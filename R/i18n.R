@@ -1,6 +1,6 @@
 # ---------------------------------------------------------------------------
-# spicy's display-string registry (stage 1: extraction at byte-identical
-# default output).
+# spicy's display-string registry, and the layer that resolves a key to the
+# label a reader sees.
 #
 # Every string a reader of a spicy TABLE sees -- column headers, row labels,
 # cell contents, titles, table footnotes -- lives here and nowhere else.
@@ -13,11 +13,17 @@
 #
 # Keys are stable; values are the English defaults. A key is never derived
 # from its value, and no mechanism of the package may branch on a displayed
-# string -- see dev/i18n_string_census.md section 1.6.
+# string -- see dev/i18n_string_census.md section 1.6. That rule is what
+# makes the resolution below safe: a translated label moves the text a
+# reader sees and nothing else, because the frozen half of every couple
+# (the column name, the block identity, the encoded token) is a constant
+# written out in the source and never read from here.
 #
-# Stage 2 (not implemented here) will resolve, in order:
-#   getOption("spicy.labels")[[key]] -> language table -> English default.
-# Only the body of `spicy_str()` changes then; `spicy_fmt()` is untouched.
+# `spicy_str()` resolves, in order:
+#   getOption("spicy.labels")[[key]] -> language set -> English default.
+# `spicy_fmt()` is untouched: it formats whatever `spicy_str()` returns, so
+# a set whose grammar needs the holes in another order writes them in the
+# positional form (`%1$s`) and nothing else changes.
 #
 # Non-ASCII glyphs are written as \uXXXX escapes, as everywhere else in the
 # package (CRAN portability; see dev/fix_nonascii.R).
@@ -721,8 +727,44 @@
 # Hard error on an unknown key: a missing key is a development bug, never a
 # runtime condition. `[[` on a named character vector already raises
 # "subscript out of bounds", which is the behaviour we want.
+#
+# The English default is read FIRST, before either option: an unknown key
+# must raise the same condition whatever the language, and the default is
+# also the answer whenever neither layer carries the key.
+#
+# The fast path is the one that matters. Both options unset is the state
+# every existing table renders in, and it costs two `getOption()` lookups
+# and nothing else -- no validation, no set lookup, no copy -- so the
+# English output stays byte-identical and no measurable slower.
 spicy_str <- function(key) {
-  .spicy_strings[[key]]
+  default <- .spicy_strings[[key]]
+  labels_opt <- getOption("spicy.labels", NULL)
+  lang_opt <- getOption("spicy.language", NULL)
+  if (is.null(labels_opt) && is.null(lang_opt)) {
+    return(default)
+  }
+  # `match()` rather than `[[`: both layers are named character vectors, and
+  # `[[` on an atomic vector RAISES for a name it does not carry instead of
+  # answering "not here" -- which is the whole question being asked.
+  if (!is.null(labels_opt)) {
+    labels <- .spicy_labels_option(labels_opt)
+    i <- match(key, names(labels))
+    if (!is.na(i)) {
+      return(unname(labels[[i]]))
+    }
+  }
+  if (!is.null(lang_opt)) {
+    set <- .spicy_language_table(.spicy_language_option(lang_opt))
+    i <- match(key, names(set))
+    if (!is.na(i)) {
+      return(unname(set[[i]]))
+    }
+  }
+  # Fallback: a set carries only the keys it translates, so a key it does
+  # not name resolves to English. A translation is never obliged to be
+  # complete, and a key added after it was written can never leave a table
+  # with a blank cell or an error.
+  default
 }
 
 # Interpolated display label. The template is an `sprintf` format; the holes
@@ -730,6 +772,394 @@ spicy_str <- function(key) {
 # A template whose hole repeats must use the positional form (`%1$s`).
 spicy_fmt <- function(key, ...) {
   sprintf(spicy_str(key), ...)
+}
+
+
+# ---- Template holes -------------------------------------------------------
+
+# The holes are the CONTRACT between a template and its call site: the site
+# passes what the ENGLISH default asked for, and every replacement -- a
+# translation or a user's override -- has to take exactly that. The check
+# lives here so the validator and the test that guards the shipped sets run
+# the same one; a second copy would drift, and the property is only worth
+# what its strictest reading is.
+
+# `%%` is a literal percent, not a hole. Deliberately strict: no space
+# flag, and only the conversion letters the registry uses -- a loose
+# pattern reads the "% C" of ", 95% CI [" as a conversion and calls a
+# display literal a template.
+.SPICY_FORMAT_SPEC_RX <- "%(\\d+[$])?[-+#0]*[0-9]*([.][0-9]+)?[sdifeEgGxX]"
+
+.spicy_format_specs <- function(v) {
+  m <- regmatches(v, gregexpr(.SPICY_FORMAT_SPEC_RX, v, perl = TRUE))[[1L]]
+  m[m != "%%"]
+}
+
+# The arguments a template asks for, as dummies of the right type.
+.spicy_format_dummies <- function(specs) {
+  dummy_for <- function(spec) {
+    if (grepl("[dioxX]$", spec)) {
+      1L
+    } else if (grepl("[feEgG]$", spec)) {
+      1
+    } else {
+      "x"
+    }
+  }
+  idx <- sub("^%(\\d+)[$].*$", "\\1", specs)
+  if (all(grepl("^[0-9]+$", idx))) {
+    idx <- as.integer(idx)
+    lapply(seq_len(max(idx)), function(i) {
+      hit <- which(idx == i)
+      if (length(hit)) dummy_for(specs[[hit[[1L]]]]) else "x"
+    })
+  } else {
+    lapply(specs, dummy_for)
+  }
+}
+
+# Does `candidate` take exactly the arguments `reference` is filled with?
+#
+# `sprintf()` gives all three verdicts this needs: it ERRORS on too few
+# arguments, on a type mismatch (`%d` handed a string) and on a positional
+# hole past the arity, and it WARNS on an argument the format never uses.
+# The warning counts too: a label that drops a hole silently loses the
+# number the table meant to show.
+#
+# Caught here rather than at render time, where the failure surfaces inside
+# a table call and names no key -- a long way from the `options()` line that
+# caused it.
+.spicy_holes_compatible <- function(candidate, reference) {
+  specs <- .spicy_format_specs(reference)
+  if (!length(specs)) {
+    return(!length(.spicy_format_specs(candidate)))
+  }
+  args <- .spicy_format_dummies(specs)
+  tryCatch(
+    {
+      do.call(sprintf, c(list(candidate), args))
+      TRUE
+    },
+    error = function(e) FALSE,
+    warning = function(w) FALSE
+  )
+}
+
+
+# ---- Language sets --------------------------------------------------------
+
+# The sets spicy ships. "en" is the registry above and has no table of its
+# own: it IS the fallback, so a second copy could only drift from it.
+.SPICY_LANGUAGES <- c("en", "fr")
+
+# `switch()` rather than a list built at load time: a set lives in its own
+# file, and R collates R/i18n.R before R/i18n_fr.R -- a top-level list would
+# be built from an object that does not exist yet.
+.spicy_language_table <- function(lang) {
+  switch(lang, en = NULL, fr = .spicy_strings_fr)
+}
+
+# Validate `options(spicy.language)` and return the language name.
+.spicy_language_option <- function(opt) {
+  if (!is.character(opt) || length(opt) != 1L || is.na(opt)) {
+    spicy_abort(
+      c(
+        "`options(spicy.language)` must be a single language name.",
+        "i" = paste0(
+          "Available languages: ",
+          paste0("\"", .SPICY_LANGUAGES, "\"", collapse = ", "),
+          "."
+        )
+      ),
+      class = "spicy_invalid_input"
+    )
+  }
+  if (!opt %in% .SPICY_LANGUAGES) {
+    spicy_abort(
+      c(
+        paste0("spicy ships no language set named ", .quote_val(opt), "."),
+        "i" = paste0(
+          "Available languages: ",
+          paste0("\"", .SPICY_LANGUAGES, "\"", collapse = ", "),
+          "."
+        ),
+        "i" = paste(
+          "A single label is an override, not a language:",
+          "see `options(spicy.labels)` on ?spicy_labels."
+        )
+      ),
+      class = "spicy_invalid_input"
+    )
+  }
+  opt
+}
+
+
+# ---- The per-key override layer -------------------------------------------
+
+# Validating a handful of labels on every lookup would be paid once per
+# string per table -- thousands of times. The validated form is therefore
+# cached against the option VALUE itself, never against a "already checked"
+# flag: any change to `options(spicy.labels)` -- another list, an edited
+# entry, a removed key -- fails `identical()` and is validated again. No
+# cached answer can survive the option that produced it.
+.spicy_i18n_cache <- new.env(parent = emptyenv())
+
+.spicy_labels_option <- function(opt) {
+  if (identical(.spicy_i18n_cache$labels_in, opt)) {
+    return(.spicy_i18n_cache$labels_out)
+  }
+  out <- .spicy_validate_labels(opt)
+  .spicy_i18n_cache$labels_in <- opt
+  .spicy_i18n_cache$labels_out <- out
+  out
+}
+
+# Normalise `options(spicy.labels)` to a named character vector, or raise.
+#
+# Hard errors throughout, including on an unknown key: an override that
+# names a key spicy does not have is a label the user believes is in force
+# and that no table will ever show. Warning and carrying on would leave the
+# report wrong and the session quiet -- the failure this option exists to
+# prevent.
+.spicy_validate_labels <- function(opt) {
+  shape <- paste(
+    "Supply a named list or a named character vector, one entry per",
+    "label: `options(spicy.labels = list(row_missing_level =",
+    "\"(No answer)\"))`."
+  )
+  if (is.list(opt)) {
+    bad <- !vapply(
+      opt,
+      function(v) is.character(v) && length(v) == 1L && !is.na(v),
+      logical(1)
+    )
+    if (any(bad)) {
+      spicy_abort(
+        c(
+          "Every `options(spicy.labels)` entry must be a single string.",
+          "x" = paste0(
+            "Not a single string: ",
+            paste(.quote_val(names(opt)[bad]), collapse = ", "),
+            "."
+          )
+        ),
+        class = "spicy_invalid_input"
+      )
+    }
+    opt <- if (length(opt)) {
+      stats::setNames(as.character(unlist(opt, use.names = FALSE)), names(opt))
+    } else {
+      stats::setNames(character(0), character(0))
+    }
+  }
+  if (!is.character(opt)) {
+    spicy_abort(
+      c(
+        "`options(spicy.labels)` must be a named list or character vector.",
+        "i" = shape
+      ),
+      class = "spicy_invalid_input"
+    )
+  }
+  if (!length(opt)) {
+    return(stats::setNames(character(0), character(0)))
+  }
+  nms <- names(opt)
+  if (is.null(nms) || anyNA(nms) || !all(nzchar(nms))) {
+    spicy_abort(
+      c(
+        "Every `options(spicy.labels)` entry must be named for its key.",
+        "i" = shape
+      ),
+      class = "spicy_invalid_input"
+    )
+  }
+  if (anyDuplicated(nms)) {
+    spicy_abort(
+      c(
+        "`options(spicy.labels)` names a key more than once.",
+        "x" = paste0(
+          "Duplicated: ",
+          paste(.quote_val(unique(nms[duplicated(nms)])), collapse = ", "),
+          "."
+        )
+      ),
+      class = "spicy_invalid_input"
+    )
+  }
+  if (anyNA(opt)) {
+    spicy_abort(
+      c(
+        "Every `options(spicy.labels)` entry must be a single string.",
+        "x" = paste0(
+          "Missing value for: ",
+          paste(.quote_val(nms[is.na(opt)]), collapse = ", "),
+          "."
+        )
+      ),
+      class = "spicy_invalid_input"
+    )
+  }
+  unknown <- nms[!nms %in% names(.spicy_strings)]
+  if (length(unknown)) {
+    spicy_abort(
+      c(
+        "`options(spicy.labels)` names labels spicy does not have.",
+        "x" = paste0("Unknown: ", paste(.quote_val(unknown), collapse = ", "), "."),
+        "i" = "`spicy_labels()` lists every key and the label in force."
+      ),
+      class = "spicy_invalid_input"
+    )
+  }
+  # Some labels are TEMPLATES, and spicy fills their holes with the
+  # variable name, the count, the percentage. An override that drops a
+  # hole loses that number; one that adds a hole, or retypes a `%d` as a
+  # `%s`, raises inside the next table call instead of here.
+  mismatched <- nms[
+    !vapply(
+      seq_along(opt),
+      function(i) {
+        .spicy_holes_compatible(
+          unname(opt[[i]]),
+          unname(.spicy_strings[[nms[[i]]]])
+        )
+      },
+      logical(1)
+    )
+  ]
+  if (length(mismatched)) {
+    spicy_abort(
+      c(
+        "An `options(spicy.labels)` entry does not fit what spicy fills it with.",
+        stats::setNames(
+          vapply(
+            mismatched,
+            function(k) {
+              paste0(
+                .quote_val(k),
+                " must carry the same holes as its default, ",
+                .quote_val(unname(.spicy_strings[[k]])),
+                "."
+              )
+            },
+            character(1)
+          ),
+          rep("x", length(mismatched))
+        ),
+        "i" = paste(
+          "A `%s` or `%d` in a label is a value spicy supplies",
+          "(a variable name, a count, a percentage), not text to edit."
+        )
+      ),
+      class = "spicy_invalid_input"
+    )
+  }
+  opt
+}
+
+
+#' Table labels and their language
+#'
+#' @description
+#' Every string a reader of a spicy table sees -- column headers, row
+#' labels, titles, table footnotes -- is held under a stable key, and
+#' `spicy_labels()` returns those keys with the label each one currently
+#' resolves to. It is the companion of the two options that move them.
+#'
+#' @section Global options:
+#'
+#' * **`options(spicy.language = "fr")`**
+#'   The language of the labels, for the whole document. Two sets ship:
+#'   `"en"` (the default) and `"fr"`. The language of a report is a
+#'   property of the report, so this is set once in a setup chunk rather
+#'   than passed to each table.
+#'
+#' * **`options(spicy.labels = list(<key> = "<label>"))`**
+#'   A per-label override, for the case where one word has to change and
+#'   a language does not: a named list (or named character vector) whose
+#'   names are keys of `spicy_labels()`. An unknown key is an error.
+#'
+#' A label resolves through `spicy.labels`, then the `spicy.language`
+#' set, then English. A set carries only the keys it translates, so
+#' anything it does not name falls back to English rather than erroring
+#' or coming out blank. Both options are cleared with `NULL`.
+#'
+#' @section What a language does not change:
+#'
+#' Only DISPLAY strings translate. The column names of the exported
+#' frames (`as.data.frame()`, `tidy()`, `as_structured()`) are a
+#' documented contract that user code indexes into, so `out[["Yes %"]]`
+#' resolves under every language, and so do the block identities, the
+#' encoded cell tokens and the mathematical glyphs. Errors, warnings and
+#' messages stay English: they are read by developers and quoted in bug
+#' reports.
+#'
+#' One exception, and it follows from the same rule. A column named
+#' after a LEVEL of `by` takes that level's own spelling -- which is why
+#' `"Yes %"` stays `"Yes %"`: your data is never translated. spicy's own
+#' missing category is such a level, so it is the one name that does
+#' move: `table_categorical(by = )` on a variable with missing values
+#' gives `"(Missing) n"` in English and `"(Manquant) n"` under `"fr"`
+#' (or whatever `row_missing_level` is overridden to). Address that
+#' column through `row_missing_level` rather than by typing it.
+#'
+#' Number FORMATTING is a separate lever. `options(spicy.language = "fr")`
+#' translates the words; the `"fr"` style
+#' (`options(spicy.style = "fr")`, see [spicy_style()]) writes the decimal
+#' comma. A French report usually wants both.
+#'
+#' @param language A language name (`"en"`, `"fr"`), or `NULL` (the
+#'   default) to report the labels in force. Any
+#'   `options(spicy.labels)` override applies either way.
+#'
+#' @return A named character vector, one element per key, in registry
+#'   order.
+#'
+#' @seealso [spicy_style()] for number formatting, including the French
+#'   decimal comma.
+#'
+#' @examples
+#' head(spicy_labels())
+#'
+#' # The same keys in French.
+#' fr <- spicy_labels("fr")
+#' fr[["header_mean"]]
+#' fr[["row_missing_level"]]
+#'
+#' # One label, not a language: the missing CATEGORY of the grouping
+#' # variable is a refusal to answer here, not an absent value.
+#' old <- options(spicy.labels = list(row_missing_level = "(No answer)"))
+#' table_categorical(sochealth, select = sex, by = smoking)
+#' options(old)
+#'
+#' @export
+spicy_labels <- function(language = NULL) {
+  if (is.null(language)) {
+    lang_opt <- getOption("spicy.language", NULL)
+    language <- if (is.null(lang_opt)) {
+      "en"
+    } else {
+      .spicy_language_option(lang_opt)
+    }
+  } else {
+    language <- .spicy_language_option(language)
+  }
+  out <- .spicy_strings
+  set <- .spicy_language_table(language)
+  if (length(set)) {
+    i <- match(names(set), names(out))
+    keep <- !is.na(i)
+    out[i[keep]] <- unname(set[keep])
+  }
+  labels_opt <- getOption("spicy.labels", NULL)
+  if (!is.null(labels_opt)) {
+    labels <- .spicy_labels_option(labels_opt)
+    if (length(labels)) {
+      out[match(names(labels), names(out))] <- unname(labels)
+    }
+  }
+  out
 }
 
 # Escape a display label so it can be pasted into a regular expression.

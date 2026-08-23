@@ -420,6 +420,60 @@ rendered to Word, Excel, or HTML follows it, and
 `?spicy_style` lists every style and every rule with the sentence it
 comes from.
 
+## Table language
+
+A style decides how numbers are written. The language decides which
+words sit around them. `options(spicy.language = "fr")` prints the
+headers, row labels, titles and table notes in French:
+
+```{r language-fr}
+options(spicy.language = "fr")
+table_continuous(sochealth, select = bmi, by = sex)
+```
+
+The language of a report is a property of the report, not of a call, so
+it is set once in the setup chunk. `"en"` is the default and is
+unchanged by any of this.
+
+The two levers are orthogonal, and a French report usually wants both —
+the language for the words, the `"fr"` style for the decimal comma:
+
+```{r language-fr-style}
+table_continuous(sochealth, select = bmi, by = sex, style = "fr")
+```
+
+```{r language-reset, include = FALSE}
+options(spicy.language = NULL)
+```
+
+When one word has to change and a language does not — a questionnaire
+where a missing category means a refusal, not an absent value —
+`options(spicy.labels = )` overrides labels one at a time, on top of
+whatever language is in force:
+
+```{r language-labels}
+options(spicy.labels = list(row_missing_level = "(No answer)"))
+table_categorical(sochealth, select = sex, by = smoking)
+options(spicy.labels = NULL)
+```
+
+`spicy_labels()` is how you find the key for a label you want to
+change: it returns every key with the text it currently resolves to.
+
+Two things a language deliberately does not move. The column names of
+the exported frames are a contract your code indexes into, so
+`out[["Yes %"]]` resolves whatever the language — spicy translates its
+own vocabulary, never your data. And errors and warnings stay in
+English, because they are read by developers and quoted in bug reports.
+
+The one column name that *does* follow the language comes from the same
+rule read the other way: a column named after a level of `by` takes that
+level's spelling, and spicy's own missing category is a level. So
+`table_categorical(by = )` on a variable with missing values gives
+`(Missing) n` in English and `(Manquant) n` in French. If your code
+selects that column, build its name from `spicy_labels()[["row_missing_level"]]`
+rather than typing it.
+
 ## Citing table values in the text
 
 The number a sentence quotes should be the number the table prints —

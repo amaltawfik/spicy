@@ -169,6 +169,10 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
 
 ## New functions
 
+* `spicy_labels()` returns every table label with the key that names it,
+  in the language currently in force. `spicy_labels("fr")` shows the
+  French set. The keys are what `options(spicy.labels)` takes.
+
 * `table_continuous_svy()` summarizes continuous variables from a
   `survey` design object -- `survey::svydesign()` or
   `survey::as.svrepdesign()` -- instead of a data frame. Every
@@ -233,6 +237,24 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
   and the official document they come from.
 
 ## New features
+
+* `options(spicy.language = "fr")` prints table labels in French --
+  headers, row labels, titles and table notes -- for a whole document.
+  `"en"` is the default and is unchanged. A label the French set does
+  not carry falls back to English, so nothing comes out blank.
+
+* `options(spicy.labels = list(row_missing_level = "(No answer)"))`
+  overrides one label at a time, in any language. It is the layer to
+  reach for when a single word has to change and a language does not.
+
+* A language changes only what a reader sees. The column names of
+  `as.data.frame()`, `tidy()` and `as_structured()` stay put, so
+  `out[["Yes %"]]` resolves whatever the language, and so do the
+  mathematical glyphs. Errors and warnings stay in English.
+
+* Number formatting stays a separate lever: `options(spicy.language =
+  "fr")` translates the words, `style = "fr"` writes the decimal comma.
+  A French report usually wants both.
 
 * `table_regression()` names the variance estimator the design actually
   uses: Taylor linearisation, replicate weights and their scheme, or a
