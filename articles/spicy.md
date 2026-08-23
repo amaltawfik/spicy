@@ -307,19 +307,19 @@ table_categorical(
 #>    No                            │     67         16.8       354     29.5   
 #>    Yes                           │    333         83.2       846     70.5   
 #> 
-#>  Variable                        │ p (Total %)  Cramer's V 
-#> ─────────────────────────────────┼─────────────────────────
-#>  Current smoker                  │    <.001        .14     
-#>    No                            │                         
-#>    Yes                           │                         
-#>    (Missing)                     │                         
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Regular physical activity       │    <.001        .21     
-#>    No                            │                         
-#>    Yes                           │                         
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Dentist visit in last 12 months │    <.001        .22     
-#>    No                            │                         
+#>  Variable                        │   p    Cramer's V 
+#> ─────────────────────────────────┼───────────────────
+#>  Current smoker                  │ <.001     .14     
+#>    No                            │                   
+#>    Yes                           │                   
+#>    (Missing)                     │                   
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Regular physical activity       │ <.001     .21     
+#>    No                            │                   
+#>    Yes                           │                   
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Dentist visit in last 12 months │ <.001     .22     
+#>    No                            │                   
 #>    Yes                           │
 ```
 
@@ -357,7 +357,7 @@ table_continuous(
 #>                                 │ Upper secondary     3.43       3.63    534 
 #>                                 │ Tertiary            4.01       4.21    399 
 #> 
-#>  Variable                       │ Group            p (n) 
+#>  Variable                       │ Group              p   
 #> ────────────────────────────────┼────────────────────────
 #>  Body mass index                │ Lower secondary  <.001 
 #>                                 │ Upper secondary        

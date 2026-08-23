@@ -825,7 +825,7 @@ table_continuous(
 #>                                │ Upper secondary    67.82      70.12    539 
 #>                                │ Tertiary           75.55      78.15    400 
 #> 
-#>  Variable                      │ Group            p (n) 
+#>  Variable                      │ Group              p   
 #> ───────────────────────────────┼────────────────────────
 #>  Body mass index               │ Lower secondary  <.001 
 #>                                │ Upper secondary        
@@ -935,7 +935,7 @@ table_continuous(
 #>  WHO-5 wellbeing index (0-100)  │ Female  67.16  14.80                     620 
 #>                                 │ Male    71.05  16.23                     580 
 #> 
-#>  Variable                       │ Group   p (n) 
+#>  Variable                       │ Group     p   
 #> ────────────────────────────────┼───────────────
 #>  Body mass index                │ Female   .018 
 #>                                 │ Male          
@@ -999,7 +999,7 @@ table_continuous(
 #>                                │ Upper secondary    67.82      70.12    539 
 #>                                │ Tertiary           75.55      78.15    400 
 #> 
-#>  Variable                      │ Group            p (n) 
+#>  Variable                      │ Group              p   
 #> ───────────────────────────────┼────────────────────────
 #>  WHO-5 wellbeing index (0-100) │ Lower secondary  <.001 
 #>                                │ Upper secondary        

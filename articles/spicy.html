@@ -376,19 +376,19 @@ tables for categorical variables:</p>
 <span><span class="co">#&gt;    No                            <span style="color: #9E9E9E;">│</span>     67         16.8       354     29.5   </span></span>
 <span><span class="co">#&gt;    Yes                           <span style="color: #9E9E9E;">│</span>    333         83.2       846     70.5   </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable                        <span style="color: #9E9E9E;">│</span> p (Total %)  Cramer's V </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────────────────────┼─────────────────────────</span></span></span>
-<span><span class="co">#&gt;  Current smoker                  <span style="color: #9E9E9E;">│</span>    &lt;.001        .14     </span></span>
-<span><span class="co">#&gt;    No                            <span style="color: #9E9E9E;">│</span>                         </span></span>
-<span><span class="co">#&gt;    Yes                           <span style="color: #9E9E9E;">│</span>                         </span></span>
-<span><span class="co">#&gt;    (Missing)                     <span style="color: #9E9E9E;">│</span>                         </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  Regular physical activity       <span style="color: #9E9E9E;">│</span>    &lt;.001        .21     </span></span>
-<span><span class="co">#&gt;    No                            <span style="color: #9E9E9E;">│</span>                         </span></span>
-<span><span class="co">#&gt;    Yes                           <span style="color: #9E9E9E;">│</span>                         </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  Dentist visit in last 12 months <span style="color: #9E9E9E;">│</span>    &lt;.001        .22     </span></span>
-<span><span class="co">#&gt;    No                            <span style="color: #9E9E9E;">│</span>                         </span></span>
+<span><span class="co">#&gt;  Variable                        <span style="color: #9E9E9E;">│</span>   p    Cramer's V </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────────────────────┼───────────────────</span></span></span>
+<span><span class="co">#&gt;  Current smoker                  <span style="color: #9E9E9E;">│</span> &lt;.001     .14     </span></span>
+<span><span class="co">#&gt;    No                            <span style="color: #9E9E9E;">│</span>                   </span></span>
+<span><span class="co">#&gt;    Yes                           <span style="color: #9E9E9E;">│</span>                   </span></span>
+<span><span class="co">#&gt;    (Missing)                     <span style="color: #9E9E9E;">│</span>                   </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  Regular physical activity       <span style="color: #9E9E9E;">│</span> &lt;.001     .21     </span></span>
+<span><span class="co">#&gt;    No                            <span style="color: #9E9E9E;">│</span>                   </span></span>
+<span><span class="co">#&gt;    Yes                           <span style="color: #9E9E9E;">│</span>                   </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  Dentist visit in last 12 months <span style="color: #9E9E9E;">│</span> &lt;.001     .22     </span></span>
+<span><span class="co">#&gt;    No                            <span style="color: #9E9E9E;">│</span>                   </span></span>
 <span><span class="co">#&gt;    Yes                           <span style="color: #9E9E9E;">│</span></span></span></code></pre></div>
 <p><code><a href="../reference/table_continuous.html">table_continuous()</a></code> summarizes continuous variables,
 either overall or by a categorical <code>by</code> variable; when
@@ -422,7 +422,7 @@ Welch test by default):</p>
 <span><span class="co">#&gt;                                 <span style="color: #9E9E9E;">│</span> Upper secondary     3.43       3.63    534 </span></span>
 <span><span class="co">#&gt;                                 <span style="color: #9E9E9E;">│</span> Tertiary            4.01       4.21    399 </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable                       <span style="color: #9E9E9E;">│</span> Group            p (n) </span></span>
+<span><span class="co">#&gt;  Variable                       <span style="color: #9E9E9E;">│</span> Group              p   </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────────────────────┼────────────────────────</span></span></span>
 <span><span class="co">#&gt;  Body mass index                <span style="color: #9E9E9E;">│</span> Lower secondary  &lt;.001 </span></span>
 <span><span class="co">#&gt;                                 <span style="color: #9E9E9E;">│</span> Upper secondary        </span></span>

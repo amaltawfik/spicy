@@ -105,6 +105,7 @@ wider than the console. Wraps the internal renderer
 <span>  total_row_idx <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">x</span>, <span class="st">"total_row_idx"</span><span class="op">)</span>,</span>
 <span>  display_labels <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  fit_stats_start <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  qualify_companions <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -208,6 +209,18 @@ visible data cell is blank – model-level statistics print once,
 under the panel that carries their values, instead of leaving
 empty <code>n</code> / <code>AIC</code> stub rows on every continuation panel. <code>NULL</code>
 (default) keeps all rows on all panels.</p></dd>
+
+
+<dt id="arg-qualify-companions">qualify_companions<a class="anchor" aria-label="anchor" href="#arg-qualify-companions"></a></dt>
+<dd><p>Logical. When the table splits into stacked
+panels, should a companion column (<code>SE</code>, <code>p</code>, an interval) that a
+width split separated from its carrier name that carrier in its
+header – <code>95% CI</code> becoming <code>95% CI (B)</code>? Set it <code>TRUE</code> only for a
+layout where those headers really are companions of the estimate
+column on their left, as in a coefficient table. In a layout whose
+<code>p</code> is the omnibus test of a whole block it has no carrier, and
+qualifying it would attribute it to whichever column happened to
+sit before it. Defaults to <code>FALSE</code>.</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>

@@ -138,7 +138,7 @@ table_continuous(
 #>                                 │ Upper secondary     3.43       3.63    534 
 #>                                 │ Tertiary            4.01       4.21    399 
 #> 
-#>  Variable                       │ Group            p (n) 
+#>  Variable                       │ Group              p   
 #> ────────────────────────────────┼────────────────────────
 #>  Body mass index                │ Lower secondary  <.001 
 #>                                 │ Upper secondary        
@@ -486,10 +486,10 @@ table_continuous(
 #>  Body mass index │ Female  25.03  3.74  19.50  29.10    21.57      28.49    7 
 #>                  │ Male    30.20  3.03  27.80  33.60    22.68      37.72    3 
 #> 
-#>  Variable        │ Group   p (n)      ES         SMD   
-#> ─────────────────┼─────────────────────────────────────
-#>  Body mass index │ Female  .072   g = -1.3057  -1.5194 
-#>                  │ Male                                
+#>  Variable        │ Group    p        ES         SMD   
+#> ─────────────────┼────────────────────────────────────
+#>  Body mass index │ Female  .072  g = -1.3057  -1.5194 
+#>                  │ Male                               
 #> 
 #> SMD = standardized mean difference (Female - Male); |SMD| > 0.1 is the usual imbalance threshold.
 ```
@@ -552,19 +552,19 @@ table_continuous(
 #>  Satisfaction with standard of living (1-5) │ Female    3.28       3.46     615 
 #>                                             │ Male      3.33       3.52     577 
 #> 
-#>  Variable                                   │ Group   p (n) 
-#> ────────────────────────────────────────────┼───────────────
-#>  Satisfaction with health (1-5)             │ Female  .267  
-#>                                             │ Male          
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Satisfaction with work (1-5)               │ Female  .073  
-#>                                             │ Male          
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Satisfaction with relationships (1-5)      │ Female  .570  
-#>                                             │ Male          
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Satisfaction with standard of living (1-5) │ Female  .453  
-#>                                             │ Male          
+#>  Variable                                   │ Group    p   
+#> ────────────────────────────────────────────┼──────────────
+#>  Satisfaction with health (1-5)             │ Female  .267 
+#>                                             │ Male         
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Satisfaction with work (1-5)               │ Female  .073 
+#>                                             │ Male         
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Satisfaction with relationships (1-5)      │ Female  .570 
+#>                                             │ Male         
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Satisfaction with standard of living (1-5) │ Female  .453 
+#>                                             │ Male         
 #> 
 #> Missing values removed: life_sat_health (8), life_sat_work (8), life_sat_relationships (8), life_sat_standard (8).
 ```
@@ -1105,7 +1105,7 @@ table_continuous(
 | Missing values removed: bmi (12), life_sat_health (8). |  |  |  |  |  |  |  |  |  |
 
 Descriptive statistics by Highest education level
-{#tinytable_0e2dz584teblfqzdn7s3 .table .tinytable
+{#tinytable_eudzuasfzj70blymwo40 .table .tinytable
 style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 

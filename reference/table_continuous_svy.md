@@ -326,11 +326,11 @@ table_continuous_svy(dclus1, select = api00, by = stype)
 #>           │ H      618.57   96.74  443.00  724.00   528.67     708.48     14 
 #>           │ M      631.44  109.06  411.00  847.00   561.87     701.01     25 
 #> 
-#>  Variable │ Group  p (n) 
-#> ──────────┼──────────────
-#>  api00    │ E      .314  
-#>           │ H            
-#>           │ M            
+#>  Variable │ Group   p   
+#> ──────────┼─────────────
+#>  api00    │ E      .314 
+#>           │ H           
+#>           │ M           
 #> 
 #> N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; degrees of freedom vary by group (7 to 14). Std. errors: Design-based (Taylor linearisation). Confidence intervals and tests use the design degrees of freedom. Group comparison: design-based Wald test. The group comparison uses 12 degrees of freedom (observed groups only).
 table_continuous_svy(

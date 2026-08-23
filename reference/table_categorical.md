@@ -749,12 +749,12 @@ table_categorical(
 #>    Yes          │       20.8             59         14.8       249     20.8   
 #>    (Missing)    │        2.2              9          2.2        25      2.1   
 #> 
-#>  Variable       │ p (Total %)  Cramer's V  CI lower  CI upper 
-#> ────────────────┼─────────────────────────────────────────────
-#>  Current smoker │    <.001        .14        .08       .19    
-#>    No           │                                             
-#>    Yes          │                                             
-#>    (Missing)    │                                             
+#>  Variable       │   p    Cramer's V  CI lower  CI upper 
+#> ────────────────┼───────────────────────────────────────
+#>  Current smoker │ <.001     .14        .08       .19    
+#>    No           │                                       
+#>    Yes          │                                       
+#>    (Missing)    │                                       
 
 # --- Per-variable association measure ----------------------------------
 
@@ -782,17 +782,17 @@ table_categorical(
 #>    Upper secondary       │   290       46.8     249     42.9     539     44.9   
 #>    Tertiary              │   196       31.6     204     35.2     400     33.3   
 #> 
-#>  Variable                │ p (Total %)  Effect size 
-#> ─────────────────────────┼──────────────────────────
-#>  Current smoker          │    .713          .01     
-#>    No                    │                          
-#>    Yes                   │                          
-#>    (Missing)             │                          
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Highest education level │    .344          .04     
-#>    Lower secondary       │                          
-#>    Upper secondary       │                          
-#>    Tertiary              │                          
+#>  Variable                │  p    Effect size 
+#> ─────────────────────────┼───────────────────
+#>  Current smoker          │ .713      .01     
+#>    No                    │                   
+#>    Yes                   │                   
+#>    (Missing)             │                   
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Highest education level │ .344      .04     
+#>    Lower secondary       │                   
+#>    Upper secondary       │                   
+#>    Tertiary              │                   
 #> 
 #> Note. Phi: Current smoker; Cramer's V: Highest education level.
 
@@ -817,17 +817,17 @@ table_categorical(
 #>    Upper secondary       │   290       46.8     249     42.9     539     44.9   
 #>    Tertiary              │   196       31.6     204     35.2     400     33.3   
 #> 
-#>  Variable                │ p (Total %)  Cramer's V 
-#> ─────────────────────────┼─────────────────────────
-#>  Current smoker          │    .713         .01     
-#>    No                    │                         
-#>    Yes                   │                         
-#>    (Missing)             │                         
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Highest education level │    .344         .04     
-#>    Lower secondary       │                         
-#>    Upper secondary       │                         
-#>    Tertiary              │                         
+#>  Variable                │  p    Cramer's V 
+#> ─────────────────────────┼──────────────────
+#>  Current smoker          │ .713     .01     
+#>    No                    │                  
+#>    Yes                   │                  
+#>    (Missing)             │                  
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Highest education level │ .344     .04     
+#>    Lower secondary       │                  
+#>    Upper secondary       │                  
+#>    Tertiary              │                  
 
 # Per-variable override (recommended named form).
 table_categorical(
@@ -861,24 +861,24 @@ table_categorical(
 #>    Very good             │   154       24.8     141     24.3     295     24.6   
 #>    (Missing)             │    10        1.6      10      1.7      20      1.7   
 #> 
-#>  Variable                │ p (Total %)  Effect size 
-#> ─────────────────────────┼──────────────────────────
-#>  Current smoker          │    .713          .01     
-#>    No                    │                          
-#>    Yes                   │                          
-#>    (Missing)             │                          
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Highest education level │    .344          .04     
-#>    Lower secondary       │                          
-#>    Upper secondary       │                          
-#>    Tertiary              │                          
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Self-rated health       │    .849          .01     
-#>    Poor                  │                          
-#>    Fair                  │                          
-#>    Good                  │                          
-#>    Very good             │                          
-#>    (Missing)             │                          
+#>  Variable                │  p    Effect size 
+#> ─────────────────────────┼───────────────────
+#>  Current smoker          │ .713      .01     
+#>    No                    │                   
+#>    Yes                   │                   
+#>    (Missing)             │                   
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Highest education level │ .344      .04     
+#>    Lower secondary       │                   
+#>    Upper secondary       │                   
+#>    Tertiary              │                   
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Self-rated health       │ .849      .01     
+#>    Poor                  │                   
+#>    Fair                  │                   
+#>    Good                  │                   
+#>    Very good             │                   
+#>    (Missing)             │                   
 #> 
 #> Note. Phi: Current smoker; Cramer's V: Highest education level; Kendall's Tau-b: Self-rated health.
 

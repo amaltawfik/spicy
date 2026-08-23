@@ -381,6 +381,12 @@ instead of rendering an empty column.
   [`survey::svydesign()`](https://rdrr.io/pkg/survey/man/svydesign.html)
   design is correct and still accepted.
 
+- [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md)
+  tests the same table on a calibrated design as on any other: the
+  displayed `"(Missing)"` category is descriptive and does not enter the
+  comparison, so `drop_na = FALSE` gives the p-value of `drop_na = TRUE`
+  instead of `NaN`.
+
 - [`vignette("survey-tables")`](https://amaltawfik.github.io/spicy/articles/survey-tables.md)
   gains a section on regression under a design, and
   [`?table_continuous_svy`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md)
@@ -1372,6 +1378,15 @@ instead of rendering an empty column.
   `summary(fit)` and
   [`survey::regTermTest()`](https://rdrr.io/pkg/survey/man/regTermTest.html)
   cover them meanwhile. \## Minor improvements
+
+- [`spicy_print_table()`](https://amaltawfik.github.io/spicy/reference/spicy_print_table.md)
+  gains `qualify_companions`. When a width split pushes an `SE`, a `p`
+  or an interval onto a continuation panel, this says whether that
+  column should name the estimate it belongs to (`95% CI` becoming
+  `95% CI (B)`). It is `FALSE` by default, because a `p` that tests a
+  whole block belongs to no column and naming one for it would say
+  something false about what was compared; the coefficient tables, where
+  the neighbour on the left really is the carrier, ask for it.
 
 - [`as_structured()`](https://amaltawfik.github.io/spicy/reference/as_structured.md)
   no longer carries a `measure` field in the `col_meta` of a

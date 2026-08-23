@@ -512,15 +512,15 @@ ct <- table_categorical(sochealth, c(sex, smoking), by = education)
 #>    Yes          │       20.8             59         14.8       249     20.8   
 #>    (Missing)    │        2.2              9          2.2        25      2.1   
 #> 
-#>  Variable       │ p (Total %)  Cramer's V 
-#> ────────────────┼─────────────────────────
-#>  Sex            │     .344        .04     
-#>    Female       │                         
-#>    Male         │                         
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Current smoker │    <.001        .14     
-#>    No           │                         
-#>    Yes          │                         
+#>  Variable       │   p    Cramer's V 
+#> ────────────────┼───────────────────
+#>  Sex            │  .344     .04     
+#>    Female       │                   
+#>    Male         │                   
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Current smoker │ <.001     .14     
+#>    No           │                   
+#>    Yes          │                   
 #>    (Missing)    │
 sc <- as_structured(ct)
 sc$body[, c("Variable", ".variable", ".level", ".row_role")]

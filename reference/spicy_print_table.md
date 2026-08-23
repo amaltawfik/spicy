@@ -26,6 +26,7 @@ spicy_print_table(
   total_row_idx = attr(x, "total_row_idx"),
   display_labels = NULL,
   fit_stats_start = NULL,
+  qualify_companions = FALSE,
   ...
 )
 ```
@@ -132,6 +133,17 @@ spicy_print_table(
   print once, under the panel that carries their values, instead of
   leaving empty `n` / `AIC` stub rows on every continuation panel.
   `NULL` (default) keeps all rows on all panels.
+
+- qualify_companions:
+
+  Logical. When the table splits into stacked panels, should a companion
+  column (`SE`, `p`, an interval) that a width split separated from its
+  carrier name that carrier in its header – `95% CI` becoming
+  `95% CI (B)`? Set it `TRUE` only for a layout where those headers
+  really are companions of the estimate column on their left, as in a
+  coefficient table. In a layout whose `p` is the omnibus test of a
+  whole block it has no carrier, and qualifying it would attribute it to
+  whichever column happened to sit before it. Defaults to `FALSE`.
 
 - ...:
 

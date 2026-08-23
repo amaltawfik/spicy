@@ -78,19 +78,19 @@ table_categorical(
 #>    No                            │     67         16.8       354     29.5   
 #>    Yes                           │    333         83.2       846     70.5   
 #> 
-#>  Variable                        │ p (Total %)  Cramer's V 
-#> ─────────────────────────────────┼─────────────────────────
-#>  Current smoker                  │    <.001        .14     
-#>    No                            │                         
-#>    Yes                           │                         
-#>    (Missing)                     │                         
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Regular physical activity       │    <.001        .21     
-#>    No                            │                         
-#>    Yes                           │                         
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Dentist visit in last 12 months │    <.001        .22     
-#>    No                            │                         
+#>  Variable                        │   p    Cramer's V 
+#> ─────────────────────────────────┼───────────────────
+#>  Current smoker                  │ <.001     .14     
+#>    No                            │                   
+#>    Yes                           │                   
+#>    (Missing)                     │                   
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Regular physical activity       │ <.001     .21     
+#>    No                            │                   
+#>    Yes                           │                   
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Dentist visit in last 12 months │ <.001     .22     
+#>    No                            │                   
 #>    Yes                           │
 ```
 
@@ -305,11 +305,11 @@ table_categorical(
 #>    Yes          │       20.8             59         14.8       249     20.8   
 #>    (Missing)    │        2.2              9          2.2        25      2.1   
 #> 
-#>  Variable       │ p (Total %)  Lambda 
-#> ────────────────┼─────────────────────
-#>  Current smoker │    <.001      .00   
-#>    No           │                     
-#>    Yes          │                     
+#>  Variable       │   p    Lambda 
+#> ────────────────┼───────────────
+#>  Current smoker │ <.001   .00   
+#>    No           │               
+#>    Yes          │               
 #>    (Missing)    │
 ```
 
@@ -678,11 +678,11 @@ table_categorical(
 #>    Yes          │       20.78            59        14.75       249     20.75  
 #>    (Missing)    │        2.23             9         2.25        25      2.08  
 #> 
-#>  Variable       │ p (Total %)  Cramer's V 
-#> ────────────────┼─────────────────────────
-#>  Current smoker │   <.0001        .136    
-#>    No           │                         
-#>    Yes          │                         
+#>  Variable       │   p     Cramer's V 
+#> ────────────────┼────────────────────
+#>  Current smoker │ <.0001     .136    
+#>    No           │                    
+#>    Yes          │                    
 #>    (Missing)    │
 ```
 
@@ -863,7 +863,7 @@ table_categorical(
 |     No                    | 334    | 53.9 | 316  | 54.5 | 650   | 54.2 |      |     |
 |     Yes                   | 286    | 46.1 | 264  | 45.5 | 550   | 45.8 |      |     |
 
-Categorical table by sex {#tinytable_1hchglcajij9iihy1975 .table
+Categorical table by sex {#tinytable_gt4f5djlbm0irxlvpjwm .table
 .tinytable style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 
