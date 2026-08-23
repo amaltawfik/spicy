@@ -644,3 +644,19 @@ les tests portent sur by.
   résiduels à la spec.
 - Le lot rename by→select (décision 39) part MAINTENANT, après le
   train décision 37 et avant le train air (qui reste dernier).
+
+## Décision 41 — G2 : les deux flags morts sont branchés, les sniffs pré-frame actés (2026-08-24)
+
+VALIDÉ par Amal (les deux recos) :
+- `supports$partial_effect_size` et `supports$nested_lrt` sont
+  BRANCHÉS : les gates inherits() qui décident de ces features lisent
+  désormais le flag (~2 sites chacun) — la déclaration devient enfin
+  la vérité, contrairement à robust_vcov (supprimé, jamais eu de
+  consommateur).
+- Note de design actée : les contrôles PRÉ-frame
+  (validate_vcov_cluster_lists et parents) reniflent légitimement le
+  fit — c'est le prix du fail-fast de C2 Inc 1 ; un flag de frame ne
+  peut pas garder un contrôle antérieur au frame. D1 est ainsi
+  « delivered as amended », plus jamais « partiel ».
+Implémentation : accroché au lot rename by→select (décisions 39-40),
+même wagon, pipeline commun.
