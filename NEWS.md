@@ -522,6 +522,16 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
   the column glosses the console prints. The interactive HTML display is
   unchanged: the note still renders outside the table grid, once.
 
+* `output = "gt"` renders valid HTML when a `by` level or a model name
+  contains a double quote, an angle bracket or a backslash. gt builds the
+  `headers` attribute of every body cell from the column name without
+  escaping it, so a level such as `Q"1` closed the attribute early and the
+  rest of the name was re-parsed as markup. Affects `table_categorical()`,
+  `table_continuous_lm()` and `table_regression()`. The column names
+  `output = "data.frame"` publishes are unchanged, the header still shows
+  the level as it stands in the data, and a table of ordinary names renders
+  exactly as before.
+
 * `output = "tinytable"` escapes cell text in `table_categorical()`,
   `table_continuous()`, `table_continuous_lm()` and `table_outcome()`. A
   level or variable label containing markup was rendered as markup: a label

@@ -873,14 +873,24 @@ export_continuous_lm_table <- function(
 
     display_df <- rename_ci_cols_lm(display_df, ci_ll, ci_ul)
     col_keys <- names(display_df)
+    # The keys of the marginal-mean and delta columns are built from
+    # `by` levels, i.e. user data, and gt writes a column id RAW into
+    # the `headers="..."` attribute of every body cell. `.gt_safe_ids()`
+    # is the identity on an ordinary key; `lab()` and `span_ids` keep
+    # reading the KEY, so nothing a reader sees moves.
+    gt_ids <- .gt_safe_ids(col_keys)
+    names(display_df) <- unname(gt_ids)
     tbl <- gt::gt(display_df)
 
-    label_list <- stats::setNames(as.list(rep("", length(col_keys))), col_keys)
+    label_list <- stats::setNames(
+      as.list(rep("", length(col_keys))),
+      unname(gt_ids)
+    )
     if (has_ci && .LM_KEY_CI_LL %in% col_keys) {
-      label_list[[.LM_KEY_CI_LL]] <- lab(.LM_KEY_CI_LL)
+      label_list[[gt_ids[[.LM_KEY_CI_LL]]]] <- lab(.LM_KEY_CI_LL)
     }
     if (has_ci && .LM_KEY_CI_UL %in% col_keys) {
-      label_list[[.LM_KEY_CI_UL]] <- lab(.LM_KEY_CI_UL)
+      label_list[[gt_ids[[.LM_KEY_CI_UL]]]] <- lab(.LM_KEY_CI_UL)
     }
     tbl <- gt::cols_label(tbl, .list = label_list)
 
@@ -897,7 +907,7 @@ export_continuous_lm_table <- function(
       tbl <- gt::tab_spanner(
         tbl,
         label = lab(col),
-        columns = col,
+        columns = gt_ids[[col]],
         id = span_ids[[col]]
       )
     }
@@ -905,13 +915,17 @@ export_continuous_lm_table <- function(
       tbl <- gt::tab_spanner(
         tbl,
         label = ci_spanner_label,
-        columns = c(.LM_KEY_CI_LL, .LM_KEY_CI_UL),
+        columns = unname(gt_ids[c(.LM_KEY_CI_LL, .LM_KEY_CI_UL)]),
         id = span_ids[[.LM_KEY_CI]]
       )
     }
 
-    tbl <- gt::cols_align(tbl, align = "left", columns = .LM_KEY_VARIABLE)
-    numeric_cols <- setdiff(col_keys, .LM_KEY_VARIABLE)
+    tbl <- gt::cols_align(
+      tbl,
+      align = "left",
+      columns = gt_ids[[.LM_KEY_VARIABLE]]
+    )
+    numeric_cols <- unname(gt_ids[setdiff(col_keys, .LM_KEY_VARIABLE)])
     if (use_decimal && length(numeric_cols) > 0L) {
       # Cells were pre-padded with figure-spaces upstream; centring
       # uniform-width strings places the decimal points at the same
@@ -954,7 +968,7 @@ export_continuous_lm_table <- function(
         tbl,
         style = rule_top,
         locations = gt::cells_column_labels(
-          columns = c(.LM_KEY_CI_LL, .LM_KEY_CI_UL)
+          columns = unname(gt_ids[c(.LM_KEY_CI_LL, .LM_KEY_CI_UL)])
         )
       )
     }
@@ -971,9 +985,11 @@ export_continuous_lm_table <- function(
     tbl <- gt::tab_style(
       tbl,
       style = gt::cell_text(align = "left"),
-      locations = gt::cells_column_labels(columns = .LM_KEY_VARIABLE)
+      locations = gt::cells_column_labels(
+        columns = gt_ids[[.LM_KEY_VARIABLE]]
+      )
     )
-    non_variable_cols <- setdiff(col_keys, .LM_KEY_VARIABLE)
+    non_variable_cols <- unname(gt_ids[setdiff(col_keys, .LM_KEY_VARIABLE)])
     if (length(non_variable_cols) > 0L) {
       tbl <- gt::tab_style(
         tbl,
@@ -994,7 +1010,7 @@ export_continuous_lm_table <- function(
     ci_css_sel <- if (has_ci) {
       paste(
         vapply(
-          c(.LM_KEY_CI_LL, .LM_KEY_CI_UL),
+          unname(gt_ids[c(.LM_KEY_CI_LL, .LM_KEY_CI_UL)]),
           function(id) sprintf('.gt_table thead tr:last-child th[id="%s"]', id),
           character(1)
         ),

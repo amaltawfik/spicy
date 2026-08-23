@@ -3639,11 +3639,14 @@ test_that("a quote in a `by` level no longer breaks the gt render", {
   html <- expect_no_error(
     as.character(gt::as_raw_html(g, inline_css = FALSE))
   )
-  # The rule reaches the quote-bearing column: sass renormalises the
-  # escaped double quote to a single-quoted CSS string, which matches
-  # the id gt wrote into the DOM.
-  expect_true(grepl("th[id='a\"b_n']", html, fixed = TRUE))
-  expect_true(grepl('scope="col" id="a&quot;b_n"', html, fixed = TRUE))
+  # The rule reaches the quote-bearing column. The quote never gets as
+  # far as the selector any more: `.gt_safe_ids()` takes it out of the
+  # gt id before the table is built (register n. 73), so both sides of
+  # the match read the sanitised id. The `by` level itself is untouched
+  # -- it is the spanner LABEL, which gt escapes.
+  expect_true(grepl("th[id=\"a_b_n\"]", html, fixed = TRUE))
+  expect_true(grepl('scope="col" id="a_b_n"', html, fixed = TRUE))
+  expect_true(grepl(">a\"b<", html, fixed = TRUE))
 })
 
 test_that(".css_escape_string leaves an ordinary label untouched", {
