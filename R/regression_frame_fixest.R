@@ -54,8 +54,11 @@ as_regression_frame.fixest <- function(
   is_negbin <- is.character(fit$family) && identical(fit$family[[1L]], "negbin")
   is_glm <- is_negbin || (!is.null(fit$family) && is.list(fit$family))
   coefs <- .fixest_coefs(fit, ci_level = ci_level, is_glm = is_glm)
-  # AME rows when requested (finding M2): response-scale avg_slopes();
-  # a robust vcov is recomputed inside and honoured.
+  # AME rows when requested (finding M2): response-scale avg_slopes().
+  # `vcov` is always the fit's own estimator here -- fixest keeps the
+  # variance it was fitted with (FE-clustered by default), and spicy's
+  # HC* / CR* / resampling tokens are refused up front by
+  # .robust_vcov_support(), which grants fixest "classical" only.
   coefs <- .attach_ame_to_frame_coefs(
     coefs,
     fit,
