@@ -638,10 +638,22 @@ validate_vcov_cluster_lists <- function(vcov, cluster, models) {
     }
   }
 
-  # Step 6b: vocabulary check (each element must be a known type)
+  # Step 6b: vocabulary check (each element must be a known type).
+  # The CHECK is class-independent -- an unknown token is unknown to
+  # every class -- but the hint is not: listing the whole vocabulary
+  # offered "nid" / "iid" / "ker" / "rank" to an lm user (rq-only, and
+  # refused one step later by 6c) and "HC0"-"HC5" / "CR0"-"CR3" /
+  # "jackknife" to an rq user (refused there for statistical reasons).
+  # A typo should be answered with the tokens THIS call can actually
+  # use, so the hint is the union of the models' own capabilities,
+  # falling back to the full vocabulary if none can be determined.
   vcov_check <- if (is.list(vcov)) unlist(vcov) else vcov
   bad <- setdiff(vcov_check, valid_vcov)
   if (length(bad) > 0L) {
+    usable <- unique(unlist(lapply(models, function(m) {
+      tryCatch(.robust_vcov_support(m), error = function(e) character(0))
+    })))
+    usable <- intersect(valid_vcov, usable)
     spicy_abort(
       c(
         sprintf(
@@ -649,8 +661,16 @@ validate_vcov_cluster_lists <- function(vcov, cluster, models) {
           paste(.quote_val(bad), collapse = ", ")
         ),
         "i" = sprintf(
-          "Valid types: %s.",
-          paste(.quote_val(valid_vcov), collapse = ", ")
+          "Valid types for %s: %s.",
+          if (length(models) == 1L) {
+            sprintf("`%s`", class(models[[1L]])[1L])
+          } else {
+            "these models"
+          },
+          paste(
+            .quote_val(if (length(usable) > 0L) usable else valid_vcov),
+            collapse = ", "
+          )
         )
       ),
       class = "spicy_invalid_input"
