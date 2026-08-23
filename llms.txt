@@ -152,7 +152,7 @@ renders them with the conventions of each model family:
 | Mixed effects | [`lme4::lmer()`](https://rdrr.io/pkg/lme4/man/lmer.html), [`lme4::glmer()`](https://rdrr.io/pkg/lme4/man/glmer.html), [`glmmTMB::glmmTMB()`](https://rdrr.io/pkg/glmmTMB/man/glmmTMB.html), [`nlme::lme()`](https://rdrr.io/pkg/nlme/man/lme.html), [`nlme::gls()`](https://rdrr.io/pkg/nlme/man/gls.html) |
 | Ordinal and categorical | [`MASS::polr()`](https://rdrr.io/pkg/MASS/man/polr.html), [`ordinal::clm()`](https://rdrr.io/pkg/ordinal/man/clm.html) (incl. partial proportional odds), [`nnet::multinom()`](https://rdrr.io/pkg/nnet/man/multinom.html), [`mlogit::mlogit()`](https://rdrr.io/pkg/mlogit/man/mlogit.html) |
 | Counts, two-part models | [`pscl::hurdle()`](https://rdrr.io/pkg/pscl/man/hurdle.html), [`pscl::zeroinfl()`](https://rdrr.io/pkg/pscl/man/zeroinfl.html), [`glmmTMB::glmmTMB()`](https://rdrr.io/pkg/glmmTMB/man/glmmTMB.html) (zero-inflation and dispersion components) |
-| Survival | [`survival::coxph()`](https://rdrr.io/pkg/survival/man/coxph.html), [`survival::survreg()`](https://rdrr.io/pkg/survival/man/survreg.html), [`rms::cph()`](https://rdrr.io/pkg/rms/man/cph.html), [`flexsurv::flexsurvreg()`](http://chjackson.github.io/flexsurv-dev/reference/flexsurvreg.md) |
+| Survival | [`survival::coxph()`](https://rdrr.io/pkg/survival/man/coxph.html), [`survival::survreg()`](https://rdrr.io/pkg/survival/man/survreg.html), [`rms::cph()`](https://rdrr.io/pkg/rms/man/cph.html), [`flexsurv::flexsurvreg()`](https://rdrr.io/pkg/flexsurv/man/flexsurvreg.html) |
 | Survey-weighted | [`survey::svyglm()`](https://rdrr.io/pkg/survey/man/svyglm.html) (design-based SEs) |
 | Population-averaged (GEE) | [`geepack::geeglm()`](https://rdrr.io/pkg/geepack/man/geeglm.html) (native sandwich SEs, working correlation disclosed) |
 | Additive, proportions, selection | [`mgcv::gam()`](https://rdrr.io/pkg/mgcv/man/gam.html), [`mgcv::bam()`](https://rdrr.io/pkg/mgcv/man/bam.html), [`betareg::betareg()`](https://rdrr.io/pkg/betareg/man/betareg.html), [`sampleSelection::selection()`](https://rdrr.io/pkg/sampleSelection/man/selection.html) |
@@ -829,6 +829,17 @@ lists every rule with the sentence it comes from.
 - [`spicy_style()`](https://amaltawfik.github.io/spicy/reference/spicy_style.md)
   [`spicy_style_names()`](https://amaltawfik.github.io/spicy/reference/spicy_style.md)
   : Build or select a table style
+
+## Table language
+
+The words around the numbers. `options(spicy.language)` sets the
+language of every table label for a document, `options(spicy.labels)`
+overrides one label at a time, and
+[`spicy_labels()`](https://amaltawfik.github.io/spicy/reference/spicy_labels.md)
+names the keys both of them take.
+
+- [`spicy_labels()`](https://amaltawfik.github.io/spicy/reference/spicy_labels.md)
+  : Table labels and their language
 
 ## Supported models
 

@@ -1187,14 +1187,24 @@ silent model-based result under a robust label:
 - `lmer`, `lme`, `coxph`, `survreg`,
   [`mgcv::gam`](https://rdrr.io/pkg/mgcv/man/gam.html)/`bam`, `polr`,
   `clm`, `betareg`,
-  [`nnet::multinom`](https://rdrr.io/pkg/nnet/man/multinom.html), `rms`
-  (`ols`/`lrm`/`cph`/`Glm`):
+  [`nnet::multinom`](https://rdrr.io/pkg/nnet/man/multinom.html),
+  [`pscl::zeroinfl`](https://rdrr.io/pkg/pscl/man/zeroinfl.html)/`hurdle`,
+  `rms` (`ols`/`lrm`/`cph`/`Glm`):
 
   `classical` + `CR*` only – `HC*` and the resamplers (which refit
   `lm`/`glm`) are not defined for these. `clm` with a scale / nominal
   (partial-PO) component is `classical` only. `multinom` needs sandwich
   \>= 3.1-2 (which added its `estfun()` method); its `cluster` is one
-  entry per observation.
+  entry per observation. For the two-part `pscl` fits the cluster
+  sandwich covers both components (count and zero) at once.
+
+- [`quantreg::rq`](https://rdrr.io/pkg/quantreg/man/rq.html):
+
+  its own estimator family, not the sandwich vocabulary: `classical` (=
+  `"nid"`, quantreg's large-sample default), `"iid"`, `"ker"`, `"rank"`
+  (intervals only) and a native `"bootstrap"`, clustered via the wild
+  gradient bootstrap. `HC*`, `CR*` and `jackknife` are refused, each
+  with its own reason – see the `vcov` argument.
 
 - [`geepack::geeglm`](https://rdrr.io/pkg/geepack/man/geeglm.html):
 
@@ -1211,6 +1221,15 @@ silent model-based result under a robust label:
   clustering belongs in the design itself (`survey::svydesign(ids = )`),
   not in the table call.
 
+- `estimatr` (`lm_robust`/`iv_robust`) and `fixest`:
+
+  these fits carry the variance they were computed with – estimatr's
+  `se_type =`, and whatever fixest's own `vcov` interface produced – and
+  spicy never overwrites it. A `vcov` request is refused; set the
+  estimator through the fitting package instead (`se_type =` for
+  estimatr; `vcov =` at estimation or in
+  [`summary()`](https://rdrr.io/r/base/summary.html) for fixest).
+
 - Other classes (`glmer`, `glmmTMB`, `rstanarm`/`brms`, ...):
 
   `classical` (model-based) only (clubSandwich has no working backend
@@ -1221,7 +1240,8 @@ the field-standard oracle: `lm`/`glm`/`lmer`/`lme` use clubSandwich (CR2
 = Bell-McCaffrey, with Satterthwaite df for `lm`/`lme`/`lmer`);
 `coxph`/`cph` use the Lin-Wei grouped-dfbeta sandwich (identical to
 `coxph(..., cluster=)`);
-`survreg`/`gam`/`polr`/`clm`/`betareg`/`mlogit`/`multinom` use
+`survreg`/`gam`/`polr`/`clm`/`betareg`/`mlogit`/`multinom` and the
+`pscl` two-part fits use
 [`sandwich::vcovCL()`](https://zeileis.codeberg.page/sandwich/reference/vcovCL.html);
 `rms` fits use
 [`rms::robcov()`](https://rdrr.io/pkg/rms/man/robcov.html) (which needs

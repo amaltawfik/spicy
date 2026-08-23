@@ -29,7 +29,7 @@ supports four survival engines:
   — parametric accelerated failure time (AFT) models;
 - **[`rms::cph()`](https://rdrr.io/pkg/rms/man/cph.html)** — the Cox
   model in the `rms` ecosystem;
-- **[`flexsurv::flexsurvreg()`](http://chjackson.github.io/flexsurv-dev/reference/flexsurvreg.md)**
+- **[`flexsurv::flexsurvreg()`](https://rdrr.io/pkg/flexsurv/man/flexsurvreg.html)**
   — fully parametric models over a wide family of distributions.
 
 The running example is
@@ -576,7 +576,7 @@ table_regression(cph_fit, vcov = "CR0", cluster = ~inst,
 
 ## Fully parametric: `flexsurv`
 
-[`flexsurv::flexsurvreg()`](http://chjackson.github.io/flexsurv-dev/reference/flexsurvreg.md)
+[`flexsurv::flexsurvreg()`](https://rdrr.io/pkg/flexsurv/man/flexsurvreg.html)
 (Jackson 2016) fits parametric survival models over a wide family of
 distributions (and the Royston–Parmar 2002 spline models). The location
 coefficients are exponentiated under a generic `exp(B)` header — the

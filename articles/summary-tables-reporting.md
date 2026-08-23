@@ -821,6 +821,99 @@ sets one for a whole document.
 [`?spicy_style`](https://amaltawfik.github.io/spicy/reference/spicy_style.md)
 lists every style and every rule with the sentence it comes from.
 
+## Table language
+
+A style decides how numbers are written. The language decides which
+words sit around them. `options(spicy.language = "fr")` prints the
+headers, row labels, titles and table notes in French:
+
+``` r
+
+options(spicy.language = "fr")
+table_continuous(sochealth, select = bmi, by = sex)
+#> Statistiques descriptives selon Sex
+#> 
+#>  Variable        │ Groupe    M     ET    Min    Max   95% CI LL  95% CI UL   n  
+#> ─────────────────┼──────────────────────────────────────────────────────────────
+#>  Body mass index │ Female  25.69  3.78  16.00  38.90    25.39      25.98    616 
+#>                  │ Male    26.20  3.64  16.00  37.70    25.90      26.50    572 
+#> 
+#>  Variable        │ Groupe   p   
+#> ─────────────────┼──────────────
+#>  Body mass index │ Female  .018 
+#>                  │ Male         
+#> 
+#> Valeurs manquantes retirées : bmi (12).
+```
+
+The language of a report is a property of the report, not of a call, so
+it is set once in the setup chunk. `"en"` is the default and is
+unchanged by any of this.
+
+The two levers are orthogonal, and a French report usually wants both —
+the language for the words, the `"fr"` style for the decimal comma:
+
+``` r
+
+table_continuous(sochealth, select = bmi, by = sex, style = "fr")
+#> Statistiques descriptives selon Sex
+#> 
+#>  Variable        │ Groupe    M     ET    Min    Max   95% CI LL  95% CI UL   n  
+#> ─────────────────┼──────────────────────────────────────────────────────────────
+#>  Body mass index │ Female  25,69  3,78  16,00  38,90    25,39      25,98    616 
+#>                  │ Male    26,20  3,64  16,00  37,70    25,90      26,50    572 
+#> 
+#>  Variable        │ Groupe    p   
+#> ─────────────────┼───────────────
+#>  Body mass index │ Female  0,018 
+#>                  │ Male          
+#> 
+#> Valeurs manquantes retirées : bmi (12).
+```
+
+When one word has to change and a language does not — a questionnaire
+where a missing category means a refusal, not an absent value —
+`options(spicy.labels = )` overrides labels one at a time, on top of
+whatever language is in force:
+
+``` r
+
+options(spicy.labels = list(row_missing_level = "(No answer)"))
+table_categorical(sochealth, select = sex, by = smoking)
+#> Categorical table by smoking
+#> 
+#>  Variable │ No n  No %  Yes n  Yes %  (No answer) n  (No answer) %  Total n 
+#> ──────────┼─────────────────────────────────────────────────────────────────
+#>  Sex      │                                                                 
+#>    Female │ 475   51.3   131   52.6        14            56.0         620   
+#>    Male   │ 451   48.7   118   47.4        11            44.0         580   
+#> 
+#>  Variable │ Total %   p    Phi 
+#> ──────────┼────────────────────
+#>  Sex      │          .713  .01 
+#>    Female │  51.7              
+#>    Male   │  48.3
+options(spicy.labels = NULL)
+```
+
+[`spicy_labels()`](https://amaltawfik.github.io/spicy/reference/spicy_labels.md)
+is how you find the key for a label you want to change: it returns every
+key with the text it currently resolves to.
+
+Two things a language deliberately does not move. The column names of
+the exported frames are a contract your code indexes into, so
+`out[["Yes %"]]` resolves whatever the language — spicy translates its
+own vocabulary, never your data. And errors and warnings stay in
+English, because they are read by developers and quoted in bug reports.
+
+The one column name that *does* follow the language comes from the same
+rule read the other way: a column named after a level of `by` takes that
+level’s spelling, and spicy’s own missing category is a level. So
+`table_categorical(by = )` on a variable with missing values gives
+`(Missing) n` in English and `(Manquant) n` in French. If your code
+selects that column, build its name from
+`spicy_labels()[["row_missing_level"]]` rather than typing it.
+
 ## Citing table values in the text
 
 The number a sentence quotes should be the number the table prints —
@@ -930,7 +1023,7 @@ tab |>
 |     No | 177 | 67.8 | 310 | 57.5 | 163 | 40.8 | 650 | 54.2 |       |     |
 |     Yes |  84 | 32.2 | 229 | 42.5 | 237 | 59.2 | 550 | 45.8 |       |     |
 
-Categorical table by education {#tinytable_n5qikkj2pe89lwt60ejp .table
+Categorical table by education {#tinytable_xrtvs1ub7crgvr6lmx41 .table
 .tinytable style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 

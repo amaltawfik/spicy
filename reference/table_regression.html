@@ -1230,7 +1230,7 @@ refused.</p></dd>
 
 <dt><code>lmer</code>, <code>lme</code>, <code>coxph</code>, <code>survreg</code>,
 <code><a href="https://rdrr.io/pkg/mgcv/man/gam.html" class="external-link">mgcv::gam</a></code>/<code>bam</code>, <code>polr</code>, <code>clm</code>, <code>betareg</code>,
-<code><a href="https://rdrr.io/pkg/nnet/man/multinom.html" class="external-link">nnet::multinom</a></code>,
+<code><a href="https://rdrr.io/pkg/nnet/man/multinom.html" class="external-link">nnet::multinom</a></code>, <code><a href="https://rdrr.io/pkg/pscl/man/zeroinfl.html" class="external-link">pscl::zeroinfl</a></code>/<code>hurdle</code>,
 <code>rms</code> (<code>ols</code>/<code>lrm</code>/<code>cph</code>/<code>Glm</code>)</dt>
 <dd><p><code>classical</code>
 + <code>CR*</code> only – <code>HC*</code> and the resamplers (which refit
@@ -1238,7 +1238,16 @@ refused.</p></dd>
 nominal (partial-PO) component is <code>classical</code> only.
 <code>multinom</code> needs <span class="pkg">sandwich</span> &gt;= 3.1-2 (which added its
 <code>estfun()</code> method); its <code>cluster</code> is one entry per
-observation.</p></dd>
+observation. For the two-part <code>pscl</code> fits the cluster
+sandwich covers both components (count and zero) at once.</p></dd>
+
+<dt><code><a href="https://rdrr.io/pkg/quantreg/man/rq.html" class="external-link">quantreg::rq</a></code></dt>
+<dd><p>its own estimator family, not the sandwich
+vocabulary: <code>classical</code> (= <code>"nid"</code>, quantreg's large-sample
+default), <code>"iid"</code>, <code>"ker"</code>, <code>"rank"</code> (intervals only) and a
+native <code>"bootstrap"</code>, clustered via the wild gradient
+bootstrap. <code>HC*</code>, <code>CR*</code> and <code>jackknife</code> are refused, each with
+its own reason – see the <code>vcov</code> argument.</p></dd>
 
 <dt><code><a href="https://rdrr.io/pkg/geepack/man/geeglm.html" class="external-link">geepack::geeglm</a></code></dt>
 <dd><p>no spicy-side estimator at all: GEE
@@ -1255,6 +1264,15 @@ variance for the declared design, and clustering belongs in
 the design itself (<code>survey::svydesign(ids = )</code>), not in the
 table call.</p></dd>
 
+<dt><code>estimatr</code> (<code>lm_robust</code>/<code>iv_robust</code>) and <code>fixest</code></dt>
+<dd><p>these
+fits carry the variance they were computed with – estimatr's
+<code>se_type =</code>, and whatever fixest's own <code>vcov</code> interface
+produced – and spicy never overwrites it. A <code>vcov</code> request is
+refused; set the estimator through the fitting package instead
+(<code>se_type =</code> for estimatr; <code>vcov =</code> at estimation or in
+<code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code> for fixest).</p></dd>
+
 <dt>Other classes (<code>glmer</code>, <code>glmmTMB</code>,
 <code>rstanarm</code>/<code>brms</code>, ...)</dt>
 <dd><p><code>classical</code> (model-based) only
@@ -1267,7 +1285,8 @@ to the field-standard oracle: <code>lm</code>/<code>glm</code>/<code>lmer</code>
 <span class="pkg">clubSandwich</span> (CR2 = Bell-McCaffrey, with Satterthwaite df for
 <code>lm</code>/<code>lme</code>/<code>lmer</code>); <code>coxph</code>/<code>cph</code> use the Lin-Wei grouped-dfbeta
 sandwich (identical to <code>coxph(..., cluster=)</code>);
-<code>survreg</code>/<code>gam</code>/<code>polr</code>/<code>clm</code>/<code>betareg</code>/<code>mlogit</code>/<code>multinom</code> use
+<code>survreg</code>/<code>gam</code>/<code>polr</code>/<code>clm</code>/<code>betareg</code>/<code>mlogit</code>/<code>multinom</code> and the
+<code>pscl</code> two-part fits use
 <code><a href="https://zeileis.codeberg.page/sandwich/reference/vcovCL.html" class="external-link">sandwich::vcovCL()</a></code>; <code>rms</code> fits use <code><a href="https://rdrr.io/pkg/rms/man/robcov.html" class="external-link">rms::robcov()</a></code> (which
 needs the fit's <code>x = TRUE, y = TRUE</code>). These single cluster
 sandwiches have no CR0-CR3 bias-reduction variants, so the requested

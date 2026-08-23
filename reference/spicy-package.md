@@ -84,6 +84,10 @@ entry, on their OWN clock rather than the parent family's):
   [`table_continuous_svy()`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md),
   [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md)
 
+- Display language and label overrides:
+  [`spicy_labels()`](https://amaltawfik.github.io/spicy/reference/spicy_labels.md)
+  (with `options(spicy.language)` / `options(spicy.labels)`)
+
 **Internal API** (not part of the public surface; can change without
 notice – avoid calling directly from downstream code):
 

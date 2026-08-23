@@ -101,6 +101,17 @@ lists every rule with the sentence it comes from.
   [`spicy_style_names()`](https://amaltawfik.github.io/spicy/reference/spicy_style.md)
   : Build or select a table style
 
+## Table language
+
+The words around the numbers. `options(spicy.language)` sets the
+language of every table label for a document, `options(spicy.labels)`
+overrides one label at a time, and
+[`spicy_labels()`](https://amaltawfik.github.io/spicy/reference/spicy_labels.md)
+names the keys both of them take.
+
+- [`spicy_labels()`](https://amaltawfik.github.io/spicy/reference/spicy_labels.md)
+  : Table labels and their language
+
 ## Supported models
 
 The registry of model classes
