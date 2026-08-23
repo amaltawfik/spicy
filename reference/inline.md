@@ -21,9 +21,14 @@ inline(x, variable, level = NULL, column = NULL, model = NULL)
   [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md),
   [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
   [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md),
+  [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md),
+  [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md)
   or
-  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
-  (default output).
+  [`table_continuous_svy()`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md)
+  (default output) – every family
+  [`as_structured()`](https://amaltawfik.github.io/spicy/reference/as_structured.md)
+  accepts.
 
 - variable:
 
@@ -33,7 +38,9 @@ inline(x, variable, level = NULL, column = NULL, model = NULL)
 - level:
 
   For a factor variable, the level, as a string. `"(Missing)"` addresses
-  the missing-value category by role.
+  the missing-value category by role. On
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md),
+  whose groups are columns rather than rows, it names the group.
 
 - column:
 
@@ -41,11 +48,12 @@ inline(x, variable, level = NULL, column = NULL, model = NULL)
   the estimate-like column of the row when it is unambiguous: the
   family's primary estimate. That is the coefficient for
   [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
-  and
-  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
   – always token `"b"`: an exponentiated table changes its header to OR,
-  IRR or HR, never its token – the mean (`"m"`) or, on a median-only
-  table, the median (`"med"`, `"med_iqr"`) for
+  IRR or HR, never its token – the contrast (`"delta"`) or, across a
+  numeric `by`, the slope (`"b"`) for
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md),
+  the mean (`"m"`) or, on a median-only table, the median (`"med"`,
+  `"med_iqr"`) for
   [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
   and the count (`"n"`) for
   [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md).
@@ -77,6 +85,13 @@ levels sits on the variable's own row: the *p* of a
 [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
 block, its association measure, its SMD. Leave `level` out to cite it
 (`inline(tbl, smoking, column = "p")`).
+
+[`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
+lays its groups out sideways – one row per outcome, the `by` levels as
+columns (`M (Female)`, `M (Male)`) – so there `level` names the group
+whose column you want: `inline(tbl, bmi, "Female", "emmean")`. The
+columns that belong to no group (the contrast, its interval, `p`, `n`)
+are cited without one, as before.
 
 The column is a **token** of the typed contract (`"b"`, `"se"`, `"p"`,
 `"ci"`, `"or"`, `"ame"`, `"n"`, `"pct"`, `"m"`, ... – see

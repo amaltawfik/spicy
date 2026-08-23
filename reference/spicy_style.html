@@ -9,15 +9,17 @@
 decimals a p-value gets, where it bottoms out, whether it keeps its
 leading zero, what the decimal mark is, how a confidence interval is
 written. spicy_style() composes one by hand; the named themes
-("jama", "lancet", "annals", "apa", "aer", "fr") are
-pre-composed ones, each encoding rules taken verbatim from an
-official document of the institution.'><meta property="og:description" content='A style is a small set of number-formatting rules – how many
+("jama", "nejm", "lancet", "annals", "apa", "aer",
+"fr" – spicy_style_names() returns the list) are pre-composed
+ones, each encoding rules taken verbatim from an official document
+of the institution.'><meta property="og:description" content='A style is a small set of number-formatting rules – how many
 decimals a p-value gets, where it bottoms out, whether it keeps its
 leading zero, what the decimal mark is, how a confidence interval is
 written. spicy_style() composes one by hand; the named themes
-("jama", "lancet", "annals", "apa", "aer", "fr") are
-pre-composed ones, each encoding rules taken verbatim from an
-official document of the institution.'><meta property="og:image" content="https://amaltawfik.github.io/spicy/logo.svg"></head><body>
+("jama", "nejm", "lancet", "annals", "apa", "aer",
+"fr" – spicy_style_names() returns the list) are pre-composed
+ones, each encoding rules taken verbatim from an official document
+of the institution.'><meta property="og:image" content="https://amaltawfik.github.io/spicy/logo.svg"></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -87,9 +89,10 @@ official document of the institution.'><meta property="og:image" content="https:
 decimals a p-value gets, where it bottoms out, whether it keeps its
 leading zero, what the decimal mark is, how a confidence interval is
 written. <code>spicy_style()</code> composes one by hand; the named themes
-(<code>"jama"</code>, <code>"lancet"</code>, <code>"annals"</code>, <code>"apa"</code>, <code>"aer"</code>, <code>"fr"</code>) are
-pre-composed ones, each encoding rules taken verbatim from an
-official document of the institution.</p>
+(<code>"jama"</code>, <code>"nejm"</code>, <code>"lancet"</code>, <code>"annals"</code>, <code>"apa"</code>, <code>"aer"</code>,
+<code>"fr"</code> – <code>spicy_style_names()</code> returns the list) are pre-composed
+ones, each encoding rules taken verbatim from an official document
+of the institution.</p>
     </div>
 
     <div class="section level2">
@@ -377,13 +380,15 @@ and inferential statistics (t, F, chi-square) to two decimals."</p></li>
 <li><p>confidence intervals in square brackets, bounds separated by
 a comma – the <em>Sample tables</em> page gives
 <code>95% CI [LL, UL]</code> as one of the two official layouts.</p></li>
-<li><p>significance stars, <strong>if you ask for them</strong> with
-<code>stars = TRUE</code>, at <code>.05</code> / <code>.01</code> / <code>.001</code> – the thresholds of
-the official correlation and ANOVA sample tables. The theme does
-not switch stars on: the APA regression sample table has none.</p></li>
 </ul><p>Not encoded: the one-decimal rule for means of integer scales
 (depends on what the variable measures, which spicy cannot know),
-and the thousands separator (see <em>Known gaps</em> below).</p>
+and the thousands separator (see <em>Known gaps</em> below). Nor the star
+thresholds. The official correlation and ANOVA sample tables mark
+<code>.05</code> / <code>.01</code> / <code>.001</code>, which is what <code>stars = TRUE</code> gives you –
+but as spicy's own default, not as anything this theme pins: one
+<code>stars</code> lever carries both the thresholds and the decision to show
+them, and the APA regression sample table shows none. So the theme
+sets no <code>stars</code>, and <code>style = "apa"</code> never switches them on.</p>
 </div>
 
 <div class="section">

@@ -4,8 +4,9 @@ A *style* is a small set of number-formatting rules – how many decimals
 a p-value gets, where it bottoms out, whether it keeps its leading zero,
 what the decimal mark is, how a confidence interval is written.
 `spicy_style()` composes one by hand; the named themes (`"jama"`,
-`"lancet"`, `"annals"`, `"apa"`, `"aer"`, `"fr"`) are pre-composed ones,
-each encoding rules taken verbatim from an official document of the
+`"nejm"`, `"lancet"`, `"annals"`, `"apa"`, `"aer"`, `"fr"` –
+`spicy_style_names()` returns the list) are pre-composed ones, each
+encoding rules taken verbatim from an official document of the
 institution.
 
 ## Usage
@@ -297,14 +298,15 @@ change of those defaults will not move an APA-formatted table.
   the *Sample tables* page gives `95% CI [LL, UL]` as one of the two
   official layouts.
 
-- significance stars, **if you ask for them** with `stars = TRUE`, at
-  `.05` / `.01` / `.001` – the thresholds of the official correlation
-  and ANOVA sample tables. The theme does not switch stars on: the APA
-  regression sample table has none.
-
 Not encoded: the one-decimal rule for means of integer scales (depends
 on what the variable measures, which spicy cannot know), and the
-thousands separator (see *Known gaps* below).
+thousands separator (see *Known gaps* below). Nor the star thresholds.
+The official correlation and ANOVA sample tables mark `.05` / `.01` /
+`.001`, which is what `stars = TRUE` gives you – but as spicy's own
+default, not as anything this theme pins: one `stars` lever carries both
+the thresholds and the decision to show them, and the APA regression
+sample table shows none. So the theme sets no `stars`, and
+`style = "apa"` never switches them on.
 
 ### `"aer"` – American Economic Review / AEA journals
 

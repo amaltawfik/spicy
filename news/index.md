@@ -847,6 +847,33 @@ instead of rendering an empty column.
   where the association sits on the variable row (it used to return
   `[, ]`). The wording is the one the scalar tokens already used.
 
+- A named style reaches every output, not only the console. The rules
+  that vary with the p-value itself – The Lancet’s two significant
+  figures, JAMA’s third decimal below `.01` – and a floor set apart from
+  the decimals were applied when the table was printed but not when it
+  was rendered, so `style = "lancet"` gave `0.16` on screen and `0.1634`
+  in `tinytable`, `gt`, `flextable`, Word, Excel and the clipboard.
+
+- [`inline()`](https://amaltawfik.github.io/spicy/reference/inline.md)
+  quotes the cell the table shows under a style. The style levers with
+  no argument of their own (`p_bands`, `p_sigfig`, `p_floor`, `ci_sep`,
+  `ci_brackets`) did not survive the call that built the table, so a
+  sentence citing a Lancet table wrote its interval `[2.14, 5.65]` where
+  the table printed `[2.14–5.65]`.
+
+- A bare `inline(tbl, outcome)` on `table_continuous_lm(by = )` across a
+  factor cites the mean difference. It returned the sample size: the
+  contrast is token `"delta"`, and only a numeric `by` produces the
+  `"b"` the default looked for.
+
+- [`inline()`](https://amaltawfik.github.io/spicy/reference/inline.md)
+  cites a group’s marginal mean on
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md):
+  `inline(tbl, bmi, "Female", "emmean")`. That family puts its groups in
+  the column headers, so `level` names the group there. Token `"emmean"`
+  had no address at all: the ambiguity error named `model`, which the
+  table has no spanners for, and listed no choices.
+
 - `table_continuous_lm(by = , output = "gt")` renders when two `by`
   levels differ only in punctuation or in a non-ASCII character (`"a b"`
   / `"a.b"`, `"R²"` / `"R³"`). Their spanner ids collided and gt refused

@@ -858,6 +858,9 @@ when the degrees of freedom are constant across outcomes).</p>
 <p>When <code>covariates</code> is non-empty, the printed ASCII table appends an
 APA-style footer naming the covariates and the chosen estimand, e.g.
 <code>Note. Adjusted for age, education (proportional).</code></p>
+<p>The rendering engines carry that same footer as a table note. On the
+<code>"tinytable"</code> route the note is set one size down;
+<code>options(spicy.note_style)</code> governs that (see <code><a href="table_regression.html">table_regression()</a></code>).</p>
 <p>Optional output engines require the corresponding suggested packages:</p><ul><li><p><span class="pkg">tinytable</span> for <code>output = "tinytable"</code></p></li>
 <li><p><span class="pkg">gt</span> for <code>output = "gt"</code></p></li>
 <li><p><span class="pkg">flextable</span> for <code>output = "flextable"</code></p></li>

@@ -871,6 +871,11 @@ When `covariates` is non-empty, the printed ASCII table appends an
 APA-style footer naming the covariates and the chosen estimand, e.g.
 `Note. Adjusted for age, education (proportional).`
 
+The rendering engines carry that same footer as a table note. On the
+`"tinytable"` route the note is set one size down;
+`options(spicy.note_style)` governs that (see
+[`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)).
+
 Optional output engines require the corresponding suggested packages:
 
 - tinytable for `output = "tinytable"`

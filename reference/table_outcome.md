@@ -250,6 +250,16 @@ Convert it first
 ([`haven::as_factor()`](https://forcats.tidyverse.org/reference/as_factor.html))
 to get the labels in the stub.
 
+## The table note
+
+One note sits under the table and states what left the analytic sample,
+which group comparison ran in each block, what the displayed columns
+mean, and how the blocks and the `Overall` row are to be read. The
+rendering engines carry the same sentence as a table note. On the
+`"tinytable"` route it is set one size down; `options(spicy.note_style)`
+governs that (see
+[`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)).
+
 ## See also
 
 [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
