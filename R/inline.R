@@ -207,7 +207,16 @@ inline <- function(
     }
     # Convenience: match the displayed label (the console suffixes
     # factor headers with a colon; strip it before comparing).
-    shown <- sub(":$", "", trimws(body$Variable))
+    #
+    # The suffix is DERIVED from the very template that wrote it
+    # (`label_block_header`, filled with an empty caption), never typed
+    # out: French puts a no-break space before the colon, and a
+    # hardcoded ":$" would leave that space behind -- `shown` would then
+    # equal no caption at all and addressing a variable by its displayed
+    # label would abort with "no such variable", silently, in one
+    # language only.
+    blk_suffix <- .escape_regex(spicy_fmt("label_block_header", ""))
+    shown <- sub(paste0(blk_suffix, "$"), "", trimws(body$Variable))
     lbl_rows <- which(
       shown == var_chr & body$.row_role == "factor_header"
     )
