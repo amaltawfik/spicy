@@ -66,9 +66,10 @@ fr <- spicy_labels("fr")
 fr[["header_mean"]]
 fr[["row_missing_level"]]
 
-# One label, not a language.
+# One label, not a language: the missing CATEGORY of the grouping
+# variable is a refusal to answer here, not an absent value.
 old <- options(spicy.labels = list(row_missing_level = "(No answer)"))
-freq(factor(c("a", NA)))
+table_categorical(sochealth, select = sex, by = smoking)
 options(old)
 
 }
