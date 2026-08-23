@@ -3798,7 +3798,14 @@ export_desc_table <- function(
         vapply(
           ci_cols,
           function(id) {
-            sprintf('.gt_table thead tr:last-child th[id="%s"]', id)
+            # Same second line of defence as the categorical selector:
+            # the ids are sanitised upstream, so this is the identity
+            # today -- and the guarantee the sass compiler never again
+            # sees an unterminated attribute selector from this branch.
+            sprintf(
+              '.gt_table thead tr:last-child th[id="%s"]',
+              .css_escape_string(id)
+            )
           },
           character(1)
         ),
