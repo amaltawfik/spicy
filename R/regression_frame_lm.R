@@ -255,10 +255,10 @@ as_regression_frame.glm <- function(fit, ...) {
 # (class, family, dv, n_obs, weights_kind, vcov_*, ci_*, supports,
 # fit_stats); class-specific oddities that the FOOTER reads case-by-case
 # go into `info$extras` per Q5 (cluster_name, exp_applied, exp_header,
-# use_ame_satterthwaite, singular_terms, weighted_n, title_prefix,
-# family_info). This keeps the schema minimal while preserving every
-# byte the footer renderer needs for byte-identical output after
-# round-tripping through `.frame_to_legacy_extract()` in sub-step 3.
+# use_ame_satterthwaite, singular_terms, weighted_n, title_prefix). This
+# keeps the schema minimal while preserving every byte the footer
+# renderer needs. The frame is now what the renderers read: the legacy
+# extract shape and its `.frame_to_legacy_extract()` adapter are gone.
 .build_info <- function(
   legacy,
   fit,

@@ -10,10 +10,13 @@
 # regression_frame_lm.R and similar siblings.
 #
 # Design: dev/design_as_regression_frame.md (single source of truth).
-# Phase 0b status: SCAFFOLDING ONLY. No production code calls the generic
-# yet -- existing extract_lm_phase1() pipeline remains the live path.
-# Phase 0b sub-step 2 will add the lm / glm methods. Phase 0b sub-steps
-# 3-5 will migrate downstream consumers one at a time.
+# Status: LIVE. table_regression() builds frames and nothing else -- every
+# downstream renderer (title, footer, alignment, body, nested LRT) consumes
+# them directly, and the legacy extract shape and its adapter are gone (see
+# table_regression.R, "orchestrator now builds ONLY the frames list").
+# extract_lm_phase1() survives only as the lm / glm extraction engine behind
+# .legacy_to_frame() (regression_frame_lm.R), one method's internals rather
+# than a parallel pipeline.
 #
 # Q2 settlement (dev/design_as_regression_frame.md): this generic stays
 # INTERNAL throughout the 0.x cycle. No @export. No public reference page.

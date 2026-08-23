@@ -4,11 +4,11 @@
 # fields. Logic is identical -- byte-equivalence is tested in
 # tests/testthat/test-renderer_migration_title.R.
 #
-# Phase 0c sub-step C1: first renderer migrated to consume frames
-# directly. The flip in table_regression.R bypasses the
-# .frame_to_legacy_extract() adapter for the title path; the other
-# renderers (footer blocks, body builder, alignment) continue to
-# consume the legacy extract shape until sub-steps C2-C4 land.
+# The title was the first renderer migrated to consume frames directly
+# (Phase 0c sub-step C1); the rest followed. Every renderer -- footer
+# blocks, body builder, alignment, nested LRT -- now reads frames, and
+# the legacy extract shape and its .frame_to_legacy_extract() adapter
+# no longer exist.
 build_regression_title_from_frames <- function(frames, nested = FALSE) {
   if (!is.list(frames) || length(frames) == 0L) {
     return("Regression")
