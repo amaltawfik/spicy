@@ -735,12 +735,29 @@ instead of rendering an empty column.
   returns `NULL` for it.
 
 - `output = "gt"` tables carry their table note into the saved file.
-  [`gt::gtsave()`](https://rdrr.io/pkg/gt/man/gtsave.html),
-  [`gt::as_raw_html()`](https://rdrr.io/pkg/gt/man/as_raw_html.html) and
-  a non-interactive [`print()`](https://rdrr.io/r/base/print.html) used
-  to produce a table without the missing-value disclosure, the test note
-  or the column glosses the console prints. The interactive HTML display
-  is unchanged: the note still renders outside the table grid, once.
+  [`gt::gtsave()`](https://gt.rstudio.com/reference/gtsave.html),
+  [`gt::as_raw_html()`](https://gt.rstudio.com/reference/as_raw_html.html)
+  and a non-interactive [`print()`](https://rdrr.io/r/base/print.html)
+  used to produce a table without the missing-value disclosure, the test
+  note or the column glosses the console prints. The interactive HTML
+  display is unchanged: the note still renders outside the table grid,
+  once.
+
+- `output = "gt"` renders valid HTML when a `by` level or a model name
+  contains a double quote, an angle bracket or a backslash. gt builds
+  the `headers` attribute of every body cell from the column name
+  without escaping it, so a level such as `Q"1` closed the attribute
+  early and the rest of the name was re-parsed as markup. Affects
+  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md),
+  [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  and the design twins – where
+  [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md)
+  did not even render: the same raw name reached a CSS selector and the
+  style compiler stopped with an error instead of returning a table. The
+  column names `output = "data.frame"` publishes are unchanged, the
+  header still shows the level as it stands in the data, and a table of
+  ordinary names renders exactly as before.
 
 - `output = "tinytable"` escapes cell text in
   [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),

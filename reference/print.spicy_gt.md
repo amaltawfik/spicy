@@ -1,7 +1,7 @@
 # Print method for spicy-tagged gt tables
 
 Prints a `spicy_gt` object – the
-[`gt::gt()`](https://rdrr.io/pkg/gt/man/gt.html) table returned by
+[`gt::gt()`](https://gt.rstudio.com/reference/gt.html) table returned by
 `output = "gt"`, tagged so the table note keeps its styling in
 interactive HTML display. Every gt verb works on the tagged object
 directly; printing delegates to gt's own rendering.

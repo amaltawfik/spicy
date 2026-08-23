@@ -708,7 +708,7 @@ for a homogeneous rendering – same single-font policy as
 The clipboard is the exception: its payload is delimited text meant to
 be parsed, and a padded number would paste as text next to an unpadded
 number, so its cells travel unpadded. The native
-[`gt::cols_align_decimal()`](https://rdrr.io/pkg/gt/man/cols_align_decimal.html)
+[`gt::cols_align_decimal()`](https://gt.rstudio.com/reference/cols_align_decimal.html)
 and `tinytable::style_tt(align = "d")` primitives are deliberately not
 used: the former renders visually right-aligned and the latter centres
 each cell on its own value rather than on the decimal mark, which would
@@ -863,7 +863,7 @@ table_categorical(
 |     No                    | 334    | 53.9 | 316  | 54.5 | 650   | 54.2 |      |     |
 |     Yes                   | 286    | 46.1 | 264  | 45.5 | 550   | 45.8 |      |     |
 
-Categorical table by sex {#tinytable_s7t2cpwdm7p9zqt1r9tu .table
+Categorical table by sex {#tinytable_s928bbknasfsc71ecx4p .table
 .tinytable style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 
