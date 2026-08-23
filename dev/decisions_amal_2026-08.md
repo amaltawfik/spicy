@@ -598,3 +598,19 @@ déférence à l'upstream qui sert svychisq) et confirmée par lui le
   warning classé, sur le modèle du chemin Stan.
 
 (Le titre du DESCRIPTION reste explicitement EN SUSPENS.)
+
+## Décision 38 — Terminologie française + export (2026-08-23, tranchée point par point)
+
+Francisés (convention française d'autorité) : SD→ET, SMD→DMS (Cochrane
+France), IQR→EIQ, Freq.→Eff. (INSEE), PSU→UPS, calibrated→calé (calage
+sur marges, INSEE/CALMAR), Overall→Ensemble (INSEE ; entraîne
+note_outcome_overall), Outcome (ligne)→Variable dépendante (usage
+socio/psy), feuille Excel Outcome→Variable étudiée,
+(rescaled)→(normalisée).
+Gardés en anglais (termes d'art internationaux) : ES, « Hurdle
+(zéro) », hazard ratio, Array (nom de classe R — même politique que
+les noms de colonnes gelés).
+spicy_labels() : EXPORTÉE (découvrabilité des clés d'options
+spicy.labels ; assumée pré-1.0).
+Le reste des 212 chaînes : relecture d'ensemble d'Amal encore à faire
+sur la table i18n_fr_review_table.md avant release du mode fr.
