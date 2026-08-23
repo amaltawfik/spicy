@@ -614,3 +614,17 @@ spicy_labels() : EXPORTÉE (découvrabilité des clés d'options
 spicy.labels ; assumée pré-1.0).
 Le reste des 212 chaînes : relecture d'ensemble d'Amal encore à faire
 sur la table i18n_fr_review_table.md avant release du mode fr.
+
+## Décision 39 — table_outcome : rename by → select (2026-08-24)
+
+VALIDÉ par Amal. Le `by` pluriel de table_outcome jouait le rôle que
+`select` joue partout ailleurs (les variables qui structurent les
+lignes) ; l'audit famille + écosystème (gtsummary by=colonnes,
+tableone strata, table1 |, Stata dtable by()) montre la convention
+dominante : by = LA dimension comparée. Rename en 0.13 (fenêtre des
+cassures, pré-1.0 : erreur dure avec hint de migration, NEWS Breaking,
+~86 appels tests/vignettes à migrer). Libère `by` pour la future
+variante croisée (select + by = la signature de famille, zéro
+vocabulaire nouveau ; `compare` abandonné). Invariant de famille
+documenté : select structure les lignes ; by est le groupe comparé ;
+les tests portent sur by.
