@@ -47,6 +47,16 @@ default_supports <- function() {
     nested_lrt = FALSE,
     exponentiate = FALSE,
     standardise_refit = FALSE,
+    # The Bayesian counterpart of standardise_refit: posthoc / basic /
+    # smart standardisation as exact affine rescales of the draws, with
+    # no refit. Declared TRUE only by the stanreg builder; read beside
+    # standardise_refit in table_regression()'s standardisation gate.
+    standardise_algebraic = FALSE,
+    # Declared for schema completeness, but NOT the robust-vcov gate:
+    # the `vcov` capability is a per-class SET of tokens, not a boolean,
+    # and it has to be known before any frame exists (the fail-fast check
+    # runs on the raw fits). .robust_vcov_support() in R/vcov.R is the
+    # authority; nothing reads this flag.
     robust_vcov = FALSE
   )
 }
