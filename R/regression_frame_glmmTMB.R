@@ -638,8 +638,12 @@ as_regression_frame.glmmTMB <- function(
 # NULL, and therefore silent, otherwise.
 #
 # The criterion is glmmTMB's OWN. finalizeTMB() -- the last step of
-# glmmTMB() -- emits "Model convergence problem" on exactly two states,
-# and both survive on the returned object:
+# glmmTMB() -- has three "Model convergence problem" warning sites, of
+# which two fire under the default conv_check = "warning"; the third
+# (eigval_check, on extreme eigenvalues of cov.fixed) sits in the else
+# branch of a test the default never takes, so it is unreachable unless
+# the user turns conv_check off. The two reachable states both survive
+# on the returned object:
 #   * fit$fit$convergence != 0: the optimizer's return code, with its
 #     own diagnosis in fit$fit$message;
 #   * isFALSE(fit$sdr$pdHess): a non-positive-definite Hessian. This is
