@@ -466,6 +466,14 @@ the exported frames are a contract your code indexes into, so
 own vocabulary, never your data. And errors and warnings stay in
 English, because they are read by developers and quoted in bug reports.
 
+The one column name that *does* follow the language comes from the same
+rule read the other way: a column named after a level of `by` takes that
+level's spelling, and spicy's own missing category is a level. So
+`table_categorical(by = )` on a variable with missing values gives
+`(Missing) n` in English and `(Manquant) n` in French. If your code
+selects that column, build its name from `spicy_labels()[["row_missing_level"]]`
+rather than typing it.
+
 ## Citing table values in the text
 
 The number a sentence quotes should be the number the table prints —

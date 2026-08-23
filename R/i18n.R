@@ -775,6 +775,77 @@ spicy_fmt <- function(key, ...) {
 }
 
 
+# ---- Template holes -------------------------------------------------------
+
+# The holes are the CONTRACT between a template and its call site: the site
+# passes what the ENGLISH default asked for, and every replacement -- a
+# translation or a user's override -- has to take exactly that. The check
+# lives here so the validator and the test that guards the shipped sets run
+# the same one; a second copy would drift, and the property is only worth
+# what its strictest reading is.
+
+# `%%` is a literal percent, not a hole. Deliberately strict: no space
+# flag, and only the conversion letters the registry uses -- a loose
+# pattern reads the "% C" of ", 95% CI [" as a conversion and calls a
+# display literal a template.
+.SPICY_FORMAT_SPEC_RX <- "%(\\d+[$])?[-+#0]*[0-9]*([.][0-9]+)?[sdifeEgGxX]"
+
+.spicy_format_specs <- function(v) {
+  m <- regmatches(v, gregexpr(.SPICY_FORMAT_SPEC_RX, v, perl = TRUE))[[1L]]
+  m[m != "%%"]
+}
+
+# The arguments a template asks for, as dummies of the right type.
+.spicy_format_dummies <- function(specs) {
+  dummy_for <- function(spec) {
+    if (grepl("[dioxX]$", spec)) {
+      1L
+    } else if (grepl("[feEgG]$", spec)) {
+      1
+    } else {
+      "x"
+    }
+  }
+  idx <- sub("^%(\\d+)[$].*$", "\\1", specs)
+  if (all(grepl("^[0-9]+$", idx))) {
+    idx <- as.integer(idx)
+    lapply(seq_len(max(idx)), function(i) {
+      hit <- which(idx == i)
+      if (length(hit)) dummy_for(specs[[hit[[1L]]]]) else "x"
+    })
+  } else {
+    lapply(specs, dummy_for)
+  }
+}
+
+# Does `candidate` take exactly the arguments `reference` is filled with?
+#
+# `sprintf()` gives all three verdicts this needs: it ERRORS on too few
+# arguments, on a type mismatch (`%d` handed a string) and on a positional
+# hole past the arity, and it WARNS on an argument the format never uses.
+# The warning counts too: a label that drops a hole silently loses the
+# number the table meant to show.
+#
+# Caught here rather than at render time, where the failure surfaces inside
+# a table call and names no key -- a long way from the `options()` line that
+# caused it.
+.spicy_holes_compatible <- function(candidate, reference) {
+  specs <- .spicy_format_specs(reference)
+  if (!length(specs)) {
+    return(!length(.spicy_format_specs(candidate)))
+  }
+  args <- .spicy_format_dummies(specs)
+  tryCatch(
+    {
+      do.call(sprintf, c(list(candidate), args))
+      TRUE
+    },
+    error = function(e) FALSE,
+    warning = function(w) FALSE
+  )
+}
+
+
 # ---- Language sets --------------------------------------------------------
 
 # The sets spicy ships. "en" is the registry above and has no table of its
@@ -941,6 +1012,49 @@ spicy_fmt <- function(key, ...) {
       class = "spicy_invalid_input"
     )
   }
+  # Some labels are TEMPLATES, and spicy fills their holes with the
+  # variable name, the count, the percentage. An override that drops a
+  # hole loses that number; one that adds a hole, or retypes a `%d` as a
+  # `%s`, raises inside the next table call instead of here.
+  mismatched <- nms[
+    !vapply(
+      seq_along(opt),
+      function(i) {
+        .spicy_holes_compatible(
+          unname(opt[[i]]),
+          unname(.spicy_strings[[nms[[i]]]])
+        )
+      },
+      logical(1)
+    )
+  ]
+  if (length(mismatched)) {
+    spicy_abort(
+      c(
+        "An `options(spicy.labels)` entry does not fit what spicy fills it with.",
+        stats::setNames(
+          vapply(
+            mismatched,
+            function(k) {
+              paste0(
+                .quote_val(k),
+                " must carry the same holes as its default, ",
+                .quote_val(unname(.spicy_strings[[k]])),
+                "."
+              )
+            },
+            character(1)
+          ),
+          rep("x", length(mismatched))
+        ),
+        "i" = paste(
+          "A `%s` or `%d` in a label is a value spicy supplies",
+          "(a variable name, a count, a percentage), not text to edit."
+        )
+      ),
+      class = "spicy_invalid_input"
+    )
+  }
   opt
 }
 
@@ -980,6 +1094,15 @@ spicy_fmt <- function(key, ...) {
 #' encoded cell tokens and the mathematical glyphs. Errors, warnings and
 #' messages stay English: they are read by developers and quoted in bug
 #' reports.
+#'
+#' One exception, and it follows from the same rule. A column named
+#' after a LEVEL of `by` takes that level's own spelling -- which is why
+#' `"Yes %"` stays `"Yes %"`: your data is never translated. spicy's own
+#' missing category is such a level, so it is the one name that does
+#' move: `table_categorical(by = )` on a variable with missing values
+#' gives `"(Missing) n"` in English and `"(Manquant) n"` under `"fr"`
+#' (or whatever `row_missing_level` is overridden to). Address that
+#' column through `row_missing_level` rather than by typing it.
 #'
 #' Number FORMATTING is a separate lever. `options(spicy.language = "fr")`
 #' translates the words; the `"fr"` style

@@ -64,53 +64,42 @@ test_that("every translated template takes its English arguments", {
   # call site passes what English asked for, so a translation that drops
   # a hole, adds one, or changes a %d to a %s raises at render time --
   # in one language only, on a code path a snapshot never sees.
-  spec_rx <- "%(\\d+[$])?[-+#0]*[0-9]*([.][0-9]+)?[sdifeEgGxX]"
-  conversions <- function(v) {
-    all_m <- regmatches(v, gregexpr(spec_rx, v, perl = TRUE))[[1L]]
-    all_m[all_m != "%%"]
-  }
-  dummy_for <- function(spec) {
-    if (grepl("[dioxX]$", spec)) {
-      1L
-    } else if (grepl("[feEgG]$", spec)) {
-      1
-    } else {
-      "x"
-    }
-  }
+  # `.spicy_holes_compatible()` is the package's own check, the one
+  # `options(spicy.labels)` is validated with. Reimplementing it here
+  # would leave the shipped sets and the user's overrides held to two
+  # separate standards, and only one of them would be the strict one.
   for (lang in .SPICY_LANGUAGES) {
     set <- .spicy_language_table(lang)
     if (is.null(set)) {
       next
     }
     for (k in names(set)) {
-      en <- unname(.spicy_strings[[k]])
-      m <- conversions(en)
-      if (!length(m)) {
-        # English carries no hole, so neither may the translation.
-        expect_length(conversions(unname(set[[k]])), 0L)
-        next
-      }
-      idx <- sub("^%(\\d+)[$].*$", "\\1", m)
-      args <- if (all(grepl("^[0-9]+$", idx))) {
-        idx <- as.integer(idx)
-        lapply(seq_len(max(idx)), function(i) {
-          hit <- which(idx == i)
-          if (length(hit)) dummy_for(m[[hit[[1L]]]]) else "x"
-        })
-      } else {
-        lapply(m, dummy_for)
-      }
-      ok <- tryCatch(
-        {
-          do.call(sprintf, c(list(unname(set[[k]])), args))
-          TRUE
-        },
-        error = function(e) FALSE
+      expect_true(
+        .spicy_holes_compatible(
+          unname(set[[k]]),
+          unname(.spicy_strings[[k]])
+        ),
+        info = sprintf("%s / %s", lang, k)
       )
-      expect_true(ok, info = sprintf("%s / %s", lang, k))
     }
   }
+})
+
+test_that("the hole check reads every way a template can go wrong", {
+  ok <- .spicy_holes_compatible
+  # Same holes: fine, in either order when they are positional.
+  expect_true(ok("%s removed: %d.", "Rows with missing %s removed: %d."))
+  expect_true(ok("%2$s then %1$s", "%1$s then %2$s"))
+  # A dropped hole loses a number the table meant to show.
+  expect_false(ok("Rows removed.", "Rows with missing %s removed: %d."))
+  expect_false(ok("only %s", "%s and %d"))
+  # An added hole, or one past the arity, raises at render time.
+  expect_false(ok("a %s", "a plain label"))
+  expect_false(ok("%1$s %2$s %3$s", "%1$s %2$s"))
+  # A retyped conversion: `%d` handed the string the call site passes.
+  expect_false(ok("%d values", "%s values"))
+  # A literal percent is not a hole, on either side.
+  expect_true(ok(", IC 95 % [", ", 95% CI ["))
 })
 
 test_that("the emphasised note prefix is a prefix of the note prefix, in every language", {
@@ -229,6 +218,33 @@ test_that("an override naming an unknown key is a classed error", {
   withr::local_options(spicy.labels = list(no_such_label = "x"))
   expect_error(spicy_str("header_mean"), class = "spicy_invalid_input")
   expect_error(spicy_str("header_mean"), "no_such_label")
+})
+
+test_that("an override that would not render is a classed error", {
+  # Caught at option-read time, not inside the next table call: the
+  # message can still name the key and quote the default it must match.
+  withr::local_options(
+    spicy.labels = list(note_rows_missing_by_removed = "Rows removed.")
+  )
+  expect_error(spicy_str("header_mean"), class = "spicy_invalid_input")
+  expect_error(spicy_str("header_mean"), "note_rows_missing_by_removed")
+
+  withr::local_options(spicy.labels = list(header_mean = "Mean of %s"))
+  expect_error(spicy_str("header_mean"), class = "spicy_invalid_input")
+
+  withr::local_options(
+    spicy.labels = list(note_missing_item = "%d (%s)")
+  )
+  expect_error(spicy_str("header_mean"), class = "spicy_invalid_input")
+
+  # A correct override of a template is accepted and renders.
+  withr::local_options(
+    spicy.labels = list(note_rows_missing_by_removed = "Dropped %s: %d.")
+  )
+  expect_identical(
+    spicy_fmt("note_rows_missing_by_removed", "age", 3L),
+    "Dropped age: 3."
+  )
 })
 
 test_that("a malformed override is a classed error", {
@@ -356,6 +372,24 @@ test_that("the frozen tokens and glyphs do not translate", {
   for (k in names(frozen)) {
     expect_identical(spicy_str(k), unname(frozen[[k]]), info = k)
   }
+})
+
+test_that("a cross-reference matches the thing it points at", {
+  withr::local_options(spicy.language = "fr")
+  # The spanner over a model's columns is `label_model_name`, frozen
+  # English because it becomes a column name. A footnote that cites a
+  # model by index has to spell it the way the spanner does, or the
+  # reader is sent to a "Modele 1" no column carries.
+  expect_identical(spicy_fmt("label_model_name", 1L), "Model 1")
+  expect_true(startsWith(spicy_fmt("note_ci_posterior_mixed", 1L, "95"), "Model 1"))
+})
+
+test_that("a condition message is English whatever the language", {
+  # The registry excludes conditions on purpose. `note_model_prefix`
+  # reads like a table note but is the lead line of a `spicy_abort()`,
+  # so translating it would put a French head on an English body.
+  withr::local_options(spicy.language = "fr")
+  expect_identical(spicy_str("note_model_prefix"), "Model %d: %s")
 })
 
 test_that("the block identity stays English while its caption translates", {

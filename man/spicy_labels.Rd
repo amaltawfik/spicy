@@ -52,6 +52,15 @@ encoded cell tokens and the mathematical glyphs. Errors, warnings and
 messages stay English: they are read by developers and quoted in bug
 reports.
 
+One exception, and it follows from the same rule. A column named
+after a LEVEL of \code{by} takes that level's own spelling -- which is why
+\code{"Yes \%"} stays \code{"Yes \%"}: your data is never translated. spicy's own
+missing category is such a level, so it is the one name that does
+move: \code{table_categorical(by = )} on a variable with missing values
+gives \code{"(Missing) n"} in English and \code{"(Manquant) n"} under \code{"fr"}
+(or whatever \code{row_missing_level} is overridden to). Address that
+column through \code{row_missing_level} rather than by typing it.
+
 Number FORMATTING is a separate lever. \code{options(spicy.language = "fr")}
 translates the words; the \code{"fr"} style
 (\code{options(spicy.style = "fr")}, see \code{\link[=spicy_style]{spicy_style()}}) writes the decimal

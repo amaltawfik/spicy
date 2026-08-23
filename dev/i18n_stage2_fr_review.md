@@ -45,9 +45,11 @@ maintainer still owes.
 
 | Status | Count | How it was decided |
 | --- | ---: | --- |
-| translated | 209 | a display string with a frozen twin, or no twin at all |
+| translated | 208 | a display string with a frozen twin, or no twin at all |
 | kept: term of art | 3 | decision 38 -- `ES`, `hazard ratio`, `Array` |
-| same in French | 37 | the French word IS the English one; the fallback serves it |
+| kept: condition message | 1 | `note_model_prefix` -- error text, see below |
+| same in French | 36 | the French word IS the English one; the fallback serves it |
+| same in French (confirmed) | 1 | `excel_sheet_continuous` -- checked, not forgotten |
 | frozen: notation | 24 | `symbol_*`, `marker_*`, `cell_undefined` -- the registry's own "frozen, never translated" sections |
 | frozen: template | 19 | the value is holes and punctuation, no word to translate |
 | frozen: column name | 33 | translating it would move a public `as.data.frame()` column name |
@@ -110,7 +112,18 @@ gives `"Yes %"` under `"fr"` -- pinned in `test-i18n_language.R`.
    argument default, so a French user can pass `"(ref.)"` themselves --
    but the default cannot follow the language.
 
-5. **`varlist-values.R:409` writes `"<NA>"` as a literal** where
+5. **`note_model_prefix` is misfiled in the registry.** The registry
+   header says conditions are deliberately excluded -- they are read by
+   developers and quoted in bug reports -- but this key reads like a
+   table note and is in fact the lead line of a `spicy_abort()`
+   (`regression_frame_geepack.R:182`, `.gee_refuse_cluster()`).
+   Translating it gives "Modele 1 : `cluster` is not used for `geeglm`
+   models.", a French head on an English body. Left English in the set
+   and pinned by a test; the clean fix is to take the key out of the
+   registry and inline the prefix at the call site, which moves the
+   English registry and so belongs to its own lot.
+
+6. **`varlist-values.R:409` writes `"<NA>"` as a literal** where
    `:258` reads `marker_na`. Harmless today (they are the same string),
    and it would print two different NA markers in one table the day
    `marker_na` moves. One-line fix, deliberately not taken here.

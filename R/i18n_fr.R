@@ -4,8 +4,15 @@
 #
 # PARTIAL BY DESIGN. A key absent from this table resolves to the English
 # default (R/i18n.R), so a key added tomorrow can never leave a French table
-# with a blank cell or an error. Four kinds of key are deliberately absent:
+# with a blank cell or an error. Five kinds of key are deliberately absent:
 #
+#   * the CONDITION-MESSAGE material. The registry excludes errors and
+#     warnings on purpose (R/i18n.R: they are read by developers and quoted
+#     in bug reports), but `note_model_prefix` slipped in under a `note_`
+#     name and is in fact the lead line of a `spicy_abort()`
+#     (regression_frame_geepack.R). Translating it puts a French head on an
+#     English body -- "Modele 1 : `cluster` is not used ..." -- so it stays
+#     English until the key is reclassified;
 #   * the INTERNATIONAL TERMS OF ART, kept English by decision 38 because
 #     translating a term the field reads in English helps nobody: "ES",
 #     "hazard ratio", the "Hurdle" of a hurdle component (its parenthetical
@@ -14,7 +21,10 @@
 #   * the ones whose French IS the English -- "Total", "Variable", "M", "Min",
 #     "Q1", "Test", "Phi", "Lambda", "AIC", "marginal", "Dispersion", the
 #     "Note." prefix. Restating them here would only give them somewhere to
-#     drift apart;
+#     drift apart. `excel_sheet_continuous` ("Descriptives") is in this
+#     group and is the one worth naming, because its four sibling sheet
+#     names ARE translated and it reads like an oversight: it is not --
+#     "Descriptives" is the French word too;
 #   * the FROZEN ones: the mathematical glyphs (t, z, chi-squared, beta, R2),
 #     the typographic markers (<NA>, the significance stars, the en dash of an
 #     undefined cell) and the templates that are pure punctuation ("%s (%s)").
@@ -255,7 +265,6 @@
   note_adjustment_balanced = "\u00E9quilibr\u00E9",
   note_std_errors_single = "Erreurs types\u00A0: %s.",
   note_std_errors_multi = "Erreurs types\u00A0:\n%s",
-  note_model_prefix = "Mod\u00E8le %d\u00A0: %s",
   note_model_line = "%s\u00A0: %s",
   note_model_line_indented = "  %s\u00A0: %s",
   note_vcov_classical_glm = "classiques (information de Fisher)",
@@ -281,7 +290,7 @@
   note_vcov_cluster_by = ", grappes d\u00E9finies par %s",
   note_ci_profile = "IC \u00E0 %s\u00A0%%\u00A0: vraisemblance profil\u00E9e.",
   note_ci_bootstrap_percentile = "IC \u00E0 %s\u00A0%%\u00A0: percentile bootstrap.",
-  note_ci_posterior_mixed = "Mod\u00E8le %d\u00A0: l'IC \u00E0 %s\u00A0%% est un intervalle de cr\u00E9dibilit\u00E9 a posteriori \u00E0 queues \u00E9gales.",
+  note_ci_posterior_mixed = "Model %d\u00A0: l'IC \u00E0 %s\u00A0%% est un intervalle de cr\u00E9dibilit\u00E9 a posteriori \u00E0 queues \u00E9gales.",
 
   # -- varlist() / code_book(): value summaries -----------------------------
   value_summary_matrix = "Matrice(%s)",
