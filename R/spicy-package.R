@@ -57,6 +57,8 @@
 #' \itemize{
 #'   \item Survey-design summary tables:
 #'         [table_continuous_svy()], [table_categorical_svy()]
+#'   \item Display language and label overrides: [spicy_labels()]
+#'         (with `options(spicy.language)` / `options(spicy.labels)`)
 #' }
 #'
 #' **Internal API** (not part of the public surface; can change
