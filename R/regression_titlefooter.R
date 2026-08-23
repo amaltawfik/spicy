@@ -157,7 +157,7 @@ build_regression_footer_from_frames <- function(
     build_reference_alternative_footer_block_from_frames(frames),
     build_uv_disclosure_footer_block_from_frames(frames),
     build_loo_footer_block_from_frames(frames),
-    build_stan_convergence_footer_block_from_frames(frames),
+    build_convergence_footer_block_from_frames(frames),
     build_reference_categories_footer_block_from_frames(
       frames_display,
       reference_style
@@ -2500,10 +2500,13 @@ build_loo_footer_block_from_frames <- function(frames) {
 }
 
 
-# Footer warning from the Bayesian convergence guard (max R-hat / min
-# ESS / divergent transitions past their Vehtari-et-al. targets). NULL
-# -- and therefore silent -- for clean posteriors.
-build_stan_convergence_footer_block_from_frames <- function(frames) {
+# Footer note from an engine's own convergence verdict, whatever the
+# engine: the Bayesian sampler-diagnostics guard (max R-hat / min ESS /
+# divergent transitions past their Vehtari-et-al. targets) and the
+# glmmTMB optimizer's non-convergence flags both fill
+# extras$convergence_note. NULL -- and therefore silent -- for a fit
+# whose engine reports no problem.
+build_convergence_footer_block_from_frames <- function(frames) {
   if (!is.list(frames) || length(frames) == 0L) {
     return(NULL)
   }

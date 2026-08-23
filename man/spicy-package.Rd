@@ -184,6 +184,11 @@ terms).
 with \code{spicy_caveat} when a Bayesian fit's sampler or
 predictive-accuracy diagnostics miss their targets
 (R-hat, ESS, divergences, E-BFMI, Pareto k, p_waic).
+\item \code{spicy_nonconvergence} -- signaled together with
+\code{spicy_caveat} when the fitting engine reports that
+its optimizer did not converge. The table still shows the
+numbers the model object holds, and a footer note says
+what they are worth.
 \item \code{spicy_model_choice} -- a defaulted modeling
 choice was made on the user's behalf and is disclosed
 (e.g., the linear probability model

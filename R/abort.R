@@ -79,6 +79,15 @@ spicy_abort <- function(
 #                               while withCallingHandlers(
 #                               spicy_bayes_diagnostics = ...) can mute
 #                               this guard selectively)
+#      |- spicy_nonconvergence  (the fitting engine reports that its
+#                               optimizer did not converge: the table
+#                               still shows the numbers the object
+#                               holds, and a footer note says what they
+#                               are worth. Nested under spicy_caveat so
+#                               generic caveat handlers still catch it,
+#                               while withCallingHandlers(
+#                               spicy_nonconvergence = ...) can mute
+#                               this guard selectively)
 #   |- spicy_summary_failed    (varlist() could not summarize one
 #                               column; the rest of the table is fine)
 #   |- spicy_renamed_column    (a user data column or factor level
