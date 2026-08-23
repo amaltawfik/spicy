@@ -1449,6 +1449,31 @@ test_that("brmsfit algebraic betas: engine-invariant, oracle-exact", {
       bBs$estimate[bBs$term == "Days"],
     tolerance = 1e-10
   )
+  # The two design-recovery refusals of the brms beta path, exercised
+  # on this in-scope fixture: both fire only after the design matrix
+  # has been rebuilt, so a class-only mock cannot reach them (it stops
+  # at the earlier "could not be recovered" gate).
+  # A coefficient the recovered design matrix does not carry refuses
+  # instead of silently en-dashing the whole beta column.
+  expect_error(
+    spicy:::.stan_beta_scale_factors(
+      bf_fit,
+      c("(Intercept)", "Days", "zzz"),
+      "posthoc"
+    ),
+    "does not carry column",
+    class = "spicy_unsupported_standardized"
+  )
+  # A gaussian fit whose response is not numeric refuses instead of
+  # falling back to sd_y_div = 1, which would inflate every beta by
+  # sd(y) (the 2026-07-19 review finding).
+  bf_chr <- bf_fit
+  bf_chr$data$Reaction <- as.character(seq_len(nrow(bf_chr$data)))
+  expect_error(
+    suppressWarnings(as_regression_frame(bf_chr, standardized = "posthoc")),
+    "numeric response",
+    class = "spicy_unsupported_standardized"
+  )
 })
 
 
