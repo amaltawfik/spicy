@@ -628,3 +628,19 @@ variante croisée (select + by = la signature de famille, zéro
 vocabulaire nouveau ; `compare` abandonné). Invariant de famille
 documenté : select structure les lignes ; by est le groupe comparé ;
 les tests portent sur by.
+
+## Décision 40 — Compléments famille table_* (2026-08-24)
+
+- table_continuous GARDE ses groupes en lignes : c'est son canon
+  descriptif APA, seule exception de placement de la famille ;
+  l'invariant sémantique (by = la dimension comparée, testée) reste
+  vrai partout et se documente tel quel.
+- La variante croisée (table_outcome select+by : cellules M (ET),
+  régimes k=2/k>2/ordinal, interaction au bloc) et l'empilement
+  multi-modèles (layout="stacked" sur table_regression) forment UN
+  SEUL LOT 0.14 : la pile de panneaux se construit une fois, les deux
+  features la consomment. Ferme la comparaison gtsummary/tableone
+  (dernier gap). Spec unique au pipeline habituel, arbitrages
+  résiduels à la spec.
+- Le lot rename by→select (décision 39) part MAINTENANT, après le
+  train décision 37 et avant le train air (qui reste dernier).
