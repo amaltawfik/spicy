@@ -993,6 +993,10 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
   yet; `summary(fit)` and `survey::regTermTest()` cover them meanwhile.
 ## Minor improvements
 
+* A one-way `table_continuous()` (no `by`) draws no rule between its
+  variable blocks in the rich engines (tinytable, gt, flextable, Word,
+  Excel), matching the console: each block is a single row, so the rule
+  carried no information. A by-group table still rules between variables.
 * `spicy_print_table()` gains `qualify_companions`. When a width split
   pushes an `SE`, a `p` or an interval onto a continuation panel, this
   says whether that column should name the estimate it belongs to

@@ -168,6 +168,29 @@ test_that("table_categorical separates its variable blocks", {
   expect_length(.pt_hlines(tex2, "0.03"), 2L)
 })
 
+test_that("a one-way continuous table draws no inter-variable rule; by-group does", {
+  skip_if_not_installed("tinytable")
+  d <- .pt_data()
+  # One-way: each variable block is a single row, so a rule between the
+  # blocks is ink without information -- decision 37 draws none, in the
+  # engines exactly as on the console.
+  tex_ow <- .pt_latex(table_continuous(
+    d,
+    c(age, wellbeing_score),
+    output = "tinytable"
+  ))
+  expect_length(.pt_hlines(tex_ow, "0.03"), 0L)
+  # By-group: the blocks are multi-row and the rule separates variables,
+  # so it is kept (one rule, above the second variable's block).
+  tex_bg <- .pt_latex(table_continuous(
+    d,
+    c(age, wellbeing_score),
+    by = sex,
+    output = "tinytable"
+  ))
+  expect_length(.pt_hlines(tex_bg, "0.03"), 1L)
+})
+
 
 # ---- descriptive families: caption + note --------------------------------
 

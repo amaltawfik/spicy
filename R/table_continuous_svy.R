@@ -1065,8 +1065,14 @@ table_continuous_svy <- function(
       decimal_mark = decimal_mark,
       show_n = show_n,
       # The design twin lays its rows out exactly as its sibling does,
-      # so it reads the same block key.
-      sep_rows = .struct_run_sep_rows(result$variable),
+      # so it reads the same block key -- and under the same one-way
+      # policy: no inter-variable rule when there is no group (decision
+      # 37); a by-group table keeps its rules.
+      sep_rows = if (has_group) {
+        .struct_run_sep_rows(result$variable)
+      } else {
+        integer(0)
+      },
       title = .continuous_title(attr(result, "group_label", exact = TRUE)),
       excel_path = excel_path,
       excel_sheet = excel_sheet,
