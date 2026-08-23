@@ -1,5 +1,5 @@
 # ---------------------------------------------------------------------------
-# Phase 0b scaffolding: as_regression_frame() generic + validator.
+# as_regression_frame() generic + validator.
 #
 # Internal S3 generic that produces a standardised data frame from a fitted
 # regression model object, plus a per-model metadata list. Sits upstream of
@@ -10,10 +10,13 @@
 # regression_frame_lm.R and similar siblings.
 #
 # Design: dev/design_as_regression_frame.md (single source of truth).
-# Phase 0b status: SCAFFOLDING ONLY. No production code calls the generic
-# yet -- existing extract_lm_phase1() pipeline remains the live path.
-# Phase 0b sub-step 2 will add the lm / glm methods. Phase 0b sub-steps
-# 3-5 will migrate downstream consumers one at a time.
+# Status: LIVE. table_regression() builds frames and nothing else -- every
+# downstream renderer (title, footer, alignment, body, nested LRT) consumes
+# them directly, and the legacy extract shape and its adapter are gone (see
+# table_regression.R, "orchestrator now builds ONLY the frames list").
+# extract_lm_phase1() survives only as the lm / glm extraction engine behind
+# .legacy_to_frame() (regression_frame_lm.R), one method's internals rather
+# than a parallel pipeline.
 #
 # Q2 settlement (dev/design_as_regression_frame.md): this generic stays
 # INTERNAL throughout the 0.x cycle. No @export. No public reference page.
@@ -44,6 +47,16 @@ default_supports <- function() {
     nested_lrt = FALSE,
     exponentiate = FALSE,
     standardise_refit = FALSE,
+    # The Bayesian counterpart of standardise_refit: posthoc / basic /
+    # smart standardisation as exact affine rescales of the draws, with
+    # no refit. Declared TRUE only by the stanreg builder; read beside
+    # standardise_refit in table_regression()'s standardisation gate.
+    standardise_algebraic = FALSE,
+    # Declared for schema completeness, but NOT the robust-vcov gate:
+    # the `vcov` capability is a per-class SET of tokens, not a boolean,
+    # and it has to be known before any frame exists (the fail-fast check
+    # runs on the raw fits). .robust_vcov_support() in R/vcov.R is the
+    # authority; nothing reads this flag.
     robust_vcov = FALSE
   )
 }
@@ -451,9 +464,13 @@ validate_regression_frame <- function(frame) {
 
   # Restricted values for estimate_type. Canonical vocabulary (all
   # lowercase): c("B", "beta", "ame") for coefficient / standardised /
-  # average-marginal-effect rows, plus the partial-effect-size tokens
-  # ("partial_f2", "partial_eta2", "partial_omega2", "partial_chi2")
-  # emitted by extract_partial_effect_rows(). The legacy uppercase
+  # average-marginal-effect rows, "vc" for random-effect variance
+  # components, the partial-effect-size tokens ("partial_f2",
+  # "partial_eta2", "partial_omega2", "partial_chi2") emitted by
+  # extract_partial_effect_rows(), and the causal survival estimands
+  # ("rmst", "risk_diff") that .coxph_estimand_rows() /
+  # .survreg_estimand_rows() rbind onto coefs before the frame is
+  # constructed (regression_frame_survival.R). The legacy uppercase
   # "AME" emitted by extract_lm_phase1() has been normalised to "ame".
   allowed_types <- c(
     "B",
@@ -463,7 +480,9 @@ validate_regression_frame <- function(frame) {
     "partial_f2",
     "partial_eta2",
     "partial_omega2",
-    "partial_chi2"
+    "partial_chi2",
+    "rmst",
+    "risk_diff"
   )
   bad_types <- setdiff(unique(coefs$estimate_type), allowed_types)
   if (length(bad_types) > 0L) {

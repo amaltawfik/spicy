@@ -755,3 +755,26 @@ test_that("transformed terms get no orphan estimand row; note + caveat fire", {
     class = "spicy_caveat"
   )
 })
+
+
+# The estimand rows are rbind()ed onto coefs BEFORE new_regression_frame()
+# runs (regression_frame_survival.R), so "rmst" / "risk_diff" are frame
+# estimate_type values like any other -- and the schema validator's
+# allowed_types vocabulary has to know them. It did not, so a coxph frame
+# carrying estimands failed its own schema check.
+test_that("a frame carrying estimand rows passes the schema validator", {
+  skip_if_not_installed("survival")
+  d <- .est_lung()
+  fit <- survival::coxph(survival::Surv(time, status) ~ age + sex, data = d)
+  set.seed(4)
+  fr <- spicy:::as_regression_frame(
+    fit,
+    model_id = "M1",
+    show_columns = c("b", "rmst", "risk_diff"),
+    tau = 365,
+    at_time = 365,
+    boot_n = 15
+  )
+  expect_true(all(c("rmst", "risk_diff") %in% fr$coefs$estimate_type))
+  expect_true(spicy:::validate_regression_frame(fr))
+})

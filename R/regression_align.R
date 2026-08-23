@@ -98,11 +98,15 @@ compute_canonical_term_order_from_frames <- function(frames) {
 }
 
 
-# Frame-aware sibling of align_extracts(). Takes a list of frames plus
-# a parallel `model_ids` vector (frames do not carry model_id; it lives
-# in the orchestrator) and produces an aligned object SHAPE-IDENTICAL
-# to align_extracts()'s return value, so the downstream body builder
-# can consume it unchanged until C4 lands.
+# The aligner. Takes a list of frames plus a parallel `model_ids`
+# vector (frames do not carry model_id; it lives in the orchestrator)
+# and produces the aligned object the body builder consumes.
+#
+# It replaced an align_extracts() that read the legacy extract shape,
+# and was deliberately built SHAPE-IDENTICAL to that function's return
+# value so the body builder could migrate without changing. Both
+# align_extracts() and the extract shape are gone; the layout described
+# below is now simply this function's own contract.
 #
 # Internal strategy:
 #   1. Build the long-format coefs data.frame by stacking each frame's
@@ -128,8 +132,9 @@ compute_canonical_term_order_from_frames <- function(frames) {
 #   3. The remaining alignment logic (factor_ref_levels capture,
 #      compute_canonical_term_order, group_factor_terms,
 #      reference-style filter, order_idx assignment, outcome_labels
-#      and exp_headers vectors) is the same as align_extracts(), just
-#      reading from frames for the input-time vapply.
+#      and exp_headers vectors) was carried over unchanged from the
+#      legacy aligner, just reading from frames for the input-time
+#      vapply.
 #
 # Phase 0c sub-step C3.
 align_frames <- function(
@@ -285,7 +290,7 @@ align_frames <- function(
     })
   )
 
-  # ---- Everything below mirrors align_extracts() ------------------------
+  # ---- Everything below carried over from the legacy aligner ------------
   ref_rows_all <- coefs_long[coefs_long$is_reference, , drop = FALSE]
   factor_ref_levels <- if (nrow(ref_rows_all) == 0L) {
     setNames(character(0), character(0))

@@ -1096,14 +1096,21 @@ sandwich for mlogit's per-choice-situation scores, so \verb{HC*} is
 refused.}
 \item{\code{lmer}, \code{lme}, \code{coxph}, \code{survreg},
 \code{mgcv::gam}/\code{bam}, \code{polr}, \code{clm}, \code{betareg},
-\code{nnet::multinom},
+\code{nnet::multinom}, \code{pscl::zeroinfl}/\code{hurdle},
 \code{rms} (\code{ols}/\code{lrm}/\code{cph}/\code{Glm})}{\code{classical}
 + \verb{CR*} only -- \verb{HC*} and the resamplers (which refit
 \code{lm}/\code{glm}) are not defined for these. \code{clm} with a scale /
 nominal (partial-PO) component is \code{classical} only.
 \code{multinom} needs \pkg{sandwich} >= 3.1-2 (which added its
 \code{estfun()} method); its \code{cluster} is one entry per
-observation.}
+observation. For the two-part \code{pscl} fits the cluster
+sandwich covers both components (count and zero) at once.}
+\item{\code{quantreg::rq}}{its own estimator family, not the sandwich
+vocabulary: \code{classical} (= \code{"nid"}, quantreg's large-sample
+default), \code{"iid"}, \code{"ker"}, \code{"rank"} (intervals only) and a
+native \code{"bootstrap"}, clustered via the wild gradient
+bootstrap. \verb{HC*}, \verb{CR*} and \code{jackknife} are refused, each with
+its own reason -- see the \code{vcov} argument.}
 \item{\code{geepack::geeglm}}{no spicy-side estimator at all: GEE
 inference is robust by construction, so the fit's own sandwich
 (or jackknife) standard errors -- chosen by geeglm's
@@ -1115,6 +1122,13 @@ design-based Taylor / replicate variance is already the robust
 variance for the declared design, and clustering belongs in
 the design itself (\code{survey::svydesign(ids = )}), not in the
 table call.}
+\item{\code{estimatr} (\code{lm_robust}/\code{iv_robust}) and \code{fixest}}{these
+fits carry the variance they were computed with -- estimatr's
+\verb{se_type =}, and whatever fixest's own \code{vcov} interface
+produced -- and spicy never overwrites it. A \code{vcov} request is
+refused; set the estimator through the fitting package instead
+(\verb{se_type =} for estimatr; \verb{vcov =} at estimation or in
+\code{summary()} for fixest).}
 \item{Other classes (\code{glmer}, \code{glmmTMB},
 \code{rstanarm}/\code{brms}, ...)}{\code{classical} (model-based) only
 (\pkg{clubSandwich} has no working backend for \code{glmer} /
@@ -1126,7 +1140,8 @@ to the field-standard oracle: \code{lm}/\code{glm}/\code{lmer}/\code{lme} use
 \pkg{clubSandwich} (CR2 = Bell-McCaffrey, with Satterthwaite df for
 \code{lm}/\code{lme}/\code{lmer}); \code{coxph}/\code{cph} use the Lin-Wei grouped-dfbeta
 sandwich (identical to \code{coxph(..., cluster=)});
-\code{survreg}/\code{gam}/\code{polr}/\code{clm}/\code{betareg}/\code{mlogit}/\code{multinom} use
+\code{survreg}/\code{gam}/\code{polr}/\code{clm}/\code{betareg}/\code{mlogit}/\code{multinom} and the
+\code{pscl} two-part fits use
 \code{\link[sandwich:vcovCL]{sandwich::vcovCL()}}; \code{rms} fits use \code{\link[rms:robcov]{rms::robcov()}} (which
 needs the fit's \verb{x = TRUE, y = TRUE}). These single cluster
 sandwiches have no CR0-CR3 bias-reduction variants, so the requested

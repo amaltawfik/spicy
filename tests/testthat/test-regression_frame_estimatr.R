@@ -307,3 +307,81 @@ test_that("lm_robust and iv_robust AME match marginaleffects::avg_slopes", {
     expect_equal(a$std_error, orc$std.error[idx], tolerance = 1e-8)
   }
 })
+
+
+# estimatr bakes se_type into the fit and spicy reports those SEs
+# unchanged, so a spicy-side `vcov` is a POLICY refusal, not a pending
+# wiring job. The message has to say so and point at the fit argument,
+# rather than inherit the generic "being added" wording.
+test_that("estimatr refuses a spicy vcov and points at se_type", {
+  fit <- .fit_lm_robust_basic()
+  err <- tryCatch(
+    table_regression(fit, vcov = "HC3", output = "data.frame"),
+    spicy_unsupported_vcov = function(e) e
+  )
+  expect_s3_class(err, "spicy_unsupported_vcov")
+  msg <- paste(conditionMessage(err), collapse = " ")
+  expect_match(msg, "se_type", fixed = TRUE)
+  expect_false(grepl("being added", msg, fixed = TRUE))
+
+  iv <- .fit_iv_robust_basic()
+  expect_error(
+    table_regression(
+      iv,
+      vcov = "CR2",
+      cluster = seq_len(stats::nobs(iv)),
+      output = "data.frame"
+    ),
+    class = "spicy_unsupported_vcov"
+  )
+})
+
+
+# The refit hint has to name the fit's OWN estimatr function. Sending an
+# iv_robust user to lm_robust() would change the ESTIMATOR (2SLS -> OLS)
+# in order to change a standard error -- a different model, not a
+# different variance.
+test_that("the estimatr refit hint names the fit's own function", {
+  lmr <- .fit_lm_robust_basic()
+  msg_lm <- paste(
+    conditionMessage(tryCatch(
+      table_regression(lmr, vcov = "HC3", output = "data.frame"),
+      spicy_unsupported_vcov = function(e) e
+    )),
+    collapse = " "
+  )
+  expect_match(msg_lm, "estimatr::lm_robust(", fixed = TRUE)
+  expect_false(grepl("estimatr::iv_robust(", msg_lm, fixed = TRUE))
+
+  iv <- .fit_iv_robust_basic()
+  msg_iv <- paste(
+    conditionMessage(tryCatch(
+      table_regression(iv, vcov = "HC3", output = "data.frame"),
+      spicy_unsupported_vcov = function(e) e
+    )),
+    collapse = " "
+  )
+  expect_match(msg_iv, "estimatr::iv_robust(", fixed = TRUE)
+  expect_false(grepl("estimatr::lm_robust(", msg_iv, fixed = TRUE))
+})
+
+
+# `cluster` alone on an own-estimator class used to advise "set vcov to
+# CR0-CR3", which is advice the very next gate refuses. The hint has to
+# point at the route that exists for the class.
+test_that("cluster alone on estimatr points at estimatr's own clustering", {
+  fit <- .fit_lm_robust_basic()
+  w <- tryCatch(
+    table_regression(
+      fit,
+      cluster = seq_len(stats::nobs(fit)),
+      output = "data.frame"
+    ),
+    spicy_ignored_arg = function(c) c
+  )
+  expect_s3_class(w, "spicy_ignored_arg")
+  msg <- paste(conditionMessage(w), collapse = " ")
+  expect_match(msg, "clusters = ", fixed = TRUE)
+  expect_match(msg, "estimatr::lm_robust(", fixed = TRUE)
+  expect_false(grepl("Set `vcov` to", msg, fixed = TRUE))
+})

@@ -1,11 +1,11 @@
 # ---------------------------------------------------------------------------
-# Phase 0b sub-step 2: as_regression_frame.lm() / .glm() methods.
+# as_regression_frame.lm() / .glm() methods.
 #
-# Strangler-fig wrappers around the existing extract_lm_phase1() pipeline.
-# Production code STILL routes through extract_lm_phase1() directly; these
-# methods exist so we can (a) prove the schema is sufficient on real fits
-# via the validator, and (b) get oracle cross-validation tests in place
-# before any downstream consumer migrates in sub-step 3.
+# Strangler-fig wrappers around the extract_lm_phase1() pipeline, which is
+# now reached ONLY through them: these methods are the live path, and
+# extract_lm_phase1() is their extraction engine rather than a parallel
+# pipeline production code can route through (see .legacy_to_frame()
+# below, and the orchestrator, which builds frames and nothing else).
 #
 # Design: dev/design_as_regression_frame.md (single source of truth).
 # Q2 settled: this generic stays internal throughout the 0.x cycle. The
@@ -255,10 +255,10 @@ as_regression_frame.glm <- function(fit, ...) {
 # (class, family, dv, n_obs, weights_kind, vcov_*, ci_*, supports,
 # fit_stats); class-specific oddities that the FOOTER reads case-by-case
 # go into `info$extras` per Q5 (cluster_name, exp_applied, exp_header,
-# use_ame_satterthwaite, singular_terms, weighted_n, title_prefix,
-# family_info). This keeps the schema minimal while preserving every
-# byte the footer renderer needs for byte-identical output after
-# round-tripping through `.frame_to_legacy_extract()` in sub-step 3.
+# use_ame_satterthwaite, singular_terms, weighted_n, title_prefix). This
+# keeps the schema minimal while preserving every byte the footer
+# renderer needs. The frame is now what the renderers read: the legacy
+# extract shape and its `.frame_to_legacy_extract()` adapter are gone.
 .build_info <- function(
   legacy,
   fit,
@@ -276,8 +276,7 @@ as_regression_frame.glm <- function(fit, ...) {
   # frame ships about 18 fields (nobs, r2, adj_r2, aic, AICc, BIC, sigma,
   # rmse, omega2, f2, pseudo_r2_*, deviance, df_residual, weighted_nobs).
   # The validator requires only `nobs`; the rest are additive and survive
-  # the schema unchanged. Renderer code (sub-steps 3-4) will consume them
-  # via the same keys it uses today.
+  # the schema unchanged, and the renderers read them by those same keys.
   fit_stats <- as.list(legacy$fit_stats)
   fit_stats$model_id <- NULL # bookkeeping, not data
   fit_stats$outcome <- NULL # lives in info$dv
@@ -367,8 +366,8 @@ as_regression_frame.glm <- function(fit, ...) {
   # Order matches the original `extract_fit_stats()` return, with the
   # nested-LRT change tokens appended at the end (Phase 0c C3:
   # attach_nested_stats_to_frames() injects these into fs BEFORE
-  # compaction, so they need to be carried through to the legacy-
-  # shaped data.frame consumed by the body builder until C4).
+  # compaction, so they are carried through to the legacy-shaped
+  # fit-stats data.frame that align_frames() hands the body builder).
   # The schema since Phase 1 uses new field names (r_squared,
   # adj_r_squared, log_lik, ...) but this function normalises BOTH
   # legacy (`r2`, `adj_r2`, ...) and new-schema field names to the
@@ -429,9 +428,9 @@ as_regression_frame.glm <- function(fit, ...) {
   )
   # Nested-LRT change tokens (present only when attach_nested_stats_*
   # ran for this model). Included only when present in `fs` -- this
-  # mirrors the legacy extract_fit_stats() shape, which omits the
-  # change columns when nested = FALSE and adds them post-hoc when
-  # attach_nested_stats_to_extracts() runs.
+  # mirrors the legacy extract_fit_stats() shape, which omitted the
+  # change columns when nested = FALSE and added them post-hoc when the
+  # nested-stats attach ran.
   change_keys <- c(
     "r2_change",
     "adj_r2_change",

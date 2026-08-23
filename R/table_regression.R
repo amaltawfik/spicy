@@ -309,14 +309,21 @@
 #'     refused.}
 #'   \item{`lmer`, `lme`, `coxph`, `survreg`,
 #'     `mgcv::gam`/`bam`, `polr`, `clm`, `betareg`,
-#'     `nnet::multinom`,
+#'     `nnet::multinom`, `pscl::zeroinfl`/`hurdle`,
 #'     `rms` (`ols`/`lrm`/`cph`/`Glm`)}{`classical`
 #'     + `CR*` only -- `HC*` and the resamplers (which refit
 #'     `lm`/`glm`) are not defined for these. `clm` with a scale /
 #'     nominal (partial-PO) component is `classical` only.
 #'     `multinom` needs \pkg{sandwich} >= 3.1-2 (which added its
 #'     `estfun()` method); its `cluster` is one entry per
-#'     observation.}
+#'     observation. For the two-part `pscl` fits the cluster
+#'     sandwich covers both components (count and zero) at once.}
+#'   \item{`quantreg::rq`}{its own estimator family, not the sandwich
+#'     vocabulary: `classical` (= `"nid"`, quantreg's large-sample
+#'     default), `"iid"`, `"ker"`, `"rank"` (intervals only) and a
+#'     native `"bootstrap"`, clustered via the wild gradient
+#'     bootstrap. `HC*`, `CR*` and `jackknife` are refused, each with
+#'     its own reason -- see the `vcov` argument.}
 #'   \item{`geepack::geeglm`}{no spicy-side estimator at all: GEE
 #'     inference is robust by construction, so the fit's own sandwich
 #'     (or jackknife) standard errors -- chosen by geeglm's
@@ -328,6 +335,13 @@
 #'     variance for the declared design, and clustering belongs in
 #'     the design itself (`survey::svydesign(ids = )`), not in the
 #'     table call.}
+#'   \item{`estimatr` (`lm_robust`/`iv_robust`) and `fixest`}{these
+#'     fits carry the variance they were computed with -- estimatr's
+#'     `se_type =`, and whatever fixest's own `vcov` interface
+#'     produced -- and spicy never overwrites it. A `vcov` request is
+#'     refused; set the estimator through the fitting package instead
+#'     (`se_type =` for estimatr; `vcov =` at estimation or in
+#'     `summary()` for fixest).}
 #'   \item{Other classes (`glmer`, `glmmTMB`,
 #'     `rstanarm`/`brms`, ...)}{`classical` (model-based) only
 #'     (\pkg{clubSandwich} has no working backend for `glmer` /
@@ -339,7 +353,8 @@
 #' \pkg{clubSandwich} (CR2 = Bell-McCaffrey, with Satterthwaite df for
 #' `lm`/`lme`/`lmer`); `coxph`/`cph` use the Lin-Wei grouped-dfbeta
 #' sandwich (identical to `coxph(..., cluster=)`);
-#' `survreg`/`gam`/`polr`/`clm`/`betareg`/`mlogit`/`multinom` use
+#' `survreg`/`gam`/`polr`/`clm`/`betareg`/`mlogit`/`multinom` and the
+#' `pscl` two-part fits use
 #' [sandwich::vcovCL()]; `rms` fits use [rms::robcov()] (which
 #' needs the fit's `x = TRUE, y = TRUE`). These single cluster
 #' sandwiches have no CR0-CR3 bias-reduction variants, so the requested
@@ -3049,21 +3064,18 @@ table_regression <- function(
   # "none" + flat informational message tied to reference_style; the
   # override / suppression happens last).
   title <- if (is.null(title)) {
-    # Phase 0c sub-step C1: title is now built from frames directly,
-    # bypassing the legacy-extract adapter for this code path. The
-    # other renderers (footer / body / alignment) continue to consume
-    # the legacy extract shape until sub-steps C2-C4 land.
+    # The title was the first renderer to read frames directly; the
+    # footer, body and alignment followed, and the legacy extract shape
+    # is gone.
     build_regression_title_from_frames(frames, nested = nested)
   } else if (isFALSE(title)) {
     NULL
   } else {
     as.character(title)
   }
-  # Phase 0c sub-step C2.last: the footer dispatcher now reads from
-  # frames directly. Each builder calls its _from_frames sibling (added
-  # in C1, C2.a, C2.b, C2.c). The legacy build_regression_footer() is
-  # kept in the codebase for C5 cleanup so we can revert quickly if a
-  # corner case slips through the byte-equivalence gates.
+  # The footer dispatcher reads from frames directly, each builder
+  # calling its _from_frames sibling. The legacy build_regression_footer()
+  # it replaced no longer exists.
   # `re_scale_val` / `re_columns_val` were validated fail-fast up top (finding
   # m3) and reused to materialise the RE rows; thread them through the footer.
 
