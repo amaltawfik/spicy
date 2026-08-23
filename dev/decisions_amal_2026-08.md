@@ -576,3 +576,25 @@ déférence à l'upstream qui sert svychisq) et confirmée par lui le
   aucun refus, tous refusés, refus partiel — au lieu de l'ancienne
   clause décidée par table. Une variable dont les manquants recouvrent
   les lignes à poids négatif est testable, et elle est testée.
+
+## Décision 37 — Quatre arbitrages design (2026-08-23)
+
+- **air format : ADOPTÉ.** Un commit de reformatage global unique +
+  `.git-blame-ignore-revs` pour préserver le blame ; air devient la
+  norme du dépôt (fin des dérives par passage d'agent). Le train air
+  part APRÈS la fusion de toutes les branches ouvertes (sinon enfer de
+  merge).
+- **G3 : le flag `supports$robust_vcov` est SUPPRIMÉ.** Jamais écrit,
+  jamais lu ; la seule source de vérité des capacités robustes est
+  `.robust_vcov_support()`.
+- **n°65 : moteurs alignés sur la console.** Une table one-way ne
+  trace de filet séparateur de variables nulle part — chaque bloc
+  étant une variable seule, le filet est de l'encre sans information.
+  Changement visible dans les moteurs riches → snapshots + puce NEWS.
+- **n°212 : sous non-convergence glmmTMB, ICC et R² sont supprimés
+  comme AIC/BIC** (aucune fit-stat dérivée d'un fit non convergé ; les
+  estimés restent, la note dit ce qu'ils valent), et les warnings
+  anonymes « NaNs produced » sont avalés sélectivement à côté du
+  warning classé, sur le modèle du chemin Stan.
+
+(Le titre du DESCRIPTION reste explicitement EN SUSPENS.)
