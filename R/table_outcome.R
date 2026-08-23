@@ -505,6 +505,15 @@
 #' its value labels, as it does in [table_continuous()]. Convert it
 #' first (`haven::as_factor()`) to get the labels in the stub.
 #'
+#' # The table note
+#'
+#' One note sits under the table and states what left the analytic
+#' sample, which group comparison ran in each block, what the displayed
+#' columns mean, and how the blocks and the `Overall` row are to be
+#' read. The rendering engines carry the same sentence as a table note.
+#' On the `"tinytable"` route it is set one size down;
+#' `options(spicy.note_style)` governs that (see [table_regression()]).
+#'
 #' @param data A data frame.
 #' @param outcome The continuous outcome, unquoted or as a string.
 #'   Exactly one column.
