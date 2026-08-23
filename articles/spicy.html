@@ -458,6 +458,16 @@ covariate adjustment:</p>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Std. errors: heteroskedasticity-robust (HC3).</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Missing values removed: bmi (12).</span></span></span></code></pre></div>
+<p>By default every <code>table_*</code> helper formats to APA
+conventions. To match a journal instead, pass <code>style =</code> —
+<code>"jama"</code>, <code>"nejm"</code>, <code>"lancet"</code>,
+<code>"annals"</code>, <code>"aer"</code> (and <code>"fr"</code> for
+French typographic conventions); <code><a href="../reference/spicy_style.html">spicy_style_names()</a></code> lists
+them all. Set it once for a whole document with
+<code>options(spicy.style = "nejm")</code>, or compose a custom variant
+with <code><a href="../reference/spicy_style.html">spicy_style()</a></code>, for example
+<code>spicy_style("lancet", ci_sep = " to ")</code>. The same styles
+apply to the regression tables below.</p>
 <p>For detailed guidance, see the dedicated articles on
 <code><a href="../reference/table_categorical.html">table_categorical()</a></code>, <code><a href="../reference/table_continuous.html">table_continuous()</a></code>, and
 <code><a href="../reference/table_continuous_lm.html">table_continuous_lm()</a></code>, and the final reporting overview
@@ -470,10 +480,12 @@ tying the summary tables together.</p>
 for one or several fitted models — more than thirty classes, from
 <code><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm()</a></code> / <code><a href="https://rdrr.io/r/stats/glm.html" class="external-link">glm()</a></code> to mixed-effects, ordinal,
 survival and Bayesian engines (the full map is
-<code><a href="../articles/table-regression-supported-models.html">vignette("table-regression-supported-models")</a></code>) — with
-APA-aligned formatting, factor grouping with reference rows, robust
-variance, standardised coefficients, average marginal effects,
-hierarchical comparisons, and side-by-side multi-model layouts:</p>
+<code><a href="../articles/table-regression-supported-models.html">vignette("table-regression-supported-models")</a></code>) — with APA
+formatting by default and the same journal styles on demand
+(<code>style = "jama"</code>, <code>"nejm"</code>, <code>"lancet"</code>
+and more), factor grouping with reference rows, robust variance,
+standardised coefficients, average marginal effects, hierarchical
+comparisons, and side-by-side multi-model layouts:</p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">wellbeing_score</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">smoking</span>, data <span class="op">=</span> <span class="va">sochealth</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
@@ -560,8 +572,8 @@ effect size for a contingency table.</li>
 <ul>
 <li>
 <code><a href="../articles/table-categorical.html">vignette("table-categorical")</a></code> and
-<code><a href="../articles/table-continuous.html">vignette("table-continuous")</a></code> — the APA Table 1 / 2
-builders.</li>
+<code><a href="../articles/table-continuous.html">vignette("table-continuous")</a></code> — the Table 1 / 2 builders
+(APA by default, other journal styles via <code>style =</code>).</li>
 <li>
 <code><a href="../articles/table-outcome.html">vignette("table-outcome")</a></code> — one continuous outcome
 across several groupings, one block of rows per grouping.</li>

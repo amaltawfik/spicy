@@ -399,6 +399,16 @@ table_continuous_lm(
 #> Missing values removed: bmi (12).
 ```
 
+By default every `table_*` helper formats to APA conventions. To match a
+journal instead, pass `style =` — `"jama"`, `"nejm"`, `"lancet"`,
+`"annals"`, `"aer"` (and `"fr"` for French typographic conventions);
+[`spicy_style_names()`](https://amaltawfik.github.io/spicy/reference/spicy_style.md)
+lists them all. Set it once for a whole document with
+`options(spicy.style = "nejm")`, or compose a custom variant with
+[`spicy_style()`](https://amaltawfik.github.io/spicy/reference/spicy_style.md),
+for example `spicy_style("lancet", ci_sep = " to ")`. The same styles
+apply to the regression tables below.
+
 For detailed guidance, see the dedicated articles on
 [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
 [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
@@ -414,9 +424,11 @@ more than thirty classes, from [`lm()`](https://rdrr.io/r/stats/lm.html)
 / [`glm()`](https://rdrr.io/r/stats/glm.html) to mixed-effects, ordinal,
 survival and Bayesian engines (the full map is
 [`vignette("table-regression-supported-models")`](https://amaltawfik.github.io/spicy/articles/table-regression-supported-models.md))
-— with APA-aligned formatting, factor grouping with reference rows,
-robust variance, standardised coefficients, average marginal effects,
-hierarchical comparisons, and side-by-side multi-model layouts:
+— with APA formatting by default and the same journal styles on demand
+(`style = "jama"`, `"nejm"`, `"lancet"` and more), factor grouping with
+reference rows, robust variance, standardised coefficients, average
+marginal effects, hierarchical comparisons, and side-by-side multi-model
+layouts:
 
 ``` r
 
@@ -509,7 +521,8 @@ sochealth |>
 - [`vignette("table-categorical")`](https://amaltawfik.github.io/spicy/articles/table-categorical.md)
   and
   [`vignette("table-continuous")`](https://amaltawfik.github.io/spicy/articles/table-continuous.md)
-  — the APA Table 1 / 2 builders.
+  — the Table 1 / 2 builders (APA by default, other journal styles via
+  `style =`).
 - [`vignette("table-outcome")`](https://amaltawfik.github.io/spicy/articles/table-outcome.md)
   — one continuous outcome across several groupings, one block of rows
   per grouping.
