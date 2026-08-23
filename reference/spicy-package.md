@@ -218,6 +218,11 @@ parent class plus a leaf class describing the specific cause:
     miss their targets (R-hat, ESS, divergences, E-BFMI, Pareto k,
     p_waic).
 
+  - `spicy_nonconvergence` – signaled together with `spicy_caveat` when
+    the fitting engine reports that its optimizer did not converge. The
+    table still shows the numbers the model object holds, and a footer
+    note says what they are worth.
+
   - `spicy_model_choice` – a defaulted modeling choice was made on the
     user's behalf and is disclosed (e.g., the linear probability model
     [`table_regression_uv()`](https://amaltawfik.github.io/spicy/reference/table_regression_uv.md)

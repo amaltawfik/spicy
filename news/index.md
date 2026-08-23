@@ -603,6 +603,17 @@ instead of rendering an empty column.
   and no SE or CI on the collapsed variance components. For `glmmTMB`
   the check covers the zero-inflation and dispersion components too.
 
+- Nested `lme` fits (`random = ~ 1 | A/B`) show one `Random effects` row
+  per level, each with its own label, SE and CI, plus one `N (<factor>)`
+  row per grouping factor. Levels are named the way `lmer` names them
+  (`B:A`), so the same nested model fitted with either engine lines up
+  in a multi-model table.
+
+- A `glmmTMB` fit whose optimizer did not converge says so: a table note
+  names the engine’s own diagnosis and a `spicy_nonconvergence` warning
+  (under `spicy_caveat`) fires. The estimates still print – they are
+  what the model object holds.
+
 - Under a cluster-robust `vcov`, the ordinal Thresholds block (`polr` /
   `clm`) takes its SEs, z, p and CIs from the same sandwich as the
   slopes.
@@ -724,13 +735,12 @@ instead of rendering an empty column.
   returns `NULL` for it.
 
 - `output = "gt"` tables carry their table note into the saved file.
-  [`gt::gtsave()`](https://gt.rstudio.com/reference/gtsave.html),
-  [`gt::as_raw_html()`](https://gt.rstudio.com/reference/as_raw_html.html)
-  and a non-interactive [`print()`](https://rdrr.io/r/base/print.html)
-  used to produce a table without the missing-value disclosure, the test
-  note or the column glosses the console prints. The interactive HTML
-  display is unchanged: the note still renders outside the table grid,
-  once.
+  [`gt::gtsave()`](https://rdrr.io/pkg/gt/man/gtsave.html),
+  [`gt::as_raw_html()`](https://rdrr.io/pkg/gt/man/as_raw_html.html) and
+  a non-interactive [`print()`](https://rdrr.io/r/base/print.html) used
+  to produce a table without the missing-value disclosure, the test note
+  or the column glosses the console prints. The interactive HTML display
+  is unchanged: the note still renders outside the table grid, once.
 
 - `output = "tinytable"` escapes cell text in
   [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
