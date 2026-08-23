@@ -1064,6 +1064,9 @@ table_continuous_svy <- function(
       align = align,
       decimal_mark = decimal_mark,
       show_n = show_n,
+      # The design twin lays its rows out exactly as its sibling does,
+      # so it reads the same block key.
+      sep_rows = .struct_run_sep_rows(result$variable),
       title = .continuous_title(attr(result, "group_label", exact = TRUE)),
       excel_path = excel_path,
       excel_sheet = excel_sheet,

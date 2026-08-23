@@ -98,20 +98,21 @@ print.spicy_continuous_table <- function(x, ...) {
   }
 
   # Separator rows: the first row of each variable block, except the
-  # first. The shared helper carries the `"Variable" %in% names()` half of
-  # the old inline test; the `has_group` half stays HERE and must stay.
-  # Without a `by`, `build_display_df()` does not deduplicate the label
-  # column -- that loop is itself under `has_group` -- so every row would
-  # be the start of a block and the console would draw a hairline under
-  # each one. The two `has_group` are now co-dependent: this one is
-  # `!is.null(group_var)`, `build_display_df()`'s is
-  # `"group" %in% names(result)`, and `table_continuous()` sets the
-  # attribute and the column together.
+  # first, read from the COMPUTE frame's block key -- `x$variable`, the
+  # column the typed view carries as `.variable`.
   #
-  # (The rendering engines call `compute_var_sep_rows()` unguarded and DO
-  # draw those rules on a one-way table. That console / engine divergence
-  # is preserved here, not settled.)
-  sep_rows <- if (has_group) compute_var_sep_rows(display_df) else integer(0)
+  # The `has_group` guard is the console's POLICY, and it is all it is
+  # now: a one-way table has one row per variable, and a rule between
+  # every pair of rows is noise rather than structure. It used to
+  # double as a repair for the derivation, which read the deduplicated
+  # LABEL column and therefore answered "every row" on a frame
+  # `build_display_df()` had not blanked -- a coupling between two
+  # functions that no signature stated. Reading the key directly, the
+  # guard says only what the console wants.
+  #
+  # (The rendering engines draw those rules on a one-way table. That
+  # console / engine divergence is preserved here, not settled.)
+  sep_rows <- if (has_group) .struct_run_sep_rows(x$variable) else integer(0)
 
   title <- .continuous_title(attr(x, "group_label", exact = TRUE))
 

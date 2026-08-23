@@ -936,3 +936,162 @@ test_that("an empty body yields no block rows and no indented rows", {
   expect_identical(spicy:::.struct_block_sep_rows(mock), integer(0))
   expect_identical(spicy:::.struct_indent_rows(mock), integer(0))
 })
+
+
+# ---- the run-based predicate: blocks with no header row -------------------
+
+test_that("the run predicate agrees with the retired string derivation", {
+  # `.struct_run_sep_rows()` replaced a derivation that read the
+  # DEDUPLICATED label column of the display frame. On everything the
+  # continuous families deliver the two answers coincide, and that is
+  # what makes the replacement byte-identical rather than a change of
+  # behaviour. The oracle below is the retired function, transcribed:
+  # "a row whose label is not blank opens a block".
+  string_oracle <- function(display_df) {
+    labels <- display_df[[spicy:::.CON_KEY_VARIABLE]]
+    which(seq_along(labels) > 1L & nzchar(labels))
+  }
+
+  sh <- sh_desc()
+  dup <- sh
+  attr(dup$bmi, "label") <- "Score"
+  attr(dup$wellbeing_score, "label") <- "Score"
+
+  corpus <- list(
+    quiet(table_continuous(sh, select = c(bmi, income), by = sex)),
+    quiet(table_continuous(sh, select = c(bmi, income))),
+    quiet(table_continuous(sh, select = bmi, by = sex)),
+    quiet(table_continuous(sh, select = c(bmi, income, wellbeing_score), by = education)),
+    quiet(table_continuous(sh, select = c(bmi, income), by = sex, smd = TRUE)),
+    quiet(table_continuous(
+      sh,
+      select = c(bmi, income),
+      by = sex,
+      effect_size = "auto",
+      statistic = TRUE
+    )),
+    quiet(table_continuous(dup, select = c(bmi, wellbeing_score), by = sex)),
+    quiet(table_continuous(dup, select = c(bmi, wellbeing_score)))
+  )
+  for (tbl in corpus) {
+    expect_identical(
+      spicy:::.struct_run_sep_rows(tbl$variable),
+      string_oracle(con_display(tbl))
+    )
+    # And with the typed view, whose `.variable` IS the key read above.
+    expect_identical(
+      spicy:::.struct_run_sep_rows(tbl$variable),
+      spicy:::.struct_run_sep_rows(as_structured(tbl)$body$.variable)
+    )
+  }
+})
+
+test_that("two variables sharing one display label keep their own blocks", {
+  # The assumption the string derivation carried: that the label column
+  # is the block key. It is not -- it is a display string, and two
+  # variables may legitimately print the same one. `build_display_df()`
+  # blanks the label of a CONTINUATION row and keys that blanking on
+  # the source variable, so the delivered frame happens to answer
+  # correctly; nothing in either function said so, and a frame built
+  # any other way (labels repeated rather than blanked) reads as one
+  # row per block. The key does not have that problem.
+  sh <- sh_desc()
+  dup <- sh
+  attr(dup$bmi, "label") <- "Score"
+  attr(dup$wellbeing_score, "label") <- "Score"
+  # Two statistics only, so the table fits one console panel and the
+  # rule below is counted once.
+  tbl <- quiet(table_continuous(
+    dup,
+    select = c(bmi, wellbeing_score),
+    by = sex,
+    show_columns = c("m", "sd")
+  ))
+
+  labels <- unique(con_display(tbl)[[spicy:::.CON_KEY_VARIABLE]])
+  expect_identical(setdiff(labels, ""), "Score")
+
+  n_groups <- length(unique(tbl$group))
+  expect_identical(
+    spicy:::.struct_run_sep_rows(tbl$variable),
+    n_groups + 1L
+  )
+  # The console draws exactly one rule between the two blocks, and each
+  # block still shows its own numbers.
+  txt <- capture.output(print(tbl))
+  expect_identical(sum(grepl("╌", txt, fixed = TRUE)), 1L)
+  expect_identical(sum(grepl("Score", txt, fixed = TRUE)), 2L)
+
+  # On a frame whose labels were NOT blanked -- the shape the retired
+  # derivation could not read -- the key still answers with the blocks.
+  repeated <- rep("Score", nrow(tbl))
+  expect_identical(
+    which(seq_along(repeated) > 1L & nzchar(repeated)),
+    seq(2L, nrow(tbl))
+  )
+  expect_identical(spicy:::.struct_run_sep_rows(tbl$variable), n_groups + 1L)
+})
+
+test_that("the run predicate handles NA keys, ties and degenerate lengths", {
+  # NA is a value: adjacent NAs are one block, an NA beside a name opens
+  # one. A bare `!=` returns NA on those pairs and `which()` drops the
+  # row, which loses a rule without saying so.
+  expect_identical(
+    spicy:::.struct_run_sep_rows(c("a", "a", "b", "b", "c")),
+    c(3L, 5L)
+  )
+  expect_identical(
+    spicy:::.struct_run_sep_rows(c("a", NA, NA, "b")),
+    c(2L, 4L)
+  )
+  expect_identical(spicy:::.struct_run_sep_rows(rep(NA_character_, 4L)), integer(0))
+  expect_identical(spicy:::.struct_run_sep_rows(character(0)), integer(0))
+  expect_identical(spicy:::.struct_run_sep_rows("a"), integer(0))
+  # Non-adjacent repeats are two blocks, not one: a run, never a set.
+  expect_identical(
+    spicy:::.struct_run_sep_rows(c("a", "b", "a")),
+    c(2L, 3L)
+  )
+})
+
+test_that("the exporter draws no rules when a family names none", {
+  # The default used to be `NULL` and fell through to the label-column
+  # derivation, so a family that said nothing got geometry invented for
+  # it. It now gets none -- a table without rules, never one with the
+  # wrong ones.
+  skip_if_not_installed("tinytable")
+  display_df <- data.frame(
+    Variable = c("A", "", "B", ""),
+    n = c("10", "20", "30", "40"),
+    stringsAsFactors = FALSE
+  )
+  export <- function(...) {
+    spicy:::export_desc_table(
+      display_df = display_df,
+      output = "tinytable",
+      ci_level = 0.95,
+      stub_keys = "Variable",
+      title = "Descriptive statistics",
+      excel_path = NULL,
+      excel_sheet = "Sheet1",
+      clipboard_delim = "\t",
+      word_path = NULL,
+      ...
+    )
+  }
+  # The `i` of every light `hline{i}` in the rendered LaTeX: the light
+  # rule (0.03em) is the block separator, the heavy one (0.06em) is the
+  # frame.
+  light_rules <- function(tt) {
+    latex <- tinytable::save_tt(tt, output = "latex")
+    m <- gregexpr(
+      "hline\\{([0-9]+)\\}=\\{[^}]*\\}\\{[^}]*0.03em",
+      latex
+    )
+    hits <- regmatches(latex, m)[[1L]]
+    sort(unique(as.integer(sub("^hline\\{([0-9]+)\\}.*$", "\\1", hits))))
+  }
+  expect_identical(light_rules(export()), integer(0))
+  # Same frame with the geometry stated: exactly the rule asked for.
+  expect_length(light_rules(export(sep_rows = 3L)), 1L)
+})

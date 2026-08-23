@@ -1771,6 +1771,10 @@ table_continuous <- function(
         align = align,
         decimal_mark = decimal_mark,
         show_n = show_n,
+        # Block geometry from the compute frame's key, exactly as the
+        # console reads it. Unlike the console the engines draw the
+        # rules on a one-way table too, so no `has_group` guard here.
+        sep_rows = .struct_run_sep_rows(result$variable),
         title = .continuous_title(attr(result, "group_label", exact = TRUE)),
         excel_path = excel_path,
         excel_sheet = excel_sheet,
@@ -3122,9 +3126,9 @@ build_display_df <- function(
 
   # `has_group` here and `has_group` in `print.spicy_continuous_table()`
   # (`!is.null(group_var)`) are two spellings of one fact -- the column
-  # and the attribute are set together by `table_continuous()` -- and the
-  # console's separator rule now depends on the pair agreeing (see
-  # `compute_var_sep_rows()`).
+  # and the attribute are set together by `table_continuous()`. Nothing
+  # downstream depends on the pair agreeing any more: the separator
+  # rule reads the block key, not the labels this branch blanks.
   has_group <- "group" %in% names(result)
   has_computed <- "statistic" %in% names(result)
   has_es <- "es_value" %in% names(result)
@@ -3262,21 +3266,6 @@ build_display_df <- function(
 }
 
 
-# --- internal: compute separator row indices (first row of each var block) ---
-compute_var_sep_rows <- function(display_df) {
-  if (!.CON_KEY_VARIABLE %in% names(display_df)) {
-    return(integer(0)) # nocov
-  }
-  vars <- display_df[[.CON_KEY_VARIABLE]]
-  sep <- integer(0)
-  for (i in seq_along(vars)) {
-    if (i > 1L && nzchar(vars[i])) {
-      sep <- c(sep, i)
-    }
-  }
-  sep
-}
-
 # --- internal: rename CI columns for export ---
 # The engines below carry the CI level in the SPANNER, so the column
 # keys are the bare bounds. The median CI keeps its own keys: two
@@ -3407,7 +3396,14 @@ export_desc_table <- function(
   align = "decimal",
   decimal_mark = ".",
   show_n = TRUE,
-  sep_rows = NULL,
+  # Block geometry is the CALLER's, like the title just below: each
+  # family knows what a block of its own is and derives it from a typed
+  # key. This used to default to `NULL` and fall through to a
+  # derivation from the label column, which is how the exporter came to
+  # hold a second, weaker answer to a question its callers had already
+  # answered. The default now says "no blocks", which is a table
+  # without rules -- never a table with the wrong ones.
+  sep_rows = integer(0),
   indent_rows = integer(0),
   indent_text = "  ",
   indent_text_excel_clipboard = strrep("\u00A0", 6),
@@ -3447,11 +3443,6 @@ export_desc_table <- function(
     build_header_rows_from(keys, hl_labels, hl_spanners)
   }
 
-  # Block geometry, supplied by families whose rows are blocks and
-  # derived from the label column otherwise.
-  if (is.null(sep_rows)) {
-    sep_rows <- compute_var_sep_rows(display_df)
-  }
   # The stub: one label column ("Variable"), or two when a family puts
   # the group in a column of its own. The KEYS, not a count -- gt
   # addresses both its columns and its spanner ids by frozen name.
