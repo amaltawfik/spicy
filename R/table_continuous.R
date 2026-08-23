@@ -3654,6 +3654,16 @@ export_desc_table <- function(
     display_df <- hl_rename(display_df)
     gt_col_keys <- names(display_df)
     groups_spec <- hl_spanners(gt_col_keys)
+    # This branch renders the two survey families as well, and THEIR
+    # column keys are qualified by a `by` level ("Q\"x n"), i.e. user
+    # data. gt writes a column id RAW into the `headers="..."` attribute
+    # of every body cell and into the `th[id="%s"]` selector below,
+    # where a double quote aborted sass and took the render down.
+    # `.gt_safe_ids()` is the identity on this family's own frozen keys,
+    # and `hl_headers()` / `groups_spec` keep reading the KEY, so no
+    # header moves.
+    gt_ids <- .gt_safe_ids(gt_col_keys)
+    gt_col_ids <- unname(gt_ids)
     # Block indentation: gt renders the label cell as HTML, so the
     # console's prefix is swapped for four non-breaking spaces --
     # the same recipe as the categorical family, and the reason a
@@ -3664,20 +3674,21 @@ export_desc_table <- function(
         substring(display_df[[1L]][indent_rows], nchar(indent_text) + 1L)
       )
     }
+    names(display_df) <- gt_col_ids
     tbl <- gt::gt(display_df)
 
     # Sub-row labels: empty for single-col spanners, LL/UL under each
     # CI spanner.
     gt_bottom <- hl_headers(gt_col_keys)$bottom
     label_list <- as.list(gt_bottom)
-    names(label_list) <- gt_col_keys
+    names(label_list) <- gt_col_ids
     tbl <- gt::cols_label(tbl, .list = label_list)
 
     for (g in groups_spec) {
       tbl <- gt::tab_spanner(
         tbl,
         label = g$label,
-        columns = gt_col_keys[g$cols],
+        columns = gt_col_ids[g$cols],
         # The id is MACHINE state (`left_spanners` below reads it back),
         # so it is built from the key, never from the printed label.
         id = paste0("spn_", g$key)
@@ -3690,10 +3701,10 @@ export_desc_table <- function(
     # table_regression() / table_continuous_lm()); "center" / "right"
     # use gt::cols_align() literally.
     for (sk in stub_keys) {
-      tbl <- gt::cols_align(tbl, align = "left", columns = sk)
+      tbl <- gt::cols_align(tbl, align = "left", columns = gt_ids[[sk]])
     }
-    left_cols <- stub_keys
-    numeric_cols <- setdiff(names(display_df), left_cols)
+    left_cols <- unname(gt_ids[stub_keys])
+    numeric_cols <- setdiff(gt_col_ids, left_cols)
     if (use_decimal && length(numeric_cols) > 0L) {
       # Cells were pre-padded with figure-spaces upstream; centring
       # uniform-width strings places the decimal points at the same
@@ -3744,7 +3755,7 @@ export_desc_table <- function(
     # Bound columns of every CI spanner (mean CI, median CI).
     ci_cols <- unlist(lapply(
       groups_spec,
-      function(g) if (length(g$cols) > 1L) gt_col_keys[g$cols] else NULL
+      function(g) if (length(g$cols) > 1L) gt_col_ids[g$cols] else NULL
     ))
     tbl <- gt::tab_style(
       tbl,
@@ -3787,7 +3798,14 @@ export_desc_table <- function(
         vapply(
           ci_cols,
           function(id) {
-            sprintf('.gt_table thead tr:last-child th[id="%s"]', id)
+            # Same second line of defence as the categorical selector:
+            # the ids are sanitised upstream, so this is the identity
+            # today -- and the guarantee the sass compiler never again
+            # sees an unterminated attribute selector from this branch.
+            sprintf(
+              '.gt_table thead tr:last-child th[id="%s"]',
+              .css_escape_string(id)
+            )
           },
           character(1)
         ),

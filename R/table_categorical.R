@@ -3491,6 +3491,15 @@ table_categorical <- function(
     if (do_smd) {
       col_ids[ncol(dat_gt)] <- "smd_col"
     }
+    # The group ids above carry `by` levels, i.e. user data, and gt
+    # writes a column id RAW into the `headers="..."` attribute of every
+    # body cell (and it lands in the `th[id="%s"]` selector below).
+    # `.gt_safe_ids()` is the identity on an ordinary level; the two
+    # derived vectors are read wherever a group column is addressed, so
+    # the ids can never be typed out a second time and drift.
+    col_ids <- unname(.gt_safe_ids(col_ids))
+    grp_id_n <- col_ids[2L * seq_along(group_levels)]
+    grp_id_pct <- col_ids[2L * seq_along(group_levels) + 1L]
     names(dat_gt) <- col_ids
 
     tbl <- gt::gt(dat_gt)
@@ -3499,12 +3508,8 @@ table_categorical <- function(
     label_list <- list()
     label_list[[.CAT_KEY_VARIABLE]] <- ""
     for (gi in seq_along(group_levels)) {
-      label_list[[paste0(group_levels[gi], "_n")]] <- spicy_str(
-        "header_n_lower"
-      )
-      label_list[[paste0(group_levels[gi], "_pct")]] <- spicy_str(
-        "header_percent_symbol"
-      )
+      label_list[[grp_id_n[gi]]] <- spicy_str("header_n_lower")
+      label_list[[grp_id_pct[gi]]] <- spicy_str("header_percent_symbol")
     }
     label_list[[.CAT_KEY_P]] <- ""
     if (show_assoc) {
@@ -3528,10 +3533,7 @@ table_categorical <- function(
       tbl <- gt::tab_spanner(
         tbl,
         label = group_labels[gi],
-        columns = c(
-          paste0(group_levels[gi], "_n"),
-          paste0(group_levels[gi], "_pct")
-        )
+        columns = c(grp_id_n[gi], grp_id_pct[gi])
       )
     }
     tbl <- gt::tab_spanner(
@@ -3563,9 +3565,7 @@ table_categorical <- function(
     # table_regression() / table_continuous_lm()); "center" / "right"
     # use gt::cols_align() literally.
     tbl <- gt::cols_align(tbl, align = "left", columns = .CAT_KEY_VARIABLE)
-    grp_cols <- unlist(lapply(group_levels, function(g) {
-      c(paste0(g, "_n"), paste0(g, "_pct"))
-    }))
+    grp_cols <- as.vector(rbind(grp_id_n, grp_id_pct))
     right_cols <- .CAT_KEY_P
     if (show_assoc) {
       right_cols <- c(right_cols, "assoc_col")
@@ -3662,9 +3662,11 @@ table_categorical <- function(
     # 3) opt_css rules (override gt's hidden borders in normal
     #    renderers: RStudio viewer, Quarto, pkgdown)
     # Build CSS selector for group-column <th> elements. These ids carry
-    # the `by` level labels, i.e. user data, so they are escaped for the
-    # CSS string they land in (`.css_escape_string()`); the CI selectors
-    # of the two other descriptive families interpolate frozen keys.
+    # the `by` level labels, i.e. user data. `.gt_safe_ids()` above has
+    # already taken the quote and the backslash out of them; the
+    # `.css_escape_string()` here is the second line of that defence,
+    # kept because this selector is one edit away from an id that never
+    # passed through the sanitiser.
     grp_css_sel <- paste(
       vapply(
         grp_cols,

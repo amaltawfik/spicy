@@ -770,6 +770,17 @@ output_gt <- function(rendered) {
   n_cols <- ncol(body)
   n_rows <- nrow(body)
 
+  # A multi-model column key opens with the model NAME the caller chose
+  # ("Step 1: B"), which is user data, and gt writes a column id RAW
+  # into the `headers="..."` attribute of every body cell -- a double
+  # quote there closes the attribute early and the rest of the name is
+  # re-parsed as bare attributes. `.gt_safe_ids()` is the identity on an
+  # ordinary name. `orig_names` stays the KEY: `col_meta` is indexed by
+  # it, and it is what `as.data.frame()` publishes.
+  gt_ids <- .gt_safe_ids(orig_names)
+  gt_names <- unname(gt_ids)
+  names(body) <- gt_names
+
   tbl <- gt::gt(body)
 
   # Match table_continuous_lm header structure: actual column
@@ -780,11 +791,11 @@ output_gt <- function(rendered) {
   # collapses the visual header to two rows (single-model: spanner
   # row + LL/UL row) instead of three.
   ci_cols_set <- unlist(lapply(ci_spanners, function(cs) cs$cols))
-  label_list <- stats::setNames(as.list(rep("", n_cols)), orig_names)
+  label_list <- stats::setNames(as.list(rep("", n_cols)), gt_names)
   for (cs in ci_spanners) {
     if (length(cs$cols) >= 2L) {
-      label_list[[orig_names[cs$cols[1L]]]] <- spicy_str("header_ci_ll")
-      label_list[[orig_names[cs$cols[2L]]]] <- spicy_str("header_ci_ul")
+      label_list[[gt_names[cs$cols[1L]]]] <- spicy_str("header_ci_ll")
+      label_list[[gt_names[cs$cols[2L]]]] <- spicy_str("header_ci_ul")
     }
   }
   tbl <- gt::cols_label(tbl, .list = label_list)
@@ -844,7 +855,7 @@ output_gt <- function(rendered) {
     tbl <- gt::tab_spanner(
       tbl,
       label = bare,
-      columns = orig_names[j],
+      columns = gt_names[j],
       id = span_id
     )
   }
@@ -854,7 +865,7 @@ output_gt <- function(rendered) {
       tbl <- gt::tab_spanner(
         tbl,
         label = cs$label,
-        columns = orig_names[cs$cols],
+        columns = gt_names[cs$cols],
         id = paste0("ci_span_", paste(cs$cols, collapse = "_"))
       )
     }
@@ -866,7 +877,7 @@ output_gt <- function(rendered) {
   if (has_model_spanner) {
     for (k in seq_along(spanners)) {
       lbl <- names(spanners)[k]
-      cols_in_span <- orig_names[spanners[[k]]]
+      cols_in_span <- gt_names[spanners[[k]]]
       tbl <- gt::tab_spanner(
         tbl,
         label = lbl,
@@ -977,7 +988,7 @@ output_gt <- function(rendered) {
       tbl,
       style = rule_top,
       locations = gt::cells_column_labels(
-        columns = orig_names[ci_cols_set]
+        columns = gt_names[ci_cols_set]
       )
     )
   }
@@ -1018,13 +1029,13 @@ output_gt <- function(rendered) {
   tbl <- gt::tab_style(
     tbl,
     style = gt::cell_text(align = "left", weight = "normal"),
-    locations = gt::cells_column_labels(columns = orig_names[1L])
+    locations = gt::cells_column_labels(columns = gt_names[1L])
   )
   if (n_cols >= 2L) {
     tbl <- gt::tab_style(
       tbl,
       style = gt::cell_text(align = "center", weight = "normal"),
-      locations = gt::cells_column_labels(columns = orig_names[-1L])
+      locations = gt::cells_column_labels(columns = gt_names[-1L])
     )
   }
   # Centre all spanner-row labels (B / SE / 95% CI / p / Model X),
@@ -1059,7 +1070,7 @@ output_gt <- function(rendered) {
       )
     }
   }
-  tbl <- gt::cols_align(tbl, align = "left", columns = orig_names[1L])
+  tbl <- gt::cols_align(tbl, align = "left", columns = gt_names[1L])
   if (n_cols >= 2L) {
     # Numeric body columns are already character-padded (via
     # `.format_structured_to_string_body()` + `.pad_for_decimal_align()`
@@ -1069,14 +1080,14 @@ output_gt <- function(rendered) {
     # `cols_align_decimal()` needed (and avoids gt's alignment bug
     # with `fmt(fns = ...)` output that displayed APA p-values as
     # `. 213`).
-    tbl <- gt::cols_align(tbl, align = "center", columns = orig_names[-1L])
+    tbl <- gt::cols_align(tbl, align = "center", columns = gt_names[-1L])
   }
   # Factor-level rows: indent the Variable cell.
   if (length(level_rows) > 0L) {
     tbl <- gt::tab_style(
       tbl,
       style = gt::cell_text(indent = gt::px(20)),
-      locations = gt::cells_body(columns = orig_names[1L], rows = level_rows)
+      locations = gt::cells_body(columns = gt_names[1L], rows = level_rows)
     )
   }
 

@@ -94,6 +94,40 @@
   )
 }
 
+# The gt column id of every column KEY, named by the key.
+#
+# `gt::gt()` reads the data frame's column NAMES as the ids it writes
+# into the rendered DOM, and in four of the families those names carry
+# user data: a `by` level ("Q\"x_n"), a marginal mean ("M (Q\"x)"), a
+# model name ("M\"1: B"). gt escapes the id where it lands in `id="..."`
+# on the `<th>`, but the `headers="..."` attribute it writes on every
+# body cell takes the name RAW. A level holding a double quote closes
+# that attribute early and the remainder is re-parsed as bare
+# attributes: `M (Q"x)` renders as `headers="M (Q" x)`. The same raw id
+# is interpolated into the `th[id="%s"]` CSS selectors these branches
+# build, where a double quote aborted sass ("unterminated attribute
+# selector for id") and took the whole render down.
+#
+# So the KEY and the gt id part company here, exactly as the key and the
+# header already have: the key stays the public column name
+# `output = "data.frame"` publishes and `col_meta` is indexed by, the id
+# is DOM state. Nothing a reader sees moves -- the visible text is
+# carried by the spanner / column label above, which gt escapes
+# correctly.
+#
+# Only the characters that cannot survive an HTML attribute value or a
+# CSS string are replaced: the double quote, the two angle brackets, the
+# backslash (CSS's own escape) and the control characters. Every other
+# name is returned untouched, so a table of ordinary names renders byte
+# for byte as it did before. `make.unique()` breaks a tie the
+# replacement could create ("a\"b" and "a<b" both land as "a_b"); the
+# keys are data frame column names, so a set with no collision comes
+# back exactly as it went in.
+.gt_safe_ids <- function(keys) {
+  ids <- gsub("[\"<>\\\\[:cntrl:]]", "_", keys)
+  stats::setNames(make.unique(ids, sep = "_"), keys)
+}
+
 # Escape a value for interpolation INSIDE a double-quoted CSS string,
 # as in the `th[id="..."]` attribute selectors the gt branches build.
 # Most of those ids are frozen ASCII keys, but the categorical group
