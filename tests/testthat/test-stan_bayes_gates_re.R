@@ -1350,6 +1350,78 @@ test_that("the brms beta scope predicate reads formulas, not draws", {
 })
 
 
+test_that("brms factor design columns and their algebra need no fit", {
+  skip_if_not_installed("brms")
+  # .brms_factor_design_cols() reads the formula / data pair and the
+  # design matrix's assign attribute, so its rule -- and the scale
+  # factors it feeds -- are CI-testable without sampling.
+  set.seed(1)
+  d <- data.frame(
+    y = stats::rnorm(12),
+    x = stats::rnorm(12),
+    g = factor(rep(c("a", "b", "c"), 4)),
+    cyl = rep(c(4, 6, 8), 4)
+  )
+  mk <- function(f) {
+    structure(
+      list(algorithm = "sampling", formula = brms::bf(f), data = d),
+      class = "brmsfit"
+    )
+  }
+  design <- function(fit) {
+    tt <- stats::delete.response(stats::terms(stats::formula(fit)$formula))
+    stats::model.matrix(tt, data = stats::model.frame(tt, data = d))
+  }
+  # A pre-made factor: both treatment dummies are factor columns.
+  fit_g <- mk(y ~ x + g)
+  mm_g <- design(fit_g)
+  expect_identical(
+    colnames(mm_g)[spicy:::.brms_factor_design_cols(fit_g, mm_g)],
+    c("gb", "gc")
+  )
+  # An inline factor() term is materialised by the model frame, so its
+  # dummies are caught too -- brms carries no $xlevels to consult.
+  fit_i <- mk(y ~ x + factor(cyl))
+  mm_i <- design(fit_i)
+  expect_identical(
+    colnames(mm_i)[spicy:::.brms_factor_design_cols(fit_i, mm_i)],
+    c("factor(cyl)6", "factor(cyl)8")
+  )
+  # Interaction columns are not pure factor main effects.
+  fit_x <- mk(y ~ x * g)
+  mm_x <- design(fit_x)
+  expect_identical(
+    colnames(mm_x)[spicy:::.brms_factor_design_cols(fit_x, mm_x)],
+    c("gb", "gc")
+  )
+  # A design with no factor at all.
+  fit_n <- mk(y ~ x)
+  expect_identical(
+    spicy:::.brms_factor_design_cols(fit_n, design(fit_n)),
+    integer(0)
+  )
+  # The algebra those columns feed: the continuous input is sd-scaled,
+  # the dummies are left raw under the "posthoc" convention.
+  sf <- spicy:::.algebraic_scale_factors(
+    mm_i,
+    spicy:::.brms_factor_design_cols(fit_i, mm_i),
+    factor_treatment = "unscaled",
+    input_scaling = "sd",
+    sd_y_div = stats::sd(d$y)
+  )
+  expect_equal(
+    unname(sf[["x"]]),
+    stats::sd(d$x) / stats::sd(d$y),
+    tolerance = 1e-12
+  )
+  expect_equal(
+    unname(sf[["factor(cyl)6"]]),
+    1 / stats::sd(d$y),
+    tolerance = 1e-12
+  )
+})
+
+
 test_that("brmsfit algebraic betas: engine-invariant, oracle-exact", {
   skip_on_ci()
   skip_if_not_installed("brms")
