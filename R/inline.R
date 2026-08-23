@@ -95,10 +95,11 @@
 #' @param column A column token, or a `{token}` pattern. `NULL` (the
 #'   default) returns the estimate-like column of the row when it is
 #'   unambiguous: the family's primary estimate. That is the
-#'   coefficient for [table_regression()] and [table_continuous_lm()]
-#'   -- always token `"b"`: an exponentiated table changes its header
-#'   to OR, IRR or HR, never its token -- the mean (`"m"`) or, on a
-#'   median-only table, the median (`"med"`, `"med_iqr"`) for
+#'   coefficient for [table_regression()] -- always token `"b"`: an
+#'   exponentiated table changes its header to OR, IRR or HR, never
+#'   its token -- the contrast (`"delta"`) or, across a numeric `by`,
+#'   the slope (`"b"`) for [table_continuous_lm()], the mean (`"m"`)
+#'   or, on a median-only table, the median (`"med"`, `"med_iqr"`) for
 #'   [table_continuous()], and the count (`"n"`) for
 #'   [table_categorical()]. A row carrying none of them refuses and
 #'   lists its tokens.
@@ -469,14 +470,21 @@ inline <- function(
 # the old "mean" entry matched nothing and "n" -- one place earlier --
 # won instead. A bare `inline()` on a descriptive table quoted the
 # group's N where the sentence meant its mean.
-
+#
+# `"delta"` sits beside `"b"` for the same reason, one family over.
+# `table_continuous_lm()` emits `"b"` only when `by` is NUMERIC (a
+# slope); across the levels of a FACTOR -- the form the function is
+# named for -- the estimate is the contrast, token `"delta"`, and the
+# table carries no `"b"` at all. Without this entry the preference
+# fell through to `"n"`, and a bare `inline(tbl, outcome)` quoted the
+# sample size where the sentence meant the mean difference.
 .inline_default_token <- function(s, cols) {
   tokens <- unique(vapply(
     cols[cols %in% names(s$col_meta)],
     function(nm) s$col_meta[[nm]]$token %||% "",
     character(1)
   ))
-  for (cand in c("b", "m", "med", "med_iqr", "n")) {
+  for (cand in c("b", "delta", "m", "med", "med_iqr", "n")) {
     if (cand %in% tokens) {
       return(cand)
     }

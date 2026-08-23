@@ -668,6 +668,27 @@ test_that("a bare inline() cites the family's primary estimate", {
   expect_false(identical(inline(tl, mpg), inline(tl, mpg, column = "n")))
 })
 
+test_that("a bare inline() on a factor `by` cites the contrast, not n", {
+  # Register 55's failure mode in its third costume, and the one the
+  # function is named for. `table_continuous_lm()` emits token "b" only
+  # across a NUMERIC `by` -- a slope; `mtcars$am` is 0/1, which is why
+  # the block above passes. Across the levels of a FACTOR the estimate
+  # is the contrast, token "delta", and the table carries no "b" at
+  # all: the preference list fell through to "n", so a bare call quoted
+  # the sample size (1188) where the sentence meant the mean difference
+  # (0.51). Asserted on the values, per shape, so neither can drift
+  # onto a neighbouring column by agreeing with itself.
+  d <- as.data.frame(sochealth)
+  tf <- .il_quiet(table_continuous_lm(d, select = bmi, by = sex))
+  expect_identical(inline(tf, bmi), inline(tf, bmi, column = "delta"))
+  expect_identical(inline(tf, bmi), "0.51")
+  expect_identical(inline(tf, bmi, column = "n"), "1188")
+  # The numeric-`by` shape keeps its slope.
+  tn <- .il_quiet(table_continuous_lm(mtcars, select = "mpg", by = "am"))
+  expect_identical(inline(tn, mpg), inline(tn, mpg, column = "b"))
+  expect_error(inline(tn, mpg, column = "delta"), "No column with token")
+})
+
 test_that("a bare inline() on a median-only table cites the median, not n", {
   # Register 55's failure mode in its non-parametric costume: a
   # median-only row carries no "m", and the preference list used to

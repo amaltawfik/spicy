@@ -610,6 +610,10 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
   `p_floor`, `ci_sep`, `ci_brackets`) did not survive the call that
   built the table, so a sentence citing a Lancet table wrote its
   interval `[2.14, 5.65]` where the table printed `[2.14–5.65]`.
+* A bare `inline(tbl, outcome)` on `table_continuous_lm(by = )` across
+  a factor cites the mean difference. It returned the sample size: the
+  contrast is token `"delta"`, and only a numeric `by` produces the
+  `"b"` the default looked for.
 * `table_continuous_lm(by = , output = "gt")` renders when two `by`
   levels differ only in punctuation or in a non-ASCII character
   (`"a b"` / `"a.b"`, `"R²"` / `"R³"`). Their spanner ids collided and

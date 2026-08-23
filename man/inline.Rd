@@ -20,10 +20,11 @@ fit-statistic token (\code{"n"}, \code{"r2"}, ...).}
 \item{column}{A column token, or a \code{{token}} pattern. \code{NULL} (the
 default) returns the estimate-like column of the row when it is
 unambiguous: the family's primary estimate. That is the
-coefficient for \code{\link[=table_regression]{table_regression()}} and \code{\link[=table_continuous_lm]{table_continuous_lm()}}
--- always token \code{"b"}: an exponentiated table changes its header
-to OR, IRR or HR, never its token -- the mean (\code{"m"}) or, on a
-median-only table, the median (\code{"med"}, \code{"med_iqr"}) for
+coefficient for \code{\link[=table_regression]{table_regression()}} -- always token \code{"b"}: an
+exponentiated table changes its header to OR, IRR or HR, never
+its token -- the contrast (\code{"delta"}) or, across a numeric \code{by},
+the slope (\code{"b"}) for \code{\link[=table_continuous_lm]{table_continuous_lm()}}, the mean (\code{"m"})
+or, on a median-only table, the median (\code{"med"}, \code{"med_iqr"}) for
 \code{\link[=table_continuous]{table_continuous()}}, and the count (\code{"n"}) for
 \code{\link[=table_categorical]{table_categorical()}}. A row carrying none of them refuses and
 lists its tokens.}
