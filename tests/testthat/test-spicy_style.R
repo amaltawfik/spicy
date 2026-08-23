@@ -374,11 +374,23 @@ test_that("apa pins spicy's defaults rather than changing them", {
   expect_identical(st$ci_sep, ", ")
 })
 
-test_that("apa states the star thresholds without switching stars on", {
+test_that("apa encodes no star rule, and its rule list says none", {
+  # The guide's sample tables do mark .05 / .01 / .001, and spicy's own
+  # default for `stars = TRUE` agrees -- but the theme pins neither,
+  # because one `stars` lever carries both the thresholds and the
+  # decision to show them, and the APA regression sample table shows
+  # none. A `rules` entry claiming otherwise would put an unencoded
+  # rule in the list that is supposed to be exact.
   s <- spicy_style("apa")
   expect_null(s$stars)
+  expect_false(any(grepl("star", attr(s, "provenance")$rules)))
   txt <- console(table_regression(fixed_fit(), style = "apa"))
   expect_false(grepl("*", txt, fixed = TRUE))
+  # Asking for stars gives the guide's thresholds, from the default.
+  expect_identical(
+    unname(spicy:::resolve_stars_thresholds(TRUE)),
+    c(0.001, 0.01, 0.05)
+  )
 })
 
 test_that("aer: leading zero on every decimal fraction, no stars", {
