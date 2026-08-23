@@ -424,7 +424,9 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
   covers the zero-inflation and dispersion components too.
 * Nested `lme` fits (`random = ~ 1 | A/B`) show one `Random effects` row
   per level, each with its own label, SE and CI, plus one `N (<factor>)`
-  row per grouping factor.
+  row per grouping factor. Levels are named the way `lmer` names them
+  (`B:A`), so the same nested model fitted with either engine lines up in
+  a multi-model table.
 * A `glmmTMB` fit whose optimizer did not converge says so: a table note
   names the engine's own diagnosis and a `spicy_nonconvergence` warning
   (under `spicy_caveat`) fires. The estimates still print -- they are what

@@ -334,12 +334,20 @@ as_regression_frame.gls <- function(
   # rows) run OUTERMOST-first: reverse it so the "n_groups" token renders
   # its "N (<factor>)" rows in the same order as the block above them.
   # Reading only ngrps[1] reported the innermost level and silently
-  # dropped every outer one from a nested fit.
+  # dropped every outer one from a nested fit. The rows are labelled the
+  # way the variance-component block above them is (.lme_group_labels),
+  # so "N (Side:Dog) 20" says what the 20 units are -- Dog-by-Side
+  # combinations -- and matches what an lmer of the same structure calls
+  # them.
+  # ngrps is already innermost-first, which is the order the block above
+  # them now uses (.lme_order_blocks), so the leading slots are taken
+  # as-is.
   ng <- fit$dims$ngrps
-  n_re_levels <- length(fit$modelStruct$reStruct)
+  labels <- .lme_group_labels(fit)
+  n_re_levels <- length(labels)
   n_groups <- if (n_re_levels > 0L && length(ng) >= n_re_levels) {
-    keep <- rev(seq_len(n_re_levels))
-    setNames(as.integer(ng[keep]), names(ng)[keep])
+    keep <- seq_len(n_re_levels)
+    setNames(as.integer(ng[keep]), unname(labels[names(ng)[keep]]))
   } else {
     NULL # nocov  (lme fits always carry >= 1 grouping factor)
   }
@@ -552,6 +560,72 @@ as_regression_frame.gls <- function(
 }
 
 
+# How each grouping level of an lme fit is LABELLED in the table, keyed
+# by the bare name nlme uses internally. Returns a named character
+# vector, outermost level first: c(Dog = "Dog", Side = "Side:Dog").
+#
+# nlme and lme4 name the same nested block differently. `~ 1 | Dog/Side`
+# and `(1 | Dog/Side)` fit the same two levels, but nlme calls the inner
+# one "Side" while lme4 expands the slash into `(1|Dog) + (1|Dog:Side)`
+# and calls it "Side:Dog" -- verified against lme4::VarCorr(), which is
+# what the merMod frame reads. Three levels give "half:Side:Dog",
+# "Side:Dog", "Dog": each level is joined to its ancestors with ":",
+# innermost component first.
+#
+# Adopting lme4's spelling is not cosmetic. The RE rows are keyed
+# `re::<group>::<term>`, so a table holding the same nested model fitted
+# by both engines rendered THREE sigma rows and three N rows with holes
+# instead of two aligned ones. It is also the more honest label: nlme's
+# bare "Side" has 20 units on Pixel, which are Dog-by-Side combinations,
+# not 20 sides -- nlme's own summary writes it "Side %in% Dog".
+#
+# The nesting order comes from the FITTED object, not from the call:
+# lme() normalises `random = list(Dog = ~day, Side = ~1)` to the same
+# `~ Dog/Side` structure as the slash form, and both leave
+# modelStruct$reStruct ordered innermost-first. lme has no crossed
+# regime -- every level below the outermost is nested in the ones above
+# it -- so composing every non-outermost level is always right.
+.lme_group_labels <- function(fit) {
+  raw <- rev(names(fit$modelStruct$reStruct))
+  if (length(raw) == 0L) {
+    return(setNames(character(0), character(0))) # nocov  (lme has >= 1)
+  }
+  setNames(
+    vapply(
+      seq_along(raw),
+      function(k) paste(rev(raw[seq_len(k)]), collapse = ":"),
+      character(1)
+    ),
+    raw
+  )
+}
+
+
+# Row order of the variance-component block. nlme's VarCorr lists nested
+# blocks outermost-first (Dog, then Side); lme4 lists them innermost-first
+# (Side:Dog, then Dog). .lme_group_labels() already adopts lme4's spelling,
+# so adopt its order too: the RE block of one structure is then row-for-row
+# identical across the two engines rather than merely key-compatible, and a
+# multi-model table's row order stops depending on which model the user
+# listed first. Stable within a block, and the residual always closes it.
+#
+# Only NESTED fits move. A single-level fit has one block and comes back
+# untouched -- the sort is stable and every non-residual row shares one
+# rank.
+.lme_order_blocks <- function(vc_df, labels) {
+  if (nrow(vc_df) == 0L) {
+    return(vc_df) # nocov
+  }
+  rank_of <- rev(unname(labels)) # innermost level first
+  rank <- match(vc_df$group, rank_of)
+  # Residual (and anything unrecognised) closes the block.
+  rank[is.na(rank)] <- length(rank_of) + 1L
+  out <- vc_df[order(rank, seq_len(nrow(vc_df))), , drop = FALSE]
+  rownames(out) <- NULL
+  out
+}
+
+
 # Extract random-effects metadata from an lme fit. nlme::VarCorr.lme()
 # returns a CHARACTER matrix with columns "Variance" / "StdDev" and
 # rows labelled with the random-effect term names + "Residual".
@@ -593,7 +667,13 @@ as_regression_frame.gls <- function(
   # below into the same reStruct block, so the two levels shared one SE
   # and one CI, and the renderer (which keys RE rows on group + term)
   # collapsed them into a single row.
-  default_group <- names(fit$dims$ngrps)[1L]
+  #
+  # The header gives nlme's BARE name for the level ("Side"), which is
+  # not what the level is: nlme's own summary prints it "Side %in% Dog",
+  # and its 20 units are Dog-by-Side combinations, not 20 sides. It is
+  # also not what lme4 calls the same block -- see .lme_group_labels().
+  labels <- .lme_group_labels(fit)
+  default_group <- labels[[1L]] %||% names(fit$dims$ngrps)[1L]
   current_group <- default_group
   rows <- list()
   for (i in seq_along(rn)) {
@@ -602,7 +682,8 @@ as_regression_frame.gls <- function(
       # the group of every row until the next header; anything else that
       # fails to parse is simply skipped, as before.
       if (grepl("[[:space:]]=$", rn[i])) {
-        current_group <- sub("[[:space:]]*=$", "", rn[i])
+        hdr <- sub("[[:space:]]*=$", "", rn[i])
+        current_group <- if (hdr %in% names(labels)) labels[[hdr]] else hdr
       }
       next
     }
@@ -622,10 +703,13 @@ as_regression_frame.gls <- function(
   # the random-effects covariance matrix). lme's intervals() exposes
   # them under names like "cor((Intercept),age)" inside reStruct -- one
   # entry per grouping factor, so the walk covers them all.
+  # `raw_of` maps the displayed (lme4-style) label back to nlme's bare
+  # name, which is how intervals()$reStruct is keyed.
+  raw_of <- setNames(names(labels), unname(labels))
   re_groups <- if (nrow(vc_df) > 0L) {
-    setdiff(unique(vc_df$group), "Residual")
+    raw_of[intersect(unname(labels), unique(vc_df$group))]
   } else {
-    character(0) # nocov  (an lme fit always has one variance component)
+    raw_of[0L] # nocov  (an lme fit always has one variance component)
   }
   vc_df <- .lme_append_correlation_rows(vc_df, fit, re_groups)
 
@@ -634,7 +718,16 @@ as_regression_frame.gls <- function(
   # natural log-SD parametrisation backtransformed); we square to
   # convert to variance scale, and Delta-method for SE
   # (SE(sd^2) = 2*sd*SE(sd)).
-  vc_df <- .lme_attach_wald_se_ci(vc_df, fit, ci_level = ci_level)
+  vc_df <- .lme_attach_wald_se_ci(
+    vc_df,
+    fit,
+    ci_level = ci_level,
+    raw_of = raw_of
+  )
+
+  # Last, so every row above carries its final values: put the blocks in
+  # lme4's order (see .lme_order_blocks).
+  vc_df <- .lme_order_blocks(vc_df, labels)
 
   icc <- .merMod_icc(vc_df) # reuse: same variance-ratio rule
   null_lrt <- .compute_null_model_lrt(fit)
@@ -655,6 +748,8 @@ as_regression_frame.gls <- function(
 # rows for downstream renderers. `groups` is every grouping factor of the
 # fit, in VarCorr block order: a nested fit can carry a correlation at
 # more than one level, and intervals()$reStruct holds one entry per level.
+# It is NAMED by the displayed label and VALUED by nlme's bare name (see
+# .lme_group_labels), because reStruct is keyed on the bare one.
 .lme_append_correlation_rows <- function(vc_df, fit, groups) {
   # Ensure schema columns even if no correlations are appended.
   if (!"is_correlation" %in% colnames(vc_df)) {
@@ -669,8 +764,9 @@ as_regression_frame.gls <- function(
   }
 
   rows_extra <- list()
-  for (group_nm in groups) {
-    group_ci <- ci_obj$reStruct[[group_nm]]
+  for (k in seq_along(groups)) {
+    group_nm <- names(groups)[k] # displayed label, what vc_df carries
+    group_ci <- ci_obj$reStruct[[unname(groups[k])]] # nlme's bare name
     if (is.null(group_ci)) {
       next # nocov
     }
@@ -728,8 +824,18 @@ as_regression_frame.gls <- function(
 
 
 # Attach Wald SE + CI (at ci_level) on variance scale via
-# nlme::intervals().
-.lme_attach_wald_se_ci <- function(vc_df, fit, ci_level = 0.95) {
+# nlme::intervals(). `raw_of` maps the displayed group label back to
+# nlme's bare name, which is how intervals()$reStruct is keyed (see
+# .lme_group_labels).
+.lme_attach_wald_se_ci <- function(
+  vc_df,
+  fit,
+  ci_level = 0.95,
+  raw_of = NULL
+) {
+  bare <- function(g) {
+    if (!is.null(raw_of) && g %in% names(raw_of)) unname(raw_of[[g]]) else g
+  }
   # nocov start  (only invoked from the defensive guards below)
   na_block <- function(df) {
     df$std_error <- NA_real_
@@ -783,7 +889,7 @@ as_regression_frame.gls <- function(
       # vc_df stores the pair canonically as "<t1>, <t2>" (engine-aligned);
       # nlme's rowname joins with a bare comma -- try both orders and both
       # separators via exact-string matching.
-      group_ci <- ci_obj$reStruct[[g]]
+      group_ci <- ci_obj$reStruct[[bare(g)]]
       if (is.null(group_ci)) {
         next # nocov
       }
@@ -824,7 +930,7 @@ as_regression_frame.gls <- function(
       sd_lower <- unname(sigma_ci["lower"])
       sd_upper <- unname(sigma_ci["upper"])
     } else {
-      group_ci <- ci_obj$reStruct[[g]]
+      group_ci <- ci_obj$reStruct[[bare(g)]]
       if (is.null(group_ci)) {
         next # nocov
       }
