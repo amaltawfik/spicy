@@ -29,6 +29,15 @@ if (!nzchar(out_dir)) {
     "OUT DIR: the output directory is an empty string. Pass a writable directory as the first argument. Suite not run.\n"
   )
 }
+# A file-looking argument is a caller who meant the CSV itself: creating
+# a directory literally named 'results.csv' would honor the letter of the
+# request and betray its intent (the n. 201 incident passed exactly this).
+if (grepl("\\.(csv|log|txt|md)$", out_dir, ignore.case = TRUE)) {
+  .suite_abort(
+    "OUT DIR: '%s' looks like a file name. The argument is the DIRECTORY that will receive suite_results.csv. Suite not run.\n",
+    out_dir
+  )
+}
 if (!dir.exists(out_dir)) {
   if (file.exists(out_dir)) {
     .suite_abort(
