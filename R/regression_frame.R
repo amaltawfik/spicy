@@ -454,9 +454,13 @@ validate_regression_frame <- function(frame) {
 
   # Restricted values for estimate_type. Canonical vocabulary (all
   # lowercase): c("B", "beta", "ame") for coefficient / standardised /
-  # average-marginal-effect rows, plus the partial-effect-size tokens
-  # ("partial_f2", "partial_eta2", "partial_omega2", "partial_chi2")
-  # emitted by extract_partial_effect_rows(). The legacy uppercase
+  # average-marginal-effect rows, "vc" for random-effect variance
+  # components, the partial-effect-size tokens ("partial_f2",
+  # "partial_eta2", "partial_omega2", "partial_chi2") emitted by
+  # extract_partial_effect_rows(), and the causal survival estimands
+  # ("rmst", "risk_diff") that .coxph_estimand_rows() /
+  # .survreg_estimand_rows() rbind onto coefs before the frame is
+  # constructed (regression_frame_survival.R). The legacy uppercase
   # "AME" emitted by extract_lm_phase1() has been normalised to "ame".
   allowed_types <- c(
     "B",
@@ -466,7 +470,9 @@ validate_regression_frame <- function(frame) {
     "partial_f2",
     "partial_eta2",
     "partial_omega2",
-    "partial_chi2"
+    "partial_chi2",
+    "rmst",
+    "risk_diff"
   )
   bad_types <- setdiff(unique(coefs$estimate_type), allowed_types)
   if (length(bad_types) > 0L) {
