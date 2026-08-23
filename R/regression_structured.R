@@ -1741,7 +1741,21 @@ build_structured_body <- function(
   if (!is.null(cfmt$threshold) && is.finite(val) && val < cfmt$threshold) {
     return(.below_threshold_text(cfmt$threshold, decimal_mark))
   }
-  s <- format_number(val, cfmt$precision, decimal_mark)
+  # A p-value's decimal count can depend on its own size: a theme's
+  # `p_bands` ("three decimals below .01, two otherwise") or its
+  # `p_sigfig` (The Lancet's two significant figures capped at four
+  # decimals). `format_p_value()` -- the console's formatter -- asks
+  # `.style_p_decimals()` that question; this path used to take the
+  # column's flat precision instead, so every string-driven surface
+  # (tinytable, gt, flextable, Excel, clipboard, `inline()`) printed a
+  # Lancet p as `0.1634` where the console printed `0.16`. A p column
+  # is the one that carries a floor: `pd` shares `p_style` but is a
+  # posterior probability, not a p-value, and takes no bands.
+  precision <- cfmt$precision
+  if (!is.null(cfmt$threshold)) {
+    precision <- .style_p_decimals(val, precision)
+  }
+  s <- format_number(val, precision, decimal_mark)
   if (identical(cfmt$p_style, "apa")) {
     s <- sub("^0(?=[\\.,])", "", s, perl = TRUE)
     s <- sub("^-0(?=[\\.,])", "-", s, perl = TRUE)

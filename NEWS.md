@@ -598,6 +598,13 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
   `column = "assoc_ci"` on a level row of `table_categorical()`, where
   the association sits on the variable row (it used to return `[, ]`).
   The wording is the one the scalar tokens already used.
+* A named style reaches every output, not only the console. The rules
+  that vary with the p-value itself -- The Lancet's two significant
+  figures, JAMA's third decimal below `.01` -- and a floor set apart
+  from the decimals were applied when the table was printed but not
+  when it was rendered, so `style = "lancet"` gave `0.16` on screen and
+  `0.1634` in `tinytable`, `gt`, `flextable`, Word, Excel and the
+  clipboard.
 * `table_continuous_lm(by = , output = "gt")` renders when two `by`
   levels differ only in punctuation or in a non-ASCII character
   (`"a b"` / `"a.b"`, `"R²"` / `"R³"`). Their spanner ids collided and
