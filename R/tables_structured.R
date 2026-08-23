@@ -336,7 +336,11 @@
       token = "p",
       precision = as.integer(p_digits),
       p_style = .style_p_style_token(),
-      threshold = 10^(-p_digits),
+      # The style's floor, like the `p_threshold` of the format spec
+      # below: a flat `10^(-p_digits)` disagreed with it -- and with the
+      # console -- as soon as a theme set its floor apart from its
+      # decimals (JAMA: two decimals, floor at .001).
+      threshold = .style_p_floor(p_digits),
       display_label = spicy_str("header_p")
     )
     if (show_assoc) {
@@ -591,7 +595,7 @@
       display_label = spicy_str("header_p"),
       precision = as.integer(p_digits),
       p_style = .style_p_style_token(),
-      threshold = 10^(-p_digits)
+      threshold = .style_p_floor(p_digits)
     )
     col_source[[.CON_KEY_P]] <- list(name = .CON_KEY_P, field = "p.value")
   }
@@ -852,7 +856,7 @@
         token = "p",
         precision = as.integer(p_digits),
         p_style = .style_p_style_token(),
-        threshold = 10^(-p_digits)
+        threshold = .style_p_floor(p_digits)
       ),
       r2 = list(token = "r2", precision = as.integer(fit_digits)),
       es = {

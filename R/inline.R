@@ -9,6 +9,15 @@
 #     .format_structured_to_string_body(), the exact function the
 #     fidelity tests pin against the console, so a number quoted in
 #     the text can never drift from the number printed in the table.
+#
+# The second pillar needs the table's STYLE back in force. Half a
+# style travels in the typed contract (`digits`, `p_digits`,
+# `decimal_mark` are formals, so they are already baked into
+# `col_meta`); the other half -- `p_bands`, `p_sigfig`, `p_floor`,
+# `ci_sep`, `ci_brackets` -- has no formal and lives in the
+# call-scoped format context, which is long gone by the time a
+# sentence cites a cell. `.style_restore()` puts it back for the
+# length of the call.
 
 #' Cite a table cell in inline text
 #'
@@ -39,6 +48,13 @@
 #' its levels sits on the variable's own row: the *p* of a
 #' `table_categorical()` block, its association measure, its SMD. Leave
 #' `level` out to cite it (`inline(tbl, smoking, column = "p")`).
+#'
+#' [table_continuous_lm()] lays its groups out sideways -- one row per
+#' outcome, the `by` levels as columns (`M (Female)`, `M (Male)`) --
+#' so there `level` names the group whose column you want:
+#' `inline(tbl, bmi, "Female", "emmean")`. The columns that belong to
+#' no group (the contrast, its interval, `p`, `n`) are cited without
+#' one, as before.
 #'
 #' The column is a **token** of the typed contract (`"b"`, `"se"`,
 #' `"p"`, `"ci"`, `"or"`, `"ame"`, `"n"`, `"pct"`, `"m"`, ... -- see
@@ -77,19 +93,24 @@
 #' reason rather than pasting a dash into a sentence.
 #'
 #' @param x A table returned by [table_regression()],
-#'   [table_categorical()], [table_continuous()], or
-#'   [table_continuous_lm()] (default output).
+#'   [table_categorical()], [table_continuous()],
+#'   [table_continuous_lm()], [table_outcome()],
+#'   [table_categorical_svy()] or [table_continuous_svy()] (default
+#'   output) -- every family [as_structured()] accepts.
 #' @param variable The source variable, unquoted or as a string; or a
 #'   fit-statistic token (`"n"`, `"r2"`, ...).
 #' @param level For a factor variable, the level, as a string.
-#'   `"(Missing)"` addresses the missing-value category by role.
+#'   `"(Missing)"` addresses the missing-value category by role. On
+#'   [table_continuous_lm()], whose groups are columns rather than
+#'   rows, it names the group.
 #' @param column A column token, or a `{token}` pattern. `NULL` (the
 #'   default) returns the estimate-like column of the row when it is
 #'   unambiguous: the family's primary estimate. That is the
-#'   coefficient for [table_regression()] and [table_continuous_lm()]
-#'   -- always token `"b"`: an exponentiated table changes its header
-#'   to OR, IRR or HR, never its token -- the mean (`"m"`) or, on a
-#'   median-only table, the median (`"med"`, `"med_iqr"`) for
+#'   coefficient for [table_regression()] -- always token `"b"`: an
+#'   exponentiated table changes its header to OR, IRR or HR, never
+#'   its token -- the contrast (`"delta"`) or, across a numeric `by`,
+#'   the slope (`"b"`) for [table_continuous_lm()], the mean (`"m"`)
+#'   or, on a median-only table, the median (`"med"`, `"med_iqr"`) for
 #'   [table_continuous()], and the count (`"n"`) for
 #'   [table_categorical()]. A row carrying none of them refuses and
 #'   lists its tokens.
@@ -115,6 +136,14 @@ inline <- function(
   column = NULL,
   model = NULL
 ) {
+  # The table's own style, back in force for the length of this call --
+  # otherwise the sentence re-formats under spicy's defaults and quotes
+  # a number the table never printed: a Lancet p-value at four decimals
+  # instead of two significant figures, an interval closed with the
+  # default comma instead of the journal's en dash.
+  .style_pushed <- .style_restore(x)
+  on.exit(.style_end(.style_pushed), add = TRUE)
+
   s <- as_structured(x)
   formatted <- .format_structured_to_string_body(s)
 
@@ -130,6 +159,12 @@ inline <- function(
   if (is.null(column)) {
     column <- .inline_default_token(s, cols)
   }
+  # One family lays its groups out sideways, so `level` addresses a
+  # COLUMN there rather than a row.
+  narrowed <- .inline_level_cols(s, rows, level, column, cols)
+  cols <- narrowed$cols
+  level <- narrowed$level
+
   row <- .inline_resolve_row(s, formatted, rows, var_chr, level, column, cols)
   if (grepl("{", column, fixed = TRUE)) {
     return(.inline_pattern(s, formatted, row, column, cols))
@@ -300,6 +335,66 @@ inline <- function(
   setdiff(unique(substring(braced, 2L, nchar(braced) - 1L)), "ci_label")
 }
 
+# `level` as a COLUMN address, on the one family that lays its groups
+# out sideways.
+#
+# `table_continuous_lm()` prints one row per outcome and puts the `by`
+# levels in the HEADERS ("M (Female)", "M (Male)"), with the level
+# carried as data in `col_meta$level` precisely so a consumer never
+# parses the header back. `inline()` reads row identity only, so those
+# two columns were an ambiguity it asked the caller to settle with
+# `model` -- on a table that has no spanners, listing nothing
+# ("Available: ."), while `model` itself refused with "this table has
+# no model spanners". Both remedies it named were dead ends, and a
+# token of the published contract was unreachable.
+#
+# The rule is narrow, and both halves are load-bearing: it fires only
+# when the variable's own rows carry no `.level` (so `level` cannot be
+# a row address) AND the token asked for really does spread over
+# several columns that carry one. Everywhere else `level` keeps
+# meaning the row it has always meant.
+.inline_level_cols <- function(s, rows, level, column, cols) {
+  unchanged <- list(cols = cols, level = level)
+  if (is.null(level) || any(!is.na(s$body$.level[rows]))) {
+    return(unchanged)
+  }
+  lv <- vapply(
+    cols,
+    function(nm) s$col_meta[[nm]]$level %||% NA_character_,
+    character(1)
+  )
+  if (all(is.na(lv))) {
+    return(unchanged)
+  }
+  spread <- FALSE
+  for (tk in .inline_requested_tokens(column)) {
+    same <- .inline_token_cols(s, cols, tk)
+    if (length(same) > 1L && any(!is.na(lv[same]))) {
+      spread <- TRUE
+    }
+  }
+  if (!spread) {
+    return(unchanged)
+  }
+  pick <- !is.na(lv) & lv == level
+  if (!any(pick)) {
+    spicy_abort(
+      c(
+        sprintf("No group %s in this table.", .quote_val(level)),
+        "i" = paste0(
+          "Available: ",
+          paste(.quote_val(unique(stats::na.omit(lv))), collapse = ", "),
+          "."
+        )
+      ),
+      class = "spicy_invalid_input"
+    )
+  }
+  # The columns that carry no level at all (`p`, `n`, the contrast and
+  # its interval) belong to no group and stay addressable.
+  list(cols = cols[is.na(lv) | pick], level = NULL)
+}
+
 # The columns of `cols` carrying `token` (a pair for an interval).
 .inline_token_cols <- function(s, cols, token) {
   cols[
@@ -452,13 +547,21 @@ inline <- function(
 # the old "mean" entry matched nothing and "n" -- one place earlier --
 # won instead. A bare `inline()` on a descriptive table quoted the
 # group's N where the sentence meant its mean.
+#
+# `"delta"` sits beside `"b"` for the same reason, one family over.
+# `table_continuous_lm()` emits `"b"` only when `by` is NUMERIC (a
+# slope); across the levels of a FACTOR -- the form the function is
+# named for -- the estimate is the contrast, token `"delta"`, and the
+# table carries no `"b"` at all. Without this entry the preference
+# fell through to `"n"`, and a bare `inline(tbl, outcome)` quoted the
+# sample size where the sentence meant the mean difference.
 .inline_default_token <- function(s, cols) {
   tokens <- unique(vapply(
     cols[cols %in% names(s$col_meta)],
     function(nm) s$col_meta[[nm]]$token %||% "",
     character(1)
   ))
-  for (cand in c("b", "m", "med", "med_iqr", "n")) {
+  for (cand in c("b", "delta", "m", "med", "med_iqr", "n")) {
     if (cand %in% tokens) {
       return(cand)
     }
@@ -585,16 +688,27 @@ inline <- function(
     return(paste0(br[[1L]], lo, sep, hi, br[[2L]]))
   }
   if (length(hits) > 1L) {
+    # Which argument settles this one? Columns that carry a group in
+    # `col_meta$level` are told apart by `level`; anything else is a
+    # multi-model table, where the spanner labels are the choices.
+    groups <- unique(stats::na.omit(vapply(
+      hits,
+      function(nm) s$col_meta[[nm]]$level %||% NA_character_,
+      character(1)
+    )))
+    arg <- if (length(groups) > 1L) "level" else "model"
+    choices <- if (length(groups) > 1L) groups else names(s$spanners)
     spicy_abort(
       c(
         sprintf(
-          "Token %s matches %d columns: pick one with `model`.",
+          "Token %s matches %d columns: pick one with `%s`.",
           .quote_val(token),
-          length(hits)
+          length(hits),
+          arg
         ),
         "i" = paste0(
           "Available: ",
-          paste(.quote_val(names(s$spanners)), collapse = ", "),
+          paste(.quote_val(choices), collapse = ", "),
           "."
         )
       ),

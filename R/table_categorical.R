@@ -1852,6 +1852,10 @@ table_categorical <- function(
       attr(out, "decimal_mark") <- decimal_mark
       attr(out, "long_data") <- long_raw
       attr(out, "structured") <- structured
+      # See `.style_stamp()`: the style levers with no argument have to
+      # outlive this call, because `inline()` re-formats the typed body
+      # to cite a cell.
+      out <- .style_stamp(out)
       class(out) <- c("spicy_categorical_table", "spicy_table", "data.frame")
       print(out)
       return(invisible(out))
@@ -3224,6 +3228,10 @@ table_categorical <- function(
       # mistaking a user group named "Total" for it.
       attr(out, "total_group") <- margin_key
     }
+    # See `.style_stamp()`: the style levers with no argument have to
+    # outlive this call, because `inline()` re-formats the typed body to
+    # cite a cell.
+    out <- .style_stamp(out)
     class(out) <- c("spicy_categorical_table", "spicy_table", "data.frame")
     print(out)
     return(invisible(out))

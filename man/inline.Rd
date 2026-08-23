@@ -8,22 +8,27 @@ inline(x, variable, level = NULL, column = NULL, model = NULL)
 }
 \arguments{
 \item{x}{A table returned by \code{\link[=table_regression]{table_regression()}},
-\code{\link[=table_categorical]{table_categorical()}}, \code{\link[=table_continuous]{table_continuous()}}, or
-\code{\link[=table_continuous_lm]{table_continuous_lm()}} (default output).}
+\code{\link[=table_categorical]{table_categorical()}}, \code{\link[=table_continuous]{table_continuous()}},
+\code{\link[=table_continuous_lm]{table_continuous_lm()}}, \code{\link[=table_outcome]{table_outcome()}},
+\code{\link[=table_categorical_svy]{table_categorical_svy()}} or \code{\link[=table_continuous_svy]{table_continuous_svy()}} (default
+output) -- every family \code{\link[=as_structured]{as_structured()}} accepts.}
 
 \item{variable}{The source variable, unquoted or as a string; or a
 fit-statistic token (\code{"n"}, \code{"r2"}, ...).}
 
 \item{level}{For a factor variable, the level, as a string.
-\code{"(Missing)"} addresses the missing-value category by role.}
+\code{"(Missing)"} addresses the missing-value category by role. On
+\code{\link[=table_continuous_lm]{table_continuous_lm()}}, whose groups are columns rather than
+rows, it names the group.}
 
 \item{column}{A column token, or a \code{{token}} pattern. \code{NULL} (the
 default) returns the estimate-like column of the row when it is
 unambiguous: the family's primary estimate. That is the
-coefficient for \code{\link[=table_regression]{table_regression()}} and \code{\link[=table_continuous_lm]{table_continuous_lm()}}
--- always token \code{"b"}: an exponentiated table changes its header
-to OR, IRR or HR, never its token -- the mean (\code{"m"}) or, on a
-median-only table, the median (\code{"med"}, \code{"med_iqr"}) for
+coefficient for \code{\link[=table_regression]{table_regression()}} -- always token \code{"b"}: an
+exponentiated table changes its header to OR, IRR or HR, never
+its token -- the contrast (\code{"delta"}) or, across a numeric \code{by},
+the slope (\code{"b"}) for \code{\link[=table_continuous_lm]{table_continuous_lm()}}, the mean (\code{"m"})
+or, on a median-only table, the median (\code{"med"}, \code{"med_iqr"}) for
 \code{\link[=table_continuous]{table_continuous()}}, and the count (\code{"n"}) for
 \code{\link[=table_categorical]{table_categorical()}}. A row carrying none of them refuses and
 lists its tokens.}
@@ -58,6 +63,13 @@ A statistic that belongs to a whole variable rather than to one of
 its levels sits on the variable's own row: the \emph{p} of a
 \code{table_categorical()} block, its association measure, its SMD. Leave
 \code{level} out to cite it (\code{inline(tbl, smoking, column = "p")}).
+
+\code{\link[=table_continuous_lm]{table_continuous_lm()}} lays its groups out sideways -- one row per
+outcome, the \code{by} levels as columns (\code{M (Female)}, \code{M (Male)}) --
+so there \code{level} names the group whose column you want:
+\code{inline(tbl, bmi, "Female", "emmean")}. The columns that belong to
+no group (the contrast, its interval, \code{p}, \code{n}) are cited without
+one, as before.
 
 The column is a \strong{token} of the typed contract (\code{"b"}, \code{"se"},
 \code{"p"}, \code{"ci"}, \code{"or"}, \code{"ame"}, \code{"n"}, \code{"pct"}, \code{"m"}, ... -- see

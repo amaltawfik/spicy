@@ -201,6 +201,15 @@ its value labels, as it does in \code{\link[=table_continuous]{table_continuous(
 first (\code{haven::as_factor()}) to get the labels in the stub.
 }
 
+\section{The table note}{
+One note sits under the table and states what left the analytic
+sample, which group comparison ran in each block, what the displayed
+columns mean, and how the blocks and the \code{Overall} row are to be
+read. The rendering engines carry the same sentence as a table note.
+On the \code{"tinytable"} route it is set one size down;
+\code{options(spicy.note_style)} governs that (see \code{\link[=table_regression]{table_regression()}}).
+}
+
 \examples{
 table_outcome(sochealth, bmi, by = c(sex, smoking))
 table_outcome(sochealth, wellbeing_score, by = where(is.factor))

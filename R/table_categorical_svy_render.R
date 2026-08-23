@@ -334,7 +334,7 @@
     }
     if (identical(e$base, "p")) {
       meta$p_style <- .style_p_style_token()
-      meta$threshold <- 10^(-p_digits)
+      meta$threshold <- .style_p_floor(p_digits)
     }
     if (identical(e$token, "prop_ci")) {
       meta$ci_role <- if (identical(e$base, "ll")) {

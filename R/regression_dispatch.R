@@ -113,6 +113,12 @@ output_default <- function(rendered, aligned) {
   prov <- .regression_provenance(aligned)
   attr(rendered, "model_ids") <- prov$model_ids
   attr(rendered, "outcome") <- prov$outcome
+  # This family bakes its display strings at build time, so the style
+  # never had to survive the call -- until `inline()` re-formatted the
+  # same body from the typed contract to cite one cell. The levers with
+  # no formal (`p_bands`, `p_sigfig`, `ci_sep`, ...) ride along like the
+  # other formatting attributes; with no style the stamp is a no-op.
+  rendered <- .style_stamp(rendered)
   class(rendered) <- c("spicy_regression_table", "spicy_table", "data.frame")
   rendered
 }

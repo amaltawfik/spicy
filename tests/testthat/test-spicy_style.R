@@ -24,6 +24,12 @@ console <- function(x) {
   paste(utils::capture.output(print(x)), collapse = "\n")
 }
 
+# The table itself, with the print the constructors do swallowed.
+quietly <- function(expr) {
+  invisible(utils::capture.output(res <- suppressWarnings(expr)))
+  res
+}
+
 # Put a style's argument-less levers in force the way a table call
 # does, so the low-level formatters can be unit-tested directly.
 # Returns the resolved style (its `p_digits` is what the table
@@ -368,11 +374,23 @@ test_that("apa pins spicy's defaults rather than changing them", {
   expect_identical(st$ci_sep, ", ")
 })
 
-test_that("apa states the star thresholds without switching stars on", {
+test_that("apa encodes no star rule, and its rule list says none", {
+  # The guide's sample tables do mark .05 / .01 / .001, and spicy's own
+  # default for `stars = TRUE` agrees -- but the theme pins neither,
+  # because one `stars` lever carries both the thresholds and the
+  # decision to show them, and the APA regression sample table shows
+  # none. A `rules` entry claiming otherwise would put an unencoded
+  # rule in the list that is supposed to be exact.
   s <- spicy_style("apa")
   expect_null(s$stars)
+  expect_false(any(grepl("star", attr(s, "provenance")$rules)))
   txt <- console(table_regression(fixed_fit(), style = "apa"))
   expect_false(grepl("*", txt, fixed = TRUE))
+  # Asking for stars gives the guide's thresholds, from the default.
+  expect_identical(
+    unname(spicy:::resolve_stars_thresholds(TRUE)),
+    c(0.001, 0.01, 0.05)
+  )
 })
 
 test_that("aer: leading zero on every decimal fraction, no stars", {
@@ -485,6 +503,49 @@ test_that("a style set at build time still governs a later print", {
   expect_match(console(x), "<0,001")
   y <- table_continuous_lm(d, mpg, by = am, style = "annals")
   expect_match(console(y), "<0\\.001")
+})
+
+test_that("a theme's p rule reaches the string-driven surfaces too", {
+  # The console formats a p through `format_p_value()`, which asks the
+  # style how many decimals THIS p gets -- The Lancet's two significant
+  # figures, JAMA's third decimal below .01. The structured re-format,
+  # which is the body tinytable / gt / flextable / Excel / clipboard and
+  # `inline()` all render from, took the column's flat precision
+  # instead: a Lancet table read 0.16 on screen and 0.1634 in Word.
+  tl <- quietly(table_regression(fixed_fit(), style = "lancet"))
+  local_style("lancet")
+  body <- spicy:::.format_structured_to_string_body(as_structured(tl))
+  # The premise: this table really does carry a p the flat precision
+  # would have written differently.
+  expect_true(any(nzchar(trimws(body$p))))
+  expect_identical(trimws(body$p), trimws(tl$p))
+})
+
+test_that("a theme's p floor governs the typed contract, not 10^-p_digits", {
+  # `col_meta$threshold` was a flat `10^(-p_digits)` in the descriptive
+  # families, while the format spec beside it already used the style's
+  # floor. The two part ways as soon as a theme sets them apart -- JAMA
+  # asks for two decimals and a floor at .001 -- so the same table
+  # floored at .01 in every string-driven output and at .001 on screen.
+  tc <- quietly(table_continuous(fixed_data(), mpg, by = am, style = "jama"))
+  s <- as_structured(tc)
+  p_cols <- names(s$col_meta)[vapply(
+    s$col_meta,
+    function(m) identical(m$token, "p"),
+    logical(1)
+  )]
+  expect_length(p_cols, 1L)
+  expect_equal(s$col_meta[[p_cols]]$threshold, 1e-3)
+  expect_equal(s$format_spec$p_threshold, 1e-3)
+  # And with no style the two are the same number, as they always were.
+  tp <- quietly(table_continuous(fixed_data(), mpg, by = am, p_digits = 4))
+  sp <- as_structured(tp)
+  p_cols <- names(sp$col_meta)[vapply(
+    sp$col_meta,
+    function(m) identical(m$token, "p"),
+    logical(1)
+  )]
+  expect_equal(sp$col_meta[[p_cols]]$threshold, 1e-4)
 })
 
 test_that("the structured view reports the style's p contract", {

@@ -96,9 +96,10 @@ A \emph{style} is a small set of number-formatting rules -- how many
 decimals a p-value gets, where it bottoms out, whether it keeps its
 leading zero, what the decimal mark is, how a confidence interval is
 written. \code{spicy_style()} composes one by hand; the named themes
-(\code{"jama"}, \code{"lancet"}, \code{"annals"}, \code{"apa"}, \code{"aer"}, \code{"fr"}) are
-pre-composed ones, each encoding rules taken verbatim from an
-official document of the institution.
+(\code{"jama"}, \code{"nejm"}, \code{"lancet"}, \code{"annals"}, \code{"apa"}, \code{"aer"},
+\code{"fr"} -- \code{spicy_style_names()} returns the list) are pre-composed
+ones, each encoding rules taken verbatim from an official document
+of the institution.
 }
 \details{
 A style is accepted by the \code{style} argument of \code{\link[=table_regression]{table_regression()}},
@@ -279,15 +280,17 @@ and inferential statistics (t, F, chi-square) to two decimals."
 \item confidence intervals in square brackets, bounds separated by
 a comma -- the \emph{Sample tables} page gives
 \verb{95\% CI [LL, UL]} as one of the two official layouts.
-\item significance stars, \strong{if you ask for them} with
-\code{stars = TRUE}, at \code{.05} / \code{.01} / \code{.001} -- the thresholds of
-the official correlation and ANOVA sample tables. The theme does
-not switch stars on: the APA regression sample table has none.
 }
 
 Not encoded: the one-decimal rule for means of integer scales
 (depends on what the variable measures, which spicy cannot know),
-and the thousands separator (see \emph{Known gaps} below).
+and the thousands separator (see \emph{Known gaps} below). Nor the star
+thresholds. The official correlation and ANOVA sample tables mark
+\code{.05} / \code{.01} / \code{.001}, which is what \code{stars = TRUE} gives you --
+but as spicy's own default, not as anything this theme pins: one
+\code{stars} lever carries both the thresholds and the decision to show
+them, and the APA regression sample table shows none. So the theme
+sets no \code{stars}, and \code{style = "apa"} never switches them on.
 }
 
 \subsection{\code{"aer"} -- American Economic Review / AEA journals}{

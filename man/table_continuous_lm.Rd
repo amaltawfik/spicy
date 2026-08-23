@@ -738,6 +738,10 @@ When \code{covariates} is non-empty, the printed ASCII table appends an
 APA-style footer naming the covariates and the chosen estimand, e.g.
 \verb{Note. Adjusted for age, education (proportional).}
 
+The rendering engines carry that same footer as a table note. On the
+\code{"tinytable"} route the note is set one size down;
+\code{options(spicy.note_style)} governs that (see \code{\link[=table_regression]{table_regression()}}).
+
 Optional output engines require the corresponding suggested packages:
 \itemize{
 \item \pkg{tinytable} for \code{output = "tinytable"}

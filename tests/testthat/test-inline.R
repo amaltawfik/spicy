@@ -65,6 +65,60 @@ test_that("the cited text follows the style and the decimal mark", {
   expect_identical(inline(tbl_j, age, column = "p"), ".16")
 })
 
+test_that("a cited cell carries the style levers that have no formal", {
+  # Half a style travels in the typed contract, because `digits`,
+  # `p_digits` and `decimal_mark` are formals and are baked into
+  # `col_meta` at build time. The other half -- `p_sigfig`, `p_bands`,
+  # `p_floor`, `ci_sep`, `ci_brackets` -- has no formal and only ever
+  # lived in the call-scoped format context, which is gone by the time
+  # a sentence cites a cell. So `inline()` re-formatted under spicy's
+  # defaults: a Lancet p came out at four decimals where the table
+  # printed two significant figures, the floor lost its leading zero,
+  # and the interval closed with the default comma instead of the
+  # journal's en dash. Asserted against the table's OWN rendered cell
+  # wherever the object carries one, and against the values otherwise.
+  dot <- "\u00b7"
+  dash <- "\u2013"
+  tl <- .il_quiet(table_regression(.il_fit(), style = "lancet"))
+  s <- as_structured(tl)
+  age_row <- which(s$body$.variable == "age")
+  int_row <- which(s$body$.variable == "(Intercept)")
+  expect_identical(inline(tl, age, column = "p"), trimws(tl$p[age_row]))
+  expect_identical(inline(tl, age, column = "p"), paste0("0", dot, "16"))
+  expect_identical(inline(tl, "(Intercept)", column = "p"), trimws(tl$p[int_row]))
+  expect_identical(
+    inline(tl, "(Intercept)", column = "p"),
+    paste0("<0", dot, "0001")
+  )
+  expect_identical(
+    inline(tl, age, column = "ci"),
+    paste0("[-0", dot, "02", dash, "0", dot, "10]")
+  )
+
+  # Both interval levers, hand-composed.
+  ts <- .il_quiet(table_regression(
+    .il_fit(),
+    style = spicy_style(ci_brackets = c("(", ")"), ci_sep = " to ")
+  ))
+  expect_identical(inline(ts, age, column = "ci"), "(-0.02 to 0.10)")
+
+  # And the descriptive families, which reach `inline()` by the same
+  # road: the block p of a categorical / outcome table, and a floor
+  # that parts ways with the decimals (JAMA: two decimals, floor .001).
+  d <- as.data.frame(sochealth)
+  tk <- .il_quiet(table_categorical(d, select = smoking, by = sex, style = "lancet"))
+  expect_identical(inline(tk, smoking, column = "p"), paste0("0", dot, "71"))
+  to <- .il_quiet(table_outcome(d, bmi, by = sex, style = "lancet"))
+  expect_identical(inline(to, sex, column = "p"), paste0("0", dot, "018"))
+  tj <- .il_quiet(table_continuous(
+    d,
+    select = wellbeing_score,
+    by = sex,
+    style = "jama"
+  ))
+  expect_identical(inline(tj, wellbeing_score, "Female", "p"), "<.001")
+})
+
 test_that("categorical and continuous families answer by token", {
   d <- as.data.frame(sochealth)
   tc <- .il_quiet(table_categorical(d, select = smoking, by = sex))
@@ -612,6 +666,75 @@ test_that("a bare inline() cites the family's primary estimate", {
   tl <- .il_quiet(table_continuous_lm(mtcars, select = "mpg", by = "am"))
   expect_identical(inline(tl, mpg), inline(tl, mpg, column = "b"))
   expect_false(identical(inline(tl, mpg), inline(tl, mpg, column = "n")))
+})
+
+test_that("a bare inline() on a factor `by` cites the contrast, not n", {
+  # Register 55's failure mode in its third costume, and the one the
+  # function is named for. `table_continuous_lm()` emits token "b" only
+  # across a NUMERIC `by` -- a slope; `mtcars$am` is 0/1, which is why
+  # the block above passes. Across the levels of a FACTOR the estimate
+  # is the contrast, token "delta", and the table carries no "b" at
+  # all: the preference list fell through to "n", so a bare call quoted
+  # the sample size (1188) where the sentence meant the mean difference
+  # (0.51). Asserted on the values, per shape, so neither can drift
+  # onto a neighbouring column by agreeing with itself.
+  d <- as.data.frame(sochealth)
+  tf <- .il_quiet(table_continuous_lm(d, select = bmi, by = sex))
+  expect_identical(inline(tf, bmi), inline(tf, bmi, column = "delta"))
+  expect_identical(inline(tf, bmi), "0.51")
+  expect_identical(inline(tf, bmi, column = "n"), "1188")
+  # The numeric-`by` shape keeps its slope.
+  tn <- .il_quiet(table_continuous_lm(mtcars, select = "mpg", by = "am"))
+  expect_identical(inline(tn, mpg), inline(tn, mpg, column = "b"))
+  expect_error(inline(tn, mpg, column = "delta"), "No column with token")
+})
+
+test_that("`level` cites a group column of table_continuous_lm()", {
+  # This family lays its groups out SIDEWAYS: one row per outcome, the
+  # `by` levels in the headers ("M (Female)", "M (Male)"), with the
+  # level carried as data in `col_meta$level` precisely so a consumer
+  # never parses the header back. `inline()` read row identity only, so
+  # the two marginal-mean columns were an ambiguity it told the caller
+  # to settle with `model` -- on a table with no spanners, listing
+  # nothing ("Available: ."), while `model` itself refused with "this
+  # table has no model spanners". Both remedies were dead ends and
+  # `"emmean"`, a token of the published contract, was unreachable.
+  d <- as.data.frame(sochealth)
+  tl <- .il_quiet(table_continuous_lm(d, select = bmi, by = sex))
+  s <- as_structured(tl)
+  lv <- vapply(
+    s$col_meta,
+    function(m) m$level %||% NA_character_,
+    character(1)
+  )
+  expect_setequal(stats::na.omit(unname(lv)), c("Female", "Male"))
+
+  expect_identical(inline(tl, bmi, "Female", "emmean"), "25.69")
+  expect_identical(inline(tl, bmi, "Male", "emmean"), "26.20")
+  expect_identical(
+    inline(tl, bmi, "Female", "{emmean} (n = {n})"),
+    "25.69 (n = 1188)"
+  )
+  # A group the table does not have refuses with the groups it has --
+  # the message that used to name `model` and list nothing.
+  err <- tryCatch(inline(tl, bmi, "Nope", "emmean"), error = identity)
+  expect_s3_class(err, "spicy_invalid_input")
+  expect_match(conditionMessage(err), "No group \"Nope\"", fixed = TRUE)
+  expect_match(conditionMessage(err), "\"Female\", \"Male\"", fixed = TRUE)
+  # Omitting it names `level`, not `model`, and lists the groups.
+  err <- tryCatch(inline(tl, bmi, column = "emmean"), error = identity)
+  expect_match(conditionMessage(err), "pick one with `level`", fixed = TRUE)
+  expect_match(conditionMessage(err), "\"Female\", \"Male\"", fixed = TRUE)
+
+  # The columns that belong to no group are cited without one, and the
+  # rule does not spill onto the families whose levels are rows.
+  expect_identical(inline(tl, bmi, column = "delta"), "0.51")
+  expect_identical(inline(tl, bmi, column = "p"), ".018")
+  tc <- .il_quiet(table_continuous(d, select = bmi, by = sex))
+  expect_identical(inline(tc, bmi, "Female", "m"), "25.69")
+  tr <- .il_quiet(table_regression(lm(wellbeing_score ~ age + sex, data = d)))
+  expect_identical(inline(tr, sex, "Male", "b"), "3.90")
+  expect_error(inline(tr, age, "Male", "b"), "No level", class = "spicy_invalid_input")
 })
 
 test_that("a bare inline() on a median-only table cites the median, not n", {
