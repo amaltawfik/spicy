@@ -9,6 +9,15 @@
 #     .format_structured_to_string_body(), the exact function the
 #     fidelity tests pin against the console, so a number quoted in
 #     the text can never drift from the number printed in the table.
+#
+# The second pillar needs the table's STYLE back in force. Half a
+# style travels in the typed contract (`digits`, `p_digits`,
+# `decimal_mark` are formals, so they are already baked into
+# `col_meta`); the other half -- `p_bands`, `p_sigfig`, `p_floor`,
+# `ci_sep`, `ci_brackets` -- has no formal and lives in the
+# call-scoped format context, which is long gone by the time a
+# sentence cites a cell. `.style_restore()` puts it back for the
+# length of the call.
 
 #' Cite a table cell in inline text
 #'
@@ -115,6 +124,14 @@ inline <- function(
   column = NULL,
   model = NULL
 ) {
+  # The table's own style, back in force for the length of this call --
+  # otherwise the sentence re-formats under spicy's defaults and quotes
+  # a number the table never printed: a Lancet p-value at four decimals
+  # instead of two significant figures, an interval closed with the
+  # default comma instead of the journal's en dash.
+  .style_pushed <- .style_restore(x)
+  on.exit(.style_end(.style_pushed), add = TRUE)
+
   s <- as_structured(x)
   formatted <- .format_structured_to_string_body(s)
 
@@ -452,6 +469,7 @@ inline <- function(
 # the old "mean" entry matched nothing and "n" -- one place earlier --
 # won instead. A bare `inline()` on a descriptive table quoted the
 # group's N where the sentence meant its mean.
+
 .inline_default_token <- function(s, cols) {
   tokens <- unique(vapply(
     cols[cols %in% names(s$col_meta)],

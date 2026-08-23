@@ -65,6 +65,60 @@ test_that("the cited text follows the style and the decimal mark", {
   expect_identical(inline(tbl_j, age, column = "p"), ".16")
 })
 
+test_that("a cited cell carries the style levers that have no formal", {
+  # Half a style travels in the typed contract, because `digits`,
+  # `p_digits` and `decimal_mark` are formals and are baked into
+  # `col_meta` at build time. The other half -- `p_sigfig`, `p_bands`,
+  # `p_floor`, `ci_sep`, `ci_brackets` -- has no formal and only ever
+  # lived in the call-scoped format context, which is gone by the time
+  # a sentence cites a cell. So `inline()` re-formatted under spicy's
+  # defaults: a Lancet p came out at four decimals where the table
+  # printed two significant figures, the floor lost its leading zero,
+  # and the interval closed with the default comma instead of the
+  # journal's en dash. Asserted against the table's OWN rendered cell
+  # wherever the object carries one, and against the values otherwise.
+  dot <- "\u00b7"
+  dash <- "\u2013"
+  tl <- .il_quiet(table_regression(.il_fit(), style = "lancet"))
+  s <- as_structured(tl)
+  age_row <- which(s$body$.variable == "age")
+  int_row <- which(s$body$.variable == "(Intercept)")
+  expect_identical(inline(tl, age, column = "p"), trimws(tl$p[age_row]))
+  expect_identical(inline(tl, age, column = "p"), paste0("0", dot, "16"))
+  expect_identical(inline(tl, "(Intercept)", column = "p"), trimws(tl$p[int_row]))
+  expect_identical(
+    inline(tl, "(Intercept)", column = "p"),
+    paste0("<0", dot, "0001")
+  )
+  expect_identical(
+    inline(tl, age, column = "ci"),
+    paste0("[-0", dot, "02", dash, "0", dot, "10]")
+  )
+
+  # Both interval levers, hand-composed.
+  ts <- .il_quiet(table_regression(
+    .il_fit(),
+    style = spicy_style(ci_brackets = c("(", ")"), ci_sep = " to ")
+  ))
+  expect_identical(inline(ts, age, column = "ci"), "(-0.02 to 0.10)")
+
+  # And the descriptive families, which reach `inline()` by the same
+  # road: the block p of a categorical / outcome table, and a floor
+  # that parts ways with the decimals (JAMA: two decimals, floor .001).
+  d <- as.data.frame(sochealth)
+  tk <- .il_quiet(table_categorical(d, select = smoking, by = sex, style = "lancet"))
+  expect_identical(inline(tk, smoking, column = "p"), paste0("0", dot, "71"))
+  to <- .il_quiet(table_outcome(d, bmi, by = sex, style = "lancet"))
+  expect_identical(inline(to, sex, column = "p"), paste0("0", dot, "018"))
+  tj <- .il_quiet(table_continuous(
+    d,
+    select = wellbeing_score,
+    by = sex,
+    style = "jama"
+  ))
+  expect_identical(inline(tj, wellbeing_score, "Female", "p"), "<.001")
+})
+
 test_that("categorical and continuous families answer by token", {
   d <- as.data.frame(sochealth)
   tc <- .il_quiet(table_categorical(d, select = smoking, by = sex))

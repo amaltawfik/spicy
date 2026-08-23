@@ -605,6 +605,11 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
   when it was rendered, so `style = "lancet"` gave `0.16` on screen and
   `0.1634` in `tinytable`, `gt`, `flextable`, Word, Excel and the
   clipboard.
+* `inline()` quotes the cell the table shows under a style. The style
+  levers with no argument of their own (`p_bands`, `p_sigfig`,
+  `p_floor`, `ci_sep`, `ci_brackets`) did not survive the call that
+  built the table, so a sentence citing a Lancet table wrote its
+  interval `[2.14, 5.65]` where the table printed `[2.14–5.65]`.
 * `table_continuous_lm(by = , output = "gt")` renders when two `by`
   levels differ only in punctuation or in a non-ASCII character
   (`"a b"` / `"a.b"`, `"R²"` / `"R³"`). Their spanner ids collided and
