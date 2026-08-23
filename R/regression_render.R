@@ -4,7 +4,7 @@
 #   "Pivot wide on (term, statistic) \u2192 m1, m2, m3...
 #    Apply show_columns, digits, decimal alignment, APA formatting."
 #
-# Takes an aligned long extract (output of align_extracts()) plus
+# Takes an aligned long table (output of align_frames()) plus
 # user-facing display knobs and returns a character data.frame
 # ready for the output-dispatch layer (Step 11). Each row is one
 # displayed line in the final table:
@@ -360,7 +360,7 @@ render_regression_table <- function(
   #                               set on the response (labelled,
   #                               haven, SPSS), else the variable name
   #
-  # Both come from align_extracts(); fallback if absent.
+  # Both come from align_frames(); fallback if absent.
   model_outcomes <- .aligned_model_outcomes(aligned, model_ids)
   model_outcome_labels <- if (
     !is.null(aligned$outcome_labels_auto) &&

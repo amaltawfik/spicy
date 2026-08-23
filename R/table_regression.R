@@ -3064,21 +3064,18 @@ table_regression <- function(
   # "none" + flat informational message tied to reference_style; the
   # override / suppression happens last).
   title <- if (is.null(title)) {
-    # Phase 0c sub-step C1: title is now built from frames directly,
-    # bypassing the legacy-extract adapter for this code path. The
-    # other renderers (footer / body / alignment) continue to consume
-    # the legacy extract shape until sub-steps C2-C4 land.
+    # The title was the first renderer to read frames directly; the
+    # footer, body and alignment followed, and the legacy extract shape
+    # is gone.
     build_regression_title_from_frames(frames, nested = nested)
   } else if (isFALSE(title)) {
     NULL
   } else {
     as.character(title)
   }
-  # Phase 0c sub-step C2.last: the footer dispatcher now reads from
-  # frames directly. Each builder calls its _from_frames sibling (added
-  # in C1, C2.a, C2.b, C2.c). The legacy build_regression_footer() is
-  # kept in the codebase for C5 cleanup so we can revert quickly if a
-  # corner case slips through the byte-equivalence gates.
+  # The footer dispatcher reads from frames directly, each builder
+  # calling its _from_frames sibling. The legacy build_regression_footer()
+  # it replaced no longer exists.
   # `re_scale_val` / `re_columns_val` were validated fail-fast up top (finding
   # m3) and reused to materialise the RE rows; thread them through the footer.
 

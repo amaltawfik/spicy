@@ -57,16 +57,14 @@ build_regression_title_from_frames <- function(frames, nested = FALSE) {
 }
 
 
-# Frame-aware dispatcher. Same signature as build_regression_footer()
-# but reads frames instead of extracts. Calls each builder's
-# _from_frames sibling (added in Phase 0c sub-steps C1, C2.a, C2.b,
-# C2.c). build_stars_footer_block() and build_nested_footer_block()
-# don't take an extracts arg -- they are reused unchanged.
+# The footer dispatcher: reads frames and calls each builder's
+# _from_frames sibling. build_stars_footer_block() and
+# build_nested_footer_block() never took an extracts arg -- they are
+# reused unchanged.
 #
-# Phase 0c sub-step C2.last: orchestrator (table_regression.R) flips
-# to this dispatcher. The legacy build_regression_footer() stays in
-# the codebase until C5 cleanup so we can revert quickly if a corner
-# case slips through the byte-equivalence gates.
+# This replaced a legacy build_regression_footer() that consumed the
+# extract shape; both that dispatcher and the shape are gone, and the
+# orchestrator calls this one.
 build_regression_footer_from_frames <- function(
   frames,
   standardized = "none",
@@ -202,10 +200,9 @@ capitalize_first <- function(s) {
 # Logic and output are identical; byte-equivalence is tested in
 # tests/testthat/test-renderer_migration_footer_simple.R.
 #
-# Phase 0c sub-step C2.a: migrating one footer-block builder at a time so
-# each gets its own byte-equivalence gate. The dispatcher
-# build_regression_footer() will keep consuming legacy extracts until
-# every builder has a _from_frames sibling.
+# The footer-block builders were migrated one at a time, each with its
+# own byte-equivalence gate; every one now has a _from_frames sibling
+# and the dispatcher that consumed legacy extracts is gone.
 build_regression_type_footer_block_from_frames <- function(frames) {
   if (!is.list(frames) || length(frames) == 0L) {
     return(NULL)

@@ -35,8 +35,8 @@
 # Compute pairwise nested-comparison statistics for all adjacent pairs
 # in `fits`. Returns a wide-by-row data.frame with one row per pair
 # (M2 vs M1, M3 vs M2, ...) and one column per change token. Used by
-# attach_nested_stats_to_extracts() to fold the change stats into
-# each model's fit_stats so the renderer emits them as table rows.
+# attach_nested_stats_to_frames() to fold the change stats into each
+# model's fit_stats so the renderer emits them as table rows.
 compute_nested_comparisons <- function(fits) {
   if (length(fits) < 2L) {
     return(empty_nested_comparisons())
@@ -356,14 +356,16 @@ compute_one_pair_mixed <- function(fit_prev, fit_curr) {
 }
 
 
-# Frame-aware sibling of attach_nested_stats_to_extracts(). Injects the
-# same change tokens (r2_change, adj_r2_change, f_change, ..., p_change)
-# into each `frames[[i]]$info$fit_stats` list. After this call, the
+# Injects the change tokens (r2_change, adj_r2_change, f_change, ...,
+# p_change) into each `frames[[i]]$info$fit_stats` list. It replaced an
+# attach_nested_stats_to_extracts() that wrote the same tokens into the
+# legacy extract shape; that function is gone. After this call, the
 # augmented list is consumed by:
-#   * .compact_fit_stats_for_legacy() (which carries the keys through
-#     to the legacy-shaped data.frame consumed by the body builder
-#     until C4);
-#   * the frame's downstream consumers once C4 lands.
+#   * .compact_fit_stats_for_legacy(), called by align_frames(), which
+#     carries the keys through to the legacy-shaped fit-stats
+#     data.frame the body builder consumes;
+#   * the frame's other downstream consumers, which read info$fit_stats
+#     directly.
 #
 # Phase 0c sub-step C3.
 attach_nested_stats_to_frames <- function(frames, fits) {

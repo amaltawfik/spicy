@@ -1,5 +1,5 @@
 # ---------------------------------------------------------------------------
-# Phase 0b scaffolding: as_regression_frame() generic + validator.
+# as_regression_frame() generic + validator.
 #
 # Internal S3 generic that produces a standardised data frame from a fitted
 # regression model object, plus a per-model metadata list. Sits upstream of
