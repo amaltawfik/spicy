@@ -965,11 +965,11 @@ test_that("the console prints the registry header, not the column key", {
 })
 
 test_that("a table without `by` draws no variable separator in the console", {
-  # `compute_var_sep_rows()` reads the DEDUPLICATED label column, and
-  # `build_display_df()` only deduplicates under a `by`. Calling it
-  # unguarded from the print method draws a hairline under every row of a
-  # one-way table -- which is why the `has_group` guard is kept when the
-  # inlined copy is replaced by the shared helper.
+  # A one-way table has one row per variable, so the block key changes
+  # on every row and `.struct_run_sep_rows()` answers "every row". The
+  # console does not want a hairline under each of them; the engines do
+  # draw them. That is a rendering policy, and the `has_group` guard in
+  # `.continuous_console_render()` is where it is written down.
   one_way <- capture.output(print(
     table_continuous(iris, select = c(Sepal.Length, Sepal.Width))
   ))

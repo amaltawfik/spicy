@@ -592,8 +592,9 @@ test_that("flextable fit_stats_layout = 'merged' emits colspan in fit-stat rows"
 
 # (Removed in v0.13: tests for .split_ci_columns no-op case,
 # .detect_level_rows, .trim_level_indent. Those helpers are gone;
-# the renderer's `structured$level_rows` and `structured$body` are the
-# new source of truth.)
+# the renderer's `structured$body` is the new source of truth, and a
+# level is `body$.indent > 0` -- the v2 `level_rows` index vector went
+# with them.)
 
 test_that("gt output: factor-level indent + decimal alignment via cols_align_decimal", {
   skip_if_not_installed("gt")

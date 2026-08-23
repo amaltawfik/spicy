@@ -194,6 +194,45 @@
   setdiff(which(structured$body$.row_role == "factor_header"), 1L)
 }
 
+# Rows that OPEN a block in a family whose blocks carry NO header row:
+# the first row of each run of the block KEY, the first row of the body
+# excepted.
+#
+# The sibling of `.struct_block_sep_rows()`, for the other block shape.
+# A categorical block opens on a `factor_header` row and the rule is
+# drawn above it; a continuous block is a run of `group` rows sharing
+# one variable, with no header to key on. Both read a typed field of
+# the contract. Neither reads a display string -- which is the whole
+# point: the derivation this one replaced read the label column and was
+# right only because `build_display_df()` blanks the label of every
+# continuation row. That invariant lives in another function, under
+# another condition (`has_group`), and nothing tied the two together;
+# a family that laid its labels out differently -- repeating them
+# rather than blanking them, or giving two variables the same one --
+# got its rules from a string that was never the block key.
+#
+# Takes the KEY VECTOR rather than a structured object because the
+# engine path of `table_continuous()` renders without building a
+# structured view. The key it passes is `result$variable`, the very
+# column `.build_continuous_structured()` writes into `.variable`, so
+# the console, the engines and the typed view are reading one field.
+#
+# NA is a VALUE here, not a missing answer: two adjacent NA keys stay
+# in one block and an NA next to a name opens a new one. A bare `!=`
+# would return NA on those pairs and `which()` would drop the row,
+# losing the rule in silence.
+.struct_run_sep_rows <- function(key) {
+  n <- length(key)
+  if (n < 2L) {
+    return(integer(0))
+  }
+  prev <- key[-n]
+  cur <- key[-1L]
+  changed <- (is.na(prev) != is.na(cur)) |
+    (!is.na(prev) & !is.na(cur) & prev != cur)
+  which(c(FALSE, changed))
+}
+
 # Rows to indent: the literal reading of the field the v3 contract
 # declares for exactly this.
 #
