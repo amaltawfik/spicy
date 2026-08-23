@@ -326,13 +326,20 @@ as_regression_frame.gls <- function(
   dv <- all.vars(stats::formula(fit))[1L]
   dv_label <- .extract_dv_label_nlme(fit, dv)
 
-  # Primary grouping factor count: fit$dims$ngrps is a named integer
-  # vector whose first element is the actual grouping factor; the
-  # remaining slots ("X" / "y") are fixed-effect / response dummies.
+  # Group counts, one entry per grouping factor. fit$dims$ngrps is a
+  # named integer vector holding the grouping factors first, then the
+  # "X" / "y" fixed-effect / response dummies -- so the leading
+  # length(reStruct) slots are the real ones. It runs INNERMOST-first,
+  # while VarCorr and intervals() (and therefore the variance-component
+  # rows) run OUTERMOST-first: reverse it so the "n_groups" token renders
+  # its "N (<factor>)" rows in the same order as the block above them.
+  # Reading only ngrps[1] reported the innermost level and silently
+  # dropped every outer one from a nested fit.
   ng <- fit$dims$ngrps
-  primary_group <- names(ng)[1L]
-  n_groups <- if (length(ng) > 0L) {
-    setNames(as.integer(ng[1L]), primary_group)
+  n_re_levels <- length(fit$modelStruct$reStruct)
+  n_groups <- if (n_re_levels > 0L && length(ng) >= n_re_levels) {
+    keep <- rev(seq_len(n_re_levels))
+    setNames(as.integer(ng[keep]), names(ng)[keep])
   } else {
     NULL # nocov  (lme fits always carry >= 1 grouping factor)
   }
@@ -570,14 +577,36 @@ as_regression_frame.gls <- function(
   variances <- suppressWarnings(as.numeric(raw[, "Variance"]))
   sds <- suppressWarnings(as.numeric(raw[, "StdDev"]))
 
-  # The grouping factor name comes from fit$dims$ngrps[1].
-  group_nm <- names(fit$dims$ngrps)[1L]
+  # Which grouping factor each row belongs to. VarCorr.lme() flattens
+  # EVERY level of a nested fit into one character matrix and marks each
+  # block with a "<group> =" header row -- the pdMat class sits in the
+  # Variance cell, so the header does not parse as a number and is
+  # skipped. Walking those headers is the only in-band record of the
+  # block a row belongs to. A single-level fit carries no header at all
+  # (its group name lives in attr(vc, "title")), and there
+  # fit$dims$ngrps[1] IS the grouping factor.
+  #
+  # ngrps alone is not that record: it runs INNERMOST-first, the reverse
+  # of VarCorr's block order. Reading only its first name labelled every
+  # block with the innermost group -- on `random = ~ 1 | Dog/Side` both
+  # levels printed as "Side", which also sent both intervals() lookups
+  # below into the same reStruct block, so the two levels shared one SE
+  # and one CI, and the renderer (which keys RE rows on group + term)
+  # collapsed them into a single row.
+  default_group <- names(fit$dims$ngrps)[1L]
+  current_group <- default_group
   rows <- list()
   for (i in seq_along(rn)) {
     if (is.na(variances[i])) {
+      # Sub-header line. When it is a block header ("<group> =") it names
+      # the group of every row until the next header; anything else that
+      # fails to parse is simply skipped, as before.
+      if (grepl("[[:space:]]=$", rn[i])) {
+        current_group <- sub("[[:space:]]*=$", "", rn[i])
+      }
       next
-    } # skip rows that don't parse (sub-header lines)
-    grp <- if (identical(rn[i], "Residual")) "Residual" else group_nm
+    }
+    grp <- if (identical(rn[i], "Residual")) "Residual" else current_group
     rows[[length(rows) + 1L]] <- data.frame(
       group = grp,
       term = if (identical(rn[i], "Residual")) "" else rn[i],
@@ -591,8 +620,14 @@ as_regression_frame.gls <- function(
 
   # Phase 7c7b: append correlation rows (off-diagonal entries from
   # the random-effects covariance matrix). lme's intervals() exposes
-  # them under names like "cor((Intercept),age)" inside reStruct.
-  vc_df <- .lme_append_correlation_rows(vc_df, fit, group_nm)
+  # them under names like "cor((Intercept),age)" inside reStruct -- one
+  # entry per grouping factor, so the walk covers them all.
+  re_groups <- if (nrow(vc_df) > 0L) {
+    setdiff(unique(vc_df$group), "Residual")
+  } else {
+    character(0) # nocov  (an lme fit always has one variance component)
+  }
+  vc_df <- .lme_append_correlation_rows(vc_df, fit, re_groups)
 
   # Phase 7c7a: extend with Wald SE + CI (at ci_level) via
   # nlme::intervals(). intervals() returns CIs on the SD scale (the
@@ -617,8 +652,10 @@ as_regression_frame.gls <- function(
 # intercept-slope correlation appears in intervals()$reStruct under
 # rownames like "cor((Intercept),age)". The schema marker
 # `is_correlation = TRUE` distinguishes correlation rows from variance
-# rows for downstream renderers.
-.lme_append_correlation_rows <- function(vc_df, fit, group_nm) {
+# rows for downstream renderers. `groups` is every grouping factor of the
+# fit, in VarCorr block order: a nested fit can carry a correlation at
+# more than one level, and intervals()$reStruct holds one entry per level.
+.lme_append_correlation_rows <- function(vc_df, fit, groups) {
   # Ensure schema columns even if no correlations are appended.
   if (!"is_correlation" %in% colnames(vc_df)) {
     vc_df$is_correlation <- FALSE
@@ -630,49 +667,53 @@ as_regression_frame.gls <- function(
   if (is.null(ci_obj) || is.null(ci_obj$reStruct)) {
     return(vc_df)
   }
-  group_ci <- ci_obj$reStruct[[group_nm]]
-  if (is.null(group_ci)) {
-    return(vc_df) # nocov
-  }
-
-  cor_rows <- grep("^cor\\(", rownames(group_ci), value = TRUE)
-  if (length(cor_rows) == 0L) {
-    return(vc_df)
-  }
 
   rows_extra <- list()
-  for (rn in cor_rows) {
-    est <- group_ci[rn, "est."]
-    pair <- sub("^cor\\((.+)\\)$", "\\1", rn)
-    # Normalise "(Intercept),age" (nlme's comma-only join) to the canonical
-    # "(Intercept), age" (lme4's ", " join, VarCorr term order) so identical
-    # random structures align across engines in a multi-model table. Match
-    # both sides against the group's known variance-row terms -- robust to
-    # term names that themselves contain a comma-free "," is impossible in
-    # an R name, but matching keeps the split principled.
-    known <- vc_df$term[
-      vc_df$group == group_nm &
-        !(vc_df$is_correlation %in% TRUE)
-    ]
-    commas <- gregexpr(",", pair, fixed = TRUE)[[1L]]
-    for (pos in commas) {
-      lhs <- trimws(substr(pair, 1L, pos - 1L))
-      rhs <- trimws(substr(pair, pos + 1L, nchar(pair)))
-      if (lhs %in% known && rhs %in% known) {
-        ord <- c(lhs, rhs)[order(match(c(lhs, rhs), known))]
-        pair <- paste(ord, collapse = ", ")
-        break
-      }
+  for (group_nm in groups) {
+    group_ci <- ci_obj$reStruct[[group_nm]]
+    if (is.null(group_ci)) {
+      next # nocov
     }
-    rows_extra[[length(rows_extra) + 1L]] <- data.frame(
-      group = group_nm,
-      term = pair,
-      variance = NA_real_,
-      sd = NA_real_,
-      corr = est,
-      is_correlation = TRUE,
-      stringsAsFactors = FALSE
-    )
+    cor_rows <- grep("^cor\\(", rownames(group_ci), value = TRUE)
+    if (length(cor_rows) == 0L) {
+      next
+    }
+    for (rn in cor_rows) {
+      est <- group_ci[rn, "est."]
+      pair <- sub("^cor\\((.+)\\)$", "\\1", rn)
+      # Normalise "(Intercept),age" (nlme's comma-only join) to the canonical
+      # "(Intercept), age" (lme4's ", " join, VarCorr term order) so identical
+      # random structures align across engines in a multi-model table. Match
+      # both sides against the group's known variance-row terms -- robust to
+      # term names that themselves contain a comma-free "," is impossible in
+      # an R name, but matching keeps the split principled.
+      known <- vc_df$term[
+        vc_df$group == group_nm &
+          !(vc_df$is_correlation %in% TRUE)
+      ]
+      commas <- gregexpr(",", pair, fixed = TRUE)[[1L]]
+      for (pos in commas) {
+        lhs <- trimws(substr(pair, 1L, pos - 1L))
+        rhs <- trimws(substr(pair, pos + 1L, nchar(pair)))
+        if (lhs %in% known && rhs %in% known) {
+          ord <- c(lhs, rhs)[order(match(c(lhs, rhs), known))]
+          pair <- paste(ord, collapse = ", ")
+          break
+        }
+      }
+      rows_extra[[length(rows_extra) + 1L]] <- data.frame(
+        group = group_nm,
+        term = pair,
+        variance = NA_real_,
+        sd = NA_real_,
+        corr = est,
+        is_correlation = TRUE,
+        stringsAsFactors = FALSE
+      )
+    }
+  }
+  if (length(rows_extra) == 0L) {
+    return(vc_df)
   }
   extra_df <- do.call(rbind, rows_extra)
   # Insert correlation rows BEFORE the residual (so the residual stays
