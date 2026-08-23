@@ -179,6 +179,14 @@ reference:
       `?spicy_style` lists every rule with the sentence it comes from.
     contents:
       - spicy_style
+  - title: Table language
+    desc: >
+      The words around the numbers. `options(spicy.language)` sets the
+      language of every table label for a document, `options(spicy.labels)`
+      overrides one label at a time, and `spicy_labels()` names the keys
+      both of them take.
+    contents:
+      - spicy_labels
   - title: Supported models
     desc: >
       The registry of model classes `table_regression()` supports --
