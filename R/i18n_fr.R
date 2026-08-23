@@ -4,8 +4,13 @@
 #
 # PARTIAL BY DESIGN. A key absent from this table resolves to the English
 # default (R/i18n.R), so a key added tomorrow can never leave a French table
-# with a blank cell or an error. Three kinds of key are deliberately absent:
+# with a blank cell or an error. Four kinds of key are deliberately absent:
 #
+#   * the INTERNATIONAL TERMS OF ART, kept English by decision 38 because
+#     translating a term the field reads in English helps nobody: "ES",
+#     "hazard ratio", the "Hurdle" of a hurdle component (its parenthetical
+#     is French), and "Array", which is an R class name and therefore falls
+#     under the same policy as a frozen column name;
 #   * the ones whose French IS the English -- "Total", "Variable", "M", "Min",
 #     "Q1", "Test", "Phi", "Lambda", "AIC", "marginal", "Dispersion", the
 #     "Note." prefix. Restating them here would only give them somewhere to
@@ -36,8 +41,9 @@
 # ORDER unless the grammar forces otherwise -- in which case it uses the
 # positional form (`%1$s`), as `note_gloss_med_ci` and `note_gloss_smd` do.
 #
-# This file is authored, not generated at build time. The strings are pending
-# a native review (dev/i18n_stage2_fr_review.md).
+# This file is authored, not generated at build time. The fourteen
+# terminology calls are settled (decision 38); the set as a whole is still
+# pending a read-through (dev/i18n_stage2_fr_review.md).
 # ---------------------------------------------------------------------------
 
 .spicy_strings_fr <- c(
@@ -132,7 +138,7 @@
   label_block_scale_effects = "Effets d'\u00E9chelle",
   label_block_random_effects = "Effets al\u00E9atoires",
   label_block_zero_inflation = "Inflation de z\u00E9ros",
-  label_block_zero_hurdle = "Obstacle (z\u00E9ro)",
+  label_block_zero_hurdle = "Hurdle (z\u00E9ro)",
   label_block_header = "%s\u00A0:",
   label_ref_annotation = "%s [r\u00E9f.\u00A0: %s]",
   cell_yes = "Oui",
@@ -162,7 +168,6 @@
   # -- table_regression(): abbreviation glosses -----------------------------
   note_abbrev_or = "OR = rapport de cotes",
   note_abbrev_irr = "IRR = rapport de taux d'incidence",
-  note_abbrev_hr = "HR = rapport de risques instantan\u00E9s",
   note_abbrev_rr = "RR = rapport de risques",
   note_abbrev_mr = "MR = rapport de moyennes",
   note_abbrev_tr = "TR = rapport de temps",
@@ -182,7 +187,6 @@
   header_sd = "ET",
   header_median = "M\u00E9d",
   header_iqr = "EIQ",
-  header_effect_size_short = "TE",
   header_smd = "DMS",
   header_weighted_n = "n pond\u00E9r\u00E9",
   header_lm_adj_r2 = "R\u00B2 ajust\u00E9",
@@ -281,7 +285,6 @@
 
   # -- varlist() / code_book(): value summaries -----------------------------
   value_summary_matrix = "Matrice(%s)",
-  value_summary_array = "Tableau(%s)",
   value_summary_list = "Liste(%d)",
   value_summary_list_types = "%s\u00A0: %s",
   value_summary_error = "<erreur\u00A0: %s>",
