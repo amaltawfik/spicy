@@ -307,3 +307,31 @@ test_that("lm_robust and iv_robust AME match marginaleffects::avg_slopes", {
     expect_equal(a$std_error, orc$std.error[idx], tolerance = 1e-8)
   }
 })
+
+
+# estimatr bakes se_type into the fit and spicy reports those SEs
+# unchanged, so a spicy-side `vcov` is a POLICY refusal, not a pending
+# wiring job. The message has to say so and point at the fit argument,
+# rather than inherit the generic "being added" wording.
+test_that("estimatr refuses a spicy vcov and points at se_type", {
+  fit <- .fit_lm_robust_basic()
+  err <- tryCatch(
+    table_regression(fit, vcov = "HC3", output = "data.frame"),
+    spicy_unsupported_vcov = function(e) e
+  )
+  expect_s3_class(err, "spicy_unsupported_vcov")
+  msg <- paste(conditionMessage(err), collapse = " ")
+  expect_match(msg, "se_type", fixed = TRUE)
+  expect_false(grepl("being added", msg, fixed = TRUE))
+
+  iv <- .fit_iv_robust_basic()
+  expect_error(
+    table_regression(
+      iv,
+      vcov = "CR2",
+      cluster = seq_len(stats::nobs(iv)),
+      output = "data.frame"
+    ),
+    class = "spicy_unsupported_vcov"
+  )
+})

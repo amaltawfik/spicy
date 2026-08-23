@@ -207,6 +207,15 @@ test_that("fixest fits keep their own estimator: spicy HC*/CR* tokens are refuse
     table_regression(fit, vcov = "bootstrap", output = "data.frame"),
     class = "spicy_unsupported_vcov"
   )
+  # The refusal is a settled policy, so it names the fit-time argument
+  # instead of the generic "being added" wording.
+  err <- tryCatch(
+    table_regression(fit, vcov = "HC3", output = "data.frame"),
+    spicy_unsupported_vcov = function(e) e
+  )
+  msg <- paste(conditionMessage(err), collapse = " ")
+  expect_match(msg, "feols", fixed = TRUE)
+  expect_false(grepl("being added", msg, fixed = TRUE))
 })
 
 

@@ -911,6 +911,56 @@ validate_vcov_cluster_lists <- function(vcov, cluster, models) {
           class = "spicy_unsupported_vcov"
         )
       }
+      # estimatr and fixest carry the variance they were FITTED with:
+      # estimatr bakes se_type into the fit object, fixest defaults to
+      # clustering on its absorbed fixed effects. spicy never overwrites
+      # either. The refusal is a settled policy, so it must not inherit
+      # the generic "being added" wording below, which would promise a
+      # wiring job that is never coming and hide the one thing the user
+      # can actually do: choose the estimator at fit time.
+      if (inherits(models[[i]], c("lm_robust", "iv_robust"))) {
+        spicy_abort(
+          c(
+            sprintf(
+              "`vcov = \"%s\"` is not available for `%s` models.",
+              vt,
+              class(models[[i]])[1L]
+            ),
+            "i" = paste0(
+              "estimatr fixes the variance estimator at fit time and ",
+              "spicy reports the fit's own standard errors unchanged."
+            ),
+            "i" = paste0(
+              "Refit with the estimator you want: ",
+              "estimatr::lm_robust(..., se_type = \"HC3\"), or ",
+              "se_type = \"CR2\" with `clusters =`."
+            )
+          ),
+          class = "spicy_unsupported_vcov"
+        )
+      }
+      if (inherits(models[[i]], "fixest")) {
+        spicy_abort(
+          c(
+            sprintf(
+              "`vcov = \"%s\"` is not available for `%s` models.",
+              vt,
+              class(models[[i]])[1L]
+            ),
+            "i" = paste0(
+              "fixest fits keep their own variance (clustered on the ",
+              "absorbed fixed effects by default), which spicy reports ",
+              "unchanged; the footer names it."
+            ),
+            "i" = paste0(
+              "Choose the estimator on the fit: ",
+              "fixest::feols(..., vcov = \"hetero\") or ",
+              "vcov = ~cluster_var."
+            )
+          ),
+          class = "spicy_unsupported_vcov"
+        )
+      }
       spicy_abort(
         c(
           sprintf(
