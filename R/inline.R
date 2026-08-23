@@ -86,8 +86,10 @@
 #' reason rather than pasting a dash into a sentence.
 #'
 #' @param x A table returned by [table_regression()],
-#'   [table_categorical()], [table_continuous()], or
-#'   [table_continuous_lm()] (default output).
+#'   [table_categorical()], [table_continuous()],
+#'   [table_continuous_lm()], [table_outcome()],
+#'   [table_categorical_svy()] or [table_continuous_svy()] (default
+#'   output) -- every family [as_structured()] accepts.
 #' @param variable The source variable, unquoted or as a string; or a
 #'   fit-statistic token (`"n"`, `"r2"`, ...).
 #' @param level For a factor variable, the level, as a string.

@@ -8,8 +8,10 @@ inline(x, variable, level = NULL, column = NULL, model = NULL)
 }
 \arguments{
 \item{x}{A table returned by \code{\link[=table_regression]{table_regression()}},
-\code{\link[=table_categorical]{table_categorical()}}, \code{\link[=table_continuous]{table_continuous()}}, or
-\code{\link[=table_continuous_lm]{table_continuous_lm()}} (default output).}
+\code{\link[=table_categorical]{table_categorical()}}, \code{\link[=table_continuous]{table_continuous()}},
+\code{\link[=table_continuous_lm]{table_continuous_lm()}}, \code{\link[=table_outcome]{table_outcome()}},
+\code{\link[=table_categorical_svy]{table_categorical_svy()}} or \code{\link[=table_continuous_svy]{table_continuous_svy()}} (default
+output) -- every family \code{\link[=as_structured]{as_structured()}} accepts.}
 
 \item{variable}{The source variable, unquoted or as a string; or a
 fit-statistic token (\code{"n"}, \code{"r2"}, ...).}
