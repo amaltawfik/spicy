@@ -17,7 +17,9 @@ output) -- every family \code{\link[=as_structured]{as_structured()}} accepts.}
 fit-statistic token (\code{"n"}, \code{"r2"}, ...).}
 
 \item{level}{For a factor variable, the level, as a string.
-\code{"(Missing)"} addresses the missing-value category by role.}
+\code{"(Missing)"} addresses the missing-value category by role. On
+\code{\link[=table_continuous_lm]{table_continuous_lm()}}, whose groups are columns rather than
+rows, it names the group.}
 
 \item{column}{A column token, or a \code{{token}} pattern. \code{NULL} (the
 default) returns the estimate-like column of the row when it is
@@ -61,6 +63,13 @@ A statistic that belongs to a whole variable rather than to one of
 its levels sits on the variable's own row: the \emph{p} of a
 \code{table_categorical()} block, its association measure, its SMD. Leave
 \code{level} out to cite it (\code{inline(tbl, smoking, column = "p")}).
+
+\code{\link[=table_continuous_lm]{table_continuous_lm()}} lays its groups out sideways -- one row per
+outcome, the \code{by} levels as columns (\code{M (Female)}, \code{M (Male)}) --
+so there \code{level} names the group whose column you want:
+\code{inline(tbl, bmi, "Female", "emmean")}. The columns that belong to
+no group (the contrast, its interval, \code{p}, \code{n}) are cited without
+one, as before.
 
 The column is a \strong{token} of the typed contract (\code{"b"}, \code{"se"},
 \code{"p"}, \code{"ci"}, \code{"or"}, \code{"ame"}, \code{"n"}, \code{"pct"}, \code{"m"}, ... -- see

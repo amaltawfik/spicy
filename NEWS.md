@@ -614,6 +614,11 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
   a factor cites the mean difference. It returned the sample size: the
   contrast is token `"delta"`, and only a numeric `by` produces the
   `"b"` the default looked for.
+* `inline()` cites a group's marginal mean on `table_continuous_lm()`:
+  `inline(tbl, bmi, "Female", "emmean")`. That family puts its groups
+  in the column headers, so `level` names the group there. Token
+  `"emmean"` had no address at all: the ambiguity error named `model`,
+  which the table has no spanners for, and listed no choices.
 * `table_continuous_lm(by = , output = "gt")` renders when two `by`
   levels differ only in punctuation or in a non-ASCII character
   (`"a b"` / `"a.b"`, `"R²"` / `"R³"`). Their spanner ids collided and

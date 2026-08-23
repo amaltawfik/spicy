@@ -49,6 +49,13 @@
 #' `table_categorical()` block, its association measure, its SMD. Leave
 #' `level` out to cite it (`inline(tbl, smoking, column = "p")`).
 #'
+#' [table_continuous_lm()] lays its groups out sideways -- one row per
+#' outcome, the `by` levels as columns (`M (Female)`, `M (Male)`) --
+#' so there `level` names the group whose column you want:
+#' `inline(tbl, bmi, "Female", "emmean")`. The columns that belong to
+#' no group (the contrast, its interval, `p`, `n`) are cited without
+#' one, as before.
+#'
 #' The column is a **token** of the typed contract (`"b"`, `"se"`,
 #' `"p"`, `"ci"`, `"or"`, `"ame"`, `"n"`, `"pct"`, `"m"`, ... -- see
 #' `as_structured()`'s `col_meta`), never a display header. `"ci"`
@@ -93,7 +100,9 @@
 #' @param variable The source variable, unquoted or as a string; or a
 #'   fit-statistic token (`"n"`, `"r2"`, ...).
 #' @param level For a factor variable, the level, as a string.
-#'   `"(Missing)"` addresses the missing-value category by role.
+#'   `"(Missing)"` addresses the missing-value category by role. On
+#'   [table_continuous_lm()], whose groups are columns rather than
+#'   rows, it names the group.
 #' @param column A column token, or a `{token}` pattern. `NULL` (the
 #'   default) returns the estimate-like column of the row when it is
 #'   unambiguous: the family's primary estimate. That is the
@@ -150,6 +159,12 @@ inline <- function(
   if (is.null(column)) {
     column <- .inline_default_token(s, cols)
   }
+  # One family lays its groups out sideways, so `level` addresses a
+  # COLUMN there rather than a row.
+  narrowed <- .inline_level_cols(s, rows, level, column, cols)
+  cols <- narrowed$cols
+  level <- narrowed$level
+
   row <- .inline_resolve_row(s, formatted, rows, var_chr, level, column, cols)
   if (grepl("{", column, fixed = TRUE)) {
     return(.inline_pattern(s, formatted, row, column, cols))
@@ -318,6 +333,66 @@ inline <- function(
   }
   braced <- regmatches(column, gregexpr("\\{[^{}]+\\}", column))[[1L]]
   setdiff(unique(substring(braced, 2L, nchar(braced) - 1L)), "ci_label")
+}
+
+# `level` as a COLUMN address, on the one family that lays its groups
+# out sideways.
+#
+# `table_continuous_lm()` prints one row per outcome and puts the `by`
+# levels in the HEADERS ("M (Female)", "M (Male)"), with the level
+# carried as data in `col_meta$level` precisely so a consumer never
+# parses the header back. `inline()` reads row identity only, so those
+# two columns were an ambiguity it asked the caller to settle with
+# `model` -- on a table that has no spanners, listing nothing
+# ("Available: ."), while `model` itself refused with "this table has
+# no model spanners". Both remedies it named were dead ends, and a
+# token of the published contract was unreachable.
+#
+# The rule is narrow, and both halves are load-bearing: it fires only
+# when the variable's own rows carry no `.level` (so `level` cannot be
+# a row address) AND the token asked for really does spread over
+# several columns that carry one. Everywhere else `level` keeps
+# meaning the row it has always meant.
+.inline_level_cols <- function(s, rows, level, column, cols) {
+  unchanged <- list(cols = cols, level = level)
+  if (is.null(level) || any(!is.na(s$body$.level[rows]))) {
+    return(unchanged)
+  }
+  lv <- vapply(
+    cols,
+    function(nm) s$col_meta[[nm]]$level %||% NA_character_,
+    character(1)
+  )
+  if (all(is.na(lv))) {
+    return(unchanged)
+  }
+  spread <- FALSE
+  for (tk in .inline_requested_tokens(column)) {
+    same <- .inline_token_cols(s, cols, tk)
+    if (length(same) > 1L && any(!is.na(lv[same]))) {
+      spread <- TRUE
+    }
+  }
+  if (!spread) {
+    return(unchanged)
+  }
+  pick <- !is.na(lv) & lv == level
+  if (!any(pick)) {
+    spicy_abort(
+      c(
+        sprintf("No group %s in this table.", .quote_val(level)),
+        "i" = paste0(
+          "Available: ",
+          paste(.quote_val(unique(stats::na.omit(lv))), collapse = ", "),
+          "."
+        )
+      ),
+      class = "spicy_invalid_input"
+    )
+  }
+  # The columns that carry no level at all (`p`, `n`, the contrast and
+  # its interval) belong to no group and stay addressable.
+  list(cols = cols[is.na(lv) | pick], level = NULL)
 }
 
 # The columns of `cols` carrying `token` (a pair for an interval).
@@ -613,16 +688,27 @@ inline <- function(
     return(paste0(br[[1L]], lo, sep, hi, br[[2L]]))
   }
   if (length(hits) > 1L) {
+    # Which argument settles this one? Columns that carry a group in
+    # `col_meta$level` are told apart by `level`; anything else is a
+    # multi-model table, where the spanner labels are the choices.
+    groups <- unique(stats::na.omit(vapply(
+      hits,
+      function(nm) s$col_meta[[nm]]$level %||% NA_character_,
+      character(1)
+    )))
+    arg <- if (length(groups) > 1L) "level" else "model"
+    choices <- if (length(groups) > 1L) groups else names(s$spanners)
     spicy_abort(
       c(
         sprintf(
-          "Token %s matches %d columns: pick one with `model`.",
+          "Token %s matches %d columns: pick one with `%s`.",
           .quote_val(token),
-          length(hits)
+          length(hits),
+          arg
         ),
         "i" = paste0(
           "Available: ",
-          paste(.quote_val(names(s$spanners)), collapse = ", "),
+          paste(.quote_val(choices), collapse = ", "),
           "."
         )
       ),

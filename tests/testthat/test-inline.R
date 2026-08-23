@@ -689,6 +689,54 @@ test_that("a bare inline() on a factor `by` cites the contrast, not n", {
   expect_error(inline(tn, mpg, column = "delta"), "No column with token")
 })
 
+test_that("`level` cites a group column of table_continuous_lm()", {
+  # This family lays its groups out SIDEWAYS: one row per outcome, the
+  # `by` levels in the headers ("M (Female)", "M (Male)"), with the
+  # level carried as data in `col_meta$level` precisely so a consumer
+  # never parses the header back. `inline()` read row identity only, so
+  # the two marginal-mean columns were an ambiguity it told the caller
+  # to settle with `model` -- on a table with no spanners, listing
+  # nothing ("Available: ."), while `model` itself refused with "this
+  # table has no model spanners". Both remedies were dead ends and
+  # `"emmean"`, a token of the published contract, was unreachable.
+  d <- as.data.frame(sochealth)
+  tl <- .il_quiet(table_continuous_lm(d, select = bmi, by = sex))
+  s <- as_structured(tl)
+  lv <- vapply(
+    s$col_meta,
+    function(m) m$level %||% NA_character_,
+    character(1)
+  )
+  expect_setequal(stats::na.omit(unname(lv)), c("Female", "Male"))
+
+  expect_identical(inline(tl, bmi, "Female", "emmean"), "25.69")
+  expect_identical(inline(tl, bmi, "Male", "emmean"), "26.20")
+  expect_identical(
+    inline(tl, bmi, "Female", "{emmean} (n = {n})"),
+    "25.69 (n = 1188)"
+  )
+  # A group the table does not have refuses with the groups it has --
+  # the message that used to name `model` and list nothing.
+  err <- tryCatch(inline(tl, bmi, "Nope", "emmean"), error = identity)
+  expect_s3_class(err, "spicy_invalid_input")
+  expect_match(conditionMessage(err), "No group \"Nope\"", fixed = TRUE)
+  expect_match(conditionMessage(err), "\"Female\", \"Male\"", fixed = TRUE)
+  # Omitting it names `level`, not `model`, and lists the groups.
+  err <- tryCatch(inline(tl, bmi, column = "emmean"), error = identity)
+  expect_match(conditionMessage(err), "pick one with `level`", fixed = TRUE)
+  expect_match(conditionMessage(err), "\"Female\", \"Male\"", fixed = TRUE)
+
+  # The columns that belong to no group are cited without one, and the
+  # rule does not spill onto the families whose levels are rows.
+  expect_identical(inline(tl, bmi, column = "delta"), "0.51")
+  expect_identical(inline(tl, bmi, column = "p"), ".018")
+  tc <- .il_quiet(table_continuous(d, select = bmi, by = sex))
+  expect_identical(inline(tc, bmi, "Female", "m"), "25.69")
+  tr <- .il_quiet(table_regression(lm(wellbeing_score ~ age + sex, data = d)))
+  expect_identical(inline(tr, sex, "Male", "b"), "3.90")
+  expect_error(inline(tr, age, "Male", "b"), "No level", class = "spicy_invalid_input")
+})
+
 test_that("a bare inline() on a median-only table cites the median, not n", {
   # Register 55's failure mode in its non-parametric costume: a
   # median-only row carries no "m", and the preference list used to
