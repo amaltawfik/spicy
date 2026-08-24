@@ -1,7 +1,7 @@
 # `table_outcome()` against `gtsummary::tbl_continuous()`.
 #
 #   tbl_continuous(data, variable = Y, include = c(A, B))
-#     ==  table_outcome(data, outcome = Y, by = c(A, B))
+#     ==  table_outcome(data, outcome = Y, select = c(A, B))
 #
 # Same geometry -- one stub column, a header row per grouping, indented
 # levels -- so the two are directly comparable, and every place they
@@ -47,7 +47,7 @@ test_that("the median and the count match gtsummary exactly", {
     smoking.Yes = 248L
   )
 
-  tbl <- .too_quiet(table_outcome(.too_sh(), bmi, by = c(sex, smoking)))
+  tbl <- .too_quiet(table_outcome(.too_sh(), bmi, select = c(sex, smoking)))
   key <- paste(tbl$variable, tbl$level, sep = ".")
   for (k in names(gts_median)) {
     i <- which(key == k)
@@ -74,7 +74,7 @@ test_that("the quartiles follow R's default, gtsummary's follow type 2", {
   gts_p75 <- c(sex.Female = 28.600000000000001, sex.Male = 28.649999999999999)
 
   d <- .too_sh()
-  tbl <- .too_quiet(table_outcome(d, bmi, by = sex))
+  tbl <- .too_quiet(table_outcome(d, bmi, select = sex))
   for (lv in c("Female", "Male")) {
     i <- which(tbl$level == lv)
     x <- d$bmi[d$sex == lv]
@@ -160,7 +160,7 @@ test_that("we show the missing levels, gtsummary hides them", {
   # defaults renders TWO levels, No and Yes; there is no Unknown row in
   # its cards. We render three, and the third is keyed by its role.
   d <- .too_sh()
-  tbl <- .too_quiet(table_outcome(d, bmi, by = smoking))
+  tbl <- .too_quiet(table_outcome(d, bmi, select = smoking))
   shown <- tbl$level[tbl$.row_role %in% c("level", "missing")]
   expect_identical(shown, c("No", "Yes", "(Missing)"))
   expect_identical(sum(tbl$.row_role == "missing"), 1L)
@@ -173,7 +173,7 @@ test_that("we show the missing levels, gtsummary hides them", {
 })
 
 test_that("we open on a marginal row, gtsummary has none", {
-  tbl <- .too_quiet(table_outcome(.too_sh(), bmi, by = sex))
+  tbl <- .too_quiet(table_outcome(.too_sh(), bmi, select = sex))
   expect_identical(tbl$.row_role[[1L]], "summary")
   expect_identical(
     attr(tbl, "display_df")$Variable[[1L]],
@@ -184,7 +184,7 @@ test_that("we open on a marginal row, gtsummary has none", {
 test_that("we name the outcome, and we carry a p by default", {
   # gtsummary's header reads "N = 200": the outcome appears nowhere in
   # the table. Ours is in the title, on every engine.
-  tbl <- .too_quiet(table_outcome(.too_sh(), bmi, by = sex))
+  tbl <- .too_quiet(table_outcome(.too_sh(), bmi, select = sex))
   expect_identical(
     spicy:::.outcome_title(attr(tbl, "outcome_label")),
     "Descriptive statistics of Body mass index"
@@ -201,7 +201,7 @@ test_that("the composite cell is ours, punctuation included", {
   tbl <- .too_quiet(table_outcome(
     .too_sh(),
     bmi,
-    by = sex,
+    select = sex,
     show_columns = c("med_iqr", "n")
   ))
   cell <- attr(tbl, "display_df")[["Med [Q1, Q3]"]][[3L]]
@@ -209,7 +209,7 @@ test_that("the composite cell is ours, punctuation included", {
   tbl_eu <- .too_quiet(table_outcome(
     .too_sh(),
     bmi,
-    by = sex,
+    select = sex,
     show_columns = c("med_iqr", "n"),
     decimal_mark = ","
   ))

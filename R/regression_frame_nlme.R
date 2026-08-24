@@ -359,9 +359,15 @@ as_regression_frame.gls <- function(
     ci_method <- "wald"
   }
 
+  # partial_effect_size = TRUE: as_regression_frame.lme() calls
+  # .attach_partial_chi2_to_frame_coefs(), so `partial_chi2` rows are
+  # real here. as_regression_frame.gls() does NOT, and .gls_info()
+  # below keeps the flag FALSE -- the two declarations differ because
+  # the two builders differ. Read by table_regression()'s capability
+  # guard, decision 41.
   supports <- list(
     ame = TRUE,
-    partial_effect_size = FALSE,
+    partial_effect_size = TRUE,
     classical_r2 = FALSE,
     nested_lrt = TRUE,
     exponentiate = FALSE,

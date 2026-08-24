@@ -240,9 +240,10 @@ uncertainty comes from resampling subjects and so ignores the strata
 and clusters the design declares (use \code{\link[survey:svykm]{survey::svykm()}} for a
 marginal curve).
 
-\code{nested = TRUE} is not refused, and does not compare: it puts the
-models side by side and adds no change statistic, because there is no
-likelihood to compare. To test a term under the design, use
+\code{nested = TRUE} is refused for a design-based table: there is no
+likelihood to compare, so every change statistic would be empty, and
+a block of empty rows reads like an answer. Put the models side by
+side with \code{nested = FALSE}, and test a term under the design with
 \code{\link[survey:regTermTest]{survey::regTermTest()}}.
 
 \code{svyglm} keeps an \code{AIC} row: survey's \code{extractAIC.svyglm} computes

@@ -495,3 +495,198 @@ test_that("validate_regression_frame() type-checks optional info fields", {
   frame$info$random_effects <- NULL
   expect_invisible(validate_regression_frame(frame))
 })
+
+
+# ---- The capability flags are consumed, not decoration ---------------------
+#
+# Decision 41. `supports$partial_effect_size` and `supports$nested_lrt`
+# were set by every builder and read by nobody; the features they name
+# were decided by inherits() gates that could not see a frame. They are
+# now read POST-frame, beside `supports$ame`, by the capability guards
+# in table_regression(). The witness for "the flag is the authority" is
+# that flipping it on a class whose behaviour is otherwise unchanged
+# flips the feature -- so a builder that mis-declares breaks visibly.
+
+test_that("supports$partial_effect_size gates the partial columns", {
+  fit <- stats::lm(mpg ~ wt + factor(cyl), data = mtcars)
+
+  # Declared TRUE (the real .lm_supports()): the column is produced.
+  ok <- table_regression(
+    fit,
+    show_columns = c("b", "partial_eta2"),
+    output = "data.frame"
+  )
+  expect_length(names(ok), 3L)
+  expect_true(any(nzchar(ok[[3L]])))
+
+  # Declared FALSE, nothing else changed: the request is refused rather
+  # than rendered as a column of dashes.
+  testthat::local_mocked_bindings(
+    .lm_supports = function() {
+      s <- spicy:::.glm_supports()
+      s$classical_r2 <- TRUE
+      s$exponentiate <- FALSE
+      s$partial_effect_size <- FALSE
+      s
+    },
+    .package = "spicy"
+  )
+  err <- tryCatch(
+    table_regression(fit, show_columns = c("b", "partial_eta2")),
+    error = identity
+  )
+  expect_s3_class(err, "spicy_invalid_input")
+  expect_match(
+    conditionMessage(err),
+    "Partial effect-size columns are not available",
+    fixed = TRUE
+  )
+  expect_match(conditionMessage(err), "`lm`", fixed = TRUE)
+})
+
+test_that("supports$nested_lrt gates the hierarchical comparison", {
+  m1 <- stats::lm(mpg ~ wt, data = mtcars)
+  m2 <- stats::lm(mpg ~ wt + hp, data = mtcars)
+
+  # Declared TRUE: the change rows are computed.
+  ok <- table_regression(list(m1, m2), nested = TRUE, output = "data.frame")
+  expect_s3_class(ok, "data.frame")
+
+  # Declared FALSE: refused, with the side-by-side alternative named.
+  testthat::local_mocked_bindings(
+    .lm_supports = function() {
+      s <- spicy:::.glm_supports()
+      s$classical_r2 <- TRUE
+      s$exponentiate <- FALSE
+      s$nested_lrt <- FALSE
+      s
+    },
+    .package = "spicy"
+  )
+  err <- tryCatch(
+    table_regression(list(m1, m2), nested = TRUE),
+    error = identity
+  )
+  expect_s3_class(err, "spicy_invalid_input")
+  expect_match(
+    conditionMessage(err),
+    "`nested = TRUE` is not available",
+    fixed = TRUE
+  )
+  expect_match(conditionMessage(err), "nested = FALSE", fixed = TRUE)
+})
+
+test_that("one incapable model refuses the whole hierarchy", {
+  skip_if_not_installed("estimatr")
+  # The column guards refuse only when NO model can fill the column: a
+  # column is independent per model. A hierarchy is not -- every change
+  # statistic is about an adjacent PAIR, so one fit that cannot be
+  # compared removes the comparison rather than blanking a cell. The
+  # `!all()` predicate is the difference, and it is the whole point:
+  # `list(lm, lm_robust)` used to pass the guard and render no
+  # comparison at all.
+  m1 <- stats::lm(mpg ~ wt, data = mtcars)
+  m2 <- estimatr::lm_robust(mpg ~ wt + hp, data = mtcars)
+  err <- tryCatch(
+    table_regression(list(m1, m2), nested = TRUE),
+    error = identity
+  )
+  expect_s3_class(err, "spicy_invalid_input")
+  # Only the INCAPABLE class is named -- the capable lm is not at fault.
+  expect_match(conditionMessage(err), "`lm_robust`", fixed = TRUE)
+  expect_false(grepl("`lm` /", conditionMessage(err), fixed = TRUE))
+  expect_match(conditionMessage(err), "adjacent PAIRS", fixed = TRUE)
+})
+
+
+# ---- The univariable screen stands for the fits it wraps -------------------
+#
+# The screen frame is a composite: its `info$class` is "uv_screen" and
+# the bundle is a plain list carrying class `spicy_uv_screen`, so
+# nothing about the models the user passed is visible to a gate that
+# reads a class off the object it was handed. Both refusal layers used
+# to miss it -- the pre-frame token gate saw a mixed set, the post-frame
+# capability guard saw the pooled flag -- and a linear screen asking for
+# `partial_chi2` rendered a fully blank column that a solo lm() is
+# refused for.
+
+test_that("a linear screen is refused the glm partial token", {
+  d <- na.omit(as.data.frame(spicy::sochealth)[, c("bmi", "age", "sex")])
+  err <- tryCatch(
+    table_regression_uv(
+      d,
+      outcome = bmi,
+      predictors = c(age, sex),
+      method = "lm",
+      show_columns = c("b", "partial_chi2")
+    ),
+    error = identity
+  )
+  expect_s3_class(err, "spicy_invalid_input")
+  # The pre-frame token gate, now unwrapping the bundle: same refusal a
+  # solo lm() gets, naming the least-squares substitutes.
+  expect_match(
+    conditionMessage(err),
+    "not defined for `lm` models",
+    fixed = TRUE
+  )
+  expect_match(conditionMessage(err), "partial_eta2", fixed = TRUE)
+
+  # A solo lm() is refused identically -- that is the invariant.
+  solo <- tryCatch(
+    table_regression(
+      stats::lm(bmi ~ age, data = d),
+      show_columns = c("b", "partial_chi2")
+    ),
+    error = identity
+  )
+  expect_s3_class(solo, "spicy_invalid_input")
+  expect_match(
+    conditionMessage(solo),
+    "not defined for `lm` models",
+    fixed = TRUE
+  )
+})
+
+test_that("a logistic screen still fills the glm partial token", {
+  d <- na.omit(as.data.frame(spicy::sochealth)[, c("bmi", "age", "sex")])
+  d$high <- as.integer(d$bmi > stats::median(d$bmi))
+  tbl <- table_regression_uv(
+    d,
+    outcome = high,
+    predictors = c(age, sex),
+    method = "glm",
+    show_columns = c("b", "partial_chi2"),
+    output = "data.frame"
+  )
+  # The column exists AND carries at least one value: unwrapping the
+  # bundle must not turn the legitimate case into a refusal.
+  chi_col <- names(tbl)[length(names(tbl))]
+  expect_true(any(nzchar(tbl[[chi_col]])))
+})
+
+test_that("a screen refusal names the wrapped classes, not `uv_screen`", {
+  skip_if_not_installed("survival")
+  d <- survival::lung
+  d$sex <- factor(d$sex, labels = c("m", "f"))
+  d <- na.omit(d[, c("time", "status", "age", "sex")])
+  err <- tryCatch(
+    table_regression_uv(
+      d,
+      outcome = survival::Surv(time, status),
+      predictors = c(age, sex),
+      method = "coxph",
+      show_columns = c("b", "partial_chi2")
+    ),
+    error = identity
+  )
+  expect_s3_class(err, "spicy_invalid_input")
+  expect_match(
+    conditionMessage(err),
+    "Partial effect-size columns are not available",
+    fixed = TRUE
+  )
+  # The class the user passed, never the composite's internal name.
+  expect_match(conditionMessage(err), "`coxph`", fixed = TRUE)
+  expect_false(grepl("uv_screen", conditionMessage(err), fixed = TRUE))
+})

@@ -2925,6 +2925,94 @@ table_regression <- function(
     }
   }
 
+  # Partial-effect-size capability guard (decision 41). Same shape as
+  # the AME guard above, reading the same kind of declaration: a class
+  # whose builder emits no term-level partial rows must REFUSE the
+  # token rather than render an entirely empty column. The pre-frame
+  # gate in validate_class_appropriate_tokens() only arbitrates WHICH
+  # partial estimand a class may ask for (variance-explained on lm,
+  # chi-square on glm and on the mixed families); it says nothing about
+  # the classes that have neither, and those used to reach the renderer
+  # and print a column of dashes. `supports$partial_effect_size` is the
+  # authority here, so a builder that mis-declares now visibly changes
+  # what the table refuses.
+  if (any(.PARTIAL_ES_TOKENS %in% show_columns)) {
+    partial_ok <- vapply(
+      frames,
+      function(fr) {
+        isTRUE(fr$info$supports$partial_effect_size)
+      },
+      logical(1)
+    )
+    if (!any(partial_ok)) {
+      classes <- .frame_class_labels(frames)
+      spicy_abort(
+        c(
+          sprintf(
+            "Partial effect-size columns are not available for %s.",
+            paste0("`", classes, "`", collapse = " / ")
+          ),
+          "i" = paste0(
+            "The term-level partial effect size is defined here for the ",
+            "least-squares families (`partial_f2` / `partial_eta2` / ",
+            "`partial_omega2`) and, as a partial likelihood-ratio or Wald ",
+            "chi-square, for `glm` and the mixed-effects families ",
+            "(`partial_chi2`). No such decomposition exists for this class ",
+            "(see ?table_regression_models)."
+          ),
+          "i" = "Drop the partial effect-size token(s) from `show_columns`."
+        ),
+        class = "spicy_invalid_input"
+      )
+    }
+  }
+
+  # Nested-comparison capability guard (decision 41). `nested = TRUE`
+  # on a model that cannot be compared to its predecessor used to
+  # render a block of en-dashed change rows -- an answer-shaped
+  # absence. Refuse instead, reading `supports$nested_lrt`. The GEE
+  # refusal in validate_nested_alignment() still fires first, before any
+  # frame exists, and keeps its own QIC hint; this guard covers the
+  # classes with no pre-frame gate of their own (design-based fits,
+  # Bayesian fits, lm_robust, ivreg).
+  #
+  # ONE incapable model is enough to refuse, unlike the column guards
+  # above. A column is independent per model -- a mixed lm + glm table
+  # fills the capable side and en-dashes the other, which is the
+  # intended reading. A hierarchy is a SEQUENCE: every change statistic
+  # is a statement about an adjacent PAIR, so a fit that cannot enter a
+  # comparison silently removes the comparison the table exists for.
+  # There is no capable side to fall back on.
+  if (isTRUE(nested) && length(frames) >= 2L) {
+    nested_ok <- vapply(
+      frames,
+      function(fr) {
+        isTRUE(fr$info$supports$nested_lrt)
+      },
+      logical(1)
+    )
+    if (!all(nested_ok)) {
+      classes <- .frame_class_labels(frames[!nested_ok])
+      spicy_abort(
+        c(
+          sprintf(
+            "`nested = TRUE` is not available for %s.",
+            paste0("`", classes, "`", collapse = " / ")
+          ),
+          "i" = paste0(
+            "The change statistics of a hierarchy (\u0394R\u00B2, partial ",
+            "F, LRT, \u0394AIC) all read a likelihood or a least-squares ",
+            "decomposition this class does not provide, and a hierarchy ",
+            "compares adjacent PAIRS -- one model that cannot be compared ",
+            "removes the comparison, it does not blank one column."
+          ),
+          "i" = "Render the models side by side with `nested = FALSE`."
+        ),
+        class = "spicy_invalid_input"
+      )
+    }
+  }
+
   # `exponentiate = TRUE` no-op detection (relocated from before extraction):
   # now that every frame is built, warn only when NO model actually applied
   # exp() -- i.e. every link is identity or otherwise non-exponentiable. Keyed

@@ -16,7 +16,7 @@
 }
 
 test_that("as_structured() accepts the family", {
-  tbl <- .tos_tbl(bmi, by = c(sex, smoking))
+  tbl <- .tos_tbl(bmi, select = c(sex, smoking))
   s <- as_structured(tbl)
   expect_type(s, "list")
   expect_identical(s$version, spicy:::.spicy_structured_version())
@@ -29,7 +29,7 @@ test_that("as_structured() accepts the family", {
 })
 
 test_that("every row says what it is", {
-  tbl <- .tos_tbl(bmi, by = c(sex, smoking))
+  tbl <- .tos_tbl(bmi, select = c(sex, smoking))
   s <- as_structured(tbl)
   expect_identical(
     s$body$.row_role,
@@ -62,10 +62,15 @@ test_that("every row says what it is", {
 
 test_that("the typed body renders the console body, cell for cell", {
   corpus <- list(
-    .tos_tbl(bmi, by = c(sex, smoking)),
-    .tos_tbl(bmi, by = c(sex, region), statistic = TRUE, effect_size = "auto"),
-    .tos_tbl(bmi, by = sex, show_columns = c("med_iqr", "med_ci", "n")),
-    .tos_tbl(bmi, by = sex, overall = FALSE, decimal_mark = ",")
+    .tos_tbl(bmi, select = c(sex, smoking)),
+    .tos_tbl(
+      bmi,
+      select = c(sex, region),
+      statistic = TRUE,
+      effect_size = "auto"
+    ),
+    .tos_tbl(bmi, select = sex, show_columns = c("med_iqr", "med_ci", "n")),
+    .tos_tbl(bmi, select = sex, overall = FALSE, decimal_mark = ",")
   )
   for (tbl in corpus) {
     s <- as_structured(tbl)
@@ -79,7 +84,7 @@ test_that("the typed body renders the console body, cell for cell", {
 })
 
 test_that("the structural blanks are absences, not undefined cells", {
-  tbl <- .tos_tbl(bmi, by = c(sex, smoking), statistic = TRUE)
+  tbl <- .tos_tbl(bmi, select = c(sex, smoking), statistic = TRUE)
   s <- as_structured(tbl)
   header <- which(s$body$.row_role == "factor_header")
   levels_i <- which(s$body$.indent > 0L)
@@ -104,7 +109,7 @@ test_that("an undefined cell keeps its status", {
     y = c(1, 2, 4, 5, 2, 3, 8),
     g = factor(c("A", "A", "A", "A", "A", "A", "B"))
   )
-  tbl <- .tos_quiet(table_outcome(d, y, by = g, p_value = FALSE))
+  tbl <- .tos_quiet(table_outcome(d, y, select = g, p_value = FALSE))
   s <- as_structured(tbl)
   solo <- which(s$body$.level == "B")
   expect_identical(s$cell_status$SD[solo], "undefined")
@@ -115,7 +120,7 @@ test_that("an undefined cell keeps its status", {
 })
 
 test_that("inline() reaches a level and a block", {
-  tbl <- .tos_tbl(bmi, by = c(sex, smoking), effect_size = "auto")
+  tbl <- .tos_tbl(bmi, select = c(sex, smoking), effect_size = "auto")
   s <- as_structured(tbl)
   rendered <- spicy:::.format_structured_to_string_body(s)
 
@@ -138,25 +143,25 @@ test_that("a bare inline() on the outcome cites the marginal mean", {
   # the token "m", and the count precedes it in the preference list. If
   # that ever drifts back, the most natural citation this table offers
   # would quote an N where the sentence means a mean.
-  tbl <- .tos_tbl(bmi, by = sex)
+  tbl <- .tos_tbl(bmi, select = sex)
   expect_identical(inline(tbl, bmi), "25.93")
   expect_identical(inline(tbl, bmi), inline(tbl, bmi, column = "m"))
   expect_false(identical(inline(tbl, bmi), inline(tbl, bmi, column = "n")))
 })
 
 test_that("the interval composes from its own bounds", {
-  tbl <- .tos_tbl(bmi, by = sex)
+  tbl <- .tos_tbl(bmi, select = sex)
   expect_match(inline(tbl, sex, "Female", "ci"), "^\\[.+, .+\\]$")
   expect_match(inline(tbl, bmi, column = "ci"), "^\\[.+, .+\\]$")
 })
 
 test_that("addressing survives custom labels", {
   d <- as.data.frame(spicy::sochealth)
-  plain <- .tos_quiet(table_outcome(d, bmi, by = sex))
+  plain <- .tos_quiet(table_outcome(d, bmi, select = sex))
   relabelled <- .tos_quiet(table_outcome(
     d,
     bmi,
-    by = sex,
+    select = sex,
     labels = c(sex = "Administrative sex", bmi = "BMI")
   ))
   expect_identical(
@@ -180,11 +185,18 @@ test_that("addressing survives custom labels", {
 # ============================================================================
 
 test_that("coercion strips the rendering attributes, keeps provenance", {
-  tbl <- .tos_tbl(bmi, by = c(sex, smoking))
+  tbl <- .tos_tbl(bmi, select = c(sex, smoking))
   plain <- as.data.frame(tbl)
   expect_false(inherits(plain, "spicy_outcome_table"))
   expect_identical(attr(plain, "outcome"), "bmi")
-  expect_identical(attr(plain, "by"), c("sex", "smoking"))
+  expect_identical(attr(plain, "select"), c("sex", "smoking"))
+  # The old spellings of the two renamed attributes are gone, not
+  # aliased: `"by"` became `"select"` (kept, provenance) and
+  # `"by_na_dropped"` became `"select_na_dropped"` (rendering-only,
+  # stripped here like every other rendering attribute).
+  expect_null(attr(plain, "by"))
+  expect_null(attr(plain, "by_na_dropped"))
+  expect_null(attr(plain, "select_na_dropped"))
   expect_null(attr(plain, "display_df"))
   expect_null(attr(plain, "structured"))
   # The original object is untouched and still prints.
@@ -198,7 +210,7 @@ test_that("coercion strips the rendering attributes, keeps provenance", {
 })
 
 test_that("tidy() returns the described rows only", {
-  tbl <- .tos_tbl(bmi, by = c(sex, smoking))
+  tbl <- .tos_tbl(bmi, select = c(sex, smoking))
   td <- broom::tidy(tbl)
   expect_identical(
     names(td),
@@ -237,7 +249,7 @@ test_that("tidy() returns the described rows only", {
 })
 
 test_that("glance() returns one row per block", {
-  tbl <- .tos_tbl(bmi, by = c(sex, smoking), effect_size = "auto")
+  tbl <- .tos_tbl(bmi, select = c(sex, smoking), effect_size = "auto")
   gl <- broom::glance(tbl)
   expect_identical(
     names(gl),
@@ -280,12 +292,12 @@ test_that("the glance schema is fixed, SMD columns included", {
   # `smd_type` / `smd_value` are present and NA from the first
   # version: adding the statistic later must not break a pipeline that
   # indexes this frame.
-  gl <- broom::glance(.tos_tbl(bmi, by = sex))
+  gl <- broom::glance(.tos_tbl(bmi, select = sex))
   expect_true(all(c("smd_type", "smd_value") %in% names(gl)))
   expect_true(all(is.na(gl$smd_type)))
   expect_true(all(is.na(gl$smd_value)))
   # And the same schema with no comparison at all.
-  gl2 <- broom::glance(.tos_tbl(bmi, by = sex, p_value = FALSE))
+  gl2 <- broom::glance(.tos_tbl(bmi, select = sex, p_value = FALSE))
   expect_identical(names(gl2), names(gl))
   expect_true(all(is.na(gl2$p.value)))
 })
@@ -297,7 +309,7 @@ test_that("a block with no comparison still gets its glance row", {
     g = c("a", "a", "a", "a", "b", "b", "b", "b"),
     stringsAsFactors = FALSE
   )
-  tbl <- .tos_quiet(table_outcome(d, y, by = c(one, g)))
+  tbl <- .tos_quiet(table_outcome(d, y, select = c(one, g)))
   gl <- broom::glance(tbl)
   expect_identical(nrow(gl), 2L)
   expect_true(is.na(gl$p.value[gl$variable == "one"]))

@@ -749,6 +749,7 @@ as_regression_frame.spicy_uv_screen <- function(
   base_info <- NULL
   any_singular <- FALSE
   singular_terms <- character(0)
+  any_partial_es <- FALSE
 
   for (k in seq_along(bundle$fits)) {
     pred <- bundle$predictors[k]
@@ -789,6 +790,13 @@ as_regression_frame.spicy_uv_screen <- function(
     if (isTRUE(fr$info$extras$has_singular)) {
       any_singular <- TRUE
       singular_terms <- c(singular_terms, fr$info$extras$singular_terms)
+    }
+    # Partial effect sizes are computed PER FIT and their rows survive
+    # into the screen, so the pooled frame declares the capability the
+    # wrapped fits actually have -- an lm / glm / mixed screen fills the
+    # column, a coxph or multinom screen leaves it empty and says so.
+    if (isTRUE(fr$info$supports$partial_effect_size)) {
+      any_partial_es <- TRUE
     }
     cf <- fr$coefs
     block <- cf[cf$parent_var == pred, , drop = FALSE]
@@ -875,6 +883,15 @@ as_regression_frame.spicy_uv_screen <- function(
 
   info <- base_info
   info$class <- "uv_screen"
+  # The classes the screen stands for. `info$class` is the composite's
+  # own name, which says nothing to a user reading a refusal: a message
+  # about `uv_screen` names an internal object, not the models they
+  # passed. Capability guards read this instead.
+  info$extras$screen_classes <- unique(vapply(
+    bundle$fits,
+    function(f) class(f)[1L],
+    character(1)
+  ))
   info$n_obs <- max(ns)
   info$extras$has_singular <- any_singular
   info$extras$singular_terms <- unique(singular_terms)
@@ -913,8 +930,12 @@ as_regression_frame.spicy_uv_screen <- function(
   } else {
     NULL
   }
+  # The pooled frame is not a fit: no AME backend, no single R-squared,
+  # nothing to compare a hierarchy against (`nested = TRUE` is refused
+  # upstream). The partial-effect flag is the exception, because those
+  # rows come from the wrapped fits and are already in `coefs`.
   info$supports$ame <- FALSE
-  info$supports$partial_effect_size <- FALSE
+  info$supports$partial_effect_size <- any_partial_es
   info$supports$classical_r2 <- FALSE
   info$supports$nested_lrt <- FALSE
   info$supports$standardise_refit <- FALSE

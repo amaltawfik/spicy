@@ -25,6 +25,21 @@
 # the conventional Steiger inversion and always brackets the
 # Olejnik & Algina point estimate in non-degenerate cases.
 
+# Every show_columns token that asks for a term-level partial effect
+# size: the four estimands and the `_ci` variants that reuse the same
+# underlying computation. Single producer, so the capability guard in
+# table_regression() and the extraction gate below can never disagree
+# about what "a partial effect size was requested" means.
+.PARTIAL_ES_TOKENS <- c(
+  "partial_f2",
+  "partial_f2_ci",
+  "partial_eta2",
+  "partial_eta2_ci",
+  "partial_omega2",
+  "partial_omega2_ci",
+  "partial_chi2"
+)
+
 # ---- Public-internal entry point ------------------------------------------
 
 extract_partial_effect_rows <- function(

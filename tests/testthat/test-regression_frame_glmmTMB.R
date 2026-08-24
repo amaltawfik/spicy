@@ -227,7 +227,7 @@ test_that("glmmTMB Gaussian: supports flags are correct", {
   fr <- as_regression_frame(fit, model_id = "M1")
   sp <- fr$info$supports
   expect_true(sp$ame)
-  expect_false(sp$partial_effect_size)
+  expect_true(sp$partial_effect_size) # partial chi^2 path
   expect_false(sp$classical_r2)
   expect_true(sp$nested_lrt)
   expect_false(sp$exponentiate) # identity link

@@ -30,11 +30,11 @@
 
 test_that("all weights 1 reproduces the unweighted table", {
   d <- .tow_data()
-  plain <- .tow_quiet(table_outcome(d, y, by = c(g, h), p_value = FALSE))
+  plain <- .tow_quiet(table_outcome(d, y, select = c(g, h), p_value = FALSE))
   weighted <- .tow_quiet(table_outcome(
     d,
     y,
-    by = c(g, h),
+    select = c(g, h),
     p_value = FALSE,
     weights = w1
   ))
@@ -54,14 +54,14 @@ test_that("integer weights reproduce the duplicated data", {
   weighted <- .tow_quiet(table_outcome(
     d,
     y,
-    by = c(g, h),
+    select = c(g, h),
     p_value = FALSE,
     weights = wi
   ))
   duplicated_tbl <- .tow_quiet(table_outcome(
     expanded,
     y,
-    by = c(g, h),
+    select = c(g, h),
     p_value = FALSE
   ))
   for (nm in c("mean", "sd", "min", "max", "ci_lower", "ci_upper", "median")) {
@@ -87,11 +87,17 @@ test_that("rescale normalises over the whole sample, never per level", {
   # Both halves are checked against the SIBLING, which is the family's
   # published behaviour: same numbers, per level, to 1e-12.
   d <- .tow_data()
-  raw <- .tow_quiet(table_outcome(d, y, by = g, p_value = FALSE, weights = wi))
+  raw <- .tow_quiet(table_outcome(
+    d,
+    y,
+    select = g,
+    p_value = FALSE,
+    weights = wi
+  ))
   scaled <- .tow_quiet(table_outcome(
     d,
     y,
-    by = g,
+    select = g,
     p_value = FALSE,
     weights = wi,
     rescale = TRUE,
@@ -135,7 +141,13 @@ test_that("rescale normalises over the whole sample, never per level", {
 
 test_that("the weighted table says it is weighted", {
   d <- .tow_data()
-  tbl <- .tow_quiet(table_outcome(d, y, by = g, p_value = FALSE, weights = wi))
+  tbl <- .tow_quiet(table_outcome(
+    d,
+    y,
+    select = g,
+    p_value = FALSE,
+    weights = wi
+  ))
   expect_match(attr(tbl, "note"), "Statistics weighted by wi.", fixed = TRUE)
 })
 
@@ -145,7 +157,7 @@ test_that("weights refuse the inference, not the description", {
   # against an interval must not be silently unweighted beside
   # weighted descriptives.
   err <- tryCatch(
-    table_outcome(d, y, by = g, weights = w1),
+    table_outcome(d, y, select = g, weights = w1),
     error = identity
   )
   expect_s3_class(err, "spicy_not_implemented")
@@ -158,7 +170,7 @@ test_that("weights refuse the inference, not the description", {
     table_outcome(
       d,
       y,
-      by = g,
+      select = g,
       weights = w1,
       p_value = FALSE,
       effect_size = "auto"
@@ -168,7 +180,7 @@ test_that("weights refuse the inference, not the description", {
   expect_s3_class(err, "spicy_not_implemented")
   # The description itself is fine.
   expect_s3_class(
-    .tow_quiet(table_outcome(d, y, by = g, weights = w1, p_value = FALSE)),
+    .tow_quiet(table_outcome(d, y, select = g, weights = w1, p_value = FALSE)),
     "spicy_outcome_table"
   )
 })
@@ -180,7 +192,7 @@ test_that("the two token guards of decision 17 hold", {
     table_outcome(
       d,
       y,
-      by = g,
+      select = g,
       weights = w1,
       p_value = FALSE,
       show_columns = c("med", "med_ci")
@@ -191,7 +203,7 @@ test_that("the two token guards of decision 17 hold", {
   expect_match(conditionMessage(err), "order-statistic", fixed = TRUE)
   # And a weighted count has nothing to show without weights.
   err <- tryCatch(
-    table_outcome(d, y, by = g, show_columns = c("m", "weighted_n")),
+    table_outcome(d, y, select = g, show_columns = c("m", "weighted_n")),
     error = identity
   )
   expect_s3_class(err, "spicy_invalid_input")
@@ -202,20 +214,20 @@ test_that("invalid weights are refused, and NA weights are disclosed", {
   d$bad <- d$w1
   d$bad[[1L]] <- Inf
   err <- tryCatch(
-    table_outcome(d, y, by = g, weights = bad, p_value = FALSE),
+    table_outcome(d, y, select = g, weights = bad, p_value = FALSE),
     error = identity
   )
   expect_s3_class(err, "spicy_invalid_input")
   d$neg <- d$w1
   d$neg[[1L]] <- -1
   err <- tryCatch(
-    table_outcome(d, y, by = g, weights = neg, p_value = FALSE),
+    table_outcome(d, y, select = g, weights = neg, p_value = FALSE),
     error = identity
   )
   expect_s3_class(err, "spicy_invalid_input")
   d$zero <- 0
   err <- tryCatch(
-    table_outcome(d, y, by = g, weights = zero, p_value = FALSE),
+    table_outcome(d, y, select = g, weights = zero, p_value = FALSE),
     error = identity
   )
   expect_s3_class(err, "spicy_invalid_input")
@@ -227,7 +239,7 @@ test_that("invalid weights are refused, and NA weights are disclosed", {
   tbl <- .tow_quiet(table_outcome(
     d,
     y,
-    by = g,
+    select = g,
     weights = some_na,
     p_value = FALSE
   ))
@@ -241,7 +253,7 @@ test_that("invalid weights are refused, and NA weights are disclosed", {
 test_that("rescale without weights is announced and ignored", {
   d <- .tow_data()
   expect_warning(
-    table_outcome(d, y, by = g, rescale = TRUE, p_value = FALSE),
+    table_outcome(d, y, select = g, rescale = TRUE, p_value = FALSE),
     class = "spicy_ignored_arg"
   )
 })

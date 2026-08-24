@@ -344,7 +344,7 @@ one to read, and it is why the block geometry of all three
 descriptive families is computed from it:
 
 ```{r desc-outcome}
-ot <- table_outcome(sochealth, bmi, by = c(sex, smoking))
+ot <- table_outcome(sochealth, bmi, select = c(sex, smoking))
 so <- as_structured(ot)
 so$body[, c("Variable", ".variable", ".level", ".row_role", ".indent")]
 ```

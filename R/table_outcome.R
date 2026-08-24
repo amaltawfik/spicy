@@ -76,7 +76,7 @@
   )
 }
 
-# Internal: the display levels of one `by` variable, and the vector
+# Internal: the display levels of one `select` variable, and the vector
 # that carries them.
 #
 # Factors keep their DECLARED order (empty levels included: a declared
@@ -163,7 +163,7 @@
   gvec <- g_obs[complete]
   # Pin the test's group order to the DISPLAYED order: the formula
   # interface of t.test() / wilcox.test() would otherwise re-sort a
-  # bare character or numeric `by` and flip the sign convention of the
+  # bare character or numeric `select` and flip the sign convention of the
   # statistic relative to the rows above it.
   gvec <- droplevels(factor(as.character(gvec), levels = level_order))
   n_valid_groups <- length(unique(gvec))
@@ -248,7 +248,7 @@
 # One row per displayed row, in display order:
 #
 #   * the marginal row (`.row_role == "summary"`), when `overall`;
-#   * per `by` variable, a header row (`factor_header`) carrying the
+#   * per `select` variable, a header row (`factor_header`) carrying the
 #     block's own statistics -- test, p, effect size -- and no
 #     descriptive cell, then one row per displayed level (`level`, or
 #     `missing` for the missing-value display level) carrying the
@@ -258,7 +258,7 @@
 # with `drop_na = FALSE` the levels of a block PARTITION the
 # outcome-complete sample -- the missing display level included -- so
 # the block's counts sum to the marginal count exactly. With
-# `drop_na = TRUE` each block loses its own missing `by` rows, and the
+# `drop_na = TRUE` each block loses its own missing `select` rows, and the
 # note says so, per variable.
 #
 # `rescale` normalises the weights over the outcome's whole surviving
@@ -267,8 +267,8 @@
 # sampling weight carries into this table.
 .outcome_compute <- function(
   outcome,
-  by_list,
-  by_labels,
+  select_list,
+  select_labels,
   outcome_name,
   outcome_label,
   ci_level = 0.95,
@@ -327,29 +327,29 @@
   }
 
   test_used <- stats::setNames(
-    rep(NA_character_, length(by_list)),
-    names(by_list)
+    rep(NA_character_, length(select_list)),
+    names(select_list)
   )
-  by_na_dropped <- stats::setNames(
-    rep(0L, length(by_list)),
-    names(by_list)
+  select_na_dropped <- stats::setNames(
+    rep(0L, length(select_list)),
+    names(select_list)
   )
   missing_labels <- stats::setNames(
-    rep(NA_character_, length(by_list)),
-    names(by_list)
+    rep(NA_character_, length(select_list)),
+    names(select_list)
   )
   n_groups <- stats::setNames(
-    rep(NA_integer_, length(by_list)),
-    names(by_list)
+    rep(NA_integer_, length(select_list)),
+    names(select_list)
   )
 
-  for (j in seq_along(by_list)) {
-    nm <- names(by_list)[[j]]
-    g <- by_list[[j]]
+  for (j in seq_along(select_list)) {
+    nm <- names(select_list)[[j]]
+    g <- select_list[[j]]
     geom <- .outcome_by_levels(g, drop_na)
     missing_labels[[nm]] <- geom$missing_label
     if (drop_na && geom$n_na > 0L) {
-      by_na_dropped[[nm]] <- geom$n_na
+      select_na_dropped[[nm]] <- geom$n_na
     }
     inf <- .outcome_block_inference(
       outcome,
@@ -366,7 +366,7 @@
     test_used[[nm]] <- inf$test_used
     n_groups[[nm]] <- inf$n_groups
     rows[[length(rows) + 1L]] <- cbind(
-      identity_row(nm, by_labels[[nm]], NA_character_, "factor_header"),
+      identity_row(nm, select_labels[[nm]], NA_character_, "factor_header"),
       blank_desc,
       inf$test,
       inf$es,
@@ -381,7 +381,7 @@
       rows[[length(rows) + 1L]] <- cbind(
         identity_row(
           nm,
-          by_labels[[nm]],
+          select_labels[[nm]],
           lv,
           if (identical(lv, geom$missing_label)) "missing" else "level"
         ),
@@ -394,13 +394,41 @@
   result <- do.call(rbind, rows)
   rownames(result) <- NULL
   attr(result, "test_used") <- test_used
-  attr(result, "by_na_dropped") <- by_na_dropped
+  attr(result, "select_na_dropped") <- select_na_dropped
   attr(result, "missing_labels") <- missing_labels
   attr(result, "n_groups") <- n_groups
   result
 }
 
 # ---- the public function --------------------------------------------------
+
+# Internal: hard migration error for the renamed `by` argument.
+#
+# `by` survives as a default-less formal at the END of the signature --
+# never in the third position, which now belongs to `select` and must
+# stay reachable positionally -- purely so that old `by =` calls land
+# here and get the actionable replacement message instead of R's bare
+# "unused argument" error. Same device as `abort_styled_defunct()` in
+# R/cross_tab.R.
+#
+# The name is not merely retired: `by` returns to this signature in a
+# later release as the COMPARED group of the crossed variant, which is
+# what `by` means everywhere else in the family. Silently accepting the
+# old spelling would therefore be worse than an error -- it would mean
+# two incompatible readings of one argument.
+abort_outcome_by_renamed <- function() {
+  spicy_abort(
+    c(
+      paste0(
+        "`by` was renamed `select` in table_outcome() (spicy 0.13.0): ",
+        "the grouping characteristics structure the rows, as `select` ",
+        "does across the family."
+      ),
+      "i" = "Use `table_outcome(data, outcome, select = ...)`."
+    ),
+    class = c("spicy_defunct", "spicy_invalid_input")
+  )
+}
 
 #' Describe one continuous outcome across several groupings
 #'
@@ -419,7 +447,7 @@
 #'
 #' Several continuous variables across *one* grouping is
 #' [table_continuous()] (`select = `, `by = `). One continuous variable
-#' across one or several groupings is this function. A single `by` is
+#' across one or several groupings is this function. A single `select` is
 #' legitimate here -- it is the natural way in when you know more
 #' groupings are coming -- but with several outcomes and one grouping,
 #' the sibling is the table you want.
@@ -491,17 +519,17 @@
 #' whole analytic sample, where a mean is recomputed over every
 #' observation and nothing is added. A mean is not a total.
 #'
-#' # Choosing the `by` columns
+#' # Choosing the `select` columns
 #'
-#' The canonical form is `by = where(is.factor)`, or an explicit
-#' enumeration. Negation (`by = -c(x, y)`) is not recommended: it
+#' The canonical form is `select = where(is.factor)`, or an explicit
+#' enumeration. Negation (`select = -c(x, y)`) is not recommended: it
 #' sweeps in every remaining column, and a numeric one becomes a block
 #' with one LEVEL per distinct value, in order of first appearance. A
 #' variable producing more than 20 levels raises a warning for that
 #' reason -- an arbitrary threshold, but a sixty-row block where a
 #' reader expects a handful of categories is not a table.
 #'
-#' A `haven_labelled` column used as `by` shows its numeric CODES, not
+#' A `haven_labelled` column used as `select` shows its numeric CODES, not
 #' its value labels, as it does in [table_continuous()]. Convert it
 #' first (`haven::as_factor()`) to get the labels in the stub.
 #'
@@ -517,12 +545,14 @@
 #' @param data A data frame.
 #' @param outcome The continuous outcome, unquoted or as a string.
 #'   Exactly one column.
-#' @param by The grouping variables, as a tidyselect expression. One
-#'   block of rows per variable, in the order given.
+#' @param select The grouping characteristics to describe the outcome
+#'   across, as a tidyselect expression or a character vector of column
+#'   names. One block of rows per variable, in the order given. As
+#'   everywhere in the family, `select` is what structures the rows.
 #' @param labels Named character vector of display labels, for the
-#'   outcome and for the `by` variables alike.
+#'   outcome and for the `select` variables alike.
 #' @param overall Show the marginal `Overall` row (default `TRUE`).
-#' @param drop_na Drop rows with a missing `by` value from that block
+#' @param drop_na Drop rows with a missing `select` value from that block
 #'   (default `FALSE`: they are shown as a `(Missing)` level and
 #'   excluded from the comparison).
 #' @param weights,rescale Frequency weights and whether to rescale them
@@ -550,6 +580,8 @@
 #'   destinations, as in [table_continuous()].
 #' @param user_na Honour declared missing values (see `?freq`).
 #' @param style A journal style; see [spicy_style()].
+#' @param by Defunct. The grouping characteristics are selected with
+#'   `select` since spicy 0.13.0; supplying `by` is an error.
 #'
 #' @return A `spicy_outcome_table`: the compute frame, with the display
 #'   frame and the typed view attached. `output = "data.frame"` /
@@ -560,12 +592,12 @@
 #' @export
 #'
 #' @examples
-#' table_outcome(sochealth, bmi, by = c(sex, smoking))
-#' table_outcome(sochealth, wellbeing_score, by = where(is.factor))
+#' table_outcome(sochealth, bmi, select = c(sex, smoking))
+#' table_outcome(sochealth, wellbeing_score, select = where(is.factor))
 table_outcome <- function(
   data,
   outcome,
-  by,
+  select,
   labels = NULL,
   overall = TRUE,
   drop_na = FALSE,
@@ -610,8 +642,15 @@ table_outcome <- function(
   clipboard_delim = "\t",
   word_path = NULL,
   user_na = TRUE,
-  style = NULL
+  style = NULL,
+  by
 ) {
+  # Migration guard first, so old `by =` calls get the actionable
+  # replacement message before any other validation can fire.
+  if (!missing(by)) {
+    abort_outcome_by_renamed()
+  }
+
   # A journal / locale style only moves DEFAULTS (see `?spicy_style`).
   .style_pushed <- .style_begin(style, match.call(), environment())
   on.exit(.style_end(.style_pushed), add = TRUE)
@@ -734,12 +773,16 @@ table_outcome <- function(
   outcome_name <- outcome_names[[1L]]
 
   # --- the groupings: at least one column, all of them in `data` ---------
-  by_names <- resolve_multi_column_selection(rlang::enquo(by), data, "by")
-  if (length(by_names) == 0L) {
+  select_names <- resolve_multi_column_selection(
+    rlang::enquo(select),
+    data,
+    "select"
+  )
+  if (length(select_names) == 0L) {
     spicy_abort(
       c(
-        "`by` must select at least one column in `data`.",
-        "i" = "`by = where(is.factor)` selects the categorical columns."
+        "`select` must select at least one column in `data`.",
+        "i" = "`select = where(is.factor)` selects the categorical columns."
       ),
       class = "spicy_invalid_input"
     )
@@ -749,12 +792,12 @@ table_outcome <- function(
   # character vector never reaches). Harmless for an optional argument,
   # not for the one that drives the whole table: a typo would travel as
   # `data[["sexe"]] == NULL` and fail far from its cause.
-  .outcome_check_membership(by_names, data, "by")
-  if (outcome_name %in% by_names) {
+  .outcome_check_membership(select_names, data, "select")
+  if (outcome_name %in% select_names) {
     spicy_abort(
       c(
         sprintf(
-          "`by` cannot contain the outcome (%s).",
+          "`select` cannot contain the outcome (%s).",
           .quote_val(outcome_name)
         ),
         "i" = "A variable cannot be described across its own levels."
@@ -762,7 +805,7 @@ table_outcome <- function(
       class = "spicy_invalid_input"
     )
   }
-  .check_integer64_columns(data, c(outcome_name, by_names), "table_outcome")
+  .check_integer64_columns(data, c(outcome_name, select_names), "table_outcome")
 
   outcome_raw <- data[[outcome_name]]
   if (!is.numeric(outcome_raw)) {
@@ -784,20 +827,20 @@ table_outcome <- function(
   n_user_na <- if (user_na) sum(.user_na_mask(outcome_raw)) else 0L
   outcome_vec <- resolve_user_na(outcome_raw)
   n_outcome_na <- sum(is.na(outcome_vec)) - n_user_na
-  by_list <- lapply(by_names, function(nm) resolve_user_na(data[[nm]]))
-  names(by_list) <- by_names
+  select_list <- lapply(select_names, function(nm) resolve_user_na(data[[nm]]))
+  names(select_list) <- select_names
 
   # A grouping with too many levels is not refused -- the family never
-  # refuses a numeric `by` -- but it is announced: sixty one-row blocks
+  # refuses a numeric `select` -- but it is announced: sixty one-row blocks
   # is not a table, and the usual cause is a continuous column swept in
   # by a negation.
-  for (nm in by_names) {
-    k <- length(unique(stats::na.omit(as.character(by_list[[nm]]))))
+  for (nm in select_names) {
+    k <- length(unique(stats::na.omit(as.character(select_list[[nm]]))))
     if (k > .OUTCOME_CARDINALITY_WARN) {
       spicy_warn(
         c(
           sprintf("`%s` has %d levels; is it a categorical variable?", nm, k),
-          "i" = "`by = where(is.factor)` selects the categorical columns."
+          "i" = "`select = where(is.factor)` selects the categorical columns."
         ),
         class = "spicy_caveat"
       )
@@ -975,15 +1018,19 @@ table_outcome <- function(
   }
 
   # --- labels -------------------------------------------------------------
-  all_labels <- resolve_variable_labels(data, c(outcome_name, by_names), labels)
-  names(all_labels) <- c(outcome_name, by_names)
+  all_labels <- resolve_variable_labels(
+    data,
+    c(outcome_name, select_names),
+    labels
+  )
+  names(all_labels) <- c(outcome_name, select_names)
   outcome_label <- all_labels[[outcome_name]]
 
   # --- compute ------------------------------------------------------------
   result <- .outcome_compute(
     outcome = outcome_vec,
-    by_list = by_list,
-    by_labels = all_labels[by_names],
+    select_list = select_list,
+    select_labels = all_labels[select_names],
     outcome_name = outcome_name,
     outcome_label = outcome_label,
     ci_level = ci_level,
@@ -997,7 +1044,7 @@ table_outcome <- function(
     effect_size_explicit = effect_size_explicit,
     overall = overall
   )
-  by_na_dropped <- attr(result, "by_na_dropped")
+  select_na_dropped <- attr(result, "select_na_dropped")
   test_used <- attr(result, "test_used")
   n_groups <- attr(result, "n_groups")
   missing_labels <- attr(result, "missing_labels")
@@ -1008,7 +1055,7 @@ table_outcome <- function(
     outcome_label = outcome_label,
     n_outcome_na = n_outcome_na,
     n_user_na = n_user_na,
-    by_na_dropped = by_na_dropped,
+    select_na_dropped = select_na_dropped,
     weights_name = weights_name,
     n_na_weights = n_na_weights,
     weighted = !is.null(weights_vec),
@@ -1045,7 +1092,7 @@ table_outcome <- function(
   attr(result, "align") <- align
   attr(result, "outcome") <- outcome_name
   attr(result, "outcome_label") <- outcome_label
-  attr(result, "by") <- by_names
+  attr(result, "select") <- select_names
   attr(result, "show_columns") <- tokens
   attr(result, "show_p") <- p_value
   attr(result, "show_statistic") <- statistic
@@ -1121,7 +1168,7 @@ table_outcome <- function(
   result
 }
 
-# The level count beyond which a `by` variable is announced as
+# The level count beyond which a `select` variable is announced as
 # suspicious. Arbitrary and stated as such in the Rd: the family has no
 # other threshold, and this one exists because a table of sixty
 # one-row blocks is not a table.
@@ -1261,7 +1308,7 @@ table_outcome <- function(
   outcome_label,
   n_outcome_na,
   n_user_na,
-  by_na_dropped,
+  select_na_dropped,
   weights_name,
   n_na_weights,
   weighted,
@@ -1295,13 +1342,13 @@ table_outcome <- function(
       )
     )
   }
-  # One occurrence per `by` variable: the reader must be able to see
+  # One occurrence per `select` variable: the reader must be able to see
   # which block lost which rows.
-  for (nm in names(by_na_dropped)) {
-    if (by_na_dropped[[nm]] > 0L) {
+  for (nm in names(select_na_dropped)) {
+    if (select_na_dropped[[nm]] > 0L) {
       parts <- c(
         parts,
-        spicy_fmt("note_rows_missing_by_removed", nm, by_na_dropped[[nm]])
+        spicy_fmt("note_rows_missing_by_removed", nm, select_na_dropped[[nm]])
       )
     }
   }

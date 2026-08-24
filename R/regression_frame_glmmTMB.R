@@ -367,9 +367,14 @@ as_regression_frame.glmmTMB <- function(
   # / cloglog / inverse) where the user typically wants OR / IRR.
   exp_ok <- !identical(fam$link, "identity")
 
+  # partial_effect_size = TRUE: the builder calls
+  # .attach_partial_chi2_to_frame_coefs(), so `partial_chi2` rows are
+  # real here -- the Wald chi-square analog, not the least-squares
+  # variance partition (classical_r2 stays FALSE). Read by
+  # table_regression()'s capability guard, decision 41.
   supports <- list(
     ame = TRUE,
-    partial_effect_size = FALSE,
+    partial_effect_size = TRUE,
     classical_r2 = FALSE,
     nested_lrt = TRUE,
     exponentiate = exp_ok,
