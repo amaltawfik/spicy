@@ -327,7 +327,7 @@ test_that("a translation moves no public column name", {
       con = names(as.data.frame(table_continuous(d, select = y, by = g))),
       lm = names(as.data.frame(table_continuous_lm(d, select = y, by = g))),
       reg = names(as.data.frame(table_regression(fit))),
-      out = names(as.data.frame(table_outcome(d, outcome = y, by = c(x, g)))),
+      out = names(as.data.frame(table_outcome(d, outcome = y, select = c(x, g)))),
       structured = names(as_structured(table_regression(fit)))
     )
   }
@@ -435,7 +435,7 @@ test_that("a French table of each family is pinned", {
     print(table_categorical(d, select = smoke, by = sex))
     print(table_continuous(d, select = c(bmi, age), by = sex))
     print(table_continuous_lm(d, select = bmi, by = sex))
-    print(table_outcome(d, outcome = bmi, by = c(sex, smoke)))
+    print(table_outcome(d, outcome = bmi, select = c(sex, smoke)))
     print(table_regression(stats::lm(bmi ~ age + sex, data = d)))
   })
 })

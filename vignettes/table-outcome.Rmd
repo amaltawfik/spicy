@@ -50,18 +50,18 @@ The rule fits on one line.
   = , by = )`. The classic Table 1: age, BMI and well-being compared
   between two arms.
 - **One outcome across one or several groupings** —
-  `table_outcome(outcome = , by = )`. The classic "correlates of"
+  `table_outcome(outcome = , select = )`. The classic "correlates of"
   table: who has a higher BMI — men or women, smokers or not, which
   region?
 
-Both are legitimate with a single `by`. If you already know that more
-groupings are coming, start here: adding a variable to `by` adds a
+Both are legitimate with a single `select`. If you already know that more
+groupings are coming, start here: adding a variable to `select` adds a
 block, and nothing else in the call changes.
 
 ## A first table
 
 ```{r first}
-table_outcome(sochealth, outcome = bmi, by = c(sex, smoking))
+table_outcome(sochealth, outcome = bmi, select = c(sex, smoking))
 ```
 
 Four things to notice, because each is a decision:
@@ -87,7 +87,7 @@ missing, so the block's counts add up to the `Overall` count —
 whatever the grouping.
 
 ```{r denominators}
-tbl <- table_outcome(sochealth, bmi, by = c(sex, smoking))
+tbl <- table_outcome(sochealth, bmi, select = c(sex, smoking))
 raw <- as.data.frame(tbl)
 
 # The marginal count.
@@ -108,7 +108,7 @@ showing them. The blocks then no longer share a denominator, and the
 note reports the loss per variable:
 
 ```{r dropna}
-table_outcome(sochealth, bmi, by = smoking, drop_na = TRUE)
+table_outcome(sochealth, bmi, select = smoking, drop_na = TRUE)
 ```
 
 ### Why "Overall" and not "Total"
@@ -136,7 +136,7 @@ nothing about it changes here.
 table_outcome(
   sochealth,
   bmi,
-  by = c(sex, education),
+  select = c(sex, education),
   show_columns = c("med_iqr", "n")
 )
 ```
@@ -163,7 +163,7 @@ for another, and the note under the table says so in as many words.
 table_outcome(
   sochealth,
   bmi,
-  by = c(sex, region),
+  select = c(sex, region),
   statistic = TRUE,
   effect_size = "auto"
 )
@@ -199,24 +199,24 @@ thin <- data.frame(
   # Two levels, but one of them holds a single observation.
   wave = c("first", "first", "first", "first", "first", "first", "first", "last")
 )
-table_outcome(thin, score, by = c(arm, site, wave))
+table_outcome(thin, score, select = c(arm, site, wave))
 ```
 
-## Choosing the `by` columns
+## Choosing the `select` columns
 
-`by` is a tidyselect expression, and the canonical forms are an
+`select` is a tidyselect expression, and the canonical forms are an
 explicit enumeration or `where(is.factor)`:
 
 ```{r where-factor}
 table_outcome(
   sochealth,
   wellbeing_score,
-  by = where(is.factor),
+  select = where(is.factor),
   show_columns = c("m", "sd", "n")
 )
 ```
 
-Negation (`by = -c(x, y)`) is **not** recommended, and the reason is
+Negation (`select = -c(x, y)`) is **not** recommended, and the reason is
 worth a paragraph. It sweeps in every remaining column, and a numeric
 one becomes a block with one *level* per distinct value, in order of
 first appearance — a single block sixty rows long, where a reader
@@ -229,7 +229,7 @@ refuses no numeric grouping.
 
 Labelled data deserves a word here, because importing from SPSS or
 Stata is a central use of this package. A `haven_labelled` column used
-as `by` shows its numeric CODES, not its value labels — the same as in
+as `select` shows its numeric CODES, not its value labels — the same as in
 `table_continuous(by = )`. Convert it first (`haven::as_factor()`) to
 get the labels in the stub.
 
@@ -257,7 +257,7 @@ the reading you want for it:
 table_outcome(
   sochealth,
   bmi,
-  by = sex,
+  select = sex,
   weights = weight,
   rescale = TRUE,
   p_value = FALSE,
@@ -298,7 +298,7 @@ effect size, the test — has no level to name, and is addressed
 without one.
 
 ```{r inline}
-tbl <- table_outcome(sochealth, bmi, by = c(sex, smoking))
+tbl <- table_outcome(sochealth, bmi, select = c(sex, smoking))
 
 inline(tbl, sex, "Female", "m")
 inline(tbl, sex, column = "p")
@@ -323,7 +323,7 @@ inline(tbl, smoking, column = "{p}")
 row, with `.row_role` saying what each row is.
 
 ```{r long}
-head(table_outcome(sochealth, bmi, by = sex, output = "long"), 4)
+head(table_outcome(sochealth, bmi, select = sex, output = "long"), 4)
 ```
 
 `tidy()` returns the described rows — the marginal row and one row per
@@ -374,24 +374,24 @@ console is the reference; the six reproduce it cell for cell, indentation
 and block rules included.
 
 ```{r engines-list, eval = FALSE}
-table_outcome(sochealth, bmi, by = c(sex, smoking), output = "gt")
-table_outcome(sochealth, bmi, by = c(sex, smoking), output = "tinytable")
-table_outcome(sochealth, bmi, by = c(sex, smoking), output = "flextable")
+table_outcome(sochealth, bmi, select = c(sex, smoking), output = "gt")
+table_outcome(sochealth, bmi, select = c(sex, smoking), output = "tinytable")
+table_outcome(sochealth, bmi, select = c(sex, smoking), output = "flextable")
 table_outcome(
   sochealth,
   bmi,
-  by = c(sex, smoking),
+  select = c(sex, smoking),
   output = "excel",
   excel_path = "bmi.xlsx"
 )
 table_outcome(
   sochealth,
   bmi,
-  by = c(sex, smoking),
+  select = c(sex, smoking),
   output = "word",
   word_path = "bmi.docx"
 )
-table_outcome(sochealth, bmi, by = c(sex, smoking), output = "clipboard")
+table_outcome(sochealth, bmi, select = c(sex, smoking), output = "clipboard")
 ```
 
 A journal style moves the defaults of the whole table, exactly as it
@@ -401,7 +401,7 @@ does elsewhere in the family:
 table_outcome(
   sochealth,
   bmi,
-  by = sex,
+  select = sex,
   style = "jama",
   show_columns = c("m", "sd", "n")
 )
@@ -414,7 +414,7 @@ pkgdown_dark_gt(
   table_outcome(
     sochealth,
     bmi,
-    by = c(sex, education),
+    select = c(sex, education),
     effect_size = "auto",
     output = "gt"
   )
@@ -425,7 +425,7 @@ pkgdown_dark_gt(
 table_outcome(
   sochealth,
   wellbeing_score,
-  by = c(sex, smoking),
+  select = c(sex, smoking),
   show_columns = c("med_iqr", "n"),
   output = "tinytable"
 )

@@ -198,9 +198,11 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
 
 * `table_outcome()` summarizes one continuous outcome across the levels
   of several categorical variables, stacked as blocks -- the inverse
-  layout of `table_continuous()`. Each block reports a group comparison
-  (`p`, optional test statistic and effect size), and an `Overall` row
-  gives the marginal summary. Statistics are chosen with the same
+  layout of `table_continuous()`. The grouping characteristics are
+  chosen with `select`, as everywhere else in the family: `select`
+  structures the rows. Each block reports a group comparison (`p`,
+  optional test statistic and effect size), and an `Overall` row gives
+  the marginal summary. Statistics are chosen with the same
   `show_columns` tokens as `table_continuous()`, and every output engine
   is available. See `vignette("table-outcome")`.
 * `inline()` cites one table cell in running Quarto / R Markdown text:

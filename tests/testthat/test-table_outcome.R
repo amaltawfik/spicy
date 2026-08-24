@@ -8,7 +8,7 @@ test_that("the title names the outcome and nothing else", {
     spicy:::.outcome_title("Body mass index"),
     "Descriptive statistics of Body mass index"
   )
-  # One `by` or six, the title is the same: the geometry is what
+  # One `select` or six, the title is the same: the geometry is what
   # changes, not the subject of the table.
   expect_identical(
     spicy:::.outcome_title("Age (years)"),
@@ -54,7 +54,7 @@ test_that("Overall is not the word Total, and that is deliberate", {
 
 
 # ============================================================================
-# The compute frame: one block per `by` variable
+# The compute frame: one block per `select` variable
 # ============================================================================
 
 # The worked example of the spec: eight observations, a two-level
@@ -66,8 +66,8 @@ test_that("Overall is not the word Total, and that is deliberate", {
 .to_compute <- function(..., y = .to_y()) {
   suppressWarnings(spicy:::.outcome_compute(
     outcome = y,
-    by_list = list(g1 = .to_g1(), g2 = .to_g2()),
-    by_labels = c(g1 = "G one", g2 = "G two"),
+    select_list = list(g1 = .to_g1(), g2 = .to_g2()),
+    select_labels = c(g1 = "G one", g2 = "G two"),
     outcome_name = "y",
     outcome_label = "Y",
     ...
@@ -188,8 +188,8 @@ test_that("the block counts sum to the marginal count", {
   g_na <- c("a", "a", "a", NA, "b", "b", NA, "b")
   r <- suppressWarnings(spicy:::.outcome_compute(
     outcome = y,
-    by_list = list(g = g_na, h = .to_g2()),
-    by_labels = c(g = "G", h = "H"),
+    select_list = list(g = g_na, h = .to_g2()),
+    select_labels = c(g = "G", h = "H"),
     outcome_name = "y",
     outcome_label = "Y",
     drop_na = FALSE
@@ -202,12 +202,12 @@ test_that("the block counts sum to the marginal count", {
       overall_n
     )
   }
-  # The missing `by` values are a display level of their own, and the
+  # The missing `select` values are a display level of their own, and the
   # role is the KEY -- not the label.
   miss <- r[r$variable == "g" & r$.row_role == "missing", ]
   expect_identical(nrow(miss), 1L)
   expect_identical(miss$level, "(Missing)")
-  # Two rows have a missing `by` value and an observed outcome; both
+  # Two rows have a missing `select` value and an observed outcome; both
   # count, which is the point of showing the level.
   expect_identical(miss$n, 2L)
 })
@@ -217,8 +217,8 @@ test_that("drop_na = TRUE removes the missing rows block by block", {
   g_na <- c("a", "a", "a", NA, "b", "b", NA, "b")
   r <- suppressWarnings(spicy:::.outcome_compute(
     outcome = y,
-    by_list = list(g = g_na),
-    by_labels = c(g = "G"),
+    select_list = list(g = g_na),
+    select_labels = c(g = "G"),
     outcome_name = "y",
     outcome_label = "Y",
     drop_na = TRUE
@@ -226,7 +226,7 @@ test_that("drop_na = TRUE removes the missing rows block by block", {
   expect_identical(r$n[r$.row_role == "summary"], 8L)
   expect_identical(sum(r$n[r$.row_role == "level"]), 6L)
   expect_false(any(r$.row_role == "missing"))
-  expect_identical(unname(attr(r, "by_na_dropped")[["g"]]), 2L)
+  expect_identical(unname(attr(r, "select_na_dropped")[["g"]]), 2L)
 })
 
 test_that("a block too thin to compare degrades on its own", {
@@ -234,8 +234,8 @@ test_that("a block too thin to compare degrades on its own", {
   # can. The thin one keeps NA test columns; the other is untouched.
   r <- suppressWarnings(spicy:::.outcome_compute(
     outcome = .to_y(),
-    by_list = list(one = rep("only", 8L), g1 = .to_g1()),
-    by_labels = c(one = "One", g1 = "G one"),
+    select_list = list(one = rep("only", 8L), g1 = .to_g1()),
+    select_labels = c(one = "One", g1 = "G one"),
     outcome_name = "y",
     outcome_label = "Y",
     do_test = TRUE
@@ -257,8 +257,8 @@ test_that("a declared but empty level keeps its row", {
   )
   r <- suppressWarnings(spicy:::.outcome_compute(
     outcome = .to_y(),
-    by_list = list(g = g),
-    by_labels = c(g = "G"),
+    select_list = list(g = g),
+    select_labels = c(g = "G"),
     outcome_name = "y",
     outcome_label = "Y"
   ))
@@ -272,8 +272,8 @@ test_that("a declared but empty level keeps its row", {
 test_that("a single observation leaves the SD undefined, not zero", {
   r <- suppressWarnings(spicy:::.outcome_compute(
     outcome = c(1, 2, 3, 4, 10, 20, 30, 40),
-    by_list = list(g = c("a", "a", "a", "a", "a", "a", "a", "solo")),
-    by_labels = c(g = "G"),
+    select_list = list(g = c("a", "a", "a", "a", "a", "a", "a", "solo")),
+    select_labels = c(g = "G"),
     outcome_name = "y",
     outcome_label = "Y"
   ))
@@ -284,11 +284,13 @@ test_that("a single observation leaves the SD undefined, not zero", {
   expect_true(is.na(r$ci_lower[solo]))
 })
 
-test_that("a `by` with no observed level yields no level rows", {
+test_that("a `select` with no observed level yields no level rows", {
   r <- suppressWarnings(spicy:::.outcome_compute(
     outcome = .to_y(),
-    by_list = list(g = factor(rep(NA_character_, 8L), levels = character(0))),
-    by_labels = c(g = "G"),
+    select_list = list(
+      g = factor(rep(NA_character_, 8L), levels = character(0))
+    ),
+    select_labels = c(g = "G"),
     outcome_name = "y",
     outcome_label = "Y",
     drop_na = TRUE
@@ -322,7 +324,7 @@ test_that("overall = FALSE drops the marginal row and nothing else", {
 }
 
 test_that("the console lays out one stub column and indented levels", {
-  tbl <- .to_quiet(table_outcome(.to_sh(), bmi, by = c(sex, smoking)))
+  tbl <- .to_quiet(table_outcome(.to_sh(), bmi, select = c(sex, smoking)))
   df <- attr(tbl, "display_df")
   expect_identical(names(df)[[1L]], "Variable")
   expect_identical(
@@ -347,7 +349,7 @@ test_that("a statistic sits on the row it belongs to", {
   tbl <- .to_quiet(table_outcome(
     .to_sh(),
     bmi,
-    by = c(sex, smoking),
+    select = c(sex, smoking),
     statistic = TRUE,
     effect_size = "auto"
   ))
@@ -378,7 +380,7 @@ test_that("a statistic sits on the row it belongs to", {
 })
 
 test_that("a rule opens every block, the first one included", {
-  tbl <- .to_quiet(table_outcome(.to_sh(), bmi, by = c(sex, smoking)))
+  tbl <- .to_quiet(table_outcome(.to_sh(), bmi, select = c(sex, smoking)))
   geom <- spicy:::.outcome_body_geometry(tbl)
   # Rows 2 and 5 open a block. The rule above row 2 is the one a
   # rank-based predicate would drop -- the table opens on a `summary`
@@ -394,7 +396,7 @@ test_that("a rule opens every block, the first one included", {
 })
 
 test_that("the note discloses the comparison, the missing and the shape", {
-  tbl <- .to_quiet(table_outcome(.to_sh(), bmi, by = c(sex, region)))
+  tbl <- .to_quiet(table_outcome(.to_sh(), bmi, select = c(sex, region)))
   note <- attr(tbl, "note")
   # The outcome's own missing values, once, globally -- this is the
   # sentence that reconciles the Overall count with the raw data.
@@ -409,14 +411,14 @@ test_that("the note discloses the comparison, the missing and the shape", {
 
 test_that("the disclosures follow the arguments that cause them", {
   d <- .to_sh()
-  # `drop_na = TRUE`: one sentence per `by` variable that lost rows.
-  tbl <- .to_quiet(table_outcome(d, bmi, by = smoking, drop_na = TRUE))
+  # `drop_na = TRUE`: one sentence per `select` variable that lost rows.
+  tbl <- .to_quiet(table_outcome(d, bmi, select = smoking, drop_na = TRUE))
   expect_match(attr(tbl, "note"), "Rows with missing smoking removed: 25.")
   # `overall = FALSE`: no sentence about a row that is not there.
-  tbl2 <- .to_quiet(table_outcome(d, bmi, by = sex, overall = FALSE))
+  tbl2 <- .to_quiet(table_outcome(d, bmi, select = sex, overall = FALSE))
   expect_false(grepl("whole analytic sample", attr(tbl2, "note"), fixed = TRUE))
   # No comparison: no sentence about blocks that compare nothing.
-  tbl3 <- .to_quiet(table_outcome(d, bmi, by = sex, p_value = FALSE))
+  tbl3 <- .to_quiet(table_outcome(d, bmi, select = sex, p_value = FALSE))
   expect_false(grepl("not adjusted", attr(tbl3, "note"), fixed = TRUE))
   expect_false(grepl("Group comparison", attr(tbl3, "note"), fixed = TRUE))
 })
@@ -427,7 +429,7 @@ test_that("the table tests what it shows", {
   tbl <- .to_quiet(table_outcome(
     .to_sh(),
     bmi,
-    by = sex,
+    select = sex,
     show_columns = c("med_iqr", "n")
   ))
   expect_match(attr(tbl, "note"), "Wilcoxon rank-sum test", fixed = TRUE)
@@ -436,7 +438,7 @@ test_that("the table tests what it shows", {
     table_outcome(
       .to_sh(),
       bmi,
-      by = sex,
+      select = sex,
       show_columns = c("med_iqr", "n"),
       test = "welch"
     ),
@@ -446,13 +448,13 @@ test_that("the table tests what it shows", {
 
 test_that("refusals are classed and name the cause", {
   d <- .to_sh()
-  err <- tryCatch(table_outcome(d, sex, by = smoking), error = identity)
+  err <- tryCatch(table_outcome(d, sex, select = smoking), error = identity)
   # NOT `invalid_input`: a categorical outcome is a shape the API must
   # keep room for, not a mistake.
   expect_s3_class(err, "spicy_not_implemented")
   expect_match(conditionMessage(err), "table_categorical()", fixed = TRUE)
 
-  err <- tryCatch(table_outcome(d, c(bmi, age), by = sex), error = identity)
+  err <- tryCatch(table_outcome(d, c(bmi, age), select = sex), error = identity)
   expect_s3_class(err, "spicy_invalid_input")
   expect_match(
     conditionMessage(err),
@@ -462,16 +464,16 @@ test_that("refusals are classed and name the cause", {
 
   # The membership guard: without it a typo travels as a NULL column
   # and fails far from its cause.
-  err <- tryCatch(table_outcome(d, bmi, by = c("sexe")), error = identity)
+  err <- tryCatch(table_outcome(d, bmi, select = c("sexe")), error = identity)
   expect_s3_class(err, "spicy_invalid_input")
   expect_match(conditionMessage(err), "sexe", fixed = TRUE)
   expect_match(conditionMessage(err), "Available:", fixed = TRUE)
 
-  err <- tryCatch(table_outcome(d, bmi, by = NULL), error = identity)
+  err <- tryCatch(table_outcome(d, bmi, select = NULL), error = identity)
   expect_s3_class(err, "spicy_invalid_input")
   expect_match(conditionMessage(err), "at least one column", fixed = TRUE)
 
-  err <- tryCatch(table_outcome(d, bmi, by = c(sex, bmi)), error = identity)
+  err <- tryCatch(table_outcome(d, bmi, select = c(sex, bmi)), error = identity)
   expect_s3_class(err, "spicy_invalid_input")
   expect_match(
     conditionMessage(err),
@@ -480,24 +482,63 @@ test_that("refusals are classed and name the cause", {
   )
 
   err <- tryCatch(
-    table_outcome(d, bmi, by = sex, show_columns = list(bmi = "m")),
+    table_outcome(d, bmi, select = sex, show_columns = list(bmi = "m")),
     error = identity
   )
   expect_s3_class(err, "spicy_invalid_input")
   expect_match(conditionMessage(err), "character vector", fixed = TRUE)
 
   err <- tryCatch(
-    table_outcome(d, bmi, by = sex, show_columns = c("m", "weighted_n")),
+    table_outcome(d, bmi, select = sex, show_columns = c("m", "weighted_n")),
     error = identity
   )
   expect_s3_class(err, "spicy_invalid_input")
 })
 
+test_that("the renamed `by` errors with the migration hint", {
+  # Decision 39. `by` was the third formal until 0.13.0; it now names
+  # nothing, and it comes back in a later release as the COMPARED
+  # group. A silent alias would mean two readings of one argument, so
+  # the old spelling is a hard, classed error -- never R's bare
+  # "unused argument".
+  d <- .to_sh()
+  err <- tryCatch(
+    table_outcome(d, bmi, by = c(sex, smoking)),
+    error = identity
+  )
+  expect_s3_class(err, "spicy_defunct")
+  expect_s3_class(err, "spicy_invalid_input")
+  expect_s3_class(err, "spicy_error")
+  expect_match(conditionMessage(err), "renamed `select`", fixed = TRUE)
+  expect_match(
+    conditionMessage(err),
+    "table_outcome(data, outcome, select = ...)",
+    fixed = TRUE
+  )
+
+  # It fires BEFORE any other validation, so the migration message is
+  # what the user sees even when the rest of the call is also wrong.
+  err2 <- tryCatch(
+    table_outcome(d, bmi, by = c(sex), ci_level = 95),
+    error = identity
+  )
+  expect_s3_class(err2, "spicy_defunct")
+
+  # `select` is the only spelling; the third position still binds it.
+  named <- .to_quiet(table_outcome(d, bmi, select = c(sex, smoking)))
+  positional <- .to_quiet(table_outcome(d, bmi, c(sex, smoking)))
+  expect_identical(
+    attr(named, "display_df"),
+    attr(positional, "display_df")
+  )
+  expect_identical(attr(named, "select"), c("sex", "smoking"))
+})
+
 test_that("a high-cardinality grouping is announced, never refused", {
-  # The family refuses no numeric `by`; it says what it sees. The
+  # The family refuses no numeric `select`; it says what it sees. The
   # threshold is arbitrary and the Rd says so.
   expect_warning(
-    tbl <- table_outcome(.to_sh(), bmi, by = age),
+    tbl <- table_outcome(.to_sh(), bmi, select = age),
     class = "spicy_caveat"
   )
   expect_s3_class(tbl, "spicy_outcome_table")
@@ -505,7 +546,7 @@ test_that("a high-cardinality grouping is announced, never refused", {
 
 test_that("the raw outputs are the plain compute frame", {
   d <- .to_sh()
-  raw <- .to_quiet(table_outcome(d, bmi, by = sex, output = "long"))
+  raw <- .to_quiet(table_outcome(d, bmi, select = sex, output = "long"))
   expect_s3_class(raw, "data.frame")
   expect_false(inherits(raw, "spicy_outcome_table"))
   expect_true(all(
@@ -518,7 +559,7 @@ test_that("the raw outputs are the plain compute frame", {
   expect_true(all(c("smd_type", "smd_value") %in% names(raw)))
   expect_true(all(is.na(raw$smd_value)))
   expect_identical(
-    .to_quiet(table_outcome(d, bmi, by = sex, output = "data.frame")),
+    .to_quiet(table_outcome(d, bmi, select = sex, output = "data.frame")),
     raw
   )
 })
@@ -527,13 +568,13 @@ test_that("the console shape is pinned", {
   skip_on_cran()
   d <- .to_sh()
   expect_snapshot(print(suppressWarnings(
-    table_outcome(d, bmi, by = c(sex, smoking))
+    table_outcome(d, bmi, select = c(sex, smoking))
   )))
   expect_snapshot(print(suppressWarnings(
     table_outcome(
       d,
       bmi,
-      by = c(sex, region),
+      select = c(sex, region),
       statistic = TRUE,
       effect_size = "auto"
     )
@@ -542,7 +583,7 @@ test_that("the console shape is pinned", {
     table_outcome(
       d,
       bmi,
-      by = sex,
+      select = sex,
       overall = FALSE,
       show_columns = c("med_iqr", "n")
     )
@@ -560,7 +601,7 @@ test_that("printing a subset prints the subset", {
   # eight ORIGINAL rows -- and the block rules were recomputed from the
   # four-row subset, so the printed body did not even agree with its
   # own rules.
-  x <- .to_quiet(table_outcome(.to_sh(), bmi, by = c(sex, smoking)))
+  x <- .to_quiet(table_outcome(.to_sh(), bmi, select = c(sex, smoking)))
   body_lines <- function(obj) {
     lines <- utils::capture.output(print(obj))
     # Body rows are the ones with the stub separator, minus the header.
@@ -588,7 +629,7 @@ test_that("the block note is owed only when a block compared", {
     arm = c("A", "A", "A", "A", "B", "B", "B", "B", "C"),
     stringsAsFactors = FALSE
   )
-  thin <- .to_quiet(table_outcome(d, score, by = arm))
+  thin <- .to_quiet(table_outcome(d, score, select = arm))
   # Nothing was compared: the p column is empty top to bottom.
   expect_true(all(!nzchar(attr(thin, "display_df")$p)))
   expect_false(grepl("Each block compares", attr(thin, "note"), fixed = TRUE))
@@ -597,7 +638,7 @@ test_that("the block note is owed only when a block compared", {
   expect_match(attr(thin, "note"), "whole analytic sample", fixed = TRUE)
 
   # A table that did compare still says so.
-  real <- .to_quiet(table_outcome(.to_sh(), bmi, by = sex))
+  real <- .to_quiet(table_outcome(.to_sh(), bmi, select = sex))
   expect_match(attr(real, "note"), "Each block compares", fixed = TRUE)
   expect_match(attr(real, "note"), "Group comparison", fixed = TRUE)
 })

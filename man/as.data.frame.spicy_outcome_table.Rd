@@ -27,7 +27,7 @@ These S3 methods strip the \code{"spicy_outcome_table"} class and the
 rendering-only attributes from an object returned by
 \code{\link[=table_outcome]{table_outcome()}}, so the underlying long-format data can be
 manipulated with downstream tools under the standard \code{data.frame} /
-\code{tbl_df} contract. The \code{"outcome"} and \code{"by"} attributes are kept as
+\code{tbl_df} contract. The \code{"outcome"} and \code{"select"} attributes are kept as
 lightweight provenance markers. The original \code{x} is unaffected, and
 \code{print(x)} continues to render the formatted table.
 }

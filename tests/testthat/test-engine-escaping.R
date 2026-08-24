@@ -53,7 +53,7 @@
 .esc_builders <- function() {
   list(
     table_outcome = function(out) {
-      .esc_quiet(table_outcome(.esc_hostile(), y, by = g, output = out))
+      .esc_quiet(table_outcome(.esc_hostile(), y, select = g, output = out))
     },
     table_continuous = function(out) {
       .esc_quiet(table_continuous(
@@ -114,13 +114,13 @@ test_that("the three rich engines carry the same label content", {
   skip_if_not_installed("gt")
   skip_if_not_installed("flextable")
   d <- .esc_hostile()
-  console <- attr(.esc_quiet(table_outcome(d, y, by = g)), "display_df")
+  console <- attr(.esc_quiet(table_outcome(d, y, select = g)), "display_df")
   stub <- trimws(console$Variable)
   norm <- function(x) trimws(gsub("[\u2007\u00A0]", " ", as.character(x)))
 
-  tt <- .esc_quiet(table_outcome(d, y, by = g, output = "tinytable"))
-  g_tbl <- .esc_quiet(table_outcome(d, y, by = g, output = "gt"))
-  ft <- .esc_quiet(table_outcome(d, y, by = g, output = "flextable"))
+  tt <- .esc_quiet(table_outcome(d, y, select = g, output = "tinytable"))
+  g_tbl <- .esc_quiet(table_outcome(d, y, select = g, output = "gt"))
+  ft <- .esc_quiet(table_outcome(d, y, select = g, output = "flextable"))
 
   # The escaping happens at RENDER: every engine still holds the label
   # the console holds, tag characters included.
@@ -135,7 +135,7 @@ test_that("a tag-shaped caption and the note are both escaped", {
   tt <- .esc_quiet(table_outcome(
     d,
     y,
-    by = g,
+    select = g,
     labels = c(y = "BMI <sub>kg</sub>"),
     output = "tinytable"
   ))
@@ -155,7 +155,13 @@ test_that("a tag-shaped caption and the note are both escaped", {
   expect_identical(
     .esc_body_rows(html),
     .esc_body_rows(.esc_tt_html(.esc_quiet(
-      table_outcome(d, y, by = g, labels = c(y = "BMI"), output = "tinytable")
+      table_outcome(
+        d,
+        y,
+        select = g,
+        labels = c(y = "BMI"),
+        output = "tinytable"
+      )
     )))
   )
 })
@@ -166,7 +172,7 @@ test_that("no live script survives in the note", {
   html <- .esc_tt_html(.esc_quiet(table_outcome(
     d,
     y,
-    by = g,
+    select = g,
     labels = c(y = "<script>alert(1)</script>"),
     output = "tinytable"
   )))
@@ -191,7 +197,7 @@ test_that("a note carrying a cell boundary does not survive the escape", {
   html <- .esc_tt_html(.esc_quiet(table_outcome(
     d,
     y,
-    by = g,
+    select = g,
     labels = c(y = "</td></tr><tr><td>PWNED"),
     output = "tinytable"
   )))
@@ -214,7 +220,7 @@ test_that("the note escape is engine-aware: Typst output is untouched", {
   obj <- .esc_quiet(table_outcome(
     d,
     y,
-    by = g,
+    select = g,
     labels = c(y = "BMI [kg] <sub>x</sub>"),
     output = "tinytable"
   ))
