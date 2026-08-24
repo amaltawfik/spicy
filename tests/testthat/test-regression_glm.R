@@ -1853,7 +1853,10 @@ test_that("AUDIT: glm + NA in predictors -> nobs reflects na.omit, no crash", {
   expect_true(all(is.finite(td$estimate[!is.na(td$estimate)])))
 })
 
-test_that("AUDIT: glm + cluster vector with NAs -> clear fallback warning", {
+test_that("AUDIT: glm + cluster vector with NAs -> clear refusal", {
+  # Was a spicy_fallback warning and a table of CLASSICAL standard errors
+  # under a "cluster-robust (CR2)" footer (register n. 229). clubSandwich
+  # names the cause exactly, so the refusal relays it.
   set.seed(1)
   n <- 100L
   d <- data.frame(
@@ -1863,10 +1866,13 @@ test_that("AUDIT: glm + cluster vector with NAs -> clear fallback warning", {
   )
   d$clinic[1:3] <- NA
   fit <- glm(y ~ x, data = d, family = binomial)
-  expect_warning(
+  err <- tryCatch(
     table_regression(fit, vcov = "CR2", cluster = d$clinic),
-    class = "spicy_fallback"
+    error = function(e) e
   )
+  expect_s3_class(err, "spicy_unsupported_vcov")
+  expect_match(conditionMessage(err), "missing values")
+  expect_match(conditionMessage(err), "clubSandwich::vcovCR()", fixed = TRUE)
 })
 
 test_that("AUDIT: cluster length mismatch -> clear actionable error", {

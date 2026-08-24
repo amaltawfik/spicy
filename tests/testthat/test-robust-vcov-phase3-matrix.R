@@ -68,38 +68,47 @@ test_that("every documented vcov token runs on lm; out-of-list tokens error", {
 
 ## ---- Phase 3 matrix: rd-vcov-classes:hc-failure-fallback-warning -----------
 
-test_that("HC failure falls back to classical with a spicy_fallback warning", {
+test_that("HC failure refuses; it never returns the classical matrix", {
+  # Was: warn spicy_fallback and return stats::vcov(fit). The caller then
+  # labelled that classical matrix "heteroskedasticity-robust (HC3)"
+  # (register n. 229), so the substitution is refused instead.
   skip_if_not_installed("sandwich")
   fit <- stats::lm(mpg ~ wt, data = mtcars)
   testthat::local_mocked_bindings(
     vcovHC = function(...) stop("synthetic HC failure"),
     .package = "sandwich"
   )
-  expect_warning(
+  expect_error(
     spicy:::compute_model_vcov(fit, "HC3"),
-    class = "spicy_fallback"
+    class = "spicy_unsupported_vcov"
   )
-  vc <- suppressWarnings(spicy:::compute_model_vcov(fit, "HC3"))
-  expect_equal(vc, stats::vcov(fit))
+  err <- tryCatch(
+    spicy:::compute_model_vcov(fit, "HC3"),
+    error = function(e) e
+  )
+  expect_false(is.matrix(err))
+  expect_match(conditionMessage(err), "synthetic HC failure", fixed = TRUE)
 })
 
-## ---- Phase 3 matrix: rd-vcov-classes:cr-vcovcr-failure-fallback-warning ----
+## ---- Phase 3 matrix: rd-vcov-classes:cr-vcovcr-failure-refusal ----
 
-test_that("vcovCR failure falls back to classical with a spicy_fallback warning", {
+test_that("vcovCR failure refuses; it never returns the classical matrix", {
   skip_if_not_installed("clubSandwich")
   fit <- stats::lm(extra ~ group, data = sleep)
   testthat::local_mocked_bindings(
     vcovCR = function(...) stop("synthetic CR failure"),
     .package = "clubSandwich"
   )
-  expect_warning(
+  expect_error(
     spicy:::compute_model_vcov(fit, "CR2", cluster = sleep$ID),
-    class = "spicy_fallback"
+    class = "spicy_unsupported_vcov"
   )
-  vc <- suppressWarnings(
-    spicy:::compute_model_vcov(fit, "CR2", cluster = sleep$ID)
+  err <- tryCatch(
+    spicy:::compute_model_vcov(fit, "CR2", cluster = sleep$ID),
+    error = function(e) e
   )
-  expect_equal(vc, stats::vcov(fit))
+  expect_false(is.matrix(err))
+  expect_match(conditionMessage(err), "synthetic CR failure", fixed = TRUE)
 })
 
 ## ---- Phase 3 matrix: rd-vcov-classes:cr-missing-clubsandwich-error ---------
