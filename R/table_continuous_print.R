@@ -110,8 +110,8 @@ print.spicy_continuous_table <- function(x, ...) {
   # functions that no signature stated. Reading the key directly, the
   # guard says only what the console wants.
   #
-  # (The rendering engines draw those rules on a one-way table. That
-  # console / engine divergence is preserved here, not settled.)
+  # (The rich engines now follow the same policy: a one-way table draws
+  # no inter-variable rule anywhere -- decision 37 aligned them here.)
   sep_rows <- if (has_group) .struct_run_sep_rows(x$variable) else integer(0)
 
   title <- .continuous_title(attr(x, "group_label", exact = TRUE))

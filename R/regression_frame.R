@@ -36,8 +36,8 @@ spicy_frame_version <- function() {
 
 # Default capability flags: every capability is FALSE unless a method opts in.
 # new_regression_frame() merges a method's `info$supports` onto this, so a
-# method need only set the flags it supports and any newly-added flag (e.g.
-# robust_vcov) defaults safely across all ~30 classes. This list is ALSO the
+# method need only set the flags it supports and any newly-added flag
+# defaults safely across all ~30 classes. This list is ALSO the
 # single source of truth for the supports field set the validator requires.
 default_supports <- function() {
   list(
@@ -51,13 +51,7 @@ default_supports <- function() {
     # smart standardisation as exact affine rescales of the draws, with
     # no refit. Declared TRUE only by the stanreg builder; read beside
     # standardise_refit in table_regression()'s standardisation gate.
-    standardise_algebraic = FALSE,
-    # Declared for schema completeness, but NOT the robust-vcov gate:
-    # the `vcov` capability is a per-class SET of tokens, not a boolean,
-    # and it has to be known before any frame exists (the fail-fast check
-    # runs on the raw fits). .robust_vcov_support() in R/vcov.R is the
-    # authority; nothing reads this flag.
-    robust_vcov = FALSE
+    standardise_algebraic = FALSE
   )
 }
 

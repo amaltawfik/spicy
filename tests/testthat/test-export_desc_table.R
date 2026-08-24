@@ -235,3 +235,70 @@ test_that("excel writes the stronger indent into the label", {
     strrep("_", 6)
   )))
 })
+
+
+# ---- the one-way rule policy, at the layer every engine reads -------------
+#
+# Decision 37 gates the inter-variable rule of the continuous families on
+# `by`. The gate lives in the CALLER, in the `sep_rows` it hands the
+# exporter, so every engine -- tinytable, gt, flextable, Word, Excel --
+# inherits it from one place. tinytable and flextable pin the rendered
+# consequence in their own parity files; this pins the contract itself,
+# which is what the three engines with no cheap structural oracle rely
+# on.
+
+# The `sep_rows` the family hands the exporter for a given call.
+.edt_sep_rows_for <- function(expr) {
+  seen <- NULL
+  testthat::local_mocked_bindings(
+    export_desc_table = function(display_df, ..., sep_rows = integer(0)) {
+      seen <<- sep_rows
+      invisible(NULL)
+    }
+  )
+  .edt_quiet(expr)
+  seen
+}
+
+test_that("table_continuous() sends no sep_rows without `by`, and some with", {
+  d <- as.data.frame(sochealth)
+  for (engine in c("tinytable", "gt", "flextable")) {
+    expect_length(
+      .edt_sep_rows_for(
+        table_continuous(d, c(age, wellbeing_score), output = engine)
+      ),
+      0L
+    )
+    expect_length(
+      .edt_sep_rows_for(
+        table_continuous(d, c(age, wellbeing_score), by = sex, output = engine)
+      ),
+      1L
+    )
+  }
+})
+
+test_that("table_continuous_svy() sends no sep_rows without `by`", {
+  skip_if_not_installed("survey")
+  data(api, package = "survey", envir = environment())
+  des <- survey::svydesign(
+    id = ~dnum,
+    weights = ~pw,
+    data = apiclus1,
+    fpc = ~fpc
+  )
+  expect_length(
+    .edt_sep_rows_for(
+      table_continuous_svy(des, select = c(api00, api99), output = "gt")
+    ),
+    0L
+  )
+  expect_true(length(.edt_sep_rows_for(
+    table_continuous_svy(
+      des,
+      select = c(api00, api99),
+      by = stype,
+      output = "gt"
+    )
+  )) >= 1L)
+})

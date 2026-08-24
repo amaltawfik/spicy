@@ -451,8 +451,12 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
   a multi-model table.
 * A `glmmTMB` fit whose optimizer did not converge says so: a table note
   names the engine's own diagnosis and a `spicy_nonconvergence` warning
-  (under `spicy_caveat`) fires. The estimates still print -- they are what
-  the model object holds.
+  (under `spicy_caveat`) fires. No fit statistic derived from such a fit is
+  reported -- ICC, R², AIC and BIC are all withheld, since they would be
+  computed from the values the optimizer stopped at. The estimates and the
+  variance components still print: they are what the model object holds.
+  `spicy_nonconvergence` is the only warning raised; the anonymous
+  `NaNs produced` warnings the engine emits alongside it are suppressed.
 * Under a cluster-robust `vcov`, the ordinal Thresholds block (`polr` /
   `clm`) takes its SEs, z, p and CIs from the same sandwich as the slopes.
 * AME columns are available for many more classes, and per outcome category
@@ -993,6 +997,10 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
   yet; `summary(fit)` and `survey::regTermTest()` cover them meanwhile.
 ## Minor improvements
 
+* A one-way `table_continuous()` (no `by`) draws no rule between its
+  variable blocks in the rich engines (tinytable, gt, flextable, Word,
+  Excel), matching the console: each block is a single row, so the rule
+  carried no information. A by-group table still rules between variables.
 * `spicy_print_table()` gains `qualify_companions`. When a width split
   pushes an `SE`, a `p` or an interval onto a continuation panel, this
   says whether that column should name the estimate it belongs to

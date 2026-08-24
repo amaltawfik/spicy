@@ -1772,9 +1772,15 @@ table_continuous <- function(
         decimal_mark = decimal_mark,
         show_n = show_n,
         # Block geometry from the compute frame's key, exactly as the
-        # console reads it. Unlike the console the engines draw the
-        # rules on a one-way table too, so no `has_group` guard here.
-        sep_rows = .struct_run_sep_rows(result$variable),
+        # console reads it -- and under the same `has_group` policy: a
+        # one-way table has one row per variable, so a rule between every
+        # pair is ink without information, and it is drawn nowhere
+        # (decision 37). A by-group table keeps its inter-variable rules.
+        sep_rows = if (has_group) {
+          .struct_run_sep_rows(result$variable)
+        } else {
+          integer(0)
+        },
         title = .continuous_title(attr(result, "group_label", exact = TRUE)),
         excel_path = excel_path,
         excel_sheet = excel_sheet,
