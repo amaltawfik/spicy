@@ -256,6 +256,15 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
 
 ## New features
 
+* `table_regression()` says why a mixed-effects table reports no ICC. A
+  fit with more than one grouping factor has no single intraclass
+  correlation to report -- nested levels define one per level, crossed
+  factors none uniquely -- so the row stays out and a table note gives the
+  reason. The note appears only when `icc` is among the fit statistics
+  being shown, and only for that reason: a random-slope or
+  unsupported-family omission stays silent rather than claim an
+  explanation it does not have.
+
 * `options(spicy.language = "fr")` prints table labels in French --
   headers, row labels, titles and table notes -- for a whole document.
   `"en"` is the default and is unchanged. A label the French set does
@@ -550,6 +559,49 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
   it -- so a renderer never has to read an en-dash back to find out.
 
 ## Bug fixes
+
+* `table_outcome()` names the argument it is missing. Omitting `outcome`
+  or `select` used to die deep inside tidyselect on base R's own
+  `argument "expr" is missing` message, translated by the session locale
+  and naming a variable that appears nowhere in the call. Both are
+  refused up front now, each in the words of the argument that is
+  actually missing.
+
+* `table_regression()` keeps a random-effects correlation row inside the
+  block that carries it. With two grouping factors,
+  `(1 + age | Subject) + (1 | Sex)` printed the Subject correlation below
+  the Sex variance, under the wrong heading. Nothing moves in a
+  one-factor fit.
+
+* `table_regression()` refuses `"r2_change"`, `"adj_r2_change"`,
+  `"f_change"` and `"f2_change"` in `show_fit_stats` on any hierarchy
+  whose nested comparison is a likelihood-ratio test -- `survreg`,
+  `polr`, `clm`, `coxph`, `gls`, `betareg`, `fixest`, the mixed-effects
+  families and the rest. They used to be accepted and then silently
+  ignored, so the row that was asked for simply was not in the table.
+  The message points at `"lrt_change"` + `"p_change"`, which is what
+  `nested = TRUE` already selects for those fits. A quantile hierarchy
+  refuses them too, `"lrt_change"` included, and is pointed at
+  `"f_change"` + `"p_change"` -- the Wald-type test
+  `quantreg::anova.rq()` reports. `lm` and `nls` keep the least-squares
+  tokens, and `glm` keeps its own pseudo-R-squared message.
+
+* `table_regression()` refuses a mixed-effects fit whose grouping factor
+  is named `Residual` instead of merging it with the residual variance.
+  `Residual` is the key the random-effects table uses for the residual
+  row, so such a fit printed two rows both labelled `(Residual)`, gave
+  the grouping factor's variance the residual's confidence interval -- an
+  interval that did not contain its own estimate -- and dropped the ICC
+  without a word. The error names the reserved word and the fix; there is
+  no partial rendering, because what the collision breaks is the frame,
+  not the table.
+
+* `table_regression()` on a survey-design fit tells a user who passed
+  `cluster` with a non-cluster-robust `vcov` to declare the clustering in
+  `survey::svydesign(ids = )`. The advice used to be to set `vcov` to
+  `"CR0"`-`"CR3"`, which on a design fit leads straight to a hard error:
+  there is no CR route for such a fit, and its own design-based variance
+  is already cluster-robust.
 
 * `table_regression()` refuses a partial effect-size column, and
   `nested = TRUE`, on model classes that cannot produce them, instead of
@@ -1042,6 +1094,12 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
   lines of design description. Design-based Cox models are not supported
   yet; `summary(fit)` and `survey::regTermTest()` cover them meanwhile.
 ## Minor improvements
+
+* `table_regression()` writes the two convergence diagnoses spicy words
+  itself -- a non-positive-definite Hessian, an optimizer return code --
+  in the language in force. The engine's own message passes through as
+  data, and the accompanying warning stays in English, as every spicy
+  condition does.
 
 * A one-way `table_continuous()` (no `by`) draws no rule between its
   variable blocks in the rich engines (tinytable, gt, flextable, Word,
