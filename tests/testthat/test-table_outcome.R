@@ -679,3 +679,31 @@ test_that("the `by` migration still fires before the missing-arg guards", {
   err <- tryCatch(table_outcome(d, by = c(sex)), error = identity)
   expect_s3_class(err, "spicy_defunct")
 })
+
+
+# ---- "data.frame" and "long" are synonyms, and the docs say so ----------
+
+test_that("output = 'data.frame' and output = 'long' return one object", {
+  # Pinned because ?table_outcome now promises it. The compute frame is
+  # already long -- one row per level, plus the block header and the
+  # overall row, which is what `.row_role` marks -- so there is no wide
+  # form for the pair to straddle. Same reason `table_continuous()`
+  # documents its own pair as synonymous.
+  d <- .to_sh()
+  as_df <- .to_quiet(table_outcome(
+    d,
+    bmi,
+    select = c(sex, smoking),
+    output = "data.frame"
+  ))
+  as_long <- .to_quiet(table_outcome(
+    d,
+    bmi,
+    select = c(sex, smoking),
+    output = "long"
+  ))
+  expect_identical(as_df, as_long)
+  # And it really is the long shape, not a wide one under a long name.
+  expect_true(".row_role" %in% names(as_df))
+  expect_true(all(c("level", "summary") %in% as_df$.row_role))
+})
