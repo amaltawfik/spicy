@@ -664,7 +664,7 @@ all three descriptive families is computed from it:
 
 ``` r
 
-ot <- table_outcome(sochealth, bmi, by = c(sex, smoking))
+ot <- table_outcome(sochealth, bmi, select = c(sex, smoking))
 so <- as_structured(ot)
 so$body[, c("Variable", ".variable", ".level", ".row_role", ".indent")]
 #>         Variable .variable    .level     .row_role .indent

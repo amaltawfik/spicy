@@ -135,19 +135,20 @@ technical one.</p>
 age, BMI and well-being compared between two arms.</li>
 <li>
 <strong>One outcome across one or several groupings</strong> —
-<code>table_outcome(outcome = , by = )</code>. The classic “correlates
-of” table: who has a higher BMI — men or women, smokers or not, which
-region?</li>
+<code>table_outcome(outcome = , select = )</code>. The classic
+“correlates of” table: who has a higher BMI — men or women, smokers or
+not, which region?</li>
 </ul>
-<p>Both are legitimate with a single <code>by</code>. If you already
+<p>Both are legitimate with a single <code>select</code>. If you already
 know that more groupings are coming, start here: adding a variable to
-<code>by</code> adds a block, and nothing else in the call changes.</p>
+<code>select</code> adds a block, and nothing else in the call
+changes.</p>
 </div>
 <div class="section level2">
 <h2 id="a-first-table">A first table<a class="anchor" aria-label="anchor" href="#a-first-table"></a>
 </h2>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/table_outcome.html">table_outcome</a></span><span class="op">(</span><span class="va">sochealth</span>, outcome <span class="op">=</span> <span class="va">bmi</span>, by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">sex</span>, <span class="va">smoking</span><span class="op">)</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/table_outcome.html">table_outcome</a></span><span class="op">(</span><span class="va">sochealth</span>, outcome <span class="op">=</span> <span class="va">bmi</span>, select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">sex</span>, <span class="va">smoking</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Descriptive statistics of Body mass index</span></span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Variable       <span style="color: #9E9E9E;">│</span>   M     SD    Min    Max   95% CI LL  95% CI UL   n     p   </span></span>
@@ -192,7 +193,7 @@ exact. Each block shows a <code>(Missing)</code> level for the rows
 whose grouping value is missing, so the block’s counts add up to the
 <code>Overall</code> count — whatever the grouping.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">tbl</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/table_outcome.html">table_outcome</a></span><span class="op">(</span><span class="va">sochealth</span>, <span class="va">bmi</span>, by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">sex</span>, <span class="va">smoking</span><span class="op">)</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">tbl</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/table_outcome.html">table_outcome</a></span><span class="op">(</span><span class="va">sochealth</span>, <span class="va">bmi</span>, select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">sex</span>, <span class="va">smoking</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">raw</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">tbl</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># The marginal count.</span></span>
@@ -212,7 +213,7 @@ data — 1188 here, not 1200.</p>
 rows instead of showing them. The blocks then no longer share a
 denominator, and the note reports the loss per variable:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/table_outcome.html">table_outcome</a></span><span class="op">(</span><span class="va">sochealth</span>, <span class="va">bmi</span>, by <span class="op">=</span> <span class="va">smoking</span>, drop_na <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/table_outcome.html">table_outcome</a></span><span class="op">(</span><span class="va">sochealth</span>, <span class="va">bmi</span>, select <span class="op">=</span> <span class="va">smoking</span>, drop_na <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Descriptive statistics of Body mass index</span></span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Variable       <span style="color: #9E9E9E;">│</span>   M     SD    Min    Max   95% CI LL  95% CI UL   n     p   </span></span>
@@ -254,7 +255,7 @@ vocabulary itself; nothing about it changes here.</p>
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_outcome.html">table_outcome</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span>,</span>
 <span>  <span class="va">bmi</span>,</span>
-<span>  by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">sex</span>, <span class="va">education</span><span class="op">)</span>,</span>
+<span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">sex</span>, <span class="va">education</span><span class="op">)</span>,</span>
 <span>  show_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"med_iqr"</span>, <span class="st">"n"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Descriptive statistics of Body mass index</span></span></span>
@@ -295,7 +296,7 @@ as many words.</p>
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_outcome.html">table_outcome</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span>,</span>
 <span>  <span class="va">bmi</span>,</span>
-<span>  by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">sex</span>, <span class="va">region</span><span class="op">)</span>,</span>
+<span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">sex</span>, <span class="va">region</span><span class="op">)</span>,</span>
 <span>  statistic <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  effect_size <span class="op">=</span> <span class="st">"auto"</span></span>
 <span><span class="op">)</span></span>
@@ -362,7 +363,7 @@ untouched.</p>
 <span>  <span class="co"># Two levels, but one of them holds a single observation.</span></span>
 <span>  wave <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"first"</span>, <span class="st">"first"</span>, <span class="st">"first"</span>, <span class="st">"first"</span>, <span class="st">"first"</span>, <span class="st">"first"</span>, <span class="st">"first"</span>, <span class="st">"last"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/table_outcome.html">table_outcome</a></span><span class="op">(</span><span class="va">thin</span>, <span class="va">score</span>, by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">arm</span>, <span class="va">site</span>, <span class="va">wave</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/table_outcome.html">table_outcome</a></span><span class="op">(</span><span class="va">thin</span>, <span class="va">score</span>, select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">arm</span>, <span class="va">site</span>, <span class="va">wave</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Descriptive statistics of score</span></span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Variable        <span style="color: #9E9E9E;">│</span>   M     SD    Min    Max   95% CI LL  95% CI UL  n   p   </span></span>
@@ -383,15 +384,15 @@ untouched.</p>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Group comparison: Welch t-test. Each block compares score across the levels of one variable; blocks are not adjusted for one another. Overall = the whole analytic sample.</span></span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="choosing-the-by-columns">Choosing the <code>by</code> columns<a class="anchor" aria-label="anchor" href="#choosing-the-by-columns"></a>
+<h2 id="choosing-the-select-columns">Choosing the <code>select</code> columns<a class="anchor" aria-label="anchor" href="#choosing-the-select-columns"></a>
 </h2>
-<p><code>by</code> is a tidyselect expression, and the canonical forms
-are an explicit enumeration or <code>where(is.factor)</code>:</p>
+<p><code>select</code> is a tidyselect expression, and the canonical
+forms are an explicit enumeration or <code>where(is.factor)</code>:</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_outcome.html">table_outcome</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span>,</span>
 <span>  <span class="va">wellbeing_score</span>,</span>
-<span>  by <span class="op">=</span> <span class="fu"><a href="https://tidyselect.r-lib.org/reference/where.html" class="external-link">where</a></span><span class="op">(</span><span class="va">is.factor</span><span class="op">)</span>,</span>
+<span>  select <span class="op">=</span> <span class="fu"><a href="https://tidyselect.r-lib.org/reference/where.html" class="external-link">where</a></span><span class="op">(</span><span class="va">is.factor</span><span class="op">)</span>,</span>
 <span>  show_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"m"</span>, <span class="st">"sd"</span>, <span class="st">"n"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Descriptive statistics of WHO-5 wellbeing index (0-100)</span></span></span>
@@ -476,7 +477,7 @@ are an explicit enumeration or <code>where(is.factor)</code>:</p>
 <span><span class="co">#&gt;    Very high                       <span style="color: #9E9E9E;">│</span>  67.69    16.15     128           </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Group comparison: Welch one-way ANOVA (age_group, education, social_class, region, employment_status, income_group, self_rated_health, bmi_category, institutional_trust); Welch t-test (sex, smoking, physical_activity, dentist_12m). Each block compares WHO-5 wellbeing index (0-100) across the levels of one variable; blocks are not adjusted for one another. Overall = the whole analytic sample.</span></span></span></code></pre></div>
-<p>Negation (<code>by = -c(x, y)</code>) is <strong>not</strong>
+<p>Negation (<code>select = -c(x, y)</code>) is <strong>not</strong>
 recommended, and the reason is worth a paragraph. It sweeps in every
 remaining column, and a numeric one becomes a block with one
 <em>level</em> per distinct value, in order of first appearance — a
@@ -489,10 +490,10 @@ nudge, never a refusal, because the family refuses no numeric
 grouping.</p>
 <p>Labelled data deserves a word here, because importing from SPSS or
 Stata is a central use of this package. A <code>haven_labelled</code>
-column used as <code>by</code> shows its numeric CODES, not its value
-labels — the same as in <code>table_continuous(by = )</code>. Convert it
-first (<code><a href="https://forcats.tidyverse.org/reference/as_factor.html" class="external-link">haven::as_factor()</a></code>) to get the labels in the
-stub.</p>
+column used as <code>select</code> shows its numeric CODES, not its
+value labels — the same as in <code>table_continuous(by = )</code>.
+Convert it first (<code><a href="https://forcats.tidyverse.org/reference/as_factor.html" class="external-link">haven::as_factor()</a></code>) to get the labels in
+the stub.</p>
 <p>The order of the blocks is the order you write, and the order of the
 levels inside a block is the variable’s own: a factor keeps its declared
 level order (empty levels included — a level nobody chose is information
@@ -517,7 +518,7 @@ to the sample size.</p>
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_outcome.html">table_outcome</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span>,</span>
 <span>  <span class="va">bmi</span>,</span>
-<span>  by <span class="op">=</span> <span class="va">sex</span>,</span>
+<span>  select <span class="op">=</span> <span class="va">sex</span>,</span>
 <span>  weights <span class="op">=</span> <span class="va">weight</span>,</span>
 <span>  rescale <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  p_value <span class="op">=</span> <span class="cn">FALSE</span>,</span>
@@ -564,7 +565,7 @@ statistic needs its level; a <strong>block’s</strong> statistic — the
 <em>p</em>, the effect size, the test — has no level to name, and is
 addressed without one.</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">tbl</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/table_outcome.html">table_outcome</a></span><span class="op">(</span><span class="va">sochealth</span>, <span class="va">bmi</span>, by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">sex</span>, <span class="va">smoking</span><span class="op">)</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">tbl</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/table_outcome.html">table_outcome</a></span><span class="op">(</span><span class="va">sochealth</span>, <span class="va">bmi</span>, select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">sex</span>, <span class="va">smoking</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="../reference/inline.html">inline</a></span><span class="op">(</span><span class="va">tbl</span>, <span class="va">sex</span>, <span class="st">"Female"</span>, <span class="st">"m"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "25.69"</span></span>
@@ -589,7 +590,7 @@ rule — every token must live on the same row:</p>
 <p><code>output = "long"</code> returns the compute frame: one row per
 displayed row, with <code>.row_role</code> saying what each row is.</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="../reference/table_outcome.html">table_outcome</a></span><span class="op">(</span><span class="va">sochealth</span>, <span class="va">bmi</span>, by <span class="op">=</span> <span class="va">sex</span>, output <span class="op">=</span> <span class="st">"long"</span><span class="op">)</span>, <span class="fl">4</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="../reference/table_outcome.html">table_outcome</a></span><span class="op">(</span><span class="va">sochealth</span>, <span class="va">bmi</span>, select <span class="op">=</span> <span class="va">sex</span>, output <span class="op">=</span> <span class="st">"long"</span><span class="op">)</span>, <span class="fl">4</span><span class="op">)</span></span>
 <span><span class="co">#&gt;   variable           label  level     .row_role     mean       sd min  max</span></span>
 <span><span class="co">#&gt; 1      bmi Body mass index   &lt;NA&gt;       summary 25.93148 3.720186  16 38.9</span></span>
 <span><span class="co">#&gt; 2      sex             Sex   &lt;NA&gt; factor_header       NA       NA  NA   NA</span></span>
@@ -686,31 +687,31 @@ once.</li>
 console is the reference; the six reproduce it cell for cell,
 indentation and block rules included.</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/table_outcome.html">table_outcome</a></span><span class="op">(</span><span class="va">sochealth</span>, <span class="va">bmi</span>, by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">sex</span>, <span class="va">smoking</span><span class="op">)</span>, output <span class="op">=</span> <span class="st">"gt"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/table_outcome.html">table_outcome</a></span><span class="op">(</span><span class="va">sochealth</span>, <span class="va">bmi</span>, by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">sex</span>, <span class="va">smoking</span><span class="op">)</span>, output <span class="op">=</span> <span class="st">"tinytable"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/table_outcome.html">table_outcome</a></span><span class="op">(</span><span class="va">sochealth</span>, <span class="va">bmi</span>, by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">sex</span>, <span class="va">smoking</span><span class="op">)</span>, output <span class="op">=</span> <span class="st">"flextable"</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/table_outcome.html">table_outcome</a></span><span class="op">(</span><span class="va">sochealth</span>, <span class="va">bmi</span>, select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">sex</span>, <span class="va">smoking</span><span class="op">)</span>, output <span class="op">=</span> <span class="st">"gt"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/table_outcome.html">table_outcome</a></span><span class="op">(</span><span class="va">sochealth</span>, <span class="va">bmi</span>, select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">sex</span>, <span class="va">smoking</span><span class="op">)</span>, output <span class="op">=</span> <span class="st">"tinytable"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/table_outcome.html">table_outcome</a></span><span class="op">(</span><span class="va">sochealth</span>, <span class="va">bmi</span>, select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">sex</span>, <span class="va">smoking</span><span class="op">)</span>, output <span class="op">=</span> <span class="st">"flextable"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/table_outcome.html">table_outcome</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span>,</span>
 <span>  <span class="va">bmi</span>,</span>
-<span>  by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">sex</span>, <span class="va">smoking</span><span class="op">)</span>,</span>
+<span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">sex</span>, <span class="va">smoking</span><span class="op">)</span>,</span>
 <span>  output <span class="op">=</span> <span class="st">"excel"</span>,</span>
 <span>  excel_path <span class="op">=</span> <span class="st">"bmi.xlsx"</span></span>
 <span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/table_outcome.html">table_outcome</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span>,</span>
 <span>  <span class="va">bmi</span>,</span>
-<span>  by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">sex</span>, <span class="va">smoking</span><span class="op">)</span>,</span>
+<span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">sex</span>, <span class="va">smoking</span><span class="op">)</span>,</span>
 <span>  output <span class="op">=</span> <span class="st">"word"</span>,</span>
 <span>  word_path <span class="op">=</span> <span class="st">"bmi.docx"</span></span>
 <span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/table_outcome.html">table_outcome</a></span><span class="op">(</span><span class="va">sochealth</span>, <span class="va">bmi</span>, by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">sex</span>, <span class="va">smoking</span><span class="op">)</span>, output <span class="op">=</span> <span class="st">"clipboard"</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="../reference/table_outcome.html">table_outcome</a></span><span class="op">(</span><span class="va">sochealth</span>, <span class="va">bmi</span>, select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">sex</span>, <span class="va">smoking</span><span class="op">)</span>, output <span class="op">=</span> <span class="st">"clipboard"</span><span class="op">)</span></span></code></pre></div>
 <p>A journal style moves the defaults of the whole table, exactly as it
 does elsewhere in the family:</p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_outcome.html">table_outcome</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span>,</span>
 <span>  <span class="va">bmi</span>,</span>
-<span>  by <span class="op">=</span> <span class="va">sex</span>,</span>
+<span>  select <span class="op">=</span> <span class="va">sex</span>,</span>
 <span>  style <span class="op">=</span> <span class="st">"jama"</span>,</span>
 <span>  show_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"m"</span>, <span class="st">"sd"</span>, <span class="st">"n"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
@@ -734,7 +735,7 @@ does elsewhere in the family:</p>
 <span>  <span class="fu"><a href="../reference/table_outcome.html">table_outcome</a></span><span class="op">(</span></span>
 <span>    <span class="va">sochealth</span>,</span>
 <span>    <span class="va">bmi</span>,</span>
-<span>    by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">sex</span>, <span class="va">education</span><span class="op">)</span>,</span>
+<span>    select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">sex</span>, <span class="va">education</span><span class="op">)</span>,</span>
 <span>    effect_size <span class="op">=</span> <span class="st">"auto"</span>,</span>
 <span>    output <span class="op">=</span> <span class="st">"gt"</span></span>
 <span>  <span class="op">)</span></span>
@@ -1267,55 +1268,55 @@ another. Overall = the whole analytic sample.
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_outcome.html">table_outcome</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span>,</span>
 <span>  <span class="va">wellbeing_score</span>,</span>
-<span>  by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">sex</span>, <span class="va">smoking</span><span class="op">)</span>,</span>
+<span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">sex</span>, <span class="va">smoking</span><span class="op">)</span>,</span>
 <span>  show_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"med_iqr"</span>, <span class="st">"n"</span><span class="op">)</span>,</span>
 <span>  output <span class="op">=</span> <span class="st">"tinytable"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 
     <script src="https://cdn.jsdelivr.net/gh/vincentarelbundock/tinytable@main/inst/tinytable.js"></script><script>
       // Create table-specific functions using external factory
-      const tableFns_hkw3sho3w6333n4da5ef = TinyTable.createTableFunctions("tinytable_hkw3sho3w6333n4da5ef");
+      const tableFns_mw28zxrbvo5ra95xt9k4 = TinyTable.createTableFunctions("tinytable_mw28zxrbvo5ra95xt9k4");
       // tinytable span after
       window.addEventListener('load', function () {
           var cellsToStyle = [
             // tinytable style arrays after
-          { positions: [ { i: '2', j: 2 }, { i: '3', j: 2 }, { i: '5', j: 2 }, { i: '6', j: 2 }, { i: '7', j: 2 }, { i: '2', j: 3 }, { i: '3', j: 3 }, { i: '5', j: 3 }, { i: '6', j: 3 }, { i: '7', j: 3 }, { i: '2', j: 4 }, { i: '3', j: 4 }, { i: '5', j: 4 }, { i: '6', j: 4 }, { i: '7', j: 4 } ], css_id: 'tinytable_css_owexzm98lklxjrrvsw17',}, 
-          { positions: [ { i: '1', j: 2 }, { i: '4', j: 2 }, { i: '1', j: 3 }, { i: '4', j: 3 }, { i: '1', j: 4 }, { i: '4', j: 4 } ], css_id: 'tinytable_css_axub75yp7gii6xqyx5kp',}, 
-          { positions: [ { i: '0', j: 2 }, { i: '8', j: 2 }, { i: '0', j: 3 }, { i: '8', j: 3 }, { i: '0', j: 4 }, { i: '8', j: 4 } ], css_id: 'tinytable_css_jqj7acc8x6h3av77vvgt',}, 
-          { positions: [ { i: '-1', j: 2 }, { i: '-1', j: 3 }, { i: '-1', j: 4 } ], css_id: 'tinytable_css_la7438q264rmxece80zr',}, 
-          { positions: [ { i: '8', j: 1 } ], css_id: 'tinytable_css_az91hak3b3malbsvlk3v',}, 
-          { positions: [ { i: '4', j: 1 } ], css_id: 'tinytable_css_ghjnw88jjqscodwve3hk',}, 
-          { positions: [ { i: '3', j: 1 }, { i: '6', j: 1 }, { i: '7', j: 1 } ], css_id: 'tinytable_css_4kxaux8ghdvhkk3t9e4w',}, 
-          { positions: [ { i: '2', j: 1 }, { i: '5', j: 1 } ], css_id: 'tinytable_css_9alsqnibg373b8khqfh7',}, 
-          { positions: [ { i: '1', j: 1 } ], css_id: 'tinytable_css_kk3ht0bnc5voria6vqnh',}, 
-          { positions: [ { i: '0', j: 1 } ], css_id: 'tinytable_css_en74ztnp3hpsxkrhagzm',}, 
-          { positions: [ { i: '-1', j: 1 } ], css_id: 'tinytable_css_ldbo3gzij4snz2ztp454',}, 
+          { positions: [ { i: '2', j: 2 }, { i: '3', j: 2 }, { i: '5', j: 2 }, { i: '6', j: 2 }, { i: '7', j: 2 }, { i: '2', j: 3 }, { i: '3', j: 3 }, { i: '5', j: 3 }, { i: '6', j: 3 }, { i: '7', j: 3 }, { i: '2', j: 4 }, { i: '3', j: 4 }, { i: '5', j: 4 }, { i: '6', j: 4 }, { i: '7', j: 4 } ], css_id: 'tinytable_css_38w0oebjazrs6485a1gt',}, 
+          { positions: [ { i: '1', j: 2 }, { i: '4', j: 2 }, { i: '1', j: 3 }, { i: '4', j: 3 }, { i: '1', j: 4 }, { i: '4', j: 4 } ], css_id: 'tinytable_css_erwcg2wuj76cmb57sq9g',}, 
+          { positions: [ { i: '0', j: 2 }, { i: '8', j: 2 }, { i: '0', j: 3 }, { i: '8', j: 3 }, { i: '0', j: 4 }, { i: '8', j: 4 } ], css_id: 'tinytable_css_87m973l1e1mfi0korhpz',}, 
+          { positions: [ { i: '-1', j: 2 }, { i: '-1', j: 3 }, { i: '-1', j: 4 } ], css_id: 'tinytable_css_ocngbcjifubdr48bynil',}, 
+          { positions: [ { i: '8', j: 1 } ], css_id: 'tinytable_css_9quzerok9kjqgxisldmu',}, 
+          { positions: [ { i: '4', j: 1 } ], css_id: 'tinytable_css_psau8g1xkzqgvc0e3kzk',}, 
+          { positions: [ { i: '3', j: 1 }, { i: '6', j: 1 }, { i: '7', j: 1 } ], css_id: 'tinytable_css_clzgujn7s4to316ajo1j',}, 
+          { positions: [ { i: '2', j: 1 }, { i: '5', j: 1 } ], css_id: 'tinytable_css_d6ffcn3bt6v1kdsnmy29',}, 
+          { positions: [ { i: '1', j: 1 } ], css_id: 'tinytable_css_i5kx7njhbtn4umrsije7',}, 
+          { positions: [ { i: '0', j: 1 } ], css_id: 'tinytable_css_0ufz1vewnpxb5lfozhg5',}, 
+          { positions: [ { i: '-1', j: 1 } ], css_id: 'tinytable_css_8pmogrspwgfuvdj22okk',}, 
           ];
 
           // Loop over the arrays to style the cells
           cellsToStyle.forEach(function (group) {
               group.positions.forEach(function (cell) {
-                  tableFns_hkw3sho3w6333n4da5ef.styleCell(cell.i, cell.j, group.css_id);
+                  tableFns_mw28zxrbvo5ra95xt9k4.styleCell(cell.i, cell.j, group.css_id);
               });
           });
       });
     </script><link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/vincentarelbundock/tinytable@main/inst/tinytable.css">
 <style>
     /* tinytable css entries after */
-    #tinytable_hkw3sho3w6333n4da5ef td.tinytable_css_owexzm98lklxjrrvsw17, #tinytable_hkw3sho3w6333n4da5ef th.tinytable_css_owexzm98lklxjrrvsw17 { text-align: center }
-    #tinytable_hkw3sho3w6333n4da5ef td.tinytable_css_axub75yp7gii6xqyx5kp, #tinytable_hkw3sho3w6333n4da5ef th.tinytable_css_axub75yp7gii6xqyx5kp {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
-    #tinytable_hkw3sho3w6333n4da5ef td.tinytable_css_jqj7acc8x6h3av77vvgt, #tinytable_hkw3sho3w6333n4da5ef th.tinytable_css_jqj7acc8x6h3av77vvgt {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
-    #tinytable_hkw3sho3w6333n4da5ef td.tinytable_css_la7438q264rmxece80zr, #tinytable_hkw3sho3w6333n4da5ef th.tinytable_css_la7438q264rmxece80zr {  position: relative; --border-bottom: 0; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.1em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
-    #tinytable_hkw3sho3w6333n4da5ef td.tinytable_css_az91hak3b3malbsvlk3v, #tinytable_hkw3sho3w6333n4da5ef th.tinytable_css_az91hak3b3malbsvlk3v {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left; padding-left: 1em; padding-left: 0.8em; }
-    #tinytable_hkw3sho3w6333n4da5ef td.tinytable_css_ghjnw88jjqscodwve3hk, #tinytable_hkw3sho3w6333n4da5ef th.tinytable_css_ghjnw88jjqscodwve3hk {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left; padding-left: 1em; padding-left: 0.8em; }
-    #tinytable_hkw3sho3w6333n4da5ef td.tinytable_css_4kxaux8ghdvhkk3t9e4w, #tinytable_hkw3sho3w6333n4da5ef th.tinytable_css_4kxaux8ghdvhkk3t9e4w { text-align: left; padding-left: 1em; padding-left: 0.8em; }
-    #tinytable_hkw3sho3w6333n4da5ef td.tinytable_css_9alsqnibg373b8khqfh7, #tinytable_hkw3sho3w6333n4da5ef th.tinytable_css_9alsqnibg373b8khqfh7 { text-align: left }
-    #tinytable_hkw3sho3w6333n4da5ef td.tinytable_css_kk3ht0bnc5voria6vqnh, #tinytable_hkw3sho3w6333n4da5ef th.tinytable_css_kk3ht0bnc5voria6vqnh {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
-    #tinytable_hkw3sho3w6333n4da5ef td.tinytable_css_en74ztnp3hpsxkrhagzm, #tinytable_hkw3sho3w6333n4da5ef th.tinytable_css_en74ztnp3hpsxkrhagzm {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
-    #tinytable_hkw3sho3w6333n4da5ef td.tinytable_css_ldbo3gzij4snz2ztp454, #tinytable_hkw3sho3w6333n4da5ef th.tinytable_css_ldbo3gzij4snz2ztp454 {  position: relative; --border-bottom: 0; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.1em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
+    #tinytable_mw28zxrbvo5ra95xt9k4 td.tinytable_css_38w0oebjazrs6485a1gt, #tinytable_mw28zxrbvo5ra95xt9k4 th.tinytable_css_38w0oebjazrs6485a1gt { text-align: center }
+    #tinytable_mw28zxrbvo5ra95xt9k4 td.tinytable_css_erwcg2wuj76cmb57sq9g, #tinytable_mw28zxrbvo5ra95xt9k4 th.tinytable_css_erwcg2wuj76cmb57sq9g {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
+    #tinytable_mw28zxrbvo5ra95xt9k4 td.tinytable_css_87m973l1e1mfi0korhpz, #tinytable_mw28zxrbvo5ra95xt9k4 th.tinytable_css_87m973l1e1mfi0korhpz {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
+    #tinytable_mw28zxrbvo5ra95xt9k4 td.tinytable_css_ocngbcjifubdr48bynil, #tinytable_mw28zxrbvo5ra95xt9k4 th.tinytable_css_ocngbcjifubdr48bynil {  position: relative; --border-bottom: 0; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.1em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
+    #tinytable_mw28zxrbvo5ra95xt9k4 td.tinytable_css_9quzerok9kjqgxisldmu, #tinytable_mw28zxrbvo5ra95xt9k4 th.tinytable_css_9quzerok9kjqgxisldmu {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left; padding-left: 1em; padding-left: 0.8em; }
+    #tinytable_mw28zxrbvo5ra95xt9k4 td.tinytable_css_psau8g1xkzqgvc0e3kzk, #tinytable_mw28zxrbvo5ra95xt9k4 th.tinytable_css_psau8g1xkzqgvc0e3kzk {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left; padding-left: 1em; padding-left: 0.8em; }
+    #tinytable_mw28zxrbvo5ra95xt9k4 td.tinytable_css_clzgujn7s4to316ajo1j, #tinytable_mw28zxrbvo5ra95xt9k4 th.tinytable_css_clzgujn7s4to316ajo1j { text-align: left; padding-left: 1em; padding-left: 0.8em; }
+    #tinytable_mw28zxrbvo5ra95xt9k4 td.tinytable_css_d6ffcn3bt6v1kdsnmy29, #tinytable_mw28zxrbvo5ra95xt9k4 th.tinytable_css_d6ffcn3bt6v1kdsnmy29 { text-align: left }
+    #tinytable_mw28zxrbvo5ra95xt9k4 td.tinytable_css_i5kx7njhbtn4umrsije7, #tinytable_mw28zxrbvo5ra95xt9k4 th.tinytable_css_i5kx7njhbtn4umrsije7 {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
+    #tinytable_mw28zxrbvo5ra95xt9k4 td.tinytable_css_0ufz1vewnpxb5lfozhg5, #tinytable_mw28zxrbvo5ra95xt9k4 th.tinytable_css_0ufz1vewnpxb5lfozhg5 {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
+    #tinytable_mw28zxrbvo5ra95xt9k4 td.tinytable_css_8pmogrspwgfuvdj22okk, #tinytable_mw28zxrbvo5ra95xt9k4 th.tinytable_css_8pmogrspwgfuvdj22okk {  position: relative; --border-bottom: 0; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.1em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
     </style>
 <div class="container">
-      <table class="table tinytable" id="tinytable_hkw3sho3w6333n4da5ef" style="width: auto; margin-left: auto; margin-right: auto;" data-quarto-disable-processing="true">
+      <table class="table tinytable" id="tinytable_mw28zxrbvo5ra95xt9k4" style="width: auto; margin-left: auto; margin-right: auto;" data-quarto-disable-processing="true">
 <caption>Descriptive statistics of WHO-5 wellbeing index (0-100)</caption>
         <thead>
 <tr>

@@ -290,9 +290,10 @@ fit; and the <code>"rmst"</code> / <code>"risk_diff"</code> columns for <code>sv
 uncertainty comes from resampling subjects and so ignores the strata
 and clusters the design declares (use <code><a href="https://rdrr.io/pkg/survey/man/svykm.html" class="external-link">survey::svykm()</a></code> for a
 marginal curve).</p>
-<p><code>nested = TRUE</code> is not refused, and does not compare: it puts the
-models side by side and adds no change statistic, because there is no
-likelihood to compare. To test a term under the design, use
+<p><code>nested = TRUE</code> is refused for a design-based table: there is no
+likelihood to compare, so every change statistic would be empty, and
+a block of empty rows reads like an answer. Put the models side by
+side with <code>nested = FALSE</code>, and test a term under the design with
 <code><a href="https://rdrr.io/pkg/survey/man/regTermTest.html" class="external-link">survey::regTermTest()</a></code>.</p>
 <p><code>svyglm</code> keeps an <code>AIC</code> row: survey's <code>extractAIC.svyglm</code> computes
 the design-based AIC of Lumley &amp; Scott (2015), the one information

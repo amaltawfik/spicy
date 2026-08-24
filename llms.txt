@@ -567,7 +567,7 @@ groupings, one block per grouping.
 table_outcome(
   sochealth,
   outcome = bmi,
-  by = c(sex, smoking)
+  select = c(sex, smoking)
 )
 #> Descriptive statistics of Body mass index
 #> 

@@ -5,7 +5,7 @@ rendering-only attributes from an object returned by
 [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md),
 so the underlying long-format data can be manipulated with downstream
 tools under the standard `data.frame` / `tbl_df` contract. The
-`"outcome"` and `"by"` attributes are kept as lightweight provenance
+`"outcome"` and `"select"` attributes are kept as lightweight provenance
 markers. The original `x` is unaffected, and `print(x)` continues to
 render the formatted table.
 

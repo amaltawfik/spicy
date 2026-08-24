@@ -284,9 +284,11 @@ instead of rendering an empty column.
   summarizes one continuous outcome across the levels of several
   categorical variables, stacked as blocks – the inverse layout of
   [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md).
-  Each block reports a group comparison (`p`, optional test statistic
-  and effect size), and an `Overall` row gives the marginal summary.
-  Statistics are chosen with the same `show_columns` tokens as
+  The grouping characteristics are chosen with `select`, as everywhere
+  else in the family: `select` structures the rows. Each block reports a
+  group comparison (`p`, optional test statistic and effect size), and
+  an `Overall` row gives the marginal summary. Statistics are chosen
+  with the same `show_columns` tokens as
   [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
   and every output engine is available. See
   [`vignette("table-outcome")`](https://amaltawfik.github.io/spicy/articles/table-outcome.md).
@@ -750,6 +752,13 @@ instead of rendering an empty column.
   out.
 
 ### Bug fixes
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  refuses a partial effect-size column, and `nested = TRUE`, on model
+  classes that cannot produce them, instead of rendering a column or a
+  block of empty rows. Both refusals name the class and the alternative.
+  Mixed-effects fits (`lmer`, `glmer`, `glmmTMB`, `lme`) and the
+  univariable screen keep `partial_chi2`: they do compute it.
 
 - `weighted_nobs` is `NA` for an unweighted
   [`glm()`](https://rdrr.io/r/stats/glm.html), in

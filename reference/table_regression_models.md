@@ -236,9 +236,10 @@ strata and clusters the design declares (use
 [`survey::svykm()`](https://rdrr.io/pkg/survey/man/svykm.html) for a
 marginal curve).
 
-`nested = TRUE` is not refused, and does not compare: it puts the models
-side by side and adds no change statistic, because there is no
-likelihood to compare. To test a term under the design, use
+`nested = TRUE` is refused for a design-based table: there is no
+likelihood to compare, so every change statistic would be empty, and a
+block of empty rows reads like an answer. Put the models side by side
+with `nested = FALSE`, and test a term under the design with
 [`survey::regTermTest()`](https://rdrr.io/pkg/survey/man/regTermTest.html).
 
 `svyglm` keeps an `AIC` row: survey's `extractAIC.svyglm` computes the

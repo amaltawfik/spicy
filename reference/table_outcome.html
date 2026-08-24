@@ -97,7 +97,7 @@ gives the marginal summary of the whole analytic sample.</p>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">table_outcome</span><span class="op">(</span></span>
 <span>  <span class="va">data</span>,</span>
 <span>  <span class="va">outcome</span>,</span>
-<span>  <span class="va">by</span>,</span>
+<span>  <span class="va">select</span>,</span>
 <span>  labels <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  overall <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  drop_na <span class="op">=</span> <span class="cn">FALSE</span>,</span>
@@ -126,7 +126,8 @@ gives the marginal summary of the whole analytic sample.</p>
 <span>  clipboard_delim <span class="op">=</span> <span class="st">"\t"</span>,</span>
 <span>  word_path <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  user_na <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  style <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  style <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  <span class="va">by</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -143,14 +144,16 @@ gives the marginal summary of the whole analytic sample.</p>
 Exactly one column.</p></dd>
 
 
-<dt id="arg-by">by<a class="anchor" aria-label="anchor" href="#arg-by"></a></dt>
-<dd><p>The grouping variables, as a tidyselect expression. One
-block of rows per variable, in the order given.</p></dd>
+<dt id="arg-select">select<a class="anchor" aria-label="anchor" href="#arg-select"></a></dt>
+<dd><p>The grouping characteristics to describe the outcome
+across, as a tidyselect expression or a character vector of column
+names. One block of rows per variable, in the order given. As
+everywhere in the family, <code>select</code> is what structures the rows.</p></dd>
 
 
 <dt id="arg-labels">labels<a class="anchor" aria-label="anchor" href="#arg-labels"></a></dt>
 <dd><p>Named character vector of display labels, for the
-outcome and for the <code>by</code> variables alike.</p></dd>
+outcome and for the <code>select</code> variables alike.</p></dd>
 
 
 <dt id="arg-overall">overall<a class="anchor" aria-label="anchor" href="#arg-overall"></a></dt>
@@ -158,7 +161,7 @@ outcome and for the <code>by</code> variables alike.</p></dd>
 
 
 <dt id="arg-drop-na">drop_na<a class="anchor" aria-label="anchor" href="#arg-drop-na"></a></dt>
-<dd><p>Drop rows with a missing <code>by</code> value from that block
+<dd><p>Drop rows with a missing <code>select</code> value from that block
 (default <code>FALSE</code>: they are shown as a <code>(Missing)</code> level and
 excluded from the comparison).</p></dd>
 
@@ -232,6 +235,11 @@ destinations, as in <code><a href="table_continuous.html">table_continuous()</a>
 <dt id="arg-style">style<a class="anchor" aria-label="anchor" href="#arg-style"></a></dt>
 <dd><p>A journal style; see <code><a href="spicy_style.html">spicy_style()</a></code>.</p></dd>
 
+
+<dt id="arg-by">by<a class="anchor" aria-label="anchor" href="#arg-by"></a></dt>
+<dd><p>Defunct. The grouping characteristics are selected with
+<code>select</code> since spicy 0.13.0; supplying <code>by</code> is an error.</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
@@ -243,7 +251,7 @@ frame and the typed view attached. <code>output = "data.frame"</code> /
     <h2 id="which-shape-do-i-need-">Which shape do I need?<a class="anchor" aria-label="anchor" href="#which-shape-do-i-need-"></a></h2>
     <p>Several continuous variables across <em>one</em> grouping is
 <code><a href="table_continuous.html">table_continuous()</a></code> (<code>select = </code>, <code>by = </code>). One continuous variable
-across one or several groupings is this function. A single <code>by</code> is
+across one or several groupings is this function. A single <code>select</code> is
 legitimate here – it is the natural way in when you know more
 groupings are coming – but with several outcomes and one grouping,
 the sibling is the table you want.</p>
@@ -310,15 +318,15 @@ whole analytic sample, where a mean is recomputed over every
 observation and nothing is added. A mean is not a total.</p>
     </div>
     <div class="section level2">
-    <h2 id="choosing-the-by-columns">Choosing the <code>by</code> columns<a class="anchor" aria-label="anchor" href="#choosing-the-by-columns"></a></h2>
-    <p>The canonical form is <code>by = where(is.factor)</code>, or an explicit
-enumeration. Negation (<code>by = -c(x, y)</code>) is not recommended: it
+    <h2 id="choosing-the-select-columns">Choosing the <code>select</code> columns<a class="anchor" aria-label="anchor" href="#choosing-the-select-columns"></a></h2>
+    <p>The canonical form is <code>select = where(is.factor)</code>, or an explicit
+enumeration. Negation (<code>select = -c(x, y)</code>) is not recommended: it
 sweeps in every remaining column, and a numeric one becomes a block
 with one LEVEL per distinct value, in order of first appearance. A
 variable producing more than 20 levels raises a warning for that
 reason – an arbitrary threshold, but a sixty-row block where a
 reader expects a handful of categories is not a table.</p>
-<p>A <code>haven_labelled</code> column used as <code>by</code> shows its numeric CODES, not
+<p>A <code>haven_labelled</code> column used as <code>select</code> shows its numeric CODES, not
 its value labels, as it does in <code><a href="table_continuous.html">table_continuous()</a></code>. Convert it
 first (<code><a href="https://forcats.tidyverse.org/reference/as_factor.html" class="external-link">haven::as_factor()</a></code>) to get the labels in the stub.</p>
     </div>
@@ -339,7 +347,7 @@ On the <code>"tinytable"</code> route it is set one size down;
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="fu">table_outcome</span><span class="op">(</span><span class="va">sochealth</span>, <span class="va">bmi</span>, by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">sex</span>, <span class="va">smoking</span><span class="op">)</span><span class="op">)</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="fu">table_outcome</span><span class="op">(</span><span class="va">sochealth</span>, <span class="va">bmi</span>, select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">sex</span>, <span class="va">smoking</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Descriptive statistics of Body mass index</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Variable       <span style="color: #9E9E9E;">│</span>   M     SD    Min    Max   95% CI LL  95% CI UL   n     p   </span>
@@ -356,7 +364,7 @@ On the <code>"tinytable"</code> route it is set one size down;
 <span class="r-out co"><span class="r-pr">#&gt;</span>    (Missing)    <span style="color: #9E9E9E;">│</span> 24.74  3.63  17.60  32.50    23.24      26.23      25       </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Missing values removed: bmi (12). Group comparison: Welch t-test. Each block compares Body mass index across the levels of one variable; blocks are not adjusted for one another. Overall = the whole analytic sample.</span></span>
-<span class="r-in"><span><span class="fu">table_outcome</span><span class="op">(</span><span class="va">sochealth</span>, <span class="va">wellbeing_score</span>, by <span class="op">=</span> <span class="fu"><a href="https://tidyselect.r-lib.org/reference/where.html" class="external-link">where</a></span><span class="op">(</span><span class="va">is.factor</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">table_outcome</span><span class="op">(</span><span class="va">sochealth</span>, <span class="va">wellbeing_score</span>, select <span class="op">=</span> <span class="fu"><a href="https://tidyselect.r-lib.org/reference/where.html" class="external-link">where</a></span><span class="op">(</span><span class="va">is.factor</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Descriptive statistics of WHO-5 wellbeing index (0-100)</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Variable                        <span style="color: #9E9E9E;">│</span>   M     SD     Min    Max    95% CI LL </span>

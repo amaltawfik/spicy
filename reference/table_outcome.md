@@ -16,7 +16,7 @@ the marginal summary of the whole analytic sample.
 table_outcome(
   data,
   outcome,
-  by,
+  select,
   labels = NULL,
   overall = TRUE,
   drop_na = FALSE,
@@ -45,7 +45,8 @@ table_outcome(
   clipboard_delim = "\t",
   word_path = NULL,
   user_na = TRUE,
-  style = NULL
+  style = NULL,
+  by
 )
 ```
 
@@ -59,15 +60,17 @@ table_outcome(
 
   The continuous outcome, unquoted or as a string. Exactly one column.
 
-- by:
+- select:
 
-  The grouping variables, as a tidyselect expression. One block of rows
-  per variable, in the order given.
+  The grouping characteristics to describe the outcome across, as a
+  tidyselect expression or a character vector of column names. One block
+  of rows per variable, in the order given. As everywhere in the family,
+  `select` is what structures the rows.
 
 - labels:
 
   Named character vector of display labels, for the outcome and for the
-  `by` variables alike.
+  `select` variables alike.
 
 - overall:
 
@@ -75,8 +78,8 @@ table_outcome(
 
 - drop_na:
 
-  Drop rows with a missing `by` value from that block (default `FALSE`:
-  they are shown as a `(Missing)` level and excluded from the
+  Drop rows with a missing `select` value from that block (default
+  `FALSE`: they are shown as a `(Missing)` level and excluded from the
   comparison).
 
 - weights, rescale:
@@ -149,6 +152,11 @@ table_outcome(
   A journal style; see
   [`spicy_style()`](https://amaltawfik.github.io/spicy/reference/spicy_style.md).
 
+- by:
+
+  Defunct. The grouping characteristics are selected with `select` since
+  spicy 0.13.0; supplying `by` is an error.
+
 ## Value
 
 A `spicy_outcome_table`: the compute frame, with the display frame and
@@ -160,8 +168,8 @@ compute frame unclassed.
 Several continuous variables across *one* grouping is
 [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
 (`select = `, `by = `). One continuous variable across one or several
-groupings is this function. A single `by` is legitimate here – it is the
-natural way in when you know more groupings are coming – but with
+groupings is this function. A single `select` is legitimate here – it is
+the natural way in when you know more groupings are coming – but with
 several outcomes and one grouping, the sibling is the table you want.
 
 ## Choosing the statistics
@@ -233,18 +241,18 @@ where frequencies add up. This row is the whole analytic sample, where a
 mean is recomputed over every observation and nothing is added. A mean
 is not a total.
 
-## Choosing the `by` columns
+## Choosing the `select` columns
 
-The canonical form is `by = where(is.factor)`, or an explicit
-enumeration. Negation (`by = -c(x, y)`) is not recommended: it sweeps in
-every remaining column, and a numeric one becomes a block with one LEVEL
-per distinct value, in order of first appearance. A variable producing
-more than 20 levels raises a warning for that reason – an arbitrary
-threshold, but a sixty-row block where a reader expects a handful of
-categories is not a table.
+The canonical form is `select = where(is.factor)`, or an explicit
+enumeration. Negation (`select = -c(x, y)`) is not recommended: it
+sweeps in every remaining column, and a numeric one becomes a block with
+one LEVEL per distinct value, in order of first appearance. A variable
+producing more than 20 levels raises a warning for that reason – an
+arbitrary threshold, but a sixty-row block where a reader expects a
+handful of categories is not a table.
 
-A `haven_labelled` column used as `by` shows its numeric CODES, not its
-value labels, as it does in
+A `haven_labelled` column used as `select` shows its numeric CODES, not
+its value labels, as it does in
 [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md).
 Convert it first
 ([`haven::as_factor()`](https://forcats.tidyverse.org/reference/as_factor.html))
@@ -270,7 +278,7 @@ for categorical outcomes.
 ## Examples
 
 ``` r
-table_outcome(sochealth, bmi, by = c(sex, smoking))
+table_outcome(sochealth, bmi, select = c(sex, smoking))
 #> Descriptive statistics of Body mass index
 #> 
 #>  Variable       │   M     SD    Min    Max   95% CI LL  95% CI UL   n     p   
@@ -287,7 +295,7 @@ table_outcome(sochealth, bmi, by = c(sex, smoking))
 #>    (Missing)    │ 24.74  3.63  17.60  32.50    23.24      26.23      25       
 #> 
 #> Missing values removed: bmi (12). Group comparison: Welch t-test. Each block compares Body mass index across the levels of one variable; blocks are not adjusted for one another. Overall = the whole analytic sample.
-table_outcome(sochealth, wellbeing_score, by = where(is.factor))
+table_outcome(sochealth, wellbeing_score, select = where(is.factor))
 #> Descriptive statistics of WHO-5 wellbeing index (0-100)
 #> 
 #>  Variable                        │   M     SD     Min    Max    95% CI LL 
