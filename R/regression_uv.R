@@ -883,6 +883,15 @@ as_regression_frame.spicy_uv_screen <- function(
 
   info <- base_info
   info$class <- "uv_screen"
+  # The classes the screen stands for. `info$class` is the composite's
+  # own name, which says nothing to a user reading a refusal: a message
+  # about `uv_screen` names an internal object, not the models they
+  # passed. Capability guards read this instead.
+  info$extras$screen_classes <- unique(vapply(
+    bundle$fits,
+    function(f) class(f)[1L],
+    character(1)
+  ))
   info$n_obs <- max(ns)
   info$extras$has_singular <- any_singular
   info$extras$singular_terms <- unique(singular_terms)

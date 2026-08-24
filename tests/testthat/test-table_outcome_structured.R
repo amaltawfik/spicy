@@ -190,8 +190,13 @@ test_that("coercion strips the rendering attributes, keeps provenance", {
   expect_false(inherits(plain, "spicy_outcome_table"))
   expect_identical(attr(plain, "outcome"), "bmi")
   expect_identical(attr(plain, "select"), c("sex", "smoking"))
-  # The old spelling of the provenance marker is gone, not aliased.
+  # The old spellings of the two renamed attributes are gone, not
+  # aliased: `"by"` became `"select"` (kept, provenance) and
+  # `"by_na_dropped"` became `"select_na_dropped"` (rendering-only,
+  # stripped here like every other rendering attribute).
   expect_null(attr(plain, "by"))
+  expect_null(attr(plain, "by_na_dropped"))
+  expect_null(attr(plain, "select_na_dropped"))
   expect_null(attr(plain, "display_df"))
   expect_null(attr(plain, "structured"))
   # The original object is untouched and still prints.

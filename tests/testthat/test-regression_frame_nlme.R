@@ -347,6 +347,17 @@ test_that("gls: title_prefix = 'Generalised least squares (nlme)'", {
   )
 })
 
+test_that("gls: supports$partial_effect_size = FALSE (no attach helper)", {
+  # The FALSE side of the same flag its lme sibling declares TRUE: only
+  # as_regression_frame.lme() calls
+  # .attach_partial_chi2_to_frame_coefs(). The two builders differ, so
+  # the two declarations differ -- that is the flag doing its job.
+  fit <- .fit_gls_corcs()
+  fr <- as_regression_frame(fit, model_id = "M1")
+  expect_false(fr$info$supports$partial_effect_size)
+  expect_true(fr$info$supports$nested_lrt)
+})
+
 test_that("gls: factor predictor synthesises a reference row", {
   fit <- .fit_gls_corcs()
   fr <- as_regression_frame(fit, model_id = "M1")

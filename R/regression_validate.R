@@ -1280,17 +1280,25 @@ validate_class_appropriate_tokens <- function(
   # gate below (no likelihood -> no pseudo-R^2 / IC / partial LRT),
   # so it must not be claimed by the glm bucket -- the glm messages
   # would suggest substitutes GEE cannot compute.
-  gee_flags <- vapply(models, inherits, logical(1), "geeglm")
-  glm_flags <- vapply(models, inherits, logical(1), "glm") & !gee_flags
+  #
+  # A univariable-screen bundle stands for the fits it wraps, here as
+  # in the r2 gate below: the bundle is a plain list carrying class
+  # `spicy_uv_screen`, so reading its class alone made every screen a
+  # mixed set, and the substitution gates never fired. A linear screen
+  # asking for `partial_chi2` then rendered a fully blank column --
+  # exactly what a solo lm() is refused for.
+  eff_models <- .unwrap_screen_bundles(models)
+  gee_flags <- vapply(eff_models, inherits, logical(1), "geeglm")
+  glm_flags <- vapply(eff_models, inherits, logical(1), "glm") & !gee_flags
   lm_only_flags <- vapply(
-    models,
+    eff_models,
     function(f) {
       inherits(f, "lm") && !inherits(f, "glm")
     },
     logical(1)
   )
-  all_glm <- length(models) > 0L && all(glm_flags)
-  all_lm <- length(models) > 0L && all(lm_only_flags)
+  all_glm <- length(eff_models) > 0L && all(glm_flags)
+  all_lm <- length(eff_models) > 0L && all(lm_only_flags)
 
   # Variance-explained partial tokens. Reject only when ALL models
   # are glm \u2013 in mixed sets, the renderer en-dashes glm rows and
@@ -1404,8 +1412,9 @@ validate_class_appropriate_tokens <- function(
     # A univariable-screen bundle stands for the fits it wraps: with
     # `multivariable = FALSE` the bundle is the ONLY entry in `models`,
     # so reading its class alone would refuse the linear screen -- the
-    # very table the column is for.
-    eff_fits <- .unwrap_screen_bundles(models)
+    # very table the column is for. Same unwrapped set as the class
+    # buckets above.
+    eff_fits <- eff_models
     any_ols <- any(vapply(
       eff_fits,
       function(f) inherits(f, "lm") && !inherits(f, "glm"),

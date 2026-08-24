@@ -502,6 +502,16 @@ test_that("glmer: supports$exponentiate = TRUE (non-identity link)", {
   expect_true(fr$info$supports$exponentiate)
 })
 
+test_that("glmer: supports$partial_effect_size = TRUE (partial chi^2)", {
+  # The glm ARM of .merMod_info(), which the lmer test does not reach.
+  # Both arms call .attach_partial_chi2_to_frame_coefs(), so both must
+  # declare the capability the guard in table_regression() reads.
+  fit <- .fit_glmer_logit()
+  fr <- as_regression_frame(fit, model_id = "M1")
+  expect_true(fr$info$supports$partial_effect_size)
+  expect_identical(class(fit)[1L], "glmerMod")
+})
+
 test_that("glmer poisson: family + title_prefix reflect Poisson", {
   fit <- .fit_glmer_poisson()
   fr <- as_regression_frame(fit, model_id = "M1")

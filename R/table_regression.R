@@ -2945,13 +2945,7 @@ table_regression <- function(
       logical(1)
     )
     if (!any(partial_ok)) {
-      classes <- unique(vapply(
-        frames,
-        function(fr) {
-          fr$info$class %||% "?"
-        },
-        character(1)
-      ))
+      classes <- .frame_class_labels(frames)
       spicy_abort(
         c(
           sprintf(
@@ -2974,13 +2968,21 @@ table_regression <- function(
   }
 
   # Nested-comparison capability guard (decision 41). `nested = TRUE`
-  # on a table where NO model can be compared to its predecessor used
-  # to render a full block of en-dashed change rows -- an answer-shaped
+  # on a model that cannot be compared to its predecessor used to
+  # render a block of en-dashed change rows -- an answer-shaped
   # absence. Refuse instead, reading `supports$nested_lrt`. The GEE
   # refusal in validate_nested_alignment() still fires first, before any
   # frame exists, and keeps its own QIC hint; this guard covers the
   # classes with no pre-frame gate of their own (design-based fits,
   # Bayesian fits, lm_robust, ivreg).
+  #
+  # ONE incapable model is enough to refuse, unlike the column guards
+  # above. A column is independent per model -- a mixed lm + glm table
+  # fills the capable side and en-dashes the other, which is the
+  # intended reading. A hierarchy is a SEQUENCE: every change statistic
+  # is a statement about an adjacent PAIR, so a fit that cannot enter a
+  # comparison silently removes the comparison the table exists for.
+  # There is no capable side to fall back on.
   if (isTRUE(nested) && length(frames) >= 2L) {
     nested_ok <- vapply(
       frames,
@@ -2989,14 +2991,8 @@ table_regression <- function(
       },
       logical(1)
     )
-    if (!any(nested_ok)) {
-      classes <- unique(vapply(
-        frames,
-        function(fr) {
-          fr$info$class %||% "?"
-        },
-        character(1)
-      ))
+    if (!all(nested_ok)) {
+      classes <- .frame_class_labels(frames[!nested_ok])
       spicy_abort(
         c(
           sprintf(
@@ -3006,7 +3002,9 @@ table_regression <- function(
           "i" = paste0(
             "The change statistics of a hierarchy (\u0394R\u00B2, partial ",
             "F, LRT, \u0394AIC) all read a likelihood or a least-squares ",
-            "decomposition this class does not provide."
+            "decomposition this class does not provide, and a hierarchy ",
+            "compares adjacent PAIRS -- one model that cannot be compared ",
+            "removes the comparison, it does not blank one column."
           ),
           "i" = "Render the models side by side with `nested = FALSE`."
         ),
