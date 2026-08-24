@@ -630,7 +630,13 @@ inline <- function(
 # throughout, and not that the group means beside it are addressable.
 # The context arguments are optional so a caller without a structured
 # table still gets the bare refusal.
-.inline_refuse_empty <- function(txt, token, s = NULL, formatted = NULL, cols = NULL) {
+.inline_refuse_empty <- function(
+  txt,
+  token,
+  s = NULL,
+  formatted = NULL,
+  cols = NULL
+) {
   if (nzchar(txt)) {
     return(invisible(NULL))
   }
@@ -671,13 +677,16 @@ inline <- function(
       logical(1)
     ))
   if (all_blank) {
-    hints <- c(hints, "i" = sprintf(
-      paste0(
-        "The %s column is empty on EVERY row: this table carries no ",
-        "value for that token."
-      ),
-      .quote_val(token)
-    ))
+    hints <- c(
+      hints,
+      "i" = sprintf(
+        paste0(
+          "The %s column is empty on EVERY row: this table carries no ",
+          "value for that token."
+        ),
+        .quote_val(token)
+      )
+    )
   }
   levels_by_token <- list()
   for (nm in setdiff(cols, hits)) {
@@ -689,16 +698,22 @@ inline <- function(
   }
   if (length(levels_by_token) > 0L) {
     tk <- names(levels_by_token)[1L]
-    hints <- c(hints, "i" = sprintf(
-      "Per-group columns ARE addressable: `level = %s, column = %s`.",
-      .quote_val(levels_by_token[[tk]][1L]),
-      .quote_val(tk)
-    ))
-    hints <- c(hints, "i" = paste0(
-      "Available levels: ",
-      paste(.quote_val(levels_by_token[[tk]]), collapse = ", "),
-      "."
-    ))
+    hints <- c(
+      hints,
+      "i" = sprintf(
+        "Per-group columns ARE addressable: `level = %s, column = %s`.",
+        .quote_val(levels_by_token[[tk]][1L]),
+        .quote_val(tk)
+      )
+    )
+    hints <- c(
+      hints,
+      "i" = paste0(
+        "Available levels: ",
+        paste(.quote_val(levels_by_token[[tk]]), collapse = ", "),
+        "."
+      )
+    )
   }
   hints
 }

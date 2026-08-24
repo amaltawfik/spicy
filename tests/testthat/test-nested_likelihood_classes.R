@@ -7,7 +7,9 @@
 # the statistics against stats::anova() as oracle, and the refusals.
 
 skip_if_no <- function(...) {
-  for (p in c(...)) skip_if_not_installed(p)
+  for (p in c(...)) {
+    skip_if_not_installed(p)
+  }
 }
 
 # ---- fixtures -------------------------------------------------------------
@@ -346,7 +348,11 @@ test_that("a nested survreg table renders LRT rows and no R2 dashes", {
   p <- survreg_pair()
   out <- paste(
     capture.output(print(
-      table_regression(list(p$m1, p$m2), nested = TRUE, show_columns = c("b", "p"))
+      table_regression(
+        list(p$m1, p$m2),
+        nested = TRUE,
+        show_columns = c("b", "p")
+      )
     )),
     collapse = "\n"
   )
@@ -607,11 +613,20 @@ test_that("a REML/ML nlme pair is refused, not silently recomputed", {
   )
   expect_s3_class(err, "spicy_invalid_input")
   expect_match(conditionMessage(err), engine, fixed = TRUE)
-  expect_match(conditionMessage(err), "their own `anova()` method refused", fixed = TRUE)
-  expect_match(conditionMessage(err), "different methods (REML and ML)", fixed = TRUE)
+  expect_match(
+    conditionMessage(err),
+    "their own `anova()` method refused",
+    fixed = TRUE
+  )
+  expect_match(
+    conditionMessage(err),
+    "different methods (REML and ML)",
+    fixed = TRUE
+  )
 
   # The number the fallback used to print, and the honest one it is not.
-  wrong <- 2 * (as.numeric(stats::logLik(ml2)) - as.numeric(stats::logLik(reml)))
+  wrong <- 2 *
+    (as.numeric(stats::logLik(ml2)) - as.numeric(stats::logLik(reml)))
   expect_equal(wrong, 6.846349006, tolerance = 1e-8)
   ml1 <- nlme::gls(follicles ~ sin(2 * pi * Time), data = d, method = "ML")
   honest <- compute_nested_comparisons(list(ml1, ml2))
@@ -655,7 +670,12 @@ test_that("the classes with no anova() method still serve exact lrtest values", 
   for (nm in names(cases)) {
     got <- compute_nested_comparisons(cases[[nm]])
     oracle <- lmtest::lrtest(cases[[nm]][[1L]], cases[[nm]][[2L]])
-    expect_equal(got$lrt_change[1L], oracle$Chisq[2L], tolerance = 1e-10, info = nm)
+    expect_equal(
+      got$lrt_change[1L],
+      oracle$Chisq[2L],
+      tolerance = 1e-10,
+      info = nm
+    )
   }
 })
 
@@ -740,7 +760,10 @@ test_that("loglik_df_increase reports the added parameters, or NA", {
   m2 <- stats::lm(mpg ~ wt + hp, data = mtcars)
   expect_equal(loglik_df_increase(m1, m2), 1)
   expect_equal(loglik_df_increase(m2, m1), -1)
-  expect_true(is.na(loglik_df_increase(structure(list(), class = "nothing"), m2)))
+  expect_true(is.na(loglik_df_increase(
+    structure(list(), class = "nothing"),
+    m2
+  )))
 })
 
 
@@ -795,7 +818,11 @@ test_that("the refusal's reason is true for every class that can hear it", {
   # feols reaches the arm ...
   expect_true(spicy:::all_likelihood_path(list(f1, f2)))
   # ... and is not told something false about its own estimator.
-  expect_false(grepl("least-squares framework", reason(list(f1, f2)), fixed = TRUE))
+  expect_false(grepl(
+    "least-squares framework",
+    reason(list(f1, f2)),
+    fixed = TRUE
+  ))
 })
 
 

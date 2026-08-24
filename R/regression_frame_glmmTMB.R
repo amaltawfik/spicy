@@ -147,7 +147,8 @@ as_regression_frame.glmmTMB <- function(
       # invoking a restart that is not established would error, turning
       # a muted nuisance into a failed build.
       if (
-        conditionMessage(w) %in% nan_msgs &&
+        conditionMessage(w) %in%
+          nan_msgs &&
           !is.null(findRestart("muffleWarning"))
       ) {
         invokeRestart("muffleWarning")

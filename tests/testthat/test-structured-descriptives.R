@@ -961,7 +961,11 @@ test_that("the run predicate agrees with the retired string derivation", {
     quiet(table_continuous(sh, select = c(bmi, income), by = sex)),
     quiet(table_continuous(sh, select = c(bmi, income))),
     quiet(table_continuous(sh, select = bmi, by = sex)),
-    quiet(table_continuous(sh, select = c(bmi, income, wellbeing_score), by = education)),
+    quiet(table_continuous(
+      sh,
+      select = c(bmi, income, wellbeing_score),
+      by = education
+    )),
     quiet(table_continuous(sh, select = c(bmi, income), by = sex, smd = TRUE)),
     quiet(table_continuous(
       sh,
@@ -1044,7 +1048,10 @@ test_that("the run predicate handles NA keys, ties and degenerate lengths", {
     spicy:::.struct_run_sep_rows(c("a", NA, NA, "b")),
     c(2L, 4L)
   )
-  expect_identical(spicy:::.struct_run_sep_rows(rep(NA_character_, 4L)), integer(0))
+  expect_identical(
+    spicy:::.struct_run_sep_rows(rep(NA_character_, 4L)),
+    integer(0)
+  )
   expect_identical(spicy:::.struct_run_sep_rows(character(0)), integer(0))
   expect_identical(spicy:::.struct_run_sep_rows("a"), integer(0))
   # Non-adjacent repeats are two blocks, not one: a run, never a set.

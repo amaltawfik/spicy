@@ -85,7 +85,10 @@ test_that("a cited cell carries the style levers that have no formal", {
   int_row <- which(s$body$.variable == "(Intercept)")
   expect_identical(inline(tl, age, column = "p"), trimws(tl$p[age_row]))
   expect_identical(inline(tl, age, column = "p"), paste0("0", dot, "16"))
-  expect_identical(inline(tl, "(Intercept)", column = "p"), trimws(tl$p[int_row]))
+  expect_identical(
+    inline(tl, "(Intercept)", column = "p"),
+    trimws(tl$p[int_row])
+  )
   expect_identical(
     inline(tl, "(Intercept)", column = "p"),
     paste0("<0", dot, "0001")
@@ -106,7 +109,12 @@ test_that("a cited cell carries the style levers that have no formal", {
   # road: the block p of a categorical / outcome table, and a floor
   # that parts ways with the decimals (JAMA: two decimals, floor .001).
   d <- as.data.frame(sochealth)
-  tk <- .il_quiet(table_categorical(d, select = smoking, by = sex, style = "lancet"))
+  tk <- .il_quiet(table_categorical(
+    d,
+    select = smoking,
+    by = sex,
+    style = "lancet"
+  ))
   expect_identical(inline(tk, smoking, column = "p"), paste0("0", dot, "71"))
   to <- .il_quiet(table_outcome(d, bmi, select = sex, style = "lancet"))
   expect_identical(inline(to, sex, column = "p"), paste0("0", dot, "018"))
@@ -734,7 +742,11 @@ test_that("`level` cites a group column of table_continuous_lm()", {
   expect_identical(inline(tc, bmi, "Female", "m"), "25.69")
   tr <- .il_quiet(table_regression(lm(wellbeing_score ~ age + sex, data = d)))
   expect_identical(inline(tr, sex, "Male", "b"), "3.90")
-  expect_error(inline(tr, age, "Male", "b"), "No level", class = "spicy_invalid_input")
+  expect_error(
+    inline(tr, age, "Male", "b"),
+    "No level",
+    class = "spicy_invalid_input"
+  )
 })
 
 test_that("a bare inline() on a median-only table cites the median, not n", {

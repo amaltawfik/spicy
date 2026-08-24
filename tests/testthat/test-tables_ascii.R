@@ -282,7 +282,9 @@ test_that("a block omnibus p is not attributed to its neighbour", {
   # claim about what was compared.
   skip_if_not_installed("survey")
   d <- mtcars
-  for (v in c("cyl", "gear", "am", "carb")) d[[v]] <- factor(d[[v]])
+  for (v in c("cyl", "gear", "am", "carb")) {
+    d[[v]] <- factor(d[[v]])
+  }
   hdr <- function(expr, w) {
     op <- options(width = w)
     on.exit(options(op), add = TRUE)

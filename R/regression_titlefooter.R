@@ -1935,7 +1935,11 @@ build_icc_omitted_footer_block_from_frames <- function(
     return(NULL)
   }
   msg <- function(reason) {
-    switch(reason, multi_group = spicy_str("note_icc_multi_group"), NA_character_)
+    switch(
+      reason,
+      multi_group = spicy_str("note_icc_multi_group"),
+      NA_character_
+    )
   }
   affected <- which(!is.na(reasons))
   # One shared line when every model says the same thing -- the reason is

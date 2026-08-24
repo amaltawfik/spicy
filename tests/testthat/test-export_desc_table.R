@@ -293,12 +293,15 @@ test_that("table_continuous_svy() sends no sep_rows without `by`", {
     ),
     0L
   )
-  expect_true(length(.edt_sep_rows_for(
-    table_continuous_svy(
-      des,
-      select = c(api00, api99),
-      by = stype,
-      output = "gt"
-    )
-  )) >= 1L)
+  expect_true(
+    length(.edt_sep_rows_for(
+      table_continuous_svy(
+        des,
+        select = c(api00, api99),
+        by = stype,
+        output = "gt"
+      )
+    )) >=
+      1L
+  )
 })

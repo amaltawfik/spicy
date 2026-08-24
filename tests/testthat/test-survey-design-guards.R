@@ -492,7 +492,11 @@ test_that("a design fit's cluster hint names the design, not CR*", {
     )
     expect_s3_class(w, "spicy_ignored_arg")
     msg <- paste(conditionMessage(w), collapse = " ")
-    expect_match(msg, "survey::svydesign(ids = ~cluster_var, ...)", fixed = TRUE)
+    expect_match(
+      msg,
+      "survey::svydesign(ids = ~cluster_var, ...)",
+      fixed = TRUE
+    )
     # The advice that errors is gone.
     expect_false(grepl("Set `vcov` to", msg, fixed = TRUE))
     expect_false(grepl("CR0", msg, fixed = TRUE))

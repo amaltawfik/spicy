@@ -46,7 +46,10 @@ test_that("the same hints reach an explicitly addressed delta", {
 test_that("the remedy the message names actually works", {
   d <- .inline_msg_data()
   tbl <- table_continuous_lm(d, c(bmi, chol), by = sex, contrast = "none")
-  expect_identical(inline(tbl, bmi, level = "Female", column = "emmean"), "26.59")
+  expect_identical(
+    inline(tbl, bmi, level = "Female", column = "emmean"),
+    "26.59"
+  )
   expect_identical(inline(tbl, bmi, level = "Male", column = "emmean"), "25.22")
 })
 
@@ -74,9 +77,15 @@ test_that("no refusal on this table lists an empty set of alternatives", {
   d <- .inline_msg_data()
   tbl <- table_continuous(d, c(bmi, chol), by = sex)
   msgs <- c(
-    tryCatch(inline(tbl, bmi, column = "p"), error = function(e) conditionMessage(e)),
-    tryCatch(inline(tbl, bmi, "Nope", "p"), error = function(e) conditionMessage(e)),
-    tryCatch(inline(tbl, bmi, "Female", "mean"), error = function(e) conditionMessage(e))
+    tryCatch(inline(tbl, bmi, column = "p"), error = function(e) {
+      conditionMessage(e)
+    }),
+    tryCatch(inline(tbl, bmi, "Nope", "p"), error = function(e) {
+      conditionMessage(e)
+    }),
+    tryCatch(inline(tbl, bmi, "Female", "mean"), error = function(e) {
+      conditionMessage(e)
+    })
   )
   for (m in msgs) {
     expect_false(grepl("Available: .", m, fixed = TRUE))

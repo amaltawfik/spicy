@@ -60,8 +60,7 @@
 
 test_that("a nested lme labels each variance component with its own level", {
   fit <- .fit_lme_nested()
-  vc <- spicy:::as_regression_frame(fit)$info$random_effects$
-    variance_components
+  vc <- spicy:::as_regression_frame(fit)$info$random_effects$variance_components
 
   # Innermost level first, lme4's order and lme4's composite spelling.
   expect_identical(vc$group, c("Side:Dog", "Dog", "Residual"))
@@ -85,8 +84,7 @@ test_that("a nested lme labels each variance component with its own level", {
 
 test_that("a nested lme gives each level its own Wald SE and CI", {
   fit <- .fit_lme_nested()
-  vc <- spicy:::as_regression_frame(fit)$info$random_effects$
-    variance_components
+  vc <- spicy:::as_regression_frame(fit)$info$random_effects$variance_components
 
   # The defect: identical std_error / ci_lower / ci_upper on the two
   # random-effect rows, because both read the same intervals() block.
@@ -171,8 +169,7 @@ test_that("a three-level lme composes each level onto its ancestors", {
 
 test_that("a nested lme attributes each correlation row to its own level", {
   fit <- .fit_lme_nested_slope()
-  vc <- spicy:::as_regression_frame(fit)$info$random_effects$
-    variance_components
+  vc <- spicy:::as_regression_frame(fit)$info$random_effects$variance_components
 
   is_cor <- vc$is_correlation %in% TRUE
   expect_identical(sum(is_cor), 1L)
