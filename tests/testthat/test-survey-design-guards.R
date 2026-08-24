@@ -443,12 +443,22 @@ test_that("an unknown vcov token keeps its own answer on a design fit", {
   )
   expect_match(conditionMessage(err), "Unknown `vcov` type", fixed = TRUE)
   expect_false(grepl("variance authority", conditionMessage(err)))
-  # An HC-prefixed unknown keeps ITS historical answer too: sandwich
-  # errors, the HC arm's fallback warns and returns stats::vcov() --
-  # which on a design fit IS the design variance.
-  expect_warning(
-    v9 <- spicy:::compute_model_vcov(fit, "HC9"),
-    class = "spicy_fallback"
+  # An HC-prefixed unknown reaches the HC arm before the unknown-token
+  # abort, and sandwich rejects it there. That used to warn and return
+  # stats::vcov() -- which on a design fit IS the design variance, and so
+  # was the right matrix under the wrong label ("heteroskedasticity-
+  # robust (HC9)"). The label is what spicy refuses to get wrong
+  # (register n. 229), so the arm now aborts and names the remedy that
+  # returns the same matrix honestly.
+  err9 <- tryCatch(
+    spicy:::compute_model_vcov(fit, "HC9"),
+    error = identity
   )
-  expect_identical(v9, stats::vcov(fit))
+  expect_s3_class(err9, "spicy_unsupported_vcov")
+  expect_match(conditionMessage(err9), "HC9", fixed = TRUE)
+  expect_match(conditionMessage(err9), "sandwich::vcovHC()", fixed = TRUE)
+  expect_identical(
+    spicy:::compute_model_vcov(fit, "classical"),
+    stats::vcov(fit)
+  )
 })
