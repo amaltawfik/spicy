@@ -54,12 +54,17 @@ as_regression_frame.glmmTMB <- function(
 ) {
   .check_glmmTMB_available()
 
-  # The whole build runs under the NaN-warning mute: summary.glmmTMB and
-  # the Wald extractors raise anonymous "NaNs produced" warnings on a
-  # non-converged / boundary fit, restating in the session locale what
-  # the classed convergence / singular caveats say precisely. The classed
-  # warnings, raised inside .glmmTMB_info(), pass straight through.
-  .mute_glmmTMB_nan_warnings({
+  # The NaN-warning mute applies to the NON-CONVERGED path only. On such
+  # a fit summary.glmmTMB and the Wald extractors raise anonymous "NaNs
+  # produced" warnings that restate, in the session locale, what the
+  # classed convergence caveat says precisely. The verdict is two pure
+  # field reads, so it can be taken here, before the build, without
+  # raising anything; a converged fit runs entirely unwrapped and can
+  # never have a warning swallowed -- the user-data paths inside (AME,
+  # standardisation, the null-LRT refit) keep their own voice. The
+  # classed warning itself, raised inside .glmmTMB_info(), passes
+  # through either way.
+  .mute_glmmTMB_nan_warnings(.glmmTMB_is_nonconverged(fit), {
     coefs <- .glmmTMB_coefs(fit, ci_level = ci_level)
     # vcov can only be "model"/"classical" here: CR* is refused for
     # glmmTMB (no clubSandwich backend -- vcovCR.default is numerically
@@ -116,21 +121,35 @@ as_regression_frame.glmmTMB <- function(
 
 # Selectively muffle the anonymous "NaNs produced" warnings that
 # glmmTMB:::summary.glmmTMB and the Wald extractors raise on a fit whose
-# information matrix is not positive definite (a non-converged or
-# boundary fit): sqrt() of a negative variance, a ratio through zero.
-# They restate, anonymously and in the session's own locale, what the
-# classed spicy_nonconvergence / singular caveats already say precisely;
-# muting them BY MESSAGE keeps every other warning flowing -- the classed
-# caveat included. This is not blanket suppression: the message is matched
-# against base R's own string in the active locale (gettext), so it fires
-# under an English or a translated session alike, and any warning that is
-# not that exact string passes straight through.
-.mute_glmmTMB_nan_warnings <- function(expr) {
+# information matrix is not positive definite: sqrt() of a negative
+# variance, a ratio through zero. They restate, anonymously and in the
+# session's own locale, what the classed spicy_nonconvergence caveat
+# already says precisely; muting them BY MESSAGE keeps every other
+# warning flowing -- the classed caveat included. This is not blanket
+# suppression: the message is matched against base R's own string in the
+# active locale (gettext), so it fires under an English or a translated
+# session alike, and any warning that is not that exact string passes
+# straight through.
+#
+# `active` narrows it further: the caller mutes only where the noise is
+# expected (the non-converged fit), and `expr` is evaluated untouched
+# otherwise -- a mute that is never armed cannot swallow anything.
+.mute_glmmTMB_nan_warnings <- function(active, expr) {
+  if (!isTRUE(active)) {
+    return(expr)
+  }
   nan_msgs <- unique(c("NaNs produced", gettext("NaNs produced", domain = "R")))
   withCallingHandlers(
     expr,
     warning = function(w) {
-      if (conditionMessage(w) %in% nan_msgs) {
+      # The restart exists for a warning signalled by warning() itself,
+      # but not for one delivered through some other condition path;
+      # invoking a restart that is not established would error, turning
+      # a muted nuisance into a failed build.
+      if (
+        conditionMessage(w) %in% nan_msgs &&
+          !is.null(findRestart("muffleWarning"))
+      ) {
         invokeRestart("muffleWarning")
       }
     }
@@ -286,10 +305,11 @@ as_regression_frame.glmmTMB <- function(
   # so render blank. The pseudo-R2 / ICC do NOT -- they are computed from
   # the same starting values and would otherwise print a confident number
   # for a model that never fitted. Suppress them under the same
-  # criterion (decision 37). The note is raised ONCE here (its warning is
-  # the classed spicy_nonconvergence) and reused in extras below.
+  # criterion (decision 37). The verdict is the side-effect-free read;
+  # the note is built ONCE here (raising the classed spicy_nonconvergence
+  # warning) and reused in extras below.
+  nonconverged <- .glmmTMB_is_nonconverged(fit)
   convergence_note <- .glmmTMB_convergence_note(fit, dv)
-  nonconverged <- !is.null(convergence_note)
 
   # glmmTMB does not export ngrps(); pull per-grouping-factor counts
   # from the summary object instead. summary(fit)$ngrps is a list with
@@ -717,7 +737,12 @@ as_regression_frame.glmmTMB <- function(
 # leaves both flags standing. The note is a statement about the numbers
 # printed in THIS table, not a replay of the fit-time diagnostic, so it
 # is not gated on that control.
-.glmmTMB_convergence_note <- function(fit, dv = NA_character_) {
+#
+# The criterion itself lives in .glmmTMB_convergence_problems() -- two
+# pure field reads, no side effect -- so the callers that need only the
+# VERDICT (the fit-statistic gate, the NaN-mute gate) can ask without
+# raising the warning, and cannot drift from what the note reports.
+.glmmTMB_convergence_problems <- function(fit) {
   problems <- character(0)
 
   code <- fit$fit$convergence
@@ -737,6 +762,19 @@ as_regression_frame.glmmTMB <- function(
   if (length(pd_hess) == 1L && isFALSE(pd_hess)) {
     problems <- c(problems, "non-positive-definite Hessian matrix")
   }
+
+  problems
+}
+
+
+# The verdict alone, side-effect free.
+.glmmTMB_is_nonconverged <- function(fit) {
+  length(.glmmTMB_convergence_problems(fit)) > 0L
+}
+
+
+.glmmTMB_convergence_note <- function(fit, dv = NA_character_) {
+  problems <- .glmmTMB_convergence_problems(fit)
 
   if (length(problems) == 0L) {
     return(NULL)
