@@ -345,7 +345,7 @@ test_that("lm pair: nested dispatch still routes to compute_one_pair_lm", {
   )
 })
 
-test_that("glm pair: nested dispatch still routes to compute_one_pair_glm", {
+test_that("glm pair: nested dispatch still routes to compute_one_pair_lrt", {
   m1 <- glm(am ~ 1, data = mtcars, family = binomial)
   m2 <- glm(am ~ mpg, data = mtcars, family = binomial)
   comp <- spicy:::compute_nested_comparisons(list(m1, m2))

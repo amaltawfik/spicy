@@ -146,7 +146,7 @@ test_that("compute_one_pair_lm returns the all-NA contract when anova fails", {
   expect_identical(spicy:::compute_one_pair_lm(m_a, m_b), na_pair_cov100)
 })
 
-test_that("compute_one_pair_glm returns the all-NA contract when anova fails", {
+test_that("compute_one_pair_lrt returns the all-NA contract when anova fails", {
   g_a <- suppressWarnings(
     glm(am ~ wt, data = mtcars[1:20, ], family = binomial)
   )
@@ -154,7 +154,7 @@ test_that("compute_one_pair_glm returns the all-NA contract when anova fails", {
   expect_error(
     suppressWarnings(stats::anova(g_a, g_b, test = "LRT")) # sanity: trigger
   )
-  expect_identical(spicy:::compute_one_pair_glm(g_a, g_b), na_pair_cov100)
+  expect_identical(spicy:::compute_one_pair_lrt(g_a, g_b), na_pair_cov100)
 })
 
 test_that("compute_one_pair_mixed returns the all-NA contract when anova fails", {

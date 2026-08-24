@@ -606,7 +606,7 @@ test_that("mismatched n keeps the all-NA contract, not a refusal", {
   )
   g_b <- stats::glm(am ~ wt + hp, data = mtcars, family = stats::binomial)
   expect_true(nobs_conflict(g_a, g_b))
-  got <- expect_no_error(compute_one_pair_glm(g_a, g_b))
+  got <- expect_no_error(compute_one_pair_lrt(g_a, g_b))
   expect_true(all(vapply(got, is.na, logical(1))))
 })
 

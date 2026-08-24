@@ -196,7 +196,7 @@ compute_nested_comparisons <- function(fits) {
     } else if (pair_rq) {
       compute_one_pair_rq(fit_prev, fit_curr)
     } else if (pair_glm || pair_lrt) {
-      compute_one_pair_glm(fit_prev, fit_curr)
+      compute_one_pair_lrt(fit_prev, fit_curr)
     } else {
       compute_one_pair_lm(fit_prev, fit_curr)
     }
@@ -309,10 +309,12 @@ compute_one_pair_lm <- function(fit_prev, fit_curr) {
 
 # ---- Per-pair likelihood computation (Phase 3 Step 6) --------------------
 
-# Per-pair statistics for ANY nested pair of likelihood fits. Named for
-# glm, which it was written for, but since 0.13 it serves every class
-# with a likelihood: coxph, multinom, survreg, polr, clm, gls, betareg,
-# zeroinfl, hurdle, mlogit, flexsurvreg, fixest, rms::lrm / cph.
+# Per-pair statistics for ANY nested pair of likelihood fits: glm, which
+# it was written for, and since 0.13 every other class with a
+# likelihood -- coxph, multinom, survreg, polr, clm, gls, betareg,
+# zeroinfl, hurdle, mlogit, flexsurvreg, fixest, rms::lrm / cph. It was
+# called `compute_one_pair_glm` until it stopped being about glm; the
+# name now says what routes a pair here, which is the test it computes.
 #
 # The statistic is the LRT chi-square (Hosmer & Lemeshow Section 3.5;
 # Long & Freese 2014 Section 3.2.4) -- the canonical hierarchical test,
@@ -323,7 +325,7 @@ compute_one_pair_lm <- function(fit_prev, fit_curr) {
 # partition does not apply outside the least-squares framework. AIC /
 # AICc / BIC / Deltadeviance / Deltachi^2 / p_change are all meaningful
 # and computed.
-compute_one_pair_glm <- function(fit_prev, fit_curr) {
+compute_one_pair_lrt <- function(fit_prev, fit_curr) {
   na <- list(
     r2_change = NA_real_,
     adj_r2_change = NA_real_,
