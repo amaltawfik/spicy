@@ -1,4 +1,5 @@
-# gt DOM ids built from `by` levels (register n. 213 / n. 218).
+# gt DOM ids built from `by` levels (register n. 213 / n. 218) and the
+# margin-collision label (register n. 219).
 
 .spn_data <- function(levels, n = 60) {
   set.seed(7)
@@ -64,4 +65,47 @@ test_that(".gt_safe_ids is still the identity on ordinary keys", {
     unname(.gt_safe_ids(c("A B_n", "A-B_n"))),
     c("A B_n", "A-B_n_1")
   )
+})
+
+
+# ---- n. 219: a `by` level literally named "Total" ------------------------
+
+# The register recorded this as the dedup "leaking from the id into the
+# visible label". It does not: the USER's level prints verbatim and it is
+# the MARGIN -- spicy's own column -- that takes the disambiguated key, on
+# purpose, with a warning, so a reader can still tell the two apart.
+test_that("a by level named Total keeps its name; the margin is renamed", {
+  d <- .spn_data(c("Total", "Other"))
+  tbl <- withCallingHandlers(
+    table_categorical(d, f, by = g),
+    spicy_renamed_column = function(w) invokeRestart("muffleWarning")
+  )
+  out <- paste(capture.output(print(tbl)), collapse = "\n")
+  expect_match(out, "Total n", fixed = TRUE) # the user's level, verbatim
+  expect_match(out, "Other n", fixed = TRUE)
+  expect_match(out, "Total_1 n", fixed = TRUE) # the margin, disambiguated
+})
+
+test_that("the margin rename is disclosed, not silent", {
+  d <- .spn_data(c("Total", "Other"))
+  expect_warning(
+    table_categorical(d, f, by = g),
+    class = "spicy_renamed_column"
+  )
+  expect_warning(
+    table_categorical(d, f, by = g),
+    "collides with the margin column"
+  )
+})
+
+test_that("the gt spanners carry the same three labels, all distinct", {
+  skip_if_not_installed("gt")
+  d <- .spn_data(c("Total", "Other"))
+  tbl <- withCallingHandlers(
+    table_categorical(d, f, by = g, output = "gt"),
+    spicy_renamed_column = function(w) invokeRestart("muffleWarning")
+  )
+  ids <- .spn_html_ids(tbl)
+  expect_identical(anyDuplicated(ids), 0L)
+  expect_true(all(c('id="Total"', 'id="Other"', 'id="Total_1"') %in% ids))
 })
