@@ -636,8 +636,13 @@ instead of rendering an empty column.
 
 - A `glmmTMB` fit whose optimizer did not converge says so: a table note
   names the engine’s own diagnosis and a `spicy_nonconvergence` warning
-  (under `spicy_caveat`) fires. The estimates still print – they are
-  what the model object holds.
+  (under `spicy_caveat`) fires. No fit statistic derived from such a fit
+  is reported – ICC, R², AIC and BIC are all withheld, since they would
+  be computed from the values the optimizer stopped at. The estimates
+  and the variance components still print: they are what the model
+  object holds. `spicy_nonconvergence` is the only warning raised; the
+  anonymous `NaNs produced` warnings the engine emits alongside it are
+  suppressed.
 
 - Under a cluster-robust `vcov`, the ordinal Thresholds block (`polr` /
   `clm`) takes its SEs, z, p and CIs from the same sandwich as the
@@ -1457,6 +1462,13 @@ instead of rendering an empty column.
   `summary(fit)` and
   [`survey::regTermTest()`](https://rdrr.io/pkg/survey/man/regTermTest.html)
   cover them meanwhile. \## Minor improvements
+
+- A one-way
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
+  (no `by`) draws no rule between its variable blocks in the rich
+  engines (tinytable, gt, flextable, Word, Excel), matching the console:
+  each block is a single row, so the rule carried no information. A
+  by-group table still rules between variables.
 
 - [`spicy_print_table()`](https://amaltawfik.github.io/spicy/reference/spicy_print_table.md)
   gains `qualify_companions`. When a width split pushes an `SE`, a `p`

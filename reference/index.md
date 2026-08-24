@@ -78,12 +78,12 @@
 
 ## Survey-design tables
 
-Experimental
-([`?spicy`](https://amaltawfik.github.io/spicy/reference/spicy-package.md)):
-new in this cycle, and the shape of the table and the names of the
-design-specific arguments may still move – with a `NEWS.md` entry – on
-their own clock rather than the parent family’s. Every number comes from
-survey (Lumley).
+The descriptive tables from a
+[`survey::svydesign()`](https://rdrr.io/pkg/survey/man/svydesign.html)
+or replicate-weight design: design-based estimates, standard errors,
+degrees of freedom and tests, every number delegated to survey (Lumley).
+New in this cycle – see the API-stability tiers in
+[`?spicy`](https://amaltawfik.github.io/spicy/reference/spicy-package.md).
 
 - [`table_continuous_svy()`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md)
   : Descriptive statistics from a survey design
