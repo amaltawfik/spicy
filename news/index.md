@@ -158,6 +158,28 @@
   and [`sum_n()`](https://amaltawfik.github.io/spicy/reference/sum_n.md)
   with `min_valid = 0` return `NA` for rows with no valid values (was
   `NaN` and a silent `0`).
+- A robust `vcov` that cannot be computed is now an error. spicy warned
+  and returned the classical variance, which the table then labelled
+  robust. This was reachable from ordinary calls: a `cluster` vector
+  containing `NA` produced a table of classical standard errors under a
+  cluster-robust footer. Use `vcov = "classical"` to ask for the
+  model-based variance.
+- `cluster` containing `NA` is refused for every cluster-robust
+  estimator. For
+  [`coxph()`](https://rdrr.io/pkg/survival/man/coxph.html) it used to
+  return a variance that treated the observations with a missing id as a
+  cluster of their own. Refit without those observations, or impute the
+  ids.
+- `table_regression(nested = TRUE)` errors on
+  [`nlme::gls()`](https://rdrr.io/pkg/nlme/man/gls.html) /
+  [`nlme::lme()`](https://rdrr.io/pkg/nlme/man/lme.html) fits estimated
+  by REML whose fixed effects differ, and on any pair whose own
+  [`anova()`](https://rdrr.io/r/stats/anova.html) method refuses the
+  comparison (for example one fit by REML and one by ML). The restricted
+  likelihood is not comparable across different fixed-effect
+  specifications, nor across estimation methods. Refit both with
+  `method = "ML"`. Comparisons that differ only in the random structure
+  are unaffected.
 
 ### New supported models
 
@@ -759,6 +781,39 @@ instead of rendering an empty column.
   block of empty rows. Both refusals name the class and the alternative.
   Mixed-effects fits (`lmer`, `glmer`, `glmmTMB`, `lme`) and the
   univariable screen keep `partial_chi2`: they do compute it.
+
+- `nested = TRUE` works for every model class that has a likelihood.
+  Nested comparisons of
+  [`survival::survreg()`](https://rdrr.io/pkg/survival/man/survreg.html),
+  [`MASS::polr()`](https://rdrr.io/pkg/MASS/man/polr.html),
+  [`ordinal::clm()`](https://rdrr.io/pkg/ordinal/man/clm.html),
+  [`nlme::gls()`](https://rdrr.io/pkg/nlme/man/gls.html),
+  [`nls()`](https://rdrr.io/r/stats/nls.html),
+  [`MASS::rlm()`](https://rdrr.io/pkg/MASS/man/rlm.html),
+  [`pscl::zeroinfl()`](https://rdrr.io/pkg/pscl/man/zeroinfl.html) and
+  [`pscl::hurdle()`](https://rdrr.io/pkg/pscl/man/hurdle.html) fits
+  failed with an untranslated base R error.
+
+- `nested = TRUE` reports the likelihood-ratio change test for classes
+  that ship no [`anova()`](https://rdrr.io/r/stats/anova.html) method –
+  [`betareg::betareg()`](https://rdrr.io/pkg/betareg/man/betareg.html),
+  [`pscl::zeroinfl()`](https://rdrr.io/pkg/pscl/man/zeroinfl.html),
+  [`pscl::hurdle()`](https://rdrr.io/pkg/pscl/man/hurdle.html),
+  [`mlogit::mlogit()`](https://rdrr.io/pkg/mlogit/man/mlogit.html),
+  [`flexsurv::flexsurvreg()`](http://chjackson.github.io/flexsurv-dev/reference/flexsurvreg.md)
+  and `fixest` – instead of a row of dashes. The class-aware defaults
+  give those classes the likelihood-ratio rows instead of empty
+  change-in-R-squared and F rows.
+
+- `nested = TRUE` no longer reports a negative chi-square with a p-value
+  when the models are passed largest-first.
+
+- `output = "gt"`: two `by` levels differing only in whitespace (`"A B"`
+  and `"A-B"`) no longer collapse to the same HTML id.
+
+- [`inline()`](https://amaltawfik.github.io/spicy/reference/inline.md)
+  says whether an empty cell’s column is empty throughout the table, and
+  names the per-group columns that can be addressed instead.
 
 - `weighted_nobs` is `NA` for an unweighted
   [`glm()`](https://rdrr.io/r/stats/glm.html), in
