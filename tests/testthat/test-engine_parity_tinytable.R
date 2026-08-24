@@ -191,6 +191,26 @@ test_that("a one-way continuous table draws no inter-variable rule; by-group doe
   expect_length(.pt_hlines(tex_bg, "0.03"), 1L)
 })
 
+test_that("the survey twin follows the same one-way rule policy", {
+  skip_if_not_installed("tinytable")
+  skip_if_not_installed("survey")
+  data(api, package = "survey", envir = environment())
+  des <- survey::svydesign(id = ~dnum, weights = ~pw, data = apiclus1, fpc = ~fpc)
+  tex_ow <- .pt_latex(table_continuous_svy(
+    des,
+    select = c(api00, api99),
+    output = "tinytable"
+  ))
+  expect_length(.pt_hlines(tex_ow, "0.03"), 0L)
+  tex_bg <- .pt_latex(table_continuous_svy(
+    des,
+    select = c(api00, api99),
+    by = stype,
+    output = "tinytable"
+  ))
+  expect_true(length(.pt_hlines(tex_bg, "0.03")) >= 1L)
+})
+
 
 # ---- descriptive families: caption + note --------------------------------
 

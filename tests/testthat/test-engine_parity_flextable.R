@@ -179,6 +179,47 @@ test_that("every console separator is drawn, not only the first", {
   expect_equal(sum(w == 0.5), 2L)
 })
 
+test_that("a one-way continuous table draws no inter-variable rule", {
+  skip_if_not_installed("flextable")
+  d <- .pf_data()
+  # Decision 37: a one-way block is a single row, so the rule between
+  # blocks carries no information and is drawn nowhere -- the engines
+  # follow the console. A by-group table keeps it.
+  w_ow <- .pf_body_rules(table_continuous(
+    d,
+    c(age, wellbeing_score),
+    output = "flextable"
+  ))
+  expect_equal(sum(w_ow == 0.5), 0L)
+  w_bg <- .pf_body_rules(table_continuous(
+    d,
+    c(age, wellbeing_score),
+    by = sex,
+    output = "flextable"
+  ))
+  expect_equal(sum(w_bg == 0.5), 1L)
+})
+
+test_that("the survey twin follows the same one-way rule policy", {
+  skip_if_not_installed("flextable")
+  skip_if_not_installed("survey")
+  data(api, package = "survey", envir = environment())
+  des <- survey::svydesign(id = ~dnum, weights = ~pw, data = apiclus1, fpc = ~fpc)
+  w_ow <- .pf_body_rules(table_continuous_svy(
+    des,
+    select = c(api00, api99),
+    output = "flextable"
+  ))
+  expect_equal(sum(w_ow == 0.5), 0L)
+  w_bg <- .pf_body_rules(table_continuous_svy(
+    des,
+    select = c(api00, api99),
+    by = stype,
+    output = "flextable"
+  ))
+  expect_true(sum(w_bg == 0.5) >= 1L)
+})
+
 
 # ---- captions -------------------------------------------------------------
 
