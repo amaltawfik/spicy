@@ -621,17 +621,86 @@ inline <- function(
 # did not, so a token whose bounds are empty on this row composed the
 # brackets around nothing and returned "[, ]". One producer, so the two
 # paths cannot word the same refusal differently.
-.inline_refuse_empty <- function(txt, token) {
-  if (!nzchar(txt)) {
-    spicy_abort(
+#
+# The refusal used to stop at the full stop, which made it a dead end on
+# the one table where it is REACHED BY DEFAULT: `table_continuous_lm(
+# contrast = "none")` still prints the delta column, empty, and `delta`
+# is the token a bare `inline(x, var)` asks for. The reader was told the
+# cell is empty and nothing else -- not that the column is empty
+# throughout, and not that the group means beside it are addressable.
+# The context arguments are optional so a caller without a structured
+# table still gets the bare refusal.
+.inline_refuse_empty <- function(txt, token, s = NULL, formatted = NULL, cols = NULL) {
+  if (nzchar(txt)) {
+    return(invisible(NULL))
+  }
+  spicy_abort(
+    c(
       sprintf(
         "The %s cell of this row is empty in the table.",
         .quote_val(token)
       ),
-      class = "spicy_invalid_input"
-    )
+      .inline_empty_cell_hints(s, token, formatted, cols)
+    ),
+    class = "spicy_invalid_input"
+  )
+}
+
+# The two hints the empty-cell refusal can earn from the table itself.
+#
+# (1) The column is empty on EVERY row, not just this one -- the table
+#     carries no value for the token at all. Stated as a property of the
+#     table, never by naming the argument that produced it: `inline()`
+#     reads the structured view and has no sight of the call.
+# (2) Some other token spreads over columns that carry a group. Those
+#     ARE addressable, and `level` is the argument that reaches them --
+#     the remedy the reader needs and could not guess.
+.inline_empty_cell_hints <- function(s, token, formatted, cols) {
+  if (is.null(s) || is.null(formatted) || is.null(cols)) {
+    return(character(0))
   }
-  invisible(NULL)
+  hits <- Filter(
+    function(nm) identical(s$col_meta[[nm]]$token %||% "", token),
+    cols
+  )
+  hints <- character(0)
+  all_blank <- length(hits) > 0L &&
+    all(vapply(
+      hits,
+      function(nm) !any(nzchar(trimws(formatted[[nm]]))),
+      logical(1)
+    ))
+  if (all_blank) {
+    hints <- c(hints, "i" = sprintf(
+      paste0(
+        "The %s column is empty on EVERY row: this table carries no ",
+        "value for that token."
+      ),
+      .quote_val(token)
+    ))
+  }
+  levels_by_token <- list()
+  for (nm in setdiff(cols, hits)) {
+    lv <- s$col_meta[[nm]]$level %||% NA_character_
+    tk <- s$col_meta[[nm]]$token %||% ""
+    if (!is.na(lv) && nzchar(tk)) {
+      levels_by_token[[tk]] <- unique(c(levels_by_token[[tk]], lv))
+    }
+  }
+  if (length(levels_by_token) > 0L) {
+    tk <- names(levels_by_token)[1L]
+    hints <- c(hints, "i" = sprintf(
+      "Per-group columns ARE addressable: `level = %s, column = %s`.",
+      .quote_val(levels_by_token[[tk]][1L]),
+      .quote_val(tk)
+    ))
+    hints <- c(hints, "i" = paste0(
+      "Available levels: ",
+      paste(.quote_val(levels_by_token[[tk]]), collapse = ", "),
+      "."
+    ))
+  }
+  hints
 }
 
 # One formatted cell by (row, token), the interval composed like the
@@ -688,8 +757,8 @@ inline <- function(
     # above lets it through: an association interval on a LEVEL row of
     # `table_categorical()` (the measure sits on the variable row) used
     # to compose as "[, ]".
-    .inline_refuse_empty(lo, token)
-    .inline_refuse_empty(hi, token)
+    .inline_refuse_empty(lo, token, s, formatted, cols)
+    .inline_refuse_empty(hi, token, s, formatted, cols)
     br <- .style_ci_brackets()
     sep <- .style_ci_sep(
       ci_bracket_separator(s$format_spec$decimal_mark)
@@ -726,7 +795,7 @@ inline <- function(
   }
   .inline_refuse_status(.struct_cell_status(s, hits)[row], token)
   out <- trimws(formatted[[hits]][row])
-  .inline_refuse_empty(out, token)
+  .inline_refuse_empty(out, token, s, formatted, cols)
   out
 }
 

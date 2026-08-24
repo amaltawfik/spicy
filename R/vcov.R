@@ -3,7 +3,8 @@
 # table_continuous_lm()). Moved here from R/lm_compute.R: nothing below is
 # lm-specific. Contents:
 #   * compute_model_vcov(): vcov family dispatch -- classical / HC* (sandwich) /
-#     CR* (clubSandwich) / bootstrap / jackknife. The resamplers
+#     CR* (clubSandwich, sandwich::vcovCL, or the native Lin-Wei / robcov
+#     path by class) / bootstrap / jackknife. The resamplers
 #     (compute_resample_vcov_*) refit lm/glm and so apply only to those classes.
 #   * compute_coef_inference(): single-coefficient inference; the reference
 #     distribution (t vs z) follows the ESTIMATOR, not the fit class.
@@ -27,6 +28,53 @@
   inherits(
     fit,
     c("svyglm", "svrepglm", "svyolr", "svycoxph", "svrepcoxph")
+  )
+}
+
+# A robust estimator that could not be computed is an ERROR, never a
+# silent substitution.
+#
+# Until 0.13 both robust branches warned and returned stats::vcov(fit) --
+# the CLASSICAL matrix. Nothing downstream was told: `vcov_kind` is set
+# from the REQUESTED type where the frame is built, `.robust_vcov_label()`
+# formats that same requested type, and the footer therefore announced
+# "heteroskedasticity-robust (HC3)" over classical standard errors. A
+# warning in the console does not travel with a saved table, an exported
+# Word document or a knitted report; the mislabelled numbers do.
+#
+# The register recorded the public paths as safe by construction, because
+# the estimator is validated against the class first. They were not: the
+# validator checks the estimator, not the CLUSTER, so
+# `table_regression(fit, vcov = "CR2", cluster = <vector with NAs>)`
+# rendered a full table of classical standard errors under a
+# cluster-robust footer. Two of the tests migrated with this change were
+# pinning exactly that, one of them through the public API.
+#
+# The honest-label alternative -- return the classical matrix and flip
+# every downstream label to "classical" -- would have to thread a flag
+# through the frame builders of every class; the truth cannot travel from
+# here on its own. Refusing keeps the guarantee where it can be enforced:
+# what spicy labels robust IS robust.
+.abort_vcov_failed <- function(type, cnd, callee) {
+  spicy_abort(
+    c(
+      sprintf("`vcov = \"%s\"` could not be computed for this fit.", type),
+      "x" = sprintf(
+        "%s failed: %s",
+        callee,
+        conditionMessage(cnd)
+      ),
+      "i" = paste0(
+        "spicy does not substitute the classical variance here: the ",
+        "table would carry classical standard errors under a robust ",
+        "label."
+      ),
+      "i" = paste0(
+        "Use `vcov = \"classical\"` to ask for the model-based variance ",
+        "explicitly, or pick an estimator this fit supports."
+      )
+    ),
+    class = "spicy_unsupported_vcov"
   )
 }
 
@@ -142,20 +190,7 @@ compute_model_vcov <- function(
   if (startsWith(type, "HC")) {
     return(tryCatch(
       sandwich::vcovHC(fit, type = type),
-      error = function(e) {
-        spicy_warn(
-          c(
-            sprintf(
-              "Robust `vcov = \"%s\"` could not be computed.",
-              type
-            ),
-            "x" = paste0("Underlying error: ", conditionMessage(e)),
-            "i" = "Falling back to the classical OLS variance; the result may contain NA."
-          ),
-          class = "spicy_fallback"
-        )
-        stats::vcov(fit)
-      }
+      error = function(e) .abort_vcov_failed(type, e, "sandwich::vcovHC()")
     ))
   }
 
@@ -174,6 +209,7 @@ compute_model_vcov <- function(
     # BEFORE sandwich/clubSandwich so a wrong length never surfaces their
     # locale-dependent internal error. Shared single source of truth.
     .check_cluster_length(fit, cluster)
+    .check_cluster_no_na(fit, cluster)
     # Cluster-robust backend by class. The CR0..CR3 bias-reduction variants are
     # a clubSandwich concept; Cox and the sandwich::vcovCL classes have a single
     # cluster sandwich, so the requested CR* maps to that one estimator.
@@ -210,7 +246,10 @@ compute_model_vcov <- function(
         )
       )
     ) {
-      return(sandwich::vcovCL(fit, cluster = cluster))
+      return(tryCatch(
+        sandwich::vcovCL(fit, cluster = cluster),
+        error = function(e) .abort_vcov_failed(type, e, "sandwich::vcovCL()")
+      ))
     }
     # No clubSandwich backend: glmmTMB silently dispatches to
     # vcovCR.default and returns numerically invalid SEs. The validate
@@ -245,20 +284,7 @@ compute_model_vcov <- function(
     }
     return(tryCatch(
       clubSandwich::vcovCR(fit, type = type, cluster = cluster),
-      error = function(e) {
-        spicy_warn(
-          c(
-            sprintf(
-              "Cluster-robust `vcov = \"%s\"` could not be computed.",
-              type
-            ),
-            "x" = paste0("Underlying error: ", conditionMessage(e)),
-            "i" = "Falling back to the classical OLS variance; the result may contain NA."
-          ),
-          class = "spicy_fallback"
-        )
-        stats::vcov(fit)
-      }
+      error = function(e) .abort_vcov_failed(type, e, "clubSandwich::vcovCR()")
     ))
   }
 
@@ -1304,6 +1330,46 @@ compute_satt_df_per_coef <- function(fit, vc, cluster) {
 # by the public validator (validate_vcov_cluster_lists) and the internal compute
 # path (compute_model_vcov), so direct/internal callers fail just as cleanly as
 # table_regression(). No-op unless `cluster` is an atomic vector of wrong length.
+# A missing cluster id is not a cluster. Refuse it once, here, for every
+# CR* backend -- because the three backends disagree about it and one of
+# them disagrees silently.
+#
+#   * sandwich::vcovCL and clubSandwich::vcovCR refuse, loudly, naming
+#     the two honest remedies.
+#   * spicy's own Lin-Wei path for coxph sums dfbeta residuals with
+#     rowsum(), which turns NA into its OWN GROUP. The result is a
+#     cluster-robust variance for a sample in which the subjects with
+#     unknown membership have been asserted to be correlated with each
+#     other -- and it rendered, with a "cluster-robust (Lin-Wei)" footer.
+#     Measured on survival::lung with 5 ids blanked: SE(age) 0.011231683
+#     against 0.008065997 with the clusters intact, a 39% inflation, and
+#     three clusters claimed where the data have two.
+#
+# The wording follows sandwich's, which states the two ways out.
+.check_cluster_no_na <- function(fit, cluster, label = "`cluster`") {
+  if (is.null(cluster) || !is.atomic(cluster) || !anyNA(cluster)) {
+    return(invisible(NULL))
+  }
+  spicy_abort(
+    c(
+      sprintf(
+        "%s has %d missing value(s); a cluster-robust variance cannot be computed.",
+        label,
+        sum(is.na(cluster))
+      ),
+      "i" = paste0(
+        "An observation with no cluster id belongs to no cluster: it can ",
+        "neither be grouped nor left in place."
+      ),
+      "i" = paste0(
+        "Refit the model without those observations, or impute the ",
+        "missing ids, then pass the matching `cluster`."
+      )
+    ),
+    class = "spicy_invalid_input"
+  )
+}
+
 .check_cluster_length <- function(fit, cluster, label = "`cluster`") {
   if (is.null(cluster) || !is.atomic(cluster)) {
     return(invisible(NULL))

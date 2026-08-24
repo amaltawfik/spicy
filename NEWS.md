@@ -105,6 +105,22 @@
   whose value is simply absent still counts `0`.
 * `mean_n()` and `sum_n()` with `min_valid = 0` return `NA` for rows with no
   valid values (was `NaN` and a silent `0`).
+* A robust `vcov` that cannot be computed is now an error. spicy warned and
+  returned the classical variance, which the table then labelled robust.
+  This was reachable from ordinary calls: a `cluster` vector containing `NA`
+  produced a table of classical standard errors under a cluster-robust
+  footer. Use `vcov = "classical"` to ask for the model-based variance.
+* `cluster` containing `NA` is refused for every cluster-robust estimator.
+  For `coxph()` it used to return a variance that treated the observations
+  with a missing id as a cluster of their own. Refit without those
+  observations, or impute the ids.
+* `table_regression(nested = TRUE)` errors on `nlme::gls()` / `nlme::lme()`
+  fits estimated by REML whose fixed effects differ, and on any pair whose
+  own `anova()` method refuses the comparison (for example one fit by REML
+  and one by ML). The restricted likelihood is not comparable across
+  different fixed-effect specifications, nor across estimation methods.
+  Refit both with `method = "ML"`. Comparisons that differ only in the
+  random structure are unaffected.
 
 ## New supported models
 
@@ -541,6 +557,27 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
   class and the alternative. Mixed-effects fits (`lmer`, `glmer`,
   `glmmTMB`, `lme`) and the univariable screen keep `partial_chi2`: they
   do compute it.
+
+* `nested = TRUE` works for every model class that has a likelihood. Nested
+  comparisons of `survival::survreg()`, `MASS::polr()`, `ordinal::clm()`,
+  `nlme::gls()`, `nls()`, `MASS::rlm()`, `pscl::zeroinfl()` and
+  `pscl::hurdle()` fits failed with an untranslated base R error.
+
+* `nested = TRUE` reports the likelihood-ratio change test for classes that
+  ship no `anova()` method -- `betareg::betareg()`, `pscl::zeroinfl()`,
+  `pscl::hurdle()`, `mlogit::mlogit()`, `flexsurv::flexsurvreg()` and
+  `fixest` -- instead of a row of dashes. The class-aware defaults give
+  those classes the likelihood-ratio rows instead of empty
+  change-in-R-squared and F rows.
+
+* `nested = TRUE` no longer reports a negative chi-square with a p-value
+  when the models are passed largest-first.
+
+* `output = "gt"`: two `by` levels differing only in whitespace (`"A B"` and
+  `"A-B"`) no longer collapse to the same HTML id.
+
+* `inline()` says whether an empty cell's column is empty throughout the
+  table, and names the per-group columns that can be addressed instead.
 
 * `weighted_nobs` is `NA` for an unweighted `glm()`, in
   `table_regression()` and in `glance()`. It used to equal `n`:

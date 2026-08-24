@@ -828,3 +828,70 @@ test_that(".nakagawa_components_merMod declines when the fixed-effect prediction
   ))
   expect_null(spicy:::.nakagawa_components_merMod(stub))
 })
+
+
+# ============================================================================
+# The file's own PASS count (register n. 204)
+# ============================================================================
+
+# n. 204 reported this file's PASS count as non-deterministic (94 vs 99) and
+# guessed at the mechanism: "probably a conditional skip placed AFTER some
+# expectations". Such a block runs its expectations AND reports skipped, so
+# the count moves without anything failing and the file stops being a
+# regression signal.
+#
+# The audit found no such block, and neither archived full-suite table
+# records a skip here. What the count DOES depend on is the Suggests
+# surface: SEVEN blocks are guarded by skip_if_not_installed() (posterior,
+# lme4 x3, tinytable, fixest + openxlsx2, RLRsim), and 99 minus the 5
+# expectations of either 5-expectation guarded block is exactly the 94 that
+# was seen. That is testthat working as designed, not a defect -- but only
+# while every skip stays where it can be trusted, ahead of the first
+# expectation of its block.
+#
+# So the property is asserted instead of assumed. The scan runs on R's own
+# parser, not on a regex over the text: getParseData() labels each token, so
+# a COMMENT that discusses skipping (this header, for one) and a STR_CONST
+# that spells a call are not tokens of type SYMBOL_FUNCTION_CALL and cannot
+# be mistaken for one. Block extents come from the parse tree, so a block
+# ends where its expression ends -- not at "the next test_that() minus one",
+# which would drag the FOLLOWING block's comment header into this one and
+# mis-attribute it.
+test_that("no skip in this file can fire after an expectation", {
+  path <- testthat::test_path("test-cov-compute-vcov-gaps.R")
+  skip_if_not(file.exists(path))
+  pd <- utils::getParseData(parse(path, keep.source = TRUE))
+  expect_true(nrow(pd) > 0L) # sanity: the parser produced tokens
+
+  calls <- pd[pd$token == "SYMBOL_FUNCTION_CALL", c("line1", "col1", "text")]
+  blocks <- calls[calls$text == "test_that", ]
+  expect_gt(nrow(blocks), 20L) # sanity: the scan found the blocks
+
+  # The extent of each test_that() call, from the parse tree.
+  tt_expr <- pd[
+    pd$token == "expr" & pd$parent == 0L,
+    c("line1", "line2")
+  ]
+  offenders <- character(0)
+  for (i in seq_len(nrow(blocks))) {
+    span <- tt_expr[
+      tt_expr$line1 <= blocks$line1[i] & tt_expr$line2 >= blocks$line1[i],
+    ]
+    if (nrow(span) == 0L) {
+      next
+    }
+    lo <- min(span$line1)
+    hi <- max(span$line2)
+    inside <- calls[calls$line1 >= lo & calls$line1 <= hi, ]
+    skips <- inside[grepl("^skip", inside$text), ]
+    expects <- inside[grepl("^expect_", inside$text), ]
+    if (nrow(skips) == 0L || nrow(expects) == 0L) {
+      next
+    }
+    first_expect <- min(expects$line1)
+    if (any(skips$line1 > first_expect)) {
+      offenders <- c(offenders, sprintf("line %d", lo))
+    }
+  }
+  expect_identical(offenders, character(0))
+})

@@ -3013,7 +3013,9 @@ test_that("compute_model_vcov errors for CR* without cluster and clubSandwich", 
   )
 })
 
-test_that("compute_model_vcov CR fallback warns when clubSandwich errors", {
+test_that("compute_model_vcov refuses when clubSandwich errors", {
+  # Was a spicy_fallback warning plus the classical matrix, which the
+  # caller then labelled cluster-robust (register n. 229).
   fit <- stats::lm(extra ~ group, data = sleep)
   testthat::local_mocked_bindings(
     vcovCR = function(...) stop("synthetic CR failure"),
@@ -3021,11 +3023,12 @@ test_that("compute_model_vcov CR fallback warns when clubSandwich errors", {
   )
   msg <- tryCatch(
     spicy:::compute_model_vcov(fit, type = "CR2", cluster = sleep$ID),
-    warning = function(w) conditionMessage(w)
+    error = function(e) conditionMessage(e)
   )
   expect_true(is.character(msg))
-  expect_match(msg, "Cluster-robust")
+  expect_match(msg, "CR2")
   expect_match(msg, "synthetic CR failure")
+  expect_match(msg, "clubSandwich::vcovCR()", fixed = TRUE)
 })
 
 test_that("compute_coef_inference falls back when clubSandwich coef_test errors", {
@@ -3282,11 +3285,10 @@ test_that("pick_es_value_lm fails fast on unknown effect_size", {
   expect_equal(spicy:::pick_es_value_lm(ms, "g"), 0.45)
 })
 
-test_that("compute_model_vcov falls back to classical vcov when sandwich errors", {
-  # The defensive fallback in compute_model_vcov (warn + return classical
-  # vcov) is reached only when sandwich::vcovHC() itself errors. We
-  # mock a failure to verify the fallback path emits a clear sprintf
-  # warning and returns a usable (possibly-NA) matrix.
+test_that("compute_model_vcov refuses when sandwich errors", {
+  # The branch is reached only when sandwich::vcovHC() itself errors. It
+  # used to warn and return the classical matrix, which the caller then
+  # labelled robust (register n. 229); it now refuses and says why.
   testthat::local_mocked_bindings(
     vcovHC = function(x, type, ...) stop("synthetic test failure"),
     .package = "sandwich"
@@ -3295,14 +3297,14 @@ test_that("compute_model_vcov falls back to classical vcov when sandwich errors"
   fit <- stats::lm(mpg ~ wt, data = mtcars)
   msg <- tryCatch(
     spicy:::compute_model_vcov(fit, "HC4m"),
-    warning = function(w) conditionMessage(w)
+    error = function(e) conditionMessage(e)
   )
 
   expect_true(is.character(msg))
-  expect_match(msg, "Robust `vcov = \"HC4m\"`")
+  expect_match(msg, "`vcov = \"HC4m\"`", fixed = TRUE)
   expect_match(msg, "synthetic test failure")
-  # cli-style bullet wording: "Falling back to the classical OLS variance"
-  expect_match(msg, "Falling back to the classical OLS variance")
+  expect_match(msg, "sandwich::vcovHC()", fixed = TRUE)
+  expect_false(grepl("Falling back", msg, fixed = TRUE))
 })
 
 test_that("compute_model_vcov matches sandwich::vcovHC numerically", {
@@ -3838,28 +3840,38 @@ test_that("fit_categorical_predictor_lm_rows handles df_resid <= 0 (perfect fit)
   expect_true(all(is.na(out$emmean_se)))
 })
 
-test_that("compute_model_vcov HC fallback returns the classical vcov after warning", {
+test_that("a failed HC computation yields no matrix at all", {
   testthat::local_mocked_bindings(
     vcovHC = function(x, type, ...) stop("synthetic test failure"),
     .package = "sandwich"
   )
   fit <- stats::lm(mpg ~ wt, data = mtcars)
-  vc <- suppressWarnings(spicy:::compute_model_vcov(fit, "HC4m"))
-  expect_true(is.matrix(vc))
-  expect_equal(vc, stats::vcov(fit))
+  expect_error(
+    spicy:::compute_model_vcov(fit, "HC4m"),
+    class = "spicy_unsupported_vcov"
+  )
+  got <- tryCatch(
+    spicy:::compute_model_vcov(fit, "HC4m"),
+    error = function(e) e
+  )
+  expect_false(is.matrix(got))
 })
 
-test_that("compute_model_vcov CR fallback returns the classical vcov after warning", {
+test_that("a failed CR computation yields no matrix at all", {
   testthat::local_mocked_bindings(
     vcovCR = function(...) stop("synthetic CR failure"),
     .package = "clubSandwich"
   )
   fit <- stats::lm(extra ~ group, data = sleep)
-  vc <- suppressWarnings(
-    spicy:::compute_model_vcov(fit, type = "CR2", cluster = sleep$ID)
+  expect_error(
+    spicy:::compute_model_vcov(fit, type = "CR2", cluster = sleep$ID),
+    class = "spicy_unsupported_vcov"
   )
-  expect_true(is.matrix(vc))
-  expect_equal(vc, stats::vcov(fit))
+  got <- tryCatch(
+    spicy:::compute_model_vcov(fit, type = "CR2", cluster = sleep$ID),
+    error = function(e) e
+  )
+  expect_false(is.matrix(got))
 })
 
 test_that("compute_resample_vcov_bootstrap errors when 0 valid replicates", {
