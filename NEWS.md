@@ -198,9 +198,11 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
 
 * `table_outcome()` summarizes one continuous outcome across the levels
   of several categorical variables, stacked as blocks -- the inverse
-  layout of `table_continuous()`. Each block reports a group comparison
-  (`p`, optional test statistic and effect size), and an `Overall` row
-  gives the marginal summary. Statistics are chosen with the same
+  layout of `table_continuous()`. The grouping characteristics are
+  chosen with `select`, as everywhere else in the family: `select`
+  structures the rows. Each block reports a group comparison (`p`,
+  optional test statistic and effect size), and an `Overall` row gives
+  the marginal summary. Statistics are chosen with the same
   `show_columns` tokens as `table_continuous()`, and every output engine
   is available. See `vignette("table-outcome")`.
 * `inline()` cites one table cell in running Quarto / R Markdown text:
@@ -532,6 +534,13 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
   it -- so a renderer never has to read an en-dash back to find out.
 
 ## Bug fixes
+
+* `table_regression()` refuses a partial effect-size column, and
+  `nested = TRUE`, on model classes that cannot produce them, instead of
+  rendering a column or a block of empty rows. Both refusals name the
+  class and the alternative. Mixed-effects fits (`lmer`, `glmer`,
+  `glmmTMB`, `lme`) and the univariable screen keep `partial_chi2`: they
+  do compute it.
 
 * `weighted_nobs` is `NA` for an unweighted `glm()`, in
   `table_regression()` and in `glance()`. It used to equal `n`:

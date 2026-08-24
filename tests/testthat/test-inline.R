@@ -108,7 +108,7 @@ test_that("a cited cell carries the style levers that have no formal", {
   d <- as.data.frame(sochealth)
   tk <- .il_quiet(table_categorical(d, select = smoking, by = sex, style = "lancet"))
   expect_identical(inline(tk, smoking, column = "p"), paste0("0", dot, "71"))
-  to <- .il_quiet(table_outcome(d, bmi, by = sex, style = "lancet"))
+  to <- .il_quiet(table_outcome(d, bmi, select = sex, style = "lancet"))
   expect_identical(inline(to, sex, column = "p"), paste0("0", dot, "018"))
   tj <- .il_quiet(table_continuous(
     d,
@@ -893,7 +893,7 @@ test_that("a real level named (Missing) is not shadowed by the role", {
   )
   d <- data.frame(g = g, y = seq_along(g))
 
-  to <- .il_quiet(table_outcome(d, y, by = g))
+  to <- .il_quiet(table_outcome(d, y, select = g))
   shown <- attr(to, "display_df")
   expect_identical(
     trimws(shown$Variable),
@@ -927,7 +927,7 @@ test_that("the missing category is still addressed by its documented name", {
     g = factor(c("a", "a", "a", "b", "b", NA, NA)),
     y = c(1, 2, 3, 10, 20, 30, 40)
   )
-  to <- .il_quiet(table_outcome(d, y, by = g))
+  to <- .il_quiet(table_outcome(d, y, select = g))
   expect_identical(inline(to, g, "(Missing)", "n"), "2")
   ct <- .il_quiet(table_categorical(d, select = g))
   expect_identical(inline(ct, g, "(Missing)", "n"), "2")

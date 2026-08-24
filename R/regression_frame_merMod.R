@@ -475,10 +475,17 @@ as_regression_frame.glmerMod <- function(
     }
   }
 
+  # partial_effect_size = TRUE in both arms: the mixed builders call
+  # .attach_partial_chi2_to_frame_coefs() (above), so a mixed fit really
+  # does produce term-level partial effect rows -- the Wald chi-square
+  # analog, not the least-squares variance partition, which is why
+  # classical_r2 stays FALSE. The flag is read by table_regression()'s
+  # capability guard (decision 41), so declaring FALSE here would refuse
+  # a column this builder can fill.
   supports <- if (is_glm) {
     list(
       ame = TRUE,
-      partial_effect_size = FALSE,
+      partial_effect_size = TRUE,
       classical_r2 = FALSE,
       nested_lrt = TRUE,
       exponentiate = TRUE,
@@ -487,7 +494,7 @@ as_regression_frame.glmerMod <- function(
   } else {
     list(
       ame = TRUE,
-      partial_effect_size = FALSE,
+      partial_effect_size = TRUE,
       classical_r2 = FALSE,
       nested_lrt = TRUE,
       exponentiate = FALSE,

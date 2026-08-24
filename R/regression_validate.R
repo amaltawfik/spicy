@@ -548,6 +548,38 @@ validate_nested_alignment <- function(models, nested) {
 }
 
 # Steps 6-8: vcov + cluster list/scalar coordination
+#
+# ---- Where a capability may be read from, and where it may not -------
+#
+# Decision 41, acted here once for the whole validation layer. This
+# function -- and every validator table_regression() calls before its
+# frame loop: validate_nested_alignment(), validate_show_columns(),
+# validate_class_appropriate_tokens() -- sniffs the FIT with
+# inherits(). That is legitimate, and it is not a gap left by the frame
+# refactor: these checks exist precisely so that a request a class
+# cannot honour dies before any fitting-adjacent work starts (C2
+# increment 1, fail fast). A frame flag cannot govern a check that runs
+# BEFORE the frame exists, so asking these sites to read one would mean
+# building the frames first and losing the fail-fast they were written
+# for.
+#
+# The rule the two layers split on:
+#
+#   * PRE-frame  -- inherits() on the fit. Refuses the impossible
+#                   before any frame is built. Keeps its class-specific
+#                   message (the GEE / QIC hint, the rq tau guard, the
+#                   lm-vs-glm partial substitutions).
+#   * POST-frame -- `info$supports$*` on the built frame, and nothing
+#                   else. The AME guard, the partial-effect-size guard
+#                   and the nested-comparison guard in
+#                   table_regression() all read a declaration; a
+#                   builder that mis-declares changes what the table
+#                   does, which is what makes the declaration worth
+#                   trusting.
+#
+# So `supports` is the truth about what a frame CAN render, never a
+# substitute for the earlier refusal, and nothing below should be
+# rewritten to consult it.
 validate_vcov_cluster_lists <- function(vcov, cluster, models) {
   n_models <- length(models)
 
@@ -1248,17 +1280,25 @@ validate_class_appropriate_tokens <- function(
   # gate below (no likelihood -> no pseudo-R^2 / IC / partial LRT),
   # so it must not be claimed by the glm bucket -- the glm messages
   # would suggest substitutes GEE cannot compute.
-  gee_flags <- vapply(models, inherits, logical(1), "geeglm")
-  glm_flags <- vapply(models, inherits, logical(1), "glm") & !gee_flags
+  #
+  # A univariable-screen bundle stands for the fits it wraps, here as
+  # in the r2 gate below: the bundle is a plain list carrying class
+  # `spicy_uv_screen`, so reading its class alone made every screen a
+  # mixed set, and the substitution gates never fired. A linear screen
+  # asking for `partial_chi2` then rendered a fully blank column --
+  # exactly what a solo lm() is refused for.
+  eff_models <- .unwrap_screen_bundles(models)
+  gee_flags <- vapply(eff_models, inherits, logical(1), "geeglm")
+  glm_flags <- vapply(eff_models, inherits, logical(1), "glm") & !gee_flags
   lm_only_flags <- vapply(
-    models,
+    eff_models,
     function(f) {
       inherits(f, "lm") && !inherits(f, "glm")
     },
     logical(1)
   )
-  all_glm <- length(models) > 0L && all(glm_flags)
-  all_lm <- length(models) > 0L && all(lm_only_flags)
+  all_glm <- length(eff_models) > 0L && all(glm_flags)
+  all_lm <- length(eff_models) > 0L && all(lm_only_flags)
 
   # Variance-explained partial tokens. Reject only when ALL models
   # are glm \u2013 in mixed sets, the renderer en-dashes glm rows and
@@ -1372,8 +1412,9 @@ validate_class_appropriate_tokens <- function(
     # A univariable-screen bundle stands for the fits it wraps: with
     # `multivariable = FALSE` the bundle is the ONLY entry in `models`,
     # so reading its class alone would refuse the linear screen -- the
-    # very table the column is for.
-    eff_fits <- .unwrap_screen_bundles(models)
+    # very table the column is for. Same unwrapped set as the class
+    # buckets above.
+    eff_fits <- eff_models
     any_ols <- any(vapply(
       eff_fits,
       function(f) inherits(f, "lm") && !inherits(f, "glm"),

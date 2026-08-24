@@ -29,39 +29,44 @@
 }
 
 test_that("tinytable and gt render the console body", {
-  tbl <- .tor_tbl(bmi, by = c(sex, smoking), statistic = TRUE)
+  tbl <- .tor_tbl(bmi, select = c(sex, smoking), statistic = TRUE)
   console <- attr(tbl, "display_df")
   skip_if_not_installed("tinytable")
   skip_if_not_installed("gt")
   tt <- .tor_tbl(
     bmi,
-    by = c(sex, smoking),
+    select = c(sex, smoking),
     statistic = TRUE,
     output = "tinytable"
   )
-  g <- .tor_tbl(bmi, by = c(sex, smoking), statistic = TRUE, output = "gt")
+  g <- .tor_tbl(bmi, select = c(sex, smoking), statistic = TRUE, output = "gt")
   expect_identical(.tor_cells(tt@data), .tor_cells(console))
   expect_identical(.tor_cells(g[["_data"]]), .tor_cells(console))
 })
 
 test_that("the typed view renders the same body as the engines", {
-  tbl <- .tor_tbl(bmi, by = c(sex, region), effect_size = "auto")
+  tbl <- .tor_tbl(bmi, select = c(sex, region), effect_size = "auto")
   s <- as_structured(tbl)
   typed <- spicy:::.format_structured_to_string_body(s)
   skip_if_not_installed("gt")
-  g <- .tor_tbl(bmi, by = c(sex, region), effect_size = "auto", output = "gt")
+  g <- .tor_tbl(
+    bmi,
+    select = c(sex, region),
+    effect_size = "auto",
+    output = "gt"
+  )
   expect_identical(.tor_cells(g[["_data"]]), .tor_cells(typed))
 })
 
 test_that("only the level rows are indented", {
   skip_if_not_installed("gt")
   skip_if_not_installed("tinytable")
-  tbl <- .tor_tbl(bmi, by = c(sex, smoking))
+  tbl <- .tor_tbl(bmi, select = c(sex, smoking))
   indent <- spicy:::.struct_indent_rows(as_structured(tbl))
   expect_identical(indent, c(3L, 4L, 6L, 7L, 8L))
 
   for (out in c("gt", "tinytable")) {
-    rendered <- .tor_tbl(bmi, by = c(sex, smoking), output = out)
+    rendered <- .tor_tbl(bmi, select = c(sex, smoking), output = out)
     col <- if (identical(out, "gt")) {
       rendered[["_data"]][[1L]]
     } else {
@@ -78,10 +83,10 @@ test_that("only the level rows are indented", {
 
 test_that("the block rules are drawn above every block", {
   skip_if_not_installed("gt")
-  tbl <- .tor_tbl(bmi, by = c(sex, smoking))
+  tbl <- .tor_tbl(bmi, select = c(sex, smoking))
   sep <- spicy:::.struct_block_sep_rows(as_structured(tbl))
   expect_identical(sep, c(2L, 5L))
-  g <- .tor_tbl(bmi, by = c(sex, smoking), output = "gt")
+  g <- .tor_tbl(bmi, select = c(sex, smoking), output = "gt")
   styles <- g[["_styles"]]
   body <- styles[styles$locname == "data", , drop = FALSE]
   light <- body$rownum[vapply(
@@ -96,23 +101,28 @@ test_that("the block rules are drawn above every block", {
 test_that("the engines carry the title and the note", {
   skip_if_not_installed("gt")
   skip_if_not_installed("tinytable")
-  tbl <- .tor_tbl(bmi, by = sex)
+  tbl <- .tor_tbl(bmi, select = sex)
   title <- spicy:::.outcome_title(attr(tbl, "outcome_label"))
   note <- attr(tbl, "note")
 
-  g <- .tor_tbl(bmi, by = sex, output = "gt")
+  g <- .tor_tbl(bmi, select = sex, output = "gt")
   expect_identical(as.character(g[["_heading"]]$title), title)
   expect_identical(attr(g, "spicy_note", exact = TRUE), note)
 
-  tt <- .tor_tbl(bmi, by = sex, output = "tinytable")
+  tt <- .tor_tbl(bmi, select = sex, output = "tinytable")
   expect_identical(tt@caption, title)
   expect_identical(unname(unlist(tt@notes)), note)
 })
 
 test_that("show_columns reaches the engines", {
   skip_if_not_installed("gt")
-  tbl <- .tor_tbl(bmi, by = sex, show_columns = c("med_iqr", "n"))
-  g <- .tor_tbl(bmi, by = sex, show_columns = c("med_iqr", "n"), output = "gt")
+  tbl <- .tor_tbl(bmi, select = sex, show_columns = c("med_iqr", "n"))
+  g <- .tor_tbl(
+    bmi,
+    select = sex,
+    show_columns = c("med_iqr", "n"),
+    output = "gt"
+  )
   expect_identical(
     .tor_cells(g[["_data"]]),
     .tor_cells(attr(tbl, "display_df"))
@@ -126,8 +136,8 @@ test_that("show_columns reaches the engines", {
 
 test_that("flextable renders the console body and pads the levels", {
   skip_if_not_installed("flextable")
-  tbl <- .tor_tbl(bmi, by = c(sex, smoking))
-  ft <- .tor_tbl(bmi, by = c(sex, smoking), output = "flextable")
+  tbl <- .tor_tbl(bmi, select = c(sex, smoking))
+  ft <- .tor_tbl(bmi, select = c(sex, smoking), output = "flextable")
   console <- attr(tbl, "display_df")
   indent <- spicy:::.struct_indent_rows(as_structured(tbl))
 
@@ -154,7 +164,7 @@ test_that("the Word route writes a document with the console caption", {
   skip_if_not_installed("flextable")
   skip_if_not_installed("officer")
   f <- withr::local_tempfile(fileext = ".docx")
-  out <- .tor_tbl(bmi, by = sex, output = "word", word_path = f)
+  out <- .tor_tbl(bmi, select = sex, output = "word", word_path = f)
   expect_identical(out, f)
   expect_true(file.exists(f))
   expect_gt(file.size(f), 0)
@@ -163,10 +173,10 @@ test_that("the Word route writes a document with the console caption", {
 test_that("Excel keeps the marginal label whole and deepens the levels", {
   skip_if_not_installed("openxlsx2")
   f <- withr::local_tempfile(fileext = ".xlsx")
-  tbl <- .tor_tbl(bmi, by = c(sex, smoking))
+  tbl <- .tor_tbl(bmi, select = c(sex, smoking))
   .tor_tbl(
     bmi,
-    by = c(sex, smoking),
+    select = c(sex, smoking),
     output = "excel",
     excel_path = f,
     indent_text_excel_clipboard = strrep("_", 6)
@@ -203,10 +213,10 @@ test_that("the clipboard payload carries the title, the grid and the note", {
     },
     .package = "clipr"
   )
-  tbl <- .tor_tbl(bmi, by = c(sex, smoking))
+  tbl <- .tor_tbl(bmi, select = c(sex, smoking))
   .tor_tbl(
     bmi,
-    by = c(sex, smoking),
+    select = c(sex, smoking),
     output = "clipboard",
     indent_text_excel_clipboard = strrep("_", 6)
   )
@@ -236,12 +246,12 @@ test_that("every engine agrees with the console on the numbers", {
   skip_if_not_installed("flextable")
   skip_if_not_installed("gt")
   skip_if_not_installed("tinytable")
-  tbl <- .tor_tbl(bmi, by = c(sex, region), effect_size = "auto")
+  tbl <- .tor_tbl(bmi, select = c(sex, region), effect_size = "auto")
   console <- .tor_cells(attr(tbl, "display_df")[-1L])
   for (out in c("tinytable", "gt", "flextable")) {
     rendered <- .tor_tbl(
       bmi,
-      by = c(sex, region),
+      select = c(sex, region),
       effect_size = "auto",
       output = out
     )

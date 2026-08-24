@@ -159,7 +159,7 @@ test_that("the saved gt file carries the note, not only the title", {
   d <- spicy::sochealth
   builders <- list(
     outcome = function() {
-      table_outcome(d, bmi, by = c(sex, smoking), output = "gt")
+      table_outcome(d, bmi, select = c(sex, smoking), output = "gt")
     },
     continuous = function() {
       table_continuous(d, select = "bmi", by = "sex", output = "gt")
@@ -198,7 +198,7 @@ test_that("the HTML display path still prints the note once", {
   tbl <- suppressWarnings(table_outcome(
     spicy::sochealth,
     bmi,
-    by = sex,
+    select = sex,
     output = "gt"
   ))
   note <- attr(tbl, "spicy_note", exact = TRUE)

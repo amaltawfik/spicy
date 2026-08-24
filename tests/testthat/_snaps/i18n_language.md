@@ -86,7 +86,7 @@
       ────────────┼──────────────────────────────────────────────────────────────────────────────
        bmi        │  26.87    23.17      -3.70        -9.09        1.69       .144    0.32    8  
     Code
-      print(table_outcome(d, outcome = bmi, by = c(sex, smoke)))
+      print(table_outcome(d, outcome = bmi, select = c(sex, smoke)))
     Output
       Statistiques descriptives pour bmi
       

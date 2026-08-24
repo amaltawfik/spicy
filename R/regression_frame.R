@@ -39,6 +39,25 @@ spicy_frame_version <- function() {
 # method need only set the flags it supports and any newly-added flag
 # defaults safely across all ~30 classes. This list is ALSO the
 # single source of truth for the supports field set the validator requires.
+# The class names to PUT IN A MESSAGE for a set of frames. Normally
+# `info$class`, except for the univariable screen, whose frame is a
+# composite named `uv_screen`: a refusal citing that name would name an
+# internal object rather than the models the user passed, so the screen
+# publishes the classes it stands for in `extras$screen_classes` and
+# they are spliced in here. Read by the capability guards in
+# table_regression().
+.frame_class_labels <- function(frames) {
+  out <- unlist(lapply(frames, function(fr) {
+    wrapped <- fr$info$extras$screen_classes
+    if (length(wrapped) > 0L) {
+      return(as.character(wrapped))
+    }
+    fr$info$class %||% "?"
+  }))
+  unique(as.character(out))
+}
+
+
 default_supports <- function() {
   list(
     ame = FALSE,

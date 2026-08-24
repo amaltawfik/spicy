@@ -143,7 +143,7 @@ print.spicy_outcome_table <- function(x, ...) {
 unclass_spicy_outcome_table <- function(x) {
   keep <- list(
     outcome = attr(x, "outcome", exact = TRUE),
-    by = attr(x, "by", exact = TRUE)
+    select = attr(x, "select", exact = TRUE)
   )
   for (nm in setdiff(names(attributes(x)), c("names", "row.names", "class"))) {
     attr(x, nm) <- NULL
@@ -163,7 +163,7 @@ unclass_spicy_outcome_table <- function(x) {
 #' rendering-only attributes from an object returned by
 #' [table_outcome()], so the underlying long-format data can be
 #' manipulated with downstream tools under the standard `data.frame` /
-#' `tbl_df` contract. The `"outcome"` and `"by"` attributes are kept as
+#' `tbl_df` contract. The `"outcome"` and `"select"` attributes are kept as
 #' lightweight provenance markers. The original `x` is unaffected, and
 #' `print(x)` continues to render the formatted table.
 #'

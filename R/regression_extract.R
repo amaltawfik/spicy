@@ -192,20 +192,7 @@ extract_lm_phase1 <- function(
   }
 
   # ---- Partial effect-size rows (Step 6 + Phase 3 Step 3) ----------------
-  if (
-    any(
-      c(
-        "partial_f2",
-        "partial_f2_ci",
-        "partial_eta2",
-        "partial_eta2_ci",
-        "partial_omega2",
-        "partial_omega2_ci",
-        "partial_chi2"
-      ) %in%
-        show_columns
-    )
-  ) {
+  if (any(.PARTIAL_ES_TOKENS %in% show_columns)) {
     partial_rows <- extract_partial_effect_rows(
       fit = fit,
       ci_level = ci_level,

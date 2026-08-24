@@ -1,7 +1,7 @@
 # the console shape is pinned
 
     Code
-      print(suppressWarnings(table_outcome(d, bmi, by = c(sex, smoking))))
+      print(suppressWarnings(table_outcome(d, bmi, select = c(sex, smoking))))
     Output
       Descriptive statistics of Body mass index
       
@@ -23,8 +23,8 @@
 ---
 
     Code
-      print(suppressWarnings(table_outcome(d, bmi, by = c(sex, region), statistic = TRUE,
-      effect_size = "auto")))
+      print(suppressWarnings(table_outcome(d, bmi, select = c(sex, region),
+      statistic = TRUE, effect_size = "auto")))
     Output
       Descriptive statistics of Body mass index
       
@@ -65,7 +65,7 @@
 ---
 
     Code
-      print(suppressWarnings(table_outcome(d, bmi, by = sex, overall = FALSE,
+      print(suppressWarnings(table_outcome(d, bmi, select = sex, overall = FALSE,
         show_columns = c("med_iqr", "n"))))
     Output
       Descriptive statistics of Body mass index

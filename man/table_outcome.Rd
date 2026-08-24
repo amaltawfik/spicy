@@ -7,7 +7,7 @@
 table_outcome(
   data,
   outcome,
-  by,
+  select,
   labels = NULL,
   overall = TRUE,
   drop_na = FALSE,
@@ -36,7 +36,8 @@ table_outcome(
   clipboard_delim = "\\t",
   word_path = NULL,
   user_na = TRUE,
-  style = NULL
+  style = NULL,
+  by
 )
 }
 \arguments{
@@ -45,15 +46,17 @@ table_outcome(
 \item{outcome}{The continuous outcome, unquoted or as a string.
 Exactly one column.}
 
-\item{by}{The grouping variables, as a tidyselect expression. One
-block of rows per variable, in the order given.}
+\item{select}{The grouping characteristics to describe the outcome
+across, as a tidyselect expression or a character vector of column
+names. One block of rows per variable, in the order given. As
+everywhere in the family, \code{select} is what structures the rows.}
 
 \item{labels}{Named character vector of display labels, for the
-outcome and for the \code{by} variables alike.}
+outcome and for the \code{select} variables alike.}
 
 \item{overall}{Show the marginal \code{Overall} row (default \code{TRUE}).}
 
-\item{drop_na}{Drop rows with a missing \code{by} value from that block
+\item{drop_na}{Drop rows with a missing \code{select} value from that block
 (default \code{FALSE}: they are shown as a \code{(Missing)} level and
 excluded from the comparison).}
 
@@ -96,6 +99,9 @@ destinations, as in \code{\link[=table_continuous]{table_continuous()}}.}
 \item{user_na}{Honour declared missing values (see \code{?freq}).}
 
 \item{style}{A journal style; see \code{\link[=spicy_style]{spicy_style()}}.}
+
+\item{by}{Defunct. The grouping characteristics are selected with
+\code{select} since spicy 0.13.0; supplying \code{by} is an error.}
 }
 \value{
 A \code{spicy_outcome_table}: the compute frame, with the display
@@ -115,7 +121,7 @@ gives the marginal summary of the whole analytic sample.
 \section{Which shape do I need?}{
 Several continuous variables across \emph{one} grouping is
 \code{\link[=table_continuous]{table_continuous()}} (\verb{select = }, \verb{by = }). One continuous variable
-across one or several groupings is this function. A single \code{by} is
+across one or several groupings is this function. A single \code{select} is
 legitimate here -- it is the natural way in when you know more
 groupings are coming -- but with several outcomes and one grouping,
 the sibling is the table you want.
@@ -187,16 +193,16 @@ whole analytic sample, where a mean is recomputed over every
 observation and nothing is added. A mean is not a total.
 }
 
-\section{Choosing the \code{by} columns}{
-The canonical form is \code{by = where(is.factor)}, or an explicit
-enumeration. Negation (\code{by = -c(x, y)}) is not recommended: it
+\section{Choosing the \code{select} columns}{
+The canonical form is \code{select = where(is.factor)}, or an explicit
+enumeration. Negation (\code{select = -c(x, y)}) is not recommended: it
 sweeps in every remaining column, and a numeric one becomes a block
 with one LEVEL per distinct value, in order of first appearance. A
 variable producing more than 20 levels raises a warning for that
 reason -- an arbitrary threshold, but a sixty-row block where a
 reader expects a handful of categories is not a table.
 
-A \code{haven_labelled} column used as \code{by} shows its numeric CODES, not
+A \code{haven_labelled} column used as \code{select} shows its numeric CODES, not
 its value labels, as it does in \code{\link[=table_continuous]{table_continuous()}}. Convert it
 first (\code{haven::as_factor()}) to get the labels in the stub.
 }
@@ -211,8 +217,8 @@ On the \code{"tinytable"} route it is set one size down;
 }
 
 \examples{
-table_outcome(sochealth, bmi, by = c(sex, smoking))
-table_outcome(sochealth, wellbeing_score, by = where(is.factor))
+table_outcome(sochealth, bmi, select = c(sex, smoking))
+table_outcome(sochealth, wellbeing_score, select = where(is.factor))
 }
 \seealso{
 \code{\link[=table_continuous]{table_continuous()}} for the transposed shape,
