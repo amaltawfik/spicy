@@ -1383,38 +1383,45 @@ validate_class_appropriate_tokens <- function(
   # class-aware default already uses, so a default can never name a
   # token this refuses -- such a hierarchy defaults to lrt_change +
   # p_change, which is exactly what the message points at.
-  if (!all_glm && all_likelihood_path(eff_models)) {
-    bad_fit <- intersect(
-      show_fit_stats,
-      c("r2_change", "adj_r2_change", "f_change", "f2_change")
-    )
-    if (length(bad_fit) > 0L) {
-      spicy_abort(
-        c(
-          sprintf(
-            "Token(s) %s in `show_fit_stats` are not defined for `%s` models.",
-            paste(.quote_val(bad_fit), collapse = ", "),
-            class(eff_models[[1L]])[1L]
-          ),
-          # The reason names what SPICY reports for this hierarchy, not
-          # what the estimator is. Saying "no analog outside the
-          # least-squares framework" was false for two of the classes
-          # that reach here: fixest::feols() IS least squares, with a
-          # real R^2, and gls is a milder case -- both are routed to the
-          # likelihood pair, which is the fact the user needs.
-          "i" = paste0(
-            "The nested comparison for these fits is a ",
-            "likelihood-ratio chi-square, which reports no ",
-            "variance-explained change."
-          ),
-          "i" = paste0(
-            "Use `\"lrt_change\"` + `\"p_change\"`, which is also what ",
-            "`nested = TRUE` selects for this hierarchy by default."
-          )
+  #
+  # The TOKENS are tested first and the predicate only afterwards, and
+  # that order is load-bearing, not style: `all_likelihood_path()` calls
+  # stats::logLik() on every model, and logLik() is not free on every
+  # class -- logLik.brmsfit() builds the whole ndraws x nobs pointwise
+  # matrix. Asked the other way round, every plain table_regression()
+  # call paid for a question about change tokens that were never
+  # requested (measured: one has_usable_loglik() per model on a call
+  # with no change token in it).
+  bad_fit <- intersect(
+    show_fit_stats,
+    c("r2_change", "adj_r2_change", "f_change", "f2_change")
+  )
+  if (length(bad_fit) > 0L && !all_glm && all_likelihood_path(eff_models)) {
+    spicy_abort(
+      c(
+        sprintf(
+          "Token(s) %s in `show_fit_stats` are not defined for `%s` models.",
+          paste(.quote_val(bad_fit), collapse = ", "),
+          class(eff_models[[1L]])[1L]
         ),
-        class = "spicy_invalid_input"
-      )
-    }
+        # The reason names what SPICY reports for this hierarchy, not
+        # what the estimator is. Saying "no analog outside the
+        # least-squares framework" was false for two of the classes
+        # that reach here: fixest::feols() IS least squares, with a
+        # real R^2, and gls is a milder case -- both are routed to the
+        # likelihood pair, which is the fact the user needs.
+        "i" = paste0(
+          "The nested comparison for these fits is a ",
+          "likelihood-ratio chi-square, which reports no ",
+          "variance-explained change."
+        ),
+        "i" = paste0(
+          "Use `\"lrt_change\"` + `\"p_change\"`, which is also what ",
+          "`nested = TRUE` selects for this hierarchy by default."
+        )
+      ),
+      class = "spicy_invalid_input"
+    )
   }
 
   if (all_lm) {

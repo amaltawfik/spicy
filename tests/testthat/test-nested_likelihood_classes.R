@@ -797,3 +797,29 @@ test_that("the refusal's reason is true for every class that can hear it", {
   # ... and is not told something false about its own estimator.
   expect_false(grepl("least-squares framework", reason(list(f1, f2)), fixed = TRUE))
 })
+
+
+test_that("the predicate is not paid for on a call that asks no token", {
+  # `all_likelihood_path()` calls stats::logLik() on every model, and
+  # logLik() is not free on every class -- logLik.brmsfit() builds the
+  # whole ndraws x nobs pointwise matrix. The TOKENS are therefore
+  # tested first, so a plain call never pays for a question about change
+  # tokens it did not ask. Mocking the predicate to raise is the
+  # sharpest way to say "never called".
+  skip_if_no("survival")
+  p <- survreg_pair()
+  local_mocked_bindings(
+    has_usable_loglik = function(fit) stop("predicate consulted")
+  )
+  expect_no_error(table_regression(p$m1, output = "data.frame"))
+
+  # And it IS consulted the moment a change token is on the table.
+  expect_error(
+    table_regression(
+      list(p$m1, p$m2),
+      nested = TRUE,
+      show_fit_stats = c("r2_change", "p_change")
+    ),
+    "predicate consulted"
+  )
+})
