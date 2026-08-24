@@ -1855,8 +1855,14 @@ test_that("AUDIT: glm + NA in predictors -> nobs reflects na.omit, no crash", {
 
 test_that("AUDIT: glm + cluster vector with NAs -> clear refusal", {
   # Was a spicy_fallback warning and a table of CLASSICAL standard errors
-  # under a "cluster-robust (CR2)" footer (register n. 229). clubSandwich
-  # names the cause exactly, so the refusal relays it.
+  # under a "cluster-robust (CR2)" footer (register n. 229).
+  #
+  # The refusal used to come from clubSandwich, relayed. It now comes
+  # from spicy's own cluster guard, which runs BEFORE any backend: the
+  # three cluster-robust backends disagreed about a missing id and one of
+  # them (the Cox path) answered with an invented cluster instead of an
+  # error, so the property is settled once, on `cluster`, for all of
+  # them. Earlier, and the same answer whatever the class.
   set.seed(1)
   n <- 100L
   d <- data.frame(
@@ -1870,9 +1876,11 @@ test_that("AUDIT: glm + cluster vector with NAs -> clear refusal", {
     table_regression(fit, vcov = "CR2", cluster = d$clinic),
     error = function(e) e
   )
-  expect_s3_class(err, "spicy_unsupported_vcov")
-  expect_match(conditionMessage(err), "missing values")
-  expect_match(conditionMessage(err), "clubSandwich::vcovCR()", fixed = TRUE)
+  expect_s3_class(err, "spicy_invalid_input")
+  expect_match(conditionMessage(err), "3 missing value(s)", fixed = TRUE)
+  expect_match(conditionMessage(err), "belongs to no cluster", fixed = TRUE)
+  # Nothing is rendered: the old contract returned a full table here.
+  expect_false(inherits(err, "spicy_regression_table"))
 })
 
 test_that("AUDIT: cluster length mismatch -> clear actionable error", {

@@ -681,3 +681,24 @@ test_that("loglik_df_increase reports the added parameters, or NA", {
   expect_equal(loglik_df_increase(m2, m1), -1)
   expect_true(is.na(loglik_df_increase(structure(list(), class = "nothing"), m2)))
 })
+
+
+# A method can also decline by returning a table with nothing in it --
+# no error to relay, but still nothing to compare. Reached directly
+# rather than marked nocov: the arm is plainly callable, and the last
+# nocov written on that reasoning in this file turned out to be a
+# fiction.
+test_that("the refusal also covers a method that raised nothing", {
+  m1 <- stats::lm(mpg ~ wt, data = mtcars)
+  m2 <- stats::lm(mpg ~ wt + hp, data = mtcars)
+  err <- tryCatch(
+    abort_nested_anova_refused(m1, m2, NULL),
+    error = function(e) e
+  )
+  expect_s3_class(err, "spicy_invalid_input")
+  expect_match(
+    conditionMessage(err),
+    "the method returned no model-comparison table",
+    fixed = TRUE
+  )
+})

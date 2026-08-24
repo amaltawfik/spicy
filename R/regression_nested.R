@@ -731,7 +731,7 @@ nested_anova_method_exists <- function(fit) {
 # quoted, never parsed.
 abort_nested_anova_refused <- function(fit_prev, fit_curr, cnd) {
   detail <- if (is.null(cnd)) {
-    "the method returned no model-comparison table" # nocov
+    "the method returned no model-comparison table"
   } else {
     conditionMessage(cnd)
   }
