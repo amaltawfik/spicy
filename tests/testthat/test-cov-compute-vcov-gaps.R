@@ -828,3 +828,49 @@ test_that(".nakagawa_components_merMod declines when the fixed-effect prediction
   ))
   expect_null(spicy:::.nakagawa_components_merMod(stub))
 })
+
+
+# ============================================================================
+# The file's own PASS count (register n. 204)
+# ============================================================================
+
+# n. 204 reported this file's PASS count as non-deterministic (94 vs 99) and
+# guessed at the mechanism: "probably a conditional skip placed AFTER some
+# expectations". Such a block runs its expectations AND reports skipped, so
+# the count moves without anything failing and the file stops being a
+# regression signal.
+#
+# The audit found no such block, and neither archived full-suite table
+# records a skip here. What the count DOES depend on is the Suggests
+# surface: five blocks are guarded by skip_if_not_installed(), and 99 minus
+# the 5 expectations of the two 5-expectation guarded blocks is exactly the
+# 94 that was seen. That is testthat working as designed, not a defect --
+# but only while every skip stays where it can be trusted, ahead of the
+# first expectation of its block.
+#
+# So the property is asserted instead of assumed: this test parses its OWN
+# source and proves that no skip in the file can fire after an expectation.
+# The hypothesised mechanism becomes impossible to introduce, and the count
+# is then a function of the installed Suggests alone.
+test_that("no skip in this file can fire after an expectation", {
+  path <- testthat::test_path("test-cov-compute-vcov-gaps.R")
+  skip_if_not(file.exists(path))
+  src <- readLines(path, warn = FALSE)
+  # Both patterns are assembled from pieces so this scanner does not match
+  # its OWN source lines and report itself as the offender.
+  pat_skip <- paste0("\bskip", "(_[a-z_]+)?", "[(]")
+  pat_expect <- paste0("\bexpect", "_[a-z_0-9]+", "[(]")
+  starts <- grep("^test_that[(]", src)
+  expect_gt(length(starts), 20L) # sanity: the scan found the blocks
+  ends <- c(starts[-1L] - 1L, length(src))
+  offenders <- character(0)
+  for (i in seq_along(starts)) {
+    block <- src[starts[i]:ends[i]]
+    skips <- grep(pat_skip, block)
+    expects <- grep(pat_expect, block)
+    if (length(skips) > 0L && length(expects) > 0L && any(skips > min(expects))) {
+      offenders <- c(offenders, trimws(block[1L]))
+    }
+  }
+  expect_identical(offenders, character(0))
+})
