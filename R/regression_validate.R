@@ -548,6 +548,38 @@ validate_nested_alignment <- function(models, nested) {
 }
 
 # Steps 6-8: vcov + cluster list/scalar coordination
+#
+# ---- Where a capability may be read from, and where it may not -------
+#
+# Decision 41, acted here once for the whole validation layer. This
+# function -- and every validator table_regression() calls before its
+# frame loop: validate_nested_alignment(), validate_show_columns(),
+# validate_class_appropriate_tokens() -- sniffs the FIT with
+# inherits(). That is legitimate, and it is not a gap left by the frame
+# refactor: these checks exist precisely so that a request a class
+# cannot honour dies before any fitting-adjacent work starts (C2
+# increment 1, fail fast). A frame flag cannot govern a check that runs
+# BEFORE the frame exists, so asking these sites to read one would mean
+# building the frames first and losing the fail-fast they were written
+# for.
+#
+# The rule the two layers split on:
+#
+#   * PRE-frame  -- inherits() on the fit. Refuses the impossible
+#                   before any frame is built. Keeps its class-specific
+#                   message (the GEE / QIC hint, the rq tau guard, the
+#                   lm-vs-glm partial substitutions).
+#   * POST-frame -- `info$supports$*` on the built frame, and nothing
+#                   else. The AME guard, the partial-effect-size guard
+#                   and the nested-comparison guard in
+#                   table_regression() all read a declaration; a
+#                   builder that mis-declares changes what the table
+#                   does, which is what makes the declaration worth
+#                   trusting.
+#
+# So `supports` is the truth about what a frame CAN render, never a
+# substitute for the earlier refusal, and nothing below should be
+# rewritten to consult it.
 validate_vcov_cluster_lists <- function(vcov, cluster, models) {
   n_models <- length(models)
 

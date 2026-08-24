@@ -535,6 +535,13 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
 
 ## Bug fixes
 
+* `table_regression()` refuses a partial effect-size column, and
+  `nested = TRUE`, on model classes that cannot produce them, instead of
+  rendering a column or a block of empty rows. Both refusals name the
+  class and the alternative. Mixed-effects fits (`lmer`, `glmer`,
+  `glmmTMB`, `lme`) and the univariable screen keep `partial_chi2`: they
+  do compute it.
+
 * `weighted_nobs` is `NA` for an unweighted `glm()`, in
   `table_regression()` and in `glance()`. It used to equal `n`:
   `stats::weights()` returns the prior weights of a `glm()`, a vector of

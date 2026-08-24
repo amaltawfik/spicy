@@ -495,3 +495,83 @@ test_that("validate_regression_frame() type-checks optional info fields", {
   frame$info$random_effects <- NULL
   expect_invisible(validate_regression_frame(frame))
 })
+
+
+# ---- The capability flags are consumed, not decoration ---------------------
+#
+# Decision 41. `supports$partial_effect_size` and `supports$nested_lrt`
+# were set by every builder and read by nobody; the features they name
+# were decided by inherits() gates that could not see a frame. They are
+# now read POST-frame, beside `supports$ame`, by the capability guards
+# in table_regression(). The witness for "the flag is the authority" is
+# that flipping it on a class whose behaviour is otherwise unchanged
+# flips the feature -- so a builder that mis-declares breaks visibly.
+
+test_that("supports$partial_effect_size gates the partial columns", {
+  fit <- stats::lm(mpg ~ wt + factor(cyl), data = mtcars)
+
+  # Declared TRUE (the real .lm_supports()): the column is produced.
+  ok <- table_regression(
+    fit,
+    show_columns = c("b", "partial_eta2"),
+    output = "data.frame"
+  )
+  expect_length(names(ok), 3L)
+  expect_true(any(nzchar(ok[[3L]])))
+
+  # Declared FALSE, nothing else changed: the request is refused rather
+  # than rendered as a column of dashes.
+  testthat::local_mocked_bindings(
+    .lm_supports = function() {
+      s <- spicy:::.glm_supports()
+      s$classical_r2 <- TRUE
+      s$exponentiate <- FALSE
+      s$partial_effect_size <- FALSE
+      s
+    },
+    .package = "spicy"
+  )
+  err <- tryCatch(
+    table_regression(fit, show_columns = c("b", "partial_eta2")),
+    error = identity
+  )
+  expect_s3_class(err, "spicy_invalid_input")
+  expect_match(
+    conditionMessage(err),
+    "Partial effect-size columns are not available",
+    fixed = TRUE
+  )
+  expect_match(conditionMessage(err), "`lm`", fixed = TRUE)
+})
+
+test_that("supports$nested_lrt gates the hierarchical comparison", {
+  m1 <- stats::lm(mpg ~ wt, data = mtcars)
+  m2 <- stats::lm(mpg ~ wt + hp, data = mtcars)
+
+  # Declared TRUE: the change rows are computed.
+  ok <- table_regression(list(m1, m2), nested = TRUE, output = "data.frame")
+  expect_s3_class(ok, "data.frame")
+
+  # Declared FALSE: refused, with the side-by-side alternative named.
+  testthat::local_mocked_bindings(
+    .lm_supports = function() {
+      s <- spicy:::.glm_supports()
+      s$classical_r2 <- TRUE
+      s$exponentiate <- FALSE
+      s$nested_lrt <- FALSE
+      s
+    },
+    .package = "spicy"
+  )
+  err <- tryCatch(
+    table_regression(list(m1, m2), nested = TRUE),
+    error = identity
+  )
+  expect_s3_class(err, "spicy_invalid_input")
+  expect_match(
+    conditionMessage(err),
+    "`nested = TRUE` is not available",
+    fixed = TRUE
+  )
+  expect_match(conditionMessage(err), "nested = FALSE", fixed = TRUE)
+})
