@@ -123,9 +123,35 @@
 # replacement could create ("a\"b" and "a<b" both land as "a_b"); the
 # keys are data frame column names, so a set with no collision comes
 # back exactly as it went in.
+# Second pass, added for n. 213 / n. 218: gt does not write our id into
+# the DOM as we hand it over. `gt:::valid_html_id()` collapses every run
+# of WHITESPACE to a single "-", which can RE-MERGE two ids make.unique()
+# has just declared distinct. Two `by` levels "A B" and "A-B" both land on
+# `A-B_n`: the two `<th>` share one DOM id and every body cell's
+# `headers="A-B_n"` then points at both, so a screen reader announces the
+# wrong group and a `th[id=]` rule styles two columns at once. (In the
+# spanner position gt escapes the id instead of normalising it, so
+# spanners never collide this way -- measured on gt 1.3.0.)
+#
+# The tie is broken on a SHADOW of the id -- the form gt will actually
+# emit -- and the suffix make.unique() would have given is transplanted
+# onto the real id. A set whose shadows are already distinct comes back
+# untouched, so an ordinary table (including every frozen key with a
+# space in it, "95% CI LL" and friends) renders byte for byte as before.
+# One pass converges: the suffix carries no whitespace, so the suffixed
+# id's own shadow is exactly the unique shadow it was given.
 .gt_safe_ids <- function(keys) {
-  ids <- gsub("[\"<>\\\\[:cntrl:]]", "_", keys)
-  stats::setNames(make.unique(ids, sep = "_"), keys)
+  ids <- make.unique(gsub("[\"<>\\\\[:cntrl:]]", "_", keys), sep = "_")
+  shadow <- gsub("[[:space:]]+", "-", ids)
+  if (anyDuplicated(shadow) > 0L) {
+    unique_shadow <- make.unique(shadow, sep = "_")
+    moved <- unique_shadow != shadow
+    ids[moved] <- paste0(
+      ids[moved],
+      substring(unique_shadow[moved], nchar(shadow[moved]) + 1L)
+    )
+  }
+  stats::setNames(ids, keys)
 }
 
 # Escape a value for interpolation INSIDE a double-quoted CSS string,
