@@ -79,18 +79,25 @@ test_that("a non-mixed fit is not asked about a block it has not got", {
 test_that("the guard reads the term, not merely the group name", {
   # A frame whose ONLY Residual row is the residual (empty term) passes;
   # one extra row under that group with a term of its own does not.
-  ok <- list(variance_components = data.frame(
-    group = c("Subject", "Residual"),
-    term = c("(Intercept)", ""),
-    stringsAsFactors = FALSE
+  ok <- list(
+    variance_components = data.frame(
+      group = c("Subject", "Residual"),
+      term = c("(Intercept)", ""),
+      stringsAsFactors = FALSE
+    )
+  )
+  expect_null(spicy:::.assert_no_reserved_residual_group(
+    ok,
+    lm(mpg ~ wt, mtcars)
   ))
-  expect_null(spicy:::.assert_no_reserved_residual_group(ok, lm(mpg ~ wt, mtcars)))
 
-  bad <- list(variance_components = data.frame(
-    group = c("Residual", "Residual"),
-    term = c("(Intercept)", ""),
-    stringsAsFactors = FALSE
-  ))
+  bad <- list(
+    variance_components = data.frame(
+      group = c("Residual", "Residual"),
+      term = c("(Intercept)", ""),
+      stringsAsFactors = FALSE
+    )
+  )
   expect_error(
     spicy:::.assert_no_reserved_residual_group(bad, lm(mpg ~ wt, mtcars)),
     class = "spicy_unsupported"

@@ -12,7 +12,12 @@
 test_that("a failed HC* computation aborts instead of returning classical", {
   skip_if_not_installed("MASS")
   skip_if_not_installed("sandwich")
-  fit <- MASS::polr(Sat ~ Infl, data = MASS::housing, weights = Freq, Hess = TRUE)
+  fit <- MASS::polr(
+    Sat ~ Infl,
+    data = MASS::housing,
+    weights = Freq,
+    Hess = TRUE
+  )
   # Sanity: the engine really does fail on this fit.
   expect_error(sandwich::vcovHC(fit, type = "HC3"))
 
@@ -58,13 +63,22 @@ test_that("a failed CR* computation aborts instead of returning classical", {
 test_that("the refusal names the failing engine and the honest alternative", {
   skip_if_not_installed("MASS")
   skip_if_not_installed("sandwich")
-  fit <- MASS::polr(Sat ~ Infl, data = MASS::housing, weights = Freq, Hess = TRUE)
+  fit <- MASS::polr(
+    Sat ~ Infl,
+    data = MASS::housing,
+    weights = Freq,
+    Hess = TRUE
+  )
   msg <- tryCatch(
     compute_model_vcov(fit, type = "HC3"),
     error = function(e) conditionMessage(e)
   )
   expect_match(msg, "sandwich::vcovHC()", fixed = TRUE)
-  expect_match(msg, "classical standard errors under a robust label", fixed = TRUE)
+  expect_match(
+    msg,
+    "classical standard errors under a robust label",
+    fixed = TRUE
+  )
   expect_match(msg, "vcov = \"classical\"", fixed = TRUE)
   # The word "robust" appears only in the explanation of what is REFUSED.
   expect_false(grepl("Falling back", msg, fixed = TRUE))

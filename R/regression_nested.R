@@ -390,15 +390,31 @@ compute_one_pair_lrt <- function(fit_prev, fit_curr) {
   # "p-value". Look up defensively, new names appended LAST so glm/coxph
   # priority is untouched.
   lrt_col <- intersect(
-    c("Deviance", "scaled dev.", "LRT", "Chisq", "LR stat.", "LR.stat", "L.Ratio"),
+    c(
+      "Deviance",
+      "scaled dev.",
+      "LRT",
+      "Chisq",
+      "LR stat.",
+      "LR.stat",
+      "L.Ratio"
+    ),
     names(av)
   )
   p_col <- intersect(
     c("Pr(>Chi)", "Pr(>Chisq)", "Pr(>|Chi|)", "Pr(>F)", "Pr(Chi)", "p-value"),
     names(av)
   )
-  lrt_stat <- if (length(lrt_col) > 0L) scalar_or_na(av[[lrt_col[1L]]][2L]) else NA_real_
-  p_val <- if (length(p_col) > 0L) scalar_or_na(av[[p_col[1L]]][2L]) else NA_real_
+  lrt_stat <- if (length(lrt_col) > 0L) {
+    scalar_or_na(av[[lrt_col[1L]]][2L])
+  } else {
+    NA_real_
+  }
+  p_val <- if (length(p_col) > 0L) {
+    scalar_or_na(av[[p_col[1L]]][2L])
+  } else {
+    NA_real_
+  }
 
   # The table is read, not trusted. Hand the models the other way round
   # and anova.survreg answers Deviance -12.37 on Df -1 with Pr(>Chi)
@@ -676,7 +692,11 @@ default_nested_tokens <- function(models) {
 # number of rows"). Everything read off a summary(), an anova() column or
 # a deviance() goes through here.
 scalar_or_na <- function(x) {
-  if (length(x) == 1L && is.numeric(x) && is.finite(x)) as.numeric(x) else NA_real_
+  if (length(x) == 1L && is.numeric(x) && is.finite(x)) {
+    as.numeric(x)
+  } else {
+    NA_real_
+  }
 }
 
 # TRUE for an anova() result that carries two model rows.
@@ -701,9 +721,12 @@ nested_lrt_anova <- function(fit_prev, fit_curr) {
   # explicit form is tried.
   attempt <- function(...) {
     tryCatch(
-      list(value = suppressMessages(suppressWarnings(
-        stats::anova(fit_prev, fit_curr, ...)
-      )), cnd = NULL),
+      list(
+        value = suppressMessages(suppressWarnings(
+          stats::anova(fit_prev, fit_curr, ...)
+        )),
+        cnd = NULL
+      ),
       error = function(e) list(value = NULL, cnd = e)
     )
   }
@@ -728,8 +751,10 @@ nested_lrt_anova <- function(fit_prev, fit_curr) {
   # fallback quietly formed 2 (l_ML - l_REML) across two different
   # criteria. Whether a method exists is asked of the METHOD TABLE, not
   # inferred from the failure: an error is not evidence of absence.
-  if (nested_anova_method_exists(fit_prev) ||
-    nested_anova_method_exists(fit_curr)) {
+  if (
+    nested_anova_method_exists(fit_prev) ||
+      nested_anova_method_exists(fit_curr)
+  ) {
     abort_nested_anova_refused(fit_prev, fit_curr, a2$cnd %||% a1$cnd)
   }
   NULL
@@ -760,7 +785,8 @@ abort_nested_anova_refused <- function(fit_prev, fit_curr, cnd) {
     conditionMessage(cnd)
   }
   hint <- if (
-    inherits(fit_prev, c("gls", "lme")) && inherits(fit_curr, c("gls", "lme")) &&
+    inherits(fit_prev, c("gls", "lme")) &&
+      inherits(fit_curr, c("gls", "lme")) &&
       !identical(fit_prev$method, fit_curr$method)
   ) {
     sprintf(
@@ -817,7 +843,8 @@ loglik_lrt <- function(fit_prev, fit_curr) {
   if (!inherits(ll_prev, "logLik") || !inherits(ll_curr, "logLik")) {
     return(NULL)
   }
-  stat <- 2 * (scalar_or_na(as.numeric(ll_curr)) - scalar_or_na(as.numeric(ll_prev)))
+  stat <- 2 *
+    (scalar_or_na(as.numeric(ll_curr)) - scalar_or_na(as.numeric(ll_prev)))
   df_diff <- loglik_df_increase(fit_prev, fit_curr)
   # Stricter than lrt_admissible() on one point: this route needs the
   # degrees of freedom to compute a p-value at all, so an unknown count
@@ -896,15 +923,23 @@ deviance_or_na <- function(fit) {
 # chance at a comparison. The mirror of comparable_nobs(), which demands
 # positive evidence of comparability before a likelihood is used.
 nobs_conflict <- function(fit_prev, fit_curr) {
-  n_prev <- scalar_or_na(tryCatch(.spicy_nobs(fit_prev), error = function(e) NA_real_))
-  n_curr <- scalar_or_na(tryCatch(.spicy_nobs(fit_curr), error = function(e) NA_real_))
+  n_prev <- scalar_or_na(tryCatch(.spicy_nobs(fit_prev), error = function(e) {
+    NA_real_
+  }))
+  n_curr <- scalar_or_na(tryCatch(.spicy_nobs(fit_curr), error = function(e) {
+    NA_real_
+  }))
   is.finite(n_prev) && is.finite(n_curr) && !isTRUE(n_prev == n_curr)
 }
 
 # TRUE when both fits report the same, known number of observations.
 comparable_nobs <- function(fit_prev, fit_curr) {
-  n_prev <- scalar_or_na(tryCatch(.spicy_nobs(fit_prev), error = function(e) NA_real_))
-  n_curr <- scalar_or_na(tryCatch(.spicy_nobs(fit_curr), error = function(e) NA_real_))
+  n_prev <- scalar_or_na(tryCatch(.spicy_nobs(fit_prev), error = function(e) {
+    NA_real_
+  }))
+  n_curr <- scalar_or_na(tryCatch(.spicy_nobs(fit_curr), error = function(e) {
+    NA_real_
+  }))
   is.finite(n_prev) && is.finite(n_curr) && isTRUE(n_prev == n_curr)
 }
 

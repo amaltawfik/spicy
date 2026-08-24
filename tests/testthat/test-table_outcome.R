@@ -671,7 +671,11 @@ test_that("a missing `outcome` is refused the same way", {
 
   # Both missing: the outcome is named first, because it is the subject.
   err_both <- tryCatch(table_outcome(d), error = identity)
-  expect_match(conditionMessage(err_both), "`outcome` is required", fixed = TRUE)
+  expect_match(
+    conditionMessage(err_both),
+    "`outcome` is required",
+    fixed = TRUE
+  )
 })
 
 test_that("the `by` migration still fires before the missing-arg guards", {

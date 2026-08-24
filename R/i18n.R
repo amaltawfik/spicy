@@ -1017,7 +1017,11 @@ spicy_fmt <- function(key, ...) {
     spicy_abort(
       c(
         "`options(spicy.labels)` names labels spicy does not have.",
-        "x" = paste0("Unknown: ", paste(.quote_val(unknown), collapse = ", "), "."),
+        "x" = paste0(
+          "Unknown: ",
+          paste(.quote_val(unknown), collapse = ", "),
+          "."
+        ),
         "i" = "`spicy_labels()` lists every key and the label in force."
       ),
       class = "spicy_invalid_input"

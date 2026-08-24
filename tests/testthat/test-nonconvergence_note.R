@@ -263,9 +263,15 @@ test_that("the convergence footer builder reads any engine's note", {
   # One frame flagged out of two keeps the "Model k:" attribution -- the
   # same arm the Bayesian sampler-diagnostics note uses, now shared.
   mk <- function(note = NULL) {
-    list(info = list(extras = if (is.null(note)) list() else {
-      list(convergence_note = note)
-    }))
+    list(
+      info = list(
+        extras = if (is.null(note)) {
+          list()
+        } else {
+          list(convergence_note = note)
+        }
+      )
+    )
   }
   expect_identical(
     spicy:::build_convergence_footer_block_from_frames(
@@ -367,7 +373,9 @@ test_that("building the note raises nothing, however often it is asked", {
   fit <- .fit_glmmTMB_nonconverged()
   problems <- spicy:::.glmmTMB_convergence_problems(fit)
   seen <- .nc_conditions({
-    for (i in 1:3) spicy:::.glmmTMB_convergence_note(problems)
+    for (i in 1:3) {
+      spicy:::.glmmTMB_convergence_note(problems)
+    }
   })
   expect_length(seen, 0L)
   # And it still returns the note.

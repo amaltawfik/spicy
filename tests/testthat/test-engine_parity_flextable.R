@@ -204,7 +204,12 @@ test_that("the survey twin follows the same one-way rule policy", {
   skip_if_not_installed("flextable")
   skip_if_not_installed("survey")
   data(api, package = "survey", envir = environment())
-  des <- survey::svydesign(id = ~dnum, weights = ~pw, data = apiclus1, fpc = ~fpc)
+  des <- survey::svydesign(
+    id = ~dnum,
+    weights = ~pw,
+    data = apiclus1,
+    fpc = ~fpc
+  )
   w_ow <- .pf_body_rules(table_continuous_svy(
     des,
     select = c(api00, api99),

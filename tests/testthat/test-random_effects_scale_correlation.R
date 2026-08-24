@@ -281,8 +281,7 @@ test_that("a two-factor lmer keeps each correlation inside its own block", {
 
 test_that("a one-factor lmer block is untouched by the reorder", {
   fit <- .fit_lmer_slope_7c7b()
-  vc <- spicy:::as_regression_frame(fit)$info$random_effects$
-    variance_components
+  vc <- spicy:::as_regression_frame(fit)$info$random_effects$variance_components
 
   # Byte-identical to what the unsorted path produced: same rows, same
   # order, and the rownames the rbind left behind are not renumbered.

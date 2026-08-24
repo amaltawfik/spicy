@@ -125,8 +125,13 @@ test_that("the labels a recogniser alternates over stay distinct in every langua
   distinct <- list(
     companion = c("header_se", "header_p", "header_effect_size_short"),
     exp = c(
-      "header_exp_or", "header_exp_irr", "header_exp_hr", "header_exp_rr",
-      "header_exp_mr", "header_exp_tr", "header_exp_generic"
+      "header_exp_or",
+      "header_exp_irr",
+      "header_exp_hr",
+      "header_exp_rr",
+      "header_exp_mr",
+      "header_exp_tr",
+      "header_exp_generic"
     )
   )
   for (lang in .SPICY_LANGUAGES) {
@@ -327,7 +332,11 @@ test_that("a translation moves no public column name", {
       con = names(as.data.frame(table_continuous(d, select = y, by = g))),
       lm = names(as.data.frame(table_continuous_lm(d, select = y, by = g))),
       reg = names(as.data.frame(table_regression(fit))),
-      out = names(as.data.frame(table_outcome(d, outcome = y, select = c(x, g)))),
+      out = names(as.data.frame(table_outcome(
+        d,
+        outcome = y,
+        select = c(x, g)
+      ))),
       structured = names(as_structured(table_regression(fit)))
     )
   }
@@ -354,20 +363,35 @@ test_that("a data level keeps its own spelling in a column name", {
 test_that("the frozen tokens and glyphs do not translate", {
   withr::local_options(spicy.language = "fr")
   frozen <- c(
-    symbol_t = "t", symbol_z = "z", symbol_f = "F",
-    symbol_chi_sq = "\u03C7\u00B2", symbol_beta = "\u03B2",
-    symbol_delta = "\u0394", symbol_r2 = "R\u00B2",
+    symbol_t = "t",
+    symbol_z = "z",
+    symbol_f = "F",
+    symbol_chi_sq = "\u03C7\u00B2",
+    symbol_beta = "\u03B2",
+    symbol_delta = "\u0394",
+    symbol_r2 = "R\u00B2",
     cell_undefined = "\u2013",
-    marker_na = "<NA>", marker_nan = "<NaN>",
-    symbol_star_001 = "***", symbol_star_05 = "*",
-    header_variable = "Variable", header_p = "p", header_b = "B",
-    header_se = "SE", header_n_lower = "n",
-    header_ci_label_confidence = "CI", header_ci_ll = "LL",
-    header_ci_ul = "UL", header_ci_spanner = "%s%% %s",
-    header_exp_or = "OR", header_exp_hr = "HR",
-    label_total = "Total", header_margin_total = "Total",
-    label_model_name = "Model %d", fitstat_adj_r2 = "Adj. R\u00B2",
-    note_prefix = "Note. ", note_prefix_emphasis = "Note."
+    marker_na = "<NA>",
+    marker_nan = "<NaN>",
+    symbol_star_001 = "***",
+    symbol_star_05 = "*",
+    header_variable = "Variable",
+    header_p = "p",
+    header_b = "B",
+    header_se = "SE",
+    header_n_lower = "n",
+    header_ci_label_confidence = "CI",
+    header_ci_ll = "LL",
+    header_ci_ul = "UL",
+    header_ci_spanner = "%s%% %s",
+    header_exp_or = "OR",
+    header_exp_hr = "HR",
+    label_total = "Total",
+    header_margin_total = "Total",
+    label_model_name = "Model %d",
+    fitstat_adj_r2 = "Adj. R\u00B2",
+    note_prefix = "Note. ",
+    note_prefix_emphasis = "Note."
   )
   for (k in names(frozen)) {
     expect_identical(spicy_str(k), unname(frozen[[k]]), info = k)
@@ -381,7 +405,10 @@ test_that("a cross-reference matches the thing it points at", {
   # model by index has to spell it the way the spanner does, or the
   # reader is sent to a "Modele 1" no column carries.
   expect_identical(spicy_fmt("label_model_name", 1L), "Model 1")
-  expect_true(startsWith(spicy_fmt("note_ci_posterior_mixed", 1L, "95"), "Model 1"))
+  expect_true(startsWith(
+    spicy_fmt("note_ci_posterior_mixed", 1L, "95"),
+    "Model 1"
+  ))
 })
 
 test_that("a condition message is English whatever the language", {
