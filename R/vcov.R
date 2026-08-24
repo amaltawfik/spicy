@@ -30,6 +30,47 @@
   )
 }
 
+# A robust estimator that could not be computed is an ERROR, never a
+# silent substitution.
+#
+# Until 0.13 both robust branches warned and returned stats::vcov(fit) --
+# the CLASSICAL matrix. Nothing downstream was told: `vcov_kind` is set
+# from the REQUESTED type where the frame is built, `.robust_vcov_label()`
+# formats that same requested type, and the footer therefore announced
+# "heteroskedasticity-robust (HC3)" over classical standard errors. A
+# warning in the console does not travel with a saved table, an exported
+# Word document or a knitted report; the mislabelled numbers do. The
+# public paths could not reach it (the estimator is validated against the
+# class first), but as_regression_frame() called directly could, and did.
+#
+# The honest-label alternative -- return the classical matrix and flip
+# every downstream label to "classical" -- would have to thread a flag
+# through the frame builders of every class; the truth cannot travel from
+# here on its own. Refusing keeps the guarantee where it can be enforced:
+# what spicy labels robust IS robust.
+.abort_vcov_failed <- function(type, cnd, callee) {
+  spicy_abort(
+    c(
+      sprintf("`vcov = \"%s\"` could not be computed for this fit.", type),
+      "x" = sprintf(
+        "%s failed: %s",
+        callee,
+        conditionMessage(cnd)
+      ),
+      "i" = paste0(
+        "spicy does not substitute the classical variance here: the ",
+        "table would carry classical standard errors under a robust ",
+        "label."
+      ),
+      "i" = paste0(
+        "Use `vcov = \"classical\"` to ask for the model-based variance ",
+        "explicitly, or pick an estimator this fit supports."
+      )
+    ),
+    class = "spicy_unsupported_vcov"
+  )
+}
+
 compute_model_vcov <- function(
   fit,
   type = "classical",
@@ -142,20 +183,7 @@ compute_model_vcov <- function(
   if (startsWith(type, "HC")) {
     return(tryCatch(
       sandwich::vcovHC(fit, type = type),
-      error = function(e) {
-        spicy_warn(
-          c(
-            sprintf(
-              "Robust `vcov = \"%s\"` could not be computed.",
-              type
-            ),
-            "x" = paste0("Underlying error: ", conditionMessage(e)),
-            "i" = "Falling back to the classical OLS variance; the result may contain NA."
-          ),
-          class = "spicy_fallback"
-        )
-        stats::vcov(fit)
-      }
+      error = function(e) .abort_vcov_failed(type, e, "sandwich::vcovHC()")
     ))
   }
 
@@ -245,20 +273,7 @@ compute_model_vcov <- function(
     }
     return(tryCatch(
       clubSandwich::vcovCR(fit, type = type, cluster = cluster),
-      error = function(e) {
-        spicy_warn(
-          c(
-            sprintf(
-              "Cluster-robust `vcov = \"%s\"` could not be computed.",
-              type
-            ),
-            "x" = paste0("Underlying error: ", conditionMessage(e)),
-            "i" = "Falling back to the classical OLS variance; the result may contain NA."
-          ),
-          class = "spicy_fallback"
-        )
-        stats::vcov(fit)
-      }
+      error = function(e) .abort_vcov_failed(type, e, "clubSandwich::vcovCR()")
     ))
   }
 
