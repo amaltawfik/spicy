@@ -651,6 +651,41 @@ table_outcome <- function(
     abort_outcome_by_renamed()
   }
 
+  # `outcome` and `select` carry no default -- one names the variable
+  # being described, the other the blocks it is described across, and
+  # the table is nothing without either. Left to lazy evaluation they
+  # surfaced far downstream as a bare base-R `missingArgError`
+  # ("argument \"expr\" is missing"), translated by the session's locale
+  # and naming a variable that appears nowhere in the user's call.
+  # Refuse here, classed, in the words of the argument that is actually
+  # missing. `table_categorical()` / `table_continuous()` need no twin
+  # of this: `select` is optional there and defaults to the whole frame.
+  if (missing(outcome)) {
+    spicy_abort(
+      c(
+        "`outcome` is required: table_outcome() describes one variable.",
+        "i" = paste0(
+          "Name the continuous variable to describe, e.g. ",
+          "`table_outcome(data, bmi, select = c(sex, smoking))`."
+        )
+      ),
+      class = "spicy_invalid_input"
+    )
+  }
+  if (missing(select)) {
+    spicy_abort(
+      c(
+        "`select` is required: table_outcome() has no rows without it.",
+        "i" = paste0(
+          "Name the characteristics to describe the outcome across, ",
+          "e.g. `select = c(sex, smoking)` or ",
+          "`select = where(is.factor)`."
+        )
+      ),
+      class = "spicy_invalid_input"
+    )
+  }
+
   # A journal / locale style only moves DEFAULTS (see `?spicy_style`).
   .style_pushed <- .style_begin(style, match.call(), environment())
   on.exit(.style_end(.style_pushed), add = TRUE)
