@@ -747,28 +747,68 @@ as_regression_frame.glmmTMB <- function(
 # pure field reads, no side effect -- so the callers that need only the
 # VERDICT (the fit-statistic gate, the NaN-mute gate) can ask without
 # raising the warning, and cannot drift from what the note reports.
+#
+# It returns RECORDS, not sentences: a `kind` naming which flag fired,
+# and the datum that flag carries. Two of the three kinds used to be
+# spicy prose written at this line -- "non-positive-definite Hessian
+# matrix" and "optimizer returned code %s" -- which then travelled into
+# the footer through the data hole of `note_nonconvergence`, against the
+# rule that every string a table shows lives in the registry. Records
+# put the words back where they belong AND keep the two audiences apart:
+# the footer reads them through the registry and follows
+# `spicy.language`, the warning reads the English defaults and does not,
+# because a condition is read by developers and quoted in bug reports
+# (dev/i18n_string_census.md section 6). The engine's own message is
+# DATA either way and passes through verbatim.
 .glmmTMB_convergence_problems <- function(fit) {
-  problems <- character(0)
+  problems <- list()
 
   code <- fit$fit$convergence
   if (length(code) == 1L && !is.na(code) && !identical(as.numeric(code), 0)) {
     msg <- fit$fit$message
     problems <- c(
       problems,
-      if (is.character(msg) && length(msg) == 1L && nzchar(msg)) {
-        msg
-      } else {
-        sprintf("optimizer returned code %s", as.character(code)) # nocov
-      }
+      list(
+        if (is.character(msg) && length(msg) == 1L && nzchar(msg)) {
+          list(kind = "engine_message", value = msg)
+        } else {
+          list(kind = "code", value = as.character(code)) # nocov
+        }
+      )
     )
   }
 
   pd_hess <- fit$sdr$pdHess
   if (length(pd_hess) == 1L && isFALSE(pd_hess)) {
-    problems <- c(problems, "non-positive-definite Hessian matrix")
+    problems <- c(problems, list(list(kind = "hessian", value = NULL)))
   }
 
   problems
+}
+
+
+# The words for a list of problem records, joined the way the note joins
+# them. `translated = TRUE` resolves through `spicy_str()` and so follows
+# `spicy.language`; `FALSE` reads the registry's English defaults
+# directly, for the condition, which stays English in every locale.
+# One code path either way, so the two vocabularies cannot say different
+# things about the same flag.
+.glmmTMB_problem_text <- function(problems, translated = TRUE) {
+  lookup <- function(key) {
+    if (translated) spicy_str(key) else unname(.spicy_strings[[key]])
+  }
+  vapply(
+    problems,
+    function(p) {
+      switch(
+        p$kind,
+        engine_message = p$value,
+        code = sprintf(lookup("note_nonconvergence_code"), p$value), # nocov
+        hessian = lookup("note_nonconvergence_hessian")
+      )
+    },
+    character(1)
+  )
 }
 
 
@@ -785,7 +825,10 @@ as_regression_frame.glmmTMB <- function(
     return(NULL)
   }
 
-  note <- spicy_fmt("note_nonconvergence", paste(problems, collapse = "; "))
+  note <- spicy_fmt(
+    "note_nonconvergence",
+    paste(.glmmTMB_problem_text(problems), collapse = "; ")
+  )
   spicy_warn(
     c(
       sprintf(
@@ -795,7 +838,7 @@ as_regression_frame.glmmTMB <- function(
         } else {
           "unknown" # nocov
         },
-        paste(problems, collapse = "; ")
+        paste(.glmmTMB_problem_text(problems, translated = FALSE), collapse = "; ")
       ),
       "i" = paste0(
         "The table reports what the object holds. See ",

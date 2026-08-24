@@ -340,6 +340,13 @@
   # states what the printed numbers are, because the estimates are still
   # shown -- they are what the object holds.
   note_nonconvergence = "Model convergence problem: %s. The estimates are the values the optimizer stopped at, not a converged fit.",
+  # The two diagnoses spicy words itself, which fill the hole above
+  # beside (or instead of) the engine's own message. The Hessian one is
+  # a plain verdict; the code one takes the optimizer's return code,
+  # which is DATA. The engine's message is data too and never comes
+  # through here -- it passes verbatim.
+  note_nonconvergence_hessian = "non-positive-definite Hessian matrix",
+  note_nonconvergence_code = "optimizer returned code %s",
   # Why the ICC row is missing from a mixed-effects table. No hole: the
   # sentence states a property of the model the reader wrote. The row
   # stays absent -- there is no single number it could hold.

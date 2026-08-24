@@ -271,3 +271,79 @@ test_that("the convergence footer builder reads any engine's note", {
     spicy:::build_convergence_footer_block_from_frames(list(mk(), mk()))
   )
 })
+
+
+# ---- 6. The diagnoses spicy words itself live in the registry -----------
+#
+# "non-positive-definite Hessian matrix" and "optimizer returned code %s"
+# were spicy prose written at the criterion and poured into the footer
+# through the data hole of `note_nonconvergence` -- table text living
+# outside the registry, against the contract. They are keys now, and the
+# criterion returns RECORDS (a kind + its datum) rather than sentences,
+# which is what lets the two audiences diverge: the footer follows
+# `spicy.language`, the warning does not.
+
+test_that("the criterion returns records, not sentences", {
+  fit <- .fit_glmmTMB_nonconverged()
+  problems <- spicy:::.glmmTMB_convergence_problems(fit)
+  expect_type(problems, "list")
+  expect_identical(
+    vapply(problems, function(p) p$kind, character(1)),
+    c("engine_message", "hessian")
+  )
+  # The engine's message is DATA and is carried verbatim.
+  expect_identical(problems[[1L]]$value, fit$fit$message)
+})
+
+test_that("the two spicy diagnoses resolve from the registry", {
+  fit <- .fit_glmmTMB_nonconverged()
+  problems <- spicy:::.glmmTMB_convergence_problems(fit)
+  txt <- spicy:::.glmmTMB_problem_text(problems)
+  expect_identical(
+    txt,
+    c(fit$fit$message, spicy:::spicy_str("note_nonconvergence_hessian"))
+  )
+  # The code arm, which no fixture reaches (glmmTMB always carries a
+  # message), formats the optimizer's return code into its own key.
+  expect_identical(
+    spicy:::.glmmTMB_problem_text(list(list(kind = "code", value = "7"))),
+    sprintf(spicy:::spicy_str("note_nonconvergence_code"), "7")
+  )
+})
+
+test_that("the footer follows the language and the condition does not", {
+  fit <- .fit_glmmTMB_nonconverged()
+  withr::local_options(spicy.language = "fr")
+
+  caught <- NULL
+  out <- suppressWarnings(withCallingHandlers(
+    table_regression(fit),
+    spicy_nonconvergence = function(w) {
+      caught <<- w
+      invokeRestart("muffleWarning")
+    }
+  ))
+  rendered <- paste(capture.output(print(out)), collapse = "\n")
+
+  # The table speaks French, through the key.
+  expect_match(
+    rendered,
+    spicy:::spicy_str("note_nonconvergence_hessian"),
+    fixed = TRUE
+  )
+  expect_false(grepl(
+    "non-positive-definite Hessian matrix",
+    rendered,
+    fixed = TRUE
+  ))
+  # The condition stays English: it is read by developers and quoted in
+  # bug reports (dev/i18n_string_census.md section 6).
+  expect_match(
+    conditionMessage(caught),
+    "non-positive-definite Hessian matrix",
+    fixed = TRUE
+  )
+  # The engine's own message is data and appears in both, verbatim.
+  expect_match(rendered, fit$fit$message, fixed = TRUE)
+  expect_match(conditionMessage(caught), fit$fit$message, fixed = TRUE)
+})
