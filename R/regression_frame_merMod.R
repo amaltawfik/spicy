@@ -711,6 +711,10 @@ as_regression_frame.glmerMod <- function(
     .merMod_attach_wald_se_ci(vc_df, fit, ci_level = ci_level)
   }
 
+  # Last, so every row above carries its final values: put each
+  # grouping factor's rows back together (see .merMod_order_blocks).
+  vc_df <- .merMod_order_blocks(vc_df, names(vc))
+
   icc <- .merMod_icc(vc_df, fit = fit)
 
   null_lrt <- .compute_null_model_lrt(fit)
@@ -770,6 +774,42 @@ as_regression_frame.glmerMod <- function(
     extra_df,
     vc_df[is_resid, , drop = FALSE]
   )
+}
+
+
+# Row order of the variance-component block: every row of one grouping
+# factor together, the factors in lme4's own VarCorr order, the residual
+# last.
+#
+# The correlation rows are appended in one lump above (all groups' rho
+# rows between the last sigma row and the residual), which is right for
+# a one-factor fit and wrong the moment there are two: on
+# `(1 + age | Subject) + (1 | Sex)` the block read sigma Subject,
+# sigma Subject, sigma Sex, rho Subject, sigma Residual -- the
+# correlation of a block the reader has already left behind. Sorting
+# afterwards is what the nlme twin does (.lme_order_blocks), for the
+# same reason and with the same rule, so one structure fitted by either
+# engine renders row-for-row alike.
+#
+# The sort is STABLE and every row of a one-factor fit shares one rank,
+# so no row of such a fit moves. A frame nothing moves in is returned
+# untouched, rownames included: the reorder must be invisible -- to the
+# byte -- wherever it has nothing to do. `group_order` is names(vc):
+# lme4 itself decides which factor leads.
+.merMod_order_blocks <- function(vc_df, group_order) {
+  if (nrow(vc_df) == 0L) {
+    return(vc_df) # nocov
+  }
+  rank <- match(vc_df$group, group_order)
+  # Residual (and anything unrecognised) closes the block.
+  rank[is.na(rank)] <- length(group_order) + 1L
+  ord <- order(rank, seq_len(nrow(vc_df)))
+  if (identical(ord, seq_len(nrow(vc_df)))) {
+    return(vc_df)
+  }
+  out <- vc_df[ord, , drop = FALSE]
+  rownames(out) <- NULL
+  out
 }
 
 

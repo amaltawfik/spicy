@@ -224,3 +224,75 @@ test_that("scale conversion applied to a real lme frame matches oracle SD", {
     tolerance = 1e-10
   )
 })
+
+
+# ---- Block order: a correlation row follows the block that carries it ----
+#
+# The correlation rows are appended in one lump, between the last
+# variance row and the residual. On a one-factor fit that lands them
+# exactly where they belong; with two factors it did not, and the rho of
+# the FIRST block printed after the second block's sigma. The rows are
+# sorted afterwards, the way the nlme twin sorts them
+# (.lme_order_blocks), so one structure fitted by either engine renders
+# alike.
+
+.fit_lmer_two_factors_corr <- function() {
+  skip_if_not_installed("lme4")
+  # Two grouping factors, and a correlation at the OUTER one only:
+  # Subject carries an intercept-slope pair, Sex a bare intercept.
+  suppressWarnings(lme4::lmer(
+    distance ~ age + (1 + age | Subject) + (1 | Sex),
+    data = nlme::Orthodont
+  ))
+}
+
+test_that("a two-factor lmer keeps each correlation inside its own block", {
+  skip_if_not_installed("nlme")
+  fit <- .fit_lmer_two_factors_corr()
+  vc <- suppressWarnings(
+    spicy:::as_regression_frame(fit)$info$random_effects$variance_components
+  )
+
+  expect_identical(
+    vc$group,
+    c("Subject", "Subject", "Subject", "Sex", "Residual")
+  )
+  expect_identical(
+    vc$term,
+    c("(Intercept)", "age", "(Intercept), age", "(Intercept)", "")
+  )
+  # The moved row is the correlation, and it moved WITH its values: the
+  # sort runs after the SE / CI attach, so nothing is re-keyed.
+  is_cor <- vc$is_correlation %in% TRUE
+  expect_identical(which(is_cor), 3L)
+  oracle <- attr(lme4::VarCorr(fit)$Subject, "correlation")[1L, 2L]
+  expect_equal(vc$corr[is_cor], oracle, tolerance = 1e-10)
+
+  # And the rendered block reads in that order too.
+  out <- paste(
+    capture.output(print(suppressWarnings(table_regression(fit)))),
+    collapse = "\n"
+  )
+  expect_lt(
+    regexpr("\u03C1 Subject", out, fixed = TRUE),
+    regexpr("\u03C3 Sex", out, fixed = TRUE)
+  )
+})
+
+test_that("a one-factor lmer block is untouched by the reorder", {
+  fit <- .fit_lmer_slope_7c7b()
+  vc <- spicy:::as_regression_frame(fit)$info$random_effects$
+    variance_components
+
+  # Byte-identical to what the unsorted path produced: same rows, same
+  # order, and the rownames the rbind left behind are not renumbered.
+  expect_identical(
+    spicy:::.merMod_order_blocks(vc, c("Subject")),
+    vc
+  )
+  expect_identical(
+    vc$group,
+    c("Subject", "Subject", "Subject", "Residual")
+  )
+  expect_identical(vc$is_correlation, c(FALSE, FALSE, TRUE, FALSE))
+})
