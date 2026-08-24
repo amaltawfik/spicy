@@ -1664,6 +1664,9 @@ as_regression_frame.brmsfit <- function(
   list(
     variance_components = vc_df,
     icc = NA_real_,
+    # No ICC is attempted on this path at all, so there is no omission
+    # for the footer to explain (see .merMod_icc_omitted_reason).
+    icc_omitted = NA_character_,
     method = "MCMC",
     null_lrt = NULL
   )

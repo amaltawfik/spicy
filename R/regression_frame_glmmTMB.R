@@ -886,6 +886,14 @@ as_regression_frame.glmmTMB <- function(
   list(
     variance_components = vc_df,
     icc = icc,
+    # Only where the ICC kernel actually ran: a non-Gaussian glmmTMB has
+    # no ICC for a reason of its own, and must not be told it has too
+    # many grouping factors.
+    icc_omitted = if (is_gaussian_identity) {
+      .merMod_icc_omitted_reason(vc_df, icc)
+    } else {
+      NA_character_
+    },
     method = method,
     null_lrt = null_lrt
   )

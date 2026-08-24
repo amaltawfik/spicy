@@ -721,6 +721,7 @@ as_regression_frame.glmerMod <- function(
   list(
     variance_components = vc_df,
     icc = icc,
+    icc_omitted = .merMod_icc_omitted_reason(vc_df, icc),
     method = method,
     null_lrt = null_lrt
   )
@@ -1275,6 +1276,36 @@ as_regression_frame.glmerMod <- function(
     return(NA_real_)
   }
   var_r / (var_r + var_e)
+}
+
+
+# Why the ICC row is absent, when the reason is one a reader can act on.
+#
+# `.merMod_icc()` returns NA for several distinct reasons and the row is
+# then simply not rendered -- a hole where a number usually is, saying
+# nothing. Of those reasons exactly one is a property of the DESIGN the
+# reader chose rather than a limit of the method: more than one grouping
+# factor. There is then no single intraclass correlation to report --
+# nested levels define one ICC per level, and crossed factors define no
+# unique decomposition at all -- so the omission is a correct answer and
+# deserves to be stated, in the same spirit as the non-convergence note.
+#
+# Returns "multi_group" only when the ICC is absent AND that is the gate
+# that stopped it (the multi-factor test is the first one
+# `.merMod_icc()` applies, so nothing else can have fired first).
+# NA_character_ everywhere else -- including a random-slope or
+# unsupported-family omission, which this note must not claim to
+# explain. Callers pass the same `vc_df` they passed to `.merMod_icc()`,
+# and only from a path where that kernel actually ran.
+.merMod_icc_omitted_reason <- function(vc_df, icc) {
+  if (!is.na(icc) || nrow(vc_df) == 0L) {
+    return(NA_character_)
+  }
+  if ("is_correlation" %in% colnames(vc_df)) {
+    vc_df <- vc_df[!(vc_df$is_correlation %in% TRUE), , drop = FALSE]
+  }
+  groups <- setdiff(unique(vc_df$group), "Residual")
+  if (length(groups) > 1L) "multi_group" else NA_character_
 }
 
 

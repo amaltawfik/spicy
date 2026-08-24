@@ -740,6 +740,7 @@ as_regression_frame.gls <- function(
   list(
     variance_components = vc_df,
     icc = icc,
+    icc_omitted = .merMod_icc_omitted_reason(vc_df, icc),
     method = method,
     null_lrt = null_lrt
   )

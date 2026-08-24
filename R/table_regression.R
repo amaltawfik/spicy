@@ -3205,6 +3205,7 @@ table_regression <- function(
     stars = stars,
     nested = nested,
     show_columns = show_columns,
+    show_fit_stats = show_fit_stats,
     reference_style = reference_style,
     show_re = isTRUE(show_re),
     re_scale = re_scale_val,

@@ -93,12 +93,16 @@ default_extras <- function() {
 
 # Canonical empty `info$random_effects` for non-mixed (or RE-less) fits. One
 # shape everywhere -- key set matches the populated form built by the
-# mixed-effects methods (variance_components / icc / method / null_lrt) -- so
-# consumers never NULL-deref `$icc` (NA_real_ vs NULL) or `$variance_components`.
+# mixed-effects methods (variance_components / icc / icc_omitted / method /
+# null_lrt) -- so consumers never NULL-deref `$icc` (NA_real_ vs NULL) or
+# `$variance_components`. `icc_omitted` names WHY the ICC is NA when the
+# reason is one the reader can act on (see .merMod_icc_omitted_reason);
+# NA_character_ otherwise, including here, where there is no ICC to explain.
 empty_random_effects <- function() {
   list(
     variance_components = data.frame(),
     icc = NA_real_,
+    icc_omitted = NA_character_,
     method = NA_character_,
     null_lrt = NULL
   )

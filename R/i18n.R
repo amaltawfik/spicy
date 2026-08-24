@@ -340,6 +340,10 @@
   # states what the printed numbers are, because the estimates are still
   # shown -- they are what the object holds.
   note_nonconvergence = "Model convergence problem: %s. The estimates are the values the optimizer stopped at, not a converged fit.",
+  # Why the ICC row is missing from a mixed-effects table. No hole: the
+  # sentence states a property of the model the reader wrote. The row
+  # stays absent -- there is no single number it could hold.
+  note_icc_multi_group = "ICC is not reported: several grouping factors define several ICCs.",
 
   # -- table_regression(): the absolute survival estimands -------------------
   # The footnote of the RMST-difference and risk-difference columns.

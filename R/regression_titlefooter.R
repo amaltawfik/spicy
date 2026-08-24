@@ -72,6 +72,7 @@ build_regression_footer_from_frames <- function(
   stars = FALSE,
   nested = FALSE,
   show_columns = character(0),
+  show_fit_stats = character(0),
   reference_style = "row",
   show_re = TRUE,
   re_scale = "sd",
@@ -147,6 +148,7 @@ build_regression_footer_from_frames <- function(
     build_singular_footer_block_from_frames(frames),
     build_re_se_skipped_footer_block_from_frames(frames),
     build_re_profile_footer_block_from_frames(frames),
+    build_icc_omitted_footer_block_from_frames(frames, show_fit_stats),
     build_polynomial_contrasts_footer_block_from_frames(
       frames_display,
       displayed_parent_vars = displayed_parent_vars
@@ -1899,6 +1901,59 @@ build_re_se_skipped_footer_block_from_frames <- function(frames) {
     character(1)
   )
   paste(per, collapse = "\n")
+}
+
+
+# Why the ICC row is not there, when the reason is the model's own
+# structure: `random_effects$icc_omitted` (see
+# .merMod_icc_omitted_reason). A mixed table asks for `icc` by default
+# and simply drops the row when it is NA, which leaves a reader of a
+# two-factor fit comparing their table against a one-factor example and
+# finding a line missing with nothing said. The row STAYS absent -- there
+# is no single number it could hold -- and the footer states why.
+#
+# Gated on the token actually being asked for: a caller who dropped the
+# fit-statistics block wants no fit-statistics prose either.
+build_icc_omitted_footer_block_from_frames <- function(
+  frames,
+  show_fit_stats = character(0)
+) {
+  if (!is.list(frames) || length(frames) == 0L) {
+    return(NULL)
+  }
+  if (!"icc" %in% show_fit_stats) {
+    return(NULL)
+  }
+  reasons <- vapply(
+    frames,
+    function(f) {
+      as.character(f$info$random_effects$icc_omitted %||% NA_character_)
+    },
+    character(1)
+  )
+  if (all(is.na(reasons))) {
+    return(NULL)
+  }
+  msg <- function(reason) {
+    switch(reason, multi_group = spicy_str("note_icc_multi_group"), NA_character_)
+  }
+  affected <- which(!is.na(reasons))
+  # One shared line when every model says the same thing -- the reason is
+  # a property of a structure, and several models usually share it.
+  if (
+    length(affected) == length(frames) &&
+      length(unique(reasons[affected])) == 1L
+  ) {
+    return(msg(reasons[affected][1L]))
+  }
+  paste(
+    vapply(
+      affected,
+      function(k) .model_line(frames, k, msg(reasons[k])),
+      character(1)
+    ),
+    collapse = "\n"
+  )
 }
 
 
