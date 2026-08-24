@@ -1424,6 +1424,52 @@ validate_class_appropriate_tokens <- function(
     )
   }
 
+  # Quantile hierarchies, which `all_likelihood_path()` excludes BY
+  # CLASS and which therefore kept the exact silence the arm above ends.
+  # Measured on an rq pair: r2_change, adj_r2_change, f2_change and
+  # lrt_change were all accepted and all rendered nothing --
+  # `compute_nested_comparisons()` routes any rq pair to
+  # `compute_one_pair_rq()`, which hard-codes those four to NA_real_,
+  # and the renderer drops a fit-stat row that is NA across the table.
+  # The exception belongs on the TOKEN, not on the class: rq refuses the
+  # variance-explained three like every other class, and lrt_change with
+  # them, because an rq pair never reaches the likelihood route at all --
+  # logLik.rq() is a pseudo-likelihood on the check-loss objective, not
+  # a likelihood a ratio test can be built from. What rq DOES have is
+  # anova.rq()'s Wald-type F, so the message points there, which is also
+  # its class-aware default.
+  #
+  # Tokens first, predicate second, for the reason given above.
+  bad_rq <- intersect(
+    show_fit_stats,
+    c("r2_change", "adj_r2_change", "f2_change", "lrt_change")
+  )
+  if (
+    length(bad_rq) > 0L &&
+      length(eff_models) > 0L &&
+      all(vapply(eff_models, inherits, logical(1), "rq"))
+  ) {
+    spicy_abort(
+      c(
+        sprintf(
+          "Token(s) %s in `show_fit_stats` are not defined for `rq` models.",
+          paste(.quote_val(bad_rq), collapse = ", ")
+        ),
+        "i" = paste0(
+          "Quantile regression partitions no sums of squares, and ",
+          "`logLik.rq()` is a pseudo-likelihood on the check-loss ",
+          "objective rather than one a ratio test can be built from."
+        ),
+        "i" = paste0(
+          "Use `\"f_change\"` + `\"p_change\"` -- the Wald-type test ",
+          "`quantreg::anova.rq()` reports, and what `nested = TRUE` ",
+          "selects for a quantile hierarchy by default."
+        )
+      ),
+      class = "spicy_invalid_input"
+    )
+  }
+
   if (all_lm) {
     bad <- intersect(show_columns, "partial_chi2")
     if (length(bad) > 0L) {

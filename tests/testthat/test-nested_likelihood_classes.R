@@ -823,3 +823,67 @@ test_that("the predicate is not paid for on a call that asks no token", {
     "predicate consulted"
   )
 })
+
+
+test_that("a quantile hierarchy refuses the tokens it cannot report", {
+  # `all_likelihood_path()` excludes rq by CLASS, which left the exact
+  # silence the likelihood arm ends: r2_change, adj_r2_change,
+  # f2_change and lrt_change were all accepted on an rq pair and all
+  # rendered nothing, because compute_one_pair_rq() hard-codes the four
+  # to NA and the renderer drops an all-NA fit-stat row. The exception
+  # belongs on the token, not the class.
+  skip_if_no("quantreg")
+  q1 <- quantreg::rq(mpg ~ wt, data = mtcars)
+  q2 <- quantreg::rq(mpg ~ wt + hp, data = mtcars)
+
+  # The four the pair cannot produce.
+  for (tok in c("r2_change", "adj_r2_change", "f2_change", "lrt_change")) {
+    err <- tryCatch(
+      table_regression(
+        list(q1, q2),
+        nested = TRUE,
+        show_fit_stats = c(tok, "p_change"),
+        output = "data.frame"
+      ),
+      error = identity
+    )
+    expect_s3_class(err, "spicy_invalid_input")
+    msg <- paste(conditionMessage(err), collapse = " ")
+    expect_match(msg, tok, fixed = TRUE, info = tok)
+    # rq is pointed at its OWN test, not at the LRT the other classes get.
+    expect_match(msg, "f_change", fixed = TRUE, info = tok)
+    expect_match(msg, "anova.rq()", fixed = TRUE, info = tok)
+  }
+
+  # lrt_change is refused on its own grounds: rq never reaches the
+  # likelihood route, and logLik.rq is a pseudo-likelihood.
+  err <- tryCatch(
+    table_regression(
+      list(q1, q2),
+      nested = TRUE,
+      show_fit_stats = c("lrt_change", "p_change"),
+      output = "data.frame"
+    ),
+    error = identity
+  )
+  expect_match(
+    paste(conditionMessage(err), collapse = " "),
+    "pseudo-likelihood",
+    fixed = TRUE
+  )
+
+  # And what rq CAN report is untouched, defaults included.
+  expect_no_error(table_regression(
+    list(q1, q2),
+    nested = TRUE,
+    show_fit_stats = c("f_change", "p_change"),
+    output = "data.frame"
+  ))
+  expect_no_error(
+    table_regression(list(q1, q2), nested = TRUE, output = "data.frame")
+  )
+  expect_identical(
+    spicy:::default_nested_tokens(list(q1, q2)),
+    c("f_change", "p_change")
+  )
+})
