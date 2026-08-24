@@ -1,19 +1,26 @@
 # ---------------------------------------------------------------------------
 # Coverage-closing tests for R/regression_titlefooter.R -- footer note arms
 #
-# Closes the CI-uncovered branches of the frame-aware note builders:
+# Closes the CI-uncovered branches of the frame-aware note builders. The
+# branches are named by BUILDER and by what the arm does -- never by line
+# number. The numbers this header used to carry (441-450, 526, 589, 595,
+# 847, 1963-1980, 2387-2408, 2435-2444) had all rotted: every one of them
+# pointed above or below its own function after the builders moved, and
+# 526 landed before the start of the function it claimed to cite. A line
+# citation is a fact about a file that keeps changing; a function name is
+# a fact about the code (register n. 208).
 #   * build_ci_method_footer_block_from_frames(): the per-model credible
 #     interval disclosure emitted only in a MIXED frequentist + Bayesian
-#     table (lines 441-450),
+#     table,
 #   * build_abbreviations_footer_block_from_frames(): the gloss-less beta
-#     arm (526) and the "pd" / "mcse" definitions (589, 595),
+#     arm and the "pd" / "mcse" definitions,
 #   * build_ordinal_thresholds_footer_block_from_frames(): the "link scale"
 #     fall-through when the exponentiating links are neither uniformly
-#     logit nor uniformly cloglog (847),
+#     logit nor uniformly cloglog,
 #   * build_exponentiate_footer_block_from_frames(): the all-Bayesian and
-#     mixed SE glosses (1963, 1965-1968) and the HDI CI gloss (1980),
-#   * build_loo_footer_block_from_frames() (2387-2408) and
-#     build_convergence_footer_block_from_frames() (2435-2444):
+#     mixed SE glosses and the HDI CI gloss,
+#   * build_loo_footer_block_from_frames() and
+#     build_convergence_footer_block_from_frames():
 #     the bare "all models share the note" arm and the "notes differ ->
 #     Model k:" arm.
 #
@@ -25,7 +32,7 @@
 # cannot pass. Style matches test-cov-titlefooter.R / test-cov100-titlefooter.R.
 # ---------------------------------------------------------------------------
 
-# ---- Mixed frequentist + Bayesian CI disclosure (441-450) -----------------
+# ---- Mixed frequentist + Bayesian CI disclosure --------------------------
 # Only fires when SOME (not all) models are posterior AND a CI column is
 # actually displayed: the shared "95% CI" header cannot be relabelled to
 # "CrI" in a mixed table, so each Bayesian model discloses its interval.
@@ -94,7 +101,7 @@ test_that("posterior CI disclosure honours a non-default ci_level", {
 })
 
 
-# ---- Abbreviations: beta without a gloss (526) ----------------------------
+# ---- Abbreviations: beta without a gloss ---------------------------------
 # The five documented `standardized` methods each carry a gloss; the
 # gloss-less arm is the defensive fall-through for any other token.
 
@@ -111,7 +118,7 @@ test_that("beta abbreviation degrades to the bare definition without a gloss", {
 })
 
 
-# ---- Abbreviations: Bayesian-only column keys (589, 595) ------------------
+# ---- Abbreviations: Bayesian-only column keys ----------------------------
 # pd and MCSE are posterior-only columns, but the abbreviation key is a pure
 # show_columns lookup: no draws needed to prove the definitions travel with
 # the table (BARG self-description).
@@ -141,7 +148,7 @@ test_that("abbreviations footer defines pd and MCSE for posterior columns", {
 })
 
 
-# ---- Ordinal thresholds in rows mode: the "link scale" fall-through (847) --
+# ---- Ordinal thresholds in rows mode: the "link scale" fall-through ------
 # The cut-point scale is named per link. Two exponentiating ordinal models
 # with DIFFERENT links (logit + cloglog) share no single scale name, so the
 # gloss falls back to the neutral "link scale".
@@ -199,7 +206,7 @@ test_that("threshold rows gloss says 'link scale' when links are not uniform", {
 })
 
 
-# ---- Exponentiate footer: Bayesian SE / CI glosses (1963, 1965-1968, 1980) --
+# ---- Exponentiate footer: Bayesian SE / CI glosses -----------------------
 # Bayesian frames exponentiate the DRAWS, so the SE is the posterior MAD SD
 # of exp(draws), not a delta-method transfer. The gloss must name the
 # mechanism that produced the displayed numbers. The frame only has to
@@ -274,7 +281,7 @@ test_that("exponentiate CI gloss says highest-density interval under HDI", {
 })
 
 
-# ---- PSIS-LOO footer note aggregator (2387-2408) --------------------------
+# ---- PSIS-LOO footer note aggregator -------------------------------------
 # The unattributed note is only honest when EVERY model carries the same
 # note; otherwise each affected model keeps its "Model k:" prefix.
 
@@ -332,7 +339,7 @@ test_that("LOO footer per-model lines use the custom model label", {
 })
 
 
-# ---- Convergence footer: the differing-notes arm (2435-2444) -------------
+# ---- Convergence footer: the differing-notes arm -------------------------
 # Same convention as the LOO builder: divergence / R-hat warnings are
 # per-model facts, so a table where the models disagree keeps the prefix.
 
