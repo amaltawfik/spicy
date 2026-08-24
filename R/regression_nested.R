@@ -666,8 +666,11 @@ usable_anova_table <- function(av) {
 # c("Chisq", "none") and abort, and anova.gls expects a LOGICAL. Their
 # DEFAULT two-model test already IS the likelihood-ratio chi-square, so
 # try the explicit form first -- glm and coxph keep the exact call they
-# have always made -- then fall back to the bare form. Returns NULL when
-# the class has no usable two-model method.
+# have always made -- then fall back to the bare form.
+#
+# Returns NULL only when the class registers NO anova method at all, so
+# the caller may recompute from the likelihoods. When a method exists and
+# raised, this ABORTS instead: see below.
 nested_lrt_anova <- function(fit_prev, fit_curr) {
   # suppressMessages as well as suppressWarnings: ordinal::anova.clm
   # prints "'test' argument ignored in anova.clm" as a message when the
