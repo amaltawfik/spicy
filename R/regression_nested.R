@@ -23,12 +23,144 @@
 #
 # Class-aware default token sets (injected by table_regression() when
 # `nested = TRUE` and the user did not supply `show_fit_stats`):
-#   * lm  : c("r2_change", "f_change", "p_change") -- APA Table 7.13
-#   * glm : c("lrt_change", "p_change")            -- Hosmer & Lemeshow
-#                                                    Section 3.5 / Long &
-#                                                    Freese 2014 Section 3.6
-# Mixed-class hierarchies route through the lm path; the glm side
-# en-dashes the variance-explained tokens.
+#   * least squares : c("r2_change", "f_change", "p_change") -- APA
+#                     Table 7.13
+#   * likelihood    : c("lrt_change", "p_change")  -- Hosmer & Lemeshow
+#                     Section 3.5 / Long & Freese 2014 Section 3.6
+# Mixed-class hierarchies route through the least-squares path; the
+# likelihood side en-dashes the variance-explained tokens.
+#
+# The split is least squares vs likelihood, not a list of blessed
+# classes: see LEAST_SQUARES_CLASSES / is_likelihood_pair() below.
+
+# ---- Pair routing predicates ---------------------------------------------
+
+# Least-squares families own the R^2 / partial-F path. "lm" covers lm,
+# aov, MASS::rlm and rms::ols by inheritance; "nls" is least squares
+# WITHOUT the lm class, and its nested test is the extra-sum-of-squares
+# F that anova.nls reports (Bates & Watts 1988, Section 4.2), not an
+# LRT. glm inherits "lm" but is intercepted by its own branch before
+# this predicate is consulted.
+LEAST_SQUARES_CLASSES <- c("lm", "nls")
+
+# TRUE when logLik() yields a finite scalar, i.e. the fit carries a
+# likelihood an LRT can be built from.
+has_usable_loglik <- function(fit) {
+  ll <- tryCatch(
+    suppressWarnings(stats::logLik(fit)),
+    error = function(e) NULL
+  )
+  length(ll) >= 1L && is.finite(as.numeric(ll)[1L])
+}
+
+# A pair rides the likelihood-ratio path when BOTH fits carry a
+# likelihood and NEITHER is a least-squares fit. Requiring both sides
+# keeps a mismatched pair (lm + survreg, say) on the least-squares path,
+# where a failed anova() en-dashes the whole column instead of inventing
+# a cross-family LRT.
+is_likelihood_pair <- function(fit_prev, fit_curr) {
+  !inherits(fit_prev, LEAST_SQUARES_CLASSES) &&
+    !inherits(fit_curr, LEAST_SQUARES_CLASSES) &&
+    has_usable_loglik(fit_prev) &&
+    has_usable_loglik(fit_curr)
+}
+
+
+# ---- REML guard (nlme) ---------------------------------------------------
+
+# TRUE for an nlme fit (gls / lme, and nlme by inheritance) estimated by
+# restricted maximum likelihood.
+is_reml_nlme_fit <- function(fit) {
+  inherits(fit, c("gls", "lme")) &&
+    identical(as.character(fit$method %||% ""), "REML")
+}
+
+# Signature of the FIXED-effects specification, built exactly the way
+# nlme:::anova.lme builds it: sorted term labels joined by "&", plus an
+# "(Intercept)" marker. Mirroring nlme's own test means spicy refuses on
+# precisely the pairs nlme itself flags -- and does it structurally,
+# never by matching nlme's warning text (which is translated).
+fixed_terms_key <- function(fit) {
+  tt <- tryCatch(
+    stats::terms(stats::formula(fit)),
+    error = function(e) NULL
+  )
+  if (is.null(tt)) {
+    return(NA_character_) # nocov -- formula() succeeds for gls / lme
+  }
+  key <- paste(sort(attr(tt, "term.labels")), collapse = "&")
+  if (isTRUE(attr(tt, "intercept") == 1)) {
+    paste(key, "(Intercept)", sep = "&")
+  } else {
+    key # nocov -- no-intercept nlme fits are not part of the guard's job
+  }
+}
+
+# Refuse a likelihood-ratio comparison of two REML fits whose fixed
+# effects differ. The restricted likelihood is built on contrasts of the
+# response that annihilate the fixed-effects design, so it carries a
+# term that changes with X and the two criteria are not on a common
+# scale:
+#
+#   "LME models with different fixed-effects structures fit using REML
+#    cannot be compared on the basis of their restricted likelihoods. In
+#    particular, likelihood ratio tests are not valid under these
+#    circumstances."
+#      -- Pinheiro & Bates (2000), Section 2.2.5, p. 76
+#
+#   "When two nested models differ in the specification of their
+#    fixed-effects terms, a likelihood ratio test can be defined for
+#    maximum likelihood fits only."
+#      -- Pinheiro & Bates (2000), Section 2.4.2, p. 87
+#
+#   "the construction of likelihood ratio tests comparing nested models
+#    for the mean should always be based on the ML, not the REML,
+#    log-likelihood."
+#      -- Fitzmaurice, Laird & Ware (2011), Section 4.5, p. 104
+#
+# nlme's own anova() warns and prints the invalid statistic anyway; a
+# number printed in a table is read as a result, so spicy refuses. We do
+# NOT silently refit with ML (lme4's choice for merMod, which is why the
+# merMod pair path needs no guard): a spicy-side update() would re-run
+# the optimiser on data that may no longer be in scope, and the ML
+# DeltaAIC would then contradict the REML AIC rows shown for the same
+# models. Comparisons that differ only in the RANDOM structure are
+# untouched -- those ARE valid under REML (Pinheiro & Bates, Section
+# 2.4.1, p. 83: the test "can also be used with models fit by REML, but
+# only if both models have been fit by REML and if the fixed-effects
+# specification is the same for both models").
+check_nested_reml_pair <- function(fit_prev, fit_curr) {
+  if (!(is_reml_nlme_fit(fit_prev) && is_reml_nlme_fit(fit_curr))) {
+    return(invisible(NULL))
+  }
+  if (identical(fixed_terms_key(fit_prev), fixed_terms_key(fit_curr))) {
+    return(invisible(NULL))
+  }
+  spicy_abort(
+    c(
+      paste0(
+        "`nested = TRUE` cannot compare REML fits whose fixed effects ",
+        "differ."
+      ),
+      "i" = paste0(
+        "The restricted likelihood depends on the fixed-effects design ",
+        "matrix, so the two criteria are not on a common scale and the ",
+        "likelihood-ratio test is not valid (Pinheiro & Bates 2000, ",
+        "Section 2.4.2)."
+      ),
+      "i" = paste0(
+        "Refit both models by maximum likelihood, e.g. ",
+        "`update(m1, method = \"ML\")`, then compare."
+      ),
+      "i" = paste0(
+        "REML comparisons stay valid when only the random structure ",
+        "differs."
+      )
+    ),
+    class = "spicy_invalid_input"
+  )
+}
+
 
 # ---- Public-internal entry point -----------------------------------------
 
@@ -47,14 +179,17 @@ compute_nested_comparisons <- function(fits) {
   for (k in seq_len(length(fits) - 1L)) {
     fit_prev <- fits[[k]]
     fit_curr <- fits[[k + 1L]]
+    check_nested_reml_pair(fit_prev, fit_curr)
     pair_mixed <- is_mixed(fit_prev) && is_mixed(fit_curr)
     pair_glm <- inherits(fit_prev, "glm") && inherits(fit_curr, "glm")
-    # coxph and nnet::multinom have a proper nested likelihood-ratio test
-    # (anova.coxph -> Chisq; anova.multinom -> LR stat.) but no classical
-    # R^2: route them through the LRT pair path, NOT the lm path (which
-    # reads summary()$r.squared and crashes on those fits).
-    pair_lrt <- (inherits(fit_prev, "coxph") && inherits(fit_curr, "coxph")) ||
-      (inherits(fit_prev, "multinom") && inherits(fit_curr, "multinom"))
+    # Every class that carries a likelihood has a nested likelihood-ratio
+    # test and none of them has a classical R^2. Until 0.13 only coxph and
+    # multinom were routed here by name; survreg / polr / clm / gls /
+    # betareg / zeroinfl / ... fell through to the lm path, which reads
+    # summary()$r.squared and died with a bare, locale-translated base
+    # error. The predicate replaces that whitelist: a likelihood is the
+    # thing that makes an LRT possible, so ask for a likelihood.
+    pair_lrt <- is_likelihood_pair(fit_prev, fit_curr)
     pair_rq <- inherits(fit_prev, "rq") && inherits(fit_curr, "rq")
     stats <- if (pair_mixed) {
       compute_one_pair_mixed(fit_prev, fit_curr)
@@ -109,24 +244,31 @@ compute_one_pair_lm <- function(fit_prev, fit_curr) {
     suppressWarnings(stats::anova(fit_prev, fit_curr)),
     error = function(e) NULL
   )
-  if (is.null(av) || nrow(av) < 2L) {
+  if (!usable_anova_table(av)) {
     return(na)
   }
 
+  # Every quantity below goes through scalar_or_na(): a least-squares
+  # family that is not `lm` need not define all of them. MASS::rlm has
+  # summary()$r.squared but NOT adj.r.squared (length 0); nls has
+  # neither; rms::ols raises on deviance(). Reading them raw produced a
+  # zero-length column and a bare "arguments imply differing number of
+  # rows" abort in the data.frame() below.
   sm_prev <- summary(fit_prev)
   sm_curr <- summary(fit_curr)
-  r2_p <- unname(sm_prev$r.squared)
-  r2_c <- unname(sm_curr$r.squared)
-  adj_r2_p <- unname(sm_prev$adj.r.squared)
-  adj_r2_c <- unname(sm_curr$adj.r.squared)
+  r2_p <- scalar_or_na(sm_prev$r.squared)
+  r2_c <- scalar_or_na(sm_curr$r.squared)
+  adj_r2_p <- scalar_or_na(sm_prev$adj.r.squared)
+  adj_r2_c <- scalar_or_na(sm_curr$adj.r.squared)
 
-  F_stat <- if ("F" %in% names(av)) av[["F"]][2] else av[["F value"]][2]
-  p_val <- av[["Pr(>F)"]][2]
+  F_col <- if ("F" %in% names(av)) "F" else "F value"
+  F_stat <- scalar_or_na(av[[F_col]][2])
+  p_val <- scalar_or_na(av[["Pr(>F)"]][2])
 
   f2_change <- if (is.finite(r2_c) && r2_c < 1) {
     (r2_c - r2_p) / (1 - r2_c)
   } else {
-    NA_real_ # nocov
+    NA_real_
   }
 
   # LRT -- asymptotic chi^2 via -2 (l_prev - l_curr). For lm with
@@ -139,22 +281,16 @@ compute_one_pair_lm <- function(fit_prev, fit_curr) {
   })
   lrt_stat <- -2 * (ll_prev - ll_curr)
 
-  aic_p <- stats::AIC(fit_prev)
-  aic_c <- stats::AIC(fit_curr)
-  bic_p <- stats::BIC(fit_prev)
-  bic_c <- stats::BIC(fit_curr)
+  aic_p <- ic_or_na(stats::AIC, fit_prev)
+  aic_c <- ic_or_na(stats::AIC, fit_curr)
+  bic_p <- ic_or_na(stats::BIC, fit_prev)
+  bic_c <- ic_or_na(stats::BIC, fit_curr)
 
-  # AICc -- Hurvich & Tsai (1989). k = length(coef) + 1 (sigma).
-  aicc <- function(fit, aic_v) {
-    k <- length(stats::coef(fit)) + 1L
-    n <- .spicy_nobs(fit)
-    if (n - k - 1L > 0L) aic_v + (2 * k * (k + 1L)) / (n - k - 1L) else NA_real_
-  }
-  aicc_p <- aicc(fit_prev, aic_p)
-  aicc_c <- aicc(fit_curr, aic_c)
+  aicc_p <- aicc_of(fit_prev, aic_p)
+  aicc_c <- aicc_of(fit_curr, aic_c)
 
-  dev_p <- stats::deviance(fit_prev)
-  dev_c <- stats::deviance(fit_curr)
+  dev_p <- deviance_or_na(fit_prev)
+  dev_c <- deviance_or_na(fit_curr)
 
   list(
     r2_change = r2_c - r2_p,
@@ -171,16 +307,22 @@ compute_one_pair_lm <- function(fit_prev, fit_curr) {
 }
 
 
-# ---- Per-pair glm computation (Phase 3 Step 6) ---------------------------
+# ---- Per-pair likelihood computation (Phase 3 Step 6) --------------------
 
-# Per-pair statistics for nested glm models. Uses the LRT chi-square
-# from anova(test = "LRT") (Hosmer & Lemeshow Section 3.5; Long & Freese
-# 2014 Section 3.2.4) -- the canonical hierarchical-logistic test, mirroring
-# the role of partial F in lm. Variance-explained tokens (r2_change,
-# adj_r2_change, f_change, f2_change) are NA for glm: the residual-
-# sum-of-squares partition does not apply outside the least-squares
-# framework. AIC / AICc / BIC / Deltadeviance / Deltachi^2 / p_change are all
-# meaningful and computed.
+# Per-pair statistics for ANY nested pair of likelihood fits. Named for
+# glm, which it was written for, but since 0.13 it serves every class
+# with a likelihood: coxph, multinom, survreg, polr, clm, gls, betareg,
+# zeroinfl, hurdle, mlogit, flexsurvreg, fixest, rms::lrm / cph.
+#
+# The statistic is the LRT chi-square (Hosmer & Lemeshow Section 3.5;
+# Long & Freese 2014 Section 3.2.4) -- the canonical hierarchical test,
+# mirroring the role of partial F in lm. It is read off the class's own
+# anova() table where one exists, and recomputed from the likelihoods
+# otherwise. Variance-explained tokens (r2_change, adj_r2_change,
+# f_change, f2_change) are NA here: the residual-sum-of-squares
+# partition does not apply outside the least-squares framework. AIC /
+# AICc / BIC / Deltadeviance / Deltachi^2 / p_change are all meaningful
+# and computed.
 compute_one_pair_glm <- function(fit_prev, fit_curr) {
   na <- list(
     r2_change = NA_real_,
@@ -195,62 +337,62 @@ compute_one_pair_glm <- function(fit_prev, fit_curr) {
     p_change = NA_real_
   )
 
-  av <- if (inherits(fit_prev, "multinom")) {
-    # anova.multinom() rejects test = "LRT" (its match.arg allows only
-    # "Chisq" / "none"); its default test IS the likelihood-ratio
-    # chi-square, reported as "LR stat." + "Pr(Chi)".
-    tryCatch(
-      suppressWarnings(stats::anova(fit_prev, fit_curr)),
-      error = function(e) NULL
-    )
-  } else {
-    tryCatch(
-      suppressWarnings(stats::anova(fit_prev, fit_curr, test = "LRT")),
-      error = function(e) NULL
-    )
-  }
-  if (is.null(av) || nrow(av) < 2L) {
+  av <- nested_lrt_anova(fit_prev, fit_curr)
+
+  # No usable anova() table means every change statistic has to come
+  # from the two likelihoods instead -- and likelihoods (hence AIC, BIC,
+  # deviance) fitted on different samples are not comparable at all. The
+  # public path never gets here with mismatched n (validate_nested_
+  # alignment() refuses first); a direct internal call can, and gets the
+  # all-NA contract rather than a plausible-looking number.
+  if (is.null(av) && !comparable_nobs(fit_prev, fit_curr)) {
     return(na)
   }
 
   # Column names vary across R versions and model classes: "Deviance" +
   # "Pr(>Chi)" is standard for binomial / poisson; "Pr(>F)" appears for quasi-
   # families when test = "F" is the natural test; anova.coxph reports the LRT as
-  # "Chisq" + "Pr(>|Chi|)"; anova.multinom as "LR stat." + "Pr(Chi)". Look up
-  # defensively, new names appended LAST so glm/coxph priority is untouched.
+  # "Chisq" + "Pr(>|Chi|)"; anova.multinom and anova.polr as "LR stat." +
+  # "Pr(Chi)"; anova.clm as "LR.stat" + "Pr(>Chisq)"; anova.gls as "L.Ratio" +
+  # "p-value". Look up defensively, new names appended LAST so glm/coxph
+  # priority is untouched.
   lrt_col <- intersect(
-    c("Deviance", "scaled dev.", "LRT", "Chisq", "LR stat."),
+    c("Deviance", "scaled dev.", "LRT", "Chisq", "LR stat.", "LR.stat", "L.Ratio"),
     names(av)
   )
   p_col <- intersect(
-    c("Pr(>Chi)", "Pr(>Chisq)", "Pr(>|Chi|)", "Pr(>F)", "Pr(Chi)"),
+    c("Pr(>Chi)", "Pr(>Chisq)", "Pr(>|Chi|)", "Pr(>F)", "Pr(Chi)", "p-value"),
     names(av)
   )
-  lrt_stat <- if (length(lrt_col) > 0L) av[[lrt_col[1L]]][2L] else NA_real_ # nocov
-  p_val <- if (length(p_col) > 0L) av[[p_col[1L]]][2L] else NA_real_ # nocov
+  lrt_stat <- if (length(lrt_col) > 0L) scalar_or_na(av[[lrt_col[1L]]][2L]) else NA_real_
+  p_val <- if (length(p_col) > 0L) scalar_or_na(av[[p_col[1L]]][2L]) else NA_real_
 
-  aic_p <- stats::AIC(fit_prev)
-  aic_c <- stats::AIC(fit_curr)
-  bic_p <- stats::BIC(fit_prev)
-  bic_c <- stats::BIC(fit_curr)
-
-  aicc <- function(fit, aic_v) {
-    k <- length(stats::coef(fit)) + 1L
-    n <- .spicy_nobs(fit)
-    if (n - k - 1L > 0L) aic_v + (2 * k * (k + 1L)) / (n - k - 1L) else NA_real_ # nocov
+  # Several supported classes ship no two-model anova() method at all
+  # (betareg, mlogit, pscl, flexsurv, fixest) or ship one with an
+  # incompatible signature (rms treats extra arguments as factor names).
+  # For those the LRT is recomputed from the likelihoods themselves --
+  # the same quantity anova.polr and anova.gls report, and the one
+  # lmtest::lrtest() computes. Both members of the pair are replaced at
+  # once so the statistic and its p-value always come from the same
+  # computation.
+  if (!is.finite(lrt_stat) || !is.finite(p_val)) {
+    fallback <- loglik_lrt(fit_prev, fit_curr)
+    if (!is.null(fallback)) {
+      lrt_stat <- fallback$stat
+      p_val <- fallback$p
+    }
   }
-  aicc_p <- aicc(fit_prev, aic_p)
-  aicc_c <- aicc(fit_curr, aic_c)
 
-  # deviance() is a finite scalar for glm but NULL for coxph (no residual
-  # deviance defined); guard to NA so the change is en-dashed, not a 0-length
-  # value that would break the comparison data.frame.
-  dev1 <- function(fit) {
-    d <- tryCatch(stats::deviance(fit), error = function(e) NULL)
-    if (length(d) == 1L && is.finite(d)) as.numeric(d) else NA_real_
-  }
-  dev_p <- dev1(fit_prev)
-  dev_c <- dev1(fit_curr)
+  aic_p <- ic_or_na(stats::AIC, fit_prev)
+  aic_c <- ic_or_na(stats::AIC, fit_curr)
+  bic_p <- ic_or_na(stats::BIC, fit_prev)
+  bic_c <- ic_or_na(stats::BIC, fit_curr)
+
+  aicc_p <- aicc_of(fit_prev, aic_p)
+  aicc_c <- aicc_of(fit_curr, aic_c)
+
+  dev_p <- deviance_or_na(fit_prev)
+  dev_c <- deviance_or_na(fit_curr)
 
   list(
     r2_change = NA_real_,
@@ -449,8 +591,16 @@ default_nested_tokens <- function(models) {
   mixed_classes <- c("merMod", "lmerModLmerTest", "glmmTMB", "lme")
   all_mixed <- all(vapply(models, inherits, logical(1), mixed_classes))
   all_glm <- all(vapply(models, inherits, logical(1), "glm"))
-  all_cox <- all(vapply(models, inherits, logical(1), "coxph"))
-  all_multinom <- all(vapply(models, inherits, logical(1), "multinom"))
+  # Same predicate the pair router uses: a hierarchy of likelihood fits
+  # gets the LRT tokens, whatever the class. It used to name coxph and
+  # multinom explicitly, which left survreg / polr / clm / gls / betareg
+  # / ... defaulting to the lm tokens -- an all-dash DeltaR-squared row
+  # above an all-dash F row.
+  all_lrt <- all(vapply(
+    models,
+    function(m) !inherits(m, LEAST_SQUARES_CLASSES) && has_usable_loglik(m),
+    logical(1)
+  ))
   if (all_mixed) {
     # Mixed-effects: AIC + BIC + chi^2 LRT + p. Variance-explained
     # change is reported via the absolute Nakagawa R^2 rows; the
@@ -458,19 +608,139 @@ default_nested_tokens <- function(models) {
     # consensus formula across families (the "marginal vs conditional"
     # split makes a single Delta column ambiguous).
     c("aic_change", "bic_change", "lrt_change", "p_change")
-  } else if (all_glm || all_cox || all_multinom) {
-    # Likelihood-based hierarchies (glm; coxph / rms::cph partial
-    # likelihood; nnet::multinom): the change test is the LRT. The lm
-    # tokens (r2_change / f_change) have no definition here and
-    # previously rendered as all-dash rows in a Cox comparison table.
-    c("lrt_change", "p_change")
   } else if (all(vapply(models, inherits, logical(1), "rq"))) {
-    # Quantile regression: anova.rq's Wald-type F + p. No R-squared
-    # or likelihood family for the check-loss objective.
+    # Quantile regression: anova.rq's Wald-type F + p. No R-squared,
+    # and the check-loss objective's logLik.rq is a pseudo-likelihood
+    # -- so this branch stays AHEAD of the likelihood branch, which
+    # would otherwise claim rq on the strength of that method.
     c("f_change", "p_change")
+  } else if (all_glm || all_lrt) {
+    # Likelihood-based hierarchies (glm; coxph / rms::cph partial
+    # likelihood; nnet::multinom; survreg; polr / clm; gls; betareg;
+    # zeroinfl / hurdle; mlogit; flexsurvreg; fixest): the change test is
+    # the LRT. The lm tokens (r2_change / f_change) have no definition
+    # here and previously rendered as all-dash rows in a Cox comparison
+    # table.
+    c("lrt_change", "p_change")
   } else {
     c("r2_change", "f_change", "p_change")
   }
+}
+
+
+# ---- Shared numeric guards for the per-pair computations -----------------
+
+# Coerce to a finite numeric scalar or NA_real_. The per-pair functions
+# assemble a one-row data.frame, so a NULL or zero-length quantity is not
+# a missing value there -- it is an abort ("arguments imply differing
+# number of rows"). Everything read off a summary(), an anova() column or
+# a deviance() goes through here.
+scalar_or_na <- function(x) {
+  if (length(x) == 1L && is.numeric(x) && is.finite(x)) as.numeric(x) else NA_real_
+}
+
+# TRUE for an anova() result that carries two model rows.
+usable_anova_table <- function(av) {
+  is.data.frame(av) && nrow(av) >= 2L
+}
+
+# Two-model anova() for the likelihood path. The anova methods disagree
+# about `test`: anova.glm and anova.coxph take test = "LRT", while
+# anova.multinom / anova.polr / anova.survreg match.arg it against
+# c("Chisq", "none") and abort, and anova.gls expects a LOGICAL. Their
+# DEFAULT two-model test already IS the likelihood-ratio chi-square, so
+# try the explicit form first -- glm and coxph keep the exact call they
+# have always made -- then fall back to the bare form. Returns NULL when
+# the class has no usable two-model method.
+nested_lrt_anova <- function(fit_prev, fit_curr) {
+  # suppressMessages as well as suppressWarnings: ordinal::anova.clm
+  # prints "'test' argument ignored in anova.clm" as a message when the
+  # explicit form is tried.
+  av <- tryCatch(
+    suppressMessages(suppressWarnings(
+      stats::anova(fit_prev, fit_curr, test = "LRT")
+    )),
+    error = function(e) NULL
+  )
+  if (!usable_anova_table(av)) {
+    av <- tryCatch(
+      suppressMessages(suppressWarnings(stats::anova(fit_prev, fit_curr))),
+      error = function(e) NULL
+    )
+  }
+  if (usable_anova_table(av)) av else NULL
+}
+
+# Likelihood-ratio test computed from the two likelihoods directly:
+# 2 (l_curr - l_prev) on (df_curr - df_prev) degrees of freedom, where
+# the parameter counts are logLik()'s own "df" attribute. This is the
+# quantity anova.polr and anova.gls report and the one lmtest::lrtest()
+# computes; it exists for every class whose logLik() method is complete,
+# including the ones that ship no anova() method. Returns NULL -- not a
+# number -- unless both likelihoods are finite, both parameter counts are
+# known, the second model is strictly larger, and the statistic is
+# non-negative; anything else is a sign the pair is not nested the way
+# the caller believes, and an en-dash is the honest answer.
+loglik_lrt <- function(fit_prev, fit_curr) {
+  ll_prev <- tryCatch(
+    suppressWarnings(stats::logLik(fit_prev)),
+    error = function(e) NULL
+  )
+  ll_curr <- tryCatch(
+    suppressWarnings(stats::logLik(fit_curr)),
+    error = function(e) NULL
+  )
+  if (!inherits(ll_prev, "logLik") || !inherits(ll_curr, "logLik")) {
+    return(NULL)
+  }
+  df_prev <- scalar_or_na(attr(ll_prev, "df"))
+  df_curr <- scalar_or_na(attr(ll_curr, "df"))
+  stat <- 2 * (scalar_or_na(as.numeric(ll_curr)) - scalar_or_na(as.numeric(ll_prev)))
+  df_diff <- df_curr - df_prev
+  if (!is.finite(stat) || !is.finite(df_diff) || df_diff < 1 || stat < 0) {
+    return(NULL)
+  }
+  list(
+    stat = stat,
+    p = stats::pchisq(stat, df = df_diff, lower.tail = FALSE)
+  )
+}
+
+# AIC / BIC that survive a class without the method.
+ic_or_na <- function(fun, fit) {
+  scalar_or_na(tryCatch(fun(fit), error = function(e) NULL))
+}
+
+# AICc -- Hurvich & Tsai (1989). k = length(coef) + 1 (sigma). isTRUE()
+# on the comparison, not a bare `if`: .spicy_nobs() returns NA for a
+# class with no usable count, and `if (NA > 0)` is an abort.
+aicc_of <- function(fit, aic_v) {
+  k <- length(tryCatch(stats::coef(fit), error = function(e) NULL)) + 1L
+  n <- tryCatch(.spicy_nobs(fit), error = function(e) NA_real_)
+  if (isTRUE(n - k - 1L > 0L)) {
+    aic_v + (2 * k * (k + 1L)) / (n - k - 1L)
+  } else {
+    NA_real_
+  }
+}
+
+# deviance() is a finite scalar for glm but NULL for coxph and gls (no
+# residual deviance defined) and an abort for rms::ols (its method reads
+# an argument spicy does not pass). Guard to NA so the change is
+# en-dashed, not a zero-length value that would break the comparison
+# data.frame.
+deviance_or_na <- function(fit) {
+  scalar_or_na(tryCatch(
+    suppressWarnings(stats::deviance(fit)),
+    error = function(e) NULL
+  ))
+}
+
+# TRUE when both fits report the same, known number of observations.
+comparable_nobs <- function(fit_prev, fit_curr) {
+  n_prev <- scalar_or_na(tryCatch(.spicy_nobs(fit_prev), error = function(e) NA_real_))
+  n_curr <- scalar_or_na(tryCatch(.spicy_nobs(fit_curr), error = function(e) NA_real_))
+  is.finite(n_prev) && is.finite(n_curr) && isTRUE(n_prev == n_curr)
 }
 
 
@@ -493,6 +763,14 @@ default_nested_tokens <- function(models) {
   # entry per observation actually used.
   if (inherits(fit, "rq")) {
     return(as.numeric(length(fit$residuals)))
+  }
+  # pscl registers neither nobs.zeroinfl nor nobs.hurdle; both fits carry
+  # the count on `$n`. Without this, `nested = TRUE` on a zero-inflated
+  # pair died inside validate_nested_alignment()'s vapply with the bare
+  # "no 'nobs' method is available" -- before compute_nested_comparisons()
+  # was ever reached.
+  if (inherits(fit, c("zeroinfl", "hurdle"))) {
+    return(as.numeric(fit$n))
   }
   as.numeric(stats::nobs(fit))
 }
