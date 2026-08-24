@@ -165,10 +165,11 @@ reference:
       - inline
   - title: Survey-design tables
     desc: >
-      Experimental (`?spicy`): new in this cycle, and the shape of the
-      table and the names of the design-specific arguments may still
-      move -- with a `NEWS.md` entry -- on their own clock rather than
-      the parent family's. Every number comes from survey (Lumley).
+      The descriptive tables from a `survey::svydesign()` or
+      replicate-weight design: design-based estimates, standard errors,
+      degrees of freedom and tests, every number delegated to survey
+      (Lumley). New in this cycle -- see the API-stability tiers in
+      `?spicy`.
     contents:
       - table_continuous_svy
       - table_categorical_svy
