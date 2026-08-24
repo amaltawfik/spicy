@@ -1173,16 +1173,7 @@ format_cell_value <- function(
   show_columns
 ) {
   tk <- cs$token
-  is_es <- tk %in%
-    c(
-      "partial_f2",
-      "partial_f2_ci",
-      "partial_eta2",
-      "partial_eta2_ci",
-      "partial_omega2",
-      "partial_omega2_ci",
-      "partial_chi2"
-    )
+  is_es <- tk %in% .PARTIAL_ES_TOKENS
   digits_to_use <- if (is_es) {
     effect_size_digits
   } else if (tk %in% c("r2", "adj_r2")) {

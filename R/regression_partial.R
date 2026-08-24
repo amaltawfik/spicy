@@ -40,6 +40,15 @@
   "partial_chi2"
 )
 
+# The variance-explained half of the set: everything above except the
+# likelihood-ratio chi-square, which is the GLM analog rather than a
+# partition of sums of squares. This is the subset the class refusals
+# name -- glm, GEE and mixed fits each reject exactly these, for the same
+# reason -- and the subset the lm extractor computes. Derived, not
+# re-spelt, so adding an estimand upstream cannot leave one of the four
+# readers behind.
+.PARTIAL_VARIANCE_ES_TOKENS <- setdiff(.PARTIAL_ES_TOKENS, "partial_chi2")
+
 # ---- Public-internal entry point ------------------------------------------
 
 extract_partial_effect_rows <- function(
@@ -67,15 +76,7 @@ extract_partial_effect_rows <- function(
   # Map both atomic tokens AND their _ci counterparts to the same
   # underlying long-data computation: `partial_f2_ci` reuses the same
   # CI columns built by `partial_f2`.
-  partial_tokens <- c(
-    "partial_f2",
-    "partial_f2_ci",
-    "partial_eta2",
-    "partial_eta2_ci",
-    "partial_omega2",
-    "partial_omega2_ci"
-  )
-  active <- intersect(show_columns, partial_tokens)
+  active <- intersect(show_columns, .PARTIAL_VARIANCE_ES_TOKENS)
   if (length(active) == 0L) {
     return(empty_coefs_long())
   }

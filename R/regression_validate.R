@@ -69,19 +69,15 @@
     # token names live.
     "r2",
     "adj_r2",
-    # Variance-explained partials (lm only) \u2013 split into
-    # estimate-only + CI-only, matching the b / ci asymmetry-free
-    # convention.
-    "partial_f2",
-    "partial_f2_ci",
-    "partial_eta2",
-    "partial_eta2_ci",
-    "partial_omega2",
-    "partial_omega2_ci",
-    # LRT-based partial chi-square (glm; analog of partial F) \u2013
+    # Term-level partial effect sizes, spliced from their single
+    # producer (.PARTIAL_ES_TOKENS, R/regression_partial.R -- sourced
+    # before this file, alphabetically, so the constant exists here):
+    # the variance-explained partials for lm, split into estimate-only
+    # + CI-only to match the b / ci asymmetry-free convention, then the
+    # LRT-based partial chi-square for glm (the analog of partial F),
     # kept BUNDLED as "value (df)" because that is the standard
     # statistical-reporting convention (e.g. "chi2(2) = 5.34").
-    "partial_chi2",
+    .PARTIAL_ES_TOKENS,
     # Probability of direction (Bayesian fits only).
     "pd",
     # Per-parameter sampler diagnostics (Bayesian fits only), and the
@@ -1318,17 +1314,7 @@ validate_class_appropriate_tokens <- function(
   # are glm \u2013 in mixed sets, the renderer en-dashes glm rows and
   # populates lm rows, which is the right behaviour.
   if (all_glm) {
-    bad <- intersect(
-      show_columns,
-      c(
-        "partial_f2",
-        "partial_f2_ci",
-        "partial_eta2",
-        "partial_eta2_ci",
-        "partial_omega2",
-        "partial_omega2_ci"
-      )
-    )
+    bad <- intersect(show_columns, .PARTIAL_VARIANCE_ES_TOKENS)
     if (length(bad) > 0L) {
       spicy_abort(
         c(
@@ -1807,18 +1793,7 @@ validate_class_appropriate_tokens <- function(
         class = "spicy_invalid_input"
       )
     }
-    bad_cols <- intersect(
-      show_columns,
-      c(
-        "partial_chi2",
-        "partial_f2",
-        "partial_f2_ci",
-        "partial_eta2",
-        "partial_eta2_ci",
-        "partial_omega2",
-        "partial_omega2_ci"
-      )
-    )
+    bad_cols <- intersect(show_columns, .PARTIAL_ES_TOKENS)
     if (length(bad_cols) > 0L) {
       spicy_abort(
         c(
@@ -1881,17 +1856,7 @@ validate_class_appropriate_tokens <- function(
     # partial_chi2 (the Type-II Wald chi-square for mixed fits) IS defined
     # here, so it is deliberately NOT rejected -- only the variance-explained
     # (least-squares) partials are undefined for mixed models.
-    bad_cols <- intersect(
-      show_columns,
-      c(
-        "partial_f2",
-        "partial_f2_ci",
-        "partial_eta2",
-        "partial_eta2_ci",
-        "partial_omega2",
-        "partial_omega2_ci"
-      )
-    )
+    bad_cols <- intersect(show_columns, .PARTIAL_VARIANCE_ES_TOKENS)
     if (length(bad_cols) > 0L) {
       spicy_abort(
         c(
