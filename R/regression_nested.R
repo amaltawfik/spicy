@@ -92,7 +92,7 @@ fixed_terms_key <- function(fit) {
   if (isTRUE(attr(tt, "intercept") == 1)) {
     paste(key, "(Intercept)", sep = "&")
   } else {
-    key # nocov -- no-intercept nlme fits are not part of the guard's job
+    key
   }
 }
 

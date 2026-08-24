@@ -435,3 +435,70 @@ test_that("lm and glm pairs are unchanged by the reroute", {
   expect_identical(gotg$lrt_change[1L], avg[["Deviance"]][2L])
   expect_identical(gotg$p_change[1L], avg[["Pr(>Chi)"]][2L])
 })
+
+
+# ---- 9. the routing helpers, exercised directly --------------------------
+
+# The guards that keep a doubtful pair from producing a number. They are
+# reached through the public path only by classes not installed here, so
+# they are asserted where they live.
+test_that("loglik_lrt refuses a pair it cannot vouch for", {
+  m1 <- stats::lm(mpg ~ wt, data = mtcars)
+  m2 <- stats::lm(mpg ~ wt + hp, data = mtcars)
+  # The happy path, so the refusals below are not vacuous.
+  ok <- loglik_lrt(m1, m2)
+  expect_equal(
+    ok$stat,
+    2 * (as.numeric(stats::logLik(m2)) - as.numeric(stats::logLik(m1))),
+    tolerance = 1e-12
+  )
+  expect_equal(
+    ok$p,
+    stats::pchisq(ok$stat, df = 1, lower.tail = FALSE),
+    tolerance = 1e-12
+  )
+  # No likelihood at all on one side.
+  expect_null(loglik_lrt(structure(list(), class = "nothing"), m2))
+  expect_null(loglik_lrt(m1, structure(list(), class = "nothing")))
+  # The second model is not the larger one: df_diff < 1.
+  expect_null(loglik_lrt(m2, m1))
+  expect_null(loglik_lrt(m1, m1))
+})
+
+test_that("the numeric guards keep a missing quantity out of the data.frame", {
+  expect_identical(scalar_or_na(NULL), NA_real_)
+  expect_identical(scalar_or_na(numeric(0)), NA_real_)
+  expect_identical(scalar_or_na(c(1, 2)), NA_real_)
+  expect_identical(scalar_or_na("x"), NA_real_)
+  expect_identical(scalar_or_na(NaN), NA_real_)
+  expect_identical(scalar_or_na(2.5), 2.5)
+  expect_false(usable_anova_table(NULL))
+  expect_false(usable_anova_table(data.frame(a = 1)))
+  expect_true(usable_anova_table(data.frame(a = 1:2)))
+  stub <- structure(list(), class = "nothing")
+  expect_identical(ic_or_na(stats::AIC, stub), NA_real_)
+  expect_identical(deviance_or_na(stub), NA_real_)
+  expect_identical(aicc_of(stub, 10), NA_real_)
+  expect_false(comparable_nobs(stub, stub))
+  expect_false(has_usable_loglik(stub))
+})
+
+# The intercept marker is part of the fixed-effects signature, so a
+# no-intercept pair takes the other arm of the key builder -- and is
+# refused on the same grounds.
+test_that("the REML guard covers no-intercept nlme fits", {
+  skip_if_no("nlme")
+  d <- nlme::Ovary
+  m1 <- nlme::gls(follicles ~ sin(2 * pi * Time) - 1, data = d)
+  m2 <- nlme::gls(
+    follicles ~ sin(2 * pi * Time) + cos(2 * pi * Time) - 1,
+    data = d
+  )
+  expect_false(grepl("(Intercept)", fixed_terms_key(m1), fixed = TRUE))
+  expect_error(
+    compute_nested_comparisons(list(m1, m2)),
+    class = "spicy_invalid_input"
+  )
+  # And an identical-fixed-effects REML pair is still let through.
+  expect_identical(fixed_terms_key(m1), fixed_terms_key(m1))
+})
