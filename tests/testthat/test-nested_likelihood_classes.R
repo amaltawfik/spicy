@@ -502,3 +502,110 @@ test_that("the REML guard covers no-intercept nlme fits", {
   # And an identical-fixed-effects REML pair is still let through.
   expect_identical(fixed_terms_key(m1), fixed_terms_key(m1))
 })
+
+
+# ---- 10. an anova() that REFUSED is not an anova() that is absent -------
+
+# A class with no anova() method never engaged with the comparison, and
+# recomputing the LRT from the likelihoods is a service. A class whose
+# anova() method exists and RAISED is a model-comparison method saying no
+# -- and falling back there computes a number the engine has just
+# declared meaningless.
+test_that("a REML/ML nlme pair is refused, not silently recomputed", {
+  skip_if_no("nlme")
+  d <- nlme::Ovary
+  reml <- nlme::gls(follicles ~ sin(2 * pi * Time), data = d)
+  ml2 <- nlme::gls(
+    follicles ~ sin(2 * pi * Time) + cos(2 * pi * Time),
+    data = d,
+    method = "ML"
+  )
+  expect_identical(reml$method, "REML")
+  expect_identical(ml2$method, "ML")
+
+  # Sanity: nlme itself refuses, and the engine's sentence is the one the
+  # refusal must carry. Captured here rather than written out: it is
+  # locale-translated.
+  engine <- tryCatch(
+    stats::anova(reml, ml2),
+    error = function(e) conditionMessage(e)
+  )
+  expect_true(is.character(engine))
+
+  err <- tryCatch(
+    compute_nested_comparisons(list(reml, ml2)),
+    error = function(e) e
+  )
+  expect_s3_class(err, "spicy_invalid_input")
+  expect_match(conditionMessage(err), engine, fixed = TRUE)
+  expect_match(conditionMessage(err), "their own `anova()` method refused", fixed = TRUE)
+  expect_match(conditionMessage(err), "different methods (REML and ML)", fixed = TRUE)
+
+  # The number the fallback used to print, and the honest one it is not.
+  wrong <- 2 * (as.numeric(stats::logLik(ml2)) - as.numeric(stats::logLik(reml)))
+  expect_equal(wrong, 6.846349006, tolerance = 1e-8)
+  ml1 <- nlme::gls(follicles ~ sin(2 * pi * Time), data = d, method = "ML")
+  honest <- compute_nested_comparisons(list(ml1, ml2))
+  expect_equal(honest$lrt_change[1L], 5.89345119597, tolerance = 1e-9)
+  expect_false(isTRUE(all.equal(honest$lrt_change[1L], wrong)))
+})
+
+test_that("nested_anova_method_exists distinguishes absence from refusal", {
+  skip_if_no("nlme", "betareg", "pscl")
+  data("GasolineYield", package = "betareg", envir = environment())
+  data("bioChemists", package = "pscl", envir = environment())
+  # Has a method.
+  expect_true(nested_anova_method_exists(
+    nlme::gls(follicles ~ sin(2 * pi * Time), data = nlme::Ovary)
+  ))
+  expect_true(nested_anova_method_exists(stats::lm(mpg ~ wt, data = mtcars)))
+  # Has none.
+  expect_false(nested_anova_method_exists(
+    betareg::betareg(yield ~ batch, data = GasolineYield)
+  ))
+  expect_false(nested_anova_method_exists(
+    pscl::zeroinfl(art ~ fem | 1, data = bioChemists)
+  ))
+  expect_false(nested_anova_method_exists(structure(list(), class = "nothing")))
+})
+
+test_that("the classes with no anova() method still serve exact lrtest values", {
+  skip_if_no("betareg", "pscl", "lmtest")
+  data("GasolineYield", package = "betareg", envir = environment())
+  data("bioChemists", package = "pscl", envir = environment())
+  cases <- list(
+    betareg = list(
+      betareg::betareg(yield ~ batch, data = GasolineYield),
+      betareg::betareg(yield ~ batch + temp, data = GasolineYield)
+    ),
+    hurdle = list(
+      pscl::hurdle(art ~ fem | 1, data = bioChemists),
+      pscl::hurdle(art ~ fem + mar | 1, data = bioChemists)
+    )
+  )
+  for (nm in names(cases)) {
+    got <- compute_nested_comparisons(cases[[nm]])
+    oracle <- lmtest::lrtest(cases[[nm]][[1L]], cases[[nm]][[2L]])
+    expect_equal(got$lrt_change[1L], oracle$Chisq[2L], tolerance = 1e-10, info = nm)
+  }
+})
+
+# A pair fitted on different samples is settled before anova() is asked,
+# so the refusal never relays a sentence that is about the samples.
+test_that("mismatched n keeps the all-NA contract, not a refusal", {
+  g_a <- suppressWarnings(
+    stats::glm(am ~ wt, data = mtcars[1:20, ], family = stats::binomial)
+  )
+  g_b <- stats::glm(am ~ wt + hp, data = mtcars, family = stats::binomial)
+  expect_true(nobs_conflict(g_a, g_b))
+  got <- expect_no_error(compute_one_pair_glm(g_a, g_b))
+  expect_true(all(vapply(got, is.na, logical(1))))
+})
+
+test_that("nobs_conflict treats an unknown count as no evidence", {
+  m <- stats::lm(mpg ~ wt, data = mtcars)
+  stub <- structure(list(), class = "nothing")
+  expect_false(nobs_conflict(stub, m))
+  expect_false(nobs_conflict(m, m))
+  expect_true(nobs_conflict(m, stats::lm(mpg ~ wt, data = mtcars[1:20, ])))
+})

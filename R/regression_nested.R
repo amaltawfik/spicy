@@ -337,14 +337,20 @@ compute_one_pair_glm <- function(fit_prev, fit_curr) {
     p_change = NA_real_
   )
 
+  # Likelihoods -- and so AIC, BIC, deviance and any LRT built from them
+  # -- fitted on different samples are not comparable at all. Settle that
+  # BEFORE asking anova(), because anova() will fail for a reason that is
+  # about the samples and not about the comparison, and the refusal below
+  # would then relay a misleading sentence. The public path never gets
+  # here with mismatched n (validate_nested_alignment() refuses first); a
+  # direct internal call can, and gets the all-NA contract rather than a
+  # plausible-looking number.
+  if (nobs_conflict(fit_prev, fit_curr)) {
+    return(na)
+  }
+
   av <- nested_lrt_anova(fit_prev, fit_curr)
 
-  # No usable anova() table means every change statistic has to come
-  # from the two likelihoods instead -- and likelihoods (hence AIC, BIC,
-  # deviance) fitted on different samples are not comparable at all. The
-  # public path never gets here with mismatched n (validate_nested_
-  # alignment() refuses first); a direct internal call can, and gets the
-  # all-NA contract rather than a plausible-looking number.
   if (is.null(av) && !comparable_nobs(fit_prev, fit_curr)) {
     return(na)
   }
@@ -368,13 +374,12 @@ compute_one_pair_glm <- function(fit_prev, fit_curr) {
   p_val <- if (length(p_col) > 0L) scalar_or_na(av[[p_col[1L]]][2L]) else NA_real_
 
   # Several supported classes ship no two-model anova() method at all
-  # (betareg, mlogit, pscl, flexsurv, fixest) or ship one with an
-  # incompatible signature (rms treats extra arguments as factor names).
-  # For those the LRT is recomputed from the likelihoods themselves --
-  # the same quantity anova.polr and anova.gls report, and the one
-  # lmtest::lrtest() computes. Both members of the pair are replaced at
-  # once so the statistic and its p-value always come from the same
-  # computation.
+  # (betareg, mlogit, pscl, flexsurv, fixest). For those -- and ONLY for
+  # those; see nested_lrt_anova() -- the LRT is recomputed from the
+  # likelihoods themselves: the same quantity anova.polr and anova.gls
+  # report, and the one lmtest::lrtest() computes. Both members of the
+  # pair are replaced at once so the statistic and its p-value always
+  # come from the same computation.
   if (!is.finite(lrt_stat) || !is.finite(p_val)) {
     fallback <- loglik_lrt(fit_prev, fit_curr)
     if (!is.null(fallback)) {
@@ -656,19 +661,100 @@ nested_lrt_anova <- function(fit_prev, fit_curr) {
   # suppressMessages as well as suppressWarnings: ordinal::anova.clm
   # prints "'test' argument ignored in anova.clm" as a message when the
   # explicit form is tried.
-  av <- tryCatch(
-    suppressMessages(suppressWarnings(
-      stats::anova(fit_prev, fit_curr, test = "LRT")
-    )),
-    error = function(e) NULL
-  )
-  if (!usable_anova_table(av)) {
-    av <- tryCatch(
-      suppressMessages(suppressWarnings(stats::anova(fit_prev, fit_curr))),
-      error = function(e) NULL
+  attempt <- function(...) {
+    tryCatch(
+      list(value = suppressMessages(suppressWarnings(
+        stats::anova(fit_prev, fit_curr, ...)
+      )), cnd = NULL),
+      error = function(e) list(value = NULL, cnd = e)
     )
   }
-  if (usable_anova_table(av)) av else NULL
+  a1 <- attempt(test = "LRT")
+  if (usable_anova_table(a1$value)) {
+    return(a1$value)
+  }
+  a2 <- attempt()
+  if (usable_anova_table(a2$value)) {
+    return(a2$value)
+  }
+
+  # Neither form produced a table, and the two reasons are NOT the same
+  # thing. A class that ships no anova() method never engaged with the
+  # question, and recomputing the LRT from the likelihoods is a service.
+  # A class that HAS an anova() method and raised is a model-comparison
+  # method saying no -- and falling back there computes a number the
+  # engine has just declared meaningless. That is how a REML fit paired
+  # with an ML fit came to print DeltaChi2 +6.85, p .009, where the
+  # honest ML-ML answer is 5.893 on the same data: nlme refuses ("all
+  # fitted objects must be fit with the same estimation method") and the
+  # fallback quietly formed 2 (l_ML - l_REML) across two different
+  # criteria. Whether a method exists is asked of the METHOD TABLE, not
+  # inferred from the failure: an error is not evidence of absence.
+  if (nested_anova_method_exists(fit_prev) ||
+    nested_anova_method_exists(fit_curr)) {
+    abort_nested_anova_refused(fit_prev, fit_curr, a2$cnd %||% a1$cnd)
+  }
+  NULL
+}
+
+# TRUE when any class in the fit's class vector registers an S3 anova
+# method -- i.e. stats::anova() dispatches somewhere real for this fit.
+nested_anova_method_exists <- function(fit) {
+  for (cls in class(fit)) {
+    m <- tryCatch(
+      utils::getS3method("anova", cls, optional = TRUE),
+      error = function(e) NULL
+    )
+    if (!is.null(m)) {
+      return(TRUE)
+    }
+  }
+  FALSE
+}
+
+# Relay the engine's refusal rather than working around it. The relayed
+# sentence is the model package's own and is locale-translated, so it is
+# quoted, never parsed.
+abort_nested_anova_refused <- function(fit_prev, fit_curr, cnd) {
+  detail <- if (is.null(cnd)) {
+    "the method returned no model-comparison table" # nocov
+  } else {
+    conditionMessage(cnd)
+  }
+  hint <- if (
+    inherits(fit_prev, c("gls", "lme")) && inherits(fit_curr, c("gls", "lme")) &&
+      !identical(fit_prev$method, fit_curr$method)
+  ) {
+    sprintf(
+      paste0(
+        "These fits were estimated by different methods (%s and %s). ",
+        "Refit both the same way -- `method = \"ML\"` for a ",
+        "fixed-effects comparison."
+      ),
+      as.character(fit_prev$method %||% "?"),
+      as.character(fit_curr$method %||% "?")
+    )
+  } else {
+    paste0(
+      "If this class ships its own comparison function, use it outside ",
+      "the table."
+    )
+  }
+  spicy_abort(
+    c(
+      paste0(
+        "`nested = TRUE` cannot compare these models: their own ",
+        "`anova()` method refused."
+      ),
+      "x" = sprintf("anova() failed: %s", detail),
+      "i" = paste0(
+        "spicy does not substitute a likelihood-ratio test that the ",
+        "model's own comparison method declined to perform."
+      ),
+      "i" = hint
+    ),
+    class = "spicy_invalid_input"
+  )
 }
 
 # Likelihood-ratio test computed from the two likelihoods directly:
@@ -734,6 +820,16 @@ deviance_or_na <- function(fit) {
     suppressWarnings(stats::deviance(fit)),
     error = function(e) NULL
   ))
+}
+
+# TRUE only when both counts are KNOWN and differ. An unknown count is
+# not a conflict: it is no evidence either way, and the pair keeps its
+# chance at a comparison. The mirror of comparable_nobs(), which demands
+# positive evidence of comparability before a likelihood is used.
+nobs_conflict <- function(fit_prev, fit_curr) {
+  n_prev <- scalar_or_na(tryCatch(.spicy_nobs(fit_prev), error = function(e) NA_real_))
+  n_curr <- scalar_or_na(tryCatch(.spicy_nobs(fit_curr), error = function(e) NA_real_))
+  is.finite(n_prev) && is.finite(n_curr) && !isTRUE(n_prev == n_curr)
 }
 
 # TRUE when both fits report the same, known number of observations.
