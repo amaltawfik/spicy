@@ -725,8 +725,15 @@ available: <code>"adj_r2_change"</code>, <code>"f2_change"</code>,
 <code>"deviance_change"</code>, <code>"aic_change"</code> /
 <code>"aicc_change"</code> / <code>"bic_change"</code>.
 Variance-explained change tokens (Δr², Δf²) are undefined for
-mixed-effects pairs and their rows are dropped from the table — the
-F-test framework that grounds them doesn’t apply.</p>
+mixed-effects pairs, and asking for one is a
+<code>spicy_invalid_input</code> error naming <code>"lrt_change"</code>
++ <code>"p_change"</code> instead: the F-test framework that grounds
+them doesn’t apply. The same refusal covers every hierarchy whose nested
+comparison is a likelihood-ratio test (<code>survreg</code>,
+<code>polr</code>, <code>clm</code>, <code>coxph</code>,
+<code>gls</code>, <code>betareg</code>, <code>multinom</code>,
+<code>fixest</code>), while a quantile hierarchy is pointed at
+<code>"f_change"</code> + <code>"p_change"</code>.</p>
 <p>Validation is strict: identical <code>nobs</code> and identical
 response across all models, otherwise a <code>spicy_invalid_input</code>
 error explains the listwise-deletion trap and suggests refitting on the

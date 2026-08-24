@@ -620,8 +620,13 @@ mixed-effects fits (`lmer` / `glmer` / `glmmTMB` /
 controls the order of the rows. Other change tokens are available:
 `"adj_r2_change"`, `"f2_change"`, `"deviance_change"`, `"aic_change"` /
 `"aicc_change"` / `"bic_change"`. Variance-explained change tokens (Δr²,
-Δf²) are undefined for mixed-effects pairs and their rows are dropped
-from the table — the F-test framework that grounds them doesn’t apply.
+Δf²) are undefined for mixed-effects pairs, and asking for one is a
+`spicy_invalid_input` error naming `"lrt_change"` + `"p_change"`
+instead: the F-test framework that grounds them doesn’t apply. The same
+refusal covers every hierarchy whose nested comparison is a
+likelihood-ratio test (`survreg`, `polr`, `clm`, `coxph`, `gls`,
+`betareg`, `multinom`, `fixest`), while a quantile hierarchy is pointed
+at `"f_change"` + `"p_change"`.
 
 Validation is strict: identical `nobs` and identical response across all
 models, otherwise a `spicy_invalid_input` error explains the

@@ -1398,16 +1398,29 @@ gets en-dashes (no previous model to compare to). Validation
 requires identical <code>nobs</code> and identical response variable
 across all models.</p>
 <p>Default change tokens auto-injected when <code>show_fit_stats</code> is
-<code>NULL</code>:</p><ul><li><p>All-lm: <code>c("r2_change", "f_change", "p_change")</code> –
-APA hierarchical regression standard.</p></li>
+<code>NULL</code>:</p><ul><li><p>All-lm (and <code>nls</code>): <code>c("r2_change", "f_change", "p_change")</code> – APA hierarchical regression standard.</p></li>
 <li><p>All-glm: <code>c("lrt_change", "p_change")</code> – Hosmer &amp;
 Lemeshow Section 3.5; Long &amp; Freese 2014 Section 3.2.4.</p></li>
+<li><p>Any other hierarchy that carries a likelihood
+(<code>survreg</code>, <code>polr</code>, <code>clm</code>, <code>coxph</code>, <code>gls</code>, <code>betareg</code>,
+<code>multinom</code>, <code>fixest</code>, ...): the same
+<code>c("lrt_change", "p_change")</code>.</p></li>
+<li><p>Mixed-effects (<code>lmer</code> / <code>glmer</code> / <code>glmmTMB</code> /
+<code><a href="https://rdrr.io/pkg/nlme/man/lme.html" class="external-link">nlme::lme</a></code>): <code>c("aic_change", "bic_change", "lrt_change", "p_change")</code> – Pinheiro &amp; Bates 2000 Section 2.4.1.</p></li>
+<li><p>Quantile (<code>rq</code>): <code>c("f_change", "p_change")</code> – the
+Wald-type test <code><a href="https://rdrr.io/pkg/quantreg/man/anova.rq.html" class="external-link">quantreg::anova.rq()</a></code> reports.</p></li>
 </ul><p>To customise, pass the change tokens directly to
-<code>show_fit_stats</code>. Variance-explained change tokens on an
-all-glm hierarchy raise <code>spicy_invalid_input</code> (the
-residual-sum-of-squares partition does not apply outside the
-least-squares framework – the renderer points the user at
-<code>lrt_change</code>).</p>
+<code>show_fit_stats</code>. The variance-explained change tokens
+(<code>"r2_change"</code>, <code>"adj_r2_change"</code>, <code>"f_change"</code>,
+<code>"f2_change"</code>) raise <code>spicy_invalid_input</code> on any hierarchy
+whose nested comparison is a likelihood-ratio test – <code>glm</code>,
+and equally every other likelihood class and the
+mixed-effects families: that comparison reports a chi-square,
+not a variance-explained change, and the message points at
+<code>"lrt_change"</code> + <code>"p_change"</code>. A quantile hierarchy refuses
+them too, and <code>"lrt_change"</code> with them, pointing at
+<code>"f_change"</code> + <code>"p_change"</code> instead. <code>lm</code> and <code>nls</code> keep the
+least-squares tokens.</p>
     </div>
     <div class="section level2">
     <h2 id="standardised-coefficients">Standardised coefficients<a class="anchor" aria-label="anchor" href="#standardised-coefficients"></a></h2>

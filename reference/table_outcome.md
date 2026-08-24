@@ -131,7 +131,12 @@ table_outcome(
 
   One of `"default"`, `"data.frame"`, `"long"`, or a rendering engine:
   `"tinytable"`, `"gt"`, `"flextable"`, `"excel"`, `"clipboard"`,
-  `"word"`.
+  `"word"`. `"data.frame"` and `"long"` are synonyms and return the same
+  object: the compute frame is already long (one row per level, plus the
+  block header and the overall row). Both names are kept so the argument
+  reads the same here as in
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
+  where the pair is also synonymous.
 
 - indent_text, indent_text_excel_clipboard:
 
@@ -161,7 +166,8 @@ table_outcome(
 
 A `spicy_outcome_table`: the compute frame, with the display frame and
 the typed view attached. `output = "data.frame"` / `"long"` returns the
-compute frame unclassed.
+compute frame unclassed – the two tokens are synonyms and return
+identical objects.
 
 ## Which shape do I need?
 

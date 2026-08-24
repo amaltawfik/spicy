@@ -556,6 +556,7 @@ table_regression(p3, show_columns = c("b", "se"))
 #> Std. errors: Wald (model-based).
 #> p-values: Satterthwaite t-test (lmerTest).
 #> Random effects (REML): LR test vs linear regression, χ̄²(2) = 63.19, p < .001.
+#> ICC is not reported: several grouping factors define several ICCs.
 ```
 
 Both levels of nesting get their σ row, one `N (cask:batch)` /

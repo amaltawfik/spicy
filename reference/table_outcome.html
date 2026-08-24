@@ -215,7 +215,12 @@ formatting.</p></dd>
 <dt id="arg-output">output<a class="anchor" aria-label="anchor" href="#arg-output"></a></dt>
 <dd><p>One of <code>"default"</code>, <code>"data.frame"</code>, <code>"long"</code>, or a
 rendering engine: <code>"tinytable"</code>, <code>"gt"</code>, <code>"flextable"</code>,
-<code>"excel"</code>, <code>"clipboard"</code>, <code>"word"</code>.</p></dd>
+<code>"excel"</code>, <code>"clipboard"</code>, <code>"word"</code>. <code>"data.frame"</code> and <code>"long"</code>
+are synonyms and return the same object: the compute frame is
+already long (one row per level, plus the block header and the
+overall row). Both names are kept so the argument reads the same
+here as in <code><a href="table_continuous.html">table_continuous()</a></code>, where the pair is also
+synonymous.</p></dd>
 
 
 <dt id="arg-indent-text-indent-text-excel-clipboard">indent_text, indent_text_excel_clipboard<a class="anchor" aria-label="anchor" href="#arg-indent-text-indent-text-excel-clipboard"></a></dt>
@@ -245,7 +250,8 @@ destinations, as in <code><a href="table_continuous.html">table_continuous()</a>
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>A <code>spicy_outcome_table</code>: the compute frame, with the display
 frame and the typed view attached. <code>output = "data.frame"</code> /
-<code>"long"</code> returns the compute frame unclassed.</p>
+<code>"long"</code> returns the compute frame unclassed – the two tokens are
+synonyms and return identical objects.</p>
     </div>
     <div class="section level2">
     <h2 id="which-shape-do-i-need-">Which shape do I need?<a class="anchor" aria-label="anchor" href="#which-shape-do-i-need-"></a></h2>
