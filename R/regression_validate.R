@@ -1151,10 +1151,24 @@ validate_vcov_cluster_lists <- function(vcov, cluster, models) {
     if (!is.null(c_i) && !is_cr) {
       # Own-estimator classes get their own route, like the rq carve-out
       # above. The generic "set `vcov` to CR0-CR3" advice would send an
-      # estimatr / fixest user straight into the hard refusal that Step
-      # 6c raises for exactly those tokens -- advice that cannot be
-      # followed. Their clustering lives in the fitting call.
-      hint <- if (inherits(models[[i]], c("lm_robust", "iv_robust"))) {
+      # estimatr / fixest / survey user straight into the hard refusal
+      # that Step 6c raises for exactly those tokens -- advice that
+      # cannot be followed. Their clustering lives in the fitting call,
+      # or, for a design fit, in the design.
+      hint <- if (.is_design_fit(models[[i]])) {
+        # There is no CR* route for a design fit at all: clubSandwich has
+        # no vcovCR.svyglm, so the token is refused outright above. The
+        # design already carries the clustering it was declared with, and
+        # its Taylor / replicate variance IS the cluster-robust one --
+        # the same sentence Step 6c uses when the user follows the old
+        # hint and lands on the refusal.
+        paste0(
+          "The survey design carries the clustering: declare it with ",
+          "survey::svydesign(ids = ~cluster_var, ...) and refit. The ",
+          "fit's own design-based variance is already cluster-robust ",
+          "for the declared design."
+        )
+      } else if (inherits(models[[i]], c("lm_robust", "iv_robust"))) {
         estimatr_fn <- if (inherits(models[[i]], "iv_robust")) {
           "estimatr::iv_robust"
         } else {
