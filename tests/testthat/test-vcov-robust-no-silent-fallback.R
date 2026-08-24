@@ -83,3 +83,89 @@ test_that("the classical estimator still returns the model variance", {
     sandwich::vcovHC(fit, type = "HC3")
   )
 })
+
+
+# ---- the third engine site, and an invented cluster --------------------
+
+# compute_model_vcov() reaches three cluster-robust backends, and until
+# now they disagreed about a missing cluster id. sandwich::vcovCL and
+# clubSandwich::vcovCR refuse it (their error arrived bare, unclassed);
+# spicy's own Lin-Wei path for coxph sums dfbeta residuals with rowsum(),
+# which makes NA its OWN GROUP and returns a variance -- silently, and
+# the table rendered it under a "cluster-robust (Lin-Wei)" footer.
+test_that("sandwich::vcovCL failures are classed, not bare", {
+  skip_if_not_installed("sandwich")
+  skip_if_not_installed("pscl")
+  data("bioChemists", package = "pscl", envir = environment())
+  fit <- pscl::zeroinfl(art ~ fem + mar | 1, data = bioChemists)
+  cl <- bioChemists$fem
+  # The good case still computes.
+  expect_true(is.matrix(compute_model_vcov(fit, "CR0", cluster = cl)))
+  cl_na <- cl
+  cl_na[1:5] <- NA
+  # Sanity: the engine itself refuses, and used to do so unclassed.
+  expect_error(suppressWarnings(sandwich::vcovCL(fit, cluster = cl_na)))
+  err <- tryCatch(
+    compute_model_vcov(fit, "CR0", cluster = cl_na),
+    error = function(e) e
+  )
+  expect_s3_class(err, "spicy_error")
+  expect_s3_class(err, "spicy_invalid_input")
+})
+
+test_that("coxph no longer invents a cluster out of the missing ids", {
+  skip_if_not_installed("survival")
+  d <- survival::lung
+  d <- d[!is.na(d$ph.ecog) & !is.na(d$wt.loss), ]
+  fit <- survival::coxph(
+    survival::Surv(time, status) ~ age + ph.ecog,
+    data = d
+  )
+  intact <- compute_model_vcov(fit, "CR0", cluster = d$sex)
+  expect_equal(sqrt(intact[1L, 1L]), 0.008065996985, tolerance = 1e-9)
+
+  cl_na <- d$sex
+  cl_na[1:5] <- NA
+  err <- tryCatch(
+    compute_model_vcov(fit, "CR0", cluster = cl_na),
+    error = function(e) e
+  )
+  expect_s3_class(err, "spicy_invalid_input")
+  expect_match(conditionMessage(err), "5 missing value(s)", fixed = TRUE)
+  expect_false(is.matrix(err))
+})
+
+test_that("the public path refuses rather than rendering an invented cluster", {
+  skip_if_not_installed("survival")
+  d <- survival::lung
+  d <- d[!is.na(d$ph.ecog) & !is.na(d$wt.loss), ]
+  fit <- survival::coxph(
+    survival::Surv(time, status) ~ age + ph.ecog,
+    data = d
+  )
+  cl_na <- d$sex
+  cl_na[1:5] <- NA
+  expect_error(
+    table_regression(fit, vcov = "CR0", cluster = cl_na),
+    class = "spicy_invalid_input"
+  )
+  # And the intact-cluster table still renders with its robust footer.
+  out <- paste(
+    capture.output(print(
+      table_regression(fit, vcov = "CR0", cluster = d$sex)
+    )),
+    collapse = "\n"
+  )
+  expect_match(out, "cluster-robust", fixed = TRUE)
+})
+
+test_that(".check_cluster_no_na passes everything that is usable", {
+  fit <- stats::lm(mpg ~ wt, data = mtcars)
+  expect_null(.check_cluster_no_na(fit, NULL))
+  expect_null(.check_cluster_no_na(fit, mtcars$cyl))
+  expect_null(.check_cluster_no_na(fit, list(1, 2))) # not atomic
+  expect_error(
+    .check_cluster_no_na(fit, c(1, NA, 3)),
+    class = "spicy_invalid_input"
+  )
+})
