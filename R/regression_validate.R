@@ -2091,11 +2091,13 @@ validate_class_appropriate_tokens <- function(
   invisible(NULL)
 }
 
-# Step 10: show_fit_stats. Empty character or NULL means "drop the
-# fit-stats footer block" -- a legitimate rendering choice (some
-# users prefer the body alone). show_columns has no analogous
-# escape hatch because a table with zero data columns is
-# nonsensical.
+# Step 10: show_fit_stats. `FALSE` drops the fit-statistic rows -- a
+# legitimate rendering choice (some users prefer the body alone) --
+# and `NULL` is the class-aware-default sentinel; the two are not
+# interchangeable, and `character(0)` is neither, having been removed.
+# The body below is where that contract is stated and enforced.
+# show_columns has no analogous escape hatch, because a table with
+# zero data columns is nonsensical.
 validate_show_fit_stats <- function(show_fit_stats) {
   # Phase 7c23 (item a): the explicit "suppress fit-stats" alias is
   # `FALSE` (parity with `show_re = FALSE` / `outcome_labels = FALSE`).

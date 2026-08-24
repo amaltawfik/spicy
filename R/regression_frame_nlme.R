@@ -626,7 +626,15 @@ as_regression_frame.gls <- function(
   rank <- match(vc_df$group, rank_of)
   # Residual (and anything unrecognised) closes the block.
   rank[is.na(rank)] <- length(rank_of) + 1L
-  out <- vc_df[order(rank, seq_len(nrow(vc_df))), , drop = FALSE]
+  ord <- order(rank, seq_len(nrow(vc_df)))
+  # A frame nothing moves in comes back untouched, rownames included:
+  # the reorder must be invisible -- to the byte -- wherever it has
+  # nothing to do. The merMod twin (.merMod_order_blocks) already holds
+  # this; the asymmetry was noticed at review and is closed here.
+  if (identical(ord, seq_len(nrow(vc_df)))) {
+    return(vc_df)
+  }
+  out <- vc_df[ord, , drop = FALSE]
   rownames(out) <- NULL
   out
 }

@@ -809,7 +809,7 @@ as_regression_frame.glmmTMB <- function(
       switch(
         p$kind,
         engine_message = p$value,
-        code = sprintf(lookup("note_nonconvergence_code"), p$value), # nocov
+        code = sprintf(lookup("note_nonconvergence_code"), p$value),
         hessian = lookup("note_nonconvergence_hessian")
       )
     },
