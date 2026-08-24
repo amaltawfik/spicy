@@ -356,26 +356,87 @@ test_that("a nested survreg table renders LRT rows and no R2 dashes", {
 })
 
 # Asking explicitly for a variance-explained token on a likelihood fit is
-# not an error: the change is NA for every model, and the renderer drops
-# a fit-stat row that is empty across the whole table rather than
-# printing an all-dash one. A row that is NA for SOME models still
-# renders, with an en-dash in those cells -- the lm control below.
-test_that("explicit R2-change tokens on a likelihood fit are not fatal", {
+# refused, in the same words and for the same reason glm has always been
+# refused. It used to be accepted and then silently ignored: the change
+# is NA for every model, and the renderer drops a fit-stat row that is
+# empty across the whole table rather than printing an all-dash one --
+# so the row the user asked for simply was not there, with nothing said.
+# (A row NA for SOME models still renders with en-dashes; the lm control
+# below is that case, and is unaffected.)
+test_that("explicit R2-change tokens on a likelihood fit are refused", {
   skip_if_no("survival")
   p <- survreg_pair()
+  err <- tryCatch(
+    table_regression(
+      list(p$m1, p$m2),
+      nested = TRUE,
+      show_columns = c("b", "p"),
+      show_fit_stats = c("r2_change", "lrt_change", "p_change")
+    ),
+    error = identity
+  )
+  expect_s3_class(err, "spicy_invalid_input")
+  msg <- paste(conditionMessage(err), collapse = " ")
+  expect_match(msg, "\"r2_change\"", fixed = TRUE)
+  expect_match(msg, "survreg", fixed = TRUE)
+  # The token that IS defined is not swept up with it, and is named.
+  expect_false(grepl("lrt_change\" in", msg, fixed = TRUE))
+  expect_match(msg, "lrt_change", fixed = TRUE)
+
+  # The default hierarchy is untouched: it never asks for the token.
   out <- paste(
     capture.output(print(
       table_regression(
         list(p$m1, p$m2),
         nested = TRUE,
-        show_columns = c("b", "p"),
-        show_fit_stats = c("r2_change", "lrt_change", "p_change")
+        show_columns = c("b", "p")
       )
     )),
     collapse = "\n"
   )
   expect_match(out, "Δχ²", fixed = TRUE)
   expect_false(grepl("ΔR²", out, fixed = TRUE))
+})
+
+test_that("the refusal covers the likelihood path and spares quantile fits", {
+  # rq is the carve-out: logLik.rq is a pseudo-likelihood on the
+  # check-loss objective, but anova.rq gives a real Wald-type F, so
+  # `f_change` is defined there -- and is what the class-aware default
+  # selects.
+  skip_if_no("quantreg")
+  q1 <- quantreg::rq(mpg ~ wt, data = mtcars)
+  q2 <- quantreg::rq(mpg ~ wt + hp, data = mtcars)
+  out <- expect_no_error(table_regression(
+    list(q1, q2),
+    nested = TRUE,
+    show_fit_stats = c("f_change", "p_change"),
+    output = "data.frame"
+  ))
+  expect_s3_class(out, "data.frame")
+
+  # lm keeps every least-squares token.
+  m1 <- lm(mpg ~ wt, data = mtcars)
+  m2 <- lm(mpg ~ wt + hp, data = mtcars)
+  expect_no_error(table_regression(
+    list(m1, m2),
+    nested = TRUE,
+    show_fit_stats = c("r2_change", "f_change", "p_change"),
+    output = "data.frame"
+  ))
+})
+
+test_that("all_likelihood_path() decides rq before it decides likelihood", {
+  skip_if_no("quantreg")
+  q <- quantreg::rq(mpg ~ wt, data = mtcars)
+  expect_false(spicy:::all_likelihood_path(list(q, q)))
+  expect_false(spicy:::all_likelihood_path(list(lm(mpg ~ wt, mtcars))))
+  # glm rides its own, older arm: it inherits "lm".
+  expect_false(spicy:::all_likelihood_path(
+    list(glm(am ~ wt, mtcars, family = binomial()))
+  ))
+  skip_if_no("survival")
+  p <- survreg_pair()
+  expect_true(spicy:::all_likelihood_path(list(p$m1, p$m2)))
 })
 
 test_that("lm control: a partially-NA change row renders with an en-dash", {

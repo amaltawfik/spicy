@@ -65,6 +65,31 @@ is_likelihood_pair <- function(fit_prev, fit_curr) {
     has_usable_loglik(fit_curr)
 }
 
+# TRUE when EVERY fit in a list rides the likelihood-ratio path, and so
+# has no variance-explained change to report at all. One definition,
+# read by two callers that must not disagree: the class-aware default
+# tokens (which give such a list lrt_change + p_change) and the token
+# validator (which refuses the least-squares change tokens for it) --
+# otherwise a default could name a token the validator rejects.
+#
+# rq is decided FIRST and excluded: logLik.rq exists but is a
+# pseudo-likelihood on the check-loss objective, while anova.rq does
+# give a Wald-type F, so `f_change` is real there. glm is excluded by
+# inheritance from "lm" and keeps its own, older arm.
+all_likelihood_path <- function(models) {
+  if (all(vapply(models, inherits, logical(1), "rq"))) {
+    return(FALSE)
+  }
+  length(models) > 0L &&
+    all(vapply(
+      models,
+      function(m) {
+        !inherits(m, LEAST_SQUARES_CLASSES) && has_usable_loglik(m)
+      },
+      logical(1)
+    ))
+}
+
 
 # ---- REML guard (nlme) ---------------------------------------------------
 
@@ -613,12 +638,9 @@ default_nested_tokens <- function(models) {
   # gets the LRT tokens, whatever the class. It used to name coxph and
   # multinom explicitly, which left survreg / polr / clm / gls / betareg
   # / ... defaulting to the lm tokens -- an all-dash DeltaR-squared row
-  # above an all-dash F row.
-  all_lrt <- all(vapply(
-    models,
-    function(m) !inherits(m, LEAST_SQUARES_CLASSES) && has_usable_loglik(m),
-    logical(1)
-  ))
+  # above an all-dash F row. Shared with the token validator, which
+  # refuses the least-squares change tokens for exactly this set.
+  all_lrt <- all_likelihood_path(models)
   if (all_mixed) {
     # Mixed-effects: AIC + BIC + chi^2 LRT + p. Variance-explained
     # change is reported via the absolute Nakagawa R^2 rows; the

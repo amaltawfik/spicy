@@ -25,8 +25,9 @@
 # Token vocabularies (lm + glm). Match dev/table_regression_design.md \u00A74.
 # Centralised here so validators, the rendering layer, and the test suite
 # share a single source of truth. Class-aware token compatibility is
-# checked separately by `validate_class_appropriate_tokens()` and
-# `validate_class_appropriate_nested_stats()`.
+# checked separately, by `validate_class_appropriate_tokens()` -- one
+# validator, not two: the nested-stats half was folded into it when the
+# change statistics became fit-statistic ROWS (feb7f529).
 .regression_tokens <- list(
   # ATOMIC tokens for `show_columns`: one token = one displayed
   # column. All lowercase (idiomatic R / broom convention). Group
@@ -1368,6 +1369,49 @@ validate_class_appropriate_tokens <- function(
     }
   }
 
+  # The same refusal, for the same reason, for every OTHER class whose
+  # nested comparison is a likelihood-ratio test. glm has had it since
+  # the beginning; survreg, polr, gls, clm, coxph, betareg, the mixed
+  # families and the rest got silence -- `compute_one_pair_lrt()` returns
+  # NA for the four least-squares change tokens, the renderer drops a
+  # fit-stat row that is NA across the whole table, and the row the user
+  # asked for was simply not there. Two users, one mistake, two answers.
+  #
+  # Only the CHANGE tokens: the absolute r2 / adj_r2 / omega2 / f2 rows
+  # are a wider question (betareg has a pseudo-R2, gam a real one) and
+  # stay out of this arm. `all_likelihood_path()` is the predicate the
+  # class-aware default already uses, so a default can never name a
+  # token this refuses -- such a hierarchy defaults to lrt_change +
+  # p_change, which is exactly what the message points at.
+  if (!all_glm && all_likelihood_path(eff_models)) {
+    bad_fit <- intersect(
+      show_fit_stats,
+      c("r2_change", "adj_r2_change", "f_change", "f2_change")
+    )
+    if (length(bad_fit) > 0L) {
+      spicy_abort(
+        c(
+          sprintf(
+            "Token(s) %s in `show_fit_stats` are not defined for `%s` models.",
+            paste(.quote_val(bad_fit), collapse = ", "),
+            class(eff_models[[1L]])[1L]
+          ),
+          "i" = paste0(
+            "A variance-explained partition of sums of squares has no ",
+            "analog outside the least-squares framework; the nested ",
+            "change these fits report is the likelihood-ratio ",
+            "chi-square."
+          ),
+          "i" = paste0(
+            "Use `\"lrt_change\"` + `\"p_change\"`, which is also what ",
+            "`nested = TRUE` selects for this hierarchy by default."
+          )
+        ),
+        class = "spicy_invalid_input"
+      )
+    }
+  }
+
   if (all_lm) {
     bad <- intersect(show_columns, "partial_chi2")
     if (length(bad) > 0L) {
@@ -1989,14 +2033,6 @@ validate_class_appropriate_tokens <- function(
   invisible(NULL)
 }
 
-# Class-aware validation of `nested_stats`. Variance-explained
-# tokens (r2_change, adj_r2_change, F, f2_change) require an OLS
-# residual-sum-of-squares partition and are NA for glm. Reject
-# explicitly when ALL nested models are glm; for mixed lm + glm
-# hierarchies the renderer en-dashes the glm side, which is the
-# right behaviour. NULL or empty `nested_stats` is a no-op (the
-# class-aware default in compute_nested_comparisons_lm() picks the
-# right tokens automatically).
 # Step 10: show_fit_stats. Empty character or NULL means "drop the
 # fit-stats footer block" -- a legitimate rendering choice (some
 # users prefer the body alone). show_columns has no analogous
