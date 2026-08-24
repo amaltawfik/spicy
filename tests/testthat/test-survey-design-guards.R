@@ -462,3 +462,68 @@ test_that("an unknown vcov token keeps its own answer on a design fit", {
     stats::vcov(fit)
   )
 })
+
+
+# ---- The `cluster` hint on a design fit points at the design ------------
+#
+# `cluster` with a non-CR `vcov` warns that the cluster vector is
+# ignored, and used to close with "Set `vcov` to CR0-CR3". On a design
+# fit that advice cannot be followed: CR* is refused outright a step
+# earlier (clubSandwich has no vcovCR.svyglm, so the call would land on
+# vcovCR.glm and ignore strata, FPC and calibration). A user who did as
+# they were told got an error, not a table. Same carve-out shape as the
+# estimatr / fixest and rq arms: the class that carries its own
+# clustering gets its own route named.
+
+test_that("a design fit's cluster hint names the design, not CR*", {
+  skip_if_not_installed("survey")
+  data("api", package = "survey", envir = environment())
+  apiclus1 <- get("apiclus1", envir = environment())
+  fits <- .svy_guard_fits()
+
+  for (cls in names(fits)) {
+    w <- tryCatch(
+      table_regression(
+        fits[[cls]],
+        cluster = apiclus1$dnum,
+        output = "data.frame"
+      ),
+      spicy_ignored_arg = function(w) w
+    )
+    expect_s3_class(w, "spicy_ignored_arg")
+    msg <- paste(conditionMessage(w), collapse = " ")
+    expect_match(msg, "survey::svydesign(ids = ~cluster_var, ...)", fixed = TRUE)
+    # The advice that errors is gone.
+    expect_false(grepl("Set `vcov` to", msg, fixed = TRUE))
+    expect_false(grepl("CR0", msg, fixed = TRUE))
+  }
+
+  # And following the hint's predecessor really did error -- the reason
+  # the arm exists.
+  expect_error(
+    table_regression(
+      fits$svyglm,
+      cluster = apiclus1$dnum,
+      vcov = "CR0",
+      output = "data.frame"
+    ),
+    class = "spicy_unsupported_vcov"
+  )
+})
+
+test_that("a class with a real CR* route keeps the generic hint", {
+  w <- tryCatch(
+    table_regression(
+      lm(mpg ~ wt, data = mtcars),
+      cluster = mtcars$cyl,
+      output = "data.frame"
+    ),
+    spicy_ignored_arg = function(w) w
+  )
+  expect_s3_class(w, "spicy_ignored_arg")
+  expect_match(
+    paste(conditionMessage(w), collapse = " "),
+    "Set `vcov` to",
+    fixed = TRUE
+  )
+})

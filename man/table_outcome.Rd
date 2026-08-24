@@ -88,7 +88,12 @@ formatting.}
 
 \item{output}{One of \code{"default"}, \code{"data.frame"}, \code{"long"}, or a
 rendering engine: \code{"tinytable"}, \code{"gt"}, \code{"flextable"},
-\code{"excel"}, \code{"clipboard"}, \code{"word"}.}
+\code{"excel"}, \code{"clipboard"}, \code{"word"}. \code{"data.frame"} and \code{"long"}
+are synonyms and return the same object: the compute frame is
+already long (one row per level, plus the block header and the
+overall row). Both names are kept so the argument reads the same
+here as in \code{\link[=table_continuous]{table_continuous()}}, where the pair is also
+synonymous.}
 
 \item{indent_text, indent_text_excel_clipboard}{Level-row
 indentation, for the console and for the plain-text engines.}
@@ -106,7 +111,8 @@ destinations, as in \code{\link[=table_continuous]{table_continuous()}}.}
 \value{
 A \code{spicy_outcome_table}: the compute frame, with the display
 frame and the typed view attached. \code{output = "data.frame"} /
-\code{"long"} returns the compute frame unclassed.
+\code{"long"} returns the compute frame unclassed -- the two tokens are
+synonyms and return identical objects.
 }
 \description{
 Summarises \emph{one} continuous outcome across the levels of \emph{several}

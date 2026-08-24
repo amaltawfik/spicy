@@ -1260,17 +1260,30 @@ across all models.
 Default change tokens auto-injected when \code{show_fit_stats} is
 \code{NULL}:
 \itemize{
-\item All-lm: \code{c("r2_change", "f_change", "p_change")} --
-APA hierarchical regression standard.
+\item All-lm (and \code{nls}): \code{c("r2_change", "f_change", "p_change")} -- APA hierarchical regression standard.
 \item All-glm: \code{c("lrt_change", "p_change")} -- Hosmer &
 Lemeshow Section 3.5; Long & Freese 2014 Section 3.2.4.
+\item Any other hierarchy that carries a likelihood
+(\code{survreg}, \code{polr}, \code{clm}, \code{coxph}, \code{gls}, \code{betareg},
+\code{multinom}, \code{fixest}, ...): the same
+\code{c("lrt_change", "p_change")}.
+\item Mixed-effects (\code{lmer} / \code{glmer} / \code{glmmTMB} /
+\code{nlme::lme}): \code{c("aic_change", "bic_change", "lrt_change", "p_change")} -- Pinheiro & Bates 2000 Section 2.4.1.
+\item Quantile (\code{rq}): \code{c("f_change", "p_change")} -- the
+Wald-type test \code{quantreg::anova.rq()} reports.
 }
 To customise, pass the change tokens directly to
-\code{show_fit_stats}. Variance-explained change tokens on an
-all-glm hierarchy raise \code{spicy_invalid_input} (the
-residual-sum-of-squares partition does not apply outside the
-least-squares framework -- the renderer points the user at
-\code{lrt_change}).
+\code{show_fit_stats}. The variance-explained change tokens
+(\code{"r2_change"}, \code{"adj_r2_change"}, \code{"f_change"},
+\code{"f2_change"}) raise \code{spicy_invalid_input} on any hierarchy
+whose nested comparison is a likelihood-ratio test -- \code{glm},
+and equally every other likelihood class and the
+mixed-effects families: that comparison reports a chi-square,
+not a variance-explained change, and the message points at
+\code{"lrt_change"} + \code{"p_change"}. A quantile hierarchy refuses
+them too, and \code{"lrt_change"} with them, pointing at
+\code{"f_change"} + \code{"p_change"} instead. \code{lm} and \code{nls} keep the
+least-squares tokens.
 }
 
 \section{Standardised coefficients}{

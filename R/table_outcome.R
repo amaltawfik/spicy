@@ -573,7 +573,12 @@ abort_outcome_by_renamed <- function() {
 #'   `"right"`.
 #' @param output One of `"default"`, `"data.frame"`, `"long"`, or a
 #'   rendering engine: `"tinytable"`, `"gt"`, `"flextable"`,
-#'   `"excel"`, `"clipboard"`, `"word"`.
+#'   `"excel"`, `"clipboard"`, `"word"`. `"data.frame"` and `"long"`
+#'   are synonyms and return the same object: the compute frame is
+#'   already long (one row per level, plus the block header and the
+#'   overall row). Both names are kept so the argument reads the same
+#'   here as in [table_continuous()], where the pair is also
+#'   synonymous.
 #' @param indent_text,indent_text_excel_clipboard Level-row
 #'   indentation, for the console and for the plain-text engines.
 #' @param excel_path,excel_sheet,clipboard_delim,word_path Output
@@ -585,7 +590,8 @@ abort_outcome_by_renamed <- function() {
 #'
 #' @return A `spicy_outcome_table`: the compute frame, with the display
 #'   frame and the typed view attached. `output = "data.frame"` /
-#'   `"long"` returns the compute frame unclassed.
+#'   `"long"` returns the compute frame unclassed -- the two tokens are
+#'   synonyms and return identical objects.
 #'
 #' @seealso [table_continuous()] for the transposed shape,
 #'   [table_categorical()] for categorical outcomes.
@@ -649,6 +655,41 @@ table_outcome <- function(
   # replacement message before any other validation can fire.
   if (!missing(by)) {
     abort_outcome_by_renamed()
+  }
+
+  # `outcome` and `select` carry no default -- one names the variable
+  # being described, the other the blocks it is described across, and
+  # the table is nothing without either. Left to lazy evaluation they
+  # surfaced far downstream as a bare base-R `missingArgError`
+  # ("argument \"expr\" is missing"), translated by the session's locale
+  # and naming a variable that appears nowhere in the user's call.
+  # Refuse here, classed, in the words of the argument that is actually
+  # missing. `table_categorical()` / `table_continuous()` need no twin
+  # of this: `select` is optional there and defaults to the whole frame.
+  if (missing(outcome)) {
+    spicy_abort(
+      c(
+        "`outcome` is required: table_outcome() describes one variable.",
+        "i" = paste0(
+          "Name the continuous variable to describe, e.g. ",
+          "`table_outcome(data, bmi, select = c(sex, smoking))`."
+        )
+      ),
+      class = "spicy_invalid_input"
+    )
+  }
+  if (missing(select)) {
+    spicy_abort(
+      c(
+        "`select` is required: table_outcome() has no rows without it.",
+        "i" = paste0(
+          "Name the characteristics to describe the outcome across, ",
+          "e.g. `select = c(sex, smoking)` or ",
+          "`select = where(is.factor)`."
+        )
+      ),
+      class = "spicy_invalid_input"
+    )
   }
 
   # A journal / locale style only moves DEFAULTS (see `?spicy_style`).
@@ -1076,6 +1117,14 @@ table_outcome <- function(
     overall = overall
   )
 
+  # `output = "data.frame"` and `output = "long"` return the SAME
+  # object, and the documentation says so. This shape has no wide form
+  # to be the other half of the pair: the compute frame is already one
+  # row per level (plus the block header and the overall row), which is
+  # what `.row_role` marks. The two names coexist for harmonisation with
+  # `table_continuous()`, where the pair is synonymous for the same
+  # reason, and with `table_continuous_lm()`, where it is not. A real
+  # pivot would have to invent a second shape, not reveal one.
   if (output %in% c("data.frame", "long")) {
     attributes(result) <- attributes(result)[
       names(attributes(result)) %in% c("names", "row.names", "class")

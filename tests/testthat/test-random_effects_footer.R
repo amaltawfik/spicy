@@ -191,3 +191,137 @@ test_that("random effects footer prefixes per model for multi-model lists", {
   expect_match(out, "Model 1:", fixed = TRUE)
   expect_match(out, "Model 2:", fixed = TRUE)
 })
+
+
+# ---- 5. The absent ICC row says why it is absent -------------------------
+#
+# `.merMod_icc()` returns NA for several reasons and the row is simply
+# dropped. One of those reasons is a property of the design the reader
+# CHOSE -- more than one grouping factor, which defines one ICC per level
+# nested and none uniquely when crossed -- and a reader comparing their
+# two-factor table against a one-factor example finds a line missing with
+# nothing said. The row stays absent; the footer states the reason.
+
+.fit_lmer_crossed <- function() {
+  skip_if_not_installed("lme4")
+  skip_if_not_installed("nlme")
+  suppressWarnings(lme4::lmer(
+    distance ~ age + (1 | Subject) + (1 | Sex),
+    data = nlme::Orthodont
+  ))
+}
+
+.fit_lme_nested_icc <- function() {
+  skip_if_not_installed("nlme")
+  nlme::lme(pixel ~ day, data = nlme::Pixel, random = ~ 1 | Dog / Side)
+}
+
+test_that("a crossed lmer says why it reports no ICC", {
+  fit <- .fit_lmer_crossed()
+  fr <- suppressWarnings(as_regression_frame(fit))
+  expect_true(is.na(fr$info$random_effects$icc))
+  expect_identical(fr$info$random_effects$icc_omitted, "multi_group")
+
+  out <- paste(
+    capture.output(print(suppressWarnings(table_regression(fit)))),
+    collapse = "\n"
+  )
+  # The row is not there ...
+  expect_false(grepl("\n ICC ", out, fixed = TRUE))
+  # ... and the note says why, in the registry's words.
+  expect_match(out, spicy:::spicy_str("note_icc_multi_group"), fixed = TRUE)
+})
+
+test_that("a nested lme says why it reports no ICC", {
+  fit <- .fit_lme_nested_icc()
+  fr <- as_regression_frame(fit)
+  expect_true(is.na(fr$info$random_effects$icc))
+  expect_identical(fr$info$random_effects$icc_omitted, "multi_group")
+
+  out <- paste(
+    capture.output(print(table_regression(fit))),
+    collapse = "\n"
+  )
+  expect_false(grepl("\n ICC ", out, fixed = TRUE))
+  expect_match(out, spicy:::spicy_str("note_icc_multi_group"), fixed = TRUE)
+})
+
+test_that("a single-factor fit keeps its ICC and stays silent", {
+  fit <- .fit_lmer_re()
+  fr <- as_regression_frame(fit)
+  expect_false(is.na(fr$info$random_effects$icc))
+  expect_true(is.na(fr$info$random_effects$icc_omitted))
+
+  out <- paste(capture.output(print(table_regression(fit))), collapse = "\n")
+  expect_match(out, "ICC", fixed = TRUE)
+  expect_false(grepl(
+    spicy:::spicy_str("note_icc_multi_group"),
+    out,
+    fixed = TRUE
+  ))
+})
+
+test_that("the note does not claim an omission it cannot explain", {
+  # One grouping factor, a random SLOPE: no ICC either, but for a
+  # reason this note says nothing about. Silence, not a wrong sentence.
+  skip_if_not_installed("lme4")
+  fit <- lme4::lmer(Reaction ~ Days + (Days | Subject), data = lme4::sleepstudy)
+  fr <- as_regression_frame(fit)
+  expect_true(is.na(fr$info$random_effects$icc))
+  expect_true(is.na(fr$info$random_effects$icc_omitted))
+
+  out <- paste(capture.output(print(table_regression(fit))), collapse = "\n")
+  expect_false(grepl(
+    spicy:::spicy_str("note_icc_multi_group"),
+    out,
+    fixed = TRUE
+  ))
+})
+
+test_that("the note is gated on the fit-statistic actually being asked for", {
+  fit <- .fit_lmer_crossed()
+  out <- paste(
+    capture.output(print(suppressWarnings(table_regression(
+      fit,
+      show_fit_stats = c("nobs", "aic")
+    )))),
+    collapse = "\n"
+  )
+  expect_false(grepl(
+    spicy:::spicy_str("note_icc_multi_group"),
+    out,
+    fixed = TRUE
+  ))
+  # And the builder is the thing that refuses, not the caller.
+  fr <- suppressWarnings(as_regression_frame(fit))
+  expect_null(spicy:::build_icc_omitted_footer_block_from_frames(
+    list(fr),
+    show_fit_stats = character(0)
+  ))
+  expect_identical(
+    spicy:::build_icc_omitted_footer_block_from_frames(list(fr), "icc"),
+    spicy:::spicy_str("note_icc_multi_group")
+  )
+})
+
+test_that("a mixed list of models attributes the note to the model", {
+  fr_one <- as_regression_frame(.fit_lmer_re(), model_id = "M1")
+  fr_two <- suppressWarnings(
+    as_regression_frame(.fit_lmer_crossed(), model_id = "M2")
+  )
+  out <- spicy:::build_icc_omitted_footer_block_from_frames(
+    list(fr_one, fr_two),
+    show_fit_stats = "icc"
+  )
+  expect_match(out, "Model 2:", fixed = TRUE)
+  expect_false(grepl("Model 1:", out, fixed = TRUE))
+})
+
+test_that("a non-mixed frame carries the empty icc_omitted contract", {
+  fr <- as_regression_frame(.fit_lm_no_re())
+  expect_true(is.na(fr$info$random_effects$icc_omitted))
+  expect_null(spicy:::build_icc_omitted_footer_block_from_frames(
+    list(fr),
+    show_fit_stats = "icc"
+  ))
+})

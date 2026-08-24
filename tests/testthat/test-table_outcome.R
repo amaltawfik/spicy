@@ -642,3 +642,68 @@ test_that("the block note is owed only when a block compared", {
   expect_match(attr(real, "note"), "Each block compares", fixed = TRUE)
   expect_match(attr(real, "note"), "Group comparison", fixed = TRUE)
 })
+
+
+# ---- A missing `outcome` / `select` is refused in spicy's own words -----
+
+test_that("a missing `select` is a classed refusal, not a missingArgError", {
+  # Neither formal has a default: one names the variable described, the
+  # other the blocks it is described across. Left to lazy evaluation the
+  # call died deep inside tidyselect on base R's own
+  # `missingArgError` -- "argument \"expr\" is missing", translated by
+  # the session's locale and naming a variable that appears nowhere in
+  # the user's call.
+  d <- .to_sh()
+  err <- tryCatch(table_outcome(d, bmi), error = identity)
+  expect_s3_class(err, "spicy_invalid_input")
+  expect_s3_class(err, "spicy_error")
+  expect_false(inherits(err, "missingArgError"))
+  expect_match(conditionMessage(err), "`select` is required", fixed = TRUE)
+  expect_match(conditionMessage(err), "select = c(sex, smoking)", fixed = TRUE)
+})
+
+test_that("a missing `outcome` is refused the same way", {
+  d <- .to_sh()
+  err <- tryCatch(table_outcome(d, select = sex), error = identity)
+  expect_s3_class(err, "spicy_invalid_input")
+  expect_false(inherits(err, "missingArgError"))
+  expect_match(conditionMessage(err), "`outcome` is required", fixed = TRUE)
+
+  # Both missing: the outcome is named first, because it is the subject.
+  err_both <- tryCatch(table_outcome(d), error = identity)
+  expect_match(conditionMessage(err_both), "`outcome` is required", fixed = TRUE)
+})
+
+test_that("the `by` migration still fires before the missing-arg guards", {
+  d <- .to_sh()
+  err <- tryCatch(table_outcome(d, by = c(sex)), error = identity)
+  expect_s3_class(err, "spicy_defunct")
+})
+
+
+# ---- "data.frame" and "long" are synonyms, and the docs say so ----------
+
+test_that("output = 'data.frame' and output = 'long' return one object", {
+  # Pinned because ?table_outcome now promises it. The compute frame is
+  # already long -- one row per level, plus the block header and the
+  # overall row, which is what `.row_role` marks -- so there is no wide
+  # form for the pair to straddle. Same reason `table_continuous()`
+  # documents its own pair as synonymous.
+  d <- .to_sh()
+  as_df <- .to_quiet(table_outcome(
+    d,
+    bmi,
+    select = c(sex, smoking),
+    output = "data.frame"
+  ))
+  as_long <- .to_quiet(table_outcome(
+    d,
+    bmi,
+    select = c(sex, smoking),
+    output = "long"
+  ))
+  expect_identical(as_df, as_long)
+  # And it really is the long shape, not a wide one under a long name.
+  expect_true(".row_role" %in% names(as_df))
+  expect_true(all(c("level", "summary") %in% as_df$.row_role))
+})

@@ -71,7 +71,11 @@ test_that("a non-converged glmmTMB carries a convergence note", {
   expect_match(out, "(Intercept)", fixed = TRUE)
   expect_match(out, "Days", fixed = TRUE)
 
-  note <- suppressWarnings(spicy:::.glmmTMB_convergence_note(fit, "Reaction"))
+  # No suppressWarnings: the builder is pure, and asking it what the
+  # note says raises nothing.
+  note <- spicy:::.glmmTMB_convergence_note(
+    spicy:::.glmmTMB_convergence_problems(fit)
+  )
   expect_type(note, "character")
   expect_identical(
     note,
@@ -124,7 +128,9 @@ test_that("a non-converged glmmTMB raises spicy_nonconvergence", {
 
 test_that("a converged glmmTMB gets neither note nor warning", {
   fit <- .fit_glmmTMB_converged()
-  expect_null(spicy:::.glmmTMB_convergence_note(fit, "Reaction"))
+  expect_null(spicy:::.glmmTMB_convergence_note(
+    spicy:::.glmmTMB_convergence_problems(fit)
+  ))
   expect_null(
     spicy:::as_regression_frame(fit)$info$extras$convergence_note
   )
@@ -269,5 +275,117 @@ test_that("the convergence footer builder reads any engine's note", {
   )
   expect_null(
     spicy:::build_convergence_footer_block_from_frames(list(mk(), mk()))
+  )
+})
+
+
+# ---- 6. The diagnoses spicy words itself live in the registry -----------
+#
+# "non-positive-definite Hessian matrix" and "optimizer returned code %s"
+# were spicy prose written at the criterion and poured into the footer
+# through the data hole of `note_nonconvergence` -- table text living
+# outside the registry, against the contract. They are keys now, and the
+# criterion returns RECORDS (a kind + its datum) rather than sentences,
+# which is what lets the two audiences diverge: the footer follows
+# `spicy.language`, the warning does not.
+
+test_that("the criterion returns records, not sentences", {
+  fit <- .fit_glmmTMB_nonconverged()
+  problems <- spicy:::.glmmTMB_convergence_problems(fit)
+  expect_type(problems, "list")
+  expect_identical(
+    vapply(problems, function(p) p$kind, character(1)),
+    c("engine_message", "hessian")
+  )
+  # The engine's message is DATA and is carried verbatim.
+  expect_identical(problems[[1L]]$value, fit$fit$message)
+})
+
+test_that("the two spicy diagnoses resolve from the registry", {
+  fit <- .fit_glmmTMB_nonconverged()
+  problems <- spicy:::.glmmTMB_convergence_problems(fit)
+  txt <- spicy:::.glmmTMB_problem_text(problems)
+  expect_identical(
+    txt,
+    c(fit$fit$message, spicy:::spicy_str("note_nonconvergence_hessian"))
+  )
+  # The code arm, which no fixture reaches (glmmTMB always carries a
+  # message), formats the optimizer's return code into its own key.
+  expect_identical(
+    spicy:::.glmmTMB_problem_text(list(list(kind = "code", value = "7"))),
+    sprintf(spicy:::spicy_str("note_nonconvergence_code"), "7")
+  )
+})
+
+test_that("the footer follows the language and the condition does not", {
+  fit <- .fit_glmmTMB_nonconverged()
+  withr::local_options(spicy.language = "fr")
+
+  caught <- NULL
+  out <- suppressWarnings(withCallingHandlers(
+    table_regression(fit),
+    spicy_nonconvergence = function(w) {
+      caught <<- w
+      invokeRestart("muffleWarning")
+    }
+  ))
+  rendered <- paste(capture.output(print(out)), collapse = "\n")
+
+  # The table speaks French, through the key.
+  expect_match(
+    rendered,
+    spicy:::spicy_str("note_nonconvergence_hessian"),
+    fixed = TRUE
+  )
+  expect_false(grepl(
+    "non-positive-definite Hessian matrix",
+    rendered,
+    fixed = TRUE
+  ))
+  # The condition stays English: it is read by developers and quoted in
+  # bug reports (dev/i18n_string_census.md section 6).
+  expect_match(
+    conditionMessage(caught),
+    "non-positive-definite Hessian matrix",
+    fixed = TRUE
+  )
+  # The engine's own message is data and appears in both, verbatim.
+  expect_match(rendered, fit$fit$message, fixed = TRUE)
+  expect_match(conditionMessage(caught), fit$fit$message, fixed = TRUE)
+})
+
+
+# ---- 7. The builder is pure; the emission site signals ------------------
+#
+# The note builder used to raise the classed warning while building the
+# note, so one CALL was one WARNING and asking the note what it said was
+# indistinguishable from reporting the problem. It held together only
+# because the frame called it exactly once. Construction and signalling
+# are separate now.
+
+test_that("building the note raises nothing, however often it is asked", {
+  fit <- .fit_glmmTMB_nonconverged()
+  problems <- spicy:::.glmmTMB_convergence_problems(fit)
+  seen <- .nc_conditions({
+    for (i in 1:3) spicy:::.glmmTMB_convergence_note(problems)
+  })
+  expect_length(seen, 0L)
+  # And it still returns the note.
+  expect_type(spicy:::.glmmTMB_convergence_note(problems), "character")
+})
+
+test_that("the signal is its own function, and still classed", {
+  fit <- .fit_glmmTMB_nonconverged()
+  problems <- spicy:::.glmmTMB_convergence_problems(fit)
+  seen <- .nc_conditions(
+    spicy:::.warn_glmmTMB_nonconvergence(problems, "Reaction")
+  )
+  expect_length(seen, 1L)
+  expect_s3_class(seen[[1L]], "spicy_nonconvergence")
+  expect_s3_class(seen[[1L]], "spicy_caveat")
+  expect_match(
+    conditionMessage(seen[[1L]]),
+    "Model convergence problem (outcome: Reaction)",
+    fixed = TRUE
   )
 })

@@ -305,11 +305,17 @@ as_regression_frame.glmmTMB <- function(
   # so render blank. The pseudo-R2 / ICC do NOT -- they are computed from
   # the same starting values and would otherwise print a confident number
   # for a model that never fitted. Suppress them under the same
-  # criterion (decision 37). The verdict is the side-effect-free read;
-  # the note is built ONCE here (raising the classed spicy_nonconvergence
-  # warning) and reused in extras below.
-  nonconverged <- .glmmTMB_is_nonconverged(fit)
-  convergence_note <- .glmmTMB_convergence_note(fit, dv)
+  # criterion (decision 37). The criterion is read ONCE, here: the
+  # verdict, the note and the classed spicy_nonconvergence warning are
+  # three uses of one answer, so they cannot drift -- and the warning is
+  # raised at this emission site rather than as a side effect of asking
+  # the note what it says.
+  problems <- .glmmTMB_convergence_problems(fit)
+  nonconverged <- length(problems) > 0L
+  convergence_note <- .glmmTMB_convergence_note(problems)
+  if (nonconverged) {
+    .warn_glmmTMB_nonconvergence(problems, dv)
+  }
 
   # glmmTMB does not export ngrps(); pull per-grouping-factor counts
   # from the summary object instead. summary(fit)$ngrps is a list with
@@ -747,28 +753,68 @@ as_regression_frame.glmmTMB <- function(
 # pure field reads, no side effect -- so the callers that need only the
 # VERDICT (the fit-statistic gate, the NaN-mute gate) can ask without
 # raising the warning, and cannot drift from what the note reports.
+#
+# It returns RECORDS, not sentences: a `kind` naming which flag fired,
+# and the datum that flag carries. Two of the three kinds used to be
+# spicy prose written at this line -- "non-positive-definite Hessian
+# matrix" and "optimizer returned code %s" -- which then travelled into
+# the footer through the data hole of `note_nonconvergence`, against the
+# rule that every string a table shows lives in the registry. Records
+# put the words back where they belong AND keep the two audiences apart:
+# the footer reads them through the registry and follows
+# `spicy.language`, the warning reads the English defaults and does not,
+# because a condition is read by developers and quoted in bug reports
+# (dev/i18n_string_census.md section 6). The engine's own message is
+# DATA either way and passes through verbatim.
 .glmmTMB_convergence_problems <- function(fit) {
-  problems <- character(0)
+  problems <- list()
 
   code <- fit$fit$convergence
   if (length(code) == 1L && !is.na(code) && !identical(as.numeric(code), 0)) {
     msg <- fit$fit$message
     problems <- c(
       problems,
-      if (is.character(msg) && length(msg) == 1L && nzchar(msg)) {
-        msg
-      } else {
-        sprintf("optimizer returned code %s", as.character(code)) # nocov
-      }
+      list(
+        if (is.character(msg) && length(msg) == 1L && nzchar(msg)) {
+          list(kind = "engine_message", value = msg)
+        } else {
+          list(kind = "code", value = as.character(code)) # nocov
+        }
+      )
     )
   }
 
   pd_hess <- fit$sdr$pdHess
   if (length(pd_hess) == 1L && isFALSE(pd_hess)) {
-    problems <- c(problems, "non-positive-definite Hessian matrix")
+    problems <- c(problems, list(list(kind = "hessian", value = NULL)))
   }
 
   problems
+}
+
+
+# The words for a list of problem records, joined the way the note joins
+# them. `translated = TRUE` resolves through `spicy_str()` and so follows
+# `spicy.language`; `FALSE` reads the registry's English defaults
+# directly, for the condition, which stays English in every locale.
+# One code path either way, so the two vocabularies cannot say different
+# things about the same flag.
+.glmmTMB_problem_text <- function(problems, translated = TRUE) {
+  lookup <- function(key) {
+    if (translated) spicy_str(key) else unname(.spicy_strings[[key]])
+  }
+  vapply(
+    problems,
+    function(p) {
+      switch(
+        p$kind,
+        engine_message = p$value,
+        code = sprintf(lookup("note_nonconvergence_code"), p$value),
+        hessian = lookup("note_nonconvergence_hessian")
+      )
+    },
+    character(1)
+  )
 }
 
 
@@ -778,14 +824,31 @@ as_regression_frame.glmmTMB <- function(
 }
 
 
-.glmmTMB_convergence_note <- function(fit, dv = NA_character_) {
-  problems <- .glmmTMB_convergence_problems(fit)
-
+# The footer note for a list of problem records. PURE: it builds a
+# string and returns it, and NULL when there is nothing to report.
+#
+# It used to raise the classed warning as well, so calling the builder
+# WAS signalling the condition. That held together only because the
+# frame happened to call it exactly once and reused the value; any
+# second caller -- a future engine, a test asking what the note says, a
+# re-render -- would have raised a second warning by asking a question.
+# Construction and signalling are separate now, and the emission site
+# below is the one place that signals.
+.glmmTMB_convergence_note <- function(problems) {
   if (length(problems) == 0L) {
     return(NULL)
   }
+  spicy_fmt(
+    "note_nonconvergence",
+    paste(.glmmTMB_problem_text(problems), collapse = "; ")
+  )
+}
 
-  note <- spicy_fmt("note_nonconvergence", paste(problems, collapse = "; "))
+
+# The signal. English throughout: a condition is read by developers and
+# quoted in bug reports, so it does not follow `spicy.language` even
+# though the note it accompanies does.
+.warn_glmmTMB_nonconvergence <- function(problems, dv = NA_character_) {
   spicy_warn(
     c(
       sprintf(
@@ -795,7 +858,10 @@ as_regression_frame.glmmTMB <- function(
         } else {
           "unknown" # nocov
         },
-        paste(problems, collapse = "; ")
+        paste(
+          .glmmTMB_problem_text(problems, translated = FALSE),
+          collapse = "; "
+        )
       ),
       "i" = paste0(
         "The table reports what the object holds. See ",
@@ -805,7 +871,7 @@ as_regression_frame.glmmTMB <- function(
     ),
     class = c("spicy_nonconvergence", "spicy_caveat")
   )
-  note
+  invisible(NULL)
 }
 
 
@@ -886,6 +952,14 @@ as_regression_frame.glmmTMB <- function(
   list(
     variance_components = vc_df,
     icc = icc,
+    # Only where the ICC kernel actually ran: a non-Gaussian glmmTMB has
+    # no ICC for a reason of its own, and must not be told it has too
+    # many grouping factors.
+    icc_omitted = if (is_gaussian_identity) {
+      .merMod_icc_omitted_reason(vc_df, icc)
+    } else {
+      NA_character_
+    },
     method = method,
     null_lrt = null_lrt
   )

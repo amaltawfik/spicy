@@ -167,6 +167,9 @@
   note_component_gloss_hurdle_censored = "Composante %s\u00A0: %s censur\u00E9e \u00E0 droite sur l'\u00E9chelle logarithmique.",
   note_rank_deficient = "Mod\u00E8le de rang d\u00E9ficient\u00A0: coefficient(s) \u00E9cart\u00E9(s) affich\u00E9(s) sous la forme %s.",
   note_nonconvergence = "Probl\u00E8me de convergence du mod\u00E8le\u00A0: %s. Les estimations sont les valeurs auxquelles l'optimiseur s'est arr\u00EAt\u00E9, et non celles d'un ajustement converg\u00E9.",
+  note_nonconvergence_hessian = "matrice hessienne non d\u00E9finie positive",
+  note_nonconvergence_code = "l'optimiseur a renvoy\u00E9 le code %s",
+  note_icc_multi_group = "L'ICC n'est pas rapport\u00E9\u00A0: plusieurs facteurs de groupement d\u00E9finissent plusieurs ICC.",
 
   # -- table_regression(): the absolute survival estimands ------------------
   note_estimand_rmst = "dRMST = diff\u00E9rence de survie moyenne restreinte sur [0, %s]",

@@ -101,22 +101,22 @@ test_that("compute_one_pair_lm - degenerate self-pair returns NA fields graceful
 
 
 # ============================================================================
-# compute_one_pair_glm() -- direct unit
+# compute_one_pair_lrt() -- direct unit
 # ============================================================================
 
-test_that("compute_one_pair_glm - lrt_change matches anova(test='LRT')", {
+test_that("compute_one_pair_lrt - lrt_change matches anova(test='LRT')", {
   g1 <- glm(am ~ mpg, mt, family = binomial)
   g2 <- glm(am ~ mpg + wt, mt, family = binomial)
-  out <- spicy:::compute_one_pair_glm(g1, g2)
+  out <- spicy:::compute_one_pair_lrt(g1, g2)
   av <- stats::anova(g1, g2, test = "LRT")
   lrt_col <- intersect(c("Deviance", "scaled dev.", "LRT"), names(av))
   expect_equal(out$lrt_change, unname(av[[lrt_col[1L]]][2L]), tolerance = 1e-10)
 })
 
-test_that("compute_one_pair_glm - variance-explained tokens are NA", {
+test_that("compute_one_pair_lrt - variance-explained tokens are NA", {
   g1 <- glm(am ~ mpg, mt, family = binomial)
   g2 <- glm(am ~ mpg + wt, mt, family = binomial)
-  out <- spicy:::compute_one_pair_glm(g1, g2)
+  out <- spicy:::compute_one_pair_lrt(g1, g2)
   expect_true(is.na(out$r2_change))
   expect_true(is.na(out$adj_r2_change))
   expect_true(is.na(out$f_change))

@@ -93,12 +93,16 @@ default_extras <- function() {
 
 # Canonical empty `info$random_effects` for non-mixed (or RE-less) fits. One
 # shape everywhere -- key set matches the populated form built by the
-# mixed-effects methods (variance_components / icc / method / null_lrt) -- so
-# consumers never NULL-deref `$icc` (NA_real_ vs NULL) or `$variance_components`.
+# mixed-effects methods (variance_components / icc / icc_omitted / method /
+# null_lrt) -- so consumers never NULL-deref `$icc` (NA_real_ vs NULL) or
+# `$variance_components`. `icc_omitted` names WHY the ICC is NA when the
+# reason is one the reader can act on (see .merMod_icc_omitted_reason);
+# NA_character_ otherwise, including here, where there is no ICC to explain.
 empty_random_effects <- function() {
   list(
     variance_components = data.frame(),
     icc = NA_real_,
+    icc_omitted = NA_character_,
     method = NA_character_,
     null_lrt = NULL
   )
@@ -112,6 +116,7 @@ empty_random_effects <- function() {
 # live in exactly one location. Pairs with validate_regression_frame() per the
 # standard new_<class>() / validate_<class>() constructor convention.
 new_regression_frame <- function(coefs, info, fit) {
+  .assert_no_reserved_residual_group(info$random_effects, fit)
   info$supports <- utils::modifyList(
     default_supports(),
     info$supports %||% list()
@@ -122,6 +127,64 @@ new_regression_frame <- function(coefs, info, fit) {
     class = "spicy_regression_frame",
     spicy_frame_version = spicy_frame_version(),
     fit = fit
+  )
+}
+
+# "Residual" is not a name in the variance-components frame, it is a KEY.
+# Every mixed engine writes the residual row as group = "Residual",
+# term = "", and every consumer reads that string back to find the
+# residual: the SE / CI walks (nlme, glmmTMB), the ICC kernel
+# (`setdiff(unique(group), "Residual")`), the block sort, the null-model
+# LR test, the footer panel. A grouping factor a user happens to have
+# named `Residual` therefore does not merely look like the residual -- it
+# IS the residual as far as those seven readers are concerned.
+#
+# What that produced, measured on `lme(distance ~ age, random = ~ 1 |
+# Residual)`: the group's variance row (4.47) rendered with the RESIDUAL's
+# interval, [1.50, 2.79] -- an interval that does not contain its own
+# estimate -- because the name-keyed branch of the SE walk fired for both
+# rows. The ICC went silently NA on every engine, since subtracting the
+# reserved key left no grouping factor at all.
+#
+# Disambiguating would mean giving the residual an internal key no data
+# value can collide with and migrating all seven readers plus five
+# engines onto it: a change to the frame contract, not a guard. Fixing
+# only the walk that was caught would leave the ICC, the sort and the
+# footer keyed on the collision and hide the rest of the damage. So the
+# frame refuses to be built, at the one place every engine passes
+# through, and says which word is taken and what to do about it. The
+# residual row itself is exempt by its empty term -- that is what marks
+# it in all five engines.
+.assert_no_reserved_residual_group <- function(random_effects, fit) {
+  vc <- random_effects$variance_components
+  if (!is.data.frame(vc) || nrow(vc) == 0L) {
+    return(invisible(NULL))
+  }
+  if (!all(c("group", "term") %in% names(vc))) {
+    return(invisible(NULL)) # nocov  (schema guarantees both columns)
+  }
+  hit <- !is.na(vc$group) & vc$group == "Residual" & nzchar(vc$term %||% "")
+  if (!any(hit)) {
+    return(invisible(NULL))
+  }
+  spicy_abort(
+    c(
+      sprintf(
+        paste0(
+          "A grouping factor of this `%s` fit is named \"Residual\", ",
+          "which spicy reserves for the residual variance."
+        ),
+        class(fit)[1L]
+      ),
+      "i" = paste0(
+        "The random-effects table keys every row on its grouping ",
+        "factor, and \"Residual\" is the key of the residual row ",
+        "itself: the two would share one identity, one interval and ",
+        "one ICC."
+      ),
+      "i" = "Rename the grouping variable and refit."
+    ),
+    class = "spicy_unsupported"
   )
 }
 

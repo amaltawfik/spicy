@@ -25,8 +25,9 @@
 # Token vocabularies (lm + glm). Match dev/table_regression_design.md \u00A74.
 # Centralised here so validators, the rendering layer, and the test suite
 # share a single source of truth. Class-aware token compatibility is
-# checked separately by `validate_class_appropriate_tokens()` and
-# `validate_class_appropriate_nested_stats()`.
+# checked separately, by `validate_class_appropriate_tokens()` -- one
+# validator, not two: the nested-stats half was folded into it when the
+# change statistics became fit-statistic ROWS (feb7f529).
 .regression_tokens <- list(
   # ATOMIC tokens for `show_columns`: one token = one displayed
   # column. All lowercase (idiomatic R / broom convention). Group
@@ -69,19 +70,15 @@
     # token names live.
     "r2",
     "adj_r2",
-    # Variance-explained partials (lm only) \u2013 split into
-    # estimate-only + CI-only, matching the b / ci asymmetry-free
-    # convention.
-    "partial_f2",
-    "partial_f2_ci",
-    "partial_eta2",
-    "partial_eta2_ci",
-    "partial_omega2",
-    "partial_omega2_ci",
-    # LRT-based partial chi-square (glm; analog of partial F) \u2013
+    # Term-level partial effect sizes, spliced from their single
+    # producer (.PARTIAL_ES_TOKENS, R/regression_partial.R -- sourced
+    # before this file, alphabetically, so the constant exists here):
+    # the variance-explained partials for lm, split into estimate-only
+    # + CI-only to match the b / ci asymmetry-free convention, then the
+    # LRT-based partial chi-square for glm (the analog of partial F),
     # kept BUNDLED as "value (df)" because that is the standard
     # statistical-reporting convention (e.g. "chi2(2) = 5.34").
-    "partial_chi2",
+    .PARTIAL_ES_TOKENS,
     # Probability of direction (Bayesian fits only).
     "pd",
     # Per-parameter sampler diagnostics (Bayesian fits only), and the
@@ -1151,10 +1148,24 @@ validate_vcov_cluster_lists <- function(vcov, cluster, models) {
     if (!is.null(c_i) && !is_cr) {
       # Own-estimator classes get their own route, like the rq carve-out
       # above. The generic "set `vcov` to CR0-CR3" advice would send an
-      # estimatr / fixest user straight into the hard refusal that Step
-      # 6c raises for exactly those tokens -- advice that cannot be
-      # followed. Their clustering lives in the fitting call.
-      hint <- if (inherits(models[[i]], c("lm_robust", "iv_robust"))) {
+      # estimatr / fixest / survey user straight into the hard refusal
+      # that Step 6c raises for exactly those tokens -- advice that
+      # cannot be followed. Their clustering lives in the fitting call,
+      # or, for a design fit, in the design.
+      hint <- if (.is_design_fit(models[[i]])) {
+        # There is no CR* route for a design fit at all: clubSandwich has
+        # no vcovCR.svyglm, so the token is refused outright above. The
+        # design already carries the clustering it was declared with, and
+        # its Taylor / replicate variance IS the cluster-robust one --
+        # the same sentence Step 6c uses when the user follows the old
+        # hint and lands on the refusal.
+        paste0(
+          "The survey design carries the clustering: declare it with ",
+          "survey::svydesign(ids = ~cluster_var, ...) and refit. The ",
+          "fit's own design-based variance is already cluster-robust ",
+          "for the declared design."
+        )
+      } else if (inherits(models[[i]], c("lm_robust", "iv_robust"))) {
         estimatr_fn <- if (inherits(models[[i]], "iv_robust")) {
           "estimatr::iv_robust"
         } else {
@@ -1304,17 +1315,7 @@ validate_class_appropriate_tokens <- function(
   # are glm \u2013 in mixed sets, the renderer en-dashes glm rows and
   # populates lm rows, which is the right behaviour.
   if (all_glm) {
-    bad <- intersect(
-      show_columns,
-      c(
-        "partial_f2",
-        "partial_f2_ci",
-        "partial_eta2",
-        "partial_eta2_ci",
-        "partial_omega2",
-        "partial_omega2_ci"
-      )
-    )
+    bad <- intersect(show_columns, .PARTIAL_VARIANCE_ES_TOKENS)
     if (length(bad) > 0L) {
       spicy_abort(
         c(
@@ -1366,6 +1367,107 @@ validate_class_appropriate_tokens <- function(
         class = "spicy_invalid_input"
       )
     }
+  }
+
+  # The same refusal, for the same reason, for every OTHER class whose
+  # nested comparison is a likelihood-ratio test. glm has had it since
+  # the beginning; survreg, polr, gls, clm, coxph, betareg, the mixed
+  # families and the rest got silence -- `compute_one_pair_lrt()` returns
+  # NA for the four least-squares change tokens, the renderer drops a
+  # fit-stat row that is NA across the whole table, and the row the user
+  # asked for was simply not there. Two users, one mistake, two answers.
+  #
+  # Only the CHANGE tokens: the absolute r2 / adj_r2 / omega2 / f2 rows
+  # are a wider question (betareg has a pseudo-R2, gam a real one) and
+  # stay out of this arm. `all_likelihood_path()` is the predicate the
+  # class-aware default already uses, so a default can never name a
+  # token this refuses -- such a hierarchy defaults to lrt_change +
+  # p_change, which is exactly what the message points at.
+  #
+  # The TOKENS are tested first and the predicate only afterwards, and
+  # that order is load-bearing, not style: `all_likelihood_path()` calls
+  # stats::logLik() on every model, and logLik() is not free on every
+  # class -- logLik.brmsfit() builds the whole ndraws x nobs pointwise
+  # matrix. Asked the other way round, every plain table_regression()
+  # call paid for a question about change tokens that were never
+  # requested (measured: one has_usable_loglik() per model on a call
+  # with no change token in it).
+  bad_fit <- intersect(
+    show_fit_stats,
+    c("r2_change", "adj_r2_change", "f_change", "f2_change")
+  )
+  if (length(bad_fit) > 0L && !all_glm && all_likelihood_path(eff_models)) {
+    spicy_abort(
+      c(
+        sprintf(
+          "Token(s) %s in `show_fit_stats` are not defined for `%s` models.",
+          paste(.quote_val(bad_fit), collapse = ", "),
+          class(eff_models[[1L]])[1L]
+        ),
+        # The reason names what SPICY reports for this hierarchy, not
+        # what the estimator is. Saying "no analog outside the
+        # least-squares framework" was false for two of the classes
+        # that reach here: fixest::feols() IS least squares, with a
+        # real R^2, and gls is a milder case -- both are routed to the
+        # likelihood pair, which is the fact the user needs.
+        "i" = paste0(
+          "The nested comparison for these fits is a ",
+          "likelihood-ratio chi-square, which reports no ",
+          "variance-explained change."
+        ),
+        "i" = paste0(
+          "Use `\"lrt_change\"` + `\"p_change\"`, which is also what ",
+          "`nested = TRUE` selects for this hierarchy by default."
+        )
+      ),
+      class = "spicy_invalid_input"
+    )
+  }
+
+  # Quantile hierarchies, which `all_likelihood_path()` excludes BY
+  # CLASS and which therefore kept the exact silence the arm above ends.
+  # Measured on an rq pair: r2_change, adj_r2_change, f2_change and
+  # lrt_change were all accepted and all rendered nothing --
+  # `compute_nested_comparisons()` routes any rq pair to
+  # `compute_one_pair_rq()`, which hard-codes those four to NA_real_,
+  # and the renderer drops a fit-stat row that is NA across the table.
+  # The exception belongs on the TOKEN, not on the class: rq refuses the
+  # variance-explained three like every other class, and lrt_change with
+  # them, because an rq pair never reaches the likelihood route at all --
+  # logLik.rq() is a pseudo-likelihood on the check-loss objective, not
+  # a likelihood a ratio test can be built from. What rq DOES have is
+  # anova.rq()'s Wald-type F, so the message points there, which is also
+  # its class-aware default.
+  #
+  # Tokens first, predicate second, for the reason given above.
+  bad_rq <- intersect(
+    show_fit_stats,
+    c("r2_change", "adj_r2_change", "f2_change", "lrt_change")
+  )
+  if (
+    length(bad_rq) > 0L &&
+      length(eff_models) > 0L &&
+      all(vapply(eff_models, inherits, logical(1), "rq"))
+  ) {
+    spicy_abort(
+      c(
+        sprintf(
+          "Token(s) %s in `show_fit_stats` are not defined for `rq` models.",
+          paste(.quote_val(bad_rq), collapse = ", ")
+        ),
+        "i" = paste0(
+          "Quantile regression partitions no sums of squares, and ",
+          "`logLik.rq()` is a pseudo-likelihood on the check-loss ",
+          "objective rather than one a ratio test can be built from."
+        ),
+        "i" = paste0(
+          "Use `\"f_change\"` + `\"p_change\"` -- the Wald-type test ",
+          "`quantreg::anova.rq()` reports, and what `nested = TRUE` ",
+          "selects for a quantile hierarchy by default."
+        )
+      ),
+      class = "spicy_invalid_input"
+    )
   }
 
   if (all_lm) {
@@ -1793,18 +1895,7 @@ validate_class_appropriate_tokens <- function(
         class = "spicy_invalid_input"
       )
     }
-    bad_cols <- intersect(
-      show_columns,
-      c(
-        "partial_chi2",
-        "partial_f2",
-        "partial_f2_ci",
-        "partial_eta2",
-        "partial_eta2_ci",
-        "partial_omega2",
-        "partial_omega2_ci"
-      )
-    )
+    bad_cols <- intersect(show_columns, .PARTIAL_ES_TOKENS)
     if (length(bad_cols) > 0L) {
       spicy_abort(
         c(
@@ -1867,17 +1958,7 @@ validate_class_appropriate_tokens <- function(
     # partial_chi2 (the Type-II Wald chi-square for mixed fits) IS defined
     # here, so it is deliberately NOT rejected -- only the variance-explained
     # (least-squares) partials are undefined for mixed models.
-    bad_cols <- intersect(
-      show_columns,
-      c(
-        "partial_f2",
-        "partial_f2_ci",
-        "partial_eta2",
-        "partial_eta2_ci",
-        "partial_omega2",
-        "partial_omega2_ci"
-      )
-    )
+    bad_cols <- intersect(show_columns, .PARTIAL_VARIANCE_ES_TOKENS)
     if (length(bad_cols) > 0L) {
       spicy_abort(
         c(
@@ -2010,19 +2091,13 @@ validate_class_appropriate_tokens <- function(
   invisible(NULL)
 }
 
-# Class-aware validation of `nested_stats`. Variance-explained
-# tokens (r2_change, adj_r2_change, F, f2_change) require an OLS
-# residual-sum-of-squares partition and are NA for glm. Reject
-# explicitly when ALL nested models are glm; for mixed lm + glm
-# hierarchies the renderer en-dashes the glm side, which is the
-# right behaviour. NULL or empty `nested_stats` is a no-op (the
-# class-aware default in compute_nested_comparisons_lm() picks the
-# right tokens automatically).
-# Step 10: show_fit_stats. Empty character or NULL means "drop the
-# fit-stats footer block" -- a legitimate rendering choice (some
-# users prefer the body alone). show_columns has no analogous
-# escape hatch because a table with zero data columns is
-# nonsensical.
+# Step 10: show_fit_stats. `FALSE` drops the fit-statistic rows -- a
+# legitimate rendering choice (some users prefer the body alone) --
+# and `NULL` is the class-aware-default sentinel; the two are not
+# interchangeable, and `character(0)` is neither, having been removed.
+# The body below is where that contract is stated and enforced.
+# show_columns has no analogous escape hatch, because a table with
+# zero data columns is nonsensical.
 validate_show_fit_stats <- function(show_fit_stats) {
   # Phase 7c23 (item a): the explicit "suppress fit-stats" alias is
   # `FALSE` (parity with `show_re = FALSE` / `outcome_labels = FALSE`).

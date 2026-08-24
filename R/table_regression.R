@@ -471,17 +471,32 @@
 #' Default change tokens auto-injected when `show_fit_stats` is
 #' `NULL`:
 #' \itemize{
-#'   \item All-lm: `c("r2_change", "f_change", "p_change")` --
-#'     APA hierarchical regression standard.
+#'   \item All-lm (and `nls`): `c("r2_change", "f_change",
+#'     "p_change")` -- APA hierarchical regression standard.
 #'   \item All-glm: `c("lrt_change", "p_change")` -- Hosmer &
 #'     Lemeshow Section 3.5; Long & Freese 2014 Section 3.2.4.
+#'   \item Any other hierarchy that carries a likelihood
+#'     (`survreg`, `polr`, `clm`, `coxph`, `gls`, `betareg`,
+#'     `multinom`, `fixest`, ...): the same
+#'     `c("lrt_change", "p_change")`.
+#'   \item Mixed-effects (`lmer` / `glmer` / `glmmTMB` /
+#'     `nlme::lme`): `c("aic_change", "bic_change", "lrt_change",
+#'     "p_change")` -- Pinheiro & Bates 2000 Section 2.4.1.
+#'   \item Quantile (`rq`): `c("f_change", "p_change")` -- the
+#'     Wald-type test `quantreg::anova.rq()` reports.
 #' }
 #' To customise, pass the change tokens directly to
-#' `show_fit_stats`. Variance-explained change tokens on an
-#' all-glm hierarchy raise `spicy_invalid_input` (the
-#' residual-sum-of-squares partition does not apply outside the
-#' least-squares framework -- the renderer points the user at
-#' `lrt_change`).
+#' `show_fit_stats`. The variance-explained change tokens
+#' (`"r2_change"`, `"adj_r2_change"`, `"f_change"`,
+#' `"f2_change"`) raise `spicy_invalid_input` on any hierarchy
+#' whose nested comparison is a likelihood-ratio test -- `glm`,
+#' and equally every other likelihood class and the
+#' mixed-effects families: that comparison reports a chi-square,
+#' not a variance-explained change, and the message points at
+#' `"lrt_change"` + `"p_change"`. A quantile hierarchy refuses
+#' them too, and `"lrt_change"` with them, pointing at
+#' `"f_change"` + `"p_change"` instead. `lm` and `nls` keep the
+#' least-squares tokens.
 #'
 #' # Standardised coefficients
 #'
@@ -3205,6 +3220,7 @@ table_regression <- function(
     stars = stars,
     nested = nested,
     show_columns = show_columns,
+    show_fit_stats = show_fit_stats,
     reference_style = reference_style,
     show_re = isTRUE(show_re),
     re_scale = re_scale_val,
