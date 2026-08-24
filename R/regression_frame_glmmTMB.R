@@ -305,11 +305,17 @@ as_regression_frame.glmmTMB <- function(
   # so render blank. The pseudo-R2 / ICC do NOT -- they are computed from
   # the same starting values and would otherwise print a confident number
   # for a model that never fitted. Suppress them under the same
-  # criterion (decision 37). The verdict is the side-effect-free read;
-  # the note is built ONCE here (raising the classed spicy_nonconvergence
-  # warning) and reused in extras below.
-  nonconverged <- .glmmTMB_is_nonconverged(fit)
-  convergence_note <- .glmmTMB_convergence_note(fit, dv)
+  # criterion (decision 37). The criterion is read ONCE, here: the
+  # verdict, the note and the classed spicy_nonconvergence warning are
+  # three uses of one answer, so they cannot drift -- and the warning is
+  # raised at this emission site rather than as a side effect of asking
+  # the note what it says.
+  problems <- .glmmTMB_convergence_problems(fit)
+  nonconverged <- length(problems) > 0L
+  convergence_note <- .glmmTMB_convergence_note(problems)
+  if (nonconverged) {
+    .warn_glmmTMB_nonconvergence(problems, dv)
+  }
 
   # glmmTMB does not export ngrps(); pull per-grouping-factor counts
   # from the summary object instead. summary(fit)$ngrps is a list with
@@ -818,17 +824,31 @@ as_regression_frame.glmmTMB <- function(
 }
 
 
-.glmmTMB_convergence_note <- function(fit, dv = NA_character_) {
-  problems <- .glmmTMB_convergence_problems(fit)
-
+# The footer note for a list of problem records. PURE: it builds a
+# string and returns it, and NULL when there is nothing to report.
+#
+# It used to raise the classed warning as well, so calling the builder
+# WAS signalling the condition. That held together only because the
+# frame happened to call it exactly once and reused the value; any
+# second caller -- a future engine, a test asking what the note says, a
+# re-render -- would have raised a second warning by asking a question.
+# Construction and signalling are separate now, and the emission site
+# below is the one place that signals.
+.glmmTMB_convergence_note <- function(problems) {
   if (length(problems) == 0L) {
     return(NULL)
   }
-
-  note <- spicy_fmt(
+  spicy_fmt(
     "note_nonconvergence",
     paste(.glmmTMB_problem_text(problems), collapse = "; ")
   )
+}
+
+
+# The signal. English throughout: a condition is read by developers and
+# quoted in bug reports, so it does not follow `spicy.language` even
+# though the note it accompanies does.
+.warn_glmmTMB_nonconvergence <- function(problems, dv = NA_character_) {
   spicy_warn(
     c(
       sprintf(
@@ -838,7 +858,10 @@ as_regression_frame.glmmTMB <- function(
         } else {
           "unknown" # nocov
         },
-        paste(.glmmTMB_problem_text(problems, translated = FALSE), collapse = "; ")
+        paste(
+          .glmmTMB_problem_text(problems, translated = FALSE),
+          collapse = "; "
+        )
       ),
       "i" = paste0(
         "The table reports what the object holds. See ",
@@ -848,7 +871,7 @@ as_regression_frame.glmmTMB <- function(
     ),
     class = c("spicy_nonconvergence", "spicy_caveat")
   )
-  note
+  invisible(NULL)
 }
 
 

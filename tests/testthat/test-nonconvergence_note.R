@@ -71,7 +71,11 @@ test_that("a non-converged glmmTMB carries a convergence note", {
   expect_match(out, "(Intercept)", fixed = TRUE)
   expect_match(out, "Days", fixed = TRUE)
 
-  note <- suppressWarnings(spicy:::.glmmTMB_convergence_note(fit, "Reaction"))
+  # No suppressWarnings: the builder is pure, and asking it what the
+  # note says raises nothing.
+  note <- spicy:::.glmmTMB_convergence_note(
+    spicy:::.glmmTMB_convergence_problems(fit)
+  )
   expect_type(note, "character")
   expect_identical(
     note,
@@ -124,7 +128,9 @@ test_that("a non-converged glmmTMB raises spicy_nonconvergence", {
 
 test_that("a converged glmmTMB gets neither note nor warning", {
   fit <- .fit_glmmTMB_converged()
-  expect_null(spicy:::.glmmTMB_convergence_note(fit, "Reaction"))
+  expect_null(spicy:::.glmmTMB_convergence_note(
+    spicy:::.glmmTMB_convergence_problems(fit)
+  ))
   expect_null(
     spicy:::as_regression_frame(fit)$info$extras$convergence_note
   )
@@ -346,4 +352,40 @@ test_that("the footer follows the language and the condition does not", {
   # The engine's own message is data and appears in both, verbatim.
   expect_match(rendered, fit$fit$message, fixed = TRUE)
   expect_match(conditionMessage(caught), fit$fit$message, fixed = TRUE)
+})
+
+
+# ---- 7. The builder is pure; the emission site signals ------------------
+#
+# The note builder used to raise the classed warning while building the
+# note, so one CALL was one WARNING and asking the note what it said was
+# indistinguishable from reporting the problem. It held together only
+# because the frame called it exactly once. Construction and signalling
+# are separate now.
+
+test_that("building the note raises nothing, however often it is asked", {
+  fit <- .fit_glmmTMB_nonconverged()
+  problems <- spicy:::.glmmTMB_convergence_problems(fit)
+  seen <- .nc_conditions({
+    for (i in 1:3) spicy:::.glmmTMB_convergence_note(problems)
+  })
+  expect_length(seen, 0L)
+  # And it still returns the note.
+  expect_type(spicy:::.glmmTMB_convergence_note(problems), "character")
+})
+
+test_that("the signal is its own function, and still classed", {
+  fit <- .fit_glmmTMB_nonconverged()
+  problems <- spicy:::.glmmTMB_convergence_problems(fit)
+  seen <- .nc_conditions(
+    spicy:::.warn_glmmTMB_nonconvergence(problems, "Reaction")
+  )
+  expect_length(seen, 1L)
+  expect_s3_class(seen[[1L]], "spicy_nonconvergence")
+  expect_s3_class(seen[[1L]], "spicy_caveat")
+  expect_match(
+    conditionMessage(seen[[1L]]),
+    "Model convergence problem (outcome: Reaction)",
+    fixed = TRUE
+  )
 })
