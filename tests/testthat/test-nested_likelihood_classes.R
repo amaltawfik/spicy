@@ -499,8 +499,16 @@ test_that("the REML guard covers no-intercept nlme fits", {
     compute_nested_comparisons(list(m1, m2)),
     class = "spicy_invalid_input"
   )
-  # And an identical-fixed-effects REML pair is still let through.
-  expect_identical(fixed_terms_key(m1), fixed_terms_key(m1))
+  # The key is what separates them: same terms, same key; different
+  # terms, different key. (The earlier form compared m1 with itself and
+  # asserted nothing.)
+  m1_again <- nlme::gls(follicles ~ sin(2 * pi * Time) - 1, data = d)
+  expect_identical(fixed_terms_key(m1), fixed_terms_key(m1_again))
+  expect_false(identical(fixed_terms_key(m1), fixed_terms_key(m2)))
+  # And a no-intercept REML pair with the SAME fixed effects is let
+  # through, exactly as the intercept case is.
+  m2_same <- nlme::gls(follicles ~ sin(2 * pi * Time) - 1, data = d)
+  expect_no_error(compute_nested_comparisons(list(m1, m2_same)))
 })
 
 
@@ -608,4 +616,68 @@ test_that("nobs_conflict treats an unknown count as no evidence", {
   expect_false(nobs_conflict(stub, m))
   expect_false(nobs_conflict(m, m))
   expect_true(nobs_conflict(m, stats::lm(mpg ~ wt, data = mtcars[1:20, ])))
+})
+
+
+# ---- 11. one admissibility rule for both routes -------------------------
+
+# Handed the models the other way round, anova.survreg answers
+# Deviance -12.37 on Df -1 with Pr(>Chi) .0004, and anova.glm -9.12 with
+# .0025: a negative chi-square carrying a significant p. The likelihood
+# route always refused such a pair; the anova route printed it.
+test_that("a reversed pair yields no chi-square on the anova route", {
+  skip_if_no("survival")
+  p <- survreg_pair()
+  reversed <- compute_nested_comparisons(list(p$m2, p$m1))
+  expect_true(is.na(reversed$lrt_change[1L]))
+  expect_true(is.na(reversed$p_change[1L]))
+  # The signed information criteria are meaningful in either order and
+  # still travel: only the test statistic is withheld.
+  expect_equal(reversed$aic_change[1L], 10.3700891143, tolerance = 1e-8)
+  # The right way round is untouched.
+  forward <- compute_nested_comparisons(list(p$m1, p$m2))
+  expect_equal(forward$lrt_change[1L], 12.3700891143, tolerance = 1e-9)
+})
+
+test_that("the rule reaches glm and coxph too", {
+  skip_if_no("survival")
+  g1 <- stats::glm(am ~ wt, data = mtcars, family = stats::binomial)
+  g2 <- stats::glm(am ~ wt + hp, data = mtcars, family = stats::binomial)
+  expect_true(is.na(compute_nested_comparisons(list(g2, g1))$lrt_change[1L]))
+  expect_equal(
+    compute_nested_comparisons(list(g1, g2))$lrt_change[1L],
+    9.116974335,
+    tolerance = 1e-8
+  )
+  d <- lung_nested()
+  c1 <- survival::coxph(survival::Surv(time, status) ~ age, data = d)
+  c2 <- survival::coxph(
+    survival::Surv(time, status) ~ age + ph.ecog,
+    data = d
+  )
+  expect_true(is.na(compute_nested_comparisons(list(c2, c1))$lrt_change[1L]))
+  expect_equal(
+    compute_nested_comparisons(list(c1, c2))$lrt_change[1L],
+    12.49692011,
+    tolerance = 1e-8
+  )
+})
+
+test_that("lrt_admissible states the rule both routes obey", {
+  expect_true(lrt_admissible(3.2, 1))
+  expect_true(lrt_admissible(0, 2))
+  expect_true(lrt_admissible(3.2, NA_real_)) # unknown df is not evidence
+  expect_false(lrt_admissible(-3.2, 1)) # negative chi-square
+  expect_false(lrt_admissible(3.2, 0)) # same parameter count
+  expect_false(lrt_admissible(3.2, -1)) # reversed
+  expect_false(lrt_admissible(NA_real_, 1))
+  expect_false(lrt_admissible(Inf, 1))
+})
+
+test_that("loglik_df_increase reports the added parameters, or NA", {
+  m1 <- stats::lm(mpg ~ wt, data = mtcars)
+  m2 <- stats::lm(mpg ~ wt + hp, data = mtcars)
+  expect_equal(loglik_df_increase(m1, m2), 1)
+  expect_equal(loglik_df_increase(m2, m1), -1)
+  expect_true(is.na(loglik_df_increase(structure(list(), class = "nothing"), m2)))
 })

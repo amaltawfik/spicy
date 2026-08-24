@@ -373,6 +373,17 @@ compute_one_pair_glm <- function(fit_prev, fit_curr) {
   lrt_stat <- if (length(lrt_col) > 0L) scalar_or_na(av[[lrt_col[1L]]][2L]) else NA_real_
   p_val <- if (length(p_col) > 0L) scalar_or_na(av[[p_col[1L]]][2L]) else NA_real_
 
+  # The table is read, not trusted. Hand the models the other way round
+  # and anova.survreg answers Deviance -12.37 on Df -1 with Pr(>Chi)
+  # .0004 -- a negative chi-square carrying a significant p, printed
+  # straight into the table. anova.glm does the same (-9.12, .0025).
+  # loglik_lrt() has always refused that pair; the two routes now apply
+  # ONE rule, so which route served the number cannot change the answer.
+  if (!lrt_admissible(lrt_stat, loglik_df_increase(fit_prev, fit_curr))) {
+    lrt_stat <- NA_real_
+    p_val <- NA_real_
+  }
+
   # Several supported classes ship no two-model anova() method at all
   # (betareg, mlogit, pscl, flexsurv, fixest). For those -- and ONLY for
   # those; see nested_lrt_anova() -- the LRT is recomputed from the
@@ -779,17 +790,48 @@ loglik_lrt <- function(fit_prev, fit_curr) {
   if (!inherits(ll_prev, "logLik") || !inherits(ll_curr, "logLik")) {
     return(NULL)
   }
-  df_prev <- scalar_or_na(attr(ll_prev, "df"))
-  df_curr <- scalar_or_na(attr(ll_curr, "df"))
   stat <- 2 * (scalar_or_na(as.numeric(ll_curr)) - scalar_or_na(as.numeric(ll_prev)))
-  df_diff <- df_curr - df_prev
-  if (!is.finite(stat) || !is.finite(df_diff) || df_diff < 1 || stat < 0) {
+  df_diff <- loglik_df_increase(fit_prev, fit_curr)
+  # Stricter than lrt_admissible() on one point: this route needs the
+  # degrees of freedom to compute a p-value at all, so an unknown count
+  # is fatal here where the anova route can still trust its own table.
+  if (!is.finite(df_diff) || !lrt_admissible(stat, df_diff)) {
     return(NULL)
   }
   list(
     stat = stat,
     p = stats::pchisq(stat, df = df_diff, lower.tail = FALSE)
   )
+}
+
+# Parameter-count increase from prev to curr, from logLik()'s own "df"
+# attribute. NA when either count is unknown.
+loglik_df_increase <- function(fit_prev, fit_curr) {
+  df_of <- function(fit) {
+    ll <- tryCatch(
+      suppressWarnings(stats::logLik(fit)),
+      error = function(e) NULL
+    )
+    if (!inherits(ll, "logLik")) NA_real_ else scalar_or_na(attr(ll, "df"))
+  }
+  df_of(fit_curr) - df_of(fit_prev)
+}
+
+# Is this a statistic a likelihood-ratio test could have produced?
+#
+# A likelihood-ratio chi-square is non-negative by construction: the
+# larger model cannot fit worse. A negative one means the pair was handed
+# over the wrong way round -- the "added" terms were removed -- and the
+# p-value beside it is then computed from a direction that did not
+# happen. Degrees of freedom follow the same logic: a nested pair adds at
+# least one parameter, so a non-positive increase is not a nested
+# comparison. An UNKNOWN increase is not evidence against the pair and
+# does not veto a statistic the class's own anova() vouched for.
+lrt_admissible <- function(stat, df_increase) {
+  if (!is.finite(stat) || stat < 0) {
+    return(FALSE)
+  }
+  !(is.finite(df_increase) && df_increase < 1)
 }
 
 # AIC / BIC that survive a class without the method.
