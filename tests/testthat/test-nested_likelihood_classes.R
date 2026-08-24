@@ -763,3 +763,37 @@ test_that("the refusal also covers a method that raised nothing", {
     fixed = TRUE
   )
 })
+
+
+test_that("the refusal's reason is true for every class that can hear it", {
+  # The reason names what SPICY reports for the hierarchy, not what the
+  # estimator is. "No analog outside the least-squares framework" was
+  # false for fixest::feols(), which IS least squares with a real R^2
+  # and is nevertheless routed to the likelihood pair.
+  skip_if_no("survival")
+  p <- survreg_pair()
+  reason <- function(models) {
+    err <- tryCatch(
+      table_regression(
+        models,
+        nested = TRUE,
+        show_fit_stats = c("r2_change", "p_change")
+      ),
+      error = identity
+    )
+    paste(conditionMessage(err), collapse = " ")
+  }
+  msg <- reason(list(p$m1, p$m2))
+  expect_match(msg, "likelihood-ratio chi-square", fixed = TRUE)
+  expect_false(grepl("least-squares framework", msg, fixed = TRUE))
+
+  skip_if_no("fixest")
+  d <- mtcars
+  d$g <- factor(d$cyl)
+  f1 <- fixest::feols(mpg ~ wt | g, data = d)
+  f2 <- fixest::feols(mpg ~ wt + hp | g, data = d)
+  # feols reaches the arm ...
+  expect_true(spicy:::all_likelihood_path(list(f1, f2)))
+  # ... and is not told something false about its own estimator.
+  expect_false(grepl("least-squares framework", reason(list(f1, f2)), fixed = TRUE))
+})

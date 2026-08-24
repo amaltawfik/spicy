@@ -1396,11 +1396,16 @@ validate_class_appropriate_tokens <- function(
             paste(.quote_val(bad_fit), collapse = ", "),
             class(eff_models[[1L]])[1L]
           ),
+          # The reason names what SPICY reports for this hierarchy, not
+          # what the estimator is. Saying "no analog outside the
+          # least-squares framework" was false for two of the classes
+          # that reach here: fixest::feols() IS least squares, with a
+          # real R^2, and gls is a milder case -- both are routed to the
+          # likelihood pair, which is the fact the user needs.
           "i" = paste0(
-            "A variance-explained partition of sums of squares has no ",
-            "analog outside the least-squares framework; the nested ",
-            "change these fits report is the likelihood-ratio ",
-            "chi-square."
+            "The nested comparison for these fits is a ",
+            "likelihood-ratio chi-square, which reports no ",
+            "variance-explained change."
           ),
           "i" = paste0(
             "Use `\"lrt_change\"` + `\"p_change\"`, which is also what ",
