@@ -146,6 +146,111 @@ test_that("a converged glmmTMB gets neither note nor warning", {
 })
 
 
+# ---- 4b. No fit statistic derived from a non-converged fit -------------
+#
+# The optimizer stopped at its starting values, so every model-level
+# statistic computed FROM those values is meaningless. AIC/BIC come back
+# NA on their own (logLik is NA) and so render blank; ICC and the
+# Nakagawa R2 do not -- they would print a confident 0.50 / 0.81 / 0.90
+# for a model that never fitted. They are blanked under the same
+# criterion (decision 37). The estimates and the sigma rows still print.
+
+# The fit-statistic tokens the structured view carries in `.variable`.
+.nc_fit_stat_tokens <- function(fit) {
+  st <- suppressWarnings(as_structured(table_regression(fit)))
+  st$body$.variable[st$body$.row_role == "fit_stat"]
+}
+
+test_that("a non-converged glmmTMB reports no ICC and no R-squared", {
+  fit <- .fit_glmmTMB_nonconverged()
+
+  # (a) The rendered table: no ICC row, no R2 row of either flavour.
+  out <- paste(
+    capture.output(print(suppressWarnings(table_regression(fit)))),
+    collapse = "\n"
+  )
+  expect_false(grepl("ICC", out, fixed = TRUE))
+  expect_false(grepl("R²", out, fixed = TRUE))
+  # The estimates and the variance components are still there: the note
+  # says what they are worth, it does not withhold them.
+  expect_match(out, "(Intercept)", fixed = TRUE)
+  expect_match(out, "Subject (Intercept)", fixed = TRUE)
+
+  # (a) The structured view, where those rows would carry a token.
+  toks <- .nc_fit_stat_tokens(fit)
+  expect_false(any(c("icc", "r2_marginal", "r2_conditional") %in% toks))
+  # No pseudo-R2 of any spelling sneaks in either.
+  expect_false(any(grepl("r2|pseudo", toks)))
+  # The structural fit-stats that are NOT derived from the fit stay.
+  expect_true(all(c("nobs", "n_groups") %in% toks))
+
+  # And at the frame level, the source of both.
+  frame <- suppressWarnings(spicy:::as_regression_frame(fit))
+  expect_true(is.na(frame$info$random_effects$icc))
+  expect_true(is.na(frame$info$fit_stats$r2_marginal))
+  expect_true(is.na(frame$info$fit_stats$r2_conditional))
+})
+
+test_that("a converged glmmTMB keeps its ICC and R-squared", {
+  fit <- .fit_glmmTMB_converged()
+
+  out <- paste(capture.output(print(table_regression(fit))), collapse = "\n")
+  expect_match(out, "ICC", fixed = TRUE)
+  expect_match(out, "R²", fixed = TRUE)
+
+  toks <- .nc_fit_stat_tokens(fit)
+  expect_true(all(
+    c("icc", "r2_marginal", "r2_conditional") %in% toks
+  ))
+
+  frame <- spicy:::as_regression_frame(fit)
+  expect_false(is.na(frame$info$random_effects$icc))
+  expect_false(is.na(frame$info$fit_stats$r2_marginal))
+})
+
+
+# ---- 4c. One condition surfaces, not four ------------------------------
+#
+# glmmTMB:::summary.glmmTMB and the Wald extractors raise anonymous
+# "NaNs produced" warnings on such a fit (three of them reached the user
+# before the mute), restating in the session's locale what the classed
+# caveat says precisely. Only the classed warning is allowed out.
+
+# Every condition the call raises, in order, muffled so the run is quiet.
+.nc_conditions <- function(expr) {
+  seen <- list()
+  withCallingHandlers(
+    force(expr),
+    warning = function(w) {
+      seen[[length(seen) + 1L]] <<- w
+      invokeRestart("muffleWarning")
+    }
+  )
+  seen
+}
+
+test_that("exactly one condition surfaces, and it is the classed one", {
+  fit <- .fit_glmmTMB_nonconverged()
+  seen <- .nc_conditions(table_regression(fit))
+
+  expect_length(seen, 1L)
+  expect_s3_class(seen[[1L]], "spicy_nonconvergence")
+  # Nothing anonymous got through. Matched against base R's own string
+  # in the active locale, exactly as the mute matches it, so this holds
+  # in a translated session too.
+  msgs <- vapply(seen, conditionMessage, character(1))
+  nan_msgs <- unique(c("NaNs produced", gettext("NaNs produced", domain = "R")))
+  expect_false(any(msgs %in% nan_msgs))
+})
+
+test_that("a converged glmmTMB raises no condition at all", {
+  fit <- .fit_glmmTMB_converged()
+  # The mute is not even armed on this path; nothing may be swallowed
+  # and nothing is raised.
+  expect_length(.nc_conditions(table_regression(fit)), 0L)
+})
+
+
 # ---- 5. The footer builder is engine-generic ---------------------------
 
 test_that("the convergence footer builder reads any engine's note", {
