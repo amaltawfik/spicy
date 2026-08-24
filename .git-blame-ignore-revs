@@ -1,2 +1,5 @@
-# One-shot whole-tree air format (air 0.7.0), 2026-07-24
-15bb69531d39c11bf8e888727c601d5133c05d60
+# Revisions git blame should ignore (mechanical reformats).
+# Enable once per clone:  git config blame.ignoreRevsFile .git-blame-ignore-revs
+
+# air format: the one global formatting pass (decision 37)
+e893a1383bd914e3d71642ca21ac57e48b2c950d
