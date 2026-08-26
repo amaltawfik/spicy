@@ -947,6 +947,16 @@ as_regression_frame.glmmTMB <- function(
   # SE.
   vc_df <- .glmmTMB_attach_wald_se_ci(vc_df, fit, ci_level = ci_level)
 
+  # Last, so every row above carries its final values: put each grouping
+  # factor's rows back together (see .merMod_order_blocks). The
+  # correlation rows are appended in one lump above, which is right for a
+  # one-factor fit and wrong the moment there are two -- the same defect
+  # eb367bb7 fixed in lme4 and 80802197 in nlme, fixed here by the same
+  # helper so one structure renders row-for-row alike on all three
+  # engines. `names(vc)` is glmmTMB's own VarCorr order; nothing moves in
+  # a one-factor fit.
+  vc_df <- .merMod_order_blocks(vc_df, names(vc))
+
   icc <- if (is_gaussian_identity) .merMod_icc(vc_df) else NA_real_
 
   null_lrt <- .compute_null_model_lrt(fit)
