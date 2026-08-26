@@ -239,7 +239,10 @@ keeps the default display.</p></dd>
 <dt id="arg-output">output<a class="anchor" aria-label="anchor" href="#arg-output"></a></dt>
 <dd><p>One of <code>"default"</code>, <code>"data.frame"</code>, <code>"long"</code>, or a
 rendering engine: <code>"tinytable"</code>, <code>"gt"</code>, <code>"flextable"</code>,
-<code>"excel"</code>, <code>"clipboard"</code>, <code>"word"</code>.</p></dd>
+<code>"excel"</code>, <code>"clipboard"</code>, <code>"word"</code>. <code>"data.frame"</code> and <code>"long"</code>
+are synonyms and return the same object: the compute frame is
+already long, one row per <code>(variable x group)</code>. Same pair, same
+reason, as in <code><a href="table_continuous.html">table_continuous()</a></code>.</p></dd>
 
 
 <dt id="arg-excel-path-excel-sheet-clipboard-delim-word-path">excel_path, excel_sheet, clipboard_delim, word_path<a class="anchor" aria-label="anchor" href="#arg-excel-path-excel-sheet-clipboard-delim-word-path"></a></dt>
@@ -263,7 +266,8 @@ destinations, as in <code><a href="table_continuous.html">table_continuous()</a>
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>A <code>spicy_continuous_svy_table</code>: the compute frame, with the
 display frame and the typed view attached. <code>output = "data.frame"</code>
-/ <code>"long"</code> returns the compute frame unclassed.</p>
+/ <code>"long"</code> returns the compute frame unclassed – the two tokens
+are synonyms and return identical objects.</p>
     </div>
     <div class="section level2">
     <h2 id="which-function-do-i-need-">Which function do I need?<a class="anchor" aria-label="anchor" href="#which-function-do-i-need-"></a></h2>

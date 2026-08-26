@@ -164,7 +164,10 @@ table_continuous_svy(
 
   One of `"default"`, `"data.frame"`, `"long"`, or a rendering engine:
   `"tinytable"`, `"gt"`, `"flextable"`, `"excel"`, `"clipboard"`,
-  `"word"`.
+  `"word"`. `"data.frame"` and `"long"` are synonyms and return the same
+  object: the compute frame is already long, one row per
+  `(variable x group)`. Same pair, same reason, as in
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md).
 
 - excel_path, excel_sheet, clipboard_delim, word_path:
 
@@ -189,7 +192,8 @@ table_continuous_svy(
 
 A `spicy_continuous_svy_table`: the compute frame, with the display
 frame and the typed view attached. `output = "data.frame"` / `"long"`
-returns the compute frame unclassed.
+returns the compute frame unclassed – the two tokens are synonyms and
+return identical objects.
 
 ## Which function do I need?
 

@@ -228,7 +228,12 @@ tests were withheld, and the call warns
 <dt id="arg-output">output<a class="anchor" aria-label="anchor" href="#arg-output"></a></dt>
 <dd><p>One of <code>"default"</code>, <code>"data.frame"</code>, <code>"long"</code>, or a
 rendering engine: <code>"tinytable"</code>, <code>"gt"</code>, <code>"flextable"</code>,
-<code>"excel"</code>, <code>"clipboard"</code>, <code>"word"</code>.</p></dd>
+<code>"excel"</code>, <code>"clipboard"</code>, <code>"word"</code>. <code>"data.frame"</code> and <code>"long"</code>
+are synonyms here and return the same object: the wide compute
+frame, one row per level with a pair of columns per group. Note
+the difference from <code><a href="table_categorical.html">table_categorical()</a></code>, where the two tokens
+return genuinely different shapes – this design carries a single
+compute frame, and both names reach it.</p></dd>
 
 
 <dt id="arg-indent-text-indent-text-excel-clipboard">indent_text, indent_text_excel_clipboard<a class="anchor" aria-label="anchor" href="#arg-indent-text-indent-text-excel-clipboard"></a></dt>
@@ -254,7 +259,8 @@ destinations, as in <code><a href="table_categorical.html">table_categorical()</
     <p>A <code>spicy_categorical_svy_table</code>: the wide compute frame,
 with the display frame and the typed view attached.
 <code>output = "data.frame"</code> / <code>"long"</code> returns the compute frame
-unclassed.</p>
+unclassed – the two tokens are synonyms and return identical
+objects.</p>
     </div>
     <div class="section level2">
     <h2 id="what-the-columns-are">What the columns are<a class="anchor" aria-label="anchor" href="#what-the-columns-are"></a></h2>

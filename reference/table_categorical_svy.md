@@ -151,7 +151,12 @@ table_categorical_svy(
 
   One of `"default"`, `"data.frame"`, `"long"`, or a rendering engine:
   `"tinytable"`, `"gt"`, `"flextable"`, `"excel"`, `"clipboard"`,
-  `"word"`.
+  `"word"`. `"data.frame"` and `"long"` are synonyms here and return the
+  same object: the wide compute frame, one row per level with a pair of
+  columns per group. Note the difference from
+  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
+  where the two tokens return genuinely different shapes – this design
+  carries a single compute frame, and both names reach it.
 
 - indent_text, indent_text_excel_clipboard:
 
@@ -176,7 +181,8 @@ table_categorical_svy(
 
 A `spicy_categorical_svy_table`: the wide compute frame, with the
 display frame and the typed view attached. `output = "data.frame"` /
-`"long"` returns the compute frame unclassed.
+`"long"` returns the compute frame unclassed – the two tokens are
+synonyms and return identical objects.
 
 ## What the columns are
 
