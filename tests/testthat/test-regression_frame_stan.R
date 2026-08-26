@@ -18,8 +18,9 @@
 # memory across a whole file is what would strain the memory budget --
 # but the fit comes back from a DISK cache after the first sampling
 # run (helper-stan-cache.R), which is neither held in memory nor paid
-# for twice. Measured on this file: 1158 s before the cache, 247 s on
-# the run that fills it, 81 s on every run after.
+# for twice. Measured on this file: 1158 s before the cache, and 32 s on
+# every run once the entries exist. A run that has to fill them costs
+# roughly one sampling pass per fixture on top.
 # ---------------------------------------------------------------------------
 
 # ---- Fast-fit helpers ------------------------------------------------------
