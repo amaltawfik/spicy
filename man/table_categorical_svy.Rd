@@ -95,7 +95,12 @@ tests were withheld, and the call warns
 
 \item{output}{One of \code{"default"}, \code{"data.frame"}, \code{"long"}, or a
 rendering engine: \code{"tinytable"}, \code{"gt"}, \code{"flextable"},
-\code{"excel"}, \code{"clipboard"}, \code{"word"}.}
+\code{"excel"}, \code{"clipboard"}, \code{"word"}. \code{"data.frame"} and \code{"long"}
+are synonyms here and return the same object: the wide compute
+frame, one row per level with a pair of columns per group. Note
+the difference from \code{\link[=table_categorical]{table_categorical()}}, where the two tokens
+return genuinely different shapes -- this design carries a single
+compute frame, and both names reach it.}
 
 \item{indent_text, indent_text_excel_clipboard}{Level-row
 indentation, for the console and for the plain-text engines.}
@@ -111,7 +116,8 @@ destinations, as in \code{\link[=table_categorical]{table_categorical()}}.}
 A \code{spicy_categorical_svy_table}: the wide compute frame,
 with the display frame and the typed view attached.
 \code{output = "data.frame"} / \code{"long"} returns the compute frame
-unclassed.
+unclassed -- the two tokens are synonyms and return identical
+objects.
 }
 \description{
 The design twin of \code{\link[=table_categorical]{table_categorical()}}: counts and estimated

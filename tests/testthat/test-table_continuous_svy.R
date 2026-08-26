@@ -1378,3 +1378,28 @@ test_that("`labels` renames the stub, and a journal style reaches the cells", {
   styled <- table_continuous_svy(d, select = api00, by = stype, style = "jama")
   expect_s3_class(styled, "spicy_continuous_svy_table")
 })
+
+
+# ---- "data.frame" and "long" are synonyms, and the docs say so ----------
+
+test_that("output = 'data.frame' and output = 'long' return one object", {
+  # Pinned because ?table_continuous_svy now promises it. The compute
+  # frame is already long -- one row per (variable x group) -- so there
+  # is no wide form for the pair to straddle, exactly as in
+  # table_continuous(), whose own pair is documented as synonymous.
+  d <- .svyc_design("clus1")
+  as_df <- suppressWarnings(table_continuous_svy(
+    d,
+    select = c(api00, api99),
+    by = stype,
+    output = "data.frame"
+  ))
+  as_long <- suppressWarnings(table_continuous_svy(
+    d,
+    select = c(api00, api99),
+    by = stype,
+    output = "long"
+  ))
+  expect_identical(as_df, as_long)
+  expect_true(all(c("variable", "group", "mean") %in% names(as_df)))
+})

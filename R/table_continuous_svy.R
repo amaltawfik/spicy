@@ -553,7 +553,10 @@ order_continuous_svy_tokens <- function(tokens) {
 #'   `"right"`.
 #' @param output One of `"default"`, `"data.frame"`, `"long"`, or a
 #'   rendering engine: `"tinytable"`, `"gt"`, `"flextable"`,
-#'   `"excel"`, `"clipboard"`, `"word"`.
+#'   `"excel"`, `"clipboard"`, `"word"`. `"data.frame"` and `"long"`
+#'   are synonyms and return the same object: the compute frame is
+#'   already long, one row per `(variable x group)`. Same pair, same
+#'   reason, as in [table_continuous()].
 #' @param excel_path,excel_sheet,clipboard_delim,word_path Output
 #'   destinations, as in [table_continuous()].
 #' @param verbose Report the columns skipped as non-numeric.
@@ -562,7 +565,8 @@ order_continuous_svy_tokens <- function(tokens) {
 #'
 #' @return A `spicy_continuous_svy_table`: the compute frame, with the
 #'   display frame and the typed view attached. `output = "data.frame"`
-#'   / `"long"` returns the compute frame unclassed.
+#'   / `"long"` returns the compute frame unclassed -- the two tokens
+#'   are synonyms and return identical objects.
 #'
 #' @seealso [table_continuous()] for the data-frame sibling,
 #'   [table_categorical_svy()] for categorical variables,
@@ -1006,6 +1010,11 @@ table_continuous_svy <- function(
   )
   .warn_negative_weights_no_test(test_refused)
 
+  # `output = "data.frame"` and `output = "long"` return the SAME
+  # object, and the documentation says so. The compute frame is already
+  # long -- one row per (variable x group) -- so there is no wide form
+  # for the pair to straddle; a real pivot would have to invent a second
+  # shape rather than reveal one. Same settlement as table_continuous().
   if (output %in% c("data.frame", "long")) {
     attr(result, "note") <- note
     return(result)
