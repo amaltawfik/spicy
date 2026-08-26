@@ -245,3 +245,36 @@ test_that("an aliased clm predictor renders undefined instead of erroring", {
     tolerance = 1e-9
   )
 })
+
+
+# ---- Intercept-only ordinal fits keep the schema's column types --------
+
+test_that("an intercept-only polr frame keeps character parent_var / label", {
+  # `y ~ 1` is a legal ordinal model: coef() holds the cut-points only,
+  # so the coefs frame has zero rows. ifelse() hands back its TEST
+  # vector when the test is empty, which turned `parent_var` and
+  # `label` into logical(0) -- the frame changed schema type on a fit
+  # that merely had no predictors.
+  skip_if_not_installed("MASS")
+  d <- .cov100_ord_data()
+  fr <- as_regression_frame(MASS::polr(y ~ 1, data = d, Hess = TRUE))
+  expect_identical(nrow(fr$coefs), 0L)
+  expect_type(fr$coefs$parent_var, "character")
+  expect_type(fr$coefs$label, "character")
+  expect_invisible(spicy:::validate_regression_frame(fr))
+})
+
+test_that("an intercept-only svyolr frame keeps character parent_var / label", {
+  # The survey twin of the polr witness above, same trap, same guard.
+  skip_if_not_installed("survey")
+  skip_if_not_installed("MASS")
+  d <- .cov100_ord_data()
+  d$.w <- rep(1, nrow(d))
+  d$.id <- seq_len(nrow(d))
+  des <- survey::svydesign(id = ~.id, weights = ~.w, data = d)
+  fr <- as_regression_frame(survey::svyolr(y ~ 1, design = des))
+  expect_identical(nrow(fr$coefs), 0L)
+  expect_type(fr$coefs$parent_var, "character")
+  expect_type(fr$coefs$label, "character")
+  expect_invisible(spicy:::validate_regression_frame(fr))
+})

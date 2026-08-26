@@ -124,10 +124,15 @@ as_regression_frame.svyolr <- function(
     integer(1)
   )
 
+  # as.character(): ifelse() returns its TEST vector, untouched, when the
+  # test is empty, so an intercept-only ordinal fit (`y ~ 1`, whose
+  # coef() holds the cut-points only) would give these two columns
+  # logical(0) instead of character(0). Same guard as the polr / clm
+  # builders in regression_frame_ordinal.R.
   coefs <- data.frame(
     term = nm,
-    parent_var = ifelse(is.na(ft), nm, ft),
-    label = ifelse(is.na(lvl), nm, lvl),
+    parent_var = as.character(ifelse(is.na(ft), nm, ft)),
+    label = as.character(ifelse(is.na(lvl), nm, lvl)),
     factor_level_pos = as.integer(pos),
     is_ref = rep(FALSE, length(nm)),
     estimate_type = rep("B", length(nm)),

@@ -286,8 +286,15 @@ as_regression_frame.clm <- function(
     integer(1)
   )
 
-  parent_var <- ifelse(is.na(ft), nm, ft)
-  label <- ifelse(is.na(lvl), nm, lvl)
+  # as.character(): ifelse() returns its TEST vector, untouched, when the
+  # test is empty -- so with no predictor coefficients at all these two
+  # come back logical(0), not character(0), and the frame's `parent_var`
+  # and `label` columns silently change type. An ordinal fit is exactly
+  # where that happens: `y ~ 1` is a legal model whose coef() holds the
+  # cut-points only, so `nm` is empty and every column below is
+  # zero-length.
+  parent_var <- as.character(ifelse(is.na(ft), nm, ft))
+  label <- as.character(ifelse(is.na(lvl), nm, lvl))
 
   coefs <- data.frame(
     term = nm,
@@ -671,8 +678,15 @@ as_regression_frame.clm <- function(
     integer(1)
   )
 
-  parent_var <- ifelse(is.na(ft), nm, ft)
-  label <- ifelse(is.na(lvl), nm, lvl)
+  # as.character(): ifelse() returns its TEST vector, untouched, when the
+  # test is empty -- so with no predictor coefficients at all these two
+  # come back logical(0), not character(0), and the frame's `parent_var`
+  # and `label` columns silently change type. An ordinal fit is exactly
+  # where that happens: `y ~ 1` is a legal model whose coef() holds the
+  # cut-points only, so `nm` is empty and every column below is
+  # zero-length.
+  parent_var <- as.character(ifelse(is.na(ft), nm, ft))
+  label <- as.character(ifelse(is.na(lvl), nm, lvl))
 
   coefs <- data.frame(
     term = nm,
