@@ -42,7 +42,7 @@
   skip_if_not_installed("brms")
   skip_if_not_installed("posterior")
   skip_if_not_installed("lme4")
-  .stan_cached_fit("brms_basic", "brms", function() {
+  .stan_cached_fit("brms_basic", .STAN_CACHE_PKGS_BRMS, function() {
     set.seed(1)
     brms::brm(
       Reaction ~ Days,
@@ -61,7 +61,7 @@
   skip_if_not_installed("brms")
   skip_if_not_installed("posterior")
   skip_if_not_installed("lme4")
-  .stan_cached_fit("brms_factor", "brms", function() {
+  .stan_cached_fit("brms_factor", .STAN_CACHE_PKGS_BRMS, function() {
     d <- lme4::sleepstudy
     d$treatment <- factor(rep(c("A", "B", "C"), length.out = nrow(d)))
     set.seed(2)
@@ -81,7 +81,7 @@
   skip_on_ci()
   skip_if_not_installed("brms")
   skip_if_not_installed("posterior")
-  .stan_cached_fit("brms_logit", "brms", function() {
+  .stan_cached_fit("brms_logit", .STAN_CACHE_PKGS_BRMS, function() {
     d <- mtcars
     set.seed(3)
     brms::brm(
@@ -102,7 +102,7 @@
   skip_if_not_installed("rstanarm")
   skip_if_not_installed("posterior")
   skip_if_not_installed("lme4")
-  .stan_cached_fit("rstanarm_basic", "rstanarm", function() {
+  .stan_cached_fit("rstanarm_basic", .STAN_CACHE_PKGS_RSTANARM, function() {
     set.seed(4)
     rstanarm::stan_glm(
       Reaction ~ Days,
@@ -380,15 +380,23 @@ test_that("brmsfit: multilevel fits render an RE block, single-level fits do not
   skip_if_not_installed("brms")
   skip_if_not_installed("posterior")
   skip_if_not_installed("lme4")
-  set.seed(5)
-  fit_re <- brms::brm(
-    Reaction ~ Days + (1 | Subject),
-    data = lme4::sleepstudy,
-    chains = 1,
-    iter = 400,
-    refresh = 0,
-    silent = 2,
-    backend = "rstan"
+  # Cached like the four named fixtures: this is the slowest fit in the
+  # file, and it was the only one still resampled on every run.
+  fit_re <- .stan_cached_fit(
+    "brms_multilevel",
+    .STAN_CACHE_PKGS_BRMS,
+    function() {
+      set.seed(5)
+      brms::brm(
+        Reaction ~ Days + (1 | Subject),
+        data = lme4::sleepstudy,
+        chains = 1,
+        iter = 400,
+        refresh = 0,
+        silent = 2,
+        backend = "rstan"
+      )
+    }
   )
   out_re <- paste(
     capture.output(print(suppressWarnings(table_regression(fit_re)))),

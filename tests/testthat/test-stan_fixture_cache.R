@@ -85,7 +85,7 @@ test_that("an unreadable entry is a miss, not a failure", {
     n <<- n + 1L
     list(tag = "a")
   }
-  .stan_cached_fit("probe_bad", "testthat", build)
+  suppressMessages(.stan_cached_fit("probe_bad", "testthat", build))
   entry <- list.files(
     .stan_cache_dir(),
     pattern = "^probe_bad-",
@@ -93,7 +93,12 @@ test_that("an unreadable entry is a miss, not a failure", {
   )
   expect_length(entry, 1L)
   writeLines("not an rds at all", entry)
-  out <- .stan_cached_fit("probe_bad", "testthat", build)
+  # The miss is not swallowed: it is a classed condition, so a cache
+  # that never reads cannot masquerade as one that always hits.
+  expect_condition(
+    out <- .stan_cached_fit("probe_bad", "testthat", build),
+    class = "spicy_fixture_cache_unreadable"
+  )
   expect_identical(n, 2L)
   expect_identical(out$tag, "a")
   # And the entry was rewritten, so the damage does not persist.
@@ -107,6 +112,66 @@ test_that("an unreadable entry is a miss, not a failure", {
   )
 })
 
+
+test_that("the key covers every package in the set, not just the first", {
+  skip_if(is.null(.stan_cache_dir()), "not a source checkout")
+  withr::defer(.cache_probe_clean("probe_set"))
+  .cache_probe_clean("probe_set")
+
+  n <- 0L
+  build <- function() {
+    n <<- n + 1L
+    list(tag = "a")
+  }
+  # Same fitting package, different toolchain / data member: the entry
+  # must not be reused. This is what makes an rstan or a sleepstudy bump
+  # invalidate a fit whose model call never changed.
+  .stan_cached_fit("probe_set", c("testthat", "withr"), build)
+  .stan_cached_fit("probe_set", c("testthat", "rlang"), build)
+  expect_identical(n, 2L)
+  # And an uninstalled member contributes NA rather than erroring.
+  expect_no_error(
+    .stan_cached_fit("probe_set", c("testthat", "notapackage123"), build)
+  )
+  expect_identical(n, 3L)
+})
+
+test_that("an unwritable cache says so instead of failing silently", {
+  skip_if(is.null(.stan_cache_dir()), "not a source checkout")
+  # A directory where the entry's path is already taken by a DIRECTORY:
+  # saveRDS() cannot write there, and the fixture must still be
+  # returned -- with the failure announced, not swallowed.
+  n <- 0L
+  build <- function() {
+    n <<- n + 1L
+    list(tag = "a")
+  }
+  d <- .stan_cache_dir()
+  # Discover the exact path this key writes, then block it.
+  suppressMessages(.stan_cached_fit("probe_ro", "testthat", build))
+  path <- list.files(d, pattern = "^probe_ro-", full.names = TRUE)
+  expect_length(path, 1L)
+  unlink(path)
+  dir.create(path)
+  withr::defer(unlink(path, recursive = TRUE))
+
+  # The second call finds a path it can neither read (unreadable note)
+  # nor write (unwritable note), and still returns the fit: one build
+  # here, two in total.
+  # Muffle only the unreadable note -- which also shows the two classes
+  # are separately catchable, not one undifferentiated "cache noise".
+  expect_condition(
+    out <- withCallingHandlers(
+      .stan_cached_fit("probe_ro", "testthat", build),
+      spicy_fixture_cache_unreadable = function(c) {
+        invokeRestart("muffleMessage")
+      }
+    ),
+    class = "spicy_fixture_cache_unwritable"
+  )
+  expect_identical(out$tag, "a")
+  expect_identical(n, 2L)
+})
 test_that("outside a source checkout the cache disables itself", {
   # This is the R CMD check / CRAN shape: the tests run from
   # <pkg>.Rcheck/tests/testthat, where there is no dev/ directory. The
