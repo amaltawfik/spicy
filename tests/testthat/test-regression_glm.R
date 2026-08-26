@@ -2683,6 +2683,7 @@ test_that("lm basic: matches effectsize::standardize_parameters", {
   td <- broom::tidy(table_regression(fit, standardized = "basic"))
   beta <- td[td$estimate_type == "beta", ]
   oracle <- effectsize::standardize_parameters(fit, method = "basic")
+  n_checked <- 0L
   for (term_nm in c("wt", "cyl6", "cyl8")) {
     if (!term_nm %in% beta$term) {
       next
@@ -2693,7 +2694,10 @@ test_that("lm basic: matches effectsize::standardize_parameters", {
       tolerance = 1e-8,
       info = paste("term =", term_nm)
     )
+    n_checked <- n_checked + 1L
   }
+  # All three terms, not "whichever happened to survive a rename".
+  expect_oracle_covered(n_checked, 3L)
 })
 
 test_that("lm smart: continuous uses 2 * SD, binary stays raw (Gelman 2008)", {

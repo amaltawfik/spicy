@@ -395,6 +395,7 @@ test_that("coxph coefs match parameters::model_parameters() (oracle)", {
   )
 
   b_rows <- fr$coefs[fr$coefs$estimate_type == "B" & !fr$coefs$is_ref, ]
+  expect_oracle_covered(length(oracle$Parameter))
   for (nm in oracle$Parameter) {
     spicy_row <- b_rows[b_rows$term == nm, ]
     oracle_row <- oracle[oracle$Parameter == nm, ]
@@ -434,6 +435,7 @@ test_that("survreg Weibull coefs match parameters::model_parameters() (oracle)",
   b_rows <- fr$coefs[fr$coefs$estimate_type == "B" & !fr$coefs$is_ref, ]
   # parameters may report Log(scale) or auxiliary rows; only check the
   # rows the frame surfaces.
+  n_checked <- 0L
   for (nm in b_rows$term) {
     oracle_row <- oracle[oracle$Parameter == nm, ]
     if (nrow(oracle_row) == 0L) {
@@ -458,5 +460,7 @@ test_that("survreg Weibull coefs match parameters::model_parameters() (oracle)",
       tolerance = 1e-6,
       info = paste("oracle p mismatch on term:", nm)
     )
+    n_checked <- n_checked + 1L
   }
+  expect_oracle_covered(n_checked)
 })

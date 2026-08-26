@@ -245,13 +245,19 @@ test_that("gam parametric coefs match parameters::model_parameters() (oracle)", 
   fr <- as_regression_frame(fit, model_id = "M1")
   oracle <- parameters::model_parameters(fit, ci = 0.95, effects = "fixed")
   b_rows <- fr$coefs[fr$coefs$estimate_type == "B" & !fr$coefs$is_ref, ]
+  n_checked <- 0L
   for (nm in b_rows$term) {
     oracle_row <- oracle[oracle$Parameter == nm, ]
+    # A smooth-term row has no parametric oracle counterpart, so the
+    # skip is legitimate here -- but the loop must still prove it
+    # compared something (register n. 243).
     if (nrow(oracle_row) == 0L) {
       next
     }
     spicy_row <- b_rows[b_rows$term == nm, ]
     expect_equal(spicy_row$estimate, oracle_row$Coefficient, tolerance = 1e-6)
     expect_equal(spicy_row$std_error, oracle_row$SE, tolerance = 1e-6)
+    n_checked <- n_checked + 1L
   }
+  expect_oracle_covered(n_checked)
 })

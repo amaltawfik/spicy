@@ -320,7 +320,9 @@ test_that("brmsfit coefs match parameters::model_parameters() (oracle)", {
   # Drop the distributional / sigma rows on the oracle side so the
   # intersection is restricted to true fixed effects.
   shared <- intersect(b_rows$term, oracle_terms)
-  expect_gt(length(shared), 0L)
+  # The oracle-coverage guard, as everywhere else: an intersection that
+  # comes back empty would leave the loop below asserting nothing.
+  expect_oracle_covered(length(shared))
   for (nm in shared) {
     spicy_row <- b_rows[b_rows$term == nm, ]
     oracle_row <- oracle[oracle_terms == nm, ]

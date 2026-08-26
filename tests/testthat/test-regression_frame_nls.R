@@ -207,6 +207,7 @@ test_that("nls coefs match parameters::model_parameters() (oracle)", {
   fit <- .fit_nls_mm()
   fr <- as_regression_frame(fit, model_id = "M1")
   oracle <- parameters::model_parameters(fit, ci = 0.95)
+  expect_oracle_covered(length(oracle$Parameter))
   for (nm in oracle$Parameter) {
     spicy_row <- fr$coefs[fr$coefs$term == nm, ]
     oracle_row <- oracle[oracle$Parameter == nm, ]

@@ -344,6 +344,7 @@ test_that("lm coefs match parameters::model_parameters() (oracle)", {
   b_rows <- frame$coefs[
     frame$coefs$estimate_type == "B" & !frame$coefs$is_ref,
   ]
+  expect_oracle_covered(length(oracle$Parameter))
   for (nm in oracle$Parameter) {
     spicy_row <- b_rows[b_rows$term == nm, ]
     oracle_row <- oracle[oracle$Parameter == nm, ]
@@ -397,6 +398,7 @@ test_that("glm coefs match parameters::model_parameters() (oracle)", {
   b_rows <- frame$coefs[
     frame$coefs$estimate_type == "B" & !frame$coefs$is_ref,
   ]
+  expect_oracle_covered(length(oracle$Parameter))
   for (nm in oracle$Parameter) {
     spicy_row <- b_rows[b_rows$term == nm, ]
     oracle_row <- oracle[oracle$Parameter == nm, ]

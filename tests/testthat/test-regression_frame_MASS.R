@@ -185,6 +185,7 @@ test_that("negbin coefs match parameters::model_parameters() (oracle)", {
   fr <- as_regression_frame(fit, model_id = "M1")
   oracle <- parameters::model_parameters(fit, ci = 0.95, exponentiate = FALSE)
   b_rows <- fr$coefs[fr$coefs$estimate_type == "B" & !fr$coefs$is_ref, ]
+  expect_oracle_covered(length(oracle$Parameter))
   for (nm in oracle$Parameter) {
     spicy_row <- b_rows[b_rows$term == nm, ]
     oracle_row <- oracle[oracle$Parameter == nm, ]
@@ -199,6 +200,7 @@ test_that("rlm coefs match parameters::model_parameters() (oracle)", {
   fr <- as_regression_frame(fit, model_id = "M1")
   oracle <- parameters::model_parameters(fit, ci = 0.95)
   b_rows <- fr$coefs[fr$coefs$estimate_type == "B" & !fr$coefs$is_ref, ]
+  expect_oracle_covered(length(oracle$Parameter))
   for (nm in oracle$Parameter) {
     spicy_row <- b_rows[b_rows$term == nm, ]
     oracle_row <- oracle[oracle$Parameter == nm, ]

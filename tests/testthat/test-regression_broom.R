@@ -286,6 +286,7 @@ test_that("tidy ⇄ raw long: per-coef estimates round-trip", {
   td <- broom::tidy(out)
   raw <- table_regression(fit, output = "long")
   # Each B-row in tidy must match the corresponding raw entry
+  n_checked <- 0L
   for (i in seq_len(nrow(td))) {
     if (td$estimate_type[i] != "B") {
       next
@@ -297,7 +298,10 @@ test_that("tidy ⇄ raw long: per-coef estimates round-trip", {
     ]
     expect_equal(td$estimate[i], raw_row$estimate, tolerance = 1e-12)
     expect_equal(td$std.error[i], raw_row$std.error, tolerance = 1e-12)
+    n_checked <- n_checked + 1L
   }
+  # A tidy frame with no B rows at all would make every iteration skip.
+  expect_oracle_covered(n_checked)
 })
 
 

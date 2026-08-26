@@ -306,6 +306,7 @@ test_that("feols coefs match parameters::model_parameters() (oracle)", {
   oracle <- parameters::model_parameters(fit, ci = 0.95)
 
   b_rows <- fr$coefs[fr$coefs$estimate_type == "B" & !fr$coefs$is_ref, ]
+  expect_oracle_covered(length(oracle$Parameter))
   for (nm in oracle$Parameter) {
     spicy_row <- b_rows[b_rows$term == nm, ]
     oracle_row <- oracle[oracle$Parameter == nm, ]
