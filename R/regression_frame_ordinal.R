@@ -286,8 +286,15 @@ as_regression_frame.clm <- function(
     integer(1)
   )
 
-  parent_var <- ifelse(is.na(ft), nm, ft)
-  label <- ifelse(is.na(lvl), nm, lvl)
+  # as.character(): ifelse() returns its TEST vector, untouched, when the
+  # test is empty -- so with no predictor coefficients at all these two
+  # come back logical(0), not character(0), and the frame's `parent_var`
+  # and `label` columns silently change type. An ordinal fit is exactly
+  # where that happens: `y ~ 1` is a legal model whose coef() holds the
+  # cut-points only, so `nm` is empty and every column below is
+  # zero-length.
+  parent_var <- as.character(ifelse(is.na(ft), nm, ft))
+  label <- as.character(ifelse(is.na(lvl), nm, lvl))
 
   coefs <- data.frame(
     term = nm,
@@ -671,8 +678,15 @@ as_regression_frame.clm <- function(
     integer(1)
   )
 
-  parent_var <- ifelse(is.na(ft), nm, ft)
-  label <- ifelse(is.na(lvl), nm, lvl)
+  # as.character(): ifelse() returns its TEST vector, untouched, when the
+  # test is empty -- so with no predictor coefficients at all these two
+  # come back logical(0), not character(0), and the frame's `parent_var`
+  # and `label` columns silently change type. An ordinal fit is exactly
+  # where that happens: `y ~ 1` is a legal model whose coef() holds the
+  # cut-points only, so `nm` is empty and every column below is
+  # zero-length.
+  parent_var <- as.character(ifelse(is.na(ft), nm, ft))
+  label <- as.character(ifelse(is.na(lvl), nm, lvl))
 
   coefs <- data.frame(
     term = nm,
@@ -992,7 +1006,11 @@ as_regression_frame.clm <- function(
     return(coefs)
   }
   if (is.null(coefs$is_threshold)) {
-    coefs$is_threshold <- FALSE
+    # rep(), not the scalar: `y ~ 1` is a legal ordinal model whose coefs
+    # frame has NO rows -- the cut-points below are its entire content --
+    # and assigning a length-1 value into a zero-row data.frame is an
+    # error, not a recycle.
+    coefs$is_threshold <- rep(FALSE, nrow(coefs))
   }
   # The reference distribution travels WITH the thresholds: the
   # statistic and the p were computed upstream under it, and the interval
@@ -1050,6 +1068,18 @@ as_regression_frame.clm <- function(
       n <= 0
   ) {
     return(na)
+  }
+  # A fit with no predictors IS its own null model, so both pseudo-R^2
+  # are exactly 0. The optimiser does not know that: it stops a few
+  # 1e-15 short of the null log-likelihood, the ratio comes out at
+  # -1.5e-14, and an intercept-only ordinal table rendered "R^2
+  # (McFadden)  -0.00" -- a negative R^2, which cannot happen for a
+  # nested null. Settle it at the cause (the two log-likelihoods being
+  # the same number) rather than clamping the ratio afterwards, so a
+  # genuinely negative value, which would mean the fit did not
+  # converge, stays visible.
+  if (abs(ll_full - ll_null) <= 1e-8 * max(1, abs(ll_null))) {
+    return(list(mcfadden = 0, nagelkerke = 0))
   }
   mcfadden <- 1 - ll_full / ll_null
   cox_snell <- 1 - exp((ll_null - ll_full) * 2 / n)

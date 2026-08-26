@@ -99,7 +99,10 @@ keeps the default display.}
 
 \item{output}{One of \code{"default"}, \code{"data.frame"}, \code{"long"}, or a
 rendering engine: \code{"tinytable"}, \code{"gt"}, \code{"flextable"},
-\code{"excel"}, \code{"clipboard"}, \code{"word"}.}
+\code{"excel"}, \code{"clipboard"}, \code{"word"}. \code{"data.frame"} and \code{"long"}
+are synonyms and return the same object: the compute frame is
+already long, one row per \verb{(variable x group)}. Same pair, same
+reason, as in \code{\link[=table_continuous]{table_continuous()}}.}
 
 \item{excel_path, excel_sheet, clipboard_delim, word_path}{Output
 destinations, as in \code{\link[=table_continuous]{table_continuous()}}.}
@@ -113,7 +116,8 @@ destinations, as in \code{\link[=table_continuous]{table_continuous()}}.}
 \value{
 A \code{spicy_continuous_svy_table}: the compute frame, with the
 display frame and the typed view attached. \code{output = "data.frame"}
-/ \code{"long"} returns the compute frame unclassed.
+/ \code{"long"} returns the compute frame unclassed -- the two tokens
+are synonyms and return identical objects.
 }
 \description{
 The design twin of \code{\link[=table_continuous]{table_continuous()}}: the same table of means,

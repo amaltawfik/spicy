@@ -213,12 +213,22 @@ test_that("hurdle count-component coefs match parameters::model_parameters() (or
     component = "conditional"
   )
 
+  # parameters prefixes every hurdle parameter with its component --
+  # `count_` here, `zero_` in the twin below. The frame keeps the
+  # model's bare term names and separates the components structurally,
+  # so without the prefix the join missed on EVERY term, the loop
+  # `next`ed past all of its expectations, and this block reported as
+  # skipped while checking nothing at all (register n. 243). The
+  # numbers were right the whole time; only the guard was dead.
   b_rows <- fr$coefs[fr$coefs$estimate_type == "B" & !fr$coefs$is_ref, ]
+  n_checked <- 0L
   for (nm in b_rows$term) {
-    oracle_row <- oracle[oracle$Parameter == nm, ]
-    if (nrow(oracle_row) == 0L) {
-      next
-    }
+    oracle_row <- oracle[oracle$Parameter == paste0("count_", nm), ]
+    expect_identical(
+      nrow(oracle_row),
+      1L,
+      info = paste("no count_ oracle row for term:", nm)
+    )
     spicy_row <- b_rows[b_rows$term == nm, ]
     expect_equal(
       spicy_row$estimate,
@@ -238,5 +248,60 @@ test_that("hurdle count-component coefs match parameters::model_parameters() (or
       tolerance = 1e-6,
       info = paste("oracle p mismatch on term:", nm)
     )
+    n_checked <- n_checked + 1L
   }
+  # Every predictor row compared, not merely one of them.
+  expect_oracle_covered(n_checked, nrow(b_rows))
+})
+
+test_that("hurdle zero-component coefs match parameters::model_parameters() (oracle)", {
+  skip_if_not_installed("parameters")
+  fit <- .fit_hurdle_basic()
+  fr <- as_regression_frame(fit, model_id = "M1")
+
+  oracle <- parameters::model_parameters(
+    fit,
+    ci = 0.95,
+    exponentiate = FALSE,
+    component = "zero_inflated"
+  )
+
+  # The zero-hurdle half of the model lives in
+  # `info$extras$component_blocks`, not in `coefs`, and its terms are
+  # already `zero_`-prefixed -- so this side of the model had no oracle
+  # at all while the count side had a dead one.
+  blocks <- fr$info$extras$component_blocks
+  expect_identical(length(blocks), 1L)
+  zb <- blocks[[1L]]$coefs
+  zb <- zb[!zb$is_ref, ]
+  n_checked <- 0L
+  for (nm in zb$term) {
+    oracle_row <- oracle[oracle$Parameter == nm, ]
+    expect_identical(
+      nrow(oracle_row),
+      1L,
+      info = paste("no zero_ oracle row for term:", nm)
+    )
+    spicy_row <- zb[zb$term == nm, ]
+    expect_equal(
+      spicy_row$estimate,
+      oracle_row$Coefficient,
+      tolerance = 1e-6,
+      info = paste("oracle B mismatch on term:", nm)
+    )
+    expect_equal(
+      spicy_row$std_error,
+      oracle_row$SE,
+      tolerance = 1e-6,
+      info = paste("oracle SE mismatch on term:", nm)
+    )
+    expect_equal(
+      spicy_row$p_value,
+      oracle_row$p,
+      tolerance = 1e-6,
+      info = paste("oracle p mismatch on term:", nm)
+    )
+    n_checked <- n_checked + 1L
+  }
+  expect_oracle_covered(n_checked, nrow(zb))
 })

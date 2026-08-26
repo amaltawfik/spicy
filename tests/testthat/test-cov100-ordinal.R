@@ -245,3 +245,150 @@ test_that("an aliased clm predictor renders undefined instead of erroring", {
     tolerance = 1e-9
   )
 })
+
+
+# ---- An intercept-only ordinal fit renders, end to end -----------------
+#
+# `y ~ 1` is a legal ordinal model, and not an empty one: coef() holds
+# the cut-points, and the cut-points ARE its content. It used to abort
+# in public, with an untranslated base error, on four separate
+# zero-row assumptions between the frame builder and the renderer:
+#   * ifelse() returning its empty TEST vector, so `parent_var` and
+#     `label` arrived logical(0) instead of character(0);
+#   * `coefs$is_threshold <- FALSE`, a length-1 assignment into a
+#     zero-row data.frame;
+#   * .rbind_union() padding a missing column with a length-1 typed NA;
+#   * six optional columns in align_frames() falling back to a scalar
+#     NA that data.frame() recycles into rows -- but refuses against
+#     none.
+# These witnesses drive the PUBLIC call, because the frame being valid
+# was never the promise the user cares about.
+
+.m1_ord_fits <- function() {
+  skip_if_not_installed("MASS")
+  skip_if_not_installed("ordinal")
+  skip_if_not_installed("survey")
+  d <- .cov100_ord_data()
+  d$.w <- rep(1, nrow(d))
+  d$.id <- seq_len(nrow(d))
+  des <- survey::svydesign(id = ~.id, weights = ~.w, data = d)
+  list(
+    polr = MASS::polr(y ~ 1, data = d, Hess = TRUE),
+    clm = ordinal::clm(y ~ 1, data = d),
+    svyolr = survey::svyolr(y ~ 1, design = des)
+  )
+}
+
+test_that("an intercept-only ordinal table renders its cut-points", {
+  fits <- .m1_ord_fits()
+  for (nm in names(fits)) {
+    out <- paste(
+      capture.output(print(table_regression(fits[[nm]]))),
+      collapse = "\n"
+    )
+    # The Thresholds block is there, with both cut-points, labelled.
+    expect_match(out, "Thresholds:", fixed = TRUE, info = nm)
+    expect_match(out, "lo | mid", fixed = TRUE, info = nm)
+    expect_match(out, "mid | hi", fixed = TRUE, info = nm)
+    # And the fit statistics, so the table is a table and not a header.
+    expect_match(out, "150", fixed = TRUE, info = nm)
+  }
+})
+
+test_that("an intercept-only ordinal frame keeps the schema's column types", {
+  fits <- .m1_ord_fits()
+  for (nm in names(fits)) {
+    fr <- as_regression_frame(fits[[nm]])
+    expect_identical(nrow(fr$coefs), 0L, info = nm)
+    expect_type(fr$coefs$parent_var, "character")
+    expect_type(fr$coefs$label, "character")
+    expect_invisible(spicy:::validate_regression_frame(fr))
+  }
+})
+
+test_that("every public output survives a zero-coefficient ordinal fit", {
+  fits <- .m1_ord_fits()
+  for (nm in names(fits)) {
+    fit <- fits[[nm]]
+    df <- table_regression(fit, output = "data.frame")
+    expect_s3_class(df, "data.frame")
+    expect_gt(nrow(df), 0L)
+    lg <- table_regression(fit, output = "long")
+    expect_s3_class(lg, "data.frame")
+    # The structured view exists -- empty_render_table() has none, so
+    # this is the assertion that says the table was really built.
+    s <- as_structured(table_regression(fit))
+    expect_gt(nrow(s$body), 0L)
+    expect_s3_class(broom::tidy(table_regression(fit)), "data.frame")
+    expect_s3_class(broom::glance(table_regression(fit)), "data.frame")
+    expect_no_error(table_regression(fit, exponentiate = TRUE))
+    expect_no_error(table_regression(
+      fit,
+      show_columns = c("b", "se", "ci", "p")
+    ))
+  }
+})
+
+test_that("a zero-coefficient fit sits beside a normal one in one table", {
+  # The alignment layer is where the scalar-NA columns lived: a table
+  # that mixes an empty frame with a populated one exercises the union
+  # of both row sets, not just the empty case.
+  fits <- .m1_ord_fits()
+  d <- .cov100_ord_data()
+  with_pred <- MASS::polr(y ~ x, data = d, Hess = TRUE)
+  out <- paste(
+    capture.output(print(table_regression(
+      list(M0 = fits$polr, M1 = with_pred)
+    ))),
+    collapse = "\n"
+  )
+  expect_match(out, "Thresholds:", fixed = TRUE)
+  expect_match(out, "x", fixed = TRUE)
+})
+
+test_that("pseudo-R2 is exactly zero when the fit IS its own null", {
+  # An intercept-only fit reproduces the marginal frequencies, so both
+  # pseudo-R2 are 0. The optimiser stops ~1e-14 short, which rendered as
+  # the meaningless "-0.00" -- a negative R2 for a nested null.
+  fits <- .m1_ord_fits()
+  for (nm in c("polr", "clm")) {
+    fs <- as_regression_frame(fits[[nm]])$info$fit_stats
+    expect_identical(fs$pseudo_r2_mcfadden, 0, info = nm)
+    expect_identical(fs$pseudo_r2_nagelkerke, 0, info = nm)
+  }
+  out <- paste(
+    capture.output(print(table_regression(fits$polr))),
+    collapse = "\n"
+  )
+  expect_false(grepl("-0.00", out, fixed = TRUE))
+})
+
+test_that("hiding the only block there is refuses instead of rendering nothing", {
+  # `show_thresholds = FALSE` on a fit whose whole content is
+  # cut-points leaves no rows at all. build_regression_table() answers
+  # that with empty_render_table(): no fit statistics, no note, and no
+  # structured view for as_structured() to find -- a bare header, which
+  # is worse than either a table or a refusal. Say what emptied it.
+  fits <- .m1_ord_fits()
+  for (nm in names(fits)) {
+    err <- tryCatch(
+      table_regression(fits[[nm]], show_thresholds = FALSE),
+      error = identity
+    )
+    expect_s3_class(err, "spicy_empty_table")
+    expect_match(conditionMessage(err), "no rows to show", fixed = TRUE)
+    expect_match(
+      conditionMessage(err),
+      "show_thresholds = FALSE",
+      fixed = TRUE
+    )
+  }
+  # A fit WITH predictors is untouched by the guard.
+  d <- .cov100_ord_data()
+  expect_no_error(
+    table_regression(
+      MASS::polr(y ~ x, data = d, Hess = TRUE),
+      show_thresholds = FALSE
+    )
+  )
+})

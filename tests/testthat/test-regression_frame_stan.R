@@ -12,11 +12,15 @@
 #   * Oracle cross-validation against parameters::model_parameters()
 #     (skipped if not installed).
 #
-# Fits are intentionally tiny (1 chain, ~300 iterations) so the suite
-# stays fast. Each test creates its own fit because brmsfit objects
-# are large enough that caching them across tests can blow up the
-# CI memory budget; the marginal MCMC cost per call is small (~2-5s).
+# Fits are intentionally tiny (1 chain, 400 iterations) and
 # `set.seed()` makes the draws deterministic for assertion stability.
+# Each test still asks for its own fit -- holding brmsfit objects in
+# memory across a whole file is what would strain the memory budget --
+# but the fit comes back from a DISK cache after the first sampling
+# run (helper-stan-cache.R), which is neither held in memory nor paid
+# for twice. Measured on this file: 1158 s before the cache, and 32 s on
+# every run once the entries exist. A run that has to fill them costs
+# roughly one sampling pass per fixture on top.
 # ---------------------------------------------------------------------------
 
 # ---- Fast-fit helpers ------------------------------------------------------
@@ -28,21 +32,29 @@
 # (every developer has a working Stan toolchain when they install
 # brms / rstanarm). CRAN runs each example separately and provides
 # Stan, so the help-page examples remain useful.
+#
+# The fits themselves come through .stan_cached_fit() (see
+# helper-stan-cache.R): sampled once, then read back from a
+# source-checkout-only disk cache keyed on the R version, the fitting
+# package's version and a hash of the model call below. Editing any of
+# these bodies -- the seed included -- invalidates the entry on its own.
 .fit_brms_basic <- function() {
   skip_on_ci()
   skip_if_not_installed("brms")
   skip_if_not_installed("posterior")
   skip_if_not_installed("lme4")
-  set.seed(1)
-  brms::brm(
-    Reaction ~ Days,
-    data = lme4::sleepstudy,
-    chains = 1,
-    iter = 400,
-    refresh = 0,
-    silent = 2,
-    backend = "rstan"
-  )
+  .stan_cached_fit("brms_basic", .STAN_CACHE_PKGS_BRMS, function() {
+    set.seed(1)
+    brms::brm(
+      Reaction ~ Days,
+      data = lme4::sleepstudy,
+      chains = 1,
+      iter = 400,
+      refresh = 0,
+      silent = 2,
+      backend = "rstan"
+    )
+  })
 }
 
 .fit_brms_factor <- function() {
@@ -50,36 +62,40 @@
   skip_if_not_installed("brms")
   skip_if_not_installed("posterior")
   skip_if_not_installed("lme4")
-  d <- lme4::sleepstudy
-  d$treatment <- factor(rep(c("A", "B", "C"), length.out = nrow(d)))
-  set.seed(2)
-  brms::brm(
-    Reaction ~ Days + treatment,
-    data = d,
-    chains = 1,
-    iter = 400,
-    refresh = 0,
-    silent = 2,
-    backend = "rstan"
-  )
+  .stan_cached_fit("brms_factor", .STAN_CACHE_PKGS_BRMS, function() {
+    d <- lme4::sleepstudy
+    d$treatment <- factor(rep(c("A", "B", "C"), length.out = nrow(d)))
+    set.seed(2)
+    brms::brm(
+      Reaction ~ Days + treatment,
+      data = d,
+      chains = 1,
+      iter = 400,
+      refresh = 0,
+      silent = 2,
+      backend = "rstan"
+    )
+  })
 }
 
 .fit_brms_logit <- function() {
   skip_on_ci()
   skip_if_not_installed("brms")
   skip_if_not_installed("posterior")
-  d <- mtcars
-  set.seed(3)
-  brms::brm(
-    am ~ mpg,
-    data = d,
-    family = brms::bernoulli(),
-    chains = 1,
-    iter = 400,
-    refresh = 0,
-    silent = 2,
-    backend = "rstan"
-  )
+  .stan_cached_fit("brms_logit", .STAN_CACHE_PKGS_BRMS, function() {
+    d <- mtcars
+    set.seed(3)
+    brms::brm(
+      am ~ mpg,
+      data = d,
+      family = brms::bernoulli(),
+      chains = 1,
+      iter = 400,
+      refresh = 0,
+      silent = 2,
+      backend = "rstan"
+    )
+  })
 }
 
 .fit_rstanarm_basic <- function() {
@@ -87,14 +103,16 @@
   skip_if_not_installed("rstanarm")
   skip_if_not_installed("posterior")
   skip_if_not_installed("lme4")
-  set.seed(4)
-  rstanarm::stan_glm(
-    Reaction ~ Days,
-    data = lme4::sleepstudy,
-    chains = 1,
-    iter = 400,
-    refresh = 0
-  )
+  .stan_cached_fit("rstanarm_basic", .STAN_CACHE_PKGS_RSTANARM, function() {
+    set.seed(4)
+    rstanarm::stan_glm(
+      Reaction ~ Days,
+      data = lme4::sleepstudy,
+      chains = 1,
+      iter = 400,
+      refresh = 0
+    )
+  })
 }
 
 
@@ -320,10 +338,15 @@ test_that("brmsfit coefs match parameters::model_parameters() (oracle)", {
   # Drop the distributional / sigma rows on the oracle side so the
   # intersection is restricted to true fixed effects.
   shared <- intersect(b_rows$term, oracle_terms)
-  expect_gt(length(shared), 0L)
+  n_checked <- 0L
   for (nm in shared) {
     spicy_row <- b_rows[b_rows$term == nm, ]
     oracle_row <- oracle[oracle_terms == nm, ]
+    # Both lookups must hit exactly one row: an unmatched term
+    # would otherwise compare a zero-row frame and the counter
+    # below would never see it.
+    expect_identical(nrow(oracle_row), 1L, info = nm)
+    expect_identical(nrow(spicy_row), 1L, info = nm)
     oracle_est <- oracle_row$Median %||% oracle_row$Coefficient
     # Posterior comparisons across packages have larger natural
     # tolerance because the underlying draws differ (RNG seed, sample
@@ -336,7 +359,11 @@ test_that("brmsfit coefs match parameters::model_parameters() (oracle)", {
       tolerance = 1e-3,
       info = paste("oracle estimate mismatch on term:", nm)
     )
+    n_checked <- n_checked + 1L
   }
+  # Counted BY the loop, not before it: an empty intersection and a
+  # neutered body have to look different to this guard.
+  expect_oracle_covered(n_checked, length(shared))
 })
 
 
@@ -361,15 +388,23 @@ test_that("brmsfit: multilevel fits render an RE block, single-level fits do not
   skip_if_not_installed("brms")
   skip_if_not_installed("posterior")
   skip_if_not_installed("lme4")
-  set.seed(5)
-  fit_re <- brms::brm(
-    Reaction ~ Days + (1 | Subject),
-    data = lme4::sleepstudy,
-    chains = 1,
-    iter = 400,
-    refresh = 0,
-    silent = 2,
-    backend = "rstan"
+  # Cached like the four named fixtures: this is the slowest fit in the
+  # file, and it was the only one still resampled on every run.
+  fit_re <- .stan_cached_fit(
+    "brms_multilevel",
+    .STAN_CACHE_PKGS_BRMS,
+    function() {
+      set.seed(5)
+      brms::brm(
+        Reaction ~ Days + (1 | Subject),
+        data = lme4::sleepstudy,
+        chains = 1,
+        iter = 400,
+        refresh = 0,
+        silent = 2,
+        backend = "rstan"
+      )
+    }
   )
   out_re <- paste(
     capture.output(print(suppressWarnings(table_regression(fit_re)))),
@@ -378,9 +413,13 @@ test_that("brmsfit: multilevel fits render an RE block, single-level fits do not
   expect_match(out_re, "Random effects:", fixed = TRUE)
   expect_match(out_re, "Subject (Intercept)", fixed = TRUE)
   expect_match(out_re, "Random effects (MCMC).", fixed = TRUE)
-  expect_true(isTRUE(
-    suppressWarnings(as_regression_frame(fit_re))$info$supports$ame
-  ))
+  fr_re <- suppressWarnings(as_regression_frame(fit_re))
+  expect_true(isTRUE(fr_re$info$supports$ame))
+  # `info$n_groups` is a named INTEGER VECTOR, the schema's shape and
+  # the one lme4::ngrps() gives the merMod builder. brms::ngrps()
+  # returns a list and the builder used to pass it straight through.
+  expect_type(fr_re$info$n_groups, "integer")
+  expect_identical(fr_re$info$n_groups[["Subject"]], 18L)
 })
 
 

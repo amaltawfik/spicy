@@ -233,6 +233,7 @@ test_that("multinom coefs match parameters::model_parameters() (oracle)", {
   oracle <- parameters::model_parameters(fit, ci = 0.95, exponentiate = FALSE)
 
   non_ref <- fr$coefs[!fr$coefs$is_ref, ]
+  n_checked <- 0L
   for (i in seq_len(nrow(non_ref))) {
     spicy_row <- non_ref[i, ]
     # parameters reports per-outcome coefs; match on (Parameter, Response).
@@ -268,5 +269,7 @@ test_that("multinom coefs match parameters::model_parameters() (oracle)", {
       tolerance = 1e-6,
       info = paste(spicy_row$outcome_level, "::", spicy_row$term)
     )
+    n_checked <- n_checked + 1L
   }
+  expect_oracle_covered(n_checked, nrow(non_ref))
 })

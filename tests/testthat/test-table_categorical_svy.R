@@ -1154,3 +1154,31 @@ test_that("a group whose name collides with the margin is disambiguated", {
   expect_true(isTRUE(s$col_meta[["Total_1 %"]]$total))
   expect_null(s$col_meta[["Total %"]]$total)
 })
+
+
+# ---- "data.frame" and "long" are synonyms, and the docs say so ----------
+
+test_that("output = 'data.frame' and output = 'long' return one object", {
+  # Pinned because ?table_categorical_svy now promises it. Worth saying
+  # out loud because the data-frame sibling behaves differently:
+  # table_categorical() really does build a second, long shape, while
+  # this design carries a single WIDE compute frame -- one row per
+  # level, a pair of columns per group -- and both names reach it.
+  des <- .svycat_design("clus1")
+  as_df <- suppressWarnings(table_categorical_svy(
+    des,
+    select = c(sch.wide, stype),
+    by = comp.imp,
+    output = "data.frame"
+  ))
+  as_long <- suppressWarnings(table_categorical_svy(
+    des,
+    select = c(sch.wide, stype),
+    by = comp.imp,
+    output = "long"
+  ))
+  expect_identical(as_df, as_long)
+  # And it is the wide frame, not a pivoted one.
+  expect_true(all(c("variable", "level", ".row_role") %in% names(as_df)))
+  expect_true(any(grepl(" n$", names(as_df))))
+})

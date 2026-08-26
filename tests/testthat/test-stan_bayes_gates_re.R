@@ -90,9 +90,13 @@ test_that("stan_glmer renders an RE block, not per-group b[] rows", {
     tolerance = 1e-10
   )
 
-  # n_groups feeds the N (region) fit-stat machinery.
+  # n_groups feeds the N (region) fit-stat machinery. Named INTEGER
+  # VECTOR, the schema's shape and the one lme4::ngrps() gives the
+  # merMod builder -- this test used to read it with `$`, which only
+  # works on the list the Bayesian builders wrongly published.
   fr <- as_regression_frame(fit)
-  expect_identical(fr$info$n_groups$region, 6L)
+  expect_type(fr$info$n_groups, "integer")
+  expect_identical(fr$info$n_groups[["region"]], 6L)
 })
 
 

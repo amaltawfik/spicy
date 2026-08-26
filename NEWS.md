@@ -133,7 +133,9 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
 * Mixed effects (`lmer` / `glmer`, `glmmTMB`, `lme`, `gls`): random effects
   as a block of rows (SD, correlations, residual, with SE and CI), ICC,
   per-group N and marginal / conditional R² as fit statistics, and a
-  boundary-corrected LR test against the model without random effects.
+  boundary-corrected LR test against the model without random effects. A
+  correlation row sits inside the block of the grouping factor it belongs
+  to, on all three engines.
 * GEE fits (`geeglm()`): its own sandwich SEs (clustered on `id =`, or the
   `std.err =` jackknife) are the inference, the footer gives the working
   correlation and alpha, fit stats report the cluster structure (`"qic"` /
@@ -154,7 +156,8 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
   terms and `clm(scale = ~)` scale coefficients get their own blocks, the
   latter kept on the log scale under `exponentiate = TRUE`. An aliased
   `clm` predictor (rank-deficient design) renders as undefined, like an
-  aliased `lm` or `glm` coefficient.
+  aliased `lm` or `glm` coefficient. An intercept-only fit (`y ~ 1`)
+  renders too: its cut-points are its whole content.
 * Robust / IV / panel (`estimatr`, `ivreg`, `feols` and
   friends); beta, Tobit, and two-part counts (`betareg`, `tobit`, `zeroinfl`
   / `hurdle`); plus `rlm`, `glm.nb`, `rq`, `gam` / `bam`, `nls`,

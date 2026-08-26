@@ -96,6 +96,7 @@ test_that("binary multinom: coefs match parameters::model_parameters() (oracle)"
   fr <- as_regression_frame(fit, model_id = "M1")
   oracle <- parameters::model_parameters(fit, ci = 0.95, exponentiate = FALSE)
   non_ref <- fr$coefs[!fr$coefs$is_ref, ]
+  n_checked <- 0L
   for (i in seq_len(nrow(non_ref))) {
     spicy_row <- non_ref[i, ]
     bare_term <- sub("^virginica: ", "", spicy_row$term)
@@ -116,7 +117,9 @@ test_that("binary multinom: coefs match parameters::model_parameters() (oracle)"
       info = bare_term
     )
     expect_equal(spicy_row$p_value, orow$p, tolerance = 1e-6, info = bare_term)
+    n_checked <- n_checked + 1L
   }
+  expect_oracle_covered(n_checked, nrow(non_ref))
 })
 
 

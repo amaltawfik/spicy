@@ -363,7 +363,12 @@
 #'   `"right"`.
 #' @param output One of `"default"`, `"data.frame"`, `"long"`, or a
 #'   rendering engine: `"tinytable"`, `"gt"`, `"flextable"`,
-#'   `"excel"`, `"clipboard"`, `"word"`.
+#'   `"excel"`, `"clipboard"`, `"word"`. `"data.frame"` and `"long"`
+#'   are synonyms here and return the same object: the wide compute
+#'   frame, one row per level with a pair of columns per group. Note
+#'   the difference from [table_categorical()], where the two tokens
+#'   return genuinely different shapes -- this design carries a single
+#'   compute frame, and both names reach it.
 #' @param indent_text,indent_text_excel_clipboard Level-row
 #'   indentation, for the console and for the plain-text engines.
 #' @param excel_path,excel_sheet,clipboard_delim,word_path Output
@@ -374,7 +379,8 @@
 #' @return A `spicy_categorical_svy_table`: the wide compute frame,
 #'   with the display frame and the typed view attached.
 #'   `output = "data.frame"` / `"long"` returns the compute frame
-#'   unclassed.
+#'   unclassed -- the two tokens are synonyms and return identical
+#'   objects.
 #'
 #' @seealso [table_categorical()] for the data-frame sibling,
 #'   [table_continuous_svy()] for continuous variables.
@@ -805,6 +811,12 @@ table_categorical_svy <- function(
   )
   .warn_negative_weights_no_test(test_refused)
 
+  # `output = "data.frame"` and `output = "long"` return the SAME
+  # object, and the documentation says so. Unlike table_categorical(),
+  # which really does build a second, long shape, this design has one
+  # compute frame -- wide, one row per level with a pair of columns per
+  # group -- and both names reach it. The pair is kept so the argument
+  # reads the same across the family.
   if (output %in% c("data.frame", "long")) {
     attr(result, "note") <- note
     return(result)

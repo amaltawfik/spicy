@@ -250,6 +250,7 @@ test_that("glmmTMB CI on variance = (SD CI)^2 (Delta-method roundtrip)", {
   fr <- as_regression_frame(fit)
   vc <- fr$info$random_effects$variance_components
   ci_sd <- confint(fit, method = "Wald", parm = "theta_")
+  n_checked <- 0L
   for (i in seq_len(nrow(vc))) {
     if (vc$group[i] == "Residual") {
       next
@@ -260,7 +261,10 @@ test_that("glmmTMB CI on variance = (SD CI)^2 (Delta-method roundtrip)", {
       tolerance = 1e-10
     )
     expect_equal(vc$ci_upper[i], ci_sd[1L, "97.5 %"]^2, tolerance = 1e-10)
+    n_checked <- n_checked + 1L
   }
+  # Skipping the residual row must not amount to skipping every row.
+  expect_oracle_covered(n_checked)
 })
 
 

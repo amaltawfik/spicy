@@ -1393,12 +1393,21 @@ extract_ame_glm <- function(
 
 # rbind two coefs-shaped data.frames with differing columns: pad each to the
 # union (NA of the source column's type) and bind in the first frame's order.
+#
+# The padding is rep()'d to the target's own row count rather than left as
+# the length-1 typed NA: `[[<-` on a data.frame recycles a scalar only
+# into a frame that HAS rows, and errors against zero of them. `a` is
+# the side that reaches here empty -- an intercept-only ordinal fit
+# (`y ~ 1`) has no coefficient rows at all, and arrives with its
+# cut-points as `b`. Every caller guards `b` on `nrow(b) > 0L`, so its
+# own rep() is symmetry rather than a demonstrated case; it costs
+# nothing and keeps the two halves readable as one rule.
 .rbind_union <- function(a, b) {
   for (col in setdiff(names(b), names(a))) {
-    a[[col]] <- b[[col]][NA_integer_]
+    a[[col]] <- rep(b[[col]][NA_integer_], nrow(a))
   }
   for (col in setdiff(names(a), names(b))) {
-    b[[col]] <- a[[col]][NA_integer_]
+    b[[col]] <- rep(a[[col]][NA_integer_], nrow(b))
   }
   rbind(a, b[, names(a), drop = FALSE])
 }

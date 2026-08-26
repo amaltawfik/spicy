@@ -282,6 +282,7 @@ test_that("polr coefs match parameters::model_parameters() (oracle)", {
   oracle <- parameters::model_parameters(fit, ci = 0.95, exponentiate = FALSE)
 
   b_rows <- fr$coefs[fr$coefs$estimate_type == "B" & !fr$coefs$is_ref, ]
+  n_checked <- 0L
   for (nm in b_rows$term) {
     oracle_row <- oracle[oracle$Parameter == nm, ]
     if (nrow(oracle_row) == 0L) {
@@ -300,7 +301,9 @@ test_that("polr coefs match parameters::model_parameters() (oracle)", {
       tolerance = 1e-6,
       info = paste("oracle SE mismatch on term:", nm)
     )
+    n_checked <- n_checked + 1L
   }
+  expect_oracle_covered(n_checked, nrow(b_rows))
 })
 
 test_that("clm coefs match parameters::model_parameters() (oracle)", {
@@ -311,6 +314,7 @@ test_that("clm coefs match parameters::model_parameters() (oracle)", {
   oracle <- parameters::model_parameters(fit, ci = 0.95, exponentiate = FALSE)
 
   b_rows <- fr$coefs[fr$coefs$estimate_type == "B" & !fr$coefs$is_ref, ]
+  n_checked <- 0L
   for (nm in b_rows$term) {
     oracle_row <- oracle[oracle$Parameter == nm, ]
     if (nrow(oracle_row) == 0L) {
@@ -335,7 +339,9 @@ test_that("clm coefs match parameters::model_parameters() (oracle)", {
       tolerance = 1e-6,
       info = paste("oracle p mismatch on term:", nm)
     )
+    n_checked <- n_checked + 1L
   }
+  expect_oracle_covered(n_checked, nrow(b_rows))
 })
 
 

@@ -45,3 +45,8 @@ dev/_source/
 dev/journal_styles/
 /*.tar.gz
 tools/suite_results.csv
+
+# Stan fixture cache: brmsfit / stanreg objects sampled once and read
+# back by the test helpers (tests/testthat/helper-stan-cache.R). Large,
+# machine-specific, and regenerated on demand.
+dev/.fixture_cache/

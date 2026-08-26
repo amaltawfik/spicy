@@ -295,3 +295,76 @@ test_that("a one-factor lmer block is untouched by the reorder", {
   )
   expect_identical(vc$is_correlation, c(FALSE, FALSE, TRUE, FALSE))
 })
+
+
+# ---- The same block order on glmmTMB (n252/n248) -------------------------
+#
+# glmmTMB appends its correlation rows in the same one lump, and lumped
+# them in the same wrong place on two grouping factors. Same helper, same
+# rule, so a structure fitted by lme4, nlme or glmmTMB renders alike.
+
+.fit_glmmTMB_two_factors_corr <- function() {
+  skip_if_not_installed("glmmTMB")
+  skip_if_not_installed("nlme")
+  suppressWarnings(glmmTMB::glmmTMB(
+    distance ~ age + (1 + age | Subject) + (1 | Sex),
+    data = as.data.frame(nlme::Orthodont),
+    REML = FALSE
+  ))
+}
+
+test_that("a two-factor glmmTMB keeps each correlation inside its own block", {
+  fit <- .fit_glmmTMB_two_factors_corr()
+  vc <- suppressWarnings(
+    spicy:::as_regression_frame(fit)$info$random_effects$variance_components
+  )
+
+  expect_identical(
+    vc$group,
+    c("Subject", "Subject", "Subject", "Sex", "Residual")
+  )
+  expect_identical(
+    vc$term,
+    c("(Intercept)", "age", "(Intercept), age", "(Intercept)", "")
+  )
+  # The moved row is the correlation, and it moved WITH its values: the
+  # sort runs after the Wald SE / CI attach, so nothing is re-keyed.
+  is_cor <- vc$is_correlation %in% TRUE
+  expect_identical(which(is_cor), 3L)
+  oracle <- attr(glmmTMB::VarCorr(fit)$cond$Subject, "correlation")[1L, 2L]
+  expect_equal(vc$corr[is_cor], oracle, tolerance = 1e-10)
+
+  # And the rendered block reads in that order too.
+  out <- paste(
+    capture.output(print(suppressWarnings(table_regression(fit)))),
+    collapse = "\n"
+  )
+  expect_lt(
+    regexpr("\u03C1 Subject", out, fixed = TRUE),
+    regexpr("\u03C3 Sex", out, fixed = TRUE)
+  )
+})
+
+test_that("a one-factor glmmTMB block is untouched by the reorder", {
+  skip_if_not_installed("glmmTMB")
+  skip_if_not_installed("nlme")
+  fit <- suppressWarnings(glmmTMB::glmmTMB(
+    distance ~ age + (1 + age | Subject),
+    data = as.data.frame(nlme::Orthodont),
+    REML = FALSE
+  ))
+  vc <- suppressWarnings(
+    spicy:::as_regression_frame(fit)$info$random_effects$variance_components
+  )
+
+  # Byte-identical to what the unsorted path produced, rownames included.
+  expect_identical(
+    spicy:::.merMod_order_blocks(vc, c("Subject")),
+    vc
+  )
+  expect_identical(
+    vc$group,
+    c("Subject", "Subject", "Subject", "Residual")
+  )
+  expect_identical(vc$is_correlation, c(FALSE, FALSE, TRUE, FALSE))
+})

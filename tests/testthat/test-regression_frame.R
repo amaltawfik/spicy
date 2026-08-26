@@ -690,3 +690,166 @@ test_that("a screen refusal names the wrapped classes, not `uv_screen`", {
   expect_match(conditionMessage(err), "`coxph`", fixed = TRUE)
   expect_false(grepl("uv_screen", conditionMessage(err), fixed = TRUE))
 })
+
+
+# ---------------------------------------------------------------------------
+# The validator is ARMED at runtime (G6): the schema is checked at the
+# constructor, again wherever a method mutates a frame after construction,
+# and once more at the dispatch boundary the pipeline consumes.
+# ---------------------------------------------------------------------------
+
+# A frame built entirely by hand -- it never passes through
+# new_regression_frame(), which is the point: the constructor normalises
+# `info$supports` through modifyList(default_supports(), ...), so a
+# MISSING supports entry cannot survive it and can only be witnessed at
+# the dispatch boundary.
+.hand_built_frame <- function(mangle = identity) {
+  coefs <- data.frame(
+    term = c("(Intercept)", "x"),
+    parent_var = c("(Intercept)", "x"),
+    label = c("(Intercept)", "x"),
+    factor_level_pos = c(NA_integer_, NA_integer_),
+    is_ref = c(FALSE, FALSE),
+    estimate_type = c("B", "B"),
+    estimate = c(1, 0.5),
+    std_error = c(0.1, 0.05),
+    ci_lower = c(0.8, 0.4),
+    ci_upper = c(1.2, 0.6),
+    statistic = c(10, 10),
+    df = c(98, 98),
+    p_value = c(0.01, 0.02),
+    stringsAsFactors = FALSE
+  )
+  info <- list(
+    class = "spicy_fake_fit",
+    family = list(family = "gaussian", link = "identity"),
+    dv = "y",
+    n_obs = 100L,
+    weights_kind = "none",
+    fit_stats = list(nobs = 100L),
+    vcov_kind = "model",
+    vcov_label = "OLS",
+    ci_level = 0.95,
+    ci_method = "wald",
+    supports = default_supports(),
+    extras = default_extras()
+  )
+  mangle(structure(
+    list(coefs = coefs, info = info),
+    class = "spicy_regression_frame",
+    spicy_frame_version = spicy_frame_version(),
+    fit = structure(list(), class = "spicy_fake_fit")
+  ))
+}
+
+# Register a test-only as_regression_frame() method returning the
+# hand-built frame, for the duration of the calling test. This is the
+# only way to reach the dispatch boundary with a frame the constructor
+# never saw -- exactly the position a third-party method would be in.
+.with_fake_frame_method <- function(mangle, env = parent.frame()) {
+  ns <- asNamespace("spicy")
+  registerS3method(
+    "as_regression_frame",
+    "spicy_fake_fit",
+    function(fit, ...) .hand_built_frame(mangle),
+    envir = ns
+  )
+  withr::defer(
+    rm(
+      list = "as_regression_frame.spicy_fake_fit",
+      envir = get(".__S3MethodsTable__.", envir = ns)
+    ),
+    envir = env
+  )
+  structure(list(), class = "spicy_fake_fit")
+}
+
+test_that("the hand-built frame is accepted while it is intact", {
+  fake <- .with_fake_frame_method(identity)
+  # Baseline: without this the two refusals below would prove nothing --
+  # they could be failing for any other reason.
+  expect_s3_class(table_regression(fake), "spicy_regression_table")
+})
+
+test_that("dispatch boundary rejects a frame missing a supports entry", {
+  fake <- .with_fake_frame_method(function(fr) {
+    fr$info$supports$ame <- NULL
+    fr
+  })
+  err <- tryCatch(table_regression(fake), error = identity)
+  expect_s3_class(err, "spicy_invalid_frame")
+  expect_match(conditionMessage(err), "missing: ame", fixed = TRUE)
+})
+
+test_that("a missing supports entry is unreachable through the constructor", {
+  # Why the witness above needs the dispatch boundary: the constructor
+  # merges onto default_supports(), so the deleted flag comes back.
+  fr <- .hand_built_frame()
+  info <- fr$info
+  info$supports$ame <- NULL
+  built <- new_regression_frame(fr$coefs, info, structure(list(), class = "lm"))
+  expect_true("ame" %in% names(built$info$supports))
+  expect_false(built$info$supports$ame)
+})
+
+test_that("dispatch boundary rejects an unknown estimate_type token", {
+  # The bug class this guard exists to stop (4ff93cda): a builder emits
+  # a token no renderer knows, and the row silently disappears
+  # downstream instead of the frame being refused here.
+  fake <- .with_fake_frame_method(function(fr) {
+    fr$coefs$estimate_type <- c("B", "partial_r2")
+    fr
+  })
+  err <- tryCatch(table_regression(fake), error = identity)
+  expect_s3_class(err, "spicy_invalid_frame")
+  expect_match(conditionMessage(err), "unknown: partial_r2", fixed = TRUE)
+})
+
+test_that("constructor boundary rejects a schema violation at creation", {
+  fr <- .hand_built_frame()
+  coefs <- fr$coefs
+  # The likeliest real-world slip: a builder that never fills std_error
+  # and leaves the all-NA logical that bare `NA` (not `NA_real_`) makes.
+  coefs$std_error <- c(NA, NA)
+  err <- tryCatch(
+    new_regression_frame(coefs, fr$info, structure(list(), class = "lm")),
+    error = identity
+  )
+  expect_s3_class(err, "spicy_invalid_frame")
+  expect_match(conditionMessage(err), "std_error", fixed = TRUE)
+  expect_match(
+    conditionMessage(err),
+    "expected double, got logical",
+    fixed = TRUE
+  )
+})
+
+test_that("mutation boundary re-checks a frame edited after construction", {
+  # .attach_event_counts() is the one place five builders (geeglm,
+  # glmmTMB, merMod, coxph, svycoxph) touch their frame after
+  # new_regression_frame() returned, so the constructor's verdict is
+  # stale by the time the frame is handed back.
+  fit <- glm(am ~ wt, data = mtcars, family = binomial())
+  fr <- as_regression_frame(fit, model_id = "M1")
+  expect_invisible(validate_regression_frame(fr))
+  fr$coefs$estimate_type <- rep("not_a_token", nrow(fr$coefs))
+  expect_error(
+    .attach_event_counts(fr, fit),
+    class = "spicy_invalid_frame"
+  )
+})
+
+test_that("the generic stays introspectable as an S3 generic", {
+  # Load-bearing, not cosmetic: classify_unsupported_lm_class() decides
+  # a class is supported by asking getS3method(), and the
+  # unsupported-class error tells the user to run methods(). Both go
+  # through utils:::findGeneric(), which reads body(as_regression_frame)
+  # for a literal UseMethod() call -- so the dispatch may never move out
+  # of the generic into a shim. Moving it there was measured to reject
+  # every supported model as unsupported.
+  expect_false(
+    is.null(utils::getS3method("as_regression_frame", "lm", optional = TRUE))
+  )
+  expect_silent(m <- utils::methods("as_regression_frame"))
+  expect_true(length(m) > 30L)
+})

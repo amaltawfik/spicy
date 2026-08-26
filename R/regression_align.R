@@ -239,34 +239,39 @@ align_frames <- function(
         outcome_level = if (!is.null(cf$outcome_level)) {
           as.character(cf$outcome_level)
         } else {
-          NA_character_
+          rep(NA_character_, nrow(cf))
         },
         # Probability of direction (Bayesian frames only; NA elsewhere).
         pd = if (!is.null(cf$pd)) {
           as.numeric(cf$pd)
         } else {
-          NA_real_
+          rep(NA_real_, nrow(cf))
         },
         # Per-parameter sampler diagnostics (Bayesian frames only).
+        # rep(), like every other optional column above: data.frame()
+        # recycles a length-1 default into a populated frame silently,
+        # but refuses it against zero rows ("arguments imply differing
+        # number of rows: 0, 1"). An intercept-only ordinal fit is
+        # exactly that frame.
         rhat = if (!is.null(cf$rhat)) {
           as.numeric(cf$rhat)
         } else {
-          NA_real_
+          rep(NA_real_, nrow(cf))
         },
         ess_bulk = if (!is.null(cf$ess_bulk)) {
           as.numeric(cf$ess_bulk)
         } else {
-          NA_real_
+          rep(NA_real_, nrow(cf))
         },
         ess_tail = if (!is.null(cf$ess_tail)) {
           as.numeric(cf$ess_tail)
         } else {
-          NA_real_
+          rep(NA_real_, nrow(cf))
         },
         mcse = if (!is.null(cf$mcse)) {
           as.numeric(cf$mcse)
         } else {
-          NA_real_
+          rep(NA_real_, nrow(cf))
         },
         stringsAsFactors = FALSE
       )
