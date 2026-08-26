@@ -1934,11 +1934,32 @@ build_icc_omitted_footer_block_from_frames <- function(
   if (all(is.na(reasons))) {
     return(NULL)
   }
+  # The vocabulary of `icc_omitted` is closed: `.merMod_icc_omitted_reason()`
+  # emits "multi_group" or NA, and the NA half never reaches here. The
+  # default therefore names an internal inconsistency rather than
+  # returning a value -- because the value it used to return was
+  # NA_character_, and a footer builder that hands back NA does not stay
+  # silent: with one model it made the block itself NA, and with two it
+  # composed the literal line "Model 1: NA". Measured, on a made-up
+  # token. A reason token added without its sentence must fail here, not
+  # print the word NA to a reader.
   msg <- function(reason) {
     switch(
       reason,
       multi_group = spicy_str("note_icc_multi_group"),
-      NA_character_
+      spicy_abort(
+        c(
+          sprintf(
+            "Internal: no footer sentence for `icc_omitted` reason %s.",
+            sQuote(reason)
+          ),
+          "i" = paste0(
+            "Add the reason to build_icc_omitted_footer_block_from_frames() ",
+            "together with its i18n key."
+          )
+        ),
+        class = "spicy_internal_invariant"
+      )
     )
   }
   affected <- which(!is.na(reasons))

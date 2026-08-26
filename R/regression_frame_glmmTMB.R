@@ -966,6 +966,19 @@ as_regression_frame.glmmTMB <- function(
     # Only where the ICC kernel actually ran: a non-Gaussian glmmTMB has
     # no ICC for a reason of its own, and must not be told it has too
     # many grouping factors.
+    #
+    # This makes the two mixed engines answer differently on the same
+    # structure, and the asymmetry is known and deliberate (register
+    # n. 252, finding F4). On a binomial fit with two grouping factors,
+    # glmer reports icc_omitted = "multi_group" -- because its own ICC
+    # kernel DOES run on non-Gaussian families, through the Nakagawa
+    # link-scale distribution variance, and stopped on the multi-factor
+    # gate -- while glmmTMB reports NA, because no kernel ran at all
+    # and "several grouping factors" would not be the true reason. The
+    # reader gets a sentence on lme4 and silence on glmmTMB. Harmonising
+    # means giving glmmTMB the non-Gaussian ICC, not muting lme4; until
+    # then the behaviour is pinned by a witness rather than left to
+    # drift (test-random_effects_footer.R).
     icc_omitted = if (is_gaussian_identity) {
       .merMod_icc_omitted_reason(vc_df, icc)
     } else {

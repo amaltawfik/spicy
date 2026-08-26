@@ -325,3 +325,94 @@ test_that("a non-mixed frame carries the empty icc_omitted contract", {
     show_fit_stats = "icc"
   ))
 })
+
+
+# ---- An unknown reason token fails loudly, it does not print "NA" ------
+
+test_that("a reason with no sentence is refused, not rendered as NA", {
+  # The switch() default used to be NA_character_, and a footer builder
+  # that returns NA does not stay silent: with one model the block
+  # itself became NA, and with two the composed line read
+  # "Model 1: NA". Nothing produces such a token today --
+  # .merMod_icc_omitted_reason() emits "multi_group" or NA, and the NA
+  # half is filtered out upstream -- so this is a trap set for the next
+  # reason that gets added without its sentence.
+  fake <- function(reason) {
+    list(
+      info = list(
+        class = "lmerMod",
+        random_effects = list(icc_omitted = reason)
+      )
+    )
+  }
+  err <- tryCatch(
+    spicy:::build_icc_omitted_footer_block_from_frames(
+      list(fake("a_reason_with_no_sentence")),
+      show_fit_stats = "icc"
+    ),
+    error = identity
+  )
+  expect_s3_class(err, "spicy_internal_invariant")
+  expect_match(conditionMessage(err), "a_reason_with_no_sentence")
+  # The per-model composition path refuses too, not just the shared one.
+  expect_error(
+    spicy:::build_icc_omitted_footer_block_from_frames(
+      list(fake("a_reason_with_no_sentence"), fake("multi_group")),
+      show_fit_stats = "icc"
+    ),
+    class = "spicy_internal_invariant"
+  )
+  # And the known token still renders, so the guard costs nothing.
+  expect_identical(
+    spicy:::build_icc_omitted_footer_block_from_frames(
+      list(fake("multi_group")),
+      show_fit_stats = "icc"
+    ),
+    spicy:::spicy_str("note_icc_multi_group")
+  )
+})
+
+
+# ---- The two mixed engines answer differently, and that is pinned ------
+
+test_that("glmer explains a multi-factor non-Gaussian ICC, glmmTMB stays silent", {
+  # Register n. 252, finding F4: a KNOWN asymmetry, pinned rather than
+  # harmonised. glmer's ICC kernel runs on non-Gaussian families (the
+  # Nakagawa link-scale distribution variance), so on two grouping
+  # factors it stops on the multi-factor gate and can name it. glmmTMB
+  # runs no kernel at all off Gaussian-identity, so "several grouping
+  # factors" would not be the true reason and it says nothing.
+  # Harmonising means giving glmmTMB the non-Gaussian ICC, not muting
+  # lme4.
+  skip_if_not_installed("lme4")
+  skip_if_not_installed("glmmTMB")
+  d <- lme4::cbpp
+  d$herd2 <- factor(rep(letters[1:3], length.out = nrow(d)))
+  f <- cbind(incidence, size - incidence) ~ period + (1 | herd) + (1 | herd2)
+
+  fr_glmer <- suppressWarnings(as_regression_frame(
+    lme4::glmer(f, data = d, family = binomial)
+  ))
+  expect_true(is.na(fr_glmer$info$random_effects$icc))
+  expect_identical(fr_glmer$info$random_effects$icc_omitted, "multi_group")
+
+  fr_tmb <- suppressWarnings(as_regression_frame(
+    glmmTMB::glmmTMB(f, data = d, family = binomial)
+  ))
+  expect_true(is.na(fr_tmb$info$random_effects$icc))
+  expect_true(is.na(fr_tmb$info$random_effects$icc_omitted))
+
+  # The consequence for the reader, stated as such: a sentence on one
+  # engine, silence on the other, for the same random structure.
+  expect_identical(
+    spicy:::build_icc_omitted_footer_block_from_frames(
+      list(fr_glmer),
+      show_fit_stats = "icc"
+    ),
+    spicy:::spicy_str("note_icc_multi_group")
+  )
+  expect_null(spicy:::build_icc_omitted_footer_block_from_frames(
+    list(fr_tmb),
+    show_fit_stats = "icc"
+  ))
+})
