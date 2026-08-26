@@ -242,12 +242,19 @@ test_that("rq coefficients match parameters::model_parameters() (oracle, point e
   # independent), not SEs / p-values.
   oracle <- parameters::model_parameters(fit, ci = 0.95)
   b_rows <- fr$coefs[fr$coefs$estimate_type == "B" & !fr$coefs$is_ref, ]
-  expect_oracle_covered(length(oracle$Parameter))
+  n_checked <- 0L
   for (nm in oracle$Parameter) {
     spicy_row <- b_rows[b_rows$term == nm, ]
     oracle_row <- oracle[oracle$Parameter == nm, ]
+    # Both lookups must hit exactly one row: an unmatched term
+    # would otherwise compare a zero-row frame and the counter
+    # below would never see it.
+    expect_identical(nrow(oracle_row), 1L, info = nm)
+    expect_identical(nrow(spicy_row), 1L, info = nm)
     expect_equal(spicy_row$estimate, oracle_row$Coefficient, tolerance = 1e-6)
+    n_checked <- n_checked + 1L
   }
+  expect_oracle_covered(n_checked, length(oracle$Parameter))
 })
 
 test_that("ivreg coefs match parameters::model_parameters() (oracle)", {
@@ -256,13 +263,20 @@ test_that("ivreg coefs match parameters::model_parameters() (oracle)", {
   fr <- as_regression_frame(fit, model_id = "M1")
   oracle <- parameters::model_parameters(fit, ci = 0.95)
   b_rows <- fr$coefs[fr$coefs$estimate_type == "B" & !fr$coefs$is_ref, ]
-  expect_oracle_covered(length(oracle$Parameter))
+  n_checked <- 0L
   for (nm in oracle$Parameter) {
     spicy_row <- b_rows[b_rows$term == nm, ]
     oracle_row <- oracle[oracle$Parameter == nm, ]
+    # Both lookups must hit exactly one row: an unmatched term
+    # would otherwise compare a zero-row frame and the counter
+    # below would never see it.
+    expect_identical(nrow(oracle_row), 1L, info = nm)
+    expect_identical(nrow(spicy_row), 1L, info = nm)
     expect_equal(spicy_row$estimate, oracle_row$Coefficient, tolerance = 1e-6)
     expect_equal(spicy_row$std_error, oracle_row$SE, tolerance = 1e-6)
+    n_checked <- n_checked + 1L
   }
+  expect_oracle_covered(n_checked, length(oracle$Parameter))
 })
 
 

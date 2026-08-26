@@ -306,10 +306,15 @@ test_that("feols coefs match parameters::model_parameters() (oracle)", {
   oracle <- parameters::model_parameters(fit, ci = 0.95)
 
   b_rows <- fr$coefs[fr$coefs$estimate_type == "B" & !fr$coefs$is_ref, ]
-  expect_oracle_covered(length(oracle$Parameter))
+  n_checked <- 0L
   for (nm in oracle$Parameter) {
     spicy_row <- b_rows[b_rows$term == nm, ]
     oracle_row <- oracle[oracle$Parameter == nm, ]
+    # Both lookups must hit exactly one row: an unmatched term
+    # would otherwise compare a zero-row frame and the counter
+    # below would never see it.
+    expect_identical(nrow(oracle_row), 1L, info = nm)
+    expect_identical(nrow(spicy_row), 1L, info = nm)
     expect_equal(
       spicy_row$estimate,
       oracle_row$Coefficient,
@@ -328,7 +333,9 @@ test_that("feols coefs match parameters::model_parameters() (oracle)", {
       tolerance = 1e-6,
       info = paste("oracle p mismatch on term:", nm)
     )
+    n_checked <- n_checked + 1L
   }
+  expect_oracle_covered(n_checked, length(oracle$Parameter))
 })
 
 

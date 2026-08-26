@@ -337,12 +337,15 @@ test_that("brmsfit coefs match parameters::model_parameters() (oracle)", {
   # Drop the distributional / sigma rows on the oracle side so the
   # intersection is restricted to true fixed effects.
   shared <- intersect(b_rows$term, oracle_terms)
-  # The oracle-coverage guard, as everywhere else: an intersection that
-  # comes back empty would leave the loop below asserting nothing.
-  expect_oracle_covered(length(shared))
+  n_checked <- 0L
   for (nm in shared) {
     spicy_row <- b_rows[b_rows$term == nm, ]
     oracle_row <- oracle[oracle_terms == nm, ]
+    # Both lookups must hit exactly one row: an unmatched term
+    # would otherwise compare a zero-row frame and the counter
+    # below would never see it.
+    expect_identical(nrow(oracle_row), 1L, info = nm)
+    expect_identical(nrow(spicy_row), 1L, info = nm)
     oracle_est <- oracle_row$Median %||% oracle_row$Coefficient
     # Posterior comparisons across packages have larger natural
     # tolerance because the underlying draws differ (RNG seed, sample
@@ -355,7 +358,11 @@ test_that("brmsfit coefs match parameters::model_parameters() (oracle)", {
       tolerance = 1e-3,
       info = paste("oracle estimate mismatch on term:", nm)
     )
+    n_checked <- n_checked + 1L
   }
+  # Counted BY the loop, not before it: an empty intersection and a
+  # neutered body have to look different to this guard.
+  expect_oracle_covered(n_checked, length(shared))
 })
 
 
