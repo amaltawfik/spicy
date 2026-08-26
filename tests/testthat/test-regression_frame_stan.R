@@ -378,9 +378,13 @@ test_that("brmsfit: multilevel fits render an RE block, single-level fits do not
   expect_match(out_re, "Random effects:", fixed = TRUE)
   expect_match(out_re, "Subject (Intercept)", fixed = TRUE)
   expect_match(out_re, "Random effects (MCMC).", fixed = TRUE)
-  expect_true(isTRUE(
-    suppressWarnings(as_regression_frame(fit_re))$info$supports$ame
-  ))
+  fr_re <- suppressWarnings(as_regression_frame(fit_re))
+  expect_true(isTRUE(fr_re$info$supports$ame))
+  # `info$n_groups` is a named INTEGER VECTOR, the schema's shape and
+  # the one lme4::ngrps() gives the merMod builder. brms::ngrps()
+  # returns a list and the builder used to pass it straight through.
+  expect_type(fr_re$info$n_groups, "integer")
+  expect_identical(fr_re$info$n_groups[["Subject"]], 18L)
 })
 
 

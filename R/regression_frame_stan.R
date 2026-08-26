@@ -1673,7 +1673,12 @@ as_regression_frame.brmsfit <- function(
 }
 
 
-# Named group-size vector (design-doc shape: NULL | named int).
+# Named group-size vector (schema shape: NULL | named int vector), the
+# same object lme4::ngrps() hands the merMod builder and the one
+# glmmTMB, nlme, fixest and geepack all publish. Both branches used to
+# wrap it in a list; the renderer reads it through names() and [[ ]] and
+# could not tell, but the schema and every sibling builder said vector,
+# so a Bayesian frame was the one that did not fit its own contract.
 .stan_n_groups <- function(fit, class_name) {
   if (identical(class_name, "brmsfit")) {
     # brms::ngrps() returns the named level counts directly and
@@ -1684,14 +1689,16 @@ as_regression_frame.brmsfit <- function(
     if (is.null(ng) || length(ng) == 0L) {
       return(NULL)
     }
-    return(lapply(ng, as.integer))
+    return(stats::setNames(
+      as.integer(unlist(ng, use.names = FALSE)),
+      names(ng)
+    ))
   }
   ng <- tryCatch(fit$glmod$reTrms$flist, error = function(e) NULL)
   if (is.null(ng) || length(ng) == 0L) {
     return(NULL)
   }
-  out <- vapply(ng, function(f) length(unique(as.character(f))), integer(1))
-  as.list(out)
+  vapply(ng, function(f) length(unique(as.character(f))), integer(1))
 }
 
 
