@@ -12,11 +12,14 @@
 #   * Oracle cross-validation against parameters::model_parameters()
 #     (skipped if not installed).
 #
-# Fits are intentionally tiny (1 chain, ~300 iterations) so the suite
-# stays fast. Each test creates its own fit because brmsfit objects
-# are large enough that caching them across tests can blow up the
-# CI memory budget; the marginal MCMC cost per call is small (~2-5s).
+# Fits are intentionally tiny (1 chain, 400 iterations) and
 # `set.seed()` makes the draws deterministic for assertion stability.
+# Each test still asks for its own fit -- holding brmsfit objects in
+# memory across a whole file is what would strain the memory budget --
+# but the fit comes back from a DISK cache after the first sampling
+# run (helper-stan-cache.R), which is neither held in memory nor paid
+# for twice. Measured on this file: 1158 s before the cache, 247 s on
+# the run that fills it, 81 s on every run after.
 # ---------------------------------------------------------------------------
 
 # ---- Fast-fit helpers ------------------------------------------------------
@@ -28,21 +31,29 @@
 # (every developer has a working Stan toolchain when they install
 # brms / rstanarm). CRAN runs each example separately and provides
 # Stan, so the help-page examples remain useful.
+#
+# The fits themselves come through .stan_cached_fit() (see
+# helper-stan-cache.R): sampled once, then read back from a
+# source-checkout-only disk cache keyed on the R version, the fitting
+# package's version and a hash of the model call below. Editing any of
+# these bodies -- the seed included -- invalidates the entry on its own.
 .fit_brms_basic <- function() {
   skip_on_ci()
   skip_if_not_installed("brms")
   skip_if_not_installed("posterior")
   skip_if_not_installed("lme4")
-  set.seed(1)
-  brms::brm(
-    Reaction ~ Days,
-    data = lme4::sleepstudy,
-    chains = 1,
-    iter = 400,
-    refresh = 0,
-    silent = 2,
-    backend = "rstan"
-  )
+  .stan_cached_fit("brms_basic", "brms", function() {
+    set.seed(1)
+    brms::brm(
+      Reaction ~ Days,
+      data = lme4::sleepstudy,
+      chains = 1,
+      iter = 400,
+      refresh = 0,
+      silent = 2,
+      backend = "rstan"
+    )
+  })
 }
 
 .fit_brms_factor <- function() {
@@ -50,36 +61,40 @@
   skip_if_not_installed("brms")
   skip_if_not_installed("posterior")
   skip_if_not_installed("lme4")
-  d <- lme4::sleepstudy
-  d$treatment <- factor(rep(c("A", "B", "C"), length.out = nrow(d)))
-  set.seed(2)
-  brms::brm(
-    Reaction ~ Days + treatment,
-    data = d,
-    chains = 1,
-    iter = 400,
-    refresh = 0,
-    silent = 2,
-    backend = "rstan"
-  )
+  .stan_cached_fit("brms_factor", "brms", function() {
+    d <- lme4::sleepstudy
+    d$treatment <- factor(rep(c("A", "B", "C"), length.out = nrow(d)))
+    set.seed(2)
+    brms::brm(
+      Reaction ~ Days + treatment,
+      data = d,
+      chains = 1,
+      iter = 400,
+      refresh = 0,
+      silent = 2,
+      backend = "rstan"
+    )
+  })
 }
 
 .fit_brms_logit <- function() {
   skip_on_ci()
   skip_if_not_installed("brms")
   skip_if_not_installed("posterior")
-  d <- mtcars
-  set.seed(3)
-  brms::brm(
-    am ~ mpg,
-    data = d,
-    family = brms::bernoulli(),
-    chains = 1,
-    iter = 400,
-    refresh = 0,
-    silent = 2,
-    backend = "rstan"
-  )
+  .stan_cached_fit("brms_logit", "brms", function() {
+    d <- mtcars
+    set.seed(3)
+    brms::brm(
+      am ~ mpg,
+      data = d,
+      family = brms::bernoulli(),
+      chains = 1,
+      iter = 400,
+      refresh = 0,
+      silent = 2,
+      backend = "rstan"
+    )
+  })
 }
 
 .fit_rstanarm_basic <- function() {
@@ -87,14 +102,16 @@
   skip_if_not_installed("rstanarm")
   skip_if_not_installed("posterior")
   skip_if_not_installed("lme4")
-  set.seed(4)
-  rstanarm::stan_glm(
-    Reaction ~ Days,
-    data = lme4::sleepstudy,
-    chains = 1,
-    iter = 400,
-    refresh = 0
-  )
+  .stan_cached_fit("rstanarm_basic", "rstanarm", function() {
+    set.seed(4)
+    rstanarm::stan_glm(
+      Reaction ~ Days,
+      data = lme4::sleepstudy,
+      chains = 1,
+      iter = 400,
+      refresh = 0
+    )
+  })
 }
 
 
