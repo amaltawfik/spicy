@@ -2796,6 +2796,60 @@ table_regression <- function(
     }
   }
 
+  # A model that reaches the renderer with no rows at all cannot produce
+  # a table: build_regression_table() returns empty_render_table(), which
+  # carries no fit statistics, no note and no structured view -- so the
+  # caller gets a bare header, and as_structured() then refuses the
+  # object for want of a view. Silence is the worst of the three possible
+  # answers; say what emptied the table instead.
+  #
+  # Exactly one route reaches this state: a fit whose entire content is a
+  # block the caller switched off. An intercept-only ordinal (`y ~ 1`) is
+  # that fit -- its cut-points ARE the model, there is not one predictor
+  # coefficient beside them -- and `show_thresholds = FALSE` removes
+  # them. Left alone (the default), the same fit renders its Thresholds
+  # block and its fit statistics normally.
+  empty_frames <- vapply(
+    frames,
+    function(fr) nrow(fr$coefs) == 0L,
+    logical(1)
+  )
+  if (any(empty_frames)) {
+    mod_labels <- .model_display_names(models)
+    hid_thresholds <- !isTRUE(show_thresholds) &&
+      any(vapply(
+        frames[empty_frames],
+        function(fr) {
+          thr <- fr$info$extras$thresholds
+          is.data.frame(thr) && nrow(thr) > 0L
+        },
+        logical(1)
+      ))
+    spicy_abort(
+      c(
+        sprintf(
+          "%s has no rows to show.",
+          paste(mod_labels[empty_frames], collapse = ", ")
+        ),
+        "i" = if (hid_thresholds) {
+          paste0(
+            "This fit has no predictor coefficients -- its cut-points ",
+            "are its whole content -- and `show_thresholds = FALSE` ",
+            "hides them."
+          )
+        } else {
+          "Every row the model could contribute has been switched off."
+        },
+        "i" = if (hid_thresholds) {
+          "Drop `show_thresholds = FALSE` to see the cut-points."
+        } else {
+          "Re-enable one of the row blocks (`show_thresholds`, `show_re`, `show_components`)."
+        }
+      ),
+      class = "spicy_empty_table"
+    )
+  }
+
   # Singular mixed fits: the table note states the FACT (boundary
   # estimate, SE/CI omitted); the actionable advice belongs here, to the
   # analyst, once per table -- not in a published table note.
