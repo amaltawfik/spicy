@@ -651,6 +651,10 @@ as_regression_frame.tobit <- function(
   frame$info$extras$tobit_right <- as.numeric(right %||% Inf)
 
   attr(frame, "fit") <- fit
+  # The MUTATION boundary: everything above rewrote a frame the survreg
+  # constructor had already validated, so re-check the state that
+  # actually leaves this method.
+  validate_regression_frame(frame)
   frame
 }
 

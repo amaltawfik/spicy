@@ -65,6 +65,10 @@ as_regression_frame.negbin <- function(
   }
 
   attr(frame, "fit") <- fit
+  # The MUTATION boundary: everything above rewrote a frame the glm
+  # constructor had already validated, so re-check the state that
+  # actually leaves this method.
+  validate_regression_frame(frame)
   frame
 }
 

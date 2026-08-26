@@ -622,5 +622,11 @@ as_regression_frame.glm <- function(fit, ...) {
   cf$events <- events
   cf$events_n <- n_vec
   frame$coefs <- cf
+  # The MUTATION boundary. This is the only place five of the frame
+  # builders (geeglm, glmmTMB, merMod, coxph, svycoxph) touch their frame
+  # after new_regression_frame() returned, so the constructor's check saw
+  # a state this one has since replaced. The early returns above hand back
+  # the frame untouched and need no re-check.
+  validate_regression_frame(frame)
   frame
 }

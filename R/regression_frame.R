@@ -122,12 +122,29 @@ new_regression_frame <- function(coefs, info, fit) {
     info$supports %||% list()
   )
   info$extras <- utils::modifyList(default_extras(), info$extras %||% list())
-  structure(
+  frame <- structure(
     list(coefs = coefs, info = info),
     class = "spicy_regression_frame",
     spicy_frame_version = spicy_frame_version(),
     fit = fit
   )
+  # ---- The CONSTRUCTOR boundary (validation site 1 of 2) ------------------
+  # Every one of the ~34 frame constructions in the package passes through
+  # here, including the ones a per-class method reaches by calling another
+  # method directly rather than through the generic (negbin -> .glm,
+  # tobit -> .survreg, glm.nb-style fixest -> .lm). A schema violation is
+  # therefore attributed to the method that CREATED it, at the line that
+  # created it, rather than surfacing later as an unrelated rendering
+  # anomaly downstream (4ff93cda is the bug class this exists to stop).
+  #
+  # This site cannot be the only one: the methods that keep editing their
+  # frame after this returns (negbin, tobit, and the five that attach
+  # event counts) are seen here only in their PRE-mutation state. Their
+  # final state is checked at the mutation sites themselves and again at
+  # the dispatch boundary, as_regression_frame_validated(). See that
+  # function for the cost measurement.
+  validate_regression_frame(frame)
+  frame
 }
 
 # "Residual" is not a name in the variance-components frame, it is a KEY.
@@ -266,6 +283,44 @@ as_regression_frame <- function(fit, ...) {
     return(as_regression_frame.default(fit, ...))
   }
   UseMethod("as_regression_frame")
+}
+
+# ---- The DISPATCH boundary ------------------------------------------------
+#
+# The validating front door to the generic above, and the ONLY way the
+# pipeline is allowed to obtain a frame: table_regression() (the
+# orchestrator loop) and table_regression_uv() (per wrapped fit) both
+# call this, never `as_regression_frame()` directly.
+#
+# Why the check is here and not one line higher, inside the generic:
+# UseMethod() returns from the generic's own frame, so nothing written
+# after it ever runs, and moving the dispatch into a shim so the check
+# could follow it would strip the literal `UseMethod` call out of
+# `body(as_regression_frame)`. utils:::findGeneric() reads exactly that
+# body to decide whether a function is an S3 generic -- and with it gone
+# `utils::getS3method("as_regression_frame", cl)` stops resolving the
+# family (which is how classify_unsupported_lm_class() decides a class
+# is supported at all), while `methods("as_regression_frame")` -- which
+# the unsupported-class error tells the USER to run -- starts warning
+# "appears not to be S3 generic". Measured, not assumed: with the shim
+# in place every supported model was rejected as unsupported. So the
+# generic stays a textbook generic and the boundary sits around it.
+#
+# What this site catches that new_regression_frame() cannot: a frame
+# that never passed through the constructor at all -- a hand-built one,
+# or one from an `as_regression_frame()` method registered outside this
+# package -- and the final, post-mutation state of the methods that keep
+# editing their frame after construction.
+#
+# Measured cost: ~345 us per call on a typical lm frame (9 coef rows),
+# ~330 us on a 31-row glm frame -- flat in nrow(coefs), because the work
+# is ~30 column and field checks, not a row scan. One
+# table_regression(lm) call is ~90 ms, so the whole validation budget is
+# well under 1% of a table.
+as_regression_frame_validated <- function(fit, ...) {
+  frame <- as_regression_frame(fit, ...)
+  validate_regression_frame(frame)
+  frame
 }
 
 #' Default `as_regression_frame()` method (unsupported class fallback).

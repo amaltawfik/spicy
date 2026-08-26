@@ -2525,7 +2525,7 @@ table_regression <- function(
   # (title, footer, alignment, nested LRT) consumes frames directly.
   frames <- vector("list", n_models)
   for (i in seq_len(n_models)) {
-    frames[[i]] <- as_regression_frame(
+    frames[[i]] <- as_regression_frame_validated(
       models[[i]],
       model_id = model_ids[i],
       vcov = vcov_list[[i]],

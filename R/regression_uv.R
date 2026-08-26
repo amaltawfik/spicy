@@ -765,7 +765,7 @@ as_regression_frame.spicy_uv_screen <- function(
         cluster_k <- cluster_k[-om]
       }
     }
-    fr <- as_regression_frame(
+    fr <- as_regression_frame_validated(
       bundle$fits[[k]],
       model_id = model_id,
       vcov = vcov,
