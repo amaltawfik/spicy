@@ -9,9 +9,39 @@
 # blocks, body builder, alignment, nested LRT -- now reads frames, and
 # the legacy extract shape and its .frame_to_legacy_extract() adapter
 # no longer exist.
+# Decision 42: the translated display form of an engine's title_prefix,
+# or NULL when the current language is English or has no bridge entry --
+# in which case the caller keeps the WHOLE English title (coherent or
+# nothing, never a half-translated head). Engine suffixes are proper
+# nouns: detached before the lookup, reattached verbatim. This helper
+# and the bridge it reads disappear together when 251-C makes the
+# prefix a registry key.
+.title_prefix_display <- function(prefix) {
+  lang <- .spicy_language_option(getOption("spicy.language", "en"))
+  bridge <- .spicy_title_prefix_table(lang)
+  if (is.null(bridge)) {
+    return(NULL)
+  }
+  suffix <- ""
+  for (s in c(" (glmmTMB)", " (nlme)")) {
+    if (endsWith(prefix, s)) {
+      suffix <- s
+      prefix <- substr(prefix, 1L, nchar(prefix) - nchar(s))
+      break
+    }
+  }
+  # Single-bracket on purpose: `[[` on a named vector ERRORS on a
+  # missing name, `[` answers NA -- and NA here means "no entry".
+  hit <- unname(bridge[prefix])
+  if (is.na(hit)) {
+    return(NULL)
+  }
+  paste0(hit, suffix)
+}
+
 build_regression_title_from_frames <- function(frames, nested = FALSE) {
   if (!is.list(frames) || length(frames) == 0L) {
-    return("Regression")
+    return(spicy_str("title_regression_fallback"))
   }
   outcomes <- vapply(
     frames,
@@ -34,6 +64,29 @@ build_regression_title_from_frames <- function(frames, nested = FALSE) {
     prefixes[1L]
   } else {
     "Regression"
+  }
+
+  # Decision 42: a translatable prefix routes through the registry
+  # templates; an untranslatable one keeps the English literals below
+  # exactly as they always were (coherent or nothing).
+  disp <- .title_prefix_display(prefix)
+  if (!is.null(disp)) {
+    if (n == 1L) {
+      if (length(outcomes) == 0L) {
+        return(disp)
+      }
+      return(spicy_fmt("title_regression_single", disp, outcomes[1]))
+    }
+    if (isTRUE(nested)) {
+      # The French template carries the adjective itself ("%s
+      # hierarchique"), so the prefix keeps its capital -- no
+      # lowercase_first() on this branch.
+      return(spicy_fmt("title_regression_hierarchical", disp, outcomes[1]))
+    }
+    if (length(unique(outcomes)) == 1L) {
+      return(spicy_fmt("title_regression_comparison_dv", disp, outcomes[1]))
+    }
+    return(spicy_fmt("title_regression_comparison", disp))
   }
 
   if (n == 1L) {
@@ -222,10 +275,21 @@ build_regression_type_footer_block_from_frames <- function(frames) {
     },
     character(1)
   )
+  # Decision 42: the single-model and same-family arms translate (the
+  # prefix through the bridge, the plural through its whole-sentence
+  # key). The mixed-family arm below embeds the frozen "Model %d:"
+  # labels and stays English wholesale -- coherent or nothing.
+  disp <- .title_prefix_display(types[1])
   if (length(types) == 1L) {
+    if (!is.null(disp)) {
+      return(paste0(capitalize_first(disp), "."))
+    }
     return(paste0(capitalize_first(types[1]), "."))
   }
   if (length(unique(types)) == 1L) {
+    if (!is.null(disp)) {
+      return(spicy_fmt("note_type_models", lowercase_first(disp)))
+    }
     return(paste0(capitalize_first(types[1]), " models."))
   }
   per <- vapply(
