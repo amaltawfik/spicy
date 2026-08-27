@@ -258,6 +258,89 @@ test_that("gls fitted by ML is compared, not refused", {
   expect_no_error(compute_nested_comparisons(list(p$m1, p$m2)))
 })
 
+# The same guard, the other engine (register n. 244(b)). glmmTMB(REML =
+# TRUE) refuses this comparison in its own words; the mixed pair path
+# used to wrap that abort in tryCatch and en-dash the change column.
+tmb_reml_pair <- function() {
+  skip_if_no("glmmTMB", "lme4")
+  d <- lme4::sleepstudy
+  list(
+    m1 = glmmTMB::glmmTMB(
+      Reaction ~ Days + (1 | Subject),
+      data = d,
+      REML = TRUE
+    ),
+    m2 = glmmTMB::glmmTMB(
+      Reaction ~ Days + I(Days^2) + (1 | Subject),
+      data = d,
+      REML = TRUE
+    ),
+    m3 = glmmTMB::glmmTMB(
+      Reaction ~ Days + (Days | Subject),
+      data = d,
+      REML = TRUE
+    )
+  )
+}
+
+test_that("REML glmmTMB with different fixed effects is refused", {
+  p <- tmb_reml_pair()
+  expect_true(is_reml_glmmTMB_fit(p$m1))
+  # The engine's own verdict, which the tryCatch used to swallow.
+  expect_error(suppressMessages(stats::anova(p$m1, p$m2)))
+  err <- expect_error(
+    compute_nested_comparisons(list(p$m1, p$m2)),
+    class = "spicy_invalid_input"
+  )
+  expect_match(
+    conditionMessage(err),
+    "REML fits whose fixed effects differ",
+    fixed = TRUE
+  )
+  # The remedy is glmmTMB's own switch, not nlme's.
+  expect_match(conditionMessage(err), "REML = FALSE", fixed = TRUE)
+  expect_false(grepl("method = \"ML\"", conditionMessage(err), fixed = TRUE))
+})
+
+test_that("REML glmmTMB differing only in the random structure compares", {
+  p <- tmb_reml_pair()
+  got <- expect_no_error(compute_nested_comparisons(list(p$m1, p$m3)))
+  expect_true(is.finite(got$lrt_change[1L]))
+  av <- suppressWarnings(suppressMessages(stats::anova(p$m1, p$m3)))
+  expect_equal(got$lrt_change[1L], av[["Chisq"]][2L], tolerance = 1e-10)
+})
+
+test_that("glmmTMB fitted by ML is never touched by the guard", {
+  skip_if_no("glmmTMB", "lme4")
+  d <- lme4::sleepstudy
+  m1 <- glmmTMB::glmmTMB(Reaction ~ Days + (1 | Subject), data = d)
+  m2 <- glmmTMB::glmmTMB(
+    Reaction ~ Days + I(Days^2) + (1 | Subject),
+    data = d
+  )
+  expect_false(is_reml_glmmTMB_fit(m1))
+  got <- expect_no_error(compute_nested_comparisons(list(m1, m2)))
+  expect_true(is.finite(got$lrt_change[1L]))
+})
+
+# The fixed-effects signature reads through the random-effects bars for
+# glmmTMB and leaves every other class on stats::formula().
+test_that("nested_fixed_formula strips the bars for glmmTMB only", {
+  skip_if_no("glmmTMB", "lme4")
+  d <- lme4::sleepstudy
+  m <- glmmTMB::glmmTMB(Reaction ~ Days + (1 | Subject), data = d)
+  expect_identical(
+    deparse1(nested_fixed_formula(m)),
+    "Reaction ~ Days"
+  )
+  expect_identical(fixed_terms_key(m), "Days&(Intercept)")
+  lm_fit <- lm(mpg ~ wt, data = mtcars)
+  expect_identical(
+    deparse1(nested_fixed_formula(lm_fit)),
+    deparse1(stats::formula(lm_fit))
+  )
+})
+
 
 # ---- 5. least-squares families keep the F path ---------------------------
 

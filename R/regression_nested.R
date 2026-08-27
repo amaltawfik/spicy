@@ -91,13 +91,43 @@ all_likelihood_path <- function(models) {
 }
 
 
-# ---- REML guard (nlme) ---------------------------------------------------
+# ---- REML guard (nlme, glmmTMB) ------------------------------------------
 
 # TRUE for an nlme fit (gls / lme, and nlme by inheritance) estimated by
 # restricted maximum likelihood.
 is_reml_nlme_fit <- function(fit) {
   inherits(fit, c("gls", "lme")) &&
     identical(as.character(fit$method %||% ""), "REML")
+}
+
+# TRUE for a glmmTMB fit estimated by restricted maximum likelihood
+# (REML = TRUE, opt-in: glmmTMB estimates by ML by default). The flag is
+# read where the frame builder reads it (`fit$modelInfo$REML`).
+is_reml_glmmTMB_fit <- function(fit) {
+  inherits(fit, "glmmTMB") &&
+    isTRUE(tryCatch(fit$modelInfo$REML, error = function(e) FALSE))
+}
+
+# TRUE for any fit in the mixed / correlated-error router whose criterion
+# is a RESTRICTED likelihood, and whose engine therefore cannot compare a
+# pair across fixed-effects structures. lme4 is deliberately absent: it
+# refits by ML rather than refusing, and that refit is disclosed instead
+# (build_nested_ml_refit_footer_block_from_frames()).
+is_reml_pair_fit <- function(fit) {
+  is_reml_nlme_fit(fit) || is_reml_glmmTMB_fit(fit)
+}
+
+# The FIXED-effects formula of a fit. gls / lme carry no random-effects
+# bars in formula(); a glmmTMB conditional formula does, and nobars() is
+# what strips them -- the same helper the null-LRT refits already use, so
+# the two readings of "the fixed part" cannot drift apart.
+nested_fixed_formula <- function(fit) {
+  if (inherits(fit, "glmmTMB")) {
+    return(suppressWarnings(.re_nobars(
+      stats::formula(fit, fixed.only = TRUE, component = "cond")
+    )))
+  }
+  stats::formula(fit)
 }
 
 # Signature of the FIXED-effects specification, built exactly the way
@@ -107,7 +137,7 @@ is_reml_nlme_fit <- function(fit) {
 # never by matching nlme's warning text (which is translated).
 fixed_terms_key <- function(fit) {
   tt <- tryCatch(
-    stats::terms(stats::formula(fit)),
+    stats::terms(nested_fixed_formula(fit)),
     error = function(e) NULL
   )
   if (is.null(tt)) {
@@ -154,12 +184,27 @@ fixed_terms_key <- function(fit) {
 # 2.4.1, p. 83: the test "can also be used with models fit by REML, but
 # only if both models have been fit by REML and if the fixed-effects
 # specification is the same for both models").
+#
+# glmmTMB(REML = TRUE) reaches the same conclusion in its own words --
+# anova.glmmTMB stops with "Can't compare REML fits with different
+# fixed-effect components" -- but the mixed pair path wrapped that abort
+# in tryCatch and en-dashed the whole change column, an answer-shaped
+# absence in place of an engine that had said no. The structural test
+# above answers for both engines, so which engine holds the fit cannot
+# change whether the user is told.
 check_nested_reml_pair <- function(fit_prev, fit_curr) {
-  if (!(is_reml_nlme_fit(fit_prev) && is_reml_nlme_fit(fit_curr))) {
+  if (!(is_reml_pair_fit(fit_prev) && is_reml_pair_fit(fit_curr))) {
     return(invisible(NULL))
   }
   if (identical(fixed_terms_key(fit_prev), fixed_terms_key(fit_curr))) {
     return(invisible(NULL))
+  }
+  # The remedy is the engine's own switch, and the two engines spell it
+  # differently: `method = "ML"` for nlme, `REML = FALSE` for glmmTMB.
+  refit_hint <- if (is_reml_glmmTMB_fit(fit_prev)) {
+    "`update(m1, REML = FALSE)`"
+  } else {
+    "`update(m1, method = \"ML\")`"
   }
   spicy_abort(
     c(
@@ -173,9 +218,9 @@ check_nested_reml_pair <- function(fit_prev, fit_curr) {
         "likelihood-ratio test is not valid (Pinheiro & Bates 2000, ",
         "Section 2.4.2)."
       ),
-      "i" = paste0(
-        "Refit both models by maximum likelihood, e.g. ",
-        "`update(m1, method = \"ML\")`, then compare."
+      "i" = sprintf(
+        "Refit both models by maximum likelihood, e.g. %s, then compare.",
+        refit_hint
       ),
       "i" = paste0(
         "REML comparisons stay valid when only the random structure ",
