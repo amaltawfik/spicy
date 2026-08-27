@@ -60,7 +60,7 @@ as_regression_frame.geeglm <- function(
   # The orchestrator gate already refuses these; guard here too so a
   # direct frame call gets the same classed refusal (multinom
   # precedent) instead of silently mislabelled inference.
-  if (!(vcov %||% "classical") %in% c("model", "classical")) {
+  if (!.is_model_vcov(vcov)) {
     .gee_refuse_vcov(vcov)
   }
   if (!is.null(cluster)) {

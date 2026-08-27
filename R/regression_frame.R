@@ -74,6 +74,71 @@ default_supports <- function() {
   )
 }
 
+
+# ---- info$vcov_kind: one vocabulary, one default -------------------------
+#
+# The canonical name for the variance the FIT ITSELF reports -- the
+# model-based standard errors, whatever a given class calls them
+# internally. "classical" is the historical synonym: it is what the user
+# still types in `vcov = "classical"` and what sandwich-free branches of
+# the lm / MASS / geepack builders passed straight through, so ~25
+# builders wrote "model" while four wrote "classical" for the same thing.
+# Every consumer then carried the ambiguity as a literal disjunction,
+# `%in% c("model", "classical")`, in 14 files -- and two of them, three
+# lines apart in the same file, disagreed about which spelling a MISSING
+# value should default to.
+#
+# The synonym is not removed from the user's vocabulary; it is normalised
+# out of the FRAME's. new_regression_frame() canonicalises on the way in,
+# .frame_vcov_kind() canonicalises on the way out (for frames built by
+# hand or by older code), and .validate_info() asserts the closed set.
+.MODEL_VCOV_KIND <- "model"
+
+# The closed vocabulary of info$vcov_kind, DERIVED rather than typed: it
+# is the compute layer's estimator set (minus the "classical" synonym,
+# which normalises to the canon) plus the three class-native defaults no
+# spicy estimator produces -- estimatr's own HC (`robust`), the Bayesian
+# posterior, and survey's design-based linearisation. A function, not a
+# constant, so it does not depend on which file R sources first.
+.frame_vcov_kinds <- function() {
+  unique(c(
+    .MODEL_VCOV_KIND,
+    setdiff(.VCOV_COMPUTE_MODES, "classical"),
+    # estimatr::lm_robust / iv_robust: the fit carries its own HC.
+    "robust",
+    # rstanarm / brms: the uncertainty comes from the draws.
+    "posterior",
+    # survey::svyglm / svyolr / svycoxph: the design is the authority.
+    "survey-Taylor"
+  ))
+}
+
+# Normalise one vcov_kind value: a missing one is the model-based
+# default, and "classical" IS the model-based default under its older
+# name. Anything else passes through untouched -- an unknown token is
+# the validator's business, not this function's.
+.canon_vcov_kind <- function(x) {
+  if (is.null(x) || length(x) != 1L || is.na(x)) {
+    return(.MODEL_VCOV_KIND)
+  }
+  x <- as.character(x)
+  if (identical(x, "classical")) .MODEL_VCOV_KIND else x
+}
+
+# The vcov_kind of a frame, read through the canon. THE accessor: every
+# consumer that used to write `frame$info$vcov_kind %||% <a literal>`
+# calls this instead, so the default cannot be spelled two ways again.
+.frame_vcov_kind <- function(frame) {
+  .canon_vcov_kind(frame$info$vcov_kind)
+}
+
+# TRUE when a token -- an argument the user passed or a field read off a
+# frame -- names the model's own variance rather than a re-derived one.
+.is_model_vcov <- function(x) {
+  identical(.canon_vcov_kind(x), .MODEL_VCOV_KIND)
+}
+
+
 # Default `info$extras` skeleton: the keys common to (nearly) every frame.
 # Method-specific extras (smooth_terms, random-effect engine, zero-inflation
 # component, ...) are merged on top by new_regression_frame().
@@ -122,6 +187,9 @@ new_regression_frame <- function(coefs, info, fit) {
     info$supports %||% list()
   )
   info$extras <- utils::modifyList(default_extras(), info$extras %||% list())
+  # One spelling of the model-based default reaches every consumer,
+  # whatever the builder was handed. See .MODEL_VCOV_KIND.
+  info$vcov_kind <- .canon_vcov_kind(info$vcov_kind)
   frame <- structure(
     list(coefs = coefs, info = info),
     class = "spicy_regression_frame",
@@ -400,7 +468,9 @@ as_regression_frame.default <- function(fit, ...) {
 #   n_obs           int / dbl
 #   weights_kind    chr  (one of "none", "frequency", "sampling", "case")
 #   fit_stats       list (must contain nobs)
-#   vcov_kind       chr
+#   vcov_kind       chr  (one of .frame_vcov_kinds(); read through
+#                         .frame_vcov_kind(), which normalises the
+#                         historical "classical" to the canon "model")
 #   vcov_label      chr
 #   ci_level        dbl (in (0, 1))
 #   ci_method       chr
@@ -702,6 +772,26 @@ validate_regression_frame <- function(frame) {
         class = "spicy_invalid_frame"
       )
     }
+  }
+
+  # vcov_kind vocabulary. Asserted through the canon, so the historical
+  # "classical" spelling of the model-based default passes -- a frame
+  # built by older code or by hand is valid, and .frame_vcov_kind() gives
+  # its consumers the canonical reading. What this refuses is a token
+  # from no vocabulary at all, which is how a mislabelled variance
+  # reaches a footer.
+  allowed_vcov <- .frame_vcov_kinds()
+  if (!.canon_vcov_kind(info$vcov_kind) %in% allowed_vcov) {
+    spicy_abort(
+      c(
+        sprintf(
+          "Invalid regression frame: `info$vcov_kind` = %s is not a recognised value.",
+          sQuote(info$vcov_kind)
+        ),
+        "i" = paste("Allowed:", paste(allowed_vcov, collapse = ", "))
+      ),
+      class = "spicy_invalid_frame"
+    )
   }
 
   # weights_kind vocabulary

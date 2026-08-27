@@ -77,7 +77,9 @@ test_that("as_regression_frame.lm() populates required info fields correctly", {
   expect_null(info$n_groups)
   expect_identical(info$ci_level, 0.95)
   expect_identical(info$ci_method, "wald")
-  expect_identical(info$vcov_kind, "classical")
+  # The canon, not the "classical" synonym the argument still spells:
+  # new_regression_frame() normalises on the way in (register n. 228).
+  expect_identical(info$vcov_kind, "model")
   expect_identical(info$vcov_label, "OLS")
 })
 

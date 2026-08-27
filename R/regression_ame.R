@@ -1223,7 +1223,8 @@ extract_ame_glm <- function(
   # Robust AME uncertainty: when a robust vcov was requested for the
   # coefficients, recompute the same matrix and pass it to avg_slopes so the AME
   # SE / CI / p honour the requested estimator. A no-op for the model-based
-  # defaults ("model" / "classical" / "survey-Taylor"), where avg_slopes uses
+  # defaults (the canon "model" and the design-based "survey-Taylor"),
+  # where avg_slopes uses
   # the fit's own vcov (design-based for svyglm). The AME point estimates are
   # vcov-independent either way. A frame that already computed the matrix
   # passes it via `vcov_matrix` (rq: the coefficient rows and the AME must
@@ -1232,7 +1233,8 @@ extract_ame_glm <- function(
   if (
     is.null(vc) &&
       !is.null(vcov_type) &&
-      !vcov_type %in% c("model", "classical", "survey-Taylor")
+      !.is_model_vcov(vcov_type) &&
+      !identical(vcov_type, "survey-Taylor")
   ) {
     # A spicy condition raised here is a REFUSAL, not a computation that
     # happened to fail: the design-fit guard of compute_model_vcov()

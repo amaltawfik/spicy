@@ -83,7 +83,7 @@ as_regression_frame.ols <- function(
     model_id = model_id,
     rms_class = "ols"
   )
-  if (!vcov %in% c("model", "classical")) {
+  if (!.is_model_vcov(vcov)) {
     info$vcov_label <- .robust_vcov_label(
       vcov,
       cluster_name %||% NA_character_,
@@ -144,7 +144,7 @@ as_regression_frame.lrm <- function(
     model_id = model_id,
     rms_class = "lrm"
   )
-  if (!vcov %in% c("model", "classical")) {
+  if (!.is_model_vcov(vcov)) {
     info$vcov_label <- .robust_vcov_label(
       vcov,
       cluster_name %||% NA_character_,
@@ -195,7 +195,7 @@ as_regression_frame.cph <- function(
     model_id = model_id,
     rms_class = "cph"
   )
-  if (!vcov %in% c("model", "classical")) {
+  if (!.is_model_vcov(vcov)) {
     info$vcov_label <- .robust_vcov_label(
       vcov,
       cluster_name %||% NA_character_,
@@ -263,7 +263,7 @@ as_regression_frame.Glm <- function(
     model_id = model_id,
     rms_class = "Glm"
   )
-  if (!vcov %in% c("model", "classical")) {
+  if (!.is_model_vcov(vcov)) {
     info$vcov_label <- .robust_vcov_label(
       vcov,
       cluster_name %||% NA_character_,

@@ -2132,7 +2132,7 @@ table_regression <- function(
     overridden <- vapply(
       vlist,
       function(v) {
-        !(is.character(v) && length(v) == 1L && v %in% c("model", "classical"))
+        !.is_model_vcov(v)
       },
       logical(1)
     )

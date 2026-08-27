@@ -353,8 +353,8 @@ lowercase_first <- function(s) {
 #                                   already-formatted label, e.g.
 #                                   "Wald (model-based)", "Robust (HC2)",
 #                                   "Bayesian (REML-implied)", ...)
-#   frame$info$vcov_kind           (legacy: vcov-token from the
-#                                   lm/glm path -- "classical" / "HC*"
+#   frame$info$vcov_kind           (the estimator token, read through
+#                                   .frame_vcov_kind(): "model" / "HC*"
 #                                   / "CR*" / "bootstrap" / etc.)
 #   frame$info$extras$cluster_name (was extract$cluster_name)
 #   frame$info$class               (was extract$is_glm; derived)
@@ -380,10 +380,15 @@ format_vcov_label_from_frame <- function(frame) {
     }
   }
 
-  vt <- frame$info$vcov_kind %||% "classical"
+  vt <- .frame_vcov_kind(frame)
   cn <- frame$info$extras$cluster_name %||% NA_character_
   is_glm <- identical(cls, "glm")
-  if (vt == "classical") {
+  # The model-based default, under its canonical name. Guarded by the
+  # CLASS as well as the token: this arm names the mechanism that
+  # produces an lm / glm standard error, and the tail of this function
+  # has always returned the bare token for any other class that arrives
+  # here without an engine-supplied label.
+  if (.is_model_vcov(vt) && cls %in% c("lm", "glm")) {
     # Phase 7c23 (item c): "Fisher information" is the standard
     # publication-grade name for the glm vcov (the inverse of the
     # expected information matrix; for canonical links equals the
@@ -562,7 +567,7 @@ build_ci_method_footer_block_from_frames <- function(
     frames,
     function(f) {
       identical(f$info$ci_method, "profile") &&
-        (f$info$vcov_kind %||% "model") %in% c("model", "classical")
+        .is_model_vcov(.frame_vcov_kind(f))
     },
     logical(1)
   )
@@ -578,7 +583,7 @@ build_ci_method_footer_block_from_frames <- function(
     frames,
     function(f) {
       identical(f$info$ci_method, "boot_percentile") &&
-        identical(f$info$vcov_kind, "bootstrap")
+        identical(.frame_vcov_kind(f), "bootstrap")
     },
     logical(1)
   )
@@ -1462,7 +1467,7 @@ build_nested_ml_refit_footer_block_from_frames <- function(frames, nested) {
 .mixed_inference_label_for_frame <- function(frame) {
   cls <- frame$info$class %||% ""
   ci <- frame$info$ci_method %||% ""
-  vk <- frame$info$vcov_kind %||% "model"
+  vk <- .frame_vcov_kind(frame)
   # Under a CR* vcov the whole inference set (SE, Satterthwaite df, p)
   # comes from clubSandwich::coef_test(), NOT from lmerTest / nlme --
   # the footer must attribute the df source truthfully. (glmmTMB can
@@ -1595,7 +1600,7 @@ build_component_blocks_footer_block_from_frames <- function(frames) {
     }
     if (
       isTRUE(f$info$extras$component_robust_note) &&
-        !f$info$vcov_kind %in% c("model", "classical")
+        !.is_model_vcov(.frame_vcov_kind(f))
     ) {
       robust_note <- TRUE
     }

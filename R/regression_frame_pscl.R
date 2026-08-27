@@ -151,7 +151,7 @@ as_regression_frame.zeroinfl <- function(
     vcov_type = vcov,
     cluster = cluster
   )
-  if (!vcov %in% c("model", "classical")) {
+  if (!.is_model_vcov(vcov)) {
     info$vcov_label <- .robust_vcov_label(
       vcov,
       cluster_name %||% NA_character_,
@@ -459,7 +459,7 @@ as_regression_frame.zeroinfl <- function(
   est <- unname(smz[, "Estimate"])
   se <- unname(smz[, "Std. Error"])
   # Robust: re-infer from the zero_* block of the whole-model cluster sandwich.
-  if (!vcov_type %in% c("model", "classical")) {
+  if (!.is_model_vcov(vcov_type)) {
     vc_full <- compute_model_vcov(fit, type = vcov_type, cluster = cluster)
     pref <- paste0("zero_", nm)
     if (all(pref %in% rownames(vc_full))) {

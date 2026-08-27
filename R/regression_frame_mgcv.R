@@ -83,7 +83,7 @@ as_regression_frame.gam <- function(
     is_gaussian_identity = is_gaussian_identity,
     fam = fam
   )
-  if (!vcov %in% c("model", "classical")) {
+  if (!.is_model_vcov(vcov)) {
     info$vcov_label <- .robust_vcov_label(
       vcov,
       cluster_name %||% NA_character_,

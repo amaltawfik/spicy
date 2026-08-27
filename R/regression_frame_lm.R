@@ -47,12 +47,7 @@ as_regression_frame.lm <- function(
   # orchestrator warns once per table; resolving here keeps
   # info$ci_method truthful (the CI footer and as_structured() consumers
   # see the EFFECTIVE method).
-  if (
-    identical(ci_method, "profile") &&
-      !(is.character(vcov) &&
-        length(vcov) == 1L &&
-        vcov %in% c("model", "classical"))
-  ) {
+  if (identical(ci_method, "profile") && !.is_model_vcov(vcov)) {
     ci_method <- "wald"
   }
 
@@ -503,10 +498,11 @@ as_regression_frame.glm <- function(fit, ...) {
 
 
 # Maps the internal vcov_kind string to a human-readable footer label.
-# Falls back to the kind name when unknown.
+# Falls back to the kind name when unknown. The lookup is keyed on the
+# CANON, so the model-based default needs one row rather than one per
+# spelling.
 .vcov_label_from_kind <- function(vcov_kind, is_glm = FALSE) {
   labels <- c(
-    classical = if (is_glm) "Model-based (asymptotic)" else "OLS",
     model = if (is_glm) "Model-based (asymptotic)" else "OLS",
     HC0 = "HC0 heteroskedasticity-consistent",
     HC1 = "HC1 heteroskedasticity-consistent",
@@ -521,7 +517,7 @@ as_regression_frame.glm <- function(fit, ...) {
     bootstrap = "Bootstrap",
     jackknife = "Jackknife"
   )
-  out <- labels[vcov_kind]
+  out <- labels[.canon_vcov_kind(vcov_kind)]
   if (is.na(out)) vcov_kind else unname(out)
 }
 

@@ -1242,13 +1242,11 @@ compute_satt_df_per_coef <- function(fit, vc, cluster) {
   estimates = NULL,
   term_keys = NULL
 ) {
-  # No-op for the model-based defaults: "classical" / "model" (every class) and
-  # "survey-Taylor" (the svyglm design-based default, whose SE .svyglm_coefs()
-  # already computed and which compute_model_vcov() does not know).
-  if (
-    is.null(vcov_type) ||
-      vcov_type %in% c("classical", "model", "survey-Taylor")
-  ) {
+  # No-op for the model-based defaults: the canon "model" (every class,
+  # and the "classical" the user still types for it) and "survey-Taylor"
+  # (the svyglm design-based default, whose SE .svyglm_coefs() already
+  # computed and which compute_model_vcov() does not know).
+  if (.is_model_vcov(vcov_type) || identical(vcov_type, "survey-Taylor")) {
     return(coefs)
   }
   vc <- compute_model_vcov(fit, type = vcov_type, cluster = cluster)
