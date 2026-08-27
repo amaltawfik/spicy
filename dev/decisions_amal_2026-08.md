@@ -660,3 +660,22 @@ VALIDÉ par Amal (les deux recos) :
   « delivered as amended », plus jamais « partiel ».
 Implémentation : accroché au lot rename by→select (décisions 39-40),
 même wagon, pipeline commun.
+
+## Décision 42 — Le français est un léger plus, calibré comme tel (2026-08-27)
+
+Contexte posé par Amal : le mode fr n'est PAS un enjeu du package —
+« un léger plus car je suis francophone, mais même moi risque de
+rarement l'utiliser » ; la vraie question des traductions se posera
+à la v1.0 ; « on ne peut tout faire ».
+- « Model N » : GELÉ partout (doctrine clés, cohérence spanner/
+  footnote). Le refactor col_name/display_label (251-C, qui
+  débloquerait « Modèle N » et l'affichage « IC à 95 % ») est REPORTÉ
+  à l'horizon v1.0.
+- Périmètre fr pré-gel : MINIMUM VITAL SEUL — 8 clés (6 gabarits de
+  titre + 2 joiners de note de type), car titre + première note sont
+  anglais sur 100 % des tables : c'est ce qui fait paraître le mode
+  cassé plutôt que partiel. 251-A étendu (~43) et 251-B (~150)
+  REPORTÉS à l'horizon v1.0, inventaire conservé (n°253).
+- Le mode fr reste documenté comme partiel avec fallback anglais —
+  état assumé, pas un défaut.
+Exécution : design + prose fr par Fable en direct (8 clés = petit).
