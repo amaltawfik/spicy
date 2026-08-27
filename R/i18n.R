@@ -912,6 +912,18 @@ spicy_fmt <- function(key, ...) {
   switch(lang, en = NULL, fr = .spicy_strings_fr)
 }
 
+# The typographic locale a language brings with it: the decimal mark and
+# the leading-zero rule its readers expect, held as style levers so the
+# format layer needs no second mechanism (R/spicy_style.R,
+# `.style_locale_defaults()`). "en" answers NULL because spicy's
+# defaults ARE the English ones, and so does any language that ships no
+# locale of its own -- a set of words is enough to be a language.
+# Same `switch()` reason as above: the locale lives in its language's
+# file, which R collates after this one.
+.spicy_locale_table <- function(lang) {
+  switch(lang, fr = .spicy_locale_fr, NULL)
+}
+
 # The title-prefix bridge of a language set (decision 42): the engine's
 # English `title_prefix` strings mapped to their translation. "en" has
 # none -- the English prose IS the source. A future language adds its
@@ -1136,7 +1148,8 @@ spicy_fmt <- function(key, ...) {
 #' @section Global options:
 #'
 #' * **`options(spicy.language = "fr")`**
-#'   The language of the labels, for the whole document. Two sets ship:
+#'   The language of the table, for the whole document -- its labels and
+#'   the typography its numbers are written in. Two sets ship:
 #'   `"en"` (the default) and `"fr"`. The language of a report is a
 #'   property of the report, so this is set once in a setup chunk rather
 #'   than passed to each table.
@@ -1170,10 +1183,38 @@ spicy_fmt <- function(key, ...) {
 #' (or whatever `row_missing_level` is overridden to). Address that
 #' column through `row_missing_level` rather than by typing it.
 #'
-#' Number FORMATTING is a separate lever. `options(spicy.language = "fr")`
-#' translates the words; the `"fr"` style
-#' (`options(spicy.style = "fr")`, see [spicy_style()]) writes the decimal
-#' comma. A French report usually wants both.
+#' @section Numbers follow the language too:
+#'
+#' A language brings its typographic locale with it, so
+#' `options(spicy.language = "fr")` is one gesture for a coherent
+#' French report table: French words, comma decimal mark, and the
+#' leading zero French typography keeps on a p-value (`0,003`). The
+#' sources are the BIPM's SI brochure and the European Union's *Code
+#' de redaction interinstitutionnel*; [spicy_style()] quotes them.
+#' `"en"` brings no locale, and nothing changes for anyone who sets no
+#' language.
+#'
+#' The locale rides the style layer, so it reaches the reporting
+#' families -- [table_regression()], [table_categorical()],
+#' [table_continuous()], [table_continuous_lm()], [table_outcome()]
+#' and the survey twins. The exploration pair has no such layer:
+#' [freq()] and [cross_tab()] translate their words under a language
+#' but keep their own `decimal_mark` argument, set by hand.
+#'
+#' The locale sits at the BOTTOM of the formatting resolution. A
+#' journal style outranks it -- `style = "jama"` under `"fr"` gives
+#' JAMA's p-values and the French comma, `style = "lancet"` keeps the
+#' journal's midline decimal point -- and an argument you type outranks
+#' both, so `decimal_mark = "."` gives French words with a decimal
+#' point (the p-value keeps its locale zero; [spicy_style()] documents
+#' that lever).
+#'
+#' Two timing notes. Figures are frozen when a table is BUILT, like
+#' every formatting argument, while words resolve when it is printed --
+#' so set the language once, at the top of the document. And a comma
+#' mark makes an Excel export write its body as text rather than live
+#' numbers, since Excel would otherwise re-punctuate a numeric cell
+#' with the viewer's own locale.
 #'
 #' @param language A language name (`"en"`, `"fr"`), or `NULL` (the
 #'   default) to report the labels in force. Any
@@ -1182,8 +1223,8 @@ spicy_fmt <- function(key, ...) {
 #' @return A named character vector, one element per key, in registry
 #'   order.
 #'
-#' @seealso [spicy_style()] for number formatting, including the French
-#'   decimal comma.
+#' @seealso [spicy_style()] for the journal styles, which outrank the
+#'   language's own typography.
 #'
 #' @examples
 #' head(spicy_labels())

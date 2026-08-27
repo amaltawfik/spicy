@@ -59,6 +59,33 @@ test_that("every shipped set names only keys the registry has", {
   }
 })
 
+test_that("every shipped locale names only levers a style knows", {
+  # A locale is a style-lever list, so it has to speak the same
+  # vocabulary; a lever the format layer does not know would be a
+  # silent no-op in exactly the place a silent no-op is worst.
+  for (lang in .SPICY_LANGUAGES) {
+    loc <- .spicy_locale_table(lang)
+    if (is.null(loc)) {
+      next
+    }
+    expect_type(loc, "list")
+    expect_true(length(loc) >= 1L, label = lang)
+    expect_identical(
+      setdiff(names(loc), spicy:::.STYLE_FIELDS),
+      character(0),
+      label = lang
+    )
+    # And it must survive the constructor's own validation.
+    expect_s3_class(do.call(spicy_style, loc), "spicy_style")
+  }
+})
+
+test_that("English carries no locale", {
+  # "en" is the fallback in both layers: spicy's defaults ARE its
+  # typography, and a second copy could only drift from them.
+  expect_null(.spicy_locale_table("en"))
+})
+
 test_that("every translated template takes its English arguments", {
   # The holes are the CONTRACT between a template and its call site: the
   # call site passes what English asked for, so a translation that drops

@@ -273,6 +273,11 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
   `"en"` is the default and is unchanged. A label the French set does
   not carry falls back to English, so nothing comes out blank.
 
+* The title of a `table_regression()` table and its type note are
+  French too, for the model families a French-speaking user meets by
+  default. A family with no French title keeps its English title and
+  type note whole, rather than a half-translated head.
+
 * `options(spicy.labels = list(row_missing_level = "(No answer)"))`
   overrides one label at a time, in any language. It is the layer to
   reach for when a single word has to change and a language does not.
@@ -282,9 +287,21 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
   `out[["Yes %"]]` resolves whatever the language, and so do the
   mathematical glyphs. Errors and warnings stay in English.
 
-* Number formatting stays a separate lever: `options(spicy.language =
-  "fr")` translates the words, `style = "fr"` writes the decimal comma.
-  A French report usually wants both.
+* A language brings its typography with it, so
+  `options(spicy.language = "fr")` is one gesture for a coherent French
+  report table: French words, decimal comma, and the leading zero
+  French typography keeps on a p-value (`0,003`). `"en"` brings none,
+  and nothing changes for anyone who sets no language. The exploration
+  pair -- `freq()` and `cross_tab()` -- translates its words but keeps
+  its own `decimal_mark` argument.
+
+* A journal style composes with the language instead of replacing it.
+  A theme fills only the levers its own guidelines state, so
+  `style = "jama"` under `"fr"` gives JAMA's p-values and the French
+  comma; where the two meet the theme wins (`"lancet"` keeps its
+  midline decimal point). Any formatting argument you type wins over
+  both, so `decimal_mark = "."` gives French words and a decimal
+  point.
 
 * `table_regression()` names the variance estimator the design actually
   uses: Taylor linearisation, replicate weights and their scheme, or a
@@ -381,8 +398,8 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
   cross-software correspondence.
 * New `style` argument on `table_regression()`, `table_categorical()`,
   `table_continuous()` and `table_continuous_lm()`: `"jama"`, `"nejm"`,
-  `"lancet"`, `"annals"`, `"apa"`, `"aer"` and `"fr"`. Each theme encodes only rules
-  taken from an official document of the institution, listed one by one in
+  `"lancet"`, `"annals"`, `"apa"` and `"aer"`. Each theme encodes only rules
+  taken from an official document of the journal, listed one by one in
   `?spicy_style` -- numeric formatting conformity, not full editorial
   conformity. An unknown name errors and names the ones that exist.
 * Themes move defaults only. Any formatting argument you pass wins over the

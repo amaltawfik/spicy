@@ -1128,6 +1128,15 @@ le corpus sur ce point.
 bilingue, citable, et porteur d'une règle de tableau qu'aucune revue n'énonce
 aussi nettement.
 
+**Où cela vit dans le paquet (mise à jour 2026-08-27).** Ces deux règles — virgule
+décimale, zéro initial conservé — n'adossent plus un thème nommé. Le registre des
+styles ne contient que des revues (« chaque thème est un journal ») et « fr » en
+était le seul intrus : il a été retiré. Elles adossent désormais la **locale de la
+langue**, `.spicy_locale_fr` dans `R/i18n_fr.R`, que
+`options(spicy.language = "fr")` pose au niveau le plus bas de la résolution de
+format (argument > style > locale > défauts spicy). Les verbatims ci-dessus ont
+voyagé avec, en commentaire de provenance dans ce fichier-là.
+
 ---
 
 ### 5.2 ISO 80000-1:2022 — virgule décimale et écriture des nombres
@@ -1213,9 +1222,12 @@ de 7.2.2. iso.org renvoie 403 à WebFetch et au proxy.
 espace avant `%`, exception anglais/irlandais/maltais.
 
 **Commentaire.** Meilleur substitut gratuit et citable au Lexique de l'Imprimerie
-nationale pour un thème francophone. Le site style-guide.europa.eu charge son
-contenu en JS (proxy et curl ne récupèrent que la navigation) : le PDF officiel
-est la seule voie fiable, et il contient bien le texte intégral (17 400 lignes
+nationale pour la typographie francophone. Depuis le 2026-08-27, le point 6.5
+adosse la locale de la langue (`.spicy_locale_fr`, `R/i18n_fr.R`) et non plus un
+thème du registre des styles : voir la note de fin du § 5.1. Le site
+style-guide.europa.eu charge son contenu en JS (proxy et curl ne
+récupèrent que la navigation) : le PDF officiel est la seule voie
+fiable, et il contient bien le texte intégral (17 400 lignes
 extraites).
 
 ---
@@ -1241,7 +1253,8 @@ avancée ici : toute pagination serait une invention.**
 
 **Encodable dans `format_spec` : non en l'état.** Substituts officiels, gratuits
 et citables pour les mêmes règles françaises : le Code de rédaction UE (5.3) et
-la version française de la Brochure SI du BIPM (5.1).
+la version française de la Brochure SI du BIPM (5.1) — qui, depuis la décision
+43 (2026-08-27), adossent la locale de la langue et non plus un thème.
 
 ---
 
@@ -1267,9 +1280,9 @@ la version française de la Brochure SI du BIPM (5.1).
 | Science — manuscrit | Instructions for preparing an initial manuscript | non trouvé | non trouvé | non — astérisque = premier symbole de note | zéro initial obligatoire ; chiffres significatifs seulement | oui (partiel) |
 | Science — politique | Editorial Policies, Statistical Analysis | ≤ 2 chiffres significatifs (dérogation tests multiples) | SE ou IC obligatoires ; méthode de construction à déclarer | non trouvé | chiffres significatifs | oui (partiel) |
 | PNAS | Submitting Your Manuscript + Editorial Policies | non trouvé | non trouvé | non — astérisque = premier symbole de note | non trouvé | partiel |
-| BIPM (SI, 9e éd., 2019) | Brochure SI § 5.4.4 | — | — | — | marque décimale point **ou** virgule selon la langue ; zéro initial toujours ; `big_mark` = espace ; **format constant par colonne** | oui |
+| BIPM (SI, 9e éd., 2019) | Brochure SI § 5.4.4 | — | — | — | marque décimale point **ou** virgule selon la langue ; zéro initial toujours ; `big_mark` = espace ; **format constant par colonne** | adosse la locale de la langue (déc. 43), plus un thème |
 | ISO 80000-1:2022 | Norme payante | — | — | — | clauses 7.2.1, 7.2.2, Annexe B (arrondi) identifiées ; texte non lu | manque-la-norme |
-| Code de rédaction UE (FR) | Code interinstitutionnel, 2022 | — | — | — | virgule décimale ; espace fine aux milliers ; décimales non groupées ; espace avant `%` | oui |
+| Code de rédaction UE (FR) | Code interinstitutionnel, 2022 | — | — | — | virgule décimale ; espace fine aux milliers ; décimales non groupées ; espace avant `%` | adosse la locale de la langue (déc. 43), plus un thème |
 | Lexique Imprimerie nationale | Livre 2002 | — | — | — | entrées identifiées, contenu non lu | manque-le-livre |
 | AMA Manual of Style 11e | Livre 2020 | — | — | — | sections 4.1.4, 4.1.8, 18.7.1–18.7.4, glossaire ch. 19 identifiées | manque-le-livre |
 | APA Publication Manual 7e | Livre 2020 | — | — | — | §6.36, §6.40–6.45, Table 6.5, §7.8–7.21 identifiées ; l'essentiel est repris dans le guide gratuit | manque-le-livre (peu bloquant) |
@@ -1354,8 +1367,8 @@ limité au nom de fichier). Aucun de ces documents n'a été téléchargé.
   « Pourcentage », « Unités de mesure ».
 - **Ce que l'achat débloquerait.** L'autorité de référence française sur l'espace
   fine insécable et la composition des tableaux — non citable en ligne, d'où
-  l'intérêt de sourcer un thème francophone sur BIPM + Code de rédaction UE en
-  attendant.
+  l'intérêt d'adosser la locale de la langue (décision 43) sur BIPM + Code de
+  rédaction UE en attendant.
 - **À verser dans la bibliothèque de méthodes d'Amal.**
 
 ---

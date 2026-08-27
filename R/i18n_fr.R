@@ -320,6 +320,39 @@
   value_summary_invalid = "Erreur\u00A0: valeurs invalides"
 )
 
+# ---- La locale de la langue -----------------------------------------------
+# La typographie qu'une langue apporte AVEC elle, lue par
+# .style_locale_defaults() (R/spicy_style.R) comme la couche de levers
+# la MOINS prioritaire : un argument tape et n'importe quel style la
+# surclassent. Une langue future arrive avec son fichier de chaines ET
+# sa locale, au meme endroit.
+#
+# Sources -- migrees du registre des styles, ou "fr" etait le seul theme
+# a n'etre pas un journal :
+#
+#   * BIPM, Le Systeme international d'unites, 9e ed., 2019, section
+#     5.4.4 (https://www.bipm.org/documents/20126/41483022/
+#     SI-Brochure-9.pdf), consulte le 2026-08-14. Marque decimale
+#     laissee a la langue : "Le separateur decimal choisi sera celui
+#     qui est d'usage courant selon la langue concernee et le
+#     contexte." Zero initial : "Si le nombre se situe entre +1 et -1,
+#     le separateur decimal est toujours precede d'un zero : par
+#     exemple, -0,234 mais pas -,234."
+#   * Union europeenne, Code de redaction interinstitutionnel, ed. fr
+#     2022, point 6.5 (https://style-guide.europa.eu/fr), consulte le
+#     2026-08-14 : "La virgule est utilisee pour separer les unites des
+#     decimales."
+#
+# Le zero initial est ce qui rend la locale indispensable : avec la
+# seule virgule, spicy ecrirait une valeur p ",003". Le point-virgule
+# entre les bornes d'un intervalle sous virgule decimale est en
+# revanche la desambiguisation propre a spicy, deduite de decimal_mark
+# (ci_bracket_separator()) : rien a poser ici.
+.spicy_locale_fr <- list(
+  decimal_mark = ",",
+  p_style = "standard"
+)
+
 # ---- Le pont des prefixes de titre (decision 42) ---------------------------
 # Les chaines ANGLAISES FINALES que les moteurs posent dans
 # extras$title_prefix, mappees vers leur francais. C'est un PONT
