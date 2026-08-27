@@ -679,3 +679,32 @@ rarement l'utiliser » ; la vraie question des traductions se posera
 - Le mode fr reste documenté comme partiel avec fallback anglais —
   état assumé, pas un défaut.
 Exécution : design + prose fr par Fable en direct (8 clés = petit).
+
+## Décision 43 — Le « fr » quitte le registre des journaux ; la langue porte sa locale (2026-08-27)
+
+Question soulevée par Amal (« peut-être n'était-ce pas judicieux de
+proposer un style fr qui change la logique par rapport aux autres
+styles »), tranchée sur ma recommandation : « vasy en mode pro, on
+enlève fr au theme de journaux/revue ».
+- Le thème « fr » SORT du registre des styles : le registre redevient
+  pur (chaque thème nommé = un journal, chaque règle sourcée —
+  amende la partie « plus le style francophone » de la décision 7 du
+  2026-08-14 ; les sources BIPM/UE migrent vers la doc de la langue).
+- `options(spicy.language = "fr")` devient LE geste français : mots
+  ET chiffres (virgule décimale, zéro devant le p), au niveau le plus
+  bas de la résolution : argument > style > locale de la langue >
+  défauts spicy. Composable avec les journaux (jama + fr = règles p
+  de jama et virgule ; lancet garde son point médian ; un style qui
+  supprime le zéro de tête gagne — geste explicite).
+- `style = "fr"` = erreur dure dédiée pointant la solution (jamais
+  publié sur CRAN : pas de section breaking dans NEWS, règle
+  published-only).
+- Échappatoire : `decimal_mark = "."` en argument gagne toujours
+  (mots français, point décimal).
+- Hors périmètre, registre n°262 : freq()/cross_tab() (pas de couche
+  style) gardent le point sous langue fr — à trancher un jour.
+Modèle de référence : gtsummary sépare theme journal / theme langue
+et fait porter la marque décimale par la langue ; SPSS/Stata : langue
+de sortie = réglage système, typographie = locale.
+Exécution : spec dev/style_fr_locale_spec.md, implémentation Opus sur
+localefr-013, revue 3 lentilles, base frtitles-013.
