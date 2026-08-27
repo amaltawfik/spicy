@@ -411,3 +411,51 @@ test_that("the FE guard reaches the public path", {
     class = "spicy_invalid_input"
   )
 })
+
+# A VARYING SLOPE is a different absorbed structure, and `fixef_vars`
+# cannot see it: `| id` and `| id[t]` both answer "id", so the key was
+# identical and the guard stayed silent while the second fit absorbed
+# one extra coefficient per unit -- 30 of them on a 30-unit panel, for
+# the same single covariate. `fixef_terms` distinguishes them, and is
+# absent (falling back to `fixef_vars`) on any fit with no slope.
+test_that("a varying-slope FE structure is not the same structure", {
+  skip_if_not_installed("fixest")
+  set.seed(20260828)
+  n <- 360L
+  d <- data.frame(
+    id = factor(rep(seq_len(30L), each = 12L)),
+    t = rep(seq_len(12L), times = 30L)
+  )
+  d$x <- stats::rnorm(n)
+  d$y <- 2 * d$x + as.numeric(d$id) * 0.1 + stats::rnorm(n)
+  plain <- fixest::feols(y ~ x | id, data = d)
+  slope <- fixest::feols(y ~ x | id[t], data = d)
+  # Same covariate set, wildly different parameter counts.
+  expect_identical(names(stats::coef(plain)), names(stats::coef(slope)))
+  expect_gt(
+    attr(stats::logLik(slope), "df") - attr(stats::logLik(plain), "df"),
+    25
+  )
+  # The old field cannot tell them apart; the new one can.
+  expect_identical(
+    as.character(plain$fixef_vars),
+    as.character(slope$fixef_vars)
+  )
+  expect_null(plain$fixef_terms)
+  expect_identical(spicy:::fixest_fe_key(plain), "id")
+  expect_false(
+    identical(spicy:::fixest_fe_key(plain), spicy:::fixest_fe_key(slope))
+  )
+  err <- expect_error(
+    spicy:::compute_nested_comparisons(list(plain, slope)),
+    class = "spicy_invalid_input"
+  )
+  expect_match(conditionMessage(err), "absorbed different fixed effects")
+  # ... and two fits absorbing the SAME slope structure still compare.
+  slope2 <- fixest::feols(y ~ x + I(x^2) | id[t], data = d)
+  expect_identical(
+    spicy:::fixest_fe_key(slope),
+    spicy:::fixest_fe_key(slope2)
+  )
+  expect_no_error(spicy:::compute_nested_comparisons(list(slope, slope2)))
+})

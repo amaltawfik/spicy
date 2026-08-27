@@ -336,12 +336,27 @@ check_nested_mixed_engine_pair <- function(fit_prev, fit_curr) {
 # ---- Absorbed fixed-effects guard (fixest) -------------------------------
 
 # Signature of a fixest fit's ABSORBED fixed-effects structure: the
-# dimension names, sorted, joined by "&". `fixef_vars` is the documented
+# absorbed TERMS, sorted, joined by "&".
+#
+# `fixef_terms` is the field that distinguishes `| id` from `| id[t]`
+# ("id" against "id", "id[[t]]"): the varying-slope form absorbs one
+# coefficient per unit on top of the unit intercepts -- 30 extra
+# parameters on a 30-unit panel, logLik df 32 against 62 -- for the same
+# covariate set. Read through `fixef_vars`, both fits carried the key
+# "id", the guard stayed silent, and the chi-square published measured
+# the change in the absorbed structure and nothing else. fixest sets
+# `fixef_terms` only when a slope is involved, so a plain `| id + g` fit
+# has none and falls back to `fixef_vars`, the documented dimension-name
 # field ("The names of each fixed-effect dimension", ?feols Value), NULL
 # for a fit with no `| fe` part -- which is a structure like any other
 # and gets the empty key.
+#
+# The key is SORTED, so the order the dimensions were written in is not
+# a structure: `| Origin + Year` and `| Year + Origin` absorb the same
+# set of dummies and compare.
 fixest_fe_key <- function(fit) {
-  paste(sort(as.character(fit$fixef_vars %||% character(0))), collapse = "&")
+  fe_terms <- fit$fixef_terms %||% fit$fixef_vars %||% character(0)
+  paste(sort(as.character(fe_terms)), collapse = "&")
 }
 
 # Refuse a likelihood-ratio comparison of two fixest fits that absorbed
@@ -367,8 +382,11 @@ check_nested_fixest_fe_pair <- function(fit_prev, fit_curr) {
   if (identical(fixest_fe_key(fit_prev), fixest_fe_key(fit_curr))) {
     return(invisible(NULL))
   }
+  # Named from the same field the key reads, so the sentence names what
+  # actually differed: `| id` against `| id[t]` reads "id" against
+  # "id + id[[t]]", not "id" against "id".
   describe <- function(fit) {
-    fe <- as.character(fit$fixef_vars %||% character(0))
+    fe <- as.character(fit$fixef_terms %||% fit$fixef_vars %||% character(0))
     if (length(fe) == 0L) "none" else paste(fe, collapse = " + ")
   }
   spicy_abort(
