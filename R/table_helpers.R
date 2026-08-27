@@ -108,7 +108,17 @@ format_number <- function(x, digits = 2L, decimal_mark = ".") {
 # floor sits, and whether the leading zero is kept. With no style
 # active every hook returns the value computed here, so the output
 # is byte-identical to the pre-style formatter.
-format_p_value <- function(p, decimal_mark = ".", digits = 3L) {
+#
+# `leading_zero` answers the third question for a caller that has no
+# style layer to answer it through -- `cross_tab()`, whose only
+# typographic lever is `decimal_mark`. `NULL` (the default) asks the
+# style, which is what every other caller does.
+format_p_value <- function(
+  p,
+  decimal_mark = ".",
+  digits = 3L,
+  leading_zero = NULL
+) {
   if (is.na(p)) {
     return("")
   }
@@ -117,7 +127,11 @@ format_p_value <- function(p, decimal_mark = ".", digits = 3L) {
     digits <- 3L
   }
   threshold <- .style_p_floor(digits)
-  keep_zero <- .style_p_leading_zero()
+  keep_zero <- if (is.null(leading_zero)) {
+    .style_p_leading_zero()
+  } else {
+    isTRUE(leading_zero)
+  }
   if (p < threshold) {
     # "<.001" for digits=3, "<.0001" for digits=4, "<.01" for digits=2
     return(paste0(
@@ -142,6 +156,19 @@ format_p_value <- function(p, decimal_mark = ".", digits = 3L) {
     nd <- nd + 1L
   }
   format_number(threshold, nd, decimal_mark)
+}
+
+# Internal: put a plain rendered number under the table's decimal
+# mark. For the quantities that reach a note through `sprintf("%s")`
+# rather than `format_number()` -- a `round()`ed value whose English
+# rendering is `as.character()`'s and must not move by a byte. Under
+# `"."` this IS `as.character()`.
+.mark_decimal <- function(x, decimal_mark) {
+  out <- as.character(x)
+  if (identical(decimal_mark, ".")) {
+    return(out)
+  }
+  chartr(".", decimal_mark, out)
 }
 
 # Internal: drop the leading zero of a decimal fraction ("0.03" ->

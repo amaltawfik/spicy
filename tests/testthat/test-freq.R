@@ -648,6 +648,44 @@ test_that("freq() honours `decimal_mark = ',' in the printed percentages", {
   expect_false(any(grepl("\\b\\d+\\.\\d", out)))
 })
 
+test_that("freq() takes its default decimal mark from the language", {
+  # Decision 44: the locale supplies the DEFAULT; an argument you type
+  # wins, even when it is the package default.
+  en <- capture.output(freq(c(1, 1, 2, 2, 2)))
+  withr::local_options(spicy.language = "fr")
+  fr <- capture.output(freq(c(1, 1, 2, 2, 2)))
+  expect_true(any(grepl("40,0", fr, fixed = TRUE)))
+  expect_false(any(grepl("[0-9]\\.[0-9]", fr)))
+  # The mark is frozen on the object at build time, like every other
+  # formatting argument.
+  expect_identical(attr(freq(c(1, 1, 2)), "decimal_mark"), ",")
+  # The argument still wins, and then the numbers are the English ones.
+  typed <- capture.output(freq(c(1, 1, 2, 2, 2), decimal_mark = "."))
+  expect_true(any(grepl("40.0", typed, fixed = TRUE)))
+  # The English rendering itself has not moved.
+  expect_true(any(grepl("40.0", en, fixed = TRUE)))
+  # `missing()` is the detector, so it has to survive a constructed
+  # call: absent from the argument list means absent.
+  expect_identical(
+    attr(do.call(freq, list(data = c(1, 1, 2))), "decimal_mark"),
+    ","
+  )
+  expect_identical(
+    attr(
+      do.call(freq, list(data = c(1, 1, 2), decimal_mark = ".")),
+      "decimal_mark"
+    ),
+    "."
+  )
+})
+
+test_that("a language that carries no locale leaves freq() on the point", {
+  withr::local_options(spicy.language = "en")
+  out <- capture.output(freq(c(1, 1, 2, 2, 2)))
+  expect_true(any(grepl("40.0", out, fixed = TRUE)))
+  expect_false(any(grepl("[0-9],[0-9]", out)))
+})
+
 test_that("freq() rejects pathological sort values with the friendly message", {
   # Without `is.character` / `length == 1L` / `!is.na` guards, `sort = NULL`
   # crashed with "argument is of length zero" (logical(0) inside `if`),

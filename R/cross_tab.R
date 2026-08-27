@@ -61,9 +61,13 @@
 #'   `percent != "none"`.
 #' @param decimal_mark Character used as the decimal mark in printed
 #'   numeric values (cells, chi-squared, association estimate, CI
-#'   bounds, p-value). Defaults to `"."`. Set to `","` for European
-#'   formatting; matches the `decimal_mark` argument of the
-#'   `table_*()` family.
+#'   bounds, p-value, table note). Either `"."` or `","`. The default
+#'   follows the language: `options(spicy.language = "fr")` gives the
+#'   comma here and in [freq()], exactly as it does in the reporting
+#'   `table_*()` family. An argument you type wins, so
+#'   `decimal_mark = "."` under a French language gives French words
+#'   and a decimal point. Under a comma the p-value keeps its leading
+#'   zero (`p = 0,659`), the form French typography requires.
 #' @param p_digits Integer number of decimals used to format the
 #'   p-value (and to determine the small-`p` threshold below which
 #'   `< .001` notation is used). Defaults to `3` (the APA standard);
@@ -211,6 +215,18 @@ cross_tab <- function(
       class = "spicy_invalid_input"
     )
   }
+
+  # The language's typographic locale supplies the DEFAULT decimal
+  # mark, the same way it does in `freq()`: an argument you type > the
+  # locale > `"."`. The validation below then applies to the resolved
+  # value, unchanged.
+  if (missing(decimal_mark)) {
+    loc <- .style_locale_defaults()
+    if (!is.null(loc$decimal_mark)) {
+      decimal_mark <- loc$decimal_mark
+    }
+  }
+
   if (
     !is.character(decimal_mark) ||
       length(decimal_mark) != 1L ||
@@ -985,7 +1001,15 @@ cross_tab <- function(
       p_formatted <- format_p_value(
         pval,
         decimal_mark = decimal_mark,
-        digits = p_digits
+        digits = p_digits,
+        # Under a comma the leading zero stays: `p = ,659` is a form
+        # the SI brochure forbids (BIPM, 9th edition, section 5.4.4),
+        # and the reporting families never write it because a French
+        # locale carries `p_style = "standard"` with the mark. The
+        # pair has no style layer to carry it, so the MARK does --
+        # whether it comes from the language or from the argument.
+        # Under a point nothing moves: `.659` is the APA default.
+        leading_zero = if (identical(decimal_mark, ",")) TRUE else NULL
       )
       p_str <- if (substring(p_formatted, 1L, 1L) == "<") {
         spicy_fmt("note_p_prefix_lt", p_formatted) # "p <.001"
@@ -1055,7 +1079,15 @@ cross_tab <- function(
       small1 <- sum(expected < 1, na.rm = TRUE)
       prop5 <- small5 / length(expected)
       if ((prop5 > 0.20 || small1 > 0) && !simulate_p) {
-        min_exp <- round(min(expected, na.rm = TRUE), 2)
+        # The note's own numbers follow the mark too: a table whose
+        # cells read "66,7" cannot say "66.7" one line below. They
+        # reach `sprintf("%s")` as `round()`ed doubles, so
+        # `.mark_decimal()` renders them exactly as `as.character()`
+        # did -- under a point the note does not move by a byte.
+        min_exp <- .mark_decimal(
+          round(min(expected, na.rm = TRUE), 2),
+          decimal_mark
+        )
         note <- paste0(
           note,
           "\n",
@@ -1064,7 +1096,7 @@ cross_tab <- function(
             "note_expected_lt5",
             small5,
             if (small5 > 1) "s" else "",
-            round(prop5 * 100, 1)
+            .mark_decimal(round(prop5 * 100, 1), decimal_mark)
           ),
           if (small1 > 0) {
             paste0(

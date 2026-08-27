@@ -7,11 +7,11 @@
       
        Catégorie   │ Valeurs      Eff.    Pourcentage    Pourcentage valide 
       ─────────────┼────────────────────────────────────────────────────────
-       Valide      │ No              4           50.0                  57.1 
-                   │ Yes             3           37.5                  42.9 
-       Manquant    │ NA              1           12.5                       
+       Valide      │ No              4           50,0                  57,1 
+                   │ Yes             3           37,5                  42,9 
+       Manquant    │ NA              1           12,5                       
       ─────────────┼────────────────────────────────────────────────────────
-       Total       │                 8          100.0                 100.0 
+       Total       │                 8          100,0                 100,0 
       
       Classe : factor
       Données : d
@@ -22,15 +22,15 @@
       
        Values   │       F        M │   Total 
       ──────────┼──────────────────┼─────────
-       No       │    50.0     66.7 │    57.1 
-       Yes      │    50.0     33.3 │    42.9 
+       No       │    50,0     66,7 │    57,1 
+       Yes      │    50,0     33,3 │    42,9 
       ──────────┼──────────────────┼─────────
-       Total    │   100.0    100.0 │   100.0 
+       Total    │   100,0    100,0 │   100,0 
        N        │       4        3 │       7 
       
-      Khi-2(1) = 0.2, p = .659
-      V de Cramér = 0.17
-      Avertissement : 4 cellules avec effectif théorique < 5 (100 %). Effectif théorique minimum = 1.29. Envisagez `simulate_p = TRUE` ou définissez-le globalement via `options(spicy.simulate_p = TRUE)`.
+      Khi-2(1) = 0,2, p = 0,659
+      V de Cramér = 0,17
+      Avertissement : 4 cellules avec effectif théorique < 5 (100 %). Effectif théorique minimum = 1,29. Envisagez `simulate_p = TRUE` ou définissez-le globalement via `options(spicy.simulate_p = TRUE)`.
       Valeurs manquantes retirées : smoke (1).
     Code
       print(table_categorical(d, select = smoke, by = sex))
