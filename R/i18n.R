@@ -323,6 +323,12 @@
   # colon and the full stop are the joiners the line is built from.
   note_re_line = "%s.",
   note_re_line_lrt = "%s: %s.",
+  # `nested = TRUE` over an lme4 hierarchy fitted by REML: anova.merMod
+  # refits by ML before it compares, so the change rows and the per-model
+  # AIC rows are two different criteria. No hole: the sentence names both
+  # sides of a disagreement the reader can otherwise only discover by
+  # subtracting the AIC rows by hand.
+  note_nested_ml_refit = "Change statistics from ML refits; the per-model AIC rows are REML and are not comparable across fixed-effects structures.",
   # Component-block glosses. One hole: the block caption. The
   # zero-inflation gloss is shared by glmmTMB and pscl - one component,
   # one sentence.

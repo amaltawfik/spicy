@@ -190,6 +190,7 @@ build_regression_footer_from_frames <- function(
       decimal_mark = decimal_mark
     ),
     build_mixed_inference_footer_block_from_frames(frames),
+    build_nested_ml_refit_footer_block_from_frames(frames, nested),
     build_gee_footer_block_from_frames(frames),
     build_random_effects_footer_block_from_frames(
       frames,
@@ -1402,6 +1403,52 @@ build_mixed_inference_footer_block_from_frames <- function(frames) {
     character(1)
   )
   paste(lines, collapse = "\n")
+}
+
+
+# The table says where its change statistics came from when they did not
+# come from the fits the other rows describe.
+#
+# lme4::anova.merMod refits a REML fit by maximum likelihood before it
+# compares (a one-line message spicy suppresses), so the change block of
+# a REML hierarchy is computed on ML refits while the per-model AIC rows
+# above it are the REML criteria of the fits themselves. Measured on
+# sleepstudy: DeltaAIC -114.46 from the refits against -115.86 from the
+# displayed rows. Recomputing the change on the REML criteria would be
+# the wrong fix: a restricted likelihood is built on contrasts that
+# annihilate the fixed-effects design, so REML criteria are not
+# comparable across fixed-effects structures at all (Pinheiro & Bates
+# 2000, Section 2.4.2 -- the same ground as the REML refusal in
+# check_nested_reml_pair()). The refit is right and the disagreement is
+# real, so the table discloses it.
+#
+# Fires only when a pair actually WAS refitted: both members lme4 fits
+# (the only engine in the mixed router that refits -- glmmTMB refuses,
+# nlme warns and is refused by spicy) and at least one of them REML.
+build_nested_ml_refit_footer_block_from_frames <- function(frames, nested) {
+  if (!isTRUE(nested) || !is.list(frames) || length(frames) < 2L) {
+    return(NULL)
+  }
+  is_lme4 <- vapply(
+    frames,
+    function(f) (f$info$class %||% "") %in% c("lmerMod", "glmerMod"),
+    logical(1)
+  )
+  is_reml <- vapply(
+    frames,
+    function(f) identical(f$info$random_effects$method, "REML"),
+    logical(1)
+  )
+  pairs <- seq_len(length(frames) - 1L)
+  refitted <- any(
+    is_lme4[pairs] &
+      is_lme4[pairs + 1L] &
+      (is_reml[pairs] | is_reml[pairs + 1L])
+  )
+  if (!refitted) {
+    return(NULL)
+  }
+  spicy_str("note_nested_ml_refit")
 }
 
 

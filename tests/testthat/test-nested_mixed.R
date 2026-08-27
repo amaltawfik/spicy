@@ -363,3 +363,76 @@ test_that("glm pair: nested dispatch still routes to compute_one_pair_lrt", {
   )
   expect_true(is.na(comp$r2_change[1L]))
 })
+
+
+# ---- 7. The ML-refit disclosure (register n.244(a)) ---------------------
+#
+# lme4::anova.merMod refits a REML fit by ML before comparing, so the
+# change rows of a REML hierarchy and the per-model AIC rows above them
+# are two different criteria. The note fires exactly when that refit
+# happened.
+
+test_that("REML lmer hierarchy discloses the ML refit", {
+  skip_if_not_installed("lme4")
+  m1 <- lme4::lmer(Reaction ~ 1 + (1 | Subject), data = lme4::sleepstudy)
+  m2 <- lme4::lmer(Reaction ~ Days + (1 | Subject), data = lme4::sleepstudy)
+  # The disagreement the note exists for: the block's DeltaAIC is not the
+  # difference of the AIC rows the same table prints.
+  comp <- spicy:::compute_nested_comparisons(list(m1, m2))
+  expect_false(isTRUE(all.equal(
+    comp$aic_change[1L],
+    stats::AIC(m2) - stats::AIC(m1)
+  )))
+  out <- capture.output(table_regression(list(m1, m2), nested = TRUE))
+  expect_match(
+    paste(out, collapse = "\n"),
+    spicy_str("note_nested_ml_refit"),
+    fixed = TRUE
+  )
+})
+
+test_that("an ML lmer hierarchy carries no refit note", {
+  skip_if_not_installed("lme4")
+  p <- .fit_lmer_nested() # both fitted with REML = FALSE
+  out <- capture.output(table_regression(list(p$m1, p$m2), nested = TRUE))
+  expect_false(grepl(
+    spicy_str("note_nested_ml_refit"),
+    paste(out, collapse = "\n"),
+    fixed = TRUE
+  ))
+})
+
+test_that("a non-mixed hierarchy carries no refit note", {
+  m1 <- lm(mpg ~ 1, data = mtcars)
+  m2 <- lm(mpg ~ wt, data = mtcars)
+  out <- capture.output(table_regression(list(m1, m2), nested = TRUE))
+  expect_false(grepl(
+    spicy_str("note_nested_ml_refit"),
+    paste(out, collapse = "\n"),
+    fixed = TRUE
+  ))
+})
+
+test_that("the refit note is a nested-only block", {
+  skip_if_not_installed("lme4")
+  m1 <- lme4::lmer(Reaction ~ 1 + (1 | Subject), data = lme4::sleepstudy)
+  m2 <- lme4::lmer(Reaction ~ Days + (1 | Subject), data = lme4::sleepstudy)
+  frames <- list(
+    spicy:::as_regression_frame(m1),
+    spicy:::as_regression_frame(m2)
+  )
+  expect_null(
+    spicy:::build_nested_ml_refit_footer_block_from_frames(frames, FALSE)
+  )
+  expect_identical(
+    spicy:::build_nested_ml_refit_footer_block_from_frames(frames, TRUE),
+    spicy_str("note_nested_ml_refit")
+  )
+  # A single frame has no pair to refit.
+  expect_null(
+    spicy:::build_nested_ml_refit_footer_block_from_frames(frames[1L], TRUE)
+  )
+  expect_null(
+    spicy:::build_nested_ml_refit_footer_block_from_frames("not a list", TRUE)
+  )
+})
