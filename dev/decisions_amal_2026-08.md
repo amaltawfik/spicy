@@ -708,3 +708,25 @@ et fait porter la marque décimale par la langue ; SPSS/Stata : langue
 de sortie = réglage système, typographie = locale.
 Exécution : spec dev/style_fr_locale_spec.md, implémentation Opus sur
 localefr-013, revue 3 lentilles, base frtitles-013.
+
+## Décision 44 — freq()/cross_tab() suivent la locale de la langue (2026-08-27)
+
+Tranché par Amal (« pour freq et crosstab, on peut de toute manière
+changer le decimal mark, donc on aligne ») : la paire d'exploration
+s'aligne sur le principe « un geste = un document français cohérent »,
+précédent SPSS (virgule partout en français, exploration comprise).
+- La locale fournit le DÉFAUT de leur `decimal_mark` : argument tapé >
+  locale de la langue > "." — l'échappatoire reste, c'est l'argument
+  qui a emporté la décision.
+- Cohérence obligatoire au passage : le p de cross_tab (« p = .659 »)
+  ne doit JAMAIS devenir « p = ,659 » (forme interdite SI) — le zéro
+  de tête suit la locale comme dans les familles de reporting ;
+  vérifier ce que fait déjà decimal_mark = "," tapé sur le p (si la
+  base imprime « ,659 », c'est un défaut préexistant à corriger dans
+  le même lot).
+- Surfaces à retourner : les trois phrases-frontières écrites la
+  veille (?freq, ?spicy_labels, vignette summary-tables-reporting,
+  bullet NEWS) + snapshots fr de la paire.
+- Clôt la question n°262 du registre.
+Exécution : petit lot dédié, séquencé APRÈS le merge du train
+nested244 (chevauchement i18n.R/NEWS).
