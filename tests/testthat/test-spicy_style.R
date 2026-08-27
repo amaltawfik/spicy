@@ -256,6 +256,32 @@ test_that("jama on a real table", {
   expect_false(grepl("<0.001", txt, fixed = TRUE))
 })
 
+test_that("format_p_value's `leading_zero` overrides the style's answer", {
+  # The hook `cross_tab()` speaks through: it has no style layer, so
+  # under a comma mark it asks for the zero itself. NULL -- what every
+  # other caller passes -- still asks the style.
+  st <- local_style("jama")
+  expect_identical(spicy:::format_p_value(0.08, ".", 3L), ".08")
+  expect_identical(
+    spicy:::format_p_value(0.08, ".", 3L, leading_zero = TRUE),
+    "0.08"
+  )
+  expect_identical(
+    spicy:::format_p_value(0.08, ".", 3L, leading_zero = NULL),
+    ".08"
+  )
+  expect_identical(st$p_digits, 2L)
+})
+
+test_that("format_p_value's `leading_zero = FALSE` strips under a keeping style", {
+  local_style("nejm")
+  expect_identical(spicy:::format_p_value(0.08, ".", 3L), "0.08")
+  expect_identical(
+    spicy:::format_p_value(0.08, ".", 3L, leading_zero = FALSE),
+    ".08"
+  )
+})
+
 test_that("nejm: tiered p with the leading zero kept", {
   # "In general, P values larger than 0.01 should be reported to two
   #  decimal places, and those between 0.01 and 0.001 to three decimal

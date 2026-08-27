@@ -527,6 +527,76 @@ test_that("cross_tab `decimal_mark = ','` propagates to all printed numbers", {
   expect_match(note, "95% CI \\[\\d+,\\d{2}; \\d+,\\d{2}\\]")
 })
 
+test_that("cross_tab keeps the p-value's leading zero under a comma", {
+  # BIPM, SI brochure 9th ed., 5.4.4: a decimal marker is always
+  # preceded by a zero. `p = ,659` was the form spicy 0.12.0 printed.
+  d <- data.frame(
+    sex = factor(c("F", "M", "F", "M", "F", "M", "F", "M")),
+    smoke = factor(c("Yes", "No", "No", "Yes", "No", "No", "Yes", NA))
+  )
+  note <- attr(cross_tab(d, smoke, sex, decimal_mark = ","), "note")
+  expect_match(note, "p = 0,659", fixed = TRUE)
+  expect_false(grepl("p = ,", note, fixed = TRUE))
+  # The "<" floor takes the zero too.
+  small <- attr(
+    cross_tab(mtcars, cyl, gear, decimal_mark = ",", p_digits = 2L),
+    "note"
+  )
+  expect_match(small, "p <0,01", fixed = TRUE)
+  expect_false(grepl("<,", small, fixed = TRUE))
+  # Under a point the APA form is untouched.
+  dot <- attr(cross_tab(d, smoke, sex), "note")
+  expect_match(dot, "p = .659", fixed = TRUE)
+  expect_false(grepl("0.659", dot, fixed = TRUE))
+})
+
+test_that("cross_tab's expected-count note follows the decimal mark", {
+  d <- data.frame(
+    a = factor(c(rep("x", 20), rep("y", 3), "z")),
+    b = factor(c(rep("p", 12), rep("q", 12)))
+  )
+  comma <- attr(cross_tab(d, a, b, decimal_mark = ","), "note")
+  expect_match(comma, "(66,7%)", fixed = TRUE)
+  expect_match(comma, "Minimum expected = 0,5", fixed = TRUE)
+  expect_false(grepl("66.7", comma, fixed = TRUE))
+  # The English note does not move by a byte: no trailing ".0" appears
+  # where `round()` never produced one.
+  dot <- attr(cross_tab(d, a, b), "note")
+  expect_match(dot, "(66.7%)", fixed = TRUE)
+  expect_match(dot, "Minimum expected = 0.5.", fixed = TRUE)
+})
+
+test_that(".mark_decimal renders a number under the table's mark", {
+  expect_identical(spicy:::.mark_decimal(66.7, "."), "66.7")
+  expect_identical(spicy:::.mark_decimal(66.7, ","), "66,7")
+  # Under a point it IS as.character(): 100 stays "100", not "100.0".
+  expect_identical(spicy:::.mark_decimal(100, "."), as.character(100))
+  expect_identical(spicy:::.mark_decimal(100, ","), "100")
+})
+
+test_that("cross_tab takes its default decimal mark from the language", {
+  d <- data.frame(
+    sex = factor(c("F", "M", "F", "M", "F", "M", "F", "M")),
+    smoke = factor(c("Yes", "No", "No", "Yes", "No", "No", "Yes", NA))
+  )
+  withr::local_options(spicy.language = "fr")
+  res <- cross_tab(d, smoke, sex, percent = "column")
+  expect_identical(attr(res, "decimal_mark"), ",")
+  out <- capture.output(print(res))
+  expect_false(any(grepl("[0-9]\\.[0-9]", out)))
+  # An argument you type wins, even when it is the package default.
+  typed <- cross_tab(d, smoke, sex, percent = "column", decimal_mark = ".")
+  expect_identical(attr(typed, "decimal_mark"), ".")
+  expect_match(attr(typed, "note"), "p = .659", fixed = TRUE)
+  # `missing()` is the detector, so it has to survive a constructed
+  # call, and the resolved mark has to reach the by-group tables that
+  # a closure builds one at a time.
+  built <- do.call(cross_tab, list(data = d, x = quote(smoke), y = quote(sex)))
+  expect_identical(attr(built, "decimal_mark"), ",")
+  grouped <- cross_tab(d, smoke, sex, by = sex)
+  expect_identical(attr(grouped[[1L]], "decimal_mark"), ",")
+})
+
 test_that("cross_tab `p_digits` controls p-value precision and threshold", {
   # mtcars cyl x gear has p ~ 0.0014 (chi-2 = 18.04, df=4) -> with
   # p_digits = 3, the value is above 0.001 and prints `p = .001`;

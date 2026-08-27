@@ -95,11 +95,12 @@
 #'   and [cross_tab()]. See `Details` for the interaction with `NA`
 #'   weights.
 #' @param decimal_mark Character used as the decimal mark in printed
-#'   percentages. Either `"."` (the default) or `","`. The reporting
-#'   `table_*()` families take the comma automatically from
-#'   `options(spicy.language = "fr")`; the exploration pair has no
-#'   style layer, so here (and in [cross_tab()]) the mark is set by
-#'   hand.
+#'   percentages. Either `"."` or `","`. The default follows the
+#'   language: `options(spicy.language = "fr")` gives the comma here
+#'   and in [cross_tab()], exactly as it does in the reporting
+#'   `table_*()` families. An argument you type wins, so
+#'   `decimal_mark = "."` under a French language gives French words
+#'   and a decimal point.
 #' @param output Output format. `"default"` (the default) returns a
 #'   `spicy_freq_table` object that auto-prints as a formatted spicy
 #'   table; `"data.frame"` returns a plain `data.frame` with frequency
@@ -284,6 +285,20 @@ freq <- function(
     )
   }
   digits <- as.integer(digits)
+
+  # The language's typographic locale supplies the DEFAULT decimal
+  # mark, so one `options(spicy.language = "fr")` reaches the
+  # exploration pair too. Resolution: an argument you type > the
+  # locale > `"."`. The `missing()` hook is the same one `rescale`
+  # uses above, and it means an explicit `decimal_mark = "."` under a
+  # French language still gives you a point. The validation below then
+  # applies to the resolved value, unchanged.
+  if (missing(decimal_mark)) {
+    loc <- .style_locale_defaults()
+    if (!is.null(loc$decimal_mark)) {
+      decimal_mark <- loc$decimal_mark
+    }
+  }
 
   if (
     !is.character(decimal_mark) ||

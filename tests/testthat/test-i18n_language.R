@@ -473,6 +473,105 @@ test_that("inline() still addresses a variable by its translated label", {
 })
 
 
+# ---- 5b. The locale reaches the exploration pair --------------------------
+
+test_that("a French language writes the whole pair under the comma", {
+  # Decision 44: the language sets the DEFAULT of `decimal_mark` in
+  # `freq()` and `cross_tab()` too, so one option gives a coherent
+  # French document. Every number the pair renders follows -- cells,
+  # the chi-squared statistic, the p-value, the association estimate
+  # and its interval, and the table note.
+  d <- data.frame(
+    sex = factor(c("F", "M", "F", "M", "F", "M", "F", "M")),
+    smoke = factor(c("Yes", "No", "No", "Yes", "No", "No", "Yes", NA))
+  )
+  withr::local_options(spicy.language = "fr", width = 100)
+  fq <- capture.output(print(freq(d$smoke)))
+  ct <- capture.output(print(cross_tab(
+    d,
+    smoke,
+    sex,
+    percent = "column",
+    assoc_ci = TRUE
+  )))
+  expect_false(any(grepl("[0-9]\\.[0-9]", c(fq, ct))))
+  expect_true(any(grepl("50,0", fq, fixed = TRUE)))
+  expect_true(any(grepl("Khi-2(1) = 0,2", ct, fixed = TRUE)))
+  # The interval separator switches with the mark, as everywhere else.
+  expect_true(any(grepl("[0,00; 0,82]", ct, fixed = TRUE)))
+})
+
+test_that("the French p-value of the pair keeps its leading zero", {
+  # ",659" is the form the SI brochure forbids; the mark carries the
+  # rule here, since the pair has no `p_style` lever of its own.
+  d <- data.frame(
+    sex = factor(c("F", "M", "F", "M", "F", "M", "F", "M")),
+    smoke = factor(c("Yes", "No", "No", "Yes", "No", "No", "Yes", NA))
+  )
+  withr::local_options(spicy.language = "fr")
+  note <- attr(cross_tab(d, smoke, sex), "note")
+  expect_match(note, "p = 0,659", fixed = TRUE)
+  expect_false(grepl("p = ,", note, fixed = TRUE))
+})
+
+test_that("an argument beats the language in the pair too", {
+  d <- data.frame(
+    sex = factor(c("F", "M", "F", "M", "F", "M", "F", "M")),
+    smoke = factor(c("Yes", "No", "No", "Yes", "No", "No", "Yes", NA))
+  )
+  en_fq <- capture.output(print(freq(d$smoke, decimal_mark = ".")))
+  en_ct <- capture.output(print(cross_tab(
+    d,
+    smoke,
+    sex,
+    percent = "column",
+    decimal_mark = "."
+  )))
+  withr::local_options(spicy.language = "fr")
+  fr_fq <- capture.output(print(freq(d$smoke, decimal_mark = ".")))
+  fr_ct <- capture.output(print(cross_tab(
+    d,
+    smoke,
+    sex,
+    percent = "column",
+    decimal_mark = "."
+  )))
+  # Words translate, numbers do not: the escape hatch for a bilingual
+  # document. The p-value keeps the point form as well.
+  expect_false(any(grepl("[0-9],[0-9]", c(fr_fq, fr_ct))))
+  expect_true(any(grepl("p = .659", fr_ct, fixed = TRUE)))
+  # And the numbers themselves are the ones English printed -- the
+  # words around them are the only difference.
+  numbers <- function(x) {
+    unlist(regmatches(x, gregexpr("[0-9]+[.,]?[0-9]*", x)))
+  }
+  expect_identical(numbers(fr_fq), numbers(en_fq))
+  expect_identical(numbers(fr_ct), numbers(en_ct))
+  expect_true(any(grepl("p = .659", en_ct, fixed = TRUE)))
+})
+
+test_that("the pair's internal callers are untouched by the locale", {
+  # `table_categorical()` builds its rows from `freq()` and
+  # `cross_tab()` and reads their NUMERIC output, never their rendered
+  # text. Those inner calls name no `decimal_mark`, so under a French
+  # language they now take the comma -- which must not reach a value.
+  # An explicit `decimal_mark = "."` on the outer call is the sharpest
+  # form of the question: French words, English numbers, correct ones.
+  d <- data.frame(
+    sex = factor(c("F", "M", "F", "M", "F", "M", "F", "M")),
+    smoke = factor(c("Yes", "No", "No", "Yes", "No", "No", "Yes", "Yes"))
+  )
+  en <- as.data.frame(table_categorical(d, select = smoke, by = sex))
+  withr::local_options(spicy.language = "fr")
+  fr <- as.data.frame(table_categorical(
+    d,
+    select = smoke,
+    by = sex,
+    decimal_mark = "."
+  ))
+  expect_identical(unname(as.matrix(fr)), unname(as.matrix(en)))
+})
+
 # ---- 6. The French corpus, pinned -----------------------------------------
 
 test_that("a French table of each family is pinned", {

@@ -94,9 +94,13 @@ that family also accepts (\code{"tinytable"}, \code{"gt"}, \code{"flextable"},
 
 \item{decimal_mark}{Character used as the decimal mark in printed
 numeric values (cells, chi-squared, association estimate, CI
-bounds, p-value). Defaults to \code{"."}. Set to \code{","} for European
-formatting; matches the \code{decimal_mark} argument of the
-\verb{table_*()} family.}
+bounds, p-value, table note). Either \code{"."} or \code{","}. The default
+follows the language: \code{options(spicy.language = "fr")} gives the
+comma here and in \code{\link[=freq]{freq()}}, exactly as it does in the reporting
+\verb{table_*()} family. An argument you type wins, so
+\code{decimal_mark = "."} under a French language gives French words
+and a decimal point. Under a comma the p-value keeps its leading
+zero (\verb{p = 0,659}), the form French typography requires.}
 
 \item{p_digits}{Integer number of decimals used to format the
 p-value (and to determine the small-\code{p} threshold below which

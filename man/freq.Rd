@@ -101,11 +101,12 @@ and \code{\link[=cross_tab]{cross_tab()}}. See \code{Details} for the interactio
 weights.}
 
 \item{decimal_mark}{Character used as the decimal mark in printed
-percentages. Either \code{"."} (the default) or \code{","}. The reporting
-\verb{table_*()} families take the comma automatically from
-\code{options(spicy.language = "fr")}; the exploration pair has no
-style layer, so here (and in \code{\link[=cross_tab]{cross_tab()}}) the mark is set by
-hand.}
+percentages. Either \code{"."} or \code{","}. The default follows the
+language: \code{options(spicy.language = "fr")} gives the comma here
+and in \code{\link[=cross_tab]{cross_tab()}}, exactly as it does in the reporting
+\verb{table_*()} families. An argument you type wins, so
+\code{decimal_mark = "."} under a French language gives French words
+and a decimal point.}
 
 \item{output}{Output format. \code{"default"} (the default) returns a
 \code{spicy_freq_table} object that auto-prints as a formatted spicy

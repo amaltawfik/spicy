@@ -78,9 +78,12 @@ language.
 The locale rides the style layer, so it reaches the reporting
 families -- \code{\link[=table_regression]{table_regression()}}, \code{\link[=table_categorical]{table_categorical()}},
 \code{\link[=table_continuous]{table_continuous()}}, \code{\link[=table_continuous_lm]{table_continuous_lm()}}, \code{\link[=table_outcome]{table_outcome()}}
-and the survey twins. The exploration pair has no such layer:
-\code{\link[=freq]{freq()}} and \code{\link[=cross_tab]{cross_tab()}} translate their words under a language
-but keep their own \code{decimal_mark} argument, set by hand.
+and the survey twins. The language reaches every table, the
+exploration pair included: \code{\link[=freq]{freq()}} and \code{\link[=cross_tab]{cross_tab()}} have no
+style layer, so it sets the DEFAULT of their \code{decimal_mark} -- the
+one typographic lever they carry -- and an argument you type wins
+over it. Under a comma their p-value keeps its leading zero
+(\verb{p = 0,659}), the form French typography requires.
 
 The locale sits at the BOTTOM of the formatting resolution. A
 journal style outranks it -- \code{style = "jama"} under \code{"fr"} gives
