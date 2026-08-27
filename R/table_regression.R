@@ -631,12 +631,12 @@
 #'
 #' # Global options
 #'
-#' * **`options(spicy.style = )`** -- the journal or locale style
-#'   applied by default to all four table families
+#' * **`options(spicy.style = )`** -- the journal style applied by
+#'   default to all four table families
 #'   (`table_regression()`, `table_categorical()`,
 #'   `table_continuous()`, `table_continuous_lm()`). Takes a theme
-#'   name (`"jama"`, `"lancet"`, `"annals"`, `"apa"`, `"aer"`,
-#'   `"fr"`) or a [spicy_style()] object. The style of a report is a
+#'   name (`"jama"`, `"nejm"`, `"lancet"`, `"annals"`, `"apa"`,
+#'   `"aer"`) or a [spicy_style()] object. The style of a report is a
 #'   property of the document, so it is set once in the setup chunk;
 #'   the `style` argument overrides it per call, and any formatting
 #'   argument you type overrides both. `options(spicy.style = NULL)`
@@ -1334,8 +1334,8 @@
 #'   APA-strict, journal-specific) be applied without modifying the
 #'   call site.
 #'
-#' @param style A journal or locale style: a theme name (`"jama"`,
-#'   `"lancet"`, `"annals"`, `"apa"`, `"aer"`, `"fr"`), a
+#' @param style A journal style: a theme name (`"jama"`, `"nejm"`,
+#'   `"lancet"`, `"annals"`, `"apa"`, `"aer"`), a
 #'   [spicy_style()] object, or `NULL` (the default). A style only
 #'   changes DEFAULTS -- any argument you pass explicitly wins over it.
 #'   Set `options(spicy.style = )` for document-wide scope. A theme

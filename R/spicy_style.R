@@ -1,5 +1,5 @@
 # ---------------------------------------------------------------------------
-# Journal / locale styles
+# Journal styles, and the typography a language brings with it
 # ---------------------------------------------------------------------------
 #
 # A style is DATA: a named list of format levers (`spicy_style()`), and a
@@ -67,10 +67,10 @@
 #' decimals a p-value gets, where it bottoms out, whether it keeps its
 #' leading zero, what the decimal mark is, how a confidence interval is
 #' written. `spicy_style()` composes one by hand; the named themes
-#' (`"jama"`, `"nejm"`, `"lancet"`, `"annals"`, `"apa"`, `"aer"`,
-#' `"fr"` -- `spicy_style_names()` returns the list) are pre-composed
-#' ones, each encoding rules taken verbatim from an official document
-#' of the institution.
+#' (`"jama"`, `"nejm"`, `"lancet"`, `"annals"`, `"apa"`, `"aer"` --
+#' `spicy_style_names()` returns the list) are pre-composed ones, each
+#' encoding rules taken verbatim from an official document of the
+#' institution.
 #'
 #' A style is accepted by the `style` argument of [table_regression()],
 #' [table_categorical()], [table_continuous()] and
@@ -98,9 +98,39 @@
 #'
 #' # Resolution order
 #'
-#' `style` argument, then `getOption("spicy.style")`, then spicy's
-#' defaults. Within a style, an explicit function argument beats the
-#' style's value for the same lever.
+#' An argument you type, then the `style` argument, then
+#' `getOption("spicy.style")`, then the typography of
+#' `getOption("spicy.language")`, then spicy's defaults. Within a
+#' style, an explicit function argument beats the style's value for
+#' the same lever.
+#'
+#' # The language's locale
+#'
+#' A language brings its typography with it, at the bottom of that
+#' order. `options(spicy.language = "fr")` is therefore one gesture
+#' for a coherent French table -- French words, and numbers written
+#' the French way: comma decimal mark, and the leading zero French
+#' typography keeps on a p-value (`0,003`). The sources are BIPM,
+#' *Le Systeme international d'unites*, 9th edition, 2019, section
+#' 5.4.4, and European Union, *Code de redaction interinstitutionnel*,
+#' French edition 2022, point 6.5. `"en"` brings no locale, and
+#' nothing changes for anyone who sets no language.
+#'
+#' A theme composes with a locale rather than fighting it, because a
+#' theme encodes only what its own source states: `"jama"` fixes no
+#' decimal mark, so JAMA under a French language gives JAMA's p-value
+#' rules and the French comma. Where the two do meet, the theme wins --
+#' you asked for it by name. `"lancet"` keeps its midline decimal
+#' point; `"apa"` keeps its missing leading zero, which under a comma
+#' prints `,003`, a form the SI brochure forbids. That is the price of
+#' an explicit gesture: add `p_style = "standard"` to get the zero
+#' back.
+#'
+#' An argument beats both, which is the escape hatch for a bilingual
+#' table: `decimal_mark = "."` under a French language gives French
+#' words and a decimal point.
+#'
+#' See [spicy_labels()] for the language option itself.
 #'
 #' # Themes
 #'
@@ -283,33 +313,6 @@
 #' floor, no interval format and no decimal mark, so spicy's defaults
 #' apply. Horizontal-rules-only, no shading, a nine-column maximum and
 #' "Panel A / Panel B" blocks are layout, not number formatting.
-#'
-#' ## `"fr"` -- French-language typography (a locale, not a journal)
-#'
-#' Sources: BIPM, *Le Systeme international d'unites*, 9th edition,
-#' 2019, section 5.4.4
-#' (`https://www.bipm.org/documents/20126/41483022/SI-Brochure-9.pdf`);
-#' European Union, *Code de redaction interinstitutionnel*, French
-#' edition 2022, point 6.5 (`https://style-guide.europa.eu/fr`); both
-#' consulted 2026-08-14.
-#'
-#' Encoded:
-#' \itemize{
-#'   \item comma as the decimal mark -- "La virgule est utilisee pour
-#'     separer les unites des decimales" (EU, 6.5); the SI brochure
-#'     leaves the choice to the language: "Le separateur decimal choisi
-#'     sera celui qui est d'usage courant selon la langue concernee et
-#'     le contexte."
-#'   \item leading zero kept, p-values included -- "Si le nombre se
-#'     situe entre +1 et -1, le separateur decimal est toujours precede
-#'     d'un zero : par exemple, -0,234 mais pas -,234" (SI, 5.4.4).
-#'     This is what makes the theme worth having: with only
-#'     `decimal_mark = ","`, spicy would print a p-value as `,003`.
-#' }
-#'
-#' The semicolon that separates interval bounds under a comma decimal
-#' mark is spicy's own disambiguation rule, not a sourced one; it
-#' follows from `decimal_mark` and needs no entry here.
 #'
 #' # Known gaps
 #'
@@ -898,31 +901,6 @@ spicy_style <- function(
         p_style = "standard",
         stars = FALSE
       )
-    ),
-    fr = list(
-      journal = "French-language typography (locale, not a journal)",
-      document = paste0(
-        "BIPM, Le Systeme international d'unites, 9e ed., 5.4.4; ",
-        "Union europeenne, Code de redaction interinstitutionnel, 6.5"
-      ),
-      url = "https://www.bipm.org/documents/20126/41483022/SI-Brochure-9.pdf",
-      date = "2019 / 2022, consulted 2026-08-14",
-      rules = c(
-        "decimal mark: comma",
-        "leading zero kept, p-values included"
-      ),
-      # "La virgule est utilisee pour separer les unites des decimales"
-      #  (EU code, 6.5).
-      # "Si le nombre se situe entre +1 et -1, le separateur decimal est
-      #  toujours precede d'un zero : par exemple, -0,234 mais pas
-      #  -,234" (SI brochure, 5.4.4).
-      # The "; " that separates interval bounds under a comma decimal
-      # mark follows from `decimal_mark` and is spicy's own
-      # disambiguation, not a sourced rule: not encoded here.
-      style = spicy_style(
-        decimal_mark = ",",
-        p_style = "standard"
-      )
     )
   )
 }
@@ -936,6 +914,23 @@ spicy_style_names <- function() {
 # `name` is already known to be a single non-NA string: every caller
 # routes through `.style_resolve_object()`.
 .style_from_registry <- function(name) {
+  # "fr" was a theme until it stopped being one: the registry's contract
+  # is that a named theme IS a journal, and French typography is a
+  # locale. It travels with the language now, so this name gets its own
+  # message rather than the "unknown style" list it would otherwise
+  # fall into. Every route -- the `style` argument,
+  # `options(spicy.style = "fr")`, `spicy_style("fr")` and
+  # `spicy_style("fr", ...)` as a base -- passes through here.
+  if (identical(name, "fr")) {
+    spicy_abort(
+      c(
+        "The \"fr\" style is gone: French typography now comes with the language.",
+        "i" = "`options(spicy.language = \"fr\")` gives a French table -- words and numbers.",
+        "i" = "For the numbers alone, compose `spicy_style(decimal_mark = \",\", p_style = \"standard\")`."
+      ),
+      class = "spicy_invalid_input"
+    )
+  }
   reg <- .spicy_style_registry()
   entry <- reg[[name]]
   if (is.null(entry)) {
@@ -1088,6 +1083,22 @@ print.spicy_style <- function(x, ...) {
   .style_resolve_object(style)
 }
 
+# The typography a language brings with it -- the LOWEST-priority lever
+# layer: an explicit argument and any style outrank it. Returns a plain
+# list of levers, or NULL when no language is set, when it is "en", or
+# when it ships no locale.
+#
+# Deliberately NOT a `spicy_style`: a locale is not a style, carries no
+# provenance, and must never pass for a theme in `print()` or in the
+# structured contract.
+.style_locale_defaults <- function() {
+  lang_opt <- getOption("spicy.language", NULL)
+  if (is.null(lang_opt)) {
+    return(NULL)
+  }
+  .spicy_locale_table(.spicy_language_option(lang_opt))
+}
+
 
 # ---- Call-scoped format context ------------------------------------------
 
@@ -1132,23 +1143,35 @@ print.spicy_style <- function(x, ...) {
 # to pop).
 .style_begin <- function(spec, call, env) {
   style <- .style_resolve(spec)
-  if (is.null(style)) {
+  locale <- .style_locale_defaults()
+  if (is.null(style) && is.null(locale)) {
+    # The fast path: no style, no language. It costs one `getOption()`
+    # more than it used to and nothing else, and the table that comes
+    # out is byte for byte the one that came out before.
     return(FALSE)
   }
+  # The language's typography is the layer UNDER the style: the style
+  # overwrites it lever by lever, and every lever the style leaves open
+  # the locale keeps. `spicy_style()` stores only the levers actually
+  # set, so this merge says exactly that. The style's provenance is not
+  # touched -- a locale is not a style and never passes for one.
+  eff <- locale
+  eff[names(style)] <- style
+
   typed <- names(call)
   typed <- typed[nzchar(typed)]
 
-  for (field in intersect(names(style), .STYLE_ARG_FIELDS)) {
+  for (field in intersect(names(eff), .STYLE_ARG_FIELDS)) {
     # An argument the caller typed always wins over the style, even
     # when its value equals the function's own default. A lever the
     # function has no argument for is simply not its business.
     if (field %in% typed || !exists(field, envir = env, inherits = FALSE)) {
       next
     }
-    assign(field, style[[field]], envir = env)
+    assign(field, eff[[field]], envir = env)
   }
 
-  fmt <- style[intersect(names(style), .STYLE_FMT_FIELDS)]
+  fmt <- eff[intersect(names(eff), .STYLE_FMT_FIELDS)]
   # `p_digits` typed by the caller is a request for THAT many decimals
   # on every p-value, so the theme's own ways of choosing p-precision
   # -- bands, significant figures, and the floor derived from them --

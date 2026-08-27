@@ -385,8 +385,8 @@
 #'   ordinary values. See the "Declared missing values" section of
 #'   [freq()].
 #'
-#' @param style A journal or locale style: a theme name (`"jama"`,
-#'   `"lancet"`, `"annals"`, `"apa"`, `"aer"`, `"fr"`), a
+#' @param style A journal style: a theme name (`"jama"`, `"nejm"`,
+#'   `"lancet"`, `"annals"`, `"apa"`, `"aer"`), a
 #'   [spicy_style()] object, or `NULL` (the default). A style only
 #'   changes DEFAULTS -- any argument you pass explicitly wins over it.
 #'   Set `options(spicy.style = )` for document-wide scope. A theme

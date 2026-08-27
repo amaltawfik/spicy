@@ -767,8 +767,8 @@ surrounding document and lets editorial conventions (Nature,
 APA-strict, journal-specific) be applied without modifying the
 call site.}
 
-\item{style}{A journal or locale style: a theme name (\code{"jama"},
-\code{"lancet"}, \code{"annals"}, \code{"apa"}, \code{"aer"}, \code{"fr"}), a
+\item{style}{A journal style: a theme name (\code{"jama"}, \code{"nejm"},
+\code{"lancet"}, \code{"annals"}, \code{"apa"}, \code{"aer"}), a
 \code{\link[=spicy_style]{spicy_style()}} object, or \code{NULL} (the default). A style only
 changes DEFAULTS -- any argument you pass explicitly wins over it.
 Set \code{options(spicy.style = )} for document-wide scope. A theme
@@ -1419,12 +1419,12 @@ numeric so cluster-robust Satterthwaite df is preserved.
 
 \section{Global options}{
 \itemize{
-\item \strong{\code{options(spicy.style = )}} -- the journal or locale style
-applied by default to all four table families
+\item \strong{\code{options(spicy.style = )}} -- the journal style applied by
+default to all four table families
 (\code{table_regression()}, \code{table_categorical()},
 \code{table_continuous()}, \code{table_continuous_lm()}). Takes a theme
-name (\code{"jama"}, \code{"lancet"}, \code{"annals"}, \code{"apa"}, \code{"aer"},
-\code{"fr"}) or a \code{\link[=spicy_style]{spicy_style()}} object. The style of a report is a
+name (\code{"jama"}, \code{"nejm"}, \code{"lancet"}, \code{"annals"}, \code{"apa"},
+\code{"aer"}) or a \code{\link[=spicy_style]{spicy_style()}} object. The style of a report is a
 property of the document, so it is set once in the setup chunk;
 the \code{style} argument overrides it per call, and any formatting
 argument you type overrides both. \code{options(spicy.style = NULL)}

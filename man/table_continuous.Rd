@@ -306,8 +306,8 @@ values never reach the numeric summaries: they are excluded like
 \code{FALSE}, the declared codes are summarized as ordinary numbers.
 See the "Declared missing values" section of \code{\link[=freq]{freq()}}.}
 
-\item{style}{A journal or locale style: a theme name (\code{"jama"},
-\code{"lancet"}, \code{"annals"}, \code{"apa"}, \code{"aer"}, \code{"fr"}), a
+\item{style}{A journal style: a theme name (\code{"jama"}, \code{"nejm"},
+\code{"lancet"}, \code{"annals"}, \code{"apa"}, \code{"aer"}), a
 \code{\link[=spicy_style]{spicy_style()}} object, or \code{NULL} (the default). A style only
 changes DEFAULTS -- any argument you pass explicitly wins over it.
 Set \code{options(spicy.style = )} for document-wide scope. A theme

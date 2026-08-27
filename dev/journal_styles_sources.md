@@ -1128,6 +1128,15 @@ le corpus sur ce point.
 bilingue, citable, et porteur d'une règle de tableau qu'aucune revue n'énonce
 aussi nettement.
 
+**Où cela vit dans le paquet (mise à jour 2026-08-27).** Ces deux règles — virgule
+décimale, zéro initial conservé — n'adossent plus un thème nommé. Le registre des
+styles ne contient que des revues (« chaque thème est un journal ») et « fr » en
+était le seul intrus : il a été retiré. Elles adossent désormais la **locale de la
+langue**, `.spicy_locale_fr` dans `R/i18n_fr.R`, que
+`options(spicy.language = "fr")` pose au niveau le plus bas de la résolution de
+format (argument > style > locale > défauts spicy). Les verbatims ci-dessus ont
+voyagé avec, en commentaire de provenance dans ce fichier-là.
+
 ---
 
 ### 5.2 ISO 80000-1:2022 — virgule décimale et écriture des nombres
@@ -1213,8 +1222,10 @@ de 7.2.2. iso.org renvoie 403 à WebFetch et au proxy.
 espace avant `%`, exception anglais/irlandais/maltais.
 
 **Commentaire.** Meilleur substitut gratuit et citable au Lexique de l'Imprimerie
-nationale pour un thème francophone. Le site style-guide.europa.eu charge son
-contenu en JS (proxy et curl ne récupèrent que la navigation) : le PDF officiel
+nationale pour la typographie francophone. Depuis le 2026-08-27, le point 6.5
+adosse la locale de la langue (`.spicy_locale_fr`, `R/i18n_fr.R`) et non plus un
+thème du registre des styles : voir la note de fin du § 5.1. Le site
+style-guide.europa.eu charge son contenu en JS (proxy et curl ne récupèrent que la navigation) : le PDF officiel
 est la seule voie fiable, et il contient bien le texte intégral (17 400 lignes
 extraites).
 

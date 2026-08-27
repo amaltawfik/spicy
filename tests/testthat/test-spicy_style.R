@@ -1,4 +1,4 @@
-# Journal / locale styles.
+# Journal styles, and the typography a language brings with it.
 #
 # One block per theme, checking the rules its registry entry claims --
 # one at a time, on a fixed fit, against the console text a reader
@@ -7,6 +7,9 @@
 #
 # Sources for every rule: dev/journal_styles_sources.md and the
 # `rules` field of the registry entry, quoted above each block.
+#
+# The locale block checks the other half of the resolution: a language
+# carries its own typography, under any style and under any argument.
 
 fixed_fit <- function() {
   lm(mpg ~ wt + hp, data = mtcars)
@@ -192,9 +195,11 @@ test_that("every registry entry carries its provenance and rule list", {
 })
 
 test_that("the shipped themes are exactly the sourced ones", {
+  # Every name here is a JOURNAL. French typography was the one entry
+  # that was not, and it left: it is the language's locale now.
   expect_identical(
     spicy_style_names(),
-    c("jama", "nejm", "lancet", "annals", "apa", "aer", "fr")
+    c("jama", "nejm", "lancet", "annals", "apa", "aer")
   )
 })
 
@@ -413,22 +418,136 @@ test_that("aer's star ban still yields to an explicit argument", {
   expect_true(grepl("*", txt, fixed = TRUE))
 })
 
-test_that("fr: comma decimal mark and leading zero kept", {
+
+# ---- The language's locale -----------------------------------------------
+
+test_that("no language and no style is still the fast path", {
+  # The invariant the whole suite pins: a user who sets neither pays
+  # one `getOption()` more and sees the same table, byte for byte.
+  expect_false(spicy:::.style_begin(NULL, quote(f()), new.env()))
+  expect_null(.style_locale_defaults())
+})
+
+test_that("a language without a locale brings none", {
+  withr::local_options(spicy.language = "en")
+  expect_null(.style_locale_defaults())
+  expect_null(spicy:::.spicy_locale_table("en"))
+  expect_false(spicy:::.style_begin(NULL, quote(f()), new.env()))
+})
+
+test_that("the French locale is the comma and the leading zero", {
   # EU code 6.5: "La virgule est utilisee pour separer les unites des
   #  decimales." SI brochure 5.4.4: "le separateur decimal est
   #  toujours precede d'un zero".
-  txt <- console(table_regression(fixed_fit(), style = "fr"))
+  withr::local_options(spicy.language = "fr")
+  expect_identical(
+    .style_locale_defaults(),
+    list(decimal_mark = ",", p_style = "standard")
+  )
+  txt <- console(table_regression(fixed_fit()))
   expect_match(txt, "37,23")
   expect_match(txt, "<0,001")
   expect_false(grepl("<,001", txt, fixed = TRUE))
-  # the bound separator disambiguates itself under a comma mark
+  # the bound separator disambiguates itself under a comma mark, with
+  # no lever of its own: `ci_bracket_separator()` reads `decimal_mark`
   expect_match(txt, "; ")
 })
 
-test_that("fr keeps the leading zero on bounded measures too", {
-  txt <- console(table_categorical(fixed_data(), "cyl", by = am, style = "fr"))
+test_that("the French locale keeps the leading zero on bounded measures too", {
+  withr::local_options(spicy.language = "fr")
+  txt <- console(table_categorical(fixed_data(), "cyl", by = am))
   expect_match(txt, "0,52") # Cramer's V, leading zero kept
   expect_false(grepl(" ,52", txt, fixed = TRUE))
+})
+
+test_that("the locale reaches all four families", {
+  withr::local_options(spicy.language = "fr")
+  d <- fixed_data()
+  expect_match(console(table_regression(fixed_fit())), "37,23")
+  expect_match(console(table_categorical(d, "cyl", by = am)), "15,8")
+  expect_match(console(table_continuous(d, mpg, by = am)), "17,15")
+  expect_match(console(table_continuous_lm(d, mpg, by = am)), "17,15")
+})
+
+test_that("a theme fills only what its source states, the locale the rest", {
+  # JAMA fixes no decimal mark, so a French JAMA table is JAMA's
+  # p-value rules AND the French comma: the merge is lever by lever.
+  withr::local_options(spicy.language = "fr")
+  txt <- console(table_regression(fixed_fit(), style = "jama"))
+  expect_match(txt, "37,23") # locale kept
+  expect_match(txt, "<,001") # jama's floor and missing leading zero
+})
+
+test_that("a theme outranks the locale where the two meet", {
+  withr::local_options(spicy.language = "fr")
+  # The Lancet writes its own decimal mark: the theme wins.
+  txt <- console(table_regression(fixed_fit(), style = "lancet"))
+  expect_match(txt, "37\u00b723")
+  expect_false(grepl("37,23", txt, fixed = TRUE))
+  # APA drops the leading zero, which under a comma prints ",001" --
+  # a form the SI brochure forbids. The explicit gesture still wins,
+  # and ?spicy_style documents the case.
+  apa <- console(table_regression(fixed_fit(), style = "apa"))
+  expect_match(apa, "<,001")
+  expect_match(apa, "37,23") # apa fixes no decimal mark, so the comma stays
+})
+
+test_that("the style option outranks the locale as the argument does", {
+  withr::local_options(spicy.language = "fr", spicy.style = "lancet")
+  expect_match(console(table_regression(fixed_fit())), "37\u00b723")
+})
+
+test_that("an argument beats the locale, for a bilingual table", {
+  withr::local_options(spicy.language = "fr")
+  txt <- console(table_regression(fixed_fit(), decimal_mark = "."))
+  expect_match(txt, "37\\.23")
+  expect_false(grepl("37,23", txt, fixed = TRUE))
+  # French words, decimal point: the escape hatch is only the numbers.
+  expect_match(txt, "R\u00E9gression lin\u00E9aire", fixed = TRUE)
+})
+
+test_that("the locale is figures at build time, words at print time", {
+  # A formatting lever is frozen when the table is built, like every
+  # argument; a label is resolved when it is printed. So a table built
+  # in French and printed in English keeps its commas and loses its
+  # French -- the asymmetry is documented, not accidental.
+  x <- withr::with_options(
+    list(spicy.language = "fr"),
+    quietly(table_continuous(fixed_data(), c(mpg, wt), by = am))
+  )
+  txt <- console(x)
+  expect_match(txt, "17,15")
+  expect_match(txt, "Descriptive statistics")
+})
+
+test_that("the structured contract reports the locale", {
+  withr::local_options(spicy.language = "fr")
+  s <- as_structured(quietly(table_regression(fixed_fit())))
+  expect_identical(s$format_spec$decimal_mark, ",")
+  expect_identical(s$format_spec$p_style, "standard")
+})
+
+test_that("style = \"fr\" is a dedicated error naming what replaced it", {
+  # The name was a theme for one release cycle. It routes here from the
+  # argument, from `spicy_style()`, and from the option.
+  expect_error(
+    table_regression(fixed_fit(), style = "fr"),
+    class = "spicy_invalid_input"
+  )
+  expect_error(spicy_style("fr"), class = "spicy_invalid_input")
+  expect_error(
+    spicy_style("fr", ci_sep = " to "),
+    class = "spicy_invalid_input"
+  )
+  withr::local_options(spicy.style = "fr")
+  expect_error(
+    table_continuous(fixed_data(), mpg),
+    class = "spicy_invalid_input"
+  )
+})
+
+test_that("the \"fr\" error is pinned", {
+  expect_snapshot(spicy_style("fr"), error = TRUE)
 })
 
 
@@ -477,12 +596,16 @@ test_that("the style argument beats the option, which beats the defaults", {
   fit <- fixed_fit()
   withr::local_options(spicy.style = "lancet")
   expect_match(console(table_regression(fit)), "37·23") # option in force
-  expect_match(console(table_regression(fit, style = "fr")), "37,23") # argument
+  # argument
+  expect_match(
+    console(table_regression(fit, style = spicy_style(decimal_mark = ","))),
+    "37,23"
+  )
 })
 
 test_that("options(spicy.style) reaches all four families", {
   d <- fixed_data()
-  withr::local_options(spicy.style = "fr")
+  withr::local_options(spicy.style = spicy_style(decimal_mark = ","))
   expect_match(console(table_regression(fixed_fit())), "37,23")
   expect_match(console(table_categorical(d, "cyl", by = am)), "15,8")
   expect_match(console(table_continuous(d, mpg, by = am)), "17,15")
@@ -499,7 +622,12 @@ test_that("a malformed spicy.style option is refused", {
 
 test_that("a style set at build time still governs a later print", {
   d <- fixed_data()
-  x <- table_continuous(d, c(mpg, wt), by = am, style = "fr")
+  x <- table_continuous(
+    d,
+    c(mpg, wt),
+    by = am,
+    style = spicy_style(decimal_mark = ",", p_style = "standard")
+  )
   expect_match(console(x), "<0,001")
   y <- table_continuous_lm(d, mpg, by = am, style = "annals")
   expect_match(console(y), "<0\\.001")
