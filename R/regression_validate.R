@@ -228,6 +228,16 @@
   "rank"
 )
 
+# The vocabulary of the COMPUTE layer, which serves two entry points with
+# two argument vocabularies: table_regression() (.VCOV_MODES above) and
+# table_continuous_lm(), whose formal additionally admits "HC4m" (the
+# modified-exponent HC4 of Cribari-Neto, Souza & Vasconcellos 2007).
+# compute_model_vcov() asserts THIS set before dispatching, so no token
+# outside it can reach sandwich / clubSandwich and be answered in their
+# words instead of spicy's; the per-entry-point vocabularies stay
+# narrower, and each keeps refusing what it does not offer.
+.VCOV_COMPUTE_MODES <- unique(c(.VCOV_MODES, "HC4m"))
+
 validate_models_input <- function(models) {
   # Step 1: handle NULL upfront (R's `inherits` and `is.list` both
   # return FALSE on NULL, so it would otherwise slip through)

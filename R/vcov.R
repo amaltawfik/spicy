@@ -78,6 +78,40 @@
   )
 }
 
+# An estimator token spicy does not have a word for.
+#
+# The closed vocabulary is asserted at the TOP of compute_model_vcov(),
+# before any dispatch, because the HC* and CR* branches select on a
+# PREFIX: "HC7", "HC10" and "CRunch" all satisfy startsWith() and used to
+# reach sandwich / clubSandwich, which answered in their own words about
+# their own `type` argument ("'arg' should be one of ..."). The public
+# entry point has always refused an unknown token here (Step 6b of
+# validate_vcov_cluster_lists), but the frame layer and the internal
+# callers reach this function directly, and a package's vocabulary should
+# be enforced by the package (register n. 244(h)).
+#
+# The hint lists the vocabulary rather than the class's own subset: this
+# is the frontier where a token is UNRECOGNISED, and what a given class
+# can compute is the next question, answered by the branches below and by
+# .robust_vcov_support() at the public gate.
+.abort_unknown_vcov_type <- function(type) {
+  shown <- if (is.character(type) && length(type) == 1L && !is.na(type)) {
+    type
+  } else {
+    paste(format(type), collapse = ", ")
+  }
+  spicy_abort(
+    c(
+      sprintf("Unknown `vcov` type \"%s\".", shown),
+      "i" = sprintf(
+        "Valid types: %s.",
+        paste(.quote_val(.VCOV_COMPUTE_MODES), collapse = ", ")
+      )
+    ),
+    class = "spicy_invalid_input"
+  )
+}
+
 compute_model_vcov <- function(
   fit,
   type = "classical",
@@ -85,6 +119,11 @@ compute_model_vcov <- function(
   weights = NULL,
   boot_n = 1000L
 ) {
+  # The spicy vocabulary, before any engine's. See
+  # .abort_unknown_vcov_type().
+  if (!isTRUE(type %in% .VCOV_COMPUTE_MODES)) {
+    .abort_unknown_vcov_type(type)
+  }
   # quantreg::rq routes to its own summary-based backends BEFORE the
   # generic branches: "classical" must resolve to the nid sandwich (not
   # stats::vcov(), which has no rq method), and "bootstrap" must reach
@@ -114,12 +153,13 @@ compute_model_vcov <- function(
   # -- as_regression_frame(fit, vcov = ) and .apply_robust_vcov_to_coefs()
   # -- which bypasses that gate. "model" and "survey-Taylor" are the
   # frame-level aliases of the design-based default never reach here
-  # (.apply_robust_vcov_to_coefs() short-circuits them). The guard fires
-  # only on KNOWN estimators (.VCOV_MODES) so an unknown token keeps the
-  # "Unknown `vcov` type" answer it has always had.
+  # (.apply_robust_vcov_to_coefs() short-circuits them). The guard covers
+  # EVERY known estimator, HC4m included: the unknown ones no longer
+  # arrive, the vocabulary gate at the top of the function having already
+  # answered them.
   if (
     .is_design_fit(fit) &&
-      type %in% setdiff(.VCOV_MODES, "classical")
+      type %in% setdiff(.VCOV_COMPUTE_MODES, "classical")
   ) {
     spicy_abort(
       c(
@@ -288,9 +328,23 @@ compute_model_vcov <- function(
     ))
   }
 
+  # Reached only by a token the vocabulary DOES contain and no branch
+  # above claims: the quantreg family ("nid" / "iid" / "ker" / "rank") on
+  # a fit that is not an rq. The public gate refuses that combination by
+  # class before it gets here; this is the internal route's answer.
   spicy_abort(
-    sprintf("Unknown `vcov` type \"%s\".", type),
-    class = "spicy_invalid_input"
+    c(
+      sprintf(
+        "`vcov = \"%s\"` is not available for `%s` models.",
+        type,
+        class(fit)[1L]
+      ),
+      "i" = paste0(
+        "\"nid\", \"iid\", \"ker\" and \"rank\" are quantile-regression ",
+        "estimators (`quantreg::rq`)."
+      )
+    ),
+    class = "spicy_unsupported_vcov"
   )
 }
 
