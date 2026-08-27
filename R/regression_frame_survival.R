@@ -100,7 +100,7 @@ as_regression_frame.coxph <- function(
     ci_method = ci_method,
     model_id = model_id
   )
-  if (!vcov %in% c("model", "classical")) {
+  if (!.is_model_vcov(vcov)) {
     info$vcov_label <- .robust_vcov_label(
       vcov,
       cluster_name %||% NA_character_,
@@ -205,7 +205,7 @@ as_regression_frame.survreg <- function(
     ci_method = ci_method,
     model_id = model_id
   )
-  if (!vcov %in% c("model", "classical")) {
+  if (!.is_model_vcov(vcov)) {
     info$vcov_label <- .robust_vcov_label(
       vcov,
       cluster_name %||% NA_character_,

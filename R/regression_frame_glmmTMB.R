@@ -97,7 +97,7 @@ as_regression_frame.glmmTMB <- function(
       ci_method = ci_method,
       model_id = model_id
     )
-    if (!vcov %in% c("model", "classical")) {
+    if (!.is_model_vcov(vcov)) {
       info$vcov_label <- .robust_vcov_label(
         vcov,
         cluster_name %||% NA_character_
@@ -463,7 +463,7 @@ as_regression_frame.glmmTMB <- function(
     # effects only; the zi/disp rows stay model-based. Consumed by the footer
     # for an explicit disclosure.
     component_robust_note = length(component_blocks) > 0L &&
-      !vcov_kind %in% c("model", "classical")
+      !.is_model_vcov(vcov_kind)
   )
 
   list(

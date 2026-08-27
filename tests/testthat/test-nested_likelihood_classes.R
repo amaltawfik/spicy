@@ -258,6 +258,89 @@ test_that("gls fitted by ML is compared, not refused", {
   expect_no_error(compute_nested_comparisons(list(p$m1, p$m2)))
 })
 
+# The same guard, the other engine (register n. 244(b)). glmmTMB(REML =
+# TRUE) refuses this comparison in its own words; the mixed pair path
+# used to wrap that abort in tryCatch and en-dash the change column.
+tmb_reml_pair <- function() {
+  skip_if_no("glmmTMB", "lme4")
+  d <- lme4::sleepstudy
+  list(
+    m1 = glmmTMB::glmmTMB(
+      Reaction ~ Days + (1 | Subject),
+      data = d,
+      REML = TRUE
+    ),
+    m2 = glmmTMB::glmmTMB(
+      Reaction ~ Days + I(Days^2) + (1 | Subject),
+      data = d,
+      REML = TRUE
+    ),
+    m3 = glmmTMB::glmmTMB(
+      Reaction ~ Days + (Days | Subject),
+      data = d,
+      REML = TRUE
+    )
+  )
+}
+
+test_that("REML glmmTMB with different fixed effects is refused", {
+  p <- tmb_reml_pair()
+  expect_true(is_reml_glmmTMB_fit(p$m1))
+  # The engine's own verdict, which the tryCatch used to swallow.
+  expect_error(suppressMessages(stats::anova(p$m1, p$m2)))
+  err <- expect_error(
+    compute_nested_comparisons(list(p$m1, p$m2)),
+    class = "spicy_invalid_input"
+  )
+  expect_match(
+    conditionMessage(err),
+    "REML fits whose fixed effects differ",
+    fixed = TRUE
+  )
+  # The remedy is glmmTMB's own switch, not nlme's.
+  expect_match(conditionMessage(err), "REML = FALSE", fixed = TRUE)
+  expect_false(grepl("method = \"ML\"", conditionMessage(err), fixed = TRUE))
+})
+
+test_that("REML glmmTMB differing only in the random structure compares", {
+  p <- tmb_reml_pair()
+  got <- expect_no_error(compute_nested_comparisons(list(p$m1, p$m3)))
+  expect_true(is.finite(got$lrt_change[1L]))
+  av <- suppressWarnings(suppressMessages(stats::anova(p$m1, p$m3)))
+  expect_equal(got$lrt_change[1L], av[["Chisq"]][2L], tolerance = 1e-10)
+})
+
+test_that("glmmTMB fitted by ML is never touched by the guard", {
+  skip_if_no("glmmTMB", "lme4")
+  d <- lme4::sleepstudy
+  m1 <- glmmTMB::glmmTMB(Reaction ~ Days + (1 | Subject), data = d)
+  m2 <- glmmTMB::glmmTMB(
+    Reaction ~ Days + I(Days^2) + (1 | Subject),
+    data = d
+  )
+  expect_false(is_reml_glmmTMB_fit(m1))
+  got <- expect_no_error(compute_nested_comparisons(list(m1, m2)))
+  expect_true(is.finite(got$lrt_change[1L]))
+})
+
+# The fixed-effects signature reads through the random-effects bars for
+# glmmTMB and leaves every other class on stats::formula().
+test_that("nested_fixed_formula strips the bars for glmmTMB only", {
+  skip_if_no("glmmTMB", "lme4")
+  d <- lme4::sleepstudy
+  m <- glmmTMB::glmmTMB(Reaction ~ Days + (1 | Subject), data = d)
+  expect_identical(
+    deparse1(nested_fixed_formula(m)),
+    "Reaction ~ Days"
+  )
+  expect_identical(fixed_terms_key(m), "Days&(Intercept)")
+  lm_fit <- lm(mpg ~ wt, data = mtcars)
+  expect_identical(
+    deparse1(nested_fixed_formula(lm_fit)),
+    deparse1(stats::formula(lm_fit))
+  )
+})
+
 
 # ---- 5. least-squares families keep the F path ---------------------------
 
@@ -283,6 +366,76 @@ test_that("rlm pair: least-squares path, undefined stats NA not fatal", {
     default_nested_tokens(list(m1, m2)),
     c("r2_change", "f_change", "p_change")
   )
+})
+
+# ...and the PUBLIC path never gets there: an rlm hierarchy has no
+# nested comparison of any kind, so the request is refused rather than
+# rendered as a table with the change rows silently missing (register
+# n. 244(c)).
+test_that("rlm declares no nested test and `nested = TRUE` is refused", {
+  skip_if_no("MASS")
+  m1 <- MASS::rlm(mpg ~ wt, data = mtcars)
+  m2 <- MASS::rlm(mpg ~ wt + hp, data = mtcars)
+  fr <- as_regression_frame(m1)
+  expect_false(fr$info$supports$nested_lrt)
+  err <- expect_error(
+    table_regression(list(m1, m2), nested = TRUE),
+    class = "spicy_invalid_input"
+  )
+  expect_match(conditionMessage(err), "`rlm`", fixed = TRUE)
+  expect_match(conditionMessage(err), "M-estimation", fixed = TRUE)
+  # No internal object name leaks into the sentence.
+  expect_false(grepl("fit_curr|fit_prev", conditionMessage(err)))
+})
+
+test_that("an explicit change token on an rlm pair names the token", {
+  skip_if_no("MASS")
+  m1 <- MASS::rlm(mpg ~ wt, data = mtcars)
+  m2 <- MASS::rlm(mpg ~ wt + hp, data = mtcars)
+  for (tok in c("lrt_change", "aic_change", "r2_change", "p_change")) {
+    err <- expect_error(
+      table_regression(
+        list(m1, m2),
+        show_fit_stats = c("nobs", tok)
+      ),
+      class = "spicy_invalid_input"
+    )
+    expect_match(conditionMessage(err), tok, fixed = TRUE, info = tok)
+  }
+  # The arm is not conditioned on `nested`, so it fires on a single fit
+  # and on a `nested = FALSE` pair alike -- and the remedy has to be
+  # something those callers have not already done. "Drop the token" is,
+  # and it is the one the homologous glm arm offers.
+  err <- expect_error(
+    table_regression(
+      list(m1, m2),
+      nested = FALSE,
+      show_fit_stats = c("nobs", "aic_change")
+    ),
+    class = "spicy_invalid_input"
+  )
+  expect_match(conditionMessage(err), "Drop the token", fixed = TRUE)
+  expect_false(grepl("with `nested = FALSE`", conditionMessage(err)))
+  err1 <- expect_error(
+    table_regression(m1, show_fit_stats = c("nobs", "aic_change")),
+    class = "spicy_invalid_input"
+  )
+  expect_match(conditionMessage(err1), "Drop the token", fixed = TRUE)
+})
+
+test_that("the rlm change refusal leaves the plain rlm table alone", {
+  skip_if_no("MASS")
+  m1 <- MASS::rlm(mpg ~ wt, data = mtcars)
+  m2 <- MASS::rlm(mpg ~ wt + hp, data = mtcars)
+  expect_no_error(table_regression(list(m1, m2), output = "data.frame"))
+  # A MIXED hierarchy is not claimed by the all-rlm arm; the capability
+  # guard refuses it, naming the incapable class.
+  lm1 <- lm(mpg ~ wt, data = mtcars)
+  err <- expect_error(
+    table_regression(list(lm1, m2), nested = TRUE),
+    class = "spicy_invalid_input"
+  )
+  expect_match(conditionMessage(err), "`rlm`", fixed = TRUE)
 })
 
 # nls is least squares without the lm class; its nested test is the

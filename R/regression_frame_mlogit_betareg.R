@@ -89,7 +89,7 @@ as_regression_frame.mlogit <- function(
   info$extras$reference_alternative <-
     if (length(ref_alt) == 1L) ref_alt else NA_character_
   info$extras$choice_alternatives <- as.character(names(fit$freq))
-  if (!vcov %in% c("model", "classical")) {
+  if (!.is_model_vcov(vcov)) {
     info$vcov_label <- .robust_vcov_label(
       vcov,
       cluster_name %||% NA_character_,
@@ -347,7 +347,7 @@ as_regression_frame.betareg <- function(
     ci_method = ci_method,
     model_id = model_id
   )
-  if (!vcov %in% c("model", "classical")) {
+  if (!.is_model_vcov(vcov)) {
     info$vcov_label <- .robust_vcov_label(
       vcov,
       cluster_name %||% NA_character_,

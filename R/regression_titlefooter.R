@@ -190,6 +190,11 @@ build_regression_footer_from_frames <- function(
       decimal_mark = decimal_mark
     ),
     build_mixed_inference_footer_block_from_frames(frames),
+    build_nested_ml_refit_footer_block_from_frames(
+      frames,
+      nested,
+      show_fit_stats
+    ),
     build_gee_footer_block_from_frames(frames),
     build_random_effects_footer_block_from_frames(
       frames,
@@ -352,8 +357,8 @@ lowercase_first <- function(s) {
 #                                   already-formatted label, e.g.
 #                                   "Wald (model-based)", "Robust (HC2)",
 #                                   "Bayesian (REML-implied)", ...)
-#   frame$info$vcov_kind           (legacy: vcov-token from the
-#                                   lm/glm path -- "classical" / "HC*"
+#   frame$info$vcov_kind           (the estimator token, read through
+#                                   .frame_vcov_kind(): "model" / "HC*"
 #                                   / "CR*" / "bootstrap" / etc.)
 #   frame$info$extras$cluster_name (was extract$cluster_name)
 #   frame$info$class               (was extract$is_glm; derived)
@@ -379,10 +384,20 @@ format_vcov_label_from_frame <- function(frame) {
     }
   }
 
-  vt <- frame$info$vcov_kind %||% "classical"
+  vt <- .frame_vcov_kind(frame)
   cn <- frame$info$extras$cluster_name %||% NA_character_
   is_glm <- identical(cls, "glm")
-  if (vt == "classical") {
+  # The model-based default, under its canonical name. Guarded by the
+  # CLASS as well as the token: this arm names the mechanism that
+  # produces an lm / glm standard error. The guard CHANGES what a
+  # non-lm/glm frame reaching here without an engine-supplied label
+  # renders -- such a frame used to enter this arm and come out
+  # "classical (OLS)", so a coxph frame was labelled as ordinary least
+  # squares -- and it now falls through to the tail and gets the bare
+  # token. No production frame can be in that position (every builder
+  # supplies a label and the constructor canonicalises the kind), so the
+  # change is reachable only by hand; it is pinned as such.
+  if (.is_model_vcov(vt) && cls %in% c("lm", "glm")) {
     # Phase 7c23 (item c): "Fisher information" is the standard
     # publication-grade name for the glm vcov (the inverse of the
     # expected information matrix; for canonical links equals the
@@ -561,7 +576,7 @@ build_ci_method_footer_block_from_frames <- function(
     frames,
     function(f) {
       identical(f$info$ci_method, "profile") &&
-        (f$info$vcov_kind %||% "model") %in% c("model", "classical")
+        .is_model_vcov(.frame_vcov_kind(f))
     },
     logical(1)
   )
@@ -577,7 +592,7 @@ build_ci_method_footer_block_from_frames <- function(
     frames,
     function(f) {
       identical(f$info$ci_method, "boot_percentile") &&
-        identical(f$info$vcov_kind, "bootstrap")
+        identical(.frame_vcov_kind(f), "bootstrap")
     },
     logical(1)
   )
@@ -1405,6 +1420,89 @@ build_mixed_inference_footer_block_from_frames <- function(frames) {
 }
 
 
+# The table says where its change statistics came from when they did not
+# come from the fits the other rows describe.
+#
+# lme4::anova.merMod refits a REML fit by maximum likelihood before it
+# compares (a one-line message spicy suppresses), so the change block of
+# a REML hierarchy is computed on ML refits while the per-model AIC and
+# BIC rows above it are the REML criteria of the fits themselves.
+# Measured on sleepstudy: DeltaAIC -114.46 from the refits against
+# -115.86 from the displayed rows, DeltaBIC -111.27 against -112.67.
+# Recomputing the change on the REML criteria would be the wrong fix: a
+# restricted likelihood is built on contrasts that annihilate the
+# fixed-effects design, so REML criteria are not comparable across
+# fixed-effects structures at all (Pinheiro & Bates 2000, Section 2.4.2
+# -- the same ground as the REML refusal in check_nested_reml_pair()).
+# The refit is right and the disagreement is real, so the table
+# discloses it.
+#
+# TWO conditions, and both are about what the reader can see.
+#
+# (1) At least one change token is actually ON the table: selected for
+#     display AND carrying a number somewhere. A note describes rows,
+#     and `show_fit_stats = "nobs"` renders a table with no change rows
+#     at all, while a hierarchy the admissibility rules en-dash renders
+#     none either. In both cases the sentence annotated rows that are
+#     not there.
+# (2) An adjacent pair actually WAS refitted: both members lme4 fits
+#     (the only engine in the mixed router that refits -- glmmTMB
+#     refuses, nlme warns and is refused by spicy) and at least one of
+#     them REML.
+build_nested_ml_refit_footer_block_from_frames <- function(
+  frames,
+  nested,
+  show_fit_stats = character(0)
+) {
+  if (!isTRUE(nested) || !is.list(frames) || length(frames) < 2L) {
+    return(NULL)
+  }
+  shown_change <- intersect(show_fit_stats, .NESTED_CHANGE_TOKENS)
+  has_change_row <- length(shown_change) > 0L &&
+    any(vapply(
+      frames,
+      function(f) {
+        fs <- f$info$fit_stats
+        if (!is.list(fs)) {
+          return(FALSE)
+        }
+        # Subset by NAME, not by [[: a list `[[` on an absent name is an
+        # error, and a frame that never went through
+        # attach_nested_stats_to_frames() carries none of these keys.
+        any(vapply(
+          fs[intersect(shown_change, names(fs))],
+          function(v) isTRUE(is.finite(scalar_or_na(v))),
+          logical(1)
+        ))
+      },
+      logical(1)
+    ))
+  if (!has_change_row) {
+    return(NULL)
+  }
+  is_lme4 <- vapply(
+    frames,
+    function(f) (f$info$class %||% "") %in% c("lmerMod", "glmerMod"),
+    logical(1)
+  )
+  is_reml <- vapply(
+    frames,
+    function(f) identical(f$info$random_effects$method, "REML"),
+    logical(1)
+  )
+  pairs <- seq_len(length(frames) - 1L)
+  refitted <- any(
+    is_lme4[pairs] &
+      is_lme4[pairs + 1L] &
+      (is_reml[pairs] | is_reml[pairs + 1L])
+  )
+  if (!refitted) {
+    return(NULL)
+  }
+  spicy_str("note_nested_ml_refit")
+}
+
+
 # Pick the right one-line annotation for a single frame. NULL when
 # the frame is not a mixed-effects fit.
 #
@@ -1415,7 +1513,7 @@ build_mixed_inference_footer_block_from_frames <- function(frames) {
 .mixed_inference_label_for_frame <- function(frame) {
   cls <- frame$info$class %||% ""
   ci <- frame$info$ci_method %||% ""
-  vk <- frame$info$vcov_kind %||% "model"
+  vk <- .frame_vcov_kind(frame)
   # Under a CR* vcov the whole inference set (SE, Satterthwaite df, p)
   # comes from clubSandwich::coef_test(), NOT from lmerTest / nlme --
   # the footer must attribute the df source truthfully. (glmmTMB can
@@ -1548,7 +1646,7 @@ build_component_blocks_footer_block_from_frames <- function(frames) {
     }
     if (
       isTRUE(f$info$extras$component_robust_note) &&
-        !f$info$vcov_kind %in% c("model", "classical")
+        !.is_model_vcov(.frame_vcov_kind(f))
     ) {
       robust_note <- TRUE
     }

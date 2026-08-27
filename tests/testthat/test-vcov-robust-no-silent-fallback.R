@@ -183,3 +183,107 @@ test_that(".check_cluster_no_na passes everything that is usable", {
     class = "spicy_invalid_input"
   )
 })
+
+
+# ---- The spicy vocabulary answers before any engine's (n. 244(h)) -------
+#
+# The HC* and CR* branches select on a PREFIX, so "HC7" / "CRunch"
+# satisfied startsWith() and reached sandwich / clubSandwich, which
+# answered in their own words about their own `type` argument. The
+# closed vocabulary is now asserted at the top of compute_model_vcov().
+
+test_that("an HC-prefixed unknown gets spicy's answer, not sandwich's", {
+  fit <- stats::lm(mpg ~ wt, data = mtcars)
+  for (tok in c("HC7", "HC10", "hc3", "CR9", "CRunch", "Bootstrap")) {
+    err <- tryCatch(compute_model_vcov(fit, tok), error = identity)
+    expect_s3_class(err, "spicy_invalid_input")
+    expect_match(conditionMessage(err), "Unknown `vcov` type", fixed = TRUE)
+    expect_match(conditionMessage(err), tok, fixed = TRUE, info = tok)
+    # The valid vocabulary is listed, and sandwich is never named.
+    expect_match(conditionMessage(err), "\"HC3\"", fixed = TRUE)
+    expect_false(grepl("sandwich", conditionMessage(err), fixed = TRUE))
+    expect_false(grepl("'arg' should be one of", conditionMessage(err)))
+  }
+})
+
+test_that("every token of the compute vocabulary passes the gate", {
+  fit <- stats::lm(mpg ~ wt, data = mtcars)
+  for (tok in c("classical", paste0("HC", 0:5), "HC4m")) {
+    expect_true(is.matrix(compute_model_vcov(fit, tok)), info = tok)
+  }
+  # HC4m is table_continuous_lm()'s token, absent from table_regression()'s
+  # own vocabulary: the compute layer serves both and must admit it.
+  expect_false("HC4m" %in% .VCOV_MODES)
+  expect_true("HC4m" %in% .VCOV_COMPUTE_MODES)
+})
+
+test_that("a non-string vcov type is refused before dispatch", {
+  fit <- stats::lm(mpg ~ wt, data = mtcars)
+  expect_error(compute_model_vcov(fit, NULL), class = "spicy_invalid_input")
+  expect_error(
+    compute_model_vcov(fit, c("HC1", "HC2")),
+    class = "spicy_invalid_input"
+  )
+  expect_error(compute_model_vcov(fit, 3), class = "spicy_invalid_input")
+})
+
+# The branch that formats a non-string type had line coverage and no
+# assertion on what it produced -- it could have said anything. Each
+# shape is pinned to a sentence a reader can act on.
+test_that("the non-string branch says what it received", {
+  expect_match(
+    conditionMessage(tryCatch(
+      spicy:::.abort_unknown_vcov_type(NULL),
+      error = identity
+    )),
+    "Unknown `vcov` type \"NULL\".",
+    fixed = TRUE
+  )
+  expect_match(
+    conditionMessage(tryCatch(
+      spicy:::.abort_unknown_vcov_type(c("HC1", "HC2")),
+      error = identity
+    )),
+    "Unknown `vcov` type \"HC1, HC2\".",
+    fixed = TRUE
+  )
+  # character(0) formats to nothing at all, which used to print the empty
+  # sentence `Unknown \`vcov\` type "".` -- a message naming no token.
+  msg0 <- conditionMessage(tryCatch(
+    spicy:::.abort_unknown_vcov_type(character(0)),
+    error = identity
+  ))
+  expect_false(grepl("type \"\".", msg0, fixed = TRUE))
+  expect_match(msg0, "Unknown `vcov` type \"<none>\".", fixed = TRUE)
+  # Every shape still lists the vocabulary.
+  for (msg in c(
+    msg0,
+    conditionMessage(tryCatch(
+      spicy:::.abort_unknown_vcov_type(NULL),
+      error = identity
+    ))
+  )) {
+    expect_match(msg, "Valid types:", fixed = TRUE)
+    expect_match(msg, "\"HC3\"", fixed = TRUE)
+  }
+})
+
+test_that("a quantile token on a non-rq fit names the estimator family", {
+  fit <- stats::lm(mpg ~ wt, data = mtcars)
+  err <- tryCatch(compute_model_vcov(fit, "nid"), error = identity)
+  expect_s3_class(err, "spicy_unsupported_vcov")
+  expect_match(conditionMessage(err), "`lm`", fixed = TRUE)
+  expect_match(conditionMessage(err), "quantile-regression", fixed = TRUE)
+})
+
+test_that("the rq family keeps its own class-level refusals", {
+  skip_if_not_installed("quantreg")
+  m <- quantreg::rq(mpg ~ wt, data = mtcars)
+  # In the vocabulary, refused BY CLASS -- the gate does not swallow it.
+  err <- tryCatch(compute_model_vcov(m, "HC3"), error = identity)
+  expect_s3_class(err, "spicy_unsupported_vcov")
+  expect_match(conditionMessage(err), "`rq` models", fixed = TRUE)
+  # Out of the vocabulary -- the gate answers first.
+  err2 <- tryCatch(compute_model_vcov(m, "HC7"), error = identity)
+  expect_s3_class(err2, "spicy_invalid_input")
+})

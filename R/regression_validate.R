@@ -228,6 +228,16 @@
   "rank"
 )
 
+# The vocabulary of the COMPUTE layer, which serves two entry points with
+# two argument vocabularies: table_regression() (.VCOV_MODES above) and
+# table_continuous_lm(), whose formal additionally admits "HC4m" (the
+# modified-exponent HC4 of Cribari-Neto, Souza & Vasconcellos 2007).
+# compute_model_vcov() asserts THIS set before dispatching, so no token
+# outside it can reach sandwich / clubSandwich and be answered in their
+# words instead of spicy's; the per-entry-point vocabularies stay
+# narrower, and each keeps refusing what it does not offer.
+.VCOV_COMPUTE_MODES <- unique(c(.VCOV_MODES, "HC4m"))
+
 validate_models_input <- function(models) {
   # Step 1: handle NULL upfront (R's `inherits` and `is.list` both
   # return FALSE on NULL, so it would otherwise slip through)
@@ -1399,17 +1409,23 @@ validate_class_appropriate_tokens <- function(
   if (length(bad_fit) > 0L && !all_glm && all_likelihood_path(eff_models)) {
     spicy_abort(
       c(
+        # The headline names the ROUTE, not a property of the class.
+        # "not defined for `ols` models" was simply false: rms::ols IS
+        # ordinary least squares, its R^2 matches lm's to 1e-12, and
+        # DeltaR^2 is perfectly well defined on such a pair --
+        # fixest::feols is the same case. What is true of every class
+        # that reaches here is that spicy compares the hierarchy
+        # through the likelihood, and that route carries no
+        # variance-explained change.
         sprintf(
-          "Token(s) %s in `show_fit_stats` are not defined for `%s` models.",
-          paste(.quote_val(bad_fit), collapse = ", "),
-          class(eff_models[[1L]])[1L]
+          paste0(
+            "spicy compares a `%s` hierarchy through the ",
+            "likelihood-ratio chi-square, so token(s) %s in ",
+            "`show_fit_stats` are not computed on this route."
+          ),
+          class(eff_models[[1L]])[1L],
+          paste(.quote_val(bad_fit), collapse = ", ")
         ),
-        # The reason names what SPICY reports for this hierarchy, not
-        # what the estimator is. Saying "no analog outside the
-        # least-squares framework" was false for two of the classes
-        # that reach here: fixest::feols() IS least squares, with a
-        # real R^2, and gls is a milder case -- both are routed to the
-        # likelihood pair, which is the fact the user needs.
         "i" = paste0(
           "The nested comparison for these fits is a ",
           "likelihood-ratio chi-square, which reports no ",
@@ -1464,6 +1480,53 @@ validate_class_appropriate_tokens <- function(
           "Use `\"f_change\"` + `\"p_change\"` -- the Wald-type test ",
           "`quantreg::anova.rq()` reports, and what `nested = TRUE` ",
           "selects for a quantile hierarchy by default."
+        )
+      ),
+      class = "spicy_invalid_input"
+    )
+  }
+
+  # Robust M-estimation (MASS::rlm), which has no nested comparison of
+  # ANY kind -- unlike rq, which at least owns a Wald-type F. The
+  # objective is a bounded loss on the scaled residuals: it partitions no
+  # sums of squares (summary()$r.squared is a logical NA and
+  # adj.r.squared is absent altogether) and it is not a likelihood, so
+  # anova.rlm returns its table with the F and Pr(>F) cells deliberately
+  # empty. `stats::AIC()` does answer -- rlm inherits "lm", so logLik.lm
+  # computes the GAUSSIAN likelihood of the residuals, which is the
+  # criterion the M-estimator exists to avoid. Every change token is
+  # therefore refused, not a subset: an rlm hierarchy used to render with
+  # no change rows at all and no word about why (register n. 244(c)).
+  # The `supports$nested_lrt = FALSE` flag catches `nested = TRUE`; this
+  # arm catches the explicit request, and fires first because it can name
+  # the tokens.
+  bad_rlm <- intersect(show_fit_stats, .NESTED_CHANGE_TOKENS)
+  if (
+    length(bad_rlm) > 0L &&
+      length(eff_models) > 0L &&
+      all(vapply(eff_models, inherits, logical(1), "rlm"))
+  ) {
+    spicy_abort(
+      c(
+        sprintf(
+          "Token(s) %s in `show_fit_stats` are not defined for `rlm` models.",
+          paste(.quote_val(bad_rlm), collapse = ", ")
+        ),
+        "i" = paste0(
+          "M-estimation minimises a bounded loss rather than a ",
+          "likelihood or a residual sum of squares, so an rlm ",
+          "hierarchy has neither a likelihood-ratio test nor a partial ",
+          "F to report."
+        ),
+        # The remedy has to be something the caller has not already
+        # done: this arm is not conditioned on `nested`, so it fires on
+        # a single fit and on a `nested = FALSE` pair, and telling
+        # either of those to pass `nested = FALSE` is no remedy at all.
+        # Dropping the token is, and it is the same one the homologous
+        # glm arm offers.
+        "i" = paste0(
+          "Drop the token, or compare the least-squares fits (`lm()`) ",
+          "if the hierarchy itself is the question."
         )
       ),
       class = "spicy_invalid_input"

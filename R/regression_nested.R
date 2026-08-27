@@ -43,6 +43,23 @@
 # this predicate is consulted.
 LEAST_SQUARES_CLASSES <- c("lm", "nls")
 
+# Every token that describes a CHANGE between two adjacent models, and
+# so exists only inside a hierarchy. Read by the class gates that refuse
+# a hierarchy outright (a class with no nested test of any kind); the
+# gates that refuse a SUBSET name their subset themselves.
+.NESTED_CHANGE_TOKENS <- c(
+  "r2_change",
+  "adj_r2_change",
+  "f_change",
+  "f2_change",
+  "lrt_change",
+  "aic_change",
+  "aicc_change",
+  "bic_change",
+  "deviance_change",
+  "p_change"
+)
+
 # TRUE when logLik() yields a finite scalar, i.e. the fit carries a
 # likelihood an LRT can be built from.
 has_usable_loglik <- function(fit) {
@@ -65,6 +82,14 @@ is_likelihood_pair <- function(fit_prev, fit_curr) {
     has_usable_loglik(fit_curr)
 }
 
+# A pair BOTH of whose members are rms fits (ols, lrm, cph, Glm, psm,
+# orm -- every class in the family carries "rms"). Such a pair has its
+# own two-model comparison function and rides neither generic path; see
+# compute_one_pair_rms().
+is_rms_pair <- function(fit_prev, fit_curr) {
+  inherits(fit_prev, "rms") && inherits(fit_curr, "rms")
+}
+
 # TRUE when EVERY fit in a list rides the likelihood-ratio path, and so
 # has no variance-explained change to report at all. One definition,
 # read by two callers that must not disagree: the class-aware default
@@ -76,9 +101,19 @@ is_likelihood_pair <- function(fit_prev, fit_curr) {
 # pseudo-likelihood on the check-loss objective, while anova.rq does
 # give a Wald-type F, so `f_change` is real there. glm is excluded by
 # inheritance from "lm" and keeps its own, older arm.
+#
+# rms is decided SECOND and included, class vector notwithstanding: the
+# whole family compares through rms::lrtest(), so an ols hierarchy --
+# least squares, "lm" in its class vector, a real R-squared on the fit --
+# reports the likelihood-ratio chi-square and no variance-explained
+# change. Saying so here is what keeps the class-aware default and the
+# token validator from disagreeing about ols.
 all_likelihood_path <- function(models) {
   if (all(vapply(models, inherits, logical(1), "rq"))) {
     return(FALSE)
+  }
+  if (length(models) > 0L && all(vapply(models, inherits, logical(1), "rms"))) {
+    return(TRUE)
   }
   length(models) > 0L &&
     all(vapply(
@@ -91,13 +126,43 @@ all_likelihood_path <- function(models) {
 }
 
 
-# ---- REML guard (nlme) ---------------------------------------------------
+# ---- REML guard (nlme, glmmTMB) ------------------------------------------
 
 # TRUE for an nlme fit (gls / lme, and nlme by inheritance) estimated by
 # restricted maximum likelihood.
 is_reml_nlme_fit <- function(fit) {
   inherits(fit, c("gls", "lme")) &&
     identical(as.character(fit$method %||% ""), "REML")
+}
+
+# TRUE for a glmmTMB fit estimated by restricted maximum likelihood
+# (REML = TRUE, opt-in: glmmTMB estimates by ML by default). The flag is
+# read where the frame builder reads it (`fit$modelInfo$REML`).
+is_reml_glmmTMB_fit <- function(fit) {
+  inherits(fit, "glmmTMB") &&
+    isTRUE(tryCatch(fit$modelInfo$REML, error = function(e) FALSE))
+}
+
+# TRUE for any fit in the mixed / correlated-error router whose criterion
+# is a RESTRICTED likelihood, and whose engine therefore cannot compare a
+# pair across fixed-effects structures. lme4 is deliberately absent: it
+# refits by ML rather than refusing, and that refit is disclosed instead
+# (build_nested_ml_refit_footer_block_from_frames()).
+is_reml_pair_fit <- function(fit) {
+  is_reml_nlme_fit(fit) || is_reml_glmmTMB_fit(fit)
+}
+
+# The FIXED-effects formula of a fit. gls / lme carry no random-effects
+# bars in formula(); a glmmTMB conditional formula does, and nobars() is
+# what strips them -- the same helper the null-LRT refits already use, so
+# the two readings of "the fixed part" cannot drift apart.
+nested_fixed_formula <- function(fit) {
+  if (inherits(fit, "glmmTMB")) {
+    return(suppressWarnings(.re_nobars(
+      stats::formula(fit, fixed.only = TRUE, component = "cond")
+    )))
+  }
+  stats::formula(fit)
 }
 
 # Signature of the FIXED-effects specification, built exactly the way
@@ -107,7 +172,7 @@ is_reml_nlme_fit <- function(fit) {
 # never by matching nlme's warning text (which is translated).
 fixed_terms_key <- function(fit) {
   tt <- tryCatch(
-    stats::terms(stats::formula(fit)),
+    stats::terms(nested_fixed_formula(fit)),
     error = function(e) NULL
   )
   if (is.null(tt)) {
@@ -154,12 +219,27 @@ fixed_terms_key <- function(fit) {
 # 2.4.1, p. 83: the test "can also be used with models fit by REML, but
 # only if both models have been fit by REML and if the fixed-effects
 # specification is the same for both models").
+#
+# glmmTMB(REML = TRUE) reaches the same conclusion in its own words --
+# anova.glmmTMB stops with "Can't compare REML fits with different
+# fixed-effect components" -- but the mixed pair path wrapped that abort
+# in tryCatch and en-dashed the whole change column, an answer-shaped
+# absence in place of an engine that had said no. The structural test
+# above answers for both engines, so which engine holds the fit cannot
+# change whether the user is told.
 check_nested_reml_pair <- function(fit_prev, fit_curr) {
-  if (!(is_reml_nlme_fit(fit_prev) && is_reml_nlme_fit(fit_curr))) {
+  if (!(is_reml_pair_fit(fit_prev) && is_reml_pair_fit(fit_curr))) {
     return(invisible(NULL))
   }
   if (identical(fixed_terms_key(fit_prev), fixed_terms_key(fit_curr))) {
     return(invisible(NULL))
+  }
+  # The remedy is the engine's own switch, and the two engines spell it
+  # differently: `method = "ML"` for nlme, `REML = FALSE` for glmmTMB.
+  refit_hint <- if (is_reml_glmmTMB_fit(fit_prev)) {
+    "`update(m1, REML = FALSE)`"
+  } else {
+    "`update(m1, method = \"ML\")`"
   }
   spicy_abort(
     c(
@@ -173,13 +253,162 @@ check_nested_reml_pair <- function(fit_prev, fit_curr) {
         "likelihood-ratio test is not valid (Pinheiro & Bates 2000, ",
         "Section 2.4.2)."
       ),
-      "i" = paste0(
-        "Refit both models by maximum likelihood, e.g. ",
-        "`update(m1, method = \"ML\")`, then compare."
+      "i" = sprintf(
+        "Refit both models by maximum likelihood, e.g. %s, then compare.",
+        refit_hint
       ),
       "i" = paste0(
         "REML comparisons stay valid when only the random structure ",
         "differs."
+      )
+    ),
+    class = "spicy_invalid_input"
+  )
+}
+
+
+# ---- Cross-engine guard (mixed-effects router) ---------------------------
+
+# Which engine fitted a mixed-effects model, or NA for a fit the mixed
+# router does not claim. The three engines of the router are lme4
+# (lmerMod / glmerMod, lmerTest decorations included), glmmTMB and nlme.
+nested_mixed_engine <- function(fit) {
+  if (inherits(fit, c("merMod", "lmerModLmerTest"))) {
+    return("lme4")
+  }
+  if (inherits(fit, "glmmTMB")) {
+    return("glmmTMB")
+  }
+  if (inherits(fit, "lme")) {
+    return("nlme")
+  }
+  NA_character_
+}
+
+# Refuse a hierarchy whose two mixed-effects fits come from DIFFERENT
+# engines.
+#
+# Change statistics on this route come from the engine's own two-model
+# anova(), and no engine's method accepts a fit from another:
+# anova.merMod handed a glmmTMB object aborts, and so does the reverse.
+# The abort was caught by the tryCatch in compute_one_pair_mixed() and
+# turned into an all-NA row, so the table rendered with no change rows
+# and not a word about why -- the answer-shaped absence that the REML
+# refusal exists to end. Measured on sleepstudy, BOTH ways: a
+# lmer-REML + glmmTMB-REML pair and a lmer-ML + glmmTMB-ML pair both
+# came back all-NA and both rendered silently, so this is not a REML
+# question and widening the REML predicate would not have closed it.
+#
+# Decided BEFORE check_nested_reml_pair(): its remedy is to refit by
+# maximum likelihood, which does not make two engines comparable.
+check_nested_mixed_engine_pair <- function(fit_prev, fit_curr) {
+  engine_prev <- nested_mixed_engine(fit_prev)
+  engine_curr <- nested_mixed_engine(fit_curr)
+  if (
+    is.na(engine_prev) ||
+      is.na(engine_curr) ||
+      identical(engine_prev, engine_curr)
+  ) {
+    return(invisible(NULL))
+  }
+  spicy_abort(
+    c(
+      paste0(
+        "`nested = TRUE` cannot compare mixed-effects fits from ",
+        "different engines."
+      ),
+      "x" = sprintf("Fitted by %s, then %s.", engine_prev, engine_curr),
+      "i" = paste0(
+        "Change statistics come from the engine's own model-comparison ",
+        "method, and no engine's `anova()` accepts a fit produced by ",
+        "another."
+      ),
+      "i" = paste0(
+        "Refit one of the two with the other's engine, or render the ",
+        "models side by side with `nested = FALSE`."
+      )
+    ),
+    class = "spicy_invalid_input"
+  )
+}
+
+
+# ---- Absorbed fixed-effects guard (fixest) -------------------------------
+
+# Signature of a fixest fit's ABSORBED fixed-effects structure: the
+# absorbed TERMS, sorted, joined by "&".
+#
+# `fixef_terms` is the field that distinguishes `| id` from `| id[t]`
+# ("id" against "id", "id[[t]]"): the varying-slope form absorbs one
+# coefficient per unit on top of the unit intercepts -- 30 extra
+# parameters on a 30-unit panel, logLik df 32 against 62 -- for the same
+# covariate set. Read through `fixef_vars`, both fits carried the key
+# "id", the guard stayed silent, and the chi-square published measured
+# the change in the absorbed structure and nothing else. fixest sets
+# `fixef_terms` only when a slope is involved, so a plain `| id + g` fit
+# has none and falls back to `fixef_vars`, the documented dimension-name
+# field ("The names of each fixed-effect dimension", ?feols Value), NULL
+# for a fit with no `| fe` part -- which is a structure like any other
+# and gets the empty key.
+#
+# The key is SORTED, so the order the dimensions were written in is not
+# a structure: `| Origin + Year` and `| Year + Origin` absorb the same
+# set of dummies and compare.
+fixest_fe_key <- function(fit) {
+  fe_terms <- fit$fixef_terms %||% fit$fixef_vars %||% character(0)
+  paste(sort(as.character(fe_terms)), collapse = "&")
+}
+
+# Refuse a likelihood-ratio comparison of two fixest fits that absorbed
+# DIFFERENT fixed-effects structures.
+#
+# fixest counts every absorbed level as an estimated parameter: on the
+# `trade` data, logLik() reports df 17 for one FE dimension and 32 for
+# two. The LRT built from those likelihoods then measures the change in
+# the FE structure alongside the change in the coefficients, and the two
+# are not separable -- measured on that pair, DeltaChi2 10656.65 with
+# p = 0, a number that says nothing about the covariate the user added.
+# Within a SHARED structure the absorbed levels contribute the same
+# constant to both sides and the test is exactly the one the user meant,
+# so that pair is untouched.
+#
+# The check is structural (which dimensions were absorbed), not
+# numerical (how many levels): two fits absorbing the same factor on
+# different subsamples are caught earlier, by the sample-size gate.
+check_nested_fixest_fe_pair <- function(fit_prev, fit_curr) {
+  if (!(inherits(fit_prev, "fixest") && inherits(fit_curr, "fixest"))) {
+    return(invisible(NULL))
+  }
+  if (identical(fixest_fe_key(fit_prev), fixest_fe_key(fit_curr))) {
+    return(invisible(NULL))
+  }
+  # Named from the same field the key reads, so the sentence names what
+  # actually differed: `| id` against `| id[t]` reads "id" against
+  # "id + id[[t]]", not "id" against "id".
+  describe <- function(fit) {
+    fe <- as.character(fit$fixef_terms %||% fit$fixef_vars %||% character(0))
+    if (length(fe) == 0L) "none" else paste(fe, collapse = " + ")
+  }
+  spicy_abort(
+    c(
+      paste0(
+        "`nested = TRUE` cannot compare fixest fits that absorbed ",
+        "different fixed effects."
+      ),
+      "x" = sprintf(
+        "Absorbed: %s, then %s.",
+        describe(fit_prev),
+        describe(fit_curr)
+      ),
+      "i" = paste0(
+        "fixest counts every absorbed level as an estimated parameter, ",
+        "so a likelihood-ratio test across two structures measures the ",
+        "change in the fixed effects together with the change in the ",
+        "coefficients, and the two cannot be separated."
+      ),
+      "i" = paste0(
+        "Hold the `| fe` part fixed across the hierarchy, or render the ",
+        "models side by side with `nested = FALSE`."
       )
     ),
     class = "spicy_invalid_input"
@@ -204,7 +433,9 @@ compute_nested_comparisons <- function(fits) {
   for (k in seq_len(length(fits) - 1L)) {
     fit_prev <- fits[[k]]
     fit_curr <- fits[[k + 1L]]
+    check_nested_mixed_engine_pair(fit_prev, fit_curr)
     check_nested_reml_pair(fit_prev, fit_curr)
+    check_nested_fixest_fe_pair(fit_prev, fit_curr)
     pair_mixed <- is_mixed(fit_prev) && is_mixed(fit_curr)
     pair_glm <- inherits(fit_prev, "glm") && inherits(fit_curr, "glm")
     # Every class that carries a likelihood has a nested likelihood-ratio
@@ -216,7 +447,15 @@ compute_nested_comparisons <- function(fits) {
     # thing that makes an LRT possible, so ask for a likelihood.
     pair_lrt <- is_likelihood_pair(fit_prev, fit_curr)
     pair_rq <- inherits(fit_prev, "rq") && inherits(fit_curr, "rq")
-    stats <- if (pair_mixed) {
+    # rms is decided before the generic paths because it fits BOTH of
+    # them wrongly: lrm / Glm layer "glm" and ols layers "lm" into their
+    # class vectors, so the pair would ride a route whose anova() call
+    # lands on the single-fit Wald test anova.rms. See
+    # compute_one_pair_rms().
+    pair_rms <- is_rms_pair(fit_prev, fit_curr)
+    stats <- if (pair_rms) {
+      compute_one_pair_rms(fit_prev, fit_curr)
+    } else if (pair_mixed) {
       compute_one_pair_mixed(fit_prev, fit_curr)
     } else if (pair_rq) {
       compute_one_pair_rq(fit_prev, fit_curr)
@@ -504,6 +743,26 @@ compute_one_pair_mixed <- function(fit_prev, fit_curr) {
     p_change = NA_real_
   )
 
+  # Direction is settled BEFORE anova is asked, on the order the CALLER
+  # gave. anova.merMod and anova.glmmTMB sort the models by parameter
+  # count before they compare, and every read below is POSITIONAL, so a
+  # hierarchy handed over the wrong way round came back with the row for
+  # row SAME block as the right way round: removing a predictor was
+  # published as a highly significant improvement carrying a NEGATIVE
+  # DeltaAIC, beside per-model AIC rows that rise. Measured on
+  # sleepstudy, Reaction ~ Days + (1|Subject) given first and the
+  # intercept-only model second: DeltaChi2 +116.46, p 3.8e-27,
+  # DeltaAIC -114.46, where the AIC rows displayed differ by +115.86.
+  # The rule is lrt_admissible()'s, applied to the parameter count: a
+  # nested pair adds at least one parameter, and an UNKNOWN count is not
+  # evidence against the pair. It vetoes the WHOLE row, not just the
+  # chi-square: AIC, BIC and deviance are read off the same reordered
+  # table.
+  df_increase <- loglik_df_increase(fit_prev, fit_curr)
+  if (isTRUE(df_increase < 1)) {
+    return(na)
+  }
+
   av <- tryCatch(
     suppressWarnings(suppressMessages(stats::anova(fit_prev, fit_curr))),
     error = function(e) NULL
@@ -642,6 +901,197 @@ compute_one_pair_rq <- function(fit_prev, fit_curr) {
 }
 
 
+# ---- Per-pair rms computation --------------------------------------------
+
+# rms fits compare through rms::lrtest(), the package's own two-model
+# likelihood-ratio test, for every class in the family: ols, lrm, cph,
+# Glm, psm, orm.
+#
+# They had to be routed away from BOTH generic paths, because they fit
+# both of them wrongly. anova.rms is a single-fit Wald test, not a model
+# comparison: handed two fits it aborts ("factor names not in design:
+# ..."). Since an anova method DOES exist for class "rms",
+# nested_lrt_anova() read that -- correctly, by its own rule -- as an
+# engine refusing to compare, so an lrm or cph hierarchy hard-errored
+# and the relayed sentence quoted a spicy internal name (register
+# n. 246(d), n. 246(f)). ols went the other way: it carries "lm", rode
+# the least-squares path, and the same abort was caught there and turned
+# into an all-NA row -- a table with no change rows at all.
+#
+# rms::lrtest() reads each fit's own "Model L.R." and "d.f." off
+# fit$stats, the likelihood-ratio machinery every rms class already
+# carries. On lrm and cph it returns exactly what the generic logLik
+# fallback computes (pinned as an oracle in the tests, to the last
+# digit); ols is the class that gains a comparison it never had.
+#
+# Two corrections are applied to its answer.
+#
+# DIRECTION. lrtest() takes abs() of BOTH the statistic and the degrees
+# of freedom, so a pair handed over the wrong way round comes back as a
+# positive chi-square carrying a significant p -- a direction that did
+# not happen. Reading the parameter count alone does not catch it: a
+# pair that ADDS parameters while fitting WORSE (a REPLACED predictor
+# rather than an added one) increases the df and so passes that test,
+# and abs() then publishes the degradation as a highly significant
+# improvement. Measured on lrm(yb ~ x1) against lrm(yb ~ x2 + x3):
+# DeltaChi2 +46.65 with p 8.5e-12, beside a DeltaAIC of +48.65. The
+# SIGNED likelihood difference is rebuilt from the two fits' own
+# logLik() methods -- every class in the family has one -- and it, not
+# rms's absolute value, is what the shared admissibility rule reads.
+# Zero passes: two identical fits are a chi-square of 0, not a
+# direction.
+#
+# P-VALUE. lrtest() ends with `1 - pchisq(chisq, dof)`, which cancels to
+# exactly 0 once p drops below ~1e-16 -- the ordinary case for a nested
+# hierarchy with a real effect. The statistic and the degrees of freedom
+# are rms's, exact to the last digit; the p-value is recomputed from
+# them on the upper tail, because a p of 0 is not a p and it travels
+# into as_structured() and every numeric extraction.
+#
+# rms's own warnings (psm scale parameters) are left to reach the user:
+# an engine's caveat about the comparison it is performing is part of
+# the answer. (With rms 8.1.1 that particular branch is not reachable --
+# fit$parms is length 0 for weibull and for exponential alike -- so it
+# is a policy about relaying warnings, not a described behaviour.)
+#
+# Variance-explained tokens stay NA for the whole family, ols included:
+# the comparison reported IS the likelihood-ratio chi-square, and
+# all_likelihood_path() says so, so the class-aware default and the
+# token validator cannot disagree about it.
+compute_one_pair_rms <- function(fit_prev, fit_curr) {
+  na <- list(
+    r2_change = NA_real_,
+    adj_r2_change = NA_real_,
+    f_change = NA_real_,
+    f2_change = NA_real_,
+    lrt_change = NA_real_,
+    aic_change = NA_real_,
+    aicc_change = NA_real_,
+    bic_change = NA_real_,
+    deviance_change = NA_real_,
+    p_change = NA_real_
+  )
+  # Likelihoods fitted on different samples are not comparable at all;
+  # settle that before asking rms, exactly as compute_one_pair_lrt()
+  # does. The public path never gets here with mismatched n.
+  if (nobs_conflict(fit_prev, fit_curr)) {
+    return(na)
+  }
+
+  st <- rms_lrtest_stats(fit_prev, fit_curr)
+  lrt_stat <- st$stat
+  p_val <- st$p
+  # The admissibility rule reads the SIGNED difference, never rms's
+  # absolute one: on this route `stat < 0` would be dead code otherwise,
+  # and the parameter count alone lets a worse-fitting larger model
+  # through. An UNKNOWN signed difference is not evidence against the
+  # pair and does not veto (the rule the other two routes apply to an
+  # unknown df increase), so the df test still stands behind it.
+  signed_stat <- rms_signed_lr_change(fit_prev, fit_curr)
+  df_increase <- loglik_df_increase(fit_prev, fit_curr)
+  if (
+    !lrt_admissible(lrt_stat, df_increase) ||
+      isTRUE(signed_stat < 0)
+  ) {
+    lrt_stat <- NA_real_
+    p_val <- NA_real_
+  }
+
+  aic_p <- ic_or_na(stats::AIC, fit_prev)
+  aic_c <- ic_or_na(stats::AIC, fit_curr)
+  bic_p <- ic_or_na(stats::BIC, fit_prev)
+  bic_c <- ic_or_na(stats::BIC, fit_curr)
+
+  utils::modifyList(
+    na,
+    list(
+      lrt_change = lrt_stat,
+      aic_change = aic_c - aic_p,
+      aicc_change = aicc_of(fit_curr, aic_c) - aicc_of(fit_prev, aic_p),
+      bic_change = bic_c - bic_p,
+      deviance_change = deviance_or_na(fit_prev) - deviance_or_na(fit_curr),
+      p_change = p_val
+    )
+  )
+}
+
+# The rms::lrtest() reading of a pair. Whether the function EXISTS is
+# asked of the namespace, never inferred from a failure: lrtest()
+# aborting is the ENGINE's verdict on the pair ("models are not nested"),
+# and that is relayed, not worked around. Only a missing rms falls back
+# to the class-generic likelihood route.
+rms_lrtest_stats <- function(fit_prev, fit_curr) {
+  fun <- if (spicy_pkg_available("rms")) {
+    get0("lrtest", envir = asNamespace("rms"), mode = "function")
+  } else {
+    NULL
+  }
+  if (is.null(fun)) {
+    fb <- loglik_lrt(fit_prev, fit_curr)
+    return(list(
+      stat = fb$stat %||% NA_real_,
+      p = fb$p %||% NA_real_
+    ))
+  }
+  out <- tryCatch(fun(fit_prev, fit_curr), error = function(e) e)
+  if (inherits(out, "error")) {
+    abort_rms_lrtest_refused(out)
+  }
+  s <- out$stats
+  stat <- scalar_or_na(s[["L.R. Chisq"]])
+  df <- scalar_or_na(s[["d.f."]])
+  # rms reports P as `1 - pchisq(chisq, dof)`, which underflows to
+  # exactly 0 below p ~ 1.1e-16. Its chi-square and degrees of freedom
+  # are kept as they are; the tail probability is recomputed from them.
+  p <- if (is.finite(stat) && is.finite(df) && df > 0) {
+    stats::pchisq(stat, df = df, lower.tail = FALSE)
+  } else {
+    scalar_or_na(s[["P"]]) # nocov -- lrtest() aborts when dof is 0
+  }
+  list(stat = stat, p = p)
+}
+
+# The SIGNED likelihood-ratio change of a pair, 2 (l_curr - l_prev),
+# from the fits' own logLik() methods. NA when either likelihood is
+# unavailable. This is the quantity rms::lrtest() discards with abs();
+# rebuilding it is what tells an added predictor from a replaced one.
+rms_signed_lr_change <- function(fit_prev, fit_curr) {
+  ll_of <- function(fit) {
+    ll <- tryCatch(
+      suppressWarnings(stats::logLik(fit)),
+      error = function(e) NULL
+    )
+    if (!inherits(ll, "logLik")) NA_real_ else scalar_or_na(as.numeric(ll))
+  }
+  2 * (ll_of(fit_curr) - ll_of(fit_prev))
+}
+
+# Relay rms's refusal rather than working around it. The relayed sentence
+# is rms's own; it is quoted, never parsed, and names nothing internal to
+# spicy.
+abort_rms_lrtest_refused <- function(cnd) {
+  spicy_abort(
+    c(
+      paste0(
+        "`nested = TRUE` cannot compare these models: `rms::lrtest()` ",
+        "refused."
+      ),
+      "x" = sprintf("rms::lrtest() failed: %s", conditionMessage(cnd)),
+      "i" = paste0(
+        "spicy does not substitute a likelihood-ratio test that the ",
+        "model's own comparison function declined to perform."
+      ),
+      "i" = paste0(
+        "Two rms fits compare on their model likelihood-ratio ",
+        "statistics: the second must add parameters to the first, on ",
+        "the same data."
+      )
+    ),
+    class = "spicy_invalid_input"
+  )
+}
+
+
 # ---- Default tokens injected when nested = TRUE -------------------------
 
 # Class-aware default change-token vector. Plugged into `show_fit_stats`
@@ -775,6 +1225,24 @@ nested_anova_method_exists <- function(fit) {
   FALSE
 }
 
+# Names local to this file, scrubbed out of a relayed engine message.
+#
+# Some engines build their message by deparsing the arguments they were
+# handed: anova.rms reads its `...` as the names of factors to test and
+# answers "factor names not in design:  fit_curr", quoting a spicy
+# local at a user who has never seen it (register n. 246(f)). The
+# all-rms route no longer reaches that method, but a MIXED hierarchy --
+# one rms fit, one not -- still does, through the public entry point.
+# The names are replaced by what they stand for; nothing else in the
+# engine's sentence is touched.
+scrub_internal_fit_names <- function(x) {
+  if (!is.character(x) || length(x) != 1L) {
+    return(x) # nocov -- conditionMessage() is always a length-1 string
+  }
+  x <- gsub("fit_prev[[:space:],]+fit_curr", "the models", x)
+  gsub("fit_prev|fit_curr", "the models", x)
+}
+
 # Relay the engine's refusal rather than working around it. The relayed
 # sentence is the model package's own and is locale-translated, so it is
 # quoted, never parsed.
@@ -782,7 +1250,7 @@ abort_nested_anova_refused <- function(fit_prev, fit_curr, cnd) {
   detail <- if (is.null(cnd)) {
     "the method returned no model-comparison table"
   } else {
-    conditionMessage(cnd)
+    scrub_internal_fit_names(conditionMessage(cnd))
   }
   hint <- if (
     inherits(fit_prev, c("gls", "lme")) &&

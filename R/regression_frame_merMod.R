@@ -83,7 +83,7 @@ as_regression_frame.lmerMod <- function(
   )
   # Footer names the robust estimator actually applied (overrides the
   # model-based label set by .merMod_info()).
-  if (!vcov %in% c("model", "classical")) {
+  if (!.is_model_vcov(vcov)) {
     info$vcov_label <- .robust_vcov_label(vcov, cluster_name %||% NA_character_)
   }
   # Phase 7c16: exp() transform for non-identity links. lmer is

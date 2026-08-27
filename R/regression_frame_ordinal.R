@@ -55,7 +55,7 @@ as_regression_frame.polr <- function(
   # Profile CIs are model-based (confint.polr); a robust vcov takes precedence
   # -- its Wald-robust CIs overwrite them below -- so only profile under a
   # model-based vcov.
-  eff_ci_method <- if (vcov %in% c("model", "classical")) {
+  eff_ci_method <- if (.is_model_vcov(vcov)) {
     ci_method %||% "wald"
   } else {
     "wald"
@@ -88,7 +88,7 @@ as_regression_frame.polr <- function(
     ci_method = ci_method,
     model_id = model_id
   )
-  if (!vcov %in% c("model", "classical")) {
+  if (!.is_model_vcov(vcov)) {
     info$vcov_label <- .robust_vcov_label(
       vcov,
       cluster_name %||% NA_character_,
@@ -136,7 +136,7 @@ as_regression_frame.clm <- function(
   # Refuse a robust `vcov` cleanly (classical is available) rather than erroring
   # deep inside sandwich.
   is_ppo <- !is.null(fit$nom.terms)
-  if (is_ppo && !(vcov %in% c("model", "classical"))) {
+  if (is_ppo && !.is_model_vcov(vcov)) {
     spicy_abort(
       c(
         sprintf(
@@ -159,7 +159,7 @@ as_regression_frame.clm <- function(
 
   # Profile CIs are model-based (confint.clm); a robust vcov takes precedence,
   # so only profile under a model-based vcov.
-  eff_ci_method <- if (vcov %in% c("model", "classical")) {
+  eff_ci_method <- if (.is_model_vcov(vcov)) {
     ci_method %||% "wald"
   } else {
     "wald"
@@ -193,7 +193,7 @@ as_regression_frame.clm <- function(
     ci_method = ci_method,
     model_id = model_id
   )
-  if (!vcov %in% c("model", "classical")) {
+  if (!.is_model_vcov(vcov)) {
     info$vcov_label <- .robust_vcov_label(
       vcov,
       cluster_name %||% NA_character_,
