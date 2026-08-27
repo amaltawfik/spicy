@@ -82,6 +82,14 @@ is_likelihood_pair <- function(fit_prev, fit_curr) {
     has_usable_loglik(fit_curr)
 }
 
+# A pair BOTH of whose members are rms fits (ols, lrm, cph, Glm, psm,
+# orm -- every class in the family carries "rms"). Such a pair has its
+# own two-model comparison function and rides neither generic path; see
+# compute_one_pair_rms().
+is_rms_pair <- function(fit_prev, fit_curr) {
+  inherits(fit_prev, "rms") && inherits(fit_curr, "rms")
+}
+
 # TRUE when EVERY fit in a list rides the likelihood-ratio path, and so
 # has no variance-explained change to report at all. One definition,
 # read by two callers that must not disagree: the class-aware default
@@ -93,9 +101,19 @@ is_likelihood_pair <- function(fit_prev, fit_curr) {
 # pseudo-likelihood on the check-loss objective, while anova.rq does
 # give a Wald-type F, so `f_change` is real there. glm is excluded by
 # inheritance from "lm" and keeps its own, older arm.
+#
+# rms is decided SECOND and included, class vector notwithstanding: the
+# whole family compares through rms::lrtest(), so an ols hierarchy --
+# least squares, "lm" in its class vector, a real R-squared on the fit --
+# reports the likelihood-ratio chi-square and no variance-explained
+# change. Saying so here is what keeps the class-aware default and the
+# token validator from disagreeing about ols.
 all_likelihood_path <- function(models) {
   if (all(vapply(models, inherits, logical(1), "rq"))) {
     return(FALSE)
+  }
+  if (length(models) > 0L && all(vapply(models, inherits, logical(1), "rms"))) {
+    return(TRUE)
   }
   length(models) > 0L &&
     all(vapply(
@@ -278,7 +296,15 @@ compute_nested_comparisons <- function(fits) {
     # thing that makes an LRT possible, so ask for a likelihood.
     pair_lrt <- is_likelihood_pair(fit_prev, fit_curr)
     pair_rq <- inherits(fit_prev, "rq") && inherits(fit_curr, "rq")
-    stats <- if (pair_mixed) {
+    # rms is decided before the generic paths because it fits BOTH of
+    # them wrongly: lrm / Glm layer "glm" and ols layers "lm" into their
+    # class vectors, so the pair would ride a route whose anova() call
+    # lands on the single-fit Wald test anova.rms. See
+    # compute_one_pair_rms().
+    pair_rms <- is_rms_pair(fit_prev, fit_curr)
+    stats <- if (pair_rms) {
+      compute_one_pair_rms(fit_prev, fit_curr)
+    } else if (pair_mixed) {
       compute_one_pair_mixed(fit_prev, fit_curr)
     } else if (pair_rq) {
       compute_one_pair_rq(fit_prev, fit_curr)
@@ -700,6 +726,143 @@ compute_one_pair_rq <- function(fit_prev, fit_curr) {
       aic_change = aic_c - aic_p,
       bic_change = bic_c - bic_p
     )
+  )
+}
+
+
+# ---- Per-pair rms computation --------------------------------------------
+
+# rms fits compare through rms::lrtest(), the package's own two-model
+# likelihood-ratio test, for every class in the family: ols, lrm, cph,
+# Glm, psm, orm.
+#
+# They had to be routed away from BOTH generic paths, because they fit
+# both of them wrongly. anova.rms is a single-fit Wald test, not a model
+# comparison: handed two fits it aborts ("factor names not in design:
+# ..."). Since an anova method DOES exist for class "rms",
+# nested_lrt_anova() read that -- correctly, by its own rule -- as an
+# engine refusing to compare, so an lrm or cph hierarchy hard-errored
+# and the relayed sentence quoted a spicy internal name (register
+# n. 246(d), n. 246(f)). ols went the other way: it carries "lm", rode
+# the least-squares path, and the same abort was caught there and turned
+# into an all-NA row -- a table with no change rows at all.
+#
+# rms::lrtest() reads each fit's own "Model L.R." and "d.f." off
+# fit$stats, the likelihood-ratio machinery every rms class already
+# carries. On lrm and cph it returns exactly what the generic logLik
+# fallback computes (pinned as an oracle in the tests, to the last
+# digit); ols is the class that gains a comparison it never had.
+#
+# One correction is applied to its answer. lrtest() takes abs() of BOTH
+# the statistic and the degrees of freedom, so a pair handed over the
+# wrong way round comes back as a positive chi-square carrying a
+# significant p -- a direction that did not happen. The admissibility
+# rule the other two paths apply is applied here too, on the SIGNED
+# parameter increase. rms's own warnings (psm scale parameters) are left
+# to reach the user: an engine's caveat about the comparison it is
+# performing is part of the answer.
+#
+# Variance-explained tokens stay NA for the whole family, ols included:
+# the comparison reported IS the likelihood-ratio chi-square, and
+# all_likelihood_path() says so, so the class-aware default and the
+# token validator cannot disagree about it.
+compute_one_pair_rms <- function(fit_prev, fit_curr) {
+  na <- list(
+    r2_change = NA_real_,
+    adj_r2_change = NA_real_,
+    f_change = NA_real_,
+    f2_change = NA_real_,
+    lrt_change = NA_real_,
+    aic_change = NA_real_,
+    aicc_change = NA_real_,
+    bic_change = NA_real_,
+    deviance_change = NA_real_,
+    p_change = NA_real_
+  )
+  # Likelihoods fitted on different samples are not comparable at all;
+  # settle that before asking rms, exactly as compute_one_pair_lrt()
+  # does. The public path never gets here with mismatched n.
+  if (nobs_conflict(fit_prev, fit_curr)) {
+    return(na)
+  }
+
+  st <- rms_lrtest_stats(fit_prev, fit_curr)
+  lrt_stat <- st$stat
+  p_val <- st$p
+  if (!lrt_admissible(lrt_stat, loglik_df_increase(fit_prev, fit_curr))) {
+    lrt_stat <- NA_real_
+    p_val <- NA_real_
+  }
+
+  aic_p <- ic_or_na(stats::AIC, fit_prev)
+  aic_c <- ic_or_na(stats::AIC, fit_curr)
+  bic_p <- ic_or_na(stats::BIC, fit_prev)
+  bic_c <- ic_or_na(stats::BIC, fit_curr)
+
+  utils::modifyList(
+    na,
+    list(
+      lrt_change = lrt_stat,
+      aic_change = aic_c - aic_p,
+      aicc_change = aicc_of(fit_curr, aic_c) - aicc_of(fit_prev, aic_p),
+      bic_change = bic_c - bic_p,
+      deviance_change = deviance_or_na(fit_prev) - deviance_or_na(fit_curr),
+      p_change = p_val
+    )
+  )
+}
+
+# The rms::lrtest() reading of a pair. Whether the function EXISTS is
+# asked of the namespace, never inferred from a failure: lrtest()
+# aborting is the ENGINE's verdict on the pair ("models are not nested"),
+# and that is relayed, not worked around. Only a missing rms falls back
+# to the class-generic likelihood route.
+rms_lrtest_stats <- function(fit_prev, fit_curr) {
+  fun <- if (spicy_pkg_available("rms")) {
+    get0("lrtest", envir = asNamespace("rms"), mode = "function")
+  } else {
+    NULL
+  }
+  if (is.null(fun)) {
+    fb <- loglik_lrt(fit_prev, fit_curr)
+    return(list(
+      stat = fb$stat %||% NA_real_,
+      p = fb$p %||% NA_real_
+    ))
+  }
+  out <- tryCatch(fun(fit_prev, fit_curr), error = function(e) e)
+  if (inherits(out, "error")) {
+    abort_rms_lrtest_refused(out)
+  }
+  s <- out$stats
+  list(
+    stat = scalar_or_na(s[["L.R. Chisq"]]),
+    p = scalar_or_na(s[["P"]])
+  )
+}
+
+# Relay rms's refusal rather than working around it. The relayed sentence
+# is rms's own; it is quoted, never parsed, and names nothing internal to
+# spicy.
+abort_rms_lrtest_refused <- function(cnd) {
+  spicy_abort(
+    c(
+      paste0(
+        "`nested = TRUE` cannot compare these models: `rms::lrtest()` ",
+        "refused."
+      ),
+      "x" = sprintf("rms::lrtest() failed: %s", conditionMessage(cnd)),
+      "i" = paste0(
+        "spicy does not substitute a likelihood-ratio test that the ",
+        "model's own comparison function declined to perform."
+      ),
+      "i" = paste0(
+        "Two rms fits compare on their model likelihood-ratio ",
+        "statistics: the second must add parameters to the first, on ",
+        "the same data."
+      )
+    ),
+    class = "spicy_invalid_input"
   )
 }
 
