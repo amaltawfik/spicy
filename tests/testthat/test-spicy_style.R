@@ -624,6 +624,32 @@ test_that("an explicit p_style outranks the mark in both directions", {
     style = spicy_style(p_style = "standard")
   ))
   expect_match(std, "<0.001")
+
+  # The same direction on the STRUCTURED side. This is the divergence
+  # the p_style threading of `.below_threshold_text()` closed: a column
+  # whose frozen token is "standard" under a point rendered "0.045"
+  # above the floor and "<.001" below it -- two cells of one column
+  # disagreeing, and both disagreeing with the console line above. The
+  # console assertion just made cannot see it; only the engine can.
+  ss <- as_structured(table_regression(
+    fixed_fit(),
+    style = spicy_style(p_style = "standard")
+  ))
+  expect_identical(ss$col_meta[["p"]]$p_style, "standard")
+  expect_identical(
+    spicy:::.cell_to_string(0.0004, 3L, ss$col_meta[["p"]], "", "."),
+    "<0.001"
+  )
+  expect_identical(
+    spicy:::.cell_to_string(0.045, 3L, ss$col_meta[["p"]], "", "."),
+    "0.045"
+  )
+
+  # The living fallback of the same helper -- the arm a caller with no
+  # frozen token takes -- asserted by value rather than by coverage
+  # alone. Under a comma it must answer the way the mark rule does.
+  expect_identical(spicy:::.below_threshold_text(0.001, ","), "<0,001")
+  expect_identical(spicy:::.below_threshold_text(0.001, "."), "<.001")
 })
 
 test_that("a point mark is untouched by the rule", {
@@ -636,7 +662,13 @@ test_that("a point mark is untouched by the rule", {
     " .52",
     fixed = TRUE
   )
-  expect_match(console(table_continuous(d, mpg, by = am)), ".001", fixed = TRUE)
+  # Anchored on the column padding: `grepl(".001", "0.001", fixed =
+  # TRUE)` is TRUE, so an unanchored match here would also pass if the
+  # point path started KEEPING the zero -- the exact regression this
+  # block exists to name. The negative assertion is the one with teeth.
+  cont <- console(table_continuous(d, mpg, by = am))
+  expect_match(cont, " .001", fixed = TRUE)
+  expect_false(grepl("0.001", cont, fixed = TRUE))
   expect_identical(spicy:::format_p_value(0.045, "."), ".045")
 })
 

@@ -1934,6 +1934,115 @@ test_that("options(OutDec) cannot override a typed decimal_mark", {
   expect_identical(withr::with_options(list(OutDec = ","), comma()), comma())
 })
 
+test_that("options(OutDec) cannot reach the renderers outside the shared formatters", {
+  # The witness above covers the five families, the pair and the shared
+  # formatters. Several renderers write their own `formatC()` and never
+  # pass through `format_number()`; a mutation reverting THEIR pins left
+  # the whole suite green, so they get a witness of their own here.
+  #
+  # One entry per pinned site:
+  #   the survey twin's cell formatter  R/table_categorical_svy_render.R
+  #   print.spicy_assoc_detail          R/assoc.R
+  #   print.spicy_assoc_table           R/assoc.R
+  #   format_signed(), change tokens    R/regression_nested.R
+  #   the fractional Satterthwaite df   R/table_continuous_lm_render.R
+  #   the GEE working-correlation alpha R/regression_titlefooter.R
+  #   the R-hat and MCSE cells          R/regression_render.R
+  skip_if_not_installed("survey")
+  d <- mtcars
+  d$am <- factor(d$am, labels = c("auto", "manual"))
+  d$cyl <- factor(d$cyl)
+  des <- survey::svydesign(ids = ~1, data = d, weights = ~1)
+  tbl <- table(d$cyl, d$am)
+  m1 <- stats::lm(mpg ~ wt, data = d)
+  m2 <- stats::lm(mpg ~ wt + hp, data = d)
+  # A fractional df2 is what sends `format_df()` down its `formatC()`
+  # branch; an integer one returns early through `as.character()`.
+  df_block <- data.frame(
+    test_type = "t",
+    df1 = 1,
+    df2 = 45.3,
+    statistic = 2,
+    predictor_type = "categorical",
+    estimate = c(NA, 1),
+    level = c("A", "B"),
+    stringsAsFactors = FALSE
+  )
+  cell <- function(field, value) {
+    spicy:::format_cell_value(
+      long_row = stats::setNames(list(value), field),
+      cs = list(token = field, fields = field),
+      stars_map = NULL,
+      digits = 2L,
+      p_digits = 3L,
+      effect_size_digits = 2L,
+      decimal_mark = ".",
+      show_columns = field
+    )
+  }
+  render <- function() {
+    c(
+      capture.output(print(
+        table_categorical_svy(des, select = cyl, by = am, decimal_mark = ".")
+      )),
+      capture.output(print(cramer_v(tbl, detail = TRUE))),
+      capture.output(print(assoc_measures(tbl))),
+      capture.output(print(
+        table_regression(list(m1, m2), nested = TRUE, decimal_mark = ".")
+      )),
+      spicy:::get_test_header_lm(df_block, TRUE, TRUE),
+      spicy:::.format_gee_for_frame(
+        list(
+          info = list(
+            class = "geeglm",
+            extras = list(gee_corstr = "exchangeable", gee_alpha = 0.077)
+          )
+        ),
+        "."
+      ),
+      cell("rhat", 1.0125),
+      cell("mcse", 0.0995)
+    )
+  }
+  dot <- render()
+  # Sentinel: an empty or all-blank render() would make the identity
+  # below vacuous.
+  expect_true(sum(nzchar(dot)) > 20L)
+  expect_false(any(grepl("[0-9],[0-9]", dot)))
+  expect_identical(withr::with_options(list(OutDec = ","), render()), dot)
+
+  # Every site that has a mark to follow follows the argument, not the
+  # session: same call, comma asked for, comma out under either option.
+  comma <- function() {
+    c(
+      capture.output(print(
+        table_categorical_svy(des, select = cyl, by = am, decimal_mark = ",")
+      )),
+      capture.output(print(
+        table_regression(list(m1, m2), nested = TRUE, decimal_mark = ",")
+      )),
+      spicy:::.format_gee_for_frame(
+        list(
+          info = list(
+            class = "geeglm",
+            extras = list(gee_corstr = "exchangeable", gee_alpha = 0.077)
+          )
+        ),
+        ","
+      )
+    )
+  }
+  com <- comma()
+  expect_identical(withr::with_options(list(OutDec = "."), comma()), com)
+  expect_identical(withr::with_options(list(OutDec = ","), comma()), com)
+  # The two sites this branch taught the mark, asserted by value: the
+  # change tokens used to read "+0.07" over cells reading "0,75".
+  expect_true(any(grepl("+0,07", com, fixed = TRUE)))
+  expect_true(any(grepl("+12,38", com, fixed = TRUE)))
+  expect_false(any(grepl("+0.07", com, fixed = TRUE)))
+  expect_true(any(grepl("alpha = 0,08", com, fixed = TRUE)))
+})
+
 test_that("format_p_value handles NA and falls back to default for bad digits", {
   expect_equal(spicy:::format_p_value(NA_real_, ".", 3L), "")
   # Non-finite or < 1 digits silently fall back to digits=3.
