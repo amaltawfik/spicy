@@ -9,9 +9,46 @@
 # blocks, body builder, alignment, nested LRT -- now reads frames, and
 # the legacy extract shape and its .frame_to_legacy_extract() adapter
 # no longer exist.
+# Decision 42: the translated display form of an engine's title_prefix,
+# or NULL when the current language is English or has no bridge entry --
+# in which case the caller keeps the WHOLE English title (coherent or
+# nothing, never a half-translated head). Engine suffixes are proper
+# nouns: detached before the lookup, reattached verbatim. This helper
+# and the bridge it reads disappear together when 251-C makes the
+# prefix a registry key.
+.title_prefix_display <- function(prefix) {
+  # Defensive: no engine is known to emit a non-string prefix, but an
+  # NA here would turn the `endsWith()` below into an error under a
+  # translating language while English renders it -- the fallback must
+  # never be LESS robust than the path it falls back from.
+  if (!is.character(prefix) || length(prefix) != 1L || is.na(prefix)) {
+    return(NULL)
+  }
+  lang <- .spicy_language_option(getOption("spicy.language", "en"))
+  bridge <- .spicy_title_prefix_table(lang)
+  if (is.null(bridge)) {
+    return(NULL)
+  }
+  suffix <- ""
+  for (s in c(" (glmmTMB)", " (nlme)")) {
+    if (endsWith(prefix, s)) {
+      suffix <- s
+      prefix <- substr(prefix, 1L, nchar(prefix) - nchar(s))
+      break
+    }
+  }
+  # Single-bracket on purpose: `[[` on a named vector ERRORS on a
+  # missing name, `[` answers NA -- and NA here means "no entry".
+  hit <- unname(bridge[prefix])
+  if (is.na(hit)) {
+    return(NULL)
+  }
+  paste0(hit, suffix)
+}
+
 build_regression_title_from_frames <- function(frames, nested = FALSE) {
   if (!is.list(frames) || length(frames) == 0L) {
-    return("Regression")
+    return(spicy_str("title_regression_fallback"))
   }
   outcomes <- vapply(
     frames,
@@ -30,17 +67,44 @@ build_regression_title_from_frames <- function(frames, nested = FALSE) {
     },
     character(1)
   )
-  prefix <- if (length(unique(prefixes)) == 1L) {
-    prefixes[1L]
-  } else {
-    "Regression"
+  mixed <- length(unique(prefixes)) > 1L
+  prefix <- if (mixed) "Regression" else prefixes[1L]
+
+  # Decision 42: a translatable prefix routes through the registry
+  # templates; an untranslatable one falls through to the English arm
+  # below (coherent or nothing). A MIXED-family table never translates:
+  # its type footer is the frozen English "Model k: ..." list, and a
+  # French title over an English footer is the hybrid the rule forbids
+  # -- even though the fallback prefix "Regression" has a bridge entry.
+  disp <- if (mixed) NULL else .title_prefix_display(prefix)
+  if (!is.null(disp)) {
+    if (n == 1L) {
+      if (length(outcomes) == 0L) {
+        return(disp)
+      }
+      return(spicy_fmt("title_regression_single", disp, outcomes[1]))
+    }
+    if (isTRUE(nested)) {
+      # The French template carries its own qualifier ("%s -- modeles
+      # hierarchiques"), so the prefix keeps its capital -- no
+      # lowercase_first() on this branch.
+      return(spicy_fmt("title_regression_hierarchical", disp, outcomes[1]))
+    }
+    if (length(unique(outcomes)) == 1L) {
+      return(spicy_fmt("title_regression_comparison_dv", disp, outcomes[1]))
+    }
+    return(spicy_fmt("title_regression_comparison", disp))
   }
 
+  # The English arm resolves through `.spicy_fmt_en()`: the language
+  # layer is bypassed (these templates must never come out half-French)
+  # but a `spicy.labels` override still reaches them -- the registry
+  # advertises the keys, so they cannot be dead letters in English.
   if (n == 1L) {
     if (length(outcomes) == 0L) {
       return(prefix)
     }
-    return(sprintf("%s: %s", prefix, outcomes[1]))
+    return(.spicy_fmt_en("title_regression_single", prefix, outcomes[1]))
   }
 
   identical_dv <- length(unique(outcomes)) == 1L
@@ -48,12 +112,16 @@ build_regression_title_from_frames <- function(frames, nested = FALSE) {
   if (isTRUE(nested)) {
     # lowercase_first() keeps proper-noun titles intact ("Hierarchical
     # Cox proportional hazards regression", not "Hierarchical cox ...").
-    return(sprintf("Hierarchical %s: %s", lowercase_first(prefix), outcomes[1]))
+    return(.spicy_fmt_en(
+      "title_regression_hierarchical",
+      lowercase_first(prefix),
+      outcomes[1]
+    ))
   }
   if (identical_dv) {
-    return(sprintf("%s comparison: %s", prefix, outcomes[1]))
+    return(.spicy_fmt_en("title_regression_comparison_dv", prefix, outcomes[1]))
   }
-  sprintf("%s comparison", prefix)
+  .spicy_fmt_en("title_regression_comparison", prefix)
 }
 
 
@@ -222,16 +290,36 @@ build_regression_type_footer_block_from_frames <- function(frames) {
     },
     character(1)
   )
+  # Decision 42: the single-model and same-family arms translate (the
+  # prefix through the bridge, the plural through its whole-sentence
+  # key). The mixed-family arm below embeds the frozen "Model %d:"
+  # labels and stays English wholesale -- coherent or nothing --
+  # including its line TEMPLATE: `.spicy_fmt_en()` bypasses the
+  # language so a French NBSP colon never lands inside the English
+  # fallback sentence. The plural English arm routes through the
+  # registry too, so a `spicy.labels` override of `note_type_models`
+  # works in English, as `spicy_labels()` advertises.
+  disp <- .title_prefix_display(types[1])
   if (length(types) == 1L) {
+    if (!is.null(disp)) {
+      return(paste0(capitalize_first(disp), "."))
+    }
     return(paste0(capitalize_first(types[1]), "."))
   }
   if (length(unique(types)) == 1L) {
-    return(paste0(capitalize_first(types[1]), " models."))
+    if (!is.null(disp)) {
+      return(spicy_fmt("note_type_models", lowercase_first(disp)))
+    }
+    return(.spicy_fmt_en("note_type_models", capitalize_first(types[1])))
   }
   per <- vapply(
     seq_along(types),
     function(i) {
-      .model_line(frames, i, lowercase_first(types[i]))
+      .spicy_fmt_en(
+        "note_model_line",
+        .model_ref(frames, i),
+        lowercase_first(types[i])
+      )
     },
     character(1)
   )

@@ -107,7 +107,7 @@
     Code
       print(table_regression(stats::lm(bmi ~ age + sex, data = d)))
     Output
-      Linear regression: bmi
+      Régression linéaire : bmi
       
        Variable    │   B     SE       95% CI        p   
       ─────────────┼────────────────────────────────────
@@ -121,7 +121,7 @@
        R²          │  0.99                              
        Adj. R²     │  0.98                              
       
-      Note. Linear regression.
+      Note. Régression linéaire.
       Erreurs types : classiques (MCO).
 
 # a single overridden label is pinned

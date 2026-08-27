@@ -352,6 +352,24 @@
   # stays absent -- there is no single number it could hold.
   note_icc_multi_group = "ICC is not reported: several grouping factors define several ICCs.",
 
+  # -- table_regression(): title and type-footer templates -------------------
+  # Decision 42. The %s holes are the family prefix and, where present,
+  # the outcome label -- both DATA. The prefix itself is engine prose
+  # (extras$title_prefix); under a non-English language it goes through
+  # the language file's title-prefix bridge, and a prefix with no bridge
+  # entry keeps the WHOLE English title: coherent or nothing, never a
+  # half-translated head. The bridge is deleted wholesale when the
+  # col_name/display_label refactor (251-C, v1.0 horizon) makes the
+  # prefix a registry key of its own; these templates are permanent.
+  title_regression_fallback = "Regression",
+  title_regression_single = "%s: %s",
+  title_regression_hierarchical = "Hierarchical %s: %s",
+  title_regression_comparison_dv = "%s comparison: %s",
+  title_regression_comparison = "%s comparison",
+  # The type footer's same-family plural ("Linear regression models.").
+  # French inverts the construction, so the whole sentence is the unit.
+  note_type_models = "%s models.",
+
   # -- table_regression(): the absolute survival estimands -------------------
   # The footnote of the RMST-difference and risk-difference columns.
   # One hole each: the horizon and the landmark, on the outcome's own
@@ -785,6 +803,30 @@ spicy_fmt <- function(key, ...) {
   sprintf(spicy_str(key), ...)
 }
 
+# Resolution with the LANGUAGE layer bypassed: the user's labels override
+# still wins (it outranks every language), then the English default --
+# never the active language's set. This is the coherent-or-nothing
+# fallback arm of the regression title (decision 42): when a family has
+# no bridge entry, the whole title must come out English, and routing
+# through `spicy_str()` there would wrap the English prefix in a French
+# template. The labels layer stays live so `options(spicy.labels)`
+# reaches these templates in every language, English included.
+.spicy_str_en <- function(key) {
+  labels_opt <- getOption("spicy.labels", NULL)
+  if (!is.null(labels_opt)) {
+    labels <- .spicy_labels_option(labels_opt)
+    i <- match(key, names(labels))
+    if (!is.na(i)) {
+      return(unname(labels[[i]]))
+    }
+  }
+  .spicy_strings[[key]]
+}
+
+.spicy_fmt_en <- function(key, ...) {
+  sprintf(.spicy_str_en(key), ...)
+}
+
 
 # ---- Template holes -------------------------------------------------------
 
@@ -868,6 +910,15 @@ spicy_fmt <- function(key, ...) {
 # be built from an object that does not exist yet.
 .spicy_language_table <- function(lang) {
   switch(lang, en = NULL, fr = .spicy_strings_fr)
+}
+
+# The title-prefix bridge of a language set (decision 42): the engine's
+# English `title_prefix` strings mapped to their translation. "en" has
+# none -- the English prose IS the source. A future language adds its
+# own vector in its own file and one arm here. The whole mechanism is
+# deleted when 251-C makes the prefix a registry key.
+.spicy_title_prefix_table <- function(lang) {
+  switch(lang, en = NULL, fr = .FR_TITLE_PREFIXES)
 }
 
 # Validate `options(spicy.language)` and return the language name.

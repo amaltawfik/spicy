@@ -172,7 +172,7 @@
   note_icc_multi_group = "L'ICC n'est pas rapport\u00E9\u00A0: plusieurs facteurs de groupement d\u00E9finissent plusieurs ICC.",
 
   # -- table_regression(): the absolute survival estimands ------------------
-  note_estimand_rmst = "dRMST = diff\u00E9rence de survie moyenne restreinte sur [0, %s]",
+  note_estimand_rmst = "dRMST = diff\u00E9rence de temps de survie moyen restreint sur [0, %s]",
   note_estimand_risk_diff = "dRisk = diff\u00E9rence d'incidence cumul\u00E9e \u00E0 %s",
   note_estimand_method = "\u00A0; ajust\u00E9e par g-computation \u00E0 partir du mod\u00E8le ajust\u00E9, erreurs types par bootstrap non param\u00E9trique (%s r\u00E9plications).",
   note_estimand_method_stratified = "\u00A0; ajust\u00E9e par g-computation \u00E0 partir du mod\u00E8le ajust\u00E9 (lignes de base intra-strate), erreurs types par bootstrap non param\u00E9trique (%s r\u00E9plications).",
@@ -292,8 +292,25 @@
   note_vcov_design_bare = "Fond\u00E9es sur le plan de sondage",
   note_vcov_cluster_by = ", grappes d\u00E9finies par %s",
   note_ci_profile = "IC \u00E0 %s\u00A0%%\u00A0: vraisemblance profil\u00E9e.",
-  note_ci_bootstrap_percentile = "IC \u00E0 %s\u00A0%%\u00A0: percentile bootstrap.",
+  note_ci_bootstrap_percentile = "IC \u00E0 %s\u00A0%%\u00A0: bootstrap percentile.",
   note_ci_posterior_mixed = "Model %d\u00A0: l'IC \u00E0 %s\u00A0%% est un intervalle de cr\u00E9dibilit\u00E9 a posteriori \u00E0 queues \u00E9gales.",
+
+  # -- table_regression(): titres et note de type (decision 42) -------------
+  # Les %s recoivent le prefixe de famille (traduit par le pont
+  # .FR_TITLE_PREFIXES ci-dessous) et le label de l'outcome. L'ordre des
+  # trous est celui de l'anglais. Le hierarchique est un TAG apres
+  # tiret cadratin, comme la comparaison : un adjectif postpose se
+  # rattacherait au dernier mot du prefixe, pas a la regression
+  # ("... ponderee par le plan de sondage hierarchique" lirait "plan
+  # hierarchique" -- un vrai terme de sondage, donc un contresens).
+  title_regression_fallback = "R\u00E9gression",
+  title_regression_single = "%s\u00A0: %s",
+  title_regression_hierarchical = "%s \u2014 mod\u00E8les hi\u00E9rarchiques\u00A0: %s",
+  title_regression_comparison_dv = "%s \u2014 comparaison\u00A0: %s",
+  title_regression_comparison = "%s \u2014 comparaison",
+  # La phrase entiere est l'unite : "Modeles de regression lineaire."
+  # (le prefixe arrive en minuscule initiale, regle du site d'appel).
+  note_type_models = "Mod\u00E8les de %s.",
 
   # -- varlist() / code_book(): value summaries -----------------------------
   value_summary_matrix = "Matrice(%s)",
@@ -301,4 +318,36 @@
   value_summary_list_types = "%s\u00A0: %s",
   value_summary_error = "<erreur\u00A0: %s>",
   value_summary_invalid = "Erreur\u00A0: valeurs invalides"
+)
+
+# ---- Le pont des prefixes de titre (decision 42) ---------------------------
+# Les chaines ANGLAISES FINALES que les moteurs posent dans
+# extras$title_prefix, mappees vers leur francais. C'est un PONT
+# deliberement jetable : quand 251-C (horizon v1.0) fera porter une CLE
+# par le frame, ce vecteur et .spicy_title_prefix_table() disparaissent
+# en bloc. Regle d'application (au site d'appel) : coherent-ou-rien --
+# un prefixe absent d'ici garde son titre anglais ENTIER ; les suffixes
+# moteur " (glmmTMB)" / " (nlme)" sont detaches puis reattaches tels
+# quels (noms propres). Familles couvertes : les chemins par defaut
+# qu'un utilisateur francophone rencontre (decision 42, minimum vital).
+.FR_TITLE_PREFIXES <- c(
+  "Regression" = "R\u00E9gression",
+  "Linear regression" = "R\u00E9gression lin\u00E9aire",
+  "Logistic regression" = "R\u00E9gression logistique",
+  "Probit regression" = "R\u00E9gression probit",
+  "Binomial regression" = "R\u00E9gression binomiale",
+  "Log-binomial regression" = "R\u00E9gression log-binomiale",
+  "Poisson regression" = "R\u00E9gression de Poisson",
+  "Quasi-Poisson regression" = "R\u00E9gression quasi-Poisson",
+  "Negative-binomial regression" = "R\u00E9gression binomiale n\u00E9gative",
+  "Linear mixed-effects regression" = "R\u00E9gression lin\u00E9aire \u00E0 effets mixtes",
+  "Logistic mixed-effects regression" = "R\u00E9gression logistique \u00E0 effets mixtes",
+  "Poisson mixed-effects regression" = "R\u00E9gression de Poisson \u00E0 effets mixtes",
+  "Negative-binomial mixed-effects regression" = "R\u00E9gression binomiale n\u00E9gative \u00E0 effets mixtes",
+  "Cumulative logit regression (proportional odds)" = "R\u00E9gression logit cumulatif (cotes proportionnelles)",
+  "Cox proportional hazards regression" = "R\u00E9gression de Cox \u00E0 risques proportionnels",
+  "Survey-weighted linear regression" = "R\u00E9gression lin\u00E9aire pond\u00E9r\u00E9e par le plan de sondage",
+  "Survey-weighted logistic regression" = "R\u00E9gression logistique pond\u00E9r\u00E9e par le plan de sondage",
+  "Survey-weighted Cox proportional hazards regression" = "R\u00E9gression de Cox \u00E0 risques proportionnels pond\u00E9r\u00E9e par le plan de sondage",
+  "Multinomial logistic regression" = "R\u00E9gression logistique multinomiale"
 )
