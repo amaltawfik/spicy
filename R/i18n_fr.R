@@ -172,7 +172,7 @@
   note_icc_multi_group = "L'ICC n'est pas rapport\u00E9\u00A0: plusieurs facteurs de groupement d\u00E9finissent plusieurs ICC.",
 
   # -- table_regression(): the absolute survival estimands ------------------
-  note_estimand_rmst = "dRMST = diff\u00E9rence de survie moyenne restreinte sur [0, %s]",
+  note_estimand_rmst = "dRMST = diff\u00E9rence de temps de survie moyen restreint sur [0, %s]",
   note_estimand_risk_diff = "dRisk = diff\u00E9rence d'incidence cumul\u00E9e \u00E0 %s",
   note_estimand_method = "\u00A0; ajust\u00E9e par g-computation \u00E0 partir du mod\u00E8le ajust\u00E9, erreurs types par bootstrap non param\u00E9trique (%s r\u00E9plications).",
   note_estimand_method_stratified = "\u00A0; ajust\u00E9e par g-computation \u00E0 partir du mod\u00E8le ajust\u00E9 (lignes de base intra-strate), erreurs types par bootstrap non param\u00E9trique (%s r\u00E9plications).",
@@ -292,7 +292,7 @@
   note_vcov_design_bare = "Fond\u00E9es sur le plan de sondage",
   note_vcov_cluster_by = ", grappes d\u00E9finies par %s",
   note_ci_profile = "IC \u00E0 %s\u00A0%%\u00A0: vraisemblance profil\u00E9e.",
-  note_ci_bootstrap_percentile = "IC \u00E0 %s\u00A0%%\u00A0: percentile bootstrap.",
+  note_ci_bootstrap_percentile = "IC \u00E0 %s\u00A0%%\u00A0: bootstrap percentile.",
   note_ci_posterior_mixed = "Model %d\u00A0: l'IC \u00E0 %s\u00A0%% est un intervalle de cr\u00E9dibilit\u00E9 a posteriori \u00E0 queues \u00E9gales.",
 
   # -- table_regression(): titres et note de type (decision 42) -------------
@@ -323,7 +323,7 @@
 # extras$title_prefix, mappees vers leur francais. C'est un PONT
 # deliberement jetable : quand 251-C (horizon v1.0) fera porter une CLE
 # par le frame, ce vecteur et .spicy_title_prefix_table() disparaissent
-# en bloc. Regle d'application (au site d'appel) : cohherent-ou-rien --
+# en bloc. Regle d'application (au site d'appel) : coherent-ou-rien --
 # un prefixe absent d'ici garde son titre anglais ENTIER ; les suffixes
 # moteur " (glmmTMB)" / " (nlme)" sont detaches puis reattaches tels
 # quels (noms propres). Familles couvertes : les chemins par defaut
