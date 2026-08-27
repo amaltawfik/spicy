@@ -190,7 +190,11 @@ build_regression_footer_from_frames <- function(
       decimal_mark = decimal_mark
     ),
     build_mixed_inference_footer_block_from_frames(frames),
-    build_nested_ml_refit_footer_block_from_frames(frames, nested),
+    build_nested_ml_refit_footer_block_from_frames(
+      frames,
+      nested,
+      show_fit_stats
+    ),
     build_gee_footer_block_from_frames(frames),
     build_random_effects_footer_block_from_frames(
       frames,
@@ -1416,22 +1420,59 @@ build_mixed_inference_footer_block_from_frames <- function(frames) {
 #
 # lme4::anova.merMod refits a REML fit by maximum likelihood before it
 # compares (a one-line message spicy suppresses), so the change block of
-# a REML hierarchy is computed on ML refits while the per-model AIC rows
-# above it are the REML criteria of the fits themselves. Measured on
-# sleepstudy: DeltaAIC -114.46 from the refits against -115.86 from the
-# displayed rows. Recomputing the change on the REML criteria would be
-# the wrong fix: a restricted likelihood is built on contrasts that
-# annihilate the fixed-effects design, so REML criteria are not
-# comparable across fixed-effects structures at all (Pinheiro & Bates
-# 2000, Section 2.4.2 -- the same ground as the REML refusal in
-# check_nested_reml_pair()). The refit is right and the disagreement is
-# real, so the table discloses it.
+# a REML hierarchy is computed on ML refits while the per-model AIC and
+# BIC rows above it are the REML criteria of the fits themselves.
+# Measured on sleepstudy: DeltaAIC -114.46 from the refits against
+# -115.86 from the displayed rows, DeltaBIC -111.27 against -112.67.
+# Recomputing the change on the REML criteria would be the wrong fix: a
+# restricted likelihood is built on contrasts that annihilate the
+# fixed-effects design, so REML criteria are not comparable across
+# fixed-effects structures at all (Pinheiro & Bates 2000, Section 2.4.2
+# -- the same ground as the REML refusal in check_nested_reml_pair()).
+# The refit is right and the disagreement is real, so the table
+# discloses it.
 #
-# Fires only when a pair actually WAS refitted: both members lme4 fits
-# (the only engine in the mixed router that refits -- glmmTMB refuses,
-# nlme warns and is refused by spicy) and at least one of them REML.
-build_nested_ml_refit_footer_block_from_frames <- function(frames, nested) {
+# TWO conditions, and both are about what the reader can see.
+#
+# (1) At least one change token is actually ON the table: selected for
+#     display AND carrying a number somewhere. A note describes rows,
+#     and `show_fit_stats = "nobs"` renders a table with no change rows
+#     at all, while a hierarchy the admissibility rules en-dash renders
+#     none either. In both cases the sentence annotated rows that are
+#     not there.
+# (2) An adjacent pair actually WAS refitted: both members lme4 fits
+#     (the only engine in the mixed router that refits -- glmmTMB
+#     refuses, nlme warns and is refused by spicy) and at least one of
+#     them REML.
+build_nested_ml_refit_footer_block_from_frames <- function(
+  frames,
+  nested,
+  show_fit_stats = character(0)
+) {
   if (!isTRUE(nested) || !is.list(frames) || length(frames) < 2L) {
+    return(NULL)
+  }
+  shown_change <- intersect(show_fit_stats, .NESTED_CHANGE_TOKENS)
+  has_change_row <- length(shown_change) > 0L &&
+    any(vapply(
+      frames,
+      function(f) {
+        fs <- f$info$fit_stats
+        if (!is.list(fs)) {
+          return(FALSE)
+        }
+        # Subset by NAME, not by [[: a list `[[` on an absent name is an
+        # error, and a frame that never went through
+        # attach_nested_stats_to_frames() carries none of these keys.
+        any(vapply(
+          fs[intersect(shown_change, names(fs))],
+          function(v) isTRUE(is.finite(scalar_or_na(v))),
+          logical(1)
+        ))
+      },
+      logical(1)
+    ))
+  if (!has_change_row) {
     return(NULL)
   }
   is_lme4 <- vapply(

@@ -267,6 +267,72 @@ check_nested_reml_pair <- function(fit_prev, fit_curr) {
 }
 
 
+# ---- Cross-engine guard (mixed-effects router) ---------------------------
+
+# Which engine fitted a mixed-effects model, or NA for a fit the mixed
+# router does not claim. The three engines of the router are lme4
+# (lmerMod / glmerMod, lmerTest decorations included), glmmTMB and nlme.
+nested_mixed_engine <- function(fit) {
+  if (inherits(fit, c("merMod", "lmerModLmerTest"))) {
+    return("lme4")
+  }
+  if (inherits(fit, "glmmTMB")) {
+    return("glmmTMB")
+  }
+  if (inherits(fit, "lme")) {
+    return("nlme")
+  }
+  NA_character_
+}
+
+# Refuse a hierarchy whose two mixed-effects fits come from DIFFERENT
+# engines.
+#
+# Change statistics on this route come from the engine's own two-model
+# anova(), and no engine's method accepts a fit from another:
+# anova.merMod handed a glmmTMB object aborts, and so does the reverse.
+# The abort was caught by the tryCatch in compute_one_pair_mixed() and
+# turned into an all-NA row, so the table rendered with no change rows
+# and not a word about why -- the answer-shaped absence that the REML
+# refusal exists to end. Measured on sleepstudy, BOTH ways: a
+# lmer-REML + glmmTMB-REML pair and a lmer-ML + glmmTMB-ML pair both
+# came back all-NA and both rendered silently, so this is not a REML
+# question and widening the REML predicate would not have closed it.
+#
+# Decided BEFORE check_nested_reml_pair(): its remedy is to refit by
+# maximum likelihood, which does not make two engines comparable.
+check_nested_mixed_engine_pair <- function(fit_prev, fit_curr) {
+  engine_prev <- nested_mixed_engine(fit_prev)
+  engine_curr <- nested_mixed_engine(fit_curr)
+  if (
+    is.na(engine_prev) ||
+      is.na(engine_curr) ||
+      identical(engine_prev, engine_curr)
+  ) {
+    return(invisible(NULL))
+  }
+  spicy_abort(
+    c(
+      paste0(
+        "`nested = TRUE` cannot compare mixed-effects fits from ",
+        "different engines."
+      ),
+      "x" = sprintf("Fitted by %s, then %s.", engine_prev, engine_curr),
+      "i" = paste0(
+        "Change statistics come from the engine's own model-comparison ",
+        "method, and no engine's `anova()` accepts a fit produced by ",
+        "another."
+      ),
+      "i" = paste0(
+        "Refit one of the two with the other's engine, or render the ",
+        "models side by side with `nested = FALSE`."
+      )
+    ),
+    class = "spicy_invalid_input"
+  )
+}
+
+
 # ---- Absorbed fixed-effects guard (fixest) -------------------------------
 
 # Signature of a fixest fit's ABSORBED fixed-effects structure: the
@@ -349,6 +415,7 @@ compute_nested_comparisons <- function(fits) {
   for (k in seq_len(length(fits) - 1L)) {
     fit_prev <- fits[[k]]
     fit_curr <- fits[[k + 1L]]
+    check_nested_mixed_engine_pair(fit_prev, fit_curr)
     check_nested_reml_pair(fit_prev, fit_curr)
     check_nested_fixest_fe_pair(fit_prev, fit_curr)
     pair_mixed <- is_mixed(fit_prev) && is_mixed(fit_curr)
@@ -657,6 +724,26 @@ compute_one_pair_mixed <- function(fit_prev, fit_curr) {
     deviance_change = NA_real_,
     p_change = NA_real_
   )
+
+  # Direction is settled BEFORE anova is asked, on the order the CALLER
+  # gave. anova.merMod and anova.glmmTMB sort the models by parameter
+  # count before they compare, and every read below is POSITIONAL, so a
+  # hierarchy handed over the wrong way round came back with the row for
+  # row SAME block as the right way round: removing a predictor was
+  # published as a highly significant improvement carrying a NEGATIVE
+  # DeltaAIC, beside per-model AIC rows that rise. Measured on
+  # sleepstudy, Reaction ~ Days + (1|Subject) given first and the
+  # intercept-only model second: DeltaChi2 +116.46, p 3.8e-27,
+  # DeltaAIC -114.46, where the AIC rows displayed differ by +115.86.
+  # The rule is lrt_admissible()'s, applied to the parameter count: a
+  # nested pair adds at least one parameter, and an UNKNOWN count is not
+  # evidence against the pair. It vetoes the WHOLE row, not just the
+  # chi-square: AIC, BIC and deviance are read off the same reordered
+  # table.
+  df_increase <- loglik_df_increase(fit_prev, fit_curr)
+  if (isTRUE(df_increase < 1)) {
+    return(na)
+  }
 
   av <- tryCatch(
     suppressWarnings(suppressMessages(stats::anova(fit_prev, fit_curr))),
