@@ -151,9 +151,13 @@ edition, 2019, section 5.4.4,
 no language. The locale reaches the exploration pair as well:
 \code{freq()} and \code{cross_tab()} have no style layer, so the language
 sets the DEFAULT of their \code{decimal_mark} and nothing else. An
-argument you type still wins, and under a comma their p-value
-keeps its leading zero -- there the mark carries the rule that
-\code{p_style} carries here.
+argument you type still wins. The leading zero of a p-value works
+the same way in both worlds: its DEFAULT follows the mark -- a
+comma keeps it (\verb{0,003}), a point drops it (\code{.003}) -- and
+\code{p_style} is the explicit lever that overrides that default
+wherever there is one, which is why a theme's rule survives any
+mark in the \verb{table_*()} families while the pair, having no such
+lever, always follows its mark.
 
 A theme composes with a locale rather than fighting it, because a
 theme encodes only what its own source states: \code{"jama"} fixes no

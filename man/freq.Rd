@@ -106,7 +106,10 @@ language: \code{options(spicy.language = "fr")} gives the comma here
 and in \code{\link[=cross_tab]{cross_tab()}}, exactly as it does in the reporting
 \verb{table_*()} families. An argument you type wins, so
 \code{decimal_mark = "."} under a French language gives French words
-and a decimal point.}
+and a decimal point. The resolved mark is frozen on the object
+when it is built, like every other formatting argument: a table
+built under a French language still prints its commas when it is
+printed later with the language option cleared.}
 
 \item{output}{Output format. \code{"default"} (the default) returns a
 \code{spicy_freq_table} object that auto-prints as a formatted spicy

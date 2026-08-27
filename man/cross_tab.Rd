@@ -100,7 +100,11 @@ comma here and in \code{\link[=freq]{freq()}}, exactly as it does in the reporti
 \verb{table_*()} family. An argument you type wins, so
 \code{decimal_mark = "."} under a French language gives French words
 and a decimal point. Under a comma the p-value keeps its leading
-zero (\verb{p = 0,659}), the form French typography requires.}
+zero (\verb{p = 0,659}), the form French typography requires. The
+resolved mark is frozen on the object when it is built, like every
+other formatting argument: a table built under a French language
+still prints its commas when it is printed later with the language
+option cleared.}
 
 \item{p_digits}{Integer number of decimals used to format the
 p-value (and to determine the small-\code{p} threshold below which

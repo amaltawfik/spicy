@@ -514,6 +514,29 @@ test_that("the French p-value of the pair keeps its leading zero", {
   expect_false(grepl("p = ,", note, fixed = TRUE))
 })
 
+test_that("the pair's mark is frozen at build, not at print", {
+  # What ?freq and ?cross_tab now promise: the resolved mark rides on
+  # the object like every other formatting argument, so a table built
+  # under a French language keeps its commas when the option is gone by
+  # the time it prints.
+  d <- data.frame(
+    sex = factor(c("F", "M", "F", "M", "F", "M", "F", "M")),
+    smoke = factor(c("Yes", "No", "No", "Yes", "No", "No", "Yes", NA))
+  )
+  built <- withr::with_options(
+    list(spicy.language = "fr"),
+    list(
+      fq = freq(d$smoke),
+      ct = cross_tab(d, smoke, sex, percent = "column")
+    )
+  )
+  withr::local_options(spicy.language = NULL)
+  fq <- capture.output(print(built$fq))
+  ct <- capture.output(print(built$ct))
+  expect_true(any(grepl("50,0", fq, fixed = TRUE)))
+  expect_false(any(grepl("[0-9]\\.[0-9]", c(fq, ct))))
+})
+
 test_that("an argument beats the language in the pair too", {
   d <- data.frame(
     sex = factor(c("F", "M", "F", "M", "F", "M", "F", "M")),
