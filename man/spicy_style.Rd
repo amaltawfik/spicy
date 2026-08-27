@@ -137,13 +137,20 @@ the same lever.
 \section{The language's locale}{
 A language brings its typography with it, at the bottom of that
 order. \code{options(spicy.language = "fr")} is therefore one gesture
-for a coherent French table -- French words, and numbers written
-the French way: comma decimal mark, and the leading zero French
-typography keeps on a p-value (\verb{0,003}). The sources are BIPM,
-\emph{Le Systeme international d'unites}, 9th edition, 2019, section
-5.4.4, and European Union, \emph{Code de redaction interinstitutionnel},
-French edition 2022, point 6.5. \code{"en"} brings no locale, and
-nothing changes for anyone who sets no language.
+for a coherent French report table -- French words, and numbers
+written the French way: comma decimal mark, and the leading zero
+French typography keeps on a p-value (\verb{0,003}). "La virgule est
+utilisee pour separer les unites des decimales" (European Union,
+\emph{Code de redaction interinstitutionnel}, French edition 2022,
+point 6.5, \verb{https://style-guide.europa.eu/fr}); "Si le nombre se
+situe entre +1 et -1, le separateur decimal est toujours precede
+d'un zero" (BIPM, \emph{Le Systeme international d'unites}, 9th
+edition, 2019, section 5.4.4,
+\verb{https://www.bipm.org/documents/20126/41483022/SI-Brochure-9.pdf}).
+\code{"en"} brings no locale, and nothing changes for anyone who sets
+no language. The exploration pair sits outside its reach: \code{freq()}
+and \code{cross_tab()} have no style layer, so their \code{decimal_mark}
+stays an argument set by hand.
 
 A theme composes with a locale rather than fighting it, because a
 theme encodes only what its own source states: \code{"jama"} fixes no
@@ -152,12 +159,21 @@ rules and the French comma. Where the two do meet, the theme wins --
 you asked for it by name. \code{"lancet"} keeps its midline decimal
 point; \code{"apa"} keeps its missing leading zero, which under a comma
 prints \verb{,003}, a form the SI brochure forbids. That is the price of
-an explicit gesture: add \code{p_style = "standard"} to get the zero
-back.
+an explicit gesture; to keep APA's other rules and restore the
+zero, compose the way out yourself:
+\code{style = spicy_style("apa", p_style = "standard")}. One lever bends
+the other way: a theme's \code{", "} interval separator was sourced
+under a dot mark, and under a comma mark it would BE the mark -- so
+it yields to the derived \code{"; "}, exactly as the French adaptations
+of APA style themselves write (\verb{[3,45; 6,78]}). Any other
+separator (\code{" to "}, an en dash) is unambiguous and stays.
 
 An argument beats both, which is the escape hatch for a bilingual
 table: \code{decimal_mark = "."} under a French language gives French
-words and a decimal point.
+words and a decimal point. It moves only the mark: the p-value
+keeps the locale's leading zero (\code{0.003}), because \code{p_style} is a
+style lever with no argument of its own --
+\code{style = spicy_style(p_style = "apa")} drops it again.
 
 See \code{\link[=spicy_labels]{spicy_labels()}} for the language option itself.
 }

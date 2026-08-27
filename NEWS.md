@@ -275,8 +275,8 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
 
 * The title of a `table_regression()` table and its type note are
   French too, for the model families a French-speaking user meets by
-  default. A family with no French title keeps its English one whole,
-  rather than mixing the two.
+  default. A family with no French title keeps its English title and
+  type note whole, rather than a half-translated head.
 
 * `options(spicy.labels = list(row_missing_level = "(No answer)"))`
   overrides one label at a time, in any language. It is the layer to
@@ -289,9 +289,11 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
 
 * A language brings its typography with it, so
   `options(spicy.language = "fr")` is one gesture for a coherent French
-  table: French words, decimal comma, and the leading zero French
-  typography keeps on a p-value (`0,003`). `"en"` brings none, and
-  nothing changes for anyone who sets no language.
+  report table: French words, decimal comma, and the leading zero
+  French typography keeps on a p-value (`0,003`). `"en"` brings none,
+  and nothing changes for anyone who sets no language. The exploration
+  pair -- `freq()` and `cross_tab()` -- translates its words but keeps
+  its own `decimal_mark` argument.
 
 * A journal style composes with the language instead of replacing it.
   A theme fills only the levers its own guidelines state, so

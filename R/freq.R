@@ -95,10 +95,11 @@
 #'   and [cross_tab()]. See `Details` for the interaction with `NA`
 #'   weights.
 #' @param decimal_mark Character used as the decimal mark in printed
-#'   percentages. Either `"."` (the default) or `","`. Matches the
-#'   `decimal_mark` argument of [cross_tab()] and the three
-#'   `table_*()` helpers, so European-locale users get a consistent
-#'   experience across the package.
+#'   percentages. Either `"."` (the default) or `","`. The reporting
+#'   `table_*()` families take the comma automatically from
+#'   `options(spicy.language = "fr")`; the exploration pair has no
+#'   style layer, so here (and in [cross_tab()]) the mark is set by
+#'   hand.
 #' @param output Output format. `"default"` (the default) returns a
 #'   `spicy_freq_table` object that auto-prints as a formatted spicy
 #'   table; `"data.frame"` returns a plain `data.frame` with frequency

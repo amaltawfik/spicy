@@ -108,13 +108,20 @@
 #'
 #' A language brings its typography with it, at the bottom of that
 #' order. `options(spicy.language = "fr")` is therefore one gesture
-#' for a coherent French table -- French words, and numbers written
-#' the French way: comma decimal mark, and the leading zero French
-#' typography keeps on a p-value (`0,003`). The sources are BIPM,
-#' *Le Systeme international d'unites*, 9th edition, 2019, section
-#' 5.4.4, and European Union, *Code de redaction interinstitutionnel*,
-#' French edition 2022, point 6.5. `"en"` brings no locale, and
-#' nothing changes for anyone who sets no language.
+#' for a coherent French report table -- French words, and numbers
+#' written the French way: comma decimal mark, and the leading zero
+#' French typography keeps on a p-value (`0,003`). "La virgule est
+#' utilisee pour separer les unites des decimales" (European Union,
+#' *Code de redaction interinstitutionnel*, French edition 2022,
+#' point 6.5, `https://style-guide.europa.eu/fr`); "Si le nombre se
+#' situe entre +1 et -1, le separateur decimal est toujours precede
+#' d'un zero" (BIPM, *Le Systeme international d'unites*, 9th
+#' edition, 2019, section 5.4.4,
+#' `https://www.bipm.org/documents/20126/41483022/SI-Brochure-9.pdf`).
+#' `"en"` brings no locale, and nothing changes for anyone who sets
+#' no language. The exploration pair sits outside its reach: `freq()`
+#' and `cross_tab()` have no style layer, so their `decimal_mark`
+#' stays an argument set by hand.
 #'
 #' A theme composes with a locale rather than fighting it, because a
 #' theme encodes only what its own source states: `"jama"` fixes no
@@ -123,12 +130,21 @@
 #' you asked for it by name. `"lancet"` keeps its midline decimal
 #' point; `"apa"` keeps its missing leading zero, which under a comma
 #' prints `,003`, a form the SI brochure forbids. That is the price of
-#' an explicit gesture: add `p_style = "standard"` to get the zero
-#' back.
+#' an explicit gesture; to keep APA's other rules and restore the
+#' zero, compose the way out yourself:
+#' `style = spicy_style("apa", p_style = "standard")`. One lever bends
+#' the other way: a theme's `", "` interval separator was sourced
+#' under a dot mark, and under a comma mark it would BE the mark -- so
+#' it yields to the derived `"; "`, exactly as the French adaptations
+#' of APA style themselves write (`[3,45; 6,78]`). Any other
+#' separator (`" to "`, an en dash) is unambiguous and stays.
 #'
 #' An argument beats both, which is the escape hatch for a bilingual
 #' table: `decimal_mark = "."` under a French language gives French
-#' words and a decimal point.
+#' words and a decimal point. It moves only the mark: the p-value
+#' keeps the locale's leading zero (`0.003`), because `p_style` is a
+#' style lever with no argument of its own --
+#' `style = spicy_style(p_style = "apa")` drops it again.
 #'
 #' See [spicy_labels()] for the language option itself.
 #'
@@ -1172,6 +1188,20 @@ print.spicy_style <- function(x, ...) {
   }
 
   fmt <- eff[intersect(names(eff), .STYLE_FMT_FIELDS)]
+  if (is.null(style)) {
+    # A locale-only push must not mask a frame already in force: before
+    # the locale existed, a call with no style pushed nothing and the
+    # outer frame governed the formatters. The outer frame therefore
+    # overrides the locale, lever by lever -- it came from an explicit
+    # style, and the locale is the weakest layer everywhere. (A call
+    # WITH a style keeps its historical semantics: its own frame,
+    # outer frame masked.) No shipped entry point nests frames today;
+    # this guards the first bundle that will.
+    outer <- .style_fmt()
+    if (!is.null(outer)) {
+      fmt[names(outer)] <- outer
+    }
+  }
   # `p_digits` typed by the caller is a request for THAT many decimals
   # on every p-value, so the theme's own ways of choosing p-precision
   # -- bands, significant figures, and the floor derived from them --
@@ -1289,7 +1319,19 @@ print.spicy_style <- function(x, ...) {
 .style_ci_sep <- function(default) {
   fmt <- .style_fmt()
   if (!is.null(fmt) && !is.null(fmt$ci_sep)) {
-    return(fmt$ci_sep)
+    sep <- fmt$ci_sep
+    # A style's ", " was sourced under a dot decimal mark (APA writes
+    # "[3.45, 6.78]"; no surveyed source states a separator for a
+    # comma mark). Under a comma mark that separator IS the mark, and
+    # "[33,96, 40,50]" is the very ambiguity ci_bracket_separator()
+    # exists to prevent -- so the lever yields to the derived "; ",
+    # exactly as the French adaptations of APA style themselves write
+    # (IC 95 % [3,45; 6,78]). Every other separator (" to ", an en
+    # dash, ";") is unambiguous under any mark and stays absolute.
+    if (identical(sep, ", ") && identical(default, "; ")) {
+      return(default)
+    }
+    return(sep)
   }
   default
 }

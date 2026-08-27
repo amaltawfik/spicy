@@ -460,13 +460,51 @@ test_that("the French locale keeps the leading zero on bounded measures too", {
   expect_false(grepl(" ,52", txt, fixed = TRUE))
 })
 
-test_that("the locale reaches all four families", {
+test_that("the locale reaches every family with a style layer", {
   withr::local_options(spicy.language = "fr")
   d <- fixed_data()
   expect_match(console(table_regression(fixed_fit())), "37,23")
   expect_match(console(table_categorical(d, "cyl", by = am)), "15,8")
   expect_match(console(table_continuous(d, mpg, by = am)), "17,15")
   expect_match(console(table_continuous_lm(d, mpg, by = am)), "17,15")
+  expect_match(console(quietly(table_outcome(d, mpg, select = am))), "17,15")
+})
+
+test_that("the locale reaches the survey twins", {
+  skip_if_not_installed("survey")
+  withr::local_options(spicy.language = "fr")
+  d <- fixed_data()
+  d$w <- 1
+  des <- survey::svydesign(ids = ~1, weights = ~w, data = d)
+  expect_match(
+    console(quietly(table_continuous_svy(des, mpg, by = am))),
+    "17,15"
+  )
+  expect_match(
+    console(quietly(table_categorical_svy(des, "cyl", by = am))),
+    "[0-9],[0-9]"
+  )
+})
+
+test_that("an unknown language fails at build exactly as it always did", {
+  # `.style_locale_defaults()` now consults the language at BUILD time;
+  # the abort must be the same one `spicy_str()` always raised.
+  withr::local_options(spicy.language = "de")
+  expect_error(table_continuous(fixed_data(), mpg), "no language set named")
+})
+
+test_that("a locale-only frame does not mask an outer style frame", {
+  # No shipped entry point nests format frames today; the first bundle
+  # that composes tables under an outer frame must find the historical
+  # semantics: a call with no style of its own leaves the outer frame
+  # in force, with the locale underneath it.
+  withr::local_options(spicy.language = "fr")
+  spicy:::.style_push(list(p_style = "apa", ci_sep = " to "))
+  withr::defer(spicy:::.style_pop())
+  txt <- console(table_regression(fixed_fit()))
+  expect_match(txt, "96 to ") # outer ci_sep survives the locale push
+  expect_match(txt, "<,001") # outer p_style beats the locale
+  expect_match(txt, "37,23") # the locale's mark still applies
 })
 
 test_that("a theme fills only what its source states, the locale the rest", {
@@ -490,6 +528,21 @@ test_that("a theme outranks the locale where the two meet", {
   apa <- console(table_regression(fixed_fit(), style = "apa"))
   expect_match(apa, "<,001")
   expect_match(apa, "37,23") # apa fixes no decimal mark, so the comma stays
+  # apa's ", " bound separator was sourced under a dot mark; under the
+  # locale's comma it would BE the mark ("[33,96, 40,50]"), so it
+  # yields to the derived "; " -- as the French adaptations of APA
+  # style themselves write. An unambiguous separator stays absolute.
+  expect_match(apa, "96; ")
+  expect_false(grepl("[0-9], -", apa))
+  en_apa <- withr::with_options(
+    list(spicy.language = NULL),
+    console(table_regression(fixed_fit(), style = "apa"))
+  )
+  expect_match(en_apa, "96, ") # English apa keeps its sourced ", "
+  to <- console(
+    table_regression(fixed_fit(), style = spicy_style("apa", ci_sep = " to "))
+  )
+  expect_match(to, "96 to ")
 })
 
 test_that("the style option outranks the locale as the argument does", {
@@ -518,6 +571,13 @@ test_that("the locale is figures at build time, words at print time", {
   txt <- console(x)
   expect_match(txt, "17,15")
   expect_match(txt, "Descriptive statistics")
+  # The converse direction: built in English, printed under fr -- the
+  # figures stay English (frozen at build, like every formatting
+  # argument), the resolvable words turn French.
+  y <- quietly(table_continuous(fixed_data(), c(mpg, wt), by = am))
+  fr_txt <- withr::with_options(list(spicy.language = "fr"), console(y))
+  expect_match(fr_txt, "17\\.15")
+  expect_match(fr_txt, "Statistiques descriptives")
 })
 
 test_that("the structured contract reports the locale", {
@@ -529,21 +589,28 @@ test_that("the structured contract reports the locale", {
 
 test_that("style = \"fr\" is a dedicated error naming what replaced it", {
   # The name was a theme for one release cycle. It routes here from the
-  # argument, from `spicy_style()`, and from the option.
-  expect_error(
+  # argument, from `spicy_style()`, and from the option -- and every
+  # route must carry the DEDICATED message: the generic unknown-style
+  # fallback shares the class, so a class check alone would stay green
+  # with the dedicated branch deleted (proved by mutation in review).
+  e1 <- expect_error(
     table_regression(fixed_fit(), style = "fr"),
     class = "spicy_invalid_input"
   )
-  expect_error(spicy_style("fr"), class = "spicy_invalid_input")
-  expect_error(
+  expect_match(conditionMessage(e1), "comes with the language")
+  e2 <- expect_error(spicy_style("fr"), class = "spicy_invalid_input")
+  expect_match(conditionMessage(e2), "comes with the language")
+  e3 <- expect_error(
     spicy_style("fr", ci_sep = " to "),
     class = "spicy_invalid_input"
   )
+  expect_match(conditionMessage(e3), "comes with the language")
   withr::local_options(spicy.style = "fr")
-  expect_error(
+  e4 <- expect_error(
     table_continuous(fixed_data(), mpg),
     class = "spicy_invalid_input"
   )
+  expect_match(conditionMessage(e4), "comes with the language")
 })
 
 test_that("the \"fr\" error is pinned", {

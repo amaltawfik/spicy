@@ -1187,18 +1187,34 @@ spicy_fmt <- function(key, ...) {
 #'
 #' A language brings its typographic locale with it, so
 #' `options(spicy.language = "fr")` is one gesture for a coherent
-#' French table: French words, comma decimal mark, and the leading zero
-#' French typography keeps on a p-value (`0,003`). The sources are the
-#' BIPM's SI brochure and the European Union's *Code de redaction
-#' interinstitutionnel*; [spicy_style()] quotes them. `"en"` brings no
-#' locale, and nothing changes for anyone who sets no language.
+#' French report table: French words, comma decimal mark, and the
+#' leading zero French typography keeps on a p-value (`0,003`). The
+#' sources are the BIPM's SI brochure and the European Union's *Code
+#' de redaction interinstitutionnel*; [spicy_style()] quotes them.
+#' `"en"` brings no locale, and nothing changes for anyone who sets no
+#' language.
+#'
+#' The locale rides the style layer, so it reaches the reporting
+#' families -- [table_regression()], [table_categorical()],
+#' [table_continuous()], [table_continuous_lm()], [table_outcome()]
+#' and the survey twins. The exploration pair has no such layer:
+#' [freq()] and [cross_tab()] translate their words under a language
+#' but keep their own `decimal_mark` argument, set by hand.
 #'
 #' The locale sits at the BOTTOM of the formatting resolution. A
 #' journal style outranks it -- `style = "jama"` under `"fr"` gives
 #' JAMA's p-values and the French comma, `style = "lancet"` keeps the
 #' journal's midline decimal point -- and an argument you type outranks
 #' both, so `decimal_mark = "."` gives French words with a decimal
-#' point.
+#' point (the p-value keeps its locale zero; [spicy_style()] documents
+#' that lever).
+#'
+#' Two timing notes. Figures are frozen when a table is BUILT, like
+#' every formatting argument, while words resolve when it is printed --
+#' so set the language once, at the top of the document. And a comma
+#' mark makes an Excel export write its body as text rather than live
+#' numbers, since Excel would otherwise re-punctuate a numeric cell
+#' with the viewer's own locale.
 #'
 #' @param language A language name (`"en"`, `"fr"`), or `NULL` (the
 #'   default) to report the labels in force. Any
