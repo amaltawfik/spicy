@@ -389,9 +389,14 @@ format_vcov_label_from_frame <- function(frame) {
   is_glm <- identical(cls, "glm")
   # The model-based default, under its canonical name. Guarded by the
   # CLASS as well as the token: this arm names the mechanism that
-  # produces an lm / glm standard error, and the tail of this function
-  # has always returned the bare token for any other class that arrives
-  # here without an engine-supplied label.
+  # produces an lm / glm standard error. The guard CHANGES what a
+  # non-lm/glm frame reaching here without an engine-supplied label
+  # renders -- such a frame used to enter this arm and come out
+  # "classical (OLS)", so a coxph frame was labelled as ordinary least
+  # squares -- and it now falls through to the tail and gets the bare
+  # token. No production frame can be in that position (every builder
+  # supplies a label and the constructor canonicalises the kind), so the
+  # change is reachable only by hand; it is pinned as such.
   if (.is_model_vcov(vt) && cls %in% c("lm", "glm")) {
     # Phase 7c23 (item c): "Fisher information" is the standard
     # publication-grade name for the glm vcov (the inverse of the

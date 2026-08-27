@@ -459,10 +459,57 @@ test_that("an unknown vcov token keeps its own answer on a design fit", {
     conditionMessage(err9),
     fixed = TRUE
   ))
+  # The message still names a remedy, as its predecessor did -- the
+  # vocabulary itself, listed, rather than a backend to call.
+  expect_match(conditionMessage(err9), "Valid types:", fixed = TRUE)
+  expect_match(conditionMessage(err9), "\"HC3\"", fixed = TRUE)
   expect_identical(
     spicy:::compute_model_vcov(fit, "classical"),
     stats::vcov(fit)
   )
+})
+
+
+# HC4m is the one token the design guard gained when it widened from
+# .VCOV_MODES to .VCOV_COMPUTE_MODES, and the widening corrected a
+# NUMBER, not a label: the token used to fall through to sandwich, which
+# built a heteroskedasticity-robust matrix out of the weighted working
+# model and handed it back to be reported under the design's own
+# "Taylor linearisation" heading. It is refused now, like every other
+# estimator that re-derives a variance the design already carries.
+test_that("HC4m on a design fit is refused, like every other estimator", {
+  skip_if_not_installed("survey")
+  data(api, package = "survey", envir = environment())
+  dclus1 <- survey::svydesign(
+    id = ~dnum,
+    weights = ~pw,
+    fpc = ~fpc,
+    data = apiclus1
+  )
+  fit <- survey::svyglm(api00 ~ ell, design = dclus1)
+  # In the vocabulary -- so this is the design guard's refusal, not the
+  # unknown-token one.
+  expect_true("HC4m" %in% spicy:::.VCOV_COMPUTE_MODES)
+  err <- expect_error(
+    spicy:::compute_model_vcov(fit, "HC4m"),
+    class = "spicy_unsupported_vcov"
+  )
+  expect_match(conditionMessage(err), "HC4m", fixed = TRUE)
+  expect_match(conditionMessage(err), "survey-design fit", fixed = TRUE)
+  # The refusal is actionable: it names the design as the authority and
+  # says where to go instead.
+  expect_match(conditionMessage(err), "variance authority", fixed = TRUE)
+  expect_match(conditionMessage(err), "svydesign", fixed = TRUE)
+  # The frame route, which bypasses the public gate, refuses too.
+  expect_error(
+    spicy:::as_regression_frame(fit, vcov = "HC4m"),
+    class = "spicy_unsupported_vcov"
+  )
+  # HC4m stays available where it is legitimate.
+  expect_true(is.matrix(spicy:::compute_model_vcov(
+    stats::lm(mpg ~ wt, data = mtcars),
+    "HC4m"
+  )))
 })
 
 

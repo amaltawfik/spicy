@@ -98,7 +98,12 @@
   shown <- if (is.character(type) && length(type) == 1L && !is.na(type)) {
     type
   } else {
-    paste(format(type), collapse = ", ")
+    # format(NULL) is "NULL", but format(character(0)) is character(0),
+    # which pasted to "" and printed the empty sentence
+    # `Unknown \`vcov\` type "".` -- a message naming no token at all.
+    # An absent token is described rather than quoted.
+    parts <- format(type)
+    if (length(parts) == 0L) "<none>" else paste(parts, collapse = ", ")
   }
   spicy_abort(
     c(

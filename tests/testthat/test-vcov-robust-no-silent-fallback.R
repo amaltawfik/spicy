@@ -227,6 +227,47 @@ test_that("a non-string vcov type is refused before dispatch", {
   expect_error(compute_model_vcov(fit, 3), class = "spicy_invalid_input")
 })
 
+# The branch that formats a non-string type had line coverage and no
+# assertion on what it produced -- it could have said anything. Each
+# shape is pinned to a sentence a reader can act on.
+test_that("the non-string branch says what it received", {
+  expect_match(
+    conditionMessage(tryCatch(
+      spicy:::.abort_unknown_vcov_type(NULL),
+      error = identity
+    )),
+    "Unknown `vcov` type \"NULL\".",
+    fixed = TRUE
+  )
+  expect_match(
+    conditionMessage(tryCatch(
+      spicy:::.abort_unknown_vcov_type(c("HC1", "HC2")),
+      error = identity
+    )),
+    "Unknown `vcov` type \"HC1, HC2\".",
+    fixed = TRUE
+  )
+  # character(0) formats to nothing at all, which used to print the empty
+  # sentence `Unknown \`vcov\` type "".` -- a message naming no token.
+  msg0 <- conditionMessage(tryCatch(
+    spicy:::.abort_unknown_vcov_type(character(0)),
+    error = identity
+  ))
+  expect_false(grepl("type \"\".", msg0, fixed = TRUE))
+  expect_match(msg0, "Unknown `vcov` type \"<none>\".", fixed = TRUE)
+  # Every shape still lists the vocabulary.
+  for (msg in c(
+    msg0,
+    conditionMessage(tryCatch(
+      spicy:::.abort_unknown_vcov_type(NULL),
+      error = identity
+    ))
+  )) {
+    expect_match(msg, "Valid types:", fixed = TRUE)
+    expect_match(msg, "\"HC3\"", fixed = TRUE)
+  }
+})
+
 test_that("a quantile token on a non-rq fit names the estimator family", {
   fit <- stats::lm(mpg ~ wt, data = mtcars)
   err <- tryCatch(compute_model_vcov(fit, "nid"), error = identity)

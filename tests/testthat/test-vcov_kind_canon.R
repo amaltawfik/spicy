@@ -155,10 +155,28 @@ test_that("the rendered variance label is unchanged by the canon", {
     spicy_str("note_vcov_classical_lm")
   )
   # A class that reaches the derivation without an engine label keeps the
-  # token, which is what it has always returned there.
+  # token.
   expect_identical(
     format_vcov_label_from_frame(
       list(info = list(class = "coxph", vcov_kind = "model", extras = list()))
+    ),
+    "model"
+  )
+  # The historical spelling, on that same hand-built frame, is where the
+  # class guard CHANGES the rendering: without it the frame entered the
+  # lm/glm arm and came out "classical (OLS)", labelling a Cox partial
+  # likelihood as ordinary least squares. No production frame can be in
+  # this position -- every builder supplies a label, and the constructor
+  # canonicalises the kind -- so the guard is pinned here, by hand.
+  expect_identical(
+    format_vcov_label_from_frame(
+      list(
+        info = list(
+          class = "coxph",
+          vcov_kind = "classical",
+          extras = list()
+        )
+      )
     ),
     "model"
   )
