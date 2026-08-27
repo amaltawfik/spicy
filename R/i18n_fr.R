@@ -298,12 +298,14 @@
   # -- table_regression(): titres et note de type (decision 42) -------------
   # Les %s recoivent le prefixe de famille (traduit par le pont
   # .FR_TITLE_PREFIXES ci-dessous) et le label de l'outcome. L'ordre des
-  # trous est celui de l'anglais. Le hierarchique inverse l'adjectif
-  # ("Regression lineaire hierarchique"), d'ou un gabarit complet
-  # plutot qu'un mot prefixe.
+  # trous est celui de l'anglais. Le hierarchique est un TAG apres
+  # tiret cadratin, comme la comparaison : un adjectif postpose se
+  # rattacherait au dernier mot du prefixe, pas a la regression
+  # ("... ponderee par le plan de sondage hierarchique" lirait "plan
+  # hierarchique" -- un vrai terme de sondage, donc un contresens).
   title_regression_fallback = "R\u00E9gression",
   title_regression_single = "%s\u00A0: %s",
-  title_regression_hierarchical = "%s hi\u00E9rarchique\u00A0: %s",
+  title_regression_hierarchical = "%s \u2014 mod\u00E8les hi\u00E9rarchiques\u00A0: %s",
   title_regression_comparison_dv = "%s \u2014 comparaison\u00A0: %s",
   title_regression_comparison = "%s \u2014 comparaison",
   # La phrase entiere est l'unite : "Modeles de regression lineaire."
@@ -337,14 +339,15 @@
   "Log-binomial regression" = "R\u00E9gression log-binomiale",
   "Poisson regression" = "R\u00E9gression de Poisson",
   "Quasi-Poisson regression" = "R\u00E9gression quasi-Poisson",
-  "Negative binomial regression" = "R\u00E9gression binomiale n\u00E9gative",
+  "Negative-binomial regression" = "R\u00E9gression binomiale n\u00E9gative",
   "Linear mixed-effects regression" = "R\u00E9gression lin\u00E9aire \u00E0 effets mixtes",
   "Logistic mixed-effects regression" = "R\u00E9gression logistique \u00E0 effets mixtes",
   "Poisson mixed-effects regression" = "R\u00E9gression de Poisson \u00E0 effets mixtes",
+  "Negative-binomial mixed-effects regression" = "R\u00E9gression binomiale n\u00E9gative \u00E0 effets mixtes",
   "Cumulative logit regression (proportional odds)" = "R\u00E9gression logit cumulatif (cotes proportionnelles)",
   "Cox proportional hazards regression" = "R\u00E9gression de Cox \u00E0 risques proportionnels",
-  "Survey-weighted linear regression" = "R\u00E9gression lin\u00E9aire pond\u00E9r\u00E9e par le plan",
-  "Survey-weighted logistic regression" = "R\u00E9gression logistique pond\u00E9r\u00E9e par le plan",
-  "Survey-weighted Cox proportional hazards regression" = "R\u00E9gression de Cox \u00E0 risques proportionnels pond\u00E9r\u00E9e par le plan",
+  "Survey-weighted linear regression" = "R\u00E9gression lin\u00E9aire pond\u00E9r\u00E9e par le plan de sondage",
+  "Survey-weighted logistic regression" = "R\u00E9gression logistique pond\u00E9r\u00E9e par le plan de sondage",
+  "Survey-weighted Cox proportional hazards regression" = "R\u00E9gression de Cox \u00E0 risques proportionnels pond\u00E9r\u00E9e par le plan de sondage",
   "Multinomial logistic regression" = "R\u00E9gression logistique multinomiale"
 )

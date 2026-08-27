@@ -44,7 +44,7 @@ test_that("the French titles come out French, NBSP colon included", {
   )
   expect_identical(
     build_regression_title_from_frames(list(f1, f2), nested = TRUE),
-    "R\u00e9gression lin\u00e9aire hi\u00e9rarchique\u00a0: mpg"
+    "R\u00e9gression lin\u00e9aire \u2014 mod\u00e8les hi\u00e9rarchiques\u00a0: mpg"
   )
   expect_identical(
     build_regression_title_from_frames(list(f1, f2)),
@@ -91,14 +91,114 @@ test_that("an unmapped family keeps its WHOLE English title under fr", {
   )
 })
 
-test_that("the mixed-family footer arm stays English wholesale", {
-  withr::local_options(spicy.language = "fr")
+test_that("the mixed-family table stays English wholesale under fr", {
+  # Coherent or nothing at TABLE level: the mixed-family type footer is
+  # the frozen English "Model k: ..." list, so the title must not
+  # translate either -- even though the mixed fallback prefix
+  # "Regression" has a bridge entry -- and the footer's line template
+  # must be the English one (ASCII colon, not the French NBSP colon).
   f1 <- .tf_lm_frame()
   f2 <- .tf_lm_frame()
   f2$info$extras$title_prefix <- "Heckman selection model"
+  en_title <- build_regression_title_from_frames(list(f1, f2))
+  en_note <- build_regression_type_footer_block_from_frames(list(f1, f2))
+  withr::local_options(spicy.language = "fr")
+  expect_identical(
+    build_regression_title_from_frames(list(f1, f2)),
+    en_title
+  )
   note <- build_regression_type_footer_block_from_frames(list(f1, f2))
-  expect_match(note, "Model 1", fixed = TRUE)
-  expect_false(grepl("\u00e9", note))
+  expect_identical(note, en_note)
+  expect_match(note, "Model 1: ", fixed = TRUE)
+  expect_false(grepl("\u00a0", note))
+})
+
+test_that("the five template keys accept a spicy.labels override in English", {
+  # The registry advertises these keys, so they must not be dead
+  # letters when no language is set: the English arms resolve through
+  # .spicy_fmt_en(), which bypasses the language layer but keeps the
+  # labels layer live.
+  withr::with_options(
+    list(spicy.labels = list(row_overall = "Sample")),
+    # An override of an UNRELATED key leaves the templates on their
+    # English defaults (the labels layer is consulted, misses, and
+    # falls through).
+    expect_identical(
+      build_regression_title_from_frames(list(.tf_lm_frame())),
+      "Linear regression: mpg"
+    )
+  )
+  withr::local_options(
+    spicy.labels = list(
+      title_regression_single = "%s <<%s>>",
+      title_regression_hierarchical = "Blocks of %s: %s",
+      title_regression_comparison_dv = "%s versus: %s",
+      title_regression_comparison = "%s (compared)",
+      note_type_models = "%s family.",
+      note_model_line = "%s => %s"
+    )
+  )
+  g1 <- .tf_lm_frame()
+  g2 <- .tf_lm_frame(mpg ~ wt + hp)
+  g3 <- as_regression_frame(lm(disp ~ wt, data = mtcars))
+  g3$info$extras$title_prefix <- "Heckman selection model"
+  expect_identical(
+    build_regression_title_from_frames(list(g1)),
+    "Linear regression <<mpg>>"
+  )
+  expect_identical(
+    build_regression_title_from_frames(list(g1, g2), nested = TRUE),
+    "Blocks of linear regression: mpg"
+  )
+  expect_identical(
+    build_regression_title_from_frames(list(g1, g2)),
+    "Linear regression versus: mpg"
+  )
+  expect_identical(
+    build_regression_title_from_frames(list(g1, g3)),
+    "Regression (compared)"
+  )
+  expect_identical(
+    build_regression_type_footer_block_from_frames(list(g1, g2)),
+    "Linear regression family."
+  )
+  expect_match(
+    build_regression_type_footer_block_from_frames(list(g1, g3)),
+    "Model 1 => linear regression",
+    fixed = TRUE
+  )
+})
+
+test_that("an NA title_prefix does not crash the bridge", {
+  f1 <- .tf_lm_frame()
+  f1$info$extras$title_prefix <- NA_character_
+  en_title <- build_regression_title_from_frames(list(f1))
+  withr::local_options(spicy.language = "fr")
+  expect_identical(build_regression_title_from_frames(list(f1)), en_title)
+})
+
+test_that("the hyphenated engine spellings reach their bridge entries", {
+  # MASS::glm.nb and fixest both emit "Negative-binomial regression"
+  # (hyphenated); glmmTMB emits "Negative-binomial mixed-effects
+  # regression (glmmTMB)". Planted by hand so no Suggests package is
+  # needed -- the strings are pinned to the engine sources by
+  # test-regression grep-level tests, not here.
+  withr::local_options(spicy.language = "fr")
+  f1 <- .tf_lm_frame()
+  f1$info$extras$title_prefix <- "Negative-binomial regression"
+  expect_identical(
+    build_regression_title_from_frames(list(f1)),
+    "R\u00e9gression binomiale n\u00e9gative\u00a0: mpg"
+  )
+  f1$info$extras$title_prefix <-
+    "Negative-binomial mixed-effects regression (glmmTMB)"
+  expect_identical(
+    build_regression_title_from_frames(list(f1)),
+    paste0(
+      "R\u00e9gression binomiale n\u00e9gative \u00e0 effets mixtes",
+      " (glmmTMB)\u00a0: mpg"
+    )
+  )
 })
 
 test_that("an engine suffix survives the bridge as a proper noun", {

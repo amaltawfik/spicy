@@ -803,6 +803,30 @@ spicy_fmt <- function(key, ...) {
   sprintf(spicy_str(key), ...)
 }
 
+# Resolution with the LANGUAGE layer bypassed: the user's labels override
+# still wins (it outranks every language), then the English default --
+# never the active language's set. This is the coherent-or-nothing
+# fallback arm of the regression title (decision 42): when a family has
+# no bridge entry, the whole title must come out English, and routing
+# through `spicy_str()` there would wrap the English prefix in a French
+# template. The labels layer stays live so `options(spicy.labels)`
+# reaches these templates in every language, English included.
+.spicy_str_en <- function(key) {
+  labels_opt <- getOption("spicy.labels", NULL)
+  if (!is.null(labels_opt)) {
+    labels <- .spicy_labels_option(labels_opt)
+    i <- match(key, names(labels))
+    if (!is.na(i)) {
+      return(unname(labels[[i]]))
+    }
+  }
+  .spicy_strings[[key]]
+}
+
+.spicy_fmt_en <- function(key, ...) {
+  sprintf(.spicy_str_en(key), ...)
+}
+
 
 # ---- Template holes -------------------------------------------------------
 
