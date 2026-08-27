@@ -218,9 +218,13 @@ that family also accepts (<code>"tinytable"</code>, <code>"gt"</code>, <code>"fl
 <dt id="arg-decimal-mark">decimal_mark<a class="anchor" aria-label="anchor" href="#arg-decimal-mark"></a></dt>
 <dd><p>Character used as the decimal mark in printed
 numeric values (cells, chi-squared, association estimate, CI
-bounds, p-value). Defaults to <code>"."</code>. Set to <code>","</code> for European
-formatting; matches the <code>decimal_mark</code> argument of the
-<code>table_*()</code> family.</p></dd>
+bounds, p-value, table note). Either <code>"."</code> or <code>","</code>. The default
+follows the language: <code>options(spicy.language = "fr")</code> gives the
+comma here and in <code><a href="freq.html">freq()</a></code>, exactly as it does in the reporting
+<code>table_*()</code> family. An argument you type wins, so
+<code>decimal_mark = "."</code> under a French language gives French words
+and a decimal point. Under a comma the p-value keeps its leading
+zero (<code>p = 0,659</code>), the form French typography requires.</p></dd>
 
 
 <dt id="arg-p-digits">p_digits<a class="anchor" aria-label="anchor" href="#arg-p-digits"></a></dt>
@@ -553,7 +557,7 @@ the regular <code>NA</code> count.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">──────────┼──────────────────────────────────────────────────┼─────────</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Total    <span style="color: #9E9E9E;">│</span>               257                527         391 <span style="color: #9E9E9E;">│</span>    1175 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Chi-2(2) = 21,6, p &lt;,0001</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Chi-2(2) = 21,6, p &lt;0,0001</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Cramer's V = 0,14</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Missing values removed: smoking (25).</span></span>
 <span class="r-in"><span></span></span>

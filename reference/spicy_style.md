@@ -174,11 +174,13 @@ precede d'un zero" (BIPM, *Le Systeme international d'unites*, 9th
 edition, 2019, section 5.4.4,
 `https://www.bipm.org/documents/20126/41483022/SI-Brochure-9.pdf`).
 `"en"` brings no locale, and nothing changes for anyone who sets no
-language. The exploration pair sits outside its reach:
+language. The locale reaches the exploration pair as well:
 [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md) and
 [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
-have no style layer, so their `decimal_mark` stays an argument set by
-hand.
+have no style layer, so the language sets the DEFAULT of their
+`decimal_mark` and nothing else. An argument you type still wins, and
+under a comma their p-value keeps its leading zero – there the mark
+carries the rule that `p_style` carries here.
 
 A theme composes with a locale rather than fighting it, because a theme
 encodes only what its own source states: `"jama"` fixes no decimal mark,

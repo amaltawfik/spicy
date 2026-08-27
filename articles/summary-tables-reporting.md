@@ -851,13 +851,14 @@ it: the decimal comma, and the leading zero French typography keeps on a
 *p* value (`0,003` where the English default writes `.003`). The
 language of a report is a property of the report, not of a call, so it
 is set once in the setup chunk. `"en"` is the default and is unchanged
-by any of this. Two boundaries are worth knowing: the typography rides
-the reporting families, so the exploration pair —
+by any of this. The language reaches every table, the exploration pair
+included:
 [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md) and
 [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
-— translates its words but keeps its own `decimal_mark` argument; and
-figures are frozen when a table is built, words when it is printed,
-which is one more reason the language belongs in the setup chunk.
+take the comma from it too, and an argument you type wins. One boundary
+is worth knowing: figures are frozen when a table is built, words when
+it is printed, which is one more reason the language belongs in the
+setup chunk.
 
 A journal style composes with the language rather than replacing it. A
 theme encodes only what its own author guidelines state, so whatever it
@@ -1064,7 +1065,7 @@ tab |>
 |     No | 177 | 67.8 | 310 | 57.5 | 163 | 40.8 | 650 | 54.2 |       |     |
 |     Yes |  84 | 32.2 | 229 | 42.5 | 237 | 59.2 | 550 | 45.8 |       |     |
 
-Categorical table by education {#tinytable_q1l23fqe86rx8gzuxfuu .table
+Categorical table by education {#tinytable_o72xsty5pcteltyry3n1 .table
 .tinytable style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 

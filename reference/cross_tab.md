@@ -137,9 +137,14 @@ cross_tab(
 - decimal_mark:
 
   Character used as the decimal mark in printed numeric values (cells,
-  chi-squared, association estimate, CI bounds, p-value). Defaults to
-  `"."`. Set to `","` for European formatting; matches the
-  `decimal_mark` argument of the `table_*()` family.
+  chi-squared, association estimate, CI bounds, p-value, table note).
+  Either `"."` or `","`. The default follows the language:
+  `options(spicy.language = "fr")` gives the comma here and in
+  [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md),
+  exactly as it does in the reporting `table_*()` family. An argument
+  you type wins, so `decimal_mark = "."` under a French language gives
+  French words and a decimal point. Under a comma the p-value keeps its
+  leading zero (`p = 0,659`), the form French typography requires.
 
 - p_digits:
 
@@ -488,7 +493,7 @@ cross_tab(sochealth, smoking, education, decimal_mark = ",", p_digits = 4)
 #> ──────────┼──────────────────────────────────────────────────┼─────────
 #>  Total    │               257                527         391 │    1175 
 #> 
-#> Chi-2(2) = 21,6, p <,0001
+#> Chi-2(2) = 21,6, p <0,0001
 #> Cramer's V = 0,14
 #> Missing values removed: smoking (25).
 ```

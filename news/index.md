@@ -401,12 +401,13 @@ instead of rendering an empty column.
 
 - A language brings its typography with it, so
   `options(spicy.language = "fr")` is one gesture for a coherent French
-  report table: French words, decimal comma, and the leading zero French
+  document: French words, decimal comma, and the leading zero French
   typography keeps on a p-value (`0,003`). `"en"` brings none, and
-  nothing changes for anyone who sets no language. The exploration pair
-  – [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md) and
+  nothing changes for anyone who sets no language. It reaches
+  [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md) and
   [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
-  – translates its words but keeps its own `decimal_mark` argument.
+  too, where it sets the default of `decimal_mark`; an argument you type
+  wins.
 
 - A journal style composes with the language instead of replacing it. A
   theme fills only the levers its own guidelines state, so
@@ -804,6 +805,16 @@ instead of rendering an empty column.
   out.
 
 ### Bug fixes
+
+- `cross_tab(decimal_mark = ",")` keeps the leading zero of its p-value:
+  `p = 0,659` and `p <0,001`, where it used to print `,659` and `<,001`.
+  A comma with nothing before it is not a number French typography
+  admits. Under `decimal_mark = "."` the APA form `.659` is unchanged.
+
+- `cross_tab(decimal_mark = ",")` also puts its table note under the
+  comma: the share of small expected cells and the minimum expected
+  count used to keep a decimal point while the cells above them read a
+  comma.
 
 - [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md)
   names the argument it is missing. Omitting `outcome` or `select` used

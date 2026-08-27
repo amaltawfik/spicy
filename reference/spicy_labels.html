@@ -159,9 +159,12 @@ language.</p>
 <p>The locale rides the style layer, so it reaches the reporting
 families – <code><a href="table_regression.html">table_regression()</a></code>, <code><a href="table_categorical.html">table_categorical()</a></code>,
 <code><a href="table_continuous.html">table_continuous()</a></code>, <code><a href="table_continuous_lm.html">table_continuous_lm()</a></code>, <code><a href="table_outcome.html">table_outcome()</a></code>
-and the survey twins. The exploration pair has no such layer:
-<code><a href="freq.html">freq()</a></code> and <code><a href="cross_tab.html">cross_tab()</a></code> translate their words under a language
-but keep their own <code>decimal_mark</code> argument, set by hand.</p>
+and the survey twins. The language reaches every table, the
+exploration pair included: <code><a href="freq.html">freq()</a></code> and <code><a href="cross_tab.html">cross_tab()</a></code> have no
+style layer, so it sets the DEFAULT of their <code>decimal_mark</code> – the
+one typographic lever they carry – and an argument you type wins
+over it. Under a comma their p-value keeps its leading zero
+(<code>p = 0,659</code>), the form French typography requires.</p>
 <p>The locale sits at the BOTTOM of the formatting resolution. A
 journal style outranks it – <code>style = "jama"</code> under <code>"fr"</code> gives
 JAMA's p-values and the French comma, <code>style = "lancet"</code> keeps the

@@ -143,11 +143,12 @@ freq(
 - decimal_mark:
 
   Character used as the decimal mark in printed percentages. Either
-  `"."` (the default) or `","`. The reporting `table_*()` families take
-  the comma automatically from `options(spicy.language = "fr")`; the
-  exploration pair has no style layer, so here (and in
-  [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md))
-  the mark is set by hand.
+  `"."` or `","`. The default follows the language:
+  `options(spicy.language = "fr")` gives the comma here and in
+  [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md),
+  exactly as it does in the reporting `table_*()` families. An argument
+  you type wins, so `decimal_mark = "."` under a French language gives
+  French words and a decimal point.
 
 - output:
 

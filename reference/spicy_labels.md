@@ -80,11 +80,14 @@ The locale rides the style layer, so it reaches the reporting families –
 [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
 [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md),
 [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md)
-and the survey twins. The exploration pair has no such layer:
+and the survey twins. The language reaches every table, the exploration
+pair included:
 [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md) and
 [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
-translate their words under a language but keep their own `decimal_mark`
-argument, set by hand.
+have no style layer, so it sets the DEFAULT of their `decimal_mark` –
+the one typographic lever they carry – and an argument you type wins
+over it. Under a comma their p-value keeps its leading zero
+(`p = 0,659`), the form French typography requires.
 
 The locale sits at the BOTTOM of the formatting resolution. A journal
 style outranks it – `style = "jama"` under `"fr"` gives JAMA's p-values
