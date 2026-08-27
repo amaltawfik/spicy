@@ -1537,7 +1537,7 @@ get_test_row_index_lm <- function(block) {
     if (abs(d - round(d)) < .Machine$double.eps^0.5) {
       return(as.character(as.integer(round(d))))
     }
-    formatC(d, format = "f", digits = 1L)
+    formatC(d, format = "f", digits = 1L, decimal.mark = ".")
   }
 
   glyph <- glyphs[[parts$kind]]

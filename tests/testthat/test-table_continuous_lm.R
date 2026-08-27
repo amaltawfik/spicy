@@ -1877,6 +1877,63 @@ test_that("an explicit leading_zero still outranks the mark", {
   )
 })
 
+test_that("options(OutDec) cannot override a typed decimal_mark", {
+  # Beside the shared formatters because that is where the leak was:
+  # `formatC()` and `as.character()` both read the session option, so a
+  # user with `OutDec = ","` got commas out of a table that asked for a
+  # point -- the substitution that owns the mark looks for a dot and
+  # found none. The whole rendered surface is compared, not a sample.
+  d <- mtcars
+  d$am <- factor(d$am, labels = c("auto", "manual"))
+  d$cyl <- factor(d$cyl)
+  fit <- stats::lm(mpg ~ wt, data = d)
+  render <- function() {
+    c(
+      spicy:::format_number(37.226, 2L, "."),
+      spicy:::format_number(1.75e11, 2L, "."),
+      spicy:::format_p_value(0.045, "."),
+      spicy:::format_p_value(0.0004, "."),
+      spicy:::format_p_threshold(0.05, "."),
+      spicy:::.mark_decimal(2.84, "."),
+      spicy:::.ci_pct_str(0.975),
+      capture.output(print(
+        table_categorical(d, cyl, by = am, decimal_mark = ".")
+      )),
+      capture.output(print(
+        table_continuous(d, mpg, by = am, decimal_mark = ".")
+      )),
+      capture.output(print(
+        table_continuous_lm(d, mpg, by = am, decimal_mark = ".")
+      )),
+      capture.output(print(
+        table_outcome(d, outcome = mpg, select = am, decimal_mark = ".")
+      )),
+      capture.output(print(
+        table_regression(fit, stars = TRUE, decimal_mark = ".")
+      )),
+      capture.output(print(cross_tab(d, cyl, am, decimal_mark = "."))),
+      capture.output(print(freq(d, cyl, decimal_mark = ".")))
+    )
+  }
+  dot <- render()
+  expect_false(any(grepl("[0-9],[0-9]", dot)))
+  expect_identical(withr::with_options(list(OutDec = ","), render()), dot)
+
+  # And the comma the user DID ask for is unaffected by the option too.
+  comma <- function() {
+    c(
+      spicy:::format_number(37.226, 2L, ","),
+      spicy:::format_p_value(0.0004, ","),
+      spicy:::format_p_threshold(0.05, ","),
+      spicy:::.mark_decimal(2.84, ","),
+      capture.output(print(
+        table_regression(fit, stars = TRUE, decimal_mark = ",")
+      ))
+    )
+  }
+  expect_identical(withr::with_options(list(OutDec = ","), comma()), comma())
+})
+
 test_that("format_p_value handles NA and falls back to default for bad digits", {
   expect_equal(spicy:::format_p_value(NA_real_, ".", 3L), "")
   # Non-finite or < 1 digits silently fall back to digits=3.

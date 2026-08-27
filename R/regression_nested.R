@@ -1449,7 +1449,7 @@ comparable_nobs <- function(fit_prev, fit_curr) {
 # Signed numeric format with explicit "+" prefix for positive values
 # (helps readability of delta tables).
 format_signed <- function(x, digits) {
-  s <- formatC(x, format = "f", digits = digits)
+  s <- formatC(x, format = "f", digits = digits, decimal.mark = ".")
   if (is.finite(x) && x > 0 && !startsWith(s, "+")) {
     s <- paste0("+", s)
   }

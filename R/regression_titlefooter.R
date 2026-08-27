@@ -956,7 +956,11 @@ format_p_threshold <- function(p, decimal_mark = ".") {
   if (!is.finite(p) || p <= 0 || p > 1) {
     return(format(p))
   }
-  s <- formatC(p, format = "f", digits = 3) # always 3 decimals first
+  # Always 3 decimals first, and always with a dot: the rest of this
+  # function is written against one, and `formatC()` would otherwise
+  # read `options(OutDec)` and hand it a comma the table never asked
+  # for (the same leak `format_number()` closes).
+  s <- formatC(p, format = "f", digits = 3, decimal.mark = ".")
   # ".050" / ".100" / ".001" -- unless the style or the table's mark
   # keeps the leading zero, in which case "0.050" / "0.100" / "0.001".
   s <- .strip_leading_zero(s, ".", .style_p_leading_zero(decimal_mark))
@@ -1116,7 +1120,7 @@ build_gee_footer_block_from_frames <- function(frames) {
     return(sprintf(
       "GEE working correlation: %s (alpha = %s).",
       corstr,
-      formatC(alpha, format = "f", digits = 2)
+      formatC(alpha, format = "f", digits = 2, decimal.mark = ".")
     ))
   }
   if (length(alpha) > 1L) {

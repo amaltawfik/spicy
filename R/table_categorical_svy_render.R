@@ -103,7 +103,7 @@
     .CAT_KEY_VARIABLE
   )
   fmt <- function(v, d) {
-    out <- formatC(v, format = "f", digits = d)
+    out <- formatC(v, format = "f", digits = d, decimal.mark = ".")
     if (decimal_mark != ".") {
       out <- sub("\\.", decimal_mark, out)
     }

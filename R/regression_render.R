@@ -1294,7 +1294,11 @@ format_cell_value <- function(
     # Two significant digits with trailing zeros kept ("0.10", not
     # "0.1"), plain notation; strip the bare trailing point that
     # flag = "#" leaves on integer-valued output.
-    out <- sub("\\.$", "", formatC(val, digits = 2, format = "g", flag = "#"))
+    out <- sub(
+      "\\.$",
+      "",
+      formatC(val, digits = 2, format = "g", flag = "#", decimal.mark = ".")
+    )
     if (!identical(decimal_mark, ".")) {
       out <- sub(".", decimal_mark, out, fixed = TRUE) # nocov
     }

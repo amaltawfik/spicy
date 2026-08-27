@@ -170,7 +170,7 @@ print.spicy_assoc_detail <- function(
         # as `cross_tab()` and the `table_*()` family.
         format_p_value(v, decimal_mark = ".", digits = 3L)
       } else {
-        formatC(v, format = "f", digits = digits)
+        formatC(v, format = "f", digits = digits, decimal.mark = ".")
       }
     },
     character(1)
@@ -2001,7 +2001,7 @@ print.spicy_assoc_table <- function(
     ifelse(
       is.na(v),
       spicy_str("cell_undefined"),
-      formatC(v, format = "f", digits = digits)
+      formatC(v, format = "f", digits = digits, decimal.mark = ".")
     )
   }
   # APA-style p-value via the shared `format_p_value()` helper:

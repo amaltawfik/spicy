@@ -1742,7 +1742,13 @@ build_structured_body <- function(
     out <- sub(
       "\\.$",
       "",
-      formatC(val, digits = as.integer(cfmt$signif), format = "g", flag = "#")
+      formatC(
+        val,
+        digits = as.integer(cfmt$signif),
+        format = "g",
+        flag = "#",
+        decimal.mark = "."
+      )
     )
     if (!identical(decimal_mark, ".")) {
       out <- sub(".", decimal_mark, out, fixed = TRUE) # nocov

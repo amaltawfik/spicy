@@ -590,6 +590,13 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
   count used to keep a decimal point while the cells above them read a
   comma.
 
+* `options(OutDec)` can no longer override a typed `decimal_mark`. In a
+  session set to `OutDec = ","`, every `table_*()` family and the
+  exploration pair printed commas even where `decimal_mark = "."` was
+  asked for, because the underlying formatters read the option. The
+  rendered output now depends on the argument alone, and is unchanged
+  under the default option.
+
 * `decimal_mark = ","` keeps the leading zero of a p-value in every
   `table_*()` family too, on the console and in every rendered output:
   `0,018`, `<0,001`, and `*** p < 0,001` in the star legend, where they

@@ -82,12 +82,20 @@ format_number <- function(x, digits = 2L, decimal_mark = ".") {
   # in standard cases. Users who want sub-precision values visible
   # can request more `digits`.
   use_scientific <- is.finite(x) && x != 0 && abs_x >= 1e+7
+  # `decimal.mark` pinned: `formatC()` reads `options(OutDec)`
+  # otherwise, and a session set to `OutDec = ","` then beat a typed
+  # `decimal_mark = "."` -- the substitution below is a no-op under a
+  # point, so the comma survived all the way to the cell, and the
+  # leading-zero strip (which looks for the mark it was told) stopped
+  # firing with it. This function is the ONE producer of a rendered
+  # number for the whole package: the mark it writes is the argument's,
+  # never the session's.
   if (use_scientific) {
     # `formatC(format = "e")` gives "1.75e+11" with `digits` mantissa
     # decimals. Honour the user's `digits` (2 by default).
-    out <- formatC(x, digits = digits, format = "e")
+    out <- formatC(x, digits = digits, format = "e", decimal.mark = ".")
   } else {
-    out <- formatC(x, digits = digits, format = "f")
+    out <- formatC(x, digits = digits, format = "f", decimal.mark = ".")
   }
   if (!identical(decimal_mark, ".")) {
     out <- chartr(".", decimal_mark, out)
@@ -165,6 +173,15 @@ format_p_value <- function(
 # `"."` this IS `as.character()`.
 .mark_decimal <- function(x, decimal_mark) {
   out <- as.character(x)
+  # `as.character()` on a double reads `options(OutDec)` too, so a
+  # session set to "," handed back "2,84" for a note that asked for a
+  # point. Normalise to the dot this function is written against; under
+  # the default OutDec the substitution never fires and this IS
+  # `as.character()`, to the byte.
+  od <- getOption("OutDec", ".")
+  if (is.character(od) && length(od) == 1L && nchar(od) == 1L && od != ".") {
+    out <- chartr(od, ".", out)
+  }
   if (identical(decimal_mark, ".")) {
     return(out)
   }
