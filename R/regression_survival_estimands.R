@@ -840,6 +840,33 @@
 }
 
 
+# ---- Horizon rendering -----------------------------------------------------
+
+# Internal: the estimand horizon (`tau`, `at_time`) as it is written into
+# a column header -- and therefore into a NAME.
+#
+# "dRMST (365.5)" is not decoration: it is verbatim the column name of
+# `as.data.frame()`, of `output = "data.frame"`, of the structured
+# `body`, and the key of `col_meta`. That makes it a frozen key, and the
+# package's rule for those is `.ci_pct_str()`'s: a user's
+# `options(OutDec)` must never leak into a programmatic name, and neither
+# must the table's `decimal_mark` -- the same call would otherwise return
+# a data frame whose columns are named differently depending on a
+# typographic argument. So the horizon is pinned at the point, both ways,
+# for good.
+#
+# `format(decimal.mark = ".")` rather than `formatC()`: it is
+# byte-identical to the bare `format()` it replaces on every value
+# (`formatC(format = "fg")` would re-round 730.25 to "730.2" and expand
+# 1e+05), so nothing but the OutDec leak changes.
+#
+# The footer note below quotes the same string, so header and gloss stay
+# spelled alike.
+.estimand_horizon_str <- function(x) {
+  format(x, decimal.mark = ".")
+}
+
+
 # ---- Footer ----------------------------------------------------------------
 
 # Table note for the estimand columns, read from
@@ -864,12 +891,18 @@ build_survival_estimand_footer_block_from_frames <- function(frames) {
       }
       parts <- character(0)
       if (!is.null(es$tau)) {
-        parts <- c(parts, spicy_fmt("note_estimand_rmst", format(es$tau)))
+        parts <- c(
+          parts,
+          spicy_fmt("note_estimand_rmst", .estimand_horizon_str(es$tau))
+        )
       }
       if (!is.null(es$at_time)) {
         parts <- c(
           parts,
-          spicy_fmt("note_estimand_risk_diff", format(es$at_time))
+          spicy_fmt(
+            "note_estimand_risk_diff",
+            .estimand_horizon_str(es$at_time)
+          )
         )
       }
       skipped_note <- if (length(es$skipped_terms %||% character(0)) > 0L) {

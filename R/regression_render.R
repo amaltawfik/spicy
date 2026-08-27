@@ -733,11 +733,18 @@ build_column_spec <- function(
     # (`all_b`, `all_ame`).
     # Survival estimands: the anchor headers carry the horizon
     # (`estimand_horizons`), the sub-columns stay naked like AME's.
+    #
+    # The horizon is written with `.estimand_horizon_str()`: this header
+    # is a FROZEN KEY -- verbatim the name of the column in
+    # `as.data.frame()`, in `output = "data.frame"`, in the structured
+    # `body`, and in `col_meta` -- so it follows `.ci_pct_str()`'s
+    # doctrine and stays at the point whatever the session or the table
+    # asks for.
     rmst = list(
       estimate_type = "rmst",
       fields = "estimate",
       header_short = if (!is.null(estimand_horizons$tau)) {
-        spicy_fmt("header_rmst", format(estimand_horizons$tau))
+        spicy_fmt("header_rmst", .estimand_horizon_str(estimand_horizons$tau))
       } else {
         spicy_str("header_rmst_no_horizon") # nocov
       }
@@ -761,7 +768,10 @@ build_column_spec <- function(
       estimate_type = "risk_diff",
       fields = "estimate",
       header_short = if (!is.null(estimand_horizons$at_time)) {
-        spicy_fmt("header_risk_diff", format(estimand_horizons$at_time))
+        spicy_fmt(
+          "header_risk_diff",
+          .estimand_horizon_str(estimand_horizons$at_time)
+        )
       } else {
         spicy_str("header_risk_diff_no_horizon") # nocov
       }
@@ -1249,8 +1259,10 @@ format_cell_value <- function(
   # Sampler-diagnostic fields: ESS renders as an integer (a sample
   # size), R-hat with 3 decimals (the 1.01 target needs them).
   # pd is a posterior probability: p-column style (p_digits decimals,
-  # APA leading-zero drop) -- its information lives between .95 and 1,
-  # where the generic 2-decimal cell is blind (".998" vs "1.00").
+  # and the p column's leading-zero rule -- dropped under a point, kept
+  # under a comma, unless a style says otherwise) -- its information
+  # lives between .95 and 1, where the generic 2-decimal cell is blind
+  # (".998" vs "1.00").
   if (field == "pd") {
     val <- long_row[[field]][1]
     if (!is.finite(val)) {
@@ -1912,7 +1924,7 @@ format_fit_stat_value <- function(
     # Explicit "+" prefix on positive change values (signals
     # improvement on R\u00b2 / \u0394\u03c7\u00b2 / \u0394f\u00b2, worsening on \u0394deviance / \u0394AIC
     # depending on direction). Same convention as APA / modelsummary.
-    return(format_signed(val, prec))
+    return(format_signed(val, prec, decimal_mark))
   }
   format_number(val, prec, decimal_mark)
 }
