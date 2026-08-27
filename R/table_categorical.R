@@ -1450,10 +1450,12 @@ table_categorical <- function(
     )
   }
 
-  # `decimal.mark` pinned on every `formatC()` of this file: the
-  # substitution below is the ONLY authority on the mark, and
-  # `formatC()` would otherwise read `options(OutDec)` and slip a
-  # session comma past a table that asked for a point.
+  # `decimal.mark` pinned on every `formatC()` of this file that can
+  # write one -- the exception is `fmt_n()` below, whose `digits = 0`
+  # produces no decimal mark at all. The substitution below is the ONLY
+  # authority on the mark, and `formatC()` would otherwise read
+  # `options(OutDec)` and slip a session comma past a table that asked
+  # for a point.
   fmt_num <- function(x, digits = 1, na = "") {
     out <- ifelse(
       is.na(x),

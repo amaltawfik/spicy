@@ -87,9 +87,13 @@ format_number <- function(x, digits = 2L, decimal_mark = ".") {
   # `decimal_mark = "."` -- the substitution below is a no-op under a
   # point, so the comma survived all the way to the cell, and the
   # leading-zero strip (which looks for the mark it was told) stopped
-  # firing with it. This function is the ONE producer of a rendered
-  # number for the whole package: the mark it writes is the argument's,
-  # never the session's.
+  # firing with it. This function is the package's MAIN producer of a
+  # rendered number, and the one every family's cells go through; a
+  # handful of local producers (the `table_categorical` /
+  # `table_continuous` formatters, the significant-digit columns, the
+  # `assoc` prints, `format_signed()`) pin `decimal.mark` the same way
+  # for the same reason. Wherever it is written, the mark is the
+  # argument's, never the session's.
   if (use_scientific) {
     # `formatC(format = "e")` gives "1.75e+11" with `digits` mantissa
     # decimals. Honour the user's `digits` (2 by default).

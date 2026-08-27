@@ -373,7 +373,8 @@
 #'   lever and raises an error rather than being ignored.
 #' @param p_style How p-values carry their leading zero: `"apa"` drops
 #'   it (`.003`), `"standard"` keeps it (`0.003`). `NULL` leaves
-#'   spicy's default, which drops it.
+#'   spicy's default, which follows the mark: dropped under a point,
+#'   kept under a comma.
 #' @param p_digits Decimal places for p-values (a positive integer).
 #'   Under `p_sigfig` it acts as the decimal cap instead.
 #' @param p_floor The value below which a p-value prints as `<floor`
@@ -1033,12 +1034,25 @@ print.spicy_style <- function(x, ...) {
   invisible(x)
 }
 
+# `decimal.mark` pinned at the point on every branch: these are the
+# lever values the reader would RETYPE to reproduce the style, so they
+# must be printed as R parses them. Under `options(OutDec = ",")` the
+# bare `format()` printed `p_floor 0,0001` and `p_bands p < 0,01 -> 3
+# dp` -- numbers no one can paste back into `spicy_style()`. The style
+# object carries no `decimal_mark` of its own, so there is nothing else
+# for these to follow.
 .style_fmt_lever <- function(v) {
   if (is.list(v)) {
     return(paste(
       vapply(
         v,
-        function(b) sprintf("p < %s -> %d dp", format(b[[1L]]), b[[2L]]),
+        function(b) {
+          sprintf(
+            "p < %s -> %d dp",
+            format(b[[1L]], decimal.mark = "."),
+            b[[2L]]
+          )
+        },
         character(1)
       ),
       collapse = "; "
@@ -1048,12 +1062,18 @@ print.spicy_style <- function(x, ...) {
     return("FALSE")
   }
   if (!is.null(names(v))) {
-    return(paste(sprintf("%s = %s", names(v), format(v)), collapse = ", "))
+    return(paste(
+      sprintf("%s = %s", names(v), format(v, decimal.mark = ".")),
+      collapse = ", "
+    ))
   }
   if (is.numeric(v)) {
-    return(paste(format(v, scientific = FALSE, trim = TRUE), collapse = " "))
+    return(paste(
+      format(v, scientific = FALSE, trim = TRUE, decimal.mark = "."),
+      collapse = " "
+    ))
   }
-  paste(format(v), collapse = " ")
+  paste(format(v, decimal.mark = "."), collapse = " ")
 }
 
 

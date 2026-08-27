@@ -101,9 +101,11 @@
 #'   `table_*()` families. An argument you type wins, so
 #'   `decimal_mark = "."` under a French language gives French words
 #'   and a decimal point. The resolved mark is frozen on the object
-#'   when it is built, like every other formatting argument: a table
-#'   built under a French language still prints its commas when it is
-#'   printed later with the language option cleared.
+#'   when it is built: a table built under a French language still
+#'   prints its commas when it is printed later with the language
+#'   option cleared. Its words are not -- `freq()` resolves its labels
+#'   at print time -- so that table prints English headings over French
+#'   numbers.
 #' @param output Output format. `"default"` (the default) returns a
 #'   `spicy_freq_table` object that auto-prints as a formatted spicy
 #'   table; `"data.frame"` returns a plain `data.frame` with frequency

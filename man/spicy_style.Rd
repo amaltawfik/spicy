@@ -40,7 +40,8 @@ lever and raises an error rather than being ignored.}
 
 \item{p_style}{How p-values carry their leading zero: \code{"apa"} drops
 it (\code{.003}), \code{"standard"} keeps it (\code{0.003}). \code{NULL} leaves
-spicy's default, which drops it.}
+spicy's default, which follows the mark: dropped under a point,
+kept under a comma.}
 
 \item{p_digits}{Decimal places for p-values (a positive integer).
 Under \code{p_sigfig} it acts as the decimal cap instead.}
