@@ -823,39 +823,14 @@ lists every style and every rule with the sentence it comes from.
 
 ## Table language
 
-A style decides how numbers are written. The language decides which
-words sit around them. `options(spicy.language = "fr")` prints the
-headers, row labels, titles and table notes in French:
+A style is what a journal asks for. A language is what your reader
+reads. `options(spicy.language = "fr")` prints the table in French —
+headers, row labels, titles and table notes, and the numbers with them:
 
 ``` r
 
 options(spicy.language = "fr")
 table_continuous(sochealth, select = bmi, by = sex)
-#> Statistiques descriptives selon Sex
-#> 
-#>  Variable        │ Groupe    M     ET    Min    Max   95% CI LL  95% CI UL   n  
-#> ─────────────────┼──────────────────────────────────────────────────────────────
-#>  Body mass index │ Female  25.69  3.78  16.00  38.90    25.39      25.98    616 
-#>                  │ Male    26.20  3.64  16.00  37.70    25.90      26.50    572 
-#> 
-#>  Variable        │ Groupe   p   
-#> ─────────────────┼──────────────
-#>  Body mass index │ Female  .018 
-#>                  │ Male         
-#> 
-#> Valeurs manquantes retirées : bmi (12).
-```
-
-The language of a report is a property of the report, not of a call, so
-it is set once in the setup chunk. `"en"` is the default and is
-unchanged by any of this.
-
-The two levers are orthogonal, and a French report usually wants both —
-the language for the words, the `"fr"` style for the decimal comma:
-
-``` r
-
-table_continuous(sochealth, select = bmi, by = sex, style = "fr")
 #> Statistiques descriptives selon Sex
 #> 
 #>  Variable        │ Groupe    M     ET    Min    Max   95% CI LL  95% CI UL   n  
@@ -866,6 +841,72 @@ table_continuous(sochealth, select = bmi, by = sex, style = "fr")
 #>  Variable        │ Groupe    p   
 #> ─────────────────┼───────────────
 #>  Body mass index │ Female  0,018 
+#>                  │ Male          
+#> 
+#> Valeurs manquantes retirées : bmi (12).
+```
+
+One gesture, one coherent table. A language brings its typography with
+it: the decimal comma, and the leading zero French typography keeps on a
+*p* value (`0,003` where the English default writes `.003`). The
+language of a report is a property of the report, not of a call, so it
+is set once in the setup chunk. `"en"` is the default and is unchanged
+by any of this. Two boundaries are worth knowing: the typography rides
+the reporting families, so the exploration pair —
+[`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md) and
+[`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
+— translates its words but keeps its own `decimal_mark` argument; and
+figures are frozen when a table is built, words when it is printed,
+which is one more reason the language belongs in the setup chunk.
+
+A journal style composes with the language rather than replacing it. A
+theme encodes only what its own author guidelines state, so whatever it
+leaves open the language still fills — JAMA fixes no decimal mark, and a
+French JAMA table keeps the comma:
+
+``` r
+
+table_continuous(sochealth, select = bmi, by = sex, style = "jama")
+#> Statistiques descriptives selon Sex
+#> 
+#>  Variable        │ Groupe    M     ET    Min    Max   95% CI LL  95% CI UL   n  
+#> ─────────────────┼──────────────────────────────────────────────────────────────
+#>  Body mass index │ Female  25,69  3,78  16,00  38,90    25,39      25,98    616 
+#>                  │ Male    26,20  3,64  16,00  37,70    25,90      26,50    572 
+#> 
+#>  Variable        │ Groupe   p  
+#> ─────────────────┼─────────────
+#>  Body mass index │ Female  ,02 
+#>                  │ Male        
+#> 
+#> Valeurs manquantes retirées : bmi (12).
+```
+
+Where the two do meet, the theme wins — you asked for it by name. JAMA’s
+own rule drops the leading zero of a *p* value, so the table above
+writes `,02` rather than `0,02`; `style = "lancet"` keeps the journal’s
+midline decimal point instead of the comma. To keep a theme’s other
+rules and restore the zero, compose the variant:
+`style = spicy_style("jama", p_style = "standard")`.
+
+An argument you type wins over both, which is the escape hatch for a
+bilingual table — French words, decimal point. It moves only the mark:
+the *p* value keeps its French leading zero (`0.018`), since the
+leading-zero rule is a style lever, not an argument:
+
+``` r
+
+table_continuous(sochealth, select = bmi, by = sex, decimal_mark = ".")
+#> Statistiques descriptives selon Sex
+#> 
+#>  Variable        │ Groupe    M     ET    Min    Max   95% CI LL  95% CI UL   n  
+#> ─────────────────┼──────────────────────────────────────────────────────────────
+#>  Body mass index │ Female  25.69  3.78  16.00  38.90    25.39      25.98    616 
+#>                  │ Male    26.20  3.64  16.00  37.70    25.90      26.50    572 
+#> 
+#>  Variable        │ Groupe    p   
+#> ─────────────────┼───────────────
+#>  Body mass index │ Female  0.018 
 #>                  │ Male          
 #> 
 #> Valeurs manquantes retirées : bmi (12).
@@ -941,14 +982,14 @@ inline(tbl, sex, "Male", "{b} ({ci_label} {ci}; p {p})")
 ```
 
 Two properties carry the guarantee. The text follows the table: under
-`style = "jama"` or `decimal_mark = ","` the cited string changes with
-the printed one. And the addressing survives relabeling: rows are found
-by the source variable and level — not by the displayed label — so
-`labels = c(sex = "Administrative sex")` changes the table, not your
-calls. Misaddressing never fails silently: an unknown variable, level,
-or column token errors with the list of available choices, and a
-reference or non-estimable cell refuses with its reason instead of
-pasting a dash into a sentence.
+`style = "jama"`, `decimal_mark = ","` or a table language, the cited
+string changes with the printed one. And the addressing survives
+relabeling: rows are found by the source variable and level — not by the
+displayed label — so `labels = c(sex = "Administrative sex")` changes
+the table, not your calls. Misaddressing never fails silently: an
+unknown variable, level, or column token errors with the list of
+available choices, and a reference or non-estimable cell refuses with
+its reason instead of pasting a dash into a sentence.
 
 ## Post-process the returned table object
 
@@ -1023,7 +1064,7 @@ tab |>
 |     No | 177 | 67.8 | 310 | 57.5 | 163 | 40.8 | 650 | 54.2 |       |     |
 |     Yes |  84 | 32.2 | 229 | 42.5 | 237 | 59.2 | 550 | 45.8 |       |     |
 
-Categorical table by education {#tinytable_rvih7oqpat3ctb0g49i1 .table
+Categorical table by education {#tinytable_o1erns2z8pwhnnb53cxa .table
 .tinytable style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 

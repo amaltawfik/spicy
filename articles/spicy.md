@@ -401,13 +401,15 @@ table_continuous_lm(
 
 By default every `table_*` helper formats to APA conventions. To match a
 journal instead, pass `style =` — `"jama"`, `"nejm"`, `"lancet"`,
-`"annals"`, `"aer"` (and `"fr"` for French typographic conventions);
+`"annals"`, `"apa"`, `"aer"`;
 [`spicy_style_names()`](https://amaltawfik.github.io/spicy/reference/spicy_style.md)
 lists them all. Set it once for a whole document with
 `options(spicy.style = "nejm")`, or compose a custom variant with
 [`spicy_style()`](https://amaltawfik.github.io/spicy/reference/spicy_style.md),
 for example `spicy_style("lancet", ci_sep = " to ")`. The same styles
-apply to the regression tables below.
+apply to the regression tables below. French typographic conventions are
+not a journal style: they come with the language, through
+`options(spicy.language = "fr")`.
 
 For detailed guidance, see the dedicated articles on
 [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),

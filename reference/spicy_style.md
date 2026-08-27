@@ -4,7 +4,7 @@ A *style* is a small set of number-formatting rules – how many decimals
 a p-value gets, where it bottoms out, whether it keeps its leading zero,
 what the decimal mark is, how a confidence interval is written.
 `spicy_style()` composes one by hand; the named themes (`"jama"`,
-`"nejm"`, `"lancet"`, `"annals"`, `"apa"`, `"aer"`, `"fr"` –
+`"nejm"`, `"lancet"`, `"annals"`, `"apa"`, `"aer"` –
 `spicy_style_names()` returns the list) are pre-composed ones, each
 encoding rules taken verbatim from an official document of the
 institution.
@@ -155,9 +155,56 @@ leading-zero rule is orthogonal and stays.
 
 ## Resolution order
 
-`style` argument, then `getOption("spicy.style")`, then spicy's
-defaults. Within a style, an explicit function argument beats the
-style's value for the same lever.
+An argument you type, then the `style` argument, then
+`getOption("spicy.style")`, then the typography of
+`getOption("spicy.language")`, then spicy's defaults. Within a style, an
+explicit function argument beats the style's value for the same lever.
+
+## The language's locale
+
+A language brings its typography with it, at the bottom of that order.
+`options(spicy.language = "fr")` is therefore one gesture for a coherent
+French report table – French words, and numbers written the French way:
+comma decimal mark, and the leading zero French typography keeps on a
+p-value (`0,003`). "La virgule est utilisee pour separer les unites des
+decimales" (European Union, *Code de redaction interinstitutionnel*,
+French edition 2022, point 6.5, `https://style-guide.europa.eu/fr`); "Si
+le nombre se situe entre +1 et -1, le separateur decimal est toujours
+precede d'un zero" (BIPM, *Le Systeme international d'unites*, 9th
+edition, 2019, section 5.4.4,
+`https://www.bipm.org/documents/20126/41483022/SI-Brochure-9.pdf`).
+`"en"` brings no locale, and nothing changes for anyone who sets no
+language. The exploration pair sits outside its reach:
+[`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md) and
+[`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
+have no style layer, so their `decimal_mark` stays an argument set by
+hand.
+
+A theme composes with a locale rather than fighting it, because a theme
+encodes only what its own source states: `"jama"` fixes no decimal mark,
+so JAMA under a French language gives JAMA's p-value rules and the
+French comma. Where the two do meet, the theme wins – you asked for it
+by name. `"lancet"` keeps its midline decimal point; `"apa"` keeps its
+missing leading zero, which under a comma prints `,003`, a form the SI
+brochure forbids. That is the price of an explicit gesture; to keep
+APA's other rules and restore the zero, compose the way out yourself:
+`style = spicy_style("apa", p_style = "standard")`. One lever bends the
+other way: a theme's `", "` interval separator was sourced under a dot
+mark, and under a comma mark it would BE the mark – so it yields to the
+derived `"; "`, exactly as the French adaptations of APA style
+themselves write (`[3,45; 6,78]`). Any other separator (`" to "`, an en
+dash) is unambiguous and stays.
+
+An argument beats both, which is the escape hatch for a bilingual table:
+`decimal_mark = "."` under a French language gives French words and a
+decimal point. It moves only the mark: the p-value keeps the locale's
+leading zero (`0.003`), because `p_style` is a style lever with no
+argument of its own – `style = spicy_style(p_style = "apa")` drops it
+again.
+
+See
+[`spicy_labels()`](https://amaltawfik.github.io/spicy/reference/spicy_labels.md)
+for the language option itself.
 
 ## Themes
 
@@ -332,32 +379,6 @@ Not encoded: the guide fixes no number of decimals, no p-value floor, no
 interval format and no decimal mark, so spicy's defaults apply.
 Horizontal-rules-only, no shading, a nine-column maximum and "Panel A /
 Panel B" blocks are layout, not number formatting.
-
-### `"fr"` – French-language typography (a locale, not a journal)
-
-Sources: BIPM, *Le Systeme international d'unites*, 9th edition, 2019,
-section 5.4.4
-(`https://www.bipm.org/documents/20126/41483022/SI-Brochure-9.pdf`);
-European Union, *Code de redaction interinstitutionnel*, French edition
-2022, point 6.5 (`https://style-guide.europa.eu/fr`); both consulted
-2026-08-14.
-
-Encoded:
-
-- comma as the decimal mark – "La virgule est utilisee pour separer les
-  unites des decimales" (EU, 6.5); the SI brochure leaves the choice to
-  the language: "Le separateur decimal choisi sera celui qui est d'usage
-  courant selon la langue concernee et le contexte."
-
-- leading zero kept, p-values included – "Si le nombre se situe entre +1
-  et -1, le separateur decimal est toujours precede d'un zero : par
-  exemple, -0,234 mais pas -,234" (SI, 5.4.4). This is what makes the
-  theme worth having: with only `decimal_mark = ","`, spicy would print
-  a p-value as `,003`.
-
-The semicolon that separates interval bounds under a comma decimal mark
-is spicy's own disambiguation rule, not a sourced one; it follows from
-`decimal_mark` and needs no entry here.
 
 ## Known gaps
 

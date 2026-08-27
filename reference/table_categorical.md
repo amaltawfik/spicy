@@ -360,8 +360,8 @@ table_categorical(
 
 - style:
 
-  A journal or locale style: a theme name (`"jama"`, `"lancet"`,
-  `"annals"`, `"apa"`, `"aer"`, `"fr"`), a
+  A journal style: a theme name (`"jama"`, `"nejm"`, `"lancet"`,
+  `"annals"`, `"apa"`, `"aer"`), a
   [`spicy_style()`](https://amaltawfik.github.io/spicy/reference/spicy_style.md)
   object, or `NULL` (the default). A style only changes DEFAULTS – any
   argument you pass explicitly wins over it. Set

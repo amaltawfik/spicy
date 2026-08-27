@@ -849,8 +849,8 @@ table_regression(
 
 - style:
 
-  A journal or locale style: a theme name (`"jama"`, `"lancet"`,
-  `"annals"`, `"apa"`, `"aer"`, `"fr"`), a
+  A journal style: a theme name (`"jama"`, `"nejm"`, `"lancet"`,
+  `"annals"`, `"apa"`, `"aer"`), a
   [`spicy_style()`](https://amaltawfik.github.io/spicy/reference/spicy_style.md)
   object, or `NULL` (the default). A style only changes DEFAULTS – any
   argument you pass explicitly wins over it. Set
@@ -1514,13 +1514,13 @@ is kept numeric so cluster-robust Satterthwaite df is preserved.
 
 ## Global options
 
-- **`options(spicy.style = )`** – the journal or locale style applied by
-  default to all four table families (`table_regression()`,
+- **`options(spicy.style = )`** – the journal style applied by default
+  to all four table families (`table_regression()`,
   [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
   [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
   [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)).
-  Takes a theme name (`"jama"`, `"lancet"`, `"annals"`, `"apa"`,
-  `"aer"`, `"fr"`) or a
+  Takes a theme name (`"jama"`, `"nejm"`, `"lancet"`, `"annals"`,
+  `"apa"`, `"aer"`) or a
   [`spicy_style()`](https://amaltawfik.github.io/spicy/reference/spicy_style.md)
   object. The style of a report is a property of the document, so it is
   set once in the setup chunk; the `style` argument overrides it per

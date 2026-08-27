@@ -461,13 +461,14 @@ covariate adjustment:</p>
 <p>By default every <code>table_*</code> helper formats to APA
 conventions. To match a journal instead, pass <code>style =</code> —
 <code>"jama"</code>, <code>"nejm"</code>, <code>"lancet"</code>,
-<code>"annals"</code>, <code>"aer"</code> (and <code>"fr"</code> for
-French typographic conventions); <code><a href="../reference/spicy_style.html">spicy_style_names()</a></code> lists
-them all. Set it once for a whole document with
-<code>options(spicy.style = "nejm")</code>, or compose a custom variant
-with <code><a href="../reference/spicy_style.html">spicy_style()</a></code>, for example
+<code>"annals"</code>, <code>"apa"</code>, <code>"aer"</code>;
+<code><a href="../reference/spicy_style.html">spicy_style_names()</a></code> lists them all. Set it once for a whole
+document with <code>options(spicy.style = "nejm")</code>, or compose a
+custom variant with <code><a href="../reference/spicy_style.html">spicy_style()</a></code>, for example
 <code>spicy_style("lancet", ci_sep = " to ")</code>. The same styles
-apply to the regression tables below.</p>
+apply to the regression tables below. French typographic conventions are
+not a journal style: they come with the language, through
+<code>options(spicy.language = "fr")</code>.</p>
 <p>For detailed guidance, see the dedicated articles on
 <code><a href="../reference/table_categorical.html">table_categorical()</a></code>, <code><a href="../reference/table_continuous.html">table_continuous()</a></code>, and
 <code><a href="../reference/table_continuous_lm.html">table_continuous_lm()</a></code>, and the final reporting overview

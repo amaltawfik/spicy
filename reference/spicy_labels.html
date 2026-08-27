@@ -108,7 +108,8 @@ order.</p>
 
 
 <ul><li><p><strong><code>options(spicy.language = "fr")</code></strong>
-The language of the labels, for the whole document. Two sets ship:
+The language of the table, for the whole document – its labels and
+the typography its numbers are written in. Two sets ship:
 <code>"en"</code> (the default) and <code>"fr"</code>. The language of a report is a
 property of the report, so this is set once in a setup chunk rather
 than passed to each table.</p></li>
@@ -141,15 +142,44 @@ move: <code>table_categorical(by = )</code> on a variable with missing values
 gives <code>"(Missing) n"</code> in English and <code>"(Manquant) n"</code> under <code>"fr"</code>
 (or whatever <code>row_missing_level</code> is overridden to). Address that
 column through <code>row_missing_level</code> rather than by typing it.</p>
-<p>Number FORMATTING is a separate lever. <code>options(spicy.language = "fr")</code>
-translates the words; the <code>"fr"</code> style
-(<code>options(spicy.style = "fr")</code>, see <code><a href="spicy_style.html">spicy_style()</a></code>) writes the decimal
-comma. A French report usually wants both.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="numbers-follow-the-language-too">Numbers follow the language too<a class="anchor" aria-label="anchor" href="#numbers-follow-the-language-too"></a></h2>
+
+
+
+<p>A language brings its typographic locale with it, so
+<code>options(spicy.language = "fr")</code> is one gesture for a coherent
+French report table: French words, comma decimal mark, and the
+leading zero French typography keeps on a p-value (<code>0,003</code>). The
+sources are the BIPM's SI brochure and the European Union's <em>Code
+de redaction interinstitutionnel</em>; <code><a href="spicy_style.html">spicy_style()</a></code> quotes them.
+<code>"en"</code> brings no locale, and nothing changes for anyone who sets no
+language.</p>
+<p>The locale rides the style layer, so it reaches the reporting
+families – <code><a href="table_regression.html">table_regression()</a></code>, <code><a href="table_categorical.html">table_categorical()</a></code>,
+<code><a href="table_continuous.html">table_continuous()</a></code>, <code><a href="table_continuous_lm.html">table_continuous_lm()</a></code>, <code><a href="table_outcome.html">table_outcome()</a></code>
+and the survey twins. The exploration pair has no such layer:
+<code><a href="freq.html">freq()</a></code> and <code><a href="cross_tab.html">cross_tab()</a></code> translate their words under a language
+but keep their own <code>decimal_mark</code> argument, set by hand.</p>
+<p>The locale sits at the BOTTOM of the formatting resolution. A
+journal style outranks it – <code>style = "jama"</code> under <code>"fr"</code> gives
+JAMA's p-values and the French comma, <code>style = "lancet"</code> keeps the
+journal's midline decimal point – and an argument you type outranks
+both, so <code>decimal_mark = "."</code> gives French words with a decimal
+point (the p-value keeps its locale zero; <code><a href="spicy_style.html">spicy_style()</a></code> documents
+that lever).</p>
+<p>Two timing notes. Figures are frozen when a table is BUILT, like
+every formatting argument, while words resolve when it is printed –
+so set the language once, at the top of the document. And a comma
+mark makes an Excel export write its body as text rather than live
+numbers, since Excel would otherwise re-punctuate a numeric cell
+with the viewer's own locale.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
-    <div class="dont-index"><p><code><a href="spicy_style.html">spicy_style()</a></code> for number formatting, including the French
-decimal comma.</p></div>
+    <div class="dont-index"><p><code><a href="spicy_style.html">spicy_style()</a></code> for the journal styles, which outrank the
+language's own typography.</p></div>
     </div>
 
     <div class="section level2">

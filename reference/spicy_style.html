@@ -9,17 +9,17 @@
 decimals a p-value gets, where it bottoms out, whether it keeps its
 leading zero, what the decimal mark is, how a confidence interval is
 written. spicy_style() composes one by hand; the named themes
-("jama", "nejm", "lancet", "annals", "apa", "aer",
-"fr" – spicy_style_names() returns the list) are pre-composed
-ones, each encoding rules taken verbatim from an official document
-of the institution.'><meta property="og:description" content='A style is a small set of number-formatting rules – how many
+("jama", "nejm", "lancet", "annals", "apa", "aer" –
+spicy_style_names() returns the list) are pre-composed ones, each
+encoding rules taken verbatim from an official document of the
+institution.'><meta property="og:description" content='A style is a small set of number-formatting rules – how many
 decimals a p-value gets, where it bottoms out, whether it keeps its
 leading zero, what the decimal mark is, how a confidence interval is
 written. spicy_style() composes one by hand; the named themes
-("jama", "nejm", "lancet", "annals", "apa", "aer",
-"fr" – spicy_style_names() returns the list) are pre-composed
-ones, each encoding rules taken verbatim from an official document
-of the institution.'><meta property="og:image" content="https://amaltawfik.github.io/spicy/logo.svg"></head><body>
+("jama", "nejm", "lancet", "annals", "apa", "aer" –
+spicy_style_names() returns the list) are pre-composed ones, each
+encoding rules taken verbatim from an official document of the
+institution.'><meta property="og:image" content="https://amaltawfik.github.io/spicy/logo.svg"></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -89,10 +89,10 @@ of the institution.'><meta property="og:image" content="https://amaltawfik.githu
 decimals a p-value gets, where it bottoms out, whether it keeps its
 leading zero, what the decimal mark is, how a confidence interval is
 written. <code>spicy_style()</code> composes one by hand; the named themes
-(<code>"jama"</code>, <code>"nejm"</code>, <code>"lancet"</code>, <code>"annals"</code>, <code>"apa"</code>, <code>"aer"</code>,
-<code>"fr"</code> – <code>spicy_style_names()</code> returns the list) are pre-composed
-ones, each encoding rules taken verbatim from an official document
-of the institution.</p>
+(<code>"jama"</code>, <code>"nejm"</code>, <code>"lancet"</code>, <code>"annals"</code>, <code>"apa"</code>, <code>"aer"</code> –
+<code>spicy_style_names()</code> returns the list) are pre-composed ones, each
+encoding rules taken verbatim from an official document of the
+institution.</p>
     </div>
 
     <div class="section level2">
@@ -241,9 +241,52 @@ derived from them. The leading-zero rule is orthogonal and stays.</p>
     </div>
     <div class="section level2">
     <h2 id="resolution-order">Resolution order<a class="anchor" aria-label="anchor" href="#resolution-order"></a></h2>
-    <p><code>style</code> argument, then <code>getOption("spicy.style")</code>, then spicy's
-defaults. Within a style, an explicit function argument beats the
-style's value for the same lever.</p>
+    <p>An argument you type, then the <code>style</code> argument, then
+<code>getOption("spicy.style")</code>, then the typography of
+<code>getOption("spicy.language")</code>, then spicy's defaults. Within a
+style, an explicit function argument beats the style's value for
+the same lever.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="the-language-s-locale">The language's locale<a class="anchor" aria-label="anchor" href="#the-language-s-locale"></a></h2>
+    <p>A language brings its typography with it, at the bottom of that
+order. <code>options(spicy.language = "fr")</code> is therefore one gesture
+for a coherent French report table – French words, and numbers
+written the French way: comma decimal mark, and the leading zero
+French typography keeps on a p-value (<code>0,003</code>). "La virgule est
+utilisee pour separer les unites des decimales" (European Union,
+<em>Code de redaction interinstitutionnel</em>, French edition 2022,
+point 6.5, <code>https://style-guide.europa.eu/fr</code>); "Si le nombre se
+situe entre +1 et -1, le separateur decimal est toujours precede
+d'un zero" (BIPM, <em>Le Systeme international d'unites</em>, 9th
+edition, 2019, section 5.4.4,
+<code>https://www.bipm.org/documents/20126/41483022/SI-Brochure-9.pdf</code>).
+<code>"en"</code> brings no locale, and nothing changes for anyone who sets
+no language. The exploration pair sits outside its reach: <code><a href="freq.html">freq()</a></code>
+and <code><a href="cross_tab.html">cross_tab()</a></code> have no style layer, so their <code>decimal_mark</code>
+stays an argument set by hand.</p>
+<p>A theme composes with a locale rather than fighting it, because a
+theme encodes only what its own source states: <code>"jama"</code> fixes no
+decimal mark, so JAMA under a French language gives JAMA's p-value
+rules and the French comma. Where the two do meet, the theme wins –
+you asked for it by name. <code>"lancet"</code> keeps its midline decimal
+point; <code>"apa"</code> keeps its missing leading zero, which under a comma
+prints <code>,003</code>, a form the SI brochure forbids. That is the price of
+an explicit gesture; to keep APA's other rules and restore the
+zero, compose the way out yourself:
+<code>style = spicy_style("apa", p_style = "standard")</code>. One lever bends
+the other way: a theme's <code>", "</code> interval separator was sourced
+under a dot mark, and under a comma mark it would BE the mark – so
+it yields to the derived <code>"; "</code>, exactly as the French adaptations
+of APA style themselves write (<code>[3,45; 6,78]</code>). Any other
+separator (<code>" to "</code>, an en dash) is unambiguous and stays.</p>
+<p>An argument beats both, which is the escape hatch for a bilingual
+table: <code>decimal_mark = "."</code> under a French language gives French
+words and a decimal point. It moves only the mark: the p-value
+keeps the locale's leading zero (<code>0.003</code>), because <code>p_style</code> is a
+style lever with no argument of its own –
+<code>style = spicy_style(p_style = "apa")</code> drops it again.</p>
+<p>See <code><a href="spicy_labels.html">spicy_labels()</a></code> for the language option itself.</p>
     </div>
     <div class="section level2">
     <h2 id="themes">Themes<a class="anchor" aria-label="anchor" href="#themes"></a></h2>
@@ -412,31 +455,6 @@ spicy already defaults to <code>stars = FALSE</code>. Ask for
 floor, no interval format and no decimal mark, so spicy's defaults
 apply. Horizontal-rules-only, no shading, a nine-column maximum and
 "Panel A / Panel B" blocks are layout, not number formatting.</p>
-</div>
-
-<div class="section">
-<h3 id="-fr-french-language-typography-a-locale-not-a-journal-"><code>"fr"</code> – French-language typography (a locale, not a journal)<a class="anchor" aria-label="anchor" href="#-fr-french-language-typography-a-locale-not-a-journal-"></a></h3>
-
-
-<p>Sources: BIPM, <em>Le Systeme international d'unites</em>, 9th edition,
-2019, section 5.4.4
-(<code>https://www.bipm.org/documents/20126/41483022/SI-Brochure-9.pdf</code>);
-European Union, <em>Code de redaction interinstitutionnel</em>, French
-edition 2022, point 6.5 (<code>https://style-guide.europa.eu/fr</code>); both
-consulted 2026-08-14.</p>
-<p>Encoded:</p><ul><li><p>comma as the decimal mark – "La virgule est utilisee pour
-separer les unites des decimales" (EU, 6.5); the SI brochure
-leaves the choice to the language: "Le separateur decimal choisi
-sera celui qui est d'usage courant selon la langue concernee et
-le contexte."</p></li>
-<li><p>leading zero kept, p-values included – "Si le nombre se
-situe entre +1 et -1, le separateur decimal est toujours precede
-d'un zero : par exemple, -0,234 mais pas -,234" (SI, 5.4.4).
-This is what makes the theme worth having: with only
-<code>decimal_mark = ","</code>, spicy would print a p-value as <code>,003</code>.</p></li>
-</ul><p>The semicolon that separates interval bounds under a comma decimal
-mark is spicy's own disambiguation rule, not a sourced one; it
-follows from <code>decimal_mark</code> and needs no entry here.</p>
 </div>
 
     </div>

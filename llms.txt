@@ -82,9 +82,11 @@ row-wise summaries.
   per-predictor N and events, for `glm`, `lm`, and Cox outcomes.
 - **Journal styles** with
   [`spicy_style()`](https://amaltawfik.github.io/spicy/reference/spicy_style.md):
-  `style = "jama"`, `"nejm"`, `"lancet"`, `"annals"`, `"apa"`, `"aer"`,
-  or `"fr"` restyles any table, every rule sourced from the journal’s
-  author guidelines.
+  `style = "jama"`, `"nejm"`, `"lancet"`, `"annals"`, `"apa"`, or
+  `"aer"` restyles any table, every rule sourced from the journal’s
+  author guidelines. For a French table,
+  `options(spicy.language = "fr")` gives the words and the French
+  typography together.
 - **Variable inspection** with
   [`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md)
   and [`vl()`](https://amaltawfik.github.io/spicy/reference/varlist.md):
@@ -451,7 +453,7 @@ table_continuous(
 #>                                 │ Upper secondary     3.43       3.63    534 
 #>                                 │ Tertiary            4.01       4.21    399 
 #> 
-#>  Variable                       │ Group            p (n) 
+#>  Variable                       │ Group              p   
 #> ────────────────────────────────┼────────────────────────
 #>  Body mass index                │ Lower secondary  <.001 
 #>                                 │ Upper secondary        

@@ -926,8 +926,8 @@ call site.</p></dd>
 
 
 <dt id="arg-style">style<a class="anchor" aria-label="anchor" href="#arg-style"></a></dt>
-<dd><p>A journal or locale style: a theme name (<code>"jama"</code>,
-<code>"lancet"</code>, <code>"annals"</code>, <code>"apa"</code>, <code>"aer"</code>, <code>"fr"</code>), a
+<dd><p>A journal style: a theme name (<code>"jama"</code>, <code>"nejm"</code>,
+<code>"lancet"</code>, <code>"annals"</code>, <code>"apa"</code>, <code>"aer"</code>), a
 <code><a href="spicy_style.html">spicy_style()</a></code> object, or <code>NULL</code> (the default). A style only
 changes DEFAULTS – any argument you pass explicitly wins over it.
 Set <code>options(spicy.style = )</code> for document-wide scope. A theme
@@ -1543,12 +1543,12 @@ numeric so cluster-robust Satterthwaite df is preserved.</p>
     <div class="section level2">
     <h2 id="global-options">Global options<a class="anchor" aria-label="anchor" href="#global-options"></a></h2>
 
-<ul><li><p><strong><code>options(spicy.style = )</code></strong> – the journal or locale style
-applied by default to all four table families
+<ul><li><p><strong><code>options(spicy.style = )</code></strong> – the journal style applied by
+default to all four table families
 (<code>table_regression()</code>, <code><a href="table_categorical.html">table_categorical()</a></code>,
 <code><a href="table_continuous.html">table_continuous()</a></code>, <code><a href="table_continuous_lm.html">table_continuous_lm()</a></code>). Takes a theme
-name (<code>"jama"</code>, <code>"lancet"</code>, <code>"annals"</code>, <code>"apa"</code>, <code>"aer"</code>,
-<code>"fr"</code>) or a <code><a href="spicy_style.html">spicy_style()</a></code> object. The style of a report is a
+name (<code>"jama"</code>, <code>"nejm"</code>, <code>"lancet"</code>, <code>"annals"</code>, <code>"apa"</code>,
+<code>"aer"</code>) or a <code><a href="spicy_style.html">spicy_style()</a></code> object. The style of a report is a
 property of the document, so it is set once in the setup chunk;
 the <code>style</code> argument overrides it per call, and any formatting
 argument you type overrides both. <code>options(spicy.style = NULL)</code>

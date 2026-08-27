@@ -211,10 +211,11 @@ weights.</p></dd>
 
 <dt id="arg-decimal-mark">decimal_mark<a class="anchor" aria-label="anchor" href="#arg-decimal-mark"></a></dt>
 <dd><p>Character used as the decimal mark in printed
-percentages. Either <code>"."</code> (the default) or <code>","</code>. Matches the
-<code>decimal_mark</code> argument of <code><a href="cross_tab.html">cross_tab()</a></code> and the three
-<code>table_*()</code> helpers, so European-locale users get a consistent
-experience across the package.</p></dd>
+percentages. Either <code>"."</code> (the default) or <code>","</code>. The reporting
+<code>table_*()</code> families take the comma automatically from
+<code>options(spicy.language = "fr")</code>; the exploration pair has no
+style layer, so here (and in <code><a href="cross_tab.html">cross_tab()</a></code>) the mark is set by
+hand.</p></dd>
 
 
 <dt id="arg-output">output<a class="anchor" aria-label="anchor" href="#arg-output"></a></dt>

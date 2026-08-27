@@ -25,10 +25,11 @@ A named character vector, one element per key, in registry order.
 
 ## Global options
 
-- **`options(spicy.language = "fr")`** The language of the labels, for
-  the whole document. Two sets ship: `"en"` (the default) and `"fr"`.
-  The language of a report is a property of the report, so this is set
-  once in a setup chunk rather than passed to each table.
+- **`options(spicy.language = "fr")`** The language of the table, for
+  the whole document – its labels and the typography its numbers are
+  written in. Two sets ship: `"en"` (the default) and `"fr"`. The
+  language of a report is a property of the report, so this is set once
+  in a setup chunk rather than passed to each table.
 
 - **`options(spicy.labels = list(<key> = "<label>"))`** A per-label
   override, for the case where one word has to change and a language
@@ -61,16 +62,50 @@ category is such a level, so it is the one name that does move:
 whatever `row_missing_level` is overridden to). Address that column
 through `row_missing_level` rather than by typing it.
 
-Number FORMATTING is a separate lever. `options(spicy.language = "fr")`
-translates the words; the `"fr"` style (`options(spicy.style = "fr")`,
-see
-[`spicy_style()`](https://amaltawfik.github.io/spicy/reference/spicy_style.md))
-writes the decimal comma. A French report usually wants both.
+## Numbers follow the language too
+
+A language brings its typographic locale with it, so
+`options(spicy.language = "fr")` is one gesture for a coherent French
+report table: French words, comma decimal mark, and the leading zero
+French typography keeps on a p-value (`0,003`). The sources are the
+BIPM's SI brochure and the European Union's *Code de redaction
+interinstitutionnel*;
+[`spicy_style()`](https://amaltawfik.github.io/spicy/reference/spicy_style.md)
+quotes them. `"en"` brings no locale, and nothing changes for anyone who
+sets no language.
+
+The locale rides the style layer, so it reaches the reporting families –
+[`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md),
+[`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
+[`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
+[`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md),
+[`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md)
+and the survey twins. The exploration pair has no such layer:
+[`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md) and
+[`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
+translate their words under a language but keep their own `decimal_mark`
+argument, set by hand.
+
+The locale sits at the BOTTOM of the formatting resolution. A journal
+style outranks it – `style = "jama"` under `"fr"` gives JAMA's p-values
+and the French comma, `style = "lancet"` keeps the journal's midline
+decimal point – and an argument you type outranks both, so
+`decimal_mark = "."` gives French words with a decimal point (the
+p-value keeps its locale zero;
+[`spicy_style()`](https://amaltawfik.github.io/spicy/reference/spicy_style.md)
+documents that lever).
+
+Two timing notes. Figures are frozen when a table is BUILT, like every
+formatting argument, while words resolve when it is printed – so set the
+language once, at the top of the document. And a comma mark makes an
+Excel export write its body as text rather than live numbers, since
+Excel would otherwise re-punctuate a numeric cell with the viewer's own
+locale.
 
 ## See also
 
 [`spicy_style()`](https://amaltawfik.github.io/spicy/reference/spicy_style.md)
-for number formatting, including the French decimal comma.
+for the journal styles, which outrank the language's own typography.
 
 ## Examples
 
