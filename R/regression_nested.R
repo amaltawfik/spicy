@@ -819,14 +819,35 @@ compute_one_pair_rq <- function(fit_prev, fit_curr) {
 # fallback computes (pinned as an oracle in the tests, to the last
 # digit); ols is the class that gains a comparison it never had.
 #
-# One correction is applied to its answer. lrtest() takes abs() of BOTH
-# the statistic and the degrees of freedom, so a pair handed over the
-# wrong way round comes back as a positive chi-square carrying a
-# significant p -- a direction that did not happen. The admissibility
-# rule the other two paths apply is applied here too, on the SIGNED
-# parameter increase. rms's own warnings (psm scale parameters) are left
-# to reach the user: an engine's caveat about the comparison it is
-# performing is part of the answer.
+# Two corrections are applied to its answer.
+#
+# DIRECTION. lrtest() takes abs() of BOTH the statistic and the degrees
+# of freedom, so a pair handed over the wrong way round comes back as a
+# positive chi-square carrying a significant p -- a direction that did
+# not happen. Reading the parameter count alone does not catch it: a
+# pair that ADDS parameters while fitting WORSE (a REPLACED predictor
+# rather than an added one) increases the df and so passes that test,
+# and abs() then publishes the degradation as a highly significant
+# improvement. Measured on lrm(yb ~ x1) against lrm(yb ~ x2 + x3):
+# DeltaChi2 +46.65 with p 8.5e-12, beside a DeltaAIC of +48.65. The
+# SIGNED likelihood difference is rebuilt from the two fits' own
+# logLik() methods -- every class in the family has one -- and it, not
+# rms's absolute value, is what the shared admissibility rule reads.
+# Zero passes: two identical fits are a chi-square of 0, not a
+# direction.
+#
+# P-VALUE. lrtest() ends with `1 - pchisq(chisq, dof)`, which cancels to
+# exactly 0 once p drops below ~1e-16 -- the ordinary case for a nested
+# hierarchy with a real effect. The statistic and the degrees of freedom
+# are rms's, exact to the last digit; the p-value is recomputed from
+# them on the upper tail, because a p of 0 is not a p and it travels
+# into as_structured() and every numeric extraction.
+#
+# rms's own warnings (psm scale parameters) are left to reach the user:
+# an engine's caveat about the comparison it is performing is part of
+# the answer. (With rms 8.1.1 that particular branch is not reachable --
+# fit$parms is length 0 for weibull and for exponential alike -- so it
+# is a policy about relaying warnings, not a described behaviour.)
 #
 # Variance-explained tokens stay NA for the whole family, ols included:
 # the comparison reported IS the likelihood-ratio chi-square, and
@@ -855,7 +876,18 @@ compute_one_pair_rms <- function(fit_prev, fit_curr) {
   st <- rms_lrtest_stats(fit_prev, fit_curr)
   lrt_stat <- st$stat
   p_val <- st$p
-  if (!lrt_admissible(lrt_stat, loglik_df_increase(fit_prev, fit_curr))) {
+  # The admissibility rule reads the SIGNED difference, never rms's
+  # absolute one: on this route `stat < 0` would be dead code otherwise,
+  # and the parameter count alone lets a worse-fitting larger model
+  # through. An UNKNOWN signed difference is not evidence against the
+  # pair and does not veto (the rule the other two routes apply to an
+  # unknown df increase), so the df test still stands behind it.
+  signed_stat <- rms_signed_lr_change(fit_prev, fit_curr)
+  df_increase <- loglik_df_increase(fit_prev, fit_curr)
+  if (
+    !lrt_admissible(lrt_stat, df_increase) ||
+      isTRUE(signed_stat < 0)
+  ) {
     lrt_stat <- NA_real_
     p_val <- NA_real_
   }
@@ -901,10 +933,32 @@ rms_lrtest_stats <- function(fit_prev, fit_curr) {
     abort_rms_lrtest_refused(out)
   }
   s <- out$stats
-  list(
-    stat = scalar_or_na(s[["L.R. Chisq"]]),
-    p = scalar_or_na(s[["P"]])
-  )
+  stat <- scalar_or_na(s[["L.R. Chisq"]])
+  df <- scalar_or_na(s[["d.f."]])
+  # rms reports P as `1 - pchisq(chisq, dof)`, which underflows to
+  # exactly 0 below p ~ 1.1e-16. Its chi-square and degrees of freedom
+  # are kept as they are; the tail probability is recomputed from them.
+  p <- if (is.finite(stat) && is.finite(df) && df > 0) {
+    stats::pchisq(stat, df = df, lower.tail = FALSE)
+  } else {
+    scalar_or_na(s[["P"]]) # nocov -- lrtest() aborts when dof is 0
+  }
+  list(stat = stat, p = p)
+}
+
+# The SIGNED likelihood-ratio change of a pair, 2 (l_curr - l_prev),
+# from the fits' own logLik() methods. NA when either likelihood is
+# unavailable. This is the quantity rms::lrtest() discards with abs();
+# rebuilding it is what tells an added predictor from a replaced one.
+rms_signed_lr_change <- function(fit_prev, fit_curr) {
+  ll_of <- function(fit) {
+    ll <- tryCatch(
+      suppressWarnings(stats::logLik(fit)),
+      error = function(e) NULL
+    )
+    if (!inherits(ll, "logLik")) NA_real_ else scalar_or_na(as.numeric(ll))
+  }
+  2 * (ll_of(fit_curr) - ll_of(fit_prev))
 }
 
 # Relay rms's refusal rather than working around it. The relayed sentence
@@ -1066,6 +1120,24 @@ nested_anova_method_exists <- function(fit) {
   FALSE
 }
 
+# Names local to this file, scrubbed out of a relayed engine message.
+#
+# Some engines build their message by deparsing the arguments they were
+# handed: anova.rms reads its `...` as the names of factors to test and
+# answers "factor names not in design:  fit_curr", quoting a spicy
+# local at a user who has never seen it (register n. 246(f)). The
+# all-rms route no longer reaches that method, but a MIXED hierarchy --
+# one rms fit, one not -- still does, through the public entry point.
+# The names are replaced by what they stand for; nothing else in the
+# engine's sentence is touched.
+scrub_internal_fit_names <- function(x) {
+  if (!is.character(x) || length(x) != 1L) {
+    return(x) # nocov -- conditionMessage() is always a length-1 string
+  }
+  x <- gsub("fit_prev[[:space:],]+fit_curr", "the models", x)
+  gsub("fit_prev|fit_curr", "the models", x)
+}
+
 # Relay the engine's refusal rather than working around it. The relayed
 # sentence is the model package's own and is locale-translated, so it is
 # quoted, never parsed.
@@ -1073,7 +1145,7 @@ abort_nested_anova_refused <- function(fit_prev, fit_curr, cnd) {
   detail <- if (is.null(cnd)) {
     "the method returned no model-comparison table"
   } else {
-    conditionMessage(cnd)
+    scrub_internal_fit_names(conditionMessage(cnd))
   }
   hint <- if (
     inherits(fit_prev, c("gls", "lme")) &&

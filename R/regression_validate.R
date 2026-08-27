@@ -1409,17 +1409,23 @@ validate_class_appropriate_tokens <- function(
   if (length(bad_fit) > 0L && !all_glm && all_likelihood_path(eff_models)) {
     spicy_abort(
       c(
+        # The headline names the ROUTE, not a property of the class.
+        # "not defined for `ols` models" was simply false: rms::ols IS
+        # ordinary least squares, its R^2 matches lm's to 1e-12, and
+        # DeltaR^2 is perfectly well defined on such a pair --
+        # fixest::feols is the same case. What is true of every class
+        # that reaches here is that spicy compares the hierarchy
+        # through the likelihood, and that route carries no
+        # variance-explained change.
         sprintf(
-          "Token(s) %s in `show_fit_stats` are not defined for `%s` models.",
-          paste(.quote_val(bad_fit), collapse = ", "),
-          class(eff_models[[1L]])[1L]
+          paste0(
+            "spicy compares a `%s` hierarchy through the ",
+            "likelihood-ratio chi-square, so token(s) %s in ",
+            "`show_fit_stats` are not computed on this route."
+          ),
+          class(eff_models[[1L]])[1L],
+          paste(.quote_val(bad_fit), collapse = ", ")
         ),
-        # The reason names what SPICY reports for this hierarchy, not
-        # what the estimator is. Saying "no analog outside the
-        # least-squares framework" was false for two of the classes
-        # that reach here: fixest::feols() IS least squares, with a
-        # real R^2, and gls is a milder case -- both are routed to the
-        # likelihood pair, which is the fact the user needs.
         "i" = paste0(
           "The nested comparison for these fits is a ",
           "likelihood-ratio chi-square, which reports no ",
