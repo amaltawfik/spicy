@@ -1518,10 +1518,15 @@ validate_class_appropriate_tokens <- function(
           "hierarchy has neither a likelihood-ratio test nor a partial ",
           "F to report."
         ),
+        # The remedy has to be something the caller has not already
+        # done: this arm is not conditioned on `nested`, so it fires on
+        # a single fit and on a `nested = FALSE` pair, and telling
+        # either of those to pass `nested = FALSE` is no remedy at all.
+        # Dropping the token is, and it is the same one the homologous
+        # glm arm offers.
         "i" = paste0(
-          "Render the models side by side with `nested = FALSE`, or ",
-          "compare the least-squares fits (`lm()`) if the hierarchy ",
-          "itself is the question."
+          "Drop the token, or compare the least-squares fits (`lm()`) ",
+          "if the hierarchy itself is the question."
         )
       ),
       class = "spicy_invalid_input"

@@ -402,6 +402,25 @@ test_that("an explicit change token on an rlm pair names the token", {
     )
     expect_match(conditionMessage(err), tok, fixed = TRUE, info = tok)
   }
+  # The arm is not conditioned on `nested`, so it fires on a single fit
+  # and on a `nested = FALSE` pair alike -- and the remedy has to be
+  # something those callers have not already done. "Drop the token" is,
+  # and it is the one the homologous glm arm offers.
+  err <- expect_error(
+    table_regression(
+      list(m1, m2),
+      nested = FALSE,
+      show_fit_stats = c("nobs", "aic_change")
+    ),
+    class = "spicy_invalid_input"
+  )
+  expect_match(conditionMessage(err), "Drop the token", fixed = TRUE)
+  expect_false(grepl("with `nested = FALSE`", conditionMessage(err)))
+  err1 <- expect_error(
+    table_regression(m1, show_fit_stats = c("nobs", "aic_change")),
+    class = "spicy_invalid_input"
+  )
+  expect_match(conditionMessage(err1), "Drop the token", fixed = TRUE)
 })
 
 test_that("the rlm change refusal leaves the plain rlm table alone", {
