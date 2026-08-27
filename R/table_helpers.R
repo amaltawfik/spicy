@@ -103,12 +103,14 @@ format_number <- function(x, digits = 2L, decimal_mark = ".") {
   out
 }
 
-# Internal: APA-style *p*-value formatter. `digits` controls both
+# Internal: the shared *p*-value formatter. `digits` controls both
 # the displayed precision AND the small-`p` threshold: with
 # `digits = 3` the rendering is `.045` for ordinary p and `<.001`
-# below threshold; `digits = 4` gives `.0451` and `<.0001`. Leading
-# zeros are always stripped, the configured `decimal_mark` is
-# honoured. NA -> "".
+# below threshold; `digits = 4` gives `.0451` and `<.0001`. The
+# configured `decimal_mark` is honoured, and it also decides the
+# leading zero: dropped under a point (the APA form spicy defaults
+# to), kept under a comma (`0,045`, the only form the SI brochure
+# admits). NA -> "".
 #
 # A journal style (`R/spicy_style.R`) may override three of those
 # choices for the duration of a table call: how many decimals this
@@ -117,10 +119,11 @@ format_number <- function(x, digits = 2L, decimal_mark = ".") {
 # active every hook returns the value computed here, so the output
 # is byte-identical to the pre-style formatter.
 #
-# `leading_zero` answers the third question for a caller that has no
-# style layer to answer it through -- `cross_tab()`, whose only
-# typographic lever is `decimal_mark`. `NULL` (the default) asks the
-# style, which is what every other caller does.
+# `leading_zero` settles the third question outright for a caller that
+# wants no part of either rule -- `cross_tab()`, whose only typographic
+# lever is `decimal_mark`, states its own guarantee here. `NULL` (the
+# default) asks the style and then the mark, which is what every other
+# caller does.
 format_p_value <- function(
   p,
   decimal_mark = ".",
