@@ -867,7 +867,6 @@ instead of rendering an empty column.
   [`ordinal::clm()`](https://rdrr.io/pkg/ordinal/man/clm.html),
   [`nlme::gls()`](https://rdrr.io/pkg/nlme/man/gls.html),
   [`nls()`](https://rdrr.io/r/stats/nls.html),
-  [`MASS::rlm()`](https://rdrr.io/pkg/MASS/man/rlm.html),
   [`pscl::zeroinfl()`](https://rdrr.io/pkg/pscl/man/zeroinfl.html) and
   [`pscl::hurdle()`](https://rdrr.io/pkg/pscl/man/hurdle.html) fits
   failed with an untranslated base R error.
@@ -885,6 +884,76 @@ instead of rendering an empty column.
 
 - `nested = TRUE` no longer reports a negative chi-square with a p-value
   when the models are passed largest-first.
+
+- `nested = TRUE` over mixed-effects fits estimated by REML says in the
+  table note that its change statistics come from maximum-likelihood
+  refits, which need not match differences of the criteria the table
+  displays. `lme4` refits before it compares, so the two numbers
+  disagreed and nothing said why. The note appears only when the table
+  actually shows change rows.
+
+- `nested = TRUE` over mixed-effects fits reports no change statistics
+  when the hierarchy is passed largest-first. The engines reorder the
+  models by parameter count before comparing, so removing a predictor
+  came back as a significant improvement, with a change in `AIC` of the
+  wrong sign.
+
+- `nested = TRUE` refuses a mixed-effects hierarchy whose two models
+  come from different engines (`lme4`, `glmmTMB`, `nlme`). No engine’s
+  [`anova()`](https://rdrr.io/r/stats/anova.html) accepts a fit produced
+  by another, and the change column used to come back as dashes with
+  nothing said.
+
+- `nested = TRUE` compares `rms` fits through
+  [`rms::lrtest()`](https://rdrr.io/pkg/rms/man/rmsMisc.html). A
+  hierarchy of [`rms::lrm()`](https://rdrr.io/pkg/rms/man/lrm.html) or
+  [`rms::cph()`](https://rdrr.io/pkg/rms/man/cph.html) fits used to fail
+  outright, and one of
+  [`rms::ols()`](https://rdrr.io/pkg/rms/man/ols.html) fits rendered
+  with no change rows at all.
+
+- `nested = TRUE` over `rms` fits reports no chi-square when the second
+  model estimates more parameters and still fits worse – replacing a
+  predictor rather than adding one.
+  [`rms::lrtest()`](https://rdrr.io/pkg/rms/man/rmsMisc.html) reports
+  the absolute likelihood difference, so that case read as a highly
+  significant improvement.
+
+- `nested = TRUE` over `rms` fits reports a p-value where it used to
+  report exactly zero.
+  [`rms::lrtest()`](https://rdrr.io/pkg/rms/man/rmsMisc.html) computes
+  it by subtraction, which cancels to zero for any strong comparison.
+
+- `nested = TRUE` refuses a hierarchy of
+  [`MASS::rlm()`](https://rdrr.io/pkg/MASS/man/rlm.html) fits, and
+  refuses the change tokens in `show_fit_stats` for them. Robust
+  M-estimation has neither a likelihood-ratio test nor a partial F, and
+  the table used to render with the change rows silently missing.
+
+- `nested = TRUE` refuses a pair of `glmmTMB` fits estimated by REML
+  whose fixed effects differ, as it already did for `nlme`. The
+  comparison is not valid; the change column used to come back as
+  dashes.
+
+- `nested = TRUE` refuses a `fixest` hierarchy whose models absorb
+  different fixed effects. The likelihood counts the absorbed levels, so
+  the test measured the change in the fixed effects along with the
+  change in the coefficients. A varying slope counts: `| id` and
+  `| id[t]` are different structures.
+
+- `vcov = "HC4m"` on a survey-design fit is refused. It used to return a
+  sandwich matrix computed from the weighted working model, which the
+  table then labelled as design-based – a wrong number under a right
+  heading. Every other robust estimator was already refused there, and
+  `HC4m` is unchanged everywhere else.
+
+- An unknown `vcov` token reaching the frame layer is answered by spicy,
+  listing the valid ones, instead of by `sandwich`. Tokens such as
+  `"HC7"` used to reach the backend through their `HC` prefix;
+  [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  and
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
+  already refused them at the call.
 
 - `output = "gt"`: two `by` levels differing only in whitespace (`"A B"`
   and `"A-B"`) no longer collapse to the same HTML id.
