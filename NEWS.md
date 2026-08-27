@@ -632,7 +632,7 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
 
 * `nested = TRUE` works for every model class that has a likelihood. Nested
   comparisons of `survival::survreg()`, `MASS::polr()`, `ordinal::clm()`,
-  `nlme::gls()`, `nls()`, `MASS::rlm()`, `pscl::zeroinfl()` and
+  `nlme::gls()`, `nls()`, `pscl::zeroinfl()` and
   `pscl::hurdle()` fits failed with an untranslated base R error.
 
 * `nested = TRUE` reports the likelihood-ratio change test for classes that
@@ -644,6 +644,33 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
 
 * `nested = TRUE` no longer reports a negative chi-square with a p-value
   when the models are passed largest-first.
+
+* `nested = TRUE` over mixed-effects fits estimated by REML says in the
+  table note that its change statistics come from maximum-likelihood
+  refits, and that the `AIC` rows above them do not. `lme4` refits before
+  it compares, so the two numbers disagreed and nothing said why.
+
+* `nested = TRUE` compares `rms` fits through `rms::lrtest()`. A hierarchy
+  of `rms::lrm()` or `rms::cph()` fits used to fail outright, and one of
+  `rms::ols()` fits rendered with no change rows at all.
+
+* `nested = TRUE` refuses a hierarchy of `MASS::rlm()` fits, and refuses
+  the change tokens in `show_fit_stats` for them. Robust M-estimation has
+  neither a likelihood-ratio test nor a partial F, and the table used to
+  render with the change rows silently missing.
+
+* `nested = TRUE` refuses a pair of `glmmTMB` fits estimated by REML whose
+  fixed effects differ, as it already did for `nlme`. The comparison is
+  not valid; the change column used to come back as dashes.
+
+* `nested = TRUE` refuses a `fixest` hierarchy whose models absorb
+  different fixed effects. The likelihood counts the absorbed levels, so
+  the test measured the change in the fixed effects along with the change
+  in the coefficients.
+
+* An unknown `vcov` token is answered by spicy, listing the valid ones,
+  instead of by `sandwich`. Tokens such as `"HC7"` used to reach the
+  backend through their `HC` prefix.
 
 * `output = "gt"`: two `by` levels differing only in whitespace (`"A B"` and
   `"A-B"`) no longer collapse to the same HTML id.
