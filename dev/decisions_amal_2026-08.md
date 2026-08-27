@@ -730,3 +730,30 @@ précédent SPSS (virgule partout en français, exploration comprise).
 - Clôt la question n°262 du registre.
 Exécution : petit lot dédié, séquencé APRÈS le merge du train
 nested244 (chevauchement i18n.R/NEWS).
+
+## Décision 45 — Format multilingue v1.0 : registre R par langue, vue générée, jamais de CSV-source (2026-08-27)
+
+Tranché par Amal (« si c'est vraiment la manière la plus pro et
+robuste, je valide ») sur recommandation argumentée.
+- La SOURCE de chaque langue reste un fichier R par langue
+  (.spicy_strings_xx + .spicy_locale_xx, clés stables, échappements
+  ASCII, commentaires-contrat) — le modèle CSV de gtsummary est
+  écarté pour sa fragilité structurelle : indexé par le TEXTE anglais,
+  toute reformulation détache silencieusement les traductions ; pas
+  de commentaires, échappement fragile, table large à conflits,
+  sysdata binaire.
+- La vue matricielle (côte-à-côte des langues) est un ARTEFACT GÉNÉRÉ
+  depuis la source (le modèle dev/i18n_fr_review_table.md), jamais
+  l'inverse.
+- Outillage v1.0 : tools/i18n_new_language.R (échafaudage d'un
+  fichier de langue depuis le registre : clés + anglais en
+  commentaire + emplacements vides, auto-échappement, validateur de
+  trous) + génération de la table de relecture par langue.
+- gettext/.po reste écarté pour les tables (indexé par texte anglais
+  aussi, piloté par la machine et non par le document) ; resterait la
+  voie naturelle SI un jour on traduisait les conditions — que notre
+  contrat garde anglaises.
+- Escalade théorique (10+ langues) : fichiers YAML par langue lus au
+  build — jamais un CSV. À ne considérer qu'à ce seuil.
+Rien à implémenter avant la v1.0 ; l'architecture actuelle est déjà
+conforme.
