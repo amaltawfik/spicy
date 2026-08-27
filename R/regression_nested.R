@@ -267,6 +267,71 @@ check_nested_reml_pair <- function(fit_prev, fit_curr) {
 }
 
 
+# ---- Absorbed fixed-effects guard (fixest) -------------------------------
+
+# Signature of a fixest fit's ABSORBED fixed-effects structure: the
+# dimension names, sorted, joined by "&". `fixef_vars` is the documented
+# field ("The names of each fixed-effect dimension", ?feols Value), NULL
+# for a fit with no `| fe` part -- which is a structure like any other
+# and gets the empty key.
+fixest_fe_key <- function(fit) {
+  paste(sort(as.character(fit$fixef_vars %||% character(0))), collapse = "&")
+}
+
+# Refuse a likelihood-ratio comparison of two fixest fits that absorbed
+# DIFFERENT fixed-effects structures.
+#
+# fixest counts every absorbed level as an estimated parameter: on the
+# `trade` data, logLik() reports df 17 for one FE dimension and 32 for
+# two. The LRT built from those likelihoods then measures the change in
+# the FE structure alongside the change in the coefficients, and the two
+# are not separable -- measured on that pair, DeltaChi2 10656.65 with
+# p = 0, a number that says nothing about the covariate the user added.
+# Within a SHARED structure the absorbed levels contribute the same
+# constant to both sides and the test is exactly the one the user meant,
+# so that pair is untouched.
+#
+# The check is structural (which dimensions were absorbed), not
+# numerical (how many levels): two fits absorbing the same factor on
+# different subsamples are caught earlier, by the sample-size gate.
+check_nested_fixest_fe_pair <- function(fit_prev, fit_curr) {
+  if (!(inherits(fit_prev, "fixest") && inherits(fit_curr, "fixest"))) {
+    return(invisible(NULL))
+  }
+  if (identical(fixest_fe_key(fit_prev), fixest_fe_key(fit_curr))) {
+    return(invisible(NULL))
+  }
+  describe <- function(fit) {
+    fe <- as.character(fit$fixef_vars %||% character(0))
+    if (length(fe) == 0L) "none" else paste(fe, collapse = " + ")
+  }
+  spicy_abort(
+    c(
+      paste0(
+        "`nested = TRUE` cannot compare fixest fits that absorbed ",
+        "different fixed effects."
+      ),
+      "x" = sprintf(
+        "Absorbed: %s, then %s.",
+        describe(fit_prev),
+        describe(fit_curr)
+      ),
+      "i" = paste0(
+        "fixest counts every absorbed level as an estimated parameter, ",
+        "so a likelihood-ratio test across two structures measures the ",
+        "change in the fixed effects together with the change in the ",
+        "coefficients, and the two cannot be separated."
+      ),
+      "i" = paste0(
+        "Hold the `| fe` part fixed across the hierarchy, or render the ",
+        "models side by side with `nested = FALSE`."
+      )
+    ),
+    class = "spicy_invalid_input"
+  )
+}
+
+
 # ---- Public-internal entry point -----------------------------------------
 
 # Compute pairwise nested-comparison statistics for all adjacent pairs
@@ -285,6 +350,7 @@ compute_nested_comparisons <- function(fits) {
     fit_prev <- fits[[k]]
     fit_curr <- fits[[k + 1L]]
     check_nested_reml_pair(fit_prev, fit_curr)
+    check_nested_fixest_fe_pair(fit_prev, fit_curr)
     pair_mixed <- is_mixed(fit_prev) && is_mixed(fit_curr)
     pair_glm <- inherits(fit_prev, "glm") && inherits(fit_curr, "glm")
     # Every class that carries a likelihood has a nested likelihood-ratio

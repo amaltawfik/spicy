@@ -316,3 +316,98 @@ test_that("the disclosure token is frozen, not resolved", {
   expect_identical(spicy:::.reg_fe_cell_label("No"), "[cell_no]")
   expect_identical(spicy:::.reg_fe_cell_label(""), "")
 })
+
+
+# ---- Nested comparison and the absorbed FE structure (n. 244(e)) --------
+#
+# fixest counts every absorbed level as an estimated parameter, so a
+# likelihood-ratio test across two FE structures measures the change in
+# the fixed effects together with the change in the coefficients. A
+# shared structure keeps the test exactly; a differing one is refused.
+
+.fe_nested_fits <- function() {
+  skip_if_not_installed("fixest")
+  tr <- .fe_trade()
+  list(
+    one_a = fixest::feols(log(Euros) ~ log(dist_km) | Origin, data = tr),
+    one_b = fixest::feols(
+      log(Euros) ~ log(dist_km) + log(dist_km)^2 | Origin,
+      data = tr
+    ),
+    two = fixest::feols(
+      log(Euros) ~ log(dist_km) | Origin + Product,
+      data = tr
+    ),
+    none = fixest::feols(log(Euros) ~ log(dist_km), data = tr)
+  )
+}
+
+test_that("differing absorbed fixed effects are refused, both directions", {
+  f <- .fe_nested_fits()
+  # The trap: logLik()'s df counts the absorbed levels, so the two fits
+  # do not have a common parameter baseline.
+  expect_gt(
+    attr(stats::logLik(f$two), "df"),
+    attr(stats::logLik(f$one_a), "df")
+  )
+  err <- expect_error(
+    spicy:::compute_nested_comparisons(list(f$one_a, f$two)),
+    class = "spicy_invalid_input"
+  )
+  expect_match(conditionMessage(err), "absorbed different fixed effects")
+  expect_match(conditionMessage(err), "Origin + Product", fixed = TRUE)
+  expect_error(
+    spicy:::compute_nested_comparisons(list(f$two, f$one_a)),
+    class = "spicy_invalid_input"
+  )
+})
+
+test_that("a fit with no FE part is a structure like any other", {
+  f <- .fe_nested_fits()
+  expect_identical(spicy:::fixest_fe_key(f$none), "")
+  expect_identical(spicy:::fixest_fe_key(f$one_a), "Origin")
+  err <- expect_error(
+    spicy:::compute_nested_comparisons(list(f$none, f$one_a)),
+    class = "spicy_invalid_input"
+  )
+  expect_match(conditionMessage(err), "none", fixed = TRUE)
+})
+
+test_that("a shared FE structure keeps the comparison it always had", {
+  f <- .fe_nested_fits()
+  tr <- .fe_trade()
+  big <- fixest::feols(
+    log(Euros) ~ log(dist_km) + log(Year) | Origin,
+    data = tr
+  )
+  got <- expect_no_error(
+    spicy:::compute_nested_comparisons(list(f$one_a, big))
+  )
+  # Numeric pin: the LRT is the plain likelihood difference, unchanged by
+  # the guard, and its df is the one added coefficient.
+  ll1 <- as.numeric(stats::logLik(f$one_a))
+  ll2 <- as.numeric(stats::logLik(big))
+  expect_equal(got$lrt_change[1L], 2 * (ll2 - ll1), tolerance = 1e-8)
+  expect_equal(
+    got$p_change[1L],
+    stats::pchisq(2 * (ll2 - ll1), df = 1L, lower.tail = FALSE),
+    tolerance = 1e-8
+  )
+  expect_identical(
+    spicy:::fixest_fe_key(f$one_a),
+    spicy:::fixest_fe_key(big)
+  )
+  # The guard ignores pairs it is not about.
+  expect_null(spicy:::check_nested_fixest_fe_pair(
+    lm(mpg ~ wt, mtcars),
+    f$one_a
+  ))
+})
+
+test_that("the FE guard reaches the public path", {
+  f <- .fe_nested_fits()
+  expect_error(
+    suppressWarnings(table_regression(list(f$one_a, f$two), nested = TRUE)),
+    class = "spicy_invalid_input"
+  )
+})
