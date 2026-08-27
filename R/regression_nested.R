@@ -43,6 +43,23 @@
 # this predicate is consulted.
 LEAST_SQUARES_CLASSES <- c("lm", "nls")
 
+# Every token that describes a CHANGE between two adjacent models, and
+# so exists only inside a hierarchy. Read by the class gates that refuse
+# a hierarchy outright (a class with no nested test of any kind); the
+# gates that refuse a SUBSET name their subset themselves.
+.NESTED_CHANGE_TOKENS <- c(
+  "r2_change",
+  "adj_r2_change",
+  "f_change",
+  "f2_change",
+  "lrt_change",
+  "aic_change",
+  "aicc_change",
+  "bic_change",
+  "deviance_change",
+  "p_change"
+)
+
 # TRUE when logLik() yields a finite scalar, i.e. the fit carries a
 # likelihood an LRT can be built from.
 has_usable_loglik <- function(fit) {

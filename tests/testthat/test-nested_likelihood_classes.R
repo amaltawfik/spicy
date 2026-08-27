@@ -368,6 +368,57 @@ test_that("rlm pair: least-squares path, undefined stats NA not fatal", {
   )
 })
 
+# ...and the PUBLIC path never gets there: an rlm hierarchy has no
+# nested comparison of any kind, so the request is refused rather than
+# rendered as a table with the change rows silently missing (register
+# n. 244(c)).
+test_that("rlm declares no nested test and `nested = TRUE` is refused", {
+  skip_if_no("MASS")
+  m1 <- MASS::rlm(mpg ~ wt, data = mtcars)
+  m2 <- MASS::rlm(mpg ~ wt + hp, data = mtcars)
+  fr <- as_regression_frame(m1)
+  expect_false(fr$info$supports$nested_lrt)
+  err <- expect_error(
+    table_regression(list(m1, m2), nested = TRUE),
+    class = "spicy_invalid_input"
+  )
+  expect_match(conditionMessage(err), "`rlm`", fixed = TRUE)
+  expect_match(conditionMessage(err), "M-estimation", fixed = TRUE)
+  # No internal object name leaks into the sentence.
+  expect_false(grepl("fit_curr|fit_prev", conditionMessage(err)))
+})
+
+test_that("an explicit change token on an rlm pair names the token", {
+  skip_if_no("MASS")
+  m1 <- MASS::rlm(mpg ~ wt, data = mtcars)
+  m2 <- MASS::rlm(mpg ~ wt + hp, data = mtcars)
+  for (tok in c("lrt_change", "aic_change", "r2_change", "p_change")) {
+    err <- expect_error(
+      table_regression(
+        list(m1, m2),
+        show_fit_stats = c("nobs", tok)
+      ),
+      class = "spicy_invalid_input"
+    )
+    expect_match(conditionMessage(err), tok, fixed = TRUE, info = tok)
+  }
+})
+
+test_that("the rlm change refusal leaves the plain rlm table alone", {
+  skip_if_no("MASS")
+  m1 <- MASS::rlm(mpg ~ wt, data = mtcars)
+  m2 <- MASS::rlm(mpg ~ wt + hp, data = mtcars)
+  expect_no_error(table_regression(list(m1, m2), output = "data.frame"))
+  # A MIXED hierarchy is not claimed by the all-rlm arm; the capability
+  # guard refuses it, naming the incapable class.
+  lm1 <- lm(mpg ~ wt, data = mtcars)
+  err <- expect_error(
+    table_regression(list(lm1, m2), nested = TRUE),
+    class = "spicy_invalid_input"
+  )
+  expect_match(conditionMessage(err), "`rlm`", fixed = TRUE)
+})
+
 # nls is least squares without the lm class; its nested test is the
 # extra-sum-of-squares F that anova.nls reports (Bates & Watts 1988).
 test_that("nls pair rides the F path with no R-squared", {

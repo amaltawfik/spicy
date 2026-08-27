@@ -1470,6 +1470,48 @@ validate_class_appropriate_tokens <- function(
     )
   }
 
+  # Robust M-estimation (MASS::rlm), which has no nested comparison of
+  # ANY kind -- unlike rq, which at least owns a Wald-type F. The
+  # objective is a bounded loss on the scaled residuals: it partitions no
+  # sums of squares (summary()$r.squared is a logical NA and
+  # adj.r.squared is absent altogether) and it is not a likelihood, so
+  # anova.rlm returns its table with the F and Pr(>F) cells deliberately
+  # empty. `stats::AIC()` does answer -- rlm inherits "lm", so logLik.lm
+  # computes the GAUSSIAN likelihood of the residuals, which is the
+  # criterion the M-estimator exists to avoid. Every change token is
+  # therefore refused, not a subset: an rlm hierarchy used to render with
+  # no change rows at all and no word about why (register n. 244(c)).
+  # The `supports$nested_lrt = FALSE` flag catches `nested = TRUE`; this
+  # arm catches the explicit request, and fires first because it can name
+  # the tokens.
+  bad_rlm <- intersect(show_fit_stats, .NESTED_CHANGE_TOKENS)
+  if (
+    length(bad_rlm) > 0L &&
+      length(eff_models) > 0L &&
+      all(vapply(eff_models, inherits, logical(1), "rlm"))
+  ) {
+    spicy_abort(
+      c(
+        sprintf(
+          "Token(s) %s in `show_fit_stats` are not defined for `rlm` models.",
+          paste(.quote_val(bad_rlm), collapse = ", ")
+        ),
+        "i" = paste0(
+          "M-estimation minimises a bounded loss rather than a ",
+          "likelihood or a residual sum of squares, so an rlm ",
+          "hierarchy has neither a likelihood-ratio test nor a partial ",
+          "F to report."
+        ),
+        "i" = paste0(
+          "Render the models side by side with `nested = FALSE`, or ",
+          "compare the least-squares fits (`lm()`) if the hierarchy ",
+          "itself is the question."
+        )
+      ),
+      class = "spicy_invalid_input"
+    )
+  }
+
   if (all_lm) {
     bad <- intersect(show_columns, "partial_chi2")
     if (length(bad) > 0L) {
