@@ -1254,8 +1254,13 @@ print.spicy_style <- function(x, ...) {
 # when p-values keep their leading zero, "apa" (the spicy default) when
 # they drop it. Consumed by the structured contract and by the Excel
 # number formats derived from it.
-.style_p_style_token <- function() {
-  if (.style_p_leading_zero()) "standard" else "apa"
+#
+# `decimal_mark` is the table's effective mark, for the same reason
+# `.style_p_leading_zero()` takes it: the token is what every
+# string-driven surface reads instead of calling the console's
+# formatter, so it has to answer the question the same way.
+.style_p_style_token <- function(decimal_mark = ".") {
+  if (.style_p_leading_zero(decimal_mark)) "standard" else "apa"
 }
 
 
@@ -1312,9 +1317,26 @@ print.spicy_style <- function(x, ...) {
 }
 
 # TRUE when a p-value keeps its leading zero.
-.style_p_leading_zero <- function() {
+#
+# Two answers, in order. A `p_style` in scope -- typed into
+# `spicy_style()`, carried by a theme, or brought by a language's
+# locale -- settles it outright: an explicit gesture keeps its rule
+# under any mark, which is why `"apa"` under a French language still
+# prints `,003` (documented in ?spicy_style). With no `p_style` at
+# all, the MARK settles it: a comma with nothing before it is not a
+# number the SI brochure admits (BIPM, 9th edition, section 5.4.4),
+# so a comma keeps the zero. Under a point nothing moves -- the APA
+# drop is spicy's own default.
+#
+# `decimal_mark` is the table's effective mark, threaded from the call
+# site rather than read from a global, so an object formats the same
+# way whatever the session is doing while it prints.
+.style_p_leading_zero <- function(decimal_mark = ".") {
   fmt <- .style_fmt()
-  identical(fmt$p_style, "standard")
+  if (!is.null(fmt$p_style)) {
+    return(identical(fmt$p_style, "standard"))
+  }
+  identical(decimal_mark, ",")
 }
 
 # Separator between the bounds of a confidence interval. `default` is

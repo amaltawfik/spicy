@@ -1506,9 +1506,10 @@ table_categorical <- function(
     }
     s <- formatC(v, format = "f", digits = v_digits)
     # The association measure is bounded, so it follows the same
-    # leading-zero policy as a p-value: dropped by default (APA), kept
-    # under a style that says so (`p_style = "standard"`).
-    s <- .strip_leading_zero(s, ".", .style_p_leading_zero())
+    # leading-zero policy as a p-value: dropped under a decimal point,
+    # kept under a comma mark or under a style that says so
+    # (`p_style = "standard"`).
+    s <- .strip_leading_zero(s, ".", .style_p_leading_zero(decimal_mark))
     if (decimal_mark != ".") {
       s <- sub("\\.", decimal_mark, s)
     }

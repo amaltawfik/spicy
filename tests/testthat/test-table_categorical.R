@@ -2597,7 +2597,7 @@ test_that("p_digits = 4 respects decimal_mark = ','", {
   )
   disp <- attr(out, "display_df")
   p_col <- disp[["p"]][nzchar(disp[["p"]])]
-  expect_true(any(grepl("^<,0001$", p_col)))
+  expect_true(any(grepl("^<0,0001$", p_col)))
 })
 
 test_that("table_categorical does not over-truncate p in (10^-p_digits, 0.001)", {

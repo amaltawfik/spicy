@@ -877,7 +877,7 @@ test_that("table_continuous_lm low-level formatting helpers behave as expected",
   expect_true(is.numeric(spicy:::get_r2_value_lm(block, "r2")))
   expect_equal(spicy:::format_number(c(1.2, NA), 1L, ","), c("1,2", ""))
   expect_equal(spicy:::format_p_value(NA_real_), "")
-  expect_equal(spicy:::format_p_value(0.045, ","), ",045")
+  expect_equal(spicy:::format_p_value(0.045, ","), "0,045")
 })
 
 test_that("a wide-character label does not split the console into panels", {
@@ -1856,10 +1856,25 @@ test_that("format_p_value derives threshold from digits", {
 })
 
 test_that("format_p_value respects European decimal mark across digits", {
-  expect_equal(spicy:::format_p_value(0.045, ",", 3L), ",045")
-  expect_equal(spicy:::format_p_value(0.0008, ",", 3L), "<,001")
-  expect_equal(spicy:::format_p_value(0.00008, ",", 4L), "<,0001")
-  expect_equal(spicy:::format_p_value(0.005, ",", 2L), "<,01")
+  # A comma keeps the leading zero at every precision: ",045" is not a
+  # number (BIPM, SI brochure 9th ed., 5.4.4).
+  expect_equal(spicy:::format_p_value(0.045, ",", 3L), "0,045")
+  expect_equal(spicy:::format_p_value(0.0008, ",", 3L), "<0,001")
+  expect_equal(spicy:::format_p_value(0.00008, ",", 4L), "<0,0001")
+  expect_equal(spicy:::format_p_value(0.005, ",", 2L), "<0,01")
+})
+
+test_that("an explicit leading_zero still outranks the mark", {
+  # The pair's lever (`cross_tab()` has no style layer): it can force
+  # the drop back under a comma, and force the zero under a point.
+  expect_equal(
+    spicy:::format_p_value(0.045, ",", 3L, leading_zero = FALSE),
+    ",045"
+  )
+  expect_equal(
+    spicy:::format_p_value(0.045, ".", 3L, leading_zero = TRUE),
+    "0.045"
+  )
 })
 
 test_that("format_p_value handles NA and falls back to default for bad digits", {

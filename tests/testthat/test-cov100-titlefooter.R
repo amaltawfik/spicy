@@ -407,7 +407,8 @@ test_that("beta abbreviation names the standardisation method and dummy conventi
 
 test_that("the stars legend follows the table's decimal mark", {
   # The legend used to hardcode the dot: a comma table printed a body
-  # in commas under a footer reading "p < .001".
+  # in commas under a footer reading "p < .001". The leading zero
+  # follows the mark with it -- "p < ,001" is not a number.
   fit <- lm(mpg ~ wt + hp, data = mtcars)
   txt <- paste(
     capture.output(print(
@@ -415,8 +416,9 @@ test_that("the stars legend follows the table's decimal mark", {
     )),
     collapse = "\n"
   )
-  expect_match(txt, "p < ,001", fixed = TRUE)
+  expect_match(txt, "p < 0,001", fixed = TRUE)
   expect_false(grepl("p < .001", txt, fixed = TRUE))
+  expect_false(grepl("p < ,001", txt, fixed = TRUE))
   # And the dot world is untouched.
   txt2 <- paste(
     capture.output(print(table_regression(fit, stars = TRUE))),

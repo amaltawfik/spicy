@@ -590,6 +590,14 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
   count used to keep a decimal point while the cells above them read a
   comma.
 
+* `decimal_mark = ","` keeps the leading zero of a p-value in every
+  `table_*()` family too, on the console and in every rendered output:
+  `0,018`, `<0,001`, and `*** p < 0,001` in the star legend, where they
+  used to read `,018`, `<,001` and `p < ,001`. The bounded association
+  measure of `table_categorical()` follows the same rule (`0,52`). A
+  `p_style` you asked for still wins, so `style = "jama"` under a comma
+  keeps JAMA's `,02`, and `decimal_mark = "."` is unchanged throughout.
+
 * `table_outcome()` names the argument it is missing. Omitting `outcome`
   or `select` used to die deep inside tidyselect on base R's own
   `argument "expr" is missing` message, translated by the session locale
@@ -858,8 +866,9 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
   are addressed by a CSS attribute selector, and the unescaped quote
   aborted gt's style compiler ("unterminated attribute selector").
 * The significance-star legend of `table_regression(stars = TRUE)` follows
-  the table's `decimal_mark`: a comma table now reads `p < ,001`, not
-  `p < .001`.
+  the table's `decimal_mark`, leading zero included: a comma table reads
+  `*** p < 0,001`, where it used to keep a decimal point under a body
+  printed in commas.
 * The confidence interval of an association measure in
   `table_categorical()` separates its bounds with `;` under
   `decimal_mark = ","`, as every other interval in the package already

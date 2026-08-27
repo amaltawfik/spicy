@@ -128,7 +128,7 @@ format_p_value <- function(
   }
   threshold <- .style_p_floor(digits)
   keep_zero <- if (is.null(leading_zero)) {
-    .style_p_leading_zero()
+    .style_p_leading_zero(decimal_mark)
   } else {
     isTRUE(leading_zero)
   }

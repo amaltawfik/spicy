@@ -1262,7 +1262,11 @@ format_cell_value <- function(
       digits = p_digits,
       decimal.mark = decimal_mark
     )
-    return(.strip_leading_zero(out, decimal_mark, .style_p_leading_zero()))
+    return(.strip_leading_zero(
+      out,
+      decimal_mark,
+      .style_p_leading_zero(decimal_mark)
+    ))
   }
   if (field %in% c("ess_bulk", "ess_tail")) {
     val <- long_row[[field]][1]

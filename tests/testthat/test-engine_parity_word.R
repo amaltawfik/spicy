@@ -100,7 +100,7 @@ test_that("stars reach the Word cells that the footer legend documents", {
   # The legend the audit found orphaned now documents symbols that are
   # in the table -- and its thresholds follow the table's decimal mark
   # (they used to stay dot-based in a comma table).
-  expect_match(.wd_note(rows), "*** p < ,001", fixed = TRUE)
+  expect_match(.wd_note(rows), "*** p < 0,001", fixed = TRUE)
 })
 
 

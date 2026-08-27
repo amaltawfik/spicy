@@ -512,6 +512,135 @@ test_that("the locale reaches the survey twins", {
   )
 })
 
+# ---- The mark alone, with no style ---------------------------------------
+
+test_that("a typed comma keeps the leading zero in every family", {
+  # The sibling of decision 43: with no `p_style` anywhere, the DEFAULT
+  # of the leading zero follows the MARK -- in the reporting families
+  # as it already did in the exploration pair. ",018" is not a number
+  # (BIPM, SI brochure 9th ed., 5.4.4).
+  d <- fixed_data()
+  # A stripped zero is a comma with a non-digit before it.
+  stripped <- function(txt) grepl("(^|[^0-9])[,][0-9]", txt)
+
+  cat_txt <- console(table_categorical(
+    d,
+    "cyl",
+    by = am,
+    assoc_ci = TRUE,
+    decimal_mark = ","
+  ))
+  expect_match(cat_txt, "0,013") # the p cell
+  expect_match(cat_txt, "0,52") # the bounded association measure
+  expect_false(stripped(cat_txt))
+
+  cont <- console(table_continuous(d, c(mpg, wt), by = am, decimal_mark = ","))
+  expect_match(cont, "<0,001") # the band below the floor
+  expect_false(stripped(cont))
+
+  lm_txt <- console(table_continuous_lm(
+    d,
+    c(mpg, wt),
+    by = am,
+    decimal_mark = ","
+  ))
+  expect_match(lm_txt, "<0,001")
+  expect_false(stripped(lm_txt))
+
+  out <- console(quietly(
+    table_outcome(d, mpg, select = am, decimal_mark = ",")
+  ))
+  expect_match(out, "0,001")
+  expect_false(stripped(out))
+
+  reg <- console(table_regression(
+    fixed_fit(),
+    stars = TRUE,
+    decimal_mark = ","
+  ))
+  expect_match(reg, "<0,001")
+  expect_match(reg, "*** p < 0,001", fixed = TRUE) # the star legend
+  expect_false(stripped(reg))
+})
+
+test_that("the mark reaches the survey twins too", {
+  skip_if_not_installed("survey")
+  d <- fixed_data()
+  d$w <- 1
+  des <- survey::svydesign(ids = ~1, weights = ~w, data = d)
+  txt <- console(quietly(
+    table_categorical_svy(des, "cyl", by = am, decimal_mark = ",")
+  ))
+  expect_match(txt, "0,0[0-9]{2}")
+  expect_false(grepl("(^|[^0-9])[,][0-9]", txt))
+})
+
+test_that("the structured token follows the mark, so every engine agrees", {
+  # The console formatter and the token every string-driven surface
+  # reads (tinytable, flextable / Word, Excel, clipboard, inline())
+  # must answer the leading-zero question the same way.
+  s <- as_structured(table_regression(fixed_fit(), decimal_mark = ","))
+  expect_identical(s$format_spec$p_style, "standard")
+  expect_identical(s$col_meta[["p"]]$p_style, "standard")
+  expect_identical(
+    spicy:::.cell_to_string(0.0004, 1L, s$col_meta[["p"]], "", ","),
+    "<0,001"
+  )
+  # A theme under the same mark keeps its own rule, everywhere.
+  sj <- as_structured(table_regression(
+    fixed_fit(),
+    decimal_mark = ",",
+    style = "jama"
+  ))
+  expect_identical(sj$col_meta[["p"]]$p_style, "apa")
+  expect_identical(
+    spicy:::.cell_to_string(0.0004, 1L, sj$col_meta[["p"]], "", ","),
+    "<,001"
+  )
+})
+
+test_that("an explicit p_style outranks the mark in both directions", {
+  # A theme, or a composed style, is the explicit gesture; it wins under
+  # any mark. Decision 43 -- unchanged by the mark-driven default.
+  jama <- console(table_regression(
+    fixed_fit(),
+    decimal_mark = ",",
+    style = "jama"
+  ))
+  expect_match(jama, "<,001")
+  expect_false(grepl("<0,001", jama, fixed = TRUE))
+
+  apa <- console(table_regression(
+    fixed_fit(),
+    decimal_mark = ",",
+    style = spicy_style(p_style = "apa")
+  ))
+  expect_match(apa, "<,001")
+  expect_false(grepl("<0,001", apa, fixed = TRUE))
+
+  # And the other way round: "standard" keeps the zero under a point.
+  std <- console(table_regression(
+    fixed_fit(),
+    style = spicy_style(p_style = "standard")
+  ))
+  expect_match(std, "<0.001")
+})
+
+test_that("a point mark is untouched by the rule", {
+  # The invariant the corpus snapshot pins in full; asserted here by
+  # name so a failure says what broke.
+  d <- fixed_data()
+  expect_match(console(table_regression(fixed_fit())), "<.001", fixed = TRUE)
+  expect_match(
+    console(table_categorical(d, "cyl", by = am)),
+    " .52",
+    fixed = TRUE
+  )
+  expect_match(console(table_continuous(d, mpg, by = am)), ".001", fixed = TRUE)
+  expect_identical(spicy:::format_p_value(0.045, "."), ".045")
+})
+
+
 test_that("an unknown language fails at build exactly as it always did", {
   # `.style_locale_defaults()` now consults the language at BUILD time;
   # the abort must be the same one `spicy_str()` always raised.
@@ -788,7 +917,9 @@ test_that("with no style every formatter takes its historical path", {
   expect_identical(spicy:::format_p_value(0.0456), ".046")
   expect_identical(spicy:::format_p_value(0.0004), "<.001")
   expect_identical(spicy:::format_p_value(0.00004, digits = 4L), "<.0001")
-  expect_identical(spicy:::format_p_value(0.0456, ","), ",046")
+  # The one formatter a mark moves without a style: a comma keeps the
+  # leading zero, a point drops it exactly as it always has.
+  expect_identical(spicy:::format_p_value(0.0456, ","), "0,046")
   expect_identical(spicy:::format_p_value(NA_real_), "")
   expect_identical(spicy:::ci_bracket_separator("."), ", ")
   expect_identical(spicy:::ci_bracket_separator(","), "; ")
@@ -796,6 +927,11 @@ test_that("with no style every formatter takes its historical path", {
   expect_identical(spicy:::.style_p_floor(3L), 1e-3)
   expect_false(spicy:::.style_p_leading_zero())
   expect_identical(spicy:::.style_p_style_token(), "apa")
+  # With no `p_style` in scope the MARK answers, and both surfaces --
+  # the console formatter and the token every engine reads -- answer
+  # the same way.
+  expect_true(spicy:::.style_p_leading_zero(","))
+  expect_identical(spicy:::.style_p_style_token(","), "standard")
   expect_identical(spicy:::.style_p_decimals(0.02, 3L), 3L)
 })
 
