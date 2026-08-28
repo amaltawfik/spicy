@@ -11,6 +11,11 @@
 #     `sprintf()` form it replaces -- that is the non-regression pin;
 #   * under a comma only the RENDERED numbers move; term labels, R code
 #     quoted back to the reader, and integers stay exactly as they were.
+#
+# The one footer output that deliberately changed under a point is the
+# random-effects LR-test p ("= 0.500" -> "= .500"), which joins the
+# leading-zero convention every other p in the package already follows
+# (decision 46, point 2). Its guards live at the bottom.
 # ---------------------------------------------------------------------------
 
 # ---- Fixtures: bare frames, so the assertions are about the strings ------
@@ -392,4 +397,76 @@ test_that("the rq title tau stays at the point under any mark", {
       fixed = TRUE
     )
   }
+})
+
+
+# ---- 6. The random-effects LR-test p joins the convention -----------------
+
+test_that("the panel p drops its leading zero under a point", {
+  # Decision 46, point 2: this line used to write "= 0.500" while every
+  # p cell in the table above it wrote ".500".
+  expect_identical(spicy:::format_p_value_for_panel(0.5), "= .500")
+  expect_identical(spicy:::format_p_value_for_panel(0.0342), "= .034")
+  expect_identical(spicy:::format_p_value_for_panel(1e-5), "< .001")
+  expect_identical(spicy:::format_p_value_for_panel(NA_real_), "= NA")
+})
+
+test_that("the panel p keeps its leading zero under a comma", {
+  # The only form the SI brochure admits (BIPM 9th ed., 5.4.4).
+  expect_identical(spicy:::format_p_value_for_panel(0.5, ","), "= 0,500")
+  expect_identical(spicy:::format_p_value_for_panel(0.0342, ","), "= 0,034")
+  expect_identical(spicy:::format_p_value_for_panel(1e-5, ","), "< 0,001")
+})
+
+test_that("an explicit p_style outranks the mark on the panel p", {
+  # Same precedence as every other p in the package: a typed style wins
+  # under any mark, in both directions.
+  spicy:::.style_push(list(p_style = "standard"))
+  withr::defer(spicy:::.style_pop())
+  expect_identical(spicy:::format_p_value_for_panel(0.5), "= 0.500")
+  expect_identical(spicy:::format_p_value_for_panel(1e-5), "< 0.001")
+})
+
+test_that("an apa p_style drops the zero even under a comma", {
+  spicy:::.style_push(list(p_style = "apa"))
+  withr::defer(spicy:::.style_pop())
+  expect_identical(spicy:::format_p_value_for_panel(0.5, ","), "= ,500")
+})
+
+test_that("the random-effects footer sentence carries the new p", {
+  # Built from codepoints: the combining macron of chi-bar-squared is
+  # invisible in source and easily normalized away by an editor.
+  chibar2 <- intToUtf8(c(0x03C7, 0x0304, 0x00B2))
+  fr <- list(
+    info = list(
+      class = "lmerMod",
+      random_effects = list(
+        method = "REML",
+        variance_components = data.frame(group = "g", term = "(Intercept)"),
+        null_lrt = list(
+          chi2 = 2.7714,
+          df = 1L,
+          p_chibar2 = 0.153,
+          family_label = "linear regression"
+        )
+      ),
+      extras = list()
+    )
+  )
+  expect_identical(
+    spicy:::.format_random_effects_for_frame(fr),
+    paste0(
+      "Random effects (REML): LR test vs linear regression, ",
+      chibar2,
+      "(1) = 2.77, p = .153."
+    )
+  )
+  expect_identical(
+    spicy:::.format_random_effects_for_frame(fr, ","),
+    paste0(
+      "Random effects (REML): LR test vs linear regression, ",
+      chibar2,
+      "(1) = 2,77, p = 0,153."
+    )
+  )
 })

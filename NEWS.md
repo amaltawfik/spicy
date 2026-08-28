@@ -483,7 +483,9 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
 * `re_ci = "profile"` gives profile-likelihood CIs for the variance
   components of `lmer` / `glmer` fits (no SE column; the footer discloses
   the method), and `re_test = "lrt"` / `"rlrt"` fills the test columns of
-  the `Random effects` rows.
+  the `Random effects` rows. The block's own LR-test p in the footer
+  follows the package's leading-zero rule, like every other p: `p = .153`
+  under a point, `p = 0,153` under a comma.
 * Variance-component SEs are omitted on large mixed fits, above
   `options("spicy.re_se_max_n")` (default 1000), with a note and a warning
   giving the override.

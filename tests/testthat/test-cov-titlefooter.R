@@ -314,7 +314,11 @@ test_that("random-effects summary shows the method alone when no LR test", {
 
 test_that("format_p_value_for_panel handles NA, finite, and tiny p", {
   expect_identical(spicy:::format_p_value_for_panel(NA_real_), "= NA")
-  expect_identical(spicy:::format_p_value_for_panel(0.5), "= 0.500")
+  # The leading zero follows the package convention, not this footer's
+  # own habit (decision 46, point 2): the ordinary arm reads ".500" like
+  # every p cell above it. Both arms are pinned under both marks in
+  # test-footer_typography.R.
+  expect_identical(spicy:::format_p_value_for_panel(0.5), "= .500")
   expect_identical(spicy:::format_p_value_for_panel(1e-5), "< .001")
 })
 

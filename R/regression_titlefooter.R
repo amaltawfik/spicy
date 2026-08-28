@@ -1914,8 +1914,14 @@ build_component_blocks_footer_block_from_frames <- function(frames) {
 # `decimal_mark = ","` used to read "p < .001" three lines above
 # "*** p < 0,001". The floor branch quotes `format_p_threshold()` -- the
 # legend's own producer -- so the two can no longer disagree, and the
-# ordinary branch goes through `format_number()`. Under a point both are
-# byte-identical to the hard-coded forms they replace.
+# ordinary branch goes through `format_number()`.
+#
+# Its LEADING ZERO is the package's, not this footer's: `.001` and
+# `.500` under a point (the APA drop spicy defaults to), `0,001` and
+# `0,500` under a comma (the only form the SI brochure admits), and a
+# `p_style` in scope settles it outright for both branches at once.
+# This line used to write "= 0.500" under a point while every p cell
+# in the table above it wrote ".500".
 format_p_value_for_panel <- function(p, decimal_mark = ".") {
   if (!is.finite(p)) {
     return("= NA")
@@ -1923,7 +1929,14 @@ format_p_value_for_panel <- function(p, decimal_mark = ".") {
   if (p < 0.001) {
     return(paste0("< ", format_p_threshold(0.001, decimal_mark)))
   }
-  paste0("= ", format_number(p, 3L, decimal_mark))
+  paste0(
+    "= ",
+    .strip_leading_zero(
+      format_number(p, 3L, decimal_mark),
+      decimal_mark,
+      .style_p_leading_zero(decimal_mark)
+    )
+  )
 }
 
 
