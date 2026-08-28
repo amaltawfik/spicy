@@ -483,7 +483,9 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
 * `re_ci = "profile"` gives profile-likelihood CIs for the variance
   components of `lmer` / `glmer` fits (no SE column; the footer discloses
   the method), and `re_test = "lrt"` / `"rlrt"` fills the test columns of
-  the `Random effects` rows.
+  the `Random effects` rows. The block's own LR-test p in the footer
+  follows the package's leading-zero rule, like every other p: `p = .153`
+  under a point, `p = 0,153` under a comma.
 * Variance-component SEs are omitted on large mixed fits, above
   `options("spicy.re_se_max_n")` (default 1000), with a note and a warning
   giving the override.
@@ -610,6 +612,16 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
   `dRMST (365.5)`, is the name of that column in `as.data.frame()` and
   in `as_structured()`, so it keeps its point whatever the session or
   the table asks for.
+
+* Five `table_regression()` footers follow `decimal_mark` as well: the
+  compact ordinal cut-points, the Cox concordance and its standard
+  error, the `survreg` scale and the `flexsurvreg` shape / scale, and
+  the Bayesian predictive-accuracy and sampler-diagnostic figures. A
+  comma table printed all of them with a point. No value changes, and
+  `decimal_mark = "."` is unchanged. Two things in those lines keep
+  their point on purpose: R code quoted back to you
+  (`k_threshold = 0.7`), and the quantile in a quantile-regression
+  title, which is part of the name of the model.
 
 * `table_outcome()` names the argument it is missing. Omitting `outcome`
   or `select` used to die deep inside tidyselect on base R's own

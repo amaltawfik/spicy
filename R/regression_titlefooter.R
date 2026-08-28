@@ -204,9 +204,15 @@ build_regression_footer_from_frames <- function(
       re_test = re_test,
       decimal_mark = decimal_mark
     ),
-    build_survival_footer_block_from_frames(frames),
+    build_survival_footer_block_from_frames(
+      frames,
+      decimal_mark = decimal_mark
+    ),
     build_survival_estimand_footer_block_from_frames(frames),
-    build_ordinal_thresholds_footer_block_from_frames(frames),
+    build_ordinal_thresholds_footer_block_from_frames(
+      frames,
+      decimal_mark = decimal_mark
+    ),
     build_scale_effects_footer_block_from_frames(frames),
     build_component_blocks_footer_block_from_frames(frames),
     build_abbreviations_footer_block_from_frames(
@@ -230,8 +236,11 @@ build_regression_footer_from_frames <- function(
     build_reference_outcome_footer_block_from_frames(frames),
     build_reference_alternative_footer_block_from_frames(frames),
     build_uv_disclosure_footer_block_from_frames(frames),
-    build_loo_footer_block_from_frames(frames),
-    build_convergence_footer_block_from_frames(frames),
+    build_loo_footer_block_from_frames(frames, decimal_mark = decimal_mark),
+    build_convergence_footer_block_from_frames(
+      frames,
+      decimal_mark = decimal_mark
+    ),
     build_reference_categories_footer_block_from_frames(
       frames_display,
       reference_style
@@ -995,7 +1004,10 @@ format_p_threshold <- function(p, decimal_mark = ".") {
 #
 # Multi-model: "Model k:" prefix only when more than one frame
 # contributes content.
-build_ordinal_thresholds_footer_block_from_frames <- function(frames) {
+build_ordinal_thresholds_footer_block_from_frames <- function(
+  frames,
+  decimal_mark = "."
+) {
   if (!is.list(frames) || length(frames) == 0L) {
     return(NULL)
   }
@@ -1045,7 +1057,7 @@ build_ordinal_thresholds_footer_block_from_frames <- function(frames) {
   # Footer mode (show_thresholds = FALSE): the compact per-model line.
   per_model <- lapply(seq_along(frames), function(i) {
     f <- frames[[i]]
-    txt <- .format_ordinal_thresholds_for_frame(f)
+    txt <- .format_ordinal_thresholds_for_frame(f, decimal_mark)
     if (is.null(txt)) NULL else list(idx = i, text = txt)
   })
   per_model <- Filter(Negate(is.null), per_model)
@@ -1123,8 +1135,8 @@ build_gee_footer_block_from_frames <- function(frames, decimal_mark = ".") {
       corstr,
       # The estimate is a rendered number in a note, so it follows the
       # table's mark like the cells above it -- and, through
-      # `format_number()`, ignores `options(OutDec)` either way.
-      format_number(alpha, 2L, decimal_mark)
+      # `.footer_num()`, ignores `options(OutDec)` either way.
+      .footer_num(alpha, 2L, decimal_mark)
     ))
   }
   if (length(alpha) > 1L) {
@@ -1138,7 +1150,7 @@ build_gee_footer_block_from_frames <- function(frames, decimal_mark = ".") {
 }
 
 
-.format_ordinal_thresholds_for_frame <- function(frame) {
+.format_ordinal_thresholds_for_frame <- function(frame, decimal_mark = ".") {
   cls <- frame$info$class %||% ""
   if (!cls %in% c("polr", "clm", "svyolr")) {
     return(NULL)
@@ -1150,7 +1162,15 @@ build_gee_footer_block_from_frames <- function(frames, decimal_mark = ".") {
   parts <- vapply(
     seq_len(nrow(th)),
     function(i) {
-      sprintf("%s = %.2f", th$term[i], th$estimate[i])
+      # A cut-point is a rendered number in a note, so it follows the
+      # table's mark like the coefficient cells above it -- and, through
+      # `.footer_num()`, ignores `options(OutDec)` either way. Under a
+      # point this is byte-for-byte the `sprintf("%.2f")` it replaces.
+      sprintf(
+        "%s = %s",
+        th$term[i],
+        .footer_num(th$estimate[i], 2L, decimal_mark)
+      )
     },
     character(1)
   )
@@ -1171,14 +1191,17 @@ build_gee_footer_block_from_frames <- function(frames, decimal_mark = ".") {
 #                 fit-stat rows since 2026-07-09)
 #   survreg:    "Distribution: Weibull; scale = 0.75."
 #   flexsurv:   "Distribution: Weibull; shape = 1.33, scale = 531.05."
-build_survival_footer_block_from_frames <- function(frames) {
+build_survival_footer_block_from_frames <- function(
+  frames,
+  decimal_mark = "."
+) {
   if (!is.list(frames) || length(frames) == 0L) {
     return(NULL)
   }
 
   per_model <- lapply(seq_along(frames), function(i) {
     f <- frames[[i]]
-    txt <- .format_survival_for_frame(f)
+    txt <- .format_survival_for_frame(f, decimal_mark)
     if (is.null(txt)) NULL else list(idx = i, text = txt)
   })
   per_model <- Filter(Negate(is.null), per_model)
@@ -1203,21 +1226,21 @@ build_survival_footer_block_from_frames <- function(frames) {
 }
 
 
-.format_survival_for_frame <- function(frame) {
+.format_survival_for_frame <- function(frame, decimal_mark = ".") {
   cls <- frame$info$class %||% ""
   if (cls %in% c("coxph", "cph", "svycoxph")) {
-    .format_coxph_survival(frame)
+    .format_coxph_survival(frame, decimal_mark)
   } else if (cls == "survreg") {
-    .format_survreg_survival(frame)
+    .format_survreg_survival(frame, decimal_mark)
   } else if (cls == "flexsurvreg") {
-    .format_flexsurv_survival(frame)
+    .format_flexsurv_survival(frame, decimal_mark)
   } else {
     NULL
   }
 }
 
 
-.format_coxph_survival <- function(frame) {
+.format_coxph_survival <- function(frame, decimal_mark = ".") {
   conc <- frame$info$extras$concordance
   parts <- character(0)
   # n and the number of events moved from this footer prose into
@@ -1227,13 +1250,24 @@ build_survival_footer_block_from_frames <- function(frames) {
   if (
     !is.null(conc) && is.list(conc) && !is.null(conc$c) && is.finite(conc$c)
   ) {
+    # The concordance and its SE are rendered numbers in a note: they
+    # follow the table's mark like the cells above them, through the
+    # footer twin `.footer_num()`. Under a point the two arms are
+    # byte-identical to the `%.2f` they replace.
     if (!is.null(conc$se) && is.finite(conc$se)) {
       parts <- c(
         parts,
-        sprintf("Concordance C = %.2f (SE = %.2f)", conc$c, conc$se)
+        sprintf(
+          "Concordance C = %s (SE = %s)",
+          .footer_num(conc$c, 2L, decimal_mark),
+          .footer_num(conc$se, 2L, decimal_mark)
+        )
       )
     } else {
-      parts <- c(parts, sprintf("Concordance C = %.2f", conc$c)) # nocov
+      parts <- c(
+        parts,
+        sprintf("Concordance C = %s", .footer_num(conc$c, 2L, decimal_mark))
+      )
     }
   }
   # Reachable now that the Events prose moved to fit-stat rows: a
@@ -1245,7 +1279,7 @@ build_survival_footer_block_from_frames <- function(frames) {
 }
 
 
-.format_survreg_survival <- function(frame) {
+.format_survreg_survival <- function(frame, decimal_mark = ".") {
   dist <- frame$info$extras$distribution
   scale <- frame$info$extras$scale_parameter
   parts <- character(0)
@@ -1253,7 +1287,10 @@ build_survival_footer_block_from_frames <- function(frames) {
     parts <- c(parts, sprintf("Distribution: %s", .surv_title_dist(dist)))
   }
   if (!is.null(scale) && is.finite(scale)) {
-    parts <- c(parts, sprintf("scale = %.2f", scale))
+    parts <- c(
+      parts,
+      sprintf("scale = %s", .footer_num(scale, 2L, decimal_mark))
+    )
   }
   if (length(parts) == 0L) {
     return(NULL) # nocov
@@ -1262,7 +1299,7 @@ build_survival_footer_block_from_frames <- function(frames) {
 }
 
 
-.format_flexsurv_survival <- function(frame) {
+.format_flexsurv_survival <- function(frame, decimal_mark = ".") {
   dist <- frame$info$extras$distribution
   aux <- frame$info$extras$aux_parameters
   parts <- character(0)
@@ -1270,7 +1307,14 @@ build_survival_footer_block_from_frames <- function(frames) {
     parts <- c(parts, sprintf("Distribution: %s", .surv_title_dist(dist)))
   }
   if (!is.null(aux) && is.numeric(aux) && length(aux) > 0L) {
-    aux_str <- paste(sprintf("%s = %.2f", names(aux), aux), collapse = ", ")
+    aux_str <- paste(
+      sprintf(
+        "%s = %s",
+        names(aux),
+        .footer_num(unname(aux), 2L, decimal_mark)
+      ),
+      collapse = ", "
+    )
     parts <- c(parts, aux_str)
   }
   if (length(parts) == 0L) {
@@ -1870,8 +1914,14 @@ build_component_blocks_footer_block_from_frames <- function(frames) {
 # `decimal_mark = ","` used to read "p < .001" three lines above
 # "*** p < 0,001". The floor branch quotes `format_p_threshold()` -- the
 # legend's own producer -- so the two can no longer disagree, and the
-# ordinary branch goes through `format_number()`. Under a point both are
-# byte-identical to the hard-coded forms they replace.
+# ordinary branch goes through `.footer_num()`.
+#
+# Its LEADING ZERO is the package's, not this footer's: `.001` and
+# `.500` under a point (the APA drop spicy defaults to), `0,001` and
+# `0,500` under a comma (the only form the SI brochure admits), and a
+# `p_style` in scope settles it outright for both branches at once.
+# This line used to write "= 0.500" under a point while every p cell
+# in the table above it wrote ".500".
 format_p_value_for_panel <- function(p, decimal_mark = ".") {
   if (!is.finite(p)) {
     return("= NA")
@@ -1879,7 +1929,14 @@ format_p_value_for_panel <- function(p, decimal_mark = ".") {
   if (p < 0.001) {
     return(paste0("< ", format_p_threshold(0.001, decimal_mark)))
   }
-  paste0("= ", format_number(p, 3L, decimal_mark))
+  paste0(
+    "= ",
+    .strip_leading_zero(
+      .footer_num(p, 3L, decimal_mark),
+      decimal_mark,
+      .style_p_leading_zero(decimal_mark)
+    )
+  )
 }
 
 
@@ -1942,7 +1999,7 @@ format_p_value_for_panel <- function(p, decimal_mark = ".") {
       "LR test vs %s, \u03C7\u0304\u00B2(%d) = %s, p %s",
       lrt$family_label %||% "no-random model",
       as.integer(lrt$df),
-      format_number(lrt$chi2, 2L, decimal_mark),
+      .footer_num(lrt$chi2, 2L, decimal_mark),
       p_str
     )
   }
@@ -2740,17 +2797,56 @@ build_scale_effects_footer_block_from_frames <- function(frames) {
 }
 
 
+# One Bayesian footer note, under the table's decimal mark.
+#
+# The Stan frame builds its two notes at BUILD time, where the mark is
+# not known -- a frame is the model's data and carries no typography.
+# So it stores the numeric diagnostics beside the baked sentence, and
+# the render layer replays the SAME producer with the table's mark.
+# Under a point the replay is byte-identical to the stored string (same
+# function, same arguments), which is what makes this safe; a frame
+# with no diagnostics (glmmTMB's convergence verdict, a test stub, a
+# frame from an older cached fixture) keeps its string verbatim.
+.marked_stan_note <- function(numbers, baked, producer, decimal_mark) {
+  if (is.list(numbers)) {
+    out <- tryCatch(
+      list(value = producer(numbers, decimal_mark)),
+      error = function(e) NULL
+    )
+    if (!is.null(out)) {
+      return(as.character(out$value %||% NA_character_))
+    }
+    # An ERROR from the producer -- a malformed slot on a foreign or
+    # future-schema frame -- falls back to the baked string the frame
+    # carries for exactly that case. A legitimate NULL (the producer
+    # has nothing to say) does NOT: the two must stay distinct, or a
+    # quiet diagnostics set would resurrect a stale sentence.
+  }
+  as.character(baked %||% NA_character_)
+}
+
+
 # Footer note for the PSIS-LOO fit-stat rows: the elpd SE, without
 # which the ELPD / LOOIC rows cannot support a comparison judgment.
 # Same dedupe convention as the sibling builders.
-build_loo_footer_block_from_frames <- function(frames) {
+#
+# The sentence is re-rendered HERE, under the table's mark, from the
+# numeric diagnostics the frame carries (`extras$stan_loo`) -- the
+# frame's baked `loo_note` is the same producer's output at a point
+# and stays the fallback for anything that supplies only the string.
+build_loo_footer_block_from_frames <- function(frames, decimal_mark = ".") {
   if (!is.list(frames) || length(frames) == 0L) {
     return(NULL)
   }
   notes <- vapply(
     frames,
     function(f) {
-      as.character(f$info$extras$loo_note %||% NA_character_)
+      .marked_stan_note(
+        f$info$extras$stan_loo,
+        f$info$extras$loo_note,
+        .stan_loo_text,
+        decimal_mark
+      )
     },
     character(1)
   )
@@ -2788,14 +2884,27 @@ build_loo_footer_block_from_frames <- function(frames) {
 # glmmTMB optimizer's non-convergence flags both fill
 # extras$convergence_note. NULL -- and therefore silent -- for a fit
 # whose engine reports no problem.
-build_convergence_footer_block_from_frames <- function(frames) {
+#
+# The Bayesian arm carries numeric diagnostics as well (R-hat, E-BFMI),
+# so its sentence is re-rendered here under the table's mark; the
+# glmmTMB arm has no number in it and passes through as the string its
+# engine wrote.
+build_convergence_footer_block_from_frames <- function(
+  frames,
+  decimal_mark = "."
+) {
   if (!is.list(frames) || length(frames) == 0L) {
     return(NULL)
   }
   notes <- vapply(
     frames,
     function(f) {
-      as.character(f$info$extras$convergence_note %||% NA_character_)
+      .marked_stan_note(
+        f$info$extras$stan_convergence,
+        f$info$extras$convergence_note,
+        .stan_convergence_text,
+        decimal_mark
+      )
     },
     character(1)
   )

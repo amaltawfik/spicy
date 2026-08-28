@@ -339,6 +339,16 @@ as_regression_frame.rq <- function(
     singular_terms = character(0),
     has_weights = !identical(wk, "none"),
     weighted_n = NA_real_,
+    # The one title prefix with a number in it -- and it stays at the
+    # point, alone among the footer numbers of the same lot. A prefix
+    # is not only display: it is the LOOKUP KEY of the language bridge
+    # (`.title_prefix_display()` reads `.FR_TITLE_PREFIXES[prefix]`) and
+    # the identity the type footer dedupes models on. A key whose
+    # spelling depended on a rendering argument would be a key that
+    # sometimes matches, so the tau is pinned here and the whole
+    # sentence is stated in one mark. When 251-C makes the prefix a
+    # registry key with the tau as data, the tau follows the mark for
+    # free -- that is the fix, not a `chartr()` on a key.
     title_prefix = sprintf("Quantile regression (\u03C4 = %.2f)", tau),
     exp_applied = FALSE,
     exp_header = NA_character_,

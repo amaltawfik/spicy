@@ -107,6 +107,25 @@ format_number <- function(x, digits = 2L, decimal_mark = ".") {
   out
 }
 
+# The sprintf() twin, for the FOOTER SENTENCES that migrated off
+# literal sprintf("%.Nf") forms. Their contract is byte-identity with
+# the form they replaced, at every magnitude and for every input --
+# and format_number() breaks it twice: it switches to scientific at
+# abs(x) >= 1e+7 (a flexsurvreg scale on a seconds axis is a real
+# case: "scale = 61060822.37" must not become "scale = 6.11e+07"),
+# and it renders NA as "" (a footer must say "shape = NA", never a
+# dangling "shape = ,"). Fixed decimals always, non-finites spelled
+# the way sprintf spelled them, the mark pinned like everywhere else.
+.footer_num <- function(x, digits = 2L, decimal_mark = ".") {
+  out <- formatC(x, digits = digits, format = "f", decimal.mark = decimal_mark)
+  # `formatC()` pads a non-finite to `" NA"`; sprintf printed `"NA"`.
+  bad <- !is.finite(x)
+  if (any(bad)) {
+    out[bad] <- trimws(out[bad])
+  }
+  out
+}
+
 # Internal: the shared *p*-value formatter. `digits` controls both
 # the displayed precision AND the small-`p` threshold: with
 # `digits = 3` the rendering is `.045` for ordinary p and `<.001`
