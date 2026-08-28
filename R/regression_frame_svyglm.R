@@ -416,10 +416,13 @@ as_regression_frame.svyglm <- function(
   if ("AIC" %in% names(a)) {
     return(as.numeric(a[["AIC"]]))
   }
-  # A future survey that honours the contract returns a scalar; anything
-  # else is not an AIC we can name.
+  # nocov start: a future survey that honours the contract returns a
+  # scalar; anything else is not an AIC we can name. Unreachable with
+  # any released survey -- `AIC.svyglm()` returns a named vector that
+  # always carries "AIC", so the guard above has already returned.
   if (length(a) == 1L) {
-    return(as.numeric(a)) # nocov
+    return(as.numeric(a))
   }
-  NA_real_ # nocov
+  NA_real_
+  # nocov end
 }

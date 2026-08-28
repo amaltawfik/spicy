@@ -1376,7 +1376,11 @@ table_continuous_svy <- function(
   degf_range <- if (length(degf_dom_used) > 0L) {
     range(degf_dom_used)
   } else {
-    NULL
+    # Unreachable: one `degf_dom_used` entry is appended per
+    # (variable x domain) with no condition on it, and a table with no
+    # variable to summarise is refused upstream -- so the vector is
+    # never empty by the time the note is built.
+    NULL # nocov
   }
   lines <- .design_note_lines(meta, degf_range = degf_range)
   if (!is.null(df_user)) {
