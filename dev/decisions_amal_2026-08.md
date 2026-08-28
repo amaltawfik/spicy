@@ -757,3 +757,28 @@ robuste, je valide ») sur recommandation argumentée.
   build — jamais un CSV. À ne considérer qu'à ce seuil.
 Rien à implémenter avant la v1.0 ; l'architecture actuelle est déjà
 conforme.
+
+## Décision 46 — Coefficients d'association : des valeurs, pas des tableaux ; et le pied RE s'harmonise (2026-08-28)
+
+Point 1 tranché par Amal (« pour 1 je valide ») : cramer_v() et ses
+sœurs RENVOIENT DES VALEURS (numeric nu, convention R — pas de
+decimal_mark, erreur de catégorie) ; print(assoc_measures()) est un
+RELEVÉ DIAGNOSTIQUE (le summary(lm) de l'association), au point
+déterministe (OutDec pinné depuis simark), sans couche de reporting.
+Les surfaces publiables qui portent ces mesures (note cross_tab,
+colonne d'effet table_categorical, inline()) suivent déjà langue/
+marque/zéro. CLÔT n°282 et n°276(a) par refus motivé — aucun formal
+à ajouter, par design.
+
+Point 2 délégué à Fable (« je te laisse trancher ») — arbitrage : le
+bras « = 0.500 » du pied RE (format_p_value_for_panel) rejoint la
+convention p du package via le producteur partagé → « = .500 » sous
+point (zéro supprimé, comme toute cellule p par défaut), « = 0,500 »
+sous virgule (déjà juste depuis simark). Calendrier vérifié :
+re_test = "lrt"/"rlrt" est né dans le cycle 0.13 (juillet 2026,
+jamais sur CRAN) → finition same-cycle, clause dans la section de la
+feature, PAS de breaking. À prendre dans le balayage pré-gel n°279
+(pieds de page sprintf suivent la marque : Concordance, seuils
+ordinaux compacts, échelle/aux survreg-flexsurv, SE(ELPD)/R-hat/
+E-BFMI bayésiens, tau du titre rq) — un seul lot « typographie des
+pieds de page ».
