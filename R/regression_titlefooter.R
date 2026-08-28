@@ -1135,8 +1135,8 @@ build_gee_footer_block_from_frames <- function(frames, decimal_mark = ".") {
       corstr,
       # The estimate is a rendered number in a note, so it follows the
       # table's mark like the cells above it -- and, through
-      # `format_number()`, ignores `options(OutDec)` either way.
-      format_number(alpha, 2L, decimal_mark)
+      # `.footer_num()`, ignores `options(OutDec)` either way.
+      .footer_num(alpha, 2L, decimal_mark)
     ))
   }
   if (length(alpha) > 1L) {
@@ -1164,12 +1164,12 @@ build_gee_footer_block_from_frames <- function(frames, decimal_mark = ".") {
     function(i) {
       # A cut-point is a rendered number in a note, so it follows the
       # table's mark like the coefficient cells above it -- and, through
-      # `format_number()`, ignores `options(OutDec)` either way. Under a
+      # `.footer_num()`, ignores `options(OutDec)` either way. Under a
       # point this is byte-for-byte the `sprintf("%.2f")` it replaces.
       sprintf(
         "%s = %s",
         th$term[i],
-        format_number(th$estimate[i], 2L, decimal_mark)
+        .footer_num(th$estimate[i], 2L, decimal_mark)
       )
     },
     character(1)
@@ -1252,21 +1252,21 @@ build_survival_footer_block_from_frames <- function(
   ) {
     # The concordance and its SE are rendered numbers in a note: they
     # follow the table's mark like the cells above them, through the
-    # same `format_number()` every family's cells go through. Under a
-    # point the two arms are byte-identical to the `%.2f` they replace.
+    # footer twin `.footer_num()`. Under a point the two arms are
+    # byte-identical to the `%.2f` they replace.
     if (!is.null(conc$se) && is.finite(conc$se)) {
       parts <- c(
         parts,
         sprintf(
           "Concordance C = %s (SE = %s)",
-          format_number(conc$c, 2L, decimal_mark),
-          format_number(conc$se, 2L, decimal_mark)
+          .footer_num(conc$c, 2L, decimal_mark),
+          .footer_num(conc$se, 2L, decimal_mark)
         )
       )
     } else {
       parts <- c(
         parts,
-        sprintf("Concordance C = %s", format_number(conc$c, 2L, decimal_mark))
+        sprintf("Concordance C = %s", .footer_num(conc$c, 2L, decimal_mark))
       )
     }
   }
@@ -1289,7 +1289,7 @@ build_survival_footer_block_from_frames <- function(
   if (!is.null(scale) && is.finite(scale)) {
     parts <- c(
       parts,
-      sprintf("scale = %s", format_number(scale, 2L, decimal_mark))
+      sprintf("scale = %s", .footer_num(scale, 2L, decimal_mark))
     )
   }
   if (length(parts) == 0L) {
@@ -1311,7 +1311,7 @@ build_survival_footer_block_from_frames <- function(
       sprintf(
         "%s = %s",
         names(aux),
-        format_number(unname(aux), 2L, decimal_mark)
+        .footer_num(unname(aux), 2L, decimal_mark)
       ),
       collapse = ", "
     )
@@ -1914,7 +1914,7 @@ build_component_blocks_footer_block_from_frames <- function(frames) {
 # `decimal_mark = ","` used to read "p < .001" three lines above
 # "*** p < 0,001". The floor branch quotes `format_p_threshold()` -- the
 # legend's own producer -- so the two can no longer disagree, and the
-# ordinary branch goes through `format_number()`.
+# ordinary branch goes through `.footer_num()`.
 #
 # Its LEADING ZERO is the package's, not this footer's: `.001` and
 # `.500` under a point (the APA drop spicy defaults to), `0,001` and
@@ -1932,7 +1932,7 @@ format_p_value_for_panel <- function(p, decimal_mark = ".") {
   paste0(
     "= ",
     .strip_leading_zero(
-      format_number(p, 3L, decimal_mark),
+      .footer_num(p, 3L, decimal_mark),
       decimal_mark,
       .style_p_leading_zero(decimal_mark)
     )
@@ -1999,7 +1999,7 @@ format_p_value_for_panel <- function(p, decimal_mark = ".") {
       "LR test vs %s, \u03C7\u0304\u00B2(%d) = %s, p %s",
       lrt$family_label %||% "no-random model",
       as.integer(lrt$df),
-      format_number(lrt$chi2, 2L, decimal_mark),
+      .footer_num(lrt$chi2, 2L, decimal_mark),
       p_str
     )
   }
@@ -2809,7 +2809,18 @@ build_scale_effects_footer_block_from_frames <- function(frames) {
 # frame from an older cached fixture) keeps its string verbatim.
 .marked_stan_note <- function(numbers, baked, producer, decimal_mark) {
   if (is.list(numbers)) {
-    return(as.character(producer(numbers, decimal_mark) %||% NA_character_))
+    out <- tryCatch(
+      list(value = producer(numbers, decimal_mark)),
+      error = function(e) NULL
+    )
+    if (!is.null(out)) {
+      return(as.character(out$value %||% NA_character_))
+    }
+    # An ERROR from the producer -- a malformed slot on a foreign or
+    # future-schema frame -- falls back to the baked string the frame
+    # carries for exactly that case. A legitimate NULL (the producer
+    # has nothing to say) does NOT: the two must stay distinct, or a
+    # quiet diagnostics set would resurrect a stale sentence.
   }
   as.character(baked %||% NA_character_)
 }

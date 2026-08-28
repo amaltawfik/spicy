@@ -1782,7 +1782,23 @@ as_regression_frame.brmsfit <- function(
   if (!is.list(d)) {
     return(FALSE)
   }
-  !is.na(d$rhat) || !is.na(d$ess) || !is.na(d$n_div) || !is.na(d$bfmi)
+  # `.stan_has_diag()` rather than bare `!is.na()`: a slot a foreign
+  # frame omitted yields logical(0) under `||` and the predicate would
+  # answer NA -- an answer-shaped non-answer.
+  .stan_has_diag(d$rhat) ||
+    .stan_has_diag(d$ess) ||
+    .stan_has_diag(d$n_div) ||
+    .stan_has_diag(d$bfmi)
+}
+
+# A diagnostics field is PRESENT when it is a length-one non-NA
+# number. Anything else -- absent from the list, NULL, logical(0), a
+# vector -- reads as "not flagged": the producers below must render a
+# partial or foreign slot, never abort on it (the render layer falls
+# back to the frame's baked sentence on an error, but a producer that
+# can answer should answer).
+.stan_has_diag <- function(v) {
+  is.numeric(v) && length(v) == 1L && !is.na(v)
 }
 
 
@@ -1790,11 +1806,21 @@ as_regression_frame.brmsfit <- function(
 # twice: at build with a point (the string the classed warning quotes
 # and the frame stores), and again at render with the table's mark
 # (`.marked_stan_note()`), which is why every number here is routed
-# through `format_number()` rather than `sprintf("%.Nf")` -- under a
+# through `.footer_num()` rather than `sprintf("%.Nf")` -- under a
 # point the two are byte-identical.
 .stan_convergence_text <- function(d, decimal_mark = ".") {
   if (!is.list(d)) {
     return(NULL)
+  }
+  # Schema refusal, deliberately an ERROR: a slot missing any of the
+  # six fields is a foreign or future-schema frame, and the render
+  # layer's contract (`.marked_stan_note()`) is to fall back to the
+  # frame's baked sentence on an error -- and only on an error. A
+  # WELL-FORMED slot that is merely quiet returns NULL below and
+  # silences the note; the two outcomes must never blur.
+  required <- c("rhat", "ess", "ess_bar", "n_div", "bfmi", "div_unavailable")
+  if (!all(required %in% names(d))) {
+    stop("stan_convergence slot does not carry the six diagnostic fields")
   }
   # The TARGETS are rendered numbers too. A sentence that read "max
   # R-hat = 1,034 (target < 1.01)" would carry two decimal marks four
@@ -1802,23 +1828,23 @@ as_regression_frame.brmsfit <- function(
   # ("*** p < 0,001"). Only literal R CODE keeps its point below --
   # `k_threshold = 0.7` is an argument the reader retypes.
   problems <- character(0)
-  if (!is.na(d$rhat)) {
+  if (.stan_has_diag(d$rhat)) {
     problems <- c(
       problems,
       sprintf(
         "max R-hat = %s (target < %s)",
-        format_number(d$rhat, 3L, decimal_mark),
-        format_number(1.01, 2L, decimal_mark)
+        .footer_num(d$rhat, 3L, decimal_mark),
+        .footer_num(1.01, 2L, decimal_mark)
       )
     )
   }
-  if (!is.na(d$ess)) {
+  if (.stan_has_diag(d$ess) && .stan_has_diag(d$ess_bar)) {
     problems <- c(
       problems,
       sprintf("min ESS = %d (target > %d)", d$ess, d$ess_bar)
     )
   }
-  if (!is.na(d$n_div)) {
+  if (.stan_has_diag(d$n_div)) {
     problems <- c(
       problems,
       sprintf(
@@ -1828,13 +1854,13 @@ as_regression_frame.brmsfit <- function(
       )
     )
   }
-  if (!is.na(d$bfmi)) {
+  if (.stan_has_diag(d$bfmi)) {
     problems <- c(
       problems,
       sprintf(
         "min E-BFMI = %s (target > %s)",
-        format_number(d$bfmi, 2L, decimal_mark),
-        format_number(0.2, 1L, decimal_mark)
+        .footer_num(d$bfmi, 2L, decimal_mark),
+        .footer_num(0.2, 1L, decimal_mark)
       )
     )
   }
@@ -1879,17 +1905,22 @@ as_regression_frame.brmsfit <- function(
   if (!is.list(d)) {
     return(NULL)
   }
+  # Same schema refusal as the convergence sibling: error on a foreign
+  # slot so the render layer falls back to the baked sentence.
+  if (!all(c("has_elpd", "has_waic") %in% names(d))) {
+    stop("stan_loo slot does not carry its accuracy fields")
+  }
   acc_parts <- character(0)
   if (isTRUE(d$has_elpd)) {
     acc_parts <- c(
       acc_parts,
-      sprintf("SE(ELPD) = %s", format_number(d$elpd_se, 1L, decimal_mark))
+      sprintf("SE(ELPD) = %s", .footer_num(d$elpd_se, 1L, decimal_mark))
     )
   }
   if (isTRUE(d$has_waic)) {
     acc_parts <- c(
       acc_parts,
-      sprintf("SE(WAIC) = %s", format_number(d$waic_se, 1L, decimal_mark))
+      sprintf("SE(WAIC) = %s", .footer_num(d$waic_se, 1L, decimal_mark))
     )
   }
   bits <- character(0)
@@ -1923,7 +1954,7 @@ as_regression_frame.brmsfit <- function(
         ),
         d$n_bad_k,
         d$n_k,
-        format_number(d$k_thr, 2L, decimal_mark)
+        .footer_num(d$k_thr, 2L, decimal_mark)
       )
     )
   }
@@ -1937,7 +1968,7 @@ as_regression_frame.brmsfit <- function(
           "\"elpd_loo\"`)."
         ),
         d$n_bad_p,
-        format_number(0.4, 1L, decimal_mark)
+        .footer_num(0.4, 1L, decimal_mark)
       )
     )
   }

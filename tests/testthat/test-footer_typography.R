@@ -4,7 +4,8 @@
 # Five footers used to write their numbers with a hard-coded
 # `sprintf("%.Nf")`, so a table asked for commas printed "1,10" in the
 # body and "= -1.72" three lines below it. They now route through
-# `format_number()` like every cell above them.
+# `.footer_num()`, the sprintf twin: fixed decimals at any magnitude,
+# non-finites spelled out, the mark pinned.
 #
 # Two invariants are pinned here, and both are load-bearing:
 #   * under a point every one of these strings is BYTE-IDENTICAL to the
@@ -469,4 +470,98 @@ test_that("the random-effects footer sentence carries the new p", {
       "(1) = 2,77, p = 0,153."
     )
   )
+})
+
+
+# ---- 8. The sprintf twin: fixed decimals at any magnitude, NA spelled ----
+
+test_that(".footer_num never switches to scientific and spells non-finites", {
+  # format_number() flips to scientific at 1e+7 and renders NA as "" --
+  # both break the byte-identity these footers contracted (a flexsurv
+  # scale on a seconds axis is a REAL >= 1e+7 case). The twin does what
+  # sprintf did, under both marks.
+  expect_identical(spicy:::.footer_num(61060822.3712, 2L), "61060822.37")
+  expect_identical(spicy:::.footer_num(1e7, 2L), "10000000.00")
+  expect_identical(spicy:::.footer_num(1.5e8, 2L, ","), "150000000,00")
+  expect_identical(spicy:::.footer_num(NA_real_, 2L), "NA")
+  expect_identical(spicy:::.footer_num(NaN, 2L), "NaN")
+  expect_identical(spicy:::.footer_num(Inf, 2L), "Inf")
+  expect_identical(spicy:::.footer_num(0.9, 2L), "0.90")
+  expect_identical(spicy:::.footer_num(c(1.11, NA), 2L, ","), c("1,11", "NA"))
+})
+
+test_that("a huge or missing aux parameter renders as sprintf did", {
+  fr <- .ft_frame(
+    "flexsurvreg",
+    list(
+      distribution = "weibull",
+      aux_parameters = c(shape = NA_real_, scale = 61060822.3712)
+    )
+  )
+  out <- spicy:::build_survival_footer_block_from_frames(list(fr))
+  expect_match(out, "scale = 61060822.37", fixed = TRUE)
+  expect_match(out, "shape = NA", fixed = TRUE)
+  expect_false(grepl("e+07", out, fixed = TRUE))
+  fr2 <- .ft_frame(
+    "survreg",
+    list(distribution = "weibull", scale_parameter = 1e7)
+  )
+  expect_match(
+    spicy:::build_survival_footer_block_from_frames(list(fr2)),
+    "scale = 10000000.00",
+    fixed = TRUE
+  )
+})
+
+
+# ---- 9. The replay survives a malformed slot, and only an ERROR falls back --
+
+test_that("a malformed diagnostics slot falls back to the baked sentence", {
+  # A foreign or future-schema frame may carry a stan_convergence list
+  # missing fields; the replay must not out-error the string the frame
+  # stores for exactly that case.
+  baked <- "Sampler diagnostics: max R-hat = 1.031 (target < 1.01)."
+  fr <- .ft_frame(
+    "stanreg",
+    list(
+      stan_convergence = list(rhat = NA_real_),
+      convergence_note = baked
+    )
+  )
+  expect_identical(
+    spicy:::build_convergence_footer_block_from_frames(list(fr)),
+    baked
+  )
+  baked_loo <- "Predictive accuracy by PSIS-LOO; SE(ELPD) = 12.3."
+  fr2 <- .ft_frame(
+    "stanreg",
+    list(stan_loo = list(), loo_note = baked_loo)
+  )
+  expect_identical(
+    spicy:::build_loo_footer_block_from_frames(list(fr2)),
+    baked_loo
+  )
+})
+
+test_that("a QUIET well-formed slot does not resurrect a stale sentence", {
+  # The fallback is for ERRORS only: a producer that legitimately has
+  # nothing to say must silence the note, baked string or not.
+  fr <- .ft_frame(
+    "stanreg",
+    list(
+      stan_convergence = .ft_conv_diag(),
+      convergence_note = "Sampler diagnostics: STALE."
+    )
+  )
+  expect_null(spicy:::build_convergence_footer_block_from_frames(list(fr)))
+})
+
+test_that("the failed predicate answers FALSE, never NA, on a foreign slot", {
+  expect_identical(spicy:::.stan_convergence_failed(list(a = 1)), FALSE)
+  expect_identical(spicy:::.stan_convergence_failed(list()), FALSE)
+  expect_identical(
+    spicy:::.stan_convergence_failed(.ft_conv_diag(rhat = 1.02)),
+    TRUE
+  )
+  expect_identical(spicy:::.stan_convergence_failed(.ft_conv_diag()), FALSE)
 })
