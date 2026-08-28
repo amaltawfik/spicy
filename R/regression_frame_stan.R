@@ -1284,56 +1284,38 @@ as_regression_frame.brmsfit <- function(
   # transition is flagged (Stan guidance). Checked over EVERY sampled
   # parameter, not only the displayed coefficients. Clean fits add no
   # footer line -- the publication table stays lean.
-  conv_note <- .stan_convergence_note(fit, class_name)
+  conv <- .stan_convergence_diagnostics(fit, class_name)
+  conv_note <- .stan_convergence_text(conv, ".")
+  # Only a FAILED guard is warned about. A note that merely discloses
+  # an unavailable divergence count is information, not a defect --
+  # the same distinction the note itself draws.
+  if (isTRUE(.stan_convergence_failed(conv))) {
+    spicy_warn(
+      paste0(
+        "Bayesian fit (outcome: ",
+        dv,
+        ") shows sampler problems -- ",
+        conv_note
+      ),
+      class = c("spicy_bayes_diagnostics", "spicy_caveat")
+    )
+  }
 
   # Footer note for the predictive-accuracy rows: the estimate's SE
   # always travels with it (Vehtari et al. 2017), and reliability
   # caveats (Pareto k for PSIS-LOO, p_waic for WAIC) are appended --
   # never silenced -- with a classed warning scripts can catch.
-  loo_bits <- character(0)
-  acc_parts <- character(0)
-  if (is.finite(loo_pair$elpd)) {
-    acc_parts <- c(acc_parts, sprintf("SE(ELPD) = %.1f", loo_pair$elpd_se))
-  }
-  if (is.finite(waic_pair$waic)) {
-    acc_parts <- c(acc_parts, sprintf("SE(WAIC) = %.1f", waic_pair$waic_se))
-  }
-  if (length(acc_parts) > 0L) {
-    method_lbl <- if (
-      is.finite(loo_pair$elpd) &&
-        is.finite(waic_pair$waic)
-    ) {
-      "PSIS-LOO / WAIC"
-    } else if (is.finite(loo_pair$elpd)) {
-      "PSIS-LOO"
-    } else {
-      "WAIC"
-    }
-    loo_bits <- c(
-      loo_bits,
-      sprintf(
-        "Predictive accuracy by %s; %s.",
-        method_lbl,
-        paste(acc_parts, collapse = "; ")
-      )
-    )
-  }
+  loo_diag <- list(
+    has_elpd = is.finite(loo_pair$elpd),
+    elpd_se = loo_pair$elpd_se,
+    has_waic = is.finite(waic_pair$waic),
+    waic_se = waic_pair$waic_se,
+    n_bad_k = loo_pair$n_bad_k,
+    n_k = loo_pair$n_k,
+    k_thr = loo_pair$k_thr,
+    n_bad_p = waic_pair$n_bad_p
+  )
   if (isTRUE(loo_pair$n_bad_k > 0L)) {
-    # Remediation ladder per Bayesian Workflow ch. 24: moment matching
-    # first, then refitting the flagged folds, then K-fold CV.
-    loo_bits <- c(
-      loo_bits,
-      sprintf(
-        paste0(
-          "PSIS-LOO unreliable for %d of %d observations (Pareto ",
-          "k > %.2f); consider loo::loo_moment_match(), refitting ",
-          "the flagged folds (k_threshold = 0.7), or K-fold CV."
-        ),
-        loo_pair$n_bad_k,
-        loo_pair$n_k,
-        loo_pair$k_thr
-      )
-    )
     spicy_warn(
       sprintf(
         paste0(
@@ -1350,17 +1332,6 @@ as_regression_frame.brmsfit <- function(
     )
   }
   if (isTRUE(waic_pair$n_bad_p > 0L)) {
-    loo_bits <- c(
-      loo_bits,
-      sprintf(
-        paste0(
-          "WAIC approximation unreliable for %d observation(s) ",
-          "(p_waic > 0.4); prefer PSIS-LOO (`show_fit_stats = ",
-          "\"elpd_loo\"`)."
-        ),
-        waic_pair$n_bad_p
-      )
-    )
     spicy_warn(
       sprintf(
         paste0(
@@ -1390,11 +1361,14 @@ as_regression_frame.brmsfit <- function(
       NA_character_
     },
     posterior_engine = class_name,
-    loo_note = if (length(loo_bits) > 0L) {
-      paste(loo_bits, collapse = " ")
-    } else {
-      NULL
-    },
+    # Both Bayesian notes travel twice: as the sentence this build
+    # produced at a point (what the classed warnings quote, and the
+    # fallback for any consumer that reads the string), and as the
+    # NUMBERS behind it, so the footer can replay the same producer
+    # under the table's decimal mark. See `.marked_stan_note()`.
+    stan_loo = loo_diag,
+    loo_note = .stan_loo_text(loo_diag, "."),
+    stan_convergence = conv,
     convergence_note = conv_note
   )
 
@@ -1703,14 +1677,16 @@ as_regression_frame.brmsfit <- function(
 
 
 # Global sampler-diagnostics check for the convergence guard. Returns
-# a footer string when any diagnostic misses its target (and raises a
-# classed warning -- spicy_bayes_diagnostics, nested under
-# spicy_caveat -- so scripts can mute this guard selectively while
-# generic spicy_caveat handlers keep catching it), or NULL for a
-# clean posterior. When the divergence count cannot be extracted the
-# table is NOT presented as diagnostics-clean: the note discloses the
-# gap instead (without the warning).
-.stan_convergence_note <- function(fit, class_name) {
+# the flagged diagnostics as NUMBERS -- the sentence is
+# `.stan_convergence_text()`'s job, and the classed warning
+# (spicy_bayes_diagnostics, nested under spicy_caveat, so scripts can
+# mute this guard selectively while generic spicy_caveat handlers keep
+# catching it) is raised by the caller from that sentence. NULL when
+# the posterior cannot be summarised at all. When the divergence count
+# cannot be extracted the table is NOT presented as diagnostics-clean:
+# `div_unavailable` makes the note disclose the gap instead (and no
+# warning is raised, since nothing was found wrong).
+.stan_convergence_diagnostics <- function(fit, class_name) {
   draws <- tryCatch(posterior::as_draws_array(fit), error = function(e) NULL)
   if (is.null(draws)) {
     return(NULL) # nocov
@@ -1771,34 +1747,100 @@ as_regression_frame.brmsfit <- function(
     NULL # nocov
   }
 
+  # Only the FLAGGED quantities are kept: a field that is NA means the
+  # guard it belongs to passed (or could not run), so the text producer
+  # below needs no thresholds of its own.
+  list(
+    rhat = if (is.finite(max_rhat) && max_rhat >= 1.01) {
+      max_rhat
+    } else {
+      NA_real_
+    },
+    ess = if (is.finite(min_ess) && min_ess < ess_bar) {
+      as.integer(round(min_ess))
+    } else {
+      NA_integer_
+    },
+    ess_bar = as.integer(ess_bar),
+    n_div = if (!is.na(n_div) && n_div > 0L) as.integer(n_div) else NA_integer_,
+    bfmi = if (
+      !is.null(bfmi) && length(bfmi) > 0L && any(bfmi < 0.2, na.rm = TRUE)
+    ) {
+      min(bfmi, na.rm = TRUE)
+    } else {
+      NA_real_
+    },
+    div_unavailable = is.na(n_div)
+  )
+}
+
+
+# TRUE when at least one sampler guard actually FAILED, as opposed to
+# a diagnostics set that is merely incomplete. What decides whether the
+# build raises its classed warning.
+.stan_convergence_failed <- function(d) {
+  if (!is.list(d)) {
+    return(FALSE)
+  }
+  !is.na(d$rhat) || !is.na(d$ess) || !is.na(d$n_div) || !is.na(d$bfmi)
+}
+
+
+# The sampler-diagnostics sentence, under one decimal mark. Called
+# twice: at build with a point (the string the classed warning quotes
+# and the frame stores), and again at render with the table's mark
+# (`.marked_stan_note()`), which is why every number here is routed
+# through `format_number()` rather than `sprintf("%.Nf")` -- under a
+# point the two are byte-identical.
+.stan_convergence_text <- function(d, decimal_mark = ".") {
+  if (!is.list(d)) {
+    return(NULL)
+  }
+  # The TARGETS are rendered numbers too. A sentence that read "max
+  # R-hat = 1,034 (target < 1.01)" would carry two decimal marks four
+  # words apart; the star legend settled the same question the same way
+  # ("*** p < 0,001"). Only literal R CODE keeps its point below --
+  # `k_threshold = 0.7` is an argument the reader retypes.
   problems <- character(0)
-  if (is.finite(max_rhat) && max_rhat >= 1.01) {
+  if (!is.na(d$rhat)) {
     problems <- c(
       problems,
-      sprintf("max R-hat = %.3f (target < 1.01)", max_rhat)
+      sprintf(
+        "max R-hat = %s (target < %s)",
+        format_number(d$rhat, 3L, decimal_mark),
+        format_number(1.01, 2L, decimal_mark)
+      )
     )
   }
-  if (is.finite(min_ess) && min_ess < ess_bar) {
+  if (!is.na(d$ess)) {
     problems <- c(
       problems,
-      sprintf("min ESS = %d (target > %d)", as.integer(round(min_ess)), ess_bar)
+      sprintf("min ESS = %d (target > %d)", d$ess, d$ess_bar)
     )
   }
-  if (!is.na(n_div) && n_div > 0L) {
+  if (!is.na(d$n_div)) {
     problems <- c(
       problems,
-      sprintf("%d divergent transition%s", n_div, if (n_div > 1L) "s" else "")
+      sprintf(
+        "%d divergent transition%s",
+        d$n_div,
+        if (d$n_div > 1L) "s" else ""
+      )
     )
   }
-  if (!is.null(bfmi) && length(bfmi) > 0L && any(bfmi < 0.2, na.rm = TRUE)) {
+  if (!is.na(d$bfmi)) {
     problems <- c(
       problems,
-      sprintf("min E-BFMI = %.2f (target > 0.2)", min(bfmi, na.rm = TRUE))
+      sprintf(
+        "min E-BFMI = %s (target > %s)",
+        format_number(d$bfmi, 2L, decimal_mark),
+        format_number(0.2, 1L, decimal_mark)
+      )
     )
   }
 
-  unavailable <- if (is.na(n_div)) {
-    "divergent-transition count unavailable for this fit" # nocov
+  unavailable <- if (isTRUE(d$div_unavailable)) {
+    "divergent-transition count unavailable for this fit"
   } else {
     character(0)
   }
@@ -1809,29 +1851,98 @@ as_regression_frame.brmsfit <- function(
     }
     # Partial diagnostics are disclosed, not warned about: R-hat /
     # ESS pass, but the reader must know the check was incomplete.
-    # nocov start
     return(paste0(
       "Sampler diagnostics: R-hat and ESS within ",
       "targets; ",
       unavailable,
       "."
     ))
-    # nocov end
   }
-  note <- paste0(
+  paste0(
     "Sampler diagnostics: ",
     paste(c(problems, unavailable), collapse = "; "),
     ". Do not report as-is; run longer or reparameterize ",
     "(Vehtari et al. 2021)."
   )
-  spicy_warn(
-    paste0(
-      "Bayesian fit (outcome: ",
-      .stan_dv(fit),
-      ") shows sampler problems -- ",
-      note
-    ),
-    class = c("spicy_bayes_diagnostics", "spicy_caveat")
-  )
-  note
+}
+
+
+# The predictive-accuracy sentence and its reliability caveats, under
+# one decimal mark. Same two-call contract as the sibling above.
+#
+# The Pareto-k and p_waic thresholds are quoted back to the reader as
+# prose, so they follow the mark like the targets in the sibling
+# sentence. What does NOT follow it is literal R code -- the
+# `k_threshold = 0.7` argument and `show_fit_stats = "elpd_loo"` are
+# things the reader retypes, and R parses a point.
+.stan_loo_text <- function(d, decimal_mark = ".") {
+  if (!is.list(d)) {
+    return(NULL)
+  }
+  acc_parts <- character(0)
+  if (isTRUE(d$has_elpd)) {
+    acc_parts <- c(
+      acc_parts,
+      sprintf("SE(ELPD) = %s", format_number(d$elpd_se, 1L, decimal_mark))
+    )
+  }
+  if (isTRUE(d$has_waic)) {
+    acc_parts <- c(
+      acc_parts,
+      sprintf("SE(WAIC) = %s", format_number(d$waic_se, 1L, decimal_mark))
+    )
+  }
+  bits <- character(0)
+  if (length(acc_parts) > 0L) {
+    method_lbl <- if (isTRUE(d$has_elpd) && isTRUE(d$has_waic)) {
+      "PSIS-LOO / WAIC"
+    } else if (isTRUE(d$has_elpd)) {
+      "PSIS-LOO"
+    } else {
+      "WAIC"
+    }
+    bits <- c(
+      bits,
+      sprintf(
+        "Predictive accuracy by %s; %s.",
+        method_lbl,
+        paste(acc_parts, collapse = "; ")
+      )
+    )
+  }
+  if (isTRUE(d$n_bad_k > 0L)) {
+    # Remediation ladder per Bayesian Workflow ch. 24: moment matching
+    # first, then refitting the flagged folds, then K-fold CV.
+    bits <- c(
+      bits,
+      sprintf(
+        paste0(
+          "PSIS-LOO unreliable for %d of %d observations (Pareto ",
+          "k > %s); consider loo::loo_moment_match(), refitting ",
+          "the flagged folds (k_threshold = 0.7), or K-fold CV."
+        ),
+        d$n_bad_k,
+        d$n_k,
+        format_number(d$k_thr, 2L, decimal_mark)
+      )
+    )
+  }
+  if (isTRUE(d$n_bad_p > 0L)) {
+    bits <- c(
+      bits,
+      sprintf(
+        paste0(
+          "WAIC approximation unreliable for %d observation(s) ",
+          "(p_waic > %s); prefer PSIS-LOO (`show_fit_stats = ",
+          "\"elpd_loo\"`)."
+        ),
+        d$n_bad_p,
+        format_number(0.4, 1L, decimal_mark)
+      )
+    )
+  }
+  if (length(bits) == 0L) {
+    return(NULL)
+  }
+  paste(bits, collapse = " ")
 }

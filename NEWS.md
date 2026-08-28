@@ -611,6 +611,16 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
   in `as_structured()`, so it keeps its point whatever the session or
   the table asks for.
 
+* Five `table_regression()` footers follow `decimal_mark` as well: the
+  compact ordinal cut-points, the Cox concordance and its standard
+  error, the `survreg` scale and the `flexsurvreg` shape / scale, and
+  the Bayesian predictive-accuracy and sampler-diagnostic figures. A
+  comma table printed all of them with a point. No value changes, and
+  `decimal_mark = "."` is unchanged. Two things in those lines keep
+  their point on purpose: R code quoted back to you
+  (`k_threshold = 0.7`), and the quantile in a quantile-regression
+  title, which is part of the name of the model.
+
 * `table_outcome()` names the argument it is missing. Omitting `outcome`
   or `select` used to die deep inside tidyselect on base R's own
   `argument "expr" is missing` message, translated by the session locale
