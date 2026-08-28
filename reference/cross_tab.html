@@ -224,7 +224,11 @@ comma here and in <code><a href="freq.html">freq()</a></code>, exactly as it doe
 <code>table_*()</code> family. An argument you type wins, so
 <code>decimal_mark = "."</code> under a French language gives French words
 and a decimal point. Under a comma the p-value keeps its leading
-zero (<code>p = 0,659</code>), the form French typography requires.</p></dd>
+zero (<code>p = 0,659</code>), the form French typography requires. The
+resolved mark is frozen on the object when it is built, like every
+other formatting argument: a table built under a French language
+still prints its commas when it is printed later with the language
+option cleared.</p></dd>
 
 
 <dt id="arg-p-digits">p_digits<a class="anchor" aria-label="anchor" href="#arg-p-digits"></a></dt>

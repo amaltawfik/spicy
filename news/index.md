@@ -816,6 +816,31 @@ instead of rendering an empty column.
   count used to keep a decimal point while the cells above them read a
   comma.
 
+- `decimal_mark = ","` keeps the leading zero of a p-value in every
+  `table_*()` family too, on the console and in every rendered output:
+  `0,018` and `<0,001`, where they used to read `,018` and `<,001`. The
+  bounded association measure of
+  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
+  follows the same rule (`0,52`).
+  [`as_structured()`](https://amaltawfik.github.io/spicy/reference/as_structured.md)
+  publishes the same rule: `format_spec$p_style` and `col_meta$p_style`
+  read `"standard"` under a typed comma, matching the strings they
+  describe. A `p_style` you asked for still wins, so `style = "jama"`
+  under a comma keeps JAMA’s `,02`, and `decimal_mark = "."` is
+  unchanged throughout.
+
+- `options(OutDec)` can no longer override a typed `decimal_mark`. In a
+  session set to `OutDec = ","`, every `table_*()` family and the
+  exploration pair printed commas even where `decimal_mark = "."` was
+  asked for, because the underlying formatters read the option. Every
+  number spicy renders now depends on the argument alone, and is
+  unchanged under the default option. Column names never depended on it
+  and still do not: the horizon in a survival estimand’s header,
+  `dRMST (365.5)`, is the name of that column in
+  [`as.data.frame()`](https://rdrr.io/r/base/as.data.frame.html) and in
+  [`as_structured()`](https://amaltawfik.github.io/spicy/reference/as_structured.md),
+  so it keeps its point whatever the session or the table asks for.
+
 - [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md)
   names the argument it is missing. Omitting `outcome` or `select` used
   to die deep inside tidyselect on base R’s own
@@ -1162,8 +1187,17 @@ instead of rendering an empty column.
   gt’s style compiler (“unterminated attribute selector”).
 
 - The significance-star legend of `table_regression(stars = TRUE)`
-  follows the table’s `decimal_mark`: a comma table now reads
-  `p < ,001`, not `p < .001`.
+  follows the table’s `decimal_mark`, leading zero included: a comma
+  table reads `*** p < 0,001`, where it used to keep a decimal point
+  under a body printed in commas.
+
+- The rest of a comma table’s footer follows its mark too: the
+  random-effects LR test line (`p < 0,001`, and its chi-bar-squared
+  statistic), the GEE working-correlation `alpha`, the coverage quoted
+  in a profile or bootstrap CI note (`97,5% CIs`), and the change tokens
+  of a nested model comparison (`+0,07`). Each kept a decimal point
+  under a body printed in commas – the random-effects line contradicting
+  the star legend three rows below it.
 
 - The confidence interval of an association measure in
   [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)

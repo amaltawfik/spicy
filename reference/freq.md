@@ -148,7 +148,11 @@ freq(
   [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md),
   exactly as it does in the reporting `table_*()` families. An argument
   you type wins, so `decimal_mark = "."` under a French language gives
-  French words and a decimal point.
+  French words and a decimal point. The resolved mark is frozen on the
+  object when it is built: a table built under a French language still
+  prints its commas when it is printed later with the language option
+  cleared. Its words are not – `freq()` resolves its labels at print
+  time – so that table prints English headings over French numbers.
 
 - output:
 

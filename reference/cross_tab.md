@@ -144,7 +144,11 @@ cross_tab(
   exactly as it does in the reporting `table_*()` family. An argument
   you type wins, so `decimal_mark = "."` under a French language gives
   French words and a decimal point. Under a comma the p-value keeps its
-  leading zero (`p = 0,659`), the form French typography requires.
+  leading zero (`p = 0,659`), the form French typography requires. The
+  resolved mark is frozen on the object when it is built, like every
+  other formatting argument: a table built under a French language still
+  prints its commas when it is printed later with the language option
+  cleared.
 
 - p_digits:
 
