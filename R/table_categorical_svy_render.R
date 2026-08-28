@@ -103,7 +103,7 @@
     .CAT_KEY_VARIABLE
   )
   fmt <- function(v, d) {
-    out <- formatC(v, format = "f", digits = d)
+    out <- formatC(v, format = "f", digits = d, decimal.mark = ".")
     if (decimal_mark != ".") {
       out <- sub("\\.", decimal_mark, out)
     }
@@ -333,7 +333,7 @@
       }
     }
     if (identical(e$base, "p")) {
-      meta$p_style <- .style_p_style_token()
+      meta$p_style <- .style_p_style_token(decimal_mark)
       meta$threshold <- .style_p_floor(p_digits)
     }
     if (identical(e$token, "prop_ci")) {
@@ -417,7 +417,7 @@
       digits = percent_digits,
       percent_digits = percent_digits,
       p_digits = p_digits,
-      p_style = .style_p_style_token(),
+      p_style = .style_p_style_token(decimal_mark),
       p_threshold = .style_p_floor(p_digits),
       ci_level = ci_level
     ),

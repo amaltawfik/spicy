@@ -877,7 +877,7 @@ test_that("table_continuous_lm low-level formatting helpers behave as expected",
   expect_true(is.numeric(spicy:::get_r2_value_lm(block, "r2")))
   expect_equal(spicy:::format_number(c(1.2, NA), 1L, ","), c("1,2", ""))
   expect_equal(spicy:::format_p_value(NA_real_), "")
-  expect_equal(spicy:::format_p_value(0.045, ","), ",045")
+  expect_equal(spicy:::format_p_value(0.045, ","), "0,045")
 })
 
 test_that("a wide-character label does not split the console into panels", {
@@ -1856,10 +1856,191 @@ test_that("format_p_value derives threshold from digits", {
 })
 
 test_that("format_p_value respects European decimal mark across digits", {
-  expect_equal(spicy:::format_p_value(0.045, ",", 3L), ",045")
-  expect_equal(spicy:::format_p_value(0.0008, ",", 3L), "<,001")
-  expect_equal(spicy:::format_p_value(0.00008, ",", 4L), "<,0001")
-  expect_equal(spicy:::format_p_value(0.005, ",", 2L), "<,01")
+  # A comma keeps the leading zero at every precision: ",045" is not a
+  # number (BIPM, SI brochure 9th ed., 5.4.4).
+  expect_equal(spicy:::format_p_value(0.045, ",", 3L), "0,045")
+  expect_equal(spicy:::format_p_value(0.0008, ",", 3L), "<0,001")
+  expect_equal(spicy:::format_p_value(0.00008, ",", 4L), "<0,0001")
+  expect_equal(spicy:::format_p_value(0.005, ",", 2L), "<0,01")
+})
+
+test_that("an explicit leading_zero still outranks the mark", {
+  # The pair's lever (`cross_tab()` has no style layer): it can force
+  # the drop back under a comma, and force the zero under a point.
+  expect_equal(
+    spicy:::format_p_value(0.045, ",", 3L, leading_zero = FALSE),
+    ",045"
+  )
+  expect_equal(
+    spicy:::format_p_value(0.045, ".", 3L, leading_zero = TRUE),
+    "0.045"
+  )
+})
+
+test_that("options(OutDec) cannot override a typed decimal_mark", {
+  # Beside the shared formatters because that is where the leak was:
+  # `formatC()` and `as.character()` both read the session option, so a
+  # user with `OutDec = ","` got commas out of a table that asked for a
+  # point -- the substitution that owns the mark looks for a dot and
+  # found none. The whole rendered surface is compared, not a sample.
+  d <- mtcars
+  d$am <- factor(d$am, labels = c("auto", "manual"))
+  d$cyl <- factor(d$cyl)
+  fit <- stats::lm(mpg ~ wt, data = d)
+  render <- function() {
+    c(
+      spicy:::format_number(37.226, 2L, "."),
+      spicy:::format_number(1.75e11, 2L, "."),
+      spicy:::format_p_value(0.045, "."),
+      spicy:::format_p_value(0.0004, "."),
+      spicy:::format_p_threshold(0.05, "."),
+      spicy:::.mark_decimal(2.84, "."),
+      spicy:::.ci_pct_str(0.975),
+      capture.output(print(
+        table_categorical(d, cyl, by = am, decimal_mark = ".")
+      )),
+      capture.output(print(
+        table_continuous(d, mpg, by = am, decimal_mark = ".")
+      )),
+      capture.output(print(
+        table_continuous_lm(d, mpg, by = am, decimal_mark = ".")
+      )),
+      capture.output(print(
+        table_outcome(d, outcome = mpg, select = am, decimal_mark = ".")
+      )),
+      capture.output(print(
+        table_regression(fit, stars = TRUE, decimal_mark = ".")
+      )),
+      capture.output(print(cross_tab(d, cyl, am, decimal_mark = "."))),
+      capture.output(print(freq(d, cyl, decimal_mark = ".")))
+    )
+  }
+  dot <- render()
+  expect_false(any(grepl("[0-9],[0-9]", dot)))
+  expect_identical(withr::with_options(list(OutDec = ","), render()), dot)
+
+  # And the comma the user DID ask for is unaffected by the option too.
+  comma <- function() {
+    c(
+      spicy:::format_number(37.226, 2L, ","),
+      spicy:::format_p_value(0.0004, ","),
+      spicy:::format_p_threshold(0.05, ","),
+      spicy:::.mark_decimal(2.84, ","),
+      capture.output(print(
+        table_regression(fit, stars = TRUE, decimal_mark = ",")
+      ))
+    )
+  }
+  expect_identical(withr::with_options(list(OutDec = ","), comma()), comma())
+})
+
+test_that("options(OutDec) cannot reach the renderers outside the shared formatters", {
+  # The witness above covers the five families, the pair and the shared
+  # formatters. Several renderers write their own `formatC()` and never
+  # pass through `format_number()`; a mutation reverting THEIR pins left
+  # the whole suite green, so they get a witness of their own here.
+  #
+  # One entry per pinned site:
+  #   the survey twin's cell formatter  R/table_categorical_svy_render.R
+  #   print.spicy_assoc_detail          R/assoc.R
+  #   print.spicy_assoc_table           R/assoc.R
+  #   format_signed(), change tokens    R/regression_nested.R
+  #   the fractional Satterthwaite df   R/table_continuous_lm_render.R
+  #   the GEE working-correlation alpha R/regression_titlefooter.R
+  #   the R-hat and MCSE cells          R/regression_render.R
+  skip_if_not_installed("survey")
+  d <- mtcars
+  d$am <- factor(d$am, labels = c("auto", "manual"))
+  d$cyl <- factor(d$cyl)
+  des <- survey::svydesign(ids = ~1, data = d, weights = ~1)
+  tbl <- table(d$cyl, d$am)
+  m1 <- stats::lm(mpg ~ wt, data = d)
+  m2 <- stats::lm(mpg ~ wt + hp, data = d)
+  # A fractional df2 is what sends `format_df()` down its `formatC()`
+  # branch; an integer one returns early through `as.character()`.
+  df_block <- data.frame(
+    test_type = "t",
+    df1 = 1,
+    df2 = 45.3,
+    statistic = 2,
+    predictor_type = "categorical",
+    estimate = c(NA, 1),
+    level = c("A", "B"),
+    stringsAsFactors = FALSE
+  )
+  cell <- function(field, value) {
+    spicy:::format_cell_value(
+      long_row = stats::setNames(list(value), field),
+      cs = list(token = field, fields = field),
+      stars_map = NULL,
+      digits = 2L,
+      p_digits = 3L,
+      effect_size_digits = 2L,
+      decimal_mark = ".",
+      show_columns = field
+    )
+  }
+  render <- function() {
+    c(
+      capture.output(print(
+        table_categorical_svy(des, select = cyl, by = am, decimal_mark = ".")
+      )),
+      capture.output(print(cramer_v(tbl, detail = TRUE))),
+      capture.output(print(assoc_measures(tbl))),
+      capture.output(print(
+        table_regression(list(m1, m2), nested = TRUE, decimal_mark = ".")
+      )),
+      spicy:::get_test_header_lm(df_block, TRUE, TRUE),
+      spicy:::.format_gee_for_frame(
+        list(
+          info = list(
+            class = "geeglm",
+            extras = list(gee_corstr = "exchangeable", gee_alpha = 0.077)
+          )
+        ),
+        "."
+      ),
+      cell("rhat", 1.0125),
+      cell("mcse", 0.0995)
+    )
+  }
+  dot <- render()
+  # Sentinel: an empty or all-blank render() would make the identity
+  # below vacuous.
+  expect_true(sum(nzchar(dot)) > 20L)
+  expect_false(any(grepl("[0-9],[0-9]", dot)))
+  expect_identical(withr::with_options(list(OutDec = ","), render()), dot)
+
+  # Every site that has a mark to follow follows the argument, not the
+  # session: same call, comma asked for, comma out under either option.
+  comma <- function() {
+    c(
+      capture.output(print(
+        table_categorical_svy(des, select = cyl, by = am, decimal_mark = ",")
+      )),
+      capture.output(print(
+        table_regression(list(m1, m2), nested = TRUE, decimal_mark = ",")
+      )),
+      spicy:::.format_gee_for_frame(
+        list(
+          info = list(
+            class = "geeglm",
+            extras = list(gee_corstr = "exchangeable", gee_alpha = 0.077)
+          )
+        ),
+        ","
+      )
+    )
+  }
+  com <- comma()
+  expect_identical(withr::with_options(list(OutDec = "."), comma()), com)
+  expect_identical(withr::with_options(list(OutDec = ","), comma()), com)
+  # The two sites this branch taught the mark, asserted by value: the
+  # change tokens used to read "+0.07" over cells reading "0,75".
+  expect_true(any(grepl("+0,07", com, fixed = TRUE)))
+  expect_true(any(grepl("+12,38", com, fixed = TRUE)))
+  expect_false(any(grepl("+0.07", com, fixed = TRUE)))
+  expect_true(any(grepl("alpha = 0,08", com, fixed = TRUE)))
 })
 
 test_that("format_p_value handles NA and falls back to default for bad digits", {

@@ -1448,8 +1448,18 @@ comparable_nobs <- function(fit_prev, fit_curr) {
 
 # Signed numeric format with explicit "+" prefix for positive values
 # (helps readability of delta tables).
-format_signed <- function(x, digits) {
-  s <- formatC(x, format = "f", digits = digits)
+#
+# `decimal_mark` is threaded like `format_number()`'s, and for the same
+# reason: this is the sibling branch of the very same fit-stat cell (see
+# `.format_fit_stat_value()`), so a nested table asked for commas used to
+# print "+0.07" one row above "0,001". The `formatC()` mark stays pinned
+# at the point and the substitution happens after the sign, so the
+# session's `options(OutDec)` reaches neither.
+format_signed <- function(x, digits, decimal_mark = ".") {
+  s <- formatC(x, format = "f", digits = digits, decimal.mark = ".")
+  if (!identical(decimal_mark, ".")) {
+    s <- chartr(".", decimal_mark, s)
+  }
   if (is.finite(x) && x > 0 && !startsWith(s, "+")) {
     s <- paste0("+", s)
   }

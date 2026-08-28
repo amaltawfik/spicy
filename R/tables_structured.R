@@ -335,7 +335,7 @@
     col_meta[[.CAT_KEY_P]] <- list(
       token = "p",
       precision = as.integer(p_digits),
-      p_style = .style_p_style_token(),
+      p_style = .style_p_style_token(decimal_mark),
       # The style's floor, like the `p_threshold` of the format spec
       # below: a flat `10^(-p_digits)` disagreed with it -- and with the
       # console -- as soon as a theme set its floor apart from its
@@ -351,7 +351,7 @@
       col_meta[[measure_col]] <- list(
         token = "assoc",
         precision = as.integer(v_digits),
-        p_style = .style_p_style_token(),
+        p_style = .style_p_style_token(decimal_mark),
         value_range = c(-1, 1),
         display_label = measure_label %||% measure_col
       )
@@ -371,7 +371,7 @@
           col_meta[[nm]] <- list(
             token = "assoc_ci",
             precision = as.integer(v_digits),
-            p_style = .style_p_style_token(),
+            p_style = .style_p_style_token(decimal_mark),
             value_range = c(-1, 1),
             ci_role = if (identical(nm, ll)) "LL" else "UL",
             ci_pair = if (identical(nm, ll)) ul else ll,
@@ -491,7 +491,7 @@
       percent_digits = as.integer(percent_digits),
       p_digits = as.integer(p_digits),
       v_digits = as.integer(v_digits),
-      p_style = .style_p_style_token(),
+      p_style = .style_p_style_token(decimal_mark),
       p_threshold = .style_p_floor(p_digits),
       ci_level = assoc_ci_level
     ),
@@ -594,7 +594,7 @@
       token = "p",
       display_label = spicy_str("header_p"),
       precision = as.integer(p_digits),
-      p_style = .style_p_style_token(),
+      p_style = .style_p_style_token(decimal_mark),
       threshold = .style_p_floor(p_digits)
     )
     col_source[[.CON_KEY_P]] <- list(name = .CON_KEY_P, field = "p.value")
@@ -760,7 +760,7 @@
       digits = as.integer(digits),
       p_digits = as.integer(p_digits),
       effect_size_digits = as.integer(effect_size_digits),
-      p_style = .style_p_style_token(),
+      p_style = .style_p_style_token(decimal_mark),
       p_threshold = .style_p_floor(p_digits),
       ci_level = ci_level
     ),
@@ -855,7 +855,7 @@
       p = list(
         token = "p",
         precision = as.integer(p_digits),
-        p_style = .style_p_style_token(),
+        p_style = .style_p_style_token(decimal_mark),
         threshold = .style_p_floor(p_digits)
       ),
       r2 = list(token = "r2", precision = as.integer(fit_digits)),
@@ -938,7 +938,7 @@
       p_digits = as.integer(p_digits),
       effect_size_digits = as.integer(effect_size_digits),
       fit_digits = as.integer(fit_digits),
-      p_style = .style_p_style_token(),
+      p_style = .style_p_style_token(decimal_mark),
       p_threshold = .style_p_floor(p_digits),
       ci_level = ci_level
     ),
@@ -1046,7 +1046,7 @@
       digits = as.integer(digits),
       p_digits = as.integer(p_digits),
       effect_size_digits = as.integer(effect_size_digits),
-      p_style = .style_p_style_token(),
+      p_style = .style_p_style_token(decimal_mark),
       p_threshold = .style_p_floor(p_digits),
       ci_level = ci_level
     ),

@@ -447,7 +447,7 @@ build_structured_body <- function(
     # The leading-zero policy of bounded columns is spicy's APA drop
     # by default; a journal style may pin it to "standard".
     p_style <- if (is_p_col || identical(token, "pd")) {
-      .style_p_style_token()
+      .style_p_style_token(decimal_mark)
     } else {
       NULL
     }
@@ -669,6 +669,7 @@ build_structured_body <- function(
       fit_digits = fit_digits,
       ic_digits = ic_digits,
       p_digits = p_digits,
+      decimal_mark = decimal_mark,
       n_groups_by_model = aligned$n_groups_by_model,
       fixef_by_model = aligned$fixef_by_model,
       blank_models = aligned$blank_fit_stats_models
@@ -792,7 +793,7 @@ build_structured_body <- function(
     effect_size_digits = as.integer(effect_size_digits),
     fit_digits = as.integer(fit_digits),
     ic_digits = as.integer(ic_digits),
-    p_style = .style_p_style_token(),
+    p_style = .style_p_style_token(decimal_mark),
     p_threshold = .style_p_floor(p_digits),
     ci_level = ci_level
   )
@@ -1254,6 +1255,7 @@ build_structured_body <- function(
   fit_digits,
   ic_digits,
   p_digits,
+  decimal_mark = ".",
   n_groups_by_model = NULL,
   fixef_by_model = NULL,
   blank_models = NULL
@@ -1413,7 +1415,11 @@ build_structured_body <- function(
       ic_digits = ic_digits,
       p_digits = p_digits
     )
-    p_style <- if (identical(tk, "p_change")) .style_p_style_token() else NULL
+    p_style <- if (identical(tk, "p_change")) {
+      .style_p_style_token(decimal_mark)
+    } else {
+      NULL
+    }
     threshold <- if (identical(tk, "p_change")) {
       .style_p_floor(p_digits)
     } else {
@@ -1652,17 +1658,33 @@ build_structured_body <- function(
 }
 
 # Below-threshold display text used in p-columns when |p| < threshold.
-# Example: threshold = 0.001 -> "<.001" (US) or "<,001" (EU).
-.below_threshold_text <- function(threshold, decimal_mark = ".") {
+# Example: threshold = 0.001 -> "<.001" (US) or "<0,001" (EU).
+#
+# `p_style` is the COLUMN's own token, frozen when the table was built.
+# It has to be, and not a fresh question to the style layer: the cells
+# above and below the floor belong to one column and cannot disagree
+# about the leading zero, and the column's token is the only thing that
+# survives being handed to an engine. With no token (a caller that has
+# none), the style and the mark answer as they do everywhere else.
+.below_threshold_text <- function(
+  threshold,
+  decimal_mark = ".",
+  p_style = NULL
+) {
   if (is.null(threshold) || !is.finite(threshold) || threshold <= 0) {
     return(NULL)
+  }
+  keep_zero <- if (is.null(p_style)) {
+    .style_p_leading_zero(decimal_mark)
+  } else {
+    identical(p_style, "standard")
   }
   paste0(
     "<",
     .strip_leading_zero(
       .format_p_floor(threshold, decimal_mark),
       decimal_mark,
-      .style_p_leading_zero()
+      keep_zero
     )
   )
 }
@@ -1720,7 +1742,13 @@ build_structured_body <- function(
     out <- sub(
       "\\.$",
       "",
-      formatC(val, digits = as.integer(cfmt$signif), format = "g", flag = "#")
+      formatC(
+        val,
+        digits = as.integer(cfmt$signif),
+        format = "g",
+        flag = "#",
+        decimal.mark = "."
+      )
     )
     if (!identical(decimal_mark, ".")) {
       out <- sub(".", decimal_mark, out, fixed = TRUE) # nocov
@@ -1728,7 +1756,7 @@ build_structured_body <- function(
     return(out)
   }
   if (!is.null(cfmt$threshold) && is.finite(val) && val < cfmt$threshold) {
-    return(.below_threshold_text(cfmt$threshold, decimal_mark))
+    return(.below_threshold_text(cfmt$threshold, decimal_mark, cfmt$p_style))
   }
   # A p-value's decimal count can depend on its own size: a theme's
   # `p_bands` ("three decimals below .01, two otherwise") or its

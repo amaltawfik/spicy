@@ -195,13 +195,14 @@ build_regression_footer_from_frames <- function(
       nested,
       show_fit_stats
     ),
-    build_gee_footer_block_from_frames(frames),
+    build_gee_footer_block_from_frames(frames, decimal_mark = decimal_mark),
     build_random_effects_footer_block_from_frames(
       frames,
       show_re = show_re,
       re_scale = re_scale,
       re_columns = re_columns,
-      re_test = re_test
+      re_test = re_test,
+      decimal_mark = decimal_mark
     ),
     build_survival_footer_block_from_frames(frames),
     build_survival_estimand_footer_block_from_frames(frames),
@@ -560,16 +561,16 @@ build_ci_method_footer_block_from_frames <- function(
     return(NULL)
   }
   # The coverage quoted in a note is display text like the header it
-  # glosses: its decimal point follows `decimal_mark` (decision 27).
-  # The historical rounding (1 decimal) is kept as-is; only the mark
-  # of an already-fractional percentage moves.
+  # glosses: its decimal point follows `decimal_mark` (decision 27), and
+  # it is produced by the SAME helper the header uses. A local `format()`
+  # here read `options(OutDec)` instead, so a session set to a comma
+  # printed the header "97.5% CI" over the note "97,5% CIs: profile
+  # likelihood." in a table that had asked for a point -- and, under that
+  # same session, the Lancet substitution below found no point left to
+  # replace. `.ci_pct_display()` is `.ci_pct_str()`'s display twin: the
+  # header's pinned digits, then the reader's mark.
   .pct <- function(idx) {
-    lvl <- frames[[idx]]$info$ci_level %||% 0.95
-    out <- sub("\\.0$", "", format(round(100 * lvl, 1), nsmall = 0))
-    if (identical(decimal_mark, ".")) {
-      return(out)
-    }
-    sub(".", decimal_mark, out, fixed = TRUE)
+    .ci_pct_display(frames[[idx]]$info$ci_level %||% 0.95, decimal_mark)
   }
   lines <- character(0)
   is_profile <- vapply(
@@ -956,9 +957,14 @@ format_p_threshold <- function(p, decimal_mark = ".") {
   if (!is.finite(p) || p <= 0 || p > 1) {
     return(format(p))
   }
-  s <- formatC(p, format = "f", digits = 3) # always 3 decimals first
-  # ".050" / ".100" / ".001" -- unless a style keeps the leading zero.
-  s <- .strip_leading_zero(s, ".", .style_p_leading_zero())
+  # Always 3 decimals first, and always with a dot: the rest of this
+  # function is written against one, and `formatC()` would otherwise
+  # read `options(OutDec)` and hand it a comma the table never asked
+  # for (the same leak `format_number()` closes).
+  s <- formatC(p, format = "f", digits = 3, decimal.mark = ".")
+  # ".050" / ".100" / ".001" -- unless the style or the table's mark
+  # keeps the leading zero, in which case "0.050" / "0.100" / "0.001".
+  s <- .strip_leading_zero(s, ".", .style_p_leading_zero(decimal_mark))
   # Trim trailing zeros but keep at least 2 decimal digits ("." + 2
   # chars). The floor counts the integer part, which is empty under the
   # APA drop (".050" -> 3) and one digit when a style keeps the leading
@@ -1071,14 +1077,14 @@ build_ordinal_thresholds_footer_block_from_frames <- function(frames) {
 #   independence:        "GEE working correlation: independence."
 #   unstructured:        "GEE working correlation: unstructured
 #                         (10 correlation parameters)."
-build_gee_footer_block_from_frames <- function(frames) {
+build_gee_footer_block_from_frames <- function(frames, decimal_mark = ".") {
   if (!is.list(frames) || length(frames) == 0L) {
     return(NULL)
   }
 
   per_model <- lapply(seq_along(frames), function(i) {
     f <- frames[[i]]
-    txt <- .format_gee_for_frame(f)
+    txt <- .format_gee_for_frame(f, decimal_mark)
     if (is.null(txt)) NULL else list(idx = i, text = txt)
   })
   per_model <- Filter(Negate(is.null), per_model)
@@ -1100,7 +1106,7 @@ build_gee_footer_block_from_frames <- function(frames) {
 }
 
 
-.format_gee_for_frame <- function(frame) {
+.format_gee_for_frame <- function(frame, decimal_mark = ".") {
   cls <- frame$info$class %||% ""
   if (!identical(cls, "geeglm")) {
     return(NULL)
@@ -1115,7 +1121,10 @@ build_gee_footer_block_from_frames <- function(frames) {
     return(sprintf(
       "GEE working correlation: %s (alpha = %s).",
       corstr,
-      formatC(alpha, format = "f", digits = 2)
+      # The estimate is a rendered number in a note, so it follows the
+      # table's mark like the cells above it -- and, through
+      # `format_number()`, ignores `options(OutDec)` either way.
+      format_number(alpha, 2L, decimal_mark)
     ))
   }
   if (length(alpha) > 1L) {
@@ -1313,7 +1322,8 @@ build_random_effects_footer_block_from_frames <- function(
   show_re = TRUE,
   re_scale = "sd",
   re_columns = c("est", "se", "ci"),
-  re_test = "none"
+  re_test = "none",
+  decimal_mark = "."
 ) {
   if (!is.list(frames) || length(frames) == 0L) {
     return(NULL)
@@ -1328,6 +1338,7 @@ build_random_effects_footer_block_from_frames <- function(
     f <- frames[[i]]
     txt <- .format_random_effects_for_frame(
       f,
+      decimal_mark = decimal_mark,
       re_scale = re_scale,
       re_columns = re_columns
     )
@@ -1851,16 +1862,24 @@ build_component_blocks_footer_block_from_frames <- function(frames) {
 }
 
 
-# Internal: APA-ish p-value formatter for the LR test line. Returns
-# strings like "< .001" or "= .034" so the line reads naturally.
-format_p_value_for_panel <- function(p) {
+# Internal: p-value formatter for the LR test line. Returns strings like
+# "< .001" or "= 0.034" so the line reads naturally after "p".
+#
+# The number follows the table's `decimal_mark` like every other rendered
+# number: the same footer carries the star legend, and a table built with
+# `decimal_mark = ","` used to read "p < .001" three lines above
+# "*** p < 0,001". The floor branch quotes `format_p_threshold()` -- the
+# legend's own producer -- so the two can no longer disagree, and the
+# ordinary branch goes through `format_number()`. Under a point both are
+# byte-identical to the hard-coded forms they replace.
+format_p_value_for_panel <- function(p, decimal_mark = ".") {
   if (!is.finite(p)) {
     return("= NA")
   }
   if (p < 0.001) {
-    return("< .001")
+    return(paste0("< ", format_p_threshold(0.001, decimal_mark)))
   }
-  sprintf("= %.3f", p)
+  paste0("= ", format_number(p, 3L, decimal_mark))
 }
 
 
@@ -1881,7 +1900,7 @@ format_p_value_for_panel <- function(p) {
 
 # Format the per-frame random-effects sentence. Returns NULL when the
 # frame has no random-effects content (lm / glm / coxph / etc.).
-.format_random_effects_for_frame <- function(frame, ...) {
+.format_random_effects_for_frame <- function(frame, decimal_mark = ".", ...) {
   re <- frame$info$random_effects
   if (is.null(re)) {
     return(NULL)
@@ -1918,12 +1937,12 @@ format_p_value_for_panel <- function(p) {
   lrt <- re$null_lrt
   lrt_part <- NULL
   if (!is.null(lrt) && is.finite(lrt$chi2) && is.finite(lrt$df)) {
-    p_str <- format_p_value_for_panel(lrt$p_chibar2)
+    p_str <- format_p_value_for_panel(lrt$p_chibar2, decimal_mark)
     lrt_part <- sprintf(
-      "LR test vs %s, \u03C7\u0304\u00B2(%d) = %.2f, p %s",
+      "LR test vs %s, \u03C7\u0304\u00B2(%d) = %s, p %s",
       lrt$family_label %||% "no-random model",
       as.integer(lrt$df),
-      lrt$chi2,
+      format_number(lrt$chi2, 2L, decimal_mark),
       p_str
     )
   }

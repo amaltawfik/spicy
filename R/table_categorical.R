@@ -1450,8 +1450,18 @@ table_categorical <- function(
     )
   }
 
+  # `decimal.mark` pinned on every `formatC()` of this file that can
+  # write one -- the exception is `fmt_n()` below, whose `digits = 0`
+  # produces no decimal mark at all. The substitution below is the ONLY
+  # authority on the mark, and `formatC()` would otherwise read
+  # `options(OutDec)` and slip a session comma past a table that asked
+  # for a point.
   fmt_num <- function(x, digits = 1, na = "") {
-    out <- ifelse(is.na(x), na, formatC(x, format = "f", digits = digits))
+    out <- ifelse(
+      is.na(x),
+      na,
+      formatC(x, format = "f", digits = digits, decimal.mark = ".")
+    )
     if (decimal_mark != ".") {
       out <- sub("\\.", decimal_mark, out)
     }
@@ -1504,11 +1514,12 @@ table_categorical <- function(
     if (is.na(v)) {
       return("")
     }
-    s <- formatC(v, format = "f", digits = v_digits)
+    s <- formatC(v, format = "f", digits = v_digits, decimal.mark = ".")
     # The association measure is bounded, so it follows the same
-    # leading-zero policy as a p-value: dropped by default (APA), kept
-    # under a style that says so (`p_style = "standard"`).
-    s <- .strip_leading_zero(s, ".", .style_p_leading_zero())
+    # leading-zero policy as a p-value: dropped under a decimal point,
+    # kept under a comma mark or under a style that says so
+    # (`p_style = "standard"`).
+    s <- .strip_leading_zero(s, ".", .style_p_leading_zero(decimal_mark))
     if (decimal_mark != ".") {
       s <- sub("\\.", decimal_mark, s)
     }
@@ -1530,7 +1541,7 @@ table_categorical <- function(
     if (is.na(v)) {
       return(spicy_str("cell_undefined"))
     }
-    s <- formatC(v, format = "f", digits = v_digits)
+    s <- formatC(v, format = "f", digits = v_digits, decimal.mark = ".")
     if (decimal_mark != ".") {
       s <- sub("\\.", decimal_mark, s)
     }

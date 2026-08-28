@@ -316,7 +316,7 @@ test_that("decimal_mark = ',' holds in every Excel cell of the body", {
   # the file cannot set: the body goes out pre-formatted instead.
   expect_equal(.xl_at(m, 5L, "B"), "65,07")
   expect_equal(.xl_at(m, 5L, "C"), "1,63")
-  expect_equal(.xl_at(m, 5L, "F"), "<,001")
+  expect_equal(.xl_at(m, 5L, "F"), "<0,001")
   expect_equal(.xl_at(m, 6L, "B"), "0,04")
   expect_equal(
     .xl_types(path, c("B5", "C5", "F5", "B10")),

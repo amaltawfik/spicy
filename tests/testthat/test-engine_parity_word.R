@@ -100,7 +100,19 @@ test_that("stars reach the Word cells that the footer legend documents", {
   # The legend the audit found orphaned now documents symbols that are
   # in the table -- and its thresholds follow the table's decimal mark
   # (they used to stay dot-based in a comma table).
-  expect_match(.wd_note(rows), "*** p < ,001", fixed = TRUE)
+  expect_match(.wd_note(rows), "*** p < 0,001", fixed = TRUE)
+  # The p CELL under the same comma, the Word twin of the Excel
+  # `.xl_at(m, 5L, "F") == "<0,001"`. The legend above comes from
+  # `format_p_threshold()`; a body cell comes from `.cell_to_string()`
+  # through the frozen `col_meta$p_style`, a different path entirely. A
+  # regression of that token would ship a document whose footer says
+  # "p < 0,001" over a column reading "<,001", and nothing here would
+  # have noticed. Both p columns of the two-model table, above the
+  # floor and below it.
+  expect_equal(.wd_trim(.wd_row(rows, "(Intercept)")[4L]), "<0,001")
+  expect_equal(.wd_trim(.wd_row(rows, "(Intercept)")[7L]), "<0,001")
+  expect_equal(.wd_trim(.wd_row(rows, "age")[4L]), "0,163")
+  expect_equal(.wd_trim(.wd_row(rows, "Male")[7L]), "0,674")
 })
 
 

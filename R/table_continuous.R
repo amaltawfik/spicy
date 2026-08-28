@@ -2937,7 +2937,7 @@ epsilon_sq_boot_ci <- function(xvec, gvec, n_groups, ci_level, n_boot = 2000L) {
   decimal_mark = "."
 ) {
   fmt <- function(v, d = digits) {
-    out <- formatC(v, format = "f", digits = d)
+    out <- formatC(v, format = "f", digits = d, decimal.mark = ".")
     if (decimal_mark != ".") {
       out <- sub("\\.", decimal_mark, out)
     }
@@ -2953,7 +2953,7 @@ epsilon_sq_boot_ci <- function(xvec, gvec, n_groups, ci_level, n_boot = 2000L) {
     if (is.na(stat)) {
       return("")
     }
-    s <- formatC(stat, format = "f", digits = 2L)
+    s <- formatC(stat, format = "f", digits = 2L, decimal.mark = ".")
     if (decimal_mark != ".") {
       s <- sub("\\.", decimal_mark, s)
     }
@@ -2979,7 +2979,7 @@ epsilon_sq_boot_ci <- function(xvec, gvec, n_groups, ci_level, n_boot = 2000L) {
       paste0("H(", d, ") = ", s)
     } else if (is.na(df2)) {
       # t-test (welch or student): df can be fractional
-      d <- formatC(df1, format = "f", digits = 2L)
+      d <- formatC(df1, format = "f", digits = 2L, decimal.mark = ".")
       if (decimal_mark != ".") {
         d <- sub("\\.", decimal_mark, d)
       }
@@ -2987,7 +2987,7 @@ epsilon_sq_boot_ci <- function(xvec, gvec, n_groups, ci_level, n_boot = 2000L) {
     } else {
       # F-test (welch_anova or anova)
       d1 <- formatC(df1, format = "f", digits = 0L)
-      d2 <- formatC(df2, format = "f", digits = 2L)
+      d2 <- formatC(df2, format = "f", digits = 2L, decimal.mark = ".")
       if (decimal_mark != ".") {
         d2 <- sub("\\.", decimal_mark, d2)
       }
@@ -3007,14 +3007,29 @@ epsilon_sq_boot_ci <- function(xvec, gvec, n_groups, ci_level, n_boot = 2000L) {
       return("")
     }
     label <- es_labels[[es_type]]
-    v <- formatC(es_value, format = "f", digits = effect_size_digits)
+    v <- formatC(
+      es_value,
+      format = "f",
+      digits = effect_size_digits,
+      decimal.mark = "."
+    )
     if (decimal_mark != ".") {
       v <- sub("\\.", decimal_mark, v)
     }
     s <- paste0(label, " = ", v)
     if (show_ci && !is.na(ci_lower) && !is.na(ci_upper)) {
-      lo <- formatC(ci_lower, format = "f", digits = effect_size_digits)
-      hi <- formatC(ci_upper, format = "f", digits = effect_size_digits)
+      lo <- formatC(
+        ci_lower,
+        format = "f",
+        digits = effect_size_digits,
+        decimal.mark = "."
+      )
+      hi <- formatC(
+        ci_upper,
+        format = "f",
+        digits = effect_size_digits,
+        decimal.mark = "."
+      )
       if (decimal_mark != ".") {
         lo <- sub("\\.", decimal_mark, lo)
         hi <- sub("\\.", decimal_mark, hi)

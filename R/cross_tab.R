@@ -67,7 +67,11 @@
 #'   `table_*()` family. An argument you type wins, so
 #'   `decimal_mark = "."` under a French language gives French words
 #'   and a decimal point. Under a comma the p-value keeps its leading
-#'   zero (`p = 0,659`), the form French typography requires.
+#'   zero (`p = 0,659`), the form French typography requires. The
+#'   resolved mark is frozen on the object when it is built, like every
+#'   other formatting argument: a table built under a French language
+#'   still prints its commas when it is printed later with the language
+#'   option cleared.
 #' @param p_digits Integer number of decimals used to format the
 #'   p-value (and to determine the small-`p` threshold below which
 #'   `< .001` notation is used). Defaults to `3` (the APA standard);
