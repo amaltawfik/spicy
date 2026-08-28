@@ -672,7 +672,9 @@ instead of rendering an empty column.
 - `re_ci = "profile"` gives profile-likelihood CIs for the variance
   components of `lmer` / `glmer` fits (no SE column; the footer
   discloses the method), and `re_test = "lrt"` / `"rlrt"` fills the test
-  columns of the `Random effects` rows.
+  columns of the `Random effects` rows. The block’s own LR-test p in the
+  footer follows the package’s leading-zero rule, like every other p:
+  `p = .153` under a point, `p = 0,153` under a comma.
 
 - Variance-component SEs are omitted on large mixed fits, above
   `options("spicy.re_se_max_n")` (default 1000), with a note and a
@@ -840,6 +842,17 @@ instead of rendering an empty column.
   [`as.data.frame()`](https://rdrr.io/r/base/as.data.frame.html) and in
   [`as_structured()`](https://amaltawfik.github.io/spicy/reference/as_structured.md),
   so it keeps its point whatever the session or the table asks for.
+
+- Five
+  [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  footers follow `decimal_mark` as well: the compact ordinal cut-points,
+  the Cox concordance and its standard error, the `survreg` scale and
+  the `flexsurvreg` shape / scale, and the Bayesian predictive-accuracy
+  and sampler-diagnostic figures. A comma table printed all of them with
+  a point. No value changes, and `decimal_mark = "."` is unchanged. Two
+  things in those lines keep their point on purpose: R code quoted back
+  to you (`k_threshold = 0.7`), and the quantile in a
+  quantile-regression title, which is part of the name of the model.
 
 - [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md)
   names the argument it is missing. Omitting `outcome` or `select` used

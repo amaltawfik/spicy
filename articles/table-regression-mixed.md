@@ -968,7 +968,7 @@ table_regression(
 #> Note. Linear mixed-effects regression models.
 #> Std. errors: Wald (model-based).
 #> p-values: Satterthwaite t-test (lmerTest).
-#> Naive: Random effects (REML): LR test vs linear regression, χ̄²(1) = 0.03, p = 0.431.
+#> Naive: Random effects (REML): LR test vs linear regression, χ̄²(1) = 0.03, p = .431.
 #> Within-between: Random effects (REML): LR test vs linear regression, χ̄²(1) = 0.00, p = 1.000.
 #> Within-between: Singular fit: the random-effect structure is at or near the boundary of the parameter space (a variance of 0, or a correlation of +/-1); the Wald SE and CI of the variance components are omitted.
 #> Naive: Random-effect variance components: SE and CI not computed (n = 1188 exceeds the spicy.re_se_max_n cap).
