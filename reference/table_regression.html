@@ -1397,6 +1397,38 @@ contributes one column of change stats; the FIRST model column
 gets en-dashes (no previous model to compare to). Validation
 requires identical <code>nobs</code> and identical response variable
 across all models.</p>
+<p><strong>Structural refusals.</strong> Four hierarchies carry no valid change
+statistic whatever their <code>nobs</code> and response, and are refused with
+<code>spicy_invalid_input</code> rather than rendered with empty or
+meaningless cells:</p><ul><li><p><em>A REML pair whose fixed effects differ</em>
+(<code>nlme::lme(method = "REML")</code>, <code>glmmTMB(REML = TRUE)</code>). The
+restricted likelihood depends on the fixed-effects design
+matrix, so the two criteria are not on a common scale and the
+likelihood-ratio test is not valid (Pinheiro &amp; Bates 2000
+Section 2.4.2). Refit both by maximum likelihood
+(<code>method = "ML"</code>, <code>REML = FALSE</code>). A REML pair that differs
+only in its random structure stays valid and is accepted.</p></li>
+<li><p><em>Two <code>fixest</code> fits that absorbed different fixed
+effects</em>. fixest counts every absorbed level as an estimated
+parameter, so a test across two <code>| fe</code> structures measures the
+change in the absorbed effects together with the change in the
+coefficients, and the two cannot be separated. Hold the
+<code>| fe</code> part fixed across the hierarchy.</p></li>
+<li><p><em>Mixed-effects fits from different engines</em> (<code>lme4</code>,
+<code>glmmTMB</code>, <code><a href="https://rdrr.io/pkg/nlme/man/lme.html" class="external-link">nlme::lme</a></code>). The change statistics come from the
+engine's own two-model <code><a href="https://rdrr.io/r/stats/anova.html" class="external-link">anova()</a></code>, and no engine's method
+accepts a fit produced by another. Refit one of the two with
+the other's engine.</p></li>
+<li><p><em>A <code><a href="https://rdrr.io/pkg/MASS/man/rlm.html" class="external-link">MASS::rlm</a></code> hierarchy</em>. M-estimation minimises a
+bounded loss on the scaled residuals: it partitions no sums of
+squares and it is not a likelihood, so there is neither a
+likelihood-ratio test nor a partial F to report. Every change
+token is refused – including on a single fit or a
+<code>nested = FALSE</code> pair, where the token is the explicit
+request. Compare the least-squares fits (<code><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm()</a></code>) if the
+hierarchy itself is the question.</p></li>
+</ul><p>In the first three, <code>nested = FALSE</code> renders the models side by
+side instead.</p>
 <p>Default change tokens auto-injected when <code>show_fit_stats</code> is
 <code>NULL</code>:</p><ul><li><p>All-lm (and <code>nls</code>): <code>c("r2_change", "f_change", "p_change")</code> – APA hierarchical regression standard.</p></li>
 <li><p>All-glm: <code>c("lrt_change", "p_change")</code> – Hosmer &amp;

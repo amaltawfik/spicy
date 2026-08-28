@@ -225,12 +225,14 @@ here.
 
 ## Stability
 
-This function is **experimental** in the sense
+This function is **stabilising** in the sense
 [`?spicy`](https://amaltawfik.github.io/spicy/reference/spicy-package.md)
-defines: it is new in this cycle, and the shape of the table and the
-names of its design-specific arguments may still move – with a `NEWS.md`
-entry – on their own clock rather than the parent family's. The numbers
-themselves are survey's and do not move with it.
+defines: the names of its design-specific arguments may still be
+tightened before 1.0 – with a `NEWS.md` entry – but the behaviour does
+not change silently. It was experimental through 0.13; the shape of the
+table has held across the cycle, so it now moves on the parent family's
+clock rather than its own. The numbers themselves are survey's and do
+not move with it.
 
 ## What is absent, and why
 

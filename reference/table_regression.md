@@ -1349,6 +1349,45 @@ stats; the FIRST model column gets en-dashes (no previous model to
 compare to). Validation requires identical `nobs` and identical response
 variable across all models.
 
+**Structural refusals.** Four hierarchies carry no valid change
+statistic whatever their `nobs` and response, and are refused with
+`spicy_invalid_input` rather than rendered with empty or meaningless
+cells:
+
+- *A REML pair whose fixed effects differ*
+  (`nlme::lme(method = "REML")`, `glmmTMB(REML = TRUE)`). The restricted
+  likelihood depends on the fixed-effects design matrix, so the two
+  criteria are not on a common scale and the likelihood-ratio test is
+  not valid (Pinheiro & Bates 2000 Section 2.4.2). Refit both by maximum
+  likelihood (`method = "ML"`, `REML = FALSE`). A REML pair that differs
+  only in its random structure stays valid and is accepted.
+
+- *Two `fixest` fits that absorbed different fixed effects*. fixest
+  counts every absorbed level as an estimated parameter, so a test
+  across two `| fe` structures measures the change in the absorbed
+  effects together with the change in the coefficients, and the two
+  cannot be separated. Hold the `| fe` part fixed across the hierarchy.
+
+- *Mixed-effects fits from different engines* (`lme4`, `glmmTMB`,
+  [`nlme::lme`](https://rdrr.io/pkg/nlme/man/lme.html)). The change
+  statistics come from the engine's own two-model
+  [`anova()`](https://rdrr.io/r/stats/anova.html), and no engine's
+  method accepts a fit produced by another. Refit one of the two with
+  the other's engine.
+
+- *A [`MASS::rlm`](https://rdrr.io/pkg/MASS/man/rlm.html) hierarchy*.
+  M-estimation minimises a bounded loss on the scaled residuals: it
+  partitions no sums of squares and it is not a likelihood, so there is
+  neither a likelihood-ratio test nor a partial F to report. Every
+  change token is refused – including on a single fit or a
+  `nested = FALSE` pair, where the token is the explicit request.
+  Compare the least-squares fits
+  ([`lm()`](https://rdrr.io/r/stats/lm.html)) if the hierarchy itself is
+  the question.
+
+In the first three, `nested = FALSE` renders the models side by side
+instead.
+
 Default change tokens auto-injected when `show_fit_stats` is `NULL`:
 
 - All-lm (and `nls`): `c("r2_change", "f_change", "p_change")` – APA

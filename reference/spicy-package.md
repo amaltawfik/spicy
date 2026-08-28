@@ -60,6 +60,10 @@ on the **stable** surface.
   [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md),
   [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md)
 
+- Survey-design summary tables:
+  [`table_continuous_svy()`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md),
+  [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md)
+
 - Regression tables:
   [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md),
   [`table_regression_uv()`](https://amaltawfik.github.io/spicy/reference/table_regression_uv.md),
@@ -76,13 +80,9 @@ on the **stable** surface.
 - Omnibus association overview:
   [`assoc_measures()`](https://amaltawfik.github.io/spicy/reference/assoc_measures.md)
 
-**Experimental** (new in this cycle; the shape of the table and the
-names of the design-specific arguments may still move, with a `NEWS.md`
-entry, on their OWN clock rather than the parent family's):
-
-- Survey-design summary tables:
-  [`table_continuous_svy()`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md),
-  [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md)
+**Experimental** (new in this cycle; the shape of the output and the
+argument names may still move, with a `NEWS.md` entry, on their OWN
+clock rather than the parent family's):
 
 - Display language and label overrides:
   [`spicy_labels()`](https://amaltawfik.github.io/spicy/reference/spicy_labels.md)
