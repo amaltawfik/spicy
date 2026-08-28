@@ -1257,6 +1257,42 @@ gets en-dashes (no previous model to compare to). Validation
 requires identical \code{nobs} and identical response variable
 across all models.
 
+\strong{Structural refusals.} Four hierarchies carry no valid change
+statistic whatever their \code{nobs} and response, and are refused with
+\code{spicy_invalid_input} rather than rendered with empty or
+meaningless cells:
+\itemize{
+\item \emph{A REML pair whose fixed effects differ}
+(\code{nlme::lme(method = "REML")}, \code{glmmTMB(REML = TRUE)}). The
+restricted likelihood depends on the fixed-effects design
+matrix, so the two criteria are not on a common scale and the
+likelihood-ratio test is not valid (Pinheiro & Bates 2000
+Section 2.4.2). Refit both by maximum likelihood
+(\code{method = "ML"}, \code{REML = FALSE}). A REML pair that differs
+only in its random structure stays valid and is accepted.
+\item \emph{Two \code{fixest} fits that absorbed different fixed
+effects}. fixest counts every absorbed level as an estimated
+parameter, so a test across two \verb{| fe} structures measures the
+change in the absorbed effects together with the change in the
+coefficients, and the two cannot be separated. Hold the
+\verb{| fe} part fixed across the hierarchy.
+\item \emph{Mixed-effects fits from different engines} (\code{lme4},
+\code{glmmTMB}, \code{nlme::lme}). The change statistics come from the
+engine's own two-model \code{anova()}, and no engine's method
+accepts a fit produced by another. Refit one of the two with
+the other's engine.
+\item \emph{A \code{MASS::rlm} hierarchy}. M-estimation minimises a
+bounded loss on the scaled residuals: it partitions no sums of
+squares and it is not a likelihood, so there is neither a
+likelihood-ratio test nor a partial F to report. Every change
+token is refused -- including on a single fit or a
+\code{nested = FALSE} pair, where the token is the explicit
+request. Compare the least-squares fits (\code{lm()}) if the
+hierarchy itself is the question.
+}
+In the first three, \code{nested = FALSE} renders the models side by
+side instead.
+
 Default change tokens auto-injected when \code{show_fit_stats} is
 \code{NULL}:
 \itemize{

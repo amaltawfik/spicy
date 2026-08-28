@@ -302,11 +302,13 @@
 #'
 #' # Stability
 #'
-#' This function is **experimental** in the sense `?spicy` defines: it
-#' is new in this cycle, and the shape of the table and the names of
-#' its design-specific arguments may still move -- with a `NEWS.md`
-#' entry -- on their own clock rather than the parent family's. The
-#' numbers themselves are survey's and do not move with it.
+#' This function is **stabilising** in the sense `?spicy` defines: the
+#' names of its design-specific arguments may still be tightened
+#' before 1.0 -- with a `NEWS.md` entry -- but the behaviour does not
+#' change silently. It was experimental through 0.13; the shape of the
+#' table has held across the cycle, so it now moves on the parent
+#' family's clock rather than its own. The numbers themselves are
+#' survey's and do not move with it.
 #'
 #' # What is absent, and why
 #'
@@ -979,7 +981,14 @@ table_categorical_svy <- function(
 
 # A block's key as a LIST INDEX. `NA` (the one-way table) cannot index a
 # list, and a group literally named "NA" must not collide with it.
-.cat_svy_block_id <- function(b) if (is.na(b)) "overall" else b
+#
+# The sentinel prefix below is U+0001 written as a source ESCAPE, never
+# as the byte itself. Written as the byte it reads as nothing at all --
+# in the editor, in the diff, in the review -- and the non-ASCII
+# sentinel looked only above 0x7F, so it saw nothing either; that is
+# how it sat here unremarked (register n. 269). The escape is the same
+# string at run time and the only form that says what it is.
+.cat_svy_block_id <- function(b) if (is.na(b)) "\u0001overall" else b
 
 # `levels_keep` resolved to one character vector per variable, or NULL.
 .cat_svy_levels_keep <- function(levels_keep, select_names) {

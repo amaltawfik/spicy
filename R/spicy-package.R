@@ -42,6 +42,8 @@
 #'   \item Summary table builders: [table_categorical()],
 #'         [table_continuous()], [table_continuous_lm()],
 #'         [table_outcome()]
+#'   \item Survey-design summary tables:
+#'         [table_continuous_svy()], [table_categorical_svy()]
 #'   \item Regression tables: [table_regression()],
 #'         [table_regression_uv()], [table_regression_models()],
 #'         [as_structured()]
@@ -50,13 +52,10 @@
 #'   \item Omnibus association overview: [assoc_measures()]
 #' }
 #'
-#' **Experimental** (new in this cycle; the shape of the table and
-#' the names of the design-specific arguments may still move, with a
-#' `NEWS.md` entry, on their OWN clock rather than the parent
-#' family's):
+#' **Experimental** (new in this cycle; the shape of the output and
+#' the argument names may still move, with a `NEWS.md` entry, on their
+#' OWN clock rather than the parent family's):
 #' \itemize{
-#'   \item Survey-design summary tables:
-#'         [table_continuous_svy()], [table_categorical_svy()]
 #'   \item Display language and label overrides: [spicy_labels()]
 #'         (with `options(spicy.language)` / `options(spicy.labels)`)
 #' }

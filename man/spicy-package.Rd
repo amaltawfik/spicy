@@ -48,6 +48,8 @@ changes):
 \item Summary table builders: \code{\link[=table_categorical]{table_categorical()}},
 \code{\link[=table_continuous]{table_continuous()}}, \code{\link[=table_continuous_lm]{table_continuous_lm()}},
 \code{\link[=table_outcome]{table_outcome()}}
+\item Survey-design summary tables:
+\code{\link[=table_continuous_svy]{table_continuous_svy()}}, \code{\link[=table_categorical_svy]{table_categorical_svy()}}
 \item Regression tables: \code{\link[=table_regression]{table_regression()}},
 \code{\link[=table_regression_uv]{table_regression_uv()}}, \code{\link[=table_regression_models]{table_regression_models()}},
 \code{\link[=as_structured]{as_structured()}}
@@ -56,13 +58,10 @@ changes):
 \item Omnibus association overview: \code{\link[=assoc_measures]{assoc_measures()}}
 }
 
-\strong{Experimental} (new in this cycle; the shape of the table and
-the names of the design-specific arguments may still move, with a
-\code{NEWS.md} entry, on their OWN clock rather than the parent
-family's):
+\strong{Experimental} (new in this cycle; the shape of the output and
+the argument names may still move, with a \code{NEWS.md} entry, on their
+OWN clock rather than the parent family's):
 \itemize{
-\item Survey-design summary tables:
-\code{\link[=table_continuous_svy]{table_continuous_svy()}}, \code{\link[=table_categorical_svy]{table_categorical_svy()}}
 \item Display language and label overrides: \code{\link[=spicy_labels]{spicy_labels()}}
 (with \code{options(spicy.language)} / \code{options(spicy.labels)})
 }

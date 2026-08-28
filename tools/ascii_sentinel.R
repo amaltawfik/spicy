@@ -1,4 +1,4 @@
-# Non-ASCII sentinel for R/.
+# Byte sentinel for R/.
 #
 # The class this closes is the INVISIBLE one. Three U+00A0 NO-BREAK
 # SPACEs got into R/ during the outcome campaign: they read as ordinary
@@ -13,6 +13,23 @@
 # that has to be invisible belongs in the source as a `"\uXXXX"`
 # escape, the way `intToUtf8(0x200B)` is already written elsewhere in
 # the package.
+#
+# TWO rules, because the first one alone had a hole underneath it. The
+# scan looked only ABOVE 0x7F, and the invisible characters do not all
+# live up there: a raw U+0001 sat in `.cat_svy_block_id()` as the
+# literal control byte -- correct at run time, unreadable in the source,
+# and beneath the scan's floor in both directions (register n. 269).
+# So a C0 CONTROL character is a hard failure too, with no allowlist at
+# all: tab is the one that has a job in source text, and every other
+# one belongs in the source as the same `"\uXXXX"` escape. The remedy
+# is the escape, never the byte, and it costs nothing -- the string is
+# identical once parsed.
+#
+# What the control rule does NOT cover is U+0000: `readLines()` drops
+# it and the line's remainder with it. That is the one control byte R
+# refuses to parse at all ("nul character not allowed"), so it can
+# never ship quietly -- it fails loudly long before a byte scan, which
+# is the opposite of the class this file exists for.
 #
 # The lists are keyed by codepoint rather than by the character, so
 # this file stays pure ASCII and cannot fail its own rule.
@@ -52,9 +69,27 @@ ASCII_SENTINEL_KNOWN <- c(
   "201d" = "RIGHT DOUBLE QUOTATION MARK (reads as a quote)"
 )
 
-# Every disallowed non-ASCII character under `dirs`, as a data.frame
-# with one row per site: file, line, col (character offset within the
-# line), codepoint, and what it is. Zero rows means the tree is clean.
+# C0 controls, for the message only -- none of them is ever allowed, so
+# this list changes nothing about the verdict. Named where a name helps
+# the author find the thing; the rest are reported by codepoint, which
+# is all there is to see anyway.
+ASCII_SENTINEL_CONTROL <- c(
+  "0001" = "START OF HEADING (invisible: a raw control byte)",
+  "0007" = "BELL (invisible)",
+  "0008" = "BACKSPACE (invisible)",
+  "000b" = "VERTICAL TAB (invisible)",
+  "000c" = "FORM FEED (invisible)",
+  "001b" = "ESCAPE (invisible: the lead byte of an ANSI sequence)",
+  "001c" = "FILE SEPARATOR (invisible)",
+  "001d" = "GROUP SEPARATOR (invisible)",
+  "001e" = "RECORD SEPARATOR (invisible)",
+  "001f" = "UNIT SEPARATOR (invisible)"
+)
+
+# Every disallowed character under `dirs` -- non-ASCII off the
+# allowlist, and C0 control other than tab -- as a data.frame with one
+# row per site: file, line, col (character offset within the line),
+# codepoint, and what it is. Zero rows means the tree is clean.
 ascii_sentinel_sites <- function(dirs = "R", allowed = ASCII_SENTINEL_ALLOWED) {
   files <- list.files(
     dirs,
@@ -80,7 +115,16 @@ ascii_sentinel_sites <- function(dirs = "R", allowed = ASCII_SENTINEL_ALLOWED) {
         cp <- c(cp, NA_integer_)
         next
       }
-      hit <- which(pts > 127L & !(pts %in% ok))
+      # Two floors, one pass. Above 0x7F the allowlist decides; below
+      # 0x20 nothing does -- tab is the only control character with a
+      # job in source text. LF and CR are named for the reader's sake:
+      # `readLines()` has already eaten them, so they cannot appear
+      # here, and the line says the rule rather than leaving it to be
+      # inferred from an absence.
+      hit <- which(
+        (pts > 127L & !(pts %in% ok)) |
+          (pts < 32L & !(pts %in% c(9L, 10L, 13L)))
+      )
       if (length(hit)) {
         file <- c(file, rep(f, length(hit)))
         line <- c(line, rep(i, length(hit)))
@@ -89,7 +133,12 @@ ascii_sentinel_sites <- function(dirs = "R", allowed = ASCII_SENTINEL_ALLOWED) {
       }
     }
   }
-  what <- unname(ASCII_SENTINEL_KNOWN[sprintf("%04x", cp)])
+  named <- c(ASCII_SENTINEL_KNOWN, ASCII_SENTINEL_CONTROL)
+  what <- unname(named[sprintf("%04x", cp)])
+  # A control character nobody bothered to name is still a control
+  # character, and must not fall through to "not on the allowlist" --
+  # there is no allowlist down there to be off.
+  what[is.na(what) & !is.na(cp) & cp < 32L] <- "C0 CONTROL (invisible)"
   what[is.na(what)] <- "not on the allowlist"
   what[is.na(cp)] <- "not valid UTF-8"
   data.frame(

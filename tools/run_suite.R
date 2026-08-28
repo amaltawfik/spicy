@@ -72,16 +72,17 @@ if (!isTRUE(.probe_ok)) {
 }
 unlink(.probe)
 
-# Before the suite, not after: a stray non-ASCII character in R/ is
-# found by a byte scan in a second, and a 40-minute run is too long to
-# spend learning it at the end. See tools/ascii_sentinel.R for the
-# allowlist and why the rule is an allowlist.
+# Before the suite, not after: a stray non-ASCII character in R/, or a
+# raw control byte, is found by a byte scan in a second, and a
+# 40-minute run is too long to spend learning it at the end. See
+# tools/ascii_sentinel.R for the allowlist, why the rule is an
+# allowlist above 0x7F, and why there is none below 0x20.
 source("tools/ascii_sentinel.R")
 sentinel <- ascii_sentinel_sites("R")
 if (nrow(sentinel) > 0L) {
   cat(ascii_sentinel_report(sentinel), sep = "\n")
   cat(sprintf(
-    "ASCII SENTINEL: %d disallowed character(s) in R/. Use the ASCII equivalent, or write the character as a \\uXXXX escape. Suite not run.\n",
+    "BYTE SENTINEL: %d disallowed character(s) in R/. Use the ASCII equivalent, or write the character as a \\uXXXX escape. Suite not run.\n",
     nrow(sentinel)
   ))
   quit(status = 1L)
