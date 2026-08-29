@@ -121,13 +121,18 @@ test_that("the SMD cell follows the table's decimal mark", {
   )
   tc <- table_categorical(d, trait, by = grp, smd = TRUE, decimal_mark = ",")
 
-  # `inline()` reads the same formatted cell the printed table shows.
+  # The PRINTED cell itself, not only inline(): the SMD column of
+  # display_df is what the table shows, and inline() formats through a
+  # different path -- the review's mutation M12 proved the two can
+  # disagree, with this assertion as the only one that notices.
+  expect_identical(attr(tc, "display_df")$SMD[[1L]], "0,43")
   cell <- inline(tc, trait, column = "{smd}")
   expect_identical(cell, "0,43")
   expect_false(grepl(".", cell, fixed = TRUE))
 
   # The default mark is unchanged: same data, same value, a full stop.
   tc_dot <- table_categorical(d, trait, by = grp, smd = TRUE)
+  expect_identical(attr(tc_dot, "display_df")$SMD[[1L]], "0.43")
   expect_identical(inline(tc_dot, trait, column = "{smd}"), "0.43")
 })
 
@@ -690,6 +695,11 @@ test_that("the estimatr cluster hint names the function that fitted the model", 
 # ---- regression_frame_nlme.R 881: variance components without intervals ----
 
 test_that("nlme variance components stay listed when intervals cannot be had", {
+  # MUTATION-EQUIVALENT GUARD (review of coverage-013): without the
+  # early `na_block()` return the downstream code degrades to the same
+  # all-NA block, so no assertion can pin the guard itself. It is kept
+  # as the contract stated at its source; this witness covers the line
+  # and the CASE (intervals() failing on a real fit).
   skip_if_not_installed("nlme")
   fm <- nlme::lme(
     distance ~ age,

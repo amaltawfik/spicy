@@ -89,6 +89,13 @@ test_that("a domain survey declines to estimate keeps its counts", {
   # is NA. The interval loop then has nothing to put an interval
   # around and skips the level rather than asking `svyciprop()` for
   # one anyway.
+  #
+  # MUTATION-EQUIVALENT GUARD (review of coverage-013): without the
+  # skip, the doomed `svyciprop()` call is made, `.svy_try()` swallows
+  # its failure, and the same NA comes out -- no assertion can tell
+  # the two apart. The guard is kept for what it states at the source
+  # (no interval where there is no percentage) and for not making a
+  # call known to fail; this witness covers the line and the CASE.
   skip_if_not_installed("survey")
   withr::local_options(survey.lonely.psu = "fail")
   d <- data.frame(

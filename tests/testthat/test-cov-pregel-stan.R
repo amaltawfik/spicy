@@ -146,6 +146,7 @@ test_that("the brms coefficient path refuses to guess its draws names", {
   # method passes the map between them. Without the map the function
   # would subset the draws by the DISPLAY names and silently return the
   # wrong parameters; it says so instead.
+  skip_if_not_installed("posterior")
   m <- draws_matrix_fixture()
   err <- expect_error(
     spicy:::.stan_coefs(m, colnames(m), 0.95, brms_b_prefix = TRUE),
@@ -167,6 +168,7 @@ test_that("coefficient rows survive a fit that carries no factor metadata", {
   # predictor treated as non-factor (parent_var = label = term) rather
   # than the whole table lost -- the graceful degradation the comment
   # above the accessor promises. A bare draws matrix IS such an object.
+  skip_if_not_installed("posterior")
   m <- draws_matrix_fixture()
   coefs <- spicy:::.stan_coefs(m, colnames(m), 0.95)
 
