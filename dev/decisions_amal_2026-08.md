@@ -782,3 +782,22 @@ feature, PAS de breaking. À prendre dans le balayage pré-gel n°279
 ordinaux compacts, échelle/aux survreg-flexsurv, SE(ELPD)/R-hat/
 E-BFMI bayésiens, tau du titre rq) — un seul lot « typographie des
 pieds de page ».
+
+## Décision 47 — Assigner est silencieux partout : les trois familles descriptives s'alignent (2026-08-29)
+
+Tranché par Amal (« oui on aligne ») sur le constat n°288 de la revue
+couverture : table_categorical(), table_continuous() et
+table_continuous_lm() faisaient print(out) puis invisible(out) sous
+output = "default" — la table s'affichait MÊME assignée, contre la
+convention R universelle et contre le reste du package
+(freq/cross_tab/table_regression : silencieux à l'assignation, retour
+visible), vers laquelle freq() a été migrée ce cycle même.
+- Le fix : retour VISIBLE de l'objet (l'autoprint de R montre la table
+  sur un appel nu ; l'assignation la tait), suppression du print()
+  explicite. Vérifier au passage table_outcome() et les jumelles svy
+  (probablement déjà conformes — mesurer, pas supposer).
+- Comportement 0.12 publié → bullet BREAKING modelé sur celui de
+  freq() ; roxygen @return des trois pages mis à jour.
+- Bénéfice collatéral : le bruit d'impression des fichiers de test qui
+  touchent ces constructeurs s'éteint.
+Clôt n°288.
