@@ -9,7 +9,7 @@ description: >
   and row blocks, plus the robust-variance backends and
   standardized-coefficient support each family takes.
 output:
-  rmarkdown::html_vignette:
+  html_document:
     toc: true
     toc_depth: 2
 ---

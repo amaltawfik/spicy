@@ -8,7 +8,7 @@ description: >
   likelihood-ratio test, and the `nnet::multinom` engine plus the
   `mlogit` discrete-choice engine.
 output:
-  rmarkdown::html_vignette:
+  html_document:
     toc: true
     toc_depth: 2
 ---

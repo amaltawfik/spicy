@@ -5,7 +5,7 @@ description: >
   Somers' D, and other effect sizes for contingency tables in R, with
   confidence intervals and p-values.
 output:
-  rmarkdown::html_vignette:
+  html_document:
     toc: true
     toc_depth: 2
 ---

@@ -10,7 +10,7 @@ description: >
   layouts, and output to console, gt, tinytable, flextable,
   Excel, Word, or clipboard.
 output:
-  rmarkdown::html_vignette:
+  html_document:
     toc: true
     toc_depth: 2
 ---

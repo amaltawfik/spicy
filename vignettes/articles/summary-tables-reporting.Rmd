@@ -7,7 +7,7 @@ description: >
   arguments fit together, and which output format to choose for
   console, Quarto, Word, or Excel workflows.
 output:
-  rmarkdown::html_vignette:
+  html_document:
     toc: true
     toc_depth: 2
 ---

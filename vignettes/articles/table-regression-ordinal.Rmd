@@ -9,7 +9,7 @@ description: >
   testing the proportional-odds assumption, and the partial
   proportional odds and scale relaxations.
 output:
-  rmarkdown::html_vignette:
+  html_document:
     toc: true
     toc_depth: 2
 ---

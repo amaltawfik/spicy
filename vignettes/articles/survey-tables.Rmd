@@ -1,6 +1,6 @@
 ---
 title: "Summary tables from a survey design"
-output: rmarkdown::html_vignette
+output: html_document
 ---
 
 ```{r, include = FALSE}

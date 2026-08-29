@@ -9,7 +9,7 @@ description: >
   values, or build a custom renderer -- against one schema for all
   five families.
 output:
-  rmarkdown::html_vignette:
+  html_document:
     toc: true
     toc_depth: 2
 ---

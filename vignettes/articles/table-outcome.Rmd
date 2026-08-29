@@ -8,7 +8,7 @@ description: >
   statistic vocabulary and the same output engines as
   table_continuous().
 output:
-  rmarkdown::html_vignette:
+  html_document:
     toc: true
     toc_depth: 2
 ---

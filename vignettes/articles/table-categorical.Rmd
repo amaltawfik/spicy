@@ -7,7 +7,7 @@ description: >
   APA formatting by default, named journal styles (JAMA, NEJM,
   The Lancet, ...) by argument.
 output:
-  rmarkdown::html_vignette:
+  html_document:
     toc: true
     toc_depth: 2
 ---

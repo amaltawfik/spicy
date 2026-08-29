@@ -8,7 +8,7 @@ description: >
   effects, cluster-robust variance across both components, and
   zero-inflated mixed models with `glmmTMB`.
 output:
-  rmarkdown::html_vignette:
+  html_document:
     toc: true
     toc_depth: 2
 ---

@@ -9,7 +9,7 @@ description: >
   variants for few clusters, odds ratios with event counts, and
   population-averaged marginal effects.
 output:
-  rmarkdown::html_vignette:
+  html_document:
     toc: true
     toc_depth: 2
 ---

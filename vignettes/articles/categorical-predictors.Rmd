@@ -8,7 +8,7 @@ description: >
   ordinal predictors, successive-difference coding, and why continuous
   predictors should not be categorized.
 output:
-  rmarkdown::html_vignette:
+  html_document:
     toc: true
     toc_depth: 2
 ---

@@ -5,7 +5,7 @@ description: >
   with spicy. Learn how to use varlist(), vl(), code_book(), and
   label_from_names() for survey and labelled datasets.
 output:
-  rmarkdown::html_vignette:
+  html_document:
     toc: true
     toc_depth: 2
 ---

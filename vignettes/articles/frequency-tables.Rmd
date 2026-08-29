@@ -5,7 +5,7 @@ description: >
   effect sizes, and weighted counts in R using the spicy package.
   Covers sorting, percentages, grouping, and labelled data.
 output:
-  rmarkdown::html_vignette:
+  html_document:
     toc: true
     toc_depth: 2
 ---

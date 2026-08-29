@@ -9,7 +9,7 @@ description: >
   Nakagawa R-squared, Satterthwaite inference, three-level and crossed
   designs, and the `lme4`, `glmmTMB`, and `nlme` engines.
 output:
-  rmarkdown::html_vignette:
+  html_document:
     toc: true
     toc_depth: 2
 ---

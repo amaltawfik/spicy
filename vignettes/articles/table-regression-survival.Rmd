@@ -8,7 +8,7 @@ description: >
   time models with time ratios, and the `survival`, `rms`, and
   `flexsurv` engines.
 output:
-  rmarkdown::html_vignette:
+  html_document:
     toc: true
     toc_depth: 2
 ---

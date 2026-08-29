@@ -7,7 +7,7 @@ description: >
   prior disclosure, random effects from the posterior draws, and the
   `rstanarm` and `brms` engines.
 output:
-  rmarkdown::html_vignette:
+  html_document:
     toc: true
     toc_depth: 2
 ---
