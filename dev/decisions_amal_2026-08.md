@@ -801,3 +801,22 @@ visible), vers laquelle freq() a été migrée ce cycle même.
 - Bénéfice collatéral : le bruit d'impression des fichiers de test qui
   touchent ces constructeurs s'éteint.
 Clôt n°288.
+
+## Décision 48 — Une seule vignette sur CRAN, vingt articles sur le site (2026-08-29)
+
+Proposé par Amal (« se contenter de mettre comme vignette dans le CRAN
+uniquement get started, et laisser les autres sur le website »),
+endossé avec l'argument décisif : la ROBUSTESSE CRAN — 21 vignettes
+reconstruites par CRAN à chaque check = 20 surfaces d'archivage sur un
+hoquet de Suggests (brms/glmmTMB/mlogit/survey...) ; modèle
+gtsummary/dplyr/ggplot2.
+- spicy.Rmd (get started) = l'unique vignette CRAN ; les 20 autres →
+  vignettes/articles/ (convention usethis : .Rbuildignore, pkgdown les
+  rend en Articles aux MÊMES URLs).
+- Le vrai travail : balayer tous les renvois vignette("...") des Rd et
+  des textes vers les articles déplacés → renvois au site (un
+  vignette() vers une vignette partie ne résout plus chez l'installé).
+- get started garde/renforce ses liens vers le site pour la suite.
+Contexte : premier check remote+manual d'Amal (2026-08-29), qui a
+aussi attrapé le ≈ du manuel PDF (382b5f59) et confirmé le compteur
+6-mois (9 updates → attendre septembre).
