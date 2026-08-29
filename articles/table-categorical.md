@@ -765,29 +765,6 @@ out <- table_categorical(
   select = c(smoking, physical_activity),
   by = sex
 )
-#> Categorical table by sex
-#> 
-#>  Variable                  │ Female n  Female %  Male n  Male %  Total n 
-#> ───────────────────────────┼─────────────────────────────────────────────
-#>  Current smoker            │                                             
-#>    No                      │   475       76.6     451     77.8     926   
-#>    Yes                     │   131       21.1     118     20.3     249   
-#>    (Missing)               │    14        2.3      11      1.9      25   
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Regular physical activity │                                             
-#>    No                      │   334       53.9     316     54.5     650   
-#>    Yes                     │   286       46.1     264     45.5     550   
-#> 
-#>  Variable                  │ Total %   p    Phi 
-#> ───────────────────────────┼────────────────────
-#>  Current smoker            │          .713  .01 
-#>    No                      │  77.2              
-#>    Yes                     │  20.8              
-#>    (Missing)               │   2.1              
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Regular physical activity │          .832  .01 
-#>    No                      │  54.2              
-#>    Yes                     │  45.8
 
 # One row per (variable x level x group) with broom-style columns
 # (outcome, level, group, n, proportion). The synthetic Total
@@ -863,7 +840,7 @@ table_categorical(
 |     No                    | 334    | 53.9 | 316  | 54.5 | 650   | 54.2 |      |     |
 |     Yes                   | 286    | 46.1 | 264  | 45.5 | 550   | 45.8 |      |     |
 
-Categorical table by sex {#tinytable_cvq5vaggag7tn605r9r1 .table
+Categorical table by sex {#tinytable_d71gfznimuq9wna5a2ru .table
 .tinytable style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 

@@ -488,40 +488,6 @@ lays out one factor header row per variable and one row per category:
 ``` r
 
 ct <- table_categorical(sochealth, c(sex, smoking), by = education)
-#> Categorical table by education
-#> 
-#>  Variable       │ Lower secondary n  Lower secondary %  Upper secondary n 
-#> ────────────────┼─────────────────────────────────────────────────────────
-#>  Sex            │                                                         
-#>    Female       │        134               51.3                290        
-#>    Male         │        127               48.7                249        
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Current smoker │                                                         
-#>    No           │        179               68.6                415        
-#>    Yes          │         78               29.9                112        
-#>    (Missing)    │          4                1.5                 12        
-#> 
-#>  Variable       │ Upper secondary %  Tertiary n  Tertiary %  Total n  Total % 
-#> ────────────────┼─────────────────────────────────────────────────────────────
-#>  Sex            │                                                             
-#>    Female       │       53.8            196         49.0       620     51.7   
-#>    Male         │       46.2            204         51.0       580     48.3   
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Current smoker │                                                             
-#>    No           │       77.0            332         83.0       926     77.2   
-#>    Yes          │       20.8             59         14.8       249     20.8   
-#>    (Missing)    │        2.2              9          2.2        25      2.1   
-#> 
-#>  Variable       │   p    Cramer's V 
-#> ────────────────┼───────────────────
-#>  Sex            │  .344     .04     
-#>    Female       │                   
-#>    Male         │                   
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Current smoker │ <.001     .14     
-#>    No           │                   
-#>    Yes          │                   
-#>    (Missing)    │
 sc <- as_structured(ct)
 sc$body[, c("Variable", ".variable", ".level", ".row_role")]
 #>         Variable .variable    .level     .row_role
@@ -571,25 +537,6 @@ statistic OF a group, while these compare two:
 ``` r
 
 cn <- table_continuous(sochealth, c(age, bmi), by = sex, effect_size = "auto")
-#> Descriptive statistics by Sex
-#> 
-#>  Variable        │ Group     M     SD     Min    Max   95% CI LL  95% CI UL 
-#> ─────────────────┼──────────────────────────────────────────────────────────
-#>  Age (years)     │ Female  49.38  14.91  25.00  75.00    48.20      50.55   
-#>                  │ Male    49.14  14.50  25.00  75.00    47.96      50.32   
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Body mass index │ Female  25.69   3.78  16.00  38.90    25.39      25.98   
-#>                  │ Male    26.20   3.64  16.00  37.70    25.90      26.50   
-#> 
-#>  Variable        │ Group    n    p       ES     
-#> ─────────────────┼──────────────────────────────
-#>  Age (years)     │ Female  620  .780   g = 0.02 
-#>                  │ Male    580                  
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Body mass index │ Female  616  .018  g = -0.14 
-#>                  │ Male    572                  
-#> 
-#> Missing values removed: bmi (12).
 scn <- as_structured(cn)
 scn$body[, c("Variable", ".variable", ".level", ".row_role", "M", "SD")]
 #>          Variable .variable .level .row_role        M        SD
@@ -622,19 +569,6 @@ parse `M (Male)`:
 ``` r
 
 lm_tbl <- table_continuous_lm(sochealth, c(age, bmi), by = sex)
-#> Continuous outcomes by Sex
-#> 
-#>  Variable        │ M (Female)  M (Male)  Δ (Male - Female)  95% CI LL 
-#> ─────────────────┼────────────────────────────────────────────────────
-#>  Age (years)     │   49.38      49.14          -0.24          -1.90   
-#>  Body mass index │   25.69      26.20           0.51           0.09   
-#> 
-#>  Variable        │ 95% CI UL   p     R²    n   
-#> ─────────────────┼─────────────────────────────
-#>  Age (years)     │   1.43     .780  0.00  1200 
-#>  Body mass index │   0.93     .018  0.00  1188 
-#> 
-#> Note. Missing values removed: bmi (12).
 slm <- as_structured(lm_tbl)
 slm$body[, c("Variable", ".variable", ".row_role")]
 #>          Variable .variable .row_role

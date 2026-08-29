@@ -90,6 +90,8 @@
 <li>
 <code><a href="../reference/freq.html">freq()</a></code> no longer prints as a side effect: a bare <code>freq(...)</code> still shows the table, but <code>f &lt;- freq(...)</code> is silent. The unused <code>...</code> is removed, so unknown arguments error.</li>
 <li>
+<code><a href="../reference/table_categorical.html">table_categorical()</a></code>, <code><a href="../reference/table_continuous.html">table_continuous()</a></code>, and <code><a href="../reference/table_continuous_lm.html">table_continuous_lm()</a></code> no longer print as a side effect: a bare call still shows the table, but <code>x &lt;- table_categorical(...)</code> is silent. Print <code>x</code> to display it.</li>
+<li>
 <code><a href="../reference/copy_clipboard.html">copy_clipboard()</a></code> arguments use snake_case: <code>row_names_as_col</code>, <code>row_names</code>, <code>col_names</code>. The old dot.case names error with the replacement.</li>
 <li>
 <code><a href="../reference/build_ascii_table.html">build_ascii_table()</a></code> is no longer exported – use <code><a href="../reference/spicy_print_table.html">spicy_print_table()</a></code> – and <code>column_total_line</code> is removed from both (it never had any effect).</li>

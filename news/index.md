@@ -68,6 +68,12 @@
   longer prints as a side effect: a bare `freq(...)` still shows the
   table, but `f <- freq(...)` is silent. The unused `...` is removed, so
   unknown arguments error.
+- [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
+  and
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
+  no longer print as a side effect: a bare call still shows the table,
+  but `x <- table_categorical(...)` is silent. Print `x` to display it.
 - [`copy_clipboard()`](https://amaltawfik.github.io/spicy/reference/copy_clipboard.md)
   arguments use snake_case: `row_names_as_col`, `row_names`,
   `col_names`. The old dot.case names error with the replacement.

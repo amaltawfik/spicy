@@ -355,7 +355,7 @@ table_continuous(
 
   Output format. One of:
 
-  - `"default"`: a printed ASCII table, returned invisibly.
+  - `"default"`: an ASCII table object, printed when the call is bare.
 
   - `"data.frame"` / `"long"`: a plain `data.frame` with one row per
     `(variable x group)` (or one row per `variable` when `by` is not
@@ -427,9 +427,12 @@ table_continuous(
 
 Depends on `output`:
 
-- `"default"`: prints a styled ASCII table and returns the underlying
-  `data.frame` invisibly (S3 class `"spicy_continuous_table"` /
-  `"spicy_table"`). The object can be re-coerced via
+- `"default"`: the underlying `data.frame` carrying the rendering
+  metadata as attributes (S3 class `"spicy_continuous_table"` /
+  `"spicy_table"`). The object is returned visibly, so a bare
+  `table_continuous(...)` call auto-prints the styled ASCII table at the
+  console while `t <- table_continuous(...)` stays silent (print `t` to
+  display the table). The object can be re-coerced via
   [`as.data.frame.spicy_continuous_table()`](https://amaltawfik.github.io/spicy/reference/as.data.frame.spicy_continuous_table.md)
   or piped into
   [`broom::tidy()`](https://generics.r-lib.org/reference/tidy.html) /

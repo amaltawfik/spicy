@@ -332,19 +332,6 @@ s$col_meta$B                         # column metadata for B
 
 # The same schema on a descriptive table.
 ct <- table_categorical(mtcars, c(cyl, gear), by = am)
-#> Categorical table by am
-#> 
-#>  Variable │ 1 n  1 %   0 n  0 %   Total n  Total %    p    Cramer's V 
-#> ──────────┼───────────────────────────────────────────────────────────
-#>  cyl      │                                          .013     .52     
-#>    6      │  3   23.1   4   21.1     7      21.9                      
-#>    4      │  8   61.5   3   15.8    11      34.4                      
-#>    8      │  2   15.4  12   63.2    14      43.8                      
-#> ╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  gear     │                                         <.001     .81     
-#>    4      │  8   61.5   4   21.1    12      37.5                      
-#>    3      │  0    0.0  15   78.9    15      46.9                      
-#>    5      │  5   38.5   0    0.0     5      15.6                      
 sc <- as_structured(ct)
 sc$body[, c("Variable", ".variable", ".level", ".row_role")]
 #>   Variable .variable .level     .row_role

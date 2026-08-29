@@ -975,25 +975,6 @@ out <- table_continuous(
   select = c(bmi, wellbeing_score),
   by = sex
 )
-#> Descriptive statistics by Sex
-#> 
-#>  Variable                      │ Group     M     SD     Min    Max    95% CI LL 
-#> ───────────────────────────────┼────────────────────────────────────────────────
-#>  Body mass index               │ Female  25.69   3.78  16.00   38.90    25.39   
-#>                                │ Male    26.20   3.64  16.00   37.70    25.90   
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  WHO-5 wellbeing index (0-100) │ Female  67.16  14.80  19.60  100.00    65.99   
-#>                                │ Male    71.05  16.23  18.70  100.00    69.73   
-#> 
-#>  Variable                      │ Group   95% CI UL   n     p   
-#> ───────────────────────────────┼───────────────────────────────
-#>  Body mass index               │ Female    25.98    616   .018 
-#>                                │ Male      26.50    572        
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  WHO-5 wellbeing index (0-100) │ Female    68.33    620  <.001 
-#>                                │ Male      72.37    580        
-#> 
-#> Missing values removed: bmi (12).
 
 # Long descriptive rows: one per (variable x group) with broom-style
 # columns (outcome, label, group, estimate = mean, std.error,
@@ -1105,7 +1086,7 @@ table_continuous(
 | Missing values removed: bmi (12), life_sat_health (8). |  |  |  |  |  |  |  |  |  |
 
 Descriptive statistics by Highest education level
-{#tinytable_cxqgmeypnqfv38jxdw99 .table .tinytable
+{#tinytable_epeyzxcfkfs04ojgcq3o .table .tinytable
 style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 

@@ -352,7 +352,7 @@ right-aligns only the counts and the <em>p</em>-value there, and
 
 
 <dt id="arg-output">output<a class="anchor" aria-label="anchor" href="#arg-output"></a></dt>
-<dd><p>Output format. One of:</p><ul><li><p><code>"default"</code> (a printed ASCII table, returned invisibly)</p></li>
+<dd><p>Output format. One of:</p><ul><li><p><code>"default"</code> (an ASCII table object, printed when the call is bare)</p></li>
 <li><p><code>"data.frame"</code> (a wide numeric <code>data.frame</code>)</p></li>
 <li><p><code>"long"</code> (a long numeric <code>data.frame</code>)</p></li>
 <li><p><code>"tinytable"</code> (requires <code>tinytable</code>)</p></li>
@@ -437,9 +437,12 @@ error.</p></dd>
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>Depends on <code>output</code>:</p><ul><li><p><code>"default"</code>: prints a styled ASCII table and returns the
-underlying <code>data.frame</code> invisibly (S3 class
-<code>"spicy_categorical_table"</code>).</p></li>
+    <p>Depends on <code>output</code>:</p><ul><li><p><code>"default"</code>: the underlying <code>data.frame</code> carrying the
+rendering metadata as attributes (S3 class
+<code>"spicy_categorical_table"</code>). The object is returned visibly, so
+a bare <code>table_categorical(...)</code> call auto-prints the styled ASCII
+table at the console while <code>t &lt;- table_categorical(...)</code> stays
+silent (print <code>t</code> to display the table).</p></li>
 <li><p><code>"data.frame"</code>: a wide <code>data.frame</code> with one row per
 variable–level combination.
 When <code>by</code> is used, the columns are <code>Variable</code>, <code>Level</code>, and one

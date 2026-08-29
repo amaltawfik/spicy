@@ -399,19 +399,6 @@ user-facing entry points.</p></div>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># The same schema on a descriptive table.</span></span></span>
 <span class="r-in"><span><span class="va">ct</span> <span class="op">&lt;-</span> <span class="fu"><a href="table_categorical.html">table_categorical</a></span><span class="op">(</span><span class="va">mtcars</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">cyl</span>, <span class="va">gear</span><span class="op">)</span>, by <span class="op">=</span> <span class="va">am</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Categorical table by am</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable <span style="color: #9E9E9E;">│</span> 1 n  1 %   0 n  0 %   Total n  Total %    p    Cramer's V </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">──────────┼───────────────────────────────────────────────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  cyl      <span style="color: #9E9E9E;">│</span>                                          .013     .52     </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    6      <span style="color: #9E9E9E;">│</span>  3   23.1   4   21.1     7      21.9                      </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    4      <span style="color: #9E9E9E;">│</span>  8   61.5   3   15.8    11      34.4                      </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    8      <span style="color: #9E9E9E;">│</span>  2   15.4  12   63.2    14      43.8                      </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  gear     <span style="color: #9E9E9E;">│</span>                                         &lt;.001     .81     </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    4      <span style="color: #9E9E9E;">│</span>  8   61.5   4   21.1    12      37.5                      </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    3      <span style="color: #9E9E9E;">│</span>  0    0.0  15   78.9    15      46.9                      </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    5      <span style="color: #9E9E9E;">│</span>  5   38.5   0    0.0     5      15.6                      </span>
 <span class="r-in"><span><span class="va">sc</span> <span class="op">&lt;-</span> <span class="fu">as_structured</span><span class="op">(</span><span class="va">ct</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">sc</span><span class="op">$</span><span class="va">body</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Variable"</span>, <span class="st">".variable"</span>, <span class="st">".level"</span>, <span class="st">".row_role"</span><span class="op">)</span><span class="op">]</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   Variable .variable .level     .row_role</span>

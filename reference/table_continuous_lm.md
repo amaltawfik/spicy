@@ -553,7 +553,7 @@ table_continuous_lm(
 
   Output format. One of:
 
-  - `"default"`: a printed ASCII table, returned invisibly
+  - `"default"`: an ASCII table object, printed when the call is bare
 
   - `"data.frame"`: a plain wide `data.frame`
 
@@ -621,9 +621,12 @@ table_continuous_lm(
 
 Depends on `output`:
 
-- `"default"`: prints a styled ASCII table and invisibly returns the
-  underlying long `data.frame` with class `"spicy_continuous_lm_table"`
-  / `"spicy_table"`.
+- `"default"`: the underlying long `data.frame` with class
+  `"spicy_continuous_lm_table"` / `"spicy_table"`. The object is
+  returned visibly, so a bare `table_continuous_lm(...)` call
+  auto-prints the styled ASCII table at the console while
+  `t <- table_continuous_lm(...)` stays silent (print `t` to display the
+  table).
 
 - `"data.frame"`: a plain wide `data.frame` with one row per outcome and
   numeric columns for means (categorical `by`) or slope (numeric `by`),

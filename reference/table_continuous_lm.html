@@ -581,7 +581,7 @@ format would require a separate refactor.</p></dd>
 
 
 <dt id="arg-output">output<a class="anchor" aria-label="anchor" href="#arg-output"></a></dt>
-<dd><p>Output format. One of:</p><ul><li><p><code>"default"</code>: a printed ASCII table, returned invisibly</p></li>
+<dd><p>Output format. One of:</p><ul><li><p><code>"default"</code>: an ASCII table object, printed when the call is bare</p></li>
 <li><p><code>"data.frame"</code>: a plain wide <code>data.frame</code></p></li>
 <li><p><code>"long"</code>: a raw long <code>data.frame</code></p></li>
 <li><p><code>"tinytable"</code> (requires <code>tinytable</code>)</p></li>
@@ -641,9 +641,12 @@ error.</p></dd>
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>Depends on <code>output</code>:</p><ul><li><p><code>"default"</code>: prints a styled ASCII table and invisibly returns
-the underlying long <code>data.frame</code> with class
-<code>"spicy_continuous_lm_table"</code> / <code>"spicy_table"</code>.</p></li>
+    <p>Depends on <code>output</code>:</p><ul><li><p><code>"default"</code>: the underlying long <code>data.frame</code> with class
+<code>"spicy_continuous_lm_table"</code> / <code>"spicy_table"</code>. The object is
+returned visibly, so a bare <code>table_continuous_lm(...)</code> call
+auto-prints the styled ASCII table at the console while
+<code>t &lt;- table_continuous_lm(...)</code> stays silent (print <code>t</code> to
+display the table).</p></li>
 <li><p><code>"data.frame"</code>: a plain wide <code>data.frame</code> with one row per
 outcome and numeric columns for means (categorical <code>by</code>) or slope
 (numeric <code>by</code>), optional contrast and CI, optional test statistic,

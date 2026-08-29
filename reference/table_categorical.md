@@ -283,7 +283,7 @@ table_categorical(
 
   Output format. One of:
 
-  - `"default"` (a printed ASCII table, returned invisibly)
+  - `"default"` (an ASCII table object, printed when the call is bare)
 
   - `"data.frame"` (a wide numeric `data.frame`)
 
@@ -375,8 +375,12 @@ table_categorical(
 
 Depends on `output`:
 
-- `"default"`: prints a styled ASCII table and returns the underlying
-  `data.frame` invisibly (S3 class `"spicy_categorical_table"`).
+- `"default"`: the underlying `data.frame` carrying the rendering
+  metadata as attributes (S3 class `"spicy_categorical_table"`). The
+  object is returned visibly, so a bare `table_categorical(...)` call
+  auto-prints the styled ASCII table at the console while
+  `t <- table_categorical(...)` stays silent (print `t` to display the
+  table).
 
 - `"data.frame"`: a wide `data.frame` with one row per variable–level
   combination. When `by` is used, the columns are `Variable`, `Level`,

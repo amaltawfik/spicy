@@ -445,7 +445,7 @@ whose <code>excel</code> output still uses that convention at every <code>align<
 
 
 <dt id="arg-output">output<a class="anchor" aria-label="anchor" href="#arg-output"></a></dt>
-<dd><p>Output format. One of:</p><ul><li><p><code>"default"</code>: a printed ASCII table, returned invisibly.</p></li>
+<dd><p>Output format. One of:</p><ul><li><p><code>"default"</code>: an ASCII table object, printed when the call is bare.</p></li>
 <li><p><code>"data.frame"</code> / <code>"long"</code>: a plain <code>data.frame</code> with one row
 per <code>(variable x group)</code> (or one row per <code>variable</code> when <code>by</code>
 is not used). The two names are synonyms; pick whichever reads
@@ -507,11 +507,15 @@ error.</p></dd>
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>Depends on <code>output</code>:</p><ul><li><p><code>"default"</code>: prints a styled ASCII table and returns the
-underlying <code>data.frame</code> invisibly (S3 class
-<code>"spicy_continuous_table"</code> / <code>"spicy_table"</code>). The object can
-be re-coerced via <code><a href="as.data.frame.spicy_continuous_table.html">as.data.frame.spicy_continuous_table()</a></code> or
-piped into <code><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">broom::tidy()</a></code> / <code><a href="https://generics.r-lib.org/reference/glance.html" class="external-link">broom::glance()</a></code>.</p></li>
+    <p>Depends on <code>output</code>:</p><ul><li><p><code>"default"</code>: the underlying <code>data.frame</code> carrying the
+rendering metadata as attributes (S3 class
+<code>"spicy_continuous_table"</code> / <code>"spicy_table"</code>). The object is
+returned visibly, so a bare <code>table_continuous(...)</code> call
+auto-prints the styled ASCII table at the console while
+<code>t &lt;- table_continuous(...)</code> stays silent (print <code>t</code> to display
+the table). The object can be re-coerced via
+<code><a href="as.data.frame.spicy_continuous_table.html">as.data.frame.spicy_continuous_table()</a></code> or piped into
+<code><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">broom::tidy()</a></code> / <code><a href="https://generics.r-lib.org/reference/glance.html" class="external-link">broom::glance()</a></code>.</p></li>
 <li><p><code>"data.frame"</code> / <code>"long"</code>: a plain <code>data.frame</code> with
 columns <code>variable</code>, <code>label</code>, <code>group</code> (when <code>by</code> is used),
 <code>mean</code>, <code>sd</code>, <code>min</code>, <code>max</code>, <code>ci_lower</code>, <code>ci_upper</code>, <code>median</code>,

@@ -669,24 +669,6 @@ out <- table_continuous_lm(
   effect_size = "g",
   effect_size_ci = TRUE
 )
-#> Continuous outcomes by Sex
-#> 
-#>  Variable                      │ M (Female)  M (Male)  Δ (Male - Female) 
-#> ───────────────────────────────┼─────────────────────────────────────────
-#>  WHO-5 wellbeing index (0-100) │   67.16      71.05          3.89        
-#>  Body mass index               │   25.69      26.20          0.51        
-#> 
-#>  Variable                      │ 95% CI LL  95% CI UL    p     R²  
-#> ───────────────────────────────┼───────────────────────────────────
-#>  WHO-5 wellbeing index (0-100) │   2.13       5.64     <.001  0.02 
-#>  Body mass index               │   0.09       0.93      .018  0.00 
-#> 
-#>  Variable                      │         g           n   
-#> ───────────────────────────────┼─────────────────────────
-#>  WHO-5 wellbeing index (0-100) │ 0.25 [0.14, 0.36]  1200 
-#>  Body mass index               │ 0.14 [0.02, 0.25]  1188 
-#> 
-#> Note. Missing values removed: bmi (12).
 
 # One row per estimated parameter: emmean per level, contrast for
 # binary predictors, slope for numeric predictors.
