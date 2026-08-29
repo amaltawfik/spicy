@@ -1,21 +1,35 @@
 # ---------------------------------------------------------------------------
-# Vignette map completeness. Two maps point readers at the articles:
-# the "Learn more" section of the Get-started vignette
-# (vignettes/spicy.Rmd) and _pkgdown.yml (navbar articles menu +
-# articles index). Both are maintained by hand, so a new vignette can
-# silently miss one of them. These tests enumerate vignettes/*.Rmd and
-# fail, naming the vignette, whenever a map is incomplete -- and,
-# conversely, whenever a map references a vignette that no longer
-# exists. Plain-text parsing on purpose: the yaml package is not a
-# declared dependency, and line-level assertions make failures easy
-# to read. Skipped when the source tree is unavailable (installed
-# package / built tarball, where _pkgdown.yml is not shipped).
+# Documentation map completeness. The package ships one vignette,
+# vignettes/spicy.Rmd (Get started); the twenty walk-throughs are
+# pkgdown articles under vignettes/articles/, kept out of the tarball by
+# .Rbuildignore and rendered at the same articles/<slug>.html URLs.
+#
+# Three maps point readers at those articles: the "Learn more" section
+# of Get started, the _pkgdown.yml navbar articles menu, and the
+# _pkgdown.yml articles index. All three are maintained by hand, so a
+# new article can silently miss one. These tests enumerate
+# vignettes/articles/*.Rmd and fail, naming the article, whenever a map
+# is incomplete -- and, conversely, whenever a map references an article
+# that no longer exists. Plain-text parsing on purpose: the yaml package
+# is not a declared dependency, and line-level assertions make failures
+# easy to read. Skipped when the source tree is unavailable (installed
+# package / built tarball, where neither _pkgdown.yml nor the articles
+# are shipped).
 # ---------------------------------------------------------------------------
 
-.vignette_names <- function(vignettes_dir) {
-  files <- list.files(vignettes_dir, pattern = "\\.Rmd$")
+.site_url <- "https://amaltawfik.github.io/spicy"
+
+# The twenty articles, by slug (vignettes/articles/<slug>.Rmd).
+.article_names <- function(vignettes_dir) {
+  files <- list.files(file.path(vignettes_dir, "articles"), pattern = "\\.Rmd$")
   files <- files[!startsWith(files, "_")]
   sort(sub("\\.Rmd$", "", files))
+}
+
+# Every page pkgdown renders under articles/: the articles plus the one
+# vignette, which pkgdown puts there too.
+.page_names <- function(vignettes_dir) {
+  sort(c("spicy", .article_names(vignettes_dir)))
 }
 
 # Lines of the "## Learn more" section of vignettes/spicy.Rmd (from
@@ -48,22 +62,39 @@
 }
 
 
-test_that("every vignette is linked from the Get-started 'Learn more' map", {
+test_that("the package ships exactly one vignette, Get started", {
   vignettes_dir <- test_path("..", "..", "vignettes")
   skip_if(!dir.exists(vignettes_dir), "vignette sources not available")
 
-  vignettes <- .vignette_names(vignettes_dir)
+  top_level <- list.files(vignettes_dir, pattern = "\\.Rmd$")
+  expect_equal(sort(top_level), "spicy.Rmd")
+
+  # A walk-through added at the top level would be rebuilt by CRAN on
+  # every check; it belongs in vignettes/articles/.
+  expect_true(length(.article_names(vignettes_dir)) > 0L)
+})
+
+
+test_that("every article is linked from the Get-started 'Learn more' map", {
+  vignettes_dir <- test_path("..", "..", "vignettes")
+  skip_if(!dir.exists(vignettes_dir), "vignette sources not available")
+
+  articles <- .article_names(vignettes_dir)
   learn_more <- paste(
     .learn_more_lines(file.path(vignettes_dir, "spicy.Rmd")),
     collapse = "\n"
   )
 
-  # spicy.Rmd is the map itself; every other vignette needs an entry.
-  required <- setdiff(vignettes, "spicy")
+  # Get started is the only installed vignette: it must reach the
+  # articles by absolute URL, since vignette() no longer resolves them.
   linked <- vapply(
-    required,
+    articles,
     function(nm) {
-      grepl(sprintf('vignette("%s")', nm), learn_more, fixed = TRUE)
+      grepl(
+        sprintf("%s/articles/%s.html", .site_url, nm),
+        learn_more,
+        fixed = TRUE
+      )
     },
     logical(1)
   )
@@ -71,27 +102,35 @@ test_that("every vignette is linked from the Get-started 'Learn more' map", {
     all(linked),
     sprintf(
       paste0(
-        "Vignette(s) missing from the 'Learn more' section of ",
-        "vignettes/spicy.Rmd: %s. Add a `vignette(\"<name>\")` bullet ",
-        "for each."
+        "Article(s) missing from the 'Learn more' section of ",
+        "vignettes/spicy.Rmd: %s. Add a bullet linking to ",
+        "%s/articles/<name>.html."
       ),
-      paste(required[!linked], collapse = ", ")
+      paste(articles[!linked], collapse = ", "),
+      .site_url
     )
   )
 
-  # Reverse direction: no stale vignette() call in the map.
+  # Reverse direction: no stale article link in the map.
   referenced <- unique(unlist(regmatches(
     learn_more,
-    gregexpr('vignette\\("([A-Za-z0-9._-]+)"\\)', learn_more)
+    gregexpr(
+      paste0(.site_url, "/articles/([A-Za-z0-9._-]+)\\.html"),
+      learn_more
+    )
   )))
-  referenced <- sub('^vignette\\("', "", sub('"\\)$', "", referenced))
-  stale <- setdiff(referenced, vignettes)
+  referenced <- sub(
+    paste0("^", .site_url, "/articles/"),
+    "",
+    sub("\\.html$", "", referenced)
+  )
+  stale <- setdiff(referenced, .page_names(vignettes_dir))
   expect(
     length(stale) == 0L,
     sprintf(
       paste0(
-        "The 'Learn more' section of vignettes/spicy.Rmd references ",
-        "vignette(s) with no matching vignettes/*.Rmd file: %s."
+        "The 'Learn more' section of vignettes/spicy.Rmd links ",
+        "article page(s) with no matching source file: %s."
       ),
       paste(stale, collapse = ", ")
     )
@@ -99,13 +138,13 @@ test_that("every vignette is linked from the Get-started 'Learn more' map", {
 })
 
 
-test_that("every vignette appears in the _pkgdown.yml navbar articles menu", {
+test_that("every article appears in the _pkgdown.yml navbar articles menu", {
   vignettes_dir <- test_path("..", "..", "vignettes")
   pkgdown_yml <- test_path("..", "..", "_pkgdown.yml")
   skip_if(!dir.exists(vignettes_dir), "vignette sources not available")
   skip_if(!file.exists(pkgdown_yml), "_pkgdown.yml not available")
 
-  vignettes <- .vignette_names(vignettes_dir)
+  pages <- .page_names(vignettes_dir)
   yml <- readLines(pkgdown_yml, warn = FALSE, encoding = "UTF-8")
   navbar <- .pkgdown_section(yml, "navbar")
 
@@ -115,12 +154,12 @@ test_that("every vignette appears in the _pkgdown.yml navbar articles menu", {
   ))
   navbar_pages <- unique(sub("^articles/", "", sub("\\.html$", "", hrefs)))
 
-  missing <- setdiff(vignettes, navbar_pages)
+  missing <- setdiff(pages, navbar_pages)
   expect(
     length(missing) == 0L,
     sprintf(
       paste0(
-        "Vignette(s) missing from the navbar articles menu of ",
+        "Article(s) missing from the navbar articles menu of ",
         "_pkgdown.yml: %s. Add a '- text: <title>' / ",
         "'href: articles/<name>.html' entry."
       ),
@@ -128,13 +167,13 @@ test_that("every vignette appears in the _pkgdown.yml navbar articles menu", {
     )
   )
 
-  stale <- setdiff(navbar_pages, vignettes)
+  stale <- setdiff(navbar_pages, pages)
   expect(
     length(stale) == 0L,
     sprintf(
       paste0(
         "The _pkgdown.yml navbar links article page(s) with no ",
-        "matching vignettes/*.Rmd file: %s."
+        "matching source file under vignettes/: %s."
       ),
       paste(stale, collapse = ", ")
     )
@@ -142,27 +181,30 @@ test_that("every vignette appears in the _pkgdown.yml navbar articles menu", {
 })
 
 
-test_that("every vignette appears in the _pkgdown.yml articles index", {
+test_that("every article appears in the _pkgdown.yml articles index", {
   vignettes_dir <- test_path("..", "..", "vignettes")
   pkgdown_yml <- test_path("..", "..", "_pkgdown.yml")
   skip_if(!dir.exists(vignettes_dir), "vignette sources not available")
   skip_if(!file.exists(pkgdown_yml), "_pkgdown.yml not available")
 
-  vignettes <- .vignette_names(vignettes_dir)
+  # pkgdown names an article by its path relative to vignettes/ minus
+  # the extension, so the index selects the moved ones as
+  # "articles/<slug>" and Get started as plain "spicy".
+  expected <- c("spicy", paste0("articles/", .article_names(vignettes_dir)))
   yml <- readLines(pkgdown_yml, warn = FALSE, encoding = "UTF-8")
   articles <- .pkgdown_section(yml, "articles")
 
-  # Contents entries are bare names, e.g. "      - table-regression".
+  # Contents entries are bare names, e.g. "      - articles/table-regression".
   # Lines such as "  - title: Articles" carry a colon and do not match.
-  entries <- grep("^\\s+-\\s+[A-Za-z0-9._-]+\\s*$", articles, value = TRUE)
+  entries <- grep("^\\s+-\\s+[A-Za-z0-9._/-]+\\s*$", articles, value = TRUE)
   index_entries <- unique(trimws(sub("^\\s*-\\s+", "", entries)))
 
-  missing <- setdiff(vignettes, index_entries)
+  missing <- setdiff(expected, index_entries)
   expect(
     length(missing) == 0L,
     sprintf(
       paste0(
-        "Vignette(s) missing from the articles index (articles: ",
+        "Article(s) missing from the articles index (articles: ",
         "contents:) of _pkgdown.yml: %s. Add the name to the ",
         "contents list."
       ),
@@ -170,13 +212,13 @@ test_that("every vignette appears in the _pkgdown.yml articles index", {
     )
   )
 
-  stale <- setdiff(index_entries, vignettes)
+  stale <- setdiff(index_entries, expected)
   expect(
     length(stale) == 0L,
     sprintf(
       paste0(
         "The _pkgdown.yml articles index lists entry names with no ",
-        "matching vignettes/*.Rmd file: %s."
+        "matching source file under vignettes/: %s."
       ),
       paste(stale, collapse = ", ")
     )
@@ -184,9 +226,9 @@ test_that("every vignette appears in the _pkgdown.yml articles index", {
 })
 
 
-# Phase 3 matrix – vignettes-news:vignettes-exist (lot T4)
+# Phase 3 matrix - vignettes-news:vignettes-exist (lot T4)
 
-test_that("the vignettes NEWS names are all present in vignettes/", {
+test_that("the article names promised in NEWS are all present", {
   vignettes_dir <- test_path("..", "..", "vignettes")
   skip_if(!dir.exists(vignettes_dir), "vignette sources not available")
   # The NEWS 'Seven new vignettes' bullet: mixed, GEE, multinomial,
@@ -202,12 +244,15 @@ test_that("the vignettes NEWS names are all present in vignettes/", {
     "categorical-predictors",
     "table-regression-supported-models"
   )
-  present <- .vignette_names(vignettes_dir)
+  present <- .article_names(vignettes_dir)
   missing <- setdiff(named, present)
   expect(
     length(missing) == 0L,
     sprintf(
-      "Vignette(s) promised in NEWS.md are missing from vignettes/: %s.",
+      paste0(
+        "Article(s) promised in NEWS.md are missing from ",
+        "vignettes/articles/: %s."
+      ),
       paste(missing, collapse = ", ")
     )
   )
