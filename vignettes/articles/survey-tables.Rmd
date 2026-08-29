@@ -1,10 +1,6 @@
 ---
 title: "Summary tables from a survey design"
 output: rmarkdown::html_vignette
-vignette: >
-  %\VignetteIndexEntry{Summary tables from a survey design}
-  %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
 ---
 
 ```{r, include = FALSE}

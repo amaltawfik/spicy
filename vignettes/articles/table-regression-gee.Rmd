@@ -12,10 +12,6 @@ output:
   rmarkdown::html_vignette:
     toc: true
     toc_depth: 2
-vignette: >
-  %\VignetteIndexEntry{GEE regression tables (population-averaged models)}
-  %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
 ---
 
 ```{r, include = FALSE}

@@ -1,10 +1,11 @@
 # Strip background colours from `gt` tables so they render correctly
-# under both the light and dark pkgdown themes (CRAN- and pkgdown-built
-# vignettes share this helper). Wrap any `output = "gt"` result with
-# `pkgdown_dark_gt()` before rendering.
+# under both the light and dark pkgdown themes. Wrap any
+# `output = "gt"` result with `pkgdown_dark_gt()` before rendering.
 #
-# Sourced once per vignette via `source("_pkgdown-helpers.R")` so the
-# four rendered-table vignettes stay byte-identical.
+# Lives beside its only consumers, the articles in this directory, and
+# is sourced once per article via `source("_pkgdown-helpers.R")` so the
+# rendered-table articles stay byte-identical. The leading underscore
+# keeps pkgdown from treating the file as an article of its own.
 pkgdown_dark_gt <- function(tab) {
   tab |>
     gt::opt_css(

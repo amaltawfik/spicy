@@ -8,10 +8,6 @@ output:
   rmarkdown::html_vignette:
     toc: true
     toc_depth: 2
-vignette: >
-  %\VignetteIndexEntry{Cramer's V, Phi, and association measures}
-  %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
 ---
 
 ```{r, include = FALSE}
