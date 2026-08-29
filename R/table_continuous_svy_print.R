@@ -122,7 +122,11 @@ NULL
   if (requireNamespace("tibble", quietly = TRUE)) {
     return(tibble::as_tibble(df))
   }
-  df
+  # tibble is in Imports (DESCRIPTION), so the guard above never fails
+  # on an installed spicy. The fallback is kept because the sibling
+  # families spell the same convention and a dependency that moved to
+  # Suggests must degrade, not error.
+  df # nocov
 }
 
 #' @rdname tidy.spicy_continuous_svy_table

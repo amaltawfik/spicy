@@ -499,3 +499,170 @@ test_that("brmsfit accepts `labels =` keyed on a factor term", {
   expect_true("Arm:" %in% out$Variable)
   expect_false("treatment:" %in% out$Variable)
 })
+
+
+# ---- exponentiate on a non-identity link ---------------------------------
+
+test_that("brmsfit logit: `exponentiate` maps the draws, not the summary", {
+  # The link gate runs before any draws work and passes for a logit
+  # fit, and the transform is DRAWS-NATIVE: the reported estimate is
+  # the median of exp(draws), which for a monotone map is exp of the
+  # median of the draws. Pinning that identity is what makes the odds
+  # ratio the same number a reader would get from the log-odds column.
+  fit <- .fit_brms_logit()
+  fr_plain <- suppressWarnings(as_regression_frame(fit, model_id = "M1"))
+  fr_exp <- suppressWarnings(
+    as_regression_frame(fit, model_id = "M1", exponentiate = TRUE)
+  )
+  expect_true(isTRUE(fr_exp$info$extras$exp_applied))
+  expect_false(isTRUE(fr_plain$info$extras$exp_applied))
+  expect_equal(
+    fr_exp$coefs$estimate,
+    exp(fr_plain$coefs$estimate),
+    tolerance = 1e-8
+  )
+  # The interval travels with it: exponentiating a posterior quantile
+  # is the quantile of the exponentiated posterior.
+  expect_equal(
+    fr_exp$coefs$ci_lower,
+    exp(fr_plain$coefs$ci_lower),
+    tolerance = 1e-8
+  )
+  expect_true(all(fr_exp$coefs$estimate > 0))
+})
+
+
+# ---- correlated random slopes --------------------------------------------
+
+test_that("brmsfit: a correlated random slope renders its correlation row", {
+  skip_on_ci()
+  skip_if_not_installed("brms")
+  skip_if_not_installed("posterior")
+  skip_if_not_installed("lme4")
+  # `(Days | Subject)` is the only fixture that samples a `cor_*`
+  # parameter, and the correlation between two random terms is a row of
+  # the RE block in its own right -- read off the `cor_<group>__<t1>__<t2>`
+  # draws, not derived from the two SDs. Cached like every other fixture.
+  fit <- .stan_cached_fit(
+    "brms_corr",
+    .STAN_CACHE_PKGS_BRMS,
+    function() {
+      set.seed(6)
+      brms::brm(
+        Reaction ~ Days + (Days | Subject),
+        data = lme4::sleepstudy,
+        chains = 1,
+        iter = 400,
+        refresh = 0,
+        silent = 2,
+        backend = "rstan"
+      )
+    }
+  )
+  re <- suppressWarnings(
+    as_regression_frame(fit)
+  )$info$random_effects$variance_components
+  # Two SD rows and one correlation row for the group, plus Residual.
+  sd_rows <- re[!re$is_correlation & re$group == "Subject", ]
+  expect_setequal(sd_rows$term, c("(Intercept)", "Days"))
+  corr_rows <- re[re$is_correlation, ]
+  expect_identical(nrow(corr_rows), 1L)
+  expect_identical(corr_rows$group, "Subject")
+  # The two terms are named in the reader's words and joined by the
+  # multiplication sign, and "Intercept" is spelled the way every other
+  # row of the table spells it.
+  expect_identical(corr_rows$term, "(Intercept) × Days")
+  # A correlation carries no variance / SD, and its interval lies
+  # inside [-1, 1].
+  expect_true(is.na(corr_rows$variance))
+  expect_true(is.na(corr_rows$sd))
+  expect_true(corr_rows$corr >= -1 && corr_rows$corr <= 1)
+  expect_true(corr_rows$ci_lower >= -1 && corr_rows$ci_upper <= 1)
+})
+
+
+# ---- diagnostics that only a failing computation can show ----------------
+
+test_that("a failed PSIS-LOO / WAIC is announced, never silently absent", {
+  # Pre-1.0 policy: a fit statistic the caller ASKED for and that could
+  # not be computed must say what failed and what is missing, rather
+  # than leaving a row out of the table with no explanation. The
+  # underlying error text travels with the message so the reader can
+  # act on it.
+  fit <- .fit_brms_basic()
+  skip_if_not_installed("loo")
+  warns <- list()
+  fr <- with_mocked_bindings(
+    withCallingHandlers(
+      as_regression_frame(
+        fit,
+        model_id = "M1",
+        show_fit_stats = c("elpd_loo", "looic", "waic")
+      ),
+      warning = function(w) {
+        warns[[length(warns) + 1L]] <<- w
+        invokeRestart("muffleWarning")
+      }
+    ),
+    loo = function(...) stop("no importance sampling here"),
+    waic = function(...) stop("no pointwise likelihood here"),
+    .package = "loo"
+  )
+  msgs <- vapply(warns, conditionMessage, character(1))
+  classes <- vapply(
+    warns,
+    function(w) inherits(w, "spicy_bayes_diagnostics"),
+    logical(1)
+  )
+  expect_true(all(classes))
+  expect_true(any(grepl(
+    "PSIS-LOO failed for outcome Reaction (no importance sampling here)",
+    msgs,
+    fixed = TRUE
+  )))
+  expect_true(any(grepl(
+    "WAIC failed for outcome Reaction (no pointwise likelihood here)",
+    msgs,
+    fixed = TRUE
+  )))
+  expect_true(any(grepl("rows are omitted", msgs, fixed = TRUE)))
+  # And the statistics themselves are absent, not zero.
+  expect_true(is.na(fr$info$fit_stats$elpd_loo))
+  expect_true(is.na(fr$info$fit_stats$looic))
+  expect_true(is.na(fr$info$fit_stats$waic))
+})
+
+
+test_that("a low E-BFMI is flagged with the value that failed the guard", {
+  # The energy diagnostic (Betancourt 2017) is the one convergence
+  # guard the sampled fixtures never trip, so the value comes from
+  # rstan's own extractor with a failing posterior standing in. What is
+  # pinned is the guard's arithmetic: the MINIMUM E-BFMI is the number
+  # reported, and only when it is below 0.2.
+  fit <- .fit_brms_basic()
+  skip_if_not_installed("rstan")
+  flagged <- with_mocked_bindings(
+    spicy:::.stan_convergence_diagnostics(fit, "brmsfit"),
+    get_bfmi = function(...) c(0.12, 0.44),
+    .package = "rstan"
+  )
+  expect_equal(flagged$bfmi, 0.12)
+  expect_match(
+    spicy:::.stan_convergence_text(flagged, "."),
+    "min E-BFMI = 0.12 (target > 0.2)",
+    fixed = TRUE
+  )
+  # Above the bar the field stays NA: a guard that passed adds no
+  # sentence to a publication table.
+  clean <- with_mocked_bindings(
+    spicy:::.stan_convergence_diagnostics(fit, "brmsfit"),
+    get_bfmi = function(...) c(0.9, 0.8),
+    .package = "rstan"
+  )
+  expect_true(is.na(clean$bfmi))
+  expect_false(grepl(
+    "E-BFMI",
+    spicy:::.stan_convergence_text(clean, "."),
+    fixed = TRUE
+  ))
+})

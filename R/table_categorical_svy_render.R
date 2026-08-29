@@ -233,12 +233,20 @@
         )
         i <- i + 1L
       } else if (j == i) {
+        # nocov start: a block that spans ONE column would name itself
+        # with the qualified header rather than the block label.
+        # Unreachable by construction -- `.cat_svy_columns()` emits the
+        # n and the % of every block as two ADJACENT entries, so a
+        # non-NA block always runs over at least two columns and `j`
+        # has already advanced past `i` above. Kept because the run
+        # length is computed, not assumed.
         groups[[length(groups) + 1L]] <- list(
           key = col_keys[[i]],
           label = full_labels[[col_keys[[i]]]],
           cols = i
         )
         i <- i + 1L
+        # nocov end
       } else {
         groups[[length(groups) + 1L]] <- list(
           key = b,
@@ -477,7 +485,10 @@
     degf_range = if (length(degf_dom_used) > 0L) {
       range(degf_dom_used)
     } else {
-      NULL
+      # Unreachable, like the continuous twin: one entry is appended
+      # per block with no condition on it, and `blocks` is never empty
+      # (a one-way table's single block is `NA_character_`).
+      NULL # nocov
     }
   )
   if (!is.null(df_user)) {

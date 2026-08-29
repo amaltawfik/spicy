@@ -3366,9 +3366,11 @@ desc_spanner_groups <- function(col_keys, ci_level, decimal_mark = ".") {
 #
 # Parameterised on the two resolvers rather than on the continuous
 # vocabulary, so a family whose spanners are its `by` groups builds its
-# header through the same function. `build_header_rows()` is the
-# continuous specialisation and keeps its own name and signature: it is
-# the one every existing caller uses.
+# header through the same function. The continuous vocabulary is not a
+# second entry point: `export_desc_table()` binds it as the DEFAULT of
+# its `header_layout` argument (`hl_labels` / `hl_spanners`) and every
+# engine reads the header through `hl_headers()`, so there is exactly
+# one caller of this function and one place the default lives.
 build_header_rows_from <- function(col_keys, labels_fn, spanners_fn) {
   nc <- length(col_keys)
   top <- labels_fn(col_keys)
@@ -3380,14 +3382,6 @@ build_header_rows_from <- function(col_keys, labels_fn, spanners_fn) {
     }
   }
   list(top = top, bottom = bot)
-}
-
-build_header_rows <- function(col_keys, ci_level, decimal_mark = ".") {
-  build_header_rows_from(
-    col_keys,
-    function(keys) .continuous_labels(keys, ci_level, decimal_mark),
-    function(keys) desc_spanner_groups(keys, ci_level, decimal_mark)
-  )
 }
 
 # --- internal: the count / p-value right-hand columns ---

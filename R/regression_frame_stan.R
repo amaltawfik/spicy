@@ -1555,9 +1555,14 @@ as_regression_frame.brmsfit <- function(
     # the model's known grouping factors ("g1:g2" beats its parent
     # "g1"), falling back to the first-colon split if the lookup
     # fails.
-    grp_names <- names(tryCatch(fit$glmod$reTrms$flist, error = function(e) {
-      NULL
-    }))
+    # The tryCatch is belt-and-braces: `$` on a stanreg list cannot
+    # error -- an absent slot gives NULL, which `names()` takes -- so
+    # the handler body is unreachable and marked as such.
+    flist <- tryCatch(
+      fit$glmod$reTrms$flist,
+      error = function(e) NULL # nocov
+    )
+    grp_names <- names(flist)
     grp_names <- unique(grp_names[order(nchar(grp_names), decreasing = TRUE)])
     grp <- character(length(inside))
     pair <- character(length(inside))
