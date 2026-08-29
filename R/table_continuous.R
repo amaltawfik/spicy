@@ -226,7 +226,7 @@
 #'   Same default and same three values as [table_continuous_lm()],
 #'   whose `excel` output still uses that convention at every `align`.
 #' @param output Output format. One of:
-#'   - `"default"`: a printed ASCII table, returned invisibly.
+#'   - `"default"`: an ASCII table object, printed when the call is bare.
 #'   - `"data.frame"` / `"long"`: a plain `data.frame` with one row
 #'     per `(variable x group)` (or one row per `variable` when `by`
 #'     is not used). The two names are synonyms; pick whichever reads
@@ -269,11 +269,15 @@
 #'
 #' @return Depends on `output`:
 #' \itemize{
-#'   \item `"default"`: prints a styled ASCII table and returns the
-#'     underlying `data.frame` invisibly (S3 class
-#'     `"spicy_continuous_table"` / `"spicy_table"`). The object can
-#'     be re-coerced via [as.data.frame.spicy_continuous_table()] or
-#'     piped into `broom::tidy()` / `broom::glance()`.
+#'   \item `"default"`: the underlying `data.frame` carrying the
+#'     rendering metadata as attributes (S3 class
+#'     `"spicy_continuous_table"` / `"spicy_table"`). The object is
+#'     returned visibly, so a bare `table_continuous(...)` call
+#'     auto-prints the styled ASCII table at the console while
+#'     `t <- table_continuous(...)` stays silent (print `t` to display
+#'     the table). The object can be re-coerced via
+#'     [as.data.frame.spicy_continuous_table()] or piped into
+#'     `broom::tidy()` / `broom::glance()`.
 #'   \item `"data.frame"` / `"long"`: a plain `data.frame` with
 #'     columns `variable`, `label`, `group` (when `by` is used),
 #'     `mean`, `sd`, `min`, `max`, `ci_lower`, `ci_upper`, `median`,
@@ -1827,8 +1831,11 @@ table_continuous <- function(
     missing_group_label = missing_group_label
   )
   class(result) <- c("spicy_continuous_table", "spicy_table", class(result))
-  print(result)
-  invisible(result)
+  # Return VISIBLY and let standard auto-print dispatch to
+  # print.spicy_continuous_table(): a bare table_continuous(...) call
+  # still displays the table, while `t <- table_continuous(...)` is
+  # silent (the freq() / cross_tab() model).
+  result
 }
 
 

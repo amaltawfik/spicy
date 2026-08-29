@@ -331,17 +331,47 @@ test_that("table_categorical warns about ignored grouped options without by", {
   expect_s3_class(res$value, "data.frame")
 })
 
-test_that("table_categorical default output prints ASCII and returns styled object", {
-  printed <- capture.output(
-    out <- table_categorical(
-      sochealth,
-      select = smoking,
-      output = "default"
-    )
+test_that("table_categorical default output renders ASCII and returns styled object", {
+  # Assigning is silent (decision 47): the ASCII rendering comes from
+  # the print method, which is what the auto-print of a bare call
+  # dispatches to.
+  out <- table_categorical(
+    sochealth,
+    select = smoking,
+    output = "default"
   )
+  printed <- capture.output(print(out))
 
   expect_true(length(printed) > 0)
   expect_s3_class(out, "spicy_categorical_table")
+})
+
+test_that("table_categorical returns visibly and is silent when assigned", {
+  # A bare call renders (capture.output() evaluates as at top level, so
+  # the visible return auto-prints); an assignment writes nothing.
+  expect_visible(table_categorical(sochealth, select = smoking))
+  bare <- capture.output(table_categorical(sochealth, select = smoking))
+  expect_true(length(bare) > 0)
+
+  assigned <- capture.output(
+    tc <- table_categorical(sochealth, select = smoking)
+  )
+  expect_identical(assigned, character(0))
+  expect_s3_class(tc, "spicy_categorical_table")
+  expect_identical(capture.output(print(tc)), bare)
+
+  # Same on the by-group branch (the second `output == "default"`
+  # return of the function).
+  expect_visible(table_categorical(sochealth, select = smoking, by = sex))
+  bare_by <- capture.output(
+    table_categorical(sochealth, select = smoking, by = sex)
+  )
+  expect_true(length(bare_by) > 0)
+  assigned_by <- capture.output(
+    tb <- table_categorical(sochealth, select = smoking, by = sex)
+  )
+  expect_identical(assigned_by, character(0))
+  expect_identical(capture.output(print(tb)), bare_by)
 })
 
 test_that("table_categorical default output with output = 'data.frame' returns wide raw data", {
@@ -1529,7 +1559,7 @@ test_that("table_categorical one-way empty after dropping NA produces 0-row data
   expect_equal(nrow(out_long), 0L)
 })
 
-test_that("table_categorical grouped default output prints and returns invisibly", {
+test_that("table_categorical grouped default output returns a styled object", {
   out <- table_categorical(
     data = sochealth,
     select = smoking,

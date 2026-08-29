@@ -142,18 +142,14 @@ test_that("bootstrap SEs are disclosed in the console note", {
 
 test_that("cluster_name attr is stored and disclosed for CR vcov", {
   skip_if_not_installed("clubSandwich")
-  txt <- paste(
-    capture.output(
-      tbl <- table_continuous_lm(
-        sochealth,
-        select = wellbeing_score,
-        by = physical_activity,
-        vcov = "CR0",
-        cluster = ~region
-      )
-    ),
-    collapse = "\n"
+  tbl <- table_continuous_lm(
+    sochealth,
+    select = wellbeing_score,
+    by = physical_activity,
+    vcov = "CR0",
+    cluster = ~region
   )
+  txt <- paste(capture.output(print(tbl)), collapse = "\n")
   expect_identical(attr(tbl, "cluster_name"), "region")
   expect_match(
     txt,
@@ -172,18 +168,14 @@ test_that("cluster_name attr is NA for an anonymous cluster vector", {
   # once-per-session "external vector in selections" deprecation
   # warning for raw-vector clusters; unrelated to the behavior under
   # test here (the NA fallback).
-  txt <- paste(
-    suppressWarnings(capture.output(
-      tbl <- table_continuous_lm(
-        sochealth,
-        select = wellbeing_score,
-        by = physical_activity,
-        vcov = "CR2",
-        cluster = cl
-      )
-    )),
-    collapse = "\n"
-  )
+  tbl <- suppressWarnings(table_continuous_lm(
+    sochealth,
+    select = wellbeing_score,
+    by = physical_activity,
+    vcov = "CR2",
+    cluster = cl
+  ))
+  txt <- paste(capture.output(print(tbl)), collapse = "\n")
   expect_identical(attr(tbl, "cluster_name"), NA_character_)
   expect_match(txt, "Std. errors: cluster-robust (CR2).", fixed = TRUE)
   expect_false(grepl("clusters by", txt, fixed = TRUE))

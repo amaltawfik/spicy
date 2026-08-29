@@ -558,7 +558,7 @@
 #'   right-aligns only the counts and the *p*-value there, and
 #'   `table_continuous_lm()` applies that convention at every `align`.
 #' @param output Output format. One of:
-#'   - `"default"` (a printed ASCII table, returned invisibly)
+#'   - `"default"` (an ASCII table object, printed when the call is bare)
 #'   - `"data.frame"` (a wide numeric `data.frame`)
 #'   - `"long"` (a long numeric `data.frame`)
 #'   - `"tinytable"` (requires `tinytable`)
@@ -614,9 +614,12 @@
 #'
 #' @return Depends on `output`:
 #' \itemize{
-#'   \item `"default"`: prints a styled ASCII table and returns the
-#'     underlying `data.frame` invisibly (S3 class
-#'     `"spicy_categorical_table"`).
+#'   \item `"default"`: the underlying `data.frame` carrying the
+#'     rendering metadata as attributes (S3 class
+#'     `"spicy_categorical_table"`). The object is returned visibly, so
+#'     a bare `table_categorical(...)` call auto-prints the styled ASCII
+#'     table at the console while `t <- table_categorical(...)` stays
+#'     silent (print `t` to display the table).
 #'   \item `"data.frame"`: a wide `data.frame` with one row per
 #'     variable--level combination.
 #'     When `by` is used, the columns are `Variable`, `Level`, and one
@@ -1868,8 +1871,11 @@ table_categorical <- function(
       # to cite a cell.
       out <- .style_stamp(out)
       class(out) <- c("spicy_categorical_table", "spicy_table", "data.frame")
-      print(out)
-      return(invisible(out))
+      # Return VISIBLY and let standard auto-print dispatch to
+      # print.spicy_categorical_table(): a bare table_categorical(...)
+      # call still displays the table, while `t <- table_categorical(...)`
+      # is silent (the freq() / cross_tab() model).
+      return(out)
     }
 
     if (output == "tinytable") {
@@ -3244,8 +3250,11 @@ table_categorical <- function(
     # cite a cell.
     out <- .style_stamp(out)
     class(out) <- c("spicy_categorical_table", "spicy_table", "data.frame")
-    print(out)
-    return(invisible(out))
+    # Return VISIBLY and let standard auto-print dispatch to
+    # print.spicy_categorical_table(): a bare table_categorical(...) call
+    # still displays the table, while `t <- table_categorical(...)` is
+    # silent (the freq() / cross_tab() model).
+    return(out)
   }
 
   # For rendered formats: merge CI inline into measure column, drop CI cols

@@ -216,7 +216,7 @@ right-aligns only the counts and the \emph{p}-value there, and
 
 \item{output}{Output format. One of:
 \itemize{
-\item \code{"default"} (a printed ASCII table, returned invisibly)
+\item \code{"default"} (an ASCII table object, printed when the call is bare)
 \item \code{"data.frame"} (a wide numeric \code{data.frame})
 \item \code{"long"} (a long numeric \code{data.frame})
 \item \code{"tinytable"} (requires \code{tinytable})
@@ -281,9 +281,12 @@ error.}
 \value{
 Depends on \code{output}:
 \itemize{
-\item \code{"default"}: prints a styled ASCII table and returns the
-underlying \code{data.frame} invisibly (S3 class
-\code{"spicy_categorical_table"}).
+\item \code{"default"}: the underlying \code{data.frame} carrying the
+rendering metadata as attributes (S3 class
+\code{"spicy_categorical_table"}). The object is returned visibly, so
+a bare \code{table_categorical(...)} call auto-prints the styled ASCII
+table at the console while \code{t <- table_categorical(...)} stays
+silent (print \code{t} to display the table).
 \item \code{"data.frame"}: a wide \code{data.frame} with one row per
 variable--level combination.
 When \code{by} is used, the columns are \code{Variable}, \code{Level}, and one
