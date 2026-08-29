@@ -1,7 +1,7 @@
 ---
 title: "Publication-ready regression tables"
 description: >
-  Coefficient tables for fitted regression models in R with
+  Regression tables for fitted models in R with
   journal-grade formatting (APA by default; JAMA, NEJM, The Lancet,
   Annals, or AER by name): classical, heteroskedasticity-consistent and
   cluster-robust variance, five standardisation methods, partial

@@ -7,8 +7,8 @@ home:
     chi-squared tests and association measures (Cramer's V, Phi,
     Gamma, Kendall's Tau-b, Somers' D), categorical and continuous
     summary tables, model-based group comparisons for continuous
-    outcomes, and publication-ready regression coefficient tables
-    for one or more `lm` or `glm` fits side by side. All table
+    outcomes, and publication-ready regression tables for one or
+    more fitted models side by side (30+ model classes). All table
     outputs follow rigorous reporting conventions (APA by default,
     with named journal styles), expose `broom`-compatible
     `tidy()` / `glance()` methods, and export to console, gt,

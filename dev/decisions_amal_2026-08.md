@@ -856,3 +856,54 @@ différenciateur en tête, « Descriptive Statistics » verbatim
 (« publication-ready summary and regression tables ») dont il est
 l'expansion. ÉDITION : au commit dédié du 30 septembre (check-list
 décision 49), pas avant.
+
+## Décision 51 — La Description du DESCRIPTION (2026-08-30)
+
+Tranché par Amal (« oui, mais check avant [les revues] ») après
+quatre tours : longueur (200 → mesure des références : gtsummary 77,
+flextable 110, modelsummary 181 mots), « coefficient tables » →
+« regression tables » (son attrape), relecture mot-à-mot (fragment →
+deux-points ; one or several → one or more ; such as restauré ;
+can switch ; helpers en phrase autonome ; 'Word'/'Excel' quotés),
+puis re-périmétrage labelled sur audit 4-agents (la revendication
+value labels meurt — cross_tab affiche les codes bruts, n°292 ;
+« throughout » borné aux descriptives). Texte gelé, 125 mots :
+
+  Provides publication-ready tables for descriptive statistics and
+  regression models: frequency tables and cross-tabulations with
+  association measures (Cramer's V, Kendall's Tau-b, and others),
+  categorical and continuous summary tables, by group or from a
+  complex survey design, and regression tables for one or more
+  models side by side, across more than thirty model classes from
+  mixed-effects to survival and Bayesian, with robust standard
+  errors, average marginal effects, and univariable screening.
+  Tables follow APA conventions by default, can switch to named
+  journal styles such as JAMA, NEJM, or The Lancet, and render
+  identically in the console and in 'gt', 'tinytable', 'flextable',
+  'Word', 'Excel', or the clipboard. Declared missing values in
+  labelled data are honored and disclosed throughout the descriptive
+  tables. Helpers cover codebooks, variable inspection, and row-wise
+  summaries.
+
+Vérification revues (demande explicite d'Amal) : la politique CRAN
+n'a qu'une ligne (« Trademarks must be respected ») et aucune règle
+contre nommer des revues ; usage nominatif descriptif, aucune
+affiliation impliquée. Précédents live : ggpubr (juillet 2026,
+« APA, AMA, NEJM, Lancet » en acronymes nus dans sa Description) et
+tangram 0.8.3 (« New England Journal of Medicine style, Lancet
+style »). NB : la 0.12.0 acceptée ne contenait PAS ces noms (page
+CRAN live vérifiée — seule « APA conventions ») ; le précédent
+interne supposé n'existait pas, d'où la vérification externe.
+Chaque affirmation du texte est adossée au code (30+ classes,
+parité console/rendus, user_na descriptives — audit n°292-294).
+ÉDITION : au commit dédié du 30 septembre, avec le Title
+(décision 50), pas avant.
+
+Addendum décision 51 (2026-08-30, relecture README) : au commit du
+30 septembre, synchroniser AUSSI R/spicy-package.R (+ redocument) —
+son titre roxygen et sa @description miroitent l'ancien
+Title/Description (« regression coefficient tables », « descriptive
+statistics, summary tables, and data management ») et deviendraient
+faux le jour où DESCRIPTION change. Même commit, même vocabulaire.
+cran-comments.md est réécrit ce jour-là de toute façon (check-list
+décision 49).

@@ -530,7 +530,7 @@ table_continuous(
   model-based continuous summary tables with robust standard errors or
   case weights.
 - See [*Publication-ready regression tables*](table-regression.html) for full
-  coefficient tables from one or several fitted `lm` / `glm` models
+  regression tables from one or more fitted models
   (APA Table 3).
 - See [*Summary tables for reporting*](summary-tables-reporting.html) for a
   cross-function reporting workflow that ties the four summary-table

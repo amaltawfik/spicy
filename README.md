@@ -18,9 +18,9 @@ License](https://img.shields.io/badge/license-MIT-blue.svg?style=flat)](https://
 downloads](https://cranlogs.r-pkg.org/badges/grand-total/spicy)](https://cranlogs.r-pkg.org/badges/grand-total/spicy)
 <!-- badges: end -->
 
-spicy is an R package for frequency tables, cross-tabulations,
-association measures, categorical and continuous summary tables,
-publication-ready regression tables for 30+ model classes, and labelled
+spicy is an R package for publication-ready tables: frequency tables and
+cross-tabulations, association measures, categorical and continuous
+summary tables, regression tables for 30+ model classes, and labelled
 survey data workflows.
 
 ## Features
@@ -47,7 +47,7 @@ row-wise summaries.
   the same statistic vocabulary and output engines.
 - **Design-based summary tables** with `table_continuous_svy()` and
   `table_categorical_svy()` on a `survey::svydesign` object: estimates,
-  SEs and CIs from the `survey` package (Taylor linearisation or
+  SEs and CIs from the `survey` package (Taylor linearization or
   replicate weights), design degrees of freedom, observed and weighted
   counts – the design twins of the two families above, with the same
   statistic vocabulary and output engines.
@@ -61,7 +61,7 @@ row-wise summaries.
   models side by side, across 30+ model classes (see *Supported models*
   below): classical / heteroskedasticity-robust / cluster-robust /
   bootstrap / jackknife variance with each class’s field-standard
-  backend, standardised coefficients, family-aware `exponentiate` (OR /
+  backend, standardized coefficients, family-aware `exponentiate` (OR /
   IRR / HR / RR / MR, link-gated), Wald or profile-likelihood CIs,
   average marginal effects (per-category for ordinal and multinomial
   models), partial *f²* / *η²* / *ω²* / *χ²* effect sizes, class-aware
@@ -72,16 +72,16 @@ row-wise summaries.
   per-term test; ordinal models report their thresholds; zero-inflated
   and hurdle models report every model component. Survival models go
   beyond hazard ratios: adjusted restricted-mean-survival-time and risk
-  differences by g-computation (`tau` / `at_time`), for Cox fits
-  (stratified included) and parametric AFT fits, in single tables and in
+  differences by g-computation (`tau` / `at_time`), for `coxph` fits
+  (stratified included) and `survreg` AFT fits, in single tables and in
   the univariable screen.
 - **Univariable screening** with `table_regression_uv()`:
   one-predictor-at-a-time models merged with the multivariable fit,
   per-predictor N and events, for `glm`, `lm`, and Cox outcomes.
 - **Journal styles** with `spicy_style()`: `style = "jama"`, `"nejm"`,
   `"lancet"`, `"annals"`, `"apa"`, or `"aer"` restyles any table, every
-  rule sourced from the journal’s author guidelines. For a French table,
-  `options(spicy.language = "fr")` gives the words and the French
+  rule sourced from each style’s published guidelines. For a French
+  table, `options(spicy.language = "fr")` gives the words and the French
   typography together.
 - **Variable inspection** with `varlist()` and `vl()`: names, labels,
   values, classes, distinct values (`N_distinct`), valid observations
@@ -125,8 +125,8 @@ spicy](https://amaltawfik.github.io/spicy/articles/spicy.html).
   so custom renderers and downstream pipelines can detect changes
   instead of silently mis-reading them.
 - **Hard errors over silent guesses.** Requests a model class cannot
-  honour are refused with a classed, actionable error – never rendered
-  as an empty column or a silently substituted statistic.
+  honor are refused with a classed, actionable error – never rendered as
+  an empty column or a silently substituted statistic.
 
 ## Supported models
 
@@ -520,9 +520,10 @@ tables](https://amaltawfik.github.io/spicy/articles/table-continuous.html)
 for continuous summaries and group comparisons, [Model-based continuous
 summary
 tables](https://amaltawfik.github.io/spicy/articles/table-continuous-lm.html)
-for weighted or robust linear-model reporting, [Regression coefficient
+for weighted or robust linear-model reporting, [Publication-ready
+regression
 tables](https://amaltawfik.github.io/spicy/articles/table-regression.html)
-for regression tables across model families, and [Summary tables for
+for `table_regression()` across model families, and [Summary tables for
 reporting](https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.html)
 for an overview of summary tables.
 
@@ -615,7 +616,7 @@ Each workflow has a dedicated article on the package site:
   tables](https://amaltawfik.github.io/spicy/articles/table-continuous.html)
 - [Model-based continuous summary
   tables](https://amaltawfik.github.io/spicy/articles/table-continuous-lm.html)
-- [Regression coefficient
+- [Publication-ready regression
   tables](https://amaltawfik.github.io/spicy/articles/table-regression.html)
 - [Mixed-effects regression
   tables](https://amaltawfik.github.io/spicy/articles/table-regression-mixed.html)
