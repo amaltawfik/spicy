@@ -373,6 +373,7 @@ enum
 equidispersion
 erroring
 estimand
+estimand's
 estimands
 estimatr
 estimatr's
@@ -388,6 +389,7 @@ flextable
 flextable's
 flextables
 footer's
+formatters
 geeglm
 geeglm's
 geepack
@@ -434,6 +436,7 @@ marginaleffects
 marginality
 merDeriv
 midline
+minimises
 mis
 misdescribes
 mislabelled
