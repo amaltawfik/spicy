@@ -668,7 +668,7 @@ build_abbreviations_footer_block_from_frames <- function(
     # AME (ordinal / multinomial) only names the probability scale that sets
     # it apart from the single-outcome case. The interpretation guidance --
     # the sum-to-zero property and the percentage-points (not percent)
-    # reading -- lives in vignette("table-regression-ordinal").
+    # reading -- lives in the "Ordinal regression tables" article.
     has_percat <- is.list(frames) &&
       any(vapply(
         frames,
