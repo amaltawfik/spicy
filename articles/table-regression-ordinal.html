@@ -107,7 +107,7 @@
       <img src="../logo.svg" class="logo" alt=""><h1>Ordinal regression tables</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/amaltawfik/spicy/blob/main/vignettes/table-regression-ordinal.Rmd" class="external-link"><code>vignettes/table-regression-ordinal.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/amaltawfik/spicy/blob/main/vignettes/articles/table-regression-ordinal.Rmd" class="external-link"><code>vignettes/articles/table-regression-ordinal.Rmd</code></a></small>
       <div class="d-none name"><code>table-regression-ordinal.Rmd</code></div>
     </div>
 
@@ -116,10 +116,10 @@
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/amaltawfik/spicy/" class="external-link">spicy</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="http://www.stats.ox.ac.uk/pub/MASS4/" class="external-link">MASS</a></span><span class="op">)</span>        <span class="co"># polr()</span></span></code></pre></div>
-<p>This vignette covers <strong>ordinal regression</strong> — models for
+<p>This article covers <strong>ordinal regression</strong> — models for
 an <em>ordered</em> categorical response such as a Poor &lt; Fair &lt;
 Good &lt; Very good health rating or a Likert agreement scale. The
-companion vignette <a href="table-regression.html"><em>Publication-ready
+companion article <a href="table-regression.html"><em>Publication-ready
 regression tables</em></a> covers the shared mechanics
 (<code>vcov</code>, <code>ci_level</code>, output formats, multi-model
 layouts, broom integration; the class-by-class map is <a href="table-regression-supported-models.html"><em>Supported
@@ -313,7 +313,7 @@ ratio applies at every cut-point (<code>Poor | Fair</code>,
 per-category detail is what the AME matrix below provides. For a
 location (proportional) coefficient, an OR above 1 raises the cumulative
 odds of being in a <em>higher</em> health category and an OR below 1
-lowers them — the non-proportional block later in this vignette follows
+lowers them — the non-proportional block later in this article follows
 the opposite convention. Exact reading for the one borderline effect
 here: smoking’s OR of 0.76 means that, at every cut-point, smokers have
 about 24% lower odds of being in a higher health category rather than a
@@ -463,7 +463,7 @@ MLE — so for <code>polr</code> / <code>clm</code> all four
 cluster sandwich, and the footer names the estimator <code>CL</code>
 rather than the requested label. Pass the cluster as a formula, a column
 name, or a vector (the three accepted forms are detailed in the main
-vignette’s <em>Cluster-robust (CR)</em> section):</p>
+article’s <em>Cluster-robust (CR)</em> section):</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span></span>
 <span>  <span class="va">fit</span>, vcov <span class="op">=</span> <span class="st">"CR2"</span>, cluster <span class="op">=</span> <span class="op">~</span><span class="va">region</span>,</span>
@@ -848,7 +848,7 @@ sensitivity analysis.</li>
 <li>When the assumption fails <em>broadly</em>, or the ordering of the
 response is itself doubtful, abandon ordinality for <strong>multinomial
 logit</strong> — the standard unconstrained alternative (Long &amp;
-Freese 2014), compared to the ordinal fit by AIC — covered in the <a href="table-regression-multinomial.html">multinomial vignette</a>.</li>
+Freese 2014), compared to the ordinal fit by AIC — covered in the <a href="table-regression-multinomial.html">multinomial article</a>.</li>
 <li>For asymmetric responses and grouped survival times, the
 <strong>cloglog</strong> link (<code>method = "cloglog"</code> in
 <code>polr</code>, <code>link = "cloglog"</code> in <code>clm</code>)

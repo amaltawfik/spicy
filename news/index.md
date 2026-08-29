@@ -186,6 +186,11 @@
   specifications, nor across estimation methods. Refit both with
   `method = "ML"`. Comparisons that differ only in the random structure
   are unaffected.
+- The package ships one vignette, *Get started*; the twenty
+  walk-throughs live as articles on the package site, at the same URLs.
+  `vignette("<name>")` no longer finds them from an installed package –
+  read them at <https://amaltawfik.github.io/spicy/>, where every help
+  page now links.
 
 ### New supported models
 
@@ -319,8 +324,8 @@ instead of rendering an empty column.
   an `Overall` row gives the marginal summary. Statistics are chosen
   with the same `show_columns` tokens as
   [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
-  and every output engine is available. See
-  [`vignette("table-outcome")`](https://amaltawfik.github.io/spicy/articles/table-outcome.md).
+  and every output engine is available. See the table-outcome article on
+  the package site.
 
 - [`inline()`](https://amaltawfik.github.io/spicy/reference/inline.md)
   cites one table cell in running Quarto / R Markdown text: the returned
@@ -472,8 +477,8 @@ instead of rendering an empty column.
   comparison, so `drop_na = FALSE` gives the p-value of `drop_na = TRUE`
   instead of `NaN`.
 
-- [`vignette("survey-tables")`](https://amaltawfik.github.io/spicy/articles/survey-tables.md)
-  gains a section on regression under a design, and
+- The survey-tables article gains a section on regression under a
+  design, and
   [`?table_continuous_svy`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md)
   /
   [`?table_categorical_svy`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md)
@@ -638,8 +643,7 @@ instead of rendering an empty column.
   `ties = "breslow"` fit gives a Breslow baseline, the default Efron fit
   an Efron one. Documented in
   [`?table_regression`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
-  and
-  [`vignette("table-regression-survival")`](https://amaltawfik.github.io/spicy/articles/table-regression-survival.md).
+  and the survival article on the package site.
 
 - New `show_columns` token `"n_events"`: event counts as `events/N` next
   to the estimates – per factor level (reference row included), model
@@ -1929,8 +1933,7 @@ CRAN release: 2026-05-19
 
   See
   [`?table_regression`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
-  and
-  [`vignette("table-regression")`](https://amaltawfik.github.io/spicy/articles/table-regression.md).
+  and `vignette("table-regression")`.
 
 - [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
   gains additive covariate adjustment via the new `covariates` argument.
@@ -1939,7 +1942,7 @@ CRAN release: 2026-05-19
   grid). Under adjustment, `f²` and `ω²` become partial effect sizes;
   `d` and `g` raise an explanatory error. The auto-built footer
   documents the covariates and the estimand. See
-  [`vignette("table-continuous-lm")`](https://amaltawfik.github.io/spicy/articles/table-continuous-lm.md).
+  `vignette("table-continuous-lm")`.
 
 - New exported
   [`as_structured()`](https://amaltawfik.github.io/spicy/reference/as_structured.md)

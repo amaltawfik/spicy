@@ -30,27 +30,29 @@ broom-canonical frame
 to a one-row-per-model glance summary
 ([`broom::glance()`](https://generics.r-lib.org/reference/glance.html)).
 
-This vignette teaches the shared mechanics on
+This article teaches the shared mechanics on
 [`lm()`](https://rdrr.io/r/stats/lm.html) and
 [`glm()`](https://rdrr.io/r/stats/glm.html) fits. The *Generalised
 linear models* section covers the glm-specific argument semantics; the
 *Mixed-effects models* section introduces the Random effects rows that
 mixed-effects fits add below the fixed effects (`lmer`, `glmer`,
-`glmmTMB`, `lme`). Each further model family has a dedicated vignette
-that applies these mechanics to its own estimands:
-[`vignette("table-regression-mixed")`](https://amaltawfik.github.io/spicy/articles/table-regression-mixed.md)
-for mixed-effects models,
-[`vignette("table-regression-gee")`](https://amaltawfik.github.io/spicy/articles/table-regression-gee.md)
-for population-averaged (GEE) models,
-[`vignette("table-regression-counts")`](https://amaltawfik.github.io/spicy/articles/table-regression-counts.md)
-for Poisson, negative-binomial, and two-part models,
-[`vignette("table-regression-ordinal")`](https://amaltawfik.github.io/spicy/articles/table-regression-ordinal.md)
-for ordinal models (`polr`, `clm`),
-[`vignette("table-regression-multinomial")`](https://amaltawfik.github.io/spicy/articles/table-regression-multinomial.md)
-for multinomial models (`multinom`, `mlogit`),
-[`vignette("table-regression-survival")`](https://amaltawfik.github.io/spicy/articles/table-regression-survival.md)
-for survival models (`coxph`, `survreg`), and
-[`vignette("table-regression-bayesian")`](https://amaltawfik.github.io/spicy/articles/table-regression-bayesian.md)
+`glmmTMB`, `lme`). Each further model family has a dedicated article
+that applies these mechanics to its own estimands: [*Mixed-effects
+regression
+tables*](https://amaltawfik.github.io/spicy/articles/table-regression-mixed.md)
+for mixed-effects models, [*GEE regression
+tables*](https://amaltawfik.github.io/spicy/articles/table-regression-gee.md)
+for population-averaged (GEE) models, [*Count and two-part regression
+tables*](https://amaltawfik.github.io/spicy/articles/table-regression-counts.md)
+for Poisson, negative-binomial, and two-part models, [*Ordinal
+regression
+tables*](https://amaltawfik.github.io/spicy/articles/table-regression-ordinal.md)
+for ordinal models (`polr`, `clm`), [*Multinomial regression
+tables*](https://amaltawfik.github.io/spicy/articles/table-regression-multinomial.md)
+for multinomial models (`multinom`, `mlogit`), [*Survival regression
+tables*](https://amaltawfik.github.io/spicy/articles/table-regression-survival.md)
+for survival models (`coxph`, `survreg`), and [*Bayesian regression
+tables*](https://amaltawfik.github.io/spicy/articles/table-regression-bayesian.md)
 for Bayesian fits (`rstanarm`, `brms`). The mechanics covered here —
 confidence levels, multi-model and nested layouts, p-value adjustment,
 coefficient filtering, output formats, and the broom methods — apply
@@ -58,10 +60,11 @@ across every supported class; variance-estimator availability varies by
 family, and the complete map — every supported class with its estimands,
 variance estimators and fit statistics, including the families without a
 dedicated article (quantile regression, `fixest`, `betareg`, …) — is
-[`vignette("table-regression-supported-models")`](https://amaltawfik.github.io/spicy/articles/table-regression-supported-models.md).
+[*Supported
+models*](https://amaltawfik.github.io/spicy/articles/table-regression-supported-models.md).
 One decision cuts across all of them — how to code, test, and present
-categorical *predictors* — and has its own vignette:
-[`vignette("categorical-predictors")`](https://amaltawfik.github.io/spicy/articles/categorical-predictors.md).
+categorical *predictors* — and has its own article: [*Categorical
+predictors*](https://amaltawfik.github.io/spicy/articles/categorical-predictors.md).
 
 ## Basic usage
 
@@ -145,8 +148,8 @@ table_regression(fit, style = "nejm")
 
 The complete tour of the named styles — what each journal specifies,
 with the guideline sentence behind every rule — is in the *House styles*
-section of
-[`vignette("summary-tables-reporting")`](https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.md).
+section of [*Summary tables for
+reporting*](https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.md).
 
 ## Standardised coefficients
 
@@ -251,7 +254,7 @@ CI column.
 polynomial contrasts (`.L` = linear, `.Q` = quadratic) — trend
 components across the ordered levels, not per-level effects against a
 reference. For a coefficient table read level-against-reference, convert
-it to a plain factor; we reuse this copy throughout the vignette:
+it to a plain factor; we reuse this copy throughout the article:
 
 ``` r
 
@@ -530,7 +533,8 @@ belongs to the joint model, not to any predictor. A `p_adjust` argument
 treats the screen as one family of tests. For a time-to-event screen the
 same call takes `method = "coxph"` with a
 [`Surv()`](https://rdrr.io/pkg/survival/man/Surv.html) outcome — see
-[`vignette("table-regression-survival")`](https://amaltawfik.github.io/spicy/articles/table-regression-survival.md).
+[*Survival regression
+tables*](https://amaltawfik.github.io/spicy/articles/table-regression-survival.md).
 
 ## Hierarchical / nested regression
 
@@ -1130,8 +1134,8 @@ table_regression(fit, show_columns = c("n_events", "b", "ci", "p"))
 The token is off by default and *deliberately narrow*: it is defined for
 binomial models with an ungrouped 0/1 response and for right-censored
 Cox models (events per factor level; Cox tables also carry `N events` as
-a default fit statistic — see
-[`vignette("table-regression-survival")`](https://amaltawfik.github.io/spicy/articles/table-regression-survival.md)).
+a default fit statistic — see [*Survival regression
+tables*](https://amaltawfik.github.io/spicy/articles/table-regression-survival.md)).
 Requesting it anywhere else is a hard, classed error rather than a
 silently empty column.
 
@@ -1510,8 +1514,8 @@ For the model-building sequence, the REML/ML estimator choice, the
 Nakagawa R² and ICC mechanics, per-class inference paths, singular fits,
 testing random components, and the `glmmTMB` /
 [`nlme::lme`](https://rdrr.io/pkg/nlme/man/lme.html) specifics —
-including a worked `glmer` AME example — see
-[`vignette("table-regression-mixed", package = "spicy")`](https://amaltawfik.github.io/spicy/articles/table-regression-mixed.md).
+including a worked `glmer` AME example — see [*Mixed-effects regression
+tables*](https://amaltawfik.github.io/spicy/articles/table-regression-mixed.md).
 
 ## Output formats
 
@@ -1782,54 +1786,67 @@ the `estimate_type` column so the same data frame can hold rows for B,
 
 ## See also
 
-- [`vignette("table-regression-supported-models", package = "spicy")`](https://amaltawfik.github.io/spicy/articles/table-regression-supported-models.md)
+- [*Supported
+  models*](https://amaltawfik.github.io/spicy/articles/table-regression-supported-models.md)
   — the map of every supported class: estimands, variance estimators,
   standardized-coefficient scope, and fit statistics per family.
-- [`vignette("categorical-predictors", package = "spicy")`](https://amaltawfik.github.io/spicy/articles/categorical-predictors.md)
+- [*Categorical
+  predictors*](https://amaltawfik.github.io/spicy/articles/categorical-predictors.md)
   for categorical *predictors* across all model families: dummy coding
   and reference levels, joint tests, ordinal predictors (scores vs
   dummies), and the categorization trap.
 
-Model-family vignettes build on the mechanics shown here:
+Model-family articles build on the mechanics shown here:
 
-- [`vignette("table-regression-mixed", package = "spicy")`](https://amaltawfik.github.io/spicy/articles/table-regression-mixed.md)
+- [*Mixed-effects regression
+  tables*](https://amaltawfik.github.io/spicy/articles/table-regression-mixed.md)
   for mixed-effects (multilevel) models: random effects as table rows,
   ICC, the boundary-corrected chi-bar-squared test, and opt-in per-term
   LRT / RLRT.
-- [`vignette("table-regression-gee", package = "spicy")`](https://amaltawfik.github.io/spicy/articles/table-regression-gee.md)
+- [*GEE regression
+  tables*](https://amaltawfik.github.io/spicy/articles/table-regression-gee.md)
   for population-averaged (GEE) models: the fit’s own sandwich
   inference, working-correlation choice via QIC, and jackknife variants
   for few clusters.
-- [`vignette("table-regression-counts", package = "spicy")`](https://amaltawfik.github.io/spicy/articles/table-regression-counts.md)
+- [*Count and two-part regression
+  tables*](https://amaltawfik.github.io/spicy/articles/table-regression-counts.md)
   for count and two-part models: Poisson and negative-binomial rate
   ratios, offsets, and zero-inflated / hurdle components as labelled
   blocks.
-- [`vignette("table-regression-ordinal", package = "spicy")`](https://amaltawfik.github.io/spicy/articles/table-regression-ordinal.md)
+- [*Ordinal regression
+  tables*](https://amaltawfik.github.io/spicy/articles/table-regression-ordinal.md)
   for ordinal (proportional-odds) models: shared slopes, ordered
   thresholds as rows, and per-category marginal effects.
-- [`vignette("table-regression-multinomial", package = "spicy")`](https://amaltawfik.github.io/spicy/articles/table-regression-multinomial.md)
+- [*Multinomial regression
+  tables*](https://amaltawfik.github.io/spicy/articles/table-regression-multinomial.md)
   for multinomial logistic models: outcome categories as columns and
   changing the reference category.
-- [`vignette("table-regression-survival", package = "spicy")`](https://amaltawfik.github.io/spicy/articles/table-regression-survival.md)
+- [*Survival regression
+  tables*](https://amaltawfik.github.io/spicy/articles/table-regression-survival.md)
   for survival models: Cox hazard ratios with events and concordance,
   accelerated failure time models, and survival estimands.
-- [`vignette("table-regression-bayesian", package = "spicy")`](https://amaltawfik.github.io/spicy/articles/table-regression-bayesian.md)
+- [*Bayesian regression
+  tables*](https://amaltawfik.github.io/spicy/articles/table-regression-bayesian.md)
   for Bayesian fits: posterior medians and credible intervals, the
   probability of direction, and random effects from the draws.
 
 Descriptive and reporting companions:
 
-- [`vignette("table-categorical", package = "spicy")`](https://amaltawfik.github.io/spicy/articles/table-categorical.md)
+- [*Categorical summary
+  tables*](https://amaltawfik.github.io/spicy/articles/table-categorical.md)
   for the APA Table 1 categorical descriptors (factors, labelled
   variables, chi-squared tests, association measures).
-- [`vignette("table-continuous", package = "spicy")`](https://amaltawfik.github.io/spicy/articles/table-continuous.md)
+- [*Continuous summary
+  tables*](https://amaltawfik.github.io/spicy/articles/table-continuous.md)
   for the APA Table 1 / Table 2 continuous descriptors and unadjusted
   group-comparison tests.
-- [`vignette("table-continuous-lm", package = "spicy")`](https://amaltawfik.github.io/spicy/articles/table-continuous-lm.md)
+- [*Model-based continuous summary
+  tables*](https://amaltawfik.github.io/spicy/articles/table-continuous-lm.md)
   for the one-predictor-by-many-outcomes linear-model counterpart
   (estimated marginal means, contrast or slope, four effect-size
   families with noncentral CIs).
-- [`vignette("summary-tables-reporting", package = "spicy")`](https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.md)
+- [*Summary tables for
+  reporting*](https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.md)
   for an end-to-end reporting workflow that combines the four spicy
   summary-table helpers along the APA Table 1 / 2 / 3 sequence.
 

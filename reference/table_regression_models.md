@@ -126,9 +126,9 @@ Wald z inference; `exponentiate` follows the usual link gates (OR / IRR
 `"qic"` / `"qicu"` (Pan 2001) and the `"scale"` (dispersion) parameter
 are opt-in – there is no likelihood, so AIC, pseudo-R-squared,
 `nested = TRUE`, and `standardized` are refused. See the
-population-averaged section of
-[`vignette("table-regression-mixed")`](https://amaltawfik.github.io/spicy/articles/table-regression-mixed.md)
-for the contrast with subject-specific mixed models.
+population-averaged section of the [Mixed-effects regression
+tables](https://amaltawfik.github.io/spicy/articles/table-regression-mixed.html)
+article for the contrast with subject-specific mixed models.
 
 ## Ordinal models
 
@@ -138,8 +138,9 @@ render as a `Non-proportional effects` block, one coefficient per
 cut-point. `exponentiate` yields proportional odds ratios under logit;
 `ci_method = "profile"` profiles the predictor coefficients. AME is
 per-category (the marginal effect on each P(Y = k)). Defaults include
-McFadden and Nagelkerke pseudo-R-squared. See
-[`vignette("table-regression-ordinal")`](https://amaltawfik.github.io/spicy/articles/table-regression-ordinal.md).
+McFadden and Nagelkerke pseudo-R-squared. See the [Ordinal regression
+tables](https://amaltawfik.github.io/spicy/articles/table-regression-ordinal.html)
+article.
 
 ## Counts and two-part models
 
@@ -246,8 +247,10 @@ with `nested = FALSE`, and test a term under the design with
 design-based AIC of Lumley & Scott (2015), the one information criterion
 published for this class, and `show_fit_stats = "eff_p"` reports the
 effective number of design parameters beside it. `BIC.svyglm` requires a
-maximal model and has no default, so it stays blank. See
-[`vignette("survey-tables")`](https://amaltawfik.github.io/spicy/articles/survey-tables.md).
+maximal model and has no default, so it stays blank. See the [Summary
+tables from a survey
+design](https://amaltawfik.github.io/spicy/articles/survey-tables.html)
+article.
 
 ## Robust, IV, quantile and panel models
 
@@ -294,9 +297,11 @@ outside the table.
 ## See also
 
 [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md);
-[`vignette("table-regression")`](https://amaltawfik.github.io/spicy/articles/table-regression.md)
-and
-[`vignette("table-regression-ordinal")`](https://amaltawfik.github.io/spicy/articles/table-regression-ordinal.md).
+the [Publication-ready regression
+tables](https://amaltawfik.github.io/spicy/articles/table-regression.html)
+and [Ordinal regression
+tables](https://amaltawfik.github.io/spicy/articles/table-regression-ordinal.html)
+articles.
 
 ## Examples
 

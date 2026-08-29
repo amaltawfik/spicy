@@ -261,9 +261,10 @@ profile CIs on request),
 `theta` / `alpha` dispersion statistics),
 [`MASS::rlm`](https://rdrr.io/pkg/MASS/man/rlm.html),
 [`stats::nls`](https://rdrr.io/r/stats/nls.html). Start with
-[`vignette("table-regression")`](https://amaltawfik.github.io/spicy/articles/table-regression.md)
-and
-[`vignette("categorical-predictors")`](https://amaltawfik.github.io/spicy/articles/categorical-predictors.md).
+[*Publication-ready regression
+tables*](https://amaltawfik.github.io/spicy/articles/table-regression.md)
+and [*Categorical
+predictors*](https://amaltawfik.github.io/spicy/articles/categorical-predictors.md).
 
 **Robust, IV, quantile, panel.**
 [`estimatr::lm_robust()`](https://declaredesign.org/r/estimatr/reference/lm_robust.html)
@@ -287,40 +288,43 @@ token.
 render as rows – SD, correlations, residual – deliberately without
 per-row p-values; the footer carries the boundary-correct
 chi-bar-squared test, and `re_test = "lrt"` / `"rlrt"` adds per-term
-tests. See
-[`vignette("table-regression-mixed")`](https://amaltawfik.github.io/spicy/articles/table-regression-mixed.md).
+tests. See [*Mixed-effects regression
+tables*](https://amaltawfik.github.io/spicy/articles/table-regression-mixed.md).
 
 **Population-averaged (GEE).**
 [`geepack::geeglm()`](https://rdrr.io/pkg/geepack/man/geeglm.html):
 marginal (population-averaged) coefficients with the fit’s own sandwich
 SEs as the default inference, the working correlation structure
 disclosed in the footer (with its estimated alpha), cluster-structure
-fit statistics, and opt-in QIC / QICu. See
-[`vignette("table-regression-gee")`](https://amaltawfik.github.io/spicy/articles/table-regression-gee.md)
-for the full workflow;
-[`vignette("table-regression-mixed")`](https://amaltawfik.github.io/spicy/articles/table-regression-mixed.md)
+fit statistics, and opt-in QIC / QICu. See [*GEE regression
+tables*](https://amaltawfik.github.io/spicy/articles/table-regression-gee.md)
+for the full workflow; [*Mixed-effects regression
+tables*](https://amaltawfik.github.io/spicy/articles/table-regression-mixed.md)
 contrasts GEE with subject-specific mixed models in a single table.
 
 **Ordinal.** [`MASS::polr`](https://rdrr.io/pkg/MASS/man/polr.html) and
 [`ordinal::clm`](https://rdrr.io/pkg/ordinal/man/clm.html): proportional
 odds ratios, a `Thresholds` block for the cut-points (log-odds scale,
 never exponentiated), partial-proportional-odds terms as a
-`Non-proportional effects` block, and per-category AME. See
-[`vignette("table-regression-ordinal")`](https://amaltawfik.github.io/spicy/articles/table-regression-ordinal.md).
+`Non-proportional effects` block, and per-category AME. See [*Ordinal
+regression
+tables*](https://amaltawfik.github.io/spicy/articles/table-regression-ordinal.md).
 
 **Categorical.**
 [`nnet::multinom`](https://rdrr.io/pkg/nnet/man/multinom.html) renders
 outcome categories as columns with per-outcome AME;
 [`mlogit::mlogit`](https://rdrr.io/pkg/mlogit/man/mlogit.html) renders
-per-alternative rows for discrete-choice designs. See
-[`vignette("table-regression-multinomial")`](https://amaltawfik.github.io/spicy/articles/table-regression-multinomial.md).
+per-alternative rows for discrete-choice designs. See [*Multinomial
+regression
+tables*](https://amaltawfik.github.io/spicy/articles/table-regression-multinomial.md).
 
 **Counts and two-part.** Poisson and negative binomial through `glm` /
 `glm.nb` / `glmmTMB`, plus
 [`pscl::zeroinfl()`](https://rdrr.io/pkg/pscl/man/zeroinfl.html) and
 [`pscl::hurdle()`](https://rdrr.io/pkg/pscl/man/hurdle.html) with their
 zero components as labelled blocks and a combined-response AME. See
-[`vignette("table-regression-counts")`](https://amaltawfik.github.io/spicy/articles/table-regression-counts.md).
+[*Count and two-part regression
+tables*](https://amaltawfik.github.io/spicy/articles/table-regression-counts.md).
 
 **Survival.**
 [`survival::coxph`](https://rdrr.io/pkg/survival/man/coxph.html) and
@@ -336,8 +340,8 @@ exactly as [`survfit()`](https://rdrr.io/pkg/survival/man/survfit.html)
 and [`basehaz()`](https://rdrr.io/pkg/survival/man/basehaz.html) do – a
 `ties = "breslow"` fit gives a Breslow baseline, the default Efron fit
 an Efron one – so the hazard-ratio column and the dRMST column always
-come from the same likelihood. See
-[`vignette("table-regression-survival")`](https://amaltawfik.github.io/spicy/articles/table-regression-survival.md).
+come from the same likelihood. See [*Survival regression
+tables*](https://amaltawfik.github.io/spicy/articles/table-regression-survival.md).
 
 **Survey-weighted.**
 [`survey::svyglm()`](https://rdrr.io/pkg/survey/man/svyglm.html):
@@ -360,8 +364,8 @@ Harrell-style workflows drop in directly.
 posterior draws: posterior median, MAD SD, credible intervals,
 draws-native exponentiation and AME, sampler diagnostics checked on
 every fit (with opt-in `pd`, `rhat`, `ess_bulk` / `ess_tail` and `mcse`
-columns). No p-values, by design. See
-[`vignette("table-regression-bayesian")`](https://amaltawfik.github.io/spicy/articles/table-regression-bayesian.md).
+columns). No p-values, by design. See [*Bayesian regression
+tables*](https://amaltawfik.github.io/spicy/articles/table-regression-bayesian.md).
 
 ## When a class is not supported
 

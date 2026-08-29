@@ -18,8 +18,8 @@ adjustment, or one of four effect-size families (`f2`, Cohen’s *d*,
 Hedges’ *g*, Hays’ \\\omega^2\\) with noncentral CIs. Formatting follows
 APA conventions by default; `style = "jama"` (or `"nejm"`, `"lancet"`,
 `"annals"`, `"aer"`) switches the whole table to that journal’s
-published rules — the *House styles* section of
-[`vignette("summary-tables-reporting")`](https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.md)
+published rules — the *House styles* section of [*Summary tables for
+reporting*](https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.md)
 shows each style and the guideline sentence behind every rule.
 
 ## Basic usage
@@ -700,18 +700,18 @@ broom::glance(out)
 
 ## See also
 
-- See
-  [`vignette("table-continuous", package = "spicy")`](https://amaltawfik.github.io/spicy/articles/table-continuous.md)
+- See [*Continuous summary
+  tables*](https://amaltawfik.github.io/spicy/articles/table-continuous.md)
   for descriptive continuous summary tables with classical
   group-comparison tests.
-- See
-  [`vignette("table-regression", package = "spicy")`](https://amaltawfik.github.io/spicy/articles/table-regression.md)
+- See [*Publication-ready regression
+  tables*](https://amaltawfik.github.io/spicy/articles/table-regression.md)
   for the full coefficient table when the analysis moves from a
   per-outcome one-predictor model to a single multi-predictor `lm` /
   `glm`, including interactions, polynomials, and standardised
   coefficients.
-- See
-  [`vignette("summary-tables-reporting", package = "spicy")`](https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.md)
+- See [*Summary tables for
+  reporting*](https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.md)
   for a cross-function reporting workflow using the summary-table
   helpers along the APA Table 1 / 2 / 3 sequence.
 

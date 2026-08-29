@@ -107,7 +107,7 @@
       <img src="../logo.svg" class="logo" alt=""><h1>Multinomial regression tables</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/amaltawfik/spicy/blob/main/vignettes/table-regression-multinomial.Rmd" class="external-link"><code>vignettes/table-regression-multinomial.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/amaltawfik/spicy/blob/main/vignettes/articles/table-regression-multinomial.Rmd" class="external-link"><code>vignettes/articles/table-regression-multinomial.Rmd</code></a></small>
       <div class="d-none name"><code>table-regression-multinomial.Rmd</code></div>
     </div>
 
@@ -116,10 +116,10 @@
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/amaltawfik/spicy/" class="external-link">spicy</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="http://www.stats.ox.ac.uk/pub/MASS4/" class="external-link">nnet</a></span><span class="op">)</span></span></code></pre></div>
-<p>This vignette covers <strong>multinomial logistic regression</strong>
+<p>This article covers <strong>multinomial logistic regression</strong>
 — models for a <em>nominal</em> outcome, a categorical response whose
 categories have no natural order: employment status, party choice,
-transport mode. The companion vignette <a href="table-regression.html"><em>Publication-ready regression
+transport mode. The companion article <a href="table-regression.html"><em>Publication-ready regression
 tables</em></a> covers the shared mechanics (<code>vcov</code>,
 <code>ci_level</code>, output formats, multi-model layouts, broom
 integration; the class-by-class map is <a href="table-regression-supported-models.html"><em>Supported
@@ -577,11 +577,10 @@ Whether to enter an ordinal predictor as <strong>numeric scores</strong>
 multinomial one: the workflow — fit both codings, compare with
 <code>nested = TRUE</code>, and keep the scores only when the
 likelihood-ratio test finds no departure from a linear trend — is
-developed with its caveats in
-<code><a href="../articles/categorical-predictors.html">vignette("categorical-predictors")</a></code>. One point <em>is</em>
-multinomial-specific: each freed coding costs one parameter <strong>per
-equation</strong>, so the test’s degrees of freedom multiply by the
-number of non-reference outcomes:</p>
+developed with its caveats in <a href="categorical-predictors.html"><em>Categorical predictors</em></a>.
+One point <em>is</em> multinomial-specific: each freed coding costs one
+parameter <strong>per equation</strong>, so the test’s degrees of
+freedom multiply by the number of non-reference outcomes:</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">d</span><span class="op">$</span><span class="va">educ_score</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric</a></span><span class="op">(</span><span class="va">d</span><span class="op">$</span><span class="va">education</span><span class="op">)</span>   <span class="co"># 1 / 2 / 3</span></span>
 <span><span class="va">fit_lin</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/nnet/man/multinom.html" class="external-link">multinom</a></span><span class="op">(</span><span class="va">employment_status</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">educ_score</span>,</span>
@@ -640,7 +639,7 @@ dummies improve on the scores, and AIC agrees (2514.3 vs 2515.8). On
 Agresti’s (2007, sec. 4.4.3) grounds the scores model is then
 preferable: simpler to report, and more powerful against a genuine trend
 — an advantage that reverses if the true pattern is non-monotone. See
-the categorical-predictors vignette for the caveats that keep this
+the categorical-predictors article for the caveats that keep this
 decision honest (equal spacing, pre-testing, and when to simply keep the
 dummies).</p>
 </div>

@@ -23,7 +23,7 @@ families
 [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
 [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md),
 [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md))
-expose the same schema, covered at the end of this vignette. The tour
+expose the same schema, covered at the end of this article. The tour
 below uses a regression table; everything it shows reads identically on
 the other four.
 
@@ -40,7 +40,7 @@ returns the *display geometry* – rows and columns exactly as the
 rendered table lays them out, factor headers and fit statistics included
 – and is the right input for filtering what a reader will see,
 post-processing numbers in table shape, or rendering the table with an
-engine spicy does not ship. This vignette covers the second tool. The
+engine spicy does not ship. This article covers the second tool. The
 shared mechanics of
 [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
 are in [*Publication-ready regression

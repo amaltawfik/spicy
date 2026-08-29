@@ -2,28 +2,28 @@ pandoc: 3.8.3
 pkgdown: 2.2.1
 pkgdown_sha: ~
 articles:
-  as-structured: as-structured.html
-  association-measures: association-measures.html
-  categorical-predictors: categorical-predictors.html
-  frequency-tables: frequency-tables.html
+  articles/as-structured: as-structured.html
+  articles/association-measures: association-measures.html
+  articles/categorical-predictors: categorical-predictors.html
+  articles/frequency-tables: frequency-tables.html
   spicy: spicy.html
-  summary-tables-reporting: summary-tables-reporting.html
-  survey-tables: survey-tables.html
-  table-categorical: table-categorical.html
-  table-continuous-lm: table-continuous-lm.html
-  table-continuous: table-continuous.html
-  table-outcome: table-outcome.html
-  table-regression-bayesian: table-regression-bayesian.html
-  table-regression-counts: table-regression-counts.html
-  table-regression-gee: table-regression-gee.html
-  table-regression-mixed: table-regression-mixed.html
-  table-regression-multinomial: table-regression-multinomial.html
-  table-regression-ordinal: table-regression-ordinal.html
-  table-regression-supported-models: table-regression-supported-models.html
-  table-regression-survival: table-regression-survival.html
-  table-regression: table-regression.html
-  variable-exploration: variable-exploration.html
-last_built: 2026-08-29T15:16Z
+  articles/summary-tables-reporting: summary-tables-reporting.html
+  articles/survey-tables: survey-tables.html
+  articles/table-categorical: table-categorical.html
+  articles/table-continuous-lm: table-continuous-lm.html
+  articles/table-continuous: table-continuous.html
+  articles/table-outcome: table-outcome.html
+  articles/table-regression-bayesian: table-regression-bayesian.html
+  articles/table-regression-counts: table-regression-counts.html
+  articles/table-regression-gee: table-regression-gee.html
+  articles/table-regression-mixed: table-regression-mixed.html
+  articles/table-regression-multinomial: table-regression-multinomial.html
+  articles/table-regression-ordinal: table-regression-ordinal.html
+  articles/table-regression-supported-models: table-regression-supported-models.html
+  articles/table-regression-survival: table-regression-survival.html
+  articles/table-regression: table-regression.html
+  articles/variable-exploration: variable-exploration.html
+last_built: 2026-08-29T18:16Z
 urls:
   reference: https://amaltawfik.github.io/spicy/reference
   article: https://amaltawfik.github.io/spicy/articles

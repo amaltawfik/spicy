@@ -480,13 +480,13 @@ tying the summary tables together.</p>
 <p><code><a href="../reference/table_regression.html">table_regression()</a></code> reports the full coefficient table
 for one or several fitted models — more than thirty classes, from
 <code><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm()</a></code> / <code><a href="https://rdrr.io/r/stats/glm.html" class="external-link">glm()</a></code> to mixed-effects, ordinal,
-survival and Bayesian engines (the full map is
-<code><a href="../articles/table-regression-supported-models.html">vignette("table-regression-supported-models")</a></code>) — with APA
-formatting by default and the same journal styles on demand
-(<code>style = "jama"</code>, <code>"nejm"</code>, <code>"lancet"</code>
-and more), factor grouping with reference rows, robust variance,
-standardised coefficients, average marginal effects, hierarchical
-comparisons, and side-by-side multi-model layouts:</p>
+survival and Bayesian engines (the full map is the <a href="https://amaltawfik.github.io/spicy/articles/table-regression-supported-models.html">Supported
+models</a> article) — with APA formatting by default and the same
+journal styles on demand (<code>style = "jama"</code>,
+<code>"nejm"</code>, <code>"lancet"</code> and more), factor grouping
+with reference rows, robust variance, standardised coefficients, average
+marginal effects, hierarchical comparisons, and side-by-side multi-model
+layouts:</p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">wellbeing_score</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">smoking</span>, data <span class="op">=</span> <span class="va">sochealth</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
@@ -555,34 +555,45 @@ themselves:</p>
 <div class="section level2">
 <h2 id="learn-more">Learn more<a class="anchor" aria-label="anchor" href="#learn-more"></a>
 </h2>
+<p>This is the vignette the package ships. Every walk-through below is
+an article on the <a href="https://amaltawfik.github.io/spicy/">spicy
+website</a>, kept alongside the reference pages and rebuilt with each
+release.</p>
 <p><strong>Explore and tabulate</strong></p>
 <ul>
 <li>
-<code><a href="../articles/variable-exploration.html">vignette("variable-exploration")</a></code> — inspect variables,
-labels and missingness (<code><a href="../reference/varlist.html">varlist()</a></code>,
-<code><a href="../reference/code_book.html">code_book()</a></code>, <code><a href="../reference/label_from_names.html">label_from_names()</a></code>).</li>
+<a href="https://amaltawfik.github.io/spicy/articles/variable-exploration.html">Explore
+variables and build codebooks</a> — inspect variables, labels and
+missingness (<code><a href="../reference/varlist.html">varlist()</a></code>, <code><a href="../reference/code_book.html">code_book()</a></code>,
+<code><a href="../reference/label_from_names.html">label_from_names()</a></code>).</li>
 <li>
-<code><a href="../articles/frequency-tables.html">vignette("frequency-tables")</a></code> — <code><a href="../reference/freq.html">freq()</a></code> and
+<a href="https://amaltawfik.github.io/spicy/articles/frequency-tables.html">Frequency
+tables and cross-tabulations</a> — <code><a href="../reference/freq.html">freq()</a></code> and
 <code><a href="../reference/cross_tab.html">cross_tab()</a></code> in depth (weights, simulation, labelled
 data).</li>
 <li>
-<code><a href="../articles/association-measures.html">vignette("association-measures")</a></code> — choosing the right
-effect size for a contingency table.</li>
+<a href="https://amaltawfik.github.io/spicy/articles/association-measures.html">Cramer’s
+V, Phi, and association measures</a> — choosing the right effect size
+for a contingency table.</li>
 </ul>
 <p><strong>Summary tables</strong></p>
 <ul>
 <li>
-<code><a href="../articles/table-categorical.html">vignette("table-categorical")</a></code> and
-<code><a href="../articles/table-continuous.html">vignette("table-continuous")</a></code> — the Table 1 / 2 builders
-(APA by default, other journal styles via <code>style =</code>).</li>
+<a href="https://amaltawfik.github.io/spicy/articles/table-categorical.html">Categorical
+summary tables</a> and <a href="https://amaltawfik.github.io/spicy/articles/table-continuous.html">Continuous
+summary tables</a> — the Table 1 / 2 builders (APA by default, other
+journal styles via <code>style =</code>).</li>
 <li>
-<code><a href="../articles/table-outcome.html">vignette("table-outcome")</a></code> — one continuous outcome
-across several groupings, one block of rows per grouping.</li>
+<a href="https://amaltawfik.github.io/spicy/articles/table-outcome.html">One
+outcome across several groupings</a> — one continuous outcome across
+several groupings, one block of rows per grouping.</li>
 <li>
-<code><a href="../articles/table-continuous-lm.html">vignette("table-continuous-lm")</a></code> — model-based group
-comparisons (robust SE, weights, covariate adjustment).</li>
+<a href="https://amaltawfik.github.io/spicy/articles/table-continuous-lm.html">Model-based
+continuous summary tables</a> — model-based group comparisons (robust
+SE, weights, covariate adjustment).</li>
 <li>
-<code><a href="../articles/survey-tables.html">vignette("survey-tables")</a></code> — the same two tables from a
+<a href="https://amaltawfik.github.io/spicy/articles/survey-tables.html">Summary
+tables from a survey design</a> — the same two tables from a
 <code>survey</code> design: design-based standard errors, degrees of
 freedom and tests (<code><a href="../reference/table_continuous_svy.html">table_continuous_svy()</a></code>,
 <code><a href="../reference/table_categorical_svy.html">table_categorical_svy()</a></code>).</li>
@@ -590,48 +601,56 @@ freedom and tests (<code><a href="../reference/table_continuous_svy.html">table_
 <p><strong>Regression tables</strong></p>
 <ul>
 <li>
-<code><a href="../articles/table-regression.html">vignette("table-regression")</a></code> — the core guide,
-including the univariable screen
+<a href="https://amaltawfik.github.io/spicy/articles/table-regression.html">Publication-ready
+regression tables</a> — the core guide, including the univariable screen
 (<code><a href="../reference/table_regression_uv.html">table_regression_uv()</a></code>).</li>
 <li>
-<code><a href="../articles/table-regression-supported-models.html">vignette("table-regression-supported-models")</a></code> — the
-class-by-class capability map (more than thirty model classes).</li>
+<a href="https://amaltawfik.github.io/spicy/articles/table-regression-supported-models.html">Supported
+models</a> — the class-by-class capability map (more than thirty model
+classes).</li>
 <li>
-<code><a href="../articles/as-structured.html">vignette("as-structured")</a></code> — the typed view behind every
-regression table: filter, aggregate, or build a custom renderer.</li>
+<a href="https://amaltawfik.github.io/spicy/articles/as-structured.html">The
+structured view</a> — the typed view behind every regression table:
+filter, aggregate, or build a custom renderer.</li>
 <li>
-<code><a href="../articles/table-regression-mixed.html">vignette("table-regression-mixed")</a></code> — mixed-effects
-(multilevel) models, random effects as table rows, ICC.</li>
+<a href="https://amaltawfik.github.io/spicy/articles/table-regression-mixed.html">Mixed-effects
+regression tables</a> — mixed-effects (multilevel) models, random
+effects as table rows, ICC.</li>
 <li>
-<code><a href="../articles/table-regression-gee.html">vignette("table-regression-gee")</a></code> — GEE
-(population-averaged) models, working-correlation choice via QIC,
-sandwich inference.</li>
+<a href="https://amaltawfik.github.io/spicy/articles/table-regression-gee.html">GEE
+regression tables</a> — GEE (population-averaged) models,
+working-correlation choice via QIC, sandwich inference.</li>
 <li>
-<code><a href="../articles/table-regression-counts.html">vignette("table-regression-counts")</a></code> — Poisson,
-negative-binomial, zero-inflated and hurdle models.</li>
+<a href="https://amaltawfik.github.io/spicy/articles/table-regression-counts.html">Count
+and two-part regression tables</a> — Poisson, negative-binomial,
+zero-inflated and hurdle models.</li>
 <li>
-<code><a href="../articles/table-regression-survival.html">vignette("table-regression-survival")</a></code> — Cox hazard
-ratios and accelerated failure time models.</li>
+<a href="https://amaltawfik.github.io/spicy/articles/table-regression-survival.html">Survival
+regression tables</a> — Cox hazard ratios and accelerated failure time
+models.</li>
 <li>
-<code><a href="../articles/table-regression-ordinal.html">vignette("table-regression-ordinal")</a></code> —
-proportional-odds models, thresholds, per-category marginal
-effects.</li>
+<a href="https://amaltawfik.github.io/spicy/articles/table-regression-ordinal.html">Ordinal
+regression tables</a> — proportional-odds models, thresholds,
+per-category marginal effects.</li>
 <li>
-<code><a href="../articles/table-regression-multinomial.html">vignette("table-regression-multinomial")</a></code> — multinomial
-logit with outcome categories as columns.</li>
+<a href="https://amaltawfik.github.io/spicy/articles/table-regression-multinomial.html">Multinomial
+regression tables</a> — multinomial logit with outcome categories as
+columns.</li>
 <li>
-<code><a href="../articles/table-regression-bayesian.html">vignette("table-regression-bayesian")</a></code> — posterior
-medians, credible intervals, convergence checks.</li>
+<a href="https://amaltawfik.github.io/spicy/articles/table-regression-bayesian.html">Bayesian
+regression tables</a> — posterior medians, credible intervals,
+convergence checks.</li>
 <li>
-<code><a href="../articles/categorical-predictors.html">vignette("categorical-predictors")</a></code> — reference levels,
-joint tests, contrasts — across all of the above.</li>
+<a href="https://amaltawfik.github.io/spicy/articles/categorical-predictors.html">Categorical
+predictors</a> — reference levels, joint tests, contrasts — across all
+of the above.</li>
 </ul>
 <p><strong>Putting it together</strong></p>
 <ul>
 <li>
-<code><a href="../articles/summary-tables-reporting.html">vignette("summary-tables-reporting")</a></code> — the end-to-end
-reporting sequence tying the four <code>table_*</code> helpers
-together.</li>
+<a href="https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.html">Summary
+tables for reporting</a> — the end-to-end reporting sequence tying the
+four <code>table_*</code> helpers together.</li>
 <li>
 <code><a href="../reference/mean_n.html">?mean_n</a></code>, <code><a href="../reference/sum_n.html">?sum_n</a></code>, <code><a href="../reference/count_n.html">?count_n</a></code> —
 row-wise summaries with minimum-valid-values rules.</li>

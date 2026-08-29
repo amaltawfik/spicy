@@ -583,8 +583,9 @@ boundary-corrected chi-bar-squared p-value (Self &amp; Liang 1987;
 Stram &amp; Lee 1994). Variance-component rows deliberately carry
 <strong>no per-row p-value</strong>: a Wald test of a variance is invalid at
 the boundary of the parameter space, and no reporting guideline
-requests one (see the <em>Mixed-effects models</em> section of
-<code><a href="../articles/table-regression.html">vignette("table-regression")</a></code>). <code>FALSE</code> suppresses the block.
+requests one (see the <em>Mixed-effects models</em> section of the
+<a href="https://amaltawfik.github.io/spicy/articles/table-regression.html">Publication-ready regression tables</a>
+article). <code>FALSE</code> suppresses the block.
 No effect on fits without random effects (<code>lm</code>, <code>glm</code>,
 <code>coxph</code>, ...).</p></dd>
 
@@ -621,8 +622,9 @@ full SE + CI.</p>
 optimistic near the variance boundary (Self &amp; Liang 1987
 chi-bar-squared); request boundary-respecting profile-likelihood
 intervals with <code>re_ci = "profile"</code> when robustness is critical.
-See the <em>Mixed-effects models</em> section of
-<code><a href="../articles/table-regression.html">vignette("table-regression")</a></code>.</p>
+See the <em>Mixed-effects models</em> section of the
+<a href="https://amaltawfik.github.io/spicy/articles/table-regression.html">Publication-ready regression tables</a>
+article.</p>
 <p>For <code>lmer</code> / <code>glmer</code> fits these SEs come from <code>merDeriv</code>, whose
 cost grows superlinearly with the number of observations (about a
 minute at n of roughly 2,700). Above <code>options("spicy.re_se_max_n")</code>
@@ -1385,8 +1387,9 @@ likelihood-based fit statistics (<code>"aic"</code>, pseudo-R², ...),
 group-level terms instead), <code>ci_method = "profile"</code> /
 <code>"boot_percentile"</code>, and non-MCMC fits
 (<code>algorithm = "meanfield"</code> / <code>"optimizing"</code> – refit with
-<code>algorithm = "sampling"</code>). See
-<code><a href="../articles/table-regression-bayesian.html">vignette("table-regression-bayesian")</a></code>.</p>
+<code>algorithm = "sampling"</code>). See the
+<a href="https://amaltawfik.github.io/spicy/articles/table-regression-bayesian.html">Bayesian regression tables</a>
+article.</p>
     </div>
     <div class="section level2">
     <h2 id="hierarchical-nested-model-comparison">Hierarchical (nested) model comparison<a class="anchor" aria-label="anchor" href="#hierarchical-nested-model-comparison"></a></h2>

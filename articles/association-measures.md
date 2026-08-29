@@ -7,9 +7,9 @@ library(spicy)
 
 spicy provides a coherent set of effect size and association measures
 for contingency tables, covering nominal and ordinal variables. This
-vignette explains which measure to use depending on the measurement
-level of your variables, and how to obtain confidence intervals and
-p-values for chi-squared-based and rank-based statistics.
+article explains which measure to use depending on the measurement level
+of your variables, and how to obtain confidence intervals and p-values
+for chi-squared-based and rank-based statistics.
 
 ## Choosing the right measure
 
@@ -108,7 +108,7 @@ p-value tests the null hypothesis of no association using the Pearson
 chi-squared test. The chi-squared-based measures (Cramer’s V, Phi, the
 contingency coefficient) have no standard asymptotic standard error, so
 the `SE` column prints `–` for them; the rank-based measures later in
-this vignette report their asymptotic SE in that column.
+this article report their asymptotic SE in that column.
 
 ``` r
 
@@ -403,7 +403,7 @@ coefficient), and `somers_d(direction = "symmetric")` reports the
 estimate only. Cramer’s V and Phi also omit the interval silently in
 degenerate cases (estimate exactly 0, or n \<= 3). The confidence level
 defaults to 95% and can be changed with `conf_level` – here both levels
-on the smoking-by-education table from the beginning of the vignette:
+on the smoking-by-education table from the beginning of the article:
 
 ``` r
 
@@ -479,14 +479,14 @@ print(res, digits = 5)
 
 ## See also
 
-- See
-  [`vignette("frequency-tables")`](https://amaltawfik.github.io/spicy/articles/frequency-tables.md)
+- See [*Frequency tables and
+  cross-tabulations*](https://amaltawfik.github.io/spicy/articles/frequency-tables.md)
   for
   [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md),
   which reports these measures inline through its `assoc_measure`
   argument.
-- See
-  [`vignette("table-categorical")`](https://amaltawfik.github.io/spicy/articles/table-categorical.md)
+- See [*Categorical summary
+  tables*](https://amaltawfik.github.io/spicy/articles/table-categorical.md)
   for association measures inside publication-ready categorical summary
   tables.
 

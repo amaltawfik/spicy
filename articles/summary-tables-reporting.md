@@ -27,8 +27,8 @@ used in empirical articles:
   [`survey::svydesign`](https://rdrr.io/pkg/survey/man/svydesign.html)
   object, when the sample is stratified, clustered, or carried by
   replicate weights — design-based SEs and CIs, design degrees of
-  freedom, design tests (see
-  [`vignette("survey-tables")`](https://amaltawfik.github.io/spicy/articles/survey-tables.md));
+  freedom, design tests (see [*Summary tables from a survey
+  design*](https://amaltawfik.github.io/spicy/articles/survey-tables.md));
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   builds **Table 3** (the coefficient table) from one or several fitted
   models — [`lm()`](https://rdrr.io/r/stats/lm.html) /
@@ -43,7 +43,7 @@ formats (`default` console ASCII, `gt`, `tinytable`, `flextable`,
 numeric cells (the categorical table’s cells are percentages, so it
 spells the argument `percent_digits`) — so a single reporting workflow
 can move smoothly from descriptive to inferential without juggling
-different APIs. This vignette focuses on that shared logic; the
+different APIs. This article focuses on that shared logic; the
 function-specific articles cover the methodological options in depth.
 
 ## Choose the right function
@@ -57,7 +57,7 @@ Use the function that matches the unit you want to report:
 | [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md) | Numeric outcomes through one linear model per outcome | `select`, `by` (single predictor) | Robust / cluster-robust / bootstrap / jackknife SE, case weights, additive covariate adjustment, four effect-size measures with noncentral CIs |
 | [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md) | *One* numeric outcome across the levels of *several* categorical variables | `outcome` (one), `select` (many) | One group comparison per block, an `Overall` marginal row, the same statistic tokens as [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md) |
 | [`table_continuous_svy()`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md), [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md) | The same descriptive tables from a [`survey::svydesign`](https://rdrr.io/pkg/survey/man/svydesign.html) (stratified, clustered, replicate-weight samples) | design-first: `design`, then `select`, `by` | Design-based SE and CI, design df, Rao–Scott and design *t*/*F* tests, design effects, observed and weighted counts |
-| [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md) | One or several fitted models — 36 classes, from [`lm()`](https://rdrr.io/r/stats/lm.html) / [`glm()`](https://rdrr.io/r/stats/glm.html) to mixed, ordinal, survival and Bayesian engines (see [`vignette("table-regression-supported-models")`](https://amaltawfik.github.io/spicy/articles/table-regression-supported-models.md)) | Fit-first: pass the model object(s) directly, no `select` / `by` | APA-aligned coefficient table with `B`, `β`, `95% CI`, `p`, AME, robust variance, side-by-side and hierarchical layouts |
+| [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md) | One or several fitted models — 36 classes, from [`lm()`](https://rdrr.io/r/stats/lm.html) / [`glm()`](https://rdrr.io/r/stats/glm.html) to mixed, ordinal, survival and Bayesian engines (see [*Supported models*](https://amaltawfik.github.io/spicy/articles/table-regression-supported-models.md)) | Fit-first: pass the model object(s) directly, no `select` / `by` | APA-aligned coefficient table with `B`, `β`, `95% CI`, `p`, AME, robust variance, side-by-side and hierarchical layouts |
 
 In practice, follow the APA sequence:
 
@@ -743,8 +743,8 @@ For the epidemiological variant of Table 2 — a univariable screen of
 every candidate predictor set against the multivariable model —
 [`table_regression_uv()`](https://amaltawfik.github.io/spicy/reference/table_regression_uv.md)
 builds the whole two-part layout in one call; see the *Univariable
-screening* section of
-[`vignette("table-regression")`](https://amaltawfik.github.io/spicy/articles/table-regression.md).
+screening* section of [*Publication-ready regression
+tables*](https://amaltawfik.github.io/spicy/articles/table-regression.md).
 
 ## Choose the output format
 
@@ -1065,7 +1065,7 @@ tab |>
 |     No | 177 | 67.8 | 310 | 57.5 | 163 | 40.8 | 650 | 54.2 |       |     |
 |     Yes |  84 | 32.2 | 229 | 42.5 | 237 | 59.2 | 550 | 45.8 |       |     |
 
-Categorical table by education {#tinytable_a5zvuwmyhrz5yck1eiwf .table
+Categorical table by education {#tinytable_q1ul2iesu6u6ahg56jgl .table
 .tinytable style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 
@@ -1118,13 +1118,13 @@ The dedicated articles go deeper into each function:
   estimand boundary.
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   covers single- and multi-model coefficient tables across 36 model
-  classes (the map is
-  [`vignette("table-regression-supported-models")`](https://amaltawfik.github.io/spicy/articles/table-regression-supported-models.md)),
+  classes (the map is [*Supported
+  models*](https://amaltawfik.github.io/spicy/articles/table-regression-supported-models.md)),
   five standardisation methods (four for linear models, plus the
   glm-only pseudo-standardisation), partial effect sizes with
   noncentral-F CIs, average marginal effects, hierarchical
   (`nested = TRUE`) comparisons, multiplicity correction, and
   response-scale reporting for GLMs.
 
-Use this vignette as the final reporting overview, then consult the
+Use this article as the final reporting overview, then consult the
 function-specific articles when you need the detailed controls.

@@ -137,8 +137,8 @@ reading error carried into every translation of the table.
 takes, with the same meanings — `"m"`, `"sd"`, `"med"`, `"iqr"`,
 `"med_iqr"`, `"q1"`, `"q3"`, `"min"`, `"max"`, `"ci"`, `"med_ci"`,
 `"n"`, `"weighted_n"`. See the *Choosing which statistics to show*
-section of
-[`vignette("table-continuous")`](https://amaltawfik.github.io/spicy/articles/table-continuous.md)
+section of [*Continuous summary
+tables*](https://amaltawfik.github.io/spicy/articles/table-continuous.md)
 for the vocabulary itself; nothing about it changes here.
 
 ``` r
@@ -411,8 +411,8 @@ appearance.
 ## Weights
 
 Two conventions coexist, and `rescale` is the switch between them — the
-same choice
-[`vignette("table-continuous")`](https://amaltawfik.github.io/spicy/articles/table-continuous.md)
+same choice [*Continuous summary
+tables*](https://amaltawfik.github.io/spicy/articles/table-continuous.md)
 sets out in full.
 
 Without `rescale`, weights are read as **frequencies**: all weights 1
@@ -696,19 +696,23 @@ table_outcome(
 | Group comparison: Wilcoxon rank-sum test. Med \[Q1, Q3\] = median \[first quartile, third quartile\]. Each block compares WHO-5 wellbeing index (0-100) across the levels of one variable; blocks are not adjusted for one another. Overall = the whole analytic sample. |  |  |  |
 
 Descriptive statistics of WHO-5 wellbeing index (0-100)
-{#tinytable_6ms9xfaszps7qj038gia .table .tinytable
+{#tinytable_lp8m4ife53w011pro1ev .table .tinytable
 style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 
 ## See also
 
-- [`vignette("table-continuous", package = "spicy")`](https://amaltawfik.github.io/spicy/articles/table-continuous.md)
+- [*Continuous summary
+  tables*](https://amaltawfik.github.io/spicy/articles/table-continuous.md)
   for the transposed shape — several outcomes across one grouping — and
   for the statistic vocabulary in full.
-- [`vignette("table-categorical", package = "spicy")`](https://amaltawfik.github.io/spicy/articles/table-categorical.md)
+- [*Categorical summary
+  tables*](https://amaltawfik.github.io/spicy/articles/table-categorical.md)
   for categorical outcomes.
-- [`vignette("as-structured", package = "spicy")`](https://amaltawfik.github.io/spicy/articles/as-structured.md)
+- [*The structured
+  view*](https://amaltawfik.github.io/spicy/articles/as-structured.md)
   for the typed view behind this table, and the geometry fields
   (`.row_role`, `.indent`) a custom renderer reads.
-- [`vignette("summary-tables-reporting", package = "spicy")`](https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.md)
+- [*Summary tables for
+  reporting*](https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.md)
   for the cross-function reporting workflow.

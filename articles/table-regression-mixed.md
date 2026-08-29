@@ -6,9 +6,9 @@ library(spicy)
 library(lmerTest)   # masks lme4::lmer() with the Satterthwaite-aware version
 ```
 
-This vignette covers **mixed-effects (multilevel) regression** — models
+This article covers **mixed-effects (multilevel) regression** — models
 for data with a grouping structure, such as repeated measurements nested
-in subjects or respondents nested in regions. The companion vignette
+in subjects or respondents nested in regions. The companion article
 [*Publication-ready regression
 tables*](https://amaltawfik.github.io/spicy/articles/table-regression.md)
 covers the shared mechanics (`vcov`, `ci_level`, output formats,
@@ -37,8 +37,8 @@ The Bayesian mixed engines
 /
 [`stan_glmer()`](https://mc-stan.org/rstanarm/reference/stan_glmer.html),
 `brm()` with grouping terms) render the same *Random effects* block from
-their posterior draws — see
-[`vignette("table-regression-bayesian")`](https://amaltawfik.github.io/spicy/articles/table-regression-bayesian.md).
+their posterior draws — see [*Bayesian regression
+tables*](https://amaltawfik.github.io/spicy/articles/table-regression-bayesian.md).
 
 Two datasets carry the main narrative. The table anatomy is shown on
 [`lme4::sleepstudy`](https://rdrr.io/pkg/lme4/man/sleepstudy.html) —
@@ -1244,7 +1244,8 @@ ratios of a structural zero**. Read one number from each: relative to
 mined streams, unmined ones carry about three times the abundance (IRR
 3.13) where salamanders occur at all, and about a fifth of the odds of
 structural absence (OR 0.18). Component blocks are covered in depth in
-[`vignette("table-regression-counts")`](https://amaltawfik.github.io/spicy/articles/table-regression-counts.md);
+[*Count and two-part regression
+tables*](https://amaltawfik.github.io/spicy/articles/table-regression-counts.md);
 opt out with `show_components = FALSE`.
 
 ## `nlme::lme`
@@ -1304,7 +1305,7 @@ few clusters, event counts, population-averaged marginal effects, and
 why spicy’s `vcov` / `cluster` arguments are refused for these fits — is
 the dedicated [*GEE regression
 tables*](https://amaltawfik.github.io/spicy/articles/table-regression-gee.md)
-vignette; here is the contrast itself, in one table:
+article; here is the contrast itself, in one table:
 
 ``` r
 
@@ -1510,15 +1511,19 @@ td[td$estimate_type == "vc", c("term", "estimate", "std.error", "conf.low", "con
 
 ## Where next
 
-- [`vignette("table-regression")`](https://amaltawfik.github.io/spicy/articles/table-regression.md)
+- [*Publication-ready regression
+  tables*](https://amaltawfik.github.io/spicy/articles/table-regression.md)
   — the shared mechanics: output formats, multi-model layouts,
   `p_adjust`, broom methods.
-- [`vignette("table-regression-counts")`](https://amaltawfik.github.io/spicy/articles/table-regression-counts.md)
+- [*Count and two-part regression
+  tables*](https://amaltawfik.github.io/spicy/articles/table-regression-counts.md)
   — zero-inflation and dispersion component blocks in depth.
-- [`vignette("table-regression-bayesian")`](https://amaltawfik.github.io/spicy/articles/table-regression-bayesian.md)
+- [*Bayesian regression
+  tables*](https://amaltawfik.github.io/spicy/articles/table-regression-bayesian.md)
   — the same *Random effects* block from posterior draws (`stan_glmer`,
   `brm`).
-- [`vignette("table-regression-supported-models")`](https://amaltawfik.github.io/spicy/articles/table-regression-supported-models.md)
+- [*Supported
+  models*](https://amaltawfik.github.io/spicy/articles/table-regression-supported-models.md)
   — the class-by-class capability map.
 
 ## References

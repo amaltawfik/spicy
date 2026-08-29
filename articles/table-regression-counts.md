@@ -6,9 +6,9 @@ library(spicy)
 library(pscl)     # zeroinfl(), hurdle()
 ```
 
-This vignette covers **count regression** — models for a non-negative
+This article covers **count regression** — models for a non-negative
 integer outcome such as number of publications, doctor visits, or
-species counts. The companion vignette [*Publication-ready regression
+species counts. The companion article [*Publication-ready regression
 tables*](https://amaltawfik.github.io/spicy/articles/table-regression.md)
 covers the shared mechanics (`vcov`, `ci_level`, output formats,
 multi-model layouts, broom integration; the class-by-class map is
@@ -61,8 +61,8 @@ zeros than the count process predicts (**excess zeros** — the job of the
 zero-inflated and hurdle models, which add a second, binary submodel for
 the zeros). The two are entangled: unmodelled dispersion surfaces as
 apparent excess zeros, so the model comparison at the end of this
-vignette, not the raw zero count, arbitrates. Each extension changes
-what the table must show, and the sections below follow that escalation.
+article, not the raw zero count, arbitrates. Each extension changes what
+the table must show, and the sections below follow that escalation.
 
 ## Poisson baseline
 
@@ -424,8 +424,9 @@ multivariable model — is one call away with
 `table_regression_uv(..., family = poisson(), exponentiate = TRUE)`
 (`family` switches the engine to Poisson; `exponentiate` is still needed
 to display IRRs rather than log-scale coefficients); the layout is
-introduced in the *Univariable screening* section of
-[`vignette("table-regression")`](https://amaltawfik.github.io/spicy/articles/table-regression.md).
+introduced in the *Univariable screening* section of [*Publication-ready
+regression
+tables*](https://amaltawfik.github.io/spicy/articles/table-regression.md).
 
 ## One number per predictor: the combined AME
 
@@ -559,7 +560,7 @@ in the random-effects structure itself, as the `(1 | site)` term below
 does; the same convention is documented in the companion [*Mixed-effects
 regression
 tables*](https://amaltawfik.github.io/spicy/articles/table-regression-mixed.md)
-vignette:
+article:
 
 ``` r
 
@@ -624,8 +625,8 @@ unname(exp(fe$cond["minedno"]) *         # count-rate ratio (IRR 4.34)
 
 The expected count is about 8.7 times higher in unmined streams — one
 coherent ecological story told in two parts. The random-effects block
-and its conventions are covered in the companion vignette
-[*Mixed-effects regression
+and its conventions are covered in the companion article [*Mixed-effects
+regression
 tables*](https://amaltawfik.github.io/spicy/articles/table-regression-mixed.md).
 
 ## Counts with high-dimensional fixed effects: `fixest`

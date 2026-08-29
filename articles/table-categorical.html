@@ -107,7 +107,7 @@
       <img src="../logo.svg" class="logo" alt=""><h1>Categorical summary tables</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/amaltawfik/spicy/blob/main/vignettes/table-categorical.Rmd" class="external-link"><code>vignettes/table-categorical.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/amaltawfik/spicy/blob/main/vignettes/articles/table-categorical.Rmd" class="external-link"><code>vignettes/articles/table-categorical.Rmd</code></a></small>
       <div class="d-none name"><code>table-categorical.Rmd</code></div>
     </div>
 
@@ -126,10 +126,9 @@ Formatting follows APA conventions by default;
 <code>style = "jama"</code> (or <code>"nejm"</code>,
 <code>"lancet"</code>, <code>"annals"</code>, <code>"aer"</code>)
 switches the whole table to that journal’s published rules — the
-<em>House styles</em> section of
-<code><a href="../articles/summary-tables-reporting.html">vignette("summary-tables-reporting")</a></code> shows each style and
-the guideline sentence behind every rule. This vignette walks through
-the main features.</p>
+<em>House styles</em> section of <a href="summary-tables-reporting.html"><em>Summary tables for
+reporting</em></a> shows each style and the guideline sentence behind
+every rule. This article walks through the main features.</p>
 <div class="section level2">
 <h2 id="basic-usage">Basic usage<a class="anchor" aria-label="anchor" href="#basic-usage"></a>
 </h2>
@@ -410,11 +409,10 @@ variable.</p>
 <code>"tau_c"</code>, <code>"somers_d"</code>, and
 <code>"lambda"</code>; <code>assoc_measure = "none"</code> drops the
 column entirely. See <code><a href="../reference/table_categorical.html">?table_categorical</a></code> for the dispatch
-details and
-<code><a href="../articles/association-measures.html">vignette("association-measures", package = "spicy")</a></code> for
-definitions and guidance on choosing among them. Override the automatic
-choice with a single string for uniform application, or with a named
-vector to mix measures per row:</p>
+details and <a href="association-measures.html"><em>Cramer’s V, Phi, and
+association measures</em></a> for definitions and guidance on choosing
+among them. Override the automatic choice with a single string for
+uniform application, or with a named vector to mix measures per row:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Uniform: same measure for every row variable</span></span>
 <span><span class="fu"><a href="../reference/table_categorical.html">table_categorical</a></span><span class="op">(</span></span>
@@ -1604,54 +1602,54 @@ table by sex):</p>
 
     <script src="https://cdn.jsdelivr.net/gh/vincentarelbundock/tinytable@main/inst/tinytable.js"></script><script>
       // Create table-specific functions using external factory
-      const tableFns_9q2nxsajaap679lmvvtv = TinyTable.createTableFunctions("tinytable_9q2nxsajaap679lmvvtv");
+      const tableFns_sah3uyy50t4vd95w0187 = TinyTable.createTableFunctions("tinytable_sah3uyy50t4vd95w0187");
       // tinytable span after
       window.addEventListener('load', function () {
           var cellsToStyle = [
             // tinytable style arrays after
-          { positions: [ { i: '4', j: 8 }, { i: '4', j: 9 } ], css_id: 'tinytable_css_4rwntt8xs9il1ozbcvml',}, 
-          { positions: [ { i: '1', j: 8 }, { i: '2', j: 8 }, { i: '3', j: 8 }, { i: '5', j: 8 }, { i: '6', j: 8 }, { i: '1', j: 9 }, { i: '2', j: 9 }, { i: '3', j: 9 }, { i: '5', j: 9 }, { i: '6', j: 9 } ], css_id: 'tinytable_css_zrousotuzkwpe2z394nx',}, 
-          { positions: [ { i: '0', j: 8 }, { i: '7', j: 8 }, { i: '0', j: 9 }, { i: '7', j: 9 } ], css_id: 'tinytable_css_avctkw9uba4ep6tjuh4q',}, 
-          { positions: [ { i: '-1', j: 8 }, { i: '-1', j: 9 } ], css_id: 'tinytable_css_njuhsu7projg4u8wxna2',}, 
-          { positions: [ { i: '4', j: 2 }, { i: '4', j: 3 }, { i: '4', j: 4 }, { i: '4', j: 5 }, { i: '4', j: 6 }, { i: '4', j: 7 } ], css_id: 'tinytable_css_u9g5ak39eut1pkweqkyg',}, 
-          { positions: [ { i: '1', j: 2 }, { i: '2', j: 2 }, { i: '3', j: 2 }, { i: '5', j: 2 }, { i: '6', j: 2 }, { i: '1', j: 3 }, { i: '2', j: 3 }, { i: '3', j: 3 }, { i: '5', j: 3 }, { i: '6', j: 3 }, { i: '1', j: 4 }, { i: '2', j: 4 }, { i: '3', j: 4 }, { i: '5', j: 4 }, { i: '6', j: 4 }, { i: '1', j: 5 }, { i: '2', j: 5 }, { i: '3', j: 5 }, { i: '5', j: 5 }, { i: '6', j: 5 }, { i: '1', j: 6 }, { i: '2', j: 6 }, { i: '3', j: 6 }, { i: '5', j: 6 }, { i: '6', j: 6 }, { i: '1', j: 7 }, { i: '2', j: 7 }, { i: '3', j: 7 }, { i: '5', j: 7 }, { i: '6', j: 7 } ], css_id: 'tinytable_css_x407sag21o2u1wlt3erx',}, 
-          { positions: [ { i: '0', j: 2 }, { i: '7', j: 2 }, { i: '0', j: 3 }, { i: '7', j: 3 }, { i: '0', j: 4 }, { i: '7', j: 4 }, { i: '0', j: 5 }, { i: '7', j: 5 }, { i: '0', j: 6 }, { i: '7', j: 6 }, { i: '0', j: 7 }, { i: '7', j: 7 } ], css_id: 'tinytable_css_1okjg2wcj5v44pyy054i',}, 
-          { positions: [ { i: '-1', j: 2 }, { i: '-1', j: 3 }, { i: '-1', j: 4 }, { i: '-1', j: 5 }, { i: '-1', j: 6 }, { i: '-1', j: 7 } ], css_id: 'tinytable_css_cs3h6lh9giybud3t8vdp',}, 
-          { positions: [ { i: '7', j: 1 } ], css_id: 'tinytable_css_f4ltjb6n6xm9655fy8z3',}, 
-          { positions: [ { i: '4', j: 1 } ], css_id: 'tinytable_css_hxdcxx7azh7ek32byczf',}, 
-          { positions: [ { i: '2', j: 1 }, { i: '3', j: 1 }, { i: '6', j: 1 } ], css_id: 'tinytable_css_y7j42gi6sqtfa0lo4nzl',}, 
-          { positions: [ { i: '1', j: 1 }, { i: '5', j: 1 } ], css_id: 'tinytable_css_skn2icuvsxvg197r1d70',}, 
-          { positions: [ { i: '0', j: 1 } ], css_id: 'tinytable_css_r62s9hb1rc2qib3as6ih',}, 
-          { positions: [ { i: '-1', j: 1 } ], css_id: 'tinytable_css_rm61m6fmidnmknpqal0d',}, 
+          { positions: [ { i: '4', j: 8 }, { i: '4', j: 9 } ], css_id: 'tinytable_css_xg5r8t3f8hc45xj56h44',}, 
+          { positions: [ { i: '1', j: 8 }, { i: '2', j: 8 }, { i: '3', j: 8 }, { i: '5', j: 8 }, { i: '6', j: 8 }, { i: '1', j: 9 }, { i: '2', j: 9 }, { i: '3', j: 9 }, { i: '5', j: 9 }, { i: '6', j: 9 } ], css_id: 'tinytable_css_55xj7stdoq2305of41ro',}, 
+          { positions: [ { i: '0', j: 8 }, { i: '7', j: 8 }, { i: '0', j: 9 }, { i: '7', j: 9 } ], css_id: 'tinytable_css_83i0y7b2ichjcylsc9vh',}, 
+          { positions: [ { i: '-1', j: 8 }, { i: '-1', j: 9 } ], css_id: 'tinytable_css_cl08cvspdlpznps8p4xl',}, 
+          { positions: [ { i: '4', j: 2 }, { i: '4', j: 3 }, { i: '4', j: 4 }, { i: '4', j: 5 }, { i: '4', j: 6 }, { i: '4', j: 7 } ], css_id: 'tinytable_css_n7jsjdr7xuehiroa7oc9',}, 
+          { positions: [ { i: '1', j: 2 }, { i: '2', j: 2 }, { i: '3', j: 2 }, { i: '5', j: 2 }, { i: '6', j: 2 }, { i: '1', j: 3 }, { i: '2', j: 3 }, { i: '3', j: 3 }, { i: '5', j: 3 }, { i: '6', j: 3 }, { i: '1', j: 4 }, { i: '2', j: 4 }, { i: '3', j: 4 }, { i: '5', j: 4 }, { i: '6', j: 4 }, { i: '1', j: 5 }, { i: '2', j: 5 }, { i: '3', j: 5 }, { i: '5', j: 5 }, { i: '6', j: 5 }, { i: '1', j: 6 }, { i: '2', j: 6 }, { i: '3', j: 6 }, { i: '5', j: 6 }, { i: '6', j: 6 }, { i: '1', j: 7 }, { i: '2', j: 7 }, { i: '3', j: 7 }, { i: '5', j: 7 }, { i: '6', j: 7 } ], css_id: 'tinytable_css_73jfve7eyrbx4fkdodzt',}, 
+          { positions: [ { i: '0', j: 2 }, { i: '7', j: 2 }, { i: '0', j: 3 }, { i: '7', j: 3 }, { i: '0', j: 4 }, { i: '7', j: 4 }, { i: '0', j: 5 }, { i: '7', j: 5 }, { i: '0', j: 6 }, { i: '7', j: 6 }, { i: '0', j: 7 }, { i: '7', j: 7 } ], css_id: 'tinytable_css_6e5yap4t57ulvt5p80aa',}, 
+          { positions: [ { i: '-1', j: 2 }, { i: '-1', j: 3 }, { i: '-1', j: 4 }, { i: '-1', j: 5 }, { i: '-1', j: 6 }, { i: '-1', j: 7 } ], css_id: 'tinytable_css_i4m5s8xzgldemioino5g',}, 
+          { positions: [ { i: '7', j: 1 } ], css_id: 'tinytable_css_74m50e4xbwyp0wgamxfd',}, 
+          { positions: [ { i: '4', j: 1 } ], css_id: 'tinytable_css_5i6rlk5s5yybzyxek5xs',}, 
+          { positions: [ { i: '2', j: 1 }, { i: '3', j: 1 }, { i: '6', j: 1 } ], css_id: 'tinytable_css_ozwu9h7ot0gaeypjhxe2',}, 
+          { positions: [ { i: '1', j: 1 }, { i: '5', j: 1 } ], css_id: 'tinytable_css_pn2daby95k3j6n35f250',}, 
+          { positions: [ { i: '0', j: 1 } ], css_id: 'tinytable_css_whlcm7y1itflhawb5a5d',}, 
+          { positions: [ { i: '-1', j: 1 } ], css_id: 'tinytable_css_agmwk9xe44l37avqrsfx',}, 
           ];
 
           // Loop over the arrays to style the cells
           cellsToStyle.forEach(function (group) {
               group.positions.forEach(function (cell) {
-                  tableFns_9q2nxsajaap679lmvvtv.styleCell(cell.i, cell.j, group.css_id);
+                  tableFns_sah3uyy50t4vd95w0187.styleCell(cell.i, cell.j, group.css_id);
               });
           });
       });
     </script><link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/vincentarelbundock/tinytable@main/inst/tinytable.css">
 <style>
     /* tinytable css entries after */
-    #tinytable_9q2nxsajaap679lmvvtv td.tinytable_css_4rwntt8xs9il1ozbcvml, #tinytable_9q2nxsajaap679lmvvtv th.tinytable_css_4rwntt8xs9il1ozbcvml {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center; white-space: nowrap; }
-    #tinytable_9q2nxsajaap679lmvvtv td.tinytable_css_zrousotuzkwpe2z394nx, #tinytable_9q2nxsajaap679lmvvtv th.tinytable_css_zrousotuzkwpe2z394nx { text-align: center; white-space: nowrap; }
-    #tinytable_9q2nxsajaap679lmvvtv td.tinytable_css_avctkw9uba4ep6tjuh4q, #tinytable_9q2nxsajaap679lmvvtv th.tinytable_css_avctkw9uba4ep6tjuh4q {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center; white-space: nowrap; }
-    #tinytable_9q2nxsajaap679lmvvtv td.tinytable_css_njuhsu7projg4u8wxna2, #tinytable_9q2nxsajaap679lmvvtv th.tinytable_css_njuhsu7projg4u8wxna2 {  position: relative; --border-bottom: 0; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.1em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center; white-space: nowrap; }
-    #tinytable_9q2nxsajaap679lmvvtv td.tinytable_css_u9g5ak39eut1pkweqkyg, #tinytable_9q2nxsajaap679lmvvtv th.tinytable_css_u9g5ak39eut1pkweqkyg {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
-    #tinytable_9q2nxsajaap679lmvvtv td.tinytable_css_x407sag21o2u1wlt3erx, #tinytable_9q2nxsajaap679lmvvtv th.tinytable_css_x407sag21o2u1wlt3erx { text-align: center }
-    #tinytable_9q2nxsajaap679lmvvtv td.tinytable_css_1okjg2wcj5v44pyy054i, #tinytable_9q2nxsajaap679lmvvtv th.tinytable_css_1okjg2wcj5v44pyy054i {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
-    #tinytable_9q2nxsajaap679lmvvtv td.tinytable_css_cs3h6lh9giybud3t8vdp, #tinytable_9q2nxsajaap679lmvvtv th.tinytable_css_cs3h6lh9giybud3t8vdp {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
-    #tinytable_9q2nxsajaap679lmvvtv td.tinytable_css_f4ltjb6n6xm9655fy8z3, #tinytable_9q2nxsajaap679lmvvtv th.tinytable_css_f4ltjb6n6xm9655fy8z3 {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left; padding-left: 1em; padding-left: 0.8em; }
-    #tinytable_9q2nxsajaap679lmvvtv td.tinytable_css_hxdcxx7azh7ek32byczf, #tinytable_9q2nxsajaap679lmvvtv th.tinytable_css_hxdcxx7azh7ek32byczf {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left; padding-left: 1em; padding-left: 0.8em; }
-    #tinytable_9q2nxsajaap679lmvvtv td.tinytable_css_y7j42gi6sqtfa0lo4nzl, #tinytable_9q2nxsajaap679lmvvtv th.tinytable_css_y7j42gi6sqtfa0lo4nzl { text-align: left; padding-left: 1em; padding-left: 0.8em; }
-    #tinytable_9q2nxsajaap679lmvvtv td.tinytable_css_skn2icuvsxvg197r1d70, #tinytable_9q2nxsajaap679lmvvtv th.tinytable_css_skn2icuvsxvg197r1d70 { text-align: left }
-    #tinytable_9q2nxsajaap679lmvvtv td.tinytable_css_r62s9hb1rc2qib3as6ih, #tinytable_9q2nxsajaap679lmvvtv th.tinytable_css_r62s9hb1rc2qib3as6ih {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
-    #tinytable_9q2nxsajaap679lmvvtv td.tinytable_css_rm61m6fmidnmknpqal0d, #tinytable_9q2nxsajaap679lmvvtv th.tinytable_css_rm61m6fmidnmknpqal0d {  position: relative; --border-bottom: 0; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.1em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
+    #tinytable_sah3uyy50t4vd95w0187 td.tinytable_css_xg5r8t3f8hc45xj56h44, #tinytable_sah3uyy50t4vd95w0187 th.tinytable_css_xg5r8t3f8hc45xj56h44 {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center; white-space: nowrap; }
+    #tinytable_sah3uyy50t4vd95w0187 td.tinytable_css_55xj7stdoq2305of41ro, #tinytable_sah3uyy50t4vd95w0187 th.tinytable_css_55xj7stdoq2305of41ro { text-align: center; white-space: nowrap; }
+    #tinytable_sah3uyy50t4vd95w0187 td.tinytable_css_83i0y7b2ichjcylsc9vh, #tinytable_sah3uyy50t4vd95w0187 th.tinytable_css_83i0y7b2ichjcylsc9vh {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center; white-space: nowrap; }
+    #tinytable_sah3uyy50t4vd95w0187 td.tinytable_css_cl08cvspdlpznps8p4xl, #tinytable_sah3uyy50t4vd95w0187 th.tinytable_css_cl08cvspdlpznps8p4xl {  position: relative; --border-bottom: 0; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.1em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center; white-space: nowrap; }
+    #tinytable_sah3uyy50t4vd95w0187 td.tinytable_css_n7jsjdr7xuehiroa7oc9, #tinytable_sah3uyy50t4vd95w0187 th.tinytable_css_n7jsjdr7xuehiroa7oc9 {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
+    #tinytable_sah3uyy50t4vd95w0187 td.tinytable_css_73jfve7eyrbx4fkdodzt, #tinytable_sah3uyy50t4vd95w0187 th.tinytable_css_73jfve7eyrbx4fkdodzt { text-align: center }
+    #tinytable_sah3uyy50t4vd95w0187 td.tinytable_css_6e5yap4t57ulvt5p80aa, #tinytable_sah3uyy50t4vd95w0187 th.tinytable_css_6e5yap4t57ulvt5p80aa {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
+    #tinytable_sah3uyy50t4vd95w0187 td.tinytable_css_i4m5s8xzgldemioino5g, #tinytable_sah3uyy50t4vd95w0187 th.tinytable_css_i4m5s8xzgldemioino5g {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
+    #tinytable_sah3uyy50t4vd95w0187 td.tinytable_css_74m50e4xbwyp0wgamxfd, #tinytable_sah3uyy50t4vd95w0187 th.tinytable_css_74m50e4xbwyp0wgamxfd {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left; padding-left: 1em; padding-left: 0.8em; }
+    #tinytable_sah3uyy50t4vd95w0187 td.tinytable_css_5i6rlk5s5yybzyxek5xs, #tinytable_sah3uyy50t4vd95w0187 th.tinytable_css_5i6rlk5s5yybzyxek5xs {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left; padding-left: 1em; padding-left: 0.8em; }
+    #tinytable_sah3uyy50t4vd95w0187 td.tinytable_css_ozwu9h7ot0gaeypjhxe2, #tinytable_sah3uyy50t4vd95w0187 th.tinytable_css_ozwu9h7ot0gaeypjhxe2 { text-align: left; padding-left: 1em; padding-left: 0.8em; }
+    #tinytable_sah3uyy50t4vd95w0187 td.tinytable_css_pn2daby95k3j6n35f250, #tinytable_sah3uyy50t4vd95w0187 th.tinytable_css_pn2daby95k3j6n35f250 { text-align: left }
+    #tinytable_sah3uyy50t4vd95w0187 td.tinytable_css_whlcm7y1itflhawb5a5d, #tinytable_sah3uyy50t4vd95w0187 th.tinytable_css_whlcm7y1itflhawb5a5d {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
+    #tinytable_sah3uyy50t4vd95w0187 td.tinytable_css_agmwk9xe44l37avqrsfx, #tinytable_sah3uyy50t4vd95w0187 th.tinytable_css_agmwk9xe44l37avqrsfx {  position: relative; --border-bottom: 0; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.1em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
     </style>
 <div class="container">
-      <table class="table tinytable" id="tinytable_9q2nxsajaap679lmvvtv" style="width: auto; margin-left: auto; margin-right: auto;" data-quarto-disable-processing="true">
+      <table class="table tinytable" id="tinytable_sah3uyy50t4vd95w0187" style="width: auto; margin-left: auto; margin-right: auto;" data-quarto-disable-processing="true">
 <caption>Categorical table by sex</caption>
         <thead>
 <tr>
@@ -2429,17 +2427,18 @@ spreadsheet or a text editor:</p>
 <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a>
 </h2>
 <ul>
-<li>See <code><a href="../articles/table-continuous.html">vignette("table-continuous", package = "spicy")</a></code> for
-the continuous counterpart with classical group-comparison tests.</li>
-<li>See <code><a href="../articles/table-continuous-lm.html">vignette("table-continuous-lm", package = "spicy")</a></code>
-for model-based continuous summary tables.</li>
-<li>See <code><a href="../articles/table-regression.html">vignette("table-regression", package = "spicy")</a></code> for
-the full coefficient table from one or several fitted <code>lm</code> /
-<code>glm</code> models (APA Table 3).</li>
-<li>See
-<code><a href="../articles/summary-tables-reporting.html">vignette("summary-tables-reporting", package = "spicy")</a></code> for
-a cross-function reporting workflow that ties the four summary-table
-helpers together along the APA Table 1 / 2 / 3 sequence.</li>
+<li>See <a href="table-continuous.html"><em>Continuous summary
+tables</em></a> for the continuous counterpart with classical
+group-comparison tests.</li>
+<li>See <a href="table-continuous-lm.html"><em>Model-based continuous
+summary tables</em></a> for model-based continuous summary tables.</li>
+<li>See <a href="table-regression.html"><em>Publication-ready regression
+tables</em></a> for the full coefficient table from one or several
+fitted <code>lm</code> / <code>glm</code> models (APA Table 3).</li>
+<li>See <a href="summary-tables-reporting.html"><em>Summary tables for
+reporting</em></a> for a cross-function reporting workflow that ties the
+four summary-table helpers together along the APA Table 1 / 2 / 3
+sequence.</li>
 </ul>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

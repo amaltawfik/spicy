@@ -6,10 +6,10 @@ library(spicy)
 library(nnet)
 ```
 
-This vignette covers **multinomial logistic regression** — models for a
+This article covers **multinomial logistic regression** — models for a
 *nominal* outcome, a categorical response whose categories have no
 natural order: employment status, party choice, transport mode. The
-companion vignette [*Publication-ready regression
+companion article [*Publication-ready regression
 tables*](https://amaltawfik.github.io/spicy/articles/table-regression.md)
 covers the shared mechanics (`vcov`, `ci_level`, output formats,
 multi-model layouts, broom integration; the class-by-class map is
@@ -497,8 +497,8 @@ predictor as **numeric scores** (one slope) or as dummies is a general
 model-building decision, not a multinomial one: the workflow — fit both
 codings, compare with `nested = TRUE`, and keep the scores only when the
 likelihood-ratio test finds no departure from a linear trend — is
-developed with its caveats in
-[`vignette("categorical-predictors")`](https://amaltawfik.github.io/spicy/articles/categorical-predictors.md).
+developed with its caveats in [*Categorical
+predictors*](https://amaltawfik.github.io/spicy/articles/categorical-predictors.md).
 One point *is* multinomial-specific: each freed coding costs one
 parameter **per equation**, so the test’s degrees of freedom multiply by
 the number of non-reference outcomes:
@@ -564,7 +564,7 @@ dummies improve on the scores, and AIC agrees (2514.3 vs 2515.8). On
 Agresti’s (2007, sec. 4.4.3) grounds the scores model is then
 preferable: simpler to report, and more powerful against a genuine trend
 — an advantage that reverses if the true pattern is non-monotone. See
-the categorical-predictors vignette for the caveats that keep this
+the categorical-predictors article for the caveats that keep this
 decision honest (equal spacing, pre-testing, and when to simply keep the
 dummies).
 

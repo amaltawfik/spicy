@@ -13,8 +13,8 @@ console and for publication-ready outputs in rendered documents. When
 statistics, and effect sizes. Formatting follows APA conventions by
 default; `style = "jama"` (or `"nejm"`, `"lancet"`, `"annals"`, `"aer"`)
 switches the whole table to that journal’s published rules — the *House
-styles* section of
-[`vignette("summary-tables-reporting")`](https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.md)
+styles* section of [*Summary tables for
+reporting*](https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.md)
 shows each style and the guideline sentence behind every rule.
 
 ## Basic usage
@@ -1086,7 +1086,7 @@ table_continuous(
 | Missing values removed: bmi (12), life_sat_health (8). |  |  |  |  |  |  |  |  |  |
 
 Descriptive statistics by Highest education level
-{#tinytable_p4jb805ly8kwt436nurr .table .tinytable
+{#tinytable_9gqaweeckkyq14bj8cie .table .tinytable
 style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 
@@ -1115,24 +1115,24 @@ table_continuous(
 
 ## See also
 
-- See
-  [`vignette("table-categorical", package = "spicy")`](https://amaltawfik.github.io/spicy/articles/table-categorical.md)
+- See [*Categorical summary
+  tables*](https://amaltawfik.github.io/spicy/articles/table-categorical.md)
   for grouped tables of categorical variables.
-- See
-  [`vignette("table-outcome", package = "spicy")`](https://amaltawfik.github.io/spicy/articles/table-outcome.md)
+- See [*One outcome across several
+  groupings*](https://amaltawfik.github.io/spicy/articles/table-outcome.md)
   for the transposed shape: ONE continuous outcome described across the
   levels of SEVERAL groupings, one block of rows per grouping. Several
   outcomes across one grouping is this article; one outcome across one
   or more groupings is that one.
-- See
-  [`vignette("table-continuous-lm", package = "spicy")`](https://amaltawfik.github.io/spicy/articles/table-continuous-lm.md)
+- See [*Model-based continuous summary
+  tables*](https://amaltawfik.github.io/spicy/articles/table-continuous-lm.md)
   for model-based continuous summary tables with robust standard errors
   or case weights.
-- See
-  [`vignette("table-regression", package = "spicy")`](https://amaltawfik.github.io/spicy/articles/table-regression.md)
+- See [*Publication-ready regression
+  tables*](https://amaltawfik.github.io/spicy/articles/table-regression.md)
   for full coefficient tables from one or several fitted `lm` / `glm`
   models (APA Table 3).
-- See
-  [`vignette("summary-tables-reporting", package = "spicy")`](https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.md)
+- See [*Summary tables for
+  reporting*](https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.md)
   for a cross-function reporting workflow that ties the four
   summary-table helpers together along the APA Table 1 / 2 / 3 sequence.

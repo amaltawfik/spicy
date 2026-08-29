@@ -107,7 +107,7 @@
       <img src="../logo.svg" class="logo" alt=""><h1>Continuous summary tables</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/amaltawfik/spicy/blob/main/vignettes/table-continuous.Rmd" class="external-link"><code>vignettes/table-continuous.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/amaltawfik/spicy/blob/main/vignettes/articles/table-continuous.Rmd" class="external-link"><code>vignettes/articles/table-continuous.Rmd</code></a></small>
       <div class="d-none name"><code>table-continuous.Rmd</code></div>
     </div>
 
@@ -123,9 +123,9 @@ group-comparison tests, test statistics, and effect sizes. Formatting
 follows APA conventions by default; <code>style = "jama"</code> (or
 <code>"nejm"</code>, <code>"lancet"</code>, <code>"annals"</code>,
 <code>"aer"</code>) switches the whole table to that journal’s published
-rules — the <em>House styles</em> section of
-<code><a href="../articles/summary-tables-reporting.html">vignette("summary-tables-reporting")</a></code> shows each style and
-the guideline sentence behind every rule.</p>
+rules — the <em>House styles</em> section of <a href="summary-tables-reporting.html"><em>Summary tables for
+reporting</em></a> shows each style and the guideline sentence behind
+every rule.</p>
 <div class="section level2">
 <h2 id="basic-usage">Basic usage<a class="anchor" aria-label="anchor" href="#basic-usage"></a>
 </h2>
@@ -1702,44 +1702,44 @@ documents:</p>
 
     <script src="https://cdn.jsdelivr.net/gh/vincentarelbundock/tinytable@main/inst/tinytable.js"></script><script>
       // Create table-specific functions using external factory
-      const tableFns_p4jb805ly8kwt436nurr = TinyTable.createTableFunctions("tinytable_p4jb805ly8kwt436nurr");
+      const tableFns_9gqaweeckkyq14bj8cie = TinyTable.createTableFunctions("tinytable_9gqaweeckkyq14bj8cie");
       // tinytable span after
       window.addEventListener('load', function () {
           var cellsToStyle = [
             // tinytable style arrays after
-          { positions: [ { i: '-1', j: 7 }, { i: '-1', j: 8 } ], css_id: 'tinytable_css_rg0vqkm0gyu5y07dleet',}, 
-          { positions: [ { i: '3', j: 3 }, { i: '6', j: 3 }, { i: '3', j: 4 }, { i: '6', j: 4 }, { i: '3', j: 5 }, { i: '6', j: 5 }, { i: '3', j: 6 }, { i: '6', j: 6 }, { i: '3', j: 7 }, { i: '6', j: 7 }, { i: '3', j: 8 }, { i: '6', j: 8 }, { i: '3', j: 9 }, { i: '6', j: 9 }, { i: '3', j: 10 }, { i: '6', j: 10 } ], css_id: 'tinytable_css_lv8qve6mbw7flnt02x6j',}, 
-          { positions: [ { i: '1', j: 3 }, { i: '2', j: 3 }, { i: '4', j: 3 }, { i: '5', j: 3 }, { i: '7', j: 3 }, { i: '8', j: 3 }, { i: '1', j: 4 }, { i: '2', j: 4 }, { i: '4', j: 4 }, { i: '5', j: 4 }, { i: '7', j: 4 }, { i: '8', j: 4 }, { i: '1', j: 5 }, { i: '2', j: 5 }, { i: '4', j: 5 }, { i: '5', j: 5 }, { i: '7', j: 5 }, { i: '8', j: 5 }, { i: '1', j: 6 }, { i: '2', j: 6 }, { i: '4', j: 6 }, { i: '5', j: 6 }, { i: '7', j: 6 }, { i: '8', j: 6 }, { i: '1', j: 7 }, { i: '2', j: 7 }, { i: '4', j: 7 }, { i: '5', j: 7 }, { i: '7', j: 7 }, { i: '8', j: 7 }, { i: '1', j: 8 }, { i: '2', j: 8 }, { i: '4', j: 8 }, { i: '5', j: 8 }, { i: '7', j: 8 }, { i: '8', j: 8 }, { i: '1', j: 9 }, { i: '2', j: 9 }, { i: '4', j: 9 }, { i: '5', j: 9 }, { i: '7', j: 9 }, { i: '8', j: 9 }, { i: '1', j: 10 }, { i: '2', j: 10 }, { i: '4', j: 10 }, { i: '5', j: 10 }, { i: '7', j: 10 }, { i: '8', j: 10 } ], css_id: 'tinytable_css_9gdpfz5za85sjlvcxkdn',}, 
-          { positions: [ { i: '0', j: 3 }, { i: '9', j: 3 }, { i: '0', j: 4 }, { i: '9', j: 4 }, { i: '0', j: 5 }, { i: '9', j: 5 }, { i: '0', j: 6 }, { i: '9', j: 6 }, { i: '0', j: 7 }, { i: '9', j: 7 }, { i: '0', j: 8 }, { i: '9', j: 8 }, { i: '0', j: 9 }, { i: '9', j: 9 }, { i: '0', j: 10 }, { i: '9', j: 10 } ], css_id: 'tinytable_css_6ms9xfaszps7qj038gia',}, 
-          { positions: [ { i: '-1', j: 3 }, { i: '-1', j: 4 }, { i: '-1', j: 5 }, { i: '-1', j: 6 }, { i: '-1', j: 9 }, { i: '-1', j: 10 } ], css_id: 'tinytable_css_j4fo6oiq2648zku0jjm1',}, 
-          { positions: [ { i: '3', j: 1 }, { i: '6', j: 1 }, { i: '3', j: 2 }, { i: '6', j: 2 } ], css_id: 'tinytable_css_wfhnp5nah360a9qvw56b',}, 
-          { positions: [ { i: '1', j: 1 }, { i: '2', j: 1 }, { i: '4', j: 1 }, { i: '5', j: 1 }, { i: '7', j: 1 }, { i: '8', j: 1 }, { i: '1', j: 2 }, { i: '2', j: 2 }, { i: '4', j: 2 }, { i: '5', j: 2 }, { i: '7', j: 2 }, { i: '8', j: 2 } ], css_id: 'tinytable_css_cp5gf5xj6nve9ks9e58s',}, 
-          { positions: [ { i: '0', j: 1 }, { i: '9', j: 1 }, { i: '0', j: 2 }, { i: '9', j: 2 } ], css_id: 'tinytable_css_y4o4nad8rhuwlw69kz4m',}, 
-          { positions: [ { i: '-1', j: 1 }, { i: '-1', j: 2 } ], css_id: 'tinytable_css_omzrtf8aiah2a1ktgqfl',}, 
+          { positions: [ { i: '-1', j: 7 }, { i: '-1', j: 8 } ], css_id: 'tinytable_css_5lhfp3ov2rkvdd8hhkk9',}, 
+          { positions: [ { i: '3', j: 3 }, { i: '6', j: 3 }, { i: '3', j: 4 }, { i: '6', j: 4 }, { i: '3', j: 5 }, { i: '6', j: 5 }, { i: '3', j: 6 }, { i: '6', j: 6 }, { i: '3', j: 7 }, { i: '6', j: 7 }, { i: '3', j: 8 }, { i: '6', j: 8 }, { i: '3', j: 9 }, { i: '6', j: 9 }, { i: '3', j: 10 }, { i: '6', j: 10 } ], css_id: 'tinytable_css_c4d3kk6ieizcnhl1s4p7',}, 
+          { positions: [ { i: '1', j: 3 }, { i: '2', j: 3 }, { i: '4', j: 3 }, { i: '5', j: 3 }, { i: '7', j: 3 }, { i: '8', j: 3 }, { i: '1', j: 4 }, { i: '2', j: 4 }, { i: '4', j: 4 }, { i: '5', j: 4 }, { i: '7', j: 4 }, { i: '8', j: 4 }, { i: '1', j: 5 }, { i: '2', j: 5 }, { i: '4', j: 5 }, { i: '5', j: 5 }, { i: '7', j: 5 }, { i: '8', j: 5 }, { i: '1', j: 6 }, { i: '2', j: 6 }, { i: '4', j: 6 }, { i: '5', j: 6 }, { i: '7', j: 6 }, { i: '8', j: 6 }, { i: '1', j: 7 }, { i: '2', j: 7 }, { i: '4', j: 7 }, { i: '5', j: 7 }, { i: '7', j: 7 }, { i: '8', j: 7 }, { i: '1', j: 8 }, { i: '2', j: 8 }, { i: '4', j: 8 }, { i: '5', j: 8 }, { i: '7', j: 8 }, { i: '8', j: 8 }, { i: '1', j: 9 }, { i: '2', j: 9 }, { i: '4', j: 9 }, { i: '5', j: 9 }, { i: '7', j: 9 }, { i: '8', j: 9 }, { i: '1', j: 10 }, { i: '2', j: 10 }, { i: '4', j: 10 }, { i: '5', j: 10 }, { i: '7', j: 10 }, { i: '8', j: 10 } ], css_id: 'tinytable_css_kac6nuu0njy145cb031a',}, 
+          { positions: [ { i: '0', j: 3 }, { i: '9', j: 3 }, { i: '0', j: 4 }, { i: '9', j: 4 }, { i: '0', j: 5 }, { i: '9', j: 5 }, { i: '0', j: 6 }, { i: '9', j: 6 }, { i: '0', j: 7 }, { i: '9', j: 7 }, { i: '0', j: 8 }, { i: '9', j: 8 }, { i: '0', j: 9 }, { i: '9', j: 9 }, { i: '0', j: 10 }, { i: '9', j: 10 } ], css_id: 'tinytable_css_lp8m4ife53w011pro1ev',}, 
+          { positions: [ { i: '-1', j: 3 }, { i: '-1', j: 4 }, { i: '-1', j: 5 }, { i: '-1', j: 6 }, { i: '-1', j: 9 }, { i: '-1', j: 10 } ], css_id: 'tinytable_css_w2sm6kb39vuop46ff4f8',}, 
+          { positions: [ { i: '3', j: 1 }, { i: '6', j: 1 }, { i: '3', j: 2 }, { i: '6', j: 2 } ], css_id: 'tinytable_css_luw6omp5v96dbpxutpmk',}, 
+          { positions: [ { i: '1', j: 1 }, { i: '2', j: 1 }, { i: '4', j: 1 }, { i: '5', j: 1 }, { i: '7', j: 1 }, { i: '8', j: 1 }, { i: '1', j: 2 }, { i: '2', j: 2 }, { i: '4', j: 2 }, { i: '5', j: 2 }, { i: '7', j: 2 }, { i: '8', j: 2 } ], css_id: 'tinytable_css_jbrnohq9hqh6zvkmhn13',}, 
+          { positions: [ { i: '0', j: 1 }, { i: '9', j: 1 }, { i: '0', j: 2 }, { i: '9', j: 2 } ], css_id: 'tinytable_css_2klkm194od2ogbgsesea',}, 
+          { positions: [ { i: '-1', j: 1 }, { i: '-1', j: 2 } ], css_id: 'tinytable_css_jhwli79997ugab75av15',}, 
           ];
 
           // Loop over the arrays to style the cells
           cellsToStyle.forEach(function (group) {
               group.positions.forEach(function (cell) {
-                  tableFns_p4jb805ly8kwt436nurr.styleCell(cell.i, cell.j, group.css_id);
+                  tableFns_9gqaweeckkyq14bj8cie.styleCell(cell.i, cell.j, group.css_id);
               });
           });
       });
     </script><link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/vincentarelbundock/tinytable@main/inst/tinytable.css">
 <style>
     /* tinytable css entries after */
-    #tinytable_p4jb805ly8kwt436nurr td.tinytable_css_rg0vqkm0gyu5y07dleet, #tinytable_p4jb805ly8kwt436nurr th.tinytable_css_rg0vqkm0gyu5y07dleet {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
-    #tinytable_p4jb805ly8kwt436nurr td.tinytable_css_lv8qve6mbw7flnt02x6j, #tinytable_p4jb805ly8kwt436nurr th.tinytable_css_lv8qve6mbw7flnt02x6j {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
-    #tinytable_p4jb805ly8kwt436nurr td.tinytable_css_9gdpfz5za85sjlvcxkdn, #tinytable_p4jb805ly8kwt436nurr th.tinytable_css_9gdpfz5za85sjlvcxkdn { text-align: center }
-    #tinytable_p4jb805ly8kwt436nurr td.tinytable_css_6ms9xfaszps7qj038gia, #tinytable_p4jb805ly8kwt436nurr th.tinytable_css_6ms9xfaszps7qj038gia {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
-    #tinytable_p4jb805ly8kwt436nurr td.tinytable_css_j4fo6oiq2648zku0jjm1, #tinytable_p4jb805ly8kwt436nurr th.tinytable_css_j4fo6oiq2648zku0jjm1 {  position: relative; --border-bottom: 0; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.1em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
-    #tinytable_p4jb805ly8kwt436nurr td.tinytable_css_wfhnp5nah360a9qvw56b, #tinytable_p4jb805ly8kwt436nurr th.tinytable_css_wfhnp5nah360a9qvw56b {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
-    #tinytable_p4jb805ly8kwt436nurr td.tinytable_css_cp5gf5xj6nve9ks9e58s, #tinytable_p4jb805ly8kwt436nurr th.tinytable_css_cp5gf5xj6nve9ks9e58s { text-align: left }
-    #tinytable_p4jb805ly8kwt436nurr td.tinytable_css_y4o4nad8rhuwlw69kz4m, #tinytable_p4jb805ly8kwt436nurr th.tinytable_css_y4o4nad8rhuwlw69kz4m {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
-    #tinytable_p4jb805ly8kwt436nurr td.tinytable_css_omzrtf8aiah2a1ktgqfl, #tinytable_p4jb805ly8kwt436nurr th.tinytable_css_omzrtf8aiah2a1ktgqfl {  position: relative; --border-bottom: 0; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.1em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
+    #tinytable_9gqaweeckkyq14bj8cie td.tinytable_css_5lhfp3ov2rkvdd8hhkk9, #tinytable_9gqaweeckkyq14bj8cie th.tinytable_css_5lhfp3ov2rkvdd8hhkk9 {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
+    #tinytable_9gqaweeckkyq14bj8cie td.tinytable_css_c4d3kk6ieizcnhl1s4p7, #tinytable_9gqaweeckkyq14bj8cie th.tinytable_css_c4d3kk6ieizcnhl1s4p7 {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
+    #tinytable_9gqaweeckkyq14bj8cie td.tinytable_css_kac6nuu0njy145cb031a, #tinytable_9gqaweeckkyq14bj8cie th.tinytable_css_kac6nuu0njy145cb031a { text-align: center }
+    #tinytable_9gqaweeckkyq14bj8cie td.tinytable_css_lp8m4ife53w011pro1ev, #tinytable_9gqaweeckkyq14bj8cie th.tinytable_css_lp8m4ife53w011pro1ev {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
+    #tinytable_9gqaweeckkyq14bj8cie td.tinytable_css_w2sm6kb39vuop46ff4f8, #tinytable_9gqaweeckkyq14bj8cie th.tinytable_css_w2sm6kb39vuop46ff4f8 {  position: relative; --border-bottom: 0; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.1em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
+    #tinytable_9gqaweeckkyq14bj8cie td.tinytable_css_luw6omp5v96dbpxutpmk, #tinytable_9gqaweeckkyq14bj8cie th.tinytable_css_luw6omp5v96dbpxutpmk {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
+    #tinytable_9gqaweeckkyq14bj8cie td.tinytable_css_jbrnohq9hqh6zvkmhn13, #tinytable_9gqaweeckkyq14bj8cie th.tinytable_css_jbrnohq9hqh6zvkmhn13 { text-align: left }
+    #tinytable_9gqaweeckkyq14bj8cie td.tinytable_css_2klkm194od2ogbgsesea, #tinytable_9gqaweeckkyq14bj8cie th.tinytable_css_2klkm194od2ogbgsesea {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
+    #tinytable_9gqaweeckkyq14bj8cie td.tinytable_css_jhwli79997ugab75av15, #tinytable_9gqaweeckkyq14bj8cie th.tinytable_css_jhwli79997ugab75av15 {  position: relative; --border-bottom: 0; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.1em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
     </style>
 <div class="container">
-      <table class="table tinytable" id="tinytable_p4jb805ly8kwt436nurr" style="width: auto; margin-left: auto; margin-right: auto;" data-quarto-disable-processing="true">
+      <table class="table tinytable" id="tinytable_9gqaweeckkyq14bj8cie" style="width: auto; margin-left: auto; margin-right: auto;" data-quarto-disable-processing="true">
 <caption>Descriptive statistics by Highest education level</caption>
         <thead>
 <tr>
@@ -1906,23 +1906,23 @@ documents:</p>
 <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a>
 </h2>
 <ul>
-<li>See <code><a href="../articles/table-categorical.html">vignette("table-categorical", package = "spicy")</a></code>
-for grouped tables of categorical variables.</li>
-<li>See <code><a href="../articles/table-outcome.html">vignette("table-outcome", package = "spicy")</a></code> for
-the transposed shape: ONE continuous outcome described across the levels
-of SEVERAL groupings, one block of rows per grouping. Several outcomes
-across one grouping is this article; one outcome across one or more
-groupings is that one.</li>
-<li>See <code><a href="../articles/table-continuous-lm.html">vignette("table-continuous-lm", package = "spicy")</a></code>
-for model-based continuous summary tables with robust standard errors or
-case weights.</li>
-<li>See <code><a href="../articles/table-regression.html">vignette("table-regression", package = "spicy")</a></code> for
-full coefficient tables from one or several fitted <code>lm</code> /
-<code>glm</code> models (APA Table 3).</li>
-<li>See
-<code><a href="../articles/summary-tables-reporting.html">vignette("summary-tables-reporting", package = "spicy")</a></code> for
-a cross-function reporting workflow that ties the four summary-table
-helpers together along the APA Table 1 / 2 / 3 sequence.</li>
+<li>See <a href="table-categorical.html"><em>Categorical summary
+tables</em></a> for grouped tables of categorical variables.</li>
+<li>See <a href="table-outcome.html"><em>One outcome across several
+groupings</em></a> for the transposed shape: ONE continuous outcome
+described across the levels of SEVERAL groupings, one block of rows per
+grouping. Several outcomes across one grouping is this article; one
+outcome across one or more groupings is that one.</li>
+<li>See <a href="table-continuous-lm.html"><em>Model-based continuous
+summary tables</em></a> for model-based continuous summary tables with
+robust standard errors or case weights.</li>
+<li>See <a href="table-regression.html"><em>Publication-ready regression
+tables</em></a> for full coefficient tables from one or several fitted
+<code>lm</code> / <code>glm</code> models (APA Table 3).</li>
+<li>See <a href="summary-tables-reporting.html"><em>Summary tables for
+reporting</em></a> for a cross-function reporting workflow that ties the
+four summary-table helpers together along the APA Table 1 / 2 / 3
+sequence.</li>
 </ul>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

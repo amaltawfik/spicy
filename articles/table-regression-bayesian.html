@@ -107,7 +107,7 @@
       <img src="../logo.svg" class="logo" alt=""><h1>Bayesian regression tables</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/amaltawfik/spicy/blob/main/vignettes/table-regression-bayesian.Rmd" class="external-link"><code>vignettes/table-regression-bayesian.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/amaltawfik/spicy/blob/main/vignettes/articles/table-regression-bayesian.Rmd" class="external-link"><code>vignettes/articles/table-regression-bayesian.Rmd</code></a></small>
       <div class="d-none name"><code>table-regression-bayesian.Rmd</code></div>
     </div>
 
@@ -116,9 +116,9 @@
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/amaltawfik/spicy/" class="external-link">spicy</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://mc-stan.org/rstanarm/" class="external-link">rstanarm</a></span><span class="op">)</span></span></code></pre></div>
-<p>This vignette covers <strong>Bayesian regression tables</strong> —
-the same <code><a href="../reference/table_regression.html">table_regression()</a></code> call on a posterior instead of
-a maximum-likelihood fit. The companion vignette <a href="table-regression.html"><em>Publication-ready regression
+<p>This article covers <strong>Bayesian regression tables</strong> — the
+same <code><a href="../reference/table_regression.html">table_regression()</a></code> call on a posterior instead of a
+maximum-likelihood fit. The companion article <a href="table-regression.html"><em>Publication-ready regression
 tables</em></a> covers the shared mechanics (the class-by-class map is
 <a href="table-regression-supported-models.html"><em>Supported
 models</em></a>); here we focus on what genuinely changes when the
@@ -131,14 +131,14 @@ to check before reading anything.</p>
 <strong><code>rstanarm</code></strong> (<code><a href="https://mc-stan.org/rstanarm/reference/stan_glm.html" class="external-link">stan_glm()</a></code>,
 <code><a href="https://mc-stan.org/rstanarm/reference/stan_glmer.html" class="external-link">stan_lmer()</a></code>, <code><a href="https://mc-stan.org/rstanarm/reference/stan_glmer.html" class="external-link">stan_glmer()</a></code>) — ships precompiled
 models, so fits run in seconds and every <code>rstanarm</code> chunk in
-this vignette executes live;</li>
+this article executes live;</li>
 <li>
 <strong><code>brms</code></strong> (<code>brm()</code>) — a wider
 model space, at the cost of compiling each model; shown at the end (the
 code is identical in spirit).</li>
 </ul>
 <p>The running example is the logistic regression of
-<code>smoking</code> from the main vignette’s glm section — same data
+<code>smoking</code> from the main article’s glm section — same data
 (<code>sochealth</code>), same predictors — so the Bayesian table can be
 read against its frequentist twin.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
@@ -147,7 +147,7 @@ read against its frequentist twin.</p>
 <span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://mc-stan.org/rstanarm/reference/stan_glm.html" class="external-link">stan_glm</a></span><span class="op">(</span><span class="va">smoking</span> <span class="op">~</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">age</span> <span class="op">+</span> <span class="va">education</span>, data <span class="op">=</span> <span class="va">sh</span>,</span>
 <span>                family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/family.html" class="external-link">binomial</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>                iter <span class="op">=</span> <span class="fl">1000</span>, chains <span class="op">=</span> <span class="fl">2</span>, seed <span class="op">=</span> <span class="fl">123</span>, refresh <span class="op">=</span> <span class="fl">0</span><span class="op">)</span></span></code></pre></div>
-<p>The sampler settings are trimmed so this vignette builds in seconds —
+<p>The sampler settings are trimmed so this article builds in seconds —
 for real work, keep rstanarm’s defaults (four chains of 2,000
 iterations): R-hat compares chains, so it needs several to compare, and
 credible bounds are tail quantiles, estimated exactly where draws are
@@ -752,7 +752,7 @@ misses the R-hat and ESS targets, so the table says so in its footer and
 a <code>spicy_bayes_diagnostics</code> warning fires — a manuscript fit
 with rstanarm’s default sampler settings renders this same table
 clean.</p>
-<p>Compare this block with the <code>lmer</code> table of the <a href="table-regression-mixed.html">mixed-effects vignette</a>: same
+<p>Compare this block with the <code>lmer</code> table of the <a href="table-regression-mixed.html">mixed-effects article</a>: same
 layout, but the credible interval on the <code>Days</code> slope SD —
 the <code>σ Subject Days</code> row — is a genuine posterior statement —
 no chi-bar-squared correction, no profile refit — and the footer reads
@@ -1213,12 +1213,13 @@ Coefficients exponentiated and displayed as OR; SE on the OR scale
 </h2>
 <ul>
 <li>
-<code><a href="../articles/table-regression.html">vignette("table-regression", package = "spicy")</a></code> for the
-shared mechanics (columns, layouts, filtering).</li>
+<a href="table-regression.html"><em>Publication-ready regression
+tables</em></a> for the shared mechanics (columns, layouts,
+filtering).</li>
 <li>
-<code><a href="../articles/table-regression-mixed.html">vignette("table-regression-mixed", package = "spicy")</a></code>
-for the frequentist multilevel counterpart of the random-effects
-block.</li>
+<a href="table-regression-mixed.html"><em>Mixed-effects regression
+tables</em></a> for the frequentist multilevel counterpart of the
+random-effects block.</li>
 </ul>
 </div>
 <div class="section level2">

@@ -9,7 +9,7 @@ library(spicy)
 [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
 are the core tabulation functions in spicy. They handle factors,
 labelled variables (from haven or labelled), weights, and missing values
-out of the box. This vignette covers the main options using the bundled
+out of the box. This article covers the main options using the bundled
 `sochealth` dataset.
 
 ## Frequency tables with freq()
@@ -746,11 +746,14 @@ options(
 
 ## Learn more
 
-- [`vignette("association-measures")`](https://amaltawfik.github.io/spicy/articles/association-measures.md) -
+- [*Cramer’s V, Phi, and association
+  measures*](https://amaltawfik.github.io/spicy/articles/association-measures.md) -
   choosing the right effect size for your contingency table.
-- [`vignette("table-categorical")`](https://amaltawfik.github.io/spicy/articles/table-categorical.md) -
+- [*Categorical summary
+  tables*](https://amaltawfik.github.io/spicy/articles/table-categorical.md) -
   building publication-ready categorical tables.
-- [`vignette("summary-tables-reporting")`](https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.md) -
+- [*Summary tables for
+  reporting*](https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.md) -
   end-to-end reporting workflow that ties the four `table_*` helpers
   together along the APA Table 1 / 2 / 3 sequence (including
   [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)

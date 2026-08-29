@@ -107,7 +107,7 @@
       <img src="../logo.svg" class="logo" alt=""><h1>The structured view: programmatic access to spicy tables</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/amaltawfik/spicy/blob/main/vignettes/as-structured.Rmd" class="external-link"><code>vignettes/as-structured.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/amaltawfik/spicy/blob/main/vignettes/articles/as-structured.Rmd" class="external-link"><code>vignettes/articles/as-structured.Rmd</code></a></small>
       <div class="d-none name"><code>as-structured.Rmd</code></div>
     </div>
 
@@ -129,9 +129,9 @@ tinytable, flextable, clipboard) consume internally – nothing about it
 is second-class – and the descriptive families
 (<code><a href="../reference/table_categorical.html">table_categorical()</a></code>, <code><a href="../reference/table_continuous.html">table_continuous()</a></code>,
 <code><a href="../reference/table_continuous_lm.html">table_continuous_lm()</a></code>, <code><a href="../reference/table_outcome.html">table_outcome()</a></code>) expose
-the same schema, covered at the end of this vignette. The tour below
-uses a regression table; everything it shows reads identically on the
-other four.</p>
+the same schema, covered at the end of this article. The tour below uses
+a regression table; everything it shows reads identically on the other
+four.</p>
 <p>Two sibling tools serve different needs, and choosing well saves
 work. <code><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">broom::tidy()</a></code> returns the <em>statistical</em> long
 form – one row per term and estimate type per model, with
@@ -145,7 +145,7 @@ rows and columns exactly as the rendered table lays them out, factor
 headers and fit statistics included – and is the right input for
 filtering what a reader will see, post-processing numbers in table
 shape, or rendering the table with an engine spicy does not ship. This
-vignette covers the second tool. The shared mechanics of
+article covers the second tool. The shared mechanics of
 <code><a href="../reference/table_regression.html">table_regression()</a></code> are in <a href="table-regression.html"><em>Publication-ready regression
 tables</em></a>; the class-by-class map is <a href="table-regression-supported-models.html"><em>Supported
 models</em></a>.</p>

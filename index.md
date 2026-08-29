@@ -644,7 +644,7 @@ and
 
 ## Documentation
 
-Each workflow has a dedicated vignette:
+Each workflow has a dedicated article on the package site:
 
 - [Getting started with
   spicy](https://amaltawfik.github.io/spicy/articles/spicy.html)

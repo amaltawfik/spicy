@@ -6,11 +6,11 @@ library(spicy)
 library(geepack) # geeglm()
 ```
 
-This vignette covers **generalized estimating equations** (GEE) –
+This article covers **generalized estimating equations** (GEE) –
 marginal models for clustered and longitudinal data, fitted with
 [`geepack::geeglm()`](https://rdrr.io/pkg/geepack/man/geeglm.html)
 (Liang & Zeger, 1986; Halekoh, Højsgaard & Yan, 2006). The companion
-vignette [*Publication-ready regression
+article [*Publication-ready regression
 tables*](https://amaltawfik.github.io/spicy/articles/table-regression.md)
 covers the shared mechanics (output engines, labels,
 [`tidy()`](https://generics.r-lib.org/reference/tidy.html));
@@ -70,7 +70,7 @@ the notable exception – with a random intercept, every coefficient
 except the intercept coincides, so conditional and marginal rate ratios
 are directly comparable. Neither estimand is “biased”: they answer
 different questions. The side-by-side table in the [mixed-effects
-vignette](https://amaltawfik.github.io/spicy/articles/table-regression-mixed.md)
+article](https://amaltawfik.github.io/spicy/articles/table-regression-mixed.md)
 shows the gap on real data.
 
 **What GEE buys.** When the marginal question is the right one, GEE has
@@ -410,7 +410,7 @@ This odds ratio is marginal: it compares the odds of a positive outcome
 between the treated and untreated *populations*. The subject-specific
 odds ratio from the matching mixed model is larger – the attenuation of
 the first section – and the [mixed-effects
-vignette](https://amaltawfik.github.io/spicy/articles/table-regression-mixed.md)
+article](https://amaltawfik.github.io/spicy/articles/table-regression-mixed.md)
 shows the two side by side.
 
 Average marginal effects translate the odds ratio onto the probability
@@ -512,7 +512,7 @@ table_regression(
 | Max cluster size |       4  |      |        |       |        |
 
 Population-averaged logistic regression (GEE): outcome {.table
-.cl-0ad300aa quarto-disable-processing="true"}
+.cl-3f9066f2 quarto-disable-processing="true"}
 
 *Note.* Population-averaged logistic regression (GEE). Std. errors:
 Robust sandwich (GEE), clusters by subject. GEE working correlation:

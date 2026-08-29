@@ -107,7 +107,7 @@
       <img src="../logo.svg" class="logo" alt=""><h1>Supported models</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/amaltawfik/spicy/blob/main/vignettes/table-regression-supported-models.Rmd" class="external-link"><code>vignettes/table-regression-supported-models.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/amaltawfik/spicy/blob/main/vignettes/articles/table-regression-supported-models.Rmd" class="external-link"><code>vignettes/articles/table-regression-supported-models.Rmd</code></a></small>
       <div class="d-none name"><code>table-regression-supported-models.Rmd</code></div>
     </div>
 
@@ -833,9 +833,9 @@ p-values at all.</p>
 <code>lm</code>, <code>glm</code> (with profile CIs on request),
 <code><a href="https://rdrr.io/pkg/MASS/man/glm.nb.html" class="external-link">MASS::glm.nb</a></code> (with opt-in <code>theta</code> /
 <code>alpha</code> dispersion statistics), <code><a href="https://rdrr.io/pkg/MASS/man/rlm.html" class="external-link">MASS::rlm</a></code>,
-<code><a href="https://rdrr.io/r/stats/nls.html" class="external-link">stats::nls</a></code>. Start with
-<code><a href="../articles/table-regression.html">vignette("table-regression")</a></code> and
-<code><a href="../articles/categorical-predictors.html">vignette("categorical-predictors")</a></code>.</p>
+<code><a href="https://rdrr.io/r/stats/nls.html" class="external-link">stats::nls</a></code>. Start with <a href="table-regression.html"><em>Publication-ready regression
+tables</em></a> and <a href="categorical-predictors.html"><em>Categorical
+predictors</em></a>.</p>
 <p><strong>Robust, IV, quantile, panel.</strong>
 <code><a href="https://declaredesign.org/r/estimatr/reference/lm_robust.html" class="external-link">estimatr::lm_robust()</a></code> / <code>iv_robust()</code>,
 <code><a href="https://rdrr.io/pkg/AER/man/ivreg.html" class="external-link">AER::ivreg()</a></code> and <code><a href="https://rdrr.io/pkg/AER/man/tobit.html" class="external-link">AER::tobit()</a></code>,
@@ -856,31 +856,35 @@ via <code>lmerTest</code>), <code>glmer</code>, <code>glmmTMB</code>
 correlations, residual – deliberately without per-row p-values; the
 footer carries the boundary-correct chi-bar-squared test, and
 <code>re_test = "lrt"</code> / <code>"rlrt"</code> adds per-term tests.
-See <code><a href="../articles/table-regression-mixed.html">vignette("table-regression-mixed")</a></code>.</p>
+See <a href="table-regression-mixed.html"><em>Mixed-effects regression
+tables</em></a>.</p>
 <p><strong>Population-averaged (GEE).</strong>
 <code><a href="https://rdrr.io/pkg/geepack/man/geeglm.html" class="external-link">geepack::geeglm()</a></code>: marginal (population-averaged)
 coefficients with the fit’s own sandwich SEs as the default inference,
 the working correlation structure disclosed in the footer (with its
 estimated alpha), cluster-structure fit statistics, and opt-in QIC /
-QICu. See <code><a href="../articles/table-regression-gee.html">vignette("table-regression-gee")</a></code> for the full
-workflow; <code><a href="../articles/table-regression-mixed.html">vignette("table-regression-mixed")</a></code> contrasts GEE
-with subject-specific mixed models in a single table.</p>
+QICu. See <a href="table-regression-gee.html"><em>GEE regression
+tables</em></a> for the full workflow; <a href="table-regression-mixed.html"><em>Mixed-effects regression
+tables</em></a> contrasts GEE with subject-specific mixed models in a
+single table.</p>
 <p><strong>Ordinal.</strong> <code><a href="https://rdrr.io/pkg/MASS/man/polr.html" class="external-link">MASS::polr</a></code> and
 <code><a href="https://rdrr.io/pkg/ordinal/man/clm.html" class="external-link">ordinal::clm</a></code>: proportional odds ratios, a
 <code>Thresholds</code> block for the cut-points (log-odds scale, never
 exponentiated), partial-proportional-odds terms as a
 <code>Non-proportional effects</code> block, and per-category AME. See
-<code><a href="../articles/table-regression-ordinal.html">vignette("table-regression-ordinal")</a></code>.</p>
+<a href="table-regression-ordinal.html"><em>Ordinal regression
+tables</em></a>.</p>
 <p><strong>Categorical.</strong> <code><a href="https://rdrr.io/pkg/nnet/man/multinom.html" class="external-link">nnet::multinom</a></code> renders
 outcome categories as columns with per-outcome AME;
 <code><a href="https://rdrr.io/pkg/mlogit/man/mlogit.html" class="external-link">mlogit::mlogit</a></code> renders per-alternative rows for
-discrete-choice designs. See
-<code><a href="../articles/table-regression-multinomial.html">vignette("table-regression-multinomial")</a></code>.</p>
+discrete-choice designs. See <a href="table-regression-multinomial.html"><em>Multinomial regression
+tables</em></a>.</p>
 <p><strong>Counts and two-part.</strong> Poisson and negative binomial
 through <code>glm</code> / <code>glm.nb</code> / <code>glmmTMB</code>,
 plus <code><a href="https://rdrr.io/pkg/pscl/man/zeroinfl.html" class="external-link">pscl::zeroinfl()</a></code> and <code><a href="https://rdrr.io/pkg/pscl/man/hurdle.html" class="external-link">pscl::hurdle()</a></code> with
 their zero components as labelled blocks and a combined-response AME.
-See <code><a href="../articles/table-regression-counts.html">vignette("table-regression-counts")</a></code>.</p>
+See <a href="table-regression-counts.html"><em>Count and two-part
+regression tables</em></a>.</p>
 <p><strong>Survival.</strong> <code><a href="https://rdrr.io/pkg/survival/man/coxph.html" class="external-link">survival::coxph</a></code> and
 <code><a href="https://rdrr.io/pkg/rms/man/cph.html" class="external-link">rms::cph</a></code> (hazard ratios, <code><a href="https://rdrr.io/pkg/survival/man/strata.html" class="external-link">strata()</a></code> supported),
 <code><a href="https://rdrr.io/pkg/survival/man/survreg.html" class="external-link">survival::survreg</a></code> (time ratios) and
@@ -891,8 +895,8 @@ those estimands standardize follows the tie-handling convention of the
 fit, exactly as <code><a href="https://rdrr.io/pkg/survival/man/survfit.html" class="external-link">survfit()</a></code> and <code><a href="https://rdrr.io/pkg/survival/man/basehaz.html" class="external-link">basehaz()</a></code> do – a
 <code>ties = "breslow"</code> fit gives a Breslow baseline, the default
 Efron fit an Efron one – so the hazard-ratio column and the dRMST column
-always come from the same likelihood. See
-<code><a href="../articles/table-regression-survival.html">vignette("table-regression-survival")</a></code>.</p>
+always come from the same likelihood. See <a href="table-regression-survival.html"><em>Survival regression
+tables</em></a>.</p>
 <p><strong>Survey-weighted.</strong> <code><a href="https://rdrr.io/pkg/survey/man/svyglm.html" class="external-link">survey::svyglm()</a></code>:
 design-based inference; the unweighted n is a default fit statistic and
 the sum of design weights is available as
@@ -913,7 +917,8 @@ posterior median, MAD SD, credible intervals, draws-native
 exponentiation and AME, sampler diagnostics checked on every fit (with
 opt-in <code>pd</code>, <code>rhat</code>, <code>ess_bulk</code> /
 <code>ess_tail</code> and <code>mcse</code> columns). No p-values, by
-design. See <code><a href="../articles/table-regression-bayesian.html">vignette("table-regression-bayesian")</a></code>.</p>
+design. See <a href="table-regression-bayesian.html"><em>Bayesian
+regression tables</em></a>.</p>
 </div>
 <div class="section level2">
 <h2 id="when-a-class-is-not-supported">When a class is not supported<a class="anchor" aria-label="anchor" href="#when-a-class-is-not-supported"></a>

@@ -14,10 +14,10 @@ one-way frequency-style tables for the selected variables. Export to gt,
 tinytable, flextable, Excel, or Word. Formatting follows APA conventions
 by default; `style = "jama"` (or `"nejm"`, `"lancet"`, `"annals"`,
 `"aer"`) switches the whole table to that journal’s published rules —
-the *House styles* section of
-[`vignette("summary-tables-reporting")`](https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.md)
+the *House styles* section of [*Summary tables for
+reporting*](https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.md)
 shows each style and the guideline sentence behind every rule. This
-vignette walks through the main features.
+article walks through the main features.
 
 ## Basic usage
 
@@ -274,8 +274,8 @@ Seven measures are available: `"cramer_v"`, `"phi"`, `"gamma"`,
 `"tau_b"`, `"tau_c"`, `"somers_d"`, and `"lambda"`;
 `assoc_measure = "none"` drops the column entirely. See
 [`?table_categorical`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
-for the dispatch details and
-[`vignette("association-measures", package = "spicy")`](https://amaltawfik.github.io/spicy/articles/association-measures.md)
+for the dispatch details and [*Cramer’s V, Phi, and association
+measures*](https://amaltawfik.github.io/spicy/articles/association-measures.md)
 for definitions and guidance on choosing among them. Override the
 automatic choice with a single string for uniform application, or with a
 named vector to mix measures per row:
@@ -840,7 +840,7 @@ table_categorical(
 |     No                    | 334    | 53.9 | 316  | 54.5 | 650   | 54.2 |      |     |
 |     Yes                   | 286    | 46.1 | 264  | 45.5 | 550   | 45.8 |      |     |
 
-Categorical table by sex {#tinytable_9q2nxsajaap679lmvvtv .table
+Categorical table by sex {#tinytable_sah3uyy50t4vd95w0187 .table
 .tinytable style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 
@@ -903,17 +903,17 @@ table_categorical(
 
 ## See also
 
-- See
-  [`vignette("table-continuous", package = "spicy")`](https://amaltawfik.github.io/spicy/articles/table-continuous.md)
+- See [*Continuous summary
+  tables*](https://amaltawfik.github.io/spicy/articles/table-continuous.md)
   for the continuous counterpart with classical group-comparison tests.
-- See
-  [`vignette("table-continuous-lm", package = "spicy")`](https://amaltawfik.github.io/spicy/articles/table-continuous-lm.md)
+- See [*Model-based continuous summary
+  tables*](https://amaltawfik.github.io/spicy/articles/table-continuous-lm.md)
   for model-based continuous summary tables.
-- See
-  [`vignette("table-regression", package = "spicy")`](https://amaltawfik.github.io/spicy/articles/table-regression.md)
+- See [*Publication-ready regression
+  tables*](https://amaltawfik.github.io/spicy/articles/table-regression.md)
   for the full coefficient table from one or several fitted `lm` / `glm`
   models (APA Table 3).
-- See
-  [`vignette("summary-tables-reporting", package = "spicy")`](https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.md)
+- See [*Summary tables for
+  reporting*](https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.md)
   for a cross-function reporting workflow that ties the four
   summary-table helpers together along the APA Table 1 / 2 / 3 sequence.

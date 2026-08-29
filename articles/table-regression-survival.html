@@ -107,7 +107,7 @@
       <img src="../logo.svg" class="logo" alt=""><h1>Survival regression tables</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/amaltawfik/spicy/blob/main/vignettes/table-regression-survival.Rmd" class="external-link"><code>vignettes/table-regression-survival.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/amaltawfik/spicy/blob/main/vignettes/articles/table-regression-survival.Rmd" class="external-link"><code>vignettes/articles/table-regression-survival.Rmd</code></a></small>
       <div class="d-none name"><code>table-regression-survival.Rmd</code></div>
     </div>
 
@@ -116,10 +116,10 @@
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/amaltawfik/spicy/" class="external-link">spicy</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/therneau/survival" class="external-link">survival</a></span><span class="op">)</span></span></code></pre></div>
-<p>This vignette covers <strong>survival (time-to-event)
+<p>This article covers <strong>survival (time-to-event)
 regression</strong> — models for the <strong>time until an event
 occurs</strong>, with censoring for the subjects whose event is not
-observed within follow-up. The companion vignette <a href="table-regression.html"><em>Publication-ready regression
+observed within follow-up. The companion article <a href="table-regression.html"><em>Publication-ready regression
 tables</em></a> covers the shared mechanics (<code>vcov</code>,
 <code>ci_level</code>, output formats, multi-model layouts, broom
 integration; the class-by-class map is <a href="table-regression-supported-models.html"><em>Supported
@@ -222,7 +222,7 @@ comparable patients, the one predicted to fail earlier actually does.
 same token also renders as a per-level <em>column</em> —
 <code>show_columns = c("n_events", "b", "ci", "p")</code> gives events/N
 next to each hazard ratio, the univariable screen below uses it, and
-binomial tables share the convention (see the core vignette).</li>
+binomial tables share the convention (see the core article).</li>
 </ol>
 </li>
 </ul>
@@ -299,7 +299,7 @@ are averaged, and the two standardized curves are integrated to
 <code>tau</code> (RMST) or evaluated at <code>at_time</code> and
 complemented (risk = 1 − survival). Standard errors come from a
 nonparametric bootstrap, so expect the chunk to take a few seconds; the
-200 replicates below keep the vignette light, and the default
+200 replicates below keep the article light, and the default
 <code>boot_n = 1000</code> is the better choice for a publication
 table.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">

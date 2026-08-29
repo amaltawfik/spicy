@@ -107,7 +107,7 @@
       <img src="../logo.svg" class="logo" alt=""><h1>Count and two-part regression tables</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/amaltawfik/spicy/blob/main/vignettes/table-regression-counts.Rmd" class="external-link"><code>vignettes/table-regression-counts.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/amaltawfik/spicy/blob/main/vignettes/articles/table-regression-counts.Rmd" class="external-link"><code>vignettes/articles/table-regression-counts.Rmd</code></a></small>
       <div class="d-none name"><code>table-regression-counts.Rmd</code></div>
     </div>
 
@@ -116,9 +116,9 @@
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/amaltawfik/spicy/" class="external-link">spicy</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/atahk/pscl" class="external-link">pscl</a></span><span class="op">)</span>     <span class="co"># zeroinfl(), hurdle()</span></span></code></pre></div>
-<p>This vignette covers <strong>count regression</strong> — models for a
+<p>This article covers <strong>count regression</strong> — models for a
 non-negative integer outcome such as number of publications, doctor
-visits, or species counts. The companion vignette <a href="table-regression.html"><em>Publication-ready regression
+visits, or species counts. The companion article <a href="table-regression.html"><em>Publication-ready regression
 tables</em></a> covers the shared mechanics (<code>vcov</code>,
 <code>ci_level</code>, output formats, multi-model layouts, broom
 integration; the class-by-class map is <a href="table-regression-supported-models.html"><em>Supported
@@ -168,7 +168,7 @@ binomial’s job), and there are more zeros than the count process
 predicts (<strong>excess zeros</strong> — the job of the zero-inflated
 and hurdle models, which add a second, binary submodel for the zeros).
 The two are entangled: unmodelled dispersion surfaces as apparent excess
-zeros, so the model comparison at the end of this vignette, not the raw
+zeros, so the model comparison at the end of this article, not the raw
 zero count, arbitrates. Each extension changes what the table must show,
 and the sections below follow that escalation.</p>
 </div>
@@ -500,7 +500,8 @@ multivariable model — is one call away with
 (<code>family</code> switches the engine to Poisson;
 <code>exponentiate</code> is still needed to display IRRs rather than
 log-scale coefficients); the layout is introduced in the <em>Univariable
-screening</em> section of <code><a href="../articles/table-regression.html">vignette("table-regression")</a></code>.</p>
+screening</em> section of <a href="table-regression.html"><em>Publication-ready regression
+tables</em></a>.</p>
 </div>
 <div class="section level2">
 <h2 id="one-number-per-predictor-the-combined-ame">One number per predictor: the combined AME<a class="anchor" aria-label="anchor" href="#one-number-per-predictor-the-combined-ame"></a>
@@ -625,7 +626,7 @@ a default method and return numerically invalid standard errors, and
 behind. Express the clustering in the random-effects structure itself,
 as the <code>(1 | site)</code> term below does; the same convention is
 documented in the companion <a href="table-regression-mixed.html"><em>Mixed-effects regression
-tables</em></a> vignette:</p>
+tables</em></a> article:</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"Salamanders"</span>, package <span class="op">=</span> <span class="st">"glmmTMB"</span><span class="op">)</span></span>
 <span><span class="va">fit_mix</span> <span class="op">&lt;-</span> <span class="fu">glmmTMB</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/glmmTMB/man/glmmTMB.html" class="external-link">glmmTMB</a></span><span class="op">(</span></span>
@@ -682,7 +683,7 @@ cancels and the ratio holds at any given site:</p>
 <span><span class="co">#&gt; [1] 8.696186</span></span></code></pre></div>
 <p>The expected count is about 8.7 times higher in unmined streams — one
 coherent ecological story told in two parts. The random-effects block
-and its conventions are covered in the companion vignette <a href="table-regression-mixed.html"><em>Mixed-effects regression
+and its conventions are covered in the companion article <a href="table-regression-mixed.html"><em>Mixed-effects regression
 tables</em></a>.</p>
 </div>
 <div class="section level2">

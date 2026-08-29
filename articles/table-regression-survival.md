@@ -6,9 +6,9 @@ library(spicy)
 library(survival)
 ```
 
-This vignette covers **survival (time-to-event) regression** — models
-for the **time until an event occurs**, with censoring for the subjects
-whose event is not observed within follow-up. The companion vignette
+This article covers **survival (time-to-event) regression** — models for
+the **time until an event occurs**, with censoring for the subjects
+whose event is not observed within follow-up. The companion article
 [*Publication-ready regression
 tables*](https://amaltawfik.github.io/spicy/articles/table-regression.md)
 covers the shared mechanics (`vcov`, `ci_level`, output formats,
@@ -115,7 +115,7 @@ Reading the table:
       same token also renders as a per-level *column* —
       `show_columns = c("n_events", "b", "ci", "p")` gives events/N next
       to each hazard ratio, the univariable screen below uses it, and
-      binomial tables share the convention (see the core vignette).
+      binomial tables share the convention (see the core article).
 
 The table reports the model, not its assumption: check proportionality
 with
@@ -193,7 +193,7 @@ as observed; the curves are averaged, and the two standardized curves
 are integrated to `tau` (RMST) or evaluated at `at_time` and
 complemented (risk = 1 − survival). Standard errors come from a
 nonparametric bootstrap, so expect the chunk to take a few seconds; the
-200 replicates below keep the vignette light, and the default
+200 replicates below keep the article light, and the default
 `boot_n = 1000` is the better choice for a publication table.
 
 ``` r

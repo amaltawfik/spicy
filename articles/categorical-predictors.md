@@ -5,14 +5,14 @@
 library(spicy)
 ```
 
-Every regression vignette in this collection is organised by the type of
+Every regression article in this collection is organised by the type of
 *outcome* — continuous, binary, count, ordinal, multinomial, survival.
 This one is organised by the type of *predictor*. How a categorical
 predictor is coded, tested, simplified, and presented is the same
 decision whether the model is an
 [`lm()`](https://rdrr.io/r/stats/lm.html), a logistic regression, or a
 Cox model, so it has one home rather than a copy in every family
-vignette. The examples use the bundled `sochealth` survey data
+article. The examples use the bundled `sochealth` survey data
 ([`?sochealth`](https://amaltawfik.github.io/spicy/reference/sochealth.md))
 with [`lm()`](https://rdrr.io/r/stats/lm.html) and
 [`glm()`](https://rdrr.io/r/stats/glm.html) fits; everything shown
@@ -198,7 +198,7 @@ anova(m0, m1)
 
 For `glm` fits, the `partial_chi2` column reports the same joint
 question per term as a likelihood-ratio chi-square with its df, without
-needing a second model (see the main vignette’s *Term-level partial
+needing a second model (see the main article’s *Term-level partial
 chi-square*).
 
 The rule cuts the other way too:
@@ -292,7 +292,7 @@ reading — trend tests are exactly what polynomial contrasts are for —
 but it is *not* the level-versus-reference reading most regression
 tables intend. For that, convert to a plain factor
 (`factor(x, ordered = FALSE)`), as the message suggests and as the other
-vignettes in this collection do.
+articles in this collection do.
 
 ## Scores or dummies?
 
@@ -588,7 +588,7 @@ The presentation layer is independent of the coding decisions above.
 `labels` renames variables and levels; `reference_style = "annotation"`
 lifts the reference into the factor header for compact tables; `keep` /
 `drop` filter rows by regex after all statistics are computed (see the
-main vignette’s *Display options* and *Filtering displayed
+main article’s *Display options* and *Filtering displayed
 coefficients*):
 
 ``` r
@@ -620,13 +620,16 @@ table_regression(
 
 ## See also
 
-- [`vignette("table-regression", package = "spicy")`](https://amaltawfik.github.io/spicy/articles/table-regression.md)
+- [*Publication-ready regression
+  tables*](https://amaltawfik.github.io/spicy/articles/table-regression.md)
   for the shared table mechanics (variance estimators, nested layouts,
   filtering, output formats).
-- [`vignette("table-regression-ordinal", package = "spicy")`](https://amaltawfik.github.io/spicy/articles/table-regression-ordinal.md)
+- [*Ordinal regression
+  tables*](https://amaltawfik.github.io/spicy/articles/table-regression-ordinal.md)
   for ordinal *outcomes* — the proportional-odds model, its tests and
   relaxations.
-- [`vignette("table-regression-multinomial", package = "spicy")`](https://amaltawfik.github.io/spicy/articles/table-regression-multinomial.md)
+- [*Multinomial regression
+  tables*](https://amaltawfik.github.io/spicy/articles/table-regression-multinomial.md)
   for the scores-vs-dummies decision inside a multinomial model, where
   each freed coding costs one parameter per equation.
 

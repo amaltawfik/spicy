@@ -424,13 +424,13 @@ and the final reporting overview tying the summary tables together.
 reports the full coefficient table for one or several fitted models —
 more than thirty classes, from [`lm()`](https://rdrr.io/r/stats/lm.html)
 / [`glm()`](https://rdrr.io/r/stats/glm.html) to mixed-effects, ordinal,
-survival and Bayesian engines (the full map is
-[`vignette("table-regression-supported-models")`](https://amaltawfik.github.io/spicy/articles/table-regression-supported-models.md))
-— with APA formatting by default and the same journal styles on demand
-(`style = "jama"`, `"nejm"`, `"lancet"` and more), factor grouping with
-reference rows, robust variance, standardised coefficients, average
-marginal effects, hierarchical comparisons, and side-by-side multi-model
-layouts:
+survival and Bayesian engines (the full map is the [Supported
+models](https://amaltawfik.github.io/spicy/articles/table-regression-supported-models.html)
+article) — with APA formatting by default and the same journal styles on
+demand (`style = "jama"`, `"nejm"`, `"lancet"` and more), factor
+grouping with reference rows, robust variance, standardised
+coefficients, average marginal effects, hierarchical comparisons, and
+side-by-side multi-model layouts:
 
 ``` r
 
@@ -504,34 +504,45 @@ sochealth |>
 
 ## Learn more
 
+This is the vignette the package ships. Every walk-through below is an
+article on the [spicy website](https://amaltawfik.github.io/spicy/),
+kept alongside the reference pages and rebuilt with each release.
+
 **Explore and tabulate**
 
-- [`vignette("variable-exploration")`](https://amaltawfik.github.io/spicy/articles/variable-exploration.md)
+- [Explore variables and build
+  codebooks](https://amaltawfik.github.io/spicy/articles/variable-exploration.html)
   — inspect variables, labels and missingness
   ([`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md),
   [`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md),
   [`label_from_names()`](https://amaltawfik.github.io/spicy/reference/label_from_names.md)).
-- [`vignette("frequency-tables")`](https://amaltawfik.github.io/spicy/articles/frequency-tables.md)
+- [Frequency tables and
+  cross-tabulations](https://amaltawfik.github.io/spicy/articles/frequency-tables.html)
   — [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md) and
   [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
   in depth (weights, simulation, labelled data).
-- [`vignette("association-measures")`](https://amaltawfik.github.io/spicy/articles/association-measures.md)
+- [Cramer’s V, Phi, and association
+  measures](https://amaltawfik.github.io/spicy/articles/association-measures.html)
   — choosing the right effect size for a contingency table.
 
 **Summary tables**
 
-- [`vignette("table-categorical")`](https://amaltawfik.github.io/spicy/articles/table-categorical.md)
-  and
-  [`vignette("table-continuous")`](https://amaltawfik.github.io/spicy/articles/table-continuous.md)
+- [Categorical summary
+  tables](https://amaltawfik.github.io/spicy/articles/table-categorical.html)
+  and [Continuous summary
+  tables](https://amaltawfik.github.io/spicy/articles/table-continuous.html)
   — the Table 1 / 2 builders (APA by default, other journal styles via
   `style =`).
-- [`vignette("table-outcome")`](https://amaltawfik.github.io/spicy/articles/table-outcome.md)
+- [One outcome across several
+  groupings](https://amaltawfik.github.io/spicy/articles/table-outcome.html)
   — one continuous outcome across several groupings, one block of rows
   per grouping.
-- [`vignette("table-continuous-lm")`](https://amaltawfik.github.io/spicy/articles/table-continuous-lm.md)
+- [Model-based continuous summary
+  tables](https://amaltawfik.github.io/spicy/articles/table-continuous-lm.html)
   — model-based group comparisons (robust SE, weights, covariate
   adjustment).
-- [`vignette("survey-tables")`](https://amaltawfik.github.io/spicy/articles/survey-tables.md)
+- [Summary tables from a survey
+  design](https://amaltawfik.github.io/spicy/articles/survey-tables.html)
   — the same two tables from a `survey` design: design-based standard
   errors, degrees of freedom and tests
   ([`table_continuous_svy()`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md),
@@ -539,36 +550,48 @@ sochealth |>
 
 **Regression tables**
 
-- [`vignette("table-regression")`](https://amaltawfik.github.io/spicy/articles/table-regression.md)
+- [Publication-ready regression
+  tables](https://amaltawfik.github.io/spicy/articles/table-regression.html)
   — the core guide, including the univariable screen
   ([`table_regression_uv()`](https://amaltawfik.github.io/spicy/reference/table_regression_uv.md)).
-- [`vignette("table-regression-supported-models")`](https://amaltawfik.github.io/spicy/articles/table-regression-supported-models.md)
+- [Supported
+  models](https://amaltawfik.github.io/spicy/articles/table-regression-supported-models.html)
   — the class-by-class capability map (more than thirty model classes).
-- [`vignette("as-structured")`](https://amaltawfik.github.io/spicy/articles/as-structured.md)
+- [The structured
+  view](https://amaltawfik.github.io/spicy/articles/as-structured.html)
   — the typed view behind every regression table: filter, aggregate, or
   build a custom renderer.
-- [`vignette("table-regression-mixed")`](https://amaltawfik.github.io/spicy/articles/table-regression-mixed.md)
+- [Mixed-effects regression
+  tables](https://amaltawfik.github.io/spicy/articles/table-regression-mixed.html)
   — mixed-effects (multilevel) models, random effects as table rows,
   ICC.
-- [`vignette("table-regression-gee")`](https://amaltawfik.github.io/spicy/articles/table-regression-gee.md)
+- [GEE regression
+  tables](https://amaltawfik.github.io/spicy/articles/table-regression-gee.html)
   — GEE (population-averaged) models, working-correlation choice via
   QIC, sandwich inference.
-- [`vignette("table-regression-counts")`](https://amaltawfik.github.io/spicy/articles/table-regression-counts.md)
+- [Count and two-part regression
+  tables](https://amaltawfik.github.io/spicy/articles/table-regression-counts.html)
   — Poisson, negative-binomial, zero-inflated and hurdle models.
-- [`vignette("table-regression-survival")`](https://amaltawfik.github.io/spicy/articles/table-regression-survival.md)
+- [Survival regression
+  tables](https://amaltawfik.github.io/spicy/articles/table-regression-survival.html)
   — Cox hazard ratios and accelerated failure time models.
-- [`vignette("table-regression-ordinal")`](https://amaltawfik.github.io/spicy/articles/table-regression-ordinal.md)
+- [Ordinal regression
+  tables](https://amaltawfik.github.io/spicy/articles/table-regression-ordinal.html)
   — proportional-odds models, thresholds, per-category marginal effects.
-- [`vignette("table-regression-multinomial")`](https://amaltawfik.github.io/spicy/articles/table-regression-multinomial.md)
+- [Multinomial regression
+  tables](https://amaltawfik.github.io/spicy/articles/table-regression-multinomial.html)
   — multinomial logit with outcome categories as columns.
-- [`vignette("table-regression-bayesian")`](https://amaltawfik.github.io/spicy/articles/table-regression-bayesian.md)
+- [Bayesian regression
+  tables](https://amaltawfik.github.io/spicy/articles/table-regression-bayesian.html)
   — posterior medians, credible intervals, convergence checks.
-- [`vignette("categorical-predictors")`](https://amaltawfik.github.io/spicy/articles/categorical-predictors.md)
+- [Categorical
+  predictors](https://amaltawfik.github.io/spicy/articles/categorical-predictors.html)
   — reference levels, joint tests, contrasts — across all of the above.
 
 **Putting it together**
 
-- [`vignette("summary-tables-reporting")`](https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.md)
+- [Summary tables for
+  reporting](https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.html)
   — the end-to-end reporting sequence tying the four `table_*` helpers
   together.
 - [`?mean_n`](https://amaltawfik.github.io/spicy/reference/mean_n.md),

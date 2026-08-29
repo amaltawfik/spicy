@@ -6,10 +6,10 @@ library(spicy)
 library(rstanarm)
 ```
 
-This vignette covers **Bayesian regression tables** — the same
+This article covers **Bayesian regression tables** — the same
 [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
 call on a posterior instead of a maximum-likelihood fit. The companion
-vignette [*Publication-ready regression
+article [*Publication-ready regression
 tables*](https://amaltawfik.github.io/spicy/articles/table-regression.md)
 covers the shared mechanics (the class-by-class map is [*Supported
 models*](https://amaltawfik.github.io/spicy/articles/table-regression-supported-models.md));
@@ -26,12 +26,12 @@ supports two engines:
   [`stan_lmer()`](https://mc-stan.org/rstanarm/reference/stan_glmer.html),
   [`stan_glmer()`](https://mc-stan.org/rstanarm/reference/stan_glmer.html))
   — ships precompiled models, so fits run in seconds and every
-  `rstanarm` chunk in this vignette executes live;
+  `rstanarm` chunk in this article executes live;
 - **`brms`** (`brm()`) — a wider model space, at the cost of compiling
   each model; shown at the end (the code is identical in spirit).
 
 The running example is the logistic regression of `smoking` from the
-main vignette’s glm section — same data (`sochealth`), same predictors —
+main article’s glm section — same data (`sochealth`), same predictors —
 so the Bayesian table can be read against its frequentist twin.
 
 ``` r
@@ -43,11 +43,11 @@ fit <- stan_glm(smoking ~ sex + age + education, data = sh,
                 iter = 1000, chains = 2, seed = 123, refresh = 0)
 ```
 
-The sampler settings are trimmed so this vignette builds in seconds —
-for real work, keep rstanarm’s defaults (four chains of 2,000
-iterations): R-hat compares chains, so it needs several to compare, and
-credible bounds are tail quantiles, estimated exactly where draws are
-scarcest (Vehtari et al. 2021).
+The sampler settings are trimmed so this article builds in seconds — for
+real work, keep rstanarm’s defaults (four chains of 2,000 iterations):
+R-hat compares chains, so it needs several to compare, and credible
+bounds are tail quantiles, estimated exactly where draws are scarcest
+(Vehtari et al. 2021).
 
 ## What changes in a Bayesian table
 
@@ -670,7 +670,7 @@ a `spicy_bayes_diagnostics` warning fires — a manuscript fit with
 rstanarm’s default sampler settings renders this same table clean.
 
 Compare this block with the `lmer` table of the [mixed-effects
-vignette](https://amaltawfik.github.io/spicy/articles/table-regression-mixed.md):
+article](https://amaltawfik.github.io/spicy/articles/table-regression-mixed.md):
 same layout, but the credible interval on the `Days` slope SD — the
 `σ Subject Days` row — is a genuine posterior statement — no
 chi-bar-squared correction, no profile refit — and the footer reads
@@ -746,9 +746,11 @@ of the exponentiated draws); CI bounds exponentiated (asymmetric).
 
 ## See also
 
-- [`vignette("table-regression", package = "spicy")`](https://amaltawfik.github.io/spicy/articles/table-regression.md)
+- [*Publication-ready regression
+  tables*](https://amaltawfik.github.io/spicy/articles/table-regression.md)
   for the shared mechanics (columns, layouts, filtering).
-- [`vignette("table-regression-mixed", package = "spicy")`](https://amaltawfik.github.io/spicy/articles/table-regression-mixed.md)
+- [*Mixed-effects regression
+  tables*](https://amaltawfik.github.io/spicy/articles/table-regression-mixed.md)
   for the frequentist multilevel counterpart of the random-effects
   block.
 

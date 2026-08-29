@@ -6,9 +6,9 @@ library(spicy)
 library(MASS)        # polr()
 ```
 
-This vignette covers **ordinal regression** — models for an *ordered*
+This article covers **ordinal regression** — models for an *ordered*
 categorical response such as a Poor \< Fair \< Good \< Very good health
-rating or a Likert agreement scale. The companion vignette
+rating or a Likert agreement scale. The companion article
 [*Publication-ready regression
 tables*](https://amaltawfik.github.io/spicy/articles/table-regression.md)
 covers the shared mechanics (`vcov`, `ci_level`, output formats,
@@ -206,7 +206,7 @@ cut-point (`Poor | Fair`, `Fair | Good`, `Good | Very good`). It is
 detail is what the AME matrix below provides. For a location
 (proportional) coefficient, an OR above 1 raises the cumulative odds of
 being in a *higher* health category and an OR below 1 lowers them — the
-non-proportional block later in this vignette follows the opposite
+non-proportional block later in this article follows the opposite
 convention. Exact reading for the one borderline effect here: smoking’s
 OR of 0.76 means that, at every cut-point, smokers have about 24% lower
 odds of being in a higher health category rather than a lower one,
@@ -362,8 +362,7 @@ has no method for an ordinal MLE — so for `polr` / `clm` all four `CR*`
 labels map to the *same* plain (CR0-type) cluster sandwich, and the
 footer names the estimator `CL` rather than the requested label. Pass
 the cluster as a formula, a column name, or a vector (the three accepted
-forms are detailed in the main vignette’s *Cluster-robust (CR)*
-section):
+forms are detailed in the main article’s *Cluster-robust (CR)* section):
 
 ``` r
 
@@ -751,7 +750,7 @@ never plausible.
   is itself doubtful, abandon ordinality for **multinomial logit** — the
   standard unconstrained alternative (Long & Freese 2014), compared to
   the ordinal fit by AIC — covered in the [multinomial
-  vignette](https://amaltawfik.github.io/spicy/articles/table-regression-multinomial.md).
+  article](https://amaltawfik.github.io/spicy/articles/table-regression-multinomial.md).
 - For asymmetric responses and grouped survival times, the **cloglog**
   link (`method = "cloglog"` in `polr`, `link = "cloglog"` in `clm`)
   replaces the odds-ratio reading with a hazard-ratio one — displayed as

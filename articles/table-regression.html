@@ -107,7 +107,7 @@
       <img src="../logo.svg" class="logo" alt=""><h1>Publication-ready regression tables</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/amaltawfik/spicy/blob/main/vignettes/table-regression.Rmd" class="external-link"><code>vignettes/table-regression.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/amaltawfik/spicy/blob/main/vignettes/articles/table-regression.Rmd" class="external-link"><code>vignettes/articles/table-regression.Rmd</code></a></small>
       <div class="d-none name"><code>table-regression.Rmd</code></div>
     </div>
 
@@ -136,38 +136,36 @@ comes from.</p>
 models, not raw data and a formula. The same object exports cleanly to a
 long broom-canonical frame (<code><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">broom::tidy()</a></code>) and to a
 one-row-per-model glance summary (<code><a href="https://generics.r-lib.org/reference/glance.html" class="external-link">broom::glance()</a></code>).</p>
-<p>This vignette teaches the shared mechanics on <code><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm()</a></code> and
+<p>This article teaches the shared mechanics on <code><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm()</a></code> and
 <code><a href="https://rdrr.io/r/stats/glm.html" class="external-link">glm()</a></code> fits. The <em>Generalised linear models</em> section
 covers the glm-specific argument semantics; the <em>Mixed-effects
 models</em> section introduces the Random effects rows that
 mixed-effects fits add below the fixed effects (<code>lmer</code>,
 <code>glmer</code>, <code>glmmTMB</code>, <code>lme</code>). Each
-further model family has a dedicated vignette that applies these
-mechanics to its own estimands:
-<code><a href="../articles/table-regression-mixed.html">vignette("table-regression-mixed")</a></code> for mixed-effects
-models, <code><a href="../articles/table-regression-gee.html">vignette("table-regression-gee")</a></code> for
-population-averaged (GEE) models,
-<code><a href="../articles/table-regression-counts.html">vignette("table-regression-counts")</a></code> for Poisson,
-negative-binomial, and two-part models,
-<code><a href="../articles/table-regression-ordinal.html">vignette("table-regression-ordinal")</a></code> for ordinal models
-(<code>polr</code>, <code>clm</code>),
-<code><a href="../articles/table-regression-multinomial.html">vignette("table-regression-multinomial")</a></code> for multinomial
-models (<code>multinom</code>, <code>mlogit</code>),
-<code><a href="../articles/table-regression-survival.html">vignette("table-regression-survival")</a></code> for survival models
-(<code>coxph</code>, <code>survreg</code>), and
-<code><a href="../articles/table-regression-bayesian.html">vignette("table-regression-bayesian")</a></code> for Bayesian fits
-(<code>rstanarm</code>, <code>brms</code>). The mechanics covered here —
-confidence levels, multi-model and nested layouts, p-value adjustment,
-coefficient filtering, output formats, and the broom methods — apply
-across every supported class; variance-estimator availability varies by
-family, and the complete map — every supported class with its estimands,
-variance estimators and fit statistics, including the families without a
+further model family has a dedicated article that applies these
+mechanics to its own estimands: <a href="table-regression-mixed.html"><em>Mixed-effects regression
+tables</em></a> for mixed-effects models, <a href="table-regression-gee.html"><em>GEE regression tables</em></a> for
+population-averaged (GEE) models, <a href="table-regression-counts.html"><em>Count and two-part regression
+tables</em></a> for Poisson, negative-binomial, and two-part models, <a href="table-regression-ordinal.html"><em>Ordinal regression
+tables</em></a> for ordinal models (<code>polr</code>,
+<code>clm</code>), <a href="table-regression-multinomial.html"><em>Multinomial regression
+tables</em></a> for multinomial models (<code>multinom</code>,
+<code>mlogit</code>), <a href="table-regression-survival.html"><em>Survival regression
+tables</em></a> for survival models (<code>coxph</code>,
+<code>survreg</code>), and <a href="table-regression-bayesian.html"><em>Bayesian regression
+tables</em></a> for Bayesian fits (<code>rstanarm</code>,
+<code>brms</code>). The mechanics covered here — confidence levels,
+multi-model and nested layouts, p-value adjustment, coefficient
+filtering, output formats, and the broom methods — apply across every
+supported class; variance-estimator availability varies by family, and
+the complete map — every supported class with its estimands, variance
+estimators and fit statistics, including the families without a
 dedicated article (quantile regression, <code>fixest</code>,
-<code>betareg</code>, …) — is
-<code><a href="../articles/table-regression-supported-models.html">vignette("table-regression-supported-models")</a></code>. One decision
-cuts across all of them — how to code, test, and present categorical
-<em>predictors</em> — and has its own vignette:
-<code><a href="../articles/categorical-predictors.html">vignette("categorical-predictors")</a></code>.</p>
+<code>betareg</code>, …) — is <a href="table-regression-supported-models.html"><em>Supported
+models</em></a>. One decision cuts across all of them — how to code,
+test, and present categorical <em>predictors</em> — and has its own
+article: <a href="categorical-predictors.html"><em>Categorical
+predictors</em></a>.</p>
 <div class="section level2">
 <h2 id="basic-usage">Basic usage<a class="anchor" aria-label="anchor" href="#basic-usage"></a>
 </h2>
@@ -246,8 +244,8 @@ above 0.01, floor <code>&lt;0.001</code>:</p>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: classical (OLS).</span></span></span></code></pre></div>
 <p>The complete tour of the named styles — what each journal specifies,
 with the guideline sentence behind every rule — is in the <em>House
-styles</em> section of
-<code><a href="../articles/summary-tables-reporting.html">vignette("summary-tables-reporting")</a></code>.</p>
+styles</em> section of <a href="summary-tables-reporting.html"><em>Summary tables for
+reporting</em></a>.</p>
 </div>
 <div class="section level2">
 <h2 id="standardised-coefficients">Standardised coefficients<a class="anchor" aria-label="anchor" href="#standardised-coefficients"></a>
@@ -362,7 +360,7 @@ which R codes with polynomial contrasts (<code>.L</code> = linear,
 <code>.Q</code> = quadratic) — trend components across the ordered
 levels, not per-level effects against a reference. For a coefficient
 table read level-against-reference, convert it to a plain factor; we
-reuse this copy throughout the vignette:</p>
+reuse this copy throughout the article:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">sh</span> <span class="op">&lt;-</span> <span class="va">sochealth</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>education <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="va">education</span>, ordered <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span><span class="op">)</span></span>
@@ -637,7 +635,8 @@ fit statistic — it belongs to the joint model, not to any predictor. A
 <code>p_adjust</code> argument treats the screen as one family of tests.
 For a time-to-event screen the same call takes
 <code>method = "coxph"</code> with a <code><a href="https://rdrr.io/pkg/survival/man/Surv.html" class="external-link">Surv()</a></code> outcome — see
-<code><a href="../articles/table-regression-survival.html">vignette("table-regression-survival")</a></code>.</p>
+<a href="table-regression-survival.html"><em>Survival regression
+tables</em></a>.</p>
 </div>
 <div class="section level2">
 <h2 id="hierarchical-nested-regression">Hierarchical / nested regression<a class="anchor" aria-label="anchor" href="#hierarchical-nested-regression"></a>
@@ -1226,10 +1225,9 @@ full-sample count on numeric predictors and the intercept row:</p>
 <p>The token is off by default and <em>deliberately narrow</em>: it is
 defined for binomial models with an ungrouped 0/1 response and for
 right-censored Cox models (events per factor level; Cox tables also
-carry <code>N events</code> as a default fit statistic — see
-<code><a href="../articles/table-regression-survival.html">vignette("table-regression-survival")</a></code>). Requesting it
-anywhere else is a hard, classed error rather than a silently empty
-column.</p>
+carry <code>N events</code> as a default fit statistic — see <a href="table-regression-survival.html"><em>Survival regression
+tables</em></a>). Requesting it anywhere else is a hard, classed error
+rather than a silently empty column.</p>
 </div>
 <div class="section level3">
 <h3 id="term-level-partial-chi-square">Term-level partial chi-square<a class="anchor" aria-label="anchor" href="#term-level-partial-chi-square"></a>
@@ -1601,8 +1599,8 @@ whose reference respects the boundary.</p>
 Nakagawa R² and ICC mechanics, per-class inference paths, singular fits,
 testing random components, and the <code>glmmTMB</code> /
 <code><a href="https://rdrr.io/pkg/nlme/man/lme.html" class="external-link">nlme::lme</a></code> specifics — including a worked <code>glmer</code>
-AME example — see
-<code><a href="../articles/table-regression-mixed.html">vignette("table-regression-mixed", package = "spicy")</a></code>.</p>
+AME example — see <a href="table-regression-mixed.html"><em>Mixed-effects regression
+tables</em></a>.</p>
 </div>
 <div class="section level2">
 <h2 id="output-formats">Output formats<a class="anchor" aria-label="anchor" href="#output-formats"></a>
@@ -2282,68 +2280,72 @@ per-coefficient effect-size estimates without ambiguity.</p>
 </h2>
 <ul>
 <li>
-<code><a href="../articles/table-regression-supported-models.html">vignette("table-regression-supported-models", package = "spicy")</a></code>
-— the map of every supported class: estimands, variance estimators,
-standardized-coefficient scope, and fit statistics per family.</li>
+<a href="table-regression-supported-models.html"><em>Supported
+models</em></a> — the map of every supported class: estimands, variance
+estimators, standardized-coefficient scope, and fit statistics per
+family.</li>
 <li>
-<code><a href="../articles/categorical-predictors.html">vignette("categorical-predictors", package = "spicy")</a></code>
-for categorical <em>predictors</em> across all model families: dummy
-coding and reference levels, joint tests, ordinal predictors (scores vs
-dummies), and the categorization trap.</li>
+<a href="categorical-predictors.html"><em>Categorical
+predictors</em></a> for categorical <em>predictors</em> across all model
+families: dummy coding and reference levels, joint tests, ordinal
+predictors (scores vs dummies), and the categorization trap.</li>
 </ul>
-<p>Model-family vignettes build on the mechanics shown here:</p>
+<p>Model-family articles build on the mechanics shown here:</p>
 <ul>
 <li>
-<code><a href="../articles/table-regression-mixed.html">vignette("table-regression-mixed", package = "spicy")</a></code>
-for mixed-effects (multilevel) models: random effects as table rows,
-ICC, the boundary-corrected chi-bar-squared test, and opt-in per-term
-LRT / RLRT.</li>
+<a href="table-regression-mixed.html"><em>Mixed-effects regression
+tables</em></a> for mixed-effects (multilevel) models: random effects as
+table rows, ICC, the boundary-corrected chi-bar-squared test, and opt-in
+per-term LRT / RLRT.</li>
 <li>
-<code><a href="../articles/table-regression-gee.html">vignette("table-regression-gee", package = "spicy")</a></code> for
-population-averaged (GEE) models: the fit’s own sandwich inference,
-working-correlation choice via QIC, and jackknife variants for few
-clusters.</li>
+<a href="table-regression-gee.html"><em>GEE regression
+tables</em></a> for population-averaged (GEE) models: the fit’s own
+sandwich inference, working-correlation choice via QIC, and jackknife
+variants for few clusters.</li>
 <li>
-<code><a href="../articles/table-regression-counts.html">vignette("table-regression-counts", package = "spicy")</a></code>
-for count and two-part models: Poisson and negative-binomial rate
-ratios, offsets, and zero-inflated / hurdle components as labelled
-blocks.</li>
+<a href="table-regression-counts.html"><em>Count and two-part
+regression tables</em></a> for count and two-part models: Poisson and
+negative-binomial rate ratios, offsets, and zero-inflated / hurdle
+components as labelled blocks.</li>
 <li>
-<code><a href="../articles/table-regression-ordinal.html">vignette("table-regression-ordinal", package = "spicy")</a></code>
-for ordinal (proportional-odds) models: shared slopes, ordered
-thresholds as rows, and per-category marginal effects.</li>
+<a href="table-regression-ordinal.html"><em>Ordinal regression
+tables</em></a> for ordinal (proportional-odds) models: shared slopes,
+ordered thresholds as rows, and per-category marginal effects.</li>
 <li>
-<code><a href="../articles/table-regression-multinomial.html">vignette("table-regression-multinomial", package = "spicy")</a></code>
-for multinomial logistic models: outcome categories as columns and
-changing the reference category.</li>
+<a href="table-regression-multinomial.html"><em>Multinomial
+regression tables</em></a> for multinomial logistic models: outcome
+categories as columns and changing the reference category.</li>
 <li>
-<code><a href="../articles/table-regression-survival.html">vignette("table-regression-survival", package = "spicy")</a></code>
-for survival models: Cox hazard ratios with events and concordance,
-accelerated failure time models, and survival estimands.</li>
+<a href="table-regression-survival.html"><em>Survival regression
+tables</em></a> for survival models: Cox hazard ratios with events and
+concordance, accelerated failure time models, and survival
+estimands.</li>
 <li>
-<code><a href="../articles/table-regression-bayesian.html">vignette("table-regression-bayesian", package = "spicy")</a></code>
-for Bayesian fits: posterior medians and credible intervals, the
-probability of direction, and random effects from the draws.</li>
+<a href="table-regression-bayesian.html"><em>Bayesian regression
+tables</em></a> for Bayesian fits: posterior medians and credible
+intervals, the probability of direction, and random effects from the
+draws.</li>
 </ul>
 <p>Descriptive and reporting companions:</p>
 <ul>
 <li>
-<code><a href="../articles/table-categorical.html">vignette("table-categorical", package = "spicy")</a></code> for
-the APA Table 1 categorical descriptors (factors, labelled variables,
-chi-squared tests, association measures).</li>
+<a href="table-categorical.html"><em>Categorical summary
+tables</em></a> for the APA Table 1 categorical descriptors (factors,
+labelled variables, chi-squared tests, association measures).</li>
 <li>
-<code><a href="../articles/table-continuous.html">vignette("table-continuous", package = "spicy")</a></code> for the
-APA Table 1 / Table 2 continuous descriptors and unadjusted
-group-comparison tests.</li>
+<a href="table-continuous.html"><em>Continuous summary
+tables</em></a> for the APA Table 1 / Table 2 continuous descriptors and
+unadjusted group-comparison tests.</li>
 <li>
-<code><a href="../articles/table-continuous-lm.html">vignette("table-continuous-lm", package = "spicy")</a></code> for
-the one-predictor-by-many-outcomes linear-model counterpart (estimated
-marginal means, contrast or slope, four effect-size families with
-noncentral CIs).</li>
+<a href="table-continuous-lm.html"><em>Model-based continuous
+summary tables</em></a> for the one-predictor-by-many-outcomes
+linear-model counterpart (estimated marginal means, contrast or slope,
+four effect-size families with noncentral CIs).</li>
 <li>
-<code><a href="../articles/summary-tables-reporting.html">vignette("summary-tables-reporting", package = "spicy")</a></code>
-for an end-to-end reporting workflow that combines the four spicy
-summary-table helpers along the APA Table 1 / 2 / 3 sequence.</li>
+<a href="summary-tables-reporting.html"><em>Summary tables for
+reporting</em></a> for an end-to-end reporting workflow that combines
+the four spicy summary-table helpers along the APA Table 1 / 2 / 3
+sequence.</li>
 </ul>
 </div>
 <div class="section level2">

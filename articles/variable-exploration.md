@@ -16,7 +16,7 @@ or [`vl()`](https://amaltawfik.github.io/spicy/reference/varlist.md),
 and build an interactive codebook with
 [`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md).
 
-This vignette focuses on three common tasks:
+This article focuses on three common tasks:
 
 - clean imported column names and recover variable labels with
   [`label_from_names()`](https://amaltawfik.github.io/spicy/reference/label_from_names.md)

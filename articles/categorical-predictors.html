@@ -107,7 +107,7 @@
       <img src="../logo.svg" class="logo" alt=""><h1>Categorical predictors</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/amaltawfik/spicy/blob/main/vignettes/categorical-predictors.Rmd" class="external-link"><code>vignettes/categorical-predictors.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/amaltawfik/spicy/blob/main/vignettes/articles/categorical-predictors.Rmd" class="external-link"><code>vignettes/articles/categorical-predictors.Rmd</code></a></small>
       <div class="d-none name"><code>categorical-predictors.Rmd</code></div>
     </div>
 
@@ -115,13 +115,13 @@
     
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/amaltawfik/spicy/" class="external-link">spicy</a></span><span class="op">)</span></span></code></pre></div>
-<p>Every regression vignette in this collection is organised by the type
+<p>Every regression article in this collection is organised by the type
 of <em>outcome</em> — continuous, binary, count, ordinal, multinomial,
 survival. This one is organised by the type of <em>predictor</em>. How a
 categorical predictor is coded, tested, simplified, and presented is the
 same decision whether the model is an <code><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm()</a></code>, a logistic
 regression, or a Cox model, so it has one home rather than a copy in
-every family vignette. The examples use the bundled
+every family article. The examples use the bundled
 <code>sochealth</code> survey data (<code><a href="../reference/sochealth.html">?sochealth</a></code>) with
 <code><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm()</a></code> and <code><a href="https://rdrr.io/r/stats/glm.html" class="external-link">glm()</a></code> fits; everything shown carries
 over to the other supported classes.</p>
@@ -295,7 +295,7 @@ digit (F = 3.13 on 3 and 1195 df, p = .025):</p>
 <p>For <code>glm</code> fits, the <code>partial_chi2</code> column
 reports the same joint question per term as a likelihood-ratio
 chi-square with its df, without needing a second model (see the main
-vignette’s <em>Term-level partial chi-square</em>).</p>
+article’s <em>Term-level partial chi-square</em>).</p>
 <p>The rule cuts the other way too:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">d_r</span> <span class="op">&lt;-</span> <span class="va">sochealth</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/stats/complete.cases.html" class="external-link">complete.cases</a></span><span class="op">(</span></span>
@@ -381,7 +381,7 @@ tests are exactly what polynomial contrasts are for — but it is
 <em>not</em> the level-versus-reference reading most regression tables
 intend. For that, convert to a plain factor
 (<code>factor(x, ordered = FALSE)</code>), as the message suggests and
-as the other vignettes in this collection do.</p>
+as the other articles in this collection do.</p>
 </div>
 <div class="section level2">
 <h2 id="scores-or-dummies">Scores or dummies?<a class="anchor" aria-label="anchor" href="#scores-or-dummies"></a>
@@ -668,7 +668,7 @@ exists.</p>
 <code>reference_style = "annotation"</code> lifts the reference into the
 factor header for compact tables; <code>keep</code> / <code>drop</code>
 filter rows by regex after all statistics are computed (see the main
-vignette’s <em>Display options</em> and <em>Filtering displayed
+article’s <em>Display options</em> and <em>Filtering displayed
 coefficients</em>):</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span></span>
@@ -700,17 +700,18 @@ coefficients</em>):</p>
 </h2>
 <ul>
 <li>
-<code><a href="../articles/table-regression.html">vignette("table-regression", package = "spicy")</a></code> for the
-shared table mechanics (variance estimators, nested layouts, filtering,
-output formats).</li>
+<a href="table-regression.html"><em>Publication-ready regression
+tables</em></a> for the shared table mechanics (variance estimators,
+nested layouts, filtering, output formats).</li>
 <li>
-<code><a href="../articles/table-regression-ordinal.html">vignette("table-regression-ordinal", package = "spicy")</a></code>
-for ordinal <em>outcomes</em> — the proportional-odds model, its tests
-and relaxations.</li>
+<a href="table-regression-ordinal.html"><em>Ordinal regression
+tables</em></a> for ordinal <em>outcomes</em> — the proportional-odds
+model, its tests and relaxations.</li>
 <li>
-<code><a href="../articles/table-regression-multinomial.html">vignette("table-regression-multinomial", package = "spicy")</a></code>
-for the scores-vs-dummies decision inside a multinomial model, where
-each freed coding costs one parameter per equation.</li>
+<a href="table-regression-multinomial.html"><em>Multinomial
+regression tables</em></a> for the scores-vs-dummies decision inside a
+multinomial model, where each freed coding costs one parameter per
+equation.</li>
 </ul>
 </div>
 <div class="section level2">
