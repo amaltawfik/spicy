@@ -1160,6 +1160,25 @@ test_that("ordinary missing values are counted in the note", {
 
 # ---- restitution ----------------------------------------------------------
 
+test_that("the design table comes back visibly, and assigning it says nothing", {
+  # Decision 47, the family invariant: a bare call renders through the
+  # print method (capture.output() evaluates as at top level, so the
+  # visible return auto-prints), an assignment writes nothing. This
+  # twin was already conformant; the witness pins it.
+  d <- .svyc_design("clus1")
+  bare <- suppressWarnings(
+    utils::capture.output(table_continuous_svy(d, select = api00))
+  )
+  expect_true(length(bare) > 0)
+
+  assigned <- suppressWarnings(
+    utils::capture.output(tbl <- table_continuous_svy(d, select = api00))
+  )
+  expect_identical(assigned, character(0))
+  expect_s3_class(tbl, "spicy_continuous_svy_table")
+  expect_identical(utils::capture.output(print(tbl)), bare)
+})
+
 test_that("the console table prints its title, its columns and its footer", {
   d <- .svyc_design("clus1")
   expect_snapshot(table_continuous_svy(d, select = c(api00, api99)))

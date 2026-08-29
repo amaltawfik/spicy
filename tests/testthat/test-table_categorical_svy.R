@@ -880,6 +880,25 @@ test_that("the categorical refusal clause says how far it reached", {
 
 # ---- restitution ----------------------------------------------------------
 
+test_that("the design table comes back visibly, and assigning it says nothing", {
+  # Decision 47, the family invariant: a bare call renders through the
+  # print method (capture.output() evaluates as at top level, so the
+  # visible return auto-prints), an assignment writes nothing. This
+  # twin was already conformant; the witness pins it.
+  d <- .svycat_design("clus1")
+  bare <- suppressWarnings(
+    utils::capture.output(table_categorical_svy(d, select = stype))
+  )
+  expect_true(length(bare) > 0)
+
+  assigned <- suppressWarnings(
+    utils::capture.output(tbl <- table_categorical_svy(d, select = stype))
+  )
+  expect_identical(assigned, character(0))
+  expect_s3_class(tbl, "spicy_categorical_svy_table")
+  expect_identical(utils::capture.output(print(tbl)), bare)
+})
+
 test_that("the console table prints its blocks, its spanners and its footer", {
   d <- .svycat_design("clus1")
   expect_snapshot(table_categorical_svy(d, select = c(stype, awards)))
