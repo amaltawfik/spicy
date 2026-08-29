@@ -275,6 +275,9 @@ test_that("varlist() returns empty tibble when no columns match", {
 })
 
 test_that("varlist() non-interactive with no tbl returns message", {
+  # The block tests the non-interactive branch by name; a console
+  # session takes the viewer branch instead (premise = guard).
+  skip_if(interactive(), "needs a non-interactive session")
   expect_message(
     varlist(mtcars),
     "Non-interactive session"
@@ -733,6 +736,7 @@ test_that("varlist() empty selection returns empty data.frame with tbl", {
 })
 
 test_that("varlist() non-interactive empty selection prints message", {
+  skip_if(interactive(), "needs a non-interactive session")
   df <- data.frame(x = 1:3)
   expect_message(
     suppressWarnings(varlist(df, starts_with("z"))),
@@ -741,6 +745,7 @@ test_that("varlist() non-interactive empty selection prints message", {
 })
 
 test_that("varlist() non-interactive prints message", {
+  skip_if(interactive(), "needs a non-interactive session")
   expect_message(
     varlist(mtcars),
     "Non-interactive"
