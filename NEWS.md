@@ -124,6 +124,11 @@
   different fixed-effect specifications, nor across estimation methods.
   Refit both with `method = "ML"`. Comparisons that differ only in the
   random structure are unaffected.
+* The package ships one vignette, *Get started*; the twenty
+  walk-throughs live as articles on the package site, at the same URLs.
+  `vignette("<name>")` no longer finds them from an installed package --
+  read them at <https://amaltawfik.github.io/spicy/>, where every help
+  page now links.
 
 ## New supported models
 
