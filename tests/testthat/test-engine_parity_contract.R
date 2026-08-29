@@ -363,6 +363,11 @@ test_that("the gt note survives every route to a rendered table", {
   gt::gtsave(g, path)
   saved <- paste(readLines(path, warn = FALSE), collapse = "\n")
   expect_true(grepl(note_bit, saved, fixed = TRUE))
+  # The console-print route is the NON-interactive delegation: in an
+  # interactive session gt displays in the viewer and the capture is
+  # empty. The two robust routes above already ran; only this last
+  # assertion needs the guard.
+  skip_if(interactive(), "console print needs a non-interactive session")
   expect_true(any(grepl(
     note_bit,
     capture.output(print(g)),

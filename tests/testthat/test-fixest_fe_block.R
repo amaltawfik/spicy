@@ -222,6 +222,9 @@ test_that("structured and rich engines encode the FE cells correctly", {
   expect_lt(i_fe, grep("^ n\\s", out)[1])
   # Rich engines display Yes/No, never the numeric encoding.
   skip_if_not_installed("tinytable")
+  # tinytable's print shows in the viewer when interactive; only the
+  # non-interactive textual print can be captured and asserted on.
+  skip_if(interactive(), "console print needs a non-interactive session")
   tt <- suppressWarnings(table_regression(
     list(OLS = fl, FE = f_fe, OrOnly = f_or),
     output = "tinytable"

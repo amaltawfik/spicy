@@ -6,3 +6,10 @@
 # Neutralised once here; blocks that test a language, a style or a
 # label override set their own, scoped with withr::local_options().
 options(spicy.language = NULL, spicy.style = NULL, spicy.labels = NULL)
+
+# The ASCII renderer splits panels on getOption("width"), and a handful
+# of witnesses address rendered lines by position. Rscript runs at 80;
+# an IDE console follows its pane, so devtools::test() from a console
+# re-wrapped the corpus and failed layout pins spuriously. Same
+# baseline for every session.
+options(width = 80L)
