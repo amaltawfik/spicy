@@ -7,9 +7,9 @@
 
   Get started with spicy for descriptive statistics, variable
   inspection, frequency tables, cross-tabulations, association measures,
-  categorical and continuous summary tables, regression coefficient
-  tables, and codebooks in R. A tidyverse-friendly alternative to SPSS
-  and Stata for survey and labelled data workflows.
+  categorical and continuous summary tables, regression tables, and
+  codebooks in R. A tidyverse-friendly alternative to SPSS and Stata for
+  survey and labelled data workflows.
 
 - [Explore variables and build
   codebooks](https://amaltawfik.github.io/spicy/articles/variable-exploration.md):
@@ -77,14 +77,13 @@
 - [Publication-ready regression
   tables](https://amaltawfik.github.io/spicy/articles/table-regression.md):
 
-  Coefficient tables for fitted regression models in R with
-  journal-grade formatting (APA by default; JAMA, NEJM, The Lancet,
-  Annals, or AER by name): classical, heteroskedasticity-consistent and
-  cluster-robust variance, five standardisation methods, partial effect
-  sizes with noncentral-F CIs, average marginal effects,
-  multiple-comparison adjustment, side-by-side and hierarchical layouts,
-  and output to console, gt, tinytable, flextable, Excel, Word, or
-  clipboard.
+  Regression tables for fitted models in R with journal-grade formatting
+  (APA by default; JAMA, NEJM, The Lancet, Annals, or AER by name):
+  classical, heteroskedasticity-consistent and cluster-robust variance,
+  five standardisation methods, partial effect sizes with noncentral-F
+  CIs, average marginal effects, multiple-comparison adjustment,
+  side-by-side and hierarchical layouts, and output to console, gt,
+  tinytable, flextable, Excel, Word, or clipboard.
 
 - [Supported
   models](https://amaltawfik.github.io/spicy/articles/table-regression-supported-models.md):

@@ -1086,7 +1086,7 @@ table_continuous(
 | Missing values removed: bmi (12), life_sat_health (8). |  |  |  |  |  |  |  |  |  |
 
 Descriptive statistics by Highest education level
-{#tinytable_9gqaweeckkyq14bj8cie .table .tinytable
+{#tinytable_1v9q4djx9pncj14muh1x .table .tinytable
 style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 
@@ -1130,8 +1130,8 @@ table_continuous(
   or case weights.
 - See [*Publication-ready regression
   tables*](https://amaltawfik.github.io/spicy/articles/table-regression.md)
-  for full coefficient tables from one or several fitted `lm` / `glm`
-  models (APA Table 3).
+  for full regression tables from one or more fitted models (APA Table
+  3).
 - See [*Summary tables for
   reporting*](https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.md)
   for a cross-function reporting workflow that ties the four

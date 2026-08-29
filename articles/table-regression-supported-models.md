@@ -7,7 +7,7 @@ library(spicy)
 
 [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
 takes fitted model objects – never raw data plus a formula – and renders
-them as publication-ready coefficient tables. “Supported” is a
+them as publication-ready regression tables. “Supported” is a
 commitment, not a list of classes that happen to run: every number a
 supported class produces is validated against a field reference (the
 model’s own [`summary()`](https://rdrr.io/r/base/summary.html),
