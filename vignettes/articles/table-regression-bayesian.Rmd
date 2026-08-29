@@ -526,9 +526,9 @@ pkgdown_dark_gt(table_regression(fit, exponentiate = TRUE, output = "gt"))
 
 ## See also
 
-- `vignette("table-regression", package = "spicy")` for the shared
+- [*Publication-ready regression tables*](table-regression.html) for the shared
   mechanics (columns, layouts, filtering).
-- `vignette("table-regression-mixed", package = "spicy")` for the
+- [*Mixed-effects regression tables*](table-regression-mixed.html) for the
   frequentist multilevel counterpart of the random-effects block.
 
 ## References

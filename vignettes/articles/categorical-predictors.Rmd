@@ -394,13 +394,13 @@ table_regression(
 
 ## See also
 
-- `vignette("table-regression", package = "spicy")` for the shared
+- [*Publication-ready regression tables*](table-regression.html) for the shared
   table mechanics (variance estimators, nested layouts, filtering,
   output formats).
-- `vignette("table-regression-ordinal", package = "spicy")` for
+- [*Ordinal regression tables*](table-regression-ordinal.html) for
   ordinal *outcomes* — the proportional-odds model, its tests and
   relaxations.
-- `vignette("table-regression-multinomial", package = "spicy")` for
+- [*Multinomial regression tables*](table-regression-multinomial.html) for
   the scores-vs-dummies decision inside a multinomial model, where
   each freed coding costs one parameter per equation.
 

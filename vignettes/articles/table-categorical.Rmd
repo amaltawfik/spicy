@@ -36,7 +36,7 @@ the selected variables. Export to gt, tinytable, flextable, Excel, or
 Word. Formatting follows APA conventions by default; `style = "jama"`
 (or `"nejm"`, `"lancet"`, `"annals"`, `"aer"`) switches the whole
 table to that journal's published rules — the *House styles* section
-of `vignette("summary-tables-reporting")` shows each style and the
+of [*Summary tables for reporting*](summary-tables-reporting.html) shows each style and the
 guideline sentence behind every rule. This vignette walks through the
 main features.
 
@@ -164,8 +164,9 @@ which measure was used for each variable.
 Seven measures are available: `"cramer_v"`, `"phi"`, `"gamma"`,
 `"tau_b"`, `"tau_c"`, `"somers_d"`, and `"lambda"`; `assoc_measure =
 "none"` drops the column entirely. See `?table_categorical` for the
-dispatch details and `vignette("association-measures", package =
-"spicy")` for definitions and guidance on choosing among them.
+dispatch details and
+[*Cramer's V, Phi, and association measures*](association-measures.html)
+for definitions and guidance on choosing among them.
 Override the automatic choice with a single string for uniform
 application, or with a named vector to mix measures per row:
 
@@ -497,14 +498,14 @@ table_categorical(
 
 ## See also
 
-- See `vignette("table-continuous", package = "spicy")` for the
+- See [*Continuous summary tables*](table-continuous.html) for the
   continuous counterpart with classical group-comparison tests.
-- See `vignette("table-continuous-lm", package = "spicy")` for
+- See [*Model-based continuous summary tables*](table-continuous-lm.html) for
   model-based continuous summary tables.
-- See `vignette("table-regression", package = "spicy")` for the
+- See [*Publication-ready regression tables*](table-regression.html) for the
   full coefficient table from one or several fitted `lm` / `glm`
   models (APA Table 3).
-- See `vignette("summary-tables-reporting", package = "spicy")` for
+- See [*Summary tables for reporting*](summary-tables-reporting.html) for
   a cross-function reporting workflow that ties the four
   summary-table helpers together along the APA Table 1 / 2 / 3
   sequence.

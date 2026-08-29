@@ -290,11 +290,11 @@ options(
 
 ## Learn more
 
-- `vignette("association-measures")` - choosing the right effect size
+- [*Cramer's V, Phi, and association measures*](association-measures.html) - choosing the right effect size
   for your contingency table.
-- `vignette("table-categorical")` - building publication-ready
+- [*Categorical summary tables*](table-categorical.html) - building publication-ready
   categorical tables.
-- `vignette("summary-tables-reporting")` - end-to-end reporting
+- [*Summary tables for reporting*](summary-tables-reporting.html) - end-to-end reporting
   workflow that ties the four `table_*` helpers together along the
   APA Table 1 / 2 / 3 sequence (including `table_regression()` for
   the coefficient table).

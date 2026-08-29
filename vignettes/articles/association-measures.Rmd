@@ -359,9 +359,9 @@ print(res, digits = 5)
 
 ## See also
 
-- See `vignette("frequency-tables")` for `cross_tab()`, which reports
+- See [*Frequency tables and cross-tabulations*](frequency-tables.html) for `cross_tab()`, which reports
   these measures inline through its `assoc_measure` argument.
-- See `vignette("table-categorical")` for association measures inside
+- See [*Categorical summary tables*](table-categorical.html) for association measures inside
   publication-ready categorical summary tables.
 
 ## References

@@ -379,7 +379,7 @@ general model-building decision, not a multinomial one: the workflow
 — fit both codings, compare with `nested = TRUE`, and keep the scores
 only when the likelihood-ratio test finds no departure from a linear
 trend — is developed with its caveats in
-`vignette("categorical-predictors")`. One point *is*
+[*Categorical predictors*](categorical-predictors.html). One point *is*
 multinomial-specific: each freed coding costs one parameter **per
 equation**, so the test's degrees of freedom multiply by the number
 of non-reference outcomes:

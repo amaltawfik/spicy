@@ -253,8 +253,8 @@ refused for Bayesian tables, which carry no p-values at all.
 **Linear and generalized linear.** The core engines: `lm`, `glm`
 (with profile CIs on request), `MASS::glm.nb` (with opt-in `theta` /
 `alpha` dispersion statistics), `MASS::rlm`, `stats::nls`. Start
-with `vignette("table-regression")` and
-`vignette("categorical-predictors")`.
+with [*Publication-ready regression tables*](table-regression.html) and
+[*Categorical predictors*](categorical-predictors.html).
 
 **Robust, IV, quantile, panel.** `estimatr::lm_robust()` /
 `iv_robust()`, `AER::ivreg()` and `AER::tobit()`, `quantreg::rq()`
@@ -273,32 +273,32 @@ and `nlme::gls`. Random effects render as rows -- SD, correlations,
 residual -- deliberately without per-row p-values; the footer
 carries the boundary-correct chi-bar-squared test, and
 `re_test = "lrt"` / `"rlrt"` adds per-term tests. See
-`vignette("table-regression-mixed")`.
+[*Mixed-effects regression tables*](table-regression-mixed.html).
 
 **Population-averaged (GEE).** `geepack::geeglm()`: marginal
 (population-averaged) coefficients with the fit's own sandwich SEs
 as the default inference, the working correlation structure disclosed
 in the footer (with its estimated alpha), cluster-structure fit
 statistics, and opt-in QIC / QICu. See
-`vignette("table-regression-gee")` for the full workflow;
-`vignette("table-regression-mixed")` contrasts GEE with
+[*GEE regression tables*](table-regression-gee.html) for the full workflow;
+[*Mixed-effects regression tables*](table-regression-mixed.html) contrasts GEE with
 subject-specific mixed models in a single table.
 
 **Ordinal.** `MASS::polr` and `ordinal::clm`: proportional odds
 ratios, a `Thresholds` block for the cut-points (log-odds scale,
 never exponentiated), partial-proportional-odds terms as a
 `Non-proportional effects` block, and per-category AME. See
-`vignette("table-regression-ordinal")`.
+[*Ordinal regression tables*](table-regression-ordinal.html).
 
 **Categorical.** `nnet::multinom` renders outcome categories as
 columns with per-outcome AME; `mlogit::mlogit` renders
 per-alternative rows for discrete-choice designs. See
-`vignette("table-regression-multinomial")`.
+[*Multinomial regression tables*](table-regression-multinomial.html).
 
 **Counts and two-part.** Poisson and negative binomial through
 `glm` / `glm.nb` / `glmmTMB`, plus `pscl::zeroinfl()` and
 `pscl::hurdle()` with their zero components as labelled blocks and a
-combined-response AME. See `vignette("table-regression-counts")`.
+combined-response AME. See [*Count and two-part regression tables*](table-regression-counts.html).
 
 **Survival.** `survival::coxph` and `rms::cph` (hazard ratios,
 `strata()` supported), `survival::survreg` (time ratios) and
@@ -309,7 +309,7 @@ follows the tie-handling convention of the fit, exactly as
 `survfit()` and `basehaz()` do -- a `ties = "breslow"` fit gives a
 Breslow baseline, the default Efron fit an Efron one -- so the
 hazard-ratio column and the dRMST column always come from the same
-likelihood. See `vignette("table-regression-survival")`.
+likelihood. See [*Survival regression tables*](table-regression-survival.html).
 
 **Survey-weighted.** `survey::svyglm()`: design-based inference;
 the unweighted n is a default fit statistic and the sum of design
@@ -329,7 +329,7 @@ posterior draws: posterior median, MAD SD, credible intervals,
 draws-native exponentiation and AME, sampler diagnostics checked on
 every fit (with opt-in `pd`, `rhat`, `ess_bulk` / `ess_tail` and
 `mcse` columns). No p-values, by design. See
-`vignette("table-regression-bayesian")`.
+[*Bayesian regression tables*](table-regression-bayesian.html).
 
 ## When a class is not supported
 

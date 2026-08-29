@@ -293,7 +293,7 @@ the multivariable model — is one call away with
 (`family` switches the engine to Poisson; `exponentiate` is still
 needed to display IRRs rather than log-scale coefficients); the
 layout is introduced in the *Univariable screening* section of
-`vignette("table-regression")`.
+[*Publication-ready regression tables*](table-regression.html).
 
 ## One number per predictor: the combined AME
 

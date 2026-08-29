@@ -44,7 +44,7 @@ effect-size families (`f2`, Cohen's *d*, Hedges' *g*, Hays'
 conventions by default; `style = "jama"` (or `"nejm"`, `"lancet"`,
 `"annals"`, `"aer"`) switches the whole table to that journal's
 published rules — the *House styles* section of
-`vignette("summary-tables-reporting")` shows each style and the
+[*Summary tables for reporting*](summary-tables-reporting.html) shows each style and the
 guideline sentence behind every rule.
 
 ## Basic usage
@@ -489,13 +489,13 @@ broom::glance(out)
 
 ## See also
 
-- See `vignette("table-continuous", package = "spicy")` for descriptive
+- See [*Continuous summary tables*](table-continuous.html) for descriptive
   continuous summary tables with classical group-comparison tests.
-- See `vignette("table-regression", package = "spicy")` for the full
+- See [*Publication-ready regression tables*](table-regression.html) for the full
   coefficient table when the analysis moves from a per-outcome
   one-predictor model to a single multi-predictor `lm` / `glm`,
   including interactions, polynomials, and standardised coefficients.
-- See `vignette("summary-tables-reporting", package = "spicy")` for a
+- See [*Summary tables for reporting*](summary-tables-reporting.html) for a
   cross-function reporting workflow using the summary-table helpers
   along the APA Table 1 / 2 / 3 sequence.
 
