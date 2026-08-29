@@ -19,6 +19,13 @@
 
 .site_url <- "https://amaltawfik.github.io/spicy"
 
+# The maps live in the source tree only. An unpacked tarball carries
+# vignettes/ (spicy.Rmd) but not vignettes/articles/, which
+# .Rbuildignore drops -- so both must be there before any map is read.
+.have_sources <- function(vignettes_dir) {
+  dir.exists(vignettes_dir) && dir.exists(file.path(vignettes_dir, "articles"))
+}
+
 # The twenty articles, by slug (vignettes/articles/<slug>.Rmd).
 .article_names <- function(vignettes_dir) {
   files <- list.files(file.path(vignettes_dir, "articles"), pattern = "\\.Rmd$")
@@ -64,7 +71,7 @@
 
 test_that("the package ships exactly one vignette, Get started", {
   vignettes_dir <- test_path("..", "..", "vignettes")
-  skip_if(!dir.exists(vignettes_dir), "vignette sources not available")
+  skip_if(!.have_sources(vignettes_dir), "article sources not available")
 
   top_level <- list.files(vignettes_dir, pattern = "\\.Rmd$")
   expect_equal(sort(top_level), "spicy.Rmd")
@@ -77,7 +84,7 @@ test_that("the package ships exactly one vignette, Get started", {
 
 test_that("every article is linked from the Get-started 'Learn more' map", {
   vignettes_dir <- test_path("..", "..", "vignettes")
-  skip_if(!dir.exists(vignettes_dir), "vignette sources not available")
+  skip_if(!.have_sources(vignettes_dir), "article sources not available")
 
   articles <- .article_names(vignettes_dir)
   learn_more <- paste(
@@ -141,7 +148,7 @@ test_that("every article is linked from the Get-started 'Learn more' map", {
 test_that("every article appears in the _pkgdown.yml navbar articles menu", {
   vignettes_dir <- test_path("..", "..", "vignettes")
   pkgdown_yml <- test_path("..", "..", "_pkgdown.yml")
-  skip_if(!dir.exists(vignettes_dir), "vignette sources not available")
+  skip_if(!.have_sources(vignettes_dir), "article sources not available")
   skip_if(!file.exists(pkgdown_yml), "_pkgdown.yml not available")
 
   pages <- .page_names(vignettes_dir)
@@ -184,7 +191,7 @@ test_that("every article appears in the _pkgdown.yml navbar articles menu", {
 test_that("every article appears in the _pkgdown.yml articles index", {
   vignettes_dir <- test_path("..", "..", "vignettes")
   pkgdown_yml <- test_path("..", "..", "_pkgdown.yml")
-  skip_if(!dir.exists(vignettes_dir), "vignette sources not available")
+  skip_if(!.have_sources(vignettes_dir), "article sources not available")
   skip_if(!file.exists(pkgdown_yml), "_pkgdown.yml not available")
 
   # pkgdown names an article by its path relative to vignettes/ minus
@@ -230,7 +237,7 @@ test_that("every article appears in the _pkgdown.yml articles index", {
 
 test_that("the article names promised in NEWS are all present", {
   vignettes_dir <- test_path("..", "..", "vignettes")
-  skip_if(!dir.exists(vignettes_dir), "vignette sources not available")
+  skip_if(!.have_sources(vignettes_dir), "article sources not available")
   # The NEWS 'Seven new vignettes' bullet: mixed, GEE, multinomial,
   # counts, survival, ordinal, categorical-predictors -- plus the
   # supported-models map it points at.
