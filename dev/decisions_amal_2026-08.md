@@ -835,3 +835,24 @@ has moved to a slower release cadence ») ; relecture du tarball ;
 devtools::check(remote = TRUE, manual = TRUE) attendu 0-0-1 (incoming
 seule) ; submit ; puis au verdict d'acceptation : git tag vX.Y.Z +
 push du tag (règle permanente).
+
+## Décision 50 — Le Title du DESCRIPTION (2026-08-30)
+
+Tranché par Amal après trois tours de challenge (« réfléchis bien
+comme un pro », « en es-tu certain ? », « on peut le models et le
+descriptive ») :
+
+  Publication-Ready Tables for Descriptive Statistics and Regression
+  Models
+
+73 caractères, Title Case (for/and minuscules), CRAN-légal (pas de
+préfixe « spicy: », pas de point final, pas de « for R »). Porte le
+différenciateur en tête, « Descriptive Statistics » verbatim
+(exigence-clé d'Amal) et « Regression Models » nommé. Préposition
+« for » = lecture de destination (l'usage), retenue contre « of »
+(l'inventaire). Précédents CRAN du différenciateur : modelsummary
+(« Publication-Ready » dans son Title), gtsummary
+(« Presentation-Ready »). Cohabite avec la phrase courte du site
+(« publication-ready summary and regression tables ») dont il est
+l'expansion. ÉDITION : au commit dédié du 30 septembre (check-list
+décision 49), pas avant.
