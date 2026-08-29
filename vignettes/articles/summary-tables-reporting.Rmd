@@ -55,7 +55,7 @@ arguments, and the same `digits` control for numeric cells (the
 categorical table's cells are percentages, so it spells the argument
 `percent_digits`) — so a single reporting workflow can move smoothly from
 descriptive to inferential without juggling different APIs. This
-vignette focuses on that shared logic; the function-specific articles
+article focuses on that shared logic; the function-specific articles
 cover the methodological options in depth.
 
 ## Choose the right function
@@ -635,5 +635,5 @@ The dedicated articles go deeper into each function:
   comparisons, multiplicity correction, and response-scale reporting
   for GLMs.
 
-Use this vignette as the final reporting overview, then consult the
+Use this article as the final reporting overview, then consult the
 function-specific articles when you need the detailed controls.

@@ -37,7 +37,7 @@ Word. Formatting follows APA conventions by default; `style = "jama"`
 (or `"nejm"`, `"lancet"`, `"annals"`, `"aer"`) switches the whole
 table to that journal's published rules — the *House styles* section
 of [*Summary tables for reporting*](summary-tables-reporting.html) shows each style and the
-guideline sentence behind every rule. This vignette walks through the
+guideline sentence behind every rule. This article walks through the
 main features.
 
 ## Basic usage

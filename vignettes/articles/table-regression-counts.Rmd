@@ -35,9 +35,9 @@ library(spicy)
 library(pscl)     # zeroinfl(), hurdle()
 ```
 
-This vignette covers **count regression** — models for a non-negative
+This article covers **count regression** — models for a non-negative
 integer outcome such as number of publications, doctor visits, or
-species counts. The companion vignette [*Publication-ready regression
+species counts. The companion article [*Publication-ready regression
 tables*](table-regression.html) covers the shared mechanics (`vcov`,
 `ci_level`, output formats, multi-model layouts, broom integration; the class-by-class map is [*Supported models*](table-regression-supported-models.html));
 here we focus on what is specific to counts: rate ratios,
@@ -78,7 +78,7 @@ zeros than the count process predicts (**excess zeros** — the job of
 the zero-inflated and hurdle models, which add a second, binary
 submodel for the zeros). The two are entangled: unmodelled dispersion
 surfaces as apparent excess zeros, so the model comparison at the end
-of this vignette, not the raw zero count, arbitrates. Each extension
+of this article, not the raw zero count, arbitrates. Each extension
 changes what the table must show, and the sections below follow that
 escalation.
 
@@ -370,7 +370,7 @@ numbers it cannot stand behind. Express the clustering in the
 random-effects structure itself, as the `(1 | site)` term below does;
 the same convention is documented in the companion
 [*Mixed-effects regression tables*](table-regression-mixed.html)
-vignette:
+article:
 
 ```{r glmmtmb, eval = have_glmmTMB}
 data("Salamanders", package = "glmmTMB")
@@ -401,7 +401,7 @@ unname(exp(fe$cond["minedno"]) *         # count-rate ratio (IRR 4.34)
 
 The expected count is about 8.7 times higher in unmined streams —
 one coherent ecological story told in two parts. The random-effects block
-and its conventions are covered in the companion vignette
+and its conventions are covered in the companion article
 [*Mixed-effects regression tables*](table-regression-mixed.html).
 
 ## Counts with high-dimensional fixed effects: `fixest`

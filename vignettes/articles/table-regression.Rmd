@@ -53,7 +53,7 @@ not raw data and a formula. The same object exports cleanly to a
 long broom-canonical frame (`broom::tidy()`) and to a
 one-row-per-model glance summary (`broom::glance()`).
 
-This vignette teaches the shared mechanics on `lm()` and `glm()`
+This article teaches the shared mechanics on `lm()` and `glm()`
 fits. The *Generalised linear models* section covers the
 glm-specific argument semantics; the *Mixed-effects models*
 section introduces the Random effects rows that mixed-effects
@@ -214,7 +214,7 @@ codes with polynomial contrasts (`.L` = linear, `.Q` = quadratic)
 — trend components across the ordered levels, not per-level
 effects against a reference. For a coefficient table read
 level-against-reference, convert it to a plain factor; we reuse
-this copy throughout the vignette:
+this copy throughout the article:
 
 ```{r partial}
 sh <- sochealth |>

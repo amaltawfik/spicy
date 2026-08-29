@@ -41,10 +41,10 @@ library(spicy)
 library(lmerTest)   # masks lme4::lmer() with the Satterthwaite-aware version
 ```
 
-This vignette covers **mixed-effects (multilevel) regression** — models
+This article covers **mixed-effects (multilevel) regression** — models
 for data with a grouping structure, such as repeated measurements
 nested in subjects or respondents nested in regions. The companion
-vignette [*Publication-ready regression
+article [*Publication-ready regression
 tables*](table-regression.html) covers the shared mechanics (`vcov`,
 `ci_level`, output formats, multi-model layouts, broom integration; the class-by-class map is [*Supported models*](table-regression-supported-models.html));
 here we focus on what is *specific* to mixed fits — above all, how the
@@ -836,7 +836,7 @@ between-subject variance. The full GEE workflow — working-correlation
 choice via QIC, jackknife variants for few clusters, event counts,
 population-averaged marginal effects, and why spicy's `vcov` /
 `cluster` arguments are refused for these fits — is the dedicated
-[*GEE regression tables*](table-regression-gee.html) vignette; here
+[*GEE regression tables*](table-regression-gee.html) article; here
 is the contrast itself, in one table:
 
 ```{r gee, eval = have_geepack, warning = FALSE}

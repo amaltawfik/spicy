@@ -33,10 +33,10 @@ library(spicy)
 library(geepack) # geeglm()
 ```
 
-This vignette covers **generalized estimating equations** (GEE) --
+This article covers **generalized estimating equations** (GEE) --
 marginal models for clustered and longitudinal data, fitted with
 `geepack::geeglm()` (Liang & Zeger, 1986; Halekoh, Højsgaard & Yan,
-2006). The companion vignette [*Publication-ready regression
+2006). The companion article [*Publication-ready regression
 tables*](table-regression.html) covers the shared mechanics (output
 engines, labels, `tidy()`); [*Mixed-effects regression
 tables*](table-regression-mixed.html) shows the population-averaged
@@ -97,7 +97,7 @@ intercept, every coefficient except the intercept coincides, so
 conditional and marginal rate ratios are directly comparable.
 Neither estimand is "biased": they answer different questions. The
 side-by-side table in the
-[mixed-effects vignette](table-regression-mixed.html) shows the gap
+[mixed-effects article](table-regression-mixed.html) shows the gap
 on real data.
 
 **What GEE buys.** When the marginal question is the right one, GEE
@@ -321,7 +321,7 @@ This odds ratio is marginal: it compares the odds of a positive
 outcome between the treated and untreated *populations*. The
 subject-specific odds ratio from the matching mixed model is larger
 -- the attenuation of the first section -- and the
-[mixed-effects vignette](table-regression-mixed.html) shows the two
+[mixed-effects article](table-regression-mixed.html) shows the two
 side by side.
 
 Average marginal effects translate the odds ratio onto the

@@ -39,7 +39,7 @@ output engines (Excel, gt, tinytable, flextable, clipboard) consume
 internally -- nothing about it is second-class -- and the
 descriptive families (`table_categorical()`, `table_continuous()`,
 `table_continuous_lm()`, `table_outcome()`) expose the same schema, covered at the end
-of this vignette. The tour below uses a regression table; everything
+of this article. The tour below uses a regression table; everything
 it shows reads identically on the other four.
 
 Two sibling tools serve different needs, and choosing well saves
@@ -53,7 +53,7 @@ geometry* -- rows and columns exactly as the rendered table lays
 them out, factor headers and fit statistics included -- and is the
 right input for filtering what a reader will see, post-processing
 numbers in table shape, or rendering the table with an engine spicy
-does not ship. This vignette covers the second tool. The shared
+does not ship. This article covers the second tool. The shared
 mechanics of `table_regression()` are in
 [*Publication-ready regression
 tables*](table-regression.html); the class-by-class map is

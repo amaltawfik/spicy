@@ -23,7 +23,7 @@ library(spicy)
 
 `freq()` and `cross_tab()` are the core tabulation functions in spicy.
 They handle factors, labelled variables (from haven or labelled),
-weights, and missing values out of the box. This vignette covers the
+weights, and missing values out of the box. This article covers the
 main options using the bundled `sochealth` dataset.
 
 ## Frequency tables with freq()

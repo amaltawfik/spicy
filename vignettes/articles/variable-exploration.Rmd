@@ -31,7 +31,7 @@ documentation in R. You can derive labels from imported column names,
 inspect variables with `varlist()` or `vl()`, and build an interactive
 codebook with `code_book()`.
 
-This vignette focuses on three common tasks:
+This article focuses on three common tasks:
 
 - clean imported column names and recover variable labels with
   `label_from_names()`
