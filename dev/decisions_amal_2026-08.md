@@ -820,3 +820,18 @@ gtsummary/dplyr/ggplot2.
 Contexte : premier check remote+manual d'Amal (2026-08-29), qui a
 aussi attrapé le ≈ du manuel PDF (382b5f59) et confirmé le compteur
 6-mois (9 updates → attendre septembre).
+
+## Décision 49 — Soumission 0.13.0 : le 30 septembre 2026 (2026-08-29)
+
+Tranché par Amal (« on vise le 30 septembre ») sur le calcul exact du
+compteur CRAN : au 30/09, la fenêtre 6-mois tombe à 5 releases (0.7.0
+du 30 mars en sort ce jour-là) et 0.13.0 arrive 4,5 mois après 0.12.0
+— les deux signaux au vert pour l'examen humain. Marge de repli si
+besoin : après le 11 octobre (compteur 4).
+Check-list du jour J : bump version 0.13.0 (fait tomber la NOTE
+« large components ») ; cran-comments.md avec la phrase de cadence
+(« this release consolidates a full development cycle; the package
+has moved to a slower release cadence ») ; relecture du tarball ;
+devtools::check(remote = TRUE, manual = TRUE) attendu 0-0-1 (incoming
+seule) ; submit ; puis au verdict d'acceptation : git tag vX.Y.Z +
+push du tag (règle permanente).
