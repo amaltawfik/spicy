@@ -168,8 +168,8 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
   averaged over the population the design describes rather than over the
   sample. Both counts are reported -- the observed `n` and the
   `Weighted n`, which is the sum of the sampling weights and not of the
-  first replicate's. The `AIC` row is survey's design-based criterion
-  (Lumley & Scott 2015), with `show_fit_stats = "eff_p"` for the effective
+  first replicate's. The `AIC` row is survey's design-based criterion,
+  with `show_fit_stats = "eff_p"` for the effective
   number of design parameters beside it; `BIC` needs a maximal model and
   stays blank, and the deviance, log-likelihood and residual scale are
   absent rather than reported on the scale of the sum of the weights.
@@ -348,8 +348,8 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
   `drop_na = TRUE` instead of `NaN`.
 
 * `vignette("survey-tables")` gains a section on regression under a design,
-  and `?table_continuous_svy` / `?table_categorical_svy` state that the two
-  are experimental.
+  and `?table_continuous_svy` / `?table_categorical_svy` state their
+  stability tier.
 
 * Handing a `survey` design object to `table_continuous()`,
   `table_categorical()`, `table_continuous_lm()` or `table_outcome()` now
@@ -1223,6 +1223,7 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
   instead of failing with `No AIC for survey models` after printing six
   lines of design description. Design-based Cox models are not supported
   yet; `summary(fit)` and `survey::regTermTest()` cover them meanwhile.
+
 ## Minor improvements
 
 * `table_regression()` writes the two convergence diagnoses spicy words
