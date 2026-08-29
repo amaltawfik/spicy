@@ -235,12 +235,11 @@ instead of rendering an empty column.
   averaged over the population the design describes rather than over the
   sample. Both counts are reported – the observed `n` and the
   `Weighted n`, which is the sum of the sampling weights and not of the
-  first replicate’s. The `AIC` row is survey’s design-based criterion
-  (Lumley & Scott 2015), with `show_fit_stats = "eff_p"` for the
-  effective number of design parameters beside it; `BIC` needs a maximal
-  model and stays blank, and the deviance, log-likelihood and residual
-  scale are absent rather than reported on the scale of the sum of the
-  weights.
+  first replicate’s. The `AIC` row is survey’s design-based criterion,
+  with `show_fit_stats = "eff_p"` for the effective number of design
+  parameters beside it; `BIC` needs a maximal model and stays blank, and
+  the deviance, log-likelihood and residual scale are absent rather than
+  reported on the scale of the sum of the weights.
 - Design-weighted ordinal models
   ([`survey::svyolr()`](https://rdrr.io/pkg/survey/man/svyolr.html)):
   the cut-points as a Thresholds block, per-category average marginal
@@ -472,7 +471,7 @@ instead of rendering an empty column.
   [`?table_continuous_svy`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md)
   /
   [`?table_categorical_svy`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md)
-  state that the two are experimental.
+  state their stability tier.
 
 - Handing a `survey` design object to
   [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
@@ -1730,7 +1729,9 @@ instead of rendering an empty column.
   description. Design-based Cox models are not supported yet;
   `summary(fit)` and
   [`survey::regTermTest()`](https://rdrr.io/pkg/survey/man/regTermTest.html)
-  cover them meanwhile. \## Minor improvements
+  cover them meanwhile.
+
+### Minor improvements
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   writes the two convergence diagnoses spicy words itself – a
