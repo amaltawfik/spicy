@@ -143,9 +143,12 @@ test_that("knit_print.spicy_gt embeds the note via the post-processor", {
 
 test_that("print.spicy_gt non-interactive delegates to NextMethod()", {
   skip_if_not_installed("gt")
+  # A premise is a guard, never an assertion (portability lesson 4): a
+  # developer running devtools::test() from a console IS interactive,
+  # and this block tests the other branch. Rscript / CI still run it.
+  skip_if(interactive(), "needs a non-interactive session")
   fit <- lm(mpg ~ wt + cyl, data = mt)
   g <- table_regression(fit, output = "gt", note = "Note. n.")
-  expect_false(interactive())
   # Non-interactive: falls through to gt's own print (NextMethod()).
   out <- capture.output(res <- print(g))
   expect_true(length(out) > 0L)
@@ -236,9 +239,10 @@ test_that("knit_print.spicy_flextable embeds the note via the post-processor", {
 
 test_that("print.spicy_flextable non-interactive delegates to NextMethod()", {
   skip_if_not_installed("flextable")
+  # Same guard as the gt sibling: the premise skips, it never fails.
+  skip_if(interactive(), "needs a non-interactive session")
   fit <- lm(mpg ~ wt + cyl, data = mt)
   ft <- table_regression(fit, output = "flextable", note = "Note. n.")
-  expect_false(interactive())
   out <- capture.output(res <- print(ft))
   expect_true(length(out) > 0L)
 
