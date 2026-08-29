@@ -496,7 +496,7 @@ See the \emph{Mixed-effects models} section of
 
 For \code{lmer} / \code{glmer} fits these SEs come from \code{merDeriv}, whose
 cost grows superlinearly with the number of observations (about a
-minute at n ≈ 2,700). Above \code{options("spicy.re_se_max_n")}
+minute at n of roughly 2,700). Above \code{options("spicy.re_se_max_n")}
 (default \code{1000}) they are skipped: the rows keep their estimates,
 the SE / CI cells render as en-dashes, a table note states the
 omission, and a \code{spicy_caveat} warning points here. Raise the cap
