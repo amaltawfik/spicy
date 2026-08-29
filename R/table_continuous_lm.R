@@ -359,7 +359,7 @@
 #'   proportional fonts, and writing raw numbers with a numeric
 #'   format would require a separate refactor.
 #' @param output Output format. One of:
-#'   - `"default"`: a printed ASCII table, returned invisibly
+#'   - `"default"`: an ASCII table object, printed when the call is bare
 #'   - `"data.frame"`: a plain wide `data.frame`
 #'   - `"long"`: a raw long `data.frame`
 #'   - `"tinytable"` (requires `tinytable`)
@@ -399,9 +399,12 @@
 #'
 #' @return Depends on `output`:
 #' \itemize{
-#'   \item `"default"`: prints a styled ASCII table and invisibly returns
-#'     the underlying long `data.frame` with class
-#'     `"spicy_continuous_lm_table"` / `"spicy_table"`.
+#'   \item `"default"`: the underlying long `data.frame` with class
+#'     `"spicy_continuous_lm_table"` / `"spicy_table"`. The object is
+#'     returned visibly, so a bare `table_continuous_lm(...)` call
+#'     auto-prints the styled ASCII table at the console while
+#'     `t <- table_continuous_lm(...)` stays silent (print `t` to
+#'     display the table).
 #'   \item `"data.frame"`: a plain wide `data.frame` with one row per
 #'     outcome and numeric columns for means (categorical `by`) or slope
 #'     (numeric `by`), optional contrast and CI, optional test statistic,
@@ -1726,8 +1729,11 @@ table_continuous_lm <- function(
       "spicy_table",
       class(result)
     )
-    print(result)
-    return(invisible(result))
+    # Return VISIBLY and let standard auto-print dispatch to
+    # print.spicy_continuous_lm_table(): a bare table_continuous_lm(...)
+    # call still displays the table, while `t <- table_continuous_lm(...)`
+    # is silent (the freq() / cross_tab() model).
+    return(result)
   }
 
   export_continuous_lm_table(

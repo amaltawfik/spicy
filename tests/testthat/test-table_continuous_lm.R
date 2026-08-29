@@ -59,6 +59,24 @@ test_that("table_continuous_lm default output returns a spicy table", {
   expect_equal(attr(out, "vcov_type"), "classical")
 })
 
+test_that("table_continuous_lm returns visibly and is silent when assigned", {
+  # Decision 47: a bare call renders (capture.output() evaluates as at
+  # top level, so the visible return auto-prints); an assignment
+  # writes nothing.
+  expect_visible(table_continuous_lm(iris, select = Sepal.Length, by = Species))
+  bare <- capture.output(
+    table_continuous_lm(iris, select = Sepal.Length, by = Species)
+  )
+  expect_true(length(bare) > 0)
+
+  assigned <- capture.output(
+    tl <- table_continuous_lm(iris, select = Sepal.Length, by = Species)
+  )
+  expect_identical(assigned, character(0))
+  expect_s3_class(tl, "spicy_continuous_lm_table")
+  expect_identical(capture.output(print(tl)), bare)
+})
+
 # ---- computation ----
 
 test_that("table_continuous_lm numeric predictor slope matches lm", {
@@ -4961,7 +4979,7 @@ test_that("missing values are disclosed in the table note (decision 14)", {
   # -- the same ledger wording as table_continuous(). The n column
   # shows the effect of the exclusions; the note shows the cause.
   txt <- paste(
-    capture.output(suppressMessages(invisible(
+    capture.output(print(suppressMessages(
       table_continuous_lm(d, select = bmi, by = sex, covariates = "age")
     ))),
     collapse = "\n"
@@ -5003,7 +5021,7 @@ test_that("declared missing values are disclosed separately (decision 14)", {
   )
   d$grp <- rep(c("a", "b"), 4L)
   txt <- paste(
-    capture.output(suppressMessages(invisible(
+    capture.output(print(suppressMessages(
       table_continuous_lm(d, select = y, by = grp)
     ))),
     collapse = "\n"

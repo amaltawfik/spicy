@@ -271,7 +271,7 @@ whose \code{excel} output still uses that convention at every \code{align}.}
 
 \item{output}{Output format. One of:
 \itemize{
-\item \code{"default"}: a printed ASCII table, returned invisibly.
+\item \code{"default"}: an ASCII table object, printed when the call is bare.
 \item \code{"data.frame"} / \code{"long"}: a plain \code{data.frame} with one row
 per \verb{(variable x group)} (or one row per \code{variable} when \code{by}
 is not used). The two names are synonyms; pick whichever reads
@@ -319,11 +319,15 @@ error.}
 \value{
 Depends on \code{output}:
 \itemize{
-\item \code{"default"}: prints a styled ASCII table and returns the
-underlying \code{data.frame} invisibly (S3 class
-\code{"spicy_continuous_table"} / \code{"spicy_table"}). The object can
-be re-coerced via \code{\link[=as.data.frame.spicy_continuous_table]{as.data.frame.spicy_continuous_table()}} or
-piped into \code{broom::tidy()} / \code{broom::glance()}.
+\item \code{"default"}: the underlying \code{data.frame} carrying the
+rendering metadata as attributes (S3 class
+\code{"spicy_continuous_table"} / \code{"spicy_table"}). The object is
+returned visibly, so a bare \code{table_continuous(...)} call
+auto-prints the styled ASCII table at the console while
+\code{t <- table_continuous(...)} stays silent (print \code{t} to display
+the table). The object can be re-coerced via
+\code{\link[=as.data.frame.spicy_continuous_table]{as.data.frame.spicy_continuous_table()}} or piped into
+\code{broom::tidy()} / \code{broom::glance()}.
 \item \code{"data.frame"} / \code{"long"}: a plain \code{data.frame} with
 columns \code{variable}, \code{label}, \code{group} (when \code{by} is used),
 \code{mean}, \code{sd}, \code{min}, \code{max}, \code{ci_lower}, \code{ci_upper}, \code{median},

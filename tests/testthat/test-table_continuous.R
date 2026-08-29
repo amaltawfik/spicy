@@ -35,6 +35,29 @@ test_that("table_continuous returns spicy_continuous_table class when default ou
   expect_s3_class(out, "spicy_table")
 })
 
+test_that("table_continuous returns visibly and is silent when assigned", {
+  # Decision 47: a bare call renders (capture.output() evaluates as at
+  # top level, so the visible return auto-prints); an assignment
+  # writes nothing.
+  expect_visible(table_continuous(iris, select = Sepal.Length))
+  bare <- capture.output(table_continuous(iris, select = Sepal.Length))
+  expect_true(length(bare) > 0)
+
+  assigned <- capture.output(
+    tc <- table_continuous(iris, select = Sepal.Length)
+  )
+  expect_identical(assigned, character(0))
+  expect_s3_class(tc, "spicy_continuous_table")
+  expect_identical(capture.output(print(tc)), bare)
+
+  # Same with a `by` group.
+  assigned_by <- capture.output(
+    tb <- table_continuous(iris, select = Sepal.Length, by = Species)
+  )
+  expect_identical(assigned_by, character(0))
+  expect_true(length(capture.output(print(tb))) > 0)
+})
+
 test_that("table_continuous default output object carries correct attributes", {
   out <- table_continuous(
     iris,
@@ -995,9 +1018,7 @@ test_that("a missing variable label falls back to the column name", {
   # one crossing, and every line is the same width.
   d <- data.frame(x = c(1, 2, 3), y = c(4, 5, 6))
   attr(d$x, "label") <- NA_character_
-  # `table_continuous()` prints as it builds; swallow that copy so the
-  # assertions read exactly one rendering.
-  invisible(capture.output(out <- table_continuous(d, select = c(x, y))))
+  out <- table_continuous(d, select = c(x, y))
   txt <- capture.output(print(out))
 
   expect_false(any(grepl("NA", txt, fixed = TRUE)))

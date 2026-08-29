@@ -323,6 +323,27 @@ test_that("overall = FALSE drops the marginal row and nothing else", {
   res
 }
 
+test_that("the object comes back visibly, and assigning it says nothing", {
+  # Decision 47, the family invariant: a bare call renders through the
+  # print method (capture.output() evaluates as at top level, so the
+  # visible return auto-prints), an assignment writes nothing. This
+  # family was already conformant; the witness pins it.
+  d <- .to_sh()
+  bare <- suppressWarnings(
+    utils::capture.output(table_outcome(d, bmi, select = c(sex, smoking)))
+  )
+  expect_true(length(bare) > 0)
+
+  assigned <- suppressWarnings(
+    utils::capture.output(
+      tbl <- table_outcome(d, bmi, select = c(sex, smoking))
+    )
+  )
+  expect_identical(assigned, character(0))
+  expect_s3_class(tbl, "spicy_outcome_table")
+  expect_identical(utils::capture.output(print(tbl)), bare)
+})
+
 test_that("the console lays out one stub column and indented levels", {
   tbl <- .to_quiet(table_outcome(.to_sh(), bmi, select = c(sex, smoking)))
   df <- attr(tbl, "display_df")

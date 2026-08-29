@@ -43,14 +43,6 @@
          No           │   2     50,0     2     50,0       4        50,0                     
          Yes          │   2     50,0     1     25,0       3        37,5                     
          (Manquant)   │   0      0,0     1     25,0       1        12,5                     
-      Tableau des variables catégorielles selon sex
-      
-       Variable       │  F n    F %     M n    M %     Total n    Total %      p      Phi   
-      ────────────────┼─────────────────────────────────────────────────────────────────────
-       smoke          │                                                      0,659    0,17  
-         No           │   2     50,0     2     50,0       4        50,0                     
-         Yes          │   2     50,0     1     25,0       3        37,5                     
-         (Manquant)   │   0      0,0     1     25,0       1        12,5                     
     Code
       print(table_continuous(d, select = c(bmi, age), by = sex))
     Output
@@ -63,23 +55,9 @@
       ╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
        age        │ F          48,25    12,58    31,00    61,00      28,23        68,27      4    0,153  
                   │ M          35,50     8,74    24,00    45,00      21,60        49,40      4           
-      Statistiques descriptives selon sex
-      
-       Variable   │ Groupe       M       ET       Min      Max     95% CI LL    95% CI UL    n      p    
-      ────────────┼──────────────────────────────────────────────────────────────────────────────────────
-       bmi        │ F          26,88     3,69    22,10    31,00      21,01        32,74      4    0,152  
-                  │ M          23,18     2,41    19,80    25,40      19,34        27,01      4           
-      ╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-       age        │ F          48,25    12,58    31,00    61,00      28,23        68,27      4    0,153  
-                  │ M          35,50     8,74    24,00    45,00      21,60        49,40      4           
     Code
       print(table_continuous_lm(d, select = bmi, by = sex))
     Output
-      Variables continues selon sex
-      
-       Variable   │  M (F)    M (M)    Δ (M - F)    95% CI LL    95% CI UL      p       R²     n  
-      ────────────┼───────────────────────────────────────────────────────────────────────────────
-       bmi        │  26,87    23,17      -3,70        -9,09        1,69       0,144    0,32    8  
       Variables continues selon sex
       
        Variable   │  M (F)    M (M)    Δ (M - F)    95% CI LL    95% CI UL      p       R²     n  
@@ -129,19 +107,6 @@
     Code
       print(table_categorical(d, select = sex, by = arm))
     Output
-      Categorical table by arm
-      
-       Variable │ Campus n  Campus %  Control n  Control %  (No answer) n  (No answer) %  All n  All % 
-      ──────────┼──────────────────────────────────────────────────────────────────────────────────────
-       sex      │                                                                                      
-         F      │    0         0.0        2        100.0          1            50.0         3    50.0  
-         M      │    2       100.0        0          0.0          1            50.0         3    50.0  
-      
-       Variable │  p    Phi  
-      ──────────┼────────────
-       sex      │ .046  1.00 
-         F      │            
-         M      │            
       Categorical table by arm
       
        Variable │ Campus n  Campus %  Control n  Control %  (No answer) n  (No answer) %  All n  All % 

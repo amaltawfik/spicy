@@ -427,7 +427,7 @@ format would require a separate refactor.}
 
 \item{output}{Output format. One of:
 \itemize{
-\item \code{"default"}: a printed ASCII table, returned invisibly
+\item \code{"default"}: an ASCII table object, printed when the call is bare
 \item \code{"data.frame"}: a plain wide \code{data.frame}
 \item \code{"long"}: a raw long \code{data.frame}
 \item \code{"tinytable"} (requires \code{tinytable})
@@ -473,9 +473,12 @@ error.}
 \value{
 Depends on \code{output}:
 \itemize{
-\item \code{"default"}: prints a styled ASCII table and invisibly returns
-the underlying long \code{data.frame} with class
-\code{"spicy_continuous_lm_table"} / \code{"spicy_table"}.
+\item \code{"default"}: the underlying long \code{data.frame} with class
+\code{"spicy_continuous_lm_table"} / \code{"spicy_table"}. The object is
+returned visibly, so a bare \code{table_continuous_lm(...)} call
+auto-prints the styled ASCII table at the console while
+\code{t <- table_continuous_lm(...)} stays silent (print \code{t} to
+display the table).
 \item \code{"data.frame"}: a plain wide \code{data.frame} with one row per
 outcome and numeric columns for means (categorical \code{by}) or slope
 (numeric \code{by}), optional contrast and CI, optional test statistic,
