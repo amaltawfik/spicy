@@ -9,13 +9,9 @@ description: >
   Nakagawa R-squared, Satterthwaite inference, three-level and crossed
   designs, and the `lme4`, `glmmTMB`, and `nlme` engines.
 output:
-  rmarkdown::html_vignette:
+  html_document:
     toc: true
     toc_depth: 2
-vignette: >
-  %\VignetteIndexEntry{Mixed-effects regression tables}
-  %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
 ---
 
 ```{r, include = FALSE}
@@ -45,10 +41,10 @@ library(spicy)
 library(lmerTest)   # masks lme4::lmer() with the Satterthwaite-aware version
 ```
 
-This vignette covers **mixed-effects (multilevel) regression** — models
+This article covers **mixed-effects (multilevel) regression** — models
 for data with a grouping structure, such as repeated measurements
 nested in subjects or respondents nested in regions. The companion
-vignette [*Publication-ready regression
+article [*Publication-ready regression
 tables*](table-regression.html) covers the shared mechanics (`vcov`,
 `ci_level`, output formats, multi-model layouts, broom integration; the class-by-class map is [*Supported models*](table-regression-supported-models.html));
 here we focus on what is *specific* to mixed fits — above all, how the
@@ -66,7 +62,7 @@ here we focus on what is *specific* to mixed fits — above all, how the
 
 The Bayesian mixed engines (`stan_lmer()` / `stan_glmer()`, `brm()`
 with grouping terms) render the same *Random effects* block from
-their posterior draws — see `vignette("table-regression-bayesian")`.
+their posterior draws — see [*Bayesian regression tables*](table-regression-bayesian.html).
 
 Two datasets carry the main narrative. The table anatomy is shown on
 `lme4::sleepstudy` — reaction times of 18 subjects measured on 10
@@ -806,7 +802,7 @@ ratios of a structural zero**. Read one number from each: relative to
 mined streams, unmined ones carry about three times the abundance
 (IRR 3.13) where salamanders occur at all, and about a fifth of the
 odds of structural absence (OR 0.18). Component blocks are covered in
-depth in `vignette("table-regression-counts")`; opt out
+depth in [*Count and two-part regression tables*](table-regression-counts.html); opt out
 with `show_components = FALSE`.
 
 ## `nlme::lme`
@@ -840,7 +836,7 @@ between-subject variance. The full GEE workflow — working-correlation
 choice via QIC, jackknife variants for few clusters, event counts,
 population-averaged marginal effects, and why spicy's `vcov` /
 `cluster` arguments are refused for these fits — is the dedicated
-[*GEE regression tables*](table-regression-gee.html) vignette; here
+[*GEE regression tables*](table-regression-gee.html) article; here
 is the contrast itself, in one table:
 
 ```{r gee, eval = have_geepack, warning = FALSE}
@@ -937,13 +933,13 @@ td[td$estimate_type == "vc", c("term", "estimate", "std.error", "conf.low", "con
 
 ## Where next
 
-- `vignette("table-regression")` — the shared mechanics: output
+- [*Publication-ready regression tables*](table-regression.html) — the shared mechanics: output
   formats, multi-model layouts, `p_adjust`, broom methods.
-- `vignette("table-regression-counts")` — zero-inflation and
+- [*Count and two-part regression tables*](table-regression-counts.html) — zero-inflation and
   dispersion component blocks in depth.
-- `vignette("table-regression-bayesian")` — the same *Random
+- [*Bayesian regression tables*](table-regression-bayesian.html) — the same *Random
   effects* block from posterior draws (`stan_glmer`, `brm`).
-- `vignette("table-regression-supported-models")` — the
+- [*Supported models*](table-regression-supported-models.html) — the
   class-by-class capability map.
 
 ## References

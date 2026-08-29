@@ -5,13 +5,9 @@ description: >
   with spicy. Learn how to use varlist(), vl(), code_book(), and
   label_from_names() for survey and labelled datasets.
 output:
-  rmarkdown::html_vignette:
+  html_document:
     toc: true
     toc_depth: 2
-vignette: >
-  %\VignetteIndexEntry{Explore variables and build codebooks}
-  %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
 ---
 
 ```{r, include = FALSE}
@@ -35,7 +31,7 @@ documentation in R. You can derive labels from imported column names,
 inspect variables with `varlist()` or `vl()`, and build an interactive
 codebook with `code_book()`.
 
-This vignette focuses on three common tasks:
+This article focuses on three common tasks:
 
 - clean imported column names and recover variable labels with
   `label_from_names()`

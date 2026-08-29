@@ -25,3 +25,5 @@
 ^tests/testthat/_snaps/_problems$
 ^\.markdownlint\.json$
 ^\.git-blame-ignore-revs$
+^vignettes/articles$
+^\.git$

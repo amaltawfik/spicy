@@ -10,13 +10,9 @@ description: >
   layouts, and output to console, gt, tinytable, flextable,
   Excel, Word, or clipboard.
 output:
-  rmarkdown::html_vignette:
+  html_document:
     toc: true
     toc_depth: 2
-vignette: >
-  %\VignetteIndexEntry{Publication-ready regression tables}
-  %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
 ---
 
 ```{r, include = FALSE}
@@ -57,22 +53,22 @@ not raw data and a formula. The same object exports cleanly to a
 long broom-canonical frame (`broom::tidy()`) and to a
 one-row-per-model glance summary (`broom::glance()`).
 
-This vignette teaches the shared mechanics on `lm()` and `glm()`
+This article teaches the shared mechanics on `lm()` and `glm()`
 fits. The *Generalised linear models* section covers the
 glm-specific argument semantics; the *Mixed-effects models*
 section introduces the Random effects rows that mixed-effects
 fits add below the fixed effects (`lmer`, `glmer`, `glmmTMB`,
-`lme`). Each further model family has a dedicated vignette that
+`lme`). Each further model family has a dedicated article that
 applies these mechanics to its own estimands:
-`vignette("table-regression-mixed")` for mixed-effects models,
-`vignette("table-regression-gee")` for population-averaged (GEE)
-models, `vignette("table-regression-counts")` for Poisson,
+[*Mixed-effects regression tables*](table-regression-mixed.html) for mixed-effects models,
+[*GEE regression tables*](table-regression-gee.html) for population-averaged (GEE)
+models, [*Count and two-part regression tables*](table-regression-counts.html) for Poisson,
 negative-binomial, and two-part models,
-`vignette("table-regression-ordinal")` for ordinal models
-(`polr`, `clm`), `vignette("table-regression-multinomial")` for
+[*Ordinal regression tables*](table-regression-ordinal.html) for ordinal models
+(`polr`, `clm`), [*Multinomial regression tables*](table-regression-multinomial.html) for
 multinomial models (`multinom`, `mlogit`),
-`vignette("table-regression-survival")` for survival models
-(`coxph`, `survreg`), and `vignette("table-regression-bayesian")`
+[*Survival regression tables*](table-regression-survival.html) for survival models
+(`coxph`, `survreg`), and [*Bayesian regression tables*](table-regression-bayesian.html)
 for Bayesian fits (`rstanarm`, `brms`). The mechanics covered here — confidence
 levels, multi-model and nested layouts, p-value adjustment,
 coefficient filtering, output formats, and the broom methods —
@@ -81,10 +77,10 @@ availability varies by family, and the complete map — every
 supported class with its estimands, variance estimators and fit
 statistics, including the families without a dedicated article
 (quantile regression, `fixest`, `betareg`, ...) — is
-`vignette("table-regression-supported-models")`. One decision cuts
+[*Supported models*](table-regression-supported-models.html). One decision cuts
 across all of them — how to code,
 test, and present categorical *predictors* — and has its own
-vignette: `vignette("categorical-predictors")`.
+article: [*Categorical predictors*](categorical-predictors.html).
 
 ## Basic usage
 
@@ -131,7 +127,7 @@ table_regression(fit, style = "nejm")
 
 The complete tour of the named styles — what each journal
 specifies, with the guideline sentence behind every rule — is in
-the *House styles* section of `vignette("summary-tables-reporting")`.
+the *House styles* section of [*Summary tables for reporting*](summary-tables-reporting.html).
 
 ## Standardised coefficients
 
@@ -218,7 +214,7 @@ codes with polynomial contrasts (`.L` = linear, `.Q` = quadratic)
 — trend components across the ordered levels, not per-level
 effects against a reference. For a coefficient table read
 level-against-reference, convert it to a plain factor; we reuse
-this copy throughout the vignette:
+this copy throughout the article:
 
 ```{r partial}
 sh <- sochealth |>
@@ -378,7 +374,7 @@ multivariable `n` appears once, as a fit statistic — it belongs to
 the joint model, not to any predictor. A `p_adjust` argument treats
 the screen as one family of tests. For a time-to-event screen the
 same call takes `method = "coxph"` with a `Surv()` outcome — see
-`vignette("table-regression-survival")`.
+[*Survival regression tables*](table-regression-survival.html).
 
 ## Hierarchical / nested regression
 
@@ -734,7 +730,7 @@ The token is off by default and *deliberately narrow*: it is
 defined for binomial models with an ungrouped 0/1 response and for
 right-censored Cox models (events per factor level; Cox tables
 also carry `N events` as a default fit statistic — see
-`vignette("table-regression-survival")`). Requesting it anywhere
+[*Survival regression tables*](table-regression-survival.html)). Requesting it anywhere
 else is a hard, classed error rather than a silently empty
 column.
 
@@ -958,7 +954,7 @@ For the model-building sequence, the REML/ML estimator choice,
 the Nakagawa R² and ICC mechanics, per-class inference paths,
 singular fits, testing random components, and the `glmmTMB` /
 `nlme::lme` specifics — including a worked `glmer` AME example —
-see `vignette("table-regression-mixed", package = "spicy")`.
+see [*Mixed-effects regression tables*](table-regression-mixed.html).
 
 ## Output formats
 
@@ -1022,55 +1018,55 @@ ambiguity.
 
 ## See also
 
-- `vignette("table-regression-supported-models", package = "spicy")`
+- [*Supported models*](table-regression-supported-models.html)
   — the map of every supported class: estimands, variance
   estimators, standardized-coefficient scope, and fit statistics
   per family.
-- `vignette("categorical-predictors", package = "spicy")` for
+- [*Categorical predictors*](categorical-predictors.html) for
   categorical *predictors* across all model families: dummy coding
   and reference levels, joint tests, ordinal predictors
   (scores vs dummies), and the categorization trap.
 
-Model-family vignettes build on the mechanics shown here:
+Model-family articles build on the mechanics shown here:
 
-- `vignette("table-regression-mixed", package = "spicy")` for
+- [*Mixed-effects regression tables*](table-regression-mixed.html) for
   mixed-effects (multilevel) models: random effects as table
   rows, ICC, the boundary-corrected chi-bar-squared test, and
   opt-in per-term LRT / RLRT.
-- `vignette("table-regression-gee", package = "spicy")` for
+- [*GEE regression tables*](table-regression-gee.html) for
   population-averaged (GEE) models: the fit's own sandwich
   inference, working-correlation choice via QIC, and jackknife
   variants for few clusters.
-- `vignette("table-regression-counts", package = "spicy")` for
+- [*Count and two-part regression tables*](table-regression-counts.html) for
   count and two-part models: Poisson and negative-binomial rate
   ratios, offsets, and zero-inflated / hurdle components as
   labelled blocks.
-- `vignette("table-regression-ordinal", package = "spicy")` for
+- [*Ordinal regression tables*](table-regression-ordinal.html) for
   ordinal (proportional-odds) models: shared slopes, ordered
   thresholds as rows, and per-category marginal effects.
-- `vignette("table-regression-multinomial", package = "spicy")`
+- [*Multinomial regression tables*](table-regression-multinomial.html)
   for multinomial logistic models: outcome categories as columns
   and changing the reference category.
-- `vignette("table-regression-survival", package = "spicy")` for
+- [*Survival regression tables*](table-regression-survival.html) for
   survival models: Cox hazard ratios with events and concordance,
   accelerated failure time models, and survival estimands.
-- `vignette("table-regression-bayesian", package = "spicy")` for
+- [*Bayesian regression tables*](table-regression-bayesian.html) for
   Bayesian fits: posterior medians and credible intervals, the
   probability of direction, and random effects from the draws.
 
 Descriptive and reporting companions:
 
-- `vignette("table-categorical", package = "spicy")` for the APA
+- [*Categorical summary tables*](table-categorical.html) for the APA
   Table 1 categorical descriptors (factors, labelled variables,
   chi-squared tests, association measures).
-- `vignette("table-continuous", package = "spicy")` for the APA
+- [*Continuous summary tables*](table-continuous.html) for the APA
   Table 1 / Table 2 continuous descriptors and unadjusted
   group-comparison tests.
-- `vignette("table-continuous-lm", package = "spicy")` for the
+- [*Model-based continuous summary tables*](table-continuous-lm.html) for the
   one-predictor-by-many-outcomes linear-model counterpart
   (estimated marginal means, contrast or slope, four effect-size
   families with noncentral CIs).
-- `vignette("summary-tables-reporting", package = "spicy")` for an
+- [*Summary tables for reporting*](summary-tables-reporting.html) for an
   end-to-end reporting workflow that combines the four spicy
   summary-table helpers along the APA Table 1 / 2 / 3 sequence.
 

@@ -334,9 +334,9 @@
 #' criteria `"qic"` / `"qicu"` (Pan 2001) and the `"scale"`
 #' (dispersion) parameter are opt-in -- there is no likelihood, so
 #' AIC, pseudo-R-squared, `nested = TRUE`, and `standardized` are
-#' refused. See the population-averaged section of
-#' `vignette("table-regression-mixed")` for the contrast with
-#' subject-specific mixed models.
+#' refused. See the population-averaged section of the
+#' [Mixed-effects regression tables](https://amaltawfik.github.io/spicy/articles/table-regression-mixed.html)
+#' article for the contrast with subject-specific mixed models.
 #'
 #' @section Ordinal models:
 #' Cut-points render as a `Thresholds` block (log-odds scale, never
@@ -345,8 +345,9 @@
 #' cut-point. `exponentiate` yields proportional odds ratios under logit;
 #' `ci_method = "profile"` profiles the predictor coefficients. AME is
 #' per-category (the marginal effect on each P(Y = k)). Defaults include
-#' McFadden and Nagelkerke pseudo-R-squared. See
-#' `vignette("table-regression-ordinal")`.
+#' McFadden and Nagelkerke pseudo-R-squared. See the
+#' [Ordinal regression tables](https://amaltawfik.github.io/spicy/articles/table-regression-ordinal.html)
+#' article.
 #'
 #' @section Counts and two-part models:
 #' Two-part models show their full model: the zero component renders as a
@@ -445,7 +446,9 @@
 #' criterion published for this class, and
 #' `show_fit_stats = "eff_p"` reports the effective number of design
 #' parameters beside it. `BIC.svyglm` requires a maximal model and has
-#' no default, so it stays blank. See `vignette("survey-tables")`.
+#' no default, so it stays blank. See the
+#' [Summary tables from a survey design](https://amaltawfik.github.io/spicy/articles/survey-tables.html)
+#' article.
 #'
 #' @section Robust, IV, quantile and panel models:
 #' `estimatr` fits keep their own robust SEs (never overwritten);
@@ -491,8 +494,11 @@
 #' @return A data frame with one row per supported engine and columns
 #'   `family`, `class`, `engine`, `ame`, `exponentiate`, `blocks`.
 #'
-#' @seealso [table_regression()]; `vignette("table-regression")` and
-#'   `vignette("table-regression-ordinal")`.
+#' @seealso [table_regression()]; the
+#'   [Publication-ready regression tables](https://amaltawfik.github.io/spicy/articles/table-regression.html)
+#'   and
+#'   [Ordinal regression tables](https://amaltawfik.github.io/spicy/articles/table-regression-ordinal.html)
+#'   articles.
 #'
 #' @aliases table_regression_mixed table_regression_ordinal table_regression_categorical table_regression_counts table_regression_survival table_regression_robust table_regression_bayesian
 #'

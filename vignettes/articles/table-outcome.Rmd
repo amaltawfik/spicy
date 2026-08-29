@@ -8,13 +8,9 @@ description: >
   statistic vocabulary and the same output engines as
   table_continuous().
 output:
-  rmarkdown::html_vignette:
+  html_document:
     toc: true
     toc_depth: 2
-vignette: >
-  %\VignetteIndexEntry{One outcome across several groupings}
-  %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
 ---
 
 ```{r, include = FALSE}
@@ -129,7 +125,7 @@ translation of the table.
 with the same meanings — `"m"`, `"sd"`, `"med"`, `"iqr"`,
 `"med_iqr"`, `"q1"`, `"q3"`, `"min"`, `"max"`, `"ci"`, `"med_ci"`,
 `"n"`, `"weighted_n"`. See the *Choosing which statistics to show*
-section of `vignette("table-continuous")` for the vocabulary itself;
+section of [*Continuous summary tables*](table-continuous.html) for the vocabulary itself;
 nothing about it changes here.
 
 ```{r tokens}
@@ -242,7 +238,7 @@ first appearance.
 ## Weights
 
 Two conventions coexist, and `rescale` is the switch between them —
-the same choice `vignette("table-continuous")` sets out in full.
+the same choice [*Continuous summary tables*](table-continuous.html) sets out in full.
 
 Without `rescale`, weights are read as **frequencies**: all weights 1
 reproduces the unweighted table, and integer weights reproduce the
@@ -433,13 +429,13 @@ table_outcome(
 
 ## See also
 
-- `vignette("table-continuous", package = "spicy")` for the
+- [*Continuous summary tables*](table-continuous.html) for the
   transposed shape — several outcomes across one grouping — and for
   the statistic vocabulary in full.
-- `vignette("table-categorical", package = "spicy")` for categorical
+- [*Categorical summary tables*](table-categorical.html) for categorical
   outcomes.
-- `vignette("as-structured", package = "spicy")` for the typed view
+- [*The structured view*](as-structured.html) for the typed view
   behind this table, and the geometry fields (`.row_role`, `.indent`)
   a custom renderer reads.
-- `vignette("summary-tables-reporting", package = "spicy")` for the
+- [*Summary tables for reporting*](summary-tables-reporting.html) for the
   cross-function reporting workflow.

@@ -8,13 +8,9 @@ description: >
   likelihood-ratio test, and the `nnet::multinom` engine plus the
   `mlogit` discrete-choice engine.
 output:
-  rmarkdown::html_vignette:
+  html_document:
     toc: true
     toc_depth: 2
-vignette: >
-  %\VignetteIndexEntry{Multinomial regression tables}
-  %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
 ---
 
 ```{r, include = FALSE}
@@ -40,10 +36,10 @@ library(spicy)
 library(nnet)
 ```
 
-This vignette covers **multinomial logistic regression** — models for a
+This article covers **multinomial logistic regression** — models for a
 *nominal* outcome, a categorical response whose categories have no
 natural order: employment status, party choice, transport mode. The
-companion vignette [*Publication-ready regression
+companion article [*Publication-ready regression
 tables*](table-regression.html) covers the shared mechanics (`vcov`,
 `ci_level`, output formats, multi-model layouts, broom integration; the class-by-class map is [*Supported models*](table-regression-supported-models.html)),
 and [*Ordinal regression tables*](table-regression-ordinal.html) covers
@@ -383,7 +379,7 @@ general model-building decision, not a multinomial one: the workflow
 — fit both codings, compare with `nested = TRUE`, and keep the scores
 only when the likelihood-ratio test finds no departure from a linear
 trend — is developed with its caveats in
-`vignette("categorical-predictors")`. One point *is*
+[*Categorical predictors*](categorical-predictors.html). One point *is*
 multinomial-specific: each freed coding costs one parameter **per
 equation**, so the test's degrees of freedom multiply by the number
 of non-reference outcomes:
@@ -402,7 +398,7 @@ dummies improve on the scores, and AIC agrees (2514.3 vs 2515.8). On
 Agresti's (2007, sec. 4.4.3) grounds the scores model is then
 preferable: simpler to report, and more powerful against a genuine
 trend — an advantage that reverses if the true pattern is
-non-monotone. See the categorical-predictors vignette for the caveats
+non-monotone. See the categorical-predictors article for the caveats
 that keep this decision honest (equal spacing, pre-testing, and when
 to simply keep the dummies).
 

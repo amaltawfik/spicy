@@ -8,13 +8,9 @@ description: >
   time models with time ratios, and the `survival`, `rms`, and
   `flexsurv` engines.
 output:
-  rmarkdown::html_vignette:
+  html_document:
     toc: true
     toc_depth: 2
-vignette: >
-  %\VignetteIndexEntry{Survival regression tables}
-  %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
 ---
 
 ```{r, include = FALSE}
@@ -37,9 +33,9 @@ library(spicy)
 library(survival)
 ```
 
-This vignette covers **survival (time-to-event) regression** — models
+This article covers **survival (time-to-event) regression** — models
 for the **time until an event occurs**, with censoring for the
-subjects whose event is not observed within follow-up. The companion vignette [*Publication-ready
+subjects whose event is not observed within follow-up. The companion article [*Publication-ready
 regression tables*](table-regression.html) covers the shared mechanics
 (`vcov`, `ci_level`, output formats, multi-model layouts, broom
 integration; the class-by-class map is
@@ -121,7 +117,7 @@ Reading the table:
   *column* — `show_columns = c("n_events", "b", "ci", "p")` gives
   events/N next to each hazard ratio, the univariable screen below
   uses it, and binomial tables share the convention (see the core
-  vignette).
+  article).
 
 The table reports the model, not its assumption: check
 proportionality with `survival::cox.zph()` before publishing
@@ -191,7 +187,7 @@ are averaged, and the two standardized curves are integrated to
 `tau` (RMST) or evaluated at `at_time` and complemented
 (risk = 1 − survival). Standard errors come from
 a nonparametric bootstrap, so expect the chunk to take a few
-seconds; the 200 replicates below keep the vignette light, and the
+seconds; the 200 replicates below keep the article light, and the
 default `boot_n = 1000` is the better choice for a publication
 table.
 

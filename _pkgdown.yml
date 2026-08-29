@@ -102,26 +102,26 @@ articles:
     navbar: Articles
     contents:
       - spicy
-      - variable-exploration
-      - frequency-tables
-      - association-measures
-      - table-categorical
-      - table-continuous
-      - table-continuous-lm
-      - table-outcome
-      - survey-tables
-      - table-regression
-      - table-regression-supported-models
-      - as-structured
-      - table-regression-mixed
-      - table-regression-gee
-      - table-regression-counts
-      - table-regression-survival
-      - table-regression-ordinal
-      - table-regression-multinomial
-      - table-regression-bayesian
-      - categorical-predictors
-      - summary-tables-reporting
+      - articles/variable-exploration
+      - articles/frequency-tables
+      - articles/association-measures
+      - articles/table-categorical
+      - articles/table-continuous
+      - articles/table-continuous-lm
+      - articles/table-outcome
+      - articles/survey-tables
+      - articles/table-regression
+      - articles/table-regression-supported-models
+      - articles/as-structured
+      - articles/table-regression-mixed
+      - articles/table-regression-gee
+      - articles/table-regression-counts
+      - articles/table-regression-survival
+      - articles/table-regression-ordinal
+      - articles/table-regression-multinomial
+      - articles/table-regression-bayesian
+      - articles/categorical-predictors
+      - articles/summary-tables-reporting
 
 reference:
   - title: Variable Metadata

@@ -7,13 +7,9 @@ description: >
   APA formatting by default, named journal styles (JAMA, NEJM,
   The Lancet, ...) by argument.
 output:
-  rmarkdown::html_vignette:
+  html_document:
     toc: true
     toc_depth: 2
-vignette: >
-  %\VignetteIndexEntry{Continuous summary tables}
-  %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
 ---
 
 ```{r, include = FALSE}
@@ -39,7 +35,7 @@ tests, test statistics, and effect sizes. Formatting follows APA
 conventions by default; `style = "jama"` (or `"nejm"`, `"lancet"`,
 `"annals"`, `"aer"`) switches the whole table to that journal's
 published rules — the *House styles* section of
-`vignette("summary-tables-reporting")` shows each style and the
+[*Summary tables for reporting*](summary-tables-reporting.html) shows each style and the
 guideline sentence behind every rule.
 
 ## Basic usage
@@ -523,19 +519,19 @@ table_continuous(
 
 ## See also
 
-- See `vignette("table-categorical", package = "spicy")` for grouped
+- See [*Categorical summary tables*](table-categorical.html) for grouped
   tables of categorical variables.
-- See `vignette("table-outcome", package = "spicy")` for the
+- See [*One outcome across several groupings*](table-outcome.html) for the
   transposed shape: ONE continuous outcome described across the
   levels of SEVERAL groupings, one block of rows per grouping.
   Several outcomes across one grouping is this article; one outcome
   across one or more groupings is that one.
-- See `vignette("table-continuous-lm", package = "spicy")` for
+- See [*Model-based continuous summary tables*](table-continuous-lm.html) for
   model-based continuous summary tables with robust standard errors or
   case weights.
-- See `vignette("table-regression", package = "spicy")` for full
+- See [*Publication-ready regression tables*](table-regression.html) for full
   coefficient tables from one or several fitted `lm` / `glm` models
   (APA Table 3).
-- See `vignette("summary-tables-reporting", package = "spicy")` for a
+- See [*Summary tables for reporting*](summary-tables-reporting.html) for a
   cross-function reporting workflow that ties the four summary-table
   helpers together along the APA Table 1 / 2 / 3 sequence.

@@ -455,8 +455,9 @@
 #' group-level terms instead), `ci_method = "profile"` /
 #' `"boot_percentile"`, and non-MCMC fits
 #' (`algorithm = "meanfield"` / `"optimizing"` -- refit with
-#' `algorithm = "sampling"`). See
-#' `vignette("table-regression-bayesian")`.
+#' `algorithm = "sampling"`). See the
+#' [Bayesian regression tables](https://amaltawfik.github.io/spicy/articles/table-regression-bayesian.html)
+#' article.
 #'
 #' # Hierarchical (nested) model comparison
 #'
@@ -1082,8 +1083,9 @@
 #'   Stram & Lee 1994). Variance-component rows deliberately carry
 #'   **no per-row p-value**: a Wald test of a variance is invalid at
 #'   the boundary of the parameter space, and no reporting guideline
-#'   requests one (see the *Mixed-effects models* section of
-#'   `vignette("table-regression")`). `FALSE` suppresses the block.
+#'   requests one (see the *Mixed-effects models* section of the
+#'   [Publication-ready regression tables](https://amaltawfik.github.io/spicy/articles/table-regression.html)
+#'   article). `FALSE` suppresses the block.
 #'   No effect on fits without random effects (`lm`, `glm`,
 #'   `coxph`, ...).
 #' @param re_scale One of `"sd"` (default) or `"variance"`.
@@ -1118,8 +1120,9 @@
 #'   optimistic near the variance boundary (Self & Liang 1987
 #'   chi-bar-squared); request boundary-respecting profile-likelihood
 #'   intervals with `re_ci = "profile"` when robustness is critical.
-#'   See the *Mixed-effects models* section of
-#'   `vignette("table-regression")`.
+#'   See the *Mixed-effects models* section of the
+#'   [Publication-ready regression tables](https://amaltawfik.github.io/spicy/articles/table-regression.html)
+#'   article.
 #'
 #'   For `lmer` / `glmer` fits these SEs come from `merDeriv`, whose
 #'   cost grows superlinearly with the number of observations (about a

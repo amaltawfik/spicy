@@ -453,8 +453,9 @@ boundary-corrected chi-bar-squared p-value (Self & Liang 1987;
 Stram & Lee 1994). Variance-component rows deliberately carry
 \strong{no per-row p-value}: a Wald test of a variance is invalid at
 the boundary of the parameter space, and no reporting guideline
-requests one (see the \emph{Mixed-effects models} section of
-\code{vignette("table-regression")}). \code{FALSE} suppresses the block.
+requests one (see the \emph{Mixed-effects models} section of the
+\href{https://amaltawfik.github.io/spicy/articles/table-regression.html}{Publication-ready regression tables}
+article). \code{FALSE} suppresses the block.
 No effect on fits without random effects (\code{lm}, \code{glm},
 \code{coxph}, ...).}
 
@@ -491,8 +492,9 @@ Note. Under the default \code{re_ci = "wald"} the SE and CI are Wald
 optimistic near the variance boundary (Self & Liang 1987
 chi-bar-squared); request boundary-respecting profile-likelihood
 intervals with \code{re_ci = "profile"} when robustness is critical.
-See the \emph{Mixed-effects models} section of
-\code{vignette("table-regression")}.
+See the \emph{Mixed-effects models} section of the
+\href{https://amaltawfik.github.io/spicy/articles/table-regression.html}{Publication-ready regression tables}
+article.
 
 For \code{lmer} / \code{glmer} fits these SEs come from \code{merDeriv}, whose
 cost grows superlinearly with the number of observations (about a
@@ -1244,8 +1246,9 @@ likelihood-based fit statistics (\code{"aic"}, pseudo-R², ...),
 group-level terms instead), \code{ci_method = "profile"} /
 \code{"boot_percentile"}, and non-MCMC fits
 (\code{algorithm = "meanfield"} / \code{"optimizing"} -- refit with
-\code{algorithm = "sampling"}). See
-\code{vignette("table-regression-bayesian")}.
+\code{algorithm = "sampling"}). See the
+\href{https://amaltawfik.github.io/spicy/articles/table-regression-bayesian.html}{Bayesian regression tables}
+article.
 }
 
 \section{Hierarchical (nested) model comparison}{

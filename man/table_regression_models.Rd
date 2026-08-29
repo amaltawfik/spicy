@@ -130,9 +130,9 @@ RR). Default fit statistics report the cluster structure (n,
 criteria \code{"qic"} / \code{"qicu"} (Pan 2001) and the \code{"scale"}
 (dispersion) parameter are opt-in -- there is no likelihood, so
 AIC, pseudo-R-squared, \code{nested = TRUE}, and \code{standardized} are
-refused. See the population-averaged section of
-\code{vignette("table-regression-mixed")} for the contrast with
-subject-specific mixed models.
+refused. See the population-averaged section of the
+\href{https://amaltawfik.github.io/spicy/articles/table-regression-mixed.html}{Mixed-effects regression tables}
+article for the contrast with subject-specific mixed models.
 }
 
 \section{Ordinal models}{
@@ -143,8 +143,9 @@ render as a \verb{Non-proportional effects} block, one coefficient per
 cut-point. \code{exponentiate} yields proportional odds ratios under logit;
 \code{ci_method = "profile"} profiles the predictor coefficients. AME is
 per-category (the marginal effect on each P(Y = k)). Defaults include
-McFadden and Nagelkerke pseudo-R-squared. See
-\code{vignette("table-regression-ordinal")}.
+McFadden and Nagelkerke pseudo-R-squared. See the
+\href{https://amaltawfik.github.io/spicy/articles/table-regression-ordinal.html}{Ordinal regression tables}
+article.
 }
 
 \section{Counts and two-part models}{
@@ -251,7 +252,9 @@ the design-based AIC of Lumley & Scott (2015), the one information
 criterion published for this class, and
 \code{show_fit_stats = "eff_p"} reports the effective number of design
 parameters beside it. \code{BIC.svyglm} requires a maximal model and has
-no default, so it stays blank. See \code{vignette("survey-tables")}.
+no default, so it stays blank. See the
+\href{https://amaltawfik.github.io/spicy/articles/survey-tables.html}{Summary tables from a survey design}
+article.
 }
 
 \section{Robust, IV, quantile and panel models}{
@@ -306,6 +309,9 @@ table_regression_models()
 subset(table_regression_models(), family == "Mixed effects")
 }
 \seealso{
-\code{\link[=table_regression]{table_regression()}}; \code{vignette("table-regression")} and
-\code{vignette("table-regression-ordinal")}.
+\code{\link[=table_regression]{table_regression()}}; the
+\href{https://amaltawfik.github.io/spicy/articles/table-regression.html}{Publication-ready regression tables}
+and
+\href{https://amaltawfik.github.io/spicy/articles/table-regression-ordinal.html}{Ordinal regression tables}
+articles.
 }

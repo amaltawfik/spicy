@@ -5,13 +5,9 @@ description: >
   effect sizes, and weighted counts in R using the spicy package.
   Covers sorting, percentages, grouping, and labelled data.
 output:
-  rmarkdown::html_vignette:
+  html_document:
     toc: true
     toc_depth: 2
-vignette: >
-  %\VignetteIndexEntry{Frequency tables and cross-tabulations}
-  %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
 ---
 
 ```{r, include = FALSE}
@@ -27,7 +23,7 @@ library(spicy)
 
 `freq()` and `cross_tab()` are the core tabulation functions in spicy.
 They handle factors, labelled variables (from haven or labelled),
-weights, and missing values out of the box. This vignette covers the
+weights, and missing values out of the box. This article covers the
 main options using the bundled `sochealth` dataset.
 
 ## Frequency tables with freq()
@@ -294,11 +290,11 @@ options(
 
 ## Learn more
 
-- `vignette("association-measures")` - choosing the right effect size
+- [*Cramer's V, Phi, and association measures*](association-measures.html) - choosing the right effect size
   for your contingency table.
-- `vignette("table-categorical")` - building publication-ready
+- [*Categorical summary tables*](table-categorical.html) - building publication-ready
   categorical tables.
-- `vignette("summary-tables-reporting")` - end-to-end reporting
+- [*Summary tables for reporting*](summary-tables-reporting.html) - end-to-end reporting
   workflow that ties the four `table_*` helpers together along the
   APA Table 1 / 2 / 3 sequence (including `table_regression()` for
   the coefficient table).

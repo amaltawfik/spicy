@@ -5,13 +5,9 @@ description: >
   Somers' D, and other effect sizes for contingency tables in R, with
   confidence intervals and p-values.
 output:
-  rmarkdown::html_vignette:
+  html_document:
     toc: true
     toc_depth: 2
-vignette: >
-  %\VignetteIndexEntry{Cramer's V, Phi, and association measures}
-  %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
 ---
 
 ```{r, include = FALSE}
@@ -27,7 +23,7 @@ library(spicy)
 
 spicy provides a coherent set of effect size and association measures
 for contingency tables, covering nominal and ordinal variables. This
-vignette explains which measure to use depending on the measurement
+article explains which measure to use depending on the measurement
 level of your variables, and how to obtain confidence intervals and
 p-values for chi-squared-based and rank-based statistics.
 
@@ -107,7 +103,7 @@ p-value tests the null hypothesis of no association using the Pearson
 chi-squared test. The chi-squared-based measures (Cramer's V, Phi, the
 contingency coefficient) have no standard asymptotic standard error, so
 the `SE` column prints `–` for them; the rank-based measures later in
-this vignette report their asymptotic SE in that column.
+this article report their asymptotic SE in that column.
 
 ```{r cramer-detail}
 cramer_v(tbl, detail = TRUE)
@@ -319,7 +315,7 @@ asymptotic SE exists for the contingency coefficient), and
 V and Phi also omit the interval silently in degenerate cases (estimate
 exactly 0, or n <= 3). The confidence level defaults to 95% and can be
 changed with `conf_level` -- here both levels on the
-smoking-by-education table from the beginning of the vignette:
+smoking-by-education table from the beginning of the article:
 
 ```{r ci-level}
 cramer_v(tbl, detail = TRUE)
@@ -363,9 +359,9 @@ print(res, digits = 5)
 
 ## See also
 
-- See `vignette("frequency-tables")` for `cross_tab()`, which reports
+- See [*Frequency tables and cross-tabulations*](frequency-tables.html) for `cross_tab()`, which reports
   these measures inline through its `assoc_measure` argument.
-- See `vignette("table-categorical")` for association measures inside
+- See [*Categorical summary tables*](table-categorical.html) for association measures inside
   publication-ready categorical summary tables.
 
 ## References
