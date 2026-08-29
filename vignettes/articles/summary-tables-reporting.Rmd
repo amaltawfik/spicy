@@ -627,7 +627,7 @@ The dedicated articles go deeper into each function:
   degrees of freedom, quantile rules, and the weights-vs-design
   estimand boundary.
 - `table_regression()` covers single- and multi-model regression
-  tables across 36 model classes (the map is
+  tables across 30+ model classes (the map is
   [*Supported models*](table-regression-supported-models.html)), five
   standardisation methods (four for linear models, plus the glm-only
   pseudo-standardisation), partial effect sizes with noncentral-F
