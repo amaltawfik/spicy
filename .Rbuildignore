@@ -26,3 +26,4 @@
 ^\.markdownlint\.json$
 ^\.git-blame-ignore-revs$
 ^vignettes/articles$
+^\.git$

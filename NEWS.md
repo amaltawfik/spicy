@@ -231,7 +231,7 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
   optional test statistic and effect size), and an `Overall` row gives
   the marginal summary. Statistics are chosen with the same
   `show_columns` tokens as `table_continuous()`, and every output engine
-  is available. See `vignette("table-outcome")`.
+  is available. See the table-outcome article on the package site.
 * `inline()` cites one table cell in running Quarto / R Markdown text:
   the returned string is exactly the displayed cell -- same decimals,
   *p* style, interval punctuation, journal style -- so a number quoted
@@ -355,7 +355,7 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
   not enter the comparison, so `drop_na = FALSE` gives the p-value of
   `drop_na = TRUE` instead of `NaN`.
 
-* `vignette("survey-tables")` gains a section on regression under a design,
+* The survey-tables article gains a section on regression under a design,
   and `?table_continuous_svy` / `?table_categorical_svy` state their
   stability tier.
 
@@ -464,7 +464,7 @@ class cannot honour are refused with a classed error (`spicy_unsupported_vcov`,
 * The baseline hazard behind these columns follows the tie handling of the
   fit, as `survfit()` and `basehaz()` do: a `ties = "breslow"` fit gives a
   Breslow baseline, the default Efron fit an Efron one. Documented in
-  `?table_regression` and `vignette("table-regression-survival")`.
+  `?table_regression` and the survival article on the package site.
 * New `show_columns` token `"n_events"`: event counts as `events/N` next to
   the estimates -- per factor level (reference row included), model totals
   on continuous rows -- for binomial outcomes (`glm`, `glmer`, `glmmTMB`)
