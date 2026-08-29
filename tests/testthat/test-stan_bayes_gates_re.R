@@ -1290,6 +1290,10 @@ test_that("diagnostic columns keep their conventions in every engine", {
   # structured precision map). Every diagnostic token of the console
   # row must appear verbatim in the tinytable output.
   skip_if_not_installed("tinytable")
+  # tinytable's print shows in the viewer when interactive; the
+  # console assertions above already ran, only this capture needs the
+  # non-interactive session.
+  skip_if(interactive(), "console print needs a non-interactive session")
   tt <- suppressWarnings(table_regression(
     f,
     show_columns = cols,
