@@ -907,3 +907,25 @@ statistics, summary tables, and data management ») et deviendraient
 faux le jour où DESCRIPTION change. Même commit, même vocabulaire.
 cran-comments.md est réécrit ce jour-là de toute façon (check-list
 décision 49).
+
+## Décision 52 — Le NEWS raconte l'upgrade, pas le cycle (2026-08-30)
+
+Amal (« le NEWS est franchement bcp trop long » puis « fais au plus
+pro ») a délégué le remède ; principes appliqués, valables pour tous
+les cycles futurs :
+1. Une entrée Bug fixes/Minor n'existe que si le comportement corrigé
+   était dans la release CRAN précédente (preuve contre le tag) ; la
+   correction d'une feature née dans le cycle appartient à la puce de
+   la feature. Corollaire du principe « NEWS: publié seulement ».
+2. Les corrections qui CHANGENT des chiffres publiés ouvrent Bug fixes
+   sous « ### Corrected results » (kendall_tau_b 0.6.0-0.12.0 en tête).
+3. Puces au rasoir tidyverse (1-4 lignes, une affirmation user, zéro
+   récit) ; sous-sections ### par thème ; chapeau de 8 lignes en tête
+   de release ; le détail vit dans les articles du site et dans git.
+Exécution 2026-08-30 : triage 7 agents contre v0.12.0 (281 puces,
+~135 keep / 57 drop / 12 flags, preuves exécutées), réécriture
+intégrale de ma main. Section dev 1331 → ~575 lignes, NEWS total
+1847 → 1091. Flags promus : OutDec et weighted_nobs en Breaking ;
+kendall/cbind-binomial/AME-poids/Type-II/profile-vcov/ordinal-order/
+totaux cross_tab en Corrected results. L'histoire interne supprimée
+du changelog reste dans git (état pré-réécriture au commit parent).
