@@ -1,3 +1,15 @@
+# gt : l'attribut headers= est construit sur le nom brut de colonne
+
+- **Cible** : gt 1.3.0
+- **Canal** : GitHub rstudio/gt, à ouvrir
+- **Envoyé** : non envoyé
+- **Statut** : dossier prêt
+- **Côté spicy** : contourné localement par .gt_safe_ids() (R/flextable_helpers.R)
+
+---
+
+*Dossier tel qu'envoyé, conservé verbatim ci-dessous.*
+
 # gt: the `headers=` attribute is built from the raw column name
 
 Dossier for an upstream report to `rstudio/gt`. Measured on gt 1.3.0,

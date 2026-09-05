@@ -135,6 +135,7 @@ air format (pinned: air 0.7.0; the whole tree was one-shot formatted -- see .git
 
 * The `dev/` scripts are the reference workflow for local development, release preparation, and post-release cleanup. Keep them aligned if the package workflow changes.
 * CI already covers `R CMD check`, `rhub`, `pkgdown`, and test coverage. Local changes should not assume CI will catch avoidable documentation or test regressions.
+* Session notes in `dev/` that match the ignored patterns (`*_spec.md`, `*_finding.md`, `*_plan.md`, ...) are scratch and stay local. Before a session ends, promote anything durable: a confirmed bug becomes a GitHub issue with a reproduction (ideally also a skipped regression test that references the issue), and a design question or decision becomes an ADR in `dev/decisions/` (one file per decision, named `YYYY-MM-DD-slug.md`, status proposed / accepted / rejected, updated in place when decided). A bug report sent upstream moves from its ignored `*_draft.md` to `dev/upstream/` on the day it is sent, with the standard header and a row in `dev/upstream/README.md`; generated review views (`dev/*_review_table.md`) stay local and are regenerated from their source.
 
 ## Writing
 

@@ -1472,7 +1472,7 @@ test_that("brmsfit algebraic betas: engine-invariant, oracle-exact", {
   # effectsize is the oracle for "basic" (its brms "posthoc" leaves
   # continuous draws unscaled -- inconsistent with its own stanreg
   # posthoc on the identical model; upstream report drafted in
-  # dev/effectsize_upstream_issue_draft.md).
+  # dev/upstream/parameters-standardize-posthoc-brmsfit.md).
   fr_b <- suppressWarnings(as_regression_frame(
     bf_fit,
     standardized = "basic",
