@@ -335,6 +335,13 @@ test_that("Glm poisson exponentiates to IRR; AME matches the glm-equivalent orac
   # AME rides the class-stripped glm path: marginaleffects cannot read the
   # rms Glm directly, so the oracle is avg_slopes() on the identical
   # stats::glm() fit.
+  # marginaleffects >= 1.0.0 gives a clean glm analytic Jacobians while the
+  # class-stripped Glm stays on the numerical path, and the two paths
+  # diverge by up to ~1e-4 across platforms (macOS / Linux CI). Pin BOTH
+  # sides to the numerical path so this stays an engine-equivalence oracle
+  # at 1e-8, platform-invariant; if marginaleffects ever retires the
+  # option, the comparison fails loudly at 1e-8 rather than flaking.
+  withr::local_options(marginaleffects_analytic_jacobian = FALSE)
   fr <- suppressWarnings(as_regression_frame(fit, show_columns = c("b", "ame")))
   expect_true(isTRUE(fr$info$supports$ame))
   a <- fr$coefs[
@@ -349,10 +356,7 @@ test_that("Glm poisson exponentiates to IRR; AME matches the glm-equivalent orac
   expect_identical(nrow(a), nrow(orc))
   idx <- match(a$term, orc$term)
   expect_equal(a$estimate, orc$estimate[idx], tolerance = 1e-8)
-  # marginaleffects >= 1.0.0 computes glm standard errors through analytic
-  # Jacobians while rms::Glm keeps the numerical path, so the two engines
-  # agree to differentiation precision (~1e-6 relative), not 1e-8.
-  expect_equal(a$std_error, orc$std.error[idx], tolerance = 1e-5)
+  expect_equal(a$std_error, orc$std.error[idx], tolerance = 1e-8)
 })
 
 # Phase 3 matrix: rd-vcov-classes:registry-cph
