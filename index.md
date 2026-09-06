@@ -229,7 +229,7 @@ The examples below use the bundled `sochealth` dataset.
 ### Inspect variables
 
 ![varlist demo with labelled
-data](reference/figures/animation_varlist.gif)
+data](https://raw.githubusercontent.com/amaltawfik/spicy/main/man/figures/animation_varlist.gif)
 
 ``` r
 
