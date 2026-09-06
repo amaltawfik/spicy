@@ -27,3 +27,5 @@
 ^\.git-blame-ignore-revs$
 ^vignettes/articles$
 ^\.git$
+^man/figures/animation_varlist\.gif$
+^\.venv$

@@ -7,7 +7,6 @@
 status](https://www.r-pkg.org/badges/version-ago/spicy)](https://CRAN.R-project.org/package=spicy)
 [![r-universe](https://amaltawfik.r-universe.dev/badges/spicy)](https://amaltawfik.r-universe.dev/spicy)
 [![R-CMD-check](https://github.com/amaltawfik/spicy/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/amaltawfik/spicy/actions/workflows/R-CMD-check.yaml)
-[![R-hub](https://github.com/amaltawfik/spicy/actions/workflows/rhub.yaml/badge.svg)](https://github.com/amaltawfik/spicy/actions/workflows/rhub.yaml)
 [![Codecov](https://codecov.io/gh/amaltawfik/spicy/branch/main/graph/badge.svg)](https://app.codecov.io/gh/amaltawfik/spicy)
 [![Project Status:
 Active](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
@@ -210,7 +209,7 @@ The examples below use the bundled `sochealth` dataset.
 
 ### Inspect variables
 
-<img src="man/figures/animation_varlist.gif" alt="varlist demo with labelled data" width="100%">
+<img src="https://raw.githubusercontent.com/amaltawfik/spicy/main/man/figures/animation_varlist.gif" alt="varlist demo with labelled data" width="100%">
 
 ``` r
 varlist(sochealth, tbl = TRUE)
