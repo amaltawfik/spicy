@@ -13,7 +13,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">spicy</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.12.0.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.13.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -70,10 +70,10 @@
     </div>
 
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="development version" id="spicy-development-version">spicy (development version)<a class="anchor" aria-label="anchor" href="#spicy-development-version"></a></h2>
+<h2 class="pkg-version" data-toc-text="0.13.0" id="spicy-0130">spicy 0.13.0<a class="anchor" aria-label="anchor" href="#spicy-0130"></a></h2>
 <p>This is the largest release the package has had. <code><a href="../reference/table_regression.html">table_regression()</a></code> grows from <code>lm</code> / <code>glm</code> to more than thirty model classes; the summary tables gain survey-design twins, a univariable screen, and an outcome-first layout; six journal styles and a French output arrive with document-wide options; declared missing values are honored package-wide; and a long audit aligned every rendered output with the console, cell for cell. The walk-throughs live as articles at <a href="https://amaltawfik.github.io/spicy/" class="uri">https://amaltawfik.github.io/spicy/</a>.</p>
 <div class="section level3">
-<h3 id="breaking-changes-development-version">Breaking changes<a class="anchor" aria-label="anchor" href="#breaking-changes-development-version"></a></h3>
+<h3 id="breaking-changes-0-13-0">Breaking changes<a class="anchor" aria-label="anchor" href="#breaking-changes-0-13-0"></a></h3>
 <ul><li>Declared missing values (<code>na_values</code>, <code>na_range</code>, tagged NAs) now count as missing in <code><a href="../reference/freq.html">freq()</a></code>, <code><a href="../reference/cross_tab.html">cross_tab()</a></code>, the <code>table_*()</code> family, <code><a href="../reference/mean_n.html">mean_n()</a></code> / <code><a href="../reference/sum_n.html">sum_n()</a></code> / <code><a href="../reference/count_n.html">count_n()</a></code>, and <code><a href="../reference/varlist.html">varlist()</a></code> / <code><a href="../reference/varlist.html">vl()</a></code> / <code><a href="../reference/code_book.html">code_book()</a></code>, so numbers change for labelled survey data. The tabulating helpers disclose the exclusion in a note, and <code><a href="../reference/freq.html">freq()</a></code> keeps a labelled Missing row per code. <code>user_na = FALSE</code> restores the previous behavior. See <code><a href="../reference/freq.html">?freq</a></code>.</li>
 <li>
 <code><a href="../reference/varlist.html">varlist()</a></code>, <code><a href="../reference/varlist.html">vl()</a></code>, and <code><a href="../reference/code_book.html">code_book()</a></code> use one missing definition for <code>N_distinct</code>, <code>N_valid</code>, and <code>NAs</code> on labelled data, and observed <code>na_range</code> codes and tagged-NA labels appear in <code>Values</code>.</li>
@@ -124,7 +124,7 @@
 <li>The package ships a single vignette, <em>Get started</em>; the walk-throughs live as articles on the package site at the same URLs. <code>vignette("&lt;name&gt;")</code> no longer finds them from an installed package — read them at <a href="https://amaltawfik.github.io/spicy/" class="uri">https://amaltawfik.github.io/spicy/</a>, where every help page now links.</li>
 </ul></div>
 <div class="section level3">
-<h3 id="new-supported-models-development-version">New supported models<a class="anchor" aria-label="anchor" href="#new-supported-models-development-version"></a></h3>
+<h3 id="new-supported-models-0-13-0">New supported models<a class="anchor" aria-label="anchor" href="#new-supported-models-0-13-0"></a></h3>
 <p><code><a href="../reference/table_regression.html">table_regression()</a></code> grows from <code>lm</code> / <code>glm</code> to more than thirty model classes, each rendered with the conventions of its family: <code><a href="../reference/table_regression_models.html">?table_regression_models</a></code> is the registry, the site’s articles are the walk-throughs. A request a class cannot honor is refused with a classed error, never rendered as an empty column, and every class fills the fit-statistics block with what it has (<code>nobs</code> and <code>AIC</code> at minimum, class-aware defaults such as pseudo-R² for ordinal and multinomial fits).</p>
 <ul><li>Mixed effects (<code>lmer</code> / <code>glmer</code>, <code>glmmTMB</code>, <code>lme</code>, <code>gls</code>): random effects as a block of rows (SD, correlations, residual, each with SE and CI), ICC, per-group N, marginal / conditional R², and a boundary-correct LR test of the random part. <code>re_ci = "profile"</code> gives profile CIs on the variance components, <code>re_test = "lrt"</code> / <code>"rlrt"</code> fills their test columns, and variance-component SEs are omitted above <code>options("spicy.re_se_max_n")</code> (default 1000).</li>
 <li>Mixed-effects guards: singular (boundary) structures are noted on all three engines, a non-converged <code>glmmTMB</code> fit withholds its likelihood-derived fit statistics under a note and a classed warning, a fit with several grouping factors explains why no single ICC exists, and nested <code>lme</code> levels are named as <code>lmer</code> names them, so the two engines line up in one table.</li>
@@ -142,7 +142,7 @@
 <li>Design-weighted Cox fits (<code><a href="https://rdrr.io/pkg/survey/man/svycoxph.html" class="external-link">survey::svycoxph()</a></code>): hazard ratios, both counts, concordance, and the design’s degrees of freedom; the RMST and risk-difference columns are refused — their bootstrap ignores the design — with a pointer at <code><a href="https://rdrr.io/pkg/survey/man/svykm.html" class="external-link">survey::svykm()</a></code>.</li>
 </ul></div>
 <div class="section level3">
-<h3 id="new-functions-development-version">New functions<a class="anchor" aria-label="anchor" href="#new-functions-development-version"></a></h3>
+<h3 id="new-functions-0-13-0">New functions<a class="anchor" aria-label="anchor" href="#new-functions-0-13-0"></a></h3>
 <ul><li>
 <code><a href="../reference/table_continuous_svy.html">table_continuous_svy()</a></code> and <code><a href="../reference/table_categorical_svy.html">table_categorical_svy()</a></code> summarize a <code>survey</code> design object — the design twins of <code><a href="../reference/table_continuous.html">table_continuous()</a></code> and <code><a href="../reference/table_categorical.html">table_categorical()</a></code>, with the same layout, tokens, and engines. Every statistic is computed by survey (means, SDs, quantiles, design effects, <code><a href="https://rdrr.io/pkg/survey/man/svyciprop.html" class="external-link">svyciprop()</a></code> intervals, Rao-Scott chi-squared), intervals and tests use the design degrees of freedom, <code>by</code> gives each group its own domain, and the note names the design and both counts. A calibrated design with negative weights is disclosed and its group comparisons withheld; <code>chisq_statistic = "saddlepoint"</code> is refused on replicate designs; and handing a design to the data-frame functions errors with the function to call instead.</li>
 <li>
@@ -159,15 +159,15 @@
 <code><a href="../reference/table_regression_models.html">table_regression_models()</a></code> returns the machine-readable registry of supported classes (family, engine, AME, <code>exponentiate</code> semantics); its help page is the per-family reference.</li>
 </ul></div>
 <div class="section level3">
-<h3 id="new-features-development-version">New features<a class="anchor" aria-label="anchor" href="#new-features-development-version"></a></h3>
+<h3 id="new-features-0-13-0">New features<a class="anchor" aria-label="anchor" href="#new-features-0-13-0"></a></h3>
 <div class="section level4">
-<h4 id="journal-styles-and-languages-development-version">Journal styles and languages<a class="anchor" aria-label="anchor" href="#journal-styles-and-languages-development-version"></a></h4>
+<h4 id="journal-styles-and-languages-0-13-0">Journal styles and languages<a class="anchor" aria-label="anchor" href="#journal-styles-and-languages-0-13-0"></a></h4>
 <ul><li>New <code>style</code> argument on the four table families, and <code>options(spicy.style = )</code> for document-wide scope: <code>"jama"</code>, <code>"nejm"</code>, <code>"lancet"</code>, <code>"annals"</code>, <code>"apa"</code>, and <code>"aer"</code>. A theme encodes only rules taken from an official document of the journal — numeric formatting conformity, not full editorial conformity — and moves defaults only: any formatting argument you pass wins, even at its own default value. <code>decimal_mark</code> accepts any single character in every family, which is what lets <code>"lancet"</code> set its midline dot.</li>
 <li>
 <code>options(spicy.language = "fr")</code> prints table labels in French — headers, row labels, titles, notes — and brings French typography with it: the decimal comma and the leading zero French usage keeps on a p-value (<code>0,003</code>). A label the French set does not carry falls back to English, and <code><a href="../reference/table_regression.html">table_regression()</a></code> titles translate whole or not at all. <code>options(spicy.labels = )</code> overrides one label at a time, in any language. A language changes only what a reader sees — machine outputs, column names, errors, and warnings stay put — and composes with a style: where the two meet the theme wins (<code>"lancet"</code> keeps its midline point), and an explicit argument beats both.</li>
 </ul></div>
 <div class="section level4">
-<h4 id="summary-tables-development-version">Summary tables<a class="anchor" aria-label="anchor" href="#summary-tables-development-version"></a></h4>
+<h4 id="summary-tables-0-13-0">Summary tables<a class="anchor" aria-label="anchor" href="#summary-tables-0-13-0"></a></h4>
 <ul><li>
 <code><a href="../reference/table_categorical.html">table_categorical()</a></code> and <code><a href="../reference/table_continuous.html">table_continuous()</a></code> gain <code>smd = TRUE</code>: a standardized-mean-difference column, the balance diagnostic of a Table 1 — signed for two groups, a multivariate distance for more, no CI and no p-value, working under <code>weights</code>. The raw outputs and <code>glance()</code> carry <code>smd_type</code> / <code>smd_value</code> whatever the argument, and the weighted-comparison refusal now points at it.</li>
 <li>
@@ -178,7 +178,7 @@
 <code>select</code> is optional in <code><a href="../reference/table_categorical.html">table_categorical()</a></code> (every eligible categorical column, <code>by</code> excluded); <code><a href="../reference/table_continuous.html">table_continuous()</a></code> gains <code>drop_na = FALSE</code> (<code>"(Missing)"</code> group, tests on the observed groups); both read <code>options(spicy.rescale)</code>.</li>
 </ul></div>
 <div class="section level4">
-<h4 id="regression-tables-development-version">Regression tables<a class="anchor" aria-label="anchor" href="#regression-tables-development-version"></a></h4>
+<h4 id="regression-tables-0-13-0">Regression tables<a class="anchor" aria-label="anchor" href="#regression-tables-0-13-0"></a></h4>
 <ul><li>New <code>show_columns</code> families <code>"rmst"</code> and <code>"risk_diff"</code> for <code>coxph</code> and <code>survreg</code> fits: covariate-adjusted differences in restricted mean survival time over <code>[0, tau]</code> and in cumulative incidence at <code>at_time</code>, by g-computation with bootstrap inference — in single tables and in the univariable screen (one shared horizon there). The horizon is explicit and required (<code>tau = "minmax"</code> opt-in), stratified Cox fits keep each subject’s own stratum baseline, and the baseline hazard follows the fit’s tie handling.</li>
 <li>New <code>show_columns</code> token <code>"n_events"</code>: event counts as <code>events/N</code> beside the estimates — per factor level, model totals on continuous rows — for binomial outcomes and right-censored <code>coxph</code> fits.</li>
 <li>Heteroskedasticity- and cluster-robust <code>vcov</code> across the supported classes, with each class’s field-standard backend: <code>"CR1S"</code> reproduces Stata’s <code>regress, vce(cluster)</code> exactly, <code>multinom</code> gets <code>"CR0"</code>–<code>"CR3"</code> (AME included), <code>rq</code> gets quantreg’s own family (<code>"nid"</code> default, <code>"rank"</code>, native <code>"bootstrap"</code>, wild gradient cluster bootstrap), and resampling footers report the valid replicate count. What no backend supports is refused, never approximated.</li>
@@ -189,20 +189,20 @@
 <li>AME columns for many more classes, per outcome category for <code>polr</code> / <code>clm</code> / <code>multinom</code>, honoring a robust <code>vcov</code>; <code><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">broom::tidy()</a></code> gains <code>outcome_level</code> for the per-category rows. When a <code>β</code> column shows, the note names the standardization method and its conventions.</li>
 </ul></div>
 <div class="section level4">
-<h4 id="the-structured-view-development-version">The structured view<a class="anchor" aria-label="anchor" href="#the-structured-view-development-version"></a></h4>
+<h4 id="the-structured-view-0-13-0">The structured view<a class="anchor" aria-label="anchor" href="#the-structured-view-0-13-0"></a></h4>
 <ul><li>
 <code><a href="../reference/as_structured.html">as_structured()</a></code> reads the descriptive tables too, and carries everything the printed table shows: significance markers and their cutoffs, composed display cells (<code>events/N</code>), the absorbed fixed-effects block, and a per-row identity that survives stacking — <code>.variable</code>, <code>.level</code>, <code>.row_role</code>, <code>.indent</code>, with <code>cell_status</code> naming reference and undefined cells — so a renderer never reads an en dash to find out what a cell is. A <code>version</code> field names the contract; a view from a newer contract is refused instead of mis-read.</li>
 <li>Table notes on the <code>"tinytable"</code> engine are set one size down, like the other engines, and <code>options(spicy.note_style)</code> passes Typst styling through (<code>"none"</code> leaves the note to the document template).</li>
 </ul></div>
 <div class="section level4">
-<h4 id="documentation-development-version">Documentation<a class="anchor" aria-label="anchor" href="#documentation-development-version"></a></h4>
+<h4 id="documentation-0-13-0">Documentation<a class="anchor" aria-label="anchor" href="#documentation-0-13-0"></a></h4>
 <ul><li>Seven new articles: mixed-effects, GEE, multinomial, count and two-part, survival, ordinal regression tables, and categorical predictors (dummy coding, reference levels, joint tests, contrast codings).</li>
 </ul></div>
 </div>
 <div class="section level3">
-<h3 id="bug-fixes-development-version">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-development-version"></a></h3>
+<h3 id="bug-fixes-0-13-0">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-0-13-0"></a></h3>
 <div class="section level4">
-<h4 id="corrected-results-development-version">Corrected results<a class="anchor" aria-label="anchor" href="#corrected-results-development-version"></a></h4>
+<h4 id="corrected-results-0-13-0">Corrected results<a class="anchor" aria-label="anchor" href="#corrected-results-0-13-0"></a></h4>
 <p>These fixes change numbers that 0.12.0 reported.</p>
 <ul><li>
 <code><a href="../reference/kendall_tau_b.html">kendall_tau_b()</a></code> reported wrong standard errors, confidence intervals, and Wald p-values in every release from 0.6.0 through 0.12.0 — the asymptotic SE mis-scaled one margin term; point estimates were correct. Also via <code><a href="../reference/assoc_measures.html">assoc_measures()</a></code> and the <code><a href="../reference/cross_tab.html">cross_tab()</a></code> association line.</li>
@@ -219,7 +219,7 @@
 <code><a href="../reference/cross_tab.html">cross_tab()</a></code> computes weighted count totals (<code>percent = "none"</code>) from the unrounded table, and titles fall back to a neutral placeholder instead of a value plucked from an inline expression.</li>
 </ul></div>
 <div class="section level4">
-<h4 id="tabulation-and-association-measures-development-version">Tabulation and association measures<a class="anchor" aria-label="anchor" href="#tabulation-and-association-measures-development-version"></a></h4>
+<h4 id="tabulation-and-association-measures-0-13-0">Tabulation and association measures<a class="anchor" aria-label="anchor" href="#tabulation-and-association-measures-0-13-0"></a></h4>
 <ul><li>Under <code>decimal_mark = ","</code>, every surface follows the mark: p-values and bounded measures keep their leading zero (<code>0,018</code>, <code>&lt;0,001</code>), <code><a href="../reference/cross_tab.html">cross_tab()</a></code>’s expected-count note, the significance-star legend (<code>*** p &lt; 0,001</code>), and the nested change statistics (<code>+0,07</code>) read the comma, and an association interval separates its bounds with <code>;</code> (<code>0,45 [0,31; 0,59]</code>). <code><a href="../reference/as_structured.html">as_structured()</a></code> reports the matching <code>p_style</code>; one you ask for still wins.</li>
 <li>
 <code>nested = TRUE</code> no longer reports a negative chi-square with a p-value when the models are passed largest-first.</li>
@@ -230,7 +230,7 @@
 <code><a href="../reference/freq.html">freq()</a></code> keeps its label footer when <code>NA</code>-weight rows are dropped, <code><a href="https://rdrr.io/r/base/print.html" class="external-link">print()</a></code> invisibly returns the table object, <code>labelled_levels = "labels"</code> warns when distinct codes merge under one label, <code>valid = FALSE</code> drops the Valid columns instead of printing <code>NA</code> under a <code>100.0</code> total, and <code>sort = "name+"</code> / <code>"name-"</code> sorts labelled variables by code whenever codes are displayed.</li>
 </ul></div>
 <div class="section level4">
-<h4 id="summary-tables-development-version-1">Summary tables<a class="anchor" aria-label="anchor" href="#summary-tables-development-version-1"></a></h4>
+<h4 id="summary-tables-0-13-0-1">Summary tables<a class="anchor" aria-label="anchor" href="#summary-tables-0-13-0-1"></a></h4>
 <ul><li>
 <code><a href="../reference/table_categorical.html">table_categorical()</a></code> displays labelled columns as <code>"[code] label"</code> levels in every path, keeps a declared-but-unobserved <code>by</code> level as an explicit zero column, and keeps both the group and the margin when a <code>by</code> level is named <code>"Total"</code>.</li>
 <li>
@@ -247,7 +247,7 @@
 <code><a href="../reference/table_continuous_lm.html">table_continuous_lm()</a></code> discloses robust and resampling SEs in the note, accepts <code>cluster = ~region</code>, treats a value-labelled <code>by</code> as categorical, accepts non-syntactic covariate names and unused factor levels, excludes <code>NA</code>-weight rows with disclosure, and degrades cleanly on degenerate fits (single-level <code>by</code> refused, saturated and too-sparse fits warned per variable).</li>
 </ul></div>
 <div class="section level4">
-<h4 id="rendering-and-output-engines-development-version">Rendering and output engines<a class="anchor" aria-label="anchor" href="#rendering-and-output-engines-development-version"></a></h4>
+<h4 id="rendering-and-output-engines-0-13-0">Rendering and output engines<a class="anchor" aria-label="anchor" href="#rendering-and-output-engines-0-13-0"></a></h4>
 <ul><li>
 <code>output = "gt"</code> tables keep their note wherever they are rendered — saved, converted to HTML, or printed non-interactively — and gt and flextable outputs render in Quarto / R Markdown Word, PowerPoint, and PDF documents, where they silently disappeared. A new <code>as_flextable()</code> method returns the underlying flextable.</li>
 <li>
@@ -268,7 +268,7 @@
 <li>The flextable outputs of the descriptive tables carry the same wrapper as <code><a href="../reference/table_regression.html">table_regression()</a></code>, so notes and knit-time rendering behave identically.</li>
 </ul></div>
 <div class="section level4">
-<h4 id="regression-tables-development-version-1">Regression tables<a class="anchor" aria-label="anchor" href="#regression-tables-development-version-1"></a></h4>
+<h4 id="regression-tables-0-13-0-1">Regression tables<a class="anchor" aria-label="anchor" href="#regression-tables-0-13-0-1"></a></h4>
 <ul><li>
 <code>table_regression(m1, m2)</code> without <code><a href="https://rdrr.io/r/base/list.html" class="external-link">list()</a></code> errors helpfully (the second fit used to bind to <code>vcov</code>), an <code>NA</code> or colliding model name is handled instead of crashing or drawing indistinguishable columns, the <code>p_adjust</code> footer’s family size matches the adjustment performed, and multi-model titles keep proper nouns capitalized.</li>
 <li>Factor rows follow <code><a href="https://rdrr.io/r/base/levels.html" class="external-link">levels()</a></code> order instead of alphabetical, the AME companion tokens work without the bare <code>"ame"</code> token, ordered factors with AME columns show a reference row, and stars anchor on B (and AME), never on beta.</li>
@@ -279,7 +279,7 @@
 <code>show_fit_stats = "pseudo_r2_tjur"</code> errors when no model is a binomial <code>glm</code>; the row was silently dropped. Returns carry the documented <code>outcome</code> / <code>model_ids</code> provenance attributes across every output.</li>
 </ul></div>
 <div class="section level4">
-<h4 id="inspection-and-row-wise-helpers-development-version">Inspection and row-wise helpers<a class="anchor" aria-label="anchor" href="#inspection-and-row-wise-helpers-development-version"></a></h4>
+<h4 id="inspection-and-row-wise-helpers-0-13-0">Inspection and row-wise helpers<a class="anchor" aria-label="anchor" href="#inspection-and-row-wise-helpers-0-13-0"></a></h4>
 <ul><li>
 <code><a href="../reference/varlist.html">varlist()</a></code>, <code><a href="../reference/varlist.html">vl()</a></code>, and <code><a href="../reference/code_book.html">code_book()</a></code> render <code>POSIXlt</code> columns as datetimes under <code>values = TRUE</code> and show an explicit <code>NA</code> factor level as <code>&lt;NA&gt;</code> instead of dropping it; <code><a href="../reference/label_from_names.html">label_from_names()</a></code> no longer blames the split for duplicate names already in the input.</li>
 <li>
@@ -288,7 +288,7 @@
 </ul></div>
 </div>
 <div class="section level3">
-<h3 id="minor-improvements-development-version">Minor improvements<a class="anchor" aria-label="anchor" href="#minor-improvements-development-version"></a></h3>
+<h3 id="minor-improvements-0-13-0">Minor improvements<a class="anchor" aria-label="anchor" href="#minor-improvements-0-13-0"></a></h3>
 <ul><li>A one-way <code><a href="../reference/table_continuous.html">table_continuous()</a></code> no longer draws a rule between its single-row blocks in the rendered outputs, matching the console, and <code>table_continuous(by = )</code> titles the table <code>Descriptive statistics by &lt;label&gt;</code> everywhere.</li>
 <li>
 <code><a href="../reference/cross_tab.html">cross_tab()</a></code> reports excluded missing values in the table note — per variable, with a deduplicated row total — instead of dropping them silently; it accepts logical weights like <code><a href="../reference/freq.html">freq()</a></code> and validates <code>digits</code> the same way.</li>
