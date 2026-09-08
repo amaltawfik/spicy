@@ -4,18 +4,21 @@
 \name{spicy-package}
 \alias{spicy}
 \alias{spicy-package}
-\title{spicy: descriptive statistics, summary tables, and data management}
+\title{spicy: publication-ready tables for descriptive statistics and
+regression models}
 \description{
-spicy provides tools for descriptive data analysis, variable
-inspection, and tabulation workflows: frequency tables,
-cross-tabulations with chi-squared tests and effect sizes,
-association measures for contingency tables, categorical and
-continuous summary tables, regression coefficient tables for one
-or several fits side by side (thirty-plus supported model
-classes), model-based linear-regression tables with optional
-additive covariate adjustment, row-wise descriptive summaries,
-interactive codebooks, variable-label extraction, and clipboard
-export.
+spicy provides publication-ready tables for descriptive statistics
+and regression models: frequency tables and cross-tabulations with
+association measures, categorical and continuous summary tables (by
+group or from a complex survey design), and regression tables for
+one or more models side by side, across more than thirty model
+classes, with robust standard errors, average marginal effects, and
+univariable screening. Tables follow APA conventions by default, can
+switch to named journal styles, and render identically in the
+console and the rich outputs. Declared missing values in labelled
+data are honored and disclosed throughout the descriptive tables;
+helpers cover codebooks, variable inspection, and row-wise
+summaries.
 }
 \section{API stability}{
 

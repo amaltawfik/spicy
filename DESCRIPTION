@@ -1,29 +1,23 @@
 Package: spicy
-Title: Descriptive Statistics, Summary Tables, and Data Management Tools
-Version: 0.12.0.9000
+Title: Publication-Ready Tables for Descriptive Statistics and Regression
+    Models
+Version: 0.13.0
 Authors@R: 
     person("Amal", "Tawfik", , "amal.tawfik@hesav.ch", role = c("aut", "cre", "cph"), comment = c(ORCID = "0009-0006-2422-1555", ROR = "04j47fz63"))
-Description: Provides tabulation, descriptive-summary, and
-    variable-inspection tools for applied data analysis. Frequency
-    tables and cross-tabulations with contingency-table association
-    measures (Cramer's V, Phi, Goodman-Kruskal Gamma, Kendall's
-    Tau-b, Somers' D, and others); categorical and continuous
-    summary tables; regression coefficient tables for one or more
-    fits side by side, spanning more than thirty model classes from
-    linear, generalized linear, and mixed-effects fits to ordinal,
-    multinomial, count, survival, survey, population-averaged
-    (GEE), and Bayesian models, with robust and cluster-robust
-    standard errors, average marginal effects, survival estimands
-    (restricted mean survival time and risk differences), and
-    univariable screening tables; and outcome-by-group comparison
-    tables from linear models with optional additive covariate
-    adjustment. Summary and regression tables follow APA
-    conventions by default and can switch to named journal styles
-    such as JAMA, NEJM, or The Lancet; all tables expose
-    'broom'-compatible 'tidy()' / 'glance()' methods for downstream
-    pipelines. Helpers cover interactive codebooks, variable-label
-    extraction, clipboard export, and row-wise descriptive
-    summaries.
+Description: Provides publication-ready tables for descriptive statistics
+    and regression models: frequency tables and cross-tabulations with
+    association measures (Cramer's V, Kendall's Tau-b, and others),
+    categorical and continuous summary tables, by group or from a complex
+    survey design, and regression tables for one or more models side by
+    side, across more than thirty model classes from mixed-effects to
+    survival and Bayesian, with robust standard errors, average marginal
+    effects, and univariable screening. Tables follow APA conventions by
+    default, can switch to named journal styles such as JAMA, NEJM, or
+    The Lancet, and render identically in the console and in 'gt',
+    'tinytable', 'flextable', 'Word', 'Excel', or the clipboard. Declared
+    missing values in labelled data are honored and disclosed throughout
+    the descriptive tables. Helpers cover codebooks, variable inspection,
+    and row-wise summaries.
 License: MIT + file LICENSE
 URL: https://github.com/amaltawfik/spicy/, https://amaltawfik.github.io/spicy/
 BugReports: https://github.com/amaltawfik/spicy/issues

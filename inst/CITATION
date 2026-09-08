@@ -1,17 +1,27 @@
 citHeader("To cite the spicy package in publications, use:")
 
+# Title and version come from DESCRIPTION (`meta`), so the citation can
+# never drift from the package metadata. The year is the CRAN
+# publication year when the installed build carries one, and the
+# current year on a development install. Only stable identifiers (DOI,
+# ORCID, URL) are written out.
+
+year <- sub("-.*", "", meta$`Date/Publication`)
+if (!length(year) || is.na(year) || !nzchar(year)) {
+  year <- format(Sys.Date(), "%Y")
+}
+
 bibentry(
   bibtype = "Manual",
-  title   = "spicy: Descriptive Statistics, Summary Tables, and Data Management Tools",
+  title   = sprintf("spicy: %s", gsub("\\s+", " ", meta$Title)),
   author  = person(
     given   = "Amal",
     family  = "Tawfik",
     email   = "amal.tawfik@hesav.ch",
     comment = c(ORCID = "0009-0006-2422-1555")
   ),
-  year    = format(Sys.Date(), "%Y"),
+  year    = year,
   note    = sprintf("R package version %s", meta$Version),
   url     = "https://CRAN.R-project.org/package=spicy",
   doi     = "10.32614/CRAN.package.spicy"
 )
-

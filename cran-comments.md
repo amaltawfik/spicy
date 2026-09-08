@@ -1,17 +1,19 @@
+# cran-comments for spicy 0.13.0
+
 ## Test environments
 
-* Local: Windows 11, R 4.6.0
-* GitHub Actions: ubuntu-latest, windows-latest, macOS-latest
-  (R-release)
-* win-builder: R-release, R-devel, R-oldrelease
+* Local: Windows 11, R 4.6.1
+* GitHub Actions: windows-latest (R-release), macOS-latest
+  (R-release), ubuntu-latest (R-release, R-devel, R-oldrel-1)
+* win-builder: R-release, R-devel
 
 ## R CMD check results
 
-0 errors | 0 warnings | 1 NOTE on win-builder.
+0 errors | 0 warnings | 1 NOTE
 
-The NOTE is the standard CRAN incoming-feasibility check
-("Number of updates in past 6 months: 9"). No other notes,
-warnings, or errors on any tested platform.
+The NOTE is the standard CRAN incoming-feasibility check ("Number of
+updates in past 6 months"). No other notes, warnings, or errors on
+any tested platform.
 
 ## Reverse dependencies
 
@@ -19,20 +21,17 @@ spicy has no reverse dependencies.
 
 ## Notes on this submission
 
-This release adds the `table_regression()` function for
-publication-ready regression coefficient tables (`lm` and `glm`
-fits side by side, multiple standardisation methods, average
-marginal effects, partial effect sizes with noncentral CIs,
-hierarchical model comparisons, and the same output engines as
-the rest of the package) and an additive `covariates` argument
-in `table_continuous_lm()` (G-computation and equal-weight
-marginal-mean estimands). It also bundles a focused round of bug
-fixes and one opt-in breaking change (`code_book()` no longer
-silently truncates very long export filenames). Full details in
-`NEWS.md`.
+This release consolidates a full development cycle; the package has
+moved to a slower release cadence. `table_regression()` grows from
+`lm` / `glm` to more than thirty model classes, the summary tables
+gain survey-design twins and a univariable screen, six journal
+styles and a French output arrive with document-wide options, and
+declared missing values (`na_values` / `na_range`, tagged NAs) are
+honored across the descriptive functions. The package now ships a
+single vignette; the twenty walk-throughs live as articles on the
+package site. Full details in `NEWS.md`.
 
-The release frequency reflects the rapid build-out of the
-table-rendering layer ahead of the 1.0 freeze, not bug-driven
-churn. Each release passes `R CMD check --as-cran` clean on all
-three win-builder R lines (R-release, R-devel, R-oldrelease) and
-the test suite has 3600+ unit tests.
+The test suite has 18,000+ unit tests, with estimates and standard
+errors validated to the digit against independent implementations
+(SPSS/PSPP, Stata conventions, and the reference R packages of each
+model family).

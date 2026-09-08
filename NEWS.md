@@ -1,4 +1,4 @@
-# spicy (development version)
+# spicy 0.13.0
 
 This is the largest release the package has had. `table_regression()`
 grows from `lm` / `glm` to more than thirty model classes; the summary

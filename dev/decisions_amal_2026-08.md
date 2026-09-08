@@ -929,3 +929,16 @@ intégrale de ma main. Section dev 1331 → ~575 lignes, NEWS total
 kendall/cbind-binomial/AME-poids/Type-II/profile-vcov/ordinal-order/
 totaux cross_tab en Corrected results. L'histoire interne supprimée
 du changelog reste dans git (état pré-réécriture au commit parent).
+
+Addendum décisions 49-51 (2026-09-08) : sur demande d'Amal (citer le
+package dans un article), les ÉDITIONS du jour J sont avancées à
+aujourd'hui — Version 0.13.0, Title (50), Description (51),
+spicy-package.R synchronisé, NEWS re-titré « spicy 0.13.0 »,
+cran-comments réécrit, et inst/CITATION rendu DYNAMIQUE (titre et
+version depuis meta, année depuis Date/Publication avec repli — sa
+version en dur portait encore l'ancien Title, surface attrapée par
+la question d'Amal). Citation rendue : « Tawfik A (2026). spicy:
+Publication-Ready Tables for Descriptive Statistics and Regression
+Models. R package version 0.13.0 ». La SOUMISSION reste au 30
+septembre (compteur 5) : il n'y restera que pull + check + submit.
+Rien ne doit plus bouger dans le package d'ici là.
