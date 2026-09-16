@@ -512,6 +512,9 @@ These fixes change numbers that 0.12.0 reported.
   variable, labelled by the contrast-matrix column names, with no
   invented reference row. Logical and character predictors get the
   grouped layout too.
+* A factor level containing `:` (`"Part-time: 50-89%"`) stays inside
+  its variable block in `table_regression()`; it used to be mistaken
+  for an interaction term and printed as a raw coefficient name.
 * The statistic column header follows each model's reference
   distribution (`z` or `t`); it was hardcoded to `t`.
 * Bootstrap, jackknife, and `standardized = "refit"` refits no longer

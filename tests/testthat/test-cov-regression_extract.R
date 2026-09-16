@@ -10,8 +10,8 @@
 #     high-degree suffixes).
 #   * poly_suffix_degree(): the `^k` high-degree branch + the NA
 #     fall-through for an unparseable suffix.
-#   * match_coef_to_factor() / detect_factor_term_meta(): interaction-coef
-#     skip (name contains ":").
+#   * match_coef_to_factor() / detect_factor_term_meta(): interaction coefs
+#     fall through to NULL, including when a LEVEL contains ":".
 #   * .spicy_get_xlevels() class-specific reconstruction arms: fixest,
 #     nlme lme, stanreg, and the brmsfit data-NULL early return.
 #   * .spicy_fixed_coef_names() stanreg arm.
@@ -222,7 +222,7 @@ test_that("table_regression on a 6-level ordered factor surfaces ^4 / ^5 trends"
 })
 
 
-# ---- 6. match_coef_to_factor(): interaction-coef skip (line 718) ----------
+# ---- 6. match_coef_to_factor(): interaction coefs fall through ------------
 
 test_that("match_coef_to_factor returns NULL for an interaction coef name", {
   xl <- list(cyl = c("4", "6", "8"))
@@ -499,4 +499,192 @@ test_that("the two weight predicates answer two different questions", {
   expect_false(.has_real_weights(stats::weights(fit_0)))
   expect_identical(.weights_kind_from_fit(fit_0), "none")
   expect_identical(.weighted_n_or_na(stats::weights(fit_0)), NA_real_)
+})
+
+# ---- 14. Factor levels containing ":" stay inside their block -------------
+#
+# `match_coef_to_factor()` used to reject any coef name containing ":" as an
+# interaction BEFORE trying to match it. A level may legitimately hold a
+# colon ("Part-time: 50-89%"), so those main effects escaped their factor
+# block and printed under the raw coefficient name. The matcher now lets the
+# (var, level) match decide: an interaction name never equals
+# `paste0(var, level)`, so it still falls through to NULL.
+
+colon_level_data <- function(n = 180L) {
+  set.seed(42)
+  employment <- factor(
+    sample(c("Full-time", "Part-time: 50-89%", "Part-time: <50%"), n, TRUE),
+    levels = c("Full-time", "Part-time: 50-89%", "Part-time: <50%")
+  )
+  x <- stats::rnorm(n)
+  lp <- 0.5 * x + as.numeric(employment)
+  data.frame(
+    y = 2 + lp + stats::rnorm(n),
+    yb = stats::rbinom(n, 1L, stats::plogis(lp - 2)),
+    x = x,
+    employment = employment,
+    grp = factor(sample(c("A", "B", "C"), n, TRUE))
+  )
+}
+
+COLON_LEVELS <- c("Part-time: 50-89%", "Part-time: <50%")
+
+
+test_that("lm: factor levels containing ':' stay inside the factor block", {
+  d <- colon_level_data()
+  fit <- lm(y ~ x + employment, data = d)
+  # The coefficient names really do carry a colon -- that is the whole trap.
+  expect_true(all(paste0("employment", COLON_LEVELS) %in% names(coef(fit))))
+
+  meta <- spicy:::detect_factor_term_meta(fit)
+  m1 <- meta[["employmentPart-time: 50-89%"]]
+  expect_identical(m1$factor_term, "employment")
+  expect_identical(m1$factor_level, "Part-time: 50-89%")
+  expect_identical(m1$factor_level_pos, 2L)
+  m2 <- meta[["employmentPart-time: <50%"]]
+  expect_identical(m2$factor_term, "employment")
+  expect_identical(m2$factor_level, "Part-time: <50%")
+  expect_identical(m2$factor_level_pos, 3L)
+
+  body <- as_structured(table_regression(fit))$body
+  lv <- body[body$.row_role == "level", ]
+  expect_identical(lv$.variable, rep("employment", 2L))
+  expect_identical(lv$.level, COLON_LEVELS)
+  expect_identical(
+    body$.variable[body$.row_role == "factor_header"],
+    "employment"
+  )
+  expect_identical(body$.level[body$.row_role == "reference"], "Full-time")
+  # No row is named after the raw coefficient.
+  expect_false(any(grepl("employmentPart-time", body$.variable, fixed = TRUE)))
+
+  df <- table_regression(fit, output = "data.frame")
+  expect_identical(
+    trimws(df$Variable)[3:6],
+    c("employment:", "Full-time (ref.)", COLON_LEVELS)
+  )
+  expect_false(any(grepl("employmentPart-time", df$Variable, fixed = TRUE)))
+})
+
+
+test_that("glm(binomial): colon levels stay in the block under exponentiate", {
+  d <- colon_level_data()
+  fit <- glm(yb ~ x + employment, data = d, family = binomial)
+
+  body <- as_structured(table_regression(fit, exponentiate = TRUE))$body
+  lv <- body[body$.row_role == "level", ]
+  expect_identical(lv$.variable, rep("employment", 2L))
+  expect_identical(lv$.level, COLON_LEVELS)
+  expect_identical(body$.level[body$.row_role == "reference"], "Full-time")
+  expect_false(any(grepl("employmentPart-time", body$.variable, fixed = TRUE)))
+  # The level rows carry real odds ratios, not the reference dashes.
+  expect_true(all(is.finite(lv$OR) & lv$OR > 0))
+
+  df <- table_regression(fit, exponentiate = TRUE, output = "data.frame")
+  expect_true(all(COLON_LEVELS %in% trimws(df$Variable)))
+  expect_false(any(grepl("employmentPart-time", df$Variable, fixed = TRUE)))
+})
+
+
+test_that("interaction rows are unaffected by the colon-level fix", {
+  d <- colon_level_data()
+  # Convention on a colon-FREE factor first: interaction rows are flat coef
+  # rows at indent 0, carrying the raw interaction name and no level.
+  ref <- as_structured(table_regression(lm(y ~ x * grp, data = d)))$body
+  ix_ref <- ref[ref$.variable %in% c("x:grpB", "x:grpC"), ]
+  expect_identical(nrow(ix_ref), 2L)
+  expect_identical(ix_ref$.row_role, rep("coef", 2L))
+  expect_true(all(is.na(ix_ref$.level)))
+  expect_identical(ix_ref$.indent, rep(0L, 2L))
+
+  # Same shape of model with the colon levels: main effects grouped, the
+  # interaction rows identical to the convention above.
+  body <- as_structured(table_regression(lm(y ~ x * employment, data = d)))$body
+  expect_identical(body$.level[body$.row_role == "level"], COLON_LEVELS)
+  ix <- body[body$.variable %in% paste0("x:employment", COLON_LEVELS), ]
+  expect_identical(nrow(ix), 2L)
+  expect_identical(ix$.row_role, ix_ref$.row_role)
+  expect_true(all(is.na(ix$.level)))
+  expect_identical(ix$.indent, ix_ref$.indent)
+
+  # The matcher itself: an interaction coef never equals paste0(var, level),
+  # on either side of the colon.
+  xl <- list(employment = levels(d$employment), x = c("a", "b"))
+  expect_null(spicy:::match_coef_to_factor("x:employmentPart-time: 50-89%", xl))
+  expect_null(spicy:::match_coef_to_factor("employmentPart-time: 50-89%:x", xl))
+})
+
+
+test_that("AME rows for colon levels align with the factor block", {
+  skip_if_not_installed("marginaleffects")
+  d <- colon_level_data()
+  tbl <- table_regression(
+    lm(y ~ x + employment, data = d),
+    show_columns = c("b", "ame")
+  )
+
+  body <- as_structured(tbl)$body
+  expect_true("AME" %in% names(body))
+  lv <- body[body$.row_role == "level", ]
+  expect_identical(lv$.level, COLON_LEVELS)
+  expect_true(all(is.finite(lv$AME)))
+  # One AME per NON-reference level: the reference row is present and empty.
+  ref_row <- body[body$.row_role == "reference", ]
+  expect_identical(nrow(ref_row), 1L)
+  expect_true(is.na(ref_row$AME))
+
+  long <- broom::tidy(tbl)
+  ame_terms <- long$term[long$estimate_type == "ame"]
+  expect_true(all(paste0("employment", COLON_LEVELS) %in% ame_terms))
+  expect_identical(sum(startsWith(ame_terms, "employment")), 2L)
+})
+
+
+test_that("console output indents colon levels under the factor header", {
+  d <- colon_level_data()
+  fit <- lm(y ~ x + employment, data = d)
+  out <- capture.output(print(table_regression(fit)))
+  expect_true(any(grepl("^ employment:", out)))
+  expect_true(any(grepl("^   Part-time: 50-89%", out)))
+  expect_true(any(grepl("^   Part-time: <50%", out)))
+  expect_false(any(grepl("employmentPart-time", out, fixed = TRUE)))
+})
+
+
+test_that("labels still relabel a block whose levels contain ':'", {
+  d <- colon_level_data()
+  out <- capture.output(print(table_regression(
+    lm(y ~ x + employment, data = d),
+    labels = c(employment = "Employment")
+  )))
+  expect_true(any(grepl("^ Employment:", out)))
+  expect_true(any(grepl("^   Part-time: 50-89%", out)))
+  expect_false(any(grepl("^ employment:", out)))
+  expect_false(any(grepl("employmentPart-time", out, fixed = TRUE)))
+})
+
+test_that("colon levels: the sTayS minimal reproduction (two factors, 2026-09-16)", {
+  set.seed(1)
+  n <- 300
+  gl <- c("Low: <50%", "Mid: 50-89%", "High: 90-100%")
+  hl <- c("A", "B: x", "C")
+  d <- data.frame(
+    y = rnorm(n),
+    g = factor(sample(gl, n, TRUE), levels = gl),
+    h = factor(sample(hl, n, TRUE), levels = hl)
+  )
+  m <- lm(y ~ g + h, data = d)
+  df <- table_regression(m, output = "data.frame")
+  v <- trimws(df$Variable)
+  # Every level sits under its own header, in declared order; no raw name.
+  expect_identical(
+    v[seq_len(9)],
+    c("(Intercept)",
+      "g:", "Low: <50% (ref.)", "Mid: 50-89%", "High: 90-100%",
+      "h:", "A (ref.)", "B: x", "C")
+  )
+  expect_false(any(grepl("^gMid|^gHigh|^hB", v)))
+  st <- as_structured(table_regression(m))
+  lv <- st$body[st$body$.row_role == "level", , drop = FALSE]
+  expect_setequal(lv$.level, c("Mid: 50-89%", "High: 90-100%", "B: x", "C"))
 })

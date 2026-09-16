@@ -987,10 +987,12 @@ match_coef_to_factor <- function(coef_name, xlevels, contrast_suffixes = NULL) {
   if (coef_name == "(Intercept)") {
     return(NULL)
   }
-  # Skip interaction terms -- they involve multiple factors / numerics
-  if (grepl(":", coef_name, fixed = TRUE)) {
-    return(NULL)
-  }
+  # No textual guard against interaction terms: a level may legitimately
+  # contain ":" (e.g. "Part-time: 50-89%"), so a name test would strand
+  # such main effects outside their factor block. The matching loop below
+  # decides instead -- a coef equal to `paste0(var, level)` IS a main
+  # effect whatever characters the level holds, and an interaction name
+  # ("x:gb", "gb:x") never equals one, so it falls through to NULL.
 
   # Try the longest factor name first so that when one factor's name is a
   # prefix of another (e.g. `f` and `foo`), a coef like `fooC` matches the
