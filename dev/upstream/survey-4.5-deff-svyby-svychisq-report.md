@@ -4,7 +4,7 @@
 - **Canal** : courriel au mainteneur, faute de tracker public
 - **Envoyé** : 2026-08-21 04:20
 - **Statut** : envoyé, sans réponse connue au 2026-09-06
-- **Côté spicy** : les tables svy rapportent DEff et les statistiques de svychisq() (R/i18n.R, table_continuous_svy et son jumeau catégoriel) ; vérifier si un contournement de deff() sur svyby est en place et le référencer ici
+- **Côté spicy** (vérifié 2026-09-16) : (1) deff.svyby — jamais emprunté : chaque domaine est un `svymean()` séparé et `survey::deff()` est appelé sur ce résultat, pas sur un `svyby` (R/table_continuous_svy.R:202) — non-exposition structurelle ; (2) svychisq sur plans répliqués — garde délibérée : `"lincom"` et `"wls-score"` refusés d’emblée (R/table_categorical_svy.R:57), `"saddlepoint"` refusé sur un plan à poids répliqués et accepté sur un plan linéarisé où il est correct (:346, :923). Rien à retirer quand survey corrigera ; le refus de `"saddlepoint"` sur plans répliqués pourra alors être levé (avec entrée NEWS).
 
 ---
 
