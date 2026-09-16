@@ -523,7 +523,8 @@ wording – "ref:", "vs", "Reference categories:").</p></dd>
 <dt id="arg-show-fit-stats">show_fit_stats<a class="anchor" aria-label="anchor" href="#arg-show-fit-stats"></a></dt>
 <dd><p>Character vector of tokens for the
 model-level rows below the coefficients; row order follows
-token order. <code>NULL</code> (default) resolves class-aware:</p><ul><li><p><code>lm</code>: <code>c("nobs", "r2", "adj_r2")</code>.</p></li>
+token order. <code>NULL</code> (default) resolves class-aware:</p><ul><li><p><code>lm</code>, <code><a href="https://declaredesign.org/r/estimatr/reference/lm_robust.html" class="external-link">estimatr::lm_robust()</a></code>: <code>c("nobs", "r2", "adj_r2")</code>. <code><a href="https://declaredesign.org/r/estimatr/reference/iv_robust.html" class="external-link">estimatr::iv_robust()</a></code> gets <code>"nobs"</code> alone –
+the 2SLS R-squared is not the classical one.</p></li>
 <li><p><code>glm</code>, ordinal <code>polr</code> / <code>clm</code>:
 <code>c("nobs", "pseudo_r2_mcfadden", "pseudo_r2_nagelkerke", "aic")</code> (McFadden = Stata <code>ologit</code> default,
 Nagelkerke = SPSS PLUM).</p></li>
@@ -1093,17 +1094,20 @@ Refused when no model in the table is a geeglm fit; the
 likelihood-based tokens (<code>"aic"</code>, pseudo-\(R^2\), ...)
 are refused in return for all-GEE tables – quasi-likelihood
 has no likelihood.</p></li>
-<li><p>fixest absorbed fixed effects (<code>fixest</code> only, both on by
-default for fixest tables): <code>"fixed_effects"</code> renders a
+<li><p>Absorbed fixed effects (<code>fixest</code> fits, and <code>estimatr</code> fits
+built with <code>fixed_effects =</code>): <code>"fixed_effects"</code> renders a
 <code>Fixed effects:</code> block at the top of the fit statistics –
 one Yes / No row per absorbed factor (the <code>etable</code> / <code>esttab</code>
-convention), blank cells for non-fixest models in mixed
-tables. Varying-slope-only factors (<code>Origin[[x]]</code>) absorb no
+convention), blank cells for models without the concept in
+mixed tables – and is on by default for both.
+Varying-slope-only factors (<code>Origin[[x]]</code>) absorb no
 intercept: they read No when another model absorbs that
-factor, and contribute no row otherwise. <code>"within_r2"</code> is the
-FE-partialled within R-squared (<code>feols</code>; GLM-family fixest
-fits report fixest's McFadden <code>pr2</code> instead). Both tokens are
-refused when no model in the table is a fixest fit.</p></li>
+factor, and contribute no row otherwise.
+<code>"within_r2"</code> is the FE-partialled within
+R-squared (a default for <code>feols</code>, opt-in for <code>estimatr</code>;
+GLM-family fixest fits report fixest's McFadden <code>pr2</code>
+instead). Both tokens are refused when no model in the table
+absorbs fixed effects.</p></li>
 <li><p>Effect size: <code>"f2"</code>.</p></li>
 <li><p>Information criteria: <code>"aic"</code>, <code>"aicc"</code>, <code>"bic"</code>,
 <code>"deviance"</code> (lowercase like every other token; the rendered
@@ -1114,7 +1118,8 @@ comparison</em> below): <code>"r2_change"</code>, <code>"adj_r2_change"</code>,
 <code>"f_change"</code>, <code>"f2_change"</code>, <code>"lrt_change"</code>,
 <code>"aic_change"</code>, <code>"aicc_change"</code>, <code>"bic_change"</code>,
 <code>"deviance_change"</code>, <code>"p_change"</code>.</p></li>
-</ul><p>Default (resolved when <code>NULL</code>) is class-aware: lm fits get
+</ul><p>Default (resolved when <code>NULL</code>) is class-aware: lm and
+<code>lm_robust</code> fits get
 <code>c("nobs", "r2", "adj_r2")</code>; glm and ordinal <code>polr</code> / <code>clm</code> fits get
 <code>c("nobs", "pseudo_r2_mcfadden", "pseudo_r2_nagelkerke", "aic")</code>;
 mixed lm + glm sets union both groups (the renderer per-row

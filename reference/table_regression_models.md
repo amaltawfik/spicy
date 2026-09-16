@@ -259,12 +259,13 @@ article.
 the heteroskedasticity-robust `"nid"` sandwich (quantreg's own
 large-sample default), with `"iid"`, `"ker"`, `"rank"` (CIs only) and a
 native `"bootstrap"` – clustered via the wild gradient bootstrap – as
-`vcov` options (the footer names the estimator); `fixest` fits disclose
-their absorbed fixed effects as a default-on `Fixed effects:` block (one
-Yes / No row per factor; varying-slope-only factors are not absorbed
-intercepts and read No), with the within R-squared in the default fit
-statistics and per-factor `N (<factor>)` counts via the opt-in
-`n_groups` token.
+`vcov` options (the footer names the estimator); `fixest` fits – and
+`estimatr` fits built with `fixed_effects =` – disclose their absorbed
+fixed effects as a default-on `Fixed effects:` block (one Yes / No row
+per factor; varying-slope-only factors are not absorbed intercepts and
+read No), with per-factor `N (<factor>)` counts via the opt-in
+`n_groups` token and the within R-squared in the default fit statistics
+for `fixest` (opt-in via `within_r2` for `estimatr`).
 
 ## Bayesian models
 

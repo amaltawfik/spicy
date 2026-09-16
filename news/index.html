@@ -302,6 +302,10 @@
 <li>Under <code>exponentiate = TRUE</code> with a visible SE column, the footer states the SE scale (delta method) and that the CI bounds are asymmetric.</li>
 <li>
 <code><a href="../reference/table_continuous.html">table_continuous()</a></code>’s “<code>test</code> is ignored” warning states the full trigger condition, and <code><a href="../reference/varlist.html">varlist()</a></code> annotates <code>difftime</code> values with their units.</li>
+<li>An estimatr fit that absorbs fixed effects (<code>fixed_effects =</code>) discloses them in the <code>Fixed effects:</code> block like a fixest fit, <code>"n_groups"</code> counts their levels, and <code>"within_r2"</code> reports the FE-partialled R-squared.</li>
+<li>The model type note of an estimatr fit follows its <code>se_type</code>: <code>(classical SE)</code>, <code>(no SE computed)</code>, or <code>(robust SE)</code>; it used to read <code>(robust SE)</code> for every fit.</li>
+<li>
+<code>lm_robust</code> tables report R² and adjusted R² by default, like <code>lm</code> tables; <code>iv_robust</code> keeps <code>n</code> only (its R² is not the classical one).</li>
 </ul></div>
 </div>
     <div class="section level2">

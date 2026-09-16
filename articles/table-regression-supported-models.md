@@ -274,12 +274,13 @@ predictors*](https://amaltawfik.github.io/spicy/articles/categorical-predictors.
 [`quantreg::rq()`](https://rdrr.io/pkg/quantreg/man/rq.html) (defaulting
 to the heteroskedasticity-robust `nid` sandwich – quantreg’s own
 large-sample default – with `iid`, `ker`, `rank` CIs and a native
-clustered bootstrap as `vcov` options), and the `fixest` estimators,
-whose absorbed fixed effects render as a default-on `Fixed effects:`
-block – one Yes / No row per factor, blank for non-fixest models in a
-mixed table – with the within R-squared among the default fit statistics
-and per-factor `N (<factor>)` counts through the opt-in `"n_groups"`
-token.
+clustered bootstrap as `vcov` options), and the `fixest` estimators.
+Absorbed fixed effects – a `fixest` fit, or an `estimatr` fit built with
+`fixed_effects =` – render as a default-on `Fixed effects:` block – one
+Yes / No row per factor, blank for models without the concept in a mixed
+table – with per-factor `N (<factor>)` counts through the opt-in
+`"n_groups"` token and the within R-squared through `"within_r2"` (a
+`fixest` default).
 
 **Mixed effects.** `lmer` (Satterthwaite t via `lmerTest`), `glmer`,
 `glmmTMB` (with zero-inflation and dispersion blocks),

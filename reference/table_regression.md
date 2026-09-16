@@ -439,7 +439,11 @@ table_regression(
   coefficients; row order follows token order. `NULL` (default) resolves
   class-aware:
 
-  - `lm`: `c("nobs", "r2", "adj_r2")`.
+  - `lm`,
+    [`estimatr::lm_robust()`](https://declaredesign.org/r/estimatr/reference/lm_robust.html):
+    `c("nobs", "r2", "adj_r2")`.
+    [`estimatr::iv_robust()`](https://declaredesign.org/r/estimatr/reference/iv_robust.html)
+    gets `"nobs"` alone – the 2SLS R-squared is not the classical one.
 
   - `glm`, ordinal `polr` / `clm`:
     `c("nobs", "pseudo_r2_mcfadden", "pseudo_r2_nagelkerke", "aic")`
@@ -1028,16 +1032,17 @@ restore it explicitly when needed).
   likelihood-based tokens (`"aic"`, pseudo-\\R^2\\, ...) are refused in
   return for all-GEE tables – quasi-likelihood has no likelihood.
 
-- fixest absorbed fixed effects (`fixest` only, both on by default for
-  fixest tables): `"fixed_effects"` renders a `Fixed effects:` block at
-  the top of the fit statistics – one Yes / No row per absorbed factor
-  (the `etable` / `esttab` convention), blank cells for non-fixest
-  models in mixed tables. Varying-slope-only factors (`Origin[[x]]`)
-  absorb no intercept: they read No when another model absorbs that
-  factor, and contribute no row otherwise. `"within_r2"` is the
-  FE-partialled within R-squared (`feols`; GLM-family fixest fits report
-  fixest's McFadden `pr2` instead). Both tokens are refused when no
-  model in the table is a fixest fit.
+- Absorbed fixed effects (`fixest` fits, and `estimatr` fits built with
+  `fixed_effects =`): `"fixed_effects"` renders a `Fixed effects:` block
+  at the top of the fit statistics – one Yes / No row per absorbed
+  factor (the `etable` / `esttab` convention), blank cells for models
+  without the concept in mixed tables – and is on by default for both.
+  Varying-slope-only factors (`Origin[[x]]`) absorb no intercept: they
+  read No when another model absorbs that factor, and contribute no row
+  otherwise. `"within_r2"` is the FE-partialled within R-squared (a
+  default for `feols`, opt-in for `estimatr`; GLM-family fixest fits
+  report fixest's McFadden `pr2` instead). Both tokens are refused when
+  no model in the table absorbs fixed effects.
 
 - Effect size: `"f2"`.
 
@@ -1051,8 +1056,8 @@ restore it explicitly when needed).
   `"aic_change"`, `"aicc_change"`, `"bic_change"`, `"deviance_change"`,
   `"p_change"`.
 
-Default (resolved when `NULL`) is class-aware: lm fits get
-`c("nobs", "r2", "adj_r2")`; glm and ordinal `polr` / `clm` fits get
+Default (resolved when `NULL`) is class-aware: lm and `lm_robust` fits
+get `c("nobs", "r2", "adj_r2")`; glm and ordinal `polr` / `clm` fits get
 `c("nobs", "pseudo_r2_mcfadden", "pseudo_r2_nagelkerke", "aic")`; mixed
 lm + glm sets union both groups (the renderer per-row en-dashes the
 inappropriate cell); Cox fits get `c("nobs", "n_events", "aic")`; GEE
