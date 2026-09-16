@@ -639,20 +639,20 @@ mfit <- stan_lmer(Reaction ~ Days + (Days | Subject),
                   iter = 1000, chains = 2, seed = 7, refresh = 0)
 table_regression(mfit)
 #> Warning: Bayesian fit (outcome: Reaction) shows sampler problems -- Sampler
-#> diagnostics: max R-hat = 1.010 (target < 1.01); min ESS = 253 (target > 400).
+#> diagnostics: max R-hat = 1.011 (target < 1.01); min ESS = 282 (target > 400).
 #> Do not report as-is; run longer or reparameterize (Vehtari et al. 2021).
 #> Bayesian linear regression (stanreg): Reaction
 #> 
 #>  Variable                         │   B      SE       95% CrI      
 #> ──────────────────────────────────┼────────────────────────────────
-#>  (Intercept)                      │ 251.23  6.53  [237.54, 264.18] 
-#>  Days                             │  10.38  1.82  [  6.58,  13.95] 
+#>  (Intercept)                      │ 251.04  6.59  [237.83, 265.21] 
+#>  Days                             │  10.45  1.80  [  6.79,  13.78] 
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  Random effects:                  │                                
-#>    σ Subject (Intercept)          │  21.99  5.52  [ 12.68,  35.63] 
-#>    σ Subject Days                 │   6.53  1.33  [  4.37,  10.18] 
-#>    ρ Subject (Days × (Intercept)) │   0.11  0.30  [ -0.42,   0.70] 
-#>    σ (Residual)                   │  25.99  1.63  [ 23.14,  29.28] 
+#>    σ Subject (Intercept)          │  23.38  5.55  [ 13.01,  35.44] 
+#>    σ Subject Days                 │   6.68  1.42  [  4.48,  10.56] 
+#>    ρ Subject (Days × (Intercept)) │   0.11  0.31  [ -0.45,   0.64] 
+#>    σ (Residual)                   │  25.85  1.56  [ 22.85,  29.13] 
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n                                │ 180                            
 #>  R² (Bayes)                       │   0.79                         
@@ -660,7 +660,7 @@ table_regression(mfit)
 #> Note. Bayesian linear regression (stanreg).
 #> Std. errors: posterior MAD SD (scaled median absolute deviation).
 #> Random effects (MCMC).
-#> Sampler diagnostics: max R-hat = 1.010 (target < 1.01); min ESS = 253 (target > 400). Do not report as-is; run longer or reparameterize (Vehtari et al. 2021).
+#> Sampler diagnostics: max R-hat = 1.011 (target < 1.01); min ESS = 282 (target > 400). Do not report as-is; run longer or reparameterize (Vehtari et al. 2021).
 ```
 
 Note the guard from the convergence section doing its job: this

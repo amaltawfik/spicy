@@ -724,20 +724,20 @@ quantile never encounters:</p>
 <span>                  iter <span class="op">=</span> <span class="fl">1000</span>, chains <span class="op">=</span> <span class="fl">2</span>, seed <span class="op">=</span> <span class="fl">7</span>, refresh <span class="op">=</span> <span class="fl">0</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">mfit</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Warning: Bayesian fit (outcome: Reaction) shows sampler problems -- Sampler</span></span>
-<span><span class="co">#&gt; diagnostics: max R-hat = 1.010 (target &lt; 1.01); min ESS = 253 (target &gt; 400).</span></span>
+<span><span class="co">#&gt; diagnostics: max R-hat = 1.011 (target &lt; 1.01); min ESS = 282 (target &gt; 400).</span></span>
 <span><span class="co">#&gt; Do not report as-is; run longer or reparameterize (Vehtari et al. 2021).</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Bayesian linear regression (stanreg): Reaction</span></span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Variable                         <span style="color: #9E9E9E;">│</span>   B      SE       95% CrI      </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">──────────────────────────────────┼────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  (Intercept)                      <span style="color: #9E9E9E;">│</span> 251.23  6.53  [237.54, 264.18] </span></span>
-<span><span class="co">#&gt;  Days                             <span style="color: #9E9E9E;">│</span>  10.38  1.82  [  6.58,  13.95] </span></span>
+<span><span class="co">#&gt;  (Intercept)                      <span style="color: #9E9E9E;">│</span> 251.04  6.59  [237.83, 265.21] </span></span>
+<span><span class="co">#&gt;  Days                             <span style="color: #9E9E9E;">│</span>  10.45  1.80  [  6.79,  13.78] </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
 <span><span class="co">#&gt;  Random effects:                  <span style="color: #9E9E9E;">│</span>                                </span></span>
-<span><span class="co">#&gt;    σ Subject (Intercept)          <span style="color: #9E9E9E;">│</span>  21.99  5.52  [ 12.68,  35.63] </span></span>
-<span><span class="co">#&gt;    σ Subject Days                 <span style="color: #9E9E9E;">│</span>   6.53  1.33  [  4.37,  10.18] </span></span>
-<span><span class="co">#&gt;    ρ Subject (Days × (Intercept)) <span style="color: #9E9E9E;">│</span>   0.11  0.30  [ -0.42,   0.70] </span></span>
-<span><span class="co">#&gt;    σ (Residual)                   <span style="color: #9E9E9E;">│</span>  25.99  1.63  [ 23.14,  29.28] </span></span>
+<span><span class="co">#&gt;    σ Subject (Intercept)          <span style="color: #9E9E9E;">│</span>  23.38  5.55  [ 13.01,  35.44] </span></span>
+<span><span class="co">#&gt;    σ Subject Days                 <span style="color: #9E9E9E;">│</span>   6.68  1.42  [  4.48,  10.56] </span></span>
+<span><span class="co">#&gt;    ρ Subject (Days × (Intercept)) <span style="color: #9E9E9E;">│</span>   0.11  0.31  [ -0.45,   0.64] </span></span>
+<span><span class="co">#&gt;    σ (Residual)                   <span style="color: #9E9E9E;">│</span>  25.85  1.56  [ 22.85,  29.13] </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
 <span><span class="co">#&gt;  n                                <span style="color: #9E9E9E;">│</span> 180                            </span></span>
 <span><span class="co">#&gt;  R² (Bayes)                       <span style="color: #9E9E9E;">│</span>   0.79                         </span></span>
@@ -745,7 +745,7 @@ quantile never encounters:</p>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Bayesian linear regression (stanreg).</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: posterior MAD SD (scaled median absolute deviation).</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Random effects (MCMC).</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; Sampler diagnostics: max R-hat = 1.010 (target &lt; 1.01); min ESS = 253 (target &gt; 400). Do not report as-is; run longer or reparameterize (Vehtari et al. 2021).</span></span></span></code></pre></div>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; Sampler diagnostics: max R-hat = 1.011 (target &lt; 1.01); min ESS = 282 (target &gt; 400). Do not report as-is; run longer or reparameterize (Vehtari et al. 2021).</span></span></span></code></pre></div>
 <p>Note the guard from the convergence section doing its job: this
 deliberately trimmed run (two short chains, a correlated random slope)
 misses the R-hat and ESS targets, so the table says so in its footer and
