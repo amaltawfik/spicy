@@ -1442,11 +1442,14 @@
 #' # with `(ref.)` and shows an en dash in the statistic columns.
 #' table_regression(fit)
 #'
+#' \donttest{
 #' # Standardised coefficients (beta) injected next to B. "refit"
 #' # is the Cohen et al. (2003) refit-on-z-scores convention;
 #' # "basic" reproduces the SPSS / Stata regress, beta definition.
 #' table_regression(fit, standardized = "refit")
+#' }
 #'
+#' \donttest{
 #' # Custom column set: B + AME + AME-specific p-value. Note that
 #' # the `p` token always belongs to B, never to AME -- use the
 #' # explicit `ame_p` token for AME inference.
@@ -1454,20 +1457,26 @@
 #'   fit,
 #'   show_columns = c("b", "p", "ame", "ame_ci", "ame_p")
 #' )
+#' }
 #'
+#' \donttest{
 #' # Group-token shortcut: "all_b" + "all_ame" expands to the full
 #' # B / AME column families side by side.
 #' table_regression(fit, show_columns = c("all_b", "all_ame"))
+#' }
 #'
 #' # ---- Cluster-robust variance -------------------------------------
 #' # CR2 (Bell-McCaffrey) with Satterthwaite-corrected df is the
 #' # recommended default under few clusters. Three forms are accepted
 #' # for `cluster`; the formula is preferred for composability with
 #' # multi-way clustering and for programmatic robustness.
+#' \donttest{
 #' table_regression(fit, vcov = "CR2", cluster = ~region)
 #' table_regression(fit, vcov = "CR2", cluster = "region")
 #' table_regression(fit, vcov = "CR2", cluster = ~region:age_group)
+#' }
 #'
+#' \donttest{
 #' # ---- Hierarchical (nested) regression ----------------------------
 #' # Adds in-table change-statistic rows (Delta R^2 / F-change /
 #' # p-change for lm; LRT / p-change for glm) below the fit-stats.
@@ -1485,7 +1494,9 @@
 #'   list("Step 1" = m1, "Step 2" = m2, "Step 3" = m3),
 #'   nested = TRUE
 #' )
+#' }
 #'
+#' \donttest{
 #' # ---- Side-by-side variance comparison ----------------------------
 #' # Same fit, three vcovs in one wide table. Useful for showing the
 #' # sensitivity of inference to the variance assumption.
@@ -1494,10 +1505,12 @@
 #'   vcov    = list("classical", "HC3", "CR2"),
 #'   cluster = list(NULL, NULL, ~region)
 #' )
+#' }
 #'
 #' # ---- Tidy long format for downstream pipelines -------------------
 #' broom::tidy(table_regression(fit))
 #'
+#' \donttest{
 #' # ---- Mixed-effects models ----------------------------------------
 #' # Linear mixed-effects (lme4). The footer adds a random-effects
 #' # panel with sigma + Wald SE / CI from `merDeriv`, the Nakagawa
@@ -1527,6 +1540,7 @@
 #'   m3 <- lme4::lmer(Reaction ~ Days  + (Days | Subject),
 #'                     data = lme4::sleepstudy, REML = FALSE)
 #'   table_regression(list(m1, m2, m3), nested = TRUE)
+#' }
 #' }
 #'
 #' \dontrun{
