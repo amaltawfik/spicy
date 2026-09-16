@@ -263,12 +263,29 @@ as_regression_frame.iv_robust <- function(
     ci_method <- "wald"
   }
 
+  # Absorbed fixed effects (`fixed_effects = ~ f`): estimatr flags them
+  # with `fes` and lists one character vector of levels per factor in
+  # `felevels`. `fit$fixed_effects` is unreliable, so never read it.
+  felevels <- if (isTRUE(fit$fes)) fit$felevels else NULL
+  fixef_sizes <- if (length(felevels) > 0L) lengths(felevels) else integer(0)
+  n_groups <- if (length(fixef_sizes) > 0L) {
+    stats::setNames(as.integer(fixef_sizes), names(fixef_sizes))
+  } else {
+    NULL
+  }
+
   # estimatr does not define AIC/BIC/logLik (robust SE are not MLE).
   # r.squared / adj.r.squared are computed by the engine.
   fit_stats <- list(
     r_squared = as.numeric(fit$r.squared %||% NA_real_),
     adj_r_squared = as.numeric(fit$adj.r.squared %||% NA_real_),
-    pseudo_r2 = NULL,
+    # proj_r.squared is the FE-partialled R-squared, estimatr's twin of
+    # fixest's "wr2"; the nested slot is the shared within_r2 route.
+    pseudo_r2 = if (length(fixef_sizes) > 0L && !is.null(fit$proj_r.squared)) {
+      list(within_r2 = as.numeric(fit$proj_r.squared))
+    } else {
+      NULL
+    },
     aic = NA_real_,
     bic = NA_real_,
     log_lik = NA_real_,
@@ -301,16 +318,18 @@ as_regression_frame.iv_robust <- function(
     } else {
       NA_real_
     },
-    title_prefix = if (is_iv) {
-      "IV regression (robust SE)"
-    } else {
-      "Linear regression (robust SE)"
-    },
+    title_prefix = .estimatr_title_prefix(se_type, is_iv),
     exp_applied = FALSE,
     exp_header = NA_character_,
     se_type = se_type,
     clustered = clustered
   )
+  # Left absent without absorbed fixed effects, so a plain fit stays a
+  # blank cell in a mixed table instead of a "No".
+  if (length(fixef_sizes) > 0L) {
+    extras$fixef_sizes <- fixef_sizes
+    extras$fixef_intercept <- names(felevels)
+  }
 
   list(
     class = if (is_iv) "iv_robust" else "lm_robust",
@@ -318,7 +337,7 @@ as_regression_frame.iv_robust <- function(
     dv = dv,
     dv_label = dv_label,
     n_obs = as.integer(stats::nobs(fit)),
-    n_groups = NULL,
+    n_groups = n_groups,
     # Match the base-lm convention (.weights_kind_from_fit): non-constant
     # regression weights are "case", not "frequency" (lm_robust does not
     # treat them as observation counts).
@@ -335,6 +354,20 @@ as_regression_frame.iv_robust <- function(
 }
 
 
+# Model-type note. The SE family belongs in it: a "none" fit reports no
+# uncertainty at all and a "classical" one is not robust, so neither may
+# announce robust SE.
+.estimatr_title_prefix <- function(se_type, is_iv) {
+  kind <- switch(
+    se_type,
+    "none" = "no SE computed",
+    "classical" = "classical SE",
+    "robust SE"
+  )
+  paste0(if (is_iv) "IV regression (" else "Linear regression (", kind, ")")
+}
+
+
 # Map estimatr's se_type slot to a human-readable vcov_label. The cluster-
 # robust labels carry "(CR2)" suffix etc. to disambiguate.
 .estimatr_vcov_label <- function(se_type, clustered) {
@@ -348,6 +381,7 @@ as_regression_frame.iv_robust <- function(
     "stata" = "Robust (Stata HC1)",
     "CR0" = "Cluster-robust (CR0)",
     "CR2" = "Cluster-robust (CR2)",
+    "none" = "None (se_type = \"none\")",
     paste0("Robust (", se_type, ")")
   )
   base

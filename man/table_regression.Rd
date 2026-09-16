@@ -390,7 +390,8 @@ wording -- "ref:", "vs", "Reference categories:").}
 model-level rows below the coefficients; row order follows
 token order. \code{NULL} (default) resolves class-aware:
 \itemize{
-\item \code{lm}: \code{c("nobs", "r2", "adj_r2")}.
+\item \code{lm}, \code{estimatr::lm_robust()}: \code{c("nobs", "r2", "adj_r2")}. \code{estimatr::iv_robust()} gets \code{"nobs"} alone --
+the 2SLS R-squared is not the classical one.
 \item \code{glm}, ordinal \code{polr} / \code{clm}:
 \code{c("nobs", "pseudo_r2_mcfadden", "pseudo_r2_nagelkerke", "aic")} (McFadden = Stata \code{ologit} default,
 Nagelkerke = SPSS PLUM).
@@ -951,17 +952,20 @@ Refused when no model in the table is a geeglm fit; the
 likelihood-based tokens (\code{"aic"}, pseudo-\eqn{R^2}{R^2}, ...)
 are refused in return for all-GEE tables -- quasi-likelihood
 has no likelihood.
-\item fixest absorbed fixed effects (\code{fixest} only, both on by
-default for fixest tables): \code{"fixed_effects"} renders a
+\item Absorbed fixed effects (\code{fixest} fits, and \code{estimatr} fits
+built with \verb{fixed_effects =}): \code{"fixed_effects"} renders a
 \verb{Fixed effects:} block at the top of the fit statistics --
 one Yes / No row per absorbed factor (the \code{etable} / \code{esttab}
-convention), blank cells for non-fixest models in mixed
-tables. Varying-slope-only factors (\code{Origin[[x]]}) absorb no
+convention), blank cells for models without the concept in
+mixed tables -- and is on by default for both.
+Varying-slope-only factors (\code{Origin[[x]]}) absorb no
 intercept: they read No when another model absorbs that
-factor, and contribute no row otherwise. \code{"within_r2"} is the
-FE-partialled within R-squared (\code{feols}; GLM-family fixest
-fits report fixest's McFadden \code{pr2} instead). Both tokens are
-refused when no model in the table is a fixest fit.
+factor, and contribute no row otherwise.
+\code{"within_r2"} is the FE-partialled within
+R-squared (a default for \code{feols}, opt-in for \code{estimatr};
+GLM-family fixest fits report fixest's McFadden \code{pr2}
+instead). Both tokens are refused when no model in the table
+absorbs fixed effects.
 \item Effect size: \code{"f2"}.
 \item Information criteria: \code{"aic"}, \code{"aicc"}, \code{"bic"},
 \code{"deviance"} (lowercase like every other token; the rendered
@@ -974,7 +978,8 @@ comparison} below): \code{"r2_change"}, \code{"adj_r2_change"},
 \code{"deviance_change"}, \code{"p_change"}.
 }
 
-Default (resolved when \code{NULL}) is class-aware: lm fits get
+Default (resolved when \code{NULL}) is class-aware: lm and
+\code{lm_robust} fits get
 \code{c("nobs", "r2", "adj_r2")}; glm and ordinal \code{polr} / \code{clm} fits get
 \code{c("nobs", "pseudo_r2_mcfadden", "pseudo_r2_nagelkerke", "aic")};
 mixed lm + glm sets union both groups (the renderer per-row

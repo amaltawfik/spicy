@@ -265,11 +265,13 @@ sandwich (quantreg's own large-sample default), with \code{"iid"},
 \code{"ker"}, \code{"rank"} (CIs only) and a native \code{"bootstrap"} --
 clustered via the wild gradient bootstrap -- as \code{vcov} options
 (the footer names the estimator);
-\code{fixest} fits disclose their absorbed fixed effects as a default-on
+\code{fixest} fits -- and \code{estimatr} fits built with \verb{fixed_effects =} --
+disclose their absorbed fixed effects as a default-on
 \verb{Fixed effects:} block (one Yes / No row per factor;
 varying-slope-only factors are not absorbed intercepts and read
-No), with the within R-squared in the default fit statistics and
-per-factor \verb{N (<factor>)} counts via the opt-in \code{n_groups} token.
+No), with per-factor \verb{N (<factor>)} counts via the opt-in
+\code{n_groups} token and the within R-squared in the default fit
+statistics for \code{fixest} (opt-in via \code{within_r2} for \code{estimatr}).
 }
 
 \section{Bayesian models}{

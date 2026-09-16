@@ -575,6 +575,16 @@ These fixes change numbers that 0.12.0 reported.
 * `table_continuous()`'s "`test` is ignored" warning states the full
   trigger condition, and `varlist()` annotates `difftime` values with
   their units.
+* An estimatr fit that absorbs fixed effects (`fixed_effects =`)
+  discloses them in the `Fixed effects:` block like a fixest fit,
+  `"n_groups"` counts their levels, and `"within_r2"` reports the
+  FE-partialled R-squared.
+* The model type note of an estimatr fit follows its `se_type`:
+  `(classical SE)`, `(no SE computed)`, or `(robust SE)`; it used to
+  read `(robust SE)` for every fit.
+* `lm_robust` tables report R² and adjusted R² by default, like `lm`
+  tables; `iv_robust` keeps `n` only (its R² is not the classical
+  one).
 
 # spicy 0.12.0
 

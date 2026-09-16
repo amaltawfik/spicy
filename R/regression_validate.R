@@ -1270,6 +1270,15 @@ validate_show_columns <- function(show_columns, standardized) {
   out
 }
 
+# Fits that absorb fixed effects, and so can disclose them: every
+# fixest estimator, plus an estimatr fit built with `fixed_effects =`
+# (which sets `fes`). A pre-frame class sniff, like its callers.
+absorbs_fixed_effects <- function(model) {
+  inherits(model, "fixest") ||
+    (inherits(model, c("lm_robust", "iv_robust")) && isTRUE(model$fes))
+}
+
+
 # Class-aware token validation. Rejects tokens that are
 # mathematically inappropriate for the model class with a clear
 # remediation pointer toward the right substitute. Called AFTER
@@ -1864,20 +1873,24 @@ validate_class_appropriate_tokens <- function(
     }
   }
 
-  # fixest disclosure tokens. Deliberately an ANY-gate (a third
-  # variant next to the theta / phi ALL-gate and the ungated
+  # Absorbed-fixed-effects disclosure tokens. Deliberately an ANY-gate
+  # (a third variant next to the theta / phi ALL-gate and the ungated
   # n_groups): the Fixed effects block is a cross-model design
   # disclosure, so a mixed lm + fixest table is exactly where it is
-  # most useful -- non-fixest columns simply render blank cells.
+  # most useful -- columns without the concept render blank cells.
   fixest_tokens <- intersect(show_fit_stats, c("fixed_effects", "within_r2"))
   if (length(fixest_tokens) > 0L) {
-    any_fixest <- length(models) > 0L &&
-      any(vapply(models, inherits, logical(1), "fixest"))
-    if (!any_fixest) {
+    any_fe <- length(models) > 0L &&
+      any(vapply(models, absorbs_fixed_effects, logical(1)))
+    if (!any_fe) {
       spicy_abort(
         c(
           sprintf(
-            "Token(s) %s in `show_fit_stats` are defined only for fixest fits.",
+            paste0(
+              "Token(s) %s in `show_fit_stats` are defined only for fits ",
+              "that absorb fixed effects (fixest, or estimatr with ",
+              "`fixed_effects =`)."
+            ),
             paste(.quote_val(fixest_tokens), collapse = ", ")
           ),
           "i" = paste0(

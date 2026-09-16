@@ -163,17 +163,20 @@
 #'     likelihood-based tokens (`"aic"`, pseudo-\eqn{R^2}{R^2}, ...)
 #'     are refused in return for all-GEE tables -- quasi-likelihood
 #'     has no likelihood.
-#'   \item fixest absorbed fixed effects (`fixest` only, both on by
-#'     default for fixest tables): `"fixed_effects"` renders a
+#'   \item Absorbed fixed effects (`fixest` fits, and `estimatr` fits
+#'     built with `fixed_effects =`): `"fixed_effects"` renders a
 #'     `Fixed effects:` block at the top of the fit statistics --
 #'     one Yes / No row per absorbed factor (the `etable` / `esttab`
-#'     convention), blank cells for non-fixest models in mixed
-#'     tables. Varying-slope-only factors (`Origin[[x]]`) absorb no
+#'     convention), blank cells for models without the concept in
+#'     mixed tables -- and is on by default for both.
+#'     Varying-slope-only factors (`Origin[[x]]`) absorb no
 #'     intercept: they read No when another model absorbs that
-#'     factor, and contribute no row otherwise. `"within_r2"` is the
-#'     FE-partialled within R-squared (`feols`; GLM-family fixest
-#'     fits report fixest's McFadden `pr2` instead). Both tokens are
-#'     refused when no model in the table is a fixest fit.
+#'     factor, and contribute no row otherwise.
+#'     `"within_r2"` is the FE-partialled within
+#'     R-squared (a default for `feols`, opt-in for `estimatr`;
+#'     GLM-family fixest fits report fixest's McFadden `pr2`
+#'     instead). Both tokens are refused when no model in the table
+#'     absorbs fixed effects.
 #'   \item Effect size: `"f2"`.
 #'   \item Information criteria: `"aic"`, `"aicc"`, `"bic"`,
 #'     `"deviance"` (lowercase like every other token; the rendered
@@ -186,7 +189,8 @@
 #'     `"deviance_change"`, `"p_change"`.
 #' }
 #'
-#' Default (resolved when `NULL`) is class-aware: lm fits get
+#' Default (resolved when `NULL`) is class-aware: lm and
+#' `lm_robust` fits get
 #' `c("nobs", "r2", "adj_r2")`; glm and ordinal `polr` / `clm` fits get
 #' `c("nobs", "pseudo_r2_mcfadden", "pseudo_r2_nagelkerke", "aic")`;
 #' mixed lm + glm sets union both groups (the renderer per-row
@@ -1021,7 +1025,9 @@
 #'   model-level rows below the coefficients; row order follows
 #'   token order. `NULL` (default) resolves class-aware:
 #'   \itemize{
-#'     \item `lm`: `c("nobs", "r2", "adj_r2")`.
+#'     \item `lm`, `estimatr::lm_robust()`: `c("nobs", "r2",
+#'       "adj_r2")`. `estimatr::iv_robust()` gets `"nobs"` alone --
+#'       the 2SLS R-squared is not the classical one.
 #'     \item `glm`, ordinal `polr` / `clm`:
 #'       `c("nobs", "pseudo_r2_mcfadden", "pseudo_r2_nagelkerke",
 #'       "aic")` (McFadden = Stata `ologit` default,
@@ -1852,11 +1858,19 @@ table_regression <- function(
         !is_gee &
         !is_design
     )
+    # The OLS bucket: fits whose CLASSICAL R-squared pair is defined.
+    # lm_robust belongs in it -- it is a linear regression with a
+    # robust variance, and its R-squared is the same statistic as an
+    # lm's, so a default table without it was a hole. iv_robust (a
+    # disjoint class, not a subclass) stays out: the 2SLS R-squared is
+    # not the classical one, which is why its frame declares
+    # supports$classical_r2 = FALSE.
     any_lm_only <- any(
       vapply(
         models,
         function(f) {
-          inherits(f, "lm") && !inherits(f, "glm")
+          (inherits(f, "lm") && !inherits(f, "glm")) ||
+            inherits(f, "lm_robust")
         },
         logical(1)
       ) &
@@ -2052,8 +2066,10 @@ table_regression <- function(
     show_fit_stats <- unique(show_fit_stats)
     # The Fixed effects block renders at the TOP of the fit block
     # (etable / journal placement), so the token must lead the vector
-    # even when an lm arm contributed first in a mixed table.
-    if (any_fixest) {
+    # even when an lm arm contributed first in a mixed table. An
+    # estimatr fit built with `fixed_effects =` absorbs factors the
+    # same way and discloses them the same way.
+    if (any(vapply(models, absorbs_fixed_effects, logical(1)))) {
       show_fit_stats <- unique(c("fixed_effects", show_fit_stats))
     }
     if (isTRUE(nested) && length(models) >= 2L) {
