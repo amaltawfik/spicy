@@ -1717,6 +1717,7 @@ broom integration:
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Linear regression.</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Std. errors: classical (OLS).</span></span>
 <span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># \donttest{</span></span></span>
 <span class="r-in"><span><span class="co"># Standardised coefficients (beta) injected next to B. "refit"</span></span></span>
 <span class="r-in"><span><span class="co"># is the Cohen et al. (2003) refit-on-z-scores convention;</span></span></span>
 <span class="r-in"><span><span class="co"># "basic" reproduces the SPSS / Stata regress, beta definition.</span></span></span>
@@ -1741,7 +1742,9 @@ broom integration:
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Linear regression.</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Std. errors: classical (OLS).</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">β = standardised coefficient ("refit": outcome and numeric predictors z-scored, factor dummies on 0/1).</span></span>
+<span class="r-in"><span><span class="co"># }</span></span></span>
 <span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># \donttest{</span></span></span>
 <span class="r-in"><span><span class="co"># Custom column set: B + AME + AME-specific p-value. Note that</span></span></span>
 <span class="r-in"><span><span class="co"># the `p` token always belongs to B, never to AME -- use the</span></span></span>
 <span class="r-in"><span><span class="co"># explicit `ame_p` token for AME inference.</span></span></span>
@@ -1769,7 +1772,9 @@ broom integration:
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Linear regression.</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Std. errors: classical (OLS).</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">AME = average marginal effect.</span></span>
+<span class="r-in"><span><span class="co"># }</span></span></span>
 <span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># \donttest{</span></span></span>
 <span class="r-in"><span><span class="co"># Group-token shortcut: "all_b" + "all_ame" expands to the full</span></span></span>
 <span class="r-in"><span><span class="co"># B / AME column families side by side.</span></span></span>
 <span class="r-in"><span><span class="fu">table_regression</span><span class="op">(</span><span class="va">fit</span>, show_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"all_b"</span>, <span class="st">"all_ame"</span><span class="op">)</span><span class="op">)</span></span></span>
@@ -1804,12 +1809,14 @@ broom integration:
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Linear regression.</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Std. errors: classical (OLS).</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">AME = average marginal effect.</span></span>
+<span class="r-in"><span><span class="co"># }</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># ---- Cluster-robust variance -------------------------------------</span></span></span>
 <span class="r-in"><span><span class="co"># CR2 (Bell-McCaffrey) with Satterthwaite-corrected df is the</span></span></span>
 <span class="r-in"><span><span class="co"># recommended default under few clusters. Three forms are accepted</span></span></span>
 <span class="r-in"><span><span class="co"># for `cluster`; the formula is preferred for composability with</span></span></span>
 <span class="r-in"><span><span class="co"># multi-way clustering and for programmatic robustness.</span></span></span>
+<span class="r-in"><span><span class="co"># \donttest{</span></span></span>
 <span class="r-in"><span><span class="fu">table_regression</span><span class="op">(</span><span class="va">fit</span>, vcov <span class="op">=</span> <span class="st">"CR2"</span>, cluster <span class="op">=</span> <span class="op">~</span><span class="va">region</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Linear regression: wellbeing_score</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
@@ -1870,7 +1877,9 @@ broom integration:
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Linear regression.</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Std. errors: cluster-robust (CR2), clusters by region:age_group.</span></span>
+<span class="r-in"><span><span class="co"># }</span></span></span>
 <span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># \donttest{</span></span></span>
 <span class="r-in"><span><span class="co"># ---- Hierarchical (nested) regression ----------------------------</span></span></span>
 <span class="r-in"><span><span class="co"># Adds in-table change-statistic rows (Delta R^2 / F-change /</span></span></span>
 <span class="r-in"><span><span class="co"># p-change for lm; LRT / p-change for glm) below the fit-stats.</span></span></span>
@@ -1925,7 +1934,9 @@ broom integration:
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Linear regression models.</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Std. errors: classical (OLS).</span></span>
+<span class="r-in"><span><span class="co"># }</span></span></span>
 <span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># \donttest{</span></span></span>
 <span class="r-in"><span><span class="co"># ---- Side-by-side variance comparison ----------------------------</span></span></span>
 <span class="r-in"><span><span class="co"># Same fit, three vcovs in one wide table. Useful for showing the</span></span></span>
 <span class="r-in"><span><span class="co"># sensitivity of inference to the variance assumption.</span></span></span>
@@ -1971,6 +1982,7 @@ broom integration:
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">  Classical: classical (OLS)</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">  HC3: heteroskedasticity-robust (HC3)</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">  CR2: cluster-robust (CR2), clusters by region</span></span>
+<span class="r-in"><span><span class="co"># }</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># ---- Tidy long format for downstream pipelines -------------------</span></span></span>
 <span class="r-in"><span><span class="fu">broom</span><span class="fu">::</span><span class="fu"><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">tidy</a></span><span class="op">(</span><span class="fu">table_regression</span><span class="op">(</span><span class="va">fit</span><span class="op">)</span><span class="op">)</span></span></span>
@@ -1985,6 +1997,7 @@ broom integration:
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   p.value &lt;dbl&gt;, test_type &lt;chr&gt;, is_intercept &lt;lgl&gt;, factor_term &lt;chr&gt;,</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   factor_level &lt;chr&gt;</span></span>
 <span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># \donttest{</span></span></span>
 <span class="r-in"><span><span class="co"># ---- Mixed-effects models ----------------------------------------</span></span></span>
 <span class="r-in"><span><span class="co"># Linear mixed-effects (lme4). The footer adds a random-effects</span></span></span>
 <span class="r-in"><span><span class="co"># panel with sigma + Wald SE / CI from `merDeriv`, the Nakagawa</span></span></span>
@@ -2093,6 +2106,7 @@ broom integration:
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Model 1: Random effects (ML): LR test vs linear regression, χ̄²(1) = 50.51, p &lt; .001.</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Model 2: Random effects (ML): LR test vs linear regression, χ̄²(1) = 106.21, p &lt; .001.</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Model 3: Random effects (ML): LR test vs linear regression, χ̄²(3) = 148.35, p &lt; .001.</span></span>
+<span class="r-in"><span><span class="co"># }</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
 <span class="r-in"><span><span class="co"># ---- Rich-format outputs (require optional Suggests packages) ----</span></span></span>
