@@ -19,7 +19,7 @@ Description: Provides publication-ready tables for descriptive statistics
     the descriptive tables. Helpers cover codebooks, variable inspection,
     and row-wise summaries.
 License: MIT + file LICENSE
-URL: https://github.com/amaltawfik/spicy/, https://amaltawfik.github.io/spicy/
+URL: https://amaltawfik.github.io/spicy/, https://github.com/amaltawfik/spicy
 BugReports: https://github.com/amaltawfik/spicy/issues
 Encoding: UTF-8
 Language: en-US
