@@ -1,6 +1,8 @@
 # ADR 2026-09-18 — Avec `nested = TRUE`, le test de changement ignore `vcov`
 
-**Statut** : proposé (2026-09-18). À arbitrer avant implémentation.
+**Statut** : arbitré par Amal le 2026-09-18. Rien dans la 0.13.0. En 0.14,
+l'option 1 directement, sans la note intermédiaire. Voir « Arbitrage » en fin
+de fiche.
 
 ## Contexte
 
@@ -67,3 +69,36 @@ Option 3. La note de pied est un correctif immédiat qui supprime
 l'incohérence silencieuse sans rien changer aux résultats existants. Le test
 de Wald robuste est la bonne cible, mais il demande un arbitrage sur les
 libellés et sur les degrés de liberté en présence de grappes.
+
+## Arbitrage (Amal, 2026-09-18)
+
+La recommandation provisoire n'est pas retenue. Rien ne change dans la 0.13.0
+et la 0.14 fera directement l'option 1.
+
+Raisons :
+
+- La ligne s'appelle « F change ». C'est le nom consacré du F partiel
+  classique de la régression hiérarchique, celui de SPSS et des manuels. Le
+  libellé nomme donc le test. Le pied de table dit « Std. errors: HC3 », ce qui
+  décrit les erreurs-types des coefficients et ne prétend rien sur le test de
+  bloc. Aucun chiffre n'est faux et aucune étiquette ne ment.
+- Le précédent `note_nested_ml_refit` ne s'applique pas. Il couvre des critères
+  REML affichés à côté de changements calculés en ML, ce qu'aucun libellé ne
+  permet de deviner. Ici le libellé porte l'information.
+- La note de l'option 2 serait provisoire. Elle serait réécrite ou supprimée
+  dès que le test de Wald robuste arrive, soit deux changements visibles du
+  pied de table pour un seul sujet.
+- La 0.13.0 est gelée pour une soumission le 30 septembre. Le gel a déjà été
+  rouvert plusieurs fois, à chaque fois pour un vrai défaut. Une phrase de
+  confort ne passe pas ce seuil.
+
+Réserve consignée : le libellé renseigne un lecteur averti, pas tous. Un
+utilisateur qui demande HC3 peut croire que tout le tableau suit, et c'est ce
+qui s'est produit dans sTayS avant le calcul à la main. Le sujet est réel, et
+la bonne réponse est le test lui-même.
+
+Cible 0.14 : test de Wald robuste quand `vcov` n'est pas classique, avec un
+libellé distinct de « F change », les bons degrés de liberté en présence de
+grappes, une validation contre `lmtest::waldtest()` et
+`car::linearHypothesis()`, et la mise en garde documentée sur les tests à
+grand nombre de contraintes en petit échantillon.
