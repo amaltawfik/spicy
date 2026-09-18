@@ -1243,9 +1243,10 @@ table_continuous_lm(
   cluster = ID,
   vcov = "CR2"
 )
-#> Registered S3 method overwritten by 'clubSandwich':
-#>   method    from    
-#>   bread.mlm sandwich
+#> Registered S3 methods overwritten by 'clubSandwich':
+#>   method                from    
+#>   bread.mlm             sandwich
+#>   model.frame.iv_robust estimatr
 #> Continuous outcomes by group
 #> 
 #>  Variable │ M (1)  M (2)  Δ (2 - 1)  95% CI LL  95% CI UL   p     R²   n  
