@@ -21,6 +21,15 @@ devtools::test()
 # 03 LOCAL CHECKS -------
 devtools::check()
 
+# Full CRAN-like check: incoming checks (remote) + PDF manual, in CRAN's
+# environment (no clipboard, skip_on_cran() honoured). ~75 min: the whole
+# suite runs inside. Expected before a submission: 0 errors, 0 warnings,
+# 1 NOTE (the incoming one).
+withr::with_envvar(
+  c(CLIPR_ALLOW = "FALSE", NOT_CRAN = NA),
+  devtools::check(remote = TRUE, manual = TRUE)
+)
+
 # 04 README & WEBSITE -------
 devtools::build_readme()
 source("dev/build_pkgdown_site.R") # Build site + clean internal pages
