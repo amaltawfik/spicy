@@ -199,7 +199,6 @@ NEJM
 NEJM's
 NOMREG
 Nagelkerke
-Nagelkerke's
 Nakagawa
 Neto
 Newey
@@ -248,6 +247,7 @@ SAMPL
 SDs
 SES
 SEs
+SLS
 SMD
 SPSS's
 Satariano
@@ -327,8 +327,6 @@ behavioural
 biserial
 booktabs
 brms
-capitalised
-categoricals
 cauchit
 centre
 centred
@@ -373,7 +371,6 @@ enum
 equidispersion
 erroring
 estimand
-estimand's
 estimands
 estimatr
 estimatr's
@@ -389,7 +386,6 @@ flextable
 flextable's
 flextables
 footer's
-formatters
 geeglm
 geeglm's
 geepack
@@ -418,7 +414,6 @@ ie
 infty
 interinstitutionnel
 intra
-intraclass
 l'analyse
 labelled
 le
@@ -453,7 +448,6 @@ multivariable
 natively
 nd
 ndf
-neighbour
 neighbourhoods
 neighbours
 nlme's
@@ -488,9 +482,7 @@ precompiled
 preprint
 pseudo's
 quantreg's
-quasibinomial
 randomised
-recognised
 recomputation
 regexes
 relabelled
@@ -502,7 +494,6 @@ renderer
 renderers
 reparameterisation
 reparameterization
-replicate's
 resamplers
 reweights
 rms
@@ -539,7 +530,6 @@ uncentered
 unclassed
 unclustered
 underpredicts
-unescaped
 unexponentiated
 unformatted
 ungrouped
@@ -553,11 +543,9 @@ unrounded
 unstandardised
 unstarred
 untagged
-unterminated
 untruncated
 utilisee
 validator
-validator's
 variational
 varlist
 vcov
