@@ -39,7 +39,7 @@
 # package's version and a hash of the model call below. Editing any of
 # these bodies -- the seed included -- invalidates the entry on its own.
 .fit_brms_basic <- function() {
-  skip_on_ci()
+  .skip_unless_local_stan()
   skip_if_not_installed("brms")
   skip_if_not_installed("posterior")
   skip_if_not_installed("lme4")
@@ -58,7 +58,7 @@
 }
 
 .fit_brms_factor <- function() {
-  skip_on_ci()
+  .skip_unless_local_stan()
   skip_if_not_installed("brms")
   skip_if_not_installed("posterior")
   skip_if_not_installed("lme4")
@@ -79,7 +79,7 @@
 }
 
 .fit_brms_logit <- function() {
-  skip_on_ci()
+  .skip_unless_local_stan()
   skip_if_not_installed("brms")
   skip_if_not_installed("posterior")
   .stan_cached_fit("brms_logit", .STAN_CACHE_PKGS_BRMS, function() {
@@ -99,7 +99,7 @@
 }
 
 .fit_rstanarm_basic <- function() {
-  skip_on_ci()
+  .skip_unless_local_stan()
   skip_if_not_installed("rstanarm")
   skip_if_not_installed("posterior")
   skip_if_not_installed("lme4")
@@ -370,7 +370,7 @@ test_that("brmsfit coefs match parameters::model_parameters() (oracle)", {
 ## ---- Phase 3 matrix (lot T2) ----------------------------------------------
 
 # Phase 3 matrix: rd-vcov-classes:registry-brmsfit
-# Local-only like every brms fixture (skip_on_ci inside the fit helpers):
+# Local-only like every brms fixture (.skip_unless_local_stan() inside the fit helpers):
 # Stan compilation is unreliable on CI runners.
 test_that("brmsfit: multilevel fits render an RE block, single-level fits do not", {
   fit_plain <- .fit_brms_basic()
@@ -384,7 +384,7 @@ test_that("brmsfit: multilevel fits render an RE block, single-level fits do not
     suppressWarnings(as_regression_frame(fit_plain))$info$supports$ame
   ))
 
-  skip_on_ci()
+  .skip_unless_local_stan()
   skip_if_not_installed("brms")
   skip_if_not_installed("posterior")
   skip_if_not_installed("lme4")
@@ -425,10 +425,10 @@ test_that("brmsfit: multilevel fits render an RE block, single-level fits do not
 
 ## ---- Delta review D3: draws-native AME honours the fit's prior weights ----
 
-# Local-only like the fixtures above (skip_on_ci): Stan sampling is
+# Local-only like the fixtures above (.skip_unless_local_stan()): Stan sampling is
 # unreliable on CI runners.
 test_that("stanreg: weighted fit's AME equals avg_slopes(wts = ) (draws path)", {
-  skip_on_ci()
+  .skip_unless_local_stan()
   skip_if_not_installed("rstanarm")
   skip_if_not_installed("posterior")
   skip_if_not_installed("marginaleffects")
@@ -478,7 +478,7 @@ test_that("stanreg: weighted fit's AME equals avg_slopes(wts = ) (draws path)", 
 test_that("brmsfit accepts `labels =` keyed on coefficient names", {
   # `stats::terms()` raises on the fit itself; the label validator used
   # to call it unguarded and died before applying anything.
-  # Local-only, like every other brms fixture here (skip_on_ci).
+  # Local-only, like every other brms fixture here (.skip_unless_local_stan()).
   fit <- .fit_brms_basic()
   out <- suppressWarnings(
     table_regression(fit, labels = c(Days = "Days of deprivation"))
@@ -535,7 +535,7 @@ test_that("brmsfit logit: `exponentiate` maps the draws, not the summary", {
 # ---- correlated random slopes --------------------------------------------
 
 test_that("brmsfit: a correlated random slope renders its correlation row", {
-  skip_on_ci()
+  .skip_unless_local_stan()
   skip_if_not_installed("brms")
   skip_if_not_installed("posterior")
   skip_if_not_installed("lme4")

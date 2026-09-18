@@ -31,7 +31,11 @@ honored across the descriptive functions. The package now ships a
 single vignette; the twenty walk-throughs live as articles on the
 package site. Full details in `NEWS.md`.
 
-The test suite has 18,000+ unit tests, with estimates and standard
-errors validated to the digit against independent implementations
-(SPSS/PSPP, Stata conventions, and the reference R packages of each
-model family).
+The full test suite has 18,000+ expectations, with estimates and
+standard errors validated to the digit against independent
+implementations (SPSS/PSPP, Stata conventions, and the reference R
+packages of each model family). It runs on GitHub Actions on every
+push, across five platforms. To keep the CRAN check within a few
+minutes, `tests/testthat.R` runs a contract tier on CRAN: the main test
+file of each exported family, about 5,700 expectations. Fixtures that
+compile or sample Stan models never run on CRAN.

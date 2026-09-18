@@ -4,7 +4,7 @@
 # Every `.fit_brms_*` / `.fit_rstanarm_*` call compiles and samples a
 # model, and test-regression_frame_stan.R alone calls them 22 times: the
 # file takes about 19 minutes. Those fixtures are local-only
-# (`skip_on_ci`) exactly because that cost is not CI's to pay -- but a
+# (`.skip_unless_local_stan()`) exactly because that cost is nobody else's -- but a
 # local run is also the ONLY place the brms half of the frame schema is
 # ever exercised (AGENTS.md), so the cost lands on the one run that must
 # not be skipped.
@@ -22,7 +22,22 @@
 # behave exactly as they did before -- no writing outside the session's
 # own tree, nothing for a CRAN check to see. `dev/.fixture_cache/` is
 # gitignored.
+#
+# That absence is also why the fixtures must never run on CRAN: with no
+# cache, every one of them would compile and sample a Stan model on the
+# check farm -- about half an hour here, and an ERROR wherever the Stan
+# toolchain does not build. `skip_on_ci()` alone does not cover that: it
+# reads the `CI` variable, which CRAN does not set, and brms / rstanarm
+# are in Suggests, so CRAN installs them. Hence ONE guard, defined below,
+# that skips both.
 # ---------------------------------------------------------------------------
+
+# Local-only guard for every fixture that compiles or samples a Stan model.
+# Named, and defined once, so the two halves cannot drift apart.
+.skip_unless_local_stan <- function() {
+  testthat::skip_on_cran()
+  testthat::skip_on_ci()
+}
 
 # The package sets whose versions invalidate a fixture: the fitting
 # package, the sampler toolchain beneath it, and the package supplying
