@@ -45,13 +45,26 @@ devtools::spell_check()
 
 # 02 LOCAL BARRIER (on the edited tree) -------
 devtools::test() # expect FAIL 0 (run tools/run_suite.R for the CSV)
-# The check emulates the CRAN clipboard environment; expected verdict
-# 0 errors / 0 warnings / 1 NOTE (the "incoming" NOTE only: new
-# submission count + any possibly-misspelled proper nouns, all
-# already accepted for 0.12.0).
+# Full check, two modes. Both run the incoming checks (remote) and build
+# the PDF manual; CLIPR_ALLOW = FALSE reproduces a machine without a
+# clipboard. Expected verdict: 0 errors, 0 warnings, 1 NOTE (incoming).
+#
+# (a) Strict. devtools::check() sets NOT_CRAN = "true" by default, so
+#     EVERY test runs, skip_on_cran() ones included (about 70 min).
 withr::with_envvar(
-  c(CLIPR_ALLOW = "FALSE", NOT_CRAN = NA),
+  c(CLIPR_ALLOW = "FALSE"),
   devtools::check(remote = TRUE, manual = TRUE)
+)
+#
+# (b) CRAN-faithful. skip_on_cran() tests are skipped, as on the CRAN
+#     machines. NOT_CRAN must go through `env_vars`: check() overrides
+#     any value set outside it (an outer NOT_CRAN = NA has no effect).
+withr::with_envvar(
+  c(CLIPR_ALLOW = "FALSE"),
+  devtools::check(
+    remote = TRUE, manual = TRUE,
+    env_vars = c(NOT_CRAN = "false")
+  )
 )
 
 # 03 QUALITY ASSURANCE -------

@@ -21,13 +21,26 @@ devtools::test()
 # 03 LOCAL CHECKS -------
 devtools::check()
 
-# Full CRAN-like check: incoming checks (remote) + PDF manual, in CRAN's
-# environment (no clipboard, skip_on_cran() honoured). ~75 min: the whole
-# suite runs inside. Expected before a submission: 0 errors, 0 warnings,
-# 1 NOTE (the incoming one).
+# Full check, two modes. Both run the incoming checks (remote) and build
+# the PDF manual; CLIPR_ALLOW = FALSE reproduces a machine without a
+# clipboard. Expected verdict: 0 errors, 0 warnings, 1 NOTE (incoming).
+#
+# (a) Strict. devtools::check() sets NOT_CRAN = "true" by default, so
+#     EVERY test runs, skip_on_cran() ones included (about 70 min).
 withr::with_envvar(
-  c(CLIPR_ALLOW = "FALSE", NOT_CRAN = NA),
+  c(CLIPR_ALLOW = "FALSE"),
   devtools::check(remote = TRUE, manual = TRUE)
+)
+#
+# (b) CRAN-faithful. skip_on_cran() tests are skipped, as on the CRAN
+#     machines. NOT_CRAN must go through `env_vars`: check() overrides
+#     any value set outside it (an outer NOT_CRAN = NA has no effect).
+withr::with_envvar(
+  c(CLIPR_ALLOW = "FALSE"),
+  devtools::check(
+    remote = TRUE, manual = TRUE,
+    env_vars = c(NOT_CRAN = "false")
+  )
 )
 
 # 04 README & WEBSITE -------
