@@ -1236,13 +1236,15 @@ table_continuous_lm(
 
 # Cluster-robust SE for repeated-measures data: the `sleep` dataset
 # has 10 subjects measured twice (one observation per group).
-table_continuous_lm(
-  sleep,
-  select = extra,
-  by = group,
-  cluster = ID,
-  vcov = "CR2"
-)
+if (requireNamespace("clubSandwich", quietly = TRUE)) {
+  table_continuous_lm(
+    sleep,
+    select = extra,
+    by = group,
+    cluster = ID,
+    vcov = "CR2"
+  )
+}
 #> Registered S3 methods overwritten by 'clubSandwich':
 #>   method                from    
 #>   bread.mlm             sandwich
