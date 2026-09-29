@@ -43,6 +43,11 @@ jobs:
           http-user-agent: ${{ matrix.config.http-user-agent }}
           use-public-rspm: true
 
+      # The gdtools binary links to X11 (/opt/X11/lib/libXrender.1.dylib); without XQuartz flextable cannot load.
+      - name: Install XQuartz (macOS)
+        if: runner.os == 'macOS'
+        run: brew install --cask xquartz
+
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
           cache-version: 2
