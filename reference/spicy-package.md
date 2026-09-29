@@ -266,9 +266,9 @@ parent class plus a leaf class describing the specific cause:
 
 Useful links:
 
-- <https://github.com/amaltawfik/spicy/>
-
 - <https://amaltawfik.github.io/spicy/>
+
+- <https://github.com/amaltawfik/spicy>
 
 - Report bugs at <https://github.com/amaltawfik/spicy/issues>
 

@@ -108,8 +108,11 @@ CI; `re_scale`, `re_columns`), deliberately with **no per-row p-value**
 chi-bar-squared LR test of the whole random part, and `re_test = "lrt"`
 / `"rlrt"` adds an opt-in boundary-correct per-term test. `N (groups)`
 and `ICC` are fit-stat rows; Nakagawa marginal / conditional R-squared
-are the default R-squared family. `CR*` robust via clubSandwich
-(glmmTMB: conditional part only, disclosed).
+are the default R-squared family. `CR*` cluster-robust standard errors
+are available for `lmer` and `lme` fits, via clubSandwich with
+Satterthwaite degrees of freedom. `glmer` and `glmmTMB` fits keep their
+model-based standard errors: a `CR*` request on them is refused with a
+clear error.
 
 ## Population-averaged (GEE) models
 
