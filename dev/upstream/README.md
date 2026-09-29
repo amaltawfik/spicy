@@ -17,7 +17,7 @@ listés pour mémoire.
 | R-core | [Bugzilla #19128](https://bugs.r-project.org/show_bug.cgi?id=19128) drop1() sur glm(y = FALSE) avec cbind() | 2026-08-06 | déposé | [r-core-drop1-glm-cbind-y-false.md](r-core-drop1-glm-cbind-y-false.md) |
 | tinytable | [#674](https://github.com/vincentarelbundock/tinytable/issues/674) gouttière Typst de group_tt(j) | 2026-08-13 | corrigé dans tinytable 0.18.0 ; garde-fou conservé, décision dans R/tt_theme.R | [tinytable-typst-column-gutter.md](tinytable-typst-column-gutter.md) |
 | cardx | [#352](https://github.com/pharmaverse/cardx/issues/352) min/max ignorent le plan de sondage | 2026-08-15 | corrigé upstream 2026-08-16 | — |
-| performance | [#937](https://github.com/easystats/performance/issues/937) check_singularity.lme() à plusieurs niveaux | 2026-08-21 | ouvert | — |
+| performance | [#937](https://github.com/easystats/performance/issues/937) check_singularity.lme() à plusieurs niveaux | 2026-08-21 | corrigé upstream 2026-09-27, PR #953, performance 0.18.2.3 (dev) | — |
 | tableone | [#114](https://github.com/kaz-yos/tableone/issues/114) SMD catégoriel faux sur niveaux disjoints | 2026-08-21 | ouvert | — |
 | data.table | [#7887](https://github.com/Rdatatable/data.table/issues/7887) as.data.table() récursif sur Surv | 2026-08-23 | ouvert | — |
 | covr | [#641](https://github.com/r-lib/covr/issues/641) package_coverage() et pkgload::load_all() | 2026-08-23 | ouvert | — |
