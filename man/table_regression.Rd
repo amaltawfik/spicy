@@ -1541,16 +1541,20 @@ table_regression(fit, standardized = "refit")
 # Custom column set: B + AME + AME-specific p-value. Note that
 # the `p` token always belongs to B, never to AME -- use the
 # explicit `ame_p` token for AME inference.
-table_regression(
-  fit,
-  show_columns = c("b", "p", "ame", "ame_ci", "ame_p")
-)
+if (requireNamespace("marginaleffects", quietly = TRUE)) {
+  table_regression(
+    fit,
+    show_columns = c("b", "p", "ame", "ame_ci", "ame_p")
+  )
+}
 }
 
 \donttest{
 # Group-token shortcut: "all_b" + "all_ame" expands to the full
 # B / AME column families side by side.
-table_regression(fit, show_columns = c("all_b", "all_ame"))
+if (requireNamespace("marginaleffects", quietly = TRUE)) {
+  table_regression(fit, show_columns = c("all_b", "all_ame"))
+}
 }
 
 # ---- Cluster-robust variance -------------------------------------
@@ -1559,9 +1563,15 @@ table_regression(fit, show_columns = c("all_b", "all_ame"))
 # for `cluster`; the formula is preferred for composability with
 # multi-way clustering and for programmatic robustness.
 \donttest{
-table_regression(fit, vcov = "CR2", cluster = ~region)
-table_regression(fit, vcov = "CR2", cluster = "region")
-table_regression(fit, vcov = "CR2", cluster = ~region:age_group)
+if (requireNamespace("clubSandwich", quietly = TRUE)) {
+  table_regression(fit, vcov = "CR2", cluster = ~region)
+}
+if (requireNamespace("clubSandwich", quietly = TRUE)) {
+  table_regression(fit, vcov = "CR2", cluster = "region")
+}
+if (requireNamespace("clubSandwich", quietly = TRUE)) {
+  table_regression(fit, vcov = "CR2", cluster = ~region:age_group)
+}
 }
 
 \donttest{
@@ -1588,15 +1598,19 @@ table_regression(
 # ---- Side-by-side variance comparison ----------------------------
 # Same fit, three vcovs in one wide table. Useful for showing the
 # sensitivity of inference to the variance assumption.
-table_regression(
-  list("Classical" = fit, "HC3" = fit, "CR2" = fit),
-  vcov    = list("classical", "HC3", "CR2"),
-  cluster = list(NULL, NULL, ~region)
-)
+if (requireNamespace("clubSandwich", quietly = TRUE)) {
+  table_regression(
+    list("Classical" = fit, "HC3" = fit, "CR2" = fit),
+    vcov    = list("classical", "HC3", "CR2"),
+    cluster = list(NULL, NULL, ~region)
+  )
+}
 }
 
 # ---- Tidy long format for downstream pipelines -------------------
-broom::tidy(table_regression(fit))
+if (requireNamespace("broom", quietly = TRUE)) {
+  broom::tidy(table_regression(fit))
+}
 
 \donttest{
 # ---- Mixed-effects models ----------------------------------------

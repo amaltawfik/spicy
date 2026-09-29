@@ -1451,6 +1451,8 @@ test_that("table_continuous word output writes file", {
 })
 
 test_that("table_continuous word errors without path", {
+  skip_if_not_installed("flextable")
+  skip_if_not_installed("officer")
   expect_error(
     table_continuous(iris, select = c(Sepal.Length), output = "word"),
     "word_path"
@@ -1458,6 +1460,8 @@ test_that("table_continuous word errors without path", {
 })
 
 test_that("table_continuous word errors with empty path", {
+  skip_if_not_installed("flextable")
+  skip_if_not_installed("officer")
   expect_error(
     table_continuous(
       iris,

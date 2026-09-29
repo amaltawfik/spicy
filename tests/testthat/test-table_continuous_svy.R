@@ -92,6 +92,7 @@
 # ---- oracles --------------------------------------------------------------
 
 test_that("every displayed number is survey's own (stratified design)", {
+  skip_if_not_installed("survey", "4.5")
   out <- .svyc_long(
     .svyc_design("strat"),
     select = api00,
@@ -133,6 +134,7 @@ test_that("`deff = \"replace\"` is the other design effect, and says so", {
 })
 
 test_that("every displayed number is survey's own (cluster design)", {
+  skip_if_not_installed("survey", "4.5")
   out <- .svyc_long(
     .svyc_design("clus1"),
     select = api00,
@@ -289,6 +291,7 @@ test_that("the two-stratum micro design matches a hand linearisation", {
   # Six PSU, two strata, weights 5 and 2. The linearised variance is
   # the exact rational 492/441, so this witness would catch a survey
   # regression as well as one of ours.
+  skip_if_not_installed("survey", "4.5")
   out <- .svyc_long(
     .svyc_design("micro"),
     select = y,
@@ -315,6 +318,7 @@ test_that("the two-stratum micro design matches a hand linearisation", {
 # ---- replicate weights ----------------------------------------------------
 
 test_that("a replicate design gives the same point estimate, its own SE", {
+  skip_if_not_installed("survey", "4.5")
   lin <- .svyc_long(.svyc_design("clus1"), select = api00)
   rep <- .svyc_long(.svyc_design("rep1"), select = api00)
   expect_equal(rep$mean, lin$mean, tolerance = 1e-12)
@@ -341,6 +345,7 @@ test_that("a replicate design gives the same point estimate, its own SE", {
 # ---- domains --------------------------------------------------------------
 
 test_that("`by` cuts one domain per group, each with its own df", {
+  skip_if_not_installed("survey", "4.5")
   out <- .svyc_long(.svyc_design("clus1"), select = api00, by = stype)
   expect_identical(out$group, c("E", "H", "M"))
   # Point estimates and standard errors identical to `svyby()` -- the
@@ -595,6 +600,7 @@ test_that("a calibrated design with no negative weight says nothing", {
 })
 
 test_that("the footer gives the df span when the groups disagree", {
+  skip_if_not_installed("survey", "4.5")
   tbl <- table_continuous_svy(.svyc_design("clus1"), select = api00, by = stype)
   expect_match(
     attr(tbl, "missing_note"),

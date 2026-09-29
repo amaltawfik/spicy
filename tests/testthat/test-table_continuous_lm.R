@@ -963,11 +963,13 @@ test_that("the console and every engine print the registry header, not the key",
 
   # 2. The two-row header builder: flextable / Word, Excel and the
   #    clipboard all print `hdrs$top`.
+  skip_if_not_installed("flextable")
   ft <- table_continuous_lm(d, select = y, by = g, output = "flextable")
   hdr <- unlist(ft$header$dataset, use.names = FALSE)
   expect_true(any(grepl("<Variable>", hdr, fixed = TRUE)))
   expect_true(any(grepl("<M (a)>", hdr, fixed = TRUE)))
 
+  skip_if_not_installed("clipr")
   cap <- new.env(parent = emptyenv())
   with_mocked_bindings(
     table_continuous_lm(d, select = y, by = g, output = "clipboard"),
@@ -3307,6 +3309,7 @@ test_that("table_continuous_lm errors clearly on bad cluster + vcov combinations
     ),
     "cluster.*only used"
   )
+  skip_if_not_installed("clubSandwich")
   expect_error(
     table_continuous_lm(
       sochealth,

@@ -192,7 +192,7 @@ the \code{p} column; for an effect size, model it with
 }
 
 \examples{
-\dontshow{if (requireNamespace("survey", quietly = TRUE)) withAutoprint(\{ # examplesIf}
+\dontshow{if (requireNamespace("survey", quietly = TRUE) && utils::packageVersion("survey") >= "4.5") withAutoprint(\{ # examplesIf}
 data(api, package = "survey")
 dclus1 <- survey::svydesign(
   id = ~dnum, weights = ~pw, data = apiclus1, fpc = ~fpc

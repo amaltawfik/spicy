@@ -312,6 +312,9 @@ test_that("the fixed-effects block reaches every engine as the console draws it"
   )
   # The internal key never reaches a reader, in any engine.
   for (o in c("default", "gt", "tinytable", "flextable")) {
+    if (o != "default" && !requireNamespace(o, quietly = TRUE)) {
+      next
+    }
     cells <- unlist(switch(
       o,
       default = .ep_console(build(o)),

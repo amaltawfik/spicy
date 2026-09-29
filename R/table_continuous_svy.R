@@ -575,7 +575,7 @@ order_continuous_svy_tokens <- function(tokens) {
 #'   [table_regression()] on a `survey::svyglm()` fit for a model.
 #' @export
 #'
-#' @examplesIf requireNamespace("survey", quietly = TRUE)
+#' @examplesIf requireNamespace("survey", quietly = TRUE) && utils::packageVersion("survey") >= "4.5"
 #' data(api, package = "survey")
 #' dclus1 <- survey::svydesign(
 #'   id = ~dnum, weights = ~pw, data = apiclus1, fpc = ~fpc

@@ -41,6 +41,7 @@
 # ---- oracles --------------------------------------------------------------
 
 test_that("the percentages are svymean's, in percent", {
+  skip_if_not_installed("survey", "4.5")
   out <- .svycat_long(.svycat_design("clus1"), select = stype)
   expect_identical(out$.row_role, c("factor_header", "level", "level", "level"))
   expect_identical(out$level, c(NA, "E", "H", "M"))
@@ -57,6 +58,7 @@ test_that("the percentages are svymean's, in percent", {
 })
 
 test_that("the design effects are svymean(deff = )'s, per level", {
+  skip_if_not_installed("survey", "4.5")
   out <- .svycat_long(.svycat_design("clus1"), select = stype, deff = TRUE)
   expect_equal(
     out$DEff[-1L],
@@ -257,6 +259,7 @@ test_that("a negative calibration weight is counted, not dropped", {
 })
 
 test_that("a replicate design gives the same percentages, its own intervals", {
+  skip_if_not_installed("survey", "4.5")
   lin <- .svycat_long(
     .svycat_design("clus1"),
     select = stype,

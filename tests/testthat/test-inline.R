@@ -397,6 +397,7 @@ test_that("an interval token names its own bounds, not a rival estimand", {
 
   # Same shape on the regression side: the coefficient interval and the
   # AME interval are both addressable in one single-model table.
+  skip_if_not_installed("marginaleffects")
   g <- suppressWarnings(table_regression(
     glm(I(bmi > 30) ~ age + sex, data = d, family = stats::binomial()),
     show_columns = c("b", "ci", "p", "ame", "ame_ci")

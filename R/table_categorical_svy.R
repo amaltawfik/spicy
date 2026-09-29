@@ -388,7 +388,7 @@
 #'   [table_continuous_svy()] for continuous variables.
 #' @export
 #'
-#' @examplesIf requireNamespace("survey", quietly = TRUE)
+#' @examplesIf requireNamespace("survey", quietly = TRUE) && utils::packageVersion("survey") >= "4.5"
 #' data(api, package = "survey")
 #' dclus1 <- survey::svydesign(
 #'   id = ~dnum, weights = ~pw, data = apiclus1, fpc = ~fpc
