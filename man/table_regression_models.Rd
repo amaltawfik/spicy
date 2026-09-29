@@ -111,8 +111,11 @@ CI; \code{re_scale}, \code{re_columns}), deliberately with \strong{no per-row p-
 chi-bar-squared LR test of the whole random part, and
 \code{re_test = "lrt"} / \code{"rlrt"} adds an opt-in boundary-correct per-term
 test. \code{N (groups)} and \code{ICC} are fit-stat rows; Nakagawa marginal /
-conditional R-squared are the default R-squared family. \verb{CR*} robust via
-\pkg{clubSandwich} (glmmTMB: conditional part only, disclosed).
+conditional R-squared are the default R-squared family. \verb{CR*}
+cluster-robust standard errors are available for \code{lmer} and \code{lme} fits,
+via \pkg{clubSandwich} with Satterthwaite degrees of freedom. \code{glmer}
+and \code{glmmTMB} fits keep their model-based standard errors: a \verb{CR*}
+request on them is refused with a clear error.
 }
 
 \section{Population-averaged (GEE) models}{

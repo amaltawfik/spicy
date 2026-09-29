@@ -228,8 +228,8 @@ ordered-factor polynomial contrasts carries its own class,
 \seealso{
 Useful links:
 \itemize{
-  \item \url{https://github.com/amaltawfik/spicy/}
   \item \url{https://amaltawfik.github.io/spicy/}
+  \item \url{https://github.com/amaltawfik/spicy}
   \item Report bugs at \url{https://github.com/amaltawfik/spicy/issues}
 }
 
