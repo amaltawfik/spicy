@@ -210,6 +210,11 @@
 #
 # `title = NULL` / "" returns the table untouched.
 .spicy_ft_word_caption <- function(ft, title, props = NULL) {
+  # Forced first, as in `.spicy_ft_html_caption()` below: `ft` may be
+  # the builder call itself, which carries the flextable availability
+  # guard, and that guard must fire before the officer check and before
+  # anything here touches flextable.
+  force(ft)
   if (is.null(title) || !nzchar(title)) {
     return(ft)
   }
@@ -265,6 +270,11 @@
 #
 # `title = NULL` / "" returns the table untouched.
 .spicy_ft_html_caption <- function(ft, title, props = NULL) {
+  # Forced first: `ft` may be the builder call itself, which carries the
+  # flextable availability guard. Left lazy, `flextable::as_chunk()`
+  # below would run first, and a user without flextable would get R's
+  # raw loadNamespace() error instead of spicy's classed, actionable one.
+  force(ft)
   if (is.null(title) || !nzchar(title)) {
     return(ft)
   }

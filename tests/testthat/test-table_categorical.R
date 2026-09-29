@@ -1903,7 +1903,8 @@ test_that("table_categorical errors for missing flextable package", {
   )
   expect_error(
     table_categorical(sochealth, select = smoking, output = "flextable"),
-    "flextable"
+    "flextable",
+    class = "spicy_missing_pkg"
   )
 })
 
@@ -2021,7 +2022,8 @@ test_that("table_categorical grouped errors for missing flextable", {
       by = sex,
       output = "flextable"
     ),
-    "flextable"
+    "flextable",
+    class = "spicy_missing_pkg"
   )
 })
 
