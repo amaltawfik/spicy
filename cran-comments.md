@@ -3,6 +3,8 @@
 ## Test environments
 
 * Local: Windows 11, R 4.6.1
+* Local, without the suggested packages
+  (`_R_CHECK_DEPENDS_ONLY_=true`): Windows 11, R 4.6.1
 * GitHub Actions: windows-latest (R-release), macOS-latest
   (R-release), ubuntu-latest (R-release, R-devel, R-oldrel-1)
 * win-builder: R-release, R-devel

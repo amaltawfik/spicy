@@ -45,9 +45,10 @@ devtools::spell_check()
 
 # 02 LOCAL BARRIER (on the edited tree) -------
 devtools::test() # expect FAIL 0 (run tools/run_suite.R for the CSV)
-# Full check, two modes. Both run the incoming checks (remote) and build
-# the PDF manual; CLIPR_ALLOW = FALSE reproduces a machine without a
-# clipboard. Expected verdict: 0 errors, 0 warnings, 1 NOTE (incoming).
+# Full check, three modes. (a) and (b) run the incoming checks (remote)
+# and build the PDF manual; CLIPR_ALLOW = FALSE reproduces a machine
+# without a clipboard. Expected verdict: 0 errors, 0 warnings, and at
+# most the incoming NOTE.
 #
 # (a) Strict. devtools::check() sets NOT_CRAN = "true" by default, so
 #     EVERY test runs, skip_on_cran() ones included (about 70 min).
@@ -64,6 +65,20 @@ withr::with_envvar(
   devtools::check(
     remote = TRUE, manual = TRUE,
     env_vars = c(NOT_CRAN = "false")
+  )
+)
+#
+# (c) Without the suggested packages, what CRAN's noSuggests flavor
+#     sees. R hides every package outside Depends / Imports and their
+#     own dependencies (testthat and the vignette builder stay). It
+#     catches a suggested package used without a guard in an example or
+#     a test, which (a) and (b) cannot see on a machine that has them
+#     all. Expected verdict: 0 errors.
+withr::with_envvar(
+  c(CLIPR_ALLOW = "FALSE"),
+  devtools::check(
+    remote = FALSE, manual = FALSE,
+    env_vars = c(NOT_CRAN = "false", "_R_CHECK_DEPENDS_ONLY_" = "true")
   )
 )
 
