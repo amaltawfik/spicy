@@ -23,6 +23,9 @@
 ^\.Rdata$
 ^\.DS_Store$
 ^tests/testthat/_snaps/_problems$
+^tests/testthat/_problems$
+^tests/testthat/testthat-problems\.rds$
+^tools/suite_results\.csv$
 ^\.markdownlint\.json$
 ^\.git-blame-ignore-revs$
 ^vignettes/articles$
