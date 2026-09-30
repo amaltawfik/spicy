@@ -11,7 +11,19 @@
 
 ## R CMD check results
 
-0 errors | 0 warnings | 0 notes
+0 errors | 0 warnings | 1 NOTE
+
+The NOTE comes from the spell check of the CRAN incoming-feasibility
+step (win-builder):
+
+    Possibly misspelled words in DESCRIPTION:
+      APA, Cramer's, JAMA, NEJM, codebooks, univariable
+
+All six are spelled as intended. APA, JAMA and NEJM name reporting
+styles (American Psychological Association, Journal of the American
+Medical Association, New England Journal of Medicine), Cramer's V is a
+measure of association, and "codebooks" and "univariable" are standard
+terms. No other notes, warnings, or errors on any tested platform.
 
 ## Reverse dependencies
 
