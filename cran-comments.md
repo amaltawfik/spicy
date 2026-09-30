@@ -7,23 +7,23 @@
   (`_R_CHECK_DEPENDS_ONLY_=true`): Windows 11, R 4.6.1
 * GitHub Actions: windows-latest (R-release), macOS-latest
   (R-release), ubuntu-latest (R-release, R-devel, R-oldrel-1)
-* win-builder: R-release, R-devel
+* win-builder: R-release, R-devel, R-oldrelease
 
 ## R CMD check results
 
 0 errors | 0 warnings | 1 NOTE
 
 The NOTE comes from the spell check of the CRAN incoming-feasibility
-step (win-builder):
+step (win-builder, R-devel and R-release):
 
     Possibly misspelled words in DESCRIPTION:
-      APA, Cramer's, JAMA, NEJM, codebooks, univariable
+      JAMA, NEJM, univariable
 
-All six are spelled as intended. APA, JAMA and NEJM name reporting
-styles (American Psychological Association, Journal of the American
-Medical Association, New England Journal of Medicine), Cramer's V is a
-measure of association, and "codebooks" and "univariable" are standard
-terms. No other notes, warnings, or errors on any tested platform.
+All three are spelled as intended: JAMA and NEJM name reporting styles
+(Journal of the American Medical Association, New England Journal of
+Medicine), and "univariable" is the standard term. R-oldrelease also
+lists APA, Cramer's and codebooks, which the published 0.12.0 already
+used. No other notes, warnings, or errors on any tested platform.
 
 ## Reverse dependencies
 
