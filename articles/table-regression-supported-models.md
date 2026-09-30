@@ -192,7 +192,7 @@ Family by family:
   observation), `mlogit` takes `CR*` (one per choice situation). Both
   refuse `HC*`: `multinom` has no working-residual form for a
   multi-equation model, and for `mlogit`,
-  [`sandwich::vcovHC()`](https://rdrr.io/pkg/sandwich/man/vcovHC.html)
+  [`sandwich::vcovHC()`](https://zeileis.codeberg.page/sandwich/reference/vcovHC.html)
   computes a result but silently mis-scales the meat for its per-chooser
   score structure.
 - **Quantile (`rq`)** – its own estimator family: `"classical"` resolves
@@ -203,9 +203,9 @@ Family by family:
   `rms` fits take `CR*` via
   [`rms::robcov()`](https://rdrr.io/pkg/rms/man/robcov.html) (refit with
   `x = TRUE, y = TRUE`); `survreg` takes `CR*` via
-  [`sandwich::vcovCL()`](https://rdrr.io/pkg/sandwich/man/vcovCL.html).
+  [`sandwich::vcovCL()`](https://zeileis.codeberg.page/sandwich/reference/vcovCL.html).
 - **`gam` / `bam`, `betareg`, `pscl` two-part** – `CR*` via
-  [`sandwich::vcovCL()`](https://rdrr.io/pkg/sandwich/man/vcovCL.html);
+  [`sandwich::vcovCL()`](https://zeileis.codeberg.page/sandwich/reference/vcovCL.html);
   zero-inflated and hurdle fits cluster both components.
 - **Own-estimator classes** – `estimatr` fits keep the robust SEs they
   were computed with; `fixest` fits keep their estimator (the footer

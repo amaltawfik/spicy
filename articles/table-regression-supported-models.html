@@ -747,7 +747,7 @@ component is model-based only.</li>
 <code>mlogit</code> takes <code>CR*</code> (one per choice situation).
 Both refuse <code>HC*</code>: <code>multinom</code> has no
 working-residual form for a multi-equation model, and for
-<code>mlogit</code>, <code><a href="https://rdrr.io/pkg/sandwich/man/vcovHC.html" class="external-link">sandwich::vcovHC()</a></code> computes a result
+<code>mlogit</code>, <code><a href="https://zeileis.codeberg.page/sandwich/reference/vcovHC.html" class="external-link">sandwich::vcovHC()</a></code> computes a result
 but silently mis-scales the meat for its per-chooser score
 structure.</li>
 <li>
@@ -762,11 +762,11 @@ opt-ins, and clustering goes through the native wild gradient bootstrap
 grouped-dfbeta sandwich; the <code>rms</code> fits take <code>CR*</code>
 via <code><a href="https://rdrr.io/pkg/rms/man/robcov.html" class="external-link">rms::robcov()</a></code> (refit with
 <code>x = TRUE, y = TRUE</code>); <code>survreg</code> takes
-<code>CR*</code> via <code><a href="https://rdrr.io/pkg/sandwich/man/vcovCL.html" class="external-link">sandwich::vcovCL()</a></code>.</li>
+<code>CR*</code> via <code><a href="https://zeileis.codeberg.page/sandwich/reference/vcovCL.html" class="external-link">sandwich::vcovCL()</a></code>.</li>
 <li>
 <strong><code>gam</code> / <code>bam</code>, <code>betareg</code>,
 <code>pscl</code> two-part</strong> – <code>CR*</code> via
-<code><a href="https://rdrr.io/pkg/sandwich/man/vcovCL.html" class="external-link">sandwich::vcovCL()</a></code>; zero-inflated and hurdle fits cluster
+<code><a href="https://zeileis.codeberg.page/sandwich/reference/vcovCL.html" class="external-link">sandwich::vcovCL()</a></code>; zero-inflated and hurdle fits cluster
 both components.</li>
 <li>
 <strong>Own-estimator classes</strong> – <code>estimatr</code> fits

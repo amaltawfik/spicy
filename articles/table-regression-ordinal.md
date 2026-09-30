@@ -355,7 +355,7 @@ than two categories.
 
 Ordinal fits accept the cluster-robust `vcov` family (`"CR0"`–`"CR3"`),
 computed by
-[`sandwich::vcovCL()`](https://rdrr.io/pkg/sandwich/man/vcovCL.html).
+[`sandwich::vcovCL()`](https://zeileis.codeberg.page/sandwich/reference/vcovCL.html).
 One caveat up front: the CR2 / CR3 small-sample bias-reduction
 adjustments are defined for (generalised) linear models — `clubSandwich`
 has no method for an ordinal MLE — so for `polr` / `clm` all four `CR*`
