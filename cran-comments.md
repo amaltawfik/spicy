@@ -11,11 +11,7 @@
 
 ## R CMD check results
 
-0 errors | 0 warnings | 1 NOTE
-
-The NOTE is the standard CRAN incoming-feasibility check ("Number of
-updates in past 6 months"). No other notes, warnings, or errors on
-any tested platform.
+0 errors | 0 warnings | 0 notes
 
 ## Reverse dependencies
 
