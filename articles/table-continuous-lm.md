@@ -86,9 +86,9 @@ table_continuous_lm(
 ```
 
 The `HC*` family is computed via
-[`sandwich::vcovHC()`](https://zeileis.codeberg.page/sandwich/reference/vcovHC.html)
-and includes `"HC0"`, `"HC1"`, `"HC2"`, `"HC3"` (the
-[`sandwich::vcovHC()`](https://zeileis.codeberg.page/sandwich/reference/vcovHC.html)
+[`sandwich::vcovHC()`](https://rdrr.io/pkg/sandwich/man/vcovHC.html) and
+includes `"HC0"`, `"HC1"`, `"HC2"`, `"HC3"` (the
+[`sandwich::vcovHC()`](https://rdrr.io/pkg/sandwich/man/vcovHC.html)
 default, recommended for small to moderate samples by Long and Ervin
 2000), `"HC4"`, `"HC4m"`, and `"HC5"`. spicy’s own default remains
 `vcov = "classical"`.
