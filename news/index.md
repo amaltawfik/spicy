@@ -1,5 +1,7 @@
 # Changelog
 
+## spicy (development version)
+
 ## spicy 0.13.0
 
 [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
