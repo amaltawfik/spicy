@@ -1,3 +1,5 @@
+# spicy (development version)
+
 # spicy 0.13.0
 
 `table_regression()` now covers more than thirty model classes and gains

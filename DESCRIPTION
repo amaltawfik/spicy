@@ -1,7 +1,7 @@
 Package: spicy
 Title: Publication-Ready Tables for Descriptive Statistics and Regression
     Models
-Version: 0.13.0
+Version: 0.13.0.9000
 Authors@R: 
     person("Amal", "Tawfik", , "amal.tawfik@hesav.ch", role = c("aut", "cre", "cph"), comment = c(ORCID = "0009-0006-2422-1555", ROR = "04j47fz63"))
 Description: Provides publication-ready tables for descriptive statistics
