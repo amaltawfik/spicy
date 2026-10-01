@@ -8,7 +8,7 @@
 ## Citation
 
 Source:
-[`inst/CITATION`](https://github.com/amaltawfik/spicy/blob/main/inst/CITATION)
+[`inst/CITATION`](https://github.com/amaltawfik/spicy/blob/v0.13.0/inst/CITATION)
 
 Tawfik A (2026). *spicy: Publication-Ready Tables for Descriptive
 Statistics and Regression Models*.

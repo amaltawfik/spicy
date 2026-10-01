@@ -696,7 +696,7 @@ table_outcome(
 | Group comparison: Wilcoxon rank-sum test. Med \[Q1, Q3\] = median \[first quartile, third quartile\]. Each block compares WHO-5 wellbeing index (0-100) across the levels of one variable; blocks are not adjusted for one another. Overall = the whole analytic sample. |  |  |  |
 
 Descriptive statistics of WHO-5 wellbeing index (0-100)
-{#tinytable_d6pnewg8m993saaw64ui .table .tinytable
+{#tinytable_cren57lb7hn3yc6t8cgm .table .tinytable
 style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 
