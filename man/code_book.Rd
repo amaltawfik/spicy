@@ -44,14 +44,14 @@ from \code{Values} but still counted in the \code{NAs} column.}
 \item{title}{Optional character string displayed as the table caption.
 Defaults to \code{"Codebook"}. Set to \code{NULL} to remove the title
 completely. When \code{filename = NULL}, the title is also used as the base for
-export filenames after conversion to a portable ASCII name (see
-\emph{Export filenames}).}
+export filenames after conversion to a portable ASCII name.}
 
 \item{filename}{Optional character string used as the base for exported CSV,
 Excel, and PDF filenames. If \code{NULL} (the default), a portable filename is
 derived from \code{title}, falling back to \code{"Codebook"} when needed. File
-extensions are added by the browser/export engine. See \emph{Export
-filenames} for the conversion rules.}
+extensions are added by the browser/export engine. How an accented
+letter is spelled in the portable name depends on the platform: pass
+an ASCII \code{filename} to set the name exactly.}
 
 \item{factor_levels}{Character. Controls how factor values are displayed
 in \code{Values}. \code{"all"} (the default; \code{\link[=varlist]{varlist()}} uses \code{"observed"}) shows
@@ -89,29 +89,6 @@ PDF) directly from the Viewer.
 \code{\link[=varlist]{varlist()}} with \code{tbl = TRUE}.
 }
 }
-\section{Export filenames}{
-
-The base name of the exported files is plain ASCII, so that it is valid
-on every operating system. It is built from \code{filename}, or from \code{title}
-when \code{filename} is \code{NULL}, by fixed rules that give the same name on
-every platform and in every locale:
-\itemize{
-\item Accented Latin letters lose their accent, and letters with no base
-letter get their usual ASCII spelling: the sharp s becomes \code{ss}, the
-\code{ae} and \code{oe} ligatures become \code{ae} and \code{oe}.
-\item Typographic punctuation behaves like its ASCII counterpart: a curly
-apostrophe is removed like a straight one, a dash becomes a hyphen.
-\item Invisible characters, such as a soft hyphen or a zero-width space,
-are removed.
-\item Every other character, including the letters of non-Latin scripts,
-becomes an underscore, and consecutive underscores collapse into one.
-}
-
-When nothing is left, a name derived from \code{title} falls back to
-\code{"Codebook"}, and an explicit \code{filename} is an error. For a title in a
-non-Latin script, pass an ASCII \code{filename}.
-}
-
 \section{Dependencies}{
 
 Requires the following package:

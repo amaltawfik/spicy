@@ -91,7 +91,6 @@ Suggests:
     performance,
     rmarkdown,
     spelling,
-    stringi,
     testthat (>= 3.0.0),
     tinytable,
     withr

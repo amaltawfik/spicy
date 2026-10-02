@@ -1,11 +1,5 @@
 # spicy (development version)
 
-* `code_book()` builds the same export file name on every platform. The
-  name no longer depends on the system's `iconv`, which turned the title
-  `"Âge & santé"` into `ge_sant` instead of `Age_sante` on Alpine Linux and
-  lost the letter `ß` on Windows. Names change for the letters that were
-  mishandled: `ß` now gives `ss` and `œ` gives `oe` (#8).
-
 # spicy 0.13.0
 
 `table_regression()` now covers more than thirty model classes and gains
