@@ -2,7 +2,17 @@
 
 ## spicy (development version)
 
+- [`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md)
+  builds the same export file name on every platform. The name no longer
+  depends on the system’s `iconv`, which turned the title
+  `"Âge & santé"` into `ge_sant` instead of `Age_sante` on Alpine Linux
+  and lost the letter `ß` on Windows. Names change for the letters that
+  were mishandled: `ß` now gives `ss` and `œ` gives `oe`
+  ([\#8](https://github.com/amaltawfik/spicy/issues/8)).
+
 ## spicy 0.13.0
+
+CRAN release: 2026-10-01
 
 [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
 now covers more than thirty model classes and gains a univariable

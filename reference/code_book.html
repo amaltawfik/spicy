@@ -147,14 +147,16 @@ from <code>Values</code> but still counted in the <code>NAs</code> column.</p></
 <dd><p>Optional character string displayed as the table caption.
 Defaults to <code>"Codebook"</code>. Set to <code>NULL</code> to remove the title
 completely. When <code>filename = NULL</code>, the title is also used as the base for
-export filenames after conversion to a portable ASCII name.</p></dd>
+export filenames after conversion to a portable ASCII name (see
+<em>Export filenames</em>).</p></dd>
 
 
 <dt id="arg-filename">filename<a class="anchor" aria-label="anchor" href="#arg-filename"></a></dt>
 <dd><p>Optional character string used as the base for exported CSV,
 Excel, and PDF filenames. If <code>NULL</code> (the default), a portable filename is
 derived from <code>title</code>, falling back to <code>"Codebook"</code> when needed. File
-extensions are added by the browser/export engine.</p></dd>
+extensions are added by the browser/export engine. See <em>Export
+filenames</em> for the conversion rules.</p></dd>
 
 
 <dt id="arg-factor-levels">factor_levels<a class="anchor" aria-label="anchor" href="#arg-factor-levels"></a></dt>
@@ -188,6 +190,26 @@ PDF) directly from the Viewer.</p></li>
 <code><a href="varlist.html">varlist()</a></code>; the underlying summary tibble is built by
 <code><a href="varlist.html">varlist()</a></code> with <code>tbl = TRUE</code>.</p></li>
 </ul></div>
+    <div class="section level2">
+    <h2 id="export-filenames">Export filenames<a class="anchor" aria-label="anchor" href="#export-filenames"></a></h2>
+
+
+<p>The base name of the exported files is plain ASCII, so that it is valid
+on every operating system. It is built from <code>filename</code>, or from <code>title</code>
+when <code>filename</code> is <code>NULL</code>, by fixed rules that give the same name on
+every platform and in every locale:</p><ul><li><p>Accented Latin letters lose their accent, and letters with no base
+letter get their usual ASCII spelling: the sharp s becomes <code>ss</code>, the
+<code>ae</code> and <code>oe</code> ligatures become <code>ae</code> and <code>oe</code>.</p></li>
+<li><p>Typographic punctuation behaves like its ASCII counterpart: a curly
+apostrophe is removed like a straight one, a dash becomes a hyphen.</p></li>
+<li><p>Invisible characters, such as a soft hyphen or a zero-width space,
+are removed.</p></li>
+<li><p>Every other character, including the letters of non-Latin scripts,
+becomes an underscore, and consecutive underscores collapse into one.</p></li>
+</ul><p>When nothing is left, a name derived from <code>title</code> falls back to
+<code>"Codebook"</code>, and an explicit <code>filename</code> is an error. For a title in a
+non-Latin script, pass an ASCII <code>filename</code>.</p>
+    </div>
     <div class="section level2">
     <h2 id="dependencies">Dependencies<a class="anchor" aria-label="anchor" href="#dependencies"></a></h2>
 
