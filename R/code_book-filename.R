@@ -109,8 +109,9 @@ code_book_ascii_filename <- function(filename) {
 # into a visible one in a file name, which is why the soft hyphen is
 # removed here although ICU folds it to "-".
 #
-# data-raw/code_book_fold_table.R carries the same list: keep the two in
-# step (test-code_book_fold_oracle.R fails if they drift apart).
+# This function is the only home of that list. The generator of the fold
+# table, data-raw/code_book_fold_table.R, reads it from here, so a code
+# point added below also leaves the table at the next regeneration.
 code_book_is_dropped <- function(cp) {
   (cp >= 0x0300L & cp <= 0x036FL) | # Combining Diacritical Marks
     (cp >= 0x1AB0L & cp <= 0x1AFFL) | # Combining Diacritical Marks Extended

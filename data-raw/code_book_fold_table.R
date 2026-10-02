@@ -32,20 +32,11 @@ stopifnot(requireNamespace("stringi", quietly = TRUE))
 icu_version <- stringi::stri_info()$ICU.version
 unicode_version <- stringi::stri_info()$Unicode.version
 
-# Keep in step with code_book_is_dropped() in R/code_book-filename.R.
-is_dropped <- function(cp) {
-  (cp >= 0x0300L & cp <= 0x036FL) |
-    (cp >= 0x1AB0L & cp <= 0x1AFFL) |
-    (cp >= 0x1DC0L & cp <= 0x1DFFL) |
-    (cp >= 0x20D0L & cp <= 0x20FFL) |
-    (cp >= 0xFE20L & cp <= 0xFE2FL) |
-    cp == 0x00ADL |
-    (cp >= 0x200BL & cp <= 0x200FL) |
-    (cp >= 0x202AL & cp <= 0x202EL) |
-    (cp >= 0x2060L & cp <= 0x206FL) |
-    (cp >= 0xFE00L & cp <= 0xFE0FL) |
-    cp == 0xFEFFL
-}
+# The list of removed code points has one home, the package itself: it
+# is read from there, never copied here.
+pkg_code <- new.env()
+sys.source("R/code_book-filename.R", envir = pkg_code)
+is_dropped <- pkg_code$code_book_is_dropped
 
 cp <- setdiff(0x80:0x2FFFF, 0xD800:0xDFFF)
 ch <- intToUtf8(cp, multiple = TRUE)
