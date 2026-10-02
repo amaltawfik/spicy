@@ -15,11 +15,13 @@
 #' @param title Optional character string displayed as the table caption.
 #'   Defaults to `"Codebook"`. Set to `NULL` to remove the title
 #'   completely. When `filename = NULL`, the title is also used as the base for
-#'   export filenames after conversion to a portable ASCII name.
+#'   export filenames after conversion to a portable ASCII name (see
+#'   *Export filenames*).
 #' @param filename Optional character string used as the base for exported CSV,
 #'   Excel, and PDF filenames. If `NULL` (the default), a portable filename is
 #'   derived from `title`, falling back to `"Codebook"` when needed. File
-#'   extensions are added by the browser/export engine.
+#'   extensions are added by the browser/export engine. See *Export
+#'   filenames* for the conversion rules.
 #' @param factor_levels Character. Controls how factor values are displayed
 #'   in `Values`. `"all"` (the default; [varlist()] uses `"observed"`) shows
 #'   all declared levels, including unused levels. `"observed"` shows only
@@ -37,6 +39,26 @@
 #' A `DT::datatable` object.
 #'
 #' @inheritSection freq Declared missing values
+#'
+#' @section Export filenames:
+#' The base name of the exported files is plain ASCII, so that it is valid
+#' on every operating system. It is built from `filename`, or from `title`
+#' when `filename` is `NULL`, by fixed rules that give the same name on
+#' every platform and in every locale:
+#'
+#' * Accented Latin letters lose their accent, and letters with no base
+#'   letter get their usual ASCII spelling: the sharp s becomes `ss`, the
+#'   `ae` and `oe` ligatures become `ae` and `oe`.
+#' * Typographic punctuation behaves like its ASCII counterpart: a curly
+#'   apostrophe is removed like a straight one, a dash becomes a hyphen.
+#' * Invisible characters, such as a soft hyphen or a zero-width space,
+#'   are removed.
+#' * Every other character, including the letters of non-Latin scripts,
+#'   becomes an underscore, and consecutive underscores collapse into one.
+#'
+#' When nothing is left, a name derived from `title` falls back to
+#' `"Codebook"`, and an explicit `filename` is an error. For a title in a
+#' non-Latin script, pass an ASCII `filename`.
 #'
 #' @section Dependencies:
 #' Requires the following package:
