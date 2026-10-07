@@ -180,6 +180,11 @@ parent class plus a leaf class describing the specific cause:
     message names the replacement. Signaled together with
     `spicy_invalid_input` so generic input handlers still catch it.
 
+  - `spicy_bad_authors` – the `authors` argument of
+    [`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md)
+    has none of its accepted shapes. Signaled together with
+    `spicy_invalid_input`.
+
   - `spicy_internal` – an internal precondition failed; this is a bug in
     spicy, please report it.
 

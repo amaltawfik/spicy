@@ -94,7 +94,8 @@ row-wise summaries.
   observations (`N_valid`), and missing data.
 - **Codebooks** with
   [`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md):
-  interactive and exportable, for labelled and survey-style datasets.
+  variables, values and unweighted counts, in the console or in an Excel
+  file.
 - **Label extraction** with
   [`label_from_names()`](https://amaltawfik.github.io/spicy/reference/label_from_names.md),
   including LimeSurvey-style headers.
@@ -252,12 +253,8 @@ varlist(sochealth, tbl = TRUE)
 
 ``` r
 
-code_book(
-  sochealth,
-  starts_with("bmi"),
-  values = TRUE,
-  include_na = TRUE
-)
+code_book(sochealth, starts_with("bmi"), title = "BMI codebook")
+code_book(sochealth, output = "sochealth_codebook.xlsx")
 ```
 
 See [Explore variables and build

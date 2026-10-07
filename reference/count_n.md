@@ -172,10 +172,11 @@ and
 disclose the exclusion in the table note
 (`Declared missing values removed: x (2).`);
 [`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md)
-and
+counts them as missing in `N_valid` / `NAs` / `N_distinct` while still
+listing the declared codes in `Values`;
 [`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md)
-count them as missing in `N_valid` / `NAs` / `N_distinct` while still
-listing the declared codes in `Values`.
+counts them in `n_declared_missing` and flags them in its `values`
+table.
 
 Every function involved offers the same escape hatch: set
 `user_na = FALSE` to ignore the declaration and treat the declared codes

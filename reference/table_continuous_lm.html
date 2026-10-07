@@ -891,9 +891,10 @@ but they are not erased from display. <code><a href="freq.html">freq()</a></code
 declared value as its own row of the Missing block, with its value
 label; <code><a href="cross_tab.html">cross_tab()</a></code>, <code><a href="table_categorical.html">table_categorical()</a></code>, and
 <code><a href="table_continuous.html">table_continuous()</a></code> disclose the exclusion in the table note
-(<code>Declared missing values removed: x (2).</code>); <code><a href="varlist.html">varlist()</a></code> and
-<code><a href="code_book.html">code_book()</a></code> count them as missing in <code>N_valid</code> / <code>NAs</code> /
-<code>N_distinct</code> while still listing the declared codes in <code>Values</code>.</p>
+(<code>Declared missing values removed: x (2).</code>); <code><a href="varlist.html">varlist()</a></code> counts
+them as missing in <code>N_valid</code> / <code>NAs</code> / <code>N_distinct</code> while still
+listing the declared codes in <code>Values</code>; <code><a href="code_book.html">code_book()</a></code> counts them in
+<code>n_declared_missing</code> and flags them in its <code>values</code> table.</p>
 <p>Every function involved offers the same escape hatch: set
 <code>user_na = FALSE</code> to ignore the declaration and treat the declared
 codes as valid values (the behavior of spicy before 0.13.0).

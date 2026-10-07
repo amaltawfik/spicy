@@ -14,8 +14,8 @@
 - [Explore variables and build
   codebooks](https://amaltawfik.github.io/spicy/articles/variable-exploration.md):
 
-  Explore variables, inspect labels, and build interactive codebooks in
-  R with spicy. Learn how to use varlist(), vl(), code_book(), and
+  Explore variables, inspect labels, and build codebooks in R with
+  spicy. Learn how to use varlist(), vl(), code_book(), and
   label_from_names() for survey and labelled datasets.
 
 - [Frequency tables and

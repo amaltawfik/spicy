@@ -3,7 +3,8 @@
 ## Variable Metadata
 
 - [`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md)
-  : Generate an interactive variable codebook
+  [`print(`*`<spicy_codebook>`*`)`](https://amaltawfik.github.io/spicy/reference/code_book.md)
+  : Build a codebook of a data frame
 
 - [`label_from_names()`](https://amaltawfik.github.io/spicy/reference/label_from_names.md)
   :

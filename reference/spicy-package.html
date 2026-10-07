@@ -222,6 +222,9 @@ estimate the requested statistic.</p></li>
 pre-1.0 hard break; the message names the replacement.
 Signaled together with <code>spicy_invalid_input</code> so
 generic input handlers still catch it.</p></li>
+<li><p><code>spicy_bad_authors</code> – the <code>authors</code> argument of
+<code><a href="code_book.html">code_book()</a></code> has none of its accepted shapes. Signaled
+together with <code>spicy_invalid_input</code>.</p></li>
 <li><p><code>spicy_internal</code> – an internal precondition
 failed; this is a bug in spicy, please report it.</p></li>
 <li><p><code>spicy_internal_invariant</code> – an internal

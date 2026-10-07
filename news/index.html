@@ -71,6 +71,17 @@
 
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="development version" id="spicy-development-version">spicy (development version)<a class="anchor" aria-label="anchor" href="#spicy-development-version"></a></h2>
+<div class="section level3">
+<h3 id="breaking-changes-development-version">Breaking changes<a class="anchor" aria-label="anchor" href="#breaking-changes-development-version"></a></h3>
+<ul><li><p><code><a href="../reference/code_book.html">code_book()</a></code> no longer opens an interactive DT widget: it returns a codebook object, which prints as the list of variables. The browser export buttons go, and <code>filename</code> with them: <code>output = "&lt;path&gt;.xlsx"</code> writes the codebook to a file.</p></li>
+<li><p><code><a href="../reference/code_book.html">code_book()</a></code> drops <code>include_na</code>, since missing values are always counted. <code>values</code> is now the maximum number of categories listed per variable (default 100), no longer <code>TRUE</code> or <code>FALSE</code>.</p></li>
+</ul></div>
+<div class="section level3">
+<h3 id="new-features-development-version">New features<a class="anchor" aria-label="anchor" href="#new-features-development-version"></a></h3>
+<ul><li><p><code><a href="../reference/code_book.html">code_book()</a></code> returns a <code>spicy_codebook</code> object in three parts: a <code>header</code> (title, authors, date, numbers of observations and variables, notes, declared missing values), <code>variables</code> (one row per variable with its type in plain words, valid and missing counts, and summary statistics), and <code>values</code> (one row per category with unweighted counts and percentages). Its labels follow <code>options(spicy.language)</code>.</p></li>
+<li><p><code>code_book(output = "&lt;path&gt;.xlsx")</code> writes the codebook to an Excel workbook: the header on a first sheet, then <code>variables</code> and <code>values</code>.</p></li>
+<li><p><code><a href="../reference/code_book.html">code_book()</a></code> gains <code>authors</code>, <code>notes</code>, <code>source</code> (the code each variable had in the source file), <code>range</code> (minimum and maximum of numeric variables and dates), and <code>decimal_mark</code>.</p></li>
+</ul></div>
 </div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.13.0" id="spicy-0130">spicy 0.13.0<a class="anchor" aria-label="anchor" href="#spicy-0130"></a></h2><p class="text-muted">CRAN release: 2026-10-01</p>

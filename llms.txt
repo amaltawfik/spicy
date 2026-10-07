@@ -94,7 +94,8 @@ row-wise summaries.
   observations (`N_valid`), and missing data.
 - **Codebooks** with
   [`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md):
-  interactive and exportable, for labelled and survey-style datasets.
+  variables, values and unweighted counts, in the console or in an Excel
+  file.
 - **Label extraction** with
   [`label_from_names()`](https://amaltawfik.github.io/spicy/reference/label_from_names.md),
   including LimeSurvey-style headers.
@@ -252,12 +253,8 @@ varlist(sochealth, tbl = TRUE)
 
 ``` r
 
-code_book(
-  sochealth,
-  starts_with("bmi"),
-  values = TRUE,
-  include_na = TRUE
-)
+code_book(sochealth, starts_with("bmi"), title = "BMI codebook")
+code_book(sochealth, output = "sochealth_codebook.xlsx")
 ```
 
 See [Explore variables and build
@@ -737,7 +734,8 @@ details.
 ## Variable Metadata
 
 - [`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md)
-  : Generate an interactive variable codebook
+  [`print(`*`<spicy_codebook>`*`)`](https://amaltawfik.github.io/spicy/reference/code_book.md)
+  : Build a codebook of a data frame
 
 - [`label_from_names()`](https://amaltawfik.github.io/spicy/reference/label_from_names.md)
   :
@@ -993,8 +991,8 @@ Documented here for direct invocation with custom arguments (e.g.,
 - [Explore variables and build
   codebooks](https://amaltawfik.github.io/spicy/articles/variable-exploration.md):
 
-  Explore variables, inspect labels, and build interactive codebooks in
-  R with spicy. Learn how to use varlist(), vl(), code_book(), and
+  Explore variables, inspect labels, and build codebooks in R with
+  spicy. Learn how to use varlist(), vl(), code_book(), and
   label_from_names() for survey and labelled datasets.
 
 - [Frequency tables and

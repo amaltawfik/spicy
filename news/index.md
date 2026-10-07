@@ -2,6 +2,37 @@
 
 ## spicy (development version)
 
+### Breaking changes
+
+- [`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md)
+  no longer opens an interactive DT widget: it returns a codebook
+  object, which prints as the list of variables. The browser export
+  buttons go, and `filename` with them: `output = "<path>.xlsx"` writes
+  the codebook to a file.
+
+- [`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md)
+  drops `include_na`, since missing values are always counted. `values`
+  is now the maximum number of categories listed per variable (default
+  100), no longer `TRUE` or `FALSE`.
+
+### New features
+
+- [`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md)
+  returns a `spicy_codebook` object in three parts: a `header` (title,
+  authors, date, numbers of observations and variables, notes, declared
+  missing values), `variables` (one row per variable with its type in
+  plain words, valid and missing counts, and summary statistics), and
+  `values` (one row per category with unweighted counts and
+  percentages). Its labels follow `options(spicy.language)`.
+
+- `code_book(output = "<path>.xlsx")` writes the codebook to an Excel
+  workbook: the header on a first sheet, then `variables` and `values`.
+
+- [`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md)
+  gains `authors`, `notes`, `source` (the code each variable had in the
+  source file), `range` (minimum and maximum of numeric variables and
+  dates), and `decimal_mark`.
+
 ## spicy 0.13.0
 
 CRAN release: 2026-10-01
