@@ -1,0 +1,105 @@
+== Check 1: fiches never split (except the long one) ==
+                      var typst_start typst_end pdf_start pdf_end split
+1                      id           4         4         4       4 FALSE
+2                     sex           4         4         4       4 FALSE
+3                     age           4         4         4       4 FALSE
+4               age_group           4         4         4       4 FALSE
+5               education           5         5         5       5 FALSE
+6            social_class           5         5         5       5 FALSE
+7                  region           5         5         5       5 FALSE
+8                 commune           6         7         6       7  TRUE
+9       employment_status           8         8         8       8 FALSE
+10           income_group           8         8         8       8 FALSE
+11                 income           8         8         8       8 FALSE
+12                smoking           8         8         8       8 FALSE
+13      physical_activity           9         9         9       9 FALSE
+14            dentist_12m           9         9         9       9 FALSE
+15      self_rated_health           9         9         9       9 FALSE
+16        wellbeing_score           9         9         9       9 FALSE
+17                    bmi          10        10        10      10 FALSE
+18           bmi_category          10        10        10      10 FALSE
+19    institutional_trust          10        10        10      10 FALSE
+20     political_position          10        10        10      10 FALSE
+21        life_sat_health          11        11        11      11 FALSE
+22          life_sat_work          11        11        11      11 FALSE
+23 life_sat_relationships          11        11        11      11 FALSE
+24      life_sat_standard          11        11        11      11 FALSE
+25          response_date          11        11        11      11 FALSE
+26                 weight          11        11        11      11 FALSE
+fiches: 26 | split according to Typst: commune | split according to the PDF: commune | Typst and PDF agree: TRUE
+ordinary fiches split: none 
+
+== Check 2: repeated header rows ==
+list page 2: header row at y = 199, first variable row at y = 217 (id), last at y = 693 (life_sat_relationships), 23 rows
+list page 3: header row at y = 76, first variable row at y = 100 (life_sat_standard), last at y = 142 (weight), 3 rows
+list spans pages 2, 3 | header above the rows on every page: TRUE 
+long fiche commune, page 6: header row at y = 122, first value row y = 140 (code 1), last value row code 35, 35 value rows
+long fiche commune, page 7: header row at y = 76, first value row y = 94 (code 36), last value row code NA, 26 value rows
+
+== Check 3: index page numbers and links ==
+index entries: 26 | alphabetical: TRUE | page numbers equal to the PDF page of the fiche: 26 of 26 | equal to Typst's location: 26 
+link annotations: 90 | all resolve to a page: TRUE 
+on_page
+ 2  3 12 
+35  3 52 
+                    var page_in_index pdf_fiche_page typst_fiche_page
+                    age             4              4                4
+              age_group             4              4                4
+                    bmi            10             10               10
+           bmi_category            10             10               10
+                commune             6              6                6
+            dentist_12m             9              9                9
+              education             5              5                5
+      employment_status             8              8                8
+                     id             4              4                4
+                 income             8              8                8
+           income_group             8              8                8
+    institutional_trust            10             10               10
+        life_sat_health            11             11               11
+ life_sat_relationships            11             11               11
+      life_sat_standard            11             11               11
+          life_sat_work            11             11               11
+      physical_activity             9              9                9
+     political_position            10             10               10
+                 region             5              5                5
+          response_date            11             11               11
+      self_rated_health             9              9                9
+                    sex             4              4                4
+                smoking             8              8                8
+           social_class             5              5                5
+                 weight            11             11               11
+        wellbeing_score             9              9                9
+ link_target
+           4
+           4
+          10
+          10
+           6
+           9
+           5
+           8
+           4
+           8
+           8
+          10
+          11
+          11
+          11
+          11
+           9
+          10
+           5
+          11
+           9
+           4
+           8
+           5
+          11
+           9
+index links landing on the fiche page: 26 of 26 
+
+== Bonus: table of contents ==
+TOC 'Liste ...' says page 2 | Typst heading page 2
+TOC 'Fiches ...' says page 4 | Typst heading page 4
+TOC 'Index ...' says page 12 | Typst heading page 12
+PDF bookmarks: top level 3 | under 'Fiches des variables': 26 
