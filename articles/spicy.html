@@ -160,6 +160,26 @@ vignette:</p>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> bmi_category BMI category                Norma… orde…          3    <span style="text-decoration: underline;">1</span>188    12</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> income       Monthly household income (… 1000,… nume…       <span style="text-decoration: underline;">1</span>052    <span style="text-decoration: underline;">1</span>200     0</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> weight       Survey design weight        0.294… nume…        794    <span style="text-decoration: underline;">1</span>200     0</span></span></code></pre></div>
+<p><code><a href="../reference/code_book.html">code_book()</a></code> turns the same inspection into a document:
+one row per variable, the unweighted count of every value, and a header
+with the title, authors, and notes. It prints the list of variables and
+returns the codebook, which <code>output = "&lt;path&gt;.xlsx"</code>
+writes to Excel and <code>output = "&lt;path&gt;.pdf"</code> compiles to
+a PDF (through Quarto).</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/code_book.html">code_book</a></span><span class="op">(</span><span class="va">sochealth</span>, <span class="va">sex</span>, <span class="va">age</span>, <span class="va">smoking</span>, <span class="va">bmi</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Codebook</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Date: 2026-10-07</span></span>
+<span><span class="co">#&gt; Observations: 1200</span></span>
+<span><span class="co">#&gt; Variables: 4</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;    Pos. <span style="color: #9E9E9E;">│</span> Variable    Label              Type                      Valid    Missing </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────┼───────────────────────────────────────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;       1 <span style="color: #9E9E9E;">│</span> sex         Sex                categorical (levels)       1200          0 </span></span>
+<span><span class="co">#&gt;       2 <span style="color: #9E9E9E;">│</span> age         Age (years)        numeric                    1200          0 </span></span>
+<span><span class="co">#&gt;      10 <span style="color: #9E9E9E;">│</span> smoking     Current smoker     categorical (levels)       1175         25 </span></span>
+<span><span class="co">#&gt;      15 <span style="color: #9E9E9E;">│</span> bmi         Body mass index    numeric                    1188         12</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="frequency-tables">Frequency tables<a class="anchor" aria-label="anchor" href="#frequency-tables"></a>
@@ -167,7 +187,7 @@ vignette:</p>
 <p><code><a href="../reference/freq.html">freq()</a></code> produces frequency tables with counts,
 percentages, valid percentages (shown by default whenever missing values
 are present), and optionally cumulative percentages.</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/freq.html">freq</a></span><span class="op">(</span><span class="va">sochealth</span>, <span class="va">education</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Frequency table: education</span></span></span>
 <span><span class="co">#&gt; </span></span>
@@ -185,7 +205,7 @@ are present), and optionally cumulative percentages.</p>
 <p>Weighted frequencies use the <code>weights</code> argument. With
 <code>rescale = TRUE</code>, the total weighted N matches the unweighted
 N:</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/freq.html">freq</a></span><span class="op">(</span><span class="va">sochealth</span>, <span class="va">education</span>, weights <span class="op">=</span> <span class="va">weight</span>, rescale <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Frequency table: education</span></span></span>
 <span><span class="co">#&gt; </span></span>
@@ -207,7 +227,7 @@ N:</p>
 </h2>
 <p><code><a href="../reference/cross_tab.html">cross_tab()</a></code> crosses two categorical variables. By
 default it shows counts, a chi-squared test, and Cramer’s V:</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/cross_tab.html">cross_tab</a></span><span class="op">(</span><span class="va">sochealth</span>, <span class="va">smoking</span>, <span class="va">education</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Crosstable: smoking x education (N)</span></span></span>
 <span><span class="co">#&gt; </span></span>
@@ -222,7 +242,7 @@ default it shows counts, a chi-squared test, and Cramer’s V:</p>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Cramer's V = 0.14</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Missing values removed: smoking (25).</span></span></span></code></pre></div>
 <p>Add percentages with <code>percent</code>:</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/cross_tab.html">cross_tab</a></span><span class="op">(</span><span class="va">sochealth</span>, <span class="va">smoking</span>, <span class="va">education</span>, percent <span class="op">=</span> <span class="st">"column"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Crosstable: smoking x education (Column %)</span></span></span>
 <span><span class="co">#&gt; </span></span>
@@ -238,7 +258,7 @@ default it shows counts, a chi-squared test, and Cramer’s V:</p>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Cramer's V = 0.14</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Missing values removed: smoking (25).</span></span></span></code></pre></div>
 <p>Group by a third variable with <code>by</code>:</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/cross_tab.html">cross_tab</a></span><span class="op">(</span><span class="va">sochealth</span>, <span class="va">smoking</span>, <span class="va">education</span>, by <span class="op">=</span> <span class="va">sex</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Crosstable: smoking x education (N) | sex = Female</span></span></span>
 <span><span class="co">#&gt; </span></span>
@@ -268,7 +288,7 @@ default it shows counts, a chi-squared test, and Cramer’s V:</p>
 <p>When both variables are ordered factors, <code><a href="../reference/cross_tab.html">cross_tab()</a></code>
 automatically selects an ordinal measure (Kendall’s Tau-b) instead of
 Cramer’s V:</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/cross_tab.html">cross_tab</a></span><span class="op">(</span><span class="va">sochealth</span>, <span class="va">self_rated_health</span>, <span class="va">education</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Crosstable: self_rated_health x education (N)</span></span></span>
 <span><span class="co">#&gt; </span></span>
@@ -290,7 +310,7 @@ Cramer’s V:</p>
 </h2>
 <p>For a quick overview of all available association statistics, pass a
 contingency table to <code><a href="../reference/assoc_measures.html">assoc_measures()</a></code>:</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">tbl</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/xtabs.html" class="external-link">xtabs</a></span><span class="op">(</span><span class="op">~</span> <span class="va">smoking</span> <span class="op">+</span> <span class="va">education</span>, data <span class="op">=</span> <span class="va">sochealth</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/assoc_measures.html">assoc_measures</a></span><span class="op">(</span><span class="va">tbl</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Measure                            Estimate     SE  CI lower  CI upper      p </span></span>
@@ -313,7 +333,7 @@ contingency table to <code><a href="../reference/assoc_measures.html">assoc_meas
 <code><a href="../reference/gamma_gk.html">gamma_gk()</a></code>, or <code><a href="../reference/kendall_tau_b.html">kendall_tau_b()</a></code> return a scalar
 by default. Pass <code>detail = TRUE</code> for the confidence interval
 and p-value:</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/cramer_v.html">cramer_v</a></span><span class="op">(</span><span class="va">tbl</span>, detail <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Estimate  SE  CI lower  CI upper      p</span></span>
 <span><span class="co">#&gt;    0.136   –     0.079     0.191  &lt;.001</span></span></code></pre></div>
@@ -323,7 +343,7 @@ and p-value:</p>
 </h2>
 <p><code><a href="../reference/table_categorical.html">table_categorical()</a></code> covers grouped or one-way summary
 tables for categorical variables:</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_categorical.html">table_categorical</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span>,</span>
 <span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">smoking</span>, <span class="va">physical_activity</span>, <span class="va">dentist_12m</span><span class="op">)</span>,</span>
@@ -394,7 +414,7 @@ tables for categorical variables:</p>
 either overall or by a categorical <code>by</code> variable; when
 <code>by</code> is supplied it also reports a group-comparison test (a
 Welch test by default):</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_continuous.html">table_continuous</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span>,</span>
 <span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">bmi</span>, <span class="va">life_sat_health</span><span class="op">)</span>,</span>
@@ -437,7 +457,7 @@ Welch test by default):</p>
 territory when you want to stay in a linear-model framework, for example
 with robust or cluster-robust standard errors, case weights, or additive
 covariate adjustment:</p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_continuous_lm.html">table_continuous_lm</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span>,</span>
 <span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">wellbeing_score</span>, <span class="va">bmi</span><span class="op">)</span>,</span>
@@ -487,7 +507,7 @@ journal styles on demand (<code>style = "jama"</code>,
 with reference rows, robust variance, standardised coefficients, average
 marginal effects, hierarchical comparisons, and side-by-side multi-model
 layouts:</p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">wellbeing_score</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">smoking</span>, data <span class="op">=</span> <span class="va">sochealth</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Linear regression: wellbeing_score</span></span></span>
@@ -529,7 +549,7 @@ the valid items as long as at least three are present (and turns
 <code>NA</code> in the last row, which has only two), and
 <code>count_n(special = "NA")</code> counts the missing items
 themselves:</p>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">sochealth</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span>
 <span>    mean_sat  <span class="op">=</span> <span class="fu"><a href="../reference/mean_n.html">mean_n</a></span><span class="op">(</span>select <span class="op">=</span> <span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">starts_with</a></span><span class="op">(</span><span class="st">"life_sat"</span><span class="op">)</span><span class="op">)</span>,</span>

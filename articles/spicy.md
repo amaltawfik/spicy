@@ -59,6 +59,30 @@ varlist(sochealth, starts_with("bmi"), income, weight, tbl = TRUE)
 #> 4 weight       Survey design weight        0.294… nume…        794    1200     0
 ```
 
+[`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md)
+turns the same inspection into a document: one row per variable, the
+unweighted count of every value, and a header with the title, authors,
+and notes. It prints the list of variables and returns the codebook,
+which `output = "<path>.xlsx"` writes to Excel and
+`output = "<path>.pdf"` compiles to a PDF (through Quarto).
+
+``` r
+
+code_book(sochealth, sex, age, smoking, bmi)
+#> Codebook
+#> 
+#> Date: 2026-10-07
+#> Observations: 1200
+#> Variables: 4
+#> 
+#>    Pos. │ Variable    Label              Type                      Valid    Missing 
+#> ────────┼───────────────────────────────────────────────────────────────────────────
+#>       1 │ sex         Sex                categorical (levels)       1200          0 
+#>       2 │ age         Age (years)        numeric                    1200          0 
+#>      10 │ smoking     Current smoker     categorical (levels)       1175         25 
+#>      15 │ bmi         Body mass index    numeric                    1188         12
+```
+
 ## Frequency tables
 
 [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md)

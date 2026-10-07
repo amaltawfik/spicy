@@ -441,7 +441,8 @@ cover with the header, the list of variables with their pages, one sheet
 per variable, and an alphabetical index. It needs Quarto 1.7 or later,
 whose bundled Typst compiles the PDF; without Quarto,
 `output = "<path>.typ"` writes the Typst source, to compile with
-`typst compile` on another machine.
+`typst compile` on another machine. spicy does not write DDI-XML: for a
+DDI description of the data file, see the DDIwR package.
 
 ``` r
 
