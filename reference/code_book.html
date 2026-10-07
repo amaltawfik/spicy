@@ -5,19 +5,19 @@
       fontURL: "https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/output/chtml/fonts/woff-v2"
     }
   };
-</script><script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/IBM_Plex_Sans-0.4.10/font.css" rel="stylesheet"><link href="../deps/IBM_Plex_Mono-0.4.10/font.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet"><meta property="og:title" content="Build a codebook of a data frame — code_book"><meta name="description" content='code_book() documents the variables of a data frame: one row per
+</script><script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/IBM_Plex_Sans-0.4.10/font.css" rel="stylesheet"><link href="../deps/IBM_Plex_Mono-0.4.10/font.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet"><meta property="og:title" content="Build a codebook of a data frame — code_book"><meta name="description" content="code_book() documents the variables of a data frame: one row per
 variable (position, name, label, type, valid and missing counts,
 summary statistics), and one row per category of its categorical and
 logical variables (code, label, count, percentages). The codebook
-prints as the list of variables, and output = "&amp;lt;path&amp;gt;.xlsx" writes
-it to an Excel file.
-The counts are unweighted: they describe the file, not a population.'><meta property="og:description" content='code_book() documents the variables of a data frame: one row per
+prints as the list of variables, and output writes it to an Excel
+workbook or to a PDF.
+The counts are unweighted: they describe the file, not a population."><meta property="og:description" content="code_book() documents the variables of a data frame: one row per
 variable (position, name, label, type, valid and missing counts,
 summary statistics), and one row per category of its categorical and
 logical variables (code, label, count, percentages). The codebook
-prints as the list of variables, and output = "&amp;lt;path&amp;gt;.xlsx" writes
-it to an Excel file.
-The counts are unweighted: they describe the file, not a population.'><meta property="og:image" content="https://amaltawfik.github.io/spicy/logo.svg"></head><body>
+prints as the list of variables, and output writes it to an Excel
+workbook or to a PDF.
+The counts are unweighted: they describe the file, not a population."><meta property="og:image" content="https://amaltawfik.github.io/spicy/logo.svg"></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -87,8 +87,8 @@ The counts are unweighted: they describe the file, not a population.'><meta prop
 variable (position, name, label, type, valid and missing counts,
 summary statistics), and one row per category of its categorical and
 logical variables (code, label, count, percentages). The codebook
-prints as the list of variables, and <code>output = "&lt;path&gt;.xlsx"</code> writes
-it to an Excel file.</p>
+prints as the list of variables, and <code>output</code> writes it to an Excel
+workbook or to a PDF.</p>
 <p>The counts are unweighted: they describe the file, not a population.</p>
     </div>
 
@@ -106,6 +106,10 @@ it to an Excel file.</p>
 <span>  factor_levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"all"</span>, <span class="st">"observed"</span><span class="op">)</span>,</span>
 <span>  user_na <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  decimal_mark <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  font <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  font_code <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  colors <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  paper <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"a4"</span>, <span class="st">"letter"</span><span class="op">)</span>,</span>
 <span>  output <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span>
 <span></span>
@@ -179,19 +183,45 @@ the "Declared missing values" section.</p></dd>
 
 
 <dt id="arg-decimal-mark">decimal_mark<a class="anchor" aria-label="anchor" href="#arg-decimal-mark"></a></dt>
-<dd><p>Decimal mark of the numbers the codebook prints, a
-single character such as <code>"."</code> or <code>","</code>. <code>NULL</code> (the default) takes
-the mark of <code>options(spicy.style)</code>, then the one of the language
+<dd><p>Decimal mark of the numbers in the PDF, a single
+character such as <code>"."</code> or <code>","</code>. <code>NULL</code> (the default) takes the mark
+of <code>options(spicy.style)</code>, then the one of the language
 (<code>options(spicy.language = "fr")</code> gives the comma), then <code>"."</code>. The
-console list prints counts only, so the mark shows in the PDF output
-(planned). The Excel file keeps numbers as numbers.</p></dd>
+console list prints counts only, and the Excel file keeps numbers as
+numbers.</p></dd>
+
+
+<dt id="arg-font-font-code">font, font_code<a class="anchor" aria-label="anchor" href="#arg-font-font-code"></a></dt>
+<dd><p>Fonts of the PDF, for the text and for the names
+and codes. <code>NULL</code> (the default) uses New Computer Modern and DejaVu
+Sans Mono, which Typst embeds, so the PDF looks the same whatever the
+machine. Any other font must be one Typst finds, named exactly as
+<code>quarto typst fonts</code> lists it; a <code>.typ</code> output keeps the name as
+given, unchecked. A <code>font</code> also sets the font of the Excel file,
+which otherwise keeps its default font.</p></dd>
+
+
+<dt id="arg-colors">colors<a class="anchor" aria-label="anchor" href="#arg-colors"></a></dt>
+<dd><p>Named character vector of <code>"#RRGGBB"</code> colors replacing
+part of the palette of the PDF: <code>primary</code> (title, headings and the
+text of table headers), <code>accent</code> (links and the declared missing
+marker), <code>band</code> (behind table headers), <code>band_dark</code> (the band of each
+variable, under white text), <code>zebra</code>, <code>grid</code> (rules), <code>text</code> and
+<code>muted</code>. The headers of the Excel file take <code>primary</code> and <code>band</code> too.</p></dd>
+
+
+<dt id="arg-paper">paper<a class="anchor" aria-label="anchor" href="#arg-paper"></a></dt>
+<dd><p>Paper size of the PDF: <code>"a4"</code> (the default) or <code>"letter"</code>.</p></dd>
 
 
 <dt id="arg-output">output<a class="anchor" aria-label="anchor" href="#arg-output"></a></dt>
 <dd><p><code>NULL</code> (the default) returns the codebook, which prints as
-the list of variables. A path ending in <code>.xlsx</code> writes the codebook to
-that Excel file and returns it invisibly; this requires <code>openxlsx2</code>. A
-PDF output is planned.</p></dd>
+the list of variables. A path writes the codebook to that file, in
+the format of its extension, and returns it invisibly: <code>.xlsx</code> for an
+Excel workbook (this requires <code>openxlsx2</code>), <code>.pdf</code> for a PDF (this
+requires the <code>quarto</code> package and Quarto 1.7 or later, found on the
+PATH or through the <code>QUARTO_PATH</code> environment variable), <code>.typ</code> for
+the Typst source of that PDF.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -216,7 +246,9 @@ numeric variables and <code>earliest</code> and <code>latest</code> for dates.</
 
 
 </dl><p>The attributes <code>language</code> and <code>decimal_mark</code> record the language and
-the decimal mark the codebook was built with.</p>
+the decimal mark the codebook was built with, and <code>appearance</code> the look
+of its PDF: a list of <code>font</code>, <code>font_code</code>, <code>colors</code> (all eight) and
+<code>paper</code>.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
@@ -255,6 +287,20 @@ missing values, notes, and the versions of spicy and R that wrote it.
 The other two, <code>variables</code> and <code>values</code>, are the two tables of the
 object from the first row, with a frozen header and filters: numbers
 stay numeric cells and dates are ISO text.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="pdf-output">PDF output<a class="anchor" aria-label="anchor" href="#pdf-output"></a></h2>
+
+
+<p>The PDF opens on a cover (title, authors, date, numbers of observations
+and variables, notes), lists the variables with the page of each, and
+summarizes the declared missing values. One sheet per variable follows
+(counts, statistics, and the table of its values, where <code>M</code> marks a
+declared missing value), then an alphabetical index. A sheet breaks
+across pages only when it does not fit on one. <code>code_book()</code>
+writes the Typst source and compiles it with the Typst that Quarto
+bundles. Without Quarto, <code>output = "&lt;path&gt;.typ"</code> writes the same
+source, self-contained: <code>typst compile</code> makes the PDF on any machine.</p>
     </div>
     <div class="section level2">
     <h2 id="declared-missing-values">Declared missing values<a class="anchor" aria-label="anchor" href="#declared-missing-values"></a></h2>
@@ -364,6 +410,10 @@ frequency table of one variable.</p>
 <span class="r-in"><span>  <span class="va">path</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span>fileext <span class="op">=</span> <span class="st">".xlsx"</span><span class="op">)</span></span></span>
 <span class="r-in"><span>  <span class="fu">code_book</span><span class="op">(</span><span class="va">sochealth</span>, output <span class="op">=</span> <span class="va">path</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># The Typst source of the PDF, which `output = "&lt;path&gt;.pdf"` compiles</span></span></span>
+<span class="r-in"><span><span class="co"># when Quarto is installed.</span></span></span>
+<span class="r-in"><span><span class="fu">code_book</span><span class="op">(</span><span class="va">sochealth</span>, output <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span>fileext <span class="op">=</span> <span class="st">".typ"</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>

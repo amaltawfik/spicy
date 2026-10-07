@@ -147,6 +147,14 @@ parent class plus a leaf class describing the specific cause:
   - `spicy_missing_pkg` – a Suggests dependency is required by the
     requested operation but not installed.
 
+  - `spicy_missing_quarto` –
+    [`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md)
+    was asked for a PDF, and Quarto, which compiles it, was not found.
+
+  - `spicy_typst_failed` – Typst could not compile the PDF of
+    [`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md);
+    the condition carries its messages in `stderr`.
+
   - `spicy_missing_column` – a referenced column is not in `data`.
 
   - `spicy_unsupported` – the operation is not applicable to this input

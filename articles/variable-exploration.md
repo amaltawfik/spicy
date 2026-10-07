@@ -23,7 +23,7 @@ This article focuses on three common tasks:
 - inspect variables, labels, values, classes, and missing data with
   [`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md)
   and [`vl()`](https://amaltawfik.github.io/spicy/reference/varlist.md)
-- build a codebook, in the console or in an Excel file, with
+- build a codebook, in the console, an Excel file, or a PDF, with
   [`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md)
 
 These tools are especially useful for survey datasets, labelled data,
@@ -244,10 +244,10 @@ A codebook is the document that travels with a data file: what each
 variable measures, how it is coded, and how many observations carry each
 value.
 [`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md)
-builds it from the data frame itself. It prints the list of variables
-and returns the codebook invisibly, as an object you can keep, inspect,
-or write to Excel. The counts are unweighted: they describe the file,
-not the population.
+builds it from the data frame itself and returns it as an object you can
+keep, inspect, or write to Excel or PDF, which prints as the list of
+variables. The counts are unweighted: they describe the file, not the
+population.
 
 `code_book(sochealth)` documents every variable. The same tidyselect
 selectors as in
@@ -329,7 +329,7 @@ cb$values
 #> 11 bmi_category NA            NA    FALSE               12       1        NA
 ```
 
-Numeric variables are summarised in `variables` and have no rows in
+Numeric variables are summarized in `variables` and have no rows in
 `values`; text variables and dates have none either.
 
 ### Title, authors, and notes
@@ -385,7 +385,7 @@ honours the declaration as the tabulation functions do (see the
 “Declared missing values” section of
 [`?freq`](https://amaltawfik.github.io/spicy/reference/freq.md)): the
 declared codes count as missing, are listed in `values` with
-`declared_missing = TRUE`, and are summarised in the header with the
+`declared_missing = TRUE`, and are summarized in the header with the
 variables that carry them.
 
 ``` r
@@ -434,6 +434,25 @@ code_book(
 )
 ```
 
+### Write the codebook to PDF
+
+`output = "<path>.pdf"` writes the codebook as a document to share: a
+cover with the header, the list of variables with their pages, one sheet
+per variable, and an alphabetical index. It needs Quarto 1.7 or later,
+whose bundled Typst compiles the PDF; without Quarto,
+`output = "<path>.typ"` writes the Typst source, to compile with
+`typst compile` on another machine.
+
+``` r
+
+code_book(
+  sochealth,
+  title = "Social health survey",
+  authors = c("Jane Doe" = "University of Somewhere"),
+  output = "sochealth_codebook.pdf"
+)
+```
+
 ## When to use varlist() and code_book()
 
 Use
@@ -447,7 +466,7 @@ when you want the same summary with a shorter call in interactive work.
 Use
 [`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md)
 when you want a codebook to keep or share: the counts of every value, in
-an object or in an Excel file.
+an object, an Excel file, or a PDF.
 
 The two tools differ in one default:
 [`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md)

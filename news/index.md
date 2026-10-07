@@ -2,18 +2,20 @@
 
 ## spicy (development version)
 
+[`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md)
+becomes a codebook you can deliver: an object with the counts of every
+value, printed in the console, written to Excel, or compiled to a PDF
+with a cover, one sheet per variable, and an index.
+
 ### Breaking changes
 
 - [`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md)
-  no longer opens an interactive DT widget: it returns a codebook
-  object, which prints as the list of variables. The browser export
-  buttons go, and `filename` with them: `output = "<path>.xlsx"` writes
-  the codebook to a file.
-
-- [`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md)
-  drops `include_na`, since missing values are always counted. `values`
-  is now the maximum number of categories listed per variable (default
-  100), no longer `TRUE` or `FALSE`.
+  no longer opens an interactive DT widget with browser export buttons:
+  it returns a `spicy_codebook` object, which prints as the list of
+  variables, and `output = "<path>"` writes the file. `filename` and
+  `include_na` are gone and raise an error that names the replacement;
+  `values` is now the maximum number of categories listed per variable
+  (default 100), no longer `TRUE` or `FALSE`. DT leaves Suggests.
 
 ### New features
 
@@ -28,10 +30,25 @@
 - `code_book(output = "<path>.xlsx")` writes the codebook to an Excel
   workbook: the header on a first sheet, then `variables` and `values`.
 
+- `code_book(output = "<path>.pdf")` writes the codebook to a PDF,
+  compiled by the Typst that Quarto (1.7 or later) bundles: a cover with
+  the authors, the list of variables with their pages, one sheet per
+  variable, and an alphabetical index. `output = "<path>.typ"` writes
+  the Typst source, to compile on a machine without Quarto.
+
 - [`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md)
   gains `authors`, `notes`, `source` (the code each variable had in the
   source file), `range` (minimum and maximum of numeric variables and
-  dates), and `decimal_mark`.
+  dates), and `decimal_mark`, and for the look of the PDF `font`,
+  `font_code`, `colors`, and `paper`. The Excel workbook takes the
+  `band` and `primary` colors for its headers, and `font` when it is
+  given.
+
+- [`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md)
+  honours declared missing values: they count as missing, get their own
+  rows in `values`, and are summarized in the header. A labelled vector
+  whose value labels all sit on declared missing codes is documented as
+  numeric, with its statistics on the valid values.
 
 ## spicy 0.13.0
 

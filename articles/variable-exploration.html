@@ -129,7 +129,7 @@ build a codebook with <code><a href="../reference/code_book.html">code_book()</a
 <li>inspect variables, labels, values, classes, and missing data with
 <code><a href="../reference/varlist.html">varlist()</a></code> and <code><a href="../reference/varlist.html">vl()</a></code>
 </li>
-<li>build a codebook, in the console or in an Excel file, with
+<li>build a codebook, in the console, an Excel file, or a PDF, with
 <code><a href="../reference/code_book.html">code_book()</a></code>
 </li>
 </ul>
@@ -311,10 +311,10 @@ inspect a subset of variables by name pattern or type.</p>
 </h2>
 <p>A codebook is the document that travels with a data file: what each
 variable measures, how it is coded, and how many observations carry each
-value. <code><a href="../reference/code_book.html">code_book()</a></code> builds it from the data frame itself. It
-prints the list of variables and returns the codebook invisibly, as an
-object you can keep, inspect, or write to Excel. The counts are
-unweighted: they describe the file, not the population.</p>
+value. <code><a href="../reference/code_book.html">code_book()</a></code> builds it from the data frame itself and
+returns it as an object you can keep, inspect, or write to Excel or PDF,
+which prints as the list of variables. The counts are unweighted: they
+describe the file, not the population.</p>
 <p><code>code_book(sochealth)</code> documents every variable. The same
 tidyselect selectors as in <code><a href="../reference/varlist.html">varlist()</a></code> narrow it down:</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
@@ -380,7 +380,7 @@ values:</p>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> bmi_category Overweight    <span style="color: #BB0000;">NA</span>    FALSE              569      47.4      47.9</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> bmi_category Obesity       <span style="color: #BB0000;">NA</span>    FALSE              154      12.8      13.0</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">11</span> bmi_category NA            <span style="color: #BB0000;">NA</span>    FALSE               12       1        <span style="color: #BB0000;">NA</span></span></span></code></pre></div>
-<p>Numeric variables are summarised in <code>variables</code> and have
+<p>Numeric variables are summarized in <code>variables</code> and have
 no rows in <code>values</code>; text variables and dates have none
 either.</p>
 </div>
@@ -434,7 +434,7 @@ for a French codebook. The labels of the data are never translated.</p>
 functions do (see the “Declared missing values” section of
 <code><a href="../reference/freq.html">?freq</a></code>): the declared codes count as missing, are listed in
 <code>values</code> with <code>declared_missing = TRUE</code>, and are
-summarised in the header with the variables that carry them.</p>
+summarized in the header with the variables that carry them.</p>
 <div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">income</span> <span class="op">&lt;-</span> <span class="fu">haven</span><span class="fu">::</span><span class="fu"><a href="https://haven.tidyverse.org/reference/labelled_spss.html" class="external-link">labelled_spss</a></span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">3200</span>, <span class="fl">4100</span>, <span class="fl">99998</span>, <span class="fl">5600</span>, <span class="fl">99999</span>, <span class="fl">2900</span>, <span class="cn">NA</span>, <span class="fl">7400</span><span class="op">)</span>,</span>
@@ -477,6 +477,24 @@ rows. Numbers stay numeric cells, and dates are ISO text.</p>
 <span>  output <span class="op">=</span> <span class="st">"sochealth_codebook.xlsx"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 </div>
+<div class="section level3">
+<h3 id="write-the-codebook-to-pdf">Write the codebook to PDF<a class="anchor" aria-label="anchor" href="#write-the-codebook-to-pdf"></a>
+</h3>
+<p><code>output = "&lt;path&gt;.pdf"</code> writes the codebook as a
+document to share: a cover with the header, the list of variables with
+their pages, one sheet per variable, and an alphabetical index. It needs
+Quarto 1.7 or later, whose bundled Typst compiles the PDF; without
+Quarto, <code>output = "&lt;path&gt;.typ"</code> writes the Typst
+source, to compile with <code>typst compile</code> on another
+machine.</p>
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/code_book.html">code_book</a></span><span class="op">(</span></span>
+<span>  <span class="va">sochealth</span>,</span>
+<span>  title <span class="op">=</span> <span class="st">"Social health survey"</span>,</span>
+<span>  authors <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Jane Doe"</span> <span class="op">=</span> <span class="st">"University of Somewhere"</span><span class="op">)</span>,</span>
+<span>  output <span class="op">=</span> <span class="st">"sochealth_codebook.pdf"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+</div>
 </div>
 <div class="section level2">
 <h2 id="when-to-use-varlist-and-code_book">When to use varlist() and code_book()<a class="anchor" aria-label="anchor" href="#when-to-use-varlist-and-code_book"></a>
@@ -486,7 +504,8 @@ or a tibble you can inspect directly.</p>
 <p>Use <code><a href="../reference/varlist.html">vl()</a></code> when you want the same summary with a shorter
 call in interactive work.</p>
 <p>Use <code><a href="../reference/code_book.html">code_book()</a></code> when you want a codebook to keep or
-share: the counts of every value, in an object or in an Excel file.</p>
+share: the counts of every value, in an object, an Excel file, or a
+PDF.</p>
 <p>The two tools differ in one default: <code><a href="../reference/varlist.html">varlist()</a></code> shows
 only the <strong>observed</strong> factor levels in its
 <code>Values</code> column (the convention of Stata <code>tab</code> and

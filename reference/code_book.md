@@ -4,8 +4,8 @@
 variable (position, name, label, type, valid and missing counts, summary
 statistics), and one row per category of its categorical and logical
 variables (code, label, count, percentages). The codebook prints as the
-list of variables, and `output = "<path>.xlsx"` writes it to an Excel
-file.
+list of variables, and `output` writes it to an Excel workbook or to a
+PDF.
 
 The counts are unweighted: they describe the file, not a population.
 
@@ -24,6 +24,10 @@ code_book(
   factor_levels = c("all", "observed"),
   user_na = TRUE,
   decimal_mark = NULL,
+  font = NULL,
+  font_code = NULL,
+  colors = NULL,
+  paper = c("a4", "letter"),
   output = NULL
 )
 
@@ -97,19 +101,45 @@ print(x, ...)
 
 - decimal_mark:
 
-  Decimal mark of the numbers the codebook prints, a single character
-  such as `"."` or `","`. `NULL` (the default) takes the mark of
+  Decimal mark of the numbers in the PDF, a single character such as
+  `"."` or `","`. `NULL` (the default) takes the mark of
   `options(spicy.style)`, then the one of the language
   (`options(spicy.language = "fr")` gives the comma), then `"."`. The
-  console list prints counts only, so the mark shows in the PDF output
-  (planned). The Excel file keeps numbers as numbers.
+  console list prints counts only, and the Excel file keeps numbers as
+  numbers.
+
+- font, font_code:
+
+  Fonts of the PDF, for the text and for the names and codes. `NULL`
+  (the default) uses New Computer Modern and DejaVu Sans Mono, which
+  Typst embeds, so the PDF looks the same whatever the machine. Any
+  other font must be one Typst finds, named exactly as
+  `quarto typst fonts` lists it; a `.typ` output keeps the name as
+  given, unchecked. A `font` also sets the font of the Excel file, which
+  otherwise keeps its default font.
+
+- colors:
+
+  Named character vector of `"#RRGGBB"` colors replacing part of the
+  palette of the PDF: `primary` (title, headings and the text of table
+  headers), `accent` (links and the declared missing marker), `band`
+  (behind table headers), `band_dark` (the band of each variable, under
+  white text), `zebra`, `grid` (rules), `text` and `muted`. The headers
+  of the Excel file take `primary` and `band` too.
+
+- paper:
+
+  Paper size of the PDF: `"a4"` (the default) or `"letter"`.
 
 - output:
 
   `NULL` (the default) returns the codebook, which prints as the list of
-  variables. A path ending in `.xlsx` writes the codebook to that Excel
-  file and returns it invisibly; this requires `openxlsx2`. A PDF output
-  is planned.
+  variables. A path writes the codebook to that file, in the format of
+  its extension, and returns it invisibly: `.xlsx` for an Excel workbook
+  (this requires `openxlsx2`), `.pdf` for a PDF (this requires the
+  `quarto` package and Quarto 1.7 or later, found on the PATH or through
+  the `QUARTO_PATH` environment variable), `.typ` for the Typst source
+  of that PDF.
 
 ## Value
 
@@ -137,7 +167,9 @@ list with
   `declared_missing`, `n`, `pct_total` and `pct_valid`.
 
 The attributes `language` and `decimal_mark` record the language and the
-decimal mark the codebook was built with.
+decimal mark the codebook was built with, and `appearance` the look of
+its PDF: a list of `font`, `font_code`, `colors` (all eight) and
+`paper`.
 
 ## Details
 
@@ -180,6 +212,18 @@ missing values, notes, and the versions of spicy and R that wrote it.
 The other two, `variables` and `values`, are the two tables of the
 object from the first row, with a frozen header and filters: numbers
 stay numeric cells and dates are ISO text.
+
+## PDF output
+
+The PDF opens on a cover (title, authors, date, numbers of observations
+and variables, notes), lists the variables with the page of each, and
+summarizes the declared missing values. One sheet per variable follows
+(counts, statistics, and the table of its values, where `M` marks a
+declared missing value), then an alphabetical index. A sheet breaks
+across pages only when it does not fit on one. `code_book()` writes the
+Typst source and compiles it with the Typst that Quarto bundles. Without
+Quarto, `output = "<path>.typ"` writes the same source, self-contained:
+`typst compile` makes the PDF on any machine.
 
 ## Declared missing values
 
@@ -297,4 +341,8 @@ if (requireNamespace("openxlsx2", quietly = TRUE)) {
   path <- tempfile(fileext = ".xlsx")
   code_book(sochealth, output = path)
 }
+
+# The Typst source of the PDF, which `output = "<path>.pdf"` compiles
+# when Quarto is installed.
+code_book(sochealth, output = tempfile(fileext = ".typ"))
 ```

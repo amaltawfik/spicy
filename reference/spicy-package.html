@@ -195,6 +195,11 @@ raised by spicy. Leaves:</p><ul><li><p><code>spicy_invalid_input</code> – bad 
 columns, degenerate grouping).</p></li>
 <li><p><code>spicy_missing_pkg</code> – a Suggests dependency
 is required by the requested operation but not installed.</p></li>
+<li><p><code>spicy_missing_quarto</code> – <code><a href="code_book.html">code_book()</a></code> was asked
+for a PDF, and Quarto, which compiles it, was not found.</p></li>
+<li><p><code>spicy_typst_failed</code> – Typst could not compile the
+PDF of <code><a href="code_book.html">code_book()</a></code>; the condition carries its messages in
+<code>stderr</code>.</p></li>
 <li><p><code>spicy_missing_column</code> – a referenced column
 is not in <code>data</code>.</p></li>
 <li><p><code>spicy_unsupported</code> – the operation is not
