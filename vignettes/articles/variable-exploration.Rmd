@@ -36,7 +36,7 @@ This article focuses on three common tasks:
   `label_from_names()`
 - inspect variables, labels, values, classes, and missing data with
   `varlist()` and `vl()`
-- build a codebook, in the console or in an Excel file, with
+- build a codebook, in the console, an Excel file, or a PDF, with
   `code_book()`
 
 These tools are especially useful for survey datasets, labelled data,
@@ -168,9 +168,9 @@ vl(sochealth, starts_with("bmi"), tbl = TRUE)
 
 A codebook is the document that travels with a data file: what each
 variable measures, how it is coded, and how many observations carry
-each value. `code_book()` builds it from the data frame itself. It
-prints the list of variables and returns the codebook invisibly, as an
-object you can keep, inspect, or write to Excel. The counts are
+each value. `code_book()` builds it from the data frame itself and
+returns it as an object you can keep, inspect, or write to Excel or
+PDF, which prints as the list of variables. The counts are
 unweighted: they describe the file, not the population.
 
 `code_book(sochealth)` documents every variable. The same tidyselect
@@ -212,7 +212,7 @@ observations and of the valid ones, plus a row for the missing values:
 cb$values
 ```
 
-Numeric variables are summarised in `variables` and have no rows in
+Numeric variables are summarized in `variables` and have no rows in
 `values`; text variables and dates have none either.
 
 ### Title, authors, and notes
@@ -251,7 +251,7 @@ Data imported from SPSS or Stata often declare missing codes, such as
 99998 = *Don't know* and 99999 = *Refused*. `code_book()` honours the
 declaration as the tabulation functions do (see the "Declared missing
 values" section of `?freq`): the declared codes count as missing, are
-listed in `values` with `declared_missing = TRUE`, and are summarised
+listed in `values` with `declared_missing = TRUE`, and are summarized
 in the header with the variables that carry them.
 
 ```{r code-book-declared}
@@ -291,6 +291,24 @@ code_book(
 )
 ```
 
+### Write the codebook to PDF
+
+`output = "<path>.pdf"` writes the codebook as a document to share: a
+cover with the header, the list of variables with their pages, one sheet
+per variable, and an alphabetical index. It needs Quarto 1.7 or later,
+whose bundled Typst compiles the PDF; without Quarto,
+`output = "<path>.typ"` writes the Typst source, to compile with
+`typst compile` on another machine.
+
+```{r code-book-pdf, eval = FALSE}
+code_book(
+  sochealth,
+  title = "Social health survey",
+  authors = c("Jane Doe" = "University of Somewhere"),
+  output = "sochealth_codebook.pdf"
+)
+```
+
 ## When to use varlist() and code_book()
 
 Use `varlist()` when you want a quick summary in a script or a tibble
@@ -300,7 +318,7 @@ Use `vl()` when you want the same summary with a shorter call in
 interactive work.
 
 Use `code_book()` when you want a codebook to keep or share: the
-counts of every value, in an object or in an Excel file.
+counts of every value, in an object, an Excel file, or a PDF.
 
 The two tools differ in one default: `varlist()` shows only the
 **observed** factor levels in its `Values` column (the convention of

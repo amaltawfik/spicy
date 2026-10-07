@@ -112,6 +112,11 @@
 #'         columns, degenerate grouping).
 #'       \item \code{spicy_missing_pkg} -- a Suggests dependency
 #'         is required by the requested operation but not installed.
+#'       \item \code{spicy_missing_quarto} -- [code_book()] was asked
+#'         for a PDF, and Quarto, which compiles it, was not found.
+#'       \item \code{spicy_typst_failed} -- Typst could not compile the
+#'         PDF of [code_book()]; the condition carries its messages in
+#'         `stderr`.
 #'       \item \code{spicy_missing_column} -- a referenced column
 #'         is not in `data`.
 #'       \item \code{spicy_unsupported} -- the operation is not

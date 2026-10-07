@@ -5,8 +5,8 @@
 #' variable (position, name, label, type, valid and missing counts,
 #' summary statistics), and one row per category of its categorical and
 #' logical variables (code, label, count, percentages). The codebook
-#' prints as the list of variables, and `output = "<path>.xlsx"` writes
-#' it to an Excel file.
+#' prints as the list of variables, and `output` writes it to an Excel
+#' workbook or to a PDF.
 #'
 #' The counts are unweighted: they describe the file, not a population.
 #'
@@ -41,16 +41,33 @@
 #'   `n_missing` and `n_declared_missing`, and listed in `values` with
 #'   `declared_missing = TRUE`. If `FALSE`, they count as valid values. See
 #'   the "Declared missing values" section.
-#' @param decimal_mark Decimal mark of the numbers the codebook prints, a
-#'   single character such as `"."` or `","`. `NULL` (the default) takes
-#'   the mark of `options(spicy.style)`, then the one of the language
+#' @param decimal_mark Decimal mark of the numbers in the PDF, a single
+#'   character such as `"."` or `","`. `NULL` (the default) takes the mark
+#'   of `options(spicy.style)`, then the one of the language
 #'   (`options(spicy.language = "fr")` gives the comma), then `"."`. The
-#'   console list prints counts only, so the mark shows in the PDF output
-#'   (planned). The Excel file keeps numbers as numbers.
+#'   console list prints counts only, and the Excel file keeps numbers as
+#'   numbers.
+#' @param font,font_code Fonts of the PDF, for the text and for the names
+#'   and codes. `NULL` (the default) uses New Computer Modern and DejaVu
+#'   Sans Mono, which Typst embeds, so the PDF looks the same whatever the
+#'   machine. Any other font must be one Typst finds, named exactly as
+#'   `quarto typst fonts` lists it; a `.typ` output keeps the name as
+#'   given, unchecked. A `font` also sets the font of the Excel file,
+#'   which otherwise keeps its default font.
+#' @param colors Named character vector of `"#RRGGBB"` colors replacing
+#'   part of the palette of the PDF: `primary` (title, headings and the
+#'   text of table headers), `accent` (links and the declared missing
+#'   marker), `band` (behind table headers), `band_dark` (the band of each
+#'   variable, under white text), `zebra`, `grid` (rules), `text` and
+#'   `muted`. The headers of the Excel file take `primary` and `band` too.
+#' @param paper Paper size of the PDF: `"a4"` (the default) or `"letter"`.
 #' @param output `NULL` (the default) returns the codebook, which prints as
-#'   the list of variables. A path ending in `.xlsx` writes the codebook to
-#'   that Excel file and returns it invisibly; this requires `openxlsx2`. A
-#'   PDF output is planned.
+#'   the list of variables. A path writes the codebook to that file, in
+#'   the format of its extension, and returns it invisibly: `.xlsx` for an
+#'   Excel workbook (this requires `openxlsx2`), `.pdf` for a PDF (this
+#'   requires the `quarto` package and Quarto 1.7 or later, found on the
+#'   PATH or through the `QUARTO_PATH` environment variable), `.typ` for
+#'   the Typst source of that PDF.
 #'
 #' @details
 #' The type of a variable is read off its R class, never guessed: a factor
@@ -92,6 +109,17 @@
 #' object from the first row, with a frozen header and filters: numbers
 #' stay numeric cells and dates are ISO text.
 #'
+#' @section PDF output:
+#' The PDF opens on a cover (title, authors, date, numbers of observations
+#' and variables, notes), lists the variables with the page of each, and
+#' summarizes the declared missing values. One sheet per variable follows
+#' (counts, statistics, and the table of its values, where `M` marks a
+#' declared missing value), then an alphabetical index. A sheet breaks
+#' across pages only when it does not fit on one. `code_book()`
+#' writes the Typst source and compiles it with the Typst that Quarto
+#' bundles. Without Quarto, `output = "<path>.typ"` writes the same
+#' source, self-contained: `typst compile` makes the PDF on any machine.
+#'
 #' @return A `spicy_codebook` object, returned invisibly when `output` is
 #' given: a list with
 #' \describe{
@@ -108,7 +136,9 @@
 #'     `label`, `declared_missing`, `n`, `pct_total` and `pct_valid`.}
 #' }
 #' The attributes `language` and `decimal_mark` record the language and
-#' the decimal mark the codebook was built with.
+#' the decimal mark the codebook was built with, and `appearance` the look
+#' of its PDF: a list of `font`, `font_code`, `colors` (all eight) and
+#' `paper`.
 #'
 #' @examples
 #' code_book(sochealth)
@@ -129,6 +159,10 @@
 #'   code_book(sochealth, output = path)
 #' }
 #'
+#' # The Typst source of the PDF, which `output = "<path>.pdf"` compiles
+#' # when Quarto is installed.
+#' code_book(sochealth, output = tempfile(fileext = ".typ"))
+#'
 #' @seealso
 #' [varlist()] to explore the variables in the Viewer; [freq()] for the
 #' frequency table of one variable.
@@ -147,6 +181,10 @@ code_book <- function(
   factor_levels = c("all", "observed"),
   user_na = TRUE,
   decimal_mark = NULL,
+  font = NULL,
+  font_code = NULL,
+  colors = NULL,
+  paper = c("a4", "letter"),
   output = NULL
 ) {
   if (!is.data.frame(x)) {
@@ -166,7 +204,9 @@ code_book <- function(
   factor_levels <- match_varlist_factor_levels(factor_levels)
   validate_varlist_logical(user_na, "user_na")
   decimal_mark <- code_book_decimal_mark(decimal_mark)
+  appearance <- code_book_appearance(font, font_code, colors, paper)
   format <- code_book_output_format(output)
+  quarto <- if (identical(format, "pdf")) code_book_quarto(c(font, font_code))
   lang <- getOption("spicy.language", NULL)
   lang <- if (is.null(lang)) "en" else .spicy_language_option(lang)
 
@@ -290,13 +330,19 @@ code_book <- function(
     ),
     class = "spicy_codebook",
     language = lang,
-    decimal_mark = decimal_mark
+    decimal_mark = decimal_mark,
+    appearance = appearance
   )
 
   if (is.null(format)) {
     return(cb)
   }
-  code_book_write_xlsx(cb, output)
+  switch(
+    format,
+    xlsx = code_book_write_xlsx(cb, output, font),
+    typ = code_book_write_typst(cb, output),
+    pdf = code_book_write_pdf(cb, output, quarto)
+  )
   invisible(cb)
 }
 
@@ -621,9 +667,9 @@ code_book_headers <- function(cols) {
     n_distinct = "header_distinct",
     min = "header_min",
     max = "header_max",
-    mean = "header_mean",
+    mean = "header_codebook_mean",
     sd = "header_sd",
-    median = "header_median",
+    median = "header_codebook_median",
     earliest = "header_earliest",
     latest = "header_latest",
     variable = "header_variable",

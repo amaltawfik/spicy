@@ -17,6 +17,10 @@ code_book(
   factor_levels = c("all", "observed"),
   user_na = TRUE,
   decimal_mark = NULL,
+  font = NULL,
+  font_code = NULL,
+  colors = NULL,
+  paper = c("a4", "letter"),
   output = NULL
 )
 
@@ -64,17 +68,37 @@ count as missing: they are left out of \code{n_valid}, counted in
 \code{declared_missing = TRUE}. If \code{FALSE}, they count as valid values. See
 the "Declared missing values" section.}
 
-\item{decimal_mark}{Decimal mark of the numbers the codebook prints, a
-single character such as \code{"."} or \code{","}. \code{NULL} (the default) takes
-the mark of \code{options(spicy.style)}, then the one of the language
+\item{decimal_mark}{Decimal mark of the numbers in the PDF, a single
+character such as \code{"."} or \code{","}. \code{NULL} (the default) takes the mark
+of \code{options(spicy.style)}, then the one of the language
 (\code{options(spicy.language = "fr")} gives the comma), then \code{"."}. The
-console list prints counts only, so the mark shows in the PDF output
-(planned). The Excel file keeps numbers as numbers.}
+console list prints counts only, and the Excel file keeps numbers as
+numbers.}
+
+\item{font, font_code}{Fonts of the PDF, for the text and for the names
+and codes. \code{NULL} (the default) uses New Computer Modern and DejaVu
+Sans Mono, which Typst embeds, so the PDF looks the same whatever the
+machine. Any other font must be one Typst finds, named exactly as
+\verb{quarto typst fonts} lists it; a \code{.typ} output keeps the name as
+given, unchecked. A \code{font} also sets the font of the Excel file,
+which otherwise keeps its default font.}
+
+\item{colors}{Named character vector of \code{"#RRGGBB"} colors replacing
+part of the palette of the PDF: \code{primary} (title, headings and the
+text of table headers), \code{accent} (links and the declared missing
+marker), \code{band} (behind table headers), \code{band_dark} (the band of each
+variable, under white text), \code{zebra}, \code{grid} (rules), \code{text} and
+\code{muted}. The headers of the Excel file take \code{primary} and \code{band} too.}
+
+\item{paper}{Paper size of the PDF: \code{"a4"} (the default) or \code{"letter"}.}
 
 \item{output}{\code{NULL} (the default) returns the codebook, which prints as
-the list of variables. A path ending in \code{.xlsx} writes the codebook to
-that Excel file and returns it invisibly; this requires \code{openxlsx2}. A
-PDF output is planned.}
+the list of variables. A path writes the codebook to that file, in
+the format of its extension, and returns it invisibly: \code{.xlsx} for an
+Excel workbook (this requires \code{openxlsx2}), \code{.pdf} for a PDF (this
+requires the \code{quarto} package and Quarto 1.7 or later, found on the
+PATH or through the \code{QUARTO_PATH} environment variable), \code{.typ} for
+the Typst source of that PDF.}
 }
 \value{
 A \code{spicy_codebook} object, returned invisibly when \code{output} is
@@ -93,15 +117,17 @@ numeric variables and \code{earliest} and \code{latest} for dates.}
 \code{label}, \code{declared_missing}, \code{n}, \code{pct_total} and \code{pct_valid}.}
 }
 The attributes \code{language} and \code{decimal_mark} record the language and
-the decimal mark the codebook was built with.
+the decimal mark the codebook was built with, and \code{appearance} the look
+of its PDF: a list of \code{font}, \code{font_code}, \code{colors} (all eight) and
+\code{paper}.
 }
 \description{
 \code{code_book()} documents the variables of a data frame: one row per
 variable (position, name, label, type, valid and missing counts,
 summary statistics), and one row per category of its categorical and
 logical variables (code, label, count, percentages). The codebook
-prints as the list of variables, and \code{output = "<path>.xlsx"} writes
-it to an Excel file.
+prints as the list of variables, and \code{output} writes it to an Excel
+workbook or to a PDF.
 
 The counts are unweighted: they describe the file, not a population.
 }
@@ -143,6 +169,19 @@ missing values, notes, and the versions of spicy and R that wrote it.
 The other two, \code{variables} and \code{values}, are the two tables of the
 object from the first row, with a frozen header and filters: numbers
 stay numeric cells and dates are ISO text.
+}
+
+\section{PDF output}{
+
+The PDF opens on a cover (title, authors, date, numbers of observations
+and variables, notes), lists the variables with the page of each, and
+summarizes the declared missing values. One sheet per variable follows
+(counts, statistics, and the table of its values, where \code{M} marks a
+declared missing value), then an alphabetical index. A sheet breaks
+across pages only when it does not fit on one. \code{code_book()}
+writes the Typst source and compiles it with the Typst that Quarto
+bundles. Without Quarto, \code{output = "<path>.typ"} writes the same
+source, self-contained: \verb{typst compile} makes the PDF on any machine.
 }
 
 \section{Declared missing values}{
@@ -195,6 +234,10 @@ if (requireNamespace("openxlsx2", quietly = TRUE)) {
   path <- tempfile(fileext = ".xlsx")
   code_book(sochealth, output = path)
 }
+
+# The Typst source of the PDF, which `output = "<path>.pdf"` compiles
+# when Quarto is installed.
+code_book(sochealth, output = tempfile(fileext = ".typ"))
 
 }
 \seealso{

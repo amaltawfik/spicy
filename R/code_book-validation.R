@@ -20,12 +20,8 @@ validate_code_book_title <- function(title) {
 
 
 validate_code_book_control_dots <- function(dots) {
-  dot_names <- names(dots)
-
-  if (is.null(dot_names)) {
-    return(invisible(dots))
-  }
-
+  # `rlang::enquos()` names every dot, with "" for the unnamed ones.
+  dot_names <- names(dots) %||% character()
   dot_names[is.na(dot_names)] <- ""
 
   # Arguments of the former widget. They now reach `...`, where tidyselect
@@ -142,7 +138,8 @@ code_book_authors <- function(authors, call = rlang::caller_env()) {
     if (length(v) != 1L || is.na(v)) {
       fail()
     }
-    as.character(v)
+    # A blank field is an empty one, and a padded ORCID a clean link.
+    trimws(as.character(v))
   }
   rows <- lapply(authors, function(a) {
     if (!is.list(a) || !nzchar(trimws(field(a, "name")))) {
@@ -259,6 +256,67 @@ code_book_decimal_mark <- function(decimal_mark) {
 }
 
 
+# The look of the PDF: the fonts, the palette of lssdoc with `colors`
+# merged over it, and the paper. Typst embeds the two default fonts; a
+# font the user names is checked by code_book_quarto(), for the PDF only.
+code_book_appearance <- function(font, font_code, colors, paper) {
+  fonts <- list(font = font, font_code = font_code)
+  for (arg in names(fonts)) {
+    f <- fonts[[arg]]
+    if (!is.null(f) && !(rlang::is_string(f) && nzchar(f))) {
+      spicy_abort(
+        paste0("`", arg, "` must be NULL or a single font name."),
+        class = "spicy_invalid_input"
+      )
+    }
+  }
+  palette <- c(
+    primary = "#133B52",
+    accent = "#3A7C8C",
+    band = "#E9F2F6",
+    band_dark = "#1F4E5F",
+    zebra = "#F4F8FA",
+    grid = "#D3DCE2",
+    text = "#222222",
+    muted = "#6E6E6E"
+  )
+  if (!is.null(colors)) {
+    nms <- names(colors)
+    if (
+      !is.character(colors) ||
+        is.null(nms) ||
+        !all(nms %in% names(palette)) ||
+        anyDuplicated(nms) > 0L ||
+        !all(grepl("^#[0-9A-Fa-f]{6}$", colors))
+    ) {
+      spicy_abort(
+        c(
+          "`colors` must be a named character vector of \"#RRGGBB\" colors.",
+          "i" = paste0("Names: ", paste(names(palette), collapse = ", "), ".")
+        ),
+        class = "spicy_invalid_input"
+      )
+    }
+    palette[nms] <- colors
+  }
+  paper <- tryCatch(
+    match.arg(paper, c("a4", "letter")),
+    error = function(e) {
+      spicy_abort(
+        "`paper` must be \"a4\" or \"letter\".",
+        class = "spicy_invalid_input"
+      )
+    }
+  )
+  list(
+    font = font %||% "New Computer Modern",
+    font_code = font_code %||% "DejaVu Sans Mono",
+    colors = palette,
+    paper = paper
+  )
+}
+
+
 # The file format `output` asks for, read off its extension.
 code_book_output_format <- function(output) {
   if (is.null(output)) {
@@ -276,43 +334,87 @@ code_book_output_format <- function(output) {
     )
   }
   ext <- tolower(tools::file_ext(output))
-  if (identical(ext, "xlsx")) {
-    if (!dir.exists(dirname(output))) {
-      spicy_abort(
-        paste0(
-          "The directory of `output` does not exist: ",
-          .quote_val(dirname(output)),
-          "."
-        ),
-        class = "spicy_invalid_input"
-      )
-    }
-    if (!spicy_pkg_available("openxlsx2")) {
-      spicy_abort(
-        c(
-          "Writing a codebook to \".xlsx\" requires the 'openxlsx2' package.",
-          "i" = "Install it with `install.packages(\"openxlsx2\")`."
-        ),
-        class = "spicy_missing_pkg"
-      )
-    }
-    return("xlsx")
-  }
-  if (identical(ext, "pdf")) {
+  if (!ext %in% c("xlsx", "pdf", "typ")) {
     spicy_abort(
       c(
-        "A PDF codebook is not available yet.",
-        "i" = "Write an Excel file with `output = \"<path>.xlsx\"`."
+        "`output` must be a path ending in \".xlsx\", \".pdf\", or \".typ\".",
+        "x" = paste0("Got ", .quote_val(output), "."),
+        "i" = "For a CSV, write `cb$variables` or `cb$values` with `utils::write.csv()`."
       ),
-      class = "spicy_unsupported"
+      class = "spicy_invalid_input"
     )
   }
-  spicy_abort(
-    c(
-      "`output` must be a path ending in \".xlsx\".",
-      "x" = paste0("Got ", .quote_val(output), "."),
-      "i" = "For a CSV, write `cb$variables` or `cb$values` with `utils::write.csv()`."
-    ),
-    class = "spicy_invalid_input"
+  if (!dir.exists(dirname(output))) {
+    spicy_abort(
+      paste0(
+        "The directory of `output` does not exist: ",
+        .quote_val(dirname(output)),
+        "."
+      ),
+      class = "spicy_invalid_input"
+    )
+  }
+  if (ext == "xlsx" && !spicy_pkg_available("openxlsx2")) {
+    spicy_abort(
+      c(
+        "Writing a codebook to \".xlsx\" requires the 'openxlsx2' package.",
+        "i" = "Install it with `install.packages(\"openxlsx2\")`."
+      ),
+      class = "spicy_missing_pkg"
+    )
+  }
+  ext
+}
+
+
+# Quarto, found by the quarto package, compiles the PDF with the Typst it
+# bundles, which must be Typst 0.12 or later (sticky blocks, paragraph
+# spacing): Quarto 1.7. A font the user names must be one Typst finds,
+# spelled as `quarto typst fonts` lists it: Typst would otherwise
+# substitute another, silently.
+code_book_quarto <- function(fonts) {
+  alt <- paste(
+    "Or write the Typst source with `output = \"<path>.typ\"`",
+    "and compile it with `typst compile`."
   )
+  if (!spicy_pkg_available("quarto")) {
+    spicy_abort(
+      c(
+        "Writing a codebook to \".pdf\" requires the 'quarto' package.",
+        "i" = "Install it with `install.packages(\"quarto\")`.",
+        "i" = alt
+      ),
+      class = "spicy_missing_pkg"
+    )
+  }
+  quarto <- quarto::quarto_path()
+  # A stale QUARTO_PATH names a file that is gone.
+  found <- !is.null(quarto) && nzchar(quarto) && file.exists(quarto)
+  version <- if (found) quarto::quarto_version()
+  if (!found || version < "1.7") {
+    spicy_abort(
+      c(
+        "Writing a codebook to \".pdf\" requires Quarto 1.7 or later.",
+        "x" = if (found) {
+          paste0("Found Quarto ", version, ".")
+        } else {
+          "Quarto was not found."
+        },
+        "i" = "Install it from <https://quarto.org>.",
+        "i" = alt
+      ),
+      class = "spicy_missing_quarto"
+    )
+  }
+  unknown <- setdiff(fonts, if (length(fonts)) code_book_typst_fonts(quarto))
+  if (length(unknown)) {
+    spicy_abort(
+      c(
+        paste0("Typst finds no font named ", .quote_val(unknown[[1L]]), "."),
+        "i" = "`quarto typst fonts` lists the fonts it finds: give the name exactly as listed."
+      ),
+      class = "spicy_invalid_input"
+    )
+  }
+  quarto
 }

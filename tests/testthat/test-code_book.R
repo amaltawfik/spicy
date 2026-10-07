@@ -459,6 +459,16 @@ test_that("authors take the three shapes of lssdoc's argument", {
   expect_identical(a$affiliation, c("HESAV", ""))
   expect_identical(a$orcid, c("0000-0002-1825-0097", ""))
   expect_identical(code_book_authors(list(j = list(name = "J")))$name, "J")
+  # A blank field is an empty one; a padded one is trimmed.
+  a <- code_book_authors(list(
+    list(name = " Jane ", affiliation = "  ", orcid = " 0000-0002-1825-0097 "),
+    list(name = "Bob", orcid = " ")
+  ))
+  expect_identical(a$name, c("Jane", "Bob"))
+  expect_identical(
+    c(a$affiliation, a$orcid),
+    c("", "", "0000-0002-1825-0097", "")
+  )
 
   cb <- code_book(cb_data(), sex, authors = c("Jane Doe" = "HESAV"))
   expect_identical(cb$header$authors$name, "Jane Doe")
@@ -603,13 +613,17 @@ test_that("removed and malformed arguments are classed errors", {
   expect_error(code_book(d, range = "yes"), class = "spicy_invalid_input")
   expect_error(code_book(d, user_na = NA), class = "spicy_invalid_input")
   expect_error(code_book(d, factor_levels = "x"), class = "spicy_invalid_input")
-  expect_error(code_book(d, output = "cb.pdf"), class = "spicy_unsupported")
   expect_error(code_book(d, output = "cb.csv"), class = "spicy_invalid_input")
   expect_error(code_book(d, output = "xlsx"), class = "spicy_invalid_input")
-  expect_error(
-    code_book(d, output = file.path(tempdir(), "no-such-dir", "cb.xlsx")),
-    class = "spicy_invalid_input"
-  )
+  for (ext in c("xlsx", "pdf", "typ")) {
+    expect_error(
+      code_book(
+        d,
+        output = file.path(tempdir(), "no-such-dir", paste0("cb.", ext))
+      ),
+      class = "spicy_invalid_input"
+    )
+  }
   expect_error(code_book(d, output = NA), class = "spicy_invalid_input")
   expect_error(code_book(d, output = ""), class = "spicy_invalid_input")
   expect_error(code_book(d, value = 5), class = "spicy_invalid_input")
@@ -712,7 +726,7 @@ test_that("the Excel codebook reads back", {
   vars <- openxlsx2::read_xlsx(path, sheet = 2)
   expect_identical(names(vars)[1:4], c("Pos.", "Variable", "Label", "Type"))
   expect_equal(vars$Valid, cb$variables$n_valid)
-  expect_equal(vars$M, cb$variables$mean)
+  expect_equal(vars$Mean, cb$variables$mean)
   expect_identical(vars[["Earliest date"]][[7]], "2024-05-01")
 
   vals <- openxlsx2::read_xlsx(path, sheet = 3)
@@ -727,6 +741,30 @@ test_that("the Excel codebook reads back", {
   props <- wb$get_properties()
   expect_identical(unname(props[["title"]]), "Codebook")
   expect_identical(unname(props[["creator"]]), "Jane Doe; Bob")
+})
+
+test_that("the Excel header takes the PDF colors, and the font when given", {
+  skip_if_not_installed("openxlsx2")
+  path <- withr::local_tempfile(fileext = ".xlsx")
+  colors <- c(band = "#112233", primary = "#FFEEDD")
+  code_book(cb_data(), colors = colors, output = path)
+  wb <- openxlsx2::wb_load(path)
+  # The style cell A1 of `variables` carries: a light text on a dark band.
+  styles <- wb$styles_mgr$styles
+  a1 <- as.integer(openxlsx2::wb_get_cell_style(wb, 2, "A1"))
+  xf <- openxlsx2::xml_attr(styles$cellXfs[[a1 + 1]], "xf")[[1]]
+  fill <- styles$fills[[as.integer(xf[["fillId"]]) + 1]]
+  font <- styles$fonts[[as.integer(xf[["fontId"]]) + 1]]
+  expect_match(fill, "<fgColor rgb=\"FF112233\"/>", fixed = TRUE)
+  expect_match(font, "<color rgb=\"FFFFEEDD\"/>", fixed = TRUE)
+  default <- openxlsx2::wb_get_base_font(openxlsx2::wb_workbook())
+  expect_identical(openxlsx2::wb_get_base_font(wb)$name, default$name)
+
+  code_book(cb_data(), font = "Arial", output = path)
+  wb <- openxlsx2::wb_load(path)
+  expect_identical(openxlsx2::wb_get_base_font(wb)$name$val, "Arial")
+  fonts <- wb$styles_mgr$styles$fonts
+  expect_true(any(grepl("<b val=\"1\"/>", fonts) & grepl("Arial", fonts)))
 })
 
 test_that("the Excel codebook follows the language, with or without a title", {

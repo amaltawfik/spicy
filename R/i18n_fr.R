@@ -329,6 +329,8 @@
   header_distinct = "Valeurs distinctes",
   header_earliest = "Premi\u00E8re date",
   header_latest = "Derni\u00E8re date",
+  header_codebook_mean = "Moyenne",
+  header_codebook_median = "M\u00E9diane",
   header_is_declared_missing = "Manquant d\u00E9clar\u00E9",
   header_pct_total = "% du total",
   header_pct_valid = "% des valides",
@@ -345,7 +347,13 @@
   cell_type_numeric = "num\u00E9rique",
   cell_type_logical = "logique",
   cell_type_text = "texte",
-  cell_type_datetime = "date-heure"
+  cell_type_datetime = "date-heure",
+  title_codebook_list = "Liste des variables",
+  title_codebook_declared = "Valeurs manquantes d\u00E9clar\u00E9es",
+  title_codebook_sheets = "Fiches des variables",
+  title_codebook_index = "Index des variables",
+  cell_system_missing = "manquant syst\u00E8me",
+  note_codebook_unweighted = "Effectifs non pond\u00E9r\u00E9s\u00A0: ils d\u00E9crivent le fichier et non une population."
 )
 
 # ---- La locale de la langue -----------------------------------------------

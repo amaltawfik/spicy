@@ -776,6 +776,10 @@
   header_distinct = "Distinct values",
   header_earliest = "Earliest date",
   header_latest = "Latest date",
+  # Spelled out, not `header_mean` / `header_median`: in a codebook "M"
+  # marks a declared missing value (`marker_declared_missing`).
+  header_codebook_mean = "Mean",
+  header_codebook_median = "Median",
   header_code = "Code",
   # Same English as `header_declared_missing`, other sense: the flag of one
   # value, not a count of observations. French tells the two apart.
@@ -807,7 +811,21 @@
   cell_type_logical = "logical",
   cell_type_text = "text",
   cell_type_date = "date",
-  cell_type_datetime = "date-time"
+  cell_type_datetime = "date-time",
+  # The PDF. `title_codebook` subtitles the cover and heads every page
+  # with the title. `marker_declared_missing` flags a declared missing
+  # value in the table of a variable, and heads that column.
+  title_codebook = "Codebook",
+  title_codebook_list = "List of variables",
+  title_codebook_declared = "Declared missing values",
+  title_codebook_sheets = "Variable descriptions",
+  title_codebook_index = "Index of variables",
+  header_page = "Page",
+  header_variables = "Variables",
+  row_notes = "Notes",
+  marker_declared_missing = "M",
+  cell_system_missing = "system missing",
+  note_codebook_unweighted = "Counts are unweighted: they describe the file, not a population."
 )
 
 # Raw display label for `key`.

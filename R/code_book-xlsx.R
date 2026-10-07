@@ -2,8 +2,9 @@
 # then `variables` and `values` as plain tables from row 1, so that each
 # keeps its filters and frozen header and reads back with `read_xlsx()`
 # without skipping rows. openxlsx2 is checked by code_book_output_format()
-# before the codebook is built.
-code_book_write_xlsx <- function(cb, path) {
+# before the codebook is built. The header takes the band and primary
+# colors of the PDF; the font is set only when `font` is given.
+code_book_write_xlsx <- function(cb, path, font = NULL) {
   h <- cb$header
   info <- code_book_info(h, orcid = TRUE)
   info <- rbind(
@@ -33,6 +34,11 @@ code_book_write_xlsx <- function(cb, path) {
   )
 
   wb <- openxlsx2::wb_workbook()
+  if (!is.null(font)) {
+    wb <- openxlsx2::wb_set_base_font(wb, font_name = font)
+  }
+  head_font <- openxlsx2::wb_get_base_font(wb)$name$val
+  argb <- sub("#", "FF", attr(cb, "appearance")$colors, fixed = TRUE)
   for (i in seq_along(tables)) {
     df <- as.data.frame(tables[[i]])
     if (i > 1L) {
@@ -48,9 +54,16 @@ code_book_write_xlsx <- function(cb, path) {
       wb,
       sheet = s,
       dims = head,
-      color = openxlsx2::wb_color(hex = "FFE9F2F6")
+      color = openxlsx2::wb_color(hex = argb[["band"]])
     )
-    wb <- openxlsx2::wb_add_font(wb, sheet = s, dims = head, bold = TRUE)
+    wb <- openxlsx2::wb_add_font(
+      wb,
+      sheet = s,
+      dims = head,
+      bold = TRUE,
+      name = head_font,
+      color = openxlsx2::wb_color(hex = argb[["primary"]])
+    )
     wb <- openxlsx2::wb_freeze_pane(wb, sheet = s, first_row = TRUE)
     wb <- openxlsx2::wb_add_filter(
       wb,

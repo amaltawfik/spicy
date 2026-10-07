@@ -1,0 +1,106 @@
+# the Typst source is the template, then the codebook as literals
+
+    Code
+      cat(src[-seq_along(tpl)], sep = "\n")
+    Output
+      
+      #let data = (
+        lang: "en",
+        paper: "a4",
+        font: "New Computer Modern",
+        font_code: "DejaVu Sans Mono",
+        colors: (primary: "#133B52", accent: "#3A7C8C", band: "#E9F2F6", band_dark: "#1F4E5F", zebra: "#F4F8FA", grid: "#D3DCE2", text: "#222222", muted: "#6E6E6E"),
+        title: "Survey \"2026\"",
+        subtitle: "Codebook",
+        header: "Codebook — Survey \"2026\"",
+        authors: (
+          (name: "Jane Doe", affiliation: "HESAV", orcid: "0000-0002-1825-0097"),
+        ),
+        date: "<date>",
+        meta: (
+          (field: "Observations", value: "5"),
+          (field: "Variables", value: "3"),
+          (field: "Generated with", value: "spicy <version>, R <version>"),
+        ),
+        notes: ("Coded with # and \\.",),
+        declared: (
+          (code: "8", label: "#DK *_@<", variables: "q"),
+          (code: "9", label: "", variables: "q"),
+        ),
+        vars: (
+          (
+            pos: "1",
+            name: "q",
+            label: "Quote \" backslash \\ #hash *bold* _under_ @ref <lt> été",
+            type: "categorical (labelled codes)",
+            source: "Q1",
+            counts: (n_valid: "2", n_missing: "3", n_declared_missing: "2", n_distinct: "2"),
+            stats: (),
+            values: (
+              (code: "1", label: "Yes \"really\"", m: false, na: false, n: "1", pct: "20.0", valid: "50.0"),
+              (code: "2", label: "No \\ never", m: false, na: false, n: "1", pct: "20.0", valid: "50.0"),
+              (code: "8", label: "#DK *_@<", m: true, na: false, n: "1", pct: "20.0", valid: ""),
+              (code: "9", label: "", m: true, na: false, n: "1", pct: "20.0", valid: ""),
+              (code: "NA", label: "system missing", m: false, na: true, n: "1", pct: "20.0", valid: ""),
+            ),
+          ),
+          (
+            pos: "2",
+            name: "n",
+            label: "",
+            type: "numeric",
+            source: none,
+            counts: (n_valid: "4", n_missing: "1", n_declared_missing: "0", n_distinct: "4"),
+            stats: (min: "1.5", max: "5.5", mean: "3.25", sd: "1.85", median: "3"),
+            values: (),
+          ),
+          (
+            pos: "3",
+            name: "day",
+            label: "",
+            type: "date",
+            source: none,
+            counts: (n_valid: "5", n_missing: "0", n_declared_missing: "0", n_distinct: "5"),
+            stats: (earliest: "2024-05-01", latest: "2024-05-05"),
+            values: (),
+          ),
+        ),
+        index: (2, 1, 0),
+      )
+      #let strings = (
+        position: "Pos.",
+        name: "Variable",
+        label: "Label",
+        type: "Type",
+        class: "R class",
+        source: "Source",
+        n_valid: "Valid",
+        n_missing: "Missing",
+        n_declared_missing: "Declared missing",
+        n_distinct: "Distinct values",
+        min: "Min",
+        max: "Max",
+        mean: "Mean",
+        sd: "SD",
+        median: "Median",
+        earliest: "Earliest date",
+        latest: "Latest date",
+        variable: "Variable",
+        code: "Code",
+        declared_missing: "Declared missing",
+        n: "n",
+        pct_total: "% of total",
+        pct_valid: "% of valid",
+        page: "Page",
+        variables: "Variables",
+        marker: "M",
+        notes: "Notes",
+        unweighted: "Counts are unweighted: they describe the file, not a population.",
+        orcid: "ORCID",
+        list: "List of variables",
+        declared: "Declared missing values",
+        sheets: "Variable descriptions",
+        index: "Index of variables",
+      )
+      #codebook(data, strings)
+
