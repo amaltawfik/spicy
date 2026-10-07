@@ -1,8 +1,11 @@
 # ADR 2026-10-06 — `code_book()` comme livrable : seuil de valeurs, export depuis R, en-tête, étendues, noms de classes
 
-**Statut** : proposé (2026-10-06). À réfléchir, puis à arbitrer avant toute
-implémentation. Cinq points liés, un seul périmètre : faire de `code_book()`
-un codebook qu'on livre, pas seulement qu'on consulte.
+**Statut** : périmètre arbitré par Amal le 2026-10-06 (voir « Arbitrage » en
+fin de fiche). Rien n'est implémenté. Cinq questions restent ouvertes, dont
+la voie du document.
+
+Proposition d'origine : cinq points liés, un seul périmètre, faire de
+`code_book()` un codebook qu'on livre, pas seulement qu'on consulte.
 
 ## Contexte
 
@@ -99,6 +102,245 @@ la classe R brute restant disponible sur demande.
 * Une variable de texte libre (N distinct proche de N valide) mérite-t-elle
   un marqueur « texte libre » plutôt qu'une liste de valeurs ?
 
-## Décision
+## Revue des experts (2026-10-06)
 
-À prendre.
+Sources ouvertes et citées ce jour-là. La liste est en fin de fiche.
+
+* **Noyau par variable.** Les sources convergent sur : nom, libellé, texte
+  exact de la question, filtre, codes et libellés de valeurs, codes
+  manquants distingués par type, dérivation des variables construites
+  (ICPSR 2020, p. 34-36 ; FORS 2023 ; CESSDA DMEG ; UKDS ; Brislinger et
+  Moschner 2019, p. 111-112).
+* **Fréquences.** L'ICPSR demande une « unweighted frequency distribution or
+  summary statistics » montrant « both valid and missing cases ». L'ISSP
+  (ZA7650, p. I) : « All cross-tabulations, descriptive statistics and
+  frequency distributions are based on unweighted data. » L'ESS et le Panel
+  suisse des ménages n'en donnent aucune.
+* **Forme.** Sommaire ou index et groupes de variables (ICPSR, p. 36).
+* **Format.** FORS : « Documentation files must be submitted in PDF
+  format ». DDI-XML recommandé par l'ICPSR, CESSDA et FORS Guide 27. Aucune
+  source ne mentionne un tableau interactif.
+* **Outils existants.** `memisc::codebook()` a la fiche la plus proche du
+  modèle (texte de question, niveau de mesure, manquants marqués, N,
+  % valides, % total), sans en-tête d'étude, sans sommaire, sans PDF.
+  `codebook` (Arslan) et `dataMaid` passent par R Markdown. Aucun outil ne
+  réunit le tout. Constaté par exécution : sjPlot 2.9.0 et datawizard 1.4.0
+  comptent deux fois un manquant déclaré, et `Hmisc::describe()` 5.3.0
+  échoue sur une colonne `haven_labelled`.
+* **Divulgation.** Aucune règle propre au codebook. Le manuel SDC (2024,
+  p. 32) avertit que minimum, maximum et médiane décrivent souvent une seule
+  observation. La Banque mondiale (2026, § 4.4) demande d'éviter les
+  fréquences pour les identifiants et les moyennes pour les codes nominaux.
+
+## Arbitrage (Amal, 2026-10-06)
+
+**1. Le périmètre est le data frame.** `code_book()` documente ce que le
+fichier contient. Il ne lit pas le questionnaire et ne reçoit pas de table
+de métadonnées par variable. Raisons données par Amal :
+
+* un export CSV de LimeSurvey ne contient ni filtre ni numérotation ;
+* le texte de la question arrive déjà par le libellé, via
+  `label_from_names()` ;
+* le filtre vit dans le fichier `.lss`, que lssdoc lit et documente.
+
+Le questionnaire (lssdoc) et le codebook (spicy) sont donc deux documents.
+C'est la pratique courante : FORS exige que le lien entre variables et
+questions soit clair, pas un document unique, et le Panel suisse des ménages
+documente ses variables à part de ses questionnaires. Le modèle intégré de
+l'ISSP suppose l'infrastructure d'une archive.
+
+**2. Le format se déclare dans le code.** Un argument `output` reçoit un
+chemin dont l'extension choisit le format. Les boutons d'export du
+navigateur disparaissent, et `filename` avec eux, donc
+`R/code_book-filename.R` et le sujet de l'issue #8. L'exploration
+interactive reste le rôle de `varlist()`.
+
+**3. Le lien avec le questionnaire survit au renommage.** Un argument
+facultatif, provisoirement `source`, reçoit un vecteur nommé des nouveaux
+noms vers les codes d'origine, celui-là même qui sert à
+`rename(all_of())`. La fiche affiche alors une ligne « Question ». L'ESS
+fait de même (`trstprl`, « Location: B6-12a ») et l'ICPSR demande que le
+libellé indique le numéro de la question.
+
+## Contenu retenu
+
+* **En-tête** : titre, date, nombre d'observations et de variables, notes
+  (argument `notes`, une puce par élément), codes manquants déclarés relevés
+  dans le fichier.
+* **Liste des variables**, dans l'ordre du fichier : position, nom,
+  libellé, type, valides, manquants.
+* **Une fiche par variable** : nom, position, libellé, source si déclarée,
+  type en clair (point 5), puis selon le type :
+  * catégorielle : code, libellé, effectif, % du total, % des valides, les
+    manquants déclarés étant marqués et comptés dans le total seulement ;
+  * numérique : valides, manquants, moyenne, écart-type, étendue (point 4) ;
+  * date : étendue ;
+  * texte libre et identifiant : nombre de valeurs distinctes, jamais les
+    valeurs.
+* **Effectifs non pondérés**, avec la mention que ces chiffres décrivent le
+  fichier et non la population (formule de NADA, reprise par FORS).
+* **Index alphabétique** en fin de document.
+* **Seuil `values`** entier (point 1) : au-delà, la fiche résume au lieu
+  de lister.
+
+Une fiche ne se coupe pas entre deux pages. Le codebook CNEF du Panel
+suisse laisse ses tableaux déborder au-dessus de la variable suivante.
+
+## Ce que le changement ajoute
+
+Tailles estimées, non mesurées. Aujourd'hui `R/code_book*.R` fait 344
+lignes et `test-code_book.R` 28 blocs.
+
+| Palier | Contenu | Estimation |
+| --- | --- | --- |
+| 1 | objet structuré (variables, valeurs, notes), impression console, export xlsx et csv | 500 à 650 lignes ajoutées, environ 250 retirées |
+| 2 | document : en-tête, liste, fiches, index, en pdf, html et docx | 350 à 450 lignes par la voie Quarto |
+
+La fonctionnalité passerait d'environ 340 à 1 000 ou 1 100 lignes, soit un
+triplement. C'est une refonte décidée, pour un besoin mesuré (quatre outils
+pour le livrable DoMiRéFAS). Le palier 1 se suffit : on peut s'y arrêter.
+
+Réutilisé : `freq()` pour les effectifs, les manquants déclarés et, plus
+tard, la pondération ; `varlist()` pour la liste. Aucune dépendance nouvelle
+en Imports. Le palier 2 par Quarto demande Quarto installé.
+
+Hors périmètre, à rouvrir sur demande : export DDI-XML, fréquences
+pondérées dans les fiches, notes par variable pour les variables
+construites, signalement des variables sans libellé.
+
+## Décisions complémentaires (Amal, 2026-10-07)
+
+* **Formats : PDF et Excel, pas de Word.** Aucune source n'attend du Word ;
+  FORS exige le PDF. Le CSV s'obtient depuis l'objet. Le html reste en
+  réserve, non prévu.
+* **Le PDF passe par Typst**, compilé directement depuis une source `.typ`
+  écrite par R, avec le Typst que Quarto embarque. Prototype du 2026-10-06
+  dans `dev/prototypes/codebook_typst/` : le design de lssdoc est atteint
+  (polices, couleurs, bandeaux, couverture, sommaire et index avec numéros
+  de page, fiches insécables, en-têtes répétés), 25 fiches sur 25 d'un seul
+  tenant, 26 numéros de page exacts sur 26, rendu en une seconde. Mesuré :
+  150 lignes de R et 220 lignes de gabarit. Sans Quarto, la fonction écrit
+  la source `.typ` pour un rendu ailleurs.
+* **Sans `output`**, `code_book(d)` affiche la liste des variables en
+  console et rend l'objet de façon invisible. Le Viewer reste celui de
+  `varlist()`.
+* **`values`** : nombre maximal de modalités listées dans une fiche et dans
+  la feuille des valeurs. Au-delà, la fiche donne le nombre de valeurs
+  distinctes. Le seuil de 10 envisagé le 2026-10-06 visait la colonne
+  compacte de `varlist()`, qui n'existe plus ici ; la liste des variables
+  n'affiche pas de valeurs. Défaut : 100.
+* **`source`** est le nom de l'argument de correspondance.
+* **Minimum et maximum** des numériques et des dates affichés par défaut,
+  un argument `range = FALSE` les masque.
+* **Dates** : type « date » ou « date-heure », résumé par valides,
+  manquants, première et dernière valeur, au format ISO 8601, dans le
+  fuseau que porte la variable et à défaut en UTC, nommé. Jamais la liste
+  des valeurs.
+* **Types.** Un vocabulaire de documentation, dérivé de la classe R sans
+  rien deviner, qui dit le niveau de mesure et le stockage :
+  `factor` → catégorielle (modalités) ; `ordered` → ordinale (modalités) ;
+  codes étiquetés (`haven_labelled`) → catégorielle (codes étiquetés) ;
+  `integer`, `double` → numérique ; `logical` → logique ; `character` →
+  texte ; `Date` → date ; `POSIXct` → date-heure ; autre → la classe R.
+  La classe R reste dans l'objet et dans l'Excel, colonne à part. Pas
+  d'option pour l'afficher dans le PDF tant que personne ne la demande.
+* **Langues.** Les libellés des données restent dans leur langue ; tout ce
+  que le package ajoute passe par le registre i18n existant (fr, en). Le
+  gabarit Typst ne contient aucun texte en dur : R lui envoie les chaînes
+  avec les données, un seul gabarit pour toutes les langues. L'index se
+  trie en ordre C, identique sur toute machine.
+* **Marque décimale.** La règle de spicy s'applique sans exception : la
+  langue fixe le défaut (virgule en français), un style de revue
+  l'emporte, un `decimal_mark` explicite l'emporte sur tout. Amal n'utilise
+  jamais la virgule : il la règle une fois. Dans l'Excel, les nombres
+  restent des nombres, la marque ne concerne que le PDF et la console.
+
+## Spécification du palier 1
+
+Signature visée :
+
+```r
+code_book(
+  x, ...,
+  title = "Codebook",
+  notes = NULL,          # character, une puce par élément
+  source = NULL,         # named character : noms actuels -> codes d'origine
+  values = 100,          # modalités listées au plus, par variable
+  range = TRUE,          # min et max des numériques et des dates
+  factor_levels = c("all", "observed"),
+  user_na = TRUE,
+  decimal_mark = NULL,   # résolution langue > style > argument
+  output = NULL          # NULL, ou un chemin .xlsx (palier 1), .pdf (palier 2)
+)
+```
+
+`filename` et `include_na` disparaissent. Les passer donne une erreur
+classée qui nomme le remplaçant (`output`, et le comptage des NA toujours
+présent). Le widget DT disparaît.
+
+Objet rendu, classe `spicy_codebook`, trois tables :
+
+* `header` : titre, date, nombre d'observations et de variables, notes,
+  codes manquants déclarés relevés dans le fichier (code, libellé,
+  variables concernées).
+* `variables`, une ligne par variable : position, nom, libellé, type
+  (vocabulaire), classe R, source, valides, manquants, dont manquants
+  déclarés, valeurs distinctes, et pour les numériques et les dates :
+  minimum, maximum, moyenne, écart-type, médiane (dates : minimum et
+  maximum seulement, en texte ISO).
+* `values`, une ligne par modalité des variables catégorielles et
+  logiques : variable, code, libellé, manquant déclaré (logique), n, % du
+  total, % des valides ; plus une ligne « NA » par variable qui en a.
+
+Effectifs non pondérés. Les variables texte et les identifiants n'ont pas
+de ligne dans `values`. Les dates non plus.
+
+`print()` : l'en-tête sur quelques lignes, puis la liste des variables
+(position, nom, libellé, type, valides, manquants) par le moteur de tableau
+console de spicy.
+
+Excel (`output = "x.xlsx"`, openxlsx2) : trois feuilles, `variables`,
+`values`, `notes`, aux noms et en-têtes dans la langue du document, nombres
+en cellules numériques, dates en texte ISO, en-tête figé.
+
+Tests : les effectifs contre `freq()` et `table()`, manquants déclarés
+contre `user_na`, relecture de l'Excel, impression figée, erreurs classées
+sur les anciens arguments, correspondance `source`, table de vocabulaire
+des types, chaînes fr et en.
+
+## Questions restantes (palier 2)
+
+1. **Police.** Calibri n'existe que sous Windows et Office. Carlito, son
+   équivalent libre, donne une pagination identique. Sans l'une ni
+   l'autre, Typst se rabat sur une police à empattements et la pagination
+   change. Choix à faire : avertir, ou embarquer Carlito dans le package
+   (poids du tarball à mesurer).
+2. **Fiche plus haute qu'une page.** Le prototype décide en R qu'une fiche
+   de plus de 30 lignes peut se couper. Une fiche insécable qui dépasse la
+   page déborderait. Mesurer en Typst, ou garder la règle en R.
+
+## Sources
+
+* ICPSR (2020), *Guide to Social Science Data Preparation and Archiving*,
+  6e éd. <https://www.icpsr.umich.edu/files/deposit/dataprep.pdf>
+* DDI Alliance, DDI-Codebook 2.5.
+  <https://ddialliance.org/Specification/DDI-Codebook/2.5/XMLSchema/codebook.xsd>
+* FORS (2023), *The preparation of social science data for SWISSUbase*, en
+  bref et en détail ; Marmier (2026), FORS Guide 27,
+  doi:10.24449/FG-2026-00027.
+* CESSDA Training Team (2020), *Data Management Expert Guide*,
+  doi:10.5281/zenodo.3820473.
+* UK Data Service, *Documenting and describing data* (pages consultées le
+  2026-10-06).
+* Brislinger et Moschner (2019), « Datenaufbereitung und Dokumentation »,
+  dans Jensen, Netscher et Weller (dir.), doi:10.3224/84742233.
+* GESIS (2023), *ISSP 2020 - Environment IV, Variable Report*, ZA7650.
+  <https://access.gesis.org/dbk/74940>
+* ESS (2025), *Codebook ESS11*, appendice A7, édition 3.0.
+* FORS (2026), *Swiss Household Panel User Guide*, vague 26.
+* Banque mondiale (2026), *Quick Reference Guide for Microdata Archivists*.
+  <https://worldbank.github.io/microdata-archivist-guide/Guide-for-Data-Archivists.pdf>
+* Griffiths et al. (2024), *SDC Handbook*, v2.0.
+  <https://ukdataservice.ac.uk/app/uploads/sdc-handbook-v2.0.pdf>
+
+Aucune de ces références n'est dans `master.bib` au 2026-10-06.
