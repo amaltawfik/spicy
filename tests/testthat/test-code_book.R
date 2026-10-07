@@ -296,7 +296,7 @@ test_that("an NA level is system missing, as in freq()", {
   expect_identical(cb$variables$n_distinct, 1L)
   o <- addNA(factor(c("lo", NA), levels = c("lo", "hi"), ordered = TRUE))
   cb <- code_book(data.frame(o = o))
-  expect_identical(cb$variables$type, "ordinal (levels)")
+  expect_identical(cb$variables$type, "categorical (ordinal)")
   expect_identical(cb$values$code, c("lo", "hi", "NA"))
 })
 
@@ -342,8 +342,8 @@ test_that("the type vocabulary is read off the R class, in English and French", 
     h = as.difftime(1, units = "hours")
   )
   en <- c(
-    "categorical (levels)",
-    "ordinal (levels)",
+    "categorical (nominal)",
+    "categorical (ordinal)",
     "categorical (labelled codes)",
     "numeric",
     "numeric",
@@ -356,8 +356,8 @@ test_that("the type vocabulary is read off the R class, in English and French", 
   expect_identical(code_book(d)$variables$type, en)
   withr::local_options(spicy.language = "fr")
   fr <- c(
-    "catégorielle (modalités)",
-    "ordinale (modalités)",
+    "catégorielle (nominale)",
+    "catégorielle (ordinale)",
     "catégorielle (codes étiquetés)",
     "numérique",
     "numérique",

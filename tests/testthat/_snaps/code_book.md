@@ -17,7 +17,7 @@
       
          Pos. │ Variable    Label           Type                              Valid    Missing 
       ────────┼────────────────────────────────────────────────────────────────────────────────
-            1 │ sex         Sex             categorical (levels)                  5          1 
+            1 │ sex         Sex             categorical (nominal)                 5          1 
             2 │ score       Score (0-20)    numeric                               5          1 
             3 │ day                         date                                  5          1 
             4 │ q1                          categorical (labelled codes)          3          3 
@@ -40,6 +40,6 @@
       
          Pos. │ Variable    Libellé    Type                                Valides    Manquants 
       ────────┼─────────────────────────────────────────────────────────────────────────────────
-            1 │ sex         Sex        catégorielle (modalités)                  5            1 
+            1 │ sex         Sex        catégorielle (nominale)                   5            1 
             4 │ q1                     catégorielle (codes étiquetés)            3            3 
 

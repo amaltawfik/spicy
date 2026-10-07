@@ -71,10 +71,12 @@
 #'
 #' @details
 #' The type of a variable is read off its R class, never guessed: a factor
-#' is categorical, an ordered factor ordinal, a `haven_labelled` vector
-#' categorical with labelled codes, an integer or double vector numeric,
-#' and a logical, character, `Date` or `POSIXct` vector logical, text, date
-#' or date-time. Any other class is shown as the class itself. The R class
+#' is categorical (nominal), an ordered factor categorical (ordinal), a
+#' `haven_labelled` vector categorical (labelled codes), an integer or
+#' double vector numeric, and a logical, character, `Date` or `POSIXct`
+#' vector logical, text, date or date-time. The level of measurement comes
+#' from the declaration alone: a factor whose order was not declared with
+#' `ordered()` is nominal. Any other class is shown as the class itself. The R class
 #' stays in its own column. With `user_na = TRUE`, a `haven_labelled`
 #' vector whose value labels all sit on declared missing codes, or that has
 #' no labels, is numeric, or text when it stores characters.

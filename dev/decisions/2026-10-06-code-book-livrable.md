@@ -238,10 +238,24 @@ construites, signalement des variables sans libellé.
   des valeurs.
 * **Types.** Un vocabulaire de documentation, dérivé de la classe R sans
   rien deviner, qui dit le niveau de mesure et le stockage :
-  `factor` → catégorielle (modalités) ; `ordered` → ordinale (modalités) ;
-  codes étiquetés (`haven_labelled`) → catégorielle (codes étiquetés) ;
+  `factor` → catégorielle (nominale) ; `ordered` → catégorielle
+  (ordinale) ; codes étiquetés (`haven_labelled`) → catégorielle (codes
+  étiquetés) [révisé le 2026-10-07 : la première version disait
+  « catégorielle (modalités) » et « ordinale (modalités) » ; Amal a
+  relevé qu'une ordinale est aussi une catégorielle et que « modalités »
+  est du jargon R qui ne dit rien. Le vocabulaire retenu est celui des
+  niveaux de mesure (Stevens, SPSS : nominal, ordinal, échelle), lu dans
+  la déclaration : un facteur non déclaré `ordered()` est nominal] ;
   `integer`, `double` → numérique ; `logical` → logique ; `character` →
-  texte ; `Date` → date ; `POSIXct` → date-heure ; autre → la classe R.
+  texte (vérifié le 2026-10-08 sur les normes : DDI-Codebook 2.5 dit
+  `varFormat type="character"` [schéma lu], comme R et SAS ; SPSS et
+  Stata disent « string » ; DDI-Lifecycle 3 dit « Text » (représentation
+  TextRepresentation, à côté de Code, Numeric, DateTime). « text » est
+  retenu : c'est le mot de la norme courante, le seul que tout lecteur
+  comprend sans jargon, et il va avec les autres mots simples du
+  vocabulaire (numeric, date, date-time). Le stockage « character »
+  reste dans la colonne classe R, comme DDI 2.5 le sépare) ; `Date` →
+  date ; `POSIXct` → date-heure ; autre → la classe R.
   La classe R reste dans l'objet et dans l'Excel, colonne à part. Pas
   d'option pour l'afficher dans le PDF tant que personne ne la demande.
 * **Langues.** Les libellés des données restent dans leur langue ; tout ce

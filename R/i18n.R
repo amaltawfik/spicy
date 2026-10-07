@@ -804,8 +804,8 @@
   cell_declared_one = "%s (%d variable)",
   cell_declared_many = "%s (%d variables)",
   # The documentation vocabulary of `type`, read off the R class.
-  cell_type_categorical = "categorical (levels)",
-  cell_type_ordinal = "ordinal (levels)",
+  cell_type_categorical = "categorical (nominal)",
+  cell_type_ordinal = "categorical (ordinal)",
   cell_type_labelled = "categorical (labelled codes)",
   cell_type_numeric = "numeric",
   cell_type_logical = "logical",
