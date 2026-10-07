@@ -382,16 +382,102 @@ Mesuré après le premier passage, avant correctifs : `R/code_book*.R`
 i18n), tests 1 898 expectations sur 12 fichiers, couverture 100 % sur les
 trois fichiers.
 
-## Questions restantes (palier 2)
+## Spécification du palier 2 (Amal, 2026-10-07)
 
-1. **Police.** Calibri n'existe que sous Windows et Office. Carlito, son
-   équivalent libre, donne une pagination identique. Sans l'une ni
-   l'autre, Typst se rabat sur une police à empattements et la pagination
-   change. Choix à faire : avertir, ou embarquer Carlito dans le package
-   (poids du tarball à mesurer).
-2. **Fiche plus haute qu'une page.** Le prototype décide en R qu'une fiche
-   de plus de 30 lignes peut se couper. Une fiche insécable qui dépasse la
-   page déborderait. Mesurer en Typst, ou garder la règle en R.
+Décisions prises le 2026-10-07, après mesure :
+
+* **Police par défaut : New Computer Modern** (texte, 10 pt) et **DejaVu
+  Sans Mono** (noms de variables et codes). Les deux sont embarquées dans
+  Typst, donc présentes sur toute machine sans rien livrer, et New
+  Computer Modern est la police des rapports Typst d'Amal (healthy campus,
+  DoMiRéFAS). Typst embarque les polices dans le PDF : le lecteur voit
+  toujours ce que la machine qui génère a produit. Carlito écartée : elle
+  n'arrive qu'avec LibreOffice, et la livrer pèse 1,3 Mo (Regular + Bold)
+  à 2,8 Mo (quatre styles) sur un tarball CRAN de 2,5 Mo. Calibri écartée
+  comme défaut : Windows et Office seulement.
+* **`font` et `font_code`** : un nom de police. Vérifié exactement contre
+  la liste de `quarto typst fonts` ; une police absente est une erreur
+  classée qui la nomme, jamais une substitution silencieuse. Le repli
+  glyphe par glyphe de Typst reste pour les symboles isolés des libellés.
+* **Palette partagée avec lssdoc**, sans variante par genre : chez OCDE,
+  Pew ou ESS, la palette est celle de la maison, le genre se dit en
+  toutes lettres. Jetons et valeurs : `primary #133B52`, `accent #3A7C8C`,
+  `band #E9F2F6`, `band_dark #1F4E5F`, `zebra #F4F8FA`, `grid #D3DCE2`,
+  `text #222222`, `muted #6E6E6E`. Argument `colors`, vecteur nommé de hex
+  validés, mêmes noms que lssdoc. Contraste mesuré du bandeau des fiches :
+  9,1:1 blanc sur `#1F4E5F`. Variante sarcelle `#1E5A66` (7,8:1) notée,
+  non retenue.
+* **En-tête courant** : à droite, en gris discret, « Codebook — titre », ou
+  le titre seul s'il contient déjà « codebook » (insensible à la casse).
+  Pied de page : « X/Y » à droite. Couverture : titre, sous-titre
+  « Codebook » quand le titre ne le dit pas, auteurs et affiliations avec
+  lien ORCID, date, observations et variables, notes en puces. Le mot
+  reste « Codebook » dans les deux langues.
+* **`paper = c("a4", "letter")`**, le public étant tout R.
+* **Excel** : `colors["band"]` sur l'en-tête ; la police n'y est fixée que
+  si `font` est donné (Office a déjà changé sa police par défaut, Calibri
+  puis Aptos).
+* **Sans Quarto** : `output = "x.typ"` écrit une source Typst
+  autoportante (gabarit et données dans un seul fichier), compilable
+  ailleurs ; `output = "x.pdf"` exige Quarto et le dit par une erreur
+  classée qui nomme l'alternative `.typ`. Quarto se trouve par le package
+  `quarto` (Suggests), qui lit `QUARTO_PATH` et le PATH ; le Quarto
+  embarqué de RStudio n'est vu que depuis une session RStudio (constat de
+  la relecture, 2026-10-07). Le gabarit demande Typst 0.12 (`block.sticky`,
+  `par.spacing`), donc Quarto 1.7 ou plus : vérifié, erreur classée sinon.
+* **Fiche plus haute qu'une page** : la règle des 30 lignes du prototype a
+  perdu des lignes à la relecture (fiche de 20 libellés longs : 17 lignes
+  sur 20 rendues, débordement sous le pied de page). Remplacée par une
+  mesure Typst : une fiche est insécable si elle tient sur une page,
+  sécable sinon, avec son bandeau collé à la première ligne.
+* **Contenu** : couverture, sommaire des variables (position, nom,
+  libellé, page), résumé (effectifs, codes manquants déclarés), une fiche
+  par variable (nom, libellé, type, source, position, valides, manquants,
+  manquants déclarés, statistiques ou bornes de dates, table des valeurs
+  code, libellé, M, n, % total, % valides), index alphabétique avec
+  numéros de page. Chaînes par le registre i18n, un seul gabarit ; marque
+  décimale appliquée aux pourcentages et statistiques.
+* **Tests** : écriture et instantané du `.typ` sur un petit jeu (avec
+  guillemets, antislashs et balisage Typst dans les libellés), erreurs
+  classées (police absente, Quarto absent, couleur invalide), compilation
+  PDF seulement si Quarto est présent (skip sinon, donc local et CI, pas
+  CRAN), fichier produit non vide.
+* **Coût estimé** : 370 lignes mesurées sur le prototype (150 R, 220
+  gabarit), plus arguments, validation, Excel et tests, soit 550 à 650
+  lignes.
+
+## Relecture du palier 2 (2026-10-07)
+
+Implémentation en worktree (R/code_book-typst.R 215 lignes, gabarit
+inst/typst/codebook.typ 202, tests 199, validation +96), soit environ
+845 lignes ajoutées : au-dessus de l'estimation, pour un sérialiseur Typst
+écrit à la main (pas de dépendance JSON) et la validation des quatre
+arguments avec les contrôles Quarto et police. PDF de `sochealth` : 11
+pages, une seconde. Relecture indépendante : 16 constats, dont un grave
+(fiches tronquées, ci-dessus). Décisions :
+
+* **Bandeau de fiche** : le libellé passe sur sa propre ligne pleine
+  largeur sous « Pos. | Variable | Type », comme la ligne Source. Un nom
+  de 40 caractères écrasait le libellé à un mot par ligne, et 45 le
+  faisaient chevaucher le type.
+* **Noms longs dans la liste et l'index** : corps réduit (7 pt) au-delà de
+  30 caractères. Jamais de caractère inséré dans un nom (espace de
+  largeur nulle) : on copie les noms de variables depuis le PDF.
+* **Ligatures TeX de New Computer Modern** désactivées : « -- » devenait
+  un tiret, « '' » un guillemet courbe dans les libellés.
+* **Statistiques** : deux décimales au-dessus de 1 en valeur absolue,
+  trois chiffres significatifs en dessous, jamais « -0.00 ». En-têtes
+  « Mean » / « Median » (« Moyenne » / « Médiane ») dans le PDF et
+  l'Excel : « M » ne marque plus que les manquants déclarés.
+* **Excel** : texte d'en-tête dans `primary`, comme le PDF, pour qu'un
+  bandeau foncé reste lisible.
+* **CI** : Quarto installé dans le workflow de couverture, pour que la
+  compilation soit mesurée (couverture 100 % maintenue).
+* **PDF balisé** (accessibilité) conservé : 3,7 Mo pour 150 variables
+  contre 0,4 Mo sans balises ; la taille est le prix de l'archivage.
+* Acceptés sans correctif : couverture qui déborde sur deux pages avec
+  cinq auteurs et dix notes ; mot de 500 caractères sans espace coupé au
+  bord de page (Typst ne coupe pas dans un mot).
 
 ## Sources
 
