@@ -325,20 +325,22 @@ tidyselect selectors as in <code><a href="../reference/varlist.html">varlist()</
 <span><span class="co">#&gt; Observations: 1200</span></span>
 <span><span class="co">#&gt; Variables: 5</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;    Pos. <span style="color: #9E9E9E;">│</span> Variable        Label                     Type                      Valid    Missing </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────┼──────────────────────────────────────────────────────────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;       1 <span style="color: #9E9E9E;">│</span> sex             Sex                       categorical (levels)       1200          0 </span></span>
-<span><span class="co">#&gt;       2 <span style="color: #9E9E9E;">│</span> age             Age (years)               numeric                    1200          0 </span></span>
-<span><span class="co">#&gt;       8 <span style="color: #9E9E9E;">│</span> income_group    Household income group    ordinal (levels)           1182         18 </span></span>
-<span><span class="co">#&gt;      15 <span style="color: #9E9E9E;">│</span> bmi             Body mass index           numeric                    1188         12 </span></span>
-<span><span class="co">#&gt;      16 <span style="color: #9E9E9E;">│</span> bmi_category    BMI category              ordinal (levels)           1188         12</span></span></code></pre></div>
+<span><span class="co">#&gt;    Pos. <span style="color: #9E9E9E;">│</span> Variable        Label                     Type                       Valid    Missing </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────┼───────────────────────────────────────────────────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;       1 <span style="color: #9E9E9E;">│</span> sex             Sex                       categorical (nominal)       1200          0 </span></span>
+<span><span class="co">#&gt;       2 <span style="color: #9E9E9E;">│</span> age             Age (years)               numeric                     1200          0 </span></span>
+<span><span class="co">#&gt;       8 <span style="color: #9E9E9E;">│</span> income_group    Household income group    categorical (ordinal)       1182         18 </span></span>
+<span><span class="co">#&gt;      15 <span style="color: #9E9E9E;">│</span> bmi             Body mass index           numeric                     1188         12 </span></span>
+<span><span class="co">#&gt;      16 <span style="color: #9E9E9E;">│</span> bmi_category    BMI category              categorical (ordinal)       1188         12</span></span></code></pre></div>
 <p>The type is read off the R class, never guessed: a factor is
-<em>categorical</em>, an ordered factor <em>ordinal</em>, a labelled
-vector <em>categorical (labelled codes)</em>, an integer or double
-vector <em>numeric</em>, and a logical, character, <code>Date</code>, or
-<code>POSIXct</code> vector <em>logical</em>, <em>text</em>,
-<em>date</em>, or <em>date-time</em>. The R class itself stays in the
-object.</p>
+<em>categorical (nominal)</em>, an ordered factor <em>categorical
+(ordinal)</em>, a labelled vector <em>categorical (labelled codes)</em>,
+an integer or double vector <em>numeric</em>, and a logical, character,
+<code>Date</code>, or <code>POSIXct</code> vector <em>logical</em>,
+<em>text</em>, <em>date</em>, or <em>date-time</em>. The level of
+measurement comes from the declaration alone: a factor whose order was
+not declared with <code><a href="https://rdrr.io/r/base/factor.html" class="external-link">ordered()</a></code> is nominal. The R class itself
+stays in the object.</p>
 <div class="section level3">
 <h3 id="the-codebook-object">The codebook object<a class="anchor" aria-label="anchor" href="#the-codebook-object"></a>
 </h3>
@@ -353,13 +355,13 @@ latest value instead):</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">cb</span><span class="op">$</span><span class="va">variables</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"name"</span>, <span class="st">"type"</span>, <span class="st">"n_valid"</span>, <span class="st">"n_missing"</span>, <span class="st">"n_distinct"</span>, <span class="st">"min"</span>, <span class="st">"max"</span>, <span class="st">"mean"</span><span class="op">)</span><span class="op">]</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 5 × 8</span></span></span>
-<span><span class="co">#&gt;   name         type                 n_valid n_missing n_distinct   min   max  mean</span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                  <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> sex          categorical (levels)    <span style="text-decoration: underline;">1</span>200         0          2    <span style="color: #BB0000;">NA</span>  <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>  </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> age          numeric                 <span style="text-decoration: underline;">1</span>200         0         51    25  75    49.3</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> income_group ordinal (levels)        <span style="text-decoration: underline;">1</span>182        18          4    <span style="color: #BB0000;">NA</span>  <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>  </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> bmi          numeric                 <span style="text-decoration: underline;">1</span>188        12        177    16  38.9  25.9</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> bmi_category ordinal (levels)        <span style="text-decoration: underline;">1</span>188        12          3    <span style="color: #BB0000;">NA</span>  <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span></span></span></code></pre></div>
+<span><span class="co">#&gt;   name         type                  n_valid n_missing n_distinct   min   max  mean</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                   <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> sex          categorical (nominal)    <span style="text-decoration: underline;">1</span>200         0          2    <span style="color: #BB0000;">NA</span>  <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>  </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> age          numeric                  <span style="text-decoration: underline;">1</span>200         0         51    25  75    49.3</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> income_group categorical (ordinal)    <span style="text-decoration: underline;">1</span>182        18          4    <span style="color: #BB0000;">NA</span>  <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>  </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> bmi          numeric                  <span style="text-decoration: underline;">1</span>188        12        177    16  38.9  25.9</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> bmi_category categorical (ordinal)    <span style="text-decoration: underline;">1</span>188        12          3    <span style="color: #BB0000;">NA</span>  <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span></span></span></code></pre></div>
 <p><code>values</code> has one row per category of the categorical,
 ordinal, and logical variables, with its count and its percentages of
 all observations and of the valid ones, plus a row for the missing
@@ -411,10 +413,10 @@ numbers of observations and variables, and your notes on the data
 <span><span class="co">#&gt; Note: Fictitious data shipped with spicy.</span></span>
 <span><span class="co">#&gt; Note: BMI computed from self-reported height and weight.</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;    Pos. <span style="color: #9E9E9E;">│</span> Variable        Label              Type                  Valid    Missing </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────┼───────────────────────────────────────────────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;      15 <span style="color: #9E9E9E;">│</span> bmi             Body mass index    numeric                1188         12 </span></span>
-<span><span class="co">#&gt;      16 <span style="color: #9E9E9E;">│</span> bmi_category    BMI category       ordinal (levels)       1188         12</span></span></code></pre></div>
+<span><span class="co">#&gt;    Pos. <span style="color: #9E9E9E;">│</span> Variable        Label              Type                       Valid    Missing </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────┼────────────────────────────────────────────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;      15 <span style="color: #9E9E9E;">│</span> bmi             Body mass index    numeric                     1188         12 </span></span>
+<span><span class="co">#&gt;      16 <span style="color: #9E9E9E;">│</span> bmi_category    BMI category       categorical (ordinal)       1188         12</span></span></code></pre></div>
 <p><code>authors</code> also accepts a list of lists with
 <code>name</code>, <code>affiliation</code>, and <code>orcid</code>.
 When the variables were renamed after import, <code>source</code>

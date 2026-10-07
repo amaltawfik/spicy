@@ -75,12 +75,12 @@ code_book(sochealth, sex, age, smoking, bmi)
 #> Observations: 1200
 #> Variables: 4
 #> 
-#>    Pos. │ Variable    Label              Type                      Valid    Missing 
-#> ────────┼───────────────────────────────────────────────────────────────────────────
-#>       1 │ sex         Sex                categorical (levels)       1200          0 
-#>       2 │ age         Age (years)        numeric                    1200          0 
-#>      10 │ smoking     Current smoker     categorical (levels)       1175         25 
-#>      15 │ bmi         Body mass index    numeric                    1188         12
+#>    Pos. │ Variable    Label              Type                       Valid    Missing 
+#> ────────┼────────────────────────────────────────────────────────────────────────────
+#>       1 │ sex         Sex                categorical (nominal)       1200          0 
+#>       2 │ age         Age (years)        numeric                     1200          0 
+#>      10 │ smoking     Current smoker     categorical (nominal)       1175         25 
+#>      15 │ bmi         Body mass index    numeric                     1188         12
 ```
 
 ## Frequency tables

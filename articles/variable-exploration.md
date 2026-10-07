@@ -263,20 +263,23 @@ code_book(sochealth, sex, age, income_group, starts_with("bmi"))
 #> Observations: 1200
 #> Variables: 5
 #> 
-#>    Pos. │ Variable        Label                     Type                      Valid    Missing 
-#> ────────┼──────────────────────────────────────────────────────────────────────────────────────
-#>       1 │ sex             Sex                       categorical (levels)       1200          0 
-#>       2 │ age             Age (years)               numeric                    1200          0 
-#>       8 │ income_group    Household income group    ordinal (levels)           1182         18 
-#>      15 │ bmi             Body mass index           numeric                    1188         12 
-#>      16 │ bmi_category    BMI category              ordinal (levels)           1188         12
+#>    Pos. │ Variable        Label                     Type                       Valid    Missing 
+#> ────────┼───────────────────────────────────────────────────────────────────────────────────────
+#>       1 │ sex             Sex                       categorical (nominal)       1200          0 
+#>       2 │ age             Age (years)               numeric                     1200          0 
+#>       8 │ income_group    Household income group    categorical (ordinal)       1182         18 
+#>      15 │ bmi             Body mass index           numeric                     1188         12 
+#>      16 │ bmi_category    BMI category              categorical (ordinal)       1188         12
 ```
 
 The type is read off the R class, never guessed: a factor is
-*categorical*, an ordered factor *ordinal*, a labelled vector
-*categorical (labelled codes)*, an integer or double vector *numeric*,
-and a logical, character, `Date`, or `POSIXct` vector *logical*, *text*,
-*date*, or *date-time*. The R class itself stays in the object.
+*categorical (nominal)*, an ordered factor *categorical (ordinal)*, a
+labelled vector *categorical (labelled codes)*, an integer or double
+vector *numeric*, and a logical, character, `Date`, or `POSIXct` vector
+*logical*, *text*, *date*, or *date-time*. The level of measurement
+comes from the declaration alone: a factor whose order was not declared
+with [`ordered()`](https://rdrr.io/r/base/factor.html) is nominal. The R
+class itself stays in the object.
 
 ### The codebook object
 
@@ -297,13 +300,13 @@ instead):
 
 cb$variables[, c("name", "type", "n_valid", "n_missing", "n_distinct", "min", "max", "mean")]
 #> # A tibble: 5 × 8
-#>   name         type                 n_valid n_missing n_distinct   min   max  mean
-#>   <chr>        <chr>                  <int>     <int>      <int> <dbl> <dbl> <dbl>
-#> 1 sex          categorical (levels)    1200         0          2    NA  NA    NA  
-#> 2 age          numeric                 1200         0         51    25  75    49.3
-#> 3 income_group ordinal (levels)        1182        18          4    NA  NA    NA  
-#> 4 bmi          numeric                 1188        12        177    16  38.9  25.9
-#> 5 bmi_category ordinal (levels)        1188        12          3    NA  NA    NA
+#>   name         type                  n_valid n_missing n_distinct   min   max  mean
+#>   <chr>        <chr>                   <int>     <int>      <int> <dbl> <dbl> <dbl>
+#> 1 sex          categorical (nominal)    1200         0          2    NA  NA    NA  
+#> 2 age          numeric                  1200         0         51    25  75    49.3
+#> 3 income_group categorical (ordinal)    1182        18          4    NA  NA    NA  
+#> 4 bmi          numeric                  1188        12        177    16  38.9  25.9
+#> 5 bmi_category categorical (ordinal)    1188        12          3    NA  NA    NA
 ```
 
 `values` has one row per category of the categorical, ordinal, and
@@ -360,10 +363,10 @@ code_book(
 #> Note: Fictitious data shipped with spicy.
 #> Note: BMI computed from self-reported height and weight.
 #> 
-#>    Pos. │ Variable        Label              Type                  Valid    Missing 
-#> ────────┼───────────────────────────────────────────────────────────────────────────
-#>      15 │ bmi             Body mass index    numeric                1188         12 
-#>      16 │ bmi_category    BMI category       ordinal (levels)       1188         12
+#>    Pos. │ Variable        Label              Type                       Valid    Missing 
+#> ────────┼────────────────────────────────────────────────────────────────────────────────
+#>      15 │ bmi             Body mass index    numeric                     1188         12 
+#>      16 │ bmi_category    BMI category       categorical (ordinal)       1188         12
 ```
 
 `authors` also accepts a list of lists with `name`, `affiliation`, and

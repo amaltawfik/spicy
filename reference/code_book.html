@@ -253,10 +253,12 @@ of its PDF: a list of <code>font</code>, <code>font_code</code>, <code>colors</c
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p>The type of a variable is read off its R class, never guessed: a factor
-is categorical, an ordered factor ordinal, a <code>haven_labelled</code> vector
-categorical with labelled codes, an integer or double vector numeric,
-and a logical, character, <code>Date</code> or <code>POSIXct</code> vector logical, text, date
-or date-time. Any other class is shown as the class itself. The R class
+is categorical (nominal), an ordered factor categorical (ordinal), a
+<code>haven_labelled</code> vector categorical (labelled codes), an integer or
+double vector numeric, and a logical, character, <code>Date</code> or <code>POSIXct</code>
+vector logical, text, date or date-time. The level of measurement comes
+from the declaration alone: a factor whose order was not declared with
+<code><a href="https://rdrr.io/r/base/factor.html" class="external-link">ordered()</a></code> is nominal. Any other class is shown as the class itself. The R class
 stays in its own column. With <code>user_na = TRUE</code>, a <code>haven_labelled</code>
 vector whose value labels all sit on declared missing codes, or that has
 no labels, is numeric, or text when it stores characters.</p>
@@ -351,32 +353,32 @@ frequency table of one variable.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Observations: 1200</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Variables: 24</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Pos. <span style="color: #9E9E9E;">│</span> Variable                  Label                                         Type                      Valid    Missing </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">────────┼────────────────────────────────────────────────────────────────────────────────────────────────────────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       1 <span style="color: #9E9E9E;">│</span> sex                       Sex                                           categorical (levels)       1200          0 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       2 <span style="color: #9E9E9E;">│</span> age                       Age (years)                                   numeric                    1200          0 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       3 <span style="color: #9E9E9E;">│</span> age_group                 Age group                                     ordinal (levels)           1200          0 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       4 <span style="color: #9E9E9E;">│</span> education                 Highest education level                       ordinal (levels)           1200          0 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       5 <span style="color: #9E9E9E;">│</span> social_class              Subjective social class                       ordinal (levels)           1200          0 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       6 <span style="color: #9E9E9E;">│</span> region                    Region of residence                           categorical (levels)       1200          0 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       7 <span style="color: #9E9E9E;">│</span> employment_status         Employment status                             categorical (levels)       1200          0 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       8 <span style="color: #9E9E9E;">│</span> income_group              Household income group                        ordinal (levels)           1182         18 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       9 <span style="color: #9E9E9E;">│</span> income                    Monthly household income (CHF)                numeric                    1200          0 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>      10 <span style="color: #9E9E9E;">│</span> smoking                   Current smoker                                categorical (levels)       1175         25 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>      11 <span style="color: #9E9E9E;">│</span> physical_activity         Regular physical activity                     categorical (levels)       1200          0 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>      12 <span style="color: #9E9E9E;">│</span> dentist_12m               Dentist visit in last 12 months               categorical (levels)       1200          0 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>      13 <span style="color: #9E9E9E;">│</span> self_rated_health         Self-rated health                             ordinal (levels)           1180         20 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>      14 <span style="color: #9E9E9E;">│</span> wellbeing_score           WHO-5 wellbeing index (0-100)                 numeric                    1200          0 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>      15 <span style="color: #9E9E9E;">│</span> bmi                       Body mass index                               numeric                    1188         12 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>      16 <span style="color: #9E9E9E;">│</span> bmi_category              BMI category                                  ordinal (levels)           1188         12 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>      17 <span style="color: #9E9E9E;">│</span> institutional_trust       Trust in institutions                         ordinal (levels)           1200          0 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>      18 <span style="color: #9E9E9E;">│</span> political_position        Political position (0 = left, 10 = right)     numeric                    1185         15 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>      19 <span style="color: #9E9E9E;">│</span> life_sat_health           Satisfaction with health (1-5)                numeric                    1192          8 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>      20 <span style="color: #9E9E9E;">│</span> life_sat_work             Satisfaction with work (1-5)                  numeric                    1192          8 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>      21 <span style="color: #9E9E9E;">│</span> life_sat_relationships    Satisfaction with relationships (1-5)         numeric                    1192          8 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>      22 <span style="color: #9E9E9E;">│</span> life_sat_standard         Satisfaction with standard of living (1-5)    numeric                    1192          8 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>      23 <span style="color: #9E9E9E;">│</span> response_date             Survey response date                          date-time                  1200          0 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>      24 <span style="color: #9E9E9E;">│</span> weight                    Survey design weight                          numeric                    1200          0 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Pos. <span style="color: #9E9E9E;">│</span> Variable                  Label                                         Type                       Valid    Missing </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">────────┼─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       1 <span style="color: #9E9E9E;">│</span> sex                       Sex                                           categorical (nominal)       1200          0 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       2 <span style="color: #9E9E9E;">│</span> age                       Age (years)                                   numeric                     1200          0 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       3 <span style="color: #9E9E9E;">│</span> age_group                 Age group                                     categorical (ordinal)       1200          0 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       4 <span style="color: #9E9E9E;">│</span> education                 Highest education level                       categorical (ordinal)       1200          0 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       5 <span style="color: #9E9E9E;">│</span> social_class              Subjective social class                       categorical (ordinal)       1200          0 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       6 <span style="color: #9E9E9E;">│</span> region                    Region of residence                           categorical (nominal)       1200          0 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       7 <span style="color: #9E9E9E;">│</span> employment_status         Employment status                             categorical (nominal)       1200          0 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       8 <span style="color: #9E9E9E;">│</span> income_group              Household income group                        categorical (ordinal)       1182         18 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       9 <span style="color: #9E9E9E;">│</span> income                    Monthly household income (CHF)                numeric                     1200          0 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      10 <span style="color: #9E9E9E;">│</span> smoking                   Current smoker                                categorical (nominal)       1175         25 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      11 <span style="color: #9E9E9E;">│</span> physical_activity         Regular physical activity                     categorical (nominal)       1200          0 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      12 <span style="color: #9E9E9E;">│</span> dentist_12m               Dentist visit in last 12 months               categorical (nominal)       1200          0 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      13 <span style="color: #9E9E9E;">│</span> self_rated_health         Self-rated health                             categorical (ordinal)       1180         20 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      14 <span style="color: #9E9E9E;">│</span> wellbeing_score           WHO-5 wellbeing index (0-100)                 numeric                     1200          0 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      15 <span style="color: #9E9E9E;">│</span> bmi                       Body mass index                               numeric                     1188         12 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      16 <span style="color: #9E9E9E;">│</span> bmi_category              BMI category                                  categorical (ordinal)       1188         12 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      17 <span style="color: #9E9E9E;">│</span> institutional_trust       Trust in institutions                         categorical (ordinal)       1200          0 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      18 <span style="color: #9E9E9E;">│</span> political_position        Political position (0 = left, 10 = right)     numeric                     1185         15 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      19 <span style="color: #9E9E9E;">│</span> life_sat_health           Satisfaction with health (1-5)                numeric                     1192          8 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      20 <span style="color: #9E9E9E;">│</span> life_sat_work             Satisfaction with work (1-5)                  numeric                     1192          8 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      21 <span style="color: #9E9E9E;">│</span> life_sat_relationships    Satisfaction with relationships (1-5)         numeric                     1192          8 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      22 <span style="color: #9E9E9E;">│</span> life_sat_standard         Satisfaction with standard of living (1-5)    numeric                     1192          8 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      23 <span style="color: #9E9E9E;">│</span> response_date             Survey response date                          date-time                   1200          0 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      24 <span style="color: #9E9E9E;">│</span> weight                    Survey design weight                          numeric                     1200          0 </span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">cb</span> <span class="op">&lt;-</span> <span class="fu">code_book</span><span class="op">(</span></span></span>
 <span class="r-in"><span>  <span class="va">sochealth</span>,</span></span>
@@ -392,7 +394,7 @@ frequency table of one variable.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>              <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span>        1 sex     Sex   cate… fact… <span style="color: #BB0000;">NA</span>        <span style="text-decoration: underline;">1</span>200         0                  0</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span>       15 bmi     Body… nume… nume… <span style="color: #BB0000;">NA</span>        <span style="text-decoration: underline;">1</span>188        12                  0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span>       16 bmi_ca… BMI … ordi… orde… <span style="color: #BB0000;">NA</span>        <span style="text-decoration: underline;">1</span>188        12                  0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span>       16 bmi_ca… BMI … cate… orde… <span style="color: #BB0000;">NA</span>        <span style="text-decoration: underline;">1</span>188        12                  0</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 8 more variables: n_distinct &lt;int&gt;, min &lt;dbl&gt;, max &lt;dbl&gt;, mean &lt;dbl&gt;,</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   sd &lt;dbl&gt;, median &lt;dbl&gt;, earliest &lt;chr&gt;, latest &lt;chr&gt;</span></span>
 <span class="r-in"><span><span class="va">cb</span><span class="op">$</span><span class="va">values</span></span></span>

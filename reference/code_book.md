@@ -174,13 +174,16 @@ its PDF: a list of `font`, `font_code`, `colors` (all eight) and
 ## Details
 
 The type of a variable is read off its R class, never guessed: a factor
-is categorical, an ordered factor ordinal, a `haven_labelled` vector
-categorical with labelled codes, an integer or double vector numeric,
-and a logical, character, `Date` or `POSIXct` vector logical, text, date
-or date-time. Any other class is shown as the class itself. The R class
-stays in its own column. With `user_na = TRUE`, a `haven_labelled`
-vector whose value labels all sit on declared missing codes, or that has
-no labels, is numeric, or text when it stores characters.
+is categorical (nominal), an ordered factor categorical (ordinal), a
+`haven_labelled` vector categorical (labelled codes), an integer or
+double vector numeric, and a logical, character, `Date` or `POSIXct`
+vector logical, text, date or date-time. The level of measurement comes
+from the declaration alone: a factor whose order was not declared with
+[`ordered()`](https://rdrr.io/r/base/factor.html) is nominal. Any other
+class is shown as the class itself. The R class stays in its own column.
+With `user_na = TRUE`, a `haven_labelled` vector whose value labels all
+sit on declared missing codes, or that has no labels, is numeric, or
+text when it stores characters.
 
 `values` lists the categories of factors and labelled vectors and the
 two values of a logical, then the declared missing values of the
@@ -282,32 +285,32 @@ code_book(sochealth)
 #> Observations: 1200
 #> Variables: 24
 #> 
-#>    Pos. │ Variable                  Label                                         Type                      Valid    Missing 
-#> ────────┼────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-#>       1 │ sex                       Sex                                           categorical (levels)       1200          0 
-#>       2 │ age                       Age (years)                                   numeric                    1200          0 
-#>       3 │ age_group                 Age group                                     ordinal (levels)           1200          0 
-#>       4 │ education                 Highest education level                       ordinal (levels)           1200          0 
-#>       5 │ social_class              Subjective social class                       ordinal (levels)           1200          0 
-#>       6 │ region                    Region of residence                           categorical (levels)       1200          0 
-#>       7 │ employment_status         Employment status                             categorical (levels)       1200          0 
-#>       8 │ income_group              Household income group                        ordinal (levels)           1182         18 
-#>       9 │ income                    Monthly household income (CHF)                numeric                    1200          0 
-#>      10 │ smoking                   Current smoker                                categorical (levels)       1175         25 
-#>      11 │ physical_activity         Regular physical activity                     categorical (levels)       1200          0 
-#>      12 │ dentist_12m               Dentist visit in last 12 months               categorical (levels)       1200          0 
-#>      13 │ self_rated_health         Self-rated health                             ordinal (levels)           1180         20 
-#>      14 │ wellbeing_score           WHO-5 wellbeing index (0-100)                 numeric                    1200          0 
-#>      15 │ bmi                       Body mass index                               numeric                    1188         12 
-#>      16 │ bmi_category              BMI category                                  ordinal (levels)           1188         12 
-#>      17 │ institutional_trust       Trust in institutions                         ordinal (levels)           1200          0 
-#>      18 │ political_position        Political position (0 = left, 10 = right)     numeric                    1185         15 
-#>      19 │ life_sat_health           Satisfaction with health (1-5)                numeric                    1192          8 
-#>      20 │ life_sat_work             Satisfaction with work (1-5)                  numeric                    1192          8 
-#>      21 │ life_sat_relationships    Satisfaction with relationships (1-5)         numeric                    1192          8 
-#>      22 │ life_sat_standard         Satisfaction with standard of living (1-5)    numeric                    1192          8 
-#>      23 │ response_date             Survey response date                          date-time                  1200          0 
-#>      24 │ weight                    Survey design weight                          numeric                    1200          0 
+#>    Pos. │ Variable                  Label                                         Type                       Valid    Missing 
+#> ────────┼─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+#>       1 │ sex                       Sex                                           categorical (nominal)       1200          0 
+#>       2 │ age                       Age (years)                                   numeric                     1200          0 
+#>       3 │ age_group                 Age group                                     categorical (ordinal)       1200          0 
+#>       4 │ education                 Highest education level                       categorical (ordinal)       1200          0 
+#>       5 │ social_class              Subjective social class                       categorical (ordinal)       1200          0 
+#>       6 │ region                    Region of residence                           categorical (nominal)       1200          0 
+#>       7 │ employment_status         Employment status                             categorical (nominal)       1200          0 
+#>       8 │ income_group              Household income group                        categorical (ordinal)       1182         18 
+#>       9 │ income                    Monthly household income (CHF)                numeric                     1200          0 
+#>      10 │ smoking                   Current smoker                                categorical (nominal)       1175         25 
+#>      11 │ physical_activity         Regular physical activity                     categorical (nominal)       1200          0 
+#>      12 │ dentist_12m               Dentist visit in last 12 months               categorical (nominal)       1200          0 
+#>      13 │ self_rated_health         Self-rated health                             categorical (ordinal)       1180         20 
+#>      14 │ wellbeing_score           WHO-5 wellbeing index (0-100)                 numeric                     1200          0 
+#>      15 │ bmi                       Body mass index                               numeric                     1188         12 
+#>      16 │ bmi_category              BMI category                                  categorical (ordinal)       1188         12 
+#>      17 │ institutional_trust       Trust in institutions                         categorical (ordinal)       1200          0 
+#>      18 │ political_position        Political position (0 = left, 10 = right)     numeric                     1185         15 
+#>      19 │ life_sat_health           Satisfaction with health (1-5)                numeric                     1192          8 
+#>      20 │ life_sat_work             Satisfaction with work (1-5)                  numeric                     1192          8 
+#>      21 │ life_sat_relationships    Satisfaction with relationships (1-5)         numeric                     1192          8 
+#>      22 │ life_sat_standard         Satisfaction with standard of living (1-5)    numeric                     1192          8 
+#>      23 │ response_date             Survey response date                          date-time                   1200          0 
+#>      24 │ weight                    Survey design weight                          numeric                     1200          0 
 
 cb <- code_book(
   sochealth,
@@ -323,7 +326,7 @@ cb$variables
 #>      <int> <chr>   <chr> <chr> <chr> <chr>    <int>     <int>              <int>
 #> 1        1 sex     Sex   cate… fact… NA        1200         0                  0
 #> 2       15 bmi     Body… nume… nume… NA        1188        12                  0
-#> 3       16 bmi_ca… BMI … ordi… orde… NA        1188        12                  0
+#> 3       16 bmi_ca… BMI … cate… orde… NA        1188        12                  0
 #> # ℹ 8 more variables: n_distinct <int>, min <dbl>, max <dbl>, mean <dbl>,
 #> #   sd <dbl>, median <dbl>, earliest <chr>, latest <chr>
 cb$values
