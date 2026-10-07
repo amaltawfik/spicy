@@ -141,9 +141,10 @@
 #' declared value as its own row of the Missing block, with its value
 #' label; [cross_tab()], [table_categorical()], and
 #' [table_continuous()] disclose the exclusion in the table note
-#' (`Declared missing values removed: x (2).`); [varlist()] and
-#' [code_book()] count them as missing in `N_valid` / `NAs` /
-#' `N_distinct` while still listing the declared codes in `Values`.
+#' (`Declared missing values removed: x (2).`); [varlist()] counts
+#' them as missing in `N_valid` / `NAs` / `N_distinct` while still
+#' listing the declared codes in `Values`; [code_book()] counts them in
+#' `n_declared_missing` and flags them in its `values` table.
 #'
 #' Every function involved offers the same escape hatch: set
 #' `user_na = FALSE` to ignore the declaration and treat the declared

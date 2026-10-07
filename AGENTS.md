@@ -33,9 +33,9 @@ input or output.
        adjustment -- the user must correct the input. Use a
        classed condition (the `spicy_error` parent plus a
        leaf class) so downstream code can dispatch
-       (e.g. `code_book()` does not truncate over-long
-       filenames; the browser download error surfaces and the
-       user shortens the title).
+       (e.g. `code_book()` refuses an `output` path whose
+       extension it does not write, rather than guessing a
+       format; the user names an `.xlsx` file).
 
   Tests that observe these signals must dispatch on **class**,
   not on regex over the message string. `sQuote()`, `cli`

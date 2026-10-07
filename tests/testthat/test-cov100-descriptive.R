@@ -127,36 +127,7 @@ test_that(".compute_beta_rows_for_mixed declines lme/gls formulas with inline tr
   expect_null(spicy:::.compute_beta_rows_for_mixed(fit_lme))
 })
 
-# ---- code_book-filename.R line 26: NA filename blanked before validation ---
-
-test_that("code_book_sanitize_filename maps NA input to fallback or error", {
-  # An NA filename survives the ASCII transliteration as NA, is blanked
-  # (line 26), and then either falls back or aborts like an empty string.
-  err <- tryCatch(
-    spicy:::code_book_sanitize_filename(
-      NA_character_,
-      arg = "filename",
-      fallback = NULL
-    ),
-    error = function(e) e
-  )
-  expect_s3_class(err, "spicy_invalid_input")
-  expect_match(
-    conditionMessage(err),
-    "`filename` must contain at least one letter",
-    fixed = TRUE
-  )
-  expect_identical(
-    spicy:::code_book_sanitize_filename(
-      NA_character_,
-      arg = "title",
-      fallback = "Codebook"
-    ),
-    "Codebook"
-  )
-})
-
-# ---- code_book-validation.R line 47: dots with NULL names ------------------
+# ---- code_book-validation.R: dots with NULL names --------------------------
 
 test_that("validate_code_book_control_dots passes fully unnamed dots through", {
   dots <- list(1, "a")

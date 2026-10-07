@@ -2,99 +2,147 @@
 % Please edit documentation in R/code_book.R
 \name{code_book}
 \alias{code_book}
-\title{Generate an interactive variable codebook}
+\alias{print.spicy_codebook}
+\title{Build a codebook of a data frame}
 \usage{
 code_book(
   x,
   ...,
-  values = FALSE,
-  include_na = FALSE,
   title = "Codebook",
-  filename = NULL,
+  authors = NULL,
+  notes = NULL,
+  source = NULL,
+  values = 100,
+  range = TRUE,
   factor_levels = c("all", "observed"),
-  user_na = TRUE
+  user_na = TRUE,
+  decimal_mark = NULL,
+  output = NULL
 )
+
+\method{print}{spicy_codebook}(x, ...)
 }
 \arguments{
-\item{x}{A data frame or tibble.}
+\item{x}{A data frame or tibble. For \code{print()}, a \code{spicy_codebook}.}
 
 \item{...}{Optional tidyselect-style column selectors (e.g.
-\code{starts_with("var")}, \code{where(is.numeric)}, etc.). Columns can be selected
-or reordered, but renaming selections is not supported.}
+\code{starts_with("bmi")}, \code{where(is.numeric)}). Columns can be selected or
+reordered, but renaming selections is not supported.}
 
-\item{values}{Logical. If \code{FALSE} (the default), displays a compact summary
-of the variable's values. For numeric, character, date/time, labelled, and
-factor variables, all unique non-missing values are shown when there are
-at most four; otherwise the first three values, an ellipsis (\code{...}), and
-the last value are shown. Values are sorted when appropriate (e.g.,
-numeric, character, date).
-For factors, \code{factor_levels} controls whether observed or all declared
-levels are shown; level order is preserved.
-For labelled variables, prefixed labels are displayed via
-\code{labelled::to_factor(levels = "prefixed")}.
-If \code{TRUE}, all unique non-missing values are displayed.}
+\item{title}{Title of the codebook. Defaults to \code{"Codebook"}; \code{NULL}
+removes it.}
 
-\item{include_na}{Logical. If \code{TRUE}, unique missing value markers
-(\verb{<NA>}, \verb{<NaN>}) are explicitly appended at the end of the \code{Values}
-summary when present in the variable. This applies to all variable types.
-Literal strings \code{"NA"}, \code{"NaN"}, and \code{""} are quoted to distinguish them
-from missing markers. If \code{FALSE} (the default), missing values are omitted
-from \code{Values} but still counted in the \code{NAs} column.}
+\item{authors}{Authors of the codebook: \code{NULL} (the default), a
+character vector whose names are the authors and whose values are
+their affiliations (\code{c("Jane Doe" = "University of Somewhere")}; an
+unnamed element is a name without affiliation), or a list of lists
+with \code{name} and the optional \code{affiliation} and \code{orcid}.}
 
-\item{title}{Optional character string displayed as the table caption.
-Defaults to \code{"Codebook"}. Set to \code{NULL} to remove the title
-completely. When \code{filename = NULL}, the title is also used as the base for
-export filenames after conversion to a portable ASCII name.}
+\item{notes}{Character vector of notes on the data (source, exclusions,
+coding rules, ...), one note per element.}
 
-\item{filename}{Optional character string used as the base for exported CSV,
-Excel, and PDF filenames. If \code{NULL} (the default), a portable filename is
-derived from \code{title}, falling back to \code{"Codebook"} when needed. File
-extensions are added by the browser/export engine. How an accented
-letter is spelled in the portable name depends on the platform: pass
-an ASCII \code{filename} to set the name exactly.}
+\item{source}{Named character vector mapping the current column names to
+the codes they had in the source file, the vector
+\code{dplyr::rename(all_of())} takes. Its names must be selected columns.}
 
-\item{factor_levels}{Character. Controls how factor values are displayed
-in \code{Values}. \code{"all"} (the default; \code{\link[=varlist]{varlist()}} uses \code{"observed"}) shows
-all declared levels, including unused levels. \code{"observed"} shows only
-levels present in the data, preserving factor level order.}
+\item{values}{The maximum number of categories listed per variable in \code{values}. A
+variable with more keeps its count of distinct values in \code{variables}
+and has no rows in \code{values}. Defaults to \code{100}; \code{Inf} lists them all.}
 
-\item{user_na}{Logical. If \code{TRUE} (the default), declared missing
-values count as missing in \code{N_valid}, \code{NAs}, and \code{N_distinct}
-(all three columns share one missing definition). If \code{FALSE},
-they count as valid. Either way, the declared codes remain listed
-in \code{Values} (with their value labels when declared) -- a codebook
-documents the full coding scheme. See the "Declared missing
-values" section of \code{\link[=freq]{freq()}}.}
+\item{range}{Logical. If \code{TRUE} (the default), \code{variables} gives the
+minimum and maximum of each numeric variable and the earliest and
+latest date of each date; \code{FALSE} drops those four columns.}
+
+\item{factor_levels}{Character. \code{"all"} (the default; \code{\link[=varlist]{varlist()}} uses
+\code{"observed"}) lists every declared level of a factor, every labelled
+code and both values of a logical, with a count of 0 when unused.
+\code{"observed"} lists only the values present in the data.}
+
+\item{user_na}{Logical. If \code{TRUE} (the default), declared missing values
+count as missing: they are left out of \code{n_valid}, counted in
+\code{n_missing} and \code{n_declared_missing}, and listed in \code{values} with
+\code{declared_missing = TRUE}. If \code{FALSE}, they count as valid values. See
+the "Declared missing values" section.}
+
+\item{decimal_mark}{Decimal mark of the numbers the codebook prints, a
+single character such as \code{"."} or \code{","}. \code{NULL} (the default) takes
+the mark of \code{options(spicy.style)}, then the one of the language
+(\code{options(spicy.language = "fr")} gives the comma), then \code{"."}. The
+console list prints counts only, so the mark shows in the PDF output
+(planned). The Excel file keeps numbers as numbers.}
+
+\item{output}{\code{NULL} (the default) returns the codebook, which prints as
+the list of variables. A path ending in \code{.xlsx} writes the codebook to
+that Excel file and returns it invisibly; this requires \code{openxlsx2}. A
+PDF output is planned.}
 }
 \value{
-A \code{DT::datatable} object.
+A \code{spicy_codebook} object, returned invisibly when \code{output} is
+given: a list with
+\describe{
+\item{\code{header}}{A list: \code{title}, \code{authors} (a tibble with \code{name},
+\code{affiliation} and \code{orcid}), \code{date}, \code{n_obs}, \code{n_vars}, \code{notes}, and
+\code{declared_missing}, a tibble of the declared missing values found in
+the data (\code{code}, \code{label}, \code{variables}, \code{n_variables}).}
+\item{\code{variables}}{A tibble, one row per variable: \code{position} (the
+column's position in \code{x}), \code{name}, \code{label}, \code{type}, \code{class},
+\code{source}, \code{n_valid}, \code{n_missing}, \code{n_declared_missing},
+\code{n_distinct}, then \code{min}, \code{max}, \code{mean}, \code{sd} and \code{median} for
+numeric variables and \code{earliest} and \code{latest} for dates.}
+\item{\code{values}}{A tibble, one row per value: \code{variable}, \code{code},
+\code{label}, \code{declared_missing}, \code{n}, \code{pct_total} and \code{pct_valid}.}
+}
+The attributes \code{language} and \code{decimal_mark} record the language and
+the decimal mark the codebook was built with.
 }
 \description{
-\code{code_book()} creates an interactive and exportable codebook summarizing
-selected variables of a data frame. It builds upon \code{\link[=varlist]{varlist()}} to provide
-an overview of variable names, labels, classes, and representative values in
-a sortable, searchable table.
+\code{code_book()} documents the variables of a data frame: one row per
+variable (position, name, label, type, valid and missing counts,
+summary statistics), and one row per category of its categorical and
+logical variables (code, label, count, percentages). The codebook
+prints as the list of variables, and \code{output = "<path>.xlsx"} writes
+it to an Excel file.
 
-The output is displayed as an interactive \code{DT::datatable()} in the Viewer pane
-(for example in RStudio or Positron), allowing searching, sorting, and export
-(copy, print, CSV, Excel, PDF) directly.
+The counts are unweighted: they describe the file, not a population.
 }
 \details{
-\itemize{
-\item The interactive \code{datatable} supports column sorting, global
-searching, and client-side export (copy, print, CSV, Excel,
-PDF) directly from the Viewer.
-\item Variable selection uses the same tidyselect interface as
-\code{\link[=varlist]{varlist()}}; the underlying summary tibble is built by
-\code{\link[=varlist]{varlist()}} with \code{tbl = TRUE}.
-}
-}
-\section{Dependencies}{
+The type of a variable is read off its R class, never guessed: a factor
+is categorical, an ordered factor ordinal, a \code{haven_labelled} vector
+categorical with labelled codes, an integer or double vector numeric,
+and a logical, character, \code{Date} or \code{POSIXct} vector logical, text, date
+or date-time. Any other class is shown as the class itself. The R class
+stays in its own column. With \code{user_na = TRUE}, a \code{haven_labelled}
+vector whose value labels all sit on declared missing codes, or that has
+no labels, is numeric, or text when it stores characters.
 
-Requires the following package:
-\itemize{
-\item \strong{DT}
+\code{values} lists the categories of factors and labelled vectors and the
+two values of a logical, then the declared missing values of the
+variable and a row for its system missing values (\code{code = "NA"}).
+Numeric, text and date variables have no category rows: they appear in
+\code{values} only through their declared missing values. The codes of a
+labelled vector come in code order, the levels of a factor in level
+order.
+
+Dates are written in ISO 8601: a date-time in the time zone the variable
+carries, and in UTC when it carries none, the zone being named in either
+case.
+
+The language of the labels follows \code{options(spicy.language)} when the
+codebook is built (see \code{\link[=spicy_labels]{spicy_labels()}}); the labels of the data are
+never translated.
+
+\code{print()} shortens long variable labels when that makes the list fit
+the console; the object keeps them whole.
 }
+\section{Excel output}{
+
+The workbook has three sheets, named in the language of the codebook.
+The first, \code{codebook}, holds the header as field-value pairs: title, one
+row per author, date, numbers of observations and variables, declared
+missing values, notes, and the versions of spicy and R that wrote it.
+The other two, \code{variables} and \code{values}, are the two tables of the
+object from the first row, with a frozen header and filters: numbers
+stay numeric cells and dates are ISO text.
 }
 
 \section{Declared missing values}{
@@ -116,9 +164,10 @@ but they are not erased from display. \code{\link[=freq]{freq()}} lists each obs
 declared value as its own row of the Missing block, with its value
 label; \code{\link[=cross_tab]{cross_tab()}}, \code{\link[=table_categorical]{table_categorical()}}, and
 \code{\link[=table_continuous]{table_continuous()}} disclose the exclusion in the table note
-(\verb{Declared missing values removed: x (2).}); \code{\link[=varlist]{varlist()}} and
-\code{\link[=code_book]{code_book()}} count them as missing in \code{N_valid} / \code{NAs} /
-\code{N_distinct} while still listing the declared codes in \code{Values}.
+(\verb{Declared missing values removed: x (2).}); \code{\link[=varlist]{varlist()}} counts
+them as missing in \code{N_valid} / \code{NAs} / \code{N_distinct} while still
+listing the declared codes in \code{Values}; \code{\link[=code_book]{code_book()}} counts them in
+\code{n_declared_missing} and flags them in its \code{values} table.
 
 Every function involved offers the same escape hatch: set
 \code{user_na = FALSE} to ignore the declaration and treat the declared
@@ -129,34 +178,28 @@ the regular \code{NA} count.
 }
 
 \examples{
-\dontrun{
-if (requireNamespace("DT", quietly = TRUE)) {
-  code_book(sochealth)
-  code_book(sochealth, starts_with("bmi"))
-  code_book(sochealth, starts_with("bmi"), values = TRUE, include_na = TRUE)
+code_book(sochealth)
 
-  factors <- data.frame(
-    group = factor(c("A", "B", NA), levels = c("A", "B", "C"))
-  )
-  code_book(
-    factors,
-    values = TRUE,
-    include_na = TRUE,
-    factor_levels = "observed"
-  )
+cb <- code_book(
+  sochealth,
+  sex,
+  starts_with("bmi"),
+  title = "Body mass index",
+  authors = c("Jane Doe" = "University of Somewhere"),
+  notes = "BMI computed from self-reported height and weight."
+)
+cb$variables
+cb$values
 
-  code_book(
-    sochealth,
-    starts_with("bmi"),
-    title = "BMI codebook",
-    filename = "bmi_codebook"
-  )
-}
+if (requireNamespace("openxlsx2", quietly = TRUE)) {
+  path <- tempfile(fileext = ".xlsx")
+  code_book(sochealth, output = path)
 }
 
 }
 \seealso{
-\code{\link[=varlist]{varlist()}} for generating the underlying variable summaries.
+\code{\link[=varlist]{varlist()}} to explore the variables in the Viewer; \code{\link[=freq]{freq()}} for the
+frequency table of one variable.
 
 Other variable inspection:
 \code{\link[=label_from_names]{label_from_names()}},

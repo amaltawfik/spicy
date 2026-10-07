@@ -584,18 +584,16 @@ test_that("varlist() N_distinct uses is.na() on list and POSIXlt columns", {
 
 test_that("code_book() passes user_na through to varlist()", {
   skip_if_not_installed("haven")
-  skip_if_not_installed("DT")
   x <- haven::labelled_spss(
     c(1, 2, 8, 9, 1, NA),
     labels = c(Agree = 1, Disagree = 2, DK = 8, Refused = 9),
     na_values = c(8, 9)
   )
   d <- data.frame(x = x)
-  cb <- code_book(d, user_na = FALSE)
-  payload <- cb$x$data
+  utils::capture.output(cb <- code_book(d, user_na = FALSE))
   ref <- varlist(d, tbl = TRUE, user_na = FALSE, factor_levels = "all")
-  expect_identical(unname(payload$N_valid), unname(ref$N_valid))
-  expect_identical(unname(payload$N_distinct), unname(ref$N_distinct))
+  expect_identical(cb$variables$n_valid, unname(ref$N_valid))
+  expect_identical(cb$variables$n_distinct, unname(ref$N_distinct))
 })
 
 test_that("user_na argument is validated across the family", {

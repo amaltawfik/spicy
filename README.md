@@ -85,8 +85,8 @@ row-wise summaries.
 - **Variable inspection** with `varlist()` and `vl()`: names, labels,
   values, classes, distinct values (`N_distinct`), valid observations
   (`N_valid`), and missing data.
-- **Codebooks** with `code_book()`: interactive and exportable, for
-  labelled and survey-style datasets.
+- **Codebooks** with `code_book()`: variables, values and unweighted
+  counts, in the console or in an Excel file.
 - **Label extraction** with `label_from_names()`, including
   LimeSurvey-style headers.
 - **Row-wise summaries** with `mean_n()`, `sum_n()`, and `count_n()`,
@@ -230,12 +230,8 @@ varlist(sochealth, tbl = TRUE)
 ```
 
 ``` r
-code_book(
-  sochealth,
-  starts_with("bmi"),
-  values = TRUE,
-  include_na = TRUE
-)
+code_book(sochealth, starts_with("bmi"), title = "BMI codebook")
+code_book(sochealth, output = "sochealth_codebook.xlsx")
 ```
 
 See [Explore variables and build

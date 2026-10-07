@@ -646,9 +646,10 @@ but they are not erased from display. \code{\link[=freq]{freq()}} lists each obs
 declared value as its own row of the Missing block, with its value
 label; \code{\link[=cross_tab]{cross_tab()}}, \code{\link[=table_categorical]{table_categorical()}}, and
 \code{\link[=table_continuous]{table_continuous()}} disclose the exclusion in the table note
-(\verb{Declared missing values removed: x (2).}); \code{\link[=varlist]{varlist()}} and
-\code{\link[=code_book]{code_book()}} count them as missing in \code{N_valid} / \code{NAs} /
-\code{N_distinct} while still listing the declared codes in \code{Values}.
+(\verb{Declared missing values removed: x (2).}); \code{\link[=varlist]{varlist()}} counts
+them as missing in \code{N_valid} / \code{NAs} / \code{N_distinct} while still
+listing the declared codes in \code{Values}; \code{\link[=code_book]{code_book()}} counts them in
+\code{n_declared_missing} and flags them in its \code{values} table.
 
 Every function involved offers the same escape hatch: set
 \code{user_na = FALSE} to ignore the declaration and treat the declared

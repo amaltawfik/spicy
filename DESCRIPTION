@@ -42,7 +42,6 @@ Suggests:
     car,
     clipr,
     clubSandwich,
-    DT,
     effectsize,
     emmeans,
     estimatr (>= 1.0.0),

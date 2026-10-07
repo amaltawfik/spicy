@@ -1,0 +1,45 @@
+# the print is pinned
+
+    Code
+      print(cb)
+    Output
+      Codebook
+      Jane Doe — HESAV
+      Bob
+      
+      Date: 2026-10-07
+      Observations: 6
+      Variables: 6
+      Declared missing value: 8 = DK (2 variables)
+      Declared missing value: 9 = Refused (1 variable)
+      Declared missing value: NA(a) = Refused (1 variable)
+      Note: Fictitious data.
+      
+         Pos. │ Variable    Label           Type                              Valid    Missing 
+      ────────┼────────────────────────────────────────────────────────────────────────────────
+            1 │ sex         Sex             categorical (levels)                  5          1 
+            2 │ score       Score (0-20)    numeric                               5          1 
+            3 │ day                         date                                  5          1 
+            4 │ q1                          categorical (labelled codes)          3          3 
+            5 │ q2                          categorical (labelled codes)          4          2 
+            6 │ q3                          categorical (labelled codes)          4          2 
+
+---
+
+    Code
+      print(cb)
+    Output
+      Codebook
+      Jane Doe — HESAV
+      
+      Date : 2026-10-07
+      Observations : 6
+      Variables : 2
+      Valeur manquante déclarée : 8 = DK (1 variable)
+      Valeur manquante déclarée : 9 = Refused (1 variable)
+      
+         Pos. │ Variable    Libellé    Type                                Valides    Manquants 
+      ────────┼─────────────────────────────────────────────────────────────────────────────────
+            1 │ sex         Sex        catégorielle (modalités)                  5            1 
+            4 │ q1                     catégorielle (codes étiquetés)            3            3 
+

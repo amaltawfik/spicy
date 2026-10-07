@@ -757,7 +757,57 @@
   value_summary_units = " (%s)",
   # One hole: `conditionMessage()`, which stays English (it is a condition).
   value_summary_error = "<error: %s>",
-  value_summary_invalid = "Error: invalid values"
+  value_summary_invalid = "Error: invalid values",
+
+  # -- code_book(): sheets, headers, header fields, type vocabulary ---------
+  # The object's column NAMES stay frozen English (they are what user code
+  # indexes into); these are the labels its print and its Excel show.
+  excel_sheet_codebook = "codebook",
+  excel_sheet_codebook_variables = "variables",
+  excel_sheet_codebook_values = "values",
+  header_position = "Pos.",
+  header_label = "Label",
+  header_type = "Type",
+  header_r_class = "R class",
+  header_source = "Source",
+  header_valid = "Valid",
+  header_missing = "Missing",
+  header_declared_missing = "Declared missing",
+  header_distinct = "Distinct values",
+  header_earliest = "Earliest date",
+  header_latest = "Latest date",
+  header_code = "Code",
+  # Same English as `header_declared_missing`, other sense: the flag of one
+  # value, not a count of observations. French tells the two apart.
+  header_is_declared_missing = "Declared missing",
+  header_pct_total = "% of total",
+  header_pct_valid = "% of valid",
+  header_field = "Field",
+  header_value = "Value",
+  # Fields of the first Excel sheet. The console header prints the same
+  # fields as "field: value" lines.
+  row_title = "Title",
+  row_author = "Author",
+  row_date = "Date",
+  row_observations = "Observations",
+  row_variables = "Variables",
+  row_declared_missing = "Declared missing value",
+  row_note = "Note",
+  row_generated_with = "Generated with",
+  note_field_line = "%s: %s",
+  # The code (with its label), then the number of variables declaring it.
+  # Two keys because the noun agrees with the count.
+  cell_declared_one = "%s (%d variable)",
+  cell_declared_many = "%s (%d variables)",
+  # The documentation vocabulary of `type`, read off the R class.
+  cell_type_categorical = "categorical (levels)",
+  cell_type_ordinal = "ordinal (levels)",
+  cell_type_labelled = "categorical (labelled codes)",
+  cell_type_numeric = "numeric",
+  cell_type_logical = "logical",
+  cell_type_text = "text",
+  cell_type_date = "date",
+  cell_type_datetime = "date-time"
 )
 
 # Raw display label for `key`.

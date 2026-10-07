@@ -317,7 +317,35 @@
   value_summary_list = "Liste(%d)",
   value_summary_list_types = "%s\u00A0: %s",
   value_summary_error = "<erreur\u00A0: %s>",
-  value_summary_invalid = "Erreur\u00A0: valeurs invalides"
+  value_summary_invalid = "Erreur\u00A0: valeurs invalides",
+
+  # -- code_book() ----------------------------------------------------------
+  excel_sheet_codebook_values = "valeurs",
+  header_label = "Libell\u00E9",
+  header_r_class = "Classe R",
+  header_valid = "Valides",
+  header_missing = "Manquants",
+  header_declared_missing = "Manquants d\u00E9clar\u00E9s",
+  header_distinct = "Valeurs distinctes",
+  header_earliest = "Premi\u00E8re date",
+  header_latest = "Derni\u00E8re date",
+  header_is_declared_missing = "Manquant d\u00E9clar\u00E9",
+  header_pct_total = "% du total",
+  header_pct_valid = "% des valides",
+  header_field = "Champ",
+  header_value = "Valeur",
+  row_title = "Titre",
+  row_author = "Auteur",
+  row_declared_missing = "Valeur manquante d\u00E9clar\u00E9e",
+  row_generated_with = "G\u00E9n\u00E9r\u00E9 avec",
+  note_field_line = "%s\u00A0: %s",
+  cell_type_categorical = "cat\u00E9gorielle (modalit\u00E9s)",
+  cell_type_ordinal = "ordinale (modalit\u00E9s)",
+  cell_type_labelled = "cat\u00E9gorielle (codes \u00E9tiquet\u00E9s)",
+  cell_type_numeric = "num\u00E9rique",
+  cell_type_logical = "logique",
+  cell_type_text = "texte",
+  cell_type_datetime = "date-heure"
 )
 
 # ---- La locale de la langue -----------------------------------------------

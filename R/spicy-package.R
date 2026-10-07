@@ -139,6 +139,9 @@
 #'         pre-1.0 hard break; the message names the replacement.
 #'         Signaled together with \code{spicy_invalid_input} so
 #'         generic input handlers still catch it.
+#'       \item \code{spicy_bad_authors} -- the `authors` argument of
+#'         [code_book()] has none of its accepted shapes. Signaled
+#'         together with \code{spicy_invalid_input}.
 #'       \item \code{spicy_internal} -- an internal precondition
 #'         failed; this is a bug in spicy, please report it.
 #'       \item \code{spicy_internal_invariant} -- an internal

@@ -15,7 +15,7 @@ overrides that take precedence within Claude Code sessions.
   (depend on `tinytable`/`flextable` via Suggests)
 - `R/globals.R` - package-level constants and globals
 
-Optional dependencies (Suggests): `DT`, `clipr`, `tinytable`,
+Optional dependencies (Suggests): `clipr`, `tinytable`,
 `flextable`, `openxlsx2`, `officer`.
 Guard all usage with `requireNamespace()` and a clear, actionable error.
 
