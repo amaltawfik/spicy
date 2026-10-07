@@ -86,7 +86,8 @@ row-wise summaries.
   values, classes, distinct values (`N_distinct`), valid observations
   (`N_valid`), and missing data.
 - **Codebooks** with `code_book()`: variables, values and unweighted
-  counts, in the console or in an Excel file.
+  counts, printed in the console, written to Excel, or compiled to a PDF
+  with a cover, one sheet per variable, and an index.
 - **Label extraction** with `label_from_names()`, including
   LimeSurvey-style headers.
 - **Row-wise summaries** with `mean_n()`, `sum_n()`, and `count_n()`,
@@ -232,6 +233,7 @@ varlist(sochealth, tbl = TRUE)
 ``` r
 code_book(sochealth, starts_with("bmi"), title = "BMI codebook")
 code_book(sochealth, output = "sochealth_codebook.xlsx")
+code_book(sochealth, authors = c("Jane Doe" = "HESAV"), output = "sochealth_codebook.pdf")
 ```
 
 See [Explore variables and build

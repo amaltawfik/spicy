@@ -57,6 +57,16 @@ You can also select specific columns with tidyselect syntax:
 varlist(sochealth, starts_with("bmi"), income, weight, tbl = TRUE)
 ```
 
+`code_book()` turns the same inspection into a document: one row per
+variable, the unweighted count of every value, and a header with the
+title, authors, and notes. It prints the list of variables and returns
+the codebook, which `output = "<path>.xlsx"` writes to Excel and
+`output = "<path>.pdf"` compiles to a PDF (through Quarto).
+
+```{r code-book}
+code_book(sochealth, sex, age, smoking, bmi)
+```
+
 ## Frequency tables
 
 `freq()` produces frequency tables with counts, percentages, valid
