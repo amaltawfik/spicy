@@ -493,6 +493,51 @@ pages, une seconde. Relecture indépendante : 16 constats, dont un grave
   cinq auteurs et dix notes ; mot de 500 caractères sans espace coupé au
   bord de page (Typst ne coupe pas dans un mot).
 
+Relecture d'Amal sur le PDF (2026-10-08) :
+
+* **Géométrie constante des fiches.** Les colonnes Pos. et Type du
+  bandeau, et les colonnes Missing, n, % et Valid % de la table des
+  valeurs, prennent la largeur de la plus longue valeur **du document**,
+  mesurée en Typst, et non de la fiche : les bandeaux et les tables
+  s'alignent d'une fiche à l'autre. Code et libellé restent souples (un
+  niveau de facteur peut être long).
+* **En-têtes de pourcentage** : « % » et « Valid % » (« % » et
+  « % valide »), au lieu de « % of total » et « % of valid » : la forme
+  compacte d'ICPSR, et « Percent / Valid Percent » de SPSS, d'ISSP et de
+  `freq()` disent la même chose.
+* **« Value » plutôt que « Code »** pour la première colonne (« Valeur ») :
+  c'est la paire Value / Label de SPSS, de DDI (`catValu` / `labl`),
+  d'ISSP et d'ICPSR. Deux colonnes parce que le fichier stocke le code
+  et que le lecteur a besoin de son sens ; un niveau de facteur est une
+  valeur sans libellé, la colonne reste vide à dessein.
+* **Colonne des manquants déclarés** : en-tête « Missing » (« Manquant »),
+  cellules « M », et la colonne n'existe que si le document déclare au
+  moins un code manquant. Elle était toujours vide sur un fichier sans
+  déclaration et son « M » n'était expliqué nulle part.
+* **Monospace pour les identifiants seulement** (noms de variables, codes
+  source, ORCID), à 0,9 em pour que sa hauteur d'x rejoigne celle du
+  texte. Les valeurs et les libellés passent en police de texte : les
+  codebooks publiés (ISSP, ICPSR, ESS) n'ont qu'une police, et un niveau
+  de facteur en monospace se lisait comme du code. Le monospace reste
+  sur les noms parce qu'il lève les ambiguïtés l / 1 / I et O / 0 et
+  montre les tirets bas : ce sont les choses qu'on tape.
+* **Couverture** redessinée : le genre en capitales espacées au-dessus du
+  titre (ordre de lecture « Codebook, puis l'enquête », titre dominant,
+  comme ISSP et ICPSR), auteurs et date, un filet court, les deux faits
+  sur une ligne, les notes en pleine largeur sous un intertitre, le
+  colophon (version, effectifs non pondérés) au pied de page. Le tableau
+  champ-valeur à deux colonnes, qui entassait les notes dans 3,2 pouces,
+  disparaît.
+* **Puis, même jour : la couverture ne porte que l'identité**, comme chez
+  les bons graphistes et dans les codebooks publiés (ISSP, ICPSR : la
+  couverture nomme, la page suivante explique). Genre, titre, auteurs,
+  date, et la version de spicy en colophon. Tout ce qui se lit passe en
+  page 2, « About the data » (« À propos des données ») : les faits
+  (observations, variables, version), la phrase sur les effectifs non
+  pondérés, les notes sous leur intertitre, et le tableau des codes
+  manquants déclarés, qui quitte la page de la liste des variables. La
+  liste commence sur une page neuve.
+
 ## Sources
 
 * ICPSR (2020), *Guide to Social Science Data Preparation and Archiving*,

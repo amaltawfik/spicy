@@ -780,12 +780,12 @@
   # marks a declared missing value (`marker_declared_missing`).
   header_codebook_mean = "Mean",
   header_codebook_median = "Median",
-  header_code = "Code",
+  header_code = "Value",
   # Same English as `header_declared_missing`, other sense: the flag of one
   # value, not a count of observations. French tells the two apart.
   header_is_declared_missing = "Declared missing",
-  header_pct_total = "% of total",
-  header_pct_valid = "% of valid",
+  header_pct_total = "%",
+  header_pct_valid = "Valid %",
   header_field = "Field",
   header_value = "Value",
   # Fields of the first Excel sheet. The console header prints the same
@@ -816,6 +816,7 @@
   # with the title. `marker_declared_missing` flags a declared missing
   # value in the table of a variable, and heads that column.
   title_codebook = "Codebook",
+  title_codebook_about = "About the data",
   title_codebook_list = "List of variables",
   title_codebook_declared = "Declared missing values",
   title_codebook_sheets = "Variable descriptions",
@@ -824,6 +825,7 @@
   header_variables = "Variables",
   row_notes = "Notes",
   marker_declared_missing = "M",
+  header_marker_missing = "Missing",
   cell_system_missing = "system missing",
   note_codebook_unweighted = "Counts are unweighted: they describe the file, not a population."
 )

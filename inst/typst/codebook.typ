@@ -7,7 +7,8 @@
 #let base = 10pt
 #let pad = (x: 4pt, y: 4pt)
 #let size = (
-  cover-title: 22pt, cover-subtitle: 16pt, cover-field: 1.4in, cover-value: 3.2in,
+  cover-title: 26pt, cover-top: 1.4in, cover-block: 18pt, // title block, and the air around it
+  about-field: 1.6in, // field column of the facts on the page about the data
   heading-above: 18pt, heading-below: 9pt,
   sheet: 24pt, gap: 6pt, // above a sheet, between its tables
   long-name: 7pt, // a name past its limit: 30 characters in the list and the index, 45 in a band
@@ -39,7 +40,10 @@
   let c = (:)
   for (k, v) in data.colors { c.insert(k, rgb(v)) }
   let rule = 0.5pt + c.grid
-  let mono(..args) = text(font: data.font_code, ..args)
+  // Monospace for identifiers only (variable names, source codes, ORCID),
+  // at 0.9em so its x-height sits with the body font. Values and labels
+  // stay in the body font, as in published codebooks.
+  let mono(size: 0.9em, ..args) = text(font: data.font_code, size: size, ..args)
   let hdr(body) = text(weight: "bold", fill: c.primary, body)
   let anchor(i) = label("cb-var-" + str(i))
   let page-of(i) = context link(anchor(i), text(fill: c.accent, str(locate(anchor(i)).page())))
@@ -47,7 +51,7 @@
   // The limit is where the name starts to squeeze its neighbours: 30 in
   // the list and the index, 45 in the band of a sheet.
   let name(n, limit: 30, weight: "regular") = mono(
-    size: if n.clusters().len() > limit { size.long-name } else { base },
+    size: if n.clusters().len() > limit { size.long-name } else { 0.9 * base },
     weight: weight,
     n,
   )
@@ -93,16 +97,21 @@
   )
 
   // ---- Cover ----------------------------------------------------------------
+  // Reading order: the genre as a spaced capital kicker, the study as the
+  // title, who and when; a short rule; the two facts on one line; the notes
+  // across the page; the colophon at the foot.
   {
     set align(center)
-    v(10pt)
-    if data.title != none {
-      text(size.cover-title, weight: "bold", fill: c.primary, data.title)
-      v(3pt)
-    }
+    v(size.cover-top)
     if data.subtitle != none {
-      text(size.cover-subtitle, style: "italic", fill: c.muted, data.subtitle)
+      text(base, weight: "bold", fill: c.accent, tracking: 0.18em, upper(data.subtitle))
+      v(size.gap)
     }
+    let title = if data.title != none { data.title } else { data.subtitle }
+    if title != none {
+      text(size.cover-title, weight: "bold", fill: c.primary, title)
+    }
+    v(size.cover-block)
     for a in data.authors {
       v(4pt)
       text(base + 1pt, a.name)
@@ -111,31 +120,41 @@
       }
       if a.orcid != "" {
         linebreak()
-        mono(base - 1pt, fill: c.muted, s.orcid + " ")
+        mono(size: base - 1pt, fill: c.muted, s.orcid + " ")
         link("https://orcid.org/" + a.orcid,
-             mono(base - 1pt, fill: c.accent, underline(a.orcid)))
+             mono(size: base - 1pt, fill: c.accent, underline(a.orcid)))
       }
     }
-    v(6pt)
-    text(base + 1pt, fill: c.muted, data.date)
-    v(10pt)
-    let rows = data.meta.map(m => (hdr(m.field), m.value))
-    if data.notes.len() > 0 {
-      let notes = list(indent: 0pt, body-indent: 5pt, spacing: 4pt,
-                       ..data.notes.map(n => [#n]))
-      rows.push((hdr(s.notes), notes))
-    }
-    table(
-      columns: (size.cover-field, size.cover-value), stroke: (x, y) => (bottom: 0.5pt + c.band),
-      inset: (x: 5pt, y: 4pt), align: left + top,
-      ..rows.flatten(),
-    )
     v(8pt)
-    text(base - 1pt, style: "italic", fill: c.muted, s.unweighted)
+    text(base + 1pt, fill: c.muted, data.date)
+    // The cover carries identity only; the colophon names what produced it.
+    place(bottom + center, text(base - 1pt, fill: c.muted, data.meta.last().value))
   }
   pagebreak()
 
-  // ---- List of variables, declared missing values ---------------------------
+  // ---- About the data: facts, notes, declared missing values ----------------
+  heading(level: 1, s.about)
+  table(
+    columns: (size.about-field, 1fr), stroke: (x, y) => (bottom: 0.5pt + c.band),
+    inset: (x: 5pt, y: 4pt), align: left + top,
+    ..data.meta.map(m => (hdr(m.field), m.value)).flatten(),
+  )
+  v(size.gap)
+  text(base - 1pt, style: "italic", fill: c.muted, s.unweighted)
+  if data.notes.len() > 0 {
+    heading(level: 1, s.notes)
+    list(indent: 0pt, body-indent: 6pt, spacing: 5pt, ..data.notes.map(n => [#n]))
+  }
+  if data.declared.len() > 0 {
+    heading(level: 1, s.declared)
+    listing(
+      (s.code, s.label, s.variables), (auto, 1fr, 1fr), (left, left, left),
+      data.declared.map(d => (d.code, d.label, mono(d.variables))),
+    )
+  }
+  pagebreak()
+
+  // ---- List of variables ----------------------------------------------------
   heading(level: 1, s.list)
   listing(
     (s.position, s.name, s.label, s.page), (auto, auto, 1fr, auto),
@@ -144,25 +163,33 @@
       x.pos, link(anchor(i), name(x.name)), x.label, page-of(i),
     )),
   )
-  if data.declared.len() > 0 {
-    heading(level: 1, s.declared)
-    listing(
-      (s.code, s.label, s.variables), (auto, 1fr, 1fr), (left, left, left),
-      data.declared.map(d => (mono(d.code), d.label, mono(d.variables))),
-    )
-  }
   pagebreak()
 
   // ---- One sheet per variable -----------------------------------------------
   heading(level: 1, s.sheets)
+  // One geometry for every sheet: the widest position, type, count and
+  // percentage of the whole document set the fixed columns, so the bands
+  // and the value tables line up from one sheet to the next.
+  let longest(xs) = xs.fold("", (a, b) => if b.len() > a.len() { b } else { a })
+  let rows = data.vars.map(x => x.values).flatten()
+  let widest = (
+    pos: longest(data.vars.map(x => str(x.pos)) + (s.position,)),
+    type: longest(data.vars.map(x => x.type) + (s.type,)),
+    n: longest(rows.map(r => r.n) + (s.n,)),
+    pct: longest(rows.map(r => r.pct) + (s.pct_total,)),
+    valid: longest(rows.map(r => r.valid) + (s.pct_valid,)),
+  )
+  let col(t) = measure(text(weight: "bold", t)).width + 2 * pad.x
+  // The missing column exists only when the document declares missing codes.
+  let flagged = rows.any(r => r.m)
   for (i, x) in data.vars.enumerate() {
     // An invisible heading: a PDF bookmark per variable, nothing on the page.
     let title = if x.label == "" { x.name } else { x.name + " \u{2014} " + x.label }
     let mark = place(hide(heading(level: 2, outlined: false, bookmarked: true, title)))
     let lab = if x.label == "" { () } else { wide(s.label, x.label) }
     let source = if x.source == none { () } else { wide(s.source, mono(x.source)) }
-    let band = table(
-      columns: (auto, 1fr, auto), stroke: rule, inset: pad,
+    let band = context table(
+      columns: (col(widest.pos), 1fr, col(widest.type)), stroke: rule, inset: pad,
       // band_dark must stay dark: the text of the band is white.
       fill: (col, row) => if row == 0 { c.band_dark } else if row == 1 { c.zebra },
       align: (col, row) => (right, left, left).at(col) + horizon,
@@ -175,19 +202,19 @@
     if x.stats.len() > 0 { parts.push(facts(x.stats)) }
     // Without value labels (a factor), the codes take the width.
     let labelled = x.values.any(r => r.label != "" and not r.na)
-    let values = table(
-      columns: (if labelled { (auto, 1fr) } else { (1fr, auto) }) + (auto,) * 4 + (0pt,),
+    let opt(..items) = if flagged { items.pos() } else { () }
+    let values = context table(
+      columns: ((if labelled { (auto, 1fr) } else { (1fr, auto) }) +
+        opt(col(s.missing)) + (col(widest.n), col(widest.pct), col(widest.valid), 0pt)),
       stroke: rule, inset: pad,
       fill: (col, row) => if row == 0 { c.band },
-      align: (col, row) => (left, left, center, right, right, right, left).at(col) + horizon,
-      table.header(..(s.code, s.label, s.marker, s.n, s.pct_total, s.pct_valid).map(hdr), []),
+      align: (col, row) => ((left, left) + opt(center) + (right, right, right, left)).at(col) + horizon,
+      table.header(..((s.code, s.label) + opt(s.missing) + (s.n, s.pct_total, s.pct_valid)).map(hdr), []),
       ..kept(x.values.map(r => {
         let f = if r.m or r.na { c.muted } else { c.text }
-        (
-          mono(fill: f, r.code), text(fill: f, r.label),
-          if r.m { text(weight: "bold", fill: c.accent, s.marker) } else { [] },
-          text(fill: f, r.n), text(fill: f, r.pct), text(fill: f, r.valid),
-        )
+        ((text(fill: f, r.code), text(fill: f, r.label)) +
+          opt(if r.m { text(weight: "bold", fill: c.accent, s.marker) } else { [] }) +
+          (text(fill: f, r.n), text(fill: f, r.pct), text(fill: f, r.valid)))
       })),
     )
     let head = [#metadata(i)#anchor(i)#mark]

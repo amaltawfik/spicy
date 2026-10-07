@@ -731,7 +731,7 @@ test_that("the Excel codebook reads back", {
 
   vals <- openxlsx2::read_xlsx(path, sheet = 3)
   expect_equal(vals$n, cb$values$n)
-  expect_equal(vals[["% of valid"]], cb$values$pct_valid)
+  expect_equal(vals[["Valid %"]], cb$values$pct_valid)
   expect_type(vals[["Declared missing"]], "logical")
   # A missing value leaves its cell empty, never an empty text.
   for (i in 2:3) {

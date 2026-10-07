@@ -203,8 +203,8 @@ test_that("the PDF compiles with the Typst that Quarto bundles", {
   expect_false(res$visible)
   expect_s3_class(res$value, "spicy_codebook")
   expect_gt(file.size(pdf), 0)
-  # Cover, list, nine pages of sheets, index.
-  expect_identical(cbt_pages(sochealth), 12L)
+  # Cover, the page about the data, list, nine pages of sheets, index.
+  expect_identical(cbt_pages(sochealth), 13L)
 
   two <- withr::local_tempfile(fileext = ".pdf")
   code_book(
@@ -217,10 +217,10 @@ test_that("the PDF compiles with the Typst that Quarto bundles", {
     output = two
   )
   expect_gt(file.size(two), 0)
-  # The two sheets share one page.
+  # Cover, about, list, the two sheets on one page, index.
   expect_identical(
     cbt_pages(cbt_data(), q, n, font = "Libertinus Serif", paper = "letter"),
-    4L
+    5L
   )
 
   local_mocked_bindings(code_book_typst_source = function(cb) "#let x = (")
@@ -242,8 +242,8 @@ test_that("a sheet taller than a page breaks across pages", {
   )
   labels <- stats::setNames(1:20, sprintf("Item %02d - %s", 1:20, item))
   d <- data.frame(q = labelled::labelled(1:20, labels = labels), n = 1:20)
-  # Cover, list, the sheet of q on pages 3 and 4, then the sheet of n,
-  # index. Kept whole, the sheet of q overflowed page 4, losing its last
-  # rows, and pushed n to page 5.
-  expect_identical(cbt_pages(d), 5L)
+  # Cover, about, list, the sheet of q on pages 4 and 5, then the sheet of
+  # n, index. Kept whole, the sheet of q overflowed its page, losing its
+  # last rows, and pushed n to a page of its own.
+  expect_identical(cbt_pages(d), 6L)
 })
