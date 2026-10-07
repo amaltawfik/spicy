@@ -254,6 +254,21 @@ construites, signalement des variables sans libellé.
   l'emporte, un `decimal_mark` explicite l'emporte sur tout. Amal n'utilise
   jamais la virgule : il la règle une fois. Dans l'Excel, les nombres
   restent des nombres, la marque ne concerne que le PDF et la console.
+* **Auteurs.** Un argument `authors`, au contrat de lssdoc : vecteur de
+  caractères (`c("Nom" = "Affiliation")`, ou des noms seuls) ou liste de
+  listes `name`, `affiliation`, `orcid`. Affichés sous le titre en console,
+  dans la feuille d'information de l'Excel et, au palier 2, sur la
+  couverture du PDF (ligne « Nom — Affiliation », lien ORCID, comme
+  lssdoc). Coût : environ 80 lignes (normalisation, feuille
+  d'information, chaînes, tests), sur un palier de 500 à 650.
+* **Excel : l'en-tête et les notes sur une première feuille**, pas
+  au-dessus du tableau des variables (proposition du 2026-10-07, en
+  attente de validation). Un tableau qui commence ligne 1 garde ses
+  filtres et son volet figé, et se relit d'un `read_xlsx()` sans sauter
+  de lignes. Le classeur s'ouvre sur cette feuille, donc le lecteur voit
+  le titre, les auteurs et les notes en premier. Les propriétés du
+  classeur (titre, auteur) complètent, elles ne remplacent pas : la
+  plupart des lecteurs ne les ouvrent jamais.
 
 ## Spécification du palier 1
 
@@ -263,6 +278,7 @@ Signature visée :
 code_book(
   x, ...,
   title = "Codebook",
+  authors = NULL,        # c("Nom" = "Affiliation"), ou liste name/affiliation/orcid
   notes = NULL,          # character, une puce par élément
   source = NULL,         # named character : noms actuels -> codes d'origine
   values = 100,          # modalités listées au plus, par variable
@@ -280,9 +296,9 @@ présent). Le widget DT disparaît.
 
 Objet rendu, classe `spicy_codebook`, trois tables :
 
-* `header` : titre, date, nombre d'observations et de variables, notes,
-  codes manquants déclarés relevés dans le fichier (code, libellé,
-  variables concernées).
+* `header` : titre, auteurs (nom, affiliation, ORCID), date, nombre
+  d'observations et de variables, notes, codes manquants déclarés relevés
+  dans le fichier (code, libellé, variables concernées).
 * `variables`, une ligne par variable : position, nom, libellé, type
   (vocabulaire), classe R, source, valides, manquants, dont manquants
   déclarés, valeurs distinctes, et pour les numériques et les dates :
@@ -295,18 +311,76 @@ Objet rendu, classe `spicy_codebook`, trois tables :
 Effectifs non pondérés. Les variables texte et les identifiants n'ont pas
 de ligne dans `values`. Les dates non plus.
 
-`print()` : l'en-tête sur quelques lignes, puis la liste des variables
+`print()` : l'en-tête sur quelques lignes (titre, une ligne par auteur avec
+son affiliation, date, effectifs), puis la liste des variables
 (position, nom, libellé, type, valides, manquants) par le moteur de tableau
 console de spicy.
 
-Excel (`output = "x.xlsx"`, openxlsx2) : trois feuilles, `variables`,
-`values`, `notes`, aux noms et en-têtes dans la langue du document, nombres
-en cellules numériques, dates en texte ISO, en-tête figé.
+Excel (`output = "x.xlsx"`, openxlsx2) : trois feuilles, aux noms et
+en-têtes dans la langue du document. La première, `codebook`, porte
+l'en-tête en deux colonnes (champ, valeur) : titre, une ligne par auteur
+(nom, affiliation, ORCID), date, observations, variables, codes manquants
+déclarés, une ligne par note, et la version de spicy. Les deux autres,
+`variables` et `values`, sont des tableaux purs dès la ligne 1 : nombres en
+cellules numériques, dates en texte ISO, en-tête figé et coloré, filtres
+automatiques, largeurs ajustées. Les propriétés du classeur (titre,
+auteur) sont renseignées aussi. Pas de feuille `notes` séparée.
 
 Tests : les effectifs contre `freq()` et `table()`, manquants déclarés
 contre `user_na`, relecture de l'Excel, impression figée, erreurs classées
 sur les anciens arguments, correspondance `source`, table de vocabulaire
 des types, chaînes fr et en.
+
+## Relecture du palier 1 (2026-10-07)
+
+Implémentation dans un worktree, relue par un second agent (18 constats,
+effectifs de `sochealth` identiques à `freq()` et à `table()` sur les 24
+variables). Décisions prises à la relecture :
+
+* **Lignes de `values`** : catégories des facteurs, ordinales, codes
+  étiquetés et logiques seulement, comme spécifié. L'implémentation
+  listait aussi les numériques de 100 valeurs distinctes au plus (51
+  lignes pour `age`) : retiré. Toute variable qui porte des codes
+  manquants déclarés garde ses lignes de codes déclarés et sa ligne NA,
+  numériques comprises : c'est la ventilation des manquants par motif
+  qu'un codebook doit donner (ISSP, ICPSR).
+* **Vecteur étiqueté dont toutes les étiquettes sont sur des codes
+  manquants** (revenu avec 99998 = ne sait pas, 99999 = refus) : lu comme
+  numérique, avec ses statistiques sur les valeurs valides, et non comme
+  catégoriel. La déclaration le dit, on ne devine rien. Avec
+  `user_na = FALSE` il reste catégoriel.
+* **Codes déclarés non observés** : avec `factor_levels = "all"`, listés à
+  0, comme les modalités inutilisées. L'implémentation les perdait.
+* **Niveau NA explicite d'un facteur** (`addNA()`) : manquant système,
+  comme dans `freq()`. `varlist()` le compte comme valide : le codebook
+  suit les tables de fréquences, pas l'outil d'exploration.
+* **Ordre** : codes étiquetés par code croissant, niveaux de facteur dans
+  l'ordre des niveaux. `freq()` suit l'ordre des étiquettes quand toutes
+  les valeurs sont étiquetées : les tests comparent par code.
+* **Dates** : premier et dernier en colonnes `earliest` et `latest`, en
+  texte ISO, pour que `min` et `max` restent numériques.
+* **Impression console** : le libellé est tronqué pour tenir dans
+  `getOption("width")` (125 colonnes sur `sochealth` sinon). Le libellé
+  complet reste dans l'objet et l'Excel.
+* **Excel** : cellules NA vraiment vides (`na.strings = NULL`), propriété
+  `creator` vide sans auteurs (openxlsx2 y met sinon le login système).
+* **`decimal_mark`** : conservé, sans effet avant le PDF (la liste console
+  n'imprime que des effectifs). Dit dans l'aide.
+* **Impression par la méthode `print()`, pas par la fonction.** Sans
+  `output`, `code_book(d)` rend l'objet visible : la console l'affiche
+  (autoprint) et `cb <- code_book(d)` reste silencieux, comme tout objet R.
+  Avec `output`, le fichier est écrit et l'objet rendu invisible. La
+  première implémentation appelait `print()` dans la fonction, et
+  l'assignation imprimait aussi.
+* **DT** retiré des Suggests : plus rien ne l'utilise.
+* Classes `hms` et `difftime` : plus de plage ni de valeurs (la 0.13.0 en
+  montrait). Accepté, la spécification dit « autre → la classe R ».
+  Candidat si quelqu'un le demande.
+
+Mesuré après le premier passage, avant correctifs : `R/code_book*.R`
+344 → 982 lignes (+969/−234 dans `R/` en tout, dont 80 lignes de chaînes
+i18n), tests 1 898 expectations sur 12 fichiers, couverture 100 % sur les
+trois fichiers.
 
 ## Questions restantes (palier 2)
 
