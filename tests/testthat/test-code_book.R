@@ -166,6 +166,24 @@ test_that("declared missing values follow user_na", {
   expect_identical(dm$label, c("DK", "Refused", "Refused", NA))
   expect_identical(dm$variables, c("q1, q2", "q1", "q3", "q3"))
   expect_identical(dm$n_variables, c(2L, 1L, 1L, 1L))
+  # By code, then label: a code declared under two labels gives two
+  # adjacent rows, and 99 comes after 9.
+  two <- data.frame(
+    a = haven::labelled_spss(
+      c(1, 99, 8),
+      labels = c(Refused = 99, DK = 8),
+      na_values = c(8, 99)
+    ),
+    b = haven::labelled_spss(
+      c(1, 8, 9),
+      labels = c("Don't know" = 8, X = 9),
+      na_values = c(8, 9)
+    )
+  )
+  dm <- code_book(two)$header$declared_missing
+  expect_identical(dm$code, c("8", "8", "9", "99"))
+  expect_identical(dm$label, c("DK", "Don't know", "X", "Refused"))
+  expect_identical(dm$variables, c("a", "b", "b", "a"))
 
   off <- code_book(d, user_na = FALSE)
   q1_off <- off$values[off$values$variable == "q1", ]
@@ -226,6 +244,12 @@ test_that("declared_codes writes how each variable declares its missing values",
     code_book(open)$variables$declared_codes,
     c("≥ 9000", "≤ 1")
   )
+  # The separator of the values and the range follows the language.
+  withr::local_options(spicy.language = "fr")
+  expect_identical(
+    code_book(d)$variables$declared_codes[[3]],
+    "9998\u00A0; 100000\u20131000000"
+  )
 })
 
 test_that("factor_levels = 'observed' lists only the values present", {
@@ -259,6 +283,24 @@ test_that("values caps the categories listed per variable", {
   expect_identical(nrow(cb$values), 0L)
   expect_named(cb$values, names(code_book(cb_data())$values))
   expect_identical(nrow(code_book(cb_data(), values = Inf)$values), 11L)
+
+  # Past the cap, a variable that declares missing codes keeps the rows of
+  # its declared and system missing values, as a numeric variable does.
+  skip_if_not_installed("haven")
+  q <- haven::labelled_spss(
+    c(1, 2, 8, NA),
+    labels = c(A = 1, B = 2, DK = 8),
+    na_values = 8
+  )
+  cb <- code_book(
+    data.frame(q = q, f = factor(c("a", "b", "a", NA))),
+    values = 1
+  )
+  expect_identical(cb$values$variable, c("q", "q"))
+  expect_identical(cb$values$code, c("8", "NA"))
+  expect_identical(cb$values$declared_missing, c(TRUE, FALSE))
+  expect_identical(cb$values$n, c(1L, 1L))
+  expect_true(all(is.na(cb$values$pct_valid)))
 })
 
 test_that("labels that only name declared missing codes leave the stored type", {
@@ -286,10 +328,19 @@ test_that("labels that only name declared missing codes leave the stored type", 
   expect_identical(cb$values$variable, c("inc", "inc", "txt", "txt"))
   expect_identical(cb$values$code, c("99998", "99999", "Z", "NA"))
   expect_identical(cb$values$declared_missing, c(TRUE, TRUE, TRUE, FALSE))
-  # Without the declaration, the labels are categories again.
+  # Without the declaration, the labels are categories again; a labelled
+  # vector without labels stays numeric.
   expect_identical(
-    unique(code_book(d, user_na = FALSE)$variables$type),
-    "categorical (labelled codes)"
+    code_book(d, user_na = FALSE)$variables$type,
+    c("categorical (labelled codes)", "categorical (labelled codes)", "numeric")
+  )
+  empty <- haven::labelled(
+    c("a", "b"),
+    labels = stats::setNames(character(), character())
+  )
+  expect_identical(
+    code_book(data.frame(empty = empty), user_na = FALSE)$variables$type,
+    "text"
   )
 })
 
@@ -312,6 +363,23 @@ test_that("factor_levels = 'all' lists a declared code that nobody gave", {
   observed <- code_book(d, factor_levels = "observed")
   expect_identical(observed$values$code, c("1", "2", "NA"))
   expect_identical(nrow(observed$header$declared_missing), 0L)
+
+  # A code of `na_values` with no label is listed too: the band of the
+  # PDF says "8, 9", and so does the table.
+  z <- haven::labelled_spss(
+    c(1, 2, 8, NA),
+    labels = c(A = 1, B = 2, DK = 8),
+    na_values = c(8, 9)
+  )
+  cb <- code_book(data.frame(z = z))
+  expect_identical(cb$variables$declared_codes, "8, 9")
+  expect_identical(cb$values$code, c("1", "2", "8", "9", "NA"))
+  expect_identical(cb$values$n, c(1L, 1L, 1L, 0L, 1L))
+  expect_identical(cb$values$label[[4]], NA_character_)
+  expect_identical(
+    code_book(data.frame(z = z), factor_levels = "observed")$values$code,
+    c("1", "2", "8", "NA")
+  )
 })
 
 test_that("an NA level is system missing, as in freq()", {
@@ -447,6 +515,18 @@ test_that("dates are ISO text, date-times in their zone or in UTC", {
     )
   )
   expect_true(is.na(v$earliest[[5]]))
+
+  # A POSIXlt column is a date-time too, in its own zone.
+  lt <- data.frame(id = 1:3)
+  lt$t <- as.POSIXlt(.POSIXct(instant + c(0, NA, 120), tz = "Asia/Tokyo"))
+  v <- code_book(lt)$variables
+  expect_identical(v$type[[2]], "date-time")
+  expect_identical(v$class[[2]], "POSIXlt, POSIXt")
+  expect_identical(
+    c(v$earliest[[2]], v$latest[[2]]),
+    c("2024-06-01 19:00:00 Asia/Tokyo", "2024-06-01 19:02:00 Asia/Tokyo")
+  )
+  expect_identical(c(v$n_valid[[2]], v$n_missing[[2]]), c(2L, 1L))
 })
 
 test_that("source maps current names to their codes in the source file", {
@@ -465,6 +545,13 @@ test_that("source maps current names to their codes in the source file", {
     code_book(cb_data(), sex, source = c(score = "Q3")),
     class = "spicy_invalid_input"
   )
+  # A code must say something.
+  for (blank in c("", "  ")) {
+    expect_error(
+      code_book(cb_data(), sex, score, source = c(score = "Q3", sex = blank)),
+      class = "spicy_invalid_input"
+    )
+  }
 })
 
 test_that("authors take the three shapes of lssdoc's argument", {
@@ -499,6 +586,14 @@ test_that("authors take the three shapes of lssdoc's argument", {
     c(a$affiliation, a$orcid),
     c("", "", "0000-0002-1825-0097", "")
   )
+  # An ORCID given as its address keeps the identifier alone.
+  urls <- c(
+    "https://orcid.org/0000-0002-1825-0097",
+    "http://www.orcid.org/0000-0002-1825-0097",
+    "https://WWW.ORCID.ORG/0000-0002-1825-0097"
+  )
+  a <- code_book_authors(lapply(urls, \(u) list(name = "J", orcid = u)))
+  expect_identical(a$orcid, rep("0000-0002-1825-0097", 3L))
 
   cb <- code_book(cb_data(), sex, authors = c("Jane Doe" = "HESAV"))
   expect_identical(cb$header$authors$name, "Jane Doe")
@@ -609,6 +704,27 @@ test_that("the print fits the console width by cutting long labels", {
   expect_false(any(grepl(ellipsis, out, fixed = TRUE)))
 })
 
+test_that("the print keeps a label on its row, and counts columns, not characters", {
+  d <- data.frame(id = 1:3, x = c(2.5, 3, NA))
+  attr(d$x, "label") <- "a\nb\tc"
+  last <- utils::tail(capture.output(print(code_book(d))), 1L)
+  expect_match(last, "a b c", fixed = TRUE)
+  expect_match(last, "numeric", fixed = TRUE)
+
+  # Twenty-four CJK characters take 48 columns of the console: cut to
+  # fit 70 columns, the table does not exceed them.
+  skip_if_not(l10n_info()[["UTF-8"]], "needs a UTF-8 locale")
+  attr(d$x, "label") <- strrep("\u6f22", 24)
+  withr::local_options(width = 70)
+  tbl <- utils::tail(capture.output(print(code_book(d))), 4L)
+  expect_lte(max(nchar(tbl, type = "width")), 70L)
+  expect_true(any(grepl(
+    spicy_str("marker_truncation_ellipsis"),
+    tbl,
+    fixed = TRUE
+  )))
+})
+
 test_that("decimal_mark: argument > style > language", {
   expect_identical(attr(code_book(cb_data(), sex), "decimal_mark"), ".")
   withr::local_options(spicy.language = "fr")
@@ -661,12 +777,43 @@ test_that("removed and malformed arguments are classed errors", {
       ),
       class = "spicy_invalid_input"
     )
+    # A directory is not a file, whatever its extension.
+    dir <- withr::local_tempdir(fileext = paste0(".", ext))
+    expect_error(code_book(d, output = dir), class = "spicy_invalid_input")
   }
   expect_error(code_book(d, output = NA), class = "spicy_invalid_input")
   expect_error(code_book(d, output = ""), class = "spicy_invalid_input")
   expect_error(code_book(d, value = 5), class = "spicy_invalid_input")
   expect_error(code_book(d, out = "cb.xlsx"), class = "spicy_invalid_input")
   expect_error(code_book(d, picked = sex), class = "spicy_invalid_input")
+})
+
+test_that("errors name code_book(), not the helpers that raise them", {
+  d <- cb_data()
+  called <- function(err) rlang::call_name(conditionCall(err))
+  err <- expect_error(code_book(d, paper = "A3"), class = "spicy_invalid_input")
+  expect_identical(called(err), "code_book")
+  err <- expect_error(
+    code_book(d, factor_levels = "x"),
+    class = "spicy_invalid_input"
+  )
+  expect_identical(called(err), "code_book")
+  # A renamed selection says so in the message, and an unknown column is
+  # tidyselect's error.
+  err <- expect_error(
+    code_book(d, gender = sex),
+    "cannot rename them in code_book().",
+    fixed = TRUE
+  )
+  expect_identical(called(err), "code_book")
+  expect_identical(called(expect_error(code_book(d, nope))), "code_book")
+})
+
+test_that("a raw or complex column is listed without a warning", {
+  d <- data.frame(r = as.raw(1:3), z = complex(real = 1:3, imaginary = 1))
+  expect_no_warning(cb <- code_book(d))
+  expect_identical(cb$variables$type, c("raw", "complex"))
+  expect_identical(cb$variables$n_valid, c(3L, 3L))
 })
 
 test_that("an empty selection gives empty tables", {
@@ -783,6 +930,30 @@ test_that("the Excel codebook reads back", {
   props <- wb$get_properties()
   expect_identical(unname(props[["title"]]), "Codebook")
   expect_identical(unname(props[["creator"]]), "Jane Doe; Bob")
+})
+
+test_that("the Excel file leaves non-finite statistics empty, and means as they are", {
+  skip_if_not_installed("openxlsx2")
+  path <- withr::local_tempfile(fileext = ".xlsx")
+  d <- data.frame(
+    x = c(1, Inf, -Inf, NaN, 2),
+    small = c(0.001, 0.002, 0.0025, 0.003, NA),
+    f = factor(c("a", "b", "a", "a", "b"))
+  )
+  code_book(d, output = path)
+  vars <- openxlsx2::read_xlsx(path, sheet = 2)
+  # Min, max, mean and sd of x are -Inf, Inf, NaN and NaN: empty cells,
+  # not error cells, in columns that stay numeric.
+  expect_true(all(is.na(unlist(vars[1, c("Min", "Max", "Mean", "SD")]))))
+  expect_type(vars$Mean, "double")
+  expect_equal(vars$Median[[1]], 1.5)
+  wb <- openxlsx2::wb_load(path)
+  expect_false(any(wb$worksheets[[2]]$sheet_data$cc$c_t == "e"))
+  # Only the percentages carry a number format: one of "0.00" would show
+  # the mean of `small`, 0.0021, as 0.00.
+  fmts <- wb$styles_mgr$styles$numFmts
+  expect_true(any(grepl("formatCode=\"0.0\"", fmts, fixed = TRUE)))
+  expect_false(any(grepl("formatCode=\"0.00\"", fmts, fixed = TRUE)))
 })
 
 test_that("the Excel header takes the PDF colors, and the font when given", {

@@ -53,8 +53,8 @@ of living (1--5 Likert scale). Contains missing values.}
 \item{response_date}{POSIXct. Date and time of survey response
 (September--November 2024).}
 \item{weight}{Numeric. Survey design weight (range
-0.29--3.45); calibrated so that \code{sum(weight)} matches the
-unweighted N and \code{mean(weight)} is approximately 1. See
+0.29--3.45); calibrated: \code{mean(weight)} is about 1 (0.997) and
+\code{sum(weight)} is 1196.5 for the 1200 rows. See
 \code{Details}.}
 }
 }
@@ -86,9 +86,9 @@ factors (\code{sex}, \code{region}, ...) and ordered factors (\code{education},
 automatic ordinal-vs-nominal dispatch (Cramer's V, Phi, Kendall's
 Tau-b, Goodman-Kruskal Gamma) on the same dataset.
 
-Survey weights (\code{weight}) are calibrated: \code{sum(weight)} matches
-the unweighted N to within rounding (\eqn{\approx 1200}) and
-\code{mean(weight)} is \eqn{\approx 1}. Weighted means therefore agree
+Survey weights (\code{weight}) are calibrated: they average about 1
+(\code{mean(weight)} is 0.997) and sum to 1196.5 for the 1200 rows.
+Weighted means therefore agree
 with unweighted means up to sampling noise without further
 rescaling.
 }

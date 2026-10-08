@@ -344,6 +344,7 @@
   row_declared_missing = "Valeur manquante d\u00E9clar\u00E9e",
   row_generated_with = "G\u00E9n\u00E9r\u00E9 avec",
   note_field_line = "%s\u00A0: %s",
+  sep_declared_codes = "\u00A0; ",
   cell_type_categorical = "cat\u00E9gorielle (nominale)",
   cell_type_ordinal = "cat\u00E9gorielle (ordinale)",
   cell_type_labelled = "cat\u00E9gorielle (codes \u00E9tiquet\u00E9s)",
@@ -356,7 +357,8 @@
   title_codebook_declared = "Valeurs manquantes d\u00E9clar\u00E9es",
   title_codebook_sheets = "Fiches des variables",
   title_codebook_index = "Index des variables",
-  cell_system_missing = "manquant syst\u00E8me",
+  cell_system_missing = "Manquant syst\u00E8me",
+  note_codebook_continued = "suite",
   note_codebook_unweighted = "Effectifs non pond\u00E9r\u00E9s\u00A0: ils d\u00E9crivent le fichier et non une population."
 )
 

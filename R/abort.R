@@ -90,6 +90,10 @@ spicy_abort <- function(
 #                               this guard selectively)
 #   |- spicy_summary_failed    (varlist() could not summarize one
 #                               column; the rest of the table is fine)
+#   |- spicy_passthrough       (a third-party warning re-emitted under
+#                               the spicy taxonomy)
+#      |- spicy_typst_warning  (Typst warned while compiling the PDF of
+#                               code_book(), which it still wrote)
 #   |- spicy_renamed_column    (a user data column or factor level
 #                               collided with a spicy-internal name
 #                               and was auto-renamed to preserve the

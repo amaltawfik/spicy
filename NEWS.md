@@ -1,48 +1,72 @@
 # spicy (development version)
 
-`code_book()` becomes a codebook you can deliver: an object with the
-counts of every value, printed in the console, written to Excel, or
-compiled to a PDF with a cover, one sheet per variable, and an index.
+`code_book()` now builds a codebook you can deliver: an object with the
+counts of every category, printed in the console as the list of
+variables, written to Excel, or compiled to a PDF with a cover, one
+sheet per variable, and an index.
 
 ## Breaking changes
 
 * `code_book()` no longer opens an interactive DT widget with browser
   export buttons: it returns a `spicy_codebook` object, which prints as
-  the list of variables, and `output = "<path>"` writes the file.
+  the list of variables, and `output = "<path>"` writes the file. For a
+  CSV, write `cb$variables` or `cb$values` with `utils::write.csv()`.
   `filename` and `include_na` are gone and raise an error that names the
   replacement; `values` is now the maximum number of categories listed
-  per variable (default 100), no longer `TRUE` or `FALSE`. DT leaves
-  Suggests.
+  per variable (default 100), no longer `TRUE` or `FALSE`. An explicit
+  `NA` level of a factor (`addNA()`) now counts as missing, where 0.13.0
+  counted it as valid and showed it as `<NA>`. `difftime` columns, and
+  columns of any other class without a codebook type, no longer show
+  their values; `POSIXlt` columns are date-times, shown by their earliest
+  and latest values. DT leaves Suggests.
 
 ## New features
 
 * `code_book()` returns a `spicy_codebook` object in three parts: a
-  `header` (title, authors, date, numbers of observations and variables,
-  notes, declared missing values), `variables` (one row per variable with
-  its type in plain words, valid and missing counts, and summary
-  statistics), and `values` (one row per category with unweighted counts
-  and percentages). Its labels follow `options(spicy.language)`.
+  `header` (title, subtitle, authors, date, numbers of observations and
+  variables, notes, declared missing values), `variables` (one row per
+  variable with its type in plain words, valid and missing counts, and
+  summary statistics), and `values` (one row per category with
+  unweighted counts and percentages). The type is read off the class:
+  categorical (nominal), categorical (ordinal), categorical (labelled
+  codes), numeric, logical, text, date, or date-time. The words the
+  codebook adds follow `options(spicy.language)`; the labels of the data
+  are never translated.
 
 * `code_book(output = "<path>.xlsx")` writes the codebook to an Excel
-  workbook: the header on a first sheet, then `variables` and `values`.
+  workbook (with the `openxlsx2` package): the header on a first
+  worksheet, with the date and time of writing, then `variables` and
+  `values`, each with a frozen header and filters. Numbers stay numeric
+  cells; a statistic that is not finite is an empty cell.
 
 * `code_book(output = "<path>.pdf")` writes the codebook to a PDF,
-  compiled by the Typst that Quarto (1.7 or later) bundles: a cover with
-  the authors, the list of variables with their pages, one sheet per
-  variable, and an alphabetical index. `output = "<path>.typ"` writes
-  the Typst source, to compile on a machine without Quarto.
+  compiled by the Typst that Quarto (1.7 or later, found through the
+  quarto package) bundles: a cover, a page about the data (counts, notes,
+  declared missing values), the list of variables with their pages, one
+  sheet per variable, and an index sorted by name in byte order. A sheet
+  gives the counts, the statistics (minimum and maximum at the precision
+  of the data), and the table of the values, with a Missing column when
+  the variable declares missing codes. Typst warnings arrive as one R
+  warning of class `spicy_typst_warning`. `output = "<path>.typ"` writes
+  the Typst source, to compile with Typst 0.12 or later on a machine
+  without Quarto.
 
-* `code_book()` gains `subtitle`, `authors`, `notes`, `source` (the code
-  each variable had in the source file), `range` (minimum and maximum of
-  numeric variables and dates), and `decimal_mark`, and for the look of
-  the PDF `font`, `font_code`, `colors`, and `paper`. The Excel workbook
-  takes the `band` and `primary` colors for its headers, and `font` when
-  it is given.
+* `code_book()` gains `subtitle`, `authors` (with affiliations and
+  ORCID), `notes`, `source` (the code each variable had in the source
+  file), `range` (minimum and maximum of numeric variables and dates),
+  and `decimal_mark`, plus `font`, `font_code`, `colors`, and `paper` for
+  the look of the PDF. The Excel workbook takes the `band` and `primary`
+  colors for its headers, and `font` when it is given.
 
-* `code_book()` honours declared missing values: they count as missing,
-  get their own rows in `values`, and are summarized in the header. A
-  labelled vector whose value labels all sit on declared missing codes is
-  documented as numeric, with its statistics on the valid values.
+* `code_book()` lists declared missing values in their own rows of
+  `values`, flagged by `declared_missing`, and summarizes them in the
+  header; under the default `factor_levels = "all"`, a declared code no
+  observation carries is listed with a count of 0. A labelled vector
+  without value labels, or whose value labels all sit on declared
+  missing codes, is documented as numeric (or text), with its statistics
+  on the valid values. A variable with more categories than `values`
+  that declares missing codes keeps the rows of its declared and system
+  missing values.
 
 # spicy 0.13.0
 
@@ -549,7 +573,7 @@ The first eight fixes change numbers that 0.12.0 reported.
   pins the exact console output of every spicy print method, so
   any unintended formatting drift surfaces as a PR diff.
 * **API stability contract.** `?spicy` documents which exports
-  are stable, stabilising or internal. pkgdown reference groups
+  are stable, stabilizing or internal. pkgdown reference groups
   exports via four `@family` tags.
 * **Cross-software validation.** All 13 association measures
   agree with PSPP 2.0 (`CROSSTABS /STATISTICS=ALL`, 65 / 65
@@ -599,7 +623,7 @@ The first eight fixes change numbers that 0.12.0 reported.
 * `print.spicy_assoc_detail()` / `print.spicy_assoc_table()` use
   APA-strict `<.001` / `.045` notation, matching the rest of the
   package.
-* `varlist()` / `code_book()` honour `factor_levels = "all"` for
+* `varlist()` / `code_book()` honor `factor_levels = "all"` for
   `haven_labelled` columns: declared-but-unobserved labels appear
   in the `Values` summary.
 * `copy_clipboard()` rejects `row.names.as.col` vectors of length
@@ -614,7 +638,7 @@ The first eight fixes change numbers that 0.12.0 reported.
 * `table_continuous_lm()` and `table_categorical()` default to
   decimal-point alignment for numeric columns
   (`align = "decimal"`). Pass `align = "auto"` for the previous
-  behaviour.
+  behavior.
 * `build_ascii_table()` / `spicy_print_table()`: `padding`
   switches from a string enum to a non-negative integer.
   Default `2L` (was `+5L`); printed tables are roughly 40 %

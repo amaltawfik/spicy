@@ -144,6 +144,8 @@ varlist <- function(
 }
 
 
+# `fn` and `call` name the function the user called in the errors:
+# varlist(), or code_book(), which reads its counts from here.
 varlist_impl <- function(
   x,
   ...,
@@ -152,32 +154,39 @@ varlist_impl <- function(
   include_na = FALSE,
   factor_levels = c("observed", "all"),
   user_na = TRUE,
-  raw_expr = substitute(x)
+  raw_expr = substitute(x),
+  fn = "varlist()",
+  call = rlang::caller_env()
 ) {
   if (!is.data.frame(x)) {
     spicy_abort(
       "varlist() only works with named data frames or transformations of them.",
-      class = "spicy_invalid_data"
+      class = "spicy_invalid_data",
+      call = call
     )
   }
 
-  validate_varlist_names(x)
-  validate_varlist_logical(values, "values")
-  validate_varlist_logical(tbl, "tbl")
-  validate_varlist_logical(include_na, "include_na")
-  validate_varlist_logical(user_na, "user_na")
-  factor_levels <- match_varlist_factor_levels(factor_levels)
+  validate_varlist_names(x, call = call)
+  validate_varlist_logical(values, "values", call = call)
+  validate_varlist_logical(tbl, "tbl", call = call)
+  validate_varlist_logical(include_na, "include_na", call = call)
+  validate_varlist_logical(user_na, "user_na", call = call)
+  factor_levels <- match_varlist_factor_levels(factor_levels, call = call)
 
   selectors <- if (missing(...)) {
     # Qualify `everything()` so that R CMD check's static analysis sees
     # the source -- no NOTE about an undefined global. Functionally
     # identical: `tidyselect::eval_select` evaluates the captured
     # expression in the tidyselect data mask either way.
-    tidyselect::eval_select(rlang::expr(tidyselect::everything()), data = x)
+    tidyselect::eval_select(
+      rlang::expr(tidyselect::everything()),
+      data = x,
+      error_call = call
+    )
   } else {
-    tidyselect::eval_select(rlang::expr(c(...)), data = x)
+    tidyselect::eval_select(rlang::expr(c(...)), data = x, error_call = call)
   }
-  validate_varlist_selectors(selectors, x)
+  validate_varlist_selectors(selectors, x, fn = fn, call = call)
 
   if (length(selectors) == 0) {
     spicy_warn("No columns selected.", class = "spicy_no_selection")

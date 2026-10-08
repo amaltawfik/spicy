@@ -97,7 +97,7 @@ test_that("a note typed with a dash or an asterisk is a list item", {
   expect_false(any(notes(c("A.", "-B", "*C", " - D"))$bullet))
 })
 
-test_that("statistics: two decimals from 1, three significant digits below", {
+test_that("statistics: min and max as the data, summaries at the SD's precision", {
   d <- data.frame(
     rate = c(-0.001, 0.0034, 0.0051),
     z = as.vector(scale(c(0.1, 0.2, 0.7))),
@@ -107,13 +107,25 @@ test_that("statistics: two decimals from 1, three significant digits below", {
     vars <- code_book_typst_data(code_book(d, ...))$data$vars
     lapply(vars, \(x) unname(unlist(x$stats)))
   }
-  # min, max, mean, sd, median. The mean of a z-score is noise around
-  # zero, and zero is never signed.
+  # min, max, mean, sd, median. min and max at the precision of the data,
+  # trailing zeros kept; mean, sd and median at three significant digits
+  # of the SD. An unrounded variable (a z-score) writes min and max like
+  # its summaries, the noise of its mean is zero, and zero is never signed.
   s <- stats()
-  expect_identical(s[[1]], c("-0.001", "0.0051", "0.0025", "0.00315", "0.0034"))
-  expect_identical(s[[2]][3:4], c("0.00", "1.00"))
-  expect_identical(s[[3]], c("0", "0", "0.00", "0.00", "0"))
+  expect_identical(
+    s[[1]],
+    c("-0.0010", "0.0051", "0.00250", "0.00315", "0.00340")
+  )
+  expect_identical(s[[2]], c("-0.73", "1.14", "0.00", "1.00", "-0.41"))
+  expect_identical(s[[3]], c("0", "0", "0", "0", "0"))
   expect_identical(stats(decimal_mark = ",")[[1]][[4]], "0,00315")
+  # A column holding Inf: its infinite min and max are written as R
+  # writes them, its NaN mean and sd are left out.
+  inf <- code_book(data.frame(x = c(1, Inf, -Inf, NaN, 2)))
+  expect_identical(
+    unlist(code_book_typst_data(inf)$data$vars[[1]]$stats),
+    c(min = "-Inf", max = "Inf", median = "1.50")
+  )
   expect_identical(typst_literal("a\tb"), "\"a b\"")
 })
 
@@ -124,6 +136,24 @@ test_that("colors merge over the palette, and paper sets the page", {
   expect_identical(
     look$colors[c("primary", "band")],
     c(primary = "#133B52", band = "#112233")
+  )
+  # A custom band or band_dark brings its zebra or grid, unless given.
+  tint <- attr(
+    code_book(d, colors = c(band = "#112233", band_dark = "#5F1F1F")),
+    "appearance"
+  )$colors
+  expect_identical(
+    tint[c("zebra", "grid")],
+    c(zebra = "#889099", grid = "#DFD2D2")
+  )
+  given <- attr(
+    code_book(d, colors = c(band = "#112233", zebra = "#ABCDEF")),
+    "appearance"
+  )$colors
+  expect_identical(given[["zebra"]], "#ABCDEF")
+  expect_identical(
+    attr(code_book(d), "appearance")$colors[c("zebra", "grid")],
+    c(zebra = "#F4F8FA", grid = "#D3DCE2")
   )
   expect_identical(
     look[c("font", "font_code", "paper")],
@@ -184,6 +214,57 @@ test_that("a PDF needs the quarto package and Quarto 1.7", {
   expect_false(file.exists(pdf))
 })
 
+test_that("Typst's warnings reach the user as one warning", {
+  skip_if_not_installed("quarto")
+  bin <- withr::local_tempfile(lines = "")
+  local_mocked_bindings(
+    quarto_path = function(...) bin,
+    quarto_version = function() numeric_version("1.7"),
+    .package = "quarto"
+  )
+  # A compile that wrote its PDF and warned twice for the same font, as
+  # Typst prints it: each warning, then lines pointing into the source.
+  local_mocked_bindings(
+    code_book_typst_compile = function(quarto, typ, path) {
+      c(
+        "warning: unknown font family: nope",
+        paste0("  --> ", typ, ":1:16"),
+        "",
+        "warning: unknown font family: nope",
+        "warning: a second warning"
+      )
+    }
+  )
+  pdf <- file.path(tempdir(), "cb-warned.pdf")
+  w <- expect_warning(
+    code_book(cbt_data(), output = pdf),
+    class = "spicy_typst_warning"
+  )
+  expect_s3_class(w, "spicy_passthrough")
+  msg <- conditionMessage(w)
+  expect_identical(
+    lengths(regmatches(msg, gregexpr("unknown font family: nope", msg))),
+    1L
+  )
+  expect_match(msg, "a second warning", fixed = TRUE)
+  # The log rides along, without the line naming the temporary source,
+  # which is gone.
+  expect_no_match(msg, "-->", fixed = TRUE)
+  expect_identical(
+    w$stderr[c(1L, 4L)],
+    c(
+      "warning: unknown font family: nope",
+      "warning: a second warning"
+    )
+  )
+  expect_false(any(grepl("-->", w$stderr, fixed = TRUE)))
+  # A compile without warnings says nothing.
+  local_mocked_bindings(
+    code_book_typst_compile = function(quarto, typ, path) character()
+  )
+  expect_no_warning(code_book(cbt_data(), output = pdf))
+})
+
 test_that("the fonts of the PDF must be ones Typst lists, exactly", {
   skip_if_not_installed("quarto")
   bin <- withr::local_tempfile(lines = "")
@@ -221,8 +302,8 @@ test_that("the PDF compiles with the Typst that Quarto bundles", {
   expect_false(res$visible)
   expect_s3_class(res$value, "spicy_codebook")
   expect_gt(file.size(pdf), 0)
-  # Cover, the page about the data, list, nine pages of sheets, index.
-  expect_identical(cbt_pages(sochealth), 13L)
+  # Cover, the page about the data, list, seven pages of sheets, index.
+  expect_identical(cbt_pages(sochealth), 11L)
 
   two <- withr::local_tempfile(fileext = ".pdf")
   code_book(
@@ -258,10 +339,21 @@ test_that("a sheet taller than a page breaks across pages", {
     "the school nurse should coordinate the health promotion activities",
     "of the whole school, with parents and teachers"
   )
-  labels <- stats::setNames(1:20, sprintf("Item %02d - %s", 1:20, item))
-  d <- data.frame(q = labelled::labelled(1:20, labels = labels), n = 1:20)
-  # Cover, about, list, the sheet of q on pages 4 and 5, then the sheet of
-  # n, index. Kept whole, the sheet of q overflowed its page, losing its
-  # last rows, and pushed n to a page of its own.
+  labels <- stats::setNames(1:25, sprintf("Item %02d - %s", 1:25, item))
+  d <- data.frame(q = labelled::labelled(1:25, labels = labels), n = 1:25)
+  # Cover, about, list, the sheet of q on pages 4 and 5, its values
+  # continued under a header naming it, the sheet of n, index.
   expect_identical(cbt_pages(d), 6L)
+})
+
+test_that("a name past 45 characters compiles on a band row of its own", {
+  skip_without_quarto()
+  # 91 characters: past 45 in the band, and past 60, so that the list and
+  # the index do not keep their rows together.
+  long <- paste0(strrep("satisfaction_", 6), strrep("x", 13))
+  d <- data.frame(id = 1:3, x = c(1, 2, NA))
+  names(d)[[2]] <- long
+  expect_identical(nchar(long), 91L)
+  # Cover, about, list, the two sheets, index.
+  expect_identical(cbt_pages(d), 5L)
 })

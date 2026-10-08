@@ -1,9 +1,9 @@
 ---
 title: "Explore variables and build codebooks"
 description: >
-  Explore variables, inspect labels, and build codebooks in R
-  with spicy. Learn how to use varlist(), vl(), code_book(), and
-  label_from_names() for survey and labelled datasets.
+  Inspect variables and labels, and build a codebook in the console,
+  Excel, or PDF, with varlist(), vl(), code_book(), and
+  label_from_names(), for survey and labelled data in R.
 output:
   html_document:
     toc: true
@@ -15,40 +15,24 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
 )
-options(width = 100)
+options(width = 97)
 ```
 
 ```{r setup}
 library(spicy)
 ```
 
-Before you build frequency tables or cross-tabulations, it is often worth
-checking how your variables are named, labelled, and coded.
+Before you build frequency tables or cross-tabulations, check how your
+variables are named, labelled, and coded: unclear names, missing labels,
+unexpected codes, and variables with many missing values are easier to
+fix now than in a finished table. This article covers three tasks:
 
-spicy provides a simple workflow for variable exploration and
-documentation in R. You can derive labels from imported column names,
-inspect variables with `varlist()` or `vl()`, and build a codebook
-with `code_book()`.
-
-This article focuses on three common tasks:
-
-- clean imported column names and recover variable labels with
+- recover variable labels from imported column names with
   `label_from_names()`
 - inspect variables, labels, values, classes, and missing data with
   `varlist()` and `vl()`
 - build a codebook, in the console, an Excel file, or a PDF, with
   `code_book()`
-
-These tools are especially useful for survey datasets, labelled data,
-and imported files where variable names and labels need to be checked
-before analysis.
-
-## Why inspect variables before analysis?
-
-Variable inspection helps catch common problems early: unclear names,
-missing labels, unexpected coding, and variables with many missing
-values. A quick review of your dataset also makes it easier to choose
-which variables to tabulate, summarize, or report later.
 
 ## Recover labels from imported column names
 
@@ -81,10 +65,8 @@ name, label, representative values, class, number of distinct values,
 number of valid observations, and missing values.
 
 In RStudio or Positron, the main way to use `varlist()` is
-interactively. With its default behavior, it opens a searchable,
-sortable variable overview in the Viewer, which makes it easy to scan
-labels, look for specific variables, filter what you want to inspect,
-and review the structure of a dataset before analysis.
+interactively. With its default behavior, it opens the overview in the
+Viewer, where you can search, sort, and filter the variables.
 
 ```{r varlist-interactive, eval = FALSE}
 varlist(sochealth)
@@ -168,10 +150,10 @@ vl(sochealth, starts_with("bmi"), tbl = TRUE)
 
 A codebook is the document that travels with a data file: what each
 variable measures, how it is coded, and how many observations carry
-each value. `code_book()` builds it from the data frame itself and
-returns it as an object you can keep, inspect, or write to Excel or
-PDF, which prints as the list of variables. The counts are
-unweighted: they describe the file, not the population.
+each value. `code_book()` builds it from the data frame itself. It
+returns an object that prints as the list of variables and that you can
+keep, inspect, or write to Excel or PDF. The counts are unweighted: they
+describe the file, not a population.
 
 `code_book(sochealth)` documents every variable. The same tidyselect
 selectors as in `varlist()` narrow it down:
@@ -183,10 +165,12 @@ code_book(sochealth, sex, age, income_group, starts_with("bmi"))
 The type is read off the R class, never guessed: a factor is
 *categorical (nominal)*, an ordered factor *categorical (ordinal)*, a
 labelled vector *categorical (labelled codes)*, an integer or double
-vector *numeric*, and a logical, character, `Date`, or `POSIXct` vector
-*logical*, *text*, *date*, or *date-time*. The level of measurement comes
-from the declaration alone: a factor whose order was not declared with
-`ordered()` is nominal. The R class itself stays in the object.
+vector *numeric*, a logical, character, or `Date` vector *logical*,
+*text*, or *date*, and a `POSIXct` or `POSIXlt` vector *date-time*. The
+level of measurement comes from the declaration alone: a factor whose
+order was not declared with `ordered()` is nominal. A labelled vector
+without value labels is *numeric* (or *text*), like one whose labels all
+mark missing codes (see below). The R class itself stays in the object.
 
 ### The codebook object
 
@@ -197,51 +181,63 @@ cb <- code_book(sochealth, sex, age, income_group, starts_with("bmi"))
 ```
 
 `variables` has one row per variable: its position in the data frame,
-name, label, type, R class, valid and missing counts, number of
-distinct values, and for numeric variables the minimum, maximum, mean,
-standard deviation, and median (dates get their earliest and latest
-value instead):
+name, label, type, R class, valid and missing counts, the count and
+codes of its declared missing values, number of distinct values, and,
+for numeric variables, the minimum, maximum, mean, standard deviation,
+and median (dates get their earliest and latest value instead):
 
 ```{r code-book-variables}
-cb$variables[, c("name", "type", "n_valid", "n_missing", "n_distinct", "min", "max", "mean")]
+cb$variables[, c("name", "type", "n_valid", "n_missing", "n_distinct",
+                 "min", "max", "mean")]
 ```
 
-`values` has one row per category of the categorical, ordinal, and
-logical variables, with its count and its percentages of all
-observations and of the valid ones, plus a row for the missing values:
+`values` has one row per category of the categorical and logical
+variables, with its count and its percentages of all observations and
+of the valid ones, then a row for the system missing values (`NA`) of
+each variable that has any:
 
 ```{r code-book-values}
 cb$values
 ```
 
-Numeric variables are summarized in `variables` and have no rows in
-`values`; text variables and dates have none either.
+Numeric, text, and date variables have no category rows: `variables`
+summarizes them, and they appear in `values` only through their
+declared missing values (see below). An integer Likert item is numeric
+too: give it value labels, or make it a factor, to list its categories.
+A variable with more categories than `values` (100 by default), such as
+a list of country or occupation codes, keeps its count of distinct
+values in `variables` but loses its category rows in `values` (if it
+declares missing codes, the rows of its declared and system missing
+values remain): `values = Inf` lists them all. Under the default
+`factor_levels = "all"`, unused levels count toward that limit, and they
+are listed with a count of 0.
 
-### Title, authors, and notes
+### Title, subtitle, authors, and notes
 
 The header carries what a reader needs to cite and trust the document:
-a title, the authors with their affiliation, the date, the numbers of
-observations and variables, and your notes on the data (source,
-exclusions, coding rules), one note per element:
+a title and a subtitle, the authors with their affiliations, the date,
+the numbers of observations and variables, and your notes on the data
+(source, exclusions, coding rules), one note per element:
 
 ```{r code-book-header}
 code_book(
   sochealth,
   starts_with("bmi"),
-  title = "Social health survey: body mass index",
+  title = "Social health survey",
+  subtitle = "Body mass index",
   authors = c("Jane Doe" = "University of Somewhere"),
   notes = c(
-    "Fictitious data shipped with spicy.",
-    "BMI computed from self-reported height and weight."
+    "Simulated data shipped with spicy (see ?sochealth).",
+    "BMI in kg/m², to one decimal."
   )
 )
 ```
 
 `authors` also accepts a list of lists with `name`, `affiliation`, and
-`orcid`. When the variables were renamed after import, `source`
-records the code each one had in the source file, such as a LimeSurvey
-question code: `source = c(sex = "Q1", age = "Q2")` fills the `source`
-column of `variables`.
+`orcid`. When the variables were renamed after import, `source` records
+the code each one had in the source file, such as a LimeSurvey question
+code: with `sex` and `age` selected, `source = c(sex = "Q1", age = "Q2")`
+fills the `source` column of `variables`.
 
 The words the codebook adds (column headers, types, header fields)
 follow `options(spicy.language)`: set it to `"fr"` for a French
@@ -249,40 +245,56 @@ codebook. The labels of the data are never translated.
 
 ### Declared missing values
 
-Data imported from SPSS or Stata often declare missing codes, such as
-99998 = *Don't know* and 99999 = *Refused*. `code_book()` honours the
-declaration as the tabulation functions do (see the "Declared missing
-values" section of `?freq`): the declared codes count as missing, are
-listed in `values` with `declared_missing = TRUE`, and are summarized
-in the header with the variables that carry them.
+Data imported from SPSS often declare missing codes, such as 8 =
+*Don't know* and 9 = *Refused*. `haven::read_sav()` keeps them only
+with `user_na = TRUE`: its default turns them into `NA`. Stata files
+carry extended missing values (`.a`, `.b`, ...) instead, which haven
+reads as tagged `NA`s. `code_book()` honors both declarations as the
+tabulation functions do (see the "Declared missing values" section of
+`?freq`): the declared codes count as missing, are listed in `values`
+with `declared_missing = TRUE`, and are summarized in the header with
+the variables that carry them.
 
 ```{r code-book-declared}
-income <- haven::labelled_spss(
-  c(3200, 4100, 99998, 5600, 99999, 2900, NA, 7400),
-  labels = c("Don't know" = 99998, "Refused" = 99999),
-  na_values = c(99998, 99999)
+trust <- haven::labelled_spss(
+  c(1, 2, 2, 3, 4, 8, 9, 1, NA, 2),
+  labels = c(
+    "Not at all" = 1, "A little" = 2, "Somewhat" = 3, "A lot" = 4,
+    "Don't know" = 8, "Refused" = 9
+  ),
+  na_values = c(8, 9),
+  label = "Trust in the health system"
 )
-attr(income, "label") <- "Monthly household income (CHF)"
+income <- haven::labelled_spss(
+  c(3200, 4100, 99998, 5600, 99999, 2900, NA, 7400, 3800, 4500),
+  labels = c("Don't know" = 99998, "Refused" = 99999),
+  na_values = c(99998, 99999),
+  label = "Monthly household income (CHF)"
+)
 
-cbi <- code_book(tibble::tibble(income))
+cbi <- code_book(tibble::tibble(trust, income))
+cbi
 cbi$values
+cbi$variables[, c("name", "type", "declared_codes", "min", "max", "mean")]
 ```
 
-Here every value label sits on a declared missing code, and the valid
-values are measurements. `code_book()` therefore reads `income` as
-numeric, not as categorical: `variables` gives its minimum, maximum,
-mean, and median on the valid values. A labelled vector with at least
-one label on a valid code (`1 = Yes`, `2 = No`) stays categorical. With
-`user_na = FALSE`, the declaration is ignored and the declared codes
-count as valid values.
+`trust` has labels on its valid codes: it is *categorical (labelled
+codes)*, and `values` lists its four answers, then its two declared
+missing codes and its system missing value. Every value label of
+`income` sits on a declared missing code and its valid values are
+measurements, so `code_book()` reads it as *numeric*: its statistics
+are computed on the valid values, and its only rows in `values` are its
+missing values. With `user_na = FALSE`, the declaration is ignored: the
+declared codes count as valid values, and `income` becomes a
+categorical variable whose every observed amount is a category.
 
 ### Write the codebook to Excel
 
 `output = "<path>.xlsx"` writes the codebook to an Excel workbook (this
-needs the `openxlsx2` package): a first sheet with the header, then the
-`variables` and `values` tables. Each table starts on row 1 with a
+needs the `openxlsx2` package): a first worksheet with the header, then
+the `variables` and `values` tables. Each table starts on row 1 with a
 frozen header and filters, so it sorts cleanly and reads back without
-skipping rows. Numbers stay numeric cells, and dates are ISO text.
+skipping rows. Numbers stay numeric cells, and dates are text.
 
 ```{r code-book-xlsx, eval = FALSE}
 code_book(
@@ -296,12 +308,17 @@ code_book(
 ### Write the codebook to PDF
 
 `output = "<path>.pdf"` writes the codebook as a document to share: a
-cover with the header, the list of variables with their pages, one sheet
-per variable, and an alphabetical index. It needs Quarto 1.7 or later,
-whose bundled Typst compiles the PDF; without Quarto,
-`output = "<path>.typ"` writes the Typst source, to compile with
-`typst compile` on another machine. spicy does not write DDI-XML: for a
-DDI description of the data file, see the DDIwR package.
+cover (title, subtitle, authors, date), a page about the data (numbers
+of observations and variables, notes, declared missing values), the
+list of variables with their pages, one sheet per variable, and an
+index of the variables sorted by name. It needs the quarto package and
+Quarto 1.7 or later, whose bundled Typst compiles the PDF. Without
+Quarto, `output = "<path>.typ"` writes the Typst source, which
+`typst compile` turns into the same PDF on any machine with Typst 0.12
+or later. `paper = "letter"` changes the paper size, and `font`,
+`font_code`, and `colors` the look. spicy does not write DDI-XML: for a
+DDI description of the data file, see the
+[DDIwR](https://CRAN.R-project.org/package=DDIwR) package.
 
 ```{r code-book-pdf, eval = FALSE}
 code_book(
@@ -320,8 +337,9 @@ you can inspect directly.
 Use `vl()` when you want the same summary with a shorter call in
 interactive work.
 
-Use `code_book()` when you want a codebook to keep or share: the
-counts of every value, in an object, an Excel file, or a PDF.
+Use `code_book()` when you want a codebook to keep or share: every
+variable with the counts of its categories, in an object, an Excel
+file, or a PDF.
 
 The two tools differ in one default: `varlist()` shows only the
 **observed** factor levels in its `Values` column (the convention of
@@ -331,3 +349,8 @@ declared** levels in `values`, unused ones with a count of 0 -- the
 full coding scheme, as a data dictionary or SPSS `CTABLES` would
 report it. Pass `factor_levels =` explicitly to either function to
 override the default.
+
+Their `values` arguments differ as well: in `varlist()`,
+`values = TRUE` prints every value in the `Values` column; in
+`code_book()`, `values` is the maximum number of categories listed per
+variable (100 by default).

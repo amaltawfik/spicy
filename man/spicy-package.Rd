@@ -28,12 +28,12 @@ announced in \code{NEWS.md}. The API surface is partitioned as
 follows; users planning to embed spicy in production pipelines
 or downstream packages should rely on the \strong{stable} surface.
 
-\strong{Stable} (signature and behaviour preserved across 0.y.z and
+\strong{Stable} (signature and behavior preserved across 0.y.z and
 into 1.0.0; documented changes only):
 \itemize{
 \item Frequency / cross-tabs: \code{\link[=freq]{freq()}}, \code{\link[=cross_tab]{cross_tab()}}
 \item Variable inspection: \code{\link[=varlist]{varlist()}} / \code{\link[=vl]{vl()}},
-\code{\link[=code_book]{code_book()}}, \code{\link[=label_from_names]{label_from_names()}}
+\code{\link[=label_from_names]{label_from_names()}}
 \item Row-wise summaries: \code{\link[=mean_n]{mean_n()}}, \code{\link[=sum_n]{sum_n()}}, \code{\link[=count_n]{count_n()}}
 \item Clipboard export: \code{\link[=copy_clipboard]{copy_clipboard()}}
 \item Association measures (point estimates and
@@ -44,8 +44,8 @@ documented CIs): \code{\link[=cramer_v]{cramer_v()}}, \code{\link[=phi]{phi()}},
 \code{\link[=uncertainty_coef]{uncertainty_coef()}}
 }
 
-\strong{Stabilising} (still maturing; argument names may be tightened
-before 1.0 with a \code{NEWS.md} entry, but no silent behavioural
+\strong{Stabilizing} (still maturing; argument names may be tightened
+before 1.0 with a \code{NEWS.md} entry, but no silent behavioral
 changes):
 \itemize{
 \item Summary table builders: \code{\link[=table_categorical]{table_categorical()}},
@@ -61,12 +61,15 @@ changes):
 \item Omnibus association overview: \code{\link[=assoc_measures]{assoc_measures()}}
 }
 
-\strong{Experimental} (new in this cycle; the shape of the output and
+\strong{Experimental} (new since 0.13.0; the shape of the output and
 the argument names may still move, with a \code{NEWS.md} entry, on their
 OWN clock rather than the parent family's):
 \itemize{
 \item Display language and label overrides: \code{\link[=spicy_labels]{spicy_labels()}}
-(with \code{options(spicy.language)} / \code{options(spicy.labels)})
+(with \code{options(spicy.language)} / \code{options(spicy.labels)}),
+since 0.13.0
+\item Codebooks: \code{\link[=code_book]{code_book()}} (the \code{spicy_codebook} object, its
+Excel workbook, and its PDF), in the development version
 }
 
 \strong{Internal API} (not part of the public surface; can change
@@ -87,7 +90,7 @@ the standard broom column conventions (\code{outcome}, \code{term},
 \code{estimate}, \code{std.error}, \code{conf.low}, \code{conf.high}, \code{statistic},
 \code{p.value}, \code{df}, \code{df.residual}, \code{r.squared}, \code{adj.r.squared},
 \code{nobs}, ...). The set of columns produced by each method is
-considered \strong{stabilising}: existing columns will not be silently
+considered \strong{stabilizing}: existing columns will not be silently
 renamed or have their semantics changed within \verb{0.y.z}, and any
 breaking change is announced in \code{NEWS.md}. Adding optional new
 columns (e.g. covariate-adjustment metadata) is not a breaking
@@ -105,7 +108,7 @@ convention).
 
 \section{Classed conditions}{
 
-All errors and warnings emitted by the stable / stabilising
+All errors and warnings emitted by the stable / stabilizing
 surfaces carry classed conditions so downstream code can
 dispatch on class via \code{tryCatch()} / \code{withCallingHandlers()}
 instead of matching message strings. Each condition has a
@@ -123,7 +126,8 @@ columns, degenerate grouping).
 \item \code{spicy_missing_pkg} -- a Suggests dependency
 is required by the requested operation but not installed.
 \item \code{spicy_missing_quarto} -- \code{\link[=code_book]{code_book()}} was asked
-for a PDF, and Quarto, which compiles it, was not found.
+for a PDF, and Quarto 1.7 or later, which compiles it, was
+not found.
 \item \code{spicy_typst_failed} -- Typst could not compile the
 PDF of \code{\link[=code_book]{code_book()}}; the condition carries its messages in
 \code{stderr}.
@@ -209,8 +213,12 @@ the default \code{method}).
 \item \code{spicy_passthrough} -- a third-party warning
 captured during an operation (e.g., the clipboard copy)
 and re-emitted under the spicy taxonomy.
+\item \code{spicy_typst_warning} -- Typst warned while
+compiling the PDF of \code{\link[=code_book]{code_book()}}, which it still wrote;
+the condition carries its messages in \code{stderr}. Signaled
+together with \code{spicy_passthrough}.
 \item \code{spicy_summary_failed} -- \code{\link[=varlist]{varlist()}} could not
-summarise one column; the rest of the table is fine.
+summarize one column; the rest of the table is fine.
 \item \code{spicy_renamed_column} -- a user data column or
 factor level collided with a spicy-internal name and was
 auto-renamed to preserve the data (emitted by

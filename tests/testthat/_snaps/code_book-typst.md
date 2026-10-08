@@ -45,7 +45,7 @@
               (code: "2", label: "No \\ never", m: false, na: false, n: "1", pct: "20.0", valid: "50.0"),
               (code: "8", label: "#DK *_@<", m: true, na: false, n: "1", pct: "20.0", valid: ""),
               (code: "9", label: "", m: true, na: false, n: "1", pct: "20.0", valid: ""),
-              (code: "NA", label: "system missing", m: false, na: true, n: "1", pct: "20.0", valid: ""),
+              (code: "NA", label: "System missing", m: false, na: true, n: "1", pct: "20.0", valid: ""),
             ),
           ),
           (
@@ -56,7 +56,7 @@
             source: none,
             declared_codes: none,
             counts: (n_valid: "4", n_missing: "1", n_distinct: "4"),
-            stats: (min: "1.5", max: "5.5", mean: "3.25", sd: "1.85", median: "3"),
+            stats: (min: "1.5", max: "5.5", mean: "3.25", sd: "1.85", median: "3.00"),
             values: (),
           ),
           (
@@ -104,11 +104,11 @@
         missing: "Missing",
         notes: "Notes",
         unweighted: "Counts are unweighted: they describe the file, not a population.",
-        orcid: "ORCID",
+        continued: "continued",
         about: "About the data",
         list: "List of variables",
         declared: "Declared missing values",
-        sheets: "Variable descriptions",
+        sheets: "Variable sheets",
         index: "Index of variables",
       )
       #codebook(data, strings)

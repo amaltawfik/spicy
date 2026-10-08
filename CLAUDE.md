@@ -16,7 +16,7 @@ overrides that take precedence within Claude Code sessions.
 - `R/globals.R` - package-level constants and globals
 
 Optional dependencies (Suggests): `clipr`, `tinytable`,
-`flextable`, `openxlsx2`, `officer`.
+`flextable`, `openxlsx2`, `officer`, `quarto` (the PDF of `code_book()`).
 Guard all usage with `requireNamespace()` and a clear, actionable error.
 
 ## Working style

@@ -15,17 +15,16 @@ code_book_write_typst <- function(cb, path) {
 }
 
 
-code_book_write_pdf <- function(cb, path, quarto) {
+code_book_write_pdf <- function(
+  cb,
+  path,
+  quarto,
+  call = rlang::caller_env()
+) {
   typ <- tempfile(fileext = ".typ")
   on.exit(unlink(typ), add = TRUE)
   code_book_write_typst(cb, typ)
-  # A quoted "~" would reach Typst unexpanded: R expands it first.
-  log <- suppressWarnings(system2(
-    quarto,
-    c("typst", "compile", shQuote(typ), shQuote(path.expand(path))),
-    stdout = TRUE,
-    stderr = TRUE
-  ))
+  log <- code_book_typst_compile(quarto, typ, path)
   if (!is.null(attr(log, "status"))) {
     # The temporary source is gone on exit: no line names it.
     log <- log[!grepl(basename(typ), log, fixed = TRUE)]
@@ -36,10 +35,39 @@ code_book_write_pdf <- function(cb, path, quarto) {
         "i" = "Write the source with `output = \"<path>.typ\"` to inspect it."
       ),
       class = "spicy_typst_failed",
-      stderr = log
+      stderr = log,
+      call = call
+    )
+  }
+  # A PDF made despite a warning (a glyph missing from the font, ...): the
+  # "warning:" lines reach the user as one R warning. The lines under each
+  # point into the temporary source, which is gone.
+  warned <- grep("^\\s*warning:", log, value = TRUE)
+  warned <- unique(sub("^\\s*warning:\\s*", "", warned))
+  if (length(warned)) {
+    spicy_warn(
+      c(
+        "Typst warned while compiling the codebook.",
+        stats::setNames(warned, rep("!", length(warned)))
+      ),
+      class = c("spicy_typst_warning", "spicy_passthrough"),
+      stderr = log[!grepl(basename(typ), log, fixed = TRUE)]
     )
   }
   invisible(path)
+}
+
+
+# The compile, apart so that a test can stand in for it. Typst's messages,
+# with an exit status attached when it failed. A quoted "~" would reach
+# Typst unexpanded: R expands it first.
+code_book_typst_compile <- function(quarto, typ, path) {
+  suppressWarnings(system2(
+    quarto,
+    c("typst", "compile", shQuote(typ), shQuote(path.expand(path))),
+    stdout = TRUE,
+    stderr = TRUE
+  ))
 }
 
 
@@ -77,28 +105,25 @@ code_book_typst_data <- function(cb) {
     out <- formatC(x, format = "f", digits = digits, decimal.mark = mark)
     replace(out, is.na(x), "")
   }
-  # min, max and median are values of the data, written as the data is.
-  # mean and sd are estimates: two decimals, or three significant digits
-  # between -1 and 1. Tested for zero against the largest statistic of the
-  # variable (`top`) first: no "-0.00", and no noise of a floating-point
-  # mean (-1.7e-17, a z-score).
-  stat <- function(x, estimate, top) {
-    x <- if (abs(x) <= 1e-12 * top) 0 else x
-    if (!estimate) {
-      return(format(
-        x,
-        scientific = FALSE,
-        trim = TRUE,
-        drop0trailing = TRUE,
-        digits = 15L,
-        decimal.mark = mark
-      ))
+  # min and max are values of the data, written at the precision the two
+  # carry, trailing zeros kept: 16.0 next to 38.9. Mean, SD and median are
+  # summaries, written at one shared precision: three significant digits
+  # of the SD, at most six decimals, or the precision of min and max when
+  # there is no SD. An unrounded variable writes min and max like its
+  # summaries. Zero is tested against the largest statistic of the
+  # variable (`top`) first, and is never signed: no "-0.00", and no noise
+  # of a floating-point mean (-1.7e-17, a z-score).
+  places <- function(x) {
+    if (!is.finite(x)) {
+      return(NA_integer_)
     }
-    # 0.995 already prints as 1.00; a floating-point sd of 0.99999999 too.
-    if (x == 0 || abs(x) >= 0.995) {
-      return(num(x, 2L))
+    for (d in 0:6) {
+      y <- x * 10^d
+      if (abs(y - round(y)) <= 1e-9 * max(1, abs(y))) {
+        return(d)
+      }
     }
-    formatC(signif(x, 3L), format = "fg", decimal.mark = mark)
+    NA_integer_
   }
   # The word "Codebook" heads every page with the title, and stands above
   # it on the cover, unless the title already says it.
@@ -120,16 +145,47 @@ code_book_typst_data <- function(cb) {
   rows <- split(cb$values, factor(cb$values$variable, levels = v$name))
   numeric_cols <- intersect(stat_cols, c("min", "max", "mean", "sd", "median"))
   vars <- lapply(seq_len(nrow(v)), function(i) {
-    z <- abs(vapply(numeric_cols, \(k) v[[k]][[i]], numeric(1)))
+    stat <- function(k) if (k %in% names(v)) v[[k]][[i]] else NA_real_
+    z <- abs(vapply(numeric_cols, stat, numeric(1)))
     top <- max(0, z[is.finite(z)])
+    tidy <- function(x) if (abs(x) <= 1e-12 * top) 0 else x
+    s <- stat("sd")
+    # The SD rounded to three digits first: a floating-point 0.9999999 is 1.
+    e <- if (is.finite(s) && s > 0) {
+      min(6, max(0, 2 - floor(log10(signif(s, 3)))))
+    } else {
+      NA
+    }
+    ends <- Filter(Negate(is.na), c(stat("min"), stat("max")))
+    d <- if (length(ends)) {
+      max(vapply(ends, function(x) places(tidy(x)), integer(1)))
+    } else {
+      NA
+    }
+    if (is.na(e)) {
+      e <- if (is.na(d)) 2 else d
+    }
+    if (is.na(d)) {
+      d <- e
+    }
+    fmt <- function(x, digits) {
+      x <- tidy(x)
+      if (round(x, digits) == 0) {
+        x <- 0
+      }
+      formatC(x, format = "f", digits = digits, decimal.mark = mark)
+    }
     stats <- list()
     for (k in stat_cols) {
-      s <- v[[k]][[i]]
-      if (is.na(s)) {
+      x <- v[[k]][[i]]
+      if (is.na(x)) {
         next
       }
-      estimate <- k %in% c("mean", "sd")
-      stats[[k]] <- if (is.character(s)) s else stat(s, estimate, top)
+      stats[[k]] <- if (is.character(x)) {
+        x
+      } else {
+        fmt(x, if (k %in% c("min", "max")) d else e)
+      }
     }
     r <- rows[[i]]
     # The system missing row is the one the object codes "NA".
@@ -203,7 +259,7 @@ code_book_typst_data <- function(cb) {
       missing = spicy_str("header_marker_missing"),
       notes = spicy_str("row_notes"),
       unweighted = spicy_str("note_codebook_unweighted"),
-      orcid = "ORCID",
+      continued = spicy_str("note_codebook_continued"),
       about = spicy_str("title_codebook_about"),
       list = spicy_str("title_codebook_list"),
       declared = spicy_str("title_codebook_declared"),

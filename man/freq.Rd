@@ -173,14 +173,15 @@ optional sentinel-value recoding.
 Weighting (\code{weights}): frequencies and percentages are computed
 proportionally to the weights. Missing values in \code{weights} cause
 those observations to be dropped from the table entirely (with a
-warning), matching the behaviour of \code{\link[=cross_tab]{cross_tab()}} in spicy
+warning), matching the behavior of \code{\link[=cross_tab]{cross_tab()}} in spicy
 0.11.0+. With \code{rescale = TRUE}, the remaining (non-\code{NA}-weighted)
-weights are normalised so the total weighted N equals the count
+weights are normalized so the total weighted N equals the count
 of non-\code{NA}-weighted rows. With \code{rescale = FALSE}, the total
 weighted N is the actual sum of non-\code{NA} weights.
 
 For schema-level inspection without computing frequencies, use
-\code{\link[=varlist]{varlist()}} or \code{\link[=code_book]{code_book()}}.
+\code{\link[=varlist]{varlist()}}; \code{\link[=code_book]{code_book()}} documents every variable with the counts of
+its categories.
 }
 \section{Declared missing values}{
 
@@ -191,7 +192,9 @@ source file marks as missing while keeping them distinct from a
 plain \code{NA}. Two kinds of declaration exist: \code{na_values} / \code{na_range}
 metadata on \code{\link[haven:labelled_spss]{haven::labelled_spss()}} vectors, and tagged missing
 values created by \code{\link[haven:tagged_na]{haven::tagged_na()}} (the Stata \code{.a}, \code{.b}, ...
-convention).
+convention). \code{\link[haven:read_sav]{haven::read_sav()}} keeps the \code{na_values} / \code{na_range}
+declaration only with \code{user_na = TRUE}: its default turns the
+declared codes into \code{NA} on import.
 
 spicy honors the declaration by default (\code{user_na = TRUE}):
 declared missing values are excluded from every statistic exactly

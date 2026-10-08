@@ -22,14 +22,15 @@
 #' Weighting (`weights`): frequencies and percentages are computed
 #' proportionally to the weights. Missing values in `weights` cause
 #' those observations to be dropped from the table entirely (with a
-#' warning), matching the behaviour of [cross_tab()] in spicy
+#' warning), matching the behavior of [cross_tab()] in spicy
 #' 0.11.0+. With `rescale = TRUE`, the remaining (non-`NA`-weighted)
-#' weights are normalised so the total weighted N equals the count
+#' weights are normalized so the total weighted N equals the count
 #' of non-`NA`-weighted rows. With `rescale = FALSE`, the total
 #' weighted N is the actual sum of non-`NA` weights.
 #'
 #' For schema-level inspection without computing frequencies, use
-#' [varlist()] or [code_book()].
+#' [varlist()]; [code_book()] documents every variable with the counts of
+#' its categories.
 #'
 #' @param data A `data.frame`, vector, or factor. If a data frame is provided,
 #'   specify the target variable `x`. If both `data` and `x` are supplied as
@@ -131,7 +132,9 @@
 #' plain `NA`. Two kinds of declaration exist: `na_values` / `na_range`
 #' metadata on [haven::labelled_spss()] vectors, and tagged missing
 #' values created by [haven::tagged_na()] (the Stata `.a`, `.b`, ...
-#' convention).
+#' convention). [haven::read_sav()] keeps the `na_values` / `na_range`
+#' declaration only with `user_na = TRUE`: its default turns the
+#' declared codes into `NA` on import.
 #'
 #' spicy honors the declaration by default (`user_na = TRUE`):
 #' declared missing values are excluded from every statistic exactly

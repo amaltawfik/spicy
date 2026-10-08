@@ -35,33 +35,42 @@ code_book(
 reordered, but renaming selections is not supported.}
 
 \item{title}{Title of the codebook, such as the name of the study. The
-PDF adds the word "Codebook" itself, above the title and in the page
-header, so the title need not say it. Defaults to \code{"Codebook"};
-\code{NULL} removes it.}
+PDF adds the word "Codebook" above it on the cover and before it in
+the page header, unless the title already contains the word.
+Defaults to \code{"Codebook"}. \code{NULL} leaves the console and the Excel file
+without a title; the cover of the PDF then shows "Codebook" once.}
 
 \item{subtitle}{Subtitle of the codebook, under the title: the wave, the
-edition, the extract (\code{"Enquête HESAV 2026, base partielle"}).}
+edition, the extract (\code{"Wave 3, 2026, public-use file"}).}
 
 \item{authors}{Authors of the codebook: \code{NULL} (the default), a
 character vector whose names are the authors and whose values are
 their affiliations (\code{c("Jane Doe" = "University of Somewhere")}; an
 unnamed element is a name without affiliation), or a list of lists
-with \code{name} and the optional \code{affiliation} and \code{orcid}.}
+with \code{name} and the optional \code{affiliation} and \code{orcid}. An ORCID given
+as its \verb{https://orcid.org/} address is kept as the identifier alone.}
 
 \item{notes}{Character vector of notes on the data (source, exclusions,
-coding rules, ...), one note per element. In the PDF, an element that
-starts with \code{"- "} or \code{"* "} is a list item, consecutive items making
-one list, and any other element is a paragraph:
-\code{notes = c("Fictitious data.", "- Weight: design weight.", "- BMI: self-reported.")}.
-The console and the Excel file show the notes as typed.}
+coding rules, ...), one note per element; blank notes are dropped. In
+the PDF, an element that starts with \code{"- "} or \code{"* "} is a list item,
+consecutive items making one list, and any other element is a
+paragraph:
+\code{notes = c("Wave 3 only.", "- Weight: design weight.", "- BMI: kg/m2.")}.
+The console and the Excel file show the notes as typed; the PDF turns
+straight apostrophes into typographic ones and, in French, the space
+before \code{:}, \verb{;}, \code{!}, or \verb{?} into a non-breaking space.}
 
 \item{source}{Named character vector mapping the current column names to
 the codes they had in the source file, the vector
-\code{dplyr::rename(all_of())} takes. Its names must be selected columns.}
+\code{dplyr::rename(all_of())} takes. Its names must be selected columns,
+and each code must be non-empty.}
 
-\item{values}{The maximum number of categories listed per variable in \code{values}. A
-variable with more keeps its count of distinct values in \code{variables}
-and has no rows in \code{values}. Defaults to \code{100}; \code{Inf} lists them all.}
+\item{values}{The maximum number of categories listed per variable in
+the \code{values} table; under \code{factor_levels = "all"}, unused levels and
+codes count. A variable with more keeps its count of distinct values
+in \code{variables}; in \code{values} it loses its category rows and keeps those
+of its declared and system missing values, if it declares missing
+codes. Defaults to \code{100}; \code{Inf} lists them all.}
 
 \item{range}{Logical. If \code{TRUE} (the default), \code{variables} gives the
 minimum and maximum of each numeric variable and the earliest and
@@ -69,8 +78,9 @@ latest date of each date; \code{FALSE} drops those four columns.}
 
 \item{factor_levels}{Character. \code{"all"} (the default; \code{\link[=varlist]{varlist()}} uses
 \code{"observed"}) lists every declared level of a factor, every labelled
-code and both values of a logical, with a count of 0 when unused.
-\code{"observed"} lists only the values present in the data.}
+code, every code of \code{na_values}, and both values of a logical, with a
+count of 0 when unused. \code{"observed"} lists only the values present in
+the data.}
 
 \item{user_na}{Logical. If \code{TRUE} (the default), declared missing values
 count as missing: they are left out of \code{n_valid}, counted in
@@ -85,20 +95,26 @@ of \code{options(spicy.style)}, then the one of the language
 console list prints counts only, and the Excel file keeps numbers as
 numbers.}
 
-\item{font, font_code}{Fonts of the PDF, for the text and for the names
-and codes. \code{NULL} (the default) uses New Computer Modern and DejaVu
-Sans Mono, which Typst embeds, so the PDF looks the same whatever the
-machine. Any other font must be one Typst finds, named exactly as
-\verb{quarto typst fonts} lists it; a \code{.typ} output keeps the name as
-given, unchecked. A \code{font} also sets the font of the Excel file,
-which otherwise keeps its default font.}
+\item{font, font_code}{Fonts of the PDF: \code{font} for the text, the values
+and their codes included, and \code{font_code} for the variable names and
+the source codes. \code{NULL} (the default) uses New Computer Modern and
+DejaVu Sans Mono, which Typst embeds, so the PDF looks the same on
+every machine for the characters these fonts cover; any other
+character falls back to a font found on the machine. Any other font
+must be one Typst finds, named exactly as \verb{quarto typst fonts} lists
+it; a \code{.typ} output keeps the name as given, unchecked. A \code{font} also
+sets the font of the Excel file, which otherwise keeps its default
+font.}
 
 \item{colors}{Named character vector of \code{"#RRGGBB"} colors replacing
-part of the palette of the PDF: \code{primary} (title, headings and the
-text of table headers), \code{accent} (links and the declared missing
-marker), \code{band} (behind table headers), \code{band_dark} (the band of each
-variable, under white text), \code{zebra}, \code{grid} (rules), \code{text} and
-\code{muted}. The headers of the Excel file take \code{primary} and \code{band} too.}
+part of the palette of the PDF: \code{primary} (title, headings, and the
+text of table headers), \code{accent} (the word "Codebook" above the title,
+and the links), \code{band} (behind table headers), \code{band_dark} (the band
+of each variable, under white text), \code{zebra} (behind the label rows of
+a variable), \code{grid} (rules), \code{text}, and \code{muted}. A \code{band} given
+without \code{zebra} brings a lighter tint of itself as \code{zebra}, and a
+\code{band_dark} given without \code{grid} a light tint of itself as \code{grid}. The
+headers of the Excel file take \code{primary} and \code{band} too.}
 
 \item{paper}{Paper size of the PDF: \code{"a4"} (the default) or \code{"letter"}.}
 
@@ -108,31 +124,37 @@ the format of its extension, and returns it invisibly: \code{.xlsx} for an
 Excel workbook (this requires \code{openxlsx2}), \code{.pdf} for a PDF (this
 requires the \code{quarto} package and Quarto 1.7 or later, found on the
 PATH or through the \code{QUARTO_PATH} environment variable), \code{.typ} for
-the Typst source of that PDF.}
+the Typst source of that PDF. The path names a file, in a directory
+that exists.}
 }
 \value{
 A \code{spicy_codebook} object, returned invisibly when \code{output} is
 given: a list with
 \describe{
 \item{\code{header}}{A list: \code{title}, \code{subtitle}, \code{authors} (a tibble with
-\code{name}, \code{affiliation} and \code{orcid}), \code{date}, \code{n_obs}, \code{n_vars},
-\code{notes}, and \code{declared_missing}, a tibble of the declared missing
-values found in the data (\code{code}, \code{label}, \code{variables},
+\code{name}, \code{affiliation}, and \code{orcid}), \code{date}, \code{n_obs}, \code{n_vars},
+\code{notes} (blank notes dropped), and \code{declared_missing}, a tibble of
+the declared missing values found in the data and, under
+\code{factor_levels = "all"}, of the declared codes no observation
+carries, sorted by code then label (\code{code}, \code{label}, \code{variables},
 \code{n_variables}).}
 \item{\code{variables}}{A tibble, one row per variable: \code{position} (the
 column's position in \code{x}), \code{name}, \code{label}, \code{type}, \code{class},
 \code{source}, \code{n_valid}, \code{n_missing}, \code{n_declared_missing},
 \code{declared_codes} (the \code{na_values} and \code{na_range} of a
-\code{haven_labelled_spss} vector, as text; \code{NA} without them or under
-\code{user_na = FALSE}), \code{n_distinct}, then \code{min}, \code{max}, \code{mean}, \code{sd}
-and \code{median} for numeric variables and \code{earliest} and \code{latest} for
-dates.}
+\code{haven_labelled_spss} vector, as text, the two parts separated by a
+semicolon; \code{NA} without them or under \code{user_na = FALSE}),
+\code{n_distinct}, then \code{min}, \code{max}, \code{mean}, \code{sd}, and \code{median} for
+numeric variables and \code{earliest} and \code{latest} for dates.
+\code{range = FALSE} drops \code{min}, \code{max}, \code{earliest}, and \code{latest}.}
 \item{\code{values}}{A tibble, one row per value: \code{variable}, \code{code},
-\code{label}, \code{declared_missing}, \code{n}, \code{pct_total} and \code{pct_valid}.}
+\code{label}, \code{declared_missing}, \code{n}, \code{pct_total}, and \code{pct_valid}. The
+row of the system missing values (\code{code = "NA"}) exists only for a
+variable that has missing values.}
 }
 The attributes \code{language} and \code{decimal_mark} record the language and
 the decimal mark the codebook was built with, and \code{appearance} the look
-of its PDF: a list of \code{font}, \code{font_code}, \code{colors} (all eight) and
+of its PDF: a list of \code{font}, \code{font_code}, \code{colors} (all eight), and
 \code{paper}.
 }
 \description{
@@ -149,57 +171,82 @@ The counts are unweighted: they describe the file, not a population.
 The type of a variable is read off its R class, never guessed: a factor
 is categorical (nominal), an ordered factor categorical (ordinal), a
 \code{haven_labelled} vector categorical (labelled codes), an integer or
-double vector numeric, and a logical, character, \code{Date} or \code{POSIXct}
-vector logical, text, date or date-time. The level of measurement comes
-from the declaration alone: a factor whose order was not declared with
-\code{ordered()} is nominal. Any other class is shown as the class itself. The R class
-stays in its own column. With \code{user_na = TRUE}, a \code{haven_labelled}
-vector whose value labels all sit on declared missing codes, or that has
-no labels, is numeric, or text when it stores characters.
+double vector numeric, a logical, character, or \code{Date} vector logical,
+text, or date, and a \code{POSIXct} or \code{POSIXlt} vector date-time. The level
+of measurement comes from the declaration alone: a factor whose order
+was not declared with \code{ordered()} is nominal. A vector of any other
+class is shown by its first class (\code{difftime}, \code{hms}, ...), without
+statistics. The R class stays in its own column. A \code{haven_labelled}
+vector without value labels is numeric, or text when it stores
+characters, and so is one whose value labels all sit on declared
+missing codes, with \code{user_na = TRUE}.
 
 \code{values} lists the categories of factors and labelled vectors and the
 two values of a logical, then the declared missing values of the
-variable and a row for its system missing values (\code{code = "NA"}).
-Numeric, text and date variables have no category rows: they appear in
-\code{values} only through their declared missing values. The codes of a
-labelled vector come in code order, the levels of a factor in level
-order.
+variable and, when it has any, a row for its system missing values
+(\code{code = "NA"}). Numeric, text, and date variables have no category
+rows: they appear in \code{values} only through their declared missing
+values. The codes of a labelled vector come in code order, the levels
+of a factor in level order. An explicit \code{NA} level of a factor (from
+\code{\link[=addNA]{addNA()}}) counts as missing, in the row of the system missing values.
 
-Dates are written in ISO 8601: a date-time in the time zone the variable
-carries, and in UTC when it carries none, the zone being named in either
-case.
+Dates are written as \code{YYYY-MM-DD}, and date-times as
+\verb{YYYY-MM-DD HH:MM:SS} followed by the name of the time zone the
+variable carries, or \code{UTC} when it carries none.
 
-The language of the labels follows \code{options(spicy.language)} when the
-codebook is built (see \code{\link[=spicy_labels]{spicy_labels()}}); the labels of the data are
-never translated.
+The words the codebook adds (column headers, types, field and sheet
+names) follow \code{options(spicy.language)} when the codebook is built (see
+\code{\link[=spicy_labels]{spicy_labels()}}); the variable and value labels of the data are never
+translated.
 
-\code{print()} shortens long variable labels when that makes the list fit
-the console; the object keeps them whole.
+\code{print()} shows a line break or a tab in a label as a space, and
+shortens long variable labels, counting display columns, when that
+makes the list fit the console; the object keeps the labels whole.
 }
 \section{Excel output}{
 
-The workbook has three sheets, named in the language of the codebook.
-The first, \code{codebook}, holds the header as field-value pairs: title,
-subtitle, one row per author, date, numbers of observations and
-variables, declared missing values, notes, and the versions of spicy
-and R that wrote it.
-The other two, \code{variables} and \code{values}, are the two tables of the
-object from the first row, with a frozen header and filters: numbers
-stay numeric cells and dates are ISO text.
+The workbook has three worksheets, named in the language of the
+codebook. The first, \code{codebook}, holds the header as field-value pairs:
+title, subtitle, one row per author, date, numbers of observations and
+variables, declared missing values, notes, and the versions of spicy and
+R that wrote it, with the date and time of writing. The other two,
+\code{variables} and \code{values}, hold the two tables of the object from the
+first row, under the column headers the console and the PDF show
+(\code{code} is "Value", \code{n_valid} "Valid"), with a frozen header and
+filters. Numbers stay numeric cells, the percentages shown to one
+decimal; a statistic that is not finite (of a column holding \code{Inf}) is
+an empty cell, and dates stay text, written as above.
 }
 
 \section{PDF output}{
 
-The PDF opens on a cover (title, subtitle, authors, date) and a page
-about the data (numbers of observations and variables, notes, declared
-missing values), then lists the variables with the page of each. One
-sheet per variable follows (counts, statistics, and the table of its
-values, where \code{M} marks a declared missing value), then an
-alphabetical index. A sheet breaks
-across pages only when it does not fit on one. \code{code_book()}
-writes the Typst source and compiles it with the Typst that Quarto
-bundles. Without Quarto, \code{output = "<path>.typ"} writes the same
-source, self-contained: \verb{typst compile} makes the PDF on any machine.
+The PDF opens on a cover: the word "Codebook" above the title (unless
+the title already contains it), the subtitle, the authors with their
+affiliations and ORCID addresses, the date, and at the foot the
+versions of spicy and R that made it. A page about the data follows
+(numbers of observations and variables, then the notes and the declared
+missing values), then the list of variables with the page of each.
+
+One sheet per variable comes next, under the heading "Variable sheets":
+a dark band with the position, name, and type (a name over 45
+characters takes a row of its own), rows for the label, the declared
+missing codes, and the source code, then the counts, the statistics,
+and the table of the values. On a sheet that lists declared missing
+codes, a Missing column marks them with \code{M}; the row of the system
+missing values reads "System missing". Minimum and maximum are written
+at the precision of the data; mean, SD, and median at three significant
+digits of the SD. A sheet breaks across pages only when it does not fit
+on one; its table of values then repeats its header under
+"name (continued)". An index of the variables closes the document,
+sorted by name in byte order, where uppercase letters come before
+lowercase ones.
+
+\code{code_book()} writes the Typst source and compiles it with the Typst
+that Quarto bundles; Typst warnings, such as a character missing from
+the fonts, arrive as one R warning of class \code{spicy_typst_warning}.
+Without Quarto, \code{output = "<path>.typ"} writes the same source,
+self-contained: \verb{typst compile} makes the PDF on any machine with Typst
+0.12 or later.
 }
 
 \section{Declared missing values}{
@@ -211,7 +258,9 @@ source file marks as missing while keeping them distinct from a
 plain \code{NA}. Two kinds of declaration exist: \code{na_values} / \code{na_range}
 metadata on \code{\link[haven:labelled_spss]{haven::labelled_spss()}} vectors, and tagged missing
 values created by \code{\link[haven:tagged_na]{haven::tagged_na()}} (the Stata \code{.a}, \code{.b}, ...
-convention).
+convention). \code{\link[haven:read_sav]{haven::read_sav()}} keeps the \code{na_values} / \code{na_range}
+declaration only with \code{user_na = TRUE}: its default turns the
+declared codes into \code{NA} on import.
 
 spicy honors the declaration by default (\code{user_na = TRUE}):
 declared missing values are excluded from every statistic exactly
@@ -239,14 +288,30 @@ code_book(sochealth)
 
 cb <- code_book(
   sochealth,
-  sex,
   starts_with("bmi"),
-  title = "Body mass index",
+  title = "Social health survey",
+  subtitle = "Body mass index",
   authors = c("Jane Doe" = "University of Somewhere"),
-  notes = "BMI computed from self-reported height and weight."
+  notes = "Simulated data (see ?sochealth)."
 )
+cb
 cb$variables
 cb$values
+
+# Labelled survey data: declared missing codes count as missing and are
+# flagged in `values`.
+if (requireNamespace("haven", quietly = TRUE)) {
+  trust <- haven::labelled_spss(
+    c(1, 2, 2, 3, 4, 8, 9, 1, NA, 2),
+    labels = c(
+      "Not at all" = 1, "A little" = 2, "Somewhat" = 3, "A lot" = 4,
+      "Don't know" = 8, "Refused" = 9
+    ),
+    na_values = c(8, 9),
+    label = "Trust in the health system"
+  )
+  code_book(tibble::tibble(trust))$values
+}
 
 if (requireNamespace("openxlsx2", quietly = TRUE)) {
   path <- tempfile(fileext = ".xlsx")
@@ -260,7 +325,8 @@ code_book(sochealth, output = tempfile(fileext = ".typ"))
 }
 \seealso{
 \code{\link[=varlist]{varlist()}} to explore the variables in the Viewer; \code{\link[=freq]{freq()}} for the
-frequency table of one variable.
+frequency table of one variable; the article
+\href{https://amaltawfik.github.io/spicy/articles/variable-exploration.html}{Explore variables and build codebooks}.
 
 Other variable inspection:
 \code{\link[=label_from_names]{label_from_names()}},

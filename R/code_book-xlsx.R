@@ -41,6 +41,10 @@ code_book_write_xlsx <- function(cb, path, font = NULL) {
   argb <- sub("#", "FF", attr(cb, "appearance")$colors, fixed = TRUE)
   for (i in seq_along(tables)) {
     df <- as.data.frame(tables[[i]])
+    # Inf, -Inf and NaN (statistics of a column holding Inf) would become
+    # error cells: they are left empty, and the column stays numeric.
+    dbl <- vapply(df, is.double, logical(1))
+    df[dbl] <- lapply(df[dbl], function(v) replace(v, !is.finite(v), NA))
     if (i > 1L) {
       names(df) <- code_book_headers(names(df))
     }
@@ -83,25 +87,20 @@ code_book_write_xlsx <- function(cb, path, font = NULL) {
       dims = openxlsx2::wb_dims(rows = which(info$key == k) + 1L, cols = 2L)
     )
   }
-  # Percentages shown to one decimal, means and SDs to two; the cells keep
-  # their full precision.
-  formats <- list(
-    list(2L, c("mean", "sd"), "0.00"),
-    list(3L, c("pct_total", "pct_valid"), "0.0")
-  )
-  for (f in formats) {
-    n <- nrow(tables[[f[[1L]]]])
-    if (n > 0L) {
-      wb <- openxlsx2::wb_add_numfmt(
-        wb,
-        sheet = sheets[[f[[1L]]]],
-        dims = openxlsx2::wb_dims(
-          rows = 1L + seq_len(n),
-          cols = which(names(tables[[f[[1L]]]]) %in% f[[2L]])
-        ),
-        numfmt = f[[3L]]
-      )
-    }
+  # Percentages shown to one decimal; the cells keep their full precision.
+  # Means and SDs keep the General format, which a fixed number of
+  # decimals would turn to 0.00 on a small scale.
+  n <- nrow(cb$values)
+  if (n > 0L) {
+    wb <- openxlsx2::wb_add_numfmt(
+      wb,
+      sheet = sheets[[3L]],
+      dims = openxlsx2::wb_dims(
+        rows = 1L + seq_len(n),
+        cols = which(names(cb$values) %in% c("pct_total", "pct_valid"))
+      ),
+      numfmt = "0.0"
+    )
   }
   # Without authors the creator is "", not NULL: openxlsx2 would write the
   # login of the session as creator and last modifier.

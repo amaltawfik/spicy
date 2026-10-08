@@ -1,8 +1,13 @@
-validate_varlist_logical <- function(x, arg) {
+# The checks varlist() shares with code_book(). Each takes the `call` its
+# error names (the frame that calls it, by default) and the selector check
+# the name of the function, so that an error raised for code_book() names
+# code_book().
+validate_varlist_logical <- function(x, arg, call = rlang::caller_env()) {
   if (!is.logical(x) || length(x) != 1L || is.na(x)) {
     spicy_abort(
       paste0("`", arg, "` must be TRUE or FALSE."),
-      class = "spicy_invalid_input"
+      class = "spicy_invalid_input",
+      call = call
     )
   }
 
@@ -10,24 +15,30 @@ validate_varlist_logical <- function(x, arg) {
 }
 
 
-validate_varlist_names <- function(x) {
+validate_varlist_names <- function(x, call = rlang::caller_env()) {
   nms <- names(x)
 
   if (is.null(nms)) {
-    spicy_abort("`x` must have column names.", class = "spicy_invalid_data")
+    spicy_abort(
+      "`x` must have column names.",
+      class = "spicy_invalid_data",
+      call = call
+    )
   }
 
   if (anyNA(nms) || any(!nzchar(nms))) {
     spicy_abort(
       "`x` must have non-empty column names.",
-      class = "spicy_invalid_data"
+      class = "spicy_invalid_data",
+      call = call
     )
   }
 
   if (anyDuplicated(nms)) {
     spicy_abort(
       "`x` must have unique column names.",
-      class = "spicy_invalid_data"
+      class = "spicy_invalid_data",
+      call = call
     )
   }
 
@@ -35,13 +46,19 @@ validate_varlist_names <- function(x) {
 }
 
 
-validate_varlist_selectors <- function(selectors, x) {
+validate_varlist_selectors <- function(
+  selectors,
+  x,
+  fn = "varlist()",
+  call = rlang::caller_env()
+) {
   selected_names <- names(x)[unname(selectors)]
 
   if (!identical(names(selectors), selected_names)) {
     spicy_abort(
-      "`...` can select columns but cannot rename them in varlist().",
-      class = "spicy_invalid_input"
+      paste0("`...` can select columns but cannot rename them in ", fn, "."),
+      class = "spicy_invalid_input",
+      call = call
     )
   }
 
@@ -49,7 +66,10 @@ validate_varlist_selectors <- function(selectors, x) {
 }
 
 
-match_varlist_factor_levels <- function(factor_levels) {
+match_varlist_factor_levels <- function(
+  factor_levels,
+  call = rlang::caller_env()
+) {
   choices <- c("observed", "all")
 
   if (
@@ -59,7 +79,8 @@ match_varlist_factor_levels <- function(factor_levels) {
   ) {
     spicy_abort(
       '`factor_levels` must be "observed" or "all".',
-      class = "spicy_invalid_input"
+      class = "spicy_invalid_input",
+      call = call
     )
   }
 
@@ -77,7 +98,8 @@ match_varlist_factor_levels <- function(factor_levels) {
     error = function(e) {
       spicy_abort(
         '`factor_levels` must be "observed" or "all".',
-        class = "spicy_invalid_input"
+        class = "spicy_invalid_input",
+        call = call
       )
     }
   )

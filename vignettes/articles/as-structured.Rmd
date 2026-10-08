@@ -415,7 +415,7 @@ Three properties make the structured view safe to build on:
   view is built from the same computation frames the display is --
   value fidelity is pinned by tests, and the engines migrate onto
   the view as the contract settles.
-* **Stability tier.** `as_structured()` sits in the *stabilising*
+* **Stability tier.** `as_structured()` sits in the *stabilizing*
   tier of the API (see `?spicy`, section *API stability*). The rule
   the contract actually keeps in the `0.y` series is this: nothing
   ever changes *silently*. Components are added by default; when one

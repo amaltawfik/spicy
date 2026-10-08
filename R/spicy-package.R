@@ -22,12 +22,12 @@
 #' follows; users planning to embed spicy in production pipelines
 #' or downstream packages should rely on the **stable** surface.
 #'
-#' **Stable** (signature and behaviour preserved across 0.y.z and
+#' **Stable** (signature and behavior preserved across 0.y.z and
 #' into 1.0.0; documented changes only):
 #' \itemize{
 #'   \item Frequency / cross-tabs: [freq()], [cross_tab()]
 #'   \item Variable inspection: [varlist()] / [vl()],
-#'         [code_book()], [label_from_names()]
+#'         [label_from_names()]
 #'   \item Row-wise summaries: [mean_n()], [sum_n()], [count_n()]
 #'   \item Clipboard export: [copy_clipboard()]
 #'   \item Association measures (point estimates and
@@ -38,8 +38,8 @@
 #'         [uncertainty_coef()]
 #' }
 #'
-#' **Stabilising** (still maturing; argument names may be tightened
-#' before 1.0 with a `NEWS.md` entry, but no silent behavioural
+#' **Stabilizing** (still maturing; argument names may be tightened
+#' before 1.0 with a `NEWS.md` entry, but no silent behavioral
 #' changes):
 #' \itemize{
 #'   \item Summary table builders: [table_categorical()],
@@ -55,12 +55,15 @@
 #'   \item Omnibus association overview: [assoc_measures()]
 #' }
 #'
-#' **Experimental** (new in this cycle; the shape of the output and
+#' **Experimental** (new since 0.13.0; the shape of the output and
 #' the argument names may still move, with a `NEWS.md` entry, on their
 #' OWN clock rather than the parent family's):
 #' \itemize{
 #'   \item Display language and label overrides: [spicy_labels()]
-#'         (with `options(spicy.language)` / `options(spicy.labels)`)
+#'         (with `options(spicy.language)` / `options(spicy.labels)`),
+#'         since 0.13.0
+#'   \item Codebooks: [code_book()] (the `spicy_codebook` object, its
+#'         Excel workbook, and its PDF), in the development version
 #' }
 #'
 #' **Internal API** (not part of the public surface; can change
@@ -79,7 +82,7 @@
 #' `estimate`, `std.error`, `conf.low`, `conf.high`, `statistic`,
 #' `p.value`, `df`, `df.residual`, `r.squared`, `adj.r.squared`,
 #' `nobs`, ...). The set of columns produced by each method is
-#' considered **stabilising**: existing columns will not be silently
+#' considered **stabilizing**: existing columns will not be silently
 #' renamed or have their semantics changed within `0.y.z`, and any
 #' breaking change is announced in `NEWS.md`. Adding optional new
 #' columns (e.g. covariate-adjustment metadata) is not a breaking
@@ -95,7 +98,7 @@
 #' convention).
 #'
 #' @section Classed conditions:
-#' All errors and warnings emitted by the stable / stabilising
+#' All errors and warnings emitted by the stable / stabilizing
 #' surfaces carry classed conditions so downstream code can
 #' dispatch on class via `tryCatch()` / `withCallingHandlers()`
 #' instead of matching message strings. Each condition has a
@@ -113,7 +116,8 @@
 #'       \item \code{spicy_missing_pkg} -- a Suggests dependency
 #'         is required by the requested operation but not installed.
 #'       \item \code{spicy_missing_quarto} -- [code_book()] was asked
-#'         for a PDF, and Quarto, which compiles it, was not found.
+#'         for a PDF, and Quarto 1.7 or later, which compiles it, was
+#'         not found.
 #'       \item \code{spicy_typst_failed} -- Typst could not compile the
 #'         PDF of [code_book()]; the condition carries its messages in
 #'         `stderr`.
@@ -199,8 +203,12 @@
 #'       \item \code{spicy_passthrough} -- a third-party warning
 #'         captured during an operation (e.g., the clipboard copy)
 #'         and re-emitted under the spicy taxonomy.
+#'       \item \code{spicy_typst_warning} -- Typst warned while
+#'         compiling the PDF of [code_book()], which it still wrote;
+#'         the condition carries its messages in `stderr`. Signaled
+#'         together with \code{spicy_passthrough}.
 #'       \item \code{spicy_summary_failed} -- [varlist()] could not
-#'         summarise one column; the rest of the table is fine.
+#'         summarize one column; the rest of the table is fine.
 #'       \item \code{spicy_renamed_column} -- a user data column or
 #'         factor level collided with a spicy-internal name and was
 #'         auto-renamed to preserve the data (emitted by

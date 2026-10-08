@@ -805,6 +805,9 @@
   # Two keys because the noun agrees with the count.
   cell_declared_one = "%s (%d variable)",
   cell_declared_many = "%s (%d variables)",
+  # Joins the `na_values` and the `na_range` of a variable in
+  # `declared_codes`: "8, 9; 90-99".
+  sep_declared_codes = "; ",
   # The documentation vocabulary of `type`, read off the R class.
   cell_type_categorical = "categorical (nominal)",
   cell_type_ordinal = "categorical (ordinal)",
@@ -814,21 +817,25 @@
   cell_type_text = "text",
   cell_type_date = "date",
   cell_type_datetime = "date-time",
-  # The PDF. `title_codebook` subtitles the cover and heads every page
-  # with the title. `marker_declared_missing` flags a declared missing
-  # value in the table of a variable, and heads that column.
+  # The PDF. `title_codebook` is the kicker above the title on the cover
+  # (the title itself when there is none), and heads every page with the
+  # title. `marker_declared_missing` flags a declared missing value in the
+  # table of a variable, in the column `header_marker_missing` heads.
   title_codebook = "Codebook",
   title_codebook_about = "About the data",
   title_codebook_list = "List of variables",
   title_codebook_declared = "Declared missing values",
-  title_codebook_sheets = "Variable descriptions",
+  title_codebook_sheets = "Variable sheets",
   title_codebook_index = "Index of variables",
   header_page = "Page",
   header_variables = "Variables",
   row_notes = "Notes",
   marker_declared_missing = "M",
   header_marker_missing = "Missing",
-  cell_system_missing = "system missing",
+  cell_system_missing = "System missing",
+  # Heads the table of values on the pages a long sheet continues on,
+  # after the name of the variable: "q17 (continued)".
+  note_codebook_continued = "continued",
   note_codebook_unweighted = "Counts are unweighted: they describe the file, not a population."
 )
 

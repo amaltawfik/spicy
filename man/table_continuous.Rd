@@ -636,7 +636,9 @@ source file marks as missing while keeping them distinct from a
 plain \code{NA}. Two kinds of declaration exist: \code{na_values} / \code{na_range}
 metadata on \code{\link[haven:labelled_spss]{haven::labelled_spss()}} vectors, and tagged missing
 values created by \code{\link[haven:tagged_na]{haven::tagged_na()}} (the Stata \code{.a}, \code{.b}, ...
-convention).
+convention). \code{\link[haven:read_sav]{haven::read_sav()}} keeps the \code{na_values} / \code{na_range}
+declaration only with \code{user_na = TRUE}: its default turns the
+declared codes into \code{NA} on import.
 
 spicy honors the declaration by default (\code{user_na = TRUE}):
 declared missing values are excluded from every statistic exactly

@@ -15,35 +15,45 @@
 #'   `starts_with("bmi")`, `where(is.numeric)`). Columns can be selected or
 #'   reordered, but renaming selections is not supported.
 #' @param title Title of the codebook, such as the name of the study. The
-#'   PDF adds the word "Codebook" itself, above the title and in the page
-#'   header, so the title need not say it. Defaults to `"Codebook"`;
-#'   `NULL` removes it.
+#'   PDF adds the word "Codebook" above it on the cover and before it in
+#'   the page header, unless the title already contains the word.
+#'   Defaults to `"Codebook"`. `NULL` leaves the console and the Excel file
+#'   without a title; the cover of the PDF then shows "Codebook" once.
 #' @param subtitle Subtitle of the codebook, under the title: the wave, the
-#'   edition, the extract (`"Enquête HESAV 2026, base partielle"`).
+#'   edition, the extract (`"Wave 3, 2026, public-use file"`).
 #' @param authors Authors of the codebook: `NULL` (the default), a
 #'   character vector whose names are the authors and whose values are
 #'   their affiliations (`c("Jane Doe" = "University of Somewhere")`; an
 #'   unnamed element is a name without affiliation), or a list of lists
-#'   with `name` and the optional `affiliation` and `orcid`.
+#'   with `name` and the optional `affiliation` and `orcid`. An ORCID given
+#'   as its `https://orcid.org/` address is kept as the identifier alone.
 #' @param notes Character vector of notes on the data (source, exclusions,
-#'   coding rules, ...), one note per element. In the PDF, an element that
-#'   starts with `"- "` or `"* "` is a list item, consecutive items making
-#'   one list, and any other element is a paragraph:
-#'   `notes = c("Fictitious data.", "- Weight: design weight.", "- BMI: self-reported.")`.
-#'   The console and the Excel file show the notes as typed.
+#'   coding rules, ...), one note per element; blank notes are dropped. In
+#'   the PDF, an element that starts with `"- "` or `"* "` is a list item,
+#'   consecutive items making one list, and any other element is a
+#'   paragraph:
+#'   `notes = c("Wave 3 only.", "- Weight: design weight.", "- BMI: kg/m2.")`.
+#'   The console and the Excel file show the notes as typed; the PDF turns
+#'   straight apostrophes into typographic ones and, in French, the space
+#'   before `:`, `;`, `!`, or `?` into a non-breaking space.
 #' @param source Named character vector mapping the current column names to
 #'   the codes they had in the source file, the vector
-#'   `dplyr::rename(all_of())` takes. Its names must be selected columns.
-#' @param values The maximum number of categories listed per variable in `values`. A
-#'   variable with more keeps its count of distinct values in `variables`
-#'   and has no rows in `values`. Defaults to `100`; `Inf` lists them all.
+#'   `dplyr::rename(all_of())` takes. Its names must be selected columns,
+#'   and each code must be non-empty.
+#' @param values The maximum number of categories listed per variable in
+#'   the `values` table; under `factor_levels = "all"`, unused levels and
+#'   codes count. A variable with more keeps its count of distinct values
+#'   in `variables`; in `values` it loses its category rows and keeps those
+#'   of its declared and system missing values, if it declares missing
+#'   codes. Defaults to `100`; `Inf` lists them all.
 #' @param range Logical. If `TRUE` (the default), `variables` gives the
 #'   minimum and maximum of each numeric variable and the earliest and
 #'   latest date of each date; `FALSE` drops those four columns.
 #' @param factor_levels Character. `"all"` (the default; [varlist()] uses
 #'   `"observed"`) lists every declared level of a factor, every labelled
-#'   code and both values of a logical, with a count of 0 when unused.
-#'   `"observed"` lists only the values present in the data.
+#'   code, every code of `na_values`, and both values of a logical, with a
+#'   count of 0 when unused. `"observed"` lists only the values present in
+#'   the data.
 #' @param user_na Logical. If `TRUE` (the default), declared missing values
 #'   count as missing: they are left out of `n_valid`, counted in
 #'   `n_missing` and `n_declared_missing`, and listed in `values` with
@@ -55,19 +65,25 @@
 #'   (`options(spicy.language = "fr")` gives the comma), then `"."`. The
 #'   console list prints counts only, and the Excel file keeps numbers as
 #'   numbers.
-#' @param font,font_code Fonts of the PDF, for the text and for the names
-#'   and codes. `NULL` (the default) uses New Computer Modern and DejaVu
-#'   Sans Mono, which Typst embeds, so the PDF looks the same whatever the
-#'   machine. Any other font must be one Typst finds, named exactly as
-#'   `quarto typst fonts` lists it; a `.typ` output keeps the name as
-#'   given, unchecked. A `font` also sets the font of the Excel file,
-#'   which otherwise keeps its default font.
+#' @param font,font_code Fonts of the PDF: `font` for the text, the values
+#'   and their codes included, and `font_code` for the variable names and
+#'   the source codes. `NULL` (the default) uses New Computer Modern and
+#'   DejaVu Sans Mono, which Typst embeds, so the PDF looks the same on
+#'   every machine for the characters these fonts cover; any other
+#'   character falls back to a font found on the machine. Any other font
+#'   must be one Typst finds, named exactly as `quarto typst fonts` lists
+#'   it; a `.typ` output keeps the name as given, unchecked. A `font` also
+#'   sets the font of the Excel file, which otherwise keeps its default
+#'   font.
 #' @param colors Named character vector of `"#RRGGBB"` colors replacing
-#'   part of the palette of the PDF: `primary` (title, headings and the
-#'   text of table headers), `accent` (links and the declared missing
-#'   marker), `band` (behind table headers), `band_dark` (the band of each
-#'   variable, under white text), `zebra`, `grid` (rules), `text` and
-#'   `muted`. The headers of the Excel file take `primary` and `band` too.
+#'   part of the palette of the PDF: `primary` (title, headings, and the
+#'   text of table headers), `accent` (the word "Codebook" above the title,
+#'   and the links), `band` (behind table headers), `band_dark` (the band
+#'   of each variable, under white text), `zebra` (behind the label rows of
+#'   a variable), `grid` (rules), `text`, and `muted`. A `band` given
+#'   without `zebra` brings a lighter tint of itself as `zebra`, and a
+#'   `band_dark` given without `grid` a light tint of itself as `grid`. The
+#'   headers of the Excel file take `primary` and `band` too.
 #' @param paper Paper size of the PDF: `"a4"` (the default) or `"letter"`.
 #' @param output `NULL` (the default) returns the codebook, which prints as
 #'   the list of variables. A path writes the codebook to that file, in
@@ -75,85 +91,116 @@
 #'   Excel workbook (this requires `openxlsx2`), `.pdf` for a PDF (this
 #'   requires the `quarto` package and Quarto 1.7 or later, found on the
 #'   PATH or through the `QUARTO_PATH` environment variable), `.typ` for
-#'   the Typst source of that PDF.
+#'   the Typst source of that PDF. The path names a file, in a directory
+#'   that exists.
 #'
 #' @details
 #' The type of a variable is read off its R class, never guessed: a factor
 #' is categorical (nominal), an ordered factor categorical (ordinal), a
 #' `haven_labelled` vector categorical (labelled codes), an integer or
-#' double vector numeric, and a logical, character, `Date` or `POSIXct`
-#' vector logical, text, date or date-time. The level of measurement comes
-#' from the declaration alone: a factor whose order was not declared with
-#' `ordered()` is nominal. Any other class is shown as the class itself. The R class
-#' stays in its own column. With `user_na = TRUE`, a `haven_labelled`
-#' vector whose value labels all sit on declared missing codes, or that has
-#' no labels, is numeric, or text when it stores characters.
+#' double vector numeric, a logical, character, or `Date` vector logical,
+#' text, or date, and a `POSIXct` or `POSIXlt` vector date-time. The level
+#' of measurement comes from the declaration alone: a factor whose order
+#' was not declared with `ordered()` is nominal. A vector of any other
+#' class is shown by its first class (`difftime`, `hms`, ...), without
+#' statistics. The R class stays in its own column. A `haven_labelled`
+#' vector without value labels is numeric, or text when it stores
+#' characters, and so is one whose value labels all sit on declared
+#' missing codes, with `user_na = TRUE`.
 #'
 #' `values` lists the categories of factors and labelled vectors and the
 #' two values of a logical, then the declared missing values of the
-#' variable and a row for its system missing values (`code = "NA"`).
-#' Numeric, text and date variables have no category rows: they appear in
-#' `values` only through their declared missing values. The codes of a
-#' labelled vector come in code order, the levels of a factor in level
-#' order.
+#' variable and, when it has any, a row for its system missing values
+#' (`code = "NA"`). Numeric, text, and date variables have no category
+#' rows: they appear in `values` only through their declared missing
+#' values. The codes of a labelled vector come in code order, the levels
+#' of a factor in level order. An explicit `NA` level of a factor (from
+#' [addNA()]) counts as missing, in the row of the system missing values.
 #'
-#' Dates are written in ISO 8601: a date-time in the time zone the variable
-#' carries, and in UTC when it carries none, the zone being named in either
-#' case.
+#' Dates are written as `YYYY-MM-DD`, and date-times as
+#' `YYYY-MM-DD HH:MM:SS` followed by the name of the time zone the
+#' variable carries, or `UTC` when it carries none.
 #'
-#' The language of the labels follows `options(spicy.language)` when the
-#' codebook is built (see [spicy_labels()]); the labels of the data are
-#' never translated.
+#' The words the codebook adds (column headers, types, field and sheet
+#' names) follow `options(spicy.language)` when the codebook is built (see
+#' [spicy_labels()]); the variable and value labels of the data are never
+#' translated.
 #'
-#' `print()` shortens long variable labels when that makes the list fit
-#' the console; the object keeps them whole.
+#' `print()` shows a line break or a tab in a label as a space, and
+#' shortens long variable labels, counting display columns, when that
+#' makes the list fit the console; the object keeps the labels whole.
 #'
 #' @inheritSection freq Declared missing values
 #'
 #' @section Excel output:
-#' The workbook has three sheets, named in the language of the codebook.
-#' The first, `codebook`, holds the header as field-value pairs: title,
-#' subtitle, one row per author, date, numbers of observations and
-#' variables, declared missing values, notes, and the versions of spicy
-#' and R that wrote it.
-#' The other two, `variables` and `values`, are the two tables of the
-#' object from the first row, with a frozen header and filters: numbers
-#' stay numeric cells and dates are ISO text.
+#' The workbook has three worksheets, named in the language of the
+#' codebook. The first, `codebook`, holds the header as field-value pairs:
+#' title, subtitle, one row per author, date, numbers of observations and
+#' variables, declared missing values, notes, and the versions of spicy and
+#' R that wrote it, with the date and time of writing. The other two,
+#' `variables` and `values`, hold the two tables of the object from the
+#' first row, under the column headers the console and the PDF show
+#' (`code` is "Value", `n_valid` "Valid"), with a frozen header and
+#' filters. Numbers stay numeric cells, the percentages shown to one
+#' decimal; a statistic that is not finite (of a column holding `Inf`) is
+#' an empty cell, and dates stay text, written as above.
 #'
 #' @section PDF output:
-#' The PDF opens on a cover (title, subtitle, authors, date) and a page
-#' about the data (numbers of observations and variables, notes, declared
-#' missing values), then lists the variables with the page of each. One
-#' sheet per variable follows (counts, statistics, and the table of its
-#' values, where `M` marks a declared missing value), then an
-#' alphabetical index. A sheet breaks
-#' across pages only when it does not fit on one. `code_book()`
-#' writes the Typst source and compiles it with the Typst that Quarto
-#' bundles. Without Quarto, `output = "<path>.typ"` writes the same
-#' source, self-contained: `typst compile` makes the PDF on any machine.
+#' The PDF opens on a cover: the word "Codebook" above the title (unless
+#' the title already contains it), the subtitle, the authors with their
+#' affiliations and ORCID addresses, the date, and at the foot the
+#' versions of spicy and R that made it. A page about the data follows
+#' (numbers of observations and variables, then the notes and the declared
+#' missing values), then the list of variables with the page of each.
+#'
+#' One sheet per variable comes next, under the heading "Variable sheets":
+#' a dark band with the position, name, and type (a name over 45
+#' characters takes a row of its own), rows for the label, the declared
+#' missing codes, and the source code, then the counts, the statistics,
+#' and the table of the values. On a sheet that lists declared missing
+#' codes, a Missing column marks them with `M`; the row of the system
+#' missing values reads "System missing". Minimum and maximum are written
+#' at the precision of the data; mean, SD, and median at three significant
+#' digits of the SD. A sheet breaks across pages only when it does not fit
+#' on one; its table of values then repeats its header under
+#' "name (continued)". An index of the variables closes the document,
+#' sorted by name in byte order, where uppercase letters come before
+#' lowercase ones.
+#'
+#' `code_book()` writes the Typst source and compiles it with the Typst
+#' that Quarto bundles; Typst warnings, such as a character missing from
+#' the fonts, arrive as one R warning of class `spicy_typst_warning`.
+#' Without Quarto, `output = "<path>.typ"` writes the same source,
+#' self-contained: `typst compile` makes the PDF on any machine with Typst
+#' 0.12 or later.
 #'
 #' @return A `spicy_codebook` object, returned invisibly when `output` is
 #' given: a list with
 #' \describe{
 #'   \item{`header`}{A list: `title`, `subtitle`, `authors` (a tibble with
-#'     `name`, `affiliation` and `orcid`), `date`, `n_obs`, `n_vars`,
-#'     `notes`, and `declared_missing`, a tibble of the declared missing
-#'     values found in the data (`code`, `label`, `variables`,
+#'     `name`, `affiliation`, and `orcid`), `date`, `n_obs`, `n_vars`,
+#'     `notes` (blank notes dropped), and `declared_missing`, a tibble of
+#'     the declared missing values found in the data and, under
+#'     `factor_levels = "all"`, of the declared codes no observation
+#'     carries, sorted by code then label (`code`, `label`, `variables`,
 #'     `n_variables`).}
 #'   \item{`variables`}{A tibble, one row per variable: `position` (the
 #'     column's position in `x`), `name`, `label`, `type`, `class`,
 #'     `source`, `n_valid`, `n_missing`, `n_declared_missing`,
 #'     `declared_codes` (the `na_values` and `na_range` of a
-#'     `haven_labelled_spss` vector, as text; `NA` without them or under
-#'     `user_na = FALSE`), `n_distinct`, then `min`, `max`, `mean`, `sd`
-#'     and `median` for numeric variables and `earliest` and `latest` for
-#'     dates.}
+#'     `haven_labelled_spss` vector, as text, the two parts separated by a
+#'     semicolon; `NA` without them or under `user_na = FALSE`),
+#'     `n_distinct`, then `min`, `max`, `mean`, `sd`, and `median` for
+#'     numeric variables and `earliest` and `latest` for dates.
+#'     `range = FALSE` drops `min`, `max`, `earliest`, and `latest`.}
 #'   \item{`values`}{A tibble, one row per value: `variable`, `code`,
-#'     `label`, `declared_missing`, `n`, `pct_total` and `pct_valid`.}
+#'     `label`, `declared_missing`, `n`, `pct_total`, and `pct_valid`. The
+#'     row of the system missing values (`code = "NA"`) exists only for a
+#'     variable that has missing values.}
 #' }
 #' The attributes `language` and `decimal_mark` record the language and
 #' the decimal mark the codebook was built with, and `appearance` the look
-#' of its PDF: a list of `font`, `font_code`, `colors` (all eight) and
+#' of its PDF: a list of `font`, `font_code`, `colors` (all eight), and
 #' `paper`.
 #'
 #' @examples
@@ -161,14 +208,30 @@
 #'
 #' cb <- code_book(
 #'   sochealth,
-#'   sex,
 #'   starts_with("bmi"),
-#'   title = "Body mass index",
+#'   title = "Social health survey",
+#'   subtitle = "Body mass index",
 #'   authors = c("Jane Doe" = "University of Somewhere"),
-#'   notes = "BMI computed from self-reported height and weight."
+#'   notes = "Simulated data (see ?sochealth)."
 #' )
+#' cb
 #' cb$variables
 #' cb$values
+#'
+#' # Labelled survey data: declared missing codes count as missing and are
+#' # flagged in `values`.
+#' if (requireNamespace("haven", quietly = TRUE)) {
+#'   trust <- haven::labelled_spss(
+#'     c(1, 2, 2, 3, 4, 8, 9, 1, NA, 2),
+#'     labels = c(
+#'       "Not at all" = 1, "A little" = 2, "Somewhat" = 3, "A lot" = 4,
+#'       "Don't know" = 8, "Refused" = 9
+#'     ),
+#'     na_values = c(8, 9),
+#'     label = "Trust in the health system"
+#'   )
+#'   code_book(tibble::tibble(trust))$values
+#' }
 #'
 #' if (requireNamespace("openxlsx2", quietly = TRUE)) {
 #'   path <- tempfile(fileext = ".xlsx")
@@ -181,7 +244,8 @@
 #'
 #' @seealso
 #' [varlist()] to explore the variables in the Viewer; [freq()] for the
-#' frequency table of one variable.
+#' frequency table of one variable; the article
+#' [Explore variables and build codebooks](https://amaltawfik.github.io/spicy/articles/variable-exploration.html).
 #'
 #' @family variable inspection
 #' @export
@@ -228,12 +292,19 @@ code_book <- function(
   lang <- getOption("spicy.language", NULL)
   lang <- if (is.null(lang)) "en" else .spicy_language_option(lang)
 
-  vl <- varlist(
-    x,
-    ...,
-    tbl = TRUE,
-    factor_levels = factor_levels,
-    user_na = user_na
+  # The counts of varlist(). Its Values column, which the codebook does
+  # not keep, cannot summarise a raw or complex column: that warning is
+  # muffled. Its errors name code_book().
+  vl <- withCallingHandlers(
+    varlist_impl(
+      x,
+      ...,
+      tbl = TRUE,
+      factor_levels = factor_levels,
+      user_na = user_na,
+      fn = "code_book()"
+    ),
+    spicy_summary_failed = function(w) invokeRestart("muffleWarning")
   )
   validate_code_book_source(source, vl$Variable)
   cols <- x[vl$Variable]
@@ -248,6 +319,10 @@ code_book <- function(
     cols[na_level],
     \(col) factor(col, levels = levels(col))
   )
+  # A POSIXlt column is a date-time, summarised as the POSIXct it
+  # converts to, in its own time zone.
+  lt <- vapply(cols, inherits, logical(1), what = "POSIXlt")
+  cols[lt] <- lapply(cols[lt], as.POSIXct)
   kinds <- vapply(cols, code_book_kind, character(1), user_na = user_na)
   per_var <- lapply(seq_along(cols), function(i) {
     code_book_values(
@@ -389,7 +464,8 @@ print.spicy_codebook <- function(x, ...) {
   disp <- data.frame(
     position = as.character(v$position),
     name = v$name,
-    label = v$label,
+    # A line break or a tab would split the row of the label.
+    label = gsub("[\r\n\t]+", " ", v$label),
     type = v$type,
     n_valid = as.character(v$n_valid),
     n_missing = as.character(v$n_missing)
@@ -406,18 +482,20 @@ print.spicy_codebook <- function(x, ...) {
     )
   }
   tbl <- render(disp)
-  # Wider than the console: the labels give way, down to 12 characters,
-  # and end in an ellipsis, but only when that makes the table fit. Names
-  # and types stay whole. The object and the Excel file keep the full
-  # labels.
+  # Wider than the console: the labels give way, down to 12 columns, and
+  # end in an ellipsis, but only when that makes the table fit. Names and
+  # types stay whole. The object and the Excel file keep the full labels.
+  # Widths are counted in columns of the console, where a CJK character
+  # takes two.
   first <- strsplit(tbl, "\n", fixed = TRUE)[[1L]][[1L]]
   excess <- crayon::col_nchar(first, type = "width") - getOption("width")
-  n <- nchar(disp$label)
-  w <- max(0L, n, na.rm = TRUE) - excess
+  n <- nchar(disp$label, type = "width")
+  n[is.na(disp$label)] <- 0L
+  w <- max(0L, n) - excess
   if (excess > 0L && w >= 12L) {
     long <- which(n > w)
     disp$label[long] <- paste0(
-      substr(disp$label[long], 1L, w - 1L),
+      strtrim(disp$label[long], w - 1L),
       spicy_str("marker_truncation_ellipsis")
     )
     tbl <- render(disp)
@@ -435,18 +513,22 @@ print.spicy_codebook <- function(x, ...) {
 
 
 # Internal kind of a column, read off its class. A token, never displayed:
-# `code_book_type()` turns it into the reader's word. Under `user_na`, a
-# labelled vector whose labels only name declared missing codes has no
-# categories: it is the numbers or the text it stores.
+# `code_book_type()` turns it into the reader's word. A labelled vector
+# without value labels has no categories, and neither has one whose labels
+# only name declared missing codes, under `user_na`: it is the numbers or
+# the text it stores.
 code_book_kind <- function(col, user_na) {
   cls <- class(col)
   if (is.ordered(col)) {
     "ordinal"
   } else if (is.factor(col)) {
     "categorical"
-  } else if (inherits(col, c("haven_labelled", "labelled_spss"))) {
+  } else if (inherits(col, "haven_labelled")) {
     labs <- attr(col, "labels", exact = TRUE)
-    if (!user_na || length(labs) > length(.user_na_labels(col))) {
+    # The labels that name categories: under `user_na`, not those of the
+    # declared missing codes.
+    n_cat <- length(labs) - if (user_na) length(.user_na_labels(col)) else 0L
+    if (n_cat > 0L) {
       "labelled"
     } else if (is.character(col)) {
       "text"
@@ -514,21 +596,27 @@ code_book_dates <- function(col, kind) {
 }
 
 
-# The rows of `values` for one variable, and its declared missing values
-# (kept for the header even when the rows are not listed). Factors,
-# labelled vectors and logicals list their categories, then their declared
-# and system missing values. Any other variable has rows only when it has
-# declared missing values.
+# The rows of `values` for one variable, and its declared missing values,
+# for the header. Factors, labelled vectors and logicals list their
+# categories, up to `values` of them, then their declared and system
+# missing values. Any other variable, or one with more categories, has
+# rows only when it has declared missing values.
 code_book_values <- function(col, name, kind, values, factor_levels, user_na) {
   out <- list(rows = NULL, declared = NULL)
   declared <- if (user_na) .user_na_mask(col) else logical(length(col))
   # Under factor_levels = "all", a declared code that no observation
-  # carries is listed with a count of 0, as an unused level is: its label
-  # joins the observed declared values with a weight of 0.
-  extra <- if (user_na && factor_levels == "all") .user_na_labels(col)
+  # carries is listed with a count of 0, as an unused level is: the codes
+  # of its labels and of `na_values`, labelled or not, join the observed
+  # declared values with a weight of 0.
+  extra <- if (user_na && factor_levels == "all") {
+    c(
+      unname(unclass(.user_na_labels(col))),
+      attr(col, "na_values", exact = TRUE)
+    )
+  }
   if (any(declared) || length(extra)) {
     probe <- structure(
-      c(unclass(col)[declared], unname(unclass(extra))),
+      c(unclass(col)[declared], extra),
       labels = attr(col, "labels", exact = TRUE)
     )
     out$declared <- .user_na_info(
@@ -571,8 +659,16 @@ code_book_values <- function(col, name, kind, values, factor_levels, user_na) {
     label <- names(labs)[match(cats, lab_codes)] %||%
       rep(NA_character_, length(cats))
   }
+  # Past `values`, the categories go and the variable is listed as a
+  # numeric one is: by its declared and system missing values, when it
+  # declares missing codes.
   if (length(code) > values) {
-    return(out)
+    if (is.null(out$declared)) {
+      return(out)
+    }
+    code <- character()
+    label <- character()
+    n <- integer()
   }
   # A level spelled "NA" is quoted, as varlist() does, so that it cannot
   # be read as the row of the system missing values.
@@ -602,7 +698,9 @@ code_book_values <- function(col, name, kind, values, factor_levels, user_na) {
 
 
 # One row per declared missing value found in the data, with the
-# variables that carry it, in order of first appearance.
+# variables that carry it. The rows go by code, then label, so that a
+# code declared with two labels gives two adjacent rows: numeric codes by
+# value, then the others (text codes, tagged NAs) as text.
 code_book_declared <- function(d) {
   if (is.null(d)) {
     return(tibble::tibble(
@@ -615,12 +713,14 @@ code_book_declared <- function(d) {
   key <- paste(d$code, d$label, sep = "\r")
   first <- !duplicated(key)
   vars <- lapply(key[first], function(k) d$variable[key == k])
-  tibble::tibble(
+  out <- tibble::tibble(
     code = d$code[first],
     label = d$label[first],
     variables = vapply(vars, paste, character(1), collapse = ", "),
     n_variables = lengths(vars)
   )
+  value <- suppressWarnings(as.numeric(out$code))
+  out[order(value, out$code, out$label, method = "radix"), ]
 }
 
 
@@ -646,7 +746,11 @@ code_book_declared_codes <- function(col, user_na) {
     if (length(values)) paste(.format_code(values), collapse = ", "),
     span
   )
-  if (length(out)) paste(out, collapse = "; ") else NA_character_
+  if (length(out)) {
+    paste(out, collapse = spicy_str("sep_declared_codes"))
+  } else {
+    NA_character_
+  }
 }
 
 

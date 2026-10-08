@@ -1,4 +1,10 @@
-validate_code_book_title <- function(title, arg = "title") {
+# The checks of code_book()'s arguments. Each takes the `call` its error
+# names, code_book() by default: the frame that calls it.
+validate_code_book_title <- function(
+  title,
+  arg = "title",
+  call = rlang::caller_env()
+) {
   if (is.null(title)) {
     return(invisible(title))
   }
@@ -15,7 +21,8 @@ validate_code_book_title <- function(title, arg = "title") {
         arg,
         "` must be NULL or a single non-empty character string."
       ),
-      class = "spicy_invalid_input"
+      class = "spicy_invalid_input",
+      call = call
     )
   }
 
@@ -23,10 +30,9 @@ validate_code_book_title <- function(title, arg = "title") {
 }
 
 
-validate_code_book_control_dots <- function(dots) {
+validate_code_book_control_dots <- function(dots, call = rlang::caller_env()) {
   # `rlang::enquos()` names every dot, with "" for the unnamed ones.
   dot_names <- names(dots) %||% character()
-  dot_names[is.na(dot_names)] <- ""
 
   # Arguments of the former widget. They now reach `...`, where tidyselect
   # would read them as a renamed selection; name the replacement instead.
@@ -36,16 +42,17 @@ validate_code_book_control_dots <- function(dots) {
       "with `output = \"<path>.xlsx\"`."
     ),
     include_na = paste(
-      "`include_na` was removed: missing values are always counted,",
-      "in the `n_missing` column of `variables` and in an NA row of",
-      "`values`."
+      "`include_na` was removed: missing values are always counted, in",
+      "the `n_missing` column of `variables`, and `values` gives an NA",
+      "row to each variable it lists that has missing values."
     )
   )
   hit <- intersect(dot_names, names(removed))
   if (length(hit) > 0L) {
     spicy_abort(
       removed[[hit[[1L]]]],
-      class = c("spicy_defunct", "spicy_invalid_input")
+      class = c("spicy_defunct", "spicy_invalid_input"),
+      call = call
     )
   }
 
@@ -89,7 +96,8 @@ validate_code_book_control_dots <- function(dots) {
         " = ...` exactly for this `code_book()` option; ",
         "`...` is reserved for tidyselect column selectors."
       ),
-      class = "spicy_invalid_input"
+      class = "spicy_invalid_input",
+      call = call
     )
   }
 
@@ -149,7 +157,16 @@ code_book_authors <- function(authors, call = rlang::caller_env()) {
     if (!is.list(a) || !nzchar(trimws(field(a, "name")))) {
       fail()
     }
-    vapply(c("name", "affiliation", "orcid"), field, character(1), a = a)
+    out <- vapply(c("name", "affiliation", "orcid"), field, character(1), a = a)
+    # An ORCID given as its address is kept as the identifier alone: the
+    # PDF writes the address from it.
+    out[["orcid"]] <- sub(
+      "^https?://(www[.])?orcid[.]org/",
+      "",
+      out[["orcid"]],
+      ignore.case = TRUE
+    )
+    out
   })
   rows <- unname(rows)
   tibble::tibble(
@@ -160,18 +177,19 @@ code_book_authors <- function(authors, call = rlang::caller_env()) {
 }
 
 
-validate_code_book_notes <- function(notes) {
+validate_code_book_notes <- function(notes, call = rlang::caller_env()) {
   if (!is.null(notes) && (!is.character(notes) || anyNA(notes))) {
     spicy_abort(
       "`notes` must be NULL or a character vector, one note per element.",
-      class = "spicy_invalid_input"
+      class = "spicy_invalid_input",
+      call = call
     )
   }
   invisible(notes)
 }
 
 
-validate_code_book_values <- function(values) {
+validate_code_book_values <- function(values, call = rlang::caller_env()) {
   # The released `values = TRUE / FALSE` switched the list of values on
   # and off; a logical would otherwise read as the count 1 or 0.
   if (isTRUE(values) || isFALSE(values)) {
@@ -180,7 +198,8 @@ validate_code_book_values <- function(values) {
         "`values` is now a count: the maximum number of categories listed per variable.",
         "i" = "`values = Inf` lists every category, and the default lists up to 100."
       ),
-      class = c("spicy_defunct", "spicy_invalid_input")
+      class = c("spicy_defunct", "spicy_invalid_input"),
+      call = call
     )
   }
   if (
@@ -195,7 +214,8 @@ validate_code_book_values <- function(values) {
         "`values` must be a single non-negative whole number: the maximum number of categories listed per variable.",
         "i" = "`values = Inf` lists every category."
       ),
-      class = "spicy_invalid_input"
+      class = "spicy_invalid_input",
+      call = call
     )
   }
   invisible(values)
@@ -204,7 +224,11 @@ validate_code_book_values <- function(values) {
 
 # `source` maps current column names to the codes they had in the source
 # file: the vector `dplyr::rename(all_of())` takes.
-validate_code_book_source <- function(source, columns) {
+validate_code_book_source <- function(
+  source,
+  columns,
+  call = rlang::caller_env()
+) {
   if (is.null(source)) {
     return(invisible(source))
   }
@@ -218,7 +242,23 @@ validate_code_book_source <- function(source, columns) {
   ) {
     spicy_abort(
       "`source` must be a named character vector: `c(<column> = \"<code in the source file>\")`.",
-      class = "spicy_invalid_input"
+      class = "spicy_invalid_input",
+      call = call
+    )
+  }
+  blank <- nms[!nzchar(trimws(source))]
+  if (length(blank) > 0L) {
+    spicy_abort(
+      c(
+        "`source` must give each column a non-empty code.",
+        "x" = paste0(
+          "No code for: ",
+          paste(.quote_val(blank), collapse = ", "),
+          "."
+        )
+      ),
+      class = "spicy_invalid_input",
+      call = call
     )
   }
   unknown <- setdiff(nms, columns)
@@ -232,7 +272,8 @@ validate_code_book_source <- function(source, columns) {
           "."
         )
       ),
-      class = "spicy_invalid_input"
+      class = "spicy_invalid_input",
+      call = call
     )
   }
   invisible(source)
@@ -243,7 +284,7 @@ validate_code_book_source <- function(source, columns) {
 # no `style` argument) > the language's locale > ".". Any single
 # character, as in the table families and in `spicy_style()`, so the
 # mark a style stores is one the argument accepts too.
-code_book_decimal_mark <- function(decimal_mark) {
+code_book_decimal_mark <- function(decimal_mark, call = rlang::caller_env()) {
   if (is.null(decimal_mark)) {
     style <- .style_resolve(NULL)
     return(
@@ -253,7 +294,8 @@ code_book_decimal_mark <- function(decimal_mark) {
   if (!.is_single_char(decimal_mark)) {
     spicy_abort(
       "`decimal_mark` must be a single character (e.g. \".\" or \",\").",
-      class = "spicy_invalid_input"
+      class = "spicy_invalid_input",
+      call = call
     )
   }
   decimal_mark
@@ -263,14 +305,21 @@ code_book_decimal_mark <- function(decimal_mark) {
 # The look of the PDF: the fonts, the palette of lssdoc with `colors`
 # merged over it, and the paper. Typst embeds the two default fonts; a
 # font the user names is checked by code_book_quarto(), for the PDF only.
-code_book_appearance <- function(font, font_code, colors, paper) {
+code_book_appearance <- function(
+  font,
+  font_code,
+  colors,
+  paper,
+  call = rlang::caller_env()
+) {
   fonts <- list(font = font, font_code = font_code)
   for (arg in names(fonts)) {
     f <- fonts[[arg]]
     if (!is.null(f) && !(rlang::is_string(f) && nzchar(f))) {
       spicy_abort(
         paste0("`", arg, "` must be NULL or a single font name."),
-        class = "spicy_invalid_input"
+        class = "spicy_invalid_input",
+        call = call
       )
     }
   }
@@ -298,17 +347,34 @@ code_book_appearance <- function(font, font_code, colors, paper) {
           "`colors` must be a named character vector of \"#RRGGBB\" colors.",
           "i" = paste0("Names: ", paste(names(palette), collapse = ", "), ".")
         ),
-        class = "spicy_invalid_input"
+        class = "spicy_invalid_input",
+        call = call
       )
     }
     palette[nms] <- colors
+    # A custom band or band_dark brings its own zebra and grid, unless
+    # those are given too: zebra is band halfway to white, grid band_dark
+    # a fifth of the way from white. The default palette gives back
+    # #F4F8FA and #D2DCDF.
+    mix <- function(col, w) {
+      v <- strtoi(substring(col, c(2L, 4L, 6L), c(3L, 5L, 7L)), 16L)
+      rgb <- as.integer(round(w * v + (1 - w) * 255))
+      paste0("#", paste(sprintf("%02X", rgb), collapse = ""))
+    }
+    if ("band" %in% nms && !"zebra" %in% nms) {
+      palette[["zebra"]] <- mix(palette[["band"]], 0.5)
+    }
+    if ("band_dark" %in% nms && !"grid" %in% nms) {
+      palette[["grid"]] <- mix(palette[["band_dark"]], 0.2)
+    }
   }
   paper <- tryCatch(
     match.arg(paper, c("a4", "letter")),
     error = function(e) {
       spicy_abort(
         "`paper` must be \"a4\" or \"letter\".",
-        class = "spicy_invalid_input"
+        class = "spicy_invalid_input",
+        call = call
       )
     }
   )
@@ -322,7 +388,7 @@ code_book_appearance <- function(font, font_code, colors, paper) {
 
 
 # The file format `output` asks for, read off its extension.
-code_book_output_format <- function(output) {
+code_book_output_format <- function(output, call = rlang::caller_env()) {
   if (is.null(output)) {
     return(NULL)
   }
@@ -334,7 +400,8 @@ code_book_output_format <- function(output) {
   ) {
     spicy_abort(
       "`output` must be NULL or a single file path.",
-      class = "spicy_invalid_input"
+      class = "spicy_invalid_input",
+      call = call
     )
   }
   ext <- tolower(tools::file_ext(output))
@@ -345,7 +412,8 @@ code_book_output_format <- function(output) {
         "x" = paste0("Got ", .quote_val(output), "."),
         "i" = "For a CSV, write `cb$variables` or `cb$values` with `utils::write.csv()`."
       ),
-      class = "spicy_invalid_input"
+      class = "spicy_invalid_input",
+      call = call
     )
   }
   if (!dir.exists(dirname(output))) {
@@ -355,7 +423,19 @@ code_book_output_format <- function(output) {
         .quote_val(dirname(output)),
         "."
       ),
-      class = "spicy_invalid_input"
+      class = "spicy_invalid_input",
+      call = call
+    )
+  }
+  if (dir.exists(output)) {
+    spicy_abort(
+      paste0(
+        "`output` names a directory, not a file: ",
+        .quote_val(output),
+        "."
+      ),
+      class = "spicy_invalid_input",
+      call = call
     )
   }
   if (ext == "xlsx" && !spicy_pkg_available("openxlsx2")) {
@@ -364,7 +444,8 @@ code_book_output_format <- function(output) {
         "Writing a codebook to \".xlsx\" requires the 'openxlsx2' package.",
         "i" = "Install it with `install.packages(\"openxlsx2\")`."
       ),
-      class = "spicy_missing_pkg"
+      class = "spicy_missing_pkg",
+      call = call
     )
   }
   ext
@@ -376,7 +457,7 @@ code_book_output_format <- function(output) {
 # spacing): Quarto 1.7. A font the user names must be one Typst finds,
 # spelled as `quarto typst fonts` lists it: Typst would otherwise
 # substitute another, silently.
-code_book_quarto <- function(fonts) {
+code_book_quarto <- function(fonts, call = rlang::caller_env()) {
   alt <- paste(
     "Or write the Typst source with `output = \"<path>.typ\"`",
     "and compile it with `typst compile`."
@@ -388,7 +469,8 @@ code_book_quarto <- function(fonts) {
         "i" = "Install it with `install.packages(\"quarto\")`.",
         "i" = alt
       ),
-      class = "spicy_missing_pkg"
+      class = "spicy_missing_pkg",
+      call = call
     )
   }
   quarto <- quarto::quarto_path()
@@ -407,7 +489,8 @@ code_book_quarto <- function(fonts) {
         "i" = "Install it from <https://quarto.org>.",
         "i" = alt
       ),
-      class = "spicy_missing_quarto"
+      class = "spicy_missing_quarto",
+      call = call
     )
   }
   unknown <- setdiff(fonts, if (length(fonts)) code_book_typst_fonts(quarto))
@@ -417,7 +500,8 @@ code_book_quarto <- function(fonts) {
         paste0("Typst finds no font named ", .quote_val(unknown[[1L]]), "."),
         "i" = "`quarto typst fonts` lists the fonts it finds: give the name exactly as listed."
       ),
-      class = "spicy_invalid_input"
+      class = "spicy_invalid_input",
+      call = call
     )
   }
   quarto

@@ -207,9 +207,9 @@ like \code{"welch"}.
 }
 
 \section{Stability}{
-This function is \strong{stabilising} in the sense \code{?spicy} defines: the
+This function is \strong{stabilizing} in the sense \code{?spicy} defines: the
 names of its design-specific arguments may still be tightened
-before 1.0 -- with a \code{NEWS.md} entry -- but the behaviour does not
+before 1.0 -- with a \code{NEWS.md} entry -- but the behavior does not
 change silently. It was experimental through 0.13; the shape of the
 table has held across the cycle, so it now moves on the parent
 family's clock rather than its own. The numbers themselves are

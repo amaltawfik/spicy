@@ -58,10 +58,11 @@ varlist(sochealth, starts_with("bmi"), income, weight, tbl = TRUE)
 ```
 
 `code_book()` turns the same inspection into a document: one row per
-variable, the unweighted count of every value, and a header with the
+variable, the unweighted count of every category, and a header with the
 title, authors, and notes. It prints the list of variables and returns
 the codebook, which `output = "<path>.xlsx"` writes to Excel and
-`output = "<path>.pdf"` compiles to a PDF (through Quarto).
+`output = "<path>.pdf"` compiles to a PDF (this needs the quarto package
+and Quarto 1.7 or later).
 
 ```{r code-book}
 code_book(sochealth, sex, age, smoking, bmi)
@@ -193,7 +194,7 @@ full map is the [Supported models](https://amaltawfik.github.io/spicy/articles/t
 article) — with
 APA formatting by default and the same journal styles on demand
 (`style = "jama"`, `"nejm"`, `"lancet"` and more), factor grouping with
-reference rows, robust variance, standardised coefficients, average
+reference rows, robust variance, standardized coefficients, average
 marginal effects, hierarchical comparisons, and side-by-side
 multi-model layouts:
 
@@ -240,8 +241,9 @@ kept alongside the reference pages and rebuilt with each release.
 **Explore and tabulate**
 
 - [Explore variables and build codebooks](https://amaltawfik.github.io/spicy/articles/variable-exploration.html)
-  — inspect variables, labels and missingness (`varlist()`,
-  `code_book()`, `label_from_names()`).
+  — inspect variables, labels, and missing values, and build a codebook
+  in the console, Excel, or PDF (`varlist()`, `code_book()`,
+  `label_from_names()`).
 - [Frequency tables and cross-tabulations](https://amaltawfik.github.io/spicy/articles/frequency-tables.html)
   — `freq()` and `cross_tab()` in depth (weights, simulation,
   labelled data).

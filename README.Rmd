@@ -97,7 +97,7 @@ row-wise summaries.
 - **Variable inspection** with `varlist()` and `vl()`: names,
   labels, values, classes, distinct values (`N_distinct`), valid
   observations (`N_valid`), and missing data.
-- **Codebooks** with `code_book()`: variables, values and unweighted
+- **Codebooks** with `code_book()`: variables, values, and unweighted
   counts, printed in the console, written to Excel, or compiled to a
   PDF with a cover, one sheet per variable, and an index.
 - **Label extraction** with `label_from_names()`, including
@@ -233,9 +233,13 @@ varlist(sochealth, tbl = TRUE)
 ```
 
 ```{r eval=FALSE}
-code_book(sochealth, starts_with("bmi"), title = "BMI codebook")
+code_book(sochealth, starts_with("bmi"), title = "Social health survey")
 code_book(sochealth, output = "sochealth_codebook.xlsx")
-code_book(sochealth, authors = c("Jane Doe" = "HESAV"), output = "sochealth_codebook.pdf")
+code_book(
+  sochealth,
+  authors = c("Jane Doe" = "University of Somewhere"),
+  output = "sochealth_codebook.pdf"
+)
 ```
 
 See [Explore variables and build
