@@ -54,9 +54,11 @@ sheet per variable, and an index.
 * `code_book()` gains `subtitle`, `authors` (with affiliations and
   ORCID), `notes`, `source` (the code each variable had in the source
   file), `range` (minimum and maximum of numeric variables and dates),
-  and `decimal_mark`, plus `font`, `font_code`, `colors`, and `paper` for
-  the look of the PDF. The Excel workbook takes the `band` and `primary`
-  colors for its headers, and `font` when it is given.
+  and `decimal_mark`, plus `font`, `font_code`, `colors`, `paper`, and
+  `index_columns` for the look of the PDF (the index of variables takes
+  two columns past 40 variables unless told otherwise). The Excel
+  workbook takes the `band` and `primary` colors for its headers, and
+  `font` when it is given.
 
 * `code_book()` lists declared missing values in their own rows of
   `values`, flagged by `declared_missing`, and summarizes them in the

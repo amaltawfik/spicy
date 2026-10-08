@@ -331,7 +331,14 @@
 
   // ---- Alphabetical index ---------------------------------------------------
   heading(level: 1, s.index)
-  listing(
+  // Two columns past 40 variables when every name fits a half column,
+  // as printed indexes do, unless the user settles the number.
+  let two = if data.index_columns != none {
+    data.index_columns == 2
+  } else {
+    data.vars.len() > 40 and data.vars.all(x => x.name.clusters().len() <= 40)
+  }
+  let index = listing(
     (s.name, s.position, s.page), (1fr, auto, auto), (left, right, right),
     data.index.map(i => {
       let x = data.vars.at(i)
@@ -339,4 +346,5 @@
     }),
     keep: short,
   )
+  if two { columns(2, gutter: 18pt, index) } else { index }
 }

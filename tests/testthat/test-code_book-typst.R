@@ -375,3 +375,39 @@ test_that("the PDF accounts for the categories past `values` in one row", {
   rows <- code_book_typst_data(code_book(d))$data$vars[[1]]$values
   expect_false(any(rows$other))
 })
+
+test_that("index_columns settles the columns of the index, or lets the size decide", {
+  expect_error(
+    code_book(cbt_data(), index_columns = 3),
+    class = "spicy_invalid_input"
+  )
+  expect_error(
+    code_book(cbt_data(), index_columns = "2"),
+    class = "spicy_invalid_input"
+  )
+  expect_error(
+    code_book(cbt_data(), index_columns = c(1, 2)),
+    class = "spicy_invalid_input"
+  )
+  expect_null(attr(code_book(cbt_data()), "appearance")$index_columns)
+  expect_identical(
+    attr(code_book(cbt_data(), index_columns = 2), "appearance")$index_columns,
+    2L
+  )
+  d <- code_book_typst_data(code_book(cbt_data(), index_columns = 1))$data
+  expect_identical(d$index_columns, 1L)
+  expect_null(code_book_typst_data(code_book(cbt_data()))$data$index_columns)
+  # The two-column index compiles.
+  skip_without_quarto()
+  expect_identical(
+    cbt_pages(
+      cbt_data(),
+      q,
+      n,
+      index_columns = 2,
+      font = "Libertinus Serif",
+      paper = "letter"
+    ),
+    5L
+  )
+})

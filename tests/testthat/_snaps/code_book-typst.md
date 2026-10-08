@@ -7,6 +7,7 @@
       #let data = (
         lang: "en",
         paper: "a4",
+        index_columns: none,
         font: "New Computer Modern",
         font_code: "DejaVu Sans Mono",
         colors: (primary: "#133B52", accent: "#3A7C8C", band: "#E9F2F6", band_dark: "#1F4E5F", zebra: "#F4F8FA", grid: "#D3DCE2", text: "#222222", muted: "#6E6E6E"),

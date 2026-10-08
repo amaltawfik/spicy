@@ -86,6 +86,10 @@
 #'   `band_dark` given without `grid` a light tint of itself as `grid`. The
 #'   headers of the Excel file take `primary` and `band` too.
 #' @param paper Paper size of the PDF: `"a4"` (the default) or `"letter"`.
+#' @param index_columns Columns of the index of variables at the end of the
+#'   PDF: `1` or `2`. `NULL` (the default) sets two columns past 40
+#'   variables when no name exceeds 40 characters, one column otherwise. A
+#'   name longer than that may overflow a column of two.
 #' @param output `NULL` (the default) returns the codebook, which prints as
 #'   the list of variables. A path writes the codebook to that file, in
 #'   the format of its extension, and returns it invisibly: `.xlsx` for an
@@ -203,8 +207,8 @@
 #' }
 #' The attributes `language` and `decimal_mark` record the language and
 #' the decimal mark the codebook was built with, and `appearance` the look
-#' of its PDF: a list of `font`, `font_code`, `colors` (all eight), and
-#' `paper`.
+#' of its PDF: a list of `font`, `font_code`, `colors` (all eight),
+#' `paper`, and `index_columns`.
 #'
 #' @examples
 #' code_book(sochealth)
@@ -269,6 +273,7 @@ code_book <- function(
   font_code = NULL,
   colors = NULL,
   paper = c("a4", "letter"),
+  index_columns = NULL,
   output = NULL
 ) {
   if (!is.data.frame(x)) {
@@ -289,7 +294,13 @@ code_book <- function(
   factor_levels <- match_varlist_factor_levels(factor_levels)
   validate_varlist_logical(user_na, "user_na")
   decimal_mark <- code_book_decimal_mark(decimal_mark)
-  appearance <- code_book_appearance(font, font_code, colors, paper)
+  appearance <- code_book_appearance(
+    font,
+    font_code,
+    colors,
+    paper,
+    index_columns
+  )
   format <- code_book_output_format(output)
   quarto <- if (identical(format, "pdf")) code_book_quarto(c(font, font_code))
   lang <- getOption("spicy.language", NULL)

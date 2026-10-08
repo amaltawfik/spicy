@@ -22,6 +22,7 @@ code_book(
   font_code = NULL,
   colors = NULL,
   paper = c("a4", "letter"),
+  index_columns = NULL,
   output = NULL
 )
 
@@ -119,6 +120,11 @@ headers of the Excel file take \code{primary} and \code{band} too.}
 
 \item{paper}{Paper size of the PDF: \code{"a4"} (the default) or \code{"letter"}.}
 
+\item{index_columns}{Columns of the index of variables at the end of the
+PDF: \code{1} or \code{2}. \code{NULL} (the default) sets two columns past 40
+variables when no name exceeds 40 characters, one column otherwise. A
+name longer than that may overflow a column of two.}
+
 \item{output}{\code{NULL} (the default) returns the codebook, which prints as
 the list of variables. A path writes the codebook to that file, in
 the format of its extension, and returns it invisibly: \code{.xlsx} for an
@@ -157,8 +163,8 @@ variable that has missing values.}
 }
 The attributes \code{language} and \code{decimal_mark} record the language and
 the decimal mark the codebook was built with, and \code{appearance} the look
-of its PDF: a list of \code{font}, \code{font_code}, \code{colors} (all eight), and
-\code{paper}.
+of its PDF: a list of \code{font}, \code{font_code}, \code{colors} (all eight),
+\code{paper}, and \code{index_columns}.
 }
 \description{
 \code{code_book()} documents the variables of a data frame: one row per

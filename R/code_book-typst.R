@@ -246,6 +246,7 @@ code_book_typst_data <- function(cb) {
   data <- list(
     lang = attr(cb, "language", exact = TRUE),
     paper = if (look$paper == "letter") "us-letter" else "a4",
+    index_columns = look$index_columns,
     font = look$font,
     font_code = look$font_code,
     colors = as.list(look$colors),

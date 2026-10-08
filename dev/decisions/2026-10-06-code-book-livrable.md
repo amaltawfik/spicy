@@ -696,6 +696,15 @@ Troisième relecture d'Amal, sur DoMiRéFAS (2026-10-08) :
   données gênerait qui calcule dessus. Avant, l'objet perdait toutes
   les modalités au-delà du plafond, ce qui contredisait le contrat de
   `values`.
+* **Index sur deux colonnes (candidat 4, tranché par Amal le 2026-10-09).**
+  Au-delà de 40 variables, quand aucun nom ne dépasse 40 caractères,
+  l'index se compose sur deux colonnes (en-tête répété par colonne,
+  veuves contrôlées par colonne) : 150 variables, l'index passe de 4
+  pages à 2. Typst remplit la colonne de gauche avant la droite sur la
+  dernière page, usage des index imprimés. Amal a demandé un réglage :
+  `index_columns = NULL | 1 | 2` force une ou deux colonnes ; un nom de
+  plus de 40 caractères peut déborder d'une demi-colonne, dit dans
+  l'aide. `sochealth` (24 variables) ne change pas.
 * **Colonne Label seulement quand la variable a des libellés.** Amal
   proposait une colonne unique « [1] Jamais », comme `freq()`. Écarté :
   une cellule qui mêle code et libellé perd l'alignement des libellés

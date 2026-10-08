@@ -310,6 +310,7 @@ code_book_appearance <- function(
   font_code,
   colors,
   paper,
+  index_columns = NULL,
   call = rlang::caller_env()
 ) {
   fonts <- list(font = font, font_code = font_code)
@@ -378,11 +379,25 @@ code_book_appearance <- function(
       )
     }
   )
+  if (
+    !is.null(index_columns) &&
+      !(is.numeric(index_columns) &&
+        length(index_columns) == 1L &&
+        !is.na(index_columns) &&
+        index_columns %in% c(1, 2))
+  ) {
+    spicy_abort(
+      "`index_columns` must be `NULL`, `1`, or `2`.",
+      class = "spicy_invalid_input",
+      call = call
+    )
+  }
   list(
     font = font %||% "New Computer Modern",
     font_code = font_code %||% "DejaVu Sans Mono",
     colors = palette,
-    paper = paper
+    paper = paper,
+    index_columns = if (!is.null(index_columns)) as.integer(index_columns)
   )
 }
 
