@@ -6,6 +6,50 @@ entrées, toutes les citations résolues), `BIBLIOGRAPHIE.md` (contrat du
 dépôt references). Le dossier est hors tarball (`^paper$` dans
 `.Rbuildignore`).
 
+## Portée et impact : pas de soumission maintenant (2026-10-09)
+
+Page relue le 2026-10-09 :
+<https://joss.readthedocs.io/en/latest/submitting.html#scope-and-significance>.
+JOSS juge deux choses. L'effort scientifique (« substantial scholarly
+effort ») et l'impact sur la recherche (« research impact »). Depuis
+2025 le second compte autant que le premier : les éditeurs demandent
+des preuves que le logiciel est utilisé au-delà de son auteur.
+
+État de spicy, critère par critère.
+
+- Effort : rempli. Trois ans de développement, versions CRAN depuis
+  0.12.0, suite de près de 19 000 expectations, conventions validées
+  contre SPSS, Stata et les packages de référence, site documenté.
+- Fonctionnalité de recherche : rempli. Le package fait un travail de
+  recherche (tables, modèles, codebook), pas un utilitaire.
+- Impact : NON rempli. Aucune publication ne cite spicy, aucun usage
+  hors HESAV n'est documenté, aucune contribution externe. Les 809
+  téléchargements mensuels ne sont pas une preuve d'usage (les miroirs
+  et les CI en font une part). L'énoncé « research impact statement »
+  du papier ne peut aujourd'hui citer que l'enseignement et le soutien
+  méthodologique de l'auteur lui-même, ce que JOSS lit comme un usage
+  interne.
+
+Décision proposée : ne pas soumettre maintenant. Un rejet pour défaut
+d'impact est public (issue « pre-review » visible) et ferme la porte
+pour plusieurs mois.
+
+Ce qu'il faut construire d'ici six à douze mois, dans l'ordre d'effet :
+
+1. Au moins une publication qui cite spicy par son `citation("spicy")`
+   (DoMiRéFAS, Healthy Campus ou toute étude dont les tables viennent
+   du package). Une citation vérifiable vaut plus que tout le reste.
+2. Des traces d'usage externe : issues ou questions d'utilisateurs hors
+   HESAV, mention dans un cours ou un tutoriel tiers, dépendance
+   inverse sur CRAN.
+3. Une contribution externe, même mineure (issue avec correctif, PR).
+4. Les codebooks livrés à un dépôt de données (FORS, Zenodo) avec
+   mention de l'outil.
+
+Reprendre ce dossier à la 0.14.0 et récrire le « research impact
+statement » avec ces éléments nommés. Sans au moins le point 1, ne pas
+soumettre.
+
 ## À confirmer par Amal avant soumission
 
 1. **Affiliation et ROR.** `04j47fz63` vient de DESCRIPTION ; vérifier
