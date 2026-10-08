@@ -74,6 +74,7 @@ test_that("code_book() returns the codebook, which prints as the list of variabl
       "n_valid",
       "n_missing",
       "n_declared_missing",
+      "declared_codes",
       "n_distinct",
       "min",
       "max",
@@ -196,6 +197,35 @@ test_that("a declared range flags every code inside it", {
   expect_identical(cb$values$label[[4]], "DK")
   expect_freq_rows(cb$values, r, factor_levels = "all")
   expect_identical(cb$variables$n_declared_missing, 3L)
+})
+
+test_that("declared_codes writes how each variable declares its missing values", {
+  skip_if_not_installed("haven")
+  spss <- function(...) haven::labelled_spss(c(1, 2, 9000, 9998), ...)
+  d <- data.frame(
+    values = spss(na_values = c(9998, 9999)),
+    range = spss(na_range = c(9000, 9999)),
+    both = spss(na_values = 9998, na_range = c(1e5, 1e6)),
+    none = spss(labels = c(A = 1)),
+    tagged = haven::labelled(c(1, 2, 3, haven::tagged_na("a")), c(A = 1)),
+    plain = c(1, 2, 9000, 9998)
+  )
+  expect_identical(
+    code_book(d)$variables$declared_codes,
+    c("9998, 9999", "9000\u20139999", "9998; 100000\u20131000000", NA, NA, NA)
+  )
+  # user_na = FALSE sets the declaration aside, as it does the counts.
+  off <- code_book(d, user_na = FALSE)$variables
+  expect_true(all(is.na(off$declared_codes)))
+  # An open range (SPSS "9000 THRU HI", "LO THRU 9") reads as a bound.
+  open <- data.frame(
+    hi = spss(na_range = c(9000, Inf)),
+    lo = haven::labelled_spss(c(1, 2, 9000, 9998), na_range = c(-Inf, 1))
+  )
+  expect_identical(
+    code_book(open)$variables$declared_codes,
+    c("≥ 9000", "≤ 1")
+  )
 })
 
 test_that("factor_levels = 'observed' lists only the values present", {
@@ -500,6 +530,7 @@ test_that("notes and title reach the header", {
   )
   expect_identical(cb$header$notes, c("First.", "Second."))
   expect_identical(cb$header$title, NA_character_)
+  expect_identical(cb$header$subtitle, NA_character_)
   out <- capture.output(res <- withVisible(print(cb)))
   expect_false(res$visible)
   expect_identical(res$value, cb)
@@ -512,6 +543,12 @@ test_that("notes and title reach the header", {
     class = "spicy_invalid_input"
   )
   expect_error(code_book(cb_data(), title = ""), class = "spicy_invalid_input")
+  for (s in list(NA_character_, c("a", "b"), 1, " ")) {
+    expect_error(
+      code_book(cb_data(), subtitle = s),
+      class = "spicy_invalid_input"
+    )
+  }
 })
 
 test_that("the print is pinned", {
@@ -519,8 +556,9 @@ test_that("the print is pinned", {
   d <- cbind(cb_data()[c("sex", "score", "day")], cb_labelled()[1:6, ])
   cb <- code_book(
     d,
+    subtitle = "Wave 1",
     authors = c("Jane Doe" = "HESAV", "Bob"),
-    notes = "Fictitious data."
+    notes = c("Fictitious data.", "- Marked note.")
   )
   cb$header$date <- as.Date("2026-10-07")
   expect_snapshot(print(cb))
@@ -675,8 +713,9 @@ test_that("the Excel codebook reads back", {
   expect_silent(
     cb <- code_book(
       d,
+      subtitle = "Wave 1",
       authors = authors,
-      notes = c("Fictitious.", "Second note."),
+      notes = c("Fictitious.", "- Second note."),
       output = path
     )
   )
@@ -692,6 +731,7 @@ test_that("the Excel codebook reads back", {
     info$Field,
     c(
       "Title",
+      "Subtitle",
       "Author",
       "Author",
       "Date",
@@ -704,27 +744,29 @@ test_that("the Excel codebook reads back", {
     )
   )
   expect_identical(
-    info$Value[2:3],
-    c("Jane Doe — HESAV — ORCID 0000-0002-1825-0097", "Bob")
+    info$Value[2:4],
+    c("Wave 1", "Jane Doe — HESAV — ORCID 0000-0002-1825-0097", "Bob")
   )
+  # The notes as typed, list marker included.
   expect_identical(
-    info$Value[7:9],
-    c("8 = DK (1 variable)", "Fictitious.", "Second note.")
+    info$Value[8:10],
+    c("8 = DK (1 variable)", "Fictitious.", "- Second note.")
   )
-  expect_match(info$Value[[10]], "^spicy ")
-  # Rows 6 and 7 of the sheet (the header is row 1) hold the two counts,
+  expect_match(info$Value[[11]], "^spicy ")
+  # Rows 7 and 8 of the sheet (the header is row 1) hold the two counts,
   # as numbers: written a row off, a text cell would turn the column to
   # character.
   counts <- openxlsx2::read_xlsx(
     path,
     sheet = 1,
-    dims = "B6:B7",
+    dims = "B7:B8",
     col_names = FALSE
   )
   expect_identical(counts[[1]], c(6, 8))
 
   vars <- openxlsx2::read_xlsx(path, sheet = 2)
   expect_identical(names(vars)[1:4], c("Pos.", "Variable", "Label", "Type"))
+  expect_identical(vars[["Declared missing codes"]], c(rep(NA, 7), "8"))
   expect_equal(vars$Valid, cb$variables$n_valid)
   expect_equal(vars$Mean, cb$variables$mean)
   expect_identical(vars[["Earliest date"]][[7]], "2024-05-01")

@@ -9,6 +9,7 @@ code_book(
   x,
   ...,
   title = "Codebook",
+  subtitle = NULL,
   authors = NULL,
   notes = NULL,
   source = NULL,
@@ -33,8 +34,13 @@ code_book(
 \code{starts_with("bmi")}, \code{where(is.numeric)}). Columns can be selected or
 reordered, but renaming selections is not supported.}
 
-\item{title}{Title of the codebook. Defaults to \code{"Codebook"}; \code{NULL}
-removes it.}
+\item{title}{Title of the codebook, such as the name of the study. The
+PDF adds the word "Codebook" itself, above the title and in the page
+header, so the title need not say it. Defaults to \code{"Codebook"};
+\code{NULL} removes it.}
+
+\item{subtitle}{Subtitle of the codebook, under the title: the wave, the
+edition, the extract (\code{"Enquête HESAV 2026, base partielle"}).}
 
 \item{authors}{Authors of the codebook: \code{NULL} (the default), a
 character vector whose names are the authors and whose values are
@@ -43,7 +49,11 @@ unnamed element is a name without affiliation), or a list of lists
 with \code{name} and the optional \code{affiliation} and \code{orcid}.}
 
 \item{notes}{Character vector of notes on the data (source, exclusions,
-coding rules, ...), one note per element.}
+coding rules, ...), one note per element. In the PDF, an element that
+starts with \code{"- "} or \code{"* "} is a list item, consecutive items making
+one list, and any other element is a paragraph:
+\code{notes = c("Fictitious data.", "- Weight: design weight.", "- BMI: self-reported.")}.
+The console and the Excel file show the notes as typed.}
 
 \item{source}{Named character vector mapping the current column names to
 the codes they had in the source file, the vector
@@ -104,15 +114,19 @@ the Typst source of that PDF.}
 A \code{spicy_codebook} object, returned invisibly when \code{output} is
 given: a list with
 \describe{
-\item{\code{header}}{A list: \code{title}, \code{authors} (a tibble with \code{name},
-\code{affiliation} and \code{orcid}), \code{date}, \code{n_obs}, \code{n_vars}, \code{notes}, and
-\code{declared_missing}, a tibble of the declared missing values found in
-the data (\code{code}, \code{label}, \code{variables}, \code{n_variables}).}
+\item{\code{header}}{A list: \code{title}, \code{subtitle}, \code{authors} (a tibble with
+\code{name}, \code{affiliation} and \code{orcid}), \code{date}, \code{n_obs}, \code{n_vars},
+\code{notes}, and \code{declared_missing}, a tibble of the declared missing
+values found in the data (\code{code}, \code{label}, \code{variables},
+\code{n_variables}).}
 \item{\code{variables}}{A tibble, one row per variable: \code{position} (the
 column's position in \code{x}), \code{name}, \code{label}, \code{type}, \code{class},
 \code{source}, \code{n_valid}, \code{n_missing}, \code{n_declared_missing},
-\code{n_distinct}, then \code{min}, \code{max}, \code{mean}, \code{sd} and \code{median} for
-numeric variables and \code{earliest} and \code{latest} for dates.}
+\code{declared_codes} (the \code{na_values} and \code{na_range} of a
+\code{haven_labelled_spss} vector, as text; \code{NA} without them or under
+\code{user_na = FALSE}), \code{n_distinct}, then \code{min}, \code{max}, \code{mean}, \code{sd}
+and \code{median} for numeric variables and \code{earliest} and \code{latest} for
+dates.}
 \item{\code{values}}{A tibble, one row per value: \code{variable}, \code{code},
 \code{label}, \code{declared_missing}, \code{n}, \code{pct_total} and \code{pct_valid}.}
 }
@@ -165,9 +179,10 @@ the console; the object keeps them whole.
 \section{Excel output}{
 
 The workbook has three sheets, named in the language of the codebook.
-The first, \code{codebook}, holds the header as field-value pairs: title, one
-row per author, date, numbers of observations and variables, declared
-missing values, notes, and the versions of spicy and R that wrote it.
+The first, \code{codebook}, holds the header as field-value pairs: title,
+subtitle, one row per author, date, numbers of observations and
+variables, declared missing values, notes, and the versions of spicy
+and R that wrote it.
 The other two, \code{variables} and \code{values}, are the two tables of the
 object from the first row, with a frozen header and filters: numbers
 stay numeric cells and dates are ISO text.
@@ -175,11 +190,12 @@ stay numeric cells and dates are ISO text.
 
 \section{PDF output}{
 
-The PDF opens on a cover (title, authors, date, numbers of observations
-and variables, notes), lists the variables with the page of each, and
-summarizes the declared missing values. One sheet per variable follows
-(counts, statistics, and the table of its values, where \code{M} marks a
-declared missing value), then an alphabetical index. A sheet breaks
+The PDF opens on a cover (title, subtitle, authors, date) and a page
+about the data (numbers of observations and variables, notes, declared
+missing values), then lists the variables with the page of each. One
+sheet per variable follows (counts, statistics, and the table of its
+values, where \code{M} marks a declared missing value), then an
+alphabetical index. A sheet breaks
 across pages only when it does not fit on one. \code{code_book()}
 writes the Typst source and compiles it with the Typst that Quarto
 bundles. Without Quarto, \code{output = "<path>.typ"} writes the same

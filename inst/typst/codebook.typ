@@ -7,7 +7,7 @@
 #let base = 10pt
 #let pad = (x: 4pt, y: 4pt)
 #let size = (
-  cover-title: 26pt, cover-top: 1.4in, cover-block: 18pt, // title block, and the air around it
+  cover-title: 26pt, cover-subtitle: 14pt, cover-top: 1.4in, cover-block: 18pt, // title block, and the air around it
   about-field: 1.6in, // field column of the facts on the page about the data
   heading-above: 18pt, heading-below: 9pt,
   sheet: 24pt, gap: 6pt, // above a sheet, between its tables
@@ -69,7 +69,8 @@
     fill: (x, y) => if y == 0 { c.band },
     ..d.keys().map(k => hdr(s.at(k))), ..d.values(),
   )
-  // A row of its own across the band of a sheet: the label, the source.
+  // A row of its own across the band of a sheet: the label, the declared
+  // missing codes, the source.
   let wide(word, body) = (table.cell(colspan: 3, align: left)[#hdr(word)#h(10pt)#body],)
 
   set document(title: data.header, author: data.authors.map(a => a.name))
@@ -98,18 +99,21 @@
 
   // ---- Cover ----------------------------------------------------------------
   // Reading order: the genre as a spaced capital kicker, the study as the
-  // title, who and when; a short rule; the two facts on one line; the notes
-  // across the page; the colophon at the foot.
+  // title, its subtitle, who and when; the colophon at the foot.
   {
     set align(center)
     v(size.cover-top)
-    if data.subtitle != none {
-      text(base, weight: "bold", fill: c.accent, tracking: 0.18em, upper(data.subtitle))
+    if data.genre != none {
+      text(base, weight: "bold", fill: c.accent, tracking: 0.18em, upper(data.genre))
       v(size.gap)
     }
-    let title = if data.title != none { data.title } else { data.subtitle }
+    let title = if data.title != none { data.title } else { data.genre }
     if title != none {
       text(size.cover-title, weight: "bold", fill: c.primary, title)
+    }
+    if data.subtitle != none {
+      v(size.gap)
+      text(size.cover-subtitle, fill: c.muted, data.subtitle)
     }
     v(size.cover-block)
     for a in data.authors {
@@ -143,7 +147,9 @@
   text(base - 1pt, style: "italic", fill: c.muted, s.unweighted)
   if data.notes.len() > 0 {
     heading(level: 1, s.notes)
-    list(indent: 0pt, body-indent: 6pt, spacing: 5pt, ..data.notes.map(n => [#n]))
+    // A note is a paragraph; consecutive list items make one list.
+    set list(indent: 0pt, body-indent: 6pt, spacing: 5pt)
+    for n in data.notes { if n.bullet { list.item(n.text) } else { par(n.text) } }
   }
   if data.declared.len() > 0 {
     heading(level: 1, s.declared)
@@ -187,6 +193,7 @@
     let title = if x.label == "" { x.name } else { x.name + " \u{2014} " + x.label }
     let mark = place(hide(heading(level: 2, outlined: false, bookmarked: true, title)))
     let lab = if x.label == "" { () } else { wide(s.label, x.label) }
+    let declared = if x.declared_codes == none { () } else { wide(s.declared_codes, x.declared_codes) }
     let source = if x.source == none { () } else { wide(s.source, mono(x.source)) }
     let band = context table(
       columns: (col(widest.pos), 1fr, col(widest.type)), stroke: rule, inset: pad,
@@ -196,24 +203,26 @@
       ..(s.position, s.name, s.type).map(h => text(weight: "bold", fill: white, h)),
       x.pos, name(x.name, limit: 45, weight: "bold"), x.type,
       ..lab,
+      ..declared,
       ..source,
     )
     let parts = (band, facts(x.counts))
     if x.stats.len() > 0 { parts.push(facts(x.stats)) }
-    // Without value labels (a factor), the codes take the width.
+    // The Label column only when the variable has value labels: without
+    // them (a factor), the values take the width.
     let labelled = x.values.any(r => r.label != "" and not r.na)
-    let opt(..items) = if flagged { items.pos() } else { () }
+    let opt(on, ..items) = if on { items.pos() } else { () }
     let values = context table(
-      columns: ((if labelled { (auto, 1fr) } else { (1fr, auto) }) +
-        opt(col(s.missing)) + (col(widest.n), col(widest.pct), col(widest.valid), 0pt)),
+      columns: ((if labelled { (auto, 1fr) } else { (1fr,) }) +
+        opt(flagged, col(s.missing)) + (col(widest.n), col(widest.pct), col(widest.valid), 0pt)),
       stroke: rule, inset: pad,
       fill: (col, row) => if row == 0 { c.band },
-      align: (col, row) => ((left, left) + opt(center) + (right, right, right, left)).at(col) + horizon,
-      table.header(..((s.code, s.label) + opt(s.missing) + (s.n, s.pct_total, s.pct_valid)).map(hdr), []),
+      align: (col, row) => ((left,) + opt(labelled, left) + opt(flagged, center) + (right, right, right, left)).at(col) + horizon,
+      table.header(..((s.code,) + opt(labelled, s.label) + opt(flagged, s.missing) + (s.n, s.pct_total, s.pct_valid)).map(hdr), []),
       ..kept(x.values.map(r => {
         let f = if r.m or r.na { c.muted } else { c.text }
-        ((text(fill: f, r.code), text(fill: f, r.label)) +
-          opt(if r.m { text(weight: "bold", fill: c.accent, s.marker) } else { [] }) +
+        ((text(fill: f, r.code),) + opt(labelled, text(fill: f, r.label)) +
+          opt(flagged, if r.m { text(weight: "bold", fill: c.accent, s.marker) } else { [] }) +
           (text(fill: f, r.n), text(fill: f, r.pct), text(fill: f, r.valid)))
       })),
     )

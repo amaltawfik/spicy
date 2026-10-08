@@ -1,4 +1,4 @@
-validate_code_book_title <- function(title) {
+validate_code_book_title <- function(title, arg = "title") {
   if (is.null(title)) {
     return(invisible(title))
   }
@@ -10,7 +10,11 @@ validate_code_book_title <- function(title) {
       !nzchar(trimws(title))
   ) {
     spicy_abort(
-      "`title` must be NULL or a single non-empty character string.",
+      paste0(
+        "`",
+        arg,
+        "` must be NULL or a single non-empty character string."
+      ),
       class = "spicy_invalid_input"
     )
   }

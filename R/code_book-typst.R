@@ -100,8 +100,8 @@ code_book_typst_data <- function(cb) {
     }
     formatC(signif(x, 3L), format = "fg", decimal.mark = mark)
   }
-  # The word "Codebook" heads every page with the title, and subtitles the
-  # cover, unless the title already says it.
+  # The word "Codebook" heads every page with the title, and stands above
+  # it on the cover, unless the title already says it.
   word <- spicy_str("title_codebook")
   says <- grepl(tolower(word), tolower(h$title), fixed = TRUE)
   header <- if (is.na(h$title)) {
@@ -115,7 +115,8 @@ code_book_typst_data <- function(cb) {
     c("min", "max", "mean", "sd", "median", "earliest", "latest"),
     names(v)
   )
-  counts <- c("n_valid", "n_missing", "n_declared_missing", "n_distinct")
+  # No count of declared missing values: the values table lists each code.
+  counts <- c("n_valid", "n_missing", "n_distinct")
   rows <- split(cb$values, factor(cb$values$variable, levels = v$name))
   numeric_cols <- intersect(stat_cols, c("min", "max", "mean", "sd", "median"))
   vars <- lapply(seq_len(nrow(v)), function(i) {
@@ -140,6 +141,7 @@ code_book_typst_data <- function(cb) {
       label = if (is.na(v$label[[i]])) "" else v$label[[i]],
       type = v$type[[i]],
       source = v$source[[i]],
+      declared_codes = v$declared_codes[[i]],
       counts = as.list(vapply(counts, \(k) as.character(v[[k]][[i]]), "")),
       stats = stats,
       values = data.frame(
@@ -160,8 +162,9 @@ code_book_typst_data <- function(cb) {
     font = look$font,
     font_code = look$font_code,
     colors = as.list(look$colors),
+    genre = if (!says) word,
     title = h$title,
-    subtitle = if (!says) word,
+    subtitle = h$subtitle,
     header = header,
     authors = h$authors,
     date = format(h$date),
@@ -177,7 +180,11 @@ code_book_typst_data <- function(cb) {
         sprintf("spicy %s, R %s", getNamespaceVersion("spicy"), getRversion())
       )
     ),
-    notes = as.list(h$notes),
+    # A note typed "- " or "* " is a list item, any other a paragraph.
+    notes = data.frame(
+      text = sub("^[-*] +", "", h$notes),
+      bullet = grepl("^[-*] ", h$notes)
+    ),
     declared = data.frame(
       code = dm$code,
       label = replace(dm$label, is.na(dm$label), ""),

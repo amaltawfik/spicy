@@ -14,15 +14,23 @@
 #' @param ... Optional tidyselect-style column selectors (e.g.
 #'   `starts_with("bmi")`, `where(is.numeric)`). Columns can be selected or
 #'   reordered, but renaming selections is not supported.
-#' @param title Title of the codebook. Defaults to `"Codebook"`; `NULL`
-#'   removes it.
+#' @param title Title of the codebook, such as the name of the study. The
+#'   PDF adds the word "Codebook" itself, above the title and in the page
+#'   header, so the title need not say it. Defaults to `"Codebook"`;
+#'   `NULL` removes it.
+#' @param subtitle Subtitle of the codebook, under the title: the wave, the
+#'   edition, the extract (`"Enquête HESAV 2026, base partielle"`).
 #' @param authors Authors of the codebook: `NULL` (the default), a
 #'   character vector whose names are the authors and whose values are
 #'   their affiliations (`c("Jane Doe" = "University of Somewhere")`; an
 #'   unnamed element is a name without affiliation), or a list of lists
 #'   with `name` and the optional `affiliation` and `orcid`.
 #' @param notes Character vector of notes on the data (source, exclusions,
-#'   coding rules, ...), one note per element.
+#'   coding rules, ...), one note per element. In the PDF, an element that
+#'   starts with `"- "` or `"* "` is a list item, consecutive items making
+#'   one list, and any other element is a paragraph:
+#'   `notes = c("Fictitious data.", "- Weight: design weight.", "- BMI: self-reported.")`.
+#'   The console and the Excel file show the notes as typed.
 #' @param source Named character vector mapping the current column names to
 #'   the codes they had in the source file, the vector
 #'   `dplyr::rename(all_of())` takes. Its names must be selected columns.
@@ -104,19 +112,21 @@
 #'
 #' @section Excel output:
 #' The workbook has three sheets, named in the language of the codebook.
-#' The first, `codebook`, holds the header as field-value pairs: title, one
-#' row per author, date, numbers of observations and variables, declared
-#' missing values, notes, and the versions of spicy and R that wrote it.
+#' The first, `codebook`, holds the header as field-value pairs: title,
+#' subtitle, one row per author, date, numbers of observations and
+#' variables, declared missing values, notes, and the versions of spicy
+#' and R that wrote it.
 #' The other two, `variables` and `values`, are the two tables of the
 #' object from the first row, with a frozen header and filters: numbers
 #' stay numeric cells and dates are ISO text.
 #'
 #' @section PDF output:
-#' The PDF opens on a cover (title, authors, date, numbers of observations
-#' and variables, notes), lists the variables with the page of each, and
-#' summarizes the declared missing values. One sheet per variable follows
-#' (counts, statistics, and the table of its values, where `M` marks a
-#' declared missing value), then an alphabetical index. A sheet breaks
+#' The PDF opens on a cover (title, subtitle, authors, date) and a page
+#' about the data (numbers of observations and variables, notes, declared
+#' missing values), then lists the variables with the page of each. One
+#' sheet per variable follows (counts, statistics, and the table of its
+#' values, where `M` marks a declared missing value), then an
+#' alphabetical index. A sheet breaks
 #' across pages only when it does not fit on one. `code_book()`
 #' writes the Typst source and compiles it with the Typst that Quarto
 #' bundles. Without Quarto, `output = "<path>.typ"` writes the same
@@ -125,15 +135,19 @@
 #' @return A `spicy_codebook` object, returned invisibly when `output` is
 #' given: a list with
 #' \describe{
-#'   \item{`header`}{A list: `title`, `authors` (a tibble with `name`,
-#'     `affiliation` and `orcid`), `date`, `n_obs`, `n_vars`, `notes`, and
-#'     `declared_missing`, a tibble of the declared missing values found in
-#'     the data (`code`, `label`, `variables`, `n_variables`).}
+#'   \item{`header`}{A list: `title`, `subtitle`, `authors` (a tibble with
+#'     `name`, `affiliation` and `orcid`), `date`, `n_obs`, `n_vars`,
+#'     `notes`, and `declared_missing`, a tibble of the declared missing
+#'     values found in the data (`code`, `label`, `variables`,
+#'     `n_variables`).}
 #'   \item{`variables`}{A tibble, one row per variable: `position` (the
 #'     column's position in `x`), `name`, `label`, `type`, `class`,
 #'     `source`, `n_valid`, `n_missing`, `n_declared_missing`,
-#'     `n_distinct`, then `min`, `max`, `mean`, `sd` and `median` for
-#'     numeric variables and `earliest` and `latest` for dates.}
+#'     `declared_codes` (the `na_values` and `na_range` of a
+#'     `haven_labelled_spss` vector, as text; `NA` without them or under
+#'     `user_na = FALSE`), `n_distinct`, then `min`, `max`, `mean`, `sd`
+#'     and `median` for numeric variables and `earliest` and `latest` for
+#'     dates.}
 #'   \item{`values`}{A tibble, one row per value: `variable`, `code`,
 #'     `label`, `declared_missing`, `n`, `pct_total` and `pct_valid`.}
 #' }
@@ -175,6 +189,7 @@ code_book <- function(
   x,
   ...,
   title = "Codebook",
+  subtitle = NULL,
   authors = NULL,
   notes = NULL,
   source = NULL,
@@ -198,6 +213,7 @@ code_book <- function(
 
   validate_code_book_control_dots(rlang::enquos(..., .named = FALSE))
   validate_code_book_title(title)
+  validate_code_book_title(subtitle, "subtitle")
   authors <- code_book_authors(authors)
   validate_code_book_notes(notes)
   notes <- notes[nzchar(trimws(notes))]
@@ -273,6 +289,13 @@ code_book <- function(
       integer(1),
       USE.NAMES = FALSE
     ),
+    declared_codes = vapply(
+      cols,
+      code_book_declared_codes,
+      character(1),
+      user_na = user_na,
+      USE.NAMES = FALSE
+    ),
     n_distinct = vl$N_distinct,
     min = unname(stats["min", ]),
     max = unname(stats["max", ]),
@@ -320,6 +343,7 @@ code_book <- function(
     list(
       header = list(
         title = title %||% NA_character_,
+        subtitle = subtitle %||% NA_character_,
         authors = authors,
         date = Sys.Date(),
         n_obs = nrow(x),
@@ -358,8 +382,9 @@ print.spicy_codebook <- function(x, ...) {
   on.exit(options(old), add = TRUE)
 
   info <- code_book_info(x$header)
-  top <- info$value[info$key %in% c("title", "author")]
-  facts <- info[!info$key %in% c("title", "author"), , drop = FALSE]
+  is_top <- info$key %in% c("title", "subtitle", "author")
+  top <- info$value[is_top]
+  facts <- info[!is_top, , drop = FALSE]
   v <- x$variables
   disp <- data.frame(
     position = as.character(v$position),
@@ -599,6 +624,32 @@ code_book_declared <- function(d) {
 }
 
 
+# How a labelled_spss vector declares its missing values, as text: its
+# `na_values`, then its `na_range` from one end to the other. Tagged NAs
+# are missing values, not a declaration. NA without a declaration, or
+# under `user_na = FALSE`, which sets it aside.
+code_book_declared_codes <- function(col, user_na) {
+  if (!user_na || !inherits(col, "haven_labelled_spss")) {
+    return(NA_character_)
+  }
+  values <- attr(col, "na_values", exact = TRUE)
+  range <- attr(col, "na_range", exact = TRUE)
+  # An open range reads "<= 9" or ">= 9000", a closed one "9000-9999".
+  span <- if (length(range) && is.infinite(range[[1L]])) {
+    paste0("\u2264 ", .format_code(range[[2L]]))
+  } else if (length(range) && is.infinite(range[[2L]])) {
+    paste0("\u2265 ", .format_code(range[[1L]]))
+  } else if (length(range)) {
+    paste(.format_code(range), collapse = "\u2013")
+  }
+  out <- c(
+    if (length(values)) paste(.format_code(values), collapse = ", "),
+    span
+  )
+  if (length(out)) paste(out, collapse = "; ") else NA_character_
+}
+
+
 # The header as field-value rows, for the print and the first Excel sheet.
 # `key` is an internal token: nothing branches on the displayed field.
 code_book_info <- function(header, orcid = FALSE) {
@@ -629,6 +680,7 @@ code_book_info <- function(header, orcid = FALSE) {
   )
   parts <- list(
     title = if (is.na(header$title)) character() else header$title,
+    subtitle = if (is.na(header$subtitle)) character() else header$subtitle,
     author = author,
     date = format(header$date),
     observations = as.character(header$n_obs),
@@ -638,6 +690,7 @@ code_book_info <- function(header, orcid = FALSE) {
   )
   fields <- c(
     title = "row_title",
+    subtitle = "row_subtitle",
     author = "row_author",
     date = "row_date",
     observations = "row_observations",
@@ -666,6 +719,7 @@ code_book_headers <- function(cols) {
     n_valid = "header_valid",
     n_missing = "header_missing",
     n_declared_missing = "header_declared_missing",
+    declared_codes = "header_declared_codes",
     n_distinct = "header_distinct",
     min = "header_min",
     max = "header_max",

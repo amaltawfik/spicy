@@ -39,6 +39,7 @@ test_that("the Typst source is the template, then the codebook as literals", {
   code_book(
     cbt_data(),
     title = "Survey \"2026\"",
+    subtitle = "Wave 1",
     authors = list(
       list(
         name = "Jane Doe",
@@ -53,6 +54,10 @@ test_that("the Typst source is the template, then the codebook as literals", {
   src <- readLines(path, encoding = "UTF-8")
   tpl <- readLines(system.file("typst", "codebook.typ", package = "spicy"))
   expect_identical(src[seq_along(tpl)], tpl)
+  # The band row of declared codes: on q, the one variable declaring them.
+  has <- function(x) sum(grepl(x, src, fixed = TRUE))
+  expect_identical(has("declared_codes: \"8, 9\","), 1L)
+  expect_identical(has("declared_codes: none,"), 2L)
   expect_snapshot(
     cat(src[-seq_along(tpl)], sep = "\n"),
     transform = function(x) {
@@ -66,17 +71,30 @@ test_that("the running header and the cover say Codebook once", {
   data <- function(...) {
     code_book_typst_data(code_book(data.frame(x = 1:2), ...))$data
   }
-  a <- data(title = "Social health survey")
+  a <- data(title = "Social health survey", subtitle = "Wave 1")
   expect_identical(a$header, "Codebook — Social health survey")
-  expect_identical(a$subtitle, "Codebook")
+  expect_identical(a$genre, "Codebook")
+  expect_identical(a$subtitle, "Wave 1")
   b <- data(title = "The CODEBOOK of 2026")
   expect_identical(b$header, "The CODEBOOK of 2026")
-  expect_null(b$subtitle)
+  expect_null(b$genre)
+  expect_true(is.na(b$subtitle))
   expect_identical(data()$header, "Codebook")
   none <- data(title = NULL)
   expect_identical(none$header, "Codebook")
-  expect_identical(none$subtitle, "Codebook")
+  expect_identical(none$genre, "Codebook")
   expect_true(is.na(none$title))
+})
+
+test_that("a note typed with a dash or an asterisk is a list item", {
+  notes <- function(x) {
+    code_book_typst_data(code_book(data.frame(x = 1), notes = x))$data$notes
+  }
+  n <- notes(c("Plain.", "- Weight: design.", "* BMI."))
+  expect_identical(n$text, c("Plain.", "Weight: design.", "BMI."))
+  expect_identical(n$bullet, c(FALSE, TRUE, TRUE))
+  # The marker needs its space, at the very start.
+  expect_false(any(notes(c("A.", "-B", "*C", " - D"))$bullet))
 })
 
 test_that("statistics: two decimals from 1, three significant digits below", {

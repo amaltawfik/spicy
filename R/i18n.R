@@ -773,6 +773,7 @@
   header_valid = "Valid",
   header_missing = "Missing",
   header_declared_missing = "Declared missing",
+  header_declared_codes = "Declared missing codes",
   header_distinct = "Distinct values",
   header_earliest = "Earliest date",
   header_latest = "Latest date",
@@ -791,6 +792,7 @@
   # Fields of the first Excel sheet. The console header prints the same
   # fields as "field: value" lines.
   row_title = "Title",
+  row_subtitle = "Subtitle",
   row_author = "Author",
   row_date = "Date",
   row_observations = "Observations",

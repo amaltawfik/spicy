@@ -4,6 +4,7 @@
       print(cb)
     Output
       Codebook
+      Wave 1
       Jane Doe — HESAV
       Bob
       
@@ -14,6 +15,7 @@
       Declared missing value: 9 = Refused (1 variable)
       Declared missing value: NA(a) = Refused (1 variable)
       Note: Fictitious data.
+      Note: - Marked note.
       
          Pos. │ Variable    Label           Type                              Valid    Missing 
       ────────┼────────────────────────────────────────────────────────────────────────────────
