@@ -26,7 +26,7 @@ Survey research runs on a small set of recurring outputs: a frequency
 table, a cross-tabulation with its test, a descriptive table by group, a
 regression table, and the codebook that documents the data file for
 others. In SPSS and Stata these outputs come from a few commands and
-follow conventions that readers recognise. In R they are spread across
+follow conventions that readers recognize. In R they are spread across
 packages with different vocabularies, and the conventions that a journal
 or a thesis committee expects are left to the analyst.
 
@@ -76,7 +76,7 @@ into the manuscript.
 Several R packages cover parts of this ground. `gtsummary`
 [@sjoberg2021reproducible] builds descriptive and regression tables for
 clinical reporting, rendered through `gt`, with a rich grammar for
-customisation. `modelsummary` [@arelbundock2022modelsummary] produces
+customization. `modelsummary` [@arelbundock2022modelsummary] produces
 model tables and data summaries for many output formats. `sjPlot`
 [@ludecke2025sjplot] renders descriptive and model tables in HTML with
 support for labelled data. `questionr` [@barnier2026questionr] gives

@@ -59,10 +59,9 @@ dépôt references). Le dossier est hors tarball (`^paper$` dans
 
 ## Points relevés par la génération de la bibliographie
 
-- Deux titres de `master.bib` rendent mal en APA (capitales perdues) :
-  `apa2020publication` (« american psychological association ») et
-  `arelbundock2024interpret` (« r and python ») ; à protéger par des
-  accolades dans `master.bib`, puis régénérer.
+- Les capitales de `apa2020publication` et `arelbundock2024interpret`
+  sont protégées depuis le 2026-10-09 (`master.bib` 88eecf6, `paper.bib`
+  régénéré).
 - Le champ `note` (« R package version x ») disparaît en APA ; un champ
   `version` l'afficherait. À décider.
 - Le PDF ICPSR du magasin est la 4e édition (2009) ; la 6e, citée, est en
