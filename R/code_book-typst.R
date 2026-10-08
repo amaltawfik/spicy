@@ -109,7 +109,7 @@ code_book_typst_data <- function(cb) {
   } else if (says) {
     h$title
   } else {
-    paste(word, "\u2014", h$title)
+    paste(word, "\u2013", h$title)
   }
   stat_cols <- intersect(
     c("min", "max", "mean", "sd", "median", "earliest", "latest"),

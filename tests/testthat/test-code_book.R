@@ -745,7 +745,7 @@ test_that("the Excel codebook reads back", {
   )
   expect_identical(
     info$Value[2:4],
-    c("Wave 1", "Jane Doe — HESAV — ORCID 0000-0002-1825-0097", "Bob")
+    c("Wave 1", "Jane Doe – HESAV – ORCID 0000-0002-1825-0097", "Bob")
   )
   # The notes as typed, list marker included.
   expect_identical(

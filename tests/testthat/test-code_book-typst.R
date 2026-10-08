@@ -72,7 +72,7 @@ test_that("the running header and the cover say Codebook once", {
     code_book_typst_data(code_book(data.frame(x = 1:2), ...))$data
   }
   a <- data(title = "Social health survey", subtitle = "Wave 1")
-  expect_identical(a$header, "Codebook — Social health survey")
+  expect_identical(a$header, "Codebook – Social health survey")
   expect_identical(a$genre, "Codebook")
   expect_identical(a$subtitle, "Wave 1")
   b <- data(title = "The CODEBOOK of 2026")

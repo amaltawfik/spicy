@@ -13,7 +13,7 @@
         genre: "Codebook",
         title: "Survey \"2026\"",
         subtitle: "Wave 1",
-        header: "Codebook — Survey \"2026\"",
+        header: "Codebook – Survey \"2026\"",
         authors: (
           (name: "Jane Doe", affiliation: "HESAV", orcid: "0000-0002-1825-0097"),
         ),

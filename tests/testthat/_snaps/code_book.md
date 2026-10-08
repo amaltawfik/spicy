@@ -5,7 +5,7 @@
     Output
       Codebook
       Wave 1
-      Jane Doe — HESAV
+      Jane Doe – HESAV
       Bob
       
       Date: 2026-10-07
@@ -32,7 +32,7 @@
       print(cb)
     Output
       Codebook
-      Jane Doe — HESAV
+      Jane Doe – HESAV
       
       Date : 2026-10-07
       Observations : 6

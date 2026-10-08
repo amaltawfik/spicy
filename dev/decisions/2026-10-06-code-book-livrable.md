@@ -560,6 +560,23 @@ Troisième relecture d'Amal, sur DoMiRéFAS (2026-10-08) :
   marqués forment une liste ; les autres sont des paragraphes. Les
   codebooks publiés écrivent leurs notes en prose, les puces servent aux
   énumérations.
+* **Typographie (2026-10-08, soir).** Filet sous les titres de section à
+  0,5 pt au lieu de 1 pt : le caractère porte la hiérarchie, le filet ne
+  fait que la clore, et doit rester plus léger que les traits du gras.
+  Couverture : un seul élément en gras, le titre (28 pt) ; le genre en
+  capitales espacées en graisse normale ; sous-titre, noms et date en
+  graisse normale ; affiliation et ORCID plus petits, gris, chacun sur sa
+  ligne sous le nom (plus de tiret ni d'italique) ; les tailles
+  descendent par paliers, rien en italique ; le bloc titre placé au tiers
+  supérieur. Règles de Bringhurst et pratique des couvertures de rapports
+  (OCDE, Pew) : une seule graisse forte, de l'air, pas d'ornement.
+* **Tiret demi-cadratin partout** (« Codebook – Enquête », « Jane Doe –
+  HESAV », signets du PDF) : le cadratin espacé est trop long, et c'est le
+  demi-cadratin espacé qui sépare deux segments de titre, en anglais
+  comme en français (Lexique de l'Imprimerie nationale, usage éditorial) ;
+  le cadratin est réservé aux incises et aux dialogues. Un seul tiret
+  pour les deux langues. Le mot CODEBOOK de la couverture passe à 11 pt
+  (il était à 9,5 pt, trop discret pour un repère de genre).
 * **Colonne Label seulement quand la variable a des libellés.** Amal
   proposait une colonne unique « [1] Jamais », comme `freq()`. Écarté :
   une cellule qui mêle code et libellé perd l'alignement des libellés

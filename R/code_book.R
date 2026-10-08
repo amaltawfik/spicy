@@ -656,10 +656,10 @@ code_book_info <- function(header, orcid = FALSE) {
   a <- header$authors
   author <- a$name
   aff <- nzchar(trimws(a$affiliation))
-  author[aff] <- paste0(author[aff], " \u2014 ", a$affiliation[aff])
+  author[aff] <- paste0(author[aff], " \u2013 ", a$affiliation[aff])
   if (orcid) {
     id <- nzchar(trimws(a$orcid))
-    author[id] <- paste0(author[id], " \u2014 ORCID ", a$orcid[id])
+    author[id] <- paste0(author[id], " \u2013 ORCID ", a$orcid[id])
   }
   dm <- header$declared_missing
   declared <- vapply(

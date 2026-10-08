@@ -7,7 +7,7 @@
 #let base = 10pt
 #let pad = (x: 4pt, y: 4pt)
 #let size = (
-  cover-title: 26pt, cover-subtitle: 14pt, cover-top: 1.4in, cover-block: 18pt, // title block, and the air around it
+  cover-title: 28pt, cover-subtitle: 14pt, cover-top: 1.6in, cover-block: 18pt, // title block, and the air around it
   about-field: 1.6in, // field column of the facts on the page about the data
   heading-above: 18pt, heading-below: 9pt,
   sheet: 24pt, gap: 6pt, // above a sheet, between its tables
@@ -91,48 +91,56 @@
       align(right, text(fill: c.muted, counter(page).display() + "/" + total))
     },
   )
+  // A hairline under the heading: the type carries the hierarchy, the rule
+  // only closes it (0.5pt, lighter than the strokes of the bold type).
   show heading.where(level: 1): it => block(
     width: 100%, above: size.heading-above, below: size.heading-below, sticky: true,
-    inset: (bottom: 4pt), stroke: (bottom: 1pt + c.primary),
+    inset: (bottom: 5pt), stroke: (bottom: 0.5pt + c.primary),
     text(base + 4pt, weight: "bold", fill: c.primary, it.body),
   )
 
   // ---- Cover ----------------------------------------------------------------
   // Reading order: the genre as a spaced capital kicker, the study as the
   // title, its subtitle, who and when; the colophon at the foot.
+  // Typography of the cover: one bold element, the title; the kicker in
+  // spaced capitals at text size; the subtitle, the names and the date in
+  // regular weight, the affiliations and the ORCID smaller and muted, each
+  // on its own line; sizes step down, nothing is italic.
   {
     set align(center)
+    set par(leading: 0.3em)
     v(size.cover-top)
     if data.genre != none {
-      text(base, weight: "bold", fill: c.accent, tracking: 0.18em, upper(data.genre))
-      v(size.gap)
+      text(base + 1pt, fill: c.accent, tracking: 0.25em, upper(data.genre))
+      v(size.cover-block)
     }
     let title = if data.title != none { data.title } else { data.genre }
     if title != none {
       text(size.cover-title, weight: "bold", fill: c.primary, title)
     }
     if data.subtitle != none {
-      v(size.gap)
+      v(size.gap + 2pt)
       text(size.cover-subtitle, fill: c.muted, data.subtitle)
     }
-    v(size.cover-block)
-    for a in data.authors {
-      v(4pt)
-      text(base + 1pt, a.name)
+    v(size.cover-block * 2)
+    for (i, a) in data.authors.enumerate() {
+      if i > 0 { v(size.gap + 4pt) }
+      text(base + 2pt, a.name)
       if a.affiliation != "" {
-        text(style: "italic", fill: c.muted, "  \u{2014}  " + a.affiliation)
+        linebreak()
+        text(base - 0.5pt, fill: c.muted, a.affiliation)
       }
       if a.orcid != "" {
         linebreak()
-        mono(size: base - 1pt, fill: c.muted, s.orcid + " ")
+        text(base - 1.5pt, fill: c.muted, s.orcid + " ")
         link("https://orcid.org/" + a.orcid,
-             mono(size: base - 1pt, fill: c.accent, underline(a.orcid)))
+             text(base - 1.5pt, fill: c.accent, a.orcid))
       }
     }
-    v(8pt)
-    text(base + 1pt, fill: c.muted, data.date)
+    v(size.cover-block)
+    text(base, fill: c.muted, data.date)
     // The cover carries identity only; the colophon names what produced it.
-    place(bottom + center, text(base - 1pt, fill: c.muted, data.meta.last().value))
+    place(bottom + center, text(base - 1.5pt, fill: c.muted, data.meta.last().value))
   }
   pagebreak()
 
@@ -190,7 +198,7 @@
   let flagged = rows.any(r => r.m)
   for (i, x) in data.vars.enumerate() {
     // An invisible heading: a PDF bookmark per variable, nothing on the page.
-    let title = if x.label == "" { x.name } else { x.name + " \u{2014} " + x.label }
+    let title = if x.label == "" { x.name } else { x.name + " \u{2013} " + x.label }
     let mark = place(hide(heading(level: 2, outlined: false, bookmarked: true, title)))
     let lab = if x.label == "" { () } else { wide(s.label, x.label) }
     let declared = if x.declared_codes == none { () } else { wide(s.declared_codes, x.declared_codes) }
