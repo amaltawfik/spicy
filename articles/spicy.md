@@ -61,10 +61,11 @@ varlist(sochealth, starts_with("bmi"), income, weight, tbl = TRUE)
 
 [`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md)
 turns the same inspection into a document: one row per variable, the
-unweighted count of every value, and a header with the title, authors,
-and notes. It prints the list of variables and returns the codebook,
-which `output = "<path>.xlsx"` writes to Excel and
-`output = "<path>.pdf"` compiles to a PDF (through Quarto).
+unweighted count of every category, and a header with the title,
+authors, and notes. It prints the list of variables and returns the
+codebook, which `output = "<path>.xlsx"` writes to Excel and
+`output = "<path>.pdf"` compiles to a PDF (this needs the quarto package
+and Quarto 1.7 or later).
 
 ``` r
 
@@ -452,7 +453,7 @@ survival and Bayesian engines (the full map is the [Supported
 models](https://amaltawfik.github.io/spicy/articles/table-regression-supported-models.html)
 article) — with APA formatting by default and the same journal styles on
 demand (`style = "jama"`, `"nejm"`, `"lancet"` and more), factor
-grouping with reference rows, robust variance, standardised
+grouping with reference rows, robust variance, standardized
 coefficients, average marginal effects, hierarchical comparisons, and
 side-by-side multi-model layouts:
 
@@ -536,7 +537,8 @@ kept alongside the reference pages and rebuilt with each release.
 
 - [Explore variables and build
   codebooks](https://amaltawfik.github.io/spicy/articles/variable-exploration.html)
-  — inspect variables, labels and missingness
+  — inspect variables, labels, and missing values, and build a codebook
+  in the console, Excel, or PDF
   ([`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md),
   [`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md),
   [`label_from_names()`](https://amaltawfik.github.io/spicy/reference/label_from_names.md)).

@@ -121,9 +121,9 @@ A tibble with 1200 rows and 24 variables:
 
 - weight:
 
-  Numeric. Survey design weight (range 0.29–3.45); calibrated so that
-  `sum(weight)` matches the unweighted N and `mean(weight)` is
-  approximately 1. See `Details`.
+  Numeric. Survey design weight (range 0.29–3.45); calibrated:
+  `mean(weight)` is about 1 (0.997) and `sum(weight)` is 1196.5 for the
+  1200 rows. See `Details`.
 
 ## Source
 
@@ -150,10 +150,10 @@ and
 can demonstrate the automatic ordinal-vs-nominal dispatch (Cramer's V,
 Phi, Kendall's Tau-b, Goodman-Kruskal Gamma) on the same dataset.
 
-Survey weights (`weight`) are calibrated: `sum(weight)` matches the
-unweighted N to within rounding (\\\approx 1200\\) and `mean(weight)` is
-\\\approx 1\\. Weighted means therefore agree with unweighted means up
-to sampling noise without further rescaling.
+Survey weights (`weight`) are calibrated: they average about 1
+(`mean(weight)` is 0.997) and sum to 1196.5 for the 1200 rows. Weighted
+means therefore agree with unweighted means up to sampling noise without
+further rescaling.
 
 ## Examples
 

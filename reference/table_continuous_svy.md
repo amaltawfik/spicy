@@ -283,10 +283,10 @@ distinction does not exist – the variance is the design's – so
 
 ## Stability
 
-This function is **stabilising** in the sense
+This function is **stabilizing** in the sense
 [`?spicy`](https://amaltawfik.github.io/spicy/reference/spicy-package.md)
 defines: the names of its design-specific arguments may still be
-tightened before 1.0 – with a `NEWS.md` entry – but the behaviour does
+tightened before 1.0 – with a `NEWS.md` entry – but the behavior does
 not change silently. It was experimental through 0.13; the shape of the
 table has held across the cycle, so it now moves on the parent family's
 clock rather than its own. The numbers themselves are survey's and do

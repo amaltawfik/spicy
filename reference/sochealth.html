@@ -183,8 +183,8 @@ of living (1–5 Likert scale). Contains missing values.</p></dd>
 
 <dt>weight</dt>
 <dd><p>Numeric. Survey design weight (range
-0.29–3.45); calibrated so that <code>sum(weight)</code> matches the
-unweighted N and <code>mean(weight)</code> is approximately 1. See
+0.29–3.45); calibrated: <code>mean(weight)</code> is about 1 (0.997) and
+<code>sum(weight)</code> is 1196.5 for the 1200 rows. See
 <code>Details</code>.</p></dd>
 
 
@@ -209,9 +209,9 @@ factors (<code>sex</code>, <code>region</code>, ...) and ordered factors (<code>
 <code><a href="cross_tab.html">cross_tab()</a></code> and <code><a href="table_categorical.html">table_categorical()</a></code> can demonstrate the
 automatic ordinal-vs-nominal dispatch (Cramer's V, Phi, Kendall's
 Tau-b, Goodman-Kruskal Gamma) on the same dataset.</p>
-<p>Survey weights (<code>weight</code>) are calibrated: <code>sum(weight)</code> matches
-the unweighted N to within rounding (\(\approx 1200\)) and
-<code>mean(weight)</code> is \(\approx 1\). Weighted means therefore agree
+<p>Survey weights (<code>weight</code>) are calibrated: they average about 1
+(<code>mean(weight)</code> is 0.997) and sum to 1196.5 for the 1200 rows.
+Weighted means therefore agree
 with unweighted means up to sampling noise without further
 rescaling.</p>
     </div>

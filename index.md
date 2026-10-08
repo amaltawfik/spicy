@@ -94,7 +94,7 @@ row-wise summaries.
   observations (`N_valid`), and missing data.
 - **Codebooks** with
   [`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md):
-  variables, values and unweighted counts, printed in the console,
+  variables, values, and unweighted counts, printed in the console,
   written to Excel, or compiled to a PDF with a cover, one sheet per
   variable, and an index.
 - **Label extraction** with
@@ -254,9 +254,13 @@ varlist(sochealth, tbl = TRUE)
 
 ``` r
 
-code_book(sochealth, starts_with("bmi"), title = "BMI codebook")
+code_book(sochealth, starts_with("bmi"), title = "Social health survey")
 code_book(sochealth, output = "sochealth_codebook.xlsx")
-code_book(sochealth, authors = c("Jane Doe" = "HESAV"), output = "sochealth_codebook.pdf")
+code_book(
+  sochealth,
+  authors = c("Jane Doe" = "University of Somewhere"),
+  output = "sochealth_codebook.pdf"
+)
 ```
 
 See [Explore variables and build

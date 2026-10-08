@@ -20,7 +20,7 @@ deliberately at minor-version bumps and are always announced in
 embed spicy in production pipelines or downstream packages should rely
 on the **stable** surface.
 
-**Stable** (signature and behaviour preserved across 0.y.z and into
+**Stable** (signature and behavior preserved across 0.y.z and into
 1.0.0; documented changes only):
 
 - Frequency / cross-tabs:
@@ -30,7 +30,6 @@ on the **stable** surface.
 - Variable inspection:
   [`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md)
   / [`vl()`](https://amaltawfik.github.io/spicy/reference/varlist.md),
-  [`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md),
   [`label_from_names()`](https://amaltawfik.github.io/spicy/reference/label_from_names.md)
 
 - Row-wise summaries:
@@ -54,8 +53,8 @@ on the **stable** surface.
   [`goodman_kruskal_tau()`](https://amaltawfik.github.io/spicy/reference/goodman_kruskal_tau.md),
   [`uncertainty_coef()`](https://amaltawfik.github.io/spicy/reference/uncertainty_coef.md)
 
-**Stabilising** (still maturing; argument names may be tightened before
-1.0 with a `NEWS.md` entry, but no silent behavioural changes):
+**Stabilizing** (still maturing; argument names may be tightened before
+1.0 with a `NEWS.md` entry, but no silent behavioral changes):
 
 - Summary table builders:
   [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
@@ -83,13 +82,19 @@ on the **stable** surface.
 - Omnibus association overview:
   [`assoc_measures()`](https://amaltawfik.github.io/spicy/reference/assoc_measures.md)
 
-**Experimental** (new in this cycle; the shape of the output and the
+**Experimental** (new since 0.13.0; the shape of the output and the
 argument names may still move, with a `NEWS.md` entry, on their OWN
 clock rather than the parent family's):
 
 - Display language and label overrides:
   [`spicy_labels()`](https://amaltawfik.github.io/spicy/reference/spicy_labels.md)
-  (with `options(spicy.language)` / `options(spicy.labels)`)
+  (with `options(spicy.language)` / `options(spicy.labels)`), since
+  0.13.0
+
+- Codebooks:
+  [`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md)
+  (the `spicy_codebook` object, its Excel workbook, and its PDF), in the
+  development version
 
 **Internal API** (not part of the public surface; can change without
 notice – avoid calling directly from downstream code):
@@ -110,7 +115,7 @@ methods on `spicy_categorical_table`, `spicy_continuous_table`,
 standard broom column conventions (`outcome`, `term`, `estimate`,
 `std.error`, `conf.low`, `conf.high`, `statistic`, `p.value`, `df`,
 `df.residual`, `r.squared`, `adj.r.squared`, `nobs`, ...). The set of
-columns produced by each method is considered **stabilising**: existing
+columns produced by each method is considered **stabilizing**: existing
 columns will not be silently renamed or have their semantics changed
 within `0.y.z`, and any breaking change is announced in `NEWS.md`.
 Adding optional new columns (e.g. covariate-adjustment metadata) is not
@@ -126,7 +131,7 @@ modes are preserved verbatim (matching `lmerTest::glance()` and the
 
 ## Classed conditions
 
-All errors and warnings emitted by the stable / stabilising surfaces
+All errors and warnings emitted by the stable / stabilizing surfaces
 carry classed conditions so downstream code can dispatch on class via
 [`tryCatch()`](https://rdrr.io/r/base/conditions.html) /
 [`withCallingHandlers()`](https://rdrr.io/r/base/conditions.html)
@@ -149,7 +154,8 @@ parent class plus a leaf class describing the specific cause:
 
   - `spicy_missing_quarto` –
     [`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md)
-    was asked for a PDF, and Quarto, which compiles it, was not found.
+    was asked for a PDF, and Quarto 1.7 or later, which compiles it, was
+    not found.
 
   - `spicy_typst_failed` – Typst could not compile the PDF of
     [`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md);
@@ -252,9 +258,14 @@ parent class plus a leaf class describing the specific cause:
     operation (e.g., the clipboard copy) and re-emitted under the spicy
     taxonomy.
 
+  - `spicy_typst_warning` – Typst warned while compiling the PDF of
+    [`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md),
+    which it still wrote; the condition carries its messages in
+    `stderr`. Signaled together with `spicy_passthrough`.
+
   - `spicy_summary_failed` –
     [`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md)
-    could not summarise one column; the rest of the table is fine.
+    could not summarize one column; the rest of the table is fine.
 
   - `spicy_renamed_column` – a user data column or factor level collided
     with a spicy-internal name and was auto-renamed to preserve the data

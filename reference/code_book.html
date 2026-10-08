@@ -134,14 +134,15 @@ reordered, but renaming selections is not supported.</p></dd>
 
 <dt id="arg-title">title<a class="anchor" aria-label="anchor" href="#arg-title"></a></dt>
 <dd><p>Title of the codebook, such as the name of the study. The
-PDF adds the word "Codebook" itself, above the title and in the page
-header, so the title need not say it. Defaults to <code>"Codebook"</code>;
-<code>NULL</code> removes it.</p></dd>
+PDF adds the word "Codebook" above it on the cover and before it in
+the page header, unless the title already contains the word.
+Defaults to <code>"Codebook"</code>. <code>NULL</code> leaves the console and the Excel file
+without a title; the cover of the PDF then shows "Codebook" once.</p></dd>
 
 
 <dt id="arg-subtitle">subtitle<a class="anchor" aria-label="anchor" href="#arg-subtitle"></a></dt>
 <dd><p>Subtitle of the codebook, under the title: the wave, the
-edition, the extract (<code>"Enquête HESAV 2026, base partielle"</code>).</p></dd>
+edition, the extract (<code>"Wave 3, 2026, public-use file"</code>).</p></dd>
 
 
 <dt id="arg-authors">authors<a class="anchor" aria-label="anchor" href="#arg-authors"></a></dt>
@@ -149,28 +150,36 @@ edition, the extract (<code>"Enquête HESAV 2026, base partielle"</code>).</p></
 character vector whose names are the authors and whose values are
 their affiliations (<code>c("Jane Doe" = "University of Somewhere")</code>; an
 unnamed element is a name without affiliation), or a list of lists
-with <code>name</code> and the optional <code>affiliation</code> and <code>orcid</code>.</p></dd>
+with <code>name</code> and the optional <code>affiliation</code> and <code>orcid</code>. An ORCID given
+as its <code>https://orcid.org/</code> address is kept as the identifier alone.</p></dd>
 
 
 <dt id="arg-notes">notes<a class="anchor" aria-label="anchor" href="#arg-notes"></a></dt>
 <dd><p>Character vector of notes on the data (source, exclusions,
-coding rules, ...), one note per element. In the PDF, an element that
-starts with <code>"- "</code> or <code>"* "</code> is a list item, consecutive items making
-one list, and any other element is a paragraph:
-<code>notes = c("Fictitious data.", "- Weight: design weight.", "- BMI: self-reported.")</code>.
-The console and the Excel file show the notes as typed.</p></dd>
+coding rules, ...), one note per element; blank notes are dropped. In
+the PDF, an element that starts with <code>"- "</code> or <code>"* "</code> is a list item,
+consecutive items making one list, and any other element is a
+paragraph:
+<code>notes = c("Wave 3 only.", "- Weight: design weight.", "- BMI: kg/m2.")</code>.
+The console and the Excel file show the notes as typed; the PDF turns
+straight apostrophes into typographic ones and, in French, the space
+before <code>:</code>, <code>;</code>, <code>!</code>, or <code>?</code> into a non-breaking space.</p></dd>
 
 
 <dt id="arg-source">source<a class="anchor" aria-label="anchor" href="#arg-source"></a></dt>
 <dd><p>Named character vector mapping the current column names to
 the codes they had in the source file, the vector
-<code>dplyr::rename(all_of())</code> takes. Its names must be selected columns.</p></dd>
+<code>dplyr::rename(all_of())</code> takes. Its names must be selected columns,
+and each code must be non-empty.</p></dd>
 
 
 <dt id="arg-values">values<a class="anchor" aria-label="anchor" href="#arg-values"></a></dt>
-<dd><p>The maximum number of categories listed per variable in <code>values</code>. A
-variable with more keeps its count of distinct values in <code>variables</code>
-and has no rows in <code>values</code>. Defaults to <code>100</code>; <code>Inf</code> lists them all.</p></dd>
+<dd><p>The maximum number of categories listed per variable in
+the <code>values</code> table; under <code>factor_levels = "all"</code>, unused levels and
+codes count. A variable with more keeps its count of distinct values
+in <code>variables</code>; in <code>values</code> it loses its category rows and keeps those
+of its declared and system missing values, if it declares missing
+codes. Defaults to <code>100</code>; <code>Inf</code> lists them all.</p></dd>
 
 
 <dt id="arg-range">range<a class="anchor" aria-label="anchor" href="#arg-range"></a></dt>
@@ -182,8 +191,9 @@ latest date of each date; <code>FALSE</code> drops those four columns.</p></dd>
 <dt id="arg-factor-levels">factor_levels<a class="anchor" aria-label="anchor" href="#arg-factor-levels"></a></dt>
 <dd><p>Character. <code>"all"</code> (the default; <code><a href="varlist.html">varlist()</a></code> uses
 <code>"observed"</code>) lists every declared level of a factor, every labelled
-code and both values of a logical, with a count of 0 when unused.
-<code>"observed"</code> lists only the values present in the data.</p></dd>
+code, every code of <code>na_values</code>, and both values of a logical, with a
+count of 0 when unused. <code>"observed"</code> lists only the values present in
+the data.</p></dd>
 
 
 <dt id="arg-user-na">user_na<a class="anchor" aria-label="anchor" href="#arg-user-na"></a></dt>
@@ -204,22 +214,28 @@ numbers.</p></dd>
 
 
 <dt id="arg-font-font-code">font, font_code<a class="anchor" aria-label="anchor" href="#arg-font-font-code"></a></dt>
-<dd><p>Fonts of the PDF, for the text and for the names
-and codes. <code>NULL</code> (the default) uses New Computer Modern and DejaVu
-Sans Mono, which Typst embeds, so the PDF looks the same whatever the
-machine. Any other font must be one Typst finds, named exactly as
-<code>quarto typst fonts</code> lists it; a <code>.typ</code> output keeps the name as
-given, unchecked. A <code>font</code> also sets the font of the Excel file,
-which otherwise keeps its default font.</p></dd>
+<dd><p>Fonts of the PDF: <code>font</code> for the text, the values
+and their codes included, and <code>font_code</code> for the variable names and
+the source codes. <code>NULL</code> (the default) uses New Computer Modern and
+DejaVu Sans Mono, which Typst embeds, so the PDF looks the same on
+every machine for the characters these fonts cover; any other
+character falls back to a font found on the machine. Any other font
+must be one Typst finds, named exactly as <code>quarto typst fonts</code> lists
+it; a <code>.typ</code> output keeps the name as given, unchecked. A <code>font</code> also
+sets the font of the Excel file, which otherwise keeps its default
+font.</p></dd>
 
 
 <dt id="arg-colors">colors<a class="anchor" aria-label="anchor" href="#arg-colors"></a></dt>
 <dd><p>Named character vector of <code>"#RRGGBB"</code> colors replacing
-part of the palette of the PDF: <code>primary</code> (title, headings and the
-text of table headers), <code>accent</code> (links and the declared missing
-marker), <code>band</code> (behind table headers), <code>band_dark</code> (the band of each
-variable, under white text), <code>zebra</code>, <code>grid</code> (rules), <code>text</code> and
-<code>muted</code>. The headers of the Excel file take <code>primary</code> and <code>band</code> too.</p></dd>
+part of the palette of the PDF: <code>primary</code> (title, headings, and the
+text of table headers), <code>accent</code> (the word "Codebook" above the title,
+and the links), <code>band</code> (behind table headers), <code>band_dark</code> (the band
+of each variable, under white text), <code>zebra</code> (behind the label rows of
+a variable), <code>grid</code> (rules), <code>text</code>, and <code>muted</code>. A <code>band</code> given
+without <code>zebra</code> brings a lighter tint of itself as <code>zebra</code>, and a
+<code>band_dark</code> given without <code>grid</code> a light tint of itself as <code>grid</code>. The
+headers of the Excel file take <code>primary</code> and <code>band</code> too.</p></dd>
 
 
 <dt id="arg-paper">paper<a class="anchor" aria-label="anchor" href="#arg-paper"></a></dt>
@@ -233,7 +249,8 @@ the format of its extension, and returns it invisibly: <code>.xlsx</code> for an
 Excel workbook (this requires <code>openxlsx2</code>), <code>.pdf</code> for a PDF (this
 requires the <code>quarto</code> package and Quarto 1.7 or later, found on the
 PATH or through the <code>QUARTO_PATH</code> environment variable), <code>.typ</code> for
-the Typst source of that PDF.</p></dd>
+the Typst source of that PDF. The path names a file, in a directory
+that exists.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -241,9 +258,11 @@ the Typst source of that PDF.</p></dd>
     <p>A <code>spicy_codebook</code> object, returned invisibly when <code>output</code> is
 given: a list with</p><dl><dt><code>header</code></dt>
 <dd><p>A list: <code>title</code>, <code>subtitle</code>, <code>authors</code> (a tibble with
-<code>name</code>, <code>affiliation</code> and <code>orcid</code>), <code>date</code>, <code>n_obs</code>, <code>n_vars</code>,
-<code>notes</code>, and <code>declared_missing</code>, a tibble of the declared missing
-values found in the data (<code>code</code>, <code>label</code>, <code>variables</code>,
+<code>name</code>, <code>affiliation</code>, and <code>orcid</code>), <code>date</code>, <code>n_obs</code>, <code>n_vars</code>,
+<code>notes</code> (blank notes dropped), and <code>declared_missing</code>, a tibble of
+the declared missing values found in the data and, under
+<code>factor_levels = "all"</code>, of the declared codes no observation
+carries, sorted by code then label (<code>code</code>, <code>label</code>, <code>variables</code>,
 <code>n_variables</code>).</p></dd>
 
 <dt><code>variables</code></dt>
@@ -251,19 +270,22 @@ values found in the data (<code>code</code>, <code>label</code>, <code>variables
 column's position in <code>x</code>), <code>name</code>, <code>label</code>, <code>type</code>, <code>class</code>,
 <code>source</code>, <code>n_valid</code>, <code>n_missing</code>, <code>n_declared_missing</code>,
 <code>declared_codes</code> (the <code>na_values</code> and <code>na_range</code> of a
-<code>haven_labelled_spss</code> vector, as text; <code>NA</code> without them or under
-<code>user_na = FALSE</code>), <code>n_distinct</code>, then <code>min</code>, <code>max</code>, <code>mean</code>, <code>sd</code>
-and <code>median</code> for numeric variables and <code>earliest</code> and <code>latest</code> for
-dates.</p></dd>
+<code>haven_labelled_spss</code> vector, as text, the two parts separated by a
+semicolon; <code>NA</code> without them or under <code>user_na = FALSE</code>),
+<code>n_distinct</code>, then <code>min</code>, <code>max</code>, <code>mean</code>, <code>sd</code>, and <code>median</code> for
+numeric variables and <code>earliest</code> and <code>latest</code> for dates.
+<code>range = FALSE</code> drops <code>min</code>, <code>max</code>, <code>earliest</code>, and <code>latest</code>.</p></dd>
 
 <dt><code>values</code></dt>
 <dd><p>A tibble, one row per value: <code>variable</code>, <code>code</code>,
-<code>label</code>, <code>declared_missing</code>, <code>n</code>, <code>pct_total</code> and <code>pct_valid</code>.</p></dd>
+<code>label</code>, <code>declared_missing</code>, <code>n</code>, <code>pct_total</code>, and <code>pct_valid</code>. The
+row of the system missing values (<code>code = "NA"</code>) exists only for a
+variable that has missing values.</p></dd>
 
 
 </dl><p>The attributes <code>language</code> and <code>decimal_mark</code> record the language and
 the decimal mark the codebook was built with, and <code>appearance</code> the look
-of its PDF: a list of <code>font</code>, <code>font_code</code>, <code>colors</code> (all eight) and
+of its PDF: a list of <code>font</code>, <code>font_code</code>, <code>colors</code> (all eight), and
 <code>paper</code>.</p>
     </div>
     <div class="section level2">
@@ -271,56 +293,79 @@ of its PDF: a list of <code>font</code>, <code>font_code</code>, <code>colors</c
     <p>The type of a variable is read off its R class, never guessed: a factor
 is categorical (nominal), an ordered factor categorical (ordinal), a
 <code>haven_labelled</code> vector categorical (labelled codes), an integer or
-double vector numeric, and a logical, character, <code>Date</code> or <code>POSIXct</code>
-vector logical, text, date or date-time. The level of measurement comes
-from the declaration alone: a factor whose order was not declared with
-<code><a href="https://rdrr.io/r/base/factor.html" class="external-link">ordered()</a></code> is nominal. Any other class is shown as the class itself. The R class
-stays in its own column. With <code>user_na = TRUE</code>, a <code>haven_labelled</code>
-vector whose value labels all sit on declared missing codes, or that has
-no labels, is numeric, or text when it stores characters.</p>
+double vector numeric, a logical, character, or <code>Date</code> vector logical,
+text, or date, and a <code>POSIXct</code> or <code>POSIXlt</code> vector date-time. The level
+of measurement comes from the declaration alone: a factor whose order
+was not declared with <code><a href="https://rdrr.io/r/base/factor.html" class="external-link">ordered()</a></code> is nominal. A vector of any other
+class is shown by its first class (<code>difftime</code>, <code>hms</code>, ...), without
+statistics. The R class stays in its own column. A <code>haven_labelled</code>
+vector without value labels is numeric, or text when it stores
+characters, and so is one whose value labels all sit on declared
+missing codes, with <code>user_na = TRUE</code>.</p>
 <p><code>values</code> lists the categories of factors and labelled vectors and the
 two values of a logical, then the declared missing values of the
-variable and a row for its system missing values (<code>code = "NA"</code>).
-Numeric, text and date variables have no category rows: they appear in
-<code>values</code> only through their declared missing values. The codes of a
-labelled vector come in code order, the levels of a factor in level
-order.</p>
-<p>Dates are written in ISO 8601: a date-time in the time zone the variable
-carries, and in UTC when it carries none, the zone being named in either
-case.</p>
-<p>The language of the labels follows <code>options(spicy.language)</code> when the
-codebook is built (see <code><a href="spicy_labels.html">spicy_labels()</a></code>); the labels of the data are
-never translated.</p>
-<p><code><a href="https://rdrr.io/r/base/print.html" class="external-link">print()</a></code> shortens long variable labels when that makes the list fit
-the console; the object keeps them whole.</p>
+variable and, when it has any, a row for its system missing values
+(<code>code = "NA"</code>). Numeric, text, and date variables have no category
+rows: they appear in <code>values</code> only through their declared missing
+values. The codes of a labelled vector come in code order, the levels
+of a factor in level order. An explicit <code>NA</code> level of a factor (from
+<code><a href="https://rdrr.io/r/base/factor.html" class="external-link">addNA()</a></code>) counts as missing, in the row of the system missing values.</p>
+<p>Dates are written as <code>YYYY-MM-DD</code>, and date-times as
+<code>YYYY-MM-DD HH:MM:SS</code> followed by the name of the time zone the
+variable carries, or <code>UTC</code> when it carries none.</p>
+<p>The words the codebook adds (column headers, types, field and sheet
+names) follow <code>options(spicy.language)</code> when the codebook is built (see
+<code><a href="spicy_labels.html">spicy_labels()</a></code>); the variable and value labels of the data are never
+translated.</p>
+<p><code><a href="https://rdrr.io/r/base/print.html" class="external-link">print()</a></code> shows a line break or a tab in a label as a space, and
+shortens long variable labels, counting display columns, when that
+makes the list fit the console; the object keeps the labels whole.</p>
     </div>
     <div class="section level2">
     <h2 id="excel-output">Excel output<a class="anchor" aria-label="anchor" href="#excel-output"></a></h2>
 
 
-<p>The workbook has three sheets, named in the language of the codebook.
-The first, <code>codebook</code>, holds the header as field-value pairs: title,
-subtitle, one row per author, date, numbers of observations and
-variables, declared missing values, notes, and the versions of spicy
-and R that wrote it.
-The other two, <code>variables</code> and <code>values</code>, are the two tables of the
-object from the first row, with a frozen header and filters: numbers
-stay numeric cells and dates are ISO text.</p>
+<p>The workbook has three worksheets, named in the language of the
+codebook. The first, <code>codebook</code>, holds the header as field-value pairs:
+title, subtitle, one row per author, date, numbers of observations and
+variables, declared missing values, notes, and the versions of spicy and
+R that wrote it, with the date and time of writing. The other two,
+<code>variables</code> and <code>values</code>, hold the two tables of the object from the
+first row, under the column headers the console and the PDF show
+(<code>code</code> is "Value", <code>n_valid</code> "Valid"), with a frozen header and
+filters. Numbers stay numeric cells, the percentages shown to one
+decimal; a statistic that is not finite (of a column holding <code>Inf</code>) is
+an empty cell, and dates stay text, written as above.</p>
     </div>
     <div class="section level2">
     <h2 id="pdf-output">PDF output<a class="anchor" aria-label="anchor" href="#pdf-output"></a></h2>
 
 
-<p>The PDF opens on a cover (title, subtitle, authors, date) and a page
-about the data (numbers of observations and variables, notes, declared
-missing values), then lists the variables with the page of each. One
-sheet per variable follows (counts, statistics, and the table of its
-values, where <code>M</code> marks a declared missing value), then an
-alphabetical index. A sheet breaks
-across pages only when it does not fit on one. <code>code_book()</code>
-writes the Typst source and compiles it with the Typst that Quarto
-bundles. Without Quarto, <code>output = "&lt;path&gt;.typ"</code> writes the same
-source, self-contained: <code>typst compile</code> makes the PDF on any machine.</p>
+<p>The PDF opens on a cover: the word "Codebook" above the title (unless
+the title already contains it), the subtitle, the authors with their
+affiliations and ORCID addresses, the date, and at the foot the
+versions of spicy and R that made it. A page about the data follows
+(numbers of observations and variables, then the notes and the declared
+missing values), then the list of variables with the page of each.</p>
+<p>One sheet per variable comes next, under the heading "Variable sheets":
+a dark band with the position, name, and type (a name over 45
+characters takes a row of its own), rows for the label, the declared
+missing codes, and the source code, then the counts, the statistics,
+and the table of the values. On a sheet that lists declared missing
+codes, a Missing column marks them with <code>M</code>; the row of the system
+missing values reads "System missing". Minimum and maximum are written
+at the precision of the data; mean, SD, and median at three significant
+digits of the SD. A sheet breaks across pages only when it does not fit
+on one; its table of values then repeats its header under
+"name (continued)". An index of the variables closes the document,
+sorted by name in byte order, where uppercase letters come before
+lowercase ones.</p>
+<p><code>code_book()</code> writes the Typst source and compiles it with the Typst
+that Quarto bundles; Typst warnings, such as a character missing from
+the fonts, arrive as one R warning of class <code>spicy_typst_warning</code>.
+Without Quarto, <code>output = "&lt;path&gt;.typ"</code> writes the same source,
+self-contained: <code>typst compile</code> makes the PDF on any machine with Typst
+0.12 or later.</p>
     </div>
     <div class="section level2">
     <h2 id="declared-missing-values">Declared missing values<a class="anchor" aria-label="anchor" href="#declared-missing-values"></a></h2>
@@ -333,7 +378,9 @@ source file marks as missing while keeping them distinct from a
 plain <code>NA</code>. Two kinds of declaration exist: <code>na_values</code> / <code>na_range</code>
 metadata on <code><a href="https://haven.tidyverse.org/reference/labelled_spss.html" class="external-link">haven::labelled_spss()</a></code> vectors, and tagged missing
 values created by <code><a href="https://haven.tidyverse.org/reference/tagged_na.html" class="external-link">haven::tagged_na()</a></code> (the Stata <code>.a</code>, <code>.b</code>, ...
-convention).</p>
+convention). <code><a href="https://haven.tidyverse.org/reference/read_spss.html" class="external-link">haven::read_sav()</a></code> keeps the <code>na_values</code> / <code>na_range</code>
+declaration only with <code>user_na = TRUE</code>: its default turns the
+declared codes into <code>NA</code> on import.</p>
 <p>spicy honors the declaration by default (<code>user_na = TRUE</code>):
 declared missing values are excluded from every statistic exactly
 like <code>NA</code> – valid percentages, means, chi-squared tests,
@@ -356,7 +403,8 @@ the regular <code>NA</code> count.</p>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
     <div class="dont-index"><p><code><a href="varlist.html">varlist()</a></code> to explore the variables in the Viewer; <code><a href="freq.html">freq()</a></code> for the
-frequency table of one variable.</p>
+frequency table of one variable; the article
+<a href="https://amaltawfik.github.io/spicy/articles/variable-exploration.html">Explore variables and build codebooks</a>.</p>
 <p>Other variable inspection:
 <code><a href="label_from_names.html">label_from_names()</a></code>,
 <code><a href="varlist.html">varlist()</a></code></p></div>
@@ -400,31 +448,67 @@ frequency table of one variable.</p>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">cb</span> <span class="op">&lt;-</span> <span class="fu">code_book</span><span class="op">(</span></span></span>
 <span class="r-in"><span>  <span class="va">sochealth</span>,</span></span>
-<span class="r-in"><span>  <span class="va">sex</span>,</span></span>
 <span class="r-in"><span>  <span class="fu">starts_with</span><span class="op">(</span><span class="st">"bmi"</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>  title <span class="op">=</span> <span class="st">"Body mass index"</span>,</span></span>
+<span class="r-in"><span>  title <span class="op">=</span> <span class="st">"Social health survey"</span>,</span></span>
+<span class="r-in"><span>  subtitle <span class="op">=</span> <span class="st">"Body mass index"</span>,</span></span>
 <span class="r-in"><span>  authors <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Jane Doe"</span> <span class="op">=</span> <span class="st">"University of Somewhere"</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>  notes <span class="op">=</span> <span class="st">"BMI computed from self-reported height and weight."</span></span></span>
+<span class="r-in"><span>  notes <span class="op">=</span> <span class="st">"Simulated data (see ?sochealth)."</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">cb</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Social health survey</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Body mass index</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Jane Doe – University of Somewhere</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Date: 2026-10-08</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Observations: 1200</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Variables: 2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Note: Simulated data (see ?sochealth).</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Pos. <span style="color: #9E9E9E;">│</span> Variable        Label              Type                       Valid    Missing </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">────────┼────────────────────────────────────────────────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      15 <span style="color: #9E9E9E;">│</span> bmi             Body mass index    numeric                     1188         12 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      16 <span style="color: #9E9E9E;">│</span> bmi_category    BMI category       categorical (ordinal)       1188         12 </span>
 <span class="r-in"><span><span class="va">cb</span><span class="op">$</span><span class="va">variables</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 3 × 18</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 2 × 18</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   position name    label type  class source n_valid n_missing n_declared_missing</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>              <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span>        1 sex     Sex   cate… fact… <span style="color: #BB0000;">NA</span>        <span style="text-decoration: underline;">1</span>200         0                  0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span>       15 bmi     Body… nume… nume… <span style="color: #BB0000;">NA</span>        <span style="text-decoration: underline;">1</span>188        12                  0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span>       16 bmi_ca… BMI … cate… orde… <span style="color: #BB0000;">NA</span>        <span style="text-decoration: underline;">1</span>188        12                  0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span>       15 bmi     Body… nume… nume… <span style="color: #BB0000;">NA</span>        <span style="text-decoration: underline;">1</span>188        12                  0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span>       16 bmi_ca… BMI … cate… orde… <span style="color: #BB0000;">NA</span>        <span style="text-decoration: underline;">1</span>188        12                  0</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 9 more variables: declared_codes &lt;chr&gt;, n_distinct &lt;int&gt;, min &lt;dbl&gt;,</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   max &lt;dbl&gt;, mean &lt;dbl&gt;, sd &lt;dbl&gt;, median &lt;dbl&gt;, earliest &lt;chr&gt;, latest &lt;chr&gt;</span></span>
 <span class="r-in"><span><span class="va">cb</span><span class="op">$</span><span class="va">values</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 6 × 7</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 4 × 7</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   variable     code          label declared_missing     n pct_total pct_valid</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> sex          Female        <span style="color: #BB0000;">NA</span>    FALSE              620      51.7      51.7</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> sex          Male          <span style="color: #BB0000;">NA</span>    FALSE              580      48.3      48.3</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> bmi_category Normal weight <span style="color: #BB0000;">NA</span>    FALSE              465      38.8      39.1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">4</span> bmi_category Overweight    <span style="color: #BB0000;">NA</span>    FALSE              569      47.4      47.9</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">5</span> bmi_category Obesity       <span style="color: #BB0000;">NA</span>    FALSE              154      12.8      13.0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">6</span> bmi_category NA            <span style="color: #BB0000;">NA</span>    FALSE               12       1        <span style="color: #BB0000;">NA</span>  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> bmi_category Normal weight <span style="color: #BB0000;">NA</span>    FALSE              465      38.8      39.1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> bmi_category Overweight    <span style="color: #BB0000;">NA</span>    FALSE              569      47.4      47.9</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> bmi_category Obesity       <span style="color: #BB0000;">NA</span>    FALSE              154      12.8      13.0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">4</span> bmi_category NA            <span style="color: #BB0000;">NA</span>    FALSE               12       1        <span style="color: #BB0000;">NA</span>  </span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Labelled survey data: declared missing codes count as missing and are</span></span></span>
+<span class="r-in"><span><span class="co"># flagged in `values`.</span></span></span>
+<span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"haven"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span></span>
+<span class="r-in"><span>  <span class="va">trust</span> <span class="op">&lt;-</span> <span class="fu">haven</span><span class="fu">::</span><span class="fu"><a href="https://haven.tidyverse.org/reference/labelled_spss.html" class="external-link">labelled_spss</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>    <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">3</span>, <span class="fl">4</span>, <span class="fl">8</span>, <span class="fl">9</span>, <span class="fl">1</span>, <span class="cn">NA</span>, <span class="fl">2</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>    labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>      <span class="st">"Not at all"</span> <span class="op">=</span> <span class="fl">1</span>, <span class="st">"A little"</span> <span class="op">=</span> <span class="fl">2</span>, <span class="st">"Somewhat"</span> <span class="op">=</span> <span class="fl">3</span>, <span class="st">"A lot"</span> <span class="op">=</span> <span class="fl">4</span>,</span></span>
+<span class="r-in"><span>      <span class="st">"Don't know"</span> <span class="op">=</span> <span class="fl">8</span>, <span class="st">"Refused"</span> <span class="op">=</span> <span class="fl">9</span></span></span>
+<span class="r-in"><span>    <span class="op">)</span>,</span></span>
+<span class="r-in"><span>    na_values <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">8</span>, <span class="fl">9</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>    label <span class="op">=</span> <span class="st">"Trust in the health system"</span></span></span>
+<span class="r-in"><span>  <span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="fu">code_book</span><span class="op">(</span><span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span><span class="va">trust</span><span class="op">)</span><span class="op">)</span><span class="op">$</span><span class="va">values</span></span></span>
+<span class="r-in"><span><span class="op">}</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 7 × 7</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   variable code  label      declared_missing     n pct_total pct_valid</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> trust    1     Not at all FALSE                2        20      28.6</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> trust    2     A little   FALSE                3        30      42.9</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> trust    3     Somewhat   FALSE                1        10      14.3</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">4</span> trust    4     A lot      FALSE                1        10      14.3</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">5</span> trust    8     Don't know TRUE                 1        10      <span style="color: #BB0000;">NA</span>  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">6</span> trust    9     Refused    TRUE                 1        10      <span style="color: #BB0000;">NA</span>  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">7</span> trust    NA    <span style="color: #BB0000;">NA</span>         FALSE                1        10      <span style="color: #BB0000;">NA</span>  </span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"openxlsx2"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span></span>
 <span class="r-in"><span>  <span class="va">path</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span>fileext <span class="op">=</span> <span class="st">".xlsx"</span><span class="op">)</span></span></span>

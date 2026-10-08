@@ -215,17 +215,17 @@ sentinel-value recoding.
 Weighting (`weights`): frequencies and percentages are computed
 proportionally to the weights. Missing values in `weights` cause those
 observations to be dropped from the table entirely (with a warning),
-matching the behaviour of
+matching the behavior of
 [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
 in spicy 0.11.0+. With `rescale = TRUE`, the remaining
-(non-`NA`-weighted) weights are normalised so the total weighted N
+(non-`NA`-weighted) weights are normalized so the total weighted N
 equals the count of non-`NA`-weighted rows. With `rescale = FALSE`, the
 total weighted N is the actual sum of non-`NA` weights.
 
 For schema-level inspection without computing frequencies, use
-[`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md)
-or
-[`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md).
+[`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md);
+[`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md)
+documents every variable with the counts of its categories.
 
 ## Declared missing values
 
@@ -237,6 +237,10 @@ kinds of declaration exist: `na_values` / `na_range` metadata on
 vectors, and tagged missing values created by
 [`haven::tagged_na()`](https://haven.tidyverse.org/reference/tagged_na.html)
 (the Stata `.a`, `.b`, ... convention).
+[`haven::read_sav()`](https://haven.tidyverse.org/reference/read_spss.html)
+keeps the `na_values` / `na_range` declaration only with
+`user_na = TRUE`: its default turns the declared codes into `NA` on
+import.
 
 spicy honors the declaration by default (`user_na = TRUE`): declared
 missing values are excluded from every statistic exactly like `NA` –

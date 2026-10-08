@@ -186,7 +186,9 @@ source file marks as missing while keeping them distinct from a
 plain <code>NA</code>. Two kinds of declaration exist: <code>na_values</code> / <code>na_range</code>
 metadata on <code><a href="https://haven.tidyverse.org/reference/labelled_spss.html" class="external-link">haven::labelled_spss()</a></code> vectors, and tagged missing
 values created by <code><a href="https://haven.tidyverse.org/reference/tagged_na.html" class="external-link">haven::tagged_na()</a></code> (the Stata <code>.a</code>, <code>.b</code>, ...
-convention).</p>
+convention). <code><a href="https://haven.tidyverse.org/reference/read_spss.html" class="external-link">haven::read_sav()</a></code> keeps the <code>na_values</code> / <code>na_range</code>
+declaration only with <code>user_na = TRUE</code>: its default turns the
+declared codes into <code>NA</code> on import.</p>
 <p>spicy honors the declaration by default (<code>user_na = TRUE</code>):
 declared missing values are excluded from every statistic exactly
 like <code>NA</code> – valid percentages, means, chi-squared tests,

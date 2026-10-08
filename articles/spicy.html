@@ -161,11 +161,12 @@ vignette:</p>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> income       Monthly household income (… 1000,… nume…       <span style="text-decoration: underline;">1</span>052    <span style="text-decoration: underline;">1</span>200     0</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> weight       Survey design weight        0.294… nume…        794    <span style="text-decoration: underline;">1</span>200     0</span></span></code></pre></div>
 <p><code><a href="../reference/code_book.html">code_book()</a></code> turns the same inspection into a document:
-one row per variable, the unweighted count of every value, and a header
-with the title, authors, and notes. It prints the list of variables and
-returns the codebook, which <code>output = "&lt;path&gt;.xlsx"</code>
-writes to Excel and <code>output = "&lt;path&gt;.pdf"</code> compiles to
-a PDF (through Quarto).</p>
+one row per variable, the unweighted count of every category, and a
+header with the title, authors, and notes. It prints the list of
+variables and returns the codebook, which
+<code>output = "&lt;path&gt;.xlsx"</code> writes to Excel and
+<code>output = "&lt;path&gt;.pdf"</code> compiles to a PDF (this needs
+the quarto package and Quarto 1.7 or later).</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/code_book.html">code_book</a></span><span class="op">(</span><span class="va">sochealth</span>, <span class="va">sex</span>, <span class="va">age</span>, <span class="va">smoking</span>, <span class="va">bmi</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Codebook</span></span>
@@ -504,7 +505,7 @@ survival and Bayesian engines (the full map is the <a href="https://amaltawfik.g
 models</a> article) — with APA formatting by default and the same
 journal styles on demand (<code>style = "jama"</code>,
 <code>"nejm"</code>, <code>"lancet"</code> and more), factor grouping
-with reference rows, robust variance, standardised coefficients, average
+with reference rows, robust variance, standardized coefficients, average
 marginal effects, hierarchical comparisons, and side-by-side multi-model
 layouts:</p>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
@@ -583,8 +584,9 @@ release.</p>
 <ul>
 <li>
 <a href="https://amaltawfik.github.io/spicy/articles/variable-exploration.html">Explore
-variables and build codebooks</a> — inspect variables, labels and
-missingness (<code><a href="../reference/varlist.html">varlist()</a></code>, <code><a href="../reference/code_book.html">code_book()</a></code>,
+variables and build codebooks</a> — inspect variables, labels, and
+missing values, and build a codebook in the console, Excel, or PDF
+(<code><a href="../reference/varlist.html">varlist()</a></code>, <code><a href="../reference/code_book.html">code_book()</a></code>,
 <code><a href="../reference/label_from_names.html">label_from_names()</a></code>).</li>
 <li>
 <a href="https://amaltawfik.github.io/spicy/articles/frequency-tables.html">Frequency

@@ -276,13 +276,14 @@ optional sentinel-value recoding.</p>
 <p>Weighting (<code>weights</code>): frequencies and percentages are computed
 proportionally to the weights. Missing values in <code>weights</code> cause
 those observations to be dropped from the table entirely (with a
-warning), matching the behaviour of <code><a href="cross_tab.html">cross_tab()</a></code> in spicy
+warning), matching the behavior of <code><a href="cross_tab.html">cross_tab()</a></code> in spicy
 0.11.0+. With <code>rescale = TRUE</code>, the remaining (non-<code>NA</code>-weighted)
-weights are normalised so the total weighted N equals the count
+weights are normalized so the total weighted N equals the count
 of non-<code>NA</code>-weighted rows. With <code>rescale = FALSE</code>, the total
 weighted N is the actual sum of non-<code>NA</code> weights.</p>
 <p>For schema-level inspection without computing frequencies, use
-<code><a href="varlist.html">varlist()</a></code> or <code><a href="code_book.html">code_book()</a></code>.</p>
+<code><a href="varlist.html">varlist()</a></code>; <code><a href="code_book.html">code_book()</a></code> documents every variable with the counts of
+its categories.</p>
     </div>
     <div class="section level2">
     <h2 id="declared-missing-values">Declared missing values<a class="anchor" aria-label="anchor" href="#declared-missing-values"></a></h2>
@@ -295,7 +296,9 @@ source file marks as missing while keeping them distinct from a
 plain <code>NA</code>. Two kinds of declaration exist: <code>na_values</code> / <code>na_range</code>
 metadata on <code><a href="https://haven.tidyverse.org/reference/labelled_spss.html" class="external-link">haven::labelled_spss()</a></code> vectors, and tagged missing
 values created by <code><a href="https://haven.tidyverse.org/reference/tagged_na.html" class="external-link">haven::tagged_na()</a></code> (the Stata <code>.a</code>, <code>.b</code>, ...
-convention).</p>
+convention). <code><a href="https://haven.tidyverse.org/reference/read_spss.html" class="external-link">haven::read_sav()</a></code> keeps the <code>na_values</code> / <code>na_range</code>
+declaration only with <code>user_na = TRUE</code>: its default turns the
+declared codes into <code>NA</code> on import.</p>
 <p>spicy honors the declaration by default (<code>user_na = TRUE</code>):
 declared missing values are excluded from every statistic exactly
 like <code>NA</code> – valid percentages, means, chi-squared tests,

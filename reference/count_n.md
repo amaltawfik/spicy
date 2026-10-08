@@ -156,6 +156,10 @@ kinds of declaration exist: `na_values` / `na_range` metadata on
 vectors, and tagged missing values created by
 [`haven::tagged_na()`](https://haven.tidyverse.org/reference/tagged_na.html)
 (the Stata `.a`, `.b`, ... convention).
+[`haven::read_sav()`](https://haven.tidyverse.org/reference/read_spss.html)
+keeps the `na_values` / `na_range` declaration only with
+`user_na = TRUE`: its default turns the declared codes into `NA` on
+import.
 
 spicy honors the declaration by default (`user_na = TRUE`): declared
 missing values are excluded from every statistic exactly like `NA` –

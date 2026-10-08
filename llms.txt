@@ -94,7 +94,7 @@ row-wise summaries.
   observations (`N_valid`), and missing data.
 - **Codebooks** with
   [`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md):
-  variables, values and unweighted counts, printed in the console,
+  variables, values, and unweighted counts, printed in the console,
   written to Excel, or compiled to a PDF with a cover, one sheet per
   variable, and an index.
 - **Label extraction** with
@@ -254,9 +254,13 @@ varlist(sochealth, tbl = TRUE)
 
 ``` r
 
-code_book(sochealth, starts_with("bmi"), title = "BMI codebook")
+code_book(sochealth, starts_with("bmi"), title = "Social health survey")
 code_book(sochealth, output = "sochealth_codebook.xlsx")
-code_book(sochealth, authors = c("Jane Doe" = "HESAV"), output = "sochealth_codebook.pdf")
+code_book(
+  sochealth,
+  authors = c("Jane Doe" = "University of Somewhere"),
+  output = "sochealth_codebook.pdf"
+)
 ```
 
 See [Explore variables and build
@@ -733,7 +737,7 @@ details.
 
 # Package index
 
-## Variable Metadata
+## Variables and codebooks
 
 - [`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md)
   [`print(`*`<spicy_codebook>`*`)`](https://amaltawfik.github.io/spicy/reference/code_book.md)
@@ -816,7 +820,7 @@ The descriptive tables from a
 [`survey::svydesign()`](https://rdrr.io/pkg/survey/man/svydesign.html)
 or replicate-weight design: design-based estimates, standard errors,
 degrees of freedom and tests, every number delegated to survey (Lumley).
-New in this cycle – see the API-stability tiers in
+New in 0.13.0 – see the API-stability tiers in
 [`?spicy`](https://amaltawfik.github.io/spicy/reference/spicy-package.md).
 
 - [`table_continuous_svy()`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md)
@@ -851,7 +855,7 @@ names the keys both of them take.
 The registry of model classes
 [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
 supports – one function returning the machine-readable list, whose
-documentation page also describes the per-family behaviour (inference,
+documentation page also describes the per-family behavior (inference,
 robust-variance backends, exponentiate semantics, marginal effects,
 labelled blocks).
 
@@ -993,9 +997,9 @@ Documented here for direct invocation with custom arguments (e.g.,
 - [Explore variables and build
   codebooks](https://amaltawfik.github.io/spicy/articles/variable-exploration.md):
 
-  Explore variables, inspect labels, and build codebooks in R with
-  spicy. Learn how to use varlist(), vl(), code_book(), and
-  label_from_names() for survey and labelled datasets.
+  Inspect variables and labels, and build a codebook in the console,
+  Excel, or PDF, with varlist(), vl(), code_book(), and
+  label_from_names(), for survey and labelled data in R.
 
 - [Frequency tables and
   cross-tabulations](https://amaltawfik.github.io/spicy/articles/frequency-tables.md):

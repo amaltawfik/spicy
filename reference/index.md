@@ -1,6 +1,6 @@
 # Package index
 
-## Variable Metadata
+## Variables and codebooks
 
 - [`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md)
   [`print(`*`<spicy_codebook>`*`)`](https://amaltawfik.github.io/spicy/reference/code_book.md)
@@ -83,7 +83,7 @@ The descriptive tables from a
 [`survey::svydesign()`](https://rdrr.io/pkg/survey/man/svydesign.html)
 or replicate-weight design: design-based estimates, standard errors,
 degrees of freedom and tests, every number delegated to survey (Lumley).
-New in this cycle – see the API-stability tiers in
+New in 0.13.0 – see the API-stability tiers in
 [`?spicy`](https://amaltawfik.github.io/spicy/reference/spicy-package.md).
 
 - [`table_continuous_svy()`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md)
@@ -118,7 +118,7 @@ names the keys both of them take.
 The registry of model classes
 [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
 supports – one function returning the machine-readable list, whose
-documentation page also describes the per-family behaviour (inference,
+documentation page also describes the per-family behavior (inference,
 robust-variance backends, exponentiate semantics, marginal effects,
 labelled blocks).
 

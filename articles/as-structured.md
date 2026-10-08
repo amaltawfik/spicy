@@ -709,7 +709,7 @@ Three properties make the structured view safe to build on:
   settles.
 - **Stability tier.**
   [`as_structured()`](https://amaltawfik.github.io/spicy/reference/as_structured.md)
-  sits in the *stabilising* tier of the API (see
+  sits in the *stabilizing* tier of the API (see
   [`?spicy`](https://amaltawfik.github.io/spicy/reference/spicy-package.md),
   section *API stability*). The rule the contract actually keeps in the
   `0.y` series is this: nothing ever changes *silently*. Components are
