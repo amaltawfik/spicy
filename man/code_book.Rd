@@ -67,10 +67,11 @@ and each code must be non-empty.}
 
 \item{values}{The maximum number of categories listed per variable in
 the \code{values} table; under \code{factor_levels = "all"}, unused levels and
-codes count. A variable with more keeps its count of distinct values
-in \code{variables}; in \code{values} it loses its category rows and keeps those
-of its declared and system missing values, if it declares missing
-codes. Defaults to \code{100}; \code{Inf} lists them all.}
+codes count. A variable with more lists its first \code{values} categories
+in their order, with their counts and percentages of the whole
+variable, then its declared and system missing values; \code{n_categories}
+in \code{variables} gives the total, and the PDF adds a row for the
+categories not listed. Defaults to \code{100}; \code{Inf} lists them all.}
 
 \item{range}{Logical. If \code{TRUE} (the default), \code{variables} gives the
 minimum and maximum of each numeric variable and the earliest and
@@ -144,7 +145,9 @@ column's position in \code{x}), \code{name}, \code{label}, \code{type}, \code{cl
 \code{declared_codes} (the \code{na_values} and \code{na_range} of a
 \code{haven_labelled_spss} vector, as text, the two parts separated by a
 semicolon; \code{NA} without them or under \code{user_na = FALSE}),
-\code{n_distinct}, then \code{min}, \code{max}, \code{mean}, \code{sd}, and \code{median} for
+\code{n_distinct}, \code{n_categories} (the categories of a categorical or
+logical variable, listed or not; \code{NA} otherwise), then \code{min},
+\code{max}, \code{mean}, \code{sd}, and \code{median} for
 numeric variables and \code{earliest} and \code{latest} for dates.
 \code{range = FALSE} drops \code{min}, \code{max}, \code{earliest}, and \code{latest}.}
 \item{\code{values}}{A tibble, one row per value: \code{variable}, \code{code},

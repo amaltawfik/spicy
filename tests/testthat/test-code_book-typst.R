@@ -357,3 +357,21 @@ test_that("a name past 45 characters compiles on a band row of its own", {
   # Cover, about, list, the two sheets, index.
   expect_identical(cbt_pages(d), 5L)
 })
+
+test_that("the PDF accounts for the categories past `values` in one row", {
+  d <- data.frame(f = factor(c("a", "b", "c", "d", "e", "a", "b", NA)))
+  rows <- code_book_typst_data(code_book(d, values = 2))$data$vars[[1]]$values
+  expect_identical(rows$code, c("a", "b", "", "NA"))
+  expect_identical(rows$other, c(FALSE, FALSE, TRUE, FALSE))
+  expect_identical(rows$label[[3]], "Other categories (3)")
+  # 8 observations, 7 valid: a 2, b 2, and 3 in the other categories.
+  expect_identical(rows$n[[3]], "3")
+  expect_identical(rows$pct[[3]], "37.5")
+  expect_identical(rows$valid[[3]], "42.9")
+  withr::local_options(spicy.language = "fr")
+  rows <- code_book_typst_data(code_book(d, values = 2))$data$vars[[1]]$values
+  expect_identical(rows$label[[3]], "Autres modalit\u00e9s (3)")
+  # No such row when everything is listed.
+  rows <- code_book_typst_data(code_book(d))$data$vars[[1]]$values
+  expect_false(any(rows$other))
+})

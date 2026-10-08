@@ -76,6 +76,7 @@ test_that("code_book() returns the codebook, which prints as the list of variabl
       "n_declared_missing",
       "declared_codes",
       "n_distinct",
+      "n_categories",
       "min",
       "max",
       "mean",
@@ -277,10 +278,17 @@ test_that("numeric, text and date variables have no category rows", {
 
 test_that("values caps the categories listed per variable", {
   cb <- code_book(cb_data(), values = 2)
-  expect_identical(unique(cb$values$variable), "ok")
+  # The first two categories of each variable stay, in their order, with
+  # their percentages of the whole variable; the NA rows stay too.
+  sex <- cb$values[cb$values$variable == "sex", ]
+  expect_identical(sex$code, c("F", "M", "NA"))
+  full <- code_book(cb_data())$values
+  expect_equal(sex$pct_valid[1:2], full$pct_valid[full$variable == "sex"][1:2])
   expect_identical(cb$variables$n_distinct[cb$variables$name == "grade"], 3L)
+  expect_identical(cb$variables$n_categories[cb$variables$name == "grade"], 3L)
+  expect_true(is.na(cb$variables$n_categories[cb$variables$name == "score"]))
   cb <- code_book(cb_data(), values = 0)
-  expect_identical(nrow(cb$values), 0L)
+  expect_true(all(cb$values$code == "NA" | cb$values$declared_missing))
   expect_named(cb$values, names(code_book(cb_data())$values))
   expect_identical(nrow(code_book(cb_data(), values = Inf)$values), 11L)
 
@@ -296,11 +304,17 @@ test_that("values caps the categories listed per variable", {
     data.frame(q = q, f = factor(c("a", "b", "a", NA))),
     values = 1
   )
-  expect_identical(cb$values$variable, c("q", "q"))
-  expect_identical(cb$values$code, c("8", "NA"))
-  expect_identical(cb$values$declared_missing, c(TRUE, FALSE))
-  expect_identical(cb$values$n, c(1L, 1L))
-  expect_true(all(is.na(cb$values$pct_valid)))
+  # One category each, then the declared and system missing values; the
+  # valid percentage of the category listed is still of all valid values.
+  expect_identical(cb$values$variable, c("q", "q", "q", "f", "f"))
+  expect_identical(cb$values$code, c("1", "8", "NA", "a", "NA"))
+  expect_identical(
+    cb$values$declared_missing,
+    c(FALSE, TRUE, FALSE, FALSE, FALSE)
+  )
+  expect_identical(cb$values$n, c(1L, 1L, 1L, 2L, 1L))
+  expect_equal(cb$values$pct_valid, c(50, NA, NA, 200 / 3, NA))
+  expect_identical(cb$variables$n_categories, c(2L, 2L))
 })
 
 test_that("labels that only name declared missing codes leave the stored type", {

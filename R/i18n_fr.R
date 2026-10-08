@@ -328,6 +328,7 @@
   header_declared_missing = "Manquants d\u00E9clar\u00E9s",
   header_declared_codes = "Codes manquants d\u00E9clar\u00E9s",
   header_distinct = "Valeurs distinctes",
+  header_categories = "Modalit\u00E9s",
   header_earliest = "Premi\u00E8re date",
   header_latest = "Derni\u00E8re date",
   header_codebook_mean = "Moyenne",
@@ -358,6 +359,7 @@
   title_codebook_sheets = "Fiches des variables",
   title_codebook_index = "Index des variables",
   cell_system_missing = "Manquant syst\u00E8me",
+  cell_other_categories = "Autres modalit\u00E9s (%d)",
   note_codebook_continued = "suite",
   note_codebook_unweighted = "Effectifs non pond\u00E9r\u00E9s\u00A0: ils d\u00E9crivent le fichier et non une population."
 )

@@ -191,6 +191,36 @@ code_book_typst_data <- function(cb) {
     # The system missing row is the one the object codes "NA".
     na <- r$code == "NA" & !r$declared_missing
     label <- replace(r$label, na, spicy_str("cell_system_missing"))
+    other <- rep(FALSE, nrow(r))
+    # Past `values`, the categories the object does not list are one row,
+    # after the listed ones: their number, and the count and percentages
+    # of the observations they hold, so that the table still adds up.
+    cat <- !r$declared_missing & !na
+    omitted <- v$n_categories[[i]] - sum(cat)
+    if (!is.na(omitted) && omitted > 0L) {
+      n_other <- v$n_valid[[i]] - sum(r$n[cat])
+      at <- sum(cat)
+      r <- rbind(
+        r[seq_len(at), ],
+        data.frame(
+          variable = v$name[[i]],
+          code = "",
+          label = NA_character_,
+          declared_missing = FALSE,
+          n = n_other,
+          pct_total = 100 * n_other / h$n_obs,
+          pct_valid = 100 * n_other / v$n_valid[[i]]
+        ),
+        r[-seq_len(at), ]
+      )
+      na <- append(na, FALSE, after = at)
+      label <- append(
+        label,
+        spicy_fmt("cell_other_categories", omitted),
+        after = at
+      )
+      other <- append(other, TRUE, after = at)
+    }
     list(
       pos = as.character(v$position[[i]]),
       name = v$name[[i]],
@@ -205,6 +235,7 @@ code_book_typst_data <- function(cb) {
         label = replace(label, is.na(label), ""),
         m = r$declared_missing,
         na = na,
+        other = other,
         n = as.character(r$n),
         pct = num(r$pct_total, 1L),
         valid = num(r$pct_valid, 1L)
@@ -247,7 +278,9 @@ code_book_typst_data <- function(cb) {
       list(
         code = dm$code[[i]],
         label = if (is.na(dm$label[[i]])) "" else dm$label[[i]],
-        variables = as.list(strsplit(dm$variables[[i]], ", ", fixed = TRUE)[[1L]])
+        variables = as.list(strsplit(dm$variables[[i]], ", ", fixed = TRUE)[[
+          1L
+        ]])
       )
     }),
     vars = vars,

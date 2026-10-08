@@ -42,10 +42,11 @@
 #'   and each code must be non-empty.
 #' @param values The maximum number of categories listed per variable in
 #'   the `values` table; under `factor_levels = "all"`, unused levels and
-#'   codes count. A variable with more keeps its count of distinct values
-#'   in `variables`; in `values` it loses its category rows and keeps those
-#'   of its declared and system missing values, if it declares missing
-#'   codes. Defaults to `100`; `Inf` lists them all.
+#'   codes count. A variable with more lists its first `values` categories
+#'   in their order, with their counts and percentages of the whole
+#'   variable, then its declared and system missing values; `n_categories`
+#'   in `variables` gives the total, and the PDF adds a row for the
+#'   categories not listed. Defaults to `100`; `Inf` lists them all.
 #' @param range Logical. If `TRUE` (the default), `variables` gives the
 #'   minimum and maximum of each numeric variable and the earliest and
 #'   latest date of each date; `FALSE` drops those four columns.
@@ -190,7 +191,9 @@
 #'     `declared_codes` (the `na_values` and `na_range` of a
 #'     `haven_labelled_spss` vector, as text, the two parts separated by a
 #'     semicolon; `NA` without them or under `user_na = FALSE`),
-#'     `n_distinct`, then `min`, `max`, `mean`, `sd`, and `median` for
+#'     `n_distinct`, `n_categories` (the categories of a categorical or
+#'     logical variable, listed or not; `NA` otherwise), then `min`,
+#'     `max`, `mean`, `sd`, and `median` for
 #'     numeric variables and `earliest` and `latest` for dates.
 #'     `range = FALSE` drops `min`, `max`, `earliest`, and `latest`.}
 #'   \item{`values`}{A tibble, one row per value: `variable`, `code`,
@@ -372,6 +375,11 @@ code_book <- function(
       USE.NAMES = FALSE
     ),
     n_distinct = vl$N_distinct,
+    n_categories = vapply(
+      per_var,
+      function(p) p$n_categories %||% NA_integer_,
+      integer(1)
+    ),
     min = unname(stats["min", ]),
     max = unname(stats["max", ]),
     mean = unname(stats["mean", ]),
@@ -598,9 +606,9 @@ code_book_dates <- function(col, kind) {
 
 # The rows of `values` for one variable, and its declared missing values,
 # for the header. Factors, labelled vectors and logicals list their
-# categories, up to `values` of them, then their declared and system
-# missing values. Any other variable, or one with more categories, has
-# rows only when it has declared missing values.
+# categories, the first `values` of them in their order, then their
+# declared and system missing values. Any other variable has rows only
+# when it has declared missing values.
 code_book_values <- function(col, name, kind, values, factor_levels, user_na) {
   out <- list(rows = NULL, declared = NULL)
   declared <- if (user_na) .user_na_mask(col) else logical(length(col))
@@ -659,16 +667,19 @@ code_book_values <- function(col, name, kind, values, factor_levels, user_na) {
     label <- names(labs)[match(cats, lab_codes)] %||%
       rep(NA_character_, length(cats))
   }
-  # Past `values`, the categories go and the variable is listed as a
-  # numeric one is: by its declared and system missing values, when it
-  # declares missing codes.
-  if (length(code) > values) {
-    if (is.null(out$declared)) {
-      return(out)
-    }
-    code <- character()
-    label <- character()
-    n <- integer()
+  # Past `values`, the first `values` categories stay, in their order, with
+  # their counts and percentages of the whole variable; `n_categories`
+  # says how many there are, so that the PDF can account for the rest.
+  n_categories <- length(code)
+  n_valid_cat <- sum(n)
+  if (n_categories > values) {
+    keep <- seq_len(values)
+    code <- code[keep]
+    label <- label[keep]
+    n <- n[keep]
+  }
+  if (categorical) {
+    out$n_categories <- n_categories
   }
   # A level spelled "NA" is quoted, as varlist() does, so that it cannot
   # be read as the row of the system missing values.
@@ -691,7 +702,7 @@ code_book_values <- function(col, name, kind, values, factor_levels, user_na) {
     ),
     n = counts,
     pct_total = pct(counts, n_total),
-    pct_valid = c(pct(n, sum(n)), rep(NA_real_, n_dm + has_na))
+    pct_valid = c(pct(n, n_valid_cat), rep(NA_real_, n_dm + has_na))
   )
   out
 }
@@ -825,6 +836,7 @@ code_book_headers <- function(cols) {
     n_declared_missing = "header_declared_missing",
     declared_codes = "header_declared_codes",
     n_distinct = "header_distinct",
+    n_categories = "header_categories",
     min = "header_min",
     max = "header_max",
     mean = "header_codebook_mean",

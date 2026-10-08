@@ -680,6 +680,22 @@ Troisième relecture d'Amal, sur DoMiRéFAS (2026-10-08) :
   30 caractères) et donne la largeur restante à la colonne des variables ;
   limite connue : un nom de plus de 80 caractères environ y déborde
   encore.
+* **Plafond `values` (candidat 3, tranché par Amal le 2026-10-09).** Amal
+  a corrigé ma proposition d'une note « non listées (values = 100) » :
+  un nom d'argument n'a rien à faire dans le document, les modalités se
+  listent dans leur ordre (pas « les plus fréquentes », décision
+  d'analyse), et les n et % restent ceux de toute la variable. Retenu :
+  au-delà du plafond, les premières `values` modalités restent, dans
+  l'ordre des codes, avec leurs vrais effectifs et pourcentages ; les
+  codes déclarés et la ligne NA sont toujours listés en entier ; le PDF
+  ajoute une ligne grise « Other categories (50) » / « Autres modalités
+  (50) » avec l'effectif et les pourcentages agrégés, pour que la table
+  somme à 100. Nouvelle colonne `n_categories` dans `variables`
+  (modalités listées ou non, NA hors catégorielles). L'objet et l'Excel
+  n'ont pas la ligne agrégée : une ligne de synthèse dans une table de
+  données gênerait qui calcule dessus. Avant, l'objet perdait toutes
+  les modalités au-delà du plafond, ce qui contredisait le contrat de
+  `values`.
 * **Colonne Label seulement quand la variable a des libellés.** Amal
   proposait une colonne unique « [1] Jamais », comme `freq()`. Écarté :
   une cellule qui mêle code et libellé perd l'alignement des libellés

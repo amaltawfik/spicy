@@ -205,12 +205,13 @@ summarizes them, and they appear in `values` only through their
 declared missing values (see below). An integer Likert item is numeric
 too: give it value labels, or make it a factor, to list its categories.
 A variable with more categories than `values` (100 by default), such as
-a list of country or occupation codes, keeps its count of distinct
-values in `variables` but loses its category rows in `values` (if it
-declares missing codes, the rows of its declared and system missing
-values remain): `values = Inf` lists them all. Under the default
-`factor_levels = "all"`, unused levels count toward that limit, and they
-are listed with a count of 0.
+a list of country or occupation codes, lists its first 100 categories in
+their order, with their counts and percentages of the whole variable,
+then its declared and system missing values; `n_categories` in
+`variables` gives the total, and the PDF adds a row for the categories
+not listed, so that its table still adds up. `values = Inf` lists them
+all. Under the default `factor_levels = "all"`, unused levels count
+toward that limit, and they are listed with a count of 0.
 
 ### Title, subtitle, authors, and notes
 

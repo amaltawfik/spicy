@@ -775,6 +775,7 @@
   header_declared_missing = "Declared missing",
   header_declared_codes = "Declared missing codes",
   header_distinct = "Distinct values",
+  header_categories = "Categories",
   header_earliest = "Earliest date",
   header_latest = "Latest date",
   # Spelled out, not `header_mean` / `header_median`: in a codebook "M"
@@ -833,6 +834,7 @@
   marker_declared_missing = "M",
   header_marker_missing = "Missing",
   cell_system_missing = "System missing",
+  cell_other_categories = "Other categories (%d)",
   # Heads the table of values on the pages a long sheet continues on,
   # after the name of the variable: "q17 (continued)".
   note_codebook_continued = "continued",

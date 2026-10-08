@@ -285,7 +285,7 @@
     // them (a factor), the values take the width, and the row of system
     // missing values shows its label in place of the token NA. Labelled
     // codes are numbers, set right; factor levels are text, set left.
-    let labelled = x.values.any(r => r.label != "" and not r.na)
+    let labelled = x.values.any(r => r.label != "" and not r.na and not r.other)
     let opt(on, ..items) = if on { items.pos() } else { () }
     let ncol = (if labelled { 2 } else { 1 }) + (if flagged { 1 } else { 0 }) + 4
     let values = context table(
@@ -302,8 +302,8 @@
           }),
         ..((s.code,) + opt(labelled, s.label) + opt(flagged, s.missing) + (s.n, s.pct_total, s.pct_valid)).map(hdr), []),
       ..kept(x.values.map(r => {
-        let f = if r.m or r.na { c.muted } else { c.text }
-        ((text(fill: f, if r.na and not labelled { r.label } else { r.code }),) + opt(labelled, text(fill: f, r.label)) +
+        let f = if r.m or r.na or r.other { c.muted } else { c.text }
+        ((text(fill: f, if (r.na or r.other) and not labelled { r.label } else { r.code }),) + opt(labelled, text(fill: f, r.label)) +
           opt(flagged, if r.m { text(weight: "bold", s.marker) } else { [] }) +
           (text(fill: f, r.n), text(fill: f, r.pct), text(fill: f, r.valid)))
       })),
