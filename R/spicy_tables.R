@@ -4,10 +4,10 @@
 #' Index page for the ASCII rendering engine that produces every
 #' spicy console table ([freq()], [cross_tab()], the `table_*()`
 #' family, and the association-measure printers). The engine
-#' supports Unicode line drawing, ANSI colours via \pkg{crayon}
-#' (with monochrome fallback), automatic colour-aware width
+#' supports Unicode line drawing, ANSI colors via \pkg{crayon}
+#' (with monochrome fallback), automatic color-aware width
 #' detection, configurable integer padding (`0L` / `2L` / `4L`),
-#' per-column alignment, and horizontal panelling for tables
+#' per-column alignment, and horizontal paneling for tables
 #' wider than the console.
 #'
 #' @section User-facing entry points:
@@ -18,7 +18,7 @@
 #'
 #' @section Rendering primitives (internal API):
 #' - [spicy_print_table()] -- user-facing wrapper that adds title,
-#'   note, table-type-aware alignment defaults, and panelling.
+#'   note, table-type-aware alignment defaults, and paneling.
 #' - [build_ascii_table()] -- the underlying string renderer.
 #'
 #' @seealso [spicy] for the full package overview, including the

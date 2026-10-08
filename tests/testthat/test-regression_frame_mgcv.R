@@ -51,12 +51,12 @@ test_that("gam gaussian: info$family is gaussian/identity", {
   expect_identical(fr$info$family$link, "identity")
 })
 
-test_that("gam gaussian: title_prefix = 'Generalised additive model (GAM)'", {
+test_that("gam gaussian: title_prefix = 'Generalized additive model (GAM)'", {
   fit <- .fit_gam_gaussian()
   fr <- as_regression_frame(fit, model_id = "M1")
   expect_identical(
     fr$info$extras$title_prefix,
-    "Generalised additive model (GAM)"
+    "Generalized additive model (GAM)"
   )
 })
 

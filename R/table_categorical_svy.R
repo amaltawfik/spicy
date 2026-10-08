@@ -375,7 +375,7 @@
 #'   indentation, for the console and for the plain-text engines.
 #' @param excel_path,excel_sheet,clipboard_delim,word_path Output
 #'   destinations, as in [table_categorical()].
-#' @param user_na Honour declared missing values (see `?freq`).
+#' @param user_na Honor declared missing values (see `?freq`).
 #' @param style A journal style; see [spicy_style()].
 #'
 #' @return A `spicy_categorical_svy_table`: the wide compute frame,
@@ -953,7 +953,7 @@ table_categorical_svy <- function(
       "x" = paste0(
         "survey computes its p-value without the denominator degrees of ",
         "freedom on this design class (`pchisqsum()` is called without ",
-        "`ddf`, which the linearised path supplies), so the p-value is ",
+        "`ddf`, which the linearized path supplies), so the p-value is ",
         "too small."
       ),
       "i" = paste0(

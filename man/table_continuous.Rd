@@ -98,7 +98,7 @@ section. The weighted table names its weights in the note
 not computed under weights: use \code{\link[=table_continuous_lm]{table_continuous_lm()}} for
 weighted comparisons.}
 
-\item{rescale}{Logical. If \code{TRUE}, weights are first normalised so
+\item{rescale}{Logical. If \code{TRUE}, weights are first normalized so
 that they sum to the number of observations used for each
 variable -- the same \code{rescale} grammar as \code{\link[=table_categorical]{table_categorical()}},
 read from \code{options(spicy.rescale)} when not supplied. This is the
@@ -161,7 +161,7 @@ outputs. One of:
 eta-squared (parametric, 3+ groups), rank-biserial \emph{r}
 (nonparametric, 2 groups), epsilon-squared (nonparametric, 3+
 groups).
-\item \code{"hedges_g"}: Hedges' \emph{g} (bias-corrected standardised mean
+\item \code{"hedges_g"}: Hedges' \emph{g} (bias-corrected standardized mean
 difference, 2 groups, parametric). CI via the Hedges & Olkin
 normal approximation.
 \item \code{"eta_sq"}: Eta-squared (\eqn{\eta^2}, parametric ANOVA-style
@@ -248,8 +248,8 @@ mark, the standard scientific-publication convention used by
 SPSS, SAS, and LaTeX \code{siunitx}. Numeric cells are pre-padded
 with figure-spaces (U+2007, digit-width) so every string in a
 column has the same width with the decimal mark at the same
-internal position; centring those uniform-width strings then
-stacks the decimal points vertically. The same pad-then-centre
+internal position; centering those uniform-width strings then
+stacks the decimal points vertically. The same pad-then-center
 strategy is applied on every rendering engine (\code{gt},
 \code{tinytable}, \code{flextable}, \code{word}, ASCII print) for a
 homogeneous rendering, matching \code{table_regression()} and
@@ -265,7 +265,7 @@ next to an unpadded number).
 does not: Excel cells are written unpadded, because cell-string
 padding does not align decimals under a proportional font, so the
 workbook keeps the engine's own convention instead -- counts and
-the \emph{p}-value right-aligned, the other numeric columns centred.
+the \emph{p}-value right-aligned, the other numeric columns centered.
 Same default and same three values as \code{\link[=table_continuous_lm]{table_continuous_lm()}},
 whose \code{excel} output still uses that convention at every \code{align}.}
 
@@ -451,7 +451,7 @@ These are the conventions of \code{Hmisc::wtd.mean()} / \code{wtd.var()} /
 \code{wtd.quantile()} (defaults), \code{matrixStats::weightedSd()}, and
 \code{DescTools::Quantile()}, and -- for integer weights -- of Stata's
 \verb{[fweight]} and SPSS's \verb{WEIGHT BY}. With \code{rescale = TRUE} the
-weights are normalised to sum to the number of observations first,
+weights are normalized to sum to the number of observations first,
 which makes every result invariant to the scale of the weights and
 makes the SD equal Stata's \verb{[aweight]} / \code{survey::svyvar()} value
 -- the reading appropriate for sampling weights. Weighted-quantile
@@ -599,11 +599,11 @@ nothing else off. The balance-table idiom is
 Under \code{weights}, the means and variances are the weighted ones the
 \code{M} and \code{SD} columns already display -- the frequency convention
 of the \emph{Weights} section, from the same producer, so the column
-cannot contradict its neighbours. One consequence follows and is
+cannot contradict its neighbors. One consequence follows and is
 intended: a frequency weight is a number of copies, so the
 weighted SMD is \strong{not invariant to the scale of the weights}
 (multiplying every weight by ten moves it, as it moves the \code{SD}
-column). \code{rescale = TRUE} normalises the weights to sum to \emph{n},
+column). \code{rescale = TRUE} normalizes the weights to sum to \emph{n},
 restores scale invariance, and is the form to use for sampling
 weights until the dedicated survey-design functions land.
 

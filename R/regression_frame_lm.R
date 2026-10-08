@@ -16,7 +16,7 @@
 #' `as_regression_frame()` method for `lm` fits.
 #'
 #' Thin wrapper around `extract_lm_phase1()` that reshapes the legacy
-#' long-format extractor output into the standardised `{coefs, info}`
+#' long-format extractor output into the standardized `{coefs, info}`
 #' frame documented in `dev/design_as_regression_frame.md`.
 #'
 #' @keywords internal

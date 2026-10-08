@@ -77,7 +77,7 @@
 #'   ("Statistics weighted by ..."). Group tests and effect sizes are
 #'   not computed under weights: use [table_continuous_lm()] for
 #'   weighted comparisons.
-#' @param rescale Logical. If `TRUE`, weights are first normalised so
+#' @param rescale Logical. If `TRUE`, weights are first normalized so
 #'   that they sum to the number of observations used for each
 #'   variable -- the same `rescale` grammar as [table_categorical()],
 #'   read from `options(spicy.rescale)` when not supplied. This is the
@@ -131,7 +131,7 @@
 #'     eta-squared (parametric, 3+ groups), rank-biserial *r*
 #'     (nonparametric, 2 groups), epsilon-squared (nonparametric, 3+
 #'     groups).
-#'   - `"hedges_g"`: Hedges' *g* (bias-corrected standardised mean
+#'   - `"hedges_g"`: Hedges' *g* (bias-corrected standardized mean
 #'     difference, 2 groups, parametric). CI via the Hedges & Olkin
 #'     normal approximation.
 #'   - `"eta_sq"`: Eta-squared (\eqn{\eta^2}, parametric ANOVA-style
@@ -206,8 +206,8 @@
 #'     SPSS, SAS, and LaTeX `siunitx`. Numeric cells are pre-padded
 #'     with figure-spaces (U+2007, digit-width) so every string in a
 #'     column has the same width with the decimal mark at the same
-#'     internal position; centring those uniform-width strings then
-#'     stacks the decimal points vertically. The same pad-then-centre
+#'     internal position; centering those uniform-width strings then
+#'     stacks the decimal points vertically. The same pad-then-center
 #'     strategy is applied on every rendering engine (`gt`,
 #'     `tinytable`, `flextable`, `word`, ASCII print) for a
 #'     homogeneous rendering, matching `table_regression()` and
@@ -222,7 +222,7 @@
 #'   does not: Excel cells are written unpadded, because cell-string
 #'   padding does not align decimals under a proportional font, so the
 #'   workbook keeps the engine's own convention instead -- counts and
-#'   the *p*-value right-aligned, the other numeric columns centred.
+#'   the *p*-value right-aligned, the other numeric columns centered.
 #'   Same default and same three values as [table_continuous_lm()],
 #'   whose `excel` output still uses that convention at every `align`.
 #' @param output Output format. One of:
@@ -375,7 +375,7 @@
 #' `wtd.quantile()` (defaults), `matrixStats::weightedSd()`, and
 #' `DescTools::Quantile()`, and -- for integer weights -- of Stata's
 #' `[fweight]` and SPSS's `WEIGHT BY`. With `rescale = TRUE` the
-#' weights are normalised to sum to the number of observations first,
+#' weights are normalized to sum to the number of observations first,
 #' which makes every result invariant to the scale of the weights and
 #' makes the SD equal Stata's `[aweight]` / `survey::svyvar()` value
 #' -- the reading appropriate for sampling weights. Weighted-quantile
@@ -524,11 +524,11 @@
 #' Under `weights`, the means and variances are the weighted ones the
 #' `M` and `SD` columns already display -- the frequency convention
 #' of the *Weights* section, from the same producer, so the column
-#' cannot contradict its neighbours. One consequence follows and is
+#' cannot contradict its neighbors. One consequence follows and is
 #' intended: a frequency weight is a number of copies, so the
 #' weighted SMD is **not invariant to the scale of the weights**
 #' (multiplying every weight by ten moves it, as it moves the `SD`
-#' column). `rescale = TRUE` normalises the weights to sum to *n*,
+#' column). `rescale = TRUE` normalizes the weights to sum to *n*,
 #' restores scale invariance, and is the form to use for sampling
 #' weights until the dedicated survey-design functions land.
 #'

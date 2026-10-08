@@ -89,7 +89,7 @@ In practice, follow the APA sequence:
   account for case weights, robust SE, or covariate adjustment;
 - finish with `table_regression()` once the substantive model is
   fitted — APA Table 3 with all predictors, factor groupings,
-  reference rows, and (optionally) standardised coefficients,
+  reference rows, and (optionally) standardized coefficients,
   marginal effects, or nested model comparisons.
 
 The descriptive functions share one selection grammar — on a data
@@ -304,10 +304,10 @@ table_regression(
 ```
 
 The default footer documents the variance estimator, flags
-standardised coefficients (`β = standardised coefficient`), and
+standardized coefficients (`β = standardized coefficient`), and
 reports any multiplicity correction, so the inferential regime is
 visible without leaving the table. One thing it does not carry: the
-*name* of the standardisation method. Here `standardized = "refit"`
+*name* of the standardization method. Here `standardized = "refit"`
 produced the β column, but the footer would read the same under any
 of the five methods, so record the method in the table note or the
 text of the article.
@@ -629,8 +629,8 @@ The dedicated articles go deeper into each function:
 - `table_regression()` covers single- and multi-model regression
   tables across 30+ model classes (the map is
   [*Supported models*](table-regression-supported-models.html)), five
-  standardisation methods (four for linear models, plus the glm-only
-  pseudo-standardisation), partial effect sizes with noncentral-F
+  standardization methods (four for linear models, plus the glm-only
+  pseudo-standardization), partial effect sizes with noncentral-F
   CIs, average marginal effects, hierarchical (`nested = TRUE`)
   comparisons, multiplicity correction, and response-scale reporting
   for GLMs.

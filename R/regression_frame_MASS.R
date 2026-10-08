@@ -15,7 +15,7 @@
 #' `as_regression_frame()` method for `negbin` fits (MASS::glm.nb()).
 #'
 #' Delegates to as_regression_frame.glm() for the heavy lifting, then
-#' overlays the negbin-specific title prefix, family-name normalisation,
+#' overlays the negbin-specific title prefix, family-name normalization,
 #' and theta dispersion parameter.
 #'
 #' @keywords internal

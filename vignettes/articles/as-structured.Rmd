@@ -80,7 +80,7 @@ s <- as_structured(tbl)
 names(s)
 ```
 
-The centrepiece is `body`: a data frame with the `Variable` column,
+The centerpiece is `body`: a data frame with the `Variable` column,
 one numeric column per displayed statistic, and four dot-prefixed
 identity columns at the end (the next section). The confidence
 interval that prints as one bracketed column arrives split into

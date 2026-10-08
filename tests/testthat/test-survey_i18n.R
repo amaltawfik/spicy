@@ -51,7 +51,7 @@
   "Design:",
   "Std. errors:",
   "degrees of freedom",
-  "Taylor linearisation",
+  "Taylor linearization",
   "replicate weights",
   "finite population correction",
   "N = ",
@@ -207,7 +207,7 @@ test_that("the design variance label of a regression footer comes from the regis
     expect_match(out, "z\u00e9z\u00fc", fixed = TRUE, info = nm)
     for (leak in c(
       "Design-based",
-      "Taylor linearisation",
+      "Taylor linearization",
       "replicate weights",
       "two-phase design",
       # ...and the design line the same footer carries.

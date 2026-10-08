@@ -440,7 +440,7 @@ order_continuous_svy_tokens <- function(tokens) {
 #' `sum(w) - 1`. This function implements the **sampling-weight**
 #' convention: a weight is a number of units represented, and `SD` is
 #' `sqrt(survey::svyvar())`, whose denominator is `n - 1` on weights
-#' normalised to sum to `n`. These are two estimands, not two
+#' normalized to sum to `n`. These are two estimands, not two
 #' approximations of one.
 #'
 #' `rescale = TRUE` is the bridge, and it is an identity rather than a
@@ -562,7 +562,7 @@ order_continuous_svy_tokens <- function(tokens) {
 #' @param excel_path,excel_sheet,clipboard_delim,word_path Output
 #'   destinations, as in [table_continuous()].
 #' @param verbose Report the columns skipped as non-numeric.
-#' @param user_na Honour declared missing values (see `?freq`).
+#' @param user_na Honor declared missing values (see `?freq`).
 #' @param style A journal style; see [spicy_style()].
 #'
 #' @return A `spicy_continuous_svy_table`: the compute frame, with the

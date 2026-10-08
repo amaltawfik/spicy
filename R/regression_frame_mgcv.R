@@ -391,7 +391,7 @@ as_regression_frame.gam <- function(
 
 .gam_title_prefix <- function(fam, is_gaussian_identity) {
   if (is_gaussian_identity) {
-    "Generalised additive model (GAM)"
+    "Generalized additive model (GAM)"
   } else {
     base <- switch(
       fam$family,

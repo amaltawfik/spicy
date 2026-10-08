@@ -112,7 +112,7 @@ test_that("beta abbreviation degrades to the bare definition without a gloss", {
     standardized = "custom"
   )
   beta <- intToUtf8(0x3B2) # Greek small beta (ASCII-safe source)
-  expect_identical(out, paste0(beta, " = standardised coefficient."))
+  expect_identical(out, paste0(beta, " = standardized coefficient."))
   # No empty parenthetical left behind by the missing gloss.
   expect_false(grepl("(", out, fixed = TRUE))
 })

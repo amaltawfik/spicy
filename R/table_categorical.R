@@ -271,7 +271,7 @@
     if (length(bad_vals) > 0L) {
       spicy_abort(
         sprintf(
-          "`assoc_measure` value(s) not recognised: %s.",
+          "`assoc_measure` value(s) not recognized: %s.",
           paste(.quote_val(bad_vals), collapse = ", ")
         ),
         class = "spicy_invalid_input"
@@ -297,7 +297,7 @@
     if (length(bad_vals) > 0L) {
       spicy_abort(
         sprintf(
-          "`assoc_measure` value(s) not recognised: %s.",
+          "`assoc_measure` value(s) not recognized: %s.",
           paste(.quote_val(bad_vals), collapse = ", ")
         ),
         class = "spicy_invalid_input"
@@ -430,7 +430,7 @@
 #'   labels whose names match column names in `data` (e.g.
 #'   `c(smoking = "Current smoker")`) -- the same contract as
 #'   [table_continuous()] and [table_continuous_lm()]. Only listed
-#'   columns are relabelled. For the remaining columns (and when
+#'   columns are relabeled. For the remaining columns (and when
 #'   `labels = NULL`, the default), labels are auto-detected from the
 #'   variable's label attribute (e.g. from `haven`); if none is found,
 #'   the column name is used. Unnamed (positional) label vectors,
@@ -536,8 +536,8 @@
 #'     SPSS, SAS, and LaTeX `siunitx`. Numeric cells are pre-padded
 #'     with figure-spaces (U+2007, digit-width) so every string in a
 #'     column has the same width with the decimal mark at the same
-#'     internal position; centring those uniform-width strings then
-#'     stacks the decimal points vertically. The same pad-then-centre
+#'     internal position; centering those uniform-width strings then
+#'     stacks the decimal points vertically. The same pad-then-center
 #'     strategy is applied on every rendering engine (`gt`,
 #'     `tinytable`, `flextable`, `word`, ASCII print) for a
 #'     homogeneous rendering, matching `table_regression()` and
@@ -548,7 +548,7 @@
 #'   - `"center"`: center-align all numeric columns.
 #'   - `"right"`: right-align all numeric columns.
 #'
-#'   In the `excel` output, `"center"` centres the numeric columns and
+#'   In the `excel` output, `"center"` centers the numeric columns and
 #'   `"right"` is the same rendering as the default: cell-string padding
 #'   does not align decimals under a proportional font, so `"decimal"`
 #'   right-aligns instead, which combined with the per-column `numfmt`

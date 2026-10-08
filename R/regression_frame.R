@@ -552,7 +552,7 @@ validate_regression_frame <- function(frame) {
         "Invalid regression frame: missing attribute 'fit'.",
         "i" = paste0(
           "Set attr(frame, 'fit') <- fit at the end of the per-class ",
-          "method. Downstream AME and refit-standardisation paths read ",
+          "method. Downstream AME and refit-standardization paths read ",
           "from this attribute."
         )
       ),
@@ -785,7 +785,7 @@ validate_regression_frame <- function(frame) {
     spicy_abort(
       c(
         sprintf(
-          "Invalid regression frame: `info$vcov_kind` = %s is not a recognised value.",
+          "Invalid regression frame: `info$vcov_kind` = %s is not a recognized value.",
           sQuote(info$vcov_kind)
         ),
         "i" = paste("Allowed:", paste(allowed_vcov, collapse = ", "))
@@ -800,7 +800,7 @@ validate_regression_frame <- function(frame) {
     spicy_abort(
       c(
         sprintf(
-          "Invalid regression frame: `info$weights_kind` = %s is not a recognised value.",
+          "Invalid regression frame: `info$weights_kind` = %s is not a recognized value.",
           sQuote(info$weights_kind)
         ),
         "i" = paste(

@@ -338,12 +338,12 @@ test_that("gls without correlation structure: vcov_label is plain Wald", {
 
 # ---- 11. gls: supports + title -------------------------------------------
 
-test_that("gls: title_prefix = 'Generalised least squares (nlme)'", {
+test_that("gls: title_prefix = 'Generalized least squares (nlme)'", {
   fit <- .fit_gls_corcs()
   fr <- as_regression_frame(fit, model_id = "M1")
   expect_identical(
     fr$info$extras$title_prefix,
-    "Generalised least squares (nlme)"
+    "Generalized least squares (nlme)"
   )
 })
 

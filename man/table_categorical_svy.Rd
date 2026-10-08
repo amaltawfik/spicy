@@ -108,7 +108,7 @@ indentation, for the console and for the plain-text engines.}
 \item{excel_path, excel_sheet, clipboard_delim, word_path}{Output
 destinations, as in \code{\link[=table_categorical]{table_categorical()}}.}
 
-\item{user_na}{Honour declared missing values (see \code{?freq}).}
+\item{user_na}{Honor declared missing values (see \code{?freq}).}
 
 \item{style}{A journal style; see \code{\link[=spicy_style]{spicy_style()}}.}
 }

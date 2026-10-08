@@ -7,10 +7,10 @@
 Index page for the ASCII rendering engine that produces every
 spicy console table (\code{\link[=freq]{freq()}}, \code{\link[=cross_tab]{cross_tab()}}, the \verb{table_*()}
 family, and the association-measure printers). The engine
-supports Unicode line drawing, ANSI colours via \pkg{crayon}
-(with monochrome fallback), automatic colour-aware width
+supports Unicode line drawing, ANSI colors via \pkg{crayon}
+(with monochrome fallback), automatic color-aware width
 detection, configurable integer padding (\code{0L} / \code{2L} / \code{4L}),
-per-column alignment, and horizontal panelling for tables
+per-column alignment, and horizontal paneling for tables
 wider than the console.
 }
 \section{User-facing entry points}{
@@ -27,7 +27,7 @@ wider than the console.
 
 \itemize{
 \item \code{\link[=spicy_print_table]{spicy_print_table()}} -- user-facing wrapper that adds title,
-note, table-type-aware alignment defaults, and panelling.
+note, table-type-aware alignment defaults, and paneling.
 \item \code{\link[=build_ascii_table]{build_ascii_table()}} -- the underlying string renderer.
 }
 }

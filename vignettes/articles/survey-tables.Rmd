@@ -54,7 +54,7 @@ table_continuous_svy(dclus1, select = c(api00, api99))
 Three sentences under the table, and each is there because the number
 above it cannot be read without them. The design is a one-stage
 cluster sample of 15 school districts with a finite population
-correction; the standard errors come from Taylor linearisation; the
+correction; the standard errors come from Taylor linearization; the
 interval is a *t* interval on 14 degrees of freedom -- the number of
 clusters minus one, not the 183 schools.
 
@@ -200,7 +200,7 @@ many times.
 `table_continuous_svy()` implements the **sampling-weight**
 convention: a weight is a number of units represented, and `SD` is
 `sqrt(survey::svyvar())`, whose denominator is `n - 1` on weights
-normalised to sum to `n`.
+normalized to sum to `n`.
 
 `rescale = TRUE` is the bridge between them, and it is an identity.
 Writing `w' = w * n / sum(w)`, so that `sum(w') = n`:
@@ -258,7 +258,7 @@ is no silent coercion in either direction.
 delegates the same way: the coefficients, the variance and the degrees
 of freedom all come from survey.
 
-Three model classes are supported, on a linearised and on a
+Three model classes are supported, on a linearized and on a
 replicate-weights design alike: `survey::svyglm()`, `survey::svyolr()`
 for a cumulative-link model, and `survey::svycoxph()` for a
 design-weighted Cox model.
@@ -283,7 +283,7 @@ c(design = degf(dstrat), model = df.residual(gl))
 ```
 
 The variance label names the estimator the design actually uses. On a
-replicate design there is no linearisation anywhere, and the footer says
+replicate design there is no linearization anywhere, and the footer says
 so:
 
 ```{r reg-rep}

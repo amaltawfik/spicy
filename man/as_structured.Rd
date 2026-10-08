@@ -61,7 +61,7 @@ row); \code{NA} outside a factor.
 \item \code{body$.row_role} -- what the row \emph{is}: \code{"coef"},
 \code{"factor_header"}, \code{"level"}, \code{"reference"}, \code{"fit_stat"},
 \code{"outcome"}, \code{"vc"} (variance component) in a regression table,
-plus \code{"summary"} (a row summarising one variable), \code{"group"} (a
+plus \code{"summary"} (a row summarizing one variable), \code{"group"} (a
 row keyed by one level of \code{by}) and \code{"missing"} (a row keyed by
 the \emph{missing} value) in the descriptive ones. The role is the
 key a consumer matches on: \code{"(Missing)"} is a display label --

@@ -1522,7 +1522,7 @@ validate_class_appropriate_tokens <- function(
           paste(.quote_val(bad_rlm), collapse = ", ")
         ),
         "i" = paste0(
-          "M-estimation minimises a bounded loss rather than a ",
+          "M-estimation minimizes a bounded loss rather than a ",
           "likelihood or a residual sum of squares, so an rlm ",
           "hierarchy has neither a likelihood-ratio test nor a partial ",
           "F to report."
@@ -1896,7 +1896,7 @@ validate_class_appropriate_tokens <- function(
           "i" = paste0(
             "'fixed_effects' discloses the absorbed fixed effects ",
             "(one Yes/No row per factor) and 'within_r2' is the ",
-            "FE-partialled R-squared; other classes have neither."
+            "FE-partialed R-squared; other classes have neither."
           )
         ),
         class = "spicy_invalid_input"
@@ -2907,14 +2907,14 @@ emit_standardized_caveat_if_needed <- function(models, standardized) {
   caveat_msg <- if (identical(standardized, "refit")) {
     paste0(
       "After refit on z-scored data, \u03B2 for these terms reflects ",
-      "the interaction of z-scored variables, not the standardisation ",
+      "the interaction of z-scored variables, not the standardization ",
       "of the original term."
     )
   } else {
     paste0(
       "\u03B2 scales these terms by the SD of the product / transformed ",
       "design column (the SPSS / Stata `regress, beta` / lm.beta ",
-      "convention); components are not standardised first, so results ",
+      "convention); components are not standardized first, so results ",
       "differ from \"refit\" when components are correlated."
     )
   }
@@ -2923,7 +2923,7 @@ emit_standardized_caveat_if_needed <- function(models, standardized) {
     c(
       sprintf(
         paste0(
-          "Standardised coefficients (`standardized = \"%s\"`) requested ",
+          "Standardized coefficients (`standardized = \"%s\"`) requested ",
           "on models with non-additive terms."
         ),
         standardized

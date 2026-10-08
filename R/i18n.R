@@ -723,7 +723,7 @@
   # (JK1 / JKn / BRR / bootstrap / ...), never translated. The bare
   # variant covers a design whose scheme is absent or `"other"` -- a
   # legal value of `svrepdesign(type = )` that names nothing.
-  note_vcov_design_taylor = "Design-based (Taylor linearisation)",
+  note_vcov_design_taylor = "Design-based (Taylor linearization)",
   note_vcov_design_replicate = "Design-based (replicate weights, %s)",
   note_vcov_design_replicate_bare = "Design-based (replicate weights)",
   note_vcov_design_twophase = "Design-based (two-phase design)",

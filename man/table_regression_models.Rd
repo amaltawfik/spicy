@@ -9,7 +9,7 @@
 \alias{table_regression_survival}
 \alias{table_regression_robust}
 \alias{table_regression_bayesian}
-\title{Supported models and per-family behaviour of table_regression()}
+\title{Supported models and per-family behavior of table_regression()}
 \usage{
 table_regression_models()
 }
@@ -21,10 +21,10 @@ A data frame with one row per supported engine and columns
 \code{table_regression_models()} returns the registry of model classes
 supported by \code{\link[=table_regression]{table_regression()}}, one row per engine, with each class's
 family, average-marginal-effects estimand, \code{exponentiate} semantics, and
-labelled table blocks. The same registry drives this page's table, so the
+labeled table blocks. The same registry drives this page's table, so the
 published list cannot drift from the code.
 
-This page is also the reference for \strong{per-family behaviour} (the
+This page is also the reference for \strong{per-family behavior} (the
 sections below). It is reachable as \code{?table_regression_models},
 \code{?table_regression_mixed}, \code{?table_regression_ordinal},
 \code{?table_regression_counts}, \code{?table_regression_categorical},
@@ -82,16 +82,16 @@ supported set. Feature requests are welcome on the issue tracker.
 \section{Shared semantics (all classes)}{
 
 \itemize{
-\item A robust \code{vcov} request is honoured through the class's
+\item A robust \code{vcov} request is honored through the class's
 field-standard backend, or \strong{refused with a clear error} naming the
 supported set; the footer always names the estimator actually
 applied.
-\item \code{exponentiate = TRUE} is link-gated: it produces a labelled ratio
+\item \code{exponentiate = TRUE} is link-gated: it produces a labeled ratio
 (OR / IRR / HR / RR / MR / TR) only where the link warrants
 one. Identity-link fits warn and are left untouched; non-ratio
 links (probit, cauchit, inverse, ...) are \strong{refused with a clear
 error}.
-\item Class-specific structure renders as labelled subordinate blocks
+\item Class-specific structure renders as labeled subordinate blocks
 of rows in the same table, each explained by a footer line.
 \item Fit statistics default to the family's field standard
 (\code{show_fit_stats} overrides; class-inappropriate tokens are rejected
@@ -174,7 +174,7 @@ the same quantity a relative-risk ratio). AME is per-outcome.
 \code{nested = TRUE} compares nested \code{multinom} fits by likelihood-ratio test
 (the \code{anova.multinom()} convention). Cluster-robust \verb{CR*} is
 available (one cluster value per observation; sandwich >= 3.1-2)
-and the AME columns honour it; \verb{HC*} is refused -- a multi-equation
+and the AME columns honor it; \verb{HC*} is refused -- a multi-equation
 model has no working residuals.
 \code{mlogit} renders
 per-alternative rows; AME is refused (no \code{slopes()} method exists for
@@ -215,7 +215,7 @@ the FIT -- \code{df.residual} for \code{svyglm} / \code{svyolr}, \code{degf.resi
 \code{degf.residual} for the two Cox engines -- which is what
 \code{\link[survey:regTermTest]{survey::regTermTest()}} takes as its denominator. It is not
 \code{survey::degf(design)}, and it is not re-derived here: the six engines
-of survey do not share one expression and are not harmonised (a Cox
+of survey do not share one expression and are not harmonized (a Cox
 fit carries \code{degf(design) - p + 1} although it has no intercept for
 the \code{+ 1} to cancel, so it ends one above the two other classes). The
 value is read off the object. The footer names the design and prints

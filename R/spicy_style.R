@@ -206,7 +206,7 @@
 #' (stopping-rule tests, genomewide studies) are analysis contexts the
 #' style layer cannot see; its inference policy (no p-values without a
 #' prespecified multiplicity plan, estimates + 95% CI instead, no
-#' p-values in the Table 1 of a randomised trial) is about what to
+#' p-values in the Table 1 of a randomized trial) is about what to
 #' report, not how to format it -- request those layouts through
 #' `show_columns` and `p_value = FALSE` where you need them.
 #'
@@ -239,7 +239,7 @@
 #' }
 #'
 #' Not encoded: the empty-cell filler, the ban on p-values in a
-#' randomised trial's baseline table, and the absolute-rather-than-
+#' randomized trial's baseline table, and the absolute-rather-than-
 #' relative effect rule are content decisions, not number formats.
 #'
 #' One caveat on the en dash. The journal's examples are ratio
@@ -369,7 +369,7 @@
 #'   The theme's provenance travels with the result and names the
 #'   levers you overrode, so a modified theme never passes for the
 #'   theme itself.
-#' @param ... Must be empty. Any argument landing here is a misspelt
+#' @param ... Must be empty. Any argument landing here is a misspelled
 #'   lever and raises an error rather than being ignored.
 #' @param p_style How p-values carry their leading zero: `"apa"` drops
 #'   it (`.003`), `"standard"` keeps it (`0.003`). `NULL` leaves

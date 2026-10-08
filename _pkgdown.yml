@@ -195,7 +195,7 @@ reference:
       one function returning the machine-readable list, whose
       documentation page also describes the per-family behavior
       (inference, robust-variance backends, exponentiate semantics,
-      marginal effects, labelled blocks).
+      marginal effects, labeled blocks).
     contents:
       - table_regression_models
   - title: Export

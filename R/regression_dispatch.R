@@ -2817,7 +2817,7 @@ output_word <- function(rendered, word_path, word_template = NULL) {
 #' * `body$.row_role` -- what the row *is*: `"coef"`,
 #'   `"factor_header"`, `"level"`, `"reference"`, `"fit_stat"`,
 #'   `"outcome"`, `"vc"` (variance component) in a regression table,
-#'   plus `"summary"` (a row summarising one variable), `"group"` (a
+#'   plus `"summary"` (a row summarizing one variable), `"group"` (a
 #'   row keyed by one level of `by`) and `"missing"` (a row keyed by
 #'   the *missing* value) in the descriptive ones. The role is the
 #'   key a consumer matches on: `"(Missing)"` is a display label --

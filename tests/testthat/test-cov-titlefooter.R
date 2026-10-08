@@ -139,7 +139,7 @@ test_that("standardized caveat (refit) detects interaction from attached fit", {
   expect_identical(
     out,
     paste0(
-      "Standardised ",
+      "Standardized ",
       beta,
       ": after refit on z-scored data, an ",
       "interaction's ",
@@ -161,7 +161,7 @@ test_that("standardized caveat (std) detects interaction from attached fit", {
   expect_identical(
     out,
     paste0(
-      "Standardised ",
+      "Standardized ",
       beta,
       ": interaction / transformed terms are ",
       "scaled by the SD of the product (or transformed) design column; ",
@@ -240,8 +240,8 @@ test_that(".surv_title_dist normalises all known distribution tokens", {
   expect_identical(spicy:::.surv_title_dist("exp"), "Exponential")
   expect_identical(spicy:::.surv_title_dist("llogis"), "Log-logistic")
   expect_identical(spicy:::.surv_title_dist("loglogistic"), "Log-logistic")
-  expect_identical(spicy:::.surv_title_dist("gengamma"), "Generalised gamma")
-  expect_identical(spicy:::.surv_title_dist("genf"), "Generalised F")
+  expect_identical(spicy:::.surv_title_dist("gengamma"), "Generalized gamma")
+  expect_identical(spicy:::.surv_title_dist("genf"), "Generalized F")
   expect_identical(spicy:::.surv_title_dist("gaussian"), "Gaussian")
   # Default: capitalise the first letter of an unknown token.
   expect_identical(spicy:::.surv_title_dist("customdist"), "Customdist")

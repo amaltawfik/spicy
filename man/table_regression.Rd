@@ -62,7 +62,7 @@ table_regression(
 \item{models}{A fitted model object, or a list of such fits
 (named or unnamed; classes may be mixed). Single fits are
 auto-promoted to a 1-element list. A broad set of model classes
-is supported -- linear / generalised linear (\code{lm}, \code{glm},
+is supported -- linear / generalized linear (\code{lm}, \code{glm},
 \code{MASS::glm.nb}), mixed-effects (\code{lmer}, \code{lme}, \code{glmmTMB}),
 survival (\code{coxph}, \code{survreg}), ordinal (\code{polr}, \code{clm}),
 \code{mgcv::gam}/\code{bam}, \code{betareg}, \code{mlogit}, \code{survey::svyglm}, \code{rms}
@@ -147,7 +147,7 @@ transformation-respecting).
 \code{"hdi"} (Bayesian \code{stanreg} / \code{brmsfit} fits only) replaces the
 default equal-tailed credible interval with the highest-density
 interval -- the shortest interval containing \code{ci_level} of the
-posterior draws (Kruschke 2015), relabelling the column header
+posterior draws (Kruschke 2015), relabeling the column header
 \verb{95\% HDI}. Unlike the equal-tailed interval the HDI is not
 transformation-invariant, so under \code{exponentiate = TRUE} it is
 recomputed on the exponentiated draws rather than transformed.
@@ -172,10 +172,10 @@ baseline, disclosed in the table note.}
 the difference in cumulative incidence at \code{at_time} (\code{coxph}
 and \code{survreg} fits). A positive time on the outcome's scale; no default.}
 
-\item{standardized}{Standardisation method for the \code{"beta"}
+\item{standardized}{Standardization method for the \code{"beta"}
 column. One of \code{"none"} (default), \code{"refit"}, \code{"posthoc"},
 \code{"basic"}, \code{"smart"}, \code{"pseudo"}. \code{"pseudo"} is \emph{glm only}
-(Menard 2011 fully-standardised); using it with \code{lm()} raises
+(Menard 2011 fully-standardized); using it with \code{lm()} raises
 \code{spicy_invalid_input}. Supported classes: \code{lm}, \code{glm}
 (incl. \code{MASS::glm.nb}), the mixed engines (\code{lmer} /
 \code{glmer} / \code{glmmTMB} / \code{nlme::lme}), and fixed-effects
@@ -200,7 +200,7 @@ distributional, multivariate or special terms (\code{mo()}, \code{s()},
 before fitting instead. Any other class
 raises
 \code{spicy_unsupported_standardized} rather than rendering an
-empty beta column. See the \emph{Standardised coefficients}
+empty beta column. See the \emph{Standardized coefficients}
 section.}
 
 \item{exponentiate}{Logical. When \code{TRUE}, \code{B}, the CI bounds, and
@@ -211,7 +211,7 @@ logit (\code{OR}), log (\code{IRR} / \code{RR} / \code{MR} per family, generic
 means), and binomial / ordinal cloglog (\code{HR}; grouped-time
 proportional hazards, Prentice & Gloeckler 1978). For the
 \emph{ordinal} (cumulative) cloglog model the displayed \code{HR} is
-\code{exp(-B)}, not \code{exp(B)}: the cumulative parametrisation
+\code{exp(-B)}, not \code{exp(B)}: the cumulative parametrization
 \verb{cloglog P(Y <= j) = zeta_j - xB} places the hazard of the
 grouped event on \code{-B}, so \code{exp(B)} would be the reciprocal of
 the hazard ratio (the CI endpoints are negated and swapped
@@ -300,7 +300,7 @@ Has no effect on non-ordinal models, and the rows are shown only
 when a coefficient column (\code{"b"}/\code{"beta"}) is in \code{show_columns}.}
 
 \item{show_components}{For models with secondary components,
-whether to display them as labelled subordinate blocks of rows
+whether to display them as labeled subordinate blocks of rows
 below the primary (count / conditional / location) coefficients.
 Default \code{TRUE}:
 \itemize{
@@ -311,7 +311,7 @@ Default \code{TRUE}:
 probability of a \strong{nonzero count} (note the opposite direction
 vs zero-inflation; the footer names each block's meaning).
 \item \code{glmmTMB(dispformula = )}: a \code{Dispersion} block (only when
-dispersion was actually modelled; log scale, never
+dispersion was actually modeled; log scale, never
 exponentiated).
 \item \verb{ordinal::clm(scale = ~)}: a \verb{Scale effects} block -- the
 covariate effects on the \strong{log standard deviation of the
@@ -415,7 +415,7 @@ the model's remaining sub-columns (\code{SE}, \code{LL}, \code{UL}, \code{p},
 Table 7.13 layout.
 \item \code{"merged"}: the model's numeric sub-columns are
 merged into a single wide cell containing the fit-stat
-value, centred under the model spanner. Stata \code{esttab}
+value, centered under the model spanner. Stata \code{esttab}
 layout / \emph{Econometrica} and \emph{AER} journal convention.
 Resolves the mixed-precision look of \code{"first_col"} (an
 integer \code{n} row sharing the B column with two-decimal
@@ -571,7 +571,7 @@ flextable / tinytable / Excel / Word renderers). \code{NULL}
 for the full rule. A character vector of length
 \code{length(models)} overrides. Refused (error) for a single
 multinomial model: there the column groups are outcome
-categories, relabelled via \code{outcome_labels}.}
+categories, relabeled via \code{outcome_labels}.}
 
 \item{outcome_labels}{Optional \strong{Outcome body row} override.
 \code{NULL} (default) hides the row entirely -- under the
@@ -661,7 +661,7 @@ term and coefficient names R itself produces, and they keep that
 form regardless of the language the table is rendered in. A name
 that is neither a term label nor a coefficient name is rejected,
 so the header of a subordinate block -- \verb{Random effects},
-\code{Thresholds}, \code{Zero-inflation}, ... -- cannot be relabelled here;
+\code{Thresholds}, \code{Zero-inflation}, ... -- cannot be relabeled here;
 those headers are set by the package. Classes that carry no
 \code{terms} component at all (\code{nls()},
 \code{sampleSelection::selection()}) are keyed on their coefficient
@@ -716,7 +716,7 @@ with a comma under \code{clipboard_delim = ","}, or any number under
 RFC 4180-style, so the grid survives whatever delimiter you
 choose.
 
-Paste behaviour by target:
+Paste behavior by target:
 \itemize{
 \item \strong{Excel / Google Sheets:} numerics are auto-detected and
 right-aligned; text cells stay left-aligned. (P-values such
@@ -751,14 +751,14 @@ exports rather than chunk-level rendering.}
 \item{word_template}{Optional path to a custom .docx file used as the
 template for \code{output = "word"}. The template's header, footer,
 page size, margins, and named styles ("Table Caption" in
-particular) are honoured; the table is appended to the template
+particular) are honored; the table is appended to the template
 body. Useful for institutional templates with pre-set headers
 ("APA Style", "Manuscript Submission Template", etc.). Default
 \code{NULL} (uses flextable's stock template).
 
-\strong{Customising the caption appearance:} the table caption is
+\strong{Customizing the caption appearance:} the table caption is
 tagged with the Word named style \code{"Table Caption"}. The visual
-rendering (italic / bold / colour / font) follows whatever that
+rendering (italic / bold / color / font) follows whatever that
 style is set to in the docx template. The stock Word template
 renders \code{"Table Caption"} in italic — the APA Manual 7 §7.10
 condensed convention. For a different appearance (Nature-style
@@ -793,7 +793,7 @@ outputs).
 }
 \description{
 Publication-ready coefficient table from one or more fitted
-\code{lm} / \code{glm} models. Supports standardised coefficients
+\code{lm} / \code{glm} models. Supports standardized coefficients
 (\eqn{\beta}{beta}), average marginal effects (AME), partial
 effect sizes (\emph{\eqn{f^2}{f^2}} / \emph{\eqn{\eta^2}{eta^2}} /
 \emph{\eqn{\omega^2}{omega^2}} for \code{lm}; partial
@@ -815,7 +815,7 @@ atomic tokens; see \code{show_columns} below.
 Each token = one displayed column.
 
 \itemize{
-\item Coefficient family: \code{"b"}, \code{"beta"} (standardised),
+\item Coefficient family: \code{"b"}, \code{"beta"} (standardized),
 \code{"se"}, \code{"ci"}, \code{"t"}, \code{"p"}.
 \item Marginal effects: \code{"ame"}, \code{"ame_se"}, \code{"ame_ci"},
 \code{"ame_p"}. \code{"p"} always refers to the B-coefficient
@@ -961,7 +961,7 @@ mixed tables -- and is on by default for both.
 Varying-slope-only factors (\code{Origin[[x]]}) absorb no
 intercept: they read No when another model absorbs that
 factor, and contribute no row otherwise.
-\code{"within_r2"} is the FE-partialled within
+\code{"within_r2"} is the FE-partialed within
 R-squared (a default for \code{feols}, opt-in for \code{estimatr};
 GLM-family fixest fits report fixest's McFadden \code{pr2}
 instead). Both tokens are refused when no model in the table
@@ -996,7 +996,7 @@ class-aware default is extended with change tokens
 
 \section{Multi-model semantics}{
 Pass a single fit or a \code{list()} of fits. Multi-model layout
-draws a centred \strong{spanner label} above each model's
+draws a centered \strong{spanner label} above each model's
 sub-columns:
 
 \itemize{
@@ -1082,7 +1082,7 @@ category), as it does for every other layout.
 \subsection{Robust SE availability by model class}{
 
 Not every estimator is defined for every class. A robust \code{vcov}
-the class cannot honour fails fast with \code{spicy_unsupported_vcov}
+the class cannot honor fails fast with \code{spicy_unsupported_vcov}
 -- never a silent model-based result under a robust label:
 
 \describe{
@@ -1289,7 +1289,7 @@ coefficients, and the two cannot be separated. Hold the
 engine's own two-model \code{anova()}, and no engine's method
 accepts a fit produced by another. Refit one of the two with
 the other's engine.
-\item \emph{A \code{MASS::rlm} hierarchy}. M-estimation minimises a
+\item \emph{A \code{MASS::rlm} hierarchy}. M-estimation minimizes a
 bounded loss on the scaled residuals: it partitions no sums of
 squares and it is not a likelihood, so there is neither a
 likelihood-ratio test nor a partial F to report. Every change
@@ -1316,7 +1316,7 @@ Lemeshow Section 3.5; Long & Freese 2014 Section 3.2.4.
 \item Quantile (\code{rq}): \code{c("f_change", "p_change")} -- the
 Wald-type test \code{quantreg::anova.rq()} reports.
 }
-To customise, pass the change tokens directly to
+To customize, pass the change tokens directly to
 \code{show_fit_stats}. The variance-explained change tokens
 (\code{"r2_change"}, \code{"adj_r2_change"}, \code{"f_change"},
 \code{"f2_change"}) raise \code{spicy_invalid_input} on any hierarchy
@@ -1330,7 +1330,7 @@ them too, and \code{"lrt_change"} with them, pointing at
 least-squares tokens.
 }
 
-\section{Standardised coefficients}{
+\section{Standardized coefficients}{
 \code{standardized} controls the method when \code{"beta"} is in
 \code{show_columns}:
 \itemize{
@@ -1350,7 +1350,7 @@ same range as a binary's 0 to 1 step); binary inputs --
 numeric 0/1 and factor dummies -- are left unscaled. (Before
 0.13.0 the rule was applied inverted; see NEWS.)
 \item \code{"pseudo"} -- \emph{glm only}. Menard (2004, 2011)
-fully-standardised \eqn{\beta = B \times SD(X) / SD(Y^*)}{beta = B * SD(X) / SD(Y*)},
+fully-standardized \eqn{\beta = B \times SD(X) / SD(Y^*)}{beta = B * SD(X) / SD(Y*)},
 with \eqn{Y^*}{Y*} the latent variable on the link scale and
 \eqn{SD(Y^*) = \sqrt{Var(\hat{\eta}) + Var_{link}}}{SD(Y*) = sqrt(Var(eta-hat) + Var_link)}
 (\eqn{\pi^2/3}{pi^2/3} logit, \code{1} probit,
@@ -1485,7 +1485,7 @@ the 10pt-on-11pt of the Word engine. Two opt-ins:
 exactly as the receiving document template styles it.
 \item any other string -- extra arguments for the Typst
 \code{text()} call around the note, appended to the size (e.g.
-\code{options(spicy.note_style = "fill: luma(89)")} for a grey
+\code{options(spicy.note_style = "fill: luma(89)")} for a gray
 note). Typst only; the HTML note keeps the plain \verb{0.9em}.
 }
 \code{options(spicy.note_style = NULL)} restores the default.
@@ -1496,11 +1496,11 @@ note). Typst only; the HTML note keeps the plain \verb{0.9em}.
 No \code{weights} argument: weights are a property of the fit
 (extracted via \code{\link[stats:weights]{stats::weights()}}). Pass them when fitting:
 \code{lm(y ~ x, data = df, weights = w)}. All downstream
-computations (vcov, AME, standardisation, \code{weighted_nobs})
+computations (vcov, AME, standardization, \code{weighted_nobs})
 extract them automatically.
 }
 
-\section{Internationalisation}{
+\section{Internationalization}{
 Output is in English. Override user-facing strings via
 \code{reference_label}, \code{model_labels}, \code{outcome_labels}, and
 \code{labels}. The title and footer are post-processable via
@@ -1531,7 +1531,7 @@ fit <- lm(wellbeing_score ~ age + sex + smoking, data = sochealth)
 table_regression(fit)
 
 \donttest{
-# Standardised coefficients (beta) injected next to B. "refit"
+# Standardized coefficients (beta) injected next to B. "refit"
 # is the Cohen et al. (2003) refit-on-z-scores convention;
 # "basic" reproduces the SPSS / Stata regress, beta definition.
 table_regression(fit, standardized = "refit")
@@ -1699,7 +1699,7 @@ to a world beyond "p < 0.05". \emph{The American Statistician},
 }
 \seealso{
 \code{\link[=table_regression_models]{table_regression_models()}} for the registry of supported model
-classes and the per-family behaviour reference (also reachable as
+classes and the per-family behavior reference (also reachable as
 \code{?table_regression_mixed}, \code{?table_regression_ordinal}, ...). If a
 class is not listed there, try \code{table_regression(fit)} anyway --
 unsupported classes error with a clear message.

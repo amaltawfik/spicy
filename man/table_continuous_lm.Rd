@@ -329,7 +329,7 @@ correlation of \code{by} with the outcome, divided by \verb{(1 - r^2_partial)}.
 \item \code{"d"} and \code{"g"} raise a \code{spicy_unsupported} error: Cohen's \emph{d}
 and Hedges' \emph{g} have no canonical extension to adjusted models
 (the pooled SD is undefined under adjustment). Use \code{"f2"} or
-\code{"omega2"} instead -- both generalise via partial \emph{F}.
+\code{"omega2"} instead -- both generalize via partial \emph{F}.
 }}
 
 \item{effect_size_ci}{Logical. If \code{TRUE} and \code{effect_size != "none"}, adds
@@ -350,7 +350,7 @@ warning.}
 outputs. One of:
 \itemize{
 \item \code{"r2"} (default): the model \verb{\eqn{R^2}{R^2}} (\code{summary(lm)$r.squared}).
-\item \code{"adj_r2"}: adjusted \verb{\eqn{R^2}{R^2}}, penalising for \code{df_effect} relative to the
+\item \code{"adj_r2"}: adjusted \verb{\eqn{R^2}{R^2}}, penalizing for \code{df_effect} relative to the
 residual degrees of freedom.
 \item \code{"none"}: omit the fit-statistic column.
 }
@@ -408,8 +408,8 @@ mark, the standard scientific-publication convention used by
 SPSS, SAS, and LaTeX \code{siunitx}. Numeric cells are pre-padded
 with figure-spaces (U+2007, digit-width) so every string in a
 column has the same width with the decimal mark at the same
-internal position; centring those uniform-width strings then
-stacks the decimal points vertically. The same pad-then-centre
+internal position; centering those uniform-width strings then
+stacks the decimal points vertically. The same pad-then-center
 strategy is applied on every rendering engine (\code{gt},
 \code{tinytable}, \code{flextable}, \code{word}, ASCII print) for a
 homogeneous rendering, matching \code{table_regression()}. The

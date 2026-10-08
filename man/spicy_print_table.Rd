@@ -113,7 +113,7 @@ Invisibly returns \code{x}, after printing the formatted ASCII table to the cons
 \description{
 User-facing helper that prints a spicy-styled ASCII table to the
 console with optional title and note, table-type-aware alignment
-defaults, and automatic horizontal panelling when the table is
+defaults, and automatic horizontal paneling when the table is
 wider than the console. Wraps the internal renderer
 \code{\link[=build_ascii_table]{build_ascii_table()}}.
 }
@@ -130,8 +130,8 @@ variable) is left-aligned.
 If the table is wider than the console, it is split into stacked
 horizontal panels with the left-most identifier columns repeated
 on each panel. Unicode line-drawing characters are used by
-default; coloured separators are drawn when the terminal supports
-ANSI colour (\code{\link[crayon:has_color]{crayon::has_color()}}) and fall back to monochrome
+default; colored separators are drawn when the terminal supports
+ANSI color (\code{\link[crayon:has_color]{crayon::has_color()}}) and fall back to monochrome
 otherwise.
 
 The layout arguments \code{spanners}, \code{display_labels},

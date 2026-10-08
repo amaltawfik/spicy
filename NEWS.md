@@ -328,7 +328,7 @@ The first eight fixes change numbers that 0.12.0 reported.
   `somers_d(direction = "symmetric")` returns `0` on equal concordant
   and discordant pairs.
 
-* The `tau_c` measure is labelled `"Stuart's Tau-c"` everywhere.
+* The `tau_c` measure is labeled `"Stuart's Tau-c"` everywhere.
 
 * `freq()` keeps its label footer when `NA`-weight rows are dropped,
   warns when distinct codes merge under one label, and sorts labelled
@@ -443,7 +443,7 @@ The first eight fixes change numbers that 0.12.0 reported.
   * Robust variance: classical, HC, cluster-robust (CR) with
     Satterthwaite df, bootstrap, jackknife. Per-model `vcov`
     accepted for SE-comparison tables.
-  * Standardisation: `refit`, `posthoc`, `basic`, `smart`,
+  * Standardization: `refit`, `posthoc`, `basic`, `smart`,
     `pseudo` (the last `glm` only).
   * Average marginal effects (AME) as separate columns; AME
     inference shares the coefficient's variance estimator so B
@@ -542,7 +542,7 @@ The first eight fixes change numbers that 0.12.0 reported.
 * `HC*` estimators delegate to `sandwich::vcovHC()`;
   rank-deficient fits return a clean rank-by-rank covariance.
 
-### Harmonisation across the table family
+### Harmonization across the table family
 
 * Shared reporting vocabulary (`decimal_mark`, `p_digits`,
   `align`, named-`labels`) now spans `cross_tab()`, `freq()` and

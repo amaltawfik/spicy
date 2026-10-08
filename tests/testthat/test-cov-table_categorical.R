@@ -96,7 +96,7 @@ test_that("named assoc_measure with an unrecognised value errors clearly", {
       assoc_measure = c(v1 = "bogus"),
       output = "long"
     ),
-    "value\\(s\\) not recognised"
+    "value\\(s\\) not recognized"
   )
 })
 
@@ -116,7 +116,7 @@ test_that("unnamed positional assoc_measure with a bad value errors clearly", {
       assoc_measure = c("phi", "bogus"),
       output = "long"
     ),
-    "value\\(s\\) not recognised"
+    "value\\(s\\) not recognized"
   )
 })
 

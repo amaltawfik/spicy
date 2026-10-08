@@ -892,7 +892,7 @@ extract_beta_rows <- function(
     spicy_warn(
       c(
         paste0(
-          "Standardised coefficients unavailable: the refit on ",
+          "Standardized coefficients unavailable: the refit on ",
           "z-scored data could not be built for this fit."
         ),
         "i" = paste0(
@@ -900,7 +900,7 @@ extract_beta_rows <- function(
           "...) cannot be re-evaluated on z-scored data. Pre-build the ",
           "transformed column in `data` before fitting."
         ),
-        "i" = "The table shows unstandardised coefficients only."
+        "i" = "The table shows unstandardized coefficients only."
       ),
       class = "spicy_fallback"
     )

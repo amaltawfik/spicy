@@ -367,7 +367,7 @@ standardize_pseudo_glm <- function(
     spicy_warn(
       c(
         paste0(
-          "`standardized = \"pseudo\"` (Menard fully-standardised) is ",
+          "`standardized = \"pseudo\"` (Menard fully-standardized) is ",
           "defined for binomial families with logit / probit / cloglog ",
           "/ log links."
         ),

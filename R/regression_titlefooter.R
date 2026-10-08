@@ -718,9 +718,9 @@ build_abbreviations_footer_block_from_frames <- function(
     defs <- c(
       defs,
       if (is.null(gloss)) {
-        "\u03B2 = standardised coefficient"
+        "\u03B2 = standardized coefficient"
       } else {
-        sprintf("\u03B2 = standardised coefficient (%s)", gloss)
+        sprintf("\u03B2 = standardized coefficient (%s)", gloss)
       }
     )
   }
@@ -903,22 +903,22 @@ build_standardized_caveat_footer_block_from_frames <- function(
   # differs-from-"refit" clause stays: it is the interpretive caveat
   # about the displayed numbers themselves.
   algebraic <- paste0(
-    "Standardised \u03B2: interaction / transformed terms are scaled by ",
+    "Standardized \u03B2: interaction / transformed terms are scaled by ",
     "the SD of the product (or transformed) design column; differs ",
     "from \"refit\" when components are correlated."
   )
 
   if (identical(standardized, "refit") && !fell_back) {
     return(paste0(
-      "Standardised \u03B2: after refit on z-scored data, an interaction's ",
+      "Standardized \u03B2: after refit on z-scored data, an interaction's ",
       "\u03B2 is the coefficient of the product of the z-scored components."
     ))
   }
   if (fell_back) {
     return(paste0(
-      "Standardised \u03B2: \"refit\" failed; algebraic (posthoc) scaling ",
+      "Standardized \u03B2: \"refit\" failed; algebraic (posthoc) scaling ",
       "applied. ",
-      sub("^Standardised \u03B2: ", "", algebraic)
+      sub("^Standardized \u03B2: ", "", algebraic)
     ))
   }
   algebraic
@@ -1341,8 +1341,8 @@ build_survival_footer_block_from_frames <- function(
     exp = "Exponential",
     llogis = "Log-logistic",
     loglogistic = "Log-logistic",
-    gengamma = "Generalised gamma",
-    genf = "Generalised F",
+    gengamma = "Generalized gamma",
+    genf = "Generalized F",
     gaussian = "Gaussian",
     logistic = "Logistic",
     `t` = "Student-t",
@@ -2423,7 +2423,7 @@ build_exponentiate_footer_block_from_frames <- function(
   negation_note <- if (hr_negated) {
     paste0(
       " HR is the grouped-time proportional-hazards ratio exp(-B): ",
-      "the cumulative parametrisation cloglog P(Y <= j) = zeta_j - xB ",
+      "the cumulative parametrization cloglog P(Y <= j) = zeta_j - xB ",
       "places the hazard on -B (Prentice & Gloeckler 1978; ",
       "McCullagh 1980)."
     )

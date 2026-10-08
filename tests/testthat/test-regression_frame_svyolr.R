@@ -254,7 +254,7 @@ test_that("the title names the link and the parallel-slopes assumption", {
   expect_identical(fr$info$family$family, "cumulative")
   expect_identical(fr$info$family$link, "logit")
   expect_identical(fr$info$weights_kind, "sampling")
-  expect_identical(fr$info$vcov_label, "Design-based (Taylor linearisation)")
+  expect_identical(fr$info$vcov_label, "Design-based (Taylor linearization)")
 })
 
 test_that("a probit svyolr is not titled logit", {

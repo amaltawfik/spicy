@@ -176,7 +176,7 @@ compute_model_vcov <- function(
         "i" = paste0(
           "The survey design is the variance authority: strata, clusters, ",
           "finite population correction and calibration are already carried ",
-          "by the fit's own variance (Taylor linearisation or replicate ",
+          "by the fit's own variance (Taylor linearization or replicate ",
           "weights), which is what the default reports."
         ),
         "i" = paste0(

@@ -105,7 +105,7 @@ test_that("the frame validator asserts the vcov vocabulary", {
     class = "spicy_invalid_frame"
   )
   expect_match(conditionMessage(err), "vcov_kind", fixed = TRUE)
-  expect_match(conditionMessage(err), "not a recognised value", fixed = TRUE)
+  expect_match(conditionMessage(err), "not a recognized value", fixed = TRUE)
   expect_match(conditionMessage(err), "Allowed:", fixed = TRUE)
 })
 

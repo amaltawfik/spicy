@@ -160,7 +160,7 @@ family:
 | rms | `rms::ols()`, `rms::lrm()`, `rms::Glm()` |
 | Bayesian | `rstanarm::stan_glm()`, `rstanarm::stan_glmer()`, `brms::brm()` (posterior median, credible intervals, no p-values) |
 
-Class-specific structure renders as labelled blocks in the same
+Class-specific structure renders as labeled blocks in the same
 table: random effects (with SE and CI on each variance component,
 and an optional boundary-correct per-term likelihood-ratio test),
 ordinal thresholds, non-proportional effects, zero-inflation and

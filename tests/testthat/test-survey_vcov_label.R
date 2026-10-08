@@ -39,12 +39,12 @@
 
 test_that("a linearised design keeps the label it has always had", {
   d <- .lbl_designs()
-  expect_identical(.lbl_of(d$strat), "Design-based (Taylor linearisation)")
-  expect_identical(.lbl_of(d$clus), "Design-based (Taylor linearisation)")
+  expect_identical(.lbl_of(d$strat), "Design-based (Taylor linearization)")
+  expect_identical(.lbl_of(d$clus), "Design-based (Taylor linearization)")
   # And it is a registry key now, not a literal.
   expect_identical(
     spicy_str("note_vcov_design_taylor"),
-    "Design-based (Taylor linearisation)"
+    "Design-based (Taylor linearization)"
   )
 })
 
@@ -115,13 +115,13 @@ test_that("calibrated, post-stratified and pps designs stay linearised", {
     ~stype,
     pop = c(`(Intercept)` = 6194, stypeH = 755, stypeM = 1018)
   )
-  expect_identical(.lbl_of(cal), "Design-based (Taylor linearisation)")
+  expect_identical(.lbl_of(cal), "Design-based (Taylor linearization)")
   ps <- survey::postStratify(
     d$strat,
     ~stype,
     data.frame(stype = c("E", "H", "M"), Freq = c(4421, 755, 1018))
   )
-  expect_identical(.lbl_of(ps), "Design-based (Taylor linearisation)")
+  expect_identical(.lbl_of(ps), "Design-based (Taylor linearization)")
   # A without-replacement pps design leaves NO class marker -- it is a
   # plain survey.design2 -- and its variance IS a linearisation. Keying
   # the label on `.is_supported_design()` would have demoted it.
@@ -134,7 +134,7 @@ test_that("calibrated, post-stratified and pps designs stay linearised", {
     data = strat,
     pps = "brewer"
   )
-  expect_identical(.lbl_of(pps), "Design-based (Taylor linearisation)")
+  expect_identical(.lbl_of(pps), "Design-based (Taylor linearization)")
   expect_false(spicy:::.is_supported_design(pps))
 })
 

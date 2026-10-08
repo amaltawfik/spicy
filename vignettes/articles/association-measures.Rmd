@@ -65,7 +65,7 @@ tbl <- xtabs(~ smoking + education, data = sochealth)
 assoc_measures(tbl)
 ```
 
-Directional variants are labelled `R|C` (the row variable is treated
+Directional variants are labeled `R|C` (the row variable is treated
 as dependent, i.e. predicted from the column variable) and `C|R` (the
 reverse); `symmetric` variants single out no dependent variable.
 

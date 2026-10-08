@@ -4,7 +4,7 @@ description: >
   Publication-ready tables for count regression in R with
   `table_regression()`: Poisson and negative-binomial rate ratios,
   zero-inflated and hurdle models with their zero component as a
-  labelled block, per-block exponentiation, combined average marginal
+  labeled block, per-block exponentiation, combined average marginal
   effects, cluster-robust variance across both components, and
   zero-inflated mixed models with `glmmTMB`.
 output:
@@ -42,7 +42,7 @@ tables*](table-regression.html) covers the shared mechanics (`vcov`,
 `ci_level`, output formats, multi-model layouts, broom integration; the class-by-class map is [*Supported models*](table-regression-supported-models.html));
 here we focus on what is specific to counts: rate ratios,
 overdispersion, and above all the **two-part models** whose zero
-component `table_regression()` renders as its own labelled block.
+component `table_regression()` renders as its own labeled block.
 
 `table_regression()` supports the full count-model escalation:
 
@@ -76,7 +76,7 @@ of two ways: the conditional variance exceeds the conditional mean
 (**overdispersion** — the negative binomial's job), and there are more
 zeros than the count process predicts (**excess zeros** — the job of
 the zero-inflated and hurdle models, which add a second, binary
-submodel for the zeros). The two are entangled: unmodelled dispersion
+submodel for the zeros). The two are entangled: unmodeled dispersion
 surfaces as apparent excess zeros, so the model comparison at the end
 of this article, not the raw zero count, arbitrates. Each extension
 changes what the table must show, and the sections below follow that
@@ -175,7 +175,7 @@ difference matters for interpretation:
   direction*.
 
 `table_regression()` renders the count coefficients first and the zero
-component as a labelled block, with a footer line stating exactly what
+component as a labeled block, with a footer line stating exactly what
 the block models. Under `exponentiate = TRUE` the exponentiation is
 **per block**: count coefficients become IRRs for the underlying count
 process — for `zeroinfl`, the rate among units not in the
@@ -277,7 +277,7 @@ table_regression(
 
 Read the AIC row across. The ZIP's entire inflation component buys
 less than the negative binomial's single dispersion parameter (3225.5
-against 3134.1): modelling the zeros directly is the *worse* answer to
+against 3134.1): modeling the zeros directly is the *worse* answer to
 overdispersion here. On top of the negative binomial, the inflation
 part adds only a modest further gain (3134.1 → 3122.5). The hurdle
 (AIC 3233.8) sits with the ZIP, and the previous section argued that
@@ -453,7 +453,7 @@ origin, in place of the degenerate model-based one.
 Second, ignore the AIC's magnitude. The Poisson log-likelihood is
 evaluated at the raw outcome values — trade flows in the millions
 and billions of Euros enter through the $y \log \mu$ and $\log y!$
-terms — so the astronomical AIC is a scale artefact, not evidence
+terms — so the astronomical AIC is a scale artifact, not evidence
 about fit: refitting with the outcome rounded to whole Euros (a
 genuine count of the same magnitude) reproduces it exactly, while
 dividing the outcome by a million shrinks it by orders of magnitude
@@ -464,7 +464,7 @@ so the scale-driven terms largely cancel and it stays readable.
 
 Third, `fixest`'s absorbed factors are *fixed* effects in the
 econometric sense — compare the `glmmTMB` section above, where the
-grouping structure is modelled as random effects with variance
+grouping structure is modeled as random effects with variance
 components instead; `fenegbin()` runs the same layout for the
 negative binomial.
 

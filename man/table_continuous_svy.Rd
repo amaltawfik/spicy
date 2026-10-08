@@ -109,7 +109,7 @@ destinations, as in \code{\link[=table_continuous]{table_continuous()}}.}
 
 \item{verbose}{Report the columns skipped as non-numeric.}
 
-\item{user_na}{Honour declared missing values (see \code{?freq}).}
+\item{user_na}{Honor declared missing values (see \code{?freq}).}
 
 \item{style}{A journal style; see \code{\link[=spicy_style]{spicy_style()}}.}
 }
@@ -148,7 +148,7 @@ convention: a weight is a number of copies, and \code{SD} has denominator
 \code{sum(w) - 1}. This function implements the \strong{sampling-weight}
 convention: a weight is a number of units represented, and \code{SD} is
 \code{sqrt(survey::svyvar())}, whose denominator is \code{n - 1} on weights
-normalised to sum to \code{n}. These are two estimands, not two
+normalized to sum to \code{n}. These are two estimands, not two
 approximations of one.
 
 \code{rescale = TRUE} is the bridge, and it is an identity rather than a

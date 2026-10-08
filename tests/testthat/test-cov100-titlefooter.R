@@ -391,7 +391,7 @@ test_that("beta abbreviation names the standardisation method and dummy conventi
     )
     expect_match(
       note,
-      sprintf('\u03B2 = standardised coefficient ("%s"', m),
+      sprintf('\u03B2 = standardized coefficient ("%s"', m),
       fixed = TRUE
     )
     expect_match(note, "dummies", fixed = TRUE)

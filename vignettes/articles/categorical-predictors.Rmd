@@ -25,9 +25,9 @@ source("_pkgdown-helpers.R")
 library(spicy)
 ```
 
-Every regression article in this collection is organised by the type
+Every regression article in this collection is organized by the type
 of *outcome* — continuous, binary, count, ordinal, multinomial,
-survival. This one is organised by the type of *predictor*. How a
+survival. This one is organized by the type of *predictor*. How a
 categorical predictor is coded, tested, simplified, and presented is
 the same decision whether the model is an `lm()`, a logistic
 regression, or a Cox model, so it has one home rather than a copy in

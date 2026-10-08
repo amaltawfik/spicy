@@ -264,16 +264,16 @@
 }
 
 
-#' Supported models and per-family behaviour of table_regression()
+#' Supported models and per-family behavior of table_regression()
 #'
 #' @description
 #' `table_regression_models()` returns the registry of model classes
 #' supported by [table_regression()], one row per engine, with each class's
 #' family, average-marginal-effects estimand, `exponentiate` semantics, and
-#' labelled table blocks. The same registry drives this page's table, so the
+#' labeled table blocks. The same registry drives this page's table, so the
 #' published list cannot drift from the code.
 #'
-#' This page is also the reference for **per-family behaviour** (the
+#' This page is also the reference for **per-family behavior** (the
 #' sections below). It is reachable as `?table_regression_models`,
 #' `?table_regression_mixed`, `?table_regression_ordinal`,
 #' `?table_regression_counts`, `?table_regression_categorical`,
@@ -290,16 +290,16 @@
 #'
 #' @section Shared semantics (all classes):
 #' \itemize{
-#'   \item A robust `vcov` request is honoured through the class's
+#'   \item A robust `vcov` request is honored through the class's
 #'     field-standard backend, or **refused with a clear error** naming the
 #'     supported set; the footer always names the estimator actually
 #'     applied.
-#'   \item `exponentiate = TRUE` is link-gated: it produces a labelled ratio
+#'   \item `exponentiate = TRUE` is link-gated: it produces a labeled ratio
 #'     (OR / IRR / HR / RR / MR / TR) only where the link warrants
 #'     one. Identity-link fits warn and are left untouched; non-ratio
 #'     links (probit, cauchit, inverse, ...) are **refused with a clear
 #'     error**.
-#'   \item Class-specific structure renders as labelled subordinate blocks
+#'   \item Class-specific structure renders as labeled subordinate blocks
 #'     of rows in the same table, each explained by a footer line.
 #'   \item Fit statistics default to the family's field standard
 #'     (`show_fit_stats` overrides; class-inappropriate tokens are rejected
@@ -372,7 +372,7 @@
 #' `nested = TRUE` compares nested `multinom` fits by likelihood-ratio test
 #' (the `anova.multinom()` convention). Cluster-robust `CR*` is
 #' available (one cluster value per observation; sandwich >= 3.1-2)
-#' and the AME columns honour it; `HC*` is refused -- a multi-equation
+#' and the AME columns honor it; `HC*` is refused -- a multi-equation
 #' model has no working residuals.
 #' `mlogit` renders
 #' per-alternative rows; AME is refused (no `slopes()` method exists for
@@ -409,7 +409,7 @@
 #' `degf.residual` for the two Cox engines -- which is what
 #' [survey::regTermTest()] takes as its denominator. It is not
 #' `survey::degf(design)`, and it is not re-derived here: the six engines
-#' of survey do not share one expression and are not harmonised (a Cox
+#' of survey do not share one expression and are not harmonized (a Cox
 #' fit carries `degf(design) - p + 1` although it has no intercept for
 #' the `+ 1` to cancel, so it ends one above the two other classes). The
 #' value is read off the object. The footer names the design and prints

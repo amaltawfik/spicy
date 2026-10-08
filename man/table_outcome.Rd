@@ -101,7 +101,7 @@ indentation, for the console and for the plain-text engines.}
 \item{excel_path, excel_sheet, clipboard_delim, word_path}{Output
 destinations, as in \code{\link[=table_continuous]{table_continuous()}}.}
 
-\item{user_na}{Honour declared missing values (see \code{?freq}).}
+\item{user_na}{Honor declared missing values (see \code{?freq}).}
 
 \item{style}{A journal style; see \code{\link[=spicy_style]{spicy_style()}}.}
 
@@ -115,7 +115,7 @@ frame and the typed view attached. \code{output = "data.frame"} /
 synonyms and return identical objects.
 }
 \description{
-Summarises \emph{one} continuous outcome across the levels of \emph{several}
+Summarizes \emph{one} continuous outcome across the levels of \emph{several}
 categorical variables, one block of rows per variable. It is the
 inverse layout of \code{\link[=table_continuous]{table_continuous()}}, which puts several outcomes
 in rows and one grouping in columns.
@@ -151,10 +151,10 @@ counts the missing ones.
 
 \code{rescale} is the switch between the two readings of a weight: the
 frequency reading above, and the sampling-weight reading, where the
-weights are normalised to sum to the sample size. See the Weights
+weights are normalized to sum to the sample size. See the Weights
 section of \code{\link[=table_continuous]{table_continuous()}} for the choice in full.
 
-\code{rescale = TRUE} normalises the weights over the outcome's whole
+\code{rescale = TRUE} normalizes the weights over the outcome's whole
 surviving sample, once, never per level -- a per-level rescale
 would destroy the relative weights across levels, which is the
 entire information a sampling weight carries into this table. The

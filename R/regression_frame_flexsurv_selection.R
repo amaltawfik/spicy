@@ -353,8 +353,8 @@ as_regression_frame.flexsurvreg <- function(
     exponential = "Exponential",
     exp = "Exponential",
     llogis = "Log-logistic",
-    gengamma = "Generalised gamma",
-    genf = "Generalised F",
+    gengamma = "Generalized gamma",
+    genf = "Generalized F",
     paste0(toupper(substr(dist, 1L, 1L)), substring(dist, 2L))
   )
 }

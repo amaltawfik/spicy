@@ -341,7 +341,7 @@ test_that("the design footer says what the design is, in three sentences", {
     .design_note_lines(.design_meta(.svy_fixture("strat"))),
     c(
       "Design: stratified (stype), with finite population correction; 197 degrees of freedom.",
-      "Std. errors: Design-based (Taylor linearisation).",
+      "Std. errors: Design-based (Taylor linearization).",
       "Confidence intervals and tests use the design degrees of freedom."
     )
   )

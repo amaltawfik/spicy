@@ -1259,7 +1259,7 @@ test_that("Bayesian beta: glm convention, exp/HDI interplay, refusals", {
     )))),
     collapse = "\n"
   )
-  expect_match(out, "standardised coefficient", fixed = TRUE)
+  expect_match(out, "standardized coefficient", fixed = TRUE)
 })
 
 

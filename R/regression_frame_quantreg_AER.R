@@ -591,7 +591,7 @@ as_regression_frame.ivreg <- function(
 #'
 #' tobit inherits from survreg, so the survreg method would dispatch
 #' on it via fallback. This dedicated method overrides the title,
-#' class, and family normalisation so the frame reports "Tobit
+#' class, and family normalization so the frame reports "Tobit
 #' regression" rather than "Gaussian AFT regression".
 #'
 #' @keywords internal

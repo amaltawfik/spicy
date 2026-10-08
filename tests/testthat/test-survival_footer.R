@@ -157,7 +157,7 @@ test_that(".surv_title_dist normalises lnorm -> 'Log-normal'", {
   expect_identical(spicy:::.surv_title_dist("lnorm"), "Log-normal")
   expect_identical(spicy:::.surv_title_dist("lognormal"), "Log-normal")
   expect_identical(spicy:::.surv_title_dist("weibull"), "Weibull")
-  expect_identical(spicy:::.surv_title_dist("gengamma"), "Generalised gamma")
+  expect_identical(spicy:::.surv_title_dist("gengamma"), "Generalized gamma")
 })
 
 

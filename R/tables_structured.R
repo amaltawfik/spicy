@@ -826,7 +826,7 @@
       # pass by -- it is the safety net of that very rule.
       spicy_abort(
         sprintf(
-          "Internal: unrecognised continuous-lm display column %s.",
+          "Internal: unrecognized continuous-lm display column %s.",
           .quote_val(nm)
         ),
         class = "spicy_internal_invariant"
@@ -883,7 +883,7 @@
       # abort above exists to prevent.
       spicy_abort(
         sprintf(
-          "Internal: unrecognised continuous-lm column token %s.",
+          "Internal: unrecognized continuous-lm column token %s.",
           .quote_val(ent$token)
         ),
         class = "spicy_internal_invariant"

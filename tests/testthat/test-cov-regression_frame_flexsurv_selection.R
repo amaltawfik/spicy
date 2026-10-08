@@ -101,9 +101,9 @@ test_that(".flexsurv_dist_title maps every named distribution", {
   expect_identical(spicy:::.flexsurv_dist_title("llogis"), "Log-logistic")
   expect_identical(
     spicy:::.flexsurv_dist_title("gengamma"),
-    "Generalised gamma"
+    "Generalized gamma"
   )
-  expect_identical(spicy:::.flexsurv_dist_title("genf"), "Generalised F")
+  expect_identical(spicy:::.flexsurv_dist_title("genf"), "Generalized F")
 })
 
 test_that(".flexsurv_dist_title default capitalises an unknown distribution", {

@@ -67,7 +67,7 @@ and \code{\link[=table_continuous_lm]{table_continuous_lm()}}); declared missing
 labels whose names match column names in \code{data} (e.g.
 \code{c(smoking = "Current smoker")}) -- the same contract as
 \code{\link[=table_continuous]{table_continuous()}} and \code{\link[=table_continuous_lm]{table_continuous_lm()}}. Only listed
-columns are relabelled. For the remaining columns (and when
+columns are relabeled. For the remaining columns (and when
 \code{labels = NULL}, the default), labels are auto-detected from the
 variable's label attribute (e.g. from \code{haven}); if none is found,
 the column name is used. Unnamed (positional) label vectors,
@@ -191,8 +191,8 @@ mark, the standard scientific-publication convention used by
 SPSS, SAS, and LaTeX \code{siunitx}. Numeric cells are pre-padded
 with figure-spaces (U+2007, digit-width) so every string in a
 column has the same width with the decimal mark at the same
-internal position; centring those uniform-width strings then
-stacks the decimal points vertically. The same pad-then-centre
+internal position; centering those uniform-width strings then
+stacks the decimal points vertically. The same pad-then-center
 strategy is applied on every rendering engine (\code{gt},
 \code{tinytable}, \code{flextable}, \code{word}, ASCII print) for a
 homogeneous rendering, matching \code{table_regression()} and
@@ -204,7 +204,7 @@ next to an unpadded number).
 \item \code{"right"}: right-align all numeric columns.
 }
 
-In the \code{excel} output, \code{"center"} centres the numeric columns and
+In the \code{excel} output, \code{"center"} centers the numeric columns and
 \code{"right"} is the same rendering as the default: cell-string padding
 does not align decimals under a proportional font, so \code{"decimal"}
 right-aligns instead, which combined with the per-column \code{numfmt}
