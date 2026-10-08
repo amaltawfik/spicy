@@ -705,6 +705,13 @@ Troisième relecture d'Amal, sur DoMiRéFAS (2026-10-08) :
   `index_columns = NULL | 1 | 2` force une ou deux colonnes ; un nom de
   plus de 40 caractères peut déborder d'une demi-colonne, dit dans
   l'aide. `sochealth` (24 variables) ne change pas.
+* **En-tête courant et folio à 9 pt (Amal, 2026-10-09).** Les 8 pt gris de
+  l'audit de design étaient à la borne basse de la règle « un à deux
+  points sous le corps » ; le folio est un repère de navigation que
+  l'index renvoie à chaque page. Comparaison rendue à 8 et 9 pt : 9 pt
+  reste subordonné au texte et se lit sans effort. Le colophon de
+  couverture (mention de fabrication : versions de spicy et de R) reste à
+  8 pt.
 * **Colonne Label seulement quand la variable a des libellés.** Amal
   proposait une colonne unique « [1] Jamais », comme `freq()`. Écarté :
   une cellule qui mêle code et libellé perd l'alignement des libellés

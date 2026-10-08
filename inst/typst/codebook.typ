@@ -107,12 +107,12 @@
     header-ascent: 0.466in,
     footer-descent: 0.459in,
     header: context if here().page() > 1 {
-      align(right, text(base - 2pt, fill: c.muted, data.header))
+      align(right, text(base - 1pt, fill: c.muted, data.header))
     },
     // The folio matches the running header: same size, same grey.
     footer: context if here().page() > 1 {
       let total = str(counter(page).final().first())
-      align(right, text(base - 2pt, fill: c.muted, counter(page).display() + "\u{2009}/\u{2009}" + total))
+      align(right, text(base - 1pt, fill: c.muted, counter(page).display() + "\u{2009}/\u{2009}" + total))
     },
   )
   // A hairline under the heading: the type carries the hierarchy, the rule
