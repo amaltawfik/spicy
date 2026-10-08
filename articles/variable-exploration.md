@@ -355,7 +355,7 @@ code_book(
   )
 )
 #> Social health survey: body mass index
-#> Jane Doe — University of Somewhere
+#> Jane Doe – University of Somewhere
 #> 
 #> Date: 2026-10-08
 #> Observations: 1200
