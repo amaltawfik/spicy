@@ -94,10 +94,11 @@ print(x, ...)
 
   The maximum number of categories listed per variable in the `values`
   table; under `factor_levels = "all"`, unused levels and codes count. A
-  variable with more keeps its count of distinct values in `variables`;
-  in `values` it loses its category rows and keeps those of its declared
-  and system missing values, if it declares missing codes. Defaults to
-  `100`; `Inf` lists them all.
+  variable with more lists its first `values` categories in their order,
+  with their counts and percentages of the whole variable, then its
+  declared and system missing values; `n_categories` in `variables`
+  gives the total, and the PDF adds a row for the categories not listed.
+  Defaults to `100`; `Inf` lists them all.
 
 - range:
 
@@ -190,9 +191,11 @@ list with
   `n_missing`, `n_declared_missing`, `declared_codes` (the `na_values`
   and `na_range` of a `haven_labelled_spss` vector, as text, the two
   parts separated by a semicolon; `NA` without them or under
-  `user_na = FALSE`), `n_distinct`, then `min`, `max`, `mean`, `sd`, and
-  `median` for numeric variables and `earliest` and `latest` for dates.
-  `range = FALSE` drops `min`, `max`, `earliest`, and `latest`.
+  `user_na = FALSE`), `n_distinct`, `n_categories` (the categories of a
+  categorical or logical variable, listed or not; `NA` otherwise), then
+  `min`, `max`, `mean`, `sd`, and `median` for numeric variables and
+  `earliest` and `latest` for dates. `range = FALSE` drops `min`, `max`,
+  `earliest`, and `latest`.
 
 - `values`:
 
@@ -401,13 +404,14 @@ cb
 #>      15 │ bmi             Body mass index    numeric                     1188         12 
 #>      16 │ bmi_category    BMI category       categorical (ordinal)       1188         12 
 cb$variables
-#> # A tibble: 2 × 18
+#> # A tibble: 2 × 19
 #>   position name    label type  class source n_valid n_missing n_declared_missing
 #>      <int> <chr>   <chr> <chr> <chr> <chr>    <int>     <int>              <int>
 #> 1       15 bmi     Body… nume… nume… NA        1188        12                  0
 #> 2       16 bmi_ca… BMI … cate… orde… NA        1188        12                  0
-#> # ℹ 9 more variables: declared_codes <chr>, n_distinct <int>, min <dbl>,
-#> #   max <dbl>, mean <dbl>, sd <dbl>, median <dbl>, earliest <chr>, latest <chr>
+#> # ℹ 10 more variables: declared_codes <chr>, n_distinct <int>,
+#> #   n_categories <int>, min <dbl>, max <dbl>, mean <dbl>, sd <dbl>,
+#> #   median <dbl>, earliest <chr>, latest <chr>
 cb$values
 #> # A tibble: 4 × 7
 #>   variable     code          label declared_missing     n pct_total pct_valid

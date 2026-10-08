@@ -73,9 +73,11 @@ an index.
   carries is listed with a count of 0. A labelled vector without value
   labels, or whose value labels all sit on declared missing codes, is
   documented as numeric (or text), with its statistics on the valid
-  values. A variable with more categories than `values` that declares
-  missing codes keeps the rows of its declared and system missing
-  values.
+  values. A variable with more categories than `values` lists the first
+  ones in their order, with their counts and percentages of the whole
+  variable, then its declared and system missing values; `n_categories`
+  in `variables` gives the total, and the PDF adds a row for the
+  categories not listed.
 
 ## spicy 0.13.0
 
