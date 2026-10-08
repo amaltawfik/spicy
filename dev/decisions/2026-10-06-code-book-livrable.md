@@ -667,6 +667,19 @@ Troisième relecture d'Amal, sur DoMiRéFAS (2026-10-08) :
   Vérifié par l'agent : README.md identique au tricot de README.Rmd,
   article et vignette tricotés sans avertissement, `checkRd`,
   `check_pkgdown`, orthographe à zéro, liens du site résolus.
+* **Noms longs dans la liste des variables (candidat 1, tranché par Amal le
+  2026-10-09, après comparaison des deux rendus).** Entrée empilée : un
+  nom de plus de 45 caractères (la limite du bandeau) prend une ligne à
+  lui sur les colonnes Variable et Label, avec son numéro de page ; le
+  libellé suit dessous ; pas de filet entre les deux lignes. La colonne
+  Variable se calibre sur les noms courts, les autres lignes ne bougent
+  pas, rien n'est tronqué ni inséré. C'est la règle des index imprimés et
+  des listes ISSP et ESS. Écartée : laisser tel quel (le codebook
+  documente le fichier tel qu'il est, noms trop longs compris). La table
+  des codes déclarés reçoit ses noms un par un (corps réduit au-delà de
+  30 caractères) et donne la largeur restante à la colonne des variables ;
+  limite connue : un nom de plus de 80 caractères environ y déborde
+  encore.
 * **Colonne Label seulement quand la variable a des libellés.** Amal
   proposait une colonne unique « [1] Jamais », comme `freq()`. Écarté :
   une cellule qui mêle code et libellé perd l'alignement des libellés

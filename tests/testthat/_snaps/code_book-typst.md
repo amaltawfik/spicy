@@ -27,8 +27,16 @@
           (text: "Coded with # and \\.", bullet: false),
         ),
         declared: (
-          (code: "8", label: "#DK *_@<", variables: "q"),
-          (code: "9", label: "", variables: "q"),
+          (
+            code: "8",
+            label: "#DK *_@<",
+            variables: ("q",),
+          ),
+          (
+            code: "9",
+            label: "",
+            variables: ("q",),
+          ),
         ),
         vars: (
           (

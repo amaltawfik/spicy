@@ -200,8 +200,8 @@
   if data.declared.len() > 0 {
     heading(level: 2, s.declared)
     listing(
-      (s.code, s.label, s.variables), (auto, 1fr, 2fr), (right, left, left),
-      data.declared.map(d => (d.code, d.label, mono(d.variables))),
+      (s.code, s.label, s.variables), (auto, auto, 1fr), (right, left, left),
+      data.declared.map(d => (d.code, d.label, d.variables.map(name).join(", "))),
       keep: false,
     )
   }
@@ -212,9 +212,18 @@
   listing(
     (s.position, s.name, s.label, s.page), (auto, auto, 1fr, auto),
     (right, left, left, right),
-    data.vars.enumerate().map(((i, x)) => (
-      x.pos, link(anchor(i), name(x.name)), x.label, page-of(i),
-    )),
+    // A name past the band's limit takes a line of its own across the
+    // Variable and Label columns, its label beneath: one entry on two
+    // lines, no rule between them, and the other rows keep their columns.
+    data.vars.enumerate().map(((i, x)) => if x.name.clusters().len() > 45 {
+      let open = table.cell.with(stroke: (bottom: none))
+      (
+        (open([#x.pos]), open(colspan: 2, link(anchor(i), name(x.name))), open(page-of(i))),
+        ([], table.cell(colspan: 2, x.label), []),
+      )
+    } else {
+      ((x.pos, link(anchor(i), name(x.name)), x.label, page-of(i)),)
+    }).fold((), (acc, rs) => acc + rs),
     keep: short,
   )
   pagebreak()

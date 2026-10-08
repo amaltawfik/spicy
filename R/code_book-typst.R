@@ -241,11 +241,15 @@ code_book_typst_data <- function(cb) {
       text = sub("^[-*] +", "", h$notes),
       bullet = grepl("^[-*] ", h$notes)
     ),
-    declared = data.frame(
-      code = dm$code,
-      label = replace(dm$label, is.na(dm$label), ""),
-      variables = dm$variables
-    ),
+    # One dictionary per declared code; its variables as an array, so that
+    # the template sets each name on its own (a long one in the small size).
+    declared = lapply(seq_len(nrow(dm)), function(i) {
+      list(
+        code = dm$code[[i]],
+        label = if (is.na(dm$label[[i]])) "" else dm$label[[i]],
+        variables = as.list(strsplit(dm$variables[[i]], ", ", fixed = TRUE)[[1L]])
+      )
+    }),
     vars = vars,
     index = as.list(order(v$name, method = "radix") - 1L)
   )
