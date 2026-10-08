@@ -577,6 +577,96 @@ Troisième relecture d'Amal, sur DoMiRéFAS (2026-10-08) :
   le cadratin est réservé aux incises et aux dialogues. Un seul tiret
   pour les deux langues. Le mot CODEBOOK de la couverture passe à 11 pt
   (il était à 9,5 pt, trop discret pour un repère de genre).
+* **Audit de design (nuit du 2026-10-08, agent graphiste, six documents
+  rendus page par page, espacements mesurés en points).** Vingt constats,
+  dix-huit appliqués, dont trois reviennent sur des décisions
+  antérieures, chaque fois sur mesure :
+  - statistiques : min et max à la précision des données, zéros
+    conservés ; moyenne, écart-type et médiane à une précision commune,
+    trois chiffres significatifs de l'écart-type (bmi : 16.0 | 38.9 |
+    25.93 | 3.72 | 25.90). Remplace « deux décimales, trois chiffres sous
+    1 », qui donnait « 1.00 » à côté de « 0.406 » ;
+  - un seul style de tableau, filets horizontaux seulement : les boîtes
+    empilées des fiches avaient des grilles verticales qui ne
+    s'alignaient pas (tiers, cinquièmes, moitiés de la justification) ;
+  - le bandeau sombre porte l'identité de la variable (position, nom,
+    type en blanc), plus de ligne de légendes répétée 24 fois ; une
+    ligne de moins par fiche, sochealth passe de 13 à 11 pages avec le
+    resserrement des lignes (padding vertical 3 pt, 16,2 pt par ligne) ;
+  - lignes à clé du bandeau alignées sur une largeur de clé commune, le
+    libellé long en lignes suspendues ;
+  - couverture : l'espacement de paragraphe fuyait dans le bloc titre
+    (22 pt de trop de part et d'autre) ; interligne du titre 1,15 ;
+  - colonne Missing décidée par fiche et non par document (la géométrie
+    des colonnes numériques, ancrées à droite, ne bouge pas) ; marque M
+    en gras couleur texte, pas en accent (couleur des liens) ;
+  - ligne NA : « System missing » / « Manquant système », capitale, et
+    ce libellé plutôt que le jeton NA (qui signifie « No answer » chez
+    GESIS et ISSP) sur les fiches sans libellés ;
+  - fiche coupée : « nom (continued) » / « nom (suite) » en tête des
+    pages suivantes ;
+  - monospace à 0,85 em avec correction de ligne de base (DejaVu Sans
+    Mono : hauteur d'x 0,547 em, Typst retombe sur l'ascendante ; à
+    0,9 em les noms paraissaient plus grands que les libellés, et 0,5 pt
+    trop haut) ; cellules multilignes alignées en haut ;
+  - page « About the data » : Notes et codes déclarés en titres de niveau
+    2, filets visibles, pas de retrait sur la première colonne ; notes
+    sur 32 em (70 à 76 caractères par ligne au lieu de 104), espaces
+    insécables français avant : ; ! ?, apostrophe typographique dans les
+    notes seulement ;
+  - codes numériques alignés à droite ; zebra et grille dérivés d'une
+    palette personnalisée ; pied de page à la taille de l'en-tête ;
+    plus de demi-points de corps ; ORCID en URL complète (règle ORCID) ;
+    colophon avec son verbe.
+  Écartés : groupement des milliers, date en toutes lettres (ISO gardé,
+  décision prise), index sur deux colonnes, cran de taille des noms
+  longs. Noté : les poids de `sochealth` somment à 1196,5 et non 1200,
+  la doc des données le disait « à l'arrondi près » ; corrigée.
+* **Audit de code (même nuit, agent relecteur, 30 constats).** Vérifié
+  juste : effectifs et statistiques des 24 variables de sochealth et des
+  cadres construits contre `freq()`, `table()` et R de base ; console,
+  Excel et PDF identiques en anglais et en français ; numéros de page
+  exacts jusqu'à 400 variables ; validation classée de chaque argument.
+  Corrigé : un accent circonflexe dans un exemple roxygen faisait tomber
+  la sentinelle ASCII et donc toute la suite ; `kept()` (contrôle des
+  veuves) perdait des lignes quand le bloc gardé dépassait une page
+  (table des codes déclarés à 150 variables, libellé de 400 caractères
+  dans la liste) ; Inf et NaN devenaient des cellules d'erreur Excel qui
+  rendaient la colonne texte ; `user_na = FALSE` retypait en catégoriel
+  un vecteur étiqueté sans libellés ; le plafond `values` supprimait
+  aussi les lignes de codes déclarés d'une catégorielle ; les erreurs
+  nommaient les validateurs internes et non `code_book()` ; un nom de 91
+  caractères s'imprimait sur le type ; largeur console en caractères et
+  non en largeur d'affichage ; moyenne et écart-type « 0.00 » dans
+  l'Excel pour une variable d'échelle fine ; chemin de sortie qui est un
+  dossier ; avertissements de `varlist()` sur des colonnes raw ou complex ;
+  ORCID donné en URL ; avertissements Typst avalés ; codes `na_values`
+  sans libellé non observés absents sous « all » ; « ; » sans espace
+  insécable en français ; POSIXlt non reconnu ; `source` vide accepté ;
+  commentaires périmés et classe `labelled_spss` d'avant haven 2.0.
+  NEWS : rupture ajoutée pour le niveau NA explicite d'un facteur (compté
+  manquant depuis cette version, valide en 0.13.0) et les colonnes
+  POSIXlt et difftime sans valeurs. Écartés : vérification des polices par
+  défaut à chaque PDF, `match.arg` strict, PDF reproductible à l'octet.
+* **Audit de la documentation (même nuit, 20 constats, tous appliqués).**
+  L'article ne disait pas que `haven::read_sav()` perd les manquants
+  déclarés sans `user_na = TRUE` (ajouté là et dans la section partagée
+  de `?freq`, héritée par dix pages) ; son exemple de manquants déclarés
+  montre maintenant un item étiqueté et une mesure ; le paragraphe PDF
+  décrit la couverture, la page « About the data », le package `quarto`,
+  Quarto 1.7 et Typst 0.12 ; `code_book()` passe au palier Experimental
+  de `?spicy` (sa forme bouge dans ce cycle) ; `title = NULL` est
+  documenté ; « every category » et non « every value » ; le mot
+  « sheet » ne désigne plus que les fiches (« Variable sheets » en titre
+  de section, « worksheets » pour Excel) ; exemples sans institution ni
+  français ; virgule sérielle dans l'aide ; largeur 97 dans l'article ;
+  NEWS réécrit avec la rupture du niveau NA explicite et de difftime ;
+  `_pkgdown.yml` (« Variables and codebooks ») ; orthographe américaine
+  là où elle manquait (le balayage complet des formes britanniques
+  restantes, ~50 mots, est un lot séparé pour Amal).
+  Vérifié par l'agent : README.md identique au tricot de README.Rmd,
+  article et vignette tricotés sans avertissement, `checkRd`,
+  `check_pkgdown`, orthographe à zéro, liens du site résolus.
 * **Colonne Label seulement quand la variable a des libellés.** Amal
   proposait une colonne unique « [1] Jamais », comme `freq()`. Écarté :
   une cellule qui mêle code et libellé perd l'alignement des libellés
