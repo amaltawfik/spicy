@@ -255,7 +255,7 @@ code_book_typst_data <- function(cb) {
     subtitle = h$subtitle,
     header = header,
     authors = h$authors,
-    date = format(h$date),
+    date = code_book_cover_date(h$date),
     meta = data.frame(
       field = vapply(
         c("row_observations", "row_variables", "row_generated_with"),
@@ -346,4 +346,18 @@ typst_literal <- function(x, indent = "") {
     return(paste0("(", paste(items, collapse = ", "), one, ")"))
   }
   paste0("(\n", paste0(inner, items, ",\n", collapse = ""), indent, ")")
+}
+
+# The date of the cover, in words and in the language of the codebook:
+# "8 October 2026", "8 octobre 2026", "1er octobre 2026". The month names
+# come from the registry, not from the locale of the machine.
+code_book_cover_date <- function(date) {
+  months <- strsplit(spicy_str("cover_months"), "|", fixed = TRUE)[[1L]]
+  day <- as.integer(format(date, "%d"))
+  first <- spicy_str("cover_day_first")
+  paste(
+    if (day == 1L) first else as.character(day),
+    months[[as.integer(format(date, "%m"))]],
+    format(date, "%Y")
+  )
 }

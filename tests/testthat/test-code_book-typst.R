@@ -61,7 +61,7 @@ test_that("the Typst source is the template, then the codebook as literals", {
   expect_snapshot(
     cat(src[-seq_along(tpl)], sep = "\n"),
     transform = function(x) {
-      x <- sub("date: \"[0-9-]+\"", "date: \"<date>\"", x)
+      x <- sub("date: \"[^\"]+\"", "date: \"<date>\"", x)
       sub("\"spicy [^\"]+\"", "\"spicy <version>, R <version>\"", x)
     }
   )
@@ -409,5 +409,29 @@ test_that("index_columns settles the columns of the index, or lets the size deci
       paper = "letter"
     ),
     5L
+  )
+})
+
+test_that("the cover dates the codebook in words, in its language", {
+  expect_identical(
+    code_book_cover_date(as.Date("2026-10-08")),
+    "8 October 2026"
+  )
+  expect_identical(
+    code_book_cover_date(as.Date("2026-01-01")),
+    "1 January 2026"
+  )
+  withr::local_options(spicy.language = "fr")
+  expect_identical(
+    code_book_cover_date(as.Date("2026-10-08")),
+    "8 octobre 2026"
+  )
+  expect_identical(
+    code_book_cover_date(as.Date("2026-08-01")),
+    "1er ao\u00fbt 2026"
+  )
+  expect_identical(
+    code_book_cover_date(as.Date("2026-02-15")),
+    "15 f\u00e9vrier 2026"
   )
 })

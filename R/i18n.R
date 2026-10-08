@@ -796,6 +796,10 @@
   row_subtitle = "Subtitle",
   row_author = "Author",
   row_date = "Date",
+  # The cover dates the document in words, in its own language, whatever
+  # the locale of the machine: the month names, and the first of the month.
+  cover_months = "January|February|March|April|May|June|July|August|September|October|November|December",
+  cover_day_first = "1",
   row_observations = "Observations",
   row_variables = "Variables",
   row_declared_missing = "Declared missing value",

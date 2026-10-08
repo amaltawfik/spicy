@@ -41,7 +41,8 @@ sheet per variable, and an index.
 
 * `code_book(output = "<path>.pdf")` writes the codebook to a PDF,
   compiled by the Typst that Quarto (1.7 or later, found through the
-  quarto package) bundles: a cover, a page about the data (counts, notes,
+  quarto package) bundles: a cover (dated in words, in the language of the
+  codebook), a page about the data (counts, notes,
   declared missing values), the list of variables with their pages, one
   sheet per variable, and an index sorted by name in byte order. A sheet
   gives the counts, the statistics (minimum and maximum at the precision

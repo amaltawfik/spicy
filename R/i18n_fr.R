@@ -341,6 +341,8 @@
   header_value = "Valeur",
   row_title = "Titre",
   row_subtitle = "Sous-titre",
+  cover_months = "janvier|f\u00E9vrier|mars|avril|mai|juin|juillet|ao\u00FBt|septembre|octobre|novembre|d\u00E9cembre",
+  cover_day_first = "1er",
   row_author = "Auteur",
   row_declared_missing = "Valeur manquante d\u00E9clar\u00E9e",
   row_generated_with = "G\u00E9n\u00E9r\u00E9 avec",

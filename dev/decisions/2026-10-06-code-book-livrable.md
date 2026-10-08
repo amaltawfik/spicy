@@ -712,6 +712,14 @@ Troisième relecture d'Amal, sur DoMiRéFAS (2026-10-08) :
   reste subordonné au texte et se lit sans effort. Le colophon de
   couverture (mention de fabrication : versions de spicy et de R) reste à
   8 pt.
+* **Date en toutes lettres sur la couverture (candidat 5, Amal,
+  2026-10-09).** « 8 October 2026 » / « 8 octobre 2026 » (« 1er octobre »),
+  noms de mois dans le registre et non par la locale de la machine
+  (`format(x, "%B")` donnerait la langue de Windows, pas celle du
+  document). L'ISO reste partout où la date est une donnée : objet,
+  console, Excel, dates des variables. Revient sur « ISO gardé » de
+  l'audit de design : la couverture est composée pour un humain, et tout
+  le reste y est en mots.
 * **Colonne Label seulement quand la variable a des libellés.** Amal
   proposait une colonne unique « [1] Jamais », comme `freq()`. Écarté :
   une cellule qui mêle code et libellé perd l'alignement des libellés
