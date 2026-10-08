@@ -68,7 +68,7 @@ assoc_measures(tbl)
 #> Somers' D C|R                        -0.175  0.038    -0.249    -0.101  <.001
 ```
 
-Directional variants are labelled `R|C` (the row variable is treated as
+Directional variants are labeled `R|C` (the row variable is treated as
 dependent, i.e. predicted from the column variable) and `C|R` (the
 reverse); `symmetric` variants single out no dependent variable.
 

@@ -25,9 +25,9 @@
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet">
 <meta property="og:title" content="Count and two-part regression tables">
-<meta name="description" content="Publication-ready tables for count regression in R with `table_regression()`: Poisson and negative-binomial rate ratios, zero-inflated and hurdle models with their zero component as a labelled block, per-block exponentiation, combined average marginal effects, cluster-robust variance across both components, and zero-inflated mixed models with `glmmTMB`.
+<meta name="description" content="Publication-ready tables for count regression in R with `table_regression()`: Poisson and negative-binomial rate ratios, zero-inflated and hurdle models with their zero component as a labeled block, per-block exponentiation, combined average marginal effects, cluster-robust variance across both components, and zero-inflated mixed models with `glmmTMB`.
 ">
-<meta property="og:description" content="Publication-ready tables for count regression in R with `table_regression()`: Poisson and negative-binomial rate ratios, zero-inflated and hurdle models with their zero component as a labelled block, per-block exponentiation, combined average marginal effects, cluster-robust variance across both components, and zero-inflated mixed models with `glmmTMB`.
+<meta property="og:description" content="Publication-ready tables for count regression in R with `table_regression()`: Poisson and negative-binomial rate ratios, zero-inflated and hurdle models with their zero component as a labeled block, per-block exponentiation, combined average marginal effects, cluster-robust variance across both components, and zero-inflated mixed models with `glmmTMB`.
 ">
 <meta property="og:image" content="https://amaltawfik.github.io/spicy/logo.svg">
 </head>
@@ -125,7 +125,7 @@ integration; the class-by-class map is <a href="table-regression-supported-model
 models</em></a>); here we focus on what is specific to counts: rate
 ratios, overdispersion, and above all the <strong>two-part
 models</strong> whose zero component <code><a href="../reference/table_regression.html">table_regression()</a></code>
-renders as its own labelled block.</p>
+renders as its own labeled block.</p>
 <p><code><a href="../reference/table_regression.html">table_regression()</a></code> supports the full count-model
 escalation:</p>
 <ul>
@@ -167,7 +167,7 @@ the conditional mean (<strong>overdispersion</strong> — the negative
 binomial’s job), and there are more zeros than the count process
 predicts (<strong>excess zeros</strong> — the job of the zero-inflated
 and hurdle models, which add a second, binary submodel for the zeros).
-The two are entangled: unmodelled dispersion surfaces as apparent excess
+The two are entangled: unmodeled dispersion surfaces as apparent excess
 zeros, so the model comparison at the end of this article, not the raw
 zero count, arbitrates. Each extension changes what the table must show,
 and the sections below follow that escalation.</p>
@@ -305,7 +305,7 @@ Its zero component models the probability of a <strong>nonzero
 count</strong> — the <em>opposite direction</em>.</li>
 </ul>
 <p><code><a href="../reference/table_regression.html">table_regression()</a></code> renders the count coefficients first
-and the zero component as a labelled block, with a footer line stating
+and the zero component as a labeled block, with a footer line stating
 exactly what the block models. Under <code>exponentiate = TRUE</code>
 the exponentiation is <strong>per block</strong>: count coefficients
 become IRRs for the underlying count process — for
@@ -485,7 +485,7 @@ substantive reasoning carry the comparison.)</p>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Coefficients exponentiated and displayed as IRR; CI bounds exponentiated.</span></span></span></code></pre></div>
 <p>Read the AIC row across. The ZIP’s entire inflation component buys
 less than the negative binomial’s single dispersion parameter (3225.5
-against 3134.1): modelling the zeros directly is the <em>worse</em>
+against 3134.1): modeling the zeros directly is the <em>worse</em>
 answer to overdispersion here. On top of the negative binomial, the
 inflation part adds only a modest further gain (3134.1 → 3122.5). The
 hurdle (AIC 3233.8) sits with the ZIP, and the previous section argued
@@ -765,7 +765,7 @@ origin, in place of the degenerate model-based one.</p>
 evaluated at the raw outcome values — trade flows in the millions and
 billions of Euros enter through the <span class="math inline">\(y \log
 \mu\)</span> and <span class="math inline">\(\log y!\)</span> terms — so
-the astronomical AIC is a scale artefact, not evidence about fit:
+the astronomical AIC is a scale artifact, not evidence about fit:
 refitting with the outcome rounded to whole Euros (a genuine count of
 the same magnitude) reproduces it exactly, while dividing the outcome by
 a million shrinks it by orders of magnitude without changing the
@@ -775,9 +775,9 @@ ratio of log-likelihoods on the same data, so the scale-driven terms
 largely cancel and it stays readable.</p>
 <p>Third, <code>fixest</code>’s absorbed factors are <em>fixed</em>
 effects in the econometric sense — compare the <code>glmmTMB</code>
-section above, where the grouping structure is modelled as random
-effects with variance components instead; <code>fenegbin()</code> runs
-the same layout for the negative binomial.</p>
+section above, where the grouping structure is modeled as random effects
+with variance components instead; <code>fenegbin()</code> runs the same
+layout for the negative binomial.</p>
 </div>
 <div class="section level2">
 <h2 id="output-formats">Output formats<a class="anchor" aria-label="anchor" href="#output-formats"></a>

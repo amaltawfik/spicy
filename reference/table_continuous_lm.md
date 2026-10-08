@@ -431,7 +431,7 @@ table_continuous_lm(
   - `"d"` and `"g"` raise a `spicy_unsupported` error: Cohen's *d* and
     Hedges' *g* have no canonical extension to adjusted models (the
     pooled SD is undefined under adjustment). Use `"f2"` or `"omega2"`
-    instead – both generalise via partial *F*.
+    instead – both generalize via partial *F*.
 
 - effect_size_ci:
 
@@ -457,7 +457,7 @@ table_continuous_lm(
   - `"r2"` (default): the model `\eqn{R^2}{R^2}`
     (`summary(lm)$r.squared`).
 
-  - `"adj_r2"`: adjusted `\eqn{R^2}{R^2}`, penalising for `df_effect`
+  - `"adj_r2"`: adjusted `\eqn{R^2}{R^2}`, penalizing for `df_effect`
     relative to the residual degrees of freedom.
 
   - `"none"`: omit the fit-statistic column.
@@ -530,9 +530,9 @@ table_continuous_lm(
     the standard scientific-publication convention used by SPSS, SAS,
     and LaTeX `siunitx`. Numeric cells are pre-padded with figure-spaces
     (U+2007, digit-width) so every string in a column has the same width
-    with the decimal mark at the same internal position; centring those
+    with the decimal mark at the same internal position; centering those
     uniform-width strings then stacks the decimal points vertically. The
-    same pad-then-centre strategy is applied on every rendering engine
+    same pad-then-center strategy is applied on every rendering engine
     (`gt`, `tinytable`, `flextable`, `word`, ASCII print) for a
     homogeneous rendering, matching
     [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md).

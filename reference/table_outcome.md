@@ -1,6 +1,6 @@
 # Describe one continuous outcome across several groupings
 
-Summarises *one* continuous outcome across the levels of *several*
+Summarizes *one* continuous outcome across the levels of *several*
 categorical variables, one block of rows per variable. It is the inverse
 layout of
 [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
@@ -149,7 +149,7 @@ table_outcome(
 
 - user_na:
 
-  Honour declared missing values (see
+  Honor declared missing values (see
   [`?freq`](https://amaltawfik.github.io/spicy/reference/freq.md)).
 
 - style:
@@ -197,12 +197,12 @@ weight leave the analytic sample; the note counts the missing ones.
 
 `rescale` is the switch between the two readings of a weight: the
 frequency reading above, and the sampling-weight reading, where the
-weights are normalised to sum to the sample size. See the Weights
+weights are normalized to sum to the sample size. See the Weights
 section of
 [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
 for the choice in full.
 
-`rescale = TRUE` normalises the weights over the outcome's whole
+`rescale = TRUE` normalizes the weights over the outcome's whole
 surviving sample, once, never per level – a per-level rescale would
 destroy the relative weights across levels, which is the entire
 information a sampling weight carries into this table. The means are

@@ -93,7 +93,7 @@ names(s)
 #> [7] "spanners"              "ci_pairs"              "format_spec"
 ```
 
-The centrepiece is `body`: a data frame with the `Variable` column, one
+The centerpiece is `body`: a data frame with the `Variable` column, one
 numeric column per displayed statistic, and four dot-prefixed identity
 columns at the end (the next section). The confidence interval that
 prints as one bracketed column arrives split into `LL` / `UL`:

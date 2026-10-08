@@ -2,7 +2,7 @@
 
 User-facing helper that prints a spicy-styled ASCII table to the console
 with optional title and note, table-type-aware alignment defaults, and
-automatic horizontal panelling when the table is wider than the console.
+automatic horizontal paneling when the table is wider than the console.
 Wraps the internal renderer
 [`build_ascii_table()`](https://amaltawfik.github.io/spicy/reference/build_ascii_table.md).
 
@@ -168,8 +168,8 @@ when `align_left_cols = NULL`:
 
 If the table is wider than the console, it is split into stacked
 horizontal panels with the left-most identifier columns repeated on each
-panel. Unicode line-drawing characters are used by default; coloured
-separators are drawn when the terminal supports ANSI colour
+panel. Unicode line-drawing characters are used by default; colored
+separators are drawn when the terminal supports ANSI color
 ([`crayon::has_color()`](http://r-lib.github.io/crayon/reference/has_color.md))
 and fall back to monochrome otherwise.
 

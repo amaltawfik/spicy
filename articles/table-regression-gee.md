@@ -23,7 +23,7 @@ models*](https://amaltawfik.github.io/spicy/articles/table-regression-supported-
 ## Why these models, and on what grounds
 
 **The statistical trigger is the design.** Repeated measures on the same
-subjects, patients within clinics, residents within neighbourhoods:
+subjects, patients within clinics, residents within neighborhoods:
 observations within a cluster are correlated, and an ordinary GLM that
 assumes independence gets its coefficients roughly right but their
 *variances* wrong – the casualty is every standard error, confidence
@@ -79,7 +79,7 @@ it needs no distributional assumptions: for discrete longitudinal data
 there is no convenient analogue of the multivariate normal – a full
 joint distribution for ten binary repeated measures involves over a
 thousand association parameters (Fitzmaurice et al., 2011) – and GEE
-sidesteps the problem by modelling only the mean, the variance function,
+sidesteps the problem by modeling only the mean, the variance function,
 and the pairwise association – while remaining, in many longitudinal
 designs, nearly as efficient as maximum likelihood (Fitzmaurice et al.,
 2011). Second, the coefficient estimates are consistent even when the
@@ -451,7 +451,7 @@ of a positive outcome in the treated population than under placebo.
 ## What spicy refuses for GEE, and why
 
 [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
-treats requests that GEE cannot honour as hard, explained errors rather
+treats requests that GEE cannot honor as hard, explained errors rather
 than silent approximations:
 
 - **`vcov = "HC1"` / `"CR2"` and `cluster =`.** GEE inference is robust

@@ -188,7 +188,7 @@ One scope note on inference: alongside the classical Wald-z default,
 `multinom` fits support **cluster-robust standard errors**
 (`vcov = "CR0"`–`"CR3"` with `cluster = ~id`, one cluster value per
 observation; requires sandwich ≥ 3.1-2, whose new `estfun()` method
-unlocked the cluster sandwich) — and the AME columns honour the same
+unlocked the cluster sandwich) — and the AME columns honor the same
 estimator. Heteroskedasticity-robust `HC*` remains refused — a
 multi-equation model has no working residuals, so no HC sandwich exists
 to compute; the error lists the estimators this class does support, and

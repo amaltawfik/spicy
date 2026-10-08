@@ -162,7 +162,7 @@ model-building path most multilevel analyses follow — the sequence
 codified by Raudenbush & Bryk (2002) and taught across the multilevel
 literature (Hox et al. 2018; Snijders & Bosker 2012; Bressoux 2010) — on
 the data those books made canonical: the High School & Beyond sample of
-7,185 pupils in 160 U.S. schools, modelling mathematics achievement from
+7,185 pupils in 160 U.S. schools, modeling mathematics achievement from
 pupil socio-economic status (SES) and school sector. SES is a
 standardized composite of parental education, occupation, and income
 (sample SD 0.78, so a one-point difference is a large, roughly 1.3-SD
@@ -210,7 +210,7 @@ A one-point difference in SES is associated with 3.18 more achievement
 points (SE 0.10; the same column returns in the step-2 comparison). The
 price is one silent assumption: that 7,185 pupils are 7,185 independent
 observations. They are not; pupils share schools, teachers, and
-neighbourhoods. The next steps make the grouping structure part of the
+neighborhoods. The next steps make the grouping structure part of the
 model.
 
 ### Step 1: the empty model — how much do schools matter?
@@ -578,7 +578,7 @@ and CI are meaningless, so
 [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
 omits them and says why in the footer. The same check runs on `glmmTMB`
 and [`nlme::lme`](https://rdrr.io/pkg/nlme/man/lme.html) fits, whose
-optimisers work on a log scale and therefore land *near* the boundary
+optimizers work on a log scale and therefore land *near* the boundary
 rather than exactly on it:
 
 ``` r
@@ -896,7 +896,7 @@ their uncertainty, and the test stays opt-in.
 A level-1 coefficient from the models above answers a question nobody
 asked. Regress well-being on BMI with a random intercept for region, and
 the BMI coefficient blends two different associations: how people who
-are *heavier than their region’s norm* differ from their neighbours (the
+are *heavier than their region’s norm* differ from their neighbors (the
 **within** effect), and how regions with a *higher average BMI* differ
 from other regions (the **between** effect). Nothing forces those two to
 be equal — they need not even share a sign — yet the naive model reports
@@ -1187,7 +1187,7 @@ approximation for those classes.
 
 `glmmTMB` fits reach the same table through the same code path, and
 bring two extra components. A zero-inflation (`ziformula =`) or
-dispersion (`dispformula =`) component renders as its own labelled block
+dispersion (`dispformula =`) component renders as its own labeled block
 of rows, with a footer line stating what the component models and on
 which scale — here with the `Salamanders` count data. Sixty percent of
 these stream surveys count no salamanders, and the zeros cluster in
@@ -1371,7 +1371,7 @@ accordingly farther from 1.
 ## Cluster-robust and other variance estimators
 
 `lmer` and [`nlme::lme`](https://rdrr.io/pkg/nlme/man/lme.html) fits
-honour the cluster-robust family (`"CR0"`–`"CR3"`) through
+honor the cluster-robust family (`"CR0"`–`"CR3"`) through
 `clubSandwich`, with Satterthwaite small-sample degrees of freedom
 computed from the robust covariance — the footer attributes them
 accordingly. Reach for `CR*` when you suspect the random-effects
@@ -1448,7 +1448,7 @@ table_regression(fit, standardized = "refit", show_columns = c("b", "beta", "p")
 #> Std. errors: Wald (model-based).
 #> p-values: Satterthwaite t-test (lmerTest).
 #> Random effects (REML): LR test vs linear regression, χ̄²(3) = 150.04, p < .001.
-#> β = standardised coefficient ("refit": outcome and numeric predictors z-scored, factor dummies on 0/1).
+#> β = standardized coefficient ("refit": outcome and numeric predictors z-scored, factor dummies on 0/1).
 ```
 
 The algebraic shortcuts (`"posthoc"`, `"basic"`, `"smart"`) are

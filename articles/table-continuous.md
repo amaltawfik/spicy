@@ -798,7 +798,7 @@ choice explicit instead of silent. Without `rescale`, weights are taken
 as *frequencies*: integer weights reproduce, exactly, the statistics of
 the data with each row repeated `w` times — the reading of SPSS’s
 `WEIGHT BY` and Stata’s `fweight`. With `rescale = TRUE`, weights are
-first normalised to sum to the number of observations — the
+first normalized to sum to the number of observations — the
 *sampling-weights* reading, invariant to the scale of the weights, whose
 SD matches Stata’s `aweight` and
 [`survey::svyvar()`](https://rdrr.io/pkg/survey/man/surveysummary.html).
@@ -884,7 +884,7 @@ labels each variable with its label attribute when one is present
 (e.g. data imported with `haven`), and with the column name otherwise –
 that is why the tables above read “Body mass index” rather than `bmi`.
 Use the `labels` argument, a named character vector keyed by column
-name, to override either. Only the listed columns are relabelled; the
+name, to override either. Only the listed columns are relabeled; the
 others keep their attribute label or column name:
 
 ``` r
@@ -1086,7 +1086,7 @@ table_continuous(
 | Missing values removed: bmi (12), life_sat_health (8). |  |  |  |  |  |  |  |  |  |
 
 Descriptive statistics by Highest education level
-{#tinytable_9nxv30ectbvzd6f4efbg .table .tinytable
+{#tinytable_cdqx57a187l3lclgrn3v .table .tinytable
 style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 

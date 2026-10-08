@@ -248,13 +248,13 @@ Each block chooses its own test from its own level count. With
 *t*-test and a three-or-more-level block gets the Welch one-way ANOVA,
 which is why the note above names both. `effect_size = "auto"` follows
 the test the block actually ran: Hedges’ *g* beside a *t*-test,
-eta-squared beside an ANOVA, their rank homologues beside a rank test. A
+eta-squared beside an ANOVA, their rank homologs beside a rank test. A
 column can therefore mix measures from row to row, and each cell
 prefixes its own glyph.
 
 A block that cannot be compared degrades **alone**. Fewer than two
 observed levels, or a level holding a single observation, and that block
-keeps empty statistics while its neighbours are untouched.
+keeps empty statistics while its neighbors are untouched.
 
 ``` r
 
@@ -418,7 +418,7 @@ sets out in full.
 Without `rescale`, weights are read as **frequencies**: all weights 1
 reproduces the unweighted table, and integer weights reproduce the
 *statistics* of the data duplicated that many times. With
-`rescale = TRUE` they are read as **sampling weights**, normalised so
+`rescale = TRUE` they are read as **sampling weights**, normalized so
 that they sum to the sample size.
 
 `sochealth$weight` is a survey design weight, so `rescale = TRUE` is the
@@ -465,7 +465,7 @@ in the one place a reader cannot check. For a weighted comparison, use
 two answer different questions — how many people the estimate
 represents, and how many rows carried it.
 
-And `rescale` normalises over the outcome’s whole surviving sample,
+And `rescale` normalizes over the outcome’s whole surviving sample,
 once, never per level. A per-level rescale would destroy the relative
 weights *across* levels, which is the entire information a sampling
 weight carries into this table. Every mean is unchanged by it; the SDs
@@ -696,7 +696,7 @@ table_outcome(
 | Group comparison: Wilcoxon rank-sum test. Med \[Q1, Q3\] = median \[first quartile, third quartile\]. Each block compares WHO-5 wellbeing index (0-100) across the levels of one variable; blocks are not adjusted for one another. Overall = the whole analytic sample. |  |  |  |
 
 Descriptive statistics of WHO-5 wellbeing index (0-100)
-{#tinytable_wr7cfgzt9aslitfy9k20 .table .tinytable
+{#tinytable_bl4huw3n0bwivi0nvnky .table .tinytable
 style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 

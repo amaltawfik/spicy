@@ -155,7 +155,7 @@
 <li><p>Under <code>decimal_mark = ","</code> every surface follows the mark. P-values keep their leading zero (<code>0,018</code>), and the star legend, the change statistics, and the association intervals read the comma.</p></li>
 <li><p><code>nested = TRUE</code> no longer reports a negative chi-square with a p-value when the models are passed largest-first.</p></li>
 <li><p><code><a href="../reference/cramer_v.html">cramer_v()</a></code>, <code><a href="../reference/phi.html">phi()</a></code>, and <code><a href="../reference/contingency_coef.html">contingency_coef()</a></code> return <code>NA</code> with a classed warning on a zero margin, and <code>somers_d(direction = "symmetric")</code> returns <code>0</code> on equal concordant and discordant pairs.</p></li>
-<li><p>The <code>tau_c</code> measure is labelled <code>"Stuart's Tau-c"</code> everywhere.</p></li>
+<li><p>The <code>tau_c</code> measure is labeled <code>"Stuart's Tau-c"</code> everywhere.</p></li>
 <li><p><code><a href="../reference/freq.html">freq()</a></code> keeps its label footer when <code>NA</code>-weight rows are dropped, warns when distinct codes merge under one label, and sorts labelled variables by code under <code>sort = "name+"</code>.</p></li>
 <li><p><code><a href="../reference/cross_tab.html">cross_tab()</a></code> reports excluded missing values in the table note, accepts logical weights like <code><a href="../reference/freq.html">freq()</a></code>, and no longer swallows the warnings of its association measures.</p></li>
 <li><p><code><a href="../reference/table_categorical.html">table_categorical()</a></code> displays labelled columns as <code>"[code] label"</code> levels in every path, and keeps both the group and the margin when a <code>by</code> level is named <code>"Total"</code>. Its machine outputs carry full-precision values and the documented <code>Chi2</code> and <code>df</code> columns.</p></li>
@@ -194,7 +194,7 @@
 <ul><li>
 <p>New <code><a href="../reference/table_regression.html">table_regression()</a></code>: publication-ready coefficient summary for one or more fitted <code>lm</code> or <code>glm</code> models, side by side. APA Manual 7 formatting is the default. Highlights:</p>
 <ul><li>Robust variance: classical, HC, cluster-robust (CR) with Satterthwaite df, bootstrap, jackknife. Per-model <code>vcov</code> accepted for SE-comparison tables.</li>
-<li>Standardisation: <code>refit</code>, <code>posthoc</code>, <code>basic</code>, <code>smart</code>, <code>pseudo</code> (the last <code>glm</code> only).</li>
+<li>Standardization: <code>refit</code>, <code>posthoc</code>, <code>basic</code>, <code>smart</code>, <code>pseudo</code> (the last <code>glm</code> only).</li>
 <li>Average marginal effects (AME) as separate columns; AME inference shares the coefficient’s variance estimator so B and AME are reported on the same inferential footing.</li>
 <li>Partial effect sizes: f², η², ω² for <code>lm</code> (noncentral-F CIs); partial χ² for <code>glm</code>.</li>
 <li>GLM response-scale reporting via <code>exponentiate = TRUE</code>, with family-appropriate labels (OR, IRR, HR, RR, MR, exp(B)) and optional profile-likelihood CIs (<code>ci_method = "profile"</code>).</li>
@@ -248,7 +248,7 @@
 <code>HC*</code> estimators delegate to <code><a href="https://zeileis.codeberg.page/sandwich/reference/vcovHC.html" class="external-link">sandwich::vcovHC()</a></code>; rank-deficient fits return a clean rank-by-rank covariance.</li>
 </ul></div>
 <div class="section level4">
-<h4 id="harmonisation-across-the-table-family-0-11-0">Harmonisation across the table family<a class="anchor" aria-label="anchor" href="#harmonisation-across-the-table-family-0-11-0"></a></h4>
+<h4 id="harmonization-across-the-table-family-0-11-0">Harmonization across the table family<a class="anchor" aria-label="anchor" href="#harmonization-across-the-table-family-0-11-0"></a></h4>
 <ul><li>Shared reporting vocabulary (<code>decimal_mark</code>, <code>p_digits</code>, <code>align</code>, named-<code>labels</code>) now spans <code><a href="../reference/cross_tab.html">cross_tab()</a></code>, <code><a href="../reference/freq.html">freq()</a></code> and the three <code>table_*()</code> helpers, including APA-style p-value notation (<code>&lt;.001</code> / <code>.045</code>, no leading zero).</li>
 <li>
 <code><a href="../reference/table_categorical.html">table_categorical()</a></code>’s <code>assoc_measure</code> accepts a per-variable spec. When measures differ across rows the column collapses to <code>"Effect size"</code> and an APA-style <code>Note.</code> line documents the per-variable measure; <code>phi</code> on a non-2x2 errors.</li>

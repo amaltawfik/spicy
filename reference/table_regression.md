@@ -1,7 +1,7 @@
 # Regression coefficient summary table
 
 Publication-ready coefficient table from one or more fitted `lm` / `glm`
-models. Supports standardised coefficients (\\\beta\\), average marginal
+models. Supports standardized coefficients (\\\beta\\), average marginal
 effects (AME), partial effect sizes (*\\f^2\\* / *\\\eta^2\\* /
 *\\\omega^2\\* for `lm`; partial *\\\chi^2\\* for `glm`), pseudo-\\R^2\\
 (`glm`), and a full vocabulary of variance estimators (classical / HC\*
@@ -73,7 +73,7 @@ table_regression(
 
   A fitted model object, or a list of such fits (named or unnamed;
   classes may be mixed). Single fits are auto-promoted to a 1-element
-  list. A broad set of model classes is supported – linear / generalised
+  list. A broad set of model classes is supported – linear / generalized
   linear (`lm`, `glm`,
   [`MASS::glm.nb`](https://rdrr.io/pkg/MASS/man/glm.nb.html)),
   mixed-effects (`lmer`, `lme`, `glmmTMB`), survival (`coxph`,
@@ -170,7 +170,7 @@ table_regression(
   transformation-respecting). `"hdi"` (Bayesian `stanreg` / `brmsfit`
   fits only) replaces the default equal-tailed credible interval with
   the highest-density interval – the shortest interval containing
-  `ci_level` of the posterior draws (Kruschke 2015), relabelling the
+  `ci_level` of the posterior draws (Kruschke 2015), relabeling the
   column header `95% HDI`. Unlike the equal-tailed interval the HDI is
   not transformation-invariant, so under `exponentiate = TRUE` it is
   recomputed on the exponentiated draws rather than transformed.
@@ -201,9 +201,9 @@ table_regression(
 
 - standardized:
 
-  Standardisation method for the `"beta"` column. One of `"none"`
+  Standardization method for the `"beta"` column. One of `"none"`
   (default), `"refit"`, `"posthoc"`, `"basic"`, `"smart"`, `"pseudo"`.
-  `"pseudo"` is *glm only* (Menard 2011 fully-standardised); using it
+  `"pseudo"` is *glm only* (Menard 2011 fully-standardized); using it
   with [`lm()`](https://rdrr.io/r/stats/lm.html) raises
   `spicy_invalid_input`. Supported classes: `lm`, `glm` (incl.
   [`MASS::glm.nb`](https://rdrr.io/pkg/MASS/man/glm.nb.html)), the mixed
@@ -227,7 +227,7 @@ table_regression(
   `s()`, ...). In all refused Bayesian cases, standardize predictors
   before fitting instead. Any other class raises
   `spicy_unsupported_standardized` rather than rendering an empty beta
-  column. See the *Standardised coefficients* section.
+  column. See the *Standardized coefficients* section.
 
 - exponentiate:
 
@@ -239,7 +239,7 @@ table_regression(
   of means), and binomial / ordinal cloglog (`HR`; grouped-time
   proportional hazards, Prentice & Gloeckler 1978). For the *ordinal*
   (cumulative) cloglog model the displayed `HR` is `exp(-B)`, not
-  `exp(B)`: the cumulative parametrisation
+  `exp(B)`: the cumulative parametrization
   `cloglog P(Y <= j) = zeta_j - xB` places the hazard of the grouped
   event on `-B`, so `exp(B)` would be the reciprocal of the hazard ratio
   (the CI endpoints are negated and swapped accordingly, and the table
@@ -339,7 +339,7 @@ table_regression(
 - show_components:
 
   For models with secondary components, whether to display them as
-  labelled subordinate blocks of rows below the primary (count /
+  labeled subordinate blocks of rows below the primary (count /
   conditional / location) coefficients. Default `TRUE`:
 
   - [`pscl::zeroinfl`](https://rdrr.io/pkg/pscl/man/zeroinfl.html) and
@@ -352,7 +352,7 @@ table_regression(
     names each block's meaning).
 
   - `glmmTMB(dispformula = )`: a `Dispersion` block (only when
-    dispersion was actually modelled; log scale, never exponentiated).
+    dispersion was actually modeled; log scale, never exponentiated).
 
   - `ordinal::clm(scale = ~)`: a `Scale effects` block – the covariate
     effects on the **log standard deviation of the latent response**.
@@ -469,7 +469,7 @@ table_regression(
     row. The APA Manual 7 Table 7.13 layout.
 
   - `"merged"`: the model's numeric sub-columns are merged into a single
-    wide cell containing the fit-stat value, centred under the model
+    wide cell containing the fit-stat value, centered under the model
     spanner. Stata `esttab` layout / *Econometrica* and *AER* journal
     convention. Resolves the mixed-precision look of `"first_col"` (an
     integer `n` row sharing the B column with two-decimal coefficients).
@@ -632,7 +632,7 @@ table_regression(
   *Multi-model semantics* for the full rule. A character vector of
   length `length(models)` overrides. Refused (error) for a single
   multinomial model: there the column groups are outcome categories,
-  relabelled via `outcome_labels`.
+  relabeled via `outcome_labels`.
 
 - outcome_labels:
 
@@ -736,7 +736,7 @@ table_regression(
   regardless of the language the table is rendered in. A name that is
   neither a term label nor a coefficient name is rejected, so the header
   of a subordinate block – `Random effects`, `Thresholds`,
-  `Zero-inflation`, ... – cannot be relabelled here; those headers are
+  `Zero-inflation`, ... – cannot be relabeled here; those headers are
   set by the package. Classes that carry no `terms` component at all
   ([`nls()`](https://rdrr.io/r/stats/nls.html),
   [`sampleSelection::selection()`](https://rdrr.io/pkg/sampleSelection/man/selection.html))
@@ -800,7 +800,7 @@ table_regression(
   double quote or a line break is quoted RFC 4180-style, so the grid
   survives whatever delimiter you choose.
 
-  Paste behaviour by target:
+  Paste behavior by target:
 
   - **Excel / Google Sheets:** numerics are auto-detected and
     right-aligned; text cells stay left-aligned. (P-values such as
@@ -834,14 +834,14 @@ table_regression(
 
   Optional path to a custom .docx file used as the template for
   `output = "word"`. The template's header, footer, page size, margins,
-  and named styles ("Table Caption" in particular) are honoured; the
+  and named styles ("Table Caption" in particular) are honored; the
   table is appended to the template body. Useful for institutional
   templates with pre-set headers ("APA Style", "Manuscript Submission
   Template", etc.). Default `NULL` (uses flextable's stock template).
 
-  **Customising the caption appearance:** the table caption is tagged
+  **Customizing the caption appearance:** the table caption is tagged
   with the Word named style `"Table Caption"`. The visual rendering
-  (italic / bold / colour / font) follows whatever that style is set to
+  (italic / bold / color / font) follows whatever that style is set to
   in the docx template. The stock Word template renders
   `"Table Caption"` in italic — the APA Manual 7 §7.10 condensed
   convention. For a different appearance (Nature-style bold non-italic,
@@ -888,7 +888,7 @@ see `show_columns` below.
 
 Each token = one displayed column.
 
-- Coefficient family: `"b"`, `"beta"` (standardised), `"se"`, `"ci"`,
+- Coefficient family: `"b"`, `"beta"` (standardized), `"se"`, `"ci"`,
   `"t"`, `"p"`.
 
 - Marginal effects: `"ame"`, `"ame_se"`, `"ame_ci"`, `"ame_p"`. `"p"`
@@ -1039,7 +1039,7 @@ restore it explicitly when needed).
   without the concept in mixed tables – and is on by default for both.
   Varying-slope-only factors (`Origin[[x]]`) absorb no intercept: they
   read No when another model absorbs that factor, and contribute no row
-  otherwise. `"within_r2"` is the FE-partialled within R-squared (a
+  otherwise. `"within_r2"` is the FE-partialed within R-squared (a
   default for `feols`, opt-in for `estimatr`; GLM-family fixest fits
   report fixest's McFadden `pr2` instead). Both tokens are refused when
   no model in the table absorbs fixed effects.
@@ -1071,7 +1071,7 @@ class-aware default is extended with change tokens
 ## Multi-model semantics
 
 Pass a single fit or a [`list()`](https://rdrr.io/r/base/list.html) of
-fits. Multi-model layout draws a centred **spanner label** above each
+fits. Multi-model layout draws a centered **spanner label** above each
 model's sub-columns:
 
 - `list("Naive" = m1, "Adjusted" = m2)` -\> spanner labels `"Naive"` /
@@ -1166,7 +1166,7 @@ for every other layout.
 ### Robust SE availability by model class
 
 Not every estimator is defined for every class. A robust `vcov` the
-class cannot honour fails fast with `spicy_unsupported_vcov` – never a
+class cannot honor fails fast with `spicy_unsupported_vcov` – never a
 silent model-based result under a robust label:
 
 - `lm`, `glm`,
@@ -1383,7 +1383,7 @@ cells:
   the other's engine.
 
 - *A [`MASS::rlm`](https://rdrr.io/pkg/MASS/man/rlm.html) hierarchy*.
-  M-estimation minimises a bounded loss on the scaled residuals: it
+  M-estimation minimizes a bounded loss on the scaled residuals: it
   partitions no sums of squares and it is not a likelihood, so there is
   neither a likelihood-ratio test nor a partial F to report. Every
   change token is refused – including on a single fit or a
@@ -1416,7 +1416,7 @@ Default change tokens auto-injected when `show_fit_stats` is `NULL`:
   [`quantreg::anova.rq()`](https://rdrr.io/pkg/quantreg/man/anova.rq.html)
   reports.
 
-To customise, pass the change tokens directly to `show_fit_stats`. The
+To customize, pass the change tokens directly to `show_fit_stats`. The
 variance-explained change tokens (`"r2_change"`, `"adj_r2_change"`,
 `"f_change"`, `"f2_change"`) raise `spicy_invalid_input` on any
 hierarchy whose nested comparison is a likelihood-ratio test – `glm`,
@@ -1427,7 +1427,7 @@ hierarchy refuses them too, and `"lrt_change"` with them, pointing at
 `"f_change"` + `"p_change"` instead. `lm` and `nls` keep the
 least-squares tokens.
 
-## Standardised coefficients
+## Standardized coefficients
 
 `standardized` controls the method when `"beta"` is in `show_columns`:
 
@@ -1447,7 +1447,7 @@ least-squares tokens.
   to 1 step); binary inputs – numeric 0/1 and factor dummies – are left
   unscaled. (Before 0.13.0 the rule was applied inverted; see NEWS.)
 
-- `"pseudo"` – *glm only*. Menard (2004, 2011) fully-standardised
+- `"pseudo"` – *glm only*. Menard (2004, 2011) fully-standardized
   \\\beta = B \times SD(X) / SD(Y^\*)\\, with \\Y^\*\\ the latent
   variable on the link scale and \\SD(Y^\*) = \sqrt{Var(\hat{\eta}) +
   Var\_{link}}\\ (\\\pi^2/3\\ logit, `1` probit, \\\pi^2/6\\ cloglog).
@@ -1588,7 +1588,7 @@ is kept numeric so cluster-robust Satterthwaite df is preserved.
   - any other string – extra arguments for the Typst
     [`text()`](https://rdrr.io/r/graphics/text.html) call around the
     note, appended to the size (e.g.
-    `options(spicy.note_style = "fill: luma(89)")` for a grey note).
+    `options(spicy.note_style = "fill: luma(89)")` for a gray note).
     Typst only; the HTML note keeps the plain `0.9em`.
 
   `options(spicy.note_style = NULL)` restores the default.
@@ -1598,10 +1598,10 @@ is kept numeric so cluster-robust Satterthwaite df is preserved.
 No `weights` argument: weights are a property of the fit (extracted via
 [`stats::weights()`](https://rdrr.io/r/stats/weights.html)). Pass them
 when fitting: `lm(y ~ x, data = df, weights = w)`. All downstream
-computations (vcov, AME, standardisation, `weighted_nobs`) extract them
+computations (vcov, AME, standardization, `weighted_nobs`) extract them
 automatically.
 
-## Internationalisation
+## Internationalization
 
 Output is in English. Override user-facing strings via
 `reference_label`, `model_labels`, `outcome_labels`, and `labels`. The
@@ -1661,7 +1661,7 @@ beyond "p \< 0.05". *The American Statistician*, 73(sup1), 1-19.
 ## See also
 
 [`table_regression_models()`](https://amaltawfik.github.io/spicy/reference/table_regression_models.md)
-for the registry of supported model classes and the per-family behaviour
+for the registry of supported model classes and the per-family behavior
 reference (also reachable as
 [`?table_regression_mixed`](https://amaltawfik.github.io/spicy/reference/table_regression_models.md),
 [`?table_regression_ordinal`](https://amaltawfik.github.io/spicy/reference/table_regression_models.md),
@@ -1716,7 +1716,7 @@ table_regression(fit)
 #> Std. errors: classical (OLS).
 
 # \donttest{
-# Standardised coefficients (beta) injected next to B. "refit"
+# Standardized coefficients (beta) injected next to B. "refit"
 # is the Cohen et al. (2003) refit-on-z-scores convention;
 # "basic" reproduces the SPSS / Stata regress, beta definition.
 table_regression(fit, standardized = "refit")
@@ -1739,7 +1739,7 @@ table_regression(fit, standardized = "refit")
 #> 
 #> Note. Linear regression.
 #> Std. errors: classical (OLS).
-#> β = standardised coefficient ("refit": outcome and numeric predictors z-scored, factor dummies on 0/1).
+#> β = standardized coefficient ("refit": outcome and numeric predictors z-scored, factor dummies on 0/1).
 # }
 
 # \donttest{

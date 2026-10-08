@@ -252,7 +252,7 @@ weighted comparisons.</p></dd>
 
 
 <dt id="arg-rescale">rescale<a class="anchor" aria-label="anchor" href="#arg-rescale"></a></dt>
-<dd><p>Logical. If <code>TRUE</code>, weights are first normalised so
+<dd><p>Logical. If <code>TRUE</code>, weights are first normalized so
 that they sum to the number of observations used for each
 variable – the same <code>rescale</code> grammar as <code><a href="table_categorical.html">table_categorical()</a></code>,
 read from <code>options(spicy.rescale)</code> when not supplied. This is the
@@ -321,7 +321,7 @@ outputs. One of:</p><ul><li><p><code>"none"</code> (default): no effect-size col
 eta-squared (parametric, 3+ groups), rank-biserial <em>r</em>
 (nonparametric, 2 groups), epsilon-squared (nonparametric, 3+
 groups).</p></li>
-<li><p><code>"hedges_g"</code>: Hedges' <em>g</em> (bias-corrected standardised mean
+<li><p><code>"hedges_g"</code>: Hedges' <em>g</em> (bias-corrected standardized mean
 difference, 2 groups, parametric). CI via the Hedges &amp; Olkin
 normal approximation.</p></li>
 <li><p><code>"eta_sq"</code>: Eta-squared (\(\eta^2\), parametric ANOVA-style
@@ -424,8 +424,8 @@ mark, the standard scientific-publication convention used by
 SPSS, SAS, and LaTeX <code>siunitx</code>. Numeric cells are pre-padded
 with figure-spaces (U+2007, digit-width) so every string in a
 column has the same width with the decimal mark at the same
-internal position; centring those uniform-width strings then
-stacks the decimal points vertically. The same pad-then-centre
+internal position; centering those uniform-width strings then
+stacks the decimal points vertically. The same pad-then-center
 strategy is applied on every rendering engine (<code>gt</code>,
 <code>tinytable</code>, <code>flextable</code>, <code>word</code>, ASCII print) for a
 homogeneous rendering, matching <code><a href="table_regression.html">table_regression()</a></code> and
@@ -439,7 +439,7 @@ next to an unpadded number).</p></li>
 does not: Excel cells are written unpadded, because cell-string
 padding does not align decimals under a proportional font, so the
 workbook keeps the engine's own convention instead – counts and
-the <em>p</em>-value right-aligned, the other numeric columns centred.
+the <em>p</em>-value right-aligned, the other numeric columns centered.
 Same default and same three values as <code><a href="table_continuous_lm.html">table_continuous_lm()</a></code>,
 whose <code>excel</code> output still uses that convention at every <code>align</code>.</p></dd>
 
@@ -587,7 +587,7 @@ The formulas, with \(W = \sum w_i\):</p><ul><li><p>mean: \(\sum w_i x_i / W\);</
 <code>wtd.quantile()</code> (defaults), <code><a href="https://rdrr.io/pkg/matrixStats/man/weightedVar.html" class="external-link">matrixStats::weightedSd()</a></code>, and
 <code>DescTools::Quantile()</code>, and – for integer weights – of Stata's
 <code>[fweight]</code> and SPSS's <code>WEIGHT BY</code>. With <code>rescale = TRUE</code> the
-weights are normalised to sum to the number of observations first,
+weights are normalized to sum to the number of observations first,
 which makes every result invariant to the scale of the weights and
 makes the SD equal Stata's <code>[aweight]</code> / <code><a href="https://rdrr.io/pkg/survey/man/surveysummary.html" class="external-link">survey::svyvar()</a></code> value
 – the reading appropriate for sampling weights. Weighted-quantile
@@ -716,11 +716,11 @@ nothing else off. The balance-table idiom is
 </ul><p>Under <code>weights</code>, the means and variances are the weighted ones the
 <code>M</code> and <code>SD</code> columns already display – the frequency convention
 of the <em>Weights</em> section, from the same producer, so the column
-cannot contradict its neighbours. One consequence follows and is
+cannot contradict its neighbors. One consequence follows and is
 intended: a frequency weight is a number of copies, so the
 weighted SMD is <strong>not invariant to the scale of the weights</strong>
 (multiplying every weight by ten moves it, as it moves the <code>SD</code>
-column). <code>rescale = TRUE</code> normalises the weights to sum to <em>n</em>,
+column). <code>rescale = TRUE</code> normalizes the weights to sum to <em>n</em>,
 restores scale invariance, and is the form to use for sampling
 weights until the dedicated survey-design functions land.</p>
 <p>A cell is an en-dash when the diagnostic applies but cannot be

@@ -32,7 +32,7 @@ to a one-row-per-model glance summary
 
 This article teaches the shared mechanics on
 [`lm()`](https://rdrr.io/r/stats/lm.html) and
-[`glm()`](https://rdrr.io/r/stats/glm.html) fits. The *Generalised
+[`glm()`](https://rdrr.io/r/stats/glm.html) fits. The *Generalized
 linear models* section covers the glm-specific argument semantics; the
 *Mixed-effects models* section introduces the Random effects rows that
 mixed-effects fits add below the fixed effects (`lmer`, `glmer`,
@@ -151,17 +151,17 @@ with the guideline sentence behind every rule — is in the *House styles*
 section of [*Summary tables for
 reporting*](https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.md).
 
-## Standardised coefficients
+## Standardized coefficients
 
-Standardised coefficients (`β`) make predictors with different natural
+Standardized coefficients (`β`) make predictors with different natural
 scales comparable: a one-standard-deviation increase in `X` predicts a
 `β`-standard-deviation change in `Y`. APA Manual 7 §7.13 recommends
-reporting both `B` and `β` so the unstandardised effect (natural units,
-interpretable) stays alongside the standardised effect (comparable
+reporting both `B` and `β` so the unstandardized effect (natural units,
+interpretable) stays alongside the standardized effect (comparable
 across predictors).
 
 `standardized` selects the method. Four apply to linear models — a
-fifth, glm-specific `"pseudo"`, is covered in the *Generalised linear
+fifth, glm-specific `"pseudo"`, is covered in the *Generalized linear
 models* section — and the choice is consequential and well-documented
 (Cohen, Cohen, West, and Aiken 2003 §3.4; Gelman 2008). The methods
 differ most visibly in how they treat factor dummies:
@@ -217,23 +217,23 @@ table_regression(fit, standardized = "refit")
 #> 
 #> Note. Linear regression.
 #> Std. errors: classical (OLS).
-#> β = standardised coefficient ("refit": outcome and numeric predictors z-scored, factor dummies on 0/1).
+#> β = standardized coefficient ("refit": outcome and numeric predictors z-scored, factor dummies on 0/1).
 ```
 
-On the standardised scale the predictors become directly comparable:
+On the standardized scale the predictors become directly comparable:
 being male predicts a 0.25-SD higher wellbeing score, the largest
-standardised effect in the model, while a one-SD increase in age
+standardized effect in the model, while a one-SD increase in age
 predicts a change of only 0.04 SD. The raw `B` column could not support
 that ranking — 3.86 versus 0.05 compares a factor contrast with a
 per-year slope, two different units.
 
-**Caveat: standardised coefficients with interactions or transformed
+**Caveat: standardized coefficients with interactions or transformed
 terms.** When the model contains a product term, an
 [`I()`](https://rdrr.io/r/base/AsIs.html),
 [`poly()`](https://rdrr.io/r/stats/poly.html),
 [`log()`](https://rdrr.io/r/base/Log.html), or
 [`splines::ns()`](https://rdrr.io/r/splines/ns.html) wrapper, the
-standardised coefficient of the non-additive term has no closed-form
+standardized coefficient of the non-additive term has no closed-form
 “one-SD change in X” reading (Aiken and West 1991; Cohen et al. 2003
 §7.7). The function emits a classed `spicy_caveat` warning at runtime
 *and* prints a method-specific caveat line in the table footer, so the
@@ -402,7 +402,7 @@ Reading conventions:
   unambiguous — the B-block (`B / SE / p`) is closed before the
   AME-block opens.
 - For non-linear models the AME is reported on the **response scale**,
-  not the link scale. The *Generalised linear models* section below
+  not the link scale. The *Generalized linear models* section below
   works out a logistic-regression example.
 
 Inference is delegated to
@@ -620,7 +620,7 @@ hierarchical-regression standard), `c("lrt_change", "p_change")` for
 `c("aic_change", "bic_change", "lrt_change", "p_change")` for
 mixed-effects fits (`lmer` / `glmer` / `glmmTMB` /
 [`nlme::lme`](https://rdrr.io/pkg/nlme/man/lme.html) — Pinheiro & Bates
-2000 §2.4.1). Customise via `show_fit_stats`; the order of tokens
+2000 §2.4.1). Customize via `show_fit_stats`; the order of tokens
 controls the order of the rows. Other change tokens are available:
 `"adj_r2_change"`, `"f2_change"`, `"deviance_change"`, `"aic_change"` /
 `"aicc_change"` / `"bic_change"`. Variance-explained change tokens (Δr²,
@@ -886,9 +886,9 @@ the full model, display only the rows the reader cares about —
 ## Significance stars
 
 Stars are off by default. APA 7 §6.46 explicitly discourages
-asterisks-only reporting in favour of exact p-values, and ASA’s
-post-2019 guidance (Wasserstein, Schirm, and Lazar 2019) reinforces the
-same point. Set `stars = TRUE` for the APA preset
+asterisks-only reporting in favor of exact p-values, and ASA’s post-2019
+guidance (Wasserstein, Schirm, and Lazar 2019) reinforces the same
+point. Set `stars = TRUE` for the APA preset
 (`*** p < .001, ** p < .01, * p < .05`) or pass a named numeric vector
 for custom thresholds:
 
@@ -918,7 +918,7 @@ table_regression(fit, stars = TRUE)
 #> *** p < .001, ** p < .01, * p < .05.
 ```
 
-Stars suffix the `B` column (or `β` when standardisation is requested);
+Stars suffix the `B` column (or `β` when standardization is requested);
 the threshold mapping is auto-documented in the footer. The `p` column
 itself remains unstarred so the numeric value stays readable.
 
@@ -926,7 +926,7 @@ itself remains unstarred so the numeric value stays readable.
 
 `labels` accepts a named character vector keyed by either formula term
 labels (`"sex"`) or coefficient names (`"sexMale"`), so individual
-contrast rows can be relabelled. `intercept_position` switches the
+contrast rows can be relabeled. `intercept_position` switches the
 intercept to the bottom (Stata convention).
 `reference_style = "annotation"` lifts the reference level into the
 factor header (`"sex: [ref: Female]"`) and drops the explicit reference
@@ -968,7 +968,7 @@ table_regression(
 #> Std. errors: classical (OLS).
 ```
 
-## Generalised linear models (glm)
+## Generalized linear models (glm)
 
 [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
 accepts any [`glm()`](https://rdrr.io/r/stats/glm.html) fit. Inference
@@ -1047,13 +1047,13 @@ and the generic `exp(B)` for other log-link families (a genuine ratio of
 means). Links whose exponential is *not* a ratio — probit, cauchit,
 inverse (the [`Gamma()`](https://rdrr.io/r/stats/family.html) default),
 among others — are refused with a clear error rather than silently
-mislabelled; report response-scale effects for those models via the AME
+mislabeled; report response-scale effects for those models via the AME
 column instead. The standard error follows the delta-method
 approximation `SE_OR = OR × SE_log-odds` (the Stata `logit, or`
 convention). The test statistic and the p-value stay on the link scale,
 where `B = 0` and `OR = 1` are the same hypothesis and the Wald
 approximation is most accurate, so they match the unexponentiated table
-verbatim. (Wald tests are not invariant to reparameterisation — a z
+verbatim. (Wald tests are not invariant to reparameterization — a z
 rebuilt from `SE_OR` would give a different statistic and p-value, which
 is why the link-scale test is kept; Long & Freese 2014 §3.2.2.):
 
@@ -1194,7 +1194,7 @@ marginality-respecting Type-II hypothesis, matching
 MIXED and `lmerTest`, which report Type-III tests by default; the two
 conventions coincide for models without interactions.
 
-### Standardised coefficients: `refit` and `pseudo`
+### Standardized coefficients: `refit` and `pseudo`
 
 For `glm`, `standardized = "refit"` z-scores numeric *predictors* only
 and refits the model — the response stays on its observed scale because
@@ -1204,7 +1204,7 @@ the link function is fixed. This is the “x-standardization” convention
 the `lm` case.
 
 `standardized = "pseudo"` (`glm` only) is the latent-scale variant of
-Menard’s (2004, 2011) fully standardised coefficient: `Y*` is the latent
+Menard’s (2004, 2011) fully standardized coefficient: `Y*` is the latent
 variable on the link scale, with
 `SD(Y*) = sqrt(var(linear-predictor) + var_link)` and `var_link` = π²/3
 for logit, 1 for probit, π²/6 for cloglog. Numeric predictors scale by
@@ -1238,7 +1238,7 @@ table_regression(fit, standardized = "pseudo")
 #> 
 #> Note. Logistic regression.
 #> Std. errors: classical (Fisher information).
-#> β = standardised coefficient ("pseudo": latent-scale SD(X)/SD(Y*) for numeric predictors, 1/SD(Y*) for factor dummies).
+#> β = standardized coefficient ("pseudo": latent-scale SD(X)/SD(Y*) for numeric predictors, 1/SD(Y*) for factor dummies).
 ```
 
 ### Average marginal effects: probability units, not log-odds
@@ -1811,7 +1811,7 @@ Model-family articles build on the mechanics shown here:
 - [*Count and two-part regression
   tables*](https://amaltawfik.github.io/spicy/articles/table-regression-counts.md)
   for count and two-part models: Poisson and negative-binomial rate
-  ratios, offsets, and zero-inflated / hurdle components as labelled
+  ratios, offsets, and zero-inflated / hurdle components as labeled
   blocks.
 - [*Ordinal regression
   tables*](https://amaltawfik.github.io/spicy/articles/table-regression-ordinal.md)

@@ -163,7 +163,7 @@ renders them with the conventions of each model family:
 | rms | [`rms::ols()`](https://rdrr.io/pkg/rms/man/ols.html), [`rms::lrm()`](https://rdrr.io/pkg/rms/man/lrm.html), [`rms::Glm()`](https://rdrr.io/pkg/rms/man/Glm.html) |
 | Bayesian | [`rstanarm::stan_glm()`](https://mc-stan.org/rstanarm/reference/stan_glm.html), [`rstanarm::stan_glmer()`](https://mc-stan.org/rstanarm/reference/stan_glmer.html), [`brms::brm()`](https://paulbuerkner.com/brms/reference/brm.html) (posterior median, credible intervals, no p-values) |
 
-Class-specific structure renders as labelled blocks in the same table:
+Class-specific structure renders as labeled blocks in the same table:
 random effects (with SE and CI on each variance component, and an
 optional boundary-correct per-term likelihood-ratio test), ordinal
 thresholds, non-proportional effects, zero-inflation and dispersion

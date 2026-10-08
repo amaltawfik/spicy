@@ -13,11 +13,11 @@ supported class produces is validated against a field reference (the
 model’s own [`summary()`](https://rdrr.io/r/base/summary.html),
 `sandwich`, `clubSandwich`, `marginaleffects`, `effectsize`,
 `performance`, Stata or SPSS conventions), and every request a class
-cannot honour is **refused with a classed error** that names what is
+cannot honor is **refused with a classed error** that names what is
 available – never rendered as a silently empty or approximate column.
 
 This article is the map. Each family below links to a dedicated article
-that walks through its behaviour in depth.
+that walks through its behavior in depth.
 
 ## Choosing a model
 
@@ -37,11 +37,11 @@ whichever defensible model you fit.
 | Continuous | the median or another quantile is the estimand | [`quantreg::rq()`](https://rdrr.io/pkg/quantreg/man/rq.html) | one model per quantile; effects are quantile-specific |
 | Binary | independent observations | `glm(family = binomial())` | OR via `exponentiate`; add `"ame"` for probability effects |
 | Binary | overdispersed grouped binomial data | `glm(family = quasibinomial())` |  |
-| Ordered categories | a Likert scale, severity grades | [`MASS::polr()`](https://rdrr.io/pkg/MASS/man/polr.html) or [`ordinal::clm()`](https://rdrr.io/pkg/ordinal/man/clm.html) | thresholds render as a labelled block; AME per category; `clm()` also fits partial proportional odds |
+| Ordered categories | a Likert scale, severity grades | [`MASS::polr()`](https://rdrr.io/pkg/MASS/man/polr.html) or [`ordinal::clm()`](https://rdrr.io/pkg/ordinal/man/clm.html) | thresholds render as a labeled block; AME per category; `clm()` also fits partial proportional odds |
 | Unordered categories | 3+ nominal outcomes | [`nnet::multinom()`](https://rdrr.io/pkg/nnet/man/multinom.html); [`mlogit::mlogit()`](https://rdrr.io/pkg/mlogit/man/mlogit.html) for alternative-specific predictors | outcome categories render as column groups |
 | Count | mean roughly equal to variance | `glm(family = poisson())` | IRR via `exponentiate`; rates via an [`offset()`](https://rdrr.io/r/stats/offset.html) |
 | Count | variance well above the mean | [`MASS::glm.nb()`](https://rdrr.io/pkg/MASS/man/glm.nb.html) | models the overdispersion; `quasipoisson` merely widens the SEs |
-| Count | more zeros than the count part explains | [`pscl::zeroinfl()`](https://rdrr.io/pkg/pscl/man/zeroinfl.html) / [`pscl::hurdle()`](https://rdrr.io/pkg/pscl/man/hurdle.html) | both components render as labelled blocks |
+| Count | more zeros than the count part explains | [`pscl::zeroinfl()`](https://rdrr.io/pkg/pscl/man/zeroinfl.html) / [`pscl::hurdle()`](https://rdrr.io/pkg/pscl/man/hurdle.html) | both components render as labeled blocks |
 | Proportion in (0, 1) | rates, indices, shares | [`betareg::betareg()`](https://rdrr.io/pkg/betareg/man/betareg.html) |  |
 | Time-to-event | independent observations | [`survival::coxph()`](https://rdrr.io/pkg/survival/man/coxph.html) | HR – and adjusted RMST / risk-difference columns beyond it |
 | Time-to-event | a parametric survival-time model | [`survival::survreg()`](https://rdrr.io/pkg/survival/man/survreg.html) | time ratios (TR) via `exponentiate` |
@@ -158,13 +158,13 @@ How to read the columns:
   support neither AME nor the estimand columns). `yes (draws)` means the
   effect is computed per posterior draw and summarized as a posterior
   median with MAD SD and credible interval.
-- **Exponentiate** – the labelled ratio `exponentiate = TRUE` produces.
+- **Exponentiate** – the labeled ratio `exponentiate = TRUE` produces.
   The label follows the link: OR under logit, IRR for count log-links,
   RR for the binomial log link, MR (mean ratio) for Gamma log links, HR
   for proportional hazards, TR (time ratio) for accelerated-failure-time
   models. Identity-link fits warn and stay untouched; links whose
   exponential is not a ratio (probit, cauchit, inverse) are refused.
-- **Blocks** – labelled subordinate row blocks rendered inside the same
+- **Blocks** – labeled subordinate row blocks rendered inside the same
   table (random effects, thresholds, zero components, per-outcome
   segments), each explained by a footer line.
 
@@ -210,7 +210,7 @@ Family by family:
 - **Own-estimator classes** – `estimatr` fits keep the robust SEs they
   were computed with; `fixest` fits keep their estimator (the footer
   carries fixest’s own label – clustered, Newey-West, Conley, …;
-  fixest’s “IID” is normalised to “Classical”). spicy’s `HC*` / `CR*`
+  fixest’s “IID” is normalized to “Classical”). spicy’s `HC*` / `CR*`
   tokens are refused for both.
 - **Robust by construction** – `svyglm` is design-based (Taylor /
   replicate): the design variance *is* the robust variance, and
@@ -323,7 +323,7 @@ tables*](https://amaltawfik.github.io/spicy/articles/table-regression-multinomia
 `glm.nb` / `glmmTMB`, plus
 [`pscl::zeroinfl()`](https://rdrr.io/pkg/pscl/man/zeroinfl.html) and
 [`pscl::hurdle()`](https://rdrr.io/pkg/pscl/man/hurdle.html) with their
-zero components as labelled blocks and a combined-response AME. See
+zero components as labeled blocks and a combined-response AME. See
 [*Count and two-part regression
 tables*](https://amaltawfik.github.io/spicy/articles/table-regression-counts.md).
 
@@ -384,7 +384,7 @@ table_regression(fit)
 ```
 
 The same contract applies inside a family: a request a class cannot
-honour – `HC*` for `multinom`, AME for `mlogit`, `exponentiate` on a
+honor – `HC*` for `multinom`, AME for `mlogit`, `exponentiate` on a
 probit link, `p_adjust` on a Bayesian table – is refused with the reason
 and the supported alternative, never silently degraded.
 

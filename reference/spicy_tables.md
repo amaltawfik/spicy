@@ -5,10 +5,10 @@ console table
 ([`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md),
 [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md),
 the `table_*()` family, and the association-measure printers). The
-engine supports Unicode line drawing, ANSI colours via crayon (with
-monochrome fallback), automatic colour-aware width detection,
+engine supports Unicode line drawing, ANSI colors via crayon (with
+monochrome fallback), automatic color-aware width detection,
 configurable integer padding (`0L` / `2L` / `4L`), per-column alignment,
-and horizontal panelling for tables wider than the console.
+and horizontal paneling for tables wider than the console.
 
 ## User-facing entry points
 
@@ -27,7 +27,7 @@ and horizontal panelling for tables wider than the console.
 
 - [`spicy_print_table()`](https://amaltawfik.github.io/spicy/reference/spicy_print_table.md)
   – user-facing wrapper that adds title, note, table-type-aware
-  alignment defaults, and panelling.
+  alignment defaults, and paneling.
 
 - [`build_ascii_table()`](https://amaltawfik.github.io/spicy/reference/build_ascii_table.md)
   – the underlying string renderer.

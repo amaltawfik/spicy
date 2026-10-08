@@ -152,11 +152,11 @@ Reading the table:
 
 On the logit scale a coefficient is a log cumulative-odds ratio.
 `exponentiate = TRUE` reports **odds ratios** instead, exponentiating
-the estimate and its CI bounds and relabelling the column header
+the estimate and its CI bounds and relabeling the column header
 accordingly. This is link-specific: under `method = "cloglog"` the table
 reports a **hazard ratio** (the grouped-time proportional-hazards
 reading of Prentice & Gloeckler 1978), and the sign convention matters —
-`polr` and `clm` parametrise the model as `cloglog P(Y ≤ j) = ζ_j − xB`,
+`polr` and `clm` parametrize the model as `cloglog P(Y ≤ j) = ζ_j − xB`,
 which places the hazard of the grouped event on `−B`, so the HR the
 table displays is `exp(−B)`, not `exp(B)` (a table note discloses this
 next to the HR definition, and the CI bounds are transformed
@@ -357,7 +357,7 @@ Ordinal fits accept the cluster-robust `vcov` family (`"CR0"`–`"CR3"`),
 computed by
 [`sandwich::vcovCL()`](https://zeileis.codeberg.page/sandwich/reference/vcovCL.html).
 One caveat up front: the CR2 / CR3 small-sample bias-reduction
-adjustments are defined for (generalised) linear models — `clubSandwich`
+adjustments are defined for (generalized) linear models — `clubSandwich`
 has no method for an ordinal MLE — so for `polr` / `clm` all four `CR*`
 labels map to the *same* plain (CR0-type) cluster sandwich, and the
 footer names the estimator `CL` rather than the requested label. Pass
@@ -528,7 +528,7 @@ is: fit, **test**, then relax only what fails (Long & Freese 2014).
 cut-points and compares, and `scale_test()` does the same for a scale
 (dispersion) effect. For `polr` there is no built-in equivalent — the
 classic logit-specific check is Brant’s (1990) test (package `brant`);
-`clm`’s tests are the likelihood-based generalisation.
+`clm`’s tests are the likelihood-based generalization.
 
 ``` r
 
@@ -583,7 +583,7 @@ relaxations, using smoking precisely because it is the borderline term.
 A **nominal** component frees a predictor’s effect across the
 cut-points: a separate coefficient *per cut-point* instead of one shared
 slope — Peterson & Harrell’s (1990) *partial* proportional odds. These
-render as a labelled **`Non-proportional effects`** block — one row per
+render as a labeled **`Non-proportional effects`** block — one row per
 cut-point — between the proportional coefficients and the thresholds:
 
 ``` r
@@ -754,8 +754,8 @@ never plausible.
 - For asymmetric responses and grouped survival times, the **cloglog**
   link (`method = "cloglog"` in `polr`, `link = "cloglog"` in `clm`)
   replaces the odds-ratio reading with a hazard-ratio one — displayed as
-  `exp(−B)` under the cumulative parametrisation, as explained in the
-  exponentiate section above — connecting the link menu to a modelling
+  `exp(−B)` under the cumulative parametrization, as explained in the
+  exponentiate section above — connecting the link menu to a modeling
   rationale.
 
 ## Several models side by side
@@ -857,7 +857,7 @@ average marginal effect on a response-category probability.
 
 [`broom::tidy()`](https://broom.tidymodels.org) returns the long frame,
 one row per `(term, estimate_type, outcome_level)`; each per-category
-AME row is labelled by its response category in the `outcome_level`
+AME row is labeled by its response category in the `outcome_level`
 column:
 
 ``` r

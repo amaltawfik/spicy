@@ -387,7 +387,7 @@ logical) has non-uniform observed proportions.</p>
 <ul>
 <li><p><code>adjustment = "proportional"</code> (the
 <strong>default</strong>) — G-computation / population-weighted
-standardisation. For each focal level of <code>by</code>, predictions
+standardization. For each focal level of <code>by</code>, predictions
 are evaluated at every observation in the data with <code>by</code>
 replaced by that level (covariates kept at their observed values), then
 averaged. This is the convention of Stata’s <code>margins</code> and
@@ -452,14 +452,14 @@ reported as <strong>partial</strong> <em>f²</em> / partial <em>ω²</em>
 via the partial <em>F</em> restricted to the focal term (the Type-II
 test of <code>by</code> after all covariates, equal to
 <code><a href="https://rdrr.io/r/stats/add1.html" class="external-link">stats::drop1()</a></code> in this additive setting) — the correct
-generalisation of the bivariate effect size to a covariate-adjusted
+generalization of the bivariate effect size to a covariate-adjusted
 model.</li>
 <li>
 <code>effect_size = "d"</code> and <code>"g"</code> raise
 <code>spicy_unsupported</code>: Cohen’s <em>d</em> and Hedges’
 <em>g</em> have no defined extension under adjustment (the pooled SD has
 no canonical analogue). The error message points to <code>f2</code> /
-<code>omega2</code> as the partial-F generalisations.</li>
+<code>omega2</code> as the partial-F generalizations.</li>
 </ul>
 <p>Both effect-size variants and their noncentral CIs (when
 <code>effect_size_ci = TRUE</code>) are computed from the same fitted
@@ -1148,7 +1148,7 @@ group-comparison tests.</li>
 tables</em></a> for the full coefficient table when the analysis moves
 from a per-outcome one-predictor model to a single multi-predictor
 <code>lm</code> / <code>glm</code>, including interactions, polynomials,
-and standardised coefficients.</li>
+and standardized coefficients.</li>
 <li>See <a href="summary-tables-reporting.html"><em>Summary tables for
 reporting</em></a> for a cross-function reporting workflow using the
 summary-table helpers along the APA Table 1 / 2 / 3 sequence.</li>

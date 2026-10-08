@@ -89,7 +89,7 @@ In practice, follow the APA sequence:
   [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   once the substantive model is fitted — APA Table 3 with all
   predictors, factor groupings, reference rows, and (optionally)
-  standardised coefficients, marginal effects, or nested model
+  standardized coefficients, marginal effects, or nested model
   comparisons.
 
 The descriptive functions share one selection grammar — on a data frame,
@@ -619,14 +619,14 @@ table_regression(
 #> 
 #> Note. Linear regression.
 #> Std. errors: heteroskedasticity-robust (HC3).
-#> β = standardised coefficient ("refit": outcome and numeric predictors z-scored, factor dummies on 0/1).
+#> β = standardized coefficient ("refit": outcome and numeric predictors z-scored, factor dummies on 0/1).
 ```
 
-The default footer documents the variance estimator, flags standardised
-coefficients (`β = standardised coefficient`), and reports any
+The default footer documents the variance estimator, flags standardized
+coefficients (`β = standardized coefficient`), and reports any
 multiplicity correction, so the inferential regime is visible without
 leaving the table. One thing it does not carry: the *name* of the
-standardisation method. Here `standardized = "refit"` produced the β
+standardization method. Here `standardized = "refit"` produced the β
 column, but the footer would read the same under any of the five
 methods, so record the method in the table note or the text of the
 article.
@@ -1065,7 +1065,7 @@ tab |>
 |     No | 177 | 67.8 | 310 | 57.5 | 163 | 40.8 | 650 | 54.2 |       |     |
 |     Yes |  84 | 32.2 | 229 | 42.5 | 237 | 59.2 | 550 | 45.8 |       |     |
 
-Categorical table by education {#tinytable_wpcwsw0k3axkp8or43f2 .table
+Categorical table by education {#tinytable_f4dkx0fqc480a700h6og .table
 .tinytable style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 
@@ -1120,8 +1120,8 @@ The dedicated articles go deeper into each function:
   covers single- and multi-model regression tables across 30+ model
   classes (the map is [*Supported
   models*](https://amaltawfik.github.io/spicy/articles/table-regression-supported-models.md)),
-  five standardisation methods (four for linear models, plus the
-  glm-only pseudo-standardisation), partial effect sizes with
+  five standardization methods (four for linear models, plus the
+  glm-only pseudo-standardization), partial effect sizes with
   noncentral-F CIs, average marginal effects, hierarchical
   (`nested = TRUE`) comparisons, multiplicity correction, and
   response-scale reporting for GLMs.

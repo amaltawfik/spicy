@@ -18,7 +18,7 @@ here we focus on what is specific to counts: rate ratios,
 overdispersion, and above all the **two-part models** whose zero
 component
 [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
-renders as its own labelled block.
+renders as its own labeled block.
 
 [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
 supports the full count-model escalation:
@@ -59,7 +59,7 @@ ways: the conditional variance exceeds the conditional mean
 (**overdispersion** — the negative binomial’s job), and there are more
 zeros than the count process predicts (**excess zeros** — the job of the
 zero-inflated and hurdle models, which add a second, binary submodel for
-the zeros). The two are entangled: unmodelled dispersion surfaces as
+the zeros). The two are entangled: unmodeled dispersion surfaces as
 apparent excess zeros, so the model comparison at the end of this
 article, not the raw zero count, arbitrates. Each extension changes what
 the table must show, and the sections below follow that escalation.
@@ -215,10 +215,10 @@ difference matters for interpretation:
   *opposite direction*.
 
 [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
-renders the count coefficients first and the zero component as a
-labelled block, with a footer line stating exactly what the block
-models. Under `exponentiate = TRUE` the exponentiation is **per block**:
-count coefficients become IRRs for the underlying count process — for
+renders the count coefficients first and the zero component as a labeled
+block, with a footer line stating exactly what the block models. Under
+`exponentiate = TRUE` the exponentiation is **per block**: count
+coefficients become IRRs for the underlying count process — for
 `zeroinfl`, the rate among units not in the structural-zero class; for
 `hurdle`, the latent untruncated rate — not multiplicative effects on
 the overall expected count E(Y); the zero component’s logit coefficients
@@ -409,7 +409,7 @@ table_regression(
 
 Read the AIC row across. The ZIP’s entire inflation component buys less
 than the negative binomial’s single dispersion parameter (3225.5 against
-3134.1): modelling the zeros directly is the *worse* answer to
+3134.1): modeling the zeros directly is the *worse* answer to
 overdispersion here. On top of the negative binomial, the inflation part
 adds only a modest further gain (3134.1 → 3122.5). The hurdle (AIC
 3233.8) sits with the ZIP, and the previous section argued that choosing
@@ -715,7 +715,7 @@ origin, in place of the degenerate model-based one.
 Second, ignore the AIC’s magnitude. The Poisson log-likelihood is
 evaluated at the raw outcome values — trade flows in the millions and
 billions of Euros enter through the \\y \log \mu\\ and \\\log y!\\ terms
-— so the astronomical AIC is a scale artefact, not evidence about fit:
+— so the astronomical AIC is a scale artifact, not evidence about fit:
 refitting with the outcome rounded to whole Euros (a genuine count of
 the same magnitude) reproduces it exactly, while dividing the outcome by
 a million shrinks it by orders of magnitude without changing the
@@ -726,9 +726,8 @@ cancel and it stays readable.
 
 Third, `fixest`’s absorbed factors are *fixed* effects in the
 econometric sense — compare the `glmmTMB` section above, where the
-grouping structure is modelled as random effects with variance
-components instead; `fenegbin()` runs the same layout for the negative
-binomial.
+grouping structure is modeled as random effects with variance components
+instead; `fenegbin()` runs the same layout for the negative binomial.
 
 ## Output formats
 

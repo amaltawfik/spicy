@@ -275,7 +275,7 @@ model-building path most multilevel analyses follow — the sequence
 codified by Raudenbush &amp; Bryk (2002) and taught across the
 multilevel literature (Hox et al. 2018; Snijders &amp; Bosker 2012;
 Bressoux 2010) — on the data those books made canonical: the High School
-&amp; Beyond sample of 7,185 pupils in 160 U.S. schools, modelling
+&amp; Beyond sample of 7,185 pupils in 160 U.S. schools, modeling
 mathematics achievement from pupil socio-economic status (SES) and
 school sector. SES is a standardized composite of parental education,
 occupation, and income (sample SD 0.78, so a one-point difference is a
@@ -316,7 +316,7 @@ and between-school effects (step 3):</p>
 achievement points (SE 0.10; the same column returns in the step-2
 comparison). The price is one silent assumption: that 7,185 pupils are
 7,185 independent observations. They are not; pupils share schools,
-teachers, and neighbourhoods. The next steps make the grouping structure
+teachers, and neighborhoods. The next steps make the grouping structure
 part of the model.</p>
 </div>
 <div class="section level3">
@@ -675,7 +675,7 @@ random-effect correlation onto ±1 (<code>lme4</code> calls this a
 <strong>singular fit</strong>), the Wald SE and CI are meaningless, so
 <code><a href="../reference/table_regression.html">table_regression()</a></code> omits them and says why in the footer.
 The same check runs on <code>glmmTMB</code> and <code><a href="https://rdrr.io/pkg/nlme/man/lme.html" class="external-link">nlme::lme</a></code>
-fits, whose optimisers work on a log scale and therefore land
+fits, whose optimizers work on a log scale and therefore land
 <em>near</em> the boundary rather than exactly on it:</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># (the accompanying console warning is suppressed in this rendering)</span></span>
@@ -972,7 +972,7 @@ displayed with their uncertainty, and the test stays opt-in.</p>
 asked. Regress well-being on BMI with a random intercept for region, and
 the BMI coefficient blends two different associations: how people who
 are <em>heavier than their region’s norm</em> differ from their
-neighbours (the <strong>within</strong> effect), and how regions with a
+neighbors (the <strong>within</strong> effect), and how regions with a
 <em>higher average BMI</em> differ from other regions (the
 <strong>between</strong> effect). Nothing forces those two to be equal —
 they need not even share a sign — yet the naive model reports their
@@ -1256,7 +1256,7 @@ large-sample approximation for those classes.</p>
 <p><code>glmmTMB</code> fits reach the same table through the same code
 path, and bring two extra components. A zero-inflation
 (<code>ziformula =</code>) or dispersion (<code>dispformula =</code>)
-component renders as its own labelled block of rows, with a footer line
+component renders as its own labeled block of rows, with a footer line
 stating what the component models and on which scale — here with the
 <code>Salamanders</code> count data. Sixty percent of these stream
 surveys count no salamanders, and the zeros cluster in mined sites (84%
@@ -1432,7 +1432,7 @@ accordingly farther from 1.</p>
 <div class="section level2">
 <h2 id="cluster-robust-and-other-variance-estimators">Cluster-robust and other variance estimators<a class="anchor" aria-label="anchor" href="#cluster-robust-and-other-variance-estimators"></a>
 </h2>
-<p><code>lmer</code> and <code><a href="https://rdrr.io/pkg/nlme/man/lme.html" class="external-link">nlme::lme</a></code> fits honour the
+<p><code>lmer</code> and <code><a href="https://rdrr.io/pkg/nlme/man/lme.html" class="external-link">nlme::lme</a></code> fits honor the
 cluster-robust family (<code>"CR0"</code>–<code>"CR3"</code>) through
 <code>clubSandwich</code>, with Satterthwaite small-sample degrees of
 freedom computed from the robust covariance — the footer attributes them
@@ -1507,7 +1507,7 @@ carry one consistent p per term:</p>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: Wald (model-based).</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; p-values: Satterthwaite t-test (lmerTest).</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Random effects (REML): LR test vs linear regression, χ̄²(3) = 150.04, p &lt; .001.</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; β = standardised coefficient ("refit": outcome and numeric predictors z-scored, factor dummies on 0/1).</span></span></span></code></pre></div>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; β = standardized coefficient ("refit": outcome and numeric predictors z-scored, factor dummies on 0/1).</span></span></span></code></pre></div>
 <p>The algebraic shortcuts (<code>"posthoc"</code>,
 <code>"basic"</code>, <code>"smart"</code>) are therefore not defined
 for mixed models and fall back to <code>"refit"</code> with a warning.

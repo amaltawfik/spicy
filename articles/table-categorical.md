@@ -205,7 +205,7 @@ and
 [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md).
 Use the `labels` argument to override either: a **named character
 vector** keyed by column name in `data`. Only listed columns are
-relabelled; the others keep their attribute label or column name.
+relabeled; the others keep their attribute label or column name.
 (Unnamed positional label vectors, accepted before 0.13.0, now raise an
 error.)
 
@@ -700,8 +700,8 @@ decimal mark, the standard scientific-publication convention (SPSS, SAS,
 LaTeX `siunitx`). Numeric cells are pre-padded with figure-spaces
 (U+2007, spaces exactly one digit wide) so that every string in a column
 has the same width with the decimal mark at the same internal position;
-centring those uniform-width strings then stacks the decimal points
-vertically. The same pad-then-centre strategy is applied on every
+centering those uniform-width strings then stacks the decimal points
+vertically. The same pad-then-center strategy is applied on every
 rendering engine (`gt`, `tinytable`, `flextable`, `word`, ASCII print)
 for a homogeneous rendering – same single-font policy as
 [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md).
@@ -710,7 +710,7 @@ be parsed, and a padded number would paste as text next to an unpadded
 number, so its cells travel unpadded. The native
 [`gt::cols_align_decimal()`](https://gt.rstudio.com/reference/cols_align_decimal.html)
 and `tinytable::style_tt(align = "d")` primitives are deliberately not
-used: the former renders visually right-aligned and the latter centres
+used: the former renders visually right-aligned and the latter centers
 each cell on its own value rather than on the decimal mark, which would
 be inconsistent with the other engines.
 
@@ -840,7 +840,7 @@ table_categorical(
 |     No                    | 334    | 53.9 | 316  | 54.5 | 650   | 54.2 |      |     |
 |     Yes                   | 286    | 46.1 | 264  | 45.5 | 550   | 45.8 |      |     |
 
-Categorical table by sex {#tinytable_2rdo2veb59qfnkzx3ogy .table
+Categorical table by sex {#tinytable_zvtx4sa2ohlahjmlc2cn .table
 .tinytable style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 

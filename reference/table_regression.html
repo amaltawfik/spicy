@@ -6,7 +6,7 @@
     }
   };
 </script><script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/IBM_Plex_Sans-0.4.10/font.css" rel="stylesheet"><link href="../deps/IBM_Plex_Mono-0.4.10/font.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet"><meta property="og:title" content="Regression coefficient summary table — table_regression"><meta name="description" content="Publication-ready coefficient table from one or more fitted
-lm / glm models. Supports standardised coefficients
+lm / glm models. Supports standardized coefficients
 (\(\beta\)), average marginal effects (AME), partial
 effect sizes (\(f^2\) / \(\eta^2\) /
 \(\omega^2\) for lm; partial
@@ -15,7 +15,7 @@ effect sizes (\(f^2\) / \(\eta^2\) /
 (classical / HC* / cluster-robust with Satterthwaite-corrected
 df / bootstrap / jackknife). glm covers binomial / poisson /
 Gamma / inverse.gaussian / quasi families with any link."><meta property="og:description" content="Publication-ready coefficient table from one or more fitted
-lm / glm models. Supports standardised coefficients
+lm / glm models. Supports standardized coefficients
 (\(\beta\)), average marginal effects (AME), partial
 effect sizes (\(f^2\) / \(\eta^2\) /
 \(\omega^2\) for lm; partial
@@ -90,7 +90,7 @@ Gamma / inverse.gaussian / quasi families with any link."><meta property="og:ima
 
     <div class="ref-description section level2">
     <p>Publication-ready coefficient table from one or more fitted
-<code>lm</code> / <code>glm</code> models. Supports standardised coefficients
+<code>lm</code> / <code>glm</code> models. Supports standardized coefficients
 (\(\beta\)), average marginal effects (AME), partial
 effect sizes (<em>\(f^2\)</em> / <em>\(\eta^2\)</em> /
 <em>\(\omega^2\)</em> for <code>lm</code>; partial
@@ -166,7 +166,7 @@ Gamma / inverse.gaussian / quasi families with any link.</p>
 <dd><p>A fitted model object, or a list of such fits
 (named or unnamed; classes may be mixed). Single fits are
 auto-promoted to a 1-element list. A broad set of model classes
-is supported – linear / generalised linear (<code>lm</code>, <code>glm</code>,
+is supported – linear / generalized linear (<code>lm</code>, <code>glm</code>,
 <code><a href="https://rdrr.io/pkg/MASS/man/glm.nb.html" class="external-link">MASS::glm.nb</a></code>), mixed-effects (<code>lmer</code>, <code>lme</code>, <code>glmmTMB</code>),
 survival (<code>coxph</code>, <code>survreg</code>), ordinal (<code>polr</code>, <code>clm</code>),
 <code><a href="https://rdrr.io/pkg/mgcv/man/gam.html" class="external-link">mgcv::gam</a></code>/<code>bam</code>, <code>betareg</code>, <code>mlogit</code>, <code><a href="https://rdrr.io/pkg/survey/man/svyglm.html" class="external-link">survey::svyglm</a></code>, <code>rms</code>
@@ -256,7 +256,7 @@ transformation-respecting).
 <code>"hdi"</code> (Bayesian <code>stanreg</code> / <code>brmsfit</code> fits only) replaces the
 default equal-tailed credible interval with the highest-density
 interval – the shortest interval containing <code>ci_level</code> of the
-posterior draws (Kruschke 2015), relabelling the column header
+posterior draws (Kruschke 2015), relabeling the column header
 <code>95% HDI</code>. Unlike the equal-tailed interval the HDI is not
 transformation-invariant, so under <code>exponentiate = TRUE</code> it is
 recomputed on the exponentiated draws rather than transformed.
@@ -289,10 +289,10 @@ and <code>survreg</code> fits). A positive time on the outcome's scale; no defau
 
 
 <dt id="arg-standardized">standardized<a class="anchor" aria-label="anchor" href="#arg-standardized"></a></dt>
-<dd><p>Standardisation method for the <code>"beta"</code>
+<dd><p>Standardization method for the <code>"beta"</code>
 column. One of <code>"none"</code> (default), <code>"refit"</code>, <code>"posthoc"</code>,
 <code>"basic"</code>, <code>"smart"</code>, <code>"pseudo"</code>. <code>"pseudo"</code> is <em>glm only</em>
-(Menard 2011 fully-standardised); using it with <code><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm()</a></code> raises
+(Menard 2011 fully-standardized); using it with <code><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm()</a></code> raises
 <code>spicy_invalid_input</code>. Supported classes: <code>lm</code>, <code>glm</code>
 (incl. <code><a href="https://rdrr.io/pkg/MASS/man/glm.nb.html" class="external-link">MASS::glm.nb</a></code>), the mixed engines (<code>lmer</code> /
 <code>glmer</code> / <code>glmmTMB</code> / <code><a href="https://rdrr.io/pkg/nlme/man/lme.html" class="external-link">nlme::lme</a></code>), and fixed-effects
@@ -317,7 +317,7 @@ distributional, multivariate or special terms (<code>mo()</code>, <code>s()</cod
 before fitting instead. Any other class
 raises
 <code>spicy_unsupported_standardized</code> rather than rendering an
-empty beta column. See the <em>Standardised coefficients</em>
+empty beta column. See the <em>Standardized coefficients</em>
 section.</p></dd>
 
 
@@ -330,7 +330,7 @@ logit (<code>OR</code>), log (<code>IRR</code> / <code>RR</code> / <code>MR</cod
 means), and binomial / ordinal cloglog (<code>HR</code>; grouped-time
 proportional hazards, Prentice &amp; Gloeckler 1978). For the
 <em>ordinal</em> (cumulative) cloglog model the displayed <code>HR</code> is
-<code>exp(-B)</code>, not <code>exp(B)</code>: the cumulative parametrisation
+<code>exp(-B)</code>, not <code>exp(B)</code>: the cumulative parametrization
 <code>cloglog P(Y &lt;= j) = zeta_j - xB</code> places the hazard of the
 grouped event on <code>-B</code>, so <code>exp(B)</code> would be the reciprocal of
 the hazard ratio (the CI endpoints are negated and swapped
@@ -433,7 +433,7 @@ when a coefficient column (<code>"b"</code>/<code>"beta"</code>) is in <code>sho
 
 <dt id="arg-show-components">show_components<a class="anchor" aria-label="anchor" href="#arg-show-components"></a></dt>
 <dd><p>For models with secondary components,
-whether to display them as labelled subordinate blocks of rows
+whether to display them as labeled subordinate blocks of rows
 below the primary (count / conditional / location) coefficients.
 Default <code>TRUE</code>:</p><ul><li><p><code><a href="https://rdrr.io/pkg/pscl/man/zeroinfl.html" class="external-link">pscl::zeroinfl</a></code> and <code>glmmTMB(ziformula = )</code>: a
 <code>Zero-inflation</code> block – the model for the probability of a
@@ -442,7 +442,7 @@ Default <code>TRUE</code>:</p><ul><li><p><code><a href="https://rdrr.io/pkg/pscl
 probability of a <strong>nonzero count</strong> (note the opposite direction
 vs zero-inflation; the footer names each block's meaning).</p></li>
 <li><p><code>glmmTMB(dispformula = )</code>: a <code>Dispersion</code> block (only when
-dispersion was actually modelled; log scale, never
+dispersion was actually modeled; log scale, never
 exponentiated).</p></li>
 <li><p><code>ordinal::clm(scale = ~)</code>: a <code>Scale effects</code> block – the
 covariate effects on the <strong>log standard deviation of the
@@ -547,7 +547,7 @@ the model's remaining sub-columns (<code>SE</code>, <code>LL</code>, <code>UL</c
 Table 7.13 layout.</p></li>
 <li><p><code>"merged"</code>: the model's numeric sub-columns are
 merged into a single wide cell containing the fit-stat
-value, centred under the model spanner. Stata <code>esttab</code>
+value, centered under the model spanner. Stata <code>esttab</code>
 layout / <em>Econometrica</em> and <em>AER</em> journal convention.
 Resolves the mixed-precision look of <code>"first_col"</code> (an
 integer <code>n</code> row sharing the B column with two-decimal
@@ -700,7 +700,7 @@ flextable / tinytable / Excel / Word renderers). <code>NULL</code>
 for the full rule. A character vector of length
 <code>length(models)</code> overrides. Refused (error) for a single
 multinomial model: there the column groups are outcome
-categories, relabelled via <code>outcome_labels</code>.</p></dd>
+categories, relabeled via <code>outcome_labels</code>.</p></dd>
 
 
 <dt id="arg-outcome-labels">outcome_labels<a class="anchor" aria-label="anchor" href="#arg-outcome-labels"></a></dt>
@@ -813,7 +813,7 @@ term and coefficient names R itself produces, and they keep that
 form regardless of the language the table is rendered in. A name
 that is neither a term label nor a coefficient name is rejected,
 so the header of a subordinate block – <code>Random effects</code>,
-<code>Thresholds</code>, <code>Zero-inflation</code>, ... – cannot be relabelled here;
+<code>Thresholds</code>, <code>Zero-inflation</code>, ... – cannot be relabeled here;
 those headers are set by the package. Classes that carry no
 <code>terms</code> component at all (<code><a href="https://rdrr.io/r/stats/nls.html" class="external-link">nls()</a></code>,
 <code><a href="https://rdrr.io/pkg/sampleSelection/man/selection.html" class="external-link">sampleSelection::selection()</a></code>) are keyed on their coefficient
@@ -873,7 +873,7 @@ with a comma under <code>clipboard_delim = ","</code>, or any number under
 <code>decimal_mark = ","</code>), a double quote or a line break is quoted
 RFC 4180-style, so the grid survives whatever delimiter you
 choose.</p>
-<p>Paste behaviour by target:</p><ul><li><p><strong>Excel / Google Sheets:</strong> numerics are auto-detected and
+<p>Paste behavior by target:</p><ul><li><p><strong>Excel / Google Sheets:</strong> numerics are auto-detected and
 right-aligned; text cells stay left-aligned. (P-values such
 as <code>.005</code> get re-parsed as <code>0.005</code> by Excel's auto-format
 – to preserve the APA leading-zero-dropped display, prefer
@@ -909,13 +909,13 @@ exports rather than chunk-level rendering.</p></dd>
 <dd><p>Optional path to a custom .docx file used as the
 template for <code>output = "word"</code>. The template's header, footer,
 page size, margins, and named styles ("Table Caption" in
-particular) are honoured; the table is appended to the template
+particular) are honored; the table is appended to the template
 body. Useful for institutional templates with pre-set headers
 ("APA Style", "Manuscript Submission Template", etc.). Default
 <code>NULL</code> (uses flextable's stock template).</p>
-<p><strong>Customising the caption appearance:</strong> the table caption is
+<p><strong>Customizing the caption appearance:</strong> the table caption is
 tagged with the Word named style <code>"Table Caption"</code>. The visual
-rendering (italic / bold / colour / font) follows whatever that
+rendering (italic / bold / color / font) follows whatever that
 style is set to in the docx template. The stock Word template
 renders <code>"Table Caption"</code> in italic — the APA Manual 7 §7.10
 condensed convention. For a different appearance (Nature-style
@@ -964,7 +964,7 @@ atomic tokens; see <code>show_columns</code> below.</p><div class="section">
 
 
 <p>Each token = one displayed column.</p>
-<ul><li><p>Coefficient family: <code>"b"</code>, <code>"beta"</code> (standardised),
+<ul><li><p>Coefficient family: <code>"b"</code>, <code>"beta"</code> (standardized),
 <code>"se"</code>, <code>"ci"</code>, <code>"t"</code>, <code>"p"</code>.</p></li>
 <li><p>Marginal effects: <code>"ame"</code>, <code>"ame_se"</code>, <code>"ame_ci"</code>,
 <code>"ame_p"</code>. <code>"p"</code> always refers to the B-coefficient
@@ -1103,7 +1103,7 @@ mixed tables – and is on by default for both.
 Varying-slope-only factors (<code>Origin[[x]]</code>) absorb no
 intercept: they read No when another model absorbs that
 factor, and contribute no row otherwise.
-<code>"within_r2"</code> is the FE-partialled within
+<code>"within_r2"</code> is the FE-partialed within
 R-squared (a default for <code>feols</code>, opt-in for <code>estimatr</code>;
 GLM-family fixest fits report fixest's McFadden <code>pr2</code>
 instead). Both tokens are refused when no model in the table
@@ -1137,7 +1137,7 @@ class-aware default is extended with change tokens
     <div class="section level2">
     <h2 id="multi-model-semantics">Multi-model semantics<a class="anchor" aria-label="anchor" href="#multi-model-semantics"></a></h2>
     <p>Pass a single fit or a <code><a href="https://rdrr.io/r/base/list.html" class="external-link">list()</a></code> of fits. Multi-model layout
-draws a centred <strong>spanner label</strong> above each model's
+draws a centered <strong>spanner label</strong> above each model's
 sub-columns:</p>
 <ul><li><p><code>list("Naive" = m1, "Adjusted" = m2)</code> -&gt; spanner labels
 <code>"Naive"</code> / <code>"Adjusted"</code>. Partial naming (<code>list("Naive" = m1, m2)</code>)
@@ -1214,7 +1214,7 @@ category), as it does for every other layout.</p>
 
 
 <p>Not every estimator is defined for every class. A robust <code>vcov</code>
-the class cannot honour fails fast with <code>spicy_unsupported_vcov</code>
+the class cannot honor fails fast with <code>spicy_unsupported_vcov</code>
 – never a silent model-based result under a robust label:</p>
 <dl><dt><code>lm</code>, <code>glm</code>, <code><a href="https://rdrr.io/pkg/MASS/man/glm.nb.html" class="external-link">MASS::glm.nb</a></code></dt>
 <dd><p>all of <code>classical</code>, <code>HC*</code>,
@@ -1427,7 +1427,7 @@ coefficients, and the two cannot be separated. Hold the
 engine's own two-model <code><a href="https://rdrr.io/r/stats/anova.html" class="external-link">anova()</a></code>, and no engine's method
 accepts a fit produced by another. Refit one of the two with
 the other's engine.</p></li>
-<li><p><em>A <code><a href="https://rdrr.io/pkg/MASS/man/rlm.html" class="external-link">MASS::rlm</a></code> hierarchy</em>. M-estimation minimises a
+<li><p><em>A <code><a href="https://rdrr.io/pkg/MASS/man/rlm.html" class="external-link">MASS::rlm</a></code> hierarchy</em>. M-estimation minimizes a
 bounded loss on the scaled residuals: it partitions no sums of
 squares and it is not a likelihood, so there is neither a
 likelihood-ratio test nor a partial F to report. Every change
@@ -1449,7 +1449,7 @@ Lemeshow Section 3.5; Long &amp; Freese 2014 Section 3.2.4.</p></li>
 <code><a href="https://rdrr.io/pkg/nlme/man/lme.html" class="external-link">nlme::lme</a></code>): <code>c("aic_change", "bic_change", "lrt_change", "p_change")</code> – Pinheiro &amp; Bates 2000 Section 2.4.1.</p></li>
 <li><p>Quantile (<code>rq</code>): <code>c("f_change", "p_change")</code> – the
 Wald-type test <code><a href="https://rdrr.io/pkg/quantreg/man/anova.rq.html" class="external-link">quantreg::anova.rq()</a></code> reports.</p></li>
-</ul><p>To customise, pass the change tokens directly to
+</ul><p>To customize, pass the change tokens directly to
 <code>show_fit_stats</code>. The variance-explained change tokens
 (<code>"r2_change"</code>, <code>"adj_r2_change"</code>, <code>"f_change"</code>,
 <code>"f2_change"</code>) raise <code>spicy_invalid_input</code> on any hierarchy
@@ -1463,7 +1463,7 @@ them too, and <code>"lrt_change"</code> with them, pointing at
 least-squares tokens.</p>
     </div>
     <div class="section level2">
-    <h2 id="standardised-coefficients">Standardised coefficients<a class="anchor" aria-label="anchor" href="#standardised-coefficients"></a></h2>
+    <h2 id="standardized-coefficients">Standardized coefficients<a class="anchor" aria-label="anchor" href="#standardized-coefficients"></a></h2>
     <p><code>standardized</code> controls the method when <code>"beta"</code> is in
 <code>show_columns</code>:</p><ul><li><p><code>"refit"</code> – refit on z-scored data. For <code>lm</code> both X
 and Y are z-scored (Cohen et al. 2003 gold standard); for
@@ -1481,7 +1481,7 @@ same range as a binary's 0 to 1 step); binary inputs –
 numeric 0/1 and factor dummies – are left unscaled. (Before
 0.13.0 the rule was applied inverted; see NEWS.)</p></li>
 <li><p><code>"pseudo"</code> – <em>glm only</em>. Menard (2004, 2011)
-fully-standardised \(\beta = B \times SD(X) / SD(Y^*)\),
+fully-standardized \(\beta = B \times SD(X) / SD(Y^*)\),
 with \(Y^*\) the latent variable on the link scale and
 \(SD(Y^*) = \sqrt{Var(\hat{\eta}) + Var_{link}}\)
 (\(\pi^2/3\) logit, <code>1</code> probit,
@@ -1603,7 +1603,7 @@ the 10pt-on-11pt of the Word engine. Two opt-ins:</p><ul><li><p><code>"none"</co
 exactly as the receiving document template styles it.</p></li>
 <li><p>any other string – extra arguments for the Typst
 <code><a href="https://rdrr.io/r/graphics/text.html" class="external-link">text()</a></code> call around the note, appended to the size (e.g.
-<code>options(spicy.note_style = "fill: luma(89)")</code> for a grey
+<code>options(spicy.note_style = "fill: luma(89)")</code> for a gray
 note). Typst only; the HTML note keeps the plain <code>0.9em</code>.</p></li>
 </ul><p><code>options(spicy.note_style = NULL)</code> restores the default.</p></li>
 </ul></div>
@@ -1612,11 +1612,11 @@ note). Typst only; the HTML note keeps the plain <code>0.9em</code>.</p></li>
     <p>No <code>weights</code> argument: weights are a property of the fit
 (extracted via <code><a href="https://rdrr.io/r/stats/weights.html" class="external-link">stats::weights()</a></code>). Pass them when fitting:
 <code>lm(y ~ x, data = df, weights = w)</code>. All downstream
-computations (vcov, AME, standardisation, <code>weighted_nobs</code>)
+computations (vcov, AME, standardization, <code>weighted_nobs</code>)
 extract them automatically.</p>
     </div>
     <div class="section level2">
-    <h2 id="internationalisation">Internationalisation<a class="anchor" aria-label="anchor" href="#internationalisation"></a></h2>
+    <h2 id="internationalization">Internationalization<a class="anchor" aria-label="anchor" href="#internationalization"></a></h2>
     <p>Output is in English. Override user-facing strings via
 <code>reference_label</code>, <code>model_labels</code>, <code>outcome_labels</code>, and
 <code>labels</code>. The title and footer are post-processable via
@@ -1668,7 +1668,7 @@ to a world beyond "p &lt; 0.05". <em>The American Statistician</em>,
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
     <div class="dont-index"><p><code><a href="table_regression_models.html">table_regression_models()</a></code> for the registry of supported model
-classes and the per-family behaviour reference (also reachable as
+classes and the per-family behavior reference (also reachable as
 <code><a href="table_regression_models.html">?table_regression_mixed</a></code>, <code><a href="table_regression_models.html">?table_regression_ordinal</a></code>, ...). If a
 class is not listed there, try <code>table_regression(fit)</code> anyway –
 unsupported classes error with a clear message.
@@ -1718,7 +1718,7 @@ broom integration:
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Std. errors: classical (OLS).</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># \donttest{</span></span></span>
-<span class="r-in"><span><span class="co"># Standardised coefficients (beta) injected next to B. "refit"</span></span></span>
+<span class="r-in"><span><span class="co"># Standardized coefficients (beta) injected next to B. "refit"</span></span></span>
 <span class="r-in"><span><span class="co"># is the Cohen et al. (2003) refit-on-z-scores convention;</span></span></span>
 <span class="r-in"><span><span class="co"># "basic" reproduces the SPSS / Stata regress, beta definition.</span></span></span>
 <span class="r-in"><span><span class="fu">table_regression</span><span class="op">(</span><span class="va">fit</span>, standardized <span class="op">=</span> <span class="st">"refit"</span><span class="op">)</span></span></span>
@@ -1741,7 +1741,7 @@ broom integration:
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Linear regression.</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Std. errors: classical (OLS).</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">β = standardised coefficient ("refit": outcome and numeric predictors z-scored, factor dummies on 0/1).</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">β = standardized coefficient ("refit": outcome and numeric predictors z-scored, factor dummies on 0/1).</span></span>
 <span class="r-in"><span><span class="co"># }</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># \donttest{</span></span></span>

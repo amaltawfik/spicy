@@ -25,9 +25,9 @@
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet">
 <meta property="og:title" content="Survival regression tables">
-<meta name="description" content="Publication-ready tables for survival regression in R with `table_regression()`: Cox hazard ratios with events and concordance, cluster-robust (Lin-Wei) variance for multi-centre data, hierarchical Cox comparisons by partial-likelihood ratio test, accelerated failure time models with time ratios, and the `survival`, `rms`, and `flexsurv` engines.
+<meta name="description" content="Publication-ready tables for survival regression in R with `table_regression()`: Cox hazard ratios with events and concordance, cluster-robust (Lin-Wei) variance for multi-center data, hierarchical Cox comparisons by partial-likelihood ratio test, accelerated failure time models with time ratios, and the `survival`, `rms`, and `flexsurv` engines.
 ">
-<meta property="og:description" content="Publication-ready tables for survival regression in R with `table_regression()`: Cox hazard ratios with events and concordance, cluster-robust (Lin-Wei) variance for multi-centre data, hierarchical Cox comparisons by partial-likelihood ratio test, accelerated failure time models with time ratios, and the `survival`, `rms`, and `flexsurv` engines.
+<meta property="og:description" content="Publication-ready tables for survival regression in R with `table_regression()`: Cox hazard ratios with events and concordance, cluster-robust (Lin-Wei) variance for multi-center data, hierarchical Cox comparisons by partial-likelihood ratio test, accelerated failure time models with time ratios, and the `survival`, `rms`, and `flexsurv` engines.
 ">
 <meta property="og:image" content="https://amaltawfik.github.io/spicy/logo.svg">
 </head>
@@ -125,7 +125,7 @@ tables</em></a> covers the shared mechanics (<code>vcov</code>,
 integration; the class-by-class map is <a href="table-regression-supported-models.html"><em>Supported
 models</em></a>); here we focus on what is specific to survival fits:
 hazard ratios and time ratios, event counts and concordance, and the
-variance estimators of multi-centre studies.</p>
+variance estimators of multi-center studies.</p>
 <p><code><a href="../reference/table_regression.html">table_regression()</a></code> supports four survival engines:</p>
 <ul>
 <li>
@@ -256,7 +256,7 @@ table can report later.</p>
 <h2 id="why-there-is-no-ame-column">Why there is no AME column<a class="anchor" aria-label="anchor" href="#why-there-is-no-ame-column"></a>
 </h2>
 <p>An <code>"ame"</code> request on a Cox fit is refused with an
-explanation rather than silently honoured: an average marginal effect
+explanation rather than silently honored: an average marginal effect
 needs a response scale, and a Cox model deliberately does not commit to
 one — a per-coefficient “effect on survival” would be ambiguous (at what
 time? on which scale?), and the delta-method standard errors the generic
@@ -404,7 +404,7 @@ Rockhill 1997). Efron himself, quoting Peto, put the practical case as
 convention when you have a reason, not on principle.</p>
 </div>
 <div class="section level2">
-<h2 id="multi-centre-data-cluster-robust-variance">Multi-centre data: cluster-robust variance<a class="anchor" aria-label="anchor" href="#multi-centre-data-cluster-robust-variance"></a>
+<h2 id="multi-center-data-cluster-robust-variance">Multi-center data: cluster-robust variance<a class="anchor" aria-label="anchor" href="#multi-center-data-cluster-robust-variance"></a>
 </h2>
 <p>The <code>lung</code> patients were enrolled by 18 institutions, and
 outcomes within an institution may correlate. The <code>CR*</code>
@@ -440,12 +440,12 @@ the analytic sample up front (as we did) keeps the cluster aligned when
 predictors carry missing values. Second, the direction: robust standard
 errors are not always larger — the sex SE <em>shrinks</em> here.
 Clustering corrects the variance in whichever direction the
-within-centre correlation points; treating it as a conservative
+within-center correlation points; treating it as a conservative
 inflation ritual misreads it. The robust variance corrects the standard
 errors while leaving the estimates marginal (population-averaged); the
 modeling alternative is a shared <strong>frailty</strong> term —
 <code>coxph(Surv(time, status) ~ age + sex + ph.ecog + frailty(inst), data = lung2)</code>
-— whose hazard ratios are instead conditional on the centre effect
+— whose hazard ratios are instead conditional on the center effect
 (Therneau &amp; Grambsch 2000, ch. 9). Which estimand the analysis needs
 decides between them.</p>
 </div>

@@ -147,7 +147,7 @@ table_continuous(
 
 - rescale:
 
-  Logical. If `TRUE`, weights are first normalised so that they sum to
+  Logical. If `TRUE`, weights are first normalized so that they sum to
   the number of observations used for each variable – the same `rescale`
   grammar as
   [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
@@ -224,7 +224,7 @@ table_continuous(
     (parametric, 3+ groups), rank-biserial *r* (nonparametric, 2
     groups), epsilon-squared (nonparametric, 3+ groups).
 
-  - `"hedges_g"`: Hedges' *g* (bias-corrected standardised mean
+  - `"hedges_g"`: Hedges' *g* (bias-corrected standardized mean
     difference, 2 groups, parametric). CI via the Hedges & Olkin normal
     approximation.
 
@@ -326,9 +326,9 @@ table_continuous(
     the standard scientific-publication convention used by SPSS, SAS,
     and LaTeX `siunitx`. Numeric cells are pre-padded with figure-spaces
     (U+2007, digit-width) so every string in a column has the same width
-    with the decimal mark at the same internal position; centring those
+    with the decimal mark at the same internal position; centering those
     uniform-width strings then stacks the decimal points vertically. The
-    same pad-then-centre strategy is applied on every rendering engine
+    same pad-then-center strategy is applied on every rendering engine
     (`gt`, `tinytable`, `flextable`, `word`, ASCII print) for a
     homogeneous rendering, matching
     [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
@@ -346,7 +346,7 @@ table_continuous(
   does not: Excel cells are written unpadded, because cell-string
   padding does not align decimals under a proportional font, so the
   workbook keeps the engine's own convention instead – counts and the
-  *p*-value right-aligned, the other numeric columns centred. Same
+  *p*-value right-aligned, the other numeric columns centered. Same
   default and same three values as
   [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md),
   whose `excel` output still uses that convention at every `align`.
@@ -546,7 +546,7 @@ These are the conventions of
 [`matrixStats::weightedSd()`](https://rdrr.io/pkg/matrixStats/man/weightedVar.html),
 and `DescTools::Quantile()`, and – for integer weights – of Stata's
 `[fweight]` and SPSS's `WEIGHT BY`. With `rescale = TRUE` the weights
-are normalised to sum to the number of observations first, which makes
+are normalized to sum to the number of observations first, which makes
 every result invariant to the scale of the weights and makes the SD
 equal Stata's `[aweight]` /
 [`survey::svyvar()`](https://rdrr.io/pkg/survey/man/surveysummary.html)
@@ -694,10 +694,10 @@ Conventions, all deliberate:
 Under `weights`, the means and variances are the weighted ones the `M`
 and `SD` columns already display – the frequency convention of the
 *Weights* section, from the same producer, so the column cannot
-contradict its neighbours. One consequence follows and is intended: a
+contradict its neighbors. One consequence follows and is intended: a
 frequency weight is a number of copies, so the weighted SMD is **not
 invariant to the scale of the weights** (multiplying every weight by ten
-moves it, as it moves the `SD` column). `rescale = TRUE` normalises the
+moves it, as it moves the `SD` column). `rescale = TRUE` normalizes the
 weights to sum to *n*, restores scale invariance, and is the form to use
 for sampling weights until the dedicated survey-design functions land.
 

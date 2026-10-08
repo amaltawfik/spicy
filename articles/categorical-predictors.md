@@ -5,9 +5,9 @@
 library(spicy)
 ```
 
-Every regression article in this collection is organised by the type of
+Every regression article in this collection is organized by the type of
 *outcome* — continuous, binary, count, ordinal, multinomial, survival.
-This one is organised by the type of *predictor*. How a categorical
+This one is organized by the type of *predictor*. How a categorical
 predictor is coded, tested, simplified, and presented is the same
 decision whether the model is an
 [`lm()`](https://rdrr.io/r/stats/lm.html), a logistic regression, or a

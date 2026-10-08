@@ -25,9 +25,9 @@
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet">
 <meta property="og:title" content="Publication-ready regression tables">
-<meta name="description" content="Regression tables for fitted models in R with journal-grade formatting (APA by default; JAMA, NEJM, The Lancet, Annals, or AER by name): classical, heteroskedasticity-consistent and cluster-robust variance, five standardisation methods, partial effect sizes with noncentral-F CIs, average marginal effects, multiple-comparison adjustment, side-by-side and hierarchical layouts, and output to console, gt, tinytable, flextable, Excel, Word, or clipboard.
+<meta name="description" content="Regression tables for fitted models in R with journal-grade formatting (APA by default; JAMA, NEJM, The Lancet, Annals, or AER by name): classical, heteroskedasticity-consistent and cluster-robust variance, five standardization methods, partial effect sizes with noncentral-F CIs, average marginal effects, multiple-comparison adjustment, side-by-side and hierarchical layouts, and output to console, gt, tinytable, flextable, Excel, Word, or clipboard.
 ">
-<meta property="og:description" content="Regression tables for fitted models in R with journal-grade formatting (APA by default; JAMA, NEJM, The Lancet, Annals, or AER by name): classical, heteroskedasticity-consistent and cluster-robust variance, five standardisation methods, partial effect sizes with noncentral-F CIs, average marginal effects, multiple-comparison adjustment, side-by-side and hierarchical layouts, and output to console, gt, tinytable, flextable, Excel, Word, or clipboard.
+<meta property="og:description" content="Regression tables for fitted models in R with journal-grade formatting (APA by default; JAMA, NEJM, The Lancet, Annals, or AER by name): classical, heteroskedasticity-consistent and cluster-robust variance, five standardization methods, partial effect sizes with noncentral-F CIs, average marginal effects, multiple-comparison adjustment, side-by-side and hierarchical layouts, and output to console, gt, tinytable, flextable, Excel, Word, or clipboard.
 ">
 <meta property="og:image" content="https://amaltawfik.github.io/spicy/logo.svg">
 </head>
@@ -137,7 +137,7 @@ models, not raw data and a formula. The same object exports cleanly to a
 long broom-canonical frame (<code><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">broom::tidy()</a></code>) and to a
 one-row-per-model glance summary (<code><a href="https://generics.r-lib.org/reference/glance.html" class="external-link">broom::glance()</a></code>).</p>
 <p>This article teaches the shared mechanics on <code><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm()</a></code> and
-<code><a href="https://rdrr.io/r/stats/glm.html" class="external-link">glm()</a></code> fits. The <em>Generalised linear models</em> section
+<code><a href="https://rdrr.io/r/stats/glm.html" class="external-link">glm()</a></code> fits. The <em>Generalized linear models</em> section
 covers the glm-specific argument semantics; the <em>Mixed-effects
 models</em> section introduces the Random effects rows that
 mixed-effects fits add below the fixed effects (<code>lmer</code>,
@@ -248,18 +248,18 @@ styles</em> section of <a href="summary-tables-reporting.html"><em>Summary table
 reporting</em></a>.</p>
 </div>
 <div class="section level2">
-<h2 id="standardised-coefficients">Standardised coefficients<a class="anchor" aria-label="anchor" href="#standardised-coefficients"></a>
+<h2 id="standardized-coefficients">Standardized coefficients<a class="anchor" aria-label="anchor" href="#standardized-coefficients"></a>
 </h2>
-<p>Standardised coefficients (<code>β</code>) make predictors with
+<p>Standardized coefficients (<code>β</code>) make predictors with
 different natural scales comparable: a one-standard-deviation increase
 in <code>X</code> predicts a <code>β</code>-standard-deviation change in
 <code>Y</code>. APA Manual 7 §7.13 recommends reporting both
-<code>B</code> and <code>β</code> so the unstandardised effect (natural
-units, interpretable) stays alongside the standardised effect
+<code>B</code> and <code>β</code> so the unstandardized effect (natural
+units, interpretable) stays alongside the standardized effect
 (comparable across predictors).</p>
 <p><code>standardized</code> selects the method. Four apply to linear
 models — a fifth, glm-specific <code>"pseudo"</code>, is covered in the
-<em>Generalised linear models</em> section — and the choice is
+<em>Generalized linear models</em> section — and the choice is
 consequential and well-documented (Cohen, Cohen, West, and Aiken 2003
 §3.4; Gelman 2008). The methods differ most visibly in how they treat
 factor dummies:</p>
@@ -324,17 +324,17 @@ token is auto-injected into <code>show_columns</code> immediately after
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear regression.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: classical (OLS).</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; β = standardised coefficient ("refit": outcome and numeric predictors z-scored, factor dummies on 0/1).</span></span></span></code></pre></div>
-<p>On the standardised scale the predictors become directly comparable:
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; β = standardized coefficient ("refit": outcome and numeric predictors z-scored, factor dummies on 0/1).</span></span></span></code></pre></div>
+<p>On the standardized scale the predictors become directly comparable:
 being male predicts a 0.25-SD higher wellbeing score, the largest
-standardised effect in the model, while a one-SD increase in age
+standardized effect in the model, while a one-SD increase in age
 predicts a change of only 0.04 SD. The raw <code>B</code> column could
 not support that ranking — 3.86 versus 0.05 compares a factor contrast
 with a per-year slope, two different units.</p>
-<p><strong>Caveat: standardised coefficients with interactions or
+<p><strong>Caveat: standardized coefficients with interactions or
 transformed terms.</strong> When the model contains a product term, an
 <code><a href="https://rdrr.io/r/base/AsIs.html" class="external-link">I()</a></code>, <code><a href="https://rdrr.io/r/stats/poly.html" class="external-link">poly()</a></code>, <code><a href="https://rdrr.io/r/base/Log.html" class="external-link">log()</a></code>, or
-<code><a href="https://rdrr.io/r/splines/ns.html" class="external-link">splines::ns()</a></code> wrapper, the standardised coefficient of the
+<code><a href="https://rdrr.io/r/splines/ns.html" class="external-link">splines::ns()</a></code> wrapper, the standardized coefficient of the
 non-additive term has no closed-form “one-SD change in X” reading (Aiken
 and West 1991; Cohen et al. 2003 §7.7). The function emits a classed
 <code>spicy_caveat</code> warning at runtime <em>and</em> prints a
@@ -509,7 +509,7 @@ for the AME-specific p-value.</li>
 attribution of each p-value unambiguous — the B-block
 (<code>B / SE / p</code>) is closed before the AME-block opens.</li>
 <li>For non-linear models the AME is reported on the <strong>response
-scale</strong>, not the link scale. The <em>Generalised linear
+scale</strong>, not the link scale. The <em>Generalized linear
 models</em> section below works out a logistic-regression example.</li>
 </ul>
 <p>Inference is delegated to <code><a href="https://rdrr.io/pkg/marginaleffects/man/slopes.html" class="external-link">marginaleffects::avg_slopes()</a></code>
@@ -718,7 +718,7 @@ for <code>smoking</code>.</p>
 <code>c("aic_change", "bic_change", "lrt_change", "p_change")</code> for
 mixed-effects fits (<code>lmer</code> / <code>glmer</code> /
 <code>glmmTMB</code> / <code><a href="https://rdrr.io/pkg/nlme/man/lme.html" class="external-link">nlme::lme</a></code> — Pinheiro &amp; Bates
-2000 §2.4.1). Customise via <code>show_fit_stats</code>; the order of
+2000 §2.4.1). Customize via <code>show_fit_stats</code>; the order of
 tokens controls the order of the rows. Other change tokens are
 available: <code>"adj_r2_change"</code>, <code>"f2_change"</code>,
 <code>"deviance_change"</code>, <code>"aic_change"</code> /
@@ -987,9 +987,9 @@ cares about —
 <h2 id="significance-stars">Significance stars<a class="anchor" aria-label="anchor" href="#significance-stars"></a>
 </h2>
 <p>Stars are off by default. APA 7 §6.46 explicitly discourages
-asterisks-only reporting in favour of exact p-values, and ASA’s
-post-2019 guidance (Wasserstein, Schirm, and Lazar 2019) reinforces the
-same point. Set <code>stars = TRUE</code> for the APA preset
+asterisks-only reporting in favor of exact p-values, and ASA’s post-2019
+guidance (Wasserstein, Schirm, and Lazar 2019) reinforces the same
+point. Set <code>stars = TRUE</code> for the APA preset
 (<code>*** p &lt; .001, ** p &lt; .01, * p &lt; .05</code>) or pass a
 named numeric vector for custom thresholds:</p>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
@@ -1016,7 +1016,7 @@ named numeric vector for custom thresholds:</p>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: classical (OLS).</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; *** p &lt; .001, ** p &lt; .01, * p &lt; .05.</span></span></span></code></pre></div>
 <p>Stars suffix the <code>B</code> column (or <code>β</code> when
-standardisation is requested); the threshold mapping is auto-documented
+standardization is requested); the threshold mapping is auto-documented
 in the footer. The <code>p</code> column itself remains unstarred so the
 numeric value stays readable.</p>
 </div>
@@ -1025,7 +1025,7 @@ numeric value stays readable.</p>
 </h2>
 <p><code>labels</code> accepts a named character vector keyed by either
 formula term labels (<code>"sex"</code>) or coefficient names
-(<code>"sexMale"</code>), so individual contrast rows can be relabelled.
+(<code>"sexMale"</code>), so individual contrast rows can be relabeled.
 <code>intercept_position</code> switches the intercept to the bottom
 (Stata convention). <code>reference_style = "annotation"</code> lifts
 the reference level into the factor header
@@ -1066,7 +1066,7 @@ European decimal notation and automatically changes the CI separator to
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: classical (OLS).</span></span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="generalised-linear-models-glm">Generalised linear models (glm)<a class="anchor" aria-label="anchor" href="#generalised-linear-models-glm"></a>
+<h2 id="generalized-linear-models-glm">Generalized linear models (glm)<a class="anchor" aria-label="anchor" href="#generalized-linear-models-glm"></a>
 </h2>
 <p><code><a href="../reference/table_regression.html">table_regression()</a></code> accepts any <code><a href="https://rdrr.io/r/stats/glm.html" class="external-link">glm()</a></code> fit.
 Inference defaults to the <code>z</code>-asymptotic Wald regime — the
@@ -1143,17 +1143,17 @@ and link: <code>OR</code> for <code>binomial(logit)</code>,
 and the generic <code>exp(B)</code> for other log-link families (a
 genuine ratio of means). Links whose exponential is <em>not</em> a ratio
 — probit, cauchit, inverse (the <code><a href="https://rdrr.io/r/stats/family.html" class="external-link">Gamma()</a></code> default), among
-others — are refused with a clear error rather than silently
-mislabelled; report response-scale effects for those models via the AME
-column instead. The standard error follows the delta-method
-approximation <code>SE_OR = OR × SE_log-odds</code> (the Stata
-<code>logit, or</code> convention). The test statistic and the p-value
-stay on the link scale, where <code>B = 0</code> and <code>OR = 1</code>
-are the same hypothesis and the Wald approximation is most accurate, so
-they match the unexponentiated table verbatim. (Wald tests are not
-invariant to reparameterisation — a z rebuilt from <code>SE_OR</code>
-would give a different statistic and p-value, which is why the
-link-scale test is kept; Long &amp; Freese 2014 §3.2.2.):</p>
+others — are refused with a clear error rather than silently mislabeled;
+report response-scale effects for those models via the AME column
+instead. The standard error follows the delta-method approximation
+<code>SE_OR = OR × SE_log-odds</code> (the Stata <code>logit, or</code>
+convention). The test statistic and the p-value stay on the link scale,
+where <code>B = 0</code> and <code>OR = 1</code> are the same hypothesis
+and the Wald approximation is most accurate, so they match the
+unexponentiated table verbatim. (Wald tests are not invariant to
+reparameterization — a z rebuilt from <code>SE_OR</code> would give a
+different statistic and p-value, which is why the link-scale test is
+kept; Long &amp; Freese 2014 §3.2.2.):</p>
 <div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span>, exponentiate <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Logistic regression: smoking</span></span></span>
@@ -1284,8 +1284,8 @@ default; the two conventions coincide for models without
 interactions.</p>
 </div>
 <div class="section level3">
-<h3 id="standardised-coefficients-refit-and-pseudo">Standardised coefficients: <code>refit</code> and
-<code>pseudo</code><a class="anchor" aria-label="anchor" href="#standardised-coefficients-refit-and-pseudo"></a>
+<h3 id="standardized-coefficients-refit-and-pseudo">Standardized coefficients: <code>refit</code> and
+<code>pseudo</code><a class="anchor" aria-label="anchor" href="#standardized-coefficients-refit-and-pseudo"></a>
 </h3>
 <p>For <code>glm</code>, <code>standardized = "refit"</code> z-scores
 numeric <em>predictors</em> only and refits the model — the response
@@ -1295,7 +1295,7 @@ other algebraic methods (<code>"posthoc"</code>, <code>"basic"</code>,
 <code>"smart"</code>) apply X-only scaling using the same algebra as in
 the <code>lm</code> case.</p>
 <p><code>standardized = "pseudo"</code> (<code>glm</code> only) is the
-latent-scale variant of Menard’s (2004, 2011) fully standardised
+latent-scale variant of Menard’s (2004, 2011) fully standardized
 coefficient: <code>Y*</code> is the latent variable on the link scale,
 with <code>SD(Y*) = sqrt(var(linear-predictor) + var_link)</code> and
 <code>var_link</code> = π²/3 for logit, 1 for probit, π²/6 for cloglog.
@@ -1328,7 +1328,7 @@ binomial families; non-binomial returns NA with a
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Logistic regression.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: classical (Fisher information).</span></span></span>
-<span><span class="co"><span style="color: #9E9E9E;">#&gt; β = standardised coefficient ("pseudo": latent-scale SD(X)/SD(Y*) for numeric predictors, 1/SD(Y*) for factor dummies).</span></span></span></code></pre></div>
+<span><span class="co"><span style="color: #9E9E9E;">#&gt; β = standardized coefficient ("pseudo": latent-scale SD(X)/SD(Y*) for numeric predictors, 1/SD(Y*) for factor dummies).</span></span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="average-marginal-effects-probability-units-not-log-odds">Average marginal effects: probability units, not log-odds<a class="anchor" aria-label="anchor" href="#average-marginal-effects-probability-units-not-log-odds"></a>
@@ -2306,7 +2306,7 @@ variants for few clusters.</li>
 <a href="table-regression-counts.html"><em>Count and two-part
 regression tables</em></a> for count and two-part models: Poisson and
 negative-binomial rate ratios, offsets, and zero-inflated / hurdle
-components as labelled blocks.</li>
+components as labeled blocks.</li>
 <li>
 <a href="table-regression-ordinal.html"><em>Ordinal regression
 tables</em></a> for ordinal (proportional-odds) models: shared slopes,

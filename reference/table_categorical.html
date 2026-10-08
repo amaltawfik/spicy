@@ -180,7 +180,7 @@ and <code><a href="table_continuous_lm.html">table_continuous_lm()</a></code>); 
 labels whose names match column names in <code>data</code> (e.g.
 <code>c(smoking = "Current smoker")</code>) – the same contract as
 <code><a href="table_continuous.html">table_continuous()</a></code> and <code><a href="table_continuous_lm.html">table_continuous_lm()</a></code>. Only listed
-columns are relabelled. For the remaining columns (and when
+columns are relabeled. For the remaining columns (and when
 <code>labels = NULL</code>, the default), labels are auto-detected from the
 variable's label attribute (e.g. from <code>haven</code>); if none is found,
 the column name is used. Unnamed (positional) label vectors,
@@ -329,8 +329,8 @@ mark, the standard scientific-publication convention used by
 SPSS, SAS, and LaTeX <code>siunitx</code>. Numeric cells are pre-padded
 with figure-spaces (U+2007, digit-width) so every string in a
 column has the same width with the decimal mark at the same
-internal position; centring those uniform-width strings then
-stacks the decimal points vertically. The same pad-then-centre
+internal position; centering those uniform-width strings then
+stacks the decimal points vertically. The same pad-then-center
 strategy is applied on every rendering engine (<code>gt</code>,
 <code>tinytable</code>, <code>flextable</code>, <code>word</code>, ASCII print) for a
 homogeneous rendering, matching <code><a href="table_regression.html">table_regression()</a></code> and
@@ -340,7 +340,7 @@ its cells travel unpadded (a padded number pastes as text
 next to an unpadded number).</p></li>
 <li><p><code>"center"</code>: center-align all numeric columns.</p></li>
 <li><p><code>"right"</code>: right-align all numeric columns.</p></li>
-</ul><p>In the <code>excel</code> output, <code>"center"</code> centres the numeric columns and
+</ul><p>In the <code>excel</code> output, <code>"center"</code> centers the numeric columns and
 <code>"right"</code> is the same rendering as the default: cell-string padding
 does not align decimals under a proportional font, so <code>"decimal"</code>
 right-aligns instead, which combined with the per-column <code>numfmt</code>

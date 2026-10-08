@@ -163,7 +163,7 @@ renders them with the conventions of each model family:
 | rms | [`rms::ols()`](https://rdrr.io/pkg/rms/man/ols.html), [`rms::lrm()`](https://rdrr.io/pkg/rms/man/lrm.html), [`rms::Glm()`](https://rdrr.io/pkg/rms/man/Glm.html) |
 | Bayesian | [`rstanarm::stan_glm()`](https://mc-stan.org/rstanarm/reference/stan_glm.html), [`rstanarm::stan_glmer()`](https://mc-stan.org/rstanarm/reference/stan_glmer.html), [`brms::brm()`](https://paulbuerkner.com/brms/reference/brm.html) (posterior median, credible intervals, no p-values) |
 
-Class-specific structure renders as labelled blocks in the same table:
+Class-specific structure renders as labeled blocks in the same table:
 random effects (with SE and CI on each variance component, and an
 optional boundary-correct per-term likelihood-ratio test), ordinal
 thresholds, non-proportional effects, zero-inflation and dispersion
@@ -857,10 +857,10 @@ The registry of model classes
 supports – one function returning the machine-readable list, whose
 documentation page also describes the per-family behavior (inference,
 robust-variance backends, exponentiate semantics, marginal effects,
-labelled blocks).
+labeled blocks).
 
 - [`table_regression_models()`](https://amaltawfik.github.io/spicy/reference/table_regression_models.md)
-  : Supported models and per-family behaviour of table_regression()
+  : Supported models and per-family behavior of table_regression()
 
 ## Export
 
@@ -1063,7 +1063,7 @@ Documented here for direct invocation with custom arguments (e.g.,
   Regression tables for fitted models in R with journal-grade formatting
   (APA by default; JAMA, NEJM, The Lancet, Annals, or AER by name):
   classical, heteroskedasticity-consistent and cluster-robust variance,
-  five standardisation methods, partial effect sizes with noncentral-F
+  five standardization methods, partial effect sizes with noncentral-F
   CIs, average marginal effects, multiple-comparison adjustment,
   side-by-side and hierarchical layouts, and output to console, gt,
   tinytable, flextable, Excel, Word, or clipboard.
@@ -1127,7 +1127,7 @@ Documented here for direct invocation with custom arguments (e.g.,
   Publication-ready tables for count regression in R with
   [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
   Poisson and negative-binomial rate ratios, zero-inflated and hurdle
-  models with their zero component as a labelled block, per-block
+  models with their zero component as a labeled block, per-block
   exponentiation, combined average marginal effects, cluster-robust
   variance across both components, and zero-inflated mixed models with
   `glmmTMB`.
@@ -1138,7 +1138,7 @@ Documented here for direct invocation with custom arguments (e.g.,
   Publication-ready tables for survival regression in R with
   [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
   Cox hazard ratios with events and concordance, cluster-robust
-  (Lin-Wei) variance for multi-centre data, hierarchical Cox comparisons
+  (Lin-Wei) variance for multi-center data, hierarchical Cox comparisons
   by partial-likelihood ratio test, accelerated failure time models with
   time ratios, and the `survival`, `rms`, and `flexsurv` engines.
 

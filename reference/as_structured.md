@@ -68,7 +68,7 @@ This is the right entry point for users who want to:
 
 - `body$.row_role` – what the row *is*: `"coef"`, `"factor_header"`,
   `"level"`, `"reference"`, `"fit_stat"`, `"outcome"`, `"vc"` (variance
-  component) in a regression table, plus `"summary"` (a row summarising
+  component) in a regression table, plus `"summary"` (a row summarizing
   one variable), `"group"` (a row keyed by one level of `by`) and
   `"missing"` (a row keyed by the *missing* value) in the descriptive
   ones. The role is the key a consumer matches on: `"(Missing)"` is a

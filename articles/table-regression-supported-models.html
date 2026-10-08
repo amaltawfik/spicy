@@ -123,11 +123,11 @@ against a field reference (the model’s own <code><a href="https://rdrr.io/r/ba
 <code>sandwich</code>, <code>clubSandwich</code>,
 <code>marginaleffects</code>, <code>effectsize</code>,
 <code>performance</code>, Stata or SPSS conventions), and every request
-a class cannot honour is <strong>refused with a classed error</strong>
+a class cannot honor is <strong>refused with a classed error</strong>
 that names what is available – never rendered as a silently empty or
 approximate column.</p>
 <p>This article is the map. Each family below links to a dedicated
-article that walks through its behaviour in depth.</p>
+article that walks through its behavior in depth.</p>
 <div class="section level2">
 <h2 id="choosing-a-model">Choosing a model<a class="anchor" aria-label="anchor" href="#choosing-a-model"></a>
 </h2>
@@ -201,7 +201,7 @@ probability effects</td>
 <td>
 <code><a href="https://rdrr.io/pkg/MASS/man/polr.html" class="external-link">MASS::polr()</a></code> or <code><a href="https://rdrr.io/pkg/ordinal/man/clm.html" class="external-link">ordinal::clm()</a></code>
 </td>
-<td>thresholds render as a labelled block; AME per category;
+<td>thresholds render as a labeled block; AME per category;
 <code>clm()</code> also fits partial proportional odds</td>
 </tr>
 <tr class="odd">
@@ -233,7 +233,7 @@ the SEs</td>
 <td>
 <code><a href="https://rdrr.io/pkg/pscl/man/zeroinfl.html" class="external-link">pscl::zeroinfl()</a></code> / <code><a href="https://rdrr.io/pkg/pscl/man/hurdle.html" class="external-link">pscl::hurdle()</a></code>
 </td>
-<td>both components render as labelled blocks</td>
+<td>both components render as labeled blocks</td>
 </tr>
 <tr class="odd">
 <td>Proportion in (0, 1)</td>
@@ -701,7 +701,7 @@ available for <code>survreg</code>; <code><a href="https://rdrr.io/pkg/rms/man/c
 and summarized as a posterior median with MAD SD and credible
 interval.</li>
 <li>
-<strong>Exponentiate</strong> – the labelled ratio
+<strong>Exponentiate</strong> – the labeled ratio
 <code>exponentiate = TRUE</code> produces. The label follows the link:
 OR under logit, IRR for count log-links, RR for the binomial log link,
 MR (mean ratio) for Gamma log links, HR for proportional hazards, TR
@@ -709,7 +709,7 @@ MR (mean ratio) for Gamma log links, HR for proportional hazards, TR
 warn and stay untouched; links whose exponential is not a ratio (probit,
 cauchit, inverse) are refused.</li>
 <li>
-<strong>Blocks</strong> – labelled subordinate row blocks rendered
+<strong>Blocks</strong> – labeled subordinate row blocks rendered
 inside the same table (random effects, thresholds, zero components,
 per-outcome segments), each explained by a footer line.</li>
 </ul>
@@ -772,7 +772,7 @@ both components.</li>
 <strong>Own-estimator classes</strong> – <code>estimatr</code> fits
 keep the robust SEs they were computed with; <code>fixest</code> fits
 keep their estimator (the footer carries fixest’s own label – clustered,
-Newey-West, Conley, …; fixest’s “IID” is normalised to “Classical”).
+Newey-West, Conley, …; fixest’s “IID” is normalized to “Classical”).
 spicy’s <code>HC*</code> / <code>CR*</code> tokens are refused for
 both.</li>
 <li>
@@ -884,9 +884,9 @@ tables</em></a>.</p>
 <p><strong>Counts and two-part.</strong> Poisson and negative binomial
 through <code>glm</code> / <code>glm.nb</code> / <code>glmmTMB</code>,
 plus <code><a href="https://rdrr.io/pkg/pscl/man/zeroinfl.html" class="external-link">pscl::zeroinfl()</a></code> and <code><a href="https://rdrr.io/pkg/pscl/man/hurdle.html" class="external-link">pscl::hurdle()</a></code> with
-their zero components as labelled blocks and a combined-response AME.
-See <a href="table-regression-counts.html"><em>Count and two-part
-regression tables</em></a>.</p>
+their zero components as labeled blocks and a combined-response AME. See
+<a href="table-regression-counts.html"><em>Count and two-part regression
+tables</em></a>.</p>
 <p><strong>Survival.</strong> <code><a href="https://rdrr.io/pkg/survival/man/coxph.html" class="external-link">survival::coxph</a></code> and
 <code><a href="https://rdrr.io/pkg/rms/man/cph.html" class="external-link">rms::cph</a></code> (hazard ratios, <code><a href="https://rdrr.io/pkg/survival/man/strata.html" class="external-link">strata()</a></code> supported),
 <code><a href="https://rdrr.io/pkg/survival/man/survreg.html" class="external-link">survival::survreg</a></code> (time ratios) and
@@ -935,7 +935,7 @@ regression tables</em></a>.</p>
 <span><span class="co">#&gt; Position 1: `loess` – no `as_regression_frame()` method registered. If support would be useful, please open an issue: https://github.com/amaltawfik/spicy/issues</span></span>
 <span><span class="co">#&gt; <span style="color: #0000BB;">ℹ</span> Run `methods('as_regression_frame')` to see all currently supported model classes.</span></span></code></pre></div>
 <p>The same contract applies inside a family: a request a class cannot
-honour – <code>HC*</code> for <code>multinom</code>, AME for
+honor – <code>HC*</code> for <code>multinom</code>, AME for
 <code>mlogit</code>, <code>exponentiate</code> on a probit link,
 <code>p_adjust</code> on a Bayesian table – is refused with the reason
 and the supported alternative, never silently degraded.</p>

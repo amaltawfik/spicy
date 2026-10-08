@@ -17,7 +17,7 @@ multi-model layouts, broom integration; the class-by-class map is
 models*](https://amaltawfik.github.io/spicy/articles/table-regression-supported-models.md));
 here we focus on what is specific to survival fits: hazard ratios and
 time ratios, event counts and concordance, and the variance estimators
-of multi-centre studies.
+of multi-center studies.
 
 [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
 supports four survival engines:
@@ -152,7 +152,7 @@ remedy chosen here constrains what the table can report later.
 ## Why there is no AME column
 
 An `"ame"` request on a Cox fit is refused with an explanation rather
-than silently honoured: an average marginal effect needs a response
+than silently honored: an average marginal effect needs a response
 scale, and a Cox model deliberately does not commit to one — a
 per-coefficient “effect on survival” would be ambiguous (at what time?
 on which scale?), and the delta-method standard errors the generic AME
@@ -304,7 +304,7 @@ Rockhill 1997). Efron himself, quoting Peto, put the practical case as
 “it probably doesn’t make much difference” (Efron 1977). Change the
 convention when you have a reason, not on principle.
 
-## Multi-centre data: cluster-robust variance
+## Multi-center data: cluster-robust variance
 
 The `lung` patients were enrolled by 18 institutions, and outcomes
 within an institution may correlate. The `CR*` request routes to the
@@ -342,13 +342,13 @@ provide **one value per row of the model data** — declaring the analytic
 sample up front (as we did) keeps the cluster aligned when predictors
 carry missing values. Second, the direction: robust standard errors are
 not always larger — the sex SE *shrinks* here. Clustering corrects the
-variance in whichever direction the within-centre correlation points;
+variance in whichever direction the within-center correlation points;
 treating it as a conservative inflation ritual misreads it. The robust
 variance corrects the standard errors while leaving the estimates
 marginal (population-averaged); the modeling alternative is a shared
 **frailty** term —
 `coxph(Surv(time, status) ~ age + sex + ph.ecog + frailty(inst), data = lung2)`
-— whose hazard ratios are instead conditional on the centre effect
+— whose hazard ratios are instead conditional on the center effect
 (Therneau & Grambsch 2000, ch. 9). Which estimand the analysis needs
 decides between them.
 

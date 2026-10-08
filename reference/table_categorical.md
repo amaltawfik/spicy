@@ -96,8 +96,8 @@ table_categorical(
   [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
   and
   [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md).
-  Only listed columns are relabelled. For the remaining columns (and
-  when `labels = NULL`, the default), labels are auto-detected from the
+  Only listed columns are relabeled. For the remaining columns (and when
+  `labels = NULL`, the default), labels are auto-detected from the
   variable's label attribute (e.g. from `haven`); if none is found, the
   column name is used. Unnamed (positional) label vectors, accepted
   before 0.13.0, now raise an error.
@@ -248,9 +248,9 @@ table_categorical(
     the standard scientific-publication convention used by SPSS, SAS,
     and LaTeX `siunitx`. Numeric cells are pre-padded with figure-spaces
     (U+2007, digit-width) so every string in a column has the same width
-    with the decimal mark at the same internal position; centring those
+    with the decimal mark at the same internal position; centering those
     uniform-width strings then stacks the decimal points vertically. The
-    same pad-then-centre strategy is applied on every rendering engine
+    same pad-then-center strategy is applied on every rendering engine
     (`gt`, `tinytable`, `flextable`, `word`, ASCII print) for a
     homogeneous rendering, matching
     [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
@@ -264,7 +264,7 @@ table_categorical(
 
   - `"right"`: right-align all numeric columns.
 
-  In the `excel` output, `"center"` centres the numeric columns and
+  In the `excel` output, `"center"` centers the numeric columns and
   `"right"` is the same rendering as the default: cell-string padding
   does not align decimals under a proportional font, so `"decimal"`
   right-aligns instead, which combined with the per-column `numfmt`

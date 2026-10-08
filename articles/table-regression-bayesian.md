@@ -275,7 +275,7 @@ of the table.
 
 The posterior blends data with priors, so a reported Bayesian model is
 incompletely specified until the priors are stated. `rstanarm`’s
-defaults are weakly informative (centred at zero, scaled to the data),
+defaults are weakly informative (centered at zero, scaled to the data),
 which is why the table above sits so close to its frequentist twin — but
 that is a property to *verify and report*, not assume:
 
@@ -549,7 +549,7 @@ table_regression(fit, standardized = "posthoc",
 #> 
 #> Note. Bayesian logistic regression (stanreg).
 #> Std. errors: posterior MAD SD (scaled median absolute deviation).
-#> β = standardised coefficient ("posthoc": B × SD(X)/SD(Y) for numeric predictors, B/SD(Y) for factor dummies).
+#> β = standardized coefficient ("posthoc": B × SD(X)/SD(Y) for numeric predictors, B/SD(Y) for factor dummies).
 ```
 
 On this logistic model the betas are x-standardized on the link scale

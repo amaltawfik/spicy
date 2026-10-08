@@ -48,7 +48,7 @@ spicy_style_names()
 
 - ...:
 
-  Must be empty. Any argument landing here is a misspelt lever and
+  Must be empty. Any argument landing here is a misspelled lever and
   raises an error rather than being ignored.
 
 - p_style:
@@ -260,7 +260,7 @@ Not encoded: the guideline's stated exceptions to the p rule
 (stopping-rule tests, genomewide studies) are analysis contexts the
 style layer cannot see; its inference policy (no p-values without a
 prespecified multiplicity plan, estimates + 95% CI instead, no p-values
-in the Table 1 of a randomised trial) is about what to report, not how
+in the Table 1 of a randomized trial) is about what to report, not how
 to format it – request those layouts through `show_columns` and
 `p_value = FALSE` where you need them.
 
@@ -291,7 +291,7 @@ Encoded:
   (`0[.]78 (0[.]60-1[.]00)`) and is encoded as conformity to the
   journal's published examples, nothing stronger.
 
-Not encoded: the empty-cell filler, the ban on p-values in a randomised
+Not encoded: the empty-cell filler, the ban on p-values in a randomized
 trial's baseline table, and the absolute-rather-than- relative effect
 rule are content decisions, not number formats.
 

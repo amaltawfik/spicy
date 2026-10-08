@@ -288,7 +288,7 @@ different numerical answers when at least one categorical covariate
 (factor, character, or logical) has non-uniform observed proportions.
 
 - `adjustment = "proportional"` (the **default**) — G-computation /
-  population-weighted standardisation. For each focal level of `by`,
+  population-weighted standardization. For each focal level of `by`,
   predictions are evaluated at every observation in the data with `by`
   replaced by that level (covariates kept at their observed values),
   then averaged. This is the convention of Stata’s `margins` and
@@ -353,12 +353,12 @@ Adding covariates changes which effect sizes remain meaningful:
   partial *ω²* via the partial *F* restricted to the focal term (the
   Type-II test of `by` after all covariates, equal to
   [`stats::drop1()`](https://rdrr.io/r/stats/add1.html) in this additive
-  setting) — the correct generalisation of the bivariate effect size to
+  setting) — the correct generalization of the bivariate effect size to
   a covariate-adjusted model.
 - `effect_size = "d"` and `"g"` raise `spicy_unsupported`: Cohen’s *d*
   and Hedges’ *g* have no defined extension under adjustment (the pooled
   SD has no canonical analogue). The error message points to `f2` /
-  `omega2` as the partial-F generalisations.
+  `omega2` as the partial-F generalizations.
 
 Both effect-size variants and their noncentral CIs (when
 `effect_size_ci = TRUE`) are computed from the same fitted model as the
@@ -708,7 +708,7 @@ broom::glance(out)
   tables*](https://amaltawfik.github.io/spicy/articles/table-regression.md)
   for the full coefficient table when the analysis moves from a
   per-outcome one-predictor model to a single multi-predictor `lm` /
-  `glm`, including interactions, polynomials, and standardised
+  `glm`, including interactions, polynomials, and standardized
   coefficients.
 - See [*Summary tables for
   reporting*](https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.md)

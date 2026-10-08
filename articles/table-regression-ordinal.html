@@ -259,12 +259,12 @@ templates, not as substantive findings. Override the block with
 </h2>
 <p>On the logit scale a coefficient is a log cumulative-odds ratio.
 <code>exponentiate = TRUE</code> reports <strong>odds ratios</strong>
-instead, exponentiating the estimate and its CI bounds and relabelling
+instead, exponentiating the estimate and its CI bounds and relabeling
 the column header accordingly. This is link-specific: under
 <code>method = "cloglog"</code> the table reports a <strong>hazard
 ratio</strong> (the grouped-time proportional-hazards reading of
 Prentice &amp; Gloeckler 1978), and the sign convention matters —
-<code>polr</code> and <code>clm</code> parametrise the model as
+<code>polr</code> and <code>clm</code> parametrize the model as
 <code>cloglog P(Y ≤ j) = ζ_j − xB</code>, which places the hazard of the
 grouped event on <code>−B</code>, so the HR the table displays is
 <code>exp(−B)</code>, not <code>exp(B)</code> (a table note discloses
@@ -456,7 +456,7 @@ only when the response has more than two categories.</p>
 <p>Ordinal fits accept the cluster-robust <code>vcov</code> family
 (<code>"CR0"</code>–<code>"CR3"</code>), computed by
 <code><a href="https://zeileis.codeberg.page/sandwich/reference/vcovCL.html" class="external-link">sandwich::vcovCL()</a></code>. One caveat up front: the CR2 / CR3
-small-sample bias-reduction adjustments are defined for (generalised)
+small-sample bias-reduction adjustments are defined for (generalized)
 linear models — <code>clubSandwich</code> has no method for an ordinal
 MLE — so for <code>polr</code> / <code>clm</code> all four
 <code>CR*</code> labels map to the <em>same</em> plain (CR0-type)
@@ -633,7 +633,7 @@ the model freeing each predictor across the cut-points and compares, and
 For <code>polr</code> there is no built-in equivalent — the classic
 logit-specific check is Brant’s (1990) test (package
 <code>brant</code>); <code>clm</code>’s tests are the likelihood-based
-generalisation.</p>
+generalization.</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">ordinal</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/ordinal/man/nominal.test.html" class="external-link">nominal_test</a></span><span class="op">(</span><span class="va">clm_fit</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Tests of nominal effects</span></span>
@@ -687,7 +687,7 @@ term.</p>
 <p>A <strong>nominal</strong> component frees a predictor’s effect
 across the cut-points: a separate coefficient <em>per cut-point</em>
 instead of one shared slope — Peterson &amp; Harrell’s (1990)
-<em>partial</em> proportional odds. These render as a labelled
+<em>partial</em> proportional odds. These render as a labeled
 <strong><code>Non-proportional effects</code></strong> block — one row
 per cut-point — between the proportional coefficients and the
 thresholds:</p>
@@ -853,9 +853,9 @@ Freese 2014), compared to the ordinal fit by AIC — covered in the <a href="tab
 <strong>cloglog</strong> link (<code>method = "cloglog"</code> in
 <code>polr</code>, <code>link = "cloglog"</code> in <code>clm</code>)
 replaces the odds-ratio reading with a hazard-ratio one — displayed as
-<code>exp(−B)</code> under the cumulative parametrisation, as explained
+<code>exp(−B)</code> under the cumulative parametrization, as explained
 in the exponentiate section above — connecting the link menu to a
-modelling rationale.</li>
+modeling rationale.</li>
 </ul>
 </div>
 </div>
@@ -1487,7 +1487,7 @@ probability.
 <p><a href="https://broom.tidymodels.org" class="external-link"><code>broom::tidy()</code></a>
 returns the long frame, one row per
 <code>(term, estimate_type, outcome_level)</code>; each per-category AME
-row is labelled by its response category in the
+row is labeled by its response category in the
 <code>outcome_level</code> column:</p>
 <div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">broom</span><span class="fu">::</span><span class="fu"><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">tidy</a></span><span class="op">(</span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span>, show_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"b"</span>, <span class="st">"ame"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>

@@ -130,7 +130,7 @@ models</em></a>.</p>
 </h2>
 <p><strong>The statistical trigger is the design.</strong> Repeated
 measures on the same subjects, patients within clinics, residents within
-neighbourhoods: observations within a cluster are correlated, and an
+neighborhoods: observations within a cluster are correlated, and an
 ordinary GLM that assumes independence gets its coefficients roughly
 right but their <em>variances</em> wrong – the casualty is every
 standard error, confidence interval, and p-value in the table (Hubbard
@@ -181,7 +181,7 @@ cannot match. First, it needs no distributional assumptions: for
 discrete longitudinal data there is no convenient analogue of the
 multivariate normal – a full joint distribution for ten binary repeated
 measures involves over a thousand association parameters (Fitzmaurice et
-al., 2011) – and GEE sidesteps the problem by modelling only the mean,
+al., 2011) – and GEE sidesteps the problem by modeling only the mean,
 the variance function, and the pairwise association – while remaining,
 in many longitudinal designs, nearly as efficient as maximum likelihood
 (Fitzmaurice et al., 2011). Second, the coefficient estimates are
@@ -539,8 +539,8 @@ of a positive outcome in the treated population than under placebo.</p>
 <div class="section level2">
 <h2 id="what-spicy-refuses-for-gee-and-why">What spicy refuses for GEE, and why<a class="anchor" aria-label="anchor" href="#what-spicy-refuses-for-gee-and-why"></a>
 </h2>
-<p><code><a href="../reference/table_regression.html">table_regression()</a></code> treats requests that GEE cannot
-honour as hard, explained errors rather than silent approximations:</p>
+<p><code><a href="../reference/table_regression.html">table_regression()</a></code> treats requests that GEE cannot honor
+as hard, explained errors rather than silent approximations:</p>
 <ul>
 <li>
 <strong><code>vcov = "HC1"</code> / <code>"CR2"</code> and

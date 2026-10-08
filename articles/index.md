@@ -80,7 +80,7 @@
   Regression tables for fitted models in R with journal-grade formatting
   (APA by default; JAMA, NEJM, The Lancet, Annals, or AER by name):
   classical, heteroskedasticity-consistent and cluster-robust variance,
-  five standardisation methods, partial effect sizes with noncentral-F
+  five standardization methods, partial effect sizes with noncentral-F
   CIs, average marginal effects, multiple-comparison adjustment,
   side-by-side and hierarchical layouts, and output to console, gt,
   tinytable, flextable, Excel, Word, or clipboard.
@@ -144,7 +144,7 @@
   Publication-ready tables for count regression in R with
   [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
   Poisson and negative-binomial rate ratios, zero-inflated and hurdle
-  models with their zero component as a labelled block, per-block
+  models with their zero component as a labeled block, per-block
   exponentiation, combined average marginal effects, cluster-robust
   variance across both components, and zero-inflated mixed models with
   `glmmTMB`.
@@ -155,7 +155,7 @@
   Publication-ready tables for survival regression in R with
   [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
   Cox hazard ratios with events and concordance, cluster-robust
-  (Lin-Wei) variance for multi-centre data, hierarchical Cox comparisons
+  (Lin-Wei) variance for multi-center data, hierarchical Cox comparisons
   by partial-likelihood ratio test, accelerated failure time models with
   time ratios, and the `survival`, `rms`, and `flexsurv` engines.
 

@@ -120,10 +120,10 @@ The registry of model classes
 supports – one function returning the machine-readable list, whose
 documentation page also describes the per-family behavior (inference,
 robust-variance backends, exponentiate semantics, marginal effects,
-labelled blocks).
+labeled blocks).
 
 - [`table_regression_models()`](https://amaltawfik.github.io/spicy/reference/table_regression_models.md)
-  : Supported models and per-family behaviour of table_regression()
+  : Supported models and per-family behavior of table_regression()
 
 ## Export
 
