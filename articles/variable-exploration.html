@@ -539,9 +539,11 @@ quarto package and Quarto 1.7 or later, whose bundled Typst compiles the
 PDF. Without Quarto, <code>output = "&lt;path&gt;.typ"</code> writes the
 Typst source, which <code>typst compile</code> turns into the same PDF
 on any machine with Typst 0.12 or later. <code>paper = "letter"</code>
-changes the paper size, and <code>font</code>, <code>font_code</code>,
-and <code>colors</code> the look. spicy does not write DDI-XML: for a
-DDI description of the data file, see the <a href="https://CRAN.R-project.org/package=DDIwR" class="external-link">DDIwR</a> package.</p>
+changes the paper size, <code>font</code>, <code>font_code</code>, and
+<code>colors</code> the look, and <code>index_columns</code> the index
+of variables, which takes two columns past 40 variables unless told
+otherwise. spicy does not write DDI-XML: for a DDI description of the
+data file, see the <a href="https://CRAN.R-project.org/package=DDIwR" class="external-link">DDIwR</a> package.</p>
 <div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/code_book.html">code_book</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span>,</span>

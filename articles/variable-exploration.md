@@ -488,9 +488,10 @@ the variables sorted by name. It needs the quarto package and Quarto 1.7
 or later, whose bundled Typst compiles the PDF. Without Quarto,
 `output = "<path>.typ"` writes the Typst source, which `typst compile`
 turns into the same PDF on any machine with Typst 0.12 or later.
-`paper = "letter"` changes the paper size, and `font`, `font_code`, and
-`colors` the look. spicy does not write DDI-XML: for a DDI description
-of the data file, see the
+`paper = "letter"` changes the paper size, `font`, `font_code`, and
+`colors` the look, and `index_columns` the index of variables, which
+takes two columns past 40 variables unless told otherwise. spicy does
+not write DDI-XML: for a DDI description of the data file, see the
 [DDIwR](https://CRAN.R-project.org/package=DDIwR) package.
 
 ``` r

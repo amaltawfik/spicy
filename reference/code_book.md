@@ -29,6 +29,7 @@ code_book(
   font_code = NULL,
   colors = NULL,
   paper = c("a4", "letter"),
+  index_columns = NULL,
   output = NULL
 )
 
@@ -160,6 +161,13 @@ print(x, ...)
 
   Paper size of the PDF: `"a4"` (the default) or `"letter"`.
 
+- index_columns:
+
+  Columns of the index of variables at the end of the PDF: `1` or `2`.
+  `NULL` (the default) sets two columns past 40 variables when no name
+  exceeds 40 characters, one column otherwise. A name longer than that
+  may overflow a column of two.
+
 - output:
 
   `NULL` (the default) returns the codebook, which prints as the list of
@@ -206,8 +214,8 @@ list with
 
 The attributes `language` and `decimal_mark` record the language and the
 decimal mark the codebook was built with, and `appearance` the look of
-its PDF: a list of `font`, `font_code`, `colors` (all eight), and
-`paper`.
+its PDF: a list of `font`, `font_code`, `colors` (all eight), `paper`,
+and `index_columns`.
 
 ## Details
 
