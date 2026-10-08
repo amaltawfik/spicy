@@ -259,7 +259,7 @@ narrow it down:
 code_book(sochealth, sex, age, income_group, starts_with("bmi"))
 #> Codebook
 #> 
-#> Date: 2026-10-07
+#> Date: 2026-10-08
 #> Observations: 1200
 #> Variables: 5
 #> 
@@ -357,7 +357,7 @@ code_book(
 #> Social health survey: body mass index
 #> Jane Doe — University of Somewhere
 #> 
-#> Date: 2026-10-07
+#> Date: 2026-10-08
 #> Observations: 1200
 #> Variables: 2
 #> Note: Fictitious data shipped with spicy.

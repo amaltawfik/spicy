@@ -37,11 +37,11 @@ with a cover, one sheet per variable, and an index.
   the Typst source, to compile on a machine without Quarto.
 
 - [`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md)
-  gains `authors`, `notes`, `source` (the code each variable had in the
-  source file), `range` (minimum and maximum of numeric variables and
-  dates), and `decimal_mark`, and for the look of the PDF `font`,
-  `font_code`, `colors`, and `paper`. The Excel workbook takes the
-  `band` and `primary` colors for its headers, and `font` when it is
+  gains `subtitle`, `authors`, `notes`, `source` (the code each variable
+  had in the source file), `range` (minimum and maximum of numeric
+  variables and dates), and `decimal_mark`, and for the look of the PDF
+  `font`, `font_code`, `colors`, and `paper`. The Excel workbook takes
+  the `band` and `primary` colors for its headers, and `font` when it is
   given.
 
 - [`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md)

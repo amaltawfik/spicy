@@ -98,6 +98,7 @@ workbook or to a PDF.</p>
 <span>  <span class="va">x</span>,</span>
 <span>  <span class="va">...</span>,</span>
 <span>  title <span class="op">=</span> <span class="st">"Codebook"</span>,</span>
+<span>  subtitle <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  authors <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  notes <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  source <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -132,8 +133,15 @@ reordered, but renaming selections is not supported.</p></dd>
 
 
 <dt id="arg-title">title<a class="anchor" aria-label="anchor" href="#arg-title"></a></dt>
-<dd><p>Title of the codebook. Defaults to <code>"Codebook"</code>; <code>NULL</code>
-removes it.</p></dd>
+<dd><p>Title of the codebook, such as the name of the study. The
+PDF adds the word "Codebook" itself, above the title and in the page
+header, so the title need not say it. Defaults to <code>"Codebook"</code>;
+<code>NULL</code> removes it.</p></dd>
+
+
+<dt id="arg-subtitle">subtitle<a class="anchor" aria-label="anchor" href="#arg-subtitle"></a></dt>
+<dd><p>Subtitle of the codebook, under the title: the wave, the
+edition, the extract (<code>"Enquête HESAV 2026, base partielle"</code>).</p></dd>
 
 
 <dt id="arg-authors">authors<a class="anchor" aria-label="anchor" href="#arg-authors"></a></dt>
@@ -146,7 +154,11 @@ with <code>name</code> and the optional <code>affiliation</code> and <code>orcid
 
 <dt id="arg-notes">notes<a class="anchor" aria-label="anchor" href="#arg-notes"></a></dt>
 <dd><p>Character vector of notes on the data (source, exclusions,
-coding rules, ...), one note per element.</p></dd>
+coding rules, ...), one note per element. In the PDF, an element that
+starts with <code>"- "</code> or <code>"* "</code> is a list item, consecutive items making
+one list, and any other element is a paragraph:
+<code>notes = c("Fictitious data.", "- Weight: design weight.", "- BMI: self-reported.")</code>.
+The console and the Excel file show the notes as typed.</p></dd>
 
 
 <dt id="arg-source">source<a class="anchor" aria-label="anchor" href="#arg-source"></a></dt>
@@ -228,17 +240,21 @@ the Typst source of that PDF.</p></dd>
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>A <code>spicy_codebook</code> object, returned invisibly when <code>output</code> is
 given: a list with</p><dl><dt><code>header</code></dt>
-<dd><p>A list: <code>title</code>, <code>authors</code> (a tibble with <code>name</code>,
-<code>affiliation</code> and <code>orcid</code>), <code>date</code>, <code>n_obs</code>, <code>n_vars</code>, <code>notes</code>, and
-<code>declared_missing</code>, a tibble of the declared missing values found in
-the data (<code>code</code>, <code>label</code>, <code>variables</code>, <code>n_variables</code>).</p></dd>
+<dd><p>A list: <code>title</code>, <code>subtitle</code>, <code>authors</code> (a tibble with
+<code>name</code>, <code>affiliation</code> and <code>orcid</code>), <code>date</code>, <code>n_obs</code>, <code>n_vars</code>,
+<code>notes</code>, and <code>declared_missing</code>, a tibble of the declared missing
+values found in the data (<code>code</code>, <code>label</code>, <code>variables</code>,
+<code>n_variables</code>).</p></dd>
 
 <dt><code>variables</code></dt>
 <dd><p>A tibble, one row per variable: <code>position</code> (the
 column's position in <code>x</code>), <code>name</code>, <code>label</code>, <code>type</code>, <code>class</code>,
 <code>source</code>, <code>n_valid</code>, <code>n_missing</code>, <code>n_declared_missing</code>,
-<code>n_distinct</code>, then <code>min</code>, <code>max</code>, <code>mean</code>, <code>sd</code> and <code>median</code> for
-numeric variables and <code>earliest</code> and <code>latest</code> for dates.</p></dd>
+<code>declared_codes</code> (the <code>na_values</code> and <code>na_range</code> of a
+<code>haven_labelled_spss</code> vector, as text; <code>NA</code> without them or under
+<code>user_na = FALSE</code>), <code>n_distinct</code>, then <code>min</code>, <code>max</code>, <code>mean</code>, <code>sd</code>
+and <code>median</code> for numeric variables and <code>earliest</code> and <code>latest</code> for
+dates.</p></dd>
 
 <dt><code>values</code></dt>
 <dd><p>A tibble, one row per value: <code>variable</code>, <code>code</code>,
@@ -283,9 +299,10 @@ the console; the object keeps them whole.</p>
 
 
 <p>The workbook has three sheets, named in the language of the codebook.
-The first, <code>codebook</code>, holds the header as field-value pairs: title, one
-row per author, date, numbers of observations and variables, declared
-missing values, notes, and the versions of spicy and R that wrote it.
+The first, <code>codebook</code>, holds the header as field-value pairs: title,
+subtitle, one row per author, date, numbers of observations and
+variables, declared missing values, notes, and the versions of spicy
+and R that wrote it.
 The other two, <code>variables</code> and <code>values</code>, are the two tables of the
 object from the first row, with a frozen header and filters: numbers
 stay numeric cells and dates are ISO text.</p>
@@ -294,11 +311,12 @@ stay numeric cells and dates are ISO text.</p>
     <h2 id="pdf-output">PDF output<a class="anchor" aria-label="anchor" href="#pdf-output"></a></h2>
 
 
-<p>The PDF opens on a cover (title, authors, date, numbers of observations
-and variables, notes), lists the variables with the page of each, and
-summarizes the declared missing values. One sheet per variable follows
-(counts, statistics, and the table of its values, where <code>M</code> marks a
-declared missing value), then an alphabetical index. A sheet breaks
+<p>The PDF opens on a cover (title, subtitle, authors, date) and a page
+about the data (numbers of observations and variables, notes, declared
+missing values), then lists the variables with the page of each. One
+sheet per variable follows (counts, statistics, and the table of its
+values, where <code>M</code> marks a declared missing value), then an
+alphabetical index. A sheet breaks
 across pages only when it does not fit on one. <code>code_book()</code>
 writes the Typst source and compiles it with the Typst that Quarto
 bundles. Without Quarto, <code>output = "&lt;path&gt;.typ"</code> writes the same
@@ -349,7 +367,7 @@ frequency table of one variable.</p>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="fu">code_book</span><span class="op">(</span><span class="va">sochealth</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Codebook</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Date: 2026-10-07</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Date: 2026-10-08</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Observations: 1200</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Variables: 24</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
@@ -389,14 +407,14 @@ frequency table of one variable.</p>
 <span class="r-in"><span>  notes <span class="op">=</span> <span class="st">"BMI computed from self-reported height and weight."</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">cb</span><span class="op">$</span><span class="va">variables</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 3 × 17</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 3 × 18</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   position name    label type  class source n_valid n_missing n_declared_missing</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>              <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span>        1 sex     Sex   cate… fact… <span style="color: #BB0000;">NA</span>        <span style="text-decoration: underline;">1</span>200         0                  0</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span>       15 bmi     Body… nume… nume… <span style="color: #BB0000;">NA</span>        <span style="text-decoration: underline;">1</span>188        12                  0</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span>       16 bmi_ca… BMI … cate… orde… <span style="color: #BB0000;">NA</span>        <span style="text-decoration: underline;">1</span>188        12                  0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 8 more variables: n_distinct &lt;int&gt;, min &lt;dbl&gt;, max &lt;dbl&gt;, mean &lt;dbl&gt;,</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   sd &lt;dbl&gt;, median &lt;dbl&gt;, earliest &lt;chr&gt;, latest &lt;chr&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 9 more variables: declared_codes &lt;chr&gt;, n_distinct &lt;int&gt;, min &lt;dbl&gt;,</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   max &lt;dbl&gt;, mean &lt;dbl&gt;, sd &lt;dbl&gt;, median &lt;dbl&gt;, earliest &lt;chr&gt;, latest &lt;chr&gt;</span></span>
 <span class="r-in"><span><span class="va">cb</span><span class="op">$</span><span class="va">values</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 6 × 7</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   variable     code          label declared_missing     n pct_total pct_valid</span>

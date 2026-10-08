@@ -71,7 +71,7 @@ which `output = "<path>.xlsx"` writes to Excel and
 code_book(sochealth, sex, age, smoking, bmi)
 #> Codebook
 #> 
-#> Date: 2026-10-07
+#> Date: 2026-10-08
 #> Observations: 1200
 #> Variables: 4
 #> 

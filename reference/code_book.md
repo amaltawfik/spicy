@@ -16,6 +16,7 @@ code_book(
   x,
   ...,
   title = "Codebook",
+  subtitle = NULL,
   authors = NULL,
   notes = NULL,
   source = NULL,
@@ -50,7 +51,14 @@ print(x, ...)
 
 - title:
 
-  Title of the codebook. Defaults to `"Codebook"`; `NULL` removes it.
+  Title of the codebook, such as the name of the study. The PDF adds the
+  word "Codebook" itself, above the title and in the page header, so the
+  title need not say it. Defaults to `"Codebook"`; `NULL` removes it.
+
+- subtitle:
+
+  Subtitle of the codebook, under the title: the wave, the edition, the
+  extract (`"Enquête HESAV 2026, base partielle"`).
 
 - authors:
 
@@ -63,7 +71,11 @@ print(x, ...)
 - notes:
 
   Character vector of notes on the data (source, exclusions, coding
-  rules, ...), one note per element.
+  rules, ...), one note per element. In the PDF, an element that starts
+  with `"- "` or `"* "` is a list item, consecutive items making one
+  list, and any other element is a paragraph:
+  `notes = c("Fictitious data.", "- Weight: design weight.", "- BMI: self-reported.")`.
+  The console and the Excel file show the notes as typed.
 
 - source:
 
@@ -148,18 +160,20 @@ list with
 
 - `header`:
 
-  A list: `title`, `authors` (a tibble with `name`, `affiliation` and
-  `orcid`), `date`, `n_obs`, `n_vars`, `notes`, and `declared_missing`,
-  a tibble of the declared missing values found in the data (`code`,
-  `label`, `variables`, `n_variables`).
+  A list: `title`, `subtitle`, `authors` (a tibble with `name`,
+  `affiliation` and `orcid`), `date`, `n_obs`, `n_vars`, `notes`, and
+  `declared_missing`, a tibble of the declared missing values found in
+  the data (`code`, `label`, `variables`, `n_variables`).
 
 - `variables`:
 
   A tibble, one row per variable: `position` (the column's position in
   `x`), `name`, `label`, `type`, `class`, `source`, `n_valid`,
-  `n_missing`, `n_declared_missing`, `n_distinct`, then `min`, `max`,
-  `mean`, `sd` and `median` for numeric variables and `earliest` and
-  `latest` for dates.
+  `n_missing`, `n_declared_missing`, `declared_codes` (the `na_values`
+  and `na_range` of a `haven_labelled_spss` vector, as text; `NA`
+  without them or under `user_na = FALSE`), `n_distinct`, then `min`,
+  `max`, `mean`, `sd` and `median` for numeric variables and `earliest`
+  and `latest` for dates.
 
 - `values`:
 
@@ -209,24 +223,25 @@ whole.
 ## Excel output
 
 The workbook has three sheets, named in the language of the codebook.
-The first, `codebook`, holds the header as field-value pairs: title, one
-row per author, date, numbers of observations and variables, declared
-missing values, notes, and the versions of spicy and R that wrote it.
-The other two, `variables` and `values`, are the two tables of the
-object from the first row, with a frozen header and filters: numbers
-stay numeric cells and dates are ISO text.
+The first, `codebook`, holds the header as field-value pairs: title,
+subtitle, one row per author, date, numbers of observations and
+variables, declared missing values, notes, and the versions of spicy and
+R that wrote it. The other two, `variables` and `values`, are the two
+tables of the object from the first row, with a frozen header and
+filters: numbers stay numeric cells and dates are ISO text.
 
 ## PDF output
 
-The PDF opens on a cover (title, authors, date, numbers of observations
-and variables, notes), lists the variables with the page of each, and
-summarizes the declared missing values. One sheet per variable follows
-(counts, statistics, and the table of its values, where `M` marks a
-declared missing value), then an alphabetical index. A sheet breaks
-across pages only when it does not fit on one. `code_book()` writes the
-Typst source and compiles it with the Typst that Quarto bundles. Without
-Quarto, `output = "<path>.typ"` writes the same source, self-contained:
-`typst compile` makes the PDF on any machine.
+The PDF opens on a cover (title, subtitle, authors, date) and a page
+about the data (numbers of observations and variables, notes, declared
+missing values), then lists the variables with the page of each. One
+sheet per variable follows (counts, statistics, and the table of its
+values, where `M` marks a declared missing value), then an alphabetical
+index. A sheet breaks across pages only when it does not fit on one.
+`code_book()` writes the Typst source and compiles it with the Typst
+that Quarto bundles. Without Quarto, `output = "<path>.typ"` writes the
+same source, self-contained: `typst compile` makes the PDF on any
+machine.
 
 ## Declared missing values
 
@@ -281,7 +296,7 @@ Other variable inspection:
 code_book(sochealth)
 #> Codebook
 #> 
-#> Date: 2026-10-07
+#> Date: 2026-10-08
 #> Observations: 1200
 #> Variables: 24
 #> 
@@ -321,14 +336,14 @@ cb <- code_book(
   notes = "BMI computed from self-reported height and weight."
 )
 cb$variables
-#> # A tibble: 3 × 17
+#> # A tibble: 3 × 18
 #>   position name    label type  class source n_valid n_missing n_declared_missing
 #>      <int> <chr>   <chr> <chr> <chr> <chr>    <int>     <int>              <int>
 #> 1        1 sex     Sex   cate… fact… NA        1200         0                  0
 #> 2       15 bmi     Body… nume… nume… NA        1188        12                  0
 #> 3       16 bmi_ca… BMI … cate… orde… NA        1188        12                  0
-#> # ℹ 8 more variables: n_distinct <int>, min <dbl>, max <dbl>, mean <dbl>,
-#> #   sd <dbl>, median <dbl>, earliest <chr>, latest <chr>
+#> # ℹ 9 more variables: declared_codes <chr>, n_distinct <int>, min <dbl>,
+#> #   max <dbl>, mean <dbl>, sd <dbl>, median <dbl>, earliest <chr>, latest <chr>
 cb$values
 #> # A tibble: 6 × 7
 #>   variable     code          label declared_missing     n pct_total pct_valid
