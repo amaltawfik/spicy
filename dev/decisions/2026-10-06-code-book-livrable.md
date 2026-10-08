@@ -538,6 +538,36 @@ Relecture d'Amal sur le PDF (2026-10-08) :
   manquants déclarés, qui quitte la page de la liste des variables. La
   liste commence sur une page neuve.
 
+Troisième relecture d'Amal, sur DoMiRéFAS (2026-10-08) :
+
+* **« Manquants déclarés » quitte le tableau d'effectifs de la fiche.** La
+  table des valeurs ventile déjà chaque code déclaré avec sa marque M et
+  son effectif : le compte était redondant. L'objet et l'Excel gardent
+  `n_declared_missing`.
+* **La déclaration elle-même est dite**, ce qui manquait pour les
+  numériques : une colonne `declared_codes` dans `variables` (« 9998,
+  9999 », « 9000–9999 » pour un `na_range`), une ligne du bandeau de
+  fiche « Declared missing codes » quand la variable en a. C'est
+  l'équivalent du `invalrng` de DDI : la déclaration vaut même quand
+  personne n'a donné le code.
+* **`subtitle`** : argument de sous-titre (vague, édition, extrait), sous
+  le titre en 14 pt gris. Le genre reste le mot « Codebook » en vedette,
+  ajouté par le document : titre et sous-titre ne le portent pas. Amal
+  avait écrit « Codebook : DoMiRéFAS, enquête HESAV 2026 (base
+  partielle) » en un seul titre, faute de sous-titre.
+* **Notes : paragraphes par défaut, puces sur demande.** Un élément qui
+  commence par « - » ou « * » devient une puce, les éléments consécutifs
+  marqués forment une liste ; les autres sont des paragraphes. Les
+  codebooks publiés écrivent leurs notes en prose, les puces servent aux
+  énumérations.
+* **Colonne Label seulement quand la variable a des libellés.** Amal
+  proposait une colonne unique « [1] Jamais », comme `freq()`. Écarté :
+  une cellule qui mêle code et libellé perd l'alignement des libellés
+  (« [1] » et « [99998] » n'ont pas la même largeur) et la paire Value /
+  Label est celle de tous les codebooks. Mais un facteur n'a pas de
+  libellé : sa table n'a qu'une colonne Value, pleine largeur, et plus
+  de colonne vide. Deux colonnes dès qu'une valeur porte un libellé.
+
 ## Sources
 
 * ICPSR (2020), *Guide to Social Science Data Preparation and Archiving*,
