@@ -48,15 +48,16 @@ an index.
 
 - `code_book(output = "<path>.pdf")` writes the codebook to a PDF,
   compiled by the Typst that Quarto (1.7 or later, found through the
-  quarto package) bundles: a cover, a page about the data (counts,
-  notes, declared missing values), the list of variables with their
-  pages, one sheet per variable, and an index sorted by name in byte
-  order. A sheet gives the counts, the statistics (minimum and maximum
-  at the precision of the data), and the table of the values, with a
-  Missing column when the variable declares missing codes. Typst
-  warnings arrive as one R warning of class `spicy_typst_warning`.
-  `output = "<path>.typ"` writes the Typst source, to compile with Typst
-  0.12 or later on a machine without Quarto.
+  quarto package) bundles: a cover (dated in words, in the language of
+  the codebook), a page about the data (counts, notes, declared missing
+  values), the list of variables with their pages, one sheet per
+  variable, and an index sorted by name in byte order. A sheet gives the
+  counts, the statistics (minimum and maximum at the precision of the
+  data), and the table of the values, with a Missing column when the
+  variable declares missing codes. Typst warnings arrive as one R
+  warning of class `spicy_typst_warning`. `output = "<path>.typ"` writes
+  the Typst source, to compile with Typst 0.12 or later on a machine
+  without Quarto.
 
 - [`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md)
   gains `subtitle`, `authors` (with affiliations and ORCID), `notes`,
