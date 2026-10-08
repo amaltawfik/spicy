@@ -32,3 +32,5 @@
 ^\.git$
 ^man/figures/animation_varlist\.gif$
 ^\.venv$
+^\.$
+^CONTRIBUTING\.md$
