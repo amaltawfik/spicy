@@ -282,9 +282,6 @@ test_that("polr coefs match parameters::model_parameters() (oracle)", {
   oracle <- parameters::model_parameters(fit, ci = 0.95, exponentiate = FALSE)
 
   b_rows <- fr$coefs[fr$coefs$estimate_type == "B" & !fr$coefs$is_ref, ]
-  # The engine agreement above is the oracle; the pinned SE and p come
-  # from a numerical Hessian and drift at the sixth digit across platforms
-  # (Linux CI vs Windows: 3e-6 on an SE), hence the looser tolerances.
   n_checked <- 0L
   for (nm in b_rows$term) {
     oracle_row <- oracle[oracle$Parameter == nm, ]
@@ -317,9 +314,6 @@ test_that("clm coefs match parameters::model_parameters() (oracle)", {
   oracle <- parameters::model_parameters(fit, ci = 0.95, exponentiate = FALSE)
 
   b_rows <- fr$coefs[fr$coefs$estimate_type == "B" & !fr$coefs$is_ref, ]
-  # The engine agreement above is the oracle; the pinned SE and p come
-  # from a numerical Hessian and drift at the sixth digit across platforms
-  # (Linux CI vs Windows: 3e-6 on an SE), hence the looser tolerances.
   n_checked <- 0L
   for (nm in b_rows$term) {
     oracle_row <- oracle[oracle$Parameter == nm, ]
