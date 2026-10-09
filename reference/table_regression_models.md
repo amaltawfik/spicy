@@ -48,12 +48,13 @@ A data frame with one row per supported engine and columns `family`,
 | Robust, IV, quantile, panel | `fixest` | [`fixest::feols()`](https://lrberge.github.io/fixest/reference/feols.html), [`fixest::feglm()`](https://lrberge.github.io/fixest/reference/feglm.html), [`fixest::fepois()`](https://lrberge.github.io/fixest/reference/feglm.html), [`fixest::fenegbin()`](https://lrberge.github.io/fixest/reference/femlm.html) | yes | `feglm`: OR / IRR | \- |
 | Mixed effects | `lmerMod` | [`lme4::lmer()`](https://rdrr.io/pkg/lme4/man/lmer.html) | yes | \- | Random effects |
 | Mixed effects | `glmerMod` | [`lme4::glmer()`](https://rdrr.io/pkg/lme4/man/glmer.html) | yes | OR / IRR (link) | Random effects |
-| Mixed effects | `glmmTMB` | [`glmmTMB::glmmTMB()`](https://rdrr.io/pkg/glmmTMB/man/glmmTMB.html) | yes | link-dependent (IRR for count families) | Random effects; Zero-inflation; Dispersion |
+| Mixed effects | `glmmTMB` | [`glmmTMB::glmmTMB()`](https://rdrr.io/pkg/glmmTMB/man/glmmTMB.html) | yes (no for the ordinal family) | link-dependent (IRR for count families, OR for ordinal logit) | Random effects; Zero-inflation; Dispersion; Thresholds (ordinal family) |
 | Mixed effects | `lme` | [`nlme::lme()`](https://rdrr.io/pkg/nlme/man/lme.html) | yes | \- | Random effects |
 | Mixed effects | `gls` | [`nlme::gls()`](https://rdrr.io/pkg/nlme/man/gls.html) | yes | \- | \- |
 | Population-averaged (GEE) | `geeglm` | [`geepack::geeglm()`](https://rdrr.io/pkg/geepack/man/geeglm.html) | yes | OR / IRR / RR / MR / HR (link) | \- |
 | Ordinal | `polr` | [`MASS::polr()`](https://rdrr.io/pkg/MASS/man/polr.html) | per category | OR (logit) | Thresholds |
 | Ordinal | `clm` | [`ordinal::clm()`](https://rdrr.io/pkg/ordinal/man/clm.html) | per category | OR (logit) | Thresholds; Non-proportional effects |
+| Ordinal | `clmm` | [`ordinal::clmm()`](https://rdrr.io/pkg/ordinal/man/clmm.html) | no | OR (logit) | Thresholds; Random effects |
 | Categorical | `multinom` | [`nnet::multinom()`](https://rdrr.io/pkg/nnet/man/multinom.html) | per outcome | OR | per-outcome blocks |
 | Categorical | `mlogit` | [`mlogit::mlogit()`](https://rdrr.io/pkg/mlogit/man/mlogit.html) | no | OR | per-alternative rows |
 | Counts, two-part | `zeroinfl` | [`pscl::zeroinfl()`](https://rdrr.io/pkg/pscl/man/zeroinfl.html) | yes (combined response) | IRR (count) + OR (logit zero part) | Zero-inflation |
@@ -144,6 +145,18 @@ per-category (the marginal effect on each P(Y = k)). Defaults include
 McFadden and Nagelkerke pseudo-R-squared. See the [Ordinal regression
 tables](https://amaltawfik.github.io/spicy/articles/table-regression-ordinal.html)
 article.
+
+Cumulative-link mixed models
+([`ordinal::clmm()`](https://rdrr.io/pkg/ordinal/man/clmm.html), and
+[`glmmTMB::glmmTMB()`](https://rdrr.io/pkg/glmmTMB/man/glmmTMB.html)
+with `family = glmmTMB::ordinal()`) add a `Random effects` block and the
+mixed-model fit statistics (n, groups, AIC, BIC; no R-squared). Their
+inference is Wald only: AME, a robust `vcov`, `ci_method = "profile"`
+and `standardized` are refused, as is `nested = TRUE` for `clmm`.
+`exponentiate` follows the `clm` rule (odds ratios under logit, hazard
+ratios under cloglog), except for a `clmm` fit with the cloglog link,
+where it is refused: on the current `ordinal`, the cloglog and loglog
+links of `clmm()` do not match those of `clm()` and of `glmmTMB()`.
 
 ## Counts and two-part models
 
@@ -331,25 +344,26 @@ table_regression_models()
 #> 17        Population-averaged (GEE)      geeglm
 #> 18                          Ordinal        polr
 #> 19                          Ordinal         clm
-#> 20                      Categorical    multinom
-#> 21                      Categorical      mlogit
-#> 22                 Counts, two-part    zeroinfl
-#> 23                 Counts, two-part      hurdle
-#> 24                         Survival       coxph
-#> 25                         Survival     survreg
-#> 26                         Survival         cph
-#> 27                         Survival flexsurvreg
-#> 28                  Survey-weighted      svyglm
-#> 29                  Survey-weighted      svyolr
-#> 30                  Survey-weighted    svycoxph
-#> 31 Additive, proportions, selection         gam
-#> 32 Additive, proportions, selection     betareg
-#> 33 Additive, proportions, selection   selection
-#> 34                              rms         ols
-#> 35                              rms         lrm
-#> 36                              rms         Glm
-#> 37                         Bayesian     stanreg
-#> 38                         Bayesian     brmsfit
+#> 20                          Ordinal        clmm
+#> 21                      Categorical    multinom
+#> 22                      Categorical      mlogit
+#> 23                 Counts, two-part    zeroinfl
+#> 24                 Counts, two-part      hurdle
+#> 25                         Survival       coxph
+#> 26                         Survival     survreg
+#> 27                         Survival         cph
+#> 28                         Survival flexsurvreg
+#> 29                  Survey-weighted      svyglm
+#> 30                  Survey-weighted      svyolr
+#> 31                  Survey-weighted    svycoxph
+#> 32 Additive, proportions, selection         gam
+#> 33 Additive, proportions, selection     betareg
+#> 34 Additive, proportions, selection   selection
+#> 35                              rms         ols
+#> 36                              rms         lrm
+#> 37                              rms         Glm
+#> 38                         Bayesian     stanreg
+#> 39                         Bayesian     brmsfit
 #>                                                                    engine
 #> 1                                                             stats::lm()
 #> 2                                                            stats::glm()
@@ -370,122 +384,165 @@ table_regression_models()
 #> 17                                                      geepack::geeglm()
 #> 18                                                           MASS::polr()
 #> 19                                                         ordinal::clm()
-#> 20                                                       nnet::multinom()
-#> 21                                                       mlogit::mlogit()
-#> 22                                                       pscl::zeroinfl()
-#> 23                                                         pscl::hurdle()
-#> 24                                                      survival::coxph()
-#> 25                                                    survival::survreg()
-#> 26                                                             rms::cph()
-#> 27                                                flexsurv::flexsurvreg()
-#> 28                                                       survey::svyglm()
-#> 29                                                       survey::svyolr()
-#> 30                                                     survey::svycoxph()
-#> 31                                               mgcv::gam(), mgcv::bam()
-#> 32                                                     betareg::betareg()
-#> 33                                           sampleSelection::selection()
-#> 34                                                             rms::ols()
-#> 35                                                             rms::lrm()
-#> 36                                                             rms::Glm()
-#> 37                           rstanarm::stan_glm(), rstanarm::stan_glmer()
-#> 38                                                            brms::brm()
-#>                            ame                            exponentiate
-#> 1                          yes                                       -
-#> 2                          yes          OR / IRR / RR / MR / HR (link)
-#> 3                          yes                                     IRR
-#> 4                          yes                                       -
-#> 5                           no                                       -
-#> 6                          yes                                       -
-#> 7                          yes                                       -
-#> 8                          yes                                       -
-#> 9                          yes                                       -
-#> 10                         yes                                       -
-#> 11                         yes                       `feglm`: OR / IRR
-#> 12                         yes                                       -
-#> 13                         yes                         OR / IRR (link)
-#> 14                         yes link-dependent (IRR for count families)
-#> 15                         yes                                       -
-#> 16                         yes                                       -
-#> 17                         yes          OR / IRR / RR / MR / HR (link)
-#> 18                per category                              OR (logit)
-#> 19                per category                              OR (logit)
-#> 20                 per outcome                                      OR
-#> 21                          no                                      OR
-#> 22     yes (combined response)      IRR (count) + OR (logit zero part)
-#> 23     yes (combined response)      IRR (count) + OR (logit zero part)
-#> 24            RMST / risk diff                                      HR
-#> 25      yes + RMST / risk diff            TR (log-scale distributions)
-#> 26                          no                                      HR
-#> 27                          no                          TR / HR (dist)
-#> 28          yes (design-based)                                OR / IRR
-#> 29 per category (design-based)                              OR (logit)
-#> 30                          no                                      HR
-#> 31                         yes                         OR / IRR (link)
-#> 32                         yes                          OR (mean link)
-#> 33                          no                                       -
-#> 34                         yes                                       -
-#> 35                         yes                                      OR
-#> 36                         yes                          link-dependent
-#> 37                 yes (draws)                          link-dependent
-#> 38                 yes (draws)                          link-dependent
-#>                                        blocks
-#> 1                                           -
-#> 2                                           -
-#> 3                                           -
-#> 4                                           -
-#> 5                                           -
-#> 6                                           -
-#> 7                                           -
-#> 8                                           -
-#> 9                                           -
-#> 10                                          -
-#> 11                                          -
-#> 12                             Random effects
-#> 13                             Random effects
-#> 14 Random effects; Zero-inflation; Dispersion
-#> 15                             Random effects
-#> 16                                          -
-#> 17                                          -
-#> 18                                 Thresholds
-#> 19       Thresholds; Non-proportional effects
-#> 20                         per-outcome blocks
-#> 21                       per-alternative rows
-#> 22                             Zero-inflation
-#> 23                                Zero hurdle
-#> 24                                          -
-#> 25                                          -
-#> 26                                          -
-#> 27                    distribution parameters
-#> 28                                          -
-#> 29                                 Thresholds
-#> 30                                          -
-#> 31                                          -
-#> 32                                          -
-#> 33                        selection component
-#> 34                                          -
-#> 35                                          -
-#> 36                                          -
-#> 37             Random effects (if multilevel)
-#> 38             Random effects (if multilevel)
+#> 20                                                        ordinal::clmm()
+#> 21                                                       nnet::multinom()
+#> 22                                                       mlogit::mlogit()
+#> 23                                                       pscl::zeroinfl()
+#> 24                                                         pscl::hurdle()
+#> 25                                                      survival::coxph()
+#> 26                                                    survival::survreg()
+#> 27                                                             rms::cph()
+#> 28                                                flexsurv::flexsurvreg()
+#> 29                                                       survey::svyglm()
+#> 30                                                       survey::svyolr()
+#> 31                                                     survey::svycoxph()
+#> 32                                               mgcv::gam(), mgcv::bam()
+#> 33                                                     betareg::betareg()
+#> 34                                           sampleSelection::selection()
+#> 35                                                             rms::ols()
+#> 36                                                             rms::lrm()
+#> 37                                                             rms::Glm()
+#> 38                           rstanarm::stan_glm(), rstanarm::stan_glmer()
+#> 39                                                            brms::brm()
+#>                                ame
+#> 1                              yes
+#> 2                              yes
+#> 3                              yes
+#> 4                              yes
+#> 5                               no
+#> 6                              yes
+#> 7                              yes
+#> 8                              yes
+#> 9                              yes
+#> 10                             yes
+#> 11                             yes
+#> 12                             yes
+#> 13                             yes
+#> 14 yes (no for the ordinal family)
+#> 15                             yes
+#> 16                             yes
+#> 17                             yes
+#> 18                    per category
+#> 19                    per category
+#> 20                              no
+#> 21                     per outcome
+#> 22                              no
+#> 23         yes (combined response)
+#> 24         yes (combined response)
+#> 25                RMST / risk diff
+#> 26          yes + RMST / risk diff
+#> 27                              no
+#> 28                              no
+#> 29              yes (design-based)
+#> 30     per category (design-based)
+#> 31                              no
+#> 32                             yes
+#> 33                             yes
+#> 34                              no
+#> 35                             yes
+#> 36                             yes
+#> 37                             yes
+#> 38                     yes (draws)
+#> 39                     yes (draws)
+#>                                                     exponentiate
+#> 1                                                              -
+#> 2                                 OR / IRR / RR / MR / HR (link)
+#> 3                                                            IRR
+#> 4                                                              -
+#> 5                                                              -
+#> 6                                                              -
+#> 7                                                              -
+#> 8                                                              -
+#> 9                                                              -
+#> 10                                                             -
+#> 11                                             `feglm`: OR / IRR
+#> 12                                                             -
+#> 13                                               OR / IRR (link)
+#> 14 link-dependent (IRR for count families, OR for ordinal logit)
+#> 15                                                             -
+#> 16                                                             -
+#> 17                                OR / IRR / RR / MR / HR (link)
+#> 18                                                    OR (logit)
+#> 19                                                    OR (logit)
+#> 20                                                    OR (logit)
+#> 21                                                            OR
+#> 22                                                            OR
+#> 23                            IRR (count) + OR (logit zero part)
+#> 24                            IRR (count) + OR (logit zero part)
+#> 25                                                            HR
+#> 26                                  TR (log-scale distributions)
+#> 27                                                            HR
+#> 28                                                TR / HR (dist)
+#> 29                                                      OR / IRR
+#> 30                                                    OR (logit)
+#> 31                                                            HR
+#> 32                                               OR / IRR (link)
+#> 33                                                OR (mean link)
+#> 34                                                             -
+#> 35                                                             -
+#> 36                                                            OR
+#> 37                                                link-dependent
+#> 38                                                link-dependent
+#> 39                                                link-dependent
+#>                                                                     blocks
+#> 1                                                                        -
+#> 2                                                                        -
+#> 3                                                                        -
+#> 4                                                                        -
+#> 5                                                                        -
+#> 6                                                                        -
+#> 7                                                                        -
+#> 8                                                                        -
+#> 9                                                                        -
+#> 10                                                                       -
+#> 11                                                                       -
+#> 12                                                          Random effects
+#> 13                                                          Random effects
+#> 14 Random effects; Zero-inflation; Dispersion; Thresholds (ordinal family)
+#> 15                                                          Random effects
+#> 16                                                                       -
+#> 17                                                                       -
+#> 18                                                              Thresholds
+#> 19                                    Thresholds; Non-proportional effects
+#> 20                                              Thresholds; Random effects
+#> 21                                                      per-outcome blocks
+#> 22                                                    per-alternative rows
+#> 23                                                          Zero-inflation
+#> 24                                                             Zero hurdle
+#> 25                                                                       -
+#> 26                                                                       -
+#> 27                                                                       -
+#> 28                                                 distribution parameters
+#> 29                                                                       -
+#> 30                                                              Thresholds
+#> 31                                                                       -
+#> 32                                                                       -
+#> 33                                                                       -
+#> 34                                                     selection component
+#> 35                                                                       -
+#> 36                                                                       -
+#> 37                                                                       -
+#> 38                                          Random effects (if multilevel)
+#> 39                                          Random effects (if multilevel)
 
 # All engines of one family:
 subset(table_regression_models(), family == "Mixed effects")
-#>           family    class             engine ame
-#> 12 Mixed effects  lmerMod       lme4::lmer() yes
-#> 13 Mixed effects glmerMod      lme4::glmer() yes
-#> 14 Mixed effects  glmmTMB glmmTMB::glmmTMB() yes
-#> 15 Mixed effects      lme        nlme::lme() yes
-#> 16 Mixed effects      gls        nlme::gls() yes
-#>                               exponentiate
-#> 12                                       -
-#> 13                         OR / IRR (link)
-#> 14 link-dependent (IRR for count families)
-#> 15                                       -
-#> 16                                       -
-#>                                        blocks
-#> 12                             Random effects
-#> 13                             Random effects
-#> 14 Random effects; Zero-inflation; Dispersion
-#> 15                             Random effects
-#> 16                                          -
+#>           family    class             engine                             ame
+#> 12 Mixed effects  lmerMod       lme4::lmer()                             yes
+#> 13 Mixed effects glmerMod      lme4::glmer()                             yes
+#> 14 Mixed effects  glmmTMB glmmTMB::glmmTMB() yes (no for the ordinal family)
+#> 15 Mixed effects      lme        nlme::lme()                             yes
+#> 16 Mixed effects      gls        nlme::gls()                             yes
+#>                                                     exponentiate
+#> 12                                                             -
+#> 13                                               OR / IRR (link)
+#> 14 link-dependent (IRR for count families, OR for ordinal logit)
+#> 15                                                             -
+#> 16                                                             -
+#>                                                                     blocks
+#> 12                                                          Random effects
+#> 13                                                          Random effects
+#> 14 Random effects; Zero-inflation; Dispersion; Thresholds (ordinal family)
+#> 15                                                          Random effects
+#> 16                                                                       -
 ```

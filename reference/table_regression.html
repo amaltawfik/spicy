@@ -168,7 +168,9 @@ Gamma / inverse.gaussian / quasi families with any link.</p>
 auto-promoted to a 1-element list. A broad set of model classes
 is supported – linear / generalized linear (<code>lm</code>, <code>glm</code>,
 <code><a href="https://rdrr.io/pkg/MASS/man/glm.nb.html" class="external-link">MASS::glm.nb</a></code>), mixed-effects (<code>lmer</code>, <code>lme</code>, <code>glmmTMB</code>),
-survival (<code>coxph</code>, <code>survreg</code>), ordinal (<code>polr</code>, <code>clm</code>),
+survival (<code>coxph</code>, <code>survreg</code>), ordinal (<code>polr</code>, <code>clm</code>, and the
+cumulative-link mixed models <code><a href="https://rdrr.io/pkg/ordinal/man/clmm.html" class="external-link">ordinal::clmm</a></code> and <code>glmmTMB</code> with
+<code>family = glmmTMB::ordinal()</code>),
 <code><a href="https://rdrr.io/pkg/mgcv/man/gam.html" class="external-link">mgcv::gam</a></code>/<code>bam</code>, <code>betareg</code>, <code>mlogit</code>, <code><a href="https://rdrr.io/pkg/survey/man/svyglm.html" class="external-link">survey::svyglm</a></code>, <code>rms</code>
 (<code>ols</code>/<code>lrm</code>/<code>cph</code>/<code>Glm</code>), and Bayesian (<code>rstanarm</code>/<code>brms</code>),
 among others. An unsupported class raises
@@ -420,7 +422,8 @@ Default <code>TRUE</code> (APA convention). Hide via <code>FALSE</code>.</p></dd
 
 <dt id="arg-show-thresholds">show_thresholds<a class="anchor" aria-label="anchor" href="#arg-show-thresholds"></a></dt>
 <dd><p>For ordinal cumulative-link models
-(<code><a href="https://rdrr.io/pkg/MASS/man/polr.html" class="external-link">MASS::polr</a></code>, <code><a href="https://rdrr.io/pkg/ordinal/man/clm.html" class="external-link">ordinal::clm</a></code>), whether to display the estimated
+(<code><a href="https://rdrr.io/pkg/MASS/man/polr.html" class="external-link">MASS::polr</a></code>, <code><a href="https://rdrr.io/pkg/ordinal/man/clm.html" class="external-link">ordinal::clm</a></code>, <code><a href="https://rdrr.io/pkg/ordinal/man/clmm.html" class="external-link">ordinal::clmm</a></code>, <code>glmmTMB</code> with the
+ordinal family), whether to display the estimated
 category thresholds (cut-points) as a subordinate <code>"Thresholds"</code>
 block of rows below the predictors, carrying B / SE / CI / p like
 the predictor rows. Default <code>TRUE</code>. <code>FALSE</code> collapses them to a
@@ -572,7 +575,7 @@ values move out of the B column into the merged cell).</p></dd>
 <dt id="arg-show-re">show_re<a class="anchor" aria-label="anchor" href="#arg-show-re"></a></dt>
 <dd><p>Logical. <code>TRUE</code> (default) renders the random-effects
 variance components of a mixed-effects fit (<code>lmer</code>, <code>glmer</code>,
-<code>glmmTMB</code>, <code>lme</code>) as a subordinate <strong>"Random effects" block of
+<code>glmmTMB</code>, <code>lme</code>, <code>clmm</code>) as a subordinate <strong>"Random effects" block of
 table rows</strong> below the fixed effects: one row per standard
 deviation / correlation per grouping factor, plus the residual,
 each with its estimate, SE, and CI in the shared coefficient

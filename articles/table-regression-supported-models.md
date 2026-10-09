@@ -38,6 +38,7 @@ whichever defensible model you fit.
 | Binary | independent observations | `glm(family = binomial())` | OR via `exponentiate`; add `"ame"` for probability effects |
 | Binary | overdispersed grouped binomial data | `glm(family = quasibinomial())` |  |
 | Ordered categories | a Likert scale, severity grades | [`MASS::polr()`](https://rdrr.io/pkg/MASS/man/polr.html) or [`ordinal::clm()`](https://rdrr.io/pkg/ordinal/man/clm.html) | thresholds render as a labeled block; AME per category; `clm()` also fits partial proportional odds |
+| Ordered categories | clustered or repeated measures | [`ordinal::clmm()`](https://rdrr.io/pkg/ordinal/man/clmm.html) or `glmmTMB::glmmTMB(family = glmmTMB::ordinal())` | thresholds and random effects as labeled blocks; Wald only, no AME |
 | Unordered categories | 3+ nominal outcomes | [`nnet::multinom()`](https://rdrr.io/pkg/nnet/man/multinom.html); [`mlogit::mlogit()`](https://rdrr.io/pkg/mlogit/man/mlogit.html) for alternative-specific predictors | outcome categories render as column groups |
 | Count | mean roughly equal to variance | `glm(family = poisson())` | IRR via `exponentiate`; rates via an [`offset()`](https://rdrr.io/r/stats/offset.html) |
 | Count | variance well above the mean | [`MASS::glm.nb()`](https://rdrr.io/pkg/MASS/man/glm.nb.html) | models the overdispersion; `quasipoisson` merely widens the SEs |
@@ -117,12 +118,13 @@ to get it as a data frame.
 |  | `fixest` | [`fixest::feols()`](https://lrberge.github.io/fixest/reference/feols.html), [`fixest::feglm()`](https://lrberge.github.io/fixest/reference/feglm.html), [`fixest::fepois()`](https://lrberge.github.io/fixest/reference/feglm.html), [`fixest::fenegbin()`](https://lrberge.github.io/fixest/reference/femlm.html) | yes | `feglm`: OR / IRR | \- |
 | Mixed effects | `lmerMod` | [`lme4::lmer()`](https://rdrr.io/pkg/lme4/man/lmer.html) | yes | \- | Random effects |
 |  | `glmerMod` | [`lme4::glmer()`](https://rdrr.io/pkg/lme4/man/glmer.html) | yes | OR / IRR (link) | Random effects |
-|  | `glmmTMB` | [`glmmTMB::glmmTMB()`](https://rdrr.io/pkg/glmmTMB/man/glmmTMB.html) | yes | link-dependent (IRR for count families) | Random effects; Zero-inflation; Dispersion |
+|  | `glmmTMB` | [`glmmTMB::glmmTMB()`](https://rdrr.io/pkg/glmmTMB/man/glmmTMB.html) | yes (no for the ordinal family) | link-dependent (IRR for count families, OR for ordinal logit) | Random effects; Zero-inflation; Dispersion; Thresholds (ordinal family) |
 |  | `lme` | [`nlme::lme()`](https://rdrr.io/pkg/nlme/man/lme.html) | yes | \- | Random effects |
 |  | `gls` | [`nlme::gls()`](https://rdrr.io/pkg/nlme/man/gls.html) | yes | \- | \- |
 | Population-averaged (GEE) | `geeglm` | [`geepack::geeglm()`](https://rdrr.io/pkg/geepack/man/geeglm.html) | yes | OR / IRR / RR / MR / HR (link) | \- |
 | Ordinal | `polr` | [`MASS::polr()`](https://rdrr.io/pkg/MASS/man/polr.html) | per category | OR (logit) | Thresholds |
 |  | `clm` | [`ordinal::clm()`](https://rdrr.io/pkg/ordinal/man/clm.html) | per category | OR (logit) | Thresholds; Non-proportional effects |
+|  | `clmm` | [`ordinal::clmm()`](https://rdrr.io/pkg/ordinal/man/clmm.html) | no | OR (logit) | Thresholds; Random effects |
 | Categorical | `multinom` | [`nnet::multinom()`](https://rdrr.io/pkg/nnet/man/multinom.html) | per outcome | OR | per-outcome blocks |
 |  | `mlogit` | [`mlogit::mlogit()`](https://rdrr.io/pkg/mlogit/man/mlogit.html) | no | OR | per-alternative rows |
 | Counts, two-part | `zeroinfl` | [`pscl::zeroinfl()`](https://rdrr.io/pkg/pscl/man/zeroinfl.html) | yes (combined response) | IRR (count) + OR (logit zero part) | Zero-inflation |
@@ -283,7 +285,9 @@ table – with per-factor `N (<factor>)` counts through the opt-in
 `fixest` default).
 
 **Mixed effects.** `lmer` (Satterthwaite t via `lmerTest`), `glmer`,
-`glmmTMB` (with zero-inflation and dispersion blocks),
+`glmmTMB` (with zero-inflation and dispersion blocks, and a `Thresholds`
+block for the ordinal family),
+[`ordinal::clmm`](https://rdrr.io/pkg/ordinal/man/clmm.html),
 [`nlme::lme`](https://rdrr.io/pkg/nlme/man/lme.html) and
 [`nlme::gls`](https://rdrr.io/pkg/nlme/man/gls.html). Random effects
 render as rows – SD, correlations, residual – deliberately without
@@ -307,7 +311,12 @@ contrasts GEE with subject-specific mixed models in a single table.
 [`ordinal::clm`](https://rdrr.io/pkg/ordinal/man/clm.html): proportional
 odds ratios, a `Thresholds` block for the cut-points (log-odds scale,
 never exponentiated), partial-proportional-odds terms as a
-`Non-proportional effects` block, and per-category AME. See [*Ordinal
+`Non-proportional effects` block, and per-category AME. Cumulative-link
+mixed models,
+[`ordinal::clmm`](https://rdrr.io/pkg/ordinal/man/clmm.html) and
+[`glmmTMB::glmmTMB`](https://rdrr.io/pkg/glmmTMB/man/glmmTMB.html) with
+`family = glmmTMB::ordinal()`, add the `Random effects` block and keep
+the `Thresholds` block; they are Wald only, without AME. See [*Ordinal
 regression
 tables*](https://amaltawfik.github.io/spicy/articles/table-regression-ordinal.md).
 
@@ -398,15 +407,15 @@ or cite:
 
 subset(table_regression_models(), family == "Survival")
 #>      family       class                  engine                    ame                 exponentiate
-#> 24 Survival       coxph       survival::coxph()       RMST / risk diff                           HR
-#> 25 Survival     survreg     survival::survreg() yes + RMST / risk diff TR (log-scale distributions)
-#> 26 Survival         cph              rms::cph()                     no                           HR
-#> 27 Survival flexsurvreg flexsurv::flexsurvreg()                     no               TR / HR (dist)
+#> 25 Survival       coxph       survival::coxph()       RMST / risk diff                           HR
+#> 26 Survival     survreg     survival::survreg() yes + RMST / risk diff TR (log-scale distributions)
+#> 27 Survival         cph              rms::cph()                     no                           HR
+#> 28 Survival flexsurvreg flexsurv::flexsurvreg()                     no               TR / HR (dist)
 #>                     blocks
-#> 24                       -
 #> 25                       -
 #> 26                       -
-#> 27 distribution parameters
+#> 27                       -
+#> 28 distribution parameters
 ```
 
 The per-family reference sections live on its help page:

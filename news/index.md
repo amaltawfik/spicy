@@ -45,6 +45,14 @@ PDF.
   text, date, date-time, time), in English or in French with
   `options(spicy.language)`.
 
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  supports cumulative-link mixed models:
+  [`ordinal::clmm()`](https://rdrr.io/pkg/ordinal/man/clmm.html) fits
+  and
+  [`glmmTMB::glmmTMB()`](https://rdrr.io/pkg/glmmTMB/man/glmmTMB.html)
+  fits with the ordinal family, with their thresholds and random
+  effects.
+
 ### Bug fixes
 
 - [`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md)

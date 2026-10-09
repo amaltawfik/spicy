@@ -77,7 +77,9 @@ table_regression(
   linear (`lm`, `glm`,
   [`MASS::glm.nb`](https://rdrr.io/pkg/MASS/man/glm.nb.html)),
   mixed-effects (`lmer`, `lme`, `glmmTMB`), survival (`coxph`,
-  `survreg`), ordinal (`polr`, `clm`),
+  `survreg`), ordinal (`polr`, `clm`, and the cumulative-link mixed
+  models [`ordinal::clmm`](https://rdrr.io/pkg/ordinal/man/clmm.html)
+  and `glmmTMB` with `family = glmmTMB::ordinal()`),
   [`mgcv::gam`](https://rdrr.io/pkg/mgcv/man/gam.html)/`bam`, `betareg`,
   `mlogit`,
   [`survey::svyglm`](https://rdrr.io/pkg/survey/man/svyglm.html), `rms`
@@ -325,16 +327,17 @@ table_regression(
 
   For ordinal cumulative-link models
   ([`MASS::polr`](https://rdrr.io/pkg/MASS/man/polr.html),
-  [`ordinal::clm`](https://rdrr.io/pkg/ordinal/man/clm.html)), whether
-  to display the estimated category thresholds (cut-points) as a
-  subordinate `"Thresholds"` block of rows below the predictors,
-  carrying B / SE / CI / p like the predictor rows. Default `TRUE`.
-  `FALSE` collapses them to a compact one-line footer note instead.
-  Thresholds are reported on the log-odds (B) scale and are **never
-  exponentiated** (under `exponentiate = TRUE` their rows stay on the
-  log-odds scale). Has no effect on non-ordinal models, and the rows are
-  shown only when a coefficient column (`"b"`/`"beta"`) is in
-  `show_columns`.
+  [`ordinal::clm`](https://rdrr.io/pkg/ordinal/man/clm.html),
+  [`ordinal::clmm`](https://rdrr.io/pkg/ordinal/man/clmm.html),
+  `glmmTMB` with the ordinal family), whether to display the estimated
+  category thresholds (cut-points) as a subordinate `"Thresholds"` block
+  of rows below the predictors, carrying B / SE / CI / p like the
+  predictor rows. Default `TRUE`. `FALSE` collapses them to a compact
+  one-line footer note instead. Thresholds are reported on the
+  log-odds (B) scale and are **never exponentiated** (under
+  `exponentiate = TRUE` their rows stay on the log-odds scale). Has no
+  effect on non-ordinal models, and the rows are shown only when a
+  coefficient column (`"b"`/`"beta"`) is in `show_columns`.
 
 - show_components:
 
@@ -497,19 +500,20 @@ table_regression(
 - show_re:
 
   Logical. `TRUE` (default) renders the random-effects variance
-  components of a mixed-effects fit (`lmer`, `glmer`, `glmmTMB`, `lme`)
-  as a subordinate **"Random effects" block of table rows** below the
-  fixed effects: one row per standard deviation / correlation per
-  grouping factor, plus the residual, each with its estimate, SE, and CI
-  in the shared coefficient columns. The group sizes (`N (groups)`) and
-  the ICC render as fit-statistic rows; the footer reports the
-  estimation method (`REML` / `ML`) and the likelihood-ratio test of the
-  whole random part against the no-random-effects model, with the
-  boundary-corrected chi-bar-squared p-value (Self & Liang 1987; Stram &
-  Lee 1994). Variance-component rows deliberately carry **no per-row
-  p-value**: a Wald test of a variance is invalid at the boundary of the
-  parameter space, and no reporting guideline requests one (see the
-  *Mixed-effects models* section of the [Publication-ready regression
+  components of a mixed-effects fit (`lmer`, `glmer`, `glmmTMB`, `lme`,
+  `clmm`) as a subordinate **"Random effects" block of table rows**
+  below the fixed effects: one row per standard deviation / correlation
+  per grouping factor, plus the residual, each with its estimate, SE,
+  and CI in the shared coefficient columns. The group sizes
+  (`N (groups)`) and the ICC render as fit-statistic rows; the footer
+  reports the estimation method (`REML` / `ML`) and the likelihood-ratio
+  test of the whole random part against the no-random-effects model,
+  with the boundary-corrected chi-bar-squared p-value (Self & Liang
+  1987; Stram & Lee 1994). Variance-component rows deliberately carry
+  **no per-row p-value**: a Wald test of a variance is invalid at the
+  boundary of the parameter space, and no reporting guideline requests
+  one (see the *Mixed-effects models* section of the [Publication-ready
+  regression
   tables](https://amaltawfik.github.io/spicy/articles/table-regression.html)
   article). `FALSE` suppresses the block. No effect on fits without
   random effects (`lm`, `glm`, `coxph`, ...).
