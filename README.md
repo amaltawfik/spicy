@@ -19,7 +19,7 @@ downloads](https://cranlogs.r-pkg.org/badges/grand-total/spicy)](https://cranlog
 
 spicy is an R package for publication-ready tables: frequency tables and
 cross-tabulations, association measures, categorical and continuous
-summary tables, regression tables for 30+ model classes, and labelled
+summary tables, regression tables for 39 model classes, and labelled
 survey data workflows.
 
 ## Features
@@ -57,23 +57,26 @@ row-wise summaries.
   adjustment with G-computation (Stata `margins` style) or equal-weight
   (`emmeans` style) marginal means, and weighted comparisons.
 - **Regression tables** with `table_regression()` for one or more fitted
-  models side by side, across 30+ model classes (see *Supported models*
-  below): classical / heteroskedasticity-robust / cluster-robust /
-  bootstrap / jackknife variance with each class’s field-standard
-  backend, standardized coefficients, family-aware `exponentiate` (OR /
-  IRR / HR / RR / MR, link-gated), Wald or profile-likelihood CIs,
-  average marginal effects (per-category for ordinal and multinomial
-  models), partial *f²* / *η²* / *ω²* / *χ²* effect sizes, class-aware
-  fit statistics (pseudo-*R²*, Nakagawa marginal / conditional *R²*,
-  ICC), hierarchical model comparisons with the correct nested test per
-  class, and multiple-comparison adjustment. Mixed models report their
-  random effects as table rows with an optional boundary-correct
-  per-term test; ordinal models report their thresholds; zero-inflated
-  and hurdle models report every model component. Survival models go
-  beyond hazard ratios: adjusted restricted-mean-survival-time and risk
-  differences by g-computation (`tau` / `at_time`), for `coxph` fits
-  (stratified included) and `survreg` AFT fits, in single tables and in
-  the univariable screen.
+  models side by side, across 39 model classes in 12 families (see
+  *Supported models* below): classical / heteroskedasticity-robust /
+  cluster-robust / bootstrap / jackknife variance with each class’s
+  field-standard backend, standardized coefficients, family-aware
+  `exponentiate` (OR / IRR / HR / RR / MR, link-gated), Wald or
+  profile-likelihood CIs, average marginal effects (per-category for
+  ordinal and multinomial models), partial *f²* / *η²* / *ω²* / *χ²*
+  effect sizes, class-aware fit statistics (pseudo-*R²*, Nakagawa
+  marginal / conditional *R²*, ICC), hierarchical model comparisons with
+  the correct nested test per class (a Wald test on the requested matrix
+  under a robust or cluster-robust `vcov`), and multiple-comparison
+  adjustment. Mixed models report their random effects as table rows
+  with an optional boundary-correct per-term test; ordinal models report
+  their thresholds, and cumulative-link mixed models (`ordinal::clmm()`,
+  `glmmTMB` with the ordinal family) both; zero-inflated and hurdle
+  models report every model component. Survival models go beyond hazard
+  ratios: adjusted restricted-mean-survival-time and risk differences by
+  g-computation (`tau` / `at_time`), for `coxph` fits (stratified
+  included) and `survreg` AFT fits, in single tables and in the
+  univariable screen.
 - **Univariable screening** with `table_regression_uv()`:
   one-predictor-at-a-time models merged with the multivariable fit,
   per-predictor N and events, for `glm`, `lm`, and Cox outcomes.
@@ -87,7 +90,8 @@ row-wise summaries.
   (`N_valid`), and missing data.
 - **Codebooks** with `code_book()`: variables, values, and unweighted
   counts, printed in the console, written to Excel, or compiled to a PDF
-  with a cover, one sheet per variable, and an index.
+  with a cover, notes (paragraphs, lists, italics, bold, code, links),
+  one sheet per variable, and an index.
 - **Label extraction** with `label_from_names()`, including
   LimeSurvey-style headers.
 - **Row-wise summaries** with `mean_n()`, `sum_n()`, and `count_n()`,
@@ -258,10 +262,7 @@ code_book(
 )
 ```
 
-<p align="center">
-
 <img src="https://amaltawfik.github.io/spicy/codebook/cover.png" alt="The cover of the PDF codebook: the word CODEBOOK in spaced capitals, the title Social health survey, its subtitle, two authors with their affiliations and an ORCID link, and the date" width="100%">
-</p>
 
 <img src="https://amaltawfik.github.io/spicy/codebook/sheet.png" alt="The sheet of one variable in the PDF codebook: a band with its position, name, and type, its label, the counts of valid, missing, and distinct values, and the table of its values with n, percent, and valid percent, the system missing row in grey" width="100%">
 
@@ -509,7 +510,7 @@ table_regression(fit)
 #> Std. errors: classical (OLS).
 ```
 
-Regression tables cover 30+ model classes with the conventions of each
+Regression tables cover 39 model classes with the conventions of each
 family. A mixed-effects fit, for example, reports its random effects as
 rows (SD, correlation, residual – each with SE and CI), the ICC and
 group sizes as fit statistics, and the likelihood-ratio test of the

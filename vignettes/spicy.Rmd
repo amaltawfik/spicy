@@ -188,7 +188,7 @@ summary tables together.
 ## Regression tables
 
 `table_regression()` reports the full coefficient table for one or
-several fitted models — more than thirty classes, from `lm()` /
+several fitted models — `r nrow(spicy::table_regression_models())` classes, from `lm()` /
 `glm()` to mixed-effects, ordinal, survival and Bayesian engines (the
 full map is the [Supported models](https://amaltawfik.github.io/spicy/articles/table-regression-supported-models.html)
 article) — with
@@ -273,7 +273,7 @@ kept alongside the reference pages and rebuilt with each release.
   — the core guide, including the univariable screen
   (`table_regression_uv()`).
 - [Supported models](https://amaltawfik.github.io/spicy/articles/table-regression-supported-models.html)
-  — the class-by-class capability map (more than thirty model
+  — the class-by-class capability map (`r nrow(spicy::table_regression_models())` model
   classes).
 - [The structured view](https://amaltawfik.github.io/spicy/articles/as-structured.html)
   — the typed view behind every regression table: filter, aggregate,
