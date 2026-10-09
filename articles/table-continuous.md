@@ -1086,7 +1086,7 @@ table_continuous(
 | Missing values removed: bmi (12), life_sat_health (8). |  |  |  |  |  |  |  |  |  |
 
 Descriptive statistics by Highest education level
-{#tinytable_q5yfyk98lxzlmpcjb3pz .table .tinytable
+{#tinytable_yi6v7t5u2h7vtz7a8ie6 .table .tinytable
 style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 

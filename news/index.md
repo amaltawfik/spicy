@@ -53,6 +53,15 @@ PDF.
   keep only the selected columns of an sf object. The geometry column
   came along.
 
+- The Excel files of
+  [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md),
+  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
+  and
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
+  leave an empty cell empty. It held an empty text, which Excel counted
+  and refused in a formula.
+
 ## spicy 0.13.0
 
 CRAN release: 2026-10-01
