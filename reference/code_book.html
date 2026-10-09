@@ -383,8 +383,12 @@ missing values), then the list of variables with the page of each.</p>
 <p>One sheet per variable comes next, under the heading "Variable sheets":
 a dark band with the position, name, and type (a name over 45
 characters takes a row of its own), rows for the label, the declared
-missing codes, and the source code, then the counts, the statistics,
-and the table of the values. On a sheet that lists declared missing
+missing codes, and the source code, then the counts (valid, missing,
+and distinct values), the statistics, and the table of the values. The
+number of categories is not among the counts: the table of values
+shows them, one row each, and a row "Other categories (n)" the rest
+when <code>values</code> caps the list; <code>n_categories</code> is a column of the object
+and of the Excel workbook only. On a sheet that lists declared missing
 codes, a Missing column marks them with <code>M</code>; the row of the system
 missing values reads "System missing". Minimum and maximum are written
 at the precision of the data; mean, SD, and median at three significant
