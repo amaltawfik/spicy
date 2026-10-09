@@ -4059,7 +4059,7 @@ export_desc_table <- function(
 
     # Same title the console prints, from the same helper, then the
     # two header rows two lines below.
-    wb <- openxlsx2::wb_add_data(
+    wb <- .spicy_xl_add_data(
       wb,
       x = title,
       start_row = 1
@@ -4068,27 +4068,26 @@ export_desc_table <- function(
     bot_header_row <- top_header_row + 1L
     first_body_row <- bot_header_row + 1L
 
-    wb <- openxlsx2::wb_add_data(
+    wb <- .spicy_xl_add_data(
       wb,
       x = as.data.frame(t(hdrs$top), stringsAsFactors = FALSE),
       start_row = top_header_row,
       col_names = FALSE
     )
-    wb <- openxlsx2::wb_add_data(
+    wb <- .spicy_xl_add_data(
       wb,
       x = as.data.frame(t(hdrs$bottom), stringsAsFactors = FALSE),
       start_row = bot_header_row,
       col_names = FALSE
     )
-    # `na.strings = ""`: an empty cell stays empty instead of becoming
-    # an Excel error cell ("#N/A").
-    wb <- openxlsx2::wb_add_data(
+    # An NA or "" cell is not written, so it is empty in Excel (see
+    # .spicy_xl_add_data()).
+    wb <- .spicy_xl_add_data(
       wb,
       x = display_df,
       start_row = first_body_row,
       col_names = FALSE,
-      row_names = FALSE,
-      na.strings = ""
+      row_names = FALSE
     )
 
     for (g in ci_pairs) {

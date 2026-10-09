@@ -56,12 +56,34 @@
     return(wb)
   }
   lines <- unlist(strsplit(note, "\n", fixed = TRUE), use.names = FALSE)
-  openxlsx2::wb_add_data(
+  .spicy_xl_add_data(
     wb,
     sheet = sheet,
     x = lines,
     start_row = start_row
   )
+}
+
+# Write `x` with an empty cell for every NA and every empty string. An NA
+# is left unwritten (`na.strings = NULL`); an "" (the blank of a display
+# grid: the gap of a spanner, a variable name on a continuation row, a
+# p-value shown once per block) is turned into NA first. The default of
+# openxlsx2 writes "#N/A" for an NA, and `na.strings = ""` an empty text
+# cell, which Excel counts (COUNTA, filters) and refuses in arithmetic
+# (#VALUE!). An unwritten cell reads back as NA, like the empty text did.
+.spicy_xl_add_data <- function(wb, x, ...) {
+  blank_to_na <- function(v) {
+    if (is.character(v)) {
+      v[!is.na(v) & !nzchar(v)] <- NA
+    }
+    v
+  }
+  if (is.data.frame(x)) {
+    x[] <- lapply(x, blank_to_na)
+  } else {
+    x <- blank_to_na(x)
+  }
+  openxlsx2::wb_add_data(wb, x = x, na.strings = NULL, ...)
 }
 
 # Column-wise text of a data.frame plus its header row(s), in the

@@ -2230,24 +2230,23 @@ table_categorical <- function(
       # first row; the table starts two rows below (the layout
       # `table_regression()`'s Excel export already uses).
       xl_title <- .categorical_title(NULL)
-      wb <- openxlsx2::wb_add_data(wb, x = xl_title, start_row = 1)
+      wb <- .spicy_xl_add_data(wb, x = xl_title, start_row = 1)
       header_row <- 3L
-      # `na.strings = ""` so the empty cells of a variable-header row
-      # stay blank. Without it openxlsx2 writes Excel ERROR cells
-      # ("#N/A") in the middle of the counts, and any SUM over the
-      # column inherits the error.
+      # The empty cells of a variable-header row are not written at all
+      # (see .spicy_xl_add_data()): written as "#N/A", they would sit in
+      # the middle of the counts and any SUM over the column would
+      # inherit the error.
       # `col_names = TRUE` writes `names(x)` as the sheet's header row,
       # so the frame handed to the writer carries the LABELS -- the
       # `by` branch already writes its two header rows from the display
       # vectors, and this route used to write the keys instead.
       xl_header <- unname(report_labels[names(body_xl)])
-      wb <- openxlsx2::wb_add_data(
+      wb <- .spicy_xl_add_data(
         wb,
         x = setNames(body_xl, xl_header),
         start_row = header_row,
         col_names = TRUE,
-        row_names = FALSE,
-        na.strings = ""
+        row_names = FALSE
       )
 
       nc <- ncol(body_xl)
@@ -3927,7 +3926,7 @@ table_categorical <- function(
     # Same title the console prints (it names the grouping variable,
     # which nothing else in the sheet states), then the two header
     # rows two lines below.
-    wb <- openxlsx2::wb_add_data(
+    wb <- .spicy_xl_add_data(
       wb,
       x = .categorical_title(by_name),
       start_row = 1
@@ -3936,13 +3935,13 @@ table_categorical <- function(
     bot_header_row <- top_header_row + 1L
     first_body_row <- bot_header_row + 1L
 
-    wb <- openxlsx2::wb_add_data(
+    wb <- .spicy_xl_add_data(
       wb,
       x = as.data.frame(t(top_header_flat_ex), stringsAsFactors = FALSE),
       start_row = top_header_row,
       col_names = FALSE
     )
-    wb <- openxlsx2::wb_add_data(
+    wb <- .spicy_xl_add_data(
       wb,
       x = as.data.frame(t(bot_header_ex), stringsAsFactors = FALSE),
       start_row = bot_header_row,
@@ -3968,17 +3967,16 @@ table_categorical <- function(
       body_xl[[.CAT_KEY_SMD]] <- report_wide_char[[.CAT_KEY_SMD]]
     }
 
-    # `na.strings = ""` so the empty cells of a variable-header row
-    # stay blank. Without it openxlsx2 writes Excel ERROR cells
-    # ("#N/A") in the middle of the counts, and any SUM over the
-    # column inherits the error.
-    wb <- openxlsx2::wb_add_data(
+    # The empty cells of a variable-header row are not written at all
+    # (see .spicy_xl_add_data()): written as "#N/A", they would sit in
+    # the middle of the counts and any SUM over the column would
+    # inherit the error.
+    wb <- .spicy_xl_add_data(
       wb,
       x = body_xl,
       start_row = first_body_row,
       col_names = FALSE,
-      row_names = FALSE,
-      na.strings = ""
+      row_names = FALSE
     )
 
     nc <- ncol(body_xl)

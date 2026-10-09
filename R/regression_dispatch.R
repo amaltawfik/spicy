@@ -2055,7 +2055,7 @@ output_excel <- function(rendered, excel_path, excel_sheet) {
 
   start_row <- 1L
   if (!is.null(title) && nzchar(title)) {
-    wb <- openxlsx2::wb_add_data(
+    wb <- .spicy_xl_add_data(
       wb,
       sheet = excel_sheet,
       x = title,
@@ -2078,7 +2078,7 @@ output_excel <- function(rendered, excel_path, excel_sheet) {
       col.names = paste0("V", seq_along(label_at_col))
     )
     names(df) <- names(body)
-    openxlsx2::wb_add_data(
+    .spicy_xl_add_data(
       wb,
       sheet = excel_sheet,
       x = df,
@@ -2158,16 +2158,16 @@ output_excel <- function(rendered, excel_path, excel_sheet) {
   if (length(level_rows) > 0L) {
     body[[1L]][level_rows] <- sub("^\\s+", "", body[[1L]][level_rows])
   }
-  # `na.strings = ""` so NA numeric cells render as blank (not "#N/A");
-  # below we overwrite reference-row and below-threshold cells with
-  # text overrides (the `cell_undefined` glyph / "<.001").
-  wb <- openxlsx2::wb_add_data(
+  # An NA or "" cell is not written, so it is empty in Excel (see
+  # .spicy_xl_add_data()). Below we overwrite reference-row and
+  # below-threshold cells with text overrides (the `cell_undefined`
+  # glyph / "<.001").
+  wb <- .spicy_xl_add_data(
     wb,
     sheet = excel_sheet,
     x = body,
     start_row = body_first_row,
-    col_names = FALSE,
-    na.strings = ""
+    col_names = FALSE
   )
   body_end_row <- body_first_row + nrow(body) - 1L
 
@@ -2294,7 +2294,7 @@ output_excel <- function(rendered, excel_path, excel_sheet) {
 
       txt_col <- txt_body[[j]]
       if (all(text_rows)) {
-        wb <- openxlsx2::wb_add_data(
+        wb <- .spicy_xl_add_data(
           wb,
           sheet = excel_sheet,
           x = data.frame(x = txt_col, stringsAsFactors = FALSE),
@@ -2309,7 +2309,7 @@ output_excel <- function(rendered, excel_path, excel_sheet) {
           if (!nzchar(txt_col[i])) {
             next
           }
-          wb <- openxlsx2::wb_add_data(
+          wb <- .spicy_xl_add_data(
             wb,
             sheet = excel_sheet,
             x = txt_col[i],
@@ -2550,7 +2550,7 @@ output_excel <- function(rendered, excel_path, excel_sheet) {
   if (!is.null(note) && nzchar(note)) {
     foot_row <- body_end_row + 2L
     note_lines <- strsplit(note, "\n", fixed = TRUE)[[1]]
-    wb <- openxlsx2::wb_add_data(
+    wb <- .spicy_xl_add_data(
       wb,
       sheet = excel_sheet,
       x = note_lines,

@@ -1247,32 +1247,31 @@ export_continuous_lm_table <- function(
     # Same title the console prints -- for a by-table it names the
     # grouping variable, which nothing else in the sheet states.
     if (!is.null(title) && nzchar(title)) {
-      wb <- openxlsx2::wb_add_data(wb, x = title, start_row = 1)
+      wb <- .spicy_xl_add_data(wb, x = title, start_row = 1)
     }
     top_header_row <- 3L
     bot_header_row <- top_header_row + 1L
     first_body_row <- bot_header_row + 1L
-    wb <- openxlsx2::wb_add_data(
+    wb <- .spicy_xl_add_data(
       wb,
       x = as.data.frame(t(hdrs$top), stringsAsFactors = FALSE),
       start_row = top_header_row,
       col_names = FALSE
     )
-    wb <- openxlsx2::wb_add_data(
+    wb <- .spicy_xl_add_data(
       wb,
       x = as.data.frame(t(hdrs$bottom), stringsAsFactors = FALSE),
       start_row = bot_header_row,
       col_names = FALSE
     )
-    # `na.strings = ""`: an empty cell stays empty instead of becoming
-    # an Excel error cell ("#N/A").
-    wb <- openxlsx2::wb_add_data(
+    # An NA or "" cell is not written, so it is empty in Excel (see
+    # .spicy_xl_add_data()).
+    wb <- .spicy_xl_add_data(
       wb,
       x = display_df,
       start_row = first_body_row,
       col_names = FALSE,
-      row_names = FALSE,
-      na.strings = ""
+      row_names = FALSE
     )
     if (has_ci) {
       wb <- openxlsx2::wb_merge_cells(

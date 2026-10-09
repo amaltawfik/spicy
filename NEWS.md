@@ -42,6 +42,11 @@ workbook, or a PDF.
 * `varlist()` and `code_book()` keep only the selected columns of an sf
   object. The geometry column came along.
 
+* The Excel files of `table_regression()`, `table_categorical()`,
+  `table_continuous()`, and `table_continuous_lm()` leave an empty cell
+  empty. It held an empty text, which Excel counted and refused in a
+  formula.
+
 # spicy 0.13.0
 
 `table_regression()` now covers more than thirty model classes and gains
