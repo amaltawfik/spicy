@@ -301,8 +301,9 @@ numeric variables and <code>earliest</code> and <code>latest</code> for dates an
 <code>range = FALSE</code> drops <code>min</code>, <code>max</code>, <code>earliest</code>, and <code>latest</code>.</p></dd>
 
 <dt><code>values</code></dt>
-<dd><p>A tibble, one row per value: <code>variable</code>, <code>code</code>,
-<code>label</code>, <code>declared_missing</code>, <code>n</code>, <code>pct_total</code>, and <code>pct_valid</code>. The
+<dd><p>A tibble, one row per value: <code>position</code> and
+<code>variable</code> (of the variable), <code>code</code>, <code>label</code>, <code>declared_missing</code>,
+<code>n</code>, <code>pct_total</code>, and <code>pct_valid</code>. The
 row of the system missing values (<code>code = "NA"</code>) exists only for a
 variable that has missing values.</p></dd>
 
@@ -358,9 +359,16 @@ R that wrote it, with the date and time of writing. The other two,
 <code>variables</code> and <code>values</code>, hold the two tables of the object from the
 first row, under the column headers the console and the PDF show
 (<code>code</code> is "Value", <code>n_valid</code> "Valid"), with a frozen header and
-filters. Numbers stay numeric cells, the percentages shown to one
-decimal; a statistic that is not finite (of a column holding <code>Inf</code>) is
-an empty cell, and dates stay text, written as above.</p>
+filters; in <code>variables</code>, the position, name, and label stay in view
+while the statistics scroll. The workbook always has the same columns,
+in the same order: a column that does not apply to a variable, or to
+any variable of the file, is empty, never left out. Numbers stay
+numeric cells at their full precision, shown as the PDF shows them:
+the percentages to one decimal, the mean, SD, and median of a variable
+to three significant digits of its SD; a statistic that is not finite
+(of a column holding <code>Inf</code>) is an empty cell, and dates stay text,
+written as above. Each worksheet prints in landscape, fitted to the
+width of the page, its header row on every page.</p>
     </div>
     <div class="section level2">
     <h2 id="pdf-output">PDF output<a class="anchor" aria-label="anchor" href="#pdf-output"></a></h2>
@@ -505,13 +513,13 @@ frequency table of one variable; the article
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   n_categories &lt;int&gt;, min &lt;dbl&gt;, max &lt;dbl&gt;, mean &lt;dbl&gt;, sd &lt;dbl&gt;,</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   median &lt;dbl&gt;, earliest &lt;chr&gt;, latest &lt;chr&gt;</span></span>
 <span class="r-in"><span><span class="va">cb</span><span class="op">$</span><span class="va">values</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 4 × 7</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   variable     code          label declared_missing     n pct_total pct_valid</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> bmi_category Normal weight <span style="color: #BB0000;">NA</span>    FALSE              465      38.8      39.1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> bmi_category Overweight    <span style="color: #BB0000;">NA</span>    FALSE              569      47.4      47.9</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> bmi_category Obesity       <span style="color: #BB0000;">NA</span>    FALSE              154      12.8      13.0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">4</span> bmi_category NA            <span style="color: #BB0000;">NA</span>    FALSE               12       1        <span style="color: #BB0000;">NA</span>  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 4 × 8</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   position variable     code    label declared_missing     n pct_total pct_valid</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span>       16 bmi_category Normal… <span style="color: #BB0000;">NA</span>    FALSE              465      38.8      39.1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span>       16 bmi_category Overwe… <span style="color: #BB0000;">NA</span>    FALSE              569      47.4      47.9</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span>       16 bmi_category Obesity <span style="color: #BB0000;">NA</span>    FALSE              154      12.8      13.0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">4</span>       16 bmi_category NA      <span style="color: #BB0000;">NA</span>    FALSE               12       1        <span style="color: #BB0000;">NA</span>  </span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Labelled survey data: declared missing codes count as missing and are</span></span></span>
 <span class="r-in"><span><span class="co"># flagged in `values`.</span></span></span>
@@ -527,16 +535,16 @@ frequency table of one variable; the article
 <span class="r-in"><span>  <span class="op">)</span></span></span>
 <span class="r-in"><span>  <span class="fu">code_book</span><span class="op">(</span><span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span><span class="va">trust</span><span class="op">)</span><span class="op">)</span><span class="op">$</span><span class="va">values</span></span></span>
 <span class="r-in"><span><span class="op">}</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 7 × 7</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   variable code  label      declared_missing     n pct_total pct_valid</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> trust    1     Not at all FALSE                2        20      28.6</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> trust    2     A little   FALSE                3        30      42.9</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> trust    3     Somewhat   FALSE                1        10      14.3</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">4</span> trust    4     A lot      FALSE                1        10      14.3</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">5</span> trust    8     Don't know TRUE                 1        10      <span style="color: #BB0000;">NA</span>  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">6</span> trust    9     Refused    TRUE                 1        10      <span style="color: #BB0000;">NA</span>  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">7</span> trust    NA    <span style="color: #BB0000;">NA</span>         FALSE                1        10      <span style="color: #BB0000;">NA</span>  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 7 × 8</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   position variable code  label      declared_missing     n pct_total pct_valid</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span>        1 trust    1     Not at all FALSE                2        20      28.6</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span>        1 trust    2     A little   FALSE                3        30      42.9</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span>        1 trust    3     Somewhat   FALSE                1        10      14.3</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">4</span>        1 trust    4     A lot      FALSE                1        10      14.3</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">5</span>        1 trust    8     Don't know TRUE                 1        10      <span style="color: #BB0000;">NA</span>  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">6</span>        1 trust    9     Refused    TRUE                 1        10      <span style="color: #BB0000;">NA</span>  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">7</span>        1 trust    NA    <span style="color: #BB0000;">NA</span>         FALSE                1        10      <span style="color: #BB0000;">NA</span>  </span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"openxlsx2"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span></span>
 <span class="r-in"><span>  <span class="va">path</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span>fileext <span class="op">=</span> <span class="st">".xlsx"</span><span class="op">)</span></span></span>

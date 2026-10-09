@@ -218,10 +218,10 @@ list with
 
 - `values`:
 
-  A tibble, one row per value: `variable`, `code`, `label`,
-  `declared_missing`, `n`, `pct_total`, and `pct_valid`. The row of the
-  system missing values (`code = "NA"`) exists only for a variable that
-  has missing values.
+  A tibble, one row per value: `position` and `variable` (of the
+  variable), `code`, `label`, `declared_missing`, `n`, `pct_total`, and
+  `pct_valid`. The row of the system missing values (`code = "NA"`)
+  exists only for a variable that has missing values.
 
 The attributes `language` and `decimal_mark` record the language and the
 decimal mark the codebook was built with, and `appearance` the look of
@@ -277,10 +277,17 @@ variables, declared missing values, notes, and the versions of spicy and
 R that wrote it, with the date and time of writing. The other two,
 `variables` and `values`, hold the two tables of the object from the
 first row, under the column headers the console and the PDF show (`code`
-is "Value", `n_valid` "Valid"), with a frozen header and filters.
-Numbers stay numeric cells, the percentages shown to one decimal; a
-statistic that is not finite (of a column holding `Inf`) is an empty
-cell, and dates stay text, written as above.
+is "Value", `n_valid` "Valid"), with a frozen header and filters; in
+`variables`, the position, name, and label stay in view while the
+statistics scroll. The workbook always has the same columns, in the same
+order: a column that does not apply to a variable, or to any variable of
+the file, is empty, never left out. Numbers stay numeric cells at their
+full precision, shown as the PDF shows them: the percentages to one
+decimal, the mean, SD, and median of a variable to three significant
+digits of its SD; a statistic that is not finite (of a column holding
+`Inf`) is an empty cell, and dates stay text, written as above. Each
+worksheet prints in landscape, fitted to the width of the page, its
+header row on every page.
 
 ## PDF output
 
@@ -435,13 +442,13 @@ cb$variables
 #> #   n_categories <int>, min <dbl>, max <dbl>, mean <dbl>, sd <dbl>,
 #> #   median <dbl>, earliest <chr>, latest <chr>
 cb$values
-#> # A tibble: 4 × 7
-#>   variable     code          label declared_missing     n pct_total pct_valid
-#>   <chr>        <chr>         <chr> <lgl>            <int>     <dbl>     <dbl>
-#> 1 bmi_category Normal weight NA    FALSE              465      38.8      39.1
-#> 2 bmi_category Overweight    NA    FALSE              569      47.4      47.9
-#> 3 bmi_category Obesity       NA    FALSE              154      12.8      13.0
-#> 4 bmi_category NA            NA    FALSE               12       1        NA  
+#> # A tibble: 4 × 8
+#>   position variable     code    label declared_missing     n pct_total pct_valid
+#>      <int> <chr>        <chr>   <chr> <lgl>            <int>     <dbl>     <dbl>
+#> 1       16 bmi_category Normal… NA    FALSE              465      38.8      39.1
+#> 2       16 bmi_category Overwe… NA    FALSE              569      47.4      47.9
+#> 3       16 bmi_category Obesity NA    FALSE              154      12.8      13.0
+#> 4       16 bmi_category NA      NA    FALSE               12       1        NA  
 
 # Labelled survey data: declared missing codes count as missing and are
 # flagged in `values`.
@@ -457,16 +464,16 @@ if (requireNamespace("haven", quietly = TRUE)) {
   )
   code_book(tibble::tibble(trust))$values
 }
-#> # A tibble: 7 × 7
-#>   variable code  label      declared_missing     n pct_total pct_valid
-#>   <chr>    <chr> <chr>      <lgl>            <int>     <dbl>     <dbl>
-#> 1 trust    1     Not at all FALSE                2        20      28.6
-#> 2 trust    2     A little   FALSE                3        30      42.9
-#> 3 trust    3     Somewhat   FALSE                1        10      14.3
-#> 4 trust    4     A lot      FALSE                1        10      14.3
-#> 5 trust    8     Don't know TRUE                 1        10      NA  
-#> 6 trust    9     Refused    TRUE                 1        10      NA  
-#> 7 trust    NA    NA         FALSE                1        10      NA  
+#> # A tibble: 7 × 8
+#>   position variable code  label      declared_missing     n pct_total pct_valid
+#>      <int> <chr>    <chr> <chr>      <lgl>            <int>     <dbl>     <dbl>
+#> 1        1 trust    1     Not at all FALSE                2        20      28.6
+#> 2        1 trust    2     A little   FALSE                3        30      42.9
+#> 3        1 trust    3     Somewhat   FALSE                1        10      14.3
+#> 4        1 trust    4     A lot      FALSE                1        10      14.3
+#> 5        1 trust    8     Don't know TRUE                 1        10      NA  
+#> 6        1 trust    9     Refused    TRUE                 1        10      NA  
+#> 7        1 trust    NA    NA         FALSE                1        10      NA  
 
 if (requireNamespace("openxlsx2", quietly = TRUE)) {
   path <- tempfile(fileext = ".xlsx")

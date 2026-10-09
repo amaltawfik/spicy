@@ -301,20 +301,20 @@ variable that has any:
 ``` r
 
 cb$values
-#> # A tibble: 11 × 7
-#>    variable     code          label declared_missing     n pct_total pct_valid
-#>    <chr>        <chr>         <chr> <lgl>            <int>     <dbl>     <dbl>
-#>  1 sex          Female        NA    FALSE              620      51.7      51.7
-#>  2 sex          Male          NA    FALSE              580      48.3      48.3
-#>  3 income_group Low           NA    FALSE              247      20.6      20.9
-#>  4 income_group Lower middle  NA    FALSE              388      32.3      32.8
-#>  5 income_group Upper middle  NA    FALSE              328      27.3      27.7
-#>  6 income_group High          NA    FALSE              219      18.2      18.5
-#>  7 income_group NA            NA    FALSE               18       1.5      NA  
-#>  8 bmi_category Normal weight NA    FALSE              465      38.8      39.1
-#>  9 bmi_category Overweight    NA    FALSE              569      47.4      47.9
-#> 10 bmi_category Obesity       NA    FALSE              154      12.8      13.0
-#> 11 bmi_category NA            NA    FALSE               12       1        NA
+#> # A tibble: 11 × 8
+#>    position variable     code          label declared_missing     n pct_total pct_valid
+#>       <int> <chr>        <chr>         <chr> <lgl>            <int>     <dbl>     <dbl>
+#>  1        1 sex          Female        NA    FALSE              620      51.7      51.7
+#>  2        1 sex          Male          NA    FALSE              580      48.3      48.3
+#>  3        8 income_group Low           NA    FALSE              247      20.6      20.9
+#>  4        8 income_group Lower middle  NA    FALSE              388      32.3      32.8
+#>  5        8 income_group Upper middle  NA    FALSE              328      27.3      27.7
+#>  6        8 income_group High          NA    FALSE              219      18.2      18.5
+#>  7        8 income_group NA            NA    FALSE               18       1.5      NA  
+#>  8       16 bmi_category Normal weight NA    FALSE              465      38.8      39.1
+#>  9       16 bmi_category Overweight    NA    FALSE              569      47.4      47.9
+#> 10       16 bmi_category Obesity       NA    FALSE              154      12.8      13.0
+#> 11       16 bmi_category NA            NA    FALSE               12       1        NA
 ```
 
 Numeric, text, and date variables have no category rows: `variables`
@@ -433,19 +433,19 @@ cbi
 #>       1 │ trust       Trust in the health…    categorical (labelled codes)          7          3 
 #>       2 │ income      Monthly household i…    numeric                               7          3
 cbi$values
-#> # A tibble: 10 × 7
-#>    variable code  label      declared_missing     n pct_total pct_valid
-#>    <chr>    <chr> <chr>      <lgl>            <int>     <dbl>     <dbl>
-#>  1 trust    1     Not at all FALSE                2        20      28.6
-#>  2 trust    2     A little   FALSE                3        30      42.9
-#>  3 trust    3     Somewhat   FALSE                1        10      14.3
-#>  4 trust    4     A lot      FALSE                1        10      14.3
-#>  5 trust    8     Don't know TRUE                 1        10      NA  
-#>  6 trust    9     Refused    TRUE                 1        10      NA  
-#>  7 trust    NA    NA         FALSE                1        10      NA  
-#>  8 income   99998 Don't know TRUE                 1        10      NA  
-#>  9 income   99999 Refused    TRUE                 1        10      NA  
-#> 10 income   NA    NA         FALSE                1        10      NA
+#> # A tibble: 10 × 8
+#>    position variable code  label      declared_missing     n pct_total pct_valid
+#>       <int> <chr>    <chr> <chr>      <lgl>            <int>     <dbl>     <dbl>
+#>  1        1 trust    1     Not at all FALSE                2        20      28.6
+#>  2        1 trust    2     A little   FALSE                3        30      42.9
+#>  3        1 trust    3     Somewhat   FALSE                1        10      14.3
+#>  4        1 trust    4     A lot      FALSE                1        10      14.3
+#>  5        1 trust    8     Don't know TRUE                 1        10      NA  
+#>  6        1 trust    9     Refused    TRUE                 1        10      NA  
+#>  7        1 trust    NA    NA         FALSE                1        10      NA  
+#>  8        2 income   99998 Don't know TRUE                 1        10      NA  
+#>  9        2 income   99999 Refused    TRUE                 1        10      NA  
+#> 10        2 income   NA    NA         FALSE                1        10      NA
 cbi$variables[, c("name", "type", "declared_codes", "min", "max", "mean")]
 #> # A tibble: 2 × 6
 #>   name   type                         declared_codes   min   max  mean

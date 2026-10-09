@@ -360,20 +360,20 @@ observations and of the valid ones, then a row for the system missing
 values (<code>NA</code>) of each variable that has any:</p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">cb</span><span class="op">$</span><span class="va">values</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 11 × 7</span></span></span>
-<span><span class="co">#&gt;    variable     code          label declared_missing     n pct_total pct_valid</span></span>
-<span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> sex          Female        <span style="color: #BB0000;">NA</span>    FALSE              620      51.7      51.7</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> sex          Male          <span style="color: #BB0000;">NA</span>    FALSE              580      48.3      48.3</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> income_group Low           <span style="color: #BB0000;">NA</span>    FALSE              247      20.6      20.9</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> income_group Lower middle  <span style="color: #BB0000;">NA</span>    FALSE              388      32.3      32.8</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> income_group Upper middle  <span style="color: #BB0000;">NA</span>    FALSE              328      27.3      27.7</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> income_group High          <span style="color: #BB0000;">NA</span>    FALSE              219      18.2      18.5</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> income_group NA            <span style="color: #BB0000;">NA</span>    FALSE               18       1.5      <span style="color: #BB0000;">NA</span>  </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> bmi_category Normal weight <span style="color: #BB0000;">NA</span>    FALSE              465      38.8      39.1</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> bmi_category Overweight    <span style="color: #BB0000;">NA</span>    FALSE              569      47.4      47.9</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> bmi_category Obesity       <span style="color: #BB0000;">NA</span>    FALSE              154      12.8      13.0</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">11</span> bmi_category NA            <span style="color: #BB0000;">NA</span>    FALSE               12       1        <span style="color: #BB0000;">NA</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 11 × 8</span></span></span>
+<span><span class="co">#&gt;    position variable     code          label declared_missing     n pct_total pct_valid</span></span>
+<span><span class="co">#&gt;       <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span>        1 sex          Female        <span style="color: #BB0000;">NA</span>    FALSE              620      51.7      51.7</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span>        1 sex          Male          <span style="color: #BB0000;">NA</span>    FALSE              580      48.3      48.3</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span>        8 income_group Low           <span style="color: #BB0000;">NA</span>    FALSE              247      20.6      20.9</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span>        8 income_group Lower middle  <span style="color: #BB0000;">NA</span>    FALSE              388      32.3      32.8</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span>        8 income_group Upper middle  <span style="color: #BB0000;">NA</span>    FALSE              328      27.3      27.7</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span>        8 income_group High          <span style="color: #BB0000;">NA</span>    FALSE              219      18.2      18.5</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span>        8 income_group NA            <span style="color: #BB0000;">NA</span>    FALSE               18       1.5      <span style="color: #BB0000;">NA</span>  </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span>       16 bmi_category Normal weight <span style="color: #BB0000;">NA</span>    FALSE              465      38.8      39.1</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span>       16 bmi_category Overweight    <span style="color: #BB0000;">NA</span>    FALSE              569      47.4      47.9</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span>       16 bmi_category Obesity       <span style="color: #BB0000;">NA</span>    FALSE              154      12.8      13.0</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">11</span>       16 bmi_category NA            <span style="color: #BB0000;">NA</span>    FALSE               12       1        <span style="color: #BB0000;">NA</span></span></span></code></pre></div>
 <p>Numeric, text, and date variables have no category rows:
 <code>variables</code> summarizes them, and they appear in
 <code>values</code> only through their declared missing values (see
@@ -488,19 +488,19 @@ with the variables that carry them.</p>
 <span><span class="co">#&gt;       1 <span style="color: #9E9E9E;">│</span> trust       Trust in the health…    categorical (labelled codes)          7          3 </span></span>
 <span><span class="co">#&gt;       2 <span style="color: #9E9E9E;">│</span> income      Monthly household i…    numeric                               7          3</span></span>
 <span><span class="va">cbi</span><span class="op">$</span><span class="va">values</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 10 × 7</span></span></span>
-<span><span class="co">#&gt;    variable code  label      declared_missing     n pct_total pct_valid</span></span>
-<span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> trust    1     Not at all FALSE                2        20      28.6</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> trust    2     A little   FALSE                3        30      42.9</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> trust    3     Somewhat   FALSE                1        10      14.3</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> trust    4     A lot      FALSE                1        10      14.3</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> trust    8     Don't know TRUE                 1        10      <span style="color: #BB0000;">NA</span>  </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> trust    9     Refused    TRUE                 1        10      <span style="color: #BB0000;">NA</span>  </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> trust    NA    <span style="color: #BB0000;">NA</span>         FALSE                1        10      <span style="color: #BB0000;">NA</span>  </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> income   99998 Don't know TRUE                 1        10      <span style="color: #BB0000;">NA</span>  </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> income   99999 Refused    TRUE                 1        10      <span style="color: #BB0000;">NA</span>  </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> income   NA    <span style="color: #BB0000;">NA</span>         FALSE                1        10      <span style="color: #BB0000;">NA</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 10 × 8</span></span></span>
+<span><span class="co">#&gt;    position variable code  label      declared_missing     n pct_total pct_valid</span></span>
+<span><span class="co">#&gt;       <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span>        1 trust    1     Not at all FALSE                2        20      28.6</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span>        1 trust    2     A little   FALSE                3        30      42.9</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span>        1 trust    3     Somewhat   FALSE                1        10      14.3</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span>        1 trust    4     A lot      FALSE                1        10      14.3</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span>        1 trust    8     Don't know TRUE                 1        10      <span style="color: #BB0000;">NA</span>  </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span>        1 trust    9     Refused    TRUE                 1        10      <span style="color: #BB0000;">NA</span>  </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span>        1 trust    NA    <span style="color: #BB0000;">NA</span>         FALSE                1        10      <span style="color: #BB0000;">NA</span>  </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span>        2 income   99998 Don't know TRUE                 1        10      <span style="color: #BB0000;">NA</span>  </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span>        2 income   99999 Refused    TRUE                 1        10      <span style="color: #BB0000;">NA</span>  </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span>        2 income   NA    <span style="color: #BB0000;">NA</span>         FALSE                1        10      <span style="color: #BB0000;">NA</span></span></span>
 <span><span class="va">cbi</span><span class="op">$</span><span class="va">variables</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"name"</span>, <span class="st">"type"</span>, <span class="st">"declared_codes"</span>, <span class="st">"min"</span>, <span class="st">"max"</span>, <span class="st">"mean"</span><span class="op">)</span><span class="op">]</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 2 × 6</span></span></span>
 <span><span class="co">#&gt;   name   type                         declared_codes   min   max  mean</span></span>
@@ -584,8 +584,7 @@ Excel workbook</a>.</p>
 <span>  output <span class="op">=</span> <span class="st">"sochealth_codebook.pdf"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <p>Three of its twelve pages. The cover:</p>
-<p align="center">
-<img src="https://amaltawfik.github.io/spicy/codebook/cover.png" alt="The cover: the word CODEBOOK in spaced capitals, the title Social health survey, its subtitle, two authors with their affiliations and an ORCID link, and the date" width="70%"></p>
+<p><img src="https://amaltawfik.github.io/spicy/codebook/cover.png" alt="The cover: the word CODEBOOK in spaced capitals, the title Social health survey, its subtitle, two authors with their affiliations and an ORCID link, and the date" width="100%"></p>
 <p>The page about the data, with the caution on unweighted counts and
 the notes, their markup rendered and their addresses turned into
 links:</p>
