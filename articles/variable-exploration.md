@@ -531,12 +531,11 @@ code_book(
     "- The four `life_sat_*` items run from 1 to 5 (Likert scale).",
     "- `response_date` is the time of the interview, Europe/Zurich."
   ),
-  source = setNames(paste0("Q", seq_along(sochealth)), names(sochealth)),
   output = "sochealth_codebook.pdf"
 )
 ```
 
-Three of its twelve pages. The cover:
+Three of its eleven pages. The cover:
 
 ![The cover: the word CODEBOOK in spaced capitals, the title Social
 health survey, its subtitle, two authors with their affiliations and an
@@ -555,9 +554,9 @@ items](https://amaltawfik.github.io/spicy/codebook/about.png)
 The sheet of `self_rated_health`, one of the twenty-four:
 
 ![The sheet of self_rated_health: a band with its position, name, and
-type, its label and source code, the counts of valid, missing, and
-distinct values, and the table of its values with n, percent, and valid
-percent, the system missing row in
+type, its label, the counts of valid, missing, and distinct values, and
+the table of its values with n, percent, and valid percent, the system
+missing row in
 grey](https://amaltawfik.github.io/spicy/codebook/sheet.png)
 
 ## When to use varlist() and code_book()

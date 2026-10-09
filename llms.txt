@@ -288,9 +288,9 @@ affiliations and an ORCID link, and the
 date](https://amaltawfik.github.io/spicy/codebook/cover.png)
 
 ![The sheet of one variable in the PDF codebook: a band with its
-position, name, and type, its label and source code, the counts of
-valid, missing, and distinct values, and the table of its values with n,
-percent, and valid percent, the system missing row in
+position, name, and type, its label, the counts of valid, missing, and
+distinct values, and the table of its values with n, percent, and valid
+percent, the system missing row in
 grey](https://amaltawfik.github.io/spicy/codebook/sheet.png)
 
 The whole document: [the
