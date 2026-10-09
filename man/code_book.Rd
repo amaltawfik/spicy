@@ -159,8 +159,13 @@ column's position in \code{x}), \code{name}, \code{label}, \code{type}, \code{cl
 \code{declared_codes} (the \code{na_values} and \code{na_range} of a
 \code{haven_labelled_spss} vector, as text, the two parts separated by a
 semicolon; \code{NA} without them or under \code{user_na = FALSE}),
-\code{n_distinct}, \code{n_categories} (the categories of a categorical or
-logical variable, listed or not; \code{NA} otherwise), then \code{min},
+\code{n_distinct} (the distinct values observed, of any variable),
+\code{n_categories} (the categories a categorical or logical variable
+declares, its levels, codes, or \code{TRUE} and \code{FALSE}, whether \code{values}
+lists them all or not; \code{NA} for a numeric, text, or date variable;
+it exceeds \code{n_distinct} when a category has no observation, and
+the Excel workbook shows it as "Categories" next to "Distinct
+values"), then \code{min},
 \code{max}, \code{mean}, \code{sd}, and \code{median} for
 numeric variables and \code{earliest} and \code{latest} for dates and times.
 \code{range = FALSE} drops \code{min}, \code{max}, \code{earliest}, and \code{latest}.}
