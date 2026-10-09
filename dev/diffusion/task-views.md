@@ -25,31 +25,13 @@ Management/Planning » (questionr, surveydata, blaise) pour le codebook,
 « 5.1 Estimation and Variance Estimation » (survey, srvyr, weights...)
 pour les tables sur objets de plan.
 
-Titre : `Package suggestion: spicy (survey tables and codebooks)`
+Titre : `Package suggestion: spicy (survey tables, regression tables and codebooks)`
 
-```markdown
-Hello Matthias, Alexander and Tobias,
-
-I maintain spicy (CRAN: https://cran.r-project.org/package=spicy, site:
-https://amaltawfik.github.io/spicy/) and suggest it for two sections.
-
-What it does. spicy produces the descriptive tables of survey analysis
-from a data frame: frequency tables with valid and cumulative
-percentages, cross-tabulations with tests and effect sizes, summary
-tables of categorical and continuous variables by group, and regression
-tables. The summary tables have survey-design versions that take a
-`survey` design object. The user-defined missing values of SPSS and
-Stata files (haven's `na_values`, `na_range` and tagged NAs) are honored
-and disclosed in every table. `code_book()` documents a data frame as a
-codebook, with unweighted counts per category and the declared missing
-codes, written to Excel or PDF along the ICPSR recommendations. All
-output exists in English and French.
-
-Suggested sections: 5.1 Estimation and Variance Estimation (tables from
-survey design objects, next to srvyr) and 1. Preparations/Management/
-Planning (the codebook, next to questionr and surveydata). Happy to send
-a pull request if you prefer.
-```
+Corps : `dev/diffusion/issue_officialstatistics.md` (relu mot à mot le
+2026-10-09 contre le package : 38 classes au registre de
+`table_regression_models()`, AME par classe, estimands de survie pour
+coxph et survreg, trois classes survey, onze mesures d'association,
+pourcentages colonne ou ligne de `cross_tab()`).
 
 ## ReproducibleResearch (Blischak, Hill, Marwick, Sjoberg, Landau ; version 2026-08-05)
 
@@ -64,32 +46,8 @@ texreg et xtable y sont. tinytable et modelsummary n'y sont pas.
 
 Titre : `Package suggestion: spicy`
 
-```markdown
-1. Which package would you like to suggest? What features does it provide?
-
-spicy, which I maintain. It produces descriptive tables (frequencies,
-cross-tabulations, summary tables by group) and regression tables (more
-than thirty model classes) that follow a reporting convention by default
-(APA 7) or a named journal style (NEJM, JAMA, The Lancet...). The same
-table prints in the console and renders through gt, tinytable and
-flextable, and into Word, Excel and the clipboard, so the table checked
-in a script is the one that goes into the manuscript. Output in English
-and French. `code_book()` writes the codebook of a data frame to Excel or
-PDF.
-
-2. Please provide the link to CRAN by appending the package name
-(case-sensitive) to the end of the URL below:
-
-https://cran.r-project.org/package=spicy
-
-3. Which category do you think is the best fit for the package:
-
-Literate programming, under "Object Conversion Functions": summary
-tables/statistics, tables/cross-tabulations and statistical
-models/methods for HTML and Markdown (through gt and tinytable), LaTeX
-(through tinytable) and Microsoft/LibreOffice formats (Word through
-flextable, Excel through openxlsx2).
-```
+Corps : `dev/diffusion/issue_reproducibleresearch.md`, dans le gabarit
+en trois questions de la vue (même relecture que ci-dessus).
 
 ## Epidemiology (Jombart, Rolland, Gruson ; version 2025-03-03) : ne pas proposer
 
@@ -125,7 +83,7 @@ Depuis le dépôt spicy, après relecture, un fichier par corps de message
 
 ```sh
 gh issue create -R cran-task-views/OfficialStatistics \
-  --title "Package suggestion: spicy (survey tables and codebooks)" \
+  --title "Package suggestion: spicy (survey tables, regression tables and codebooks)" \
   --body-file dev/diffusion/issue_officialstatistics.md
 gh issue create -R cran-task-views/ReproducibleResearch \
   --title "Package suggestion: spicy" \
