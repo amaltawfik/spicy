@@ -484,6 +484,35 @@ test_that("the type vocabulary is read off the R class, in English and French", 
   expect_identical(attr(cb, "language"), "fr")
 })
 
+test_that("an hms column is a time, with its earliest and latest values", {
+  skip_if_not_installed("hms")
+  d <- data.frame(
+    t = hms::as_hms(c("09:15:00", NA, "08:30:00")),
+    e = hms::hms(c(NA_real_, NA, NA))
+  )
+  cb <- code_book(d)
+  expect_identical(cb$variables$type, c("time", "time"))
+  expect_identical(cb$variables$class, rep("hms, difftime", 2L))
+  expect_identical(cb$variables$earliest, c("08:30:00", NA))
+  expect_identical(cb$variables$latest, c("09:15:00", NA))
+  expect_true(all(is.na(cb$variables$min)))
+  # No category rows, as for a date.
+  expect_identical(nrow(cb$values), 0L)
+  withr::local_options(spicy.language = "fr")
+  expect_identical(code_book(d)$variables$type, c("heure", "heure"))
+})
+
+test_that("a data frame whose `[` keeps a column keeps only the selected ones", {
+  # The `[` of an sf object keeps its geometry column whatever the
+  # selection, which listed it unasked and made code_book() fail on a
+  # subset without columns. A class of the test with the same `[`.
+  s <- cb_sticky()
+  expect_identical(code_book(s, a)$variables$name, "a")
+  cb <- code_book(s)
+  expect_identical(cb$variables$name, c("a", "geometry"))
+  expect_identical(cb$variables$type, c("numeric", "list"))
+})
+
 test_that("numeric summaries, and range = FALSE", {
   d <- cb_data()
   v <- code_book(d)$variables

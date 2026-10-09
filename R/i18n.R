@@ -778,6 +778,8 @@
   header_categories = "Categories",
   header_earliest = "Earliest date",
   header_latest = "Latest date",
+  header_earliest_time = "Earliest time",
+  header_latest_time = "Latest time",
   # Spelled out, not `header_mean` / `header_median`: in a codebook "M"
   # marks a declared missing value (`marker_declared_missing`).
   header_codebook_mean = "Mean",
@@ -822,6 +824,7 @@
   cell_type_text = "text",
   cell_type_date = "date",
   cell_type_datetime = "date-time",
+  cell_type_time = "time",
   # The PDF. `title_codebook` is the kicker above the title on the cover
   # (the title itself when there is none), and heads every page with the
   # title. `marker_declared_missing` flags a declared missing value in the

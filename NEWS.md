@@ -33,8 +33,14 @@ workbook, or a PDF.
 
 * `code_book()` names the type of each variable in plain words
   (categorical (nominal), categorical (ordinal), categorical (labelled
-  codes), numeric, logical, text, date, date-time), in English or in
-  French with `options(spicy.language)`.
+  codes), numeric, logical, text, date, date-time, time), in English or
+  in French with `options(spicy.language)`.
+
+## Bug fixes
+
+* `varlist()` and `code_book()` keep only the selected columns of an sf
+  object. The geometry column came along.
+
 # spicy 0.13.0
 
 `table_regression()` now covers more than thirty model classes and gains

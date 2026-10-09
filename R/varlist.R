@@ -154,6 +154,7 @@ varlist_impl <- function(
   include_na = FALSE,
   factor_levels = c("observed", "all"),
   user_na = TRUE,
+  summaries = TRUE,
   raw_expr = substitute(x),
   fn = "varlist()",
   call = rlang::caller_env()
@@ -221,7 +222,8 @@ varlist_impl <- function(
     return(invisible(NULL))
   }
 
-  x <- x[selectors]
+  # As a data frame: the `[` of an sf object keeps its geometry column.
+  x <- as.data.frame(x)[selectors]
 
   # `USE.NAMES = FALSE` everywhere: the variable names already live in
   # the `Variable` column, and stray names attributes on the other
@@ -272,19 +274,25 @@ varlist_impl <- function(
     )
   )
 
-  res$Values <- vapply(
-    seq_along(x),
-    function(i) {
-      summarize_varlist_column(
-        col = x[[i]],
-        name = names(x)[[i]],
-        values = values,
-        include_na = include_na,
-        factor_levels = factor_levels
-      )
-    },
-    character(1)
-  )
+  # `summaries = FALSE` leaves the column empty: code_book() does not keep
+  # it, and it is most of the time on a large file.
+  res$Values <- if (summaries) {
+    vapply(
+      seq_along(x),
+      function(i) {
+        summarize_varlist_column(
+          col = x[[i]],
+          name = names(x)[[i]],
+          values = values,
+          include_na = include_na,
+          factor_levels = factor_levels
+        )
+      },
+      character(1)
+    )
+  } else {
+    rep(NA_character_, length(x))
+  }
 
   res <- tibble::as_tibble(res[c(
     "Variable",

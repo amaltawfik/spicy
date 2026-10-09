@@ -176,12 +176,19 @@ code_book_typst_data <- function(cb) {
       formatC(x, format = "f", digits = digits, decimal.mark = mark)
     }
     stats <- list()
+    # A time of day has its own row labels: "Earliest time", not "date".
+    time <- identical(v$type[[i]], spicy_str("cell_type_time"))
     for (k in stat_cols) {
       x <- v[[k]][[i]]
       if (is.na(x)) {
         next
       }
-      stats[[k]] <- if (is.character(x)) {
+      key <- if (time && k %in% c("earliest", "latest")) {
+        paste0(k, "_time")
+      } else {
+        k
+      }
+      stats[[key]] <- if (is.character(x)) {
         x
       } else {
         fmt(x, if (k %in% c("min", "max")) d else e)
@@ -291,6 +298,8 @@ code_book_typst_data <- function(cb) {
   strings <- c(
     as.list(stats::setNames(code_book_headers(cols), cols)),
     list(
+      earliest_time = spicy_str("header_earliest_time"),
+      latest_time = spicy_str("header_latest_time"),
       page = spicy_str("header_page"),
       variables = spicy_str("header_variables"),
       marker = spicy_str("marker_declared_missing"),

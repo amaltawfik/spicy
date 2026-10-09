@@ -896,3 +896,22 @@ test_that("vl() works end-to-end through a base pipe chain", {
   expect_equal(unname(res_pipe$N_valid), rep(5L, ncol(mtcars)))
   expect_equal(unname(res_pipe$NAs), rep(0L, ncol(mtcars)))
 })
+
+test_that("varlist() keeps only the selected columns of a sticky data frame", {
+  # The `[` of an sf object keeps its geometry column whatever the
+  # selection. A class of the tests with the same `[` (helper-code_book.R).
+  s <- cb_sticky()
+  expect_identical(varlist(s, a, tbl = TRUE)$Variable, "a")
+  expect_identical(varlist(s, tbl = TRUE)$Variable, c("a", "geometry"))
+  expect_identical(s[1]$geometry, list(1, 2, 3))
+})
+
+test_that("varlist_impl() leaves Values empty without summaries", {
+  res <- varlist_impl(
+    data.frame(a = 1:3, b = "x"),
+    tbl = TRUE,
+    summaries = FALSE
+  )
+  expect_identical(res$Values, c(NA_character_, NA_character_))
+  expect_identical(res$N_valid, c(3L, 3L))
+})

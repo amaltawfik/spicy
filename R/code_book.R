@@ -104,11 +104,11 @@
 #' is categorical (nominal), an ordered factor categorical (ordinal), a
 #' `haven_labelled` vector categorical (labelled codes), an integer or
 #' double vector numeric, a logical, character, or `Date` vector logical,
-#' text, or date, and a `POSIXct` or `POSIXlt` vector date-time. The level
-#' of measurement comes from the declaration alone: a factor whose order
-#' was not declared with `ordered()` is nominal. A vector of any other
-#' class is shown by its first class (`difftime`, `hms`, ...), without
-#' statistics. The R class stays in its own column. A `haven_labelled`
+#' text, or date, a `POSIXct` or `POSIXlt` vector date-time, and an `hms`
+#' vector time. The level of measurement comes from the declaration alone:
+#' a factor whose order was not declared with `ordered()` is nominal. A
+#' vector of any other class is shown by its first class (`difftime`,
+#' ...), without statistics. The R class stays in its own column. A `haven_labelled`
 #' vector without value labels is numeric, or text when it stores
 #' characters, and so is one whose value labels all sit on declared
 #' missing codes, with `user_na = TRUE`.
@@ -122,9 +122,10 @@
 #' of a factor in level order. An explicit `NA` level of a factor (from
 #' [addNA()]) counts as missing, in the row of the system missing values.
 #'
-#' Dates are written as `YYYY-MM-DD`, and date-times as
+#' Dates are written as `YYYY-MM-DD`, date-times as
 #' `YYYY-MM-DD HH:MM:SS` followed by the name of the time zone the
-#' variable carries, or `UTC` when it carries none.
+#' variable carries, or `UTC` when it carries none, and times as
+#' `HH:MM:SS`.
 #'
 #' The words the codebook adds (column headers, types, field and sheet
 #' names) follow `options(spicy.language)` when the codebook is built (see
@@ -198,7 +199,7 @@
 #'     `n_distinct`, `n_categories` (the categories of a categorical or
 #'     logical variable, listed or not; `NA` otherwise), then `min`,
 #'     `max`, `mean`, `sd`, and `median` for
-#'     numeric variables and `earliest` and `latest` for dates.
+#'     numeric variables and `earliest` and `latest` for dates and times.
 #'     `range = FALSE` drops `min`, `max`, `earliest`, and `latest`.}
 #'   \item{`values`}{A tibble, one row per value: `variable`, `code`,
 #'     `label`, `declared_missing`, `n`, `pct_total`, and `pct_valid`. The
@@ -306,22 +307,21 @@ code_book <- function(
   lang <- getOption("spicy.language", NULL)
   lang <- if (is.null(lang)) "en" else .spicy_language_option(lang)
 
-  # The counts of varlist(). Its Values column, which the codebook does
-  # not keep, cannot summarise a raw or complex column: that warning is
-  # muffled. Its errors name code_book().
-  vl <- withCallingHandlers(
-    varlist_impl(
-      x,
-      ...,
-      tbl = TRUE,
-      factor_levels = factor_levels,
-      user_na = user_na,
-      fn = "code_book()"
-    ),
-    spicy_summary_failed = function(w) invokeRestart("muffleWarning")
+  # The counts of varlist(), without its Values column, which the codebook
+  # does not keep and which costs most of varlist()'s time on a large
+  # file. Its errors name code_book().
+  vl <- varlist_impl(
+    x,
+    ...,
+    tbl = TRUE,
+    factor_levels = factor_levels,
+    user_na = user_na,
+    summaries = FALSE,
+    fn = "code_book()"
   )
   validate_code_book_source(source, vl$Variable)
-  cols <- x[vl$Variable]
+  # As a data frame: the `[` of an sf object keeps its geometry column.
+  cols <- as.data.frame(x)[vl$Variable]
   # An NA level (`addNA()`) is system missing, as in freq(): factor()
   # drops it and keeps the other levels and the ordering.
   na_level <- vapply(
@@ -558,6 +558,8 @@ code_book_kind <- function(col, user_na) {
     "datetime"
   } else if (inherits(col, "Date")) {
     "date"
+  } else if (inherits(col, "hms")) {
+    "time"
   } else if (identical(cls, "logical")) {
     "logical"
   } else if (identical(cls, "character")) {
@@ -581,6 +583,7 @@ code_book_type <- function(kind, col) {
     text = spicy_str("cell_type_text"),
     date = spicy_str("cell_type_date"),
     datetime = spicy_str("cell_type_datetime"),
+    time = spicy_str("cell_type_time"),
     class(col)[[1L]]
   )
 }
@@ -600,8 +603,14 @@ code_book_stats <- function(col, kind) {
 
 
 code_book_dates <- function(col, kind) {
-  if (!kind %in% c("date", "datetime") || all(is.na(col))) {
+  if (!kind %in% c("date", "datetime", "time") || all(is.na(col))) {
     return(c(NA_character_, NA_character_))
+  }
+  if (kind == "time") {
+    # Not range(): it returns a difftime in seconds, not a time of day.
+    v <- col[!is.na(col)]
+    n <- as.double(v)
+    return(format(v[c(which.min(n), which.max(n))]))
   }
   r <- range(col, na.rm = TRUE)
   if (kind == "date") {

@@ -55,11 +55,13 @@
   let page-of(i) = context link(anchor(i), text(fill: c.accent, str(locate(anchor(i)).page())))
   // A long name is set smaller, never cut: readers copy names from the PDF.
   // The limit is where the name starts to squeeze its neighbours: 30 in
-  // the list and the index, 45 in the band of a sheet.
+  // the list and the index, 45 in the band of a sheet. A name wider than
+  // its column breaks after an underscore or a dot: each part is a box,
+  // and a line may end between two boxes. The text layer keeps the name.
   let name(n, limit: 30, weight: "regular") = mono(
     size: if n.clusters().len() > limit { size.long-name } else { 0.85 * base },
     weight: weight,
-    n,
+    n.matches(regex("[^_.]*[_.]?")).map(m => m.text).filter(p => p != "").map(box).join(),
   )
   // Every table of the document has one style: a header band, horizontal
   // hairlines, no vertical rule. A row that wraps keeps its cells on its

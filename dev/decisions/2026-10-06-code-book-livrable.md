@@ -728,6 +728,27 @@ Troisième relecture d'Amal, sur DoMiRéFAS (2026-10-08) :
   libellé : sa table n'a qu'une colonne Value, pleine largeur, et plus
   de colonne vide. Deux colonnes dès qu'une valeur porte un libellé.
 
+## Restes (2026-10-09)
+
+Quatre points relevés par les audits, traités ensemble pour clore la
+fonction (registre n°333).
+
+* **Nom plus large que sa colonne.** Le gabarit coupe un nom après un
+  « _ » ou un « . » : chaque segment est une box Typst et la ligne peut
+  se rompre entre deux box. La couche texte garde le nom entier. Un
+  nom sans séparateur de plus de 80 caractères environ déborde encore :
+  accepté, aucun format d'enquête n'en produit (SPSS 64 octets, Stata
+  32).
+* **hms.** Une heure du jour est un type à part entière (« time » /
+  « heure »), avec première et dernière valeur. La fiche PDF dit
+  « Earliest time », les colonnes du tibble et d'Excel gardent
+  « Earliest date » : une colonne sert à toutes les variables, une fiche
+  à une seule. `difftime` (une durée) reste montré par sa classe.
+* **sf.** Les deux fonctions indexent `as.data.frame(x)` : le `[` d'un
+  objet sf garde la géométrie, ce qui faisait planter code_book().
+* **Performance.** `varlist_impl(summaries = FALSE)` saute la colonne
+  Values que le codebook ne garde pas.
+
 ## Sources
 
 * ICPSR (2020), *Guide to Social Science Data Preparation and Archiving*,

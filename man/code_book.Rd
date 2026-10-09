@@ -154,7 +154,7 @@ semicolon; \code{NA} without them or under \code{user_na = FALSE}),
 \code{n_distinct}, \code{n_categories} (the categories of a categorical or
 logical variable, listed or not; \code{NA} otherwise), then \code{min},
 \code{max}, \code{mean}, \code{sd}, and \code{median} for
-numeric variables and \code{earliest} and \code{latest} for dates.
+numeric variables and \code{earliest} and \code{latest} for dates and times.
 \code{range = FALSE} drops \code{min}, \code{max}, \code{earliest}, and \code{latest}.}
 \item{\code{values}}{A tibble, one row per value: \code{variable}, \code{code},
 \code{label}, \code{declared_missing}, \code{n}, \code{pct_total}, and \code{pct_valid}. The
@@ -181,11 +181,11 @@ The type of a variable is read off its R class, never guessed: a factor
 is categorical (nominal), an ordered factor categorical (ordinal), a
 \code{haven_labelled} vector categorical (labelled codes), an integer or
 double vector numeric, a logical, character, or \code{Date} vector logical,
-text, or date, and a \code{POSIXct} or \code{POSIXlt} vector date-time. The level
-of measurement comes from the declaration alone: a factor whose order
-was not declared with \code{ordered()} is nominal. A vector of any other
-class is shown by its first class (\code{difftime}, \code{hms}, ...), without
-statistics. The R class stays in its own column. A \code{haven_labelled}
+text, or date, a \code{POSIXct} or \code{POSIXlt} vector date-time, and an \code{hms}
+vector time. The level of measurement comes from the declaration alone:
+a factor whose order was not declared with \code{ordered()} is nominal. A
+vector of any other class is shown by its first class (\code{difftime},
+...), without statistics. The R class stays in its own column. A \code{haven_labelled}
 vector without value labels is numeric, or text when it stores
 characters, and so is one whose value labels all sit on declared
 missing codes, with \code{user_na = TRUE}.
@@ -199,9 +199,10 @@ values. The codes of a labelled vector come in code order, the levels
 of a factor in level order. An explicit \code{NA} level of a factor (from
 \code{\link[=addNA]{addNA()}}) counts as missing, in the row of the system missing values.
 
-Dates are written as \code{YYYY-MM-DD}, and date-times as
+Dates are written as \code{YYYY-MM-DD}, date-times as
 \verb{YYYY-MM-DD HH:MM:SS} followed by the name of the time zone the
-variable carries, or \code{UTC} when it carries none.
+variable carries, or \code{UTC} when it carries none, and times as
+\code{HH:MM:SS}.
 
 The words the codebook adds (column headers, types, field and sheet
 names) follow \code{options(spicy.language)} when the codebook is built (see

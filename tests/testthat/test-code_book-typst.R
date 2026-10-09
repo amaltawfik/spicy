@@ -129,6 +129,21 @@ test_that("statistics: min and max as the data, summaries at the SD's precision"
   expect_identical(typst_literal("a\tb"), "\"a b\"")
 })
 
+test_that("a time of day has its own row labels on its sheet", {
+  skip_if_not_installed("hms")
+  d <- data.frame(t = hms::as_hms(c("09:15:00", "08:30:00")))
+  out <- code_book_typst_data(code_book(d))
+  expect_identical(
+    out$data$vars[[1]]$stats,
+    list(earliest_time = "08:30:00", latest_time = "09:15:00")
+  )
+  expect_identical(out$strings$earliest_time, "Earliest time")
+  expect_identical(out$strings$latest_time, "Latest time")
+  withr::local_options(spicy.language = "fr")
+  out <- code_book_typst_data(code_book(d))
+  expect_identical(out$strings$earliest_time, "Première heure")
+})
+
 test_that("colors merge over the palette, and paper sets the page", {
   d <- data.frame(x = 1)
   look <- attr(code_book(d, colors = c(band = "#112233")), "appearance")

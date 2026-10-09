@@ -108,6 +108,8 @@
         n: "n",
         pct_total: "%",
         pct_valid: "Valid %",
+        earliest_time: "Earliest time",
+        latest_time: "Latest time",
         page: "Page",
         variables: "Variables",
         marker: "M",
