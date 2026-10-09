@@ -623,3 +623,20 @@ test_that("user_na internals handle non-atomic and empty inputs", {
   expect_identical(spicy:::.user_na_to_na(1:3), 1:3)
   expect_identical(spicy:::.user_na_zap(letters), letters)
 })
+
+test_that("a large declared missing code is written as it is, not 1e+05", {
+  x <- labelled::labelled_spss(
+    c(1, 2, 1e5, 99999999),
+    labels = c(Yes = 1, No = 2, Refused = 1e5),
+    na_values = c(1e5, 99999999)
+  )
+  info <- spicy:::.user_na_info(x)
+  expect_identical(
+    info$value,
+    c("[1] Yes", "[2] No", "[100000] Refused", "99999999")
+  )
+  expect_identical(info$code, c("1", "2", "100000", "99999999"))
+  out <- paste(capture.output(print(freq(x))), collapse = "\n")
+  expect_match(out, "[100000] Refused", fixed = TRUE)
+  expect_false(grepl("1e+05", out, fixed = TRUE))
+})

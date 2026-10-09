@@ -183,7 +183,7 @@
       sel <- !tagged & !is.na(codes) & codes == v
       rows_value <- c(
         rows_value,
-        display_for(as.character(v), label_for(v))
+        display_for(.format_code(v), label_for(v))
       )
       rows_n <- c(rows_n, count_of(sel))
       rows_code <- c(rows_code, .format_code(v))

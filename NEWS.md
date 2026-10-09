@@ -42,6 +42,9 @@ workbook, or a PDF.
 * `varlist()` and `code_book()` keep only the selected columns of an sf
   object. The geometry column came along.
 
+* `freq()` writes a large declared missing code as it is, `100000`, not
+  `1e+05`.
+
 * The Excel files of `table_regression()`, `table_categorical()`,
   `table_continuous()`, and `table_continuous_lm()` leave an empty cell
   empty. It held an empty text, which Excel counted and refused in a
