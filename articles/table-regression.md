@@ -636,6 +636,58 @@ Validation is strict: identical `nobs` and identical response across all
 models, otherwise a `spicy_invalid_input` error explains the
 listwise-deletion trap and suggests refitting on the common subset.
 
+The change test follows `vcov`. Under any estimator other than the
+classical one, each pair is tested by a Wald test of the coefficients
+the current model adds, on that model’s robust matrix, so the block test
+and the coefficients agree. The row then reads *Wald F-change* (*Wald χ²
+(change)* for `glm`, `coxph` and the other likelihood classes), and ΔR²
+is unchanged. A Wald test of a large block in a small sample rejects too
+often, so read it with care when many predictors enter at once.
+
+``` r
+
+table_regression(list(m1, m2, m3), nested = TRUE, vcov = "HC3")
+#> Hierarchical linear regression: wellbeing_score
+#> 
+#>                          Model 1                Model 2            Model 3     
+#>                    ────────────────────  ─────────────────────  ────────────── 
+#>  Variable        │    B      SE     p       B       SE     p       B       SE  
+#> ─────────────────┼─────────────────────────────────────────────────────────────
+#>  (Intercept)     │   64.70  1.60  <.001    65.00   1.62  <.001    80.57   3.27 
+#>  age             │    0.05  0.03   .114     0.05   0.03   .106     0.07   0.03 
+#>  sex:            │                                                             
+#>    Female (ref.) │     –     –     –         –      –     –         –      –   
+#>    Male          │    3.89  0.91  <.001     3.88   0.91  <.001     4.21   0.91 
+#>  smoking:        │                                                             
+#>    No (ref.)     │                           –      –     –         –      –   
+#>    Yes           │                         -1.68   1.12   .135    -1.71   1.11 
+#>  bmi             │                                                -0.65   0.12 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n               │ 1163                  1163                   1163           
+#>  R²              │    0.02                  0.02                   0.04        
+#>  Adj. R²         │    0.02                  0.02                   0.04        
+#>  ΔR²             │     –                   +0.00                  +0.02        
+#>  Wald F-change   │     –                   +2.24                 +29.34        
+#>  p (change)      │     –                     .135                  <.001       
+#> 
+#>                    Mode… 
+#>                    ───── 
+#>  Variable        │ p (B) 
+#> ─────────────────┼───────
+#>  (Intercept)     │ <.001 
+#>  age             │  .018 
+#>  sex:            │       
+#>    Female (ref.) │  –    
+#>    Male          │ <.001 
+#>  smoking:        │       
+#>    No (ref.)     │  –    
+#>    Yes           │  .122 
+#>  bmi             │ <.001 
+#> 
+#> Note. Linear regression models.
+#> Std. errors: heteroskedasticity-robust (HC3).
+```
+
 ## Robust variance
 
 The default `vcov = "classical"` reports the OLS standard error, valid

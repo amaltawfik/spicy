@@ -113,7 +113,9 @@ table_regression(
   Hagemann 2017 wild gradient cluster bootstrap – the one cluster-robust
   route for `rq`; `CR*` and `HC*` are refused for `rq`, as is
   `"jackknife"`, whose leave-one-out form is inconsistent for
-  quantiles). See *Inference and standard errors*.
+  quantiles). With `nested = TRUE`, the change test of each pair uses
+  the same estimator (a Wald test; see *Hierarchical (nested) model
+  comparison*). See *Inference and standard errors*.
 
 - cluster:
 
@@ -667,8 +669,12 @@ table_regression(
   Whether to inject pairwise change-statistic rows for adjacent models
   (M2 vs M1, M3 vs M2, ...). `FALSE` (default) – pure side-by-side
   display. `TRUE` – requires identical `nobs` and identical response
-  variable across all models. See *Hierarchical (nested) model
-  comparison*.
+  variable across all models. Under a non-classical `vcov`, each pair is
+  tested by a Wald test of the coefficients the current model adds, on
+  that model's matrix, shown as "Wald F-change" or "Wald \\\chi^2\\
+  (change)" by the regime of its coefficient tests. See *Hierarchical
+  (nested) model comparison* for the rule, the classes it covers and its
+  small-sample caution.
 
 - digits:
 
@@ -1430,6 +1436,66 @@ and the message points at `"lrt_change"` + `"p_change"`. A quantile
 hierarchy refuses them too, and `"lrt_change"` with them, pointing at
 `"f_change"` + `"p_change"` instead. `lm` and `nls` keep the
 least-squares tokens.
+
+**The change test follows `vcov`.** Under the classical `vcov` the
+change test is the partial F, the likelihood-ratio test or
+[`quantreg::anova.rq()`](https://rdrr.io/pkg/quantreg/man/anova.rq.html)'s
+Wald test, as above. Under any other `vcov`, and under the classical
+token when the fit carries a robust variance of its own, it is the Wald
+test of the coefficients the current model adds, on the matrix its
+coefficient rows were computed from: \\W = b' V^{-1} b\\, with \\b\\ the
+\\q\\ added coefficients (aliased ones left out) and \\V\\ their block
+of the matrix. The test takes the regime of the current model's
+coefficient tests:
+
+- *F*, in a row labelled "Wald F-change": \\W / q\\ on \\(q, df)\\
+  degrees of freedom, the convention of `lmtest::waldtest(test = "F")`
+  and
+  [`car::linearHypothesis()`](https://rdrr.io/pkg/car/man/linearHypothesis.html).
+  It applies to `lm` under `"HC0"`-`"HC5"` (and `"CR1S"`, on \\G - 1\\
+  degrees of freedom),
+  [`rms::ols`](https://rdrr.io/pkg/rms/man/ols.html) under
+  `"CR0"`-`"CR3"` or after
+  [`rms::robcov()`](https://rdrr.io/pkg/rms/man/robcov.html),
+  [`quantreg::rq`](https://rdrr.io/pkg/quantreg/man/rq.html) under
+  `"iid"` and `"ker"`, and a
+  [`fixest::feols`](https://lrberge.github.io/fixest/reference/feols.html)
+  fit estimated with a non-iid vcov (on fixest's own degrees of freedom,
+  as
+  [`fixest::wald()`](https://lrberge.github.io/fixest/reference/wald.html)).
+  Under `"CR0"`-`"CR3"`, `lm`, `glm`
+  ([`MASS::glm.nb`](https://rdrr.io/pkg/MASS/man/glm.nb.html) included),
+  [`lme4::lmer`](https://rdrr.io/pkg/lme4/man/lmer.html) and
+  [`nlme::lme`](https://rdrr.io/pkg/nlme/man/lme.html) use the HTZ test
+  of
+  [`clubSandwich::Wald_test()`](http://jepusto.github.io/clubSandwich/reference/Wald_test.md),
+  the small-sample correction of their coefficient tests.
+
+- *Chi-square*, in a row labelled "Wald \\\chi^2\\ (change)" that
+  replaces the likelihood-ratio row: \\W\\ on \\q\\ degrees of freedom,
+  the convention of `lmtest::waldtest(test = "Chisq")`. It applies to
+  `glm` and `glm.nb` under `"HC0"`-`"HC5"`, `lm` and `glm` under
+  `"bootstrap"` and `"jackknife"`, `rq` under `"bootstrap"`, and under
+  `"CR0"`-`"CR3"` to `coxph`, `survreg`,
+  [`mgcv::gam`](https://rdrr.io/pkg/mgcv/man/gam.html) and `bam`,
+  `polr`, `clm`, `betareg`, `multinom`, `mlogit`, `zeroinfl`, `hurdle`
+  and [`rms::lrm`](https://rdrr.io/pkg/rms/man/lrm.html) / `cph` /
+  `Glm`; also to `survreg(robust = TRUE)`, a
+  [`fixest::fepois`](https://lrberge.github.io/fixest/reference/feglm.html)
+  or `feglm` fit with a non-iid vcov, and an `rms` fit of these classes
+  passed through `robcov()`.
+
+\\\Delta R^2\\, the information criteria and the deviance change do not
+depend on the vcov and are unchanged, and a `vcov` list tests each pair
+with the current model's estimator. The previous model's coefficients
+must all appear, under the same names, in the current one, and a smooth
+term added to a `gam` under a robust `vcov` is refused
+(`spicy_invalid_input` in both cases). `rq` keeps `anova.rq()`'s test
+under `"nid"`, its default, and under `"rank"`, which yields no matrix.
+A Wald test of many constraints in a small sample is liberal: on 219
+observations, a block of 19 predictors gave F(19, 178) = 6.91
+classically and 9.06 as a Wald HC3 test. The HTZ correction under
+`"CR0"`-`"CR3"` mitigates it.
 
 ## Standardized coefficients
 

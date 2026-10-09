@@ -204,7 +204,9 @@ opt-ins, and <code>"bootstrap"</code> running quantreg's native <code>boot.rq</c
 gradient cluster bootstrap – the one cluster-robust route for
 <code>rq</code>; <code>CR*</code> and <code>HC*</code> are refused for <code>rq</code>, as is
 <code>"jackknife"</code>, whose leave-one-out form is inconsistent for
-quantiles). See <em>Inference and standard errors</em>.</p></dd>
+quantiles). With <code>nested = TRUE</code>, the change test of each pair
+uses the same estimator (a Wald test; see <em>Hierarchical (nested)
+model comparison</em>). See <em>Inference and standard errors</em>.</p></dd>
 
 
 <dt id="arg-cluster">cluster<a class="anchor" aria-label="anchor" href="#arg-cluster"></a></dt>
@@ -738,7 +740,12 @@ numeric.</p></dd>
 for adjacent models (M2 vs M1, M3 vs M2, ...). <code>FALSE</code>
 (default) – pure side-by-side display. <code>TRUE</code> – requires
 identical <code>nobs</code> and identical response variable across all
-models. See <em>Hierarchical (nested) model comparison</em>.</p></dd>
+models. Under a non-classical <code>vcov</code>, each pair is tested by a
+Wald test of the coefficients the current model adds, on that
+model's matrix, shown as "Wald F-change" or "Wald
+\(\chi^2\) (change)" by the regime of its coefficient
+tests. See <em>Hierarchical (nested) model comparison</em> for the rule,
+the classes it covers and its small-sample caution.</p></dd>
 
 
 <dt id="arg-digits">digits<a class="anchor" aria-label="anchor" href="#arg-digits"></a></dt>
@@ -1464,6 +1471,50 @@ not a variance-explained change, and the message points at
 them too, and <code>"lrt_change"</code> with them, pointing at
 <code>"f_change"</code> + <code>"p_change"</code> instead. <code>lm</code> and <code>nls</code> keep the
 least-squares tokens.</p>
+<p><strong>The change test follows <code>vcov</code>.</strong> Under the classical <code>vcov</code> the
+change test is the partial F, the likelihood-ratio test or
+<code><a href="https://rdrr.io/pkg/quantreg/man/anova.rq.html" class="external-link">quantreg::anova.rq()</a></code>'s Wald test, as above. Under any other
+<code>vcov</code>, and under the classical token when the fit carries a robust
+variance of its own, it is the Wald test of the coefficients the
+current model adds, on the matrix its coefficient rows were computed
+from: \(W = b' V^{-1} b\), with \(b\) the \(q\)
+added coefficients (aliased ones left out) and \(V\) their block of
+the matrix. The test takes the regime of the current model's
+coefficient tests:</p><ul><li><p><em>F</em>, in a row labelled "Wald F-change": \(W / q\) on
+\((q, df)\) degrees of freedom, the convention of
+<code>lmtest::waldtest(test = "F")</code> and <code><a href="https://rdrr.io/pkg/car/man/linearHypothesis.html" class="external-link">car::linearHypothesis()</a></code>.
+It applies to <code>lm</code> under <code>"HC0"</code>-<code>"HC5"</code> (and <code>"CR1S"</code>, on
+\(G - 1\) degrees of freedom), <code><a href="https://rdrr.io/pkg/rms/man/ols.html" class="external-link">rms::ols</a></code> under <code>"CR0"</code>-<code>"CR3"</code>
+or after <code><a href="https://rdrr.io/pkg/rms/man/robcov.html" class="external-link">rms::robcov()</a></code>, <code><a href="https://rdrr.io/pkg/quantreg/man/rq.html" class="external-link">quantreg::rq</a></code> under <code>"iid"</code> and
+<code>"ker"</code>, and a <code><a href="https://lrberge.github.io/fixest/reference/feols.html" class="external-link">fixest::feols</a></code> fit estimated with a non-iid vcov
+(on fixest's own degrees of freedom, as <code><a href="https://lrberge.github.io/fixest/reference/wald.html" class="external-link">fixest::wald()</a></code>). Under
+<code>"CR0"</code>-<code>"CR3"</code>, <code>lm</code>, <code>glm</code> (<code><a href="https://rdrr.io/pkg/MASS/man/glm.nb.html" class="external-link">MASS::glm.nb</a></code> included),
+<code><a href="https://rdrr.io/pkg/lme4/man/lmer.html" class="external-link">lme4::lmer</a></code> and <code><a href="https://rdrr.io/pkg/nlme/man/lme.html" class="external-link">nlme::lme</a></code> use the HTZ test of
+<code><a href="http://jepusto.github.io/clubSandwich/reference/Wald_test.html" class="external-link">clubSandwich::Wald_test()</a></code>, the small-sample correction of their
+coefficient tests.</p></li>
+<li><p><em>Chi-square</em>, in a row labelled "Wald \(\chi^2\)
+(change)" that replaces the likelihood-ratio row: \(W\) on
+\(q\) degrees of freedom, the convention of
+<code>lmtest::waldtest(test = "Chisq")</code>. It applies to <code>glm</code> and
+<code>glm.nb</code> under <code>"HC0"</code>-<code>"HC5"</code>, <code>lm</code> and <code>glm</code> under
+<code>"bootstrap"</code> and <code>"jackknife"</code>, <code>rq</code> under <code>"bootstrap"</code>, and
+under <code>"CR0"</code>-<code>"CR3"</code> to <code>coxph</code>, <code>survreg</code>, <code><a href="https://rdrr.io/pkg/mgcv/man/gam.html" class="external-link">mgcv::gam</a></code> and
+<code>bam</code>, <code>polr</code>, <code>clm</code>, <code>betareg</code>, <code>multinom</code>, <code>mlogit</code>,
+<code>zeroinfl</code>, <code>hurdle</code> and <code><a href="https://rdrr.io/pkg/rms/man/lrm.html" class="external-link">rms::lrm</a></code> / <code>cph</code> / <code>Glm</code>; also to
+<code>survreg(robust = TRUE)</code>, a <code><a href="https://lrberge.github.io/fixest/reference/feglm.html" class="external-link">fixest::fepois</a></code> or <code>feglm</code> fit with
+a non-iid vcov, and an <code>rms</code> fit of these classes passed through
+<code>robcov()</code>.</p></li>
+</ul><p>\(\Delta R^2\), the information criteria and the
+deviance change do not depend on the vcov and are unchanged, and a
+<code>vcov</code> list tests each pair with the current model's estimator. The
+previous model's coefficients must all appear, under the same names,
+in the current one, and a smooth term added to a <code>gam</code> under a robust
+<code>vcov</code> is refused (<code>spicy_invalid_input</code> in both cases). <code>rq</code> keeps
+<code>anova.rq()</code>'s test under <code>"nid"</code>, its default, and under <code>"rank"</code>,
+which yields no matrix. A Wald test of many constraints in a small
+sample is liberal: on 219 observations, a block of 19 predictors gave
+F(19, 178) = 6.91 classically and 9.06 as a Wald HC3 test. The HTZ
+correction under <code>"CR0"</code>-<code>"CR3"</code> mitigates it.</p>
     </div>
     <div class="section level2">
     <h2 id="standardized-coefficients">Standardized coefficients<a class="anchor" aria-label="anchor" href="#standardized-coefficients"></a></h2>
