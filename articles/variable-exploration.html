@@ -298,8 +298,9 @@ inspect a subset of variables by name pattern or type.</p>
 variable measures, how it is coded, and how many observations carry each
 value. <code><a href="../reference/code_book.html">code_book()</a></code> builds it from the data frame itself. It
 returns an object that prints as the list of variables and that you can
-keep, inspect, or write to Excel or PDF. The counts are unweighted: they
-describe the file, not a population.</p>
+keep, inspect, or write to Excel or PDF. Counts and percentages are
+unweighted: they describe the data file and are not estimates for a
+population.</p>
 <p><code>code_book(sochealth)</code> documents every variable. The same
 tidyselect selectors as in <code><a href="../reference/varlist.html">varlist()</a></code> narrow it down:</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
@@ -309,6 +310,7 @@ tidyselect selectors as in <code><a href="../reference/varlist.html">varlist()</
 <span><span class="co">#&gt; Date: 2026-10-09</span></span>
 <span><span class="co">#&gt; Observations: 1200</span></span>
 <span><span class="co">#&gt; Variables: 5</span></span>
+<span><span class="co">#&gt; Note: Counts and percentages are unweighted: they describe the data file and are not estimates for a population.</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;    Pos. <span style="color: #9E9E9E;">│</span> Variable        Label                     Type                       Valid    Missing </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">────────┼───────────────────────────────────────────────────────────────────────────────────────</span></span></span>
@@ -417,6 +419,7 @@ link; the console and the Excel file show the words alone:</p>
 <span><span class="co">#&gt; Date: 2026-10-09</span></span>
 <span><span class="co">#&gt; Observations: 1200</span></span>
 <span><span class="co">#&gt; Variables: 2</span></span>
+<span><span class="co">#&gt; Note: Counts and percentages are unweighted: they describe the data file and are not estimates for a population.</span></span>
 <span><span class="co">#&gt; Note: Simulated data shipped with spicy (see ?sochealth).</span></span>
 <span><span class="co">#&gt; Note: BMI in kg/m², to one decimal.</span></span>
 <span><span class="co">#&gt; </span></span>
@@ -478,6 +481,7 @@ with the variables that carry them.</p>
 <span><span class="co">#&gt; Declared missing value: 9 = Refused (1 variable)</span></span>
 <span><span class="co">#&gt; Declared missing value: 99998 = Don't know (1 variable)</span></span>
 <span><span class="co">#&gt; Declared missing value: 99999 = Refused (1 variable)</span></span>
+<span><span class="co">#&gt; Note: Counts and percentages are unweighted: they describe the data file and are not estimates for a population.</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;    Pos. <span style="color: #9E9E9E;">│</span> Variable    Label                   Type                              Valid    Missing </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">────────┼────────────────────────────────────────────────────────────────────────────────────────</span></span></span>

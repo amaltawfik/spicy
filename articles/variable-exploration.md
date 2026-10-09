@@ -225,8 +225,8 @@ value.
 [`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md)
 builds it from the data frame itself. It returns an object that prints
 as the list of variables and that you can keep, inspect, or write to
-Excel or PDF. The counts are unweighted: they describe the file, not a
-population.
+Excel or PDF. Counts and percentages are unweighted: they describe the
+data file and are not estimates for a population.
 
 `code_book(sochealth)` documents every variable. The same tidyselect
 selectors as in
@@ -241,6 +241,7 @@ code_book(sochealth, sex, age, income_group, starts_with("bmi"))
 #> Date: 2026-10-09
 #> Observations: 1200
 #> Variables: 5
+#> Note: Counts and percentages are unweighted: they describe the data file and are not estimates for a population.
 #> 
 #>    Pos. │ Variable        Label                     Type                       Valid    Missing 
 #> ────────┼───────────────────────────────────────────────────────────────────────────────────────
@@ -359,6 +360,7 @@ code_book(
 #> Date: 2026-10-09
 #> Observations: 1200
 #> Variables: 2
+#> Note: Counts and percentages are unweighted: they describe the data file and are not estimates for a population.
 #> Note: Simulated data shipped with spicy (see ?sochealth).
 #> Note: BMI in kg/m², to one decimal.
 #> 
@@ -424,6 +426,7 @@ cbi
 #> Declared missing value: 9 = Refused (1 variable)
 #> Declared missing value: 99998 = Don't know (1 variable)
 #> Declared missing value: 99999 = Refused (1 variable)
+#> Note: Counts and percentages are unweighted: they describe the data file and are not estimates for a population.
 #> 
 #>    Pos. │ Variable    Label                   Type                              Valid    Missing 
 #> ────────┼────────────────────────────────────────────────────────────────────────────────────────

@@ -7,7 +7,8 @@ variables (code, label, count, percentages). The codebook prints as the
 list of variables, and `output` writes it to an Excel workbook or to a
 PDF.
 
-The counts are unweighted: they describe the file, not a population.
+Counts and percentages are unweighted: they describe the data file and
+are not estimates for a population.
 
 ## Usage
 
@@ -372,6 +373,7 @@ code_book(sochealth)
 #> Date: 2026-10-09
 #> Observations: 1200
 #> Variables: 24
+#> Note: Counts and percentages are unweighted: they describe the data file and are not estimates for a population.
 #> 
 #>    Pos. │ Variable                  Label                                         Type                       Valid    Missing 
 #> ────────┼─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -416,6 +418,7 @@ cb
 #> Date: 2026-10-09
 #> Observations: 1200
 #> Variables: 2
+#> Note: Counts and percentages are unweighted: they describe the data file and are not estimates for a population.
 #> Note: Simulated data (see ?sochealth).
 #> 
 #>    Pos. │ Variable        Label              Type                       Valid    Missing 

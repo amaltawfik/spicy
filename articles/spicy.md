@@ -75,6 +75,7 @@ code_book(sochealth, sex, age, smoking, bmi)
 #> Date: 2026-10-09
 #> Observations: 1200
 #> Variables: 4
+#> Note: Counts and percentages are unweighted: they describe the data file and are not estimates for a population.
 #> 
 #>    Pos. │ Variable    Label              Type                       Valid    Missing 
 #> ────────┼────────────────────────────────────────────────────────────────────────────
