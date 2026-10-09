@@ -25,7 +25,6 @@ authors <- list(
   ),
   list(name = "John Doe", affiliation = "Somewhere Institute of Public Health")
 )
-source <- stats::setNames(paste0("Q", seq_along(sochealth)), names(sochealth))
 
 # The notes show what a note can carry: paragraphs, list items, italics,
 # bold, code, a web address and a DOI. Every statement is true of the
@@ -54,7 +53,6 @@ code_book(
   subtitle = "Simulated data shipped with spicy",
   authors = authors,
   notes = notes_en,
-  source = source,
   output = pdf
 )
 code_book(
@@ -63,7 +61,6 @@ code_book(
   subtitle = "Simulated data shipped with spicy",
   authors = authors,
   notes = notes_en,
-  source = source,
   output = file.path(dir, "sochealth_codebook.xlsx")
 )
 withr::with_options(
@@ -74,7 +71,6 @@ withr::with_options(
     subtitle = "Données simulées livrées avec spicy",
     authors = authors,
     notes = notes_fr,
-    source = source,
     output = file.path(dir, "sochealth_codebook_fr.pdf")
   )
 )
