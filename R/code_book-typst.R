@@ -210,6 +210,7 @@ code_book_typst_data <- function(cb) {
       r <- rbind(
         r[seq_len(at), ],
         data.frame(
+          position = v$position[[i]],
           variable = v$name[[i]],
           code = "",
           label = NA_character_,
