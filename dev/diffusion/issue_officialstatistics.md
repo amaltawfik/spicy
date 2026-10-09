@@ -6,8 +6,8 @@ the view.
 
 What it does. spicy produces the tables of survey analysis, from a data
 frame or from fitted models, with a reporting convention applied by
-default (APA 7) or a journal style (NEJM, JAMA, The Lancet, Annals,
-AER), in English or in French.
+default (APA 7) or a journal style (NEJM, JAMA, The Lancet, Annals of
+Internal Medicine, AER), in English or in French.
 
 - Descriptive tables: `freq()` with valid and cumulative percentages,
   `cross_tab()` with column or row percentages, weights, chi-squared
@@ -29,19 +29,20 @@ AER), in English or in French.
   heteroskedasticity-robust, cluster-robust, bootstrap or jackknife
   variance with each class's standard backend, standardized
   coefficients, average marginal effects where the family defines them
-  (per outcome category for ordinal and multinomial models, design-based
-  for survey models) and, for survival models, adjusted differences in
-  restricted mean survival time and in risk by g-computation. Random
-  effects, thresholds and zero-inflation components appear as labeled
-  rows, with the fit statistics of each class, nested model comparisons
-  and a univariable screen (`table_regression_uv()`).
+  (per outcome category for ordinal models and `nnet::multinom()`,
+  design-based for `svyglm()` and `svyolr()`) and, for `coxph()` and
+  `survreg()` fits, adjusted differences in restricted mean survival
+  time and in risk by g-computation. Random effects, thresholds and
+  zero-inflation components appear as labeled rows, with the fit
+  statistics of each class, nested model comparisons and a univariable
+  screen (`table_regression_uv()`).
 - Declared missing values of SPSS and Stata files (haven's `na_values`,
   `na_range` and tagged NAs) are honored in the descriptive tables, and
   the exclusion is disclosed in a note.
 - `code_book()` documents a data frame as a codebook: unweighted counts
   and percentages per category, declared missing codes, printed in the
   console, written to Excel or compiled to a PDF with a cover, one sheet
-  per variable and an index, along the ICPSR recommendations.
+  per variable and an index, in line with the ICPSR recommendations.
 
 Every table prints in the console and renders identically through gt,
 tinytable and flextable, and into Word, Excel and the clipboard.
