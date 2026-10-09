@@ -500,15 +500,65 @@ takes two columns past 40 variables unless told otherwise. spicy does
 not write DDI-XML: for a DDI description of the data file, see the
 [DDIwR](https://CRAN.R-project.org/package=DDIwR) package.
 
+The call below produced the codebook of `sochealth` that the package
+site serves: [the
+PDF](https://amaltawfik.github.io/spicy/codebook/sochealth_codebook.pdf),
+[the same in
+French](https://amaltawfik.github.io/spicy/codebook/sochealth_codebook_fr.pdf)
+(the words of the codebook, under `options(spicy.language = "fr")`), and
+[the Excel
+workbook](https://amaltawfik.github.io/spicy/codebook/sochealth_codebook.xlsx).
+
 ``` r
 
 code_book(
   sochealth,
   title = "Social health survey",
-  authors = c("Jane Doe" = "University of Somewhere"),
+  subtitle = "Simulated data shipped with spicy",
+  authors = list(
+    list(
+      name = "Jane Doe",
+      affiliation = "University of Somewhere",
+      orcid = "0000-0002-1825-0097"
+    ),
+    list(name = "John Doe", affiliation = "Somewhere Institute of Public Health")
+  ),
+  notes = c(
+    "Simulated data shipped with *spicy* (`?sochealth`): 1,200 respondents of a fictitious social health survey, built to document the package. Nothing here describes a real population.",
+    "Source and citation: https://amaltawfik.github.io/spicy/ and doi:10.32614/CRAN.package.spicy.",
+    "- `weight` is the survey design weight (0.29 to 3.45): the counts of this codebook are **unweighted**.",
+    "- `bmi` is in kg/m2, and `bmi_category` follows it (normal weight, overweight, obesity).",
+    "- The four `life_sat_*` items run from 1 to 5 (Likert scale).",
+    "- `response_date` is the time of the interview, Europe/Zurich."
+  ),
+  source = setNames(paste0("Q", seq_along(sochealth)), names(sochealth)),
   output = "sochealth_codebook.pdf"
 )
 ```
+
+Three of its twelve pages. The cover:
+
+![The cover: the word CODEBOOK in spaced capitals, the title Social
+health survey, its subtitle, two authors with their affiliations and an
+ORCID link, and the
+date](https://amaltawfik.github.io/spicy/codebook/cover.png)
+
+The page about the data, with the caution on unweighted counts and the
+notes, their markup rendered and their addresses turned into links:
+
+![The page about the data: a table of facts (observations, variables,
+generated with), the caution that counts and percentages are unweighted,
+and the notes, with italics, bold, code, a web address, and a DOI as
+links, then four list
+items](https://amaltawfik.github.io/spicy/codebook/about.png)
+
+The sheet of `self_rated_health`, one of the twenty-four:
+
+![The sheet of self_rated_health: a band with its position, name, and
+type, its label and source code, the counts of valid, missing, and
+distinct values, and the table of its values with n, percent, and valid
+percent, the system missing row in
+grey](https://amaltawfik.github.io/spicy/codebook/sheet.png)
 
 ## When to use varlist() and code_book()
 
