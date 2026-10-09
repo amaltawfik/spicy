@@ -20,18 +20,37 @@ library(spicy)
 
 cran_tier <- c(
   # tabulation and association measures
-  "freq", "freq_print", "cross_tab", "assoc", "cramer_v",
+  "freq",
+  "freq_print",
+  "cross_tab",
+  "assoc",
+  "cramer_v",
   # variable inspection and row-wise helpers
-  "varlist", "code_book", "label_from_names", "copy_clipboard",
-  "mean_n", "sum_n", "count_n", "user_na",
+  "varlist",
+  "code_book",
+  "label_from_names",
+  "copy_clipboard",
+  "mean_n",
+  "sum_n",
+  "count_n",
+  "user_na",
   # summary tables, and their survey-design twins
-  "table_categorical", "table_continuous", "table_continuous_lm",
-  "table_outcome", "table_categorical_svy", "table_continuous_svy",
+  "table_categorical",
+  "table_continuous",
+  "table_continuous_lm",
+  "table_outcome",
+  "table_categorical_svy",
+  "table_continuous_svy",
   # regression tables
-  "table_regression", "table_regression_models", "regression_uv",
-  "regression_structured", "regression_broom", "inline",
+  "table_regression",
+  "table_regression_models",
+  "regression_uv",
+  "regression_structured",
+  "regression_broom",
+  "inline",
   # styles and languages
-  "spicy_style", "i18n"
+  "spicy_style",
+  "i18n"
 )
 
 if (isTRUE(as.logical(Sys.getenv("NOT_CRAN", "false")))) {

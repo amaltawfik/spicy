@@ -679,9 +679,17 @@ test_that("colon levels: the sTayS minimal reproduction (two factors, 2026-09-16
   # Every level sits under its own header, in declared order; no raw name.
   expect_identical(
     v[seq_len(9)],
-    c("(Intercept)",
-      "g:", "Low: <50% (ref.)", "Mid: 50-89%", "High: 90-100%",
-      "h:", "A (ref.)", "B: x", "C")
+    c(
+      "(Intercept)",
+      "g:",
+      "Low: <50% (ref.)",
+      "Mid: 50-89%",
+      "High: 90-100%",
+      "h:",
+      "A (ref.)",
+      "B: x",
+      "C"
+    )
   )
   expect_false(any(grepl("^gMid|^gHigh|^hB", v)))
   st <- as_structured(table_regression(m))

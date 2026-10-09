@@ -32,8 +32,11 @@ test_that("the CRAN tier stays a tier, not the suite", {
   exprs <- parse(entry, keep.source = FALSE)
   tier <- NULL
   for (e in exprs) {
-    if (is.call(e) && identical(e[[1L]], as.name("<-")) &&
-        identical(e[[2L]], as.name("cran_tier"))) {
+    if (
+      is.call(e) &&
+        identical(e[[1L]], as.name("<-")) &&
+        identical(e[[2L]], as.name("cran_tier"))
+    ) {
       tier <- eval(e[[3L]])
     }
   }
