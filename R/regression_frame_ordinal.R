@@ -214,6 +214,83 @@ as_regression_frame.clm <- function(
 }
 
 
+#' `as_regression_frame()` method for `clmm` fits (ordinal::clmm()).
+#'
+#' The clm frame plus the random part: location coefficients as rows, the
+#' cut-points in `info$extras$thresholds`, the variance components in
+#' `info$random_effects`. Wald z inference throughout (confint.clmm has no
+#' profile route), no robust vcov (`ordinal` ships no estimating functions
+#' for clmm) and no AME (`marginaleffects` does not support the class).
+#'
+#' @keywords internal
+#' @noRd
+#' @export
+as_regression_frame.clmm <- function(
+  fit,
+  vcov = "model",
+  vcov_label = NULL,
+  cluster = NULL,
+  cluster_name = NULL,
+  ci_level = 0.95,
+  ci_method = NULL,
+  show_columns = character(0),
+  exponentiate = FALSE,
+  model_id = "M1",
+  ...
+) {
+  .check_ordinal_available()
+  # The clm rule reads exp(-B) of a cumulative cloglog as a hazard ratio.
+  # Not for clmm: on ordinal 2026.7.26, data simulated from a cumulative
+  # cloglog model with a random intercept are fitted by
+  # clmm(link = "loglog") (logLik -1897.9, true values recovered, the
+  # glmmTMB ordinal("cloglog") fit to 1e-3) and not by
+  # clmm(link = "cloglog") (logLik -2029.4), while clm() gets the two
+  # links right. The coefficients of a "cloglog" clmm are not log hazard
+  # ratios, so the ratio is refused rather than mislabelled.
+  if (isTRUE(exponentiate) && identical(fit$link, "cloglog")) {
+    spicy_abort(
+      c(
+        paste0(
+          "`exponentiate = TRUE` is not available for a `clmm` fit with ",
+          "the cloglog link."
+        ),
+        "i" = paste0(
+          "On data simulated from a cumulative cloglog model, ",
+          "`clmm(link = \"loglog\")` fits it and `clmm(link = \"cloglog\")` ",
+          "does not, so exp(-B) would not be a hazard ratio."
+        ),
+        "i" = paste0(
+          "`glmmTMB::glmmTMB(family = glmmTMB::ordinal(\"cloglog\"))` fits ",
+          "the cumulative cloglog model; or report the link-scale ",
+          "coefficients."
+        )
+      ),
+      class = "spicy_invalid_input"
+    )
+  }
+  # The public gate refuses a robust vcov for clmm up front; this guard
+  # covers a direct call, which would otherwise print model-based SEs
+  # under a robust label.
+  if (!.is_model_vcov(vcov)) {
+    spicy_abort(
+      sprintf("`vcov = \"%s\"` is not available for `clmm` models.", vcov),
+      class = "spicy_unsupported_vcov"
+    )
+  }
+  # summary.clmm carries z + p for the location rows, as summary.clm does,
+  # so the clm builder reads them unchanged (Wald only).
+  coefs <- .clm_coefs(fit, ci_level = ci_level, ci_method = "wald")
+  info <- .clmm_info(
+    fit,
+    vcov_kind = vcov,
+    vcov_label = vcov_label,
+    ci_level = ci_level,
+    model_id = model_id
+  )
+  new_regression_frame(coefs, info, fit)
+}
+
+
 # ---- Availability guards --------------------------------------------------
 
 .check_MASS_available <- function() {
@@ -1146,6 +1223,182 @@ as_regression_frame.clm <- function(
     loglog = "Cumulative loglog",
     cauchit = "Cumulative cauchit",
     paste0("Cumulative ", link)
+  )
+}
+
+
+# ---- clmm helpers ---------------------------------------------------------
+
+# Build the info list for a clmm fit: the clm info (thresholds, link, the
+# exponentiate gate) with the mixed-model parts in place of the
+# pseudo-R^2: groups, variance components, the chi-bar-squared LR test
+# against the clm without random effects.
+.clmm_info <- function(fit, vcov_kind, vcov_label, ci_level, model_id) {
+  dv <- all.vars(stats::formula(fit))[1L]
+  link <- fit$link %||% "logit"
+  ng <- fit$dims$nlev.gf
+  fit_stats <- list(
+    r_squared = NA_real_,
+    adj_r_squared = NA_real_,
+    pseudo_r2 = NULL,
+    r2_marginal = NA_real_,
+    r2_conditional = NA_real_,
+    aic = stats::AIC(fit),
+    bic = stats::BIC(fit),
+    log_lik = as.numeric(stats::logLik(fit)),
+    deviance = -2 * as.numeric(stats::logLik(fit)),
+    sigma = NA_real_,
+    nobs = as.integer(stats::nobs(fit))
+  )
+  list(
+    class = "clmm",
+    family = list(family = "cumulative", link = link),
+    dv = dv,
+    dv_label = .extract_dv_label(fit, dv),
+    n_obs = as.integer(stats::nobs(fit)),
+    n_groups = stats::setNames(as.integer(ng), names(ng)),
+    weights_kind = "none",
+    random_effects = .clmm_random_effects(fit, ci_level),
+    fit_stats = fit_stats,
+    vcov_kind = vcov_kind,
+    vcov_label = vcov_label %||% spicy_str("note_vcov_wald_asymptotic"),
+    ci_level = as.numeric(ci_level),
+    ci_method = "wald",
+    # nested_lrt = FALSE: anova.clmm cannot evaluate the models when it is
+    # called from inside table_regression() ("Unable to evaluate models",
+    # 2026-10-09), so `nested = TRUE` is refused up front rather than
+    # after the frames are built.
+    supports = list(
+      ame = FALSE,
+      nested_lrt = FALSE,
+      exponentiate = TRUE
+    ),
+    extras = list(
+      has_singular = .clmm_is_singular(fit),
+      has_weights = .ordinal_has_weights(fit),
+      title_prefix = paste0(
+        .clm_link_title(link),
+        " mixed-effects regression (",
+        .ordinal_assumption_label(link),
+        ")"
+      ),
+      response_levels = as.character(fit$y.levels %||% character(0)),
+      thresholds = .clm_thresholds(fit)
+    )
+  )
+}
+
+
+# Boundary fit, on the glmmTMB criterion for a family without a residual
+# scale (.glmmTMB_is_singular): det(V) < 1e-5 for a random-effect
+# covariance block, so a correlation at +/-1 counts as well as a
+# variance at 0.
+.clmm_is_singular <- function(fit, tolerance = 1e-5) {
+  vc <- ordinal::VarCorr(fit)
+  any(vapply(
+    vc,
+    function(v) isTRUE(det(as.matrix(v)) < tolerance),
+    logical(1)
+  ))
+}
+
+
+# Variance components of a clmm fit, in the schema the glmmTMB frame
+# builds (one SD row per term, one correlation row per pair, SE and CI on
+# the variance scale).
+#
+# Uncertainty: vcov.clmm carries one "ST<k>" row per random-effect
+# parameter (on wine its variance 0.12429 matches glmmTMB's for
+# theta = log(SD), 0.12433). The Wald interval is SD * exp(+/- z *
+# SE(log SD)), the interval glmmTMB's confint(method = "Wald") gives,
+# and the SE and the variance-scale CI are derived from it exactly as
+# .glmmTMB_attach_wald_se_ci() does -- the same random part renders alike
+# on both engines. The map from
+# "ST<k>" to a block is only certain when every block is a scalar
+# random intercept and the Hessian kept every ST parameter (clmm drops
+# the ones it cannot estimate, e.g. at a boundary); otherwise, and on a
+# boundary fit, the SE and CI stay NA, as on the other engines.
+.clmm_random_effects <- function(fit, ci_level = 0.95) {
+  vc <- ordinal::VarCorr(fit)
+  rows <- list()
+  for (group in names(vc)) {
+    g_vc <- as.matrix(vc[[group]])
+    sds <- attr(vc[[group]], "stddev")
+    terms <- colnames(g_vc)
+    for (i in seq_along(terms)) {
+      rows[[length(rows) + 1L]] <- data.frame(
+        group = group,
+        term = terms[i],
+        variance = unname(g_vc[i, i]),
+        sd = unname(sds[i]),
+        corr = NA_real_,
+        is_correlation = FALSE,
+        stringsAsFactors = FALSE
+      )
+    }
+    cor_m <- attr(vc[[group]], "correlation")
+    if (length(terms) > 1L && !is.null(cor_m)) {
+      for (j in seq_len(length(terms) - 1L)) {
+        for (k in seq.int(j + 1L, length(terms))) {
+          rows[[length(rows) + 1L]] <- data.frame(
+            group = group,
+            term = paste(terms[j], terms[k], sep = ", "),
+            variance = NA_real_,
+            sd = NA_real_,
+            corr = unname(cor_m[k, j]),
+            is_correlation = TRUE,
+            stringsAsFactors = FALSE
+          )
+        }
+      }
+    }
+  }
+  vc_df <- do.call(rbind, rows)
+  vc_df$std_error <- NA_real_
+  vc_df$ci_lower <- NA_real_
+  vc_df$ci_upper <- NA_real_
+  vc_df$ci_method <- NA_character_
+
+  V <- tryCatch(as.matrix(stats::vcov(fit)), error = function(e) NULL)
+  st <- paste0("ST", seq_along(vc))
+  scalar <- all(vapply(vc, function(v) nrow(as.matrix(v)) == 1L, logical(1)))
+  if (
+    scalar &&
+      !.clmm_is_singular(fit) &&
+      !is.null(V) &&
+      all(st %in% rownames(V))
+  ) {
+    z <- stats::qnorm(0.5 + ci_level / 2)
+    sd_est <- vc_df$sd
+    # The scale of the ST parameters is not fixed: clmm optimises log(SD)
+    # for a single random term and the SD itself for several (measured
+    # 2026-10-09: wine's one judge term holds log(1.131) in optRes$par, a
+    # crossed fit holds 0.516 and 0.637). Read it off the optimum, and
+    # carry a raw-scale SE to the log scale by the delta method
+    # (SE(log SD) = SE(SD) / SD), so the interval is glmmTMB's in both.
+    st_par <- unname(utils::tail(fit$optRes$par, length(st)))
+    se_st <- unname(sqrt(diag(V)[st]))
+    se_log <- if (isTRUE(all.equal(st_par, log(sd_est)))) {
+      se_st
+    } else if (isTRUE(all.equal(st_par, sd_est))) {
+      se_st / sd_est
+    } else {
+      NA_real_ # nocov -- clmm stores one of the two scales
+    }
+    sd_lower <- sd_est * exp(-z * se_log)
+    sd_upper <- sd_est * exp(z * se_log)
+    vc_df$std_error <- 2 * sd_est * (sd_upper - sd_lower) / (2 * z)
+    vc_df$ci_lower <- sd_lower^2
+    vc_df$ci_upper <- sd_upper^2
+    vc_df$ci_method <- "wald"
+  }
+
+  list(
+    variance_components = vc_df,
+    icc = NA_real_,
+    icc_omitted = NA_character_,
+    method = "ML",
+    null_lrt = .compute_null_model_lrt(fit)
   )
 }
 

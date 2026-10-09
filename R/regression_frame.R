@@ -976,7 +976,8 @@ validate_regression_frame <- function(frame) {
 # Returns a list(chi2, df, p_chibar2, family_label) or NULL when
 # computation isn't possible (refit error, lme4 unavailable, etc.).
 #
-# lme4 / glmmTMB / nlme::lme are handled via engine dispatch.
+# lme4 / glmmTMB / nlme::lme / ordinal::clmm are handled via engine
+# dispatch.
 #
 # LIKELIHOOD CONVENTION (2026-07-09, dev/re_lrt_ml_reml_finding.md):
 # the test follows the FIT'S OWN estimator, matching
@@ -1032,6 +1033,8 @@ validate_regression_frame <- function(frame) {
         .null_lrt_merMod(fit)
       } else if (inherits(fit, "lme")) {
         .null_lrt_lme(fit)
+      } else if (inherits(fit, "clmm")) {
+        .null_lrt_clmm(fit)
       } else {
         NULL
       }
@@ -1292,9 +1295,55 @@ validate_regression_frame <- function(frame) {
     df = df_q,
     family_label = if (is_gaussian) {
       "linear regression"
+    } else if (identical(fam$family, "ordinal")) {
+      # The null of an ordinal glmmTMB is a cumulative-link model; named
+      # as the clmm null is, so the two engines' footers read alike.
+      sprintf("%s regression", tolower(.clm_link_title(fam$link)))
     } else {
       sprintf("%s regression", fam$family)
     }
+  )
+}
+
+
+# clmm: the null is ordinal::clm() on the same fixed part, link and
+# threshold structure, refitted on the model frame under a safe response
+# name (see .null_lrt_merMod). clmm and clm both maximise the exact (or
+# Laplace-approximated) likelihood, so their logLik values compare.
+.null_lrt_clmm <- function(fit) {
+  data <- stats::model.frame(fit)
+  fixed <- suppressWarnings(.re_nobars(stats::formula(fit)))
+  data[[".spicy_response."]] <- stats::model.response(data)
+  null_f <- stats::as.formula(
+    paste(".spicy_response. ~", deparse1(fixed[[3L]]))
+  )
+  args <- list(
+    null_f,
+    data = data,
+    link = fit$link,
+    threshold = fit$threshold
+  )
+  w <- stats::model.weights(data)
+  if (!is.null(w)) {
+    args$weights <- w
+  }
+  fit_null <- do.call(ordinal::clm, args)
+  df_q <- sum(vapply(
+    ordinal::VarCorr(fit),
+    function(m) {
+      n <- nrow(as.matrix(m))
+      as.integer(n * (n + 1L) / 2L)
+    },
+    integer(1)
+  ))
+  list(
+    chi2 = 2 *
+      (as.numeric(stats::logLik(fit)) - as.numeric(stats::logLik(fit_null))),
+    df = df_q,
+    family_label = sprintf(
+      "%s regression",
+      tolower(.clm_link_title(fit$link))
+    )
   )
 }
 

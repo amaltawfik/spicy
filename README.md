@@ -139,7 +139,7 @@ family:
 | Linear and generalized linear | `stats::lm()`, `stats::glm()`, `MASS::glm.nb()`, `MASS::rlm()`, `stats::nls()` |
 | Robust, IV, quantile, panel | `estimatr::lm_robust()`, `estimatr::iv_robust()`, `AER::ivreg()`, `AER::tobit()`, `quantreg::rq()`, `fixest::feols()`, `fixest::feglm()`, `fixest::fepois()`, `fixest::fenegbin()` |
 | Mixed effects | `lme4::lmer()`, `lme4::glmer()`, `glmmTMB::glmmTMB()`, `nlme::lme()`, `nlme::gls()` |
-| Ordinal and categorical | `MASS::polr()`, `ordinal::clm()` (incl. partial proportional odds), `nnet::multinom()`, `mlogit::mlogit()` |
+| Ordinal and categorical | `MASS::polr()`, `ordinal::clm()` (incl. partial proportional odds), `ordinal::clmm()`, `glmmTMB::glmmTMB()` (ordinal family), `nnet::multinom()`, `mlogit::mlogit()` |
 | Counts, two-part models | `pscl::hurdle()`, `pscl::zeroinfl()`, `glmmTMB::glmmTMB()` (zero-inflation and dispersion components) |
 | Survival | `survival::coxph()`, `survival::survreg()`, `rms::cph()`, `flexsurv::flexsurvreg()` |
 | Survey-weighted | `survey::svyglm()`, `survey::svyolr()`, `survey::svycoxph()` (design-based SEs) |

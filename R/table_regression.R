@@ -720,7 +720,9 @@
 #'   auto-promoted to a 1-element list. A broad set of model classes
 #'   is supported -- linear / generalized linear (`lm`, `glm`,
 #'   `MASS::glm.nb`), mixed-effects (`lmer`, `lme`, `glmmTMB`),
-#'   survival (`coxph`, `survreg`), ordinal (`polr`, `clm`),
+#'   survival (`coxph`, `survreg`), ordinal (`polr`, `clm`, and the
+#'   cumulative-link mixed models `ordinal::clmm` and `glmmTMB` with
+#'   `family = glmmTMB::ordinal()`),
 #'   `mgcv::gam`/`bam`, `betareg`, `mlogit`, `survey::svyglm`, `rms`
 #'   (`ols`/`lrm`/`cph`/`Glm`), and Bayesian (`rstanarm`/`brms`),
 #'   among others. An unsupported class raises
@@ -930,7 +932,8 @@
 #' @param show_intercept Whether to display the intercept row.
 #'   Default `TRUE` (APA convention). Hide via `FALSE`.
 #' @param show_thresholds For ordinal cumulative-link models
-#'   (`MASS::polr`, `ordinal::clm`), whether to display the estimated
+#'   (`MASS::polr`, `ordinal::clm`, `ordinal::clmm`, `glmmTMB` with the
+#'   ordinal family), whether to display the estimated
 #'   category thresholds (cut-points) as a subordinate `"Thresholds"`
 #'   block of rows below the predictors, carrying B / SE / CI / p like
 #'   the predictor rows. Default `TRUE`. `FALSE` collapses them to a
@@ -1077,7 +1080,7 @@
 #'   values move out of the B column into the merged cell).
 #' @param show_re Logical. `TRUE` (default) renders the random-effects
 #'   variance components of a mixed-effects fit (`lmer`, `glmer`,
-#'   `glmmTMB`, `lme`) as a subordinate **"Random effects" block of
+#'   `glmmTMB`, `lme`, `clmm`) as a subordinate **"Random effects" block of
 #'   table rows** below the fixed effects: one row per standard
 #'   deviation / correlation per grouping factor, plus the residual,
 #'   each with its estimate, SE, and CI in the shared coefficient
@@ -1912,7 +1915,7 @@ table_regression <- function(
     any_mixed <- any(vapply(
       models,
       function(f) {
-        inherits(f, c("merMod", "lmerModLmerTest", "glmmTMB", "lme"))
+        inherits(f, c("merMod", "lmerModLmerTest", "glmmTMB", "lme", "clmm"))
       },
       logical(1)
     ))
@@ -2941,7 +2944,7 @@ table_regression <- function(
     function(fr) {
       isTRUE(fr$info$extras$has_singular) &&
         (fr$info$class %||% "") %in%
-          c("lmerMod", "lmerModLmerTest", "glmerMod", "glmmTMB", "lme")
+          c("lmerMod", "lmerModLmerTest", "glmerMod", "glmmTMB", "lme", "clmm")
     },
     logical(1)
   )

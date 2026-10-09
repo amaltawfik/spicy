@@ -948,7 +948,7 @@ detect_factor_term_meta <- function(fit) {
     # The UNIQUE predictor names are colnames(coef(fit)).
     return(colnames(stats::coef(fit)))
   }
-  if (inherits(fit, "clm")) {
+  if (inherits(fit, c("clm", "clmm"))) {
     # ordinal::clm: coef(fit) returns thresholds AND predictors mixed
     # together (1|2, 2|3, ..., tempwarm, contactyes). fit$beta is the
     # predictor coefficients only.

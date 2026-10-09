@@ -79,9 +79,17 @@
       "Mixed effects",
       "glmmTMB",
       "glmmTMB::glmmTMB()",
-      "yes",
-      "link-dependent (IRR for count families)",
-      paste(c(.REG_BLOCK_RE, .REG_BLOCK_ZI, .REG_BLOCK_DISP), collapse = "; ")
+      "yes (no for the ordinal family)",
+      "link-dependent (IRR for count families, OR for ordinal logit)",
+      paste(
+        c(
+          .REG_BLOCK_RE,
+          .REG_BLOCK_ZI,
+          .REG_BLOCK_DISP,
+          paste0(.REG_BLOCK_THRESH, " (ordinal family)")
+        ),
+        collapse = "; "
+      )
     ),
     c("Mixed effects", "lme", "nlme::lme()", "yes", "-", .REG_BLOCK_RE),
     c("Mixed effects", "gls", "nlme::gls()", "yes", "-", "-"),
@@ -108,6 +116,14 @@
       "per category",
       "OR (logit)",
       paste(c(.REG_BLOCK_THRESH, .REG_BLOCK_NPO), collapse = "; ")
+    ),
+    c(
+      "Ordinal",
+      "clmm",
+      "ordinal::clmm()",
+      "no",
+      "OR (logit)",
+      paste(c(.REG_BLOCK_THRESH, .REG_BLOCK_RE), collapse = "; ")
     ),
     c(
       "Categorical",
@@ -351,6 +367,16 @@
 #' McFadden and Nagelkerke pseudo-R-squared. See the
 #' [Ordinal regression tables](https://amaltawfik.github.io/spicy/articles/table-regression-ordinal.html)
 #' article.
+#'
+#' Cumulative-link mixed models (`ordinal::clmm()`, and
+#' `glmmTMB::glmmTMB()` with `family = glmmTMB::ordinal()`) add a
+#' `Random effects` block and the mixed-model fit statistics (n, groups,
+#' AIC, BIC; no R-squared). Their inference is Wald only: AME, a robust
+#' `vcov`, `ci_method = "profile"` and `standardized` are refused, as is
+#' `nested = TRUE` for `clmm`. `exponentiate` follows the `clm` rule
+#' (odds ratios under logit, hazard ratios under cloglog), except that it
+#' is refused for a `clmm` fit with the cloglog link, whose coefficients
+#' do not behave as cumulative cloglog coefficients.
 #'
 #' @section Counts and two-part models:
 #' Two-part models show their full model: the zero component renders as a

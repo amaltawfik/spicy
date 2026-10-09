@@ -370,3 +370,253 @@ test_that("clm cut-points declare the asymptotic normal they are computed under"
     tolerance = 1e-15
   )
 })
+
+
+# ---- clmm (ordinal::clmm): cumulative-link mixed model ---------------------
+
+.fit_clmm_wine <- function(...) {
+  skip_if_not_installed("ordinal")
+  ordinal::clmm(
+    rating ~ temp + contact + (1 | judge),
+    data = ordinal::wine,
+    ...
+  )
+}
+
+.snap_text <- function(out) {
+  txt <- capture.output(print(out))
+  paste(sub("[ \t]+$", "", txt), collapse = "\n")
+}
+
+test_that("as_regression_frame.clmm builds a schema-valid mixed ordinal frame", {
+  fit <- .fit_clmm_wine()
+  fr <- as_regression_frame(fit, model_id = "M1")
+  expect_invisible(spicy:::validate_regression_frame(fr))
+  expect_identical(fr$info$class, "clmm")
+  expect_identical(fr$info$family, list(family = "cumulative", link = "logit"))
+  expect_identical(fr$info$n_groups, c(judge = 9L))
+  expect_false("(Intercept)" %in% fr$coefs$term)
+  expect_false(fr$info$supports$ame)
+  expect_false(fr$info$supports$nested_lrt)
+  expect_true(fr$info$supports$exponentiate)
+  expect_false(fr$info$extras$has_singular)
+  expect_identical(fr$info$extras$response_levels, as.character(1:5))
+  expect_identical(fr$info$random_effects$method, "ML")
+  expect_true(is.na(fr$info$fit_stats$r2_marginal))
+  expect_equal(fr$info$fit_stats$aic, stats::AIC(fit), tolerance = 1e-12)
+  expect_equal(
+    fr$info$fit_stats$log_lik,
+    as.numeric(stats::logLik(fit)),
+    tolerance = 1e-12
+  )
+})
+
+test_that("clmm: B, SE, p and thresholds are the engine's, pinned (oracle)", {
+  fit <- .fit_clmm_wine()
+  fr <- as_regression_frame(fit, model_id = "M1")
+  sm <- coef(summary(fit))
+  b <- fr$coefs[!fr$coefs$is_ref, ]
+  th <- fr$info$extras$thresholds
+  rows <- rbind(
+    data.frame(
+      term = b$term,
+      est = b$estimate,
+      se = b$std_error,
+      p = b$p_value
+    ),
+    data.frame(
+      term = th$term,
+      est = th$estimate,
+      se = th$std_error,
+      p = th$p_value
+    )
+  )
+  # ordinal 2026.7.26 on wine (the model of Christensen's clmm tutorial).
+  pinned <- data.frame(
+    term = c("tempwarm", "contactyes", "1|2", "2|3", "3|4", "4|5"),
+    est = c(
+      3.062996593,
+      1.834884905,
+      -1.623666899,
+      1.513365161,
+      4.228526656,
+      6.088772522
+    ),
+    se = c(
+      0.5953802916,
+      0.5125316230,
+      0.6824434363,
+      0.6037582928,
+      0.8089748098,
+      0.9724633241
+    ),
+    p = c(
+      2.680838763e-07,
+      3.435385536e-04,
+      1.735043360e-02,
+      1.219073530e-02,
+      1.722648561e-07,
+      3.820635839e-10
+    )
+  )
+  n_checked <- 0L
+  for (i in seq_len(nrow(pinned))) {
+    tm <- pinned$term[i]
+    r <- rows[rows$term == tm, ]
+    expect_identical(nrow(r), 1L, info = tm)
+    expect_equal(r$est, unname(sm[tm, "Estimate"]), tolerance = 1e-10)
+    expect_equal(r$se, unname(sm[tm, "Std. Error"]), tolerance = 1e-10)
+    expect_equal(r$p, unname(sm[tm, "Pr(>|z|)"]), tolerance = 1e-10)
+    expect_equal(r$est, pinned$est[i], tolerance = 1e-6)
+    expect_equal(r$se, pinned$se[i], tolerance = 1e-6)
+    expect_equal(r$p, pinned$p[i], tolerance = 1e-5)
+    n_checked <- n_checked + 1L
+  }
+  expect_oracle_covered(n_checked, nrow(rows))
+})
+
+test_that("clmm: the random SD is VarCorr()'s, with glmmTMB's Wald interval", {
+  fit <- .fit_clmm_wine()
+  vc <- as_regression_frame(fit)$info$random_effects$variance_components
+  sd_vc <- attr(ordinal::VarCorr(fit)$judge, "stddev")
+  expect_equal(vc$sd, unname(sd_vc), tolerance = 1e-12)
+  expect_equal(vc$sd, 1.131132565, tolerance = 1e-6)
+  # One random term: clmm optimises log(SD), and the ST1 row of vcov() is
+  # on that scale.
+  se_log <- sqrt(stats::vcov(fit)["ST1", "ST1"])
+  z <- stats::qnorm(0.975)
+  expect_equal(sqrt(vc$ci_lower), vc$sd * exp(-z * se_log), tolerance = 1e-12)
+  expect_equal(sqrt(vc$ci_upper), vc$sd * exp(z * se_log), tolerance = 1e-12)
+  expect_identical(vc$ci_method, "wald")
+})
+
+test_that("clmm: the footer LR test is against the clm without random effects", {
+  fit <- .fit_clmm_wine()
+  lrt <- as_regression_frame(fit)$info$random_effects$null_lrt
+  fit0 <- ordinal::clm(rating ~ temp + contact, data = ordinal::wine)
+  expect_equal(
+    lrt$chi2,
+    2 * (as.numeric(stats::logLik(fit)) - as.numeric(stats::logLik(fit0))),
+    tolerance = 1e-10
+  )
+  expect_identical(lrt$df, 1L)
+  expect_identical(lrt$family_label, "cumulative logit regression")
+  expect_equal(
+    lrt$p_chibar2,
+    0.5 * stats::pchisq(lrt$chi2, 1, lower.tail = FALSE)
+  )
+  # Prior weights ride into the null.
+  w <- rep(c(1, 2), length.out = nrow(ordinal::wine))
+  fit_w <- .fit_clmm_wine(weights = w)
+  fit0_w <- ordinal::clm(
+    rating ~ temp + contact,
+    data = ordinal::wine,
+    weights = w
+  )
+  expect_equal(
+    as_regression_frame(fit_w)$info$random_effects$null_lrt$chi2,
+    2 * (as.numeric(stats::logLik(fit_w)) - as.numeric(stats::logLik(fit0_w))),
+    tolerance = 1e-10
+  )
+})
+
+test_that("clmm: a boundary fit keeps its correlation row and drops the Wald SE", {
+  skip_if_not_installed("ordinal")
+  fit <- ordinal::clmm(
+    rating ~ temp + contact + (1 + contact | judge),
+    data = ordinal::wine
+  )
+  fr <- as_regression_frame(fit)
+  vc <- fr$info$random_effects$variance_components
+  expect_true(fr$info$extras$has_singular)
+  expect_identical(
+    vc$term,
+    c("(Intercept)", "contactyes", "(Intercept), contactyes")
+  )
+  expect_identical(vc$is_correlation, c(FALSE, FALSE, TRUE))
+  expect_equal(
+    vc$corr[3],
+    attr(ordinal::VarCorr(fit)$judge, "correlation")[2, 1],
+    tolerance = 1e-12
+  )
+  expect_true(all(is.na(vc$std_error)))
+  # Two variances and one covariance in the null LR test.
+  expect_identical(fr$info$random_effects$null_lrt$df, 3L)
+  # The note names the boundary, not a rank-deficient design.
+  expect_warning(out <- table_regression(fit), class = "spicy_caveat")
+  expect_match(attr(out, "note"), "Singular fit", fixed = TRUE)
+  expect_no_match(attr(out, "note"), "Rank-deficient", fixed = TRUE)
+})
+
+test_that("clmm: AME, robust vcov, profile CIs, standardized and nested are refused", {
+  fit <- .fit_clmm_wine()
+  expect_error(
+    as_regression_frame(fit, vcov = "CR2"),
+    class = "spicy_unsupported_vcov"
+  )
+  expect_error(
+    table_regression(fit, vcov = "CR2", cluster = ~judge),
+    class = "spicy_unsupported_vcov"
+  )
+  expect_error(
+    table_regression(fit, show_columns = c("b", "ame")),
+    class = "spicy_invalid_input"
+  )
+  expect_error(
+    table_regression(fit, ci_method = "profile"),
+    class = "spicy_invalid_input"
+  )
+  expect_error(
+    table_regression(fit, re_ci = "profile"),
+    class = "spicy_invalid_input"
+  )
+  expect_error(
+    table_regression(fit, standardized = "refit"),
+    class = "spicy_unsupported_standardized"
+  )
+  fit0 <- ordinal::clmm(rating ~ temp + (1 | judge), data = ordinal::wine)
+  expect_error(
+    table_regression(list(fit0, fit), nested = TRUE),
+    class = "spicy_invalid_input"
+  )
+})
+
+test_that("clmm: exponentiate gives odds ratios and leaves the thresholds", {
+  fit <- .fit_clmm_wine()
+  b <- coef(summary(fit))
+  txt <- .snap_text(table_regression(fit, exponentiate = TRUE))
+  expect_match(
+    txt,
+    sprintf("%.2f", exp(b["tempwarm", "Estimate"])),
+    fixed = TRUE
+  )
+  expect_match(txt, sprintf("%.2f", b["1|2", "Estimate"]), fixed = TRUE)
+  # A "cloglog" clmm is refused: its coefficients are not log hazard
+  # ratios (see as_regression_frame.clmm).
+  fit_cl <- .fit_clmm_wine(link = "cloglog")
+  expect_error(
+    table_regression(fit_cl, exponentiate = TRUE),
+    class = "spicy_invalid_input"
+  )
+  expect_s3_class(table_regression(fit_cl), "spicy_regression_table")
+})
+
+test_that("clmm: show_thresholds = FALSE folds the cut-points into the note", {
+  fit <- .fit_clmm_wine()
+  note <- attr(table_regression(fit, show_thresholds = FALSE), "note")
+  expect_match(note, "1|2 = -1.62", fixed = TRUE)
+})
+
+test_that("clmm: re_test = 'lrt' tests a single random term by the null LR test", {
+  fit <- .fit_clmm_wine()
+  tt <- spicy:::.compute_re_term_tests(fit, "lrt")
+  lrt <- as_regression_frame(fit)$info$random_effects$null_lrt
+  expect_equal(tt$statistic, lrt$chi2, tolerance = 1e-12)
+  expect_equal(tt$p_value, lrt$p_chibar2, tolerance = 1e-12)
+})
+
+test_that("snapshot: clmm table, default and exponentiated", {
+  fit <- .fit_clmm_wine()
+  expect_snapshot(cat(.snap_text(table_regression(fit))))
+  expect_snapshot(cat(.snap_text(table_regression(fit, exponentiate = TRUE))))
+})

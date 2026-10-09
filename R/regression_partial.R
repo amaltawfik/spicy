@@ -413,6 +413,13 @@ type2_wald_hypothesis_matrix <- function(p, rel_cols, focal_cols, V) {
   if (is.null(V) || nrow(V) != length(bhat)) {
     return(NULL) # nocov
   }
+  # A coefficient glmmTMB maps out -- the intercept of the ordinal family,
+  # fixed at 0 because the cut-points carry the location -- has an all-NA
+  # row in vcov(). It is a constant: variance and covariances 0, which
+  # keeps the NA out of every other term's quadratic form.
+  fixed_par <- apply(is.na(V), 1L, all)
+  V[fixed_par, ] <- 0
+  V[, fixed_par] <- 0
 
   data <- tryCatch(
     if (inherits(fit, c("lme", "gls"))) {

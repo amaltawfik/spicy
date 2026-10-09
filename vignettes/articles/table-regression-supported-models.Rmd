@@ -58,6 +58,7 @@ render whichever defensible model you fit.
 | Binary | independent observations | `glm(family = binomial())` | OR via `exponentiate`; add `"ame"` for probability effects |
 | Binary | overdispersed grouped binomial data | `glm(family = quasibinomial())` | |
 | Ordered categories | a Likert scale, severity grades | `MASS::polr()` or `ordinal::clm()` | thresholds render as a labeled block; AME per category; `clm()` also fits partial proportional odds |
+| Ordered categories | clustered or repeated measures | `ordinal::clmm()` or `glmmTMB::glmmTMB(family = glmmTMB::ordinal())` | thresholds and random effects as labeled blocks; Wald only, no AME |
 | Unordered categories | 3+ nominal outcomes | `nnet::multinom()`; `mlogit::mlogit()` for alternative-specific predictors | outcome categories render as column groups |
 | Count | mean roughly equal to variance | `glm(family = poisson())` | IRR via `exponentiate`; rates via an `offset()` |
 | Count | variance well above the mean | `MASS::glm.nb()` | models the overdispersion; `quasipoisson` merely widens the SEs |
@@ -269,7 +270,8 @@ models without the concept in a mixed table -- with per-factor
 within R-squared through `"within_r2"` (a `fixest` default).
 
 **Mixed effects.** `lmer` (Satterthwaite t via `lmerTest`), `glmer`,
-`glmmTMB` (with zero-inflation and dispersion blocks), `nlme::lme`
+`glmmTMB` (with zero-inflation and dispersion blocks, and a
+`Thresholds` block for the ordinal family), `ordinal::clmm`, `nlme::lme`
 and `nlme::gls`. Random effects render as rows -- SD, correlations,
 residual -- deliberately without per-row p-values; the footer
 carries the boundary-correct chi-bar-squared test, and
@@ -288,7 +290,10 @@ subject-specific mixed models in a single table.
 **Ordinal.** `MASS::polr` and `ordinal::clm`: proportional odds
 ratios, a `Thresholds` block for the cut-points (log-odds scale,
 never exponentiated), partial-proportional-odds terms as a
-`Non-proportional effects` block, and per-category AME. See
+`Non-proportional effects` block, and per-category AME. Cumulative-link
+mixed models, `ordinal::clmm` and `glmmTMB::glmmTMB` with
+`family = glmmTMB::ordinal()`, add the `Random effects` block and keep
+the `Thresholds` block; they are Wald only, without AME. See
 [*Ordinal regression tables*](table-regression-ordinal.html).
 
 **Categorical.** `nnet::multinom` renders outcome categories as

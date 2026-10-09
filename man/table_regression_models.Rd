@@ -51,12 +51,13 @@ supported set. Feature requests are welcome on the issue tracker.
    Robust, IV, quantile, panel \tab \code{fixest} \tab \code{fixest::feols()}, \code{fixest::feglm()}, \code{fixest::fepois()}, \code{fixest::fenegbin()} \tab yes \tab \code{feglm}: OR / IRR \tab - \cr
    Mixed effects \tab \code{lmerMod} \tab \code{lme4::lmer()} \tab yes \tab - \tab Random effects \cr
    Mixed effects \tab \code{glmerMod} \tab \code{lme4::glmer()} \tab yes \tab OR / IRR (link) \tab Random effects \cr
-   Mixed effects \tab \code{glmmTMB} \tab \code{glmmTMB::glmmTMB()} \tab yes \tab link-dependent (IRR for count families) \tab Random effects; Zero-inflation; Dispersion \cr
+   Mixed effects \tab \code{glmmTMB} \tab \code{glmmTMB::glmmTMB()} \tab yes (no for the ordinal family) \tab link-dependent (IRR for count families, OR for ordinal logit) \tab Random effects; Zero-inflation; Dispersion; Thresholds (ordinal family) \cr
    Mixed effects \tab \code{lme} \tab \code{nlme::lme()} \tab yes \tab - \tab Random effects \cr
    Mixed effects \tab \code{gls} \tab \code{nlme::gls()} \tab yes \tab - \tab - \cr
    Population-averaged (GEE) \tab \code{geeglm} \tab \code{geepack::geeglm()} \tab yes \tab OR / IRR / RR / MR / HR (link) \tab - \cr
    Ordinal \tab \code{polr} \tab \code{MASS::polr()} \tab per category \tab OR (logit) \tab Thresholds \cr
    Ordinal \tab \code{clm} \tab \code{ordinal::clm()} \tab per category \tab OR (logit) \tab Thresholds; Non-proportional effects \cr
+   Ordinal \tab \code{clmm} \tab \code{ordinal::clmm()} \tab no \tab OR (logit) \tab Thresholds; Random effects \cr
    Categorical \tab \code{multinom} \tab \code{nnet::multinom()} \tab per outcome \tab OR \tab per-outcome blocks \cr
    Categorical \tab \code{mlogit} \tab \code{mlogit::mlogit()} \tab no \tab OR \tab per-alternative rows \cr
    Counts, two-part \tab \code{zeroinfl} \tab \code{pscl::zeroinfl()} \tab yes (combined response) \tab IRR (count) + OR (logit zero part) \tab Zero-inflation \cr
@@ -149,6 +150,16 @@ per-category (the marginal effect on each P(Y = k)). Defaults include
 McFadden and Nagelkerke pseudo-R-squared. See the
 \href{https://amaltawfik.github.io/spicy/articles/table-regression-ordinal.html}{Ordinal regression tables}
 article.
+
+Cumulative-link mixed models (\code{ordinal::clmm()}, and
+\code{glmmTMB::glmmTMB()} with \code{family = glmmTMB::ordinal()}) add a
+\verb{Random effects} block and the mixed-model fit statistics (n, groups,
+AIC, BIC; no R-squared). Their inference is Wald only: AME, a robust
+\code{vcov}, \code{ci_method = "profile"} and \code{standardized} are refused, as is
+\code{nested = TRUE} for \code{clmm}. \code{exponentiate} follows the \code{clm} rule
+(odds ratios under logit, hazard ratios under cloglog), except that it
+is refused for a \code{clmm} fit with the cloglog link, whose coefficients
+do not behave as cumulative cloglog coefficients.
 }
 
 \section{Counts and two-part models}{

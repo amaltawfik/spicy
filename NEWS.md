@@ -37,6 +37,10 @@ workbook, or a PDF.
   codes), numeric, logical, text, date, date-time, time), in English or
   in French with `options(spicy.language)`.
 
+* `table_regression()` supports cumulative-link mixed models:
+  `ordinal::clmm()` fits and `glmmTMB::glmmTMB()` fits with the ordinal
+  family, with their thresholds and random effects.
+
 ## Bug fixes
 
 * `varlist()` and `code_book()` keep only the selected columns of an sf

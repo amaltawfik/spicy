@@ -64,7 +64,9 @@ table_regression(
 auto-promoted to a 1-element list. A broad set of model classes
 is supported -- linear / generalized linear (\code{lm}, \code{glm},
 \code{MASS::glm.nb}), mixed-effects (\code{lmer}, \code{lme}, \code{glmmTMB}),
-survival (\code{coxph}, \code{survreg}), ordinal (\code{polr}, \code{clm}),
+survival (\code{coxph}, \code{survreg}), ordinal (\code{polr}, \code{clm}, and the
+cumulative-link mixed models \code{ordinal::clmm} and \code{glmmTMB} with
+\code{family = glmmTMB::ordinal()}),
 \code{mgcv::gam}/\code{bam}, \code{betareg}, \code{mlogit}, \code{survey::svyglm}, \code{rms}
 (\code{ols}/\code{lrm}/\code{cph}/\code{Glm}), and Bayesian (\code{rstanarm}/\code{brms}),
 among others. An unsupported class raises
@@ -289,7 +291,8 @@ matching any pattern are removed. Mutually exclusive with
 Default \code{TRUE} (APA convention). Hide via \code{FALSE}.}
 
 \item{show_thresholds}{For ordinal cumulative-link models
-(\code{MASS::polr}, \code{ordinal::clm}), whether to display the estimated
+(\code{MASS::polr}, \code{ordinal::clm}, \code{ordinal::clmm}, \code{glmmTMB} with the
+ordinal family), whether to display the estimated
 category thresholds (cut-points) as a subordinate \code{"Thresholds"}
 block of rows below the predictors, carrying B / SE / CI / p like
 the predictor rows. Default \code{TRUE}. \code{FALSE} collapses them to a
@@ -442,7 +445,7 @@ values move out of the B column into the merged cell).}
 
 \item{show_re}{Logical. \code{TRUE} (default) renders the random-effects
 variance components of a mixed-effects fit (\code{lmer}, \code{glmer},
-\code{glmmTMB}, \code{lme}) as a subordinate \strong{"Random effects" block of
+\code{glmmTMB}, \code{lme}, \code{clmm}) as a subordinate \strong{"Random effects" block of
 table rows} below the fixed effects: one row per standard
 deviation / correlation per grouping factor, plus the residual,
 each with its estimate, SE, and CI in the shared coefficient

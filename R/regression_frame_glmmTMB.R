@@ -54,6 +54,40 @@ as_regression_frame.glmmTMB <- function(
 ) {
   .check_glmmTMB_available()
 
+  # The ordinal family has no average-marginal-effects backend:
+  # marginaleffects answers on the expected category index (a mean of the
+  # codes 1..k), not per category, and leaves some SEs NA. The AME tokens
+  # never reach it; supports$ame = FALSE lets the orchestrator refuse or
+  # en-dash them.
+  is_ordinal <- .glmmTMB_is_ordinal(fit)
+  ame_columns <- if (is_ordinal) {
+    setdiff(show_columns, c("ame", "ame_se", "ame_ci", "ame_p"))
+  } else {
+    show_columns
+  }
+  if (is_ordinal) {
+    # The refit z-scores the outcome, and an ordinal outcome has no scale
+    # to standardize: the clm / clmm refusal, said for this family.
+    if (!identical(standardized, "none")) {
+      spicy_abort(
+        c(
+          sprintf(
+            paste0(
+              "`standardized = \"%s\"` is not available for a `glmmTMB` ",
+              "fit with the ordinal family."
+            ),
+            standardized
+          ),
+          "i" = paste0(
+            "An ordinal outcome has no scale to standardize, as for ",
+            "`ordinal::clm()` and `ordinal::clmm()` fits."
+          )
+        ),
+        class = "spicy_unsupported_standardized"
+      )
+    }
+  }
+
   # The NaN-warning mute applies to the NON-CONVERGED path only. On such
   # a fit summary.glmmTMB and the Wald extractors raise anonymous "NaNs
   # produced" warnings that restate, in the session locale, what the
@@ -83,7 +117,7 @@ as_regression_frame.glmmTMB <- function(
       coefs,
       fit,
       ci_level,
-      show_columns,
+      ame_columns,
       vcov_type = vcov,
       cluster = cluster
     )
@@ -103,8 +137,14 @@ as_regression_frame.glmmTMB <- function(
         cluster_name %||% NA_character_
       )
     }
-    # Phase 7c16: exp() on the B / beta rows for non-identity links.
-    out <- .apply_exp_to_mixed_frame(coefs, info, fit, exponentiate)
+    # Phase 7c16: exp() on the B / beta rows for non-identity links. The
+    # ordinal family reads its info$family ("cumulative"), so the link gate,
+    # the OR / HR header and the exp(-B) of a cloglog are the clm ones.
+    out <- if (is_ordinal) {
+      .apply_exp_to_frame(coefs, info, exponentiate)
+    } else {
+      .apply_exp_to_mixed_frame(coefs, info, fit, exponentiate)
+    }
 
     frame <- new_regression_frame(out$coefs, out$info, fit)
     # Outcome event counts ("n_events" column): binomial glmmTMB fits
@@ -178,6 +218,15 @@ as_regression_frame.glmmTMB <- function(
   ff_all <- glmmTMB::fixef(fit)
   fixef <- ff_all$cond
   V <- as.matrix(stats::vcov(fit)$cond)
+  # Ordinal family: the cut-points identify the location, so glmmTMB
+  # fixes the conditional intercept at 0 (mapped out, NA variance) and
+  # summary() drops it. Indexing the summary by it was the "subscript out
+  # of bounds" crash; the cut-points render as the Thresholds block.
+  if (.glmmTMB_is_ordinal(fit)) {
+    keep <- !(names(fixef) == "(Intercept)" & is.na(diag(V)))
+    fixef <- fixef[keep]
+    V <- V[keep, keep, drop = FALSE]
+  }
   est <- unname(fixef)
   se <- sqrt(diag(V))
   nm <- names(fixef)
@@ -296,6 +345,7 @@ as_regression_frame.glmmTMB <- function(
   fam <- .glmmTMB_family_info(fit)
   is_gaussian_identity <- identical(fam$family, "gaussian") &&
     identical(fam$link, "identity")
+  is_ordinal <- identical(fam$family, "ordinal")
 
   dv <- all.vars(stats::formula(fit))[1L]
   dv_label <- .extract_dv_label(fit, dv)
@@ -342,7 +392,9 @@ as_regression_frame.glmmTMB <- function(
   }
 
   log_lik <- as.numeric(stats::logLik(fit))
-  r2_ns <- if (nonconverged) {
+  # No R^2 for the ordinal family, as for clmm: the two engines of a
+  # cumulative-link mixed model report the same fit statistics.
+  r2_ns <- if (nonconverged || is_ordinal) {
     list(marginal = NA_real_, conditional = NA_real_)
   } else {
     .nakagawa_r2(fit)
@@ -380,7 +432,7 @@ as_regression_frame.glmmTMB <- function(
   # variance partition (classical_r2 stays FALSE). Read by
   # table_regression()'s capability guard, decision 41.
   supports <- list(
-    ame = TRUE,
+    ame = !is_ordinal,
     partial_effect_size = TRUE,
     classical_r2 = FALSE,
     nested_lrt = TRUE,
@@ -465,10 +517,20 @@ as_regression_frame.glmmTMB <- function(
     component_robust_note = length(component_blocks) > 0L &&
       !.is_model_vcov(vcov_kind)
   )
+  if (is_ordinal) {
+    extras$thresholds <- .glmmTMB_ordinal_thresholds(fit)
+    extras$response_levels <- as.character(fit$modelInfo$ord_levels)
+  }
 
   list(
     class = "glmmTMB",
-    family = list(family = fam$family, link = fam$link),
+    # The ordinal family is a cumulative-link model: named as clm / clmm
+    # name it, so every family-keyed rule (exponentiate gate and header,
+    # threshold footer) treats the three engines alike.
+    family = list(
+      family = if (is_ordinal) "cumulative" else fam$family,
+      link = fam$link
+    ),
     dv = dv,
     dv_label = dv_label,
     n_obs = as.integer(stats::nobs(fit)),
@@ -489,6 +551,34 @@ as_regression_frame.glmmTMB <- function(
 .glmmTMB_family_info <- function(fit) {
   fam <- stats::family(fit)
   list(family = fam$family, link = fam$link)
+}
+
+
+.glmmTMB_is_ordinal <- function(fit) {
+  identical(stats::family(fit)$family, "ordinal")
+}
+
+
+# The cut-points of an ordinal glmmTMB fit. glmmTMB does not estimate
+# them directly: the optimiser works on `psi` (fit$fit$par, names
+# "psi"), an unconstrained softmax parametrisation that keeps them
+# ordered, and glmmTMB:::family_params() maps psi to the cut-points
+# while glmmTMB:::ordinal_thresholds() carries the delta-method SE
+# through that map. summary(fit)$thresholds is the published face of
+# both (Estimate, Std. Error, z value, rows "1|2", "2|3", ...), read here;
+# vcov(fit, full = TRUE) labels its psi rows "1|2", ... but holds the
+# variances of psi, not of the cut-points, and must not be read for them.
+# summary() gives no p-value: the Wald p is computed under the normal
+# law the rows' statistic and interval share.
+.glmmTMB_ordinal_thresholds <- function(fit) {
+  th <- summary(fit)$thresholds
+  .threshold_frame(
+    term = rownames(th),
+    estimate = unname(th[, "Estimate"]),
+    std_error = unname(th[, "Std. Error"]),
+    df = Inf,
+    test = "z"
+  )
 }
 
 
@@ -605,6 +695,15 @@ as_regression_frame.glmmTMB <- function(
     identical(fam$link, "identity")
   base <- if (is_gaussian_identity) {
     "Linear mixed-effects regression (glmmTMB)"
+  } else if (identical(fam$family, "ordinal")) {
+    # The clmm title, engine-suffixed: "Cumulative logit mixed-effects
+    # regression (proportional odds) (glmmTMB)".
+    paste0(
+      .clm_link_title(fam$link),
+      " mixed-effects regression (",
+      .ordinal_assumption_label(fam$link),
+      ") (glmmTMB)"
+    )
   } else {
     # Binomial titles are LINK-aware: a probit glmmTMB is NOT a
     # logistic regression.
@@ -1003,7 +1102,7 @@ as_regression_frame.glmmTMB <- function(
     # negative variance and warns "NaNs produced". The NaN itself is
     # handled -- .glmmTMB_blank_degenerate_vc() drops the row -- and the
     # fit's real problem is reported by its own convergence warning.
-    suppressWarnings(stats::confint(fit, method = "Wald", parm = "theta_")),
+    suppressWarnings(.glmmTMB_theta_confint(fit)),
     error = function(e) NULL
   )
   if (is.null(ci_sd) || nrow(ci_sd) == 0L) {
@@ -1093,9 +1192,7 @@ as_regression_frame.glmmTMB <- function(
   ci_sd <- tryCatch(
     # suppressWarnings: see the sibling call in
     # .glmmTMB_append_correlation_rows().
-    suppressWarnings(
-      stats::confint(fit, method = "Wald", parm = "theta_", level = ci_level)
-    ),
+    suppressWarnings(.glmmTMB_theta_confint(fit, level = ci_level)),
     error = function(e) NULL
   )
   if (is.null(ci_sd) || nrow(ci_sd) == 0L) {
@@ -1174,6 +1271,25 @@ as_regression_frame.glmmTMB <- function(
     vc_df$ci_method[i] <- "wald"
   }
   .glmmTMB_blank_degenerate_vc(vc_df)
+}
+
+
+# glmmTMB's Wald table of the random-effect parameters ("Std.Dev.<term>|
+# <group>", "Cor.<t1>.<t2>|<group>"). On an ordinal fit (glmmTMB
+# 1.1.15.2) `parm = "theta_"` returns the row of the first cut-point,
+# "1|2", instead of the SD row, so the full table is read and its
+# conditional variance-component rows kept, unprefixed. The full table's
+# "cond.Std.Dev.(Intercept)|judge" on wine is exp(theta +/- z SE(theta)),
+# the interval the "theta_" route gives on every other family.
+.glmmTMB_theta_confint <- function(fit, level = 0.95) {
+  if (!.glmmTMB_is_ordinal(fit)) {
+    return(stats::confint(fit, method = "Wald", parm = "theta_", level = level))
+  }
+  ci <- stats::confint(fit, method = "Wald", level = level)
+  keep <- grepl("^cond\\.(Std\\.Dev|Cor)\\.", rownames(ci))
+  ci <- ci[keep, , drop = FALSE]
+  rownames(ci) <- sub("^cond\\.", "", rownames(ci))
+  ci
 }
 
 

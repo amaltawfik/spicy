@@ -413,12 +413,13 @@
   }
   if (identical(val, "profile")) {
     # Profile CIs run through lme4's confint machinery: lmer / glmer
-    # only. glmmTMB and nlme::lme have their own native CI routes
-    # (TMB::sdreport; apVar), which the default already uses.
+    # only. glmmTMB, nlme::lme and ordinal::clmm have their own native
+    # CI routes (TMB::sdreport; apVar; the clmm Hessian), which the
+    # default already uses.
     bad <- vapply(
       models,
       function(m) {
-        inherits(m, c("glmmTMB", "lme"))
+        inherits(m, c("glmmTMB", "lme", "clmm"))
       },
       logical(1)
     )
@@ -433,9 +434,9 @@
             if (sum(bad) > 1L) "are" else "is"
           ),
           "i" = paste0(
-            "glmmTMB and nlme::lme variance-component CIs already come ",
-            "from their own engines (TMB's sdreport; nlme's apVar) under ",
-            "the default `re_ci = \"wald\"`."
+            "glmmTMB, nlme::lme and ordinal::clmm variance-component CIs ",
+            "already come from their own engines (TMB's sdreport; nlme's ",
+            "apVar; the clmm Hessian) under the default `re_ci = \"wald\"`."
           )
         ),
         class = "spicy_invalid_input"

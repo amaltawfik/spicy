@@ -1152,7 +1152,7 @@ build_gee_footer_block_from_frames <- function(frames, decimal_mark = ".") {
 
 .format_ordinal_thresholds_for_frame <- function(frame, decimal_mark = ".") {
   cls <- frame$info$class %||% ""
-  if (!cls %in% c("polr", "clm", "svyolr")) {
+  if (!cls %in% c("polr", "clm", "svyolr", "clmm", "glmmTMB")) {
     return(NULL)
   }
   th <- frame$info$extras$thresholds
@@ -2081,7 +2081,8 @@ build_singular_footer_block_from_frames <- function(frames) {
 
 .is_mixed_frame <- function(frame) {
   cls <- frame$info$class %||% ""
-  cls %in% c("lmerMod", "lmerModLmerTest", "glmerMod", "glmmTMB", "lme")
+  cls %in%
+    c("lmerMod", "lmerModLmerTest", "glmerMod", "glmmTMB", "lme", "clmm")
 }
 
 

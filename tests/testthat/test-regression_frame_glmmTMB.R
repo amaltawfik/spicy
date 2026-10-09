@@ -690,3 +690,276 @@ test_that(".glmmTMB_blank_degenerate_vc drops non-finite Wald quantities", {
   # Idempotent: a frame that is already clean comes back unchanged.
   expect_identical(spicy:::.glmmTMB_blank_degenerate_vc(out), out)
 })
+
+
+# ---- 12. Ordinal family (cumulative-link mixed model) ---------------------
+
+.fit_glmmTMB_ordinal <- function(link = "logit", re = TRUE) {
+  skip_if_not_installed("glmmTMB")
+  skip_if_not_installed("ordinal")
+  f <- if (re) {
+    rating ~ temp + contact + (1 | judge)
+  } else {
+    rating ~ temp + contact
+  }
+  glmmTMB::glmmTMB(
+    f,
+    data = ordinal::wine,
+    family = glmmTMB::ordinal(link = link)
+  )
+}
+
+test_that("glmmTMB ordinal: the fixed intercept is dropped, no more crash", {
+  fit <- .fit_glmmTMB_ordinal()
+  fr <- as_regression_frame(fit, model_id = "M1")
+  expect_invisible(spicy:::validate_regression_frame(fr))
+  expect_false("(Intercept)" %in% fr$coefs$term)
+  expect_identical(fr$info$family, list(family = "cumulative", link = "logit"))
+  expect_false(fr$info$supports$ame)
+  expect_identical(fr$info$extras$response_levels, as.character(1:5))
+  expect_true(is.na(fr$info$fit_stats$r2_marginal))
+  expect_identical(
+    fr$info$extras$title_prefix,
+    paste0(
+      "Cumulative logit mixed-effects regression (proportional odds) ",
+      "(glmmTMB)"
+    )
+  )
+  expect_s3_class(table_regression(fit), "spicy_regression_table")
+})
+
+test_that("glmmTMB ordinal: B, SE, p and thresholds are the engine's, pinned (oracle)", {
+  fit <- .fit_glmmTMB_ordinal()
+  fr <- as_regression_frame(fit, model_id = "M1")
+  smc <- summary(fit)$coefficients$cond
+  smt <- summary(fit)$thresholds
+  b <- fr$coefs[!fr$coefs$is_ref, ]
+  th <- fr$info$extras$thresholds
+  # summary() gives the cut-points' Estimate, Std. Error and z, not p:
+  # the p of the Thresholds rows is the Wald normal p of that z.
+  live <- rbind(
+    data.frame(
+      term = rownames(smc),
+      est = smc[, "Estimate"],
+      se = smc[, "Std. Error"],
+      p = smc[, "Pr(>|z|)"]
+    ),
+    data.frame(
+      term = rownames(smt),
+      est = smt[, "Estimate"],
+      se = smt[, "Std. Error"],
+      p = 2 * stats::pnorm(-abs(smt[, "z value"]))
+    )
+  )
+  got <- rbind(
+    data.frame(
+      term = b$term,
+      est = b$estimate,
+      se = b$std_error,
+      p = b$p_value
+    ),
+    data.frame(
+      term = th$term,
+      est = th$estimate,
+      se = th$std_error,
+      p = th$p_value
+    )
+  )
+  # glmmTMB 1.1.15.2 on wine.
+  pinned <- data.frame(
+    term = c("tempwarm", "contactyes", "1|2", "2|3", "3|4", "4|5"),
+    est = c(
+      3.063000374,
+      1.834900569,
+      -1.623669485,
+      1.513356905,
+      4.228520384,
+      6.088769341
+    ),
+    se = c(
+      0.5953910071,
+      0.5125582679,
+      0.6824365664,
+      0.6037351315,
+      0.8089554663,
+      0.9724559564
+    ),
+    p = c(
+      2.682070488e-07,
+      3.437431075e-04,
+      1.734912784e-02,
+      1.218789110e-02,
+      1.721557071e-07,
+      3.819553720e-10
+    )
+  )
+  n_checked <- 0L
+  for (i in seq_len(nrow(pinned))) {
+    tm <- pinned$term[i]
+    g <- got[got$term == tm, ]
+    l <- live[live$term == tm, ]
+    expect_identical(nrow(g), 1L, info = tm)
+    expect_equal(g$est, l$est, tolerance = 1e-10)
+    expect_equal(g$se, l$se, tolerance = 1e-10)
+    expect_equal(g$p, l$p, tolerance = 1e-10)
+    expect_equal(g$est, pinned$est[i], tolerance = 1e-5)
+    expect_equal(g$se, pinned$se[i], tolerance = 1e-5)
+    expect_equal(g$p, pinned$p[i], tolerance = 1e-4)
+    n_checked <- n_checked + 1L
+  }
+  expect_oracle_covered(n_checked, nrow(got))
+})
+
+test_that("glmmTMB ordinal: the random SD and its Wald CI are glmmTMB's", {
+  fit <- .fit_glmmTMB_ordinal()
+  vc <- as_regression_frame(fit)$info$random_effects$variance_components
+  expect_equal(
+    vc$sd,
+    unname(attr(glmmTMB::VarCorr(fit)$cond$judge, "stddev")),
+    tolerance = 1e-12
+  )
+  expect_equal(vc$sd, 1.131139594, tolerance = 1e-5)
+  # The full Wald table, not parm = "theta_": on an ordinal fit that one
+  # returns the first cut-point (glmmTMB 1.1.15.2).
+  ci <- stats::confint(fit, method = "Wald")
+  row <- "cond.Std.Dev.(Intercept)|judge"
+  expect_equal(sqrt(vc$ci_lower), unname(ci[row, 1]), tolerance = 1e-10)
+  expect_equal(sqrt(vc$ci_upper), unname(ci[row, 2]), tolerance = 1e-10)
+  expect_identical(
+    rownames(spicy:::.glmmTMB_theta_confint(fit)),
+    "Std.Dev.(Intercept)|judge"
+  )
+  lrt <- as_regression_frame(fit)$info$random_effects$null_lrt
+  expect_identical(lrt$family_label, "cumulative logit regression")
+})
+
+test_that("clmm and glmmTMB ordinal agree on wine (cross-engine triangulation)", {
+  skip_if_not_installed("ordinal")
+  fit_tmb <- .fit_glmmTMB_ordinal()
+  fit_clmm <- ordinal::clmm(
+    rating ~ temp + contact + (1 | judge),
+    data = ordinal::wine
+  )
+  a <- as_regression_frame(fit_clmm)
+  b <- as_regression_frame(fit_tmb)
+  key <- function(fr) {
+    k <- fr$coefs[!fr$coefs$is_ref, ]
+    th <- fr$info$extras$thresholds
+    data.frame(
+      term = c(k$term, th$term),
+      est = c(k$estimate, th$estimate),
+      se = c(k$std_error, th$std_error)
+    )
+  }
+  ka <- key(a)
+  kb <- key(b)[match(ka$term, key(b)$term), ]
+  expect_identical(kb$term, ka$term)
+  # Both engines maximise the same Laplace likelihood (logLik agree to
+  # 3.5e-6); the gaps are their optimisers' stopping points. Measured
+  # 2026-10-09 (ordinal 2026.7.26, glmmTMB 1.1.15.2): estimates 1.6e-5,
+  # SEs 2.7e-5, random SD 7.0e-6. Pinned just above, at 5e-5.
+  expect_lt(max(abs(ka$est - kb$est)), 5e-5)
+  expect_lt(max(abs(ka$se - kb$se)), 5e-5)
+  va <- a$info$random_effects$variance_components
+  vb <- b$info$random_effects$variance_components
+  expect_lt(abs(va$sd - vb$sd), 5e-5)
+  expect_lt(max(abs(sqrt(va$ci_upper) - sqrt(vb$ci_upper))), 5e-4)
+})
+
+test_that("clmm (several random terms) and glmmTMB ordinal agree on the RE rows", {
+  skip_if_not_installed("glmmTMB")
+  skip_if_not_installed("ordinal")
+  set.seed(1)
+  d <- expand.grid(a = factor(1:12), b = factor(1:10), rep = 1:3)
+  ua <- stats::rnorm(12, 0, 1)
+  ub <- stats::rnorm(10, 0, 0.7)
+  d$x <- stats::rnorm(nrow(d))
+  eta <- 0.8 * d$x + ua[d$a] + ub[d$b]
+  d$y <- cut(
+    eta + stats::rlogis(nrow(d)),
+    c(-Inf, -1, 0.5, 2, Inf),
+    ordered_result = TRUE
+  )
+  fit_clmm <- ordinal::clmm(y ~ x + (1 | a) + (1 | b), data = d)
+  fit_tmb <- glmmTMB::glmmTMB(
+    y ~ x + (1 | a) + (1 | b),
+    data = d,
+    family = glmmTMB::ordinal()
+  )
+  # With two random terms clmm optimises the SDs themselves, not their
+  # logs: the ST rows of vcov() are carried to the log scale by the delta
+  # method, and the rows then match glmmTMB's (measured gap 3e-7).
+  st_par <- utils::tail(fit_clmm$optRes$par, 2L)
+  expect_equal(unname(st_par), c(fit_clmm$ST$a[1, 1], fit_clmm$ST$b[1, 1]))
+  va <- as_regression_frame(fit_clmm)$info$random_effects$variance_components
+  vb <- as_regression_frame(fit_tmb)$info$random_effects$variance_components
+  expect_identical(va$group, vb$group)
+  expect_lt(max(abs(va$sd - vb$sd)), 5e-5)
+  expect_lt(max(abs(va$std_error - vb$std_error)), 5e-5)
+  expect_lt(max(abs(va$ci_lower - vb$ci_lower)), 5e-5)
+})
+
+test_that("glmmTMB ordinal: exponentiate follows the clm rule", {
+  fit <- .fit_glmmTMB_ordinal()
+  fr <- as_regression_frame(fit, exponentiate = TRUE)
+  b <- glmmTMB::fixef(fit)$cond[c("tempwarm", "contactyes")]
+  k <- fr$coefs[!fr$coefs$is_ref, ]
+  expect_equal(k$estimate, unname(exp(b)), tolerance = 1e-10)
+  expect_identical(fr$info$extras$exp_header, "OR")
+  # cloglog: glmmTMB parametrises the cumulative cloglog as clm does
+  # (the fixed-effects fits coincide), so the hazard ratio is exp(-B).
+  fit0 <- .fit_glmmTMB_ordinal("cloglog", re = FALSE)
+  clm0 <- ordinal::clm(
+    rating ~ temp + contact,
+    data = ordinal::wine,
+    link = "cloglog"
+  )
+  expect_equal(
+    unname(glmmTMB::fixef(fit0)$cond[-1]),
+    unname(clm0$beta),
+    tolerance = 1e-5
+  )
+  fit_cl <- .fit_glmmTMB_ordinal("cloglog")
+  fr_cl <- as_regression_frame(fit_cl, exponentiate = TRUE)
+  k_cl <- fr_cl$coefs[!fr_cl$coefs$is_ref, ]
+  expect_equal(
+    k_cl$estimate,
+    unname(exp(-glmmTMB::fixef(fit_cl)$cond[c("tempwarm", "contactyes")])),
+    tolerance = 1e-10
+  )
+  expect_identical(fr_cl$info$extras$exp_header, "HR")
+  expect_error(
+    table_regression(.fit_glmmTMB_ordinal("probit"), exponentiate = TRUE),
+    class = "spicy_invalid_input"
+  )
+})
+
+test_that("glmmTMB ordinal: AME, robust vcov and standardized are refused", {
+  fit <- .fit_glmmTMB_ordinal()
+  expect_error(
+    table_regression(fit, show_columns = c("b", "ame")),
+    class = "spicy_invalid_input"
+  )
+  expect_error(
+    table_regression(fit, vcov = "CR2", cluster = ~judge),
+    class = "spicy_unsupported_vcov"
+  )
+  expect_error(
+    table_regression(fit, standardized = "refit"),
+    class = "spicy_unsupported_standardized"
+  )
+})
+
+test_that("glmmTMB ordinal: the partial chi-square skips the fixed intercept", {
+  fit <- .fit_glmmTMB_ordinal()
+  fr <- as_regression_frame(fit, show_columns = c("b", "partial_chi2"))
+  pc <- fr$coefs[fr$coefs$estimate_type == "partial_chi2", ]
+  z <- summary(fit)$coefficients$cond[, "z value"]
+  expect_equal(pc$estimate, unname(z^2), tolerance = 1e-8)
+})
+
+test_that("snapshot: glmmTMB ordinal table", {
+  fit <- .fit_glmmTMB_ordinal()
+  txt <- capture.output(print(table_regression(fit)))
+  expect_snapshot(cat(paste(sub("[ \t]+$", "", txt), collapse = "\n")))
+})

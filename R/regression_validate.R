@@ -2000,7 +2000,7 @@ validate_class_appropriate_tokens <- function(
       models,
       inherits,
       logical(1),
-      c("merMod", "lmerModLmerTest", "glmmTMB", "lme")
+      c("merMod", "lmerModLmerTest", "glmmTMB", "lme", "clmm")
     ))
   if (all_mixed) {
     bad_fit <- intersect(
