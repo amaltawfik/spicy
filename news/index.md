@@ -29,9 +29,10 @@ PDF.
   writes the Typst source for a machine without Quarto.
 
 - [`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md)
-  gains `subtitle`, `authors`, `notes`, `source`, `range`, and
-  `decimal_mark`, and, for the PDF, `font`, `font_code`, `colors`,
-  `paper`, and `index_columns`.
+  gains `subtitle`, `authors`, `notes` (paragraphs or list items, with
+  `*italics*`, `**bold**`, `` `code` ``, and links in the PDF),
+  `source`, `range`, and `decimal_mark`, and, for the PDF, `font`,
+  `font_code`, `font_size`, `colors`, `paper`, and `index_columns`.
 
 - [`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md)
   documents declared missing values: their own rows in `values`, a

@@ -334,7 +334,10 @@ and they are listed with a count of 0.
 The header carries what a reader needs to cite and trust the document: a
 title and a subtitle, the authors with their affiliations, the date, the
 numbers of observations and variables, and your notes on the data
-(source, exclusions, coding rules), one note per element:
+(source, exclusions, coding rules), one note per element. In the PDF, a
+note that starts with `"- "` is a list item, `*italics*`, `**bold**`,
+and `` `code` `` are set as such, and a web address or a `doi:` becomes
+a link; the console and the Excel file show the words alone:
 
 ``` r
 

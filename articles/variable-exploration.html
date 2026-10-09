@@ -393,7 +393,11 @@ limit, and they are listed with a count of 0.</p>
 <p>The header carries what a reader needs to cite and trust the
 document: a title and a subtitle, the authors with their affiliations,
 the date, the numbers of observations and variables, and your notes on
-the data (source, exclusions, coding rules), one note per element:</p>
+the data (source, exclusions, coding rules), one note per element. In
+the PDF, a note that starts with <code>"- "</code> is a list item,
+<code>*italics*</code>, <code>**bold**</code>, and <code>`code`</code>
+are set as such, and a web address or a <code>doi:</code> becomes a
+link; the console and the Excel file show the words alone:</p>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/code_book.html">code_book</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span>,</span>

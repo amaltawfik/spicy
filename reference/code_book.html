@@ -109,6 +109,7 @@ workbook or to a PDF.</p>
 <span>  decimal_mark <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  font <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  font_code <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  font_size <span class="op">=</span> <span class="fl">10</span>,</span>
 <span>  colors <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  paper <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"a4"</span>, <span class="st">"letter"</span><span class="op">)</span>,</span>
 <span>  index_columns <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -162,9 +163,12 @@ the PDF, an element that starts with <code>"- "</code> or <code>"* "</code> is a
 consecutive items making one list, and any other element is a
 paragraph:
 <code>notes = c("Wave 3 only.", "- Weight: design weight.", "- BMI: kg/m2.")</code>.
-The console and the Excel file show the notes as typed; the PDF turns
-straight apostrophes into typographic ones and, in French, the space
-before <code>:</code>, <code>;</code>, <code>!</code>, or <code>?</code> into a non-breaking space.</p></dd>
+A note may carry <code>*italics*</code>, <code>**bold**</code>, and <code>`code`</code> (not
+nested), and a web address or a <code>doi:</code> becomes a link. The PDF
+renders these, turns straight apostrophes into typographic ones and,
+in French, the space before <code>:</code>, <code>;</code>, <code>!</code>, or <code>?</code> into a non-breaking
+space; the console and the Excel file show the words without the
+marks.</p></dd>
 
 
 <dt id="arg-source">source<a class="anchor" aria-label="anchor" href="#arg-source"></a></dt>
@@ -226,6 +230,12 @@ must be one Typst finds, named exactly as <code>quarto typst fonts</code> lists
 it; a <code>.typ</code> output keeps the name as given, unchecked. A <code>font</code> also
 sets the font of the Excel file, which otherwise keeps its default
 font.</p></dd>
+
+
+<dt id="arg-font-size">font_size<a class="anchor" aria-label="anchor" href="#arg-font-size"></a></dt>
+<dd><p>Size of the text of the PDF, in points: <code>10</code> (the
+default), or a number from 6 to 24. The title of the cover and the
+small size of a long name follow it; the margins do not.</p></dd>
 
 
 <dt id="arg-colors">colors<a class="anchor" aria-label="anchor" href="#arg-colors"></a></dt>
@@ -296,8 +306,8 @@ variable that has missing values.</p></dd>
 
 </dl><p>The attributes <code>language</code> and <code>decimal_mark</code> record the language and
 the decimal mark the codebook was built with, and <code>appearance</code> the look
-of its PDF: a list of <code>font</code>, <code>font_code</code>, <code>colors</code> (all eight),
-<code>paper</code>, and <code>index_columns</code>.</p>
+of its PDF: a list of <code>font</code>, <code>font_code</code>, <code>font_size</code>, <code>colors</code> (all
+eight), <code>paper</code>, and <code>index_columns</code>.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
