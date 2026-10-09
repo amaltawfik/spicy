@@ -936,12 +936,12 @@ Each token = one displayed column.
   right-censored `coxph` fits – other models raise
   `spicy_invalid_input`.
 
-- Survival estimands – `coxph` only: `"rmst"`, `"rmst_se"`, `"rmst_ci"`,
-  `"rmst_p"` (restricted-mean- survival-time difference over `[0, tau]`)
-  and `"risk_diff"`, `"risk_diff_se"`, `"risk_diff_ci"`, `"risk_diff_p"`
-  (cumulative-incidence difference at `at_time`), by g-computation from
-  the fitted model with bootstrap inference. The horizon arguments are
-  required; see `tau` / `at_time`.
+- Survival estimands – `coxph` and `survreg`: `"rmst"`, `"rmst_se"`,
+  `"rmst_ci"`, `"rmst_p"` (restricted-mean- survival-time difference
+  over `[0, tau]`) and `"risk_diff"`, `"risk_diff_se"`,
+  `"risk_diff_ci"`, `"risk_diff_p"` (cumulative-incidence difference at
+  `at_time`), by g-computation from the fitted model with bootstrap
+  inference. The horizon arguments are required; see `tau` / `at_time`.
 
 **Group tokens** (presets) expand to a fixed atomic vector before
 validation:
