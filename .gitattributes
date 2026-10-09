@@ -1,3 +1,8 @@
 # testthat snapshot files are written with LF; keep them LF in the
 # worktree so autocrlf never produces phantom "modified" entries.
 tests/testthat/_snaps/*.md text eol=lf
+
+# Site assets: never line-ending converted, never diffed as text.
+pkgdown/assets/**/*.pdf binary
+pkgdown/assets/**/*.xlsx binary
+pkgdown/assets/**/*.png binary
