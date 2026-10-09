@@ -845,7 +845,7 @@
   # Heads the table of values on the pages a long sheet continues on,
   # after the name of the variable: "q17 (continued)".
   note_codebook_continued = "continued",
-  note_codebook_unweighted = "Counts are unweighted: they describe the file, not a population."
+  note_codebook_unweighted = "Counts and percentages are unweighted: they describe the data file and are not estimates for a population."
 )
 
 # Raw display label for `key`.

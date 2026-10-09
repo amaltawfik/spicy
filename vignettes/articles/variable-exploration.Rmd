@@ -152,8 +152,9 @@ A codebook is the document that travels with a data file: what each
 variable measures, how it is coded, and how many observations carry
 each value. `code_book()` builds it from the data frame itself. It
 returns an object that prints as the list of variables and that you can
-keep, inspect, or write to Excel or PDF. The counts are unweighted: they
-describe the file, not a population.
+keep, inspect, or write to Excel or PDF. Counts and percentages are
+unweighted: they describe the data file and are not estimates for a
+population.
 
 `code_book(sochealth)` documents every variable. The same tidyselect
 selectors as in `varlist()` narrow it down:

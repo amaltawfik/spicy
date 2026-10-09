@@ -14,6 +14,7 @@
       Declared missing value: 8 = DK (2 variables)
       Declared missing value: 9 = Refused (1 variable)
       Declared missing value: NA(a) = Refused (1 variable)
+      Note: Counts and percentages are unweighted: they describe the data file and are not estimates for a population.
       Note: Fictitious data.
       Note: - Marked note.
       
@@ -39,6 +40,7 @@
       Variables : 2
       Valeur manquante déclarée : 8 = DK (1 variable)
       Valeur manquante déclarée : 9 = Refused (1 variable)
+      Note : Les effectifs et les pourcentages ne sont pas pondérés : ils décrivent le fichier de données et ne sont pas des estimations pour la population.
       
          Pos. │ Variable    Libellé    Type                                Valides    Manquants 
       ────────┼─────────────────────────────────────────────────────────────────────────────────

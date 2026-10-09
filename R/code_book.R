@@ -8,7 +8,8 @@
 #' prints as the list of variables, and `output` writes it to an Excel
 #' workbook or to a PDF.
 #'
-#' The counts are unweighted: they describe the file, not a population.
+#' Counts and percentages are unweighted: they describe the data file and
+#' are not estimates for a population.
 #'
 #' @param x A data frame or tibble. For `print()`, a `spicy_codebook`.
 #' @param ... Optional tidyselect-style column selectors (e.g.
@@ -839,7 +840,12 @@ code_book_info <- function(header, orcid = FALSE) {
     observations = as.character(header$n_obs),
     variables = as.character(header$n_vars),
     declared = declared,
-    note = code_book_plain(header$notes)
+    # The caution of the PDF, first among the notes: the counts and
+    # percentages of the console and of the Excel file carry it too.
+    note = c(
+      spicy_str("note_codebook_unweighted"),
+      code_book_plain(header$notes)
+    )
   )
   fields <- c(
     title = "row_title",

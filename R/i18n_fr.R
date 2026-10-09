@@ -366,7 +366,7 @@
   cell_system_missing = "Manquant syst\u00E8me",
   cell_other_categories = "Autres modalit\u00E9s (%d)",
   note_codebook_continued = "suite",
-  note_codebook_unweighted = "Effectifs non pond\u00E9r\u00E9s\u00A0: ils d\u00E9crivent le fichier et non une population."
+  note_codebook_unweighted = "Les effectifs et les pourcentages ne sont pas pond\u00E9r\u00E9s\u00A0: ils d\u00E9crivent le fichier de donn\u00E9es et ne sont pas des estimations pour la population."
 )
 
 # ---- La locale de la langue -----------------------------------------------

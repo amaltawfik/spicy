@@ -116,7 +116,7 @@
         marker: "M",
         missing: "Missing",
         notes: "Notes",
-        unweighted: "Counts are unweighted: they describe the file, not a population.",
+        unweighted: "Counts and percentages are unweighted: they describe the data file and are not estimates for a population.",
         continued: "continued",
         about: "About the data",
         list: "List of variables",

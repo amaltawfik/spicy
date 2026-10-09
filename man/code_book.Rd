@@ -182,7 +182,8 @@ logical variables (code, label, count, percentages). The codebook
 prints as the list of variables, and \code{output} writes it to an Excel
 workbook or to a PDF.
 
-The counts are unweighted: they describe the file, not a population.
+Counts and percentages are unweighted: they describe the data file and
+are not estimates for a population.
 }
 \details{
 The type of a variable is read off its R class, never guessed: a factor

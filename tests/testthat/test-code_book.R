@@ -509,7 +509,11 @@ test_that("the markup of a note is kept in the object and dropped elsewhere", {
   info <- code_book_info(cb$header)
   expect_identical(
     info$value[info$key == "note"],
-    c("See this and that in q.", "- 5 * 3 * 2 stays")
+    c(
+      spicy_str("note_codebook_unweighted"),
+      "See this and that in q.",
+      "- 5 * 3 * 2 stays"
+    )
   )
   out <- paste(capture.output(print(cb)), collapse = " ")
   expect_match(out, "See this and that in q.", fixed = TRUE)
@@ -944,6 +948,7 @@ test_that("the Excel codebook reads back", {
       "Declared missing value",
       "Note",
       "Note",
+      "Note",
       "Generated with"
     )
   )
@@ -951,12 +956,17 @@ test_that("the Excel codebook reads back", {
     info$Value[2:4],
     c("Wave 1", "Jane Doe – HESAV – ORCID 0000-0002-1825-0097", "Bob")
   )
-  # The notes as typed, list marker included.
+  # The caution on the counts, then the notes as typed, list marker included.
   expect_identical(
-    info$Value[8:10],
-    c("8 = DK (1 variable)", "Fictitious.", "- Second note.")
+    info$Value[8:11],
+    c(
+      "8 = DK (1 variable)",
+      spicy_str("note_codebook_unweighted"),
+      "Fictitious.",
+      "- Second note."
+    )
   )
-  expect_match(info$Value[[11]], "^spicy ")
+  expect_match(info$Value[[12]], "^spicy ")
   # Rows 7 and 8 of the sheet (the header is row 1) hold the two counts,
   # as numbers: written a row off, a text cell would turn the column to
   # character.
