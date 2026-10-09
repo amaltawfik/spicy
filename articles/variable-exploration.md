@@ -238,7 +238,7 @@ narrow it down:
 code_book(sochealth, sex, age, income_group, starts_with("bmi"))
 #> Codebook
 #> 
-#> Date: 2026-10-08
+#> Date: 2026-10-09
 #> Observations: 1200
 #> Variables: 5
 #> 
@@ -255,9 +255,9 @@ The type is read off the R class, never guessed: a factor is
 *categorical (nominal)*, an ordered factor *categorical (ordinal)*, a
 labelled vector *categorical (labelled codes)*, an integer or double
 vector *numeric*, a logical, character, or `Date` vector *logical*,
-*text*, or *date*, and a `POSIXct` or `POSIXlt` vector *date-time*. The
-level of measurement comes from the declaration alone: a factor whose
-order was not declared with
+*text*, or *date*, a `POSIXct` or `POSIXlt` vector *date-time*, and an
+`hms` vector *time*. The level of measurement comes from the declaration
+alone: a factor whose order was not declared with
 [`ordered()`](https://rdrr.io/r/base/factor.html) is nominal. A labelled
 vector without value labels is *numeric* (or *text*), like one whose
 labels all mark missing codes (see below). The R class itself stays in
@@ -353,7 +353,7 @@ code_book(
 #> Body mass index
 #> Jane Doe – University of Somewhere
 #> 
-#> Date: 2026-10-08
+#> Date: 2026-10-09
 #> Observations: 1200
 #> Variables: 2
 #> Note: Simulated data shipped with spicy (see ?sochealth).
@@ -414,7 +414,7 @@ cbi <- code_book(tibble::tibble(trust, income))
 cbi
 #> Codebook
 #> 
-#> Date: 2026-10-08
+#> Date: 2026-10-09
 #> Observations: 10
 #> Variables: 2
 #> Declared missing value: 8 = Don't know (1 variable)

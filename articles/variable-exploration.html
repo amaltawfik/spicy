@@ -306,7 +306,7 @@ tidyselect selectors as in <code><a href="../reference/varlist.html">varlist()</
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/code_book.html">code_book</a></span><span class="op">(</span><span class="va">sochealth</span>, <span class="va">sex</span>, <span class="va">age</span>, <span class="va">income_group</span>, <span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">starts_with</a></span><span class="op">(</span><span class="st">"bmi"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Codebook</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Date: 2026-10-08</span></span>
+<span><span class="co">#&gt; Date: 2026-10-09</span></span>
 <span><span class="co">#&gt; Observations: 1200</span></span>
 <span><span class="co">#&gt; Variables: 5</span></span>
 <span><span class="co">#&gt; </span></span>
@@ -322,11 +322,12 @@ tidyselect selectors as in <code><a href="../reference/varlist.html">varlist()</
 (ordinal)</em>, a labelled vector <em>categorical (labelled codes)</em>,
 an integer or double vector <em>numeric</em>, a logical, character, or
 <code>Date</code> vector <em>logical</em>, <em>text</em>, or
-<em>date</em>, and a <code>POSIXct</code> or <code>POSIXlt</code> vector
-<em>date-time</em>. The level of measurement comes from the declaration
-alone: a factor whose order was not declared with <code><a href="https://rdrr.io/r/base/factor.html" class="external-link">ordered()</a></code>
-is nominal. A labelled vector without value labels is <em>numeric</em>
-(or <em>text</em>), like one whose labels all mark missing codes (see
+<em>date</em>, a <code>POSIXct</code> or <code>POSIXlt</code> vector
+<em>date-time</em>, and an <code>hms</code> vector <em>time</em>. The
+level of measurement comes from the declaration alone: a factor whose
+order was not declared with <code><a href="https://rdrr.io/r/base/factor.html" class="external-link">ordered()</a></code> is nominal. A
+labelled vector without value labels is <em>numeric</em> (or
+<em>text</em>), like one whose labels all mark missing codes (see
 below). The R class itself stays in the object.</p>
 <div class="section level3">
 <h3 id="the-codebook-object">The codebook object<a class="anchor" aria-label="anchor" href="#the-codebook-object"></a>
@@ -409,7 +410,7 @@ the data (source, exclusions, coding rules), one note per element:</p>
 <span><span class="co">#&gt; Body mass index</span></span>
 <span><span class="co">#&gt; Jane Doe – University of Somewhere</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Date: 2026-10-08</span></span>
+<span><span class="co">#&gt; Date: 2026-10-09</span></span>
 <span><span class="co">#&gt; Observations: 1200</span></span>
 <span><span class="co">#&gt; Variables: 2</span></span>
 <span><span class="co">#&gt; Note: Simulated data shipped with spicy (see ?sochealth).</span></span>
@@ -466,7 +467,7 @@ with the variables that carry them.</p>
 <span><span class="va">cbi</span></span>
 <span><span class="co">#&gt; Codebook</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Date: 2026-10-08</span></span>
+<span><span class="co">#&gt; Date: 2026-10-09</span></span>
 <span><span class="co">#&gt; Observations: 10</span></span>
 <span><span class="co">#&gt; Variables: 2</span></span>
 <span><span class="co">#&gt; Declared missing value: 8 = Don't know (1 variable)</span></span>

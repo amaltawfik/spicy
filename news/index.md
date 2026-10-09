@@ -41,8 +41,20 @@ PDF.
 - [`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md)
   names the type of each variable in plain words (categorical (nominal),
   categorical (ordinal), categorical (labelled codes), numeric, logical,
-  text, date, date-time), in English or in French with
-  `options(spicy.language)`. \# spicy 0.13.0
+  text, date, date-time, time), in English or in French with
+  `options(spicy.language)`.
+
+### Bug fixes
+
+- [`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md)
+  and
+  [`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md)
+  keep only the selected columns of an sf object. The geometry column
+  came along.
+
+## spicy 0.13.0
+
+CRAN release: 2026-10-01
 
 [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
 now covers more than thirty model classes and gains a univariable

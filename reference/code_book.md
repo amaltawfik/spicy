@@ -202,8 +202,8 @@ list with
   `user_na = FALSE`), `n_distinct`, `n_categories` (the categories of a
   categorical or logical variable, listed or not; `NA` otherwise), then
   `min`, `max`, `mean`, `sd`, and `median` for numeric variables and
-  `earliest` and `latest` for dates. `range = FALSE` drops `min`, `max`,
-  `earliest`, and `latest`.
+  `earliest` and `latest` for dates and times. `range = FALSE` drops
+  `min`, `max`, `earliest`, and `latest`.
 
 - `values`:
 
@@ -223,14 +223,15 @@ The type of a variable is read off its R class, never guessed: a factor
 is categorical (nominal), an ordered factor categorical (ordinal), a
 `haven_labelled` vector categorical (labelled codes), an integer or
 double vector numeric, a logical, character, or `Date` vector logical,
-text, or date, and a `POSIXct` or `POSIXlt` vector date-time. The level
-of measurement comes from the declaration alone: a factor whose order
-was not declared with [`ordered()`](https://rdrr.io/r/base/factor.html)
-is nominal. A vector of any other class is shown by its first class
-(`difftime`, `hms`, ...), without statistics. The R class stays in its
-own column. A `haven_labelled` vector without value labels is numeric,
-or text when it stores characters, and so is one whose value labels all
-sit on declared missing codes, with `user_na = TRUE`.
+text, or date, a `POSIXct` or `POSIXlt` vector date-time, and an `hms`
+vector time. The level of measurement comes from the declaration alone:
+a factor whose order was not declared with
+[`ordered()`](https://rdrr.io/r/base/factor.html) is nominal. A vector
+of any other class is shown by its first class (`difftime`, ...),
+without statistics. The R class stays in its own column. A
+`haven_labelled` vector without value labels is numeric, or text when it
+stores characters, and so is one whose value labels all sit on declared
+missing codes, with `user_na = TRUE`.
 
 `values` lists the categories of factors and labelled vectors and the
 two values of a logical, then the declared missing values of the
@@ -242,9 +243,9 @@ a factor in level order. An explicit `NA` level of a factor (from
 [`addNA()`](https://rdrr.io/r/base/factor.html)) counts as missing, in
 the row of the system missing values.
 
-Dates are written as `YYYY-MM-DD`, and date-times as
-`YYYY-MM-DD HH:MM:SS` followed by the name of the time zone the variable
-carries, or `UTC` when it carries none.
+Dates are written as `YYYY-MM-DD`, date-times as `YYYY-MM-DD HH:MM:SS`
+followed by the name of the time zone the variable carries, or `UTC`
+when it carries none, and times as `HH:MM:SS`.
 
 The words the codebook adds (column headers, types, field and sheet
 names) follow `options(spicy.language)` when the codebook is built (see
@@ -358,7 +359,7 @@ Other variable inspection:
 code_book(sochealth)
 #> Codebook
 #> 
-#> Date: 2026-10-08
+#> Date: 2026-10-09
 #> Observations: 1200
 #> Variables: 24
 #> 
@@ -402,7 +403,7 @@ cb
 #> Body mass index
 #> Jane Doe – University of Somewhere
 #> 
-#> Date: 2026-10-08
+#> Date: 2026-10-09
 #> Observations: 1200
 #> Variables: 2
 #> Note: Simulated data (see ?sochealth).

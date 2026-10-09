@@ -284,7 +284,7 @@ semicolon; <code>NA</code> without them or under <code>user_na = FALSE</code>),
 <code>n_distinct</code>, <code>n_categories</code> (the categories of a categorical or
 logical variable, listed or not; <code>NA</code> otherwise), then <code>min</code>,
 <code>max</code>, <code>mean</code>, <code>sd</code>, and <code>median</code> for
-numeric variables and <code>earliest</code> and <code>latest</code> for dates.
+numeric variables and <code>earliest</code> and <code>latest</code> for dates and times.
 <code>range = FALSE</code> drops <code>min</code>, <code>max</code>, <code>earliest</code>, and <code>latest</code>.</p></dd>
 
 <dt><code>values</code></dt>
@@ -305,11 +305,11 @@ of its PDF: a list of <code>font</code>, <code>font_code</code>, <code>colors</c
 is categorical (nominal), an ordered factor categorical (ordinal), a
 <code>haven_labelled</code> vector categorical (labelled codes), an integer or
 double vector numeric, a logical, character, or <code>Date</code> vector logical,
-text, or date, and a <code>POSIXct</code> or <code>POSIXlt</code> vector date-time. The level
-of measurement comes from the declaration alone: a factor whose order
-was not declared with <code><a href="https://rdrr.io/r/base/factor.html" class="external-link">ordered()</a></code> is nominal. A vector of any other
-class is shown by its first class (<code>difftime</code>, <code>hms</code>, ...), without
-statistics. The R class stays in its own column. A <code>haven_labelled</code>
+text, or date, a <code>POSIXct</code> or <code>POSIXlt</code> vector date-time, and an <code>hms</code>
+vector time. The level of measurement comes from the declaration alone:
+a factor whose order was not declared with <code><a href="https://rdrr.io/r/base/factor.html" class="external-link">ordered()</a></code> is nominal. A
+vector of any other class is shown by its first class (<code>difftime</code>,
+...), without statistics. The R class stays in its own column. A <code>haven_labelled</code>
 vector without value labels is numeric, or text when it stores
 characters, and so is one whose value labels all sit on declared
 missing codes, with <code>user_na = TRUE</code>.</p>
@@ -321,9 +321,10 @@ rows: they appear in <code>values</code> only through their declared missing
 values. The codes of a labelled vector come in code order, the levels
 of a factor in level order. An explicit <code>NA</code> level of a factor (from
 <code><a href="https://rdrr.io/r/base/factor.html" class="external-link">addNA()</a></code>) counts as missing, in the row of the system missing values.</p>
-<p>Dates are written as <code>YYYY-MM-DD</code>, and date-times as
+<p>Dates are written as <code>YYYY-MM-DD</code>, date-times as
 <code>YYYY-MM-DD HH:MM:SS</code> followed by the name of the time zone the
-variable carries, or <code>UTC</code> when it carries none.</p>
+variable carries, or <code>UTC</code> when it carries none, and times as
+<code>HH:MM:SS</code>.</p>
 <p>The words the codebook adds (column headers, types, field and sheet
 names) follow <code>options(spicy.language)</code> when the codebook is built (see
 <code><a href="spicy_labels.html">spicy_labels()</a></code>); the variable and value labels of the data are never
@@ -426,7 +427,7 @@ frequency table of one variable; the article
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="fu">code_book</span><span class="op">(</span><span class="va">sochealth</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Codebook</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Date: 2026-10-08</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Date: 2026-10-09</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Observations: 1200</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Variables: 24</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
@@ -470,7 +471,7 @@ frequency table of one variable; the article
 <span class="r-out co"><span class="r-pr">#&gt;</span> Body mass index</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Jane Doe – University of Somewhere</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Date: 2026-10-08</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Date: 2026-10-09</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Observations: 1200</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Variables: 2</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Note: Simulated data (see ?sochealth).</span>

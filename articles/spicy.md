@@ -72,7 +72,7 @@ and Quarto 1.7 or later).
 code_book(sochealth, sex, age, smoking, bmi)
 #> Codebook
 #> 
-#> Date: 2026-10-08
+#> Date: 2026-10-09
 #> Observations: 1200
 #> Variables: 4
 #> 
