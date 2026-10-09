@@ -1312,7 +1312,7 @@ test_that("E2E: mixed lm + glm side-by-side renders without error", {
   expect_match(note, "Logistic: classical (Fisher information)", fixed = TRUE)
 })
 
-test_that("E2E: CR2 + glm + AME + Satterthwaite + nested LRT", {
+test_that("E2E: CR2 + glm + AME + Satterthwaite + nested Wald test", {
   set.seed(42)
   n <- 200L
   d <- data.frame(
@@ -1342,9 +1342,11 @@ test_that("E2E: CR2 + glm + AME + Satterthwaite + nested LRT", {
     "AME inference: t-test with Satterthwaite df (dominant-coefficient approximation).",
     fixed = TRUE
   )
-  # Change rows live in the body now
+  # Change rows live in the body now. Under CR2 the change test is the
+  # HTZ Wald test of the added block, an F, in place of the LRT.
   vars <- trimws(as.data.frame(out, stringsAsFactors = FALSE)$Variable)
-  expect_true("Δχ²" %in% vars)
+  expect_true("Wald F-change" %in% vars)
+  expect_false("Δχ²" %in% vars)
   # AME df_Satt is finite (not Inf) under CR2
   td <- broom::tidy(out)
   ame_rows <- td[td$estimate_type == "ame", ]

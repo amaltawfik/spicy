@@ -98,6 +98,8 @@ as_regression_frame.rq <- function(
     boot_n = boot_n,
     clustered = !is.null(cluster)
   )
+  # Read back by the nested Wald change test (one bootstrap draw).
+  info$vcov_matrix <- rq_sum$cov
 
   new_regression_frame(coefs, info, fit)
 }

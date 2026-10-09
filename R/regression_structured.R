@@ -1517,7 +1517,8 @@ build_structured_body <- function(
       "r2_change",
       "adj_r2_change",
       "f2_change",
-      "f_change"
+      "f_change",
+      "wald_f_change"
     )
   is_ic <- token %in%
     c(

@@ -257,6 +257,10 @@ extract_lm_phase1 <- function(
     # compute_resample_vcov_bootstrap); the footer reports it -- Stata's
     # bootstrap header reports completed replications, not requested ones.
     boot_n_valid = attr(vc, "boot_n_valid") %||% NA_integer_,
+    # The matrix the coefficient rows were computed from. The nested
+    # Wald change test reads it back, so a bootstrap is drawn once and
+    # the block test and the coefficients agree to the last digit.
+    vcov_matrix = vc,
     # Standardisation method ACTUALLY applied ("posthoc" after a refit
     # fallback); the footer discloses the difference.
     standardized_used = standardized_used

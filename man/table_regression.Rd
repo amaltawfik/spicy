@@ -98,7 +98,9 @@ opt-ins, and \code{"bootstrap"} running quantreg's native \code{boot.rq}
 gradient cluster bootstrap -- the one cluster-robust route for
 \code{rq}; \verb{CR*} and \verb{HC*} are refused for \code{rq}, as is
 \code{"jackknife"}, whose leave-one-out form is inconsistent for
-quantiles). See \emph{Inference and standard errors}.}
+quantiles). With \code{nested = TRUE}, the change test of each pair
+uses the same estimator (a Wald test; see \emph{Hierarchical (nested)
+model comparison}). See \emph{Inference and standard errors}.}
 
 \item{cluster}{Cluster identifier for cluster-robust variance
 (used when \code{vcov} is \code{"CR0"}-\code{"CR3"} or a cluster-bootstrap /
@@ -603,7 +605,12 @@ numeric.}
 for adjacent models (M2 vs M1, M3 vs M2, ...). \code{FALSE}
 (default) -- pure side-by-side display. \code{TRUE} -- requires
 identical \code{nobs} and identical response variable across all
-models. See \emph{Hierarchical (nested) model comparison}.}
+models. Under a non-classical \code{vcov}, each pair is tested by a
+Wald test of the coefficients the current model adds, on that
+model's matrix, shown as "Wald F-change" or "Wald
+\eqn{\chi^2}{chi^2} (change)" by the regime of its coefficient
+tests. See \emph{Hierarchical (nested) model comparison} for the rule,
+the classes it covers and its small-sample caution.}
 
 \item{digits}{Decimal places for general numeric tokens
 (\code{b}, \code{beta}, \code{se}, \code{ci}, \code{t}, \code{f_change}, \code{lrt_change},
@@ -1331,6 +1338,54 @@ not a variance-explained change, and the message points at
 them too, and \code{"lrt_change"} with them, pointing at
 \code{"f_change"} + \code{"p_change"} instead. \code{lm} and \code{nls} keep the
 least-squares tokens.
+
+\strong{The change test follows \code{vcov}.} Under the classical \code{vcov} the
+change test is the partial F, the likelihood-ratio test or
+\code{quantreg::anova.rq()}'s Wald test, as above. Under any other
+\code{vcov}, and under the classical token when the fit carries a robust
+variance of its own, it is the Wald test of the coefficients the
+current model adds, on the matrix its coefficient rows were computed
+from: \eqn{W = b' V^{-1} b}{W = b' V^-1 b}, with \eqn{b} the \eqn{q}
+added coefficients (aliased ones left out) and \eqn{V} their block of
+the matrix. The test takes the regime of the current model's
+coefficient tests:
+\itemize{
+\item \emph{F}, in a row labelled "Wald F-change": \eqn{W / q} on
+\eqn{(q, df)} degrees of freedom, the convention of
+\code{lmtest::waldtest(test = "F")} and \code{car::linearHypothesis()}.
+It applies to \code{lm} under \code{"HC0"}-\code{"HC5"} (and \code{"CR1S"}, on
+\eqn{G - 1} degrees of freedom), \code{rms::ols} under \code{"CR0"}-\code{"CR3"}
+or after \code{rms::robcov()}, \code{quantreg::rq} under \code{"iid"} and
+\code{"ker"}, and a \code{fixest::feols} fit estimated with a non-iid vcov
+(on fixest's own degrees of freedom, as \code{fixest::wald()}). Under
+\code{"CR0"}-\code{"CR3"}, \code{lm}, \code{glm} (\code{MASS::glm.nb} included),
+\code{lme4::lmer} and \code{nlme::lme} use the HTZ test of
+\code{clubSandwich::Wald_test()}, the small-sample correction of their
+coefficient tests.
+\item \emph{Chi-square}, in a row labelled "Wald \eqn{\chi^2}{chi^2}
+(change)" that replaces the likelihood-ratio row: \eqn{W} on
+\eqn{q} degrees of freedom, the convention of
+\code{lmtest::waldtest(test = "Chisq")}. It applies to \code{glm} and
+\code{glm.nb} under \code{"HC0"}-\code{"HC5"}, \code{lm} and \code{glm} under
+\code{"bootstrap"} and \code{"jackknife"}, \code{rq} under \code{"bootstrap"}, and
+under \code{"CR0"}-\code{"CR3"} to \code{coxph}, \code{survreg}, \code{mgcv::gam} and
+\code{bam}, \code{polr}, \code{clm}, \code{betareg}, \code{multinom}, \code{mlogit},
+\code{zeroinfl}, \code{hurdle} and \code{rms::lrm} / \code{cph} / \code{Glm}; also to
+\code{survreg(robust = TRUE)}, a \code{fixest::fepois} or \code{feglm} fit with
+a non-iid vcov, and an \code{rms} fit of these classes passed through
+\code{robcov()}.
+}
+\eqn{\Delta R^2}{Delta R^2}, the information criteria and the
+deviance change do not depend on the vcov and are unchanged, and a
+\code{vcov} list tests each pair with the current model's estimator. The
+previous model's coefficients must all appear, under the same names,
+in the current one, and a smooth term added to a \code{gam} under a robust
+\code{vcov} is refused (\code{spicy_invalid_input} in both cases). \code{rq} keeps
+\code{anova.rq()}'s test under \code{"nid"}, its default, and under \code{"rank"},
+which yields no matrix. A Wald test of many constraints in a small
+sample is liberal: on 219 observations, a block of 19 predictors gave
+F(19, 178) = 6.91 classically and 9.06 as a Wald HC3 test. The HTZ
+correction under \code{"CR0"}-\code{"CR3"} mitigates it.
 }
 
 \section{Standardized coefficients}{

@@ -140,6 +140,8 @@
   fitstat_deviance = "D\u00E9viance",
   fitstat_eff_p = "Param\u00E8tres effectifs",
   fitstat_f_change = "F (variation)",
+  fitstat_wald_f_change = "F de Wald (variation)",
+  fitstat_wald_chi2_change = "\u03C7\u00B2 de Wald (variation)",
   fitstat_p_change = "p (variation)",
 
   # -- table_regression(): subordinate block captions -----------------------

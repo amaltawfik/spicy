@@ -423,7 +423,19 @@ check_nested_fixest_fe_pair <- function(fit_prev, fit_curr) {
 # (M2 vs M1, M3 vs M2, ...) and one column per change token. Used by
 # attach_nested_stats_to_frames() to fold the change stats into each
 # model's fit_stats so the renderer emits them as table rows.
-compute_nested_comparisons <- function(fits) {
+#
+# `frames`, `vcov_list` and `cluster_list` (one entry per fit) carry the
+# variance the coefficients were computed with. Under a non-classical
+# vcov the change test of a pair becomes the Wald test of the block the
+# current model adds, on the current model's matrix (see
+# nested_wald_change()); without them every pair keeps its classical
+# test.
+compute_nested_comparisons <- function(
+  fits,
+  frames = NULL,
+  vcov_list = NULL,
+  cluster_list = NULL
+) {
   if (length(fits) < 2L) {
     return(empty_nested_comparisons())
   }
@@ -453,6 +465,17 @@ compute_nested_comparisons <- function(fits) {
     # lands on the single-fit Wald test anova.rms. See
     # compute_one_pair_rms().
     pair_rms <- is_rms_pair(fit_prev, fit_curr)
+    # The Wald test is settled BEFORE the classical route runs, so a pair
+    # it refuses (a previous model that is not a subset of the current
+    # one) is refused for that reason and not for one the route finds.
+    wald <- nested_wald_change(
+      fit_prev,
+      fit_curr,
+      frame = frames[[k + 1L]],
+      vcov = vcov_list[[k + 1L]],
+      cluster = cluster_list[[k + 1L]],
+      k = k
+    )
     stats <- if (pair_rms) {
       compute_one_pair_rms(fit_prev, fit_curr)
     } else if (pair_mixed) {
@@ -463,6 +486,17 @@ compute_nested_comparisons <- function(fits) {
       compute_one_pair_lrt(fit_prev, fit_curr)
     } else {
       compute_one_pair_lm(fit_prev, fit_curr)
+    }
+    if (!is.null(wald)) {
+      # The Wald test replaces the pair's classical test and its p: the
+      # partial F on the least-squares and quantile routes, the
+      # likelihood-ratio chi-square everywhere else. Delta R^2, the
+      # information criteria and the deviance do not depend on the vcov.
+      f_route <- !pair_rms &&
+        !pair_mixed &&
+        (pair_rq || !(pair_glm || pair_lrt))
+      stats[[if (f_route) "f_change" else "lrt_change"]] <- NA_real_
+      stats$p_change <- wald$p
     }
     result[[k]] <- data.frame(
       comparison = sprintf("Model %d vs Model %d", k + 1L, k),
@@ -476,12 +510,282 @@ compute_nested_comparisons <- function(fits) {
       bic_change = stats$bic_change,
       deviance_change = stats$deviance_change,
       p_change = stats$p_change,
+      wald_f_change = wald$f %||% NA_real_,
+      wald_chi2_change = wald$chi2 %||% NA_real_,
+      wald_df1 = wald$df1 %||% NA_real_,
+      wald_df2 = wald$df2 %||% NA_real_,
       stringsAsFactors = FALSE
     )
   }
   out <- do.call(rbind, result)
   rownames(out) <- NULL
   out
+}
+
+
+# ---- Wald change test under a non-classical vcov -------------------------
+
+# The change test of a pair follows the variance of the coefficients.
+# Under the classical vcov a pair keeps its classical test (partial F,
+# likelihood ratio, anova.rq). Under any other -- HC*, CR*, bootstrap,
+# jackknife, a quantile estimator other than nid, or a robust variance
+# the fit carries itself (fixest, survreg(robust = TRUE), rms::robcov())
+# -- the change test is the Wald test of the block the current model
+# adds, on the current model's matrix, the one its coefficient rows were
+# computed from:
+#
+#   W = b' V^-1 b,  b the added coefficients, V their block of the matrix.
+#
+# Its reference distribution is the one of the current model's
+# coefficient rows (their test_type), so the block test and the rows
+# beside it never disagree on the regime:
+#   * t rows: F = W / q on (q, df), df the rows' residual df -- the
+#     convention of lmtest::waldtest(test = "F") and
+#     car::linearHypothesis(); fixest uses its own t df, as
+#     fixest::wald() does.
+#   * t rows under clubSandwich CR0-CR3 (Satterthwaite per coefficient):
+#     the HTZ test of clubSandwich::Wald_test(), the small-sample
+#     correction of the coefficient tests (Pustejovsky & Tipton 2018).
+#   * z rows: W on q degrees of freedom, chi-square -- the convention of
+#     lmtest::waldtest(test = "Chisq").
+#
+# Returns NULL when the pair keeps its classical test, otherwise
+# list(f, chi2, df1, df2, p) with the statistic of the other regime NA.
+nested_wald_change <- function(fit_prev, fit_curr, frame, vcov, cluster, k) {
+  if (is.null(frame)) {
+    return(NULL)
+  }
+  spec <- if (is.null(vcov)) "classical" else vcov
+  # A quantile pair keeps anova.rq()'s Wald test under "nid", which is
+  # the matrix that test is built on, and under "rank", whose inversion
+  # yields intervals and no matrix at all.
+  if (inherits(fit_curr, "rq") && spec %in% c("nid", "rank")) {
+    return(NULL)
+  }
+  classical <- .is_model_vcov(spec)
+  if (classical && !nested_own_robust_vcov(fit_curr)) {
+    return(NULL)
+  }
+  V <- frame$info$vcov_matrix %||%
+    nested_wald_vcov(fit_curr, spec, classical, cluster)
+
+  cf_prev <- nested_wald_coefs(fit_prev)
+  cf_curr <- nested_wald_coefs(fit_curr)
+  missing <- setdiff(names(cf_prev), names(cf_curr))
+  if (length(missing) > 0L) {
+    spicy_abort(
+      c(
+        sprintf(
+          "`nested = TRUE` cannot test Model %d against Model %d.",
+          k + 1L,
+          k
+        ),
+        "x" = sprintf(
+          "Coefficient(s) of Model %d absent from Model %d: %s.",
+          k,
+          k + 1L,
+          paste0("`", missing, "`", collapse = ", ")
+        ),
+        "i" = paste0(
+          "Under a non-classical `vcov`, the change test is the Wald ",
+          "test of the coefficients the larger model adds, so every ",
+          "coefficient of the smaller model must appear, under the same ",
+          "name, in the larger one."
+        ),
+        "i" = paste0(
+          "Code the predictors the same way in both models (contrasts, ",
+          "transformations), or compare them under the classical `vcov`."
+        )
+      ),
+      class = "spicy_invalid_input"
+    )
+  }
+  block <- setdiff(names(cf_curr)[!is.na(cf_curr)], names(cf_prev))
+
+  smooth <- nested_smooth_coef_names(fit_curr)
+  if (any(block %in% smooth)) {
+    spicy_abort(
+      c(
+        sprintf(
+          paste0(
+            "`nested = TRUE` with `vcov = \"%s\"` cannot test the smooth ",
+            "term(s) that Model %d adds."
+          ),
+          spec,
+          k + 1L
+        ),
+        "i" = paste0(
+          "The robust change test is a Wald test of the added ",
+          "coefficients, and a Wald test on penalized spline coefficients ",
+          "is not a test of the smooth term."
+        ),
+        "i" = paste0(
+          "Add parametric terms only, or compare the models under the ",
+          "classical `vcov`."
+        )
+      ),
+      class = "spicy_invalid_input"
+    )
+  }
+
+  q <- length(block)
+  nm <- rownames(V)
+  if (is.null(nm)) {
+    # Unnamed matrix (sandwich::vcovCL on survreg): its leading rows are
+    # the coefficients, the extra rows the scale parameters -- the
+    # position fallback compute_coef_inference() applies.
+    nm <- c(names(cf_curr), rep("", nrow(V)))[seq_len(nrow(V))]
+  }
+  if (inherits(fit_curr, "rms")) {
+    nm <- .rms_normalise_names(nm)
+  }
+  idx <- match(block, nm)
+  b <- cf_curr[block]
+  W <- if (q > 0L && !anyNA(idx)) {
+    tryCatch(
+      as.numeric(crossprod(b, solve(as.matrix(V)[idx, idx], b))),
+      error = function(e) NA_real_
+    )
+  } else {
+    NA_real_
+  }
+
+  b_rows <- frame$coefs[
+    frame$coefs$estimate_type %in% "B" & !(frame$coefs$is_ref %in% TRUE),
+    ,
+    drop = FALSE
+  ]
+  t_rows <- identical(unique(stats::na.omit(b_rows$test_type)), "t")
+
+  if (t_rows && inherits(V, "vcovCR") && !identical(spec, "CR1S") && q > 0L) {
+    wt <- tryCatch(
+      clubSandwich::Wald_test(
+        fit_curr,
+        constraints = clubSandwich::constrain_zero(block),
+        vcov = V,
+        test = "HTZ"
+      ),
+      error = function(e) NULL
+    )
+    if (is.data.frame(wt) && nrow(wt) >= 1L) {
+      return(list(
+        f = as.numeric(wt$Fstat[1L]),
+        chi2 = NA_real_,
+        df1 = as.numeric(wt$df_num[1L]),
+        df2 = as.numeric(wt$df_denom[1L]),
+        p = as.numeric(wt$p_val[1L])
+      ))
+    }
+  }
+
+  df2 <- if (!t_rows) {
+    Inf
+  } else if (inherits(fit_curr, "fixest")) {
+    as.numeric(attr(V, "df.t") %||% Inf)
+  } else {
+    d <- unique(b_rows$df[is.finite(b_rows$df)])
+    if (length(d) == 1L) d else scalar_or_na(stats::df.residual(fit_curr))
+  }
+  if (is.finite(df2)) {
+    f <- W / q
+    return(list(
+      f = f,
+      chi2 = NA_real_,
+      df1 = q,
+      df2 = df2,
+      p = stats::pf(f, q, df2, lower.tail = FALSE)
+    ))
+  }
+  list(
+    f = NA_real_,
+    chi2 = W,
+    df1 = q,
+    df2 = Inf,
+    p = stats::pchisq(W, q, lower.tail = FALSE)
+  )
+}
+
+# TRUE when the fit carries a robust variance of its own, which its
+# coefficient rows report under the classical `vcov` token: a fixest
+# fit estimated with a non-iid vcov, survreg(robust = TRUE), an rms fit
+# passed through robcov() or bootcov().
+nested_own_robust_vcov <- function(fit) {
+  if (inherits(fit, "fixest")) {
+    vt <- attr(fit$cov.scaled, "vcov_type")
+    return(!is.null(vt) && !identical(toupper(vt), "IID"))
+  }
+  if (inherits(fit, "rms")) {
+    return(!is.null(fit$orig.var))
+  }
+  inherits(fit, "survreg") && !is.null(fit$naive.var)
+}
+
+# The matrix of the current model when its frame did not keep one: the
+# requested estimator, or the fit's own variance under the classical
+# token. Deterministic, so it equals the matrix the coefficient rows
+# were computed from (the resamplers, the only random estimators, store
+# theirs on the frame).
+nested_wald_vcov <- function(fit, spec, classical, cluster) {
+  if (inherits(fit, "fixest")) {
+    return(fit$cov.scaled)
+  }
+  if (classical) {
+    return(stats::vcov(fit))
+  }
+  compute_model_vcov(fit, type = spec, cluster = cluster)
+}
+
+# The coefficient vector of a fit, named as its vcov matrix is: the
+# fixed effects of a mixed model, the "<outcome>:<term>" names of a
+# multinom, the "(Intercept)" spelling for rms.
+nested_wald_coefs <- function(fit) {
+  if (inherits(fit, "merMod")) {
+    return(lme4::fixef(fit))
+  }
+  if (inherits(fit, "lme")) {
+    return(nlme::fixef(fit))
+  }
+  if (inherits(fit, "rms")) {
+    return(.rms_coef_named(fit))
+  }
+  cf <- stats::coef(fit)
+  if (is.matrix(cf)) {
+    nm <- outer(rownames(cf), colnames(cf), paste, sep = ":")
+    cf <- stats::setNames(as.vector(t(cf)), as.vector(t(nm)))
+  }
+  cf
+}
+
+# Names of the penalized smooth coefficients of an mgcv fit, empty for
+# every other class.
+nested_smooth_coef_names <- function(fit) {
+  if (!inherits(fit, "gam") || length(fit$smooth) == 0L) {
+    return(character(0))
+  }
+  nm <- names(stats::coef(fit))
+  unlist(lapply(fit$smooth, function(s) nm[s$first.para:s$last.para]))
+}
+
+# Places the Wald change rows in `show_fit_stats` right after the first
+# classical test row the table shows (f_change or lrt_change), so the test
+# that p_change belongs to is always on the table. Only the rows some
+# pair filled are added; a hierarchy under the classical vcov gets none.
+insert_wald_change_tokens <- function(show_fit_stats, frames) {
+  filled <- function(key) {
+    any(vapply(
+      frames,
+      function(fr) is.finite(scalar_or_na(fr$info$fit_stats[[key]])),
+      logical(1)
+    ))
+  }
+  wald <- c("wald_f_change", "wald_chi2_change")
+  wald <- wald[vapply(wald, filled, logical(1))]
+  anchor <- match(c("f_change", "lrt_change"), show_fit_stats)
+  anchor <- anchor[!is.na(anchor)]
+  if (length(wald) == 0L || length(anchor) == 0L) {
+    return(show_fit_stats)
+  }
+  append(show_fit_stats, wald, after = min(anchor))
 }
 
 
@@ -828,16 +1132,33 @@ compute_one_pair_mixed <- function(fit_prev, fit_curr) {
 #     directly.
 #
 # Phase 0c sub-step C3.
-attach_nested_stats_to_frames <- function(frames, fits) {
+attach_nested_stats_to_frames <- function(
+  frames,
+  fits,
+  vcov_list = NULL,
+  cluster_list = NULL
+) {
   if (!isTRUE(length(fits) >= 2L)) {
     return(frames)
   }
-  comp <- compute_nested_comparisons(fits)
+  comp <- compute_nested_comparisons(
+    fits,
+    frames = frames,
+    vcov_list = vcov_list,
+    cluster_list = cluster_list
+  )
   if (nrow(comp) == 0L) {
     return(frames) # nocov -- >= 2 fits always yield >= 1 comparison row
   }
   na_row <- comp[1L, , drop = FALSE]
   na_row[1L, ] <- NA
+  # The Wald columns travel only when some pair used the Wald test, so a
+  # hierarchy under the classical vcov keeps its fit-stat schema.
+  wald_cols <- c("wald_f_change", "wald_chi2_change", "wald_df1", "wald_df2")
+  if (all(is.na(comp$wald_df1))) {
+    comp <- comp[setdiff(names(comp), wald_cols)]
+    na_row <- na_row[setdiff(names(na_row), wald_cols)]
+  }
   change_cols <- setdiff(names(comp), "comparison")
   for (i in seq_along(frames)) {
     fs <- frames[[i]]$info$fit_stats

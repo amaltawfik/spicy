@@ -41,6 +41,14 @@ workbook, or a PDF.
   `ordinal::clmm()` fits and `glmmTMB::glmmTMB()` fits with the ordinal
   family, with their thresholds and random effects.
 
+* `table_regression(nested = TRUE)` with a robust or cluster-robust
+  `vcov` tests each added block with a Wald test on that matrix,
+  labelled as such: a Wald F-change for `lm`, a Wald χ² for `glm` and
+  `coxph`, and the regime of the coefficient tests for the other
+  classes. Under the classical `vcov`, the partial F and the
+  likelihood-ratio test are unchanged. Tables of 0.13.0 built with a
+  robust `vcov` and `nested = TRUE` show different change statistics.
+
 ## Bug fixes
 
 * `varlist()` and `code_book()` keep only the selected columns of an sf

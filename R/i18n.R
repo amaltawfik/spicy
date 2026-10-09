@@ -265,6 +265,11 @@
   # Nested-comparison change tokens: one template over the base label.
   fitstat_change_prefix = "\u0394%s",
   fitstat_f_change = "F-change",
+  # Under a non-classical `vcov`, the change test of a pair is a Wald test
+  # of the added block on the requested matrix: an F in the t regime, a
+  # chi-square in the z regime. Named apart so the row says which test.
+  fitstat_wald_f_change = "Wald F-change",
+  fitstat_wald_chi2_change = "Wald \u03C7\u00B2 (change)",
   fitstat_p_change = "p (change)",
 
   # -- table_regression(): subordinate block captions ------------------------

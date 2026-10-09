@@ -77,6 +77,7 @@ as_regression_frame.lm <- function(
     ci_level = ci_level,
     ci_method = ci_method
   )
+  frame$info$vcov_matrix <- legacy$vcov_matrix
   # Outcome event counts (binomial fits; no-op otherwise -- the
   # orchestrator gate errors on frames left without event data).
   if ("n_events" %in% show_columns) {
@@ -436,7 +437,13 @@ as_regression_frame.glm <- function(fit, ...) {
     "aicc_change",
     "bic_change",
     "deviance_change",
-    "p_change"
+    "p_change",
+    # The Wald change test under a non-classical vcov, present only when
+    # at least one pair of the hierarchy used it.
+    "wald_f_change",
+    "wald_chi2_change",
+    "wald_df1",
+    "wald_df2"
   )
   for (k in change_keys) {
     if (!is.null(fs[[k]])) out[[k]] <- fs[[k]]

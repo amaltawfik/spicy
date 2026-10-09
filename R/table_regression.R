@@ -539,6 +539,54 @@
 #' `"f_change"` + `"p_change"` instead. `lm` and `nls` keep the
 #' least-squares tokens.
 #'
+#' **The change test follows `vcov`.** Under the classical `vcov` the
+#' change test is the partial F, the likelihood-ratio test or
+#' `quantreg::anova.rq()`'s Wald test, as above. Under any other
+#' `vcov`, and under the classical token when the fit carries a robust
+#' variance of its own, it is the Wald test of the coefficients the
+#' current model adds, on the matrix its coefficient rows were computed
+#' from: \eqn{W = b' V^{-1} b}{W = b' V^-1 b}, with \eqn{b} the \eqn{q}
+#' added coefficients (aliased ones left out) and \eqn{V} their block of
+#' the matrix. The test takes the regime of the current model's
+#' coefficient tests:
+#' \itemize{
+#'   \item *F*, in a row labelled "Wald F-change": \eqn{W / q} on
+#'     \eqn{(q, df)} degrees of freedom, the convention of
+#'     `lmtest::waldtest(test = "F")` and `car::linearHypothesis()`.
+#'     It applies to `lm` under `"HC0"`-`"HC5"` (and `"CR1S"`, on
+#'     \eqn{G - 1} degrees of freedom), `rms::ols` under `"CR0"`-`"CR3"`
+#'     or after `rms::robcov()`, `quantreg::rq` under `"iid"` and
+#'     `"ker"`, and a `fixest::feols` fit estimated with a non-iid vcov
+#'     (on fixest's own degrees of freedom, as `fixest::wald()`). Under
+#'     `"CR0"`-`"CR3"`, `lm`, `glm` (`MASS::glm.nb` included),
+#'     `lme4::lmer` and `nlme::lme` use the HTZ test of
+#'     `clubSandwich::Wald_test()`, the small-sample correction of their
+#'     coefficient tests.
+#'   \item *Chi-square*, in a row labelled "Wald \eqn{\chi^2}{chi^2}
+#'     (change)" that replaces the likelihood-ratio row: \eqn{W} on
+#'     \eqn{q} degrees of freedom, the convention of
+#'     `lmtest::waldtest(test = "Chisq")`. It applies to `glm` and
+#'     `glm.nb` under `"HC0"`-`"HC5"`, `lm` and `glm` under
+#'     `"bootstrap"` and `"jackknife"`, `rq` under `"bootstrap"`, and
+#'     under `"CR0"`-`"CR3"` to `coxph`, `survreg`, `mgcv::gam` and
+#'     `bam`, `polr`, `clm`, `betareg`, `multinom`, `mlogit`,
+#'     `zeroinfl`, `hurdle` and `rms::lrm` / `cph` / `Glm`; also to
+#'     `survreg(robust = TRUE)`, a `fixest::fepois` or `feglm` fit with
+#'     a non-iid vcov, and an `rms` fit of these classes passed through
+#'     `robcov()`.
+#' }
+#' \eqn{\Delta R^2}{Delta R^2}, the information criteria and the
+#' deviance change do not depend on the vcov and are unchanged, and a
+#' `vcov` list tests each pair with the current model's estimator. The
+#' previous model's coefficients must all appear, under the same names,
+#' in the current one, and a smooth term added to a `gam` under a robust
+#' `vcov` is refused (`spicy_invalid_input` in both cases). `rq` keeps
+#' `anova.rq()`'s test under `"nid"`, its default, and under `"rank"`,
+#' which yields no matrix. A Wald test of many constraints in a small
+#' sample is liberal: on 219 observations, a block of 19 predictors gave
+#' F(19, 178) = 6.91 classically and 9.06 as a Wald HC3 test. The HTZ
+#' correction under `"CR0"`-`"CR3"` mitigates it.
+#'
 #' # Standardized coefficients
 #'
 #' `standardized` controls the method when `"beta"` is in
@@ -753,7 +801,9 @@
 #'   gradient cluster bootstrap -- the one cluster-robust route for
 #'   `rq`; `CR*` and `HC*` are refused for `rq`, as is
 #'   `"jackknife"`, whose leave-one-out form is inconsistent for
-#'   quantiles). See *Inference and standard errors*.
+#'   quantiles). With `nested = TRUE`, the change test of each pair
+#'   uses the same estimator (a Wald test; see *Hierarchical (nested)
+#'   model comparison*). See *Inference and standard errors*.
 #' @param cluster Cluster identifier for cluster-robust variance
 #'   (used when `vcov` is `"CR0"`-`"CR3"` or a cluster-bootstrap /
 #'   cluster-jackknife). Three accepted forms (see *How to specify
@@ -1230,7 +1280,12 @@
 #'   for adjacent models (M2 vs M1, M3 vs M2, ...). `FALSE`
 #'   (default) -- pure side-by-side display. `TRUE` -- requires
 #'   identical `nobs` and identical response variable across all
-#'   models. See *Hierarchical (nested) model comparison*.
+#'   models. Under a non-classical `vcov`, each pair is tested by a
+#'   Wald test of the coefficients the current model adds, on that
+#'   model's matrix, shown as "Wald F-change" or "Wald
+#'   \eqn{\chi^2}{chi^2} (change)" by the regime of its coefficient
+#'   tests. See *Hierarchical (nested) model comparison* for the rule,
+#'   the classes it covers and its small-sample caution.
 #' @param digits Decimal places for general numeric tokens
 #'   (`b`, `beta`, `se`, `ci`, `t`, `f_change`, `lrt_change`,
 #'   `deviance`, `deviance_change`, `ame`, `ame_se`,
@@ -3205,8 +3260,17 @@ table_regression <- function(
   # Phase 0c sub-step C3: attach to frames; the legacy path
   # (attach_nested_stats_to_extracts) is no longer called because
   # align_frames() reads from frames directly.
+  # Under a non-classical vcov the change test of a pair is a Wald test
+  # on the current model's matrix, shown in its own rows ("Wald
+  # F-change", "Wald chi^2 (change)") next to the classical test rows.
   if (isTRUE(nested)) {
-    frames <- attach_nested_stats_to_frames(frames, models)
+    frames <- attach_nested_stats_to_frames(
+      frames,
+      models,
+      vcov_list = vcov_list,
+      cluster_list = cluster_list
+    )
+    show_fit_stats <- insert_wald_change_tokens(show_fit_stats, frames)
   }
 
   # ---- Multinomial outcome-as-columns explode (display only) -------------

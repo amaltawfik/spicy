@@ -438,6 +438,19 @@ across all models, otherwise a `spicy_invalid_input` error
 explains the listwise-deletion trap and suggests refitting on the
 common subset.
 
+The change test follows `vcov`. Under any estimator other than the
+classical one, each pair is tested by a Wald test of the
+coefficients the current model adds, on that model's robust
+matrix, so the block test and the coefficients agree. The row then
+reads *Wald F-change* (*Wald χ² (change)* for `glm`, `coxph` and
+the other likelihood classes), and ΔR² is unchanged. A Wald test of
+a large block in a small sample rejects too often, so read it with
+care when many predictors enter at once.
+
+```{r nested-hc3}
+table_regression(list(m1, m2, m3), nested = TRUE, vcov = "HC3")
+```
+
 ## Robust variance
 
 The default `vcov = "classical"` reports the OLS standard error,
