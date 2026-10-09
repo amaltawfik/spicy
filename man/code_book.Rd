@@ -164,8 +164,9 @@ logical variable, listed or not; \code{NA} otherwise), then \code{min},
 \code{max}, \code{mean}, \code{sd}, and \code{median} for
 numeric variables and \code{earliest} and \code{latest} for dates and times.
 \code{range = FALSE} drops \code{min}, \code{max}, \code{earliest}, and \code{latest}.}
-\item{\code{values}}{A tibble, one row per value: \code{variable}, \code{code},
-\code{label}, \code{declared_missing}, \code{n}, \code{pct_total}, and \code{pct_valid}. The
+\item{\code{values}}{A tibble, one row per value: \code{position} and
+\code{variable} (of the variable), \code{code}, \code{label}, \code{declared_missing},
+\code{n}, \code{pct_total}, and \code{pct_valid}. The
 row of the system missing values (\code{code = "NA"}) exists only for a
 variable that has missing values.}
 }
@@ -232,9 +233,16 @@ R that wrote it, with the date and time of writing. The other two,
 \code{variables} and \code{values}, hold the two tables of the object from the
 first row, under the column headers the console and the PDF show
 (\code{code} is "Value", \code{n_valid} "Valid"), with a frozen header and
-filters. Numbers stay numeric cells, the percentages shown to one
-decimal; a statistic that is not finite (of a column holding \code{Inf}) is
-an empty cell, and dates stay text, written as above.
+filters; in \code{variables}, the position, name, and label stay in view
+while the statistics scroll. The workbook always has the same columns,
+in the same order: a column that does not apply to a variable, or to
+any variable of the file, is empty, never left out. Numbers stay
+numeric cells at their full precision, shown as the PDF shows them:
+the percentages to one decimal, the mean, SD, and median of a variable
+to three significant digits of its SD; a statistic that is not finite
+(of a column holding \code{Inf}) is an empty cell, and dates stay text,
+written as above. Each worksheet prints in landscape, fitted to the
+width of the page, its header row on every page.
 }
 
 \section{PDF output}{

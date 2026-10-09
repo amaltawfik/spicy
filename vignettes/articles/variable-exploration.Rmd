@@ -365,7 +365,7 @@ code_book(
 
 Three of its twelve pages. The cover:
 
-<p align="center"><img src="https://amaltawfik.github.io/spicy/codebook/cover.png" alt="The cover: the word CODEBOOK in spaced capitals, the title Social health survey, its subtitle, two authors with their affiliations and an ORCID link, and the date" width="70%"></p>
+<img src="https://amaltawfik.github.io/spicy/codebook/cover.png" alt="The cover: the word CODEBOOK in spaced capitals, the title Social health survey, its subtitle, two authors with their affiliations and an ORCID link, and the date" width="100%">
 
 The page about the data, with the caution on unweighted counts and the
 notes, their markup rendered and their addresses turned into links:

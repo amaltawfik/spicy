@@ -260,7 +260,7 @@ code_book(
 )
 ```
 
-<p align="center"><img src="https://amaltawfik.github.io/spicy/codebook/cover.png" alt="The cover of the PDF codebook: the word CODEBOOK in spaced capitals, the title Social health survey, its subtitle, two authors with their affiliations and an ORCID link, and the date" width="70%"></p>
+<img src="https://amaltawfik.github.io/spicy/codebook/cover.png" alt="The cover of the PDF codebook: the word CODEBOOK in spaced capitals, the title Social health survey, its subtitle, two authors with their affiliations and an ORCID link, and the date" width="100%">
 
 <img src="https://amaltawfik.github.io/spicy/codebook/sheet.png" alt="The sheet of one variable in the PDF codebook: a band with its position, name, and type, its label and source code, the counts of valid, missing, and distinct values, and the table of its values with n, percent, and valid percent, the system missing row in grey" width="100%">
 

@@ -45,8 +45,24 @@ code_book_write_xlsx <- function(cb, path, font = NULL) {
     # error cells: they are left empty, and the column stays numeric.
     dbl <- vapply(df, is.double, logical(1))
     df[dbl] <- lapply(df[dbl], function(v) replace(v, !is.finite(v), NA))
+    # The column widths come from the numbers as displayed, not from their
+    # full precision: a mean of 49.2641666666667 would take an 18-wide
+    # column.
+    shown <- df
+    if (i == 2L) {
+      dec <- xl_decimals(df$sd)
+      for (k in intersect(c("mean", "sd", "median"), names(df))) {
+        shown[[k]] <- xl_fixed(df[[k]], dec)
+      }
+    }
+    if (i == 3L) {
+      for (k in c("pct_total", "pct_valid")) {
+        shown[[k]] <- xl_fixed(df[[k]], 1L)
+      }
+    }
     if (i > 1L) {
       names(df) <- code_book_headers(names(df))
+      names(shown) <- names(df)
     }
     s <- sheets[[i]]
     head <- openxlsx2::wb_dims(rows = 1L, cols = seq_along(df))
@@ -68,14 +84,50 @@ code_book_write_xlsx <- function(cb, path, font = NULL) {
       name = head_font,
       color = openxlsx2::wb_color(hex = argb[["primary"]])
     )
-    wb <- openxlsx2::wb_freeze_pane(wb, sheet = s, first_row = TRUE)
+    # The header row stays in view; in `variables`, so do the position,
+    # the name and the label while the statistics scroll.
+    wb <- if (i == 2L) {
+      openxlsx2::wb_freeze_pane(
+        wb,
+        sheet = s,
+        first_active_row = 2L,
+        first_active_col = 4L
+      )
+    } else {
+      openxlsx2::wb_freeze_pane(wb, sheet = s, first_row = TRUE)
+    }
     wb <- openxlsx2::wb_add_filter(
       wb,
       sheet = s,
       rows = 1L,
       cols = seq_along(df)
     )
-    wb <- .spicy_xl_set_widths(wb, s, .spicy_xl_cells(df, list(names(df))))
+    wb <- .spicy_xl_set_widths(
+      wb,
+      s,
+      .spicy_xl_cells(shown, list(names(shown)))
+    )
+    if (i == 1L) {
+      # The notes wrap in a wide Value column, every row aligned at its top.
+      wb <- openxlsx2::wb_set_col_widths(wb, sheet = s, cols = 2L, widths = 90)
+      wb <- openxlsx2::wb_add_cell_style(
+        wb,
+        sheet = s,
+        dims = openxlsx2::wb_dims(rows = 1L + seq_len(nrow(df)), cols = 1:2),
+        wrap_text = "1",
+        vertical = "top"
+      )
+    }
+    # On paper: landscape, fitted to the width of the page, the header row
+    # repeated on every page.
+    wb <- openxlsx2::wb_page_setup(
+      wb,
+      sheet = s,
+      orientation = "landscape",
+      fit_to_width = TRUE,
+      fit_to_height = FALSE,
+      print_title_rows = 1L
+    )
   }
 
   # The two counts of the first sheet stay numbers.
@@ -102,6 +154,25 @@ code_book_write_xlsx <- function(cb, path, font = NULL) {
       numfmt = "0.0"
     )
   }
+  # The mean, SD and median of a variable at the precision of the PDF,
+  # three significant digits of its SD; the cells keep their full
+  # precision. Min and max stay General: they are values of the data.
+  v <- cb$variables
+  stat_cols <- which(names(v) %in% c("mean", "sd", "median"))
+  if (nrow(v) > 0L && length(stat_cols) > 0L) {
+    dec <- xl_decimals(v$sd)
+    for (r in which(!is.na(v$mean))) {
+      wb <- openxlsx2::wb_add_numfmt(
+        wb,
+        sheet = sheets[[2L]],
+        dims = openxlsx2::wb_dims(rows = r + 1L, cols = stat_cols),
+        numfmt = paste0(
+          "0",
+          if (dec[[r]] > 0L) paste0(".", strrep("0", dec[[r]]))
+        )
+      )
+    }
+  }
   # Without authors the creator is "", not NULL: openxlsx2 would write the
   # login of the session as creator and last modifier.
   wb <- openxlsx2::wb_set_properties(
@@ -111,4 +182,30 @@ code_book_write_xlsx <- function(cb, path, font = NULL) {
   )
   openxlsx2::wb_save(wb, file = path, overwrite = TRUE)
   invisible(path)
+}
+
+
+# The decimals of the mean, SD and median of each variable: three
+# significant digits of the SD (the rule of the PDF), from none to six;
+# two without an SD.
+xl_decimals <- function(sd) {
+  dec <- rep(2L, length(sd))
+  ok <- !is.na(sd) & is.finite(sd) & sd > 0
+  dec[ok] <- pmin(6L, pmax(0L, 2L - floor(log10(signif(sd[ok], 3L)))))
+  as.integer(dec)
+}
+
+
+# A number written with `digits` decimals (one per element, or one for
+# all), NA kept, for the width of its column.
+xl_fixed <- function(x, digits) {
+  digits <- rep_len(digits, length(x))
+  out <- rep(NA_character_, length(x))
+  ok <- !is.na(x)
+  out[ok] <- vapply(
+    which(ok),
+    function(j) formatC(x[[j]], format = "f", digits = digits[[j]]),
+    character(1)
+  )
+  out
 }

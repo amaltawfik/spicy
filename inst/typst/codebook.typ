@@ -111,8 +111,16 @@
     margin: (top: 1in, bottom: 1in, left: 0.98in, right: 0.98in),
     header-ascent: 0.466in,
     footer-descent: 0.459in,
+    // The running head echoes the cover: the genre in spaced capitals,
+    // the title in roman, both muted and one point smaller than the text.
     header: context if here().page() > 1 {
-      align(right, text(base - 1pt, fill: c.muted, data.header))
+      align(right, text(base - 1pt, fill: c.muted, if data.genre != none and data.title != none {
+        text(tracking: 0.2em, upper(data.genre)) + " \u{2013} " + data.title
+      } else if data.genre != none {
+        text(tracking: 0.2em, upper(data.genre))
+      } else {
+        data.header
+      }))
     },
     // The folio matches the running header: same size, same grey.
     footer: context if here().page() > 1 {

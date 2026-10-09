@@ -154,9 +154,16 @@
 #' `variables` and `values`, hold the two tables of the object from the
 #' first row, under the column headers the console and the PDF show
 #' (`code` is "Value", `n_valid` "Valid"), with a frozen header and
-#' filters. Numbers stay numeric cells, the percentages shown to one
-#' decimal; a statistic that is not finite (of a column holding `Inf`) is
-#' an empty cell, and dates stay text, written as above.
+#' filters; in `variables`, the position, name, and label stay in view
+#' while the statistics scroll. The workbook always has the same columns,
+#' in the same order: a column that does not apply to a variable, or to
+#' any variable of the file, is empty, never left out. Numbers stay
+#' numeric cells at their full precision, shown as the PDF shows them:
+#' the percentages to one decimal, the mean, SD, and median of a variable
+#' to three significant digits of its SD; a statistic that is not finite
+#' (of a column holding `Inf`) is an empty cell, and dates stay text,
+#' written as above. Each worksheet prints in landscape, fitted to the
+#' width of the page, its header row on every page.
 #'
 #' @section PDF output:
 #' The PDF opens on a cover: the word "Codebook" above the title (unless
@@ -208,8 +215,9 @@
 #'     `max`, `mean`, `sd`, and `median` for
 #'     numeric variables and `earliest` and `latest` for dates and times.
 #'     `range = FALSE` drops `min`, `max`, `earliest`, and `latest`.}
-#'   \item{`values`}{A tibble, one row per value: `variable`, `code`,
-#'     `label`, `declared_missing`, `n`, `pct_total`, and `pct_valid`. The
+#'   \item{`values`}{A tibble, one row per value: `position` and
+#'     `variable` (of the variable), `code`, `label`, `declared_missing`,
+#'     `n`, `pct_total`, and `pct_valid`. The
 #'     row of the system missing values (`code = "NA"`) exists only for a
 #'     variable that has missing values.}
 #' }
@@ -423,6 +431,7 @@ code_book <- function(
   values_tbl <- do.call(rbind, lapply(per_var, `[[`, "rows"))
   if (is.null(values_tbl)) {
     values_tbl <- data.frame(
+      position = integer(),
       variable = character(),
       code = character(),
       label = character(),
@@ -430,6 +439,13 @@ code_book <- function(
       n = integer(),
       pct_total = numeric(),
       pct_valid = numeric()
+    )
+  } else {
+    # The position of the variable first: the order of the file survives
+    # a sort or a filter of the values sheet in Excel.
+    values_tbl <- cbind(
+      position = variables$position[match(values_tbl$variable, variables$name)],
+      values_tbl
     )
   }
   declared <- do.call(

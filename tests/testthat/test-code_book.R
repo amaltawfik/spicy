@@ -89,6 +89,7 @@ test_that("code_book() returns the codebook, which prints as the list of variabl
   expect_named(
     cb$values,
     c(
+      "position",
       "variable",
       "code",
       "label",
@@ -97,6 +98,10 @@ test_that("code_book() returns the codebook, which prints as the list of variabl
       "pct_total",
       "pct_valid"
     )
+  )
+  expect_identical(
+    cb$values$position,
+    cb$variables$position[match(cb$values$variable, cb$variables$name)]
   )
   expect_identical(cb$header$n_obs, 6L)
   expect_identical(cb$header$n_vars, 7L)
@@ -986,8 +991,31 @@ test_that("the Excel codebook reads back", {
   expect_identical(vars[["Earliest date"]][[7]], "2024-05-01")
 
   vals <- openxlsx2::read_xlsx(path, sheet = 3)
+  expect_identical(names(vals)[1:2], c("Pos.", "Variable"))
+  expect_equal(vals[["Pos."]], cb$values$position)
   expect_equal(vals$n, cb$values$n)
   expect_equal(vals[["Valid %"]], cb$values$pct_valid)
+  # The first three columns of `variables` stay in view, and every sheet
+  # prints in landscape with its header row on every page.
+  con <- unz(path, "xl/worksheets/sheet2.xml")
+  pane <- paste(readLines(con, warn = FALSE), collapse = "")
+  close(con)
+  expect_match(pane, "xSplit=\"3\"")
+  expect_match(pane, "ySplit=\"1\"")
+  for (i in 1:3) {
+    expect_match(wb$worksheets[[i]]$pageSetup, "orientation=\"landscape\"")
+  }
+  # The mean, SD and median of each variable carry a number format at the
+  # precision of the PDF, next to the "0.0" of the percentages.
+  con <- unz(path, "xl/styles.xml")
+  styles <- paste(readLines(con, warn = FALSE), collapse = "")
+  close(con)
+  formats <- regmatches(styles, gregexpr("formatCode=\"0\\.0+\"", styles))[[1]]
+  expect_gte(length(unique(formats)), 2L)
+  expect_identical(
+    xl_decimals(c(NA, 0, 14.7, 0.0034, 1234)),
+    c(2L, 2L, 1L, 5L, 0L)
+  )
   expect_type(vals[["Declared missing"]], "logical")
   # A missing value leaves its cell empty, never an empty text.
   for (i in 2:3) {
