@@ -294,8 +294,13 @@ column's position in <code>x</code>), <code>name</code>, <code>label</code>, <co
 <code>declared_codes</code> (the <code>na_values</code> and <code>na_range</code> of a
 <code>haven_labelled_spss</code> vector, as text, the two parts separated by a
 semicolon; <code>NA</code> without them or under <code>user_na = FALSE</code>),
-<code>n_distinct</code>, <code>n_categories</code> (the categories of a categorical or
-logical variable, listed or not; <code>NA</code> otherwise), then <code>min</code>,
+<code>n_distinct</code> (the distinct values observed, of any variable),
+<code>n_categories</code> (the categories a categorical or logical variable
+declares, its levels, codes, or <code>TRUE</code> and <code>FALSE</code>, whether <code>values</code>
+lists them all or not; <code>NA</code> for a numeric, text, or date variable;
+it exceeds <code>n_distinct</code> when a category has no observation, and
+the Excel workbook shows it as "Categories" next to "Distinct
+values"), then <code>min</code>,
 <code>max</code>, <code>mean</code>, <code>sd</code>, and <code>median</code> for
 numeric variables and <code>earliest</code> and <code>latest</code> for dates and times.
 <code>range = FALSE</code> drops <code>min</code>, <code>max</code>, <code>earliest</code>, and <code>latest</code>.</p></dd>

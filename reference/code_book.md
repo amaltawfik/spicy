@@ -210,11 +210,15 @@ list with
   `n_missing`, `n_declared_missing`, `declared_codes` (the `na_values`
   and `na_range` of a `haven_labelled_spss` vector, as text, the two
   parts separated by a semicolon; `NA` without them or under
-  `user_na = FALSE`), `n_distinct`, `n_categories` (the categories of a
-  categorical or logical variable, listed or not; `NA` otherwise), then
-  `min`, `max`, `mean`, `sd`, and `median` for numeric variables and
-  `earliest` and `latest` for dates and times. `range = FALSE` drops
-  `min`, `max`, `earliest`, and `latest`.
+  `user_na = FALSE`), `n_distinct` (the distinct values observed, of any
+  variable), `n_categories` (the categories a categorical or logical
+  variable declares, its levels, codes, or `TRUE` and `FALSE`, whether
+  `values` lists them all or not; `NA` for a numeric, text, or date
+  variable; it exceeds `n_distinct` when a category has no observation,
+  and the Excel workbook shows it as "Categories" next to "Distinct
+  values"), then `min`, `max`, `mean`, `sd`, and `median` for numeric
+  variables and `earliest` and `latest` for dates and times.
+  `range = FALSE` drops `min`, `max`, `earliest`, and `latest`.
 
 - `values`:
 
