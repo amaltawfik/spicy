@@ -71,7 +71,7 @@
 #'     NEJM-style `no. of events/total no.`). Binary (binomial)
 #'     outcomes and right-censored `coxph` fits -- other models
 #'     raise `spicy_invalid_input`.
-#'   \item Survival estimands -- `coxph` only: `"rmst"`,
+#'   \item Survival estimands -- `coxph` and `survreg`: `"rmst"`,
 #'     `"rmst_se"`, `"rmst_ci"`, `"rmst_p"` (restricted-mean-
 #'     survival-time difference over `[0, tau]`) and
 #'     `"risk_diff"`, `"risk_diff_se"`, `"risk_diff_ci"`,

@@ -859,7 +859,7 @@ sample (STROBE item 16's "data behind the association";
 NEJM-style \verb{no. of events/total no.}). Binary (binomial)
 outcomes and right-censored \code{coxph} fits -- other models
 raise \code{spicy_invalid_input}.
-\item Survival estimands -- \code{coxph} only: \code{"rmst"},
+\item Survival estimands -- \code{coxph} and \code{survreg}: \code{"rmst"},
 \code{"rmst_se"}, \code{"rmst_ci"}, \code{"rmst_p"} (restricted-mean-
 survival-time difference over \verb{[0, tau]}) and
 \code{"risk_diff"}, \code{"risk_diff_se"}, \code{"risk_diff_ci"},

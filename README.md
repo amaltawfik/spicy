@@ -142,7 +142,7 @@ family:
 | Ordinal and categorical | `MASS::polr()`, `ordinal::clm()` (incl. partial proportional odds), `nnet::multinom()`, `mlogit::mlogit()` |
 | Counts, two-part models | `pscl::hurdle()`, `pscl::zeroinfl()`, `glmmTMB::glmmTMB()` (zero-inflation and dispersion components) |
 | Survival | `survival::coxph()`, `survival::survreg()`, `rms::cph()`, `flexsurv::flexsurvreg()` |
-| Survey-weighted | `survey::svyglm()` (design-based SEs) |
+| Survey-weighted | `survey::svyglm()`, `survey::svyolr()`, `survey::svycoxph()` (design-based SEs) |
 | Population-averaged (GEE) | `geepack::geeglm()` (native sandwich SEs, working correlation disclosed) |
 | Additive, proportions, selection | `mgcv::gam()`, `mgcv::bam()`, `betareg::betareg()`, `sampleSelection::selection()` |
 | rms | `rms::ols()`, `rms::lrm()`, `rms::Glm()` |
