@@ -53,6 +53,9 @@ PDF.
   keep only the selected columns of an sf object. The geometry column
   came along.
 
+- [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md)
+  writes a large declared missing code as it is, `100000`, not `1e+05`.
+
 - The Excel files of
   [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md),
   [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
