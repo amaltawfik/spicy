@@ -79,60 +79,34 @@ withr::with_options(
   )
 )
 
-# ---- Page excerpts -----------------------------------------------------------
-# Cropped to their content from the words of the page (points, 72 per
-# inch), rendered at `dpi`. The running header and the folio are left
-# out; so is the colophon of the cover.
-dpi <- 160
+# ---- Pages ------------------------------------------------------------------
+# Whole A4 pages, as the site of lssdoc shows its documents, with a
+# hairline round the page so that its edge shows on a white background.
+dpi <- 150
 pages <- pdftools::pdf_data(pdf)
-page_height <- pdftools::pdf_pagesize(pdf)$height[[1]]
-body <- function(d) d[d$y > 60 & d$y + d$height < page_height - 60, ]
-
-crop_page <- function(page, file, words, pad = 18) {
-  box <- c(
-    x0 = min(words$x),
-    y0 = min(words$y),
-    x1 = max(words$x + words$width),
-    y1 = max(words$y + words$height)
-  )
+render_page <- function(page, file) {
   tmp <- tempfile(fileext = ".png")
   # pdf_convert() runs the file name through sprintf(): a warning for a
   # name without a format.
   suppressWarnings(
     pdftools::pdf_convert(pdf, pages = page, dpi = dpi, filenames = tmp, verbose = FALSE)
   )
-  s <- dpi / 72
-  geometry <- sprintf(
-    "%dx%d+%d+%d",
-    round((box[["x1"]] - box[["x0"]] + 2 * pad) * s),
-    round((box[["y1"]] - box[["y0"]] + 2 * pad) * s),
-    round((box[["x0"]] - pad) * s),
-    round((box[["y0"]] - pad) * s)
-  )
-  img <- magick::image_crop(magick::image_read(tmp), geometry)
+  img <- magick::image_border(magick::image_read(tmp), "#D3DCE2", "1x1")
   magick::image_write(img, file, format = "png")
   unlink(tmp)
 }
-
-# The cover, without the colophon at its foot.
-cover <- pages[[1]]
-crop_page(1, file.path(dir, "cover.png"), cover[cover$y < page_height * 0.75, ])
-# The page about the data: facts, caution, notes.
-crop_page(2, file.path(dir, "about.png"), body(pages[[2]]))
-# One sheet: the page where the variable heads a band, between the list
-# of variables and the index, from its band to the band of the next one.
-sheet_of <- function(name, next_name) {
+render_page(1, file.path(dir, "cover.png"))
+render_page(2, file.path(dir, "about.png"))
+# The page of one sheet: where the variable heads a band, between the
+# list of variables (page 3) and the index (the last page).
+sheet_page <- function(name) {
   hits <- which(vapply(pages, function(d) any(d$text == name), logical(1)))
   page <- setdiff(hits, c(3, length(pages)))
   stopifnot(length(page) == 1)
-  d <- body(pages[[page]])
-  top <- min(d$y[d$text == name])
-  after <- d$y[d$text == next_name]
-  bottom <- if (length(after)) min(after) - 24 else max(d$y + d$height)
-  list(page = page, words = d[d$y >= top - 6 & d$y + d$height <= bottom, ])
+  page
 }
-s <- sheet_of("self_rated_health", "wellbeing_score")
-crop_page(s$page, file.path(dir, "sheet.png"), s$words)
+s <- list(page = sheet_page("self_rated_health"))
+render_page(s$page, file.path(dir, "sheet.png"))
 
 for (f in list.files(dir, full.names = TRUE)) {
   cat(sprintf("%-28s %6.0f KB\n", basename(f), file.size(f) / 1024))
