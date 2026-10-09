@@ -397,6 +397,7 @@ lm
 lme
 lmerTest
 logLik
+loglog
 loglogistic
 marginaleffects
 marginality
