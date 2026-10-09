@@ -768,6 +768,25 @@ ou un rapport ». Trois décisions, un seul lot (registre n°337).
   défaut), pas une taille à part pour les notes : les notes sont le
   texte courant.
 
+## Vitrine sur le site (Amal, 2026-10-09)
+
+Un exemple unique, sochealth, produit par `dev/make_codebook_showcase.R`
+dans `pkgdown/assets/codebook/` (racine du site, hors tarball) : PDF
+anglais et français, Excel, trois extraits de page recadrés sur leur
+contenu. Statique plutôt que généré au build du site, qui n'a pas
+Quarto ; relancé avant chaque version.
+
+* **Auteurs d'exemple**, pas le mainteneur : une couverture affirme une
+  paternité, un ORCID s'indexe, et un exemple doit se lire comme un
+  exemple. Jane Doe avec l'ORCID de test d'ORCID (Josiah Carberry), John
+  Doe sans.
+* **README** : deux extraits pleine largeur, pas côte à côte (à 900 px
+  de colonne, deux pages côte à côte font du texte de 7 px). **Article**
+  : trois extraits et l'appel complet.
+* **Pas de code manquant déclaré dans sochealth** : la fiche montre la
+  ligne « System missing », pas la colonne Missing ni la table des codes
+  déclarés. L'article les montre en console.
+
 ## Sources
 
 * ICPSR (2020), *Guide to Social Science Data Preparation and Archiving*,

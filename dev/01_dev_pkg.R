@@ -59,6 +59,7 @@ withr::with_envvar(
 )
 
 # 04 README & WEBSITE -------
+source("dev/make_codebook_showcase.R") # the codebook of the site (PDF, Excel, page excerpts)
 devtools::build_readme()
 source("dev/build_pkgdown_site.R") # Build site + clean internal pages
 

@@ -230,16 +230,47 @@ varlist(sochealth, tbl = TRUE)
 #> # ℹ 14 more rows
 ```
 
+### Codebooks
+
+`code_book()` documents a data frame: the list of variables in the
+console, an Excel workbook, or a PDF with a cover, a page about the
+data, one sheet per variable, and an index. The notes take paragraphs
+and list items, with italics, bold, code, and links.
+
 ``` r
-code_book(sochealth, starts_with("bmi"), title = "Social health survey")
-code_book(sochealth, output = "sochealth_codebook.xlsx")
 code_book(
   sochealth,
-  authors = c("Jane Doe" = "University of Somewhere"),
+  title = "Social health survey",
+  subtitle = "Simulated data shipped with spicy",
+  authors = list(
+    list(
+      name = "Jane Doe",
+      affiliation = "University of Somewhere",
+      orcid = "0000-0002-1825-0097"
+    ),
+    list(name = "John Doe", affiliation = "Somewhere Institute of Public Health")
+  ),
+  notes = c(
+    "Simulated data shipped with *spicy* (`?sochealth`): 1,200 respondents of a fictitious social health survey.",
+    "- `weight` is the survey design weight: the counts of this codebook are **unweighted**."
+  ),
   output = "sochealth_codebook.pdf"
 )
 ```
 
+<p align="center">
+
+<img src="https://amaltawfik.github.io/spicy/codebook/cover.png" alt="The cover of the PDF codebook: the word CODEBOOK in spaced capitals, the title Social health survey, its subtitle, two authors with their affiliations and an ORCID link, and the date" width="70%">
+</p>
+
+<img src="https://amaltawfik.github.io/spicy/codebook/sheet.png" alt="The sheet of one variable in the PDF codebook: a band with its position, name, and type, its label and source code, the counts of valid, missing, and distinct values, and the table of its values with n, percent, and valid percent, the system missing row in grey" width="100%">
+
+The whole document: [the
+PDF](https://amaltawfik.github.io/spicy/codebook/sochealth_codebook.pdf),
+[the same in
+French](https://amaltawfik.github.io/spicy/codebook/sochealth_codebook_fr.pdf),
+and [the Excel
+workbook](https://amaltawfik.github.io/spicy/codebook/sochealth_codebook.xlsx).
 See [Explore variables and build
 codebooks](https://amaltawfik.github.io/spicy/articles/variable-exploration.html)
 for more on `varlist()`, `vl()`, and `code_book()`.
