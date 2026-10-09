@@ -3156,8 +3156,8 @@ table_regression <- function(
           ),
           "i" = paste0(
             "The change statistics of a hierarchy (\u0394R\u00B2, partial ",
-            "F, LRT, \u0394AIC) all read a likelihood or a least-squares ",
-            "decomposition this class does not provide, and a hierarchy ",
+            "F, LRT, \u0394AIC) all need a comparison of nested fits ",
+            "that this class does not provide here, and a hierarchy ",
             "compares adjacent PAIRS -- one model that cannot be compared ",
             "removes the comparison, it does not blank one column."
           ),

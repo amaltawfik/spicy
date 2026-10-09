@@ -157,9 +157,10 @@ Cumulative-link mixed models (\code{ordinal::clmm()}, and
 AIC, BIC; no R-squared). Their inference is Wald only: AME, a robust
 \code{vcov}, \code{ci_method = "profile"} and \code{standardized} are refused, as is
 \code{nested = TRUE} for \code{clmm}. \code{exponentiate} follows the \code{clm} rule
-(odds ratios under logit, hazard ratios under cloglog), except that it
-is refused for a \code{clmm} fit with the cloglog link, whose coefficients
-do not behave as cumulative cloglog coefficients.
+(odds ratios under logit, hazard ratios under cloglog), except for a
+\code{clmm} fit with the cloglog link, where it is refused: on the current
+\code{ordinal}, the cloglog and loglog links of \code{clmm()} do not match those
+of \code{clm()} and of \code{glmmTMB()}.
 }
 
 \section{Counts and two-part models}{

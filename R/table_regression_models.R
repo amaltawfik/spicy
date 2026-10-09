@@ -374,9 +374,10 @@
 #' AIC, BIC; no R-squared). Their inference is Wald only: AME, a robust
 #' `vcov`, `ci_method = "profile"` and `standardized` are refused, as is
 #' `nested = TRUE` for `clmm`. `exponentiate` follows the `clm` rule
-#' (odds ratios under logit, hazard ratios under cloglog), except that it
-#' is refused for a `clmm` fit with the cloglog link, whose coefficients
-#' do not behave as cumulative cloglog coefficients.
+#' (odds ratios under logit, hazard ratios under cloglog), except for a
+#' `clmm` fit with the cloglog link, where it is refused: on the current
+#' `ordinal`, the cloglog and loglog links of `clmm()` do not match those
+#' of `clm()` and of `glmmTMB()`.
 #'
 #' @section Counts and two-part models:
 #' Two-part models show their full model: the zero component renders as a

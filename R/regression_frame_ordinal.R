@@ -240,13 +240,15 @@ as_regression_frame.clmm <- function(
 ) {
   .check_ordinal_available()
   # The clm rule reads exp(-B) of a cumulative cloglog as a hazard ratio.
-  # Not for clmm: on ordinal 2026.7.26, data simulated from a cumulative
-  # cloglog model with a random intercept are fitted by
-  # clmm(link = "loglog") (logLik -1897.9, true values recovered, the
-  # glmmTMB ordinal("cloglog") fit to 1e-3) and not by
-  # clmm(link = "cloglog") (logLik -2029.4), while clm() gets the two
-  # links right. The coefficients of a "cloglog" clmm are not log hazard
-  # ratios, so the ratio is refused rather than mislabelled.
+  # Not for clmm: on ordinal 2026.7.26 the cloglog and loglog links of
+  # clmm() are swapped against those of clm() and of glmmTMB's ordinal
+  # family. Measured on ordinal::wine (logLik): clm cloglog -86.634 =
+  # glmmTMB cloglog -86.634; with a judge intercept, glmmTMB cloglog
+  # -81.541 = clmm LOGLOG -81.541, and clmm cloglog -82.729. To be
+  # reported upstream (dev/upstream/README.md). The coefficients of a
+  # "cloglog" clmm are therefore not log hazard ratios: the ratio is
+  # refused rather than mislabelled, and the title does not claim
+  # proportional hazards.
   if (isTRUE(exponentiate) && identical(fit$link, "cloglog")) {
     spicy_abort(
       c(
@@ -255,13 +257,13 @@ as_regression_frame.clmm <- function(
           "the cloglog link."
         ),
         "i" = paste0(
-          "On data simulated from a cumulative cloglog model, ",
-          "`clmm(link = \"loglog\")` fits it and `clmm(link = \"cloglog\")` ",
-          "does not, so exp(-B) would not be a hazard ratio."
+          "The cloglog and loglog links of `ordinal::clmm()` do not match ",
+          "those of `ordinal::clm()` and `glmmTMB::glmmTMB()`, so exp(-B) ",
+          "is not a hazard ratio."
         ),
         "i" = paste0(
           "`glmmTMB::glmmTMB(family = glmmTMB::ordinal(\"cloglog\"))` fits ",
-          "the cumulative cloglog model; or report the link-scale ",
+          "the cumulative cloglog model, or report the link-scale ",
           "coefficients."
         )
       ),
@@ -1276,12 +1278,18 @@ as_regression_frame.clmm <- function(
     extras = list(
       has_singular = .clmm_is_singular(fit),
       has_weights = .ordinal_has_weights(fit),
-      title_prefix = paste0(
-        .clm_link_title(link),
-        " mixed-effects regression (",
-        .ordinal_assumption_label(link),
-        ")"
-      ),
+      # No "(proportional hazards)" for a cloglog clmm: see the refusal
+      # of `exponentiate` above.
+      title_prefix = if (identical(link, "cloglog")) {
+        paste(.clm_link_title(link), "mixed-effects regression")
+      } else {
+        paste0(
+          .clm_link_title(link),
+          " mixed-effects regression (",
+          .ordinal_assumption_label(link),
+          ")"
+        )
+      },
       response_levels = as.character(fit$y.levels %||% character(0)),
       thresholds = .clm_thresholds(fit)
     )
