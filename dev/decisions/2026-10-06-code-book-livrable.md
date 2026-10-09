@@ -749,6 +749,25 @@ fonction (registre n°333).
 * **Performance.** `varlist_impl(summaries = FALSE)` saute la colonne
   Values que le codebook ne garde pas.
 
+## Notes du PDF (Amal, 2026-10-09)
+
+Amal : « on est dans un document technique et ce n'est pas un article
+ou un rapport ». Trois décisions, un seul lot (registre n°337).
+
+* **Pleine largeur.** La mesure de 32 em venait des règles du livre
+  (Bringhurst, 45 à 75 caractères). Les codebooks de référence (ICPSR,
+  rapports de variables GESIS, ESS) mettent leurs notes sur la largeur
+  du texte, comme leurs tableaux. Jamais centrées : le bord gauche est
+  l'axe de la page, partagé par les titres et les tableaux.
+* **Balisage minimal.** `*italique*`, `**gras**`, `` `code` ``, liens sur
+  les adresses web et les DOI, dans le PDF seulement ; console et Excel
+  montrent les mots sans les marques. Pas d'imbrication. Mis en oeuvre
+  par des show rules du gabarit, ce qui garde les notes en littéraux
+  Typst (aucun caractère à échapper côté R).
+* **`font_size`.** Une taille de texte pour tout le document (10 pt par
+  défaut), pas une taille à part pour les notes : les notes sont le
+  texte courant.
+
 ## Sources
 
 * ICPSR (2020), *Guide to Social Science Data Preparation and Archiving*,

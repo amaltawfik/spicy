@@ -33,9 +33,12 @@
 #'   consecutive items making one list, and any other element is a
 #'   paragraph:
 #'   `notes = c("Wave 3 only.", "- Weight: design weight.", "- BMI: kg/m2.")`.
-#'   The console and the Excel file show the notes as typed; the PDF turns
-#'   straight apostrophes into typographic ones and, in French, the space
-#'   before `:`, `;`, `!`, or `?` into a non-breaking space.
+#'   A note may carry `*italics*`, `**bold**`, and `` `code` `` (not
+#'   nested), and a web address or a `doi:` becomes a link. The PDF
+#'   renders these, turns straight apostrophes into typographic ones and,
+#'   in French, the space before `:`, `;`, `!`, or `?` into a non-breaking
+#'   space; the console and the Excel file show the words without the
+#'   marks.
 #' @param source Named character vector mapping the current column names to
 #'   the codes they had in the source file, the vector
 #'   `dplyr::rename(all_of())` takes. Its names must be selected columns,
@@ -76,6 +79,9 @@
 #'   it; a `.typ` output keeps the name as given, unchecked. A `font` also
 #'   sets the font of the Excel file, which otherwise keeps its default
 #'   font.
+#' @param font_size Size of the text of the PDF, in points: `10` (the
+#'   default), or a number from 6 to 24. The title of the cover and the
+#'   small size of a long name follow it; the margins do not.
 #' @param colors Named character vector of `"#RRGGBB"` colors replacing
 #'   part of the palette of the PDF: `primary` (title, headings, and the
 #'   text of table headers), `accent` (the word "Codebook" above the title,
@@ -208,8 +214,8 @@
 #' }
 #' The attributes `language` and `decimal_mark` record the language and
 #' the decimal mark the codebook was built with, and `appearance` the look
-#' of its PDF: a list of `font`, `font_code`, `colors` (all eight),
-#' `paper`, and `index_columns`.
+#' of its PDF: a list of `font`, `font_code`, `font_size`, `colors` (all
+#' eight), `paper`, and `index_columns`.
 #'
 #' @examples
 #' code_book(sochealth)
@@ -272,6 +278,7 @@ code_book <- function(
   decimal_mark = NULL,
   font = NULL,
   font_code = NULL,
+  font_size = 10,
   colors = NULL,
   paper = c("a4", "letter"),
   index_columns = NULL,
@@ -300,7 +307,8 @@ code_book <- function(
     font_code,
     colors,
     paper,
-    index_columns
+    index_columns,
+    font_size
   )
   format <- code_book_output_format(output)
   quarto <- if (identical(format, "pdf")) code_book_quarto(c(font, font_code))
@@ -787,6 +795,16 @@ code_book_declared_codes <- function(col, user_na) {
 
 # The header as field-value rows, for the print and the first Excel sheet.
 # `key` is an internal token: nothing branches on the displayed field.
+# The words of a note without the marks of its markup, which the PDF
+# renders (the same three patterns as the template): the console and the
+# Excel file show `*italics*`, `**bold**`, and `code` as plain words.
+code_book_plain <- function(x) {
+  x <- gsub("\\*\\*([^*]+)\\*\\*", "\\1", x)
+  x <- gsub("\\*([^*[:space:]][^*]*)\\*", "\\1", x)
+  gsub("`([^`]+)`", "\\1", x)
+}
+
+
 code_book_info <- function(header, orcid = FALSE) {
   a <- header$authors
   author <- a$name
@@ -821,7 +839,7 @@ code_book_info <- function(header, orcid = FALSE) {
     observations = as.character(header$n_obs),
     variables = as.character(header$n_vars),
     declared = declared,
-    note = header$notes
+    note = code_book_plain(header$notes)
   )
   fields <- c(
     title = "row_title",

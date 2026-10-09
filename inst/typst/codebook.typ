@@ -4,15 +4,7 @@
 // the codebook), then calls `codebook(data, strings)`: the layout holds no
 // text of its own. Design tokens, sizes and bands follow lssdoc.
 
-#let base = 10pt
 #let pad = (x: 4pt, y: 3pt)
-#let size = (
-  cover-title: 28pt, cover-subtitle: 14pt, cover-top: 2.1in, cover-block: 18pt, // title block, and the air around it
-  about-field: 1.6in, // field column of the facts on the page about the data
-  heading-above: 18pt, heading-below: 9pt,
-  sheet: 24pt, gap: 6pt, // above a sheet, between its tables
-  long-name: 7pt, // a name past its limit: 30 characters in the list and the index, 45 in a band
-)
 
 // Widow and orphan control for a table that may break across pages: the
 // table ends with a zero-width column, filled here with unbreakable cells
@@ -40,6 +32,17 @@
   let c = (:)
   for (k, v) in data.colors { c.insert(k, rgb(v)) }
   let rule = 0.5pt + c.grid
+  // The text size, `font_size` of code_book(), 10pt unless the user says
+  // otherwise. The cover and the small size of a long name follow it; the
+  // spacing and the margins do not.
+  let base = data.font_size * 1pt
+  let size = (
+    cover-title: 2.8 * base, cover-subtitle: 1.4 * base, cover-top: 2.1in, cover-block: 18pt, // title block, and the air around it
+    about-field: 1.6in, // field column of the facts on the page about the data
+    heading-above: 18pt, heading-below: 9pt,
+    sheet: 24pt, gap: 6pt, // above a sheet, between its tables
+    long-name: 0.7 * base, // a name past its limit: 30 characters in the list and the index, 45 in a band
+  )
   // Monospace for identifiers only (variable names, source codes). At
   // 0.85em the x-height of DejaVu Sans Mono (0.547em) comes within 8% of
   // the body font's. Its line box starts at the body font's ascender, so
@@ -191,13 +194,22 @@
   text(base - 1pt, style: "italic", fill: c.muted, s.unweighted)
   if data.notes.len() > 0 {
     heading(level: 2, s.notes)
-    // A note is a paragraph; consecutive list items make one list. Prose
-    // keeps a reading measure (32em, about 70 characters), a typographic
-    // apostrophe and, in French, a non-breaking space before : ; ! ?
+    // A note is a paragraph; consecutive list items make one list. The
+    // notes take the width of the text, as in the codebooks of the data
+    // archives, with a typographic apostrophe and, in French, a
+    // non-breaking space before : ; ! ?
     set list(indent: 0pt, body-indent: 6pt, spacing: 5pt)
     show regex(" [:;!?]"): it => if data.lang == "fr" { "\u{a0}" + it.text.slice(1) } else { it }
     show "'": "\u{2019}"
-    block(width: 32em, for n in data.notes { if n.bullet { list.item(n.text) } else { par(n.text) } })
+    // The markup of a note: `code`, *italic*, **bold** (a later rule
+    // applies first, so the bold pair is read before a single asterisk;
+    // emphasis does not nest), and a link on a web address or a DOI.
+    show regex("`[^`]+`"): it => mono(it.text.slice(1, -1))
+    show regex("\\*[^*\\s][^*]*\\*"): it => emph(it.text.slice(1, -1))
+    show regex("\\*\\*[^*]+\\*\\*"): it => strong(it.text.slice(2, -2))
+    show regex("https?://[^\\s]*[^\\s.,;:)]"): it => link(it.text, text(fill: c.accent, it.text))
+    show regex("doi:\\s*10\\.[0-9]{4,9}/[^\\s]*[^\\s.,;:)]"): it => link("https://doi.org/" + it.text.slice(4).trim(), text(fill: c.accent, it.text))
+    for n in data.notes { if n.bullet { list.item(n.text) } else { par(n.text) } }
   }
   if data.declared.len() > 0 {
     heading(level: 2, s.declared)

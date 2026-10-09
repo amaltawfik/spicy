@@ -311,8 +311,22 @@ code_book_appearance <- function(
   colors,
   paper,
   index_columns = NULL,
+  font_size = 10,
   call = rlang::caller_env()
 ) {
+  if (
+    !(is.numeric(font_size) &&
+      length(font_size) == 1L &&
+      is.finite(font_size) &&
+      font_size >= 6 &&
+      font_size <= 24)
+  ) {
+    spicy_abort(
+      "`font_size` must be a single number of points, from 6 to 24.",
+      class = "spicy_invalid_input",
+      call = call
+    )
+  }
   fonts <- list(font = font, font_code = font_code)
   for (arg in names(fonts)) {
     f <- fonts[[arg]]
@@ -395,6 +409,7 @@ code_book_appearance <- function(
   list(
     font = font %||% "New Computer Modern",
     font_code = font_code %||% "DejaVu Sans Mono",
+    font_size = as.numeric(font_size),
     colors = palette,
     paper = paper,
     index_columns = if (!is.null(index_columns)) as.integer(index_columns)

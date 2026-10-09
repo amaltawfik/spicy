@@ -23,9 +23,10 @@ workbook, or a PDF.
   index, through the Typst that Quarto bundles; `output = "<path>.typ"`
   writes the Typst source for a machine without Quarto.
 
-* `code_book()` gains `subtitle`, `authors`, `notes`, `source`, `range`,
-  and `decimal_mark`, and, for the PDF, `font`, `font_code`, `colors`,
-  `paper`, and `index_columns`.
+* `code_book()` gains `subtitle`, `authors`, `notes` (paragraphs or list
+  items, with `*italics*`, `**bold**`, `` `code` ``, and links in the
+  PDF), `source`, `range`, and `decimal_mark`, and, for the PDF, `font`,
+  `font_code`, `font_size`, `colors`, `paper`, and `index_columns`.
 
 * `code_book()` documents declared missing values: their own rows in
   `values`, a summary in the header, and how each variable declares them

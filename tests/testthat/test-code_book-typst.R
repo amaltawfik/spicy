@@ -201,6 +201,37 @@ test_that("colors merge over the palette, and paper sets the page", {
   }
 })
 
+test_that("font_size sets the text size of the PDF", {
+  d <- data.frame(x = 1)
+  expect_identical(attr(code_book(d), "appearance")$font_size, 10)
+  big <- code_book(d, font_size = 12L)
+  expect_identical(attr(big, "appearance")$font_size, 12)
+  expect_identical(code_book_typst_data(big)$data$font_size, 12)
+  typ <- withr::local_tempfile(fileext = ".typ")
+  code_book(d, font_size = 11.5, output = typ)
+  expect_true(any(grepl("font_size: 11.5,", readLines(typ), fixed = TRUE)))
+  for (s in list("12", 0, 5, 25, NA_real_, c(10, 12), Inf)) {
+    expect_error(code_book(d, font_size = s), class = "spicy_invalid_input")
+  }
+})
+
+test_that("notes with markup and a font size compile", {
+  skip_without_quarto()
+  # Cover, about, list, the sheet, index.
+  expect_identical(
+    cbt_pages(
+      cbt_data(),
+      q,
+      notes = c(
+        "See *this*, **that**, and `q`: https://example.org/a, doi:10.1000/x.1.",
+        "- It's a list : ok ?"
+      ),
+      font_size = 12
+    ),
+    5L
+  )
+})
+
 test_that("a PDF needs the quarto package and Quarto 1.7", {
   pdf <- file.path(tempdir(), "cb-missing.pdf")
   with_mocked_bindings(

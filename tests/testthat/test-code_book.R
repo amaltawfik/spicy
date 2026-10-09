@@ -502,6 +502,20 @@ test_that("an hms column is a time, with its earliest and latest values", {
   expect_identical(code_book(d)$variables$type, c("heure", "heure"))
 })
 
+test_that("the markup of a note is kept in the object and dropped elsewhere", {
+  notes <- c("See *this* and **that** in `q`.", "- 5 * 3 * 2 stays")
+  cb <- code_book(data.frame(q = 1), notes = notes)
+  expect_identical(cb$header$notes, notes)
+  info <- code_book_info(cb$header)
+  expect_identical(
+    info$value[info$key == "note"],
+    c("See this and that in q.", "- 5 * 3 * 2 stays")
+  )
+  out <- paste(capture.output(print(cb)), collapse = " ")
+  expect_match(out, "See this and that in q.", fixed = TRUE)
+  expect_false(grepl("*this*", out, fixed = TRUE))
+})
+
 test_that("a data frame whose `[` keeps a column keeps only the selected ones", {
   # The `[` of an sf object keeps its geometry column whatever the
   # selection, which listed it unasked and made code_book() fail on a

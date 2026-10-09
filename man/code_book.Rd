@@ -20,6 +20,7 @@ code_book(
   decimal_mark = NULL,
   font = NULL,
   font_code = NULL,
+  font_size = 10,
   colors = NULL,
   paper = c("a4", "letter"),
   index_columns = NULL,
@@ -57,9 +58,12 @@ the PDF, an element that starts with \code{"- "} or \code{"* "} is a list item,
 consecutive items making one list, and any other element is a
 paragraph:
 \code{notes = c("Wave 3 only.", "- Weight: design weight.", "- BMI: kg/m2.")}.
-The console and the Excel file show the notes as typed; the PDF turns
-straight apostrophes into typographic ones and, in French, the space
-before \code{:}, \verb{;}, \code{!}, or \verb{?} into a non-breaking space.}
+A note may carry \verb{*italics*}, \verb{**bold**}, and \code{`code`} (not
+nested), and a web address or a \verb{doi:} becomes a link. The PDF
+renders these, turns straight apostrophes into typographic ones and,
+in French, the space before \code{:}, \verb{;}, \code{!}, or \verb{?} into a non-breaking
+space; the console and the Excel file show the words without the
+marks.}
 
 \item{source}{Named character vector mapping the current column names to
 the codes they had in the source file, the vector
@@ -107,6 +111,10 @@ must be one Typst finds, named exactly as \verb{quarto typst fonts} lists
 it; a \code{.typ} output keeps the name as given, unchecked. A \code{font} also
 sets the font of the Excel file, which otherwise keeps its default
 font.}
+
+\item{font_size}{Size of the text of the PDF, in points: \code{10} (the
+default), or a number from 6 to 24. The title of the cover and the
+small size of a long name follow it; the margins do not.}
 
 \item{colors}{Named character vector of \code{"#RRGGBB"} colors replacing
 part of the palette of the PDF: \code{primary} (title, headings, and the
@@ -163,8 +171,8 @@ variable that has missing values.}
 }
 The attributes \code{language} and \code{decimal_mark} record the language and
 the decimal mark the codebook was built with, and \code{appearance} the look
-of its PDF: a list of \code{font}, \code{font_code}, \code{colors} (all eight),
-\code{paper}, and \code{index_columns}.
+of its PDF: a list of \code{font}, \code{font_code}, \code{font_size}, \code{colors} (all
+eight), \code{paper}, and \code{index_columns}.
 }
 \description{
 \code{code_book()} documents the variables of a data frame: one row per

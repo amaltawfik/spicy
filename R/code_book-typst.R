@@ -256,6 +256,7 @@ code_book_typst_data <- function(cb) {
     index_columns = look$index_columns,
     font = look$font,
     font_code = look$font_code,
+    font_size = look$font_size,
     colors = as.list(look$colors),
     genre = if (!says) word,
     title = h$title,
