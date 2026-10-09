@@ -244,8 +244,8 @@ as_regression_frame.clmm <- function(
   # clmm() are swapped against those of clm() and of glmmTMB's ordinal
   # family. Measured on ordinal::wine (logLik): clm cloglog -86.634 =
   # glmmTMB cloglog -86.634; with a judge intercept, glmmTMB cloglog
-  # -81.541 = clmm LOGLOG -81.541, and clmm cloglog -82.729. To be
-  # reported upstream (dev/upstream/README.md). The coefficients of a
+  # -81.541 = clmm LOGLOG -81.541, and clmm cloglog -82.729. Reported
+  # upstream with a tested patch: runehaubo/ordinal#76. The coefficients of a
   # "cloglog" clmm are therefore not log hazard ratios: the ratio is
   # refused rather than mislabelled, and the title does not claim
   # proportional hazards.
