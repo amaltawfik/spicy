@@ -76,6 +76,15 @@ data are honored throughout. I am the maintainer; the "Helpers" section
 seems the right place.
 ```
 
+## Posté le 2026-10-09 (compte amaltawfik)
+
+- OfficialStatistics : <https://github.com/cran-task-views/OfficialStatistics/issues/50>
+- ReproducibleResearch : <https://github.com/cran-task-views/ReproducibleResearch/issues/28>
+
+À suivre : réponse des mainteneurs (OfficialStatistics a répondu en un
+jour à trois semaines sur les précédents ; ReproducibleResearch le jour
+même en 2024 et 2025). Si une PR est demandée, voir ci-dessous.
+
 ## Comment poster
 
 Depuis le dépôt spicy, après relecture, un fichier par corps de message
