@@ -840,7 +840,7 @@ table_categorical(
 |     No                    | 334    | 53.9 | 316  | 54.5 | 650   | 54.2 |      |     |
 |     Yes                   | 286    | 46.1 | 264  | 45.5 | 550   | 45.8 |      |     |
 
-Categorical table by sex {#tinytable_bejwuno1by5frw9cd58n .table
+Categorical table by sex {#tinytable_n9hsmoabq8p25qsh52fe .table
 .tinytable style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 
