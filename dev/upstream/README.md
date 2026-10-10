@@ -23,6 +23,7 @@ listés pour mémoire.
 | covr | [#641](https://github.com/r-lib/covr/issues/641) package_coverage() et pkgload::load_all() | 2026-08-23 | ouvert | — |
 | ordinal 2026.7-26 | [#76](https://github.com/runehaubo/ordinal/issues/76) clmm() permute les liens cloglog et loglog (switch C), patch de 8 lignes testé | 2026-10-09 | ouvert | [ordinal-clmm-cloglog-loglog-links.md](ordinal-clmm-cloglog-loglog-links.md) |
 | sandwich 3.1-3 | courriel au mainteneur : bread.gam() omet la dispersion, sandwich d'un gam déflaté de φ² pour les familles à dispersion libre, patch testé | 2026-10-10 | envoyé, sans réponse | [sandwich-bread-gam-dispersion.md](sandwich-bread-gam-dispersion.md) |
+| mgcv 1.9-4 | courriel au mainteneur : residuals(type = "working") de bam() = résidus de déviance, de gam() à lien non canonique = résidu de Newton (y − μ)/(mu.eta·α), $weights = poids de Fisher | 2026-10-10 | envoyé, sans réponse | [mgcv-working-residuals.md](mgcv-working-residuals.md) |
 | gt 1.3.0 | attribut headers= sur le nom brut de colonne | non envoyé | dossier prêt | [gt-headers-attribute-raw-column-name.md](gt-headers-attribute-raw-column-name.md) |
 
 À la fermeture d'un rapport : noter la version corrigée dans l'en-tête du
