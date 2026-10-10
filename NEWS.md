@@ -69,6 +69,14 @@ workbook, or a PDF.
 * `table_regression()` writes its `p_adjust` note in French under
   `options(spicy.language = "fr")`.
 
+* `table_regression()` computes the robust and cluster-robust standard
+  errors of `mgcv::gam()` and `mgcv::bam()` fits itself. Through
+  sandwich they were wrong for a family with a free dispersion (divided
+  by it), for a non-canonical link and for a non-Gaussian `bam()`. Only
+  a `gam()` with a canonical link and a fixed dispersion was right.
+  The extended families of `mgcv` other than `nb()`, whose score is not
+  the GLM score, now refuse a robust `vcov`.
+
 * The Excel files of `table_regression()`, `table_categorical()`,
   `table_continuous()`, and `table_continuous_lm()` leave an empty cell
   empty. It held an empty text, which Excel counted and refused in a

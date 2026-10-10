@@ -1,6 +1,7 @@
 # C2 increment 4: cluster-/heteroskedasticity-robust SEs for the ML-estimated
 # "GLM-family" classes that route through sandwich::vcovCL (Wald z):
-#   * gam / bam (mgcv)        -> sandwich::vcovCL
+#   * gam / bam (mgcv)        -> sandwich::vcovCL on spicy's score and
+#                                 penalized bread (R/vcov_mgcv.R)
 #   * polr (MASS) / clm       -> sandwich::vcovCL (slopes AND the
 #                                 Thresholds block, from the same
 #                                 full-model matrix)
@@ -17,7 +18,7 @@ b_rows <- function(fr) {
 
 ## ---- gam ------------------------------------------------------------------
 
-test_that("gam CR* matches sandwich::vcovCL (Wald z)", {
+test_that("gam CR* matches sandwich::vcovCL of the same glm (Wald z)", {
   skip_if_not_installed("mgcv")
   skip_if_not_installed("sandwich")
   set.seed(1)
@@ -30,7 +31,10 @@ test_that("gam CR* matches sandwich::vcovCL (Wald z)", {
   m <- mgcv::gam(y ~ x1 + x2, data = d)
   fr <- as_regression_frame(m, vcov = "CR2", cluster = d$g, cluster_name = "g")
   b <- b_rows(fr)
-  orc <- sqrt(diag(sandwich::vcovCL(m, cluster = d$g)))[b$term]
+  # The glm is the oracle: sandwich::vcovCL() on the gaussian gam itself
+  # is deflated by the dispersion squared (test-vcov_mgcv.R).
+  m_glm <- stats::glm(y ~ x1 + x2, data = d)
+  orc <- sqrt(diag(sandwich::vcovCL(m_glm, cluster = d$g)))[b$term]
   expect_equal(unname(b$std_error), unname(orc), tolerance = 1e-7)
   expect_true(all(b$test_type == "z"))
   expect_identical(fr$info$vcov_label, "cluster-robust (CL), clusters by g")

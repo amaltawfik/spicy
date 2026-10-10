@@ -359,7 +359,14 @@
 #' sandwich (identical to `coxph(..., cluster=)`);
 #' `survreg`/`gam`/`polr`/`clm`/`betareg`/`mlogit`/`multinom` and the
 #' `pscl` two-part fits use
-#' [sandwich::vcovCL()]; `rms` fits use [rms::robcov()] (which
+#' [sandwich::vcovCL()]. For `gam`/`bam`, spicy forms the sandwich
+#' itself, from the GLM score and the penalized covariance of the fit,
+#' and lets `vcovCL()` do only the clustering arithmetic: the sandwich
+#' methods for these fits are wrong for a free dispersion, a
+#' non-canonical link and a non-Gaussian `bam()`. Extended families
+#' other than `nb()` (`betar`, `ocat`, `scat`, `tw`, ...) have another
+#' score and are refused. `rms` fits use
+#' [rms::robcov()] (which
 #' needs the fit's `x = TRUE, y = TRUE`). These single cluster
 #' sandwiches have no CR0-CR3 bias-reduction variants, so the requested
 #' `CR*` maps to the one available estimator. `cluster` length is one

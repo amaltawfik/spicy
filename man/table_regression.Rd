@@ -1159,7 +1159,14 @@ to the field-standard oracle: \code{lm}/\code{glm}/\code{lmer}/\code{lme} use
 sandwich (identical to \code{coxph(..., cluster=)});
 \code{survreg}/\code{gam}/\code{polr}/\code{clm}/\code{betareg}/\code{mlogit}/\code{multinom} and the
 \code{pscl} two-part fits use
-\code{\link[sandwich:vcovCL]{sandwich::vcovCL()}}; \code{rms} fits use \code{\link[rms:robcov]{rms::robcov()}} (which
+\code{\link[sandwich:vcovCL]{sandwich::vcovCL()}}. For \code{gam}/\code{bam}, spicy forms the sandwich
+itself, from the GLM score and the penalized covariance of the fit,
+and lets \code{vcovCL()} do only the clustering arithmetic: the sandwich
+methods for these fits are wrong for a free dispersion, a
+non-canonical link and a non-Gaussian \code{bam()}. Extended families
+other than \code{nb()} (\code{betar}, \code{ocat}, \code{scat}, \code{tw}, ...) have another
+score and are refused. \code{rms} fits use
+\code{\link[rms:robcov]{rms::robcov()}} (which
 needs the fit's \verb{x = TRUE, y = TRUE}). These single cluster
 sandwiches have no CR0-CR3 bias-reduction variants, so the requested
 \verb{CR*} maps to the one available estimator. \code{cluster} length is one

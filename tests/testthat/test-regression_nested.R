@@ -567,9 +567,9 @@ test_that("Wald change, sandwich::vcovCL classes: b' V^-1 b of the cluster matri
       c("x2", "x3"),
       21.9690335
     ),
-    # Binomial: sandwich::vcovCL() on a gaussian gam leaves the
-    # dispersion out of its bread, a defect of the coefficient rows
-    # that the block test would only inherit.
+    # Binomial logit: a canonical link with a fixed dispersion, the one
+    # case where sandwich::vcovCL() on the gam itself is a valid oracle
+    # (spicy forms the gam sandwich itself, R/vcov_mgcv.R).
     gam = list(
       mgcv::gam(yb ~ x1, family = stats::binomial, data = d),
       mgcv::gam(yb ~ x1 + x2 + x3, family = stats::binomial, data = d),

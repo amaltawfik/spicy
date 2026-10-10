@@ -261,3 +261,56 @@ test_that("gam parametric coefs match parameters::model_parameters() (oracle)", 
   }
   expect_oracle_covered(n_checked)
 })
+
+
+# ---- 10. Robust SE: spicy forms the sandwich (R/vcov_mgcv.R) -------------
+
+test_that("gam / bam CR2 standard errors equal the glm's cluster sandwich", {
+  skip_if_not_installed("mgcv")
+  skip_if_not_installed("sandwich")
+  skip_if_not_installed("clubSandwich")
+  set.seed(7)
+  n <- 400
+  d <- data.frame(
+    g = factor(rep(1:20, each = 20)),
+    x1 = rnorm(n),
+    x2 = rnorm(n)
+  )
+  d$yn <- 1 + 0.5 * d$x1 - 0.3 * d$x2 + rnorm(n, sd = 3) + rnorm(20)[d$g]
+  d$yg <- rgamma(n, shape = 2, rate = 2 / exp(0.3 + 0.2 * d$x1))
+  d$yb <- rbinom(n, 1, plogis(0.4 * d$x1))
+  ctrl <- mgcv::gam.control(epsilon = 1e-12)
+  cases <- list(
+    gaussian = list(
+      mgcv::gam(yn ~ x1 + x2, data = d, control = ctrl),
+      stats::glm(yn ~ x1 + x2, data = d)
+    ),
+    gamma_log = list(
+      mgcv::gam(yg ~ x1 + x2, family = Gamma("log"), data = d, control = ctrl),
+      stats::glm(yg ~ x1 + x2, family = Gamma("log"), data = d)
+    ),
+    bam_binomial = list(
+      mgcv::bam(yb ~ x1 + x2, family = binomial, data = d, control = ctrl),
+      stats::glm(yb ~ x1 + x2, family = binomial, data = d)
+    )
+  )
+  se_of <- function(fit, vcov) {
+    out <- suppressWarnings(table_regression(
+      fit,
+      vcov = vcov,
+      cluster = d$g,
+      output = "long"
+    ))
+    out <- out[out$estimate_type == "B", ]
+    stats::setNames(out$std.error, out$term)
+  }
+  for (nm in names(cases)) {
+    m_gam <- cases[[nm]][[1]]
+    m_glm <- cases[[nm]][[2]]
+    se_gam <- se_of(m_gam, "CR2")
+    oracle <- sqrt(diag(sandwich::vcovCL(m_glm, cluster = d$g)))
+    expect_equal(se_gam, oracle[names(se_gam)], tolerance = 1e-5, label = nm)
+    # The same estimator through clubSandwich's CR1 on the glm table.
+    expect_equal(se_gam, se_of(m_glm, "CR1"), tolerance = 1e-5, label = nm)
+  }
+})

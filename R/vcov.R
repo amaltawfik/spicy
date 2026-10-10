@@ -233,8 +233,11 @@ compute_model_vcov <- function(
   }
 
   if (startsWith(type, "HC")) {
+    # mgcv fits: spicy supplies the score, the bread and the hat values
+    # (R/vcov_mgcv.R); sandwich's own route is wrong for them.
+    hc_fit <- if (inherits(fit, "gam")) .mgcv_sandwich_wrap(fit) else fit
     return(tryCatch(
-      sandwich::vcovHC(fit, type = type),
+      sandwich::vcovHC(hc_fit, type = type),
       error = function(e) .abort_vcov_failed(type, e, "sandwich::vcovHC()")
     ))
   }
@@ -264,7 +267,9 @@ compute_model_vcov <- function(
     #   * ols / lrm / cph / Glm (rms) -> rms::robcov() native cluster sandwich
     #     (Huber-White; Lin-Wei for cph). Requires the fit's x = TRUE, y = TRUE.
     #   * survreg / gam / polr / clm / betareg / mlogit -> sandwich::vcovCL
-    #     (clubSandwich has no usable method for these classes).
+    #     (clubSandwich has no usable method for these classes). gam / bam
+    #     reach it through the wrapper of R/vcov_mgcv.R, which supplies the
+    #     score and mgcv's penalized bread.
     #   * lm / glm / lmer / lme -> clubSandwich bias-reduced CR*.
     # rms first: cph inherits "coxph", but robcov() == the Lin-Wei sandwich and
     # gives a clearer x/y error, so route the whole rms family through it.
@@ -291,8 +296,9 @@ compute_model_vcov <- function(
         )
       )
     ) {
+      cl_fit <- if (inherits(fit, "gam")) .mgcv_sandwich_wrap(fit) else fit
       return(tryCatch(
-        sandwich::vcovCL(fit, cluster = cluster),
+        sandwich::vcovCL(cl_fit, cluster = cluster),
         error = function(e) .abort_vcov_failed(type, e, "sandwich::vcovCL()")
       ))
     }

@@ -201,7 +201,9 @@ Family by family:
   `sandwich::vcovCL()`.
 * **`gam` / `bam`, `betareg`, `pscl` two-part** -- `CR*` via
   `sandwich::vcovCL()`; zero-inflated and hurdle fits cluster both
-  components.
+  components. For `gam` / `bam`, spicy forms the sandwich itself,
+  from the score and the penalized covariance of the fit, and
+  `vcovCL()` only does the clustering arithmetic.
 * **Own-estimator classes** -- `estimatr` fits keep the robust SEs
   they were computed with; `fixest` fits keep their estimator (the
   footer carries fixest's own label -- clustered, Newey-West,
