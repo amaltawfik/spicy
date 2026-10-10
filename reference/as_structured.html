@@ -227,6 +227,10 @@ numeric predictor's slope), <code>"ci"</code>, <code>"statistic"</code>, <code>"
 keep their numeric anchor in <code>body</code> and their exact printed string
 in <code>col_meta$&lt;col&gt;$display_cells</code>. <code>stars</code> is always <code>NULL</code>:
 descriptive tables carry no significance markers.</p>
+<p>Under <code>p_adjust</code>, the p-value column holds the adjusted values and its
+<code>col_meta</code> adds <code>p_adjust</code> (the method), <code>p_adjust_m</code> (the number of
+tests adjusted together) and <code>p_unadjusted</code> (the raw p-value of each
+cell, as long as <code>body</code>).</p>
     </div>
     <div class="section level2">
     <h2 id="versioning">Versioning<a class="anchor" aria-label="anchor" href="#versioning"></a></h2>

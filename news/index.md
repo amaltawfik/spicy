@@ -45,6 +45,16 @@ PDF.
   text, date, date-time, time), in English or in French with
   `options(spicy.language)`.
 
+- [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
+  [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md),
+  and their survey twins gain `p_adjust`, the multiple-comparison
+  adjustment of
+  [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md),
+  applied to all the tests of the table together. The note gives the
+  method and the number of tests, and the raw p-values stay in the
+  object as `p_unadjusted`.
+
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   supports cumulative-link mixed models:
   [`ordinal::clmm()`](https://rdrr.io/pkg/ordinal/man/clmm.html) fits
@@ -71,6 +81,13 @@ PDF.
 
 - [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md)
   writes a large declared missing code as it is, `100000`, not `1e+05`.
+
+- `table_categorical(output = "gt")` shows the note on the association
+  measure and the standardized mean difference, as the other outputs do.
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  writes its `p_adjust` note in French under
+  `options(spicy.language = "fr")`.
 
 - The Excel files of
   [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md),

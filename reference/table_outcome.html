@@ -105,6 +105,7 @@ gives the marginal summary of the whole analytic sample.</p>
 <span>  rescale <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  test <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"welch"</span>, <span class="st">"student"</span>, <span class="st">"nonparametric"</span><span class="op">)</span>,</span>
 <span>  p_value <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  p_adjust <span class="op">=</span> <span class="st">"none"</span>,</span>
 <span>  statistic <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  show_n <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  show_columns <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -178,6 +179,16 @@ to sum to the sample size, as in <code><a href="table_continuous.html">table_con
 
 <dt id="arg-p-value">p_value<a class="anchor" aria-label="anchor" href="#arg-p-value"></a></dt>
 <dd><p>Show the p-value column (default <code>TRUE</code>).</p></dd>
+
+
+<dt id="arg-p-adjust">p_adjust<a class="anchor" aria-label="anchor" href="#arg-p-adjust"></a></dt>
+<dd><p>Multiple-comparison adjustment of the p-value
+column, applied to the family of every test in the table (one
+p-value per block). One of <code>"none"</code> (default), <code>"holm"</code>,
+<code>"hochberg"</code>, <code>"hommel"</code>, <code>"bonferroni"</code>, <code>"BH"</code> / <code>"fdr"</code>, or
+<code>"BY"</code>, as in <code><a href="table_regression.html">table_regression()</a></code>; delegated to
+<code><a href="https://rdrr.io/r/stats/p.adjust.html" class="external-link">stats::p.adjust()</a></code>. Needs the p-value column. See
+<em>Multiple-comparison adjustment</em>.</p></dd>
 
 
 <dt id="arg-statistic">statistic<a class="anchor" aria-label="anchor" href="#arg-statistic"></a></dt>
@@ -344,6 +355,29 @@ columns mean, and how the blocks and the <code>Overall</code> row are to be
 read. The rendering engines carry the same sentence as a table note.
 On the <code>"tinytable"</code> route it is set one size down;
 <code>options(spicy.note_style)</code> governs that (see <code><a href="table_regression.html">table_regression()</a></code>).</p>
+    </div>
+    <div class="section level2">
+    <h2 id="multiple-comparison-adjustment">Multiple-comparison adjustment<a class="anchor" aria-label="anchor" href="#multiple-comparison-adjustment"></a></h2>
+    <p>The p-values of a descriptive table describe: they test no
+prespecified hypothesis. STROBE (explanation of item 14) and the
+SAMPL guidelines advise against significance tests in descriptive and
+baseline tables, hence the default <code>p_adjust = "none"</code>.</p>
+<p>When a journal or a protocol asks for adjusted p-values anyway,
+<code>p_adjust</code> applies <code><a href="https://rdrr.io/r/stats/p.adjust.html" class="external-link">stats::p.adjust()</a></code> to the family of every test in
+the table: one p-value per variable (one per block in
+<code>table_outcome()</code>), never the rows of one variable, which share one
+test. <code>"holm"</code> suits a confirmatory set of comparisons, <code>"BH"</code> a
+screening one; <code><a href="table_regression.html">table_regression()</a></code> lists the methods. A test that
+returned no p-value stays out of the family.</p>
+<p>The adjustment runs before any formatting, so the <code>p</code> column and its
+<code>&lt;.001</code> threshold show the adjusted values, and the table note gives
+the method and the family size <code>m</code>. The raw p-values stay in the
+object: a <code>p_unadjusted</code> column next to the p-value column of the
+returned data frames, and <code>col_meta$p$p_unadjusted</code> (with the method
+in <code>p_adjust</code> and the family size in <code>p_adjust_m</code>) in
+<code><a href="as_structured.html">as_structured()</a></code>. Without <code>by</code>, or with <code>p_value = FALSE</code> where the
+function has that argument, the table shows no p-value to adjust,
+and a <code>p_adjust</code> other than <code>"none"</code> is an error.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>

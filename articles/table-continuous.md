@@ -158,7 +158,9 @@ table_continuous(
 This is the main pattern for reporting continuous variables across
 groups such as education, sex, treatment arm, or survey wave. Pass
 `p_value = FALSE` to suppress the test column and keep the output
-strictly descriptive.
+strictly descriptive. When a journal asks for adjusted *p*-values,
+`p_adjust = "holm"` (or `"BH"`) adjusts all the tests of the table
+together and the note says so.
 
 If you want the same outcomes reported in a linear-model workflow, with
 heteroskedasticity-consistent or cluster-robust standard errors, case
@@ -1086,7 +1088,7 @@ table_continuous(
 | Missing values removed: bmi (12), life_sat_health (8). |  |  |  |  |  |  |  |  |  |
 
 Descriptive statistics by Highest education level
-{#tinytable_1bs3yeh3xfhesy1r78nh .table .tinytable
+{#tinytable_fvd7lo64qx06vryvz727 .table .tinytable
 style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 

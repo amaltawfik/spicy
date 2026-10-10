@@ -385,7 +385,7 @@ Other variable inspection:
 code_book(sochealth)
 #> Codebook
 #> 
-#> Date: 2026-10-09
+#> Date: 2026-10-10
 #> Observations: 1200
 #> Variables: 24
 #> Note: Counts and percentages are unweighted: they describe the data file and are not estimates for a population.
@@ -430,7 +430,7 @@ cb
 #> Body mass index
 #> Jane Doe – University of Somewhere
 #> 
-#> Date: 2026-10-09
+#> Date: 2026-10-10
 #> Observations: 1200
 #> Variables: 2
 #> Note: Counts and percentages are unweighted: they describe the data file and are not estimates for a population.

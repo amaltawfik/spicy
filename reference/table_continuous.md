@@ -41,6 +41,7 @@ table_continuous(
   rescale = FALSE,
   test = c("welch", "student", "nonparametric"),
   p_value = NULL,
+  p_adjust = "none",
   statistic = FALSE,
   show_n = TRUE,
   show_columns = NULL,
@@ -184,6 +185,17 @@ table_continuous(
   *p*-value is shown automatically whenever `by` is supplied, and hidden
   otherwise. Pass `p_value = FALSE` to suppress the column explicitly.
   Ignored when `by` is not used.
+
+- p_adjust:
+
+  Multiple-comparison adjustment of the *p*-value column, applied to the
+  family of every test in the table (one *p*-value per variable). One of
+  `"none"` (default), `"holm"`, `"hochberg"`, `"hommel"`,
+  `"bonferroni"`, `"BH"` / `"fdr"`, or `"BY"`, as in
+  [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md);
+  delegated to
+  [`stats::p.adjust()`](https://rdrr.io/r/stats/p.adjust.html). Needs
+  `by` and the *p*-value column. See *Multiple-comparison adjustment*.
 
 - statistic:
 
@@ -759,6 +771,36 @@ Every function involved offers the same escape hatch: set
 as valid values (the behavior of spicy before 0.13.0). Tagged missing
 values are genuine `NA`s either way; for them, `user_na = FALSE` only
 collapses the per-tag breakdown back into the regular `NA` count.
+
+## Multiple-comparison adjustment
+
+The p-values of a descriptive table describe: they test no prespecified
+hypothesis. STROBE (explanation of item 14) and the SAMPL guidelines
+advise against significance tests in descriptive and baseline tables,
+hence the default `p_adjust = "none"`.
+
+When a journal or a protocol asks for adjusted p-values anyway,
+`p_adjust` applies
+[`stats::p.adjust()`](https://rdrr.io/r/stats/p.adjust.html) to the
+family of every test in the table: one p-value per variable (one per
+block in
+[`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md)),
+never the rows of one variable, which share one test. `"holm"` suits a
+confirmatory set of comparisons, `"BH"` a screening one;
+[`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+lists the methods. A test that returned no p-value stays out of the
+family.
+
+The adjustment runs before any formatting, so the `p` column and its
+`<.001` threshold show the adjusted values, and the table note gives the
+method and the family size `m`. The raw p-values stay in the object: a
+`p_unadjusted` column next to the p-value column of the returned data
+frames, and `col_meta$p$p_unadjusted` (with the method in `p_adjust` and
+the family size in `p_adjust_m`) in
+[`as_structured()`](https://amaltawfik.github.io/spicy/reference/as_structured.md).
+Without `by`, or with `p_value = FALSE` where the function has that
+argument, the table shows no p-value to adjust, and a `p_adjust` other
+than `"none"` is an error.
 
 ## See also
 

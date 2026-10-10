@@ -488,7 +488,9 @@ One limit worth knowing before you build a full balance table:
 has no `p_value` argument, so its *p* column cannot be switched off the
 way `table_continuous(p_value = FALSE)` switches off its own. A mixed
 balance table will show a categorical *p* beside a continuous column you
-removed.
+removed. Its *p* column can be adjusted, though: `p_adjust = "holm"` (or
+`"BH"`) adjusts the tests of all the variables together, and the note
+says so.
 
 ## Weighted tables
 
@@ -840,7 +842,7 @@ table_categorical(
 |     No                    | 334    | 53.9 | 316  | 54.5 | 650   | 54.2 |      |     |
 |     Yes                   | 286    | 46.1 | 264  | 45.5 | 550   | 45.8 |      |     |
 
-Categorical table by sex {#tinytable_cko7teb6rfq7dv5nzvz5 .table
+Categorical table by sex {#tinytable_wkqfi2kq4aovg5axhuyb .table
 .tinytable style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 
