@@ -2,7 +2,7 @@
 
 spicy is an R package for publication-ready tables: frequency tables and
 cross-tabulations, association measures, categorical and continuous
-summary tables, regression tables for 30+ model classes, and labelled
+summary tables, regression tables for 39 model classes, and labelled
 survey data workflows.
 
 ## Features
@@ -59,23 +59,28 @@ row-wise summaries.
   (`emmeans` style) marginal means, and weighted comparisons.
 - **Regression tables** with
   [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
-  for one or more fitted models side by side, across 30+ model classes
-  (see *Supported models* below): classical / heteroskedasticity-robust
-  / cluster-robust / bootstrap / jackknife variance with each class’s
-  field-standard backend, standardized coefficients, family-aware
-  `exponentiate` (OR / IRR / HR / RR / MR, link-gated), Wald or
-  profile-likelihood CIs, average marginal effects (per-category for
-  ordinal and multinomial models), partial *f²* / *η²* / *ω²* / *χ²*
-  effect sizes, class-aware fit statistics (pseudo-*R²*, Nakagawa
-  marginal / conditional *R²*, ICC), hierarchical model comparisons with
-  the correct nested test per class, and multiple-comparison adjustment.
-  Mixed models report their random effects as table rows with an
-  optional boundary-correct per-term test; ordinal models report their
-  thresholds; zero-inflated and hurdle models report every model
-  component. Survival models go beyond hazard ratios: adjusted
-  restricted-mean-survival-time and risk differences by g-computation
-  (`tau` / `at_time`), for `coxph` fits (stratified included) and
-  `survreg` AFT fits, in single tables and in the univariable screen.
+  for one or more fitted models side by side, across 39 model classes in
+  12 families (see *Supported models* below): classical /
+  heteroskedasticity-robust / cluster-robust / bootstrap / jackknife
+  variance with each class’s field-standard backend, standardized
+  coefficients, family-aware `exponentiate` (OR / IRR / HR / RR / MR,
+  link-gated), Wald or profile-likelihood CIs, average marginal effects
+  (per-category for ordinal and multinomial models), partial *f²* / *η²*
+  / *ω²* / *χ²* effect sizes, class-aware fit statistics (pseudo-*R²*,
+  Nakagawa marginal / conditional *R²*, ICC), hierarchical model
+  comparisons with the correct nested test per class (a Wald test on the
+  requested matrix under a robust or cluster-robust `vcov`), and
+  multiple-comparison adjustment. Mixed models report their random
+  effects as table rows with an optional boundary-correct per-term test;
+  ordinal models report their thresholds, and cumulative-link mixed
+  models
+  ([`ordinal::clmm()`](https://rdrr.io/pkg/ordinal/man/clmm.html),
+  `glmmTMB` with the ordinal family) both; zero-inflated and hurdle
+  models report every model component. Survival models go beyond hazard
+  ratios: adjusted restricted-mean-survival-time and risk differences by
+  g-computation (`tau` / `at_time`), for `coxph` fits (stratified
+  included) and `survreg` AFT fits, in single tables and in the
+  univariable screen.
 - **Univariable screening** with
   [`table_regression_uv()`](https://amaltawfik.github.io/spicy/reference/table_regression_uv.md):
   one-predictor-at-a-time models merged with the multivariable fit,
@@ -95,7 +100,8 @@ row-wise summaries.
 - **Codebooks** with
   [`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md):
   variables, values, and unweighted counts, printed in the console,
-  written to Excel, or compiled to a PDF with a cover, one sheet per
+  written to Excel, or compiled to a PDF with a cover, notes
+  (paragraphs, lists, italics, bold, code, links), one sheet per
   variable, and an index.
 - **Label extraction** with
   [`label_from_names()`](https://amaltawfik.github.io/spicy/reference/label_from_names.md),
@@ -550,7 +556,7 @@ table_regression(fit)
 #> Std. errors: classical (OLS).
 ```
 
-Regression tables cover 30+ model classes with the conventions of each
+Regression tables cover 39 model classes with the conventions of each
 family. A mixed-effects fit, for example, reports its random effects as
 rows (SD, correlation, residual – each with SE and CI), the ICC and
 group sizes as fit statistics, and the likelihood-ratio test of the

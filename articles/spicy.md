@@ -447,9 +447,9 @@ and the final reporting overview tying the summary tables together.
 ## Regression tables
 
 [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
-reports the full coefficient table for one or several fitted models —
-more than thirty classes, from [`lm()`](https://rdrr.io/r/stats/lm.html)
-/ [`glm()`](https://rdrr.io/r/stats/glm.html) to mixed-effects, ordinal,
+reports the full coefficient table for one or several fitted models — 39
+classes, from [`lm()`](https://rdrr.io/r/stats/lm.html) /
+[`glm()`](https://rdrr.io/r/stats/glm.html) to mixed-effects, ordinal,
 survival and Bayesian engines (the full map is the [Supported
 models](https://amaltawfik.github.io/spicy/articles/table-regression-supported-models.html)
 article) — with APA formatting by default and the same journal styles on
@@ -583,7 +583,7 @@ kept alongside the reference pages and rebuilt with each release.
   ([`table_regression_uv()`](https://amaltawfik.github.io/spicy/reference/table_regression_uv.md)).
 - [Supported
   models](https://amaltawfik.github.io/spicy/articles/table-regression-supported-models.html)
-  — the class-by-class capability map (more than thirty model classes).
+  — the class-by-class capability map (39 model classes).
 - [The structured
   view](https://amaltawfik.github.io/spicy/articles/as-structured.html)
   — the typed view behind every regression table: filter, aggregate, or

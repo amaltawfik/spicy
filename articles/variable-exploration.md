@@ -238,7 +238,7 @@ narrow it down:
 code_book(sochealth, sex, age, income_group, starts_with("bmi"))
 #> Codebook
 #> 
-#> Date: 2026-10-09
+#> Date: 2026-10-10
 #> Observations: 1200
 #> Variables: 5
 #> Note: Counts and percentages are unweighted: they describe the data file and are not estimates for a population.
@@ -357,7 +357,7 @@ code_book(
 #> Body mass index
 #> Jane Doe – University of Somewhere
 #> 
-#> Date: 2026-10-09
+#> Date: 2026-10-10
 #> Observations: 1200
 #> Variables: 2
 #> Note: Counts and percentages are unweighted: they describe the data file and are not estimates for a population.
@@ -419,7 +419,7 @@ cbi <- code_book(tibble::tibble(trust, income))
 cbi
 #> Codebook
 #> 
-#> Date: 2026-10-09
+#> Date: 2026-10-10
 #> Observations: 10
 #> Variables: 2
 #> Declared missing value: 8 = Don't know (1 variable)
