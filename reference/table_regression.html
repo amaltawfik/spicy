@@ -1304,7 +1304,14 @@ to the field-standard oracle: <code>lm</code>/<code>glm</code>/<code>lmer</code>
 sandwich (identical to <code>coxph(..., cluster=)</code>);
 <code>survreg</code>/<code>gam</code>/<code>polr</code>/<code>clm</code>/<code>betareg</code>/<code>mlogit</code>/<code>multinom</code> and the
 <code>pscl</code> two-part fits use
-<code><a href="https://zeileis.codeberg.page/sandwich/reference/vcovCL.html" class="external-link">sandwich::vcovCL()</a></code>; <code>rms</code> fits use <code><a href="https://rdrr.io/pkg/rms/man/robcov.html" class="external-link">rms::robcov()</a></code> (which
+<code><a href="https://zeileis.codeberg.page/sandwich/reference/vcovCL.html" class="external-link">sandwich::vcovCL()</a></code>. For <code>gam</code>/<code>bam</code>, spicy forms the sandwich
+itself, from the GLM score and the penalized covariance of the fit,
+and lets <code>vcovCL()</code> do only the clustering arithmetic: the sandwich
+methods for these fits are wrong for a free dispersion, a
+non-canonical link and a non-Gaussian <code>bam()</code>. Extended families
+other than <code>nb()</code> (<code>betar</code>, <code>ocat</code>, <code>scat</code>, <code>tw</code>, ...) have another
+score and are refused. <code>rms</code> fits use
+<code><a href="https://rdrr.io/pkg/rms/man/robcov.html" class="external-link">rms::robcov()</a></code> (which
 needs the fit's <code>x = TRUE, y = TRUE</code>). These single cluster
 sandwiches have no CR0-CR3 bias-reduction variants, so the requested
 <code>CR*</code> maps to the one available estimator. <code>cluster</code> length is one

@@ -787,7 +787,9 @@ via <code><a href="https://rdrr.io/pkg/rms/man/robcov.html" class="external-link
 <strong><code>gam</code> / <code>bam</code>, <code>betareg</code>,
 <code>pscl</code> two-part</strong> – <code>CR*</code> via
 <code><a href="https://zeileis.codeberg.page/sandwich/reference/vcovCL.html" class="external-link">sandwich::vcovCL()</a></code>; zero-inflated and hurdle fits cluster
-both components.</li>
+both components. For <code>gam</code> / <code>bam</code>, spicy forms
+the sandwich itself, from the score and the penalized covariance of the
+fit, and <code>vcovCL()</code> only does the clustering arithmetic.</li>
 <li>
 <strong>Own-estimator classes</strong> – <code>estimatr</code> fits
 keep the robust SEs they were computed with; <code>fixest</code> fits

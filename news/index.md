@@ -89,6 +89,16 @@ PDF.
   writes its `p_adjust` note in French under
   `options(spicy.language = "fr")`.
 
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  computes the robust and cluster-robust standard errors of
+  [`mgcv::gam()`](https://rdrr.io/pkg/mgcv/man/gam.html) and
+  [`mgcv::bam()`](https://rdrr.io/pkg/mgcv/man/bam.html) fits itself.
+  Through sandwich they were wrong for a family with a free dispersion
+  (divided by it), for a non-canonical link and for a non-Gaussian
+  `bam()`. Only a `gam()` with a canonical link and a fixed dispersion
+  was right. The extended families of `mgcv` other than `nb()`, whose
+  score is not the GLM score, now refuse a robust `vcov`.
+
 - The Excel files of
   [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md),
   [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),

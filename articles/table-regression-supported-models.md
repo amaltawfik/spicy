@@ -208,7 +208,10 @@ Family by family:
   [`sandwich::vcovCL()`](https://zeileis.codeberg.page/sandwich/reference/vcovCL.html).
 - **`gam` / `bam`, `betareg`, `pscl` two-part** – `CR*` via
   [`sandwich::vcovCL()`](https://zeileis.codeberg.page/sandwich/reference/vcovCL.html);
-  zero-inflated and hurdle fits cluster both components.
+  zero-inflated and hurdle fits cluster both components. For `gam` /
+  `bam`, spicy forms the sandwich itself, from the score and the
+  penalized covariance of the fit, and `vcovCL()` only does the
+  clustering arithmetic.
 - **Own-estimator classes** – `estimatr` fits keep the robust SEs they
   were computed with; `fixest` fits keep their estimator (the footer
   carries fixest’s own label – clustered, Newey-West, Conley, …;

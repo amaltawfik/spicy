@@ -1258,8 +1258,13 @@ the field-standard oracle: `lm`/`glm`/`lmer`/`lme` use clubSandwich (CR2
 `coxph(..., cluster=)`);
 `survreg`/`gam`/`polr`/`clm`/`betareg`/`mlogit`/`multinom` and the
 `pscl` two-part fits use
-[`sandwich::vcovCL()`](https://zeileis.codeberg.page/sandwich/reference/vcovCL.html);
-`rms` fits use
+[`sandwich::vcovCL()`](https://zeileis.codeberg.page/sandwich/reference/vcovCL.html).
+For `gam`/`bam`, spicy forms the sandwich itself, from the GLM score and
+the penalized covariance of the fit, and lets `vcovCL()` do only the
+clustering arithmetic: the sandwich methods for these fits are wrong for
+a free dispersion, a non-canonical link and a non-Gaussian `bam()`.
+Extended families other than `nb()` (`betar`, `ocat`, `scat`, `tw`, ...)
+have another score and are refused. `rms` fits use
 [`rms::robcov()`](https://rdrr.io/pkg/rms/man/robcov.html) (which needs
 the fit's `x = TRUE, y = TRUE`). These single cluster sandwiches have no
 CR0-CR3 bias-reduction variants, so the requested `CR*` maps to the one
