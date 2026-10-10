@@ -529,3 +529,116 @@ make_stronger_indent <- function(x, base_indent, strong_indent, rows) {
   }
   x
 }
+
+
+# ---- p_adjust in the descriptive tables -----------------------------------
+#
+# `table_categorical()`, `table_continuous()`, `table_outcome()` and the
+# two survey twins take the `p_adjust` of `table_regression()`: same
+# methods, same validation, same footer sentence. The family is every
+# test of the table -- one p-value per variable, one per block in
+# `table_outcome()` -- and never the rows of one variable, which share
+# one test. The adjustment runs on the compute frame, before any row is
+# filtered or any p-value formatted, so "<.001" reads the adjusted value.
+
+# Validation and the two refusals: an adjustment the table could not
+# show. Without a group there is no test; with `p_value = FALSE` the
+# adjusted column is not printed, and a footer announcing it would
+# describe numbers the reader cannot see.
+.check_desc_p_adjust <- function(p_adjust, has_group = TRUE, p_value = NULL) {
+  validate_p_adjust(p_adjust)
+  if (identical(p_adjust, "none")) {
+    return(invisible(NULL))
+  }
+  if (!has_group) {
+    spicy_abort(
+      c(
+        "`p_adjust` needs `by`: without a grouping variable the table runs no test.",
+        "i" = "Add `by`, or drop `p_adjust`."
+      ),
+      class = "spicy_invalid_input"
+    )
+  }
+  if (isFALSE(p_value)) {
+    spicy_abort(
+      c(
+        "`p_adjust` adjusts the p-value column, which `p_value = FALSE` removes.",
+        "i" = "Set `p_value = TRUE`, or drop `p_adjust`."
+      ),
+      class = "spicy_invalid_input"
+    )
+  }
+  invisible(NULL)
+}
+
+# Adjust the p-value column `col` of a compute frame. `key` names the
+# test each row reports (the variable, or the block), NA on a row that
+# reports none; rows sharing a key share one test, so each test enters
+# the family once, and a test that returned no p-value stays out of it.
+# The raw column is kept right after the adjusted one, as
+# `p_unadjusted`; the frame's other attributes are kept.
+#
+# Returns the frame and `info` (method, family size `m`, raw p-values
+# named by key), or `info = NULL` when nothing is adjusted.
+.desc_apply_p_adjust <- function(df, col, key, method) {
+  if (identical(method, "none")) {
+    return(list(df = df, info = NULL))
+  }
+  p <- df[[col]]
+  first <- !is.na(key) & !is.na(p) & !duplicated(key)
+  raw <- stats::setNames(p[first], key[first])
+  adjusted <- stats::p.adjust(raw, method = method)
+  hit <- !is.na(key) & !is.na(p)
+  df[[col]][hit] <- unname(adjusted[match(key[hit], names(raw))])
+
+  kept <- attributes(df)
+  df[["p_unadjusted"]] <- p
+  nm <- names(df)
+  pos <- match(col, nm)
+  df <- df[c(
+    nm[seq_len(pos)],
+    "p_unadjusted",
+    nm[-c(seq_len(pos), length(nm))]
+  )]
+  for (a in setdiff(names(kept), c("names", "row.names"))) {
+    attr(df, a) <- kept[[a]]
+  }
+  list(df = df, info = list(method = method, m = length(raw), raw = raw))
+}
+
+# The footer sentence, shared with `table_regression()`. NULL when no
+# test was adjusted.
+.desc_p_adjust_note <- function(info) {
+  if (is.null(info) || info$m == 0L) {
+    return(NULL)
+  }
+  spicy_fmt(
+    "note_p_adjusted",
+    .quote_val(info$method),
+    spicy_fmt("note_p_adjusted_tests", info$m)
+  )
+}
+
+# Record the adjustment in the typed view, on the `col_meta` of the
+# p-value column: the method (`p_adjust`), the family size
+# (`p_adjust_m`) and the raw p-value of each cell (`p_unadjusted`, as
+# long as `body`, NA where the cell is). Raw values are looked up by
+# `.variable`, the key of the test.
+.struct_attach_p_adjust <- function(structured, info) {
+  if (is.null(info) || is.null(structured)) {
+    return(structured)
+  }
+  body <- structured$body
+  for (nm in names(structured$col_meta)) {
+    if (!identical(structured$col_meta[[nm]]$token, "p")) {
+      next
+    }
+    raw <- rep(NA_real_, nrow(body))
+    hit <- !is.na(body[[nm]])
+    raw[hit] <- unname(info$raw[body[[".variable"]][hit]])
+    structured$col_meta[[nm]]$p_adjust <- info$method
+    structured$col_meta[[nm]]$p_adjust_m <- info$m
+    structured$col_meta[[nm]]$p_unadjusted <- raw
+  }
+  structured
+}

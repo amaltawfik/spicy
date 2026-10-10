@@ -442,6 +442,7 @@ abort_outcome_by_renamed <- function() {
 #' own group comparison on the block's header row, and an `Overall` row
 #' gives the marginal summary of the whole analytic sample.
 #'
+#' @inheritSection table_categorical Multiple-comparison adjustment
 #' @details
 #' # Which shape do I need?
 #'
@@ -560,6 +561,13 @@ abort_outcome_by_renamed <- function() {
 #' @param test Group comparison for every block: `"welch"` (default),
 #'   `"student"` or `"nonparametric"`.
 #' @param p_value Show the p-value column (default `TRUE`).
+#' @param p_adjust Multiple-comparison adjustment of the p-value
+#'   column, applied to the family of every test in the table (one
+#'   p-value per block). One of `"none"` (default), `"holm"`,
+#'   `"hochberg"`, `"hommel"`, `"bonferroni"`, `"BH"` / `"fdr"`, or
+#'   `"BY"`, as in [table_regression()]; delegated to
+#'   [stats::p.adjust()]. Needs the p-value column. See
+#'   *Multiple-comparison adjustment*.
 #' @param statistic Show the test statistic column.
 #' @param show_n Show the count column.
 #' @param show_columns Character vector of statistic tokens; `NULL`
@@ -611,6 +619,7 @@ table_outcome <- function(
   rescale = FALSE,
   test = c("welch", "student", "nonparametric"),
   p_value = NULL,
+  p_adjust = "none",
   statistic = FALSE,
   show_n = TRUE,
   show_columns = NULL,
@@ -931,6 +940,7 @@ table_outcome <- function(
   }
 
   # --- what the table shows and what it tests -----------------------------
+  .check_desc_p_adjust(p_adjust, TRUE, p_value)
   p_value <- if (is.null(p_value)) TRUE else p_value
   has_es_request <- !identical(effect_size, "none")
   if (effect_size_ci && !has_es_request) {
@@ -1090,6 +1100,17 @@ table_outcome <- function(
   n_groups <- attr(result, "n_groups")
   missing_labels <- attr(result, "missing_labels")
 
+  # `p_adjust`: one test per block, its p-value on the block header.
+  # Adjusted on the compute frame, before any route formats it.
+  adj <- .desc_apply_p_adjust(
+    result,
+    "p.value",
+    ifelse(result$.row_role == "factor_header", result$variable, NA),
+    p_adjust
+  )
+  result <- adj$df
+  p_adjust_info <- adj$info
+
   n_na_weights <- if (is.null(weights_vec)) 0L else sum(is.na(weights_vec))
   note <- .outcome_note(
     outcome_name = outcome_name,
@@ -1116,6 +1137,7 @@ table_outcome <- function(
       any(!is.na(test_used)),
     overall = overall
   )
+  note <- paste_note_parts(c(note, .desc_p_adjust_note(p_adjust_info)))
 
   # `output = "data.frame"` and `output = "long"` return the SAME
   # object, and the documentation says so. This shape has no wide form
@@ -1204,15 +1226,18 @@ table_outcome <- function(
   # Typed view: the numbers come from the compute frame, the composite
   # cells from the very display frame the console renders, so the two
   # can never word a cell differently.
-  attr(result, "structured") <- .build_outcome_structured(
-    result = result,
-    display_df = display_df,
-    tokens = tokens,
-    digits = digits,
-    effect_size_digits = effect_size_digits,
-    p_digits = p_digits,
-    decimal_mark = decimal_mark,
-    ci_level = ci_level
+  attr(result, "structured") <- .struct_attach_p_adjust(
+    .build_outcome_structured(
+      result = result,
+      display_df = display_df,
+      tokens = tokens,
+      digits = digits,
+      effect_size_digits = effect_size_digits,
+      p_digits = p_digits,
+      decimal_mark = decimal_mark,
+      ci_level = ci_level
+    ),
+    p_adjust_info
   )
   result
 }

@@ -37,6 +37,12 @@ workbook, or a PDF.
   codes), numeric, logical, text, date, date-time, time), in English or
   in French with `options(spicy.language)`.
 
+* `table_categorical()`, `table_continuous()`, `table_outcome()`, and
+  their survey twins gain `p_adjust`, the multiple-comparison adjustment
+  of `table_regression()`, applied to all the tests of the table
+  together. The note gives the method and the number of tests, and the
+  raw p-values stay in the object as `p_unadjusted`.
+
 * `table_regression()` supports cumulative-link mixed models:
   `ordinal::clmm()` fits and `glmmTMB::glmmTMB()` fits with the ordinal
   family, with their thresholds and random effects.
@@ -56,6 +62,12 @@ workbook, or a PDF.
 
 * `freq()` writes a large declared missing code as it is, `100000`, not
   `1e+05`.
+
+* `table_categorical(output = "gt")` shows the note on the association
+  measure and the standardized mean difference, as the other outputs do.
+
+* `table_regression()` writes its `p_adjust` note in French under
+  `options(spicy.language = "fr")`.
 
 * The Excel files of `table_regression()`, `table_categorical()`,
   `table_continuous()`, and `table_continuous_lm()` leave an empty cell

@@ -1204,3 +1204,61 @@ test_that("output = 'data.frame' and output = 'long' return one object", {
   expect_true(all(c("variable", "level", ".row_role") %in% names(as_df)))
   expect_true(any(grepl(" n$", names(as_df))))
 })
+
+# ---- p_adjust ---------------------------------------------------------------
+
+test_that("p_adjust adjusts the one design-based test of each variable", {
+  des <- .svycat_design()
+  raw <- table_categorical_svy(
+    des,
+    c(stype, awards, yr.rnd),
+    by = sch.wide,
+    output = "long"
+  )
+  raw_p <- raw$p[!is.na(raw$p)]
+  expect_length(raw_p, 3L)
+  for (method in c("holm", "BH", "bonferroni")) {
+    adj <- table_categorical_svy(
+      des,
+      c(stype, awards, yr.rnd),
+      by = sch.wide,
+      p_adjust = method,
+      output = "long"
+    )
+    expect_equal(adj$p[!is.na(adj$p)], stats::p.adjust(raw_p, method = method))
+    expect_identical(adj$p_unadjusted, raw$p)
+  }
+  tbl <- table_categorical_svy(
+    des,
+    c(stype, awards, yr.rnd),
+    by = sch.wide,
+    p_adjust = "holm"
+  )
+  meta <- as_structured(tbl)$col_meta$p
+  expect_identical(meta$p_adjust, "holm")
+  expect_identical(meta$p_adjust_m, 3L)
+  expect_equal(meta$p_unadjusted[!is.na(meta$p_unadjusted)], raw_p)
+  expect_match(
+    attr(tbl, "note"),
+    'P-values adjusted via stats::p.adjust(method = "holm"); m = 3 test(s).',
+    fixed = TRUE
+  )
+})
+
+test_that("p_adjust needs `by` and the p-value column", {
+  des <- .svycat_design()
+  expect_error(
+    table_categorical_svy(des, c(stype, awards), p_adjust = "holm"),
+    class = "spicy_invalid_input"
+  )
+  expect_error(
+    table_categorical_svy(
+      des,
+      c(stype, awards),
+      by = sch.wide,
+      p_value = FALSE,
+      p_adjust = "holm"
+    ),
+    class = "spicy_invalid_input"
+  )
+})

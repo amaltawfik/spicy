@@ -15,6 +15,7 @@ table_outcome(
   rescale = FALSE,
   test = c("welch", "student", "nonparametric"),
   p_value = NULL,
+  p_adjust = "none",
   statistic = FALSE,
   show_n = TRUE,
   show_columns = NULL,
@@ -67,6 +68,14 @@ to sum to the sample size, as in \code{\link[=table_continuous]{table_continuous
 \code{"student"} or \code{"nonparametric"}.}
 
 \item{p_value}{Show the p-value column (default \code{TRUE}).}
+
+\item{p_adjust}{Multiple-comparison adjustment of the p-value
+column, applied to the family of every test in the table (one
+p-value per block). One of \code{"none"} (default), \code{"holm"},
+\code{"hochberg"}, \code{"hommel"}, \code{"bonferroni"}, \code{"BH"} / \code{"fdr"}, or
+\code{"BY"}, as in \code{\link[=table_regression]{table_regression()}}; delegated to
+\code{\link[stats:p.adjust]{stats::p.adjust()}}. Needs the p-value column. See
+\emph{Multiple-comparison adjustment}.}
 
 \item{statistic}{Show the test statistic column.}
 
@@ -220,6 +229,31 @@ columns mean, and how the blocks and the \code{Overall} row are to be
 read. The rendering engines carry the same sentence as a table note.
 On the \code{"tinytable"} route it is set one size down;
 \code{options(spicy.note_style)} governs that (see \code{\link[=table_regression]{table_regression()}}).
+}
+
+\section{Multiple-comparison adjustment}{
+The p-values of a descriptive table describe: they test no
+prespecified hypothesis. STROBE (explanation of item 14) and the
+SAMPL guidelines advise against significance tests in descriptive and
+baseline tables, hence the default \code{p_adjust = "none"}.
+
+When a journal or a protocol asks for adjusted p-values anyway,
+\code{p_adjust} applies \code{\link[stats:p.adjust]{stats::p.adjust()}} to the family of every test in
+the table: one p-value per variable (one per block in
+\code{\link[=table_outcome]{table_outcome()}}), never the rows of one variable, which share one
+test. \code{"holm"} suits a confirmatory set of comparisons, \code{"BH"} a
+screening one; \code{\link[=table_regression]{table_regression()}} lists the methods. A test that
+returned no p-value stays out of the family.
+
+The adjustment runs before any formatting, so the \code{p} column and its
+\verb{<.001} threshold show the adjusted values, and the table note gives
+the method and the family size \code{m}. The raw p-values stay in the
+object: a \code{p_unadjusted} column next to the p-value column of the
+returned data frames, and \code{col_meta$p$p_unadjusted} (with the method
+in \code{p_adjust} and the family size in \code{p_adjust_m}) in
+\code{\link[=as_structured]{as_structured()}}. Without \code{by}, or with \code{p_value = FALSE} where the
+function has that argument, the table shows no p-value to adjust,
+and a \code{p_adjust} other than \code{"none"} is an error.
 }
 
 \examples{

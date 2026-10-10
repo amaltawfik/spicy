@@ -2517,20 +2517,20 @@ build_p_adjust_footer_block_from_frames <- function(frames, p_adjust) {
     },
     integer(1)
   )
-  size_part <- if (length(unique(sizes)) == 1L) {
-    sprintf("m = %d coefficient(s) per model", sizes[1L])
-  } else {
-    sprintf("m = (%s) coefficient(s) per model", paste(sizes, collapse = ", "))
-  }
+  size_part <- spicy_fmt(
+    "note_p_adjusted_coefficients",
+    if (length(unique(sizes)) == 1L) {
+      as.character(sizes[1L])
+    } else {
+      sprintf("(%s)", paste(sizes, collapse = ", "))
+    }
+  )
   # `.quote_val()` (see R/abort.R) gives a platform-independent
   # double-quoted method name; this footer is rendered text, so a
   # quote that flipped with the operating system would land in the
-  # table itself.
-  sprintf(
-    "P-values adjusted via stats::p.adjust(method = %s); %s.",
-    .quote_val(p_adjust),
-    size_part
-  )
+  # table itself. The sentence is shared with the descriptive tables
+  # (`.desc_p_adjust_note()`), which name tests instead of coefficients.
+  spicy_fmt("note_p_adjusted", .quote_val(p_adjust), size_part)
 }
 
 

@@ -422,6 +422,7 @@ order_continuous_svy_tokens <- function(tokens) {
 #' `survey::svyranktest()` the group comparison. Every interval and
 #' every test is referred to `survey::degf(design)`.
 #'
+#' @inheritSection table_categorical Multiple-comparison adjustment
 #' @details
 #' # Which function do I need?
 #'
@@ -544,6 +545,13 @@ order_continuous_svy_tokens <- function(tokens) {
 #'   (`spicy_negative_weights_no_test`).
 #' @param p_value Show the p-value column (defaults to `TRUE` with
 #'   `by`).
+#' @param p_adjust Multiple-comparison adjustment of the p-value
+#'   column, applied to the family of every test in the table (one
+#'   design-based p-value per variable; a withheld test stays out). One
+#'   of `"none"` (default), `"holm"`, `"hochberg"`, `"hommel"`,
+#'   `"bonferroni"`, `"BH"` / `"fdr"`, or `"BY"`, as in
+#'   [table_regression()]; delegated to [stats::p.adjust()]. Needs `by`
+#'   and the p-value column. See *Multiple-comparison adjustment*.
 #' @param statistic Show the test-statistic column.
 #' @param show_n Show the count column.
 #' @param show_columns Character vector of statistic tokens; `NULL`
@@ -600,6 +608,7 @@ table_continuous_svy <- function(
   df = NULL,
   test = c("welch", "student", "nonparametric"),
   p_value = NULL,
+  p_adjust = "none",
   statistic = FALSE,
   show_n = TRUE,
   show_columns = NULL,
@@ -721,6 +730,7 @@ table_continuous_svy <- function(
     )
   }
 
+  .check_desc_p_adjust(p_adjust, has_group, p_value)
   p_value_explicit <- !is.null(p_value)
   if (!p_value_explicit) {
     p_value <- has_group
@@ -985,6 +995,12 @@ table_continuous_svy <- function(
   result <- do.call(rbind, rows)
   rownames(result) <- NULL
 
+  # `p_adjust`: one design-based test per variable, its p-value on the
+  # variable's first group row. Adjusted before any route formats it.
+  adj <- .desc_apply_p_adjust(result, "p.value", result$variable, p_adjust)
+  result <- adj$df
+  p_adjust_info <- adj$info
+
   test_refused <- .design_refusal_regime(n_test_refused, n_test_attempted)
   note <- .svy_continuous_note(
     meta = meta,
@@ -1010,6 +1026,7 @@ table_continuous_svy <- function(
     n_negative_weights = .design_negative_weights(design),
     test_refused = test_refused
   )
+  note <- paste_note_parts(c(note, .desc_p_adjust_note(p_adjust_info)))
   .warn_negative_weights_no_test(test_refused)
 
   # `output = "data.frame"` and `output = "long"` return the SAME
@@ -1094,17 +1111,20 @@ table_continuous_svy <- function(
   }
 
   attr(result, "display_df") <- display_df
-  attr(result, "structured") <- .build_continuous_structured(
-    result = result,
-    display_df = display_df,
-    tokens_union = tokens,
-    tokens_by_var = attr(result, "show_columns_by_var"),
-    digits = digits,
-    effect_size_digits = digits,
-    p_digits = p_digits,
-    decimal_mark = decimal_mark,
-    ci_level = ci_level,
-    missing_group_label = missing_group_label
+  attr(result, "structured") <- .struct_attach_p_adjust(
+    .build_continuous_structured(
+      result = result,
+      display_df = display_df,
+      tokens_union = tokens,
+      tokens_by_var = attr(result, "show_columns_by_var"),
+      digits = digits,
+      effect_size_digits = digits,
+      p_digits = p_digits,
+      decimal_mark = decimal_mark,
+      ci_level = ci_level,
+      missing_group_label = missing_group_label
+    ),
+    p_adjust_info
   )
   result
 }

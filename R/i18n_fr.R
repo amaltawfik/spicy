@@ -214,6 +214,9 @@
   test_welch_t = "test t de Welch",
   test_welch_oneway_anova = "ANOVA \u00E0 un facteur de Welch",
   note_group_comparison = "Comparaison des groupes\u00A0: %s.",
+  note_p_adjusted = "Valeurs p ajust\u00E9es par stats::p.adjust(method = %s) sur %s.",
+  note_p_adjusted_coefficients = "m = %s coefficient(s) par mod\u00E8le",
+  note_p_adjusted_tests = "m = %d test(s)",
 
   # -- table_outcome(): the marginal row and the two disclosures ------------
   row_overall = "Ensemble",

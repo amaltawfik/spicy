@@ -103,6 +103,13 @@
 #'   default), the *p*-value is shown automatically whenever `by` is
 #'   supplied, and hidden otherwise. Pass `p_value = FALSE` to suppress
 #'   the column explicitly. Ignored when `by` is not used.
+#' @param p_adjust Multiple-comparison adjustment of the *p*-value
+#'   column, applied to the family of every test in the table (one
+#'   *p*-value per variable). One of `"none"` (default), `"holm"`,
+#'   `"hochberg"`, `"hommel"`, `"bonferroni"`, `"BH"` / `"fdr"`, or
+#'   `"BY"`, as in [table_regression()]; delegated to
+#'   [stats::p.adjust()]. Needs `by` and the *p*-value column. See
+#'   *Multiple-comparison adjustment*.
 #' @param statistic Logical. If `TRUE` and `by` is used, the test
 #'   statistic is shown in an additional column (e.g.,
 #'   `t(df) = ...`, `F(df1, df2) = ...`, `W = ...`, or `H(df) = ...`).
@@ -266,6 +273,7 @@
 #'   error.
 #'
 #' @inheritSection freq Declared missing values
+#' @inheritSection table_categorical Multiple-comparison adjustment
 #'
 #' @return Depends on `output`:
 #' \itemize{
@@ -741,6 +749,7 @@ table_continuous <- function(
   rescale = FALSE,
   test = c("welch", "student", "nonparametric"),
   p_value = NULL,
+  p_adjust = "none",
   statistic = FALSE,
   show_n = TRUE,
   show_columns = NULL,
@@ -925,6 +934,7 @@ table_continuous <- function(
     )
   }
 
+  .check_desc_p_adjust(p_adjust, has_group, p_value)
   p_value_explicit <- !is.null(p_value)
   if (!p_value_explicit) {
     p_value <- has_group
@@ -1681,6 +1691,13 @@ table_continuous <- function(
 
   rownames(result) <- NULL
 
+  # `p_adjust`: one test per variable, its p-value on the variable's
+  # first group row. Adjusted on the compute frame, before any route
+  # formats it.
+  adj <- .desc_apply_p_adjust(result, "p.value", result$variable, p_adjust)
+  result <- adj$df
+  p_adjust_info <- adj$info
+
   # --- attributes & class ---
   attr(result, "ci_level") <- ci_level
   attr(result, "digits") <- digits
@@ -1733,7 +1750,8 @@ table_continuous <- function(
     build_missing_note(),
     build_test_note(test_used, auto_rank, n_test_groups),
     build_column_glosses(tokens_union, result, ci_level, decimal_mark),
-    build_smd_note(do_smd, real_group_levels, decimal_mark)
+    build_smd_note(do_smd, real_group_levels, decimal_mark),
+    .desc_p_adjust_note(p_adjust_info)
   ))
 
   if (output %in% c("data.frame", "long")) {
@@ -1829,6 +1847,10 @@ table_continuous <- function(
     decimal_mark = decimal_mark,
     ci_level = ci_level,
     missing_group_label = missing_group_label
+  )
+  attr(result, "structured") <- .struct_attach_p_adjust(
+    attr(result, "structured"),
+    p_adjust_info
   )
   class(result) <- c("spicy_continuous_table", "spicy_table", class(result))
   # Return VISIBLY and let standard auto-print dispatch to

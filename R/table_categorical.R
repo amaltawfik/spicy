@@ -469,6 +469,12 @@
 #'   If `TRUE`, uses Monte Carlo simulation. Passed to `spicy::cross_tab()`.
 #' @param simulate_B Integer. Number of Monte Carlo replicates when
 #'   `simulate_p = TRUE`. Defaults to `2000`.
+#' @param p_adjust Multiple-comparison adjustment of the `p` column,
+#'   applied to the family of every test in the table (one p-value per
+#'   variable). One of `"none"` (default), `"holm"`, `"hochberg"`,
+#'   `"hommel"`, `"bonferroni"`, `"BH"` / `"fdr"`, or `"BY"`, as in
+#'   [table_regression()]; delegated to [stats::p.adjust()]. Needs
+#'   `by`. See *Multiple-comparison adjustment*.
 #' @param percent_digits Number of digits for percentages in report outputs.
 #'   Defaults to `1`.
 #' @param p_digits Integer >= 1. Number of decimal places used to
@@ -679,6 +685,31 @@
 #' fitted means) on continuous outcomes, see [table_continuous_lm()].
 #' For descriptive (empirical) comparisons on continuous outcomes, see
 #' [table_continuous()].
+#'
+#' # Multiple-comparison adjustment
+#'
+#' The p-values of a descriptive table describe: they test no
+#' prespecified hypothesis. STROBE (explanation of item 14) and the
+#' SAMPL guidelines advise against significance tests in descriptive and
+#' baseline tables, hence the default `p_adjust = "none"`.
+#'
+#' When a journal or a protocol asks for adjusted p-values anyway,
+#' `p_adjust` applies [stats::p.adjust()] to the family of every test in
+#' the table: one p-value per variable (one per block in
+#' [table_outcome()]), never the rows of one variable, which share one
+#' test. `"holm"` suits a confirmatory set of comparisons, `"BH"` a
+#' screening one; [table_regression()] lists the methods. A test that
+#' returned no p-value stays out of the family.
+#'
+#' The adjustment runs before any formatting, so the `p` column and its
+#' `<.001` threshold show the adjusted values, and the table note gives
+#' the method and the family size `m`. The raw p-values stay in the
+#' object: a `p_unadjusted` column next to the p-value column of the
+#' returned data frames, and `col_meta$p$p_unadjusted` (with the method
+#' in `p_adjust` and the family size in `p_adjust_m`) in
+#' [as_structured()]. Without `by`, or with `p_value = FALSE` where the
+#' function has that argument, the table shows no p-value to adjust,
+#' and a `p_adjust` other than `"none"` is an error.
 #'
 #' # Standardized mean difference
 #'
@@ -944,6 +975,7 @@ table_categorical <- function(
   correct = FALSE,
   simulate_p = FALSE,
   simulate_B = 2000,
+  p_adjust = "none",
   percent_digits = 1,
   p_digits = 3,
   v_digits = 2,
@@ -1015,6 +1047,7 @@ table_categorical <- function(
   if (has_group) {
     by_name <- resolve_single_column_selection(by_quo, data, "by")
   }
+  .check_desc_p_adjust(p_adjust, has_group)
   # Validated HERE rather than beside the other logicals below: the
   # refusal of a `by`-less `smd` reads it a few lines from now, and a
   # non-logical value must not reach `&&` first.
@@ -2913,6 +2946,27 @@ table_categorical <- function(
     rownames(long_raw) <- NULL
   }
 
+  # `p_adjust`: one test per variable, every row of a variable carrying
+  # it. Adjusted here, before the wide, display and typed frames read
+  # `p`; the sentence joins the statistics note, which every route
+  # prints. The raw p-values are keyed by the variable NAME for the
+  # typed view, whose `.variable` is the name, not the label.
+  adj <- .desc_apply_p_adjust(long_raw, "p", long_raw$variable, p_adjust)
+  long_raw <- adj$df
+  p_adjust_info <- adj$info
+  if (!is.null(p_adjust_info)) {
+    names(p_adjust_info$raw) <- select_names[
+      match(names(p_adjust_info$raw), labels)
+    ]
+    assoc_note_text <- paste(
+      c(
+        assoc_note_text[nzchar(assoc_note_text)],
+        .desc_p_adjust_note(p_adjust_info)
+      ),
+      collapse = " "
+    )
+  }
+
   if (output == "long") {
     out <- long_raw
     out$p_op <- NULL
@@ -2960,7 +3014,8 @@ table_categorical <- function(
       as.vector(rbind(.cat_key_n(group_levels), .cat_key_pct(group_levels))),
       "Chi2",
       "df",
-      .CAT_KEY_P
+      .CAT_KEY_P,
+      if (!is.null(p_adjust_info)) "p_unadjusted"
     )
     if (show_assoc) {
       cols <- c(cols, measure_col)
@@ -3002,6 +3057,9 @@ table_categorical <- function(
       r$Chi2 <- if (nrow(sv)) sv$chi2[1] else NA_real_
       r$df <- if (nrow(sv)) sv$df[1] else NA_real_
       r$p <- if (nrow(sv)) sv$p[1] else NA_real_
+      if (!is.null(p_adjust_info)) {
+        r$p_unadjusted <- if (nrow(sv)) sv$p_unadjusted[1] else NA_real_
+      }
       if (show_assoc) {
         r[[measure_col]] <- if (nrow(sv)) sv[[measure_col]][1] else NA_real_
       }
@@ -3225,6 +3283,7 @@ table_categorical <- function(
     assoc_ci = assoc_ci,
     show_smd = do_smd
   )
+  structured <- .struct_attach_p_adjust(structured, p_adjust_info)
 
   if (output == "default") {
     out <- wide_raw
@@ -3738,7 +3797,11 @@ table_categorical <- function(
     # The same title the five other engines print.
     tbl <- .spicy_gt_apa_title(tbl, .categorical_title(by_name))
 
-    return(.spicy_gt_attach_note(tbl, missing_note))
+    # Both halves of the note, as the five other routes print them.
+    return(.spicy_gt_attach_note(
+      tbl,
+      .categorical_note(missing_note, assoc_note_text)
+    ))
   }
 
   # ---------------- flextable / word ----------------

@@ -264,7 +264,9 @@ One limit worth knowing before you build a full balance table:
 `table_categorical()` has no `p_value` argument, so its *p* column
 cannot be switched off the way `table_continuous(p_value = FALSE)`
 switches off its own. A mixed balance table will show a categorical
-*p* beside a continuous column you removed.
+*p* beside a continuous column you removed. Its *p* column can be
+adjusted, though: `p_adjust = "holm"` (or `"BH"`) adjusts the tests of
+all the variables together, and the note says so.
 
 ## Weighted tables
 

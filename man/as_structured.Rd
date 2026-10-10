@@ -142,6 +142,11 @@ Cells the console builds from more than one number -- a
 keep their numeric anchor in \code{body} and their exact printed string
 in \verb{col_meta$<col>$display_cells}. \code{stars} is always \code{NULL}:
 descriptive tables carry no significance markers.
+
+Under \code{p_adjust}, the p-value column holds the adjusted values and its
+\code{col_meta} adds \code{p_adjust} (the method), \code{p_adjust_m} (the number of
+tests adjusted together) and \code{p_unadjusted} (the raw p-value of each
+cell, as long as \code{body}).
 }
 
 \section{Versioning}{

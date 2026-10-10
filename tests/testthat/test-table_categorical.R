@@ -3769,3 +3769,148 @@ test_that("the refusal states the reason the DATA gives, not a generic one", {
     class = "spicy_invalid_data"
   )
 })
+
+# ---- p_adjust ---------------------------------------------------------------
+
+test_that("p_adjust adjusts the one test of each variable, together", {
+  raw <- table_categorical(mtcars, c(cyl, gear, vs), by = am, output = "long")
+  raw_p <- raw$p[!duplicated(raw$variable)]
+  for (method in c("holm", "BH", "bonferroni")) {
+    adj <- table_categorical(
+      mtcars,
+      c(cyl, gear, vs),
+      by = am,
+      p_adjust = method,
+      output = "long"
+    )
+    expect_equal(
+      adj$p[!duplicated(adj$variable)],
+      stats::p.adjust(raw_p, method = method)
+    )
+    # Every row of a variable carries its variable's adjusted p-value.
+    expect_equal(
+      adj$p,
+      stats::p.adjust(raw_p, method = method)[match(
+        adj$variable,
+        unique(adj$variable)
+      )]
+    )
+    expect_identical(adj$p_unadjusted, raw$p)
+  }
+})
+
+test_that("p_adjust: the displayed p, the object and the note agree", {
+  raw <- table_categorical(mtcars, c(cyl, gear, vs), by = am)
+  tbl <- table_categorical(mtcars, c(cyl, gear, vs), by = am, p_adjust = "holm")
+  raw_p <- raw$p[!duplicated(raw$Variable)]
+  adj_p <- stats::p.adjust(raw_p, method = "holm")
+
+  # The display formats the adjusted value, "<.001" included.
+  shown <- attr(tbl, "display_df")$p
+  expect_identical(
+    shown[nzchar(trimws(shown))],
+    vapply(adj_p, format_p_value, character(1), decimal_mark = ".")
+  )
+  # The wide frame keeps the raw value beside the adjusted one.
+  expect_identical(tbl$p_unadjusted, raw$p)
+  expect_identical(names(tbl)[match("p", names(tbl)) + 1L], "p_unadjusted")
+
+  # The typed view: adjusted cells, raw values, method and family size.
+  # The family is every displayed test, and nothing else.
+  s <- as_structured(tbl)
+  meta <- s$col_meta$p
+  tested <- !is.na(s$body$p)
+  expect_equal(s$body$p[tested], adj_p)
+  expect_equal(meta$p_unadjusted[tested], raw_p)
+  expect_true(all(is.na(meta$p_unadjusted[!tested])))
+  expect_identical(meta$p_adjust, "holm")
+  expect_identical(meta$p_adjust_m, sum(tested))
+  expect_identical(meta$p_adjust_m, 3L)
+
+  expect_match(
+    attr(tbl, "assoc_note"),
+    'P-values adjusted via stats::p.adjust(method = "holm"); m = 3 test(s).',
+    fixed = TRUE
+  )
+})
+
+test_that("p_adjust finds the raw p-values of labelled variables", {
+  raw <- table_categorical(mtcars, c(cyl, gear), by = am)
+  tbl <- table_categorical(
+    mtcars,
+    c(cyl, gear),
+    by = am,
+    labels = c(cyl = "Cylinders", gear = "Gears"),
+    p_adjust = "holm"
+  )
+  s <- as_structured(tbl)
+  tested <- !is.na(s$body$p)
+  expect_identical(s$body$.variable[tested], c("cyl", "gear"))
+  expect_equal(
+    s$col_meta$p$p_unadjusted[tested],
+    raw$p[!duplicated(raw$Variable)]
+  )
+})
+
+test_that("p_adjust = \"none\" leaves the table as it was", {
+  a <- table_categorical(mtcars, c(cyl, gear), by = am)
+  b <- table_categorical(mtcars, c(cyl, gear), by = am, p_adjust = "none")
+  expect_identical(a, b)
+  expect_false("p_unadjusted" %in% names(a))
+  expect_null(as_structured(a)$col_meta$p$p_adjust)
+})
+
+test_that("p_adjust needs `by`, and validates its method", {
+  expect_error(
+    table_categorical(mtcars, c(cyl, gear), p_adjust = "holm"),
+    class = "spicy_invalid_input"
+  )
+  expect_error(
+    table_categorical(mtcars, c(cyl, gear), by = am, p_adjust = "tukey"),
+    class = "spicy_invalid_input"
+  )
+  # "none" without `by` is the default, not a request.
+  expect_no_error(table_categorical(mtcars, c(cyl, gear), p_adjust = "none"))
+})
+
+test_that("p_adjust: the note reaches the gt and flextable engines", {
+  skip_if_not_installed("gt")
+  skip_if_not_installed("flextable")
+  note <- 'P-values adjusted via stats::p.adjust(method = "BH"); m = 3 test(s).'
+  g <- table_categorical(
+    mtcars,
+    c(cyl, gear, vs),
+    by = am,
+    p_adjust = "BH",
+    output = "gt"
+  )
+  expect_match(attr(g, "spicy_note"), note, fixed = TRUE)
+  # The whole statistics note, as the other routes print it: before,
+  # the gt route dropped the measure note of a mixed table.
+  expect_match(attr(g, "spicy_note"), "Cramer's V: cyl, gear;", fixed = TRUE)
+  ft <- table_categorical(
+    mtcars,
+    c(cyl, gear, vs),
+    by = am,
+    p_adjust = "BH",
+    output = "flextable"
+  )
+  expect_match(ft$footer$dataset[[1L]], note, fixed = TRUE)
+})
+
+test_that("p_adjust under holm is pinned, in English and in French", {
+  withr::local_options(width = 100)
+  expect_snapshot(print(table_categorical(
+    mtcars,
+    c(cyl, gear, vs),
+    by = am,
+    p_adjust = "holm"
+  )))
+  withr::local_options(spicy.language = "fr")
+  expect_snapshot(print(table_categorical(
+    mtcars,
+    c(cyl, gear, vs),
+    by = am,
+    p_adjust = "holm"
+  )))
+})

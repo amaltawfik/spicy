@@ -4215,3 +4215,145 @@ test_that("a user's options(OutDec) never leaks into the frozen keys", {
   s <- as_structured(tbl)
   expect_true("97.5% CI LL" %in% names(s$col_meta))
 })
+
+# ---- p_adjust ---------------------------------------------------------------
+
+test_that("p_adjust adjusts the one test of each variable, together", {
+  raw <- table_continuous(mtcars, c(mpg, hp, qsec), by = am, output = "long")
+  raw_p <- raw$p.value[!is.na(raw$p.value)]
+  for (method in c("holm", "BH", "bonferroni")) {
+    adj <- table_continuous(
+      mtcars,
+      c(mpg, hp, qsec),
+      by = am,
+      p_adjust = method,
+      output = "long"
+    )
+    expect_equal(
+      adj$p.value[!is.na(adj$p.value)],
+      stats::p.adjust(raw_p, method = method)
+    )
+    expect_identical(adj$p_unadjusted, raw$p.value)
+    expect_identical(
+      names(adj)[match("p.value", names(adj)) + 1L],
+      "p_unadjusted"
+    )
+  }
+})
+
+test_that("p_adjust: the displayed p, the object and the note agree", {
+  raw <- table_continuous(mtcars, c(mpg, hp, qsec), by = am)
+  tbl <- table_continuous(
+    mtcars,
+    c(mpg, hp, qsec),
+    by = am,
+    p_adjust = "holm"
+  )
+  raw_p <- raw$p.value[!is.na(raw$p.value)]
+  adj_p <- stats::p.adjust(raw_p, method = "holm")
+
+  s <- as_structured(tbl)
+  meta <- s$col_meta$p
+  tested <- !is.na(s$body$p)
+  expect_equal(s$body$p[tested], adj_p)
+  expect_equal(meta$p_unadjusted[tested], raw_p)
+  expect_true(all(is.na(meta$p_unadjusted[!tested])))
+  expect_identical(meta$p_adjust, "holm")
+  expect_identical(meta$p_adjust_m, sum(tested))
+  expect_identical(meta$p_adjust_m, 3L)
+
+  expect_match(
+    attr(tbl, "missing_note"),
+    'P-values adjusted via stats::p.adjust(method = "holm"); m = 3 test(s).',
+    fixed = TRUE
+  )
+  out <- capture.output(print(tbl))
+  expect_true(any(grepl("m = 3 test(s).", out, fixed = TRUE)))
+})
+
+test_that("p_adjust leaves a test without a p-value out of the family", {
+  d <- data.frame(
+    g = rep(c("a", "b"), each = 4),
+    x = c(1, 2, 3, 4, 6, 7, 8, 9),
+    y = c(2, 1, 4, 3, 3, 5, 4, 6),
+    k = c(1, 1, 1, 1, 2, 2, 2, 2)
+  )
+  expect_warning(
+    raw <- table_continuous(d, c(x, y, k), by = g, output = "long"),
+    class = "spicy_warning"
+  )
+  expect_warning(
+    adj <- table_continuous(d, c(x, y, k), by = g, p_adjust = "holm"),
+    class = "spicy_warning"
+  )
+  raw_p <- raw$p.value[!is.na(raw$p.value)]
+  expect_length(raw_p, 2L)
+  expect_equal(
+    adj$p.value[!is.na(adj$p.value)],
+    stats::p.adjust(raw_p, method = "holm")
+  )
+  expect_identical(as_structured(adj)$col_meta$p$p_adjust_m, 2L)
+
+  # No test left: nothing was adjusted, and the note does not say it was.
+  expect_warning(
+    none <- table_continuous(d, k, by = g, p_adjust = "holm"),
+    class = "spicy_warning"
+  )
+  expect_identical(as_structured(none)$col_meta$p$p_adjust_m, 0L)
+  expect_false(grepl("p.adjust", attr(none, "missing_note") %||% ""))
+})
+
+test_that("p_adjust needs `by` and the p-value column", {
+  expect_error(
+    table_continuous(mtcars, c(mpg, hp), p_adjust = "holm"),
+    class = "spicy_invalid_input"
+  )
+  expect_error(
+    table_continuous(
+      mtcars,
+      c(mpg, hp),
+      by = am,
+      p_value = FALSE,
+      statistic = TRUE,
+      p_adjust = "holm"
+    ),
+    class = "spicy_invalid_input"
+  )
+  expect_error(
+    table_continuous(mtcars, c(mpg, hp), by = am, p_adjust = NA_character_),
+    class = "spicy_invalid_input"
+  )
+})
+
+test_that("p_adjust: the note reaches the tinytable engine", {
+  skip_if_not_installed("tinytable")
+  tt <- table_continuous(
+    mtcars,
+    c(mpg, hp),
+    by = am,
+    p_adjust = "bonferroni",
+    output = "tinytable"
+  )
+  expect_match(
+    paste(unlist(tt@notes), collapse = " "),
+    'P-values adjusted via stats::p.adjust(method = "bonferroni"); m = 2 test(s).',
+    fixed = TRUE
+  )
+})
+
+test_that("p_adjust under holm is pinned, in English and in French", {
+  withr::local_options(width = 100)
+  expect_snapshot(print(table_continuous(
+    mtcars,
+    c(mpg, hp, qsec),
+    by = am,
+    p_adjust = "holm"
+  )))
+  withr::local_options(spicy.language = "fr")
+  expect_snapshot(print(table_continuous(
+    mtcars,
+    c(mpg, hp, qsec),
+    by = am,
+    p_adjust = "holm"
+  )))
+})

@@ -114,6 +114,12 @@
 #                                   # "events/N" counts of the
 #                                   # `n_events` token. Any engine that
 #                                   # renders strings MUST prefer it.
+#         p_adjust = NULL | chr,    # descriptive, token "p" under
+#         p_adjust_m = NULL | int,  # `p_adjust`: the method, the number
+#         p_unadjusted = NULL | num # of tests adjusted together, and
+#                                   # the raw p of each cell (len
+#                                   # nrow(body)); the cells hold the
+#                                   # adjusted values.
 #       ),
 #       ...
 #     ),

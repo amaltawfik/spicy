@@ -732,3 +732,67 @@ test_that("output = 'data.frame' and output = 'long' return one object", {
   expect_true(".row_role" %in% names(as_df))
   expect_true(all(c("level", "summary") %in% as_df$.row_role))
 })
+
+# ---- p_adjust ---------------------------------------------------------------
+
+test_that("p_adjust adjusts the one test of each block, together", {
+  raw <- table_outcome(mtcars, mpg, select = c(am, vs, cyl), output = "long")
+  raw_p <- raw$p.value[!is.na(raw$p.value)]
+  expect_length(raw_p, 3L)
+  for (method in c("holm", "BH", "bonferroni")) {
+    adj <- table_outcome(
+      mtcars,
+      mpg,
+      select = c(am, vs, cyl),
+      p_adjust = method,
+      output = "long"
+    )
+    expect_equal(
+      adj$p.value[!is.na(adj$p.value)],
+      stats::p.adjust(raw_p, method = method)
+    )
+    expect_identical(adj$p_unadjusted, raw$p.value)
+  }
+})
+
+test_that("p_adjust: the typed view, the note and an engine agree", {
+  raw <- table_outcome(mtcars, mpg, select = c(am, vs, cyl), output = "long")
+  raw_p <- raw$p.value[!is.na(raw$p.value)]
+  tbl <- table_outcome(mtcars, mpg, select = c(am, vs, cyl), p_adjust = "BH")
+  s <- as_structured(tbl)
+  meta <- s$col_meta$p
+  tested <- !is.na(s$body$p)
+  expect_equal(s$body$p[tested], stats::p.adjust(raw_p, method = "BH"))
+  expect_equal(meta$p_unadjusted[tested], raw_p)
+  expect_identical(meta$p_adjust, "BH")
+  expect_identical(meta$p_adjust_m, 3L)
+  note <- 'P-values adjusted via stats::p.adjust(method = "BH"); m = 3 test(s).'
+  expect_match(attr(tbl, "note"), note, fixed = TRUE)
+
+  skip_if_not_installed("gt")
+  g <- table_outcome(
+    mtcars,
+    mpg,
+    select = c(am, vs, cyl),
+    p_adjust = "BH",
+    output = "gt"
+  )
+  expect_match(attr(g, "spicy_note"), note, fixed = TRUE)
+})
+
+test_that("p_adjust needs the p-value column", {
+  expect_error(
+    table_outcome(
+      mtcars,
+      mpg,
+      select = c(am, vs),
+      p_value = FALSE,
+      p_adjust = "holm"
+    ),
+    class = "spicy_invalid_input"
+  )
+  expect_error(
+    table_outcome(mtcars, mpg, select = c(am, vs), p_adjust = "Holm"),
+    class = "spicy_invalid_input"
+  )
+})

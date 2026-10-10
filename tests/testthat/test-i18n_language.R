@@ -633,3 +633,25 @@ test_that("a single overridden label is pinned", {
   )
   expect_snapshot(print(table_categorical(d, select = sex, by = arm)))
 })
+
+test_that("the p_adjust sentence of the regression follows the language", {
+  frame <- list(
+    coefs = data.frame(
+      term = c("(Intercept)", "x1", "x2"),
+      estimate_type = "B",
+      is_ref = FALSE,
+      p_value = 0.04
+    )
+  )
+  en <- spicy:::build_p_adjust_footer_block_from_frames(list(frame), "holm")
+  expect_identical(
+    en,
+    'P-values adjusted via stats::p.adjust(method = "holm"); m = 2 coefficient(s) per model.'
+  )
+  withr::local_options(spicy.language = "fr")
+  fr <- spicy:::build_p_adjust_footer_block_from_frames(list(frame), "holm")
+  expect_identical(
+    fr,
+    "Valeurs p ajustées par stats::p.adjust(method = \"holm\") sur m = 2 coefficient(s) par modèle."
+  )
+})

@@ -518,6 +518,16 @@
   note_group_comparison = "Group comparison: %s.",
   note_group_comparison_item = "%s (%s)",
 
+  # -- p_adjust: one sentence for every family that adjusts ------------------
+  # `table_regression()` and the descriptive tables share the sentence;
+  # only the family size differs: coefficients per model there, tests of
+  # the table here. Two holes: the quoted method (an API identifier,
+  # never translated), then the family-size fragment. The coefficient
+  # fragment takes a string ("3", or "(3, 4)" when the models differ).
+  note_p_adjusted = "P-values adjusted via stats::p.adjust(method = %s); %s.",
+  note_p_adjusted_coefficients = "m = %s coefficient(s) per model",
+  note_p_adjusted_tests = "m = %d test(s)",
+
   # -- table_outcome(): the marginal row and the two disclosures ------------
   # NOT `label_total` / `header_margin_total`, which both read "Total".
   # Two words for two things (decision 32bis): "Total" is the word of a

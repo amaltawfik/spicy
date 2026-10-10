@@ -261,6 +261,7 @@
 #' association, Rao-Scott corrected and referred to the design degrees
 #' of freedom.
 #'
+#' @inheritSection table_categorical Multiple-comparison adjustment
 #' @details
 #' # What the columns are
 #'
@@ -360,6 +361,13 @@
 #'   sign. Its percentages are still reported, the note says which
 #'   tests were withheld, and the call warns
 #'   (`spicy_negative_weights_no_test`).
+#' @param p_adjust Multiple-comparison adjustment of the p-value
+#'   column, applied to the family of every test in the table (one
+#'   design-based p-value per variable; a withheld test stays out). One
+#'   of `"none"` (default), `"holm"`, `"hochberg"`, `"hommel"`,
+#'   `"bonferroni"`, `"BH"` / `"fdr"`, or `"BY"`, as in
+#'   [table_regression()]; delegated to [stats::p.adjust()]. Needs `by`
+#'   and the p-value column. See *Multiple-comparison adjustment*.
 #' @param percent_digits,p_digits,decimal_mark Number formatting.
 #' @param align Numeric-cell alignment: `"decimal"`, `"center"` or
 #'   `"right"`.
@@ -424,6 +432,7 @@ table_categorical_svy <- function(
   deff = FALSE,
   df = NULL,
   p_value = NULL,
+  p_adjust = "none",
   percent_digits = 1,
   p_digits = 3,
   decimal_mark = ".",
@@ -542,6 +551,7 @@ table_categorical_svy <- function(
       }
     )
   }
+  .check_desc_p_adjust(p_adjust, has_group, p_value)
   p_value_explicit <- !is.null(p_value)
   if (!p_value_explicit) {
     p_value <- has_group
@@ -793,6 +803,17 @@ table_categorical_svy <- function(
   )
   rownames(result) <- NULL
 
+  # `p_adjust`: one design-based test per variable, its p-value on the
+  # variable's header row. Adjusted before any route formats it.
+  adj <- .desc_apply_p_adjust(
+    result,
+    .CAT_KEY_P,
+    ifelse(result$.row_role == "factor_header", result$variable, NA),
+    p_adjust
+  )
+  result <- adj$df
+  p_adjust_info <- adj$info
+
   test_refused <- .design_refusal_regime(n_test_refused, n_test_attempted)
   note <- .cat_svy_note(
     meta = meta,
@@ -811,6 +832,7 @@ table_categorical_svy <- function(
     n_negative_weights = .design_negative_weights(design),
     test_refused = test_refused
   )
+  note <- paste_note_parts(c(note, .desc_p_adjust_note(p_adjust_info)))
   .warn_negative_weights_no_test(test_refused)
 
   # `output = "data.frame"` and `output = "long"` return the SAME
@@ -877,9 +899,9 @@ table_categorical_svy <- function(
   }
 
   attr(result, "display_df") <- display_df
-  attr(result, "structured") <- .build_categorical_svy_structured(
-    result,
-    display_df
+  attr(result, "structured") <- .struct_attach_p_adjust(
+    .build_categorical_svy_structured(result, display_df),
+    p_adjust_info
   )
   result
 }

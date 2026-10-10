@@ -1428,3 +1428,64 @@ test_that("output = 'data.frame' and output = 'long' return one object", {
   expect_identical(as_df, as_long)
   expect_true(all(c("variable", "group", "mean") %in% names(as_df)))
 })
+
+# ---- p_adjust ---------------------------------------------------------------
+
+test_that("p_adjust adjusts the one design-based test of each variable", {
+  d <- .svyc_design()
+  raw <- table_continuous_svy(
+    d,
+    c(api00, api99, enroll),
+    by = sch.wide,
+    output = "long"
+  )
+  raw_p <- raw$p.value[!is.na(raw$p.value)]
+  expect_length(raw_p, 3L)
+  for (method in c("holm", "BH", "bonferroni")) {
+    adj <- table_continuous_svy(
+      d,
+      c(api00, api99, enroll),
+      by = sch.wide,
+      p_adjust = method,
+      output = "long"
+    )
+    expect_equal(
+      adj$p.value[!is.na(adj$p.value)],
+      stats::p.adjust(raw_p, method = method)
+    )
+    expect_identical(adj$p_unadjusted, raw$p.value)
+  }
+  tbl <- table_continuous_svy(
+    d,
+    c(api00, api99, enroll),
+    by = sch.wide,
+    p_adjust = "BH"
+  )
+  meta <- as_structured(tbl)$col_meta$p
+  expect_identical(meta$p_adjust, "BH")
+  expect_identical(meta$p_adjust_m, 3L)
+  expect_equal(meta$p_unadjusted[!is.na(meta$p_unadjusted)], raw_p)
+  expect_match(
+    attr(tbl, "missing_note"),
+    'P-values adjusted via stats::p.adjust(method = "BH"); m = 3 test(s).',
+    fixed = TRUE
+  )
+})
+
+test_that("p_adjust needs `by` and the p-value column", {
+  d <- .svyc_design()
+  expect_error(
+    table_continuous_svy(d, c(api00, api99), p_adjust = "holm"),
+    class = "spicy_invalid_input"
+  )
+  expect_error(
+    table_continuous_svy(
+      d,
+      c(api00, api99),
+      by = sch.wide,
+      p_value = FALSE,
+      p_adjust = "holm"
+    ),
+    class = "spicy_invalid_input"
+  )
+})

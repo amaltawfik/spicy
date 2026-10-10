@@ -2895,6 +2895,11 @@ output_word <- function(rendered, word_path, word_template = NULL) {
 #' in `col_meta$<col>$display_cells`. `stars` is always `NULL`:
 #' descriptive tables carry no significance markers.
 #'
+#' Under `p_adjust`, the p-value column holds the adjusted values and its
+#' `col_meta` adds `p_adjust` (the method), `p_adjust_m` (the number of
+#' tests adjusted together) and `p_unadjusted` (the raw p-value of each
+#' cell, as long as `body`).
+#'
 #' @section Versioning:
 #' `version` says which contract an object carries. Version `3` moved
 #' row identity out of index vectors and into the body itself:
