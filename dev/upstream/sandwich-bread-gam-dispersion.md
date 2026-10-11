@@ -6,7 +6,15 @@
   (BugReports) : Codeberg restreint les contenus produits par LLM (billet
   du 2026-07-23) ; le courriel le dit en une phrase de transparence.
 - **Envoyé** : 2026-10-10, par Amal depuis sa boîte, texte ci-dessous tel quel
-- **Statut** : envoyé, sans réponse
+- **Statut** : CORRIGÉ en version de développement (réponse d'Achim Zeileis
+  du 2026-10-12 : dispersion ajoutée à bread.gam(), codeberg
+  zeileis/sandwich issue #1 et PR #2). Même réponse : vcovCL() reconnaît
+  désormais glm(gaussian) et gam(gaussian) comme régressions linéaires et
+  prend HC1 par défaut au lieu de HC0 → nos oracles vcovCL(glm gaussien)
+  changeront à la prochaine version CRAN de sandwich. Il trouve les
+  résidus Gamma-log de mgcv « fishy » (somme non nulle) : cause connue,
+  voir mgcv-working-residuals.md ; réponse courte proposée à Amal.
+  À la sortie CRAN : retirer le test qui épingle le défaut.
 - **Côté spicy** : jusqu'à la 0.13.0, HC* et CR* d'un gam passaient par
   sandwich et héritaient du défaut (SE divisés par φ pour les familles à
   dispersion libre ; registre n°351-352). Depuis 6002f2d6 (2026-10-10,
