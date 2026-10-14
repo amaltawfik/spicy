@@ -404,7 +404,7 @@ table_regression(fit)
 #> Error in `validate_models_input()`:
 #> ! Some `models` are not supported by `table_regression()`.
 #> Position 1: `loess` – no `as_regression_frame()` method registered. If support would be useful, please open an issue: https://github.com/amaltawfik/spicy/issues
-#> ℹ Run `methods('as_regression_frame')` to see all currently supported model classes.
+#> ℹ Supported model classes: lm, glm, negbin, rlm, nls, lm_robust, iv_robust, ivreg, tobit, rq, fixest, lmerMod, glmerMod, glmmTMB, lme, gls, geeglm, polr, clm, clmm, multinom, mlogit, zeroinfl, hurdle, coxph, survreg, cph, flexsurvreg, svyglm, svyolr, svycoxph, gam, betareg, selection, ols, lrm, Glm, stanreg, brmsfit. `table_regression_models()` lists them with their engines.
 ```
 
 The same contract applies inside a family: a request a class cannot

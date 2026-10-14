@@ -220,6 +220,10 @@ PDF.
   was right. The extended families of `mgcv` other than `nb()`, whose
   score is not the GLM score, now refuse a robust `vcov`.
 
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  names the supported model classes when it refuses a model. It pointed
+  to an internal function.
+
 - The Excel files of
   [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md),
   [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
