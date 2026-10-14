@@ -16,6 +16,7 @@ est identique à HEAD (relue le 14.10.2026). Les numéros de ligne ont été rel
 | 5 | Ressources tinytable chargées depuis un CDN | pas un défaut de spicy |
 | 6 | La note « Missing values removed » nomme les variables par leur nom, pas par leur libellé | défaut : la note ne renvoie pas aux rangées |
 | 7 | Titres : nom de variable ici, libellé là | incohérence entre fonctions |
+| 8 | Nombre de classes de modèles : vignette (36), message d'erreur (sans `geeglm` ni `clmm`) et commentaire en retard sur le registre (39) | documentation et message en retard |
 
 ## 1. `table_continuous(ci = FALSE)` laisse une ligne d'en-tête vide
 
@@ -267,6 +268,47 @@ rangées est un choix plus large (termes d'interaction, contrastes) : à tranche
 séparément. Le titre « by … » des deux tableaux descriptifs est la correction la
 plus petite. Elle s'accorde avec le point 6, pour lequel la note doit aussi
 prendre le libellé.
+
+## 8. Nombre de classes de modèles : trois endroits en retard sur le registre
+
+### Symptôme
+
+Le registre `.supported_models_registry()` (`R/table_regression_models.R:21`),
+que renvoie `table_regression_models()`, compte 39 classes. Le README annonce ce
+chiffre (`README.md:22`, `60` et `513`) et la page « Packages R » du site le
+reprend. Trois endroits sont en retard :
+
+- `vignettes/articles/summary-tables-reporting.Rmd:72` annonce « 36 classes ».
+- Le message d'erreur pour une classe non prise en charge
+  (`R/regression_frame.R:412-420`) tient la liste à la main. Il oublie `geeglm`
+  (geepack) et `clmm` (ordinal).
+- Le commentaire de `R/regression_frame.R:40` parle de « ~30 classes ».
+
+La version CRAN 0.13.0 (tag `v0.13.0`) n'en compte que 38 : `clmm` est arrivé
+depuis (`NEWS.md:46`, section de développement). Le chiffre du README vaudra
+pour le CRAN à la prochaine version.
+
+Non concernés : `DESCRIPTION:12` et `R/spicy-package.R:9` disent « more than
+thirty model classes », ce qui reste vrai et n'a pas à suivre chaque ajout (à
+garder, ou à aligner sur le README : à décider). `NEWS.md:128` et `236` sont des
+entrées de versions publiées, à laisser telles quelles.
+
+### Correction la plus petite
+
+- Message d'erreur : construire la liste à partir de
+  `.supported_models_registry()` au lieu de la tenir à la main, pour qu'elle
+  suive le registre.
+- Vignette et `README.Rmd` : calculer le chiffre au tricotage,
+  `` `r nrow(table_regression_models())` ``, ou le retirer de la vignette (le
+  lien vers *Supported models* suffit).
+- Commentaire de `R/regression_frame.R:40` : retirer le chiffre.
+
+### Test
+
+Sur un objet de classe inconnue, par exemple `structure(list(), class = "foo")`,
+le message d'erreur de `table_regression()` cite chaque classe de
+`table_regression_models()`. Le test doit échouer avant la correction : il y
+manque `geeglm` et `clmm`.
 
 ## Après correction
 
