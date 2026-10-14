@@ -765,7 +765,9 @@
 #'
 #' # Internationalization
 #'
-#' Output is in English. Override user-facing strings via
+#' Output follows `options(spicy.language)` (see [spicy_labels()]); the
+#' column names of `as.data.frame()` and [as_structured()] stay English
+#' in every language. Override user-facing strings via
 #' `reference_label`, `model_labels`, `outcome_labels`, and
 #' `labels`. The title and footer are post-processable via
 #' `attr(result, "title")` and `attr(result, "note")`.
@@ -3511,7 +3513,9 @@ table_regression <- function(
   # posterior interval (the design promise in regression_frame_stan.R;
   # the hdi gate guarantees posterior_hdi is all-Bayesian): mixed
   # frequentist + Bayesian tables keep the shared "CI" label, with a
-  # per-model footer disclosure from the CI-method block.
+  # per-model footer disclosure from the CI-method block. The KEY travels:
+  # the renderer words the header in the language and the column name in
+  # English.
   frame_ci_methods <- vapply(
     frames,
     function(f) {
@@ -3519,18 +3523,18 @@ table_regression <- function(
     },
     character(1)
   )
-  ci_label_val <- if (
+  ci_label_key <- if (
     length(frames) > 0L &&
       all(frame_ci_methods == "posterior_quantile")
   ) {
-    spicy_str("header_ci_label_credible")
+    "header_ci_label_credible"
   } else if (
     length(frames) > 0L &&
       all(frame_ci_methods == "posterior_hdi")
   ) {
-    spicy_str("header_ci_label_hdi")
+    "header_ci_label_hdi"
   } else {
-    spicy_str("header_ci_label_confidence")
+    "header_ci_label_confidence"
   }
   rendered <- render_regression_table(
     aligned,
@@ -3542,7 +3546,7 @@ table_regression <- function(
     factor_layout = factor_layout,
     stars = stars,
     ci_level = ci_level,
-    ci_label = ci_label_val,
+    ci_label_key = ci_label_key,
     digits = digits,
     p_digits = p_digits,
     effect_size_digits = effect_size_digits,

@@ -100,6 +100,13 @@ workbook, or a PDF.
   typed. The footer of `reference_style = "footer"` is translated too
   ("Catégories de référence : ...").
 
+* `table_regression()` and `table_regression_uv()` write their headers in
+  French under `options(spicy.language = "fr")`: `ES`, `IC à 95 %` over
+  `LI` and `LS`, and `R² ajusté`. The column names stay `SE`, `95% CI`,
+  and `Adj. R²` in every language. `table_continuous()`,
+  `table_continuous_lm()`, `table_outcome()`, and the survey twins use
+  the same French headers.
+
 * `table_regression()` writes its `p_adjust` note in French under
   `options(spicy.language = "fr")`.
 

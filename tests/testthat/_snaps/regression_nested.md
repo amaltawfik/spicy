@@ -59,7 +59,7 @@
       
                                      Model 1                Model 2
                                ────────────────────  ─────────────────────
-       Variable              │   B      SE     p        B      SE     p
+       Variable              │   B      ES     p        B      ES     p
       ───────────────────────┼─────────────────────────────────────────────
        (Intercept)           │   1,03  0,15  <0,001    1,04   0,14  <0,001
        x1                    │   0,78  0,21  <0,001    0,82   0,21  <0,001
@@ -68,13 +68,13 @@
       ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
        n                     │ 200                   200
        R²                    │   0,13                  0,18
-       Adj. R²               │   0,13                  0,17
+       R² ajusté             │   0,13                  0,17
        ΔR²                   │    –                   +0,05
        F de Wald (variation) │    –                   +5,39
        p (variation)         │    –                    0,005
       
       Note. Modèles de régression linéaire.
-      Erreurs types : robustes à l'hétéroscédasticité (HC3).
+      Erreurs standards : robustes à l'hétéroscédasticité (HC3).
 
 ---
 
@@ -85,7 +85,7 @@
       
                                       Model 1              Model 2
                                 ───────────────────  ────────────────────
-       Variable               │   B      SE     p       B      SE     p
+       Variable               │   B      ES     p       B      ES     p
       ────────────────────────┼───────────────────────────────────────────
        (Intercept)            │  -0,05  0,14  0,753   -0,04   0,15  0,773
        x1                     │   0,34  0,15  0,019    0,38   0,15  0,011
@@ -100,5 +100,5 @@
        p (variation)          │    –                   0,070
       
       Note. Modèles de régression logistique.
-      Erreurs types : robustes à l'hétéroscédasticité (HC0).
+      Erreurs standards : robustes à l'hétéroscédasticité (HC0).
 

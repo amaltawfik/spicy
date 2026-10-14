@@ -67,7 +67,7 @@ render_regression_table <- function(
   factor_layout = c("grouped", "flat"),
   stars = FALSE,
   ci_level = 0.95,
-  ci_label = spicy_str("header_ci_label_confidence"),
+  ci_label_key = "header_ci_label_confidence",
   digits = 2L,
   p_digits = 3L,
   effect_size_digits = 2L,
@@ -220,7 +220,7 @@ render_regression_table <- function(
     model_ids,
     label_map,
     ci_level = ci_level,
-    ci_label = ci_label,
+    ci_label_key = ci_label_key,
     model_exp_headers = aligned$exp_headers_auto,
     model_stat_headers = aligned$stat_headers_auto,
     ame_categories = ame_cats_by_model,
@@ -492,7 +492,7 @@ render_regression_table <- function(
     label_map = label_map,
     col_spec = col_spec,
     labels = labels,
-    ci_label = ci_label,
+    ci_label = spicy_str(ci_label_key),
     model_outcomes = model_outcomes,
     model_outcome_labels = model_outcome_labels,
     stars_map = stars_map,
@@ -591,22 +591,43 @@ build_model_spanners <- function(body, col_spec, label_map) {
 # ---- Column spec ---------------------------------------------------------
 
 # For each requested token build a column descriptor:
-#   list(token, estimate_type, fields, header_short, header_with_model)
+#   list(col_name, display_label, token, model_id, estimate_type, fields,
+#        outcome_level)
 # `model_ids`     : vector of model IDs (long format keys)
 # `label_map`     : named character vector mapping model_id \u2192 label
-build_column_spec <- function(
+#
+# `col_name` is the column's programmatic name -- what `as.data.frame()`
+# publishes, the key of `col_meta`, the stem of the typed sub-columns
+# ("95% CI: LL") -- and is worded from the English registry in every
+# language. `display_label` is the header a reader sees and follows
+# `options(spicy.language)`. One builder, run twice with two resolvers
+# and nothing else different, so both runs list the same columns in the
+# same order. `.spicy_str_en()` keeps the user's `options(spicy.labels)`
+# live, so an English table is byte-identical.
+build_column_spec <- function(...) {
+  shown <- .column_spec_pass(..., lab = spicy_str, lab_fmt = spicy_fmt)
+  named <- .column_spec_pass(..., lab = .spicy_str_en, lab_fmt = .spicy_fmt_en)
+  for (i in seq_along(shown)) {
+    shown[[i]]$col_name <- named[[i]]$col_name
+  }
+  shown
+}
+
+.column_spec_pass <- function(
   show_columns,
   model_ids,
   label_map,
   ci_level = 0.95,
-  ci_label = spicy_str("header_ci_label_confidence"),
+  ci_label_key = "header_ci_label_confidence",
   model_exp_headers = NULL,
   model_stat_headers = NULL,
   ame_categories = NULL,
   models_with_n = NULL,
   models_with_r2 = NULL,
   estimand_horizons = NULL,
-  decimal_mark = "."
+  decimal_mark = ".",
+  lab,
+  lab_fmt
 ) {
   # NULL (direct/legacy callers): keep the "n" column for every model.
   if (is.null(models_with_n)) {
@@ -618,12 +639,9 @@ build_column_spec <- function(
   if (is.null(estimand_horizons)) {
     estimand_horizons <- list()
   }
-  # The coverage percentage follows `decimal_mark` (decision 27). In
-  # this family the interval header IS the column's programmatic name
-  # (`col_name` = deduplicated header text, and the structured
-  # sub-columns derive from it), so the whole composition moves
-  # together -- there is no frozen-key twin here, unlike the
-  # descriptive families.
+  # The coverage percentage follows `decimal_mark` (decision 27), in the
+  # header and in the column name alike ("97,5% CI"): the name takes its
+  # WORDS from English, its number from the table.
   ci_pct <- .ci_pct_display(ci_level, decimal_mark)
   if (is.null(model_exp_headers)) {
     model_exp_headers <- setNames(
@@ -637,7 +655,7 @@ build_column_spec <- function(
       model_ids
     )
   }
-  ci_hdr <- spicy_fmt("header_ci_spanner", ci_pct, ci_label)
+  ci_hdr <- lab_fmt("header_ci_spanner", ci_pct, lab(ci_label_key))
   base <- list(
     # B-coefficient family \u2013 atomic, one cell = one component.
     # Per-row N: the fit sample size, shown on the first row of a
@@ -647,7 +665,7 @@ build_column_spec <- function(
     n = list(
       estimate_type = "B",
       fields = "n_obs",
-      header_short = spicy_str("header_n_upper")
+      header_short = lab("header_n_upper")
     ),
     # Outcome event counts "events/N" per factor level (reference row
     # included), model totals on continuous rows. Binomial outcomes
@@ -655,17 +673,17 @@ build_column_spec <- function(
     n_events = list(
       estimate_type = "B",
       fields = c("events", "events_n"),
-      header_short = spicy_str("header_events_n")
+      header_short = lab("header_events_n")
     ),
     b = list(
       estimate_type = "B",
       fields = "estimate",
-      header_short = spicy_str("header_b")
+      header_short = lab("header_b")
     ),
     se = list(
       estimate_type = "B",
       fields = "se",
-      header_short = spicy_str("header_se")
+      header_short = lab("header_se")
     ),
     ci = list(
       estimate_type = "B",
@@ -675,48 +693,48 @@ build_column_spec <- function(
     t = list(
       estimate_type = "B",
       fields = "statistic",
-      header_short = spicy_str("symbol_t")
+      header_short = lab("symbol_t")
     ),
     p = list(
       estimate_type = "B",
       fields = "p_value",
-      header_short = spicy_str("header_p")
+      header_short = lab("header_p")
     ),
     # Probability of direction (Bayesian fits): share of posterior
     # draws on the dominant side of zero, range [0.5, 1].
     pd = list(
       estimate_type = "B",
       fields = "pd",
-      header_short = spicy_str("header_pd")
+      header_short = lab("header_pd")
     ),
     # Per-parameter sampler diagnostics (BARG steps 2.B / 2.C:
     # convergence and resolution for every parameter).
     rhat = list(
       estimate_type = "B",
       fields = "rhat",
-      header_short = spicy_str("header_rhat")
+      header_short = lab("header_rhat")
     ),
     ess_bulk = list(
       estimate_type = "B",
       fields = "ess_bulk",
-      header_short = spicy_str("header_ess_bulk")
+      header_short = lab("header_ess_bulk")
     ),
     ess_tail = list(
       estimate_type = "B",
       fields = "ess_tail",
-      header_short = spicy_str("header_ess_tail")
+      header_short = lab("header_ess_tail")
     ),
     # MCSE of the displayed posterior median (Bayesian Workflow
     # sec. 11.6: the criterion for how many digits are honest).
     mcse = list(
       estimate_type = "B",
       fields = "mcse",
-      header_short = spicy_str("header_mcse")
+      header_short = lab("header_mcse")
     ),
     beta = list(
       estimate_type = "beta",
       fields = "estimate",
-      header_short = spicy_str("symbol_beta")
+      header_short = lab("symbol_beta")
     ),
     # AME family \u2013 split (was bundled "value [CI]" in <= 0.11).
     # Convention: only the estimate column itself ("AME") carries the
@@ -744,15 +762,15 @@ build_column_spec <- function(
       estimate_type = "rmst",
       fields = "estimate",
       header_short = if (!is.null(estimand_horizons$tau)) {
-        spicy_fmt("header_rmst", .estimand_horizon_str(estimand_horizons$tau))
+        lab_fmt("header_rmst", .estimand_horizon_str(estimand_horizons$tau))
       } else {
-        spicy_str("header_rmst_no_horizon") # nocov
+        lab("header_rmst_no_horizon") # nocov
       }
     ),
     rmst_se = list(
       estimate_type = "rmst",
       fields = "se",
-      header_short = spicy_str("header_se")
+      header_short = lab("header_se")
     ),
     rmst_ci = list(
       estimate_type = "rmst",
@@ -762,24 +780,24 @@ build_column_spec <- function(
     rmst_p = list(
       estimate_type = "rmst",
       fields = "p_value",
-      header_short = spicy_str("header_p")
+      header_short = lab("header_p")
     ),
     risk_diff = list(
       estimate_type = "risk_diff",
       fields = "estimate",
       header_short = if (!is.null(estimand_horizons$at_time)) {
-        spicy_fmt(
+        lab_fmt(
           "header_risk_diff",
           .estimand_horizon_str(estimand_horizons$at_time)
         )
       } else {
-        spicy_str("header_risk_diff_no_horizon") # nocov
+        lab("header_risk_diff_no_horizon") # nocov
       }
     ),
     risk_diff_se = list(
       estimate_type = "risk_diff",
       fields = "se",
-      header_short = spicy_str("header_se")
+      header_short = lab("header_se")
     ),
     risk_diff_ci = list(
       estimate_type = "risk_diff",
@@ -789,17 +807,17 @@ build_column_spec <- function(
     risk_diff_p = list(
       estimate_type = "risk_diff",
       fields = "p_value",
-      header_short = spicy_str("header_p")
+      header_short = lab("header_p")
     ),
     ame = list(
       estimate_type = "ame",
       fields = "estimate",
-      header_short = spicy_str("header_ame")
+      header_short = lab("header_ame")
     ),
     ame_se = list(
       estimate_type = "ame",
       fields = "se",
-      header_short = spicy_str("header_se")
+      header_short = lab("header_se")
     ),
     ame_ci = list(
       estimate_type = "ame",
@@ -809,63 +827,64 @@ build_column_spec <- function(
     ame_p = list(
       estimate_type = "ame",
       fields = "p_value",
-      header_short = spicy_str("header_p")
+      header_short = lab("header_p")
     ),
     # Model-level variance explained, per fit. Populated by the
     # univariable screen (one fit per predictor block), where the
     # question "how much of the outcome does this predictor explain on
     # its own" has one answer per block; dropped for models whose R^2
-    # is a single model-level number (fit-statistics rows instead).
+    # is a single model-level number (fit-statistics rows instead). The
+    # keys are the ones `fit_stat_label()` reads for those rows.
     r2 = list(
       estimate_type = "B",
       fields = "r2",
-      header_short = fit_stat_label("r2")
+      header_short = lab("symbol_r2")
     ),
     adj_r2 = list(
       estimate_type = "B",
       fields = "adj_r2",
-      header_short = fit_stat_label("adj_r2")
+      header_short = lab("fitstat_adj_r2")
     ),
     # Partial-variance-explained \u2013 split (was bundled too).
     partial_f2 = list(
       estimate_type = "partial_f2",
       fields = "estimate",
-      header_short = spicy_str("symbol_f2_partial")
+      header_short = lab("symbol_f2_partial")
     ),
     partial_f2_ci = list(
       estimate_type = "partial_f2",
       fields = c("ci_low", "ci_high"),
-      header_short = spicy_fmt(
+      header_short = lab_fmt(
         "header_with_ci_suffix",
-        spicy_str("symbol_f2_partial"),
+        lab("symbol_f2_partial"),
         ci_hdr
       )
     ),
     partial_eta2 = list(
       estimate_type = "partial_eta2",
       fields = "estimate",
-      header_short = spicy_str("symbol_eta_sq_partial")
+      header_short = lab("symbol_eta_sq_partial")
     ),
     partial_eta2_ci = list(
       estimate_type = "partial_eta2",
       fields = c("ci_low", "ci_high"),
-      header_short = spicy_fmt(
+      header_short = lab_fmt(
         "header_with_ci_suffix",
-        spicy_str("symbol_eta_sq_partial"),
+        lab("symbol_eta_sq_partial"),
         ci_hdr
       )
     ),
     partial_omega2 = list(
       estimate_type = "partial_omega2",
       fields = "estimate",
-      header_short = spicy_str("symbol_omega_sq_partial")
+      header_short = lab("symbol_omega_sq_partial")
     ),
     partial_omega2_ci = list(
       estimate_type = "partial_omega2",
       fields = c("ci_low", "ci_high"),
-      header_short = spicy_fmt(
+      header_short = lab_fmt(
         "header_with_ci_suffix",
-        spicy_str("symbol_omega_sq_partial"),
+        lab("symbol_omega_sq_partial"),
         ci_hdr
       )
     ),
@@ -874,7 +893,7 @@ build_column_spec <- function(
     partial_chi2 = list(
       estimate_type = "partial_chi2",
       fields = c("estimate", "df"),
-      header_short = spicy_str("symbol_chi_sq")
+      header_short = lab("symbol_chi_sq")
     )
   )
 
@@ -930,7 +949,7 @@ build_column_spec <- function(
       col_variants <- if (length(cats) > 0L) {
         lapply(cats, function(ct) {
           list(
-            hs = spicy_fmt("header_ame_by_category", header_short, ct),
+            hs = lab_fmt("header_ame_by_category", header_short, ct),
             outcome_level = ct
           )
         })
@@ -940,7 +959,7 @@ build_column_spec <- function(
 
       for (cv in col_variants) {
         header <- if (nzchar(m_lbl)) {
-          spicy_fmt("header_model_prefixed", m_lbl, cv$hs)
+          lab_fmt("header_model_prefixed", m_lbl, cv$hs)
         } else {
           cv$hs
         }

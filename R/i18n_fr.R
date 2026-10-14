@@ -29,18 +29,20 @@
 #     the typographic markers (<NA>, the significance stars, the en dash of an
 #     undefined cell) and the templates that are pure punctuation ("%s (%s)").
 #     Notation is international; a glyph is not a word;
-#   * the column names of `table_regression()`. In that family alone the
-#     header IS the column's programmatic name (regression_render.R, the
-#     comment above `.regression_column_spec()`): "B", "SE", "p", "95% CI",
-#     "OR" and their siblings are what `as.data.frame()` publishes and what
-#     user code indexes into, so translating them would move the contract
-#     under the reader's feet. The descriptive families all carry a frozen
-#     twin (.CAT_KEY_*, .CON_KEY_*, .LM_KEY_*) and translate freely.
-#     `fitstat_adj_r2` is in this group -- it is a fit-statistic ROW label in
-#     one table and a COLUMN header in the univariable screen. So are the
-#     interval word ("CI") and its two bounds ("LL" / "UL"): the spanner
-#     they sit under is a regression column name, and a half-translated
-#     "95% CI BI" reads worse than the international form.
+#   * the regression headers a reader of any language reads as written:
+#     "B", "p", "AME", "OR", "HR" and their siblings. They are absent for
+#     that reason, not because they name columns. The programmatic names
+#     stay English in every language: `build_column_spec()`
+#     (regression_render.R) takes a column's NAME from the English
+#     registry and its HEADER from the language, so `as.data.frame()` and
+#     `as_structured()` (its sub-columns too, "95% CI: LL") keep "SE",
+#     "95% CI" and "Adj. R2" while a French reader sees "ES", "IC a 95 %"
+#     over "LI" / "LS", and "R2 ajuste". The descriptive families split the
+#     two the same way through their frozen keys (.CAT_KEY_*, .CON_KEY_*,
+#     .LM_KEY_*). One boundary: an exponentiated header ("OR", "HR", ...)
+#     and the t / z glyph are resolved in the model frame and reach the
+#     column name as text, so translating one would first need the frame
+#     to carry its key.
 #
 # TYPOGRAPHY. French sets a no-break space before ':' and ';'. It is written
 # \u00A0, never as a literal: R/ is pure ASCII (the sentinel tools/
@@ -49,7 +51,8 @@
 #
 # HOLES. `spicy_fmt()` is untouched, so a template keeps the English hole
 # ORDER unless the grammar forces otherwise -- in which case it uses the
-# positional form (`%1$s`), as `note_gloss_med_ci` and `note_gloss_smd` do.
+# positional form (`%1$s`), as `header_ci_spanner`, `note_gloss_med_ci` and
+# `note_gloss_smd` do.
 #
 # This file is authored, not generated at build time. The fourteen
 # terminology calls are settled (decision 38); the set as a whole is still
@@ -107,6 +110,10 @@
 
   # -- table_categorical(): column headers ----------------------------------
   header_effect_size = "Taille d'effet",
+  # "TE" (taille d'effet): "ES" is the French standard error since the
+  # regression headers follow the language, so the effect size takes the
+  # French abbreviation of its own long header above.
+  header_effect_size_short = "TE",
   header_ci_lower = "IC inf\u00E9rieur",
   header_ci_upper = "IC sup\u00E9rieur",
 
@@ -130,7 +137,18 @@
   note_min_expected = " Effectif th\u00E9orique minimum = %s",
   note_expected_advice = ". Envisagez %s ou d\u00E9finissez-le globalement via %s.",
 
+  # -- standard-error and interval headers, shared by several families -----
+  # Display only: a regression column keeps its English name, a
+  # descriptive one its frozen key (see the policy above). The spanner
+  # puts the interval word first: "IC a 95 %".
+  header_se = "ES",
+  header_ci_label_confidence = "IC",
+  header_ci_spanner = "%2$s \u00E0 %1$s\u00A0%%",
+  header_ci_ll = "LI",
+  header_ci_ul = "LS",
+
   # -- table_regression(): fit-statistic row labels -------------------------
+  fitstat_adj_r2 = "R\u00B2 ajust\u00E9",
   fitstat_n_events = "N \u00E9v\u00E9nements",
   label_weighted_n = "n pond\u00E9r\u00E9",
   label_r2_within = "intra",
@@ -180,8 +198,8 @@
   # -- table_regression(): the absolute survival estimands ------------------
   note_estimand_rmst = "dRMST = diff\u00E9rence de temps de survie moyen restreint sur [0, %s]",
   note_estimand_risk_diff = "dRisk = diff\u00E9rence d'incidence cumul\u00E9e \u00E0 %s",
-  note_estimand_method = "\u00A0; ajust\u00E9e par g-computation \u00E0 partir du mod\u00E8le ajust\u00E9, erreurs types par bootstrap non param\u00E9trique (%s r\u00E9plications).",
-  note_estimand_method_stratified = "\u00A0; ajust\u00E9e par g-computation \u00E0 partir du mod\u00E8le ajust\u00E9 (lignes de base intra-strate), erreurs types par bootstrap non param\u00E9trique (%s r\u00E9plications).",
+  note_estimand_method = "\u00A0; ajust\u00E9e par g-computation \u00E0 partir du mod\u00E8le ajust\u00E9, erreurs standards par bootstrap non param\u00E9trique (%s r\u00E9plications).",
+  note_estimand_method_stratified = "\u00A0; ajust\u00E9e par g-computation \u00E0 partir du mod\u00E8le ajust\u00E9 (lignes de base intra-strate), erreurs standards par bootstrap non param\u00E9trique (%s r\u00E9plications).",
   note_estimand_skipped_terms = " Les termes transform\u00E9s (%s) n'ont pas de ligne d'effet absolu\u00A0: le contraste est d\u00E9fini par variable brute\u00A0; remettez la variable \u00E0 l'\u00E9chelle dans les donn\u00E9es plut\u00F4t que dans la formule.",
 
   # -- table_regression(): abbreviation glosses -----------------------------
@@ -196,7 +214,7 @@
   note_abbrev_omega2 = "\u03C9\u00B2 = om\u00E9ga-carr\u00E9 partiel corrig\u00E9 du biais",
   note_abbrev_chi2 = "\u03C7\u00B2 = khi-deux partiel du rapport de vraisemblance",
   note_abbrev_pd = "pd = probabilit\u00E9 de direction (part de la distribution a posteriori du c\u00F4t\u00E9 dominant de z\u00E9ro\u00A0; Makowski et al. 2019)",
-  note_abbrev_mcse = "MCSE = erreur type de Monte-Carlo de la m\u00E9diane a posteriori (Vehtari et al. 2021)",
+  note_abbrev_mcse = "MCSE = erreur standard de Monte-Carlo de la m\u00E9diane a posteriori (Vehtari et al. 2021)",
   note_abbrev_ame = "AME = effet marginal moyen",
   note_abbrev_ame_percat = "AME = effet marginal moyen sur la probabilit\u00E9 d'une cat\u00E9gorie de r\u00E9ponse",
   note_assoc_measure_item = "%s\u00A0: %s",
@@ -257,7 +275,7 @@
   note_negative_weights_no_test_some = "Pour les variables dont les cas complets comprennent des lignes \u00E0 poids n\u00E9gatif, la comparaison des groupes n'est pas rapport\u00E9e\u00A0: un test fond\u00E9 sur le plan de sondage n'est pas d\u00E9fini lorsque les poids changent de signe.",
   note_deff_replace = "Les effets de plan sont calcul\u00E9s par rapport \u00E0 un tirage AVEC remise (la correction pour population finie est ignor\u00E9e).",
   note_gloss_deff = "%s = effet de plan (variance fond\u00E9e sur le plan / variance d'un \u00E9chantillon al\u00E9atoire simple de m\u00EAme n).",
-  note_gloss_se = "%s = erreur type de la moyenne fond\u00E9e sur le plan de sondage.",
+  note_gloss_se = "%s = erreur standard de la moyenne fond\u00E9e sur le plan de sondage.",
   test_design_t = "test t fond\u00E9 sur le plan de sondage",
   test_design_wald = "test de Wald fond\u00E9 sur le plan de sondage",
   test_design_wilcoxon = "test de Wilcoxon-Mann-Whitney fond\u00E9 sur le plan de sondage",
@@ -275,8 +293,8 @@
   note_adjusted_for = "Ajust\u00E9 pour %s (%s).",
   note_adjustment_proportional = "proportionnel",
   note_adjustment_balanced = "\u00E9quilibr\u00E9",
-  note_std_errors_single = "Erreurs types\u00A0: %s.",
-  note_std_errors_multi = "Erreurs types\u00A0:\n%s",
+  note_std_errors_single = "Erreurs standards\u00A0: %s.",
+  note_std_errors_multi = "Erreurs standards\u00A0:\n%s",
   note_model_line = "%s\u00A0: %s",
   note_model_line_indented = "  %s\u00A0: %s",
   note_vcov_classical_glm = "classiques (information de Fisher)",
@@ -294,11 +312,11 @@
   note_vcov_jackknife = "jackknife (suppression d'une observation)",
   note_vcov_jackknife_cluster = "jackknife (suppression d'une grappe), grappes d\u00E9finies par %s",
   note_vcov_wald_asymptotic = "Wald asymptotique (z)",
-  note_vcov_design_taylor = "Fond\u00E9es sur le plan de sondage (lin\u00E9arisation de Taylor)",
-  note_vcov_design_replicate = "Fond\u00E9es sur le plan de sondage (poids r\u00E9pliqu\u00E9s, %s)",
-  note_vcov_design_replicate_bare = "Fond\u00E9es sur le plan de sondage (poids r\u00E9pliqu\u00E9s)",
-  note_vcov_design_twophase = "Fond\u00E9es sur le plan de sondage (plan \u00E0 deux phases)",
-  note_vcov_design_bare = "Fond\u00E9es sur le plan de sondage",
+  note_vcov_design_taylor = "fond\u00E9es sur le plan de sondage (lin\u00E9arisation de Taylor)",
+  note_vcov_design_replicate = "fond\u00E9es sur le plan de sondage (poids r\u00E9pliqu\u00E9s, %s)",
+  note_vcov_design_replicate_bare = "fond\u00E9es sur le plan de sondage (poids r\u00E9pliqu\u00E9s)",
+  note_vcov_design_twophase = "fond\u00E9es sur le plan de sondage (plan \u00E0 deux phases)",
+  note_vcov_design_bare = "fond\u00E9es sur le plan de sondage",
   note_vcov_cluster_by = ", grappes d\u00E9finies par %s",
   note_ci_profile = "IC \u00E0 %s\u00A0%%\u00A0: vraisemblance profil\u00E9e.",
   note_ci_bootstrap_percentile = "IC \u00E0 %s\u00A0%%\u00A0: bootstrap percentile.",

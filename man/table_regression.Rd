@@ -1568,7 +1568,9 @@ extract them automatically.
 }
 
 \section{Internationalization}{
-Output is in English. Override user-facing strings via
+Output follows \code{options(spicy.language)} (see \code{\link[=spicy_labels]{spicy_labels()}}); the
+column names of \code{as.data.frame()} and \code{\link[=as_structured]{as_structured()}} stay English
+in every language. Override user-facing strings via
 \code{reference_label}, \code{model_labels}, \code{outcome_labels}, and
 \code{labels}. The title and footer are post-processable via
 \code{attr(result, "title")} and \code{attr(result, "note")}.

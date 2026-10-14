@@ -149,8 +149,16 @@ test_that("the labels a recogniser alternates over stay distinct in every langua
   # Both are sound as long as the labels they alternate over are
   # distinct: two keys that collapse to one string in a translation make
   # one of them unreachable, with no condition raised.
+  # `header_effect_size_short` is not one of them: it heads a column of
+  # `table_continuous()`, which shows no standard error and never reaches
+  # the recogniser (and its French "TE" is distinct from "ES" anyway).
   distinct <- list(
-    companion = c("header_se", "header_p", "header_effect_size_short"),
+    companion = c(
+      "header_se",
+      "header_p",
+      "header_ci_label_confidence",
+      "header_ci_label_credible"
+    ),
     exp = c(
       "header_exp_or",
       "header_exp_irr",
@@ -372,6 +380,75 @@ test_that("a translation moves no public column name", {
   expect_identical(frames(), en)
 })
 
+test_that("a regression table translates its headers, not its column names", {
+  skip_if_not_installed("tinytable")
+  fit <- stats::lm(wellbeing_score ~ age + sex, data = sochealth)
+  uv <- function() {
+    table_regression_uv(
+      sochealth,
+      outcome = wellbeing_score,
+      predictors = c(age, bmi),
+      method = "lm",
+      show_columns = c("n", "b", "ci", "p", "adj_r2")
+    )
+  }
+  en <- table_regression(fit)
+  en_uv <- uv()
+  withr::local_options(spicy.language = "fr", width = 120)
+  fr <- table_regression(fit)
+  s <- as_structured(fr)
+  ic <- "IC \u00E0 95\u00A0%"
+
+  expect_identical(names(as.data.frame(fr)), names(as.data.frame(en)))
+  expect_identical(names(s$body), names(as_structured(en)$body))
+  expect_identical(names(s$col_meta), names(as_structured(en)$col_meta))
+  expect_identical(
+    unname(vapply(s$col_meta, `[[`, character(1), "display_label")),
+    c("B", "ES", ic, ic, "p")
+  )
+  expect_identical(vapply(s$ci_pairs, `[[`, character(1), "label"), ic)
+
+  # The console prints an interval in one cell; the engines that split it
+  # name the bounds.
+  console <- paste(capture.output(print(fr)), collapse = "\n")
+  clip <- clipboard_payload(fr, "\t")
+  md <- tinytable::save_tt(
+    table_regression(fit, output = "tinytable"),
+    output = "markdown"
+  )
+  for (txt in c("ES", ic, "R\u00B2 ajust\u00E9")) {
+    expect_true(grepl(txt, console, fixed = TRUE), info = txt)
+  }
+  expect_true(grepl("\tLI\tLS\t", clip, fixed = TRUE))
+  for (txt in c("ES", ic, "LI", "LS")) {
+    expect_true(grepl(txt, md, fixed = TRUE), info = txt)
+  }
+  for (txt in c("SE", "95% CI", "LL", "UL", "Adj. R")) {
+    expect_false(grepl(txt, console, fixed = TRUE), info = txt)
+    expect_false(grepl(txt, clip, fixed = TRUE), info = txt)
+    expect_false(grepl(txt, md, fixed = TRUE), info = txt)
+  }
+
+  # The univariable screen, where the adjusted R2 is a column.
+  fr_uv <- uv()
+  expect_identical(names(as.data.frame(fr_uv)), names(as.data.frame(en_uv)))
+  expect_identical(
+    as_structured(fr_uv)$col_meta[["Univariable: Adj. R\u00B2"]]$display_label,
+    "R\u00B2 ajust\u00E9"
+  )
+})
+
+test_that("a descriptive interval names its bounds in the language", {
+  en <- table_continuous(sochealth, select = bmi, by = sex, ci = TRUE)
+  withr::local_options(spicy.language = "fr", width = 160)
+  fr <- table_continuous(sochealth, select = bmi, by = sex, ci = TRUE)
+  expect_identical(names(as.data.frame(fr)), names(as.data.frame(en)))
+  out <- paste(capture.output(print(fr)), collapse = "\n")
+  expect_true(grepl("IC \u00E0 95\u00A0% LI", out, fixed = TRUE))
+  expect_true(grepl("IC \u00E0 95\u00A0% LS", out, fixed = TRUE))
+  expect_false(grepl("95% CI", out, fixed = TRUE))
+})
+
 test_that("a data level keeps its own spelling in a column name", {
   # The task the frozen-key doctrine exists for: `by` levels are DATA.
   # A level named "Yes" gives the column "Yes %" in every language --
@@ -405,18 +482,12 @@ test_that("the frozen tokens and glyphs do not translate", {
     header_variable = "Variable",
     header_p = "p",
     header_b = "B",
-    header_se = "SE",
     header_n_lower = "n",
-    header_ci_label_confidence = "CI",
-    header_ci_ll = "LL",
-    header_ci_ul = "UL",
-    header_ci_spanner = "%s%% %s",
     header_exp_or = "OR",
     header_exp_hr = "HR",
     label_total = "Total",
     header_margin_total = "Total",
     label_model_name = "Model %d",
-    fitstat_adj_r2 = "Adj. R\u00B2",
     note_prefix = "Note. ",
     note_prefix_emphasis = "Note."
   )
