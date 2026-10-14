@@ -246,7 +246,7 @@ test_that("the descriptive families carry their title as an HTML caption", {
       by = "sex",
       output = "flextable"
     ))),
-    "Categorical table by sex"
+    "Categorical table by Sex"
   )
   expect_identical(
     .pf_caption(.pf_html(table_continuous(

@@ -1592,6 +1592,11 @@ table_continuous_lm <- function(
       na_dropped[[.nm]] <- .nd
     }
   }
+  # An outcome is named as its row names it; a covariate keeps its name,
+  # as in the "Adjusted for" line.
+  label_of <- stats::setNames(outcome_labels, numeric_outcomes)
+  na_dropped <- .label_counts(na_dropped, label_of)
+  user_na_dropped <- .label_counts(user_na_dropped, label_of)
   missing_parts <- character(0)
   if (length(na_dropped)) {
     missing_parts <- c(
@@ -1627,7 +1632,7 @@ table_continuous_lm <- function(
   if (n_na_by > 0L) {
     missing_parts <- c(
       missing_parts,
-      spicy_fmt("note_rows_missing_by_removed", by_name, n_na_by)
+      spicy_fmt("note_rows_missing_by_removed", by_label, n_na_by)
     )
   }
   if (!is.null(weights_vec)) {

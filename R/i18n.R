@@ -136,7 +136,7 @@
   stat_lambda = "Lambda",
 
   # -- cross_tab() statistics note ------------------------------------------
-  note_p_prefix_lt = "p %s",
+  note_p_prefix_lt = "p < %s",
   note_p_prefix_eq = "p = %s",
   test_chisq = "Chi-2(%s) = %s, %s",
   note_chisq_simulated = " (simulated)",
@@ -293,6 +293,9 @@
   # `%` inside either is safe: both arrive as sprintf arguments.
   label_ref_annotation = "%s [ref: %s]",
   label_vs_annotation = "%s [vs %s]",
+  # The default `reference_label` of `table_regression()`, the suffix of
+  # the reference row in `reference_style = "row"`.
+  label_ref = "(ref.)",
   # The two cells of the fixed-effects disclosure block (the etable /
   # esttab standard). Only the CAPTION is here: the token the two bodies
   # exchange is `.REG_FE_YES` / `.REG_FE_NO`, frozen, because the typed

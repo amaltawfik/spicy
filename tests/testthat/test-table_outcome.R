@@ -421,7 +421,11 @@ test_that("the note discloses the comparison, the missing and the shape", {
   note <- attr(tbl, "note")
   # The outcome's own missing values, once, globally -- this is the
   # sentence that reconciles the Overall count with the raw data.
-  expect_match(note, "Missing values removed: bmi (12).", fixed = TRUE)
+  expect_match(
+    note,
+    "Missing values removed: Body mass index (12).",
+    fixed = TRUE
+  )
   # Two blocks, two different tests: the note names both.
   expect_match(note, "Welch one-way ANOVA (region)", fixed = TRUE)
   expect_match(note, "Welch t-test (sex)", fixed = TRUE)
@@ -434,7 +438,10 @@ test_that("the disclosures follow the arguments that cause them", {
   d <- .to_sh()
   # `drop_na = TRUE`: one sentence per `select` variable that lost rows.
   tbl <- .to_quiet(table_outcome(d, bmi, select = smoking, drop_na = TRUE))
-  expect_match(attr(tbl, "note"), "Rows with missing smoking removed: 25.")
+  expect_match(
+    attr(tbl, "note"),
+    "Rows with missing Current smoker removed: 25."
+  )
   # `overall = FALSE`: no sentence about a row that is not there.
   tbl2 <- .to_quiet(table_outcome(d, bmi, select = sex, overall = FALSE))
   expect_false(grepl("whole analytic sample", attr(tbl2, "note"), fixed = TRUE))

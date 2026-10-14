@@ -25,7 +25,7 @@ table_regression(
   intercept_position = c("first", "last"),
   factor_layout = c("grouped", "flat"),
   reference_style = c("row", "annotation", "footer", "none"),
-  reference_label = "(ref.)",
+  reference_label = NULL,
   show_fit_stats = NULL,
   fit_stats_layout = c("first_col", "merged"),
   show_re = TRUE,
@@ -387,9 +387,11 @@ the reader sees the AME baseline explicitly, with the same
 first AME row, not to the polynomial-trend rows.}
 
 \item{reference_label}{Suffix shown after the reference level in
-\code{reference_style = "row"} mode. Default \code{"(ref.)"}. Ignored
-by the other three modes (which use structural English
-wording -- "ref:", "vs", "Reference categories:").}
+\code{reference_style = "row"} mode. \code{NULL} (default) prints \code{"(ref.)"},
+translated under \code{options(spicy.language = )}; a string you supply
+is printed as typed. Ignored by the other three modes (which use
+structural English wording -- "ref:", "vs", "Reference
+categories:").}
 
 \item{show_fit_stats}{Character vector of tokens for the
 model-level rows below the coefficients; row order follows

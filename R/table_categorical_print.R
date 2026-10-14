@@ -122,7 +122,7 @@ print.spicy_categorical_table <- function(x, ...) {
     padding <- 0L
   }
 
-  title <- .categorical_title(group_var)
+  title <- .categorical_title(attr(x, "group_label") %||% group_var)
 
   spicy_print_table(
     display_df,
@@ -143,7 +143,7 @@ print.spicy_categorical_table <- function(x, ...) {
 
 # ---- Table title ----------------------------------------------------------
 
-# Internal: the title of a categorical summary table, from the name of
+# Internal: the title of a categorical summary table, from the label of
 # the grouping variable (`NULL` = one-way). Single source for the
 # console header and the caption every rendering engine sets, so the
 # two can never drift apart.

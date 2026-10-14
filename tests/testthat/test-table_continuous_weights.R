@@ -307,8 +307,9 @@ test_that("Weighted n right-aligns with n, as table_continuous_lm does", {
     }
     sub('.*horizontal="([a-z]+)".*', "\\1", xf)
   }
-  # Columns: A Variable, B M, C SD, D n, E Weighted n. Body row 5.
-  expect_identical(horiz("D5"), "right")
-  expect_identical(horiz("E5"), "right")
-  expect_identical(horiz("B5"), "center")
+  # Columns: A Variable, B M, C SD, D n, E Weighted n. Body row 4: no
+  # spanner, so one header row.
+  expect_identical(horiz("D4"), "right")
+  expect_identical(horiz("E4"), "right")
+  expect_identical(horiz("B4"), "center")
 })

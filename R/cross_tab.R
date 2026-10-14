@@ -1016,7 +1016,8 @@ cross_tab <- function(
         leading_zero = if (identical(decimal_mark, ",")) TRUE else NULL
       )
       p_str <- if (substring(p_formatted, 1L, 1L) == "<") {
-        spicy_fmt("note_p_prefix_lt", p_formatted) # "p <.001"
+        # The template writes the "<" and its spacing ("p < .001").
+        spicy_fmt("note_p_prefix_lt", substring(p_formatted, 2L))
       } else {
         spicy_fmt("note_p_prefix_eq", p_formatted) # "p = .045"
       }
@@ -1577,6 +1578,17 @@ print.spicy_cross_table <- function(
     df_display,
     names(df_display)
   )
+
+  # The row-identifier column keeps the key "Values" as its name; the
+  # header the reader sees is the label, as in freq(). A y-level that
+  # already holds the label keeps the key, so no two headers print alike.
+  values_label <- spicy_str("label_values")
+  if (
+    identical(names(df_display)[1L], "Values") &&
+      !values_label %in% names(df_display)[-1L]
+  ) {
+    names(df_display)[1L] <- values_label
+  }
 
   spicy_print_table(
     df_display,

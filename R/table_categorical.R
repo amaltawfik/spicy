@@ -1162,6 +1162,13 @@ table_categorical <- function(
     }
   }
   labels <- resolve_variable_labels(data, select_names, labels)
+  # The "by" title names the grouping variable by its `label` attribute,
+  # then its name, as table_continuous() does.
+  by_label <- if (is.null(by_name)) {
+    NULL
+  } else {
+    resolve_variable_labels(data, by_name)
+  }
 
   if (
     !is.logical(include_total) ||
@@ -1201,6 +1208,10 @@ table_categorical <- function(
     if (!drop_na) {
       return(NULL)
     }
+    # Each variable is named as its rows name it (`labels` above).
+    label_of <- stats::setNames(labels, select_names)
+    na_dropped <- .label_counts(na_dropped, label_of)
+    user_na_dropped <- .label_counts(user_na_dropped, label_of)
     parts <- character(0)
     if (length(na_dropped)) {
       parts <- c(
@@ -1235,7 +1246,7 @@ table_categorical <- function(
     if (by_na_dropped > 0L) {
       parts <- c(
         parts,
-        spicy_fmt("note_rows_missing_by_removed", by_name, by_na_dropped)
+        spicy_fmt("note_rows_missing_by_removed", by_label, by_na_dropped)
       )
     }
     if (length(parts)) paste(parts, collapse = " ") else NULL
@@ -3290,6 +3301,7 @@ table_categorical <- function(
     attr(out, "display_df") <- report_wide_char
     attr(out, "missing_note") <- missing_note
     attr(out, "group_var") <- by_name
+    attr(out, "group_label") <- by_label
     attr(out, "indent_text") <- indent_text
     attr(out, "align") <- align
     attr(out, "decimal_mark") <- decimal_mark
@@ -3439,7 +3451,7 @@ table_categorical <- function(
 
     tt <- tinytable::tt(
       dat_tt,
-      caption = .categorical_title(by_name),
+      caption = .categorical_title(by_label),
       # The association-measure gloss belongs to the rendered table as
       # much as to the console: it names which measure each row
       # carries.
@@ -3795,7 +3807,7 @@ table_categorical <- function(
     tbl <- gt::opt_css(tbl, css = apa_css)
 
     # The same title the five other engines print.
-    tbl <- .spicy_gt_apa_title(tbl, .categorical_title(by_name))
+    tbl <- .spicy_gt_apa_title(tbl, .categorical_title(by_label))
 
     # Both halves of the note, as the five other routes print them.
     return(.spicy_gt_attach_note(
@@ -3912,7 +3924,7 @@ table_categorical <- function(
     # the rendered table states.
     return(.spicy_ft_html_caption(
       build_flextable(merge_ci_inline(report_wide_char)),
-      .categorical_title(by_name)
+      .categorical_title(by_label)
     ))
   }
 
@@ -3924,7 +3936,7 @@ table_categorical <- function(
       )
     }
     ft <- build_flextable(merge_ci_inline(report_wide_char))
-    ft <- .spicy_ft_word_caption(ft, .categorical_title(by_name))
+    ft <- .spicy_ft_word_caption(ft, .categorical_title(by_label))
     flextable::save_as_docx(ft, path = word_path)
     return(invisible(word_path))
   }
@@ -3991,7 +4003,7 @@ table_categorical <- function(
     # rows two lines below.
     wb <- .spicy_xl_add_data(
       wb,
-      x = .categorical_title(by_name),
+      x = .categorical_title(by_label),
       start_row = 1
     )
     top_header_row <- 3L
@@ -4195,7 +4207,7 @@ table_categorical <- function(
     txt <- .clipboard_payload_desc(
       clip_mat,
       clipboard_delim,
-      title = .categorical_title(by_name),
+      title = .categorical_title(by_label),
       note = .categorical_note(missing_note, assoc_note_text)
     )
     clipr::write_clip(txt)

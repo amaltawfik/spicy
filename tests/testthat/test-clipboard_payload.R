@@ -206,7 +206,10 @@ test_that("table_continuous clipboard carries the title and the note", {
     strsplit(lines[1L], "\t", fixed = TRUE)[[1L]][1L],
     "Descriptive statistics by Sex"
   )
-  expect_match(lines[length(lines)], "^Missing values removed: bmi \\(68\\)\\.")
+  expect_match(
+    lines[length(lines)],
+    "^Missing values removed: Body mass index \\(68\\)\\."
+  )
   expect_false(grepl("\u2007", captured$text, fixed = TRUE))
   # The sub-label row carries LL / UL under the CI spanner.
   expect_true("LL" %in% .clip_cells(captured$text))
@@ -225,7 +228,10 @@ test_that("table_continuous drops the sub-label row when there is no CI", {
   expect_length(lines, 4L)
   expect_match(lines[2L], "^Variable\t")
   expect_match(lines[3L], "^Body mass index\t")
-  expect_match(lines[4L], "^Missing values removed: bmi \\(12\\)\\.")
+  expect_match(
+    lines[4L],
+    "^Missing values removed: Body mass index \\(12\\)\\."
+  )
 })
 
 test_that("table_continuous_lm clipboard carries the title, without a blank row", {

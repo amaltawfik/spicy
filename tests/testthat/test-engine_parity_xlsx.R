@@ -444,7 +444,7 @@ test_that("the by-table carries its title, missing note and assoc gloss", {
   })
   expect_length(.xl_error_cells(path), 0L)
   m <- .xl_grid(path)
-  expect_equal(.xl_at(m, 1L, "A"), "Categorical table by sex")
+  expect_equal(.xl_at(m, 1L, "A"), "Categorical table by Sex")
   expect_equal(.xl_at(m, 3L, "A"), "Variable")
   expect_equal(.xl_at(m, 4L, "B"), "n")
   col_a <- m[, "A"]
@@ -728,4 +728,39 @@ test_that("align reaches the Excel output of table_continuous()", {
   # other engine honoured them.
   expect_identical(halign("center"), c("left", "left", rep("center", 7L)))
   expect_identical(halign("right"), c("left", "left", rep("right", 7L)))
+})
+
+test_that("a descriptive table with no spanner writes one header row", {
+  .xl_skip()
+  m <- .xl_grid(.xl_write(function(p) {
+    table_continuous(sleep, extra, ci = FALSE, output = "excel", excel_path = p)
+  }))
+  expect_equal(.xl_at(m, 3L, "A"), "Variable")
+  expect_equal(.xl_at(m, 4L, "A"), "extra")
+  # The CI spanner keeps its second row.
+  m_ci <- .xl_grid(.xl_write(function(p) {
+    table_continuous(sleep, extra, output = "excel", excel_path = p)
+  }))
+  expect_equal(.xl_at(m_ci, 5L, "A"), "extra")
+})
+
+test_that("table_continuous_lm without a CI writes one header row", {
+  .xl_skip()
+  write_lm <- function(ci) {
+    .xl_grid(.xl_write(function(p) {
+      table_continuous_lm(
+        sochealth,
+        bmi,
+        by = sex,
+        ci = ci,
+        output = "excel",
+        excel_path = p
+      )
+    }))
+  }
+  m <- write_lm(FALSE)
+  expect_equal(.xl_at(m, 3L, "A"), "Variable")
+  expect_equal(.xl_at(m, 4L, "A"), "Body mass index")
+  # The CI spanner keeps its second row.
+  expect_equal(.xl_at(write_lm(TRUE), 5L, "A"), "Body mass index")
 })

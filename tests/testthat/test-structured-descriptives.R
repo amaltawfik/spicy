@@ -1024,7 +1024,8 @@ test_that("two variables sharing one display label keep their own blocks", {
   # block still shows its own numbers.
   txt <- capture.output(print(tbl))
   expect_identical(sum(grepl("╌", txt, fixed = TRUE)), 1L)
-  expect_identical(sum(grepl("Score", txt, fixed = TRUE)), 2L)
+  # Body rows only: the missing-values note names "Score" too.
+  expect_identical(sum(grepl("^ Score ", txt)), 2L)
 
   # On a frame whose labels were NOT blanked -- the shape the retired
   # derivation could not read -- the key still answers with the blocks.

@@ -2297,10 +2297,10 @@ test_that("clipboard payload carries the console title and notes", {
 
   # Title on the first row, disclosure notes on the last rows: what
   # left the table, then which measure each row's effect size is.
-  expect_identical(cells[[1L]][1L], "Categorical table by sex")
+  expect_identical(cells[[1L]][1L], "Categorical table by Sex")
   expect_match(
     lines[length(lines) - 1L],
-    "^Missing values removed: smoking \\(65\\)\\."
+    "^Missing values removed: Current smoker \\(65\\)\\."
   )
   expect_match(
     lines[length(lines)],
@@ -2821,9 +2821,10 @@ test_that("drop_na = TRUE discloses removals in the missing_note", {
     drop_na = TRUE
   )
   note <- attr(out, "missing_note")
+  # Each variable is named by its row label (here its `label` attribute).
   expect_identical(
     note,
-    "Missing values removed: income_group (18), smoking (25)."
+    "Missing values removed: Household income group (18), Current smoker (25)."
   )
   printed <- paste(
     capture.output(print(out)),
@@ -2832,9 +2833,36 @@ test_that("drop_na = TRUE discloses removals in the missing_note", {
   )
   expect_match(
     printed,
-    "Missing values removed: income_group (18)",
+    "Missing values removed: Household income group (18)",
     fixed = TRUE
   )
+  relabelled <- table_categorical(
+    sochealth,
+    select = smoking,
+    labels = c(smoking = "Smoker"),
+    drop_na = TRUE
+  )
+  expect_identical(
+    attr(relabelled, "missing_note"),
+    "Missing values removed: Smoker (25)."
+  )
+})
+
+test_that("the by title names the grouping variable by its label", {
+  out <- table_categorical(sochealth, select = smoking, by = sex)
+  expect_true(any(grepl(
+    "Categorical table by Sex",
+    capture.output(print(out)),
+    fixed = TRUE
+  )))
+  d <- sochealth
+  attr(d$sex, "label") <- NULL
+  plain <- table_categorical(d, select = smoking, by = sex)
+  expect_true(any(grepl(
+    "Categorical table by sex",
+    capture.output(print(plain)),
+    fixed = TRUE
+  )))
 })
 
 test_that("drop_na = TRUE with by-NAs discloses both removals", {
@@ -2844,7 +2872,7 @@ test_that("drop_na = TRUE with by-NAs discloses both removals", {
   out <- table_categorical(d, select = smoking, by = sex_na, drop_na = TRUE)
   expect_identical(
     attr(out, "missing_note"),
-    "Missing values removed: smoking (25). Rows with missing sex_na removed: 40."
+    "Missing values removed: Current smoker (25). Rows with missing Sex removed: 40."
   )
 })
 
@@ -3478,7 +3506,7 @@ test_that("the missing disclosure reaches tinytable, one-way and by", {
   )
   expect_identical(
     paste(unlist(x@notes), collapse = " "),
-    "Missing values removed: income_group (18), smoking (25)."
+    "Missing values removed: Household income group (18), Current smoker (25)."
   )
   # And it survives rendering, not just the slot.
   expect_match(
@@ -3495,8 +3523,12 @@ test_that("the missing disclosure reaches tinytable, one-way and by", {
     output = "tinytable"
   )
   note <- paste(unlist(x_by@notes), collapse = " ")
-  expect_match(note, "Missing values removed: smoking (25).", fixed = TRUE)
-  expect_match(note, "Rows with missing sex_na removed: 40.", fixed = TRUE)
+  expect_match(
+    note,
+    "Missing values removed: Current smoker (25).",
+    fixed = TRUE
+  )
+  expect_match(note, "Rows with missing Sex removed: 40.", fixed = TRUE)
 
   # Nothing removed -> no note at all.
   clean <- table_categorical(
@@ -3523,7 +3555,7 @@ test_that("the missing disclosure reaches gt, one-way and by", {
   expect_s3_class(g, "spicy_gt")
   expect_identical(
     attr(g, "spicy_note"),
-    "Missing values removed: income_group (18), smoking (25)."
+    "Missing values removed: Household income group (18), Current smoker (25)."
   )
 
   g_by <- table_categorical(
@@ -3535,7 +3567,7 @@ test_that("the missing disclosure reaches gt, one-way and by", {
   )
   expect_match(
     attr(g_by, "spicy_note"),
-    "Rows with missing sex_na removed: 40.",
+    "Rows with missing Sex removed: 40.",
     fixed = TRUE
   )
 
@@ -3566,7 +3598,7 @@ test_that("the missing disclosure reaches flextable, one-way and by", {
   expect_identical(nrow(f$footer$dataset), 1L)
   expect_match(
     as.character(flextable::htmltools_value(f)),
-    "Missing values removed: income_group (18), smoking (25).",
+    "Missing values removed: Household income group (18), Current smoker (25).",
     fixed = TRUE
   )
 
@@ -3579,7 +3611,7 @@ test_that("the missing disclosure reaches flextable, one-way and by", {
   )
   expect_match(
     as.character(flextable::htmltools_value(f_by)),
-    "Rows with missing sex_na removed: 40.",
+    "Rows with missing Sex removed: 40.",
     fixed = TRUE
   )
 
@@ -3606,7 +3638,7 @@ test_that("the missing disclosure rides along on output = 'data.frame'", {
   )
   expect_identical(
     attr(out, "missing_note"),
-    "Missing values removed: income_group (18), smoking (25)."
+    "Missing values removed: Household income group (18), Current smoker (25)."
   )
 
   out_by <- table_categorical(
@@ -3618,7 +3650,7 @@ test_that("the missing disclosure rides along on output = 'data.frame'", {
   )
   expect_match(
     attr(out_by, "missing_note"),
-    "Rows with missing sex_na removed: 40.",
+    "Rows with missing Sex removed: 40.",
     fixed = TRUE
   )
 

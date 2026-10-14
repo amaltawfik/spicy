@@ -100,7 +100,7 @@ test_that("the grouped categorical gt table names its grouping variable", {
     by = "sex",
     output = "gt"
   )
-  expect_identical(.gt_title(tbl), spicy:::.categorical_title("sex"))
+  expect_identical(.gt_title(tbl), spicy:::.categorical_title("Sex"))
   apa <- .gt_title_apa(tbl)
   expect_identical(apa$align, "left")
   expect_identical(apa$border_color, "transparent")

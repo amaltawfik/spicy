@@ -42,6 +42,21 @@ resolve_variable_labels <- function(data, cols, labels = NULL) {
   )
 }
 
+# Internal: a missing-values ledger (counts named by column) re-keyed by
+# the label each variable shows in the table's rows, so that the
+# "Missing values removed: ..." note names a row the reader can find.
+# `labels` is named by column; a column without an entry keeps its name.
+.label_counts <- function(counts, labels) {
+  if (length(counts) == 0L) {
+    return(counts)
+  }
+  shown <- unname(labels[names(counts)])
+  keep <- is.na(shown)
+  shown[keep] <- names(counts)[keep]
+  names(counts) <- shown
+  counts
+}
+
 # Internal: format a single numeric (or vector) with `formatC()` and
 # the configured decimal mark. NA -> "" so blank cells render
 # cleanly. Vectorised by recursion -- the per-element branch is the

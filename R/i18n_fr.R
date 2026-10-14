@@ -118,6 +118,7 @@
   stat_somers_d = "D de Somers",
 
   # -- cross_tab() statistics note ------------------------------------------
+  note_p_prefix_lt = "p\u00A0<\u00A0%s",
   test_chisq = "Khi-2(%s) = %s, %s",
   note_chisq_simulated = " (simul\u00E9)",
   note_assoc_ci = ", IC \u00E0 95\u00A0% [",
@@ -153,6 +154,7 @@
   label_block_zero_hurdle = "Hurdle (z\u00E9ro)",
   label_block_header = "%s\u00A0:",
   label_ref_annotation = "%s [r\u00E9f.\u00A0: %s]",
+  label_ref = "(r\u00E9f.)",
   cell_yes = "Oui",
   cell_no = "Non",
   label_block_fixed_effects = "Effets fixes",

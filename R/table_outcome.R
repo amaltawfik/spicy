@@ -1117,7 +1117,7 @@ table_outcome <- function(
     outcome_label = outcome_label,
     n_outcome_na = n_outcome_na,
     n_user_na = n_user_na,
-    select_na_dropped = select_na_dropped,
+    select_na_dropped = .label_counts(select_na_dropped, all_labels),
     weights_name = weights_name,
     n_na_weights = n_na_weights,
     weighted = !is.null(weights_vec),
@@ -1401,7 +1401,7 @@ table_outcome <- function(
       parts,
       paste0(
         spicy_str("note_missing_removed"),
-        spicy_fmt("note_missing_item", outcome_name, n_outcome_na),
+        spicy_fmt("note_missing_item", outcome_label, n_outcome_na),
         "."
       )
     )
@@ -1411,18 +1411,23 @@ table_outcome <- function(
       parts,
       paste0(
         spicy_str("note_declared_missing_removed"),
-        spicy_fmt("note_missing_item", outcome_name, n_user_na),
+        spicy_fmt("note_missing_item", outcome_label, n_user_na),
         "."
       )
     )
   }
   # One occurrence per `select` variable: the reader must be able to see
-  # which block lost which rows.
-  for (nm in names(select_na_dropped)) {
-    if (select_na_dropped[[nm]] > 0L) {
+  # which block lost which rows. By position: the names are the blocks'
+  # labels, and two blocks may share one.
+  for (i in seq_along(select_na_dropped)) {
+    if (select_na_dropped[[i]] > 0L) {
       parts <- c(
         parts,
-        spicy_fmt("note_rows_missing_by_removed", nm, select_na_dropped[[nm]])
+        spicy_fmt(
+          "note_rows_missing_by_removed",
+          names(select_na_dropped)[[i]],
+          select_na_dropped[[i]]
+        )
       )
     }
   }

@@ -675,6 +675,22 @@ test_that("rows with a missing `by` leave the table and the note says so", {
     "Rows with missing stype removed: 3.",
     fixed = TRUE
   )
+  # A labelled `by` is named by its label, as in the title.
+  attr(dat$stype, "label") <- "School type"
+  des_lab <- survey::svydesign(
+    id = ~dnum,
+    weights = ~pw,
+    data = dat,
+    fpc = ~fpc
+  )
+  tbl_lab <- table_continuous_svy(des_lab, select = api00, by = stype)
+  expect_match(
+    attr(tbl_lab, "missing_note"),
+    "Rows with missing School type removed: 3.",
+    fixed = TRUE
+  )
+  # Dropping those rows does not cost the title its label.
+  expect_identical(attr(tbl_lab, "group_label"), "School type")
   # No "(Missing)" domain: a level the sampler never assigned is not a
   # domain, and its degrees of freedom would be an artefact.
   expect_identical(sort(unique(tbl$group)), c("E", "H", "M"))
@@ -1162,6 +1178,26 @@ test_that("ordinary missing values are counted in the note", {
     fixed = TRUE
   )
   expect_identical(tbl$n, 3L)
+})
+
+test_that("the missing-values note names each variable by its row label", {
+  skip_if_not_installed("survey")
+  d <- data.frame(y = c(1, 2, NA, 4), z = c(NA, 2, 3, 4), w = rep(1, 4))
+  attr(d$y, "label") <- "Outcome Y"
+  des <- survey::svydesign(id = ~1, weights = ~w, data = d)
+  expect_match(
+    attr(table_continuous_svy(des, select = c(y, z)), "missing_note"),
+    "Missing values removed: Outcome Y (1), z (1).",
+    fixed = TRUE
+  )
+  expect_match(
+    attr(
+      table_continuous_svy(des, select = c(y, z), labels = c(z = "Zed")),
+      "missing_note"
+    ),
+    "Missing values removed: Outcome Y (1), Zed (1).",
+    fixed = TRUE
+  )
 })
 
 # ---- restitution ----------------------------------------------------------

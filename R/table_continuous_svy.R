@@ -869,6 +869,9 @@ table_continuous_svy <- function(
 
   # --- domains -------------------------------------------------------------
   var_labels <- resolve_variable_labels(vars, numeric_cols, labels)
+  # Before any row leaves the design (`[` drops a column's attributes):
+  # the title and the missing-`by` note name the grouping variable so.
+  by_label <- if (has_group) resolve_variable_labels(vars, group_col_name)
   by_na_dropped <- 0L
   group_levels <- character(0)
   domains <- list()
@@ -1002,15 +1005,17 @@ table_continuous_svy <- function(
   p_adjust_info <- adj$info
 
   test_refused <- .design_refusal_regime(n_test_refused, n_test_attempted)
+  # The note names each variable as its rows name it.
+  label_of <- stats::setNames(var_labels, numeric_cols)
   note <- .svy_continuous_note(
     meta = meta,
     degf_used = degf_used,
     degf_dom_used = degf_dom_used,
     df_user = df_user,
-    na_dropped = na_dropped,
-    user_na_dropped = user_na_dropped,
+    na_dropped = .label_counts(na_dropped, label_of),
+    user_na_dropped = .label_counts(user_na_dropped, label_of),
     by_na_dropped = by_na_dropped,
-    group_col_name = group_col_name,
+    group_col_name = by_label,
     tokens = tokens,
     result = result,
     ci_level = ci_level,
@@ -1047,11 +1052,7 @@ table_continuous_svy <- function(
   result <- .style_stamp(result)
   attr(result, "align") <- align
   attr(result, "group_var") <- group_col_name
-  attr(result, "group_label") <- if (has_group) {
-    resolve_variable_labels(vars, group_col_name)
-  } else {
-    NULL
-  }
+  attr(result, "group_label") <- by_label
   attr(result, "show_p") <- p_value && has_group
   attr(result, "show_statistic") <- statistic && has_group
   attr(result, "show_n") <- show_n

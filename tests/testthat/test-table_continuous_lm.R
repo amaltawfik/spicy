@@ -4987,12 +4987,26 @@ test_that("missing values are disclosed in the table note (decision 14)", {
     ))),
     collapse = "\n"
   )
+  # The outcome is named by its row label, the covariate by its name, as
+  # in the "Adjusted for" line.
   expect_match(
     txt,
-    sprintf("Missing values removed: bmi (%d), age (%d).", n_bmi, n_age),
+    sprintf(
+      "Missing values removed: Body mass index (%d), age (%d).",
+      n_bmi,
+      n_age
+    ),
     fixed = TRUE
   )
-  expect_match(txt, "Rows with missing sex removed: 3.", fixed = TRUE)
+  expect_match(txt, "Rows with missing Sex removed: 3.", fixed = TRUE)
+  relabelled <- suppressMessages(
+    table_continuous_lm(d, select = bmi, by = sex, labels = c(bmi = "BMI"))
+  )
+  expect_match(
+    attr(relabelled, "missing_note"),
+    sprintf("Missing values removed: BMI (%d).", n_bmi),
+    fixed = TRUE
+  )
   # One note, at the bottom -- not repeated.
   expect_length(
     gregexpr("Missing values removed", txt, fixed = TRUE)[[1L]],
@@ -5038,6 +5052,25 @@ test_that("declared missing values are disclosed separately (decision 14)", {
   )
 })
 
+
+test_that("ci = FALSE renders one header row in tinytable / gt / flextable", {
+  skip_if_not_installed("tinytable")
+  skip_if_not_installed("gt")
+  skip_if_not_installed("flextable")
+  render <- function(output, ci = FALSE) {
+    table_continuous_lm(sochealth, bmi, by = sex, ci = ci, output = output)
+  }
+  tt <- render("tinytable")
+  expect_equal(tt@nhead, 1)
+  expect_true(all(nzchar(tt@names)))
+  gt_tbl <- render("gt")
+  expect_equal(nrow(gt_tbl[["_spanners"]]), 0)
+  expect_true(all(nzchar(unlist(gt_tbl[["_boxhead"]]$column_label))))
+  expect_equal(flextable::nrow_part(render("flextable"), "header"), 1)
+  # The CI spanner still takes the second row.
+  expect_equal(render("tinytable", ci = TRUE)@nhead, 2)
+  expect_equal(flextable::nrow_part(render("flextable", TRUE), "header"), 2)
+})
 
 # ---- gt spanner ids survive a make.names() collision ----------------------
 

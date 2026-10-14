@@ -60,11 +60,44 @@ workbook, or a PDF.
 * `varlist()` and `code_book()` keep only the selected columns of an sf
   object. The geometry column came along.
 
+* `cross_tab()` sets `<` apart in its note: `p < .001`, and in French
+  `p < 0,001` with no-break spaces. It wrote `p <.001`.
+
+* `cross_tab()` prints its corner header in French ("Valeurs") under
+  `options(spicy.language = "fr")`. The column keeps its name, `Values`.
+
 * `freq()` writes a large declared missing code as it is, `100000`, not
   `1e+05`.
 
 * `table_categorical(output = "gt")` shows the note on the association
   measure and the standardized mean difference, as the other outputs do.
+
+* `table_categorical()` titles a grouped table with the label of the `by`
+  variable, as `table_continuous()` does: "Categorical table by Sex", not
+  "by sex".
+
+* `table_categorical()`, `table_continuous()`, `table_continuous_lm()`,
+  `table_outcome()`, `table_categorical_svy()`, and
+  `table_continuous_svy()` name each variable of the missing-values notes
+  by its label, as the rows and the title do, not by its column name:
+  "Missing values removed: Body mass index (12)", "Rows with missing Sex
+  removed: 3". A covariate of `table_continuous_lm()` keeps its name.
+
+* `table_categorical_svy()` and `table_continuous_svy()` keep the label
+  of the `by` variable in the title, and `table_categorical_svy()` the
+  labels of its rows, when rows with a missing `by` are dropped.
+
+* `table_continuous(ci = FALSE)` and `table_continuous_lm(ci = FALSE)`
+  render one header row in tinytable, gt, flextable, Word, and Excel
+  output, as documented. An empty row sat
+  under the column labels. The same holds for `table_outcome()` without
+  interval columns, `table_continuous_svy(ci = FALSE)`, and
+  `table_categorical_svy()` without `by`.
+
+* `table_regression()` writes the reference rows `(réf.)` under
+  `options(spicy.language = "fr")`: `reference_label` now defaults to
+  `NULL`, the label of the language. A label you supply is printed as
+  typed.
 
 * `table_regression()` writes its `p_adjust` note in French under
   `options(spicy.language = "fr")`.

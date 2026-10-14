@@ -1155,6 +1155,23 @@ test_that("table_continuous discloses removed NAs in a table note", {
   expect_null(attr(clean, "missing_note"))
 })
 
+test_that("the missing-values note names each variable by its row label", {
+  out <- table_continuous(sochealth, select = c(age, bmi), by = sex)
+  expect_identical(
+    attr(out, "missing_note"),
+    "Missing values removed: Body mass index (12)."
+  )
+  relabelled <- table_continuous(
+    sochealth,
+    select = c(age, bmi),
+    labels = c(bmi = "BMI (kg/m2)")
+  )
+  expect_identical(
+    attr(relabelled, "missing_note"),
+    "Missing values removed: BMI (kg/m2) (12)."
+  )
+})
+
 test_that("drop_na = TRUE discloses removed missing-by rows in the note", {
   df <- data.frame(
     x = c(1:6, NA),
@@ -3006,6 +3023,50 @@ test_that("ci = FALSE renders structurally without CI in tinytable / gt / flexta
   )
 })
 
+test_that("ci = FALSE renders one header row in tinytable / gt / flextable", {
+  skip_if_not_installed("tinytable")
+  skip_if_not_installed("gt")
+  skip_if_not_installed("flextable")
+  render <- function(output, grouped) {
+    if (grouped) {
+      table_continuous(sleep, extra, by = group, ci = FALSE, output = output)
+    } else {
+      table_continuous(sleep, extra, ci = FALSE, output = output)
+    }
+  }
+  for (grouped in c(FALSE, TRUE)) {
+    tt <- render("tinytable", grouped)
+    expect_equal(tt@nhead, 1)
+    expect_true(all(nzchar(tt@names)))
+    expect_identical(
+      tt@names[1:2],
+      c("Variable", if (grouped) "Group" else "M")
+    )
+    gt_tbl <- render("gt", grouped)
+    expect_equal(nrow(gt_tbl[["_spanners"]]), 0)
+    expect_true(all(nzchar(unlist(gt_tbl[["_boxhead"]]$column_label))))
+    expect_equal(
+      flextable::nrow_part(render("flextable", grouped), "header"),
+      1
+    )
+  }
+  # The CI spanner still takes the second row.
+  tt_ci <- table_continuous(
+    sleep,
+    select = extra,
+    ci = TRUE,
+    output = "tinytable"
+  )
+  expect_equal(tt_ci@nhead, 2)
+  ft_ci <- table_continuous(
+    sleep,
+    select = extra,
+    ci = TRUE,
+    output = "flextable"
+  )
+  expect_equal(flextable::nrow_part(ft_ci, "header"), 2)
+})
+
 test_that("show_n = FALSE renders structurally without n in tinytable / gt / flextable", {
   skip_if_not_installed("tinytable")
   skip_if_not_installed("gt")
@@ -3465,11 +3526,11 @@ test_that("table_continuous discloses dropped rows on the rich outputs", {
   )
   expect_identical(
     paste(unlist(x@notes), collapse = " "),
-    "Rows with missing sex_na removed: 40."
+    "Rows with missing Sex removed: 40."
   )
   expect_match(
     tinytable::save_tt(x, output = "html"),
-    "Rows with missing sex_na removed: 40.",
+    "Rows with missing Sex removed: 40.",
     fixed = TRUE
   )
 
@@ -3479,7 +3540,7 @@ test_that("table_continuous discloses dropped rows on the rich outputs", {
   expect_s3_class(g, "spicy_gt")
   expect_identical(
     attr(g, "spicy_note"),
-    "Rows with missing sex_na removed: 40."
+    "Rows with missing Sex removed: 40."
   )
 
   f <- suppressWarnings(
@@ -3488,7 +3549,7 @@ test_that("table_continuous discloses dropped rows on the rich outputs", {
   expect_identical(nrow(f$footer$dataset), 1L)
   expect_match(
     as.character(flextable::htmltools_value(f)),
-    "Rows with missing sex_na removed: 40.",
+    "Rows with missing Sex removed: 40.",
     fixed = TRUE
   )
 })
@@ -3527,7 +3588,7 @@ test_that("an existing table note is joined, never overwritten", {
   )
   note <- paste(unlist(z@notes), collapse = " ")
   expect_match(note, "HC3", fixed = TRUE)
-  expect_match(note, "Rows with missing sex_na removed: 40.", fixed = TRUE)
+  expect_match(note, "Rows with missing Sex removed: 40.", fixed = TRUE)
 })
 
 # ---- show_columns: statistic selection -----------------------------------

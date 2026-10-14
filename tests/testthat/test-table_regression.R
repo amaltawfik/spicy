@@ -2021,7 +2021,12 @@ test_that("factor_layout grouped applies to logical predictors", {
 test_that("reference_label defaults to '(ref.)' and only acts in row mode", {
   # rd-core:reference-label-default
   fit <- lm(mpg ~ wt + cyl, data = mt)
-  expect_identical(formals(table_regression)$reference_label, "(ref.)")
+  expect_null(formals(table_regression)$reference_label)
+  expect_true(any(grepl(
+    "(ref.)",
+    as.data.frame(table_regression(fit), stringsAsFactors = FALSE)$Variable,
+    fixed = TRUE
+  )))
   o_row <- table_regression(fit, reference_label = "(base)")
   expect_true(any(grepl(
     "(base)",
@@ -2051,6 +2056,23 @@ test_that("reference_label defaults to '(ref.)' and only acts in row mode", {
       fixed = TRUE
     )))
   }
+})
+
+test_that("the default reference_label follows the language, a typed one does not", {
+  fit <- lm(mpg ~ wt + cyl, data = mt)
+  withr::local_options(spicy.language = "fr")
+  vars <- as.data.frame(
+    table_regression(fit),
+    stringsAsFactors = FALSE
+  )$Variable
+  expect_true(any(grepl("(r\u00e9f.)", vars, fixed = TRUE)))
+  expect_false(any(grepl("(ref.)", vars, fixed = TRUE)))
+  typed <- table_regression(fit, reference_label = "(ref.)")
+  expect_true(any(grepl(
+    "(ref.)",
+    as.data.frame(typed, stringsAsFactors = FALSE)$Variable,
+    fixed = TRUE
+  )))
 })
 
 test_that("align – CI anchors are each column-aligned in decimal mode", {

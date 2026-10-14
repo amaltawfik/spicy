@@ -312,6 +312,34 @@ test_that("missing values are a level of their own by default", {
     fixed = TRUE
   )
   expect_equal(sum(dropped[["%"]][-1L]), 100, tolerance = 1e-9)
+  # The note names the variable as its rows do: `labels`, then the
+  # `label` attribute, then the name.
+  relabelled <- table_categorical_svy(
+    des,
+    select = stype,
+    labels = c(stype = "School type"),
+    drop_na = TRUE
+  )
+  expect_match(
+    attr(relabelled, "note"),
+    "Missing values removed: School type (5).",
+    fixed = TRUE
+  )
+  attr(dat$stype, "label") <- "Type of school"
+  des_lab <- survey::svydesign(
+    id = ~dnum,
+    weights = ~pw,
+    data = dat,
+    fpc = ~fpc
+  )
+  expect_match(
+    attr(
+      table_categorical_svy(des_lab, select = stype, drop_na = TRUE),
+      "note"
+    ),
+    "Missing values removed: Type of school (5).",
+    fixed = TRUE
+  )
 })
 
 .svycat_holed <- function() {
@@ -541,6 +569,42 @@ test_that("`drop_na` also governs the missing-`by` domain", {
     "Rows with missing sch.wide removed: 4.",
     fixed = TRUE
   )
+  # A labelled `by` is named by its label, as in the title.
+  attr(dat$sch.wide, "label") <- "School-wide target met"
+  des_lab <- survey::svydesign(
+    id = ~dnum,
+    weights = ~pw,
+    data = dat,
+    fpc = ~fpc
+  )
+  tbl_lab <- table_categorical_svy(
+    des_lab,
+    select = stype,
+    by = sch.wide,
+    drop_na = TRUE
+  )
+  expect_match(
+    attr(tbl_lab, "note"),
+    "Rows with missing School-wide target met removed: 4.",
+    fixed = TRUE
+  )
+  # Dropping those rows does not cost the title its label.
+  expect_identical(attr(tbl_lab, "group_label"), "School-wide target met")
+  # Nor a factor row variable its label.
+  attr(dat$stype, "label") <- "Type of school"
+  des_rows <- survey::svydesign(
+    id = ~dnum,
+    weights = ~pw,
+    data = dat,
+    fpc = ~fpc
+  )
+  printed <- capture.output(print(table_categorical_svy(
+    des_rows,
+    select = stype,
+    by = sch.wide,
+    drop_na = TRUE
+  )))
+  expect_true(any(grepl("Type of school", printed, fixed = TRUE)))
 })
 
 # ---- refusals -------------------------------------------------------------

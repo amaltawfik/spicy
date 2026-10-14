@@ -396,7 +396,7 @@ test_that("cross_tab adds weight note", {
   # Pin the complete note (fully deterministic).
   expect_identical(
     attr(res, "note"),
-    "Chi-2(4) = 355.1, p <.001\nCramer's V = 0.53\nWeight: mpg"
+    "Chi-2(4) = 355.1, p < .001\nCramer's V = 0.53\nWeight: mpg"
   )
 })
 
@@ -542,8 +542,8 @@ test_that("cross_tab keeps the p-value's leading zero under a comma", {
     cross_tab(mtcars, cyl, gear, decimal_mark = ",", p_digits = 2L),
     "note"
   )
-  expect_match(small, "p <0,01", fixed = TRUE)
-  expect_false(grepl("<,", small, fixed = TRUE))
+  expect_match(small, "p < 0,01", fixed = TRUE)
+  expect_false(grepl("< ,", small, fixed = TRUE))
   # Under a point the APA form is untouched.
   dot <- attr(cross_tab(d, smoke, sex), "note")
   expect_match(dot, "p = .659", fixed = TRUE)
@@ -597,15 +597,41 @@ test_that("cross_tab takes its default decimal mark from the language", {
   expect_identical(attr(grouped[[1L]], "decimal_mark"), ",")
 })
 
+test_that("cross_tab prints the corner header in the language, keeps the column name", {
+  withr::local_options(spicy.language = "fr")
+  res <- cross_tab(mtcars, cyl, gear)
+  expect_identical(names(res)[1L], "Values")
+  out <- capture.output(print(res))
+  expect_length(grep("^ Valeurs +\u2502", out), 1L)
+  # A y-level that holds the translated header keeps the key header.
+  d <- data.frame(g = c("A", "A", "B"), y = c("Valeurs", "x", "x"))
+  out2 <- capture.output(print(cross_tab(d, g, y)))
+  expect_length(grep("^ Values +\u2502", out2), 1L)
+})
+
 test_that("cross_tab `p_digits` controls p-value precision and threshold", {
   # mtcars cyl x gear has p ~ 0.0014 (chi-2 = 18.04, df=4) -> with
   # p_digits = 3, the value is above 0.001 and prints `p = .001`;
-  # with p_digits = 2, the value is below 0.01 and prints `p <.01`.
+  # with p_digits = 2, the value is below 0.01 and prints `p < .01`.
   res3 <- cross_tab(mtcars, cyl, gear, p_digits = 3L)
   res2 <- cross_tab(mtcars, cyl, gear, p_digits = 2L)
   # APA format strips the leading zero from the p-value.
   expect_match(attr(res3, "note"), "p = \\.\\d{3}\\b")
-  expect_match(attr(res2, "note"), "p <\\.\\d{2}\\b")
+  expect_match(attr(res2, "note"), "p < \\.\\d{2}\\b")
+})
+
+test_that("cross_tab sets '<' apart in the p-value, with no-break spaces in French", {
+  expect_match(
+    attr(cross_tab(mtcars, cyl, gear, p_digits = 2L), "note"),
+    ", p < .01",
+    fixed = TRUE
+  )
+  withr::local_options(spicy.language = "fr")
+  expect_match(
+    attr(cross_tab(mtcars, cyl, gear, p_digits = 2L), "note"),
+    ", p\u00a0<\u00a00,01",
+    fixed = TRUE
+  )
 })
 
 test_that("cross_tab validates decimal_mark, p_digits and simulate_B", {

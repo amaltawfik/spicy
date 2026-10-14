@@ -743,8 +743,12 @@ export_continuous_lm_table <- function(
     if (has_ci) {
       sub_labels[ll_pos] <- lab(.LM_KEY_CI_LL)
       sub_labels[ul_pos] <- lab(.LM_KEY_CI_UL)
+    } else {
+      # No CI spanner: the labels are the column names, one header row.
+      sub_labels <- lab(col_keys)
     }
     colnames(display_df) <- sub_labels
+    top_i <- if (has_ci) -1 else 0
 
     # `tinytable::group_tt(j = )` wants the printed spanner text as the
     # NAME of the list, so a name here IS an index: two columns whose
@@ -771,7 +775,9 @@ export_continuous_lm_table <- function(
       caption = if (!is.null(title) && nzchar(title)) title else NULL,
       notes = if (!is.null(note) && nzchar(note)) note else NULL
     )
-    tt <- tinytable::group_tt(tt, j = gspec)
+    if (has_ci) {
+      tt <- tinytable::group_tt(tt, j = gspec)
+    }
     tt <- .spicy_tt_bare(tt)
     # User data reaches the cells (level labels, variable labels):
     # escape it, like every other engine of the family does.
@@ -806,12 +812,17 @@ export_continuous_lm_table <- function(
       }
       spanner_center_j <- setdiff(seq_len(nc), 1L)
       if (length(spanner_center_j) > 0L) {
-        tt <- tinytable::style_tt(tt, i = -1, j = spanner_center_j, align = "c")
+        tt <- tinytable::style_tt(
+          tt,
+          i = top_i,
+          j = spanner_center_j,
+          align = "c"
+        )
       }
-      tt <- tinytable::style_tt(tt, i = -1, j = 1L, align = "l")
+      tt <- tinytable::style_tt(tt, i = top_i, j = 1L, align = "l")
       tt <- tinytable::style_tt(
         tt,
-        i = -1,
+        i = top_i,
         j = seq_len(nc),
         line = "t",
         line_width = 0.06
@@ -882,8 +893,9 @@ export_continuous_lm_table <- function(
     names(display_df) <- unname(gt_ids)
     tbl <- gt::gt(display_df)
 
+    # No CI spanner: the labels are the column labels, one header row.
     label_list <- stats::setNames(
-      as.list(rep("", length(col_keys))),
+      as.list(if (has_ci) rep("", length(col_keys)) else lab(col_keys)),
       unname(gt_ids)
     )
     if (has_ci && .LM_KEY_CI_LL %in% col_keys) {
@@ -903,7 +915,8 @@ export_continuous_lm_table <- function(
     # fractional `ci_level` would move the id ("95% CI" -> "97.5% CI").
     # The other two descriptive families already name every spanner.
     span_ids <- .lm_spanner_ids(c(single_cols, .LM_KEY_CI))
-    for (col in single_cols) {
+    # One-column spanners only above a CI spanner's row.
+    for (col in if (has_ci) single_cols else character(0)) {
       tbl <- gt::tab_spanner(
         tbl,
         label = lab(col),
@@ -961,7 +974,11 @@ export_continuous_lm_table <- function(
     tbl <- gt::tab_style(
       tbl,
       style = rule_top,
-      locations = gt::cells_column_spanners()
+      locations = if (has_ci) {
+        gt::cells_column_spanners()
+      } else {
+        gt::cells_column_labels()
+      }
     )
     if (has_ci) {
       tbl <- gt::tab_style(
@@ -997,13 +1014,15 @@ export_continuous_lm_table <- function(
         locations = gt::cells_column_labels(columns = non_variable_cols)
       )
     }
-    tbl <- gt::tab_style(
-      tbl,
-      style = gt::cell_text(align = "left"),
-      locations = gt::cells_column_spanners(
-        spanners = span_ids[[.LM_KEY_VARIABLE]]
+    if (has_ci) {
+      tbl <- gt::tab_style(
+        tbl,
+        style = gt::cell_text(align = "left"),
+        locations = gt::cells_column_spanners(
+          spanners = span_ids[[.LM_KEY_VARIABLE]]
+        )
       )
-    )
+    }
 
     # Interpolated into a CSS attribute selector: the ids are the frozen
     # ASCII keys, so no display label ever reaches this string.
@@ -1090,6 +1109,10 @@ export_continuous_lm_table <- function(
       stringsAsFactors = FALSE,
       check.names = FALSE
     )
+    # No CI spanner: one header row, no empty second row under it.
+    if (!has_ci) {
+      map$bottom <- NULL
+    }
 
     ft <- flextable::flextable(display_df)
     ft <- flextable::set_header_df(ft, mapping = map, key = "col_keys")
@@ -1249,8 +1272,9 @@ export_continuous_lm_table <- function(
     if (!is.null(title) && nzchar(title)) {
       wb <- .spicy_xl_add_data(wb, x = title, start_row = 1)
     }
+    # Without a CI spanner, one header row: the "bottom" row is the top one.
     top_header_row <- 3L
-    bot_header_row <- top_header_row + 1L
+    bot_header_row <- top_header_row + as.integer(has_ci)
     first_body_row <- bot_header_row + 1L
     wb <- .spicy_xl_add_data(
       wb,
@@ -1258,12 +1282,14 @@ export_continuous_lm_table <- function(
       start_row = top_header_row,
       col_names = FALSE
     )
-    wb <- .spicy_xl_add_data(
-      wb,
-      x = as.data.frame(t(hdrs$bottom), stringsAsFactors = FALSE),
-      start_row = bot_header_row,
-      col_names = FALSE
-    )
+    if (has_ci) {
+      wb <- .spicy_xl_add_data(
+        wb,
+        x = as.data.frame(t(hdrs$bottom), stringsAsFactors = FALSE),
+        start_row = bot_header_row,
+        col_names = FALSE
+      )
+    }
     # An NA or "" cell is not written, so it is empty in Excel (see
     # .spicy_xl_add_data()).
     wb <- .spicy_xl_add_data(
@@ -1336,11 +1362,12 @@ export_continuous_lm_table <- function(
     # bottom_border = "thin"`, so an explicit `top_border = "thin"`
     # call paints all four sides unless the others are set to NULL.
     # Pass NULL on every unused side to draw only the intended rule.
+    # A single header row takes both rules in one call.
     wb <- openxlsx2::wb_add_border(
       wb,
       dims = openxlsx2::wb_dims(rows = top_header_row, cols = 1:nc),
       top_border = "thin",
-      bottom_border = NULL,
+      bottom_border = if (has_ci) NULL else "thin",
       left_border = NULL,
       right_border = NULL
     )
@@ -1353,15 +1380,15 @@ export_continuous_lm_table <- function(
         left_border = NULL,
         right_border = NULL
       )
+      wb <- openxlsx2::wb_add_border(
+        wb,
+        dims = openxlsx2::wb_dims(rows = bot_header_row, cols = 1:nc),
+        bottom_border = "thin",
+        top_border = NULL,
+        left_border = NULL,
+        right_border = NULL
+      )
     }
-    wb <- openxlsx2::wb_add_border(
-      wb,
-      dims = openxlsx2::wb_dims(rows = bot_header_row, cols = 1:nc),
-      bottom_border = "thin",
-      top_border = NULL,
-      left_border = NULL,
-      right_border = NULL
-    )
     if (nrow(display_df) > 0) {
       wb <- openxlsx2::wb_add_border(
         wb,

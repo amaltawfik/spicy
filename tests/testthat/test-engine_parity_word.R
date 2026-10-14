@@ -294,7 +294,7 @@ test_that("descriptive tables carry their console title as the Word caption", {
 
   cases <- list(
     list(
-      title = "Categorical table by sex",
+      title = "Categorical table by Sex",
       write = function(p) {
         table_categorical(
           d,

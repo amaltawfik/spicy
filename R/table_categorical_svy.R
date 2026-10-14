@@ -608,6 +608,10 @@ table_categorical_svy <- function(
     }
   }
   vars <- design$variables
+  # Before any row leaves the design (`[` drops a column's attributes):
+  # the rows, the title and the notes name each variable by its label.
+  var_labels <- resolve_variable_labels(vars, select_names, labels)
+  by_label <- if (has_group) resolve_variable_labels(vars, group_col_name)
 
   # --- domains -------------------------------------------------------------
   by_na_dropped <- 0L
@@ -661,7 +665,6 @@ table_categorical_svy <- function(
   meta <- .design_meta(design)
 
   # --- levels and the compute frame ----------------------------------------
-  var_labels <- resolve_variable_labels(vars, select_names, labels)
   keep_spec <- .cat_svy_levels_keep(levels_keep, select_names)
 
   rows <- list()
@@ -815,14 +818,16 @@ table_categorical_svy <- function(
   p_adjust_info <- adj$info
 
   test_refused <- .design_refusal_regime(n_test_refused, n_test_attempted)
+  # The note names each variable as its rows name it.
+  label_of <- stats::setNames(var_labels, select_names)
   note <- .cat_svy_note(
     meta = meta,
     degf_dom_used = degf_dom_used,
     df_user = df_user,
-    na_dropped = na_dropped,
-    user_na_dropped = user_na_dropped,
+    na_dropped = .label_counts(na_dropped, label_of),
+    user_na_dropped = .label_counts(user_na_dropped, label_of),
     by_na_dropped = by_na_dropped,
-    group_col_name = group_col_name,
+    group_col_name = by_label,
     decimal_mark = decimal_mark,
     proportion_ci = proportion_ci,
     ci_method = ci_method,
@@ -853,11 +858,7 @@ table_categorical_svy <- function(
   result <- .style_stamp(result)
   attr(result, "align") <- align
   attr(result, "group_var") <- group_col_name
-  attr(result, "group_label") <- if (has_group) {
-    resolve_variable_labels(vars, group_col_name)
-  } else {
-    NULL
-  }
+  attr(result, "group_label") <- by_label
   attr(result, "blocks") <- blocks
   attr(result, "margin_key") <- margin_key
   attr(result, "missing_group_label") <- missing_group_label

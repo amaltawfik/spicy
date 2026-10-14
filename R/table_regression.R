@@ -1078,9 +1078,11 @@
 #'   `[vs <ref>]` annotation in `"annotation"` mode is attached to the
 #'   first AME row, not to the polynomial-trend rows.
 #' @param reference_label Suffix shown after the reference level in
-#'   `reference_style = "row"` mode. Default `"(ref.)"`. Ignored
-#'   by the other three modes (which use structural English
-#'   wording -- "ref:", "vs", "Reference categories:").
+#'   `reference_style = "row"` mode. `NULL` (default) prints `"(ref.)"`,
+#'   translated under `options(spicy.language = )`; a string you supply
+#'   is printed as typed. Ignored by the other three modes (which use
+#'   structural English wording -- "ref:", "vs", "Reference
+#'   categories:").
 #' @param show_fit_stats Character vector of tokens for the
 #'   model-level rows below the coefficients; row order follows
 #'   token order. `NULL` (default) resolves class-aware:
@@ -1695,7 +1697,7 @@ table_regression <- function(
   intercept_position = c("first", "last"),
   factor_layout = c("grouped", "flat"),
   reference_style = c("row", "annotation", "footer", "none"),
-  reference_label = "(ref.)",
+  reference_label = NULL,
   show_fit_stats = NULL,
   fit_stats_layout = c("first_col", "merged"),
   show_re = TRUE,
@@ -2449,6 +2451,7 @@ table_regression <- function(
   validate_digit_arg(padding, "padding")
   validate_decimal_mark(decimal_mark)
   validate_reference_label(reference_label)
+  reference_label <- reference_label %||% spicy_str("label_ref")
   validate_stars(stars)
   validate_p_adjust(p_adjust)
   # Finding (a) of the Bayesian recon: a posterior has no p-values, so a

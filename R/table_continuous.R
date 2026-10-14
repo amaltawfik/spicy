@@ -1170,6 +1170,10 @@ table_continuous <- function(
   }
   by_na_dropped <- 0L
   build_missing_note <- function() {
+    # Each variable is named as its rows name it (`var_labels` below).
+    label_of <- stats::setNames(var_labels, numeric_cols)
+    na_dropped <- .label_counts(na_dropped, label_of)
+    user_na_dropped <- .label_counts(user_na_dropped, label_of)
     parts <- character(0)
     if (length(na_dropped)) {
       parts <- c(
@@ -1206,7 +1210,8 @@ table_continuous <- function(
         parts,
         spicy_fmt(
           "note_rows_missing_by_removed",
-          group_col_name,
+          # The label the title prints (`group_label` below).
+          resolve_variable_labels(data, group_col_name),
           by_na_dropped
         )
       )
@@ -3400,17 +3405,23 @@ desc_spanner_groups <- function(col_keys, ci_level, decimal_mark = ".") {
 # its `header_layout` argument (`hl_labels` / `hl_spanners`) and every
 # engine reads the header through `hl_headers()`, so there is exactly
 # one caller of this function and one place the default lives.
+#
+# `spanned` is FALSE when no spanner covers more than one column: the
+# engines then print `top` as the one header row, with no empty second
+# row under it.
 build_header_rows_from <- function(col_keys, labels_fn, spanners_fn) {
   nc <- length(col_keys)
   top <- labels_fn(col_keys)
   bot <- rep("", nc)
+  spanned <- FALSE
   for (g in spanners_fn(col_keys)) {
     top[g$cols] <- g$label
     if (length(g$cols) > 1L) {
       bot[g$cols] <- g$bounds
+      spanned <- TRUE
     }
   }
-  list(top = top, bottom = bot)
+  list(top = top, bottom = bot, spanned = spanned)
 }
 
 # --- internal: the count / p-value right-hand columns ---
@@ -3554,9 +3565,12 @@ export_desc_table <- function(
     }
 
     # Sub-row labels: empty for single-col spanners, LL/UL under each
-    # CI spanner. Absent CI columns simply contribute no pair.
-    sub_labels <- hl_headers(col_keys)$bottom
-    colnames(display_df) <- sub_labels
+    # CI spanner. Absent CI columns simply contribute no pair. With no
+    # spanner at all, the labels are the column names and there is one
+    # header row.
+    hdrs <- hl_headers(col_keys)
+    colnames(display_df) <- if (hdrs$spanned) hdrs$bottom else hdrs$top
+    top_i <- if (hdrs$spanned) -1 else 0
 
     # gspec walks the actual column keys in order, so any
     # `show_columns` selection renders with the right spanners.
@@ -3577,7 +3591,9 @@ export_desc_table <- function(
       caption = title,
       notes = note
     )
-    tt <- tinytable::group_tt(tt, j = gspec)
+    if (hdrs$spanned) {
+      tt <- tinytable::group_tt(tt, j = gspec)
+    }
     tt <- .spicy_tt_bare(tt)
     # User data reaches the cells (level labels, variable labels):
     # escape it, like every other engine of the family does.
@@ -3611,16 +3627,16 @@ export_desc_table <- function(
     spanner_center_j <- setdiff(seq_len(nc), left_j)
     tt <- tinytable::style_tt(
       tt,
-      i = -1,
+      i = top_i,
       j = spanner_center_j,
       align = "c"
     )
-    tt <- tinytable::style_tt(tt, i = -1, j = left_j, align = "l")
+    tt <- tinytable::style_tt(tt, i = top_i, j = left_j, align = "l")
 
     # APA lines
     tt <- tinytable::style_tt(
       tt,
-      i = -1,
+      i = top_i,
       j = seq_len(nc),
       line = "t",
       line_width = 0.06
@@ -3713,11 +3729,15 @@ export_desc_table <- function(
     tbl <- gt::gt(display_df)
 
     # Sub-row labels: empty for single-col spanners, LL/UL under each
-    # CI spanner.
-    gt_bottom <- hl_headers(gt_col_keys)$bottom
-    label_list <- as.list(gt_bottom)
+    # CI spanner. With no spanner at all, the labels are the column
+    # labels and no spanner is built.
+    gt_hdrs <- hl_headers(gt_col_keys)
+    label_list <- as.list(if (gt_hdrs$spanned) gt_hdrs$bottom else gt_hdrs$top)
     names(label_list) <- gt_col_ids
     tbl <- gt::cols_label(tbl, .list = label_list)
+    if (!gt_hdrs$spanned) {
+      groups_spec <- list()
+    }
 
     for (g in groups_spec) {
       tbl <- gt::tab_spanner(
@@ -3751,12 +3771,14 @@ export_desc_table <- function(
       tbl <- gt::cols_align(tbl, align = "right", columns = numeric_cols)
     }
 
-    left_spanners <- paste0("spn_", stub_keys)
-    tbl <- gt::tab_style(
-      tbl,
-      style = gt::cell_text(align = "left"),
-      locations = gt::cells_column_spanners(spanners = left_spanners)
-    )
+    if (gt_hdrs$spanned) {
+      left_spanners <- paste0("spn_", stub_keys)
+      tbl <- gt::tab_style(
+        tbl,
+        style = gt::cell_text(align = "left"),
+        locations = gt::cells_column_spanners(spanners = left_spanners)
+      )
+    }
 
     # APA borders
     rule <- gt::cell_borders(
@@ -3795,7 +3817,11 @@ export_desc_table <- function(
     tbl <- gt::tab_style(
       tbl,
       style = rule_top,
-      locations = gt::cells_column_spanners()
+      locations = if (gt_hdrs$spanned) {
+        gt::cells_column_spanners()
+      } else {
+        gt::cells_column_labels()
+      }
     )
     if (length(ci_cols) > 0L) {
       tbl <- gt::tab_style(
@@ -3919,6 +3945,10 @@ export_desc_table <- function(
       stringsAsFactors = FALSE,
       check.names = FALSE
     )
+    # No spanner: one header row, no empty second row under it.
+    if (!hdrs$spanned) {
+      map$bottom <- NULL
+    }
 
     ft <- flextable::flextable(display_df)
     ft <- flextable::set_header_df(ft, mapping = map, key = "col_keys")
@@ -4086,8 +4116,9 @@ export_desc_table <- function(
       x = title,
       start_row = 1
     )
+    # With no spanner, one header row: the "bottom" row is the top one.
     top_header_row <- 3L
-    bot_header_row <- top_header_row + 1L
+    bot_header_row <- top_header_row + as.integer(hdrs$spanned)
     first_body_row <- bot_header_row + 1L
 
     wb <- .spicy_xl_add_data(
@@ -4096,12 +4127,14 @@ export_desc_table <- function(
       start_row = top_header_row,
       col_names = FALSE
     )
-    wb <- .spicy_xl_add_data(
-      wb,
-      x = as.data.frame(t(hdrs$bottom), stringsAsFactors = FALSE),
-      start_row = bot_header_row,
-      col_names = FALSE
-    )
+    if (hdrs$spanned) {
+      wb <- .spicy_xl_add_data(
+        wb,
+        x = as.data.frame(t(hdrs$bottom), stringsAsFactors = FALSE),
+        start_row = bot_header_row,
+        col_names = FALSE
+      )
+    }
     # An NA or "" cell is not written, so it is empty in Excel (see
     # .spicy_xl_add_data()).
     wb <- .spicy_xl_add_data(
@@ -4177,11 +4210,12 @@ export_desc_table <- function(
     # so an explicit `top_border = "thin"` call paints all four sides
     # unless the others are set to NULL. Pass NULL on every unused
     # side to draw only the intended rule.
+    # A single header row takes both rules in one call.
     wb <- openxlsx2::wb_add_border(
       wb,
       dims = openxlsx2::wb_dims(rows = top_header_row, cols = 1:nc),
       top_border = "thin",
-      bottom_border = NULL,
+      bottom_border = if (hdrs$spanned) NULL else "thin",
       left_border = NULL,
       right_border = NULL
     )
@@ -4195,14 +4229,16 @@ export_desc_table <- function(
         right_border = NULL
       )
     }
-    wb <- openxlsx2::wb_add_border(
-      wb,
-      dims = openxlsx2::wb_dims(rows = bot_header_row, cols = 1:nc),
-      bottom_border = "thin",
-      top_border = NULL,
-      left_border = NULL,
-      right_border = NULL
-    )
+    if (hdrs$spanned) {
+      wb <- openxlsx2::wb_add_border(
+        wb,
+        dims = openxlsx2::wb_dims(rows = bot_header_row, cols = 1:nc),
+        bottom_border = "thin",
+        top_border = NULL,
+        left_border = NULL,
+        right_border = NULL
+      )
+    }
     if (nrow(display_df) > 0) {
       wb <- openxlsx2::wb_add_border(
         wb,

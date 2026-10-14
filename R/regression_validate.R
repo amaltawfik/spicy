@@ -2618,6 +2618,10 @@ validate_decimal_mark <- function(decimal_mark) {
 
 # Step 21: reference_label
 validate_reference_label <- function(reference_label) {
+  # NULL is the default: the registry label, resolved by the caller.
+  if (is.null(reference_label)) {
+    return(invisible(NULL))
+  }
   ok <- length(reference_label) == 1L &&
     is.character(reference_label) &&
     !is.na(reference_label) &&

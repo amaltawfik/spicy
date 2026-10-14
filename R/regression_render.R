@@ -62,7 +62,7 @@ render_regression_table <- function(
   show_columns = c("b", "se", "ci", "p"),
   show_fit_stats = c("nobs", "r2", "adj_r2"),
   model_labels = NULL,
-  reference_label = "(ref.)",
+  reference_label = spicy_str("label_ref"),
   reference_style = c("row", "annotation", "footer", "none"),
   factor_layout = c("grouped", "flat"),
   stars = FALSE,
