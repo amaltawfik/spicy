@@ -132,7 +132,8 @@ PDF.
   writes the reference rows `(réf.)` under
   `options(spicy.language = "fr")`: `reference_label` now defaults to
   `NULL`, the label of the language. A label you supply is printed as
-  typed.
+  typed. The footer of `reference_style = "footer"` is translated too
+  (“Catégories de référence : …”).
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   writes its `p_adjust` note in French under

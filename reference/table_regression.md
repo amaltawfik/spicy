@@ -437,8 +437,9 @@ table_regression(
   Suffix shown after the reference level in `reference_style = "row"`
   mode. `NULL` (default) prints `"(ref.)"`, translated under
   `options(spicy.language = )`; a string you supply is printed as typed.
-  Ignored by the other three modes (which use structural English wording
-  – "ref:", "vs", "Reference categories:").
+  Ignored by the other three modes, whose fixed wording follows the
+  language: `[ref: ...]`, `[vs ...]`, and the footer line
+  `Reference categories: ...`.
 
 - show_fit_stats:
 
