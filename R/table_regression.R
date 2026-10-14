@@ -1080,9 +1080,9 @@
 #' @param reference_label Suffix shown after the reference level in
 #'   `reference_style = "row"` mode. `NULL` (default) prints `"(ref.)"`,
 #'   translated under `options(spicy.language = )`; a string you supply
-#'   is printed as typed. Ignored by the other three modes (which use
-#'   structural English wording -- "ref:", "vs", "Reference
-#'   categories:").
+#'   is printed as typed. Ignored by the other three modes, whose fixed
+#'   wording follows the language: `[ref: ...]`, `[vs ...]`, and the
+#'   footer line `Reference categories: ...`.
 #' @param show_fit_stats Character vector of tokens for the
 #'   model-level rows below the coefficients; row order follows
 #'   token order. `NULL` (default) resolves class-aware:

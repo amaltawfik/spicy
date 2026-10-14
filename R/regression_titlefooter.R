@@ -2727,7 +2727,10 @@ build_reference_categories_footer_block_from_frames <- function(
   if (!length(pairs)) {
     return(NULL)
   }
-  paste0("Reference categories: ", paste(pairs, collapse = "; "), ".")
+  spicy_fmt(
+    "note_reference_categories",
+    paste(pairs, collapse = spicy_str("note_reference_categories_sep"))
+  )
 }
 
 

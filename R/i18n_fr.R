@@ -155,6 +155,8 @@
   label_block_header = "%s\u00A0:",
   label_ref_annotation = "%s [r\u00E9f.\u00A0: %s]",
   label_ref = "(r\u00E9f.)",
+  note_reference_categories = "Cat\u00E9gories de r\u00E9f\u00E9rence\u00A0: %s.",
+  note_reference_categories_sep = "\u00A0; ",
   cell_yes = "Oui",
   cell_no = "Non",
   label_block_fixed_effects = "Effets fixes",

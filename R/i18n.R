@@ -296,6 +296,10 @@
   # The default `reference_label` of `table_regression()`, the suffix of
   # the reference row in `reference_style = "row"`.
   label_ref = "(ref.)",
+  # The footer line of `reference_style = "footer"`: the hole receives
+  # the "factor = level" pairs, joined by the separator below.
+  note_reference_categories = "Reference categories: %s.",
+  note_reference_categories_sep = "; ",
   # The two cells of the fixed-effects disclosure block (the etable /
   # esttab standard). Only the CAPTION is here: the token the two bodies
   # exchange is `.REG_FE_YES` / `.REG_FE_NO`, frozen, because the typed

@@ -389,9 +389,9 @@ first AME row, not to the polynomial-trend rows.}
 \item{reference_label}{Suffix shown after the reference level in
 \code{reference_style = "row"} mode. \code{NULL} (default) prints \code{"(ref.)"},
 translated under \code{options(spicy.language = )}; a string you supply
-is printed as typed. Ignored by the other three modes (which use
-structural English wording -- "ref:", "vs", "Reference
-categories:").}
+is printed as typed. Ignored by the other three modes, whose fixed
+wording follows the language: \verb{[ref: ...]}, \verb{[vs ...]}, and the
+footer line \verb{Reference categories: ...}.}
 
 \item{show_fit_stats}{Character vector of tokens for the
 model-level rows below the coefficients; row order follows
