@@ -45,10 +45,9 @@ test_that("validate_models_input – class without `as_regression_frame` method 
     error = function(e) e
   )
   expect_s3_class(err, "spicy_unsupported")
-  expect_match(
-    conditionMessage(err),
-    "no `as_regression_frame\\(\\)` method registered"
-  )
+  msg <- conditionMessage(err)
+  expect_match(msg, "`rlmer_robustlmm` .+ not a supported model class")
+  expect_no_match(msg, "as_regression_frame", fixed = TRUE)
 })
 
 test_that("validate_models_input – other class errors with 'open an issue' hint", {

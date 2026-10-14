@@ -379,7 +379,7 @@ classify_unsupported_lm_class <- function(fit, position = NULL) {
   paste0(
     pos_prefix,
     sprintf(
-      "`%s` \u2013 no `as_regression_frame()` method registered. ",
+      "`%s` \u2013 not a supported model class. ",
       class(fit)[1L]
     ),
     "If support would be useful, please open an issue: ",

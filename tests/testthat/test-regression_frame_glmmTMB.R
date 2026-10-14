@@ -867,6 +867,33 @@ test_that("clmm and glmmTMB ordinal agree on wine (cross-engine triangulation)",
   expect_lt(max(abs(sqrt(va$ci_upper) - sqrt(vb$ci_upper))), 5e-4)
 })
 
+test_that("insight and spicy agree on the glmmTMB ordinal thresholds (second oracle)", {
+  skip_if_not_installed("insight", "1.6.0")
+  skip_if_not_installed("glmmTMB", "1.1.15")
+  fit <- .fit_glmmTMB_ordinal()
+  fr <- as_regression_frame(fit)
+  th <- fr$info$extras$thresholds
+  b <- fr$coefs[!fr$coefs$is_ref, ]
+  # A second oracle besides clmm (test above). insight >= 1.6.0 returns the
+  # cut-points as conditional parameters, without the fixed intercept, and
+  # their delta-method SEs through get_varcov() (parameters 0.29.3 does not:
+  # its standard_error() recycles the slopes' SEs). Unlike clmm it is not
+  # another engine: its cut-points are glmmTMB::family_params(), and their
+  # SEs apply glmmTMB's Jacobian of the softmax map to vcov(fit, full = TRUE).
+  # Measured 2026-10-14 (insight 1.6.0, glmmTMB 1.1.15.2): a gap of 0 on
+  # every estimate and SE, slopes included. Pinned at 1e-12, which leaves
+  # room for another BLAS.
+  gp <- insight::get_parameters(fit, component = "conditional")
+  se <- sqrt(diag(insight::get_varcov(fit, component = "conditional")))
+  expect_setequal(gp$Parameter, c(th$term, b$term))
+  i <- match(th$term, gp$Parameter)
+  expect_equal(th$estimate, gp$Estimate[i], tolerance = 1e-12)
+  expect_equal(th$std_error, unname(se[th$term]), tolerance = 1e-12)
+  j <- match(b$term, gp$Parameter)
+  expect_equal(b$estimate, gp$Estimate[j], tolerance = 1e-12)
+  expect_equal(b$std_error, unname(se[b$term]), tolerance = 1e-12)
+})
+
 test_that("clmm (several random terms) and glmmTMB ordinal agree on the RE rows", {
   skip_if_not_installed("glmmTMB", "1.1.15")
   skip_if_not_installed("ordinal")
