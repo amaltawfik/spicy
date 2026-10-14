@@ -48,7 +48,7 @@ table_continuous_lm(
 #>  Body mass index                │    0.09      0.93      .018  0.00  1188 
 #>  Satisfaction with health (1-5) │   -0.06      0.22      .267  0.00  1192 
 #> 
-#> Note. Missing values removed: bmi (12), life_sat_health (8).
+#> Note. Missing values removed: Body mass index (12), Satisfaction with health (1-5) (8).
 ```
 
 For categorical predictors, the table reports estimated means by level.
@@ -82,7 +82,7 @@ table_continuous_lm(
 #>  Body mass index               │   0.09       0.93     2.38   .018  0.00  1188 
 #> 
 #> Note. Std. errors: heteroskedasticity-robust (HC3).
-#> Missing values removed: bmi (12).
+#> Missing values removed: Body mass index (12).
 ```
 
 The `HC*` family is computed via
@@ -197,7 +197,7 @@ table_continuous_lm(
 #>  WHO-5 wellbeing index (0-100) │    76.55      <.001  0.19  1200   1196.47   
 #>  Body mass index               │    24.23      <.001  0.13  1188   1183.32   
 #> 
-#> Note. Missing values removed: bmi (12).
+#> Note. Missing values removed: Body mass index (12).
 ```
 
 This is often the most natural summary-table function when your
@@ -225,7 +225,7 @@ table_continuous_lm(
 #>  Body mass index               │ 0.04     0.02      0.05     <.001  0.02  1188 
 #> 
 #> Note. Std. errors: heteroskedasticity-robust (HC3).
-#> Missing values removed: bmi (12).
+#> Missing values removed: Body mass index (12).
 ```
 
 When you need the underlying returned data for further processing, use
@@ -265,7 +265,7 @@ table_continuous_lm(
 #> 
 #> Note. Adjusted for age, education (proportional).
 #> Std. errors: heteroskedasticity-robust (HC3).
-#> Missing values removed: bmi (12).
+#> Missing values removed: Body mass index (12).
 ```
 
 `covariates` accepts the full tidyselect vocabulary (`c(age, sex)`,
@@ -342,7 +342,7 @@ table_continuous_lm(
 #> 
 #> Note. Adjusted for age, education (balanced).
 #> Std. errors: heteroskedasticity-robust (HC3).
-#> Missing values removed: bmi (12).
+#> Missing values removed: Body mass index (12).
 ```
 
 ### Effect sizes under adjustment
@@ -412,7 +412,7 @@ table_continuous_lm(
 #>  WHO-5 wellbeing index (0-100) │   0.47     .124  0.00  -0.11  1175 
 #>  Body mass index               │   0.49     .905  0.00  -0.01  1163 
 #> 
-#> Note. Missing values removed: bmi (12). Rows with missing smoking removed: 25.
+#> Note. Missing values removed: Body mass index (12). Rows with missing Current smoker removed: 25.
 ```
 
 Hedges’ *g* applies the small-sample correction
@@ -439,7 +439,7 @@ table_continuous_lm(
 #>  WHO-5 wellbeing index (0-100) │   0.47     .124  0.00  -0.11  1175 
 #>  Body mass index               │   0.49     .905  0.00  -0.01  1163 
 #> 
-#> Note. Missing values removed: bmi (12). Rows with missing smoking removed: 25.
+#> Note. Missing values removed: Body mass index (12). Rows with missing Current smoker removed: 25.
 ```
 
 For categorical predictors with three or more levels (or numeric
@@ -467,7 +467,7 @@ table_continuous_lm(
 #>  WHO-5 wellbeing index (0-100) │    76.85      <.001  0.21  0.21  1200 
 #>  Body mass index               │    24.39      <.001  0.13  0.13  1188 
 #> 
-#> Note. Missing values removed: bmi (12).
+#> Note. Missing values removed: Body mass index (12).
 ```
 
 Cohen’s `f²` (= `R² / (1 - R²)`) is the effect size familiar from
@@ -494,7 +494,7 @@ table_continuous_lm(
 #>  WHO-5 wellbeing index (0-100) │ 1200 
 #>  Body mass index               │ 1188 
 #> 
-#> Note. Missing values removed: bmi (12).
+#> Note. Missing values removed: Body mass index (12).
 ```
 
 ## Confidence intervals for effect sizes
@@ -543,7 +543,7 @@ table_continuous_lm(
 #>  WHO-5 wellbeing index (0-100) │ 1175 
 #>  Body mass index               │ 1163 
 #> 
-#> Note. Missing values removed: bmi (12). Rows with missing smoking removed: 25.
+#> Note. Missing values removed: Body mass index (12). Rows with missing Current smoker removed: 25.
 ```
 
 The CI level follows `ci_level` (default `0.95`). For programmatic
@@ -623,7 +623,7 @@ table_continuous_lm(
 #>  WHO-5 wellbeing (0-100) │   5,64     <0,001  0,02  0,25 [0,14; 0,36]  1200 
 #>  Body-mass index (kg/m²) │   0,93      0,018  0,00  0,14 [0,02; 0,25]  1188 
 #> 
-#> Note. Missing values removed: bmi (12).
+#> Note. Missing values removed: Body-mass index (kg/m²) (12).
 ```
 
 ## Publication-ready output
@@ -649,7 +649,7 @@ pkgdown_dark_gt(
 [TABLE]
 
 *Note.* Std. errors: heteroskedasticity-robust (HC3). Missing values
-removed: bmi (12), life_sat_health (8).
+removed: Body mass index (12), Satisfaction with health (1-5) (8).
 
 ## Tidying for downstream pipelines
 

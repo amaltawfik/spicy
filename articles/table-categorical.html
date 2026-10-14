@@ -140,7 +140,7 @@ variables, and a grouping variable:</p>
 <span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">smoking</span>, <span class="va">physical_activity</span>, <span class="va">dentist_12m</span><span class="op">)</span>,</span>
 <span>  by <span class="op">=</span> <span class="va">education</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Categorical table by education</span></span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Categorical table by Highest education level</span></span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Variable                        <span style="color: #9E9E9E;">│</span> Lower secondary n  Lower secondary % </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────────────────────┼──────────────────────────────────────</span></span></span>
@@ -351,7 +351,7 @@ label vectors, accepted before 0.13.0, now raise an error.)</p>
 <span>    physical_activity <span class="op">=</span> <span class="st">"Regular physical activity"</span></span>
 <span>  <span class="op">)</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Categorical table by education</span></span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Categorical table by Highest education level</span></span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Variable                  <span style="color: #9E9E9E;">│</span> Lower secondary n  Lower secondary % </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────────────┼──────────────────────────────────────</span></span></span>
@@ -420,7 +420,7 @@ uniform application, or with a named vector to mix measures per row:</p>
 <span>  by <span class="op">=</span> <span class="va">education</span>,</span>
 <span>  assoc_measure <span class="op">=</span> <span class="st">"lambda"</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Categorical table by education</span></span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Categorical table by Highest education level</span></span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Variable       <span style="color: #9E9E9E;">│</span> Lower secondary n  Lower secondary %  Upper secondary n </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────┼─────────────────────────────────────────────────────────</span></span></span>
@@ -464,7 +464,7 @@ keeps the former and replaces the latter with Goodman-Kruskal Gamma:</p>
 <span>  by <span class="op">=</span> <span class="va">education</span>,</span>
 <span>  assoc_measure <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>self_rated_health <span class="op">=</span> <span class="st">"gamma"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Categorical table by education</span></span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Categorical table by Highest education level</span></span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Variable          <span style="color: #9E9E9E;">│</span> Lower secondary n  Lower secondary %  Upper secondary n </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────┼─────────────────────────────────────────────────────────</span></span></span>
@@ -560,7 +560,7 @@ row beside <code>p</code>:</p>
 <span>  by <span class="op">=</span> <span class="va">sex</span>,</span>
 <span>  smd <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Categorical table by sex</span></span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Categorical table by Sex</span></span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Variable          <span style="color: #9E9E9E;">│</span> Female n  Female %  Male n  Male %  Total n  Total %   p   </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────┼────────────────────────────────────────────────────────────</span></span></span>
@@ -634,7 +634,7 @@ fractional weighted counts:</p>
 <span>  weights <span class="op">=</span> <span class="st">"weight"</span>,</span>
 <span>  rescale <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Categorical table by education</span></span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Categorical table by Highest education level</span></span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Variable                  <span style="color: #9E9E9E;">│</span> Lower secondary n  Lower secondary % </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────────────┼──────────────────────────────────────</span></span></span>
@@ -688,7 +688,7 @@ a table note rather than silent:</p>
 <span>  by <span class="op">=</span> <span class="va">education</span>,</span>
 <span>  drop_na <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Categorical table by education</span></span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Categorical table by Highest education level</span></span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Variable               <span style="color: #9E9E9E;">│</span> Lower secondary n  Lower secondary % </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────────────┼──────────────────────────────────────</span></span></span>
@@ -714,7 +714,7 @@ a table note rather than silent:</p>
 <span><span class="co">#&gt;    Upper middle         <span style="color: #9E9E9E;">│</span>    34.3       328     27.7                           </span></span>
 <span><span class="co">#&gt;    High                 <span style="color: #9E9E9E;">│</span>    26.4       219     18.5                           </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Missing values removed: income_group (18).</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Missing values removed: Household income group (18).</span></span></span></code></pre></div>
 <p>With several selected variables the note lists each variable’s
 removals separately: selecting <code>smoking</code> and
 <code>physical_activity</code> together under
@@ -735,7 +735,7 @@ placing “(Missing)” first to highlight missingness:</p>
 <span>  drop_na <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  levels_keep <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"(Missing)"</span>, <span class="st">"Low"</span>, <span class="st">"High"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Categorical table by education</span></span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Categorical table by Highest education level</span></span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Variable               <span style="color: #9E9E9E;">│</span> Lower secondary n  Lower secondary % </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────────────┼──────────────────────────────────────</span></span></span>
@@ -780,7 +780,7 @@ association measure:</p>
 <span>  p_digits <span class="op">=</span> <span class="fl">4</span>,</span>
 <span>  v_digits <span class="op">=</span> <span class="fl">3</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Categorical table by education</span></span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Categorical table by Highest education level</span></span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Variable       <span style="color: #9E9E9E;">│</span> Lower secondary n  Lower secondary %  Upper secondary n </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────┼─────────────────────────────────────────────────────────</span></span></span>
@@ -839,7 +839,7 @@ alignment:</p>
 <span>  by <span class="op">=</span> <span class="va">sex</span>,</span>
 <span>  align <span class="op">=</span> <span class="st">"right"</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Categorical table by sex</span></span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Categorical table by Sex</span></span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Variable                  <span style="color: #9E9E9E;">│</span> Female n  Female %  Male n  Male %  Total n </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────────────┼─────────────────────────────────────────────</span></span></span>
@@ -1417,7 +1417,7 @@ APA-style borders, column spanners, and decimal alignment:</p>
 <table class="table gt_table" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
 <thead>
 <tr class="gt_heading">
-<td colspan="11" class="gt_heading gt_title gt_font_normal gt_bottom_border" style="text-align: left; border-bottom-width: 0px; border-bottom-style: solid; border-bottom-color: transparent;">Categorical table by education</td>
+<td colspan="11" class="gt_heading gt_title gt_font_normal gt_bottom_border" style="text-align: left; border-bottom-width: 0px; border-bottom-style: solid; border-bottom-color: transparent;">Categorical table by Highest education level</td>
     </tr>
 <tr class="gt_col_headings gt_spanner_row">
 <th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="1" style="text-align: left; border-top-width: 1px; border-top-style: solid; border-top-color: currentColor;" scope="col" id="spn_variable">
@@ -1603,55 +1603,55 @@ table by sex):</p>
 
     <script src="https://cdn.jsdelivr.net/gh/vincentarelbundock/tinytable@main/inst/tinytable.js"></script><script>
       // Create table-specific functions using external factory
-      const tableFns_96xueraimwknogf7fevl = TinyTable.createTableFunctions("tinytable_96xueraimwknogf7fevl");
+      const tableFns_mlx2egcbpe2e1sxawevc = TinyTable.createTableFunctions("tinytable_mlx2egcbpe2e1sxawevc");
       // tinytable span after
       window.addEventListener('load', function () {
           var cellsToStyle = [
             // tinytable style arrays after
-          { positions: [ { i: '4', j: 8 }, { i: '4', j: 9 } ], css_id: 'tinytable_css_ohhtpgmbehuhgjuf3tnn',}, 
-          { positions: [ { i: '1', j: 8 }, { i: '2', j: 8 }, { i: '3', j: 8 }, { i: '5', j: 8 }, { i: '6', j: 8 }, { i: '1', j: 9 }, { i: '2', j: 9 }, { i: '3', j: 9 }, { i: '5', j: 9 }, { i: '6', j: 9 } ], css_id: 'tinytable_css_t8426igw5a58oln3x49j',}, 
-          { positions: [ { i: '0', j: 8 }, { i: '7', j: 8 }, { i: '0', j: 9 }, { i: '7', j: 9 } ], css_id: 'tinytable_css_00vr0votm929zwm9j6kc',}, 
-          { positions: [ { i: '-1', j: 8 }, { i: '-1', j: 9 } ], css_id: 'tinytable_css_dhoaxoeqr991pxxvp3cx',}, 
-          { positions: [ { i: '4', j: 2 }, { i: '4', j: 3 }, { i: '4', j: 4 }, { i: '4', j: 5 }, { i: '4', j: 6 }, { i: '4', j: 7 } ], css_id: 'tinytable_css_ts44fgb3f9w9137o2jjm',}, 
-          { positions: [ { i: '1', j: 2 }, { i: '2', j: 2 }, { i: '3', j: 2 }, { i: '5', j: 2 }, { i: '6', j: 2 }, { i: '1', j: 3 }, { i: '2', j: 3 }, { i: '3', j: 3 }, { i: '5', j: 3 }, { i: '6', j: 3 }, { i: '1', j: 4 }, { i: '2', j: 4 }, { i: '3', j: 4 }, { i: '5', j: 4 }, { i: '6', j: 4 }, { i: '1', j: 5 }, { i: '2', j: 5 }, { i: '3', j: 5 }, { i: '5', j: 5 }, { i: '6', j: 5 }, { i: '1', j: 6 }, { i: '2', j: 6 }, { i: '3', j: 6 }, { i: '5', j: 6 }, { i: '6', j: 6 }, { i: '1', j: 7 }, { i: '2', j: 7 }, { i: '3', j: 7 }, { i: '5', j: 7 }, { i: '6', j: 7 } ], css_id: 'tinytable_css_bxo2p15osfp5d7ca0eib',}, 
-          { positions: [ { i: '0', j: 2 }, { i: '7', j: 2 }, { i: '0', j: 3 }, { i: '7', j: 3 }, { i: '0', j: 4 }, { i: '7', j: 4 }, { i: '0', j: 5 }, { i: '7', j: 5 }, { i: '0', j: 6 }, { i: '7', j: 6 }, { i: '0', j: 7 }, { i: '7', j: 7 } ], css_id: 'tinytable_css_0tqjre9kgellxieuq2z8',}, 
-          { positions: [ { i: '-1', j: 2 }, { i: '-1', j: 3 }, { i: '-1', j: 4 }, { i: '-1', j: 5 }, { i: '-1', j: 6 }, { i: '-1', j: 7 } ], css_id: 'tinytable_css_esb2yhncufjmptt5w133',}, 
-          { positions: [ { i: '7', j: 1 } ], css_id: 'tinytable_css_lkqj9zzn9wikvkxxipee',}, 
-          { positions: [ { i: '4', j: 1 } ], css_id: 'tinytable_css_6ozxlr11zkia8gil2gjg',}, 
-          { positions: [ { i: '2', j: 1 }, { i: '3', j: 1 }, { i: '6', j: 1 } ], css_id: 'tinytable_css_zwbwdqwitjjm9jux04ul',}, 
-          { positions: [ { i: '1', j: 1 }, { i: '5', j: 1 } ], css_id: 'tinytable_css_5z80e2i2vgrqxf76hx1h',}, 
-          { positions: [ { i: '0', j: 1 } ], css_id: 'tinytable_css_ug70feauiq80i33ewlmp',}, 
-          { positions: [ { i: '-1', j: 1 } ], css_id: 'tinytable_css_4jytjvlw6b57w0dozpyq',}, 
+          { positions: [ { i: '4', j: 8 }, { i: '4', j: 9 } ], css_id: 'tinytable_css_tjqlvzydkfcwf530ly8u',}, 
+          { positions: [ { i: '1', j: 8 }, { i: '2', j: 8 }, { i: '3', j: 8 }, { i: '5', j: 8 }, { i: '6', j: 8 }, { i: '1', j: 9 }, { i: '2', j: 9 }, { i: '3', j: 9 }, { i: '5', j: 9 }, { i: '6', j: 9 } ], css_id: 'tinytable_css_cyn2jvbmihp7qndj38tj',}, 
+          { positions: [ { i: '0', j: 8 }, { i: '7', j: 8 }, { i: '0', j: 9 }, { i: '7', j: 9 } ], css_id: 'tinytable_css_mkpao9rp67ljv47kkti2',}, 
+          { positions: [ { i: '-1', j: 8 }, { i: '-1', j: 9 } ], css_id: 'tinytable_css_pj7ap937pifkpb6r5yjr',}, 
+          { positions: [ { i: '4', j: 2 }, { i: '4', j: 3 }, { i: '4', j: 4 }, { i: '4', j: 5 }, { i: '4', j: 6 }, { i: '4', j: 7 } ], css_id: 'tinytable_css_vksyhgvatm5ql7syrcf0',}, 
+          { positions: [ { i: '1', j: 2 }, { i: '2', j: 2 }, { i: '3', j: 2 }, { i: '5', j: 2 }, { i: '6', j: 2 }, { i: '1', j: 3 }, { i: '2', j: 3 }, { i: '3', j: 3 }, { i: '5', j: 3 }, { i: '6', j: 3 }, { i: '1', j: 4 }, { i: '2', j: 4 }, { i: '3', j: 4 }, { i: '5', j: 4 }, { i: '6', j: 4 }, { i: '1', j: 5 }, { i: '2', j: 5 }, { i: '3', j: 5 }, { i: '5', j: 5 }, { i: '6', j: 5 }, { i: '1', j: 6 }, { i: '2', j: 6 }, { i: '3', j: 6 }, { i: '5', j: 6 }, { i: '6', j: 6 }, { i: '1', j: 7 }, { i: '2', j: 7 }, { i: '3', j: 7 }, { i: '5', j: 7 }, { i: '6', j: 7 } ], css_id: 'tinytable_css_kd2e151yofjvd9ks9dj9',}, 
+          { positions: [ { i: '0', j: 2 }, { i: '7', j: 2 }, { i: '0', j: 3 }, { i: '7', j: 3 }, { i: '0', j: 4 }, { i: '7', j: 4 }, { i: '0', j: 5 }, { i: '7', j: 5 }, { i: '0', j: 6 }, { i: '7', j: 6 }, { i: '0', j: 7 }, { i: '7', j: 7 } ], css_id: 'tinytable_css_2tkkhj215dbfn17o35bz',}, 
+          { positions: [ { i: '-1', j: 2 }, { i: '-1', j: 3 }, { i: '-1', j: 4 }, { i: '-1', j: 5 }, { i: '-1', j: 6 }, { i: '-1', j: 7 } ], css_id: 'tinytable_css_y1d9aox0lj9dtd7242lk',}, 
+          { positions: [ { i: '7', j: 1 } ], css_id: 'tinytable_css_xtefokkeeattrkvs8qis',}, 
+          { positions: [ { i: '4', j: 1 } ], css_id: 'tinytable_css_ius2aw3hmqe6cx33lr7k',}, 
+          { positions: [ { i: '2', j: 1 }, { i: '3', j: 1 }, { i: '6', j: 1 } ], css_id: 'tinytable_css_1oqq2ob4uet7w23okrpv',}, 
+          { positions: [ { i: '1', j: 1 }, { i: '5', j: 1 } ], css_id: 'tinytable_css_90x7kgbpuzf22tpo592u',}, 
+          { positions: [ { i: '0', j: 1 } ], css_id: 'tinytable_css_4lckjmz4q54e4nmgfud8',}, 
+          { positions: [ { i: '-1', j: 1 } ], css_id: 'tinytable_css_bd6t3fp2u9xr3wejg8e1',}, 
           ];
 
           // Loop over the arrays to style the cells
           cellsToStyle.forEach(function (group) {
               group.positions.forEach(function (cell) {
-                  tableFns_96xueraimwknogf7fevl.styleCell(cell.i, cell.j, group.css_id);
+                  tableFns_mlx2egcbpe2e1sxawevc.styleCell(cell.i, cell.j, group.css_id);
               });
           });
       });
     </script><link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/vincentarelbundock/tinytable@main/inst/tinytable.css">
 <style>
     /* tinytable css entries after */
-    #tinytable_96xueraimwknogf7fevl td.tinytable_css_ohhtpgmbehuhgjuf3tnn, #tinytable_96xueraimwknogf7fevl th.tinytable_css_ohhtpgmbehuhgjuf3tnn {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center; white-space: nowrap; }
-    #tinytable_96xueraimwknogf7fevl td.tinytable_css_t8426igw5a58oln3x49j, #tinytable_96xueraimwknogf7fevl th.tinytable_css_t8426igw5a58oln3x49j { text-align: center; white-space: nowrap; }
-    #tinytable_96xueraimwknogf7fevl td.tinytable_css_00vr0votm929zwm9j6kc, #tinytable_96xueraimwknogf7fevl th.tinytable_css_00vr0votm929zwm9j6kc {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center; white-space: nowrap; }
-    #tinytable_96xueraimwknogf7fevl td.tinytable_css_dhoaxoeqr991pxxvp3cx, #tinytable_96xueraimwknogf7fevl th.tinytable_css_dhoaxoeqr991pxxvp3cx {  position: relative; --border-bottom: 0; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.1em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center; white-space: nowrap; }
-    #tinytable_96xueraimwknogf7fevl td.tinytable_css_ts44fgb3f9w9137o2jjm, #tinytable_96xueraimwknogf7fevl th.tinytable_css_ts44fgb3f9w9137o2jjm {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
-    #tinytable_96xueraimwknogf7fevl td.tinytable_css_bxo2p15osfp5d7ca0eib, #tinytable_96xueraimwknogf7fevl th.tinytable_css_bxo2p15osfp5d7ca0eib { text-align: center }
-    #tinytable_96xueraimwknogf7fevl td.tinytable_css_0tqjre9kgellxieuq2z8, #tinytable_96xueraimwknogf7fevl th.tinytable_css_0tqjre9kgellxieuq2z8 {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
-    #tinytable_96xueraimwknogf7fevl td.tinytable_css_esb2yhncufjmptt5w133, #tinytable_96xueraimwknogf7fevl th.tinytable_css_esb2yhncufjmptt5w133 {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
-    #tinytable_96xueraimwknogf7fevl td.tinytable_css_lkqj9zzn9wikvkxxipee, #tinytable_96xueraimwknogf7fevl th.tinytable_css_lkqj9zzn9wikvkxxipee {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left; padding-left: 1em; padding-left: 0.8em; }
-    #tinytable_96xueraimwknogf7fevl td.tinytable_css_6ozxlr11zkia8gil2gjg, #tinytable_96xueraimwknogf7fevl th.tinytable_css_6ozxlr11zkia8gil2gjg {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left; padding-left: 1em; padding-left: 0.8em; }
-    #tinytable_96xueraimwknogf7fevl td.tinytable_css_zwbwdqwitjjm9jux04ul, #tinytable_96xueraimwknogf7fevl th.tinytable_css_zwbwdqwitjjm9jux04ul { text-align: left; padding-left: 1em; padding-left: 0.8em; }
-    #tinytable_96xueraimwknogf7fevl td.tinytable_css_5z80e2i2vgrqxf76hx1h, #tinytable_96xueraimwknogf7fevl th.tinytable_css_5z80e2i2vgrqxf76hx1h { text-align: left }
-    #tinytable_96xueraimwknogf7fevl td.tinytable_css_ug70feauiq80i33ewlmp, #tinytable_96xueraimwknogf7fevl th.tinytable_css_ug70feauiq80i33ewlmp {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
-    #tinytable_96xueraimwknogf7fevl td.tinytable_css_4jytjvlw6b57w0dozpyq, #tinytable_96xueraimwknogf7fevl th.tinytable_css_4jytjvlw6b57w0dozpyq {  position: relative; --border-bottom: 0; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.1em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
+    #tinytable_mlx2egcbpe2e1sxawevc td.tinytable_css_tjqlvzydkfcwf530ly8u, #tinytable_mlx2egcbpe2e1sxawevc th.tinytable_css_tjqlvzydkfcwf530ly8u {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center; white-space: nowrap; }
+    #tinytable_mlx2egcbpe2e1sxawevc td.tinytable_css_cyn2jvbmihp7qndj38tj, #tinytable_mlx2egcbpe2e1sxawevc th.tinytable_css_cyn2jvbmihp7qndj38tj { text-align: center; white-space: nowrap; }
+    #tinytable_mlx2egcbpe2e1sxawevc td.tinytable_css_mkpao9rp67ljv47kkti2, #tinytable_mlx2egcbpe2e1sxawevc th.tinytable_css_mkpao9rp67ljv47kkti2 {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center; white-space: nowrap; }
+    #tinytable_mlx2egcbpe2e1sxawevc td.tinytable_css_pj7ap937pifkpb6r5yjr, #tinytable_mlx2egcbpe2e1sxawevc th.tinytable_css_pj7ap937pifkpb6r5yjr {  position: relative; --border-bottom: 0; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.1em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center; white-space: nowrap; }
+    #tinytable_mlx2egcbpe2e1sxawevc td.tinytable_css_vksyhgvatm5ql7syrcf0, #tinytable_mlx2egcbpe2e1sxawevc th.tinytable_css_vksyhgvatm5ql7syrcf0 {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
+    #tinytable_mlx2egcbpe2e1sxawevc td.tinytable_css_kd2e151yofjvd9ks9dj9, #tinytable_mlx2egcbpe2e1sxawevc th.tinytable_css_kd2e151yofjvd9ks9dj9 { text-align: center }
+    #tinytable_mlx2egcbpe2e1sxawevc td.tinytable_css_2tkkhj215dbfn17o35bz, #tinytable_mlx2egcbpe2e1sxawevc th.tinytable_css_2tkkhj215dbfn17o35bz {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
+    #tinytable_mlx2egcbpe2e1sxawevc td.tinytable_css_y1d9aox0lj9dtd7242lk, #tinytable_mlx2egcbpe2e1sxawevc th.tinytable_css_y1d9aox0lj9dtd7242lk {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
+    #tinytable_mlx2egcbpe2e1sxawevc td.tinytable_css_xtefokkeeattrkvs8qis, #tinytable_mlx2egcbpe2e1sxawevc th.tinytable_css_xtefokkeeattrkvs8qis {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left; padding-left: 1em; padding-left: 0.8em; }
+    #tinytable_mlx2egcbpe2e1sxawevc td.tinytable_css_ius2aw3hmqe6cx33lr7k, #tinytable_mlx2egcbpe2e1sxawevc th.tinytable_css_ius2aw3hmqe6cx33lr7k {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left; padding-left: 1em; padding-left: 0.8em; }
+    #tinytable_mlx2egcbpe2e1sxawevc td.tinytable_css_1oqq2ob4uet7w23okrpv, #tinytable_mlx2egcbpe2e1sxawevc th.tinytable_css_1oqq2ob4uet7w23okrpv { text-align: left; padding-left: 1em; padding-left: 0.8em; }
+    #tinytable_mlx2egcbpe2e1sxawevc td.tinytable_css_90x7kgbpuzf22tpo592u, #tinytable_mlx2egcbpe2e1sxawevc th.tinytable_css_90x7kgbpuzf22tpo592u { text-align: left }
+    #tinytable_mlx2egcbpe2e1sxawevc td.tinytable_css_4lckjmz4q54e4nmgfud8, #tinytable_mlx2egcbpe2e1sxawevc th.tinytable_css_4lckjmz4q54e4nmgfud8 {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
+    #tinytable_mlx2egcbpe2e1sxawevc td.tinytable_css_bd6t3fp2u9xr3wejg8e1, #tinytable_mlx2egcbpe2e1sxawevc th.tinytable_css_bd6t3fp2u9xr3wejg8e1 {  position: relative; --border-bottom: 0; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.1em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
     </style>
 <div class="container">
-      <table class="table tinytable" id="tinytable_96xueraimwknogf7fevl" style="width: auto; margin-left: auto; margin-right: auto;" data-quarto-disable-processing="true">
-<caption>Categorical table by sex</caption>
+      <table class="table tinytable" id="tinytable_mlx2egcbpe2e1sxawevc" style="width: auto; margin-left: auto; margin-right: auto;" data-quarto-disable-processing="true">
+<caption>Categorical table by Sex</caption>
         <thead>
 <tr>
 <th scope="col" align="center" colspan="1" data-row="-1" data-col="1">Variable</th>
@@ -2262,7 +2262,7 @@ confidence interval inline after the association measure:</p>
 <table class="table gt_table" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
 <thead>
 <tr class="gt_heading">
-<td colspan="11" class="gt_heading gt_title gt_font_normal gt_bottom_border" style="text-align: left; border-bottom-width: 0px; border-bottom-style: solid; border-bottom-color: transparent;">Categorical table by education</td>
+<td colspan="11" class="gt_heading gt_title gt_font_normal gt_bottom_border" style="text-align: left; border-bottom-width: 0px; border-bottom-style: solid; border-bottom-color: transparent;">Categorical table by Highest education level</td>
     </tr>
 <tr class="gt_col_headings gt_spanner_row">
 <th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="1" style="text-align: left; border-top-width: 1px; border-top-style: solid; border-top-color: currentColor;" scope="col" id="spn_variable">

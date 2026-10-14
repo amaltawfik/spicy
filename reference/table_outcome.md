@@ -341,7 +341,7 @@ table_outcome(sochealth, bmi, select = c(sex, smoking))
 #>    Yes          │ 25.93  3.58  16.80  35.30    25.48      26.38     248       
 #>    (Missing)    │ 24.74  3.63  17.60  32.50    23.24      26.23      25       
 #> 
-#> Missing values removed: bmi (12). Group comparison: Welch t-test. Each block compares Body mass index across the levels of one variable; blocks are not adjusted for one another. Overall = the whole analytic sample.
+#> Missing values removed: Body mass index (12). Group comparison: Welch t-test. Each block compares Body mass index across the levels of one variable; blocks are not adjusted for one another. Overall = the whole analytic sample.
 table_outcome(sochealth, wellbeing_score, select = where(is.factor))
 #> Descriptive statistics of WHO-5 wellbeing index (0-100)
 #> 

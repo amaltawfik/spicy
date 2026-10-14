@@ -347,7 +347,7 @@ cross_tab(sochealth, smoking, education)
 #> ──────────┼──────────────────────────────────────────────────┼─────────
 #>  Total    │               257                527         391 │    1175 
 #> 
-#> Chi-2(2) = 21.6, p <.001
+#> Chi-2(2) = 21.6, p < .001
 #> Cramer's V = 0.14
 #> Missing values removed: smoking (25).
 ```
@@ -370,7 +370,7 @@ cross_tab(sochealth, smoking, education, percent = "column")
 #>  Total    │             100.0              100.0       100.0 │   100.0 
 #>  N        │               257                527         391 │    1175 
 #> 
-#> Chi-2(2) = 21.6, p <.001
+#> Chi-2(2) = 21.6, p < .001
 #> Cramer's V = 0.14
 #> Missing values removed: smoking (25).
 ```
@@ -387,7 +387,7 @@ cross_tab(sochealth, smoking, education, percent = "row")
 #> ──────────┼──────────────────────────────────────────────────┼─────────────────
 #>  Total    │              21.9               44.9        33.3 │   100.0    1175 
 #> 
-#> Chi-2(2) = 21.6, p <.001
+#> Chi-2(2) = 21.6, p < .001
 #> Cramer's V = 0.14
 #> Missing values removed: smoking (25).
 ```
@@ -421,7 +421,7 @@ cross_tab(sochealth, smoking, education, by = sex)
 #> ──────────┼──────────────────────────────────────────────────┼─────────
 #>  Total    │               124                245         200 │     569 
 #> 
-#> Chi-2(2) = 15.6, p <.001
+#> Chi-2(2) = 15.6, p < .001
 #> Cramer's V = 0.17
 #> Missing values removed: smoking (11).
 ```
@@ -455,7 +455,7 @@ cross_tab(sochealth, smoking, education,
 #> ──────────┼──────────────────────────────────────────────────┼─────────
 #>  Total    │                20                 53          36 │     109 
 #> 
-#> Chi-2(2) = 14.2, p <.001
+#> Chi-2(2) = 14.2, p < .001
 #> Cramer's V = 0.36
 #> Missing values removed: smoking (3).
 #> 
@@ -557,7 +557,7 @@ cross_tab(sochealth, self_rated_health, education)
 #> ─────────────┼──────────────────────────────────────────────────┼─────────
 #>  Total       │               260                527         393 │    1180 
 #> 
-#> Chi-2(6) = 73.2, p <.001
+#> Chi-2(6) = 73.2, p < .001
 #> Kendall's Tau-b = 0.20
 #> Missing values removed: self_rated_health (20).
 ```
@@ -578,7 +578,7 @@ cross_tab(sochealth, self_rated_health, education, assoc_measure = "gamma")
 #> ─────────────┼──────────────────────────────────────────────────┼─────────
 #>  Total       │               260                527         393 │    1180 
 #> 
-#> Chi-2(6) = 73.2, p <.001
+#> Chi-2(6) = 73.2, p < .001
 #> Goodman-Kruskal Gamma = 0.31
 #> Missing values removed: self_rated_health (20).
 ```
@@ -600,7 +600,7 @@ cross_tab(sochealth, smoking, education, assoc_ci = TRUE)
 #> ──────────┼──────────────────────────────────────────────────┼─────────
 #>  Total    │               257                527         391 │    1175 
 #> 
-#> Chi-2(2) = 21.6, p <.001
+#> Chi-2(2) = 21.6, p < .001
 #> Cramer's V = 0.14, 95% CI [0.08, 0.19]
 #> Missing values removed: smoking (25).
 ```
@@ -624,7 +624,7 @@ cross_tab(sochealth, smoking, education, weights = weight)
 #> ──────────┼──────────────────────────────────────────────────┼─────────
 #>  Total    │               254                531         384 │    1170 
 #> 
-#> Chi-2(2) = 21.3, p <.001
+#> Chi-2(2) = 21.3, p < .001
 #> Cramer's V = 0.13
 #> Weight: weight
 #> Missing values removed: smoking (25).
@@ -645,7 +645,7 @@ cross_tab(sochealth, smoking, education, weights = weight, rescale = TRUE)
 #> ──────────┼──────────────────────────────────────────────────┼─────────
 #>  Total    │               256                534         386 │    1175 
 #> 
-#> Chi-2(2) = 21.4, p <.001
+#> Chi-2(2) = 21.4, p < .001
 #> Cramer's V = 0.13
 #> Weight: weight (rescaled)
 #> Missing values removed: smoking (25).
@@ -674,7 +674,7 @@ cross_tab(students, self_rated_health, education)
 #> ─────────────┼──────────────────────────────────────────────────┼─────────
 #>  Total       │                22                 72          46 │     140 
 #> 
-#> Chi-2(6) = 23.4, p <.001
+#> Chi-2(6) = 23.4, p < .001
 #> Kendall's Tau-b = 0.28
 #> Warning: 5 expected cells < 5 (41.7%). 1 expected cell < 1. Minimum expected = 0.79. Consider `simulate_p = TRUE` or set globally via `options(spicy.simulate_p = TRUE)`.
 #> Missing values removed: self_rated_health (3).
@@ -700,7 +700,7 @@ cross_tab(students, self_rated_health, education,
 #> ─────────────┼──────────────────────────────────────────────────┼─────────
 #>  Total       │                22                 72          46 │     140 
 #> 
-#> Chi-2(NA) = 23.4, p <.001 (simulated)
+#> Chi-2(NA) = 23.4, p < .001 (simulated)
 #> Kendall's Tau-b = 0.28
 #> Missing values removed: self_rated_health (3).
 ```

@@ -290,7 +290,7 @@ cross_tab(sochealth, smoking, education)
 #> ──────────┼──────────────────────────────────────────────────┼─────────
 #>  Total    │               257                527         391 │    1175 
 #> 
-#> Chi-2(2) = 21.6, p <.001
+#> Chi-2(2) = 21.6, p < .001
 #> Cramer's V = 0.14
 #> Missing values removed: smoking (25).
 
@@ -306,7 +306,7 @@ cross_tab(sochealth, smoking, education, percent = "column")
 #>  Total    │             100.0              100.0       100.0 │   100.0 
 #>  N        │               257                527         391 │    1175 
 #> 
-#> Chi-2(2) = 21.6, p <.001
+#> Chi-2(2) = 21.6, p < .001
 #> Cramer's V = 0.14
 #> Missing values removed: smoking (25).
 
@@ -321,7 +321,7 @@ cross_tab(sochealth, smoking, education, weights = weight, rescale = TRUE)
 #> ──────────┼──────────────────────────────────────────────────┼─────────
 #>  Total    │               256                534         386 │    1175 
 #> 
-#> Chi-2(2) = 21.4, p <.001
+#> Chi-2(2) = 21.4, p < .001
 #> Cramer's V = 0.13
 #> Weight: weight (rescaled)
 #> Missing values removed: smoking (25).
@@ -350,7 +350,7 @@ cross_tab(sochealth, smoking, education, by = sex)
 #> ──────────┼──────────────────────────────────────────────────┼─────────
 #>  Total    │               124                245         200 │     569 
 #> 
-#> Chi-2(2) = 15.6, p <.001
+#> Chi-2(2) = 15.6, p < .001
 #> Cramer's V = 0.17
 #> Missing values removed: smoking (11).
 
@@ -378,7 +378,7 @@ cross_tab(sochealth, smoking, education, by = interaction(sex, age_group))
 #> ──────────┼──────────────────────────────────────────────────┼─────────
 #>  Total    │                20                 53          36 │     109 
 #> 
-#> Chi-2(2) = 14.2, p <.001
+#> Chi-2(2) = 14.2, p < .001
 #> Cramer's V = 0.36
 #> Missing values removed: smoking (3).
 #> 
@@ -471,7 +471,7 @@ cross_tab(sochealth, education, self_rated_health)
 #> ───────────────────┼─────────────────────────────────────┼─────────
 #>  Total             │     61     266     558          295 │    1180 
 #> 
-#> Chi-2(6) = 73.2, p <.001
+#> Chi-2(6) = 73.2, p < .001
 #> Kendall's Tau-b = 0.20
 #> Missing values removed: self_rated_health (20).
 
@@ -502,7 +502,7 @@ cross_tab(sochealth, smoking, education, decimal_mark = ",", p_digits = 4)
 #> ──────────┼──────────────────────────────────────────────────┼─────────
 #>  Total    │               257                527         391 │    1175 
 #> 
-#> Chi-2(2) = 21,6, p <0,0001
+#> Chi-2(2) = 21,6, p < 0,0001
 #> Cramer's V = 0,14
 #> Missing values removed: smoking (25).
 ```

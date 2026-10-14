@@ -647,7 +647,7 @@ table_categorical(
   select = c(smoking, physical_activity),
   by = sex
 )
-#> Categorical table by sex
+#> Categorical table by Sex
 #> 
 #>  Variable                  │ Female n  Female %  Male n  Male %  Total n 
 #> ───────────────────────────┼─────────────────────────────────────────────
@@ -699,7 +699,7 @@ table_categorical(
     physical_activity = "Physical activity"
   )
 )
-#> Categorical table by education
+#> Categorical table by Highest education level
 #> 
 #>  Variable          │ Lower secondary n  Lower secondary %  Upper secondary n 
 #> ───────────────────┼─────────────────────────────────────────────────────────
@@ -742,7 +742,7 @@ table_categorical(
   weights = "weight",
   rescale = TRUE
 )
-#> Categorical table by education
+#> Categorical table by Highest education level
 #> 
 #>  Variable                  │ Lower secondary n  Lower secondary % 
 #> ───────────────────────────┼──────────────────────────────────────
@@ -784,7 +784,7 @@ table_categorical(
   by = education,
   assoc_ci = TRUE
 )
-#> Categorical table by education
+#> Categorical table by Highest education level
 #> 
 #>  Variable       │ Lower secondary n  Lower secondary %  Upper secondary n 
 #> ────────────────┼─────────────────────────────────────────────────────────
@@ -819,7 +819,7 @@ table_categorical(
   select = c(smoking, education),
   by = sex
 )
-#> Categorical table by sex
+#> Categorical table by Sex
 #> 
 #>  Variable                │ Female n  Female %  Male n  Male %  Total n  Total % 
 #> ─────────────────────────┼──────────────────────────────────────────────────────
@@ -854,7 +854,7 @@ table_categorical(
   by = sex,
   assoc_measure = "cramer_v"
 )
-#> Categorical table by sex
+#> Categorical table by Sex
 #> 
 #>  Variable                │ Female n  Female %  Male n  Male %  Total n  Total % 
 #> ─────────────────────────┼──────────────────────────────────────────────────────
@@ -891,7 +891,7 @@ table_categorical(
     self_rated_health = "tau_b"       # ordinal x binary, Tau-b
   )
 )
-#> Categorical table by sex
+#> Categorical table by Sex
 #> 
 #>  Variable                │ Female n  Female %  Male n  Male %  Total n  Total % 
 #> ─────────────────────────┼──────────────────────────────────────────────────────

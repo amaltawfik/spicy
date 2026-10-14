@@ -33,7 +33,7 @@ table_regression(
   intercept_position = c("first", "last"),
   factor_layout = c("grouped", "flat"),
   reference_style = c("row", "annotation", "footer", "none"),
-  reference_label = "(ref.)",
+  reference_label = NULL,
   show_fit_stats = NULL,
   fit_stats_layout = c("first_col", "merged"),
   show_re = TRUE,
@@ -435,8 +435,10 @@ table_regression(
 - reference_label:
 
   Suffix shown after the reference level in `reference_style = "row"`
-  mode. Default `"(ref.)"`. Ignored by the other three modes (which use
-  structural English wording – "ref:", "vs", "Reference categories:").
+  mode. `NULL` (default) prints `"(ref.)"`, translated under
+  `options(spicy.language = )`; a string you supply is printed as typed.
+  Ignored by the other three modes (which use structural English wording
+  – "ref:", "vs", "Reference categories:").
 
 - show_fit_stats:
 

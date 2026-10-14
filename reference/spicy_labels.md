@@ -132,7 +132,7 @@ fr[["row_missing_level"]]
 # variable is a refusal to answer here, not an absent value.
 old <- options(spicy.labels = list(row_missing_level = "(No answer)"))
 table_categorical(sochealth, select = sex, by = smoking)
-#> Categorical table by smoking
+#> Categorical table by Current smoker
 #> 
 #>  Variable │ No n  No %  Yes n  Yes %  (No answer) n  (No answer) %  Total n 
 #> ──────────┼─────────────────────────────────────────────────────────────────

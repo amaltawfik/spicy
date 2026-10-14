@@ -845,7 +845,7 @@ table_continuous(
 #>  Body mass index               │   26.14    1188 
 #>  WHO-5 wellbeing index (0-100) │   69.93    1200 
 #> 
-#> Missing values removed: bmi (12).
+#> Missing values removed: Body mass index (12).
 
 # Grouped by education (Welch p-value added by default).
 table_continuous(
@@ -885,7 +885,7 @@ table_continuous(
 #>                                │ Upper secondary        
 #>                                │ Tertiary               
 #> 
-#> Missing values removed: bmi (12).
+#> Missing values removed: Body mass index (12).
 
 # Test statistic alongside the p-value.
 table_continuous(
@@ -926,7 +926,7 @@ table_continuous(
 #>                                │ Upper secondary                               
 #>                                │ Tertiary                                      
 #> 
-#> Missing values removed: bmi (12).
+#> Missing values removed: Body mass index (12).
 
 # --- Choosing the statistics --------------------------------------------
 
@@ -943,7 +943,7 @@ table_continuous(
 #>  Body mass index                 │  25.90 [23.40, 28.60]    1188  
 #>  WHO-5 wellbeing index (0-100)   │  70.25 [58.90, 79.23]    1200  
 #> 
-#> Missing values removed: bmi (12). Med [Q1, Q3] = median [first quartile, third quartile].
+#> Missing values removed: Body mass index (12). Med [Q1, Q3] = median [first quartile, third quartile].
 
 # Median with its exact (order-statistic) confidence interval.
 table_continuous(
@@ -957,7 +957,7 @@ table_continuous(
 #> ───────────────────┼───────────────────────────────────────────────────────────
 #>  Body mass index   │  25.90    5.20        25.70            26.20        1188  
 #> 
-#> Missing values removed: bmi (12). IQR = interquartile range (Q3 - Q1). Med 95% CI = exact order-statistic confidence interval for the median (coverage at least 95%).
+#> Missing values removed: Body mass index (12). IQR = interquartile range (Q3 - Q1). Med 95% CI = exact order-statistic confidence interval for the median (coverage at least 95%).
 
 # One selection per variable. A skewed variable that a scoring
 # protocol requires in median and IQR (the IPAQ case) sits next to
@@ -996,7 +996,7 @@ table_continuous(
 #>  WHO-5 wellbeing index (0-100)  │ Female  <.001 
 #>                                 │ Male          
 #> 
-#> Missing values removed: bmi (12), life_sat_health (8). Group comparison: Welch t-test (bmi, wellbeing_score); Wilcoxon rank-sum test (life_sat_health). Med [Q1, Q3] = median [first quartile, third quartile].
+#> Missing values removed: Body mass index (12), Satisfaction with health (1-5) (8). Group comparison: Welch t-test (bmi, wellbeing_score); Wilcoxon rank-sum test (life_sat_health). Med [Q1, Q3] = median [first quartile, third quartile].
 
 # --- Effect sizes -------------------------------------------------------
 
@@ -1085,7 +1085,7 @@ table_continuous(
 #>  Satisfaction with relationships (1-5)      │   3.79     1192 
 #>  Satisfaction with standard of living (1-5) │   3.46     1192 
 #> 
-#> Missing values removed: life_sat_health (8), life_sat_work (8), life_sat_relationships (8), life_sat_standard (8).
+#> Missing values removed: Satisfaction with health (1-5) (8), Satisfaction with work (1-5) (8), Satisfaction with relationships (1-5) (8), Satisfaction with standard of living (1-5) (8).
 
 # Pretty labels keyed by column name.
 table_continuous(
@@ -1108,7 +1108,7 @@ table_continuous(
 #>  Body mass index          │ 1188 
 #>  Satisfaction with health │ 1192 
 #> 
-#> Missing values removed: bmi (12), life_sat_health (8).
+#> Missing values removed: Body mass index (12), Satisfaction with health (8).
 
 # --- Output formats -----------------------------------------------------
 

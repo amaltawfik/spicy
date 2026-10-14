@@ -31,7 +31,7 @@ table_categorical(
   select = c(smoking, physical_activity, dentist_12m),
   by = education
 )
-#> Categorical table by education
+#> Categorical table by Highest education level
 #> 
 #>  Variable                        │ Lower secondary n  Lower secondary % 
 #> ─────────────────────────────────┼──────────────────────────────────────
@@ -220,7 +220,7 @@ table_categorical(
     physical_activity = "Regular physical activity"
   )
 )
-#> Categorical table by education
+#> Categorical table by Highest education level
 #> 
 #>  Variable                  │ Lower secondary n  Lower secondary % 
 #> ───────────────────────────┼──────────────────────────────────────
@@ -289,7 +289,7 @@ table_categorical(
   by = education,
   assoc_measure = "lambda"
 )
-#> Categorical table by education
+#> Categorical table by Highest education level
 #> 
 #>  Variable       │ Lower secondary n  Lower secondary %  Upper secondary n 
 #> ────────────────┼─────────────────────────────────────────────────────────
@@ -337,7 +337,7 @@ table_categorical(
   by = education,
   assoc_measure = c(self_rated_health = "gamma")
 )
-#> Categorical table by education
+#> Categorical table by Highest education level
 #> 
 #>  Variable          │ Lower secondary n  Lower secondary %  Upper secondary n 
 #> ───────────────────┼─────────────────────────────────────────────────────────
@@ -435,7 +435,7 @@ table_categorical(
   by = sex,
   smd = TRUE
 )
-#> Categorical table by sex
+#> Categorical table by Sex
 #> 
 #>  Variable          │ Female n  Female %  Male n  Male %  Total n  Total %   p   
 #> ───────────────────┼────────────────────────────────────────────────────────────
@@ -511,7 +511,7 @@ table_categorical(
   weights = "weight",
   rescale = TRUE
 )
-#> Categorical table by education
+#> Categorical table by Highest education level
 #> 
 #>  Variable                  │ Lower secondary n  Lower secondary % 
 #> ───────────────────────────┼──────────────────────────────────────
@@ -566,7 +566,7 @@ table_categorical(
   by = education,
   drop_na = TRUE
 )
-#> Categorical table by education
+#> Categorical table by Highest education level
 #> 
 #>  Variable               │ Lower secondary n  Lower secondary % 
 #> ────────────────────────┼──────────────────────────────────────
@@ -592,7 +592,7 @@ table_categorical(
 #>    Upper middle         │    34.3       328     27.7                           
 #>    High                 │    26.4       219     18.5                           
 #> 
-#> Missing values removed: income_group (18).
+#> Missing values removed: Household income group (18).
 ```
 
 With several selected variables the note lists each variable’s removals
@@ -615,7 +615,7 @@ table_categorical(
   drop_na = FALSE,
   levels_keep = c("(Missing)", "Low", "High")
 )
-#> Categorical table by education
+#> Categorical table by Highest education level
 #> 
 #>  Variable               │ Lower secondary n  Lower secondary % 
 #> ────────────────────────┼──────────────────────────────────────
@@ -664,7 +664,7 @@ table_categorical(
   p_digits = 4,
   v_digits = 3
 )
-#> Categorical table by education
+#> Categorical table by Highest education level
 #> 
 #>  Variable       │ Lower secondary n  Lower secondary %  Upper secondary n 
 #> ────────────────┼─────────────────────────────────────────────────────────
@@ -726,7 +726,7 @@ table_categorical(
   by = sex,
   align = "right"
 )
-#> Categorical table by sex
+#> Categorical table by Sex
 #> 
 #>  Variable                  │ Female n  Female %  Male n  Male %  Total n 
 #> ───────────────────────────┼─────────────────────────────────────────────
@@ -842,7 +842,7 @@ table_categorical(
 |     No                    | 334    | 53.9 | 316  | 54.5 | 650   | 54.2 |      |     |
 |     Yes                   | 286    | 46.1 | 264  | 45.5 | 550   | 45.8 |      |     |
 
-Categorical table by sex {#tinytable_96xueraimwknogf7fevl .table
+Categorical table by Sex {#tinytable_mlx2egcbpe2e1sxawevc .table
 .tinytable style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 

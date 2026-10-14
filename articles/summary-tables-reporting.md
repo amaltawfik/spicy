@@ -124,7 +124,7 @@ table_categorical(
     physical_activity = "Regular physical activity"
   )
 )
-#> Categorical table by education
+#> Categorical table by Highest education level
 #> 
 #>  Variable                  │ Lower secondary n  Lower secondary % 
 #> ───────────────────────────┼──────────────────────────────────────
@@ -202,7 +202,7 @@ table_continuous(
 #>                           │ Upper secondary     3.43       3.63    534        
 #>                           │ Tertiary            4.01       4.21    399        
 #> 
-#> Missing values removed: bmi (12), life_sat_health (8).
+#> Missing values removed: Body mass index (12), Satisfaction with health (8).
 ```
 
 ``` r
@@ -229,7 +229,7 @@ table_continuous_lm(
 #>  Satisfaction with health (1-5) │     4.09      <.001  0.15  1192 
 #> 
 #> Note. Std. errors: heteroskedasticity-robust (HC3).
-#> Missing values removed: bmi (12), life_sat_health (8).
+#> Missing values removed: Body mass index (12), Satisfaction with health (1-5) (8).
 ```
 
 Two words on the weighted example. `weights` supplies **case weights**,
@@ -327,7 +327,7 @@ table_categorical(
     dentist_12m       = "Visited a dentist in the last 12 months"
   )
 )
-#> Categorical table by education
+#> Categorical table by Highest education level
 #> 
 #>  Variable                                │ Lower secondary n  Lower secondary % 
 #> ─────────────────────────────────────────┼──────────────────────────────────────
@@ -450,7 +450,7 @@ table_continuous(
 #>                           │ Upper secondary            
 #>                           │ Tertiary                   
 #> 
-#> Missing values removed: bmi (12), life_sat_health (8).
+#> Missing values removed: Body mass index (12), Satisfaction with health (8).
 ```
 
 This keeps the reporting structure consistent while still using the
@@ -482,7 +482,7 @@ table_continuous_lm(
 #>  Satisfaction with health (1-5) │   -0.06      0.22     1.11   .267  0.00  1192 
 #> 
 #> Note. Std. errors: heteroskedasticity-robust (HC3).
-#> Missing values removed: bmi (12), life_sat_health (8).
+#> Missing values removed: Body mass index (12), Satisfaction with health (1-5) (8).
 ```
 
 This is the better summary-table path when the article is already
@@ -530,7 +530,7 @@ table_continuous(
 #>  WHO-5 wellbeing index (0-100) │ Female    68.33    620  -0.25 
 #>                                │ Male      72.37    580        
 #> 
-#> Missing values removed: bmi (12). SMD = standardized mean difference (Female - Male); |SMD| > 0.1 is the usual imbalance threshold.
+#> Missing values removed: Body mass index (12). SMD = standardized mean difference (Female - Male); |SMD| > 0.1 is the usual imbalance threshold.
 ```
 
 ``` r
@@ -541,7 +541,7 @@ table_categorical(
   by = sex,
   smd = TRUE
 )
-#> Categorical table by sex
+#> Categorical table by Sex
 #> 
 #>  Variable                  │ Female n  Female %  Male n  Male %  Total n 
 #> ───────────────────────────┼─────────────────────────────────────────────
@@ -791,7 +791,7 @@ guidelines:
 ``` r
 
 table_categorical(sochealth, select = smoking, by = sex, style = "jama")
-#> Categorical table by sex
+#> Categorical table by Sex
 #> 
 #>  Variable       │ Female n  Female %  Male n  Male %  Total n  Total %   p  
 #> ────────────────┼───────────────────────────────────────────────────────────
@@ -843,7 +843,7 @@ table_continuous(sochealth, select = bmi, by = sex)
 #>  Body mass index │ Female  0,018 
 #>                  │ Male          
 #> 
-#> Valeurs manquantes retirées : bmi (12).
+#> Valeurs manquantes retirées : Body mass index (12).
 ```
 
 One gesture, one coherent table. A language brings its typography with
@@ -880,7 +880,7 @@ table_continuous(sochealth, select = bmi, by = sex, style = "jama")
 #>  Body mass index │ Female  ,02 
 #>                  │ Male        
 #> 
-#> Valeurs manquantes retirées : bmi (12).
+#> Valeurs manquantes retirées : Body mass index (12).
 ```
 
 Where the two do meet, the theme wins — you asked for it by name. JAMA’s
@@ -910,7 +910,7 @@ table_continuous(sochealth, select = bmi, by = sex, decimal_mark = ".")
 #>  Body mass index │ Female  0.018 
 #>                  │ Male          
 #> 
-#> Valeurs manquantes retirées : bmi (12).
+#> Valeurs manquantes retirées : Body mass index (12).
 ```
 
 When one word has to change and a language does not — a questionnaire
@@ -922,7 +922,7 @@ whatever language is in force:
 
 options(spicy.labels = list(row_missing_level = "(No answer)"))
 table_categorical(sochealth, select = sex, by = smoking)
-#> Categorical table by smoking
+#> Categorical table by Current smoker
 #> 
 #>  Variable │ No n  No %  Yes n  Yes %  (No answer) n  (No answer) %  Total n 
 #> ──────────┼─────────────────────────────────────────────────────────────────
@@ -1065,8 +1065,9 @@ tab |>
 |     No | 177 | 67.8 | 310 | 57.5 | 163 | 40.8 | 650 | 54.2 |       |     |
 |     Yes |  84 | 32.2 | 229 | 42.5 | 237 | 59.2 | 550 | 45.8 |       |     |
 
-Categorical table by education {#tinytable_3hw3x26wj8h4ocoosqkr .table
-.tinytable style="width: auto; margin-left: auto; margin-right: auto;"
+Categorical table by Highest education level
+{#tinytable_f9tqrmkbpyt060iyb1u2 .table .tinytable
+style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 
 Use `flextable::` functions when you want to keep working toward Office

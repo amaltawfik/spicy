@@ -150,7 +150,7 @@ cross_tab(sochealth, smoking, education)
 #> ──────────┼──────────────────────────────────────────────────┼─────────
 #>  Total    │               257                527         391 │    1175 
 #> 
-#> Chi-2(2) = 21.6, p <.001
+#> Chi-2(2) = 21.6, p < .001
 #> Cramer's V = 0.14
 #> Missing values removed: smoking (25).
 ```
@@ -170,7 +170,7 @@ cross_tab(sochealth, smoking, education, percent = "column")
 #>  Total    │             100.0              100.0       100.0 │   100.0 
 #>  N        │               257                527         391 │    1175 
 #> 
-#> Chi-2(2) = 21.6, p <.001
+#> Chi-2(2) = 21.6, p < .001
 #> Cramer's V = 0.14
 #> Missing values removed: smoking (25).
 ```
@@ -202,7 +202,7 @@ cross_tab(sochealth, smoking, education, by = sex)
 #> ──────────┼──────────────────────────────────────────────────┼─────────
 #>  Total    │               124                245         200 │     569 
 #> 
-#> Chi-2(2) = 15.6, p <.001
+#> Chi-2(2) = 15.6, p < .001
 #> Cramer's V = 0.17
 #> Missing values removed: smoking (11).
 ```
@@ -226,7 +226,7 @@ cross_tab(sochealth, self_rated_health, education)
 #> ─────────────┼──────────────────────────────────────────────────┼─────────
 #>  Total       │               260                527         393 │    1180 
 #> 
-#> Chi-2(6) = 73.2, p <.001
+#> Chi-2(6) = 73.2, p < .001
 #> Kendall's Tau-b = 0.20
 #> Missing values removed: self_rated_health (20).
 ```
@@ -286,7 +286,7 @@ table_categorical(
   select = c(smoking, physical_activity, dentist_12m),
   by = education
 )
-#> Categorical table by education
+#> Categorical table by Highest education level
 #> 
 #>  Variable                        │ Lower secondary n  Lower secondary % 
 #> ─────────────────────────────────┼──────────────────────────────────────
@@ -393,7 +393,7 @@ table_continuous(
 #>                                 │ Upper secondary        
 #>                                 │ Tertiary               
 #> 
-#> Missing values removed: bmi (12), life_sat_health (8).
+#> Missing values removed: Body mass index (12), Satisfaction with health (1-5) (8).
 ```
 
 [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
@@ -422,7 +422,7 @@ table_continuous_lm(
 #>  Body mass index               │   0.09       0.93      .018  0.00  1188 
 #> 
 #> Note. Std. errors: heteroskedasticity-robust (HC3).
-#> Missing values removed: bmi (12).
+#> Missing values removed: Body mass index (12).
 ```
 
 By default every `table_*` helper formats to APA conventions. To match a

@@ -53,7 +53,7 @@ table_outcome(sochealth, outcome = bmi, select = c(sex, smoking))
 #>    Yes          │ 25.93  3.58  16.80  35.30    25.48      26.38     248       
 #>    (Missing)    │ 24.74  3.63  17.60  32.50    23.24      26.23      25       
 #> 
-#> Missing values removed: bmi (12). Group comparison: Welch t-test. Each block compares Body mass index across the levels of one variable; blocks are not adjusted for one another. Overall = the whole analytic sample.
+#> Missing values removed: Body mass index (12). Group comparison: Welch t-test. Each block compares Body mass index across the levels of one variable; blocks are not adjusted for one another. Overall = the whole analytic sample.
 ```
 
 Four things to notice, because each is a decision:
@@ -115,7 +115,7 @@ table_outcome(sochealth, bmi, select = smoking, drop_na = TRUE)
 #>    No           │ 25.96  3.76  16.00  38.90    25.72      26.21     915       
 #>    Yes          │ 25.93  3.58  16.80  35.30    25.48      26.38     248       
 #> 
-#> Missing values removed: bmi (12). Rows with missing smoking removed: 25. Group comparison: Welch t-test. Each block compares Body mass index across the levels of one variable; blocks are not adjusted for one another. Overall = the whole analytic sample.
+#> Missing values removed: Body mass index (12). Rows with missing Current smoker removed: 25. Group comparison: Welch t-test. Each block compares Body mass index across the levels of one variable; blocks are not adjusted for one another. Overall = the whole analytic sample.
 ```
 
 ### Why “Overall” and not “Total”
@@ -164,7 +164,7 @@ table_outcome(
 #>    Upper secondary         │  26.10 [23.50, 28.50]     534           
 #>    Tertiary                │  24.50 [22.00, 26.78]     394           
 #> 
-#> Missing values removed: bmi (12). Group comparison: Kruskal-Wallis test (education); Wilcoxon rank-sum test (sex). Med [Q1, Q3] = median [first quartile, third quartile]. Each block compares Body mass index across the levels of one variable; blocks are not adjusted for one another. Overall = the whole analytic sample.
+#> Missing values removed: Body mass index (12). Group comparison: Kruskal-Wallis test (education); Wilcoxon rank-sum test (sex). Med [Q1, Q3] = median [first quartile, third quartile]. Each block compares Body mass index across the levels of one variable; blocks are not adjusted for one another. Overall = the whole analytic sample.
 ```
 
 Only the character-vector form is accepted. The per-variable named list
@@ -229,7 +229,7 @@ table_outcome(
 #>    South             │                                       
 #>    West              │                                       
 #> 
-#> Missing values removed: bmi (12). Group comparison: Welch one-way ANOVA (region); Welch t-test (sex). Each block compares Body mass index across the levels of one variable; blocks are not adjusted for one another. Overall = the whole analytic sample.
+#> Missing values removed: Body mass index (12). Group comparison: Welch one-way ANOVA (region); Welch t-test (sex). Each block compares Body mass index across the levels of one variable; blocks are not adjusted for one another. Overall = the whole analytic sample.
 ```
 
 Read that table as a set of bivariate descriptions. It is not a model,
@@ -445,7 +445,7 @@ table_outcome(
 #>    Female   │  25.51    3.75     616      648.72    
 #>    Male     │  25.98    3.61     572      539.28    
 #> 
-#> Missing values removed: bmi (12). Statistics weighted by weight. Overall = the whole analytic sample.
+#> Missing values removed: Body mass index (12). Statistics weighted by weight. Overall = the whole analytic sample.
 ```
 
 Note *statistics*, above, and not *the table*: the mean, SD, quantiles
@@ -646,7 +646,7 @@ table_outcome(
 #>    Female   │  25.69    3.78     616         
 #>    Male     │  26.20    3.64     572         
 #> 
-#> Missing values removed: bmi (12). Group comparison: Welch t-test. Each block compares Body mass index across the levels of one variable; blocks are not adjusted for one another. Overall = the whole analytic sample.
+#> Missing values removed: Body mass index (12). Group comparison: Welch t-test. Each block compares Body mass index across the levels of one variable; blocks are not adjusted for one another. Overall = the whole analytic sample.
 ```
 
 ## Rendered output
@@ -666,10 +666,10 @@ pkgdown_dark_gt(
 
 [TABLE]
 
-Missing values removed: bmi (12). Group comparison: Welch one-way ANOVA
-(education); Welch t-test (sex). Each block compares Body mass index
-across the levels of one variable; blocks are not adjusted for one
-another. Overall = the whole analytic sample.
+Missing values removed: Body mass index (12). Group comparison: Welch
+one-way ANOVA (education); Welch t-test (sex). Each block compares Body
+mass index across the levels of one variable; blocks are not adjusted
+for one another. Overall = the whole analytic sample.
 
 ``` r
 
@@ -684,7 +684,6 @@ table_outcome(
 
 | Variable | Med \[Q1, Q3\] | n | p |
 |----|----|----|----|
-|  |  |  |  |
 | Overall | 70.25 \[58.90, 79.23\] | 1200 |       |
 | Sex |                      |      | \<.001 |
 |     Female | 68.20 \[57.30, 77.53\] |  620 |       |
@@ -696,7 +695,7 @@ table_outcome(
 | Group comparison: Wilcoxon rank-sum test. Med \[Q1, Q3\] = median \[first quartile, third quartile\]. Each block compares WHO-5 wellbeing index (0-100) across the levels of one variable; blocks are not adjusted for one another. Overall = the whole analytic sample. |  |  |  |
 
 Descriptive statistics of WHO-5 wellbeing index (0-100)
-{#tinytable_9v4i52185jf2llzo2tnq .table .tinytable
+{#tinytable_92zei48owda8bc59fm2k .table .tinytable
 style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 

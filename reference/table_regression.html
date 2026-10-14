@@ -124,7 +124,7 @@ Gamma / inverse.gaussian / quasi families with any link.</p>
 <span>  intercept_position <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"first"</span>, <span class="st">"last"</span><span class="op">)</span>,</span>
 <span>  factor_layout <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"grouped"</span>, <span class="st">"flat"</span><span class="op">)</span>,</span>
 <span>  reference_style <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"row"</span>, <span class="st">"annotation"</span>, <span class="st">"footer"</span>, <span class="st">"none"</span><span class="op">)</span>,</span>
-<span>  reference_label <span class="op">=</span> <span class="st">"(ref.)"</span>,</span>
+<span>  reference_label <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  show_fit_stats <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  fit_stats_layout <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"first_col"</span>, <span class="st">"merged"</span><span class="op">)</span>,</span>
 <span>  show_re <span class="op">=</span> <span class="cn">TRUE</span>,</span>
@@ -520,9 +520,11 @@ first AME row, not to the polynomial-trend rows.</p></dd>
 
 <dt id="arg-reference-label">reference_label<a class="anchor" aria-label="anchor" href="#arg-reference-label"></a></dt>
 <dd><p>Suffix shown after the reference level in
-<code>reference_style = "row"</code> mode. Default <code>"(ref.)"</code>. Ignored
-by the other three modes (which use structural English
-wording – "ref:", "vs", "Reference categories:").</p></dd>
+<code>reference_style = "row"</code> mode. <code>NULL</code> (default) prints <code>"(ref.)"</code>,
+translated under <code>options(spicy.language = )</code>; a string you supply
+is printed as typed. Ignored by the other three modes (which use
+structural English wording – "ref:", "vs", "Reference
+categories:").</p></dd>
 
 
 <dt id="arg-show-fit-stats">show_fit_stats<a class="anchor" aria-label="anchor" href="#arg-show-fit-stats"></a></dt>

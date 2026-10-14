@@ -79,11 +79,60 @@ PDF.
   keep only the selected columns of an sf object. The geometry column
   came along.
 
+- [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
+  sets `<` apart in its note: `p < .001`, and in French `p < 0,001` with
+  no-break spaces. It wrote `p <.001`.
+
+- [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
+  prints its corner header in French (“Valeurs”) under
+  `options(spicy.language = "fr")`. The column keeps its name, `Values`.
+
 - [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md)
   writes a large declared missing code as it is, `100000`, not `1e+05`.
 
 - `table_categorical(output = "gt")` shows the note on the association
   measure and the standardized mean difference, as the other outputs do.
+
+- [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
+  titles a grouped table with the label of the `by` variable, as
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
+  does: “Categorical table by Sex”, not “by sex”.
+
+- [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md),
+  [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md),
+  [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md),
+  and
+  [`table_continuous_svy()`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md)
+  name each variable of the missing-values notes by its label, as the
+  rows and the title do, not by its column name: “Missing values
+  removed: Body mass index (12)”, “Rows with missing Sex removed: 3”. A
+  covariate of
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
+  keeps its name.
+
+- [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md)
+  and
+  [`table_continuous_svy()`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md)
+  keep the label of the `by` variable in the title, and
+  [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md)
+  the labels of its rows, when rows with a missing `by` are dropped.
+
+- `table_continuous(ci = FALSE)` and `table_continuous_lm(ci = FALSE)`
+  render one header row in tinytable, gt, flextable, Word, and Excel
+  output, as documented. An empty row sat under the column labels. The
+  same holds for
+  [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md)
+  without interval columns, `table_continuous_svy(ci = FALSE)`, and
+  [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md)
+  without `by`.
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  writes the reference rows `(réf.)` under
+  `options(spicy.language = "fr")`: `reference_label` now defaults to
+  `NULL`, the label of the language. A label you supply is printed as
+  typed.
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   writes its `p_adjust` note in French under
