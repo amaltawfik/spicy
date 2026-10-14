@@ -1,6 +1,6 @@
 # Changelog
 
-## spicy (development version)
+## spicy 0.14.0
 
 [`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md)
 becomes a codebook you can deliver: an object, an Excel workbook, or a

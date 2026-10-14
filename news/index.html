@@ -13,7 +13,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">spicy</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.13.0.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.14.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -70,15 +70,15 @@
     </div>
 
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="development version" id="spicy-development-version">spicy (development version)<a class="anchor" aria-label="anchor" href="#spicy-development-version"></a></h2>
+<h2 class="pkg-version" data-toc-text="0.14.0" id="spicy-0140">spicy 0.14.0<a class="anchor" aria-label="anchor" href="#spicy-0140"></a></h2>
 <p><code><a href="../reference/code_book.html">code_book()</a></code> becomes a codebook you can deliver: an object, an Excel workbook, or a PDF.</p>
 <div class="section level3">
-<h3 id="breaking-changes-development-version">Breaking changes<a class="anchor" aria-label="anchor" href="#breaking-changes-development-version"></a></h3>
+<h3 id="breaking-changes-0-14-0">Breaking changes<a class="anchor" aria-label="anchor" href="#breaking-changes-0-14-0"></a></h3>
 <ul><li>
 <code><a href="../reference/code_book.html">code_book()</a></code> returns a <code>spicy_codebook</code> object and no longer opens a DT widget; <code>output</code> writes the file. <code>filename</code> and <code>include_na</code> are defunct, <code>values</code> is now a number of categories (default 100), an explicit <code>NA</code> level of a factor counts as missing, and <code>difftime</code> columns no longer list their values. DT leaves Suggests.</li>
 </ul></div>
 <div class="section level3">
-<h3 id="new-features-development-version">New features<a class="anchor" aria-label="anchor" href="#new-features-development-version"></a></h3>
+<h3 id="new-features-0-14-0">New features<a class="anchor" aria-label="anchor" href="#new-features-0-14-0"></a></h3>
 <ul><li><p><code><a href="../reference/code_book.html">code_book()</a></code> builds a codebook in three parts, <code>header</code>, <code>variables</code>, and <code>values</code> (unweighted counts and percentages per category), and prints it as the list of variables.</p></li>
 <li><p><code>code_book(output = "&lt;path&gt;.xlsx")</code> writes the codebook to an Excel workbook, and <code>output = "&lt;path&gt;.pdf"</code> to a PDF, with a cover, a page about the data, the list of variables, one sheet per variable, and an index, through the Typst that Quarto bundles; <code>output = "&lt;path&gt;.typ"</code> writes the Typst source for a machine without Quarto.</p></li>
 <li><p><code><a href="../reference/code_book.html">code_book()</a></code> gains <code>subtitle</code>, <code>authors</code>, <code>notes</code> (paragraphs or list items, with <code>*italics*</code>, <code>**bold**</code>, <code>`code`</code>, and links in the PDF), <code>source</code>, <code>range</code>, and <code>decimal_mark</code>, and, for the PDF, <code>font</code>, <code>font_code</code>, <code>font_size</code>, <code>colors</code>, <code>paper</code>, and <code>index_columns</code>.</p></li>
@@ -90,7 +90,7 @@
 <li><p><code>table_regression(vcov = "CR0")</code> gives cluster-robust standard errors for <code><a href="https://rdrr.io/pkg/glmmTMB/man/glmmTMB.html" class="external-link">glmmTMB::glmmTMB()</a></code> fits, from glmmTMB’s own sandwich (glmmTMB &gt;= 1.1.15), for the coefficients, the zero-inflation and dispersion blocks, and the average marginal effects. The cluster defaults to the top-level grouping factor of the random effects. Crossed random effects without a cluster that contains them, REML fits, the ordinal family, and the other <code>vcov</code> types are refused.</p></li>
 </ul></div>
 <div class="section level3">
-<h3 id="bug-fixes-development-version">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-development-version"></a></h3>
+<h3 id="bug-fixes-0-14-0">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-0-14-0"></a></h3>
 <ul><li><p><code><a href="../reference/varlist.html">varlist()</a></code> and <code><a href="../reference/code_book.html">code_book()</a></code> keep only the selected columns of an sf object. The geometry column came along.</p></li>
 <li><p><code><a href="../reference/cross_tab.html">cross_tab()</a></code> sets <code>&lt;</code> apart in its note: <code>p &lt; .001</code>, and in French <code>p &lt; 0,001</code> with no-break spaces. It wrote <code>p &lt;.001</code>.</p></li>
 <li><p><code><a href="../reference/cross_tab.html">cross_tab()</a></code> prints its corner header in French (“Valeurs”) under <code>options(spicy.language = "fr")</code>. The column keeps its name, <code>Values</code>.</p></li>
