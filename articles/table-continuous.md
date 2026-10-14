@@ -1089,7 +1089,7 @@ table_continuous(
 | Missing values removed: Body mass index (12), Satisfaction with health (1-5) (8). |  |  |  |  |  |  |  |  |  |
 
 Descriptive statistics by Highest education level
-{#tinytable_apimzahlyskgs83w6f0w .table .tinytable
+{#tinytable_3a8x1n9276ozzffsbi6k .table .tinytable
 style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 

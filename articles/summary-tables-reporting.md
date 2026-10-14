@@ -833,15 +833,15 @@ options(spicy.language = "fr")
 table_continuous(sochealth, select = bmi, by = sex)
 #> Statistiques descriptives selon Sex
 #> 
-#>  Variable        │ Groupe    M     ET    Min    Max   95% CI LL  95% CI UL   n  
-#> ─────────────────┼──────────────────────────────────────────────────────────────
-#>  Body mass index │ Female  25,69  3,78  16,00  38,90    25,39      25,98    616 
-#>                  │ Male    26,20  3,64  16,00  37,70    25,90      26,50    572 
+#>  Variable        │ Groupe    M     ET    Min    Max   IC à 95 % LI 
+#> ─────────────────┼─────────────────────────────────────────────────
+#>  Body mass index │ Female  25,69  3,78  16,00  38,90     25,39     
+#>                  │ Male    26,20  3,64  16,00  37,70     25,90     
 #> 
-#>  Variable        │ Groupe    p   
-#> ─────────────────┼───────────────
-#>  Body mass index │ Female  0,018 
-#>                  │ Male          
+#>  Variable        │ Groupe  IC à 95 % LS   n     p   
+#> ─────────────────┼──────────────────────────────────
+#>  Body mass index │ Female     25,98      616  0,018 
+#>                  │ Male       26,50      572        
 #> 
 #> Valeurs manquantes retirées : Body mass index (12).
 ```
@@ -870,15 +870,15 @@ French JAMA table keeps the comma:
 table_continuous(sochealth, select = bmi, by = sex, style = "jama")
 #> Statistiques descriptives selon Sex
 #> 
-#>  Variable        │ Groupe    M     ET    Min    Max   95% CI LL  95% CI UL   n  
-#> ─────────────────┼──────────────────────────────────────────────────────────────
-#>  Body mass index │ Female  25,69  3,78  16,00  38,90    25,39      25,98    616 
-#>                  │ Male    26,20  3,64  16,00  37,70    25,90      26,50    572 
+#>  Variable        │ Groupe    M     ET    Min    Max   IC à 95 % LI 
+#> ─────────────────┼─────────────────────────────────────────────────
+#>  Body mass index │ Female  25,69  3,78  16,00  38,90     25,39     
+#>                  │ Male    26,20  3,64  16,00  37,70     25,90     
 #> 
-#>  Variable        │ Groupe   p  
-#> ─────────────────┼─────────────
-#>  Body mass index │ Female  ,02 
-#>                  │ Male        
+#>  Variable        │ Groupe  IC à 95 % LS   n    p  
+#> ─────────────────┼────────────────────────────────
+#>  Body mass index │ Female     25,98      616  ,02 
+#>                  │ Male       26,50      572      
 #> 
 #> Valeurs manquantes retirées : Body mass index (12).
 ```
@@ -900,15 +900,15 @@ leading-zero rule is a style lever, not an argument:
 table_continuous(sochealth, select = bmi, by = sex, decimal_mark = ".")
 #> Statistiques descriptives selon Sex
 #> 
-#>  Variable        │ Groupe    M     ET    Min    Max   95% CI LL  95% CI UL   n  
-#> ─────────────────┼──────────────────────────────────────────────────────────────
-#>  Body mass index │ Female  25.69  3.78  16.00  38.90    25.39      25.98    616 
-#>                  │ Male    26.20  3.64  16.00  37.70    25.90      26.50    572 
+#>  Variable        │ Groupe    M     ET    Min    Max   IC à 95 % LI 
+#> ─────────────────┼─────────────────────────────────────────────────
+#>  Body mass index │ Female  25.69  3.78  16.00  38.90     25.39     
+#>                  │ Male    26.20  3.64  16.00  37.70     25.90     
 #> 
-#>  Variable        │ Groupe    p   
-#> ─────────────────┼───────────────
-#>  Body mass index │ Female  0.018 
-#>                  │ Male          
+#>  Variable        │ Groupe  IC à 95 % LS   n     p   
+#> ─────────────────┼──────────────────────────────────
+#>  Body mass index │ Female     25.98      616  0.018 
+#>                  │ Male       26.50      572        
 #> 
 #> Valeurs manquantes retirées : Body mass index (12).
 ```
@@ -1066,7 +1066,7 @@ tab |>
 |     Yes |  84 | 32.2 | 229 | 42.5 | 237 | 59.2 | 550 | 45.8 |       |     |
 
 Categorical table by Highest education level
-{#tinytable_povhkyvz5trjs91dapws .table .tinytable
+{#tinytable_j1h5st0bryfn8sq1e2tg .table .tinytable
 style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 

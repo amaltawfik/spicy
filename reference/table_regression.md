@@ -1681,7 +1681,12 @@ automatically.
 
 ## Internationalization
 
-Output is in English. Override user-facing strings via
+Output follows `options(spicy.language)` (see
+[`spicy_labels()`](https://amaltawfik.github.io/spicy/reference/spicy_labels.md));
+the column names of
+[`as.data.frame()`](https://rdrr.io/r/base/as.data.frame.html) and
+[`as_structured()`](https://amaltawfik.github.io/spicy/reference/as_structured.md)
+stay English in every language. Override user-facing strings via
 `reference_label`, `model_labels`, `outcome_labels`, and `labels`. The
 title and footer are post-processable via `attr(result, "title")` and
 `attr(result, "note")`.

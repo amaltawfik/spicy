@@ -136,6 +136,17 @@ PDF.
   (“Catégories de référence : …”).
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  and
+  [`table_regression_uv()`](https://amaltawfik.github.io/spicy/reference/table_regression_uv.md)
+  write their headers in French under `options(spicy.language = "fr")`:
+  `ES`, `IC à 95 %` over `LI` and `LS`, and `R² ajusté`. The column
+  names stay `SE`, `95% CI`, and `Adj. R²` in every language.
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md),
+  [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md),
+  and the survey twins use the same French headers.
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   writes its `p_adjust` note in French under
   `options(spicy.language = "fr")`.
 

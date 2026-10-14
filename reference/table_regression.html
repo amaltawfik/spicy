@@ -1680,7 +1680,9 @@ extract them automatically.</p>
     </div>
     <div class="section level2">
     <h2 id="internationalization">Internationalization<a class="anchor" aria-label="anchor" href="#internationalization"></a></h2>
-    <p>Output is in English. Override user-facing strings via
+    <p>Output follows <code>options(spicy.language)</code> (see <code><a href="spicy_labels.html">spicy_labels()</a></code>); the
+column names of <code><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame()</a></code> and <code><a href="as_structured.html">as_structured()</a></code> stay English
+in every language. Override user-facing strings via
 <code>reference_label</code>, <code>model_labels</code>, <code>outcome_labels</code>, and
 <code>labels</code>. The title and footer are post-processable via
 <code>attr(result, "title")</code> and <code>attr(result, "note")</code>.</p>
