@@ -616,15 +616,16 @@ clear error.</p>
 al. 2017) combines everything above with random effects: the
 zero-inflation block, the random-effects block, and per-block
 exponentiation appear in one table — here salamander counts in mined and
-unmined streams (Price et al. 2016). One scope note:
-<code>glmmTMB</code> tables are <strong>model-based only</strong>. A
-cluster-robust request (<code>vcov = "CR0"</code>–<code>"CR3"</code>) is
-refused with a clear error, because <code>clubSandwich</code> has no
-working <code>glmmTMB</code> backend — it would silently fall through to
-a default method and return numerically invalid standard errors, and
-<code><a href="../reference/table_regression.html">table_regression()</a></code> refuses to print numbers it cannot stand
-behind. Express the clustering in the random-effects structure itself,
-as the <code>(1 | site)</code> term below does; the same convention is
+unmined streams (Price et al. 2016). One scope note: the clustering
+lives in the random-effects structure itself, as the
+<code>(1 | site)</code> term below does, and the standard errors are
+model-based by default. <code>vcov = "CR0"</code> replaces them with
+cluster-robust ones from glmmTMB’s own sandwich (glmmTMB &gt;= 1.1.15),
+clustered by default on the top-level grouping factor (here
+<code>site</code>), for the count and zero-inflation blocks alike.
+<code>"CR1"</code>–<code>"CR3"</code> and <code>HC*</code> are refused:
+the sandwich has one score per cluster, and <code>clubSandwich</code>
+has no working <code>glmmTMB</code> backend. The same convention is
 documented in the companion <a href="table-regression-mixed.html"><em>Mixed-effects regression
 tables</em></a> article:</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">

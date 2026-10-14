@@ -549,16 +549,15 @@ When counts are also grouped, `glmmTMB` (Brooks et al. 2017) combines
 everything above with random effects: the zero-inflation block, the
 random-effects block, and per-block exponentiation appear in one table —
 here salamander counts in mined and unmined streams (Price et al. 2016).
-One scope note: `glmmTMB` tables are **model-based only**. A
-cluster-robust request (`vcov = "CR0"`–`"CR3"`) is refused with a clear
-error, because `clubSandwich` has no working `glmmTMB` backend — it
-would silently fall through to a default method and return numerically
-invalid standard errors, and
-[`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
-refuses to print numbers it cannot stand behind. Express the clustering
-in the random-effects structure itself, as the `(1 | site)` term below
-does; the same convention is documented in the companion [*Mixed-effects
-regression
+One scope note: the clustering lives in the random-effects structure
+itself, as the `(1 | site)` term below does, and the standard errors are
+model-based by default. `vcov = "CR0"` replaces them with cluster-robust
+ones from glmmTMB’s own sandwich (glmmTMB \>= 1.1.15), clustered by
+default on the top-level grouping factor (here `site`), for the count
+and zero-inflation blocks alike. `"CR1"`–`"CR3"` and `HC*` are refused:
+the sandwich has one score per cluster, and `clubSandwich` has no
+working `glmmTMB` backend. The same convention is documented in the
+companion [*Mixed-effects regression
 tables*](https://amaltawfik.github.io/spicy/articles/table-regression-mixed.md)
 article:
 

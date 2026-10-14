@@ -15,6 +15,17 @@ PDF.
   level of a factor counts as missing, and `difftime` columns no longer
   list their values. DT leaves Suggests.
 
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  and
+  [`table_regression_uv()`](https://amaltawfik.github.io/spicy/reference/table_regression_uv.md)
+  name an interval column with a point whatever `decimal_mark`:
+  `97.5% CI` in
+  [`as.data.frame()`](https://rdrr.io/r/base/as.data.frame.html), and
+  `97.5% CI: LL` and `97.5% CI: UL` in
+  [`as_structured()`](https://amaltawfik.github.io/spicy/reference/as_structured.md).
+  They were `97,5% CI` under `decimal_mark = ","`. The header still
+  follows the mark, and the names at 95% are unchanged.
+
 ### New features
 
 - [`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md)
@@ -75,6 +86,7 @@ PDF.
   for
   [`glmmTMB::glmmTMB()`](https://rdrr.io/pkg/glmmTMB/man/glmmTMB.html)
   fits, from glmmTMB’s own sandwich (glmmTMB \>= 1.1.15), for the
+  coefficients, their joint tests (`partial_chi2`), the standardized
   coefficients, the zero-inflation and dispersion blocks, and the
   average marginal effects. The cluster defaults to the top-level
   grouping factor of the random effects. Crossed random effects without
@@ -138,6 +150,10 @@ PDF.
   [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md)
   without `by`.
 
+- [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md)
+  sets a no-break space before the semicolon that joins the tests of its
+  comparison note in French.
+
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   writes the reference rows `(réf.)` under
   `options(spicy.language = "fr")`: `reference_label` now defaults to
@@ -154,7 +170,9 @@ PDF.
   [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
   [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md),
   [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md),
-  and the survey twins use the same French headers.
+  and the survey twins use the same French headers. The effect size of
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
+  reads `Taille d'effet`.
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   writes its `p_adjust` note in French under
@@ -162,8 +180,35 @@ PDF.
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   writes the robust standard-error line of every model class, not only
-  `lm` and `glm`, and the p-value line of mixed models in French under
-  `options(spicy.language = "fr")`.
+  `lm` and `glm`, the model-based one of `lmer`, `lme`, and `gls`, the
+  standardized-coefficient legend, and the p-value line and the
+  likelihood-ratio test of the random effects of mixed models in French
+  under `options(spicy.language = "fr")`.
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  handles [`glmer()`](https://rdrr.io/pkg/lme4/man/glmer.html) fits with
+  a Gamma or inverse-Gaussian family, which failed, and no longer fails
+  on them or on
+  [`glmer.nb()`](https://rdrr.io/pkg/lme4/man/glmer.nb.html) fits once
+  merDeriv is loaded in the session. It reads the coefficient covariance
+  from lme4 whatever else is loaded.
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  titles a [`glmer.nb()`](https://rdrr.io/pkg/lme4/man/glmer.nb.html)
+  fit “Negative-binomial mixed-effects regression”, as for the other
+  negative-binomial models, and translates the title in French. It
+  carried the theta of the fit.
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  calls the `partial_chi2` of `lmer`, `glmer`, `glmmTMB`, and `lme` fits
+  a partial Wald chi-squared in its footer. It called it a
+  likelihood-ratio chi-squared, the test of `glm`.
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  with a cluster-robust `vcov` on `lmer` and `lme` fits uses that matrix
+  for the joint tests of the terms (`partial_chi2`) and the standard
+  errors of the standardized coefficients, as for the coefficients. They
+  were model-based.
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   computes the robust and cluster-robust standard errors of

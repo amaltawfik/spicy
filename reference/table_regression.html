@@ -1315,7 +1315,12 @@ the ordinal family.</p></dd>
 <code>glmer</code>).</p></dd>
 
 
-</dl><p>Cluster-robust backends differ by class but are each cross-validated
+</dl><p>For the mixed-effects fits (<code>lmer</code>, <code>lme</code>, <code>glmmTMB</code>), the robust
+estimator covers the fixed effects: their coefficients, their joint
+tests (<code>"partial_chi2"</code>), the standardized coefficients and the AME.
+The random-effect variance components keep their model-based
+inference.</p>
+<p>Cluster-robust backends differ by class but are each cross-validated
 to the field-standard oracle: <code>lm</code>/<code>glm</code>/<code>lmer</code>/<code>lme</code> use
 <span class="pkg">clubSandwich</span> (CR2 = Bell-McCaffrey, with Satterthwaite df for
 <code>lm</code>/<code>lme</code>/<code>lmer</code>); <code>coxph</code>/<code>cph</code> use the Lin-Wei grouped-dfbeta
