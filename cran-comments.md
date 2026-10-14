@@ -1,4 +1,4 @@
-# cran-comments for spicy 0.13.0
+# cran-comments for spicy 0.14.0
 
 ## Test environments
 
@@ -21,9 +21,9 @@ step (win-builder, R-devel and R-release):
 
 All three are spelled as intended: JAMA and NEJM name reporting styles
 (Journal of the American Medical Association, New England Journal of
-Medicine), and "univariable" is the standard term. R-oldrelease also
-lists APA, Cramer's and codebooks, which the published 0.12.0 already
-used. No other notes, warnings, or errors on any tested platform.
+Medicine), and "univariable" is the standard term. The published 0.13.0
+carried the same NOTE. No other notes, warnings, or errors on any
+tested platform.
 
 ## Reverse dependencies
 
@@ -31,17 +31,18 @@ spicy has no reverse dependencies.
 
 ## Notes on this submission
 
-This release consolidates a full development cycle; the package has
-moved to a slower release cadence. `table_regression()` grows from
-`lm` / `glm` to more than thirty model classes, the summary tables
-gain survey-design twins and a univariable screen, six journal
-styles and a French output arrive with document-wide options, and
-declared missing values (`na_values` / `na_range`, tagged NAs) are
-honored across the descriptive functions. The package now ships a
-single vignette; the twenty walk-throughs live as articles on the
-package site. Full details in `NEWS.md`.
+This release follows 0.13.0 by five weeks, within the slower cadence
+the package adopted in 2026. It corrects an error of 0.13.0: the robust
+and cluster-robust standard errors of `mgcv::gam()` and `mgcv::bam()`
+fits were wrong for families with a free dispersion (divided by it), so
+the package now forms that sandwich itself. The release also makes
+`code_book()` a deliverable codebook (an object, an Excel workbook, or a
+PDF), adds the multiple-comparison adjustment to the descriptive summary
+tables, supports cumulative-link mixed models and cluster-robust
+standard errors for `glmmTMB` fits, and completes the French output.
+Full details in `NEWS.md`.
 
-The full test suite has 18,000+ expectations, with estimates and
+The full test suite has 19,900+ expectations, with estimates and
 standard errors validated to the digit against independent
 implementations (SPSS/PSPP, Stata conventions, and the reference R
 packages of each model family). It runs on GitHub Actions on every

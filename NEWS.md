@@ -1,4 +1,4 @@
-# spicy (development version)
+# spicy 0.14.0
 
 `code_book()` becomes a codebook you can deliver: an object, an Excel
 workbook, or a PDF.
@@ -97,10 +97,10 @@ workbook, or a PDF.
 
 * `table_continuous(ci = FALSE)` and `table_continuous_lm(ci = FALSE)`
   render one header row in tinytable, gt, flextable, Word, and Excel
-  output, as documented. An empty row sat
-  under the column labels. The same holds for `table_outcome()` without
-  interval columns, `table_continuous_svy(ci = FALSE)`, and
-  `table_categorical_svy()` without `by`.
+  output, as documented. An empty row sat under the column labels. The
+  same holds for `table_outcome()` without interval columns,
+  `table_continuous_svy(ci = FALSE)`, and `table_categorical_svy()`
+  without `by`.
 
 * `table_regression()` writes the reference rows `(réf.)` under
   `options(spicy.language = "fr")`: `reference_label` now defaults to
