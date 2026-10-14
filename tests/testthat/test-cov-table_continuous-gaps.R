@@ -399,10 +399,10 @@ test_that("the lm Excel exporter writes a zero-row frame with no body rows", {
   expect_true(file.exists(path))
 
   sheet <- openxlsx2::wb_to_df(openxlsx2::wb_load(path), col_names = FALSE)
-  # Row 3 is the top header, row 4 the (empty) sub-label row; with no
-  # body row `last_row` stays at 4, so the note sits at 4 + 2 = 6.
+  # Row 3 is the single header row (no CI, so no sub-label row); with no
+  # body row `last_row` stays at 3, so the note sits at 3 + 2 = 5.
   expect_identical(
     unname(sheet[["A"]]),
-    c("a title", NA, "Term", NA, NA, "a note")
+    c("a title", NA, "Term", NA, "a note")
   )
 })
