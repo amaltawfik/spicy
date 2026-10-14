@@ -923,12 +923,19 @@ extract_ame_glm <- function(
       NULL
     }
     ame_table <- tryCatch(
-      do_slopes(if (!is.null(vc)) vc else TRUE),
+      if (inherits(fit, "glmmTMB") && !is.null(vc)) {
+        # avg_slopes() takes only TRUE / FALSE / "HC0" as the vcov of a
+        # glmmTMB fit: the matrix goes through its Jacobian instead.
+        .glmmTMB_ame_robust(do_slopes(TRUE), vc, ci_level)
+      } else {
+        do_slopes(if (!is.null(vc)) vc else TRUE)
+      },
       error = function(e) {
-        # Some model types reject a custom vcov matrix in avg_slopes() (e.g.
-        # glmmTMB accepts only TRUE/FALSE/"HC0"). Fall back to the model-based
-        # AME so the estimates still appear -- they are vcov-independent; only the
-        # SE / CI / p revert to model-based -- with a clear warning.
+        # Some model types reject a custom vcov matrix in avg_slopes(), and
+        # the glmmTMB route needs marginaleffects::components(). Fall back to
+        # the model-based AME so the estimates still appear -- they are
+        # vcov-independent; only the SE / CI / p revert to model-based --
+        # with a clear warning.
         if (!is.null(vc)) {
           spicy_warn(
             c(

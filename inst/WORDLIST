@@ -157,6 +157,7 @@ Larmarange
 Lavery
 Lazar
 Lemeshow
+Lesaffre
 Liang
 Liebetrau
 Likert
@@ -292,6 +293,7 @@ Vasconcellos
 Vasishth
 Vehtari
 Venables
+Verbeke
 Vuong
 WAIC
 WLS
@@ -374,6 +376,7 @@ genomewide
 ggplot
 glm
 glmmTMB
+glmmTMB's
 gt's
 gtsummary
 gtsummary's
@@ -407,6 +410,7 @@ mis
 misdescribes
 misspecification
 misspecified
+misspecifying
 mlogit
 mlogit's
 monospace

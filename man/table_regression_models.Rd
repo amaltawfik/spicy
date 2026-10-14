@@ -114,9 +114,12 @@ chi-bar-squared LR test of the whole random part, and
 test. \code{N (groups)} and \code{ICC} are fit-stat rows; Nakagawa marginal /
 conditional R-squared are the default R-squared family. \verb{CR*}
 cluster-robust standard errors are available for \code{lmer} and \code{lme} fits,
-via \pkg{clubSandwich} with Satterthwaite degrees of freedom. \code{glmer}
-and \code{glmmTMB} fits keep their model-based standard errors: a \verb{CR*}
-request on them is refused with a clear error.
+via \pkg{clubSandwich} with Satterthwaite degrees of freedom. \code{glmmTMB}
+fits take \code{"CR0"} from glmmTMB's own sandwich (Wald z), clustered by
+default on the top-level grouping factor; see the robust-SE section of
+\code{\link[=table_regression]{table_regression()}} for when it holds. \code{glmer} fits keep their
+model-based standard errors: a \verb{CR*} request on them is refused with a
+clear error.
 }
 
 \section{Population-averaged (GEE) models}{
@@ -173,7 +176,8 @@ nonzero count -- the opposite direction, hence the distinct label), and a
 coefficients join the \code{p_adjust} family and take stars; a zero component
 is exponentiated only under a logit link (odds ratio). AME is the
 combined-response effect on E(Y). \verb{CR*} for \code{pscl} fits covers both components
-via \code{sandwich::vcovCL()}. Opt out with \code{show_components = FALSE}.
+via \code{sandwich::vcovCL()}, and \code{"CR0"} for \code{glmmTMB} fits covers the
+zero-inflation and dispersion blocks. Opt out with \code{show_components = FALSE}.
 }
 
 \section{Categorical outcomes}{

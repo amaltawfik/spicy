@@ -350,16 +350,22 @@ test_that(".flexsurv_info reports NULL aux_parameters for a dist with no aux par
 # ---- 12. Robust vcov relabels the footer --------------------------------
 
 test_that("glmmTMB frame relabels the vcov when a robust estimator is requested", {
+  skip_if_not_installed("glmmTMB", "1.1.15")
   fit <- .cov_glmmTMB_gap_fit()
-  # table_regression()'s gate keeps CR* away from glmmTMB, but the frame
-  # method still has to label whatever estimator it is handed.
+  # Without a cluster the frame clusters on the grouping factor and names
+  # it. HC0 used to reach sandwich::vcovHC(), which handed glmmTMB's own
+  # sandwich back under an HC label; the frame now refuses it.
   fr <- suppressWarnings(as_regression_frame(
     fit,
-    vcov = "HC0",
+    vcov = "CR0",
     model_id = "M1"
   ))
-  expect_identical(fr$info$vcov_label, "heteroskedasticity-robust (HC0)")
-  expect_identical(fr$info$vcov_kind, "HC0")
+  expect_identical(fr$info$vcov_label, "cluster-robust (CR0), clusters by g")
+  expect_identical(fr$info$vcov_kind, "CR0")
+  expect_error(
+    as_regression_frame(fit, vcov = "HC0", model_id = "M1"),
+    class = "spicy_unsupported_vcov"
+  )
 
   # The default model-based path keeps glmmTMB's own Wald label.
   fr0 <- as_regression_frame(fit, model_id = "M1")

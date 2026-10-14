@@ -726,3 +726,74 @@ test_that("the p_adjust sentence of the regression follows the language", {
     "Valeurs p ajustées par stats::p.adjust(method = \"holm\") sur m = 2 coefficient(s) par modèle."
   )
 })
+
+test_that("the robust-SE and mixed p-value lines follow the language", {
+  # The non-lm/glm classes build their robust label in the frame and the
+  # mixed engines add a p-value line; both read the registry, through the
+  # keys of the lm/glm footer for the former. English stays byte-identical.
+  skip_if_not_installed("glmmTMB", "1.1.15")
+  skip_if_not_installed("lme4")
+  skip_if_not_installed("clubSandwich")
+  set.seed(1)
+  d <- data.frame(site = factor(rep(1:12, each = 10)), x = stats::rnorm(120))
+  d$y <- stats::rpois(
+    120,
+    exp(0.3 + 0.3 * d$x + stats::rnorm(12, sd = 0.4)[d$site])
+  )
+  d$yg <- 1 + 0.5 * d$x + stats::rnorm(12)[d$site] + stats::rnorm(120)
+  fit_tmb <- glmmTMB::glmmTMB(y ~ x + (1 | site), data = d, family = poisson)
+  fit_lmer <- lme4::lmer(yg ~ x + (1 | site), data = d)
+  fit_lm <- stats::lm(yg ~ x, data = d)
+  notes <- function() {
+    list(
+      tmb = attr(table_regression(fit_tmb, vcov = "CR0"), "note"),
+      lmer = attr(
+        table_regression(fit_lmer, vcov = "CR2", cluster = ~site),
+        "note"
+      ),
+      lm = attr(table_regression(fit_lm, vcov = "CR0", cluster = ~site), "note")
+    )
+  }
+  se_line <- function(note) {
+    lines <- strsplit(note, "\n", fixed = TRUE)[[1L]]
+    lines[grepl("^(Std. errors|Erreurs standards)", lines)]
+  }
+  en <- notes()
+  expect_identical(
+    se_line(en$tmb),
+    "Std. errors: cluster-robust (CR0), clusters by site."
+  )
+  expect_match(en$tmb, "p-values: Wald-z asymptotic (glmmTMB).", fixed = TRUE)
+  expect_match(
+    en$lmer,
+    "p-values: Satterthwaite t-test, cluster-robust df (clubSandwich).",
+    fixed = TRUE
+  )
+  expect_identical(
+    withr::with_options(list(spicy.language = "en"), notes()),
+    en
+  )
+
+  withr::local_options(spicy.language = "fr")
+  fr <- notes()
+  # A mixed engine says it in the words of the lm footer.
+  expect_identical(se_line(fr$tmb), se_line(fr$lm))
+  expect_identical(
+    se_line(fr$tmb),
+    "Erreurs standards\u00A0: robustes aux grappes (CR0), grappes d\u00E9finies par site."
+  )
+  expect_match(
+    fr$tmb,
+    "Valeurs p\u00A0: z de Wald asymptotique (glmmTMB).",
+    fixed = TRUE
+  )
+  expect_match(
+    fr$lmer,
+    paste0(
+      "Valeurs p\u00A0: test t de Satterthwaite, degr\u00E9s de libert\u00E9 ",
+      "robustes aux grappes (clubSandwich)."
+    ),
+    fixed = TRUE
+  )
+  expect_false(any(grepl("cluster-robust|p-values", unlist(fr))))
+})

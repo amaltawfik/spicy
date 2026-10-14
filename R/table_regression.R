@@ -346,10 +346,24 @@
 #'     refused; set the estimator through the fitting package instead
 #'     (`se_type =` for estimatr; `vcov =` at estimation or in
 #'     `summary()` for fixest).}
-#'   \item{Other classes (`glmer`, `glmmTMB`,
-#'     `rstanarm`/`brms`, ...)}{`classical` (model-based) only
-#'     (\pkg{clubSandwich} has no working backend for `glmer` /
-#'     `glmmTMB`).}
+#'   \item{`glmmTMB`}{`classical` + `"CR0"` only, from glmmTMB's own
+#'     sandwich (\pkg{glmmTMB} >= 1.1.15), which covers the coefficients,
+#'     the zero-inflation and dispersion blocks and the AME. Without
+#'     `cluster`, the cluster is the top-level grouping factor of the
+#'     random effects. The estimator needs independent clusters that
+#'     contain the random effects -- every group within one cluster --
+#'     so crossed random effects need a `cluster` that contains them
+#'     all. It keeps the standard errors valid when the random-effects
+#'     distribution or the conditional variance is misspecified,
+#'     provided the estimates themselves stay consistent (Liang & Zeger
+#'     1986; Verbeke & Lesaffre 1997); with few clusters it understates
+#'     the variance, and this class has no small-sample correction
+#'     (Cameron & Miller 2015). `"CR1"`-`"CR3"` and `HC*` are refused
+#'     (the sandwich has one score per cluster), as are REML fits and
+#'     the ordinal family.}
+#'   \item{Other classes (`glmer`, `rstanarm`/`brms`, ...)}{`classical`
+#'     (model-based) only (\pkg{clubSandwich} has no working backend for
+#'     `glmer`).}
 #' }
 #'
 #' Cluster-robust backends differ by class but are each cross-validated
@@ -369,7 +383,11 @@
 #' [rms::robcov()] (which
 #' needs the fit's `x = TRUE, y = TRUE`). These single cluster
 #' sandwiches have no CR0-CR3 bias-reduction variants, so the requested
-#' `CR*` maps to the one available estimator. `cluster` length is one
+#' `CR*` maps to the one available estimator. `glmmTMB` fits use
+#' `glmmTMB::sandwich()`, with one score per cluster (the gradient of
+#' the cluster's marginal log-likelihood) and no finite-sample factor;
+#' its one estimator is requested as `"CR0"`, and the other `CR*`
+#' tokens are refused rather than mapped. `cluster` length is one
 #' entry per observation, except `mlogit` (one per choice situation)
 #' and censored `coxph` (one per subject).
 #'
@@ -1649,6 +1667,10 @@
 #' Aiken, L.S. & West, S.G. (1991). *Multiple regression: Testing
 #' and interpreting interactions*.
 #'
+#' Cameron, A.C. & Miller, D.L. (2015). A practitioner's guide to
+#' cluster-robust inference. *Journal of Human Resources*, 50(2),
+#' 317-372.
+#'
 #' Cohen, J., Cohen, P., West, S.G., & Aiken, L.S. (2003).
 #' *Applied multiple regression / correlation analysis for the
 #' behavioral sciences* (3rd ed.). Lawrence Erlbaum.
@@ -1668,10 +1690,18 @@
 #' efficiency of approximation methods for tied survival times in
 #' Cox regression. *Biometrics*, 53(3), 1151-1156.
 #'
+#' Liang, K.-Y. & Zeger, S.L. (1986). Longitudinal data analysis
+#' using generalized linear models. *Biometrika*, 73(1), 13-22.
+#'
 #' Pustejovsky, J.E. & Tipton, E. (2018). Small-sample methods for
 #' cluster-robust variance estimation and hypothesis testing in
 #' fixed effects models. *Journal of Business & Economic
 #' Statistics*, 36(4), 672-683.
+#'
+#' Verbeke, G. & Lesaffre, E. (1997). The effect of misspecifying
+#' the random-effects distribution in linear mixed models for
+#' longitudinal data. *Computational Statistics & Data Analysis*,
+#' 23(4), 541-556.
 #'
 #' Wasserstein, R.L., Schirm, A.L., & Lazar, N.A. (2019). Moving
 #' to a world beyond "p < 0.05". *The American Statistician*,

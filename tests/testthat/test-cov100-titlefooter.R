@@ -103,13 +103,12 @@ test_that("cluster jackknife footer says leave-one-cluster-out + cluster", {
 })
 
 
-# ---- Mixed-inference annotation: glmmTMB never reaches a CR* frame --------
+# ---- Mixed-inference annotation: glmmTMB keeps its Wald-z line -----------
 
-test_that("glmmTMB frame labels Wald-z asymptotic even if vcov_kind lies", {
-  # The validate gate refuses CR* for glmmTMB (no clubSandwich backend),
-  # so a glmmTMB frame can only carry model-based inference; the label
-  # function must not credit clubSandwich for this class even on a
-  # malformed frame.
+test_that("glmmTMB frame labels Wald-z asymptotic under a CR* vcov_kind", {
+  # glmmTMB's CR0 SEs come from its own sandwich and are tested against
+  # the normal: the label function must not credit clubSandwich's
+  # Satterthwaite df for this class, whatever CR token the frame carries.
   fr <- list(
     info = list(class = "glmmTMB", ci_method = "wald", vcov_kind = "CR2")
   )
@@ -120,9 +119,9 @@ test_that("glmmTMB frame labels Wald-z asymptotic even if vcov_kind lies", {
 })
 
 
-# ---- Component-blocks footer: dedup + robust-SE disclosure ----------------
+# ---- Component-blocks footer: dedup ----------------------------------------
 
-.mk_cb_frame <- function(vcov_kind = "model", robust_note = FALSE) {
+.mk_cb_frame <- function(vcov_kind = "model") {
   blk <- list(
     label = "Zero-inflation",
     gloss = paste0(
@@ -141,8 +140,7 @@ test_that("glmmTMB frame labels Wald-z asymptotic even if vcov_kind lies", {
       vcov_kind = vcov_kind,
       extras = list(
         component_blocks = list(blk),
-        exp_applied = FALSE,
-        component_robust_note = robust_note
+        exp_applied = FALSE
       )
     )
   )
@@ -159,29 +157,24 @@ test_that("component-blocks footer lists a shared block label only once", {
   )
 })
 
-test_that("component-blocks footer adds the robust-SE scope disclosure", {
+test_that("component-blocks footer needs no robust-SE scope disclosure", {
+  # A robust vcov covers the component rows too (pscl's whole-model
+  # vcovCL, glmmTMB's full CR0 sandwich): the gloss stands alone.
   out <- spicy:::build_component_blocks_footer_block_from_frames(
-    list(.mk_cb_frame(vcov_kind = "CR2", robust_note = TRUE))
+    list(.mk_cb_frame(vcov_kind = "CR0"))
   )
   expect_identical(
     out,
-    paste0(
-      "Zero-inflation component: log-odds of a structural (excess) ",
-      "zero.\nRobust SEs apply to the conditional component; ",
-      "zero-inflation / dispersion SEs are model-based."
-    )
+    "Zero-inflation component: log-odds of a structural (excess) zero."
   )
 })
 
 
 # ---- Public API: zero-inflated glmmTMB under CR2 --------------------------
-# End-to-end proof of the two branches above plus the glmmTMB Wald-z
-# cluster-robust annotation, through table_regression().
+# End-to-end proof of the dedup branch above, through table_regression().
 
 test_that("ZI glmmTMB refuses CR2; classical footer dedups the ZI gloss", {
-  # CR* is refused for glmmTMB (no clubSandwich backend); the
-  # robust-scope disclosure wording stays pinned by the synthetic
-  # .mk_cb_frame unit test above.
+  # glmmTMB's sandwich has one type, CR0: CR2 is refused up front.
   suppressWarnings(requireNamespace("glmmTMB", quietly = TRUE))
   skip_if_not_installed("glmmTMB")
   set.seed(99)

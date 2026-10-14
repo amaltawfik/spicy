@@ -1571,27 +1571,21 @@ build_nested_ml_refit_footer_block_from_frames <- function(
   vk <- .frame_vcov_kind(frame)
   # Under a CR* vcov the whole inference set (SE, Satterthwaite df, p)
   # comes from clubSandwich::coef_test(), NOT from lmerTest / nlme --
-  # the footer must attribute the df source truthfully. (glmmTMB can
-  # no longer reach a CR* frame: clubSandwich has no glmmTMB backend,
-  # so the validate gate refuses the request up front.)
+  # the footer must attribute the df source truthfully. (glmmTMB under
+  # CR0 keeps its Wald-z line: its sandwich SEs are tested against the
+  # normal, and the Std. errors line names the estimator.)
   if (startsWith(vk, "CR") && cls %in% c("lmerMod", "lme")) {
-    return(paste0(
-      "p-values: Satterthwaite t-test, cluster-robust df ",
-      "(clubSandwich)."
-    ))
+    return(spicy_str("note_pvalues_satterthwaite_cr"))
   }
   if (cls == "lmerMod" && identical(ci, "satterthwaite")) {
-    return("p-values: Satterthwaite t-test (lmerTest).")
+    return(spicy_str("note_pvalues_satterthwaite"))
   }
   switch(
     cls,
-    "lmerMod" = paste0(
-      "p-values: Wald-z, large-sample approximation. ",
-      "Load `lmerTest` for Satterthwaite t-tests."
-    ),
-    "glmerMod" = "p-values: Wald-z asymptotic (lme4).",
-    "glmmTMB" = "p-values: Wald-z asymptotic (glmmTMB).",
-    "lme" = "p-values: t-test with containment df (nlme).",
+    "lmerMod" = spicy_str("note_pvalues_wald_lmer"),
+    "glmerMod" = spicy_fmt("note_pvalues_wald", "lme4"),
+    "glmmTMB" = spicy_fmt("note_pvalues_wald", "glmmTMB"),
+    "lme" = spicy_str("note_pvalues_containment"),
     NULL
   )
 }
@@ -1663,9 +1657,9 @@ build_nested_ml_refit_footer_block_from_frames <- function(
 # Footer glosses for the component blocks: one line per DISTINCT block
 # rendered in the table (gated on is_component rows actually present, so
 # show_components = FALSE prints nothing), naming what each block models and
-# its scale under exponentiate. Plus the glmmTMB robust disclosure: under a
-# CR* request clubSandwich covers the conditional fixed effects only, so the
-# component rows stay model-based -- said explicitly, never silently.
+# its scale under exponentiate. A robust vcov covers the component rows too
+# (pscl: the whole-model vcovCL; glmmTMB: the full CR0 sandwich), so the
+# Std. errors line speaks for every row and no disclosure is needed here.
 build_component_blocks_footer_block_from_frames <- function(frames) {
   if (!is.list(frames) || length(frames) == 0L) {
     return(NULL)
@@ -1673,7 +1667,6 @@ build_component_blocks_footer_block_from_frames <- function(frames) {
 
   lines <- character(0)
   seen <- character(0)
-  robust_note <- FALSE
   for (f in frames) {
     cf <- f$coefs
     if (is.null(cf$is_component) || !any(cf$is_component %in% TRUE)) {
@@ -1699,21 +1692,6 @@ build_component_blocks_footer_block_from_frames <- function(frames) {
       }
       lines <- c(lines, gl)
     }
-    if (
-      isTRUE(f$info$extras$component_robust_note) &&
-        !.is_model_vcov(.frame_vcov_kind(f))
-    ) {
-      robust_note <- TRUE
-    }
-  }
-  if (robust_note) {
-    lines <- c(
-      lines,
-      paste0(
-        "Robust SEs apply to the conditional component; zero-inflation / ",
-        "dispersion SEs are model-based."
-      )
-    )
   }
   if (length(lines) == 0L) {
     return(NULL)

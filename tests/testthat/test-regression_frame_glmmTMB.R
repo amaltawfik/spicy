@@ -695,7 +695,8 @@ test_that(".glmmTMB_blank_degenerate_vc drops non-finite Wald quantities", {
 # ---- 12. Ordinal family (cumulative-link mixed model) ---------------------
 
 .fit_glmmTMB_ordinal <- function(link = "logit", re = TRUE) {
-  skip_if_not_installed("glmmTMB")
+  # The ordinal() family is new in glmmTMB 1.1.15: skip, not error, below.
+  skip_if_not_installed("glmmTMB", "1.1.15")
   skip_if_not_installed("ordinal")
   f <- if (re) {
     rating ~ temp + contact + (1 | judge)
@@ -867,7 +868,7 @@ test_that("clmm and glmmTMB ordinal agree on wine (cross-engine triangulation)",
 })
 
 test_that("clmm (several random terms) and glmmTMB ordinal agree on the RE rows", {
-  skip_if_not_installed("glmmTMB")
+  skip_if_not_installed("glmmTMB", "1.1.15")
   skip_if_not_installed("ordinal")
   set.seed(1)
   d <- expand.grid(a = factor(1:12), b = factor(1:10), rep = 1:3)
@@ -944,6 +945,13 @@ test_that("glmmTMB ordinal: AME, robust vcov and standardized are refused", {
     table_regression(fit, vcov = "CR2", cluster = ~judge),
     class = "spicy_unsupported_vcov"
   )
+  # CR0 too: glmmTMB's sandwich does not cover the cut-points.
+  expect_identical(spicy:::.robust_vcov_support(fit), "classical")
+  err <- expect_error(
+    table_regression(fit, vcov = "CR0"),
+    class = "spicy_unsupported_vcov"
+  )
+  expect_match(conditionMessage(err), "ordinal family", fixed = TRUE)
   expect_error(
     table_regression(fit, standardized = "refit"),
     class = "spicy_unsupported_standardized"

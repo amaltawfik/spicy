@@ -35,7 +35,7 @@ Columns:
 | `rq` | `quantreg::rq` | ✅ | — | — |
 | `feols` / `feglm` | `fixest::*` | ✅ | feglm: OR/IRR | 🔶 fixed-effects summary |
 | `lmerMod` / `glmerMod` | `lme4::lmer` / `glmer` | ✅ | glmer: OR/IRR | **Random effects rows** ✅ (+ opt-in `re_test` lrt/rlrt) |
-| `glmmTMB` | `glmmTMB::glmmTMB` | ✅ (robust → model fallback) | link-dep (IRR for nbinom*/truncated_*) | **Random effects rows** ✅ + **Zero-inflation** ✅ + **Dispersion** ✅ |
+| `glmmTMB` | `glmmTMB::glmmTMB` | ✅ (CR0: the sandwich through marginaleffects' Jacobian) | link-dep (IRR for nbinom*/truncated_*) | **Random effects rows** ✅ + **Zero-inflation** ✅ + **Dispersion** ✅ |
 | `lme` | `nlme::lme` | ✅ | — | **Random effects rows** ✅ (+ `re_test` for simple single-group random formulas) |
 | `polr` | `MASS::polr` | ✅ **per-cat** | OR (logit) / exp(B) | **Thresholds** ✅ |
 | `clm` | `ordinal::clm` | ✅ **per-cat** | OR (logit) / exp(B) | **Thresholds** ✅ |
@@ -80,7 +80,9 @@ the per-class passes.
 | `lm` | classical, HC*, CR* | wald (profile → error) | refit + posthoc/basic/smart |
 | `glm` | classical, HC*, CR* | wald, **profile** (`confint.glm`) | refit + posthoc/... |
 | `polr` / `clm` | classical, CR0–CR3 (**no HC***) | wald, **profile** (predictors via `confint`; thresholds stay Wald) | refit (posthoc/basic run but dubious on a categorical outcome) |
-| mixed (`lmer`/`glmer`/`glmmTMB`/`lme`) | ✅ classical, CR* (clubSandwich; glmmTMB CR* covers the conditional part only — footer disclosure) | wald (+ Satterthwaite df) | refit |
+| mixed (`lmer`/`lme`) | ✅ classical, CR* (clubSandwich, Satterthwaite df) | wald (+ Satterthwaite df) | refit |
+| `glmer` | ✅ classical only (no clubSandwich method) | wald | refit |
+| `glmmTMB` | ✅ classical, CR0 only (glmmTMB's own sandwich, >= 1.1.15; covers the zi / disp blocks too; default cluster = top-level grouping factor; REML, ordinal family and crossed REs without a containing cluster refused) | wald | refit |
 | `coxph` / `cph` | ✅ classical, CR* (Lin–Wei dfbeta) | wald | refit |
 | `zeroinfl` / `hurdle` | ✅ classical, CR* (`sandwich::vcovCL`; covers BOTH components; **no HC***) | wald | refit |
 | others | 🔶 per-class | 🔶 | 🔶 |

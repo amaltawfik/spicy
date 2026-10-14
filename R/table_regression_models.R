@@ -335,9 +335,12 @@
 #' test. `N (groups)` and `ICC` are fit-stat rows; Nakagawa marginal /
 #' conditional R-squared are the default R-squared family. `CR*`
 #' cluster-robust standard errors are available for `lmer` and `lme` fits,
-#' via \pkg{clubSandwich} with Satterthwaite degrees of freedom. `glmer`
-#' and `glmmTMB` fits keep their model-based standard errors: a `CR*`
-#' request on them is refused with a clear error.
+#' via \pkg{clubSandwich} with Satterthwaite degrees of freedom. `glmmTMB`
+#' fits take `"CR0"` from glmmTMB's own sandwich (Wald z), clustered by
+#' default on the top-level grouping factor; see the robust-SE section of
+#' [table_regression()] for when it holds. `glmer` fits keep their
+#' model-based standard errors: a `CR*` request on them is refused with a
+#' clear error.
 #'
 #' @section Population-averaged (GEE) models:
 #' `geepack::geeglm()` fits are read on their own terms: the sandwich
@@ -388,7 +391,8 @@
 #' coefficients join the `p_adjust` family and take stars; a zero component
 #' is exponentiated only under a logit link (odds ratio). AME is the
 #' combined-response effect on E(Y). `CR*` for `pscl` fits covers both components
-#' via `sandwich::vcovCL()`. Opt out with `show_components = FALSE`.
+#' via `sandwich::vcovCL()`, and `"CR0"` for `glmmTMB` fits covers the
+#' zero-inflation and dispersion blocks. Opt out with `show_components = FALSE`.
 #'
 #' @section Categorical outcomes:
 #' `multinom` renders per non-reference outcome; `exponentiate` yields

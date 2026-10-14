@@ -1148,10 +1148,24 @@ produced -- and spicy never overwrites it. A \code{vcov} request is
 refused; set the estimator through the fitting package instead
 (\verb{se_type =} for estimatr; \verb{vcov =} at estimation or in
 \code{summary()} for fixest).}
-\item{Other classes (\code{glmer}, \code{glmmTMB},
-\code{rstanarm}/\code{brms}, ...)}{\code{classical} (model-based) only
-(\pkg{clubSandwich} has no working backend for \code{glmer} /
-\code{glmmTMB}).}
+\item{\code{glmmTMB}}{\code{classical} + \code{"CR0"} only, from glmmTMB's own
+sandwich (\pkg{glmmTMB} >= 1.1.15), which covers the coefficients,
+the zero-inflation and dispersion blocks and the AME. Without
+\code{cluster}, the cluster is the top-level grouping factor of the
+random effects. The estimator needs independent clusters that
+contain the random effects -- every group within one cluster --
+so crossed random effects need a \code{cluster} that contains them
+all. It keeps the standard errors valid when the random-effects
+distribution or the conditional variance is misspecified,
+provided the estimates themselves stay consistent (Liang & Zeger
+1986; Verbeke & Lesaffre 1997); with few clusters it understates
+the variance, and this class has no small-sample correction
+(Cameron & Miller 2015). \code{"CR1"}-\code{"CR3"} and \verb{HC*} are refused
+(the sandwich has one score per cluster), as are REML fits and
+the ordinal family.}
+\item{Other classes (\code{glmer}, \code{rstanarm}/\code{brms}, ...)}{\code{classical}
+(model-based) only (\pkg{clubSandwich} has no working backend for
+\code{glmer}).}
 }
 
 Cluster-robust backends differ by class but are each cross-validated
@@ -1171,7 +1185,11 @@ score and are refused. \code{rms} fits use
 \code{\link[rms:robcov]{rms::robcov()}} (which
 needs the fit's \verb{x = TRUE, y = TRUE}). These single cluster
 sandwiches have no CR0-CR3 bias-reduction variants, so the requested
-\verb{CR*} maps to the one available estimator. \code{cluster} length is one
+\verb{CR*} maps to the one available estimator. \code{glmmTMB} fits use
+\code{glmmTMB::sandwich()}, with one score per cluster (the gradient of
+the cluster's marginal log-likelihood) and no finite-sample factor;
+its one estimator is requested as \code{"CR0"}, and the other \verb{CR*}
+tokens are refused rather than mapped. \code{cluster} length is one
 entry per observation, except \code{mlogit} (one per choice situation)
 and censored \code{coxph} (one per subject).
 }
@@ -1738,6 +1756,10 @@ Tables 7.13-7.15.
 Aiken, L.S. & West, S.G. (1991). \emph{Multiple regression: Testing
 and interpreting interactions}.
 
+Cameron, A.C. & Miller, D.L. (2015). A practitioner's guide to
+cluster-robust inference. \emph{Journal of Human Resources}, 50(2),
+317-372.
+
 Cohen, J., Cohen, P., West, S.G., & Aiken, L.S. (2003).
 \emph{Applied multiple regression / correlation analysis for the
 behavioral sciences} (3rd ed.). Lawrence Erlbaum.
@@ -1757,10 +1779,18 @@ Hertz-Picciotto, I. & Rockhill, B. (1997). Validity and
 efficiency of approximation methods for tied survival times in
 Cox regression. \emph{Biometrics}, 53(3), 1151-1156.
 
+Liang, K.-Y. & Zeger, S.L. (1986). Longitudinal data analysis
+using generalized linear models. \emph{Biometrika}, 73(1), 13-22.
+
 Pustejovsky, J.E. & Tipton, E. (2018). Small-sample methods for
 cluster-robust variance estimation and hypothesis testing in
 fixed effects models. \emph{Journal of Business & Economic
 Statistics}, 36(4), 672-683.
+
+Verbeke, G. & Lesaffre, E. (1997). The effect of misspecifying
+the random-effects distribution in linear mixed models for
+longitudinal data. \emph{Computational Statistics & Data Analysis},
+23(4), 541-556.
 
 Wasserstein, R.L., Schirm, A.L., & Lazar, N.A. (2019). Moving
 to a world beyond "p < 0.05". \emph{The American Statistician},

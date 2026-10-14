@@ -322,17 +322,15 @@ test_that("mlogit advertises no AME (marginaleffects has no slopes() for it)", {
   )
 })
 
-test_that("glmmTMB AME is model-based and pinned; CR* is refused up front", {
+test_that("glmmTMB AME is model-based and pinned; CR2 is refused up front", {
   skip_if_not_installed("glmmTMB")
   skip_if_not_installed("marginaleffects")
   d <- make_d()
   d$g <- factor(sample(14, nrow(d), TRUE))
   fit <- glmmTMB::glmmTMB(y ~ x1 + f + (1 | g), data = d)
   am <- ame_rows(as_regression_frame(fit, show_columns = "ame"))
-  # CR* no longer reaches the AME path at all: clubSandwich has no
-  # glmmTMB backend, so compute_model_vcov() refuses before any
-  # fallback could happen (the old graceful model-based fallback is
-  # unreachable).
+  # CR2 never reaches the AME path: glmmTMB's sandwich has one type, CR0,
+  # so compute_model_vcov() refuses before any fallback could happen.
   expect_error(
     as_regression_frame(
       fit,
@@ -351,6 +349,44 @@ test_that("glmmTMB AME is model-based and pinned; CR* is refused up front", {
   idx <- match(am$term, okey)
   expect_equal(am$estimate, orc$estimate[idx], tolerance = 1e-10)
   expect_equal(am$std_error, orc$std.error[idx], tolerance = 1e-10)
+})
+
+test_that("glmmTMB CR0 AME: marginaleffects' delta method on the sandwich", {
+  skip_if_not_installed("glmmTMB", "1.1.15")
+  skip_if_not_installed("marginaleffects", "0.29.0")
+  d <- make_d()
+  d$g <- factor(sample(14, nrow(d), TRUE))
+  d$cnt <- stats::rpois(
+    nrow(d),
+    exp(0.3 + 0.3 * d$x1 + stats::rnorm(14, sd = 0.4)[d$g])
+  )
+  fit <- glmmTMB::glmmTMB(cnt ~ x1 + f + (1 | g), data = d, family = poisson)
+  a0 <- ame_rows(as_regression_frame(fit, show_columns = "ame"))
+  a1 <- ame_rows(as_regression_frame(fit, vcov = "CR0", show_columns = "ame"))
+  # The estimates do not depend on the vcov; the SEs do.
+  expect_equal(a1$estimate, a0$estimate, tolerance = 1e-12)
+  expect_true(all(abs(a1$std_error / a0$std_error - 1) > 1e-3))
+  # avg_slopes() takes no matrix as the vcov of a glmmTMB fit. Its "HC0"
+  # route reaches the same glmmTMB sandwich, clustered on getGroups() --
+  # `g`, the one grouping factor here -- through marginaleffects' own
+  # delta method.
+  orc <- as.data.frame(suppressWarnings(
+    marginaleffects::avg_slopes(fit, vcov = "HC0")
+  ))
+  idx <- match(a1$term, oracle_term_id(orc))
+  expect_false(anyNA(idx))
+  expect_equal(a1$estimate, orc$estimate[idx], tolerance = 1e-10)
+  expect_equal(a1$std_error, orc$std.error[idx], tolerance = 1e-10)
+  expect_equal(a1$p_value, orc$p.value[idx], tolerance = 1e-8)
+  expect_equal(a1$ci_lower, orc$conf.low[idx], tolerance = 1e-10)
+  # The same matrix as the coefficient rows: J V J' with V the CR0 matrix.
+  ref <- suppressWarnings(marginaleffects::avg_slopes(fit))
+  J <- marginaleffects::components(ref, "jacobian")
+  V <- spicy:::compute_model_vcov(fit, type = "CR0")
+  key <- sub("^cond~", "", colnames(J))
+  se <- sqrt(rowSums((J %*% V[key, key]) * J))
+  idx <- match(a1$term, oracle_term_id(as.data.frame(ref)))
+  expect_equal(a1$std_error, se[idx], tolerance = 1e-10)
 })
 
 

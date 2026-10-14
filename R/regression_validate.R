@@ -991,6 +991,11 @@ validate_vcov_cluster_lists <- function(vcov, cluster, models) {
           class = "spicy_unsupported_vcov"
         )
       }
+      # glmmTMB: one estimator, CR0, through glmmTMB's own sandwich; every
+      # other token is refused with its reason (R/vcov_glmmTMB.R).
+      if (inherits(models[[i]], "glmmTMB")) {
+        .glmmTMB_refuse_vcov(models[[i]], vt)
+      }
       if (inherits(models[[i]], "fixest")) {
         spicy_abort(
           c(
@@ -1117,7 +1122,9 @@ validate_vcov_cluster_lists <- function(vcov, cluster, models) {
     }
 
     is_cr <- startsWith(v_i, "CR")
-    if (is_cr && is.null(c_i)) {
+    # A glmmTMB fit clusters by default on its top-level grouping factor;
+    # R/vcov_glmmTMB.R says so, or why there is none.
+    if (is_cr && is.null(c_i) && !inherits(models[[i]], "glmmTMB")) {
       spicy_abort(
         c(
           sprintf(
@@ -1194,6 +1201,8 @@ validate_vcov_cluster_lists <- function(vcov, cluster, models) {
           "fixest::feols(..., vcov = ~cluster_var), or ",
           "summary(fit, vcov = ~cluster_var)."
         )
+      } else if (inherits(models[[i]], "glmmTMB")) {
+        "Set `vcov` to `\"CR0\"` to use the cluster vector for cluster-robust SE."
       } else {
         paste0(
           "Set `vcov` to `\"CR0\"`, `\"CR1\"`, `\"CR2\"`, or `\"CR3\"` ",

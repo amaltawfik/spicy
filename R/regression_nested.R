@@ -745,6 +745,9 @@ nested_wald_coefs <- function(fit) {
   if (inherits(fit, "lme")) {
     return(nlme::fixef(fit))
   }
+  if (inherits(fit, "glmmTMB")) {
+    return(glmmTMB::fixef(fit)$cond)
+  }
   if (inherits(fit, "rms")) {
     return(.rms_coef_named(fit))
   }

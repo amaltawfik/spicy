@@ -54,11 +54,12 @@ test_that("nlme::lme CR2 SE matches clubSandwich", {
   expect_equal(unname(.mixed_b_se(fr)), unname(ct$SE), tolerance = 1e-6)
 })
 
-test_that("glmmTMB CR* is refused (no clubSandwich backend, default is invalid)", {
-  # clubSandwich has no vcovCR.glmmTMB: the call silently dispatches to
+test_that("glmmTMB CR2 is refused (its own sandwich has one type, CR0)", {
+  # clubSandwich has no vcovCR.glmmTMB: the call would dispatch to
   # vcovCR.default, whose result is numerically invalid for glmmTMB
   # (~360x-deflated SEs on a Poisson random-intercept check, 2026-08-05).
-  # Refuse up front, exactly like glmer -- never serve those numbers.
+  # CR0 comes from glmmTMB's own sandwich (test-vcov_glmmTMB.R); the
+  # bias-reduced CR1-CR3 are refused up front.
   suppressWarnings(requireNamespace("glmmTMB", quietly = TRUE))
   skip_if_not_installed("glmmTMB")
   fit <- suppressWarnings(

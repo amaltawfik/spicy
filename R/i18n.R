@@ -751,6 +751,14 @@
   note_vcov_design_twophase = "Design-based (two-phase design)",
   note_vcov_design_bare = "Design-based",
   note_vcov_cluster_by = ", clusters by %s",
+  # The fixed-effect inference line of a mixed model: the distribution,
+  # the df and the package that computed them. One hole on the Wald
+  # line: the engine (lme4, glmmTMB), a package name, never translated.
+  note_pvalues_satterthwaite_cr = "p-values: Satterthwaite t-test, cluster-robust df (clubSandwich).",
+  note_pvalues_satterthwaite = "p-values: Satterthwaite t-test (lmerTest).",
+  note_pvalues_wald_lmer = "p-values: Wald-z, large-sample approximation. Load `lmerTest` for Satterthwaite t-tests.",
+  note_pvalues_wald = "p-values: Wald-z asymptotic (%s).",
+  note_pvalues_containment = "p-values: t-test with containment df (nlme).",
   note_ci_profile = "%s%% CIs: profile likelihood.",
   note_ci_bootstrap_percentile = "%s%% CIs: bootstrap percentile.",
   note_ci_posterior_mixed = "Model %d: %s%% CI is an equal-tailed posterior credible interval.",

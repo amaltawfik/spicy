@@ -15,8 +15,9 @@
 #     $cond is needed for the coefs table.
 #   * summary(fit)$coefficients is a list with $cond / $zi / $disp; each
 #     element is a Wald z-asymptotic matrix (Estimate / Std. Error /
-#     z value / Pr(>|z|)). glmmTMB does NOT compute Satterthwaite df;
-#     inference is uniformly Wald z, including for Gaussian fits.
+#     z value / Pr(>|z|)). spicy reports Wald z uniformly, including for
+#     Gaussian fits; the Satterthwaite and Kenward-Roger df of glmmTMB
+#     >= 1.1.13 (summary(ddf = ), experimental) are not used.
 #   * glmmTMB::VarCorr(fit) returns a list with one top-level slot per
 #     component ($cond, $zi). Each slot is a list of per-group vcov
 #     matrices in the same shape as lme4's VarCorr -- diag() gives
@@ -100,18 +101,29 @@ as_regression_frame.glmmTMB <- function(
   # through either way.
   .mute_glmmTMB_nan_warnings(.glmmTMB_is_nonconverged(fit), {
     coefs <- .glmmTMB_coefs(fit, ci_level = ci_level)
-    # vcov can only be "model"/"classical" here: CR* is refused for
-    # glmmTMB (no clubSandwich backend -- vcovCR.default is numerically
-    # invalid) by both the validate gate and compute_model_vcov(). The
-    # shared applier is kept for its no-op classical path.
+    # CR0: glmmTMB's own cluster sandwich (R/vcov_glmmTMB.R), computed
+    # ONCE -- every cluster retapes the TMB object -- and shared by the
+    # coefficient rows, the component blocks, the AME and the nested Wald
+    # test. Without a `cluster`, the cluster is the top-level grouping
+    # factor, and the footer names it.
+    vc <- NULL
+    if (!.is_model_vcov(vcov)) {
+      vc <- compute_model_vcov(fit, type = vcov, cluster = cluster)
+      if (is.null(cluster)) {
+        cluster_name <- .glmmTMB_cluster(fit)$name
+      }
+    }
     coefs <- .apply_robust_vcov_to_coefs(
       coefs,
       fit,
       vcov,
-      cluster,
+      # The matrix is built: the cluster would only reach clubSandwich's
+      # Satterthwaite route, which has no glmmTMB method. Wald z.
+      NULL,
       ci_level,
       test = "z",
-      estimates = glmmTMB::fixef(fit)$cond
+      estimates = glmmTMB::fixef(fit)$cond,
+      vc = vc
     )
     coefs <- .attach_ame_to_frame_coefs(
       coefs,
@@ -119,7 +131,8 @@ as_regression_frame.glmmTMB <- function(
       ci_level,
       ame_columns,
       vcov_type = vcov,
-      cluster = cluster
+      cluster = cluster,
+      vcov_matrix = vc
     )
     coefs <- .attach_partial_chi2_to_frame_coefs(coefs, fit, show_columns)
     coefs <- .attach_beta_to_frame_coefs(coefs, fit, standardized, ci_level)
@@ -129,13 +142,15 @@ as_regression_frame.glmmTMB <- function(
       vcov_label = vcov_label,
       ci_level = ci_level,
       ci_method = ci_method,
-      model_id = model_id
+      model_id = model_id,
+      vc = vc
     )
     if (!.is_model_vcov(vcov)) {
       info$vcov_label <- .robust_vcov_label(
         vcov,
         cluster_name %||% NA_character_
       )
+      info$vcov_matrix <- vc
     }
     # Phase 7c16: exp() on the B / beta rows for non-identity links. The
     # ordinal family reads its info$family ("cumulative"), so the link gate,
@@ -333,14 +348,17 @@ as_regression_frame.glmmTMB <- function(
 }
 
 
-# Build the info list for a glmmTMB fit.
+# Build the info list for a glmmTMB fit. `vc` is the CR0 sandwich of
+# every fixed parameter (NULL under the model-based default); the
+# component blocks read their rows of it.
 .glmmTMB_info <- function(
   fit,
   vcov_kind,
   vcov_label,
   ci_level,
   ci_method,
-  model_id
+  model_id,
+  vc = NULL
 ) {
   fam <- .glmmTMB_family_info(fit)
   is_gaussian_identity <- identical(fam$family, "gaussian") &&
@@ -416,8 +434,8 @@ as_regression_frame.glmmTMB <- function(
     nobs = as.integer(stats::nobs(fit))
   )
 
-  # glmmTMB inference is Wald z uniformly; no Satterthwaite is computed
-  # by the engine. Default ci_method = "wald".
+  # Wald z uniformly: the experimental Satterthwaite / Kenward-Roger df
+  # of glmmTMB >= 1.1.13 are not used. Default ci_method = "wald".
   if (is.null(ci_method)) {
     ci_method <- "wald"
   }
@@ -460,7 +478,8 @@ as_regression_frame.glmmTMB <- function(
           "note_component_gloss_zero_inflation",
           spicy_str("label_block_zero_inflation")
         ),
-        ci_level = ci_level
+        ci_level = ci_level,
+        vc = vc
       )
   }
   # The Dispersion block appears only when the user MODELLED dispersion:
@@ -485,7 +504,8 @@ as_regression_frame.glmmTMB <- function(
           "note_component_gloss_dispersion",
           spicy_str("label_block_dispersion")
         ),
-        ci_level = ci_level
+        ci_level = ci_level,
+        vc = vc
       )
   }
   component_blocks <- Filter(Negate(is.null), component_blocks)
@@ -510,12 +530,7 @@ as_regression_frame.glmmTMB <- function(
     exp_applied = FALSE,
     exp_header = NA_character_,
     component_blocks = component_blocks,
-    has_zi = has_zi,
-    # Under a robust (CR*) request clubSandwich covers the CONDITIONAL fixed
-    # effects only; the zi/disp rows stay model-based. Consumed by the footer
-    # for an explicit disclosure.
-    component_robust_note = length(component_blocks) > 0L &&
-      !.is_model_vcov(vcov_kind)
+    has_zi = has_zi
   )
   if (is_ordinal) {
     extras$thresholds <- .glmmTMB_ordinal_thresholds(fit)
@@ -585,9 +600,11 @@ as_regression_frame.glmmTMB <- function(
 # Build one component block (zi / disp) for a glmmTMB fit: a standardised
 # `component block` (label / link / exp_ok / gloss / coefs) the orchestrator
 # promotes to a labelled subordinate rows block. Full Wald inference straight
-# from summary(fit)$coefficients[[component]] -- no refit. Terms are
-# "<component>."-prefixed for uniqueness against the conditional rows
-# (matching glmmTMB's own confint() rownames convention).
+# from summary(fit)$coefficients[[component]] -- no refit. Under CR0 the SEs
+# come from the "zi~" / "disp~" rows of the same sandwich as the conditional
+# rows (`vc`), so one estimator covers the whole table, as for the pscl
+# two-part fits. Terms are "<component>."-prefixed for uniqueness against
+# the conditional rows (matching glmmTMB's own confint() rownames convention).
 .glmmTMB_component_block <- function(
   fit,
   component,
@@ -595,7 +612,8 @@ as_regression_frame.glmmTMB <- function(
   link,
   exp_ok,
   gloss,
-  ci_level
+  ci_level,
+  vc = NULL
 ) {
   sm <- tryCatch(summary(fit)$coefficients[[component]], error = function(e) {
     NULL
@@ -609,6 +627,11 @@ as_regression_frame.glmmTMB <- function(
   se <- unname(sm[, "Std. Error"])
   stat <- unname(sm[, "z value"])
   p <- unname(sm[, "Pr(>|z|)"])
+  if (!is.null(vc)) {
+    se <- unname(sqrt(diag(vc)[paste0(component, "~", nm)]))
+    stat <- est / se
+    p <- 2 * stats::pnorm(-abs(stat))
+  }
   z <- stats::qnorm(0.5 + ci_level / 2)
 
   # Factor metadata for this component: variables come from the component's

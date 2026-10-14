@@ -3,9 +3,10 @@
 # table_continuous_lm()). Moved here from R/lm_compute.R: nothing below is
 # lm-specific. Contents:
 #   * compute_model_vcov(): vcov family dispatch -- classical / HC* (sandwich) /
-#     CR* (clubSandwich, sandwich::vcovCL, or the native Lin-Wei / robcov
-#     path by class) / bootstrap / jackknife. The resamplers
-#     (compute_resample_vcov_*) refit lm/glm and so apply only to those classes.
+#     CR* (clubSandwich, sandwich::vcovCL, the native Lin-Wei / robcov
+#     path, or glmmTMB's own sandwich, by class) / bootstrap / jackknife.
+#     The resamplers (compute_resample_vcov_*) refit lm/glm and so apply
+#     only to those classes.
 #   * compute_coef_inference(): single-coefficient inference; the reference
 #     distribution (t vs z) follows the ESTIMATOR, not the fit class.
 #   * compute_wald_test(): multi-coefficient Wald F / chi^2.
@@ -215,6 +216,14 @@ compute_model_vcov <- function(
     return(stats::vcov(fit))
   }
 
+  # glmmTMB: its own cluster sandwich (R/vcov_glmmTMB.R), which also
+  # answers the tokens it refuses -- HC* included, which sandwich::vcovHC()
+  # would otherwise hand to glmmTMB as a sandwich clustered on the finest
+  # grouping factor, under an HC label.
+  if (inherits(fit, "glmmTMB")) {
+    return(.glmmTMB_cluster_robust_vcov(fit, type = type, cluster = cluster))
+  }
+
   if (identical(type, "bootstrap")) {
     return(compute_resample_vcov_bootstrap(
       fit,
@@ -302,25 +311,11 @@ compute_model_vcov <- function(
         error = function(e) .abort_vcov_failed(type, e, "sandwich::vcovCL()")
       ))
     }
-    # No clubSandwich backend: glmmTMB silently dispatches to
-    # vcovCR.default and returns numerically invalid SEs. The validate
-    # gate refuses it up front; guard here too so a direct
-    # as_regression_frame() or internal caller can never reach that
-    # matrix. (svyglm has the same gap -- no vcovCR.svyglm, so the call
-    # would land on vcovCR.glm and ignore the design -- but it never
-    # reaches this branch: the survey-design guard at the top of
-    # compute_model_vcov() refuses CR* along with every other
-    # model-derived estimator, and names the design as the authority.)
-    if (inherits(fit, "glmmTMB")) {
-      spicy_abort(
-        sprintf(
-          "`vcov = \"%s\"` is not available for `%s` models.",
-          type,
-          class(fit)[1L]
-        ),
-        class = "spicy_unsupported_vcov"
-      )
-    }
+    # (svyglm has no vcovCR method either -- the call would land on
+    # vcovCR.glm and ignore the design -- but it never reaches this
+    # branch: the survey-design guard at the top of compute_model_vcov()
+    # refuses CR* along with every other model-derived estimator, and
+    # names the design as the authority.)
     if (!requireNamespace("clubSandwich", quietly = TRUE)) {
       spicy_abort(
         sprintf(
@@ -1032,14 +1027,15 @@ compute_satt_df_per_coef <- function(fit, vc, cluster) {
     glm = full,
     negbin = full, # MASS::glm.nb delegates to the glm path
     # Mixed-effects: cluster-robust via clubSandwich (Inc 2). lmer / lme get
-    # Satterthwaite df. glmer and glmmTMB are NOT granted: clubSandwich has
-    # no vcovCR method for either -- glmerMod errors outright, while glmmTMB
-    # silently dispatches to vcovCR.default and returns numerically invalid
-    # SEs (~360x deflated on a Poisson random-intercept check, 2026-08-05).
-    # Refuse cleanly until a working backend exists.
+    # Satterthwaite df. glmer is NOT granted: clubSandwich has no vcovCR
+    # method for it (glmerMod errors outright). glmmTMB takes CR0 from its
+    # own sandwich (R/vcov_glmmTMB.R) -- never clubSandwich, whose
+    # vcovCR.default returned SEs ~360x deflated on a Poisson
+    # random-intercept check (2026-08-05).
     lmerMod = cr_only,
     lmerModLmerTest = cr_only,
     lme = cr_only,
+    glmmTMB = .glmmTMB_robust_vcov_support(fit),
     # Survival (Inc 3): coxph -> Lin-Wei grouped-dfbeta; survreg -> vcovCL.
     coxph = cr_only,
     survreg = cr_only,
@@ -1242,7 +1238,9 @@ compute_satt_df_per_coef <- function(fit, vc, cluster) {
 # model-based default. Classes whose coef() is not the fixed-effect vector pass
 # `estimates` (e.g. lme4::fixef(fit)). Estimates + row metadata are preserved;
 # only the inference cells change. Shared by every non-lm/glm robust-capable
-# method so the robust path is wired in exactly one place.
+# method so the robust path is wired in exactly one place. A frame that
+# already computed the matrix passes it as `vc` (glmmTMB: one sandwich for
+# the whole frame).
 .apply_robust_vcov_to_coefs <- function(
   coefs,
   fit,
@@ -1251,7 +1249,8 @@ compute_satt_df_per_coef <- function(fit, vc, cluster) {
   ci_level,
   test = "t",
   estimates = NULL,
-  term_keys = NULL
+  term_keys = NULL,
+  vc = NULL
 ) {
   # No-op for the model-based defaults: the canon "model" (every class,
   # and the "classical" the user still types for it) and "survey-Taylor"
@@ -1260,7 +1259,7 @@ compute_satt_df_per_coef <- function(fit, vc, cluster) {
   if (.is_model_vcov(vcov_type) || identical(vcov_type, "survey-Taylor")) {
     return(coefs)
   }
-  vc <- compute_model_vcov(fit, type = vcov_type, cluster = cluster)
+  vc <- vc %||% compute_model_vcov(fit, type = vcov_type, cluster = cluster)
   cf <- if (!is.null(estimates)) estimates else stats::coef(fit)
   # term_keys: per-row lookup keys into names(cf) when coefs$term is a
   # DISPLAY name that differs from the estimate/vcov naming -- multinom
@@ -1295,32 +1294,31 @@ compute_satt_df_per_coef <- function(fit, vc, cluster) {
 }
 
 # Human-readable footer label for an applied robust vcov, mirroring the
-# lm/glm footer (format_vcov_label_from_frame). Used by the non-lm/glm methods
-# to set info$vcov_label when a robust vcov is requested, so the footer names
-# the estimator actually applied instead of the model-based default.
+# lm/glm footer (format_vcov_label_from_frame), through the same registry
+# keys, so both read the same in every language. Used by the non-lm/glm
+# methods to set info$vcov_label when a robust vcov is requested, so the
+# footer names the estimator actually applied instead of the model-based
+# default.
 .robust_vcov_label <- function(
   vcov_type,
   cluster_name = NA_character_,
   estimator = NULL
 ) {
   if (startsWith(vcov_type, "HC")) {
-    return(sprintf("heteroskedasticity-robust (%s)", estimator %||% vcov_type))
+    return(spicy_fmt("note_vcov_hc", estimator %||% vcov_type))
   }
   if (startsWith(vcov_type, "CR")) {
     cl <- if (is.na(cluster_name) || !nzchar(cluster_name)) {
-      "cluster vector supplied"
+      spicy_str("note_vcov_cluster_vector")
     } else {
-      sprintf("clusters by %s", cluster_name)
+      spicy_fmt("note_vcov_cluster_named", cluster_name)
     }
     if (identical(vcov_type, "CR1S")) {
       # The Stata-correspondence token names its convention: the
       # footer must let a reader match the table to Stata output.
-      return(sprintf(
-        "cluster-robust (CR1S, Stata vce(cluster), t(G-1)), %s",
-        cl
-      ))
+      return(spicy_fmt("note_vcov_cr1s", cl))
     }
-    return(sprintf("cluster-robust (%s), %s", estimator %||% vcov_type, cl))
+    return(spicy_fmt("note_vcov_cr", estimator %||% vcov_type, cl))
   }
   vcov_type
 }
