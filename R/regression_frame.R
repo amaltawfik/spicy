@@ -37,7 +37,7 @@ spicy_frame_version <- function() {
 # Default capability flags: every capability is FALSE unless a method opts in.
 # new_regression_frame() merges a method's `info$supports` onto this, so a
 # method need only set the flags it supports and any newly-added flag
-# defaults safely across all ~30 classes. This list is ALSO the
+# defaults safely across all classes. This list is ALSO the
 # single source of truth for the supports field set the validator requires.
 # The class names to PUT IN A MESSAGE for a set of frames. Normally
 # `info$class`, except for the univariable screen, whose frame is a
@@ -369,7 +369,7 @@ as_regression_frame <- function(fit, ...) {
 # `utils::getS3method("as_regression_frame", cl)` stops resolving the
 # family (which is how classify_unsupported_lm_class() decides a class
 # is supported at all), while `methods("as_regression_frame")` -- which
-# the unsupported-class error tells the USER to run -- starts warning
+# the registry test reads -- starts warning
 # "appears not to be S3 generic". Measured, not assumed: with the shim
 # in place every supported model was rejected as unsupported. So the
 # generic stays a textbook generic and the boundary sits around it.
@@ -409,16 +409,9 @@ as_regression_frame.default <- function(fit, ...) {
         sQuote(cls)
       ),
       "i" = paste0(
-        "Supported classes today: lm, glm, lmerMod / lmerModLmerTest, glmerMod, ",
-        "glmmTMB, lme (nlme), gls (nlme), coxph (survival), survreg (survival), ",
-        "polr / glm.nb / rlm (MASS), clm (ordinal), multinom (nnet), ",
-        "lm_robust / iv_robust (estimatr), fixest (fixest), ",
-        "hurdle / zeroinfl (pscl), rq (quantreg), ivreg / tobit (AER), ",
-        "gam / bam (mgcv), ols / lrm / cph / Glm (rms), ",
-        "mlogit (mlogit), betareg (betareg), ",
-        "flexsurvreg (flexsurv), selection (sampleSelection), nls (stats), ",
-        "svyglm / svyolr / svycoxph (survey), stanreg, brmsfit. ",
-        "Robust mixed (robustlmm) and Bayesian-hierarchical (MCMCglmm) ",
+        "Supported classes today: ",
+        paste(.supported_models_registry()$class, collapse = ", "),
+        ". Robust mixed (robustlmm) and Bayesian-hierarchical (MCMCglmm) ",
         "are on the 2026-2027 roadmap."
       ),
       "i" = paste0(

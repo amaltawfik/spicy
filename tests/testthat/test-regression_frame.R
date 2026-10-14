@@ -98,6 +98,9 @@ test_that("as_regression_frame.default() errors with discoverable message", {
     "github.com/amaltawfik/spicy/issues",
     fixed = TRUE
   )
+  # ...and lists every class of the registry.
+  words <- strsplit(conditionMessage(err), "[^A-Za-z0-9_]+")[[1]]
+  expect_identical(setdiff(table_regression_models()$class, words), character())
 })
 
 test_that("as_regression_frame(NULL) errors discoverably", {
@@ -841,8 +844,8 @@ test_that("mutation boundary re-checks a frame edited after construction", {
 
 test_that("the generic stays introspectable as an S3 generic", {
   # Load-bearing, not cosmetic: classify_unsupported_lm_class() decides
-  # a class is supported by asking getS3method(), and the
-  # unsupported-class error tells the user to run methods(). Both go
+  # a class is supported by asking getS3method(), and the registry
+  # test reads methods(). Both go
   # through utils:::findGeneric(), which reads body(as_regression_frame)
   # for a literal UseMethod() call -- so the dispatch may never move out
   # of the generic into a shim. Moving it there was measured to reject

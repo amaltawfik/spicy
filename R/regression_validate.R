@@ -329,8 +329,9 @@ validate_models_input <- function(models) {
         "Some `models` are not supported by `table_regression()`.",
         bad,
         "i" = paste0(
-          "Run `methods('as_regression_frame')` to see all currently ",
-          "supported model classes."
+          "Supported model classes: ",
+          paste(.supported_models_registry()$class, collapse = ", "),
+          ". `table_regression_models()` lists them with their engines."
         )
       ),
       class = "spicy_unsupported"

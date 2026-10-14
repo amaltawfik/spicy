@@ -65,7 +65,7 @@ test_that("validate_models_input – multi-position aggregate-fail lists ALL bad
   fit_ok <- lm(mpg ~ wt, data = mtcars)
   # A genuinely unsupported class (none of its class vector entries
   # have an as_regression_frame method registered). Phase 1-6 added
-  # methods for ~35 classes; only off-roadmap fits should reach this
+  # methods for many classes; only off-roadmap fits should reach this
   # branch.
   fit_bad <- structure(list(), class = "rlmer_robustlmm")
   err <- tryCatch(

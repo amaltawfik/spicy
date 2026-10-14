@@ -214,7 +214,7 @@ test_that("table_regression – NULL models errors with spicy_invalid_input", {
 })
 
 test_that("table_regression – class without as_regression_frame method errors with spicy_unsupported", {
-  # Phase 1-6 added methods for ~35 classes including mixed-effects,
+  # Phase 1-6 added methods for many classes including mixed-effects,
   # survival, ordinal, multinomial, robust, fixed-effects, GAM, rms,
   # Bayesian etc. Genuinely-unsupported off-roadmap classes still
   # error through the validate_models_input() gate.
@@ -223,6 +223,17 @@ test_that("table_regression – class without as_regression_frame method errors 
     table_regression(fake),
     class = "spicy_unsupported"
   )
+})
+
+test_that("an unsupported class is refused with every registry class named", {
+  err <- expect_error(
+    table_regression(structure(list(), class = "foo")),
+    class = "spicy_unsupported"
+  )
+  msg <- conditionMessage(err)
+  words <- strsplit(msg, "[^A-Za-z0-9_]+")[[1]]
+  expect_identical(setdiff(table_regression_models()$class, words), character())
+  expect_match(msg, "table_regression_models()", fixed = TRUE)
 })
 
 test_that("table_regression – binomial glm fits cleanly (Phase 3)", {
