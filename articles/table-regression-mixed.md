@@ -1405,12 +1405,19 @@ table_regression(fit_ri, vcov = "CR2", cluster = ~Subject)
 #> Random effects (REML): LR test vs linear regression, χ̄²(1) = 107.20, p < .001.
 ```
 
+`glmmTMB` fits take `"CR0"` from glmmTMB’s own sandwich (glmmTMB \>=
+1.1.15), clustered by default on the top-level grouping factor of the
+random effects; the conditions under which it holds are listed in
+[*Supported
+models*](https://amaltawfik.github.io/spicy/articles/table-regression-supported-models.md).
+
 Requests that have no valid backend are refused with a clear error
 rather than silently ignored: `HC*` (a single-level estimator whose
 sandwich assumes independent observations — the very dependence the
-random effects exist to model; use `CR*` instead), `CR*` on `glmer` or
-`glmmTMB` (no `clubSandwich` method for either), and the resampling
-estimators.
+random effects exist to model; use `CR*` instead), `CR*` on `glmer` (no
+`clubSandwich` method), `"CR1"`–`"CR3"` on `glmmTMB` (its sandwich has
+one score per cluster and no small-sample correction), and the
+resampling estimators.
 
 ## Standardized coefficients
 

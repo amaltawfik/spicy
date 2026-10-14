@@ -1464,13 +1464,19 @@ dependence:</p>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Std. errors: cluster-robust (CR2), clusters by Subject.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; p-values: Satterthwaite t-test, cluster-robust df (clubSandwich).</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Random effects (REML): LR test vs linear regression, χ̄²(1) = 107.20, p &lt; .001.</span></span></span></code></pre></div>
+<p><code>glmmTMB</code> fits take <code>"CR0"</code> from glmmTMB’s own
+sandwich (glmmTMB &gt;= 1.1.15), clustered by default on the top-level
+grouping factor of the random effects; the conditions under which it
+holds are listed in <a href="table-regression-supported-models.html"><em>Supported
+models</em></a>.</p>
 <p>Requests that have no valid backend are refused with a clear error
 rather than silently ignored: <code>HC*</code> (a single-level estimator
 whose sandwich assumes independent observations — the very dependence
 the random effects exist to model; use <code>CR*</code> instead),
-<code>CR*</code> on <code>glmer</code> or <code>glmmTMB</code> (no
-<code>clubSandwich</code> method for either), and the resampling
-estimators.</p>
+<code>CR*</code> on <code>glmer</code> (no <code>clubSandwich</code>
+method), <code>"CR1"</code>–<code>"CR3"</code> on <code>glmmTMB</code>
+(its sandwich has one score per cluster and no small-sample correction),
+and the resampling estimators.</p>
 </div>
 <div class="section level2">
 <h2 id="standardized-coefficients">Standardized coefficients<a class="anchor" aria-label="anchor" href="#standardized-coefficients"></a>

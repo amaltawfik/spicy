@@ -183,9 +183,21 @@ Family by family:
   `"bootstrap"` / `"jackknife"` resampling estimators.
 - **Mixed effects** – `lmer` and
   [`nlme::lme`](https://rdrr.io/pkg/nlme/man/lme.html) take `CR*` via
-  `clubSandwich`; `glmer`, `glmmTMB` and `gls` are model-based only
-  (`clubSandwich` has no working backend for the first two, and its
-  `gls` backend is not yet wired and validated in spicy).
+  `clubSandwich`. `glmmTMB` takes `CR0` from glmmTMB’s own sandwich
+  (glmmTMB \>= 1.1.15), for the coefficients and the zero-inflation and
+  dispersion blocks, clustered by default on the top-level grouping
+  factor of the random effects; `CR1`–`CR3`, `HC*`, REML fits and the
+  ordinal family are refused. The estimator needs independent clusters
+  that contain the random effects, every group within one cluster, so
+  crossed random effects need a cluster that contains them all. It keeps
+  the standard errors valid when the random-effects distribution or the
+  conditional variance is misspecified, provided the estimates
+  themselves stay consistent (Liang & Zeger 1986; Verbeke & Lesaffre
+  1997), and with few clusters it understates the variance, with no
+  small-sample correction for this class (Cameron & Miller 2015).
+  `glmer` and `gls` are model-based only (`clubSandwich` has no working
+  backend for `glmer`, and its `gls` backend is not yet wired and
+  validated in spicy).
 - **Ordinal (`polr`, `clm`)** – `CR0`–`CR3`, no `HC*`; the cut-point
   thresholds are reweighted from the same clustered vcov. A `clm` with a
   scale or nominal partial-proportional-odds component is model-based
@@ -428,3 +440,14 @@ The per-family reference sections live on its help page:
 [`?table_regression_ordinal`](https://amaltawfik.github.io/spicy/reference/table_regression_models.md),
 [`?table_regression_survival`](https://amaltawfik.github.io/spicy/reference/table_regression_models.md),
 and the other family aliases).
+
+## References
+
+- Cameron, A. C., & Miller, D. L. (2015). A practitioner’s guide to
+  cluster-robust inference. *Journal of Human Resources*, 50(2),
+  317–372.
+- Liang, K.-Y., & Zeger, S. L. (1986). Longitudinal data analysis using
+  generalized linear models. *Biometrika*, 73(1), 13–22.
+- Verbeke, G., & Lesaffre, E. (1997). The effect of misspecifying the
+  random-effects distribution in linear mixed models for longitudinal
+  data. *Computational Statistics & Data Analysis*, 23(4), 541–556.

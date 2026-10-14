@@ -162,9 +162,12 @@ chi-bar-squared LR test of the whole random part, and
 test. <code>N (groups)</code> and <code>ICC</code> are fit-stat rows; Nakagawa marginal /
 conditional R-squared are the default R-squared family. <code>CR*</code>
 cluster-robust standard errors are available for <code>lmer</code> and <code>lme</code> fits,
-via <span class="pkg">clubSandwich</span> with Satterthwaite degrees of freedom. <code>glmer</code>
-and <code>glmmTMB</code> fits keep their model-based standard errors: a <code>CR*</code>
-request on them is refused with a clear error.</p>
+via <span class="pkg">clubSandwich</span> with Satterthwaite degrees of freedom. <code>glmmTMB</code>
+fits take <code>"CR0"</code> from glmmTMB's own sandwich (Wald z), clustered by
+default on the top-level grouping factor; see the robust-SE section of
+<code><a href="table_regression.html">table_regression()</a></code> for when it holds. <code>glmer</code> fits keep their
+model-based standard errors: a <code>CR*</code> request on them is refused with a
+clear error.</p>
     </div>
     <div class="section level2">
     <h2 id="population-averaged-gee-models">Population-averaged (GEE) models<a class="anchor" aria-label="anchor" href="#population-averaged-gee-models"></a></h2>
@@ -223,7 +226,8 @@ nonzero count – the opposite direction, hence the distinct label), and a
 coefficients join the <code>p_adjust</code> family and take stars; a zero component
 is exponentiated only under a logit link (odds ratio). AME is the
 combined-response effect on E(Y). <code>CR*</code> for <code>pscl</code> fits covers both components
-via <code><a href="https://zeileis.codeberg.page/sandwich/reference/vcovCL.html" class="external-link">sandwich::vcovCL()</a></code>. Opt out with <code>show_components = FALSE</code>.</p>
+via <code><a href="https://zeileis.codeberg.page/sandwich/reference/vcovCL.html" class="external-link">sandwich::vcovCL()</a></code>, and <code>"CR0"</code> for <code>glmmTMB</code> fits covers the
+zero-inflation and dispersion blocks. Opt out with <code>show_components = FALSE</code>.</p>
     </div>
     <div class="section level2">
     <h2 id="categorical-outcomes">Categorical outcomes<a class="anchor" aria-label="anchor" href="#categorical-outcomes"></a></h2>

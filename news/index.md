@@ -71,6 +71,16 @@ PDF.
   likelihood-ratio test are unchanged. Tables of 0.13.0 built with a
   robust `vcov` and `nested = TRUE` show different change statistics.
 
+- `table_regression(vcov = "CR0")` gives cluster-robust standard errors
+  for
+  [`glmmTMB::glmmTMB()`](https://rdrr.io/pkg/glmmTMB/man/glmmTMB.html)
+  fits, from glmmTMB’s own sandwich (glmmTMB \>= 1.1.15), for the
+  coefficients, the zero-inflation and dispersion blocks, and the
+  average marginal effects. The cluster defaults to the top-level
+  grouping factor of the random effects. Crossed random effects without
+  a cluster that contains them, REML fits, the ordinal family, and the
+  other `vcov` types are refused.
+
 ### Bug fixes
 
 - [`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md)
@@ -148,6 +158,11 @@ PDF.
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   writes its `p_adjust` note in French under
+  `options(spicy.language = "fr")`.
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  writes the robust standard-error line of every model class, not only
+  `lm` and `glm`, and the p-value line of mixed models in French under
   `options(spicy.language = "fr")`.
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)

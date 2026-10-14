@@ -1292,11 +1292,27 @@ refused; set the estimator through the fitting package instead
 (<code>se_type =</code> for estimatr; <code>vcov =</code> at estimation or in
 <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code> for fixest).</p></dd>
 
-<dt>Other classes (<code>glmer</code>, <code>glmmTMB</code>,
-<code>rstanarm</code>/<code>brms</code>, ...)</dt>
-<dd><p><code>classical</code> (model-based) only
-(<span class="pkg">clubSandwich</span> has no working backend for <code>glmer</code> /
-<code>glmmTMB</code>).</p></dd>
+<dt><code>glmmTMB</code></dt>
+<dd><p><code>classical</code> + <code>"CR0"</code> only, from glmmTMB's own
+sandwich (<span class="pkg">glmmTMB</span> &gt;= 1.1.15), which covers the coefficients,
+the zero-inflation and dispersion blocks and the AME. Without
+<code>cluster</code>, the cluster is the top-level grouping factor of the
+random effects. The estimator needs independent clusters that
+contain the random effects – every group within one cluster –
+so crossed random effects need a <code>cluster</code> that contains them
+all. It keeps the standard errors valid when the random-effects
+distribution or the conditional variance is misspecified,
+provided the estimates themselves stay consistent (Liang &amp; Zeger
+1986; Verbeke &amp; Lesaffre 1997); with few clusters it understates
+the variance, and this class has no small-sample correction
+(Cameron &amp; Miller 2015). <code>"CR1"</code>-<code>"CR3"</code> and <code>HC*</code> are refused
+(the sandwich has one score per cluster), as are REML fits and
+the ordinal family.</p></dd>
+
+<dt>Other classes (<code>glmer</code>, <code>rstanarm</code>/<code>brms</code>, ...)</dt>
+<dd><p><code>classical</code>
+(model-based) only (<span class="pkg">clubSandwich</span> has no working backend for
+<code>glmer</code>).</p></dd>
 
 
 </dl><p>Cluster-robust backends differ by class but are each cross-validated
@@ -1316,7 +1332,11 @@ score and are refused. <code>rms</code> fits use
 <code><a href="https://rdrr.io/pkg/rms/man/robcov.html" class="external-link">rms::robcov()</a></code> (which
 needs the fit's <code>x = TRUE, y = TRUE</code>). These single cluster
 sandwiches have no CR0-CR3 bias-reduction variants, so the requested
-<code>CR*</code> maps to the one available estimator. <code>cluster</code> length is one
+<code>CR*</code> maps to the one available estimator. <code>glmmTMB</code> fits use
+<code><a href="https://rdrr.io/pkg/glmmTMB/man/sandwich.html" class="external-link">glmmTMB::sandwich()</a></code>, with one score per cluster (the gradient of
+the cluster's marginal log-likelihood) and no finite-sample factor;
+its one estimator is requested as <code>"CR0"</code>, and the other <code>CR*</code>
+tokens are refused rather than mapped. <code>cluster</code> length is one
 entry per observation, except <code>mlogit</code> (one per choice situation)
 and censored <code>coxph</code> (one per subject).</p>
 </div>
@@ -1708,6 +1728,9 @@ this function include <code>spicy_invalid_input</code>,
 Tables 7.13-7.15.</p>
 <p>Aiken, L.S. &amp; West, S.G. (1991). <em>Multiple regression: Testing
 and interpreting interactions</em>.</p>
+<p>Cameron, A.C. &amp; Miller, D.L. (2015). A practitioner's guide to
+cluster-robust inference. <em>Journal of Human Resources</em>, 50(2),
+317-372.</p>
 <p>Cohen, J., Cohen, P., West, S.G., &amp; Aiken, L.S. (2003).
 <em>Applied multiple regression / correlation analysis for the
 behavioral sciences</em> (3rd ed.). Lawrence Erlbaum.</p>
@@ -1722,10 +1745,16 @@ Science</em>, 26(4), 797-833.</p>
 <p>Hertz-Picciotto, I. &amp; Rockhill, B. (1997). Validity and
 efficiency of approximation methods for tied survival times in
 Cox regression. <em>Biometrics</em>, 53(3), 1151-1156.</p>
+<p>Liang, K.-Y. &amp; Zeger, S.L. (1986). Longitudinal data analysis
+using generalized linear models. <em>Biometrika</em>, 73(1), 13-22.</p>
 <p>Pustejovsky, J.E. &amp; Tipton, E. (2018). Small-sample methods for
 cluster-robust variance estimation and hypothesis testing in
 fixed effects models. <em>Journal of Business &amp; Economic
 Statistics</em>, 36(4), 672-683.</p>
+<p>Verbeke, G. &amp; Lesaffre, E. (1997). The effect of misspecifying
+the random-effects distribution in linear mixed models for
+longitudinal data. <em>Computational Statistics &amp; Data Analysis</em>,
+23(4), 541-556.</p>
 <p>Wasserstein, R.L., Schirm, A.L., &amp; Lazar, N.A. (2019). Moving
 to a world beyond "p &lt; 0.05". <em>The American Statistician</em>,
 73(sup1), 1-19.</p>
