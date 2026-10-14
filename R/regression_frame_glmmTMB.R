@@ -103,8 +103,9 @@ as_regression_frame.glmmTMB <- function(
     coefs <- .glmmTMB_coefs(fit, ci_level = ci_level)
     # CR0: glmmTMB's own cluster sandwich (R/vcov_glmmTMB.R), computed
     # ONCE -- every cluster retapes the TMB object -- and shared by the
-    # coefficient rows, the component blocks, the AME and the nested Wald
-    # test. Without a `cluster`, the cluster is the top-level grouping
+    # coefficient rows, the joint tests of the terms, the component blocks,
+    # the AME and the nested Wald test (the standardized refit gets its
+    # own). Without a `cluster`, the cluster is the top-level grouping
     # factor, and the footer names it.
     vc <- NULL
     if (!.is_model_vcov(vcov)) {
@@ -134,8 +135,20 @@ as_regression_frame.glmmTMB <- function(
       cluster = cluster,
       vcov_matrix = vc
     )
-    coefs <- .attach_partial_chi2_to_frame_coefs(coefs, fit, show_columns)
-    coefs <- .attach_beta_to_frame_coefs(coefs, fit, standardized, ci_level)
+    coefs <- .attach_partial_chi2_to_frame_coefs(
+      coefs,
+      fit,
+      show_columns,
+      vcov_matrix = vc
+    )
+    coefs <- .attach_beta_to_frame_coefs(
+      coefs,
+      fit,
+      standardized,
+      ci_level,
+      vcov_type = vcov,
+      cluster = cluster
+    )
     info <- .glmmTMB_info(
       fit,
       vcov_kind = vcov,

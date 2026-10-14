@@ -268,26 +268,41 @@ test_that("render – decimal_mark = ',' uses comma + ';' CI separator", {
   expect_match(wt_row$`95% CI`, ";") # CI separator switch
 })
 
-test_that("render – the coverage percentage follows decimal_mark (decision 27)", {
+test_that("render – the CI name keeps the point, its header follows decimal_mark (decision 27)", {
   aligned <- mk_aligned(list(mpg ~ wt), list("M1"))
   rt <- spicy:::render_regression_table(
     aligned,
     ci_level = 0.975,
     decimal_mark = ","
   )
-  # In this family the interval header IS the column's programmatic name
-  # (col_name = deduplicated header text), so the whole composition
-  # moves together: body column, structured sub-columns, labels.
-  expect_true("97,5% CI" %in% names(rt))
+  # The NAME is programmatic -- body column, structured sub-columns,
+  # col_meta keys -- and keeps the point; the header a reader sees takes
+  # the table's mark.
+  expect_true("97.5% CI" %in% names(rt))
   s <- attr(rt, "structured")
-  expect_true("97,5% CI: LL" %in% names(s$col_meta))
+  expect_true("97.5% CI: LL" %in% names(s$col_meta))
+  expect_false(any(grepl("97,5", names(s$col_meta), fixed = TRUE)))
+  expect_identical(s$col_meta[["97.5% CI: LL"]]$display_label, "97,5% CI")
   labs <- unique(unlist(lapply(s$col_meta, function(m) m$ci_label)))
   expect_identical(labs, "97,5% CI")
   expect_identical(
     unique(vapply(s$ci_pairs, function(p) p$label, character(1))),
     "97,5% CI"
   )
-  expect_false(any(grepl("97.5", names(s$col_meta), fixed = TRUE)))
+  # In French the header takes the words too; the name does not move.
+  rt_fr <- withr::with_options(
+    list(spicy.language = "fr"),
+    spicy:::render_regression_table(
+      aligned,
+      ci_level = 0.975,
+      decimal_mark = ","
+    )
+  )
+  expect_true("97.5% CI" %in% names(rt_fr))
+  expect_identical(
+    attr(rt_fr, "structured")$col_meta[["97.5% CI: LL"]]$display_label,
+    "IC \u00E0 97,5\u00A0%"
+  )
   # Integer coverage: byte-identical whatever the mark.
   rt95 <- spicy:::render_regression_table(aligned, decimal_mark = ",")
   expect_true("95% CI" %in% names(rt95))

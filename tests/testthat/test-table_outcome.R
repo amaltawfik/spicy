@@ -787,6 +787,22 @@ test_that("p_adjust: the typed view, the note and an engine agree", {
   expect_match(attr(g, "spicy_note"), note, fixed = TRUE)
 })
 
+test_that("p_adjust: the adjustment follows the tests, before the blocks", {
+  note <- attr(
+    table_outcome(mtcars, mpg, select = c(am, vs, cyl), p_adjust = "BH"),
+    "note"
+  )
+  expect_match(
+    note,
+    paste0(
+      "Welch t-test (am, vs). ",
+      'P-values adjusted via stats::p.adjust(method = "BH"); m = 3 test(s). ',
+      "Each block compares mpg"
+    ),
+    fixed = TRUE
+  )
+})
+
 test_that("p_adjust needs the p-value column", {
   expect_error(
     table_outcome(

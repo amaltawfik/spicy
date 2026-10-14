@@ -1135,9 +1135,9 @@ table_outcome <- function(
     show_comparison = do_test &&
       (p_value || statistic || do_es) &&
       any(!is.na(test_used)),
-    overall = overall
+    overall = overall,
+    p_adjust_info = p_adjust_info
   )
-  note <- paste_note_parts(c(note, .desc_p_adjust_note(p_adjust_info)))
 
   # `output = "data.frame"` and `output = "long"` return the SAME
   # object, and the documentation says so. This shape has no wide form
@@ -1375,8 +1375,9 @@ table_outcome <- function(
 # Internal: the note under an outcome table.
 #
 # In reading order: what left the table, then how it was weighted, then
-# how the blocks were compared, then what the columns mean, then the
-# two sentences this shape owes its reader.
+# how the blocks were compared and how their p-values were adjusted, then
+# what the columns mean, then the two sentences this shape owes its
+# reader.
 .outcome_note <- function(
   outcome_name,
   outcome_label,
@@ -1393,7 +1394,8 @@ table_outcome <- function(
   test_used,
   n_groups,
   show_comparison,
-  overall
+  overall,
+  p_adjust_info = NULL
 ) {
   parts <- character(0)
   if (n_outcome_na > 0L) {
@@ -1453,6 +1455,7 @@ table_outcome <- function(
   if (show_comparison) {
     parts <- c(parts, .outcome_test_note(test_used, n_groups))
   }
+  parts <- c(parts, .desc_p_adjust_note(p_adjust_info))
   parts <- c(
     parts,
     build_column_glosses(tokens, result, ci_level, decimal_mark)
@@ -1501,7 +1504,7 @@ table_outcome <- function(
         },
         character(1)
       ),
-      collapse = "; "
+      collapse = spicy_str("note_group_comparison_sep")
     )
   )
 }

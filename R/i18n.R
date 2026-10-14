@@ -335,6 +335,25 @@
   # colon and the full stop are the joiners the line is built from.
   note_re_line = "%s.",
   note_re_line_lrt = "%s: %s.",
+  # The LR test of the random part. Four holes: the null model (one of
+  # the `note_re_null_*` below), the df, the statistic and the p clause
+  # (operator and value) -- DATA.
+  note_re_lrt = "LR test vs %s, \u03C7\u0304\u00B2(%d) = %s, p %s",
+  # The null model of that test, named after its family. The families
+  # met by default have a key each; any other family passes the engine's
+  # own name through `note_re_null_family`. One hole in `_cumulative`:
+  # the link (logit, probit, ...), an identifier.
+  note_re_null_linear = "linear regression",
+  note_re_null_logistic = "logistic regression",
+  note_re_null_poisson = "poisson regression",
+  note_re_null_binomial = "binomial regression",
+  note_re_null_cloglog = "complementary log-log regression",
+  note_re_null_log_binomial = "log-binomial regression",
+  note_re_null_inverse_gaussian = "inverse-gaussian regression",
+  # One hole: the theta of the family, as lme4 prints it.
+  note_re_null_negative_binomial = "negative binomial(%s) regression",
+  note_re_null_cumulative = "cumulative %s regression",
+  note_re_null_family = "%s regression",
   # `nested = TRUE` over an lme4 hierarchy fitted by REML: anova.merMod
   # refits by ML before it compares, so the change rows and the per-model
   # criteria rows are two different criteria. No hole: the sentence names
@@ -423,6 +442,18 @@
   note_abbrev_eta2 = "\u03B7\u00B2 = partial eta-squared",
   note_abbrev_omega2 = "\u03C9\u00B2 = bias-corrected partial omega-squared",
   note_abbrev_chi2 = "\u03C7\u00B2 = partial likelihood-ratio chi-squared",
+  # The same column on a mixed model, whose joint test is a Wald test.
+  note_abbrev_chi2_wald = "\u03C7\u00B2 = partial Wald chi-squared",
+  # The standardized-coefficient legend, bare or naming its method in one
+  # hole: one of the `note_beta_*` glosses, each led by its `standardized`
+  # token (an identifier).
+  note_abbrev_beta = "\u03B2 = standardized coefficient",
+  note_abbrev_beta_method = "\u03B2 = standardized coefficient (%s)",
+  note_beta_refit = "\"refit\": outcome and numeric predictors z-scored, factor dummies on 0/1",
+  note_beta_posthoc = "\"posthoc\": B \u00D7 SD(X)/SD(Y) for numeric predictors, B/SD(Y) for factor dummies",
+  note_beta_basic = "\"basic\": every design column scaled by its SD, dummies included (SPSS / Stata Beta)",
+  note_beta_smart = "\"smart\": numeric predictors \u00F7 2 SD (Gelman 2008), binaries and dummies on 0/1",
+  note_beta_pseudo = "\"pseudo\": latent-scale SD(X)/SD(Y*) for numeric predictors, 1/SD(Y*) for factor dummies",
   note_abbrev_pd = "pd = probability of direction (share of the posterior on the dominant side of zero; Makowski et al. 2019)",
   note_abbrev_mcse = "MCSE = Monte Carlo standard error of the posterior median (Vehtari et al. 2021)",
   note_abbrev_ame = "AME = average marginal effect",
@@ -524,6 +555,8 @@
   test_welch_oneway_anova = "Welch one-way ANOVA",
   note_group_comparison = "Group comparison: %s.",
   note_group_comparison_item = "%s (%s)",
+  # The joiner of those items.
+  note_group_comparison_sep = "; ",
 
   # -- p_adjust: one sentence for every family that adjusts ------------------
   # `table_regression()` and the descriptive tables share the sentence;
@@ -733,6 +766,11 @@
   note_vcov_jackknife_cluster = "jackknife (leave-one-cluster-out), clusters by %s",
   note_vcov_jackknife_plain = "jackknife",
   note_vcov_wald_asymptotic = "Wald asymptotic (z)",
+  # The model-based default of lmer, lme and gls. One hole in `_corr`:
+  # the correlation structure of a gls fit, its class name (an
+  # identifier).
+  note_vcov_wald_model = "Wald (model-based)",
+  note_vcov_wald_model_corr = "Wald (model-based, %s)",
   # The variance estimator of a fit under a sampling design, named by the
   # MECHANISM the design actually uses -- not by the design's R class,
   # which is never shown to a reader, and not by whether the descriptive

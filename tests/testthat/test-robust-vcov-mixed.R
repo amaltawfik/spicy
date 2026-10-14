@@ -54,6 +54,45 @@ test_that("nlme::lme CR2 SE matches clubSandwich", {
   expect_equal(unname(.mixed_b_se(fr)), unname(ct$SE), tolerance = 1e-6)
 })
 
+test_that("lmer / lme CR2: factor joint tests and betas use the robust matrix", {
+  skip_if_not_installed("lme4")
+  skip_if_not_installed("nlme")
+  skip_if_not_installed("clubSandwich")
+  skip_if_not_installed("car")
+  d <- as.data.frame(nlme::BodyWeight)
+  fits <- list(
+    lme4::lmer(weight ~ Time + Diet + (1 | Rat), data = d),
+    nlme::lme(weight ~ Time + Diet, random = ~ 1 | Rat, data = d)
+  )
+  for (fit in fits) {
+    V <- clubSandwich::vcovCR(fit, cluster = d$Rat, type = "CR2")
+    fr <- as_regression_frame(
+      fit,
+      vcov = "CR2",
+      cluster = d$Rat,
+      show_columns = c("b", "partial_chi2"),
+      standardized = "refit"
+    )
+    chi2 <- fr$coefs[fr$coefs$estimate_type == "partial_chi2", ]
+    oracle <- car::linearHypothesis(fit, c("Diet2 = 0", "Diet3 = 0"), vcov. = V)
+    expect_equal(
+      chi2$estimate[chi2$term == "Diet2"],
+      oracle$Chisq[2L],
+      tolerance = 1e-8
+    )
+    # The rescaling of the refit leaves the statistics of the robust
+    # B rows unchanged.
+    b <- fr$coefs[fr$coefs$estimate_type == "B" & !fr$coefs$is_ref, ]
+    beta <- fr$coefs[fr$coefs$estimate_type == "beta", ]
+    slopes <- c("Time", "Diet2", "Diet3")
+    expect_equal(
+      beta$statistic[match(slopes, beta$term)],
+      b$statistic[match(slopes, b$term)],
+      tolerance = 1e-6
+    )
+  }
+})
+
 test_that("glmmTMB CR2 is refused (its own sandwich has one type, CR0)", {
   # clubSandwich has no vcovCR.glmmTMB: the call would dispatch to
   # vcovCR.default, whose result is numerically invalid for glmmTMB

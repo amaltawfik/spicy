@@ -151,7 +151,8 @@ test_that("the labels a recogniser alternates over stay distinct in every langua
   # one of them unreachable, with no condition raised.
   # `header_effect_size_short` is not one of them: it heads a column of
   # `table_continuous()`, which shows no standard error and never reaches
-  # the recogniser (and its French "TE" is distinct from "ES" anyway).
+  # the recogniser (and its French "Taille d'effet" is distinct from "ES"
+  # anyway).
   distinct <- list(
     companion = c(
       "header_se",
@@ -447,6 +448,16 @@ test_that("a descriptive interval names its bounds in the language", {
   expect_true(grepl("IC \u00E0 95\u00A0% LI", out, fixed = TRUE))
   expect_true(grepl("IC \u00E0 95\u00A0% LS", out, fixed = TRUE))
   expect_false(grepl("95% CI", out, fixed = TRUE))
+})
+
+test_that("the French effect-size header is the full word", {
+  en <- table_continuous(sochealth, select = bmi, by = sex, effect_size = TRUE)
+  withr::local_options(spicy.language = "fr", width = 160)
+  fr <- table_continuous(sochealth, select = bmi, by = sex, effect_size = TRUE)
+  expect_identical(names(as.data.frame(fr)), names(as.data.frame(en)))
+  out <- capture.output(print(fr))
+  header <- out[grepl("Variable", out, fixed = TRUE)]
+  expect_match(header, "Taille d'effet", fixed = TRUE)
 })
 
 test_that("a data level keeps its own spelling in a column name", {
@@ -796,4 +807,246 @@ test_that("the robust-SE and mixed p-value lines follow the language", {
     fixed = TRUE
   )
   expect_false(any(grepl("cluster-robust|p-values", unlist(fr))))
+})
+
+test_that("the random-effects LR test line follows the language", {
+  skip_if_not_installed("lme4")
+  skip_if_not_installed("glmmTMB")
+  skip_if_not_installed("ordinal")
+  cbpp <- lme4::cbpp
+  f_binom <- cbind(incidence, size - incidence) ~ period + (1 | herd)
+  fits <- list(
+    lme4::lmer(Reaction ~ Days + (1 | Subject), lme4::sleepstudy),
+    lme4::glmer(f_binom, cbpp, family = binomial),
+    lme4::glmer(f_binom, cbpp, family = binomial(link = "probit")),
+    lme4::glmer(incidence ~ period + (1 | herd), cbpp, family = poisson),
+    glmmTMB::glmmTMB(incidence ~ period + (1 | herd), cbpp, family = poisson),
+    glmmTMB::glmmTMB(f_binom, cbpp, family = binomial),
+    glmmTMB::glmmTMB(incidence ~ period + (1 | herd), cbpp, glmmTMB::nbinom2),
+    ordinal::clmm(rating ~ temp + (1 | judge), data = ordinal::wine)
+  )
+  frames <- lapply(fits, as_regression_frame)
+  lines <- function(mark) {
+    vapply(
+      frames,
+      spicy:::.format_random_effects_for_frame,
+      character(1),
+      decimal_mark = mark
+    )
+  }
+  en <- c(
+    "linear regression",
+    "logistic regression",
+    "probit regression",
+    "poisson regression",
+    "poisson regression",
+    "binomial regression",
+    "nbinom2 regression",
+    "cumulative logit regression"
+  )
+  fr <- paste(
+    "r\u00E9gression",
+    c(
+      "lin\u00E9aire",
+      "logistique",
+      "probit",
+      "de Poisson",
+      "de Poisson",
+      "binomiale",
+      "nbinom2",
+      "logit cumulatif"
+    )
+  )
+  got_en <- lines(".")
+  for (i in seq_along(en)) {
+    expect_match(got_en[i], paste0(": LR test vs ", en[i], ", "), fixed = TRUE)
+  }
+  withr::local_options(spicy.language = "fr")
+  got_fr <- lines(",")
+  for (i in seq_along(fr)) {
+    expect_match(
+      got_fr[i],
+      paste0(
+        "\u00A0: test du rapport de vraisemblance contre la ",
+        fr[i],
+        ", "
+      ),
+      fixed = TRUE
+    )
+  }
+  expect_identical(
+    got_fr[1L],
+    paste0(
+      "Effets al\u00E9atoires (REML)\u00A0: test du rapport de ",
+      "vraisemblance contre la r\u00E9gression lin\u00E9aire, ",
+      "\u03C7\u0304\u00B2(1) = 107,20, p < 0,001."
+    )
+  )
+})
+
+test_that("every glmer family names its null model in the language", {
+  skip_if_not_installed("lme4")
+  cbpp <- lme4::cbpp
+  f_binom <- cbind(incidence, size - incidence) ~ period + (1 | herd)
+  fits <- list(
+    lme4::glmer(f_binom, cbpp, family = binomial(link = "cloglog")),
+    suppressWarnings(lme4::glmer(f_binom, cbpp, binomial(link = "log"))),
+    lme4::glmer(f_binom, cbpp, family = binomial(link = "cauchit")),
+    suppressWarnings(lme4::glmer(
+      Reaction ~ Days + (1 | Subject),
+      lme4::sleepstudy,
+      family = inverse.gaussian(link = "log")
+    )),
+    suppressWarnings(lme4::glmer.nb(
+      TICKS ~ YEAR + (1 | BROOD),
+      lme4::grouseticks
+    ))
+  )
+  # The producer and the footer line, without the rest of the frame.
+  lines <- function(mark) {
+    vapply(
+      fits,
+      function(fit) {
+        spicy:::.format_random_effects_for_frame(
+          list(
+            info = list(
+              random_effects = list(
+                method = "ML",
+                variance_components = data.frame(group = "g", term = "x"),
+                null_lrt = spicy:::.compute_null_model_lrt(fit)
+              )
+            )
+          ),
+          mark
+        )
+      },
+      character(1)
+    )
+  }
+  en <- c(
+    "complementary log-log regression",
+    "log-binomial regression",
+    "binomial regression",
+    "inverse-gaussian regression",
+    "negative binomial\\([0-9.]+\\) regression"
+  )
+  fr <- c(
+    "log-log compl\u00E9mentaire",
+    "log-binomiale",
+    "binomiale",
+    "gaussienne inverse",
+    "binomiale n\u00E9gative \\([0-9.]+\\)"
+  )
+  got_en <- lines(".")
+  for (i in seq_along(en)) {
+    expect_match(got_en[i], paste0(": LR test vs ", en[i], ", "))
+  }
+  withr::local_options(spicy.language = "fr")
+  got_fr <- lines(",")
+  for (i in seq_along(fr)) {
+    expect_match(
+      got_fr[i],
+      paste0("contre la r\u00E9gression ", fr[i], ", ")
+    )
+  }
+})
+
+test_that("the model-based Wald line of lmer, lme and gls follows the language", {
+  skip_if_not_installed("lme4")
+  skip_if_not_installed("nlme")
+  d <- nlme::Orthodont
+  fits <- list(
+    lme4::lmer(Reaction ~ Days + (1 | Subject), lme4::sleepstudy),
+    nlme::lme(distance ~ age, random = ~ 1 | Subject, data = d),
+    nlme::gls(distance ~ age, data = d),
+    nlme::gls(
+      distance ~ age,
+      data = d,
+      correlation = nlme::corAR1(form = ~ 1 | Subject)
+    )
+  )
+  se_lines <- function() {
+    vapply(
+      fits,
+      function(fit) {
+        note <- attr(table_regression(fit), "note")
+        lines <- strsplit(note, "\n", fixed = TRUE)[[1L]]
+        lines[grepl("^(Std. errors|Erreurs standards)", lines)]
+      },
+      character(1)
+    )
+  }
+  expect_identical(
+    se_lines(),
+    c(
+      rep("Std. errors: Wald (model-based).", 3L),
+      "Std. errors: Wald (model-based, corAR1)."
+    )
+  )
+  withr::local_options(spicy.language = "fr")
+  expect_identical(
+    se_lines(),
+    c(
+      rep(
+        "Erreurs standards\u00A0: Wald (fond\u00E9es sur le mod\u00E8le).",
+        3L
+      ),
+      "Erreurs standards\u00A0: Wald (fond\u00E9es sur le mod\u00E8le, corAR1)."
+    )
+  )
+})
+
+test_that("the outcome comparison note joins its tests in the language", {
+  note <- function() {
+    attr(table_outcome(mtcars, mpg, select = c(am, vs, cyl)), "note")
+  }
+  expect_match(
+    note(),
+    "Welch one-way ANOVA (cyl); Welch t-test (am, vs).",
+    fixed = TRUE
+  )
+  withr::local_options(spicy.language = "fr")
+  expect_match(
+    note(),
+    "ANOVA \u00E0 un facteur de Welch (cyl)\u00A0; test t de Welch (am, vs).",
+    fixed = TRUE
+  )
+})
+
+test_that("the standardized-coefficient legend follows the language", {
+  d <- transform(mtcars, cyl_f = factor(cyl))
+  fit <- stats::lm(mpg ~ wt + cyl_f, data = d)
+  fit_glm <- stats::glm(vs ~ mpg, data = d, family = binomial)
+  note <- function(method) {
+    f <- if (identical(method, "pseudo")) fit_glm else fit
+    attr(
+      table_regression(f, show_columns = c("b", "beta"), standardized = method),
+      "note"
+    )
+  }
+  expect_match(
+    note("refit"),
+    paste0(
+      "\u03B2 = standardized coefficient (\"refit\": outcome and numeric ",
+      "predictors z-scored, factor dummies on 0/1)"
+    ),
+    fixed = TRUE
+  )
+  withr::local_options(spicy.language = "fr")
+  expect_match(
+    note("refit"),
+    paste0(
+      "\u03B2 = coefficient standardis\u00E9 (\"refit\"\u00A0: variable ",
+      "d\u00E9pendante et pr\u00E9dicteurs num\u00E9riques ",
+      "centr\u00E9s-r\u00E9duits, indicatrices des facteurs en 0/1)"
+    ),
+    fixed = TRUE
+  )
+  for (method in c("posthoc", "basic", "smart", "pseudo")) {
+    expect_match(
+      note(method),
+      paste0("\u03B2 = coefficient standardis\u00E9 (\"", method, "\"\u00A0: "),
+      fixed = TRUE
+    )
+  }
 })

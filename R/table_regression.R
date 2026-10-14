@@ -366,6 +366,12 @@
 #'     `glmer`).}
 #' }
 #'
+#' For the mixed-effects fits (`lmer`, `lme`, `glmmTMB`), the robust
+#' estimator covers the fixed effects: their coefficients, their joint
+#' tests (`"partial_chi2"`), the standardized coefficients and the AME.
+#' The random-effect variance components keep their model-based
+#' inference.
+#'
 #' Cluster-robust backends differ by class but are each cross-validated
 #' to the field-standard oracle: `lm`/`glm`/`lmer`/`lme` use
 #' \pkg{clubSandwich} (CR2 = Bell-McCaffrey, with Satterthwaite df for

@@ -693,34 +693,19 @@ build_abbreviations_footer_block_from_frames <- function(
     # as naming the variance estimator: no opt-out.
     gloss <- switch(
       standardized,
-      refit = paste0(
-        "\"refit\": outcome and numeric predictors z-scored, ",
-        "factor dummies on 0/1"
-      ),
-      posthoc = paste0(
-        "\"posthoc\": B \u00D7 SD(X)/SD(Y) for numeric predictors, ",
-        "B/SD(Y) for factor dummies"
-      ),
-      basic = paste0(
-        "\"basic\": every design column scaled by its SD, dummies ",
-        "included (SPSS / Stata Beta)"
-      ),
-      smart = paste0(
-        "\"smart\": numeric predictors \u00F7 2 SD (Gelman 2008), ",
-        "binaries and dummies on 0/1"
-      ),
-      pseudo = paste0(
-        "\"pseudo\": latent-scale SD(X)/SD(Y*) for numeric ",
-        "predictors, 1/SD(Y*) for factor dummies"
-      ),
+      refit = spicy_str("note_beta_refit"),
+      posthoc = spicy_str("note_beta_posthoc"),
+      basic = spicy_str("note_beta_basic"),
+      smart = spicy_str("note_beta_smart"),
+      pseudo = spicy_str("note_beta_pseudo"),
       NULL
     )
     defs <- c(
       defs,
       if (is.null(gloss)) {
-        "\u03B2 = standardized coefficient"
+        spicy_str("note_abbrev_beta")
       } else {
-        sprintf("\u03B2 = standardized coefficient (%s)", gloss)
+        spicy_fmt("note_abbrev_beta_method", gloss)
       }
     )
   }
@@ -775,7 +760,24 @@ build_abbreviations_footer_block_from_frames <- function(
     defs <- c(defs, spicy_str("note_abbrev_omega2"))
   }
   if ("partial_chi2" %in% show_columns) {
-    defs <- c(defs, spicy_str("note_abbrev_chi2"))
+    # The test each model ran: a likelihood-ratio test for glm, a Wald
+    # test for the mixed models (regression_partial.R).
+    kind <- vapply(
+      if (is.list(frames)) frames else list(),
+      function(f) {
+        if (!any(f$coefs$estimate_type %in% "partial_chi2")) {
+          return(NA_character_)
+        }
+        if (.is_mixed_frame(f)) "wald" else "lrt"
+      },
+      character(1)
+    )
+    if (any(kind %in% "lrt") || !any(kind %in% "wald")) {
+      defs <- c(defs, spicy_str("note_abbrev_chi2"))
+    }
+    if (any(kind %in% "wald")) {
+      defs <- c(defs, spicy_str("note_abbrev_chi2_wald"))
+    }
   }
   if ("pd" %in% show_columns) {
     # The definition travels WITH the table (BARG: a rendered artifact
@@ -1973,9 +1975,16 @@ format_p_value_for_panel <- function(p, decimal_mark = ".") {
   lrt_part <- NULL
   if (!is.null(lrt) && is.finite(lrt$chi2) && is.finite(lrt$df)) {
     p_str <- format_p_value_for_panel(lrt$p_chibar2, decimal_mark)
-    lrt_part <- sprintf(
-      "LR test vs %s, \u03C7\u0304\u00B2(%d) = %s, p %s",
-      lrt$family_label %||% "no-random model",
+    # The null model in the table language, from the key its producer
+    # chose; a frame built without one keeps its English label.
+    null_model <- if (is.null(lrt$family_key)) {
+      lrt$family_label %||% "no-random model"
+    } else {
+      do.call(spicy_fmt, c(list(lrt$family_key), lrt$family_args))
+    }
+    lrt_part <- spicy_fmt(
+      "note_re_lrt",
+      null_model,
       as.integer(lrt$df),
       .footer_num(lrt$chi2, 2L, decimal_mark),
       p_str

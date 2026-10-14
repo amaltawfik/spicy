@@ -11,6 +11,12 @@ workbook, or a PDF.
   explicit `NA` level of a factor counts as missing, and `difftime`
   columns no longer list their values. DT leaves Suggests.
 
+* `table_regression()` and `table_regression_uv()` name an interval column
+  with a point whatever `decimal_mark`: `97.5% CI` in `as.data.frame()`,
+  and `97.5% CI: LL` and `97.5% CI: UL` in `as_structured()`. They were
+  `97,5% CI` under `decimal_mark = ","`. The header still follows the
+  mark, and the names at 95% are unchanged.
+
 ## New features
 
 * `code_book()` builds a codebook in three parts, `header`, `variables`,
@@ -57,7 +63,8 @@ workbook, or a PDF.
 
 * `table_regression(vcov = "CR0")` gives cluster-robust standard errors
   for `glmmTMB::glmmTMB()` fits, from glmmTMB's own sandwich (glmmTMB
-  >= 1.1.15), for the coefficients, the zero-inflation and dispersion
+  >= 1.1.15), for the coefficients, their joint tests (`partial_chi2`),
+  the standardized coefficients, the zero-inflation and dispersion
   blocks, and the average marginal effects. The cluster defaults to the
   top-level grouping factor of the random effects. Crossed random
   effects without a cluster that contains them, REML fits, the ordinal
@@ -102,6 +109,9 @@ workbook, or a PDF.
   `table_continuous_svy(ci = FALSE)`, and `table_categorical_svy()`
   without `by`.
 
+* `table_outcome()` sets a no-break space before the semicolon that joins
+  the tests of its comparison note in French.
+
 * `table_regression()` writes the reference rows `(réf.)` under
   `options(spicy.language = "fr")`: `reference_label` now defaults to
   `NULL`, the label of the language. A label you supply is printed as
@@ -113,14 +123,35 @@ workbook, or a PDF.
   `LI` and `LS`, and `R² ajusté`. The column names stay `SE`, `95% CI`,
   and `Adj. R²` in every language. `table_continuous()`,
   `table_continuous_lm()`, `table_outcome()`, and the survey twins use
-  the same French headers.
+  the same French headers. The effect size of `table_continuous()` reads
+  `Taille d'effet`.
 
 * `table_regression()` writes its `p_adjust` note in French under
   `options(spicy.language = "fr")`.
 
 * `table_regression()` writes the robust standard-error line of every
-  model class, not only `lm` and `glm`, and the p-value line of mixed
+  model class, not only `lm` and `glm`, the model-based one of `lmer`,
+  `lme`, and `gls`, the standardized-coefficient legend, and the p-value
+  line and the likelihood-ratio test of the random effects of mixed
   models in French under `options(spicy.language = "fr")`.
+
+* `table_regression()` handles `glmer()` fits with a Gamma or
+  inverse-Gaussian family, which failed, and no longer fails on them or on
+  `glmer.nb()` fits once merDeriv is loaded in the session. It reads the
+  coefficient covariance from lme4 whatever else is loaded.
+
+* `table_regression()` titles a `glmer.nb()` fit "Negative-binomial
+  mixed-effects regression", as for the other negative-binomial models,
+  and translates the title in French. It carried the theta of the fit.
+
+* `table_regression()` calls the `partial_chi2` of `lmer`, `glmer`,
+  `glmmTMB`, and `lme` fits a partial Wald chi-squared in its footer. It
+  called it a likelihood-ratio chi-squared, the test of `glm`.
+
+* `table_regression()` with a cluster-robust `vcov` on `lmer` and `lme`
+  fits uses that matrix for the joint tests of the terms (`partial_chi2`)
+  and the standard errors of the standardized coefficients, as for the
+  coefficients. They were model-based.
 
 * `table_regression()` computes the robust and cluster-robust standard
   errors of `mgcv::gam()` and `mgcv::bam()` fits itself. Through

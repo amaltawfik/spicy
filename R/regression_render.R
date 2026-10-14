@@ -603,10 +603,22 @@ build_model_spanners <- function(body, col_spec, label_map) {
 # `options(spicy.language)`. One builder, run twice with two resolvers
 # and nothing else different, so both runs list the same columns in the
 # same order. `.spicy_str_en()` keeps the user's `options(spicy.labels)`
-# live, so an English table is byte-identical.
-build_column_spec <- function(...) {
-  shown <- .column_spec_pass(..., lab = spicy_str, lab_fmt = spicy_fmt)
-  named <- .column_spec_pass(..., lab = .spicy_str_en, lab_fmt = .spicy_fmt_en)
+# live, so an English table is byte-identical. The name keeps the point
+# in its coverage percentage ("97.5% CI") whatever `decimal_mark`; the
+# header follows the mark ("97,5% CI").
+build_column_spec <- function(..., decimal_mark = ".") {
+  shown <- .column_spec_pass(
+    ...,
+    decimal_mark = decimal_mark,
+    lab = spicy_str,
+    lab_fmt = spicy_fmt
+  )
+  named <- .column_spec_pass(
+    ...,
+    decimal_mark = ".",
+    lab = .spicy_str_en,
+    lab_fmt = .spicy_fmt_en
+  )
   for (i in seq_along(shown)) {
     shown[[i]]$col_name <- named[[i]]$col_name
   }
@@ -639,9 +651,8 @@ build_column_spec <- function(...) {
   if (is.null(estimand_horizons)) {
     estimand_horizons <- list()
   }
-  # The coverage percentage follows `decimal_mark` (decision 27), in the
-  # header and in the column name alike ("97,5% CI"): the name takes its
-  # WORDS from English, its number from the table.
+  # The coverage percentage follows `decimal_mark` (decision 27) in the
+  # header; build_column_spec() runs the name pass with the point.
   ci_pct <- .ci_pct_display(ci_level, decimal_mark)
   if (is.null(model_exp_headers)) {
     model_exp_headers <- setNames(

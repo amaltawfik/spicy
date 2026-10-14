@@ -1024,6 +1024,19 @@ validate_regression_frame <- function(frame) {
 }
 
 
+# The null model of the LR test: the registry key the footer resolves in
+# the table language, its holes, and its English text (`family_label`,
+# which the frame keeps, like its title prefix). The `.null_lrt_*()`
+# helpers pick the key from the family and link tokens of the fit.
+.re_null_model <- function(key, ...) {
+  list(
+    family_label = sprintf(.spicy_strings[[key]], ...),
+    family_key = key,
+    family_args = list(...)
+  )
+}
+
+
 .compute_null_model_lrt <- function(fit) {
   res <- tryCatch(
     {
@@ -1171,15 +1184,38 @@ validate_regression_frame <- function(frame) {
     return(NULL) # nocov -- .merMod_n_re_params is non-NA for a converged fit
   }
 
-  list(
-    chi2 = chi2,
-    df = as.integer(df_q),
-    family_label = if (is_gaussian) {
-      "linear regression"
-    } else {
-      sprintf("%s regression", .merMod_glm_family_title_safe(fit, fam))
-    }
-  )
+  fam_name <- fam$family %||% ""
+  null_model <- if (is_gaussian) {
+    .re_null_model("note_re_null_linear")
+  } else if (
+    identical(fam_name, "binomial") && !identical(fam$link, "probit")
+  ) {
+    # The titles of .merMod_glm_family_title(), one key each; a probit
+    # keeps its own name through `note_re_null_family`.
+    .re_null_model(switch(
+      fam$link,
+      logit = "note_re_null_logistic",
+      cloglog = "note_re_null_cloglog",
+      log = "note_re_null_log_binomial",
+      "note_re_null_binomial"
+    ))
+  } else if (identical(fam_name, "poisson")) {
+    .re_null_model("note_re_null_poisson")
+  } else if (identical(fam_name, "inverse.gaussian")) {
+    .re_null_model("note_re_null_inverse_gaussian")
+  } else if (startsWith(fam_name, "Negative Binomial(")) {
+    # glmer.nb: lme4 names the family with its theta.
+    .re_null_model(
+      "note_re_null_negative_binomial",
+      sub("^Negative Binomial\\((.*)\\)$", "\\1", fam_name)
+    )
+  } else {
+    .re_null_model(
+      "note_re_null_family",
+      .merMod_glm_family_title_safe(fit, fam)
+    )
+  }
+  c(list(chi2 = chi2, df = as.integer(df_q)), null_model)
 }
 
 
@@ -1290,19 +1326,20 @@ validate_regression_frame <- function(frame) {
     return(NULL) # nocov -- a fitted random structure has >= 1 free parameter
   }
 
-  list(
-    chi2 = chi2,
-    df = df_q,
-    family_label = if (is_gaussian) {
-      "linear regression"
-    } else if (identical(fam$family, "ordinal")) {
-      # The null of an ordinal glmmTMB is a cumulative-link model; named
-      # as the clmm null is, so the two engines' footers read alike.
-      sprintf("%s regression", tolower(.clm_link_title(fam$link)))
-    } else {
-      sprintf("%s regression", fam$family)
-    }
-  )
+  null_model <- if (is_gaussian) {
+    .re_null_model("note_re_null_linear")
+  } else if (identical(fam$family, "ordinal")) {
+    # The null of an ordinal glmmTMB is a cumulative-link model; named
+    # as the clmm null is, so the two engines' footers read alike.
+    .re_null_model("note_re_null_cumulative", tolower(fam$link))
+  } else if (identical(fam$family, "poisson")) {
+    .re_null_model("note_re_null_poisson")
+  } else if (identical(fam$family, "binomial")) {
+    .re_null_model("note_re_null_binomial")
+  } else {
+    .re_null_model("note_re_null_family", fam$family)
+  }
+  c(list(chi2 = chi2, df = df_q), null_model)
 }
 
 
@@ -1336,14 +1373,13 @@ validate_regression_frame <- function(frame) {
     },
     integer(1)
   ))
-  list(
-    chi2 = 2 *
-      (as.numeric(stats::logLik(fit)) - as.numeric(stats::logLik(fit_null))),
-    df = df_q,
-    family_label = sprintf(
-      "%s regression",
-      tolower(.clm_link_title(fit$link))
-    )
+  c(
+    list(
+      chi2 = 2 *
+        (as.numeric(stats::logLik(fit)) - as.numeric(stats::logLik(fit_null))),
+      df = df_q
+    ),
+    .re_null_model("note_re_null_cumulative", tolower(fit$link))
   )
 }
 
@@ -1417,11 +1453,7 @@ validate_regression_frame <- function(frame) {
     return(NULL) # nocov -- a fitted random structure has >= 1 free parameter
   }
 
-  list(
-    chi2 = chi2,
-    df = df_q,
-    family_label = "linear regression"
-  )
+  c(list(chi2 = chi2, df = df_q), .re_null_model("note_re_null_linear"))
 }
 
 

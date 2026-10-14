@@ -1168,6 +1168,12 @@ the ordinal family.}
 \code{glmer}).}
 }
 
+For the mixed-effects fits (\code{lmer}, \code{lme}, \code{glmmTMB}), the robust
+estimator covers the fixed effects: their coefficients, their joint
+tests (\code{"partial_chi2"}), the standardized coefficients and the AME.
+The random-effect variance components keep their model-based
+inference.
+
 Cluster-robust backends differ by class but are each cross-validated
 to the field-standard oracle: \code{lm}/\code{glm}/\code{lmer}/\code{lme} use
 \pkg{clubSandwich} (CR2 = Bell-McCaffrey, with Satterthwaite df for

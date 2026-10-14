@@ -646,3 +646,29 @@ test_that("glmer coefs match parameters::model_parameters() (oracle)", {
   }
   expect_oracle_covered(n_checked, length(oracle$Parameter))
 })
+
+test_that("a Gamma glmer table does not depend on merDeriv being loaded", {
+  skip_if_not_installed("lme4")
+  skip_if_not_installed("merDeriv")
+  fit <- suppressWarnings(lme4::glmer(
+    Reaction ~ Days + (1 | Subject),
+    data = lme4::sleepstudy,
+    family = Gamma(link = "log")
+  ))
+  # lme4's summary() reads lme4's own matrix whatever is loaded.
+  oracle <- summary(fit)$coefficients[, "Std. Error"]
+  loadNamespace("merDeriv")
+  out <- suppressWarnings(table_regression(
+    fit,
+    show_columns = c("b", "beta", "se", "partial_chi2", "ame", "ame_se"),
+    standardized = "refit",
+    output = "long"
+  ))
+  b <- out[out$estimate_type == "B" & !is.na(out$std.error), ]
+  expect_equal(b$std.error, unname(oracle[b$term]), tolerance = 1e-10)
+  for (type in c("ame", "partial_chi2", "beta")) {
+    rows <- out[out$estimate_type == type, ]
+    expect_gt(nrow(rows), 0L)
+    expect_true(all(is.finite(rows$statistic)), label = type)
+  }
+})

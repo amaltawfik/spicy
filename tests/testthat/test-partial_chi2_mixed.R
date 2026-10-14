@@ -209,6 +209,41 @@ test_that("table_regression(glmer, partial_chi2) joint test on factor", {
   expect_match(combined, "\\([2]\\)")
 })
 
+test_that("the chi^2 legend names the test each class runs", {
+  skip_if_not_installed("glmmTMB")
+  skip_if_not_installed("nlme")
+  legends <- function(fits) {
+    note <- attr(
+      table_regression(fits, show_columns = c("b", "partial_chi2")),
+      "note"
+    )
+    regmatches(note, gregexpr("\u03C7\u00B2 = [^;.]+", note))[[1L]]
+  }
+  wald <- "\u03C7\u00B2 = partial Wald chi-squared"
+  lrt <- "\u03C7\u00B2 = partial likelihood-ratio chi-squared"
+  fit_lmer <- .fit_lmer_factor_pchi()
+  fit_glm <- stats::glm(
+    carb ~ wt + factor(cyl),
+    data = mtcars,
+    family = poisson
+  )
+  expect_identical(legends(fit_lmer), wald)
+  expect_identical(legends(.fit_glmer_factor_pchi()), wald)
+  expect_identical(legends(.fit_glmmTMB_pchi()), wald)
+  expect_identical(legends(.fit_lme_factor_pchi()), wald)
+  expect_identical(legends(fit_glm), lrt)
+  expect_identical(legends(list(fit_glm, fit_lmer)), c(lrt, wald))
+  withr::local_options(spicy.language = "fr")
+  expect_identical(
+    legends(fit_lmer),
+    "\u03C7\u00B2 = khi-deux partiel de Wald"
+  )
+  expect_identical(
+    legends(fit_glm),
+    "\u03C7\u00B2 = khi-deux partiel du rapport de vraisemblance"
+  )
+})
+
 
 # ---- 6. Engine parity: all 4 produce the same chi^2 schema --------------
 
@@ -368,7 +403,11 @@ test_that("additive lmer: every term keeps the coefficient-block Wald exactly", 
   # must be bit-identical to the pre-Type-II block Wald.
   fit <- .fit_lmer_factor_pchi()
   b <- lme4::fixef(fit)
-  V <- as.matrix(stats::vcov(fit))
+  # lme4's own method, which the frame reads whatever else is loaded:
+  # merDeriv's vcov.lmerMod agrees with it only to the last bits.
+  V <- as.matrix(
+    utils::getS3method("vcov", "merMod", envir = asNamespace("lme4"))(fit)
+  )
   asgn <- attr(stats::model.matrix(fit), "assign")
   ours <- .pchi_by_term(fit)
   for (k in seq_along(ours)) {

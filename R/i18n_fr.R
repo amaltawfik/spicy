@@ -110,10 +110,8 @@
 
   # -- table_categorical(): column headers ----------------------------------
   header_effect_size = "Taille d'effet",
-  # "TE" (taille d'effet): "ES" is the French standard error since the
-  # regression headers follow the language, so the effect size takes the
-  # French abbreviation of its own long header above.
-  header_effect_size_short = "TE",
+  # No established French abbreviation (SPSS, jamovi and JASP spell it out), and the cell names the statistic (g, d, omega squared): the full word in both widths.
+  header_effect_size_short = "Taille d'effet",
   header_ci_lower = "IC inf\u00E9rieur",
   header_ci_upper = "IC sup\u00E9rieur",
 
@@ -185,6 +183,18 @@
   note_thresholds_compact = "%s\u00A0: %s.",
   note_scale_effects_gloss = "%s\u00A0: effets des covariables sur le logarithme de l'\u00E9cart-type de la r\u00E9ponse latente",
   note_re_line_lrt = "%s\u00A0: %s.",
+  note_re_lrt = "test du rapport de vraisemblance contre la %s, \u03C7\u0304\u00B2(%d) = %s, p %s",
+  note_re_null_linear = "r\u00E9gression lin\u00E9aire",
+  note_re_null_logistic = "r\u00E9gression logistique",
+  note_re_null_poisson = "r\u00E9gression de Poisson",
+  note_re_null_binomial = "r\u00E9gression binomiale",
+  note_re_null_cloglog = "r\u00E9gression log-log compl\u00E9mentaire",
+  note_re_null_log_binomial = "r\u00E9gression log-binomiale",
+  note_re_null_inverse_gaussian = "r\u00E9gression gaussienne inverse",
+  note_re_null_negative_binomial = "r\u00E9gression binomiale n\u00E9gative (%s)",
+  # Comme le pont des titres : "Regression logit cumulatif".
+  note_re_null_cumulative = "r\u00E9gression %s cumulatif",
+  note_re_null_family = "r\u00E9gression %s",
   note_component_gloss_zero_inflation = "Composante %s\u00A0: logarithme de la cote d'un z\u00E9ro structurel (exc\u00E9dentaire).",
   note_component_gloss_dispersion = "Composante %s\u00A0: \u00E9chelle logarithmique.",
   note_component_gloss_hurdle_binomial = "Composante %s\u00A0: logarithme de la cote d'un effectif non nul.",
@@ -213,6 +223,14 @@
   note_abbrev_eta2 = "\u03B7\u00B2 = \u00EAta-carr\u00E9 partiel",
   note_abbrev_omega2 = "\u03C9\u00B2 = om\u00E9ga-carr\u00E9 partiel corrig\u00E9 du biais",
   note_abbrev_chi2 = "\u03C7\u00B2 = khi-deux partiel du rapport de vraisemblance",
+  note_abbrev_chi2_wald = "\u03C7\u00B2 = khi-deux partiel de Wald",
+  note_abbrev_beta = "\u03B2 = coefficient standardis\u00E9",
+  note_abbrev_beta_method = "\u03B2 = coefficient standardis\u00E9 (%s)",
+  note_beta_refit = "\"refit\"\u00A0: variable d\u00E9pendante et pr\u00E9dicteurs num\u00E9riques centr\u00E9s-r\u00E9duits, indicatrices des facteurs en 0/1",
+  note_beta_posthoc = "\"posthoc\"\u00A0: B \u00D7 ET(X)/ET(Y) pour les pr\u00E9dicteurs num\u00E9riques, B/ET(Y) pour les indicatrices des facteurs",
+  note_beta_basic = "\"basic\"\u00A0: chaque colonne de la matrice du mod\u00E8le r\u00E9duite par son \u00E9cart-type, indicatrices comprises (Beta de SPSS / Stata)",
+  note_beta_smart = "\"smart\"\u00A0: pr\u00E9dicteurs num\u00E9riques \u00F7 2 ET (Gelman 2008), variables binaires et indicatrices en 0/1",
+  note_beta_pseudo = "\"pseudo\"\u00A0: ET(X)/ET(Y*) sur l'\u00E9chelle latente pour les pr\u00E9dicteurs num\u00E9riques, 1/ET(Y*) pour les indicatrices des facteurs",
   note_abbrev_pd = "pd = probabilit\u00E9 de direction (part de la distribution a posteriori du c\u00F4t\u00E9 dominant de z\u00E9ro\u00A0; Makowski et al. 2019)",
   note_abbrev_mcse = "MCSE = erreur standard de Monte-Carlo de la m\u00E9diane a posteriori (Vehtari et al. 2021)",
   note_abbrev_ame = "AME = effet marginal moyen",
@@ -236,6 +254,7 @@
   test_welch_t = "test t de Welch",
   test_welch_oneway_anova = "ANOVA \u00E0 un facteur de Welch",
   note_group_comparison = "Comparaison des groupes\u00A0: %s.",
+  note_group_comparison_sep = "\u00A0; ",
   note_p_adjusted = "Valeurs p ajust\u00E9es par stats::p.adjust(method = %s) sur %s.",
   note_p_adjusted_coefficients = "m = %s coefficient(s) par mod\u00E8le",
   note_p_adjusted_tests = "m = %d test(s)",
@@ -312,6 +331,8 @@
   note_vcov_jackknife = "jackknife (suppression d'une observation)",
   note_vcov_jackknife_cluster = "jackknife (suppression d'une grappe), grappes d\u00E9finies par %s",
   note_vcov_wald_asymptotic = "Wald asymptotique (z)",
+  note_vcov_wald_model = "Wald (fond\u00E9es sur le mod\u00E8le)",
+  note_vcov_wald_model_corr = "Wald (fond\u00E9es sur le mod\u00E8le, %s)",
   note_vcov_design_taylor = "fond\u00E9es sur le plan de sondage (lin\u00E9arisation de Taylor)",
   note_vcov_design_replicate = "fond\u00E9es sur le plan de sondage (poids r\u00E9pliqu\u00E9s, %s)",
   note_vcov_design_replicate_bare = "fond\u00E9es sur le plan de sondage (poids r\u00E9pliqu\u00E9s)",

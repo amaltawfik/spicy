@@ -268,6 +268,38 @@ test_that("table_regression(vcov = 'CR0') shows glmmTMB's sandwich SEs", {
   expect_match(note_u, "clusters by site.", fixed = TRUE)
 })
 
+test_that("CR0 factor joint tests and betas use glmmTMB's sandwich", {
+  skip_if_not_installed("glmmTMB", "1.1.15")
+  d <- .tmb_cluster_data()
+  fit <- glmmTMB::glmmTMB(
+    y ~ x + g + (1 | site),
+    data = d,
+    family = stats::poisson
+  )
+  fr <- as_regression_frame(
+    fit,
+    vcov = "CR0",
+    show_columns = c("b", "partial_chi2"),
+    standardized = "refit"
+  )
+  V <- stats::vcov(fit, sandwich = TRUE)$cond
+  bhat <- glmmTMB::fixef(fit)$cond[c("gb", "gc")]
+  w <- as.numeric(t(bhat) %*% solve(V[names(bhat), names(bhat)]) %*% bhat)
+  chi2 <- fr$coefs[fr$coefs$estimate_type == "partial_chi2", ]
+  expect_equal(chi2$estimate[chi2$term == "gb"], w, tolerance = 1e-8)
+  # The refit z-scores x only (Poisson outcome): its robust SE scales by
+  # sd(x), the factor dummies keep theirs.
+  b <- fr$coefs[fr$coefs$estimate_type == "B" & !fr$coefs$is_ref, ]
+  beta <- fr$coefs[fr$coefs$estimate_type == "beta", ]
+  slopes <- c("x", "gb", "gc")
+  scale <- c(stats::sd(d$x), 1, 1)
+  expect_equal(
+    beta$std_error[match(slopes, beta$term)],
+    b$std_error[match(slopes, b$term)] * scale,
+    tolerance = 1e-5
+  )
+})
+
 test_that("nested random effects cluster on the top-level factor", {
   skip_if_not_installed("glmmTMB", "1.1.15")
   d <- .tmb_nested_data()

@@ -52,6 +52,11 @@ as_regression_frame.lmerMod <- function(
   coefs <- .merMod_coefs(fit, ci_level = ci_level, family_z = FALSE)
   # Cluster-robust SEs (CR*) recompute the B-row inference from
   # clubSandwich::vcovCR + Satterthwaite df; a no-op for the model-based default.
+  # One matrix for the coefficient rows and the joint tests of the terms.
+  vc <- NULL
+  if (!.is_model_vcov(vcov)) {
+    vc <- compute_model_vcov(fit, type = vcov, cluster = cluster)
+  }
   coefs <- .apply_robust_vcov_to_coefs(
     coefs,
     fit,
@@ -59,7 +64,8 @@ as_regression_frame.lmerMod <- function(
     cluster,
     ci_level,
     test = "t",
-    estimates = lme4::fixef(fit)
+    estimates = lme4::fixef(fit),
+    vc = vc
   )
   coefs <- .attach_ame_to_frame_coefs(
     coefs,
@@ -67,10 +73,23 @@ as_regression_frame.lmerMod <- function(
     ci_level,
     show_columns,
     vcov_type = vcov,
+    cluster = cluster,
+    vcov_matrix = vc %||% .merMod_vcov(fit)
+  )
+  coefs <- .attach_partial_chi2_to_frame_coefs(
+    coefs,
+    fit,
+    show_columns,
+    vcov_matrix = vc
+  )
+  coefs <- .attach_beta_to_frame_coefs(
+    coefs,
+    fit,
+    standardized,
+    ci_level,
+    vcov_type = vcov,
     cluster = cluster
   )
-  coefs <- .attach_partial_chi2_to_frame_coefs(coefs, fit, show_columns)
-  coefs <- .attach_beta_to_frame_coefs(coefs, fit, standardized, ci_level)
   info <- .merMod_info(
     fit,
     vcov_kind = vcov,
@@ -149,7 +168,8 @@ as_regression_frame.glmerMod <- function(
     ci_level,
     show_columns,
     vcov_type = vcov,
-    cluster = cluster
+    cluster = cluster,
+    vcov_matrix = .merMod_vcov(fit)
   )
   coefs <- .attach_partial_chi2_to_frame_coefs(coefs, fit, show_columns)
   coefs <- .attach_beta_to_frame_coefs(coefs, fit, standardized, ci_level)
@@ -233,6 +253,20 @@ as_regression_frame.glmerMod <- function(
 }
 
 
+# lme4's own vcov() of a merMod fit, called by name. When merDeriv's
+# namespace loads -- spicy loads it for the variance-component SEs -- it
+# registers vcov.lmerMod and vcov.glmerMod as S3 methods, and from then on
+# dispatch on a glmerMod finds merDeriv's method (class glmerMod) before
+# lme4's vcov.merMod (its superclass). merDeriv's method refuses every
+# family but binomial and poisson (Gamma, inverse.gaussian, the negative
+# binomial of glmer.nb), so a plain vcov() made the table depend on what
+# the session had loaded before.
+.merMod_vcov <- function(fit) {
+  vc <- utils::getS3method("vcov", "merMod", envir = asNamespace("lme4"))
+  as.matrix(vc(fit))
+}
+
+
 # Build the coefs tibble for a merMod / glmerMod fit. Reads fixed
 # effects only -- random effects go in info$random_effects. Inference
 # branches on family_z:
@@ -242,7 +276,7 @@ as_regression_frame.glmerMod <- function(
 #   * glmer (family_z = TRUE): Wald z-asymptotic.
 .merMod_coefs <- function(fit, ci_level, family_z) {
   fixef <- lme4::fixef(fit)
-  V <- as.matrix(stats::vcov(fit))
+  V <- as.matrix(.merMod_vcov(fit))
   est <- unname(fixef)
   se <- sqrt(diag(V))
   nm <- names(fixef)
@@ -261,7 +295,10 @@ as_regression_frame.glmerMod <- function(
     # sm$coefficients.
     if (!is.null(sm) && "Pr(>|z|)" %in% colnames(sm$coefficients)) {
       df <- rep(Inf, length(est))
-      stat <- unname(sm$coefficients[nm, "z value"])
+      # A family with an estimated scale (Gamma, inverse.gaussian) names
+      # the statistic "t value"; its p-value is still the Wald z one.
+      stat_col <- intersect(c("z value", "t value"), colnames(sm$coefficients))
+      stat <- unname(sm$coefficients[nm, stat_col[1L]])
       p_value <- unname(sm$coefficients[nm, "Pr(>|z|)"])
     } else {
       # nocov start -- glmer summary always carries a `Pr(>|z|)` column
@@ -554,7 +591,7 @@ as_regression_frame.glmerMod <- function(
       (if (is_glm) {
         spicy_str("note_vcov_wald_asymptotic")
       } else {
-        "Wald (model-based)"
+        spicy_str("note_vcov_wald_model")
       }),
     ci_level = as.numeric(ci_level),
     ci_method = ci_method,
@@ -591,6 +628,12 @@ as_regression_frame.glmerMod <- function(
       "log" = "Log-binomial",
       "Binomial"
     ))
+  }
+  # glmer.nb: lme4 names the family with its theta, "Negative
+  # Binomial(1.2)". The title is the one of glm.nb, glmmTMB, pscl and
+  # fixest, which the French title bridge knows.
+  if (startsWith(fam$family, "Negative Binomial(")) {
+    return("Negative-binomial")
   }
   switch(
     fam$family,

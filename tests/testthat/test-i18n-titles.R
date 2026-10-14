@@ -201,6 +201,24 @@ test_that("the hyphenated engine spellings reach their bridge entries", {
   )
 })
 
+test_that("a glmer.nb fit takes the negative-binomial title of the other engines", {
+  skip_if_not_installed("lme4")
+  skip_on_cran()
+  fit <- suppressWarnings(
+    lme4::glmer.nb(TICKS ~ YEAR + (1 | BROOD), data = lme4::grouseticks)
+  )
+  frame <- as_regression_frame(fit)
+  expect_identical(
+    build_regression_title_from_frames(list(frame)),
+    "Negative-binomial mixed-effects regression: TICKS"
+  )
+  withr::local_options(spicy.language = "fr")
+  expect_identical(
+    build_regression_title_from_frames(list(frame)),
+    "R\u00e9gression binomiale n\u00e9gative \u00e0 effets mixtes\u00a0: TICKS"
+  )
+})
+
 test_that("an engine suffix survives the bridge as a proper noun", {
   skip_if_not_installed("glmmTMB")
   skip_on_cran()

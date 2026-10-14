@@ -213,7 +213,8 @@ compute_model_vcov <- function(
     )
   }
   if (identical(type, "classical")) {
-    return(stats::vcov(fit))
+    # A merMod fit reads lme4's own method (see .merMod_vcov()).
+    return(if (inherits(fit, "merMod")) .merMod_vcov(fit) else stats::vcov(fit))
   }
 
   # glmmTMB: its own cluster sandwich (R/vcov_glmmTMB.R), which also

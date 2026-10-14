@@ -313,8 +313,10 @@ extract_partial_chi2_rows_glm <- function(fit, model_id, outcome) {
 #     chi^2(k) = beta_hat[term]' * V[term, term]^{-1} * beta_hat[term]
 #
 # where k is the number of coefficients spanned by the term (1 for a
-# numeric / Boolean, k-1 for a k-level factor) and V is the model-based
-# vcov.
+# numeric / Boolean, k-1 for a k-level factor) and V is the vcov of the
+# coefficient rows: model-based by default, the robust matrix under a
+# robust `vcov` (`vcov_matrix`), in the hypothesis matrix as in the
+# quadratic form, as `car::Anova(type = 2, vcov. = V)` does.
 #
 # Convention note: SAS PROC MIXED / SPSS GENLINMIXED / Stata `mixed,
 # testparm` and `lmerTest::anova()` report Type-III tests by default.
@@ -361,7 +363,7 @@ type2_wald_hypothesis_matrix <- function(p, rel_cols, focal_cols, V) {
   L[!apply(L, 1L, function(x) all(x == 0)), , drop = FALSE]
 }
 
-.compute_partial_chi2_rows_for_mixed <- function(fit) {
+.compute_partial_chi2_rows_for_mixed <- function(fit, vcov_matrix = NULL) {
   fixed_form <- tryCatch(
     if (inherits(fit, "glmmTMB")) {
       stats::formula(fit, fixed.only = TRUE, component = "cond")
@@ -394,8 +396,12 @@ type2_wald_hypothesis_matrix <- function(p, rel_cols, focal_cols, V) {
   }
 
   V <- tryCatch(
-    {
-      v <- stats::vcov(fit)
+    if (!is.null(vcov_matrix)) {
+      # The robust matrix of the coefficient rows. glmmTMB's sandwich
+      # covers every fixed parameter: the conditional block is tested.
+      as.matrix(vcov_matrix)[names(bhat), names(bhat), drop = FALSE]
+    } else {
+      v <- if (inherits(fit, "merMod")) .merMod_vcov(fit) else stats::vcov(fit)
       # glmmTMB::vcov returns an S3 object of class c("vcov.glmmTMB",
       # "matrix") -- the $cond slot is accessible via `$cond` /
       # `[["cond"]]`. lme4 / nlme return a plain matrix-like object.
@@ -532,12 +538,18 @@ type2_wald_hypothesis_matrix <- function(p, rel_cols, focal_cols, V) {
 
 # Append Wald chi^2 partial-effect rows to a frame's coefs when
 # `partial_chi2` is in show_columns. No-op otherwise. Mirrors the
-# AME-attach helper in regression_ame.R.
-.attach_partial_chi2_to_frame_coefs <- function(coefs, fit, show_columns) {
+# AME-attach helper in regression_ame.R. `vcov_matrix` is the robust
+# matrix of the coefficient rows (NULL under the model-based default).
+.attach_partial_chi2_to_frame_coefs <- function(
+  coefs,
+  fit,
+  show_columns,
+  vcov_matrix = NULL
+) {
   if (!"partial_chi2" %in% show_columns) {
     return(coefs)
   }
-  rows <- .compute_partial_chi2_rows_for_mixed(fit)
+  rows <- .compute_partial_chi2_rows_for_mixed(fit, vcov_matrix)
   if (is.null(rows) || nrow(rows) == 0L) {
     return(coefs)
   }

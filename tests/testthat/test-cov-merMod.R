@@ -84,7 +84,7 @@ test_that("glmer inverse.gaussian: family title is 'Inverse-Gaussian'", {
   expect_identical(spicy:::.merMod_glm_family_title(fit), "Inverse-Gaussian")
 })
 
-test_that("glmer.nb: family title falls through to the title-cased default", {
+test_that("glmer.nb: family title is the negative binomial of the other engines", {
   skip_if_not_installed("lme4")
   skip_if_not_installed("MASS")
   set.seed(7)
@@ -101,10 +101,10 @@ test_that("glmer.nb: family title falls through to the title-cased default", {
     )),
     error = function(e) skip("glmer.nb did not converge in this environment")
   )
-  # Family string is "Negative Binomial(theta)"; the default switch arm
-  # title-cases the first letter (already upper) and returns it verbatim.
+  # The family string is "Negative Binomial(theta)"; the title drops the
+  # theta, as glm.nb, glmmTMB, pscl and fixest titles do.
   title <- spicy:::.merMod_glm_family_title(fit)
-  expect_match(title, "^Negative Binomial")
+  expect_identical(title, "Negative-binomial")
 })
 
 

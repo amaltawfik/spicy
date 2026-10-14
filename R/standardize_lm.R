@@ -669,8 +669,15 @@ extract_beta_rows <- function(
 #
 # Returns a list(coefs_beta = data.frame, used_method = "refit") or NULL
 # when the refit fails (e.g. formula contains an inline function call
-# that can't re-evaluate on z-scored data).
-.compute_beta_rows_for_mixed <- function(fit, ci_level = 0.95) {
+# that can't re-evaluate on z-scored data). Under a robust `vcov_type`
+# the refit gets the same estimator as the coefficient rows, as in the
+# lm refit path.
+.compute_beta_rows_for_mixed <- function(
+  fit,
+  ci_level = 0.95,
+  vcov_type = "model",
+  cluster = NULL
+) {
   # Pull the model frame and z-score numeric columns. Factor / character
   # / logical columns are kept as-is (their dummies stay 0/1 in the
   # design matrix, matching the lm path's convention).
@@ -798,7 +805,11 @@ extract_beta_rows <- function(
 
   V <- tryCatch(
     {
-      v <- stats::vcov(fit_std)
+      v <- if (inherits(fit_std, "merMod")) {
+        .merMod_vcov(fit_std)
+      } else {
+        stats::vcov(fit_std)
+      }
       if (inherits(fit_std, "glmmTMB")) {
         v_cond <- tryCatch(v$cond, error = function(e) NULL)
         # nocov start (secondary fallback; `v$cond` succeeds for real glmmTMB vcov)
@@ -812,6 +823,12 @@ extract_beta_rows <- function(
     },
     error = function(e) NULL
   )
+  if (!.is_model_vcov(vcov_type)) {
+    # The estimator of the coefficient rows, on the refit. glmmTMB's
+    # sandwich covers every fixed parameter: keep the conditional block.
+    vc <- compute_model_vcov(fit_std, type = vcov_type, cluster = cluster)
+    V <- as.matrix(vc)[names(bhat), names(bhat), drop = FALSE]
+  }
   if (is.null(V) || nrow(V) != length(bhat)) {
     return(NULL) # nocov (vcov is square + conformable on a converged refit)
   }
@@ -858,12 +875,15 @@ extract_beta_rows <- function(
 # != "none"`. No-op otherwise (no token requested OR no compatible
 # engine). All four mixed-effects methods (lmer / glmer / glmmTMB /
 # lme) currently support only the "refit" method; other choices fall
-# back to refit with a spicy_fallback warning.
+# back to refit with a spicy_fallback warning. `vcov_type` / `cluster`
+# are the estimator of the coefficient rows, applied to the refit.
 .attach_beta_to_frame_coefs <- function(
   coefs,
   fit,
   standardized,
-  ci_level = 0.95
+  ci_level = 0.95,
+  vcov_type = "model",
+  cluster = NULL
 ) {
   if (identical(standardized, "none") || is.null(standardized)) {
     return(coefs)
@@ -887,7 +907,12 @@ extract_beta_rows <- function(
       class = "spicy_fallback"
     )
   }
-  res <- .compute_beta_rows_for_mixed(fit, ci_level = ci_level)
+  res <- .compute_beta_rows_for_mixed(
+    fit,
+    ci_level = ci_level,
+    vcov_type = vcov_type,
+    cluster = cluster
+  )
   if (is.null(res)) {
     spicy_warn(
       c(

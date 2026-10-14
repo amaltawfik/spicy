@@ -47,6 +47,11 @@ as_regression_frame.lme <- function(
   .check_nlme_available()
 
   coefs <- .lme_coefs(fit, ci_level = ci_level)
+  # One matrix for the coefficient rows and the joint tests of the terms.
+  vc <- NULL
+  if (!.is_model_vcov(vcov)) {
+    vc <- compute_model_vcov(fit, type = vcov, cluster = cluster)
+  }
   coefs <- .apply_robust_vcov_to_coefs(
     coefs,
     fit,
@@ -54,7 +59,8 @@ as_regression_frame.lme <- function(
     cluster,
     ci_level,
     test = "t",
-    estimates = nlme::fixef(fit)
+    estimates = nlme::fixef(fit),
+    vc = vc
   )
   coefs <- .attach_ame_to_frame_coefs(
     coefs,
@@ -64,8 +70,20 @@ as_regression_frame.lme <- function(
     vcov_type = vcov,
     cluster = cluster
   )
-  coefs <- .attach_partial_chi2_to_frame_coefs(coefs, fit, show_columns)
-  coefs <- .attach_beta_to_frame_coefs(coefs, fit, standardized, ci_level)
+  coefs <- .attach_partial_chi2_to_frame_coefs(
+    coefs,
+    fit,
+    show_columns,
+    vcov_matrix = vc
+  )
+  coefs <- .attach_beta_to_frame_coefs(
+    coefs,
+    fit,
+    standardized,
+    ci_level,
+    vcov_type = vcov,
+    cluster = cluster
+  )
   info <- .lme_info(
     fit,
     vcov_kind = vcov,
@@ -401,7 +419,7 @@ as_regression_frame.gls <- function(
     random_effects = re,
     fit_stats = fit_stats,
     vcov_kind = vcov_kind,
-    vcov_label = vcov_label %||% "Wald (model-based)",
+    vcov_label = vcov_label %||% spicy_str("note_vcov_wald_model"),
     ci_level = as.numeric(ci_level),
     ci_method = ci_method,
     supports = supports,
@@ -440,9 +458,9 @@ as_regression_frame.gls <- function(
 
   corr_label <- .gls_corstruct_label(fit)
   default_vcov_label <- if (is.null(corr_label)) {
-    "Wald (model-based)"
+    spicy_str("note_vcov_wald_model")
   } else {
-    paste0("Wald (model-based, ", corr_label, ")")
+    spicy_fmt("note_vcov_wald_model_corr", corr_label)
   }
 
   extras <- list(
