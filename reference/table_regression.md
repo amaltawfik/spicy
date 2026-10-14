@@ -105,7 +105,7 @@ table_regression(
   own estimator family instead: `"classical"` resolves to the
   heteroskedasticity-robust `"nid"` sandwich (Hendricks-Koenker,
   Hall-Sheather bandwidth – quantreg's own large-sample default and the
-  Stata `vce(robust)` analogue), with `"iid"` (Koenker-Bassett
+  Stata `vce(robust)` analog), with `"iid"` (Koenker-Bassett
   homoskedastic, Stata `vce(iid)` parity), `"ker"` (Powell kernel) and
   `"rank"` (rank-score inversion: genuine CIs, no SE / t / p – those
   cells render as dashes) as opt-ins, and `"bootstrap"` running
@@ -1482,7 +1482,7 @@ coefficient rows were computed from: \\W = b' V^{-1} b\\, with \\b\\ the
 of the matrix. The test takes the regime of the current model's
 coefficient tests:
 
-- *F*, in a row labelled "Wald F-change": \\W / q\\ on \\(q, df)\\
+- *F*, in a row labeled "Wald F-change": \\W / q\\ on \\(q, df)\\
   degrees of freedom, the convention of `lmtest::waldtest(test = "F")`
   and
   [`car::linearHypothesis()`](https://rdrr.io/pkg/car/man/linearHypothesis.html).
@@ -1505,7 +1505,7 @@ coefficient tests:
   [`clubSandwich::Wald_test()`](http://jepusto.github.io/clubSandwich/reference/Wald_test.md),
   the small-sample correction of their coefficient tests.
 
-- *Chi-square*, in a row labelled "Wald \\\chi^2\\ (change)" that
+- *Chi-square*, in a row labeled "Wald \\\chi^2\\ (change)" that
   replaces the likelihood-ratio row: \\W\\ on \\q\\ degrees of freedom,
   the convention of `lmtest::waldtest(test = "Chisq")`. It applies to
   `glm` and `glm.nb` under `"HC0"`-`"HC5"`, `lm` and `glm` under

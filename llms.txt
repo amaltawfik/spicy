@@ -297,7 +297,7 @@ date](https://amaltawfik.github.io/spicy/codebook/cover.png)
 position, name, and type, its label, the counts of valid, missing, and
 distinct values, and the table of its values with n, percent, and valid
 percent, the system missing row in
-grey](https://amaltawfik.github.io/spicy/codebook/sheet.png)
+gray](https://amaltawfik.github.io/spicy/codebook/sheet.png)
 
 The whole document: [the
 PDF](https://amaltawfik.github.io/spicy/codebook/sochealth_codebook.pdf),
@@ -344,7 +344,7 @@ cross_tab(sochealth, smoking, education, percent = "col")
 #>  Total    │             100.0              100.0       100.0 │   100.0 
 #>  N        │               257                527         391 │    1175 
 #> 
-#> Chi-2(2) = 21.6, p <.001
+#> Chi-2(2) = 21.6, p < .001
 #> Cramer's V = 0.14
 #> Missing values removed: smoking (25).
 ```
@@ -412,7 +412,7 @@ table_categorical(
     physical_activity = "Physical activity"
   )
 )
-#> Categorical table by education
+#> Categorical table by Highest education level
 #> 
 #>  Variable          │ Lower secondary n  Lower secondary %  Upper secondary n 
 #> ───────────────────┼─────────────────────────────────────────────────────────
@@ -466,7 +466,7 @@ table_continuous(
 #>  Body mass index                │   26.14    1188 
 #>  Satisfaction with health (1-5) │    3.62    1192 
 #> 
-#> Missing values removed: bmi (12), life_sat_health (8).
+#> Missing values removed: Body mass index (12), Satisfaction with health (1-5) (8).
 ```
 
 ``` r
@@ -508,7 +508,7 @@ table_continuous(
 #>                                 │ Upper secondary        
 #>                                 │ Tertiary               
 #> 
-#> Missing values removed: bmi (12), life_sat_health (8).
+#> Missing values removed: Body mass index (12), Satisfaction with health (1-5) (8).
 ```
 
 ``` r
@@ -634,7 +634,7 @@ table_outcome(
 #>    Yes          │ 25.93  3.58  16.80  35.30    25.48      26.38     248       
 #>    (Missing)    │ 24.74  3.63  17.60  32.50    23.24      26.23      25       
 #> 
-#> Missing values removed: bmi (12). Group comparison: Welch t-test. Each block compares Body mass index across the levels of one variable; blocks are not adjusted for one another. Overall = the whole analytic sample.
+#> Missing values removed: Body mass index (12). Group comparison: Welch t-test. Each block compares Body mass index across the levels of one variable; blocks are not adjusted for one another. Overall = the whole analytic sample.
 ```
 
 ### Row-wise summaries
@@ -752,7 +752,7 @@ current CRAN release):
 
 Tawfik A (2026). *spicy: Publication-Ready Tables for Descriptive
 Statistics and Regression Models*. <doi:10.32614/CRAN.package.spicy>
-<https://doi.org/10.32614/CRAN.package.spicy>. R package version 0.13.0,
+<https://doi.org/10.32614/CRAN.package.spicy>. R package version 0.14.0,
 <https://CRAN.R-project.org/package=spicy>.
 
 ``` R
@@ -760,7 +760,7 @@ Statistics and Regression Models*. <doi:10.32614/CRAN.package.spicy>
   title = {spicy: Publication-Ready Tables for Descriptive Statistics and Regression Models},
   author = {Amal Tawfik},
   year = {2026},
-  note = {R package version 0.13.0},
+  note = {R package version 0.14.0},
   url = {https://CRAN.R-project.org/package=spicy},
   doi = {10.32614/CRAN.package.spicy},
 }

@@ -76,19 +76,19 @@ shows the gap on real data.
 **What GEE buys.** When the marginal question is the right one, GEE has
 three properties that likelihood-based alternatives cannot match. First,
 it needs no distributional assumptions: for discrete longitudinal data
-there is no convenient analogue of the multivariate normal – a full
-joint distribution for ten binary repeated measures involves over a
-thousand association parameters (Fitzmaurice et al., 2011) – and GEE
-sidesteps the problem by modeling only the mean, the variance function,
-and the pairwise association – while remaining, in many longitudinal
-designs, nearly as efficient as maximum likelihood (Fitzmaurice et al.,
-2011). Second, the coefficient estimates are consistent even when the
-assumed within-cluster correlation structure is wrong (Liang & Zeger,
-1986). Third, the standard errors come from a cluster-robust sandwich
-estimator *by construction* – robustness is not an option bolted on
-after the fact, it is the method. A mixed model, by contrast, leans on
-an assumed random-effects distribution that the data cannot verify
-(Hubbard et al., 2010).
+there is no convenient analog of the multivariate normal – a full joint
+distribution for ten binary repeated measures involves over a thousand
+association parameters (Fitzmaurice et al., 2011) – and GEE sidesteps
+the problem by modeling only the mean, the variance function, and the
+pairwise association – while remaining, in many longitudinal designs,
+nearly as efficient as maximum likelihood (Fitzmaurice et al., 2011).
+Second, the coefficient estimates are consistent even when the assumed
+within-cluster correlation structure is wrong (Liang & Zeger, 1986).
+Third, the standard errors come from a cluster-robust sandwich estimator
+*by construction* – robustness is not an option bolted on after the
+fact, it is the method. A mixed model, by contrast, leans on an assumed
+random-effects distribution that the data cannot verify (Hubbard et al.,
+2010).
 
 **What GEE costs – the criteria that argue against it.** Three
 conditions are worth checking before committing. *Efficiency*: with a

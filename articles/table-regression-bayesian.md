@@ -579,7 +579,7 @@ silently wrong:
   (next section);
 - `ci_method = "profile"` / `"boot_percentile"` — profile likelihood and
   bootstrap replicates are frequentist constructions with no posterior
-  analogue (the credible interval is computed from the draws; `"hdi"` is
+  analog (the credible interval is computed from the draws; `"hdi"` is
   the one alternative flavor);
 - `standardized = "refit"` and `"pseudo"` — refit would re-run the MCMC
   sampler on z-scored data inside a table call (minutes per model), and

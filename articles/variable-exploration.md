@@ -557,7 +557,7 @@ The sheet of `self_rated_health`, one of the twenty-four:
 type, its label, the counts of valid, missing, and distinct values, and
 the table of its values with n, percent, and valid percent, the system
 missing row in
-grey](https://amaltawfik.github.io/spicy/codebook/sheet.png)
+gray](https://amaltawfik.github.io/spicy/codebook/sheet.png)
 
 ## When to use varlist() and code_book()
 

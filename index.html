@@ -316,7 +316,7 @@
 <span>  output <span class="op">=</span> <span class="st">"sochealth_codebook.pdf"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <p><img src="https://amaltawfik.github.io/spicy/codebook/cover.png" alt="The cover of the PDF codebook: the word CODEBOOK in spaced capitals, the title Social health survey, its subtitle, two authors with their affiliations and an ORCID link, and the date" width="100%"></p>
-<p><img src="https://amaltawfik.github.io/spicy/codebook/sheet.png" alt="The sheet of one variable in the PDF codebook: a band with its position, name, and type, its label, the counts of valid, missing, and distinct values, and the table of its values with n, percent, and valid percent, the system missing row in grey" width="100%"></p>
+<p><img src="https://amaltawfik.github.io/spicy/codebook/sheet.png" alt="The sheet of one variable in the PDF codebook: a band with its position, name, and type, its label, the counts of valid, missing, and distinct values, and the table of its values with n, percent, and valid percent, the system missing row in gray" width="100%"></p>
 <p>The whole document: <a href="https://amaltawfik.github.io/spicy/codebook/sochealth_codebook.pdf">the PDF</a>, <a href="https://amaltawfik.github.io/spicy/codebook/sochealth_codebook_fr.pdf">the same in French</a>, and <a href="https://amaltawfik.github.io/spicy/codebook/sochealth_codebook.xlsx">the Excel workbook</a>. See <a href="https://amaltawfik.github.io/spicy/articles/variable-exploration.html">Explore variables and build codebooks</a> for more on <code><a href="reference/varlist.html">varlist()</a></code>, <code><a href="reference/varlist.html">vl()</a></code>, and <code><a href="reference/code_book.html">code_book()</a></code>.</p>
 </div>
 <div class="section level3">
@@ -351,7 +351,7 @@
 <span><span class="co">#&gt;  Total    │             100.0              100.0       100.0 │   100.0 </span></span>
 <span><span class="co">#&gt;  N        │               257                527         391 │    1175 </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Chi-2(2) = 21.6, p &lt;.001</span></span>
+<span><span class="co">#&gt; Chi-2(2) = 21.6, p &lt; .001</span></span>
 <span><span class="co">#&gt; Cramer's V = 0.14</span></span>
 <span><span class="co">#&gt; Missing values removed: smoking (25).</span></span></code></pre></div>
 <p>See <a href="https://amaltawfik.github.io/spicy/articles/frequency-tables.html">Frequency tables and cross-tabulations</a> for <code><a href="reference/freq.html">freq()</a></code>, <code><a href="reference/cross_tab.html">cross_tab()</a></code>, percentages, weights, and tests.</p>
@@ -406,7 +406,7 @@
 <span>    physical_activity <span class="op">=</span> <span class="st">"Physical activity"</span></span>
 <span>  <span class="op">)</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; Categorical table by education</span></span>
+<span><span class="co">#&gt; Categorical table by Highest education level</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Variable          │ Lower secondary n  Lower secondary %  Upper secondary n </span></span>
 <span><span class="co">#&gt; ───────────────────┼─────────────────────────────────────────────────────────</span></span>
@@ -457,7 +457,7 @@
 <span><span class="co">#&gt;  Body mass index                │   26.14    1188 </span></span>
 <span><span class="co">#&gt;  Satisfaction with health (1-5) │    3.62    1192 </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Missing values removed: bmi (12), life_sat_health (8).</span></span></code></pre></div>
+<span><span class="co">#&gt; Missing values removed: Body mass index (12), Satisfaction with health (1-5) (8).</span></span></code></pre></div>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="reference/table_continuous.html">table_continuous</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span>,</span>
@@ -496,7 +496,7 @@
 <span><span class="co">#&gt;                                 │ Upper secondary        </span></span>
 <span><span class="co">#&gt;                                 │ Tertiary               </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Missing values removed: bmi (12), life_sat_health (8).</span></span></code></pre></div>
+<span><span class="co">#&gt; Missing values removed: Body mass index (12), Satisfaction with health (1-5) (8).</span></span></code></pre></div>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="reference/table_continuous_lm.html">table_continuous_lm</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span>,</span>
@@ -588,7 +588,7 @@
 <span><span class="co">#&gt;    Yes          │ 25.93  3.58  16.80  35.30    25.48      26.38     248       </span></span>
 <span><span class="co">#&gt;    (Missing)    │ 24.74  3.63  17.60  32.50    23.24      26.23      25       </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Missing values removed: bmi (12). Group comparison: Welch t-test. Each block compares Body mass index across the levels of one variable; blocks are not adjusted for one another. Overall = the whole analytic sample.</span></span></code></pre></div>
+<span><span class="co">#&gt; Missing values removed: Body mass index (12). Group comparison: Welch t-test. Each block compares Body mass index across the levels of one variable; blocks are not adjusted for one another. Overall = the whole analytic sample.</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="row-wise-summaries">Row-wise summaries<a class="anchor" aria-label="anchor" href="#row-wise-summaries"></a>
@@ -655,12 +655,12 @@
 <h2 id="citation">Citation<a class="anchor" aria-label="anchor" href="#citation"></a>
 </h2>
 <p>To cite spicy in a publication or teaching material (this entry is generated by <code>citation("spicy")</code> at build time and always refers to the current CRAN release):</p>
-<p>Tawfik A (2026). <em>spicy: Publication-Ready Tables for Descriptive Statistics and Regression Models</em>. <a href="doi:10.32614/CRAN.package.spicy" class="uri">doi:10.32614/CRAN.package.spicy</a> <a href="https://doi.org/10.32614/CRAN.package.spicy" class="external-link uri">https://doi.org/10.32614/CRAN.package.spicy</a>. R package version 0.13.0, <a href="https://CRAN.R-project.org/package=spicy" class="external-link uri">https://CRAN.R-project.org/package=spicy</a>.</p>
+<p>Tawfik A (2026). <em>spicy: Publication-Ready Tables for Descriptive Statistics and Regression Models</em>. <a href="doi:10.32614/CRAN.package.spicy" class="uri">doi:10.32614/CRAN.package.spicy</a> <a href="https://doi.org/10.32614/CRAN.package.spicy" class="external-link uri">https://doi.org/10.32614/CRAN.package.spicy</a>. R package version 0.14.0, <a href="https://CRAN.R-project.org/package=spicy" class="external-link uri">https://CRAN.R-project.org/package=spicy</a>.</p>
 <div class="sourceCode" id="cb19"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" tabindex="-1"></a><span class="sc">@</span>Manual{,</span>
 <span id="cb19-2"><a href="#cb19-2" tabindex="-1"></a>  title <span class="ot">=</span> {spicy<span class="sc">:</span> Publication<span class="sc">-</span>Ready Tables <span class="cf">for</span> Descriptive Statistics and Regression Models},</span>
 <span id="cb19-3"><a href="#cb19-3" tabindex="-1"></a>  author <span class="ot">=</span> {Amal Tawfik},</span>
 <span id="cb19-4"><a href="#cb19-4" tabindex="-1"></a>  year <span class="ot">=</span> {<span class="dv">2026</span>},</span>
-<span id="cb19-5"><a href="#cb19-5" tabindex="-1"></a>  note <span class="ot">=</span> {R package version <span class="dv">0</span>.<span class="fl">13.0</span>},</span>
+<span id="cb19-5"><a href="#cb19-5" tabindex="-1"></a>  note <span class="ot">=</span> {R package version <span class="dv">0</span>.<span class="fl">14.0</span>},</span>
 <span id="cb19-6"><a href="#cb19-6" tabindex="-1"></a>  url <span class="ot">=</span> {https<span class="sc">:</span><span class="er">//</span>CRAN.R<span class="sc">-</span>project.org<span class="sc">/</span>package<span class="ot">=</span>spicy},</span>
 <span id="cb19-7"><a href="#cb19-7" tabindex="-1"></a>  doi <span class="ot">=</span> {<span class="fl">10.32614</span><span class="sc">/</span>CRAN.package.spicy},</span>
 <span id="cb19-8"><a href="#cb19-8" tabindex="-1"></a>}</span></code></pre></div>

@@ -195,7 +195,7 @@ Quantile regression (<code><a href="https://rdrr.io/pkg/quantreg/man/rq.html" cl
 family instead: <code>"classical"</code> resolves to the
 heteroskedasticity-robust <code>"nid"</code> sandwich (Hendricks-Koenker,
 Hall-Sheather bandwidth – quantreg's own large-sample default
-and the Stata <code>vce(robust)</code> analogue), with <code>"iid"</code>
+and the Stata <code>vce(robust)</code> analog), with <code>"iid"</code>
 (Koenker-Bassett homoskedastic, Stata <code>vce(iid)</code> parity),
 <code>"ker"</code> (Powell kernel) and <code>"rank"</code> (rank-score inversion:
 genuine CIs, no SE / t / p – those cells render as dashes) as
@@ -1514,7 +1514,7 @@ current model adds, on the matrix its coefficient rows were computed
 from: \(W = b' V^{-1} b\), with \(b\) the \(q\)
 added coefficients (aliased ones left out) and \(V\) their block of
 the matrix. The test takes the regime of the current model's
-coefficient tests:</p><ul><li><p><em>F</em>, in a row labelled "Wald F-change": \(W / q\) on
+coefficient tests:</p><ul><li><p><em>F</em>, in a row labeled "Wald F-change": \(W / q\) on
 \((q, df)\) degrees of freedom, the convention of
 <code>lmtest::waldtest(test = "F")</code> and <code><a href="https://rdrr.io/pkg/car/man/linearHypothesis.html" class="external-link">car::linearHypothesis()</a></code>.
 It applies to <code>lm</code> under <code>"HC0"</code>-<code>"HC5"</code> (and <code>"CR1S"</code>, on
@@ -1526,7 +1526,7 @@ or after <code><a href="https://rdrr.io/pkg/rms/man/robcov.html" class="external
 <code><a href="https://rdrr.io/pkg/lme4/man/lmer.html" class="external-link">lme4::lmer</a></code> and <code><a href="https://rdrr.io/pkg/nlme/man/lme.html" class="external-link">nlme::lme</a></code> use the HTZ test of
 <code><a href="http://jepusto.github.io/clubSandwich/reference/Wald_test.html" class="external-link">clubSandwich::Wald_test()</a></code>, the small-sample correction of their
 coefficient tests.</p></li>
-<li><p><em>Chi-square</em>, in a row labelled "Wald \(\chi^2\)
+<li><p><em>Chi-square</em>, in a row labeled "Wald \(\chi^2\)
 (change)" that replaces the likelihood-ratio row: \(W\) on
 \(q\) degrees of freedom, the convention of
 <code>lmtest::waldtest(test = "Chisq")</code>. It applies to <code>glm</code> and

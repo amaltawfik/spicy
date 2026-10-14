@@ -1077,8 +1077,8 @@ table_regression(fit)
 ```
 
 Read the fit block with care. McFadden and Nagelkerke R² are
-likelihood-based analogues of R², not proportions of explained variance
-— their values are not comparable to an OLS R², and different measures
+likelihood-based analogs of R², not proportions of explained variance —
+their values are not comparable to an OLS R², and different measures
 disagree by construction on the same fit (here 0.02 for McFadden versus
 0.03 for Nagelkerke). Long and Freese (2014, §3.3) find these scalar
 measures of limited utility except as a rough index for comparing
