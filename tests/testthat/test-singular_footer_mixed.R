@@ -8,7 +8,7 @@
 #     correlation of +/-1. The footer says so instead of the lm path's
 #     "Rank-deficient model" wording. It says "at or near" because only
 #     lme4 drives a collapsed component onto 0 itself; glmmTMB and nlme
-#     optimise a log scale, where the exact 0 is at -Inf.
+#     optimize a log scale, where the exact 0 is at -Inf.
 # ---------------------------------------------------------------------------
 
 # ---- Fixtures -------------------------------------------------------------

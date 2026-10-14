@@ -65,7 +65,7 @@ test_that("resolve_covariates_argument: bare nonexistent name errors via eval_se
   expect_match(conditionMessage(err), "nonexistent_col")
 })
 
-test_that("resolve_covariates_argument: eval_select handler honours custom `arg` label", {
+test_that("resolve_covariates_argument: eval_select handler honors custom `arg` label", {
   # The handler interpolates `arg` into the message; confirm a custom
   # label propagates so callers passing a different argument name get
   # an accurate diagnostic.

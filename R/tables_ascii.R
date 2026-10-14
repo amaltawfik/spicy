@@ -26,7 +26,7 @@
   padding
 }
 
-# Internal: validate / normalise the `spanners` argument. Returns
+# Internal: validate / normalize the `spanners` argument. Returns
 # either NULL (no spanner row) or a named list whose values are
 # unique sorted integer column indices in 1..n_cols. Each group
 # must be contiguous (the renderer centers one label over one
@@ -207,7 +207,7 @@ build_ascii_table <- function(
   # rather than a padded blank, and `build_line()` then adds NA to its
   # running position, so a single missing value used to leave the row
   # unpadded AND put every separator bar of the table at NA -- a header
-  # rule with two crossings, columns out of register. Normalised once,
+  # rule with two crossings, columns out of register. Normalized once,
   # here, for every family that reaches the ASCII renderer.
   df[] <- lapply(df, function(z) {
     z <- as.character(z)
@@ -236,7 +236,7 @@ build_ascii_table <- function(
     names(df) <- as.character(display_labels)
   }
   # The header text is padded by the same `str_pad()` as the cells and
-  # breaks the same way, so it is normalised at the same door -- AFTER
+  # breaks the same way, so it is normalized at the same door -- AFTER
   # `display_labels`, which is the second route in. A missing column
   # name (`names(x)` carrying NA, or an NA in `display_labels`) used to
   # reach `build_line()` and desync every rule of every panel, exactly
@@ -254,7 +254,7 @@ build_ascii_table <- function(
   # excluding the header). Used by the header-centering branch below
   # to center the header above the visual data region rather than the
   # padded cell width -- otherwise the header floats left of the
-  # column's visual centre because the data is right-aligned within
+  # column's visual center because the data is right-aligned within
   # extra padding.
   data_widths <- vapply(
     seq_along(df),
@@ -312,7 +312,7 @@ build_ascii_table <- function(
         # Center the header within the data region, then right-pad
         # to the full cell width so the data's left margin is
         # preserved. Visual result: header sits above the data's
-        # geometric centre, not the padded cell's centre.
+        # geometric center, not the padded cell's center.
         centered_in_data <- pad_cell(
           values[i],
           data_widths[i],
@@ -806,7 +806,7 @@ spicy_print_table <- function(
       # Remap spanners to per-panel column indices. When a model's
       # columns are split across panels, each panel displays the
       # spanner label over the surviving subset (matches modelsummary
-      # panel-split behaviour: the model name reappears at the top of
+      # panel-split behavior: the model name reappears at the top of
       # every panel where any of its columns are visible).
       panel_spanners <- NULL
       if (!is.null(spanners) && length(spanners)) {
@@ -904,7 +904,7 @@ spicy_print_table <- function(
       # Opt-in, because "the column on my left" is only the carrier in a
       # coefficient layout. In a descriptive table the `p` is the
       # omnibus test of the whole block and belongs to no column at all,
-      # and the search silently attributed it to whichever neighbour the
+      # and the search silently attributed it to whichever neighbor the
       # split had left behind -- "p (Total %)", "p (Test)",
       # "p (Total DEff)". A statistic of a block named after a column is
       # a false claim about what was tested, so those families leave

@@ -5,7 +5,7 @@
 #     row of column labels under its spanners, and the rules landed a
 #     row below where the console draws them (HTML and .docx alike,
 #     since `output_word()` builds on `output_flextable()`);
-#   * the spanner runs -- neighbouring models sharing a label were
+#   * the spanner runs -- neighboring models sharing a label were
 #     merged into ONE header cell straddling the model boundary: two
 #     CI pairs became a single 4-wide "95% CI", two "B" a single
 #     2-wide "B";

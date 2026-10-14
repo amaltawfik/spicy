@@ -23,7 +23,7 @@
 # ---- Token vocabularies (canonical) ---------------------------------------
 
 # Token vocabularies (lm + glm). Match dev/table_regression_design.md \u00A74.
-# Centralised here so validators, the rendering layer, and the test suite
+# Centralized here so validators, the rendering layer, and the test suite
 # share a single source of truth. Class-aware token compatibility is
 # checked separately, by `validate_class_appropriate_tokens()` -- one
 # validator, not two: the nested-stats half was folded into it when the
@@ -564,7 +564,7 @@ validate_nested_alignment <- function(models, nested) {
 # validate_class_appropriate_tokens() -- sniffs the FIT with
 # inherits(). That is legitimate, and it is not a gap left by the frame
 # refactor: these checks exist precisely so that a request a class
-# cannot honour dies before any fitting-adjacent work starts (C2
+# cannot honor dies before any fitting-adjacent work starts (C2
 # increment 1, fail fast). A frame flag cannot govern a check that runs
 # BEFORE the frame exists, so asking these sites to read one would mean
 # building the frames first and losing the fail-fast they were written
@@ -726,7 +726,7 @@ validate_vcov_cluster_lists <- function(vcov, cluster, models) {
     supported <- .robust_vcov_support(models[[i]])
     if (!vt %in% supported) {
       # Bayesian fits are refused on principle, not because support is
-      # pending: a posterior has no sandwich analogue. The generic
+      # pending: a posterior has no sandwich analog. The generic
       # "being added" wording below would misdescribe the design.
       if (inherits(models[[i]], c("stanreg", "brmsfit"))) {
         spicy_abort(
@@ -737,7 +737,7 @@ validate_vcov_cluster_lists <- function(vcov, cluster, models) {
               class(models[[i]])[1L]
             ),
             "i" = paste0(
-              "A posterior has no sandwich analogue: the ",
+              "A posterior has no sandwich analog: the ",
               "displayed uncertainty comes from the posterior ",
               "draws, not from an estimating equation."
             ),
@@ -1314,7 +1314,7 @@ validate_class_appropriate_tokens <- function(
   # class-aware default vector ("r2" from the fixest arm) -- the
   # 2026-07 FE-lot review caught the default glm + fixest table
   # hard-erroring. Mixed sets render class-inappropriate cells blank,
-  # which is the intended behaviour; only homogeneous sets refuse.
+  # which is the intended behavior; only homogeneous sets refuse.
   # geeglm inherits from glm but is quasi-likelihood: it gets its own
   # gate below (no likelihood -> no pseudo-R^2 / IC / partial LRT),
   # so it must not be claimed by the glm bucket -- the glm messages
@@ -1341,7 +1341,7 @@ validate_class_appropriate_tokens <- function(
 
   # Variance-explained partial tokens. Reject only when ALL models
   # are glm \u2013 in mixed sets, the renderer en-dashes glm rows and
-  # populates lm rows, which is the right behaviour.
+  # populates lm rows, which is the right behavior.
   if (all_glm) {
     bad <- intersect(show_columns, .PARTIAL_VARIANCE_ES_TOKENS)
     if (length(bad) > 0L) {
@@ -2110,7 +2110,7 @@ validate_class_appropriate_tokens <- function(
   # Tjur 2009 "coefficient of discrimination"). ANY-gate, aligned on the
   # theta / alpha dispersion precedent: when NO model in the set can
   # carry the statistic, an explicit request is refused up front --
-  # silently dropping the row (the pre-2026-08 behaviour) hid the
+  # silently dropping the row (the pre-2026-08 behavior) hid the
   # request. A mixed set with at least one binomial glm passes: the
   # non-binomial columns render the per-cell en-dash. Runs AFTER the
   # family gates above so homogeneous non-glm sets (all-lm, all-GEE,
@@ -2490,7 +2490,7 @@ validate_caption_arg <- function(x, name) {
 
 # `p_adjust` validation. Must be one of stats::p.adjust.methods.
 # We accept "fdr" as an alias for "BH" (matching stats::p.adjust
-# itself) but normalise back to the canonical name in the orchestrator
+# itself) but normalize back to the canonical name in the orchestrator
 # so the footer wording is consistent.
 .spicy_p_adjust_methods <- c(
   "none",
@@ -2811,7 +2811,7 @@ validate_predictor_labels <- function(labels, models) {
   #     -> e.g. "(Intercept)", "cyl6", "factor(cyl)8", "wt:cyl6"
   # The renderer tries the per-row label first (coef name), then
   # falls back to the per-term label (factor variable). So both
-  # flavours of key are useful: term keys rename factor headers,
+  # flavors of key are useful: term keys rename factor headers,
   # coef keys rename individual contrast rows.
   # .spicy_get_terms(), not stats::terms(): the renderer detects factor
   # headers through that helper, so the validator must accept exactly

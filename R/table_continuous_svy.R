@@ -1399,7 +1399,7 @@ table_continuous_svy <- function(
   } else {
     # Unreachable: one `degf_dom_used` entry is appended per
     # (variable x domain) with no condition on it, and a table with no
-    # variable to summarise is refused upstream -- so the vector is
+    # variable to summarize is refused upstream -- so the vector is
     # never empty by the time the note is built.
     NULL # nocov
   }

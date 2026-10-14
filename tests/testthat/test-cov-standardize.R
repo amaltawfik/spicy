@@ -27,7 +27,7 @@ test_that("standardize_lm refit propagates weights (lm)", {
 
   # Hand-derived oracle: the refit z-scores with UNWEIGHTED scale()
   # (see standardize_refit_lm), and WLS is equivariant under an affine
-  # reparameterisation of the columns, so the refitted slope / SE are
+  # reparameterization of the columns, so the refitted slope / SE are
   # EXACTLY beta_j = b_j * sd(x_j) / sd(y) and SE_beta_j = SE_j *
   # sd(x_j) / sd(y), with b_j / SE_j from the original weighted fit.
   sd_y <- stats::sd(mtcars$mpg)
@@ -138,7 +138,7 @@ test_that("refit table emits an all-NA row for an aliased predictor", {
   expect_true(is.na(dup_row$statistic))
   expect_true(is.na(dup_row$df))
   expect_true(is.na(dup_row$p_value))
-  # The non-singular term's standardised estimate / SE equal the exact
+  # The non-singular term's standardized estimate / SE equal the exact
   # algebraic rescaling of the original fit (affine equivariance of
   # OLS; dup stays aliased after z-scoring because scale(2 * wt) is
   # identical to scale(wt)).
@@ -275,7 +275,7 @@ test_that("coefs_inference_table keeps the intercept when intercept_to_na=FALSE"
     intercept_to_na = FALSE
   )
   # Under z-scored data the intercept estimate is EXACTLY 0 (up to
-  # floating point: OLS with intercept on centred data) but NOT set to
+  # floating point: OLS with intercept on centered data) but NOT set to
   # NA. Absolute tolerance since the target is zero.
   intercept <- out[out$term == "(Intercept)", , drop = FALSE]
   expect_false(is.na(intercept$estimate))

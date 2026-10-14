@@ -114,7 +114,7 @@ test_that("a declared-but-unobserved level makes S singular and ginv absorbs it"
   expect_error(solve(smat))
 })
 
-test_that("levels empty in ONE group only do not singularise S", {
+test_that("levels empty in ONE group only do not singularize S", {
   skip_if_not_installed("MASS")
   # The COMMON case: group A spreads over three levels, group B sits on
   # one. det(S) = 0.0078125, `solve()` and `ginv()` agree, tableone
@@ -206,7 +206,7 @@ test_that("a zero denominator with a non-zero difference is undefined, not zero"
 test_that("a group with no dispersion to estimate returns a SILENT NA", {
   # n = 1 (or weights summing to <= 1): `stats::sd()` / `.wtd_sd()`
   # return NA and the SMD follows, with no reason attached -- the
-  # neighbouring SD cell already discloses the same fact, and a second
+  # neighboring SD cell already discloses the same fact, and a second
   # signal would double it.
   v <- .smd_continuous(3, 4, NA_real_, 2)
   expect_true(is.na(v))
@@ -344,7 +344,7 @@ test_that("the base adapters read the same producers the table displays", {
     .smd_moments_base(d$x),
     tolerance = 1e-15
   )
-  # A group of one has no variance to standardise by.
+  # A group of one has no variance to standardize by.
   expect_identical(.smd_moments_base(1), c(1, NA_real_))
   expect_identical(.smd_moments_base(numeric(0)), c(NA_real_, NA_real_))
   expect_identical(

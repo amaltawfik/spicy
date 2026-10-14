@@ -65,10 +65,10 @@ spicy_abort <- function(
 #   |- spicy_caveat            (computation succeeded but its inter-
 #                               pretation carries a non-trivial methodo-
 #                               logical caveat the user should know
-#                               about -- e.g., standardised coefficients
+#                               about -- e.g., standardized coefficients
 #                               on non-additive terms, gaussian glm
 #                               equivalent to lm, Menard pseudo-
-#                               standardisation requested on a non-
+#                               standardization requested on a non-
 #                               binomial family)
 #      |- spicy_bayes_diagnostics (a Bayesian fit's sampler or
 #                               predictive-accuracy diagnostics missed
@@ -217,7 +217,7 @@ spicy_match_arg <- function(arg, choices = NULL, arg_name = NULL) {
 #
 # `fn` is the caller's name, for the messages the branches below add;
 # the plain non-data.frame message is deliberately unchanged and
-# unparameterised (`expect_error(..., "data. must be a data.frame")`
+# unparameterized (`expect_error(..., "data. must be a data.frame")`
 # pins it as a literal in two test files).
 .check_data_frame <- function(data, fn) {
   if (.is_survey_design(data)) {
@@ -310,7 +310,7 @@ spicy_pkg_available <- function(pkg) {
 # footer when the user passed `cluster = data$clinic_id`, instead
 # of the generic "cluster vector supplied".
 #
-# Recognised forms:
+# Recognized forms:
 #   * symbol            `df$col`              -> "col"  (extracted from `$`)
 #   * symbol            `df[["col"]]`         -> "col"  (extracted from `[[`)
 #   * bare symbol       `mycluster`           -> "mycluster"

@@ -3,7 +3,7 @@
 # developer's ambient options(spicy.language) -- the very gesture the
 # package promotes, and the one its francophone maintainer is likely
 # to have set -- would turn dozens of English-pinning tests red.
-# Neutralised once here; blocks that test a language, a style or a
+# Neutralized once here; blocks that test a language, a style or a
 # label override set their own, scoped with withr::local_options().
 options(spicy.language = NULL, spicy.style = NULL, spicy.labels = NULL)
 

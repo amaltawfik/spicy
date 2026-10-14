@@ -222,7 +222,7 @@ test_that("flexsurv factor predictors group with a reference row (xlevels fix)",
   fr <- as_regression_frame(fit)
   cf <- fr$coefs
   # Grouped: the contrast row carries parent_var/label, and the dropped
-  # reference level is synthesised as an is_ref row.
+  # reference level is synthesized as an is_ref row.
   ref <- cf[cf$is_ref, ]
   expect_identical(nrow(ref), 1L)
   expect_identical(ref$parent_var, "sex")
@@ -294,7 +294,7 @@ test_that("ordinal exponentiate: cloglog reads HR, probit is refused, thresholds
 
 # Vignette-excellence campaign (wave 1): the cumulative-cloglog HR is the
 # grouped-time proportional-hazards ratio exp(-B), NOT exp(B). Under the
-# polr / clm parametrisation cloglog P(Y <= j) = zeta_j - xB the hazard
+# polr / clm parametrization cloglog P(Y <= j) = zeta_j - xB the hazard
 # sits on -B; exp(B) is the reciprocal of the HR. Direction pinned against
 # a person-period discrete-time cloglog GLM oracle (2026-08-05).
 

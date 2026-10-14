@@ -373,7 +373,7 @@ notes, their markup rendered and their addresses turned into links:
 
 The sheet of `self_rated_health`, one of the twenty-four:
 
-<img src="https://amaltawfik.github.io/spicy/codebook/sheet.png" alt="The sheet of self_rated_health: a band with its position, name, and type, its label, the counts of valid, missing, and distinct values, and the table of its values with n, percent, and valid percent, the system missing row in grey" width="100%">
+<img src="https://amaltawfik.github.io/spicy/codebook/sheet.png" alt="The sheet of self_rated_health: a band with its position, name, and type, its label, the counts of valid, missing, and distinct values, and the table of its values with n, percent, and valid percent, the system missing row in gray" width="100%">
 
 ## When to use varlist() and code_book()
 

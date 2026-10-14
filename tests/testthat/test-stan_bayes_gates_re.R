@@ -554,12 +554,12 @@ test_that("robust vcov on a Bayesian fit gets the principled refusal", {
   ))
   expect_error(
     table_regression(fit, vcov = "HC3"),
-    "no sandwich analogue",
+    "no sandwich analog",
     class = "spicy_unsupported_vcov"
   )
   expect_error(
     table_regression(fit, vcov = "CR2", cluster = ~cyl),
-    "no sandwich analogue",
+    "no sandwich analog",
     class = "spicy_unsupported_vcov"
   )
 })
@@ -1387,7 +1387,7 @@ test_that("brms factor design columns and their algebra need no fit", {
     colnames(mm_g)[spicy:::.brms_factor_design_cols(fit_g, mm_g)],
     c("gb", "gc")
   )
-  # An inline factor() term is materialised by the model frame, so its
+  # An inline factor() term is materialized by the model frame, so its
   # dummies are caught too -- brms carries no $xlevels to consult.
   fit_i <- mk(y ~ x + factor(cyl))
   mm_i <- design(fit_i)

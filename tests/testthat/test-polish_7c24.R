@@ -7,7 +7,7 @@
 # Item (c):        glm classical vcov label = "Fisher information"
 #                  (was "MLE inverse Hessian").
 # Item (g):        gt structured-body padding aligns en-dash cells
-#                  to the decimal anchor instead of centring them.
+#                  to the decimal anchor instead of centering them.
 # ---------------------------------------------------------------------------
 
 # ---- Item (a-strict): character(0) now errors --------------------------
@@ -75,7 +75,7 @@ test_that(".pad_for_decimal_align pads en-dash cells with figure-spaces", {
   pad_B <- body_out$B
 
   # The en-dash cell is now padded with figure-spaces on both sides,
-  # not left blank-padded (which would centre it). The dash sits at
+  # not left blank-padded (which would center it). The dash sits at
   # the units position (LHS length = max_lhs - 1 figure-spaces, then
   # the dash, then a figure-space at the decimal anchor, then RHS
   # padding to match the longest fractional part).

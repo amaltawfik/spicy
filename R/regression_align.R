@@ -43,7 +43,7 @@
 .REG_BLOCK_THRESH <- "Thresholds"
 .REG_BLOCK_RE <- "Random effects"
 
-# TRUE where `x` names a subordinate block. Vectorised, and FALSE on NA:
+# TRUE where `x` names a subordinate block. Vectorized, and FALSE on NA:
 # `factor_term` is NA for every row that belongs to no factor group.
 #
 # Known limitation, pre-existing and unchanged here: a user variable

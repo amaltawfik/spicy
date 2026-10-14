@@ -65,7 +65,7 @@ as_regression_frame.ols <- function(
     estimates = .rms_coef_named(fit)
   )
   # AME rows when requested (finding M2): response-scale avg_slopes(); a
-  # robust vcov is recomputed inside and honoured.
+  # robust vcov is recomputed inside and honored.
   coefs <- .attach_ame_to_frame_coefs(
     coefs,
     fit,
@@ -126,7 +126,7 @@ as_regression_frame.lrm <- function(
     estimates = .rms_coef_named(fit)
   )
   # AME rows when requested (finding M2): response-scale avg_slopes(); a
-  # robust vcov is recomputed inside and honoured.
+  # robust vcov is recomputed inside and honored.
   coefs <- .attach_ame_to_frame_coefs(
     coefs,
     fit,
@@ -238,7 +238,7 @@ as_regression_frame.Glm <- function(
     estimates = .rms_coef_named(fit)
   )
   # AME rows when requested (finding M2): response-scale avg_slopes(); a
-  # robust vcov is recomputed inside and honoured. marginaleffects has no
+  # robust vcov is recomputed inside and honored. marginaleffects has no
   # rms::Glm support (rms's predict.Glm rejects the glm-style
   # type = "response"), but a Glm object carries the full stats::glm
   # components, so demoting the class hands avg_slopes() the native glm
@@ -302,7 +302,7 @@ as_regression_frame.Glm <- function(
   se <- sqrt(diag(V))
   nm_raw <- names(cf)
 
-  # Normalise the intercept name for cross-class schema consistency.
+  # Normalize the intercept name for cross-class schema consistency.
   nm <- ifelse(nm_raw == "Intercept", "(Intercept)", nm_raw)
 
   # cph has no intercept (baseline hazard absorbs it); drop the row
@@ -444,7 +444,7 @@ as_regression_frame.Glm <- function(
 }
 
 
-# Synthesise reference rows for factor predictors. For each factor
+# Synthesize reference rows for factor predictors. For each factor
 # variable that appears in factor_meta, find its reference level (the
 # one not represented in coefs) and add a row.
 .rms_reference_rows <- function(fit, factor_meta) {

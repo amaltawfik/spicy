@@ -13,7 +13,7 @@
 # regression) and $zero (the binary / censored-count part). The frame's
 # coefs table covers the COUNT component; the zero component ships as a
 # fully-inferenced component block (info$extras$component_blocks) that the
-# orchestrator promotes to a labelled subordinate block of table rows --
+# orchestrator promotes to a labeled subordinate block of table rows --
 # "Zero-inflation" (zeroinfl: models P(structural zero)) or "Zero hurdle"
 # (hurdle: models P(y > 0); verified numerically equal to
 # glm(I(y > 0) ~ ...) for the binomial/logit case). See
@@ -348,13 +348,13 @@ as_regression_frame.zeroinfl <- function(
   )
 
   # The zero component ships as a fully-inferenced component block that the
-  # orchestrator promotes to a labelled subordinate rows block (see
+  # orchestrator promotes to a labeled subordinate rows block (see
   # dev/component_blocks_spec.md).
   #
   # zero_link: only meaningful when the zero part is a binomial GLM. A hurdle
   # with a count-type zero.dist (poisson / negbin / geometric right-censored)
   # has NO link concept on fit$link (it is NULL) -- its zero part lives on the
-  # log scale and must never be labelled "logit".
+  # log scale and must never be labeled "logit".
   zero_link <- if (identical(zero_dist, "binomial")) {
     fit$link %||% "logit"
   } else {
@@ -431,9 +431,9 @@ as_regression_frame.zeroinfl <- function(
 }
 
 
-# Build the zero-component block for a hurdle / zeroinfl fit: a standardised
+# Build the zero-component block for a hurdle / zeroinfl fit: a standardized
 # `component block` (label / link / exp_ok / gloss / coefs) the orchestrator
-# promotes to a labelled subordinate rows block. Full Wald inference straight
+# promotes to a labeled subordinate rows block. Full Wald inference straight
 # from summary(fit)$coefficients$zero -- no refit. Under a CR* request the SEs
 # come from the zero_* rows of the same whole-model sandwich::vcovCL matrix
 # (estfun covers both components), so the whole table shares one estimator.

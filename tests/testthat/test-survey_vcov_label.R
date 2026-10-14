@@ -2,13 +2,13 @@
 # The footer names the variance estimator the DESIGN uses.
 #
 # The label was a literal, so a replicate-weight fit -- whose standard
-# errors come from 15 or 104 refits and where no linearisation happens
-# at all -- was footnoted "Design-based (Taylor linearisation)", while
+# errors come from 15 or 104 refits and where no linearization happens
+# at all -- was footnoted "Design-based (Taylor linearization)", while
 # the descriptive twin on the SAME design said "replicate weights".
 #
 # The index is the variance mechanism, not the design's R class and not
 # whether the twins support that design: a without-replacement pps
-# design is linearised (ppsvar()) and unsupported there, so keying on
+# design is linearized (ppsvar()) and unsupported there, so keying on
 # support would have moved a correct label to a wrong one.
 # ---------------------------------------------------------------------------
 
@@ -37,7 +37,7 @@
 }
 
 
-test_that("a linearised design keeps the label it has always had", {
+test_that("a linearized design keeps the label it has always had", {
   d <- .lbl_designs()
   expect_identical(.lbl_of(d$strat), "Design-based (Taylor linearization)")
   expect_identical(.lbl_of(d$clus), "Design-based (Taylor linearization)")
@@ -108,7 +108,7 @@ test_that("a replicate design with no usable scheme drops the parenthesis", {
   )
 })
 
-test_that("calibrated, post-stratified and pps designs stay linearised", {
+test_that("calibrated, post-stratified and pps designs stay linearized", {
   d <- .lbl_designs()
   cal <- survey::calibrate(
     d$strat,
@@ -123,7 +123,7 @@ test_that("calibrated, post-stratified and pps designs stay linearised", {
   )
   expect_identical(.lbl_of(ps), "Design-based (Taylor linearization)")
   # A without-replacement pps design leaves NO class marker -- it is a
-  # plain survey.design2 -- and its variance IS a linearisation. Keying
+  # plain survey.design2 -- and its variance IS a linearization. Keying
   # the label on `.is_supported_design()` would have demoted it.
   strat <- d$apistrat
   strat$fpcfrac <- strat$pw / sum(strat$pw)
@@ -147,7 +147,7 @@ test_that("a two-phase design gets its own key, never a class name", {
   )
   expect_identical(.lbl_of(tp), "Design-based (two-phase design)")
   # twophase2 also inherits survey.design, so the order of the tests is
-  # load-bearing: read as a linearised design it would be mislabelled.
+  # load-bearing: read as a linearized design it would be mislabeled.
   expect_true(inherits(tp, "survey.design"))
 })
 

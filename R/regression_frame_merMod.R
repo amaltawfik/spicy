@@ -383,7 +383,7 @@ as_regression_frame.glmerMod <- function(
 
   # Append reference-level rows for treatment-coded factor predictors
   # so the renderer can emit en-dashed reference rows (consistent with
-  # lm / glm behaviour).
+  # lm / glm behavior).
   ref_rows <- .merMod_reference_rows(fit, est_template = est)
   if (nrow(ref_rows) > 0L) {
     coefs <- rbind(coefs, ref_rows)
@@ -393,7 +393,7 @@ as_regression_frame.glmerMod <- function(
 }
 
 
-# Synthesise per-factor reference rows mirroring build_reference_rows()
+# Synthesize per-factor reference rows mirroring build_reference_rows()
 # for lm / glm. The reshape conversion uses the same fallback rules so
 # the downstream renderer treats them identically.
 .merMod_reference_rows <- function(fit, est_template) {
@@ -614,7 +614,7 @@ as_regression_frame.glmerMod <- function(
 
 
 # Title-case family label for glmer. Mirrors the convention used by
-# lm / glm (Logistic / Poisson / Binomial / Generalised mixed-effects).
+# lm / glm (Logistic / Poisson / Binomial / Generalized mixed-effects).
 .merMod_glm_family_title <- function(fit) {
   fam <- stats::family(fit)
   # Binomial titles are LINK-aware: a probit glmer is NOT a logistic
@@ -845,7 +845,7 @@ as_regression_frame.glmerMod <- function(
     return(vc_df) # nocov
   }
   rank <- match(vc_df$group, group_order)
-  # Residual (and anything unrecognised) closes the block.
+  # Residual (and anything unrecognized) closes the block.
   rank[is.na(rank)] <- length(group_order) + 1L
   ord <- order(rank, seq_len(nrow(vc_df)))
   if (identical(ord, seq_len(nrow(vc_df)))) {
@@ -916,7 +916,7 @@ as_regression_frame.glmerMod <- function(
 
   # Descriptive parameter names: lme4 spells the argument `oldNames`
   # historically and `signames` in recent releases (`oldNames` is
-  # deprecated but still honoured). Try both spellings so the helper
+  # deprecated but still honored). Try both spellings so the helper
   # survives the eventual removal on either side.
   prof <- NULL
   for (nm_arg in list(list(oldNames = FALSE), list(signames = FALSE))) {

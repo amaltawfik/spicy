@@ -48,7 +48,7 @@
 # (line 307) and, with no treatment-coded factor left, fall through to the
 # empty-frame return (line 331).
 
-test_that("geeglm ordered factor synthesises NO reference rows", {
+test_that("geeglm ordered factor synthesizes NO reference rows", {
   skip_if_not_installed("geepack")
   d <- .cov_gee_data()
   fit <- geepack::geeglm(
@@ -155,7 +155,7 @@ test_that(".gam_smooth_terms returns NA statistic and p when the s.table lacks t
   expect_identical(out$ref_df, 3.1)
   expect_identical(out$statistic, NA_real_)
   expect_identical(out$p_value, NA_real_)
-  # No "F" column, so the statistic is labelled chi2 by the fallback.
+  # No "F" column, so the statistic is labeled chi2 by the fallback.
   expect_identical(out$stat_type, "chi2")
 })
 
@@ -566,7 +566,7 @@ test_that("the svyglm frame keeps the design label and refuses anything else", {
   fr0 <- as_regression_frame(fit, model_id = "M1")
   expect_identical(fr0$info$vcov_kind, "survey-Taylor")
 
-  # This block used to pin the shared robust labeller relabelling the
+  # This block used to pin the shared robust labeler relabeling the
   # footer for `vcov = "HC1"`. That label could only ever have named an
   # estimator the design forbids: the frame is now refused before any
   # matrix is formed, so there is nothing left to relabel.

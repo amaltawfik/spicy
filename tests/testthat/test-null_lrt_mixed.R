@@ -286,7 +286,7 @@ test_that("weighted glmer LRT compares against the weighted glm null", {
 test_that("lme variance/correlation structures survive into the gls null", {
   skip_if_not_installed("nlme")
   # varPower, REML: the null must carry the same variance model, or its
-  # improvement is mislabelled as the random-effect test.
+  # improvement is mislabeled as the random-effect test.
   fl <- nlme::lme(
     distance ~ age,
     data = nlme::Orthodont,

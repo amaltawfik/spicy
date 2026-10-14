@@ -40,7 +40,7 @@ test_that("lm with no coefficients yields a zero-row schema coefs frame", {
 # ---- lm helpers: .scalar_or_na / .vcov_label_from_kind --------------------
 
 test_that(".scalar_or_na maps non-numeric, non-logical input to NA_real_", {
-  # Defensive normaliser for malformed fit-stats slots: a character or
+  # Defensive normalizer for malformed fit-stats slots: a character or
   # list slot must degrade to NA_real_, not crash the row build.
   expect_identical(spicy:::.scalar_or_na("abc"), NA_real_)
   expect_identical(spicy:::.scalar_or_na(list(1)), NA_real_)
@@ -152,7 +152,7 @@ test_that(".fixest_title_prefix maps GLM families to family-aware titles", {
     ),
     "Inverse-Gaussian regression (fixed effects)"
   )
-  # Any other family name falls through to the capitalised default.
+  # Any other family name falls through to the capitalized default.
   expect_identical(
     spicy:::.fixest_title_prefix(
       list(family = "quasipoisson", link = "log"),

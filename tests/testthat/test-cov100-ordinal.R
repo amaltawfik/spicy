@@ -13,7 +13,7 @@
 #     matrix rownames -- Wald CIs must be kept untouched in both fallbacks.
 #   * .ordinal_nonprop_rows(): a real `nominal = ~ 1` clm, whose alpha.mat
 #     carries only the "(Intercept)" baseline row -> no non-proportional
-#     rows are synthesised.
+#     rows are synthesized.
 #   * Defensive guards of .polr_thresholds / .clm_thresholds /
 #     .append_threshold_rows and the .polr_link_title switch fallback.
 #   * .ordinal_pseudo_r2 / .ordinal_null_loglik degenerate-input guards.
@@ -144,7 +144,7 @@ test_that("profile CI falls back to Wald when no term matches confint()", {
 
 # ---- 4. nominal = ~ 1: alpha.mat with only the baseline row ---------------
 
-test_that("clm nominal = ~ 1 synthesises no non-proportional rows", {
+test_that("clm nominal = ~ 1 synthesizes no non-proportional rows", {
   skip_if_not_installed("ordinal")
   data(wine, package = "ordinal", envir = environment())
   fit <- ordinal::clm(rating ~ temp, nominal = ~1, data = wine)
@@ -286,7 +286,7 @@ test_that("an intercept-only ordinal table renders its cut-points", {
       capture.output(print(table_regression(fits[[nm]]))),
       collapse = "\n"
     )
-    # The Thresholds block is there, with both cut-points, labelled.
+    # The Thresholds block is there, with both cut-points, labeled.
     expect_match(out, "Thresholds:", fixed = TRUE, info = nm)
     expect_match(out, "lo | mid", fixed = TRUE, info = nm)
     expect_match(out, "mid | hi", fixed = TRUE, info = nm)
@@ -348,7 +348,7 @@ test_that("a zero-coefficient fit sits beside a normal one in one table", {
 
 test_that("pseudo-R2 is exactly zero when the fit IS its own null", {
   # An intercept-only fit reproduces the marginal frequencies, so both
-  # pseudo-R2 are 0. The optimiser stops ~1e-14 short, which rendered as
+  # pseudo-R2 are 0. The optimizer stops ~1e-14 short, which rendered as
   # the meaningless "-0.00" -- a negative R2 for a nested null.
   fits <- .m1_ord_fits()
   for (nm in c("polr", "clm")) {

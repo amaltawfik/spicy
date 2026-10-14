@@ -2171,7 +2171,7 @@ fit_categorical_predictor_lm_rows <- function(
   # Covariate-adjusted estimated marginal means.
   #
   # Without covariates: bivariate fast path -- a single `newdata`
-  # containing one row per level of `x`, vectorised through
+  # containing one row per level of `x`, vectorized through
   # `model.matrix()` and a single matrix multiplication. emmean =
   # group mean.
   #

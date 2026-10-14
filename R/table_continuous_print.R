@@ -70,16 +70,16 @@ print.spicy_continuous_table <- function(x, ...) {
   nc <- ncol(display_df)
   numeric_j <- setdiff(seq_len(nc), align_left)
 
-  # Honour the `align` attribute. `spicy_print_table()` aligns left
-  # and centre explicitly; everything else (i.e., numeric cells not
+  # Honor the `align` attribute. `spicy_print_table()` aligns left
+  # and center explicitly; everything else (i.e., numeric cells not
   # listed in `align_center_cols`) is right-aligned by the underlying
   # `build_ascii_table()`. So:
   # - "decimal": pre-pad numeric cells via `decimal_align_strings()`
   #   so the dots line up across rows. Putting the same numeric
-  #   columns in `align_center_cols` centres the column HEADERS
+  #   columns in `align_center_cols` centers the column HEADERS
   #   (otherwise they get right-aligned, which looks inconsistent
   #   with the dot-aligned data underneath). This matches the
-  #   behaviour of `print.spicy_continuous_lm_table()`.
+  #   behavior of `print.spicy_continuous_lm_table()`.
   # - "center": numeric cells in `align_center_cols`.
   # - "right": numeric cells in neither -> right-aligned by default.
   if (identical(align, "decimal") && length(numeric_j) > 0L) {

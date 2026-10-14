@@ -1,4 +1,4 @@
-# Coverage of the arms the behaviour tests do not reach: the scalar
+# Coverage of the arms the behavior tests do not reach: the scalar
 # validators, the ignored-argument warnings, and the two fallbacks
 # that only fire on an object rebuilt by hand.
 #
@@ -110,7 +110,7 @@ test_that("the membership guard names several missing columns at once", {
   expect_match(conditionMessage(err), "alsonope")
 })
 
-test_that("declared missing values are honoured, and disclosed", {
+test_that("declared missing values are honored, and disclosed", {
   skip_if_not_installed("haven")
   d <- .cto_d()
   d$y <- haven::labelled_spss(d$y, na_values = 40)
@@ -127,7 +127,7 @@ test_that("declared missing values are honoured, and disclosed", {
 })
 
 test_that("the print method rebuilds a display frame it was not given", {
-  # A table that travelled through `structure()` or a `[` that dropped
+  # A table that traveled through `structure()` or a `[` that dropped
   # the cached frame still prints: the fallback recomputes it from the
   # attributes, which is why they are all stored.
   tbl <- .cto_quiet(table_outcome(.cto_d(), y, select = g))
@@ -221,7 +221,7 @@ test_that("a table with no block comparison has no test note", {
 
 test_that("align reaches the console for all three settings", {
   # The one argument of the family that no `table_outcome()` test
-  # exercised. "decimal" pads and centres, "center" centres the raw
+  # exercised. "decimal" pads and centers, "center" centers the raw
   # strings, "right" leaves the renderer's right alignment.
   d <- .cto_d()
   widths <- list()
@@ -233,7 +233,7 @@ test_that("align reaches the console for all three settings", {
     expect_gt(length(body), 1L)
     widths[[al]] <- body
   }
-  # The three layouts are genuinely different -- `align` is honoured,
+  # The three layouts are genuinely different -- `align` is honored,
   # not swallowed -- and they carry exactly the same numbers.
   expect_false(identical(widths$decimal, widths$center))
   expect_false(identical(widths$center, widths$right))
@@ -271,7 +271,7 @@ test_that("align reaches the engines too", {
     numeric_align <- unlist(boxh$column_align[boxh$var != "Variable"])
     expect_true(all(numeric_align == al), info = al)
   }
-  # "decimal" centres pre-padded strings, which is the family's way of
+  # "decimal" centers pre-padded strings, which is the family's way of
   # stacking decimal points on an engine with no decimal alignment.
   g_dec <- .cto_quiet(table_outcome(d, y, select = g, output = "gt"))
   boxh <- g_dec[["_boxhead"]]
@@ -284,7 +284,7 @@ test_that("an effect size that throws degrades the block, not the table", {
   # producer RAISING, as opposed to returning a non-finite value
   # (covered above). No input reaches it today -- `compute_effect_size()`
   # returns NaN rather than raising on the degenerate cases -- so the
-  # producer is mocked. The behaviour under test is this function's:
+  # producer is mocked. The behavior under test is this function's:
   # warn, name the block, blank its cells, leave the rest standing.
   d <- data.frame(
     y = c(1, 2, 3, 4, 10, 20, 30, 40),

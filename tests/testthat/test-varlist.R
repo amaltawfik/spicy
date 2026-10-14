@@ -163,7 +163,7 @@ test_that("varlist_title() handles magrittr-style pipe calls", {
   expect_equal(varlist_title(quote(df %>% head())), "vl: df*")
 })
 
-test_that("varlist_title() recognises modern dplyr/tidyr verbs (curated)", {
+test_that("varlist_title() recognizes modern dplyr/tidyr verbs (curated)", {
   # Verbs added to the curated fast-path list. Bare names: quoted
   # expressions are parsed only, never evaluated, so no namespace is
   # required at test time.
@@ -683,7 +683,7 @@ test_that("varlist() uses labelled value order consistently", {
   expect_equal(unname(res_all$Values), "[1] Low, [2] Mid, [3] High")
 })
 
-test_that("varlist() honours `factor_levels = 'all'` for labelled (declared > observed)", {
+test_that("varlist() honors `factor_levels = 'all'` for labelled (declared > observed)", {
   # spicy 0.11.0 fix: previously labelled columns silently forced
   # `factor_levels = "observed"` regardless of user input. With
   # value 3 unobserved, `factor_levels = "all"` must still surface

@@ -2,7 +2,7 @@
 # Phase 4a: as_regression_frame() method for glmmTMB fits.
 #
 # glmmTMB is a Template Model Builder-based engine that fits a wide
-# class of (generalised) linear mixed models. Single class dispatch:
+# class of (generalized) linear mixed models. Single class dispatch:
 # `class(fit) == "glmmTMB"`. The frame covers the CONDITIONAL component
 # (the "main" linear predictor) only; zero-inflation and dispersion
 # fixed-effect coefficients are stored in `info$extras$zi_coefs` /
@@ -96,7 +96,7 @@ as_regression_frame.glmmTMB <- function(
   # field reads, so it can be taken here, before the build, without
   # raising anything; a converged fit runs entirely unwrapped and can
   # never have a warning swallowed -- the user-data paths inside (AME,
-  # standardisation, the null-LRT refit) keep their own voice. The
+  # standardization, the null-LRT refit) keep their own voice. The
   # classed warning itself, raised inside .glmmTMB_info(), passes
   # through either way.
   .mute_glmmTMB_nan_warnings(.glmmTMB_is_nonconverged(fit), {
@@ -210,7 +210,7 @@ as_regression_frame.glmmTMB <- function(
   withCallingHandlers(
     expr,
     warning = function(w) {
-      # The restart exists for a warning signalled by warning() itself,
+      # The restart exists for a warning signaled by warning() itself,
       # but not for one delivered through some other condition path;
       # invoking a restart that is not established would error, turning
       # a muted nuisance into a failed build.
@@ -260,7 +260,7 @@ as_regression_frame.glmmTMB <- function(
   nm <- names(fixef)
 
   # Wald z-asymptotic: pull z + p from summary if available; otherwise
-  # synthesise from est / se. Either path produces the same numbers.
+  # synthesize from est / se. Either path produces the same numbers.
   sm <- tryCatch(summary(fit), error = function(e) NULL)
   smc <- sm$coefficients$cond
   if (!is.null(smc) && all(c("z value", "Pr(>|z|)") %in% colnames(smc))) {
@@ -322,7 +322,7 @@ as_regression_frame.glmmTMB <- function(
 }
 
 
-# Synthesise per-factor reference rows mirroring the merMod / lm path.
+# Synthesize per-factor reference rows mirroring the merMod / lm path.
 .glmmTMB_reference_rows <- function(fit, est_template) {
   fts <- detect_factor_terms(fit)
   if (length(fts) == 0L) {
@@ -472,7 +472,7 @@ as_regression_frame.glmmTMB <- function(
   )
 
   # Zero-inflation / dispersion components ship as fully-inferenced component
-  # blocks the orchestrator promotes to labelled subordinate row blocks (see
+  # blocks the orchestrator promotes to labeled subordinate row blocks (see
   # dev/component_blocks_spec.md). The zi link is ALWAYS logit (verified:
   # plogis(X zi-coefs) == predict(type = "zprob")); the dispersion model is on
   # the log scale and is never exponentiated (parameters precedent).
@@ -495,7 +495,7 @@ as_regression_frame.glmmTMB <- function(
         vc = vc
       )
   }
-  # The Dispersion block appears only when the user MODELLED dispersion:
+  # The Dispersion block appears only when the user MODELED dispersion:
   # fixef()$disp is non-empty for any family with a free dispersion parameter
   # even at the default `dispformula = ~ 1` (a bare log-dispersion intercept,
   # not a model worth a block). Gate on the formula having variables -- the
@@ -588,8 +588,8 @@ as_regression_frame.glmmTMB <- function(
 
 
 # The cut-points of an ordinal glmmTMB fit. glmmTMB does not estimate
-# them directly: the optimiser works on `psi` (fit$fit$par, names
-# "psi"), an unconstrained softmax parametrisation that keeps them
+# them directly: the optimizer works on `psi` (fit$fit$par, names
+# "psi"), an unconstrained softmax parametrization that keeps them
 # ordered, and glmmTMB:::family_params() maps psi to the cut-points
 # while glmmTMB:::ordinal_thresholds() carries the delta-method SE
 # through that map. summary(fit)$thresholds is the published face of
@@ -610,9 +610,9 @@ as_regression_frame.glmmTMB <- function(
 }
 
 
-# Build one component block (zi / disp) for a glmmTMB fit: a standardised
+# Build one component block (zi / disp) for a glmmTMB fit: a standardized
 # `component block` (label / link / exp_ok / gloss / coefs) the orchestrator
-# promotes to a labelled subordinate rows block. Full Wald inference straight
+# promotes to a labeled subordinate rows block. Full Wald inference straight
 # from summary(fit)$coefficients[[component]] -- no refit. Under CR0 the SEs
 # come from the "zi~" / "disp~" rows of the same sandwich as the conditional
 # rows (`vc`), so one estimator covers the whole table, as for the pscl
@@ -787,7 +787,7 @@ as_regression_frame.glmmTMB <- function(
 #                 that is sd/sigma < 3.2e-3, looser than the 1e-4 of
 #                 lme4::isSingular() on the same quantity: deliberately,
 #                 because neither engine can reach an exact 0 (glmmTMB
-#                 optimises log-SD, nlme log-Cholesky), so the verdict has
+#                 optimizes log-SD, nlme log-Cholesky), so the verdict has
 #                 to be taken slightly off the boundary.
 #   * components  ALL of them (cond / zi / disp). A collapsed grouping
 #                 factor in the zero-inflation model is as much a
@@ -803,7 +803,7 @@ as_regression_frame.glmmTMB <- function(
 # sleepstudy is not singular, the same fit on Reaction / 1000 is declared
 # singular, and a fit whose variance really has collapsed stops being
 # detected once the response is scaled up. Dividing by sigma^2 is the
-# parameterisation lme4::isSingular() itself works in, so the three mixed
+# parameterization lme4::isSingular() itself works in, so the three mixed
 # engines answer the same question and the answer survives a change of
 # units. Cross-checking with performance() will therefore disagree on
 # Gaussian fits whose sigma is far from 1.
@@ -813,7 +813,7 @@ as_regression_frame.glmmTMB <- function(
 # glmmTMB's sigma() also returns the dispersion parameter of nbinom1 /
 # nbinom2 / Gamma / beta fits, which is not a scale for the random
 # effects (useSc is FALSE there, and the variance is already unitless on
-# the link scale), and it returns NA when dispersion is modelled -- both
+# the link scale), and it returns NA when dispersion is modeled -- both
 # fall back to 1, i.e. to the absolute scale.
 .glmmTMB_is_singular <- function(fit, tolerance = 1e-5) {
   vc <- tryCatch(glmmTMB::VarCorr(fit), error = function(e) NULL)
@@ -841,7 +841,7 @@ as_regression_frame.glmmTMB <- function(
 
 # The squared scale a component's random-effect covariance is measured
 # against: sigma^2 when VarCorr says the component has a residual scale
-# (useSc, Gaussian-like families), 1 otherwise -- including the modelled
+# (useSc, Gaussian-like families), 1 otherwise -- including the modeled
 # dispersion case, where sc is NA because no single residual scale
 # exists.
 .glmmTMB_re_scale2 <- function(blocks) {
@@ -893,7 +893,7 @@ as_regression_frame.glmmTMB <- function(
 # It returns RECORDS, not sentences: a `kind` naming which flag fired,
 # and the datum that flag carries. Two of the three kinds used to be
 # spicy prose written at this line -- "non-positive-definite Hessian
-# matrix" and "optimizer returned code %s" -- which then travelled into
+# matrix" and "optimizer returned code %s" -- which then traveled into
 # the footer through the data hole of `note_nonconvergence`, against the
 # rule that every string a table shows lives in the registry. Records
 # put the words back where they belong AND keep the two audiences apart:
@@ -964,11 +964,11 @@ as_regression_frame.glmmTMB <- function(
 # string and returns it, and NULL when there is nothing to report.
 #
 # It used to raise the classed warning as well, so calling the builder
-# WAS signalling the condition. That held together only because the
+# WAS signaling the condition. That held together only because the
 # frame happened to call it exactly once and reused the value; any
 # second caller -- a future engine, a test asking what the note says, a
 # re-render -- would have raised a second warning by asking a question.
-# Construction and signalling are separate now, and the emission site
+# Construction and signaling are separate now, and the emission site
 # below is the one place that signals.
 .glmmTMB_convergence_note <- function(problems) {
   if (length(problems) == 0L) {
@@ -1110,9 +1110,9 @@ as_regression_frame.glmmTMB <- function(
     # link-scale distribution variance, and stopped on the multi-factor
     # gate -- while glmmTMB reports NA, because no kernel ran at all
     # and "several grouping factors" would not be the true reason. The
-    # reader gets a sentence on lme4 and silence on glmmTMB. Harmonising
+    # reader gets a sentence on lme4 and silence on glmmTMB. Harmonizing
     # means giving glmmTMB the non-Gaussian ICC, not muting lme4; until
-    # then the behaviour is pinned by a witness rather than left to
+    # then the behavior is pinned by a witness rather than left to
     # drift (test-random_effects_footer.R).
     icc_omitted = if (is_gaussian_identity) {
       .merMod_icc_omitted_reason(vc_df, icc)
@@ -1158,7 +1158,7 @@ as_regression_frame.glmmTMB <- function(
     parts <- strsplit(bare, "\\|", fixed = FALSE)[[1L]]
     pair <- parts[1L]
     group <- parts[2L]
-    # Normalise the pair to lme4's canonical "<t1>, <t2>" (terms in their
+    # Normalize the pair to lme4's canonical "<t1>, <t2>" (terms in their
     # VarCorr order) so identical random structures ALIGN across engines in a
     # multi-model table (lme4 stores "(Intercept), Days"; the raw glmmTMB
     # rowname is "Days.(Intercept)"). The "." separator is ambiguous when a
@@ -1245,7 +1245,7 @@ as_regression_frame.glmmTMB <- function(
   #   "Std.Dev.(Intercept)|Subject"  (variance term in group)
   #   "Cor.Days.(Intercept)|Subject" (correlation -- not in vc_df rows)
   # We need to match rownames to vc_df rows where group != "Residual"
-  # and term matches the parenthesised content. z at the SAME level as
+  # and term matches the parenthesized content. z at the SAME level as
   # the confint call: the SE is derived from the interval half-width.
   z <- stats::qnorm(0.5 + ci_level / 2)
   is_corr <- if ("is_correlation" %in% colnames(vc_df)) {
@@ -1329,7 +1329,7 @@ as_regression_frame.glmmTMB <- function(
 }
 
 
-# Second line of defence, independent of the singular flag: a Wald
+# Second line of defense, independent of the singular flag: a Wald
 # quantity that came back non-finite says nothing and must not reach the
 # table. It happens without singularity -- a fit stopped before
 # convergence keeps its starting values, whose information matrix is

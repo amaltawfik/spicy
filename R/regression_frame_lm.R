@@ -102,7 +102,7 @@ as_regression_frame.glm <- function(fit, ...) {
 }
 
 
-# ---- Reshape: legacy extractor output -> standardised frame ---------------
+# ---- Reshape: legacy extractor output -> standardized frame ---------------
 
 # Takes the list returned by extract_lm_phase1() plus the original fit
 # object and returns a list(coefs = <tibble>, info = <list>) carrying the
@@ -137,7 +137,7 @@ as_regression_frame.glm <- function(fit, ...) {
 
 
 # Internal: reshape the legacy long-format coefs data.frame into the
-# standardised coefs tibble.
+# standardized coefs tibble.
 #
 # Legacy columns and their schema targets:
 #   model_id        -> dropped (renderer concern, not part of frame)
@@ -365,7 +365,7 @@ as_regression_frame.glm <- function(fit, ...) {
   # compaction, so they are carried through to the legacy-shaped
   # fit-stats data.frame that align_frames() hands the body builder).
   # The schema since Phase 1 uses new field names (r_squared,
-  # adj_r_squared, log_lik, ...) but this function normalises BOTH
+  # adj_r_squared, log_lik, ...) but this function normalizes BOTH
   # legacy (`r2`, `adj_r2`, ...) and new-schema field names to the
   # single legacy shape the body builder consumes.
   out <- list(
@@ -457,7 +457,7 @@ as_regression_frame.glm <- function(fit, ...) {
 # the first element when length > 1 (defensive; shouldn't happen in
 # well-formed schemas but protects the as.data.frame() row-build from
 # crashing with "different number of rows"). Used by
-# .compact_fit_stats_for_legacy() to normalise the per-class
+# .compact_fit_stats_for_legacy() to normalize the per-class
 # variations (e.g. estimatr's stats::sigma(lm_robust) returns
 # numeric(0)).
 .scalar_or_na <- function(x) {

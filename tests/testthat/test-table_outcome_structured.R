@@ -139,7 +139,7 @@ test_that("inline() reaches a level and a block", {
 })
 
 test_that("a bare inline() on the outcome cites the marginal mean", {
-  # Watch on the neighbouring train: `.inline_default_token()` looks for
+  # Watch on the neighboring train: `.inline_default_token()` looks for
   # the token "m", and the count precedes it in the preference list. If
   # that ever drifts back, the most natural citation this table offers
   # would quote an N where the sentence means a mean.

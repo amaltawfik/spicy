@@ -111,7 +111,7 @@ as_regression_frame.flexsurvreg <- function(
   p_value <- 2 * stats::pnorm(-abs(stat))
   df <- rep(Inf, length(est))
 
-  # Honour the requested ci_level: rebuild CIs from est / se / Wald-z
+  # Honor the requested ci_level: rebuild CIs from est / se / Wald-z
   # rather than reading fit$res's hardcoded 95%.
   engine_ci_level <- 0.95
   if (isTRUE(all.equal(engine_ci_level, ci_level))) {

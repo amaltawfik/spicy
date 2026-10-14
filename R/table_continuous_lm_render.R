@@ -57,7 +57,7 @@
 
 # The column key of one `by` level's marginal mean ("M (Female)"). The
 # level is DATA; it travels in `col_meta$level` so a consumer never
-# parses the key back. Vectorised over `level`.
+# parses the key back. Vectorized over `level`.
 .lm_key_emmean <- function(level) {
   paste0(.LM_KEY_MEAN, " (", level, ")")
 }
@@ -693,15 +693,15 @@ export_continuous_lm_table <- function(
   # gt and tinytable join the padding engines. Their native
   # decimal primitives (`gt::cols_align_decimal()`,
   # `tinytable::style_tt(align = "d")`) do not produce visually
-  # centred decimal alignment:
+  # centered decimal alignment:
   #   * gt renders as right-anchored with the decimal point at
   #     a column-internal right boundary;
-  #   * tinytable centres each cell on its OWN value, ignoring
+  #   * tinytable centers each cell on its OWN value, ignoring
   #     other cells -- so decimals do not coincide across rows.
   # Same single-font decimal-anchored convention as
   # table_regression() (regression_dispatch.R:639-661 for gt and
   # the tinytable handler nearby): pad cells to uniform width
-  # upstream, centre them downstream, decimals coincide because
+  # upstream, center them downstream, decimals coincide because
   # every cell has the same character width on each side of the
   # dot.
   # The clipboard is deliberately absent from the padding engines:
@@ -786,11 +786,11 @@ export_continuous_lm_table <- function(
     if (ncol(display_df) > 1L) {
       numeric_j <- setdiff(seq_len(nc), 1L)
       if (use_decimal && length(numeric_j) > 0L) {
-        # Cells were pre-padded upstream; centring uniform-width
+        # Cells were pre-padded upstream; centering uniform-width
         # strings places the decimal points at the same horizontal
         # position. Same tinytable strategy as table_regression()
         # (uses align = "c" with pre-padding rather than align = "d"
-        # which centres each cell on its own value independently).
+        # which centers each cell on its own value independently).
         tt <- tinytable::style_tt(tt, j = numeric_j, align = "c")
       } else if (identical(align, "center") && length(numeric_j) > 0L) {
         tt <- tinytable::style_tt(tt, j = numeric_j, align = "c")
@@ -940,7 +940,7 @@ export_continuous_lm_table <- function(
     )
     numeric_cols <- unname(gt_ids[setdiff(col_keys, .LM_KEY_VARIABLE)])
     if (use_decimal && length(numeric_cols) > 0L) {
-      # Cells were pre-padded with figure-spaces upstream; centring
+      # Cells were pre-padded with figure-spaces upstream; centering
       # uniform-width strings places the decimal points at the same
       # horizontal position. Same gt strategy as table_regression().
       tbl <- gt::cols_align(tbl, align = "center", columns = numeric_cols)
@@ -1118,7 +1118,7 @@ export_continuous_lm_table <- function(
     ft <- flextable::set_header_df(ft, mapping = map, key = "col_keys")
     # `merge_h()` merges ADJACENT header cells carrying the same TEXT:
     # the geometry of the CI spanner is born of a string equality, not
-    # of the pairing the caller already knows. Two neighbouring columns
+    # of the pairing the caller already knows. Two neighboring columns
     # whose headers read alike would merge into a phantom spanner. Kept
     # as-is: replacing it by explicit merges is a mechanism change to be
     # proved on its own.
@@ -1133,11 +1133,11 @@ export_continuous_lm_table <- function(
     ft <- flextable::align(ft, j = left_j, part = "body", align = "left")
 
     if (use_decimal && length(numeric_j) > 0L) {
-      # Cells are pre-padded for decimal alignment; CENTRE the
+      # Cells are pre-padded for decimal alignment; CENTER the
       # padded strings in the default body font (no monospace
       # override). Same single-font policy as table_regression()
       # (regression_dispatch.R:1345): with uniform-precision columns
-      # the cells have the same character width, so centring still
+      # the cells have the same character width, so centering still
       # LOOKS decimal-aligned in any font with tabular figures
       # (Calibri's default in Word tables). Trade strict decimal
       # alignment for a single-font, visually consistent table.
@@ -1190,7 +1190,7 @@ export_continuous_lm_table <- function(
       # paragraph ("*Note.* ...") that wraps naturally within the
       # table width. Collapse embedded newlines (source-side line
       # breaks meant for ASCII rendering) into spaces, then emit one
-      # footer line whose leading "Note." chunk is italicised and the
+      # footer line whose leading "Note." chunk is italicized and the
       # remainder is in regular type. Same mechanism as
       # table_regression()'s output_flextable; `fp_text_lite()` (only
       # the italic flag set) keeps the footer in the table's default
@@ -1520,7 +1520,7 @@ get_test_row_index_lm <- function(block) {
   multi_coef <- intersect(test_types, c("F", "chi2"))
   chosen <- if (length(single_coef) > 0L) single_coef[1] else multi_coef[1]
   if (length(chosen) == 0L || is.na(chosen)) {
-    # An unrecognised test type becomes its own header, verbatim: an API
+    # An unrecognized test type becomes its own header, verbatim: an API
     # token turned into a visible header. Kept, not fixed here.
     return(list(kind = NA_character_, verbatim = test_types[1]))
   }

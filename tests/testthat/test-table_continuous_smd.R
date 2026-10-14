@@ -308,8 +308,8 @@ test_that("an undefined SMD is disclosed and NA, never a number", {
     output = "long"
   )
   expect_identical(r0$smd_value[[1L]], 0)
-  # A group of one has no variance to standardise by: silent NA, the
-  # neighbouring SD cell already discloses it.
+  # A group of one has no variance to standardize by: silent NA, the
+  # neighboring SD cell already discloses it.
   d1 <- data.frame(g = factor(c("A", "B", "B")), x = c(1, 2, 3))
   expect_no_warning(
     r1 <- table_continuous(
@@ -334,9 +334,9 @@ test_that("`smd = FALSE` changes nothing, and `smd = TRUE` only appends", {
     smd = TRUE
   )))
   # The column goes LAST. It used to be a constraint rather than a
-  # preference -- the console re-labelled an orphaned companion column
+  # preference -- the console re-labeled an orphaned companion column
   # by looking LEFT for a carrier, so an SMD inserted between `Test` and
-  # `p` would have re-labelled an orphaned `p` as "p (SMD)". That search
+  # `p` would have re-labeled an orphaned `p` as "p (SMD)". That search
   # is now opt-in and this family does not ask for it (register n. 89),
   # so the position is a preference again.
   keys_off <- names(

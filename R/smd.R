@@ -43,7 +43,7 @@
 # caller can word its own disclosure without re-deriving the geometry.
 # A kernel that has nothing to estimate (a group of one observation, a
 # group whose weights sum to <= 1) returns a bare NA and says nothing:
-# the neighbouring SD cell already discloses it.
+# the neighboring SD cell already discloses it.
 .smd_undefined <- function(reason) {
   structure(NA_real_, spicy_smd_undefined = reason)
 }
@@ -111,7 +111,7 @@
 #   * Two profiles on DISJOINT supports: S is singular but not zero, so
 #     `all(S == 0)` never fires, and both the bare route AND tableone
 #     publish a finite number (sqrt(2) on the pinned k = 4 case) where
-#     the true distance is infinite -- ridge regularisation
+#     the true distance is infinite -- ridge regularization
 #     `solve(S + eI)` diverges as e^(-1/2), verified.
 #
 # One consistency test, `T in image(S)`, covers both and fires on

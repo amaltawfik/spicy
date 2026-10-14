@@ -94,7 +94,7 @@ print.spicy_continuous_lm_table <- function(x, ...) {
   } else if (identical(align, "center")) {
     align_center <- setdiff(seq_along(display_df), align_left)
   } else {
-    # "right": all numeric columns right-aligned, so nothing is centred.
+    # "right": all numeric columns right-aligned, so nothing is centered.
     align_center <- integer(0)
   }
 
@@ -181,7 +181,7 @@ print.spicy_continuous_lm_table <- function(x, ...) {
 #     cannot tell which estimand they are reading.
 #   * Line 2 (non-classical `vcov` only): discloses the SE estimator.
 #     Robust / resampling standard errors are never silently
-#     labelled -- same doctrine as table_regression()'s footers.
+#     labeled -- same doctrine as table_regression()'s footers.
 #
 # Returns NULL when there is nothing to disclose; otherwise a single
 # string with "Note. " prefixed to the FIRST line and lines joined by

@@ -2,7 +2,7 @@
 # CI-coverage top-up for the compute / vcov / standardize layer.
 #
 # Every block below closes a branch the broader suites never enter. The
-# route is always the cheapest one that still asserts real behaviour:
+# route is always the cheapest one that still asserts real behavior:
 # an internal helper called directly with a hand-built fixture
 # (`spicy:::fn`), a real fit with one component removed, or a class-only
 # mock where the branch is a class gate. Files and lines closed:
@@ -467,7 +467,7 @@ test_that(".spicy_contrast_suffixes retries a contrast function on the level cou
   # suffix is the column index. Reaching this value at all proves the
   # label call failed and the count call succeeded.
   expect_identical(out, list(g = "1"))
-  # `chol` is only the stand-in generator, and its own behaviour
+  # `chol` is only the stand-in generator, and its own behavior
   # belongs to base R: it is not re-asserted here. What this test owns
   # is the helper's output -- the line above, and the line below.
   #
@@ -483,7 +483,7 @@ test_that(".spicy_contrast_suffixes retries a contrast function on the level cou
 })
 
 test_that(".spicy_get_xlevels_base returns NULL for a brmsfit with no factor predictor", {
-  # Class-only mock: the brms branch reads the stored modelling data
+  # Class-only mock: the brms branch reads the stored modeling data
   # frame and keeps the factor columns named on the formula's RHS.
   # With none, the accessor reports NULL (no factor metadata) rather
   # than an empty list, so callers take the "no xlevels" path.
@@ -556,7 +556,7 @@ test_that("mixed-model rows degrade gracefully when factor metadata fails", {
     REML = FALSE
   ))
 
-  # Reference behaviour: the factor coefficient is split into its
+  # Reference behavior: the factor coefficient is split into its
   # parent variable and its level.
   ok <- suppressWarnings(spicy:::.compute_beta_rows_for_mixed(
     fit,
@@ -694,7 +694,7 @@ test_that(".regression_provenance reports NA outcomes when the frame carries non
 })
 
 test_that("tinytable output strips the duplicate-spanner disambiguator without a note", {
-  # Identically-labelled spanners (here "B" and "95% CI", once per
+  # Identically-labeled spanners (here "B" and "95% CI", once per
   # model) are made internally unique with zero-width spaces because
   # tinytable indexes its group list by name. They must never survive
   # into the rendered table. The strip is registered on both the
@@ -761,7 +761,7 @@ test_that("Excel output leaves an absent fixed-effects cell blank", {
 test_that("the univariable linear screen discloses an LPM on a numeric 0/1 outcome", {
   # A 0/1 NUMERIC outcome needs no recoding, but the default linear
   # screen is still a linear probability model and must say so: the
-  # disclosure names the modelled event as P(y = 1).
+  # disclosure names the modeled event as P(y = 1).
   d <- mtcars[, c("am", "wt", "hp")]
   expect_warning(
     tbl <- spicy::table_regression_uv(d, outcome = am, predictors = c(wt, hp)),

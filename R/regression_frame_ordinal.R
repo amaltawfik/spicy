@@ -27,7 +27,7 @@
 #     clm: fit$link).
 #   * Exponentiation (supports$exponentiate = TRUE) gives odds ratios
 #     for the logit link and hazard ratios for cloglog. The cloglog HR
-#     is exp(-B): the cumulative parametrisation
+#     is exp(-B): the cumulative parametrization
 #     cloglog P(Y <= j) = zeta_j - xB places the grouped-event hazard
 #     on -B (Prentice & Gloeckler 1978), so the central
 #     .apply_exp_to_frame() negates before exponentiating.
@@ -129,7 +129,7 @@ as_regression_frame.clm <- function(
   .check_ordinal_available()
 
   # Partial-proportional-odds clm fits (nominal = ~ ...) ARE supported: the
-  # non-proportional terms render as a labelled "Non-proportional effects" block
+  # non-proportional terms render as a labeled "Non-proportional effects" block
   # (one coefficient per cut-point). But robust / cluster SEs are NOT available
   # for them -- `ordinal` provides no estimating functions (estfun) for the
   # nominal part, so `sandwich` / `clubSandwich` cannot build the sandwich.
@@ -247,7 +247,7 @@ as_regression_frame.clmm <- function(
   # -81.541 = clmm LOGLOG -81.541, and clmm cloglog -82.729. Reported
   # upstream with a tested patch: runehaubo/ordinal#76. The coefficients of a
   # "cloglog" clmm are therefore not log hazard ratios: the ratio is
-  # refused rather than mislabelled, and the title does not claim
+  # refused rather than mislabeled, and the title does not claim
   # proportional hazards.
   if (isTRUE(exponentiate) && identical(fit$link, "cloglog")) {
     spicy_abort(
@@ -609,7 +609,7 @@ as_regression_frame.clmm <- function(
 # (`2 * pt(-|t|, Inf)` IS `2 * pnorm(-|t|)`). A design-weighted fit passes
 # its own residual degrees of freedom, and then the statistic, the p and
 # the interval of a threshold row all come from that one distribution --
-# the whole point of parameterising here rather than at the row-building
+# the whole point of parameterizing here rather than at the row-building
 # step, which only ever computed the interval.
 .polr_thresholds <- function(fit, df = Inf, test = "z") {
   zeta <- fit$zeta %||% numeric(0)
@@ -995,7 +995,7 @@ as_regression_frame.clmm <- function(
     response_levels = as.character(fit$y.levels %||% character(0)),
     thresholds = thresholds,
     # Scale (dispersion) coefficients of a `scale = ~` clm. Stashed here --
-    # like the thresholds -- so the orchestrator materialises them AFTER
+    # like the thresholds -- so the orchestrator materializes them AFTER
     # exponentiation and p_adjust: they act on log(sigma) of the latent
     # variable, so exp(zeta) is a ratio of latent SDs, never an odds ratio.
     scale_effects = scale_effects
@@ -1076,7 +1076,7 @@ as_regression_frame.clmm <- function(
 # (NOT by the frame methods) AFTER exponentiate + p_adjust, so the cut-points
 # are never exponentiated and are not part of the p-adjust family. The rows
 # reuse estimate_type = "B" and parent_var = "Thresholds" so the existing
-# factor-group renderer emits a labelled block under a "Thresholds" header; the
+# factor-group renderer emits a labeled block under a "Thresholds" header; the
 # is_threshold marker lets the footer suppress its compact one-line fallback.
 # CIs are Wald (`est +/- z * SE`): polr/clm do not profile threshold CIs, and
 # this matches the Wald CIs spicy uses for these classes' predictor rows.
@@ -1149,7 +1149,7 @@ as_regression_frame.clmm <- function(
     return(na)
   }
   # A fit with no predictors IS its own null model, so both pseudo-R^2
-  # are exactly 0. The optimiser does not know that: it stops a few
+  # are exactly 0. The optimizer does not know that: it stops a few
   # 1e-15 short of the null log-likelihood, the ratio comes out at
   # -1.5e-14, and an intercept-only ordinal table rendered "R^2
   # (McFadden)  -0.00" -- a negative R^2, which cannot happen for a
@@ -1378,7 +1378,7 @@ as_regression_frame.clmm <- function(
   ) {
     z <- stats::qnorm(0.5 + ci_level / 2)
     sd_est <- vc_df$sd
-    # The scale of the ST parameters is not fixed: clmm optimises log(SD)
+    # The scale of the ST parameters is not fixed: clmm optimizes log(SD)
     # for a single random term and the SD itself for several (measured
     # 2026-10-09: wine's one judge term holds log(1.131) in optRes$par, a
     # crossed fit holds 0.516 and 0.637). Read it off the optimum, and

@@ -97,7 +97,7 @@ test_that("geeglm: parity with broom::tidy on estimate / SE / CI", {
   expect_equal(b$ci_upper, bt$conf.high[m], tolerance = 1e-8)
 })
 
-test_that("geeglm: factor predictor synthesises a reference row", {
+test_that("geeglm: factor predictor synthesizes a reference row", {
   fit <- .fit_gee_gaussian()
   fr <- as_regression_frame(fit, model_id = "M1")
   ref <- fr$coefs[fr$coefs$is_ref %in% TRUE, ]
@@ -208,7 +208,7 @@ test_that("geeglm: weighted fits carry weighted_nobs like a glm", {
   expect_true(is.na(fr0$info$fit_stats$weighted_nobs))
 })
 
-test_that("geeglm: AME honours the fit's prior weights", {
+test_that("geeglm: AME honors the fit's prior weights", {
   # rd-core:weights-from-fit extended to the frame path: the AME is the
   # weighted average of the unit slopes, oracle avg_slopes(wts = ).
   skip_if_not_installed("geepack")
@@ -257,7 +257,7 @@ test_that("geeglm: vcov label names the fit's own estimator + id", {
   expect_identical(fr$info$vcov_label, "Robust sandwich (GEE), clusters by Pig")
 })
 
-test_that("geeglm: jackknife std.err is read and labelled, SEs match", {
+test_that("geeglm: jackknife std.err is read and labeled, SEs match", {
   fit <- .fit_gee_gaussian(corstr = "independence", std_err = "jack")
   fr <- as_regression_frame(fit, model_id = "M1")
   expect_identical(
@@ -273,7 +273,7 @@ test_that("geeglm: jackknife std.err is read and labelled, SEs match", {
   )
 })
 
-test_that("geeglm: j1s and fij std.err variants are read and labelled", {
+test_that("geeglm: j1s and fij std.err variants are read and labeled", {
   # Small panel: the fully iterated jackknife refits once per cluster.
   skip_if_not_installed("geepack")
   set.seed(8)

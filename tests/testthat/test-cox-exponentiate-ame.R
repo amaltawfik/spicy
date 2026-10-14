@@ -1,4 +1,4 @@
-# Cox / survreg exponentiation + AME-rejection behaviour.
+# Cox / survreg exponentiation + AME-rejection behavior.
 #
 # Cox PH (coxph / rms::cph) and AFT (survreg) fits have NO stats::family()
 # method, so the exponentiate path reads the link from the frame's own

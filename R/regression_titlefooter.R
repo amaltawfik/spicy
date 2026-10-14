@@ -402,10 +402,10 @@ format_vcov_label_from_frame <- function(frame) {
   # produces an lm / glm standard error. The guard CHANGES what a
   # non-lm/glm frame reaching here without an engine-supplied label
   # renders -- such a frame used to enter this arm and come out
-  # "classical (OLS)", so a coxph frame was labelled as ordinary least
+  # "classical (OLS)", so a coxph frame was labeled as ordinary least
   # squares -- and it now falls through to the tail and gets the bare
   # token. No production frame can be in that position (every builder
-  # supplies a label and the constructor canonicalises the kind), so the
+  # supplies a label and the constructor canonicalizes the kind), so the
   # change is reachable only by hand; it is pinned as such.
   if (.is_model_vcov(vt) && cls %in% c("lm", "glm")) {
     # Phase 7c23 (item c): "Fisher information" is the standard
@@ -495,7 +495,7 @@ build_vcov_footer_block_from_frames <- function(frames) {
 #   "N = 200 (weighted 6194). Design: stratified (stype), with finite
 #    population correction; degrees of freedom vary by group (49 to 99)."
 # while the regression footer said only "Std. errors: Design-based
-# (Taylor linearisation)." -- so a reader could not tell that the design
+# (Taylor linearization)." -- so a reader could not tell that the design
 # was stratified, nor that the t had 193 degrees of freedom. That is a
 # reproducibility gap, not a question of density.
 #
@@ -896,10 +896,10 @@ build_standardized_caveat_footer_block_from_frames <- function(
     any(!is.na(used) & used != "refit")
 
   # Table notes state what IS shown, in method terms only. The
-  # negative-space contrast ("components are NOT standardised first"),
+  # negative-space contrast ("components are NOT standardized first"),
   # the convention's software genealogy (SPSS / Stata regress,beta /
   # lm.beta), and the literature citations (Friedrich 1982; Cohen et
-  # al. 2003 s7.7) are reader pedagogy and live in the *Standardised
+  # al. 2003 s7.7) are reader pedagogy and live in the *Standardized
   # coefficients* section of ?table_regression -- a publication table
   # note cites no literature and names no other software. The
   # differs-from-"refit" clause stays: it is the interpretive caveat
@@ -1564,7 +1564,7 @@ build_nested_ml_refit_footer_block_from_frames <- function(
 # the frame is not a mixed-effects fit.
 #
 # Dispatch on (class, ci_method) instead of just class: lmer fits
-# are normalised to class == "lmerMod" regardless of whether
+# are normalized to class == "lmerMod" regardless of whether
 # lmerTest decorated the fit, so we read ci_method to tell apart
 # Satterthwaite ("satterthwaite") from Wald-z fallback ("wald").
 .mixed_inference_label_for_frame <- function(frame) {
@@ -1703,7 +1703,7 @@ build_component_blocks_footer_block_from_frames <- function(frames) {
 
 
 # Promote the component blocks (zero-inflation / zero hurdle / dispersion,
-# from info$extras$component_blocks) into coefs rows for labelled subordinate
+# from info$extras$component_blocks) into coefs rows for labeled subordinate
 # blocks. Called by the table_regression() orchestrator AFTER the central
 # exponentiate (each block applies its OWN link-gated exp -- see below) and
 # BEFORE p_adjust: component coefficients are substantive hypotheses and JOIN
@@ -1827,7 +1827,7 @@ build_component_blocks_footer_block_from_frames <- function(frames) {
   }
   cil <- if ("ci_lower" %in% names(vc)) vc$ci_lower else rep(NA_real_, nrow(vc))
   ciu <- if ("ci_upper" %in% names(vc)) vc$ci_upper else rep(NA_real_, nrow(vc))
-  # NOTE: `re_columns` is a DISPLAY concern -- it is honoured at render time
+  # NOTE: `re_columns` is a DISPLAY concern -- it is honored at render time
   # (build_body_row en-dashes the deselected cells on vc rows). The data stays
   # complete here so broom::tidy() / as_structured() always carry full SE + CI.
 
@@ -2051,7 +2051,7 @@ build_singular_footer_block_from_frames <- function(frames) {
     #
     # "at the boundary (0)" named only one of the two boundary regimes
     # and overstated the other: a collapsed component reaches 0 exactly
-    # only under lme4 (glmmTMB and nlme optimise a log scale and land
+    # only under lme4 (glmmTMB and nlme optimize a log scale and land
     # near it), and a random-effect correlation pinned at +/-1 is a
     # boundary estimate with no zero variance at all.
     return(paste0(
@@ -2401,7 +2401,7 @@ build_exponentiate_footer_block_from_frames <- function(
   }
 
   # Cumulative-cloglog frames print the grouped-time proportional-
-  # hazards ratio exp(-B) (the parametrisation puts hazards on -B);
+  # hazards ratio exp(-B) (the parametrization puts hazards on -B);
   # the sign convention must be disclosed next to the HR definition.
   hr_negated <- any(vapply(
     frames[applied],
@@ -2721,7 +2721,7 @@ build_reference_categories_footer_block_from_frames <- function(
 }
 
 
-# Vectorised isTRUE: maps each element to TRUE iff it is TRUE
+# Vectorized isTRUE: maps each element to TRUE iff it is TRUE
 # (length-1, non-NA, non-FALSE). Used in the footer collector
 # above where `coefs$is_reference` may carry NAs for non-factor
 # rows in some bind paths.
@@ -2747,7 +2747,7 @@ build_nested_footer_block <- function(nested) {
 # Footer gloss for the "Scale effects" block of a heteroskedastic clm
 # (`scale = ~`). The coefficients act on log(sigma) of the latent variable,
 # so exp(zeta) is a ratio of latent standard deviations -- NOT an odds ratio.
-# The rows are materialised after exponentiation, so under exponentiate = TRUE
+# The rows are materialized after exponentiation, so under exponentiate = TRUE
 # they stay on the log scale and the note says so.
 build_scale_effects_footer_block_from_frames <- function(frames) {
   if (!is.list(frames) || length(frames) == 0L) {

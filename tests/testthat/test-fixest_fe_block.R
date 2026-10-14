@@ -195,7 +195,7 @@ test_that("structured and rich engines encode the FE cells correctly", {
   tb <- suppressWarnings(table_regression(
     list(OLS = fl, FE = f_fe, OrOnly = f_or)
   ))
-  # Machine contract: numeric 1 / 0 / NA on a row labelled with the
+  # Machine contract: numeric 1 / 0 / NA on a row labeled with the
   # bare factor name, under a "Fixed effects:" block header registered
   # as a factor header (the rows themselves as level rows).
   s <- as_structured(tb)

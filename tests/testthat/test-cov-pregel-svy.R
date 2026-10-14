@@ -32,7 +32,7 @@ test_that("a domain that observed no value at all comes back empty", {
   # `v2` is a subgroup-specific question: every unit of group B was
   # routed past it, so B's domain holds no observed value carrying a
   # non-zero weight. `.cat_svy_level_stats()` hands back its
-  # initialised NA there instead of asking survey for the mean of
+  # initialized NA there instead of asking survey for the mean of
   # nothing -- the table keeps its shape and the other blocks keep
   # their numbers.
   skip_if_not_installed("survey")
@@ -231,7 +231,7 @@ test_that("glance() gives one row per variable and no p without `by`", {
 
 # ---- table_continuous_svy.R 752: `regex = TRUE` with no `select` ----
 
-test_that("`regex = TRUE` without `select` summarises every numeric column", {
+test_that("`regex = TRUE` without `select` summarizes every numeric column", {
   des <- .svycov_api()
   out <- table_continuous_svy(des, regex = TRUE)
   numeric_cols <- names(des$variables)[
@@ -239,7 +239,7 @@ test_that("`regex = TRUE` without `select` summarises every numeric column", {
   ]
   expect_identical(unique(as.character(out$variable)), numeric_cols)
   # The missing `select` becomes ".*", not "nothing selected": the
-  # design's own bookkeeping columns are numeric and are summarised
+  # design's own bookkeeping columns are numeric and are summarized
   # with the rest.
   expect_true(all(c("fpc", "pw") %in% out$variable))
   # A pattern narrows that default, which is what makes it a default.

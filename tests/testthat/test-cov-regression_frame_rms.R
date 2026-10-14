@@ -10,7 +10,7 @@
 #     skip (line 314), both ending in the empty-rows return (line 336).
 #
 # The reference-row guards never fire on a genuine rms fit (rms always
-# parametrises a factor with >= 2 levels and one dropped reference), so we
+# parametrizes a factor with >= 2 levels and one dropped reference), so we
 # drive them via direct internal-helper calls on a real ols fit with a
 # crafted factor_meta -- mirroring the .qr_reference_rows() cov tests.
 # ---------------------------------------------------------------------------
@@ -119,10 +119,10 @@ test_that(".rms_reference_rows skips a factor with every level present -> empty 
   expect_identical(names(rr), names(spicy:::.empty_coefs_frame()))
 })
 
-test_that(".rms_reference_rows synthesises one reference row when a level is dropped", {
+test_that(".rms_reference_rows synthesizes one reference row when a level is dropped", {
   fit <- .cov_rms_ols_fit()
   # Counterpart to the guards above: with the reference level (4) absent
-  # from factor_meta, exactly one is_ref row is synthesised for it.
+  # from factor_meta, exactly one is_ref row is synthesized for it.
   fm <- list(
     b = list(factor_term = "cyl_f", factor_level = "6", factor_level_pos = 2L),
     c = list(factor_term = "cyl_f", factor_level = "8", factor_level_pos = 3L)

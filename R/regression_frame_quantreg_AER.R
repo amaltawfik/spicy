@@ -403,7 +403,7 @@ as_regression_frame.ivreg <- function(
 
   coefs <- .ivreg_coefs(fit, ci_level = ci_level)
   # AME rows when requested (finding M2): response-scale avg_slopes(); a
-  # robust vcov is recomputed inside and honoured.
+  # robust vcov is recomputed inside and honored.
   coefs <- .attach_ame_to_frame_coefs(
     coefs,
     fit,

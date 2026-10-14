@@ -136,7 +136,7 @@ test_that("knit_print.spicy_gt embeds the note via the post-processor", {
   ko <- knit_print.spicy_gt(g)
   expect_s3_class(ko, "knit_asis")
   expect_match(as.character(ko), "spicy-gt-note", fixed = TRUE)
-  # The full note TEXT made it into the payload (the post-processor italicises
+  # The full note TEXT made it into the payload (the post-processor italicizes
   # the leading "Note." so the rendered form is em-split, not verbatim).
   expect_match(as.character(ko), "<em>Note.</em> knit gt.</div>", fixed = TRUE)
 })
@@ -325,11 +325,11 @@ test_that("flextable footer accepts a custom note without the 'Note.' prefix", {
   expect_identical(nrow(foot_cell), 1L)
   # That chunk carries the full custom note verbatim (no "Note." prefix split).
   expect_identical(foot_cell$txt, "Custom footer, no prefix.")
-  # And it is NOT italicised -- i.e. the leading text was never treated as a
+  # And it is NOT italicized -- i.e. the leading text was never treated as a
   # "Note." label, confirming the non-italic arm was taken.
   expect_false(foot_cell$italic)
 
-  # Contrast: a "Note."-prefixed note takes the OTHER arm and italicises only
+  # Contrast: a "Note."-prefixed note takes the OTHER arm and italicizes only
   # the leading "Note." chunk, leaving the remainder in regular type. This pins
   # that the non-italic outcome above is specific to the no-prefix branch.
   ft_prefixed <- table_regression(
@@ -340,7 +340,7 @@ test_that("flextable footer accepts a custom note without the 'Note.' prefix", {
   prefixed_cell <- ft_prefixed$footer$content$data[[1, 1]]
   expect_identical(nrow(prefixed_cell), 2L)
   expect_identical(prefixed_cell$txt[[1L]], "Note.")
-  expect_true(prefixed_cell$italic[[1L]]) # "Note." italicised
+  expect_true(prefixed_cell$italic[[1L]]) # "Note." italicized
   expect_false(prefixed_cell$italic[[2L]]) # remainder in regular type
 })
 
@@ -424,7 +424,7 @@ test_that("output = 'word' errors when the template file does not exist", {
 })
 
 # Phase 3 matrix – rd-core:word-template-honoured
-test_that("word template page setup is honoured and caption is style-tagged", {
+test_that("word template page setup is honored and caption is style-tagged", {
   skip_if_not_installed("flextable")
   skip_if_not_installed("officer")
   fit <- lm(mpg ~ wt + cyl, data = mt)
@@ -624,7 +624,7 @@ test_that("clipboard_payload() builds a delimited payload without touching the c
   expect_identical(lines[1L], "Linear regression: mpg\t\t\t\t\t")
   expect_true("Variable\tB\tSE\t95% CI\t95% CI\tp" %in% lines)
   expect_true(any(grepl("\t", lines, fixed = TRUE)))
-  # Custom delimiter is honoured (pipe instead of tab): same complete header.
+  # Custom delimiter is honored (pipe instead of tab): same complete header.
   txt_pipe <- spicy:::clipboard_payload(rendered, "|")
   expect_true(
     "Variable|B|SE|95% CI|95% CI|p" %in%

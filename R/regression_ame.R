@@ -423,7 +423,7 @@ build_factor_ame_contrast <- function(fit, v, lvl, ref) {
 }
 
 
-# levels() analogue for the AME term-id reconstruction: a logical
+# levels() analog for the AME term-id reconstruction: a logical
 # predictor enters the design matrix as a two-level FALSE/TRUE factor
 # (single dummy `<var>TRUE`), but levels() on a logical returns NULL.
 # A character predictor is coded by model.matrix() as factor(x) --
@@ -524,7 +524,7 @@ extract_ame_marginaleffects <- function(
     # strips the wrapper and reports the bare variable ("cyl"),
     # but the model-frame column is "factor(cyl)" and the lm
     # coefficient names follow that wrapper too ("factor(cyl)6").
-    # Without this normalisation the AME row term_id would be
+    # Without this normalization the AME row term_id would be
     # "cyl6" and de-align with the B coefficient row named
     # "factor(cyl)6".
     col_name <- if (var_name %in% mf_names) {
@@ -893,7 +893,7 @@ extract_ame_glm <- function(
   } else {
     # `vc` is the robust coefficient vcov requested for this fit (HC* / CR*).
     # Passing it to avg_slopes() makes the AME standard errors / CIs / p-values
-    # honour that estimator (via the delta method) -- the AME point estimates are
+    # honor that estimator (via the delta method) -- the AME point estimates are
     # vcov-independent and unchanged. When `vc` is NULL we omit it, so avg_slopes
     # uses the fit's own vcov (the model-based one, or the design-based estimator
     # for svyglm).
@@ -1229,7 +1229,7 @@ extract_ame_glm <- function(
   }
   # Robust AME uncertainty: when a robust vcov was requested for the
   # coefficients, recompute the same matrix and pass it to avg_slopes so the AME
-  # SE / CI / p honour the requested estimator. A no-op for the model-based
+  # SE / CI / p honor the requested estimator. A no-op for the model-based
   # defaults (the canon "model" and the design-based "survey-Taylor"),
   # where avg_slopes uses
   # the fit's own vcov (design-based for svyglm). The AME point estimates are

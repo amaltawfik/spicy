@@ -212,7 +212,7 @@ fixed_terms_key <- function(fit) {
 # number printed in a table is read as a result, so spicy refuses. We do
 # NOT silently refit with ML (lme4's choice for merMod, which is why the
 # merMod pair path needs no guard): a spicy-side update() would re-run
-# the optimiser on data that may no longer be in scope, and the ML
+# the optimizer on data that may no longer be in scope, and the ML
 # DeltaAIC would then contradict the REML AIC rows shown for the same
 # models. Comparisons that differ only in the RANDOM structure are
 # untouched -- those ARE valid under REML (Pinheiro & Bates, Section
@@ -1276,7 +1276,7 @@ compute_one_pair_rq <- function(fit_prev, fit_curr) {
 # an engine's caveat about the comparison it is performing is part of
 # the answer. (With rms 8.1.1 that particular branch is not reachable --
 # fit$parms is length 0 for weibull and for exponential alike -- so it
-# is a policy about relaying warnings, not a described behaviour.)
+# is a policy about relaying warnings, not a described behavior.)
 #
 # Variance-explained tokens stay NA for the whole family, ols included:
 # the comparison reported IS the likelihood-ratio chi-square, and

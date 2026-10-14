@@ -290,7 +290,7 @@ output_long <- function(aligned) {
 # non-default value, so a classed warning closes the loop rather
 # than letting the table render in `"first_col"` mode without
 # explanation. Only the engines with native body-cell merge
-# (flextable, excel, word via flextable) honour the layout.
+# (flextable, excel, word via flextable) honor the layout.
 .warn_merged_layout_ignored <- function(rendered, engine) {
   fit_stats_layout <- attr(rendered, "fit_stats_layout") %||% "first_col"
   if (!identical(fit_stats_layout, "merged")) {
@@ -427,7 +427,7 @@ output_tinytable <- function(rendered) {
   # Factor-level rows carry the console's two-space indent in the
   # Variable cell, and the engine indents them again below
   # (`indent = 1` + `padding-left`). One indentation is the design;
-  # two is an artefact of reading a display string as data. The
+  # two is an artifact of reading a display string as data. The
   # engine's own indent is the one that survives every backend, so
   # the cell text is cleaned here.
   if (length(level_rows) > 0L) {
@@ -499,7 +499,7 @@ output_tinytable <- function(rendered) {
     }
   }
   # tinytable's `group_tt(j = list)` accesses entries via
-  # `idx[[name]]` during sanitisation, so when the named list has
+  # `idx[[name]]` during sanitization, so when the named list has
   # duplicate names (e.g. multiple "95% CI" / "B" / "p" / etc. when
   # `show_columns` requests overlapping blocks OR when multi-model
   # repeats per-col labels across models), only the FIRST entry per
@@ -552,7 +552,7 @@ output_tinytable <- function(rendered) {
   #   3. alignment ("l" on Variable, "c" on numeric cols -- pre-padded
   #      via .pad_for_decimal_align so center-aligning yields true
   #      decimal alignment in any digit-width-figure-space font).
-  #   4. spanner-row centring.
+  #   4. spanner-row centering.
   #   5. APA borders LAST.
   tt <- .spicy_tt_bare(tt)
   tt <- .spicy_tt_escape(tt)
@@ -561,7 +561,7 @@ output_tinytable <- function(rendered) {
   if (n_cols >= 2L) {
     tt <- tinytable::style_tt(tt, j = 2:n_cols, align = "c")
   }
-  # Header rows: Variable column left, the rest centred.
+  # Header rows: Variable column left, the rest centered.
   tt <- tinytable::style_tt(tt, i = 0L, j = 1L, align = "l")
   if (n_cols >= 2L) {
     tt <- tinytable::style_tt(tt, i = 0L, j = 2:n_cols, align = "c")
@@ -669,7 +669,7 @@ output_tinytable <- function(rendered) {
     )
   }
 
-  # `fit_stats_layout = "merged"` is NOT honoured for tinytable
+  # `fit_stats_layout = "merged"` is NOT honored for tinytable
   # (HTML colspan on body cells; see .warn_merged_layout_ignored).
   .warn_merged_layout_ignored(rendered, "tinytable")
 
@@ -691,7 +691,7 @@ output_tinytable <- function(rendered) {
     tt <- tinytable::style_tt(tt, finalize = function(x) {
       # Strip the U+200B disambiguator we added to duplicate spanner
       # labels so the rendered output is identical regardless of how
-      # many CIs (or other identically-labelled spanners) the user
+      # many CIs (or other identically-labeled spanners) the user
       # requested. See the "tinytable's `group_tt(j = list)`..."
       # comment above for the rationale.
       # U+200B (zero-width space); intToUtf8() keeps this source ASCII.
@@ -734,7 +734,7 @@ output_gt <- function(rendered) {
     )
     # nocov end
   }
-  # `fit_stats_layout = "merged"` is NOT honoured for gt
+  # `fit_stats_layout = "merged"` is NOT honored for gt
   # (`tab_spanner()` covers columns, not body rows; see
   # .warn_merged_layout_ignored).
   .warn_merged_layout_ignored(rendered, "gt")
@@ -747,7 +747,7 @@ output_gt <- function(rendered) {
   # gt's native `cols_align_decimal()` does NOT cleanly decimal-align
   # cells produced by `fmt(fns = drop_leading_zero)` (the APA p-style
   # formatter): the output is treated as an opaque character string
-  # that gt's aligner mis-parses, producing artefacts like `. 213` (a
+  # that gt's aligner mis-parses, producing artifacts like `. 213` (a
   # space between dot and digits). The same machinery handles
   # `fmt_number()` output fine, but mixing the two in one column breaks
   # alignment.
@@ -762,7 +762,7 @@ output_gt <- function(rendered) {
   # padded character data.frame; we then skip `fmt_*`, `text_transform`
   # and `cols_align_decimal` entirely. Figure-space (U+2007) is
   # digit-width in every common web font, so the visual alignment is
-  # exact when the cells are centre-aligned by their fixed width.
+  # exact when the cells are center-aligned by their fixed width.
   struct <- attr(rendered, "structured")
   body <- .format_structured_to_string_body(struct)
   body <- .pad_for_decimal_align(body, struct)
@@ -901,7 +901,7 @@ output_gt <- function(rendered) {
   # `.gt_table { color: #333333 }`) on all three horizontal rules
   # (outer top, mid CI bracket, header-body bottom) so they read
   # as a matched typographic set. `currentColor` resolves the same
-  # way for cells inside the table but isn't honoured uniformly by
+  # way for cells inside the table but isn't honored uniformly by
   # the renderer in some viewer / quarto contexts -- the explicit
   # hex sidesteps that.
   rule <- gt::cell_borders(
@@ -1031,7 +1031,7 @@ output_gt <- function(rendered) {
   # "Variable" header is LEFT-aligned to match its left-aligned
   # body (modern data-viz convention: header alignment follows
   # body alignment for left-text columns); numeric column labels
-  # stay centred above their decimal-aligned columns.
+  # stay centered above their decimal-aligned columns.
   tbl <- gt::tab_style(
     tbl,
     style = gt::cell_text(align = "left", weight = "normal"),
@@ -1044,7 +1044,7 @@ output_gt <- function(rendered) {
       locations = gt::cells_column_labels(columns = gt_names[-1L])
     )
   }
-  # Centre all spanner-row labels (B / SE / 95% CI / p / Model X),
+  # Center all spanner-row labels (B / SE / 95% CI / p / Model X),
   # then override the Variable spanner (col 1) to be flush-left so
   # the "Variable" caption aligns with the left-aligned body of
   # the same column.
@@ -1062,7 +1062,7 @@ output_gt <- function(rendered) {
   # `border-top: 1px #333333` applied to the LL / UL column-labels
   # cells via `rule_top` above, also stamp an inline
   # `border-bottom: 1px #333333` on the CI spanner cell itself.
-  # Some renderers don't always honour the LL/UL top vs the empty
+  # Some renderers don't always honor the LL/UL top vs the empty
   # spanner-cell bottom tie in border-collapse priority -- having
   # both sides of the shared edge marked guarantees the line.
   if (has_ci_spanner) {
@@ -1081,7 +1081,7 @@ output_gt <- function(rendered) {
     # Numeric body columns are already character-padded (via
     # `.format_structured_to_string_body()` + `.pad_for_decimal_align()`
     # above) so every cell in a column has the same character width on
-    # each side of the decimal mark. Centre-aligning them lines up the
+    # each side of the decimal mark. Center-aligning them lines up the
     # decimal points exactly -- no per-cell `fmt_number()` /
     # `cols_align_decimal()` needed (and avoids gt's alignment bug
     # with `fmt(fns = ...)` output that displayed APA p-values as
@@ -1212,13 +1212,13 @@ output_gt <- function(rendered) {
   #   * `.gt_col_headings { border-bottom: 2px solid #D3D3D3 }` is
   #     applied to BOTH header rows (the spanner row carries class
   #     `gt_col_headings gt_spanner_row`, the column-labels row
-  #     carries `gt_col_headings`), so the rule draws a 2px grey
+  #     carries `gt_col_headings`), so the rule draws a 2px gray
   #     line under the spanner row in addition to the bottom of the
   #     header.
   #   * `.gt_column_spanner { border-bottom: 2px solid #D3D3D3 }` is
   #     applied inside each spanner cell (B / SE / p / Variable /
   #     95% CI), adding its own underline.
-  # We neutralise both with `!important` (gt's selectors carry an id
+  # We neutralize both with `!important` (gt's selectors carry an id
   # which outranks a class-only selector) and at the same time
   # match the column-labels-row bottom rule to the outer top rule
   # (1px solid #333333) so they read as a matched pair. The CSS is
@@ -1257,18 +1257,18 @@ output_gt <- function(rendered) {
     "border-bottom-width: 0 !important; }",
     # Mid-rule under the column-labels row (= bottom of header,
     # above body). Applied at the CELL level (`.gt_col_heading`),
-    # AND we simultaneously neutralise the body cells'
+    # AND we simultaneously neutralize the body cells'
     # `.gt_row { border-top: 1px solid transparent }` -- without
     # this, both sides are cell-level borders with the same width
     # and style, and the browser tie-breaker picks the later
-    # element (= body row, transparent), making our colour
+    # element (= body row, transparent), making our color
     # invisible. Setting body's `border-top: 0` removes the
     # competing border entirely so our #333333 always shows.
     ".spicy-gt-outer .gt_col_heading { ",
     "border-bottom: 1px solid #333333 !important; }",
     ".spicy-gt-outer .gt_table tbody .gt_row { ",
     "border-top-width: 0 !important; }",
-    # Remove the 2px grey underline that gt draws inside every
+    # Remove the 2px gray underline that gt draws inside every
     # `<div class=\"gt_column_spanner\">`. The CI bracket line stays
     # because it lives on the LL/UL cells' inline `border-top`.
     ".spicy-gt-outer .gt_column_spanner { ",
@@ -1399,7 +1399,7 @@ output_flextable <- function(rendered) {
   # Factor-level rows carry the console's two-space indent in the
   # Variable cell, and the engine indents them again below
   # (`padding.left = 20`). One indentation is the design; two is an
-  # artefact of reading a display string as data -- and Word keeps
+  # artifact of reading a display string as data -- and Word keeps
   # literal spaces, so the .docx showed both. The engine's own indent
   # is the one that survives every backend, so the cell text is
   # cleaned here (same rule as `output_tinytable()`).
@@ -1516,7 +1516,7 @@ output_flextable <- function(rendered) {
   # labels -> add_header_row(values, colwidths)). A run continues only
   # while BOTH the label and the run KEY are unchanged; the key names
   # the block a column belongs to (its model, its CI pair). Without
-  # it, two neighbouring models that display the same label merged
+  # it, two neighboring models that display the same label merged
   # into ONE header cell straddling the model spanner above -- "B" and
   # "B" became a single 2-wide "B", and two distinct CI pairs a single
   # 4-wide "95% CI". The console and the other engines print one label
@@ -1598,9 +1598,9 @@ output_flextable <- function(rendered) {
   ft <- flextable::hline_top(ft, part = "header", border = bd)
   bd_none <- spicy_fp_border(color = "white", width = 0)
   if (has_model_spanner) {
-    # First clear flextable's default 1.5pt grey bottom across the
+    # First clear flextable's default 1.5pt gray bottom across the
     # WHOLE model spanner row (col 1 -- the empty cell above
-    # "Variable" -- otherwise inherits that grey hairline and shows
+    # "Variable" -- otherwise inherits that gray hairline and shows
     # an extra line right above the "Variable" label). Then draw
     # the black 1pt mid-rule under each model spanner col-range.
     ft <- flextable::hline(
@@ -1621,10 +1621,10 @@ output_flextable <- function(rendered) {
     }
   }
   # Bottom border of the per-col + CI spanner row (that row exists
-  # only when a CI pair does). First clear flextable's default grey
+  # only when a CI pair does). First clear flextable's default gray
   # 1.5pt border across the whole row, THEN draw the black 1pt rule
   # only under CI spanner pair(s). Without the clearing pass, the
-  # default grey bleeds across the row and overshoots the CI bracket
+  # default gray bleeds across the row and overshoots the CI bracket
   # visually.
   if (has_ci_spanner) {
     sub_row_idx <- if (has_model_spanner) 2L else 1L
@@ -1671,10 +1671,10 @@ output_flextable <- function(rendered) {
   #       decimal alignment via uniform character width, but mixes
   #       TWO fonts in the table (Calibri for Variable + header, Consolas
   #       for numeric body) -- visually distracting.
-  #   (b) CENTRE numeric cells in the default Calibri: keeps a single
+  #   (b) CENTER numeric cells in the default Calibri: keeps a single
   #       font everywhere, sacrifices strict decimal alignment. For
   #       columns with uniform precision (the common case after CI is
-  #       split into LL/UL columns of consistent decimals), centring
+  #       split into LL/UL columns of consistent decimals), centering
   #       still LOOKS decimal-aligned because every cell has the same
   #       character width.
   # We pick (b): single font wins on readability + APA convention. Users
@@ -1699,7 +1699,7 @@ output_flextable <- function(rendered) {
   }
 
   # fit_stats_layout = "merged": merge each model's numeric sub-
-  # columns into one wide centred cell per fit-stat row (Stata
+  # columns into one wide centered cell per fit-stat row (Stata
   # esttab / Econometrica convention).
   fit_stats_layout <- attr(rendered, "fit_stats_layout") %||% "first_col"
   if (identical(fit_stats_layout, "merged")) {
@@ -1717,7 +1717,7 @@ output_flextable <- function(rendered) {
   }
 
   # Content-driven autofit. plain `autofit()` sizes columns to
-  # content; `layout = "autofit"` tells Word to honour the widths.
+  # content; `layout = "autofit"` tells Word to honor the widths.
   ft <- flextable::autofit(ft)
   ft <- flextable::set_table_properties(ft, layout = "autofit")
 
@@ -1739,7 +1739,7 @@ output_flextable <- function(rendered) {
     # ("*Note.* ...") that wraps naturally within the table width.
     # Collapse embedded newlines (source-side line breaks meant for
     # ASCII rendering) into spaces, then emit one footer line whose
-    # leading "Note." chunk is italicised and the remainder is in
+    # leading "Note." chunk is italicized and the remainder is in
     # regular type.
     note_one_line <- gsub("\n", " ", note, fixed = TRUE)
     fp_normal <- officer::fp_text(font.family = "Calibri", font.size = 10)
@@ -1786,7 +1786,7 @@ output_flextable <- function(rendered) {
 
 # Strip the rendered `<tfoot>...</tfoot>` from a flextable's HTML
 # (single `<tfoot>` always present after `add_footer_lines`) and
-# inject `note` (HTML-escaped, with the leading "Note." italicised)
+# inject `note` (HTML-escaped, with the leading "Note." italicized)
 # as a `<div>` immediately after `</table>`, wrapped in an
 # inline-block so the note inherits the table's content width
 # without contributing to it. See the analogous comment in
@@ -1838,7 +1838,7 @@ output_flextable <- function(rendered) {
   # publication style expects a single hairline. Inject
   # `border-collapse: collapse` scoped to our wrapper -- adjacent
   # same-style borders collapse into one, and zero-width "empty"
-  # borders are subsumed by their neighbours. Scoped via
+  # borders are subsumed by their neighbors. Scoped via
   # `.spicy-ft-outer table` so we don't leak across other tables on
   # the same page.
   # Booktabs-style trimmed rules under each Model spanner cell:
@@ -1850,7 +1850,7 @@ output_flextable <- function(rendered) {
   # row cells' `border-bottom` AND the per-col row cells'
   # `border-top` (both set to `1pt solid black` by flextable's
   # default classes). Killing either alone leaves the other in
-  # place, so we neutralise both via `!important`, then add the
+  # place, so we neutralize both via `!important`, then add the
   # trimmed pseudo-rule on the Model spanner cells only.
   # In a single-model table WITH a CI pair the per-col row is the
   # first thead row, so the CI-spanner cell (`colspan="2"`) takes the
@@ -2455,20 +2455,20 @@ output_excel <- function(rendered, excel_path, excel_sheet) {
   # right-alignment yields visual decimal alignment without a
   # monospaced font or pre-padded strings.
   #
-  # Centring numeric cells -- the table_continuous convention --
+  # Centering numeric cells -- the table_continuous convention --
   # decimal-aligns only when every value in a column has the same
   # *character width*. In regression tables negative and positive
-  # values coexist (e.g. B = "-3.19" alongside "0.84"), so centring
+  # values coexist (e.g. B = "-3.19" alongside "0.84"), so centering
   # places the decimal point at different horizontal positions per
   # row. Right-align is the standard convention for numerics in
   # tables (gt's cols_align_decimal(), tinytable's align = "d",
   # flextable's table_continuous_lm decimal mode all converge on it
   # via different paths).
   #
-  # Headers: spanner rows ("95% CI", model spanner) stay centred so
+  # Headers: spanner rows ("95% CI", model spanner) stay centered so
   # the merged label sits over its column group. Column-label row
-  # (B / SE / LL / UL / p) is centred over the right-aligned body --
-  # the same centred-header / right-aligned-body pattern used in
+  # (B / SE / LL / UL / p) is centered over the right-aligned body --
+  # the same centered-header / right-aligned-body pattern used in
   # table_continuous_lm for n / p columns.
   if (n_cols >= 1L) {
     header_rows <- c(model_row_excel, header_top_excel, header_bottom_excel)
@@ -2527,7 +2527,7 @@ output_excel <- function(rendered, excel_path, excel_sheet) {
   # containing the fit-stat value. The value lives in the first
   # sub-column (rendered body layout); the merge extends it across
   # the remaining sub-columns of the model. The merged cell is
-  # centred so the value sits visually under the model spanner.
+  # centered so the value sits visually under the model spanner.
   fit_stats_layout <- attr(rendered, "fit_stats_layout") %||% "first_col"
   if (identical(fit_stats_layout, "merged")) {
     specs <- .fit_stat_merge_ranges(body, spanners, group_sep)
@@ -2592,7 +2592,7 @@ output_clipboard <- function(rendered, clipboard_delim) {
   if (!clipr::clipr_available()) {
     # nocov start -- system clipboard is environment-dependent and
     # typically unavailable on headless CI runners; we test the
-    # branch behaviourally elsewhere via mocking.
+    # branch behaviorally elsewhere via mocking.
     spicy_abort(
       c(
         "System clipboard is not available.",

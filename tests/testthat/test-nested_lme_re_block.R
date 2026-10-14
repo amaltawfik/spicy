@@ -4,13 +4,13 @@
 # nlme::VarCorr.lme() flattens every level of a nested fit into one
 # character matrix and marks each block with a "<group> =" header row.
 # Reading the group name from fit$dims$ngrps[1] instead -- which runs
-# innermost-first, the reverse of VarCorr's block order -- labelled both
+# innermost-first, the reverse of VarCorr's block order -- labeled both
 # levels of `random = ~ 1 | Dog/Side` as "Side", sent both intervals()
 # lookups into the same reStruct block (so the two levels shared one SE
 # and one CI), and left the renderer with two rows under one identical
 # (group, term) key, of which it displayed one.
 #
-# The levels are then labelled lme4's way ("Side:Dog", not "Side"), in
+# The levels are then labeled lme4's way ("Side:Dog", not "Side"), in
 # lme4's order, so the same nested structure fitted by lme() and lmer()
 # produces the same RE keys and the same N rows instead of two disjoint
 # sets rendering as holes. It is also the more honest label: nlme's bare
@@ -33,7 +33,7 @@
 .fit_lme_nested_slope <- function() {
   skip_if_not_installed("nlme")
   # A random slope at the OUTER level only, written as a list rather than
-  # a slash: nlme normalises consecutive list entries to the same nesting
+  # a slash: nlme normalizes consecutive list entries to the same nesting
   # (getGroupsFormula() gives ~ Dog/Side), so the labels must follow the
   # FITTED structure, not the shape of the call. Also exercises the
   # per-group correlation walk -- Dog carries a cor() row, Side does not.
@@ -56,7 +56,7 @@
 }
 
 
-# ---- 1. Each level is labelled with its OWN grouping factor -------------
+# ---- 1. Each level is labeled with its OWN grouping factor -------------
 
 test_that("a nested lme labels each variance component with its own level", {
   fit <- .fit_lme_nested()
@@ -182,7 +182,7 @@ test_that("a nested lme attributes each correlation row to its own level", {
   expect_equal(vc$ci_lower[is_cor], unname(oracle[["lower"]]), tolerance = 1e-8)
   expect_equal(vc$ci_upper[is_cor], unname(oracle[["upper"]]), tolerance = 1e-8)
 
-  # The list() spec is nesting: Side is labelled composite too, and each
+  # The list() spec is nesting: Side is labeled composite too, and each
   # block keeps its own rows together (Dog's correlation with Dog).
   expect_identical(
     vc$group,

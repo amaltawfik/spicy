@@ -48,7 +48,7 @@ test_that("render – single model, default cols: Variable + B/SE/CI/p", {
   expect_false(any(grepl("Model 1", names(rt))))
 })
 
-test_that("render – wt term renders as a labelled coefficient row", {
+test_that("render – wt term renders as a labeled coefficient row", {
   aligned <- mk_aligned(list(mpg ~ wt), list("M1"))
   rt <- spicy:::render_regression_table(aligned)
   wt_row <- rt[rt$Variable == "wt", , drop = FALSE]
@@ -71,7 +71,7 @@ test_that("render – multi-model: column headers prefixed with model labels", {
   expect_true(any(grepl("Model 1: 95% CI", names(rt))))
 })
 
-test_that("render – custom model_labels honoured in headers", {
+test_that("render – custom model_labels honored in headers", {
   aligned <- mk_aligned(list(mpg ~ wt, mpg ~ wt + am), list("A", "B"))
   rt <- spicy:::render_regression_table(
     aligned,
@@ -110,7 +110,7 @@ test_that("render – reference rows en-dashed in stat columns", {
   expect_true(all(trimws(unlist(ref_row[1, stat_cols])) == "–"))
 })
 
-test_that("render – reference_label customisation", {
+test_that("render – reference_label customization", {
   aligned <- mk_aligned(list(mpg ~ cyl), list("M1"))
   rt <- spicy:::render_regression_table(
     aligned,

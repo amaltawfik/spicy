@@ -10,7 +10,7 @@
 #   var  = sum(w (x - mean)^2) / (sum(w) - 1)
 #   quantiles: type-7 positions on the cumulative-weight scale
 #     (the Hmisc::wtd.quantile(type = "quantile") algorithm).
-# With `rescale = TRUE` the weights are normalised to sum to n first,
+# With `rescale = TRUE` the weights are normalized to sum to n first,
 # which makes the SD algebraically equal to Stata's [aweight] /
 # survey::svyvar() value -- the sampling-weights reading, through the
 # same `rescale` grammar the categorical family already has.
@@ -22,7 +22,7 @@
 # table is unweighted; otherwise the raw weights, optionally rescaled
 # (`rescale = TRUE`) so the weights of the variable's SURVIVING rows
 # (x observed, weight observed and positive) sum to their count --
-# the normalisation freq() and cross_tab() apply, over the whole
+# the normalization freq() and cross_tab() apply, over the whole
 # variable and never per group (a per-group rescale would destroy the
 # relative weights across groups).
 .prep_variable_weights <- function(x, w, rescale) {

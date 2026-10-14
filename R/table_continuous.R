@@ -878,7 +878,7 @@ table_continuous <- function(
 
   # `effect_size` accepts both logical (legacy) and character (current
   # documented enum). Logical TRUE maps to "auto" (auto-select the
-  # measure from test type and group count, the historical behaviour);
+  # measure from test type and group count, the historical behavior);
   # logical FALSE maps to "none". Character values are validated below.
   if (is.logical(effect_size)) {
     if (length(effect_size) != 1L || is.na(effect_size)) {
@@ -998,7 +998,7 @@ table_continuous <- function(
 
   # --- weights (decision 17: frequency-expansion convention) --------------
   # Same resolver and validation as table_continuous_lm(); the
-  # `rescale` grammar (weights normalised to sum to n) is shared with
+  # `rescale` grammar (weights normalized to sum to n) is shared with
   # table_categorical() and read from the same option.
   weights_quo <- rlang::enquo(weights)
   weights_name <- detect_weights_column_name(weights_quo, data)
@@ -1507,7 +1507,7 @@ table_continuous <- function(
       if (do_es) {
         if (testable) {
           # The effect size follows the test the variable actually
-          # carries: a rank-switched variable gets the rank homologue
+          # carries: a rank-switched variable gets the rank homolog
           # (rank-biserial r / epsilon-squared).
           chosen_es <- resolve_effect_size_choice(
             effect_size,
@@ -1574,7 +1574,7 @@ table_continuous <- function(
         stringsAsFactors = FALSE
       )
 
-      # Per-VARIABLE weight preparation: `rescale` normalises over the
+      # Per-VARIABLE weight preparation: `rescale` normalizes over the
       # variable's whole surviving sample, never per group -- a
       # per-group rescale would destroy the relative weights across
       # groups, which is the entire information sampling weights
@@ -1739,7 +1739,7 @@ table_continuous <- function(
   # --- raw long-format return (one row per variable x group) ---
   # `output = "data.frame"` and `output = "long"` both return the
   # underlying long-format data.frame. The two names coexist for
-  # harmonisation with `table_continuous_lm()`, where `"data.frame"`
+  # harmonization with `table_continuous_lm()`, where `"data.frame"`
   # is the wide formatted output and `"long"` is the raw analytic
   # data. In `table_continuous()` the descriptive output is naturally
   # already long (one row per (variable x group)), so the two are
@@ -2804,7 +2804,7 @@ compute_effect_size <- function(
     row$es_ci_lower <- ci[1]
     row$es_ci_upper <- ci[2]
   } else if (identical(type, "hedges_g")) {
-    # Hedges' g (bias-corrected standardised mean difference)
+    # Hedges' g (bias-corrected standardized mean difference)
     grp_levels <- if (is.factor(gvec)) {
       levels(gvec)
     } else {
@@ -2979,7 +2979,7 @@ epsilon_sq_boot_ci <- function(xvec, gvec, n_groups, ci_level, n_boot = 2000L) {
   }
 
   # Delegate p-value formatting to the shared helper from
-  # `table_continuous_lm.R`, which honours the user-supplied `p_digits`
+  # `table_continuous_lm.R`, which honors the user-supplied `p_digits`
   # (APA default: 3) and the configured decimal_mark.
   fmt_p <- function(p) format_p_value(p, decimal_mark, digits = p_digits)
 
@@ -3398,7 +3398,7 @@ desc_spanner_groups <- function(col_keys, ci_level, decimal_mark = ".") {
 # with a spanner label written across the columns it covers and the
 # per-column sub-headers underneath it.
 #
-# Parameterised on the two resolvers rather than on the continuous
+# Parameterized on the two resolvers rather than on the continuous
 # vocabulary, so a family whose spanners are its `by` groups builds its
 # header through the same function. The continuous vocabulary is not a
 # second entry point: `export_desc_table()` binds it as the DEFAULT of
@@ -3426,7 +3426,7 @@ build_header_rows_from <- function(col_keys, labels_fn, spanners_fn) {
 
 # --- internal: the count / p-value right-hand columns ---
 # The counts and the p-value right-align, every other numeric column
-# centres. Compared KEY against key -- `Variable` and `Group` can never
+# centers. Compared KEY against key -- `Variable` and `Group` can never
 # collide with these, they are excluded upstream by position rather than
 # by name.
 #
@@ -3436,7 +3436,7 @@ build_header_rows_from <- function(col_keys, labels_fn, spanners_fn) {
 # their `align = "auto"` else-arm, which was dead once `"auto"` was
 # removed from the public enum. Excel reaches it at `align = "decimal"`
 # only -- its cells are unpadded, so the default has no decimal stack to
-# centre and keeps this convention instead; `"center"` and `"right"`
+# center and keeps this convention instead; `"center"` and `"right"`
 # take the same literal alignment they take everywhere else.
 .continuous_right_cols <- function(col_keys) {
   which(col_keys %in% c(.CON_KEY_N, .CON_KEY_WEIGHTED_N, .CON_KEY_P))
@@ -3481,11 +3481,11 @@ export_desc_table <- function(
       class = "spicy_internal_invariant"
     )
   }
-  # The header layer, parameterised. Three closures -- how a bound key
+  # The header layer, parameterized. Three closures -- how a bound key
   # is shortened for the engines, what header a key prints, and which
   # columns share a spanner -- because the SIX engines below each call
   # them and none of them may re-derive one. `NULL` is the continuous
-  # vocabulary, i.e. the behaviour of every caller until now, byte for
+  # vocabulary, i.e. the behavior of every caller until now, byte for
   # byte; `table_categorical_svy()` supplies its own, whose spanners are
   # its `by` groups rather than its interval bounds.
   hl_rename <- header_layout$rename %||%
@@ -3505,14 +3505,14 @@ export_desc_table <- function(
 
   # Pre-pad numeric cells with figure-spaces (U+2007, digit-width) so
   # that every string in a column has the same width with the decimal
-  # mark at the same internal position. Centring those uniform-width
+  # mark at the same internal position. Centering those uniform-width
   # strings then stacks the decimal points vertically. We use this
   # strategy on every engine that renders the body strings -- flextable,
   # word, ASCII print, plus gt and tinytable -- rather than
   # gt::cols_align_decimal() / tinytable::style_tt(align = "d"). The
   # native primitives render differently on each engine (gt looks
-  # right-aligned; tinytable centres each cell on its own value rather
-  # than on the decimal mark), so going through the pad-then-centre
+  # right-aligned; tinytable centers each cell on its own value rather
+  # than on the decimal mark), so going through the pad-then-center
   # path gives a single homogeneous decimal alignment across all
   # engines. Same approach as `table_regression()` and
   # `table_continuous_lm()` for cross-function consistency. Excel is
@@ -3600,8 +3600,8 @@ export_desc_table <- function(
     tt <- .spicy_tt_escape(tt)
 
     # Body alignment. The first column ("Variable") and "Group" (when
-    # present) are always left-aligned; numeric columns honour the
-    # `align` argument: "decimal" -> centre uniform-width pre-padded
+    # present) are always left-aligned; numeric columns honor the
+    # `align` argument: "decimal" -> center uniform-width pre-padded
     # strings (same strategy as table_regression() / table_continuous_lm());
     # "center" / "right" -> their literal alignment.
     left_j <- seq_along(stub_keys)
@@ -3610,7 +3610,7 @@ export_desc_table <- function(
     }
     numeric_j <- setdiff(seq_len(nc), left_j)
     if (use_decimal && length(numeric_j) > 0L) {
-      # Cells were pre-padded with figure-spaces upstream; centring
+      # Cells were pre-padded with figure-spaces upstream; centering
       # uniform-width strings places the decimal points at the same
       # horizontal position. Same tinytable strategy as
       # `table_regression()`.
@@ -3751,7 +3751,7 @@ export_desc_table <- function(
     }
 
     # Alignment. The Variable / Group columns are always left-aligned;
-    # numeric columns honour the `align` argument: "decimal" centres
+    # numeric columns honor the `align` argument: "decimal" centers
     # uniform-width pre-padded strings (same strategy as
     # table_regression() / table_continuous_lm()); "center" / "right"
     # use gt::cols_align() literally.
@@ -3761,7 +3761,7 @@ export_desc_table <- function(
     left_cols <- unname(gt_ids[stub_keys])
     numeric_cols <- setdiff(gt_col_ids, left_cols)
     if (use_decimal && length(numeric_cols) > 0L) {
-      # Cells were pre-padded with figure-spaces upstream; centring
+      # Cells were pre-padded with figure-spaces upstream; centering
       # uniform-width strings places the decimal points at the same
       # horizontal position. Same gt strategy as `table_regression()`.
       tbl <- gt::cols_align(tbl, align = "center", columns = numeric_cols)
@@ -3859,8 +3859,8 @@ export_desc_table <- function(
         vapply(
           ci_cols,
           function(id) {
-            # Same second line of defence as the categorical selector:
-            # the ids are sanitised upstream, so this is the identity
+            # Same second line of defense as the categorical selector:
+            # the ids are sanitized upstream, so this is the identity
             # today -- and the guarantee the sass compiler never again
             # sees an unterminated attribute selector from this branch.
             sprintf(
@@ -3956,7 +3956,7 @@ export_desc_table <- function(
     # header cells holding the same string, and `map$top` now carries the
     # resolved labels where it used to carry the keys. Second
     # label-indexed mechanism of the family after `gspec` above, and the
-    # same stage-2 hazard: two neighbouring columns whose headers
+    # same stage-2 hazard: two neighboring columns whose headers
     # translate alike would merge into a phantom spanner.
     # `map$col_keys` stays the frozen key, so only the header geometry is
     # exposed. Kept as-is -- replacing it with explicit `merge_at()`
@@ -3972,10 +3972,10 @@ export_desc_table <- function(
     ft <- flextable::align(ft, j = left_j, part = "all", align = "left")
     if (use_decimal && length(numeric_j) > 0L) {
       # Cells were pre-padded by `decimal_align_strings()` above;
-      # CENTRE the padded strings in the default body font (no
+      # CENTER the padded strings in the default body font (no
       # monospace override). Same single-font policy as
       # table_regression() (regression_dispatch.R:1345): with
-      # uniform-precision columns, centring still LOOKS decimal-
+      # uniform-precision columns, centering still LOOKS decimal-
       # aligned because every cell has the same character width.
       ft <- flextable::align(
         ft,
@@ -4158,17 +4158,17 @@ export_desc_table <- function(
     # same column-level rule the other engines apply through
     # `cols_align()` / `style_tt(j = )`:
     #
-    #   "center" -- every numeric column centres;
+    #   "center" -- every numeric column centers;
     #   "right"  -- every numeric column right-aligns;
     #   "decimal" (default) -- Excel cells are NOT figure-space padded
     #     (padding does not align decimals under a proportional font),
-    #     so there is nothing to centre into a decimal stack. This value
+    #     so there is nothing to center into a decimal stack. This value
     #     keeps the engine's own convention instead: the counts and the
-    #     p-value right-align, the rest centres. That is the rule
+    #     p-value right-align, the rest centers. That is the rule
     #     `.continuous_right_cols()` names, and Excel is its one caller.
     #
     # The spanner row is styled with the body here, as it always has
-    # been; the HTML engines centre it independently.
+    # been; the HTML engines center it independently.
     left_cols <- seq_along(stub_keys)
     numeric_cols <- setdiff(seq_len(nc), left_cols)
     right_cols <- if (use_decimal) {

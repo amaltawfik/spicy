@@ -226,7 +226,7 @@ test_that("distribution variance is NA for non-finite Poisson lambda (line 890)"
   expect_true(is.na(spicy:::.nakagawa_distribution_variance(comps)))
 })
 
-test_that("distribution variance honours the binomial link switch", {
+test_that("distribution variance honors the binomial link switch", {
   # Spot-check the supported binomial links (closed-form constants) plus
   # the NA fall-through for an unsupported link inside the switch.
   expect_equal(

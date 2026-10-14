@@ -2,7 +2,7 @@
 # Phase 5b: as_regression_frame() method for nnet::multinom.
 #
 # Multinomial logit fits (nnet::multinom) have fundamentally different
-# coefficient organisation from every other class spicy supports:
+# coefficient organization from every other class spicy supports:
 #
 #   * stats::coef(fit) returns a MATRIX with one row per non-reference
 #     outcome level and one column per predictor (incl. Intercept).
@@ -115,7 +115,7 @@ as_regression_frame.multinom <- function(
   # Per-outcome AME on P(Y = k): avg_slopes() returns one row per
   # (predictor, outcome), aligned with the per-outcome B blocks. The
   # AME layer recomputes the same CR* matrix and hands it to
-  # avg_slopes(), so AME uncertainty honours the requested estimator.
+  # avg_slopes(), so AME uncertainty honors the requested estimator.
   coefs <- .attach_ame_to_frame_coefs(
     coefs,
     fit,
@@ -167,7 +167,7 @@ as_regression_frame.multinom <- function(
   cf <- stats::coef(fit)
   se_mat <- summary(fit)$standard.errors
 
-  # Normalise to matrix form (n_outcomes-1) x (n_predictors).
+  # Normalize to matrix form (n_outcomes-1) x (n_predictors).
   if (is.matrix(cf)) {
     coef_mat <- cf
     se_full <- as.matrix(se_mat)

@@ -401,7 +401,7 @@ test_that("an unweighted fit has no weighted count, and does not invent one", {
 
 test_that("a design fit beside an unweighted glm keeps the count to itself", {
   # The mixed table the row order was designed for. The design fit
-  # names its population; its neighbour leaves the cell undefined
+  # names its population; its neighbor leaves the cell undefined
   # instead of repeating its own `n`.
   d <- .fsf_designs()
   f1 <- survey::svyglm(api00 ~ ell, design = d$strat)
@@ -452,7 +452,7 @@ test_that("a design Cox beside an lm does not drag in the Cox AIC", {
 })
 
 test_that("queuing a glm statistic on a design fit can never print one", {
-  # The other half of the exclusion is defence in depth: the two
+  # The other half of the exclusion is defense in depth: the two
   # pseudo-R-squareds the glm branch queues are NULL in a svyglm frame,
   # so the rows are dropped whether or not the branch fires. This is the
   # invariant that makes that true -- if a future change gave them a

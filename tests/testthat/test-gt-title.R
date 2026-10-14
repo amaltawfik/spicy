@@ -149,7 +149,7 @@ test_that("the gt title equals the title the console prints", {
 
 test_that("the saved gt file carries the note, not only the title", {
   # The exact twin of the title hole this file opened on. The note was
-  # a `spicy_note` ATTRIBUTE, materialised only by `print.spicy_gt()` /
+  # a `spicy_note` ATTRIBUTE, materialized only by `print.spicy_gt()` /
   # `knit_print.spicy_gt()`. Every other route -- `gtsave()`,
   # `as_raw_html()`, a non-interactive `print()` -- shipped a titled
   # table stripped of the disclosure the console prints: which missing

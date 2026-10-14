@@ -11,7 +11,7 @@
 #
 # Oracles are survey's own numbers, pinned at 17 digits; MASS::polr with
 # the same weights triangulates the point estimates only (different
-# optimiser, and its standard errors are model-based by construction).
+# optimizer, and its standard errors are model-based by construction).
 # ---------------------------------------------------------------------------
 
 # ---- Fixtures -------------------------------------------------------------
@@ -99,7 +99,7 @@ test_that("MASS::polr with the same weights reproduces the point estimates", {
     weights = d$pw,
     Hess = TRUE
   ))
-  # Different optimisers: agreement to ~1.6e-6 relative, not to the bit.
+  # Different optimizers: agreement to ~1.6e-6 relative, not to the bit.
   expect_equal(
     unname(stats::coef(ref)),
     unname(fit$coefficients),
@@ -144,7 +144,7 @@ test_that("the cut-point p is a t, not a normal left behind by the CI", {
     tolerance = 1e-6
   )
   # The normal answer is two orders of magnitude away on the first
-  # cut-point: parameterising only the interval would have left a p from
+  # cut-point: parameterizing only the interval would have left a p from
   # one distribution beside a CI from another, in one row.
   expect_gt(th$p_value[1L] / 1.1745772275875659e-15, 50)
 })
@@ -165,7 +165,7 @@ test_that("the promoted Thresholds rows use the same t for their interval", {
   expect_s3_class(out, "data.frame")
 })
 
-test_that("polr and clm cut-points are untouched by the parameterisation", {
+test_that("polr and clm cut-points are untouched by the parameterization", {
   skip_if_not_installed("MASS")
   d <- .olr_data()
   fit <- suppressWarnings(MASS::polr(

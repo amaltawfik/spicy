@@ -34,7 +34,7 @@
 
 # ---- Mixed frequentist + Bayesian CI disclosure --------------------------
 # Only fires when SOME (not all) models are posterior AND a CI column is
-# actually displayed: the shared "95% CI" header cannot be relabelled to
+# actually displayed: the shared "95% CI" header cannot be relabeled to
 # "CrI" in a mixed table, so each Bayesian model discloses its interval.
 
 .mk_ci_frame <- function(method, level = 0.95) {
@@ -88,7 +88,7 @@ test_that("posterior CI disclosure needs a displayed CI column and a mixed set",
   )
 })
 
-test_that("posterior CI disclosure honours a non-default ci_level", {
+test_that("posterior CI disclosure honors a non-default ci_level", {
   frames <- list(
     .mk_ci_frame("wald"),
     .mk_ci_frame("posterior_quantile", level = 0.89)

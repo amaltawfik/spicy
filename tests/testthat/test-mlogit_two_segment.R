@@ -1,7 +1,7 @@
 # ---------------------------------------------------------------------------
 # mlogit two-segment layout (dev/mlogit_two_segment_spec.md, option B
 # validated 2026-07-04): generic (alternative-invariant) coefficients
-# as a leading section, then one labelled section per non-reference
+# as a leading section, then one labeled section per non-reference
 # alternative with bare row labels -- the Stata asclogit presentation.
 # Terms keep mlogit's native "<term>:<alt>" names, so tidy() /
 # output = "long" / keep / drop are untouched by the regrouping.

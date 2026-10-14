@@ -25,7 +25,7 @@ fake_brmsfit <- function() {
 # ---- regression_validate.R 655-674: robust vcov on a Bayesian fit ----
 
 test_that("a robust `vcov` on a Bayesian fit is refused on principle", {
-  # Not "support is pending": a posterior has no sandwich analogue, so
+  # Not "support is pending": a posterior has no sandwich analog, so
   # the message names the design reason rather than the generic
   # "being added" wording used for classes awaiting support.
   err <- expect_error(
@@ -38,7 +38,7 @@ test_that("a robust `vcov` on a Bayesian fit is refused on principle", {
     "`vcov = \"HC3\"` is not defined for Bayesian fits (`stanreg`).",
     fixed = TRUE
   )
-  expect_match(msg, "no sandwich analogue", fixed = TRUE)
+  expect_match(msg, "no sandwich analog", fixed = TRUE)
   # The actionable alternative is to MODEL the structure, not to
   # sandwich it after the fact.
   expect_match(msg, "rstanarm::stan_glmer()", fixed = TRUE)

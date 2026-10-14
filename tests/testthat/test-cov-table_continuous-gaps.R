@@ -71,7 +71,7 @@ test_that("weights with no positive value are refused", {
 
 test_that("rescale = TRUE without weights warns and leaves the table unweighted", {
   # 943-946: the `weights`-less else-arm. The table is still produced;
-  # only the normalisation request is dropped.
+  # only the normalization request is dropped.
   expect_warning(
     out <- table_continuous(
       mtcars,

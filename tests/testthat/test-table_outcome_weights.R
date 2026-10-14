@@ -76,7 +76,7 @@ test_that("integer weights reproduce the duplicated data", {
   )
 })
 
-test_that("rescale normalises over the whole sample, never per level", {
+test_that("rescale normalizes over the whole sample, never per level", {
   # A per-level rescale would destroy the relative weights across
   # levels -- the entire information a sampling weight carries into
   # this table. Rescaling multiplies every weight by ONE constant, read
@@ -85,7 +85,7 @@ test_that("rescale normalises over the whole sample, never per level", {
   # `sum(w) - 1` and the sum of weights is what rescaling changes.
   #
   # Both halves are checked against the SIBLING, which is the family's
-  # published behaviour: same numbers, per level, to 1e-12.
+  # published behavior: same numbers, per level, to 1e-12.
   d <- .tow_data()
   raw <- .tow_quiet(table_outcome(
     d,

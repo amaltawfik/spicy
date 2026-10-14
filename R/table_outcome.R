@@ -261,7 +261,7 @@
 # `drop_na = TRUE` each block loses its own missing `select` rows, and the
 # note says so, per variable.
 #
-# `rescale` normalises the weights over the outcome's whole surviving
+# `rescale` normalizes the weights over the outcome's whole surviving
 # sample, ONCE, never per level: a per-level rescale would destroy the
 # relative weights across levels, which is the entire information a
 # sampling weight carries into this table.
@@ -1143,7 +1143,7 @@ table_outcome <- function(
   # object, and the documentation says so. This shape has no wide form
   # to be the other half of the pair: the compute frame is already one
   # row per level (plus the block header and the overall row), which is
-  # what `.row_role` marks. The two names coexist for harmonisation with
+  # what `.row_role` marks. The two names coexist for harmonization with
   # `table_continuous()`, where the pair is synonymous for the same
   # reason, and with `table_continuous_lm()`, where it is not. A real
   # pivot would have to invent a second shape, not reveal one.

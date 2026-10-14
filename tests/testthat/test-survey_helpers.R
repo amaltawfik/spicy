@@ -63,7 +63,7 @@
 
 # ---- recognition ----------------------------------------------------------
 
-test_that("`.is_survey_design()` recognises every design class it must", {
+test_that("`.is_survey_design()` recognizes every design class it must", {
   skip_if_not_installed("survey")
   for (w in c("clus1", "strat", "rep1", "cal", "pps", "twophase")) {
     expect_true(.is_survey_design(.svy_fixture(w)), info = w)
@@ -76,7 +76,7 @@ test_that("`.is_survey_design()` recognises every design class it must", {
   expect_false(.is_survey_design(list(cluster = 1)))
 })
 
-test_that("P1 supports linearised and replicate designs, refuses the rest", {
+test_that("P1 supports linearized and replicate designs, refuses the rest", {
   skip_if_not_installed("survey")
   for (w in c("clus1", "clus2", "strat", "srs", "rep1", "cal")) {
     expect_true(.is_supported_design(.svy_fixture(w)), info = w)
@@ -291,7 +291,7 @@ test_that("`.design_weights()` asks by name, and survey still means it", {
 
 # ---- design metadata ------------------------------------------------------
 
-test_that("`.design_meta()` reads a linearised design through public slots", {
+test_that("`.design_meta()` reads a linearized design through public slots", {
   skip_if_not_installed("survey")
   m <- .design_meta(.svy_fixture("strat"))
   expect_identical(m$kind, "linearized")
@@ -363,7 +363,7 @@ test_that("the design footer says what the design is, in three sentences", {
     "Design: replicate weights (JK1), 15 replicates; 14 degrees of freedom."
   )
   # The variance sentence is the one thing that must differ between the
-  # two regimes: a replicate design does not linearise anything. It
+  # two regimes: a replicate design does not linearize anything. It
   # names the scheme, because the same sentence in a regression footer
   # does.
   expect_identical(
@@ -375,8 +375,8 @@ test_that("the design footer says what the design is, in three sentences", {
 test_that("both families print the SAME variance sentence for one design", {
   # A reader who puts a design table and a regression on the same page
   # sees one fact, said once. The two used to spell it two ways
-  # ("Standard errors: Taylor linearisation (survey)." against "Std.
-  # errors: Design-based (Taylor linearisation).") and the difference
+  # ("Standard errors: Taylor linearization (survey)." against "Std.
+  # errors: Design-based (Taylor linearization).") and the difference
   # carried no information.
   skip_if_not_installed("survey")
   for (nm in c("clus1", "rep1")) {

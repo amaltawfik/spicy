@@ -60,7 +60,7 @@ test_that("the default rendering is frozen under snapshot", {
   # a byte-identity witness. `smd = FALSE` IS the default: those are
   # the same call, so the test could not fail whatever the branch did.
   #
-  # What actually protects the default is a frozen artefact. These
+  # What actually protects the default is a frozen artifact. These
   # snapshots are the `smd = FALSE` rendering of both families; a lot
   # that disturbs it has to move them, deliberately and visibly.
   d <- .smd_eng_data()
@@ -172,7 +172,7 @@ test_that("smd = TRUE adds exactly one column, headed SMD, on every engine", {
   )
   # A lone column spans itself: its header cell is the same on both
   # header rows of the two-row layout, i.e. the column is not left
-  # under a neighbour's spanner.
+  # under a neighbor's spanner.
   hdr <- ft_con_on$header$dataset
   expect_identical(hdr[[ncol(hdr)]][[1L]], "SMD")
 

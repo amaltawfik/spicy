@@ -1,7 +1,7 @@
 # Engine parity at the CONTRACT level: everything the console prints
 # must reach gt / tinytable / flextable / clipboard through the
 # structured view, at the same precision and with the same
-# conventions. The batteries below pin the four artefacts the display
+# conventions. The batteries below pin the four artifacts the display
 # layer used to keep to itself:
 #
 #   * composite cells -- the "events/N" counts of `show_columns =
@@ -739,7 +739,7 @@ test_that("per-category AME columns carry each category's own cell", {
 })
 
 
-# ---- generalised undefined: NA with the term present ----------------------
+# ---- generalized undefined: NA with the term present ----------------------
 
 test_that("an aliased coefficient shows the console's en-dash in every engine", {
   # Decision 12 (2026-08-14): any NA that survives the console's

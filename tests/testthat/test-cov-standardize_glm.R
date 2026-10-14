@@ -35,7 +35,7 @@ test_that("standardize_glm pulls weights from the fit when weights = NULL", {
 
   # weights = NULL drives `weights <- stats::weights(fit)` (line 48); an
   # unweighted glm yields a length-n vector of 1s, so the algebraic posthoc
-  # scaling still produces a finite standardised slope.
+  # scaling still produces a finite standardized slope.
   res <- spicy:::standardize_glm(fit, method = "posthoc", weights = NULL)
 
   mpg_beta <- res$estimate[res$term == "mpg"]
@@ -64,7 +64,7 @@ test_that("glm refit emits an all-NA row for an aliased predictor", {
   expect_true(is.na(dup_row$ci_high))
   expect_true(is.na(dup_row$statistic))
   expect_true(is.na(dup_row$p_value))
-  # The non-singular term still has a finite standardised estimate.
+  # The non-singular term still has a finite standardized estimate.
   expect_true(is.finite(tbl$estimate[tbl$term == "wt"]))
 })
 
@@ -177,7 +177,7 @@ test_that("compute_menard_sd_y_star returns NA for log-binomial (no latent thres
   expect_true(is.na(spicy:::compute_menard_sd_y_star(fit)))
 })
 
-test_that("pseudo standardisation on an unsupported binomial link returns all-NA beta", {
+test_that("pseudo standardization on an unsupported binomial link returns all-NA beta", {
   fit <- glm(am ~ mpg + wt, data = mtcars, family = binomial(link = "cauchit"))
 
   # The unsupported link makes SD(Y*) NA, so standardize_pseudo_glm() emits a
@@ -226,7 +226,7 @@ test_that("compute_menard_sd_y_star strips na.exclude NA padding (finite SD(Y*))
   expect_equal(sd_y_star, spicy:::compute_menard_sd_y_star(fit_omit))
 })
 
-test_that("pseudo standardisation on an na.exclude fit returns finite betas (no caveat)", {
+test_that("pseudo standardization on an na.exclude fit returns finite betas (no caveat)", {
   d <- mtcars
   d$mpg[c(2, 5, 9)] <- NA
   fit <- glm(am ~ mpg + wt, data = d, family = binomial, na.action = na.exclude)
@@ -261,7 +261,7 @@ test_that("pseudo standardisation on an na.exclude fit returns finite betas (no 
 test_that("algebraic glm re-aligns SEs by name for an aliased predictor (HC3)", {
   # `sandwich::vcovHC` (HC3) DROPS the aliased coefficient's row/column, so the
   # diagonal SE vector is length p - 1 while coef()/model.matrix() are full
-  # width p. The standardised SE must come from a NAME-aligned vector (NA for
+  # width p. The standardized SE must come from a NAME-aligned vector (NA for
   # the aliased term) -- not a silent length-p-1 -> length-p recycle, which
   # previously produced a wrong SE for every term and a recycling warning.
   d <- mtcars
@@ -292,7 +292,7 @@ test_that("algebraic glm re-aligns SEs by name for an aliased predictor (HC3)", 
   expect_true(is.na(dup_row$statistic))
   expect_true(is.na(dup_row$p_value))
 
-  # Non-aliased term -> correct standardised estimate + HC3 SE from first
+  # Non-aliased term -> correct standardized estimate + HC3 SE from first
   # principles: beta = b * sd(wt); se = sqrt(vcovHC[wt, wt]) * sd(wt).
   b <- stats::coef(fit)
   mm <- stats::model.matrix(fit)
@@ -352,7 +352,7 @@ test_that("refit on a pre-built matrix response uses the proportion form", {
   # A stored matrix column (`d$Y <- cbind(s, f)`) re-evaluates fine
   # against the frame, but the caller's weights are POST-initialize
   # (the row totals): the refit used to re-run the binomial initialize
-  # on the matrix and standardise against an effective-weights =
+  # on the matrix and standardize against an effective-weights =
   # totals^2 fit -- beta_x 0.82544298761936219 instead of the pin
   # std_refit_beta_x_CORRECT = 0.82153410378826597
   # (vcov_cbind_oracle_pins.csv).

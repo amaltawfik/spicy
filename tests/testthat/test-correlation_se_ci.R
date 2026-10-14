@@ -135,7 +135,7 @@ test_that("lmer rho SE matches the manual Delta-method formula to 1e-10", {
 # block out COLUMN-MAJOR (vech); the original row-major position
 # formulas coincided with column-major only for n <= 2, so a 3-term
 # random block (n = 3) silently pulled SEs from the wrong vcov cells
-# (cov(term_3, term_1) mislabelled as var(term_2), etc.). Cross-
+# (cov(term_3, term_1) mislabeled as var(term_2), etc.). Cross-
 # validate every variance-row SE against merDeriv-by-name and every
 # correlation-row SE against a numDeriv gradient on the 6x6 sub-vcov.
 

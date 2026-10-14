@@ -126,7 +126,7 @@ as_regression_frame.fixest <- function(
     dfr <- tryCatch(stats::df.residual(fit), error = function(e) Inf)
     # nocov: defensive; df.residual.fixest always returns a finite numeric
     # for a valid OLS feols, and the tryCatch above already maps any error
-    # to Inf, so this NULL/non-finite normaliser is never exercised.
+    # to Inf, so this NULL/non-finite normalizer is never exercised.
     if (is.null(dfr) || !is.finite(dfr)) {
       dfr <- Inf # nocov
     }
@@ -428,7 +428,7 @@ as_regression_frame.fixest <- function(
 }
 
 
-# vcov_label normaliser. fixest's "vcov_type" attribute already carries
+# vcov_label normalizer. fixest's "vcov_type" attribute already carries
 # a near-renderer-ready label; we keep it verbatim but rename "IID"
 # to "Classical" for cross-engine consistency.
 .fixest_vcov_label <- function(vt) {

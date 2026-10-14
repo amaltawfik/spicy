@@ -68,7 +68,7 @@ compute_lm_model_stats <- function(fit, focal_term = NULL) {
 #   omega^2_partial = (SS_effect - df_effect . MSE) / (SS_effect + (N - df_effect) . MSE)
 # where SS_effect = F . df_effect . MSE_full and MSE_full = SS_resid / df_resid.
 # Note this differs from the *model-level* Hays omega^2 in `compute_lm_omega2()`
-# (denominator uses SS_total): the partial form normalises by the
+# (denominator uses SS_total): the partial form normalizes by the
 # effect-only sum of squares plus residual sum of squares, which is
 # the correct partial-effect quantity in a covariate-adjusted model.
 compute_lm_partial_omega2 <- function(fit, fs) {
@@ -550,7 +550,7 @@ align_design_to_coef <- function(design, cf) {
 #     and `marginaleffects::avg_predictions(by = "x")`):
 #     newdata = the OBSERVED data with `x` set to the focal level.
 #     Predictions are averaged over the empirical joint distribution
-#     of covariates -- the G-computation / standardisation estimand.
+#     of covariates -- the G-computation / standardization estimand.
 #     Population-weighted by construction.
 #
 #   * `"balanced"` (matches `emmeans::emmeans()` default, SPSS
@@ -560,7 +560,7 @@ align_design_to_coef <- function(design, cf) {
 #     Treats the design as if covariates were balanced -- the
 #     "marginal mean assuming a balanced design" estimand.
 #
-# Behaviour collapses to the bivariate fast path (just `x = focal`)
+# Behavior collapses to the bivariate fast path (just `x = focal`)
 # when there are no covariates -- both methods coincide trivially.
 # When all covariates are numeric (no levels to expand over), the
 # two methods also coincide because the mean of a numeric column is

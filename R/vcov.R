@@ -13,7 +13,7 @@
 #   * compute_satt_df_per_coef(): clubSandwich Satterthwaite df map.
 
 # Fits whose variance is fixed by a SAMPLING DESIGN, not by the working
-# model: survey::svyglm() (Taylor linearisation), its replicate-weights
+# model: survey::svyglm() (Taylor linearization), its replicate-weights
 # sibling svrepglm, svyolr and svycoxph. For these the design carries the
 # strata, the clusters, the finite population correction and any
 # calibration, and stats::vcov(fit) already IS the (design-)robust
@@ -41,7 +41,7 @@
 # formats that same requested type, and the footer therefore announced
 # "heteroskedasticity-robust (HC3)" over classical standard errors. A
 # warning in the console does not travel with a saved table, an exported
-# Word document or a knitted report; the mislabelled numbers do.
+# Word document or a knitted report; the mislabeled numbers do.
 #
 # The register recorded the public paths as safe by construction, because
 # the estimator is validated against the class first. They were not: the
@@ -92,7 +92,7 @@
 # be enforced by the package (register n. 244(h)).
 #
 # The hint lists the vocabulary rather than the class's own subset: this
-# is the frontier where a token is UNRECOGNISED, and what a given class
+# is the frontier where a token is UNRECOGNIZED, and what a given class
 # can compute is the next question, answered by the branches below and by
 # .robust_vcov_support() at the public gate.
 .abort_unknown_vcov_type <- function(type) {
@@ -1006,7 +1006,7 @@ compute_satt_df_per_coef <- function(fit, vc, cluster) {
 #
 # Note: "classical" is the user-facing token for the model-based default and is
 # supported by EVERY class, so default calls never error -- only an explicit
-# robust request on a class that cannot honour it does.
+# robust request on a class that cannot honor it does.
 .robust_vcov_support <- function(fit) {
   full <- c(
     "classical",
@@ -1493,7 +1493,7 @@ compute_satt_df_per_coef <- function(fit, vc, cluster) {
 # cph -- identical to coxph(..., cluster=)). robcov() needs the fit to carry its
 # design + response matrices (x = TRUE, y = TRUE); we surface a clear, actionable
 # error when they are missing instead of rms's terse "did not specify x=TRUE in
-# fit". Dimnames are normalised ("Intercept" -> "(Intercept)") to match the
+# fit". Dimnames are normalized ("Intercept" -> "(Intercept)") to match the
 # coefs frame's term column (see .rms_coef_named()).
 .rms_robust_vcov <- function(fit, cluster) {
   if (is.null(fit[["x"]]) || is.null(fit[["y"]])) {

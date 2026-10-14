@@ -288,11 +288,11 @@ test_that("the linear-model family escapes its tinytable cells too", {
 #
 # The public column name does not move: it is what `output =
 # "data.frame"` publishes and what user code indexes by. Only gt's
-# internal id is sanitised, and only for the characters that cannot
+# internal id is sanitized, and only for the characters that cannot
 # survive an HTML attribute or a CSS string -- so a table of ordinary
 # names renders exactly as it did.
 
-# A `by` level carrying every character the id sanitiser answers for.
+# A `by` level carrying every character the id sanitizer answers for.
 .esc_id_level <- "Q\"<b>\\x"
 
 .esc_id_data <- function(levs = c("Lo", .esc_id_level)) {
@@ -378,7 +378,7 @@ test_that("the hostile name still reads verbatim in the rendered header", {
   html <- as.character(gt::as_raw_html(
     .esc_id_builders()$table_continuous_lm(d)
   ))
-  # Sanitising the ID must not touch the LABEL: gt escapes the angle
+  # Sanitizing the ID must not touch the LABEL: gt escapes the angle
   # brackets, leaves the quote and the backslash as themselves, and the
   # reader sees the level exactly as it stands in the data.
   expect_true(grepl("M (Q\"&lt;b&gt;\\x)", html, fixed = TRUE))
@@ -420,7 +420,7 @@ test_that("the gt id layer leaves the public column names alone", {
 })
 
 test_that("an ordinary column name reaches gt untouched", {
-  # The control for the witnesses above: the sanitiser is the IDENTITY
+  # The control for the witnesses above: the sanitizer is the IDENTITY
   # on every name that carries none of those four characters, so an
   # ordinary table renders byte for byte as it did before the id layer
   # existed. Pinned on the ids gt receives, which is what it builds the

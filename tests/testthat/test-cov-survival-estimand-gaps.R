@@ -6,7 +6,7 @@
 #   * .survreg_estimand_gates(): the "needs a named survreg distribution"
 #     refusal (lines 375-382), reached with a survreg fit whose `dist` is
 #     a distribution LIST -- documented survreg usage, so the arm is live
-#     user-facing behaviour, not dead code.
+#     user-facing behavior, not dead code.
 #   * .survreg_estimand_points(): the NULL-rows fallback `data.frame()`
 #     (line 478) when no predictor yields a contrast row.
 #   * .survival_estimand_rows(): the tau = "minmax" fallback to
@@ -154,7 +154,7 @@ test_that(".survreg_estimand_points returns an empty frame when no contrast row 
 # ---- 3. tau = "minmax" with no factor predictor --------------------------
 
 # "minmax" is the smallest per-level maximum observed time across factor
-# predictors. An all-continuous model has no levels to minimise over, so
+# predictors. An all-continuous model has no levels to minimize over, so
 # tau falls back to the largest observed time.
 
 test_that("tau = 'minmax' falls back to max(observed time) without a factor predictor", {

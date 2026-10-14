@@ -7,7 +7,7 @@
 # is built and .robust_vcov_label() formats that same requested type, so
 # the footer announced "heteroskedasticity-robust (HC3)" over classical
 # standard errors. A console warning does not travel with a saved table,
-# an exported Word file or a knitted report; the mislabelled numbers do.
+# an exported Word file or a knitted report; the mislabeled numbers do.
 
 test_that("a failed HC* computation aborts instead of returning classical", {
   skip_if_not_installed("MASS")
@@ -30,7 +30,7 @@ test_that("a failed HC* computation aborts instead of returning classical", {
     "could not be computed for this fit"
   )
   # No warning-and-carry-on: nothing is returned at all, so nothing can be
-  # labelled. The old contract returned the classical matrix here.
+  # labeled. The old contract returned the classical matrix here.
   got <- tryCatch(
     compute_model_vcov(fit, type = "HC3"),
     error = function(e) e

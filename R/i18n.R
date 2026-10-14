@@ -129,7 +129,7 @@
   stat_phi = "Phi",
   stat_gamma = "Goodman-Kruskal Gamma",
   stat_tau_b = "Kendall's Tau-b",
-  # "Stuart's Tau-c" is the SAS PROC FREQ label (honouring Stuart, 1953);
+  # "Stuart's Tau-c" is the SAS PROC FREQ label (honoring Stuart, 1953);
   # SPSS and PSPP print "Kendall's tau-c" for the same statistic.
   stat_tau_c = "Stuart's Tau-c",
   stat_somers_d = "Somers' D",
@@ -182,7 +182,7 @@
   # `fitstat_change_prefix` ("\u0394%s"), which is a template for a
   # nested-comparison ROW label.
   symbol_delta = "\u0394",
-  # The two standardised mean differences of `table_continuous_lm()`.
+  # The two standardized mean differences of `table_continuous_lm()`.
   symbol_cohens_d = "d",
   symbol_hedges_g = "g",
   symbol_eta_sq_partial = "\u03B7\u00B2",
@@ -192,7 +192,7 @@
   symbol_f2_partial = "f\u00B2",
   symbol_r2 = "R\u00B2",
   # Composed character (base + combining diacritic): never retype it, copy
-  # it. Sensitive to Unicode normalisation and to ASCII width computation.
+  # it. Sensitive to Unicode normalization and to ASCII width computation.
   symbol_sigma_hat = "\u03C3\u0302",
 
   # -- table_regression(): column headers -----------------------------------
@@ -311,7 +311,7 @@
   # `label_block_header` like every other block rather than carrying
   # its own colon -- one typographic rule for one visual role.
   label_block_fixed_effects = "Fixed effects",
-  # The row that names the modelled outcome when a multi-outcome
+  # The row that names the modeled outcome when a multi-outcome
   # table shows one per column.
   row_outcome = "Outcome",
   # One hole: the grouping factor (a fixest absorbed factor, a random
@@ -332,7 +332,7 @@
   # of an orphaned companion column.
   note_re_method = "%s (%s)",
   # The random-effects footer line, with and without its LR test. The
-  # colon and the full stop are the joiners the line is built from.
+  # colon and the period are the joiners the line is built from.
   note_re_line = "%s.",
   note_re_line_lrt = "%s: %s.",
   # The LR test of the random part. Four holes: the null model (one of
@@ -419,7 +419,7 @@
   # The method clause, in two whole sentences rather than one sentence
   # with a translatable hole: a stratified fit standardizes within each
   # subject's own stratum baseline, and an inflected language may need
-  # to say so somewhere other than where English parenthesises it. One
+  # to say so somewhere other than where English parenthesizes it. One
   # hole in each: the replicate count. DATA.
   note_estimand_method = "; adjusted by g-computation from the fitted model, SEs by nonparametric bootstrap (%s replicates).",
   note_estimand_method_stratified = "; adjusted by g-computation from the fitted model (within-stratum baselines), SEs by nonparametric bootstrap (%s replicates).",
@@ -461,10 +461,10 @@
 
   # -- table footnotes: the APA prefix --------------------------------------
   # `note_prefix` is what a note BUILDER prepends. `note_prefix_emphasis` is
-  # the part the rich engines italicise (APA Manual 7 section 7.14) and the
-  # part their recognisers look for; it must be a prefix of `note_prefix`
+  # the part the rich engines italicize (APA Manual 7 section 7.14) and the
+  # part their recognizers look for; it must be a prefix of `note_prefix`
   # (asserted in test-i18n.R). Neither is ever re-typed at a call site: the
-  # recogniser derives its pattern and its offset from the key.
+  # recognizer derives its pattern and its offset from the key.
   note_prefix = "Note. ",
   note_prefix_emphasis = "Note.",
   note_assoc_measure_item = "%s: %s",
@@ -612,7 +612,7 @@
   # because `spicy_fmt()` substitutes no decimal mark. The "-" between
   # the group labels is punctuation, like `header_lm_delta`'s.
   note_gloss_smd = "%1$s = standardized mean difference (%2$s - %3$s); |%1$s| > %4$s is the usual imbalance threshold.",
-  # Why one column of the table has no sign while its neighbours do.
+  # Why one column of the table has no sign while its neighbors do.
   # Only shown when a variable has more than two categories.
   note_gloss_smd_multinomial = "For a variable with more than two categories the %s is the multivariate (Mahalanobis) distance between the two profiles of proportions, and is therefore unsigned.",
 
@@ -623,7 +623,7 @@
   # variance method, and the reference distribution.
   #
   # `note_design_line` is the joiner of the first sentence -- the
-  # semicolon and the full stop are punctuation whose spacing is
+  # semicolon and the period are punctuation whose spacing is
   # language-dependent, so they belong to the template.
   note_design_line = "Design: %s; %s.",
   note_design_stratified = "stratified (%s)",
@@ -656,8 +656,8 @@
   # No key of its own for the variance sentence: the twins print the
   # regression footer's, `note_std_errors_single` filled with one of the
   # `note_vcov_design_*` labels below. Two spellings of one fact
-  # ("Standard errors: Taylor linearisation (survey)." here against
-  # "Std. errors: Design-based (Taylor linearisation)." three lines
+  # ("Standard errors: Taylor linearization (survey)." here against
+  # "Std. errors: Design-based (Taylor linearization)." three lines
   # down in a regression table) is a difference the reader has to
   # resolve for nothing.
   note_design_df_used = "Confidence intervals and tests use the design degrees of freedom.",
@@ -743,7 +743,7 @@
   label_model_name = "Model %d",
   # Footer per-model lines cite the label the column spanners display
   # (.model_line() in regression_titlefooter.R): "Baseline: ..." when
-  # the user labelled the models, "Model 1: ..." otherwise.
+  # the user labeled the models, "Model 1: ..." otherwise.
   note_model_line = "%s: %s",
   # Two leading spaces are significant: the indented per-model line of the
   # Std. errors block.
@@ -774,9 +774,9 @@
   # The variance estimator of a fit under a sampling design, named by the
   # MECHANISM the design actually uses -- not by the design's R class,
   # which is never shown to a reader, and not by whether the descriptive
-  # twins support it (a without-replacement pps design is linearised and
+  # twins support it (a without-replacement pps design is linearized and
   # unsupported there). `note_vcov_design_taylor` holds the value the
-  # label had while it was a literal, so the linearised case stays
+  # label had while it was a literal, so the linearized case stays
   # byte-identical.
   #
   # One hole on the replicate line: the scheme identifier survey stores
@@ -920,7 +920,7 @@
 #
 # Hard error on an unknown key: a missing key is a development bug, never a
 # runtime condition. `[[` on a named character vector already raises
-# "subscript out of bounds", which is the behaviour we want.
+# "subscript out of bounds", which is the behavior we want.
 #
 # The English default is read FIRST, before either option: an unknown key
 # must raise the same condition whatever the language, and the default is
@@ -1154,7 +1154,7 @@ spicy_fmt <- function(key, ...) {
   out
 }
 
-# Normalise `options(spicy.labels)` to a named character vector, or raise.
+# Normalize `options(spicy.labels)` to a named character vector, or raise.
 #
 # Hard errors throughout, including on an unknown key: an override that
 # names a key spicy does not have is a label the user believes is in force
@@ -1439,7 +1439,7 @@ spicy_labels <- function(language = NULL) {
 
 # Escape a display label so it can be pasted into a regular expression.
 #
-# The package sometimes has to RECOGNISE one of its own labels in text it
+# The package sometimes has to RECOGNIZE one of its own labels in text it
 # assembled earlier. The pattern must then be generated from the label, never
 # typed out a second time: a hardcoded copy stops matching the day the label
 # changes -- silently, since a regex that fails to match raises nothing.
@@ -1447,9 +1447,9 @@ spicy_labels <- function(language = NULL) {
   gsub("([][{}()*+?.\\\\^$|])", "\\\\\\1", x)
 }
 
-# Split a rendered note into (emphasised prefix, remainder), or NULL when the
+# Split a rendered note into (emphasized prefix, remainder), or NULL when the
 # note does not open with the prefix. The rich engines (tinytable, gt,
-# flextable / Word) italicise the first element and leave the second in
+# flextable / Word) italicize the first element and leave the second in
 # regular type -- none of them may re-type the prefix or hardcode its length.
 .note_prefix_split <- function(note) {
   marker <- spicy_str("note_prefix_emphasis")
@@ -1471,13 +1471,13 @@ spicy_labels <- function(language = NULL) {
 # continuation panel, to name the estimand it belongs to.
 #
 # Built from the registry rather than typed out: the labels and the pattern
-# that recognises them must move together. The credible / confidence labels are
+# that recognizes them must move together. The credible / confidence labels are
 # the two the historical pattern covered; `header_ci_label_hdi` is deliberately
-# NOT included, to keep today's behaviour byte-for-byte.
+# NOT included, to keep today's behavior byte-for-byte.
 #
 # The coverage is matched as digits with at most one decimal MARK,
 # because that is the whole of what `.ci_pct_display()` can write into
-# the header it has to recognise -- `formatC(level * 100, format =
+# the header it has to recognize -- `formatC(level * 100, format =
 # "fg")` has no scientific branch, and the display layer only ever
 # substitutes the single decimal point. `[0-9]+` alone missed every
 # fractional level -- `97.5% CI` at `ci_level = 0.975` -- and an
@@ -1485,7 +1485,7 @@ spicy_labels <- function(language = NULL) {
 # naming its carrier. The mark class covers the marks the package
 # writes (decision 27): the period, the comma, and the Lancet midline
 # dot (U+00B7). An exotic single-character mark outside the class
-# degrades the same way any unrecognised header does: the orphan keeps
+# degrades the same way any unrecognized header does: the orphan keeps
 # its bare header.
 .companion_header_pattern <- function() {
   ci_alt <- paste(

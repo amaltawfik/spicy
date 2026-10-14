@@ -342,7 +342,7 @@ test_that(".build_structured_outcome_row returns NULL when model_outcomes is emp
 test_that(".build_structured_outcome_row default-labels arm returns NULL (override system pending)", {
   # Distinct outcomes, no explicit labels and no model_outcome_labels:
   # display_labels falls to the `else model_outcomes` arm (641). The
-  # text-override system is not finalised, so the function still
+  # text-override system is not finalized, so the function still
   # returns NULL.
   f <- spicy:::.build_structured_outcome_row
   expect_null(f(

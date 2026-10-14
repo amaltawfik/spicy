@@ -2,9 +2,9 @@
 #
 # `table_continuous_svy()` and `table_categorical_svy()` compute no
 # design-based statistic of their own: every number they show comes
-# from survey (Lumley), which is the package that owns linearisation
+# from survey (Lumley), which is the package that owns linearization
 # and replicate weights. What lives in this file is the part survey
-# does not do -- recognising a design object, reading the handful of
+# does not do -- recognizing a design object, reading the handful of
 # design facts a table owes its reader, and cutting a domain the one
 # way that keeps the variance right.
 #
@@ -33,7 +33,7 @@
 .SURVEY_MIN_VERSION <- "4.5"
 
 # Every design class survey publishes. Deliberately wider than what the
-# twins support: a `twophase` design must be RECOGNISED as a design so
+# twins support: a `twophase` design must be RECOGNIZED as a design so
 # it earns the classed refusal below instead of "`data` must be a
 # data.frame".
 #
@@ -56,7 +56,7 @@
   )
 }
 
-# The two classes the twins support: an ordinary linearised design and
+# The two classes the twins support: an ordinary linearized design and
 # a replicate-weights design. Everything else is a design whose
 # variance machinery the delegation map was not measured on, and it
 # gets a classed refusal rather than a plausible wrong number.
@@ -483,7 +483,7 @@
 # So the rule is one of READING: whatever survey posted is what
 # `regTermTest()` uses as its denominator, and a table whose row p and
 # omnibus p had different denominators would be indefensible.
-# Harmonising the formulas across classes is a regression, not a
+# Harmonizing the formulas across classes is a regression, not a
 # tidy-up.
 #
 # Two slot names, one per Cox engine, read with `[[` and both tried by
@@ -561,12 +561,12 @@
 # it. Indexed on the MECHANISM, which is the only thing the label is
 # about:
 #   * a two-phase design first, because `twophase2` also inherits
-#     `survey.design` and would otherwise be called linearised;
+#     `survey.design` and would otherwise be called linearized;
 #   * a replicate design by its scheme, or bare when the scheme is
 #     absent or `"other"`;
 #   * everything else built by `svydesign()` -- including calibrated,
 #     post-stratified and without-replacement pps designs, whose
-#     `ppsvar()` IS a linearisation -- by Taylor linearisation;
+#     `ppsvar()` IS a linearization -- by Taylor linearization;
 #   * a detached or unknown design: "Design-based", never `class(des)`.
 #     An R class name is an implementation detail, not a variance
 #     estimator, and it is not something a reader of a table can act on.
@@ -762,9 +762,9 @@
   }
   # The variance sentence is the regression footer's, built from the
   # same template and the same labels: one table calling it "Standard
-  # errors: Taylor linearisation (survey)." while its regression
-  # neighbour called it "Std. errors: Design-based (Taylor
-  # linearisation)." made the reader work out that the two were the
+  # errors: Taylor linearization (survey)." while its regression
+  # neighbor called it "Std. errors: Design-based (Taylor
+  # linearization)." made the reader work out that the two were the
   # same fact.
   vcov_label <- if (identical(meta$kind, "replicate")) {
     .design_replicate_label(meta$rep_type)

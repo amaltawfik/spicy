@@ -94,7 +94,7 @@ print.spicy_outcome_table <- function(x, ...) {
 }
 
 # Internal: the display frame of an outcome table, rebuilt when the
-# object does not carry one (a frame that travelled through
+# object does not carry one (a frame that traveled through
 # `structure()` or a `[` that dropped the attribute).
 .outcome_rendered_df <- function(x) {
   cached <- attr(x, "display_df", exact = TRUE)

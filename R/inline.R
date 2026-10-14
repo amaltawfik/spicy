@@ -547,7 +547,7 @@ inline <- function(
 # first: the regression coefficient (an exponentiated table still
 # carries the token "b" -- only its HEADER says OR, IRR or HR, so
 # scale-named tokens would be dead entries), then the descriptive
-# centre (mean before median, bare median before its bracketed
+# center (mean before median, bare median before its bracketed
 # variant), and only then the count -- the estimate of a categorical
 # table and the fallback of everything else.
 #
@@ -622,7 +622,7 @@ inline <- function(
 # brackets around nothing and returned "[, ]". One producer, so the two
 # paths cannot word the same refusal differently.
 #
-# The refusal used to stop at the full stop, which made it a dead end on
+# The refusal used to stop at the period, which made it a dead end on
 # the one table where it is REACHED BY DEFAULT: `table_continuous_lm(
 # contrast = "none")` still prints the delta column, empty, and `delta`
 # is the token a bare `inline(x, var)` asks for. The reader was told the

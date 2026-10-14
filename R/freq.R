@@ -470,7 +470,7 @@ freq <- function(
       # Drop NA-weighted rows up front so they never reach `table()` /
       # `tapply()` (where they would otherwise be retained with weight
       # zero and inflate the rescale denominator). This matches the
-      # `cross_tab()` 0.11.0 behaviour. `x_original` stays full-length:
+      # `cross_tab()` 0.11.0 behavior. `x_original` stays full-length:
       # it is only read for its `label` / class attributes below, and
       # base `[` subsetting would strip the `label` attribute from a
       # plain atomic vector (the haven pattern of a variable label

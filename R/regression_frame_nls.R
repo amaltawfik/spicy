@@ -76,7 +76,7 @@ as_regression_frame.nls <- function(
   dfr <- tryCatch(stats::df.residual(fit), error = function(e) Inf)
   # nocov: defensive; stats' df.residual.nls always returns a finite
   # numeric for a fitted nls, and the tryCatch above already maps any
-  # error to Inf, so this NULL/non-finite normaliser is never exercised.
+  # error to Inf, so this NULL/non-finite normalizer is never exercised.
   if (is.null(dfr) || !is.finite(dfr)) {
     dfr <- Inf # nocov
   }

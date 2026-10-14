@@ -76,7 +76,7 @@ test_that("as_regression_frame.betareg surfaces the missing-betareg abort messag
 
 # ---- 2. betareg with no factor predictors: empty reference-rows frame ----
 
-test_that("betareg numeric-only formula synthesises no reference rows", {
+test_that("betareg numeric-only formula synthesizes no reference rows", {
   skip_if_not_installed("betareg")
   data("GasolineYield", package = "betareg", envir = environment())
   # yield ~ temp has no factor terms, so .betareg_reference_rows() takes

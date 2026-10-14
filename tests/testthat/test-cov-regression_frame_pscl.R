@@ -60,7 +60,7 @@ test_that("hurdle with only numeric predictors yields no reference rows", {
 
 # ---- 2. Factor present but reference NOT dropped (lines 180, 202) ---------
 
-test_that("no-intercept factor fit fits every level and synthesises no reference row", {
+test_that("no-intercept factor fit fits every level and synthesizes no reference row", {
   fit <- .cov_fit_hurdle_noint_factor()
 
   # Both factor levels are estimated in the count component.
@@ -109,7 +109,7 @@ test_that(".pscl_dist_title maps the known count distributions", {
   expect_identical(spicy:::.pscl_dist_title("negbin"), "Negative-binomial")
 })
 
-test_that(".pscl_dist_title title-cases an unrecognised distribution (default arm)", {
+test_that(".pscl_dist_title title-cases an unrecognized distribution (default arm)", {
   # pscl restricts the count dist to poisson/negbin/geometric, so the
   # default switch arm is only reachable by a direct call. It should
   # upper-case the first letter and keep the rest verbatim.

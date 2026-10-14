@@ -10,7 +10,7 @@
 #   * the pkgdown "Supported models" article.
 #
 # The documentation page doubles as the CONCEPT page for per-family
-# behaviour: short sections per model family, reachable under the aliases
+# behavior: short sections per model family, reachable under the aliases
 # table_regression_mixed / _ordinal / ... so `?table_regression_mixed` keeps
 # working in the console while the reference index carries a single, genuine
 # function entry.

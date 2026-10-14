@@ -5,7 +5,7 @@
 #   * lme  -- linear mixed-effects (nlme::lme()). Gaussian-identity
 #             implicit (no family slot). Wald-t with per-coefficient
 #             DF from summary(fit)$tTable[, "DF"] (containment-style).
-#   * gls  -- generalised least squares (nlme::gls()). No random effects;
+#   * gls  -- generalized least squares (nlme::gls()). No random effects;
 #             supports correlation / variance structures. Wald-t with
 #             df = nobs(fit) - length(coef(fit)).
 #
@@ -352,7 +352,7 @@ as_regression_frame.gls <- function(
   # rows) run OUTERMOST-first: reverse it so the "n_groups" token renders
   # its "N (<factor>)" rows in the same order as the block above them.
   # Reading only ngrps[1] reported the innermost level and silently
-  # dropped every outer one from a nested fit. The rows are labelled the
+  # dropped every outer one from a nested fit. The rows are labeled the
   # way the variance-component block above them is (.lme_group_labels),
   # so "N (Side:Dog) 20" says what the 20 units are -- Dog-by-Side
   # combinations -- and matches what an lmer of the same structure calls
@@ -538,7 +538,7 @@ as_regression_frame.gls <- function(
 # The criterion is the glmmTMB frame's, on the same relative scale:
 # det(V / sigma^2) < 1e-5 for a random-effect covariance block V. nlme
 # hands it over ready-made -- fit$modelStruct$reStruct IS the covariance
-# relative to sigma^2, which is also lme4's parameterisation, so the
+# relative to sigma^2, which is also lme4's parameterization, so the
 # blocks are read as they come. Multiplying them back by sigma^2 (what
 # nlme::getVarCov() does to report absolute variances) is exactly the
 # step that must NOT be taken here.
@@ -564,7 +564,7 @@ as_regression_frame.gls <- function(
 # sigma is far from 1. They track lme4::isSingular(), which is what the
 # table note promises the reader.
 #
-# nlme optimises on the log-Cholesky scale, where an exact zero variance
+# nlme optimizes on the log-Cholesky scale, where an exact zero variance
 # sits at -Inf: a collapsed component lands NEAR 0, never on it, and the
 # tolerance is what turns "near" into a verdict. Non-finite variances
 # (det() = NA) fail the comparison and read as not singular; a fit that
@@ -584,7 +584,7 @@ as_regression_frame.gls <- function(
 }
 
 
-# How each grouping level of an lme fit is LABELLED in the table, keyed
+# How each grouping level of an lme fit is LABELED in the table, keyed
 # by the bare name nlme uses internally. Returns a named character
 # vector, outermost level first: c(Dog = "Dog", Side = "Side:Dog").
 #
@@ -604,7 +604,7 @@ as_regression_frame.gls <- function(
 # not 20 sides -- nlme's own summary writes it "Side %in% Dog".
 #
 # The nesting order comes from the FITTED object, not from the call:
-# lme() normalises `random = list(Dog = ~day, Side = ~1)` to the same
+# lme() normalizes `random = list(Dog = ~day, Side = ~1)` to the same
 # `~ Dog/Side` structure as the slash form, and both leave
 # modelStruct$reStruct ordered innermost-first. lme has no crossed
 # regime -- every level below the outermost is nested in the ones above
@@ -642,7 +642,7 @@ as_regression_frame.gls <- function(
   }
   rank_of <- rev(unname(labels)) # innermost level first
   rank <- match(vc_df$group, rank_of)
-  # Residual (and anything unrecognised) closes the block.
+  # Residual (and anything unrecognized) closes the block.
   rank[is.na(rank)] <- length(rank_of) + 1L
   ord <- order(rank, seq_len(nrow(vc_df)))
   # A frame nothing moves in comes back untouched, rownames included:
@@ -660,7 +660,7 @@ as_regression_frame.gls <- function(
 
 # Extract random-effects metadata from an lme fit. nlme::VarCorr.lme()
 # returns a CHARACTER matrix with columns "Variance" / "StdDev" and
-# rows labelled with the random-effect term names + "Residual".
+# rows labeled with the random-effect term names + "Residual".
 .lme_random_effects <- function(fit, ci_level = 0.95) {
   # nlme::lme exposes the estimator via fit$method: "REML" (default)
   # or "ML". Feeds the footer's "(REML)" / "(ML)" clarification.
@@ -693,7 +693,7 @@ as_regression_frame.gls <- function(
   # fit$dims$ngrps[1] IS the grouping factor.
   #
   # ngrps alone is not that record: it runs INNERMOST-first, the reverse
-  # of VarCorr's block order. Reading only its first name labelled every
+  # of VarCorr's block order. Reading only its first name labeled every
   # block with the innermost group -- on `random = ~ 1 | Dog/Side` both
   # levels printed as "Side", which also sent both intervals() lookups
   # below into the same reStruct block, so the two levels shared one SE
@@ -747,7 +747,7 @@ as_regression_frame.gls <- function(
 
   # Phase 7c7a: extend with Wald SE + CI (at ci_level) via
   # nlme::intervals(). intervals() returns CIs on the SD scale (the
-  # natural log-SD parametrisation backtransformed); we square to
+  # natural log-SD parametrization backtransformed); we square to
   # convert to variance scale, and Delta-method for SE
   # (SE(sd^2) = 2*sd*SE(sd)).
   vc_df <- .lme_attach_wald_se_ci(
@@ -810,7 +810,7 @@ as_regression_frame.gls <- function(
     for (rn in cor_rows) {
       est <- group_ci[rn, "est."]
       pair <- sub("^cor\\((.+)\\)$", "\\1", rn)
-      # Normalise "(Intercept),age" (nlme's comma-only join) to the canonical
+      # Normalize "(Intercept),age" (nlme's comma-only join) to the canonical
       # "(Intercept), age" (lme4's ", " join, VarCorr term order) so identical
       # random structures align across engines in a multi-model table. Match
       # both sides against the group's known variance-row terms -- robust to
@@ -986,7 +986,7 @@ as_regression_frame.gls <- function(
 }
 
 
-# Second line of defence, independent of the singular flag: a Wald
+# Second line of defense, independent of the singular flag: a Wald
 # quantity that came back non-finite says nothing and must not reach the
 # table. nlme::intervals() returns an open [0, Inf] bound on a component
 # it cannot bound, which squares to an infinite variance-scale CI.

@@ -325,7 +325,7 @@ test_that("brmsfit coefs match parameters::model_parameters() (oracle)", {
   )
 
   b_rows <- fr$coefs[fr$coefs$estimate_type == "B" & !fr$coefs$is_ref, ]
-  # Normalise oracle Parameter names. parameters::model_parameters()
+  # Normalize oracle Parameter names. parameters::model_parameters()
   # for brmsfit returns the draws-side names (`b_Intercept`,
   # `b_Days`, ...). Strip the `b_` prefix and rewrite `b_Intercept`
   # to `(Intercept)` so the intersection on a meaningful set of
@@ -423,7 +423,7 @@ test_that("brmsfit: multilevel fits render an RE block, single-level fits do not
 })
 
 
-## ---- Delta review D3: draws-native AME honours the fit's prior weights ----
+## ---- Delta review D3: draws-native AME honors the fit's prior weights ----
 
 # Local-only like the fixtures above (.skip_unless_local_stan()): Stan sampling is
 # unreliable on CI runners.

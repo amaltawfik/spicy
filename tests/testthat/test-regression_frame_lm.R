@@ -58,7 +58,7 @@ test_that("as_regression_frame.lm() attaches required attributes", {
   frame <- as_regression_frame(fit)
   expect_identical(attr(frame, "spicy_frame_version"), spicy_frame_version())
   # The fit attribute round-trips the original object so downstream AME
-  # and refit-standardisation can read it without re-fitting.
+  # and refit-standardization can read it without re-fitting.
   expect_identical(attr(frame, "fit"), fit)
 })
 
@@ -78,7 +78,7 @@ test_that("as_regression_frame.lm() populates required info fields correctly", {
   expect_identical(info$ci_level, 0.95)
   expect_identical(info$ci_method, "wald")
   # The canon, not the "classical" synonym the argument still spells:
-  # new_regression_frame() normalises on the way in (register n. 228).
+  # new_regression_frame() normalizes on the way in (register n. 228).
   expect_identical(info$vcov_kind, "model")
   expect_identical(info$vcov_label, "OLS")
 })

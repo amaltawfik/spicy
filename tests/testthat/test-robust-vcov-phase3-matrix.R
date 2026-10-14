@@ -70,7 +70,7 @@ test_that("every documented vcov token runs on lm; out-of-list tokens error", {
 
 test_that("HC failure refuses; it never returns the classical matrix", {
   # Was: warn spicy_fallback and return stats::vcov(fit). The caller then
-  # labelled that classical matrix "heteroskedasticity-robust (HC3)"
+  # labeled that classical matrix "heteroskedasticity-robust (HC3)"
   # (register n. 229), so the substitution is refused instead.
   skip_if_not_installed("sandwich")
   fit <- stats::lm(mpg ~ wt, data = mtcars)
@@ -570,7 +570,7 @@ test_that("compute_wald_test: HC* is Wald F with df.residual; resampling is chi2
     tolerance = 1e-12
   )
 
-  # Resampling regime: same matrix relabelled "bootstrap" must switch to
+  # Resampling regime: same matrix relabeled "bootstrap" must switch to
   # the asymptotic chi-square with df = q.
   out_bt <- spicy:::compute_wald_test(fit, idx, vc_hc, vcov_type = "bootstrap")
   chi2_man <- as.numeric(crossprod(bsub, solve(vc_hc[idx, idx], bsub)))

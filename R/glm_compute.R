@@ -10,7 +10,7 @@
 
 # ---- Family / link introspection -----------------------------------------
 
-# Return a small descriptor for a glm fit summarising its family
+# Return a small descriptor for a glm fit summarizing its family
 # and link, used by the rendering layer for title strings, the
 # exponentiate column-header rebrand, and the gaussian-glm caveat.
 spicy_glm_family_info <- function(fit) {
@@ -58,14 +58,14 @@ spicy_glm_title_prefix <- function(family_name, link_name) {
   if (grepl("^quasi", family_name)) {
     return("Quasi-likelihood regression")
   }
-  # gaussian + identity (and any other unrecognised family) falls
+  # gaussian + identity (and any other unrecognized family) falls
   # through to the generic "Regression" prefix.
   "Regression"
 }
 
 spicy_glm_exp_header <- function(family_name, link_name) {
   # brms spells the single-trial binomial "bernoulli": same family,
-  # same estimands (OR / RR / HR per link). Normalising here keeps
+  # same estimands (OR / RR / HR per link). Normalizing here keeps
   # info$family$family truthful ("bernoulli") while the header map
   # stays engine-consistent with glm / rstanarm.
   if (identical(family_name, "bernoulli")) {
@@ -157,7 +157,7 @@ spicy_glm_exp_header <- function(family_name, link_name) {
 # estimand: Stata's flagship `probit` command ships no `or` / `eform`
 # reporting option and SAS documents EXPB "for the logit model". The
 # surveyed R packages silently exponentiate anyway (parameters even
-# labels cauchit "Risk Ratio") -- exactly the mislabelling spicy gates
+# labels cauchit "Risk Ratio") -- exactly the mislabeling spicy gates
 # against. Pre-1.0 policy: hard error over silent wrong output.
 #
 # Identity links must never reach this assert: the callers' warn + no-op
@@ -529,7 +529,7 @@ apply_exponentiate_to_coefs <- function(coefs) {
 # response-scale effect, so exponentiating again would be wrong (and
 # the "OR" / "IRR" / ... label only applies to B / beta rows).
 #
-# `negate = TRUE` (cumulative cloglog only): the model is parametrised
+# `negate = TRUE` (cumulative cloglog only): the model is parametrized
 # cloglog P(Y <= j) = zeta_j - xB, so the grouped-time proportional-
 # hazards ratio (Prentice & Gloeckler 1978; McCullagh 1980) is
 # exp(-B), NOT exp(B) -- exp(B) would be its reciprocal. Verified
@@ -575,7 +575,7 @@ apply_exponentiate_to_frame_coefs <- function(coefs, negate = FALSE) {
 # Apply exp() to a frame's B / beta rows when exponentiate = TRUE, driven
 # entirely by the frame's own info$family / info$supports -- NOT stats::family(),
 # which errors for polr / clm / multinom / fixest / betareg / mlogit (no family()
-# method). This is the class-agnostic generalisation of
+# method). This is the class-agnostic generalization of
 # .apply_exp_to_survival_frame() / .apply_exp_to_mixed_frame(): any
 # as_regression_frame.* method that sets info$family$link and
 # info$supports$exponentiate can route its coefs through it before assembling
@@ -613,19 +613,19 @@ apply_exponentiate_to_frame_coefs <- function(coefs, negate = FALSE) {
     model_id = coefs$model_id[1L]
   )
   # Cumulative cloglog: the HR of the grouped-time proportional-hazards
-  # reading is exp(-B) under the zeta_j - xB parametrisation (see
+  # reading is exp(-B) under the zeta_j - xB parametrization (see
   # apply_exponentiate_to_frame_coefs); the footer discloses the sign.
   negate_hr <- identical(info$family$family, "cumulative") &&
     identical(info$family$link, "cloglog")
   if (negate_hr) {
     # Nominal (partial-PO) rows sit on the THRESHOLD side of the
-    # parametrisation: their exponential is a cut-specific baseline
+    # parametrization: their exponential is a cut-specific baseline
     # cumulative-hazard ratio, not a covariate hazard ratio. One column
     # cannot honestly mix exp(-B) HRs with exp(+a) baseline ratios, so
-    # the exotic combination is refused rather than mislabelled.
+    # the exotic combination is refused rather than mislabeled.
     pv <- coefs$parent_var %||% rep(NA_character_, nrow(coefs))
     # Deliberately the ONE block, not `.reg_is_block()`: the refusal is
-    # about the threshold-side parametrisation of partial-PO terms.
+    # about the threshold-side parametrization of partial-PO terms.
     if (any(pv %in% .REG_BLOCK_NPO)) {
       spicy_abort(
         c(

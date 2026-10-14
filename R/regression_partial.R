@@ -45,7 +45,7 @@
 # partition of sums of squares. This is the subset the class refusals
 # name -- glm, GEE and mixed fits each reject exactly these, for the same
 # reason -- and the subset the lm extractor computes. Derived, not
-# re-spelt, so adding an estimand upstream cannot leave one of the four
+# re-spelled, so adding an estimand upstream cannot leave one of the four
 # readers behind.
 .PARTIAL_VARIANCE_ES_TOKENS <- setdiff(.PARTIAL_ES_TOKENS, "partial_chi2")
 

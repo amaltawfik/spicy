@@ -81,7 +81,7 @@ test_that("gam with no parametric terms still produces a schema-valid frame", {
   fit <- .fit_gam_no_parametric()
   fr <- as_regression_frame(fit, model_id = "M1")
   expect_invisible(spicy:::validate_regression_frame(fr))
-  # The single smooth term is still summarised.
+  # The single smooth term is still summarized.
   expect_identical(fr$info$extras$n_smooth_terms, 1L)
 })
 
@@ -134,7 +134,7 @@ test_that("gam parametric-only frame keeps its parametric coefs and validates", 
 
 # ---- 4. Estimated-scale family: real (non-NA) t-based inference ---------
 
-test_that("Gamma(log) GAM exposes t-labelled p.table and t-based inference", {
+test_that("Gamma(log) GAM exposes t-labeled p.table and t-based inference", {
   skip_if_not_installed("mgcv")
   fit <- .fit_gam_estimated_scale(stats::Gamma(link = "log"))
 
@@ -190,7 +190,7 @@ test_that("other estimated-scale families also get non-NA t inference", {
   # closures returned by some mgcv specials (e.g. tw()) capture an enclosing
   # environment that cannot resolve internal mgcv helpers, which is a test-
   # harness quirk unrelated to the branch under test. quasipoisson() and
-  # gaussian(link = "log") both exercise the same t-labelled p.table path.
+  # gaussian(link = "log") both exercise the same t-labeled p.table path.
   families <- list(
     quasipoisson = stats::quasipoisson(),
     gaussian_log = stats::gaussian(link = "log")
@@ -218,7 +218,7 @@ test_that("known-scale family (poisson) still routes to the z-branch", {
   )
   fit <- mgcv::gam(y ~ x2 + s(x0), data = dat, family = poisson())
   sm <- summary(fit)
-  # Known scale -> z-labelled columns.
+  # Known scale -> z-labeled columns.
   expect_true(all(c("z value", "Pr(>|z|)") %in% colnames(sm$p.table)))
 
   fr <- as_regression_frame(fit, model_id = "M1")

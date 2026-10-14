@@ -55,8 +55,8 @@ test_that("no dead keys: every registry key is consumed in R/", {
   expect_identical(dead, character(0))
 })
 
-test_that("the emphasised note prefix really is a prefix of the note prefix", {
-  # The rich engines italicise `note_prefix_emphasis` and print the rest in
+test_that("the emphasized note prefix really is a prefix of the note prefix", {
+  # The rich engines italicize `note_prefix_emphasis` and print the rest in
   # regular type. If the two ever stop agreeing, every Word / HTML note
   # silently loses (or duplicates) its opening.
   expect_true(startsWith(

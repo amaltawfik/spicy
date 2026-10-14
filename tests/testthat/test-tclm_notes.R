@@ -2,7 +2,7 @@
 # non-classical SE-estimator disclosure, shared between the console
 # print method and every rich exporter (gt / flextable / tinytable /
 # word / excel). Mirrors table_regression()'s footer doctrine: robust
-# SEs are never silently labelled, and notes carry into every rich
+# SEs are never silently labeled, and notes carry into every rich
 # format.
 
 # ---- shared note builder ----

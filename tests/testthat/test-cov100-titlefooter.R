@@ -9,7 +9,7 @@
 #   * component-blocks footer: duplicate-label dedup + the robust-SE
 #     disclosure,
 #   * .append_component_rows / .append_random_effects_rows entry guards and
-#     the no-is_correlation-column / no-is_re-column initialisation paths,
+#     the no-is_correlation-column / no-is_re-column initialization paths,
 #   * the re_se_skipped footer's multi-model consolidation branches,
 #   * the multi-family exponentiate sentence without a displayed SE column,
 #   * the polynomial-legend passthrough arms for non-canonical suffixes.
@@ -216,7 +216,7 @@ test_that(".append_component_rows passes coefs through with no blocks", {
 })
 
 
-# ---- .append_random_effects_rows: guards + column initialisation ----------
+# ---- .append_random_effects_rows: guards + column initialization ----------
 
 test_that(".append_random_effects_rows passes coefs through with no RE", {
   coefs <- data.frame(term = "x", estimate = 1.5, stringsAsFactors = FALSE)
@@ -237,7 +237,7 @@ test_that(".append_random_effects_rows passes coefs through with no RE", {
   )
 })
 
-test_that(".append_random_effects_rows initialises is_re; vc frame lacks is_correlation", {
+test_that(".append_random_effects_rows initializes is_re; vc frame lacks is_correlation", {
   coefs <- data.frame(term = "x", estimate = 1.5, stringsAsFactors = FALSE)
   vc <- data.frame(
     group = c("Subject", "Residual"),
@@ -375,7 +375,7 @@ test_that("polynomial legend passes non-canonical suffixes through as-is", {
   expect_match(out, ".b = .b", fixed = TRUE) # non-poly dot suffix arm
 })
 
-test_that("beta abbreviation names the standardisation method and dummy convention", {
+test_that("beta abbreviation names the standardization method and dummy convention", {
   fit <- lm(wellbeing_score ~ age + sex, data = sochealth)
   for (m in c("refit", "posthoc", "basic", "smart")) {
     note <- paste(

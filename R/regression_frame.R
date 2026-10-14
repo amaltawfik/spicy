@@ -1,7 +1,7 @@
 # ---------------------------------------------------------------------------
 # as_regression_frame() generic + validator.
 #
-# Internal S3 generic that produces a standardised data frame from a fitted
+# Internal S3 generic that produces a standardized data frame from a fitted
 # regression model object, plus a per-model metadata list. Sits upstream of
 # build_structured_body() in the rendering pipeline.
 #
@@ -67,9 +67,9 @@ default_supports <- function() {
     exponentiate = FALSE,
     standardise_refit = FALSE,
     # The Bayesian counterpart of standardise_refit: posthoc / basic /
-    # smart standardisation as exact affine rescales of the draws, with
+    # smart standardization as exact affine rescales of the draws, with
     # no refit. Declared TRUE only by the stanreg builder; read beside
-    # standardise_refit in table_regression()'s standardisation gate.
+    # standardise_refit in table_regression()'s standardization gate.
     standardise_algebraic = FALSE
   )
 }
@@ -88,17 +88,17 @@ default_supports <- function() {
 # lines apart in the same file, disagreed about which spelling a MISSING
 # value should default to.
 #
-# The synonym is not removed from the user's vocabulary; it is normalised
-# out of the FRAME's. new_regression_frame() canonicalises on the way in,
-# .frame_vcov_kind() canonicalises on the way out (for frames built by
+# The synonym is not removed from the user's vocabulary; it is normalized
+# out of the FRAME's. new_regression_frame() canonicalizes on the way in,
+# .frame_vcov_kind() canonicalizes on the way out (for frames built by
 # hand or by older code), and .validate_info() asserts the closed set.
 .MODEL_VCOV_KIND <- "model"
 
 # The closed vocabulary of info$vcov_kind, DERIVED rather than typed: it
 # is the compute layer's estimator set (minus the "classical" synonym,
-# which normalises to the canon) plus the three class-native defaults no
+# which normalizes to the canon) plus the three class-native defaults no
 # spicy estimator produces -- estimatr's own HC (`robust`), the Bayesian
-# posterior, and survey's design-based linearisation. A function, not a
+# posterior, and survey's design-based linearization. A function, not a
 # constant, so it does not depend on which file R sources first.
 .frame_vcov_kinds <- function() {
   unique(c(
@@ -113,7 +113,7 @@ default_supports <- function() {
   ))
 }
 
-# Normalise one vcov_kind value: a missing one is the model-based
+# Normalize one vcov_kind value: a missing one is the model-based
 # default, and "classical" IS the model-based default under its older
 # name. Anything else passes through untouched -- an unknown token is
 # the validator's business, not this function's.
@@ -174,7 +174,7 @@ empty_random_effects <- function() {
 }
 
 # Low-level constructor for the `spicy_regression_frame` S3 object: the single
-# place that assembles a {coefs, info} frame, normalises info$supports /
+# place that assembles a {coefs, info} frame, normalizes info$supports /
 # info$extras against their defaults, sets the object class, and attaches the
 # two schema attributes (spicy_frame_version, fit). Every as_regression_frame.*
 # method ends with a call to this, so the object's structure + schema contract
@@ -322,17 +322,17 @@ is_regression_frame <- function(x) inherits(x, "spicy_regression_frame")
 
 # as_regression_frame(fit, ...) -> list(coefs = tibble, info = list)
 #
-# Returns the spicy-standardised frame for one fit. Per-class methods do the
+# Returns the spicy-standardized frame for one fit. Per-class methods do the
 # extraction; the rest of the pipeline (alignment, AME orchestration, body
 # build, render) is class-agnostic and reads from the returned object only.
 #
 # Per design doc §2, the return value carries two attributes:
 #   * spicy_frame_version: schema version string ("1" today).
 #   * fit                : reference to the original fit object; read by
-#                          AME orchestration, refit standardisation, and
+#                          AME orchestration, refit standardization, and
 #                          nested LRT downstream. Stripped on
 #                          as.data.frame() / clipboard / Excel / Word
-#                          serialisation paths (§12.1).
+#                          serialization paths (§12.1).
 #
 # The generic itself is NOT exported per Q2 settlement: it stays internal
 # throughout 0.x. Tests reach it via `spicy:::as_regression_frame()`. The
@@ -469,7 +469,7 @@ as_regression_frame.default <- function(fit, ...) {
 #   weights_kind    chr  (one of "none", "frequency", "sampling", "case")
 #   fit_stats       list (must contain nobs)
 #   vcov_kind       chr  (one of .frame_vcov_kinds(); read through
-#                         .frame_vcov_kind(), which normalises the
+#                         .frame_vcov_kind(), which normalizes the
 #                         historical "classical" to the canon "model")
 #   vcov_label      chr
 #   ci_level        dbl (in (0, 1))
@@ -664,7 +664,7 @@ validate_regression_frame <- function(frame) {
   }
 
   # Restricted values for estimate_type. Canonical vocabulary (all
-  # lowercase): c("B", "beta", "ame") for coefficient / standardised /
+  # lowercase): c("B", "beta", "ame") for coefficient / standardized /
   # average-marginal-effect rows, "vc" for random-effect variance
   # components, the partial-effect-size tokens ("partial_f2",
   # "partial_eta2", "partial_omega2", "partial_chi2") emitted by
@@ -672,7 +672,7 @@ validate_regression_frame <- function(frame) {
   # ("rmst", "risk_diff") that .coxph_estimand_rows() /
   # .survreg_estimand_rows() rbind onto coefs before the frame is
   # constructed (regression_frame_survival.R). The legacy uppercase
-  # "AME" emitted by extract_lm_phase1() has been normalised to "ame".
+  # "AME" emitted by extract_lm_phase1() has been normalized to "ame".
   allowed_types <- c(
     "B",
     "beta",
@@ -778,7 +778,7 @@ validate_regression_frame <- function(frame) {
   # "classical" spelling of the model-based default passes -- a frame
   # built by older code or by hand is valid, and .frame_vcov_kind() gives
   # its consumers the canonical reading. What this refuses is a token
-  # from no vocabulary at all, which is how a mislabelled variance
+  # from no vocabulary at all, which is how a mislabeled variance
   # reaches a footer.
   allowed_vcov <- .frame_vcov_kinds()
   if (!.canon_vcov_kind(info$vcov_kind) %in% allowed_vcov) {
@@ -874,7 +874,7 @@ validate_regression_frame <- function(frame) {
   }
   # Single source of truth: the supports field set IS whatever
   # default_supports() declares (so adding a flag there auto-updates the
-  # validator + every method via new_regression_frame()'s normalisation).
+  # validator + every method via new_regression_frame()'s normalization).
   required_supports <- names(default_supports())
   missing_supports <- setdiff(required_supports, names(sp))
   if (length(missing_supports) > 0L) {
@@ -1345,7 +1345,7 @@ validate_regression_frame <- function(frame) {
 
 # clmm: the null is ordinal::clm() on the same fixed part, link and
 # threshold structure, refitted on the model frame under a safe response
-# name (see .null_lrt_merMod). clmm and clm both maximise the exact (or
+# name (see .null_lrt_merMod). clmm and clm both maximize the exact (or
 # Laplace-approximated) likelihood, so their logLik values compare.
 .null_lrt_clmm <- function(fit) {
   data <- stats::model.frame(fit)
@@ -1407,7 +1407,7 @@ validate_regression_frame <- function(frame) {
   ll_null <- if (!is.null(var_struct) || !is.null(cor_struct)) {
     # Within-group variance (weights = varFunc) and/or correlation
     # structures must survive into the null, or their improvement is
-    # mislabelled as the random-effect test (e.g. varPower Orthodont:
+    # mislabeled as the random-effect test (e.g. varPower Orthodont:
     # 62.23 against the plain-lm null vs the correct 61.25). gls
     # accepts the FITTED structures as specs and re-estimates their
     # parameters on the null model, matching anova(gls, lme).
@@ -1497,7 +1497,7 @@ validate_regression_frame <- function(frame) {
   # with multiple trials (cbind), negative binomial / beta /
   # Tweedie families, zero-inflation, dispersion components.
   # These require the delta / trigamma / lognormal approximation
-  # families catalogued in Nakagawa et al. 2017 sec. 3 + the
+  # families cataloged in Nakagawa et al. 2017 sec. 3 + the
   # observation-level overdispersion handling implemented in
   # `insight::.variance_distributional()`. We delegate to
   # `performance::r2_nakagawa()` (Suggests) so the user sees a value
@@ -1911,7 +1911,7 @@ validate_regression_frame <- function(frame) {
 # glmmTMB: implemented via the engine's own VarCorr + model.matrix
 # infrastructure for the conditional model. zero-inflation and
 # multi-level dispersion components are NOT included (Nakagawa et al.
-# 2017 only formalises the standard one-level case); fits with active
+# 2017 only formalizes the standard one-level case); fits with active
 # zi / dispformula components return NA gracefully.
 .nakagawa_components_glmmTMB <- function(fit) {
   if (!requireNamespace("glmmTMB", quietly = TRUE)) {

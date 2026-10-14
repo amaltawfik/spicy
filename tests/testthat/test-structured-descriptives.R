@@ -529,9 +529,9 @@ test_that("a statistic that applies but has no value is `undefined`", {
   expect_faithful(s, con_display(tbl), skip_cols = "Group")
 })
 
-test_that("the undefined cell is recognised through the registry", {
+test_that("the undefined cell is recognized through the registry", {
   # The producer writes the glyph from `cell_undefined` and the typed
-  # view recognises it from the same key. A literal on the reading side
+  # view recognizes it from the same key. A literal on the reading side
   # passes every test above, so move the registry and watch: with a
   # literal, `cell_status` silently loses the `undefined` semantics for
   # every consumer of `as_structured()`, and the display override goes
@@ -619,7 +619,7 @@ test_that(".desc_assemble() falls back to the key when no display_label is given
 test_that("a display column outside the linear-model spec aborts the typed view", {
   # The display builder's column set is closed. A column that reaches
   # the typed view without an entry in the spec must FAIL, not be
-  # mislabelled with someone else's token -- the safety net of the rule
+  # mislabeled with someone else's token -- the safety net of the rule
   # that every comparison in this family is key against key. Reachable
   # only from inside the package, so it is pinned directly.
   lg <- quiet(table_continuous_lm(
@@ -846,8 +846,8 @@ test_that("descriptive col_meta carries display_label, defaulting to the key", {
 # ============================================================================
 
 test_that("the shared block predicates agree with the categorical answers", {
-  # `.struct_block_sep_rows()` / `.struct_indent_rows()` generalise the
-  # two categorical helpers. The generalisation must be BYTE-IDENTICAL
+  # `.struct_block_sep_rows()` / `.struct_indent_rows()` generalize the
+  # two categorical helpers. The generalization must be BYTE-IDENTICAL
   # on everything delivered, and the categorical corpus is what proves
   # it: its body always opens on a factor header (so "not the first
   # row" and "not the first header" coincide), and its only non-header
@@ -885,7 +885,7 @@ test_that("the shared block predicates agree with the categorical answers", {
 })
 
 test_that("a body that opens on a summary row keeps its first rule", {
-  # The reason the generalisation is not cosmetic. A body whose first
+  # The reason the generalization is not cosmetic. A body whose first
   # row is a marginal `summary` row above the blocks: the rank-based
   # predicate drops the rule between that row and the first block, and
   # the role-complement predicate indents the marginal row as if it
@@ -945,7 +945,7 @@ test_that("the run predicate agrees with the retired string derivation", {
   # DEDUPLICATED label column of the display frame. On everything the
   # continuous families deliver the two answers coincide, and that is
   # what makes the replacement byte-identical rather than a change of
-  # behaviour. The oracle below is the retired function, transcribed:
+  # behavior. The oracle below is the retired function, transcribed:
   # "a row whose label is not blank opens a block".
   string_oracle <- function(display_df) {
     labels <- display_df[[spicy:::.CON_KEY_VARIABLE]]

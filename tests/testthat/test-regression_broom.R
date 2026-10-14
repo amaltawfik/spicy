@@ -205,7 +205,7 @@ test_that("as_tibble – returns tbl_df", {
 # critic:pkgrd-broom-df-types (lot T4)
 # ============================================================================
 
-test_that("tidy/glance column sets are frozen (stabilising contract)", {
+test_that("tidy/glance column sets are frozen (stabilizing contract)", {
   # expect_identical on the FULL name vector: any silent rename,
   # removal, or reorder of an existing column is a contract break
   # (?spicy, section 'broom output shape'). Adding optional new

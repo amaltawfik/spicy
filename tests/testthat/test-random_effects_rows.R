@@ -10,7 +10,7 @@
   lme4::lmer(Reaction ~ Days + (Days | Subject), data = lme4::sleepstudy)
 }
 
-# The vc rows are materialised by the orchestrator (not as_regression_frame);
+# The vc rows are materialized by the orchestrator (not as_regression_frame);
 # read them back via broom::tidy(), which exposes estimate_type.
 .vc_rows <- function(fit, ...) {
   skip_if_not_installed("broom")
@@ -618,7 +618,7 @@ test_that("3-term random block SEs align slot-by-slot (merDeriv >= 0.2-6)", {
   # merDeriv < 0.2-6 returned the RE (co)variance results in an order
   # that did not match their labels for 3x3+ blocks (merDeriv GH #2:
   # index matrix built from Lambda instead of Lambdat), so positional
-  # extraction silently mislabelled the variance SEs -- and 2x2
+  # extraction silently mislabeled the variance SEs -- and 2x2
   # fixtures cannot catch it (both orders coincide). Pin the slot
   # alignment with an INDEPENDENT engine: glmmTMB's sdreport SEs for
   # the same ML fit must match term by term. The parametrizations

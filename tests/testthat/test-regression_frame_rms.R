@@ -285,7 +285,7 @@ test_that("lrm exponentiates to OR and its AME matches avg_slopes", {
   d <- data.frame(x1 = rnorm(150), x2 = rnorm(150))
   d$yb <- rbinom(150, 1, plogis(d$x1))
   fit <- rms::lrm(yb ~ x1 + x2, data = d, x = TRUE, y = TRUE)
-  # Rendered header: the B column is relabelled OR.
+  # Rendered header: the B column is relabeled OR.
   t_or <- table_regression(fit, exponentiate = TRUE, output = "data.frame")
   expect_true("OR" %in% names(t_or))
   # exp applied once: OR rows equal exp(raw B).

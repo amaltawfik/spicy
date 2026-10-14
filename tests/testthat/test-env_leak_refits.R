@@ -1,6 +1,6 @@
 # Environment-leak closure in refit paths (Group D companion fixes).
 #
-# Standardisation refits run on the model frame (evaluated columns) and
+# Standardization refits run on the model frame (evaluated columns) and
 # resampling vcovs refit per replicate: with the original formula
 # environment attached, an inline transform (`log(x)`, `factor(g)`) that
 # cannot resolve from `data` silently re-evaluated against whatever the
@@ -10,7 +10,7 @@
 # Fixes under test:
 #   * standardize_refit_lm / standardize_refit_glm: formula env stripped
 #     -> transform formulas fall back to posthoc with spicy_fallback.
-#   * .compute_beta_rows_for_mixed: match.call-normalised refit with an
+#   * .compute_beta_rows_for_mixed: match.call-normalized refit with an
 #     env-stripped formula; lme (raw-data path) declines on any inline
 #     transform; caller warns instead of silently omitting beta rows.
 #   * compute_resample_vcov_bootstrap / _jackknife: replicates refit on

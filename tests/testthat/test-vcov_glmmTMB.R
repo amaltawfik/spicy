@@ -263,7 +263,7 @@ test_that("table_regression(vcov = 'CR0') shows glmmTMB's sandwich SEs", {
     fixed = TRUE
   )
   expect_match(note, "p-values: Wald-z asymptotic (glmmTMB).", fixed = TRUE)
-  # A user cluster is honoured and named as the user wrote it.
+  # A user cluster is honored and named as the user wrote it.
   note_u <- attr(table_regression(fit, vcov = "CR0", cluster = ~site), "note")
   expect_match(note_u, "clusters by site.", fixed = TRUE)
 })

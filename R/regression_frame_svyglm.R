@@ -6,13 +6,13 @@
 # `svyglm` inherits from `glm` and `lm`, so without an explicit method
 # spicy's `as_regression_frame.lm()` would dispatch on inheritance and
 # treat the fit as a plain glm -- losing the design-based variance,
-# the sampling-weights semantics, and the Taylor-linearised CI / p.
+# the sampling-weights semantics, and the Taylor-linearized CI / p.
 # This module ships the explicit method so the design context is
 # preserved end-to-end.
 #
 # Extraction strategy:
 #   * coefs from coef(fit) and design-based vcov from vcov(fit)
-#     (Taylor-linearisation variance is computed by survey internally).
+#     (Taylor-linearization variance is computed by survey internally).
 #   * t-statistic + Wald CI using survey's df.residual().
 #   * family from family(fit) (gaussian / quasibinomial / quasipoisson /
 #     ...). Title prefix names the design-based context explicitly.
@@ -277,7 +277,7 @@ as_regression_frame.svyglm <- function(
     eff_p = .svyglm_eff_p(fit),
     # Sum of design weights: makes the "weighted_nobs" token render
     # (it was silently swallowed -- extras carried the value but the
-    # fit-stats materialiser only reads fit_stats).
+    # fit-stats materializer only reads fit_stats).
     weighted_nobs = .design_weighted_n(fit, n_obs)
   )
 
@@ -374,7 +374,7 @@ as_regression_frame.svyglm <- function(
 
 # The information criterion of a design-based glm, as a SCALAR.
 #
-# `AIC.svyglm` does not honour the `stats::AIC` contract: it returns
+# `AIC.svyglm` does not honor the `stats::AIC` contract: it returns
 # survey's `extractAIC.svyglm` verbatim, a named vector of length three
 # -- `c(eff.p, AIC, deltabar)`. Stored whole, the downstream compactor
 # takes element 1, so the table printed the effective number of design
@@ -416,7 +416,7 @@ as_regression_frame.svyglm <- function(
   if ("AIC" %in% names(a)) {
     return(as.numeric(a[["AIC"]]))
   }
-  # nocov start: a future survey that honours the contract returns a
+  # nocov start: a future survey that honors the contract returns a
   # scalar; anything else is not an AIC we can name. Unreachable with
   # any released survey -- `AIC.svyglm()` returns a named vector that
   # always carries "AIC", so the guard above has already returned.

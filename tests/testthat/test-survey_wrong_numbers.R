@@ -129,7 +129,7 @@ test_that("the design-weighted AME reproduces an independent HT oracle", {
   got <- stats::setNames(ame$estimate, ame$term)
 
   # Independent oracle: a weighted glm (survey fits the same IWLS), a
-  # centred numeric derivative, and a weighted mean of the unit-level
+  # centered numeric derivative, and a weighted mean of the unit-level
   # effects. Finite differences, so the agreement is that of the
   # derivative, not of the arithmetic.
   w <- as.numeric(apistrat$pw)
@@ -323,7 +323,7 @@ test_that("weighted_nobs of a replicate design renders the sampling total", {
   expect_false(grepl("2745", out, fixed = TRUE))
 })
 
-test_that("the linearised and replicate designs agree on the weighted n", {
+test_that("the linearized and replicate designs agree on the weighted n", {
   d <- .wn_apiclus1_designs()
   lin <- survey::svyglm(api00 ~ ell + meals, design = d$linearized)
   rep <- survey::svyglm(api00 ~ ell + meals, design = d$replicate)

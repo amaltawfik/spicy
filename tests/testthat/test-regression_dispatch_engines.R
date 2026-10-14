@@ -359,7 +359,7 @@ test_that("output = 'excel' draws the five APA border rules", {
   on.exit(unlink(path), add = TRUE)
   table_regression(list(m1, m2), output = "excel", excel_path = path)
   wb <- openxlsx2::wb_load(path)
-  # Borders live in styles.xml; check the workbook serialised
+  # Borders live in styles.xml; check the workbook serialized
   # at least one "thin" + one "hair" border in the style table.
   styles_xml <- paste(wb$styles_mgr$styles$borders, collapse = " ")
   expect_match(styles_xml, "thin", fixed = TRUE)
@@ -408,7 +408,7 @@ test_that("clipboard_payload mirrors the table_continuous_lm layout (title, span
   expect_true(any(grepl("Std\\. errors", lines)))
 })
 
-test_that("clipboard_payload honours title = FALSE / note = FALSE", {
+test_that("clipboard_payload honors title = FALSE / note = FALSE", {
   fit <- lm(mpg ~ wt, data = mt)
   rendered <- table_regression(fit, title = FALSE, note = FALSE)
   txt <- spicy:::clipboard_payload(rendered, "\t")
@@ -786,7 +786,7 @@ test_that("'merged' console render is identical to 'first_col'", {
   )
 })
 
-test_that("word honours fit_stats_layout = 'merged' via merged cells", {
+test_that("word honors fit_stats_layout = 'merged' via merged cells", {
   # rd-core:fit-stats-layout-merged-support (word merge support)
   skip_if_not_installed("flextable")
   skip_if_not_installed("officer")

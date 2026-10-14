@@ -3216,7 +3216,7 @@ test_that("compute_model_vcov errors for CR* without cluster and clubSandwich", 
 
 test_that("compute_model_vcov refuses when clubSandwich errors", {
   # Was a spicy_fallback warning plus the classical matrix, which the
-  # caller then labelled cluster-robust (register n. 229).
+  # caller then labeled cluster-robust (register n. 229).
   fit <- stats::lm(extra ~ group, data = sleep)
   testthat::local_mocked_bindings(
     vcovCR = function(...) stop("synthetic CR failure"),
@@ -3490,7 +3490,7 @@ test_that("pick_es_value_lm fails fast on unknown effect_size", {
 test_that("compute_model_vcov refuses when sandwich errors", {
   # The branch is reached only when sandwich::vcovHC() itself errors. It
   # used to warn and return the classical matrix, which the caller then
-  # labelled robust (register n. 229); it now refuses and says why.
+  # labeled robust (register n. 229); it now refuses and says why.
   testthat::local_mocked_bindings(
     vcovHC = function(x, type, ...) stop("synthetic test failure"),
     .package = "sandwich"
@@ -4901,7 +4901,7 @@ test_that("align = 'auto' is removed from table_continuous_lm", {
   )
 })
 
-test_that("tidy/glance column sets are frozen (stabilising contract)", {
+test_that("tidy/glance column sets are frozen (stabilizing contract)", {
   skip_if_not_installed("broom")
   out <- table_continuous_lm(mtcars, select = "mpg", by = "am")
   expect_identical(

@@ -87,7 +87,7 @@ test_that("build_wide_display_df_continuous_lm blanks NA n and NA weighted n", {
 test_that("export_continuous_lm_table tinytable falls back to per-column default alignment", {
   skip_if_not_installed("tinytable")
   # The public table_continuous_lm() validates `align` via match.arg()
-  # to decimal/center/right, so the final else-arm (centre most cols,
+  # to decimal/center/right, so the final else-arm (center most cols,
   # right-align n / Weighted n / p) is only reachable by calling the
   # internal exporter with a non-standard align. Assert it still yields
   # a valid tinytable rather than erroring.
@@ -164,15 +164,15 @@ test_that("export_continuous_lm_table tinytable falls back to per-column default
 
   # Column order: 1 Variable, 2 M (A), 3 p, 4 n, 5 Weighted n.
   # Else-arm contract: column 1 left, n / Weighted n / p right-aligned,
-  # every remaining numeric column centred.
+  # every remaining numeric column centered.
   expect_identical(body_align(html, 1L), "left") # label column
-  expect_identical(body_align(html, 2L), "center") # generic numeric -> centre
+  expect_identical(body_align(html, 2L), "center") # generic numeric -> center
   expect_identical(body_align(html, 3L), "right") # p -> right
   expect_identical(body_align(html, 4L), "right") # n -> right
   expect_identical(body_align(html, 5L), "right") # Weighted n -> right
 
-  # Guard against a regression that would centre the count/p columns:
-  # none of n / Weighted n / p may be centred, and the generic numeric
+  # Guard against a regression that would center the count/p columns:
+  # none of n / Weighted n / p may be centered, and the generic numeric
   # column must not be right-aligned.
   expect_false(any(c("center") %in% body_align(html, 4L)))
   expect_false(any(c("right") %in% body_align(html, 2L)))
@@ -262,7 +262,7 @@ test_that("get_test_header_lm prints t() when the Satterthwaite df is non-finite
   expect_equal(spicy:::.lm_test_label(block, TRUE, TRUE), "t()")
 })
 
-test_that("get_test_header_lm returns the raw test type for an unrecognised test", {
+test_that("get_test_header_lm returns the raw test type for an unrecognized test", {
   # A test_type that is none of t/z/F/chi2 makes both single_coef and
   # multi_coef empty, so `chosen` is NA and the function short-circuits
   # to `return(test_types[1])` -- the raw label, verbatim.

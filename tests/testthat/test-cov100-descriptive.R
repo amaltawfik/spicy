@@ -151,7 +151,7 @@ test_that("varlist reports unsortable values and 0 distinct for all-NA matrix co
   expect_identical(as.integer(vl$N_distinct[vl$Variable == "m"]), 0L)
   expect_identical(as.integer(vl$N_valid[vl$Variable == "m"]), 0L)
   expect_identical(as.integer(vl$NAs[vl$Variable == "m"]), 3L)
-  # Sanity: the ordinary integer column is summarised normally.
+  # Sanity: the ordinary integer column is summarized normally.
   expect_identical(vl$Values[vl$Variable == "a"], "1, 2, 3")
 })
 

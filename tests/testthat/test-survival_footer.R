@@ -151,9 +151,9 @@ test_that("survival footer skips non-survival models in mixed lists", {
 })
 
 
-# ---- 7. .surv_title_dist normalisation ----------------------------------
+# ---- 7. .surv_title_dist normalization ----------------------------------
 
-test_that(".surv_title_dist normalises lnorm -> 'Log-normal'", {
+test_that(".surv_title_dist normalizes lnorm -> 'Log-normal'", {
   expect_identical(spicy:::.surv_title_dist("lnorm"), "Log-normal")
   expect_identical(spicy:::.surv_title_dist("lognormal"), "Log-normal")
   expect_identical(spicy:::.surv_title_dist("weibull"), "Weibull")

@@ -1057,7 +1057,7 @@ test_that("family without method selects the glm screen (0.12 calls intact)", {
   expect_match(attr(t_fam, "title"), "logistic", ignore.case = TRUE)
 })
 
-test_that("family is normalised like stats::glm(): object, name, constructor", {
+test_that("family is normalized like stats::glm(): object, name, constructor", {
   d <- sochealth[1:300, ]
   fit_with <- function(fam) {
     table_regression_uv(
@@ -1345,7 +1345,7 @@ test_that("the documented example runs and yields the OR screen", {
   )
 })
 
-test_that("the screen honours the table_regression output contract", {
+test_that("the screen honors the table_regression output contract", {
   # rd-uv-estimands:value-same-output-contract
   d <- .uv_soc()
   scr <- table_regression_uv(

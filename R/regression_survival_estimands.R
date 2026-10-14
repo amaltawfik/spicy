@@ -261,7 +261,7 @@
   # `keep <- times <= tau` and .step_surv_at() is a findInterval() at
   # `at_time`. Truncating here removes grid points that are provably
   # discarded downstream, so the estimands are unchanged EXACTLY
-  # (max|d| = 0, not "small") -- a simplification, not an optimisation.
+  # (max|d| = 0, not "small") -- a simplification, not an optimization.
   # What it saves is the fraction of the grid past the horizon, and
   # nothing more: a third of it on the vignette's own lung fit at
   # tau = 365, three quarters when tau sits at the lower quartile of
@@ -308,7 +308,7 @@
 # Estimand contrasts are defined per RAW variable (+1 unit, or level
 # vs reference), so a variable entering the formula ONLY inside a
 # transformed term (I(age/10), log(x), poly(x, 2), a bare a:b) has no
-# coefficient row for its contrast to sit next to. The old behaviour
+# coefficient row for its contrast to sit next to. The old behavior
 # appended an ORPHAN row (term = the raw variable) whose +1-unit
 # contrast silently mismatched the displayed transformed coefficient
 # (wave-2 vignette review, dev/registre_rendu_estimands_spec.md).
@@ -653,7 +653,7 @@
 # `df` are the degrees of freedom of the estimand rows' own test. The
 # default Inf is the normal-approximation layering the iid bootstrap
 # uses: `qt(p, Inf)` and `pt(q, Inf)` are `qnorm(p)` and `pnorm(q)` to
-# the last bit, so the parameterisation costs nothing at the default
+# the last bit, so the parameterization costs nothing at the default
 # (pinned by a witness, since it is arithmetic and not an API promise).
 # A finite value gives a Wald-t instead, and the rows say so through
 # `test_type`.

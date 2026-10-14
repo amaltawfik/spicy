@@ -145,10 +145,10 @@ as_regression_frame.mlogit <- function(
   # Two-segment publication layout (Stata asclogit presentation,
   # user-validated 2026-07-04; dev/mlogit_two_segment_spec.md): a
   # row's GROUP is its alternative, not its predictor. The generic
-  # (alternative-invariant) coefficients -- the model's centrepiece,
+  # (alternative-invariant) coefficients -- the model's centerpiece,
   # shared across alternatives -- form a leading
   # "Alternative-invariant" section; each alternative then gets its
-  # own labelled section (ASC + case-specific covariates) with bare
+  # own labeled section (ASC + case-specific covariates) with bare
   # row labels, so the reader scans within an alternative. Terms keep
   # mlogit's native "<term>:<alt>" names: uniqueness, tidy(), and
   # keep / drop regexes are untouched (display-only regrouping).

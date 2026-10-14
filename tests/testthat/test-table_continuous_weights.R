@@ -236,7 +236,7 @@ test_that("the weighted-inference refusal names TESTS, not every comparison", {
   )))
 })
 
-test_that("rescale under by normalises per variable, never per group", {
+test_that("rescale under by normalizes per variable, never per group", {
   # Doubling the weights of ONE group must not change that group's
   # rescaled statistics relative to a global rescale -- the relative
   # weights across groups are the information sampling weights carry.
@@ -279,7 +279,7 @@ test_that("the structured view carries the weighted_n token faithfully", {
 test_that("Weighted n right-aligns with n, as table_continuous_lm does", {
   # A weighted count is a count. The column was born with the weights
   # feature and never joined the rule its sibling `n` follows, so a
-  # sheet centred it beside a right-aligned `n`.
+  # sheet centered it beside a right-aligned `n`.
   keys <- c("Variable", "Group", "M", "SD", "n", "Weighted n", "p")
   expect_identical(spicy:::.continuous_right_cols(keys), c(5L, 6L, 7L))
 

@@ -581,7 +581,7 @@
 #' the matrix. The test takes the regime of the current model's
 #' coefficient tests:
 #' \itemize{
-#'   \item *F*, in a row labelled "Wald F-change": \eqn{W / q} on
+#'   \item *F*, in a row labeled "Wald F-change": \eqn{W / q} on
 #'     \eqn{(q, df)} degrees of freedom, the convention of
 #'     `lmtest::waldtest(test = "F")` and `car::linearHypothesis()`.
 #'     It applies to `lm` under `"HC0"`-`"HC5"` (and `"CR1S"`, on
@@ -593,7 +593,7 @@
 #'     `lme4::lmer` and `nlme::lme` use the HTZ test of
 #'     `clubSandwich::Wald_test()`, the small-sample correction of their
 #'     coefficient tests.
-#'   \item *Chi-square*, in a row labelled "Wald \eqn{\chi^2}{chi^2}
+#'   \item *Chi-square*, in a row labeled "Wald \eqn{\chi^2}{chi^2}
 #'     (change)" that replaces the likelihood-ratio row: \eqn{W} on
 #'     \eqn{q} degrees of freedom, the convention of
 #'     `lmtest::waldtest(test = "Chisq")`. It applies to `glm` and
@@ -825,7 +825,7 @@
 #'   family instead: `"classical"` resolves to the
 #'   heteroskedasticity-robust `"nid"` sandwich (Hendricks-Koenker,
 #'   Hall-Sheather bandwidth -- quantreg's own large-sample default
-#'   and the Stata `vce(robust)` analogue), with `"iid"`
+#'   and the Stata `vce(robust)` analog), with `"iid"`
 #'   (Koenker-Bassett homoskedastic, Stata `vce(iid)` parity),
 #'   `"ker"` (Powell kernel) and `"rank"` (rank-score inversion:
 #'   genuine CIs, no SE / t / p -- those cells render as dashes) as
@@ -1866,7 +1866,7 @@ table_regression <- function(
   # no nested comparison). Computed early because it drives the
   # `show_columns` compaction default below and refuses
   # `model_labels` fail-fast: in this layout the column groups are
-  # outcome categories, not models, and their spanners are relabelled
+  # outcome categories, not models, and their spanners are relabeled
   # via `outcome_labels`. See R/regression_multinom_layout.R.
   mn_columns_active <- .multinom_columns_active(models, nested)
   if (mn_columns_active && !is.null(model_labels)) {
@@ -2022,7 +2022,7 @@ table_regression <- function(
       logical(1)
     ))
     # Ordinal cumulative-link (polr / clm): nobs + the two pseudo-R^2 that
-    # generalise the binary-logit default (McFadden = Stata ologit default,
+    # generalize the binary-logit default (McFadden = Stata ologit default,
     # Nagelkerke = SPSS PLUM) + AIC. summary.polr reports Residual Deviance +
     # AIC; Stata/SPSS lead with the pseudo-R^2, so those are the headline here.
     any_ordinal <- any(vapply(
@@ -2221,7 +2221,7 @@ table_regression <- function(
   # (highest-density interval, the Kruschke-school convention; the
   # equal-tailed interval stays the default), while `"profile"` and
   # `"boot_percentile"` are likelihood / resampling constructions with
-  # no posterior analogue -- both are refused HERE with the Bayesian
+  # no posterior analog -- both are refused HERE with the Bayesian
   # alternative, not routed into a downstream generic error.
   is_bayes_ci <- vapply(models, inherits, logical(1), c("stanreg", "brmsfit"))
   if (identical(ci_method, "hdi") && !all(is_bayes_ci)) {
@@ -2399,7 +2399,7 @@ table_regression <- function(
     }
   }
 
-  # `standardized = "pseudo"` (Menard 2011 fully-standardised) is glm
+  # `standardized = "pseudo"` (Menard 2011 fully-standardized) is glm
   # only -- it derives SD(Y*) from the link-scale latent variance,
   # which is undefined for lm.
   if (identical(standardized, "pseudo")) {
@@ -2536,7 +2536,7 @@ table_regression <- function(
   # Random-effects display args: validate fail-fast (before the extraction
   # loop), so a bad value errors immediately instead of after the expensive
   # per-model extraction, and with a spicy_invalid_input class (finding m3).
-  # Reused both to materialise the RE rows (in the loop) and by the footer.
+  # Reused both to materialize the RE rows (in the loop) and by the footer.
   validate_logical_scalar(show_re, "show_re")
   validate_logical_scalar(show_components, "show_components")
   re_scale_val <- .validate_re_scale(re_scale)
@@ -2855,7 +2855,7 @@ table_regression <- function(
         class = "spicy_invalid_input"
       )
     }
-    # Exponentiate centrally so EVERY model class honours `exponentiate = TRUE`
+    # Exponentiate centrally so EVERY model class honors `exponentiate = TRUE`
     # (OR / IRR / HR / RR / MR / TR), driven by each frame's own info$family /
     # info$supports rather than a per-class `family()` lookup. Classes that
     # exponentiate internally (lm/glm legacy, mixed, survival) set
@@ -2876,8 +2876,8 @@ table_regression <- function(
     frames[[i]]$info$extras$non_additive <-
       detect_non_additive_terms(models[[i]])
 
-    # Component blocks (zero-inflation / zero hurdle / dispersion) as labelled
-    # subordinate rows blocks. Materialised AFTER the central exponentiate --
+    # Component blocks (zero-inflation / zero hurdle / dispersion) as labeled
+    # subordinate rows blocks. Materialized AFTER the central exponentiate --
     # each block applies its OWN link-gated exp (logit -> OR; probit /
     # count-type / dispersion stay on the link scale) -- and BEFORE p_adjust:
     # component coefficients are substantive hypotheses and join the p-adjust
@@ -2934,7 +2934,7 @@ table_regression <- function(
     }
 
     # Scale (dispersion) coefficients of a `scale = ~` clm: their own
-    # "Scale effects" block, materialised here -- after exp + p_adjust, like
+    # "Scale effects" block, materialized here -- after exp + p_adjust, like
     # the thresholds -- because they act on log(sigma) of the latent variable
     # (exp(zeta) is a ratio of latent SDs, never an odds ratio). Gated on a
     # coefficient column being shown, else the rows would render empty.
@@ -2951,7 +2951,7 @@ table_regression <- function(
     }
 
     # Random effects as a subordinate "Random effects" block of rows (show_re =
-    # TRUE, the default). Materialised HERE -- after exp + p_adjust, so variance
+    # TRUE, the default). Materialized HERE -- after exp + p_adjust, so variance
     # components are never exponentiated or p-adjusted. Gated on a coefficient
     # column being shown (else the rows render empty). ICC / N (groups) / the
     # method tag and the chi-bar-squared LR test stay in the footer (they are
@@ -3054,7 +3054,7 @@ table_regression <- function(
   if (any(singular_mixed)) {
     mod_labels <- .model_display_names(models)
     # "exactly zero" would be false for three of the five classes: only
-    # lme4 drives a collapsed component onto 0 itself. glmmTMB optimises
+    # lme4 drives a collapsed component onto 0 itself. glmmTMB optimizes
     # the log-SD and nlme the log-Cholesky factor, where an exact 0 sits
     # at -Inf, so the estimate lands NEAR the boundary; and the
     # correlation regime (|r| = 1) has no zero variance at all.
@@ -3432,7 +3432,7 @@ table_regression <- function(
   # calling its _from_frames sibling. The legacy build_regression_footer()
   # it replaced no longer exists.
   # `re_scale_val` / `re_columns_val` were validated fail-fast up top (finding
-  # m3) and reused to materialise the RE rows; thread them through the footer.
+  # m3) and reused to materialize the RE rows; thread them through the footer.
 
   # Phase 7c22 (item f): pass the surviving parent_vars (post keep /
   # drop filter) so the polynomial-trends footer note suppresses when
@@ -3597,7 +3597,7 @@ table_regression <- function(
     re_columns = re_columns_val
   )
   # Stash the print-time padding as an attribute so the print
-  # method can honour the call-site choice (and tooling like
+  # method can honor the call-site choice (and tooling like
   # `as.data.frame()` / broom continues to see the raw rendered
   # cells unchanged).
   attr(rendered, "padding") <- as.integer(padding)

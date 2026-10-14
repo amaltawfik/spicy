@@ -184,7 +184,7 @@ label_from_names <- function(df, sep = ". ") {
   # Set the `"label"` attribute directly. This is the same byte-level
   # result as `labelled::var_label<-` but keeps the function
   # self-contained (no namespace lookup in the per-column loop, no
-  # behavioural drift if `labelled` ever changes its setter).
+  # behavioral drift if `labelled` ever changes its setter).
   for (i in seq_along(df)) {
     if (!is.na(labels[i])) {
       attr(df[[i]], "label") <- labels[i]

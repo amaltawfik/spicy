@@ -24,7 +24,7 @@
 # Provenance rule (Amal, 2026-08-14): a named theme enters spicy only
 # SOURCED. Every rule below is traceable to a sentence of an official
 # document of the institution, recorded in `dev/journal_styles_sources.md`
-# with URL and consultation date. Rules the catalogue records as NOT
+# with URL and consultation date. Rules the catalog records as NOT
 # FOUND are never invented: the theme inherits the spicy default and the
 # documentation says so.
 
@@ -220,7 +220,7 @@
 #'
 #' Below, the journal's midline decimal point (Unicode U+00B7, MIDDLE
 #' DOT) is written `[.]` so it cannot be confused with an ordinary
-#' full stop.
+#' period.
 #'
 #' Encoded:
 #' \itemize{
@@ -740,7 +740,7 @@ spicy_style <- function(
 # entry here and a test in tests/testthat/test-spicy_style.R.
 #
 # Every rule below is traceable to dev/journal_styles_sources.md, which
-# holds the verbatim sentence it comes from. Rules the catalogue records
+# holds the verbatim sentence it comes from. Rules the catalog records
 # as NOT FOUND are not here: those themes inherit the spicy default.
 .spicy_style_registry <- function() {
   list(
@@ -1153,7 +1153,7 @@ print.spicy_style <- function(x, ...) {
 
 # The active format context, or NULL. The fast path -- no style asked
 # for -- is one `length()` call, so every formatter keeps its exact
-# current behaviour byte for byte.
+# current behavior byte for byte.
 .style_fmt <- function() {
   n <- length(.spicy_style_stack$frames)
   if (n == 0L) {

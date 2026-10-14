@@ -43,7 +43,7 @@ test_that("negbin: info$class is 'negbin' (not 'glm')", {
   expect_identical(fr$info$class, "negbin")
 })
 
-test_that("negbin: family normalised to 'negbin' (theta stripped)", {
+test_that("negbin: family normalized to 'negbin' (theta stripped)", {
   fit <- .fit_glm_nb()
   fr <- as_regression_frame(fit, model_id = "M1")
   expect_identical(fr$info$family$family, "negbin")
@@ -167,7 +167,7 @@ test_that("rlm: supports flags are correct", {
 
 # ---- 5. rlm: factor predictor reference row -----------------------------
 
-test_that("rlm: factor predictor synthesises a reference row", {
+test_that("rlm: factor predictor synthesizes a reference row", {
   fit <- .fit_rlm_factor()
   fr <- as_regression_frame(fit, model_id = "M1")
   expect_invisible(spicy:::validate_regression_frame(fr))

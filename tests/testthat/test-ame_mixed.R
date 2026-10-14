@@ -258,7 +258,7 @@ test_that("nested glmer pair renders AME columns for both models + LRT rows", {
 })
 
 
-# ---- 6. Behavioural guard: empty show_columns => no AME -----------------
+# ---- 6. Behavioral guard: empty show_columns => no AME -----------------
 
 test_that(".attach_ame_to_frame_coefs is a no-op when no AME token requested", {
   skip_if_not_installed("marginaleffects")

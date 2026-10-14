@@ -100,7 +100,7 @@ test_that("stub_keys drives the gt stub, by name", {
 
 test_that("a one-column stub leaves the group column to the numbers", {
   # The other half of the same property: with one stub key, the second
-  # column is a value column -- centred with the rest, and absent from
+  # column is a value column -- centered with the rest, and absent from
   # the LEFT-ALIGNED spanner ids. It still has a spanner of its own:
   # every column does. See `.edt_left_spanners()` above.
   skip_if_not_installed("gt")

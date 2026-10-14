@@ -639,7 +639,7 @@ test_that("freq() validates `decimal_mark`", {
   )
 })
 
-test_that("freq() honours `decimal_mark = ',' in the printed percentages", {
+test_that("freq() honors `decimal_mark = ',' in the printed percentages", {
   out <- capture.output(freq(c(1, 1, 2, 2, 2), decimal_mark = ","))
   # Pin the complete body and Total rows (\u2502 is the box-bar column separator)
   expect_true(" Valid      \u2502 1               2       40,0 " %in% out)
@@ -820,7 +820,7 @@ test_that("freq() warns with NA weights and reports the count", {
 
 test_that("freq() drops NA-weighted rows and rescales over the remaining (0.11.0)", {
   # Since spicy 0.11.0 NA-weighted observations are dropped from the
-  # table entirely (matches `cross_tab()`); the previous behaviour
+  # table entirely (matches `cross_tab()`); the previous behavior
   # (NA -> 0 with rescale to length(weights)) inflated `n_total` and
   # biased the rescale denominator.
   df <- data.frame(x = c("A", "B", "C", "D"), w = c(1, 2, NA, NA))

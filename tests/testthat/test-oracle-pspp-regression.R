@@ -11,7 +11,7 @@
 # {income, age, sex, smoking} (n = 1175), exported with
 #   male    = as.integer(sex == "Male")
 #   smoking = as.integer(smoking == "Yes")
-# and analysed with (SET FORMAT=F16.10. for 10-decimal output):
+# and analyzed with (SET FORMAT=F16.10. for 10-decimal output):
 #
 #   REGRESSION
 #     /VARIABLES=age male
@@ -25,14 +25,14 @@
 #
 # (The tight BCON matters: PSPP's default 0.001 stops one Newton step
 # early; with BCON = 1e-12 it converges in 4 iterations and the SEs
-# stabilise to 10 decimals.)
+# stabilize to 10 decimals.)
 #
 # Conventions verified while pinning:
 #   * PSPP "Wald" is the squared z statistic (z^2); spicy reports z.
 #   * PSPP's Exp(B) CI is exp() of the Wald link-scale CI
 #     (B +/- z * SE) -- the same construction as spicy's default glm
 #     CI (confint.default), so the bounds are directly comparable.
-#   * SPSS "Beta" standardises EVERY design column, factor dummies
+#   * SPSS "Beta" standardizes EVERY design column, factor dummies
 #     included (beta = b * sd(x) / sd(y)): that is spicy's
 #     standardized = "basic". The default "refit" keeps dummies at
 #     0/1 (beta_dummy = b / sd(y), the effect of the 0 -> 1 jump in
@@ -102,7 +102,7 @@ test_that("PSPP oracle: SPSS Beta = standardized 'basic'; 'refit' keeps dummies 
   d <- .pspp_soch()
   fit <- lm(income ~ age + sex, data = d)
 
-  # standardized = "basic" standardises every design column, factor
+  # standardized = "basic" standardizes every design column, factor
   # dummies included -- the SPSS Beta definition. Both Betas match
   # PSPP's Coefficients table.
   lgb <- table_regression(fit, standardized = "basic", output = "long")

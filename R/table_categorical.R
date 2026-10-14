@@ -1131,7 +1131,7 @@ table_categorical <- function(
   )
   # `labels` must be a NAMED character vector keyed by column name in
   # `data` (the contract shared with the continuous companions). Only
-  # listed columns are relabelled; the rest fall back to the column's
+  # listed columns are relabeled; the rest fall back to the column's
   # `label` attribute (haven / labelled convention), then to the
   # column name. Positional (unnamed) vectors -- the spicy < 0.13.0
   # legacy form -- are rejected with a migration hint.
@@ -1404,7 +1404,7 @@ table_categorical <- function(
   # `measure_key` is the measure the caller ASKED this row for, as a key
   # ("cramer_v", ..., or "none"). It rides through in `measure` so the
   # long output can publish it per row: reading it back off the
-  # cross_tab() object would mean recognising a display label.
+  # cross_tab() object would mean recognizing a display label.
   parse_stats <- function(ct_obj, measure_key = NA_character_) {
     # Read numeric attributes set by cross_tab()
     p_val <- attr(ct_obj, "p_value")
@@ -1536,10 +1536,10 @@ table_categorical <- function(
   # drives both the displayed precision AND the small-*p* threshold
   # (`p_digits = 3` -> `<.001`, `p_digits = 4` -> `<.0001`, etc.),
   # leading zeros are stripped, and the configured `decimal_mark` is
-  # honoured. The `op` argument carries the comparison operator
+  # honored. The `op` argument carries the comparison operator
   # parsed from `cross_tab()`'s note text in the rare fallback path
   # where the numeric p-value is unavailable: `op = "<"` means the
-  # underlying note literally said "p < threshold", so we honour the
+  # underlying note literally said "p < threshold", so we honor the
   # request and render the small-p form regardless of the numeric
   # placeholder.
   fmt_p <- function(p, op = NA_character_) {
@@ -1600,7 +1600,7 @@ table_categorical <- function(
   # mark falls at the same horizontal position across each column.
   # Used by every body-rendering engine (`gt`, `tinytable`,
   # `flextable`, `word`, ASCII print) so the rendered
-  # output is homogeneous: centring uniform-width strings stacks the
+  # output is homogeneous: centering uniform-width strings stacks the
   # decimal points vertically. Same strategy as `table_regression()`
   # and `table_continuous_lm()`. The first column is the variable /
   # level label and is left untouched. No-op unless
@@ -1931,10 +1931,10 @@ table_categorical <- function(
       on.exit(options(tinytable_print_output = old_tt_opt), add = TRUE)
 
       dat_tt <- report_wide_char
-      # Pre-pad numeric cells so centring stacks the decimal points
+      # Pre-pad numeric cells so centering stacks the decimal points
       # vertically (same strategy as table_regression() /
       # table_continuous_lm()). The native tinytable
-      # `style_tt(align = "d")` centres each cell on its own value
+      # `style_tt(align = "d")` centers each cell on its own value
       # rather than on the decimal mark, which is inconsistent with
       # the rendering used by the other engines.
       dat_tt <- pad_decimal_cols(dat_tt)
@@ -2025,7 +2025,7 @@ table_categorical <- function(
         spicy_abort("Install package 'gt'.", class = "spicy_missing_pkg")
       }
       dat_gt <- report_wide_char
-      # Pre-pad numeric cells so centring stacks the decimal points
+      # Pre-pad numeric cells so centering stacks the decimal points
       # vertically (same strategy as table_regression() /
       # table_continuous_lm()). gt's native `cols_align_decimal()`
       # renders visually right-aligned, which is inconsistent with
@@ -2124,7 +2124,7 @@ table_categorical <- function(
       df <- pad_decimal_cols(df)
       # Level rows carry the console's indent inside the label cell
       # and the engine indents them again below (`padding.left`). One
-      # indentation is the design; two is an artefact of reading a
+      # indentation is the design; two is an artifact of reading a
       # display string as data -- and Word keeps the literal spaces.
       # Keep the engine's indent, which survives every backend, and
       # hand the cell the bare level name (same rule as the gt and
@@ -2149,7 +2149,7 @@ table_categorical <- function(
       ft <- flextable::set_header_df(ft, mapping = map, key = "col_keys")
       bd <- spicy_fp_border(color = "black", width = 1)
       ft <- flextable::align(ft, j = 1, part = "all", align = "left")
-      # Numeric column alignment honours `align`. For "decimal" the
+      # Numeric column alignment honors `align`. For "decimal" the
       # cells were pre-padded above; right-aligning the padded strings
       # preserves the dot-aligned column. Use a monospace font in the
       # body so character widths match. For "center" / "right",
@@ -2157,7 +2157,7 @@ table_categorical <- function(
       num_j <- 2:ncol(df)
       if (identical(align, "decimal") && length(num_j) > 0L) {
         # Single-font policy (matches table_regression()):
-        # cells were pre-padded above for uniform width; centring
+        # cells were pre-padded above for uniform width; centering
         # in the default body font produces approximate decimal
         # alignment without forcing a monospace override.
         ft <- flextable::align(
@@ -2312,7 +2312,7 @@ table_categorical <- function(
       )
       if (nrow(body_xl) > 0) {
         # Body alignment. The Variable column is always left-aligned;
-        # numeric columns honour `align`. For "decimal", Excel
+        # numeric columns honor `align`. For "decimal", Excel
         # already aligns decimal points implicitly via right-alignment
         # combined with a uniform numfmt (every cell of the column
         # shares the same number of decimal places), so the visual
@@ -2487,7 +2487,7 @@ table_categorical <- function(
   }
   # Internal KEY for the margin column, never a label: it is a value of
   # `long$group`, the prefix of a public column name ("Total n") and the
-  # `total_group` attribute, and every site that recognises the margin --
+  # `total_group` attribute, and every site that recognizes the margin --
   # the wide and report fills, the typed view's `total` flag, tidy() and
   # glance() -- compares it against another key, never against a rendered
   # header.
@@ -2527,7 +2527,7 @@ table_categorical <- function(
     group_levels <- c(group_levels, margin_key)
   }
   # The margin key names a COLUMN only when the margin is displayed;
-  # otherwise it is a disambiguation artefact with no header to label.
+  # otherwise it is a disambiguation artifact with no header to label.
   # Stage-2 note: the collision loop above compares `by` levels to the
   # KEY, so once the margin's header is translated a user level may
   # print the same word as the margin without triggering the rename.
@@ -2996,12 +2996,12 @@ table_categorical <- function(
     if (do_smd) {
       # `smd` / `smd_type`, mirroring `effect_size` / `effect_size_type`
       # beside them -- NOT the `smd_value` of the continuous frame,
-      # whose neighbour is `es_value`. Each frame mirrors its own.
+      # whose neighbor is `es_value`. Each frame mirrors its own.
       #
       # RULED, knowingly: one quantity therefore has two raw names
       # across the two families. The alternative -- one name everywhere
       # -- would make this column the only one here NOT matching its
-      # neighbour, and the inter-family split it would fix predates the
+      # neighbor, and the inter-family split it would fix predates the
       # SMD: `es_value`/`es_type` versus `effect_size`/`effect_size_type`
       # are already two spellings of one idea. Aligning all three pairs
       # is a pre-1.0 naming decision of its own, on the register; doing
@@ -3252,7 +3252,7 @@ table_categorical <- function(
         }
         if (do_smd) {
           # Written explicitly rather than inherited from the
-          # `rep("", ...)` initialisation above: a level row carries no
+          # `rep("", ...)` initialization above: a level row carries no
           # SMD by CONTRACT, not by accident of construction.
           r1[[.CAT_KEY_SMD]] <- ""
         }
@@ -3400,10 +3400,10 @@ table_categorical <- function(
     on.exit(options(tinytable_print_output = old_tt_opt), add = TRUE)
 
     dat_tt <- merge_ci_inline(report_wide_char)
-    # Pre-pad numeric cells so centring stacks the decimal points
+    # Pre-pad numeric cells so centering stacks the decimal points
     # vertically (same strategy as table_regression() /
     # table_continuous_lm()). The native tinytable
-    # `style_tt(align = "d")` centres each cell on its own value
+    # `style_tt(align = "d")` centers each cell on its own value
     # rather than on the decimal mark, which is inconsistent with
     # the rendering used by the other engines.
     dat_tt <- pad_decimal_cols(dat_tt)
@@ -3463,7 +3463,7 @@ table_categorical <- function(
     # escape it, like every other engine of the family does.
     tt <- .spicy_tt_escape(tt)
 
-    # Alignment. Honour the `align` argument: "decimal" centres
+    # Alignment. Honor the `align` argument: "decimal" centers
     # uniform-width pre-padded strings (same strategy as
     # table_regression() / table_continuous_lm()); "center" / "right"
     # apply literal alignment.
@@ -3478,9 +3478,9 @@ table_categorical <- function(
       "r"
     )
     tt <- tinytable::style_tt(tt, j = c(data_j, stat_j), align = tt_align)
-    # Centre n/% labels (row 0 = column labels row)
+    # Center n/% labels (row 0 = column labels row)
     tt <- tinytable::style_tt(tt, i = 0, j = data_j, align = "c")
-    # Centre spanner labels (row -1 = spanner row)
+    # Center spanner labels (row -1 = spanner row)
     tt <- tinytable::style_tt(tt, i = -1, j = 2:ncol(dat_tt), align = "c")
     if (length(mod_rows)) {
       tt <- tinytable::style_tt(tt, i = mod_rows, j = 1, indent = 1)
@@ -3555,7 +3555,7 @@ table_categorical <- function(
     }
 
     dat_gt <- merge_ci_inline(report_wide_char)
-    # Pre-pad numeric cells so centring stacks the decimal points
+    # Pre-pad numeric cells so centering stacks the decimal points
     # vertically (same strategy as table_regression() /
     # table_continuous_lm()). gt's native `cols_align_decimal()`
     # renders visually right-aligned, which is inconsistent with
@@ -3658,7 +3658,7 @@ table_categorical <- function(
     }
 
     # Alignment. The Variable column is always left-aligned; numeric
-    # columns honour the `align` argument: "decimal" centres
+    # columns honor the `align` argument: "decimal" centers
     # uniform-width pre-padded strings (same strategy as
     # table_regression() / table_continuous_lm()); "center" / "right"
     # use gt::cols_align() literally.
@@ -3704,7 +3704,7 @@ table_categorical <- function(
 
     # 1) Silence every default border.  Setting width to 0 is
     #    critical: gt defaults to 2px, and in border-collapse the
-    #    wider border wins regardless of colour.
+    #    wider border wins regardless of color.
     tbl <- gt::tab_options(
       tbl,
       table.border.top.width = gt::px(0),
@@ -3762,9 +3762,9 @@ table_categorical <- function(
     # Build CSS selector for group-column <th> elements. These ids carry
     # the `by` level labels, i.e. user data. `.gt_safe_ids()` above has
     # already taken the quote and the backslash out of them; the
-    # `.css_escape_string()` here is the second line of that defence,
+    # `.css_escape_string()` here is the second line of that defense,
     # kept because this selector is one edit away from an id that never
-    # passed through the sanitiser.
+    # passed through the sanitizer.
     grp_css_sel <- paste(
       vapply(
         grp_cols,
@@ -3824,7 +3824,7 @@ table_categorical <- function(
     df <- pad_decimal_cols(df)
     # Level rows carry the console's indent inside the label cell and
     # the engine indents them again below (`padding.left`). One
-    # indentation is the design; two is an artefact of reading a
+    # indentation is the design; two is an artifact of reading a
     # display string as data -- and Word keeps the literal spaces.
     # Keep the engine's indent, which survives every backend, and hand
     # the cell the bare level name (same rule as the gt and tinytable
@@ -3851,8 +3851,8 @@ table_categorical <- function(
     bd <- spicy_fp_border(color = "black", width = 1)
 
     ft <- flextable::align(ft, j = 1, part = "all", align = "left")
-    # Numeric column alignment honours `align`. For "decimal", cells
-    # were pre-padded above by `pad_decimal_cols()`; CENTRE the
+    # Numeric column alignment honors `align`. For "decimal", cells
+    # were pre-padded above by `pad_decimal_cols()`; CENTER the
     # padded strings in the default body font (single-font policy
     # matching table_regression()). For "center" / "right", apply
     # the literal alignment.
@@ -3879,7 +3879,7 @@ table_categorical <- function(
         align = "right"
       )
     }
-    # Centre n/% labels and spanner labels in header
+    # Center n/% labels and spanner labels in header
     ft <- flextable::align(ft, j = grp_j, part = "header", align = "center")
     # Right-align p and association measure in header
     stat_j <- (ncol(df) - n_stat_cols_merged + 1L):ncol(df)
@@ -4080,7 +4080,7 @@ table_categorical <- function(
     )
     if (nrow(body_xl) > 0) {
       # Body alignment. The Variable column is always left-aligned;
-      # numeric columns honour `align`. For "decimal", Excel already
+      # numeric columns honor `align`. For "decimal", Excel already
       # aligns decimal points implicitly via right-alignment combined
       # with a uniform numfmt, so the visual result matches the
       # dot-aligned column in print / gt / tinytable.

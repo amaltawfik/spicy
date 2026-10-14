@@ -172,7 +172,7 @@ test_that("feols: fit_stats$r_squared + adj_r_squared finite; within_r2 in pseud
 
 # ---- 7. feols: cluster vcov label ---------------------------------------
 
-test_that("feols default: vcov_label normalises 'IID' to 'Classical'", {
+test_that("feols default: vcov_label normalizes 'IID' to 'Classical'", {
   fit <- .fit_feols_basic()
   fr <- as_regression_frame(fit, model_id = "M1")
   expect_identical(fr$info$vcov_label, "Classical")
@@ -246,7 +246,7 @@ test_that("cluster alone on fixest points at fixest's own vcov interface", {
 
 # ---- 8. feols: factor predictor reference row ---------------------------
 
-test_that("feols: factor predictor synthesises a reference row", {
+test_that("feols: factor predictor synthesizes a reference row", {
   fit <- .fit_feols_factor()
   fr <- as_regression_frame(fit, model_id = "M1")
   expect_invisible(spicy:::validate_regression_frame(fr))

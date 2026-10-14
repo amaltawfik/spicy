@@ -130,7 +130,7 @@
 # `A-B_n`: the two `<th>` share one DOM id and every body cell's
 # `headers="A-B_n"` then points at both, so a screen reader announces the
 # wrong group and a `th[id=]` rule styles two columns at once. (In the
-# spanner position gt escapes the id instead of normalising it, so
+# spanner position gt escapes the id instead of normalizing it, so
 # spanners never collide this way -- measured on gt 1.3.0.)
 #
 # The tie is broken on a SHADOW of the id -- the form gt will actually
@@ -167,7 +167,7 @@
 # The newline is escaped for SYNTAX only -- a literal newline cannot
 # appear in a CSS string -- and not because the rule would then land.
 # It does not, either way, and the six-hex-digit form is not the shield
-# it looks like: sass re-serialises our `\00000A` to the short `\ab`
+# it looks like: sass re-serializes our `\00000A` to the short `\ab`
 # form, which swallows the character that follows and compiles to
 # `th[id="a<U+00AB>_n"]`. Measured.
 #
@@ -253,9 +253,9 @@
 #
 # Two non-obvious knobs in flextable's `set_caption()`:
 #
-#   * `align_with_table = FALSE`: flextable's default behaviour
+#   * `align_with_table = FALSE`: flextable's default behavior
 #     overrides the caller's `text.align` with the underlying table's
-#     alignment (via `process_caption_fp_par()`); the table is centred
+#     alignment (via `process_caption_fp_par()`); the table is centered
 #     for HTML output, so the caption would be too. FALSE keeps the
 #     APA flush-left caption (APA Manual 7 Section 7.10-7.11).
 #   * `padding.bottom`: the rendered HTML caption otherwise has

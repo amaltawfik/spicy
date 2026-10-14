@@ -1,4 +1,4 @@
-# exponentiate = TRUE must be honoured for EVERY model class, not only lm/glm,
+# exponentiate = TRUE must be honored for EVERY model class, not only lm/glm,
 # mixed, and survival. The transform is applied centrally in table_regression()
 # via .apply_exp_to_frame(), driven by each frame's info$family / info$supports.
 # Regression guard for the "exponentiate silently ignored for ~10 classes" bug.

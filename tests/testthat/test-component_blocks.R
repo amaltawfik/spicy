@@ -1,5 +1,5 @@
 # Component blocks: the zero / zero-inflation / dispersion components of
-# two-part count models render as labelled subordinate row blocks (was:
+# two-part count models render as labeled subordinate row blocks (was:
 # invisible -- only the count/conditional component rendered). Oracles are the
 # per-component summary() matrices; robust SEs cross-validate to the
 # whole-model sandwich::vcovCL. Design + decisions:
@@ -50,7 +50,7 @@ test_that("glmmTMB renders zi + Dispersion blocks before the Random effects", {
   expect_true(i_zi < i_dp && i_dp < i_re)
 })
 
-test_that("the Dispersion block only appears when dispersion was modelled", {
+test_that("the Dispersion block only appears when dispersion was modeled", {
   skip_if_not_installed("glmmTMB")
   data("Salamanders", package = "glmmTMB", envir = environment())
   m <- suppressWarnings(glmmTMB::glmmTMB(

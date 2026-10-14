@@ -116,7 +116,7 @@ test_that("`show_columns` that prunes itself empty is refused", {
   )
 })
 
-test_that("the console honours `align = \"center\"` and `\"right\"`", {
+test_that("the console honors `align = \"center\"` and `\"right\"`", {
   d <- .svyedge_design()
   for (a in c("center", "right")) {
     expect_snapshot_output(

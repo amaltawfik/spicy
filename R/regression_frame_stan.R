@@ -59,7 +59,7 @@ as_regression_frame.stanreg <- function(
   fam <- .stan_family(fit)
   use_hdi <- identical(ci_method, "hdi")
   # Draws-native exponentiation (self-applied, like the merMod /
-  # survival frames): with the draws at hand, summarising exp(draws)
+  # survival frames): with the draws at hand, summarizing exp(draws)
   # is exact, so the delta approximation has no business here. (Its
   # direction of error depends on the summary: vs the posterior SD it
   # understates severalfold for wide posteriors; vs the robust MAD SD
@@ -79,7 +79,7 @@ as_regression_frame.stanreg <- function(
   # per group-level deviation (one per school, per region, ...): those
   # are not population-level coefficients and rendered as a flood of
   # flat rows -- they are excluded here, and the random structure is
-  # summarised by the Random effects block below (finding c).
+  # summarized by the Random effects block below (finding c).
   coef_names <- names(fit$coefficients)
   coef_names <- coef_names[!grepl("^b\\[", coef_names)]
 
@@ -302,7 +302,7 @@ as_regression_frame.brmsfit <- function(
 #     via lmerMod / $glmod / $jam, never via the glm class alone.
 #   * Non-GLM subclasses (stan_polr, stan_betareg, stan_clogit) are
 #     OUT: no validated standardized-beta convention exists for these
-#     families and their frequentist analogues are refused too. NOTE:
+#     families and their frequentist analogs are refused too. NOTE:
 #     stan_betareg carries a genuine family() object, so family shape
 #     alone cannot exclude it either.
 .stan_beta_scope <- function(fit) {
@@ -354,7 +354,7 @@ as_regression_frame.brmsfit <- function(
         "The algebraic rescale is validated for ",
         "`stan_glm` / `stan_lm`-style fits; this model ",
         "family has no standardized-beta convention and ",
-        "its frequentist analogue is refused too."
+        "its frequentist analog is refused too."
       ),
       "i" = hint
     ),
@@ -454,7 +454,7 @@ as_regression_frame.brmsfit <- function(
 # Factor-derived design columns for a brmsfit: the
 # detect_factor_design_cols() rule (pure factor main effects), sourced
 # from the brms formula / data pair -- model.frame(tt, data) also
-# materialises inline factor() columns, so those are caught too.
+# materializes inline factor() columns, so those are caught too.
 .brms_factor_design_cols <- function(fit, mm) {
   tt <- stats::delete.response(stats::terms(stats::formula(fit)$formula))
   mf <- stats::model.frame(tt, data = fit$data)
@@ -1099,7 +1099,7 @@ as_regression_frame.brmsfit <- function(
 
   # Bayesian fit statistics, per the field consensus (BDA3 ch. 7:
   # elpd is THE generic predictive-accuracy measure; Gelman et al.
-  # 2019: the Bayesian R^2 as the descriptive analogue; Bayes factors
+  # 2019: the Bayesian R^2 as the descriptive analog; Bayes factors
   # deliberately absent -- BDA3 sec. 7.4 recommends against them for
   # this use). r2_bayes is cheap (~0.4 s) and part of the Bayesian
   # DEFAULT; the loo pair (~2 s, PSIS-LOO) computes only on request.
@@ -1687,7 +1687,7 @@ as_regression_frame.brmsfit <- function(
 # (spicy_bayes_diagnostics, nested under spicy_caveat, so scripts can
 # mute this guard selectively while generic spicy_caveat handlers keep
 # catching it) is raised by the caller from that sentence. NULL when
-# the posterior cannot be summarised at all. When the divergence count
+# the posterior cannot be summarized at all. When the divergence count
 # cannot be extracted the table is NOT presented as diagnostics-clean:
 # `div_unavailable` makes the note disclose the gap instead (and no
 # warning is raised, since nothing was found wrong).

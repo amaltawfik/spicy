@@ -115,7 +115,7 @@ test_that("lm_robust ci_level=0.90 yields a narrower CI than the engine 95%", {
 
 # ---- 3. Reference rows: factor with no dropped reference -----------------
 
-test_that("lm_robust no-intercept factor synthesises NO reference row", {
+test_that("lm_robust no-intercept factor synthesizes NO reference row", {
   fit <- .fit_lm_robust_no_intercept_factor()
 
   # detect_factor_terms() must flag the factor as reference_dropped = FALSE,
@@ -126,7 +126,7 @@ test_that("lm_robust no-intercept factor synthesises NO reference row", {
 
   fr <- as_regression_frame(fit, model_id = "M1")
   expect_invisible(spicy:::validate_regression_frame(fr))
-  # All three levels appear as real coefficients; none is a synthesised ref.
+  # All three levels appear as real coefficients; none is a synthesized ref.
   expect_false(any(fr$coefs$is_ref))
   expect_identical(nrow(fr$coefs), 3L)
 })

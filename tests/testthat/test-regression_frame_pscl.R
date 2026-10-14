@@ -100,7 +100,7 @@ test_that("hurdle: p-values match summary(fit)$coefficients$count byte-equivalen
 
 # ---- 3. hurdle: factor detection works through prefix mismatch -----------
 
-test_that("hurdle: factor predictor synthesises a reference row", {
+test_that("hurdle: factor predictor synthesizes a reference row", {
   fit <- .fit_hurdle_basic()
   fr <- as_regression_frame(fit, model_id = "M1")
   fem_rows <- fr$coefs[fr$coefs$parent_var == "fem", ]

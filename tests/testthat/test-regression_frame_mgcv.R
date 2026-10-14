@@ -227,7 +227,7 @@ test_that("gam poisson: smooth_terms$stat_type = 'chi2'", {
 
 # ---- 8. gam: factor predictor reference row ----------------------------
 
-test_that("gam: factor predictor synthesises a reference row", {
+test_that("gam: factor predictor synthesizes a reference row", {
   fit <- .fit_gam_factor()
   fr <- as_regression_frame(fit, model_id = "M1")
   expect_invisible(spicy:::validate_regression_frame(fr))

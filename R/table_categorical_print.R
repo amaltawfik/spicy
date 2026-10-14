@@ -35,12 +35,12 @@ print.spicy_categorical_table <- function(x, ...) {
   nc <- ncol(display_df)
   numeric_j <- setdiff(seq_len(nc), align_left)
 
-  # Honour the `align` attribute. ASCII has no native decimal-alignment
+  # Honor the `align` attribute. ASCII has no native decimal-alignment
   # primitive, so for "decimal" we pre-pad numeric cells with leading
   # and trailing spaces (via `decimal_align_strings()` from the
   # shared formatting helpers) so dots line up vertically. We also
   # put the same columns in `align_center_cols` so the column
-  # HEADERS centre over the dot-aligned data (otherwise they'd be
+  # HEADERS center over the dot-aligned data (otherwise they'd be
   # right-aligned by the default in `build_ascii_table()`, which
   # makes the header sit visually disconnected from the data column).
   # "center" puts numeric cells in `align_center_cols`. "right"

@@ -223,7 +223,7 @@ test_that("coxph: AIC/BIC/logLik match stats:: helpers", {
 
 # ---- 6. coxph: factor predictor reference rows ---------------------------
 
-test_that("coxph: factor predictor synthesises ref row + (k-1) non-ref rows", {
+test_that("coxph: factor predictor synthesizes ref row + (k-1) non-ref rows", {
   fit <- .fit_coxph_factor()
   fr <- as_regression_frame(fit, model_id = "M1")
   expect_invisible(spicy:::validate_regression_frame(fr))
@@ -370,7 +370,7 @@ test_that("survreg: title_prefix names the distribution", {
 
 # ---- 12. survreg: factor predictor reference rows ------------------------
 
-test_that("survreg: factor predictor synthesises a reference row", {
+test_that("survreg: factor predictor synthesizes a reference row", {
   fit <- .fit_survreg_factor()
   fr <- as_regression_frame(fit, model_id = "M1")
   expect_invisible(spicy:::validate_regression_frame(fr))

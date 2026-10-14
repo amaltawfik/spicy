@@ -72,7 +72,7 @@ test_that("compute_model_vcov() refuses HC* and the resamplers on design fits", 
   # through a test before -- which is exactly why the hole survived CI.
   # svrepglm inherits "svyglm", so it reaches the guard by inheritance;
   # it is exercised explicitly because the two classes carry different
-  # variance machinery (Taylor linearisation vs replicate weights) and
+  # variance machinery (Taylor linearization vs replicate weights) and
   # both returned wrong -- and DIFFERENT -- matrices.
   fits <- .svy_guard_fits()
   estimators <- c(
@@ -475,7 +475,7 @@ test_that("an unknown vcov token keeps its own answer on a design fit", {
 # NUMBER, not a label: the token used to fall through to sandwich, which
 # built a heteroskedasticity-robust matrix out of the weighted working
 # model and handed it back to be reported under the design's own
-# "Taylor linearisation" heading. It is refused now, like every other
+# "Taylor linearization" heading. It is refused now, like every other
 # estimator that re-derives a variance the design already carries.
 test_that("HC4m on a design fit is refused, like every other estimator", {
   skip_if_not_installed("survey")

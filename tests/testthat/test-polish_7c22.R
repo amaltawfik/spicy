@@ -89,7 +89,7 @@ test_that("Deviance fit-stat uses ic_digits (1 decimal by default)", {
   combined <- paste(out, collapse = "\n")
   # default ic_digits = 1L -> "23.9" not "23.92"
   expect_match(combined, "[0-9]+\\.[0-9](\\s|$)") # at least one decimal
-  # No three-decimal artefact (would indicate digits = 2L use).
+  # No three-decimal artifact (would indicate digits = 2L use).
   dev_line <- grep("Deviance", strsplit(combined, "\n")[[1L]], value = TRUE)
   if (length(dev_line) > 0L) {
     expect_false(grepl("\\.[0-9][0-9][0-9]", dev_line))

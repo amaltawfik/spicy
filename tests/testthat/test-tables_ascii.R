@@ -135,7 +135,7 @@ test_that("print.spicy_categorical_table uses grouped title and compact padding"
   )))
 })
 
-test_that("build_ascii_table honours `total_row_idx` and supports `group_sep_rows`", {
+test_that("build_ascii_table honors `total_row_idx` and supports `group_sep_rows`", {
   df <- data.frame(
     Group = c("A1", "A2", "B1", "B2"),
     Count = c("10", "20", "5", "15")
@@ -264,7 +264,7 @@ test_that("continuation panels name the estimand of an orphaned companion column
   bare <- capture.output(spicy_print_table(x, align_left_cols = 1L))
   expect_false(any(grepl("95% CI (dRisk", bare, fixed = TRUE)))
   expect_true(any(grepl("95% CI", bare, fixed = TRUE)))
-  # Carrier travelling WITH its companion: short header preserved.
+  # Carrier traveling WITH its companion: short header preserved.
   options(width = 58)
   out2 <- qp()
   hdr2 <- grep("dRisk", out2, value = TRUE)
@@ -272,7 +272,7 @@ test_that("continuation panels name the estimand of an orphaned companion column
   expect_false(any(grepl("95% CI (dRisk", out2, fixed = TRUE)))
 })
 
-test_that("a block omnibus p is not attributed to its neighbour", {
+test_that("a block omnibus p is not attributed to its neighbor", {
   # Register n. 89. The carrier search is "the nearest data column on my
   # left", which is the estimate only in a coefficient layout. In the
   # descriptive families the `p` is the test of the whole block, and a
@@ -359,7 +359,7 @@ test_that("a block omnibus p is not attributed to its neighbour", {
 
 
 test_that("an orphaned interval names its carrier at a fractional coverage", {
-  # The pattern that recognises a companion header interpolated `[0-9]+`
+  # The pattern that recognizes a companion header interpolated `[0-9]+`
   # for the coverage, so it matched "95% CI" and missed "97.5% CI": at a
   # fractional `ci_level` the orphan silently kept its bare header and
   # the reader lost which estimand it belonged to.
@@ -383,7 +383,7 @@ test_that("an orphaned interval names its carrier at a fractional coverage", {
   expect_true(any(grepl("95% CI (B)", panel_header(0.95), fixed = TRUE)))
   expect_true(any(grepl("97.5% CI (B)", panel_header(0.975), fixed = TRUE)))
   # Decision 27: the header now carries the display mark, and the
-  # pattern must keep recognising it -- the orphan names its carrier
+  # pattern must keep recognizing it -- the orphan names its carrier
   # under the comma exactly as it does under the period.
   expect_true(any(grepl(
     "97,5% CI (B)",
@@ -427,7 +427,7 @@ test_that("a missing cell renders blank without desyncing the table", {
   # `build_line()` adds that NA to its running bar position, so ONE
   # missing value used to leave its row unpadded and put every separator
   # of the table at NA -- a header rule with two crossings. Missing is
-  # normalised to empty at the door of the renderer, for every family.
+  # normalized to empty at the door of the renderer, for every family.
   df <- data.frame(
     Category = c("one", "two"),
     Values = c("a", NA_character_),

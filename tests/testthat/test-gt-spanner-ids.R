@@ -37,7 +37,7 @@ test_that("levels differing only in whitespace get distinct DOM ids", {
   ))
 })
 
-test_that("one space vs two spaces also survives the gt normalisation", {
+test_that("one space vs two spaces also survives the gt normalization", {
   skip_if_not_installed("gt")
   d <- .spn_data(c("A B", "A  B"))
   tbl <- expect_no_error(table_categorical(d, f, by = g, output = "gt"))
@@ -56,7 +56,7 @@ test_that("the visible spanner labels stay the raw levels", {
 })
 
 test_that(".gt_safe_ids is still the identity on ordinary keys", {
-  # The second pass must not move a set whose gt-normalised forms are
+  # The second pass must not move a set whose gt-normalized forms are
   # already distinct -- including every frozen key that holds a space.
   keys <- c("Variable", "M (Hi)", "95% CI LL", "p", "n", "Step 1: B")
   expect_identical(.gt_safe_ids(keys), stats::setNames(keys, keys))

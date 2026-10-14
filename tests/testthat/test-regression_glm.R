@@ -925,7 +925,7 @@ test_that("glm refit fallback: factor() in formula triggers spicy_fallback", {
   expect_true(fb_seen)
 })
 
-test_that("glm pseudo: log-binomial standardisation is NA (no latent threshold)", {
+test_that("glm pseudo: log-binomial standardization is NA (no latent threshold)", {
   d <- data.frame(
     y = c(0, 1, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1),
     x = seq_len(20)
@@ -938,7 +938,7 @@ test_that("glm pseudo: log-binomial standardisation is NA (no latent threshold)"
   skip_if(is.null(fit), "log-binomial fit did not converge")
   # The log link (relative-risk model) has no latent-threshold interpretation,
   # so the Menard / Long & Freese latent-variable SD is undefined: a caveat
-  # fires and the standardised beta is NA (use standardized = "refit").
+  # fires and the standardized beta is NA (use standardized = "refit").
   expect_warning(
     td <- broom::tidy(table_regression(fit, standardized = "pseudo")),
     class = "spicy_caveat"
@@ -1740,7 +1740,7 @@ test_that("AUDIT: spicy_caveat conditions inherit from spicy_warning", {
 
 test_that("AUDIT B3: pseudo_r2_* preserve offset in null model refit", {
   # Bug: compute_intercept_only_loglik_glm dropped the offset, so the
-  # null model under-modelled the rate baseline and pseudo-R^2 went
+  # null model under-modeled the rate baseline and pseudo-R^2 went
   # negative for offset glms (the null model must carry the same
   # offset as the full model -- the Stata convention; on offsets see
   # Long & Freese 2014 sec. 9.2.6).
@@ -2126,7 +2126,7 @@ test_that("AUDIT B5: pivot_aligned_wide also respects input order", {
 # ============================================================================
 
 test_that("AUDIT B6: partially-named models list auto-fills missing slots", {
-  # Pre-0.12: empty names were rejected outright. New behaviour:
+  # Pre-0.12: empty names were rejected outright. New behavior:
   # partial naming is unambiguous user intent (the named slots keep
   # their label, unnamed slots fall back to "Model <position>"),
   # so we accept it without warning. Duplicate explicit names are
@@ -2164,7 +2164,7 @@ test_that("AUDIT B7: ordered factor with poly contrasts -- grouped under header"
   # poly suffix (`.L` / `.Q` / `.C` / `^k`) as the sub-row label,
   # in polynomial degree order, and with NO reference row (none
   # exists for poly contrasts). The footer adds an auto note
-  # explaining the parameterisation.
+  # explaining the parameterization.
   fit <- glm(
     dentist_12m ~ age + sex + education,
     data = sochealth,
@@ -2183,7 +2183,7 @@ test_that("AUDIT B7: ordered factor with poly contrasts -- grouped under header"
   # presence of "(ref.)" anywhere is fine -- `sex` is a treatment
   # factor and KEEPS its reference row.
   expect_false(any(grepl("Lower secondary", vars)))
-  # The poly contrasts are sublabelled with the bare suffix and
+  # The poly contrasts are sublabeled with the bare suffix and
   # appear in linear -> quadratic order.
   expect_true(".L" %in% vars_trimmed)
   expect_true(".Q" %in% vars_trimmed)
@@ -2364,7 +2364,7 @@ test_that("AUDIT round 6: family x link matrix -- 14 combos all run cleanly", {
 
 test_that("AUDIT: Helmert and sum contrasts render without bogus ref row", {
   # Since the non-default-contrasts lot, these rows GROUP under the
-  # parent variable (labelled by contrast-matrix column index) instead
+  # parent variable (labeled by contrast-matrix column index) instead
   # of rendering flat -- still with no reference row, since none
   # exists under these codings.
   d <- mtcars
@@ -2763,7 +2763,7 @@ test_that("glm smart: continuous 2 * SD, binary raw (X-only Gelman)", {
   )
   # Independent refit oracle: glm on cont / (2 sd) reproduces the
   # smart beta for the continuous input exactly (link fixed; the
-  # linear predictor is reparametrised, not changed).
+  # linear predictor is reparametrized, not changed).
   d2 <- transform(d, cont = cont / (2 * sd(cont)))
   refit <- glm(y ~ bin_num + cont, data = d2, family = binomial)
   expect_equal(
@@ -3232,7 +3232,7 @@ test_that("pseudo_r2_tjur: binomial oracle value; no row for other families", {
     table_regression(pfit, show_fit_stats = c("nobs", "pseudo_r2_tjur")),
     class = "spicy_invalid_input"
   )
-  # Mixed set with at least one binomial glm: the request is honoured,
+  # Mixed set with at least one binomial glm: the request is honored,
   # and the non-binomial column renders the per-cell en-dash.
   outm <- table_regression(
     list(bin = gfit, pois = pfit),

@@ -9,7 +9,7 @@
 #     `table_continuous(weights =, rescale = TRUE)` are algebraically
 #     the same mean and the same standard deviation;
 #   * an INDEPENDENT oracle -- a six-row two-stratum design whose
-#     linearised variance is an exact rational;
+#     linearized variance is an exact rational;
 #   * the REFUSALS, one per branch.
 # ---------------------------------------------------------------------------
 
@@ -287,8 +287,8 @@ test_that("D17 holds where the alignment of n had no reason to", {
 
 # ---- an oracle that does not come from survey -----------------------------
 
-test_that("the two-stratum micro design matches a hand linearisation", {
-  # Six PSU, two strata, weights 5 and 2. The linearised variance is
+test_that("the two-stratum micro design matches a hand linearization", {
+  # Six PSU, two strata, weights 5 and 2. The linearized variance is
   # the exact rational 492/441, so this witness would catch a survey
   # regression as well as one of ours.
   skip_if_not_installed("survey", "4.5")
@@ -692,7 +692,7 @@ test_that("rows with a missing `by` leave the table and the note says so", {
   # Dropping those rows does not cost the title its label.
   expect_identical(attr(tbl_lab, "group_label"), "School type")
   # No "(Missing)" domain: a level the sampler never assigned is not a
-  # domain, and its degrees of freedom would be an artefact.
+  # domain, and its degrees of freedom would be an artifact.
   expect_identical(sort(unique(tbl$group)), c("E", "H", "M"))
 })
 

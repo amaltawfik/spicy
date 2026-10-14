@@ -83,7 +83,7 @@ test_that("non-character assoc_measure is rejected", {
   )
 })
 
-test_that("named assoc_measure with an unrecognised value errors clearly", {
+test_that("named assoc_measure with an unrecognized value errors clearly", {
   df <- data.frame(
     grp = factor(c("A", "A", "B", "B")),
     v1 = c("x", "y", "x", "y")
@@ -166,7 +166,7 @@ test_that("single-level select variable renders blank p / assoc cells (default)"
 
 # ---- one-way gt alignment branches ----------------------------------------
 
-test_that("one-way gt output honours align = 'center' and 'right'", {
+test_that("one-way gt output honors align = 'center' and 'right'", {
   skip_if_not_installed("gt")
   g_center <- table_categorical(
     sochealth,

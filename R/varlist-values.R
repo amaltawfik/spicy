@@ -1,7 +1,7 @@
 # Length-guarded `sort(unique(x), method = "radix")`. Defensive
 # wrapper: skips the `sort()` step when fewer than two distinct
 # values remain (zero- or one-element inputs are returned as-is),
-# then byte-stable radix-sorts the rest. Centralised so every
+# then byte-stable radix-sorts the rest. Centralized so every
 # call site shares the same handling of empty / singleton vectors,
 # and so the sort algorithm stays consistent across input classes.
 safe_sort_unique <- function(x) {
@@ -172,7 +172,7 @@ summarize_values_all <- function(
   }
 
   # Same labelled-to-factor unification as in `summarize_values_minmax()`:
-  # `factor_levels` is now honoured for labelled vectors, and the original
+  # `factor_levels` is now honored for labelled vectors, and the original
   # level order is preserved (sorting prefixed labels alphabetically would
   # mis-order codes >= 10, e.g. `[10] X` before `[2] X`). As there,
   # `.user_na_zap()` keeps declared-missing codes visible and

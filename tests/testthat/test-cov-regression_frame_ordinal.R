@@ -104,7 +104,7 @@ test_that("polr cloglog fit reports the cloglog link and title", {
     c("Low|Medium", "Medium|High")
   )
   # The three factor predictors (Infl, Type, Cont) each contribute one
-  # synthesised reference row; structural content, not just a count.
+  # synthesized reference row; structural content, not just a count.
   expect_identical(sum(fr$coefs$is_ref), 3L)
   expect_identical(
     fr$coefs$term[fr$coefs$is_ref],
@@ -142,7 +142,7 @@ test_that("polr loglog fit reports the loglog link and title", {
     c("Low|Medium", "Medium|High")
   )
   # The three factor predictors (Infl, Type, Cont) each contribute one
-  # synthesised reference row; structural content, not just a count.
+  # synthesized reference row; structural content, not just a count.
   expect_identical(sum(fr$coefs$is_ref), 3L)
   expect_identical(
     fr$coefs$term[fr$coefs$is_ref],
@@ -319,7 +319,7 @@ test_that("clm flexible thresholds get correct per-cutpoint SEs", {
 
 # ---- 4. .ordinal_reference_rows(): no factor terms -----------------------
 
-test_that("continuous-only polr fit synthesises no reference rows", {
+test_that("continuous-only polr fit synthesizes no reference rows", {
   skip_if_not_installed("MASS")
   set.seed(1)
   df <- data.frame(
@@ -338,7 +338,7 @@ test_that("continuous-only polr fit synthesises no reference rows", {
 
 # ---- 5. .ordinal_reference_rows(): factor without a dropped reference ----
 
-test_that("ordered (polynomial-contrast) predictor synthesises no ref rows", {
+test_that("ordered (polynomial-contrast) predictor synthesizes no ref rows", {
   skip_if_not_installed("MASS")
   # An ordered() predictor uses contr.poly: coefs are .L/.Q trends with
   # NO dropped reference level. detect_factor_terms() flags the term with

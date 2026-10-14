@@ -2,7 +2,7 @@
 # Phase 6f: as_regression_frame() method for mgcv GAMs.
 #
 # Classes:
-#   * gam -- mgcv::gam() generalised additive model.
+#   * gam -- mgcv::gam() generalized additive model.
 #            class(fit) = c("gam", "glm", "lm")
 #   * bam -- mgcv::bam() big-data GAM.
 #            class(fit) = c("bam", "gam", "glm", "lm")
@@ -12,7 +12,7 @@
 # Key design choices:
 #   * coefs table covers PARAMETRIC TERMS ONLY (summary(fit)$p.coeff).
 #     The spline basis-function coefficients (s(x0).1, s(x0).2, ...)
-#     are not separately interpretable; the engine summarises each
+#     are not separately interpretable; the engine summarizes each
 #     smooth term in summary(fit)$s.table (edf, Ref.df, statistic,
 #     p-value) which goes into info$extras$smooth_terms.
 #   * Family is read from family(fit) (works for both gaussian gam
@@ -355,7 +355,7 @@ as_regression_frame.gam <- function(
 
 # Extract smooth-term info from summary(fit)$s.table. mgcv produces a
 # matrix with columns: edf, Ref.df, F (or Chi.sq for non-Gaussian),
-# p-value. Normalise the statistic column name.
+# p-value. Normalize the statistic column name.
 .gam_smooth_terms <- function(sm) {
   st <- sm$s.table
   if (is.null(st) || nrow(st) == 0L) {

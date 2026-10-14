@@ -19,7 +19,7 @@
 
 # ---- Fixtures -------------------------------------------------------------
 
-# survey's own vignette example: pbc restricted to the randomised
+# survey's own vignette example: pbc restricted to the randomized
 # patients, inverse-probability weights from a bias model.
 .scox_design <- function() {
   skip_if_not_installed("survey")
@@ -114,7 +114,7 @@ test_that("the replicate engine carries its own variance", {
   fr <- as_regression_frame(.scox_rep_fit())
   b <- .scox_b(fr)
   # Same point estimates (the same weighted partial likelihood), a
-  # different variance (replicate weights, no linearisation).
+  # different variance (replicate weights, no linearization).
   expect_equal(
     b$estimate,
     c(0.88976550380432229, 0.25992232676154414, -1.07947760097235812),
@@ -282,13 +282,13 @@ test_that("the refusals survey raises differ by engine, and none is caught late"
   expect_error(stats::AIC(cx), "No AIC for survey models")
   expect_error(stats::AIC(rcx))
   # The log-likelihood asymmetry lives in the SLOTS, and is asserted
-  # there rather than through logLik(): the linearised engine moves the
+  # there rather than through logLik(): the linearized engine moves the
   # value to `ll` and blanks `loglik`, the replicate engine writes
   # `loglik <- c(NA, NA)` and never sets `ll`. Not through the generic,
   # because a third package can re-register the method for this class
   # and reverse which engine answers -- `performance` does exactly that
   # (its `logLik.svycoxph` reads `object$ll[2]`, so with it loaded the
-  # linearised engine returns a number and the replicate one errors).
+  # linearized engine returns a number and the replicate one errors).
   # Which is the reason the extractor never calls logLik() here at all.
   expect_length(cx$ll, 2L)
   expect_true(all(is.finite(cx$ll)))
@@ -311,7 +311,7 @@ test_that("the refusals survey raises differ by engine, and none is caught late"
 test_that("a third package re-registering logLik cannot move the frame", {
   # `performance::logLik.svycoxph` wins dispatch for this class as soon
   # as performance is loaded, and returns a finite number on the
-  # linearised engine. The frame must not change when it is.
+  # linearized engine. The frame must not change when it is.
   skip_if_not_installed("performance")
   cx <- .scox_fit()
   before <- as_regression_frame(cx)$info$fit_stats
@@ -496,7 +496,7 @@ test_that("marginaleffects still cannot compute an AME for this class", {
   # response scale for a Cox model), not crash-based. The sentinel
   # only documents the upstream state where the crash occurs.
   if (inherits(res, "error")) {
-    # The overflow flavour is platform-specific -- nodeStackOverflowError
+    # The overflow flavor is platform-specific -- nodeStackOverflowError
     # (R eval stack) on Windows/Linux, CStackOverflowError (C stack) on
     # macOS -- so the sentinel pins their common parent.
     expect_s3_class(res, "stackOverflowError")
@@ -541,7 +541,7 @@ test_that("svycoxph appears in the supported-models registry", {
 test_that("a concordance vector missing an entry degrades, it does not throw", {
   # `[[` on a named atomic vector whose name is absent THROWS rather than
   # returning NULL, so `%||%` cannot intercept it and the exception would
-  # have travelled out of as_regression_frame(). survival always sets
+  # have traveled out of as_regression_frame(). survival always sets
   # both names, which is what makes this latent rather than live.
   cc <- c(concordance = 0.81, std = 0.018)
   expect_error(cc[["nope"]], "out of bounds")

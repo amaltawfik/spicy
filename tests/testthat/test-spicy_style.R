@@ -2,7 +2,7 @@
 #
 # One block per theme, checking the rules its registry entry claims --
 # one at a time, on a fixed fit, against the console text a reader
-# would see. A theme that stops honouring one of its own documented
+# would see. A theme that stops honoring one of its own documented
 # rules fails here by name.
 #
 # Sources for every rule: dev/journal_styles_sources.md and the
@@ -141,7 +141,7 @@ test_that("p_bands and p_sigfig are mutually exclusive", {
   )
 })
 
-test_that("a misspelt lever is an error, never a silent no-op", {
+test_that("a misspelled lever is an error, never a silent no-op", {
   expect_error(spicy_style(decimalmark = ","), class = "spicy_invalid_input")
   expect_error(spicy_style(p_digit = 2), class = "spicy_invalid_input")
 })

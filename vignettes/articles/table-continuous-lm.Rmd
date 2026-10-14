@@ -274,7 +274,7 @@ Adding covariates changes which effect sizes remain meaningful:
   covariate-adjusted model.
 * `effect_size = "d"` and `"g"` raise `spicy_unsupported`: Cohen's
   *d* and Hedges' *g* have no defined extension under adjustment
-  (the pooled SD has no canonical analogue). The error message
+  (the pooled SD has no canonical analog). The error message
   points to `f2` / `omega2` as the partial-F generalizations.
 
 Both effect-size variants and their noncentral CIs (when

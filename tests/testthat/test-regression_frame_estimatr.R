@@ -188,7 +188,7 @@ test_that("lm_robust: AIC / BIC / log_lik are NA (not MLE)", {
 
 # ---- 6. lm_robust: factor predictor reference row -----------------------
 
-test_that("lm_robust: factor predictor synthesises a reference row", {
+test_that("lm_robust: factor predictor synthesizes a reference row", {
   fit <- .fit_lm_robust_factor()
   fr <- as_regression_frame(fit, model_id = "M1")
   expect_invisible(spicy:::validate_regression_frame(fr))

@@ -1,4 +1,4 @@
-# Native standardisation of regression coefficients (Q3, Q15).
+# Native standardization of regression coefficients (Q3, Q15).
 #
 # Four methods supported, matching the dispatch of
 # `effectsize::standardize_parameters()`:
@@ -23,7 +23,7 @@
 
 # ---- Shared helper ---------------------------------------------------------
 
-# Standardisation refits run on the model frame, whose columns are the
+# Standardization refits run on the model frame, whose columns are the
 # *evaluated* terms (`log(x)`, `factor(g)`, `poly(x, 2)`, ...). The refit
 # formula must therefore resolve variables from `data` only: with the
 # original formula environment attached, an inline transform silently
@@ -101,7 +101,7 @@ standardize_lm <- function(
 # ---- Method 1: refit (gold standard) --------------------------------------
 
 # z-score the model.frame's numeric columns (response + numeric
-# predictors), refit the lm on the standardised frame, then apply
+# predictors), refit the lm on the standardized frame, then apply
 # the user's vcov to the refitted fit and compute (beta, SE, CI, t, p).
 # Inference under refit is **identical** to inference on the
 # original fit (linear transformation preserves t and p) -- the only
@@ -132,7 +132,7 @@ standardize_refit_lm <- function(
     }
   }
 
-  # Refit on standardised frame, preserving weights. The formula
+  # Refit on standardized frame, preserving weights. The formula
   # environment is stripped so variables resolve from `mf` ONLY:
   # model.frame columns named after function calls (`factor(cyl)`,
   # `I(x^2)`, `poly(x, 2)`, `log(x)`, etc.) cannot re-evaluate -- lm()
@@ -193,7 +193,7 @@ standardize_refit_lm <- function(
     boot_n = boot_n
   )
   # Keep intercept as computed: under z-scored data, the refitted
-  # intercept is the predicted standardised outcome when all numeric
+  # intercept is the predicted standardized outcome when all numeric
   # predictors are at their mean and factor predictors at the
   # reference level. Meaningful (non-zero in unbalanced designs);
   # matches effectsize::standardize_parameters(method = "refit").
@@ -212,7 +212,7 @@ standardize_refit_lm <- function(
 
 # Numerics scaled by sd(X)/sd(Y); factor-derived design columns
 # scaled by 1/sd(Y) only (no X-scaling -- treat 0/1 dummies as
-# already on a "standardised" scale). Matches
+# already on a "standardized" scale). Matches
 # `effectsize::standardize_parameters(method = "posthoc")` on ADDITIVE
 # terms only: on interaction / transformed design columns this scales by
 # the SD of the PRODUCT column itself -- the SPSS beta / Stata
@@ -434,7 +434,7 @@ scale_and_rebuild <- function(
   beta <- b * scale_factor
   se_beta <- se_b * scale_factor
 
-  # Intercept set to NA -- its standardised value is mechanical
+  # Intercept set to NA -- its standardized value is mechanical
   # under algebraic scaling and not meaningful for interpretation.
   beta[1] <- NA_real_
   se_beta[1] <- NA_real_
@@ -575,7 +575,7 @@ detect_factor_design_cols <- function(fit) {
 # ---- Hook: convert standardize_lm output to long-format rows -------------
 
 # Called by extract_lm_phase1() when standardized != "none". Converts
-# the standardise table into long-format rows with
+# the standardize table into long-format rows with
 # estimate_type = "beta" so it stacks via rbind() with the existing
 # B rows.
 extract_beta_rows <- function(
@@ -589,8 +589,8 @@ extract_beta_rows <- function(
   model_id,
   outcome
 ) {
-  # Dispatch on class: glm has its own 5-method standardise machinery
-  # (5th = "pseudo", Menard 2011 fully-standardised), with X-only
+  # Dispatch on class: glm has its own 5-method standardize machinery
+  # (5th = "pseudo", Menard 2011 fully-standardized), with X-only
   # algebraic semantics for the other four (Long & Freese 2014 Section 4.7.2).
   std_table <- if (inherits(fit, "glm")) {
     standardize_glm(
@@ -652,7 +652,7 @@ extract_beta_rows <- function(
 }
 
 
-# ---- Phase 7c20: standardised betas for mixed-effects fits --------------
+# ---- Phase 7c20: standardized betas for mixed-effects fits --------------
 #
 # Refit method only (the gold standard of Cohen et al. 2003 + Gelman 2008
 # for mixed-effects too): z-score the numeric columns of the model frame,
@@ -664,7 +664,7 @@ extract_beta_rows <- function(
 # don't transfer cleanly to mixed-effects because sd(Y) is a marginal
 # quantity whose decomposition into between- vs within-cluster variance
 # is ambiguous; refit avoids the ambiguity by re-estimating the model
-# on the standardised data, leaving the random structure to absorb its
+# on the standardized data, leaving the random structure to absorb its
 # share of variance.
 #
 # Returns a list(coefs_beta = data.frame, used_method = "refit") or NULL
@@ -694,8 +694,8 @@ extract_beta_rows <- function(
   }
 
   # Identify the response variable -- non-Gaussian families (binomial,
-  # poisson, ...) require y bounded / integer-valued, so we standardise
-  # PREDICTORS ONLY for them. Gaussian / identity-link standardises
+  # poisson, ...) require y bounded / integer-valued, so we standardize
+  # PREDICTORS ONLY for them. Gaussian / identity-link standardizes
   # both response and predictors (Cohen et al. 2003 / Gelman 2008).
   fam <- tryCatch(stats::family(fit), error = function(e) NULL)
   is_gaussian <- is.null(fam) || identical(fam$family, "gaussian")
@@ -739,7 +739,7 @@ extract_beta_rows <- function(
   # any context (the captured `getCall(fit)` would fail to resolve
   # `lmer` / `glmer` / `glmmTMB` / `lme` when those packages aren't
   # attached). lme4 fits are S4 -- use stats::getCall(), not `fit$call`.
-  # The call is normalised with match.call() so the model formula can be
+  # The call is normalized with match.call() so the model formula can be
   # replaced by name with an environment-stripped copy: for the
   # model-frame engines (lmer / glmer / glmmTMB) the data columns are
   # the *evaluated* terms, and an intact formula environment lets an
@@ -871,7 +871,7 @@ extract_beta_rows <- function(
 }
 
 
-# Attach standardised beta rows to a frame's coefs when `standardized
+# Attach standardized beta rows to a frame's coefs when `standardized
 # != "none"`. No-op otherwise (no token requested OR no compatible
 # engine). All four mixed-effects methods (lmer / glmer / glmmTMB /
 # lme) currently support only the "refit" method; other choices fall

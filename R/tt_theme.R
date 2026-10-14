@@ -1,6 +1,6 @@
 # tinytable::theme_empty() clears ALL lazy slots of a tinytable --
 # including `lazy_finalize`, where tinytable stores its OUTPUT-FORMAT
-# hooks (e.g. the Typst finalizer that honours
+# hooks (e.g. the Typst finalizer that honors
 # `options(tinytable_typst_multipage)`: without it a table taller than
 # one page does not break, and its last rows can overprint). Wiping it
 # silently disabled those document-level options for every spicy table
@@ -47,10 +47,10 @@
 # tinytable puts the note in a structural slot of the rendered table
 # (`table.footer()` in Typst, a bare `<tfoot>` cell in HTML) that no
 # document-level rule reaches, so a spicy note came out at body size
-# and body colour. A note is subordinate to the table it documents:
+# and body color. A note is subordinate to the table it documents:
 # every other spicy engine already says so typographically (gt 0.9em,
 # Word 10pt against an 11pt body), and the typographic canon
-# subordinates by SIZE, in black -- grey is a screen convention that
+# subordinates by SIZE, in black -- gray is a screen convention that
 # fails on a dark background. Default: 0.9em, black, on the tinytable
 # engine's Typst and HTML output.
 #
@@ -59,7 +59,7 @@
 #   * "none"       -- no intervention at all; the note renders exactly
 #                     as the receiving template styles it;
 #   * any other string -- extra Typst `text()` arguments appended to
-#                     the size (e.g. "fill: luma(89)" for a grey note).
+#                     the size (e.g. "fill: luma(89)" for a gray note).
 #                     Typst-only: HTML keeps the plain 0.9em.
 .spicy_note_style <- function() {
   opt <- getOption("spicy.note_style", NULL)
@@ -284,7 +284,7 @@
 # the table's content width.
 .spicy_tt_note_div <- function(note) {
   note_html <- .spicy_html_escape(note)
-  # APA Manual 7 Section 7.14: the "Note." prefix is italicised. Wrap it
+  # APA Manual 7 Section 7.14: the "Note." prefix is italicized. Wrap it
   # in <em> AFTER escaping (the prefix itself contains no special
   # chars, so the <em> is safe to insert). The substitution is anchored
   # to the start of the string; if a note doesn't begin with "Note."
@@ -308,7 +308,7 @@
 }
 
 # Strip the rendered `<tfoot>` and wrap the table + note in the
-# centring / inline-block pair. Operates on a rendered HTML string.
+# centering / inline-block pair. Operates on a rendered HTML string.
 .spicy_tt_wrap_html <- function(html, note_div) {
   open_outer <- paste0(
     "<div class=\"spicy-tt-outer\" ",

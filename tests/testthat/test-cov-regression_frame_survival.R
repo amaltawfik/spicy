@@ -11,7 +11,7 @@
 #   * .survreg_dist_title(): the loglogistic / exponential / logistic /
 #     Student-t switch arms (lines 426, 427, 429, 430) via real survreg
 #     fits, plus the title-case default fallback (line 431) for an
-#     unrecognised distribution name.
+#     unrecognized distribution name.
 # ---------------------------------------------------------------------------
 
 # ---- 1. .check_survival_available(): abort when survival is missing -------
@@ -38,7 +38,7 @@ test_that(".check_survival_available message points at install.packages(\"surviv
 
 # An ordered factor uses polynomial (contr.poly) contrasts, so
 # detect_factor_terms() reports reference_dropped = FALSE. The reference-row
-# synthesiser must then `next` past it (line 238) and, with no other
+# synthesizer must then `next` past it (line 238) and, with no other
 # treatment-coded factor present, fall through to the empty-rows return
 # (line 260) -- yielding a frame with zero is_ref rows.
 
@@ -49,7 +49,7 @@ test_that(".check_survival_available message points at install.packages(\"surviv
   survival::coxph(survival::Surv(time, status) ~ age + ph.ecog, data = d)
 }
 
-test_that("coxph ordered (polynomial) factor synthesises NO reference rows", {
+test_that("coxph ordered (polynomial) factor synthesizes NO reference rows", {
   fit <- .cov_coxph_ordered()
 
   # Sanity on the detection layer: the factor is polynomial-coded and its
@@ -121,9 +121,9 @@ test_that("survreg t: title_prefix = 'Student-t AFT regression'", {
   expect_false(fr$info$supports$exponentiate)
 })
 
-test_that(".survreg_dist_title title-cases an unrecognised distribution name", {
+test_that(".survreg_dist_title title-cases an unrecognized distribution name", {
   # No survreg dist routes to the default switch arm, so exercise the
-  # capitalise-first-letter fallback directly. It must upper-case the
+  # capitalize-first-letter fallback directly. It must upper-case the
   # leading character and preserve the remainder verbatim.
   expect_identical(spicy:::.survreg_dist_title("foobar"), "Foobar")
   expect_identical(spicy:::.survreg_dist_title("rayleigh"), "Rayleigh")

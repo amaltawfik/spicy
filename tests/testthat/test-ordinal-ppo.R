@@ -46,7 +46,7 @@ test_that("non-proportional coefficients match summary.clm to machine precision"
 test_that("thresholds block is the baseline cut-points only (not expanded)", {
   fit <- ppo_fit()
   thr <- as_regression_frame(fit)$info$extras$thresholds
-  # 4 baseline thresholds for a 5-level response, labelled by the bare cut-point
+  # 4 baseline thresholds for a 5-level response, labeled by the bare cut-point
   expect_equal(nrow(thr), 4L)
   expect_false(any(grepl("Intercept|contact", thr$term)))
 })

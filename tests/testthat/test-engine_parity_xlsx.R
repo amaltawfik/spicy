@@ -719,13 +719,13 @@ test_that("align reaches the Excel output of table_continuous()", {
   }
   # The label columns never move.
   # "decimal": the workbook is unpadded, so it keeps the engine's own
-  # convention -- the count right, the rest centred.
+  # convention -- the count right, the rest centered.
   expect_identical(
     halign("decimal"),
     c("left", "left", rep("center", 6L), "right")
   )
   # "center" and "right" used to be silent no-ops here while every
-  # other engine honoured them.
+  # other engine honored them.
   expect_identical(halign("center"), c("left", "left", rep("center", 7L)))
   expect_identical(halign("right"), c("left", "left", rep("right", 7L)))
 })

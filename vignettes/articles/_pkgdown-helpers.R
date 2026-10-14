@@ -1,4 +1,4 @@
-# Strip background colours from `gt` tables so they render correctly
+# Strip background colors from `gt` tables so they render correctly
 # under both the light and dark pkgdown themes. Wrap any
 # `output = "gt"` result with `pkgdown_dark_gt()` before rendering.
 #

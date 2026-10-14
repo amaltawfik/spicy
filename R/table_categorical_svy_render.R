@@ -1,5 +1,5 @@
 # Rendering of `table_categorical_svy()`: the display frame, the header
-# layer the shared exporter is parameterised with, the typed view and
+# layer the shared exporter is parameterized with, the typed view and
 # the note.
 #
 # The compute frame this file reads is already keyed by the FROZEN
@@ -479,7 +479,7 @@
   # line states a fact about the design, and the caller cannot change
   # it. What `df` moves is the reference distribution of the intervals,
   # and the third sentence names the number it moved to -- the same
-  # division of labour as `table_continuous_svy()`.
+  # division of labor as `table_continuous_svy()`.
   lines <- .design_note_lines(
     meta,
     degf_range = if (length(degf_dom_used) > 0L) {

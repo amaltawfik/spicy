@@ -1,4 +1,4 @@
-# G2 (Group D): the algebraic standardisation convention on interaction
+# G2 (Group D): the algebraic standardization convention on interaction
 # terms, pinned to its cross-package oracles.
 #
 # spicy's posthoc / basic / smart scale an interaction row by the SD of

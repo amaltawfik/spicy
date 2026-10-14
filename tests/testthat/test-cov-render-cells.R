@@ -75,7 +75,7 @@ test_that("format_cell_value -- pd uses p_digits and drops the leading zero", {
   # borrows the p column's precision and APA leading-zero drop.
   expect_identical(fmt_cell("pd", 0.998), ".998")
   expect_identical(fmt_cell("pd", 0.5), ".500")
-  # p_digits is honoured, not hard-coded.
+  # p_digits is honored, not hard-coded.
   expect_identical(fmt_cell("pd", 0.9876, p_digits = 2L), ".99")
 })
 

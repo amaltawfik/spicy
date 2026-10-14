@@ -242,7 +242,7 @@ as_regression_frame.rlm <- function(
     ame = TRUE,
     partial_effect_size = FALSE,
     classical_r2 = FALSE,
-    # M-estimation minimises a bounded loss, not a likelihood and not a
+    # M-estimation minimizes a bounded loss, not a likelihood and not a
     # residual sum of squares: there is no likelihood-ratio test and no
     # partial F to build a nested comparison from. anova.rlm returns a
     # table with the F and Pr(>F) cells deliberately EMPTY, and

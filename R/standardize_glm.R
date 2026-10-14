@@ -1,4 +1,4 @@
-# Native standardisation of regression coefficients for `glm` fits.
+# Native standardization of regression coefficients for `glm` fits.
 #
 # Five methods, mirroring the lm dispatch + adding `"pseudo"`:
 #
@@ -15,7 +15,7 @@
 #   * "smart"   -- Gelman (2008): continuous numeric inputs scaled by
 #                 2 x SD(X); binary inputs (numeric 0/1 and factor
 #                 dummies) unchanged. X-only.
-#   * "pseudo"  -- Menard (2004, 2011) **fully** standardised:
+#   * "pseudo"  -- Menard (2004, 2011) **fully** standardized:
 #                 \u03B2 = b x SD(X) / SD(Y*)
 #                 where Y* is the latent variable on the link scale and
 #                   SD(Y*) = sqrt(var(eta^) + var_link)
@@ -148,7 +148,7 @@ standardize_refit_glm <- function(
   # `glm(Y ~ ...)`) re-evaluates fine against `mf`, but the caller's
   # `weights` are POST-initialize (user weights times the row totals):
   # refitting on the matrix re-ran the binomial `initialize` and
-  # standardised against a fit with effective weights = totals^2. Swap
+  # standardized against a fit with effective weights = totals^2. Swap
   # the response column to the stored-y representation
   # (`.glm_stored_response()`, R/glm_compute.R) -- the passed weights
   # are exactly the proportion-form weights. An INLINE `cbind()` never
@@ -271,9 +271,9 @@ standardize_algebraic_glm <- function(
   # estimators (`sandwich::vcovHC`, `clubSandwich::vcovCR`, ...) return a
   # reduced length-(p - k) matrix. Multiplying a length-(p - k) `se_b`
   # against the length-p `scale_factor` would silently recycle and
-  # misalign every standardised SE. Reindex by name -> guaranteed length
+  # misalign every standardized SE. Reindex by name -> guaranteed length
   # p, with NA for any coefficient the vcov omitted (which then flows
-  # through to an NA standardised SE for that aliased term only).
+  # through to an NA standardized SE for that aliased term only).
   se_b <- se_b_raw[names(b)]
   names(se_b) <- names(b)
 
@@ -290,7 +290,7 @@ standardize_algebraic_glm <- function(
   beta <- b * scale_factor
   se_beta <- se_b * scale_factor
 
-  # Intercept set to NA -- its standardised value is mechanical under
+  # Intercept set to NA -- its standardized value is mechanical under
   # algebraic scaling and not meaningful for interpretation. Guard
   # against no-intercept models (`glm(y ~ -1 + x, ...)`): only NA the
   # first row when it actually IS the intercept.
@@ -352,7 +352,7 @@ standardize_algebraic_glm <- function(
 }
 
 
-# ---- Method 5: pseudo (Menard 2011 fully-standardised) -------------------
+# ---- Method 5: pseudo (Menard 2011 fully-standardized) -------------------
 
 standardize_pseudo_glm <- function(
   fit,
@@ -451,7 +451,7 @@ compute_menard_sd_y_star <- function(fit) {
     # The log link (log-binomial / relative-risk model) has NO latent-
     # threshold interpretation -- it models log(p) = X'beta multiplicatively,
     # not Y = 1{Y* > 0} with a latent residual distribution. The Menard /
-    # Long & Freese latent-variable standardisation is therefore undefined
+    # Long & Freese latent-variable standardization is therefore undefined
     # here; return NA so the caller emits the "outside scope" caveat (use
     # standardized = "refit" for a log-binomial fit). Was wrongly pi^2/3.
     "log" = NA_real_,

@@ -89,7 +89,7 @@ Quantile regression (\code{quantreg::rq}) uses its own estimator
 family instead: \code{"classical"} resolves to the
 heteroskedasticity-robust \code{"nid"} sandwich (Hendricks-Koenker,
 Hall-Sheather bandwidth -- quantreg's own large-sample default
-and the Stata \code{vce(robust)} analogue), with \code{"iid"}
+and the Stata \code{vce(robust)} analog), with \code{"iid"}
 (Koenker-Bassett homoskedastic, Stata \code{vce(iid)} parity),
 \code{"ker"} (Powell kernel) and \code{"rank"} (rank-score inversion:
 genuine CIs, no SE / t / p -- those cells render as dashes) as
@@ -1383,7 +1383,7 @@ added coefficients (aliased ones left out) and \eqn{V} their block of
 the matrix. The test takes the regime of the current model's
 coefficient tests:
 \itemize{
-\item \emph{F}, in a row labelled "Wald F-change": \eqn{W / q} on
+\item \emph{F}, in a row labeled "Wald F-change": \eqn{W / q} on
 \eqn{(q, df)} degrees of freedom, the convention of
 \code{lmtest::waldtest(test = "F")} and \code{car::linearHypothesis()}.
 It applies to \code{lm} under \code{"HC0"}-\code{"HC5"} (and \code{"CR1S"}, on
@@ -1395,7 +1395,7 @@ or after \code{rms::robcov()}, \code{quantreg::rq} under \code{"iid"} and
 \code{lme4::lmer} and \code{nlme::lme} use the HTZ test of
 \code{clubSandwich::Wald_test()}, the small-sample correction of their
 coefficient tests.
-\item \emph{Chi-square}, in a row labelled "Wald \eqn{\chi^2}{chi^2}
+\item \emph{Chi-square}, in a row labeled "Wald \eqn{\chi^2}{chi^2}
 (change)" that replaces the likelihood-ratio row: \eqn{W} on
 \eqn{q} degrees of freedom, the convention of
 \code{lmtest::waldtest(test = "Chisq")}. It applies to \code{glm} and

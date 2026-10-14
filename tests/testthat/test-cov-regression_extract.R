@@ -95,7 +95,7 @@ test_that("profile CI on a multi-coef glm matches stats::confint exactly", {
   skip_if_not_installed("MASS")
   # This near-separated logistic (n = 32) warns "fitted probabilities
   # numerically 0 or 1" on the fit and on every profile refit -- a
-  # fixture artefact, not the contract under test (the near-separation
+  # fixture artifact, not the contract under test (the near-separation
   # is what makes the profile bounds differ visibly from Wald below).
   fit <- suppressWarnings(glm(am ~ wt + hp, data = mtcars, family = binomial))
   vc <- spicy:::compute_model_vcov(

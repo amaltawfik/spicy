@@ -1,7 +1,7 @@
 # Internal helpers shared by the row-wise family (`mean_n()`,
 # `sum_n()`, `count_n()`). The two summary functions had ~95 %
 # identical bodies in spicy < 0.11.0 (only `rowMeans` vs. `rowSums`
-# and the function-name labels differed); centralising the shared
+# and the function-name labels differed); centralizing the shared
 # logic here gives a single source of truth for column resolution,
 # validation and the `min_valid` masking rule. `count_n()` shares
 # only the column resolution (`.resolve_row_n_data()`, with

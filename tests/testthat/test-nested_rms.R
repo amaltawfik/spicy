@@ -264,7 +264,7 @@ test_that("p_change is recomputed, not relayed, and never underflows to 0", {
   q1 <- rms::lrm(y ~ z1, data = d)
   q2 <- rms::lrm(y ~ z1 + z2, data = d)
   oracle <- rms::lrtest(q1, q2)$stats
-  # rms's own P has cancelled to exactly zero here.
+  # rms's own P has canceled to exactly zero here.
   expect_identical(unname(oracle[["P"]]), 0)
   got <- compute_nested_comparisons(list(q1, q2))
   expect_gt(got$p_change[1L], 0)

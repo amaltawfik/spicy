@@ -170,7 +170,7 @@ test_that("a converged glmmTMB gets neither note nor warning", {
 test_that("a non-converged glmmTMB reports no ICC and no R-squared", {
   fit <- .fit_glmmTMB_nonconverged()
 
-  # (a) The rendered table: no ICC row, no R2 row of either flavour.
+  # (a) The rendered table: no ICC row, no R2 row of either flavor.
   out <- paste(
     capture.output(print(suppressWarnings(table_regression(fit)))),
     collapse = "\n"
@@ -366,7 +366,7 @@ test_that("the footer follows the language and the condition does not", {
 # The note builder used to raise the classed warning while building the
 # note, so one CALL was one WARNING and asking the note what it said was
 # indistinguishable from reporting the problem. It held together only
-# because the frame called it exactly once. Construction and signalling
+# because the frame called it exactly once. Construction and signaling
 # are separate now.
 
 test_that("building the note raises nothing, however often it is asked", {

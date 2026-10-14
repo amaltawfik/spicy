@@ -7,7 +7,7 @@
 # and the nlme variance block without intervals.
 #
 # Nothing here is a touch-the-line test: every block asserts the
-# user-visible behaviour the line implements, and most pin the
+# user-visible behavior the line implements, and most pin the
 # complementary arm beside it so the pair cannot drift apart.
 #
 # Lines closed:
@@ -106,7 +106,7 @@ test_that("a fit with no coefficients is refused with the generic advice", {
 test_that("the SMD cell follows the table's decimal mark", {
   # The SMD is a number in the table like any other, so it prints under
   # the mark the table was asked for -- a French reader must not find
-  # one full stop among the commas. Fixture built by hand (no RNG) so
+  # one period among the commas. Fixture built by hand (no RNG) so
   # the value is pinned, not merely comma-shaped.
   d <- data.frame(
     grp = factor(rep(c("c", "t"), each = 30)),
@@ -130,7 +130,7 @@ test_that("the SMD cell follows the table's decimal mark", {
   expect_identical(cell, "0,43")
   expect_false(grepl(".", cell, fixed = TRUE))
 
-  # The default mark is unchanged: same data, same value, a full stop.
+  # The default mark is unchanged: same data, same value, a period.
   tc_dot <- table_categorical(d, trait, by = grp, smd = TRUE)
   expect_identical(attr(tc_dot, "display_df")$SMD[[1L]], "0.43")
   expect_identical(inline(tc_dot, trait, column = "{smd}"), "0.43")
@@ -222,7 +222,7 @@ test_that("a token the table does not carry gets the message it always got", {
   # the rule has no columns to reason about and declines to rule. The
   # caller then gets the plain "pick a level" refusal -- the message
   # that was there before the header rule existed -- rather than a
-  # header-flavoured one about a statistic the table never had.
+  # header-flavored one about a statistic the table never had.
   err <- expect_error(
     inline(tc, trait, column = "{smd}"),
     class = "spicy_invalid_input"
@@ -392,15 +392,15 @@ test_that("copy_clipboard() names the row-names column as asked for a data frame
 })
 
 
-# ---- copy_clipboard.R 233: the success banner in colour ----
+# ---- copy_clipboard.R 233: the success banner in color ----
 
-test_that("copy_clipboard() prints its success banner when the console has colour", {
+test_that("copy_clipboard() prints its success banner when the console has color", {
   skip_if_not_installed("clipr")
   skip_if_not_installed("crayon")
-  # Two levers, because testthat turns colour OFF for reproducible
+  # Two levers, because testthat turns color OFF for reproducible
   # output and `crayon.enabled` alone does not always win: crayon reads
   # `cli.num_colors` first, and returns it unconditionally. Setting both
-  # makes the coloured arm deterministic wherever this runs.
+  # makes the colored arm deterministic wherever this runs.
   withr::local_options(crayon.enabled = TRUE, cli.num_colors = 8)
   expect_true(crayon::has_color())
 
@@ -424,7 +424,7 @@ test_that("copy_clipboard() prints its success banner when the console has colou
     "Data successfully copied to clipboard!"
   )
 
-  # `quiet = TRUE` suppresses it, colour or no colour.
+  # `quiet = TRUE` suppresses it, color or no color.
   out_quiet <- NULL
   .pregel_mocked_clipr({
     out_quiet <- capture.output(

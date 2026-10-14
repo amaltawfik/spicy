@@ -1,4 +1,4 @@
-# the console honours `align = "center"` and `"right"`
+# the console honors `align = "center"` and `"right"`
 
     Descriptive statistics
     

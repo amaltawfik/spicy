@@ -129,7 +129,7 @@ extract_lm_phase1 <- function(
   )
   coefs_long <- rbind(coefs_B, ref_rows)
 
-  # ---- Standardised beta rows (Step 4) ---------------------------------------
+  # ---- Standardized beta rows (Step 4) ---------------------------------------
   standardized_used <- NA_character_
   if (!identical(standardized, "none")) {
     beta_rows <- extract_beta_rows(
@@ -261,7 +261,7 @@ extract_lm_phase1 <- function(
     # Wald change test reads it back, so a bootstrap is drawn once and
     # the block test and the coefficients agree to the last digit.
     vcov_matrix = vc,
-    # Standardisation method ACTUALLY applied ("posthoc" after a refit
+    # Standardization method ACTUALLY applied ("posthoc" after a refit
     # fallback); the footer discloses the difference.
     standardized_used = standardized_used
   )
@@ -395,7 +395,7 @@ build_b_rows <- function(
 }
 
 # Helper to build a single coefs row with all the standard columns.
-# Centralised so all row builders (B, beta, AME, partial_*) use the
+# Centralized so all row builders (B, beta, AME, partial_*) use the
 # same column structure -- required by `rbind()` upstream.
 build_one_b_row <- function(
   nm,
@@ -497,7 +497,7 @@ build_reference_rows <- function(
     # The en-dash on the rendered cell is a semantic signal -- it
     # appears under columns where the row IS the reference. For a
     # treatment-coded factor, the same level is the reference for B,
-    # for `beta` (standardised refit), AND for AME (since
+    # for `beta` (standardized refit), AND for AME (since
     # marginaleffects contrasts against `levels()[1]`). For a
     # polynomial-coded ordered factor, the `.L` / `.Q` trends have NO
     # per-level reference, so we only emit an AME ref-row.
@@ -772,7 +772,7 @@ detect_factor_term_meta <- function(fit) {
   if (!is.null(xlev)) {
     return(xlev)
   }
-  # brmsfit: extract from fit$data (the original modelling data frame
+  # brmsfit: extract from fit$data (the original modeling data frame
   # stored by brms) using the formula's RHS to identify which columns
   # the model used. This avoids the brmsformula / model.frame
   # discrepancies that bite the generic path.
@@ -817,7 +817,7 @@ detect_factor_term_meta <- function(fit) {
     ))
   }
   # fixest: stats::model.frame(fit) returns an empty list. Reconstruct
-  # the modelling data frame by evaluating fit$call$data in
+  # the modeling data frame by evaluating fit$call$data in
   # fit$call_env (the call's lexical environment that fixest preserves).
   if (inherits(fit, "fixest")) {
     return(tryCatch(
@@ -847,7 +847,7 @@ detect_factor_term_meta <- function(fit) {
   }
   # nlme lme / gls: stats::model.frame(fit) returns reStruct / corStruct
   # objects (not the data frame). Use nlme::getData() which reconstructs
-  # the modelling data frame from fit$call.
+  # the modeling data frame from fit$call.
   if (inherits(fit, c("lme", "gls"))) {
     return(tryCatch(
       {
@@ -1014,7 +1014,7 @@ match_coef_to_factor <- function(coef_name, xlevels, contrast_suffixes = NULL) {
     # renderer can sort rows by factor-level order rather than alphabetical
     # order on the level string (important for factors whose level order
     # is not alphabetical, e.g. `factor(grp, levels = c("low","med","high"))`
-    # alphabetises as (high, low, med)).
+    # alphabetizes as (high, low, med)).
     if (suffix %in% lvls) {
       return(list(
         factor_term = var,

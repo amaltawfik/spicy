@@ -682,7 +682,7 @@ table_categorical_svy <- function(
     }
     # Two level sets, and the difference is the whole meaning of
     # `levels_keep`: the statistics are computed on ALL the observed
-    # levels, and only some of them are DISPLAYED. Renormalising over
+    # levels, and only some of them are DISPLAYED. Renormalizing over
     # the kept ones would silently redefine what the percentages
     # estimate -- `table_categorical()` does not do it, and a reader
     # comparing the two tables would find different numbers for the
@@ -943,7 +943,7 @@ table_categorical_svy <- function(
   )
 }
 
-# The saddlepoint approximation is correct on a linearised design and
+# The saddlepoint approximation is correct on a linearized design and
 # wrong on a replicate one -- the same option, the same function, two
 # code paths in survey.
 #
@@ -953,7 +953,7 @@ table_categorical_svy <- function(
 # The replicate branch drops the denominator degrees of freedom, so its
 # reference distribution has none and the p-value comes out too small.
 # Measured on the api JK1 fixture: 0.02365 against 0.02644 from the same
-# table under linearisation, in the anti-conservative direction.
+# table under linearization, in the anti-conservative direction.
 #
 # So the COMBINATION is refused rather than served with a note, which is
 # the same rule the package applies to itself: no broken survey path is

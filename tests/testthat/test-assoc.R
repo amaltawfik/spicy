@@ -527,7 +527,7 @@ test_that("PSPP oracle: mtcars 2x2 (vs x am)", {
   expect_equal(somers_d(tab, "column"), 0.1666667, tolerance = 1e-5)
 })
 
-test_that("PSPP oracle: HairEyeColor 4x4 (Hair x Eye marginalised)", {
+test_that("PSPP oracle: HairEyeColor 4x4 (Hair x Eye marginalized)", {
   tab <- margin.table(HairEyeColor, c(1, 2))
   expect_equal(cramer_v(tab), 0.2790446, tolerance = 1e-5)
   expect_equal(contingency_coef(tab), 0.4351585, tolerance = 1e-5)

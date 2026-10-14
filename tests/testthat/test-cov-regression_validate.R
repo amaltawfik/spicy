@@ -408,7 +408,7 @@ test_that("validate_output_resources - clipboard OK when available is a no-op", 
 
 test_that(".resolve_model_labels – an NA name is an unnamed slot", {
   models <- list(lm(mpg ~ wt, mtcars), lm(mpg ~ hp, mtcars))
-  # nzchar(NA) is TRUE: without the normalisation the NA survives as a
+  # nzchar(NA) is TRUE: without the normalization the NA survives as a
   # label and subscripting breaks downstream (unclassed base error).
   resolved <- spicy:::.resolve_model_labels(
     stats::setNames(models, c(NA, "B")),

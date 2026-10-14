@@ -504,7 +504,7 @@ test_that("validate_regression_frame() type-checks optional info fields", {
 # were decided by inherits() gates that could not see a frame. They are
 # now read POST-frame, beside `supports$ame`, by the capability guards
 # in table_regression(). The witness for "the flag is the authority" is
-# that flipping it on a class whose behaviour is otherwise unchanged
+# that flipping it on a class whose behavior is otherwise unchanged
 # flips the feature -- so a builder that mis-declares breaks visibly.
 
 test_that("supports$partial_effect_size gates the partial columns", {
@@ -699,7 +699,7 @@ test_that("a screen refusal names the wrapped classes, not `uv_screen`", {
 # ---------------------------------------------------------------------------
 
 # A frame built entirely by hand -- it never passes through
-# new_regression_frame(), which is the point: the constructor normalises
+# new_regression_frame(), which is the point: the constructor normalizes
 # `info$supports` through modifyList(default_supports(), ...), so a
 # MISSING supports entry cannot survive it and can only be witnessed at
 # the dispatch boundary.

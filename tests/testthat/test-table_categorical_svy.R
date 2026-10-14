@@ -504,7 +504,7 @@ test_that("`levels_keep` selects levels, as a vector or per variable", {
   d <- .svycat_design("clus1")
   out <- .svycat_long(d, select = stype, levels_keep = c("E", "M"))
   expect_identical(out$level, c(NA, "E", "M"))
-  # The percentages are NOT renormalised: they are estimates of the
+  # The percentages are NOT renormalized: they are estimates of the
   # whole variable's distribution, and dropping a display row does not
   # change what the remaining ones estimate.
   full <- .svycat_long(d, select = stype)
@@ -638,8 +638,8 @@ test_that("the two unusable svychisq statistics are refused by name", {
   )
 })
 
-test_that("saddlepoint is refused on a replicate design and kept on a linearised one", {
-  # Same option, same survey function, two code paths: the linearised
+test_that("saddlepoint is refused on a replicate design and kept on a linearized one", {
+  # Same option, same survey function, two code paths: the linearized
   # branch passes `ddf = d0 * nu` to pchisqsum(), the replicate branch
   # passes no ddf at all, so its p-value comes out too small. Refused
   # rather than served with a note.
@@ -668,7 +668,7 @@ test_that("saddlepoint is refused on a replicate design and kept on a linearised
     )),
     "data.frame"
   )
-  # On a linearised design the same option is correct, and accepted.
+  # On a linearized design the same option is correct, and accepted.
   lin <- .svycat_design("clus1")
   expect_s3_class(
     suppressWarnings(table_categorical_svy(

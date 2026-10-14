@@ -47,7 +47,7 @@ test_that("multi-model multinom body shows grouped rows with outcome", {
   expect_match(combined, "(Intercept):", fixed = TRUE)
   expect_match(combined, "Sepal.Length:", fixed = TRUE)
   expect_match(combined, "Sepal.Width:", fixed = TRUE)
-  # Outcome-labelled rows
+  # Outcome-labeled rows
   expect_match(combined, "versicolor: (Intercept)", fixed = TRUE)
   expect_match(combined, "virginica: (Intercept)", fixed = TRUE)
 })
@@ -74,7 +74,7 @@ test_that("table_regression() body shows per-alternative mlogit sections", {
     capture.output(print(table_regression(fit))),
     collapse = "\n"
   )
-  # One labelled section per non-reference alternative, bare rows
+  # One labeled section per non-reference alternative, bare rows
   # inside (the Stata asclogit presentation; phase 2 of the
   # categorical layouts, dev/mlogit_two_segment_spec.md).
   expect_match(combined, "boat:", fixed = TRUE)

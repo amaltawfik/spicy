@@ -1,5 +1,5 @@
 # Parity of the tinytable engine with the console, on the four
-# artefacts the audit found missing from the rendered table:
+# artifacts the audit found missing from the rendered table:
 #
 #   * the APA rule structure of the header -- a top rule above the
 #     outermost header row, a trimmed rule under each model spanner, a
@@ -312,7 +312,7 @@ test_that("notes are subordinated by size, in black, by default", {
     "<td colspan='3' style=\"font-size: 0.9em; \">",
     fixed = TRUE
   )
-  # No colour is imposed: the note inherits the document's text colour.
+  # No color is imposed: the note inherits the document's text color.
   note_cell <- grep(
     "table.cell(align: left, colspan",
     strsplit(.pt_typst(tt), "\n", fixed = TRUE)[[1L]],
@@ -366,7 +366,7 @@ test_that("a note the user styled through tinytable is left alone", {
 })
 
 
-test_that("the note rewriters leave a string they do not recognise alone", {
+test_that("the note rewriters leave a string they do not recognize alone", {
   # A note cell whose closing `])),` never comes (a tinytable template
   # change would look like this): the rewriter must not invent one.
   broken <- paste(

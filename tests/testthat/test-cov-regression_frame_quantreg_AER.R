@@ -3,15 +3,15 @@
 #
 # Targets the factor / ordered-factor reference-row paths that the existing
 # test-regression_frame_quantreg_AER.R does not exercise:
-#   * .rq_coefs(): rbind of a synthesised reference row for a treatment
+#   * .rq_coefs(): rbind of a synthesized reference row for a treatment
 #     -contrast factor predictor in an rq fit.
 #   * .qr_reference_rows(): the `next` skip for a polynomial-contrast
 #     (ordered) factor and the empty-rows fall-through return.
 # ---------------------------------------------------------------------------
 
-# ---- rq with a treatment-contrast factor: reference row is synthesised ----
+# ---- rq with a treatment-contrast factor: reference row is synthesized ----
 
-test_that("rq with a factor predictor synthesises one reference row", {
+test_that("rq with a factor predictor synthesizes one reference row", {
   skip_if_not_installed("quantreg")
   d <- mtcars
   d$cyl_f <- factor(d$cyl)
@@ -20,7 +20,7 @@ test_that("rq with a factor predictor synthesises one reference row", {
   expect_invisible(spicy:::validate_regression_frame(fr))
 
   rows <- fr$coefs[fr$coefs$parent_var == "cyl_f", ]
-  # 3 levels (4, 6, 8) -> 2 fitted dummies + 1 synthesised reference row.
+  # 3 levels (4, 6, 8) -> 2 fitted dummies + 1 synthesized reference row.
   expect_identical(nrow(rows), 3L)
   expect_identical(sum(rows$is_ref), 1L)
 
@@ -128,7 +128,7 @@ test_that("rq se='rank' leaves SE / statistic / p_value as NA (undefined)", {
   expect_true(all(is.na(b_rows$p_value)))
 })
 
-test_that("rq se='rank' rank CIs honour ci_level (90% vs 95% differ)", {
+test_that("rq se='rank' rank CIs honor ci_level (90% vs 95% differ)", {
   skip_if_not_installed("quantreg")
   fit <- quantreg::rq(mpg ~ wt + cyl, data = mtcars, tau = 0.5)
 

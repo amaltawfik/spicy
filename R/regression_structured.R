@@ -214,8 +214,8 @@
 # so it is the key a consumer matches on -- never the displayed label,
 # which is a display string ("(Missing)", auto-renamed on collision,
 # translatable) and can change without the row changing.
-#   summary  a row that summarises one variable with no sub-key (a
-#            continuous variable, a modelled outcome).
+#   summary  a row that summarizes one variable with no sub-key (a
+#            continuous variable, a modeled outcome).
 #   group    a row keyed by one level of the `by` variable.
 #   missing  a row keyed by the MISSING value -- the "(Missing)"
 #            category of a categorical table, the missing-`by` group
@@ -1205,7 +1205,7 @@ build_structured_body <- function(
       status[[e$name]] <- "undefined"
       next
     }
-    # Generalised NA-with-term-present (decision 12, 2026-08-14). The
+    # Generalized NA-with-term-present (decision 12, 2026-08-14). The
     # console's generic NA branch (format_cell_value()) prints an
     # en-dash for any NA that survives the field-specific blanks:
     # "the statistic applies to this row, no number expresses it" --
@@ -1272,7 +1272,7 @@ build_structured_body <- function(
   # entry for that model). For CI tokens the first entry is the LL
   # column; we re-route fit-stat values to the *estimate* (first non-
   # CI) entry per model so the value lands on the natural display
-  # column, matching the char body's behaviour.
+  # column, matching the char body's behavior.
   first_struct_col_per_model <- stats::setNames(
     rep(NA_character_, length(model_ids)),
     model_ids
@@ -1290,7 +1290,7 @@ build_structured_body <- function(
   rows <- list()
   for (tk in show_fit_stats) {
     # Fixed-effects disclosure block, numeric-typed for the structured
-    # body: one row per absorbed factor labelled "FE: <factor>"
+    # body: one row per absorbed factor labeled "FE: <factor>"
     # (modelsummary's get_gof convention), cells 1 (absorbed) / 0
     # (fixest model without this factor) / NA (non-fixest model). The
     # char console body carries the grouped Yes/No block instead.
@@ -1815,7 +1815,7 @@ build_structured_body <- function(
   decimal_mark <- struct$format_spec$decimal_mark
   fig_space <- "\u2007" # U+2007 figure space (digit-width)
   # The undefined / reference glyph, from the registry: the padder has
-  # to recognise the very mark the cell formatter wrote (Chicago /
+  # to recognize the very mark the cell formatter wrote (Chicago /
   # NEJM / JAMA tabular "not applicable").
   na_dash <- spicy_str("cell_undefined")
 
@@ -1859,7 +1859,7 @@ build_structured_body <- function(
       }
       # Phase 7c24 (item g): en-dash cells (factor reference rows /
       # "not applicable" placeholders) used to skip the padding
-      # entirely, so gt centred them in the column instead of
+      # entirely, so gt centered them in the column instead of
       # aligning to the decimal-mark anchor used by the numeric
       # cells. Treat the en-dash as a 1-glyph "integer" token: pad
       # LHS to (max_lhs - 1) figure-spaces, the dash itself takes
@@ -1939,7 +1939,7 @@ build_structured_body <- function(
 
 
 # Resolve the per-cell precision + p_style for column `col_name` at body
-# row index `row_idx`, honouring any fit_stat_overrides recorded by
+# row index `row_idx`, honoring any fit_stat_overrides recorded by
 # build_structured_body() (fit-stat rows can carry per-row precision
 # that differs from the column default, e.g. integer "n" in the same
 # column as 2-dp coefficients).

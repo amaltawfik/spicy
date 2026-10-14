@@ -547,7 +547,7 @@
         # The entry NAME is the frozen key a consumer indexes into; the
         # `display_label` is the header a renderer prints. `ci_label` is
         # text too -- `inline()` writes it into a sentence -- so it
-        # follows the registry while the neighbouring column name does
+        # follows the registry while the neighboring column name does
         # not: an assumed asymmetry of the typed contract.
         display_label = e$label,
         precision = if (isTRUE(e$integer)) 0L else as.integer(digits),
@@ -714,7 +714,7 @@
       # cell of the contract, and the override keeps the console's own
       # glyph.
       #
-      # Recognised through the REGISTRY, never through a literal. Both
+      # Recognized through the REGISTRY, never through a literal. Both
       # sides of this comparison are written by `build_display_df()`
       # from `spicy_str("cell_undefined")`; a literal here would hold
       # only while the registry value happened to match it, and the day
@@ -724,7 +724,7 @@
       # The glyph is now one key for the whole package (decision 23), so
       # this override no longer has to reconcile two of them: the shared
       # renderer `.cell_to_string()` prints the same `cell_undefined`
-      # mark this branch recognises.
+      # mark this branch recognizes.
       if (identical(shown_str, spicy_str("cell_undefined"))) {
         status[[nm]] <- "undefined"
         display[[nm]] <- shown_str
@@ -821,7 +821,7 @@
     if (is.null(ent)) {
       # The display builder's column set is closed; a column added
       # there without an entry in the spec must FAIL here, not be
-      # silently mislabelled with someone else's token. The lookup is
+      # silently mislabeled with someone else's token. The lookup is
       # KEY against key, so this abort never sees a translated header
       # pass by -- it is the safety net of that very rule.
       spicy_abort(
@@ -879,7 +879,7 @@
       # Second half of the closed set: the spec knows this column but
       # this function has no branch for what it IS. Without the default
       # `switch()` would return NULL and the column would enter the
-      # contract with no token at all -- the silent mislabelling the
+      # contract with no token at all -- the silent mislabeling the
       # abort above exists to prevent.
       spicy_abort(
         sprintf(

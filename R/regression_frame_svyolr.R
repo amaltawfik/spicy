@@ -3,7 +3,7 @@
 # design-weighted cumulative-link (proportional-odds) model.
 #
 # svyolr is NOT a polr subclass. `class(fit)` is the single string
-# "svyolr", on a linearised design and on a replicate design alike
+# "svyolr", on a linearized design and on a replicate design alike
 # (svyolr.svyrep.design ends with `class(rval) <- "svyolr"`, so there is
 # no svrepolr), and it inherits from nothing. Everything below is written
 # rather than borrowed, and the three places where borrowing would have

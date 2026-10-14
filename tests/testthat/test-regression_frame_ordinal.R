@@ -151,7 +151,7 @@ test_that("polr: threshold estimates match fit$zeta", {
 
 # ---- 5. polr: factor predictor reference rows ----------------------------
 
-test_that("polr: factor predictor synthesises one ref row (PO -- shared)", {
+test_that("polr: factor predictor synthesizes one ref row (PO -- shared)", {
   fit <- .fit_polr_basic()
   fr <- as_regression_frame(fit, model_id = "M1")
   # 3 factor predictors in the fixture -> 3 ref rows.
@@ -265,7 +265,7 @@ test_that("clm: threshold estimates match fit$alpha", {
 
 # ---- 11. clm: factor predictor reference rows ----------------------------
 
-test_that("clm: factor predictor synthesises one ref row (PO)", {
+test_that("clm: factor predictor synthesizes one ref row (PO)", {
   fit <- .fit_clm_basic()
   fr <- as_regression_frame(fit, model_id = "M1")
   expect_identical(sum(fr$coefs$is_ref), 2L) # temp + contact each have ref
@@ -484,7 +484,7 @@ test_that("clmm: the random SD is VarCorr()'s, with glmmTMB's Wald interval", {
   sd_vc <- attr(ordinal::VarCorr(fit)$judge, "stddev")
   expect_equal(vc$sd, unname(sd_vc), tolerance = 1e-12)
   expect_equal(vc$sd, 1.131132565, tolerance = 1e-6)
-  # One random term: clmm optimises log(SD), and the ST1 row of vcov() is
+  # One random term: clmm optimizes log(SD), and the ST1 row of vcov() is
   # on that scale.
   se_log <- sqrt(stats::vcov(fit)["ST1", "ST1"])
   z <- stats::qnorm(0.975)

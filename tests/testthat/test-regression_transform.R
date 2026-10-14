@@ -365,7 +365,7 @@ test_that("a keep / drop pattern matching no term warns spicy_no_match", {
 
 test_that("keep / drop filters on term names, never on display labels", {
   fit <- lm(mpg ~ wt + hp, data = mtcars)
-  # Relabelling does not shield a term from a filter on its term name.
+  # Relabeling does not shield a term from a filter on its term name.
   out <- table_regression(fit, labels = c(wt = "Poids"), drop = "^wt$")
   td <- broom::tidy(out)
   expect_false(any(td$term == "wt"))

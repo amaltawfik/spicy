@@ -167,7 +167,7 @@ test_that("reference and undefined cells refuse with the reason", {
   expect_match(conditionMessage(err), "undefined|not estimable")
 })
 
-test_that("a multi-model table requires and honours `model`", {
+test_that("a multi-model table requires and honors `model`", {
   d <- as.data.frame(sochealth)
   m1 <- lm(wellbeing_score ~ age, data = d)
   m2 <- lm(wellbeing_score ~ age + sex, data = d)
@@ -194,7 +194,7 @@ test_that("`model = k` addresses the k-th model, by identity", {
   # identity rather than against the spanner order.
   # Three specifications whose `wt` coefficient separates at the
   # displayed precision (-5.34 / -3.88 / -5.05), so no k can pass by
-  # landing on a neighbour that happens to print the same.
+  # landing on a neighbor that happens to print the same.
   d <- mtcars
   fits <- list(
     lm(mpg ~ wt, data = d),
@@ -555,7 +555,7 @@ test_that("an interval with blank bounds refuses like the scalar does", {
 })
 
 
-test_that("a multi-valued `model` is refused, not vectorised into `if`", {
+test_that("a multi-valued `model` is refused, not vectorized into `if`", {
   d <- as.data.frame(sochealth)
   tbl <- .il_quiet(table_regression(list(
     A = lm(wellbeing_score ~ age, d),
@@ -634,7 +634,7 @@ test_that("a bare inline() cites the family's primary estimate", {
   # The documented default (`?inline`, `column = NULL`): the coefficient
   # for the two model families, the mean for the continuous one, the
   # count for the categorical one. Asserted against the VALUES, per
-  # family, so no family can drift onto a neighbouring column unnoticed
+  # family, so no family can drift onto a neighboring column unnoticed
   # -- which is exactly what happened to the continuous one, whose mean
   # token is "m" while the preference list looked for "mean" and found
   # "n" first.
@@ -686,7 +686,7 @@ test_that("a bare inline() on a factor `by` cites the contrast, not n", {
   # all: the preference list fell through to "n", so a bare call quoted
   # the sample size (1188) where the sentence meant the mean difference
   # (0.51). Asserted on the values, per shape, so neither can drift
-  # onto a neighbouring column by agreeing with itself.
+  # onto a neighboring column by agreeing with itself.
   d <- as.data.frame(sochealth)
   tf <- .il_quiet(table_continuous_lm(d, select = bmi, by = sex))
   expect_identical(inline(tf, bmi), inline(tf, bmi, column = "delta"))

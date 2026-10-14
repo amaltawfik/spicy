@@ -359,7 +359,7 @@ code_book <- function(
     cols[na_level],
     \(col) factor(col, levels = levels(col))
   )
-  # A POSIXlt column is a date-time, summarised as the POSIXct it
+  # A POSIXlt column is a date-time, summarized as the POSIXct it
   # converts to, in its own time zone.
   lt <- vapply(cols, inherits, logical(1), what = "POSIXlt")
   cols[lt] <- lapply(cols[lt], as.POSIXct)

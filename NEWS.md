@@ -55,7 +55,7 @@ workbook, or a PDF.
 
 * `table_regression(nested = TRUE)` with a robust or cluster-robust
   `vcov` tests each added block with a Wald test on that matrix,
-  labelled as such: a Wald F-change for `lm`, a Wald χ² for `glm` and
+  labeled as such: a Wald F-change for `lm`, a Wald χ² for `glm` and
   `coxph`, and the regime of the coefficient tests for the other
   classes. Under the classical `vcov`, the partial F and the
   likelihood-ratio test are unchanged. Tables of 0.13.0 built with a

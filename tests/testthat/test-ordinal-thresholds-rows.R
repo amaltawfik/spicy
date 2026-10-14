@@ -21,7 +21,7 @@ thr_terms <- c("Poor | Fair", "Fair | Good", "Good | Very good")
 
 # ---- structural: thresholds become rows -----------------------------------
 
-test_that("polr thresholds render as a labelled Thresholds block (default)", {
+test_that("polr thresholds render as a labeled Thresholds block (default)", {
   skip_if_not_installed("MASS")
   fit <- MASS::polr(yc ~ x1 + smoke, data = make_ord(), Hess = TRUE)
   df <- table_regression(fit, output = "data.frame")
@@ -29,7 +29,7 @@ test_that("polr thresholds render as a labelled Thresholds block (default)", {
   expect_setequal(trimws(df$Variable)[grepl("\\|", df$Variable)], thr_terms)
 })
 
-test_that("clm thresholds render as a labelled Thresholds block (default)", {
+test_that("clm thresholds render as a labeled Thresholds block (default)", {
   skip_if_not_installed("ordinal")
   fit <- ordinal::clm(yc ~ x1 + smoke, data = make_ord())
   df <- table_regression(fit, output = "data.frame")

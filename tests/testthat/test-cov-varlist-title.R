@@ -32,7 +32,7 @@ test_that("varlist_title() returns fallback for a data-first verb on a literal",
 
 test_that("varlist_title() resolves the data arg of an anonymous-function call", {
   # varlist_call_name() final fallback (parts[[1L]]): the call head is
-  # itself a call -- the parenthesised anonymous function -- so its
+  # itself a call -- the parenthesized anonymous function -- so its
   # name is "(", not in any special list. The single-argument path
   # then recurses into `df` and marks it transformed.
   expr <- quote((function(x) x)(df))

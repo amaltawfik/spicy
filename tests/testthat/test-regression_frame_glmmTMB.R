@@ -243,7 +243,7 @@ test_that("glmmTMB binomial: supports$exponentiate = TRUE (non-identity link)", 
 
 # ---- 7. Factor predictor: reference rows ---------------------------------
 
-test_that("glmmTMB: factor predictor synthesises a reference row + non-ref rows", {
+test_that("glmmTMB: factor predictor synthesizes a reference row + non-ref rows", {
   fit <- .fit_glmmTMB_gauss_factor()
   fr <- as_regression_frame(fit, model_id = "M1")
   expect_invisible(spicy:::validate_regression_frame(fr))
@@ -563,7 +563,7 @@ test_that(".glmmTMB_re_scale2 only divides by a genuine residual scale", {
   expect_false(isTRUE(attr(nb_vc, "useSc")))
   expect_true(abs(stats::sigma(nb) - 1) > 0.1) # would have moved the verdict
   expect_identical(spicy:::.glmmTMB_re_scale2(nb_vc), 1)
-  # A modelled dispersion has no single residual scale: sc is NA and the
+  # A modeled dispersion has no single residual scale: sc is NA and the
   # divisor falls back to 1 rather than poisoning det() with NA.
   disp <- glmmTMB::glmmTMB(
     Reaction ~ Days + (1 | Subject),
@@ -621,8 +621,8 @@ test_that("glmmTMB singularity tolerance sits between the two regimes", {
     det(as.matrix(clean_vc[[1L]]) / spicy:::.glmmTMB_re_scale2(clean_vc)),
     1
   )
-  # An explicit tolerance argument is honoured. Only the loosening
-  # direction is asserted: how far below the tolerance the optimiser
+  # An explicit tolerance argument is honored. Only the loosening
+  # direction is asserted: how far below the tolerance the optimizer
   # happened to stop is not a property of the fit.
   expect_true(spicy:::.glmmTMB_is_singular(
     .fit_glmmTMB_gauss(),
@@ -855,8 +855,8 @@ test_that("clmm and glmmTMB ordinal agree on wine (cross-engine triangulation)",
   ka <- key(a)
   kb <- key(b)[match(ka$term, key(b)$term), ]
   expect_identical(kb$term, ka$term)
-  # Both engines maximise the same Laplace likelihood (logLik agree to
-  # 3.5e-6); the gaps are their optimisers' stopping points. Measured
+  # Both engines maximize the same Laplace likelihood (logLik agree to
+  # 3.5e-6); the gaps are their optimizers' stopping points. Measured
   # 2026-10-09 (ordinal 2026.7.26, glmmTMB 1.1.15.2): estimates 1.6e-5,
   # SEs 2.7e-5, random SD 7.0e-6. Pinned just above, at 5e-5.
   expect_lt(max(abs(ka$est - kb$est)), 5e-5)
@@ -887,7 +887,7 @@ test_that("clmm (several random terms) and glmmTMB ordinal agree on the RE rows"
     data = d,
     family = glmmTMB::ordinal()
   )
-  # With two random terms clmm optimises the SDs themselves, not their
+  # With two random terms clmm optimizes the SDs themselves, not their
   # logs: the ST rows of vcov() are carried to the log scale by the delta
   # method, and the rows then match glmmTMB's (measured gap 3e-7).
   st_par <- utils::tail(fit_clmm$optRes$par, 2L)
@@ -907,7 +907,7 @@ test_that("glmmTMB ordinal: exponentiate follows the clm rule", {
   k <- fr$coefs[!fr$coefs$is_ref, ]
   expect_equal(k$estimate, unname(exp(b)), tolerance = 1e-10)
   expect_identical(fr$info$extras$exp_header, "OR")
-  # cloglog: glmmTMB parametrises the cumulative cloglog as clm does
+  # cloglog: glmmTMB parametrizes the cumulative cloglog as clm does
   # (the fixed-effects fits coincide), so the hazard ratio is exp(-B).
   fit0 <- .fit_glmmTMB_ordinal("cloglog", re = FALSE)
   clm0 <- ordinal::clm(

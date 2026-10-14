@@ -2074,7 +2074,7 @@ test_that("table_categorical grouped word errors for missing officer", {
   skip("Cannot mock officer requireNamespace without recursion")
 })
 
-# ---- harmonisation with table_continuous() / _lm() (Phase 2) -------------
+# ---- harmonization with table_continuous() / _lm() (Phase 2) -------------
 
 test_that("align argument validates and is stored as attribute", {
   for (a in c("decimal", "center", "right")) {
@@ -3393,7 +3393,7 @@ test_that("align = 'auto' is removed from table_categorical", {
   )
 })
 
-test_that("tidy/glance column sets are frozen (stabilising contract)", {
+test_that("tidy/glance column sets are frozen (stabilizing contract)", {
   skip_if_not_installed("broom")
   out <- table_categorical(mtcars, select = "cyl", by = "am")
   expect_identical(
@@ -3706,7 +3706,7 @@ test_that("a quote in a `by` level no longer breaks the gt render", {
   # The rule reaches the quote-bearing column. The quote never gets as
   # far as the selector any more: `.gt_safe_ids()` takes it out of the
   # gt id before the table is built (register n. 73), so both sides of
-  # the match read the sanitised id. The `by` level itself is untouched
+  # the match read the sanitized id. The `by` level itself is untouched
   # -- it is the spanner LABEL, which gt escapes.
   expect_true(grepl("th[id=\"a_b_n\"]", html, fixed = TRUE))
   expect_true(grepl('scope="col" id="a_b_n"', html, fixed = TRUE))

@@ -197,7 +197,7 @@ table_regression_uv <- function(
   method_supplied <- !missing(method)
   # A `family` without a `method` can only mean the glm screen (family
   # is meaningless for lm and coxph, both refused below), so the intent
-  # is honoured: every pre-0.13 call that passed `family = binomial()`
+  # is honored: every pre-0.13 call that passed `family = binomial()`
   # keeps its logistic screen unchanged.
   if (family_supplied && !method_supplied) {
     method <- "glm"
@@ -235,12 +235,12 @@ table_regression_uv <- function(
       class = "spicy_invalid_input"
     )
   }
-  # Normalise `family` the way stats::glm() itself does -- the name
+  # Normalize `family` the way stats::glm() itself does -- the name
   # ("binomial") or the bare constructor (binomial) becomes the family
   # object -- so every check below can read `family$family` safely
   # instead of erroring on `$` for atomic vectors / closures. The
   # method routing above keys on whether `family` was SUPPLIED, never
-  # on its form, so normalisation cannot change the route.
+  # on its form, so normalization cannot change the route.
   if (is.character(family) && length(family) == 1L && !is.na(family)) {
     family <- tryCatch(
       get(family, mode = "function", envir = parent.frame()),
@@ -826,7 +826,7 @@ as_regression_frame.spicy_uv_screen <- function(
     # `summary()$r.squared`, already computed for the fit-statistics
     # rows -- in a one-predictor model it is also the partial eta^2 of
     # that predictor, which is what the column would otherwise be
-    # relabelled from. NA (blank cell) for classes without a classical
+    # relabeled from. NA (blank cell) for classes without a classical
     # variance partition; the token gate refuses those tables anyway.
     r2_k <- .uv_fit_r2(fr$info)
     block$r2 <- NA_real_

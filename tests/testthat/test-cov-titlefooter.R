@@ -2,7 +2,7 @@
 # Coverage-targeted tests for R/regression_titlefooter.R
 #
 # These exercise edge branches of the frame-aware title / footer builders
-# that the broader behavioural suite did not already reach: empty-frame
+# that the broader behavioral suite did not already reach: empty-frame
 # guards, single-character helpers, the legacy random-effects sentence path,
 # panel headers without a method tag, vcov label fall-throughs, polynomial
 # `^k` suffix handling, the differing-size p.adjust branch, reference
@@ -89,7 +89,7 @@ test_that("vcov label says 'cluster vector supplied' when no cluster name", {
   expect_identical(out, "cluster-robust (CR2), cluster vector supplied")
 })
 
-test_that("vcov label falls through to the raw kind for unrecognised types", {
+test_that("vcov label falls through to the raw kind for unrecognized types", {
   frame <- list(
     info = list(class = "lm", vcov_kind = "weirdtype", extras = list())
   )
@@ -232,7 +232,7 @@ test_that("survival footer prefixes 'Model k:' for >1 contributing models", {
 
 # ---- .surv_title_dist: every named switch arm + the default --------------
 
-test_that(".surv_title_dist normalises all known distribution tokens", {
+test_that(".surv_title_dist normalizes all known distribution tokens", {
   expect_identical(spicy:::.surv_title_dist("weibullPH"), "Weibull (PH)")
   expect_identical(spicy:::.surv_title_dist("gompertz"), "Gompertz")
   expect_identical(spicy:::.surv_title_dist("gamma"), "Gamma")
@@ -243,7 +243,7 @@ test_that(".surv_title_dist normalises all known distribution tokens", {
   expect_identical(spicy:::.surv_title_dist("gengamma"), "Generalized gamma")
   expect_identical(spicy:::.surv_title_dist("genf"), "Generalized F")
   expect_identical(spicy:::.surv_title_dist("gaussian"), "Gaussian")
-  # Default: capitalise the first letter of an unknown token.
+  # Default: capitalize the first letter of an unknown token.
   expect_identical(spicy:::.surv_title_dist("customdist"), "Customdist")
 })
 

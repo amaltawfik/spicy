@@ -130,7 +130,7 @@ test_that("0-row data.frame still relabels", {
   expect_equal(nrow(out), 0L)
 })
 
-# ---- sep behaviour -----------------------------------------------------
+# ---- sep behavior -----------------------------------------------------
 
 test_that("custom separator is used as a literal (no regex meaning)", {
   df <- data.frame(a = 1:2, b = 3:4)

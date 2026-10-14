@@ -20,9 +20,9 @@
 # An ordered factor uses contr.poly, so detect_factor_terms() flags the term
 # with reference_dropped = FALSE. .nlme_reference_rows() must then (a) hit the
 # `next` that skips non-treatment terms and (b) return an empty coefs frame
-# because no reference rows were synthesised.
+# because no reference rows were synthesized.
 
-test_that("lme with an ordered-factor predictor synthesises no reference rows", {
+test_that("lme with an ordered-factor predictor synthesizes no reference rows", {
   skip_if_not_installed("nlme")
   d <- nlme::Orthodont
   d$agef <- factor(d$age, ordered = TRUE) # contr.poly -> .L/.Q/.C terms

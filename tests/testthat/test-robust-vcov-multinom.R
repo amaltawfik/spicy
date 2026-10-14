@@ -180,7 +180,7 @@ test_that("multinom HC* and resamplers are refused; bad cluster length errors", 
   )
 })
 
-test_that("multinom AME columns honour the requested CR*", {
+test_that("multinom AME columns honor the requested CR*", {
   skip_if_not_installed("nnet")
   skip_if_not_installed("sandwich")
   skip_if_not_installed("marginaleffects")

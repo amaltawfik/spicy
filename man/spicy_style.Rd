@@ -252,7 +252,7 @@ consulted 2026-08-14.
 
 Below, the journal's midline decimal point (Unicode U+00B7, MIDDLE
 DOT) is written \verb{[.]} so it cannot be confused with an ordinary
-full stop.
+period.
 
 Encoded:
 \itemize{

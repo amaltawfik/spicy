@@ -21,7 +21,7 @@
 #     field is read (`summary(fit)$rsq` prints before returning
 #     numeric(0)). The coxph path calls it twice. Nothing below calls it
 #     at all: every quantity is read off the fit.
-#   * deviance() returns -184.90 on the linearised engine and 0 on the
+#   * deviance() returns -184.90 on the linearized engine and 0 on the
 #     replicate one (survey's deviance.svycoxph reads `object$ll`, which
 #     the replicate engine never sets, and falls through to `else 0`).
 #     A zero is more dangerous than a negative: it looks like a result.
@@ -267,7 +267,7 @@ as_regression_frame.svycoxph <- function(
   # compute are not usable: deviance() is a likelihood-ratio statistic
   # with the sign inverted on one engine and a bare 0 on the other, and
   # logLik() returns NA (df = 3) on the replicate engine while erroring
-  # on the linearised one. They are posted as NA in the FRAME, not merely
+  # on the linearized one. They are posted as NA in the FRAME, not merely
   # left out of the default token set, so an explicit `show_fit_stats`
   # cannot republish them.
   fit_stats <- list(

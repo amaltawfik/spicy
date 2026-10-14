@@ -5,7 +5,7 @@
 #   1. the English default does not move by a byte, whether the option is
 #      unset or set to "en";
 #   2. a set is structurally sound -- known keys, sprintf-compatible
-#      templates, and the invariants the recognisers depend on;
+#      templates, and the invariants the recognizers depend on;
 #   3. the frozen half of every couple stays English under a translation.
 
 # ---- 1. The English default -----------------------------------------------
@@ -129,9 +129,9 @@ test_that("the hole check reads every way a template can go wrong", {
   expect_true(ok(", IC 95 % [", ", 95% CI ["))
 })
 
-test_that("the emphasised note prefix is a prefix of the note prefix, in every language", {
+test_that("the emphasized note prefix is a prefix of the note prefix, in every language", {
   # Asserted at the English default in test-i18n.R. Six rich engines
-  # italicise the first and print the rest in regular type; a set that
+  # italicize the first and print the rest in regular type; a set that
   # translates one and not the other breaks all six at once, silently.
   for (lang in .SPICY_LANGUAGES) {
     withr::local_options(spicy.language = lang)
@@ -142,7 +142,7 @@ test_that("the emphasised note prefix is a prefix of the note prefix, in every l
   }
 })
 
-test_that("the labels a recogniser alternates over stay distinct in every language", {
+test_that("the labels a recognizer alternates over stay distinct in every language", {
   # `.companion_header_pattern()` matches a column's header against SE /
   # p / the interval spanner to name an orphaned companion column, and
   # the exponentiated-coefficient footer looks its gloss up BY header.
@@ -151,7 +151,7 @@ test_that("the labels a recogniser alternates over stay distinct in every langua
   # one of them unreachable, with no condition raised.
   # `header_effect_size_short` is not one of them: it heads a column of
   # `table_continuous()`, which shows no standard error and never reaches
-  # the recogniser (and its French "Taille d'effet" is distinct from "ES"
+  # the recognizer (and its French "Taille d'effet" is distinct from "ES"
   # anyway).
   distinct <- list(
     companion = c(

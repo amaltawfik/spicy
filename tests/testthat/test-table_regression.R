@@ -609,7 +609,7 @@ test_that("labels – coef-style key (cyl6) renames the contrast row", {
   expect_true("cyl:" %in% out$Variable)
 })
 
-test_that("labels – mixed term + coef-style keys both honoured", {
+test_that("labels – mixed term + coef-style keys both honored", {
   fit <- lm(mpg ~ wt + cyl, data = mt)
   out <- table_regression(
     fit,
@@ -910,7 +910,7 @@ test_that("cluster_name – list(...) with named elements per model", {
   )
 })
 
-test_that("extract_arg_column_name – handles all recognised forms", {
+test_that("extract_arg_column_name – handles all recognized forms", {
   expect_equal(spicy:::extract_arg_column_name(quote(df$col)), "col")
   expect_equal(spicy:::extract_arg_column_name(quote(df[["col"]])), "col")
   expect_equal(spicy:::extract_arg_column_name(quote(mycluster)), "mycluster")
@@ -1088,7 +1088,7 @@ test_that("no-intercept formula – works with multi-model nested lookalike", {
 # Snapshot tests – golden output for the most common rendering paths
 # ============================================================================
 
-# Snapshot helper: capture the printed output and normalise trailing
+# Snapshot helper: capture the printed output and normalize trailing
 # whitespace + the trailing blank line. spicy_print_table() pads
 # every cell to a fixed column width, so harmless changes in the
 # longest cell propagate as cascade-y diffs in the snapshot. Trimming
@@ -1611,7 +1611,7 @@ test_that("show_columns – each preset table equals its atomic-token table", {
       as.data.frame(o2, stringsAsFactors = FALSE)
     )
   }
-  # all_beta requires a standardisation method
+  # all_beta requires a standardization method
   o1 <- table_regression(fit, show_columns = "all_beta", standardized = "refit")
   o2 <- table_regression(
     fit,
@@ -2100,8 +2100,8 @@ test_that("align – CI anchors are each column-aligned in decimal mode", {
   expect_length(unique(anchor_pos(ci, "]")), 1L)
 })
 
-test_that("align – 'right' right-justifies, 'center' centres, in print", {
-  # rd-core:align-decimal-ci-anchors ('center' / 'right' behaviour)
+test_that("align – 'right' right-justifies, 'center' centers, in print", {
+  # rd-core:align-decimal-ci-anchors ('center' / 'right' behavior)
   fit <- lm(mpg ~ wt + cyl, data = mt)
   stats <- c("r2", "aic", "nobs")
   last_nonspace <- function(line) max(which(strsplit(line, "")[[1]] != " "))
@@ -2146,7 +2146,7 @@ test_that("weights come from the fit – no weights argument", {
   )
 })
 
-test_that("AME extraction honours the fit's weights", {
+test_that("AME extraction honors the fit's weights", {
   # rd-core:weights-from-fit (AME half)
   skip_if_not_installed("marginaleffects")
   set.seed(7)
@@ -2360,7 +2360,7 @@ test_that("console shows bare deduped labels; data.frame keeps unique names", {
   expect_identical(sum(nms == "95% CI.2"), 1L)
 })
 
-test_that("print honours the padding attr unless overridden at print time", {
+test_that("print honors the padding attr unless overridden at print time", {
   # rd-methods:print-honors-padding-attr
   fit <- lm(mpg ~ wt, data = mt)
   t0 <- table_regression(fit, padding = 0L)

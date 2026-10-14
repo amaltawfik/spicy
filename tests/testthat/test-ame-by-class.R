@@ -266,7 +266,7 @@ test_that("gaussian/identity glm caveat fires for plain glm but NOT svyglm/gam",
 
 # ---- robust-vcov-aware AME -------------------------------------------------
 
-test_that("frame AME honours the requested robust vcov (SE), estimate invariant", {
+test_that("frame AME honors the requested robust vcov (SE), estimate invariant", {
   skip_if_not_installed("betareg")
   skip_if_not_installed("marginaleffects")
   skip_if_not_installed("sandwich")

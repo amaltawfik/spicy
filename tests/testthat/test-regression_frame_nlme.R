@@ -4,7 +4,7 @@
 # Coverage:
 #   * lme (linear mixed-effects) -- fixed effects extraction, per-coef
 #     Wald-t DF from summary(fit)$tTable, VarCorr parsing, ICC.
-#   * gls (generalised least squares) -- Wald-t with df = nobs - p,
+#   * gls (generalized least squares) -- Wald-t with df = nobs - p,
 #     correlation structure label in vcov_label.
 #   * Factor predictor -- reference-row synthesis.
 #   * Schema validity in all paths.
@@ -240,7 +240,7 @@ test_that("lme: title_prefix = 'Linear mixed-effects regression (nlme)'", {
 
 # ---- 7. lme: factor predictor reference rows -----------------------------
 
-test_that("lme: factor predictor synthesises a reference row", {
+test_that("lme: factor predictor synthesizes a reference row", {
   fit <- .fit_lme_basic()
   fr <- as_regression_frame(fit, model_id = "M1")
   expect_invisible(spicy:::validate_regression_frame(fr))
@@ -358,7 +358,7 @@ test_that("gls: supports$partial_effect_size = FALSE (no attach helper)", {
   expect_true(fr$info$supports$nested_lrt)
 })
 
-test_that("gls: factor predictor synthesises a reference row", {
+test_that("gls: factor predictor synthesizes a reference row", {
   fit <- .fit_gls_corcs()
   fr <- as_regression_frame(fit, model_id = "M1")
   sex_rows <- fr$coefs[fr$coefs$parent_var == "Sex", ]
@@ -656,8 +656,8 @@ test_that("lme singularity reads the reStruct blocks relative to sigma^2", {
   expect_lt(det(block), 1e-6)
   clean <- .fit_lme_basic()
   expect_gt(det(as.matrix(clean$modelStruct$reStruct)[[1L]]), 1)
-  # An explicit tolerance argument is honoured. Only the loosening
-  # direction is asserted: how far below the tolerance the optimiser
+  # An explicit tolerance argument is honored. Only the loosening
+  # direction is asserted: how far below the tolerance the optimizer
   # happened to stop is not a property of the fit.
   expect_true(spicy:::.lme_is_singular(clean, tolerance = 1e6))
 })

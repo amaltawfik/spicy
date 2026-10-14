@@ -377,12 +377,12 @@ test_that("a reason with no sentence is refused, not rendered as NA", {
 
 test_that("glmer explains a multi-factor non-Gaussian ICC, glmmTMB stays silent", {
   # Register n. 252, finding F4: a KNOWN asymmetry, pinned rather than
-  # harmonised. glmer's ICC kernel runs on non-Gaussian families (the
+  # harmonized. glmer's ICC kernel runs on non-Gaussian families (the
   # Nakagawa link-scale distribution variance), so on two grouping
   # factors it stops on the multi-factor gate and can name it. glmmTMB
   # runs no kernel at all off Gaussian-identity, so "several grouping
   # factors" would not be the true reason and it says nothing.
-  # Harmonising means giving glmmTMB the non-Gaussian ICC, not muting
+  # Harmonizing means giving glmmTMB the non-Gaussian ICC, not muting
   # lme4.
   skip_if_not_installed("lme4")
   skip_if_not_installed("glmmTMB")

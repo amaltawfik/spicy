@@ -9,7 +9,7 @@
 test_that("the tinytable note reader keeps the text of every note shape", {
   # `tinytable::tt(notes = )` accepts a string, a (possibly named) list
   # of strings, or a list of `list(text =, i =, j =)` cell entries, and
-  # the slot keeps whichever shape it was given. The HTML finaliser
+  # the slot keeps whichever shape it was given. The HTML finalizer
   # escapes each note by EXACT SUBSTITUTION, so it has to recover the
   # text of all three -- a shape it cannot read is a note that reaches
   # the `<tfoot>` unescaped.
@@ -50,7 +50,7 @@ test_that("a positioned note is escaped in the rendered <tfoot>", {
   # The note cell also picks up the family's note styling.
   expect_match(out, "font-size", fixed = TRUE)
 
-  # Without the notes the finaliser cannot know which text is a note,
+  # Without the notes the finalizer cannot know which text is a note,
   # so it styles the cell and substitutes nothing -- the default
   # argument is a real path, not a placeholder.
   bare <- spicy:::.spicy_tt_note_tfoot(html)

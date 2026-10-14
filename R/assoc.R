@@ -1889,7 +1889,7 @@ assoc_measures <- function(
         conf_level = conf_level
       )
     },
-    # "Stuart's Tau-c" is the SAS PROC FREQ label (honouring Stuart,
+    # "Stuart's Tau-c" is the SAS PROC FREQ label (honoring Stuart,
     # 1953); SPSS and PSPP print "Kendall's tau-c" for the same
     # statistic. Shared with the cross_tab() note and the
     # table_categorical() column header.

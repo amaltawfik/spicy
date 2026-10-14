@@ -1,7 +1,7 @@
 # ---------------------------------------------------------------------------
 # Phase 7c8a tests: fixed-effect inference (p-values + CI) for mixed-effects
 # fits. Two-part assertion:
-#   (1) Behavioural -- coefs carry the right test_type / df / p_value per class.
+#   (1) Behavioral -- coefs carry the right test_type / df / p_value per class.
 #   (2) Footer -- the annotation line names the inference method.
 # ---------------------------------------------------------------------------
 

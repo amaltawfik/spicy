@@ -71,7 +71,7 @@ test_that("feols without a fixed-effect block sets info$n_groups = NULL", {
 
 # ---- ordered factor: reference_dropped == FALSE skip path (L149, L171) -----
 
-test_that("feols with an ordered factor synthesises no reference row", {
+test_that("feols with an ordered factor synthesizes no reference row", {
   skip_if_not_installed("fixest")
   d <- .cov_air()
   d$Wind_ord <- cut(
@@ -101,7 +101,7 @@ test_that("feols with an ordered factor synthesises no reference row", {
 # wrong family, Wald-t labels (t / finite df), classical_r2 = TRUE,
 # exponentiate disabled, and a "Linear regression" title.
 #
-# Correct behaviour, derived from first principles:
+# Correct behavior, derived from first principles:
 #   * family$family == "negbin", family$link == "log"
 #   * coeftable carries "z value" / "Pr(>|z|)" -> test_type "z", df = Inf
 #   * classical R^2 is undefined for a count GLM -> supports$classical_r2
@@ -178,7 +178,7 @@ test_that("fenegbin with a factor covariate keeps reference rows + z labels", {
   fit <- fixest::fenegbin(y ~ x + f | g, data = d)
   fr <- as_regression_frame(fit, model_id = "M1")
 
-  # One synthesised reference row (baseline level "a" of f).
+  # One synthesized reference row (baseline level "a" of f).
   ref <- fr$coefs[fr$coefs$is_ref, ]
   expect_identical(nrow(ref), 1L)
   expect_identical(ref$label, "a")

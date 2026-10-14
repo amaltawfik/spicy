@@ -1382,7 +1382,7 @@ format_cell_value <- function(
   #               (modelsummary, gtsummary, parameters all star B
   #               by default).
   #   * `beta` -> stars on beta ONLY when B is not also shown. The
-  #               standardised coefficient is a deterministic
+  #               standardized coefficient is a deterministic
   #               rescaling of B; its p-value is identical to B's
   #               (test statistic is invariant under linear
   #               rescaling). Adding stars on both B and beta cells
@@ -1676,7 +1676,7 @@ build_fit_stats_rows <- function(
     # A fit-stat row where NO model has a value informs nobody: drop
     # it instead of rendering an empty row. Historically this skip was
     # limited to the mixed-only structure stats (icc / n_groups) and
-    # n_events; generalised 2026-07-09 for the univariable-screen
+    # n_events; generalized 2026-07-09 for the univariable-screen
     # frames, whose model-level stats are all NA by construction --
     # any class-appropriate token still shows because at least one
     # model carries a value.

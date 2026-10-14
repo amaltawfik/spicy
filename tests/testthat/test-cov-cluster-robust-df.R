@@ -4,7 +4,7 @@
 #   * glm + CR2 where clubSandwich returns a NON-finite Satterthwaite df
 #     (perfect separation by a between-cluster predictor) -> z fallback.
 #   * estimatr::lm_robust + CR2 where the Satterthwaite df VARIES across
-#     coefficients -> the vectorised qt() CI rebuild must use per-coef df.
+#     coefficients -> the vectorized qt() CI rebuild must use per-coef df.
 
 test_that("glm CR2 + perfect separation: non-finite Satterthwaite df falls back to z", {
   skip_if_not_installed("clubSandwich")

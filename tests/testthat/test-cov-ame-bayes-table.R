@@ -209,7 +209,7 @@ test_that(".compute_bayes_ame_table keeps the avg_slopes summary when there are 
 
 # ---- 5. .compute_bayes_ame_table(): median / MAD SD / equal-tailed CI ------
 
-test_that(".compute_bayes_ame_table summarises posterior draws as median, MAD SD and ETI", {
+test_that(".compute_bayes_ame_table summarizes posterior draws as median, MAD SD and ETI", {
   skip_if_no_me_bayes_ame()
   # Lines 1110-1124 and 1129-1137: with a draws frame in hand each row is
   # replaced by the posterior median, the MAD SD and the equal-tailed
@@ -428,7 +428,7 @@ test_that(".compute_bayes_ame_table handles an avg_slopes result without a contr
   expect_type(out$contrast, "character")
   expect_true(all(is.na(out$contrast)))
   expect_false("group" %in% names(out))
-  # The keys still matched, so both rows were summarised from their draws.
+  # The keys still matched, so both rows were summarized from their draws.
   expect_equal(out$estimate, c(stats::median(d_wt), stats::median(d_hp)))
   expect_equal(out$std.error, c(stats::mad(d_wt), stats::mad(d_hp)))
   # Exact literals for the type-7 quantiles at 5% / 95%.

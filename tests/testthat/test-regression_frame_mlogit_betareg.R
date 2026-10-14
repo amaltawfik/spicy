@@ -159,13 +159,13 @@ test_that("betareg: factor predictor present in coefs (parent_var resolution)", 
   # batch in GasolineYield is a factor with 10 levels but uses an
   # unusual contrast coding where the reference is "10" (the last
   # level); standard treatment-contrast factor detection may not
-  # synthesise a ref row in this corner case. The key invariant we
+  # synthesize a ref row in this corner case. The key invariant we
   # care about is that the factor coefs ARE in the table.
   rows <- fr$coefs[fr$coefs$parent_var == "batch", ]
   expect_true(nrow(rows) >= 9L)
 })
 
-test_that("betareg with controlled factor: ref row synthesised", {
+test_that("betareg with controlled factor: ref row synthesized", {
   skip_if_not_installed("betareg")
   data("GasolineYield", package = "betareg", envir = environment())
   d <- GasolineYield

@@ -47,7 +47,7 @@
 
 .fit_svyglm_poisson <- function() {
   d <- .svy_design()
-  # `enroll` is a count (school enrolment); use a small subset to keep
+  # `enroll` is a count (school enrollment); use a small subset to keep
   # the Poisson realistic on the API data.
   survey::svyglm(enroll ~ ell + meals, design = d, family = quasipoisson())
 }

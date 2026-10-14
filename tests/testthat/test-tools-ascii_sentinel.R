@@ -58,7 +58,7 @@ test_that("a no-break space in R/ is named with file, line and column", {
   expect_match(msg, "NO-BREAK SPACE (invisible", fixed = TRUE)
 })
 
-test_that("the allowlist is honoured, and it holds nothing invisible", {
+test_that("the allowlist is honored, and it holds nothing invisible", {
   env <- .sentinel_load()
   allowed <- env$ASCII_SENTINEL_ALLOWED
   chars <- intToUtf8(strtoi(names(allowed), 16L), multiple = TRUE)
@@ -172,7 +172,7 @@ test_that("the byte that hid in table_categorical_svy.R would now be caught", {
   expect_identical(nrow(good), 0L)
 
   # ...and the two forms really are the same string once parsed, which
-  # is what makes the escape a free fix rather than a behaviour change.
+  # is what makes the escape a free fix rather than a behavior change.
   # Both lines are parsed and their functions called, so the claim is
   # about the value, not about the source text.
   from_raw <- eval(parse(text = raw_form))

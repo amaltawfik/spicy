@@ -2522,7 +2522,7 @@ test_that("effect-size CI bracket separator switches with decimal_mark", {
   expect_false(grepl(", ", es_comma, fixed = TRUE))
 })
 
-# ---- harmonisation with table_continuous_lm() (Phase 1) ------------------
+# ---- harmonization with table_continuous_lm() (Phase 1) ------------------
 
 test_that("effect_size accepts logical TRUE/FALSE as silent aliases", {
   out_T <- table_continuous(
@@ -3466,7 +3466,7 @@ test_that("align = 'auto' is removed from table_continuous", {
   )
 })
 
-test_that("tidy/glance column sets are frozen (stabilising contract)", {
+test_that("tidy/glance column sets are frozen (stabilizing contract)", {
   skip_if_not_installed("broom")
   out <- table_continuous(mtcars, select = "mpg", by = "am")
   expect_identical(
@@ -3508,7 +3508,7 @@ test_that("tidy/glance column sets are frozen (stabilising contract)", {
 
 # ---- the disclosure reaches every output route ---------------------------
 # dev/notes_perdues_hors_console.md: rows dropped for a missing `by`
-# value were signalled by a console warning and a note only print()
+# value were signaled by a console warning and a note only print()
 # could read -- invisible in any document rendered with
 # `warning: false`.
 
@@ -4249,7 +4249,7 @@ test_that("the coverage percentage follows decimal_mark (decision 27)", {
   expect_true("97,5% CI" %in% unlist(ft$header$dataset))
 
   # An integer coverage has no decimal point: byte-identical labels
-  # under any mark -- the lot F behaviour, pinned per mark.
+  # under any mark -- the lot F behavior, pinned per mark.
   expect_identical(
     spicy:::.continuous_labels("95% CI LL", 0.95, ","),
     spicy:::.continuous_labels("95% CI LL", 0.95, ".")
@@ -4265,7 +4265,7 @@ test_that("the coverage percentage follows decimal_mark (decision 27)", {
 test_that("a user's options(OutDec) never leaks into the frozen keys", {
   withr::local_options(OutDec = ",")
   # The frozen-key producer must pin its own decimal mark: formatC
-  # honours OutDec otherwise, and a column NAME depending on a user
+  # honors OutDec otherwise, and a column NAME depending on a user
   # option would break every [["97.5% CI LL"]] lookup.
   expect_identical(spicy:::.ci_pct_str(0.975), "97.5")
   tbl <- suppressWarnings(table_continuous(

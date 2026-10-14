@@ -5,12 +5,12 @@
 # the same thing -- the variance the fit itself reports -- so every
 # consumer carried the ambiguity as a literal disjunction in fourteen
 # files, and two consumers in ONE file disagreed about which spelling a
-# missing value defaults to. The synonym is normalised out of the FRAME,
+# missing value defaults to. The synonym is normalized out of the FRAME,
 # not out of the user's vocabulary: `vcov = "classical"` is still what a
 # user types.
 # ---------------------------------------------------------------------------
 
-test_that(".canon_vcov_kind normalises the synonym and the absence", {
+test_that(".canon_vcov_kind normalizes the synonym and the absence", {
   expect_identical(.canon_vcov_kind("classical"), "model")
   expect_identical(.canon_vcov_kind("model"), "model")
   expect_identical(.canon_vcov_kind(NULL), "model")
@@ -46,7 +46,7 @@ test_that(".is_model_vcov answers for both spellings and for nothing", {
 
 test_that(".frame_vcov_kind reads a hand-built frame through the canon", {
   # Frames built by older code or by hand never pass the constructor,
-  # which is why the READ side normalises too.
+  # which is why the READ side normalizes too.
   expect_identical(
     .frame_vcov_kind(list(info = list(vcov_kind = "classical"))),
     "model"
@@ -83,7 +83,7 @@ test_that("a frame carries the canon whichever spelling the builder took", {
   )
 })
 
-test_that("the canonicalisation sits at the constructor boundary", {
+test_that("the canonicalization sits at the constructor boundary", {
   fr <- as_regression_frame(stats::lm(mpg ~ wt, data = mtcars))
   info <- fr$info
   info$vcov_kind <- "classical"
@@ -130,7 +130,7 @@ test_that("the frame vocabulary covers every value a builder can write", {
     ) %in%
       kinds
   ))
-  # "classical" is not IN the vocabulary; it normalises INTO it.
+  # "classical" is not IN the vocabulary; it normalizes INTO it.
   expect_false("classical" %in% kinds)
   expect_true(.canon_vcov_kind("classical") %in% kinds)
 })
@@ -164,10 +164,10 @@ test_that("the rendered variance label is unchanged by the canon", {
   )
   # The historical spelling, on that same hand-built frame, is where the
   # class guard CHANGES the rendering: without it the frame entered the
-  # lm/glm arm and came out "classical (OLS)", labelling a Cox partial
+  # lm/glm arm and came out "classical (OLS)", labeling a Cox partial
   # likelihood as ordinary least squares. No production frame can be in
   # this position -- every builder supplies a label, and the constructor
-  # canonicalises the kind -- so the guard is pinned here, by hand.
+  # canonicalizes the kind -- so the guard is pinned here, by hand.
   expect_identical(
     format_vcov_label_from_frame(
       list(

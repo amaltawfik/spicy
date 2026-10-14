@@ -172,7 +172,7 @@ test_that("ivreg: SE / p byte-match summary", {
   }
 })
 
-test_that("ivreg: factor predictor synthesises a reference row", {
+test_that("ivreg: factor predictor synthesizes a reference row", {
   fit <- .fit_ivreg_factor()
   fr <- as_regression_frame(fit, model_id = "M1")
   expect_invisible(spicy:::validate_regression_frame(fr))
@@ -216,7 +216,7 @@ test_that("tobit: dv is the user's response name, not the Surv() plumbing", {
   expect_false(grepl("Surv(", out, fixed = TRUE))
 })
 
-test_that("tobit: family normalised to gaussian/identity", {
+test_that("tobit: family normalized to gaussian/identity", {
   fit <- .fit_tobit_basic()
   fr <- as_regression_frame(fit, model_id = "M1")
   expect_identical(fr$info$family$family, "gaussian")

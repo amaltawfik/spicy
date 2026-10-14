@@ -2,9 +2,9 @@
 # Phase 7c20 tests: standardized = "refit" for mixed-effects fits
 #
 # The Cohen et al. 2003 / Gelman 2008 gold-standard z-score-then-refit
-# approach. Gaussian (lmer / lme / glmmTMB Gaussian) standardises both
+# approach. Gaussian (lmer / lme / glmmTMB Gaussian) standardizes both
 # response and predictors; non-Gaussian (glmer / glmmTMB binomial /
-# Poisson) standardises predictors only (response is bounded /
+# Poisson) standardizes predictors only (response is bounded /
 # integer-valued).
 # ---------------------------------------------------------------------------
 
@@ -171,7 +171,7 @@ test_that("lmer Gaussian: beta_Days = B_Days * sd(Days) / sd(Reaction)", {
 })
 
 
-# ---- 3. Non-Gaussian: response NOT standardised -----------------------
+# ---- 3. Non-Gaussian: response NOT standardized -----------------------
 
 test_that("glmer binomial: response y stays 0/1 (predictor-only scaling)", {
   fit <- .fit_glmer_std()
@@ -196,10 +196,10 @@ test_that("glmer binomial: response y stays 0/1 (predictor-only scaling)", {
   expect_true(is.finite(b_x))
   # B is the original fit's fixed effect, untouched.
   expect_equal(b_x, lme4::fixef(fit)[["x"]], tolerance = 1e-12)
-  # Latent-scale oracle: scaling x reparametrises the logistic linear
+  # Latent-scale oracle: scaling x reparametrizes the logistic linear
   # predictor exactly, so beta = B * sd(x). The identity only holds up
   # to glmer's joint (theta, beta) optimizer tolerance across the two
-  # parametrisations (observed rel. diff ~4e-6), hence 1e-4 -- still
+  # parametrizations (observed rel. diff ~4e-6), hence 1e-4 -- still
   # tight enough to catch a spurious 1/sd(y) factor (~2x here). The
   # exact-refit oracle below pins spicy's actual computation at 1e-10.
   mf <- stats::model.frame(fit)

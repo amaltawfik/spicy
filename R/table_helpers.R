@@ -59,7 +59,7 @@ resolve_variable_labels <- function(data, cols, labels = NULL) {
 
 # Internal: format a single numeric (or vector) with `formatC()` and
 # the configured decimal mark. NA -> "" so blank cells render
-# cleanly. Vectorised by recursion -- the per-element branch is the
+# cleanly. Vectorized by recursion -- the per-element branch is the
 # common case in the print methods.
 #
 # Auto-switch to scientific notation when the magnitude is too
@@ -93,7 +93,7 @@ format_number <- function(x, digits = 2L, decimal_mark = ".") {
   # small values, the requested `digits` is the user's precision
   # contract: if a value rounds to "0.00" at digits = 2, it should
   # display as "0.00" (not "1.63e-03") -- this matches Stata's
-  # behaviour and is the only way to keep decimal-alignment stable
+  # behavior and is the only way to keep decimal-alignment stable
   # in standard cases. Users who want sub-precision values visible
   # can request more `digits`.
   use_scientific <- is.finite(x) && x != 0 && abs_x >= 1e+7
@@ -111,7 +111,7 @@ format_number <- function(x, digits = 2L, decimal_mark = ".") {
   # argument's, never the session's.
   if (use_scientific) {
     # `formatC(format = "e")` gives "1.75e+11" with `digits` mantissa
-    # decimals. Honour the user's `digits` (2 by default).
+    # decimals. Honor the user's `digits` (2 by default).
     out <- formatC(x, digits = digits, format = "e", decimal.mark = ".")
   } else {
     out <- formatC(x, digits = digits, format = "f", decimal.mark = ".")
@@ -145,7 +145,7 @@ format_number <- function(x, digits = 2L, decimal_mark = ".") {
 # the displayed precision AND the small-`p` threshold: with
 # `digits = 3` the rendering is `.045` for ordinary p and `<.001`
 # below threshold; `digits = 4` gives `.0451` and `<.0001`. The
-# configured `decimal_mark` is honoured, and it also decides the
+# configured `decimal_mark` is honored, and it also decides the
 # leading zero: dropped under a point (the APA form spicy defaults
 # to), kept under a comma (`0,045`, the only form the SI brochure
 # admits). NA -> "".
@@ -216,7 +216,7 @@ format_p_value <- function(
   out <- as.character(x)
   # `as.character()` on a double reads `options(OutDec)` too, so a
   # session set to "," handed back "2,84" for a note that asked for a
-  # point. Normalise to the dot this function is written against; under
+  # point. Normalize to the dot this function is written against; under
   # the default OutDec the substitution never fires and this IS
   # `as.character()`, to the byte.
   od <- getOption("OutDec", ".")
@@ -278,12 +278,12 @@ safe_glyph_width <- function(x) {
 # and any decimal_mark.
 #
 # Non-decimal cells (en-dash, "NA", "N/A", etc.) are positioned so
-# the glyph centres on the decimal-mark column. For a single-char
+# the glyph centers on the decimal-mark column. For a single-char
 # glyph this lines the en-dash up exactly with the `.` of the other
 # rows -- the convention recommended by APA Manual 7 Section 7.13
 # ("use a dash in the cell position where a number would otherwise
 # appear"), Stata `esttab`, `modelsummary`, and Hochuli typography
-# guidelines. Multi-char placeholders are centred around the
+# guidelines. Multi-char placeholders are centered around the
 # decimal-mark position with bias-left for even widths.
 decimal_align_strings <- function(values, decimal_mark = ".", pad_char = " ") {
   if (length(values) == 0L) {
@@ -351,7 +351,7 @@ decimal_align_strings <- function(values, decimal_mark = ".", pad_char = " ") {
       #       integer parts of the decimal rows so its rightmost
       #       digit lines up with their last integer digit.
       #   (b) Non-numeric placeholder (en-dash, "NA", "N/A") --
-      #       centre the glyph on the decimal-mark column
+      #       center the glyph on the decimal-mark column
       #       position so it visually replaces the `.` of the
       #       absent value. APA Manual 7 Section 7.13 / Stata
       #       esttab / modelsummary convention.
@@ -384,7 +384,7 @@ ci_bracket_separator <- function(decimal_mark) {
 # ("95% CI"). One producer for the five families that display one.
 #
 # `round()` -- what the two descriptive families used -- turned
-# `ci_level = 0.975` into "98%": a 97.5% interval labelled 98%, in the
+# `ci_level = 0.975` into "98%": a 97.5% interval labeled 98%, in the
 # spanner, in the column names of the `data.frame` output, and in the
 # note. %g prints the percentage exactly and still drops trailing
 # zeros, so every level that HAS an exact integer percentage keeps it:
@@ -395,13 +395,13 @@ ci_bracket_separator <- function(decimal_mark) {
 # significant-digit rule, minus %g's switch to scientific for a very
 # small number. `ci_level` is validated only as `0 < x < 1`, so
 # `ci_level = 1e-6` reached %g's threshold and wrote "1e-04" -- a
-# percentage no consumer can parse, and one the pattern that recognises
+# percentage no consumer can parse, and one the pattern that recognizes
 # a companion header cannot match. This form is unconditionally digits
 # with at most one decimal point, which is what that pattern is built
 # for. Identical to "g" on every level above 1e-6 (swept: 21014 levels,
 # 4 differ, all of them the scientific ones).
 .ci_pct_str <- function(level) {
-  # decimal.mark pinned: formatC honours options(OutDec) otherwise,
+  # decimal.mark pinned: formatC honors options(OutDec) otherwise,
   # and this is the FROZEN-KEY producer -- a user's OutDec must never
   # leak into a column name (.ci_pct_display() owns the reader-facing
   # mark).

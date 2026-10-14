@@ -167,7 +167,7 @@ test_that("truncating the baseline grid at the horizon changes nothing", {
 
 test_that("the estimand rows' df parameter is inert at its Inf default", {
   skip_if_not_installed("survival")
-  # (a) the arithmetic. The whole parameterisation rests on qt/pt at
+  # (a) the arithmetic. The whole parameterization rests on qt/pt at
   # df = Inf being qnorm/pnorm to the last bit -- true, but arithmetic
   # rather than a documented guarantee, so it is pinned rather than
   # assumed. Nine coverage levels x eleven statistics, `identical()`.
