@@ -115,6 +115,10 @@ PDF.
 - `table_categorical(output = "gt")` shows the note on the association
   measure and the standardized mean difference, as the other outputs do.
 
+- `table_categorical(output = "gt")` gives each group spanner its own
+  id, so that under gt 1.4.0, which writes an id on every spanner, two
+  `by` levels differing only in whitespace no longer share one DOM id.
+
 - [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
   titles a grouped table with the label of the `by` variable, as
   [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
