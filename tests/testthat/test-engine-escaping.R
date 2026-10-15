@@ -373,15 +373,22 @@ test_that("a hostile column name leaves every gt headers= attribute intact", {
     )
     html <- as.character(gt::as_raw_html(tbl))
     attrs <- .esc_header_attrs(html)
-    dom_ids <- .esc_dom_ids(html)
-    # Every `headers=` token names an id that exists in the document.
-    # Before the fix this failed on the truncated half of the name.
+    # Every `headers=` token must be whole. gt < 1.4.0 writes the raw
+    # column id in `headers=` (and a whitespace-collapsed id on the
+    # `<th>`, its #2085); gt >= 1.4.0 writes the DOM id on both sides.
+    # The reference set follows the installed gt. Before the fix this
+    # failed on the truncated half of the name under both.
+    reference <- if (utils::packageVersion("gt") >= "1.4.0") {
+      .esc_dom_ids(html)
+    } else {
+      ids
+    }
     expect_true(
-      all(attrs %in% dom_ids),
+      all(attrs %in% reference),
       info = paste(
         nm,
         "stray:",
-        paste(setdiff(attrs, dom_ids), collapse = " | ")
+        paste(setdiff(attrs, reference), collapse = " | ")
       )
     )
   }
