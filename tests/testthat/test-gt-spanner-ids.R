@@ -98,7 +98,7 @@ test_that("the margin rename is disclosed, not silent", {
   )
 })
 
-test_that("the gt spanners carry the same three labels, all distinct", {
+test_that("the gt spanners carry three distinct ids built from the n columns", {
   skip_if_not_installed("gt")
   d <- .spn_data(c("Total", "Other"))
   tbl <- withCallingHandlers(
@@ -107,5 +107,12 @@ test_that("the gt spanners carry the same three labels, all distinct", {
   )
   ids <- .spn_html_ids(tbl)
   expect_identical(anyDuplicated(ids), 0L)
-  expect_true(all(c('id="Total"', 'id="Other"', 'id="Total_1"') %in% ids))
+  # The spanner id is `spn_` + the machine id of the group's n column
+  # (gt >= 1.4.0 writes it on the spanner `<th>`); the visible labels
+  # stay "Total", "Other" and the renamed margin "Total_1".
+  expect_true(all(
+    c('id="spn_Total_n"', 'id="spn_Other_n"', 'id="spn_Total_1_n"') %in% ids
+  ))
+  labels <- tbl[["_spanners"]][["spanner_label"]]
+  expect_true(all(c("Total", "Other", "Total_1") %in% labels))
 })

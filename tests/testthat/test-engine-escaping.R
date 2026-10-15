@@ -316,6 +316,15 @@ test_that("the linear-model family escapes its tinytable cells too", {
   unique(substr(hits, 10L, nchar(hits) - 1L))
 }
 
+# The `id` attributes gt writes on the header cells. gt >= 1.4.0 passes
+# both the ids and the `headers=` tokens through `valid_html_id()`
+# (whitespace becomes "-"), so a `headers=` token is checked against the
+# DOM ids, not against the raw column ids.
+.esc_dom_ids <- function(html) {
+  hits <- unlist(regmatches(html, gregexpr("id=\"[^\"]*\"", html)))
+  unique(substr(hits, 5L, nchar(hits) - 1L))
+}
+
 .esc_id_builders <- function() {
   list(
     table_continuous_lm = function(d) {
@@ -364,10 +373,16 @@ test_that("a hostile column name leaves every gt headers= attribute intact", {
     )
     html <- as.character(gt::as_raw_html(tbl))
     attrs <- .esc_header_attrs(html)
+    dom_ids <- .esc_dom_ids(html)
+    # Every `headers=` token names an id that exists in the document.
     # Before the fix this failed on the truncated half of the name.
     expect_true(
-      all(attrs %in% ids),
-      info = paste(nm, "stray:", paste(setdiff(attrs, ids), collapse = " | "))
+      all(attrs %in% dom_ids),
+      info = paste(
+        nm,
+        "stray:",
+        paste(setdiff(attrs, dom_ids), collapse = " | ")
+      )
     )
   }
 })

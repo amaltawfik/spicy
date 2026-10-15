@@ -3631,7 +3631,13 @@ table_categorical <- function(
       tbl <- gt::tab_spanner(
         tbl,
         label = group_labels[gi],
-        columns = c(grp_id_n[gi], grp_id_pct[gi])
+        columns = c(grp_id_n[gi], grp_id_pct[gi]),
+        # gt >= 1.4.0 writes an `id` on the spanner `<th>`, derived from
+        # the label when none is given, after collapsing whitespace to
+        # "-": two `by` levels "A B" and "A-B" then share one DOM id. The
+        # machine id of the n column is already unique on that form
+        # (`.gt_safe_ids()`), so the spanner borrows it.
+        id = paste0("spn_", grp_id_n[gi])
       )
     }
     tbl <- gt::tab_spanner(

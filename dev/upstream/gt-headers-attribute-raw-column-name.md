@@ -1,9 +1,14 @@
 # gt : l'attribut headers= est construit sur le nom brut de colonne
 
-- **Cible** : gt 1.3.0
+- **Cible** : gt 1.3.0 ; remesuré sur gt 1.4.0 le 2026-10-15
 - **Canal** : GitHub rstudio/gt, à ouvrir
 - **Envoyé** : non envoyé
-- **Statut** : dossier prêt
+- **Statut** : dossier prêt, à remettre à jour avant envoi. gt 1.4.0
+  (#2085, #2173) aligne l'attribut headers= sur l'id des en-têtes quand
+  le nom contient des ESPACES (« plain name » → id et headers « plain-name »),
+  mais une guillemet dans le nom casse encore l'attribut : avec le
+  reproducteur ci-dessous, id="M-(Q&quot;x)" et headers="M-(Q" (tronqué).
+  Le contournement .gt_safe_ids() reste nécessaire.
 - **Côté spicy** : contourné localement par .gt_safe_ids() (R/flextable_helpers.R)
 
 ---

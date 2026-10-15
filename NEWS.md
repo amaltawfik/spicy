@@ -87,6 +87,10 @@ workbook, or a PDF.
 * `table_categorical(output = "gt")` shows the note on the association
   measure and the standardized mean difference, as the other outputs do.
 
+* `table_categorical(output = "gt")` gives each group spanner its own id,
+  so that under gt 1.4.0, which writes an id on every spanner, two `by`
+  levels differing only in whitespace no longer share one DOM id.
+
 * `table_categorical()` titles a grouped table with the label of the `by`
   variable, as `table_continuous()` does: "Categorical table by Sex", not
   "by sex".
