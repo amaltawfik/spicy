@@ -908,6 +908,24 @@ test_that("lrt_admissible states the rule both routes obey", {
   expect_false(lrt_admissible(Inf, 1))
 })
 
+test_that("a gam pair adding one df, rounded just under 1, is admitted", {
+  skip_if_no("mgcv")
+  # set.seed(5): logLik.gam's df is a sum of edf, and it rose by
+  # 0.99999999999999778 here, which a strict `< 1` refused.
+  set.seed(5)
+  d <- data.frame(x1 = stats::rnorm(150), x2 = stats::rnorm(150))
+  d$y <- 1 + 0.5 * d$x1 + 0.3 * d$x2 + stats::rnorm(150, sd = 2)
+  m1 <- mgcv::gam(y ~ x1, data = d)
+  m2 <- mgcv::gam(y ~ x1 + x2, data = d)
+  out <- compute_nested_comparisons(list(m1, m2))
+  av <- stats::anova(m1, m2, test = "LRT")
+  expect_true(is.finite(out$lrt_change[1L]))
+  expect_equal(out$p_change[1L], av[["Pr(>Chi)"]][2L], tolerance = 1e-8)
+  # Rounding is absorbed; a genuine fractional increase is still refused.
+  expect_true(lrt_admissible(3.2, 1 - 2.2e-15))
+  expect_false(lrt_admissible(3.2, 0.6))
+})
+
 test_that("loglik_df_increase reports the added parameters, or NA", {
   m1 <- stats::lm(mpg ~ wt, data = mtcars)
   m2 <- stats::lm(mpg ~ wt + hp, data = mtcars)

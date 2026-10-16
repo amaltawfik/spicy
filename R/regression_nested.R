@@ -962,6 +962,22 @@ compute_one_pair_lrt <- function(fit_prev, fit_curr) {
     NA_real_
   }
 
+  # anova.glm() prints the raw deviance difference but computes its p on
+  # that difference divided by the dispersion of the larger model. The
+  # two agree for binomial and poisson (dispersion 1). For a family that
+  # estimates it (gaussian, Gamma, inverse.gaussian, quasi*), and for a
+  # gam, which reaches anova.glm() through anova.gam(), divide by the
+  # same dispersion so the statistic is the one behind the p (#6).
+  # MASS::glm.nb reports its own "LR stat." column and is not touched.
+  if (
+    identical(lrt_col[1L], "Deviance") &&
+      inherits(fit_prev, "glm") &&
+      inherits(fit_curr, "glm")
+  ) {
+    dispersion <- suppressWarnings(summary(fit_curr))$dispersion
+    lrt_stat <- scalar_or_na(lrt_stat / dispersion)
+  }
+
   # The table is read, not trusted. Hand the models the other way round
   # and anova.survreg answers Deviance -12.37 on Df -1 with Pr(>Chi)
   # .0004 -- a negative chi-square carrying a significant p, printed
@@ -1677,7 +1693,10 @@ lrt_admissible <- function(stat, df_increase) {
   if (!is.finite(stat) || stat < 0) {
     return(FALSE)
   }
-  !(is.finite(df_increase) && df_increase < 1)
+  # The tolerance absorbs rounding, not a fractional increase:
+  # logLik.gam's df is a sum of edf, and one added parametric term can
+  # come out as 0.99999999999999778.
+  !(is.finite(df_increase) && df_increase < 1 - 1e-8)
 }
 
 # AIC / BIC that survive a class without the method.

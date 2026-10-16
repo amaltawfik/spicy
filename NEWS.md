@@ -165,6 +165,14 @@ workbook, or a PDF.
   The extended families of `mgcv` other than `nb()`, whose score is not
   the GLM score, now refuse a robust `vcov`.
 
+* `table_regression(nested = TRUE)` divides the deviance difference by
+  the dispersion for `glm()` fits whose family estimates it (gaussian,
+  Gamma, inverse Gaussian, quasi), so that the Δχ² row is the statistic
+  its p-value is computed on, as in `anova(test = "LRT")`. It showed the
+  raw difference. The same holds for `mgcv::gam()` and `mgcv::bam()`
+  fits, whose test is no longer dropped when rounding leaves the added
+  degrees of freedom just under one.
+
 * `table_regression()` names the supported model classes when it refuses
   a model. It pointed to an internal function.
 

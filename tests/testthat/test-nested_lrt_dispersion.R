@@ -21,7 +21,6 @@ nested_gamma_pair <- function() {
 }
 
 test_that("nested Gamma pair: lrt_change is the scaled deviance difference (#6)", {
-  skip("Known bug, see https://github.com/amaltawfik/spicy/issues/6")
   fits <- nested_gamma_pair()
   out <- spicy:::compute_nested_comparisons(list(fits$m1, fits$m2))
   av <- anova(fits$m1, fits$m2, test = "LRT")
