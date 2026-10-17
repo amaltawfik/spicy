@@ -25,7 +25,7 @@ tableaux descriptifs croisés :
 
 | Question | Argument |
 | --- | --- |
-| Y a-t-il un test ? | `p_value` : `NULL` (auto avec `by`), `TRUE`, `FALSE`. `FALSE` retire le bloc entier (statistique, ddl, p, note du test) dans toutes les sorties ; les colonnes sont absentes, pas vides |
+| Y a-t-il un test ? | `p_value` : `NULL` (auto avec `by`), `TRUE`, `FALSE`. `FALSE` retire la colonne p, la note du test et, dans les sorties `data.frame` et `long`, les colonnes du test que rien d'autre n'a demandé ; les colonnes sont absentes, pas vides. La colonne de statistique suit `statistic`, et une taille d'effet qui a besoin du test en garde le type et la statistique dans le cadre brut (précision du 2026-10-17, à l'implémentation) |
 | Quelle mesure d'association ou d'effet ? | `assoc_measure` (catégoriel), `effect_size` (continu), `smd` : indépendants du test |
 | Correction multiple ? | `p_adjust` : erreur claire avec `p_value = FALSE` (rien à corriger), comme dans `table_regression()` |
 

@@ -1,0 +1,33 @@
+# ADR 2026-10-17 — `table_multiresponse()` : les choix multiples comme type de première classe
+
+**Statut** : accepté par délégation (2026-10-17, Amal : « quand tu auras fini, fais ceci », « commit push sans redemander pour ce chantier »). Issue #10. Arbitrages instruits par la lecture des six articles fondateurs (digest paginé : `dev/multiresponse_method_spec.md`, local).
+
+## Contexte
+
+Un rapport descriptif (PEBSI) rend neuf blocs « cochez tout ce qui s'applique » par un contournement (`table_categorical()` + `levels_keep = "Oui"` sur des indicatrices) qui écarte en silence les items sans réponse et ne couvre aucun des pièges des réponses multiples (MRCV). Le χ² classique items × groupes est invalide : les réponses d'une même personne ne sont pas indépendantes et les comptes somment à plus de n (Loughin & Scherer 1998, p. 632-633). SPSS (MULT RESPONSE), Stata (`mrtab`), expss et questionr établissent le précédent d'un tableau dédié.
+
+## Décisions
+
+1. **Statistique du test global** : X²_S, somme sur les items des χ² de Pearson des tables r×2 groupe × item, invariante au codage oui/non (Agresti & Liu 1999, p. 942), avec la **correction de Rao-Scott de second ordre** : X²_RS2 = c(r−1)·X²_S / Σλ², ddl = c²(r−1)² / Σλ² (Bilder & Loughin 2004, p. 244-245). Le facteur de premier ordre de X²_S vaut 1, seule la correction de second ordre agit (p. 244). Σλ² = tr(M²) en forme fermée sur la matrice c×c de covariance intragroupe des indicatrices : pas de décomposition spectrale, pas d'expansion en 2^c motifs. Le **bootstrap** de X²_S (rééchantillonnage des vecteurs de réponses, tailles de groupes fixes, B = 1999 par défaut, comme MRCV) est offert en option `test = "bootstrap"` : il tient le niveau le plus régulièrement dans les simulations publiées (p. 246-247) mais il est aléatoire et dépend du schéma. Pas de substitution 0,5 des cellules nulles (MRCV le fait ; nos χ² par item égalent `chisq.test(correct = FALSE)`). Un item sans variation (choisi par tous ou par personne) sort du test global avec une note ; sa ligne reste.
+2. **Tests par item** : χ² de Pearson de la table r×2 de chaque item (composantes de X²_S ; Agresti & Liu 1999, p. 941), colonne p **ajustée par Holm par défaut** (`p_adjust = "holm"`). Les articles ajustent par Bonferroni ; Holm le domine item par item, reste valide sous dépendance arbitraire, y compris les associations négatives entre items constatées (Agresti & Liu 1999, p. 943), et son plus petit p ajusté égale le p global de Bonferroni. Ce défaut diffère de `table_categorical()` (`"none"`) parce que les items d'une même question forment une famille naturelle de tests, lue comme un tout. `p_adjust = "none"` reste possible.
+3. **Interrupteur inférentiel** : `p_value = NULL | TRUE | FALSE`, la règle de famille de l'ADR 2026-10-17 sur `p_value` (pas `include_stats`). `FALSE` retire la colonne p, la statistique (`statistic = TRUE` l'ajoute, convention de famille) et la ligne du test global dans toutes les sorties. `p_adjust` autre que `"none"` avec `p_value = FALSE` est une erreur.
+4. **Dépendance** : réimplémentation en R de base (une trentaine de lignes pour le cœur). MRCV (GPL ≥ 3, R ≥ 4.4, sans traitement des NA, bootstrap aléatoire et substitution 0,5 par défaut) n'entre pas dans Suggests. Oracles : valeurs publiées sur les données des agriculteurs du Kansas (χ² par item 5,96, 7,89, 4,62, 1,42, 10,95 et Bonferroni 0,136 : Agresti & Liu 1999, p. 941 ; X²_M = 20,85 : Loughin & Scherer 1998, p. 633), fixture reconstruite depuis la table 2 de Loughin & Scherer 1998 (p. 634), identique cellule à cellule à `MRCV::farmer1`, et valeurs RS2 épinglées une fois depuis `MRCV::MI.test(type = "rs2")` installé dans une bibliothèque temporaire.
+5. **Affichage** : un item par ligne, n et % par groupe et au total ; **% de cas par défaut** (dénominateur = répondant·es valides du groupe), `percent = "responses"` et `"both"` en option, ce que montrent toutes les tables des articles (Agresti & Liu 1999, table 1, p. 937 ; Bilder & Loughin 2004, table 1, p. 242) et SPSS. `base = "valid"` (répondant·es ayant au moins une indicatrice non manquante ; une personne qui n'a rien coché est valide) ou `"all"`. Ligne finale des effectifs de base ; note automatique du registre i18n : plusieurs réponses possibles, pourcentages qui somment à plus de 100, définition de la base. Items sans réponse affichés à zéro, jamais écartés. Tri `sort = "questionnaire"` (défaut, ordre des colonnes ; aucun article ne recommande autre chose) ou `"desc"`. Libellés par le contrat `labels` (ADR 2026-10-17, décision 54) : noms par défaut, `TRUE` lit l'attribut.
+6. **Entrée** : colonnes indicatrices par tidyselect ; logiques et 0/1 reconnus d'office ; facteurs, caractères et `haven_labelled` exigent `counted =` (la valeur comptée, « Oui ») ; toute autre valeur non manquante vaut « non choisi » (convention SPSS). Un `by` à un seul groupe ou sans `by` : pas de test.
+
+## Esquisse de signature
+
+```r
+table_multiresponse(data, select, by = NULL, counted = NULL,
+  percent = c("cases", "responses", "both"), base = c("valid", "all"),
+  sort = c("questionnaire", "desc"),
+  p_value = NULL, test = c("rs2", "bootstrap"), boot_n = 1999L,
+  p_adjust = "holm", statistic = FALSE,
+  labels = getOption("spicy.var_labels", FALSE), digits = 1, p_digits = 3,
+  decimal_mark = ".", title = NULL, note = NULL,
+  output = <les moteurs de table_categorical()>)
+```
+
+## Conséquences
+
+Même famille que `table_categorical()` : mêmes moteurs de sortie, même vue typée, même registre i18n (anglais et français), même contrat `labels` et `p_value`. Le rapport PEBSI bascule ses neuf tableaux sur la fonction native. Hors périmètre : deux variables multiréponses croisées (SPMI, Bilder & Loughin 2004), plans de sondage (Koziol & Bilder 2014, p. 149), modèles marginaux (Agresti & Liu 1999, 2001).

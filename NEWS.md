@@ -66,12 +66,7 @@ workbook, or a PDF.
 * `table_categorical()` gains `p_value`, as its siblings have.
   `p_value = FALSE` drops the chi-squared test (`p`, and `Chi2` and `df`
   in the data frames) from every output; with `assoc_measure = "none"`
-  as well, the table is purely descriptive (#9). In `table_continuous()`,
-  `table_outcome()`, and the survey twins, `p_value = FALSE` now also
-  removes the p-value from `output = "data.frame"` and `"long"`, where it
-  stayed when `statistic = TRUE` or an effect size ran the test, and
-  `table_outcome()` and `table_categorical_svy()` no longer leave empty
-  test columns there.
+  as well, the table is purely descriptive (#9).
 
 * `table_regression()` and `table_regression_uv()` take the same four
   `labels` forms. `labels = TRUE` names the outcome, the numeric terms,
@@ -101,6 +96,12 @@ workbook, or a PDF.
   family, and the other `vcov` types are refused.
 
 ## Bug fixes
+
+* `table_continuous()`, `table_outcome()`, `table_categorical_svy()`, and
+  `table_continuous_svy()` with `p_value = FALSE` no longer keep a p-value
+  in `output = "data.frame"` and `"long"` when `statistic = TRUE` or an
+  effect size ran the test, and `table_outcome()` and
+  `table_categorical_svy()` no longer leave empty test columns there.
 
 * `varlist()` and `code_book()` keep only the selected columns of an sf
   object. The geometry column came along.
