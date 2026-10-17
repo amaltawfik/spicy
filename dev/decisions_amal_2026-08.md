@@ -942,3 +942,10 @@ Publication-Ready Tables for Descriptive Statistics and Regression
 Models. R package version 0.13.0 ». La SOUMISSION reste au 30
 septembre (compteur 5) : il n'y restera que pull + check + submit.
 Rien ne doit plus bouger dans le package d'ici là.
+
+## Décision 53 — Relecture complète du mode fr et derniers arbitrages terminologiques (2026-10-17)
+
+Relecture des 454 chaînes du registre français faite par Claude sur instruction d'Amal (« continue jusqu'à tout régler sur les 2 issues »), issue #7 fermée : 36 chaînes corrigées, 3 ajoutées, 1 retirée, et les dernières notes en anglais dur câblées sur le registre (exponentiation, composantes, seuils, effets d'échelle, 44 producteurs trouvés par balayage, notes Stan). Arbitrages d'Amal au réveil : ICC gardé (pas CCI) ; « Codebook » gardé (titre du PDF et feuille Excel) ; pour l'intervalle de crédibilité et pour univariable/multivariable, « regarder les best practices, STROBE ou ce type de reco ».
+- Intervalle de crédibilité : « ICr » (SFPT, Livre blanc méthodologie, dossier 7 « Essais bayésiens », qui oppose « ICr » à « IC 95 % fréquentiste » ; « IC » seul est ambigu, EpiRheum). « HDI » gardé : terme d'art sans abréviation française établie, « HPD » serait un autre sigle anglais.
+- Univariable/multivariable : « univariée et multivariable » (EpiRHandbook fr, chapitre 19 « Régression univariée et multivariable », qui garde « multivariable » pour plusieurs variables explicatives et une seule réponse, contre « multivarié » pour plusieurs réponses, la distinction de Hidalgo et Goodman 2013). La traduction française de STROBE (Gedda 2015) ne tranche pas ce point ; elle écrit « ajustement sur les facteurs de confusion » et « intervalle de confiance de 95 % », ce qui confirme « ajusté sur ». Titres : « Régression logistique univariée et multivariable : y », « Régression logistique univariée (présélection) : y » ; note : « Chaque modèle univarié est estimé sur ses propres cas complets ».
+- Gardés tels quels : « hazard ratio » et « Array » (décision 38), « Model %d » (décision 42), « Matrice » et « Liste ».

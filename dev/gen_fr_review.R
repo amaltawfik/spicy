@@ -522,7 +522,6 @@ if (!setequal(REG$key, names(EN)) || anyDuplicated(REG$key)) {
     "header_risk_diff",
     "header_risk_diff_no_horizon",
     "header_ame",
-    "header_ci_label_credible",
     "header_ci_label_hdi",
     "header_n_lower"
   ),

@@ -77,8 +77,8 @@ title_varlist_anonymous	reviewed	2026-10-17	vl<NBSP>: <données>
 title_varlist_empty	reviewed	2026-10-17	vl<NBSP>: (aucune colonne sélectionnée)	
 title_regression_fallback	reviewed	2026-10-17	Régression	
 title_regression_single	reviewed	2026-10-17	%s<NBSP>: %s	
-title_uv_multivariable	reviewed	2026-10-17	%s univariable et multivariable<NBSP>: %s	
-title_uv_screen	reviewed	2026-10-17	%s univariable (présélection)<NBSP>: %s	
+title_uv_multivariable	corrected	2026-10-17	%s univariée et multivariable<NBSP>: %s	
+title_uv_screen	corrected	2026-10-17	%s univariée (présélection)<NBSP>: %s	
 cover_months	reviewed	2026-10-17	janvier|février|mars|avril|mai|juin|juillet|août|septembre|octobre|novembre|décembre	
 cover_day_first	reviewed	2026-10-17	1er	
 note_field_line	reviewed	2026-10-17	%s<NBSP>: %s	
@@ -263,7 +263,7 @@ note_survival_distribution	reviewed	2026-10-17	Distribution<NBSP>: %s
 note_survival_scale	reviewed	2026-10-17	échelle = %s	
 note_survival_sep	reviewed	2026-10-17	<NBSP>; 	
 note_uv_common_complete_cases	reviewed	2026-10-17	Tous les modèles sont estimés sur les %d mêmes cas complets.	
-note_uv_varying_n	reviewed	2026-10-17	Chaque modèle univariable est estimé sur ses propres cas complets<NBSP>; N varie selon le prédicteur (%d-%d).	
+note_uv_varying_n	corrected	2026-10-17	Chaque modèle univarié est estimé sur ses propres cas complets<NBSP>; N varie selon le prédicteur (%d-%d).	
 note_type_models	reviewed	2026-10-17	Modèles de %s.	
 note_type_models_sep	reviewed	2026-10-17	<NBSP>; 	
 note_estimand_rmst	reviewed	2026-10-17	dRMST = différence de temps de survie moyen restreint sur [0, %s]	
@@ -406,3 +406,23 @@ excel_sheet_continuous_lm	reviewed	2026-10-17	Modèles linéaires
 excel_sheet_codebook_values	reviewed	2026-10-17	valeurs	
 note_estimand_sep	reviewed	2026-10-17	<NBSP>; 	
 note_nonconvergence_sep	reviewed	2026-10-17	<NBSP>; 	
+note_vcov_stan_mad_sd	reviewed	2026-10-17	MAD SD a posteriori (écart absolu médian mis à l'échelle)	
+note_stan_problem_rhat	reviewed	2026-10-17	R-hat max. = %s (cible < %s)	
+note_stan_problem_ess	reviewed	2026-10-17	ESS min. = %d (cible > %d)	
+note_stan_problem_divergent_one	reviewed	2026-10-17	%d transition divergente	
+note_stan_problem_divergent_many	reviewed	2026-10-17	%d transitions divergentes	
+note_stan_problem_bfmi	reviewed	2026-10-17	E-BFMI min. = %s (cible > %s)	
+note_stan_divergent_unavailable	reviewed	2026-10-17	nombre de transitions divergentes indisponible pour cet ajustement	
+note_stan_convergence_partial	reviewed	2026-10-17	Diagnostics de l'échantillonneur<NBSP>: R-hat et ESS dans les cibles<NBSP>; %s.	
+note_stan_convergence_problems	reviewed	2026-10-17	Diagnostics de l'échantillonneur<NBSP>: %s. Ne pas rapporter tel quel<NBSP>; allonger l'échantillonnage ou reparamétrer le modèle (Vehtari et al. 2021).	
+note_stan_problems_sep	reviewed	2026-10-17	<NBSP>; 	
+note_loo_se_elpd	reviewed	2026-10-17	ES(ELPD) = %s	
+note_loo_se_waic	reviewed	2026-10-17	ES(WAIC) = %s	
+note_loo_accuracy	reviewed	2026-10-17	Performance prédictive par %s<NBSP>; %s.	
+note_loo_sep	reviewed	2026-10-17	<NBSP>; 	
+note_loo_pareto_k	reviewed	2026-10-17	PSIS-LOO non fiable pour %d observations sur %d (k de Pareto > %s)<NBSP>; envisager loo::loo_moment_match(), la réestimation des plis signalés (k_threshold = 0.7) ou une validation croisée en K plis.	
+note_loo_waic_unreliable	reviewed	2026-10-17	Approximation WAIC non fiable pour %d observation(s) (p_waic > %s)<NBSP>; préférer PSIS-LOO (`show_fit_stats = "elpd_loo"`).	
+fitstat_icc	reviewed	2026-10-17	ICC	
+title_codebook	reviewed	2026-10-17	Codebook	
+excel_sheet_codebook	reviewed	2026-10-17	codebook	
+header_ci_label_credible	corrected	2026-10-17	ICr	

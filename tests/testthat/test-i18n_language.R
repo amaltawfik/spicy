@@ -439,6 +439,27 @@ test_that("a regression table translates its headers, not its column names", {
   )
 })
 
+test_that("the credible interval header follows the language, its name does not", {
+  spec <- function(key) {
+    spicy:::build_column_spec(
+      c("b", "ci"),
+      "M1",
+      stats::setNames("", "M1"),
+      ci_label_key = key
+    )[[2L]]
+  }
+  withr::local_options(spicy.language = "fr")
+  expect_identical(
+    spec("header_ci_label_credible")[c("col_name", "display_label")],
+    list(col_name = "95% CrI", display_label = "ICr \u00E0 95\u00A0%")
+  )
+  # HDI has no established French abbreviation and stays English.
+  expect_identical(
+    spec("header_ci_label_hdi")$display_label,
+    "HDI \u00E0 95\u00A0%"
+  )
+})
+
 test_that("a descriptive interval names its bounds in the language", {
   en <- table_continuous(sochealth, select = bmi, by = sex, ci = TRUE)
   withr::local_options(spicy.language = "fr", width = 160)
@@ -1198,6 +1219,97 @@ test_that("the nonconvergence note joins its diagnoses in the language", {
   )
 })
 
+test_that("the Bayesian sampler and predictive-accuracy notes follow the language", {
+  # Pure functions of a diagnostics list: the English and the decimal mark
+  # are pinned in test-footer_typography.R.
+  conv <- function(...) {
+    utils::modifyList(
+      list(
+        rhat = NA_real_,
+        ess = NA_integer_,
+        ess_bar = 400L,
+        n_div = NA_integer_,
+        bfmi = NA_real_,
+        div_unavailable = FALSE
+      ),
+      list(...)
+    )
+  }
+  loo <- function(...) {
+    utils::modifyList(
+      list(
+        has_elpd = TRUE,
+        elpd_se = 12.3456,
+        has_waic = TRUE,
+        waic_se = 11.9876,
+        n_bad_k = 0L,
+        n_k = 100L,
+        k_thr = 0.7,
+        n_bad_p = 0L
+      ),
+      list(...)
+    )
+  }
+  flagged <- conv(rhat = 1.0342, ess = 120L, n_div = 5L, bfmi = 0.1234)
+  en <- spicy:::.stan_convergence_text(flagged)
+  withr::local_options(spicy.language = "fr")
+  expect_identical(
+    spicy:::.stan_convergence_text(flagged, ","),
+    paste0(
+      "Diagnostics de l'\u00E9chantillonneur\u00A0: R-hat max. = 1,034 ",
+      "(cible < 1,01)\u00A0; ESS min. = 120 (cible > 400)\u00A0; 5 ",
+      "transitions divergentes\u00A0; E-BFMI min. = 0,12 (cible > 0,2). ",
+      "Ne pas rapporter tel quel\u00A0; allonger l'\u00E9chantillonnage ",
+      "ou reparam\u00E9trer le mod\u00E8le (Vehtari et al. 2021)."
+    )
+  )
+  # The classed warning quotes the English sentence in every language.
+  expect_identical(
+    spicy:::.stan_convergence_text(flagged, ".", translated = FALSE),
+    en
+  )
+  expect_match(
+    spicy:::.stan_convergence_text(conv(n_div = 1L), ","),
+    "\u00A0: 1 transition divergente. Ne pas",
+    fixed = TRUE
+  )
+  expect_match(
+    spicy:::.stan_convergence_text(conv(n_div = 2L), ","),
+    "\u00A0: 2 transitions divergentes. Ne pas",
+    fixed = TRUE
+  )
+  expect_identical(
+    spicy:::.stan_convergence_text(conv(div_unavailable = TRUE), ","),
+    paste0(
+      "Diagnostics de l'\u00E9chantillonneur\u00A0: R-hat et ESS dans les ",
+      "cibles\u00A0; nombre de transitions divergentes indisponible pour ",
+      "cet ajustement."
+    )
+  )
+  expect_identical(
+    spicy:::.stan_loo_text(loo(), ","),
+    paste0(
+      "Performance pr\u00E9dictive par PSIS-LOO / WAIC\u00A0; ",
+      "ES(ELPD) = 12,3\u00A0; ES(WAIC) = 12,0."
+    )
+  )
+  # Both reliability caveats; the R code they quote keeps its point.
+  expect_identical(
+    spicy:::.stan_loo_text(
+      loo(has_elpd = FALSE, has_waic = FALSE, n_bad_k = 3L, n_bad_p = 2L),
+      ","
+    ),
+    paste0(
+      "PSIS-LOO non fiable pour 3 observations sur 100 (k de Pareto > ",
+      "0,70)\u00A0; envisager loo::loo_moment_match(), la ",
+      "r\u00E9estimation des plis signal\u00E9s (k_threshold = 0.7) ou ",
+      "une validation crois\u00E9e en K plis. Approximation WAIC non ",
+      "fiable pour 2 observation(s) (p_waic > 0,4)\u00A0; ",
+      "pr\u00E9f\u00E9rer PSIS-LOO (`show_fit_stats = \"elpd_loo\"`)."
+    )
+  )
+})
+
 test_that("the standardized-coefficient legend follows the language", {
   d <- transform(mtcars, cyl_f = factor(cyl))
   fit <- stats::lm(mpg ~ wt + cyl_f, data = d)
@@ -1731,7 +1843,7 @@ test_that("the univariable table title and sample note follow the language", {
   )
   expect_identical(
     attr(cc, "title"),
-    "R\u00E9gression logistique univariable et multivariable\u00A0: smoking"
+    "R\u00E9gression logistique univari\u00E9e et multivariable\u00A0: smoking"
   )
   n_cc <- sum(stats::complete.cases(
     as.data.frame(sochealth)[c("smoking", "age", "bmi")]
@@ -1752,7 +1864,7 @@ test_that("the univariable table title and sample note follow the language", {
   expect_match(
     attr(own, "note"),
     paste0(
-      "Chaque mod\u00E8le univariable est estim\u00E9 sur ses propres cas ",
+      "Chaque mod\u00E8le univari\u00E9 est estim\u00E9 sur ses propres cas ",
       "complets\u00A0; N varie selon le pr\u00E9dicteur \\([0-9]+-[0-9]+\\)[.]"
     )
   )
@@ -1765,7 +1877,7 @@ test_that("the univariable table title and sample note follow the language", {
   )
   expect_identical(
     attr(screen, "title"),
-    "R\u00E9gression logistique univariable (pr\u00E9s\u00E9lection)\u00A0: smoking"
+    "R\u00E9gression logistique univari\u00E9e (pr\u00E9s\u00E9lection)\u00A0: smoking"
   )
   # A family the title bridge does not carry keeps the whole English title.
   gamma <- table_regression_uv(

@@ -1288,14 +1288,16 @@ as_regression_frame.brmsfit <- function(
   conv_note <- .stan_convergence_text(conv, ".")
   # Only a FAILED guard is warned about. A note that merely discloses
   # an unavailable divergence count is information, not a defect --
-  # the same distinction the note itself draws.
+  # the same distinction the note itself draws. The warning quotes the
+  # English sentence whatever `spicy.language`: a condition stays
+  # English, the note it accompanies follows the language.
   if (isTRUE(.stan_convergence_failed(conv))) {
     spicy_warn(
       paste0(
         "Bayesian fit (outcome: ",
         dv,
         ") shows sampler problems -- ",
-        conv_note
+        .stan_convergence_text(conv, ".", translated = FALSE)
       ),
       class = c("spicy_bayes_diagnostics", "spicy_caveat")
     )
@@ -1362,10 +1364,10 @@ as_regression_frame.brmsfit <- function(
     },
     posterior_engine = class_name,
     # Both Bayesian notes travel twice: as the sentence this build
-    # produced at a point (what the classed warnings quote, and the
-    # fallback for any consumer that reads the string), and as the
-    # NUMBERS behind it, so the footer can replay the same producer
-    # under the table's decimal mark. See `.marked_stan_note()`.
+    # produced at a point (the fallback for any consumer that reads
+    # the string), and as the NUMBERS behind it, so the footer can
+    # replay the same producer under the table's decimal mark. See
+    # `.marked_stan_note()`.
     stan_loo = loo_diag,
     loo_note = .stan_loo_text(loo_diag, "."),
     stan_convergence = conv,
@@ -1385,8 +1387,7 @@ as_regression_frame.brmsfit <- function(
     vcov_kind = vcov_kind,
     # The SE column is the posterior MAD SD (ROS ch. 5; rstanarm's
     # print), not a covariance-matrix quantity: say exactly that.
-    vcov_label = vcov_label %||%
-      "posterior MAD SD (scaled median absolute deviation)",
+    vcov_label = vcov_label %||% spicy_str("note_vcov_stan_mad_sd"),
     ci_level = as.numeric(ci_level),
     ci_method = ci_method,
     supports = supports,
@@ -1808,12 +1809,15 @@ as_regression_frame.brmsfit <- function(
 
 
 # The sampler-diagnostics sentence, under one decimal mark. Called
-# twice: at build with a point (the string the classed warning quotes
-# and the frame stores), and again at render with the table's mark
-# (`.marked_stan_note()`), which is why every number here is routed
-# through `.footer_num()` rather than `sprintf("%.Nf")` -- under a
-# point the two are byte-identical.
-.stan_convergence_text <- function(d, decimal_mark = ".") {
+# twice: at build with a point (the string the frame stores), and again
+# at render with the table's mark (`.marked_stan_note()`), which is why
+# every number here is routed through `.footer_num()` rather than
+# `sprintf("%.Nf")` -- under a point the two are byte-identical.
+# `translated = TRUE` words it through `spicy_str()` and so follows
+# `spicy.language`; FALSE reads the registry's English defaults, for
+# the classed warning the build raises (the split
+# `.glmmTMB_problem_text()` makes).
+.stan_convergence_text <- function(d, decimal_mark = ".", translated = TRUE) {
   if (!is.list(d)) {
     return(NULL)
   }
@@ -1832,12 +1836,15 @@ as_regression_frame.brmsfit <- function(
   # words apart; the star legend settled the same question the same way
   # ("*** p < 0,001"). Only literal R CODE keeps its point below --
   # `k_threshold = 0.7` is an argument the reader retypes.
+  lookup <- function(key) {
+    if (translated) spicy_str(key) else unname(.spicy_strings[[key]])
+  }
   problems <- character(0)
   if (.stan_has_diag(d$rhat)) {
     problems <- c(
       problems,
       sprintf(
-        "max R-hat = %s (target < %s)",
+        lookup("note_stan_problem_rhat"),
         .footer_num(d$rhat, 3L, decimal_mark),
         .footer_num(1.01, 2L, decimal_mark)
       )
@@ -1846,16 +1853,21 @@ as_regression_frame.brmsfit <- function(
   if (.stan_has_diag(d$ess) && .stan_has_diag(d$ess_bar)) {
     problems <- c(
       problems,
-      sprintf("min ESS = %d (target > %d)", d$ess, d$ess_bar)
+      sprintf(lookup("note_stan_problem_ess"), d$ess, d$ess_bar)
     )
   }
   if (.stan_has_diag(d$n_div)) {
     problems <- c(
       problems,
       sprintf(
-        "%d divergent transition%s",
-        d$n_div,
-        if (d$n_div > 1L) "s" else ""
+        lookup(
+          if (d$n_div > 1L) {
+            "note_stan_problem_divergent_many"
+          } else {
+            "note_stan_problem_divergent_one"
+          }
+        ),
+        d$n_div
       )
     )
   }
@@ -1863,7 +1875,7 @@ as_regression_frame.brmsfit <- function(
     problems <- c(
       problems,
       sprintf(
-        "min E-BFMI = %s (target > %s)",
+        lookup("note_stan_problem_bfmi"),
         .footer_num(d$bfmi, 2L, decimal_mark),
         .footer_num(0.2, 1L, decimal_mark)
       )
@@ -1871,7 +1883,7 @@ as_regression_frame.brmsfit <- function(
   }
 
   unavailable <- if (isTRUE(d$div_unavailable)) {
-    "divergent-transition count unavailable for this fit"
+    lookup("note_stan_divergent_unavailable")
   } else {
     character(0)
   }
@@ -1882,18 +1894,14 @@ as_regression_frame.brmsfit <- function(
     }
     # Partial diagnostics are disclosed, not warned about: R-hat /
     # ESS pass, but the reader must know the check was incomplete.
-    return(paste0(
-      "Sampler diagnostics: R-hat and ESS within ",
-      "targets; ",
-      unavailable,
-      "."
-    ))
+    return(sprintf(lookup("note_stan_convergence_partial"), unavailable))
   }
-  paste0(
-    "Sampler diagnostics: ",
-    paste(c(problems, unavailable), collapse = "; "),
-    ". Do not report as-is; run longer or reparameterize ",
-    "(Vehtari et al. 2021)."
+  sprintf(
+    lookup("note_stan_convergence_problems"),
+    paste(
+      c(problems, unavailable),
+      collapse = lookup("note_stan_problems_sep")
+    )
   )
 }
 
@@ -1919,13 +1927,13 @@ as_regression_frame.brmsfit <- function(
   if (isTRUE(d$has_elpd)) {
     acc_parts <- c(
       acc_parts,
-      sprintf("SE(ELPD) = %s", .footer_num(d$elpd_se, 1L, decimal_mark))
+      spicy_fmt("note_loo_se_elpd", .footer_num(d$elpd_se, 1L, decimal_mark))
     )
   }
   if (isTRUE(d$has_waic)) {
     acc_parts <- c(
       acc_parts,
-      sprintf("SE(WAIC) = %s", .footer_num(d$waic_se, 1L, decimal_mark))
+      spicy_fmt("note_loo_se_waic", .footer_num(d$waic_se, 1L, decimal_mark))
     )
   }
   bits <- character(0)
@@ -1939,10 +1947,10 @@ as_regression_frame.brmsfit <- function(
     }
     bits <- c(
       bits,
-      sprintf(
-        "Predictive accuracy by %s; %s.",
+      spicy_fmt(
+        "note_loo_accuracy",
         method_lbl,
-        paste(acc_parts, collapse = "; ")
+        paste(acc_parts, collapse = spicy_str("note_loo_sep"))
       )
     )
   }
@@ -1951,12 +1959,8 @@ as_regression_frame.brmsfit <- function(
     # first, then refitting the flagged folds, then K-fold CV.
     bits <- c(
       bits,
-      sprintf(
-        paste0(
-          "PSIS-LOO unreliable for %d of %d observations (Pareto ",
-          "k > %s); consider loo::loo_moment_match(), refitting ",
-          "the flagged folds (k_threshold = 0.7), or K-fold CV."
-        ),
+      spicy_fmt(
+        "note_loo_pareto_k",
         d$n_bad_k,
         d$n_k,
         .footer_num(d$k_thr, 2L, decimal_mark)
@@ -1966,12 +1970,8 @@ as_regression_frame.brmsfit <- function(
   if (isTRUE(d$n_bad_p > 0L)) {
     bits <- c(
       bits,
-      sprintf(
-        paste0(
-          "WAIC approximation unreliable for %d observation(s) ",
-          "(p_waic > %s); prefer PSIS-LOO (`show_fit_stats = ",
-          "\"elpd_loo\"`)."
-        ),
+      spicy_fmt(
+        "note_loo_waic_unreliable",
         d$n_bad_p,
         .footer_num(0.4, 1L, decimal_mark)
       )

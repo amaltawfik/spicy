@@ -143,6 +143,10 @@
   # puts the interval word first: "IC a 95 %".
   header_se = "ES",
   header_ci_label_confidence = "IC",
+  # Decision 53: "ICr", the abbreviation French trial methodology sets
+  # against the frequentist "IC". "HDI" has no established French
+  # abbreviation and stays English.
+  header_ci_label_credible = "ICr",
   header_ci_spanner = "%2$s \u00E0 %1$s\u00A0%%",
   header_ci_ll = "LI",
   header_ci_ul = "LS",
@@ -420,6 +424,28 @@
   note_ci_bootstrap_percentile = "IC \u00E0 %s\u00A0%%\u00A0: bootstrap percentile.",
   note_ci_posterior_mixed = "Model %d\u00A0: l'IC \u00E0 %s\u00A0%% est un intervalle de cr\u00E9dibilit\u00E9 a posteriori \u00E0 queues \u00E9gales.",
 
+  # -- table_regression(): Bayesian footer notes ----------------------------
+  # The targets and thresholds are rendered numbers and follow the decimal
+  # mark; the R code a note quotes (k_threshold = 0.7, show_fit_stats =
+  # "elpd_loo") keeps its point, which is what R parses. "ES(ELPD)" follows
+  # `header_se`.
+  note_vcov_stan_mad_sd = "MAD SD a posteriori (\u00E9cart absolu m\u00E9dian mis \u00E0 l'\u00E9chelle)",
+  note_stan_problem_rhat = "R-hat max. = %s (cible < %s)",
+  note_stan_problem_ess = "ESS min. = %d (cible > %d)",
+  note_stan_problem_divergent_one = "%d transition divergente",
+  note_stan_problem_divergent_many = "%d transitions divergentes",
+  note_stan_problem_bfmi = "E-BFMI min. = %s (cible > %s)",
+  note_stan_divergent_unavailable = "nombre de transitions divergentes indisponible pour cet ajustement",
+  note_stan_convergence_partial = "Diagnostics de l'\u00E9chantillonneur\u00A0: R-hat et ESS dans les cibles\u00A0; %s.",
+  note_stan_convergence_problems = "Diagnostics de l'\u00E9chantillonneur\u00A0: %s. Ne pas rapporter tel quel\u00A0; allonger l'\u00E9chantillonnage ou reparam\u00E9trer le mod\u00E8le (Vehtari et al. 2021).",
+  note_stan_problems_sep = "\u00A0; ",
+  note_loo_se_elpd = "ES(ELPD) = %s",
+  note_loo_se_waic = "ES(WAIC) = %s",
+  note_loo_accuracy = "Performance pr\u00E9dictive par %s\u00A0; %s.",
+  note_loo_sep = "\u00A0; ",
+  note_loo_pareto_k = "PSIS-LOO non fiable pour %d observations sur %d (k de Pareto > %s)\u00A0; envisager loo::loo_moment_match(), la r\u00E9estimation des plis signal\u00E9s (k_threshold = 0.7) ou une validation crois\u00E9e en K plis.",
+  note_loo_waic_unreliable = "Approximation WAIC non fiable pour %d observation(s) (p_waic > %s)\u00A0; pr\u00E9f\u00E9rer PSIS-LOO (`show_fit_stats = \"elpd_loo\"`).",
+
   # -- table_regression(): titres et note de type (decision 42) -------------
   # Les %s recoivent le prefixe de famille (traduit par le pont
   # .FR_TITLE_PREFIXES ci-dessous) et le label de l'outcome. L'ordre des
@@ -435,10 +461,10 @@
   title_regression_hierarchical = "%s \u2014 mod\u00E8les embo\u00EEt\u00E9s\u00A0: %s",
   title_regression_comparison_dv = "%s \u2014 comparaison de mod\u00E8les\u00A0: %s",
   title_regression_comparison = "%s \u2014 comparaison de mod\u00E8les",
-  title_uv_multivariable = "%s univariable et multivariable\u00A0: %s",
-  title_uv_screen = "%s univariable (pr\u00E9s\u00E9lection)\u00A0: %s",
+  title_uv_multivariable = "%s univari\u00E9e et multivariable\u00A0: %s",
+  title_uv_screen = "%s univari\u00E9e (pr\u00E9s\u00E9lection)\u00A0: %s",
   note_uv_common_complete_cases = "Tous les mod\u00E8les sont estim\u00E9s sur les %d m\u00EAmes cas complets.",
-  note_uv_varying_n = "Chaque mod\u00E8le univariable est estim\u00E9 sur ses propres cas complets\u00A0; N varie selon le pr\u00E9dicteur (%d-%d).",
+  note_uv_varying_n = "Chaque mod\u00E8le univari\u00E9 est estim\u00E9 sur ses propres cas complets\u00A0; N varie selon le pr\u00E9dicteur (%d-%d).",
   # La phrase entiere est l'unite : "Modeles de regression lineaire."
   # (le prefixe arrive en minuscule initiale, regle du site d'appel).
   note_type_models = "Mod\u00E8les de %s.",

@@ -850,6 +850,64 @@ test_that("structured outputs carry the CrI / HDI interval label", {
 })
 
 
+test_that("the Bayesian footer and interval header follow the language", {
+  .skip_unless_local_stan()
+  skip_if_not_installed("rstanarm")
+  skip_if_not_installed("loo")
+  fit <- suppressWarnings(rstanarm::stan_glm(
+    am ~ wt,
+    data = mtcars,
+    family = binomial(),
+    iter = 400,
+    chains = 1,
+    refresh = 0,
+    seed = 1
+  ))
+  withr::local_options(spicy.language = "fr")
+  w <- character(0)
+  tbl <- withCallingHandlers(
+    table_regression(fit, show_fit_stats = c("nobs", "elpd_loo", "waic")),
+    warning = function(ww) {
+      w <<- c(w, conditionMessage(ww))
+      invokeRestart("muffleWarning")
+    }
+  )
+  notes <- strsplit(attr(tbl, "note"), "\n", fixed = TRUE)[[1L]]
+  expect_true(
+    paste0(
+      "Erreurs standards\u00A0: MAD SD a posteriori (\u00E9cart absolu ",
+      "m\u00E9dian mis \u00E0 l'\u00E9chelle)."
+    ) %in%
+      notes
+  )
+  expect_true(any(startsWith(
+    notes,
+    "Performance pr\u00E9dictive par PSIS-LOO / WAIC\u00A0; ES(ELPD) = "
+  )))
+  # 1 chain x 400 iterations: the ESS guard fires, as in the English
+  # guard test above.
+  conv <- notes[startsWith(
+    notes,
+    "Diagnostics de l'\u00E9chantillonneur\u00A0: "
+  )]
+  expect_length(conv, 1L)
+  expect_match(conv, "ESS min. = [0-9]+ \\(cible > 400\\)")
+  expect_match(conv, "(Vehtari et al. 2021).", fixed = TRUE)
+  # The condition stays English; the note it accompanies does not.
+  expect_true(any(grepl(
+    "shows sampler problems -- Sampler diagnostics: ",
+    w,
+    fixed = TRUE
+  )))
+  # The credible interval reads "ICr" (decision 53); its name stays English.
+  expect_identical(
+    vapply(as_structured(tbl)$ci_pairs, `[[`, character(1), "label"),
+    "ICr \u00E0 95\u00A0%"
+  )
+  expect_true("95% CrI" %in% names(as.data.frame(tbl)))
+})
+
+
 # ---- MCSE column (Bayesian Workflow sec. 11.6) ------------------------------
 
 test_that("the mcse column matches posterior::mcse_median, exp included", {

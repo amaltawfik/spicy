@@ -939,6 +939,31 @@
   note_ci_bootstrap_percentile = "%s%% CIs: bootstrap percentile.",
   note_ci_posterior_mixed = "Model %d: %s%% CI is an equal-tailed posterior credible interval.",
 
+  # -- table_regression(): Bayesian footer notes ----------------------------
+  # The SE label of a Stan fit and its two notes (R/regression_frame_stan.R).
+  # The notes are replayed under the table's decimal mark
+  # (`.marked_stan_note()`): a %s hole receives a number already formatted,
+  # a %d hole a count. The method names ("PSIS-LOO", "WAIC") are notation
+  # and stay in the producer; the R code a note quotes keeps its point in
+  # every language. Two divergence keys rather than a plural suffix: a
+  # language whose noun and adjective both inflect needs them apart.
+  note_vcov_stan_mad_sd = "posterior MAD SD (scaled median absolute deviation)",
+  note_stan_problem_rhat = "max R-hat = %s (target < %s)",
+  note_stan_problem_ess = "min ESS = %d (target > %d)",
+  note_stan_problem_divergent_one = "%d divergent transition",
+  note_stan_problem_divergent_many = "%d divergent transitions",
+  note_stan_problem_bfmi = "min E-BFMI = %s (target > %s)",
+  note_stan_divergent_unavailable = "divergent-transition count unavailable for this fit",
+  note_stan_convergence_partial = "Sampler diagnostics: R-hat and ESS within targets; %s.",
+  note_stan_convergence_problems = "Sampler diagnostics: %s. Do not report as-is; run longer or reparameterize (Vehtari et al. 2021).",
+  note_stan_problems_sep = "; ",
+  note_loo_se_elpd = "SE(ELPD) = %s",
+  note_loo_se_waic = "SE(WAIC) = %s",
+  note_loo_accuracy = "Predictive accuracy by %s; %s.",
+  note_loo_sep = "; ",
+  note_loo_pareto_k = "PSIS-LOO unreliable for %d of %d observations (Pareto k > %s); consider loo::loo_moment_match(), refitting the flagged folds (k_threshold = 0.7), or K-fold CV.",
+  note_loo_waic_unreliable = "WAIC approximation unreliable for %d observation(s) (p_waic > %s); prefer PSIS-LOO (`show_fit_stats = \"elpd_loo\"`).",
+
   # -- typographic markers: frozen ------------------------------------------
   # R's own spellings for the two missing markers. `varlist-values.R` quotes
   # the literal values "NA" / "NaN" / "" precisely to tell them apart from
