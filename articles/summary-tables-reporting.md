@@ -1066,7 +1066,7 @@ tab |>
 |     Yes |  84 | 32.2 | 229 | 42.5 | 237 | 59.2 | 550 | 45.8 |       |     |
 
 Categorical table by Highest education level
-{#tinytable_xo0l5xq181p9ohcj2ssy .table .tinytable
+{#tinytable_x9hjcbpmv14z4wedfj7k .table .tinytable
 style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 

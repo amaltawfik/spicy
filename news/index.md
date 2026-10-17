@@ -133,8 +133,11 @@ PDF.
   [`table_continuous_svy()`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md)
   name each variable of the missing-values notes by its label, as the
   rows and the title do, not by its column name: “Missing values
-  removed: Body mass index (12)”, “Rows with missing Sex removed: 3”. A
-  covariate of
+  removed: Body mass index (12)”, “Rows with missing Sex removed: 3”.
+  The label is the one given in `labels`, otherwise the variable’s label
+  attribute (as set by `haven` or
+  [`label_from_names()`](https://amaltawfik.github.io/spicy/reference/label_from_names.md)),
+  otherwise the column name. A covariate of
   [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
   keeps its name.
 
@@ -153,6 +156,11 @@ PDF.
   without interval columns, `table_continuous_svy(ci = FALSE)`, and
   [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md)
   without `by`.
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  labels the standard errors of `mgcv` fits “Bayesian (mgcv posterior
+  covariance)”. The label said “REML-implied” whatever the smoothing
+  method, including the GCV default of `gam()`.
 
 - [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md)
   sets a no-break space before the semicolon that joins the tests of its
@@ -196,7 +204,9 @@ PDF.
   write `ajusté sur`. The exponentiation, component, threshold, and
   scale-effect notes are translated too. The whole French set was read
   through and corrected
-  ([\#7](https://github.com/amaltawfik/spicy/issues/7)).
+  ([\#7](https://github.com/amaltawfik/spicy/issues/7)). The footer
+  notes of Bayesian models, sampler diagnostics and predictive accuracy,
+  are translated too.
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   handles [`glmer()`](https://rdrr.io/pkg/lme4/man/glmer.html) fits with
