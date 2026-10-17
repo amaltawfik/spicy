@@ -740,6 +740,32 @@
   # Only shown when a variable has more than two categories.
   note_gloss_smd_multinomial = "For a variable with more than two categories the %s is the multivariate (Mahalanobis) distance between the two profiles of proportions, and is therefore unsigned.",
 
+  # -- table_multiresponse(): title, headers, base row and notes ------------
+  # A "check all that apply" question, one row per item. The two
+  # percentage headers are used only under `percent = "both"`: a single
+  # percentage column keeps the family's bare `header_percent_symbol`.
+  # The global-test lines take their statistic as an argument, built at the
+  # call site from `symbol_chi_sq` and the p-value templates
+  # (`note_p_prefix_eq` / `note_p_prefix_lt`) under the table's decimal
+  # mark; the adjustment method is the quoted API identifier, as in
+  # `note_p_adjusted`.
+  title_multiresponse = "Multiple responses",
+  title_multiresponse_by = "Multiple responses by %s",
+  row_multiresponse_base = "Respondents",
+  header_pct_cases = "% of cases",
+  header_pct_responses = "% of responses",
+  note_multiresponse_cases = "Several answers possible: percentages are of respondents and can sum to more than 100.",
+  note_multiresponse_responses = "Several answers possible: percentages are of responses.",
+  note_multiresponse_base_valid = "Base: respondents with at least one answer to the question.",
+  note_multiresponse_base_answered = "Base: respondents who chose at least one item.",
+  note_multiresponse_base_all = "Base: all respondents.",
+  note_multiresponse_items_p = "Item p-values: Pearson chi-squared test of each item by group, adjusted by %s.",
+  note_multiresponse_items_p_none = "Item p-values: Pearson chi-squared test of each item by group, unadjusted.",
+  note_multiresponse_global_rs2 = "Group comparison: Rao-Scott second-order corrected chi-squared test of multiple marginal independence, %s.",
+  note_multiresponse_global_boot = "Group comparison: bootstrap test of multiple marginal independence (%d resamples), %s.",
+  note_multiresponse_not_tested = "Not tested (no variation): %s.",
+  excel_sheet_multiresponse = "Multiple responses",
+
   # -- survey twins: the self-documenting design footer ---------------------
   # A design-based table must say what design produced it, or its
   # standard errors are unreadable. Three sentences, assembled by

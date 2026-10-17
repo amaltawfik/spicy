@@ -336,6 +336,24 @@
   note_gloss_smd = "%1$s = diff\u00E9rence de moyennes standardis\u00E9e (%2$s - %3$s)\u00A0; |%1$s| > %4$s est le seuil de d\u00E9s\u00E9quilibre usuel.",
   note_gloss_smd_multinomial = "Pour une variable \u00E0 plus de deux modalit\u00E9s, la %s est la distance multivari\u00E9e (de Mahalanobis) entre les deux profils de proportions, et n'est donc pas sign\u00E9e.",
 
+  # -- table_multiresponse(): title, headers, base row and notes ------------
+  title_multiresponse = "R\u00E9ponses multiples",
+  title_multiresponse_by = "R\u00E9ponses multiples selon %s",
+  row_multiresponse_base = "Personnes ayant r\u00E9pondu",
+  header_pct_cases = "% des cas",
+  header_pct_responses = "% des r\u00E9ponses",
+  note_multiresponse_cases = "Plusieurs r\u00E9ponses possibles\u00A0: pourcentages calcul\u00E9s sur les personnes ayant r\u00E9pondu, dont la somme peut d\u00E9passer 100.",
+  note_multiresponse_responses = "Plusieurs r\u00E9ponses possibles\u00A0: pourcentages calcul\u00E9s sur les r\u00E9ponses.",
+  note_multiresponse_base_valid = "Base\u00A0: personnes ayant r\u00E9pondu \u00E0 la question (au moins une indicatrice renseign\u00E9e).",
+  note_multiresponse_base_answered = "Base\u00A0: personnes ayant coch\u00E9 au moins un item.",
+  note_multiresponse_base_all = "Base\u00A0: toutes les personnes.",
+  note_multiresponse_items_p = "Valeurs p des items\u00A0: test du khi-deux de Pearson de chaque item selon le groupe, ajust\u00E9es par %s.",
+  note_multiresponse_items_p_none = "Valeurs p des items\u00A0: test du khi-deux de Pearson de chaque item selon le groupe, non ajust\u00E9es.",
+  note_multiresponse_global_rs2 = "Comparaison des groupes\u00A0: test du khi-deux d'ind\u00E9pendance marginale multiple avec correction de Rao-Scott du second ordre, %s.",
+  note_multiresponse_global_boot = "Comparaison des groupes\u00A0: test bootstrap d'ind\u00E9pendance marginale multiple (%d r\u00E9\u00E9chantillonnages), %s.",
+  note_multiresponse_not_tested = "Non test\u00E9 (sans variation)\u00A0: %s.",
+  excel_sheet_multiresponse = "R\u00E9ponses multiples",
+
   # -- survey twins: the self-documenting design footer ---------------------
   note_design_line = "Plan de sondage\u00A0: %s\u00A0; %s.",
   note_design_stratified = "stratifi\u00E9 (%s)",

@@ -14,14 +14,16 @@
   "table_categorical",
   "table_continuous",
   "table_continuous_lm",
-  "table_regression"
+  "table_regression",
+  "table_multiresponse"
 )
 
-test_that("the four table builders share the reporting grammar", {
+test_that("the table builders share the reporting grammar", {
   # Shared formals promised by the reporting vignette. `digits` is
   # shared by the three numeric-cell functions; the categorical
   # table's cells are percentages, so it spells it `percent_digits`
-  # (the vignette says so since lot T4).
+  # (the vignette says so since lot T4), and so does the
+  # multiple-response table, whose cells are counts and percentages.
   shared <- c("labels", "p_digits", "decimal_mark", "align", "output")
   for (fn in .table_family) {
     fo <- names(formals(getExportedValue("spicy", fn)))
@@ -41,6 +43,7 @@ test_that("the four table builders share the reporting grammar", {
     )
   }
   expect_true("percent_digits" %in% names(formals(table_categorical)))
+  expect_true("percent_digits" %in% names(formals(table_multiresponse)))
 
   # One output vocabulary across the whole family.
   vocab <- lapply(.table_family, function(fn) {
@@ -110,6 +113,16 @@ test_that("the shared `labels` formal actually renames a row everywhere", {
         labels = c(wt = "Weight")
       )$Variable
   )
+  expect_true(any(grepl(
+    "Manual transmission",
+    unlist(table_multiresponse(
+      mtcars,
+      select = c("am", "vs"),
+      by = "cyl",
+      labels = c(am = "Manual transmission")
+    )),
+    fixed = TRUE
+  )))
 })
 
 # Anti-regression witnesses for register 55. Two distinct holes let a
@@ -233,7 +246,12 @@ test_that("every table class exposes working broom tidy()/glance() methods", {
       select = "mpg",
       by = "am"
     ),
-    spicy_regression_table = table_regression(lm(mpg ~ wt, data = mtcars))
+    spicy_regression_table = table_regression(lm(mpg ~ wt, data = mtcars)),
+    spicy_multiresponse_table = table_multiresponse(
+      mtcars,
+      select = c("am", "vs"),
+      by = "cyl"
+    )
   )
   for (cl in names(objs)) {
     expect_s3_class(objs[[cl]], cl)

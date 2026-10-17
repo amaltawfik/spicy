@@ -68,6 +68,16 @@ workbook, or a PDF.
   in the data frames) from every output; with `assoc_measure = "none"`
   as well, the table is purely descriptive (#9).
 
+* `table_multiresponse()` tabulates a "check all that apply" question:
+  one row per item with the count and the percentage of respondents who
+  chose it (or of responses, or both), and a row with the number of
+  respondents. With `by`, each item gets a chi-squared test, adjusted by
+  Holm by default (`p_adjust`), and the question a global test that
+  allows for several answers per respondent, Rao-Scott corrected or by
+  bootstrap (`test`). `p_value = FALSE` removes the p-values and the
+  global test, and `statistic = TRUE` shows each item's chi-squared
+  (#10).
+
 * `table_regression()` and `table_regression_uv()` take the same four
   `labels` forms. `labels = TRUE` names the outcome, the numeric terms,
   and the factor headers by their `label` attribute, as in "Linear

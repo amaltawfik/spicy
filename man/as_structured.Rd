@@ -135,6 +135,12 @@ Tokens: \code{"emmean"} (a marginal mean; the column says which level
 in \verb{col_meta$<col>$level}), \code{"delta"} (the contrast), \code{"b"} (a
 numeric predictor's slope), \code{"ci"}, \code{"statistic"}, \code{"p"},
 \code{"r2"}, \code{"es"}, \code{"n"}, \code{"weighted_n"}.
+\item \code{\link[=table_multiresponse]{table_multiresponse()}} -- one \code{"summary"} row per item, then one
+\code{"fit_stat"} row (\code{.variable == "nobs"}) holding the respondents of
+each group. Tokens: \code{"n"}, \code{"pct"} (percentage of cases),
+\code{"pct_responses"} (percentage of responses), \code{"statistic"} and
+\code{"p"}. Each group owns its columns under its own spanner, and the
+margin is flagged \verb{col_meta$<col>$total}.
 }
 
 Cells the console builds from more than one number -- a

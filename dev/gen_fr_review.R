@@ -263,6 +263,8 @@ if (!setequal(REG$key, names(EN)) || anyDuplicated(REG$key)) {
   table_continuous_lm_print = "table_continuous_lm()",
   table_continuous_lm_render = "table_continuous_lm()",
   table_outcome = "table_outcome()",
+  table_multiresponse = "table_multiresponse()",
+  table_multiresponse_print = "table_multiresponse()",
   survey_helpers = "survey twins",
   table_helpers = "descriptive tables",
   table_regression = "table_regression()",

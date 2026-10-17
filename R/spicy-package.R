@@ -44,7 +44,8 @@
 #' \itemize{
 #'   \item Summary table builders: [table_categorical()],
 #'         [table_continuous()], [table_continuous_lm()],
-#'         [table_outcome()], and [var_labels()] for their `labels`
+#'         [table_outcome()], [table_multiresponse()], and
+#'         [var_labels()] for their `labels`
 #'   \item Survey-design summary tables:
 #'         [table_continuous_svy()], [table_categorical_svy()]
 #'   \item Regression tables: [table_regression()],

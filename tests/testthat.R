@@ -39,6 +39,7 @@ cran_tier <- c(
   "table_continuous",
   "table_continuous_lm",
   "table_outcome",
+  "table_multiresponse",
   "table_categorical_svy",
   "table_continuous_svy",
   "var_labels",

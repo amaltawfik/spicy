@@ -50,7 +50,8 @@ changes):
 \itemize{
 \item Summary table builders: \code{\link[=table_categorical]{table_categorical()}},
 \code{\link[=table_continuous]{table_continuous()}}, \code{\link[=table_continuous_lm]{table_continuous_lm()}},
-\code{\link[=table_outcome]{table_outcome()}}, and \code{\link[=var_labels]{var_labels()}} for their \code{labels}
+\code{\link[=table_outcome]{table_outcome()}}, \code{\link[=table_multiresponse]{table_multiresponse()}}, and
+\code{\link[=var_labels]{var_labels()}} for their \code{labels}
 \item Survey-design summary tables:
 \code{\link[=table_continuous_svy]{table_continuous_svy()}}, \code{\link[=table_categorical_svy]{table_categorical_svy()}}
 \item Regression tables: \code{\link[=table_regression]{table_regression()}},

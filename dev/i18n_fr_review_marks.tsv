@@ -430,3 +430,19 @@ header_ci_label_hdi	reviewed	2026-10-17	HDI
 label_model_name	reviewed	2026-10-17	Model %d	
 note_vcov_classical_plain	reviewed	2026-10-17	classiques	
 note_vcov_bayesian_mgcv	reviewed	2026-10-17	bayésiennes (covariance a posteriori de mgcv)	
+title_multiresponse	reviewed	2026-10-17	Réponses multiples	
+title_multiresponse_by	reviewed	2026-10-17	Réponses multiples selon %s	
+row_multiresponse_base	reviewed	2026-10-17	Personnes ayant répondu	
+header_pct_cases	reviewed	2026-10-17	% des cas	
+header_pct_responses	reviewed	2026-10-17	% des réponses	
+note_multiresponse_cases	corrected	2026-10-17	Plusieurs réponses possibles<NBSP>: pourcentages calculés sur les personnes ayant répondu, dont la somme peut dépasser 100.	
+note_multiresponse_responses	reviewed	2026-10-17	Plusieurs réponses possibles<NBSP>: pourcentages calculés sur les réponses.	
+note_multiresponse_base_valid	reviewed	2026-10-17	Base<NBSP>: personnes ayant répondu à la question (au moins une indicatrice renseignée).	
+note_multiresponse_base_all	reviewed	2026-10-17	Base<NBSP>: toutes les personnes.	
+note_multiresponse_items_p	reviewed	2026-10-17	Valeurs p des items<NBSP>: test du khi-deux de Pearson de chaque item selon le groupe, ajustées par %s.	
+note_multiresponse_items_p_none	reviewed	2026-10-17	Valeurs p des items<NBSP>: test du khi-deux de Pearson de chaque item selon le groupe, non ajustées.	
+note_multiresponse_global_rs2	reviewed	2026-10-17	Comparaison des groupes<NBSP>: test du khi-deux d'indépendance marginale multiple avec correction de Rao-Scott du second ordre, %s.	
+note_multiresponse_global_boot	reviewed	2026-10-17	Comparaison des groupes<NBSP>: test bootstrap d'indépendance marginale multiple (%d rééchantillonnages), %s.	
+note_multiresponse_not_tested	reviewed	2026-10-17	Non testé (sans variation)<NBSP>: %s.	
+excel_sheet_multiresponse	reviewed	2026-10-17	Réponses multiples	
+note_multiresponse_base_answered	reviewed	2026-10-17	Base<NBSP>: personnes ayant coché au moins un item.	

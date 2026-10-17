@@ -2888,6 +2888,12 @@ output_word <- function(rendered, word_path, word_template = NULL) {
 #'   in `col_meta$<col>$level`), `"delta"` (the contrast), `"b"` (a
 #'   numeric predictor's slope), `"ci"`, `"statistic"`, `"p"`,
 #'   `"r2"`, `"es"`, `"n"`, `"weighted_n"`.
+#' * [table_multiresponse()] -- one `"summary"` row per item, then one
+#'   `"fit_stat"` row (`.variable == "nobs"`) holding the respondents of
+#'   each group. Tokens: `"n"`, `"pct"` (percentage of cases),
+#'   `"pct_responses"` (percentage of responses), `"statistic"` and
+#'   `"p"`. Each group owns its columns under its own spanner, and the
+#'   margin is flagged `col_meta$<col>$total`.
 #'
 #' Cells the console builds from more than one number -- a
 #' `"Med [Q1, Q3]"`, a test gloss, an effect size with its interval --
@@ -2958,7 +2964,8 @@ as_structured <- function(x) {
     spicy_continuous_lm_table = "table_continuous_lm()",
     spicy_outcome_table = "table_outcome()",
     spicy_continuous_svy_table = "table_continuous_svy()",
-    spicy_categorical_svy_table = "table_categorical_svy()"
+    spicy_categorical_svy_table = "table_categorical_svy()",
+    spicy_multiresponse_table = "table_multiresponse()"
   )
   # spicy release that gave each family its structured view -- a table
   # pickled by an older one carries no attribute at all.
@@ -2969,7 +2976,8 @@ as_structured <- function(x) {
     spicy_continuous_lm_table = "0.13.0",
     spicy_outcome_table = "0.13.0",
     spicy_continuous_svy_table = "0.13.0",
-    spicy_categorical_svy_table = "0.13.0"
+    spicy_categorical_svy_table = "0.13.0",
+    spicy_multiresponse_table = "0.14.0"
   )
   family <- names(builders)[names(builders) %in% class(x)]
   if (length(family) == 0L) {

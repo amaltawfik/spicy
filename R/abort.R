@@ -251,7 +251,8 @@ spicy_match_arg <- function(arg, choices = NULL, arg_name = NULL) {
   table_continuous = "Use `table_continuous_svy(design, ...)`: it delegates every statistic to survey (Lumley) and documents the design in the table note.",
   table_categorical = "Use `table_categorical_svy(design, ...)`: it delegates every statistic to survey (Lumley) and documents the design in the table note.",
   table_continuous_lm = "There is no design twin of this table: fit the model on the design and tabulate it with `table_regression(survey::svyglm(y ~ group, design = ))`.",
-  table_outcome = "There is no design twin of this layout: use `table_continuous_svy(design, select = <outcome>, by = <variable>)` one grouping at a time."
+  table_outcome = "There is no design twin of this layout: use `table_continuous_svy(design, select = <outcome>, by = <variable>)` one grouping at a time.",
+  table_multiresponse = "There is no design twin of this table: its tests assume a simple random sample of respondents, and a complex design needs its own correction."
 )
 
 

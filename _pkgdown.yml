@@ -160,6 +160,7 @@ reference:
       - table_continuous
       - table_continuous_lm
       - table_outcome
+      - table_multiresponse
       - var_labels
       - table_regression
       - table_regression_uv
