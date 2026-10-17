@@ -1067,3 +1067,448 @@ test_that("the standardized-coefficient legend follows the language", {
     )
   }
 })
+
+# One footer line, picked by its opening words.
+.note_line <- function(x, start) {
+  lines <- strsplit(attr(x, "note"), "\n", fixed = TRUE)[[1L]]
+  lines[startsWith(lines, start)]
+}
+
+test_that("the exponentiation note follows the language", {
+  fit <- stats::glm(vs ~ mpg, data = mtcars, family = binomial)
+  exp_line <- function(cols, start) {
+    .note_line(
+      table_regression(fit, exponentiate = TRUE, show_columns = cols),
+      start
+    )
+  }
+  expect_identical(
+    exp_line(c("b", "se", "ci", "p"), "Coefficients"),
+    paste0(
+      "Coefficients exponentiated and displayed as OR; SE on the OR scale ",
+      "(delta method); CI bounds exponentiated (asymmetric)."
+    )
+  )
+  withr::local_options(spicy.language = "fr")
+  expect_identical(
+    exp_line(c("b", "se", "ci", "p"), "Coefficients"),
+    paste0(
+      "Coefficients exponenti\u00E9s et affich\u00E9s en OR\u00A0; erreur ",
+      "standard sur l'\u00E9chelle des OR (m\u00E9thode delta)\u00A0; bornes ",
+      "de l'IC exponenti\u00E9es (asym\u00E9triques)."
+    )
+  )
+  expect_identical(
+    exp_line(c("b", "ci", "p"), "Coefficients"),
+    paste0(
+      "Coefficients exponenti\u00E9s et affich\u00E9s en OR\u00A0; bornes ",
+      "de l'IC exponenti\u00E9es."
+    )
+  )
+  # A table mixing an identity-link model names the exponentiated one.
+  mixed <- table_regression(
+    list(stats::lm(mpg ~ wt, data = mtcars), fit),
+    exponentiate = TRUE,
+    show_columns = c("b", "ci", "p")
+  )
+  expect_identical(
+    .note_line(mixed, "Model 2"),
+    paste0(
+      "Model 2\u00A0: coefficients exponenti\u00E9s et affich\u00E9s en ",
+      "OR\u00A0; bornes de l'IC exponenti\u00E9es."
+    )
+  )
+})
+
+test_that("the component-block scale notes follow the language", {
+  skip_if_not_installed("pscl")
+  zi_note <- function(link) {
+    fit <- pscl::zeroinfl(
+      art ~ fem + ment | ment,
+      data = pscl::bioChemists,
+      link = link
+    )
+    attr(table_regression(fit, exponentiate = TRUE), "note")
+  }
+  expect_match(
+    zi_note("logit"),
+    "excess) zero. Coefficients exponentiated and displayed as odds ratios.",
+    fixed = TRUE
+  )
+  withr::local_options(spicy.language = "fr")
+  expect_match(
+    zi_note("logit"),
+    paste0(
+      "(exc\u00E9dentaire). Coefficients exponenti\u00E9s et affich\u00E9s ",
+      "en rapports de cotes."
+    ),
+    fixed = TRUE
+  )
+  expect_match(
+    zi_note("probit"),
+    paste0(
+      "(exc\u00E9dentaire). Laiss\u00E9s sur l'\u00E9chelle du lien ",
+      "(non exponenti\u00E9s)."
+    ),
+    fixed = TRUE
+  )
+})
+
+test_that("the threshold and scale-effect notes follow the language", {
+  skip_if_not_installed("ordinal")
+  wine <- ordinal::wine
+  logit <- ordinal::clm(rating ~ temp + contact, data = wine)
+  cloglog <- ordinal::clm(
+    rating ~ temp + contact,
+    data = wine,
+    link = "cloglog"
+  )
+  het <- ordinal::clm(rating ~ temp, scale = ~contact, data = wine)
+  note <- function(fit) {
+    attr(table_regression(fit, exponentiate = TRUE), "note")
+  }
+  withr::local_options(spicy.language = "fr")
+  expect_match(
+    note(logit),
+    paste0(
+      "Seuils\u00A0: seuils de cat\u00E9gorie sur l'\u00E9chelle latente ",
+      "(\u00E9chelle logit, non exponenti\u00E9s)."
+    ),
+    fixed = TRUE
+  )
+  expect_match(
+    note(cloglog),
+    "(\u00E9chelle du log-risque cumul\u00E9, non exponenti\u00E9s).",
+    fixed = TRUE
+  )
+  expect_match(
+    note(cloglog),
+    paste0(
+      " HR est le rapport de risques proportionnels en temps group\u00E9 ",
+      "exp(-B)\u00A0: la param\u00E9trisation cumulative cloglog"
+    ),
+    fixed = TRUE
+  )
+  expect_match(
+    note(het),
+    paste0(
+      "de la r\u00E9ponse latente (\u00E9chelle logarithmique, non ",
+      "exponenti\u00E9s\u00A0: leur exponentielle est un rapport ",
+      "d'\u00E9carts-types latents, pas un rapport de cotes)."
+    ),
+    fixed = TRUE
+  )
+})
+
+test_that("the polynomial-trend legend follows the language", {
+  d <- transform(
+    mtcars,
+    gear_o = factor(gear, ordered = TRUE),
+    carb_o = factor(carb, ordered = TRUE)
+  )
+  note <- function(f) {
+    suppressMessages(attr(table_regression(stats::lm(f, data = d)), "note"))
+  }
+  expect_match(
+    note(mpg ~ gear_o),
+    "Ordered factor `gear_o`: polynomial trends (.L = linear, .Q = quadratic).",
+    fixed = TRUE
+  )
+  withr::local_options(spicy.language = "fr")
+  expect_match(
+    note(mpg ~ carb_o),
+    paste0(
+      "Facteur ordonn\u00E9 `carb_o`\u00A0: tendances polynomiales ",
+      "(.L = lin\u00E9aire, .Q = quadratique, .C = cubique, ^4 = quartique, ",
+      "^5 = quintique)."
+    ),
+    fixed = TRUE
+  )
+  expect_match(
+    note(mpg ~ gear_o + carb_o),
+    "Facteurs ordonn\u00E9s `gear_o`, `carb_o`\u00A0: tendances polynomiales (",
+    fixed = TRUE
+  )
+  expect_identical(spicy:::ordinal_label(7), "degr\u00E9 7")
+})
+
+test_that("the standardized caveat follows the language", {
+  frame <- function(used) {
+    list(
+      info = list(
+        extras = list(
+          non_additive = list(has_problem = TRUE),
+          standardized_used = used
+        )
+      )
+    )
+  }
+  caveat <- function(method, used = method) {
+    spicy:::build_standardized_caveat_footer_block_from_frames(
+      list(frame(used)),
+      method
+    )
+  }
+  withr::local_options(spicy.language = "fr")
+  algebraic <- paste0(
+    "les termes d'interaction ou transform\u00E9s sont r\u00E9duits par ",
+    "l'\u00E9cart-type de la colonne produit (ou transform\u00E9e) de la ",
+    "matrice du mod\u00E8le\u00A0; diff\u00E8re de \"refit\" lorsque les ",
+    "composantes sont corr\u00E9l\u00E9es."
+  )
+  expect_identical(
+    caveat("posthoc"),
+    paste0("\u03B2 standardis\u00E9\u00A0: ", algebraic)
+  )
+  expect_identical(
+    caveat("refit"),
+    paste0(
+      "\u03B2 standardis\u00E9\u00A0: apr\u00E8s r\u00E9estimation sur les ",
+      "donn\u00E9es centr\u00E9es-r\u00E9duites, le \u03B2 d'une interaction ",
+      "est le coefficient du produit des composantes centr\u00E9es-r\u00E9duites."
+    )
+  )
+  expect_identical(
+    caveat("refit", used = "posthoc"),
+    paste0(
+      "\u03B2 standardis\u00E9\u00A0: \"refit\" a \u00E9chou\u00E9\u00A0; ",
+      "mise \u00E0 l'\u00E9chelle alg\u00E9brique (posthoc) appliqu\u00E9e\u00A0: ",
+      algebraic
+    )
+  )
+})
+
+test_that("the random-effects notes follow the language", {
+  skip_if_not_installed("lme4")
+  fit <- lme4::lmer(Reaction ~ Days + (Days | Subject), lme4::sleepstudy)
+  withr::local_options(spicy.language = "fr")
+  expect_identical(
+    .note_line(table_regression(fit, re_test = "lrt"), "Valeurs p des"),
+    paste0(
+      "Valeurs p des effets al\u00E9atoires\u00A0: test du rapport de ",
+      "vraisemblance contre la structure al\u00E9atoire r\u00E9duite, loi de ",
+      "r\u00E9f\u00E9rence du khi-deux barre."
+    )
+  )
+  expect_match(
+    spicy:::build_random_effects_footer_block_from_frames(
+      list(as_regression_frame(fit)),
+      re_test = "rlrt"
+    ),
+    paste0(
+      "Valeur p des effets al\u00E9atoires\u00A0: test exact du rapport de ",
+      "vraisemblance restreinte (distribution nulle simul\u00E9e)."
+    ),
+    fixed = TRUE
+  )
+  expect_identical(
+    spicy:::.singular_msg_for_frame(list(), TRUE),
+    paste0(
+      "Ajustement singulier\u00A0: la structure des effets al\u00E9atoires ",
+      "est \u00E0 la fronti\u00E8re de l'espace des param\u00E8tres ou pr\u00E8s ",
+      "de celle-ci (une variance de 0, ou une corr\u00E9lation de +/-1)\u00A0; ",
+      "l'erreur standard de Wald et l'IC des composantes de la variance ",
+      "sont omis."
+    )
+  )
+  expect_identical(
+    spicy:::build_re_profile_footer_block_from_frames(
+      list(list(info = list(extras = list(re_ci = "profile"))))
+    ),
+    paste0(
+      "Composantes de la variance des effets al\u00E9atoires\u00A0: IC par ",
+      "vraisemblance profil\u00E9e\u00A0; pas d'erreur standard (intervalles ",
+      "asym\u00E9triques)."
+    )
+  )
+  expect_identical(
+    spicy:::build_re_se_skipped_footer_block_from_frames(
+      list(list(info = list(extras = list(re_se_skipped_n = 180L))))
+    ),
+    paste0(
+      "Composantes de la variance des effets al\u00E9atoires\u00A0: erreur ",
+      "standard et IC non calcul\u00E9s (n = 180 d\u00E9passe le plafond ",
+      "spicy.re_se_max_n)."
+    )
+  )
+})
+
+test_that("the reference-level, survival and AME notes follow the language", {
+  skip_if_not_installed("survival")
+  stub <- function(...) list(info = list(...))
+  withr::local_options(spicy.language = "fr")
+  expect_identical(
+    spicy:::build_reference_outcome_footer_block_from_frames(
+      list(stub(extras = list(reference_outcome = "Employed")))
+    ),
+    "Cat\u00E9gorie de r\u00E9f\u00E9rence de la variable d\u00E9pendante\u00A0: Employed."
+  )
+  expect_identical(
+    spicy:::build_reference_alternative_footer_block_from_frames(
+      list(stub(extras = list(reference_alternative = "beach")))
+    ),
+    "Alternative de r\u00E9f\u00E9rence\u00A0: beach."
+  )
+  lung <- survival::lung
+  cox <- survival::coxph(survival::Surv(time, status) ~ age + sex, data = lung)
+  aft <- survival::survreg(
+    survival::Surv(time, status) ~ age + sex,
+    data = lung
+  )
+  expect_identical(
+    .note_line(table_regression(cox), "Concordance"),
+    "Concordance C = 0,60 (erreur standard = 0,03)."
+  )
+  expect_identical(
+    .note_line(table_regression(aft), "Distribution"),
+    "Distribution\u00A0: Weibull\u00A0; \u00E9chelle = 0,75."
+  )
+  satt <- function(classes) {
+    spicy:::build_ame_satterthwaite_footer_block_from_frames(
+      lapply(classes, function(cl) {
+        stub(class = cl, extras = list(use_ame_satterthwaite = TRUE))
+      }),
+      "ame"
+    )
+  }
+  lead <- "Inf\u00E9rence sur les AME\u00A0: test t avec degr\u00E9s de libert\u00E9 de Satterthwaite"
+  expect_identical(satt("lm"), paste0(lead, "."))
+  expect_identical(
+    satt("glm"),
+    paste0(lead, " (approximation par le coefficient dominant).")
+  )
+  expect_identical(
+    satt(c("lm", "glm")),
+    paste0(
+      lead,
+      " (forme exacte pour lm\u00A0; approximation par le coefficient ",
+      "dominant pour glm)."
+    )
+  )
+})
+
+test_that("the GEE and quantile-regression notes follow the language", {
+  skip_if_not_installed("geepack")
+  gee <- geepack::geeglm(
+    breaks ~ tension,
+    id = wool,
+    data = warpbreaks,
+    family = poisson,
+    corstr = "exchangeable"
+  )
+  withr::local_options(spicy.language = "fr")
+  x <- table_regression(gee)
+  expect_identical(
+    .note_line(x, "Erreurs standards"),
+    "Erreurs standards\u00A0: sandwich robuste (GEE), grappes d\u00E9finies par wool."
+  )
+  expect_identical(
+    .note_line(x, "Corr\u00E9lation"),
+    "Corr\u00E9lation de travail GEE\u00A0: exchangeable (alpha = 0,02)."
+  )
+  gee_stub <- function(corstr, alpha) {
+    list(
+      info = list(
+        class = "geeglm",
+        extras = list(gee_corstr = corstr, gee_alpha = alpha)
+      )
+    )
+  }
+  expect_identical(
+    spicy:::.format_gee_for_frame(gee_stub("unstructured", c(0.1, 0.2, 0.3))),
+    "Corr\u00E9lation de travail GEE\u00A0: unstructured (3 param\u00E8tres de corr\u00E9lation)."
+  )
+  expect_identical(
+    spicy:::.format_gee_for_frame(gee_stub("independence", numeric(0))),
+    "Corr\u00E9lation de travail GEE\u00A0: independence."
+  )
+  expect_identical(
+    spicy:::.geeglm_vcov_label("jack", "wool"),
+    "jackknife approch\u00E9 (GEE), grappes d\u00E9finies par wool"
+  )
+  expect_identical(
+    vapply(
+      c("nid", "iid", "ker", "rank"),
+      spicy:::.rq_vcov_footer_label,
+      character(1),
+      boot_n = 50L,
+      clustered = FALSE,
+      USE.NAMES = FALSE
+    ),
+    c(
+      "sandwich quantile (nid, Hall-Sheather)",
+      "quantile (iid)",
+      "noyau quantile (ker)",
+      "inversion du test de rang (IC seulement)"
+    )
+  )
+  expect_identical(
+    spicy:::.rq_vcov_footer_label("boot", 50L, FALSE),
+    "bootstrap quantile (paires xy, R = 50)"
+  )
+  expect_identical(
+    spicy:::.rq_vcov_footer_label("boot", 50L, TRUE),
+    "bootstrap quantile sauvage par gradient, par grappes (R = 50)"
+  )
+})
+
+test_that("the univariable table title and sample note follow the language", {
+  withr::local_options(spicy.language = "fr")
+  cc <- table_regression_uv(
+    sochealth,
+    outcome = smoking,
+    predictors = c(age, bmi),
+    method = "glm",
+    complete_cases = TRUE
+  )
+  expect_identical(
+    attr(cc, "title"),
+    "R\u00E9gression logistique univariable et multivariable\u00A0: smoking"
+  )
+  n_cc <- sum(stats::complete.cases(
+    as.data.frame(sochealth)[c("smoking", "age", "bmi")]
+  ))
+  expect_identical(
+    .note_line(cc, "Tous"),
+    sprintf(
+      "Tous les mod\u00E8les sont estim\u00E9s sur les %d m\u00EAmes cas complets.",
+      n_cc
+    )
+  )
+  own <- table_regression_uv(
+    sochealth,
+    outcome = smoking,
+    predictors = c(age, bmi),
+    method = "glm"
+  )
+  expect_match(
+    attr(own, "note"),
+    paste0(
+      "Chaque mod\u00E8le univariable est estim\u00E9 sur ses propres cas ",
+      "complets\u00A0; N varie selon le pr\u00E9dicteur \\([0-9]+-[0-9]+\\)[.]"
+    )
+  )
+  screen <- table_regression_uv(
+    sochealth,
+    outcome = smoking,
+    predictors = c(age, sex),
+    method = "glm",
+    multivariable = FALSE
+  )
+  expect_identical(
+    attr(screen, "title"),
+    "R\u00E9gression logistique univariable (pr\u00E9s\u00E9lection)\u00A0: smoking"
+  )
+  # A family the title bridge does not carry keeps the whole English title.
+  gamma <- table_regression_uv(
+    sochealth,
+    outcome = income,
+    predictors = c(age, sex),
+    method = "glm",
+    family = stats::Gamma(link = "log")
+  )
+  expect_identical(
+    attr(gamma, "title"),
+    "Univariable and multivariable Gamma regression: income"
+  )
+})

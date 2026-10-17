@@ -545,11 +545,11 @@ as_regression_frame.gee <- function(fit, ...) {
 .geeglm_vcov_label <- function(std_err, id_name) {
   base <- switch(
     std_err,
-    "san.se" = "Robust sandwich (GEE)",
-    "jack" = "Approximate jackknife (GEE)",
-    "j1s" = "One-step jackknife (GEE)",
-    "fij" = "Fully iterated jackknife (GEE)",
+    "san.se" = spicy_str("note_vcov_gee_sandwich"),
+    "jack" = spicy_str("note_vcov_gee_jack"),
+    "j1s" = spicy_str("note_vcov_gee_j1s"),
+    "fij" = spicy_str("note_vcov_gee_fij"),
     sprintf("GEE (%s)", std_err) # nocov -- geeglm allows only the four
   )
-  sprintf("%s, clusters by %s", base, id_name)
+  paste0(base, spicy_fmt("note_vcov_cluster_by", id_name))
 }

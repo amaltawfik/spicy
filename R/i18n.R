@@ -300,6 +300,22 @@
   # the "factor = level" pairs, joined by the separator below.
   note_reference_categories = "Reference categories: %s.",
   note_reference_categories_sep = "; ",
+  # The base category of a multinomial outcome, and the base alternative
+  # of a conditional logit. One hole: the level, DATA.
+  note_reference_outcome = "Reference outcome: %s.",
+  note_reference_alternative = "Reference alternative: %s.",
+  # The legend of the polynomial-contrast rows of an ordered factor. Two
+  # holes: the quoted variable names (joined), then the legend pairs
+  # ("<suffix> = <degree>", joined), each degree one of the keys below.
+  note_poly_trends_singular = "Ordered factor %s: polynomial trends (%s).",
+  note_poly_trends_plural = "Ordered factors %s: polynomial trends (%s).",
+  note_poly_degree_linear = "linear",
+  note_poly_degree_quadratic = "quadratic",
+  note_poly_degree_cubic = "cubic",
+  note_poly_degree_quartic = "quartic",
+  note_poly_degree_quintic = "quintic",
+  note_poly_degree_sextic = "sextic",
+  note_poly_degree_generic = "degree-%d",
   # The two cells of the fixed-effects disclosure block (the etable /
   # esttab standard). Only the CAPTION is here: the token the two bodies
   # exchange is `.REG_FE_YES` / `.REG_FE_NO`, frozen, because the typed
@@ -323,9 +339,18 @@
   # `label_block_*`, so a translated block header can never leave its
   # own footer quoting the English word.
   note_thresholds_rows_gloss = "%s: latent-scale category cut-points",
+  # Appended to the gloss above under exponentiate: the cut-points keep
+  # the link scale. One hole: one of the three scale labels below.
+  note_thresholds_scale_suffix = " (%s, not exponentiated)",
+  note_scale_log_odds = "log-odds scale",
+  note_scale_log_cumhazard = "log-cumulative-hazard scale",
+  note_scale_link = "link scale",
   # Two holes: the block caption, then the rendered cut-point list.
   note_thresholds_compact = "%s: %s.",
   note_scale_effects_gloss = "%s: covariate effects on the log standard deviation of the latent response",
+  # Appended to the gloss above under exponentiate, hence the leading
+  # space.
+  note_scale_effects_not_exp = " (log scale, not exponentiated: their exponential is a ratio of latent SDs, not an odds ratio)",
   # Two holes: the block caption and the estimation method (REML / ML,
   # an identifier). Deliberately NOT `header_companion_qualified`, which
   # carries the same value for an unrelated role -- the console header
@@ -354,6 +379,16 @@
   note_re_null_negative_binomial = "negative binomial(%s) regression",
   note_re_null_cumulative = "cumulative %s regression",
   note_re_null_family = "%s regression",
+  # The test behind the p column of the variance-component rows, under
+  # `re_test = "lrt"` / `"rlrt"`.
+  note_re_test_lrt = "Random-effect p-values: LR test vs the reduced random structure, chi-bar-squared reference.",
+  note_re_test_rlrt = "Random-effect p-value: exact restricted LRT (simulated null distribution).",
+  # `re_ci = "profile"`: what the interval cells of those rows are.
+  note_re_profile_ci = "Random-effect variance components: profile likelihood CIs; no SE (asymmetric intervals).",
+  # Their SE and CI skipped for size. One hole: the sample size.
+  note_re_se_skipped = "Random-effect variance components: SE and CI not computed (n = %s exceeds the spicy.re_se_max_n cap).",
+  # A mixed fit on the boundary of its parameter space.
+  note_singular_mixed = "Singular fit: the random-effect structure is at or near the boundary of the parameter space (a variance of 0, or a correlation of +/-1); the Wald SE and CI of the variance components are omitted.",
   # `nested = TRUE` over an lme4 hierarchy fitted by REML: anova.merMod
   # refits by ML before it compares, so the change rows and the per-model
   # criteria rows are two different criteria. No hole: the sentence names
@@ -372,6 +407,10 @@
   # Two holes: the block caption, then the censoring distribution (an
   # identifier from the fit).
   note_component_gloss_hurdle_censored = "%s component: right-censored %s on the log scale.",
+  # The scale of a component block under exponentiate, appended to its
+  # gloss after a space.
+  note_component_exp_or = "Coefficients exponentiated and displayed as odds ratios.",
+  note_component_not_exp = "Left on the link scale (not exponentiated).",
   # One hole: the undefined-cell glyph the note is pointing at.
   note_rank_deficient = "Rank-deficient model: dropped coefficient(s) shown as %s.",
   # The fitting engine reports that its optimizer did not converge. One
@@ -391,6 +430,19 @@
   # sentence states a property of the model the reader wrote. The row
   # stays absent -- there is no single number it could hold.
   note_icc_multi_group = "ICC is not reported: several grouping factors define several ICCs.",
+  # The GEE working correlation. The first hole is geepack's `corstr`
+  # (an identifier); then the estimated alpha, or the count of
+  # correlation parameters.
+  note_gee_corstr_alpha = "GEE working correlation: %s (alpha = %s).",
+  note_gee_corstr_params = "GEE working correlation: %s (%d correlation parameters).",
+  note_gee_corstr_plain = "GEE working correlation: %s.",
+  # The survival footer: the Cox concordance, the parametric
+  # distribution (one hole: its display name) and the survreg scale,
+  # joined by the separator.
+  note_survival_concordance_se = "Concordance C = %s (SE = %s)",
+  note_survival_distribution = "Distribution: %s",
+  note_survival_scale = "scale = %s",
+  note_survival_sep = "; ",
 
   # -- table_regression(): title and type-footer templates -------------------
   # Decision 42. The %s holes are the family prefix and, where present,
@@ -406,6 +458,15 @@
   title_regression_hierarchical = "Hierarchical %s: %s",
   title_regression_comparison_dv = "%s comparison: %s",
   title_regression_comparison = "%s comparison",
+  # The default titles of `table_regression_uv()`, with and without the
+  # multivariable model. Two holes: the family prefix (lowercase in
+  # English, through the same bridge), then the outcome label.
+  title_uv_multivariable = "Univariable and multivariable %s: %s",
+  title_uv_screen = "Univariable %s screen: %s",
+  # The sample disclosure of that table: the common complete-case count,
+  # or the range of the per-predictor N.
+  note_uv_common_complete_cases = "All models fit on the %d common complete cases.",
+  note_uv_varying_n = "Each univariable model is fit on its own complete cases; N varies by predictor (%d-%d).",
   # The type footer's same-family plural ("Linear regression models.").
   # French inverts the construction, so the whole sentence is the unit.
   note_type_models = "%s models.",
@@ -454,10 +515,47 @@
   note_beta_basic = "\"basic\": every design column scaled by its SD, dummies included (SPSS / Stata Beta)",
   note_beta_smart = "\"smart\": numeric predictors \u00F7 2 SD (Gelman 2008), binaries and dummies on 0/1",
   note_beta_pseudo = "\"pseudo\": latent-scale SD(X)/SD(Y*) for numeric predictors, 1/SD(Y*) for factor dummies",
+  # The caveat of a standardized table with interaction or transformed
+  # terms: one lead (one hole) over three bodies. The fallback body
+  # quotes the algebraic one in its hole.
+  note_standardized_caveat = "Standardized β: %s",
+  note_standardized_caveat_algebraic = "interaction / transformed terms are scaled by the SD of the product (or transformed) design column; differs from \"refit\" when components are correlated.",
+  note_standardized_caveat_refit = "after refit on z-scored data, an interaction's β is the coefficient of the product of the z-scored components.",
+  note_standardized_caveat_fallback = "\"refit\" failed; algebraic (posthoc) scaling applied. %s",
   note_abbrev_pd = "pd = probability of direction (share of the posterior on the dominant side of zero; Makowski et al. 2019)",
   note_abbrev_mcse = "MCSE = Monte Carlo standard error of the posterior median (Vehtari et al. 2021)",
   note_abbrev_ame = "AME = average marginal effect",
   note_abbrev_ame_percat = "AME = average marginal effect on a response-category probability",
+  # The AME inference line under a cluster-robust vcov. One hole: empty,
+  # or one of the two qualifiers (leading space included).
+  note_ame_satterthwaite = "AME inference: t-test with Satterthwaite df%s.",
+  note_ame_satterthwaite_qual_both = " (closed-form for lm; dominant-coefficient approximation for glm)",
+  note_ame_satterthwaite_qual_glm = " (dominant-coefficient approximation)",
+  # The exponentiation note. The scope is the subject of the sentence:
+  # every coefficient, or the models it names (one hole: the model
+  # references, joined). The SE gloss names the mechanism behind the
+  # displayed SE; the CI gloss comes in two forms, the `_asym` one used
+  # when an SE column is shown.
+  note_exp_scope_all = "Coefficients",
+  note_exp_scope_partial = "%s: coefficients",
+  note_exp_se_gloss_delta = "delta method",
+  note_exp_se_gloss_bayes = "posterior MAD SD of the exponentiated draws",
+  note_exp_se_gloss_mixed = "delta method; posterior MAD SD of the exponentiated draws for the Bayesian model(s)",
+  note_exp_ci_gloss_standard = "CI bounds exponentiated",
+  note_exp_ci_gloss_standard_asym = "CI bounds exponentiated (asymmetric)",
+  note_exp_ci_gloss_hdi = "CI: highest-density interval of the exponentiated draws",
+  note_exp_ci_gloss_hdi_asym = "CI: highest-density interval of the exponentiated draws (asymmetric)",
+  # Appended to the sentence for a cumulative-cloglog fit, hence the
+  # leading space.
+  note_exp_hr_negated = " HR is the grouped-time proportional-hazards ratio exp(-B): the cumulative parametrization cloglog P(Y <= j) = zeta_j - xB places the hazard on -B (Prentice & Gloeckler 1978; McCullagh 1980).",
+  # The sentence itself. Holes, in order: the scope, the header (twice
+  # in `_with_se_single`; the headers joined in the `_multi` forms), the
+  # SE gloss (`_with_se_*` only), the CI gloss, the cloglog sentence
+  # (empty when absent).
+  note_exp_with_se_single = "%s exponentiated and displayed as %s; SE on the %s scale (%s); %s.%s",
+  note_exp_with_se_multi = "%s exponentiated and displayed as %s (per family); SE on the displayed ratio scale (%s); %s.%s",
+  note_exp_no_se_single = "%s exponentiated and displayed as %s; %s.%s",
+  note_exp_no_se_multi = "%s exponentiated and displayed as %s (per family); %s.%s",
 
   # -- table footnotes: the APA prefix --------------------------------------
   # `note_prefix` is what a note BUILDER prepends. `note_prefix_emphasis` is
@@ -789,6 +887,20 @@
   note_vcov_design_twophase = "Design-based (two-phase design)",
   note_vcov_design_bare = "Design-based",
   note_vcov_cluster_by = ", clusters by %s",
+  # The estimator a geeglm fit computed (its `std.err`), before the
+  # clusters suffix above.
+  note_vcov_gee_sandwich = "Robust sandwich (GEE)",
+  note_vcov_gee_jack = "Approximate jackknife (GEE)",
+  note_vcov_gee_j1s = "One-step jackknife (GEE)",
+  note_vcov_gee_fij = "Fully iterated jackknife (GEE)",
+  # The rq standard-error methods. One hole in the bootstrap labels: the
+  # replicate count.
+  note_vcov_rq_nid = "Quantile sandwich (nid, Hall-Sheather)",
+  note_vcov_rq_iid = "Quantile (iid)",
+  note_vcov_rq_ker = "Quantile kernel (ker)",
+  note_vcov_rq_rank = "Rank inversion (CIs only)",
+  note_vcov_rq_boot_cluster = "Quantile wild gradient cluster bootstrap (R = %d)",
+  note_vcov_rq_boot = "Quantile bootstrap (xy pairs, R = %d)",
   # The fixed-effect inference line of a mixed model: the distribution,
   # the df and the package that computed them. One hole on the Wald
   # line: the engine (lme4, glmmTMB), a package name, never translated.

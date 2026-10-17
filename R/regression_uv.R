@@ -647,14 +647,19 @@ table_regression_uv <- function(
         family$family
       )
     }
-    title <- if (isTRUE(multivariable)) {
-      sprintf(
-        "Univariable and multivariable %s regression: %s",
-        type,
-        outcome_name
-      )
+    # Decision 42: the family goes through the title-prefix bridge, and a
+    # family with no bridge entry keeps the whole English title.
+    prefix <- paste(type, "regression")
+    disp <- .title_prefix_display(capitalize_first(prefix))
+    key <- if (isTRUE(multivariable)) {
+      "title_uv_multivariable"
     } else {
-      sprintf("Univariable %s regression screen: %s", type, outcome_name)
+      "title_uv_screen"
+    }
+    title <- if (is.null(disp)) {
+      .spicy_fmt_en(key, prefix, outcome_name)
+    } else {
+      spicy_fmt(key, disp, outcome_name)
     }
   }
 
@@ -914,19 +919,9 @@ as_regression_frame.spicy_uv_screen <- function(
   # Disclosure line (footer theme below). Silence when nothing needs
   # saying: equal Ns without complete_cases is self-evident.
   info$extras$uv_disclosure <- if (isTRUE(bundle$complete_cases)) {
-    sprintf(
-      "All models fit on the %d common complete cases.",
-      bundle$n_data
-    )
+    spicy_fmt("note_uv_common_complete_cases", bundle$n_data)
   } else if (length(unique(ns)) > 1L) {
-    sprintf(
-      paste0(
-        "Each univariable model is fit on its own complete ",
-        "cases; N varies by predictor (%d-%d)."
-      ),
-      min(ns),
-      max(ns)
-    )
+    spicy_fmt("note_uv_varying_n", min(ns), max(ns))
   } else {
     NULL
   }

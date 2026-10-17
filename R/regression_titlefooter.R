@@ -839,13 +839,13 @@ build_ame_satterthwaite_footer_block_from_frames <- function(
   # actionable summary "t-test with Satterthwaite df", with a one-word
   # qualifier when the lm / glm paths diverge.
   qualifier <- if (any_lm && any_glm) {
-    " (closed-form for lm; dominant-coefficient approximation for glm)"
+    spicy_str("note_ame_satterthwaite_qual_both")
   } else if (any_glm) {
-    " (dominant-coefficient approximation)"
+    spicy_str("note_ame_satterthwaite_qual_glm")
   } else {
     ""
   }
-  paste0("AME inference: t-test with Satterthwaite df", qualifier, ".")
+  spicy_fmt("note_ame_satterthwaite", qualifier)
 }
 
 
@@ -904,26 +904,24 @@ build_standardized_caveat_footer_block_from_frames <- function(
   # note cites no literature and names no other software. The
   # differs-from-"refit" clause stays: it is the interpretive caveat
   # about the displayed numbers themselves.
-  algebraic <- paste0(
-    "Standardized \u03B2: interaction / transformed terms are scaled by ",
-    "the SD of the product (or transformed) design column; differs ",
-    "from \"refit\" when components are correlated."
-  )
+  # The fallback sentence quotes the algebraic one after its own lead, so
+  # the lead and the body are separate keys: no translated sentence is
+  # ever cut back by a pattern.
+  algebraic <- spicy_str("note_standardized_caveat_algebraic")
 
   if (identical(standardized, "refit") && !fell_back) {
-    return(paste0(
-      "Standardized \u03B2: after refit on z-scored data, an interaction's ",
-      "\u03B2 is the coefficient of the product of the z-scored components."
+    return(spicy_fmt(
+      "note_standardized_caveat",
+      spicy_str("note_standardized_caveat_refit")
     ))
   }
   if (fell_back) {
-    return(paste0(
-      "Standardized \u03B2: \"refit\" failed; algebraic (posthoc) scaling ",
-      "applied. ",
-      sub("^Standardized \u03B2: ", "", algebraic)
+    return(spicy_fmt(
+      "note_standardized_caveat",
+      spicy_fmt("note_standardized_caveat_fallback", algebraic)
     ))
   }
-  algebraic
+  spicy_fmt("note_standardized_caveat", algebraic)
 }
 
 
@@ -1045,13 +1043,16 @@ build_ordinal_thresholds_footer_block_from_frames <- function(
         character(1)
       ))
       scale_lbl <- if (identical(links, "logit")) {
-        "log-odds scale"
+        spicy_str("note_scale_log_odds")
       } else if (identical(links, "cloglog")) {
-        "log-cumulative-hazard scale"
+        spicy_str("note_scale_log_cumhazard")
       } else {
-        "link scale"
+        spicy_str("note_scale_link")
       }
-      gloss <- paste0(gloss, " (", scale_lbl, ", not exponentiated)")
+      gloss <- paste0(
+        gloss,
+        spicy_fmt("note_thresholds_scale_suffix", scale_lbl)
+      )
     }
     return(paste0(gloss, "."))
   }
@@ -1132,8 +1133,8 @@ build_gee_footer_block_from_frames <- function(frames, decimal_mark = ".") {
   alpha <- frame$info$extras$gee_alpha
   alpha <- alpha[is.finite(alpha)]
   if (length(alpha) == 1L) {
-    return(sprintf(
-      "GEE working correlation: %s (alpha = %s).",
+    return(spicy_fmt(
+      "note_gee_corstr_alpha",
       corstr,
       # The estimate is a rendered number in a note, so it follows the
       # table's mark like the cells above it -- and, through
@@ -1142,13 +1143,9 @@ build_gee_footer_block_from_frames <- function(frames, decimal_mark = ".") {
     ))
   }
   if (length(alpha) > 1L) {
-    return(sprintf(
-      "GEE working correlation: %s (%d correlation parameters).",
-      corstr,
-      length(alpha)
-    ))
+    return(spicy_fmt("note_gee_corstr_params", corstr, length(alpha)))
   }
-  sprintf("GEE working correlation: %s.", corstr)
+  spicy_fmt("note_gee_corstr_plain", corstr)
 }
 
 
@@ -1259,8 +1256,8 @@ build_survival_footer_block_from_frames <- function(
     if (!is.null(conc$se) && is.finite(conc$se)) {
       parts <- c(
         parts,
-        sprintf(
-          "Concordance C = %s (SE = %s)",
+        spicy_fmt(
+          "note_survival_concordance_se",
           .footer_num(conc$c, 2L, decimal_mark),
           .footer_num(conc$se, 2L, decimal_mark)
         )
@@ -1277,7 +1274,7 @@ build_survival_footer_block_from_frames <- function(
   if (length(parts) == 0L) {
     return(NULL)
   }
-  paste0(paste(parts, collapse = "; "), ".")
+  paste0(paste(parts, collapse = spicy_str("note_survival_sep")), ".")
 }
 
 
@@ -1286,18 +1283,21 @@ build_survival_footer_block_from_frames <- function(
   scale <- frame$info$extras$scale_parameter
   parts <- character(0)
   if (!is.null(dist) && is.character(dist) && nzchar(dist)) {
-    parts <- c(parts, sprintf("Distribution: %s", .surv_title_dist(dist)))
+    parts <- c(
+      parts,
+      spicy_fmt("note_survival_distribution", .surv_title_dist(dist))
+    )
   }
   if (!is.null(scale) && is.finite(scale)) {
     parts <- c(
       parts,
-      sprintf("scale = %s", .footer_num(scale, 2L, decimal_mark))
+      spicy_fmt("note_survival_scale", .footer_num(scale, 2L, decimal_mark))
     )
   }
   if (length(parts) == 0L) {
     return(NULL) # nocov
   }
-  paste0(paste(parts, collapse = "; "), ".")
+  paste0(paste(parts, collapse = spicy_str("note_survival_sep")), ".")
 }
 
 
@@ -1306,7 +1306,10 @@ build_survival_footer_block_from_frames <- function(
   aux <- frame$info$extras$aux_parameters
   parts <- character(0)
   if (!is.null(dist) && is.character(dist) && nzchar(dist)) {
-    parts <- c(parts, sprintf("Distribution: %s", .surv_title_dist(dist)))
+    parts <- c(
+      parts,
+      spicy_fmt("note_survival_distribution", .surv_title_dist(dist))
+    )
   }
   if (!is.null(aux) && is.numeric(aux) && length(aux) > 0L) {
     aux_str <- paste(
@@ -1322,7 +1325,7 @@ build_survival_footer_block_from_frames <- function(
   if (length(parts) == 0L) {
     return(NULL) # nocov
   }
-  paste0(paste(parts, collapse = "; "), ".")
+  paste0(paste(parts, collapse = spicy_str("note_survival_sep")), ".")
 }
 
 
@@ -1402,14 +1405,8 @@ build_random_effects_footer_block_from_frames <- function(
   # are cited in ?table_regression, not in a publication table note.
   test_line <- switch(
     re_test,
-    lrt = paste0(
-      "Random-effect p-values: LR test vs the reduced random structure, ",
-      "chi-bar-squared reference."
-    ),
-    rlrt = paste0(
-      "Random-effect p-value: exact restricted LRT ",
-      "(simulated null distribution)."
-    ),
+    lrt = spicy_str("note_re_test_lrt"),
+    rlrt = spicy_str("note_re_test_rlrt"),
     NULL
   )
 
@@ -1685,12 +1682,9 @@ build_component_blocks_footer_block_from_frames <- function(frames) {
       seen <- c(seen, key)
       gl <- blk$gloss
       if (isTRUE(blk$exp_applied)) {
-        gl <- paste0(
-          gl,
-          " Coefficients exponentiated and displayed as odds ratios."
-        )
+        gl <- paste0(gl, " ", spicy_str("note_component_exp_or"))
       } else if (isTRUE(f$info$extras$exp_applied) && !isTRUE(blk$exp_ok)) {
-        gl <- paste0(gl, " Left on the link scale (not exponentiated).")
+        gl <- paste0(gl, " ", spicy_str("note_component_not_exp"))
       }
       lines <- c(lines, gl)
     }
@@ -2054,12 +2048,7 @@ build_singular_footer_block_from_frames <- function(frames) {
     # only under lme4 (glmmTMB and nlme optimize a log scale and land
     # near it), and a random-effect correlation pinned at +/-1 is a
     # boundary estimate with no zero variance at all.
-    return(paste0(
-      "Singular fit: the random-effect structure is at or near the ",
-      "boundary of the parameter space (a variance of 0, or a ",
-      "correlation of +/-1); the Wald SE and CI of the variance ",
-      "components are omitted."
-    ))
+    return(spicy_str("note_singular_mixed"))
   }
   # The note names the glyph the cells carry, so it takes it as an
   # argument rather than re-typing it.
@@ -2094,10 +2083,7 @@ build_re_profile_footer_block_from_frames <- function(frames) {
   }
   # `re_ci` is a single table-wide argument and only mixed frames carry
   # variance-component rows, so one shared line is always unambiguous.
-  paste0(
-    "Random-effect variance components: profile likelihood CIs; ",
-    "no SE (asymmetric intervals)."
-  )
+  spicy_str("note_re_profile_ci")
 }
 
 
@@ -2120,11 +2106,8 @@ build_re_se_skipped_footer_block_from_frames <- function(frames) {
     return(NULL)
   }
   msg <- function(n) {
-    sprintf(
-      paste0(
-        "Random-effect variance components: SE and CI not ",
-        "computed (n = %s exceeds the spicy.re_se_max_n cap)."
-      ),
+    spicy_fmt(
+      "note_re_se_skipped",
       # No thousands separator: every other N the package prints is
       # bare, and an anglophone "," reads as a decimal under
       # decimal_mark = ",".
@@ -2251,7 +2234,7 @@ build_reference_alternative_footer_block_from_frames <- function(frames) {
     return(NULL)
   }
   affected <- which(!is.na(refs))
-  msg <- function(ref) sprintf("Reference alternative: %s.", ref)
+  msg <- function(ref) spicy_fmt("note_reference_alternative", ref)
   if (
     length(affected) == length(frames) &&
       length(unique(refs[affected])) == 1L
@@ -2290,7 +2273,7 @@ build_reference_outcome_footer_block_from_frames <- function(frames) {
     return(NULL)
   }
   affected <- which(!is.na(refs))
-  msg <- function(ref) sprintf("Reference outcome: %s.", ref)
+  msg <- function(ref) spicy_fmt("note_reference_outcome", ref)
   # One shared line only when EVERY model in the table is multinomial
   # and shares one reference -- in a mixed-class table an unqualified
   # line would read as applying to the non-multinomial models too
@@ -2349,10 +2332,10 @@ build_exponentiate_footer_block_from_frames <- function(
   ))
 
   scope <- if (all(applied)) {
-    "Coefficients"
+    spicy_str("note_exp_scope_all")
   } else {
-    sprintf(
-      "%s: coefficients",
+    spicy_fmt(
+      "note_exp_scope_partial",
       paste(
         vapply(
           which(applied),
@@ -2378,14 +2361,11 @@ build_exponentiate_footer_block_from_frames <- function(
   )
   bayes_applied <- is_bayes_f & applied
   se_gloss <- if (all(is_bayes_f[applied])) {
-    "posterior MAD SD of the exponentiated draws"
+    spicy_str("note_exp_se_gloss_bayes")
   } else if (any(bayes_applied)) {
-    paste0(
-      "delta method; posterior MAD SD of the exponentiated ",
-      "draws for the Bayesian model(s)"
-    )
+    spicy_str("note_exp_se_gloss_mixed")
   } else {
-    "delta method"
+    spicy_str("note_exp_se_gloss_delta")
   }
   any_hdi <- any(vapply(
     frames[applied],
@@ -2394,10 +2374,22 @@ build_exponentiate_footer_block_from_frames <- function(
     },
     logical(1)
   ))
+  # A displayed SE column also makes the gloss say the interval is
+  # asymmetric. The qualifier lives inside the key, so a language can
+  # place it and agree it with its noun.
+  se_shown <- "se" %in% show_columns
   ci_gloss <- if (any_hdi) {
-    "CI: highest-density interval of the exponentiated draws"
+    spicy_str(
+      if (se_shown) "note_exp_ci_gloss_hdi_asym" else "note_exp_ci_gloss_hdi"
+    )
   } else {
-    "CI bounds exponentiated"
+    spicy_str(
+      if (se_shown) {
+        "note_exp_ci_gloss_standard_asym"
+      } else {
+        "note_exp_ci_gloss_standard"
+      }
+    )
   }
 
   # Cumulative-cloglog frames print the grouped-time proportional-
@@ -2409,23 +2401,15 @@ build_exponentiate_footer_block_from_frames <- function(
     logical(1)
   ))
   negation_note <- if (hr_negated) {
-    paste0(
-      " HR is the grouped-time proportional-hazards ratio exp(-B): ",
-      "the cumulative parametrization cloglog P(Y <= j) = zeta_j - xB ",
-      "places the hazard on -B (Prentice & Gloeckler 1978; ",
-      "McCullagh 1980)."
-    )
+    spicy_str("note_exp_hr_negated")
   } else {
     ""
   }
 
-  if ("se" %in% show_columns) {
+  if (se_shown) {
     if (length(hdrs) == 1L) {
-      return(sprintf(
-        paste0(
-          "%s exponentiated and displayed as %s; SE on the %s scale ",
-          "(%s); %s (asymmetric).%s"
-        ),
+      return(spicy_fmt(
+        "note_exp_with_se_single",
         scope,
         hdrs[1L],
         hdrs[1L],
@@ -2434,11 +2418,8 @@ build_exponentiate_footer_block_from_frames <- function(
         negation_note
       ))
     }
-    return(sprintf(
-      paste0(
-        "%s exponentiated and displayed as %s (per family); SE on ",
-        "the displayed ratio scale (%s); %s (asymmetric).%s"
-      ),
+    return(spicy_fmt(
+      "note_exp_with_se_multi",
       scope,
       paste(hdrs, collapse = " / "),
       se_gloss,
@@ -2448,16 +2429,16 @@ build_exponentiate_footer_block_from_frames <- function(
   }
 
   if (length(hdrs) == 1L) {
-    return(sprintf(
-      "%s exponentiated and displayed as %s; %s.%s",
+    return(spicy_fmt(
+      "note_exp_no_se_single",
       scope,
       hdrs[1L],
       ci_gloss,
       negation_note
     ))
   }
-  sprintf(
-    "%s exponentiated and displayed as %s (per family); %s.%s",
+  spicy_fmt(
+    "note_exp_no_se_multi",
     scope,
     paste(hdrs, collapse = " / "),
     ci_gloss,
@@ -2586,9 +2567,9 @@ build_polynomial_contrasts_footer_block_from_frames <- function(
   suffix_label <- function(s) {
     switch(
       s,
-      ".L" = "linear",
-      ".Q" = "quadratic",
-      ".C" = "cubic",
+      ".L" = spicy_str("note_poly_degree_linear"),
+      ".Q" = spicy_str("note_poly_degree_quadratic"),
+      ".C" = spicy_str("note_poly_degree_cubic"),
       if (startsWith(s, "^")) {
         n <- suppressWarnings(as.integer(substring(s, 2L)))
         if (!is.na(n)) ordinal_label(n) else s
@@ -2608,26 +2589,24 @@ build_polynomial_contrasts_footer_block_from_frames <- function(
     collapse = ", "
   )
 
-  paste0(
-    if (plural) "Ordered factors " else "Ordered factor ",
+  spicy_fmt(
+    if (plural) "note_poly_trends_plural" else "note_poly_trends_singular",
     vars_str,
-    ": polynomial trends (",
-    legend,
-    ")."
+    legend
   )
 }
 
 
-# English ordinal labels for polynomial degrees >= 4 (.L .Q .C are
+# Ordinal labels for polynomial degrees >= 4 (.L .Q .C are
 # special-cased in suffix_label). "^4" -> "quartic", "^5" -> "quintic",
 # "^k" for k > 6 falls back to "degree-k".
 ordinal_label <- function(k) {
   switch(
     as.character(k),
-    "4" = "quartic",
-    "5" = "quintic",
-    "6" = "sextic",
-    sprintf("degree-%d", k)
+    "4" = spicy_str("note_poly_degree_quartic"),
+    "5" = spicy_str("note_poly_degree_quintic"),
+    "6" = spicy_str("note_poly_degree_sextic"),
+    spicy_fmt("note_poly_degree_generic", k)
   )
 }
 
@@ -2778,11 +2757,7 @@ build_scale_effects_footer_block_from_frames <- function(frames) {
     logical(1)
   ))
   if (isTRUE(exp_any)) {
-    gloss <- paste0(
-      gloss,
-      " (log scale, not exponentiated: their exponential ",
-      "is a ratio of latent SDs, not an odds ratio)"
-    )
+    gloss <- paste0(gloss, spicy_str("note_scale_effects_not_exp"))
   }
   paste0(gloss, ".")
 }

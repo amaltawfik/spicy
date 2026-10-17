@@ -140,7 +140,9 @@ workbook, or a PDF.
   models, and the REML refit note of `nested = TRUE` in French under
   `options(spicy.language = "fr")`. In French, nested models are now
   `modèles emboîtés` in the title, RR is glossed `risque relatif`, and
-  `table_continuous_lm()` and `table_outcome()` write `ajusté sur`.
+  `table_continuous_lm()` and `table_outcome()` write `ajusté sur`. The
+  exponentiation, component, threshold, and scale-effect notes are
+  translated too.
 
 * `table_regression()` handles `glmer()` fits with a Gamma or
   inverse-Gaussian family, which failed, and no longer fails on them or on

@@ -274,14 +274,14 @@ as_regression_frame.rq <- function(
 .rq_vcov_footer_label <- function(se_method, boot_n, clustered) {
   switch(
     se_method,
-    nid = "Quantile sandwich (nid, Hall-Sheather)",
-    iid = "Quantile (iid)",
-    ker = "Quantile kernel (ker)",
-    rank = "Rank inversion (CIs only)",
+    nid = spicy_str("note_vcov_rq_nid"),
+    iid = spicy_str("note_vcov_rq_iid"),
+    ker = spicy_str("note_vcov_rq_ker"),
+    rank = spicy_str("note_vcov_rq_rank"),
     boot = if (clustered) {
-      sprintf("Quantile wild gradient cluster bootstrap (R = %d)", boot_n)
+      spicy_fmt("note_vcov_rq_boot_cluster", boot_n)
     } else {
-      sprintf("Quantile bootstrap (xy pairs, R = %d)", boot_n)
+      spicy_fmt("note_vcov_rq_boot", boot_n)
     }
   )
 }
