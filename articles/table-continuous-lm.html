@@ -190,9 +190,9 @@ heteroskedasticity-consistent standard errors and tests:</p>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Std. errors: heteroskedasticity-robust (HC3).</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Missing values removed: bmi (12).</span></span></span></code></pre></div>
 <p>The <code>HC*</code> family is computed via
-<code><a href="https://zeileis.codeberg.page/sandwich/reference/vcovHC.html" class="external-link">sandwich::vcovHC()</a></code> and includes <code>"HC0"</code>,
+<code><a href="https://rdrr.io/pkg/sandwich/man/vcovHC.html" class="external-link">sandwich::vcovHC()</a></code> and includes <code>"HC0"</code>,
 <code>"HC1"</code>, <code>"HC2"</code>, <code>"HC3"</code> (the
-<code><a href="https://zeileis.codeberg.page/sandwich/reference/vcovHC.html" class="external-link">sandwich::vcovHC()</a></code> default, recommended for small to
+<code><a href="https://rdrr.io/pkg/sandwich/man/vcovHC.html" class="external-link">sandwich::vcovHC()</a></code> default, recommended for small to
 moderate samples by Long and Ervin 2000), <code>"HC4"</code>,
 <code>"HC4m"</code>, and <code>"HC5"</code>. spicy’s own default remains
 <code>vcov = "classical"</code>.</p>
