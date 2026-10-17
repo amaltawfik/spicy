@@ -385,7 +385,7 @@
   note_vcov_classical_glm = "classiques (information de Fisher)",
   note_vcov_classical_lm = "classiques (MCO)",
   note_vcov_classical_plain = "classiques",
-  note_vcov_bayesian_reml = "bay\u00E9siennes (d\u00E9duites du REML)",
+  note_vcov_bayesian_mgcv = "bay\u00E9siennes (covariance a posteriori de mgcv)",
   note_vcov_hc = "robustes \u00E0 l'h\u00E9t\u00E9rosc\u00E9dasticit\u00E9 (%s)",
   note_vcov_cluster_vector = "vecteur de grappes fourni",
   note_vcov_cluster_named = "grappes d\u00E9finies par %s",

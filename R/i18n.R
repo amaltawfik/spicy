@@ -878,9 +878,10 @@
   # mechanism (nls, AER::ivreg, rms::ols, fixest's IID, estimatr's
   # classical se_type), capitalized as it has always printed.
   note_vcov_classical_plain = "Classical",
-  # The default of mgcv::gam(): the Bayesian covariance of the
-  # coefficients.
-  note_vcov_bayesian_reml = "Bayesian (REML-implied)",
+  # The default of mgcv::gam() and bam(): the Bayesian posterior
+  # covariance of the coefficients (mgcv's Vp), whatever the smoothing
+  # method (GCV, REML, ML).
+  note_vcov_bayesian_mgcv = "Bayesian (mgcv posterior covariance)",
   note_vcov_hc = "heteroskedasticity-robust (%s)",
   note_vcov_cluster_vector = "cluster vector supplied",
   note_vcov_cluster_named = "clusters by %s",

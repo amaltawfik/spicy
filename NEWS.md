@@ -100,7 +100,10 @@ workbook, or a PDF.
   `table_continuous_svy()` name each variable of the missing-values notes
   by its label, as the rows and the title do, not by its column name:
   "Missing values removed: Body mass index (12)", "Rows with missing Sex
-  removed: 3". A covariate of `table_continuous_lm()` keeps its name.
+  removed: 3". The label is the one given in `labels`, otherwise the
+  variable's label attribute (as set by `haven` or `label_from_names()`),
+  otherwise the column name. A covariate of `table_continuous_lm()` keeps
+  its name.
 
 * `table_categorical_svy()` and `table_continuous_svy()` keep the label
   of the `by` variable in the title, and `table_categorical_svy()` the
@@ -112,6 +115,10 @@ workbook, or a PDF.
   same holds for `table_outcome()` without interval columns,
   `table_continuous_svy(ci = FALSE)`, and `table_categorical_svy()`
   without `by`.
+
+* `table_regression()` labels the standard errors of `mgcv` fits
+  "Bayesian (mgcv posterior covariance)". The label said "REML-implied"
+  whatever the smoothing method, including the GCV default of `gam()`.
 
 * `table_outcome()` sets a no-break space before the semicolon that joins
   the tests of its comparison note in French.

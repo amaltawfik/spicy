@@ -1866,8 +1866,8 @@ test_that("the Bayesian standard-error line of mgcv follows the language", {
   expect_identical(
     .se_line_en_fr(fit),
     c(
-      "Std. errors: Bayesian (REML-implied).",
-      "Erreurs standards\u00A0: bay\u00E9siennes (d\u00E9duites du REML)."
+      "Std. errors: Bayesian (mgcv posterior covariance).",
+      "Erreurs standards\u00A0: bay\u00E9siennes (covariance a posteriori de mgcv)."
     )
   )
 })

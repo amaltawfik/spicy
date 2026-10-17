@@ -53,6 +53,7 @@ CROSSTABS
 Calibri
 Cheng
 Claggett
+Codebook
 Codebooks
 Codecov
 Cousineau
@@ -183,6 +184,7 @@ McElreath
 Menard
 Menard's
 Merkle
+Modalités
 Modélisation
 Moerbeek
 Mulaik
@@ -290,6 +292,7 @@ UNIANOVA
 Univariable
 Uno
 VCV
+Valeurs
 Vasconcellos
 Vasishth
 Vehtari
@@ -406,6 +409,7 @@ loglogistic
 marginaleffects
 marginality
 merDeriv
+mgcv
 midline
 mis
 misdescribes
@@ -459,6 +463,7 @@ rms
 roadmap
 rstanarm
 rstanarm's
+référence
 sd
 se
 separateur
@@ -467,7 +472,6 @@ severalfold
 situe
 sociales
 socio
-sortable
 spicy's
 statistique
 subpopulation
@@ -518,6 +522,3 @@ wellbeing
 σ
 χ
 ω
-Modalités
-référence
-Valeurs

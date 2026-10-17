@@ -367,7 +367,7 @@ lowercase_first <- function(s) {
 #   frame$info$vcov_label          (Phase 1+: the engine-/class-specific
 #                                   already-formatted label, e.g.
 #                                   "Wald (model-based)", "Robust (HC2)",
-#                                   "Bayesian (REML-implied)", ...)
+#                                   "Bayesian (mgcv posterior covariance)", ...)
 #   frame$info$vcov_kind           (the estimator token, read through
 #                                   .frame_vcov_kind(): "model" / "HC*"
 #                                   / "CR*" / "bootstrap" / etc.)
