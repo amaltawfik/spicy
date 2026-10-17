@@ -534,9 +534,9 @@
   # The caveat of a standardized table with interaction or transformed
   # terms: one lead (one hole) over three bodies. The fallback body
   # quotes the algebraic one in its hole.
-  note_standardized_caveat = "Standardized β: %s",
+  note_standardized_caveat = "Standardized \u03B2: %s",
   note_standardized_caveat_algebraic = "interaction / transformed terms are scaled by the SD of the product (or transformed) design column; differs from \"refit\" when components are correlated.",
-  note_standardized_caveat_refit = "after refit on z-scored data, an interaction's β is the coefficient of the product of the z-scored components.",
+  note_standardized_caveat_refit = "after refit on z-scored data, an interaction's \u03B2 is the coefficient of the product of the z-scored components.",
   note_standardized_caveat_fallback = "\"refit\" failed; algebraic (posthoc) scaling applied. %s",
   note_abbrev_pd = "pd = probability of direction (share of the posterior on the dominant side of zero; Makowski et al. 2019)",
   note_abbrev_mcse = "MCSE = Monte Carlo standard error of the posterior median (Vehtari et al. 2021)",
