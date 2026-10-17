@@ -427,8 +427,9 @@ default column layout places each model in its own panel under a
 centered **spanner label** showing the model name; sub-columns
 (`B / SE / p`) are repeated under the spanner. When dependent variables
 differ across models and the user did not supply labels
-(`model_labels =` or named list), the bare DV name is lifted into the
-spanner automatically:
+(`model_labels =` or named list), each outcome is lifted into the
+spanner automatically: its variable name by default, its label attribute
+with `labels = TRUE` (see *Display options*):
 
 ``` r
 
@@ -976,9 +977,13 @@ itself remains unstarred so the numeric value stays readable.
 
 ## Display options
 
-`labels` accepts a named character vector keyed by either formula term
-labels (`"sex"`) or coefficient names (`"sexMale"`), so individual
-contrast rows can be relabeled. `intercept_position` switches the
+`labels` names the variables in four forms: `FALSE` (the default) keeps
+the names the model gives them, and `TRUE` shows the label attribute of
+the outcome, the numeric terms, and the factor headers. A named
+character vector keyed by formula term labels (`"sex"`) or coefficient
+names (`"sexMale"`) sets the wording you publish, and
+`var_labels(age = "Age in years")` renames a few variables while the
+others keep their label attribute. `intercept_position` switches the
 intercept to the bottom (Stata convention).
 `reference_style = "annotation"` lifts the reference level into the
 factor header (`"sex: [ref: Female]"`) and drops the explicit reference

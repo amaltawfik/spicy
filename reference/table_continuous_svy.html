@@ -120,7 +120,7 @@ every test is referred to <code>survey::degf(design)</code>.</p>
 <span>  show_n <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  show_columns <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  ci <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  labels <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">getOption</a></span><span class="op">(</span><span class="st">"spicy.var_labels"</span>, <span class="cn">FALSE</span><span class="op">)</span>,</span>
 <span>  ci_level <span class="op">=</span> <span class="fl">0.95</span>,</span>
 <span>  digits <span class="op">=</span> <span class="fl">2</span>,</span>
 <span>  p_digits <span class="op">=</span> <span class="fl">3</span>,</span>
@@ -235,7 +235,24 @@ keeps the default display.</p></dd>
 
 
 <dt id="arg-labels">labels<a class="anchor" aria-label="anchor" href="#arg-labels"></a></dt>
-<dd><p>Named character vector of display labels.</p></dd>
+<dd><p>How each variable is named in the table: in the rows,
+in the title, and in the missing-values notes. Four forms:</p><ul><li><p><code>labels = FALSE</code> shows the column name.</p></li>
+<li><p><code>labels = TRUE</code> shows the column's <code>label</code> attribute (as set by
+<code>haven</code>, <code>labelled</code>, or <code><a href="label_from_names.html">label_from_names()</a></code>) when it is present,
+not <code>NA</code>, and not empty, and the column name otherwise.</p></li>
+<li><p><code>labels = c(bmi = "Body mass index")</code>, a named character vector,
+gives the columns it names these labels. Every other column
+follows <code>options(spicy.var_labels)</code>: its name when the option is
+unset or <code>FALSE</code>, its <code>label</code> attribute when it is <code>TRUE</code>.</p></li>
+<li><p><code>labels = var_labels(bmi = "BMI (kg/m2)")</code> gives the columns it
+names these labels, and every other column its <code>label</code> attribute,
+whatever the option says. <code><a href="var_labels.html">var_labels()</a></code> alone is <code>labels = TRUE</code>.</p></li>
+</ul><p>Names that match no column are ignored, so one vector can serve
+every table of a project. The default reads
+<code>options(spicy.var_labels)</code>, and a <code>TRUE</code> or <code>FALSE</code> typed in the
+call wins over it. Any other value, <code>NULL</code> included, is an error. A
+variable label documents the data file; a published table carries
+the wording you set here.</p></dd>
 
 
 <dt id="arg-digits-p-digits-decimal-mark">digits, p_digits, decimal_mark<a class="anchor" aria-label="anchor" href="#arg-digits-p-digits-decimal-mark"></a></dt>

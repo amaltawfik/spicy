@@ -36,10 +36,25 @@ A named character vector, one element per key, in registry order.
   does not: a named list (or named character vector) whose names are
   keys of `spicy_labels()`. An unknown key is an error.
 
+- **`options(spicy.var_labels = TRUE)`** How the descriptive tables
+  ([`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md),
+  [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md)
+  and the survey twins) and the regression tables
+  ([`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md),
+  [`table_regression_uv()`](https://amaltawfik.github.io/spicy/reference/table_regression_uv.md))
+  name your variables: `TRUE` shows each variable's `label` attribute,
+  `FALSE` (the default) its name. It is the default of their `labels`
+  argument, and the variables a named `labels` vector leaves out follow
+  it. A `TRUE`, a `FALSE` or a
+  [`var_labels()`](https://amaltawfik.github.io/spicy/reference/var_labels.md)
+  typed in the call wins over it. Any other value is an error.
+
 A label resolves through `spicy.labels`, then the `spicy.language` set,
 then English. A set carries only the keys it translates, so anything it
 does not name falls back to English rather than erroring or coming out
-blank. Both options are cleared with `NULL`.
+blank. All three options are cleared with `NULL`.
 
 ## What a language does not change
 
@@ -132,17 +147,17 @@ fr[["row_missing_level"]]
 # variable is a refusal to answer here, not an absent value.
 old <- options(spicy.labels = list(row_missing_level = "(No answer)"))
 table_categorical(sochealth, select = sex, by = smoking)
-#> Categorical table by Current smoker
+#> Categorical table by smoking
 #> 
 #>  Variable │ No n  No %  Yes n  Yes %  (No answer) n  (No answer) %  Total n 
 #> ──────────┼─────────────────────────────────────────────────────────────────
-#>  Sex      │                                                                 
+#>  sex      │                                                                 
 #>    Female │ 475   51.3   131   52.6        14            56.0         620   
 #>    Male   │ 451   48.7   118   47.4        11            44.0         580   
 #> 
 #>  Variable │ Total %   p    Phi 
 #> ──────────┼────────────────────
-#>  Sex      │          .713  .01 
+#>  sex      │          .713  .01 
 #>    Female │  51.7              
 #>    Male   │  48.3              
 options(old)

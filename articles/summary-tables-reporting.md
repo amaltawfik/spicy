@@ -124,7 +124,7 @@ table_categorical(
     physical_activity = "Regular physical activity"
   )
 )
-#> Categorical table by Highest education level
+#> Categorical table by education
 #> 
 #>  Variable                  │ Lower secondary n  Lower secondary % 
 #> ───────────────────────────┼──────────────────────────────────────
@@ -172,7 +172,7 @@ table_continuous(
     life_sat_health = "Satisfaction with health"
   )
 )
-#> Descriptive statistics by Highest education level
+#> Descriptive statistics by education
 #> 
 #>  Variable                 │ Group              M     SD     Min    Max   
 #> ──────────────────────────┼──────────────────────────────────────────────
@@ -214,22 +214,22 @@ table_continuous_lm(
   weights = weight,
   vcov = "HC3"
 )
-#> Continuous outcomes by Highest education level
+#> Continuous outcomes by education
 #> 
-#>  Variable                       │ M (Lower secondary)  M (Upper secondary) 
-#> ────────────────────────────────┼──────────────────────────────────────────
-#>  Body mass index                │        27.85                25.79        
-#>  WHO-5 wellbeing index (0-100)  │        57.71                68.39        
-#>  Satisfaction with health (1-5) │         2.75                 3.50        
+#>  Variable        │ M (Lower secondary)  M (Upper secondary)  M (Tertiary) 
+#> ─────────────────┼────────────────────────────────────────────────────────
+#>  bmi             │        27.85                25.79            24.23     
+#>  wellbeing_score │        57.71                68.39            76.55     
+#>  life_sat_health │         2.75                 3.50             4.09     
 #> 
-#>  Variable                       │ M (Tertiary)    p     R²    n   
-#> ────────────────────────────────┼─────────────────────────────────
-#>  Body mass index                │    24.23      <.001  0.13  1188 
-#>  WHO-5 wellbeing index (0-100)  │    76.55      <.001  0.19  1200 
-#>  Satisfaction with health (1-5) │     4.09      <.001  0.15  1192 
+#>  Variable        │   p     R²    n   
+#> ─────────────────┼───────────────────
+#>  bmi             │ <.001  0.13  1188 
+#>  wellbeing_score │ <.001  0.19  1200 
+#>  life_sat_health │ <.001  0.15  1192 
 #> 
 #> Note. Std. errors: heteroskedasticity-robust (HC3).
-#> Missing values removed: Body mass index (12), Satisfaction with health (1-5) (8).
+#> Missing values removed: bmi (12), life_sat_health (8).
 ```
 
 Two words on the weighted example. `weights` supplies **case weights**,
@@ -327,7 +327,7 @@ table_categorical(
     dentist_12m       = "Visited a dentist in the last 12 months"
   )
 )
-#> Categorical table by Highest education level
+#> Categorical table by education
 #> 
 #>  Variable                                │ Lower secondary n  Lower secondary % 
 #> ─────────────────────────────────────────┼──────────────────────────────────────
@@ -406,7 +406,7 @@ table_continuous(
   p_value = TRUE,
   effect_size = TRUE
 )
-#> Descriptive statistics by Highest education level
+#> Descriptive statistics by education
 #> 
 #>  Variable                 │ Group              M     SD     Min    Max   
 #> ──────────────────────────┼──────────────────────────────────────────────
@@ -467,22 +467,22 @@ table_continuous_lm(
   vcov = "HC3",
   statistic = TRUE
 )
-#> Continuous outcomes by Sex
+#> Continuous outcomes by sex
 #> 
-#>  Variable                       │ M (Female)  M (Male)  Δ (Male - Female) 
-#> ────────────────────────────────┼─────────────────────────────────────────
-#>  Body mass index                │   25.69      26.20          0.51        
-#>  WHO-5 wellbeing index (0-100)  │   67.16      71.05          3.89        
-#>  Satisfaction with health (1-5) │    3.51       3.59          0.08        
+#>  Variable        │ M (Female)  M (Male)  Δ (Male - Female)  95% CI LL 
+#> ─────────────────┼────────────────────────────────────────────────────
+#>  bmi             │   25.69      26.20          0.51            0.09   
+#>  wellbeing_score │   67.16      71.05          3.89            2.12   
+#>  life_sat_health │    3.51       3.59          0.08           -0.06   
 #> 
-#>  Variable                       │ 95% CI LL  95% CI UL   t      p     R²    n   
-#> ────────────────────────────────┼───────────────────────────────────────────────
-#>  Body mass index                │    0.09      0.93     2.38   .018  0.00  1188 
-#>  WHO-5 wellbeing index (0-100)  │    2.12      5.65     4.32  <.001  0.02  1200 
-#>  Satisfaction with health (1-5) │   -0.06      0.22     1.11   .267  0.00  1192 
+#>  Variable        │ 95% CI UL   t      p     R²    n   
+#> ─────────────────┼────────────────────────────────────
+#>  bmi             │   0.93     2.38   .018  0.00  1188 
+#>  wellbeing_score │   5.65     4.32  <.001  0.02  1200 
+#>  life_sat_health │   0.22     1.11   .267  0.00  1192 
 #> 
 #> Note. Std. errors: heteroskedasticity-robust (HC3).
-#> Missing values removed: Body mass index (12), Satisfaction with health (1-5) (8).
+#> Missing values removed: bmi (12), life_sat_health (8).
 ```
 
 This is the better summary-table path when the article is already
@@ -506,31 +506,31 @@ table_continuous(
   smd = TRUE,
   p_value = FALSE
 )
-#> Descriptive statistics by Sex
+#> Descriptive statistics by sex
 #> 
-#>  Variable                      │ Group     M     SD     Min    Max    95% CI LL 
-#> ───────────────────────────────┼────────────────────────────────────────────────
-#>  Age (years)                   │ Female  49.38  14.91  25.00   75.00    48.20   
-#>                                │ Male    49.14  14.50  25.00   75.00    47.96   
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Body mass index               │ Female  25.69   3.78  16.00   38.90    25.39   
-#>                                │ Male    26.20   3.64  16.00   37.70    25.90   
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  WHO-5 wellbeing index (0-100) │ Female  67.16  14.80  19.60  100.00    65.99   
-#>                                │ Male    71.05  16.23  18.70  100.00    69.73   
+#>  Variable        │ Group     M     SD     Min    Max    95% CI LL  95% CI UL 
+#> ─────────────────┼───────────────────────────────────────────────────────────
+#>  age             │ Female  49.38  14.91  25.00   75.00    48.20      50.55   
+#>                  │ Male    49.14  14.50  25.00   75.00    47.96      50.32   
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  bmi             │ Female  25.69   3.78  16.00   38.90    25.39      25.98   
+#>                  │ Male    26.20   3.64  16.00   37.70    25.90      26.50   
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  wellbeing_score │ Female  67.16  14.80  19.60  100.00    65.99      68.33   
+#>                  │ Male    71.05  16.23  18.70  100.00    69.73      72.37   
 #> 
-#>  Variable                      │ Group   95% CI UL   n    SMD  
-#> ───────────────────────────────┼───────────────────────────────
-#>  Age (years)                   │ Female    50.55    620   0.02 
-#>                                │ Male      50.32    580        
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Body mass index               │ Female    25.98    616  -0.14 
-#>                                │ Male      26.50    572        
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  WHO-5 wellbeing index (0-100) │ Female    68.33    620  -0.25 
-#>                                │ Male      72.37    580        
+#>  Variable        │ Group    n    SMD  
+#> ─────────────────┼────────────────────
+#>  age             │ Female  620   0.02 
+#>                  │ Male    580        
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  bmi             │ Female  616  -0.14 
+#>                  │ Male    572        
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  wellbeing_score │ Female  620  -0.25 
+#>                  │ Male    580        
 #> 
-#> Missing values removed: Body mass index (12). SMD = standardized mean difference (Female - Male); |SMD| > 0.1 is the usual imbalance threshold.
+#> Missing values removed: bmi (12). SMD = standardized mean difference (Female - Male); |SMD| > 0.1 is the usual imbalance threshold.
 ```
 
 ``` r
@@ -541,29 +541,29 @@ table_categorical(
   by = sex,
   smd = TRUE
 )
-#> Categorical table by Sex
+#> Categorical table by sex
 #> 
-#>  Variable                  │ Female n  Female %  Male n  Male %  Total n 
-#> ───────────────────────────┼─────────────────────────────────────────────
-#>  Current smoker            │                                             
-#>    No                      │   475       76.6     451     77.8     926   
-#>    Yes                     │   131       21.1     118     20.3     249   
-#>    (Missing)               │    14        2.3      11      1.9      25   
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Regular physical activity │                                             
-#>    No                      │   334       53.9     316     54.5     650   
-#>    Yes                     │   286       46.1     264     45.5     550   
+#>  Variable          │ Female n  Female %  Male n  Male %  Total n  Total %   p   
+#> ───────────────────┼────────────────────────────────────────────────────────────
+#>  smoking           │                                                       .713 
+#>    No              │   475       76.6     451     77.8     926     77.2         
+#>    Yes             │   131       21.1     118     20.3     249     20.8         
+#>    (Missing)       │    14        2.3      11      1.9      25      2.1         
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  physical_activity │                                                       .832 
+#>    No              │   334       53.9     316     54.5     650     54.2         
+#>    Yes             │   286       46.1     264     45.5     550     45.8         
 #> 
-#>  Variable                  │ Total %   p    Phi  SMD  
-#> ───────────────────────────┼──────────────────────────
-#>  Current smoker            │          .713  .01  0.02 
-#>    No                      │  77.2                    
-#>    Yes                     │  20.8                    
-#>    (Missing)               │   2.1                    
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Regular physical activity │          .832  .01  0.01 
-#>    No                      │  54.2                    
-#>    Yes                     │  45.8                    
+#>  Variable          │ Phi  SMD  
+#> ───────────────────┼───────────
+#>  smoking           │ .01  0.02 
+#>    No              │           
+#>    Yes             │           
+#>    (Missing)       │           
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌
+#>  physical_activity │ .01  0.01 
+#>    No              │           
+#>    Yes             │           
 #> 
 #> SMD = standardized mean difference (Female - Male); |SMD| > 0.1 is the usual imbalance threshold.
 ```
@@ -791,21 +791,14 @@ guidelines:
 ``` r
 
 table_categorical(sochealth, select = smoking, by = sex, style = "jama")
-#> Categorical table by Sex
+#> Categorical table by sex
 #> 
-#>  Variable       │ Female n  Female %  Male n  Male %  Total n  Total %   p  
-#> ────────────────┼───────────────────────────────────────────────────────────
-#>  Current smoker │                                                       .71 
-#>    No           │   475       76.6     451     77.8     926     77.2        
-#>    Yes          │   131       21.1     118     20.3     249     20.8        
-#>    (Missing)    │    14        2.3      11      1.9      25      2.1        
-#> 
-#>  Variable       │ Phi 
-#> ────────────────┼─────
-#>  Current smoker │ .01 
-#>    No           │     
-#>    Yes          │     
-#>    (Missing)    │
+#>  Variable    │ Female n  Female %  Male n  Male %  Total n  Total %   p   Phi 
+#> ─────────────┼────────────────────────────────────────────────────────────────
+#>  smoking     │                                                       .71  .01 
+#>    No        │   475       76.6     451     77.8     926     77.2             
+#>    Yes       │   131       21.1     118     20.3     249     20.8             
+#>    (Missing) │    14        2.3      11      1.9      25      2.1
 ```
 
 The visible change here is the *p* column: JAMA rounds *p* values to two
@@ -831,19 +824,19 @@ headers, row labels, titles and table notes, and the numbers with them:
 
 options(spicy.language = "fr")
 table_continuous(sochealth, select = bmi, by = sex)
-#> Statistiques descriptives selon Sex
+#> Statistiques descriptives selon sex
 #> 
-#>  Variable        │ Groupe    M     ET    Min    Max   IC à 95 % LI 
-#> ─────────────────┼─────────────────────────────────────────────────
-#>  Body mass index │ Female  25,69  3,78  16,00  38,90     25,39     
-#>                  │ Male    26,20  3,64  16,00  37,70     25,90     
+#>  Variable │ Groupe    M     ET    Min    Max   IC à 95 % LI  IC à 95 % LS   n  
+#> ──────────┼────────────────────────────────────────────────────────────────────
+#>  bmi      │ Female  25,69  3,78  16,00  38,90     25,39         25,98      616 
+#>           │ Male    26,20  3,64  16,00  37,70     25,90         26,50      572 
 #> 
-#>  Variable        │ Groupe  IC à 95 % LS   n     p   
-#> ─────────────────┼──────────────────────────────────
-#>  Body mass index │ Female     25,98      616  0,018 
-#>                  │ Male       26,50      572        
+#>  Variable │ Groupe    p   
+#> ──────────┼───────────────
+#>  bmi      │ Female  0,018 
+#>           │ Male          
 #> 
-#> Valeurs manquantes retirées : Body mass index (12).
+#> Valeurs manquantes retirées : bmi (12).
 ```
 
 One gesture, one coherent table. A language brings its typography with
@@ -868,19 +861,19 @@ French JAMA table keeps the comma:
 ``` r
 
 table_continuous(sochealth, select = bmi, by = sex, style = "jama")
-#> Statistiques descriptives selon Sex
+#> Statistiques descriptives selon sex
 #> 
-#>  Variable        │ Groupe    M     ET    Min    Max   IC à 95 % LI 
-#> ─────────────────┼─────────────────────────────────────────────────
-#>  Body mass index │ Female  25,69  3,78  16,00  38,90     25,39     
-#>                  │ Male    26,20  3,64  16,00  37,70     25,90     
+#>  Variable │ Groupe    M     ET    Min    Max   IC à 95 % LI  IC à 95 % LS   n  
+#> ──────────┼────────────────────────────────────────────────────────────────────
+#>  bmi      │ Female  25,69  3,78  16,00  38,90     25,39         25,98      616 
+#>           │ Male    26,20  3,64  16,00  37,70     25,90         26,50      572 
 #> 
-#>  Variable        │ Groupe  IC à 95 % LS   n    p  
-#> ─────────────────┼────────────────────────────────
-#>  Body mass index │ Female     25,98      616  ,02 
-#>                  │ Male       26,50      572      
+#>  Variable │ Groupe   p  
+#> ──────────┼─────────────
+#>  bmi      │ Female  ,02 
+#>           │ Male        
 #> 
-#> Valeurs manquantes retirées : Body mass index (12).
+#> Valeurs manquantes retirées : bmi (12).
 ```
 
 Where the two do meet, the theme wins — you asked for it by name. JAMA’s
@@ -898,19 +891,19 @@ leading-zero rule is a style lever, not an argument:
 ``` r
 
 table_continuous(sochealth, select = bmi, by = sex, decimal_mark = ".")
-#> Statistiques descriptives selon Sex
+#> Statistiques descriptives selon sex
 #> 
-#>  Variable        │ Groupe    M     ET    Min    Max   IC à 95 % LI 
-#> ─────────────────┼─────────────────────────────────────────────────
-#>  Body mass index │ Female  25.69  3.78  16.00  38.90     25.39     
-#>                  │ Male    26.20  3.64  16.00  37.70     25.90     
+#>  Variable │ Groupe    M     ET    Min    Max   IC à 95 % LI  IC à 95 % LS   n  
+#> ──────────┼────────────────────────────────────────────────────────────────────
+#>  bmi      │ Female  25.69  3.78  16.00  38.90     25.39         25.98      616 
+#>           │ Male    26.20  3.64  16.00  37.70     25.90         26.50      572 
 #> 
-#>  Variable        │ Groupe  IC à 95 % LS   n     p   
-#> ─────────────────┼──────────────────────────────────
-#>  Body mass index │ Female     25.98      616  0.018 
-#>                  │ Male       26.50      572        
+#>  Variable │ Groupe    p   
+#> ──────────┼───────────────
+#>  bmi      │ Female  0.018 
+#>           │ Male          
 #> 
-#> Valeurs manquantes retirées : Body mass index (12).
+#> Valeurs manquantes retirées : bmi (12).
 ```
 
 When one word has to change and a language does not — a questionnaire
@@ -922,17 +915,17 @@ whatever language is in force:
 
 options(spicy.labels = list(row_missing_level = "(No answer)"))
 table_categorical(sochealth, select = sex, by = smoking)
-#> Categorical table by Current smoker
+#> Categorical table by smoking
 #> 
 #>  Variable │ No n  No %  Yes n  Yes %  (No answer) n  (No answer) %  Total n 
 #> ──────────┼─────────────────────────────────────────────────────────────────
-#>  Sex      │                                                                 
+#>  sex      │                                                                 
 #>    Female │ 475   51.3   131   52.6        14            56.0         620   
 #>    Male   │ 451   48.7   118   47.4        11            44.0         580   
 #> 
 #>  Variable │ Total %   p    Phi 
 #> ──────────┼────────────────────
-#>  Sex      │          .713  .01 
+#>  sex      │          .713  .01 
 #>    Female │  51.7              
 #>    Male   │  48.3
 options(spicy.labels = NULL)
@@ -1065,9 +1058,8 @@ tab |>
 |     No | 177 | 67.8 | 310 | 57.5 | 163 | 40.8 | 650 | 54.2 |       |     |
 |     Yes |  84 | 32.2 | 229 | 42.5 | 237 | 59.2 | 550 | 45.8 |       |     |
 
-Categorical table by Highest education level
-{#tinytable_x9hjcbpmv14z4wedfj7k .table .tinytable
-style="width: auto; margin-left: auto; margin-right: auto;"
+Categorical table by education {#tinytable_msmu2gndmjho69lq8m68 .table
+.tinytable style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 
 Use `flextable::` functions when you want to keep working toward Office

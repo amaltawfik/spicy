@@ -104,6 +104,7 @@ presentation of applied epidemiology (the
 <span>  complete_cases <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  show_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"n"</span>, <span class="st">"b"</span>, <span class="st">"ci"</span>, <span class="st">"p"</span><span class="op">)</span>,</span>
 <span>  show_intercept <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">getOption</a></span><span class="op">(</span><span class="st">"spicy.var_labels"</span>, <span class="cn">FALSE</span><span class="op">)</span>,</span>
 <span>  title <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -190,6 +191,32 @@ because each univariable fit carries its own nuisance intercept.
 See <em>Intercepts</em>.</p></dd>
 
 
+<dt id="arg-labels">labels<a class="anchor" aria-label="anchor" href="#arg-labels"></a></dt>
+<dd><p>How the variables are named: the outcome in the title,
+a numeric predictor in its row, and a factor in its header. The
+four forms of <code><a href="table_regression.html">table_regression()</a></code>:</p><ul><li><p><code>labels = FALSE</code> shows the column names.</p></li>
+<li><p><code>labels = TRUE</code> shows each column's <code>label</code> attribute (as set by
+<code>haven</code>, <code>labelled</code>, or <code><a href="label_from_names.html">label_from_names()</a></code>) when it is present,
+not <code>NA</code>, and not empty, and the column name otherwise. Factor
+levels keep their names.</p></li>
+<li><p><code>labels = c(age = "Age (years)", sexMale = "Men")</code>, a named
+character vector, gives the variables and rows it names these
+labels. Every other variable follows <code>options(spicy.var_labels)</code>:
+its name when the option is unset or <code>FALSE</code>, its <code>label</code>
+attribute when it is <code>TRUE</code>.</p></li>
+<li><p><code>labels = var_labels(age = "Age in years")</code> gives the variables
+and rows it names these labels, and every other variable its
+<code>label</code> attribute, whatever the option says. <code><a href="var_labels.html">var_labels()</a></code> alone
+is <code>labels = TRUE</code>.</p></li>
+</ul><p>The names are the outcome and predictor columns and the coefficient
+names (<code>"sexMale"</code> names the row of one level), as in
+<code><a href="table_regression.html">table_regression()</a></code>. Names that match nothing are ignored. The
+default reads <code>options(spicy.var_labels)</code>, and a <code>TRUE</code> or <code>FALSE</code>
+typed in the call wins over it. Any other value, <code>NULL</code> included, is
+an error. A variable label documents the data file; a published
+table carries the wording you set here.</p></dd>
+
+
 <dt id="arg-title">title<a class="anchor" aria-label="anchor" href="#arg-title"></a></dt>
 <dd><p>Table title; <code>NULL</code> (default) builds
 <code>"Univariable and multivariable &lt;type&gt; regression: &lt;outcome&gt;"</code>.</p></dd>
@@ -197,7 +224,7 @@ See <em>Intercepts</em>.</p></dd>
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
 <dd><p>Passed to <code><a href="table_regression.html">table_regression()</a></code> (<code>exponentiate</code>, <code>vcov</code>,
-<code>cluster</code>, <code>p_adjust</code>, <code>digits</code>, <code>labels</code>, <code>output</code>, ...).
+<code>cluster</code>, <code>p_adjust</code>, <code>digits</code>, <code>output</code>, ...).
 <code>nested</code> is not
 meaningful for a screen and is refused. <code>cluster</code> must be a
 single vector with one value per row of <code>data</code>; it is aligned to

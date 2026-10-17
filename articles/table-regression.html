@@ -534,8 +534,10 @@ places each model in its own panel under a centered <strong>spanner
 label</strong> showing the model name; sub-columns
 (<code>B / SE / p</code>) are repeated under the spanner. When dependent
 variables differ across models and the user did not supply labels
-(<code>model_labels =</code> or named list), the bare DV name is lifted
-into the spanner automatically:</p>
+(<code>model_labels =</code> or named list), each outcome is lifted into
+the spanner automatically: its variable name by default, its label
+attribute with <code>labels = TRUE</code> (see <em>Display
+options</em>):</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">m_wellbeing</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">wellbeing_score</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">smoking</span>,</span>
 <span>                   data <span class="op">=</span> <span class="va">sochealth</span><span class="op">)</span></span>
@@ -1072,9 +1074,14 @@ numeric value stays readable.</p>
 <div class="section level2">
 <h2 id="display-options">Display options<a class="anchor" aria-label="anchor" href="#display-options"></a>
 </h2>
-<p><code>labels</code> accepts a named character vector keyed by either
+<p><code>labels</code> names the variables in four forms:
+<code>FALSE</code> (the default) keeps the names the model gives them,
+and <code>TRUE</code> shows the label attribute of the outcome, the
+numeric terms, and the factor headers. A named character vector keyed by
 formula term labels (<code>"sex"</code>) or coefficient names
-(<code>"sexMale"</code>), so individual contrast rows can be relabeled.
+(<code>"sexMale"</code>) sets the wording you publish, and
+<code>var_labels(age = "Age in years")</code> renames a few variables
+while the others keep their label attribute.
 <code>intercept_position</code> switches the intercept to the bottom
 (Stata convention). <code>reference_style = "annotation"</code> lifts
 the reference level into the factor header

@@ -149,22 +149,22 @@ changes.</p>
 </h2>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_outcome.html">table_outcome</a></span><span class="op">(</span><span class="va">sochealth</span>, outcome <span class="op">=</span> <span class="va">bmi</span>, select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">sex</span>, <span class="va">smoking</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Descriptive statistics of Body mass index</span></span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Descriptive statistics of bmi</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable       <span style="color: #9E9E9E;">│</span>   M     SD    Min    Max   95% CI LL  95% CI UL   n     p   </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────┼─────────────────────────────────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  Overall        <span style="color: #9E9E9E;">│</span> 25.93  3.72  16.00  38.90    25.72      26.14    1188       </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  Sex            <span style="color: #9E9E9E;">│</span>                                                        .018 </span></span>
-<span><span class="co">#&gt;    Female       <span style="color: #9E9E9E;">│</span> 25.69  3.78  16.00  38.90    25.39      25.98     616       </span></span>
-<span><span class="co">#&gt;    Male         <span style="color: #9E9E9E;">│</span> 26.20  3.64  16.00  37.70    25.90      26.50     572       </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  Current smoker <span style="color: #9E9E9E;">│</span>                                                        .903 </span></span>
-<span><span class="co">#&gt;    No           <span style="color: #9E9E9E;">│</span> 25.96  3.76  16.00  38.90    25.72      26.21     915       </span></span>
-<span><span class="co">#&gt;    Yes          <span style="color: #9E9E9E;">│</span> 25.93  3.58  16.80  35.30    25.48      26.38     248       </span></span>
-<span><span class="co">#&gt;    (Missing)    <span style="color: #9E9E9E;">│</span> 24.74  3.63  17.60  32.50    23.24      26.23      25       </span></span>
+<span><span class="co">#&gt;  Variable    <span style="color: #9E9E9E;">│</span>   M     SD    Min    Max   95% CI LL  95% CI UL   n     p   </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────┼─────────────────────────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  Overall     <span style="color: #9E9E9E;">│</span> 25.93  3.72  16.00  38.90    25.72      26.14    1188       </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  sex         <span style="color: #9E9E9E;">│</span>                                                        .018 </span></span>
+<span><span class="co">#&gt;    Female    <span style="color: #9E9E9E;">│</span> 25.69  3.78  16.00  38.90    25.39      25.98     616       </span></span>
+<span><span class="co">#&gt;    Male      <span style="color: #9E9E9E;">│</span> 26.20  3.64  16.00  37.70    25.90      26.50     572       </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  smoking     <span style="color: #9E9E9E;">│</span>                                                        .903 </span></span>
+<span><span class="co">#&gt;    No        <span style="color: #9E9E9E;">│</span> 25.96  3.76  16.00  38.90    25.72      26.21     915       </span></span>
+<span><span class="co">#&gt;    Yes       <span style="color: #9E9E9E;">│</span> 25.93  3.58  16.80  35.30    25.48      26.38     248       </span></span>
+<span><span class="co">#&gt;    (Missing) <span style="color: #9E9E9E;">│</span> 24.74  3.63  17.60  32.50    23.24      26.23      25       </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Missing values removed: Body mass index (12). Group comparison: Welch t-test. Each block compares Body mass index across the levels of one variable; blocks are not adjusted for one another. Overall = the whole analytic sample.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Missing values removed: bmi (12). Group comparison: Welch t-test. Each block compares bmi across the levels of one variable; blocks are not adjusted for one another. Overall = the whole analytic sample.</span></span></span></code></pre></div>
 <p>Four things to notice, because each is a decision:</p>
 <ol style="list-style-type: decimal">
 <li>
@@ -214,17 +214,17 @@ rows instead of showing them. The blocks then no longer share a
 denominator, and the note reports the loss per variable:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_outcome.html">table_outcome</a></span><span class="op">(</span><span class="va">sochealth</span>, <span class="va">bmi</span>, select <span class="op">=</span> <span class="va">smoking</span>, drop_na <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Descriptive statistics of Body mass index</span></span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Descriptive statistics of bmi</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable       <span style="color: #9E9E9E;">│</span>   M     SD    Min    Max   95% CI LL  95% CI UL   n     p   </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────────┼─────────────────────────────────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  Overall        <span style="color: #9E9E9E;">│</span> 25.93  3.72  16.00  38.90    25.72      26.14    1188       </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  Current smoker <span style="color: #9E9E9E;">│</span>                                                        .903 </span></span>
-<span><span class="co">#&gt;    No           <span style="color: #9E9E9E;">│</span> 25.96  3.76  16.00  38.90    25.72      26.21     915       </span></span>
-<span><span class="co">#&gt;    Yes          <span style="color: #9E9E9E;">│</span> 25.93  3.58  16.80  35.30    25.48      26.38     248       </span></span>
+<span><span class="co">#&gt;  Variable <span style="color: #9E9E9E;">│</span>   M     SD    Min    Max   95% CI LL  95% CI UL   n     p   </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">──────────┼─────────────────────────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  Overall  <span style="color: #9E9E9E;">│</span> 25.93  3.72  16.00  38.90    25.72      26.14    1188       </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  smoking  <span style="color: #9E9E9E;">│</span>                                                        .903 </span></span>
+<span><span class="co">#&gt;    No     <span style="color: #9E9E9E;">│</span> 25.96  3.76  16.00  38.90    25.72      26.21     915       </span></span>
+<span><span class="co">#&gt;    Yes    <span style="color: #9E9E9E;">│</span> 25.93  3.58  16.80  35.30    25.48      26.38     248       </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Missing values removed: Body mass index (12). Rows with missing Current smoker removed: 25. Group comparison: Welch t-test. Each block compares Body mass index across the levels of one variable; blocks are not adjusted for one another. Overall = the whole analytic sample.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Missing values removed: bmi (12). Rows with missing smoking removed: 25. Group comparison: Welch t-test. Each block compares bmi across the levels of one variable; blocks are not adjusted for one another. Overall = the whole analytic sample.</span></span></span></code></pre></div>
 <div class="section level3">
 <h3 id="why-overall-and-not-total">Why “Overall” and not “Total”<a class="anchor" aria-label="anchor" href="#why-overall-and-not-total"></a>
 </h3>
@@ -259,22 +259,22 @@ changes here.</p>
 <span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">sex</span>, <span class="va">education</span><span class="op">)</span>,</span>
 <span>  show_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"med_iqr"</span>, <span class="st">"n"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Descriptive statistics of Body mass index</span></span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Descriptive statistics of bmi</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable                  <span style="color: #9E9E9E;">│</span>      Med [Q1, Q3]         n        p    </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────────────┼─────────────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  Overall                   <span style="color: #9E9E9E;">│</span>  25.90 [23.40, 28.60]    1188           </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  Sex                       <span style="color: #9E9E9E;">│</span>                                   .038  </span></span>
-<span><span class="co">#&gt;    Female                  <span style="color: #9E9E9E;">│</span>  25.70 [23.10, 28.60]     616           </span></span>
-<span><span class="co">#&gt;    Male                    <span style="color: #9E9E9E;">│</span>  26.10 [23.87, 28.63]     572           </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  Highest education level   <span style="color: #9E9E9E;">│</span>                                  &lt;.001  </span></span>
-<span><span class="co">#&gt;    Lower secondary         <span style="color: #9E9E9E;">│</span>  28.20 [25.70, 29.90]     260           </span></span>
-<span><span class="co">#&gt;    Upper secondary         <span style="color: #9E9E9E;">│</span>  26.10 [23.50, 28.50]     534           </span></span>
-<span><span class="co">#&gt;    Tertiary                <span style="color: #9E9E9E;">│</span>  24.50 [22.00, 26.78]     394           </span></span>
+<span><span class="co">#&gt;  Variable            <span style="color: #9E9E9E;">│</span>      Med [Q1, Q3]         n        p    </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────────┼─────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  Overall             <span style="color: #9E9E9E;">│</span>  25.90 [23.40, 28.60]    1188           </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  sex                 <span style="color: #9E9E9E;">│</span>                                   .038  </span></span>
+<span><span class="co">#&gt;    Female            <span style="color: #9E9E9E;">│</span>  25.70 [23.10, 28.60]     616           </span></span>
+<span><span class="co">#&gt;    Male              <span style="color: #9E9E9E;">│</span>  26.10 [23.87, 28.63]     572           </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  education           <span style="color: #9E9E9E;">│</span>                                  &lt;.001  </span></span>
+<span><span class="co">#&gt;    Lower secondary   <span style="color: #9E9E9E;">│</span>  28.20 [25.70, 29.90]     260           </span></span>
+<span><span class="co">#&gt;    Upper secondary   <span style="color: #9E9E9E;">│</span>  26.10 [23.50, 28.50]     534           </span></span>
+<span><span class="co">#&gt;    Tertiary          <span style="color: #9E9E9E;">│</span>  24.50 [22.00, 26.78]     394           </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Missing values removed: Body mass index (12). Group comparison: Kruskal-Wallis test (education); Wilcoxon rank-sum test (sex). Med [Q1, Q3] = median [first quartile, third quartile]. Each block compares Body mass index across the levels of one variable; blocks are not adjusted for one another. Overall = the whole analytic sample.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Missing values removed: bmi (12). Group comparison: Kruskal-Wallis test (education); Wilcoxon rank-sum test (sex). Med [Q1, Q3] = median [first quartile, third quartile]. Each block compares bmi across the levels of one variable; blocks are not adjusted for one another. Overall = the whole analytic sample.</span></span></span></code></pre></div>
 <p>Only the character-vector form is accepted. The per-variable named
 list of <code><a href="../reference/table_continuous.html">table_continuous()</a></code> would name nothing here: there
 is one outcome.</p>
@@ -301,41 +301,41 @@ as many words.</p>
 <span>  statistic <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  effect_size <span class="op">=</span> <span class="st">"auto"</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Descriptive statistics of Body mass index</span></span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Descriptive statistics of bmi</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable            <span style="color: #9E9E9E;">│</span>   M     SD    Min    Max   95% CI LL  95% CI UL   n   </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────────┼───────────────────────────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  Overall             <span style="color: #9E9E9E;">│</span> 25.93  3.72  16.00  38.90    25.72      26.14    1188 </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  Sex                 <span style="color: #9E9E9E;">│</span>                                                       </span></span>
-<span><span class="co">#&gt;    Female            <span style="color: #9E9E9E;">│</span> 25.69  3.78  16.00  38.90    25.39      25.98     616 </span></span>
-<span><span class="co">#&gt;    Male              <span style="color: #9E9E9E;">│</span> 26.20  3.64  16.00  37.70    25.90      26.50     572 </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  Region of residence <span style="color: #9E9E9E;">│</span>                                                       </span></span>
-<span><span class="co">#&gt;    Central           <span style="color: #9E9E9E;">│</span> 25.76  3.85  16.00  37.30    25.28      26.25     241 </span></span>
-<span><span class="co">#&gt;    East              <span style="color: #9E9E9E;">│</span> 25.96  3.98  16.00  37.70    25.30      26.61     144 </span></span>
-<span><span class="co">#&gt;    North             <span style="color: #9E9E9E;">│</span> 26.13  3.42  19.00  36.60    25.66      26.61     201 </span></span>
-<span><span class="co">#&gt;    Other             <span style="color: #9E9E9E;">│</span> 26.11  3.85  17.30  38.90    25.57      26.65     196 </span></span>
-<span><span class="co">#&gt;    South             <span style="color: #9E9E9E;">│</span> 25.71  3.58  16.00  35.30    25.21      26.21     198 </span></span>
-<span><span class="co">#&gt;    West              <span style="color: #9E9E9E;">│</span> 25.96  3.69  16.00  34.00    25.45      26.46     208 </span></span>
+<span><span class="co">#&gt;  Variable  <span style="color: #9E9E9E;">│</span>   M     SD    Min    Max   95% CI LL  95% CI UL   n   </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────┼───────────────────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  Overall   <span style="color: #9E9E9E;">│</span> 25.93  3.72  16.00  38.90    25.72      26.14    1188 </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  sex       <span style="color: #9E9E9E;">│</span>                                                       </span></span>
+<span><span class="co">#&gt;    Female  <span style="color: #9E9E9E;">│</span> 25.69  3.78  16.00  38.90    25.39      25.98     616 </span></span>
+<span><span class="co">#&gt;    Male    <span style="color: #9E9E9E;">│</span> 26.20  3.64  16.00  37.70    25.90      26.50     572 </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  region    <span style="color: #9E9E9E;">│</span>                                                       </span></span>
+<span><span class="co">#&gt;    Central <span style="color: #9E9E9E;">│</span> 25.76  3.85  16.00  37.30    25.28      26.25     241 </span></span>
+<span><span class="co">#&gt;    East    <span style="color: #9E9E9E;">│</span> 25.96  3.98  16.00  37.70    25.30      26.61     144 </span></span>
+<span><span class="co">#&gt;    North   <span style="color: #9E9E9E;">│</span> 26.13  3.42  19.00  36.60    25.66      26.61     201 </span></span>
+<span><span class="co">#&gt;    Other   <span style="color: #9E9E9E;">│</span> 26.11  3.85  17.30  38.90    25.57      26.65     196 </span></span>
+<span><span class="co">#&gt;    South   <span style="color: #9E9E9E;">│</span> 25.71  3.58  16.00  35.30    25.21      26.21     198 </span></span>
+<span><span class="co">#&gt;    West    <span style="color: #9E9E9E;">│</span> 25.96  3.69  16.00  34.00    25.45      26.46     208 </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable            <span style="color: #9E9E9E;">│</span>         Test           p       ES     </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────────┼───────────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  Overall             <span style="color: #9E9E9E;">│</span>                                       </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  Sex                 <span style="color: #9E9E9E;">│</span>   t(1184.50) = -2.38  .018  g = -0.14 </span></span>
-<span><span class="co">#&gt;    Female            <span style="color: #9E9E9E;">│</span>                                       </span></span>
-<span><span class="co">#&gt;    Male              <span style="color: #9E9E9E;">│</span>                                       </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  Region of residence <span style="color: #9E9E9E;">│</span> F(5, 531.84) = 0.47   .798  η² = 0.00 </span></span>
-<span><span class="co">#&gt;    Central           <span style="color: #9E9E9E;">│</span>                                       </span></span>
-<span><span class="co">#&gt;    East              <span style="color: #9E9E9E;">│</span>                                       </span></span>
-<span><span class="co">#&gt;    North             <span style="color: #9E9E9E;">│</span>                                       </span></span>
-<span><span class="co">#&gt;    Other             <span style="color: #9E9E9E;">│</span>                                       </span></span>
-<span><span class="co">#&gt;    South             <span style="color: #9E9E9E;">│</span>                                       </span></span>
-<span><span class="co">#&gt;    West              <span style="color: #9E9E9E;">│</span>                                       </span></span>
+<span><span class="co">#&gt;  Variable  <span style="color: #9E9E9E;">│</span>         Test           p       ES     </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────┼───────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  Overall   <span style="color: #9E9E9E;">│</span>                                       </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  sex       <span style="color: #9E9E9E;">│</span>   t(1184.50) = -2.38  .018  g = -0.14 </span></span>
+<span><span class="co">#&gt;    Female  <span style="color: #9E9E9E;">│</span>                                       </span></span>
+<span><span class="co">#&gt;    Male    <span style="color: #9E9E9E;">│</span>                                       </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  region    <span style="color: #9E9E9E;">│</span> F(5, 531.84) = 0.47   .798  η² = 0.00 </span></span>
+<span><span class="co">#&gt;    Central <span style="color: #9E9E9E;">│</span>                                       </span></span>
+<span><span class="co">#&gt;    East    <span style="color: #9E9E9E;">│</span>                                       </span></span>
+<span><span class="co">#&gt;    North   <span style="color: #9E9E9E;">│</span>                                       </span></span>
+<span><span class="co">#&gt;    Other   <span style="color: #9E9E9E;">│</span>                                       </span></span>
+<span><span class="co">#&gt;    South   <span style="color: #9E9E9E;">│</span>                                       </span></span>
+<span><span class="co">#&gt;    West    <span style="color: #9E9E9E;">│</span>                                       </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Missing values removed: Body mass index (12). Group comparison: Welch one-way ANOVA (region); Welch t-test (sex). Each block compares Body mass index across the levels of one variable; blocks are not adjusted for one another. Overall = the whole analytic sample.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Missing values removed: bmi (12). Group comparison: Welch one-way ANOVA (region); Welch t-test (sex). Each block compares bmi across the levels of one variable; blocks are not adjusted for one another. Overall = the whole analytic sample.</span></span></span></code></pre></div>
 <p>Read that table as a set of bivariate descriptions. It is not a
 model, and the blocks are not independent of one another: sex and region
 are correlated in any real sample, so a difference visible in one block
@@ -396,88 +396,88 @@ forms are an explicit enumeration or <code>where(is.factor)</code>:</p>
 <span>  select <span class="op">=</span> <span class="fu"><a href="https://tidyselect.r-lib.org/reference/where.html" class="external-link">where</a></span><span class="op">(</span><span class="va">is.factor</span><span class="op">)</span>,</span>
 <span>  show_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"m"</span>, <span class="st">"sd"</span>, <span class="st">"n"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Descriptive statistics of WHO-5 wellbeing index (0-100)</span></span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Descriptive statistics of wellbeing_score</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable                          <span style="color: #9E9E9E;">│</span>    M       SD       n        p    </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────────────────────┼───────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  Overall                           <span style="color: #9E9E9E;">│</span>  69.04    15.62    1200           </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  Sex                               <span style="color: #9E9E9E;">│</span>                            &lt;.001  </span></span>
-<span><span class="co">#&gt;    Female                          <span style="color: #9E9E9E;">│</span>  67.16    14.80     620           </span></span>
-<span><span class="co">#&gt;    Male                            <span style="color: #9E9E9E;">│</span>  71.05    16.23     580           </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  Age group                         <span style="color: #9E9E9E;">│</span>                             .372  </span></span>
-<span><span class="co">#&gt;    25-34                           <span style="color: #9E9E9E;">│</span>  67.55    15.36     242           </span></span>
-<span><span class="co">#&gt;    35-49                           <span style="color: #9E9E9E;">│</span>  69.48    15.36     383           </span></span>
-<span><span class="co">#&gt;    50-64                           <span style="color: #9E9E9E;">│</span>  69.06    15.94     327           </span></span>
-<span><span class="co">#&gt;    65-75                           <span style="color: #9E9E9E;">│</span>  69.78    15.84     248           </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  Highest education level           <span style="color: #9E9E9E;">│</span>                            &lt;.001  </span></span>
-<span><span class="co">#&gt;    Lower secondary                 <span style="color: #9E9E9E;">│</span>  57.22    15.44     261           </span></span>
-<span><span class="co">#&gt;    Upper secondary                 <span style="color: #9E9E9E;">│</span>  68.97    13.62     539           </span></span>
-<span><span class="co">#&gt;    Tertiary                        <span style="color: #9E9E9E;">│</span>  76.85    13.23     400           </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  Subjective social class           <span style="color: #9E9E9E;">│</span>                            &lt;.001  </span></span>
-<span><span class="co">#&gt;    Lower                           <span style="color: #9E9E9E;">│</span>  64.26    14.61     144           </span></span>
-<span><span class="co">#&gt;    Working                         <span style="color: #9E9E9E;">│</span>  65.24    15.39     278           </span></span>
-<span><span class="co">#&gt;    Lower middle                    <span style="color: #9E9E9E;">│</span>  69.17    16.58     326           </span></span>
-<span><span class="co">#&gt;    Middle                          <span style="color: #9E9E9E;">│</span>  72.82    14.13     306           </span></span>
-<span><span class="co">#&gt;    Upper middle                    <span style="color: #9E9E9E;">│</span>  72.78    14.95     146           </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  Region of residence               <span style="color: #9E9E9E;">│</span>                             .461  </span></span>
-<span><span class="co">#&gt;    Central                         <span style="color: #9E9E9E;">│</span>  68.59    15.64     245           </span></span>
-<span><span class="co">#&gt;    East                            <span style="color: #9E9E9E;">│</span>  69.69    16.00     145           </span></span>
-<span><span class="co">#&gt;    North                           <span style="color: #9E9E9E;">│</span>  69.70    16.04     203           </span></span>
-<span><span class="co">#&gt;    Other                           <span style="color: #9E9E9E;">│</span>  70.50    15.07     198           </span></span>
-<span><span class="co">#&gt;    South                           <span style="color: #9E9E9E;">│</span>  67.57    15.70     201           </span></span>
-<span><span class="co">#&gt;    West                            <span style="color: #9E9E9E;">│</span>  68.51    15.36     208           </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  Employment status                 <span style="color: #9E9E9E;">│</span>                             .049  </span></span>
-<span><span class="co">#&gt;    Employed                        <span style="color: #9E9E9E;">│</span>  69.42    15.07     762           </span></span>
-<span><span class="co">#&gt;    Student                         <span style="color: #9E9E9E;">│</span>  70.42    16.16     143           </span></span>
-<span><span class="co">#&gt;    Unemployed                      <span style="color: #9E9E9E;">│</span>  65.78    17.17     174           </span></span>
-<span><span class="co">#&gt;    Inactive                        <span style="color: #9E9E9E;">│</span>  69.72    15.64     121           </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  Household income group            <span style="color: #9E9E9E;">│</span>                             .149  </span></span>
-<span><span class="co">#&gt;    Low                             <span style="color: #9E9E9E;">│</span>  67.66    15.78     247           </span></span>
-<span><span class="co">#&gt;    Lower middle                    <span style="color: #9E9E9E;">│</span>  68.78    15.21     388           </span></span>
-<span><span class="co">#&gt;    Upper middle                    <span style="color: #9E9E9E;">│</span>  69.18    16.16     328           </span></span>
-<span><span class="co">#&gt;    High                            <span style="color: #9E9E9E;">│</span>  70.95    15.51     219           </span></span>
-<span><span class="co">#&gt;    (Missing)                       <span style="color: #9E9E9E;">│</span>  67.94    12.41      18           </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  Current smoker                    <span style="color: #9E9E9E;">│</span>                             .125  </span></span>
-<span><span class="co">#&gt;    No                              <span style="color: #9E9E9E;">│</span>  69.36    15.62     926           </span></span>
-<span><span class="co">#&gt;    Yes                             <span style="color: #9E9E9E;">│</span>  67.65    15.66     249           </span></span>
-<span><span class="co">#&gt;    (Missing)                       <span style="color: #9E9E9E;">│</span>  70.99    15.05      25           </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  Regular physical activity         <span style="color: #9E9E9E;">│</span>                             .001  </span></span>
-<span><span class="co">#&gt;    No                              <span style="color: #9E9E9E;">│</span>  67.71    15.92     650           </span></span>
-<span><span class="co">#&gt;    Yes                             <span style="color: #9E9E9E;">│</span>  70.61    15.13     550           </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  Dentist visit in last 12 months   <span style="color: #9E9E9E;">│</span>                            &lt;.001  </span></span>
-<span><span class="co">#&gt;    No                              <span style="color: #9E9E9E;">│</span>  66.15    14.79     354           </span></span>
-<span><span class="co">#&gt;    Yes                             <span style="color: #9E9E9E;">│</span>  70.25    15.81     846           </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  Self-rated health                 <span style="color: #9E9E9E;">│</span>                            &lt;.001  </span></span>
-<span><span class="co">#&gt;    Poor                            <span style="color: #9E9E9E;">│</span>  43.60    11.15      61           </span></span>
-<span><span class="co">#&gt;    Fair                            <span style="color: #9E9E9E;">│</span>  58.54    13.49     266           </span></span>
-<span><span class="co">#&gt;    Good                            <span style="color: #9E9E9E;">│</span>  71.58    12.58     558           </span></span>
-<span><span class="co">#&gt;    Very good                       <span style="color: #9E9E9E;">│</span>  78.67    12.54     295           </span></span>
-<span><span class="co">#&gt;    (Missing)                       <span style="color: #9E9E9E;">│</span>  73.42    11.32      20           </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  BMI category                      <span style="color: #9E9E9E;">│</span>                             .002  </span></span>
-<span><span class="co">#&gt;    Normal weight                   <span style="color: #9E9E9E;">│</span>  70.47    15.36     465           </span></span>
-<span><span class="co">#&gt;    Overweight                      <span style="color: #9E9E9E;">│</span>  68.78    15.65     569           </span></span>
-<span><span class="co">#&gt;    Obesity                         <span style="color: #9E9E9E;">│</span>  65.43    15.84     154           </span></span>
-<span><span class="co">#&gt;    (Missing)                       <span style="color: #9E9E9E;">│</span>  72.61    14.84      12           </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  Trust in institutions             <span style="color: #9E9E9E;">│</span>                             .366  </span></span>
-<span><span class="co">#&gt;    Very low                        <span style="color: #9E9E9E;">│</span>  69.84    15.35     366           </span></span>
-<span><span class="co">#&gt;    Low                             <span style="color: #9E9E9E;">│</span>  69.35    15.40     472           </span></span>
-<span><span class="co">#&gt;    High                            <span style="color: #9E9E9E;">│</span>  67.92    16.17     234           </span></span>
-<span><span class="co">#&gt;    Very high                       <span style="color: #9E9E9E;">│</span>  67.69    16.15     128           </span></span>
+<span><span class="co">#&gt;  Variable              <span style="color: #9E9E9E;">│</span>    M       SD       n        p    </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────────┼───────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  Overall               <span style="color: #9E9E9E;">│</span>  69.04    15.62    1200           </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  sex                   <span style="color: #9E9E9E;">│</span>                            &lt;.001  </span></span>
+<span><span class="co">#&gt;    Female              <span style="color: #9E9E9E;">│</span>  67.16    14.80     620           </span></span>
+<span><span class="co">#&gt;    Male                <span style="color: #9E9E9E;">│</span>  71.05    16.23     580           </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  age_group             <span style="color: #9E9E9E;">│</span>                             .372  </span></span>
+<span><span class="co">#&gt;    25-34               <span style="color: #9E9E9E;">│</span>  67.55    15.36     242           </span></span>
+<span><span class="co">#&gt;    35-49               <span style="color: #9E9E9E;">│</span>  69.48    15.36     383           </span></span>
+<span><span class="co">#&gt;    50-64               <span style="color: #9E9E9E;">│</span>  69.06    15.94     327           </span></span>
+<span><span class="co">#&gt;    65-75               <span style="color: #9E9E9E;">│</span>  69.78    15.84     248           </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  education             <span style="color: #9E9E9E;">│</span>                            &lt;.001  </span></span>
+<span><span class="co">#&gt;    Lower secondary     <span style="color: #9E9E9E;">│</span>  57.22    15.44     261           </span></span>
+<span><span class="co">#&gt;    Upper secondary     <span style="color: #9E9E9E;">│</span>  68.97    13.62     539           </span></span>
+<span><span class="co">#&gt;    Tertiary            <span style="color: #9E9E9E;">│</span>  76.85    13.23     400           </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  social_class          <span style="color: #9E9E9E;">│</span>                            &lt;.001  </span></span>
+<span><span class="co">#&gt;    Lower               <span style="color: #9E9E9E;">│</span>  64.26    14.61     144           </span></span>
+<span><span class="co">#&gt;    Working             <span style="color: #9E9E9E;">│</span>  65.24    15.39     278           </span></span>
+<span><span class="co">#&gt;    Lower middle        <span style="color: #9E9E9E;">│</span>  69.17    16.58     326           </span></span>
+<span><span class="co">#&gt;    Middle              <span style="color: #9E9E9E;">│</span>  72.82    14.13     306           </span></span>
+<span><span class="co">#&gt;    Upper middle        <span style="color: #9E9E9E;">│</span>  72.78    14.95     146           </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  region                <span style="color: #9E9E9E;">│</span>                             .461  </span></span>
+<span><span class="co">#&gt;    Central             <span style="color: #9E9E9E;">│</span>  68.59    15.64     245           </span></span>
+<span><span class="co">#&gt;    East                <span style="color: #9E9E9E;">│</span>  69.69    16.00     145           </span></span>
+<span><span class="co">#&gt;    North               <span style="color: #9E9E9E;">│</span>  69.70    16.04     203           </span></span>
+<span><span class="co">#&gt;    Other               <span style="color: #9E9E9E;">│</span>  70.50    15.07     198           </span></span>
+<span><span class="co">#&gt;    South               <span style="color: #9E9E9E;">│</span>  67.57    15.70     201           </span></span>
+<span><span class="co">#&gt;    West                <span style="color: #9E9E9E;">│</span>  68.51    15.36     208           </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  employment_status     <span style="color: #9E9E9E;">│</span>                             .049  </span></span>
+<span><span class="co">#&gt;    Employed            <span style="color: #9E9E9E;">│</span>  69.42    15.07     762           </span></span>
+<span><span class="co">#&gt;    Student             <span style="color: #9E9E9E;">│</span>  70.42    16.16     143           </span></span>
+<span><span class="co">#&gt;    Unemployed          <span style="color: #9E9E9E;">│</span>  65.78    17.17     174           </span></span>
+<span><span class="co">#&gt;    Inactive            <span style="color: #9E9E9E;">│</span>  69.72    15.64     121           </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  income_group          <span style="color: #9E9E9E;">│</span>                             .149  </span></span>
+<span><span class="co">#&gt;    Low                 <span style="color: #9E9E9E;">│</span>  67.66    15.78     247           </span></span>
+<span><span class="co">#&gt;    Lower middle        <span style="color: #9E9E9E;">│</span>  68.78    15.21     388           </span></span>
+<span><span class="co">#&gt;    Upper middle        <span style="color: #9E9E9E;">│</span>  69.18    16.16     328           </span></span>
+<span><span class="co">#&gt;    High                <span style="color: #9E9E9E;">│</span>  70.95    15.51     219           </span></span>
+<span><span class="co">#&gt;    (Missing)           <span style="color: #9E9E9E;">│</span>  67.94    12.41      18           </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  smoking               <span style="color: #9E9E9E;">│</span>                             .125  </span></span>
+<span><span class="co">#&gt;    No                  <span style="color: #9E9E9E;">│</span>  69.36    15.62     926           </span></span>
+<span><span class="co">#&gt;    Yes                 <span style="color: #9E9E9E;">│</span>  67.65    15.66     249           </span></span>
+<span><span class="co">#&gt;    (Missing)           <span style="color: #9E9E9E;">│</span>  70.99    15.05      25           </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  physical_activity     <span style="color: #9E9E9E;">│</span>                             .001  </span></span>
+<span><span class="co">#&gt;    No                  <span style="color: #9E9E9E;">│</span>  67.71    15.92     650           </span></span>
+<span><span class="co">#&gt;    Yes                 <span style="color: #9E9E9E;">│</span>  70.61    15.13     550           </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  dentist_12m           <span style="color: #9E9E9E;">│</span>                            &lt;.001  </span></span>
+<span><span class="co">#&gt;    No                  <span style="color: #9E9E9E;">│</span>  66.15    14.79     354           </span></span>
+<span><span class="co">#&gt;    Yes                 <span style="color: #9E9E9E;">│</span>  70.25    15.81     846           </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  self_rated_health     <span style="color: #9E9E9E;">│</span>                            &lt;.001  </span></span>
+<span><span class="co">#&gt;    Poor                <span style="color: #9E9E9E;">│</span>  43.60    11.15      61           </span></span>
+<span><span class="co">#&gt;    Fair                <span style="color: #9E9E9E;">│</span>  58.54    13.49     266           </span></span>
+<span><span class="co">#&gt;    Good                <span style="color: #9E9E9E;">│</span>  71.58    12.58     558           </span></span>
+<span><span class="co">#&gt;    Very good           <span style="color: #9E9E9E;">│</span>  78.67    12.54     295           </span></span>
+<span><span class="co">#&gt;    (Missing)           <span style="color: #9E9E9E;">│</span>  73.42    11.32      20           </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  bmi_category          <span style="color: #9E9E9E;">│</span>                             .002  </span></span>
+<span><span class="co">#&gt;    Normal weight       <span style="color: #9E9E9E;">│</span>  70.47    15.36     465           </span></span>
+<span><span class="co">#&gt;    Overweight          <span style="color: #9E9E9E;">│</span>  68.78    15.65     569           </span></span>
+<span><span class="co">#&gt;    Obesity             <span style="color: #9E9E9E;">│</span>  65.43    15.84     154           </span></span>
+<span><span class="co">#&gt;    (Missing)           <span style="color: #9E9E9E;">│</span>  72.61    14.84      12           </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  institutional_trust   <span style="color: #9E9E9E;">│</span>                             .366  </span></span>
+<span><span class="co">#&gt;    Very low            <span style="color: #9E9E9E;">│</span>  69.84    15.35     366           </span></span>
+<span><span class="co">#&gt;    Low                 <span style="color: #9E9E9E;">│</span>  69.35    15.40     472           </span></span>
+<span><span class="co">#&gt;    High                <span style="color: #9E9E9E;">│</span>  67.92    16.17     234           </span></span>
+<span><span class="co">#&gt;    Very high           <span style="color: #9E9E9E;">│</span>  67.69    16.15     128           </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Group comparison: Welch one-way ANOVA (age_group, education, social_class, region, employment_status, income_group, self_rated_health, bmi_category, institutional_trust); Welch t-test (sex, smoking, physical_activity, dentist_12m). Each block compares WHO-5 wellbeing index (0-100) across the levels of one variable; blocks are not adjusted for one another. Overall = the whole analytic sample.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Group comparison: Welch one-way ANOVA (age_group, education, social_class, region, employment_status, income_group, self_rated_health, bmi_category, institutional_trust); Welch t-test (sex, smoking, physical_activity, dentist_12m). Each block compares wellbeing_score across the levels of one variable; blocks are not adjusted for one another. Overall = the whole analytic sample.</span></span></span></code></pre></div>
 <p>Negation (<code>select = -c(x, y)</code>) is <strong>not</strong>
 recommended, and the reason is worth a paragraph. It sweeps in every
 remaining column, and a numeric one becomes a block with one
@@ -525,17 +525,17 @@ to the sample size.</p>
 <span>  p_value <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  show_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"m"</span>, <span class="st">"sd"</span>, <span class="st">"n"</span>, <span class="st">"weighted_n"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Descriptive statistics of Body mass index</span></span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Descriptive statistics of bmi</span></span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Variable   <span style="color: #9E9E9E;">│</span>    M       SD      n      Weighted n  </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────┼───────────────────────────────────────</span></span></span>
 <span><span class="co">#&gt;  Overall    <span style="color: #9E9E9E;">│</span>  25.72    3.69    1188     1188.00    </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  Sex        <span style="color: #9E9E9E;">│</span>                                       </span></span>
+<span><span class="co">#&gt;  sex        <span style="color: #9E9E9E;">│</span>                                       </span></span>
 <span><span class="co">#&gt;    Female   <span style="color: #9E9E9E;">│</span>  25.51    3.75     616      648.72    </span></span>
 <span><span class="co">#&gt;    Male     <span style="color: #9E9E9E;">│</span>  25.98    3.61     572      539.28    </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Missing values removed: Body mass index (12). Statistics weighted by weight. Overall = the whole analytic sample.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Missing values removed: bmi (12). Statistics weighted by weight. Overall = the whole analytic sample.</span></span></span></code></pre></div>
 <p>Note <em>statistics</em>, above, and not <em>the table</em>: the
 mean, SD, quantiles and interval reproduce the expanded data exactly,
 while <code>n</code> stays the raw count of rows that carried the
@@ -592,26 +592,26 @@ rule — every token must live on the same row:</p>
 displayed row, with <code>.row_role</code> saying what each row is.</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="../reference/table_outcome.html">table_outcome</a></span><span class="op">(</span><span class="va">sochealth</span>, <span class="va">bmi</span>, select <span class="op">=</span> <span class="va">sex</span>, output <span class="op">=</span> <span class="st">"long"</span><span class="op">)</span>, <span class="fl">4</span><span class="op">)</span></span>
-<span><span class="co">#&gt;   variable           label  level     .row_role     mean       sd min  max</span></span>
-<span><span class="co">#&gt; 1      bmi Body mass index   &lt;NA&gt;       summary 25.93148 3.720186  16 38.9</span></span>
-<span><span class="co">#&gt; 2      sex             Sex   &lt;NA&gt; factor_header       NA       NA  NA   NA</span></span>
-<span><span class="co">#&gt; 3      sex             Sex Female         level 25.68506 3.781113  16 38.9</span></span>
-<span><span class="co">#&gt; 4      sex             Sex   Male         level 26.19685 3.638092  16 37.7</span></span>
-<span><span class="co">#&gt;   ci_lower ci_upper median     q1     q3  iqr med_ci_lower med_ci_upper    n</span></span>
-<span><span class="co">#&gt; 1 25.71972 26.14324   25.9 23.400 28.600 5.20         25.7         26.2 1188</span></span>
-<span><span class="co">#&gt; 2       NA       NA     NA     NA     NA   NA           NA           NA   NA</span></span>
-<span><span class="co">#&gt; 3 25.38588 25.98425   25.7 23.100 28.600 5.50         25.4         26.1  616</span></span>
-<span><span class="co">#&gt; 4 25.89808 26.49563   26.1 23.875 28.625 4.75         25.8         26.6  572</span></span>
-<span><span class="co">#&gt;   weighted_n test_type statistic      df1 df2    p.value es_type es_value</span></span>
-<span><span class="co">#&gt; 1         NA      &lt;NA&gt;        NA       NA  NA         NA    &lt;NA&gt;       NA</span></span>
-<span><span class="co">#&gt; 2         NA   welch_t -2.377237 1184.497  NA 0.01760093    &lt;NA&gt;       NA</span></span>
-<span><span class="co">#&gt; 3         NA      &lt;NA&gt;        NA       NA  NA         NA    &lt;NA&gt;       NA</span></span>
-<span><span class="co">#&gt; 4         NA      &lt;NA&gt;        NA       NA  NA         NA    &lt;NA&gt;       NA</span></span>
-<span><span class="co">#&gt;   es_ci_lower es_ci_upper smd_type smd_value</span></span>
-<span><span class="co">#&gt; 1          NA          NA     &lt;NA&gt;        NA</span></span>
-<span><span class="co">#&gt; 2          NA          NA     &lt;NA&gt;        NA</span></span>
-<span><span class="co">#&gt; 3          NA          NA     &lt;NA&gt;        NA</span></span>
-<span><span class="co">#&gt; 4          NA          NA     &lt;NA&gt;        NA</span></span></code></pre></div>
+<span><span class="co">#&gt;   variable label  level     .row_role     mean       sd min  max ci_lower</span></span>
+<span><span class="co">#&gt; 1      bmi   bmi   &lt;NA&gt;       summary 25.93148 3.720186  16 38.9 25.71972</span></span>
+<span><span class="co">#&gt; 2      sex   sex   &lt;NA&gt; factor_header       NA       NA  NA   NA       NA</span></span>
+<span><span class="co">#&gt; 3      sex   sex Female         level 25.68506 3.781113  16 38.9 25.38588</span></span>
+<span><span class="co">#&gt; 4      sex   sex   Male         level 26.19685 3.638092  16 37.7 25.89808</span></span>
+<span><span class="co">#&gt;   ci_upper median     q1     q3  iqr med_ci_lower med_ci_upper    n weighted_n</span></span>
+<span><span class="co">#&gt; 1 26.14324   25.9 23.400 28.600 5.20         25.7         26.2 1188         NA</span></span>
+<span><span class="co">#&gt; 2       NA     NA     NA     NA   NA           NA           NA   NA         NA</span></span>
+<span><span class="co">#&gt; 3 25.98425   25.7 23.100 28.600 5.50         25.4         26.1  616         NA</span></span>
+<span><span class="co">#&gt; 4 26.49563   26.1 23.875 28.625 4.75         25.8         26.6  572         NA</span></span>
+<span><span class="co">#&gt;   test_type statistic      df1 df2    p.value es_type es_value es_ci_lower</span></span>
+<span><span class="co">#&gt; 1      &lt;NA&gt;        NA       NA  NA         NA    &lt;NA&gt;       NA          NA</span></span>
+<span><span class="co">#&gt; 2   welch_t -2.377237 1184.497  NA 0.01760093    &lt;NA&gt;       NA          NA</span></span>
+<span><span class="co">#&gt; 3      &lt;NA&gt;        NA       NA  NA         NA    &lt;NA&gt;       NA          NA</span></span>
+<span><span class="co">#&gt; 4      &lt;NA&gt;        NA       NA  NA         NA    &lt;NA&gt;       NA          NA</span></span>
+<span><span class="co">#&gt;   es_ci_upper smd_type smd_value</span></span>
+<span><span class="co">#&gt; 1          NA     &lt;NA&gt;        NA</span></span>
+<span><span class="co">#&gt; 2          NA     &lt;NA&gt;        NA</span></span>
+<span><span class="co">#&gt; 3          NA     &lt;NA&gt;        NA</span></span>
+<span><span class="co">#&gt; 4          NA     &lt;NA&gt;        NA</span></span></code></pre></div>
 <p><code>tidy()</code> returns the described rows — the marginal row and
 one row per (grouping x level) — and <code>glance()</code> returns one
 row per <strong>block</strong>, carrying that block’s own
@@ -621,19 +621,19 @@ comparison:</p>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 12</span></span></span>
 <span><span class="co">#&gt;   outcome variable label level estimate std.error conf.low conf.high     n   min</span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> bmi     bmi      Body… <span style="color: #BB0000;">NA</span>        25.9     0.108     25.7      26.1  <span style="text-decoration: underline;">1</span>188  16  </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> bmi     sex      Sex   Fema…     25.7     0.152     25.4      26.0   616  16  </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> bmi     sex      Sex   Male      26.2     0.152     25.9      26.5   572  16  </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> bmi     smoking  Curr… No        26.0     0.124     25.7      26.2   915  16  </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> bmi     smoking  Curr… Yes       25.9     0.227     25.5      26.4   248  16.8</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> bmi     smoking  Curr… (Mis…     24.7     0.726     23.2      26.2    25  17.6</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> bmi     bmi      bmi   <span style="color: #BB0000;">NA</span>        25.9     0.108     25.7      26.1  <span style="text-decoration: underline;">1</span>188  16  </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> bmi     sex      sex   Fema…     25.7     0.152     25.4      26.0   616  16  </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> bmi     sex      sex   Male      26.2     0.152     25.9      26.5   572  16  </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> bmi     smoking  smok… No        26.0     0.124     25.7      26.2   915  16  </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> bmi     smoking  smok… Yes       25.9     0.227     25.5      26.4   248  16.8</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> bmi     smoking  smok… (Mis…     24.7     0.726     23.2      26.2    25  17.6</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ 2 more variables: max &lt;dbl&gt;, sd &lt;dbl&gt;</span></span></span>
 <span><span class="fu">broom</span><span class="fu">::</span><span class="fu"><a href="https://generics.r-lib.org/reference/glance.html" class="external-link">glance</a></span><span class="op">(</span><span class="va">tbl</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 2 × 16</span></span></span>
 <span><span class="co">#&gt;   outcome variable label  n_levels test_type statistic    df df.residual p.value</span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> bmi     sex      Sex           2 welch_t      -<span style="color: #BB0000;">2.38</span>  <span style="text-decoration: underline;">1</span>184.          <span style="color: #BB0000;">NA</span>  0.017<span style="text-decoration: underline;">6</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> bmi     smoking  Curre…        3 welch_t       0.122  407.          <span style="color: #BB0000;">NA</span>  0.903 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> bmi     sex      sex           2 welch_t      -<span style="color: #BB0000;">2.38</span>  <span style="text-decoration: underline;">1</span>184.          <span style="color: #BB0000;">NA</span>  0.017<span style="text-decoration: underline;">6</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> bmi     smoking  smoki…        3 welch_t       0.122  407.          <span style="color: #BB0000;">NA</span>  0.903 </span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ 7 more variables: es_type &lt;chr&gt;, es_value &lt;dbl&gt;, es_ci_lower &lt;dbl&gt;,</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;">#   es_ci_upper &lt;dbl&gt;, smd_type &lt;chr&gt;, smd_value &lt;dbl&gt;, n_total &lt;int&gt;</span></span></span></code></pre></div>
 <p>Two identity columns rather than one, and deliberately:
@@ -716,17 +716,17 @@ does elsewhere in the family:</p>
 <span>  style <span class="op">=</span> <span class="st">"jama"</span>,</span>
 <span>  show_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"m"</span>, <span class="st">"sd"</span>, <span class="st">"n"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Descriptive statistics of Body mass index</span></span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Descriptive statistics of bmi</span></span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Variable   <span style="color: #9E9E9E;">│</span>    M       SD      n       p   </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────┼────────────────────────────────</span></span></span>
 <span><span class="co">#&gt;  Overall    <span style="color: #9E9E9E;">│</span>  25.93    3.72    1188         </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  Sex        <span style="color: #9E9E9E;">│</span>                           .02  </span></span>
+<span><span class="co">#&gt;  sex        <span style="color: #9E9E9E;">│</span>                           .02  </span></span>
 <span><span class="co">#&gt;    Female   <span style="color: #9E9E9E;">│</span>  25.69    3.78     616         </span></span>
 <span><span class="co">#&gt;    Male     <span style="color: #9E9E9E;">│</span>  26.20    3.64     572         </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Missing values removed: Body mass index (12). Group comparison: Welch t-test. Each block compares Body mass index across the levels of one variable; blocks are not adjusted for one another. Overall = the whole analytic sample.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Missing values removed: bmi (12). Group comparison: Welch t-test. Each block compares bmi across the levels of one variable; blocks are not adjusted for one another. Overall = the whole analytic sample.</span></span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="rendered-output">Rendered output<a class="anchor" aria-label="anchor" href="#rendered-output"></a>
@@ -922,7 +922,7 @@ border-bottom-style: none !important; }</p>
 <thead>
 <tr class="gt_heading">
 <td colspan="10" class="gt_heading gt_title gt_font_normal gt_bottom_border" style="text-align: left; border-bottom-width: 0px; border-bottom-style: solid; border-bottom-color: transparent;">
-Descriptive statistics of Body mass index
+Descriptive statistics of bmi
 </td>
 </tr>
 <tr class="gt_col_headings gt_spanner_row">
@@ -1032,7 +1032,7 @@ Overall
 </tr>
 <tr>
 <td headers="Variable" class="gt_row gt_left">
-Sex
+sex
 </td>
 <td headers="M" class="gt_row gt_center">
      
@@ -1128,7 +1128,7 @@ g = -0.14
 </tr>
 <tr>
 <td headers="Variable" class="gt_row gt_left">
-Highest education level
+education
 </td>
 <td headers="M" class="gt_row gt_center">
      
@@ -1257,10 +1257,10 @@ Highest education level
 </tbody>
 </table>
 <div class="spicy-gt-note" style="width: min-content; min-width: 100%; box-sizing: border-box; padding: 0.5rem 0.5rem 0.2rem 0.5rem; font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji'; font-size: 0.9em; line-height: 1.25; color: #333333; text-align: left;">
-Missing values removed: Body mass index (12). Group comparison: Welch
-one-way ANOVA (education); Welch t-test (sex). Each block compares Body
-mass index across the levels of one variable; blocks are not adjusted
-for one another. Overall = the whole analytic sample.
+Missing values removed: bmi (12). Group comparison: Welch one-way ANOVA
+(education); Welch t-test (sex). Each block compares bmi across the
+levels of one variable; blocks are not adjusted for one another. Overall
+= the whole analytic sample.
 </div>
 </div>
 </div>
@@ -1276,54 +1276,54 @@ for one another. Overall = the whole analytic sample.
 
     <script src="https://cdn.jsdelivr.net/gh/vincentarelbundock/tinytable@main/inst/tinytable.js"></script><script>
       // Create table-specific functions using external factory
-      const tableFns_nupqypwn6i8c4niapnpk = TinyTable.createTableFunctions("tinytable_nupqypwn6i8c4niapnpk");
+      const tableFns_pjcufngogu3ylji71754 = TinyTable.createTableFunctions("tinytable_pjcufngogu3ylji71754");
       // tinytable span after
       window.addEventListener('load', function () {
           var cellsToStyle = [
             // tinytable style arrays after
-          { positions: [ { i: '8', j: 2 }, { i: '8', j: 3 }, { i: '8', j: 4 } ], css_id: 'tinytable_css_0h7qz2dvzmpwl7f4n290',}, 
-          { positions: [ { i: '2', j: 2 }, { i: '3', j: 2 }, { i: '5', j: 2 }, { i: '6', j: 2 }, { i: '7', j: 2 }, { i: '2', j: 3 }, { i: '3', j: 3 }, { i: '5', j: 3 }, { i: '6', j: 3 }, { i: '7', j: 3 }, { i: '2', j: 4 }, { i: '3', j: 4 }, { i: '5', j: 4 }, { i: '6', j: 4 }, { i: '7', j: 4 } ], css_id: 'tinytable_css_jjjdnyhrq5fw0ehke5av',}, 
-          { positions: [ { i: '1', j: 2 }, { i: '4', j: 2 }, { i: '1', j: 3 }, { i: '4', j: 3 }, { i: '1', j: 4 }, { i: '4', j: 4 } ], css_id: 'tinytable_css_s1fyaw9wbbzhqh8jf8t9',}, 
-          { positions: [ { i: '0', j: 2 }, { i: '0', j: 3 }, { i: '0', j: 4 } ], css_id: 'tinytable_css_t8v5h4jaeepg74bcc1d4',}, 
-          { positions: [ { i: '8', j: 1 } ], css_id: 'tinytable_css_8deym41izzxlb5db1hjc',}, 
-          { positions: [ { i: '4', j: 1 } ], css_id: 'tinytable_css_leanossru1gfpyinhdsg',}, 
-          { positions: [ { i: '3', j: 1 }, { i: '6', j: 1 }, { i: '7', j: 1 } ], css_id: 'tinytable_css_1fuj7hhdrg8x1go300lk',}, 
-          { positions: [ { i: '2', j: 1 }, { i: '5', j: 1 } ], css_id: 'tinytable_css_9g39mgo2wae33hzgdvzd',}, 
-          { positions: [ { i: '1', j: 1 } ], css_id: 'tinytable_css_9jvfxxyw2n4e6dn2royy',}, 
-          { positions: [ { i: '0', j: 1 } ], css_id: 'tinytable_css_f9oqf5wr2p66gl60cdki',}, 
+          { positions: [ { i: '8', j: 2 }, { i: '8', j: 3 }, { i: '8', j: 4 } ], css_id: 'tinytable_css_vqe0a9ytosk93ykl7d7e',}, 
+          { positions: [ { i: '2', j: 2 }, { i: '3', j: 2 }, { i: '5', j: 2 }, { i: '6', j: 2 }, { i: '7', j: 2 }, { i: '2', j: 3 }, { i: '3', j: 3 }, { i: '5', j: 3 }, { i: '6', j: 3 }, { i: '7', j: 3 }, { i: '2', j: 4 }, { i: '3', j: 4 }, { i: '5', j: 4 }, { i: '6', j: 4 }, { i: '7', j: 4 } ], css_id: 'tinytable_css_lrzvqsxodtb225gmym6s',}, 
+          { positions: [ { i: '1', j: 2 }, { i: '4', j: 2 }, { i: '1', j: 3 }, { i: '4', j: 3 }, { i: '1', j: 4 }, { i: '4', j: 4 } ], css_id: 'tinytable_css_mfgsukmk3w54es14e4r0',}, 
+          { positions: [ { i: '0', j: 2 }, { i: '0', j: 3 }, { i: '0', j: 4 } ], css_id: 'tinytable_css_uxvlm8tc4oqc3tdml2gn',}, 
+          { positions: [ { i: '8', j: 1 } ], css_id: 'tinytable_css_0vck9tpui020awclbp3j',}, 
+          { positions: [ { i: '4', j: 1 } ], css_id: 'tinytable_css_popiwg0htso5cc1xrp73',}, 
+          { positions: [ { i: '3', j: 1 }, { i: '6', j: 1 }, { i: '7', j: 1 } ], css_id: 'tinytable_css_7zbd26hgz9hliamzq4xi',}, 
+          { positions: [ { i: '2', j: 1 }, { i: '5', j: 1 } ], css_id: 'tinytable_css_7pn801o64p49opml87ej',}, 
+          { positions: [ { i: '1', j: 1 } ], css_id: 'tinytable_css_7xj5vyiu5evqvahphe3m',}, 
+          { positions: [ { i: '0', j: 1 } ], css_id: 'tinytable_css_ay6lh4lwff7i7qfwi831',}, 
           ];
 
           // Loop over the arrays to style the cells
           cellsToStyle.forEach(function (group) {
               group.positions.forEach(function (cell) {
-                  tableFns_nupqypwn6i8c4niapnpk.styleCell(cell.i, cell.j, group.css_id);
+                  tableFns_pjcufngogu3ylji71754.styleCell(cell.i, cell.j, group.css_id);
               });
           });
       });
     </script><link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/vincentarelbundock/tinytable@main/inst/tinytable.css">
 <style>
     /* tinytable css entries after */
-    #tinytable_nupqypwn6i8c4niapnpk td.tinytable_css_0h7qz2dvzmpwl7f4n290, #tinytable_nupqypwn6i8c4niapnpk th.tinytable_css_0h7qz2dvzmpwl7f4n290 {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
-    #tinytable_nupqypwn6i8c4niapnpk td.tinytable_css_jjjdnyhrq5fw0ehke5av, #tinytable_nupqypwn6i8c4niapnpk th.tinytable_css_jjjdnyhrq5fw0ehke5av { text-align: center }
-    #tinytable_nupqypwn6i8c4niapnpk td.tinytable_css_s1fyaw9wbbzhqh8jf8t9, #tinytable_nupqypwn6i8c4niapnpk th.tinytable_css_s1fyaw9wbbzhqh8jf8t9 {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
-    #tinytable_nupqypwn6i8c4niapnpk td.tinytable_css_t8v5h4jaeepg74bcc1d4, #tinytable_nupqypwn6i8c4niapnpk th.tinytable_css_t8v5h4jaeepg74bcc1d4 {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
-    #tinytable_nupqypwn6i8c4niapnpk td.tinytable_css_8deym41izzxlb5db1hjc, #tinytable_nupqypwn6i8c4niapnpk th.tinytable_css_8deym41izzxlb5db1hjc {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left; padding-left: 1em; padding-left: 0.8em; }
-    #tinytable_nupqypwn6i8c4niapnpk td.tinytable_css_leanossru1gfpyinhdsg, #tinytable_nupqypwn6i8c4niapnpk th.tinytable_css_leanossru1gfpyinhdsg {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left; padding-left: 1em; padding-left: 0.8em; }
-    #tinytable_nupqypwn6i8c4niapnpk td.tinytable_css_1fuj7hhdrg8x1go300lk, #tinytable_nupqypwn6i8c4niapnpk th.tinytable_css_1fuj7hhdrg8x1go300lk { text-align: left; padding-left: 1em; padding-left: 0.8em; }
-    #tinytable_nupqypwn6i8c4niapnpk td.tinytable_css_9g39mgo2wae33hzgdvzd, #tinytable_nupqypwn6i8c4niapnpk th.tinytable_css_9g39mgo2wae33hzgdvzd { text-align: left }
-    #tinytable_nupqypwn6i8c4niapnpk td.tinytable_css_9jvfxxyw2n4e6dn2royy, #tinytable_nupqypwn6i8c4niapnpk th.tinytable_css_9jvfxxyw2n4e6dn2royy {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
-    #tinytable_nupqypwn6i8c4niapnpk td.tinytable_css_f9oqf5wr2p66gl60cdki, #tinytable_nupqypwn6i8c4niapnpk th.tinytable_css_f9oqf5wr2p66gl60cdki {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
+    #tinytable_pjcufngogu3ylji71754 td.tinytable_css_vqe0a9ytosk93ykl7d7e, #tinytable_pjcufngogu3ylji71754 th.tinytable_css_vqe0a9ytosk93ykl7d7e {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
+    #tinytable_pjcufngogu3ylji71754 td.tinytable_css_lrzvqsxodtb225gmym6s, #tinytable_pjcufngogu3ylji71754 th.tinytable_css_lrzvqsxodtb225gmym6s { text-align: center }
+    #tinytable_pjcufngogu3ylji71754 td.tinytable_css_mfgsukmk3w54es14e4r0, #tinytable_pjcufngogu3ylji71754 th.tinytable_css_mfgsukmk3w54es14e4r0 {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
+    #tinytable_pjcufngogu3ylji71754 td.tinytable_css_uxvlm8tc4oqc3tdml2gn, #tinytable_pjcufngogu3ylji71754 th.tinytable_css_uxvlm8tc4oqc3tdml2gn {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
+    #tinytable_pjcufngogu3ylji71754 td.tinytable_css_0vck9tpui020awclbp3j, #tinytable_pjcufngogu3ylji71754 th.tinytable_css_0vck9tpui020awclbp3j {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left; padding-left: 1em; padding-left: 0.8em; }
+    #tinytable_pjcufngogu3ylji71754 td.tinytable_css_popiwg0htso5cc1xrp73, #tinytable_pjcufngogu3ylji71754 th.tinytable_css_popiwg0htso5cc1xrp73 {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left; padding-left: 1em; padding-left: 0.8em; }
+    #tinytable_pjcufngogu3ylji71754 td.tinytable_css_7zbd26hgz9hliamzq4xi, #tinytable_pjcufngogu3ylji71754 th.tinytable_css_7zbd26hgz9hliamzq4xi { text-align: left; padding-left: 1em; padding-left: 0.8em; }
+    #tinytable_pjcufngogu3ylji71754 td.tinytable_css_7pn801o64p49opml87ej, #tinytable_pjcufngogu3ylji71754 th.tinytable_css_7pn801o64p49opml87ej { text-align: left }
+    #tinytable_pjcufngogu3ylji71754 td.tinytable_css_7xj5vyiu5evqvahphe3m, #tinytable_pjcufngogu3ylji71754 th.tinytable_css_7xj5vyiu5evqvahphe3m {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
+    #tinytable_pjcufngogu3ylji71754 td.tinytable_css_ay6lh4lwff7i7qfwi831, #tinytable_pjcufngogu3ylji71754 th.tinytable_css_ay6lh4lwff7i7qfwi831 {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
     </style>
 <div class="container">
-      <table class="table tinytable" id="tinytable_nupqypwn6i8c4niapnpk" style="width: auto; margin-left: auto; margin-right: auto;" data-quarto-disable-processing="true">
-<caption>Descriptive statistics of WHO-5 wellbeing index (0-100)</caption>
+      <table class="table tinytable" id="tinytable_pjcufngogu3ylji71754" style="width: auto; margin-left: auto; margin-right: auto;" data-quarto-disable-processing="true">
+<caption>Descriptive statistics of wellbeing_score</caption>
         <thead><tr>
 <th scope="col" data-row="0" data-col="1">Variable</th>
                 <th scope="col" data-row="0" data-col="2">Med [Q1, Q3]</th>
                 <th scope="col" data-row="0" data-col="3">n</th>
                 <th scope="col" data-row="0" data-col="4">p</th>
               </tr></thead>
-<tfoot><tr><td colspan="4" style="font-size: 0.9em; ">Group comparison: Wilcoxon rank-sum test. Med [Q1, Q3] = median [first quartile, third quartile]. Each block compares WHO-5 wellbeing index (0-100) across the levels of one variable; blocks are not adjusted for one another. Overall = the whole analytic sample.</td></tr></tfoot>
+<tfoot><tr><td colspan="4" style="font-size: 0.9em; ">Group comparison: Wilcoxon rank-sum test. Med [Q1, Q3] = median [first quartile, third quartile]. Each block compares wellbeing_score across the levels of one variable; blocks are not adjusted for one another. Overall = the whole analytic sample.</td></tr></tfoot>
 <tbody>
 <tr>
 <td data-row="1" data-col="1">Overall</td>
@@ -1332,7 +1332,7 @@ for one another. Overall = the whole analytic sample.
                   <td data-row="1" data-col="4">     </td>
                 </tr>
 <tr>
-<td data-row="2" data-col="1">Sex</td>
+<td data-row="2" data-col="1">sex</td>
                   <td data-row="2" data-col="2">                    </td>
                   <td data-row="2" data-col="3">    </td>
                   <td data-row="2" data-col="4">&lt;.001</td>
@@ -1350,7 +1350,7 @@ for one another. Overall = the whole analytic sample.
                   <td data-row="4" data-col="4">     </td>
                 </tr>
 <tr>
-<td data-row="5" data-col="1">Current smoker</td>
+<td data-row="5" data-col="1">smoking</td>
                   <td data-row="5" data-col="2">                    </td>
                   <td data-row="5" data-col="3">    </td>
                   <td data-row="5" data-col="4"> .104</td>

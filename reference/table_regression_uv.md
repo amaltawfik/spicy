@@ -21,6 +21,7 @@ table_regression_uv(
   complete_cases = FALSE,
   show_columns = c("n", "b", "ci", "p"),
   show_intercept = FALSE,
+  labels = getOption("spicy.var_labels", FALSE),
   title = NULL,
   ...
 )
@@ -105,6 +106,41 @@ table_regression_uv(
   default, because each univariable fit carries its own nuisance
   intercept. See *Intercepts*.
 
+- labels:
+
+  How the variables are named: the outcome in the title, a numeric
+  predictor in its row, and a factor in its header. The four forms of
+  [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
+
+  - `labels = FALSE` shows the column names.
+
+  - `labels = TRUE` shows each column's `label` attribute (as set by
+    `haven`, `labelled`, or
+    [`label_from_names()`](https://amaltawfik.github.io/spicy/reference/label_from_names.md))
+    when it is present, not `NA`, and not empty, and the column name
+    otherwise. Factor levels keep their names.
+
+  - `labels = c(age = "Age (years)", sexMale = "Men")`, a named
+    character vector, gives the variables and rows it names these
+    labels. Every other variable follows `options(spicy.var_labels)`:
+    its name when the option is unset or `FALSE`, its `label` attribute
+    when it is `TRUE`.
+
+  - `labels = var_labels(age = "Age in years")` gives the variables and
+    rows it names these labels, and every other variable its `label`
+    attribute, whatever the option says.
+    [`var_labels()`](https://amaltawfik.github.io/spicy/reference/var_labels.md)
+    alone is `labels = TRUE`.
+
+  The names are the outcome and predictor columns and the coefficient
+  names (`"sexMale"` names the row of one level), as in
+  [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md).
+  Names that match nothing are ignored. The default reads
+  `options(spicy.var_labels)`, and a `TRUE` or `FALSE` typed in the call
+  wins over it. Any other value, `NULL` included, is an error. A
+  variable label documents the data file; a published table carries the
+  wording you set here.
+
 - title:
 
   Table title; `NULL` (default) builds
@@ -114,11 +150,10 @@ table_regression_uv(
 
   Passed to
   [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
-  (`exponentiate`, `vcov`, `cluster`, `p_adjust`, `digits`, `labels`,
-  `output`, ...). `nested` is not meaningful for a screen and is
-  refused. `cluster` must be a single vector with one value per row of
-  `data`; it is aligned to each fit's own estimation sample
-  automatically.
+  (`exponentiate`, `vcov`, `cluster`, `p_adjust`, `digits`, `output`,
+  ...). `nested` is not meaningful for a screen and is refused.
+  `cluster` must be a single vector with one value per row of `data`; it
+  is aligned to each fit's own estimation sample automatically.
 
 ## Value
 

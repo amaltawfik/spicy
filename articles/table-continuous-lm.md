@@ -34,21 +34,21 @@ table_continuous_lm(
   select = c(wellbeing_score, bmi, life_sat_health),
   by = sex
 )
-#> Continuous outcomes by Sex
+#> Continuous outcomes by sex
 #> 
-#>  Variable                       │ M (Female)  M (Male)  Δ (Male - Female) 
-#> ────────────────────────────────┼─────────────────────────────────────────
-#>  WHO-5 wellbeing index (0-100)  │   67.16      71.05          3.89        
-#>  Body mass index                │   25.69      26.20          0.51        
-#>  Satisfaction with health (1-5) │    3.51       3.59          0.08        
+#>  Variable        │ M (Female)  M (Male)  Δ (Male - Female)  95% CI LL 
+#> ─────────────────┼────────────────────────────────────────────────────
+#>  wellbeing_score │   67.16      71.05          3.89            2.13   
+#>  bmi             │   25.69      26.20          0.51            0.09   
+#>  life_sat_health │    3.51       3.59          0.08           -0.06   
 #> 
-#>  Variable                       │ 95% CI LL  95% CI UL    p     R²    n   
-#> ────────────────────────────────┼─────────────────────────────────────────
-#>  WHO-5 wellbeing index (0-100)  │    2.13      5.64     <.001  0.02  1200 
-#>  Body mass index                │    0.09      0.93      .018  0.00  1188 
-#>  Satisfaction with health (1-5) │   -0.06      0.22      .267  0.00  1192 
+#>  Variable        │ 95% CI UL    p     R²    n   
+#> ─────────────────┼──────────────────────────────
+#>  wellbeing_score │   5.64     <.001  0.02  1200 
+#>  bmi             │   0.93      .018  0.00  1188 
+#>  life_sat_health │   0.22      .267  0.00  1192 
 #> 
-#> Note. Missing values removed: Body mass index (12), Satisfaction with health (1-5) (8).
+#> Note. Missing values removed: bmi (12), life_sat_health (8).
 ```
 
 For categorical predictors, the table reports estimated means by level.
@@ -69,20 +69,20 @@ table_continuous_lm(
   vcov = "HC3",
   statistic = TRUE
 )
-#> Continuous outcomes by Sex
+#> Continuous outcomes by sex
 #> 
-#>  Variable                      │ M (Female)  M (Male)  Δ (Male - Female) 
-#> ───────────────────────────────┼─────────────────────────────────────────
-#>  WHO-5 wellbeing index (0-100) │   67.16      71.05          3.89        
-#>  Body mass index               │   25.69      26.20          0.51        
+#>  Variable        │ M (Female)  M (Male)  Δ (Male - Female)  95% CI LL 
+#> ─────────────────┼────────────────────────────────────────────────────
+#>  wellbeing_score │   67.16      71.05          3.89           2.12    
+#>  bmi             │   25.69      26.20          0.51           0.09    
 #> 
-#>  Variable                      │ 95% CI LL  95% CI UL   t      p     R²    n   
-#> ───────────────────────────────┼───────────────────────────────────────────────
-#>  WHO-5 wellbeing index (0-100) │   2.12       5.65     4.32  <.001  0.02  1200 
-#>  Body mass index               │   0.09       0.93     2.38   .018  0.00  1188 
+#>  Variable        │ 95% CI UL   t      p     R²    n   
+#> ─────────────────┼────────────────────────────────────
+#>  wellbeing_score │   5.65     4.32  <.001  0.02  1200 
+#>  bmi             │   0.93     2.38   .018  0.00  1188 
 #> 
 #> Note. Std. errors: heteroskedasticity-robust (HC3).
-#> Missing values removed: Body mass index (12).
+#> Missing values removed: bmi (12).
 ```
 
 The `HC*` family is computed via
@@ -151,15 +151,15 @@ table_continuous_lm(
   boot_n = 1000,  # default
   statistic = TRUE
 )
-#> Continuous outcomes by Sex
+#> Continuous outcomes by sex
 #> 
-#>  Variable                      │ M (Female)  M (Male)  Δ (Male - Female) 
-#> ───────────────────────────────┼─────────────────────────────────────────
-#>  WHO-5 wellbeing index (0-100) │   67.16      71.05          3.89        
+#>  Variable        │ M (Female)  M (Male)  Δ (Male - Female)  95% CI LL 
+#> ─────────────────┼────────────────────────────────────────────────────
+#>  wellbeing_score │   67.16      71.05          3.89           2.12    
 #> 
-#>  Variable                      │ 95% CI LL  95% CI UL   z      p     R²    n   
-#> ───────────────────────────────┼───────────────────────────────────────────────
-#>  WHO-5 wellbeing index (0-100) │   2.12       5.66     4.30  <.001  0.02  1200 
+#>  Variable        │ 95% CI UL   z      p     R²    n   
+#> ─────────────────┼────────────────────────────────────
+#>  wellbeing_score │   5.66     4.30  <.001  0.02  1200 
 #> 
 #> Note. Std. errors: nonparametric bootstrap (1000 replicates).
 ```
@@ -185,19 +185,19 @@ table_continuous_lm(
   weights = weight,
   show_weighted_n = TRUE
 )
-#> Continuous outcomes by Highest education level
+#> Continuous outcomes by education
 #> 
-#>  Variable                      │ M (Lower secondary)  M (Upper secondary) 
-#> ───────────────────────────────┼──────────────────────────────────────────
-#>  WHO-5 wellbeing index (0-100) │        57.71                68.39        
-#>  Body mass index               │        27.85                25.79        
+#>  Variable        │ M (Lower secondary)  M (Upper secondary)  M (Tertiary) 
+#> ─────────────────┼────────────────────────────────────────────────────────
+#>  wellbeing_score │        57.71                68.39            76.55     
+#>  bmi             │        27.85                25.79            24.23     
 #> 
-#>  Variable                      │ M (Tertiary)    p     R²    n    Weighted n 
-#> ───────────────────────────────┼─────────────────────────────────────────────
-#>  WHO-5 wellbeing index (0-100) │    76.55      <.001  0.19  1200   1196.47   
-#>  Body mass index               │    24.23      <.001  0.13  1188   1183.32   
+#>  Variable        │   p     R²    n    Weighted n 
+#> ─────────────────┼───────────────────────────────
+#>  wellbeing_score │ <.001  0.19  1200   1196.47   
+#>  bmi             │ <.001  0.13  1188   1183.32   
 #> 
-#> Note. Missing values removed: Body mass index (12).
+#> Note. Missing values removed: bmi (12).
 ```
 
 This is often the most natural summary-table function when your
@@ -217,15 +217,15 @@ table_continuous_lm(
   by = age,
   vcov = "HC3"
 )
-#> Continuous outcomes by Age (years)
+#> Continuous outcomes by age
 #> 
-#>  Variable                      │  B    95% CI LL  95% CI UL    p     R²    n   
-#> ───────────────────────────────┼───────────────────────────────────────────────
-#>  WHO-5 wellbeing index (0-100) │ 0.04    -0.02      0.10      .176  0.00  1200 
-#>  Body mass index               │ 0.04     0.02      0.05     <.001  0.02  1188 
+#>  Variable          │   B      95% CI LL    95% CI UL      p       R²      n    
+#> ───────────────────┼───────────────────────────────────────────────────────────
+#>  wellbeing_score   │  0.04      -0.02        0.10        .176    0.00    1200  
+#>  bmi               │  0.04       0.02        0.05       <.001    0.02    1188  
 #> 
 #> Note. Std. errors: heteroskedasticity-robust (HC3).
-#> Missing values removed: Body mass index (12).
+#> Missing values removed: bmi (12).
 ```
 
 When you need the underlying returned data for further processing, use
@@ -251,21 +251,21 @@ table_continuous_lm(
   covariates = c(age, education),
   vcov = "HC3"
 )
-#> Continuous outcomes by Sex
+#> Continuous outcomes by sex
 #> 
-#>  Variable                      │ M (Female)  M (Male)  Δ (Male - Female) 
-#> ───────────────────────────────┼─────────────────────────────────────────
-#>  WHO-5 wellbeing index (0-100) │   67.27      70.93          3.65        
-#>  Body mass index               │   25.65      26.23          0.58        
+#>  Variable        │ M (Female)  M (Male)  Δ (Male - Female)  95% CI LL 
+#> ─────────────────┼────────────────────────────────────────────────────
+#>  wellbeing_score │   67.27      70.93          3.65           2.08    
+#>  bmi             │   25.65      26.23          0.58           0.19    
 #> 
-#>  Variable                      │ 95% CI LL  95% CI UL    p     R²    n   
-#> ───────────────────────────────┼─────────────────────────────────────────
-#>  WHO-5 wellbeing index (0-100) │   2.08       5.23     <.001  0.22  1200 
-#>  Body mass index               │   0.19       0.97      .004  0.16  1188 
+#>  Variable        │ 95% CI UL    p     R²    n   
+#> ─────────────────┼──────────────────────────────
+#>  wellbeing_score │   5.23     <.001  0.22  1200 
+#>  bmi             │   0.97      .004  0.16  1188 
 #> 
 #> Note. Adjusted for age, education (proportional).
 #> Std. errors: heteroskedasticity-robust (HC3).
-#> Missing values removed: Body mass index (12).
+#> Missing values removed: bmi (12).
 ```
 
 `covariates` accepts the full tidyselect vocabulary (`c(age, sex)`,
@@ -328,21 +328,21 @@ table_continuous_lm(
   adjustment = "balanced",
   vcov = "HC3"
 )
-#> Continuous outcomes by Sex
+#> Continuous outcomes by sex
 #> 
-#>  Variable                      │ M (Female)  M (Male)  Δ (Male - Female) 
-#> ───────────────────────────────┼─────────────────────────────────────────
-#>  WHO-5 wellbeing index (0-100) │   65.90      69.56          3.65        
-#>  Body mass index               │   25.89      26.46          0.58        
+#>  Variable        │ M (Female)  M (Male)  Δ (Male - Female)  95% CI LL 
+#> ─────────────────┼────────────────────────────────────────────────────
+#>  wellbeing_score │   65.90      69.56          3.65           2.08    
+#>  bmi             │   25.89      26.46          0.58           0.19    
 #> 
-#>  Variable                      │ 95% CI LL  95% CI UL    p     R²    n   
-#> ───────────────────────────────┼─────────────────────────────────────────
-#>  WHO-5 wellbeing index (0-100) │   2.08       5.23     <.001  0.22  1200 
-#>  Body mass index               │   0.19       0.97      .004  0.16  1188 
+#>  Variable        │ 95% CI UL    p     R²    n   
+#> ─────────────────┼──────────────────────────────
+#>  wellbeing_score │   5.23     <.001  0.22  1200 
+#>  bmi             │   0.97      .004  0.16  1188 
 #> 
 #> Note. Adjusted for age, education (balanced).
 #> Std. errors: heteroskedasticity-robust (HC3).
-#> Missing values removed: Body mass index (12).
+#> Missing values removed: bmi (12).
 ```
 
 ### Effect sizes under adjustment
@@ -400,19 +400,19 @@ table_continuous_lm(
   by = smoking,
   effect_size = "d"
 )
-#> Continuous outcomes by Current smoker
+#> Continuous outcomes by smoking
 #> 
-#>  Variable                      │ M (No)  M (Yes)  Δ (Yes - No)  95% CI LL 
-#> ───────────────────────────────┼──────────────────────────────────────────
-#>  WHO-5 wellbeing index (0-100) │ 69.36    67.65      -1.72        -3.91   
-#>  Body mass index               │ 25.96    25.93      -0.03        -0.55   
+#>  Variable        │ M (No)  M (Yes)  Δ (Yes - No)  95% CI LL  95% CI UL   p   
+#> ─────────────────┼───────────────────────────────────────────────────────────
+#>  wellbeing_score │ 69.36    67.65      -1.72        -3.91      0.47     .124 
+#>  bmi             │ 25.96    25.93      -0.03        -0.55      0.49     .905 
 #> 
-#>  Variable                      │ 95% CI UL   p     R²     d     n   
-#> ───────────────────────────────┼────────────────────────────────────
-#>  WHO-5 wellbeing index (0-100) │   0.47     .124  0.00  -0.11  1175 
-#>  Body mass index               │   0.49     .905  0.00  -0.01  1163 
+#>  Variable        │  R²     d     n   
+#> ─────────────────┼───────────────────
+#>  wellbeing_score │ 0.00  -0.11  1175 
+#>  bmi             │ 0.00  -0.01  1163 
 #> 
-#> Note. Missing values removed: Body mass index (12). Rows with missing Current smoker removed: 25.
+#> Note. Missing values removed: bmi (12). Rows with missing smoking removed: 25.
 ```
 
 Hedges’ *g* applies the small-sample correction
@@ -427,19 +427,19 @@ table_continuous_lm(
   by = smoking,
   effect_size = "g"
 )
-#> Continuous outcomes by Current smoker
+#> Continuous outcomes by smoking
 #> 
-#>  Variable                      │ M (No)  M (Yes)  Δ (Yes - No)  95% CI LL 
-#> ───────────────────────────────┼──────────────────────────────────────────
-#>  WHO-5 wellbeing index (0-100) │ 69.36    67.65      -1.72        -3.91   
-#>  Body mass index               │ 25.96    25.93      -0.03        -0.55   
+#>  Variable        │ M (No)  M (Yes)  Δ (Yes - No)  95% CI LL  95% CI UL   p   
+#> ─────────────────┼───────────────────────────────────────────────────────────
+#>  wellbeing_score │ 69.36    67.65      -1.72        -3.91      0.47     .124 
+#>  bmi             │ 25.96    25.93      -0.03        -0.55      0.49     .905 
 #> 
-#>  Variable                      │ 95% CI UL   p     R²     g     n   
-#> ───────────────────────────────┼────────────────────────────────────
-#>  WHO-5 wellbeing index (0-100) │   0.47     .124  0.00  -0.11  1175 
-#>  Body mass index               │   0.49     .905  0.00  -0.01  1163 
+#>  Variable        │  R²     g     n   
+#> ─────────────────┼───────────────────
+#>  wellbeing_score │ 0.00  -0.11  1175 
+#>  bmi             │ 0.00  -0.01  1163 
 #> 
-#> Note. Missing values removed: Body mass index (12). Rows with missing Current smoker removed: 25.
+#> Note. Missing values removed: bmi (12). Rows with missing smoking removed: 25.
 ```
 
 For categorical predictors with three or more levels (or numeric
@@ -455,19 +455,19 @@ table_continuous_lm(
   by = education,
   effect_size = "omega2"
 )
-#> Continuous outcomes by Highest education level
+#> Continuous outcomes by education
 #> 
-#>  Variable                      │ M (Lower secondary)  M (Upper secondary) 
-#> ───────────────────────────────┼──────────────────────────────────────────
-#>  WHO-5 wellbeing index (0-100) │        57.22                68.97        
-#>  Body mass index               │        28.09                26.02        
+#>  Variable        │ M (Lower secondary)  M (Upper secondary)  M (Tertiary) 
+#> ─────────────────┼────────────────────────────────────────────────────────
+#>  wellbeing_score │        57.22                68.97            76.85     
+#>  bmi             │        28.09                26.02            24.39     
 #> 
-#>  Variable                      │ M (Tertiary)    p     R²    ω²    n   
-#> ───────────────────────────────┼───────────────────────────────────────
-#>  WHO-5 wellbeing index (0-100) │    76.85      <.001  0.21  0.21  1200 
-#>  Body mass index               │    24.39      <.001  0.13  0.13  1188 
+#>  Variable        │   p     R²    ω²    n   
+#> ─────────────────┼─────────────────────────
+#>  wellbeing_score │ <.001  0.21  0.21  1200 
+#>  bmi             │ <.001  0.13  0.13  1188 
 #> 
-#> Note. Missing values removed: Body mass index (12).
+#> Note. Missing values removed: bmi (12).
 ```
 
 Cohen’s `f²` (= `R² / (1 - R²)`) is the effect size familiar from
@@ -482,19 +482,14 @@ table_continuous_lm(
   by = age,
   effect_size = "f2"
 )
-#> Continuous outcomes by Age (years)
+#> Continuous outcomes by age
 #> 
-#>  Variable                      │  B    95% CI LL  95% CI UL    p     R²    f²  
-#> ───────────────────────────────┼───────────────────────────────────────────────
-#>  WHO-5 wellbeing index (0-100) │ 0.04    -0.02      0.10      .177  0.00  0.00 
-#>  Body mass index               │ 0.04     0.02      0.05     <.001  0.02  0.02 
+#>  Variable        │  B    95% CI LL  95% CI UL    p     R²    f²    n   
+#> ─────────────────┼─────────────────────────────────────────────────────
+#>  wellbeing_score │ 0.04    -0.02      0.10      .177  0.00  0.00  1200 
+#>  bmi             │ 0.04     0.02      0.05     <.001  0.02  0.02  1188 
 #> 
-#>  Variable                      │  n   
-#> ───────────────────────────────┼──────
-#>  WHO-5 wellbeing index (0-100) │ 1200 
-#>  Body mass index               │ 1188 
-#> 
-#> Note. Missing values removed: Body mass index (12).
+#> Note. Missing values removed: bmi (12).
 ```
 
 ## Confidence intervals for effect sizes
@@ -526,24 +521,19 @@ table_continuous_lm(
   effect_size = "g",
   effect_size_ci = TRUE
 )
-#> Continuous outcomes by Current smoker
+#> Continuous outcomes by smoking
 #> 
-#>  Variable                      │ M (No)  M (Yes)  Δ (Yes - No)  95% CI LL 
-#> ───────────────────────────────┼──────────────────────────────────────────
-#>  WHO-5 wellbeing index (0-100) │ 69.36    67.65      -1.72        -3.91   
-#>  Body mass index               │ 25.96    25.93      -0.03        -0.55   
+#>  Variable        │ M (No)  M (Yes)  Δ (Yes - No)  95% CI LL  95% CI UL   p   
+#> ─────────────────┼───────────────────────────────────────────────────────────
+#>  wellbeing_score │ 69.36    67.65      -1.72        -3.91      0.47     .124 
+#>  bmi             │ 25.96    25.93      -0.03        -0.55      0.49     .905 
 #> 
-#>  Variable                      │ 95% CI UL   p     R²            g          
-#> ───────────────────────────────┼────────────────────────────────────────────
-#>  WHO-5 wellbeing index (0-100) │   0.47     .124  0.00  -0.11 [-0.25, 0.03] 
-#>  Body mass index               │   0.49     .905  0.00  -0.01 [-0.15, 0.13] 
+#>  Variable        │  R²            g            n   
+#> ─────────────────┼─────────────────────────────────
+#>  wellbeing_score │ 0.00  -0.11 [-0.25, 0.03]  1175 
+#>  bmi             │ 0.00  -0.01 [-0.15, 0.13]  1163 
 #> 
-#>  Variable                      │  n   
-#> ───────────────────────────────┼──────
-#>  WHO-5 wellbeing index (0-100) │ 1175 
-#>  Body mass index               │ 1163 
-#> 
-#> Note. Missing values removed: Body mass index (12). Rows with missing Current smoker removed: 25.
+#> Note. Missing values removed: bmi (12). Rows with missing smoking removed: 25.
 ```
 
 The CI level follows `ci_level` (default `0.95`). For programmatic
@@ -560,12 +550,12 @@ table_continuous_lm(
   effect_size_ci = TRUE,
   output = "data.frame"
 )
-#>                                      Variable   M (No)  M (Yes) Δ (Yes - No)
-#> wellbeing_score WHO-5 wellbeing index (0-100) 69.36317 67.64538    -1.717793
-#>                 95% CI LL 95% CI UL         p          R²          g
-#> wellbeing_score -3.906437 0.4708504 0.1238546 0.002017481 -0.1098571
-#>                 es_ci_lower es_ci_upper    n
-#> wellbeing_score  -0.2497291  0.03006164 1175
+#>                        Variable   M (No)  M (Yes) Δ (Yes - No) 95% CI LL
+#> wellbeing_score wellbeing_score 69.36317 67.64538    -1.717793 -3.906437
+#>                 95% CI UL         p          R²          g es_ci_lower
+#> wellbeing_score 0.4708504 0.1238546 0.002017481 -0.1098571  -0.2497291
+#>                 es_ci_upper    n
+#> wellbeing_score  0.03006164 1175
 ```
 
 ``` r
@@ -611,7 +601,7 @@ table_continuous_lm(
   effect_size_ci = TRUE,
   decimal_mark = ","
 )
-#> Continuous outcomes by Sex
+#> Continuous outcomes by sex
 #> 
 #>  Variable                │ M (Female)  M (Male)  Δ (Male - Female)  95% CI LL 
 #> ─────────────────────────┼────────────────────────────────────────────────────
@@ -649,7 +639,7 @@ pkgdown_dark_gt(
 [TABLE]
 
 *Note.* Std. errors: heteroskedasticity-robust (HC3). Missing values
-removed: Body mass index (12), Satisfaction with health (1-5) (8).
+removed: bmi (12), life_sat_health (8).
 
 ## Tidying for downstream pipelines
 
@@ -676,12 +666,12 @@ broom::tidy(out)
 #> # A tibble: 6 × 10
 #>   outcome        label term  estimate_type estimate std.error conf.low conf.high
 #>   <chr>          <chr> <chr> <chr>            <dbl>     <dbl>    <dbl>     <dbl>
-#> 1 wellbeing_sco… WHO-… Fema… emmean          67.2       0.623  65.9       68.4  
-#> 2 wellbeing_sco… WHO-… Male  emmean          71.0       0.644  69.8       72.3  
-#> 3 wellbeing_sco… WHO-… Male… difference       3.89      0.896   2.13       5.64 
-#> 4 bmi            Body… Fema… emmean          25.7       0.150  25.4       26.0  
-#> 5 bmi            Body… Male  emmean          26.2       0.155  25.9       26.5  
-#> 6 bmi            Body… Male… difference       0.512     0.216   0.0888     0.935
+#> 1 wellbeing_sco… well… Fema… emmean          67.2       0.623  65.9       68.4  
+#> 2 wellbeing_sco… well… Male  emmean          71.0       0.644  69.8       72.3  
+#> 3 wellbeing_sco… well… Male… difference       3.89      0.896   2.13       5.64 
+#> 4 bmi            bmi   Fema… emmean          25.7       0.150  25.4       26.0  
+#> 5 bmi            bmi   Male  emmean          26.2       0.155  25.9       26.5  
+#> 6 bmi            bmi   Male… difference       0.512     0.216   0.0888     0.935
 #> # ℹ 2 more variables: statistic <dbl>, p.value <dbl>
 
 # One row per outcome with model-level statistics: r.squared,
@@ -691,8 +681,8 @@ broom::glance(out)
 #> # A tibble: 2 × 16
 #>   outcome     label predictor_type test_type statistic    df df.residual p.value
 #>   <chr>       <chr> <chr>          <chr>         <dbl> <int>       <dbl>   <dbl>
-#> 1 wellbeing_… WHO-… categorical    F             18.8      1        1198 1.55e-5
-#> 2 bmi         Body… categorical    F              5.64     1        1186 1.78e-2
+#> 1 wellbeing_… well… categorical    F             18.8      1        1198 1.55e-5
+#> 2 bmi         bmi   categorical    F              5.64     1        1186 1.78e-2
 #> # ℹ 8 more variables: r.squared <dbl>, adj.r.squared <dbl>, es_type <chr>,
 #> #   es_value <dbl>, es_ci_lower <dbl>, es_ci_upper <dbl>, nobs <int>,
 #> #   weighted_n <dbl>

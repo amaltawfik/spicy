@@ -117,10 +117,20 @@ than passed to each table.</p></li>
 A per-label override, for the case where one word has to change and
 a language does not: a named list (or named character vector) whose
 names are keys of <code>spicy_labels()</code>. An unknown key is an error.</p></li>
+<li><p><strong><code>options(spicy.var_labels = TRUE)</code></strong>
+How the descriptive tables (<code><a href="table_categorical.html">table_categorical()</a></code>,
+<code><a href="table_continuous.html">table_continuous()</a></code>, <code><a href="table_continuous_lm.html">table_continuous_lm()</a></code>, <code><a href="table_outcome.html">table_outcome()</a></code> and
+the survey twins) and the regression tables (<code><a href="table_regression.html">table_regression()</a></code>,
+<code><a href="table_regression_uv.html">table_regression_uv()</a></code>) name your variables: <code>TRUE</code> shows each
+variable's <code>label</code> attribute, <code>FALSE</code> (the default) its name. It is
+the default of their <code>labels</code> argument, and the variables a named
+<code>labels</code> vector leaves out follow it. A <code>TRUE</code>, a <code>FALSE</code> or a
+<code><a href="var_labels.html">var_labels()</a></code> typed in the call wins over it. Any other value is an
+error.</p></li>
 </ul><p>A label resolves through <code>spicy.labels</code>, then the <code>spicy.language</code>
 set, then English. A set carries only the keys it translates, so
 anything it does not name falls back to English rather than erroring
-or coming out blank. Both options are cleared with <code>NULL</code>.</p>
+or coming out blank. All three options are cleared with <code>NULL</code>.</p>
     </div>
     <div class="section level2">
     <h2 id="what-a-language-does-not-change">What a language does not change<a class="anchor" aria-label="anchor" href="#what-a-language-does-not-change"></a></h2>
@@ -206,17 +216,17 @@ language's own typography.</p></div>
 <span class="r-in"><span><span class="co"># variable is a refusal to answer here, not an absent value.</span></span></span>
 <span class="r-in"><span><span class="va">old</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span>spicy.labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>row_missing_level <span class="op">=</span> <span class="st">"(No answer)"</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="table_categorical.html">table_categorical</a></span><span class="op">(</span><span class="va">sochealth</span>, select <span class="op">=</span> <span class="va">sex</span>, by <span class="op">=</span> <span class="va">smoking</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Categorical table by Current smoker</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Categorical table by smoking</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Variable <span style="color: #9E9E9E;">│</span> No n  No %  Yes n  Yes %  (No answer) n  (No answer) %  Total n </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">──────────┼─────────────────────────────────────────────────────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Sex      <span style="color: #9E9E9E;">│</span>                                                                 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  sex      <span style="color: #9E9E9E;">│</span>                                                                 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    Female <span style="color: #9E9E9E;">│</span> 475   51.3   131   52.6        14            56.0         620   </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    Male   <span style="color: #9E9E9E;">│</span> 451   48.7   118   47.4        11            44.0         580   </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Variable <span style="color: #9E9E9E;">│</span> Total %   p    Phi </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">──────────┼────────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Sex      <span style="color: #9E9E9E;">│</span>          .713  .01 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  sex      <span style="color: #9E9E9E;">│</span>          .713  .01 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    Female <span style="color: #9E9E9E;">│</span>  51.7              </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    Male   <span style="color: #9E9E9E;">│</span>  48.3              </span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span><span class="va">old</span><span class="op">)</span></span></span>

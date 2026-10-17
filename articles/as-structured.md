@@ -490,14 +490,14 @@ lays out one factor header row per variable and one row per category:
 ct <- table_categorical(sochealth, c(sex, smoking), by = education)
 sc <- as_structured(ct)
 sc$body[, c("Variable", ".variable", ".level", ".row_role")]
-#>         Variable .variable    .level     .row_role
-#> 1            Sex       sex      <NA> factor_header
-#> 2         Female       sex    Female         level
-#> 3           Male       sex      Male         level
-#> 4 Current smoker   smoking      <NA> factor_header
-#> 5             No   smoking        No         level
-#> 6            Yes   smoking       Yes         level
-#> 7      (Missing)   smoking (Missing)       missing
+#>      Variable .variable    .level     .row_role
+#> 1         sex       sex      <NA> factor_header
+#> 2      Female       sex    Female         level
+#> 3        Male       sex      Male         level
+#> 4     smoking   smoking      <NA> factor_header
+#> 5          No   smoking        No         level
+#> 6         Yes   smoking       Yes         level
+#> 7   (Missing)   smoking (Missing)       missing
 sc$spanners
 #> $`Lower secondary`
 #> [1] 2 3
@@ -539,11 +539,11 @@ statistic OF a group, while these compare two:
 cn <- table_continuous(sochealth, c(age, bmi), by = sex, effect_size = "auto")
 scn <- as_structured(cn)
 scn$body[, c("Variable", ".variable", ".level", ".row_role", "M", "SD")]
-#>          Variable .variable .level .row_role        M        SD
-#> 1     Age (years)       age Female     group 49.37903 14.905948
-#> 2                       age   Male     group 49.14138 14.497478
-#> 3 Body mass index       bmi Female     group 25.68506  3.781113
-#> 4                       bmi   Male     group 26.19685  3.638092
+#>   Variable .variable .level .row_role        M        SD
+#> 1      age       age Female     group 49.37903 14.905948
+#> 2                age   Male     group 49.14138 14.497478
+#> 3      bmi       bmi Female     group 25.68506  3.781113
+#> 4                bmi   Male     group 26.19685  3.638092
 vapply(scn$col_meta, `[[`, character(1), "token")
 #>         M        SD       Min       Max 95% CI LL 95% CI UL         n         p 
 #>       "m"      "sd"     "min"     "max"      "ci"      "ci"       "n"       "p" 
@@ -571,9 +571,9 @@ parse `M (Male)`:
 lm_tbl <- table_continuous_lm(sochealth, c(age, bmi), by = sex)
 slm <- as_structured(lm_tbl)
 slm$body[, c("Variable", ".variable", ".row_role")]
-#>          Variable .variable .row_role
-#> 1     Age (years)       age   summary
-#> 2 Body mass index       bmi   summary
+#>   Variable .variable .row_role
+#> 1      age       age   summary
+#> 2      bmi       bmi   summary
 slm$col_meta[["M (Male)"]]
 #> $token
 #> [1] "emmean"
@@ -601,15 +601,15 @@ all three descriptive families is computed from it:
 ot <- table_outcome(sochealth, bmi, select = c(sex, smoking))
 so <- as_structured(ot)
 so$body[, c("Variable", ".variable", ".level", ".row_role", ".indent")]
-#>         Variable .variable    .level     .row_role .indent
-#> 1        Overall       bmi      <NA>       summary       0
-#> 2            Sex       sex      <NA> factor_header       0
-#> 3         Female       sex    Female         level       1
-#> 4           Male       sex      Male         level       1
-#> 5 Current smoker   smoking      <NA> factor_header       0
-#> 6             No   smoking        No         level       1
-#> 7            Yes   smoking       Yes         level       1
-#> 8      (Missing)   smoking (Missing)       missing       1
+#>      Variable .variable    .level     .row_role .indent
+#> 1     Overall       bmi      <NA>       summary       0
+#> 2         sex       sex      <NA> factor_header       0
+#> 3      Female       sex    Female         level       1
+#> 4        Male       sex      Male         level       1
+#> 5     smoking   smoking      <NA> factor_header       0
+#> 6          No   smoking        No         level       1
+#> 7         Yes   smoking       Yes         level       1
+#> 8   (Missing)   smoking (Missing)       missing       1
 ```
 
 The statistics of the BLOCK sit on its header row and the statistics of
@@ -620,15 +620,15 @@ and is reserved for what the table itself marks:
 ``` r
 
 so$body[, c("Variable", "M", "p")]
-#>         Variable        M          p
-#> 1        Overall 25.93148         NA
-#> 2            Sex       NA 0.01760093
-#> 3         Female 25.68506         NA
-#> 4           Male 26.19685         NA
-#> 5 Current smoker       NA 0.90266806
-#> 6             No 25.96393         NA
-#> 7            Yes 25.93226         NA
-#> 8      (Missing) 24.73600         NA
+#>      Variable        M          p
+#> 1     Overall 25.93148         NA
+#> 2         sex       NA 0.01760093
+#> 3      Female 25.68506         NA
+#> 4        Male 26.19685         NA
+#> 5     smoking       NA 0.90266806
+#> 6          No 25.96393         NA
+#> 7         Yes 25.93226         NA
+#> 8   (Missing) 24.73600         NA
 ```
 
 ## Building your own renderer

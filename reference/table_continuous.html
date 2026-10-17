@@ -158,7 +158,7 @@ adjustment.</p>
 <span>  effect_size_ci <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  smd <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  ci <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  labels <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">getOption</a></span><span class="op">(</span><span class="st">"spicy.var_labels"</span>, <span class="cn">FALSE</span><span class="op">)</span>,</span>
 <span>  ci_level <span class="op">=</span> <span class="fl">0.95</span>,</span>
 <span>  digits <span class="op">=</span> <span class="fl">2</span>,</span>
 <span>  effect_size_digits <span class="op">=</span> <span class="fl">2</span>,</span>
@@ -388,10 +388,24 @@ Ignored (with a warning) when <code>show_columns</code> is supplied.</p></dd>
 
 
 <dt id="arg-labels">labels<a class="anchor" aria-label="anchor" href="#arg-labels"></a></dt>
-<dd><p>An optional named character vector of variable labels.
-Names must match column names in <code>data</code>. When <code>NULL</code> (the default),
-labels are auto-detected from variable attributes (e.g., haven
-labels); if none are found, the column name is used.</p></dd>
+<dd><p>How each variable is named in the table: in the rows,
+in the title, and in the missing-values notes. Four forms:</p><ul><li><p><code>labels = FALSE</code> shows the column name.</p></li>
+<li><p><code>labels = TRUE</code> shows the column's <code>label</code> attribute (as set by
+<code>haven</code>, <code>labelled</code>, or <code><a href="label_from_names.html">label_from_names()</a></code>) when it is present,
+not <code>NA</code>, and not empty, and the column name otherwise.</p></li>
+<li><p><code>labels = c(bmi = "Body mass index")</code>, a named character vector,
+gives the columns it names these labels. Every other column
+follows <code>options(spicy.var_labels)</code>: its name when the option is
+unset or <code>FALSE</code>, its <code>label</code> attribute when it is <code>TRUE</code>.</p></li>
+<li><p><code>labels = var_labels(bmi = "BMI (kg/m2)")</code> gives the columns it
+names these labels, and every other column its <code>label</code> attribute,
+whatever the option says. <code><a href="var_labels.html">var_labels()</a></code> alone is <code>labels = TRUE</code>.</p></li>
+</ul><p>Names that match no column are ignored, so one vector can serve
+every table of a project. The default reads
+<code>options(spicy.var_labels)</code>, and a <code>TRUE</code> or <code>FALSE</code> typed in the
+call wins over it. Any other value, <code>NULL</code> included, is an error. A
+variable label documents the data file; a published table carries
+the wording you set here.</p></dd>
 
 
 <dt id="arg-ci-level">ci_level<a class="anchor" aria-label="anchor" href="#arg-ci-level"></a></dt>
@@ -837,17 +851,12 @@ contrasts, fitted means);
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Descriptive statistics</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable                      <span style="color: #9E9E9E;">│</span>   M     SD     Min    Max    95% CI LL </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">───────────────────────────────┼────────────────────────────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Body mass index               <span style="color: #9E9E9E;">│</span> 25.93   3.72  16.00   38.90    25.72   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  WHO-5 wellbeing index (0-100) <span style="color: #9E9E9E;">│</span> 69.04  15.62  18.70  100.00    68.16   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span>   M     SD     Min    Max    95% CI LL  95% CI UL   n   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────┼─────────────────────────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  bmi             <span style="color: #9E9E9E;">│</span> 25.93   3.72  16.00   38.90    25.72      26.14    1188 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  wellbeing_score <span style="color: #9E9E9E;">│</span> 69.04  15.62  18.70  100.00    68.16      69.93    1200 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable                      <span style="color: #9E9E9E;">│</span> 95% CI UL   n   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">───────────────────────────────┼─────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Body mass index               <span style="color: #9E9E9E;">│</span>   26.14    1188 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  WHO-5 wellbeing index (0-100) <span style="color: #9E9E9E;">│</span>   69.93    1200 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Missing values removed: Body mass index (12).</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Missing values removed: bmi (12).</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Grouped by education (Welch p-value added by default).</span></span></span>
 <span class="r-in"><span><span class="fu">table_continuous</span><span class="op">(</span></span></span>
@@ -855,39 +864,29 @@ contrasts, fitted means);
 <span class="r-in"><span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">bmi</span>, <span class="va">wellbeing_score</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  by <span class="op">=</span> <span class="va">education</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Descriptive statistics by Highest education level</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Descriptive statistics by education</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable                      <span style="color: #9E9E9E;">│</span> Group              M     SD     Min    Max   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">───────────────────────────────┼──────────────────────────────────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Body mass index               <span style="color: #9E9E9E;">│</span> Lower secondary  28.09   3.47  18.20   38.90 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                <span style="color: #9E9E9E;">│</span> Upper secondary  26.02   3.43  16.00   37.10 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                <span style="color: #9E9E9E;">│</span> Tertiary         24.39   3.52  16.00   33.00 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  WHO-5 wellbeing index (0-100) <span style="color: #9E9E9E;">│</span> Lower secondary  57.22  15.44  18.70   97.90 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                <span style="color: #9E9E9E;">│</span> Upper secondary  68.97  13.62  26.70  100.00 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                <span style="color: #9E9E9E;">│</span> Tertiary         76.85  13.23  40.40  100.00 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span> Group              M     SD     Min    Max    95% CI LL </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────┼─────────────────────────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  bmi             <span style="color: #9E9E9E;">│</span> Lower secondary  28.09   3.47  18.20   38.90    27.66   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                  <span style="color: #9E9E9E;">│</span> Upper secondary  26.02   3.43  16.00   37.10    25.73   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                  <span style="color: #9E9E9E;">│</span> Tertiary         24.39   3.52  16.00   33.00    24.04   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  wellbeing_score <span style="color: #9E9E9E;">│</span> Lower secondary  57.22  15.44  18.70   97.90    55.33   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                  <span style="color: #9E9E9E;">│</span> Upper secondary  68.97  13.62  26.70  100.00    67.82   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                  <span style="color: #9E9E9E;">│</span> Tertiary         76.85  13.23  40.40  100.00    75.55   </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable                      <span style="color: #9E9E9E;">│</span> Group            95% CI LL  95% CI UL   n  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">───────────────────────────────┼────────────────────────────────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Body mass index               <span style="color: #9E9E9E;">│</span> Lower secondary    27.66      28.51    260 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                <span style="color: #9E9E9E;">│</span> Upper secondary    25.73      26.31    534 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                <span style="color: #9E9E9E;">│</span> Tertiary           24.04      24.74    394 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  WHO-5 wellbeing index (0-100) <span style="color: #9E9E9E;">│</span> Lower secondary    55.33      59.10    261 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                <span style="color: #9E9E9E;">│</span> Upper secondary    67.82      70.12    539 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                <span style="color: #9E9E9E;">│</span> Tertiary           75.55      78.15    400 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span> Group            95% CI UL   n     p   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────┼────────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  bmi             <span style="color: #9E9E9E;">│</span> Lower secondary    28.51    260  &lt;.001 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                  <span style="color: #9E9E9E;">│</span> Upper secondary    26.31    534        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                  <span style="color: #9E9E9E;">│</span> Tertiary           24.74    394        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  wellbeing_score <span style="color: #9E9E9E;">│</span> Lower secondary    59.10    261  &lt;.001 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                  <span style="color: #9E9E9E;">│</span> Upper secondary    70.12    539        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                  <span style="color: #9E9E9E;">│</span> Tertiary           78.15    400        </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable                      <span style="color: #9E9E9E;">│</span> Group              p   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">───────────────────────────────┼────────────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Body mass index               <span style="color: #9E9E9E;">│</span> Lower secondary  &lt;.001 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                <span style="color: #9E9E9E;">│</span> Upper secondary        </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                <span style="color: #9E9E9E;">│</span> Tertiary               </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  WHO-5 wellbeing index (0-100) <span style="color: #9E9E9E;">│</span> Lower secondary  &lt;.001 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                <span style="color: #9E9E9E;">│</span> Upper secondary        </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                <span style="color: #9E9E9E;">│</span> Tertiary               </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Missing values removed: Body mass index (12).</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Missing values removed: bmi (12).</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Test statistic alongside the p-value.</span></span></span>
 <span class="r-in"><span><span class="fu">table_continuous</span><span class="op">(</span></span></span>
@@ -896,39 +895,39 @@ contrasts, fitted means);
 <span class="r-in"><span>  by <span class="op">=</span> <span class="va">education</span>,</span></span>
 <span class="r-in"><span>  statistic <span class="op">=</span> <span class="cn">TRUE</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Descriptive statistics by Highest education level</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Descriptive statistics by education</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable                      <span style="color: #9E9E9E;">│</span> Group              M     SD     Min    Max   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">───────────────────────────────┼──────────────────────────────────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Body mass index               <span style="color: #9E9E9E;">│</span> Lower secondary  28.09   3.47  18.20   38.90 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                <span style="color: #9E9E9E;">│</span> Upper secondary  26.02   3.43  16.00   37.10 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                <span style="color: #9E9E9E;">│</span> Tertiary         24.39   3.52  16.00   33.00 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  WHO-5 wellbeing index (0-100) <span style="color: #9E9E9E;">│</span> Lower secondary  57.22  15.44  18.70   97.90 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                <span style="color: #9E9E9E;">│</span> Upper secondary  68.97  13.62  26.70  100.00 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                <span style="color: #9E9E9E;">│</span> Tertiary         76.85  13.23  40.40  100.00 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span> Group              M     SD     Min    Max    95% CI LL </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────┼─────────────────────────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  bmi             <span style="color: #9E9E9E;">│</span> Lower secondary  28.09   3.47  18.20   38.90    27.66   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                  <span style="color: #9E9E9E;">│</span> Upper secondary  26.02   3.43  16.00   37.10    25.73   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                  <span style="color: #9E9E9E;">│</span> Tertiary         24.39   3.52  16.00   33.00    24.04   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  wellbeing_score <span style="color: #9E9E9E;">│</span> Lower secondary  57.22  15.44  18.70   97.90    55.33   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                  <span style="color: #9E9E9E;">│</span> Upper secondary  68.97  13.62  26.70  100.00    67.82   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                  <span style="color: #9E9E9E;">│</span> Tertiary         76.85  13.23  40.40  100.00    75.55   </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable                      <span style="color: #9E9E9E;">│</span> Group            95% CI LL  95% CI UL   n  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">───────────────────────────────┼────────────────────────────────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Body mass index               <span style="color: #9E9E9E;">│</span> Lower secondary    27.66      28.51    260 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                <span style="color: #9E9E9E;">│</span> Upper secondary    25.73      26.31    534 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                <span style="color: #9E9E9E;">│</span> Tertiary           24.04      24.74    394 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  WHO-5 wellbeing index (0-100) <span style="color: #9E9E9E;">│</span> Lower secondary    55.33      59.10    261 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                <span style="color: #9E9E9E;">│</span> Upper secondary    67.82      70.12    539 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                <span style="color: #9E9E9E;">│</span> Tertiary           75.55      78.15    400 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span> Group            95% CI UL   n           Test          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────┼────────────────────────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  bmi             <span style="color: #9E9E9E;">│</span> Lower secondary    28.51    260  F(2, 654.48) = 87.96  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                  <span style="color: #9E9E9E;">│</span> Upper secondary    26.31    534                        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                  <span style="color: #9E9E9E;">│</span> Tertiary           24.74    394                        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  wellbeing_score <span style="color: #9E9E9E;">│</span> Lower secondary    59.10    261  F(2, 638.59) = 144.35 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                  <span style="color: #9E9E9E;">│</span> Upper secondary    70.12    539                        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                  <span style="color: #9E9E9E;">│</span> Tertiary           78.15    400                        </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable                      <span style="color: #9E9E9E;">│</span> Group                    Test             p   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">───────────────────────────────┼───────────────────────────────────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Body mass index               <span style="color: #9E9E9E;">│</span> Lower secondary  F(2, 654.48) = 87.96   &lt;.001 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                <span style="color: #9E9E9E;">│</span> Upper secondary                               </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                <span style="color: #9E9E9E;">│</span> Tertiary                                      </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  WHO-5 wellbeing index (0-100) <span style="color: #9E9E9E;">│</span> Lower secondary  F(2, 638.59) = 144.35  &lt;.001 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                <span style="color: #9E9E9E;">│</span> Upper secondary                               </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                <span style="color: #9E9E9E;">│</span> Tertiary                                      </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span> Group              p   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────┼────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  bmi             <span style="color: #9E9E9E;">│</span> Lower secondary  &lt;.001 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                  <span style="color: #9E9E9E;">│</span> Upper secondary        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                  <span style="color: #9E9E9E;">│</span> Tertiary               </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  wellbeing_score <span style="color: #9E9E9E;">│</span> Lower secondary  &lt;.001 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                  <span style="color: #9E9E9E;">│</span> Upper secondary        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                  <span style="color: #9E9E9E;">│</span> Tertiary               </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Missing values removed: Body mass index (12).</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Missing values removed: bmi (12).</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># --- Choosing the statistics --------------------------------------------</span></span></span>
 <span class="r-in"><span></span></span>
@@ -940,12 +939,12 @@ contrasts, fitted means);
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Descriptive statistics</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable                        <span style="color: #9E9E9E;">│</span>      Med [Q1, Q3]         n    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────────────────────┼────────────────────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Body mass index                 <span style="color: #9E9E9E;">│</span>  25.90 [23.40, 28.60]    1188  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  WHO-5 wellbeing index (0-100)   <span style="color: #9E9E9E;">│</span>  70.25 [58.90, 79.23]    1200  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable          <span style="color: #9E9E9E;">│</span>      Med [Q1, Q3]         n    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">───────────────────┼────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  bmi               <span style="color: #9E9E9E;">│</span>  25.90 [23.40, 28.60]    1188  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  wellbeing_score   <span style="color: #9E9E9E;">│</span>  70.25 [58.90, 79.23]    1200  </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Missing values removed: Body mass index (12). Med [Q1, Q3] = median [first quartile, third quartile].</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Missing values removed: bmi (12). Med [Q1, Q3] = median [first quartile, third quartile].</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Median with its exact (order-statistic) confidence interval.</span></span></span>
 <span class="r-in"><span><span class="fu">table_continuous</span><span class="op">(</span></span></span>
@@ -955,11 +954,11 @@ contrasts, fitted means);
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Descriptive statistics</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable          <span style="color: #9E9E9E;">│</span>   Med     IQR     Med 95% CI LL    Med 95% CI UL     n    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">───────────────────┼───────────────────────────────────────────────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Body mass index   <span style="color: #9E9E9E;">│</span>  25.90    5.20        25.70            26.20        1188  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable   <span style="color: #9E9E9E;">│</span>   Med     IQR     Med 95% CI LL    Med 95% CI UL     n    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">────────────┼───────────────────────────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  bmi        <span style="color: #9E9E9E;">│</span>  25.90    5.20        25.70            26.20        1188  </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Missing values removed: Body mass index (12). IQR = interquartile range (Q3 - Q1). Med 95% CI = exact order-statistic confidence interval for the median (coverage at least 95%).</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Missing values removed: bmi (12). IQR = interquartile range (Q3 - Q1). Med 95% CI = exact order-statistic confidence interval for the median (coverage at least 95%).</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># One selection per variable. A skewed variable that a scoring</span></span></span>
 <span class="r-in"><span><span class="co"># protocol requires in median and IQR (the IPAQ case) sits next to</span></span></span>
@@ -974,31 +973,20 @@ contrasts, fitted means);
 <span class="r-in"><span>    .default <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"m"</span>, <span class="st">"sd"</span>, <span class="st">"n"</span><span class="op">)</span></span></span>
 <span class="r-in"><span>  <span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Descriptive statistics by Sex</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Descriptive statistics by sex</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable                       <span style="color: #9E9E9E;">│</span> Group     M     SD      Med [Q1, Q3]      n  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">────────────────────────────────┼──────────────────────────────────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Body mass index                <span style="color: #9E9E9E;">│</span> Female  25.69   3.78                     616 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                 <span style="color: #9E9E9E;">│</span> Male    26.20   3.64                     572 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Satisfaction with health (1-5) <span style="color: #9E9E9E;">│</span> Female                4.00 [3.00, 5.00]  616 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                 <span style="color: #9E9E9E;">│</span> Male                  4.00 [3.00, 5.00]  576 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  WHO-5 wellbeing index (0-100)  <span style="color: #9E9E9E;">│</span> Female  67.16  14.80                     620 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                 <span style="color: #9E9E9E;">│</span> Male    71.05  16.23                     580 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span> Group     M     SD      Med [Q1, Q3]      n     p   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────┼─────────────────────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  bmi             <span style="color: #9E9E9E;">│</span> Female  25.69   3.78                     616   .018 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                  <span style="color: #9E9E9E;">│</span> Male    26.20   3.64                     572        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  life_sat_health <span style="color: #9E9E9E;">│</span> Female                4.00 [3.00, 5.00]  616   .233 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                  <span style="color: #9E9E9E;">│</span> Male                  4.00 [3.00, 5.00]  576        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  wellbeing_score <span style="color: #9E9E9E;">│</span> Female  67.16  14.80                     620  &lt;.001 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                  <span style="color: #9E9E9E;">│</span> Male    71.05  16.23                     580        </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable                       <span style="color: #9E9E9E;">│</span> Group     p   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">────────────────────────────────┼───────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Body mass index                <span style="color: #9E9E9E;">│</span> Female   .018 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                 <span style="color: #9E9E9E;">│</span> Male          </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Satisfaction with health (1-5) <span style="color: #9E9E9E;">│</span> Female   .233 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                 <span style="color: #9E9E9E;">│</span> Male          </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  WHO-5 wellbeing index (0-100)  <span style="color: #9E9E9E;">│</span> Female  &lt;.001 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                 <span style="color: #9E9E9E;">│</span> Male          </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Missing values removed: Body mass index (12), Satisfaction with health (1-5) (8). Group comparison: Welch t-test (bmi, wellbeing_score); Wilcoxon rank-sum test (life_sat_health). Med [Q1, Q3] = median [first quartile, third quartile].</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Missing values removed: bmi (12), life_sat_health (8). Group comparison: Welch t-test (bmi, wellbeing_score); Wilcoxon rank-sum test (life_sat_health). Med [Q1, Q3] = median [first quartile, third quartile].</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># --- Effect sizes -------------------------------------------------------</span></span></span>
 <span class="r-in"><span></span></span>
@@ -1011,22 +999,17 @@ contrasts, fitted means);
 <span class="r-in"><span>  effect_size <span class="op">=</span> <span class="st">"auto"</span>,</span></span>
 <span class="r-in"><span>  effect_size_ci <span class="op">=</span> <span class="cn">TRUE</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Descriptive statistics by Sex</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Descriptive statistics by sex</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable                      <span style="color: #9E9E9E;">│</span> Group     M     SD     Min    Max    95% CI LL </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">───────────────────────────────┼────────────────────────────────────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  WHO-5 wellbeing index (0-100) <span style="color: #9E9E9E;">│</span> Female  67.16  14.80  19.60  100.00    65.99   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                <span style="color: #9E9E9E;">│</span> Male    71.05  16.23  18.70  100.00    69.73   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span> Group     M     SD     Min    Max    95% CI LL  95% CI UL </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────┼───────────────────────────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  wellbeing_score <span style="color: #9E9E9E;">│</span> Female  67.16  14.80  19.60  100.00    65.99      68.33   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                  <span style="color: #9E9E9E;">│</span> Male    71.05  16.23  18.70  100.00    69.73      72.37   </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable                      <span style="color: #9E9E9E;">│</span> Group   95% CI UL   n     p   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">───────────────────────────────┼───────────────────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  WHO-5 wellbeing index (0-100) <span style="color: #9E9E9E;">│</span> Female    68.33    620  &lt;.001 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                <span style="color: #9E9E9E;">│</span> Male      72.37    580        </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable                      <span style="color: #9E9E9E;">│</span> Group              ES            </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">───────────────────────────────┼──────────────────────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  WHO-5 wellbeing index (0-100) <span style="color: #9E9E9E;">│</span> Female  g = -0.25 [-0.36, -0.14] </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                <span style="color: #9E9E9E;">│</span> Male                             </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span> Group    n     p               ES            </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────┼──────────────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  wellbeing_score <span style="color: #9E9E9E;">│</span> Female  620  &lt;.001  g = -0.25 [-0.36, -0.14] </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                  <span style="color: #9E9E9E;">│</span> Male    580                                  </span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Explicit effect-size measure.</span></span></span>
 <span class="r-in"><span><span class="fu">table_continuous</span><span class="op">(</span></span></span>
@@ -1037,31 +1020,25 @@ contrasts, fitted means);
 <span class="r-in"><span>  effect_size_ci <span class="op">=</span> <span class="cn">TRUE</span>,</span></span>
 <span class="r-in"><span>  effect_size_digits <span class="op">=</span> <span class="fl">3</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Descriptive statistics by Highest education level</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Descriptive statistics by education</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable                      <span style="color: #9E9E9E;">│</span> Group              M     SD     Min    Max   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">───────────────────────────────┼──────────────────────────────────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  WHO-5 wellbeing index (0-100) <span style="color: #9E9E9E;">│</span> Lower secondary  57.22  15.44  18.70   97.90 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                <span style="color: #9E9E9E;">│</span> Upper secondary  68.97  13.62  26.70  100.00 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                <span style="color: #9E9E9E;">│</span> Tertiary         76.85  13.23  40.40  100.00 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span> Group              M     SD     Min    Max    95% CI LL </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────┼─────────────────────────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  wellbeing_score <span style="color: #9E9E9E;">│</span> Lower secondary  57.22  15.44  18.70   97.90    55.33   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                  <span style="color: #9E9E9E;">│</span> Upper secondary  68.97  13.62  26.70  100.00    67.82   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                  <span style="color: #9E9E9E;">│</span> Tertiary         76.85  13.23  40.40  100.00    75.55   </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable                      <span style="color: #9E9E9E;">│</span> Group            95% CI LL  95% CI UL   n  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">───────────────────────────────┼────────────────────────────────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  WHO-5 wellbeing index (0-100) <span style="color: #9E9E9E;">│</span> Lower secondary    55.33      59.10    261 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                <span style="color: #9E9E9E;">│</span> Upper secondary    67.82      70.12    539 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                <span style="color: #9E9E9E;">│</span> Tertiary           75.55      78.15    400 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span> Group            95% CI UL   n     p   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────┼────────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  wellbeing_score <span style="color: #9E9E9E;">│</span> Lower secondary    59.10    261  &lt;.001 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                  <span style="color: #9E9E9E;">│</span> Upper secondary    70.12    539        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                  <span style="color: #9E9E9E;">│</span> Tertiary           78.15    400        </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable                      <span style="color: #9E9E9E;">│</span> Group              p   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">───────────────────────────────┼────────────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  WHO-5 wellbeing index (0-100) <span style="color: #9E9E9E;">│</span> Lower secondary  &lt;.001 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                <span style="color: #9E9E9E;">│</span> Upper secondary        </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                <span style="color: #9E9E9E;">│</span> Tertiary               </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable                      <span style="color: #9E9E9E;">│</span> Group                       ES             </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">───────────────────────────────┼────────────────────────────────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  WHO-5 wellbeing index (0-100) <span style="color: #9E9E9E;">│</span> Lower secondary  η² = 0.208 [0.169, 0.246] </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                <span style="color: #9E9E9E;">│</span> Upper secondary                            </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                <span style="color: #9E9E9E;">│</span> Tertiary                                   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span> Group                       ES             </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────┼────────────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  wellbeing_score <span style="color: #9E9E9E;">│</span> Lower secondary  η² = 0.208 [0.169, 0.246] </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                  <span style="color: #9E9E9E;">│</span> Upper secondary                            </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                  <span style="color: #9E9E9E;">│</span> Tertiary                                   </span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># --- Selection helpers --------------------------------------------------</span></span></span>
 <span class="r-in"><span></span></span>
@@ -1073,21 +1050,14 @@ contrasts, fitted means);
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Descriptive statistics</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable                                   <span style="color: #9E9E9E;">│</span>  M     SD   Min   Max   95% CI LL </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">────────────────────────────────────────────┼───────────────────────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Satisfaction with health (1-5)             <span style="color: #9E9E9E;">│</span> 3.55  1.25  1.00  5.00    3.48    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Satisfaction with work (1-5)               <span style="color: #9E9E9E;">│</span> 3.38  1.18  1.00  5.00    3.31    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Satisfaction with relationships (1-5)      <span style="color: #9E9E9E;">│</span> 3.72  1.10  1.00  5.00    3.66    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Satisfaction with standard of living (1-5) <span style="color: #9E9E9E;">│</span> 3.40  1.16  1.00  5.00    3.33    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable               <span style="color: #9E9E9E;">│</span>  M     SD   Min   Max   95% CI LL  95% CI UL   n   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">────────────────────────┼────────────────────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  life_sat_health        <span style="color: #9E9E9E;">│</span> 3.55  1.25  1.00  5.00    3.48       3.62     1192 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  life_sat_work          <span style="color: #9E9E9E;">│</span> 3.38  1.18  1.00  5.00    3.31       3.45     1192 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  life_sat_relationships <span style="color: #9E9E9E;">│</span> 3.72  1.10  1.00  5.00    3.66       3.79     1192 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  life_sat_standard      <span style="color: #9E9E9E;">│</span> 3.40  1.16  1.00  5.00    3.33       3.46     1192 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable                                   <span style="color: #9E9E9E;">│</span> 95% CI UL   n   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">────────────────────────────────────────────┼─────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Satisfaction with health (1-5)             <span style="color: #9E9E9E;">│</span>   3.62     1192 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Satisfaction with work (1-5)               <span style="color: #9E9E9E;">│</span>   3.45     1192 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Satisfaction with relationships (1-5)      <span style="color: #9E9E9E;">│</span>   3.79     1192 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Satisfaction with standard of living (1-5) <span style="color: #9E9E9E;">│</span>   3.46     1192 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Missing values removed: Satisfaction with health (1-5) (8), Satisfaction with work (1-5) (8), Satisfaction with relationships (1-5) (8), Satisfaction with standard of living (1-5) (8).</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Missing values removed: life_sat_health (8), life_sat_work (8), life_sat_relationships (8), life_sat_standard (8).</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Pretty labels keyed by column name.</span></span></span>
 <span class="r-in"><span><span class="fu">table_continuous</span><span class="op">(</span></span></span>
@@ -1129,26 +1099,21 @@ contrasts, fitted means);
 <span class="r-in"><span>  by <span class="op">=</span> <span class="va">sex</span>,</span></span>
 <span class="r-in"><span>  output <span class="op">=</span> <span class="st">"data.frame"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>          variable                         label  group     mean        sd  min</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1             bmi               Body mass index Female 25.68506  3.781113 16.0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2             bmi               Body mass index   Male 26.19685  3.638092 16.0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3 wellbeing_score WHO-5 wellbeing index (0-100) Female 67.16194 14.798488 19.6</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4 wellbeing_score WHO-5 wellbeing index (0-100)   Male 71.04879 16.227304 18.7</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     max ci_lower ci_upper median     q1     q3    iqr med_ci_lower med_ci_upper</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1  38.9 25.38588 25.98425   25.7 23.100 28.600  5.500         25.4         26.1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2  37.7 25.89808 26.49563   26.1 23.875 28.625  4.750         25.8         26.6</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3 100.0 65.99480 68.32907   68.2 57.300 77.525 20.225         66.6         69.7</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4 100.0 69.72540 72.37219   72.3 61.275 81.575 20.300         70.8         73.2</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     n weighted_n test_type statistic      df1 df2      p.value smd_type</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1 616         NA   welch_t -2.377237 1184.497  NA 1.760093e-02     &lt;NA&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2 572         NA      &lt;NA&gt;        NA       NA  NA           NA     &lt;NA&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3 620         NA   welch_t -4.326141 1168.700  NA 1.647005e-05     &lt;NA&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4 580         NA      &lt;NA&gt;        NA       NA  NA           NA     &lt;NA&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   smd_value</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1        NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2        NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3        NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4        NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          variable           label  group     mean        sd  min   max ci_lower</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1             bmi             bmi Female 25.68506  3.781113 16.0  38.9 25.38588</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2             bmi             bmi   Male 26.19685  3.638092 16.0  37.7 25.89808</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3 wellbeing_score wellbeing_score Female 67.16194 14.798488 19.6 100.0 65.99480</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4 wellbeing_score wellbeing_score   Male 71.04879 16.227304 18.7 100.0 69.72540</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ci_upper median     q1     q3    iqr med_ci_lower med_ci_upper   n weighted_n</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1 25.98425   25.7 23.100 28.600  5.500         25.4         26.1 616         NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2 26.49563   26.1 23.875 28.625  4.750         25.8         26.6 572         NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3 68.32907   68.2 57.300 77.525 20.225         66.6         69.7 620         NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4 72.37219   72.3 61.275 81.575 20.300         70.8         73.2 580         NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   test_type statistic      df1 df2      p.value smd_type smd_value</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1   welch_t -2.377237 1184.497  NA 1.760093e-02     &lt;NA&gt;        NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2      &lt;NA&gt;        NA       NA  NA           NA     &lt;NA&gt;        NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3   welch_t -4.326141 1168.700  NA 1.647005e-05     &lt;NA&gt;        NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4      &lt;NA&gt;        NA       NA  NA           NA     &lt;NA&gt;        NA</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># \donttest{</span></span></span>
 <span class="r-in"><span><span class="co"># Rendered HTML / docx objects -- best viewed inside a</span></span></span>

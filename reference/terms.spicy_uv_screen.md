@@ -5,8 +5,8 @@ object of the formula `outcome ~ predictor_1 + ... + predictor_k`
 spanning every predictor screened by
 [`table_regression_uv()`](https://amaltawfik.github.io/spicy/reference/table_regression_uv.md).
 Non-syntactic column names are backtick-quoted, so the terms are valid
-whatever the input names. Used internally by the label validator, which
-reads term labels off every model in a table.
+whatever the input names. Used internally to read the term labels a
+`labels` entry can name, off every model in a table.
 
 ## Usage
 

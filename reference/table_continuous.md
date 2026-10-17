@@ -49,7 +49,7 @@ table_continuous(
   effect_size_ci = FALSE,
   smd = FALSE,
   ci = TRUE,
-  labels = NULL,
+  labels = getOption("spicy.var_labels", FALSE),
   ci_level = 0.95,
   digits = 2,
   effect_size_digits = 2,
@@ -292,10 +292,33 @@ table_continuous(
 
 - labels:
 
-  An optional named character vector of variable labels. Names must
-  match column names in `data`. When `NULL` (the default), labels are
-  auto-detected from variable attributes (e.g., haven labels); if none
-  are found, the column name is used.
+  How each variable is named in the table: in the rows, in the title,
+  and in the missing-values notes. Four forms:
+
+  - `labels = FALSE` shows the column name.
+
+  - `labels = TRUE` shows the column's `label` attribute (as set by
+    `haven`, `labelled`, or
+    [`label_from_names()`](https://amaltawfik.github.io/spicy/reference/label_from_names.md))
+    when it is present, not `NA`, and not empty, and the column name
+    otherwise.
+
+  - `labels = c(bmi = "Body mass index")`, a named character vector,
+    gives the columns it names these labels. Every other column follows
+    `options(spicy.var_labels)`: its name when the option is unset or
+    `FALSE`, its `label` attribute when it is `TRUE`.
+
+  - `labels = var_labels(bmi = "BMI (kg/m2)")` gives the columns it
+    names these labels, and every other column its `label` attribute,
+    whatever the option says.
+    [`var_labels()`](https://amaltawfik.github.io/spicy/reference/var_labels.md)
+    alone is `labels = TRUE`.
+
+  Names that match no column are ignored, so one vector can serve every
+  table of a project. The default reads `options(spicy.var_labels)`, and
+  a `TRUE` or `FALSE` typed in the call wins over it. Any other value,
+  `NULL` included, is an error. A variable label documents the data
+  file; a published table carries the wording you set here.
 
 - ci_level:
 
@@ -835,17 +858,12 @@ table_continuous(
 )
 #> Descriptive statistics
 #> 
-#>  Variable                      │   M     SD     Min    Max    95% CI LL 
-#> ───────────────────────────────┼────────────────────────────────────────
-#>  Body mass index               │ 25.93   3.72  16.00   38.90    25.72   
-#>  WHO-5 wellbeing index (0-100) │ 69.04  15.62  18.70  100.00    68.16   
+#>  Variable        │   M     SD     Min    Max    95% CI LL  95% CI UL   n   
+#> ─────────────────┼─────────────────────────────────────────────────────────
+#>  bmi             │ 25.93   3.72  16.00   38.90    25.72      26.14    1188 
+#>  wellbeing_score │ 69.04  15.62  18.70  100.00    68.16      69.93    1200 
 #> 
-#>  Variable                      │ 95% CI UL   n   
-#> ───────────────────────────────┼─────────────────
-#>  Body mass index               │   26.14    1188 
-#>  WHO-5 wellbeing index (0-100) │   69.93    1200 
-#> 
-#> Missing values removed: Body mass index (12).
+#> Missing values removed: bmi (12).
 
 # Grouped by education (Welch p-value added by default).
 table_continuous(
@@ -853,39 +871,29 @@ table_continuous(
   select = c(bmi, wellbeing_score),
   by = education
 )
-#> Descriptive statistics by Highest education level
+#> Descriptive statistics by education
 #> 
-#>  Variable                      │ Group              M     SD     Min    Max   
-#> ───────────────────────────────┼──────────────────────────────────────────────
-#>  Body mass index               │ Lower secondary  28.09   3.47  18.20   38.90 
-#>                                │ Upper secondary  26.02   3.43  16.00   37.10 
-#>                                │ Tertiary         24.39   3.52  16.00   33.00 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  WHO-5 wellbeing index (0-100) │ Lower secondary  57.22  15.44  18.70   97.90 
-#>                                │ Upper secondary  68.97  13.62  26.70  100.00 
-#>                                │ Tertiary         76.85  13.23  40.40  100.00 
+#>  Variable        │ Group              M     SD     Min    Max    95% CI LL 
+#> ─────────────────┼─────────────────────────────────────────────────────────
+#>  bmi             │ Lower secondary  28.09   3.47  18.20   38.90    27.66   
+#>                  │ Upper secondary  26.02   3.43  16.00   37.10    25.73   
+#>                  │ Tertiary         24.39   3.52  16.00   33.00    24.04   
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  wellbeing_score │ Lower secondary  57.22  15.44  18.70   97.90    55.33   
+#>                  │ Upper secondary  68.97  13.62  26.70  100.00    67.82   
+#>                  │ Tertiary         76.85  13.23  40.40  100.00    75.55   
 #> 
-#>  Variable                      │ Group            95% CI LL  95% CI UL   n  
-#> ───────────────────────────────┼────────────────────────────────────────────
-#>  Body mass index               │ Lower secondary    27.66      28.51    260 
-#>                                │ Upper secondary    25.73      26.31    534 
-#>                                │ Tertiary           24.04      24.74    394 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  WHO-5 wellbeing index (0-100) │ Lower secondary    55.33      59.10    261 
-#>                                │ Upper secondary    67.82      70.12    539 
-#>                                │ Tertiary           75.55      78.15    400 
+#>  Variable        │ Group            95% CI UL   n     p   
+#> ─────────────────┼────────────────────────────────────────
+#>  bmi             │ Lower secondary    28.51    260  <.001 
+#>                  │ Upper secondary    26.31    534        
+#>                  │ Tertiary           24.74    394        
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  wellbeing_score │ Lower secondary    59.10    261  <.001 
+#>                  │ Upper secondary    70.12    539        
+#>                  │ Tertiary           78.15    400        
 #> 
-#>  Variable                      │ Group              p   
-#> ───────────────────────────────┼────────────────────────
-#>  Body mass index               │ Lower secondary  <.001 
-#>                                │ Upper secondary        
-#>                                │ Tertiary               
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  WHO-5 wellbeing index (0-100) │ Lower secondary  <.001 
-#>                                │ Upper secondary        
-#>                                │ Tertiary               
-#> 
-#> Missing values removed: Body mass index (12).
+#> Missing values removed: bmi (12).
 
 # Test statistic alongside the p-value.
 table_continuous(
@@ -894,39 +902,39 @@ table_continuous(
   by = education,
   statistic = TRUE
 )
-#> Descriptive statistics by Highest education level
+#> Descriptive statistics by education
 #> 
-#>  Variable                      │ Group              M     SD     Min    Max   
-#> ───────────────────────────────┼──────────────────────────────────────────────
-#>  Body mass index               │ Lower secondary  28.09   3.47  18.20   38.90 
-#>                                │ Upper secondary  26.02   3.43  16.00   37.10 
-#>                                │ Tertiary         24.39   3.52  16.00   33.00 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  WHO-5 wellbeing index (0-100) │ Lower secondary  57.22  15.44  18.70   97.90 
-#>                                │ Upper secondary  68.97  13.62  26.70  100.00 
-#>                                │ Tertiary         76.85  13.23  40.40  100.00 
+#>  Variable        │ Group              M     SD     Min    Max    95% CI LL 
+#> ─────────────────┼─────────────────────────────────────────────────────────
+#>  bmi             │ Lower secondary  28.09   3.47  18.20   38.90    27.66   
+#>                  │ Upper secondary  26.02   3.43  16.00   37.10    25.73   
+#>                  │ Tertiary         24.39   3.52  16.00   33.00    24.04   
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  wellbeing_score │ Lower secondary  57.22  15.44  18.70   97.90    55.33   
+#>                  │ Upper secondary  68.97  13.62  26.70  100.00    67.82   
+#>                  │ Tertiary         76.85  13.23  40.40  100.00    75.55   
 #> 
-#>  Variable                      │ Group            95% CI LL  95% CI UL   n  
-#> ───────────────────────────────┼────────────────────────────────────────────
-#>  Body mass index               │ Lower secondary    27.66      28.51    260 
-#>                                │ Upper secondary    25.73      26.31    534 
-#>                                │ Tertiary           24.04      24.74    394 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  WHO-5 wellbeing index (0-100) │ Lower secondary    55.33      59.10    261 
-#>                                │ Upper secondary    67.82      70.12    539 
-#>                                │ Tertiary           75.55      78.15    400 
+#>  Variable        │ Group            95% CI UL   n           Test          
+#> ─────────────────┼────────────────────────────────────────────────────────
+#>  bmi             │ Lower secondary    28.51    260  F(2, 654.48) = 87.96  
+#>                  │ Upper secondary    26.31    534                        
+#>                  │ Tertiary           24.74    394                        
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  wellbeing_score │ Lower secondary    59.10    261  F(2, 638.59) = 144.35 
+#>                  │ Upper secondary    70.12    539                        
+#>                  │ Tertiary           78.15    400                        
 #> 
-#>  Variable                      │ Group                    Test             p   
-#> ───────────────────────────────┼───────────────────────────────────────────────
-#>  Body mass index               │ Lower secondary  F(2, 654.48) = 87.96   <.001 
-#>                                │ Upper secondary                               
-#>                                │ Tertiary                                      
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  WHO-5 wellbeing index (0-100) │ Lower secondary  F(2, 638.59) = 144.35  <.001 
-#>                                │ Upper secondary                               
-#>                                │ Tertiary                                      
+#>  Variable        │ Group              p   
+#> ─────────────────┼────────────────────────
+#>  bmi             │ Lower secondary  <.001 
+#>                  │ Upper secondary        
+#>                  │ Tertiary               
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  wellbeing_score │ Lower secondary  <.001 
+#>                  │ Upper secondary        
+#>                  │ Tertiary               
 #> 
-#> Missing values removed: Body mass index (12).
+#> Missing values removed: bmi (12).
 
 # --- Choosing the statistics --------------------------------------------
 
@@ -938,12 +946,12 @@ table_continuous(
 )
 #> Descriptive statistics
 #> 
-#>  Variable                        │      Med [Q1, Q3]         n    
-#> ─────────────────────────────────┼────────────────────────────────
-#>  Body mass index                 │  25.90 [23.40, 28.60]    1188  
-#>  WHO-5 wellbeing index (0-100)   │  70.25 [58.90, 79.23]    1200  
+#>  Variable          │      Med [Q1, Q3]         n    
+#> ───────────────────┼────────────────────────────────
+#>  bmi               │  25.90 [23.40, 28.60]    1188  
+#>  wellbeing_score   │  70.25 [58.90, 79.23]    1200  
 #> 
-#> Missing values removed: Body mass index (12). Med [Q1, Q3] = median [first quartile, third quartile].
+#> Missing values removed: bmi (12). Med [Q1, Q3] = median [first quartile, third quartile].
 
 # Median with its exact (order-statistic) confidence interval.
 table_continuous(
@@ -953,11 +961,11 @@ table_continuous(
 )
 #> Descriptive statistics
 #> 
-#>  Variable          │   Med     IQR     Med 95% CI LL    Med 95% CI UL     n    
-#> ───────────────────┼───────────────────────────────────────────────────────────
-#>  Body mass index   │  25.90    5.20        25.70            26.20        1188  
+#>  Variable   │   Med     IQR     Med 95% CI LL    Med 95% CI UL     n    
+#> ────────────┼───────────────────────────────────────────────────────────
+#>  bmi        │  25.90    5.20        25.70            26.20        1188  
 #> 
-#> Missing values removed: Body mass index (12). IQR = interquartile range (Q3 - Q1). Med 95% CI = exact order-statistic confidence interval for the median (coverage at least 95%).
+#> Missing values removed: bmi (12). IQR = interquartile range (Q3 - Q1). Med 95% CI = exact order-statistic confidence interval for the median (coverage at least 95%).
 
 # One selection per variable. A skewed variable that a scoring
 # protocol requires in median and IQR (the IPAQ case) sits next to
@@ -972,31 +980,20 @@ table_continuous(
     .default = c("m", "sd", "n")
   )
 )
-#> Descriptive statistics by Sex
+#> Descriptive statistics by sex
 #> 
-#>  Variable                       │ Group     M     SD      Med [Q1, Q3]      n  
-#> ────────────────────────────────┼──────────────────────────────────────────────
-#>  Body mass index                │ Female  25.69   3.78                     616 
-#>                                 │ Male    26.20   3.64                     572 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Satisfaction with health (1-5) │ Female                4.00 [3.00, 5.00]  616 
-#>                                 │ Male                  4.00 [3.00, 5.00]  576 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  WHO-5 wellbeing index (0-100)  │ Female  67.16  14.80                     620 
-#>                                 │ Male    71.05  16.23                     580 
+#>  Variable        │ Group     M     SD      Med [Q1, Q3]      n     p   
+#> ─────────────────┼─────────────────────────────────────────────────────
+#>  bmi             │ Female  25.69   3.78                     616   .018 
+#>                  │ Male    26.20   3.64                     572        
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  life_sat_health │ Female                4.00 [3.00, 5.00]  616   .233 
+#>                  │ Male                  4.00 [3.00, 5.00]  576        
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  wellbeing_score │ Female  67.16  14.80                     620  <.001 
+#>                  │ Male    71.05  16.23                     580        
 #> 
-#>  Variable                       │ Group     p   
-#> ────────────────────────────────┼───────────────
-#>  Body mass index                │ Female   .018 
-#>                                 │ Male          
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Satisfaction with health (1-5) │ Female   .233 
-#>                                 │ Male          
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  WHO-5 wellbeing index (0-100)  │ Female  <.001 
-#>                                 │ Male          
-#> 
-#> Missing values removed: Body mass index (12), Satisfaction with health (1-5) (8). Group comparison: Welch t-test (bmi, wellbeing_score); Wilcoxon rank-sum test (life_sat_health). Med [Q1, Q3] = median [first quartile, third quartile].
+#> Missing values removed: bmi (12), life_sat_health (8). Group comparison: Welch t-test (bmi, wellbeing_score); Wilcoxon rank-sum test (life_sat_health). Med [Q1, Q3] = median [first quartile, third quartile].
 
 # --- Effect sizes -------------------------------------------------------
 
@@ -1009,22 +1006,17 @@ table_continuous(
   effect_size = "auto",
   effect_size_ci = TRUE
 )
-#> Descriptive statistics by Sex
+#> Descriptive statistics by sex
 #> 
-#>  Variable                      │ Group     M     SD     Min    Max    95% CI LL 
-#> ───────────────────────────────┼────────────────────────────────────────────────
-#>  WHO-5 wellbeing index (0-100) │ Female  67.16  14.80  19.60  100.00    65.99   
-#>                                │ Male    71.05  16.23  18.70  100.00    69.73   
+#>  Variable        │ Group     M     SD     Min    Max    95% CI LL  95% CI UL 
+#> ─────────────────┼───────────────────────────────────────────────────────────
+#>  wellbeing_score │ Female  67.16  14.80  19.60  100.00    65.99      68.33   
+#>                  │ Male    71.05  16.23  18.70  100.00    69.73      72.37   
 #> 
-#>  Variable                      │ Group   95% CI UL   n     p   
-#> ───────────────────────────────┼───────────────────────────────
-#>  WHO-5 wellbeing index (0-100) │ Female    68.33    620  <.001 
-#>                                │ Male      72.37    580        
-#> 
-#>  Variable                      │ Group              ES            
-#> ───────────────────────────────┼──────────────────────────────────
-#>  WHO-5 wellbeing index (0-100) │ Female  g = -0.25 [-0.36, -0.14] 
-#>                                │ Male                             
+#>  Variable        │ Group    n     p               ES            
+#> ─────────────────┼──────────────────────────────────────────────
+#>  wellbeing_score │ Female  620  <.001  g = -0.25 [-0.36, -0.14] 
+#>                  │ Male    580                                  
 
 # Explicit effect-size measure.
 table_continuous(
@@ -1035,31 +1027,25 @@ table_continuous(
   effect_size_ci = TRUE,
   effect_size_digits = 3
 )
-#> Descriptive statistics by Highest education level
+#> Descriptive statistics by education
 #> 
-#>  Variable                      │ Group              M     SD     Min    Max   
-#> ───────────────────────────────┼──────────────────────────────────────────────
-#>  WHO-5 wellbeing index (0-100) │ Lower secondary  57.22  15.44  18.70   97.90 
-#>                                │ Upper secondary  68.97  13.62  26.70  100.00 
-#>                                │ Tertiary         76.85  13.23  40.40  100.00 
+#>  Variable        │ Group              M     SD     Min    Max    95% CI LL 
+#> ─────────────────┼─────────────────────────────────────────────────────────
+#>  wellbeing_score │ Lower secondary  57.22  15.44  18.70   97.90    55.33   
+#>                  │ Upper secondary  68.97  13.62  26.70  100.00    67.82   
+#>                  │ Tertiary         76.85  13.23  40.40  100.00    75.55   
 #> 
-#>  Variable                      │ Group            95% CI LL  95% CI UL   n  
-#> ───────────────────────────────┼────────────────────────────────────────────
-#>  WHO-5 wellbeing index (0-100) │ Lower secondary    55.33      59.10    261 
-#>                                │ Upper secondary    67.82      70.12    539 
-#>                                │ Tertiary           75.55      78.15    400 
+#>  Variable        │ Group            95% CI UL   n     p   
+#> ─────────────────┼────────────────────────────────────────
+#>  wellbeing_score │ Lower secondary    59.10    261  <.001 
+#>                  │ Upper secondary    70.12    539        
+#>                  │ Tertiary           78.15    400        
 #> 
-#>  Variable                      │ Group              p   
-#> ───────────────────────────────┼────────────────────────
-#>  WHO-5 wellbeing index (0-100) │ Lower secondary  <.001 
-#>                                │ Upper secondary        
-#>                                │ Tertiary               
-#> 
-#>  Variable                      │ Group                       ES             
-#> ───────────────────────────────┼────────────────────────────────────────────
-#>  WHO-5 wellbeing index (0-100) │ Lower secondary  η² = 0.208 [0.169, 0.246] 
-#>                                │ Upper secondary                            
-#>                                │ Tertiary                                   
+#>  Variable        │ Group                       ES             
+#> ─────────────────┼────────────────────────────────────────────
+#>  wellbeing_score │ Lower secondary  η² = 0.208 [0.169, 0.246] 
+#>                  │ Upper secondary                            
+#>                  │ Tertiary                                   
 
 # --- Selection helpers --------------------------------------------------
 
@@ -1071,21 +1057,14 @@ table_continuous(
 )
 #> Descriptive statistics
 #> 
-#>  Variable                                   │  M     SD   Min   Max   95% CI LL 
-#> ────────────────────────────────────────────┼───────────────────────────────────
-#>  Satisfaction with health (1-5)             │ 3.55  1.25  1.00  5.00    3.48    
-#>  Satisfaction with work (1-5)               │ 3.38  1.18  1.00  5.00    3.31    
-#>  Satisfaction with relationships (1-5)      │ 3.72  1.10  1.00  5.00    3.66    
-#>  Satisfaction with standard of living (1-5) │ 3.40  1.16  1.00  5.00    3.33    
+#>  Variable               │  M     SD   Min   Max   95% CI LL  95% CI UL   n   
+#> ────────────────────────┼────────────────────────────────────────────────────
+#>  life_sat_health        │ 3.55  1.25  1.00  5.00    3.48       3.62     1192 
+#>  life_sat_work          │ 3.38  1.18  1.00  5.00    3.31       3.45     1192 
+#>  life_sat_relationships │ 3.72  1.10  1.00  5.00    3.66       3.79     1192 
+#>  life_sat_standard      │ 3.40  1.16  1.00  5.00    3.33       3.46     1192 
 #> 
-#>  Variable                                   │ 95% CI UL   n   
-#> ────────────────────────────────────────────┼─────────────────
-#>  Satisfaction with health (1-5)             │   3.62     1192 
-#>  Satisfaction with work (1-5)               │   3.45     1192 
-#>  Satisfaction with relationships (1-5)      │   3.79     1192 
-#>  Satisfaction with standard of living (1-5) │   3.46     1192 
-#> 
-#> Missing values removed: Satisfaction with health (1-5) (8), Satisfaction with work (1-5) (8), Satisfaction with relationships (1-5) (8), Satisfaction with standard of living (1-5) (8).
+#> Missing values removed: life_sat_health (8), life_sat_work (8), life_sat_relationships (8), life_sat_standard (8).
 
 # Pretty labels keyed by column name.
 table_continuous(
@@ -1127,26 +1106,21 @@ table_continuous(
   by = sex,
   output = "data.frame"
 )
-#>          variable                         label  group     mean        sd  min
-#> 1             bmi               Body mass index Female 25.68506  3.781113 16.0
-#> 2             bmi               Body mass index   Male 26.19685  3.638092 16.0
-#> 3 wellbeing_score WHO-5 wellbeing index (0-100) Female 67.16194 14.798488 19.6
-#> 4 wellbeing_score WHO-5 wellbeing index (0-100)   Male 71.04879 16.227304 18.7
-#>     max ci_lower ci_upper median     q1     q3    iqr med_ci_lower med_ci_upper
-#> 1  38.9 25.38588 25.98425   25.7 23.100 28.600  5.500         25.4         26.1
-#> 2  37.7 25.89808 26.49563   26.1 23.875 28.625  4.750         25.8         26.6
-#> 3 100.0 65.99480 68.32907   68.2 57.300 77.525 20.225         66.6         69.7
-#> 4 100.0 69.72540 72.37219   72.3 61.275 81.575 20.300         70.8         73.2
-#>     n weighted_n test_type statistic      df1 df2      p.value smd_type
-#> 1 616         NA   welch_t -2.377237 1184.497  NA 1.760093e-02     <NA>
-#> 2 572         NA      <NA>        NA       NA  NA           NA     <NA>
-#> 3 620         NA   welch_t -4.326141 1168.700  NA 1.647005e-05     <NA>
-#> 4 580         NA      <NA>        NA       NA  NA           NA     <NA>
-#>   smd_value
-#> 1        NA
-#> 2        NA
-#> 3        NA
-#> 4        NA
+#>          variable           label  group     mean        sd  min   max ci_lower
+#> 1             bmi             bmi Female 25.68506  3.781113 16.0  38.9 25.38588
+#> 2             bmi             bmi   Male 26.19685  3.638092 16.0  37.7 25.89808
+#> 3 wellbeing_score wellbeing_score Female 67.16194 14.798488 19.6 100.0 65.99480
+#> 4 wellbeing_score wellbeing_score   Male 71.04879 16.227304 18.7 100.0 69.72540
+#>   ci_upper median     q1     q3    iqr med_ci_lower med_ci_upper   n weighted_n
+#> 1 25.98425   25.7 23.100 28.600  5.500         25.4         26.1 616         NA
+#> 2 26.49563   26.1 23.875 28.625  4.750         25.8         26.6 572         NA
+#> 3 68.32907   68.2 57.300 77.525 20.225         66.6         69.7 620         NA
+#> 4 72.37219   72.3 61.275 81.575 20.300         70.8         73.2 580         NA
+#>   test_type statistic      df1 df2      p.value smd_type smd_value
+#> 1   welch_t -2.377237 1184.497  NA 1.760093e-02     <NA>        NA
+#> 2      <NA>        NA       NA  NA           NA     <NA>        NA
+#> 3   welch_t -4.326141 1168.700  NA 1.647005e-05     <NA>        NA
+#> 4      <NA>        NA       NA  NA           NA     <NA>        NA
 
 # \donttest{
 # Rendered HTML / docx objects -- best viewed inside a

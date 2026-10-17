@@ -144,7 +144,7 @@ Gamma / inverse.gaussian / quasi families with any link.</p>
 <span>  decimal_mark <span class="op">=</span> <span class="st">"."</span>,</span>
 <span>  align <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"decimal"</span>, <span class="st">"center"</span>, <span class="st">"right"</span><span class="op">)</span>,</span>
 <span>  padding <span class="op">=</span> <span class="fl">0L</span>,</span>
-<span>  labels <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">getOption</a></span><span class="op">(</span><span class="st">"spicy.var_labels"</span>, <span class="cn">FALSE</span><span class="op">)</span>,</span>
 <span>  title <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  note <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  output <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"default"</span>, <span class="st">"data.frame"</span>, <span class="st">"long"</span>, <span class="st">"gt"</span>, <span class="st">"flextable"</span>, <span class="st">"tinytable"</span>, <span class="st">"excel"</span>,</span>
@@ -815,24 +815,46 @@ of padding.</p></dd>
 
 
 <dt id="arg-labels">labels<a class="anchor" aria-label="anchor" href="#arg-labels"></a></dt>
-<dd><p>Named character vector overriding per-coefficient
-row labels. Names are coefficient term names (from
-<code><a href="https://rdrr.io/r/stats/terms.html" class="external-link">stats::terms()</a></code>); values are the displayed labels. E.g.
-<code>c("age" = "Age (years)", "sexM" = "Male (vs Female)")</code>.
-Default <code>NULL</code> (use raw term names).</p>
-<p>The names are model identifiers, not display text: they are the
-term and coefficient names R itself produces, and they keep that
-form regardless of the language the table is rendered in. A name
-that is neither a term label nor a coefficient name is rejected,
-so the header of a subordinate block – <code>Random effects</code>,
-<code>Thresholds</code>, <code>Zero-inflation</code>, ... – cannot be relabeled here;
-those headers are set by the package. Classes that carry no
-<code>terms</code> component at all (<code><a href="https://rdrr.io/r/stats/nls.html" class="external-link">nls()</a></code>,
-<code><a href="https://rdrr.io/pkg/sampleSelection/man/selection.html" class="external-link">sampleSelection::selection()</a></code>) are keyed on their coefficient
-(or parameter) names alone.</p>
-<p>With several models, a name is checked against the union of their
-terms: a key naming a term only one model has is legal, and the
-label lands on the rows where that term exists.</p></dd>
+<dd><p>How the variables are named in the table: the outcome
+in the title (and above its columns when the models have different
+outcomes), a numeric term in its row, and a factor in its header.
+Four forms:</p><ul><li><p><code>labels = FALSE</code> shows the names the model gives them (<code>bmi</code>,
+<code>age</code>, <code>sex</code>).</p></li>
+<li><p><code>labels = TRUE</code> shows each variable's <code>label</code> attribute (as set by
+<code>haven</code>, <code>labelled</code>, or <code><a href="label_from_names.html">label_from_names()</a></code>) when it is present,
+not <code>NA</code>, and not empty, and the name otherwise: "Linear
+regression: Body mass index", "Age (years)", "Sex:". The attribute
+is read off the model frame, or off the data the model was fit on
+where the model frame lost it. Factor levels, interactions, and
+transformed terms (<code>log(income)</code>, <code>poly(age, 2)</code>) are not variables
+and keep their names, as do the coefficient rows of
+<code>factor_layout = "flat"</code>.</p></li>
+<li><p><code>labels = c(age = "Age (years)", sexMale = "Men")</code>, a named
+character vector, gives the variables and rows it names these
+labels. Every other variable follows <code>options(spicy.var_labels)</code>:
+its name when the option is unset or <code>FALSE</code>, its <code>label</code>
+attribute when it is <code>TRUE</code>.</p></li>
+<li><p><code>labels = var_labels(age = "Age in years")</code> gives the variables
+and rows it names these labels, and every other variable its
+<code>label</code> attribute, whatever the option says. <code><a href="var_labels.html">var_labels()</a></code> alone
+is <code>labels = TRUE</code>.</p></li>
+</ul><p>The names are model identifiers, not display text: the outcome, the
+term labels of <code><a href="https://rdrr.io/r/stats/terms.html" class="external-link">stats::terms()</a></code> (<code>"age"</code>, <code>"sex"</code>, <code>"age:sex"</code>, a
+factor's term naming its header), and the coefficient names
+(<code>"(Intercept)"</code>, <code>"sexMale"</code>), each naming one row. They keep that
+form whatever the language of the table. Classes with no <code>terms</code>
+component (<code><a href="https://rdrr.io/r/stats/nls.html" class="external-link">nls()</a></code>, <code><a href="https://rdrr.io/pkg/sampleSelection/man/selection.html" class="external-link">sampleSelection::selection()</a></code>) are keyed on
+their coefficient (or parameter) names alone. With several models,
+a name is looked up in the terms of all of them and lands on the
+rows where it exists. Names that match nothing are ignored, so one
+vector can serve every table of a project. The headers of the
+subordinate blocks (<code>Random effects</code>, <code>Thresholds</code>,
+<code>Zero-inflation</code>, ...) are set by the package and cannot be
+relabeled here.</p>
+<p>The default reads <code>options(spicy.var_labels)</code>, and a <code>TRUE</code> or
+<code>FALSE</code> typed in the call wins over it. Any other value, <code>NULL</code>
+included, is an error. A variable label documents the data file; a
+published table carries the wording you set here.</p></dd>
 
 
 <dt id="arg-title-note">title, note<a class="anchor" aria-label="anchor" href="#arg-title-note"></a></dt>
@@ -1155,10 +1177,11 @@ sub-columns:</p>
 <code>"Naive"</code> / <code>"Adjusted"</code>. Partial naming (<code>list("Naive" = m1, m2)</code>)
 auto-fills missing slots as <code>"Model &lt;position&gt;"</code>.</p></li>
 <li><p><code>list(m1, m2)</code> (unnamed) -&gt; if all response variables
-differ, the bare DV name (from <code>formula(fit)[[2]]</code>) becomes
-the spanner label and the redundant Outcome body row is
-suppressed. If DVs match, the labels default to
-<code>"Model 1, 2, ..."</code>.</p></li>
+differ, each outcome becomes the spanner label of its model
+and the redundant Outcome body row is suppressed. The outcome
+is named as in the title: its name (from <code>formula(fit)[[2]]</code>),
+or its <code>label</code> attribute under <code>labels = TRUE</code>. If DVs match,
+the labels default to <code>"Model 1, 2, ..."</code>.</p></li>
 <li><p><code>model_labels = c("A", "B")</code> overrides everything.</p></li>
 </ul><p>Duplicate explicit names in the list are rejected
 (<code>spicy_invalid_input</code>) – they would silently collide in the

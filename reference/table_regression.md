@@ -53,7 +53,7 @@ table_regression(
   decimal_mark = ".",
   align = c("decimal", "center", "right"),
   padding = 0L,
-  labels = NULL,
+  labels = getOption("spicy.var_labels", FALSE),
   title = NULL,
   note = NULL,
   output = c("default", "data.frame", "long", "gt", "flextable", "tinytable", "excel",
@@ -737,27 +737,56 @@ table_regression(
 
 - labels:
 
-  Named character vector overriding per-coefficient row labels. Names
-  are coefficient term names (from
-  [`stats::terms()`](https://rdrr.io/r/stats/terms.html)); values are
-  the displayed labels. E.g.
-  `c("age" = "Age (years)", "sexM" = "Male (vs Female)")`. Default
-  `NULL` (use raw term names).
+  How the variables are named in the table: the outcome in the title
+  (and above its columns when the models have different outcomes), a
+  numeric term in its row, and a factor in its header. Four forms:
 
-  The names are model identifiers, not display text: they are the term
-  and coefficient names R itself produces, and they keep that form
-  regardless of the language the table is rendered in. A name that is
-  neither a term label nor a coefficient name is rejected, so the header
-  of a subordinate block – `Random effects`, `Thresholds`,
-  `Zero-inflation`, ... – cannot be relabeled here; those headers are
-  set by the package. Classes that carry no `terms` component at all
+  - `labels = FALSE` shows the names the model gives them (`bmi`, `age`,
+    `sex`).
+
+  - `labels = TRUE` shows each variable's `label` attribute (as set by
+    `haven`, `labelled`, or
+    [`label_from_names()`](https://amaltawfik.github.io/spicy/reference/label_from_names.md))
+    when it is present, not `NA`, and not empty, and the name otherwise:
+    "Linear regression: Body mass index", "Age (years)", "Sex:". The
+    attribute is read off the model frame, or off the data the model was
+    fit on where the model frame lost it. Factor levels, interactions,
+    and transformed terms (`log(income)`, `poly(age, 2)`) are not
+    variables and keep their names, as do the coefficient rows of
+    `factor_layout = "flat"`.
+
+  - `labels = c(age = "Age (years)", sexMale = "Men")`, a named
+    character vector, gives the variables and rows it names these
+    labels. Every other variable follows `options(spicy.var_labels)`:
+    its name when the option is unset or `FALSE`, its `label` attribute
+    when it is `TRUE`.
+
+  - `labels = var_labels(age = "Age in years")` gives the variables and
+    rows it names these labels, and every other variable its `label`
+    attribute, whatever the option says.
+    [`var_labels()`](https://amaltawfik.github.io/spicy/reference/var_labels.md)
+    alone is `labels = TRUE`.
+
+  The names are model identifiers, not display text: the outcome, the
+  term labels of [`stats::terms()`](https://rdrr.io/r/stats/terms.html)
+  (`"age"`, `"sex"`, `"age:sex"`, a factor's term naming its header),
+  and the coefficient names (`"(Intercept)"`, `"sexMale"`), each naming
+  one row. They keep that form whatever the language of the table.
+  Classes with no `terms` component
   ([`nls()`](https://rdrr.io/r/stats/nls.html),
   [`sampleSelection::selection()`](https://rdrr.io/pkg/sampleSelection/man/selection.html))
-  are keyed on their coefficient (or parameter) names alone.
+  are keyed on their coefficient (or parameter) names alone. With
+  several models, a name is looked up in the terms of all of them and
+  lands on the rows where it exists. Names that match nothing are
+  ignored, so one vector can serve every table of a project. The headers
+  of the subordinate blocks (`Random effects`, `Thresholds`,
+  `Zero-inflation`, ...) are set by the package and cannot be relabeled
+  here.
 
-  With several models, a name is checked against the union of their
-  terms: a key naming a term only one model has is legal, and the label
-  lands on the rows where that term exists.
+  The default reads `options(spicy.var_labels)`, and a `TRUE` or `FALSE`
+  typed in the call wins over it. Any other value, `NULL` included, is
+  an error. A variable label documents the data file; a published table
+  carries the wording you set here.
 
 - title, note:
 
@@ -1091,10 +1120,12 @@ model's sub-columns:
   `"Adjusted"`. Partial naming (`list("Naive" = m1, m2)`) auto-fills
   missing slots as `"Model <position>"`.
 
-- `list(m1, m2)` (unnamed) -\> if all response variables differ, the
-  bare DV name (from `formula(fit)[[2]]`) becomes the spanner label and
-  the redundant Outcome body row is suppressed. If DVs match, the labels
-  default to `"Model 1, 2, ..."`.
+- `list(m1, m2)` (unnamed) -\> if all response variables differ, each
+  outcome becomes the spanner label of its model and the redundant
+  Outcome body row is suppressed. The outcome is named as in the title:
+  its name (from `formula(fit)[[2]]`), or its `label` attribute under
+  `labels = TRUE`. If DVs match, the labels default to
+  `"Model 1, 2, ..."`.
 
 - `model_labels = c("A", "B")` overrides everything.
 

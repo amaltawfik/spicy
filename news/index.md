@@ -15,6 +15,29 @@ PDF.
   level of a factor counts as missing, and `difftime` columns no longer
   list their values. DT leaves Suggests.
 
+- [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md),
+  [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md),
+  [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md),
+  and
+  [`table_continuous_svy()`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md)
+  show column names by default. The `label` attribute is read only with
+  `labels = TRUE`. `labels = c(bmi = "Body mass index")` sets the labels
+  you publish, and the other columns follow `options(spicy.var_labels)`.
+  With the new
+  [`var_labels()`](https://amaltawfik.github.io/spicy/reference/var_labels.md),
+  as in `labels = var_labels(bmi = "IMC")`, the other columns keep their
+  `label` attribute. Names that match no column are ignored, and
+  `labels = NULL` is an error. Add `labels = TRUE` to keep the labels of
+  0.13.0. In
+  [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  and
+  [`table_regression_uv()`](https://amaltawfik.github.io/spicy/reference/table_regression_uv.md),
+  whose default output does not change, `labels = NULL` (their default
+  in 0.13.0) is an error as well, and a name that matches no term is
+  ignored instead of refused.
+
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   and
   [`table_regression_uv()`](https://amaltawfik.github.io/spicy/reference/table_regression_uv.md)
@@ -65,6 +88,14 @@ PDF.
   applied to all the tests of the table together. The note gives the
   method and the number of tests, and the raw p-values stay in the
   object as `p_unadjusted`.
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  and
+  [`table_regression_uv()`](https://amaltawfik.github.io/spicy/reference/table_regression_uv.md)
+  take the same four `labels` forms. `labels = TRUE` names the outcome,
+  the numeric terms, and the factor headers by their `label` attribute,
+  as in “Linear regression: Body mass index”, while factor levels,
+  interactions, and transformed terms keep their names.
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   supports cumulative-link mixed models:
@@ -122,7 +153,7 @@ PDF.
 - [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
   titles a grouped table with the label of the `by` variable, as
   [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
-  does: “Categorical table by Sex”, not “by sex”.
+  does: with `labels = TRUE`, “Categorical table by Sex”, not “by sex”.
 
 - [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
   [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
@@ -131,20 +162,18 @@ PDF.
   [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md),
   and
   [`table_continuous_svy()`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md)
-  name each variable of the missing-values notes by its label, as the
-  rows and the title do, not by its column name: “Missing values
-  removed: Body mass index (12)”, “Rows with missing Sex removed: 3”.
-  The label is the one given in `labels`, otherwise the variable’s label
-  attribute (as set by `haven` or
-  [`label_from_names()`](https://amaltawfik.github.io/spicy/reference/label_from_names.md)),
-  otherwise the column name. A covariate of
+  name each variable of the missing-values notes as its row and the
+  title name it: with `labels = TRUE`, “Missing values removed: Body
+  mass index (12)”, “Rows with missing Sex removed: 3”. They used the
+  column name whatever `labels` said. A covariate of
   [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
   keeps its name.
 
 - [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md)
   and
   [`table_continuous_svy()`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md)
-  keep the label of the `by` variable in the title, and
+  with `labels = TRUE` keep the label of the `by` variable in the title,
+  and
   [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md)
   the labels of its rows, when rows with a missing `by` are dropped.
 

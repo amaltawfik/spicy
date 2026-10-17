@@ -68,6 +68,9 @@
   : Continuous-outcome linear-model table
 - [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md)
   : Describe one continuous outcome across several groupings
+- [`var_labels()`](https://amaltawfik.github.io/spicy/reference/var_labels.md)
+  [`print(`*`<spicy_var_labels>`*`)`](https://amaltawfik.github.io/spicy/reference/var_labels.md)
+  : Label attributes with a few renames
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   : Regression coefficient summary table
 - [`table_regression_uv()`](https://amaltawfik.github.io/spicy/reference/table_regression_uv.md)

@@ -286,67 +286,52 @@ table_categorical(
   select = c(smoking, physical_activity, dentist_12m),
   by = education
 )
-#> Categorical table by Highest education level
+#> Categorical table by education
 #> 
-#>  Variable                        │ Lower secondary n  Lower secondary % 
-#> ─────────────────────────────────┼──────────────────────────────────────
-#>  Current smoker                  │                                      
-#>    No                            │        179               68.6        
-#>    Yes                           │         78               29.9        
-#>    (Missing)                     │          4                1.5        
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Regular physical activity       │                                      
-#>    No                            │        177               67.8        
-#>    Yes                           │         84               32.2        
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Dentist visit in last 12 months │                                      
-#>    No                            │        113               43.3        
-#>    Yes                           │        148               56.7        
+#>  Variable          │ Lower secondary n  Lower secondary %  Upper secondary n 
+#> ───────────────────┼─────────────────────────────────────────────────────────
+#>  smoking           │                                                         
+#>    No              │        179               68.6                415        
+#>    Yes             │         78               29.9                112        
+#>    (Missing)       │          4                1.5                 12        
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  physical_activity │                                                         
+#>    No              │        177               67.8                310        
+#>    Yes             │         84               32.2                229        
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  dentist_12m       │                                                         
+#>    No              │        113               43.3                174        
+#>    Yes             │        148               56.7                365        
 #> 
-#>  Variable                        │ Upper secondary n  Upper secondary % 
-#> ─────────────────────────────────┼──────────────────────────────────────
-#>  Current smoker                  │                                      
-#>    No                            │        415               77.0        
-#>    Yes                           │        112               20.8        
-#>    (Missing)                     │         12                2.2        
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Regular physical activity       │                                      
-#>    No                            │        310               57.5        
-#>    Yes                           │        229               42.5        
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Dentist visit in last 12 months │                                      
-#>    No                            │        174               32.3        
-#>    Yes                           │        365               67.7        
+#>  Variable          │ Upper secondary %  Tertiary n  Tertiary %  Total n 
+#> ───────────────────┼────────────────────────────────────────────────────
+#>  smoking           │                                                    
+#>    No              │       77.0            332         83.0       926   
+#>    Yes             │       20.8             59         14.8       249   
+#>    (Missing)       │        2.2              9          2.2        25   
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  physical_activity │                                                    
+#>    No              │       57.5            163         40.8       650   
+#>    Yes             │       42.5            237         59.2       550   
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  dentist_12m       │                                                    
+#>    No              │       32.3             67         16.8       354   
+#>    Yes             │       67.7            333         83.2       846   
 #> 
-#>  Variable                        │ Tertiary n  Tertiary %  Total n  Total % 
-#> ─────────────────────────────────┼──────────────────────────────────────────
-#>  Current smoker                  │                                          
-#>    No                            │    332         83.0       926     77.2   
-#>    Yes                           │     59         14.8       249     20.8   
-#>    (Missing)                     │      9          2.2        25      2.1   
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Regular physical activity       │                                          
-#>    No                            │    163         40.8       650     54.2   
-#>    Yes                           │    237         59.2       550     45.8   
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Dentist visit in last 12 months │                                          
-#>    No                            │     67         16.8       354     29.5   
-#>    Yes                           │    333         83.2       846     70.5   
-#> 
-#>  Variable                        │   p    Cramer's V 
-#> ─────────────────────────────────┼───────────────────
-#>  Current smoker                  │ <.001     .14     
-#>    No                            │                   
-#>    Yes                           │                   
-#>    (Missing)                     │                   
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Regular physical activity       │ <.001     .21     
-#>    No                            │                   
-#>    Yes                           │                   
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Dentist visit in last 12 months │ <.001     .22     
-#>    No                            │                   
-#>    Yes                           │
+#>  Variable          │ Total %    p    Cramer's V 
+#> ───────────────────┼────────────────────────────
+#>  smoking           │          <.001     .14     
+#>    No              │  77.2                      
+#>    Yes             │  20.8                      
+#>    (Missing)       │   2.1                      
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  physical_activity │          <.001     .21     
+#>    No              │  54.2                      
+#>    Yes             │  45.8                      
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  dentist_12m       │          <.001     .22     
+#>    No              │  29.5                      
+#>    Yes             │  70.5
 ```
 
 [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
@@ -361,39 +346,29 @@ table_continuous(
   select = c(bmi, life_sat_health),
   by = education
 )
-#> Descriptive statistics by Highest education level
+#> Descriptive statistics by education
 #> 
-#>  Variable                       │ Group              M     SD    Min    Max  
-#> ────────────────────────────────┼────────────────────────────────────────────
-#>  Body mass index                │ Lower secondary  28.09  3.47  18.20  38.90 
-#>                                 │ Upper secondary  26.02  3.43  16.00  37.10 
-#>                                 │ Tertiary         24.39  3.52  16.00  33.00 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Satisfaction with health (1-5) │ Lower secondary   2.71  1.20   1.00   5.00 
-#>                                 │ Upper secondary   3.53  1.19   1.00   5.00 
-#>                                 │ Tertiary          4.11  1.04   1.00   5.00 
+#>  Variable        │ Group              M     SD    Min    Max   95% CI LL 
+#> ─────────────────┼───────────────────────────────────────────────────────
+#>  bmi             │ Lower secondary  28.09  3.47  18.20  38.90    27.66   
+#>                  │ Upper secondary  26.02  3.43  16.00  37.10    25.73   
+#>                  │ Tertiary         24.39  3.52  16.00  33.00    24.04   
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  life_sat_health │ Lower secondary   2.71  1.20   1.00   5.00     2.57   
+#>                  │ Upper secondary   3.53  1.19   1.00   5.00     3.43   
+#>                  │ Tertiary          4.11  1.04   1.00   5.00     4.01   
 #> 
-#>  Variable                       │ Group            95% CI LL  95% CI UL   n  
-#> ────────────────────────────────┼────────────────────────────────────────────
-#>  Body mass index                │ Lower secondary    27.66      28.51    260 
-#>                                 │ Upper secondary    25.73      26.31    534 
-#>                                 │ Tertiary           24.04      24.74    394 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Satisfaction with health (1-5) │ Lower secondary     2.57       2.86    259 
-#>                                 │ Upper secondary     3.43       3.63    534 
-#>                                 │ Tertiary            4.01       4.21    399 
+#>  Variable        │ Group            95% CI UL   n     p   
+#> ─────────────────┼────────────────────────────────────────
+#>  bmi             │ Lower secondary    28.51    260  <.001 
+#>                  │ Upper secondary    26.31    534        
+#>                  │ Tertiary           24.74    394        
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  life_sat_health │ Lower secondary     2.86    259  <.001 
+#>                  │ Upper secondary     3.63    534        
+#>                  │ Tertiary            4.21    399        
 #> 
-#>  Variable                       │ Group              p   
-#> ────────────────────────────────┼────────────────────────
-#>  Body mass index                │ Lower secondary  <.001 
-#>                                 │ Upper secondary        
-#>                                 │ Tertiary               
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Satisfaction with health (1-5) │ Lower secondary  <.001 
-#>                                 │ Upper secondary        
-#>                                 │ Tertiary               
-#> 
-#> Missing values removed: Body mass index (12), Satisfaction with health (1-5) (8).
+#> Missing values removed: bmi (12), life_sat_health (8).
 ```
 
 [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
@@ -409,20 +384,20 @@ table_continuous_lm(
   by = sex,
   vcov = "HC3"
 )
-#> Continuous outcomes by Sex
+#> Continuous outcomes by sex
 #> 
-#>  Variable                      │ M (Female)  M (Male)  Δ (Male - Female) 
-#> ───────────────────────────────┼─────────────────────────────────────────
-#>  WHO-5 wellbeing index (0-100) │   67.16      71.05          3.89        
-#>  Body mass index               │   25.69      26.20          0.51        
+#>  Variable        │ M (Female)  M (Male)  Δ (Male - Female)  95% CI LL 
+#> ─────────────────┼────────────────────────────────────────────────────
+#>  wellbeing_score │   67.16      71.05          3.89           2.12    
+#>  bmi             │   25.69      26.20          0.51           0.09    
 #> 
-#>  Variable                      │ 95% CI LL  95% CI UL    p     R²    n   
-#> ───────────────────────────────┼─────────────────────────────────────────
-#>  WHO-5 wellbeing index (0-100) │   2.12       5.65     <.001  0.02  1200 
-#>  Body mass index               │   0.09       0.93      .018  0.00  1188 
+#>  Variable        │ 95% CI UL    p     R²    n   
+#> ─────────────────┼──────────────────────────────
+#>  wellbeing_score │   5.65     <.001  0.02  1200 
+#>  bmi             │   0.93      .018  0.00  1188 
 #> 
 #> Note. Std. errors: heteroskedasticity-robust (HC3).
-#> Missing values removed: Body mass index (12).
+#> Missing values removed: bmi (12).
 ```
 
 By default every `table_*` helper formats to APA conventions. To match a

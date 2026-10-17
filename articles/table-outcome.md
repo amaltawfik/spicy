@@ -38,22 +38,22 @@ adds a block, and nothing else in the call changes.
 ``` r
 
 table_outcome(sochealth, outcome = bmi, select = c(sex, smoking))
-#> Descriptive statistics of Body mass index
+#> Descriptive statistics of bmi
 #> 
-#>  Variable       │   M     SD    Min    Max   95% CI LL  95% CI UL   n     p   
-#> ────────────────┼─────────────────────────────────────────────────────────────
-#>  Overall        │ 25.93  3.72  16.00  38.90    25.72      26.14    1188       
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Sex            │                                                        .018 
-#>    Female       │ 25.69  3.78  16.00  38.90    25.39      25.98     616       
-#>    Male         │ 26.20  3.64  16.00  37.70    25.90      26.50     572       
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Current smoker │                                                        .903 
-#>    No           │ 25.96  3.76  16.00  38.90    25.72      26.21     915       
-#>    Yes          │ 25.93  3.58  16.80  35.30    25.48      26.38     248       
-#>    (Missing)    │ 24.74  3.63  17.60  32.50    23.24      26.23      25       
+#>  Variable    │   M     SD    Min    Max   95% CI LL  95% CI UL   n     p   
+#> ─────────────┼─────────────────────────────────────────────────────────────
+#>  Overall     │ 25.93  3.72  16.00  38.90    25.72      26.14    1188       
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  sex         │                                                        .018 
+#>    Female    │ 25.69  3.78  16.00  38.90    25.39      25.98     616       
+#>    Male      │ 26.20  3.64  16.00  37.70    25.90      26.50     572       
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  smoking     │                                                        .903 
+#>    No        │ 25.96  3.76  16.00  38.90    25.72      26.21     915       
+#>    Yes       │ 25.93  3.58  16.80  35.30    25.48      26.38     248       
+#>    (Missing) │ 24.74  3.63  17.60  32.50    23.24      26.23      25       
 #> 
-#> Missing values removed: Body mass index (12). Group comparison: Welch t-test. Each block compares Body mass index across the levels of one variable; blocks are not adjusted for one another. Overall = the whole analytic sample.
+#> Missing values removed: bmi (12). Group comparison: Welch t-test. Each block compares bmi across the levels of one variable; blocks are not adjusted for one another. Overall = the whole analytic sample.
 ```
 
 Four things to notice, because each is a decision:
@@ -105,17 +105,17 @@ note reports the loss per variable:
 ``` r
 
 table_outcome(sochealth, bmi, select = smoking, drop_na = TRUE)
-#> Descriptive statistics of Body mass index
+#> Descriptive statistics of bmi
 #> 
-#>  Variable       │   M     SD    Min    Max   95% CI LL  95% CI UL   n     p   
-#> ────────────────┼─────────────────────────────────────────────────────────────
-#>  Overall        │ 25.93  3.72  16.00  38.90    25.72      26.14    1188       
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Current smoker │                                                        .903 
-#>    No           │ 25.96  3.76  16.00  38.90    25.72      26.21     915       
-#>    Yes          │ 25.93  3.58  16.80  35.30    25.48      26.38     248       
+#>  Variable │   M     SD    Min    Max   95% CI LL  95% CI UL   n     p   
+#> ──────────┼─────────────────────────────────────────────────────────────
+#>  Overall  │ 25.93  3.72  16.00  38.90    25.72      26.14    1188       
+#> ╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  smoking  │                                                        .903 
+#>    No     │ 25.96  3.76  16.00  38.90    25.72      26.21     915       
+#>    Yes    │ 25.93  3.58  16.80  35.30    25.48      26.38     248       
 #> 
-#> Missing values removed: Body mass index (12). Rows with missing Current smoker removed: 25. Group comparison: Welch t-test. Each block compares Body mass index across the levels of one variable; blocks are not adjusted for one another. Overall = the whole analytic sample.
+#> Missing values removed: bmi (12). Rows with missing smoking removed: 25. Group comparison: Welch t-test. Each block compares bmi across the levels of one variable; blocks are not adjusted for one another. Overall = the whole analytic sample.
 ```
 
 ### Why “Overall” and not “Total”
@@ -149,22 +149,22 @@ table_outcome(
   select = c(sex, education),
   show_columns = c("med_iqr", "n")
 )
-#> Descriptive statistics of Body mass index
+#> Descriptive statistics of bmi
 #> 
-#>  Variable                  │      Med [Q1, Q3]         n        p    
-#> ───────────────────────────┼─────────────────────────────────────────
-#>  Overall                   │  25.90 [23.40, 28.60]    1188           
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Sex                       │                                   .038  
-#>    Female                  │  25.70 [23.10, 28.60]     616           
-#>    Male                    │  26.10 [23.87, 28.63]     572           
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Highest education level   │                                  <.001  
-#>    Lower secondary         │  28.20 [25.70, 29.90]     260           
-#>    Upper secondary         │  26.10 [23.50, 28.50]     534           
-#>    Tertiary                │  24.50 [22.00, 26.78]     394           
+#>  Variable            │      Med [Q1, Q3]         n        p    
+#> ─────────────────────┼─────────────────────────────────────────
+#>  Overall             │  25.90 [23.40, 28.60]    1188           
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  sex                 │                                   .038  
+#>    Female            │  25.70 [23.10, 28.60]     616           
+#>    Male              │  26.10 [23.87, 28.63]     572           
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  education           │                                  <.001  
+#>    Lower secondary   │  28.20 [25.70, 29.90]     260           
+#>    Upper secondary   │  26.10 [23.50, 28.50]     534           
+#>    Tertiary          │  24.50 [22.00, 26.78]     394           
 #> 
-#> Missing values removed: Body mass index (12). Group comparison: Kruskal-Wallis test (education); Wilcoxon rank-sum test (sex). Med [Q1, Q3] = median [first quartile, third quartile]. Each block compares Body mass index across the levels of one variable; blocks are not adjusted for one another. Overall = the whole analytic sample.
+#> Missing values removed: bmi (12). Group comparison: Kruskal-Wallis test (education); Wilcoxon rank-sum test (sex). Med [Q1, Q3] = median [first quartile, third quartile]. Each block compares bmi across the levels of one variable; blocks are not adjusted for one another. Overall = the whole analytic sample.
 ```
 
 Only the character-vector form is accepted. The per-variable named list
@@ -195,41 +195,41 @@ table_outcome(
   statistic = TRUE,
   effect_size = "auto"
 )
-#> Descriptive statistics of Body mass index
+#> Descriptive statistics of bmi
 #> 
-#>  Variable            │   M     SD    Min    Max   95% CI LL  95% CI UL   n   
-#> ─────────────────────┼───────────────────────────────────────────────────────
-#>  Overall             │ 25.93  3.72  16.00  38.90    25.72      26.14    1188 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Sex                 │                                                       
-#>    Female            │ 25.69  3.78  16.00  38.90    25.39      25.98     616 
-#>    Male              │ 26.20  3.64  16.00  37.70    25.90      26.50     572 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Region of residence │                                                       
-#>    Central           │ 25.76  3.85  16.00  37.30    25.28      26.25     241 
-#>    East              │ 25.96  3.98  16.00  37.70    25.30      26.61     144 
-#>    North             │ 26.13  3.42  19.00  36.60    25.66      26.61     201 
-#>    Other             │ 26.11  3.85  17.30  38.90    25.57      26.65     196 
-#>    South             │ 25.71  3.58  16.00  35.30    25.21      26.21     198 
-#>    West              │ 25.96  3.69  16.00  34.00    25.45      26.46     208 
+#>  Variable  │   M     SD    Min    Max   95% CI LL  95% CI UL   n   
+#> ───────────┼───────────────────────────────────────────────────────
+#>  Overall   │ 25.93  3.72  16.00  38.90    25.72      26.14    1188 
+#> ╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  sex       │                                                       
+#>    Female  │ 25.69  3.78  16.00  38.90    25.39      25.98     616 
+#>    Male    │ 26.20  3.64  16.00  37.70    25.90      26.50     572 
+#> ╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  region    │                                                       
+#>    Central │ 25.76  3.85  16.00  37.30    25.28      26.25     241 
+#>    East    │ 25.96  3.98  16.00  37.70    25.30      26.61     144 
+#>    North   │ 26.13  3.42  19.00  36.60    25.66      26.61     201 
+#>    Other   │ 26.11  3.85  17.30  38.90    25.57      26.65     196 
+#>    South   │ 25.71  3.58  16.00  35.30    25.21      26.21     198 
+#>    West    │ 25.96  3.69  16.00  34.00    25.45      26.46     208 
 #> 
-#>  Variable            │         Test           p       ES     
-#> ─────────────────────┼───────────────────────────────────────
-#>  Overall             │                                       
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Sex                 │   t(1184.50) = -2.38  .018  g = -0.14 
-#>    Female            │                                       
-#>    Male              │                                       
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Region of residence │ F(5, 531.84) = 0.47   .798  η² = 0.00 
-#>    Central           │                                       
-#>    East              │                                       
-#>    North             │                                       
-#>    Other             │                                       
-#>    South             │                                       
-#>    West              │                                       
+#>  Variable  │         Test           p       ES     
+#> ───────────┼───────────────────────────────────────
+#>  Overall   │                                       
+#> ╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  sex       │   t(1184.50) = -2.38  .018  g = -0.14 
+#>    Female  │                                       
+#>    Male    │                                       
+#> ╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  region    │ F(5, 531.84) = 0.47   .798  η² = 0.00 
+#>    Central │                                       
+#>    East    │                                       
+#>    North   │                                       
+#>    Other   │                                       
+#>    South   │                                       
+#>    West    │                                       
 #> 
-#> Missing values removed: Body mass index (12). Group comparison: Welch one-way ANOVA (region); Welch t-test (sex). Each block compares Body mass index across the levels of one variable; blocks are not adjusted for one another. Overall = the whole analytic sample.
+#> Missing values removed: bmi (12). Group comparison: Welch one-way ANOVA (region); Welch t-test (sex). Each block compares bmi across the levels of one variable; blocks are not adjusted for one another. Overall = the whole analytic sample.
 ```
 
 Read that table as a set of bivariate descriptions. It is not a model,
@@ -300,88 +300,88 @@ table_outcome(
   select = where(is.factor),
   show_columns = c("m", "sd", "n")
 )
-#> Descriptive statistics of WHO-5 wellbeing index (0-100)
+#> Descriptive statistics of wellbeing_score
 #> 
-#>  Variable                          │    M       SD       n        p    
-#> ───────────────────────────────────┼───────────────────────────────────
-#>  Overall                           │  69.04    15.62    1200           
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Sex                               │                            <.001  
-#>    Female                          │  67.16    14.80     620           
-#>    Male                            │  71.05    16.23     580           
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Age group                         │                             .372  
-#>    25-34                           │  67.55    15.36     242           
-#>    35-49                           │  69.48    15.36     383           
-#>    50-64                           │  69.06    15.94     327           
-#>    65-75                           │  69.78    15.84     248           
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Highest education level           │                            <.001  
-#>    Lower secondary                 │  57.22    15.44     261           
-#>    Upper secondary                 │  68.97    13.62     539           
-#>    Tertiary                        │  76.85    13.23     400           
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Subjective social class           │                            <.001  
-#>    Lower                           │  64.26    14.61     144           
-#>    Working                         │  65.24    15.39     278           
-#>    Lower middle                    │  69.17    16.58     326           
-#>    Middle                          │  72.82    14.13     306           
-#>    Upper middle                    │  72.78    14.95     146           
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Region of residence               │                             .461  
-#>    Central                         │  68.59    15.64     245           
-#>    East                            │  69.69    16.00     145           
-#>    North                           │  69.70    16.04     203           
-#>    Other                           │  70.50    15.07     198           
-#>    South                           │  67.57    15.70     201           
-#>    West                            │  68.51    15.36     208           
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Employment status                 │                             .049  
-#>    Employed                        │  69.42    15.07     762           
-#>    Student                         │  70.42    16.16     143           
-#>    Unemployed                      │  65.78    17.17     174           
-#>    Inactive                        │  69.72    15.64     121           
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Household income group            │                             .149  
-#>    Low                             │  67.66    15.78     247           
-#>    Lower middle                    │  68.78    15.21     388           
-#>    Upper middle                    │  69.18    16.16     328           
-#>    High                            │  70.95    15.51     219           
-#>    (Missing)                       │  67.94    12.41      18           
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Current smoker                    │                             .125  
-#>    No                              │  69.36    15.62     926           
-#>    Yes                             │  67.65    15.66     249           
-#>    (Missing)                       │  70.99    15.05      25           
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Regular physical activity         │                             .001  
-#>    No                              │  67.71    15.92     650           
-#>    Yes                             │  70.61    15.13     550           
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Dentist visit in last 12 months   │                            <.001  
-#>    No                              │  66.15    14.79     354           
-#>    Yes                             │  70.25    15.81     846           
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Self-rated health                 │                            <.001  
-#>    Poor                            │  43.60    11.15      61           
-#>    Fair                            │  58.54    13.49     266           
-#>    Good                            │  71.58    12.58     558           
-#>    Very good                       │  78.67    12.54     295           
-#>    (Missing)                       │  73.42    11.32      20           
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  BMI category                      │                             .002  
-#>    Normal weight                   │  70.47    15.36     465           
-#>    Overweight                      │  68.78    15.65     569           
-#>    Obesity                         │  65.43    15.84     154           
-#>    (Missing)                       │  72.61    14.84      12           
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Trust in institutions             │                             .366  
-#>    Very low                        │  69.84    15.35     366           
-#>    Low                             │  69.35    15.40     472           
-#>    High                            │  67.92    16.17     234           
-#>    Very high                       │  67.69    16.15     128           
+#>  Variable              │    M       SD       n        p    
+#> ───────────────────────┼───────────────────────────────────
+#>  Overall               │  69.04    15.62    1200           
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  sex                   │                            <.001  
+#>    Female              │  67.16    14.80     620           
+#>    Male                │  71.05    16.23     580           
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  age_group             │                             .372  
+#>    25-34               │  67.55    15.36     242           
+#>    35-49               │  69.48    15.36     383           
+#>    50-64               │  69.06    15.94     327           
+#>    65-75               │  69.78    15.84     248           
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  education             │                            <.001  
+#>    Lower secondary     │  57.22    15.44     261           
+#>    Upper secondary     │  68.97    13.62     539           
+#>    Tertiary            │  76.85    13.23     400           
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  social_class          │                            <.001  
+#>    Lower               │  64.26    14.61     144           
+#>    Working             │  65.24    15.39     278           
+#>    Lower middle        │  69.17    16.58     326           
+#>    Middle              │  72.82    14.13     306           
+#>    Upper middle        │  72.78    14.95     146           
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  region                │                             .461  
+#>    Central             │  68.59    15.64     245           
+#>    East                │  69.69    16.00     145           
+#>    North               │  69.70    16.04     203           
+#>    Other               │  70.50    15.07     198           
+#>    South               │  67.57    15.70     201           
+#>    West                │  68.51    15.36     208           
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  employment_status     │                             .049  
+#>    Employed            │  69.42    15.07     762           
+#>    Student             │  70.42    16.16     143           
+#>    Unemployed          │  65.78    17.17     174           
+#>    Inactive            │  69.72    15.64     121           
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  income_group          │                             .149  
+#>    Low                 │  67.66    15.78     247           
+#>    Lower middle        │  68.78    15.21     388           
+#>    Upper middle        │  69.18    16.16     328           
+#>    High                │  70.95    15.51     219           
+#>    (Missing)           │  67.94    12.41      18           
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  smoking               │                             .125  
+#>    No                  │  69.36    15.62     926           
+#>    Yes                 │  67.65    15.66     249           
+#>    (Missing)           │  70.99    15.05      25           
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  physical_activity     │                             .001  
+#>    No                  │  67.71    15.92     650           
+#>    Yes                 │  70.61    15.13     550           
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  dentist_12m           │                            <.001  
+#>    No                  │  66.15    14.79     354           
+#>    Yes                 │  70.25    15.81     846           
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  self_rated_health     │                            <.001  
+#>    Poor                │  43.60    11.15      61           
+#>    Fair                │  58.54    13.49     266           
+#>    Good                │  71.58    12.58     558           
+#>    Very good           │  78.67    12.54     295           
+#>    (Missing)           │  73.42    11.32      20           
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  bmi_category          │                             .002  
+#>    Normal weight       │  70.47    15.36     465           
+#>    Overweight          │  68.78    15.65     569           
+#>    Obesity             │  65.43    15.84     154           
+#>    (Missing)           │  72.61    14.84      12           
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  institutional_trust   │                             .366  
+#>    Very low            │  69.84    15.35     366           
+#>    Low                 │  69.35    15.40     472           
+#>    High                │  67.92    16.17     234           
+#>    Very high           │  67.69    16.15     128           
 #> 
-#> Group comparison: Welch one-way ANOVA (age_group, education, social_class, region, employment_status, income_group, self_rated_health, bmi_category, institutional_trust); Welch t-test (sex, smoking, physical_activity, dentist_12m). Each block compares WHO-5 wellbeing index (0-100) across the levels of one variable; blocks are not adjusted for one another. Overall = the whole analytic sample.
+#> Group comparison: Welch one-way ANOVA (age_group, education, social_class, region, employment_status, income_group, self_rated_health, bmi_category, institutional_trust); Welch t-test (sex, smoking, physical_activity, dentist_12m). Each block compares wellbeing_score across the levels of one variable; blocks are not adjusted for one another. Overall = the whole analytic sample.
 ```
 
 Negation (`select = -c(x, y)`) is **not** recommended, and the reason is
@@ -435,17 +435,17 @@ table_outcome(
   p_value = FALSE,
   show_columns = c("m", "sd", "n", "weighted_n")
 )
-#> Descriptive statistics of Body mass index
+#> Descriptive statistics of bmi
 #> 
 #>  Variable   │    M       SD      n      Weighted n  
 #> ────────────┼───────────────────────────────────────
 #>  Overall    │  25.72    3.69    1188     1188.00    
 #> ╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Sex        │                                       
+#>  sex        │                                       
 #>    Female   │  25.51    3.75     616      648.72    
 #>    Male     │  25.98    3.61     572      539.28    
 #> 
-#> Missing values removed: Body mass index (12). Statistics weighted by weight. Overall = the whole analytic sample.
+#> Missing values removed: bmi (12). Statistics weighted by weight. Overall = the whole analytic sample.
 ```
 
 Note *statistics*, above, and not *the table*: the mean, SD, quantiles
@@ -514,26 +514,26 @@ with `.row_role` saying what each row is.
 ``` r
 
 head(table_outcome(sochealth, bmi, select = sex, output = "long"), 4)
-#>   variable           label  level     .row_role     mean       sd min  max
-#> 1      bmi Body mass index   <NA>       summary 25.93148 3.720186  16 38.9
-#> 2      sex             Sex   <NA> factor_header       NA       NA  NA   NA
-#> 3      sex             Sex Female         level 25.68506 3.781113  16 38.9
-#> 4      sex             Sex   Male         level 26.19685 3.638092  16 37.7
-#>   ci_lower ci_upper median     q1     q3  iqr med_ci_lower med_ci_upper    n
-#> 1 25.71972 26.14324   25.9 23.400 28.600 5.20         25.7         26.2 1188
-#> 2       NA       NA     NA     NA     NA   NA           NA           NA   NA
-#> 3 25.38588 25.98425   25.7 23.100 28.600 5.50         25.4         26.1  616
-#> 4 25.89808 26.49563   26.1 23.875 28.625 4.75         25.8         26.6  572
-#>   weighted_n test_type statistic      df1 df2    p.value es_type es_value
-#> 1         NA      <NA>        NA       NA  NA         NA    <NA>       NA
-#> 2         NA   welch_t -2.377237 1184.497  NA 0.01760093    <NA>       NA
-#> 3         NA      <NA>        NA       NA  NA         NA    <NA>       NA
-#> 4         NA      <NA>        NA       NA  NA         NA    <NA>       NA
-#>   es_ci_lower es_ci_upper smd_type smd_value
-#> 1          NA          NA     <NA>        NA
-#> 2          NA          NA     <NA>        NA
-#> 3          NA          NA     <NA>        NA
-#> 4          NA          NA     <NA>        NA
+#>   variable label  level     .row_role     mean       sd min  max ci_lower
+#> 1      bmi   bmi   <NA>       summary 25.93148 3.720186  16 38.9 25.71972
+#> 2      sex   sex   <NA> factor_header       NA       NA  NA   NA       NA
+#> 3      sex   sex Female         level 25.68506 3.781113  16 38.9 25.38588
+#> 4      sex   sex   Male         level 26.19685 3.638092  16 37.7 25.89808
+#>   ci_upper median     q1     q3  iqr med_ci_lower med_ci_upper    n weighted_n
+#> 1 26.14324   25.9 23.400 28.600 5.20         25.7         26.2 1188         NA
+#> 2       NA     NA     NA     NA   NA           NA           NA   NA         NA
+#> 3 25.98425   25.7 23.100 28.600 5.50         25.4         26.1  616         NA
+#> 4 26.49563   26.1 23.875 28.625 4.75         25.8         26.6  572         NA
+#>   test_type statistic      df1 df2    p.value es_type es_value es_ci_lower
+#> 1      <NA>        NA       NA  NA         NA    <NA>       NA          NA
+#> 2   welch_t -2.377237 1184.497  NA 0.01760093    <NA>       NA          NA
+#> 3      <NA>        NA       NA  NA         NA    <NA>       NA          NA
+#> 4      <NA>        NA       NA  NA         NA    <NA>       NA          NA
+#>   es_ci_upper smd_type smd_value
+#> 1          NA     <NA>        NA
+#> 2          NA     <NA>        NA
+#> 3          NA     <NA>        NA
+#> 4          NA     <NA>        NA
 ```
 
 `tidy()` returns the described rows — the marginal row and one row per
@@ -546,19 +546,19 @@ broom::tidy(tbl)
 #> # A tibble: 6 × 12
 #>   outcome variable label level estimate std.error conf.low conf.high     n   min
 #>   <chr>   <chr>    <chr> <chr>    <dbl>     <dbl>    <dbl>     <dbl> <int> <dbl>
-#> 1 bmi     bmi      Body… NA        25.9     0.108     25.7      26.1  1188  16  
-#> 2 bmi     sex      Sex   Fema…     25.7     0.152     25.4      26.0   616  16  
-#> 3 bmi     sex      Sex   Male      26.2     0.152     25.9      26.5   572  16  
-#> 4 bmi     smoking  Curr… No        26.0     0.124     25.7      26.2   915  16  
-#> 5 bmi     smoking  Curr… Yes       25.9     0.227     25.5      26.4   248  16.8
-#> 6 bmi     smoking  Curr… (Mis…     24.7     0.726     23.2      26.2    25  17.6
+#> 1 bmi     bmi      bmi   NA        25.9     0.108     25.7      26.1  1188  16  
+#> 2 bmi     sex      sex   Fema…     25.7     0.152     25.4      26.0   616  16  
+#> 3 bmi     sex      sex   Male      26.2     0.152     25.9      26.5   572  16  
+#> 4 bmi     smoking  smok… No        26.0     0.124     25.7      26.2   915  16  
+#> 5 bmi     smoking  smok… Yes       25.9     0.227     25.5      26.4   248  16.8
+#> 6 bmi     smoking  smok… (Mis…     24.7     0.726     23.2      26.2    25  17.6
 #> # ℹ 2 more variables: max <dbl>, sd <dbl>
 broom::glance(tbl)
 #> # A tibble: 2 × 16
 #>   outcome variable label  n_levels test_type statistic    df df.residual p.value
 #>   <chr>   <chr>    <chr>     <int> <chr>         <dbl> <dbl>       <dbl>   <dbl>
-#> 1 bmi     sex      Sex           2 welch_t      -2.38  1184.          NA  0.0176
-#> 2 bmi     smoking  Curre…        3 welch_t       0.122  407.          NA  0.903 
+#> 1 bmi     sex      sex           2 welch_t      -2.38  1184.          NA  0.0176
+#> 2 bmi     smoking  smoki…        3 welch_t       0.122  407.          NA  0.903 
 #> # ℹ 7 more variables: es_type <chr>, es_value <dbl>, es_ci_lower <dbl>,
 #> #   es_ci_upper <dbl>, smd_type <chr>, smd_value <dbl>, n_total <int>
 ```
@@ -636,17 +636,17 @@ table_outcome(
   style = "jama",
   show_columns = c("m", "sd", "n")
 )
-#> Descriptive statistics of Body mass index
+#> Descriptive statistics of bmi
 #> 
 #>  Variable   │    M       SD      n       p   
 #> ────────────┼────────────────────────────────
 #>  Overall    │  25.93    3.72    1188         
 #> ╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Sex        │                           .02  
+#>  sex        │                           .02  
 #>    Female   │  25.69    3.78     616         
 #>    Male     │  26.20    3.64     572         
 #> 
-#> Missing values removed: Body mass index (12). Group comparison: Welch t-test. Each block compares Body mass index across the levels of one variable; blocks are not adjusted for one another. Overall = the whole analytic sample.
+#> Missing values removed: bmi (12). Group comparison: Welch t-test. Each block compares bmi across the levels of one variable; blocks are not adjusted for one another. Overall = the whole analytic sample.
 ```
 
 ## Rendered output
@@ -666,10 +666,10 @@ pkgdown_dark_gt(
 
 [TABLE]
 
-Missing values removed: Body mass index (12). Group comparison: Welch
-one-way ANOVA (education); Welch t-test (sex). Each block compares Body
-mass index across the levels of one variable; blocks are not adjusted
-for one another. Overall = the whole analytic sample.
+Missing values removed: bmi (12). Group comparison: Welch one-way ANOVA
+(education); Welch t-test (sex). Each block compares bmi across the
+levels of one variable; blocks are not adjusted for one another. Overall
+= the whole analytic sample.
 
 ``` r
 
@@ -685,17 +685,17 @@ table_outcome(
 | Variable | Med \[Q1, Q3\] | n | p |
 |----|----|----|----|
 | Overall | 70.25 \[58.90, 79.23\] | 1200 |       |
-| Sex |                      |      | \<.001 |
+| sex |                      |      | \<.001 |
 |     Female | 68.20 \[57.30, 77.53\] |  620 |       |
 |     Male | 72.30 \[61.27, 81.58\] |  580 |       |
-| Current smoker |                      |      |  .104 |
+| smoking |                      |      |  .104 |
 |     No | 70.95 \[59.23, 79.60\] |  926 |       |
 |     Yes | 68.50 \[58.30, 77.30\] |  249 |       |
 |     (Missing) | 69.70 \[62.80, 77.10\] |   25 |       |
-| Group comparison: Wilcoxon rank-sum test. Med \[Q1, Q3\] = median \[first quartile, third quartile\]. Each block compares WHO-5 wellbeing index (0-100) across the levels of one variable; blocks are not adjusted for one another. Overall = the whole analytic sample. |  |  |  |
+| Group comparison: Wilcoxon rank-sum test. Med \[Q1, Q3\] = median \[first quartile, third quartile\]. Each block compares wellbeing_score across the levels of one variable; blocks are not adjusted for one another. Overall = the whole analytic sample. |  |  |  |
 
-Descriptive statistics of WHO-5 wellbeing index (0-100)
-{#tinytable_nupqypwn6i8c4niapnpk .table .tinytable
+Descriptive statistics of wellbeing_score
+{#tinytable_pjcufngogu3ylji71754 .table .tinytable
 style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 
