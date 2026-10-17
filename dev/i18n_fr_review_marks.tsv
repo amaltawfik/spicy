@@ -16,3 +16,9 @@
 #
 # Title-prefix bridge rows are marked by their bridge: key.
 key	mark	date	fr_at_mark	note
+title_regression_hierarchical	corrected	2026-10-17	%s — modèles emboîtés<NBSP>: %s	
+note_abbrev_rr	corrected	2026-10-17	RR = risque relatif	
+note_adjusted_for	corrected	2026-10-17	Ajusté sur %s (%s).	
+note_outcome_blocks	corrected	2026-10-17	Chaque bloc compare %s entre les modalités d'une variable<NBSP>; les blocs ne sont pas ajustés les uns sur les autres.	
+note_nested_ml_refit	corrected	2026-10-17	Les statistiques de variation sont calculées à partir de modèles réestimés par maximum de vraisemblance et ne correspondent pas nécessairement aux écarts entre les critères REML affichés.	
+note_abbrev_or	reviewed	2026-10-17	OR = rapport de cotes	

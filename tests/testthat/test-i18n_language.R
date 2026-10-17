@@ -996,6 +996,23 @@ test_that("the model-based Wald line of lmer, lme and gls follows the language",
   )
 })
 
+test_that("the ML-refit note of a REML hierarchy follows the language", {
+  skip_if_not_installed("lme4")
+  withr::local_options(spicy.language = "fr")
+  m1 <- lme4::lmer(Reaction ~ 1 + (1 | Subject), data = lme4::sleepstudy)
+  m2 <- lme4::lmer(Reaction ~ Days + (1 | Subject), data = lme4::sleepstudy)
+  expect_match(
+    attr(table_regression(list(m1, m2), nested = TRUE), "note"),
+    paste0(
+      "Les statistiques de variation sont calcul\u00E9es \u00E0 partir de ",
+      "mod\u00E8les r\u00E9estim\u00E9s par maximum de vraisemblance et ne ",
+      "correspondent pas n\u00E9cessairement aux \u00E9carts entre les ",
+      "crit\u00E8res REML affich\u00E9s."
+    ),
+    fixed = TRUE
+  )
+})
+
 test_that("the outcome comparison note joins its tests in the language", {
   note <- function() {
     attr(table_outcome(mtcars, mpg, select = c(am, vs, cyl)), "note")

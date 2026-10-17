@@ -55,7 +55,7 @@
     Code
       cat(capture_norm_nested(table_regression(lm_fits, nested = TRUE, vcov = "HC3")))
     Output
-      Régression linéaire — modèles hiérarchiques : y
+      Régression linéaire — modèles emboîtés : y
       
                                      Model 1                Model 2
                                ────────────────────  ─────────────────────
@@ -81,7 +81,7 @@
     Code
       cat(capture_norm_nested(table_regression(glm_fits, nested = TRUE, vcov = "HC0")))
     Output
-      Régression logistique — modèles hiérarchiques : yb
+      Régression logistique — modèles emboîtés : yb
       
                                       Model 1              Model 2
                                 ───────────────────  ────────────────────

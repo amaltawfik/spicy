@@ -44,7 +44,7 @@ test_that("the French titles come out French, NBSP colon included", {
   )
   expect_identical(
     build_regression_title_from_frames(list(f1, f2), nested = TRUE),
-    "R\u00e9gression lin\u00e9aire \u2014 mod\u00e8les hi\u00e9rarchiques\u00a0: mpg"
+    "R\u00e9gression lin\u00e9aire \u2014 mod\u00e8les embo\u00eet\u00e9s\u00a0: mpg"
   )
   expect_identical(
     build_regression_title_from_frames(list(f1, f2)),

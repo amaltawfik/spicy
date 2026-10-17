@@ -195,6 +195,7 @@
   # Comme le pont des titres : "Regression logit cumulatif".
   note_re_null_cumulative = "r\u00E9gression %s cumulatif",
   note_re_null_family = "r\u00E9gression %s",
+  note_nested_ml_refit = "Les statistiques de variation sont calcul\u00E9es \u00E0 partir de mod\u00E8les r\u00E9estim\u00E9s par maximum de vraisemblance et ne correspondent pas n\u00E9cessairement aux \u00E9carts entre les crit\u00E8res REML affich\u00E9s.",
   note_component_gloss_zero_inflation = "Composante %s\u00A0: logarithme de la cote d'un z\u00E9ro structurel (exc\u00E9dentaire).",
   note_component_gloss_dispersion = "Composante %s\u00A0: \u00E9chelle logarithmique.",
   note_component_gloss_hurdle_binomial = "Composante %s\u00A0: logarithme de la cote d'un effectif non nul.",
@@ -215,7 +216,7 @@
   # -- table_regression(): abbreviation glosses -----------------------------
   note_abbrev_or = "OR = rapport de cotes",
   note_abbrev_irr = "IRR = rapport de taux d'incidence",
-  note_abbrev_rr = "RR = rapport de risques",
+  note_abbrev_rr = "RR = risque relatif",
   note_abbrev_mr = "MR = rapport de moyennes",
   note_abbrev_tr = "TR = rapport de temps",
   note_abbrev_expb = "exp(B) = coefficient exponenti\u00E9",
@@ -261,7 +262,7 @@
 
   # -- table_outcome(): the marginal row and the two disclosures ------------
   row_overall = "Ensemble",
-  note_outcome_blocks = "Chaque bloc compare %s entre les modalit\u00E9s d'une variable\u00A0; les blocs ne sont pas ajust\u00E9s les uns pour les autres.",
+  note_outcome_blocks = "Chaque bloc compare %s entre les modalit\u00E9s d'une variable\u00A0; les blocs ne sont pas ajust\u00E9s les uns sur les autres.",
   note_outcome_overall = "Ensemble = l'\u00E9chantillon analytique complet.",
   note_gloss_iqr = "%s = \u00E9cart interquartile (%s - %s).",
   note_gloss_med_iqr = "%s = m\u00E9diane [premier quartile, troisi\u00E8me quartile].",
@@ -309,7 +310,7 @@
   note_gloss_n_svy = "%s = effectif observ\u00E9 (non pond\u00E9r\u00E9).",
 
   # -- table_regression(): standard-error and interval notes ----------------
-  note_adjusted_for = "Ajust\u00E9 pour %s (%s).",
+  note_adjusted_for = "Ajust\u00E9 sur %s (%s).",
   note_adjustment_proportional = "proportionnel",
   note_adjustment_balanced = "\u00E9quilibr\u00E9",
   note_std_errors_single = "Erreurs standards\u00A0: %s.",
@@ -351,14 +352,16 @@
   # -- table_regression(): titres et note de type (decision 42) -------------
   # Les %s recoivent le prefixe de famille (traduit par le pont
   # .FR_TITLE_PREFIXES ci-dessous) et le label de l'outcome. L'ordre des
-  # trous est celui de l'anglais. Le hierarchique est un TAG apres
+  # trous est celui de l'anglais. Le qualificatif est un TAG apres
   # tiret cadratin, comme la comparaison : un adjectif postpose se
   # rattacherait au dernier mot du prefixe, pas a la regression
   # ("... ponderee par le plan de sondage hierarchique" lirait "plan
   # hierarchique" -- un vrai terme de sondage, donc un contresens).
+  # "Modeles emboites", pas "modeles hierarchiques" : en francais, le
+  # second designe d'ordinaire les modeles multiniveaux (issue #7).
   title_regression_fallback = "R\u00E9gression",
   title_regression_single = "%s\u00A0: %s",
-  title_regression_hierarchical = "%s \u2014 mod\u00E8les hi\u00E9rarchiques\u00A0: %s",
+  title_regression_hierarchical = "%s \u2014 mod\u00E8les embo\u00EEt\u00E9s\u00A0: %s",
   title_regression_comparison_dv = "%s \u2014 comparaison\u00A0: %s",
   title_regression_comparison = "%s \u2014 comparaison",
   # La phrase entiere est l'unite : "Modeles de regression lineaire."

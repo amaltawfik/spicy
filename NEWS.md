@@ -135,9 +135,12 @@ workbook, or a PDF.
 
 * `table_regression()` writes the robust standard-error line of every
   model class, not only `lm` and `glm`, the model-based one of `lmer`,
-  `lme`, and `gls`, the standardized-coefficient legend, and the p-value
+  `lme`, and `gls`, the standardized-coefficient legend, the p-value
   line and the likelihood-ratio test of the random effects of mixed
-  models in French under `options(spicy.language = "fr")`.
+  models, and the REML refit note of `nested = TRUE` in French under
+  `options(spicy.language = "fr")`. In French, nested models are now
+  `modèles emboîtés` in the title, RR is glossed `risque relatif`, and
+  `table_continuous_lm()` and `table_outcome()` write `ajusté sur`.
 
 * `table_regression()` handles `glmer()` fits with a Gamma or
   inverse-Gaussian family, which failed, and no longer fails on them or on

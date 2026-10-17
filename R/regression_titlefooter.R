@@ -86,7 +86,7 @@ build_regression_title_from_frames <- function(frames, nested = FALSE) {
     }
     if (isTRUE(nested)) {
       # The French template carries its own qualifier ("%s -- modeles
-      # hierarchiques"), so the prefix keeps its capital -- no
+      # emboites"), so the prefix keeps its capital -- no
       # lowercase_first() on this branch.
       return(spicy_fmt("title_regression_hierarchical", disp, outcomes[1]))
     }
