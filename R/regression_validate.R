@@ -2783,90 +2783,60 @@ validate_outcome_labels <- function(outcome_labels, models) {
   invisible(NULL)
 }
 
-# Step 24: labels (named character with keys in any model's term labels)
-validate_predictor_labels <- function(labels, models) {
-  if (is.null(labels)) {
-    return(invisible(NULL))
-  }
-  if (!is.character(labels) || any(is.na(labels))) {
+# Step 24: labels. Its form (TRUE, FALSE, a named character vector,
+# `var_labels()`) is checked at the top of table_regression() by
+# `.check_labels_arg()`, the validator the descriptive tables share, and a
+# key that names nothing in the table is ignored there (decision 54,
+# `.reg_variable_labels()`). What is left for this step: a label is a
+# string, never NA, which the stub would print as "NA".
+validate_predictor_labels <- function(labels) {
+  if (is.character(labels) && anyNA(labels)) {
     spicy_abort(
-      "`labels` must be NULL or a named character vector.",
+      "Every `labels` entry must be a string, not NA.",
       class = "spicy_invalid_input"
     )
   }
-  nms <- names(labels)
-  if (is.null(nms) || any(!nzchar(nms))) {
-    spicy_abort(
-      paste0(
-        "`labels` must be a NAMED character vector ",
-        "(names = term names; values = displayed labels)."
-      ),
-      class = "spicy_invalid_input"
-    )
-  }
+  invisible(NULL)
+}
 
-  # Accept BOTH:
-  #   * formula term labels  (`attr(terms(fit), "term.labels")`)
-  #     -> e.g. "wt", "cyl", "wt:cyl", "I(x^2)"
-  #   * coefficient names    (`names(coef(fit))`)
-  #     -> e.g. "(Intercept)", "cyl6", "factor(cyl)8", "wt:cyl6"
-  # The renderer tries the per-row label first (coef name), then
-  # falls back to the per-term label (factor variable). So both
-  # flavors of key are useful: term keys rename factor headers,
-  # coef keys rename individual contrast rows.
-  # .spicy_get_terms(), not stats::terms(): the renderer detects factor
-  # headers through that helper, so the validator must accept exactly
-  # the terms the display shows -- flexsurvreg carries its terms on the
-  # model.frame and brmsfit on the unwrapped brmsformula, and a bare
-  # stats::terms() call refused the only label those headers can take.
-  # Classes with no terms at all (nls, selection) return NULL here and
-  # are keyed on the coefficient names alone (below).
-  all_terms <- unique(unlist(lapply(models, function(fit) {
+# The keys a `labels` entry can take to relabel a row of a regression
+# table, over every model of it. BOTH flavors:
+#   * formula term labels  (`attr(terms(fit), "term.labels")`)
+#     -> e.g. "wt", "cyl", "wt:cyl", "I(x^2)"
+#   * coefficient names    (`names(coef(fit))`)
+#     -> e.g. "(Intercept)", "cyl6", "factor(cyl)8", "wt:cyl6"
+# The renderer tries the per-row label first (coef name), then
+# falls back to the per-term label (factor variable). So both
+# flavors of key are useful: term keys rename factor headers,
+# coef keys rename individual contrast rows. Any other key is ignored,
+# which keeps the package-set block headers (`Random effects`,
+# `Thresholds`, ...) out of reach: they share the lookup of the factor
+# headers.
+# .spicy_get_terms(), not stats::terms(): the renderer detects factor
+# headers through that helper, so the keys must be exactly the terms the
+# display shows -- flexsurvreg carries its terms on the model.frame and
+# brmsfit on the unwrapped brmsformula, and a bare stats::terms() call
+# missed the only label those headers can take.
+# Classes with no terms at all (nls, selection) return NULL here and
+# are keyed on the coefficient names alone (below).
+.reg_label_keys <- function(models) {
+  all_terms <- unlist(lapply(models, function(fit) {
     tryCatch(
       attr(.spicy_get_terms(fit), "term.labels"),
       error = function(e) character(0)
     )
-  })))
+  }))
   # Fixed-effect coefficient names via the polymorphic helper:
   # names(coef(fit)) is wrong for several classes (merMod returns the
   # per-GROUP coefficient list, so its names are the grouping factors;
   # lme returns random-effect-augmented coefficients; clm mixes
   # thresholds in). .spicy_fixed_coef_names() knows each class.
-  all_coefs <- unique(unlist(lapply(models, function(fit) {
+  all_coefs <- unlist(lapply(models, function(fit) {
     tryCatch(.spicy_fixed_coef_names(fit), error = function(e) {
       names(stats::coef(fit))
     })
-  })))
-  valid_keys <- unique(c(all_terms, all_coefs))
-  unknown <- setdiff(nms, valid_keys)
-  if (length(unknown) > 0L) {
-    spicy_abort(
-      c(
-        sprintf(
-          "Some `labels` keys are not term or coefficient names: %s.",
-          paste(.quote_val(unknown), collapse = ", ")
-        ),
-        # The term-labels line is dropped when the fit has no terms
-        # component at all (nls, flexsurvreg, selection, brmsfit):
-        # "Available term labels: ." would name an empty set as if it
-        # were the answer.
-        if (length(all_terms) > 0L) {
-          c(
-            "i" = sprintf(
-              "Available term labels: %s.",
-              paste(.quote_val(all_terms), collapse = ", ")
-            )
-          )
-        },
-        "i" = sprintf(
-          "Available coefficient names: %s.",
-          paste(.quote_val(all_coefs), collapse = ", ")
-        )
-      ),
-      class = "spicy_invalid_input"
-    )
-  }
-  invisible(NULL)
+  }))
+  unique(c(all_terms, all_coefs))
 }
 
 

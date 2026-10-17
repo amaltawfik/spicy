@@ -8,8 +8,9 @@
 #     group + atomic mixed expansion (the non-group else arm)
 #   * validate_token_vector        – NA / empty-string guard
 #   * validate_stars               – duplicate-symbol guard, valid no-op
-#   * validate_model_labels / validate_outcome_labels /
-#     validate_predictor_labels    – non-character / unnamed guards
+#   * validate_model_labels / validate_outcome_labels -- non-character /
+#     unnamed guards; `labels` -- the shared form check and the NA guard
+#     of validate_predictor_labels
 #   * detect_non_additive_terms    – terms()-less fit fallback to formula()
 #
 # All branches are reachable from real fits / real user inputs, so each
@@ -280,38 +281,37 @@ test_that("validate_outcome_labels – NA element errors", {
 
 
 # ============================================================================
-# validate_predictor_labels – non-character + unnamed guards
+# labels -- non-character + unnamed guards (the shared .check_labels_arg(),
+# called at the top of table_regression()), NA guard (validate_predictor_labels)
 # ============================================================================
 
-test_that("validate_predictor_labels – non-character (numeric) errors", {
-  fit <- lm(mpg ~ wt, data = mt)
-  err <- tryCatch(
-    spicy:::validate_predictor_labels(c(wt = 1), models = list(fit)),
-    error = function(e) e
-  )
-  expect_s3_class(err, "spicy_invalid_input")
-  expect_match(conditionMessage(err), "named character vector")
-})
-
-test_that("validate_predictor_labels – unnamed character vector errors", {
-  fit <- lm(mpg ~ wt, data = mt)
-  err <- tryCatch(
-    spicy:::validate_predictor_labels(c("Weight"), models = list(fit)),
-    error = function(e) e
-  )
-  expect_s3_class(err, "spicy_invalid_input")
-  expect_match(conditionMessage(err), "NAMED character vector")
-})
-
-test_that("validate_predictor_labels – NA value errors", {
+test_that("labels - non-character (numeric) errors", {
   fit <- lm(mpg ~ wt, data = mt)
   expect_error(
-    spicy:::validate_predictor_labels(
-      c(wt = NA_character_),
-      models = list(fit)
-    ),
+    table_regression(fit, labels = c(wt = 1)),
     class = "spicy_invalid_input"
   )
+})
+
+test_that("labels - unnamed character vector errors", {
+  fit <- lm(mpg ~ wt, data = mt)
+  expect_error(
+    table_regression(fit, labels = c("Weight")),
+    class = "spicy_invalid_input"
+  )
+})
+
+test_that("validate_predictor_labels - NA value errors", {
+  fit <- lm(mpg ~ wt, data = mt)
+  expect_error(
+    spicy:::validate_predictor_labels(c(wt = NA_character_)),
+    class = "spicy_invalid_input"
+  )
+  expect_error(
+    table_regression(fit, labels = c(wt = NA_character_)),
+    class = "spicy_invalid_input"
+  )
+  expect_null(spicy:::validate_predictor_labels(TRUE))
 })
 
 

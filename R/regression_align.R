@@ -368,10 +368,14 @@ align_frames <- function(
   ]
   rownames(coefs_long) <- NULL
 
+  # Each outcome as the table names it: the display `labels` resolved
+  # (decision 54, `info$dv_display`), else the variable name. Never the
+  # bare `label` attribute (`info$dv_label`): the table shows it only
+  # when `labels` asks for it.
   outcome_labels_auto <- vapply(
     frames,
     function(f) {
-      f$info$dv_label %||% f$info$dv
+      f$info$dv_display %||% f$info$dv
     },
     character(1)
   )

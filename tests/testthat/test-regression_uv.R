@@ -528,6 +528,56 @@ test_that("labels pass through to the row stubs", {
 })
 
 
+test_that("labels: names by default, the label attributes with TRUE (decision 54)", {
+  d <- .uv_soc()
+  out0 <- table_regression_uv(d, wellbeing_score, c(age, sex))
+  expect_match(attr(out0, "title"), ": wellbeing_score$")
+  expect_true(all(c("age", "sex:", "  Male") %in% out0$Variable))
+  out1 <- table_regression_uv(d, wellbeing_score, c(age, sex), labels = TRUE)
+  expect_match(
+    attr(out1, "title"),
+    ": WHO-5 wellbeing index (0-100)",
+    fixed = TRUE
+  )
+  expect_true(all(c("Age (years)", "Sex:", "  Male") %in% out1$Variable))
+  expect_false(any(c("age", "sex:") %in% out1$Variable))
+  # The screen's own complete-case subset keeps the labels of a plain
+  # data.frame, whose `[` drops them.
+  out2 <- table_regression_uv(
+    as.data.frame(d),
+    wellbeing_score,
+    c(age, sex),
+    labels = TRUE,
+    complete_cases = TRUE
+  )
+  expect_identical(out2$Variable, out1$Variable)
+  # The title of a recoded binary outcome keeps the outcome's label.
+  lpm <- table_regression_uv(d, smoking, age, method = "lm", labels = TRUE)
+  expect_match(attr(lpm, "title"), ": Current smoker$")
+  # A named vector: by column and by coefficient, the rest stays names.
+  out3 <- table_regression_uv(
+    d,
+    wellbeing_score,
+    c(age, sex),
+    labels = c(age = "Age", sexMale = "Men")
+  )
+  expect_true(all(c("Age", "sex:", "  Men") %in% out3$Variable))
+})
+
+
+test_that("labels: NULL and unnamed vectors are errors", {
+  d <- .uv_soc()
+  expect_error(
+    table_regression_uv(d, wellbeing_score, age, labels = NULL),
+    class = "spicy_invalid_input"
+  )
+  expect_error(
+    table_regression_uv(d, wellbeing_score, age, labels = "Age"),
+    class = "spicy_invalid_input"
+  )
+})
+
+
 test_that("rank-deficient predictors stay visible as dropped rows", {
   d <- .uv_soc()
   d$const <- 1

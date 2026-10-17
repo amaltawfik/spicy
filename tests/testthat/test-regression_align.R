@@ -181,10 +181,17 @@ test_that("align_frames – outcome_labels_auto: falls back to outcome when no l
   expect_identical(unname(aligned$outcome_labels_auto), c("mpg", "hp"))
 })
 
-test_that("align_frames – outcome_labels_auto reads attr('label') when set", {
+test_that("align_frames - outcome_labels_auto shows the resolved display, not the attribute", {
+  # Decision 54: the label attribute (`info$dv_label`) reaches the table
+  # only through `labels`, which table_regression() resolves into
+  # `info$dv_display`.
   d <- mt
   attr(d$mpg, "label") <- "Fuel efficiency (mpg)"
   fr <- list(mk_frame(mpg ~ wt, "M1", data = d))
+  expect_identical(fr[[1]]$info$dv_label, "Fuel efficiency (mpg)")
+  aligned <- .align(fr, "M1")
+  expect_identical(unname(aligned$outcome_labels_auto), "mpg")
+  fr[[1]]$info$dv_display <- "Fuel efficiency (mpg)"
   aligned <- .align(fr, "M1")
   expect_identical(unname(aligned$outcome_labels_auto), "Fuel efficiency (mpg)")
 })

@@ -2,32 +2,47 @@
 % Please edit documentation in R/var_labels.R
 \name{var_labels}
 \alias{var_labels}
+\alias{print.spicy_var_labels}
 \title{Label attributes with a few renames}
 \usage{
 var_labels(...)
+
+\method{print}{spicy_var_labels}(x, ...)
 }
 \arguments{
-\item{...}{\code{name = "label"} pairs, one per column to rename, each label
-a single string. A named character vector can be spliced with \verb{!!!}.
-Names that match no column of a table are ignored.}
+\item{...}{\code{name = "label"} pairs, one per variable to rename, each
+label a single string. A named character vector can be spliced with
+\verb{!!!}. Names that match nothing in a table are ignored. For
+\code{print()}, passed on to \code{\link[=print]{print()}}.}
+
+\item{x}{A \code{spicy_var_labels} object, for \code{print()}.}
 }
 \value{
-A named character vector of class \code{spicy_var_labels}.
+A named character vector of class \code{spicy_var_labels}, which
+prints as the plain named vector. \code{print()} returns \code{x} invisibly.
 }
 \description{
 Builds a value for the \code{labels} argument of the descriptive tables
 (\code{\link[=table_categorical]{table_categorical()}}, \code{\link[=table_continuous]{table_continuous()}}, \code{\link[=table_continuous_lm]{table_continuous_lm()}},
 \code{\link[=table_outcome]{table_outcome()}}, \code{\link[=table_categorical_svy]{table_categorical_svy()}} and
-\code{\link[=table_continuous_svy]{table_continuous_svy()}}). The columns it names take the labels given
-here, and every other column shows its \code{label} attribute (as set by
-\code{haven}, \code{labelled} or \code{\link[=label_from_names]{label_from_names()}}), or its name when it has
-none, whatever \code{options(spicy.var_labels)} says. \code{var_labels()} with
-no argument is the same as \code{labels = TRUE}.
+\code{\link[=table_continuous_svy]{table_continuous_svy()}}) and of the regression tables
+(\code{\link[=table_regression]{table_regression()}} and \code{\link[=table_regression_uv]{table_regression_uv()}}). The variables it
+names take the labels given here, and every other variable shows its
+\code{label} attribute (as set by \code{haven}, \code{labelled} or
+\code{\link[=label_from_names]{label_from_names()}}), or its name when it has none, whatever
+\code{options(spicy.var_labels)} says. \code{var_labels()} with no argument is
+the same as \code{labels = TRUE}.
 
 A plain named vector, \code{labels = c(bmi = "Body mass index")}, differs
-in one point: the columns it leaves out follow
+in one point: the variables it leaves out follow
 \code{options(spicy.var_labels)}, which shows their names unless it is
 \code{TRUE}.
+
+In a regression table, the names are the model's: the outcome, the
+term labels (\code{age}, or \code{sex} for the header of a factor), and the
+coefficient names (\code{sexMale}, \code{(Intercept)}). The attribute names the
+outcome, the numeric terms, and the factor headers. Factor levels,
+interactions, and transformed terms keep their names.
 }
 \examples{
 # The label attribute of every column, one rename.
@@ -45,8 +60,16 @@ tbl <- table_categorical(
   by = sex,
   labels = var_labels(!!!renames)
 )
+
+# A regression table: the outcome and the factor header keep their
+# label attribute, the numeric term takes the one given here.
+table_regression(
+  lm(wellbeing_score ~ age + sex, data = sochealth),
+  labels = var_labels(age = "Age in years")
+)
 }
 \seealso{
 The \code{labels} argument of \code{\link[=table_categorical]{table_categorical()}} and its
-siblings, which lists the four forms it takes.
+siblings, and of \code{\link[=table_regression]{table_regression()}}, which lists the four forms
+it takes.
 }

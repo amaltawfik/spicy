@@ -50,6 +50,9 @@ build_regression_title_from_frames <- function(frames, nested = FALSE) {
   if (!is.list(frames) || length(frames) == 0L) {
     return(spicy_str("title_regression_fallback"))
   }
+  # The outcome's NAME tells whether the models share it; the title
+  # prints its DISPLAY, the name or the label `labels` gives it (decision
+  # 54), which table_regression() stores as `info$dv_display`.
   outcomes <- vapply(
     frames,
     function(f) {
@@ -57,6 +60,14 @@ build_regression_title_from_frames <- function(frames, nested = FALSE) {
     },
     character(1)
   )
+  shown <- vapply(
+    frames,
+    function(f) {
+      f$info$dv_display %||% f$info$dv %||% NA_character_
+    },
+    character(1)
+  )
+  shown <- shown[!is.na(outcomes)]
   outcomes <- outcomes[!is.na(outcomes)]
   n <- length(frames)
 
@@ -82,16 +93,16 @@ build_regression_title_from_frames <- function(frames, nested = FALSE) {
       if (length(outcomes) == 0L) {
         return(disp)
       }
-      return(spicy_fmt("title_regression_single", disp, outcomes[1]))
+      return(spicy_fmt("title_regression_single", disp, shown[1]))
     }
     if (isTRUE(nested)) {
       # The French template carries its own qualifier ("%s -- modeles
       # emboites"), so the prefix keeps its capital -- no
       # lowercase_first() on this branch.
-      return(spicy_fmt("title_regression_hierarchical", disp, outcomes[1]))
+      return(spicy_fmt("title_regression_hierarchical", disp, shown[1]))
     }
     if (length(unique(outcomes)) == 1L) {
-      return(spicy_fmt("title_regression_comparison_dv", disp, outcomes[1]))
+      return(spicy_fmt("title_regression_comparison_dv", disp, shown[1]))
     }
     return(spicy_fmt("title_regression_comparison", disp))
   }
@@ -104,7 +115,7 @@ build_regression_title_from_frames <- function(frames, nested = FALSE) {
     if (length(outcomes) == 0L) {
       return(prefix)
     }
-    return(.spicy_fmt_en("title_regression_single", prefix, outcomes[1]))
+    return(.spicy_fmt_en("title_regression_single", prefix, shown[1]))
   }
 
   identical_dv <- length(unique(outcomes)) == 1L
@@ -115,11 +126,11 @@ build_regression_title_from_frames <- function(frames, nested = FALSE) {
     return(.spicy_fmt_en(
       "title_regression_hierarchical",
       lowercase_first(prefix),
-      outcomes[1]
+      shown[1]
     ))
   }
   if (identical_dv) {
-    return(.spicy_fmt_en("title_regression_comparison_dv", prefix, outcomes[1]))
+    return(.spicy_fmt_en("title_regression_comparison_dv", prefix, shown[1]))
   }
   .spicy_fmt_en("title_regression_comparison", prefix)
 }

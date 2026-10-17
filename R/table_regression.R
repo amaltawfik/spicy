@@ -214,10 +214,11 @@
 #'     `"Naive"` / `"Adjusted"`. Partial naming (`list("Naive" = m1, m2)`)
 #'     auto-fills missing slots as `"Model <position>"`.
 #'   \item `list(m1, m2)` (unnamed) -> if all response variables
-#'     differ, the bare DV name (from `formula(fit)[[2]]`) becomes
-#'     the spanner label and the redundant Outcome body row is
-#'     suppressed. If DVs match, the labels default to
-#'     `"Model 1, 2, ..."`.
+#'     differ, each outcome becomes the spanner label of its model
+#'     and the redundant Outcome body row is suppressed. The outcome
+#'     is named as in the title: its name (from `formula(fit)[[2]]`),
+#'     or its `label` attribute under `labels = TRUE`. If DVs match,
+#'     the labels default to `"Model 1, 2, ..."`.
 #'   \item `model_labels = c("A", "B")` overrides everything.
 #' }
 #'
@@ -1361,26 +1362,49 @@
 #'   width). Use `2L` (Stata-like) or `4L` for a more spacious
 #'   look. Headers stay centered above the data region regardless
 #'   of padding.
-#' @param labels Named character vector overriding per-coefficient
-#'   row labels. Names are coefficient term names (from
-#'   [stats::terms()]); values are the displayed labels. E.g.
-#'   `c("age" = "Age (years)", "sexM" = "Male (vs Female)")`.
-#'   Default `NULL` (use raw term names).
+#' @param labels How the variables are named in the table: the outcome
+#'   in the title (and above its columns when the models have different
+#'   outcomes), a numeric term in its row, and a factor in its header.
+#'   Four forms:
+#'   * `labels = FALSE` shows the names the model gives them (`bmi`,
+#'     `age`, `sex`).
+#'   * `labels = TRUE` shows each variable's `label` attribute (as set by
+#'     `haven`, `labelled`, or [label_from_names()]) when it is present,
+#'     not `NA`, and not empty, and the name otherwise: "Linear
+#'     regression: Body mass index", "Age (years)", "Sex:". The attribute
+#'     is read off the model frame, or off the data the model was fit on
+#'     where the model frame lost it. Factor levels, interactions, and
+#'     transformed terms (`log(income)`, `poly(age, 2)`) are not variables
+#'     and keep their names, as do the coefficient rows of
+#'     `factor_layout = "flat"`.
+#'   * `labels = c(age = "Age (years)", sexMale = "Men")`, a named
+#'     character vector, gives the variables and rows it names these
+#'     labels. Every other variable follows `options(spicy.var_labels)`:
+#'     its name when the option is unset or `FALSE`, its `label`
+#'     attribute when it is `TRUE`.
+#'   * `labels = var_labels(age = "Age in years")` gives the variables
+#'     and rows it names these labels, and every other variable its
+#'     `label` attribute, whatever the option says. `var_labels()` alone
+#'     is `labels = TRUE`.
 #'
-#'   The names are model identifiers, not display text: they are the
-#'   term and coefficient names R itself produces, and they keep that
-#'   form regardless of the language the table is rendered in. A name
-#'   that is neither a term label nor a coefficient name is rejected,
-#'   so the header of a subordinate block -- `Random effects`,
-#'   `Thresholds`, `Zero-inflation`, ... -- cannot be relabeled here;
-#'   those headers are set by the package. Classes that carry no
-#'   `terms` component at all (`nls()`,
-#'   `sampleSelection::selection()`) are keyed on their coefficient
-#'   (or parameter) names alone.
+#'   The names are model identifiers, not display text: the outcome, the
+#'   term labels of [stats::terms()] (`"age"`, `"sex"`, `"age:sex"`, a
+#'   factor's term naming its header), and the coefficient names
+#'   (`"(Intercept)"`, `"sexMale"`), each naming one row. They keep that
+#'   form whatever the language of the table. Classes with no `terms`
+#'   component (`nls()`, `sampleSelection::selection()`) are keyed on
+#'   their coefficient (or parameter) names alone. With several models,
+#'   a name is looked up in the terms of all of them and lands on the
+#'   rows where it exists. Names that match nothing are ignored, so one
+#'   vector can serve every table of a project. The headers of the
+#'   subordinate blocks (`Random effects`, `Thresholds`,
+#'   `Zero-inflation`, ...) are set by the package and cannot be
+#'   relabeled here.
 #'
-#'   With several models, a name is checked against the union of their
-#'   terms: a key naming a term only one model has is legal, and the
-#'   label lands on the rows where that term exists.
+#'   The default reads `options(spicy.var_labels)`, and a `TRUE` or
+#'   `FALSE` typed in the call wins over it. Any other value, `NULL`
+#'   included, is an error. A variable label documents the data file; a
+#'   published table carries the wording you set here.
 #' @param title,note Override or suppress the auto-built caption /
 #'   methodological footer. Three modes per argument:
 #'   \itemize{
@@ -1755,7 +1779,7 @@ table_regression <- function(
   decimal_mark = ".",
   align = c("decimal", "center", "right"),
   padding = 0L,
-  labels = NULL,
+  labels = getOption("spicy.var_labels", FALSE),
   title = NULL,
   note = NULL,
   output = c(
@@ -1836,6 +1860,9 @@ table_regression <- function(
   fit_stats_layout <- spicy_match_arg(fit_stats_layout)
   align <- spicy_match_arg(align)
   output <- spicy_match_arg(output)
+  # The `labels` contract of the descriptive tables (decision 54), checked
+  # by their validator so that the error is the same everywhere.
+  .check_labels_arg(labels)
 
   # ====================================================================
   # Validation cascade (Q21 -- 6 phases, ~29 steps, fail-fast).
@@ -2532,7 +2559,7 @@ table_regression <- function(
     # .multinom_columns_spanners() at the explode.
     validate_outcome_labels(outcome_labels, models)
   }
-  validate_predictor_labels(labels, models)
+  validate_predictor_labels(labels)
   # Random-effects display args: validate fail-fast (before the extraction
   # loop), so a bad value errors immediately instead of after the expensive
   # per-model extraction, and with a spicy_invalid_input class (finding m3).
@@ -3321,6 +3348,16 @@ table_regression <- function(
     show_fit_stats <- insert_wald_change_tokens(show_fit_stats, frames)
   }
 
+  # ---- Variable labels (decision 54) -------------------------------------
+  # One resolution of `labels` for the whole table: the display of each
+  # frame's outcome, which the title and the outcome-headed column groups
+  # read from `info$dv_display`, and the row lookup the renderer takes as
+  # its `labels`. Before the explode, which copies each frame's info.
+  var_labs <- .reg_variable_labels(labels, models, frames)
+  for (i in seq_along(frames)) {
+    frames[[i]]$info$dv_display <- var_labs$outcomes[[i]]
+  }
+
   # ---- Multinomial outcome-as-columns explode (display only) -------------
   # The publication layout for a single multinom model: one column
   # group per outcome category. The explode swaps in per-category
@@ -3590,7 +3627,7 @@ table_regression <- function(
     ic_digits = ic_digits,
     decimal_mark = decimal_mark,
     align = align,
-    labels = labels,
+    labels = var_labs$terms,
     outcome_labels = outcome_labels,
     title = title,
     note = full_footer_str,

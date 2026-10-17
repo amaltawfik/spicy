@@ -135,10 +135,35 @@
 #'   `FALSE` -- the opposite of [table_regression()]'s default,
 #'   because each univariable fit carries its own nuisance intercept.
 #'   See *Intercepts*.
+#' @param labels How the variables are named: the outcome in the title,
+#'   a numeric predictor in its row, and a factor in its header. The
+#'   four forms of [table_regression()]:
+#'   * `labels = FALSE` shows the column names.
+#'   * `labels = TRUE` shows each column's `label` attribute (as set by
+#'     `haven`, `labelled`, or [label_from_names()]) when it is present,
+#'     not `NA`, and not empty, and the column name otherwise. Factor
+#'     levels keep their names.
+#'   * `labels = c(age = "Age (years)", sexMale = "Men")`, a named
+#'     character vector, gives the variables and rows it names these
+#'     labels. Every other variable follows `options(spicy.var_labels)`:
+#'     its name when the option is unset or `FALSE`, its `label`
+#'     attribute when it is `TRUE`.
+#'   * `labels = var_labels(age = "Age in years")` gives the variables
+#'     and rows it names these labels, and every other variable its
+#'     `label` attribute, whatever the option says. `var_labels()` alone
+#'     is `labels = TRUE`.
+#'
+#'   The names are the outcome and predictor columns and the coefficient
+#'   names (`"sexMale"` names the row of one level), as in
+#'   [table_regression()]. Names that match nothing are ignored. The
+#'   default reads `options(spicy.var_labels)`, and a `TRUE` or `FALSE`
+#'   typed in the call wins over it. Any other value, `NULL` included, is
+#'   an error. A variable label documents the data file; a published
+#'   table carries the wording you set here.
 #' @param title Table title; `NULL` (default) builds
 #'   `"Univariable and multivariable <type> regression: <outcome>"`.
 #' @param ... Passed to [table_regression()] (`exponentiate`, `vcov`,
-#'   `cluster`, `p_adjust`, `digits`, `labels`, `output`, ...).
+#'   `cluster`, `p_adjust`, `digits`, `output`, ...).
 #'   `nested` is not
 #'   meaningful for a screen and is refused. `cluster` must be a
 #'   single vector with one value per row of `data`; it is aligned to
@@ -190,6 +215,7 @@ table_regression_uv <- function(
   complete_cases = FALSE,
   show_columns = c("n", "b", "ci", "p"),
   show_intercept = FALSE,
+  labels = getOption("spicy.var_labels", FALSE),
   title = NULL,
   ...
 ) {
@@ -206,6 +232,7 @@ table_regression_uv <- function(
   if (!is.data.frame(data)) {
     spicy_abort("`data` must be a data frame.", class = "spicy_invalid_input")
   }
+  .check_labels_arg(labels)
   if (
     !is.logical(multivariable) ||
       length(multivariable) != 1L ||
@@ -363,6 +390,11 @@ table_regression_uv <- function(
       class = "spicy_invalid_input"
     )
   }
+  # The outcome as the title names it under `labels` (decision 54),
+  # resolved on `data` as given: the 0/1 recode of a binary outcome below
+  # would cost the column its `label` attribute. A `Surv()` outcome is
+  # no column and keeps its expression unless `labels` names it.
+  outcome_display <- resolve_variable_labels(data, outcome_name, labels)
 
   dots <- list(...)
   # Cluster contract for the screen: ONE value per row of `data`. The
@@ -475,7 +507,17 @@ table_regression_uv <- function(
 
   if (isTRUE(complete_cases)) {
     cc <- stats::complete.cases(data[, c(outcome_vars, pred_names)])
-    data <- data[cc, , drop = FALSE]
+    # `[.data.frame` drops the `label` attribute of plain vectors and
+    # factors (a tibble keeps it): the screen's own subset must not take
+    # the predictors' labels away from `labels = TRUE`.
+    kept <- data[cc, , drop = FALSE]
+    for (nm in c(outcome_vars, pred_names)) {
+      lab <- attr(data[[nm]], "label", exact = TRUE)
+      if (!is.null(lab)) {
+        attr(kept[[nm]], "label") <- lab
+      }
+    }
+    data <- kept
     if (!is.null(dots$cluster)) dots$cluster <- dots$cluster[cc]
   }
 
@@ -657,15 +699,23 @@ table_regression_uv <- function(
       "title_uv_screen"
     }
     title <- if (is.null(disp)) {
-      .spicy_fmt_en(key, prefix, outcome_name)
+      .spicy_fmt_en(key, prefix, outcome_display)
     } else {
-      spicy_fmt(key, disp, outcome_name)
+      spicy_fmt(key, disp, outcome_display)
     }
   }
 
   do.call(
     table_regression,
-    c(list(models, show_columns = show_columns, title = title), dots)
+    c(
+      list(
+        models,
+        show_columns = show_columns,
+        labels = labels,
+        title = title
+      ),
+      dots
+    )
   )
 }
 
@@ -699,8 +749,8 @@ table_regression_uv <- function(
 }
 
 
-# The label validator (validate_predictor_labels) reads term labels
-# off every model via stats::terms(); the screen's terms are simply
+# The keys a `labels` entry can take (.reg_label_keys()) are read off
+# every model via stats::terms(); the screen's terms are simply
 # outcome ~ all screened predictors.
 
 #' Terms method for univariable screen bundles
@@ -710,8 +760,8 @@ table_regression_uv <- function(
 #' `outcome ~ predictor_1 + ... + predictor_k` spanning every
 #' predictor screened by [table_regression_uv()]. Non-syntactic
 #' column names are backtick-quoted, so the terms are valid whatever
-#' the input names. Used internally by the label validator, which
-#' reads term labels off every model in a table.
+#' the input names. Used internally to read the term labels a `labels`
+#' entry can name, off every model in a table.
 #'
 #' @param x A `spicy_uv_screen` bundle (the internal object wrapping
 #'   the univariable fits of [table_regression_uv()]).

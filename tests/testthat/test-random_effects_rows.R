@@ -287,11 +287,16 @@ test_that("labels accepts coefficient-level keys on mixed fits", {
     output = "data.frame"
   )
   expect_true(any(grepl("Period 2", df$Variable, fixed = TRUE)))
-  # a grouping factor is NOT a coefficient name: still rejected
-  expect_error(
-    table_regression(m, labels = c(bogus_key = "X"), output = "data.frame"),
-    class = "spicy_invalid_input"
-  )
+  # A key that is no term or coefficient name -- a grouping factor, a
+  # bogus key -- is ignored (decision 54): the random-effect rows keep
+  # the text the package sets.
+  base <- table_regression(m, output = "data.frame")$Variable
+  ignored <- table_regression(
+    m,
+    labels = c(herd = "Herd", bogus_key = "X"),
+    output = "data.frame"
+  )$Variable
+  expect_identical(ignored, base)
 })
 
 test_that("n_groups: dynamic label + numeric cell when one shared factor", {

@@ -37,11 +37,13 @@ names are keys of \code{spicy_labels()}. An unknown key is an error.
 \item \strong{\code{options(spicy.var_labels = TRUE)}}
 How the descriptive tables (\code{\link[=table_categorical]{table_categorical()}},
 \code{\link[=table_continuous]{table_continuous()}}, \code{\link[=table_continuous_lm]{table_continuous_lm()}}, \code{\link[=table_outcome]{table_outcome()}} and
-the survey twins) name your variables: \code{TRUE} shows each column's
-\code{label} attribute, \code{FALSE} (the default) its name. It is the default
-of their \code{labels} argument, and the columns a named \code{labels} vector
-leaves out follow it. A \code{TRUE}, a \code{FALSE} or a \code{\link[=var_labels]{var_labels()}} typed
-in the call wins over it. Any other value is an error.
+the survey twins) and the regression tables (\code{\link[=table_regression]{table_regression()}},
+\code{\link[=table_regression_uv]{table_regression_uv()}}) name your variables: \code{TRUE} shows each
+variable's \code{label} attribute, \code{FALSE} (the default) its name. It is
+the default of their \code{labels} argument, and the variables a named
+\code{labels} vector leaves out follow it. A \code{TRUE}, a \code{FALSE} or a
+\code{\link[=var_labels]{var_labels()}} typed in the call wins over it. Any other value is an
+error.
 }
 
 A label resolves through \code{spicy.labels}, then the \code{spicy.language}

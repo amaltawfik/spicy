@@ -506,11 +506,11 @@ test_that("outcome_labels – length mismatch errors spicy_invalid_input", {
   )
 })
 
-test_that("labels – unknown predictor key errors spicy_invalid_input", {
+test_that("labels - an unknown key is ignored (decision 54)", {
   fit <- lm(mpg ~ wt, data = mt)
-  expect_error(
-    table_regression(fit, labels = c("nonexistent_predictor" = "Foo")),
-    class = "spicy_invalid_input"
+  expect_identical(
+    table_regression(fit, labels = c("nonexistent_predictor" = "Foo"))$Variable,
+    table_regression(fit)$Variable
   )
 })
 
@@ -647,9 +647,219 @@ test_that("labels – a key that exists in only ONE model applies there only", {
   # The Horsepower row is empty under the model that lacks the term.
   hp_row <- out[out$Variable == "Horsepower", , drop = FALSE]
   expect_identical(nrow(hp_row), 1L)
-  # A key absent from EVERY model is still a hard error.
+  # A key absent from EVERY model is ignored, like any unknown key.
+  expect_identical(
+    table_regression(list(m1, m2), labels = c(nope = "X"))$Variable,
+    table_regression(list(m1, m2))$Variable
+  )
+})
+
+
+# ============================================================================
+# labels contract (decision 54): names by default, the label attributes on
+# request, the four forms of the descriptive tables
+# ============================================================================
+
+test_that("labels - names by default: title, terms, headers, outcome spanners", {
+  sh <- sochealth
+  fits <- list(
+    lm = lm(bmi ~ age + sex, data = sh),
+    glm = glm(smoking ~ age + sex, data = sh, family = binomial())
+  )
+  dvs <- c(lm = "bmi", glm = "smoking")
+  for (k in names(fits)) {
+    out <- table_regression(fits[[k]])
+    expect_match(attr(out, "title"), paste0(": ", dvs[[k]], "$"))
+    expect_true(all(c("age", "sex:", "  Male") %in% out$Variable))
+    expect_false(any(c("Age (years)", "Sex:") %in% out$Variable))
+  }
+  # Two models with different labelled outcomes: each outcome heads its
+  # columns by name, and no Outcome row repeats it.
+  two <- table_regression(
+    list(lm(wellbeing_score ~ age + sex, data = sh), fits$lm)
+  )
+  expect_identical(names(attr(two, "spanners")), c("wellbeing_score", "bmi"))
+  expect_false("Outcome" %in% two$Variable)
+})
+
+test_that("labels = TRUE - the outcome, numeric terms and factor headers read their label", {
+  sh <- sochealth
+  fits <- list(
+    lm = lm(bmi ~ age + sex, data = sh),
+    glm = glm(smoking ~ age + sex, data = sh, family = binomial())
+  )
+  outcome <- c(lm = "Body mass index", glm = "Current smoker")
+  for (k in names(fits)) {
+    out <- table_regression(fits[[k]], labels = TRUE)
+    expect_match(attr(out, "title"), paste0(": ", outcome[[k]]), fixed = TRUE)
+    expect_true(all(
+      c("Age (years)", "Sex:", "  Female (ref.)", "  Male") %in% out$Variable
+    ))
+    expect_false(any(c("age", "sex:") %in% out$Variable))
+    # The typed body the rich engines read says the same.
+    typed <- as_structured(out)$body$Variable
+    expect_true(all(c("Age (years)", "Sex:") %in% typed))
+  }
+  two <- table_regression(
+    list(lm(wellbeing_score ~ age + sex, data = sh), fits$lm),
+    labels = TRUE
+  )
+  expect_identical(
+    names(attr(two, "spanners")),
+    c("WHO-5 wellbeing index (0-100)", "Body mass index")
+  )
+  expect_false("Outcome" %in% two$Variable)
+})
+
+test_that("labels = TRUE - lmer: the random-effect rows keep their text", {
+  skip_if_not_installed("lme4")
+  fit <- lme4::lmer(
+    wellbeing_score ~ age + sex + (1 | education),
+    data = sochealth[1:600, ]
+  )
+  base <- table_regression(fit)$Variable
+  out <- table_regression(fit, labels = TRUE)
+  expect_match(
+    attr(out, "title"),
+    ": WHO-5 wellbeing index (0-100)",
+    fixed = TRUE
+  )
+  expect_true(all(c("Age (years)", "Sex:", "  Male") %in% out$Variable))
+  other <- !base %in% c("age", "sex:")
+  expect_identical(out$Variable[other], base[other])
+  # A block header is set by the package: its name as a key is ignored.
+  blocked <- table_regression(fit, labels = c("Random effects" = "RE"))
+  expect_identical(blocked$Variable, base)
+})
+
+test_that("labels = TRUE - coxph: a label the model frame lost is read off the data", {
+  skip_if_not_installed("survival")
+  sh <- as.data.frame(sochealth[!is.na(sochealth$bmi), ])
+  sh$time <- sh$bmi
+  sh$status <- as.integer(sh$age > 50)
+  fit <- survival::coxph(survival::Surv(time, status) ~ age + sex, data = sh)
+  # model.frame() rebuilds the factor from its levels, without its label.
+  expect_null(attr(stats::model.frame(fit)$sex, "label"))
+  out <- table_regression(fit, labels = TRUE)$Variable
+  expect_true(all(c("Age (years)", "Sex:", "  Male") %in% out))
+  # The same through the data of the call alone, insight aside.
+  local_mocked_bindings(
+    .reg_insight_data = function(fit) NULL,
+    .package = "spicy"
+  )
+  expect_identical(table_regression(fit, labels = TRUE)$Variable, out)
+})
+
+test_that("labels = TRUE - lme: the terms are read off the data", {
+  skip_if_not_installed("nlme")
+  sh <- as.data.frame(sochealth[!is.na(sochealth$bmi), ])
+  fit <- nlme::lme(bmi ~ age + sex, random = ~ 1 | education, data = sh)
+  out <- table_regression(fit, labels = TRUE)
+  expect_match(attr(out, "title"), ": Body mass index", fixed = TRUE)
+  expect_true(all(c("Age (years)", "Sex:", "  Male") %in% out$Variable))
+})
+
+test_that("labels = TRUE - a fit whose data is gone keeps its names, silently", {
+  skip_if_not_installed("survival")
+  fit <- local({
+    dat <- as.data.frame(sochealth[!is.na(sochealth$bmi), ])
+    dat$time <- dat$bmi
+    dat$status <- as.integer(dat$age > 50)
+    survival::coxph(survival::Surv(time, status) ~ age + sex, data = dat)
+  })
+  rm(list = "dat", envir = environment(stats::formula(fit)))
+  expect_no_warning(out <- table_regression(fit, labels = TRUE))
+  expect_true(all(c("age", "sex:") %in% out$Variable))
+})
+
+test_that("labels = TRUE - interactions and transformed terms keep their names", {
+  fit <- lm(bmi ~ poly(age, 2) + sex * income + log(income), data = sochealth)
+  out <- table_regression(fit, labels = TRUE)$Variable
+  expect_true(all(
+    c("poly(age, 2)1", "poly(age, 2)2", "sexMale:income", "log(income)") %in%
+      out
+  ))
+  # The main effect of income is the variable and takes its label; the
+  # log(income) column, onto which the model frame copied the attribute,
+  # is not.
+  expect_identical(sum(out == "Monthly household income (CHF)"), 1L)
+  flat <- table_regression(fit, labels = TRUE, factor_layout = "flat")
+  expect_true("sexMale" %in% flat$Variable)
+})
+
+test_that("labels = var_labels() - a rename over the label attributes", {
+  fit <- lm(bmi ~ age + sex, data = sochealth)
+  out <- table_regression(fit, labels = var_labels(age = "Age in years"))
+  expect_match(attr(out, "title"), ": Body mass index", fixed = TRUE)
+  expect_true(all(c("Age in years", "Sex:", "  Male") %in% out$Variable))
+  withr::local_options(spicy.var_labels = FALSE)
+  again <- table_regression(fit, labels = var_labels(age = "Age in years"))
+  expect_identical(again$Variable, out$Variable)
+})
+
+test_that("labels = c(...) - coefficient keys apply, the rest stays names", {
+  fit <- lm(bmi ~ age + sex, data = sochealth)
+  out <- table_regression(
+    fit,
+    labels = c(sexMale = "Men", "(Intercept)" = "Constant")
+  )
+  expect_match(attr(out, "title"), ": bmi$")
+  expect_true(all(c("Constant", "age", "sex:", "  Men") %in% out$Variable))
+  # The outcome answers to its own name.
+  named_dv <- table_regression(fit, labels = c(bmi = "BMI (kg/m2)"))
+  expect_match(attr(named_dv, "title"), ": BMI (kg/m2)", fixed = TRUE)
+})
+
+test_that("labels - options(spicy.var_labels = TRUE) is the base of a named vector", {
+  fit <- lm(bmi ~ age + sex, data = sochealth)
+  withr::local_options(spicy.var_labels = TRUE)
+  out <- table_regression(fit, labels = c(sexMale = "Men"))
+  expect_match(attr(out, "title"), ": Body mass index", fixed = TRUE)
+  expect_true(all(c("Age (years)", "Sex:", "  Men") %in% out$Variable))
+  # It is the default too, and a FALSE typed in the call wins over it.
+  expect_identical(
+    table_regression(fit)$Variable,
+    table_regression(fit, labels = TRUE)$Variable
+  )
+  expect_true("age" %in% table_regression(fit, labels = FALSE)$Variable)
+})
+
+test_that("labels = TRUE - an explicit outcome_labels still wins", {
+  sh <- sochealth
+  ms <- list(lm(wellbeing_score ~ age, data = sh), lm(bmi ~ age, data = sh))
+  out <- table_regression(
+    ms,
+    labels = TRUE,
+    outcome_labels = c("Well-being", "BMI")
+  )
+  row <- out[out$Variable == "Outcome", , drop = FALSE]
+  expect_identical(trimws(row[["Model 1: B"]]), "Well-being")
+  expect_identical(trimws(row[["Model 2: B"]]), "BMI")
+  expect_identical(names(attr(out, "spanners")), c("Model 1", "Model 2"))
+})
+
+test_that("labels = TRUE - two outcomes sharing a label head their columns by name", {
+  sh <- sochealth
+  attr(sh$life_sat_work, "label") <- attr(sh$life_sat_health, "label")
+  ms <- list(
+    lm(life_sat_health ~ age, data = sh),
+    lm(life_sat_work ~ age, data = sh)
+  )
+  out <- table_regression(ms, labels = TRUE)
+  expect_identical(
+    names(attr(out, "spanners")),
+    c("life_sat_health", "life_sat_work")
+  )
+})
+
+test_that("labels - NULL and unnamed vectors are errors", {
+  fit <- lm(bmi ~ age, data = sochealth)
   expect_error(
-    table_regression(list(m1, m2), labels = c(nope = "X")),
+    table_regression(fit, labels = NULL),
+    class = "spicy_invalid_input"
+  )
+  expect_error(
+    table_regression(fit, labels = c("Age (years)")),
     class = "spicy_invalid_input"
   )
 })

@@ -20,8 +20,8 @@ Returns the \code{\link[stats:terms]{stats::terms()}} object of the formula
 \code{outcome ~ predictor_1 + ... + predictor_k} spanning every
 predictor screened by \code{\link[=table_regression_uv]{table_regression_uv()}}. Non-syntactic
 column names are backtick-quoted, so the terms are valid whatever
-the input names. Used internally by the label validator, which
-reads term labels off every model in a table.
+the input names. Used internally to read the term labels a \code{labels}
+entry can name, off every model in a table.
 }
 \seealso{
 \code{\link[=table_regression_uv]{table_regression_uv()}}

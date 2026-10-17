@@ -14,6 +14,7 @@ table_regression_uv(
   complete_cases = FALSE,
   show_columns = c("n", "b", "ci", "p"),
   show_intercept = FALSE,
+  labels = getOption("spicy.var_labels", FALSE),
   title = NULL,
   ...
 )
@@ -78,11 +79,39 @@ column incomparable across predictors).}
 because each univariable fit carries its own nuisance intercept.
 See \emph{Intercepts}.}
 
+\item{labels}{How the variables are named: the outcome in the title,
+a numeric predictor in its row, and a factor in its header. The
+four forms of \code{\link[=table_regression]{table_regression()}}:
+\itemize{
+\item \code{labels = FALSE} shows the column names.
+\item \code{labels = TRUE} shows each column's \code{label} attribute (as set by
+\code{haven}, \code{labelled}, or \code{\link[=label_from_names]{label_from_names()}}) when it is present,
+not \code{NA}, and not empty, and the column name otherwise. Factor
+levels keep their names.
+\item \code{labels = c(age = "Age (years)", sexMale = "Men")}, a named
+character vector, gives the variables and rows it names these
+labels. Every other variable follows \code{options(spicy.var_labels)}:
+its name when the option is unset or \code{FALSE}, its \code{label}
+attribute when it is \code{TRUE}.
+\item \code{labels = var_labels(age = "Age in years")} gives the variables
+and rows it names these labels, and every other variable its
+\code{label} attribute, whatever the option says. \code{var_labels()} alone
+is \code{labels = TRUE}.
+}
+
+The names are the outcome and predictor columns and the coefficient
+names (\code{"sexMale"} names the row of one level), as in
+\code{\link[=table_regression]{table_regression()}}. Names that match nothing are ignored. The
+default reads \code{options(spicy.var_labels)}, and a \code{TRUE} or \code{FALSE}
+typed in the call wins over it. Any other value, \code{NULL} included, is
+an error. A variable label documents the data file; a published
+table carries the wording you set here.}
+
 \item{title}{Table title; \code{NULL} (default) builds
 \code{"Univariable and multivariable <type> regression: <outcome>"}.}
 
 \item{...}{Passed to \code{\link[=table_regression]{table_regression()}} (\code{exponentiate}, \code{vcov},
-\code{cluster}, \code{p_adjust}, \code{digits}, \code{labels}, \code{output}, ...).
+\code{cluster}, \code{p_adjust}, \code{digits}, \code{output}, ...).
 \code{nested} is not
 meaningful for a screen and is refused. \code{cluster} must be a
 single vector with one value per row of \code{data}; it is aligned to

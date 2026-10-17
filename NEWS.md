@@ -20,7 +20,10 @@ workbook, or a PDF.
   `var_labels()`, as in `labels = var_labels(bmi = "IMC")`, the other
   columns keep their `label` attribute. Names that match no column are
   ignored, and `labels = NULL` is an error. Add `labels = TRUE` to keep
-  the labels of 0.13.0.
+  the labels of 0.13.0. In `table_regression()` and
+  `table_regression_uv()`, whose default output does not change,
+  `labels = NULL` (their default in 0.13.0) is an error as well, and a
+  name that matches no term is ignored instead of refused.
 
 * `table_regression()` and `table_regression_uv()` name an interval column
   with a point whatever `decimal_mark`: `97.5% CI` in `as.data.frame()`,
@@ -59,6 +62,12 @@ workbook, or a PDF.
   of `table_regression()`, applied to all the tests of the table
   together. The note gives the method and the number of tests, and the
   raw p-values stay in the object as `p_unadjusted`.
+
+* `table_regression()` and `table_regression_uv()` take the same four
+  `labels` forms. `labels = TRUE` names the outcome, the numeric terms,
+  and the factor headers by their `label` attribute, as in "Linear
+  regression: Body mass index", while factor levels, interactions, and
+  transformed terms keep their names.
 
 * `table_regression()` supports cumulative-link mixed models:
   `ordinal::clmm()` fits and `glmmTMB::glmmTMB()` fits with the ordinal

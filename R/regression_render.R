@@ -102,15 +102,31 @@ render_regression_table <- function(
   model_ids <- aligned$model_ids %||% unique(coefs$model_id)
   n_models <- length(model_ids)
 
+  # Two vectors per model, both from align_frames():
+  #   * `model_outcomes`        \u2013 variable name from formula(fit)[[2]],
+  #                               used for the identical-DV decision
+  #   * `model_outcome_labels`  \u2013 the outcome as the table names it:
+  #                               its name, or the label `labels` gives
+  #                               it (decision 54, `.reg_variable_labels()`)
+  # The display falls back to the name.
+  model_outcomes <- .aligned_model_outcomes(aligned, model_ids)
+  model_outcome_labels <- if (
+    !is.null(aligned$outcome_labels_auto) &&
+      length(aligned$outcome_labels_auto) == length(model_ids)
+  ) {
+    unname(aligned$outcome_labels_auto)
+  } else {
+    model_outcomes
+  }
+
   # Smart default \u2013 when the user did NOT supply any spanner-label
   # source (neither `model_labels` nor `names(models)`), AND no
   # explicit Outcome-row override (`outcome_labels = NULL`), AND the
-  # models have all-distinct response variables, lift the auto-
-  # detected DV name into the column-group spanner instead of the
-  # generic "Model 1, 2, ..." auto-fill. The would-be "Outcome" body
-  # row is then redundant and is suppressed. Matches the
-  # modelsummary / Stata `estout` convention for comparison tables
-  # across outcomes.
+  # models have all-distinct response variables, lift each model's
+  # outcome into the column-group spanner instead of the generic
+  # "Model 1, 2, ..." auto-fill. The would-be "Outcome" body row is
+  # then redundant and is suppressed. Matches the modelsummary / Stata
+  # `estout` convention for comparison tables across outcomes.
   #
   # Falls back to "Model 1, ..." (and keeps the Outcome row) when:
   #   * DVs are not all distinct (duplicates would yield an
@@ -124,17 +140,20 @@ render_regression_table <- function(
   #     display entirely).
   labels_from_outcomes <- FALSE
   if (is.null(model_labels) && n_models >= 2L && is.null(outcome_labels)) {
-    # Use the bare response-variable NAME (from `formula(fit)[[2]]`)
-    # for the spanner -- not `attr("label")`, which can be a long
-    # human-readable phrase (e.g. "Wellbeing score (0-100)") that
-    # would distort column widths.
-    model_outcomes <- .aligned_model_outcomes(aligned, model_ids)
     if (
       length(unique(model_outcomes)) == n_models &&
         all(!is.na(model_outcomes)) &&
         all(nzchar(model_outcomes))
     ) {
-      model_labels <- model_outcomes
+      # The spanner names each outcome as the title does: its name by
+      # default, its label under `labels = TRUE`. Two outcomes that
+      # share a label would head two groups alike, so their names
+      # tell them apart instead.
+      model_labels <- if (anyDuplicated(model_outcome_labels) > 0L) {
+        model_outcomes
+      } else {
+        model_outcome_labels
+      }
       labels_from_outcomes <- TRUE
     }
   }
@@ -352,25 +371,9 @@ render_regression_table <- function(
   body <- do.call(rbind, rows)
 
   # Prepend outcome row when applicable (Q11b \u2013 multi-DV display).
+  # The row prints the explicit `outcome_labels` only.
   #
-  # Two vectors per model:
-  #   * `model_outcomes`        \u2013 variable name from formula(fit)[[2]],
-  #                               used for the identical-DV decision
-  #   * `model_outcome_labels`  \u2013 display string: attr("label") if
-  #                               set on the response (labelled,
-  #                               haven, SPSS), else the variable name
-  #
-  # Both come from align_frames(); fallback if absent.
-  model_outcomes <- .aligned_model_outcomes(aligned, model_ids)
-  model_outcome_labels <- if (
-    !is.null(aligned$outcome_labels_auto) &&
-      length(aligned$outcome_labels_auto) == length(model_ids)
-  ) {
-    aligned$outcome_labels_auto
-  } else {
-    model_outcomes
-  }
-  # When DV names were lifted into the spanner labels above, the
+  # When the outcomes were lifted into the spanner labels above, the
   # body Outcome row would just repeat the spanner. Suppress it.
   effective_outcome_labels <- if (isTRUE(labels_from_outcomes)) {
     FALSE
@@ -1490,6 +1493,212 @@ resolve_label <- function(term, labels) {
     return(labels[[term]])
   }
   term
+}
+
+
+# ---- Variable labels (decision 54) ----------------------------------------
+
+# How a regression table names its variables under `labels`: the contract
+# of the descriptive tables (`resolve_variable_labels()`) applied to the
+# outcomes and the terms of the fits. This is the one place where
+# `labels` meets the fits, called once by table_regression() after the
+# frames are built. It returns
+#   * `outcomes`: the display of each frame's outcome, which the title and
+#     the outcome-headed column groups print (stored as `info$dv_display`);
+#   * `terms`: the named vector the renderer looks every row up in
+#     (`format_term_label()`, `.reg_factor_header_text()`), or NULL.
+# On the name base (`FALSE`, or a plain named vector with the option
+# unset) both carry the user's entries alone, as before the contract. On
+# the attribute base, a variable that enters a model as itself -- the
+# outcome, a numeric term, the variable of a factor header -- shows its
+# `label` attribute (`.reg_model_var_labels()`; for the outcome, the frame
+# builder's reading, `info$dv_label`, comes first). A factor level, an
+# interaction or a transformed term (`log(income)`, `poly(age, 2)`) is not
+# a variable and keeps its name, even where the model frame copied the
+# attribute onto the transformed column, as `log()` does. The user's
+# entries win. A key that is no term label, coefficient name or outcome
+# is ignored, so one vector can serve every table of a project, and the
+# block headers the package sets (Random effects, Thresholds, ...) stay
+# out of its reach.
+.reg_variable_labels <- function(labels, models, frames) {
+  attr_base <- .labels_attr_base(labels)
+  user <- if (is.character(labels)) unclass(labels) else character(0)
+  # One map per model (frames and models are parallel), read only on the
+  # attribute base.
+  maps <- if (attr_base) lapply(models, .reg_model_var_labels)
+  outcomes <- vapply(
+    seq_along(frames),
+    function(i) {
+      info <- frames[[i]]$info
+      dv <- info$dv
+      var <- .reg_bare_var(dv)
+      hit <- intersect(c(dv, var), names(user))
+      if (length(hit) > 0L) {
+        return(user[[hit[1L]]])
+      }
+      if (attr_base && !is.na(var)) {
+        # A builder that found no label stores the name itself.
+        if (.is_var_label(info$dv_label) && !identical(info$dv_label, dv)) {
+          return(info$dv_label)
+        }
+        if (var %in% names(maps[[i]])) {
+          return(maps[[i]][[var]])
+        }
+      }
+      dv
+    },
+    character(1)
+  )
+  attrs <- if (attr_base) {
+    .reg_ticked(.reg_union_labels(maps))
+  } else {
+    character(0)
+  }
+  terms <- c(user, attrs[setdiff(names(attrs), names(user))])
+  if (length(terms) > 0L) {
+    terms <- terms[names(terms) %in% .reg_label_keys(models)]
+  }
+  list(outcomes = outcomes, terms = if (length(terms) > 0L) terms)
+}
+
+# The `label` attribute of each variable of one fit, named by variable.
+# Read off the model frame first. A variable whose label the model frame
+# lacks is then looked up in the data the fit was given: through
+# `insight::get_data()` when insight is installed, then through the
+# `data` of the fit's call. model.frame() rebuilds a factor from its
+# levels and drops its attributes (coxph, survreg), and some classes keep
+# no model frame a label can be read off (nlme, fixest, geepack). Silent
+# throughout: a variable no source labels keeps its name.
+.reg_model_var_labels <- function(fit) {
+  if (inherits(fit, "spicy_uv_screen")) {
+    return(.reg_union_labels(lapply(fit$fits, .reg_model_var_labels)))
+  }
+  mf <- tryCatch(stats::model.frame(fit), error = function(e) NULL)
+  if (is.data.frame(mf)) {
+    found <- .reg_data_var_labels(mf)
+    vars <- .reg_bare_var(names(mf))
+    wanted <- setdiff(vars[!is.na(vars)], names(found))
+    if (length(wanted) == 0L) {
+      return(found)
+    }
+  } else {
+    # No model frame: every labelled variable of the data, which the
+    # key filter of `.reg_variable_labels()` narrows to the terms.
+    found <- character(0)
+    wanted <- NULL
+  }
+  for (fit_data in list(.reg_insight_data, .reg_call_data)) {
+    dat <- fit_data(fit)
+    if (is.null(dat)) {
+      next
+    }
+    more <- .reg_data_var_labels(dat)
+    if (!is.null(wanted)) {
+      more <- more[names(more) %in% wanted]
+      wanted <- setdiff(wanted, names(more))
+    }
+    found <- c(found, more[setdiff(names(more), names(found))])
+    done <- if (is.null(wanted)) length(more) > 0L else length(wanted) == 0L
+    if (done) {
+      break
+    }
+  }
+  found
+}
+
+# The usable `label` attributes of the columns of a data frame that are
+# variables (`.reg_bare_var()`), named by variable.
+.reg_data_var_labels <- function(df) {
+  vars <- .reg_bare_var(names(df))
+  labs <- vapply(
+    df,
+    function(col) {
+      lab <- attr(col, "label", exact = TRUE)
+      if (.is_var_label(lab)) lab else NA_character_
+    },
+    character(1),
+    USE.NAMES = FALSE
+  )
+  keep <- !is.na(vars) & !is.na(labs)
+  stats::setNames(labs[keep], vars[keep])
+}
+
+# The data of a fit as insight recovers it (insight is in Suggests), or
+# NULL.
+.reg_insight_data <- function(fit) {
+  if (!requireNamespace("insight", quietly = TRUE)) {
+    return(NULL)
+  }
+  dat <- tryCatch(
+    insight::get_data(fit, verbose = FALSE),
+    error = function(e) NULL
+  )
+  if (is.data.frame(dat)) dat
+}
+
+# The `data` of a fit's call, evaluated where its formula was written, or
+# NULL.
+.reg_call_data <- function(fit) {
+  env <- tryCatch(environment(stats::formula(fit)), error = function(e) NULL)
+  if (!is.environment(env)) {
+    return(NULL)
+  }
+  dat <- tryCatch(
+    eval(stats::getCall(fit)$data, env),
+    error = function(e) NULL
+  )
+  if (is.data.frame(dat)) dat
+}
+
+# Labels from several maps, the first map first.
+.reg_union_labels <- function(maps) {
+  out <- unlist(unname(maps))
+  if (length(out) == 0L) {
+    return(character(0))
+  }
+  out[!duplicated(names(out))]
+}
+
+# A non-syntactic variable keyed twice: bare, as model frames and data
+# write it, and backticked, as its term and coefficient names do
+# (`` `age years` ``).
+.reg_ticked <- function(labs) {
+  if (length(labs) == 0L) {
+    return(labs)
+  }
+  ticked <- vapply(
+    names(labs),
+    function(v) deparse(as.name(v), backtick = TRUE),
+    character(1),
+    USE.NAMES = FALSE
+  )
+  c(labs, stats::setNames(labs, ticked)[ticked != names(labs)])
+}
+
+# The variable a model-frame column name or a deparsed outcome names, or
+# NA when it is an expression: `log(income)`, `poly(age, 2)`, `I(age^2)`,
+# `cbind(s, f)`, `Surv(time, status)`, `(weights)`. A name that does not
+# parse is a variable too: model.frame() writes a non-syntactic one
+# without its backticks.
+.reg_bare_var <- function(x) {
+  vapply(
+    x,
+    function(s) {
+      if (is.na(s) || !nzchar(s)) {
+        return(NA_character_)
+      }
+      e <- tryCatch(str2lang(s), error = function(err) NULL)
+      if (is.null(e)) {
+        s
+      } else if (is.name(e)) {
+        as.character(e)
+      } else {
+        NA_character_
+      }
+    },
+    character(1),
+    USE.NAMES = FALSE
+  )
 }
 
 

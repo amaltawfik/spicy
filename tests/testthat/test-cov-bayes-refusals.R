@@ -390,7 +390,7 @@ test_that("classify_unsupported_lm_class() omits the prefix without a position",
 })
 
 
-# ---- regression_validate.R 2336: coefficient-name fallback for `labels` ----
+# ---- regression_validate.R: coefficient-name fallback for `labels` keys ----
 
 test_that("`labels` keys fall back to coef() names when the helper fails", {
   # .spicy_fixed_coef_names() knows each class; the tryCatch around it
@@ -403,16 +403,11 @@ test_that("`labels` keys fall back to coef() names when the helper fails", {
     .package = "spicy"
   )
   # "(Intercept)" is NOT a formula term label -- it can only become a
-  # valid key through names(coef(fit)), so accepting it proves the
+  # valid key through names(coef(fit)), so finding it proves the
   # fallback ran.
-  expect_silent(
-    spicy:::validate_predictor_labels(c("(Intercept)" = "Constant"), list(m))
-  )
-  expect_silent(spicy:::validate_predictor_labels(c(wt = "Weight"), list(m)))
-  # A key that is neither a term nor a coefficient name still errors.
-  expect_error(
-    spicy:::validate_predictor_labels(c(zzz = "Nope"), list(m)),
-    "not term or coefficient names",
-    class = "spicy_invalid_input"
-  )
+  keys <- spicy:::.reg_label_keys(list(m))
+  expect_true(all(c("(Intercept)", "wt") %in% keys))
+  # A key that is neither a term nor a coefficient name is not one, and
+  # the table ignores it (decision 54).
+  expect_false("zzz" %in% keys)
 })

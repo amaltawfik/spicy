@@ -475,6 +475,10 @@ as_regression_frame.default <- function(fit, ...) {
 #   n_groups        named int vector OR NULL
 #   random_effects  list OR NULL
 #
+# Set by table_regression() after validation, never by a frame method:
+#   dv_display      chr  (the outcome as the table names it under
+#                         `labels`, decision 54)
+#
 # Required attributes:
 #   spicy_frame_version chr (must equal the current version)
 #   fit                 (any) -- presence checked, not type

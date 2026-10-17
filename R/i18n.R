@@ -1498,11 +1498,13 @@ spicy_fmt <- function(key, ...) {
 #' * **`options(spicy.var_labels = TRUE)`**
 #'   How the descriptive tables ([table_categorical()],
 #'   [table_continuous()], [table_continuous_lm()], [table_outcome()] and
-#'   the survey twins) name your variables: `TRUE` shows each column's
-#'   `label` attribute, `FALSE` (the default) its name. It is the default
-#'   of their `labels` argument, and the columns a named `labels` vector
-#'   leaves out follow it. A `TRUE`, a `FALSE` or a [var_labels()] typed
-#'   in the call wins over it. Any other value is an error.
+#'   the survey twins) and the regression tables ([table_regression()],
+#'   [table_regression_uv()]) name your variables: `TRUE` shows each
+#'   variable's `label` attribute, `FALSE` (the default) its name. It is
+#'   the default of their `labels` argument, and the variables a named
+#'   `labels` vector leaves out follow it. A `TRUE`, a `FALSE` or a
+#'   [var_labels()] typed in the call wins over it. Any other value is an
+#'   error.
 #'
 #' A label resolves through `spicy.labels`, then the `spicy.language`
 #' set, then English. A set carries only the keys it translates, so

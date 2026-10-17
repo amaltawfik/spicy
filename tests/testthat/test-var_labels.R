@@ -12,6 +12,14 @@ test_that("var_labels() returns a classed named character vector", {
   expect_identical(var_labels(!!!renames), x)
 })
 
+test_that("print() shows the named vector without its class", {
+  x <- var_labels(bmi = "IMC", age = "Age")
+  out <- capture.output(res <- print(x))
+  expect_identical(out, capture.output(print(c(bmi = "IMC", age = "Age"))))
+  expect_false(any(grepl("spicy_var_labels", out, fixed = TRUE)))
+  expect_identical(res, x)
+})
+
 test_that("var_labels() refuses what the labels contract refuses", {
   expect_error(var_labels("IMC"), class = "spicy_invalid_input")
   expect_error(var_labels(bmi = "IMC", "Age"), class = "spicy_invalid_input")

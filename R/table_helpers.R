@@ -33,14 +33,10 @@
 # table of a project. A variable label documents the data file; a
 # published table carries the wording the user sets, hence the column
 # name by default. Returns an unnamed character vector parallel to `cols`.
+# The regression tables apply the same contract to their outcomes and
+# terms (`.reg_variable_labels()`).
 resolve_variable_labels <- function(data, cols, labels) {
-  use_attr <- if (inherits(labels, "spicy_var_labels")) {
-    TRUE
-  } else if (is.character(labels)) {
-    .var_labels_option()
-  } else {
-    isTRUE(labels)
-  }
+  use_attr <- .labels_attr_base(labels)
   vapply(
     cols,
     function(nm) {
@@ -51,25 +47,43 @@ resolve_variable_labels <- function(data, cols, labels) {
         return(nm)
       }
       lab <- attr(data[[nm]], "label", exact = TRUE)
-      # Absent, empty, or MISSING all fall back to the column name. `NA`
-      # is a real value of the attribute in a partly-labelled import, and
-      # `nzchar(NA)` is TRUE, so it used to travel into the table's stub
-      # as the string "NA".
-      ok <- is.character(lab) && length(lab) == 1L && !is.na(lab) && nzchar(lab)
-      if (ok) lab else nm
+      if (.is_var_label(lab)) lab else nm
     },
     character(1L),
     USE.NAMES = FALSE
   )
 }
 
+# Internal: TRUE when `labels` names the variables it leaves out by
+# their `label` attribute rather than by their names: `TRUE`, a
+# `var_labels()` object whatever the option says, a plain named vector
+# when `options(spicy.var_labels)` is TRUE. `labels` has passed
+# `.check_labels_arg()`.
+.labels_attr_base <- function(labels) {
+  if (inherits(labels, "spicy_var_labels")) {
+    TRUE
+  } else if (is.character(labels)) {
+    .var_labels_option()
+  } else {
+    isTRUE(labels)
+  }
+}
+
+# Internal: is `lab` a `label` attribute a table can show? Absent, empty,
+# or MISSING all fall back to the name. `NA` is a real value of the
+# attribute in a partly-labelled import, and `nzchar(NA)` is TRUE, so it
+# used to travel into the table's stub as the string "NA".
+.is_var_label <- function(lab) {
+  is.character(lab) && length(lab) == 1L && !is.na(lab) && nzchar(lab)
+}
+
 # Internal: the one validator of `labels`, called at the top of each
-# descriptive entry point (and by `var_labels()`) so that the error is
-# the same everywhere. TRUE, FALSE and a `var_labels()` object typed in
-# the call win over the option, which is therefore checked only when it
-# is read: as the argument's default (an invalid option arrives here as
-# `labels`, `identical()` catching one that is a `var_labels()` object)
-# and as the base of a plain named vector.
+# descriptive and regression entry point (and by `var_labels()`) so that
+# the error is the same everywhere. TRUE, FALSE and a `var_labels()`
+# object typed in the call win over the option, which is therefore
+# checked only when it is read: as the argument's default (an invalid
+# option arrives here as `labels`, `identical()` catching one that is a
+# `var_labels()` object) and as the base of a plain named vector.
 .check_labels_arg <- function(labels, call = rlang::caller_env()) {
   logical_form <- isTRUE(labels) || isFALSE(labels)
   explicit <- logical_form || inherits(labels, "spicy_var_labels")

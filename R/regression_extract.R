@@ -69,10 +69,10 @@ extract_lm_phase1 <- function(
   cluster_name = NULL
 ) {
   outcome <- deparse1(stats::formula(fit)[[2]])
-  # Auto-label for the outcome row (Q11b smart auto): prefer the
-  # `label` attribute set by `labelled::var_label()` / haven import /
-  # SPSS labels, fall back to the variable name. Used by the renderer
-  # only when `outcome_labels = NULL` AND DVs differ across models.
+  # The outcome's `label` attribute, set by `labelled::var_label()` /
+  # haven import / SPSS labels, else the variable name. The table shows
+  # it only when `labels` reads the attributes (decision 54,
+  # `.reg_variable_labels()`).
   outcome_label <- tryCatch(
     {
       mr <- stats::model.response(stats::model.frame(fit))

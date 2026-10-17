@@ -4,25 +4,37 @@
 #' Builds a value for the `labels` argument of the descriptive tables
 #' ([table_categorical()], [table_continuous()], [table_continuous_lm()],
 #' [table_outcome()], [table_categorical_svy()] and
-#' [table_continuous_svy()]). The columns it names take the labels given
-#' here, and every other column shows its `label` attribute (as set by
-#' `haven`, `labelled` or [label_from_names()]), or its name when it has
-#' none, whatever `options(spicy.var_labels)` says. `var_labels()` with
-#' no argument is the same as `labels = TRUE`.
+#' [table_continuous_svy()]) and of the regression tables
+#' ([table_regression()] and [table_regression_uv()]). The variables it
+#' names take the labels given here, and every other variable shows its
+#' `label` attribute (as set by `haven`, `labelled` or
+#' [label_from_names()]), or its name when it has none, whatever
+#' `options(spicy.var_labels)` says. `var_labels()` with no argument is
+#' the same as `labels = TRUE`.
 #'
 #' A plain named vector, `labels = c(bmi = "Body mass index")`, differs
-#' in one point: the columns it leaves out follow
+#' in one point: the variables it leaves out follow
 #' `options(spicy.var_labels)`, which shows their names unless it is
 #' `TRUE`.
 #'
-#' @param ... `name = "label"` pairs, one per column to rename, each label
-#'   a single string. A named character vector can be spliced with `!!!`.
-#'   Names that match no column of a table are ignored.
+#' In a regression table, the names are the model's: the outcome, the
+#' term labels (`age`, or `sex` for the header of a factor), and the
+#' coefficient names (`sexMale`, `(Intercept)`). The attribute names the
+#' outcome, the numeric terms, and the factor headers. Factor levels,
+#' interactions, and transformed terms keep their names.
 #'
-#' @return A named character vector of class `spicy_var_labels`.
+#' @param ... `name = "label"` pairs, one per variable to rename, each
+#'   label a single string. A named character vector can be spliced with
+#'   `!!!`. Names that match nothing in a table are ignored. For
+#'   `print()`, passed on to [print()].
+#' @param x A `spicy_var_labels` object, for `print()`.
+#'
+#' @return A named character vector of class `spicy_var_labels`, which
+#'   prints as the plain named vector. `print()` returns `x` invisibly.
 #'
 #' @seealso The `labels` argument of [table_categorical()] and its
-#'   siblings, which lists the four forms it takes.
+#'   siblings, and of [table_regression()], which lists the four forms
+#'   it takes.
 #'
 #' @examples
 #' # The label attribute of every column, one rename.
@@ -39,6 +51,13 @@
 #'   select = smoking,
 #'   by = sex,
 #'   labels = var_labels(!!!renames)
+#' )
+#'
+#' # A regression table: the outcome and the factor header keep their
+#' # label attribute, the numeric term takes the one given here.
+#' table_regression(
+#'   lm(wellbeing_score ~ age + sex, data = sochealth),
+#'   labels = var_labels(age = "Age in years")
 #' )
 #' @export
 var_labels <- function(...) {
@@ -65,4 +84,11 @@ var_labels <- function(...) {
   # The names are checked by the one validator of `labels`.
   .check_labels_arg(out)
   out
+}
+
+#' @rdname var_labels
+#' @export
+print.spicy_var_labels <- function(x, ...) {
+  print(unclass(x), ...)
+  invisible(x)
 }
