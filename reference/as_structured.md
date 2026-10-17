@@ -147,6 +147,13 @@ The three descriptive families return the same schema; only the
   `"delta"` (the contrast), `"b"` (a numeric predictor's slope), `"ci"`,
   `"statistic"`, `"p"`, `"r2"`, `"es"`, `"n"`, `"weighted_n"`.
 
+- [`table_multiresponse()`](https://amaltawfik.github.io/spicy/reference/table_multiresponse.md)
+  – one `"summary"` row per item, then one `"fit_stat"` row
+  (`.variable == "nobs"`) holding the respondents of each group. Tokens:
+  `"n"`, `"pct"` (percentage of cases), `"pct_responses"` (percentage of
+  responses), `"statistic"` and `"p"`. Each group owns its columns under
+  its own spanner, and the margin is flagged `col_meta$<col>$total`.
+
 Cells the console builds from more than one number – a `"Med [Q1, Q3]"`,
 a test gloss, an effect size with its interval – keep their numeric
 anchor in `body` and their exact printed string in

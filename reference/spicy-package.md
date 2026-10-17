@@ -61,6 +61,7 @@ on the **stable** surface.
   [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
   [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md),
   [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md),
+  [`table_multiresponse()`](https://amaltawfik.github.io/spicy/reference/table_multiresponse.md),
   and
   [`var_labels()`](https://amaltawfik.github.io/spicy/reference/var_labels.md)
   for their `labels`

@@ -829,6 +829,8 @@ details.
   : Continuous-outcome linear-model table
 - [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md)
   : Describe one continuous outcome across several groupings
+- [`table_multiresponse()`](https://amaltawfik.github.io/spicy/reference/table_multiresponse.md)
+  : Multiple-response summary table
 - [`var_labels()`](https://amaltawfik.github.io/spicy/reference/var_labels.md)
   [`print(`*`<spicy_var_labels>`*`)`](https://amaltawfik.github.io/spicy/reference/var_labels.md)
   : Label attributes with a few renames

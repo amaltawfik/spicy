@@ -96,6 +96,17 @@ PDF.
   purely descriptive
   ([\#9](https://github.com/amaltawfik/spicy/issues/9)).
 
+- [`table_multiresponse()`](https://amaltawfik.github.io/spicy/reference/table_multiresponse.md)
+  tabulates a “check all that apply” question: one row per item with the
+  count and the percentage of respondents who chose it (or of responses,
+  or both), and a row with the number of respondents. With `by`, each
+  item gets a chi-squared test, adjusted by Holm by default
+  (`p_adjust`), and the question a global test that allows for several
+  answers per respondent, Rao-Scott corrected or by bootstrap (`test`).
+  `p_value = FALSE` removes the p-values and the global test, and
+  `statistic = TRUE` shows each item’s chi-squared
+  ([\#10](https://github.com/amaltawfik/spicy/issues/10)).
+
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   and
   [`table_regression_uv()`](https://amaltawfik.github.io/spicy/reference/table_regression_uv.md)

@@ -1058,7 +1058,7 @@ tab |>
 |     No | 177 | 67.8 | 310 | 57.5 | 163 | 40.8 | 650 | 54.2 |       |     |
 |     Yes |  84 | 32.2 | 229 | 42.5 | 237 | 59.2 | 550 | 45.8 |       |     |
 
-Categorical table by education {#tinytable_n1u7udw43lych966z2er .table
+Categorical table by education {#tinytable_zzrj4bce8gt29pne1gsj .table
 .tinytable style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 
