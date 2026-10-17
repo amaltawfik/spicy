@@ -309,11 +309,12 @@ build_regression_type_footer_block_from_frames <- function(frames) {
   # prefix through the bridge, the plural through its whole-sentence
   # key). The mixed-family arm below embeds the frozen "Model %d:"
   # labels and stays English wholesale -- coherent or nothing --
-  # including its line TEMPLATE: `.spicy_fmt_en()` bypasses the
-  # language so a French NBSP colon never lands inside the English
-  # fallback sentence. The plural English arm routes through the
-  # registry too, so a `spicy.labels` override of `note_type_models`
-  # works in English, as `spicy_labels()` advertises.
+  # including its line TEMPLATE and its separator: `.spicy_fmt_en()`
+  # and `.spicy_str_en()` bypass the language so a French NBSP colon or
+  # semicolon never lands inside the English fallback sentence. The
+  # plural English arm routes through the registry too, so a
+  # `spicy.labels` override of `note_type_models` works in English, as
+  # `spicy_labels()` advertises.
   disp <- .title_prefix_display(types[1])
   if (length(types) == 1L) {
     if (!is.null(disp)) {
@@ -338,7 +339,7 @@ build_regression_type_footer_block_from_frames <- function(frames) {
     },
     character(1)
   )
-  paste0(paste(per, collapse = "; "), ".")
+  paste0(paste(per, collapse = .spicy_str_en("note_type_models_sep")), ".")
 }
 
 
@@ -795,7 +796,7 @@ build_abbreviations_footer_block_from_frames <- function(
   if (length(defs) == 0L) {
     return(NULL)
   }
-  paste0(paste(defs, collapse = "; "), ".")
+  paste0(paste(defs, collapse = spicy_str("note_abbrev_sep")), ".")
 }
 
 

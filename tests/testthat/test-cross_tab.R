@@ -587,7 +587,7 @@ test_that("cross_tab takes its default decimal mark from the language", {
   # An argument you type wins, even when it is the package default.
   typed <- cross_tab(d, smoke, sex, percent = "column", decimal_mark = ".")
   expect_identical(attr(typed, "decimal_mark"), ".")
-  expect_match(attr(typed, "note"), "p = .659", fixed = TRUE)
+  expect_match(attr(typed, "note"), "p\u00A0=\u00A0.659", fixed = TRUE)
   # `missing()` is the detector, so it has to survive a constructed
   # call, and the resolved mark has to reach the by-group tables that
   # a closure builds one at a time.

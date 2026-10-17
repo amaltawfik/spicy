@@ -22,3 +22,387 @@ note_adjusted_for	corrected	2026-10-17	Ajusté sur %s (%s).
 note_outcome_blocks	corrected	2026-10-17	Chaque bloc compare %s entre les modalités d'une variable<NBSP>; les blocs ne sont pas ajustés les uns sur les autres.	
 note_nested_ml_refit	corrected	2026-10-17	Les statistiques de variation sont calculées à partir de modèles réestimés par maximum de vraisemblance et ne correspondent pas nécessairement aux écarts entre les critères REML affichés.	
 note_abbrev_or	reviewed	2026-10-17	OR = rapport de cotes	
+title_continuous_lm_by	corrected	2026-10-17	Variables dépendantes continues selon %s	
+title_percent_row	corrected	2026-10-17	 (% en ligne)	
+title_percent_column	corrected	2026-10-17	 (% en colonne)	
+title_regression_comparison_dv	corrected	2026-10-17	%s — comparaison de modèles<NBSP>: %s	
+title_regression_comparison	corrected	2026-10-17	%s — comparaison de modèles	
+bridge:cumulative_logit_regression_proportional_odds	corrected	2026-10-17	Régression à logit cumulatif (cotes proportionnelles)	
+header_ci_lower	corrected	2026-10-17	IC inf.	
+header_ci_upper	corrected	2026-10-17	IC sup.	
+header_median	corrected	2026-10-17	Méd.	
+header_declared_codes	corrected	2026-10-17	Codes déclarés manquants	
+header_is_declared_missing	corrected	2026-10-17	Déclaré manquant	
+fitstat_n_events	corrected	2026-10-17	Nombre d'événements	
+fitstat_eff_p	corrected	2026-10-17	Nombre effectif de paramètres	
+note_weights_fallback	corrected	2026-10-17	les poids	
+note_min_expected	corrected	2026-10-17	 Effectif théorique minimal = %s	
+note_reference_categories	corrected	2026-10-17	Modalités de référence<NBSP>: %s.	
+note_thresholds_rows_gloss	corrected	2026-10-17	%s<NBSP>: points de coupure entre les catégories de réponse sur l'échelle latente	
+note_re_null_cumulative	corrected	2026-10-17	régression à %s cumulatif	
+note_component_gloss_zero_inflation	corrected	2026-10-17	Composante «<NBSP>%s<NBSP>»<NBSP>: logarithme de la cote d'un zéro structurel (excédentaire).	
+note_component_gloss_dispersion	corrected	2026-10-17	Composante «<NBSP>%s<NBSP>»<NBSP>: échelle logarithmique.	
+note_component_gloss_hurdle_binomial	corrected	2026-10-17	Composante «<NBSP>%s<NBSP>»<NBSP>: logarithme de la cote d'un effectif non nul.	
+note_component_gloss_hurdle_censored	corrected	2026-10-17	Composante «<NBSP>%s<NBSP>»<NBSP>: loi %s censurée à droite sur l'échelle logarithmique.	
+note_rank_deficient	corrected	2026-10-17	Modèle de rang incomplet<NBSP>: les coefficients écartés sont affichés sous la forme %s.	
+note_nonconvergence	corrected	2026-10-17	Problème de convergence du modèle<NBSP>: %s. Les estimations sont les valeurs auxquelles l'optimiseur s'est arrêté, et non celles d'un ajustement ayant convergé.	
+note_estimand_method	corrected	2026-10-17	<NBSP>; ajustée par g-computation à partir du modèle estimé, erreurs standards par bootstrap non paramétrique (%s réplications).	
+note_estimand_method_stratified	corrected	2026-10-17	<NBSP>; ajustée par g-computation à partir du modèle estimé (risques de base par strate), erreurs standards par bootstrap non paramétrique (%s réplications).	
+test_welch_oneway_anova	corrected	2026-10-17	ANOVA de Welch à un facteur	
+note_p_adjusted	corrected	2026-10-17	Valeurs p ajustées par stats::p.adjust(method = %s)<NBSP>; %s.	
+note_outcome_overall	corrected	2026-10-17	Ensemble = l'échantillon d'analyse complet.	
+note_gloss_med_ci_undefined	corrected	2026-10-17	«<NBSP>%s<NBSP>» lorsque l'échantillon est trop petit pour cette modalité.	
+note_gloss_smd_multinomial	corrected	2026-10-17	Pour une variable à plus de deux modalités, la %s est la distance multivariée (de Mahalanobis) entre les deux profils de proportions, et n'est donc pas signée.	
+note_design_n	corrected	2026-10-17	N = %s (N pondéré = %s).	
+note_gloss_se	corrected	2026-10-17	%s = erreur standard de la moyenne, fondée sur le plan de sondage.	
+test_design_wald_chisq	corrected	2026-10-17	test de Wald des proportions des cellules, fondé sur le plan de sondage	
+test_design_adj_wald	corrected	2026-10-17	test de Wald ajusté des proportions des cellules, fondé sur le plan de sondage	
+test_design_saddlepoint	corrected	2026-10-17	khi-deux (approximation du point de selle) fondé sur le plan de sondage	
+header_events_n	corrected	2026-10-17	Événements/N	
+note_p_prefix_eq	corrected	2026-10-17	p<NBSP>=<NBSP>%s	
+note_stars_legend_entry	corrected	2026-10-17	%s p<NBSP><<NBSP>%s	
+note_p_adjusted_tests	corrected	2026-10-17	m = %d test(s)	
+note_re_test_lrt	corrected	2026-10-17	Valeurs p des effets aléatoires<NBSP>: test du rapport de vraisemblance contre la structure aléatoire réduite, loi de référence χ̄² (mélange de khi-deux).	
+note_singular_mixed	corrected	2026-10-17	Ajustement singulier<NBSP>: la structure des effets aléatoires est à la frontière de l'espace des paramètres ou près de celle-ci (une variance de 0 ou une corrélation de +/-1)<NBSP>; l'erreur standard de Wald et l'IC des composantes de la variance sont omis.	
+note_ame_satterthwaite_qual_both	corrected	2026-10-17	 (formule exacte pour lm<NBSP>; approximation par le coefficient dominant pour glm)	
+title_categorical	reviewed	2026-10-17	Tableau des variables catégorielles	
+title_categorical_by	reviewed	2026-10-17	Tableau des variables catégorielles selon %s	
+title_continuous	reviewed	2026-10-17	Statistiques descriptives	
+title_continuous_by	reviewed	2026-10-17	Statistiques descriptives selon %s	
+title_continuous_lm_by_fallback	reviewed	2026-10-17	Prédicteur	
+title_outcome	reviewed	2026-10-17	Statistiques descriptives pour %s	
+title_freq	reviewed	2026-10-17	Tableau de fréquences<NBSP>: %s	
+title_crosstab	reviewed	2026-10-17	Tableau croisé<NBSP>: %s%s%s	
+title_varlist	reviewed	2026-10-17	vl<NBSP>: %s	
+title_varlist_anonymous	reviewed	2026-10-17	vl<NBSP>: <données>	
+title_varlist_empty	reviewed	2026-10-17	vl<NBSP>: (aucune colonne sélectionnée)	
+title_regression_fallback	reviewed	2026-10-17	Régression	
+title_regression_single	reviewed	2026-10-17	%s<NBSP>: %s	
+title_uv_multivariable	reviewed	2026-10-17	%s univariable et multivariable<NBSP>: %s	
+title_uv_screen	reviewed	2026-10-17	%s univariable (présélection)<NBSP>: %s	
+cover_months	reviewed	2026-10-17	janvier|février|mars|avril|mai|juin|juillet|août|septembre|octobre|novembre|décembre	
+cover_day_first	reviewed	2026-10-17	1er	
+note_field_line	reviewed	2026-10-17	%s<NBSP>: %s	
+title_codebook_about	reviewed	2026-10-17	À propos des données	
+title_codebook_list	reviewed	2026-10-17	Liste des variables	
+title_codebook_declared	reviewed	2026-10-17	Valeurs manquantes déclarées	
+title_codebook_sheets	reviewed	2026-10-17	Fiches des variables	
+title_codebook_index	reviewed	2026-10-17	Index des variables	
+note_codebook_continued	reviewed	2026-10-17	suite	
+bridge:regression	reviewed	2026-10-17	Régression	
+bridge:linear_regression	reviewed	2026-10-17	Régression linéaire	
+bridge:logistic_regression	reviewed	2026-10-17	Régression logistique	
+bridge:probit_regression	reviewed	2026-10-17	Régression probit	
+bridge:binomial_regression	reviewed	2026-10-17	Régression binomiale	
+bridge:log_binomial_regression	reviewed	2026-10-17	Régression log-binomiale	
+bridge:poisson_regression	reviewed	2026-10-17	Régression de Poisson	
+bridge:quasi_poisson_regression	reviewed	2026-10-17	Régression quasi-Poisson	
+bridge:negative_binomial_regression	reviewed	2026-10-17	Régression binomiale négative	
+bridge:linear_mixed_effects_regression	reviewed	2026-10-17	Régression linéaire à effets mixtes	
+bridge:logistic_mixed_effects_regression	reviewed	2026-10-17	Régression logistique à effets mixtes	
+bridge:poisson_mixed_effects_regression	reviewed	2026-10-17	Régression de Poisson à effets mixtes	
+bridge:negative_binomial_mixed_effects_regression	reviewed	2026-10-17	Régression binomiale négative à effets mixtes	
+bridge:cox_proportional_hazards_regression	reviewed	2026-10-17	Régression de Cox à risques proportionnels	
+bridge:survey_weighted_linear_regression	reviewed	2026-10-17	Régression linéaire pondérée par le plan de sondage	
+bridge:survey_weighted_logistic_regression	reviewed	2026-10-17	Régression logistique pondérée par le plan de sondage	
+bridge:survey_weighted_cox_proportional_hazards_regression	reviewed	2026-10-17	Régression de Cox à risques proportionnels pondérée par le plan de sondage	
+bridge:multinomial_logistic_regression	reviewed	2026-10-17	Régression logistique multinomiale	
+header_category	reviewed	2026-10-17	Catégorie	
+label_values	reviewed	2026-10-17	Valeurs	
+header_percent	reviewed	2026-10-17	Pourcentage	
+header_valid_percent	reviewed	2026-10-17	Pourcentage valide	
+header_cum_percent	reviewed	2026-10-17	Pourcentage cumulé	
+header_cum_valid_percent	reviewed	2026-10-17	Pourcentage valide cumulé	
+header_effect_size	reviewed	2026-10-17	Taille d'effet	
+stat_cramer_v	reviewed	2026-10-17	V de Cramér	
+stat_gamma	reviewed	2026-10-17	Gamma de Goodman-Kruskal	
+stat_tau_b	reviewed	2026-10-17	Tau-b de Kendall	
+stat_tau_c	reviewed	2026-10-17	Tau-c de Stuart	
+stat_somers_d	reviewed	2026-10-17	D de Somers	
+header_se	reviewed	2026-10-17	ES	
+header_ci_label_confidence	reviewed	2026-10-17	IC	
+header_ci_spanner	reviewed	2026-10-17	%2$s à %1$s<NBSP>%%	
+header_group	reviewed	2026-10-17	Groupe	
+header_effect_size_short	reviewed	2026-10-17	Taille d'effet	
+header_ci_ll	reviewed	2026-10-17	LI	
+header_ci_ul	reviewed	2026-10-17	LS	
+header_weighted_n	reviewed	2026-10-17	n pondéré	
+header_lm_adj_r2	reviewed	2026-10-17	R² ajusté	
+header_label	reviewed	2026-10-17	Libellé	
+header_r_class	reviewed	2026-10-17	Classe R	
+header_valid	reviewed	2026-10-17	Valides	
+header_missing	reviewed	2026-10-17	Manquants	
+header_declared_missing	reviewed	2026-10-17	Manquants déclarés	
+header_distinct	reviewed	2026-10-17	Valeurs distinctes	
+header_categories	reviewed	2026-10-17	Modalités	
+header_earliest	reviewed	2026-10-17	Première date	
+header_latest	reviewed	2026-10-17	Dernière date	
+header_earliest_time	reviewed	2026-10-17	Première heure	
+header_latest_time	reviewed	2026-10-17	Dernière heure	
+header_codebook_mean	reviewed	2026-10-17	Moyenne	
+header_codebook_median	reviewed	2026-10-17	Médiane	
+header_code	reviewed	2026-10-17	Valeur	
+header_pct_valid	reviewed	2026-10-17	% valide	
+header_field	reviewed	2026-10-17	Champ	
+header_value	reviewed	2026-10-17	Valeur	
+header_marker_missing	reviewed	2026-10-17	Manquant	
+row_missing_level	reviewed	2026-10-17	(Manquant)	
+row_missing_level_dedup	reviewed	2026-10-17	(Manquant_%d)	
+row_valid	reviewed	2026-10-17	Valide	
+row_missing_block	reviewed	2026-10-17	Manquant	
+label_weighted_n	reviewed	2026-10-17	n pondéré	
+fitstat_adj_r2	reviewed	2026-10-17	R² ajusté	
+label_r2_within	reviewed	2026-10-17	intra	
+label_r2_conditional	reviewed	2026-10-17	conditionnel	
+fitstat_phi	reviewed	2026-10-17	φ (précision)	
+fitstat_scale	reviewed	2026-10-17	Échelle	
+fitstat_max_cluster_size	reviewed	2026-10-17	Taille max. de grappe	
+fitstat_deviance	reviewed	2026-10-17	Déviance	
+fitstat_f_change	reviewed	2026-10-17	F (variation)	
+fitstat_wald_f_change	reviewed	2026-10-17	F de Wald (variation)	
+fitstat_wald_chi2_change	reviewed	2026-10-17	χ² de Wald (variation)	
+fitstat_p_change	reviewed	2026-10-17	p (variation)	
+label_block_thresholds	reviewed	2026-10-17	Seuils	
+label_block_non_proportional	reviewed	2026-10-17	Effets non proportionnels	
+label_block_scale_effects	reviewed	2026-10-17	Effets d'échelle	
+label_block_random_effects	reviewed	2026-10-17	Effets aléatoires	
+label_block_zero_inflation	reviewed	2026-10-17	Inflation de zéros	
+label_block_alternative_invariant	reviewed	2026-10-17	Invariant entre alternatives	
+label_block_header	reviewed	2026-10-17	%s<NBSP>:	
+label_ref_annotation	reviewed	2026-10-17	%s [réf.<NBSP>: %s]	
+label_ref	reviewed	2026-10-17	(réf.)	
+label_block_fixed_effects	reviewed	2026-10-17	Effets fixes	
+row_title	reviewed	2026-10-17	Titre	
+row_subtitle	reviewed	2026-10-17	Sous-titre	
+row_author	reviewed	2026-10-17	Auteur	
+row_declared_missing	reviewed	2026-10-17	Valeur manquante déclarée	
+row_generated_with	reviewed	2026-10-17	Généré avec	
+cell_yes	reviewed	2026-10-17	Oui	
+cell_no	reviewed	2026-10-17	Non	
+value_summary_matrix	reviewed	2026-10-17	Matrice(%s)	
+value_summary_list	reviewed	2026-10-17	Liste(%d)	
+value_summary_list_types	reviewed	2026-10-17	%s<NBSP>: %s	
+value_summary_error	reviewed	2026-10-17	<erreur<NBSP>: %s>	
+value_summary_invalid	reviewed	2026-10-17	Erreur<NBSP>: valeurs invalides	
+sep_declared_codes	reviewed	2026-10-17	<NBSP>; 	
+cell_type_categorical	reviewed	2026-10-17	catégorielle (nominale)	
+cell_type_ordinal	reviewed	2026-10-17	catégorielle (ordinale)	
+cell_type_labelled	reviewed	2026-10-17	catégorielle (codes étiquetés)	
+cell_type_numeric	reviewed	2026-10-17	numérique	
+cell_type_logical	reviewed	2026-10-17	logique	
+cell_type_text	reviewed	2026-10-17	texte	
+cell_type_datetime	reviewed	2026-10-17	date-heure	
+cell_type_time	reviewed	2026-10-17	heure	
+cell_system_missing	reviewed	2026-10-17	Manquant système	
+cell_other_categories	reviewed	2026-10-17	Autres modalités (%d)	
+note_missing_removed	reviewed	2026-10-17	Valeurs manquantes retirées<NBSP>: 	
+note_declared_missing_removed	reviewed	2026-10-17	Valeurs manquantes déclarées retirées<NBSP>: 	
+note_missing_rows_total	reviewed	2026-10-17	<NBSP>; %d lignes au total	
+note_rows_missing_by_removed	reviewed	2026-10-17	Lignes retirées pour valeur manquante sur %s<NBSP>: %d.	
+note_rows_missing_weights	reviewed	2026-10-17	Lignes retirées pour valeur manquante sur %s<NBSP>: %d.	
+note_weighted_by	reviewed	2026-10-17	Statistiques pondérées par %s.	
+note_label	reviewed	2026-10-17	Libellé<NBSP>: %s	
+note_class	reviewed	2026-10-17	Classe<NBSP>: %s	
+note_data	reviewed	2026-10-17	Données<NBSP>: %s	
+note_weight	reviewed	2026-10-17	Pondération<NBSP>: %s	
+note_weight_applied	reviewed	2026-10-17	Pondération<NBSP>: (appliquée)	
+note_p_prefix_lt	reviewed	2026-10-17	p<NBSP><<NBSP>%s	
+test_chisq	reviewed	2026-10-17	Khi-2(%s) = %s, %s	
+note_chisq_simulated	reviewed	2026-10-17	 (simulé)	
+note_assoc_ci	reviewed	2026-10-17	, IC à 95<NBSP>% [	
+note_yates_applied	reviewed	2026-10-17	Correction de continuité de Yates appliquée.	
+note_stats_subtable	reviewed	2026-10-17	Statistiques calculées sur le sous-tableau %dx%d après suppression des lignes / colonnes vides.	
+note_warning_prefix	reviewed	2026-10-17	Avertissement<NBSP>: 	
+note_expected_lt5	reviewed	2026-10-17	%d cellule%s avec effectif théorique < 5 (%s<NBSP>%%).	
+note_expected_lt1	reviewed	2026-10-17	%d cellule%s avec effectif théorique < 1.	
+note_expected_advice	reviewed	2026-10-17	. Envisagez %s ou définissez-le globalement via %s.	
+note_reference_categories_sep	reviewed	2026-10-17	<NBSP>; 	
+note_reference_outcome	reviewed	2026-10-17	Catégorie de référence de la variable dépendante<NBSP>: %s.	
+note_reference_alternative	reviewed	2026-10-17	Alternative de référence<NBSP>: %s.	
+note_poly_trends_singular	reviewed	2026-10-17	Facteur ordonné %s<NBSP>: tendances polynomiales (%s).	
+note_poly_trends_plural	reviewed	2026-10-17	Facteurs ordonnés %s<NBSP>: tendances polynomiales (%s).	
+note_poly_degree_linear	reviewed	2026-10-17	linéaire	
+note_poly_degree_quadratic	reviewed	2026-10-17	quadratique	
+note_poly_degree_cubic	reviewed	2026-10-17	cubique	
+note_poly_degree_quartic	reviewed	2026-10-17	quartique	
+note_poly_degree_quintic	reviewed	2026-10-17	quintique	
+note_poly_degree_sextic	reviewed	2026-10-17	sextique	
+note_poly_degree_generic	reviewed	2026-10-17	degré %d	
+note_thresholds_scale_suffix	reviewed	2026-10-17	 (%s, non exponentiés)	
+note_scale_log_odds	reviewed	2026-10-17	échelle logit	
+note_scale_log_cumhazard	reviewed	2026-10-17	échelle du log-risque cumulé	
+note_scale_link	reviewed	2026-10-17	échelle du lien	
+note_thresholds_compact	reviewed	2026-10-17	%s<NBSP>: %s.	
+note_scale_effects_gloss	reviewed	2026-10-17	%s<NBSP>: effets des covariables sur le logarithme de l'écart-type de la réponse latente	
+note_scale_effects_not_exp	reviewed	2026-10-17	 (échelle logarithmique, non exponentiés<NBSP>: leur exponentielle est un rapport d'écarts-types latents, pas un rapport de cotes)	
+note_re_line_lrt	reviewed	2026-10-17	%s<NBSP>: %s.	
+note_re_lrt	reviewed	2026-10-17	test du rapport de vraisemblance contre la %s, χ̄²(%d) = %s, p %s	
+note_re_null_linear	reviewed	2026-10-17	régression linéaire	
+note_re_null_logistic	reviewed	2026-10-17	régression logistique	
+note_re_null_poisson	reviewed	2026-10-17	régression de Poisson	
+note_re_null_binomial	reviewed	2026-10-17	régression binomiale	
+note_re_null_cloglog	reviewed	2026-10-17	régression log-log complémentaire	
+note_re_null_log_binomial	reviewed	2026-10-17	régression log-binomiale	
+note_re_null_inverse_gaussian	reviewed	2026-10-17	régression gaussienne inverse	
+note_re_null_negative_binomial	reviewed	2026-10-17	régression binomiale négative (%s)	
+note_re_null_family	reviewed	2026-10-17	régression %s	
+note_re_test_rlrt	reviewed	2026-10-17	Valeur p des effets aléatoires<NBSP>: test exact du rapport de vraisemblance restreinte (distribution nulle simulée).	
+note_re_profile_ci	reviewed	2026-10-17	Composantes de la variance des effets aléatoires<NBSP>: IC par vraisemblance profilée<NBSP>; pas d'erreur standard (intervalles asymétriques).	
+note_re_se_skipped	reviewed	2026-10-17	Composantes de la variance des effets aléatoires<NBSP>: erreur standard et IC non calculés (n = %s dépasse le plafond spicy.re_se_max_n).	
+note_component_gloss_zero_inflation_link	reviewed	2026-10-17	Composante «<NBSP>%s<NBSP>»<NBSP>: probabilité d'un zéro structurel (excédentaire) sur l'échelle %s.	
+note_component_gloss_hurdle_binomial_link	reviewed	2026-10-17	Composante «<NBSP>%s<NBSP>»<NBSP>: probabilité d'un effectif non nul sur l'échelle %s.	
+note_component_exp_or	reviewed	2026-10-17	Coefficients exponentiés et affichés en rapports de cotes.	
+note_component_not_exp	reviewed	2026-10-17	Laissés sur l'échelle du lien (non exponentiés).	
+note_nonconvergence_hessian	reviewed	2026-10-17	matrice hessienne non définie positive	
+note_nonconvergence_code	reviewed	2026-10-17	l'optimiseur a renvoyé le code %s	
+note_icc_multi_group	reviewed	2026-10-17	L'ICC n'est pas rapporté<NBSP>: plusieurs facteurs de groupement définissent plusieurs ICC.	
+note_gee_corstr_alpha	reviewed	2026-10-17	Corrélation de travail GEE<NBSP>: %s (alpha = %s).	
+note_gee_corstr_params	reviewed	2026-10-17	Corrélation de travail GEE<NBSP>: %s (%d paramètres de corrélation).	
+note_gee_corstr_plain	reviewed	2026-10-17	Corrélation de travail GEE<NBSP>: %s.	
+note_survival_concordance_se	reviewed	2026-10-17	Concordance C = %s (erreur standard = %s)	
+note_survival_distribution	reviewed	2026-10-17	Distribution<NBSP>: %s	
+note_survival_scale	reviewed	2026-10-17	échelle = %s	
+note_survival_sep	reviewed	2026-10-17	<NBSP>; 	
+note_uv_common_complete_cases	reviewed	2026-10-17	Tous les modèles sont estimés sur les %d mêmes cas complets.	
+note_uv_varying_n	reviewed	2026-10-17	Chaque modèle univariable est estimé sur ses propres cas complets<NBSP>; N varie selon le prédicteur (%d-%d).	
+note_type_models	reviewed	2026-10-17	Modèles de %s.	
+note_type_models_sep	reviewed	2026-10-17	<NBSP>; 	
+note_estimand_rmst	reviewed	2026-10-17	dRMST = différence de temps de survie moyen restreint sur [0, %s]	
+note_estimand_risk_diff	reviewed	2026-10-17	dRisk = différence d'incidence cumulée à %s	
+note_estimand_skipped_terms	reviewed	2026-10-17	 Les termes transformés (%s) n'ont pas de ligne d'effet absolu<NBSP>: le contraste est défini par variable brute<NBSP>; remettez la variable à l'échelle dans les données plutôt que dans la formule.	
+note_abbrev_irr	reviewed	2026-10-17	IRR = rapport de taux d'incidence	
+note_abbrev_mr	reviewed	2026-10-17	MR = rapport de moyennes	
+note_abbrev_tr	reviewed	2026-10-17	TR = rapport de temps	
+note_abbrev_expb	reviewed	2026-10-17	exp(B) = coefficient exponentié	
+note_abbrev_f2	reviewed	2026-10-17	f² = f² partiel de Cohen	
+note_abbrev_eta2	reviewed	2026-10-17	η² = êta-carré partiel	
+note_abbrev_omega2	reviewed	2026-10-17	ω² = oméga-carré partiel corrigé du biais	
+note_abbrev_chi2	reviewed	2026-10-17	χ² = khi-deux partiel du rapport de vraisemblance	
+note_abbrev_chi2_wald	reviewed	2026-10-17	χ² = khi-deux partiel de Wald	
+note_abbrev_beta	reviewed	2026-10-17	β = coefficient standardisé	
+note_abbrev_beta_method	reviewed	2026-10-17	β = coefficient standardisé (%s)	
+note_beta_refit	reviewed	2026-10-17	"refit"<NBSP>: variable dépendante et prédicteurs numériques centrés-réduits, indicatrices des facteurs en 0/1	
+note_beta_posthoc	reviewed	2026-10-17	"posthoc"<NBSP>: B × ET(X)/ET(Y) pour les prédicteurs numériques, B/ET(Y) pour les indicatrices des facteurs	
+note_beta_basic	reviewed	2026-10-17	"basic"<NBSP>: chaque colonne de la matrice du modèle réduite par son écart-type, indicatrices comprises (Beta de SPSS / Stata)	
+note_beta_smart	reviewed	2026-10-17	"smart"<NBSP>: prédicteurs numériques ÷ 2 ET (Gelman 2008), variables binaires et indicatrices en 0/1	
+note_beta_pseudo	reviewed	2026-10-17	"pseudo"<NBSP>: ET(X)/ET(Y*) sur l'échelle latente pour les prédicteurs numériques, 1/ET(Y*) pour les indicatrices des facteurs	
+note_standardized_caveat	reviewed	2026-10-17	β standardisé<NBSP>: %s	
+note_standardized_caveat_algebraic	reviewed	2026-10-17	les termes d'interaction ou transformés sont réduits par l'écart-type de la colonne produit (ou transformée) de la matrice du modèle<NBSP>; diffère de "refit" lorsque les composantes sont corrélées.	
+note_standardized_caveat_refit	reviewed	2026-10-17	après réestimation sur les données centrées-réduites, le β d'une interaction est le coefficient du produit des composantes centrées-réduites.	
+note_standardized_caveat_fallback	reviewed	2026-10-17	"refit" a échoué<NBSP>; mise à l'échelle algébrique (posthoc) appliquée<NBSP>: %s	
+note_abbrev_pd	reviewed	2026-10-17	pd = probabilité de direction (part de la distribution a posteriori du côté dominant de zéro<NBSP>; Makowski et al. 2019)	
+note_abbrev_mcse	reviewed	2026-10-17	MCSE = erreur standard de Monte-Carlo de la médiane a posteriori (Vehtari et al. 2021)	
+note_abbrev_ame	reviewed	2026-10-17	AME = effet marginal moyen	
+note_abbrev_ame_percat	reviewed	2026-10-17	AME = effet marginal moyen sur la probabilité d'une catégorie de réponse	
+note_abbrev_sep	reviewed	2026-10-17	<NBSP>; 	
+note_ame_satterthwaite	reviewed	2026-10-17	Inférence sur les AME<NBSP>: test t avec degrés de liberté de Satterthwaite%s.	
+note_ame_satterthwaite_qual_glm	reviewed	2026-10-17	 (approximation par le coefficient dominant)	
+note_exp_scope_all	reviewed	2026-10-17	Coefficients	
+note_exp_scope_partial	reviewed	2026-10-17	%s<NBSP>: coefficients	
+note_exp_se_gloss_delta	reviewed	2026-10-17	méthode delta	
+note_exp_se_gloss_bayes	reviewed	2026-10-17	MAD SD a posteriori des tirages exponentiés	
+note_exp_se_gloss_mixed	reviewed	2026-10-17	méthode delta<NBSP>; MAD SD a posteriori des tirages exponentiés pour les modèles bayésiens	
+note_exp_ci_gloss_standard	reviewed	2026-10-17	bornes de l'IC exponentiées	
+note_exp_ci_gloss_standard_asym	reviewed	2026-10-17	bornes de l'IC exponentiées (asymétriques)	
+note_exp_ci_gloss_hdi	reviewed	2026-10-17	IC<NBSP>: intervalle de plus haute densité des tirages exponentiés	
+note_exp_ci_gloss_hdi_asym	reviewed	2026-10-17	IC<NBSP>: intervalle de plus haute densité des tirages exponentiés (asymétrique)	
+note_exp_hr_negated	reviewed	2026-10-17	 HR est le rapport de risques proportionnels en temps groupé exp(-B)<NBSP>: la paramétrisation cumulative cloglog P(Y <= j) = zeta_j - xB place le risque sur -B (Prentice et Gloeckler 1978<NBSP>; McCullagh 1980).	
+note_exp_with_se_single	reviewed	2026-10-17	%s exponentiés et affichés en %s<NBSP>; erreur standard sur l'échelle des %s (%s)<NBSP>; %s.%s	
+note_exp_with_se_multi	reviewed	2026-10-17	%s exponentiés et affichés en %s (selon la famille)<NBSP>; erreur standard sur l'échelle du rapport affiché (%s)<NBSP>; %s.%s	
+note_exp_no_se_single	reviewed	2026-10-17	%s exponentiés et affichés en %s<NBSP>; %s.%s	
+note_exp_no_se_multi	reviewed	2026-10-17	%s exponentiés et affichés en %s (selon la famille)<NBSP>; %s.%s	
+note_assoc_measure_item	reviewed	2026-10-17	%s<NBSP>: %s	
+note_assoc_measures_sep	reviewed	2026-10-17	<NBSP>; 	
+test_wilcoxon_rank_sum	reviewed	2026-10-17	test de Wilcoxon-Mann-Whitney	
+test_kruskal_wallis	reviewed	2026-10-17	test de Kruskal-Wallis	
+test_student_t	reviewed	2026-10-17	test t de Student	
+test_oneway_anova	reviewed	2026-10-17	ANOVA à un facteur	
+test_welch_t	reviewed	2026-10-17	test t de Welch	
+note_group_comparison	reviewed	2026-10-17	Comparaison des groupes<NBSP>: %s.	
+note_group_comparison_sep	reviewed	2026-10-17	<NBSP>; 	
+note_p_adjusted_coefficients	reviewed	2026-10-17	m = %s coefficient(s) par modèle	
+note_gloss_iqr	reviewed	2026-10-17	%s = écart interquartile (%s - %s).	
+note_gloss_med_iqr	reviewed	2026-10-17	%s = médiane [premier quartile, troisième quartile].	
+note_gloss_med_ci	reviewed	2026-10-17	%1$s = intervalle de confiance exact de la médiane fondé sur les statistiques d'ordre (couverture d'au moins %2$s).	
+note_gloss_smd	reviewed	2026-10-17	%1$s = différence de moyennes standardisée (%2$s - %3$s)<NBSP>; |%1$s| > %4$s est le seuil de déséquilibre usuel.	
+note_design_line	reviewed	2026-10-17	Plan de sondage<NBSP>: %s<NBSP>; %s.	
+note_design_stratified	reviewed	2026-10-17	stratifié (%s)	
+note_design_cluster	reviewed	2026-10-17	par grappes (%s)	
+note_design_srs	reviewed	2026-10-17	échantillon aléatoire simple	
+note_design_stages	reviewed	2026-10-17	%d degrés de tirage	
+note_design_fpc	reviewed	2026-10-17	avec correction pour population finie	
+note_design_replicate	reviewed	2026-10-17	poids répliqués (%s), %d réplications	
+note_design_degf	reviewed	2026-10-17	%d degrés de liberté	
+note_design_degf_varying	reviewed	2026-10-17	les degrés de liberté varient selon le groupe (%d à %d)	
+note_design_degf_resid	reviewed	2026-10-17	%d degrés de liberté résiduels	
+note_design_degf_resid_only	reviewed	2026-10-17	Les tests utilisent %d degrés de liberté résiduels.	
+note_design_df_used	reviewed	2026-10-17	Les intervalles de confiance et les tests utilisent les degrés de liberté du plan de sondage.	
+note_design_df_supplied	reviewed	2026-10-17	Les intervalles de confiance utilisent %d degrés de liberté (fournis dans `df`)<NBSP>; les tests utilisent ceux du plan de sondage.	
+note_design_df_test_differs	reviewed	2026-10-17	La comparaison des groupes utilise %d degrés de liberté (groupes observés uniquement).	
+note_quantile_rule	reviewed	2026-10-17	Quantiles<NBSP>: qrule = "%s" (survey).	
+note_negative_weights	reviewed	2026-10-17	Le calage a donné un poids négatif à %d lignes sur %d<NBSP>: une moyenne pondérée peut sortir de l'intervalle observé, et une variance peut devenir négative, laissant sa cellule indéfinie.	
+note_negative_weights_no_test	reviewed	2026-10-17	La comparaison des groupes n'est pas rapportée<NBSP>: un test fondé sur le plan de sondage n'est pas défini lorsque les poids changent de signe.	
+note_negative_weights_no_test_some	reviewed	2026-10-17	Pour les variables dont les cas complets comprennent des lignes à poids négatif, la comparaison des groupes n'est pas rapportée<NBSP>: un test fondé sur le plan de sondage n'est pas défini lorsque les poids changent de signe.	
+note_deff_replace	reviewed	2026-10-17	Les effets de plan sont calculés par rapport à un tirage AVEC remise (la correction pour population finie est ignorée).	
+note_gloss_deff	reviewed	2026-10-17	%s = effet de plan (variance fondée sur le plan / variance d'un échantillon aléatoire simple de même n).	
+test_design_t	reviewed	2026-10-17	test t fondé sur le plan de sondage	
+test_design_wald	reviewed	2026-10-17	test de Wald fondé sur le plan de sondage	
+test_design_wilcoxon	reviewed	2026-10-17	test de Wilcoxon-Mann-Whitney fondé sur le plan de sondage	
+test_design_kruskal	reviewed	2026-10-17	test de Kruskal-Wallis fondé sur le plan de sondage	
+test_design_rao_scott	reviewed	2026-10-17	khi-deux de Pearson fondé sur le plan de sondage (correction de Rao-Scott du second ordre)	
+test_design_rao_scott_chisq	reviewed	2026-10-17	khi-deux de Pearson fondé sur le plan de sondage (correction de Rao-Scott, référence khi-deux)	
+note_ci_prop_method	reviewed	2026-10-17	IC des pourcentages<NBSP>: %s (survey::svyciprop).	
+note_gloss_pct_svy	reviewed	2026-10-17	%s = pourcentage estimé au sein de la colonne (survey::svymean).	
+note_gloss_n_svy	reviewed	2026-10-17	%s = effectif observé (non pondéré).	
+note_adjustment_proportional	reviewed	2026-10-17	proportionnel	
+note_adjustment_balanced	reviewed	2026-10-17	équilibré	
+note_std_errors_single	reviewed	2026-10-17	Erreurs standards<NBSP>: %s.	
+note_std_errors_multi	reviewed	2026-10-17	Erreurs standards<NBSP>:\n%s	
+note_model_line	reviewed	2026-10-17	%s<NBSP>: %s	
+note_model_line_indented	reviewed	2026-10-17	  %s<NBSP>: %s	
+note_vcov_classical_glm	reviewed	2026-10-17	classiques (information de Fisher)	
+note_vcov_classical_lm	reviewed	2026-10-17	classiques (MCO)	
+note_vcov_hc	reviewed	2026-10-17	robustes à l'hétéroscédasticité (%s)	
+note_vcov_cluster_vector	reviewed	2026-10-17	vecteur de grappes fourni	
+note_vcov_cluster_named	reviewed	2026-10-17	grappes définies par %s	
+note_vcov_cr	reviewed	2026-10-17	robustes aux grappes (%s), %s	
+note_vcov_cr_bare	reviewed	2026-10-17	robustes aux grappes (%s)	
+note_vcov_cr1s	reviewed	2026-10-17	robustes aux grappes (CR1S, Stata vce(cluster), t(G-1)), %s	
+note_vcov_bootstrap	reviewed	2026-10-17	bootstrap non paramétrique%s	
+note_vcov_bootstrap_cluster	reviewed	2026-10-17	bootstrap par grappes%s, grappes définies par %s	
+note_vcov_bootstrap_reps	reviewed	2026-10-17	 (%d réplications)	
+note_vcov_bootstrap_reps_range	reviewed	2026-10-17	 (%d-%d réplications)	
+note_vcov_jackknife	reviewed	2026-10-17	jackknife (suppression d'une observation)	
+note_vcov_jackknife_cluster	reviewed	2026-10-17	jackknife (suppression d'une grappe), grappes définies par %s	
+note_vcov_wald_asymptotic	reviewed	2026-10-17	Wald asymptotique (z)	
+note_vcov_wald_model	reviewed	2026-10-17	Wald (fondées sur le modèle)	
+note_vcov_wald_model_corr	reviewed	2026-10-17	Wald (fondées sur le modèle, %s)	
+note_vcov_design_taylor	reviewed	2026-10-17	fondées sur le plan de sondage (linéarisation de Taylor)	
+note_vcov_design_replicate	reviewed	2026-10-17	fondées sur le plan de sondage (poids répliqués, %s)	
+note_vcov_design_replicate_bare	reviewed	2026-10-17	fondées sur le plan de sondage (poids répliqués)	
+note_vcov_design_twophase	reviewed	2026-10-17	fondées sur le plan de sondage (plan à deux phases)	
+note_vcov_design_bare	reviewed	2026-10-17	fondées sur le plan de sondage	
+note_vcov_cluster_by	reviewed	2026-10-17	, grappes définies par %s	
+note_vcov_gee_sandwich	reviewed	2026-10-17	sandwich robuste (GEE)	
+note_vcov_gee_jack	reviewed	2026-10-17	jackknife approché (GEE)	
+note_vcov_gee_j1s	reviewed	2026-10-17	jackknife en une étape (GEE)	
+note_vcov_gee_fij	reviewed	2026-10-17	jackknife entièrement itéré (GEE)	
+note_vcov_rq_nid	reviewed	2026-10-17	sandwich quantile (nid, Hall-Sheather)	
+note_vcov_rq_iid	reviewed	2026-10-17	quantile (iid)	
+note_vcov_rq_ker	reviewed	2026-10-17	noyau quantile (ker)	
+note_vcov_rq_rank	reviewed	2026-10-17	inversion du test de rang (IC seulement)	
+note_vcov_rq_boot_cluster	reviewed	2026-10-17	bootstrap quantile sauvage par gradient, par grappes (R = %d)	
+note_vcov_rq_boot	reviewed	2026-10-17	bootstrap quantile (paires xy, R = %d)	
+note_pvalues_satterthwaite_cr	reviewed	2026-10-17	Valeurs p<NBSP>: test t de Satterthwaite, degrés de liberté robustes aux grappes (clubSandwich).	
+note_pvalues_satterthwaite	reviewed	2026-10-17	Valeurs p<NBSP>: test t de Satterthwaite (lmerTest).	
+note_pvalues_wald_lmer	reviewed	2026-10-17	Valeurs p<NBSP>: z de Wald, approximation pour grands échantillons. Chargez `lmerTest` pour des tests t de Satterthwaite.	
+note_pvalues_wald	reviewed	2026-10-17	Valeurs p<NBSP>: z de Wald asymptotique (%s).	
+note_pvalues_containment	reviewed	2026-10-17	Valeurs p<NBSP>: test t, degrés de liberté «<NBSP>containment<NBSP>» (nlme).	
+note_ci_profile	reviewed	2026-10-17	IC à %s<NBSP>%%<NBSP>: vraisemblance profilée.	
+note_ci_bootstrap_percentile	reviewed	2026-10-17	IC à %s<NBSP>%%<NBSP>: bootstrap percentile.	
+note_ci_posterior_mixed	reviewed	2026-10-17	Model %d<NBSP>: l'IC à %s<NBSP>%% est un intervalle de crédibilité a posteriori à queues égales.	
+note_codebook_unweighted	reviewed	2026-10-17	Les effectifs et les pourcentages ne sont pas pondérés<NBSP>: ils décrivent le fichier de données et ne sont pas des estimations pour la population.	
+excel_sheet_regression	reviewed	2026-10-17	Régression	
+excel_sheet_categorical	reviewed	2026-10-17	Catégorielles	
+excel_sheet_continuous_lm	reviewed	2026-10-17	Modèles linéaires	
+excel_sheet_codebook_values	reviewed	2026-10-17	valeurs	

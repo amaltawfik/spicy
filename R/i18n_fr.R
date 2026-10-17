@@ -55,8 +55,9 @@
 # `note_gloss_smd` do.
 #
 # This file is authored, not generated at build time. The fourteen
-# terminology calls are settled (decision 38); the set as a whole is still
-# pending a read-through (dev/i18n_stage2_fr_review.md).
+# terminology calls are settled (decision 38), and the set as a whole was
+# read through and corrected on 2026-10-17 (issue #7; the marks are in
+# dev/i18n_fr_review_marks.tsv).
 # ---------------------------------------------------------------------------
 
 .spicy_strings_fr <- c(
@@ -68,7 +69,7 @@
   note_missing_rows_total = "\u00A0; %d lignes au total",
   note_rows_missing_by_removed = "Lignes retir\u00E9es pour valeur manquante sur %s\u00A0: %d.",
   note_rows_missing_weights = "Lignes retir\u00E9es pour valeur manquante sur %s\u00A0: %d.",
-  note_weights_fallback = "la pond\u00E9ration",
+  note_weights_fallback = "les poids",
   note_weighted_by = "Statistiques pond\u00E9r\u00E9es par %s.",
   excel_sheet_regression = "R\u00E9gression",
   excel_sheet_categorical = "Cat\u00E9gorielles",
@@ -80,13 +81,13 @@
   title_categorical_by = "Tableau des variables cat\u00E9gorielles selon %s",
   title_continuous = "Statistiques descriptives",
   title_continuous_by = "Statistiques descriptives selon %s",
-  title_continuous_lm_by = "Variables continues selon %s",
+  title_continuous_lm_by = "Variables d\u00E9pendantes continues selon %s",
   title_continuous_lm_by_fallback = "Pr\u00E9dicteur",
   title_outcome = "Statistiques descriptives pour %s",
   title_freq = "Tableau de fr\u00E9quences\u00A0: %s",
   title_crosstab = "Tableau crois\u00E9\u00A0: %s%s%s",
-  title_percent_row = " (% ligne)",
-  title_percent_column = " (% colonne)",
+  title_percent_row = " (% en ligne)",
+  title_percent_column = " (% en colonne)",
   title_varlist = "vl\u00A0: %s",
   title_varlist_anonymous = "vl\u00A0: <donn\u00E9es>",
   title_varlist_empty = "vl\u00A0: (aucune colonne s\u00E9lectionn\u00E9e)",
@@ -112,8 +113,8 @@
   header_effect_size = "Taille d'effet",
   # No established French abbreviation (SPSS, jamovi and JASP spell it out), and the cell names the statistic (g, d, omega squared): the full word in both widths.
   header_effect_size_short = "Taille d'effet",
-  header_ci_lower = "IC inf\u00E9rieur",
-  header_ci_upper = "IC sup\u00E9rieur",
+  header_ci_lower = "IC inf.",
+  header_ci_upper = "IC sup.",
 
   # -- association measures -------------------------------------------------
   stat_cramer_v = "V de Cram\u00E9r",
@@ -124,6 +125,7 @@
 
   # -- cross_tab() statistics note ------------------------------------------
   note_p_prefix_lt = "p\u00A0<\u00A0%s",
+  note_p_prefix_eq = "p\u00A0=\u00A0%s",
   test_chisq = "Khi-2(%s) = %s, %s",
   note_chisq_simulated = " (simul\u00E9)",
   note_assoc_ci = ", IC \u00E0 95\u00A0% [",
@@ -132,7 +134,7 @@
   note_warning_prefix = "Avertissement\u00A0: ",
   note_expected_lt5 = "%d cellule%s avec effectif th\u00E9orique < 5 (%s\u00A0%%).",
   note_expected_lt1 = "%d cellule%s avec effectif th\u00E9orique < 1.",
-  note_min_expected = " Effectif th\u00E9orique minimum = %s",
+  note_min_expected = " Effectif th\u00E9orique minimal = %s",
   note_expected_advice = ". Envisagez %s ou d\u00E9finissez-le globalement via %s.",
 
   # -- standard-error and interval headers, shared by several families -----
@@ -145,9 +147,12 @@
   header_ci_ll = "LI",
   header_ci_ul = "LS",
 
+  # -- table_regression(): column headers -----------------------------------
+  header_events_n = "\u00C9v\u00E9nements/N",
+
   # -- table_regression(): fit-statistic row labels -------------------------
   fitstat_adj_r2 = "R\u00B2 ajust\u00E9",
-  fitstat_n_events = "N \u00E9v\u00E9nements",
+  fitstat_n_events = "Nombre d'\u00E9v\u00E9nements",
   label_weighted_n = "n pond\u00E9r\u00E9",
   label_r2_within = "intra",
   label_r2_conditional = "conditionnel",
@@ -155,7 +160,7 @@
   fitstat_scale = "\u00C9chelle",
   fitstat_max_cluster_size = "Taille max. de grappe",
   fitstat_deviance = "D\u00E9viance",
-  fitstat_eff_p = "Param\u00E8tres effectifs",
+  fitstat_eff_p = "Nombre effectif de param\u00E8tres",
   fitstat_f_change = "F (variation)",
   fitstat_wald_f_change = "F de Wald (variation)",
   fitstat_wald_chi2_change = "\u03C7\u00B2 de Wald (variation)",
@@ -168,10 +173,11 @@
   label_block_random_effects = "Effets al\u00E9atoires",
   label_block_zero_inflation = "Inflation de z\u00E9ros",
   label_block_zero_hurdle = "Hurdle (z\u00E9ro)",
+  label_block_alternative_invariant = "Invariant entre alternatives",
   label_block_header = "%s\u00A0:",
   label_ref_annotation = "%s [r\u00E9f.\u00A0: %s]",
   label_ref = "(r\u00E9f.)",
-  note_reference_categories = "Cat\u00E9gories de r\u00E9f\u00E9rence\u00A0: %s.",
+  note_reference_categories = "Modalit\u00E9s de r\u00E9f\u00E9rence\u00A0: %s.",
   note_reference_categories_sep = "\u00A0; ",
   note_reference_outcome = "Cat\u00E9gorie de r\u00E9f\u00E9rence de la variable d\u00E9pendante\u00A0: %s.",
   note_reference_alternative = "Alternative de r\u00E9f\u00E9rence\u00A0: %s.",
@@ -190,7 +196,7 @@
   row_outcome = "Variable d\u00E9pendante",
 
   # -- table_regression(): subordinate block footers ------------------------
-  note_thresholds_rows_gloss = "%s\u00A0: seuils de cat\u00E9gorie sur l'\u00E9chelle latente",
+  note_thresholds_rows_gloss = "%s\u00A0: points de coupure entre les cat\u00E9gories de r\u00E9ponse sur l'\u00E9chelle latente",
   note_thresholds_scale_suffix = " (%s, non exponenti\u00E9s)",
   note_scale_log_odds = "\u00E9chelle logit",
   note_scale_log_cumhazard = "\u00E9chelle du log-risque cumul\u00E9",
@@ -208,23 +214,25 @@
   note_re_null_log_binomial = "r\u00E9gression log-binomiale",
   note_re_null_inverse_gaussian = "r\u00E9gression gaussienne inverse",
   note_re_null_negative_binomial = "r\u00E9gression binomiale n\u00E9gative (%s)",
-  # Comme le pont des titres : "Regression logit cumulatif".
-  note_re_null_cumulative = "r\u00E9gression %s cumulatif",
+  # Comme le pont des titres : "Regression a logit cumulatif".
+  note_re_null_cumulative = "r\u00E9gression \u00E0 %s cumulatif",
   note_re_null_family = "r\u00E9gression %s",
-  note_re_test_lrt = "Valeurs p des effets al\u00E9atoires\u00A0: test du rapport de vraisemblance contre la structure al\u00E9atoire r\u00E9duite, loi de r\u00E9f\u00E9rence du khi-deux barre.",
+  note_re_test_lrt = "Valeurs p des effets al\u00E9atoires\u00A0: test du rapport de vraisemblance contre la structure al\u00E9atoire r\u00E9duite, loi de r\u00E9f\u00E9rence \u03C7\u0304\u00B2 (m\u00E9lange de khi-deux).",
   note_re_test_rlrt = "Valeur p des effets al\u00E9atoires\u00A0: test exact du rapport de vraisemblance restreinte (distribution nulle simul\u00E9e).",
   note_re_profile_ci = "Composantes de la variance des effets al\u00E9atoires\u00A0: IC par vraisemblance profil\u00E9e\u00A0; pas d'erreur standard (intervalles asym\u00E9triques).",
   note_re_se_skipped = "Composantes de la variance des effets al\u00E9atoires\u00A0: erreur standard et IC non calcul\u00E9s (n = %s d\u00E9passe le plafond spicy.re_se_max_n).",
-  note_singular_mixed = "Ajustement singulier\u00A0: la structure des effets al\u00E9atoires est \u00E0 la fronti\u00E8re de l'espace des param\u00E8tres ou pr\u00E8s de celle-ci (une variance de 0, ou une corr\u00E9lation de +/-1)\u00A0; l'erreur standard de Wald et l'IC des composantes de la variance sont omis.",
+  note_singular_mixed = "Ajustement singulier\u00A0: la structure des effets al\u00E9atoires est \u00E0 la fronti\u00E8re de l'espace des param\u00E8tres ou pr\u00E8s de celle-ci (une variance de 0 ou une corr\u00E9lation de +/-1)\u00A0; l'erreur standard de Wald et l'IC des composantes de la variance sont omis.",
   note_nested_ml_refit = "Les statistiques de variation sont calcul\u00E9es \u00E0 partir de mod\u00E8les r\u00E9estim\u00E9s par maximum de vraisemblance et ne correspondent pas n\u00E9cessairement aux \u00E9carts entre les crit\u00E8res REML affich\u00E9s.",
-  note_component_gloss_zero_inflation = "Composante %s\u00A0: logarithme de la cote d'un z\u00E9ro structurel (exc\u00E9dentaire).",
-  note_component_gloss_dispersion = "Composante %s\u00A0: \u00E9chelle logarithmique.",
-  note_component_gloss_hurdle_binomial = "Composante %s\u00A0: logarithme de la cote d'un effectif non nul.",
-  note_component_gloss_hurdle_censored = "Composante %s\u00A0: %s censur\u00E9e \u00E0 droite sur l'\u00E9chelle logarithmique.",
+  note_component_gloss_zero_inflation = "Composante \u00AB\u00A0%s\u00A0\u00BB\u00A0: logarithme de la cote d'un z\u00E9ro structurel (exc\u00E9dentaire).",
+  note_component_gloss_dispersion = "Composante \u00AB\u00A0%s\u00A0\u00BB\u00A0: \u00E9chelle logarithmique.",
+  note_component_gloss_hurdle_binomial = "Composante \u00AB\u00A0%s\u00A0\u00BB\u00A0: logarithme de la cote d'un effectif non nul.",
+  note_component_gloss_hurdle_censored = "Composante \u00AB\u00A0%s\u00A0\u00BB\u00A0: loi %s censur\u00E9e \u00E0 droite sur l'\u00E9chelle logarithmique.",
+  note_component_gloss_zero_inflation_link = "Composante \u00AB\u00A0%s\u00A0\u00BB\u00A0: probabilit\u00E9 d'un z\u00E9ro structurel (exc\u00E9dentaire) sur l'\u00E9chelle %s.",
+  note_component_gloss_hurdle_binomial_link = "Composante \u00AB\u00A0%s\u00A0\u00BB\u00A0: probabilit\u00E9 d'un effectif non nul sur l'\u00E9chelle %s.",
   note_component_exp_or = "Coefficients exponenti\u00E9s et affich\u00E9s en rapports de cotes.",
   note_component_not_exp = "Laiss\u00E9s sur l'\u00E9chelle du lien (non exponenti\u00E9s).",
-  note_rank_deficient = "Mod\u00E8le de rang d\u00E9ficient\u00A0: coefficient(s) \u00E9cart\u00E9(s) affich\u00E9(s) sous la forme %s.",
-  note_nonconvergence = "Probl\u00E8me de convergence du mod\u00E8le\u00A0: %s. Les estimations sont les valeurs auxquelles l'optimiseur s'est arr\u00EAt\u00E9, et non celles d'un ajustement converg\u00E9.",
+  note_rank_deficient = "Mod\u00E8le de rang incomplet\u00A0: les coefficients \u00E9cart\u00E9s sont affich\u00E9s sous la forme %s.",
+  note_nonconvergence = "Probl\u00E8me de convergence du mod\u00E8le\u00A0: %s. Les estimations sont les valeurs auxquelles l'optimiseur s'est arr\u00EAt\u00E9, et non celles d'un ajustement ayant converg\u00E9.",
   note_nonconvergence_hessian = "matrice hessienne non d\u00E9finie positive",
   note_nonconvergence_code = "l'optimiseur a renvoy\u00E9 le code %s",
   note_icc_multi_group = "L'ICC n'est pas rapport\u00E9\u00A0: plusieurs facteurs de groupement d\u00E9finissent plusieurs ICC.",
@@ -239,8 +247,8 @@
   # -- table_regression(): the absolute survival estimands ------------------
   note_estimand_rmst = "dRMST = diff\u00E9rence de temps de survie moyen restreint sur [0, %s]",
   note_estimand_risk_diff = "dRisk = diff\u00E9rence d'incidence cumul\u00E9e \u00E0 %s",
-  note_estimand_method = "\u00A0; ajust\u00E9e par g-computation \u00E0 partir du mod\u00E8le ajust\u00E9, erreurs standards par bootstrap non param\u00E9trique (%s r\u00E9plications).",
-  note_estimand_method_stratified = "\u00A0; ajust\u00E9e par g-computation \u00E0 partir du mod\u00E8le ajust\u00E9 (lignes de base intra-strate), erreurs standards par bootstrap non param\u00E9trique (%s r\u00E9plications).",
+  note_estimand_method = "\u00A0; ajust\u00E9e par g-computation \u00E0 partir du mod\u00E8le estim\u00E9, erreurs standards par bootstrap non param\u00E9trique (%s r\u00E9plications).",
+  note_estimand_method_stratified = "\u00A0; ajust\u00E9e par g-computation \u00E0 partir du mod\u00E8le estim\u00E9 (risques de base par strate), erreurs standards par bootstrap non param\u00E9trique (%s r\u00E9plications).",
   note_estimand_skipped_terms = " Les termes transform\u00E9s (%s) n'ont pas de ligne d'effet absolu\u00A0: le contraste est d\u00E9fini par variable brute\u00A0; remettez la variable \u00E0 l'\u00E9chelle dans les donn\u00E9es plut\u00F4t que dans la formule.",
 
   # -- table_regression(): abbreviation glosses -----------------------------
@@ -270,8 +278,9 @@
   note_abbrev_mcse = "MCSE = erreur standard de Monte-Carlo de la m\u00E9diane a posteriori (Vehtari et al. 2021)",
   note_abbrev_ame = "AME = effet marginal moyen",
   note_abbrev_ame_percat = "AME = effet marginal moyen sur la probabilit\u00E9 d'une cat\u00E9gorie de r\u00E9ponse",
+  note_abbrev_sep = "\u00A0; ",
   note_ame_satterthwaite = "Inf\u00E9rence sur les AME\u00A0: test t avec degr\u00E9s de libert\u00E9 de Satterthwaite%s.",
-  note_ame_satterthwaite_qual_both = " (forme exacte pour lm\u00A0; approximation par le coefficient dominant pour glm)",
+  note_ame_satterthwaite_qual_both = " (formule exacte pour lm\u00A0; approximation par le coefficient dominant pour glm)",
   note_ame_satterthwaite_qual_glm = " (approximation par le coefficient dominant)",
   note_exp_scope_all = "Coefficients",
   note_exp_scope_partial = "%s\u00A0: coefficients",
@@ -288,11 +297,12 @@
   note_exp_no_se_single = "%s exponenti\u00E9s et affich\u00E9s en %s\u00A0; %s.%s",
   note_exp_no_se_multi = "%s exponenti\u00E9s et affich\u00E9s en %s (selon la famille)\u00A0; %s.%s",
   note_assoc_measure_item = "%s\u00A0: %s",
+  note_assoc_measures_sep = "\u00A0; ",
 
   # -- table_continuous(): column headers -----------------------------------
   header_group = "Groupe",
   header_sd = "ET",
-  header_median = "M\u00E9d",
+  header_median = "M\u00E9d.",
   header_iqr = "EIQ",
   header_smd = "DMS",
   header_weighted_n = "n pond\u00E9r\u00E9",
@@ -304,23 +314,22 @@
   test_student_t = "test t de Student",
   test_oneway_anova = "ANOVA \u00E0 un facteur",
   test_welch_t = "test t de Welch",
-  test_welch_oneway_anova = "ANOVA \u00E0 un facteur de Welch",
+  test_welch_oneway_anova = "ANOVA de Welch \u00E0 un facteur",
   note_group_comparison = "Comparaison des groupes\u00A0: %s.",
   note_group_comparison_sep = "\u00A0; ",
-  note_p_adjusted = "Valeurs p ajust\u00E9es par stats::p.adjust(method = %s) sur %s.",
+  note_p_adjusted = "Valeurs p ajust\u00E9es par stats::p.adjust(method = %s)\u00A0; %s.",
   note_p_adjusted_coefficients = "m = %s coefficient(s) par mod\u00E8le",
-  note_p_adjusted_tests = "m = %d test(s)",
 
   # -- table_outcome(): the marginal row and the two disclosures ------------
   row_overall = "Ensemble",
   note_outcome_blocks = "Chaque bloc compare %s entre les modalit\u00E9s d'une variable\u00A0; les blocs ne sont pas ajust\u00E9s les uns sur les autres.",
-  note_outcome_overall = "Ensemble = l'\u00E9chantillon analytique complet.",
+  note_outcome_overall = "Ensemble = l'\u00E9chantillon d'analyse complet.",
   note_gloss_iqr = "%s = \u00E9cart interquartile (%s - %s).",
   note_gloss_med_iqr = "%s = m\u00E9diane [premier quartile, troisi\u00E8me quartile].",
   note_gloss_med_ci = "%1$s = intervalle de confiance exact de la m\u00E9diane fond\u00E9 sur les statistiques d'ordre (couverture d'au moins %2$s).",
-  note_gloss_med_ci_undefined = "\u00AB\u00A0%s\u00A0\u00BB lorsque l'\u00E9chantillon est trop petit pour ce niveau.",
+  note_gloss_med_ci_undefined = "\u00AB\u00A0%s\u00A0\u00BB lorsque l'\u00E9chantillon est trop petit pour cette modalit\u00E9.",
   note_gloss_smd = "%1$s = diff\u00E9rence de moyennes standardis\u00E9e (%2$s - %3$s)\u00A0; |%1$s| > %4$s est le seuil de d\u00E9s\u00E9quilibre usuel.",
-  note_gloss_smd_multinomial = "Pour une variable \u00E0 plus de deux cat\u00E9gories, la %s est la distance multivari\u00E9e (de Mahalanobis) entre les deux profils de proportions, et n'est donc pas sign\u00E9e.",
+  note_gloss_smd_multinomial = "Pour une variable \u00E0 plus de deux modalit\u00E9s, la %s est la distance multivari\u00E9e (de Mahalanobis) entre les deux profils de proportions, et n'est donc pas sign\u00E9e.",
 
   # -- survey twins: the self-documenting design footer ---------------------
   note_design_line = "Plan de sondage\u00A0: %s\u00A0; %s.",
@@ -337,7 +346,7 @@
   note_design_degf_resid = "%d degr\u00E9s de libert\u00E9 r\u00E9siduels",
   note_design_degf_resid_only = "Les tests utilisent %d degr\u00E9s de libert\u00E9 r\u00E9siduels.",
   note_design_df_used = "Les intervalles de confiance et les tests utilisent les degr\u00E9s de libert\u00E9 du plan de sondage.",
-  note_design_n = "N = %s (pond\u00E9r\u00E9 %s).",
+  note_design_n = "N = %s (N pond\u00E9r\u00E9 = %s).",
   note_design_df_supplied = "Les intervalles de confiance utilisent %d degr\u00E9s de libert\u00E9 (fournis dans `df`)\u00A0; les tests utilisent ceux du plan de sondage.",
   note_design_df_test_differs = "La comparaison des groupes utilise %d degr\u00E9s de libert\u00E9 (groupes observ\u00E9s uniquement).",
   note_quantile_rule = "Quantiles\u00A0: qrule = \"%s\" (survey).",
@@ -346,16 +355,16 @@
   note_negative_weights_no_test_some = "Pour les variables dont les cas complets comprennent des lignes \u00E0 poids n\u00E9gatif, la comparaison des groupes n'est pas rapport\u00E9e\u00A0: un test fond\u00E9 sur le plan de sondage n'est pas d\u00E9fini lorsque les poids changent de signe.",
   note_deff_replace = "Les effets de plan sont calcul\u00E9s par rapport \u00E0 un tirage AVEC remise (la correction pour population finie est ignor\u00E9e).",
   note_gloss_deff = "%s = effet de plan (variance fond\u00E9e sur le plan / variance d'un \u00E9chantillon al\u00E9atoire simple de m\u00EAme n).",
-  note_gloss_se = "%s = erreur standard de la moyenne fond\u00E9e sur le plan de sondage.",
+  note_gloss_se = "%s = erreur standard de la moyenne, fond\u00E9e sur le plan de sondage.",
   test_design_t = "test t fond\u00E9 sur le plan de sondage",
   test_design_wald = "test de Wald fond\u00E9 sur le plan de sondage",
   test_design_wilcoxon = "test de Wilcoxon-Mann-Whitney fond\u00E9 sur le plan de sondage",
   test_design_kruskal = "test de Kruskal-Wallis fond\u00E9 sur le plan de sondage",
   test_design_rao_scott = "khi-deux de Pearson fond\u00E9 sur le plan de sondage (correction de Rao-Scott du second ordre)",
   test_design_rao_scott_chisq = "khi-deux de Pearson fond\u00E9 sur le plan de sondage (correction de Rao-Scott, r\u00E9f\u00E9rence khi-deux)",
-  test_design_wald_chisq = "test de Wald fond\u00E9 sur le plan de sondage sur les proportions des cellules",
-  test_design_adj_wald = "test de Wald ajust\u00E9 fond\u00E9 sur le plan de sondage sur les proportions des cellules",
-  test_design_saddlepoint = "khi-deux du point de selle fond\u00E9 sur le plan de sondage",
+  test_design_wald_chisq = "test de Wald des proportions des cellules, fond\u00E9 sur le plan de sondage",
+  test_design_adj_wald = "test de Wald ajust\u00E9 des proportions des cellules, fond\u00E9 sur le plan de sondage",
+  test_design_saddlepoint = "khi-deux (approximation du point de selle) fond\u00E9 sur le plan de sondage",
   note_ci_prop_method = "IC des pourcentages\u00A0: %s (survey::svyciprop).",
   note_gloss_pct_svy = "%s = pourcentage estim\u00E9 au sein de la colonne (survey::svymean).",
   note_gloss_n_svy = "%s = effectif observ\u00E9 (non pond\u00E9r\u00E9).",
@@ -423,8 +432,8 @@
   title_regression_fallback = "R\u00E9gression",
   title_regression_single = "%s\u00A0: %s",
   title_regression_hierarchical = "%s \u2014 mod\u00E8les embo\u00EEt\u00E9s\u00A0: %s",
-  title_regression_comparison_dv = "%s \u2014 comparaison\u00A0: %s",
-  title_regression_comparison = "%s \u2014 comparaison",
+  title_regression_comparison_dv = "%s \u2014 comparaison de mod\u00E8les\u00A0: %s",
+  title_regression_comparison = "%s \u2014 comparaison de mod\u00E8les",
   title_uv_multivariable = "%s univariable et multivariable\u00A0: %s",
   title_uv_screen = "%s univariable (pr\u00E9s\u00E9lection)\u00A0: %s",
   note_uv_common_complete_cases = "Tous les mod\u00E8les sont estim\u00E9s sur les %d m\u00EAmes cas complets.",
@@ -432,6 +441,14 @@
   # La phrase entiere est l'unite : "Modeles de regression lineaire."
   # (le prefixe arrive en minuscule initiale, regle du site d'appel).
   note_type_models = "Mod\u00E8les de %s.",
+  # Not served while the mixed-family type footer stays English wholesale
+  # (decision 42): that arm reads the key with the language bypassed.
+  note_type_models_sep = "\u00A0; ",
+
+  # -- typographic markers: the significance-star legend --------------------
+  # The stars themselves are frozen and absent; the legend takes the
+  # no-break spaces around "<", as note_p_prefix_lt does.
+  note_stars_legend_entry = "%s p\u00A0<\u00A0%s",
 
   # -- varlist() / code_book(): value summaries -----------------------------
   value_summary_matrix = "Matrice(%s)",
@@ -447,7 +464,7 @@
   header_valid = "Valides",
   header_missing = "Manquants",
   header_declared_missing = "Manquants d\u00E9clar\u00E9s",
-  header_declared_codes = "Codes manquants d\u00E9clar\u00E9s",
+  header_declared_codes = "Codes d\u00E9clar\u00E9s manquants",
   header_distinct = "Valeurs distinctes",
   header_categories = "Modalit\u00E9s",
   header_earliest = "Premi\u00E8re date",
@@ -456,7 +473,7 @@
   header_latest_time = "Derni\u00E8re heure",
   header_codebook_mean = "Moyenne",
   header_codebook_median = "M\u00E9diane",
-  header_is_declared_missing = "Manquant d\u00E9clar\u00E9",
+  header_is_declared_missing = "D\u00E9clar\u00E9 manquant",
   header_pct_valid = "% valide",
   header_code = "Valeur",
   header_marker_missing = "Manquant",
@@ -547,7 +564,7 @@
   "Logistic mixed-effects regression" = "R\u00E9gression logistique \u00E0 effets mixtes",
   "Poisson mixed-effects regression" = "R\u00E9gression de Poisson \u00E0 effets mixtes",
   "Negative-binomial mixed-effects regression" = "R\u00E9gression binomiale n\u00E9gative \u00E0 effets mixtes",
-  "Cumulative logit regression (proportional odds)" = "R\u00E9gression logit cumulatif (cotes proportionnelles)",
+  "Cumulative logit regression (proportional odds)" = "R\u00E9gression \u00E0 logit cumulatif (cotes proportionnelles)",
   "Cox proportional hazards regression" = "R\u00E9gression de Cox \u00E0 risques proportionnels",
   "Survey-weighted linear regression" = "R\u00E9gression lin\u00E9aire pond\u00E9r\u00E9e par le plan de sondage",
   "Survey-weighted logistic regression" = "R\u00E9gression logistique pond\u00E9r\u00E9e par le plan de sondage",

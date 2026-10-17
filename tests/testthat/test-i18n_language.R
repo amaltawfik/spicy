@@ -460,6 +460,46 @@ test_that("the French effect-size header is the full word", {
   expect_match(header, "Taille d'effet", fixed = TRUE)
 })
 
+test_that("the read-through headers and row labels follow the language", {
+  skip_if_not_installed("survival")
+  withr::local_options(spicy.language = "fr")
+  cat_meta <- as_structured(
+    table_categorical(sochealth, select = smoking, by = sex, assoc_ci = TRUE)
+  )$col_meta
+  bounds <- Filter(function(m) !is.null(m$ci_role), cat_meta)
+  expect_identical(
+    unname(vapply(bounds, `[[`, character(1), "display_label")),
+    c("IC inf.", "IC sup.")
+  )
+  con <- table_continuous(sochealth, select = bmi, show_columns = c("med", "n"))
+  expect_identical(
+    as_structured(con)$col_meta[["Med"]]$display_label,
+    "M\u00E9d."
+  )
+  fit <- stats::glm(
+    smoking ~ age + sex,
+    data = sochealth,
+    family = stats::binomial()
+  )
+  reg <- as_structured(
+    table_regression(fit, show_columns = c("n_events", "b", "p"))
+  )
+  expect_identical(
+    reg$col_meta[["Events/N"]]$display_label,
+    "\u00C9v\u00E9nements/N"
+  )
+  cox <- survival::coxph(
+    survival::Surv(time, status) ~ age,
+    data = survival::lung
+  )
+  rows <- trimws(
+    as.data.frame(
+      table_regression(cox, show_fit_stats = c("nobs", "n_events"))
+    )$Variable
+  )
+  expect_true("Nombre d'\u00E9v\u00E9nements" %in% rows)
+})
+
 test_that("a data level keeps its own spelling in a column name", {
   # The task the frozen-key doctrine exists for: `by` levels are DATA.
   # A level named "Yes" gives the column "Yes %" in every language --
@@ -536,6 +576,12 @@ test_that("the block identity stays English while its caption translates", {
   # test in test-i18n.R cannot see.
   expect_identical(.reg_block_label("Random effects"), "Effets al\u00E9atoires")
   expect_true("Random effects" %in% .REG_BLOCK_TERMS)
+  # The mlogit section takes the same split without being a block.
+  expect_identical(
+    .reg_block_label(.REG_SECTION_ALT_INVARIANT),
+    "Invariant entre alternatives"
+  )
+  expect_false(.reg_is_block(.REG_SECTION_ALT_INVARIANT))
   # The fixed-effects token the typed body encodes back to 1 / 0.
   expect_identical(.REG_FE_YES, "Yes")
   expect_identical(.reg_fe_cell_label(.REG_FE_YES), "Oui")
@@ -592,8 +638,8 @@ test_that("the French p-value of the pair keeps its leading zero", {
   )
   withr::local_options(spicy.language = "fr")
   note <- attr(cross_tab(d, smoke, sex), "note")
-  expect_match(note, "p = 0,659", fixed = TRUE)
-  expect_false(grepl("p = ,", note, fixed = TRUE))
+  expect_match(note, "p\u00A0=\u00A00,659", fixed = TRUE)
+  expect_false(grepl("p\u00A0=\u00A0,", note, fixed = TRUE))
 })
 
 test_that("the pair's mark is frozen at build, not at print", {
@@ -644,7 +690,7 @@ test_that("an argument beats the language in the pair too", {
   # Words translate, numbers do not: the escape hatch for a bilingual
   # document. The p-value keeps the point form as well.
   expect_false(any(grepl("[0-9],[0-9]", c(fr_fq, fr_ct))))
-  expect_true(any(grepl("p = .659", fr_ct, fixed = TRUE)))
+  expect_true(any(grepl("p\u00A0=\u00A0.659", fr_ct, fixed = TRUE)))
   # And the numbers themselves are the ones English printed -- the
   # words around them are the only difference.
   numbers <- function(x) {
@@ -734,7 +780,10 @@ test_that("the p_adjust sentence of the regression follows the language", {
   fr <- spicy:::build_p_adjust_footer_block_from_frames(list(frame), "holm")
   expect_identical(
     fr,
-    "Valeurs p ajustées par stats::p.adjust(method = \"holm\") sur m = 2 coefficient(s) par modèle."
+    paste0(
+      "Valeurs p ajust\u00E9es par stats::p.adjust(method = \"holm\")\u00A0; ",
+      "m = 2 coefficient(s) par mod\u00E8le."
+    )
   )
 })
 
@@ -854,7 +903,7 @@ test_that("the random-effects LR test line follows the language", {
       "de Poisson",
       "binomiale",
       "nbinom2",
-      "logit cumulatif"
+      "\u00E0 logit cumulatif"
     )
   )
   got_en <- lines(".")
@@ -1025,7 +1074,7 @@ test_that("the outcome comparison note joins its tests in the language", {
   withr::local_options(spicy.language = "fr")
   expect_match(
     note(),
-    "ANOVA \u00E0 un facteur de Welch (cyl)\u00A0; test t de Welch (am, vs).",
+    "ANOVA de Welch \u00E0 un facteur (cyl)\u00A0; test t de Welch (am, vs).",
     fixed = TRUE
   )
 })
@@ -1073,6 +1122,55 @@ test_that("the standardized-coefficient legend follows the language", {
   lines <- strsplit(attr(x, "note"), "\n", fixed = TRUE)[[1L]]
   lines[startsWith(lines, start)]
 }
+
+test_that("the abbreviation and association-measure notes join in the language", {
+  abbrev <- function() {
+    spicy:::build_abbreviations_footer_block_from_frames(
+      c("ame", "partial_eta2")
+    )
+  }
+  assoc <- function() {
+    spicy:::.assoc_note_apa(
+      c(smoking = "cramer_v", education = "tau_b"),
+      c("Smoking", "Education")
+    )
+  }
+  expect_identical(
+    abbrev(),
+    "AME = average marginal effect; \u03B7\u00B2 = partial eta-squared."
+  )
+  expect_identical(
+    assoc(),
+    "Note. Cramer's V: Smoking; Kendall's Tau-b: Education."
+  )
+  withr::local_options(spicy.language = "fr")
+  expect_identical(
+    abbrev(),
+    paste0(
+      "AME = effet marginal moyen\u00A0; \u03B7\u00B2 = \u00EAta-carr\u00E9 ",
+      "partiel."
+    )
+  )
+  expect_identical(
+    assoc(),
+    "Note. V de Cram\u00E9r\u00A0: Smoking\u00A0; Tau-b de Kendall\u00A0: Education."
+  )
+})
+
+test_that("the star legend takes the French no-break spaces", {
+  expect_identical(
+    spicy:::build_stars_footer_block(TRUE, ","),
+    "*** p < 0,001, ** p < 0,01, * p < 0,05."
+  )
+  withr::local_options(spicy.language = "fr")
+  expect_identical(
+    spicy:::build_stars_footer_block(TRUE, ","),
+    paste0(
+      "*** p\u00A0<\u00A00,001, ** p\u00A0<\u00A00,01, ",
+      "* p\u00A0<\u00A00,05."
+    )
+  )
+})
 
 test_that("the exponentiation note follows the language", {
   fit <- stats::glm(vs ~ mpg, data = mtcars, family = binomial)
@@ -1139,16 +1237,66 @@ test_that("the component-block scale notes follow the language", {
   expect_match(
     zi_note("logit"),
     paste0(
-      "(exc\u00E9dentaire). Coefficients exponenti\u00E9s et affich\u00E9s ",
-      "en rapports de cotes."
+      "Composante \u00AB\u00A0Inflation de z\u00E9ros\u00A0\u00BB\u00A0: logarithme ",
+      "de la cote d'un z\u00E9ro structurel (exc\u00E9dentaire). Coefficients ",
+      "exponenti\u00E9s et affich\u00E9s en rapports de cotes."
     ),
     fixed = TRUE
   )
   expect_match(
     zi_note("probit"),
     paste0(
-      "(exc\u00E9dentaire). Laiss\u00E9s sur l'\u00E9chelle du lien ",
-      "(non exponenti\u00E9s)."
+      "(exc\u00E9dentaire) sur l'\u00E9chelle probit. Laiss\u00E9s sur ",
+      "l'\u00E9chelle du lien (non exponenti\u00E9s)."
+    ),
+    fixed = TRUE
+  )
+})
+
+test_that("a zero part on another link than logit names it in its gloss", {
+  # "Log-odds" holds for the logit link only.
+  skip_if_not_installed("pscl")
+  zi <- pscl::zeroinfl(
+    art ~ fem + ment | ment,
+    data = pscl::bioChemists,
+    dist = "poisson",
+    link = "probit"
+  )
+  hu <- pscl::hurdle(
+    art ~ fem | fem,
+    data = pscl::bioChemists,
+    link = "probit"
+  )
+  note <- function(fit) attr(table_regression(fit), "note")
+  expect_match(
+    note(zi),
+    paste0(
+      "Zero-inflation component: probability of a structural (excess) ",
+      "zero on the probit scale."
+    ),
+    fixed = TRUE
+  )
+  expect_match(
+    note(hu),
+    "Zero hurdle component: probability of a nonzero count on the probit scale.",
+    fixed = TRUE
+  )
+  expect_false(grepl("log-odds", note(zi), fixed = TRUE))
+  withr::local_options(spicy.language = "fr")
+  expect_match(
+    note(zi),
+    paste0(
+      "Composante \u00AB\u00A0Inflation de z\u00E9ros\u00A0\u00BB\u00A0: ",
+      "probabilit\u00E9 d'un z\u00E9ro structurel (exc\u00E9dentaire) sur ",
+      "l'\u00E9chelle probit."
+    ),
+    fixed = TRUE
+  )
+  expect_match(
+    note(hu),
+    paste0(
+      "Composante \u00AB\u00A0Hurdle (z\u00E9ro)\u00A0\u00BB\u00A0: ",
+      "probabilit\u00E9 d'un effectif non nul sur l'\u00E9chelle probit."
     ),
     fixed = TRUE
   )
@@ -1171,8 +1319,9 @@ test_that("the threshold and scale-effect notes follow the language", {
   expect_match(
     note(logit),
     paste0(
-      "Seuils\u00A0: seuils de cat\u00E9gorie sur l'\u00E9chelle latente ",
-      "(\u00E9chelle logit, non exponenti\u00E9s)."
+      "Seuils\u00A0: points de coupure entre les cat\u00E9gories de ",
+      "r\u00E9ponse sur l'\u00E9chelle latente (\u00E9chelle logit, non ",
+      "exponenti\u00E9s)."
     ),
     fixed = TRUE
   )
@@ -1287,7 +1436,7 @@ test_that("the random-effects notes follow the language", {
     paste0(
       "Valeurs p des effets al\u00E9atoires\u00A0: test du rapport de ",
       "vraisemblance contre la structure al\u00E9atoire r\u00E9duite, loi de ",
-      "r\u00E9f\u00E9rence du khi-deux barre."
+      "r\u00E9f\u00E9rence \u03C7\u0304\u00B2 (m\u00E9lange de khi-deux)."
     )
   )
   expect_match(
@@ -1306,7 +1455,7 @@ test_that("the random-effects notes follow the language", {
     paste0(
       "Ajustement singulier\u00A0: la structure des effets al\u00E9atoires ",
       "est \u00E0 la fronti\u00E8re de l'espace des param\u00E8tres ou pr\u00E8s ",
-      "de celle-ci (une variance de 0, ou une corr\u00E9lation de +/-1)\u00A0; ",
+      "de celle-ci (une variance de 0 ou une corr\u00E9lation de +/-1)\u00A0; ",
       "l'erreur standard de Wald et l'IC des composantes de la variance ",
       "sont omis."
     )
@@ -1381,7 +1530,7 @@ test_that("the reference-level, survival and AME notes follow the language", {
     satt(c("lm", "glm")),
     paste0(
       lead,
-      " (forme exacte pour lm\u00A0; approximation par le coefficient ",
+      " (formule exacte pour lm\u00A0; approximation par le coefficient ",
       "dominant pour glm)."
     )
   )

@@ -18,7 +18,7 @@
     Code
       print(cross_tab(d, smoke, sex, percent = "column"))
     Output
-      Tableau croisé : smoke x sex (% colonne)
+      Tableau croisé : smoke x sex (% en colonne)
       
        Valeurs   │       F        M │   Total 
       ───────────┼──────────────────┼─────────
@@ -28,9 +28,9 @@
        Total     │   100,0    100,0 │   100,0 
        N         │       4        3 │       7 
       
-      Khi-2(1) = 0,2, p = 0,659
+      Khi-2(1) = 0,2, p = 0,659
       V de Cramér = 0,17
-      Avertissement : 4 cellules avec effectif théorique < 5 (100 %). Effectif théorique minimum = 1,29. Envisagez `simulate_p = TRUE` ou définissez-le globalement via `options(spicy.simulate_p = TRUE)`.
+      Avertissement : 4 cellules avec effectif théorique < 5 (100 %). Effectif théorique minimal = 1,29. Envisagez `simulate_p = TRUE` ou définissez-le globalement via `options(spicy.simulate_p = TRUE)`.
       Valeurs manquantes retirées : smoke (1).
     Code
       print(table_categorical(d, select = smoke, by = sex))
@@ -58,7 +58,7 @@
     Code
       print(table_continuous_lm(d, select = bmi, by = sex))
     Output
-      Variables continues selon sex
+      Variables dépendantes continues selon sex
       
        Variable   │  M (F)    M (M)    Δ (M - F)    IC à 95 % LI    IC à 95 % LS      p       R²     n  
       ────────────┼─────────────────────────────────────────────────────────────────────────────────────
@@ -81,7 +81,7 @@
          Yes          │  24,30    2,25    22,10    26,60       18,71           29,89        3           
          (Manquant)   │  23,30     –      23,30    23,30         –               –          1           
       
-      Comparaison des groupes : test t de Welch. Chaque bloc compare bmi entre les modalités d'une variable ; les blocs ne sont pas ajustés les uns sur les autres. Ensemble = l'échantillon analytique complet.
+      Comparaison des groupes : test t de Welch. Chaque bloc compare bmi entre les modalités d'une variable ; les blocs ne sont pas ajustés les uns sur les autres. Ensemble = l'échantillon d'analyse complet.
     Code
       print(table_regression(stats::lm(bmi ~ age + sex, data = d)))
     Output

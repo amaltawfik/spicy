@@ -142,7 +142,8 @@ workbook, or a PDF.
   `modèles emboîtés` in the title, RR is glossed `risque relatif`, and
   `table_continuous_lm()` and `table_outcome()` write `ajusté sur`. The
   exponentiation, component, threshold, and scale-effect notes are
-  translated too.
+  translated too. The whole French set was read through and corrected
+  (#7).
 
 * `table_regression()` handles `glmer()` fits with a Gamma or
   inverse-Gaussian family, which failed, and no longer fails on them or on

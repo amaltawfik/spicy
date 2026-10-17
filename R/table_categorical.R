@@ -385,7 +385,11 @@
     },
     character(1)
   )
-  paste0(spicy_str("note_prefix"), paste(parts, collapse = "; "), ".")
+  paste0(
+    spicy_str("note_prefix"),
+    paste(parts, collapse = spicy_str("note_assoc_measures_sep")),
+    "."
+  )
 }
 
 

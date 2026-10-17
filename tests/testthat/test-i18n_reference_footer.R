@@ -18,7 +18,7 @@ test_that("the reference-categories footer follows the language", {
   )
   expect_match(
     fr,
-    "Catégories de référence : sex = Female ; smoking = ",
+    "Modalit\u00E9s de r\u00E9f\u00E9rence\u00A0: sex = Female\u00A0; smoking = ",
     fixed = TRUE
   )
   expect_false(grepl("Reference categories", fr, fixed = TRUE))

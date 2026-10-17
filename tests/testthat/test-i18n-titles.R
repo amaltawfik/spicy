@@ -48,12 +48,12 @@ test_that("the French titles come out French, NBSP colon included", {
   )
   expect_identical(
     build_regression_title_from_frames(list(f1, f2)),
-    "R\u00e9gression lin\u00e9aire \u2014 comparaison\u00a0: mpg"
+    "R\u00e9gression lin\u00e9aire \u2014 comparaison de mod\u00e8les\u00a0: mpg"
   )
   f3 <- as_regression_frame(lm(disp ~ wt, data = mtcars))
   expect_identical(
     build_regression_title_from_frames(list(f1, f3)),
-    "R\u00e9gression lin\u00e9aire \u2014 comparaison"
+    "R\u00e9gression lin\u00e9aire \u2014 comparaison de mod\u00e8les"
   )
   expect_identical(
     build_regression_title_from_frames(list()),
@@ -111,6 +111,24 @@ test_that("the mixed-family table stays English wholesale under fr", {
   expect_identical(note, en_note)
   expect_match(note, "Model 1: ", fixed = TRUE)
   expect_false(grepl("\u00a0", note))
+})
+
+test_that("the mixed-family separator is a key, read with the language bypassed", {
+  f1 <- .tf_lm_frame()
+  f2 <- .tf_lm_frame()
+  f2$info$extras$title_prefix <- "Heckman selection model"
+  expect_identical(
+    build_regression_type_footer_block_from_frames(list(f1, f2)),
+    "Model 1: linear regression; Model 2: heckman selection model."
+  )
+  withr::local_options(
+    spicy.language = "fr",
+    spicy.labels = list(note_type_models_sep = " | ")
+  )
+  expect_identical(
+    build_regression_type_footer_block_from_frames(list(f1, f2)),
+    "Model 1: linear regression | Model 2: heckman selection model."
+  )
 })
 
 test_that("the five template keys accept a spicy.labels override in English", {

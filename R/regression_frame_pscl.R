@@ -534,23 +534,38 @@ as_regression_frame.zeroinfl <- function(
 
   rows <- .order_component_rows(rows, xlev)
 
+  # "Log-odds" names the logit link only: under any other zero link
+  # (probit, cloglog, cauchit, log) the gloss names the link instead.
+  is_logit <- identical(zero_link, "logit")
   gloss <- if (is_hurdle) {
-    if (identical(zero_dist, "binomial")) {
+    if (!identical(zero_dist, "binomial")) {
+      spicy_fmt(
+        "note_component_gloss_hurdle_censored",
+        spicy_str("label_block_zero_hurdle"),
+        zero_dist
+      )
+    } else if (is_logit) {
       spicy_fmt(
         "note_component_gloss_hurdle_binomial",
         spicy_str("label_block_zero_hurdle")
       )
     } else {
       spicy_fmt(
-        "note_component_gloss_hurdle_censored",
+        "note_component_gloss_hurdle_binomial_link",
         spicy_str("label_block_zero_hurdle"),
-        zero_dist
+        zero_link
       )
     }
-  } else {
+  } else if (is_logit) {
     spicy_fmt(
       "note_component_gloss_zero_inflation",
       spicy_str("label_block_zero_inflation")
+    )
+  } else {
+    spicy_fmt(
+      "note_component_gloss_zero_inflation_link",
+      spicy_str("label_block_zero_inflation"),
+      zero_link
     )
   }
 

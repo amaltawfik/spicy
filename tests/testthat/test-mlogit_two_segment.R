@@ -114,6 +114,19 @@ test_that("multi-model mlogit keeps the sectioned layout side by side", {
 })
 
 
+test_that("the alternative-invariant caption follows the language", {
+  fit <- .fit_mlogit_fishing_2s()
+  withr::local_options(spicy.language = "fr")
+  v <- trimws(as.data.frame(table_regression(fit))$Variable)
+  expect_true("Invariant entre alternatives\u00A0:" %in% v)
+  expect_false(any(grepl("Alternative-invariant", v, fixed = TRUE)))
+  # The identity the frame publishes stays English.
+  expect_true(
+    "Alternative-invariant" %in% as_regression_frame(fit)$coefs$parent_var
+  )
+})
+
+
 test_that("console snapshot of the two-segment layout", {
   fit <- .fit_mlogit_fishing_2s()
   expect_snapshot(print(table_regression(fit)))

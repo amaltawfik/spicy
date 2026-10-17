@@ -46,5 +46,5 @@
          0        │   6     46,2    12     63,2      18        56,2                                
          1        │   7     53,8     7     36,8      14        43,8                                
       
-      Note. V de Cramér : cyl, gear; Phi : vs. Valeurs p ajustées par stats::p.adjust(method = "holm") sur m = 3 test(s).
+      Note. V de Cramér : cyl, gear ; Phi : vs. Valeurs p ajustées par stats::p.adjust(method = "holm") ; m = 3 test(s).
 

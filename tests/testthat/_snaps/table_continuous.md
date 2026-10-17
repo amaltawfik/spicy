@@ -36,5 +36,5 @@
        qsec     │ 1        17,36   1,79  14,50   19,90      16,28         18,44     13  0,419 
                 │ 0        18,18   1,75  15,41   22,90      17,34         19,03     19        
       
-      Valeurs p ajustées par stats::p.adjust(method = "holm") sur m = 3 test(s).
+      Valeurs p ajustées par stats::p.adjust(method = "holm") ; m = 3 test(s).
 

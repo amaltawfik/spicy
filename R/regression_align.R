@@ -42,6 +42,12 @@
 .REG_BLOCK_NPO <- "Non-proportional effects"
 .REG_BLOCK_THRESH <- "Thresholds"
 .REG_BLOCK_RE <- "Random effects"
+# The leading section of a conditional-logit (mlogit) table: the
+# coefficients shared by every alternative. A frozen identity with a
+# translated caption, like the blocks above, but NOT a subordinate
+# block -- it opens the table instead of closing it -- so it stays out
+# of `.REG_BLOCK_TERMS`, and `.reg_is_block()` is FALSE for it.
+.REG_SECTION_ALT_INVARIANT <- "Alternative-invariant"
 
 # TRUE where `x` names a subordinate block. Vectorized, and FALSE on NA:
 # `factor_term` is NA for every row that belongs to no factor group.
@@ -55,9 +61,9 @@
   !is.na(x) & x %in% .REG_BLOCK_TERMS
 }
 
-# The identity -> registry key map. One key per block: the block's
-# CAPTION is a separate layer from its identity, and only the caption is
-# ever translated.
+# The identity -> registry key map. One key per block, and one for the
+# mlogit section above: the CAPTION is a separate layer from the
+# identity, and only the caption is ever translated.
 .REG_BLOCK_STR_KEYS <- c(
   "Zero-inflation" = "label_block_zero_inflation",
   "Zero hurdle" = "label_block_zero_hurdle",
@@ -65,7 +71,8 @@
   "Scale effects" = "label_block_scale_effects",
   "Non-proportional effects" = "label_block_non_proportional",
   "Thresholds" = "label_block_thresholds",
-  "Random effects" = "label_block_random_effects"
+  "Random effects" = "label_block_random_effects",
+  "Alternative-invariant" = "label_block_alternative_invariant"
 )
 
 # The caption a reader sees for one `factor_term`. A block resolves

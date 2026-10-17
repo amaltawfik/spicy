@@ -153,7 +153,11 @@ as_regression_frame.mlogit <- function(
   # mlogit's native "<term>:<alt>" names: uniqueness, tidy(), and
   # keep / drop regexes are untouched (display-only regrouping).
   parsed <- .mlogit_parse_terms(nm)
-  parent_var <- ifelse(is.na(parsed$alt), "Alternative-invariant", parsed$alt)
+  parent_var <- ifelse(
+    is.na(parsed$alt),
+    .REG_SECTION_ALT_INVARIANT,
+    parsed$alt
+  )
   label <- parsed$term
 
   out <- data.frame(

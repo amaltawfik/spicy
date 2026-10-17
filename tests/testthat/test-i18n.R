@@ -354,8 +354,12 @@ test_that("every frozen block identity equals its English caption", {
   # identity is pinned by `expect_identical(tr$parent_var, ...)` tests,
   # the caption by the console goldens, and both stay green through a
   # drift.
-  expect_setequal(.REG_BLOCK_TERMS, names(.REG_BLOCK_STR_KEYS))
-  for (blk in .REG_BLOCK_TERMS) {
+  expect_setequal(
+    c(.REG_BLOCK_TERMS, .REG_SECTION_ALT_INVARIANT),
+    names(.REG_BLOCK_STR_KEYS)
+  )
+  expect_false(.reg_is_block(.REG_SECTION_ALT_INVARIANT))
+  for (blk in names(.REG_BLOCK_STR_KEYS)) {
     expect_identical(
       .reg_block_label(blk),
       spicy_str(.REG_BLOCK_STR_KEYS[[blk]]),

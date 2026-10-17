@@ -284,6 +284,11 @@
   label_block_zero_inflation = "Zero-inflation",
   label_block_zero_hurdle = "Zero hurdle",
   label_block_dispersion = "Dispersion",
+  # Not a subordinate block: the leading section of a conditional-logit
+  # (mlogit) table, the coefficients shared by every alternative. Same
+  # split between a frozen identity and a translated caption, resolved
+  # by the same `.reg_block_label()`.
+  label_block_alternative_invariant = "Alternative-invariant",
   # One hole: the block's (or the factor variable's) caption. The colon
   # is typography, not a word, and it belongs to the template because
   # its spacing is language-dependent -- it closes up against the word
@@ -407,6 +412,12 @@
   # Two holes: the block caption, then the censoring distribution (an
   # identifier from the fit).
   note_component_gloss_hurdle_censored = "%s component: right-censored %s on the log scale.",
+  # "Log-odds" holds for the logit link only: a pscl fit whose zero part
+  # has another link (probit, cloglog, cauchit, log) takes these
+  # instead. Two holes: the block caption, then the link as pscl stores
+  # it (an identifier).
+  note_component_gloss_zero_inflation_link = "%s component: probability of a structural (excess) zero on the %s scale.",
+  note_component_gloss_hurdle_binomial_link = "%s component: probability of a nonzero count on the %s scale.",
   # The scale of a component block under exponentiate, appended to its
   # gloss after a space.
   note_component_exp_or = "Coefficients exponentiated and displayed as odds ratios.",
@@ -470,6 +481,11 @@
   # The type footer's same-family plural ("Linear regression models.").
   # French inverts the construction, so the whole sentence is the unit.
   note_type_models = "%s models.",
+  # The joiner of the per-model lines of a mixed-family type footer
+  # ("Model 1: linear regression; Model 2: ..."). That arm stays English
+  # wholesale (decision 42), so it reads this key with the language
+  # bypassed, like its line template.
+  note_type_models_sep = "; ",
 
   # -- table_regression(): the absolute survival estimands -------------------
   # The footnote of the RMST-difference and risk-difference columns.
@@ -526,6 +542,9 @@
   note_abbrev_mcse = "MCSE = Monte Carlo standard error of the posterior median (Vehtari et al. 2021)",
   note_abbrev_ame = "AME = average marginal effect",
   note_abbrev_ame_percat = "AME = average marginal effect on a response-category probability",
+  # The joiner of the abbreviation glosses (`note_abbrev_*`), which the
+  # footer prints on one line.
+  note_abbrev_sep = "; ",
   # The AME inference line under a cluster-robust vcov. One hole: empty,
   # or one of the two qualifiers (leading space included).
   note_ame_satterthwaite = "AME inference: t-test with Satterthwaite df%s.",
@@ -566,6 +585,9 @@
   note_prefix = "Note. ",
   note_prefix_emphasis = "Note.",
   note_assoc_measure_item = "%s: %s",
+  # The joiner of those items in the association-measure note of
+  # `table_categorical()`.
+  note_assoc_measures_sep = "; ",
 
   # -- table_continuous(): column headers ------------------------------------
   # The column NAME and the `col_meta` key stay frozen English -- they are
