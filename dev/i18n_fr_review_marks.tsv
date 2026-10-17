@@ -426,3 +426,7 @@ fitstat_icc	reviewed	2026-10-17	ICC
 title_codebook	reviewed	2026-10-17	Codebook	
 excel_sheet_codebook	reviewed	2026-10-17	codebook	
 header_ci_label_credible	corrected	2026-10-17	ICr	
+header_ci_label_hdi	reviewed	2026-10-17	HDI	
+label_model_name	reviewed	2026-10-17	Model %d	
+note_vcov_classical_plain	reviewed	2026-10-17	classiques	
+note_vcov_bayesian_reml	reviewed	2026-10-17	bayésiennes (déduites du REML)	

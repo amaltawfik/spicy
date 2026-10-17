@@ -591,7 +591,7 @@ as_regression_frame.Glm <- function(
     vcov_kind = vcov_kind,
     vcov_label = vcov_label %||%
       (if (rms_class == "ols") {
-        "Classical"
+        spicy_str("note_vcov_classical_plain")
       } else {
         spicy_str("note_vcov_wald_asymptotic")
       }),

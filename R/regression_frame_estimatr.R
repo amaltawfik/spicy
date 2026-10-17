@@ -377,7 +377,7 @@ as_regression_frame.iv_robust <- function(
     "HC1" = "Robust (HC1)",
     "HC2" = "Robust (HC2)",
     "HC3" = "Robust (HC3)",
-    "classical" = "Classical",
+    "classical" = spicy_str("note_vcov_classical_plain"),
     "stata" = "Robust (Stata HC1)",
     "CR0" = "Cluster-robust (CR0)",
     "CR2" = "Cluster-robust (CR2)",

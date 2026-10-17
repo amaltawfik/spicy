@@ -430,7 +430,7 @@ as_regression_frame.fixest <- function(
 
 # vcov_label normalizer. fixest's "vcov_type" attribute already carries
 # a near-renderer-ready label; we keep it verbatim but rename "IID"
-# to "Classical" for cross-engine consistency.
+# to the "Classical" of the other engines, for cross-engine consistency.
 .fixest_vcov_label <- function(vt) {
-  if (identical(vt, "IID")) "Classical" else vt
+  if (identical(vt, "IID")) spicy_str("note_vcov_classical_plain") else vt
 }

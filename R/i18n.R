@@ -874,6 +874,13 @@
   note_model_line_indented = "  %s: %s",
   note_vcov_classical_glm = "classical (Fisher information)",
   note_vcov_classical_lm = "classical (OLS)",
+  # The model-based default of the classes whose label names no
+  # mechanism (nls, AER::ivreg, rms::ols, fixest's IID, estimatr's
+  # classical se_type), capitalized as it has always printed.
+  note_vcov_classical_plain = "Classical",
+  # The default of mgcv::gam(): the Bayesian covariance of the
+  # coefficients.
+  note_vcov_bayesian_reml = "Bayesian (REML-implied)",
   note_vcov_hc = "heteroskedasticity-robust (%s)",
   note_vcov_cluster_vector = "cluster vector supplied",
   note_vcov_cluster_named = "clusters by %s",

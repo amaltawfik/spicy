@@ -1832,6 +1832,63 @@ test_that("the GEE and quantile-regression notes follow the language", {
   )
 })
 
+# The standard-error line of one fit, in English and then in French.
+.se_line_en_fr <- function(fit) {
+  en <- .note_line(table_regression(fit), "Std. errors")
+  withr::local_options(spicy.language = "fr")
+  c(en, .note_line(table_regression(fit), "Erreurs standards"))
+}
+
+test_that("the classical standard-error line of nls follows the language", {
+  fit <- nls(
+    conc ~ A * exp(-k * time),
+    data = datasets::Indometh,
+    start = list(A = 2, k = 0.5)
+  )
+  expect_identical(
+    .se_line_en_fr(fit),
+    c("Std. errors: Classical.", "Erreurs standards\u00A0: classiques.")
+  )
+})
+
+test_that("the classical standard-error line of ivreg follows the language", {
+  skip_if_not_installed("AER")
+  fit <- AER::ivreg(mpg ~ wt + cyl | hp + drat + cyl, data = mtcars)
+  expect_identical(
+    .se_line_en_fr(fit),
+    c("Std. errors: Classical.", "Erreurs standards\u00A0: classiques.")
+  )
+})
+
+test_that("the Bayesian standard-error line of mgcv follows the language", {
+  skip_if_not_installed("mgcv")
+  fit <- mgcv::gam(mpg ~ s(wt), data = mtcars)
+  expect_identical(
+    .se_line_en_fr(fit),
+    c(
+      "Std. errors: Bayesian (REML-implied).",
+      "Erreurs standards\u00A0: bay\u00E9siennes (d\u00E9duites du REML)."
+    )
+  )
+})
+
+test_that("the classical line of rms, fixest and estimatr follows the language", {
+  skip_if_not_installed("rms")
+  skip_if_not_installed("fixest")
+  skip_if_not_installed("estimatr")
+  fits <- list(
+    rms::ols(mpg ~ wt, data = mtcars),
+    fixest::feols(mpg ~ wt, data = mtcars),
+    estimatr::lm_robust(mpg ~ wt, data = mtcars, se_type = "classical")
+  )
+  for (fit in fits) {
+    expect_identical(
+      .se_line_en_fr(fit),
+      c("Std. errors: Classical.", "Erreurs standards\u00A0: classiques.")
+    )
+  }
+})
+
 test_that("the univariable table title and sample note follow the language", {
   withr::local_options(spicy.language = "fr")
   cc <- table_regression_uv(

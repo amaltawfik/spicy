@@ -576,7 +576,7 @@ as_regression_frame.ivreg <- function(
     random_effects = empty_random_effects(),
     fit_stats = fit_stats,
     vcov_kind = vcov_kind,
-    vcov_label = vcov_label %||% "Classical",
+    vcov_label = vcov_label %||% spicy_str("note_vcov_classical_plain"),
     ci_level = as.numeric(ci_level),
     ci_method = ci_method,
     supports = supports,
