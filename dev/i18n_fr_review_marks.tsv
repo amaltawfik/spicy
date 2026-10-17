@@ -1,0 +1,18 @@
+# Review marks for the French label set (issue #7). dev/gen_fr_review.R
+# merges them into dev/i18n_fr_review_table.md on every run.
+#
+# One line per key, tab-separated: key, mark, date, fr_at_mark, note.
+# A hand-typed line can be just `<key> reviewed` or `<key> corrected`:
+# the generator fills in the date and the French string the mark applies
+# to (fr_at_mark, no-break spaces written <NBSP>), then rewrites the line
+# with tabs. Or run: Rscript dev/gen_fr_review.R --mark reviewed <key> ...
+#
+#   reviewed    read in context and kept as is
+#   corrected   fixed in R/i18n_fr.R, then read in context
+#
+# When the French string later differs from fr_at_mark, the row turns
+# "to review (changed after mark)": read it again, then empty fr_at_mark
+# (or run --mark again) to accept the new string.
+#
+# Title-prefix bridge rows are marked by their bridge: key.
+key	mark	date	fr_at_mark	note

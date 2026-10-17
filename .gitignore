@@ -54,3 +54,4 @@ tools/suite_results.csv
 # back by the test helpers (tests/testthat/helper-stan-cache.R). Large,
 # machine-specific, and regenerated on demand.
 dev/.fixture_cache/
+dev/i18n_fr_review_samples.md
