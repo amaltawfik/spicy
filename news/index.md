@@ -163,7 +163,7 @@ PDF.
   `options(spicy.language = "fr")`: `reference_label` now defaults to
   `NULL`, the label of the language. A label you supply is printed as
   typed. The footer of `reference_style = "footer"` is translated too
-  (“Catégories de référence : …”).
+  (“Modalités de référence : …”).
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   and
@@ -193,7 +193,10 @@ PDF.
   [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
   and
   [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md)
-  write `ajusté sur`.
+  write `ajusté sur`. The exponentiation, component, threshold, and
+  scale-effect notes are translated too. The whole French set was read
+  through and corrected
+  ([\#7](https://github.com/amaltawfik/spicy/issues/7)).
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   handles [`glmer()`](https://rdrr.io/pkg/lme4/man/glmer.html) fits with
@@ -213,6 +216,14 @@ PDF.
   calls the `partial_chi2` of `lmer`, `glmer`, `glmmTMB`, and `lme` fits
   a partial Wald chi-squared in its footer. It called it a
   likelihood-ratio chi-squared, the test of `glm`.
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  names the link of the zero part of a
+  [`pscl::zeroinfl()`](https://rdrr.io/pkg/pscl/man/zeroinfl.html) or
+  [`pscl::hurdle()`](https://rdrr.io/pkg/pscl/man/hurdle.html) fit in
+  its component note when it is not logit: “Zero-inflation component:
+  probability of a structural (excess) zero on the probit scale.” It
+  said log-odds for every link.
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   with a cluster-robust `vcov` on `lmer` and `lme` fits uses that matrix
