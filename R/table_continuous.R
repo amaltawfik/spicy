@@ -2528,7 +2528,7 @@ build_test_note <- function(test_used, auto_rank, n_groups) {
         },
         character(1)
       ),
-      collapse = "; "
+      collapse = spicy_str("note_group_comparison_sep")
     )
   )
 }

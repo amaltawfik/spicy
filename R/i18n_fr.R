@@ -235,6 +235,7 @@
   note_nonconvergence = "Probl\u00E8me de convergence du mod\u00E8le\u00A0: %s. Les estimations sont les valeurs auxquelles l'optimiseur s'est arr\u00EAt\u00E9, et non celles d'un ajustement ayant converg\u00E9.",
   note_nonconvergence_hessian = "matrice hessienne non d\u00E9finie positive",
   note_nonconvergence_code = "l'optimiseur a renvoy\u00E9 le code %s",
+  note_nonconvergence_sep = "\u00A0; ",
   note_icc_multi_group = "L'ICC n'est pas rapport\u00E9\u00A0: plusieurs facteurs de groupement d\u00E9finissent plusieurs ICC.",
   note_gee_corstr_alpha = "Corr\u00E9lation de travail GEE\u00A0: %s (alpha = %s).",
   note_gee_corstr_params = "Corr\u00E9lation de travail GEE\u00A0: %s (%d param\u00E8tres de corr\u00E9lation).",
@@ -247,6 +248,7 @@
   # -- table_regression(): the absolute survival estimands ------------------
   note_estimand_rmst = "dRMST = diff\u00E9rence de temps de survie moyen restreint sur [0, %s]",
   note_estimand_risk_diff = "dRisk = diff\u00E9rence d'incidence cumul\u00E9e \u00E0 %s",
+  note_estimand_sep = "\u00A0; ",
   note_estimand_method = "\u00A0; ajust\u00E9e par g-computation \u00E0 partir du mod\u00E8le estim\u00E9, erreurs standards par bootstrap non param\u00E9trique (%s r\u00E9plications).",
   note_estimand_method_stratified = "\u00A0; ajust\u00E9e par g-computation \u00E0 partir du mod\u00E8le estim\u00E9 (risques de base par strate), erreurs standards par bootstrap non param\u00E9trique (%s r\u00E9plications).",
   note_estimand_skipped_terms = " Les termes transform\u00E9s (%s) n'ont pas de ligne d'effet absolu\u00A0: le contraste est d\u00E9fini par variable brute\u00A0; remettez la variable \u00E0 l'\u00E9chelle dans les donn\u00E9es plut\u00F4t que dans la formule.",
@@ -282,7 +284,6 @@
   note_ame_satterthwaite = "Inf\u00E9rence sur les AME\u00A0: test t avec degr\u00E9s de libert\u00E9 de Satterthwaite%s.",
   note_ame_satterthwaite_qual_both = " (formule exacte pour lm\u00A0; approximation par le coefficient dominant pour glm)",
   note_ame_satterthwaite_qual_glm = " (approximation par le coefficient dominant)",
-  note_exp_scope_all = "Coefficients",
   note_exp_scope_partial = "%s\u00A0: coefficients",
   note_exp_se_gloss_delta = "m\u00E9thode delta",
   note_exp_se_gloss_bayes = "MAD SD a posteriori des tirages exponenti\u00E9s",

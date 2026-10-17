@@ -362,10 +362,12 @@
         # Display text: the coverage percentage follows `decimal_mark`
         # (decision 27). Today `assoc_ci_level` is pinned at 0.95
         # upstream, so the substitution is byte-inert -- until the level
-        # is ever exposed, when this line is already right.
-        ci_label <- paste0(
+        # is ever exposed, when this line is already right. Template and
+        # interval word come from the registry, as in the other families.
+        ci_label <- spicy_fmt(
+          "header_ci_spanner",
           .ci_pct_display(assoc_ci_level, decimal_mark),
-          "% CI"
+          spicy_str("header_ci_label_confidence")
         )
         for (nm in c(ll, ul)) {
           col_meta[[nm]] <- list(

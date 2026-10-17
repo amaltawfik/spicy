@@ -437,6 +437,8 @@
   # through here -- it passes verbatim.
   note_nonconvergence_hessian = "non-positive-definite Hessian matrix",
   note_nonconvergence_code = "optimizer returned code %s",
+  # The joiner of those diagnoses inside the hole.
+  note_nonconvergence_sep = "; ",
   # Why the ICC row is missing from a mixed-effects table. No hole: the
   # sentence states a property of the model the reader wrote. The row
   # stays absent -- there is no single number it could hold.
@@ -493,6 +495,8 @@
   # time scale. DATA.
   note_estimand_rmst = "dRMST = difference in restricted mean survival time over [0, %s]",
   note_estimand_risk_diff = "dRisk = difference in cumulative incidence at %s",
+  # The joiner of those two glosses when both columns are shown.
+  note_estimand_sep = "; ",
   # The method clause, in two whole sentences rather than one sentence
   # with a translatable hole: a stratified fit standardizes within each
   # subject's own stratum baseline, and an inflected language may need

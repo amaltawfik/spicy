@@ -61,7 +61,6 @@ test_design_saddlepoint	corrected	2026-10-17	khi-deux (approximation du point de
 header_events_n	corrected	2026-10-17	Événements/N	
 note_p_prefix_eq	corrected	2026-10-17	p<NBSP>=<NBSP>%s	
 note_stars_legend_entry	corrected	2026-10-17	%s p<NBSP><<NBSP>%s	
-note_p_adjusted_tests	corrected	2026-10-17	m = %d test(s)	
 note_re_test_lrt	corrected	2026-10-17	Valeurs p des effets aléatoires<NBSP>: test du rapport de vraisemblance contre la structure aléatoire réduite, loi de référence χ̄² (mélange de khi-deux).	
 note_singular_mixed	corrected	2026-10-17	Ajustement singulier<NBSP>: la structure des effets aléatoires est à la frontière de l'espace des paramètres ou près de celle-ci (une variance de 0 ou une corrélation de +/-1)<NBSP>; l'erreur standard de Wald et l'IC des composantes de la variance sont omis.	
 note_ame_satterthwaite_qual_both	corrected	2026-10-17	 (formule exacte pour lm<NBSP>; approximation par le coefficient dominant pour glm)	
@@ -297,7 +296,6 @@ note_abbrev_ame_percat	reviewed	2026-10-17	AME = effet marginal moyen sur la pro
 note_abbrev_sep	reviewed	2026-10-17	<NBSP>; 	
 note_ame_satterthwaite	reviewed	2026-10-17	Inférence sur les AME<NBSP>: test t avec degrés de liberté de Satterthwaite%s.	
 note_ame_satterthwaite_qual_glm	reviewed	2026-10-17	 (approximation par le coefficient dominant)	
-note_exp_scope_all	reviewed	2026-10-17	Coefficients	
 note_exp_scope_partial	reviewed	2026-10-17	%s<NBSP>: coefficients	
 note_exp_se_gloss_delta	reviewed	2026-10-17	méthode delta	
 note_exp_se_gloss_bayes	reviewed	2026-10-17	MAD SD a posteriori des tirages exponentiés	
@@ -406,3 +404,5 @@ excel_sheet_regression	reviewed	2026-10-17	Régression
 excel_sheet_categorical	reviewed	2026-10-17	Catégorielles	
 excel_sheet_continuous_lm	reviewed	2026-10-17	Modèles linéaires	
 excel_sheet_codebook_values	reviewed	2026-10-17	valeurs	
+note_estimand_sep	reviewed	2026-10-17	<NBSP>; 	
+note_nonconvergence_sep	reviewed	2026-10-17	<NBSP>; 	

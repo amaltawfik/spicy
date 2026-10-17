@@ -510,7 +510,6 @@ if (!setequal(REG$key, names(EN)) || anyDuplicated(REG$key)) {
   # reader reads them as written.
   "kept: read as written" = c(
     "header_n_upper",
-    "header_events_n",
     "header_b",
     "header_p",
     "header_pd",
@@ -541,7 +540,6 @@ if (!setequal(REG$key, names(EN)) || anyDuplicated(REG$key)) {
     "header_margin_total",
     "stat_phi",
     "stat_lambda",
-    "note_p_prefix_eq",
     "header_deff",
     "fitstat_pseudo_r2",
     "fitstat_r2_qualified",
@@ -569,7 +567,8 @@ if (!setequal(REG$key, names(EN)) || anyDuplicated(REG$key)) {
     "header_max",
     "header_test",
     "note_vcov_jackknife_plain",
-    "note_stars_legend_entry",
+    "note_p_adjusted_tests",
+    "note_exp_scope_all",
     # code_book(), added after 2026-08-23
     "excel_sheet_codebook",
     "excel_sheet_codebook_variables",

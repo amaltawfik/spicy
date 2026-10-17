@@ -924,7 +924,7 @@ build_survival_estimand_footer_block_from_frames <- function(frames) {
         format(es$boot_n)
       }
       paste0(
-        paste(parts, collapse = "; "),
+        paste(parts, collapse = spicy_str("note_estimand_sep")),
         spicy_fmt(
           if (isTRUE(es$stratified)) {
             "note_estimand_method_stratified"

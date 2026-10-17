@@ -120,7 +120,7 @@ workbook, or a PDF.
   `options(spicy.language = "fr")`: `reference_label` now defaults to
   `NULL`, the label of the language. A label you supply is printed as
   typed. The footer of `reference_style = "footer"` is translated too
-  ("Catégories de référence : ...").
+  ("Modalités de référence : ...").
 
 * `table_regression()` and `table_regression_uv()` write their headers in
   French under `options(spicy.language = "fr")`: `ES`, `IC à 95 %` over
@@ -157,6 +157,12 @@ workbook, or a PDF.
 * `table_regression()` calls the `partial_chi2` of `lmer`, `glmer`,
   `glmmTMB`, and `lme` fits a partial Wald chi-squared in its footer. It
   called it a likelihood-ratio chi-squared, the test of `glm`.
+
+* `table_regression()` names the link of the zero part of a
+  `pscl::zeroinfl()` or `pscl::hurdle()` fit in its component note when
+  it is not logit: "Zero-inflation component: probability of a
+  structural (excess) zero on the probit scale." It said log-odds for
+  every link.
 
 * `table_regression()` with a cluster-robust `vcov` on `lmer` and `lme`
   fits uses that matrix for the joint tests of the terms (`partial_chi2`)

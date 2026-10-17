@@ -976,7 +976,10 @@ as_regression_frame.glmmTMB <- function(
   }
   spicy_fmt(
     "note_nonconvergence",
-    paste(.glmmTMB_problem_text(problems), collapse = "; ")
+    paste(
+      .glmmTMB_problem_text(problems),
+      collapse = spicy_str("note_nonconvergence_sep")
+    )
   )
 }
 

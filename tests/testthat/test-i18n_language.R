@@ -450,6 +450,26 @@ test_that("a descriptive interval names its bounds in the language", {
   expect_false(grepl("95% CI", out, fixed = TRUE))
 })
 
+test_that("the association interval of a categorical table is labeled in the language", {
+  s_of <- function() {
+    as_structured(table_categorical(
+      sochealth,
+      select = smoking,
+      by = education,
+      assoc_ci = TRUE
+    ))
+  }
+  lab_of <- \(s) unique(unlist(lapply(s$col_meta, `[[`, "ci_label")))
+  en <- s_of()
+  expect_identical(lab_of(en), "95% CI")
+  withr::local_options(spicy.language = "fr")
+  fr <- s_of()
+  ic <- "IC \u00E0 95\u00A0%"
+  expect_identical(lab_of(fr), ic)
+  expect_identical(vapply(fr$ci_pairs, `[[`, character(1), "label"), ic)
+  expect_identical(names(fr$body), names(en$body))
+})
+
 test_that("the French effect-size header is the full word", {
   en <- table_continuous(sochealth, select = bmi, by = sex, effect_size = TRUE)
   withr::local_options(spicy.language = "fr", width = 160)
@@ -1076,6 +1096,105 @@ test_that("the outcome comparison note joins its tests in the language", {
     note(),
     "ANOVA de Welch \u00E0 un facteur (cyl)\u00A0; test t de Welch (am, vs).",
     fixed = TRUE
+  )
+})
+
+test_that("the group-comparison note of table_continuous() joins in the language", {
+  d <- data.frame(
+    skewed = (1:60)^2,
+    age = 20 + (1:60) %% 7,
+    g = rep(c("a", "b"), 30)
+  )
+  note <- function() {
+    attr(
+      table_continuous(
+        d,
+        select = c(skewed, age),
+        by = g,
+        show_columns = list(
+          skewed = c("med_iqr", "n"),
+          age = c("m", "sd", "n")
+        ),
+        output = "long"
+      ),
+      "missing_note"
+    )
+  }
+  expect_match(
+    note(),
+    "Group comparison: Welch t-test (age); Wilcoxon rank-sum test (skewed).",
+    fixed = TRUE
+  )
+  withr::local_options(spicy.language = "fr")
+  expect_match(
+    note(),
+    paste0(
+      "Comparaison des groupes\u00A0: test de Wilcoxon-Mann-Whitney ",
+      "(skewed)\u00A0; test t de Welch (age)."
+    ),
+    fixed = TRUE
+  )
+})
+
+test_that("the survival estimand note joins its glosses in the language", {
+  es <- list(
+    tau = 365,
+    at_time = 200,
+    boot_n = 500L,
+    boot_valid = 500L,
+    stratified = FALSE,
+    skipped_terms = character(0)
+  )
+  note <- function() {
+    spicy:::build_survival_estimand_footer_block_from_frames(
+      list(list(info = list(extras = list(survival_estimands = es))))
+    )
+  }
+  expect_identical(
+    note(),
+    paste0(
+      "dRMST = difference in restricted mean survival time over [0, 365]; ",
+      "dRisk = difference in cumulative incidence at 200; adjusted by ",
+      "g-computation from the fitted model, SEs by nonparametric bootstrap ",
+      "(500 replicates)."
+    )
+  )
+  withr::local_options(spicy.language = "fr")
+  expect_identical(
+    note(),
+    paste0(
+      "dRMST = diff\u00E9rence de temps de survie moyen restreint sur ",
+      "[0, 365]\u00A0; dRisk = diff\u00E9rence d'incidence cumul\u00E9e ",
+      "\u00E0 200\u00A0; ajust\u00E9e par g-computation \u00E0 partir du ",
+      "mod\u00E8le estim\u00E9, erreurs standards par bootstrap non ",
+      "param\u00E9trique (500 r\u00E9plications)."
+    )
+  )
+})
+
+test_that("the nonconvergence note joins its diagnoses in the language", {
+  problems <- list(
+    list(kind = "engine_message", value = "false convergence (8)"),
+    list(kind = "hessian", value = NULL)
+  )
+  note <- \() spicy:::.glmmTMB_convergence_note(problems)
+  expect_identical(
+    note(),
+    paste0(
+      "Model convergence problem: false convergence (8); non-positive-definite ",
+      "Hessian matrix. The estimates are the values the optimizer stopped at, ",
+      "not a converged fit."
+    )
+  )
+  withr::local_options(spicy.language = "fr")
+  expect_identical(
+    note(),
+    paste0(
+      "Probl\u00E8me de convergence du mod\u00E8le\u00A0: false convergence ",
+      "(8)\u00A0; matrice hessienne non d\u00E9finie positive. Les estimations ",
+      "sont les valeurs auxquelles l'optimiseur s'est arr\u00EAt\u00E9, et non ",
+      "celles d'un ajustement ayant converg\u00E9."
+    )
   )
 })
 
