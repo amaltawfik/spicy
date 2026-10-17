@@ -751,3 +751,27 @@ make_stronger_indent <- function(x, base_indent, strong_indent, rows) {
   }
   structured
 }
+
+# The test block of a compute frame (decision of 2026-10-17, issue #9):
+# the p-value column is kept only with `p_value`, and the rest of the
+# test (its type, statistic and degrees of freedom) only when the test
+# ran, for the p-value, the statistic or an effect size. Absent, not NA:
+# a frame carries no p-value its table does not report, and no column
+# for a test that did not run. Columns are removed one by one, so the
+# frame keeps its other attributes.
+.desc_drop_test_block <- function(
+  df,
+  p_value,
+  test_ran = p_value,
+  p_col = "p.value",
+  stat_cols = c("test_type", "statistic", "df1", "df2")
+) {
+  drop <- if (isTRUE(p_value)) character(0) else p_col
+  if (!isTRUE(test_ran)) {
+    drop <- c(drop, stat_cols)
+  }
+  for (nm in intersect(drop, names(df))) {
+    df[[nm]] <- NULL
+  }
+  df
+}

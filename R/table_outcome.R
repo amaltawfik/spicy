@@ -1124,6 +1124,10 @@ table_outcome <- function(
   )
   result <- adj$df
   p_adjust_info <- adj$info
+  # `p_value = FALSE`: the p-value leaves the frame, and the rest of the
+  # test too when nothing ran it (it would be NA columns); `statistic` or
+  # an effect size keep it (decision of 2026-10-17).
+  result <- .desc_drop_test_block(result, p_value, do_test)
 
   n_na_weights <- if (is.null(weights_vec)) 0L else sum(is.na(weights_vec))
   note <- .outcome_note(

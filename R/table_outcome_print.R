@@ -305,16 +305,22 @@ glance.spicy_outcome_table <- function(x, ...) {
     integer(1),
     USE.NAMES = FALSE
   )
+  # The test columns may be absent from the frame (`p_value = FALSE`
+  # drops the p-value, and the rest when nothing ran the test); the
+  # summary keeps its fixed schema, NA there.
+  test_field <- function(nm, na) {
+    if (is.null(headers[[nm]])) rep(na, nrow(headers)) else headers[[nm]]
+  }
   .outcome_as_tbl(data.frame(
     outcome = rep(outcome, nrow(headers)),
     variable = headers$variable,
     label = headers$label,
     n_levels = n_levels,
-    test_type = headers$test_type,
-    statistic = headers$statistic,
-    df = headers$df1,
-    df.residual = headers$df2,
-    p.value = headers$p.value,
+    test_type = test_field("test_type", NA_character_),
+    statistic = test_field("statistic", NA_real_),
+    df = test_field("df1", NA_real_),
+    df.residual = test_field("df2", NA_real_),
+    p.value = test_field("p.value", NA_real_),
     es_type = headers$es_type,
     es_value = headers$es_value,
     es_ci_lower = headers$es_ci_lower,

@@ -1425,3 +1425,21 @@ test_that("p_adjust needs `by` and the p-value column", {
     class = "spicy_invalid_input"
   )
 })
+
+test_that("p_value = FALSE leaves no p column in the frame (issue #9)", {
+  des <- .svycat_design()
+  ref <- .svycat_long(des, c(stype, awards), by = sch.wide)
+  out <- .svycat_long(des, c(stype, awards), by = sch.wide, p_value = FALSE)
+  # Absent, not an empty column; the rest of the frame is the default's.
+  expect_identical(names(out), setdiff(names(ref), "p"))
+  expect_identical(as.list(out)[names(out)], as.list(ref)[names(out)])
+  tbl <- suppressWarnings(table_categorical_svy(
+    des,
+    c(stype, awards),
+    by = sch.wide,
+    p_value = FALSE
+  ))
+  expect_false("p" %in% names(tbl))
+  expect_false("p" %in% names(attr(tbl, "display_df")))
+  expect_true(all(is.na(broom::glance(tbl)$p.value)))
+})

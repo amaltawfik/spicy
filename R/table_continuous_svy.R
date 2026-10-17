@@ -1024,6 +1024,9 @@ table_continuous_svy <- function(
   adj <- .desc_apply_p_adjust(result, "p.value", result$variable, p_adjust)
   result <- adj$df
   p_adjust_info <- adj$info
+  # `p_value = FALSE`: the p-value leaves the frame even when `statistic`
+  # keeps the rest of the test (decision of 2026-10-17).
+  result <- .desc_drop_test_block(result, p_value, do_test)
 
   test_refused <- .design_refusal_regime(n_test_refused, n_test_attempted)
   # The note names each variable as its rows name it.

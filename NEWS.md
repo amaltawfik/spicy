@@ -63,6 +63,16 @@ workbook, or a PDF.
   together. The note gives the method and the number of tests, and the
   raw p-values stay in the object as `p_unadjusted`.
 
+* `table_categorical()` gains `p_value`, as its siblings have.
+  `p_value = FALSE` drops the chi-squared test (`p`, and `Chi2` and `df`
+  in the data frames) from every output; with `assoc_measure = "none"`
+  as well, the table is purely descriptive (#9). In `table_continuous()`,
+  `table_outcome()`, and the survey twins, `p_value = FALSE` now also
+  removes the p-value from `output = "data.frame"` and `"long"`, where it
+  stayed when `statistic = TRUE` or an effect size ran the test, and
+  `table_outcome()` and `table_categorical_svy()` no longer leave empty
+  test columns there.
+
 * `table_regression()` and `table_regression_uv()` take the same four
   `labels` forms. `labels = TRUE` names the outcome, the numeric terms,
   and the factor headers by their `label` attribute, as in "Linear

@@ -896,3 +896,35 @@ test_that("p_adjust needs the p-value column", {
     class = "spicy_invalid_input"
   )
 })
+
+test_that("p_value = FALSE leaves no p-value and no empty test column (issue #9)", {
+  test_cols <- c("test_type", "statistic", "df1", "df2", "p.value")
+  build <- function(...) {
+    .to_quiet(table_outcome(.to_sh(), bmi, select = c(sex, smoking), ...))
+  }
+  ref <- build(output = "data.frame")
+  # Absent, not NA columns; the rest of the frame is the default's.
+  out <- build(p_value = FALSE, output = "data.frame")
+  expect_identical(names(out), setdiff(names(ref), test_cols))
+  expect_identical(as.list(out)[names(out)], as.list(ref)[names(out)])
+  # The statistic and an effect size keep the test they show or come
+  # from; the p-value still goes.
+  for (st in list(
+    build(p_value = FALSE, statistic = TRUE, output = "data.frame"),
+    build(p_value = FALSE, effect_size = "auto", output = "data.frame")
+  )) {
+    expect_identical(
+      intersect(test_cols, names(st)),
+      setdiff(test_cols, "p.value")
+    )
+    expect_identical(st$statistic, ref$statistic)
+  }
+  # glance() keeps its fixed schema, NA where the frame has no column.
+  gl <- broom::glance(build(p_value = FALSE, statistic = TRUE))
+  gl0 <- broom::glance(build(p_value = FALSE))
+  expect_identical(names(gl0), names(gl))
+  expect_true(all(c("statistic", "df", "p.value") %in% names(gl)))
+  expect_true(all(is.na(gl$p.value)))
+  expect_false(anyNA(gl$statistic))
+  expect_true(all(is.na(gl0$statistic)))
+})

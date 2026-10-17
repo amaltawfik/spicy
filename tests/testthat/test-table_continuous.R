@@ -659,6 +659,26 @@ test_that("table_continuous p_value = FALSE suppresses column when by is supplie
   expect_false(attr(out, "show_p"))
 })
 
+test_that("p_value = FALSE drops p.value when another argument runs the test (issue #9)", {
+  build <- function(...) {
+    table_continuous(iris, select = Sepal.Length, by = Species, ...)
+  }
+  # The statistic keeps its own switch; the p-value follows `p_value`.
+  st <- build(p_value = FALSE, statistic = TRUE, output = "data.frame")
+  expect_true(all(c("test_type", "statistic", "df1", "df2") %in% names(st)))
+  expect_false("p.value" %in% names(st))
+  # An effect size keeps the test it comes from, not its p-value.
+  es <- build(p_value = FALSE, effect_size = "eta_sq", output = "data.frame")
+  expect_true(all(c("test_type", "statistic", "df1", "df2") %in% names(es)))
+  expect_false("p.value" %in% names(es))
+  expect_false(is.na(es$es_value[1]))
+  # glance() keeps its fixed schema, NA where the frame has no column.
+  gl <- broom::glance(build(p_value = FALSE, statistic = TRUE))
+  expect_true("p.value" %in% names(gl))
+  expect_true(is.na(gl$p.value))
+  expect_false(is.na(gl$statistic))
+})
+
 test_that("table_continuous print works with statistic only", {
   out <- table_continuous(
     iris,

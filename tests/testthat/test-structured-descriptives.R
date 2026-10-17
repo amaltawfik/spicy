@@ -240,6 +240,44 @@ test_that("as_structured() types a categorical table by a group", {
   expect_faithful(s, cat_display(tbl))
 })
 
+test_that("p_value = FALSE leaves no test column in the typed view", {
+  sh <- sh_desc()
+  tbl <- quiet(table_categorical(
+    sh,
+    c(sex, smoking),
+    by = education,
+    p_value = FALSE
+  ))
+  s <- as_structured(tbl)
+
+  expect_v3_shape(s)
+  expect_identical(
+    spicy:::.struct_value_cols(s$body),
+    c(
+      "Lower secondary n",
+      "Lower secondary %",
+      "Upper secondary n",
+      "Upper secondary %",
+      "Tertiary n",
+      "Tertiary %",
+      "Total n",
+      "Total %",
+      "Cramer's V"
+    )
+  )
+  # The group spanners do not move: the test sat to their right.
+  expect_identical(
+    s$spanners,
+    list(
+      `Lower secondary` = c(2L, 3L),
+      `Upper secondary` = c(4L, 5L),
+      Tertiary = c(6L, 7L),
+      Total = c(8L, 9L)
+    )
+  )
+  expect_faithful(s, cat_display(tbl))
+})
+
 test_that("a signed association measure is not read as a bad p-value", {
   sh <- sh_desc()
   tbl <- quiet(table_categorical(

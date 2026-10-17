@@ -4029,3 +4029,266 @@ test_that("p_adjust under holm is pinned, in English and in French", {
     p_adjust = "holm"
   )))
 })
+
+# ---- p_value (issue #9) ------------------------------------------------------
+
+.pv_tbl <- function(...) {
+  table_categorical(sochealth, c(smoking, education), by = sex, ...)
+}
+
+test_that("p_value defaults to the test with `by`, as in the siblings", {
+  ref <- .pv_tbl()
+  expect_true(all(c("Chi2", "df", "p") %in% names(ref)))
+  expect_identical(.pv_tbl(p_value = TRUE), ref)
+  expect_true(all(c("chi2", "df", "p") %in% names(.pv_tbl(output = "long"))))
+  expect_true("p" %in% names(as_structured(ref)$col_meta))
+})
+
+test_that("p_value = FALSE: the data frames are the default minus the test", {
+  ref <- .pv_tbl(output = "data.frame")
+  out <- .pv_tbl(p_value = FALSE, output = "data.frame")
+  expect_identical(names(out), setdiff(names(ref), c("Chi2", "df", "p")))
+  expect_identical(out, ref[names(out)])
+
+  ref_l <- .pv_tbl(output = "long")
+  out_l <- .pv_tbl(p_value = FALSE, output = "long")
+  expect_identical(names(out_l), setdiff(names(ref_l), c("chi2", "df", "p")))
+  expect_identical(out_l, ref_l[names(out_l)])
+})
+
+test_that("p_value = FALSE: the console table, its typed view and glance()", {
+  ref <- .pv_tbl()
+  tbl <- .pv_tbl(p_value = FALSE)
+  expect_false(any(c("Chi2", "df", "p") %in% names(tbl)))
+  expect_false(any(
+    c("chi2", "df", "p", "p_op") %in% names(attr(tbl, "long_data"))
+  ))
+
+  disp <- attr(tbl, "display_df")
+  expect_identical(disp, attr(ref, "display_df")[names(disp)])
+  expect_identical(setdiff(names(attr(ref, "display_df")), names(disp)), "p")
+
+  s <- as_structured(tbl)
+  s_ref <- as_structured(ref)
+  expect_false("p" %in% names(s$col_meta))
+  expect_false("p" %in% names(s$body))
+  expect_false("p" %in% vapply(s$col_meta, `[[`, "", "token"))
+  expect_identical(s$spanners, s_ref$spanners)
+  expect_identical(s$body$.row_role, s_ref$body$.row_role)
+
+  # The measure note is the measure's: it stays.
+  expect_identical(attr(tbl, "assoc_note"), attr(ref, "assoc_note"))
+  printed <- utils::capture.output(print(tbl))
+  header <- printed[grepl("Variable", printed, fixed = TRUE)][[1L]]
+  expect_match(header, "Female n", fixed = TRUE)
+  expect_match(header, "Total %", fixed = TRUE)
+  expect_false(grepl("\\bp\\b", header))
+
+  gl <- broom::glance(tbl)
+  expect_true(all(is.na(gl$test_type)))
+  expect_true(all(is.na(gl$statistic)))
+  expect_true(all(is.na(gl$p.value)))
+  expect_false(anyNA(gl$assoc_value))
+})
+
+test_that("p_value = FALSE removes the p column from every rendered engine", {
+  skip_if_not_installed("tinytable")
+  skip_if_not_installed("gt")
+  skip_if_not_installed("flextable")
+  skip_if_not_installed("officer")
+  skip_if_not_installed("openxlsx2")
+
+  tt <- .pv_tbl(p_value = FALSE, output = "tinytable")
+  expect_identical(
+    ncol(tt@data),
+    ncol(.pv_tbl(output = "tinytable")@data) - 1L
+  )
+  md <- strsplit(tinytable::save_tt(tt, output = "markdown"), "\n")[[1L]]
+  top <- md[grepl("Variable", md, fixed = TRUE)][[1L]]
+  expect_match(top, "Female", fixed = TRUE)
+  expect_match(top, "Total", fixed = TRUE)
+  expect_false(grepl("| p ", top, fixed = TRUE))
+
+  g <- .pv_tbl(p_value = FALSE, output = "gt")
+  g_ref <- .pv_tbl(output = "gt")
+  expect_false("p" %in% names(g[["_data"]]))
+  expect_false("spn_p" %in% g[["_spanners"]]$spanner_id)
+  expect_identical(
+    setdiff(g_ref[["_spanners"]]$spanner_id, g[["_spanners"]]$spanner_id),
+    "spn_p"
+  )
+  expect_identical(attr(g, "spicy_note"), attr(g_ref, "spicy_note"))
+
+  ft <- .pv_tbl(p_value = FALSE, output = "flextable")
+  expect_identical(
+    ft$col_keys,
+    setdiff(.pv_tbl(output = "flextable")$col_keys, "p")
+  )
+  ft_top <- unlist(ft$header$dataset[1L, ], use.names = FALSE)
+  expect_false("p" %in% ft_top)
+  expect_true(all(c("Female", "Male", "Total") %in% ft_top))
+
+  docx <- tempfile(fileext = ".docx")
+  xlsx <- tempfile(fileext = ".xlsx")
+  on.exit(unlink(c(docx, xlsx)), add = TRUE)
+  .pv_tbl(p_value = FALSE, output = "word", word_path = docx)
+  cells <- officer::docx_summary(officer::read_docx(docx))
+  cells <- cells[cells$content_type == "table cell", ]
+  wd_top <- trimws(cells$text[cells$row_id == min(cells$row_id)])
+  expect_false("p" %in% wd_top)
+  expect_true(all(c("Female", "Male", "Total") %in% wd_top))
+
+  .pv_tbl(p_value = FALSE, output = "excel", excel_path = xlsx)
+  grid <- as.matrix(openxlsx2::wb_to_df(
+    openxlsx2::wb_load(xlsx),
+    col_names = FALSE
+  ))
+  xl_top <- grid[3L, ]
+  expect_false("p" %in% xl_top)
+  expect_true(all(c("Female", "Male", "Total") %in% xl_top))
+  expect_identical(ncol(grid), 8L)
+
+  clip <- NULL
+  testthat::local_mocked_bindings(
+    clipr_available = function(...) TRUE,
+    write_clip = function(x, ...) {
+      clip <<- x
+      invisible(NULL)
+    },
+    .package = "clipr"
+  )
+  suppressMessages(.pv_tbl(p_value = FALSE, output = "clipboard"))
+  clip_top <- strsplit(strsplit(clip, "\n", fixed = TRUE)[[1L]][[2L]], "\t")[[
+    1L
+  ]]
+  expect_false("p" %in% clip_top)
+  expect_true(all(c("Female", "Male", "Total") %in% clip_top))
+})
+
+test_that("p_value = FALSE with assoc_measure = \"none\": a purely descriptive table", {
+  tbl <- .pv_tbl(p_value = FALSE, assoc_measure = "none")
+  s <- as_structured(tbl)
+  expect_identical(
+    unique(vapply(s$col_meta, `[[`, "", "token")),
+    c("n", "pct")
+  )
+  # No measure, so no measure note either.
+  expect_null(attr(tbl, "assoc_note"))
+  expect_identical(
+    names(.pv_tbl(
+      p_value = FALSE,
+      assoc_measure = "none",
+      output = "data.frame"
+    )),
+    c(
+      "Variable",
+      "Level",
+      "Female n",
+      "Female %",
+      "Male n",
+      "Male %",
+      "Total n",
+      "Total %"
+    )
+  )
+  expect_identical(
+    names(.pv_tbl(p_value = FALSE, assoc_measure = "none", output = "long")),
+    c("variable", "level", "group", "n", "pct")
+  )
+  withr::local_options(width = 100)
+  expect_snapshot(print(tbl))
+})
+
+test_that("a descriptive table leaves the engines no statistic column", {
+  skip_if_not_installed("tinytable")
+  skip_if_not_installed("gt")
+  skip_if_not_installed("flextable")
+  skip_if_not_installed("openxlsx2")
+  tt <- .pv_tbl(p_value = FALSE, assoc_measure = "none", output = "tinytable")
+  expect_identical(ncol(tt@data), 7L)
+  g <- .pv_tbl(p_value = FALSE, assoc_measure = "none", output = "gt")
+  expect_null(attr(g, "spicy_note"))
+  expect_identical(
+    g[["_spanners"]]$spanner_id,
+    c("spn_variable", paste0("spn_", c("Female", "Male", "Total"), "_n"))
+  )
+  ft <- .pv_tbl(p_value = FALSE, assoc_measure = "none", output = "flextable")
+  expect_identical(nrow(ft$footer$dataset), 0L)
+  # With no statistic left, the count of text columns taken from the
+  # right is zero: the sheet stops at the last percentage (column G)
+  # instead of styling an empty column beyond it.
+  xlsx <- tempfile(fileext = ".xlsx")
+  on.exit(unlink(xlsx), add = TRUE)
+  .pv_tbl(
+    p_value = FALSE,
+    assoc_measure = "none",
+    output = "excel",
+    excel_path = xlsx
+  )
+  wb <- openxlsx2::wb_load(xlsx)
+  expect_false(any(grepl("^H", wb$worksheets[[1L]]$sheet_data$cc$r)))
+  expect_identical(ncol(openxlsx2::wb_to_df(wb, col_names = FALSE)), 7L)
+})
+
+test_that("p_value = FALSE keeps the SMD, which has its own switch", {
+  tbl <- .pv_tbl(p_value = FALSE, smd = TRUE)
+  ref <- .pv_tbl(smd = TRUE)
+  expect_false("p" %in% names(tbl))
+  expect_identical(tbl$SMD, ref$SMD)
+  long <- .pv_tbl(p_value = FALSE, smd = TRUE, output = "long")
+  expect_true(all(c("smd", "smd_type") %in% names(long)))
+  expect_false("p" %in% names(long))
+  expect_identical(
+    as_structured(tbl)$col_meta$SMD,
+    as_structured(ref)$col_meta$SMD
+  )
+})
+
+test_that("p_adjust is refused when p_value = FALSE removes the p column", {
+  expect_error(
+    .pv_tbl(p_value = FALSE, p_adjust = "holm"),
+    class = "spicy_invalid_input"
+  )
+  expect_no_error(.pv_tbl(p_value = FALSE, p_adjust = "none"))
+})
+
+test_that("p_value without `by` is ignored, with a warning when TRUE", {
+  ref <- table_categorical(sochealth, c(smoking, education))
+  expect_warning(
+    out <- table_categorical(sochealth, c(smoking, education), p_value = TRUE),
+    class = "spicy_ignored_arg"
+  )
+  expect_identical(out, ref)
+  expect_no_warning(
+    out <- table_categorical(sochealth, c(smoking, education), p_value = FALSE)
+  )
+  expect_identical(out, ref)
+})
+
+test_that("p_value is validated", {
+  for (bad in list(NA, "no", c(TRUE, FALSE), 1)) {
+    expect_error(.pv_tbl(p_value = bad), class = "spicy_invalid_input")
+  }
+})
+
+test_that("correct and simulate_p are ignored without the test", {
+  ref <- .pv_tbl(p_value = FALSE)
+  expect_warning(
+    out <- .pv_tbl(p_value = FALSE, correct = TRUE),
+    "`correct` is ignored",
+    class = "spicy_ignored_arg"
+  )
+  expect_identical(out, ref)
+  # No Monte Carlo draw for a p-value nobody sees: the session's RNG is
+  # where it was.
+  set.seed(1)
+  expect_warning(
+    out <- .pv_tbl(p_value = FALSE, simulate_p = TRUE),
+    "`simulate_p` is ignored",
+    class = "spicy_ignored_arg"
+  )
+  after <- stats::runif(1L)
+  set.seed(1)
+  expect_identical(stats::runif(1L), after)
+  expect_identical(out, ref)
+})

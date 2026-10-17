@@ -241,9 +241,9 @@ the method and the family size \code{m}. The raw p-values stay in the
 object: a \code{p_unadjusted} column next to the p-value column of the
 returned data frames, and \code{col_meta$p$p_unadjusted} (with the method
 in \code{p_adjust} and the family size in \code{p_adjust_m}) in
-\code{\link[=as_structured]{as_structured()}}. Without \code{by}, or with \code{p_value = FALSE} where the
-function has that argument, the table shows no p-value to adjust,
-and a \code{p_adjust} other than \code{"none"} is an error.
+\code{\link[=as_structured]{as_structured()}}. Without \code{by}, or with \code{p_value = FALSE}, the table
+shows no p-value to adjust, and a \code{p_adjust} other than \code{"none"} is an
+error.
 }
 
 \examples{

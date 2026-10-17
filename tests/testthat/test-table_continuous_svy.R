@@ -1600,3 +1600,28 @@ test_that("p_adjust needs `by` and the p-value column", {
     class = "spicy_invalid_input"
   )
 })
+
+test_that("statistic = TRUE, p_value = FALSE keeps the statistic, not the p (issue #9)", {
+  d <- .svyc_design()
+  ref <- .svyc_long(d, c(api00, api99), by = stype, statistic = TRUE)
+  out <- .svyc_long(
+    d,
+    c(api00, api99),
+    by = stype,
+    statistic = TRUE,
+    p_value = FALSE
+  )
+  expect_identical(names(out), setdiff(names(ref), "p.value"))
+  expect_identical(out$statistic, ref$statistic)
+  # glance() keeps its fixed schema, NA where the frame has no column.
+  gl <- broom::glance(suppressWarnings(table_continuous_svy(
+    d,
+    c(api00, api99),
+    by = stype,
+    statistic = TRUE,
+    p_value = FALSE
+  )))
+  expect_true("p.value" %in% names(gl))
+  expect_true(all(is.na(gl$p.value)))
+  expect_false(anyNA(gl$statistic))
+})

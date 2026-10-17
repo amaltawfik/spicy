@@ -17,6 +17,7 @@ table_categorical(
   correct = FALSE,
   simulate_p = FALSE,
   simulate_B = 2000,
+  p_value = NULL,
   p_adjust = "none",
   percent_digits = 1,
   p_digits = 3,
@@ -129,12 +130,23 @@ If \code{TRUE}, uses Monte Carlo simulation. Passed to \code{spicy::cross_tab()}
 \item{simulate_B}{Integer. Number of Monte Carlo replicates when
 \code{simulate_p = TRUE}. Defaults to \code{2000}.}
 
+\item{p_value}{Logical or \code{NULL}. If \code{TRUE} and \code{by} is used, adds
+the \emph{p}-value column of the chi-squared test. When \code{NULL} (the
+default), the \emph{p}-value is shown automatically whenever \code{by} is
+supplied, and hidden otherwise. Pass \code{p_value = FALSE} to remove
+the test from every output: the \code{p} column, and the \code{Chi2} and
+\code{df} columns of \code{"data.frame"} and \code{"long"}; \code{correct} and
+\code{simulate_p} are then ignored, with a warning. The association
+measure keeps its own switch, so
+\verb{p_value = FALSE, assoc_measure = "none"} gives a purely
+descriptive table. Ignored when \code{by} is not used.}
+
 \item{p_adjust}{Multiple-comparison adjustment of the \code{p} column,
 applied to the family of every test in the table (one p-value per
 variable). One of \code{"none"} (default), \code{"holm"}, \code{"hochberg"},
 \code{"hommel"}, \code{"bonferroni"}, \code{"BH"} / \code{"fdr"}, or \code{"BY"}, as in
 \code{\link[=table_regression]{table_regression()}}; delegated to \code{\link[stats:p.adjust]{stats::p.adjust()}}. Needs
-\code{by}. See \emph{Multiple-comparison adjustment}.}
+\code{by} and the \code{p} column. See \emph{Multiple-comparison adjustment}.}
 
 \item{percent_digits}{Number of digits for percentages in report outputs.
 Defaults to \code{1}.}
@@ -312,12 +324,13 @@ silent (print \code{t} to display the table).
 variable--level combination.
 When \code{by} is used, the columns are \code{Variable}, \code{Level}, and one
 pair of \code{n} / \verb{\\\%} columns per group level (plus \code{Total} when
-\code{include_total = TRUE}), followed by \code{Chi2}, \code{df}, \code{p}, and the
-association measure column.
+\code{include_total = TRUE}), followed by \code{Chi2}, \code{df}, \code{p} (absent
+with \code{p_value = FALSE}), and the association measure column.
 When \code{by = NULL}, the columns are \code{Variable}, \code{Level}, \code{n}, \verb{\\\%}.
 \item \code{"long"}: a long \code{data.frame} with columns \code{variable},
-\code{level}, \code{n}, \code{pct} (plus \code{group}, \code{chi2}, \code{df}, \code{p} when \code{by} is
-used). The association measure is always called \code{effect_size},
+\code{level}, \code{n}, \code{pct} (plus \code{group} when \code{by} is used, and \code{chi2},
+\code{df}, \code{p} unless \code{p_value = FALSE}). The association measure is
+always called \code{effect_size},
 whichever measure it is, and \code{effect_size_type} names that measure
 per row (\code{"cramer_v"}, \code{"phi"}, ...), or is \code{NA} on the rows of a
 variable given \code{assoc_measure = "none"}. The wide outputs instead
@@ -376,6 +389,11 @@ both ordered -> Kendall's Tau-b, otherwise Cramer's V). Without
 \code{by}, the table reports the marginal frequency distribution of
 each variable with no inferential statistics.
 
+The test and the measure are two decisions with two arguments:
+\code{p_value = FALSE} removes the test, \code{assoc_measure = "none"} the
+measure. Together they give a purely descriptive table, which keeps
+the group columns and their headers; \code{smd} stays available.
+
 For model-based comparisons (cluster-robust SE, weighted contrasts,
 fitted means) on continuous outcomes, see \code{\link[=table_continuous_lm]{table_continuous_lm()}}.
 For descriptive (empirical) comparisons on continuous outcomes, see
@@ -402,9 +420,9 @@ the method and the family size \code{m}. The raw p-values stay in the
 object: a \code{p_unadjusted} column next to the p-value column of the
 returned data frames, and \code{col_meta$p$p_unadjusted} (with the method
 in \code{p_adjust} and the family size in \code{p_adjust_m}) in
-\code{\link[=as_structured]{as_structured()}}. Without \code{by}, or with \code{p_value = FALSE} where the
-function has that argument, the table shows no p-value to adjust,
-and a \code{p_adjust} other than \code{"none"} is an error.
+\code{\link[=as_structured]{as_structured()}}. Without \code{by}, or with \code{p_value = FALSE}, the table
+shows no p-value to adjust, and a \code{p_adjust} other than \code{"none"} is an
+error.
 }
 
 \section{Standardized mean difference}{
@@ -467,16 +485,10 @@ drops it: the APA strip belongs to a bounded measure, and this one
 is not bounded. The two columns therefore print \code{0.45} and \code{.45}
 side by side, on purpose.
 
-Two limits of the current grammar. This function has no \code{p_value}
-argument, so the p column cannot be switched off here as it can in
-\code{\link[=table_continuous]{table_continuous()}}; a complete balance table mixing continuous
-and categorical variables will show a categorical p beside a
-continuous column you removed. And \code{\link[=inline]{inline()}} cannot quote this
-\code{SMD} cell: like \code{p} and the association measure, it lives on the
-variable row, which \code{inline()} cannot address on a variable that
-has levels. The continuous \code{SMD} cell is quotable
-(\code{inline(tbl, x, "A", column = "smd")}); for the categorical one,
-read \code{output = "long"}.
+A balance table usually shows no test: \code{p_value = FALSE} removes the
+\code{p} column here as it does in \code{\link[=table_continuous]{table_continuous()}}, so a table mixing
+continuous and categorical variables can drop both. \code{\link[=inline]{inline()}}
+quotes the cell from the variable row (\code{inline(tbl, smoking, column = "smd")}).
 }
 
 \section{Display conventions}{
@@ -542,6 +554,15 @@ table_categorical(
 table_categorical(
   sochealth,
   select = c(smoking, physical_activity)
+)
+
+# Purely descriptive grouped table: no test, no association measure.
+table_categorical(
+  sochealth,
+  select = c(smoking, physical_activity),
+  by = sex,
+  p_value = FALSE,
+  assoc_measure = "none"
 )
 
 # Pretty labels keyed by column name.

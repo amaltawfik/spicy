@@ -484,12 +484,22 @@
 #'   If `TRUE`, uses Monte Carlo simulation. Passed to `spicy::cross_tab()`.
 #' @param simulate_B Integer. Number of Monte Carlo replicates when
 #'   `simulate_p = TRUE`. Defaults to `2000`.
+#' @param p_value Logical or `NULL`. If `TRUE` and `by` is used, adds
+#'   the *p*-value column of the chi-squared test. When `NULL` (the
+#'   default), the *p*-value is shown automatically whenever `by` is
+#'   supplied, and hidden otherwise. Pass `p_value = FALSE` to remove
+#'   the test from every output: the `p` column, and the `Chi2` and
+#'   `df` columns of `"data.frame"` and `"long"`; `correct` and
+#'   `simulate_p` are then ignored, with a warning. The association
+#'   measure keeps its own switch, so
+#'   `p_value = FALSE, assoc_measure = "none"` gives a purely
+#'   descriptive table. Ignored when `by` is not used.
 #' @param p_adjust Multiple-comparison adjustment of the `p` column,
 #'   applied to the family of every test in the table (one p-value per
 #'   variable). One of `"none"` (default), `"holm"`, `"hochberg"`,
 #'   `"hommel"`, `"bonferroni"`, `"BH"` / `"fdr"`, or `"BY"`, as in
 #'   [table_regression()]; delegated to [stats::p.adjust()]. Needs
-#'   `by`. See *Multiple-comparison adjustment*.
+#'   `by` and the `p` column. See *Multiple-comparison adjustment*.
 #' @param percent_digits Number of digits for percentages in report outputs.
 #'   Defaults to `1`.
 #' @param p_digits Integer >= 1. Number of decimal places used to
@@ -645,12 +655,13 @@
 #'     variable--level combination.
 #'     When `by` is used, the columns are `Variable`, `Level`, and one
 #'     pair of `n` / `\%` columns per group level (plus `Total` when
-#'     `include_total = TRUE`), followed by `Chi2`, `df`, `p`, and the
-#'     association measure column.
+#'     `include_total = TRUE`), followed by `Chi2`, `df`, `p` (absent
+#'     with `p_value = FALSE`), and the association measure column.
 #'     When `by = NULL`, the columns are `Variable`, `Level`, `n`, `\%`.
 #'   \item `"long"`: a long `data.frame` with columns `variable`,
-#'     `level`, `n`, `pct` (plus `group`, `chi2`, `df`, `p` when `by` is
-#'     used). The association measure is always called `effect_size`,
+#'     `level`, `n`, `pct` (plus `group` when `by` is used, and `chi2`,
+#'     `df`, `p` unless `p_value = FALSE`). The association measure is
+#'     always called `effect_size`,
 #'     whichever measure it is, and `effect_size_type` names that measure
 #'     per row (`"cramer_v"`, `"phi"`, ...), or is `NA` on the rows of a
 #'     variable given `assoc_measure = "none"`. The wide outputs instead
@@ -696,6 +707,11 @@
 #' `by`, the table reports the marginal frequency distribution of
 #' each variable with no inferential statistics.
 #'
+#' The test and the measure are two decisions with two arguments:
+#' `p_value = FALSE` removes the test, `assoc_measure = "none"` the
+#' measure. Together they give a purely descriptive table, which keeps
+#' the group columns and their headers; `smd` stays available.
+#'
 #' For model-based comparisons (cluster-robust SE, weighted contrasts,
 #' fitted means) on continuous outcomes, see [table_continuous_lm()].
 #' For descriptive (empirical) comparisons on continuous outcomes, see
@@ -722,9 +738,9 @@
 #' object: a `p_unadjusted` column next to the p-value column of the
 #' returned data frames, and `col_meta$p$p_unadjusted` (with the method
 #' in `p_adjust` and the family size in `p_adjust_m`) in
-#' [as_structured()]. Without `by`, or with `p_value = FALSE` where the
-#' function has that argument, the table shows no p-value to adjust,
-#' and a `p_adjust` other than `"none"` is an error.
+#' [as_structured()]. Without `by`, or with `p_value = FALSE`, the table
+#' shows no p-value to adjust, and a `p_adjust` other than `"none"` is an
+#' error.
 #'
 #' # Standardized mean difference
 #'
@@ -787,16 +803,11 @@
 #' is not bounded. The two columns therefore print `0.45` and `.45`
 #' side by side, on purpose.
 #'
-#' Two limits of the current grammar. This function has no `p_value`
-#' argument, so the p column cannot be switched off here as it can in
-#' [table_continuous()]; a complete balance table mixing continuous
-#' and categorical variables will show a categorical p beside a
-#' continuous column you removed. And [inline()] cannot quote this
-#' `SMD` cell: like `p` and the association measure, it lives on the
-#' variable row, which `inline()` cannot address on a variable that
-#' has levels. The continuous `SMD` cell is quotable
-#' (`inline(tbl, x, "A", column = "smd")`); for the categorical one,
-#' read `output = "long"`.
+#' A balance table usually shows no test: `p_value = FALSE` removes the
+#' `p` column here as it does in [table_continuous()], so a table mixing
+#' continuous and categorical variables can drop both. [inline()]
+#' quotes the cell from the variable row (`inline(tbl, smoking,
+#' column = "smd")`).
 #'
 #' # Display conventions
 #'
@@ -835,6 +846,15 @@
 #' table_categorical(
 #'   sochealth,
 #'   select = c(smoking, physical_activity)
+#' )
+#'
+#' # Purely descriptive grouped table: no test, no association measure.
+#' table_categorical(
+#'   sochealth,
+#'   select = c(smoking, physical_activity),
+#'   by = sex,
+#'   p_value = FALSE,
+#'   assoc_measure = "none"
 #' )
 #'
 #' # Pretty labels keyed by column name.
@@ -990,6 +1010,7 @@ table_categorical <- function(
   correct = FALSE,
   simulate_p = FALSE,
   simulate_B = 2000,
+  p_value = NULL,
   p_adjust = "none",
   percent_digits = 1,
   p_digits = 3,
@@ -1063,7 +1084,32 @@ table_categorical <- function(
   if (has_group) {
     by_name <- resolve_single_column_selection(by_quo, data, "by")
   }
-  .check_desc_p_adjust(p_adjust, has_group)
+  # `p_value`: the switch of the chi-squared test, as in the siblings.
+  # NULL shows it whenever `by` is supplied; FALSE removes `p`, `Chi2`
+  # and `df` from every output (decision of 2026-10-17, issue #9).
+  if (
+    !is.null(p_value) &&
+      (!is.logical(p_value) || length(p_value) != 1L || is.na(p_value))
+  ) {
+    spicy_abort(
+      "`p_value` must be TRUE, FALSE, or NULL.",
+      class = "spicy_invalid_input"
+    )
+  }
+  .check_desc_p_adjust(p_adjust, has_group, p_value)
+  p_value_explicit <- !is.null(p_value)
+  if (!p_value_explicit) {
+    p_value <- has_group
+  }
+  if (p_value && !has_group) {
+    if (p_value_explicit) {
+      spicy_warn(
+        "`p_value` is ignored when `by` is not used.",
+        class = "spicy_ignored_arg"
+      )
+    }
+    p_value <- FALSE
+  }
   # Validated HERE rather than beside the other logicals below: the
   # refusal of a `by`-less `smd` reads it a few lines from now, and a
   # non-logical value must not reach `&&` first.
@@ -1348,6 +1394,27 @@ table_categorical <- function(
       )
     }
     include_total <- TRUE
+  }
+  # Yates' correction and the Monte Carlo p-value change the chi-squared
+  # test and nothing else (the association measures are computed apart),
+  # so without the test they have nothing to change. Switched off for the
+  # internal calls too: a simulation would draw from the session's RNG
+  # for a p-value nobody sees.
+  if (has_group && !p_value) {
+    if (correct) {
+      spicy_warn(
+        "`correct` is ignored when `p_value = FALSE`.",
+        class = "spicy_ignored_arg"
+      )
+    }
+    if (simulate_p) {
+      spicy_warn(
+        "`simulate_p` is ignored when `p_value = FALSE`.",
+        class = "spicy_ignored_arg"
+      )
+    }
+    correct <- FALSE
+    simulate_p <- FALSE
   }
 
   weights_quo <- rlang::enquo(weights)
@@ -2962,6 +3029,15 @@ table_categorical <- function(
       collapse = " "
     )
   }
+  # `p_value = FALSE`: the test leaves the compute frame here, before any
+  # route reads it. The long output, the wide frame, the display frames
+  # and the typed view are all built from this frame.
+  long_raw <- .desc_drop_test_block(
+    long_raw,
+    p_value,
+    p_col = .CAT_KEY_P,
+    stat_cols = c("chi2", "df", "p_op")
+  )
 
   if (output == "long") {
     out <- long_raw
@@ -3008,9 +3084,7 @@ table_categorical <- function(
       .CAT_KEY_VARIABLE,
       "Level",
       as.vector(rbind(.cat_key_n(group_levels), .cat_key_pct(group_levels))),
-      "Chi2",
-      "df",
-      .CAT_KEY_P,
+      if (p_value) c("Chi2", "df", .CAT_KEY_P),
       if (!is.null(p_adjust_info)) "p_unadjusted"
     )
     if (show_assoc) {
@@ -3050,9 +3124,11 @@ table_categorical <- function(
         r[[.cat_key_pct(gr)]] <- if (nrow(s)) s$pct[1] else NA_real_
       }
 
-      r$Chi2 <- if (nrow(sv)) sv$chi2[1] else NA_real_
-      r$df <- if (nrow(sv)) sv$df[1] else NA_real_
-      r$p <- if (nrow(sv)) sv$p[1] else NA_real_
+      if (p_value) {
+        r$Chi2 <- if (nrow(sv)) sv$chi2[1] else NA_real_
+        r$df <- if (nrow(sv)) sv$df[1] else NA_real_
+        r$p <- if (nrow(sv)) sv$p[1] else NA_real_
+      }
       if (!is.null(p_adjust_info)) {
         r$p_unadjusted <- if (nrow(sv)) sv$p_unadjusted[1] else NA_real_
       }
@@ -3100,7 +3176,7 @@ table_categorical <- function(
   report_cols <- c(
     .CAT_KEY_VARIABLE,
     as.vector(rbind(.cat_key_n(group_levels), .cat_key_pct(group_levels))),
-    .CAT_KEY_P
+    if (p_value) .CAT_KEY_P
   )
   if (show_assoc) {
     report_cols <- c(report_cols, measure_col)
@@ -3117,13 +3193,15 @@ table_categorical <- function(
   # done ONCE here instead of being re-derived five times -- an Excel
   # `text_cols` or a tinytable `stat_j` that forgot the new column would
   # format the wrong cells, silently.
-  n_stat_cols <- 1L +
+  n_stat_cols <- as.integer(p_value) +
     as.integer(show_assoc) +
     2L * as.integer(show_assoc && assoc_ci) +
     as.integer(do_smd)
   # The same count once the CI bounds have been merged into the measure
   # cell, which every rendered engine does before laying out.
-  n_stat_cols_merged <- 1L + as.integer(show_assoc) + as.integer(do_smd)
+  n_stat_cols_merged <- as.integer(p_value) +
+    as.integer(show_assoc) +
+    as.integer(do_smd)
 
   # Group headers, resolved once: user levels are data, the margin is
   # the single entry that carries a word of ours.
@@ -3155,7 +3233,9 @@ table_categorical <- function(
           check.names = FALSE
         )
         out$Variable <- character(0)
-        out$p <- character(0)
+        if (p_value) {
+          out$p <- character(0)
+        }
         return(out[, report_cols, drop = FALSE])
       }
     }
@@ -3182,7 +3262,9 @@ table_categorical <- function(
         r0 <- as.list(setNames(rep(NA, length(report_cols)), report_cols))
       }
       r0$Variable <- lab
-      r0$p <- fmt_p(sv$p[1], sv$p_op[1])
+      if (p_value) {
+        r0$p <- fmt_p(sv$p[1], sv$p_op[1])
+      }
       if (show_assoc) {
         r0[[measure_col]] <- fmt_v(sv[[measure_col]][1])
       }
@@ -3231,7 +3313,9 @@ table_categorical <- function(
           }
         }
 
-        r1$p <- ""
+        if (p_value) {
+          r1$p <- ""
+        }
         if (show_assoc) {
           r1[[measure_col]] <- ""
         }
@@ -3275,6 +3359,7 @@ table_categorical <- function(
     margin_key = margin_col_key,
     measure_col = measure_col,
     measure_label = measure_label,
+    show_p = p_value,
     show_assoc = show_assoc,
     assoc_ci = assoc_ci,
     show_smd = do_smd
@@ -3346,12 +3431,12 @@ table_categorical <- function(
   top_header_span <- c(
     spicy_str("header_variable"),
     rep(group_labels, each = 2),
-    spicy_str("header_p")
+    if (p_value) spicy_str("header_p")
   )
   top_header_flat <- c(
     spicy_str("header_variable"),
     as.vector(rbind(group_labels, rep("", length(group_labels)))),
-    spicy_str("header_p")
+    if (p_value) spicy_str("header_p")
   )
   bot_header <- c(
     "",
@@ -3359,7 +3444,7 @@ table_categorical <- function(
       c(spicy_str("header_n_lower"), spicy_str("header_percent_symbol")),
       times = length(group_levels)
     ),
-    ""
+    if (p_value) ""
   )
   if (show_assoc) {
     top_header_span <- c(top_header_span, measure_label)
@@ -3422,10 +3507,12 @@ table_categorical <- function(
         lapply(seq_along(group_levels), function(i) c(2 * i, 2 * i + 1)),
         group_labels
       ),
-      setNames(
-        list(ncol(dat_tt) - n_stat_cols_merged + 1L),
-        spicy_str("header_p")
-      )
+      if (p_value) {
+        setNames(
+          list(ncol(dat_tt) - n_stat_cols_merged + 1L),
+          spicy_str("header_p")
+        )
+      }
     )
     if (show_assoc) {
       gspec[[measure_label]] <- ncol(dat_tt) - as.integer(do_smd)
@@ -3454,7 +3541,10 @@ table_categorical <- function(
     # apply literal alignment.
     tt <- tinytable::style_tt(tt, j = 1, align = "l")
     data_j <- 2:(1 + 2 * length(group_levels))
-    stat_j <- (ncol(dat_tt) - n_stat_cols_merged + 1L):ncol(dat_tt)
+    # `seq_len()`, not `a:b`: with `p_value = FALSE, assoc_measure =
+    # "none"` no statistic column is left, and `(n + 1):n` counts down
+    # to a column past the table, which tinytable refuses.
+    stat_j <- ncol(dat_tt) - n_stat_cols_merged + seq_len(n_stat_cols_merged)
     tt_align <- switch(
       align,
       decimal = "c",
@@ -3524,11 +3614,13 @@ table_categorical <- function(
       )
     }
     # Prevent p-value and measure columns from wrapping
-    tt <- tinytable::style_tt(
-      tt,
-      j = stat_j,
-      html_css = "white-space: nowrap;"
-    )
+    if (length(stat_j)) {
+      tt <- tinytable::style_tt(
+        tt,
+        j = stat_j,
+        html_css = "white-space: nowrap;"
+      )
+    }
 
     return(tt)
   }
@@ -3566,8 +3658,9 @@ table_categorical <- function(
       col_ids[2 * gi] <- paste0(group_levels[gi], "_n")
       col_ids[2 * gi + 1] <- paste0(group_levels[gi], "_pct")
     }
-    p_col_pos <- ncol(dat_gt) - n_stat_cols_merged + 1L
-    col_ids[p_col_pos] <- .CAT_KEY_P
+    if (p_value) {
+      col_ids[ncol(dat_gt) - n_stat_cols_merged + 1L] <- .CAT_KEY_P
+    }
     if (show_assoc) {
       col_ids[ncol(dat_gt) - as.integer(do_smd)] <- "assoc_col"
     }
@@ -3594,7 +3687,9 @@ table_categorical <- function(
       label_list[[grp_id_n[gi]]] <- spicy_str("header_n_lower")
       label_list[[grp_id_pct[gi]]] <- spicy_str("header_percent_symbol")
     }
-    label_list[[.CAT_KEY_P]] <- ""
+    if (p_value) {
+      label_list[[.CAT_KEY_P]] <- ""
+    }
     if (show_assoc) {
       label_list[["assoc_col"]] <- ""
     }
@@ -3625,12 +3720,14 @@ table_categorical <- function(
         id = paste0("spn_", grp_id_n[gi])
       )
     }
-    tbl <- gt::tab_spanner(
-      tbl,
-      label = spicy_str("header_p"),
-      columns = .CAT_KEY_P,
-      id = "spn_p"
-    )
+    if (p_value) {
+      tbl <- gt::tab_spanner(
+        tbl,
+        label = spicy_str("header_p"),
+        columns = .CAT_KEY_P,
+        id = "spn_p"
+      )
+    }
     if (show_assoc) {
       tbl <- gt::tab_spanner(
         tbl,
@@ -3655,7 +3752,7 @@ table_categorical <- function(
     # use gt::cols_align() literally.
     tbl <- gt::cols_align(tbl, align = "left", columns = .CAT_KEY_VARIABLE)
     grp_cols <- as.vector(rbind(grp_id_n, grp_id_pct))
-    right_cols <- .CAT_KEY_P
+    right_cols <- if (p_value) .CAT_KEY_P else character(0)
     if (show_assoc) {
       right_cols <- c(right_cols, "assoc_col")
     }
@@ -3872,9 +3969,12 @@ table_categorical <- function(
     }
     # Center n/% labels and spanner labels in header
     ft <- flextable::align(ft, j = grp_j, part = "header", align = "center")
-    # Right-align p and association measure in header
-    stat_j <- (ncol(df) - n_stat_cols_merged + 1L):ncol(df)
-    ft <- flextable::align(ft, j = stat_j, part = "header", align = "right")
+    # Right-align p and association measure in header (`seq_len()`: the
+    # range is empty when no statistic column is left, see tinytable).
+    stat_j <- ncol(df) - n_stat_cols_merged + seq_len(n_stat_cols_merged)
+    if (length(stat_j)) {
+      ft <- flextable::align(ft, j = stat_j, part = "header", align = "right")
+    }
 
     ft <- flextable::hline_top(ft, part = "header", border = bd)
     ft <- flextable::hline(ft, i = 1, j = grp_j, part = "header", border = bd)
@@ -4021,7 +4121,9 @@ table_categorical <- function(
       indent_text_excel_clipboard,
       .categorical_level_rows_typed(structured)
     )
-    body_xl$p <- report_wide_char$p
+    if (p_value) {
+      body_xl$p <- report_wide_char$p
+    }
     if (show_assoc) {
       body_xl[[measure_col]] <- report_wide_char[[measure_col]]
     }
@@ -4089,16 +4191,21 @@ table_categorical <- function(
       # Text columns (p, assoc, CI, SMD) -- force text format. Counted
       # from the RIGHT, so every optional trailing column has to be in
       # the count or the sheet formats the wrong cells: `n_stat_cols`
-      # is that count, computed once beside `report_cols`.
-      text_cols <- (nc - n_stat_cols + 1L):nc
-      wb <- openxlsx2::wb_add_numfmt(
-        wb,
-        dims = openxlsx2::wb_dims(
-          rows = first_body_row:last_row,
-          cols = text_cols
-        ),
-        numfmt = "@"
-      )
+      # is that count, computed once beside `report_cols`. Possibly
+      # zero (`p_value = FALSE, assoc_measure = "none"`), hence
+      # `seq_len()`: `(nc + 1):nc` would style an empty column past the
+      # table.
+      text_cols <- nc - n_stat_cols + seq_len(n_stat_cols)
+      if (length(text_cols)) {
+        wb <- openxlsx2::wb_add_numfmt(
+          wb,
+          dims = openxlsx2::wb_dims(
+            rows = first_body_row:last_row,
+            cols = text_cols
+          ),
+          numfmt = "@"
+        )
+      }
     }
 
     # APA borders. IMPORTANT: openxlsx2::wb_add_border() defaults

@@ -314,7 +314,9 @@
 #'       \item `test_type` -- test identifier (e.g., `"welch_t"`,
 #'         `"welch_anova"`, `"student_t"`, `"anova"`, `"wilcoxon"`,
 #'         `"kruskal"`).
-#'       \item `statistic`, `df1`, `df2`, `p.value` -- test results.
+#'       \item `statistic`, `df1`, `df2` -- the test statistic and its
+#'         degrees of freedom.
+#'       \item `p.value` -- with `p_value = TRUE` only.
 #'       \item `es_type` -- effect-size identifier (`"hedges_g"`,
 #'         `"eta_sq"`, `"r_rb"`, or `"epsilon_sq"`), when
 #'         `effect_size != "none"`.
@@ -1713,6 +1715,10 @@ table_continuous <- function(
   adj <- .desc_apply_p_adjust(result, "p.value", result$variable, p_adjust)
   result <- adj$df
   p_adjust_info <- adj$info
+  # `p_value = FALSE`: the p-value leaves the frame even when the test
+  # ran for `statistic` or the effect size, which keep the rest of it
+  # (decision of 2026-10-17).
+  result <- .desc_drop_test_block(result, p_value, do_test)
 
   # --- attributes & class ---
   attr(result, "ci_level") <- ci_level

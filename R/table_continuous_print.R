@@ -365,6 +365,9 @@ glance.spicy_continuous_table <- function(x, ...) {
 
   has_group <- "group" %in% names(long)
   has_test <- "test_type" %in% names(long)
+  # Read on its own: under `p_value = FALSE`, a test run for `statistic`
+  # or the effect size keeps its columns without the p-value.
+  has_p <- "p.value" %in% names(long)
   has_es <- "es_value" %in% names(long)
   has_smd <- "smd_value" %in% names(long)
 
@@ -392,7 +395,7 @@ glance.spicy_continuous_table <- function(x, ...) {
     statistic = if (has_test) per_outcome$statistic else NA_real_,
     df = if (has_test) per_outcome$df1 else NA_real_,
     df.residual = if (has_test) per_outcome$df2 else NA_real_,
-    p.value = if (has_test) per_outcome$p.value else NA_real_,
+    p.value = if (has_p) per_outcome$p.value else NA_real_,
     es_type = if (has_es) per_outcome$es_type else NA_character_,
     es_value = if (has_es) per_outcome$es_value else NA_real_,
     es_ci_lower = if (has_es) per_outcome$es_ci_lower else NA_real_,

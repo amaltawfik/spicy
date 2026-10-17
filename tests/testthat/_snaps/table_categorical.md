@@ -48,3 +48,22 @@
       
       Note. V de Cramér : cyl, gear ; Phi : vs. Valeurs p ajustées par stats::p.adjust(method = "holm") ; m = 3 test(s).
 
+# p_value = FALSE with assoc_measure = "none": a purely descriptive table
+
+    Code
+      print(tbl)
+    Output
+      Categorical table by sex
+      
+       Variable            │  Female n    Female %    Male n    Male %    Total n    Total %  
+      ─────────────────────┼──────────────────────────────────────────────────────────────────
+       smoking             │                                                                  
+         No                │    475         76.6       451       77.8       926       77.2    
+         Yes               │    131         21.1       118       20.3       249       20.8    
+         (Missing)         │     14          2.3        11        1.9        25        2.1    
+      ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+       education           │                                                                  
+         Lower secondary   │    134         21.6       127       21.9       261       21.8    
+         Upper secondary   │    290         46.8       249       42.9       539       44.9    
+         Tertiary          │    196         31.6       204       35.2       400       33.3    
+

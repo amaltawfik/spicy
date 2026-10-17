@@ -170,8 +170,14 @@ glance.spicy_continuous_svy_table <- function(x, ...) {
   # one-way table has no comparison at all and the columns stay NA.
   first <- match(vars, long$variable)
   has_test <- !is.null(long$test_type)
+  # Field by field: `statistic = TRUE, p_value = FALSE` keeps the test
+  # columns of the frame without the p-value.
   pick <- function(field) {
-    if (has_test) long[[field]][first] else rep(NA_real_, length(vars))
+    if (has_test && !is.null(long[[field]])) {
+      long[[field]][first]
+    } else {
+      rep(NA_real_, length(vars))
+    }
   }
   .svy_as_tbl(data.frame(
     variable = vars,

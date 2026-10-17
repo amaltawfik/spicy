@@ -837,6 +837,14 @@ table_categorical_svy <- function(
   )
   result <- adj$df
   p_adjust_info <- adj$info
+  # `p_value = FALSE`: no `p` column in the frame, rather than an empty
+  # one (decision of 2026-10-17).
+  result <- .desc_drop_test_block(
+    result,
+    p_value,
+    p_col = .CAT_KEY_P,
+    stat_cols = character(0)
+  )
 
   test_refused <- .design_refusal_regime(n_test_refused, n_test_attempted)
   # The note names each variable as its rows name it.

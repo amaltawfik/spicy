@@ -234,6 +234,24 @@ table_categorical(
 )
 ```
 
+## Descriptive tables without tests
+
+The test and the association measure are two separate choices:
+`p_value = FALSE` removes the chi-squared test (the `p` column, and
+`Chi2` and `df` from the data frames), and `assoc_measure = "none"`
+removes the measure. Together they give a purely descriptive table,
+with the same group columns and headers:
+
+```{r descriptive}
+table_categorical(
+  sochealth,
+  select = c(smoking, physical_activity),
+  by = sex,
+  p_value = FALSE,
+  assoc_measure = "none"
+)
+```
+
 ## Balance: the standardized mean difference
 
 For a baseline table read as a balance check rather than a
@@ -263,13 +281,11 @@ this column by design. Under `weights` the profiles are the weighted
 proportions, and because a profile of proportions is unchanged by a
 global rescaling of the weights, `rescale` cannot move this column.
 
-One limit worth knowing before you build a full balance table:
-`table_categorical()` has no `p_value` argument, so its *p* column
-cannot be switched off the way `table_continuous(p_value = FALSE)`
-switches off its own. A mixed balance table will show a categorical
-*p* beside a continuous column you removed. Its *p* column can be
-adjusted, though: `p_adjust = "holm"` (or `"BH"`) adjusts the tests of
-all the variables together, and the note says so.
+A balance table usually shows no test: `p_value = FALSE` removes the
+categorical *p* column as `table_continuous(p_value = FALSE)` removes
+its own, so a mixed balance table can drop both. When the *p* column
+stays, it can be adjusted: `p_adjust = "holm"` (or `"BH"`) adjusts the
+tests of all the variables together, and the note says so.
 
 ## Weighted tables
 

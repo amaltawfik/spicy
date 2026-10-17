@@ -261,9 +261,10 @@
 #
 # Columns: `n` / `pct` per group (one spanner per group level in a
 # `by` table, the margin flagged `total = TRUE` in its `col_meta`),
-# then the test `p`, the association measure, and its CI bounds. Every
-# column NAME is a frozen key; the header an engine prints is its
-# `display_label`, resolved from the registry here and nowhere else.
+# then the test `p` (absent under `show_p = FALSE`), the association
+# measure, and its CI bounds. Every column NAME is a frozen key; the
+# header an engine prints is its `display_label`, resolved from the
+# registry here and nowhere else.
 .build_categorical_structured <- function(
   long_raw,
   select_names,
@@ -279,6 +280,7 @@
   margin_key = NULL,
   measure_col = NULL,
   measure_label = NULL,
+  show_p = TRUE,
   show_assoc = FALSE,
   assoc_ci = FALSE,
   assoc_ci_level = 0.95,
@@ -331,18 +333,20 @@
       }
       spanners[[g]] <- .desc_col_index(col_names, c(n_col, p_col))
     }
-    col_names <- c(col_names, .CAT_KEY_P)
-    col_meta[[.CAT_KEY_P]] <- list(
-      token = "p",
-      precision = as.integer(p_digits),
-      p_style = .style_p_style_token(decimal_mark),
-      # The style's floor, like the `p_threshold` of the format spec
-      # below: a flat `10^(-p_digits)` disagreed with it -- and with the
-      # console -- as soon as a theme set its floor apart from its
-      # decimals (JAMA: two decimals, floor at .001).
-      threshold = .style_p_floor(p_digits),
-      display_label = spicy_str("header_p")
-    )
+    if (show_p) {
+      col_names <- c(col_names, .CAT_KEY_P)
+      col_meta[[.CAT_KEY_P]] <- list(
+        token = "p",
+        precision = as.integer(p_digits),
+        p_style = .style_p_style_token(decimal_mark),
+        # The style's floor, like the `p_threshold` of the format spec
+        # below: a flat `10^(-p_digits)` disagreed with it -- and with the
+        # console -- as soon as a theme set its floor apart from its
+        # decimals (JAMA: two decimals, floor at .001).
+        threshold = .style_p_floor(p_digits),
+        display_label = spicy_str("header_p")
+      )
+    }
     if (show_assoc) {
       col_names <- c(col_names, measure_col)
       # Ordinal measures (tau-b, tau-c, gamma, Somers' D) are signed:
@@ -437,7 +441,9 @@
 
       header_values <- list()
       if (has_group) {
-        header_values[[.CAT_KEY_P]] <- sv$p[1L]
+        if (show_p) {
+          header_values[[.CAT_KEY_P]] <- sv$p[1L]
+        }
         if (show_assoc) {
           header_values[[measure_col]] <- sv[[measure_col]][1L]
           if (assoc_ci) {

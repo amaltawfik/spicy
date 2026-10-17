@@ -367,7 +367,9 @@ or \code{effect_size != "none"}, additional columns are appended
 \item \code{test_type} -- test identifier (e.g., \code{"welch_t"},
 \code{"welch_anova"}, \code{"student_t"}, \code{"anova"}, \code{"wilcoxon"},
 \code{"kruskal"}).
-\item \code{statistic}, \code{df1}, \code{df2}, \code{p.value} -- test results.
+\item \code{statistic}, \code{df1}, \code{df2} -- the test statistic and its
+degrees of freedom.
+\item \code{p.value} -- with \code{p_value = TRUE} only.
 \item \code{es_type} -- effect-size identifier (\code{"hedges_g"},
 \code{"eta_sq"}, \code{"r_rb"}, or \code{"epsilon_sq"}), when
 \code{effect_size != "none"}.
@@ -708,9 +710,9 @@ the method and the family size \code{m}. The raw p-values stay in the
 object: a \code{p_unadjusted} column next to the p-value column of the
 returned data frames, and \code{col_meta$p$p_unadjusted} (with the method
 in \code{p_adjust} and the family size in \code{p_adjust_m}) in
-\code{\link[=as_structured]{as_structured()}}. Without \code{by}, or with \code{p_value = FALSE} where the
-function has that argument, the table shows no p-value to adjust,
-and a \code{p_adjust} other than \code{"none"} is an error.
+\code{\link[=as_structured]{as_structured()}}. Without \code{by}, or with \code{p_value = FALSE}, the table
+shows no p-value to adjust, and a \code{p_adjust} other than \code{"none"} is an
+error.
 }
 
 \examples{
