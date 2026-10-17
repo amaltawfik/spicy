@@ -974,8 +974,17 @@ test_that("the run predicate agrees with the retired string derivation", {
       effect_size = "auto",
       statistic = TRUE
     )),
-    quiet(table_continuous(dup, select = c(bmi, wellbeing_score), by = sex)),
-    quiet(table_continuous(dup, select = c(bmi, wellbeing_score)))
+    quiet(table_continuous(
+      dup,
+      select = c(bmi, wellbeing_score),
+      by = sex,
+      labels = TRUE
+    )),
+    quiet(table_continuous(
+      dup,
+      select = c(bmi, wellbeing_score),
+      labels = TRUE
+    ))
   )
   for (tbl in corpus) {
     expect_identical(
@@ -1009,6 +1018,7 @@ test_that("two variables sharing one display label keep their own blocks", {
     dup,
     select = c(bmi, wellbeing_score),
     by = sex,
+    labels = TRUE,
     show_columns = c("m", "sd")
   ))
 

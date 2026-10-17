@@ -373,13 +373,13 @@ use `rescale = TRUE`.
 
 ## Custom labels
 
-By default, `table_continuous()` labels each variable with its label
-attribute when one is present (e.g. data imported with `haven`), and
-with the column name otherwise -- that is why the tables above read
-"Body mass index" rather than `bmi`. Use the `labels` argument, a
-named character vector keyed by column name, to override either. Only
-the listed columns are relabeled; the others keep their attribute
-label or column name:
+By default, `table_continuous()` labels each variable with its column
+name, which is why the tables above read `bmi`. `labels = TRUE` uses
+the label attribute when one is present (e.g. data imported with
+`haven`), and the column name otherwise. A named character vector
+keyed by column name sets the labels you publish: the listed columns
+take them, and the others follow `options(spicy.var_labels)` (their
+name unless it is `TRUE`):
 
 ```{r labels}
 table_continuous(
@@ -387,6 +387,18 @@ table_continuous(
   select = c(wellbeing_score, life_sat_health),
   by = sex,
   labels = c(wellbeing_score = "Well-being score (0-100)")
+)
+```
+
+`var_labels()` renames the same way while the other columns, and the
+`by` variable in the title, keep their label attribute:
+
+```{r labels-var-labels}
+table_continuous(
+  sochealth,
+  select = c(wellbeing_score, life_sat_health),
+  by = sex,
+  labels = var_labels(wellbeing_score = "Well-being score (0-100)")
 )
 ```
 

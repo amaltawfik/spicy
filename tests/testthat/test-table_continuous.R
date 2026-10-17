@@ -338,11 +338,30 @@ test_that("table_continuous custom labels apply only to matching columns", {
   expect_equal(out$label, c("My X", "y"))
 })
 
-test_that("table_continuous auto-detects haven labels", {
+test_that("table_continuous reads haven labels only under labels = TRUE", {
   df <- data.frame(x = 1:5)
   attr(df$x, "label") <- "A labeled var"
-  out <- table_continuous(df, output = "data.frame")
+  expect_equal(table_continuous(df, output = "data.frame")$label, "x")
+  out <- table_continuous(df, labels = TRUE, output = "data.frame")
   expect_equal(out$label, "A labeled var")
+})
+
+test_that("labels: TRUE falls back to the name, the named form to the option", {
+  df <- data.frame(a = 1:5, b = 6:10, n = 1:5, e = 6:10)
+  attr(df$a, "label") <- "Alpha"
+  attr(df$n, "label") <- NA_character_
+  attr(df$e, "label") <- ""
+  lab <- function(...) table_continuous(df, output = "data.frame", ...)$label
+  expect_identical(lab(), c("a", "b", "n", "e"))
+  expect_identical(lab(labels = TRUE), c("Alpha", "b", "n", "e"))
+  expect_identical(
+    lab(labels = c(b = "Beta", zz = "ignored")),
+    c("a", "Beta", "n", "e")
+  )
+  withr::local_options(spicy.var_labels = TRUE)
+  expect_identical(lab(), c("Alpha", "b", "n", "e"))
+  expect_identical(lab(labels = c(b = "Beta")), c("Alpha", "Beta", "n", "e"))
+  expect_identical(lab(labels = FALSE), c("a", "b", "n", "e"))
 })
 
 test_that("table_continuous custom labels override haven labels", {
@@ -1018,7 +1037,7 @@ test_that("a missing variable label falls back to the column name", {
   # one crossing, and every line is the same width.
   d <- data.frame(x = c(1, 2, 3), y = c(4, 5, 6))
   attr(d$x, "label") <- NA_character_
-  out <- table_continuous(d, select = c(x, y))
+  out <- table_continuous(d, select = c(x, y), labels = TRUE)
   txt <- capture.output(print(out))
 
   expect_false(any(grepl("NA", txt, fixed = TRUE)))
@@ -1044,7 +1063,7 @@ test_that("a wide-character label does not overflow a narrow console", {
   attr(d$x, "label") <- strrep("身", 8L)
   txt <- withr::with_options(list(width = 28L), {
     invisible(capture.output(
-      out <- table_continuous(d, select = x, show_columns = "m")
+      out <- table_continuous(d, select = x, show_columns = "m", labels = TRUE)
     ))
     capture.output(print(out))
   })
@@ -1095,6 +1114,20 @@ test_that("table_continuous validates labels", {
   df <- data.frame(x = 1:5)
   expect_error(table_continuous(df, labels = c("a", "b")), "labels")
   expect_error(table_continuous(df, labels = 42), "labels")
+  bad <- list(NULL, NA, c(TRUE, FALSE), c(x = "X", "Y"), list(x = "X"))
+  for (b in bad) {
+    expect_error(
+      table_continuous(df, labels = b),
+      class = "spicy_invalid_input"
+    )
+  }
+  withr::local_options(spicy.var_labels = NA)
+  err <- expect_error(table_continuous(df), class = "spicy_invalid_input")
+  expect_match(conditionMessage(err), "spicy.var_labels", fixed = TRUE)
+  expect_identical(
+    table_continuous(df, labels = FALSE, output = "data.frame")$label,
+    "x"
+  )
 })
 
 test_that("table_continuous validates by", {
@@ -1159,6 +1192,16 @@ test_that("the missing-values note names each variable by its row label", {
   out <- table_continuous(sochealth, select = c(age, bmi), by = sex)
   expect_identical(
     attr(out, "missing_note"),
+    "Missing values removed: bmi (12)."
+  )
+  attr_lab <- table_continuous(
+    sochealth,
+    select = c(age, bmi),
+    by = sex,
+    labels = TRUE
+  )
+  expect_identical(
+    attr(attr_lab, "missing_note"),
     "Missing values removed: Body mass index (12)."
   )
   relabelled <- table_continuous(
@@ -1170,6 +1213,52 @@ test_that("the missing-values note names each variable by its row label", {
     attr(relabelled, "missing_note"),
     "Missing values removed: BMI (kg/m2) (12)."
   )
+})
+
+test_that("the by title and the missing-by note follow labels", {
+  d <- sochealth[, c("bmi", "income_group")]
+  build <- function(...) {
+    suppressWarnings(table_continuous(d, select = bmi, by = income_group, ...))
+  }
+  check <- function(out, by, row) {
+    expect_identical(attr(out, "group_label"), by)
+    expect_identical(
+      attr(out, "missing_note"),
+      sprintf(
+        "Missing values removed: %s (12). Rows with missing %s removed: 18.",
+        row,
+        by
+      )
+    )
+  }
+  check(build(), "income_group", "bmi")
+  check(build(labels = TRUE), "Household income group", "Body mass index")
+  check(
+    build(labels = c(income_group = "Income", bmi = "BMI")),
+    "Income",
+    "BMI"
+  )
+  withr::local_options(spicy.var_labels = TRUE)
+  check(build(labels = c(bmi = "BMI")), "Household income group", "BMI")
+  check(build(labels = FALSE), "income_group", "bmi")
+})
+
+test_that("var_labels() renames on the attribute base, whatever the option", {
+  build <- function() {
+    table_continuous(
+      sochealth,
+      select = c(bmi, age),
+      by = sex,
+      labels = var_labels(bmi = "IMC")
+    )
+  }
+  check <- function(out) {
+    expect_identical(attr(out, "group_label"), "Sex")
+    expect_identical(unique(out$label), c("IMC", "Age (years)"))
+  }
+  check(build())
+  withr::local_options(spicy.var_labels = FALSE)
+  check(build())
 })
 
 test_that("drop_na = TRUE discloses removed missing-by rows in the note", {
@@ -3526,11 +3615,11 @@ test_that("table_continuous discloses dropped rows on the rich outputs", {
   )
   expect_identical(
     paste(unlist(x@notes), collapse = " "),
-    "Rows with missing Sex removed: 40."
+    "Rows with missing sex_na removed: 40."
   )
   expect_match(
     tinytable::save_tt(x, output = "html"),
-    "Rows with missing Sex removed: 40.",
+    "Rows with missing sex_na removed: 40.",
     fixed = TRUE
   )
 
@@ -3540,7 +3629,7 @@ test_that("table_continuous discloses dropped rows on the rich outputs", {
   expect_s3_class(g, "spicy_gt")
   expect_identical(
     attr(g, "spicy_note"),
-    "Rows with missing Sex removed: 40."
+    "Rows with missing sex_na removed: 40."
   )
 
   f <- suppressWarnings(
@@ -3549,7 +3638,7 @@ test_that("table_continuous discloses dropped rows on the rich outputs", {
   expect_identical(nrow(f$footer$dataset), 1L)
   expect_match(
     as.character(flextable::htmltools_value(f)),
-    "Rows with missing Sex removed: 40.",
+    "Rows with missing sex_na removed: 40.",
     fixed = TRUE
   )
 })
@@ -3588,7 +3677,7 @@ test_that("an existing table note is joined, never overwritten", {
   )
   note <- paste(unlist(z@notes), collapse = " ")
   expect_match(note, "HC3", fixed = TRUE)
-  expect_match(note, "Rows with missing Sex removed: 40.", fixed = TRUE)
+  expect_match(note, "Rows with missing sex_na removed: 40.", fixed = TRUE)
 })
 
 # ---- show_columns: statistic selection -----------------------------------
@@ -4137,6 +4226,10 @@ test_that("the by table titles itself 'Descriptive statistics by <label>'", {
   # title, label resolved, like the other by tables of the family.
   out <- capture.output(print(
     table_continuous(sochealth, select = bmi, by = sex)
+  ))
+  expect_true(any(grepl("^Descriptive statistics by sex$", trimws(out))))
+  out <- capture.output(print(
+    table_continuous(sochealth, select = bmi, by = sex, labels = TRUE)
   ))
   expect_true(any(grepl("^Descriptive statistics by Sex$", trimws(out))))
   out1 <- capture.output(print(table_continuous(sochealth, select = bmi)))

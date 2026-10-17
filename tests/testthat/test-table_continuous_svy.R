@@ -675,7 +675,8 @@ test_that("rows with a missing `by` leave the table and the note says so", {
     "Rows with missing stype removed: 3.",
     fixed = TRUE
   )
-  # A labelled `by` is named by its label, as in the title.
+  # A labelled `by` is named by its label under `labels = TRUE`, as in
+  # the title.
   attr(dat$stype, "label") <- "School type"
   des_lab <- survey::svydesign(
     id = ~dnum,
@@ -683,7 +684,19 @@ test_that("rows with a missing `by` leave the table and the note says so", {
     data = dat,
     fpc = ~fpc
   )
-  tbl_lab <- table_continuous_svy(des_lab, select = api00, by = stype)
+  expect_identical(
+    attr(
+      table_continuous_svy(des_lab, select = api00, by = stype),
+      "group_label"
+    ),
+    "stype"
+  )
+  tbl_lab <- table_continuous_svy(
+    des_lab,
+    select = api00,
+    by = stype,
+    labels = TRUE
+  )
   expect_match(
     attr(tbl_lab, "missing_note"),
     "Rows with missing School type removed: 3.",
@@ -1182,22 +1195,84 @@ test_that("ordinary missing values are counted in the note", {
 
 test_that("the missing-values note names each variable by its row label", {
   skip_if_not_installed("survey")
-  d <- data.frame(y = c(1, 2, NA, 4), z = c(NA, 2, 3, 4), w = rep(1, 4))
+  d <- data.frame(
+    y = c(1, 2, NA, 4, 5, 6),
+    z = c(NA, 2, 3, 4, 5, 6),
+    v = c(1, 2, 3, 4, 5, 7),
+    e = c(2, 2, 3, 4, 5, 7),
+    g = c("a", "b", "a", "b", "a", NA),
+    w = rep(1, 6)
+  )
   attr(d$y, "label") <- "Outcome Y"
+  attr(d$v, "label") <- NA_character_
+  attr(d$e, "label") <- ""
+  attr(d$g, "label") <- "Group"
   des <- survey::svydesign(id = ~1, weights = ~w, data = d)
-  expect_match(
-    attr(table_continuous_svy(des, select = c(y, z)), "missing_note"),
-    "Missing values removed: Outcome Y (1), z (1).",
-    fixed = TRUE
+  build <- function(...) {
+    suppressWarnings(table_continuous_svy(des, select = c(y, z, v, e), ...))
+  }
+  # Rows and the values note on the one-way table; the `by` title and
+  # the missing-`by` note on the grouped one.
+  check <- function(by, rows, row_y, row_z, ...) {
+    tbl <- build(...)
+    expect_identical(unique(tbl$label), rows)
+    expect_match(
+      attr(tbl, "missing_note"),
+      sprintf("Missing values removed: %s (1), %s (1).", row_y, row_z),
+      fixed = TRUE
+    )
+    grouped <- build(by = g, ...)
+    expect_identical(attr(grouped, "group_label"), by)
+    expect_match(
+      attr(grouped, "missing_note"),
+      sprintf("Rows with missing %s removed: 1.", by),
+      fixed = TRUE
+    )
+  }
+  check("g", c("y", "z", "v", "e"), "y", "z")
+  # No attribute, an NA one and an empty one fall back to the name.
+  check("Group", c("Outcome Y", "z", "v", "e"), "Outcome Y", "z", labels = TRUE)
+  check(
+    "Arm",
+    c("y", "Zed", "v", "e"),
+    "y",
+    "Zed",
+    labels = c(z = "Zed", g = "Arm", nope = "X")
   )
-  expect_match(
-    attr(
-      table_continuous_svy(des, select = c(y, z), labels = c(z = "Zed")),
-      "missing_note"
-    ),
-    "Missing values removed: Outcome Y (1), Zed (1).",
-    fixed = TRUE
+  withr::local_options(spicy.var_labels = TRUE)
+  check(
+    "Group",
+    c("Outcome Y", "Zed", "v", "e"),
+    "Outcome Y",
+    "Zed",
+    labels = c(z = "Zed")
   )
+  check("g", c("y", "z", "v", "e"), "y", "z", labels = FALSE)
+  for (b in list(NULL, NA, c("a", "b"), list(z = "Zed"))) {
+    expect_error(build(labels = b), class = "spicy_invalid_input")
+  }
+  withr::local_options(spicy.var_labels = c(TRUE, TRUE))
+  expect_error(build(), class = "spicy_invalid_input")
+})
+
+test_that("var_labels() renames on the attribute base, whatever the option", {
+  skip_if_not_installed("survey")
+  des <- survey::svydesign(ids = ~1, weights = ~weight, data = sochealth)
+  build <- function() {
+    table_continuous_svy(
+      des,
+      select = c(bmi, age),
+      by = sex,
+      labels = var_labels(bmi = "IMC")
+    )
+  }
+  check <- function(tbl) {
+    expect_identical(attr(tbl, "group_label"), "Sex")
+    expect_identical(unique(tbl$label), c("IMC", "Age (years)"))
+  }
+  check(build())
+  withr::local_options(spicy.var_labels = FALSE)
+  check(build())
 })
 
 # ---- restitution ----------------------------------------------------------

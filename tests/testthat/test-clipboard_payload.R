@@ -201,14 +201,15 @@ test_that("table_continuous clipboard carries the title and the note", {
   ))
   lines <- .clip_lines(captured$text)
   # The by table states its grouping variable in the title
-  # (decision 4, 2026-08-13), label resolved ("Sex", not "sex").
+  # (decision 4, 2026-08-13), as `labels` names it (the column name by
+  # default).
   expect_identical(
     strsplit(lines[1L], "\t", fixed = TRUE)[[1L]][1L],
-    "Descriptive statistics by Sex"
+    "Descriptive statistics by sex"
   )
   expect_match(
     lines[length(lines)],
-    "^Missing values removed: Body mass index \\(68\\)\\."
+    "^Missing values removed: bmi \\(68\\)\\."
   )
   expect_false(grepl("\u2007", captured$text, fixed = TRUE))
   # The sub-label row carries LL / UL under the CI spanner.
@@ -227,10 +228,10 @@ test_that("table_continuous drops the sub-label row when there is no CI", {
   # header and the body.
   expect_length(lines, 4L)
   expect_match(lines[2L], "^Variable\t")
-  expect_match(lines[3L], "^Body mass index\t")
+  expect_match(lines[3L], "^bmi\t")
   expect_match(
     lines[4L],
-    "^Missing values removed: Body mass index \\(12\\)\\."
+    "^Missing values removed: bmi \\(12\\)\\."
   )
 })
 
@@ -247,11 +248,11 @@ test_that("table_continuous_lm clipboard carries the title, without a blank row"
   lines <- .clip_lines(captured$text)
   expect_identical(
     strsplit(lines[1L], "\t", fixed = TRUE)[[1L]][1L],
-    "Continuous outcomes by Highest education level"
+    "Continuous outcomes by education"
   )
   expect_match(lines[2L], "^Variable\t")
   # Line 3 used to be an all-blank second header row.
-  expect_match(lines[3L], "^Body mass index\t")
+  expect_match(lines[3L], "^bmi\t")
   expect_false(grepl("\u2007", captured$text, fixed = TRUE))
 })
 

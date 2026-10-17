@@ -305,10 +305,27 @@
 #' @param ci Logical. If `TRUE`, includes contrast confidence-interval columns
 #'   in the wide and rendered outputs when a single contrast is shown.
 #'   Defaults to `TRUE`.
-#' @param labels An optional named character vector of outcome labels. Names
-#'   must match column names in `data`. When `NULL` (the default), labels are
-#'   auto-detected from variable attributes; if none are found, the column name
-#'   is used.
+#' @param labels How each variable is named in the table: in the rows,
+#'   in the title, and in the missing-values notes. The covariates keep
+#'   their names. Four forms:
+#'   * `labels = FALSE` shows the column name.
+#'   * `labels = TRUE` shows the column's `label` attribute (as set by
+#'     `haven`, `labelled`, or [label_from_names()]) when it is present,
+#'     not `NA`, and not empty, and the column name otherwise.
+#'   * `labels = c(bmi = "Body mass index")`, a named character vector,
+#'     gives the columns it names these labels. Every other column
+#'     follows `options(spicy.var_labels)`: its name when the option is
+#'     unset or `FALSE`, its `label` attribute when it is `TRUE`.
+#'   * `labels = var_labels(bmi = "BMI (kg/m2)")` gives the columns it
+#'     names these labels, and every other column its `label` attribute,
+#'     whatever the option says. `var_labels()` alone is `labels = TRUE`.
+#'
+#'   Names that match no column are ignored, so one vector can serve
+#'   every table of a project. The default reads
+#'   `options(spicy.var_labels)`, and a `TRUE` or `FALSE` typed in the
+#'   call wins over it. Any other value, `NULL` included, is an error. A
+#'   variable label documents the data file; a published table carries
+#'   the wording you set here.
 #' @param ci_level Confidence level for coefficient and model-based mean
 #'   intervals (default: `0.95`). Must be between 0 and 1 exclusive.
 #' @param digits Number of decimal places for descriptive values, regression
@@ -1054,7 +1071,7 @@ table_continuous_lm <- function(
   effect_size_ci = FALSE,
   r2 = c("r2", "adj_r2", "none"),
   ci = TRUE,
-  labels = NULL,
+  labels = getOption("spicy.var_labels", FALSE),
   ci_level = 0.95,
   digits = 2,
   fit_digits = 2,
@@ -1164,12 +1181,7 @@ table_continuous_lm <- function(
       class = "spicy_invalid_input"
     )
   }
-  if (!is.null(labels) && (!is.character(labels) || is.null(names(labels)))) {
-    spicy_abort(
-      "`labels` must be a named character vector.",
-      class = "spicy_invalid_input"
-    )
-  }
+  .check_labels_arg(labels)
   for (.arg in c(
     "regex",
     "verbose",
@@ -1513,7 +1525,7 @@ table_continuous_lm <- function(
   }
 
   outcome_labels <- resolve_variable_labels(data, numeric_outcomes, labels)
-  by_label <- resolve_variable_labels(data, by_name)
+  by_label <- resolve_variable_labels(data, by_name, labels)
 
   rows <- lapply(
     seq_along(numeric_outcomes),

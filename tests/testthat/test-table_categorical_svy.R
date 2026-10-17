@@ -312,8 +312,8 @@ test_that("missing values are a level of their own by default", {
     fixed = TRUE
   )
   expect_equal(sum(dropped[["%"]][-1L]), 100, tolerance = 1e-9)
-  # The note names the variable as its rows do: `labels`, then the
-  # `label` attribute, then the name.
+  # The note names the variable as its rows do (`labels`): the name by
+  # default, the `label` attribute under `labels = TRUE`.
   relabelled <- table_categorical_svy(
     des,
     select = stype,
@@ -335,6 +335,19 @@ test_that("missing values are a level of their own by default", {
   expect_match(
     attr(
       table_categorical_svy(des_lab, select = stype, drop_na = TRUE),
+      "note"
+    ),
+    "Missing values removed: stype (5).",
+    fixed = TRUE
+  )
+  expect_match(
+    attr(
+      table_categorical_svy(
+        des_lab,
+        select = stype,
+        labels = TRUE,
+        drop_na = TRUE
+      ),
       "note"
     ),
     "Missing values removed: Type of school (5).",
@@ -569,7 +582,8 @@ test_that("`drop_na` also governs the missing-`by` domain", {
     "Rows with missing sch.wide removed: 4.",
     fixed = TRUE
   )
-  # A labelled `by` is named by its label, as in the title.
+  # A labelled `by` is named by its label under `labels = TRUE`, as in
+  # the title.
   attr(dat$sch.wide, "label") <- "School-wide target met"
   des_lab <- survey::svydesign(
     id = ~dnum,
@@ -581,6 +595,7 @@ test_that("`drop_na` also governs the missing-`by` domain", {
     des_lab,
     select = stype,
     by = sch.wide,
+    labels = TRUE,
     drop_na = TRUE
   )
   expect_match(
@@ -602,9 +617,93 @@ test_that("`drop_na` also governs the missing-`by` domain", {
     des_rows,
     select = stype,
     by = sch.wide,
+    labels = TRUE,
     drop_na = TRUE
   )))
   expect_true(any(grepl("Type of school", printed, fixed = TRUE)))
+})
+
+test_that("labels names the rows, the by title and the notes", {
+  skip_if_not_installed("survey")
+  data(api, package = "survey", envir = environment())
+  dat <- apiclus1
+  dat$stype[1:5] <- NA
+  dat$sch.wide[6:9] <- NA
+  attr(dat$stype, "label") <- "Type of school"
+  attr(dat$sch.wide, "label") <- "School-wide target met"
+  attr(dat$awards, "label") <- ""
+  attr(dat$yr.rnd, "label") <- NA_character_
+  des <- survey::svydesign(id = ~dnum, weights = ~pw, data = dat, fpc = ~fpc)
+  build <- function(...) {
+    table_categorical_svy(
+      des,
+      select = c(stype, awards, yr.rnd, comp.imp),
+      by = sch.wide,
+      drop_na = TRUE,
+      ...
+    )
+  }
+  check <- function(tbl, by, row) {
+    expect_identical(attr(tbl, "group_label"), by)
+    expect_identical(
+      unique(tbl$label[!is.na(tbl$label)]),
+      c(row, "awards", "yr.rnd", "comp.imp")
+    )
+    note <- attr(tbl, "note")
+    expect_match(
+      note,
+      sprintf("Missing values removed: %s (", row),
+      fixed = TRUE
+    )
+    expect_match(
+      note,
+      sprintf("Rows with missing %s removed: 4.", by),
+      fixed = TRUE
+    )
+  }
+  check(build(), "sch.wide", "stype")
+  # An empty attribute, an NA one and none at all fall back to the name.
+  check(build(labels = TRUE), "School-wide target met", "Type of school")
+  check(
+    build(labels = c(stype = "School type", sch.wide = "Target", x = "X")),
+    "Target",
+    "School type"
+  )
+  withr::local_options(spicy.var_labels = TRUE)
+  check(
+    build(labels = c(stype = "School type")),
+    "School-wide target met",
+    "School type"
+  )
+  check(build(labels = FALSE), "sch.wide", "stype")
+  for (b in list(NULL, NA, c("a", "b"), list(stype = "S"))) {
+    expect_error(build(labels = b), class = "spicy_invalid_input")
+  }
+  withr::local_options(spicy.var_labels = "no")
+  expect_error(build(), class = "spicy_invalid_input")
+})
+
+test_that("var_labels() renames on the attribute base, whatever the option", {
+  skip_if_not_installed("survey")
+  des <- survey::svydesign(ids = ~1, weights = ~weight, data = sochealth)
+  build <- function() {
+    table_categorical_svy(
+      des,
+      select = c(smoking, physical_activity),
+      by = sex,
+      labels = var_labels(smoking = "Fumeur")
+    )
+  }
+  check <- function(tbl) {
+    expect_identical(attr(tbl, "group_label"), "Sex")
+    expect_identical(
+      unique(tbl$label),
+      c("Fumeur", "Regular physical activity")
+    )
+  }
+  check(build())
+  withr::local_options(spicy.var_labels = FALSE)
+  check(build())
 })
 
 # ---- refusals -------------------------------------------------------------

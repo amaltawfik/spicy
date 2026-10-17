@@ -399,7 +399,7 @@ test_that("table_categorical variable-header cells are blank, not #N/A", {
   })
   expect_length(.xl_error_cells(path), 0L)
   m <- .xl_grid(path)
-  hdr <- .xl_row(m, "Self-rated health")
+  hdr <- .xl_row(m, "self_rated_health")
   expect_true(all(is.na(hdr[c("B", "C")])))
 })
 
@@ -444,7 +444,7 @@ test_that("the by-table carries its title, missing note and assoc gloss", {
   })
   expect_length(.xl_error_cells(path), 0L)
   m <- .xl_grid(path)
-  expect_equal(.xl_at(m, 1L, "A"), "Categorical table by Sex")
+  expect_equal(.xl_at(m, 1L, "A"), "Categorical table by sex")
   expect_equal(.xl_at(m, 3L, "A"), "Variable")
   expect_equal(.xl_at(m, 4L, "B"), "n")
   col_a <- m[, "A"]
@@ -473,8 +473,8 @@ test_that("table_continuous writes its console title and missing note", {
   expect_length(.xl_error_cells(path), 0L)
   m <- .xl_grid(path)
   # Decision 4 (2026-08-13): the by table states its grouping
-  # variable, label resolved.
-  expect_equal(.xl_at(m, 1L, "A"), "Descriptive statistics by Sex")
+  # variable, as `labels` names it.
+  expect_equal(.xl_at(m, 1L, "A"), "Descriptive statistics by sex")
   expect_equal(.xl_at(m, 3L, "A"), "Variable")
   expect_equal(.xl_at(m, 4L, "G"), "LL")
   expect_true(attr(obj, "missing_note") %in% m[, "A"])
@@ -495,7 +495,7 @@ test_that("table_continuous_lm writes the title above its table", {
   m <- .xl_grid(path)
   expect_match(.xl_at(m, 1L, "A"), "^Continuous outcomes by ")
   expect_equal(.xl_at(m, 3L, "A"), "Variable")
-  expect_equal(.xl_at(m, 5L, "A"), "Body mass index")
+  expect_equal(.xl_at(m, 5L, "A"), "bmi")
 })
 
 
@@ -760,7 +760,7 @@ test_that("table_continuous_lm without a CI writes one header row", {
   }
   m <- write_lm(FALSE)
   expect_equal(.xl_at(m, 3L, "A"), "Variable")
-  expect_equal(.xl_at(m, 4L, "A"), "Body mass index")
+  expect_equal(.xl_at(m, 4L, "A"), "bmi")
   # The CI spanner keeps its second row.
-  expect_equal(.xl_at(write_lm(TRUE), 5L, "A"), "Body mass index")
+  expect_equal(.xl_at(write_lm(TRUE), 5L, "A"), "bmi")
 })

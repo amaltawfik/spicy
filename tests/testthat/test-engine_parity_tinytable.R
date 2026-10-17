@@ -229,7 +229,7 @@ test_that("the descriptive families carry their title as a caption", {
   )
   expect_match(
     .pt_html(table_categorical(d, smoking, by = sex, output = "tinytable")),
-    "<caption>Categorical table by Sex</caption>",
+    "<caption>Categorical table by sex</caption>",
     fixed = TRUE
   )
   expect_match(

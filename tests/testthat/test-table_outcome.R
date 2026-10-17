@@ -352,10 +352,10 @@ test_that("the console lays out one stub column and indented levels", {
     df$Variable,
     c(
       "Overall",
-      "Sex",
+      "sex",
       "  Female",
       "  Male",
-      "Current smoker",
+      "smoking",
       "  No",
       "  Yes",
       "  (Missing)"
@@ -423,7 +423,7 @@ test_that("the note discloses the comparison, the missing and the shape", {
   # sentence that reconciles the Overall count with the raw data.
   expect_match(
     note,
-    "Missing values removed: Body mass index (12).",
+    "Missing values removed: bmi (12).",
     fixed = TRUE
   )
   # Two blocks, two different tests: the note names both.
@@ -440,7 +440,7 @@ test_that("the disclosures follow the arguments that cause them", {
   tbl <- .to_quiet(table_outcome(d, bmi, select = smoking, drop_na = TRUE))
   expect_match(
     attr(tbl, "note"),
-    "Rows with missing Current smoker removed: 25."
+    "Rows with missing smoking removed: 25."
   )
   # `overall = FALSE`: no sentence about a row that is not there.
   tbl2 <- .to_quiet(table_outcome(d, bmi, select = sex, overall = FALSE))
@@ -449,6 +449,83 @@ test_that("the disclosures follow the arguments that cause them", {
   tbl3 <- .to_quiet(table_outcome(d, bmi, select = sex, p_value = FALSE))
   expect_false(grepl("not adjusted", attr(tbl3, "note"), fixed = TRUE))
   expect_false(grepl("Group comparison", attr(tbl3, "note"), fixed = TRUE))
+})
+
+test_that("labels names the outcome and the blocks: title, rows, notes", {
+  d <- .to_sh()
+  d$plain <- as.character(d$sex)
+  d$na_lab <- structure(as.character(d$sex), label = NA_character_)
+  d$empty <- structure(as.character(d$sex), label = "")
+  build <- function(...) {
+    .to_quiet(table_outcome(
+      d,
+      bmi,
+      select = c(smoking, plain, na_lab, empty),
+      drop_na = TRUE,
+      ...
+    ))
+  }
+  check <- function(tbl, outcome, block) {
+    expect_identical(attr(tbl, "outcome_label"), outcome)
+    expect_true(any(grepl(
+      paste("Descriptive statistics of", outcome),
+      utils::capture.output(print(tbl)),
+      fixed = TRUE
+    )))
+    expect_identical(
+      tbl$label[tbl$.row_role == "factor_header"],
+      c(block, "plain", "na_lab", "empty")
+    )
+    expect_match(
+      attr(tbl, "note"),
+      sprintf("Missing values removed: %s (12).", outcome),
+      fixed = TRUE
+    )
+    expect_match(
+      attr(tbl, "note"),
+      sprintf("Rows with missing %s removed: 25.", block),
+      fixed = TRUE
+    )
+  }
+  check(build(), "bmi", "smoking")
+  # No attribute, an NA one and an empty one fall back to the name.
+  check(build(labels = TRUE), "Body mass index", "Current smoker")
+  check(build(labels = c(bmi = "BMI", nope = "X")), "BMI", "smoking")
+  withr::local_options(spicy.var_labels = TRUE)
+  check(build(labels = c(smoking = "Smoker")), "Body mass index", "Smoker")
+  check(build(labels = FALSE), "bmi", "smoking")
+  for (b in list(NULL, NA, c("a", "b"), list(bmi = "BMI"))) {
+    expect_error(
+      table_outcome(d, bmi, select = smoking, labels = b),
+      class = "spicy_invalid_input"
+    )
+  }
+  withr::local_options(spicy.var_labels = 1)
+  expect_error(
+    table_outcome(d, bmi, select = smoking),
+    class = "spicy_invalid_input"
+  )
+})
+
+test_that("var_labels() renames on the attribute base, whatever the option", {
+  build <- function() {
+    .to_quiet(table_outcome(
+      .to_sh(),
+      bmi,
+      select = c(sex, smoking),
+      labels = var_labels(bmi = "IMC")
+    ))
+  }
+  check <- function(tbl) {
+    expect_identical(attr(tbl, "outcome_label"), "IMC")
+    expect_identical(
+      tbl$label[tbl$.row_role == "factor_header"],
+      c("Sex", "Current smoker")
+    )
+  }
+  check(build())
+  withr::local_options(spicy.var_labels = FALSE)
+  check(build())
 })
 
 test_that("the table tests what it shows", {

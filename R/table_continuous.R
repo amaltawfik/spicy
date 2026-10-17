@@ -183,10 +183,26 @@
 #'   `output = "data.frame"` / `"long"` for downstream programmatic
 #'   access. Defaults to `TRUE`. The CI level is taken from `ci_level`.
 #'   Ignored (with a warning) when `show_columns` is supplied.
-#' @param labels An optional named character vector of variable labels.
-#'   Names must match column names in `data`. When `NULL` (the default),
-#'   labels are auto-detected from variable attributes (e.g., haven
-#'   labels); if none are found, the column name is used.
+#' @param labels How each variable is named in the table: in the rows,
+#'   in the title, and in the missing-values notes. Four forms:
+#'   * `labels = FALSE` shows the column name.
+#'   * `labels = TRUE` shows the column's `label` attribute (as set by
+#'     `haven`, `labelled`, or [label_from_names()]) when it is present,
+#'     not `NA`, and not empty, and the column name otherwise.
+#'   * `labels = c(bmi = "Body mass index")`, a named character vector,
+#'     gives the columns it names these labels. Every other column
+#'     follows `options(spicy.var_labels)`: its name when the option is
+#'     unset or `FALSE`, its `label` attribute when it is `TRUE`.
+#'   * `labels = var_labels(bmi = "BMI (kg/m2)")` gives the columns it
+#'     names these labels, and every other column its `label` attribute,
+#'     whatever the option says. `var_labels()` alone is `labels = TRUE`.
+#'
+#'   Names that match no column are ignored, so one vector can serve
+#'   every table of a project. The default reads
+#'   `options(spicy.var_labels)`, and a `TRUE` or `FALSE` typed in the
+#'   call wins over it. Any other value, `NULL` included, is an error. A
+#'   variable label documents the data file; a published table carries
+#'   the wording you set here.
 #' @param ci_level Confidence level for the mean confidence interval
 #'   (default: `0.95`). Must be between 0 and 1 exclusive.
 #' @param digits Number of decimal places for descriptive values and test
@@ -764,7 +780,7 @@ table_continuous <- function(
   effect_size_ci = FALSE,
   smd = FALSE,
   ci = TRUE,
-  labels = NULL,
+  labels = getOption("spicy.var_labels", FALSE),
   ci_level = 0.95,
   digits = 2,
   effect_size_digits = 2,
@@ -850,12 +866,7 @@ table_continuous <- function(
       class = "spicy_invalid_input"
     )
   }
-  if (!is.null(labels) && (!is.character(labels) || is.null(names(labels)))) {
-    spicy_abort(
-      "`labels` must be a named character vector.",
-      class = "spicy_invalid_input"
-    )
-  }
+  .check_labels_arg(labels)
   for (.lname in c(
     "statistic",
     "effect_size_ci",
@@ -1211,7 +1222,7 @@ table_continuous <- function(
         spicy_fmt(
           "note_rows_missing_by_removed",
           # The label the title prints (`group_label` below).
-          resolve_variable_labels(data, group_col_name),
+          resolve_variable_labels(data, group_col_name, labels),
           by_na_dropped
         )
       )
@@ -1720,7 +1731,7 @@ table_continuous <- function(
   # by variable must be stated in the rendered caption, like the other
   # by tables of the family.
   attr(result, "group_label") <- if (has_group) {
-    resolve_variable_labels(data, group_col_name)
+    resolve_variable_labels(data, group_col_name, labels)
   } else {
     NULL
   }

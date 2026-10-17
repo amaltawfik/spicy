@@ -197,9 +197,9 @@ test_that("Excel keeps the marginal label whole and deepens the levels", {
   # characters from every row it is handed. Handing it the marginal
   # row would return "erall": THAT is what this line guards.
   expect_identical(body[[1L]], "Overall")
-  expect_identical(body[[2L]], "Sex")
+  expect_identical(body[[2L]], "sex")
   expect_identical(body[[3L]], paste0(strrep("_", 6), "Female"))
-  expect_identical(body[[5L]], "Current smoker")
+  expect_identical(body[[5L]], "smoking")
   expect_identical(body[[8L]], paste0(strrep("_", 6), "(Missing)"))
 })
 

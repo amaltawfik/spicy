@@ -659,11 +659,10 @@ test_that("table_categorical accepts a named per-variable `assoc_measure`", {
     by = sex,
     output = "default"
   )
-  # The note lists display labels; sochealth ships label attributes,
-  # picked up by the 0.13.0 attribute fallback.
+  # The note lists display labels: the column names by default.
   expect_match(
     attr(out_default, "assoc_note"),
-    "Note\\. Phi: Current smoker; Cramer's V: Highest education level\\."
+    "Note\\. Phi: smoking; Cramer's V: education\\."
   )
 
   # Force uniform Cramer's V via single-string -> no note
@@ -1186,10 +1185,7 @@ test_that("table_categorical handles multiple select in wide output", {
     education,
     output = "data.frame"
   )
-  # sochealth ships label attributes, picked up by the fallback.
-  expect_true(all(
-    c("Current smoker", "Regular physical activity") %in% out$Variable
-  ))
+  expect_true(all(c("smoking", "physical_activity") %in% out$Variable))
 })
 
 # ---- include_total = FALSE -----------------------------------------------
@@ -2297,14 +2293,14 @@ test_that("clipboard payload carries the console title and notes", {
 
   # Title on the first row, disclosure notes on the last rows: what
   # left the table, then which measure each row's effect size is.
-  expect_identical(cells[[1L]][1L], "Categorical table by Sex")
+  expect_identical(cells[[1L]][1L], "Categorical table by sex")
   expect_match(
     lines[length(lines) - 1L],
-    "^Missing values removed: Current smoker \\(65\\)\\."
+    "^Missing values removed: smoking \\(65\\)\\."
   )
   expect_match(
     lines[length(lines)],
-    "^Note\\. Phi: Current smoker; Cramer's V: Highest education level\\."
+    "^Note\\. Phi: smoking; Cramer's V: education\\."
   )
   # Title / note rows are padded to the full grid, so every line of
   # the payload holds the same number of fields (trailing empty
@@ -2360,12 +2356,8 @@ test_that("tidy() returns long-format with broom-conventional columns (cross-tab
     c("outcome", "level", "group", "n", "proportion")
   )
   expect_true(all(td$proportion >= 0 & td$proportion <= 1))
-  # `outcome` carries the display labels; sochealth ships label
-  # attributes, picked up by the 0.13.0 attribute fallback.
-  expect_equal(
-    unique(td$outcome),
-    c("Current smoker", "Regular physical activity")
-  )
+  # `outcome` carries the display labels: the column names by default.
+  expect_equal(unique(td$outcome), c("smoking", "physical_activity"))
   # Real groups appear; the synthetic "Total" marginal is excluded
   # by `tidy()` (one row per real group, broom convention).
   expect_setequal(unique(td$group), c("Female", "Male"))
@@ -2656,7 +2648,7 @@ test_that("table_categorical does not over-truncate p in (10^-p_digits, 0.001)",
   expect_true(any(grepl("^\\.0001$", p_col)))
 })
 
-# ---- labels: named-only contract + attribute fallback (0.13.0) ------------
+# ---- labels: column names by default, the attribute on request ------------
 
 test_that("labels rejects the legacy positional character vector", {
   err <- tryCatch(
@@ -2671,7 +2663,7 @@ test_that("labels rejects the legacy positional character vector", {
   expect_s3_class(err, "spicy_invalid_input")
   expect_match(
     paste(conditionMessage(err), collapse = "\n"),
-    "must be a named character vector"
+    "a named character vector"
   )
 })
 
@@ -2687,26 +2679,73 @@ test_that("labels rejects partially named vectors", {
   )
 })
 
-test_that("labels fall back to the label attribute (haven-style)", {
+test_that("labels: names by default, the label attribute under TRUE", {
   df <- data.frame(
     smk = structure(
       c("No", "Yes", "No", "Yes"),
       label = "Current smoker"
     ),
     act = c("Low", "High", "Low", "High"),
+    na_lab = structure(c("a", "b", "a", "b"), label = NA_character_),
+    empty = structure(c("u", "v", "u", "v"), label = ""),
     stringsAsFactors = FALSE
   )
-  out <- table_categorical(df, select = c(smk, act), output = "long")
-  expect_setequal(unique(out$variable), c("Current smoker", "act"))
+  rows <- function(...) {
+    out <- table_categorical(
+      df,
+      select = c(smk, act, na_lab, empty),
+      output = "long",
+      ...
+    )
+    as.character(unique(out$variable))
+  }
+  expect_identical(rows(), c("smk", "act", "na_lab", "empty"))
+  # No attribute, an NA one and an empty one fall back to the name.
+  expect_identical(
+    rows(labels = TRUE),
+    c("Current smoker", "act", "na_lab", "empty")
+  )
+  # A named vector sets the columns it names; the others follow the
+  # option (names when unset); a name matching no column is ignored.
+  expect_identical(
+    rows(labels = c(smk = "Override", bogus = "X")),
+    c("Override", "act", "na_lab", "empty")
+  )
+  withr::local_options(spicy.var_labels = TRUE)
+  expect_identical(rows(), c("Current smoker", "act", "na_lab", "empty"))
+  expect_identical(
+    rows(labels = c(act = "Activity")),
+    c("Current smoker", "Activity", "na_lab", "empty")
+  )
+  expect_identical(rows(labels = FALSE), c("smk", "act", "na_lab", "empty"))
+})
 
-  # An explicit named label overrides the attribute.
-  out2 <- table_categorical(
-    df,
-    select = c(smk, act),
-    labels = c(smk = "Override"),
+test_that("labels refuses every other form with one classed error", {
+  bad <- list(NULL, NA, c(TRUE, FALSE), 123, list(smoking = "Smoker"), mean)
+  for (b in bad) {
+    expect_error(
+      table_categorical(sochealth, select = smoking, labels = b),
+      class = "spicy_invalid_input"
+    )
+  }
+  withr::local_options(spicy.var_labels = "yes")
+  err <- expect_error(
+    table_categorical(sochealth, select = smoking),
+    class = "spicy_invalid_input"
+  )
+  expect_match(conditionMessage(err), "spicy.var_labels", fixed = TRUE)
+  expect_error(
+    table_categorical(sochealth, select = smoking, labels = c(smoking = "S")),
+    class = "spicy_invalid_input"
+  )
+  # TRUE and FALSE typed in the call win over the option.
+  out <- table_categorical(
+    sochealth,
+    select = smoking,
+    labels = TRUE,
     output = "long"
   )
-  expect_setequal(unique(out2$variable), c("Override", "act"))
+  expect_identical(as.character(unique(out$variable)), "Current smoker")
 })
 
 test_that("labels accepts a named character vector keyed by column name", {
@@ -2725,36 +2764,82 @@ test_that("labels accepts a named character vector keyed by column name", {
   )
 })
 
-test_that("named labels relabel a subset; others fall back to the attribute label", {
+test_that("named labels relabel a subset; the others keep their names", {
   out <- table_categorical(
     sochealth,
     select = c(smoking, physical_activity),
     labels = c(smoking = "CS only"),
     output = "long"
   )
-  # physical_activity keeps its sochealth label attribute.
-  expect_setequal(
-    unique(out$variable),
-    c("CS only", "Regular physical activity")
-  )
+  expect_setequal(unique(out$variable), c("CS only", "physical_activity"))
 })
 
-test_that("named labels with unknown names error clearly", {
-  expect_error(
-    table_categorical(
-      sochealth,
-      select = smoking,
-      labels = c(bogus = "X")
-    ),
-    "Names in `labels` not found in `data`"
+test_that("named labels with unknown names are ignored", {
+  out <- table_categorical(
+    sochealth,
+    select = smoking,
+    labels = c(bogus = "X"),
+    output = "long"
   )
+  expect_identical(as.character(unique(out$variable)), "smoking")
 })
 
 test_that("non-character labels rejected at boundary", {
   expect_error(
     table_categorical(sochealth, select = smoking, labels = 123),
-    "must be a named character vector"
+    class = "spicy_invalid_input"
   )
+})
+
+test_that("the by title and the missing-values notes follow labels", {
+  d <- sochealth
+  d$sex_na <- d$sex
+  d$sex_na[1:40] <- NA
+  build <- function(...) {
+    table_categorical(d, select = smoking, by = sex_na, drop_na = TRUE, ...)
+  }
+  check <- function(out, by, row) {
+    expect_identical(attr(out, "group_label"), by)
+    expect_identical(
+      attr(out, "missing_note"),
+      sprintf(
+        "Missing values removed: %s (25). Rows with missing %s removed: 40.",
+        row,
+        by
+      )
+    )
+  }
+  check(build(), "sex_na", "smoking")
+  check(build(labels = TRUE), "Sex", "Current smoker")
+  check(
+    build(labels = c(sex_na = "Gender", smoking = "Smoker")),
+    "Gender",
+    "Smoker"
+  )
+  withr::local_options(spicy.var_labels = TRUE)
+  check(build(labels = c(smoking = "Smoker")), "Sex", "Smoker")
+  check(build(labels = FALSE), "sex_na", "smoking")
+})
+
+test_that("var_labels() renames on the attribute base, whatever the option", {
+  build <- function() {
+    table_categorical(
+      sochealth,
+      select = c(smoking, physical_activity),
+      by = sex,
+      labels = var_labels(smoking = "Fumeur")
+    )
+  }
+  check <- function(out) {
+    expect_identical(attr(out, "group_label"), "Sex")
+    expect_identical(
+      unique(as.data.frame(out)$Variable),
+      c("Fumeur", "Regular physical activity")
+    )
+  }
+  check(build())
+  withr::local_options(spicy.var_labels = FALSE)
+  check(build())
 })
 
 # ---- select: optional, defaults to eligible categorical columns -----------
@@ -2818,6 +2903,7 @@ test_that("drop_na = TRUE discloses removals in the missing_note", {
   out <- table_categorical(
     sochealth,
     select = c(income_group, smoking),
+    labels = TRUE,
     drop_na = TRUE
   )
   note <- attr(out, "missing_note")
@@ -2849,20 +2935,17 @@ test_that("drop_na = TRUE discloses removals in the missing_note", {
 })
 
 test_that("the by title names the grouping variable by its label", {
+  title_has <- function(out, text) {
+    any(grepl(text, capture.output(print(out)), fixed = TRUE))
+  }
   out <- table_categorical(sochealth, select = smoking, by = sex)
-  expect_true(any(grepl(
-    "Categorical table by Sex",
-    capture.output(print(out)),
-    fixed = TRUE
-  )))
+  expect_true(title_has(out, "Categorical table by sex"))
+  out <- table_categorical(sochealth, select = smoking, by = sex, labels = TRUE)
+  expect_true(title_has(out, "Categorical table by Sex"))
   d <- sochealth
   attr(d$sex, "label") <- NULL
-  plain <- table_categorical(d, select = smoking, by = sex)
-  expect_true(any(grepl(
-    "Categorical table by sex",
-    capture.output(print(plain)),
-    fixed = TRUE
-  )))
+  plain <- table_categorical(d, select = smoking, by = sex, labels = TRUE)
+  expect_true(title_has(plain, "Categorical table by sex"))
 })
 
 test_that("drop_na = TRUE with by-NAs discloses both removals", {
@@ -2872,7 +2955,7 @@ test_that("drop_na = TRUE with by-NAs discloses both removals", {
   out <- table_categorical(d, select = smoking, by = sex_na, drop_na = TRUE)
   expect_identical(
     attr(out, "missing_note"),
-    "Missing values removed: Current smoker (25). Rows with missing Sex removed: 40."
+    "Missing values removed: smoking (25). Rows with missing sex_na removed: 40."
   )
 })
 
@@ -3506,7 +3589,7 @@ test_that("the missing disclosure reaches tinytable, one-way and by", {
   )
   expect_identical(
     paste(unlist(x@notes), collapse = " "),
-    "Missing values removed: Household income group (18), Current smoker (25)."
+    "Missing values removed: income_group (18), smoking (25)."
   )
   # And it survives rendering, not just the slot.
   expect_match(
@@ -3525,10 +3608,10 @@ test_that("the missing disclosure reaches tinytable, one-way and by", {
   note <- paste(unlist(x_by@notes), collapse = " ")
   expect_match(
     note,
-    "Missing values removed: Current smoker (25).",
+    "Missing values removed: smoking (25).",
     fixed = TRUE
   )
-  expect_match(note, "Rows with missing Sex removed: 40.", fixed = TRUE)
+  expect_match(note, "Rows with missing sex_na removed: 40.", fixed = TRUE)
 
   # Nothing removed -> no note at all.
   clean <- table_categorical(
@@ -3555,7 +3638,7 @@ test_that("the missing disclosure reaches gt, one-way and by", {
   expect_s3_class(g, "spicy_gt")
   expect_identical(
     attr(g, "spicy_note"),
-    "Missing values removed: Household income group (18), Current smoker (25)."
+    "Missing values removed: income_group (18), smoking (25)."
   )
 
   g_by <- table_categorical(
@@ -3567,7 +3650,7 @@ test_that("the missing disclosure reaches gt, one-way and by", {
   )
   expect_match(
     attr(g_by, "spicy_note"),
-    "Rows with missing Sex removed: 40.",
+    "Rows with missing sex_na removed: 40.",
     fixed = TRUE
   )
 
@@ -3598,7 +3681,7 @@ test_that("the missing disclosure reaches flextable, one-way and by", {
   expect_identical(nrow(f$footer$dataset), 1L)
   expect_match(
     as.character(flextable::htmltools_value(f)),
-    "Missing values removed: Household income group (18), Current smoker (25).",
+    "Missing values removed: income_group (18), smoking (25).",
     fixed = TRUE
   )
 
@@ -3611,7 +3694,7 @@ test_that("the missing disclosure reaches flextable, one-way and by", {
   )
   expect_match(
     as.character(flextable::htmltools_value(f_by)),
-    "Rows with missing Sex removed: 40.",
+    "Rows with missing sex_na removed: 40.",
     fixed = TRUE
   )
 
@@ -3638,7 +3721,7 @@ test_that("the missing disclosure rides along on output = 'data.frame'", {
   )
   expect_identical(
     attr(out, "missing_note"),
-    "Missing values removed: Household income group (18), Current smoker (25)."
+    "Missing values removed: income_group (18), smoking (25)."
   )
 
   out_by <- table_categorical(
@@ -3650,7 +3733,7 @@ test_that("the missing disclosure rides along on output = 'data.frame'", {
   )
   expect_match(
     attr(out_by, "missing_note"),
-    "Rows with missing Sex removed: 40.",
+    "Rows with missing sex_na removed: 40.",
     fixed = TRUE
   )
 

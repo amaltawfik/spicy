@@ -246,7 +246,7 @@ test_that("the descriptive families carry their title as an HTML caption", {
       by = "sex",
       output = "flextable"
     ))),
-    "Categorical table by Sex"
+    "Categorical table by sex"
   )
   expect_identical(
     .pf_caption(.pf_html(table_continuous(
@@ -256,14 +256,15 @@ test_that("the descriptive families carry their title as an HTML caption", {
       output = "flextable"
     ))),
     # Decision 4 (2026-08-13): the by table states its grouping
-    # variable, label resolved.
-    "Descriptive statistics by Sex"
+    # variable, as `labels` names it.
+    "Descriptive statistics by sex"
   )
   expect_identical(
     .pf_caption(.pf_html(table_continuous_lm(
       d,
       select = c("wellbeing_score", "bmi"),
       by = "education",
+      labels = TRUE,
       output = "flextable"
     ))),
     "Continuous outcomes by Highest education level"

@@ -8,7 +8,7 @@ table_categorical(
   data,
   select = tidyselect::everything(),
   by = NULL,
-  labels = NULL,
+  labels = getOption("spicy.var_labels", FALSE),
   levels_keep = NULL,
   include_total = TRUE,
   drop_na = FALSE,
@@ -64,15 +64,28 @@ headers -- the family convention shared with \code{\link[=table_continuous]{tabl
 and \code{\link[=table_continuous_lm]{table_continuous_lm()}}); declared missing values follow
 \code{user_na} as usual.}
 
-\item{labels}{An optional \strong{named character vector} of variable
-labels whose names match column names in \code{data} (e.g.
-\code{c(smoking = "Current smoker")}) -- the same contract as
-\code{\link[=table_continuous]{table_continuous()}} and \code{\link[=table_continuous_lm]{table_continuous_lm()}}. Only listed
-columns are relabeled. For the remaining columns (and when
-\code{labels = NULL}, the default), labels are auto-detected from the
-variable's label attribute (e.g. from \code{haven}); if none is found,
-the column name is used. Unnamed (positional) label vectors,
-accepted before 0.13.0, now raise an error.}
+\item{labels}{How each variable is named in the table: in the rows,
+in the title, and in the missing-values notes. Four forms:
+\itemize{
+\item \code{labels = FALSE} shows the column name.
+\item \code{labels = TRUE} shows the column's \code{label} attribute (as set by
+\code{haven}, \code{labelled}, or \code{\link[=label_from_names]{label_from_names()}}) when it is present,
+not \code{NA}, and not empty, and the column name otherwise.
+\item \code{labels = c(bmi = "Body mass index")}, a named character vector,
+gives the columns it names these labels. Every other column
+follows \code{options(spicy.var_labels)}: its name when the option is
+unset or \code{FALSE}, its \code{label} attribute when it is \code{TRUE}.
+\item \code{labels = var_labels(bmi = "BMI (kg/m2)")} gives the columns it
+names these labels, and every other column its \code{label} attribute,
+whatever the option says. \code{var_labels()} alone is \code{labels = TRUE}.
+}
+
+Names that match no column are ignored, so one vector can serve
+every table of a project. The default reads
+\code{options(spicy.var_labels)}, and a \code{TRUE} or \code{FALSE} typed in the
+call wins over it. Any other value, \code{NULL} included, is an error. A
+variable label documents the data file; a published table carries
+the wording you set here.}
 
 \item{levels_keep}{Optional character vector of levels to keep/order for row
 modalities. If \code{NULL}, all observed levels are kept. Entries must

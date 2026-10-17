@@ -127,14 +127,17 @@ table_categorical(
 ## Custom labels
 
 By default, `table_categorical()` labels each row block with the
-variable's label attribute when one is present (e.g. data imported
-with `haven`), and with the column name otherwise -- the same
-auto-detection as `table_continuous()` and `table_continuous_lm()`.
-Use the `labels` argument to override either: a **named character
-vector** keyed by column name in `data`. Only listed columns are
-relabeled; the others keep their attribute label or column name.
-(Unnamed positional label vectors, accepted before 0.13.0, now raise
-an error.)
+column name. `labels = TRUE` uses the variable's label attribute when
+one is present (e.g. data imported with `haven`), and the column name
+otherwise. A **named character vector** keyed by column name sets the
+labels you publish: the listed columns take them, and the others follow
+`options(spicy.var_labels)` (their name unless it is `TRUE`).
+`labels = var_labels(smoking = "Smoking status")` renames the same way
+while the others keep their label attribute. Names that match no column
+are ignored, so one vector can serve every table of a report. The `by`
+variable in the title follows the same rule, as in the other summary
+tables. (Unnamed positional label vectors, accepted before 0.13.0, now
+raise an error.)
 
 ```{r labels}
 table_categorical(

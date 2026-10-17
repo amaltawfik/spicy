@@ -11,6 +11,17 @@ workbook, or a PDF.
   explicit `NA` level of a factor counts as missing, and `difftime`
   columns no longer list their values. DT leaves Suggests.
 
+* `table_categorical()`, `table_continuous()`, `table_continuous_lm()`,
+  `table_outcome()`, `table_categorical_svy()`, and
+  `table_continuous_svy()` show column names by default. The `label`
+  attribute is read only with `labels = TRUE`.
+  `labels = c(bmi = "Body mass index")` sets the labels you publish, and
+  the other columns follow `options(spicy.var_labels)`. With the new
+  `var_labels()`, as in `labels = var_labels(bmi = "IMC")`, the other
+  columns keep their `label` attribute. Names that match no column are
+  ignored, and `labels = NULL` is an error. Add `labels = TRUE` to keep
+  the labels of 0.13.0.
+
 * `table_regression()` and `table_regression_uv()` name an interval column
   with a point whatever `decimal_mark`: `97.5% CI` in `as.data.frame()`,
   and `97.5% CI: LL` and `97.5% CI: UL` in `as_structured()`. They were
@@ -92,22 +103,21 @@ workbook, or a PDF.
   levels differing only in whitespace no longer share one DOM id.
 
 * `table_categorical()` titles a grouped table with the label of the `by`
-  variable, as `table_continuous()` does: "Categorical table by Sex", not
-  "by sex".
+  variable, as `table_continuous()` does: with `labels = TRUE`,
+  "Categorical table by Sex", not "by sex".
 
 * `table_categorical()`, `table_continuous()`, `table_continuous_lm()`,
   `table_outcome()`, `table_categorical_svy()`, and
   `table_continuous_svy()` name each variable of the missing-values notes
-  by its label, as the rows and the title do, not by its column name:
-  "Missing values removed: Body mass index (12)", "Rows with missing Sex
-  removed: 3". The label is the one given in `labels`, otherwise the
-  variable's label attribute (as set by `haven` or `label_from_names()`),
-  otherwise the column name. A covariate of `table_continuous_lm()` keeps
-  its name.
+  as its row and the title name it: with `labels = TRUE`, "Missing values
+  removed: Body mass index (12)", "Rows with missing Sex removed: 3".
+  They used the column name whatever `labels` said. A covariate of
+  `table_continuous_lm()` keeps its name.
 
-* `table_categorical_svy()` and `table_continuous_svy()` keep the label
-  of the `by` variable in the title, and `table_categorical_svy()` the
-  labels of its rows, when rows with a missing `by` are dropped.
+* `table_categorical_svy()` and `table_continuous_svy()` with
+  `labels = TRUE` keep the label of the `by` variable in the title, and
+  `table_categorical_svy()` the labels of its rows, when rows with a
+  missing `by` are dropped.
 
 * `table_continuous(ci = FALSE)` and `table_continuous_lm(ci = FALSE)`
   render one header row in tinytable, gt, flextable, Word, and Excel

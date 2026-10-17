@@ -74,7 +74,7 @@ test_that("the grouped continuous gt table names its grouping variable", {
   skip_if_no_gt()
   d <- spicy::sochealth
   tbl <- table_continuous(d, select = "bmi", by = "sex", output = "gt")
-  expect_identical(.gt_title(tbl), spicy:::.continuous_title("Sex"))
+  expect_identical(.gt_title(tbl), spicy:::.continuous_title("sex"))
   # The note route is untouched: it still travels as an attribute,
   # never as a gt source note.
   expect_true(inherits(tbl, "spicy_gt"))
@@ -100,7 +100,7 @@ test_that("the grouped categorical gt table names its grouping variable", {
     by = "sex",
     output = "gt"
   )
-  expect_identical(.gt_title(tbl), spicy:::.categorical_title("Sex"))
+  expect_identical(.gt_title(tbl), spicy:::.categorical_title("sex"))
   apa <- .gt_title_apa(tbl)
   expect_identical(apa$align, "left")
   expect_identical(apa$border_color, "transparent")
@@ -113,6 +113,7 @@ test_that("the bivariate linear-model gt table carries the console title", {
     d,
     select = c("bmi", "age"),
     by = "sex",
+    labels = TRUE,
     output = "gt"
   )
   expect_identical(.gt_title(tbl), spicy:::.continuous_lm_title("Sex"))

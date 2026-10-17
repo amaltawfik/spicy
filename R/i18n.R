@@ -1495,10 +1495,19 @@ spicy_fmt <- function(key, ...) {
 #'   a language does not: a named list (or named character vector) whose
 #'   names are keys of `spicy_labels()`. An unknown key is an error.
 #'
+#' * **`options(spicy.var_labels = TRUE)`**
+#'   How the descriptive tables ([table_categorical()],
+#'   [table_continuous()], [table_continuous_lm()], [table_outcome()] and
+#'   the survey twins) name your variables: `TRUE` shows each column's
+#'   `label` attribute, `FALSE` (the default) its name. It is the default
+#'   of their `labels` argument, and the columns a named `labels` vector
+#'   leaves out follow it. A `TRUE`, a `FALSE` or a [var_labels()] typed
+#'   in the call wins over it. Any other value is an error.
+#'
 #' A label resolves through `spicy.labels`, then the `spicy.language`
 #' set, then English. A set carries only the keys it translates, so
 #' anything it does not name falls back to English rather than erroring
-#' or coming out blank. Both options are cleared with `NULL`.
+#' or coming out blank. All three options are cleared with `NULL`.
 #'
 #' @section What a language does not change:
 #'

@@ -187,7 +187,7 @@ test_that("we name the outcome, and we carry a p by default", {
   tbl <- .too_quiet(table_outcome(.too_sh(), bmi, select = sex))
   expect_identical(
     spicy:::.outcome_title(attr(tbl, "outcome_label")),
-    "Descriptive statistics of Body mass index"
+    "Descriptive statistics of bmi"
   )
   # gtsummary needs `add_p()`; we show the comparison by default.
   expect_true("p" %in% names(attr(tbl, "display_df")))

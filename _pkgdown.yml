@@ -160,6 +160,7 @@ reference:
       - table_continuous
       - table_continuous_lm
       - table_outcome
+      - var_labels
       - table_regression
       - table_regression_uv
       - as_structured

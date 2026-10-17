@@ -41,6 +41,7 @@ cran_tier <- c(
   "table_outcome",
   "table_categorical_svy",
   "table_continuous_svy",
+  "var_labels",
   # regression tables
   "table_regression",
   "table_regression_models",

@@ -328,7 +328,26 @@
 #' @param select Columns to tabulate, as a tidyselect expression on the
 #'   design's variables.
 #' @param by A single grouping column: one column block per level.
-#' @param labels Named character vector of display labels.
+#' @param labels How each variable is named in the table: in the rows,
+#'   in the title, and in the missing-values notes. Four forms:
+#'   * `labels = FALSE` shows the column name.
+#'   * `labels = TRUE` shows the column's `label` attribute (as set by
+#'     `haven`, `labelled`, or [label_from_names()]) when it is present,
+#'     not `NA`, and not empty, and the column name otherwise.
+#'   * `labels = c(bmi = "Body mass index")`, a named character vector,
+#'     gives the columns it names these labels. Every other column
+#'     follows `options(spicy.var_labels)`: its name when the option is
+#'     unset or `FALSE`, its `label` attribute when it is `TRUE`.
+#'   * `labels = var_labels(bmi = "BMI (kg/m2)")` gives the columns it
+#'     names these labels, and every other column its `label` attribute,
+#'     whatever the option says. `var_labels()` alone is `labels = TRUE`.
+#'
+#'   Names that match no column are ignored, so one vector can serve
+#'   every table of a project. The default reads
+#'   `options(spicy.var_labels)`, and a `TRUE` or `FALSE` typed in the
+#'   call wins over it. Any other value, `NULL` included, is an error. A
+#'   variable label documents the data file; a published table carries
+#'   the wording you set here.
 #' @param levels_keep Levels to keep, as a character vector (all
 #'   variables) or a named list (per variable).
 #' @param include_total Add a `Total` column block with the whole
@@ -413,7 +432,7 @@ table_categorical_svy <- function(
   design,
   select = tidyselect::everything(),
   by = NULL,
-  labels = NULL,
+  labels = getOption("spicy.var_labels", FALSE),
   levels_keep = NULL,
   include_total = TRUE,
   drop_na = FALSE,
@@ -611,7 +630,9 @@ table_categorical_svy <- function(
   # Before any row leaves the design (`[` drops a column's attributes):
   # the rows, the title and the notes name each variable by its label.
   var_labels <- resolve_variable_labels(vars, select_names, labels)
-  by_label <- if (has_group) resolve_variable_labels(vars, group_col_name)
+  by_label <- if (has_group) {
+    resolve_variable_labels(vars, group_col_name, labels)
+  }
 
   # --- domains -------------------------------------------------------------
   by_na_dropped <- 0L

@@ -647,6 +647,7 @@ test_that("table_continuous_lm uses labels, exclude, regex, and character by", {
     by = "sex",
     regex = TRUE,
     exclude = bmi,
+    labels = TRUE,
     output = "data.frame"
   )
 
@@ -665,7 +666,7 @@ test_that("table_continuous_lm reports ignored non-numeric outcomes in verbose m
     "Ignoring non-numeric selected outcomes: sex"
   )
 
-  expect_equal(out$Variable, "WHO-5 wellbeing index (0-100)")
+  expect_equal(out$Variable, "wellbeing_score")
 })
 
 test_that("table_continuous_lm helper functions cover empty-model cases", {
@@ -914,7 +915,7 @@ test_that("a wide-character label does not split the console into panels", {
   render <- function(w) {
     withr::with_options(list(width = w), {
       invisible(capture.output(
-        out <- table_continuous_lm(d, select = yy, by = g)
+        out <- table_continuous_lm(d, select = yy, by = g, labels = TRUE)
       ))
       capture.output(print(out))
     })
@@ -1638,6 +1639,7 @@ test_that("degenerate models still preserve the predictor label", {
       df,
       select = c(y_ok, y_bad),
       by = g,
+      labels = TRUE,
       output = "long"
     ),
     class = "spicy_undefined_stat"
@@ -4983,12 +4985,18 @@ test_that("missing values are disclosed in the table note (decision 14)", {
   # shows the effect of the exclusions; the note shows the cause.
   txt <- paste(
     capture.output(print(suppressMessages(
-      table_continuous_lm(d, select = bmi, by = sex, covariates = "age")
+      table_continuous_lm(
+        d,
+        select = bmi,
+        by = sex,
+        covariates = "age",
+        labels = TRUE
+      )
     ))),
     collapse = "\n"
   )
   # The outcome is named by its row label, the covariate by its name, as
-  # in the "Adjusted for" line.
+  # in the "Adjusted for" line (even under `labels = TRUE`).
   expect_match(
     txt,
     sprintf(
@@ -5027,6 +5035,67 @@ test_that("missing values are disclosed in the table note (decision 14)", {
     unlist(tt@notes),
     fixed = TRUE
   )))
+})
+
+test_that("labels names the outcomes and the by variable (title, note)", {
+  d <- as.data.frame(sochealth)
+  d$sex[1:3] <- NA
+  d$plain <- as.numeric(d$age)
+  d$na_lab <- structure(as.numeric(d$age), label = NA_character_)
+  d$empty <- structure(as.numeric(d$age), label = "")
+  build <- function(...) {
+    suppressMessages(table_continuous_lm(
+      d,
+      select = c(bmi, plain, na_lab, empty),
+      by = sex,
+      output = "long",
+      ...
+    ))
+  }
+  check <- function(out, by, rows) {
+    expect_identical(attr(out, "by_label"), by)
+    expect_identical(unique(out$label), c(rows, "plain", "na_lab", "empty"))
+    expect_match(
+      attr(out, "missing_note"),
+      sprintf("Rows with missing %s removed: 3.", by),
+      fixed = TRUE
+    )
+  }
+  check(build(), "sex", "bmi")
+  # No attribute, an NA one and an empty one fall back to the name.
+  check(build(labels = TRUE), "Sex", "Body mass index")
+  check(
+    build(labels = c(bmi = "BMI", sex = "Gender", nope = "X")),
+    "Gender",
+    "BMI"
+  )
+  withr::local_options(spicy.var_labels = TRUE)
+  check(build(labels = c(bmi = "BMI")), "Sex", "BMI")
+  check(build(labels = FALSE), "sex", "bmi")
+  for (b in list(NULL, NA, c("a", "b"), list(bmi = "BMI"))) {
+    expect_error(build(labels = b), class = "spicy_invalid_input")
+  }
+  withr::local_options(spicy.var_labels = "yes")
+  expect_error(build(), class = "spicy_invalid_input")
+})
+
+test_that("var_labels() renames on the attribute base, whatever the option", {
+  build <- function() {
+    table_continuous_lm(
+      sochealth,
+      select = c(bmi, age),
+      by = sex,
+      labels = var_labels(bmi = "IMC"),
+      output = "long"
+    )
+  }
+  check <- function(out) {
+    expect_identical(attr(out, "by_label"), "Sex")
+    expect_identical(unique(out$label), c("IMC", "Age (years)"))
+  }
+  check(build())
+  withr::local_options(spicy.var_labels = FALSE)
+  check(build())
 })
 
 test_that("declared missing values are disclosed separately (decision 14)", {

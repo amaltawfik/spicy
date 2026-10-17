@@ -294,7 +294,7 @@ test_that("descriptive tables carry their console title as the Word caption", {
 
   cases <- list(
     list(
-      title = "Categorical table by Sex",
+      title = "Categorical table by sex",
       write = function(p) {
         table_categorical(
           d,
@@ -335,7 +335,7 @@ test_that("descriptive tables carry their console title as the Word caption", {
       }
     ),
     list(
-      title = "Continuous outcomes by Sex",
+      title = "Continuous outcomes by sex",
       write = function(p) {
         table_continuous_lm(
           d,
@@ -389,11 +389,10 @@ test_that("the association gloss reaches the Word document", {
       word_path = p
     )
   })
-  # Console oracle: "Note. Phi: Current smoker; Cramer's V: Highest
-  # education level."
+  # Console oracle: "Note. Phi: smoking; Cramer's V: education."
   note <- .wd_note(.wd_rows(path))
-  expect_match(note, "Phi: Current smoker", fixed = TRUE)
-  expect_match(note, "Highest education level", fixed = TRUE)
+  expect_match(note, "Phi: smoking", fixed = TRUE)
+  expect_match(note, "V: education", fixed = TRUE)
 })
 
 test_that("a missing-value disclosure and an association gloss share the note", {
@@ -411,7 +410,7 @@ test_that("a missing-value disclosure and an association gloss share the note", 
   })
   note <- .wd_note(.wd_rows(path))
   expect_match(note, "Missing values removed", fixed = TRUE)
-  expect_match(note, "Phi: Current smoker", fixed = TRUE)
+  expect_match(note, "Phi: smoking", fixed = TRUE)
 })
 
 

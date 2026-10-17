@@ -34,12 +34,20 @@ than passed to each table.
 A per-label override, for the case where one word has to change and
 a language does not: a named list (or named character vector) whose
 names are keys of \code{spicy_labels()}. An unknown key is an error.
+\item \strong{\code{options(spicy.var_labels = TRUE)}}
+How the descriptive tables (\code{\link[=table_categorical]{table_categorical()}},
+\code{\link[=table_continuous]{table_continuous()}}, \code{\link[=table_continuous_lm]{table_continuous_lm()}}, \code{\link[=table_outcome]{table_outcome()}} and
+the survey twins) name your variables: \code{TRUE} shows each column's
+\code{label} attribute, \code{FALSE} (the default) its name. It is the default
+of their \code{labels} argument, and the columns a named \code{labels} vector
+leaves out follow it. A \code{TRUE}, a \code{FALSE} or a \code{\link[=var_labels]{var_labels()}} typed
+in the call wins over it. Any other value is an error.
 }
 
 A label resolves through \code{spicy.labels}, then the \code{spicy.language}
 set, then English. A set carries only the keys it translates, so
 anything it does not name falls back to English rather than erroring
-or coming out blank. Both options are cleared with \code{NULL}.
+or coming out blank. All three options are cleared with \code{NULL}.
 }
 
 \section{What a language does not change}{

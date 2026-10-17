@@ -21,7 +21,7 @@ table_continuous_svy(
   show_n = TRUE,
   show_columns = NULL,
   ci = TRUE,
-  labels = NULL,
+  labels = getOption("spicy.var_labels", FALSE),
   ci_level = 0.95,
   digits = 2,
   p_digits = 3,
@@ -99,7 +99,28 @@ keeps the default display.}
 
 \item{ci, ci_level}{The mean's confidence interval and its level.}
 
-\item{labels}{Named character vector of display labels.}
+\item{labels}{How each variable is named in the table: in the rows,
+in the title, and in the missing-values notes. Four forms:
+\itemize{
+\item \code{labels = FALSE} shows the column name.
+\item \code{labels = TRUE} shows the column's \code{label} attribute (as set by
+\code{haven}, \code{labelled}, or \code{\link[=label_from_names]{label_from_names()}}) when it is present,
+not \code{NA}, and not empty, and the column name otherwise.
+\item \code{labels = c(bmi = "Body mass index")}, a named character vector,
+gives the columns it names these labels. Every other column
+follows \code{options(spicy.var_labels)}: its name when the option is
+unset or \code{FALSE}, its \code{label} attribute when it is \code{TRUE}.
+\item \code{labels = var_labels(bmi = "BMI (kg/m2)")} gives the columns it
+names these labels, and every other column its \code{label} attribute,
+whatever the option says. \code{var_labels()} alone is \code{labels = TRUE}.
+}
+
+Names that match no column are ignored, so one vector can serve
+every table of a project. The default reads
+\code{options(spicy.var_labels)}, and a \code{TRUE} or \code{FALSE} typed in the
+call wins over it. Any other value, \code{NULL} included, is an error. A
+variable label documents the data file; a published table carries
+the wording you set here.}
 
 \item{digits, p_digits, decimal_mark}{Number formatting.}
 

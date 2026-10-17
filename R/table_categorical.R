@@ -430,15 +430,26 @@
 #'   headers -- the family convention shared with [table_continuous()]
 #'   and [table_continuous_lm()]); declared missing values follow
 #'   `user_na` as usual.
-#' @param labels An optional **named character vector** of variable
-#'   labels whose names match column names in `data` (e.g.
-#'   `c(smoking = "Current smoker")`) -- the same contract as
-#'   [table_continuous()] and [table_continuous_lm()]. Only listed
-#'   columns are relabeled. For the remaining columns (and when
-#'   `labels = NULL`, the default), labels are auto-detected from the
-#'   variable's label attribute (e.g. from `haven`); if none is found,
-#'   the column name is used. Unnamed (positional) label vectors,
-#'   accepted before 0.13.0, now raise an error.
+#' @param labels How each variable is named in the table: in the rows,
+#'   in the title, and in the missing-values notes. Four forms:
+#'   * `labels = FALSE` shows the column name.
+#'   * `labels = TRUE` shows the column's `label` attribute (as set by
+#'     `haven`, `labelled`, or [label_from_names()]) when it is present,
+#'     not `NA`, and not empty, and the column name otherwise.
+#'   * `labels = c(bmi = "Body mass index")`, a named character vector,
+#'     gives the columns it names these labels. Every other column
+#'     follows `options(spicy.var_labels)`: its name when the option is
+#'     unset or `FALSE`, its `label` attribute when it is `TRUE`.
+#'   * `labels = var_labels(bmi = "BMI (kg/m2)")` gives the columns it
+#'     names these labels, and every other column its `label` attribute,
+#'     whatever the option says. `var_labels()` alone is `labels = TRUE`.
+#'
+#'   Names that match no column are ignored, so one vector can serve
+#'   every table of a project. The default reads
+#'   `options(spicy.var_labels)`, and a `TRUE` or `FALSE` typed in the
+#'   call wins over it. Any other value, `NULL` included, is an error. A
+#'   variable label documents the data file; a published table carries
+#'   the wording you set here.
 #' @param levels_keep Optional character vector of levels to keep/order for row
 #'   modalities. If `NULL`, all observed levels are kept. Entries must
 #'   match the level strings the table displays (for labelled columns
@@ -970,7 +981,7 @@ table_categorical <- function(
   data,
   select = tidyselect::everything(),
   by = NULL,
-  labels = NULL,
+  labels = getOption("spicy.var_labels", FALSE),
   levels_keep = NULL,
   include_total = TRUE,
   drop_na = FALSE,
@@ -1029,6 +1040,7 @@ table_categorical <- function(
   }
 
   .check_data_frame(data, "table_categorical")
+  .check_labels_arg(labels)
   # `word_path` is a save path for `output = "word"` only (the contract
   # shared with the rest of the table family). Before 0.13.0,
   # `output = "flextable"` also wrote a .docx as a side effect when
@@ -1133,46 +1145,15 @@ table_categorical <- function(
     c(select_names, by_name),
     "table_categorical"
   )
-  # `labels` must be a NAMED character vector keyed by column name in
-  # `data` (the contract shared with the continuous companions). Only
-  # listed columns are relabeled; the rest fall back to the column's
-  # `label` attribute (haven / labelled convention), then to the
-  # column name. Positional (unnamed) vectors -- the spicy < 0.13.0
-  # legacy form -- are rejected with a migration hint.
-  if (!is.null(labels)) {
-    if (
-      !is.character(labels) ||
-        is.null(names(labels)) ||
-        !all(nzchar(names(labels)))
-    ) {
-      spicy_abort(
-        c(
-          "`labels` must be a named character vector.",
-          "x" = "Unnamed (positional) `labels` vectors are no longer accepted.",
-          "i" = "Name the values by column: `labels = c(smoking = \"Current smoker\")`."
-        ),
-        class = "spicy_invalid_input"
-      )
-    }
-    unknown <- setdiff(names(labels), names(data))
-    if (length(unknown) > 0L) {
-      spicy_abort(
-        sprintf(
-          "Names in `labels` not found in `data`: %s.",
-          paste(unknown, collapse = ", ")
-        ),
-        class = "spicy_missing_column"
-      )
-    }
-  }
-  labels <- resolve_variable_labels(data, select_names, labels)
-  # The "by" title names the grouping variable by its `label` attribute,
-  # then its name, as table_continuous() does.
+  # The "by" title names the grouping variable under the same `labels`
+  # as the rows (see `resolve_variable_labels()`), as table_continuous()
+  # does. Resolved first: `labels` then becomes the rows' labels.
   by_label <- if (is.null(by_name)) {
     NULL
   } else {
-    resolve_variable_labels(data, by_name)
+    resolve_variable_labels(data, by_name, labels)
   }
+  labels <- resolve_variable_labels(data, select_names, labels)
 
   if (
     !is.logical(include_total) ||

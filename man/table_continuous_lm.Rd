@@ -26,7 +26,7 @@ table_continuous_lm(
   effect_size_ci = FALSE,
   r2 = c("r2", "adj_r2", "none"),
   ci = TRUE,
-  labels = NULL,
+  labels = getOption("spicy.var_labels", FALSE),
   ci_level = 0.95,
   digits = 2,
   fit_digits = 2,
@@ -362,10 +362,29 @@ least-squares versions reported by \code{summary(lm(..., weights = ...))}.}
 in the wide and rendered outputs when a single contrast is shown.
 Defaults to \code{TRUE}.}
 
-\item{labels}{An optional named character vector of outcome labels. Names
-must match column names in \code{data}. When \code{NULL} (the default), labels are
-auto-detected from variable attributes; if none are found, the column name
-is used.}
+\item{labels}{How each variable is named in the table: in the rows,
+in the title, and in the missing-values notes. The covariates keep
+their names. Four forms:
+\itemize{
+\item \code{labels = FALSE} shows the column name.
+\item \code{labels = TRUE} shows the column's \code{label} attribute (as set by
+\code{haven}, \code{labelled}, or \code{\link[=label_from_names]{label_from_names()}}) when it is present,
+not \code{NA}, and not empty, and the column name otherwise.
+\item \code{labels = c(bmi = "Body mass index")}, a named character vector,
+gives the columns it names these labels. Every other column
+follows \code{options(spicy.var_labels)}: its name when the option is
+unset or \code{FALSE}, its \code{label} attribute when it is \code{TRUE}.
+\item \code{labels = var_labels(bmi = "BMI (kg/m2)")} gives the columns it
+names these labels, and every other column its \code{label} attribute,
+whatever the option says. \code{var_labels()} alone is \code{labels = TRUE}.
+}
+
+Names that match no column are ignored, so one vector can serve
+every table of a project. The default reads
+\code{options(spicy.var_labels)}, and a \code{TRUE} or \code{FALSE} typed in the
+call wins over it. Any other value, \code{NULL} included, is an error. A
+variable label documents the data file; a published table carries
+the wording you set here.}
 
 \item{ci_level}{Confidence level for coefficient and model-based mean
 intervals (default: \code{0.95}). Must be between 0 and 1 exclusive.}

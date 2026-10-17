@@ -17,30 +17,110 @@
 # misleading. Moved here for clarity.
 
 # Internal: resolve display labels for a set of columns. One contract
-# for the whole table family (`table_categorical()`,
-# `table_continuous()`, `table_continuous_lm()`): a user-supplied
-# NAMED character vector wins, then the column's `label` attribute
-# (haven / labelled convention), then the column name itself.
-# `labels = NULL` means "no user overrides". Returns an unnamed
-# character vector parallel to `cols`.
-resolve_variable_labels <- function(data, cols, labels = NULL) {
+# for the descriptive family (`table_categorical()`, `table_continuous()`,
+# `table_continuous_lm()`, `table_outcome()` and the two survey twins),
+# wherever a variable is named for the reader: rows, the `by` title, the
+# missing-values notes. `labels` has passed `.check_labels_arg()`:
+#   * FALSE: the column name;
+#   * TRUE: the column's `label` attribute (haven, labelled,
+#     `label_from_names()`) when it is a non-empty string, else the name;
+#   * a named character vector: the named columns take these labels, the
+#     others follow the base of `options(spicy.var_labels)` (names when
+#     unset);
+#   * a `var_labels()` object: the same, on the attribute base whatever
+#     the option says (`var_labels()` alone is TRUE).
+# Names that match no column are ignored, so one vector can serve every
+# table of a project. A variable label documents the data file; a
+# published table carries the wording the user sets, hence the column
+# name by default. Returns an unnamed character vector parallel to `cols`.
+resolve_variable_labels <- function(data, cols, labels) {
+  use_attr <- if (inherits(labels, "spicy_var_labels")) {
+    TRUE
+  } else if (is.character(labels)) {
+    .var_labels_option()
+  } else {
+    isTRUE(labels)
+  }
   vapply(
     cols,
     function(nm) {
-      if (!is.null(labels) && nm %in% names(labels)) {
+      if (is.character(labels) && nm %in% names(labels)) {
         return(labels[[nm]])
+      }
+      if (!use_attr) {
+        return(nm)
       }
       lab <- attr(data[[nm]], "label", exact = TRUE)
       # Absent, empty, or MISSING all fall back to the column name. `NA`
       # is a real value of the attribute in a partly-labelled import, and
       # `nzchar(NA)` is TRUE, so it used to travel into the table's stub
       # as the string "NA".
-      if (is.null(lab) || is.na(lab) || !nzchar(lab)) nm else lab
+      ok <- is.character(lab) && length(lab) == 1L && !is.na(lab) && nzchar(lab)
+      if (ok) lab else nm
     },
     character(1L),
     USE.NAMES = FALSE
   )
 }
+
+# Internal: the one validator of `labels`, called at the top of each
+# descriptive entry point (and by `var_labels()`) so that the error is
+# the same everywhere. TRUE, FALSE and a `var_labels()` object typed in
+# the call win over the option, which is therefore checked only when it
+# is read: as the argument's default (an invalid option arrives here as
+# `labels`, `identical()` catching one that is a `var_labels()` object)
+# and as the base of a plain named vector.
+.check_labels_arg <- function(labels, call = rlang::caller_env()) {
+  logical_form <- isTRUE(labels) || isFALSE(labels)
+  explicit <- logical_form || inherits(labels, "spicy_var_labels")
+  if (!explicit || identical(labels, getOption("spicy.var_labels"))) {
+    .var_labels_option(call)
+  }
+  if (logical_form) {
+    return(invisible(labels))
+  }
+  nms <- names(labels)
+  if (
+    is.character(labels) && !is.null(nms) && !anyNA(nms) && all(nzchar(nms))
+  ) {
+    return(invisible(labels))
+  }
+  spicy_abort(
+    c(
+      "`labels` must be TRUE, FALSE, a named character vector, or `var_labels()`.",
+      "x" = if (is.character(labels)) {
+        "Unnamed (positional) `labels` vectors are no longer accepted."
+      } else if (is.null(labels)) {
+        "`labels = NULL` is no longer accepted."
+      },
+      "i" = .LABELS_ARG_HINT,
+      "i" = "Name the values by column: `labels = c(smoking = \"Current smoker\")`.",
+      "i" = "`var_labels(smoking = \"Current smoker\")` keeps the `label` attribute of the other columns."
+    ),
+    class = "spicy_invalid_input",
+    call = call
+  )
+}
+
+# Internal: `options(spicy.var_labels)`, the default of `labels` and the
+# base of its named form. Unset (or NULL) reads FALSE; anything but TRUE
+# or FALSE is the error of `.check_labels_arg()`, naming the option.
+.var_labels_option <- function(call = rlang::caller_env()) {
+  opt <- getOption("spicy.var_labels", FALSE)
+  if (!isTRUE(opt) && !isFALSE(opt)) {
+    spicy_abort(
+      c(
+        "`options(spicy.var_labels)` must be TRUE or FALSE.",
+        "i" = .LABELS_ARG_HINT
+      ),
+      class = "spicy_invalid_input",
+      call = call
+    )
+  }
+  isTRUE(opt)
+}
+
+.LABELS_ARG_HINT <- "`TRUE` shows each column's `label` attribute, `FALSE` its name."
 
 # Internal: a missing-values ledger (counts named by column) re-keyed by
 # the label each variable shows in the table's rows, so that the

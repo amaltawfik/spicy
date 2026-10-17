@@ -550,8 +550,27 @@ abort_outcome_by_renamed <- function() {
 #'   across, as a tidyselect expression or a character vector of column
 #'   names. One block of rows per variable, in the order given. As
 #'   everywhere in the family, `select` is what structures the rows.
-#' @param labels Named character vector of display labels, for the
-#'   outcome and for the `select` variables alike.
+#' @param labels How each variable is named in the table: in the rows,
+#'   in the title, and in the missing-values notes. The outcome follows
+#'   the same rule as the `select` variables. Four forms:
+#'   * `labels = FALSE` shows the column name.
+#'   * `labels = TRUE` shows the column's `label` attribute (as set by
+#'     `haven`, `labelled`, or [label_from_names()]) when it is present,
+#'     not `NA`, and not empty, and the column name otherwise.
+#'   * `labels = c(bmi = "Body mass index")`, a named character vector,
+#'     gives the columns it names these labels. Every other column
+#'     follows `options(spicy.var_labels)`: its name when the option is
+#'     unset or `FALSE`, its `label` attribute when it is `TRUE`.
+#'   * `labels = var_labels(bmi = "BMI (kg/m2)")` gives the columns it
+#'     names these labels, and every other column its `label` attribute,
+#'     whatever the option says. `var_labels()` alone is `labels = TRUE`.
+#'
+#'   Names that match no column are ignored, so one vector can serve
+#'   every table of a project. The default reads
+#'   `options(spicy.var_labels)`, and a `TRUE` or `FALSE` typed in the
+#'   call wins over it. Any other value, `NULL` included, is an error. A
+#'   variable label documents the data file; a published table carries
+#'   the wording you set here.
 #' @param overall Show the marginal `Overall` row (default `TRUE`).
 #' @param drop_na Drop rows with a missing `select` value from that block
 #'   (default `FALSE`: they are shown as a `(Missing)` level and
@@ -612,7 +631,7 @@ table_outcome <- function(
   data,
   outcome,
   select,
-  labels = NULL,
+  labels = getOption("spicy.var_labels", FALSE),
   overall = TRUE,
   drop_na = FALSE,
   weights = NULL,
@@ -750,12 +769,7 @@ table_outcome <- function(
       class = "spicy_invalid_input"
     )
   }
-  if (!is.null(labels) && (!is.character(labels) || is.null(names(labels)))) {
-    spicy_abort(
-      "`labels` must be a named character vector.",
-      class = "spicy_invalid_input"
-    )
-  }
+  .check_labels_arg(labels)
   for (.lname in c(
     "overall",
     "drop_na",

@@ -8,7 +8,7 @@ table_outcome(
   data,
   outcome,
   select,
-  labels = NULL,
+  labels = getOption("spicy.var_labels", FALSE),
   overall = TRUE,
   drop_na = FALSE,
   weights = NULL,
@@ -52,8 +52,29 @@ across, as a tidyselect expression or a character vector of column
 names. One block of rows per variable, in the order given. As
 everywhere in the family, \code{select} is what structures the rows.}
 
-\item{labels}{Named character vector of display labels, for the
-outcome and for the \code{select} variables alike.}
+\item{labels}{How each variable is named in the table: in the rows,
+in the title, and in the missing-values notes. The outcome follows
+the same rule as the \code{select} variables. Four forms:
+\itemize{
+\item \code{labels = FALSE} shows the column name.
+\item \code{labels = TRUE} shows the column's \code{label} attribute (as set by
+\code{haven}, \code{labelled}, or \code{\link[=label_from_names]{label_from_names()}}) when it is present,
+not \code{NA}, and not empty, and the column name otherwise.
+\item \code{labels = c(bmi = "Body mass index")}, a named character vector,
+gives the columns it names these labels. Every other column
+follows \code{options(spicy.var_labels)}: its name when the option is
+unset or \code{FALSE}, its \code{label} attribute when it is \code{TRUE}.
+\item \code{labels = var_labels(bmi = "BMI (kg/m2)")} gives the columns it
+names these labels, and every other column its \code{label} attribute,
+whatever the option says. \code{var_labels()} alone is \code{labels = TRUE}.
+}
+
+Names that match no column are ignored, so one vector can serve
+every table of a project. The default reads
+\code{options(spicy.var_labels)}, and a \code{TRUE} or \code{FALSE} typed in the
+call wins over it. Any other value, \code{NULL} included, is an error. A
+variable label documents the data file; a published table carries
+the wording you set here.}
 
 \item{overall}{Show the marginal \code{Overall} row (default \code{TRUE}).}
 

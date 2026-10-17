@@ -2,10 +2,17 @@
 # its locale typography (decimal mark, p leading zero), so a
 # developer's ambient options(spicy.language) -- the very gesture the
 # package promotes, and the one its francophone maintainer is likely
-# to have set -- would turn dozens of English-pinning tests red.
+# to have set -- would turn dozens of English-pinning tests red. The
+# same holds for options(spicy.var_labels), which moves every variable
+# name of the descriptive tables.
 # Neutralized once here; blocks that test a language, a style or a
 # label override set their own, scoped with withr::local_options().
-options(spicy.language = NULL, spicy.style = NULL, spicy.labels = NULL)
+options(
+  spicy.language = NULL,
+  spicy.style = NULL,
+  spicy.labels = NULL,
+  spicy.var_labels = NULL
+)
 
 # The ASCII renderer splits panels on getOption("width"), and a handful
 # of witnesses address rendered lines by position. Rscript runs at 80;
