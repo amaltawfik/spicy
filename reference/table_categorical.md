@@ -29,6 +29,7 @@ table_categorical(
   correct = FALSE,
   simulate_p = FALSE,
   simulate_B = 2000,
+  p_value = NULL,
   p_adjust = "none",
   percent_digits = 1,
   p_digits = 3,
@@ -179,6 +180,18 @@ table_categorical(
   Integer. Number of Monte Carlo replicates when `simulate_p = TRUE`.
   Defaults to `2000`.
 
+- p_value:
+
+  Logical or `NULL`. If `TRUE` and `by` is used, adds the *p*-value
+  column of the chi-squared test. When `NULL` (the default), the
+  *p*-value is shown automatically whenever `by` is supplied, and hidden
+  otherwise. Pass `p_value = FALSE` to remove the test from every
+  output: the `p` column, and the `Chi2` and `df` columns of
+  `"data.frame"` and `"long"`; `correct` and `simulate_p` are then
+  ignored, with a warning. The association measure keeps its own switch,
+  so `p_value = FALSE, assoc_measure = "none"` gives a purely
+  descriptive table. Ignored when `by` is not used.
+
 - p_adjust:
 
   Multiple-comparison adjustment of the `p` column, applied to the
@@ -188,7 +201,7 @@ table_categorical(
   [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md);
   delegated to
   [`stats::p.adjust()`](https://rdrr.io/r/stats/p.adjust.html). Needs
-  `by`. See *Multiple-comparison adjustment*.
+  `by` and the `p` column. See *Multiple-comparison adjustment*.
 
 - percent_digits:
 
@@ -413,21 +426,22 @@ Depends on `output`:
 - `"data.frame"`: a wide `data.frame` with one row per variable–level
   combination. When `by` is used, the columns are `Variable`, `Level`,
   and one pair of `n` / `\%` columns per group level (plus `Total` when
-  `include_total = TRUE`), followed by `Chi2`, `df`, `p`, and the
-  association measure column. When `by = NULL`, the columns are
-  `Variable`, `Level`, `n`, `\%`.
+  `include_total = TRUE`), followed by `Chi2`, `df`, `p` (absent with
+  `p_value = FALSE`), and the association measure column. When
+  `by = NULL`, the columns are `Variable`, `Level`, `n`, `\%`.
 
 - `"long"`: a long `data.frame` with columns `variable`, `level`, `n`,
-  `pct` (plus `group`, `chi2`, `df`, `p` when `by` is used). The
-  association measure is always called `effect_size`, whichever measure
-  it is, and `effect_size_type` names that measure per row
-  (`"cramer_v"`, `"phi"`, ...), or is `NA` on the rows of a variable
-  given `assoc_measure = "none"`. The wide outputs instead name the
-  column after the measure, or `Effect size` when the row variables do
-  not share one. With `smd = TRUE` this output also carries `smd` and
-  `smd_type` (`"binary"` or `"multinomial"`, the kernel the value came
-  from); the wide outputs name that column `SMD`. Like the association
-  columns, both are ABSENT when the statistic is not requested.
+  `pct` (plus `group` when `by` is used, and `chi2`, `df`, `p` unless
+  `p_value = FALSE`). The association measure is always called
+  `effect_size`, whichever measure it is, and `effect_size_type` names
+  that measure per row (`"cramer_v"`, `"phi"`, ...), or is `NA` on the
+  rows of a variable given `assoc_measure = "none"`. The wide outputs
+  instead name the column after the measure, or `Effect size` when the
+  row variables do not share one. With `smd = TRUE` this output also
+  carries `smd` and `smd_type` (`"binary"` or `"multinomial"`, the
+  kernel the value came from); the wide outputs name that column `SMD`.
+  Like the association columns, both are ABSENT when the statistic is
+  not requested.
 
 - `"tinytable"`: a `tinytable` object.
 
@@ -468,6 +482,11 @@ Kendall's Tau-b, otherwise Cramer's V). Without `by`, the table reports
 the marginal frequency distribution of each variable with no inferential
 statistics.
 
+The test and the measure are two decisions with two arguments:
+`p_value = FALSE` removes the test, `assoc_measure = "none"` the
+measure. Together they give a purely descriptive table, which keeps the
+group columns and their headers; `smd` stays available.
+
 For model-based comparisons (cluster-robust SE, weighted contrasts,
 fitted means) on continuous outcomes, see
 [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md).
@@ -500,9 +519,8 @@ method and the family size `m`. The raw p-values stay in the object: a
 frames, and `col_meta$p$p_unadjusted` (with the method in `p_adjust` and
 the family size in `p_adjust_m`) in
 [`as_structured()`](https://amaltawfik.github.io/spicy/reference/as_structured.md).
-Without `by`, or with `p_value = FALSE` where the function has that
-argument, the table shows no p-value to adjust, and a `p_adjust` other
-than `"none"` is an error.
+Without `by`, or with `p_value = FALSE`, the table shows no p-value to
+adjust, and a `p_adjust` other than `"none"` is an error.
 
 ## Standardized mean difference
 
@@ -567,18 +585,13 @@ it: the APA strip belongs to a bounded measure, and this one is not
 bounded. The two columns therefore print `0.45` and `.45` side by side,
 on purpose.
 
-Two limits of the current grammar. This function has no `p_value`
-argument, so the p column cannot be switched off here as it can in
-[`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md);
-a complete balance table mixing continuous and categorical variables
-will show a categorical p beside a continuous column you removed. And
+A balance table usually shows no test: `p_value = FALSE` removes the `p`
+column here as it does in
+[`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
+so a table mixing continuous and categorical variables can drop both.
 [`inline()`](https://amaltawfik.github.io/spicy/reference/inline.md)
-cannot quote this `SMD` cell: like `p` and the association measure, it
-lives on the variable row, which
-[`inline()`](https://amaltawfik.github.io/spicy/reference/inline.md)
-cannot address on a variable that has levels. The continuous `SMD` cell
-is quotable (`inline(tbl, x, "A", column = "smd")`); for the categorical
-one, read `output = "long"`.
+quotes the cell from the variable row
+(`inline(tbl, smoking, column = "smd")`).
 
 ## Display conventions
 
@@ -704,6 +717,27 @@ table_categorical(
 #>  physical_activity   │               
 #>    No                │  650    54.2  
 #>    Yes               │  550    45.8  
+
+# Purely descriptive grouped table: no test, no association measure.
+table_categorical(
+  sochealth,
+  select = c(smoking, physical_activity),
+  by = sex,
+  p_value = FALSE,
+  assoc_measure = "none"
+)
+#> Categorical table by sex
+#> 
+#>  Variable          │ Female n  Female %  Male n  Male %  Total n  Total % 
+#> ───────────────────┼──────────────────────────────────────────────────────
+#>  smoking           │                                                      
+#>    No              │   475       76.6     451     77.8     926     77.2   
+#>    Yes             │   131       21.1     118     20.3     249     20.8   
+#>    (Missing)       │    14        2.3      11      1.9      25      2.1   
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  physical_activity │                                                      
+#>    No              │   334       53.9     316     54.5     650     54.2   
+#>    Yes             │   286       46.1     264     45.5     550     45.8   
 
 # Pretty labels keyed by column name.
 table_categorical(

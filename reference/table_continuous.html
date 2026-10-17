@@ -551,7 +551,9 @@ or <code>effect_size != "none"</code>, additional columns are appended
 (populated on the first row of each variable block only):</p><ul><li><p><code>test_type</code> – test identifier (e.g., <code>"welch_t"</code>,
 <code>"welch_anova"</code>, <code>"student_t"</code>, <code>"anova"</code>, <code>"wilcoxon"</code>,
 <code>"kruskal"</code>).</p></li>
-<li><p><code>statistic</code>, <code>df1</code>, <code>df2</code>, <code>p.value</code> – test results.</p></li>
+<li><p><code>statistic</code>, <code>df1</code>, <code>df2</code> – the test statistic and its
+degrees of freedom.</p></li>
+<li><p><code>p.value</code> – with <code>p_value = TRUE</code> only.</p></li>
 <li><p><code>es_type</code> – effect-size identifier (<code>"hedges_g"</code>,
 <code>"eta_sq"</code>, <code>"r_rb"</code>, or <code>"epsilon_sq"</code>), when
 <code>effect_size != "none"</code>.</p></li>
@@ -818,9 +820,9 @@ the method and the family size <code>m</code>. The raw p-values stay in the
 object: a <code>p_unadjusted</code> column next to the p-value column of the
 returned data frames, and <code>col_meta$p$p_unadjusted</code> (with the method
 in <code>p_adjust</code> and the family size in <code>p_adjust_m</code>) in
-<code><a href="as_structured.html">as_structured()</a></code>. Without <code>by</code>, or with <code>p_value = FALSE</code> where the
-function has that argument, the table shows no p-value to adjust,
-and a <code>p_adjust</code> other than <code>"none"</code> is an error.</p>
+<code><a href="as_structured.html">as_structured()</a></code>. Without <code>by</code>, or with <code>p_value = FALSE</code>, the table
+shows no p-value to adjust, and a <code>p_adjust</code> other than <code>"none"</code> is an
+error.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>

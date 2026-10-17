@@ -406,6 +406,37 @@ table_categorical(
 #> 3 2.012877e-05  0.1356677 0.07909264 0.1913716
 ```
 
+## Descriptive tables without tests
+
+The test and the association measure are two separate choices:
+`p_value = FALSE` removes the chi-squared test (the `p` column, and
+`Chi2` and `df` from the data frames), and `assoc_measure = "none"`
+removes the measure. Together they give a purely descriptive table, with
+the same group columns and headers:
+
+``` r
+
+table_categorical(
+  sochealth,
+  select = c(smoking, physical_activity),
+  by = sex,
+  p_value = FALSE,
+  assoc_measure = "none"
+)
+#> Categorical table by sex
+#> 
+#>  Variable          │ Female n  Female %  Male n  Male %  Total n  Total % 
+#> ───────────────────┼──────────────────────────────────────────────────────
+#>  smoking           │                                                      
+#>    No              │   475       76.6     451     77.8     926     77.2   
+#>    Yes             │   131       21.1     118     20.3     249     20.8   
+#>    (Missing)       │    14        2.3      11      1.9      25      2.1   
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  physical_activity │                                                      
+#>    No              │   334       53.9     316     54.5     650     54.2   
+#>    Yes             │   286       46.1     264     45.5     550     45.8
+```
+
 ## Balance: the standardized mean difference
 
 For a baseline table read as a balance check rather than a significance
@@ -468,14 +499,11 @@ on this column by design. Under `weights` the profiles are the weighted
 proportions, and because a profile of proportions is unchanged by a
 global rescaling of the weights, `rescale` cannot move this column.
 
-One limit worth knowing before you build a full balance table:
-[`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
-has no `p_value` argument, so its *p* column cannot be switched off the
-way `table_continuous(p_value = FALSE)` switches off its own. A mixed
-balance table will show a categorical *p* beside a continuous column you
-removed. Its *p* column can be adjusted, though: `p_adjust = "holm"` (or
-`"BH"`) adjusts the tests of all the variables together, and the note
-says so.
+A balance table usually shows no test: `p_value = FALSE` removes the
+categorical *p* column as `table_continuous(p_value = FALSE)` removes
+its own, so a mixed balance table can drop both. When the *p* column
+stays, it can be adjusted: `p_adjust = "holm"` (or `"BH"`) adjusts the
+tests of all the variables together, and the note says so.
 
 ## Weighted tables
 
@@ -827,7 +855,7 @@ table_categorical(
 |     No            | 334    | 53.9 | 316  | 54.5 | 650   | 54.2 |      |     |
 |     Yes           | 286    | 46.1 | 264  | 45.5 | 550   | 45.8 |      |     |
 
-Categorical table by sex {#tinytable_z3zd3q6z2chvpdmxrubn .table
+Categorical table by sex {#tinytable_pheh1mdtixif2tjif8qi .table
 .tinytable style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 

@@ -485,7 +485,10 @@ Depends on `output`:
   - `test_type` – test identifier (e.g., `"welch_t"`, `"welch_anova"`,
     `"student_t"`, `"anova"`, `"wilcoxon"`, `"kruskal"`).
 
-  - `statistic`, `df1`, `df2`, `p.value` – test results.
+  - `statistic`, `df1`, `df2` – the test statistic and its degrees of
+    freedom.
+
+  - `p.value` – with `p_value = TRUE` only.
 
   - `es_type` – effect-size identifier (`"hedges_g"`, `"eta_sq"`,
     `"r_rb"`, or `"epsilon_sq"`), when `effect_size != "none"`.
@@ -821,9 +824,8 @@ method and the family size `m`. The raw p-values stay in the object: a
 frames, and `col_meta$p$p_unadjusted` (with the method in `p_adjust` and
 the family size in `p_adjust_m`) in
 [`as_structured()`](https://amaltawfik.github.io/spicy/reference/as_structured.md).
-Without `by`, or with `p_value = FALSE` where the function has that
-argument, the table shows no p-value to adjust, and a `p_adjust` other
-than `"none"` is an error.
+Without `by`, or with `p_value = FALSE`, the table shows no p-value to
+adjust, and a `p_adjust` other than `"none"` is an error.
 
 ## See also
 

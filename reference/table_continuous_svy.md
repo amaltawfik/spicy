@@ -362,9 +362,8 @@ method and the family size `m`. The raw p-values stay in the object: a
 frames, and `col_meta$p$p_unadjusted` (with the method in `p_adjust` and
 the family size in `p_adjust_m`) in
 [`as_structured()`](https://amaltawfik.github.io/spicy/reference/as_structured.md).
-Without `by`, or with `p_value = FALSE` where the function has that
-argument, the table shows no p-value to adjust, and a `p_adjust` other
-than `"none"` is an error.
+Without `by`, or with `p_value = FALSE`, the table shows no p-value to
+adjust, and a `p_adjust` other than `"none"` is an error.
 
 ## See also
 

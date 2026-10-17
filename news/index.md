@@ -89,6 +89,13 @@ PDF.
   method and the number of tests, and the raw p-values stay in the
   object as `p_unadjusted`.
 
+- [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
+  gains `p_value`, as its siblings have. `p_value = FALSE` drops the
+  chi-squared test (`p`, and `Chi2` and `df` in the data frames) from
+  every output; with `assoc_measure = "none"` as well, the table is
+  purely descriptive
+  ([\#9](https://github.com/amaltawfik/spicy/issues/9)).
+
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   and
   [`table_regression_uv()`](https://amaltawfik.github.io/spicy/reference/table_regression_uv.md)
@@ -125,6 +132,19 @@ PDF.
   other `vcov` types are refused.
 
 ### Bug fixes
+
+- [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
+  [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md),
+  [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md),
+  and
+  [`table_continuous_svy()`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md)
+  with `p_value = FALSE` no longer keep a p-value in
+  `output = "data.frame"` and `"long"` when `statistic = TRUE` or an
+  effect size ran the test, and
+  [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md)
+  and
+  [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md)
+  no longer leave empty test columns there.
 
 - [`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md)
   and
@@ -887,7 +907,7 @@ CRAN release: 2026-05-04
   Hedges’ `"g"` (two-group only), Hays’ `"omega2"`. New `effect_size_ci`
   adds noncentral *t* / *F* CIs rendered inline as `0.18 [0.07, 0.30]`.
 - `HC*` estimators delegate to
-  [`sandwich::vcovHC()`](https://rdrr.io/pkg/sandwich/man/vcovHC.html);
+  [`sandwich::vcovHC()`](https://zeileis.codeberg.page/sandwich/reference/vcovHC.html);
   rank-deficient fits return a clean rank-by-rank covariance.
 
 #### Harmonization across the table family
