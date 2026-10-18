@@ -626,7 +626,10 @@ table_outcome(
 
 A “check all that apply” question gets a table of its own, one row per
 item. Here three logical indicators stand in for one: the life domains a
-respondent is satisfied with, rated 4 or 5 out of 5.
+respondent is satisfied with, rated 4 or 5 out of 5. The article
+[Multiple-response
+questions](https://amaltawfik.github.io/spicy/articles/table-multiresponse.html)
+explains the bases, the percentages and the tests.
 
 ``` r
 
@@ -1117,6 +1120,16 @@ Documented here for direct invocation with custom arguments (e.g.,
   variables, one block of rows per variable, a group comparison per
   block, and a marginal Overall row — with the same statistic vocabulary
   and the same output engines as table_continuous().
+
+- [Multiple-response
+  questions](https://amaltawfik.github.io/spicy/articles/table-multiresponse.md):
+
+  Tabulate a “check all that apply” question in R with
+  table_multiresponse(): one row per item, counts with percentages of
+  respondents or of responses, a stated base, and, across groups, a
+  chi-squared test per item with a Holm adjustment and a global test
+  with the second-order Rao-Scott correction, rendered by the same
+  output engines as table_categorical().
 
 - [Summary tables from a survey
   design](https://amaltawfik.github.io/spicy/articles/survey-tables.md):

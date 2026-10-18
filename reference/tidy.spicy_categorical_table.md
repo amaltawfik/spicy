@@ -49,7 +49,8 @@ columns: `outcome`, `level`, `group` (when applicable), `n`,
 `test_type` (`"chi_squared"`), `statistic` (chi-squared), `df`,
 `p.value`, `assoc_type`, `assoc_value`, `assoc_ci_lower`,
 `assoc_ci_upper`, `n_total`. Without `by`, only `outcome` and `n_total`
-are populated; the other columns are `NA`.
+are populated; the other columns are `NA`. The interval bounds are `NA`
+unless the table was built with `assoc_ci = TRUE`.
 
 ## See also
 

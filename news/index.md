@@ -109,7 +109,8 @@ PDF.
   `glance()` reports the Rao-Scott design-effect summary (`rs_cv`).
   [`inline()`](https://amaltawfik.github.io/spicy/reference/inline.md)
   cites its cells, a group selected with `model` and the base row as
-  `"nobs"` ([\#10](https://github.com/amaltawfik/spicy/issues/10)).
+  `"nobs"`. The article *Multiple-response questions* on the site walks
+  through it ([\#10](https://github.com/amaltawfik/spicy/issues/10)).
 
 - [`inline()`](https://amaltawfik.github.io/spicy/reference/inline.md)
   says when a variable has no levels and how to select a group with
@@ -181,6 +182,30 @@ PDF.
 
 - [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md)
   writes a large declared missing code as it is, `100000`, not `1e+05`.
+
+- `glance()` on a
+  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
+  result leaves `assoc_ci_lower` and `assoc_ci_upper` at `NA` unless the
+  table was built with `assoc_ci = TRUE`. It reported the interval
+  whatever `assoc_ci` said.
+
+- [`inline()`](https://amaltawfik.github.io/spicy/reference/inline.md)
+  with `model` cites the `p` and the association measure of a
+  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
+  or
+  [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md)
+  table, which belong to no group. Selecting a group dropped them, and
+  the table’s own `p` was refused.
+
+- [`inline()`](https://amaltawfik.github.io/spicy/reference/inline.md)
+  refuses a column the table does not carry with the same message on
+  every table: “No column with token”p” in this table.” Without `level`,
+  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
+  [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md),
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
+  and
+  [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md)
+  said to pick a level instead.
 
 - `table_categorical(output = "gt")` shows the note on the association
   measure and the standardized mean difference, as the other outputs do.

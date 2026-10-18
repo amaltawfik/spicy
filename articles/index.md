@@ -71,6 +71,16 @@
   block, and a marginal Overall row — with the same statistic vocabulary
   and the same output engines as table_continuous().
 
+- [Multiple-response
+  questions](https://amaltawfik.github.io/spicy/articles/table-multiresponse.md):
+
+  Tabulate a “check all that apply” question in R with
+  table_multiresponse(): one row per item, counts with percentages of
+  respondents or of responses, a stated base, and, across groups, a
+  chi-squared test per item with a Holm adjustment and a global test
+  with the second-order Rao-Scott correction, rendered by the same
+  output engines as table_categorical().
+
 - [Summary tables from a survey
   design](https://amaltawfik.github.io/spicy/articles/survey-tables.md):
 

@@ -814,115 +814,14 @@ broom::glance(out)
 ## Multiple-response items
 
 A “check all that apply” question is a set of yes/no items answered by
-the same respondent, so it is not one categorical variable: a respondent
-can choose several items, and the counts sum to more than the number of
-respondents.
+the same respondents, so it is not one categorical variable: the choices
+outnumber the respondents, and the chi-squared test of the
+items-by-groups table is not valid.
 [`table_multiresponse()`](https://amaltawfik.github.io/spicy/reference/table_multiresponse.md)
-reads the items as one question: one row per item, with the count and
-the percentage of respondents who chose it, and a final row with the
-number of respondents the percentages are computed on. Three yes/no
-factors of `sochealth` stand in for such a question here; `counted`
-names the value that marks a choice (logical and 0/1 columns need none):
-
-``` r
-
-table_multiresponse(
-  sochealth,
-  select = c(smoking, physical_activity, dentist_12m),
-  by = education,
-  counted = "Yes"
-)
-#> Multiple responses by education
-#> 
-#>  Variable          │ Lower secondary n  Lower secondary %  Upper secondary n 
-#> ───────────────────┼─────────────────────────────────────────────────────────
-#>  smoking           │         78               29.9                112        
-#>  physical_activity │         84               32.2                229        
-#>  dentist_12m       │        148               56.7                365        
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Respondents       │        261                                   539        
-#> 
-#>  Variable          │ Upper secondary %  Tertiary n  Tertiary %  Total n 
-#> ───────────────────┼────────────────────────────────────────────────────
-#>  smoking           │       20.8             59         14.8       249   
-#>  physical_activity │       42.5            237         59.2       550   
-#>  dentist_12m       │       67.7            333         83.2       846   
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Respondents       │                       400                   1200   
-#> 
-#>  Variable          │ Total %    p   
-#> ───────────────────┼────────────────
-#>  smoking           │  20.8    <.001 
-#>  physical_activity │  45.8    <.001 
-#>  dentist_12m       │  70.5    <.001 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Respondents       │                
-#> 
-#> Several answers possible: percentages are of respondents and can sum to more than 100%. Base: respondents who answered the question, including those who chose no item. 166 respondents chose none of the items. Item p-values: Pearson chi-squared test of each item by group. P-values adjusted via stats::p.adjust(method = "holm"); m = 3 test(s). Group comparison: Rao-Scott second-order corrected chi-squared test of multiple marginal independence, χ²(6.07) = 131.71, p < .001.
-```
-
-Each item’s *p*-value comes from the chi-squared test of its frequency
-across the groups, adjusted by Holm’s method by default, because the
-items of one question form one family of tests (`p_adjust = "none"`
-keeps them raw). The global test in the note compares the groups on all
-the items at once. The ordinary chi-squared test of the items-by-groups
-table is not valid here, because one respondent contributes to several
-cells: the global test sums the item statistics and applies the
-second-order Rao-Scott correction, or, with `test = "bootstrap"`, refers
-the same sum to its bootstrap distribution.
-
-The percentages of respondents can sum to more than 100, and the note
-says so. `percent = "responses"` divides by all the choices made in the
-group instead, and `percent = "both"` shows the two. For a descriptive
-report, `p_value = FALSE` removes the *p*-values and the global test
-(`statistic = TRUE` would still show each item’s chi-squared):
-
-``` r
-
-table_multiresponse(
-  sochealth,
-  select = c(smoking, physical_activity, dentist_12m),
-  by = sex,
-  counted = "Yes",
-  percent = "both",
-  p_value = FALSE
-)
-#> Multiple responses by sex
-#> 
-#>  Variable          │ Female n  Female % of cases  Female % of responses  Male n 
-#> ───────────────────┼────────────────────────────────────────────────────────────
-#>  smoking           │   131           21.1                 15.3            118   
-#>  physical_activity │   286           46.1                 33.5            264   
-#>  dentist_12m       │   437           70.5                 51.2            409   
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Respondents       │   620                                                580   
-#> 
-#>  Variable          │ Male % of cases  Male % of responses  Total n 
-#> ───────────────────┼───────────────────────────────────────────────
-#>  smoking           │      20.3               14.9            249   
-#>  physical_activity │      45.5               33.4            550   
-#>  dentist_12m       │      70.5               51.7            846   
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Respondents       │                                        1200   
-#> 
-#>  Variable          │ Total % of cases  Total % of responses 
-#> ───────────────────┼────────────────────────────────────────
-#>  smoking           │       20.8                15.1         
-#>  physical_activity │       45.8                33.4         
-#>  dentist_12m       │       70.5                51.4         
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Respondents       │                                        
-#> 
-#> Several answers possible: percentages of respondents can sum to more than 100%; percentages of responses sum to 100%. Base: respondents who answered the question, including those who chose no item. 166 respondents chose none of the items.
-```
-
-By default the base is the respondents with at least one non-missing
-item (`base = "valid"`): a respondent who chose nothing counts, one who
-skipped the question does not. `base = "answered"` keeps only the
-respondents who chose at least one item, the default of SPSS and Stata,
-and `base = "all"` uses every row. The counts are the same under the
-three bases. Within the base, a missing item counts as not chosen, for
-the percentages and for the tests alike, and the note names the base.
+reads the items as one question, with its own bases, percentages, and
+tests, as [*Multiple-response
+questions*](https://amaltawfik.github.io/spicy/articles/table-multiresponse.md)
+explains.
 
 ## Rendered outputs and export
 
@@ -968,7 +867,7 @@ table_categorical(
 |     No            | 334    | 53.9 | 316  | 54.5 | 650   | 54.2 |      |     |
 |     Yes           | 286    | 46.1 | 264  | 45.5 | 550   | 45.8 |      |     |
 
-Categorical table by sex {#tinytable_z4uj5fhqahkqsrv5ktee .table
+Categorical table by sex {#tinytable_9mx383l4adc6dfhqpvct .table
 .tinytable style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 

@@ -400,10 +400,11 @@ under `base = "valid"`, those who chose at least one item under
 same under the three bases; the percentages of cases and the tests are
 not. The `Respondents` row gives the base of each group, and the note
 says which base the table uses and how many respondents it leaves out,
-all groups together: those who answered none of the indicators under
-`"valid"`, those who chose no item under `"answered"`. Under `"valid"`
-and `"all"`, the base can hold respondents who chose no item: the note
-then says how many. Declared missing values of a labelled column
+all groups together: those who answered none of the indicators, under
+`"valid"` and `"answered"`, and those who answered but chose no item,
+under `"answered"`, in a sentence of their own. Under `"valid"` and
+`"all"`, the base can hold respondents who chose no item: the note then
+says how many. Declared missing values of a labelled column
 (`na_values`, `na_range`) are missing, as under the `user_na = TRUE`
 default of
 [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md).
@@ -449,7 +450,8 @@ Rao-Scott approach. *International Journal of Testing*, 4(1), 43-59.
 ## See also
 
 [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
-for single-response variables.
+for single-response variables; the article [Multiple-response
+questions](https://amaltawfik.github.io/spicy/articles/table-multiresponse.html).
 
 ## Examples
 

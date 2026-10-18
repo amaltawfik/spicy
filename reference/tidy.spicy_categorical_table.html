@@ -41,6 +41,7 @@ table can be consumed by any downstream tidyverse-stats pipeline.'><meta propert
     <li><a class="dropdown-item" href="../articles/table-categorical.html">Categorical summary tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-continuous.html">Continuous summary tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-outcome.html">One outcome across several groupings</a></li>
+    <li><a class="dropdown-item" href="../articles/table-multiresponse.html">Multiple-response questions</a></li>
     <li><a class="dropdown-item" href="../articles/survey-tables.html">Summary tables from a survey design</a></li>
     <li><a class="dropdown-item" href="../articles/table-continuous-lm.html">Model-based continuous summary tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression.html">Publication-ready regression tables</a></li>
@@ -123,7 +124,9 @@ chi-squared test (when <code>by</code> is used) and the requested association
 measure: <code>outcome</code>, <code>test_type</code> (<code>"chi_squared"</code>), <code>statistic</code>
 (chi-squared), <code>df</code>, <code>p.value</code>, <code>assoc_type</code>, <code>assoc_value</code>,
 <code>assoc_ci_lower</code>, <code>assoc_ci_upper</code>, <code>n_total</code>. Without <code>by</code>, only
-<code>outcome</code> and <code>n_total</code> are populated; the other columns are <code>NA</code>.</p>
+<code>outcome</code> and <code>n_total</code> are populated; the other columns are <code>NA</code>.
+The interval bounds are <code>NA</code> unless the table was built with
+<code>assoc_ci = TRUE</code>.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>

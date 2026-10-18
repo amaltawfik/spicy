@@ -626,7 +626,10 @@ table_outcome(
 
 A “check all that apply” question gets a table of its own, one row per
 item. Here three logical indicators stand in for one: the life domains a
-respondent is satisfied with, rated 4 or 5 out of 5.
+respondent is satisfied with, rated 4 or 5 out of 5. The article
+[Multiple-response
+questions](https://amaltawfik.github.io/spicy/articles/table-multiresponse.html)
+explains the bases, the percentages and the tests.
 
 ``` r
 
