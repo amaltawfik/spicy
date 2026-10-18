@@ -182,7 +182,7 @@ is a shortcut for <code><a href="../reference/varlist.html">varlist()</a></code>
 <code>tbl = TRUE</code>:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/varlist.html">varlist</a></span><span class="op">(</span><span class="va">sochealth</span>, tbl <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 24 × 7</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 29 × 7</span></span></span>
 <span><span class="co">#&gt;    Variable          Label                          Values         Class N_distinct N_valid   NAs</span></span>
 <span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>             <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                          <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> sex               Sex                            Female, Male   fact…          2    <span style="text-decoration: underline;">1</span>200     0</span></span>
@@ -195,7 +195,7 @@ is a shortcut for <code><a href="../reference/varlist.html">varlist()</a></code>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> income_group      Household income group         Low, Lower mi… orde…          4    <span style="text-decoration: underline;">1</span>182    18</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> income            Monthly household income (CHF) 1000, 1001, 1… nume…       <span style="text-decoration: underline;">1</span>052    <span style="text-decoration: underline;">1</span>200     0</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> smoking           Current smoker                 No, Yes        fact…          2    <span style="text-decoration: underline;">1</span>175    25</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 14 more rows</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 19 more rows</span></span></span></code></pre></div>
 <p>If you want the <code>Values</code> column to include explicit
 missing values, use <code>include_na = TRUE</code>. Selecting a few
 variables and keeping only the relevant columns lets the
@@ -318,8 +318,8 @@ tidyselect selectors as in <code><a href="../reference/varlist.html">varlist()</
 <span><span class="co">#&gt;       1 <span style="color: #9E9E9E;">│</span> sex             Sex                       categorical (nominal)       1200          0 </span></span>
 <span><span class="co">#&gt;       2 <span style="color: #9E9E9E;">│</span> age             Age (years)               numeric                     1200          0 </span></span>
 <span><span class="co">#&gt;       8 <span style="color: #9E9E9E;">│</span> income_group    Household income group    categorical (ordinal)       1182         18 </span></span>
-<span><span class="co">#&gt;      15 <span style="color: #9E9E9E;">│</span> bmi             Body mass index           numeric                     1188         12 </span></span>
-<span><span class="co">#&gt;      16 <span style="color: #9E9E9E;">│</span> bmi_category    BMI category              categorical (ordinal)       1188         12</span></span></code></pre></div>
+<span><span class="co">#&gt;      20 <span style="color: #9E9E9E;">│</span> bmi             Body mass index           numeric                     1188         12 </span></span>
+<span><span class="co">#&gt;      21 <span style="color: #9E9E9E;">│</span> bmi_category    BMI category              categorical (ordinal)       1188         12</span></span></code></pre></div>
 <p>The type is read off the R class, never guessed: a factor is
 <em>categorical (nominal)</em>, an ordered factor <em>categorical
 (ordinal)</em>, a labelled vector <em>categorical (labelled codes)</em>,
@@ -371,10 +371,10 @@ values (<code>NA</code>) of each variable that has any:</p>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span>        8 income_group Upper middle  <span style="color: #BB0000;">NA</span>    FALSE              328      27.3      27.7</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span>        8 income_group High          <span style="color: #BB0000;">NA</span>    FALSE              219      18.2      18.5</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span>        8 income_group NA            <span style="color: #BB0000;">NA</span>    FALSE               18       1.5      <span style="color: #BB0000;">NA</span>  </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span>       16 bmi_category Normal weight <span style="color: #BB0000;">NA</span>    FALSE              465      38.8      39.1</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span>       16 bmi_category Overweight    <span style="color: #BB0000;">NA</span>    FALSE              569      47.4      47.9</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span>       16 bmi_category Obesity       <span style="color: #BB0000;">NA</span>    FALSE              154      12.8      13.0</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">11</span>       16 bmi_category NA            <span style="color: #BB0000;">NA</span>    FALSE               12       1        <span style="color: #BB0000;">NA</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span>       21 bmi_category Normal weight <span style="color: #BB0000;">NA</span>    FALSE              465      38.8      39.1</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span>       21 bmi_category Overweight    <span style="color: #BB0000;">NA</span>    FALSE              569      47.4      47.9</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span>       21 bmi_category Obesity       <span style="color: #BB0000;">NA</span>    FALSE              154      12.8      13.0</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">11</span>       21 bmi_category NA            <span style="color: #BB0000;">NA</span>    FALSE               12       1        <span style="color: #BB0000;">NA</span></span></span></code></pre></div>
 <p>Numeric, text, and date variables have no category rows:
 <code>variables</code> summarizes them, and they appear in
 <code>values</code> only through their declared missing values (see
@@ -426,8 +426,8 @@ link; the console and the Excel file show the words alone:</p>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;    Pos. <span style="color: #9E9E9E;">│</span> Variable        Label              Type                       Valid    Missing </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">────────┼────────────────────────────────────────────────────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;      15 <span style="color: #9E9E9E;">│</span> bmi             Body mass index    numeric                     1188         12 </span></span>
-<span><span class="co">#&gt;      16 <span style="color: #9E9E9E;">│</span> bmi_category    BMI category       categorical (ordinal)       1188         12</span></span></code></pre></div>
+<span><span class="co">#&gt;      20 <span style="color: #9E9E9E;">│</span> bmi             Body mass index    numeric                     1188         12 </span></span>
+<span><span class="co">#&gt;      21 <span style="color: #9E9E9E;">│</span> bmi_category    BMI category       categorical (ordinal)       1188         12</span></span></code></pre></div>
 <p><code>authors</code> also accepts a list of lists with
 <code>name</code>, <code>affiliation</code>, and <code>orcid</code>.
 When the variables were renamed after import, <code>source</code>
@@ -583,14 +583,14 @@ Excel workbook</a>.</p>
 <span>  <span class="op">)</span>,</span>
 <span>  output <span class="op">=</span> <span class="st">"sochealth_codebook.pdf"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<p>Three of its eleven pages. The cover:</p>
+<p>Three of its twelve pages. The cover:</p>
 <p><img src="https://amaltawfik.github.io/spicy/codebook/cover.png" alt="The cover: the word CODEBOOK in spaced capitals, the title Social health survey, its subtitle, two authors with their affiliations and an ORCID link, and the date" width="100%"></p>
 <p>The page about the data, with the caution on unweighted counts and
 the notes, their markup rendered and their addresses turned into
 links:</p>
 <p><img src="https://amaltawfik.github.io/spicy/codebook/about.png" alt="The page about the data: a table of facts (observations, variables, generated with), the caution that counts and percentages are unweighted, and the notes, with italics, bold, code, a web address, and a DOI as links, then four list items" width="100%"></p>
 <p>The sheet of <code>self_rated_health</code>, one of the
-twenty-four:</p>
+twenty-nine:</p>
 <p><img src="https://amaltawfik.github.io/spicy/codebook/sheet.png" alt="The sheet of self_rated_health: a band with its position, name, and type, its label, the counts of valid, missing, and distinct values, and the table of its values with n, percent, and valid percent, the system missing row in gray" width="100%"></p>
 </div>
 </div>

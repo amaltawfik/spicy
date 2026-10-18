@@ -460,7 +460,7 @@ frequency table of one variable; the article
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Date: 2026-10-18</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Observations: 1200</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Variables: 24</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Variables: 29</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Note: Counts and percentages are unweighted: they describe the data file and are not estimates for a population.</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    Pos. <span style="color: #9E9E9E;">│</span> Variable                  Label                                         Type                       Valid    Missing </span>
@@ -477,18 +477,23 @@ frequency table of one variable; the article
 <span class="r-out co"><span class="r-pr">#&gt;</span>      10 <span style="color: #9E9E9E;">│</span> smoking                   Current smoker                                categorical (nominal)       1175         25 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>      11 <span style="color: #9E9E9E;">│</span> physical_activity         Regular physical activity                     categorical (nominal)       1200          0 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>      12 <span style="color: #9E9E9E;">│</span> dentist_12m               Dentist visit in last 12 months               categorical (nominal)       1200          0 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>      13 <span style="color: #9E9E9E;">│</span> self_rated_health         Self-rated health                             categorical (ordinal)       1180         20 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>      14 <span style="color: #9E9E9E;">│</span> wellbeing_score           WHO-5 wellbeing index (0-100)                 numeric                     1200          0 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>      15 <span style="color: #9E9E9E;">│</span> bmi                       Body mass index                               numeric                     1188         12 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>      16 <span style="color: #9E9E9E;">│</span> bmi_category              BMI category                                  categorical (ordinal)       1188         12 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>      17 <span style="color: #9E9E9E;">│</span> institutional_trust       Trust in institutions                         categorical (ordinal)       1200          0 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>      18 <span style="color: #9E9E9E;">│</span> political_position        Political position (0 = left, 10 = right)     numeric                     1185         15 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>      19 <span style="color: #9E9E9E;">│</span> life_sat_health           Satisfaction with health (1-5)                numeric                     1192          8 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>      20 <span style="color: #9E9E9E;">│</span> life_sat_work             Satisfaction with work (1-5)                  numeric                     1192          8 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>      21 <span style="color: #9E9E9E;">│</span> life_sat_relationships    Satisfaction with relationships (1-5)         numeric                     1192          8 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>      22 <span style="color: #9E9E9E;">│</span> life_sat_standard         Satisfaction with standard of living (1-5)    numeric                     1192          8 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>      23 <span style="color: #9E9E9E;">│</span> response_date             Survey response date                          date-time                   1200          0 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>      24 <span style="color: #9E9E9E;">│</span> weight                    Survey design weight                          numeric                     1200          0 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      13 <span style="color: #9E9E9E;">│</span> info_doctor               Doctor or other health professional           logical                     1164         36 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      14 <span style="color: #9E9E9E;">│</span> info_pharmacist           Pharmacist                                    logical                     1164         36 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      15 <span style="color: #9E9E9E;">│</span> info_internet             Internet, websites or apps                    logical                     1164         36 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      16 <span style="color: #9E9E9E;">│</span> info_family               Family or friends                             logical                     1164         36 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      17 <span style="color: #9E9E9E;">│</span> info_media                Television, radio or newspapers               logical                     1164         36 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      18 <span style="color: #9E9E9E;">│</span> self_rated_health         Self-rated health                             categorical (ordinal)       1180         20 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      19 <span style="color: #9E9E9E;">│</span> wellbeing_score           WHO-5 wellbeing index (0-100)                 numeric                     1200          0 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      20 <span style="color: #9E9E9E;">│</span> bmi                       Body mass index                               numeric                     1188         12 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      21 <span style="color: #9E9E9E;">│</span> bmi_category              BMI category                                  categorical (ordinal)       1188         12 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      22 <span style="color: #9E9E9E;">│</span> institutional_trust       Trust in institutions                         categorical (ordinal)       1200          0 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      23 <span style="color: #9E9E9E;">│</span> political_position        Political position (0 = left, 10 = right)     numeric                     1185         15 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      24 <span style="color: #9E9E9E;">│</span> life_sat_health           Satisfaction with health (1-5)                numeric                     1192          8 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      25 <span style="color: #9E9E9E;">│</span> life_sat_work             Satisfaction with work (1-5)                  numeric                     1192          8 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      26 <span style="color: #9E9E9E;">│</span> life_sat_relationships    Satisfaction with relationships (1-5)         numeric                     1192          8 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      27 <span style="color: #9E9E9E;">│</span> life_sat_standard         Satisfaction with standard of living (1-5)    numeric                     1192          8 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      28 <span style="color: #9E9E9E;">│</span> response_date             Survey response date                          date-time                   1200          0 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      29 <span style="color: #9E9E9E;">│</span> weight                    Survey design weight                          numeric                     1200          0 </span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">cb</span> <span class="op">&lt;-</span> <span class="fu">code_book</span><span class="op">(</span></span></span>
 <span class="r-in"><span>  <span class="va">sochealth</span>,</span></span>
@@ -511,14 +516,14 @@ frequency table of one variable; the article
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    Pos. <span style="color: #9E9E9E;">│</span> Variable        Label              Type                       Valid    Missing </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">────────┼────────────────────────────────────────────────────────────────────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>      15 <span style="color: #9E9E9E;">│</span> bmi             Body mass index    numeric                     1188         12 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>      16 <span style="color: #9E9E9E;">│</span> bmi_category    BMI category       categorical (ordinal)       1188         12 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      20 <span style="color: #9E9E9E;">│</span> bmi             Body mass index    numeric                     1188         12 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      21 <span style="color: #9E9E9E;">│</span> bmi_category    BMI category       categorical (ordinal)       1188         12 </span>
 <span class="r-in"><span><span class="va">cb</span><span class="op">$</span><span class="va">variables</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 2 × 19</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   position name    label type  class source n_valid n_missing n_declared_missing</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>              <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span>       15 bmi     Body… nume… nume… <span style="color: #BB0000;">NA</span>        <span style="text-decoration: underline;">1</span>188        12                  0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span>       16 bmi_ca… BMI … cate… orde… <span style="color: #BB0000;">NA</span>        <span style="text-decoration: underline;">1</span>188        12                  0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span>       20 bmi     Body… nume… nume… <span style="color: #BB0000;">NA</span>        <span style="text-decoration: underline;">1</span>188        12                  0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span>       21 bmi_ca… BMI … cate… orde… <span style="color: #BB0000;">NA</span>        <span style="text-decoration: underline;">1</span>188        12                  0</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 10 more variables: declared_codes &lt;chr&gt;, n_distinct &lt;int&gt;,</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   n_categories &lt;int&gt;, min &lt;dbl&gt;, max &lt;dbl&gt;, mean &lt;dbl&gt;, sd &lt;dbl&gt;,</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   median &lt;dbl&gt;, earliest &lt;chr&gt;, latest &lt;chr&gt;</span></span>
@@ -526,10 +531,10 @@ frequency table of one variable; the article
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 4 × 8</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   position variable     code    label declared_missing     n pct_total pct_valid</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span>       16 bmi_category Normal… <span style="color: #BB0000;">NA</span>    FALSE              465      38.8      39.1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span>       16 bmi_category Overwe… <span style="color: #BB0000;">NA</span>    FALSE              569      47.4      47.9</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span>       16 bmi_category Obesity <span style="color: #BB0000;">NA</span>    FALSE              154      12.8      13.0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">4</span>       16 bmi_category NA      <span style="color: #BB0000;">NA</span>    FALSE               12       1        <span style="color: #BB0000;">NA</span>  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span>       21 bmi_category Normal… <span style="color: #BB0000;">NA</span>    FALSE              465      38.8      39.1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span>       21 bmi_category Overwe… <span style="color: #BB0000;">NA</span>    FALSE              569      47.4      47.9</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span>       21 bmi_category Obesity <span style="color: #BB0000;">NA</span>    FALSE              154      12.8      13.0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">4</span>       21 bmi_category NA      <span style="color: #BB0000;">NA</span>    FALSE               12       1        <span style="color: #BB0000;">NA</span>  </span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Labelled survey data: declared missing codes count as missing and are</span></span></span>
 <span class="r-in"><span><span class="co"># flagged in `values`.</span></span></span>

@@ -107,7 +107,7 @@ controls), so swapping functions never breaks your rendering pipeline.
 ## A shared interface
 
 The examples below use `sochealth`, the dataset bundled with spicy: a
-simulated social-health survey of 1200 respondents and 24 variables,
+simulated social-health survey of 1200 respondents and 29 variables,
 every one of them carrying a variable label (see
 [`?sochealth`](https://amaltawfik.github.io/spicy/reference/sochealth.md)).
 
@@ -1069,7 +1069,7 @@ tab |>
 |     Yes |  84 | 32.2 | 229 | 42.5 | 237 | 59.2 | 550 | 45.8 |       |     |
 | Group comparison: Pearson chi-squared test. |  |  |  |  |  |  |  |  |  |  |
 
-Categorical table by education {#tinytable_3mj1ib15mbz1l7xyz5xk .table
+Categorical table by education {#tinytable_h50a6wrcnnakzepel6ic .table
 .tinytable style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 

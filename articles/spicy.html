@@ -123,7 +123,7 @@ chi-squared tests and effect sizes, and publication-ready summary
 tables, offering functionality similar to Stata or SPSS but within a
 tidyverse-friendly R environment. This vignette walks through the core
 workflow using the bundled <code>sochealth</code> dataset, a simulated
-social-health survey with 1200 respondents and 24 variables.</p>
+social-health survey with 1200 respondents and 29 variables.</p>
 <div class="section level2">
 <h2 id="inspect-your-data">Inspect your data<a class="anchor" aria-label="anchor" href="#inspect-your-data"></a>
 </h2>
@@ -137,7 +137,7 @@ Here we use <code>tbl = TRUE</code> to produce static output for the
 vignette:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/varlist.html">varlist</a></span><span class="op">(</span><span class="va">sochealth</span>, tbl <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 24 × 7</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 29 × 7</span></span></span>
 <span><span class="co">#&gt;    Variable          Label                 Values Class N_distinct N_valid   NAs</span></span>
 <span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>             <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                 <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> sex               Sex                   Femal… fact…          2    <span style="text-decoration: underline;">1</span>200     0</span></span>
@@ -150,7 +150,7 @@ vignette:</p>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> income_group      Household income gro… Low, … orde…          4    <span style="text-decoration: underline;">1</span>182    18</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> income            Monthly household in… 1000,… nume…       <span style="text-decoration: underline;">1</span>052    <span style="text-decoration: underline;">1</span>200     0</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> smoking           Current smoker        No, Y… fact…          2    <span style="text-decoration: underline;">1</span>175    25</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 14 more rows</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 19 more rows</span></span></span></code></pre></div>
 <p>You can also select specific columns with tidyselect syntax:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/varlist.html">varlist</a></span><span class="op">(</span><span class="va">sochealth</span>, <span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">starts_with</a></span><span class="op">(</span><span class="st">"bmi"</span><span class="op">)</span>, <span class="va">income</span>, <span class="va">weight</span>, tbl <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
@@ -182,7 +182,7 @@ the quarto package and Quarto 1.7 or later).</p>
 <span><span class="co">#&gt;       1 <span style="color: #9E9E9E;">│</span> sex         Sex                categorical (nominal)       1200          0 </span></span>
 <span><span class="co">#&gt;       2 <span style="color: #9E9E9E;">│</span> age         Age (years)        numeric                     1200          0 </span></span>
 <span><span class="co">#&gt;      10 <span style="color: #9E9E9E;">│</span> smoking     Current smoker     categorical (nominal)       1175         25 </span></span>
-<span><span class="co">#&gt;      15 <span style="color: #9E9E9E;">│</span> bmi         Body mass index    numeric                     1188         12</span></span></code></pre></div>
+<span><span class="co">#&gt;      20 <span style="color: #9E9E9E;">│</span> bmi         Body mass index    numeric                     1188         12</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="frequency-tables">Frequency tables<a class="anchor" aria-label="anchor" href="#frequency-tables"></a>

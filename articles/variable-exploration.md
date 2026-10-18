@@ -84,7 +84,7 @@ If you want the same summary returned as a tibble, use `tbl = TRUE`:
 ``` r
 
 varlist(sochealth, tbl = TRUE)
-#> # A tibble: 24 × 7
+#> # A tibble: 29 × 7
 #>    Variable          Label                          Values         Class N_distinct N_valid   NAs
 #>    <chr>             <chr>                          <chr>          <chr>      <int>   <int> <int>
 #>  1 sex               Sex                            Female, Male   fact…          2    1200     0
@@ -97,7 +97,7 @@ varlist(sochealth, tbl = TRUE)
 #>  8 income_group      Household income group         Low, Lower mi… orde…          4    1182    18
 #>  9 income            Monthly household income (CHF) 1000, 1001, 1… nume…       1052    1200     0
 #> 10 smoking           Current smoker                 No, Yes        fact…          2    1175    25
-#> # ℹ 14 more rows
+#> # ℹ 19 more rows
 ```
 
 If you want the `Values` column to include explicit missing values, use
@@ -248,8 +248,8 @@ code_book(sochealth, sex, age, income_group, starts_with("bmi"))
 #>       1 │ sex             Sex                       categorical (nominal)       1200          0 
 #>       2 │ age             Age (years)               numeric                     1200          0 
 #>       8 │ income_group    Household income group    categorical (ordinal)       1182         18 
-#>      15 │ bmi             Body mass index           numeric                     1188         12 
-#>      16 │ bmi_category    BMI category              categorical (ordinal)       1188         12
+#>      20 │ bmi             Body mass index           numeric                     1188         12 
+#>      21 │ bmi_category    BMI category              categorical (ordinal)       1188         12
 ```
 
 The type is read off the R class, never guessed: a factor is
@@ -311,10 +311,10 @@ cb$values
 #>  5        8 income_group Upper middle  NA    FALSE              328      27.3      27.7
 #>  6        8 income_group High          NA    FALSE              219      18.2      18.5
 #>  7        8 income_group NA            NA    FALSE               18       1.5      NA  
-#>  8       16 bmi_category Normal weight NA    FALSE              465      38.8      39.1
-#>  9       16 bmi_category Overweight    NA    FALSE              569      47.4      47.9
-#> 10       16 bmi_category Obesity       NA    FALSE              154      12.8      13.0
-#> 11       16 bmi_category NA            NA    FALSE               12       1        NA
+#>  8       21 bmi_category Normal weight NA    FALSE              465      38.8      39.1
+#>  9       21 bmi_category Overweight    NA    FALSE              569      47.4      47.9
+#> 10       21 bmi_category Obesity       NA    FALSE              154      12.8      13.0
+#> 11       21 bmi_category NA            NA    FALSE               12       1        NA
 ```
 
 Numeric, text, and date variables have no category rows: `variables`
@@ -366,8 +366,8 @@ code_book(
 #> 
 #>    Pos. │ Variable        Label              Type                       Valid    Missing 
 #> ────────┼────────────────────────────────────────────────────────────────────────────────
-#>      15 │ bmi             Body mass index    numeric                     1188         12 
-#>      16 │ bmi_category    BMI category       categorical (ordinal)       1188         12
+#>      20 │ bmi             Body mass index    numeric                     1188         12 
+#>      21 │ bmi_category    BMI category       categorical (ordinal)       1188         12
 ```
 
 `authors` also accepts a list of lists with `name`, `affiliation`, and
@@ -535,7 +535,7 @@ code_book(
 )
 ```
 
-Three of its eleven pages. The cover:
+Three of its twelve pages. The cover:
 
 ![The cover: the word CODEBOOK in spaced capitals, the title Social
 health survey, its subtitle, two authors with their affiliations and an
@@ -551,7 +551,7 @@ and the notes, with italics, bold, code, a web address, and a DOI as
 links, then four list
 items](https://amaltawfik.github.io/spicy/codebook/about.png)
 
-The sheet of `self_rated_health`, one of the twenty-four:
+The sheet of `self_rated_health`, one of the twenty-nine:
 
 ![The sheet of self_rated_health: a band with its position, name, and
 type, its label, the counts of valid, missing, and distinct values, and

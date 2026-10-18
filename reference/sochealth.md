@@ -3,7 +3,7 @@
 A simulated dataset of 1200 respondents from a fictional social-health
 survey, designed to illustrate the main features of the spicy package:
 variable labels, ordered factors, survey weights, association measures,
-and publication-ready reporting.
+a multiple-response question, and publication-ready reporting.
 
 ## Usage
 
@@ -13,7 +13,7 @@ sochealth
 
 ## Format
 
-A tibble with 1200 rows and 24 variables:
+A tibble with 1200 rows and 29 variables:
 
 - sex:
 
@@ -65,6 +65,32 @@ A tibble with 1200 rows and 24 variables:
 - dentist_12m:
 
   Factor. Dentist visit in the last 12 months (No, Yes).
+
+- info_doctor:
+
+  Logical. Source of health information in the past 12 months: doctor or
+  other health professional (`TRUE` = chosen). Missing for the 36
+  respondents who skipped the question; see `Details`.
+
+- info_pharmacist:
+
+  Logical. Source of health information: pharmacist. Missing as
+  `info_doctor`.
+
+- info_internet:
+
+  Logical. Source of health information: internet, websites or apps.
+  Missing as `info_doctor`.
+
+- info_family:
+
+  Logical. Source of health information: family or friends. Missing as
+  `info_doctor`.
+
+- info_media:
+
+  Logical. Source of health information: television, radio or
+  newspapers. Missing as `info_doctor`.
 
 - self_rated_health:
 
@@ -129,10 +155,11 @@ A tibble with 1200 rows and 24 variables:
 
 Simulated data for illustration purposes; reproducible by sourcing
 `data-raw/sochealth.R`. The script seeds the main generation block with
-`set.seed(2025)`, and the two missing-value injection blocks with
+`set.seed(2025)`, the two missing-value injection blocks with
 `set.seed(2027)` (the four `life_sat_*` items) and `set.seed(2026)`
 (`smoking`, `self_rated_health`, `income_group`, `political_position`,
-`bmi`).
+`bmi`), and the multiple-response block (the five `info_*` items) with
+`set.seed(2030)`.
 
 ## Details
 
@@ -154,6 +181,18 @@ Survey weights (`weight`) are calibrated: they average about 1
 (`mean(weight)` is 0.997) and sum to 1196.5 for the 1200 rows. Weighted
 means therefore agree with unweighted means up to sampling noise without
 further rescaling.
+
+The five `info_*` variables answer one multiple-response question,
+"Sources of health information used in the past 12 months (check all
+that apply)", the example data of
+[`table_multiresponse()`](https://amaltawfik.github.io/spicy/reference/table_multiresponse.md).
+Each item is logical: `TRUE` when the source was chosen, `FALSE` when it
+was not, and `NA` on all five items for the 36 respondents who skipped
+the question. A respondent who answered without choosing any source is
+`FALSE` on all five (67 of the 1164 who answered). Like the rest of the
+data, the block is simulated: doctor and media rise with age, internet
+falls with age and rises with education, family is more frequent among
+women, and the pharmacist item depends on no other variable.
 
 ## Examples
 

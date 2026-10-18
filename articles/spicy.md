@@ -12,7 +12,7 @@ chi-squared tests and effect sizes, and publication-ready summary
 tables, offering functionality similar to Stata or SPSS but within a
 tidyverse-friendly R environment. This vignette walks through the core
 workflow using the bundled `sochealth` dataset, a simulated
-social-health survey with 1200 respondents and 24 variables.
+social-health survey with 1200 respondents and 29 variables.
 
 ## Inspect your data
 
@@ -29,7 +29,7 @@ viewer - this is the most common usage in practice. Here we use
 ``` r
 
 varlist(sochealth, tbl = TRUE)
-#> # A tibble: 24 × 7
+#> # A tibble: 29 × 7
 #>    Variable          Label                 Values Class N_distinct N_valid   NAs
 #>    <chr>             <chr>                 <chr>  <chr>      <int>   <int> <int>
 #>  1 sex               Sex                   Femal… fact…          2    1200     0
@@ -42,7 +42,7 @@ varlist(sochealth, tbl = TRUE)
 #>  8 income_group      Household income gro… Low, … orde…          4    1182    18
 #>  9 income            Monthly household in… 1000,… nume…       1052    1200     0
 #> 10 smoking           Current smoker        No, Y… fact…          2    1175    25
-#> # ℹ 14 more rows
+#> # ℹ 19 more rows
 ```
 
 You can also select specific columns with tidyselect syntax:
@@ -82,7 +82,7 @@ code_book(sochealth, sex, age, smoking, bmi)
 #>       1 │ sex         Sex                categorical (nominal)       1200          0 
 #>       2 │ age         Age (years)        numeric                     1200          0 
 #>      10 │ smoking     Current smoker     categorical (nominal)       1175         25 
-#>      15 │ bmi         Body mass index    numeric                     1188         12
+#>      20 │ bmi         Body mass index    numeric                     1188         12
 ```
 
 ## Frequency tables

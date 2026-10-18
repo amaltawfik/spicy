@@ -59,6 +59,12 @@ PDF.
 
 ### New features
 
+- `sochealth` gains a multiple-response question, the sources of health
+  information used in the past 12 months: five logical `info_*` items,
+  missing together for the 36 respondents who skipped the question, as
+  example data for
+  [`table_multiresponse()`](https://amaltawfik.github.io/spicy/reference/table_multiresponse.md).
+
 - [`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md)
   builds a codebook in three parts, `header`, `variables`, and `values`
   (unweighted counts and percentages per category), and prints it as the

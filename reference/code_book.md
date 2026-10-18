@@ -387,7 +387,7 @@ code_book(sochealth)
 #> 
 #> Date: 2026-10-18
 #> Observations: 1200
-#> Variables: 24
+#> Variables: 29
 #> Note: Counts and percentages are unweighted: they describe the data file and are not estimates for a population.
 #> 
 #>    Pos. │ Variable                  Label                                         Type                       Valid    Missing 
@@ -404,18 +404,23 @@ code_book(sochealth)
 #>      10 │ smoking                   Current smoker                                categorical (nominal)       1175         25 
 #>      11 │ physical_activity         Regular physical activity                     categorical (nominal)       1200          0 
 #>      12 │ dentist_12m               Dentist visit in last 12 months               categorical (nominal)       1200          0 
-#>      13 │ self_rated_health         Self-rated health                             categorical (ordinal)       1180         20 
-#>      14 │ wellbeing_score           WHO-5 wellbeing index (0-100)                 numeric                     1200          0 
-#>      15 │ bmi                       Body mass index                               numeric                     1188         12 
-#>      16 │ bmi_category              BMI category                                  categorical (ordinal)       1188         12 
-#>      17 │ institutional_trust       Trust in institutions                         categorical (ordinal)       1200          0 
-#>      18 │ political_position        Political position (0 = left, 10 = right)     numeric                     1185         15 
-#>      19 │ life_sat_health           Satisfaction with health (1-5)                numeric                     1192          8 
-#>      20 │ life_sat_work             Satisfaction with work (1-5)                  numeric                     1192          8 
-#>      21 │ life_sat_relationships    Satisfaction with relationships (1-5)         numeric                     1192          8 
-#>      22 │ life_sat_standard         Satisfaction with standard of living (1-5)    numeric                     1192          8 
-#>      23 │ response_date             Survey response date                          date-time                   1200          0 
-#>      24 │ weight                    Survey design weight                          numeric                     1200          0 
+#>      13 │ info_doctor               Doctor or other health professional           logical                     1164         36 
+#>      14 │ info_pharmacist           Pharmacist                                    logical                     1164         36 
+#>      15 │ info_internet             Internet, websites or apps                    logical                     1164         36 
+#>      16 │ info_family               Family or friends                             logical                     1164         36 
+#>      17 │ info_media                Television, radio or newspapers               logical                     1164         36 
+#>      18 │ self_rated_health         Self-rated health                             categorical (ordinal)       1180         20 
+#>      19 │ wellbeing_score           WHO-5 wellbeing index (0-100)                 numeric                     1200          0 
+#>      20 │ bmi                       Body mass index                               numeric                     1188         12 
+#>      21 │ bmi_category              BMI category                                  categorical (ordinal)       1188         12 
+#>      22 │ institutional_trust       Trust in institutions                         categorical (ordinal)       1200          0 
+#>      23 │ political_position        Political position (0 = left, 10 = right)     numeric                     1185         15 
+#>      24 │ life_sat_health           Satisfaction with health (1-5)                numeric                     1192          8 
+#>      25 │ life_sat_work             Satisfaction with work (1-5)                  numeric                     1192          8 
+#>      26 │ life_sat_relationships    Satisfaction with relationships (1-5)         numeric                     1192          8 
+#>      27 │ life_sat_standard         Satisfaction with standard of living (1-5)    numeric                     1192          8 
+#>      28 │ response_date             Survey response date                          date-time                   1200          0 
+#>      29 │ weight                    Survey design weight                          numeric                     1200          0 
 
 cb <- code_book(
   sochealth,
@@ -438,14 +443,14 @@ cb
 #> 
 #>    Pos. │ Variable        Label              Type                       Valid    Missing 
 #> ────────┼────────────────────────────────────────────────────────────────────────────────
-#>      15 │ bmi             Body mass index    numeric                     1188         12 
-#>      16 │ bmi_category    BMI category       categorical (ordinal)       1188         12 
+#>      20 │ bmi             Body mass index    numeric                     1188         12 
+#>      21 │ bmi_category    BMI category       categorical (ordinal)       1188         12 
 cb$variables
 #> # A tibble: 2 × 19
 #>   position name    label type  class source n_valid n_missing n_declared_missing
 #>      <int> <chr>   <chr> <chr> <chr> <chr>    <int>     <int>              <int>
-#> 1       15 bmi     Body… nume… nume… NA        1188        12                  0
-#> 2       16 bmi_ca… BMI … cate… orde… NA        1188        12                  0
+#> 1       20 bmi     Body… nume… nume… NA        1188        12                  0
+#> 2       21 bmi_ca… BMI … cate… orde… NA        1188        12                  0
 #> # ℹ 10 more variables: declared_codes <chr>, n_distinct <int>,
 #> #   n_categories <int>, min <dbl>, max <dbl>, mean <dbl>, sd <dbl>,
 #> #   median <dbl>, earliest <chr>, latest <chr>
@@ -453,10 +458,10 @@ cb$values
 #> # A tibble: 4 × 8
 #>   position variable     code    label declared_missing     n pct_total pct_valid
 #>      <int> <chr>        <chr>   <chr> <lgl>            <int>     <dbl>     <dbl>
-#> 1       16 bmi_category Normal… NA    FALSE              465      38.8      39.1
-#> 2       16 bmi_category Overwe… NA    FALSE              569      47.4      47.9
-#> 3       16 bmi_category Obesity NA    FALSE              154      12.8      13.0
-#> 4       16 bmi_category NA      NA    FALSE               12       1        NA  
+#> 1       21 bmi_category Normal… NA    FALSE              465      38.8      39.1
+#> 2       21 bmi_category Overwe… NA    FALSE              569      47.4      47.9
+#> 3       21 bmi_category Obesity NA    FALSE              154      12.8      13.0
+#> 4       21 bmi_category NA      NA    FALSE               12       1        NA  
 
 # Labelled survey data: declared missing codes count as missing and are
 # flagged in `values`.

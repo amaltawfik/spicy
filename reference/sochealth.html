@@ -8,10 +8,12 @@
 </script><script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/IBM_Plex_Sans-0.4.10/font.css" rel="stylesheet"><link href="../deps/IBM_Plex_Mono-0.4.10/font.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet"><meta property="og:title" content="Simulated social-health survey — sochealth"><meta name="description" content="A simulated dataset of 1200 respondents from a fictional
 social-health survey, designed to illustrate the main features of
 the spicy package: variable labels, ordered factors, survey
-weights, association measures, and publication-ready reporting."><meta property="og:description" content="A simulated dataset of 1200 respondents from a fictional
+weights, association measures, a multiple-response question, and
+publication-ready reporting."><meta property="og:description" content="A simulated dataset of 1200 respondents from a fictional
 social-health survey, designed to illustrate the main features of
 the spicy package: variable labels, ordered factors, survey
-weights, association measures, and publication-ready reporting."><meta property="og:image" content="https://amaltawfik.github.io/spicy/logo.svg"></head><body>
+weights, association measures, a multiple-response question, and
+publication-ready reporting."><meta property="og:image" content="https://amaltawfik.github.io/spicy/logo.svg"></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -81,7 +83,8 @@ weights, association measures, and publication-ready reporting."><meta property=
     <p>A simulated dataset of 1200 respondents from a fictional
 social-health survey, designed to illustrate the main features of
 the spicy package: variable labels, ordered factors, survey
-weights, association measures, and publication-ready reporting.</p>
+weights, association measures, a multiple-response question, and
+publication-ready reporting.</p>
     </div>
 
     <div class="section level2">
@@ -91,7 +94,7 @@ weights, association measures, and publication-ready reporting.</p>
 
     <div class="section level2">
     <h2 id="format">Format<a class="anchor" aria-label="anchor" href="#format"></a></h2>
-    <p>A tibble with 1200 rows and 24 variables:</p><dl><dt>sex</dt>
+    <p>A tibble with 1200 rows and 29 variables:</p><dl><dt>sex</dt>
 <dd><p>Factor. Sex of the respondent.</p></dd>
 
 <dt>age</dt>
@@ -136,6 +139,28 @@ missing values.</p></dd>
 <dt>dentist_12m</dt>
 <dd><p>Factor. Dentist visit in the last 12 months
 (No, Yes).</p></dd>
+
+<dt>info_doctor</dt>
+<dd><p>Logical. Source of health information in the
+past 12 months: doctor or other health professional (<code>TRUE</code> =
+chosen). Missing for the 36 respondents who skipped the
+question; see <code>Details</code>.</p></dd>
+
+<dt>info_pharmacist</dt>
+<dd><p>Logical. Source of health information:
+pharmacist. Missing as <code>info_doctor</code>.</p></dd>
+
+<dt>info_internet</dt>
+<dd><p>Logical. Source of health information:
+internet, websites or apps. Missing as <code>info_doctor</code>.</p></dd>
+
+<dt>info_family</dt>
+<dd><p>Logical. Source of health information: family
+or friends. Missing as <code>info_doctor</code>.</p></dd>
+
+<dt>info_media</dt>
+<dd><p>Logical. Source of health information:
+television, radio or newspapers. Missing as <code>info_doctor</code>.</p></dd>
 
 <dt>self_rated_health</dt>
 <dd><p>Ordered factor. Self-rated health
@@ -194,11 +219,12 @@ of living (1–5 Likert scale). Contains missing values.</p></dd>
     <h2 id="source">Source<a class="anchor" aria-label="anchor" href="#source"></a></h2>
     <p>Simulated data for illustration purposes; reproducible by
 sourcing <code>data-raw/sochealth.R</code>. The script seeds the main
-generation block with <code>set.seed(2025)</code>, and the two
-missing-value injection blocks with <code>set.seed(2027)</code> (the
-four <code>life_sat_*</code> items) and <code>set.seed(2026)</code> (<code>smoking</code>,
-<code>self_rated_health</code>, <code>income_group</code>, <code>political_position</code>,
-<code>bmi</code>).</p>
+generation block with <code>set.seed(2025)</code>, the two missing-value
+injection blocks with <code>set.seed(2027)</code> (the four <code>life_sat_*</code>
+items) and <code>set.seed(2026)</code> (<code>smoking</code>, <code>self_rated_health</code>,
+<code>income_group</code>, <code>political_position</code>, <code>bmi</code>), and the
+multiple-response block (the five <code>info_*</code> items) with
+<code>set.seed(2030)</code>.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
@@ -215,6 +241,17 @@ Tau-b, Goodman-Kruskal Gamma) on the same dataset.</p>
 Weighted means therefore agree
 with unweighted means up to sampling noise without further
 rescaling.</p>
+<p>The five <code>info_*</code> variables answer one multiple-response question,
+"Sources of health information used in the past 12 months (check
+all that apply)", the example data of <code><a href="table_multiresponse.html">table_multiresponse()</a></code>. Each
+item is logical: <code>TRUE</code> when the source was chosen, <code>FALSE</code> when it
+was not, and <code>NA</code> on all five items for the 36 respondents who
+skipped the question. A respondent who answered without choosing
+any source is <code>FALSE</code> on all five (67 of the 1164 who answered).
+Like the rest of the data, the block is simulated: doctor and media
+rise with age, internet falls with age and rises with education,
+family is more frequent among women, and the pharmacist item depends
+on no other variable.</p>
     </div>
 
     <div class="section level2">

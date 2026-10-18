@@ -198,7 +198,7 @@ Other variable inspection:
 
 ``` r
 varlist(sochealth, tbl = TRUE)
-#> # A tibble: 24 × 7
+#> # A tibble: 29 × 7
 #>    Variable          Label                 Values Class N_distinct N_valid   NAs
 #>    <chr>             <chr>                 <chr>  <chr>      <int>   <int> <int>
 #>  1 sex               Sex                   Femal… fact…          2    1200     0
@@ -211,9 +211,9 @@ varlist(sochealth, tbl = TRUE)
 #>  8 income_group      Household income gro… Low, … orde…          4    1182    18
 #>  9 income            Monthly household in… 1000,… nume…       1052    1200     0
 #> 10 smoking           Current smoker        No, Y… fact…          2    1175    25
-#> # ℹ 14 more rows
+#> # ℹ 19 more rows
 sochealth |> varlist(tbl = TRUE)
-#> # A tibble: 24 × 7
+#> # A tibble: 29 × 7
 #>    Variable          Label                 Values Class N_distinct N_valid   NAs
 #>    <chr>             <chr>                 <chr>  <chr>      <int>   <int> <int>
 #>  1 sex               Sex                   Femal… fact…          2    1200     0
@@ -226,7 +226,7 @@ sochealth |> varlist(tbl = TRUE)
 #>  8 income_group      Household income gro… Low, … orde…          4    1182    18
 #>  9 income            Monthly household in… 1000,… nume…       1052    1200     0
 #> 10 smoking           Current smoker        No, Y… fact…          2    1175    25
-#> # ℹ 14 more rows
+#> # ℹ 19 more rows
 varlist(sochealth, where(is.numeric), values = TRUE, tbl = TRUE)
 #> # A tibble: 10 × 7
 #>    Variable               Label            Values Class N_distinct N_valid   NAs
@@ -270,7 +270,7 @@ varlist(
 #> 1 group    NA    A, B, C, <NA> factor          2       2     1
 
 vl(sochealth, tbl = TRUE)
-#> # A tibble: 24 × 7
+#> # A tibble: 29 × 7
 #>    Variable          Label                 Values Class N_distinct N_valid   NAs
 #>    <chr>             <chr>                 <chr>  <chr>      <int>   <int> <int>
 #>  1 sex               Sex                   Femal… fact…          2    1200     0
@@ -283,9 +283,9 @@ vl(sochealth, tbl = TRUE)
 #>  8 income_group      Household income gro… Low, … orde…          4    1182    18
 #>  9 income            Monthly household in… 1000,… nume…       1052    1200     0
 #> 10 smoking           Current smoker        No, Y… fact…          2    1175    25
-#> # ℹ 14 more rows
+#> # ℹ 19 more rows
 sochealth |> vl(tbl = TRUE)
-#> # A tibble: 24 × 7
+#> # A tibble: 29 × 7
 #>    Variable          Label                 Values Class N_distinct N_valid   NAs
 #>    <chr>             <chr>                 <chr>  <chr>      <int>   <int> <int>
 #>  1 sex               Sex                   Femal… fact…          2    1200     0
@@ -298,7 +298,7 @@ sochealth |> vl(tbl = TRUE)
 #>  8 income_group      Household income gro… Low, … orde…          4    1182    18
 #>  9 income            Monthly household in… 1000,… nume…       1052    1200     0
 #> 10 smoking           Current smoker        No, Y… fact…          2    1175    25
-#> # ℹ 14 more rows
+#> # ℹ 19 more rows
 vl(sochealth, starts_with("bmi"), tbl = TRUE)
 #> # A tibble: 2 × 7
 #>   Variable     Label           Values             Class N_distinct N_valid   NAs

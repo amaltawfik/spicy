@@ -937,7 +937,7 @@ table_categorical(
 |     Yes | 286 | 46.1 | 264 | 45.5 | 550 | 45.8 |      |     |
 | Group comparison: Pearson chi-squared test. |  |  |  |  |  |  |  |  |
 
-Categorical table by sex {#tinytable_5n6dc8fnjc3radigdhy1 .table
+Categorical table by sex {#tinytable_pknvpkuk1z4nzrid63oj .table
 .tinytable style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 
