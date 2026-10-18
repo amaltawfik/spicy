@@ -548,21 +548,16 @@ as_regression_frame.gls <- function(
 # diagonal so a boundary correlation counts as well as a collapsed
 # variance.
 #
-# DIVERGENCE FROM performance::check_singularity.lme(), deliberate and
-# larger than for glmmTMB, since that method is the weaker one in
-# performance on three counts:
-#   * it reads diag(nlme::getVarCov(fit)), which ERRORS on any fit with
-#     more than one level of nesting; the reStruct walk answers there;
-#   * it tests the diagonal, so a random-effect correlation pinned at
-#     +/-1 with healthy variances is not singular for lme while it is for
-#     lmer -- performance's own merMod and glmmTMB methods use det();
-#   * it tests absolute variances, so its verdict moves when the response
-#     is rescaled: on Orthodont, distance / 20 with a random slope is
-#     flagged while distance is not, and a genuinely collapsed component
-#     stops being flagged once the response is scaled up.
-# Verdicts therefore differ from performance's on Gaussian fits whose
-# sigma is far from 1. They track lme4::isSingular(), which is what the
-# table note promises the reader.
+# DIVERGENCE FROM performance::check_singularity.lme(), deliberate. Since
+# performance 0.19.0 that method walks the reStruct blocks as we do, so
+# it no longer errors on nested fits and its verdict no longer moves with
+# the units of the response (before 0.19.0 it read
+# diag(nlme::getVarCov(fit)), absolute variances, one level only). One
+# difference remains: it tests the diagonal, so a random-effect
+# correlation pinned at +/-1 with healthy variances is not singular for
+# lme while it is for lmer -- performance's own merMod and glmmTMB
+# methods use det(). Our verdict tracks lme4::isSingular(), which is what
+# the table note promises the reader.
 #
 # nlme optimizes on the log-Cholesky scale, where an exact zero variance
 # sits at -Inf: a collapsed component lands NEAR 0, never on it, and the

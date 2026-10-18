@@ -581,26 +581,29 @@ test_that("lme singularity agrees with the oracle where the scale is neutral", {
   }
 })
 
-test_that("the divergence from performance::check_singularity.lme is deliberate", {
+test_that("the lme singularity verdict does not move with the units of the response", {
   skip_if_not_installed("performance")
   skip_if_not_installed("lme4")
-  # performance tests absolute variances, so its verdict moves with the
-  # units of the response. Both cases below are pinned to OUR verdict,
-  # with lme4::isSingular() on the equivalent lmer fit as the tiebreaker.
+  # Before 0.19.0, performance tested absolute variances, so its verdict
+  # moved with the units of the response; since 0.19.0 it reads the
+  # relative reStruct diagonal and agrees with us. Both cases below are
+  # pinned to OUR verdict, with lme4::isSingular() on the equivalent lmer
+  # fit as the tiebreaker.
+  old_performance <- utils::packageVersion("performance") < "0.19.0"
 
-  # (a) Healthy fit, response divided by 100: performance says singular.
+  # (a) Healthy fit, response divided by 100: old performance said singular.
   d <- nlme::Orthodont
   d$distance <- d$distance / 100
   fit <- nlme::lme(distance ~ age, data = d, random = ~ age | Subject)
   twin <- suppressMessages(suppressWarnings(
     lme4::lmer(distance ~ age + (age | Subject), data = d)
   ))
-  expect_true(performance::check_singularity(fit))
+  expect_identical(isTRUE(performance::check_singularity(fit)), old_performance)
   expect_false(lme4::isSingular(twin))
   expect_false(spicy:::.lme_is_singular(fit))
 
-  # (b) Collapsed component, response multiplied by 100: performance
-  # stops seeing it, and the table would print the Wald SE of a boundary
+  # (b) Collapsed component, response multiplied by 100: old performance
+  # stopped seeing it, and the table would print the Wald SE of a boundary
   # estimate.
   d2 <- mtcars
   d2$gearf <- factor(d2$gear)
@@ -609,7 +612,10 @@ test_that("the divergence from performance::check_singularity.lme is deliberate"
   twin2 <- suppressMessages(suppressWarnings(
     lme4::lmer(mpg ~ wt + hp + (1 | gearf), data = d2)
   ))
-  expect_false(performance::check_singularity(fit2))
+  expect_identical(
+    isTRUE(performance::check_singularity(fit2)),
+    !old_performance
+  )
   expect_true(lme4::isSingular(twin2))
   expect_true(spicy:::.lme_is_singular(fit2))
 })
@@ -617,8 +623,8 @@ test_that("the divergence from performance::check_singularity.lme is deliberate"
 test_that("lme singularity answers for nested fits, where the oracle cannot", {
   skip_if_not_installed("performance")
   fit <- .fit_lme_nested()
-  # nlme::getVarCov() -- performance's route -- refuses more than one
-  # level of nesting; the reStruct walk covers both levels.
+  # nlme::getVarCov() -- the route performance took before 0.19.0 --
+  # refuses more than one level of nesting; the reStruct walk covers both.
   expect_error(nlme::getVarCov(fit))
   expect_length(as.matrix(fit$modelStruct$reStruct), 2L)
   expect_false(spicy:::.lme_is_singular(fit))
