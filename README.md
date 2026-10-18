@@ -664,10 +664,22 @@ Each workflow has a dedicated article on the package site:
   tables](https://amaltawfik.github.io/spicy/articles/table-continuous.html)
 - [Model-based continuous summary
   tables](https://amaltawfik.github.io/spicy/articles/table-continuous-lm.html)
+- [One outcome across several
+  groupings](https://amaltawfik.github.io/spicy/articles/table-outcome.html)
+- [Multiple-response
+  questions](https://amaltawfik.github.io/spicy/articles/table-multiresponse.html)
+- [Summary tables from a survey
+  design](https://amaltawfik.github.io/spicy/articles/survey-tables.html)
 - [Publication-ready regression
   tables](https://amaltawfik.github.io/spicy/articles/table-regression.html)
+- [Supported
+  models](https://amaltawfik.github.io/spicy/articles/table-regression-supported-models.html)
+- [The structured view: programmatic access to spicy
+  tables](https://amaltawfik.github.io/spicy/articles/as-structured.html)
 - [Mixed-effects regression
   tables](https://amaltawfik.github.io/spicy/articles/table-regression-mixed.html)
+- [GEE regression tables (population-averaged
+  models)](https://amaltawfik.github.io/spicy/articles/table-regression-gee.html)
 - [Count and two-part regression
   tables](https://amaltawfik.github.io/spicy/articles/table-regression-counts.html)
 - [Survival regression
@@ -676,6 +688,10 @@ Each workflow has a dedicated article on the package site:
   tables](https://amaltawfik.github.io/spicy/articles/table-regression-ordinal.html)
 - [Multinomial regression
   tables](https://amaltawfik.github.io/spicy/articles/table-regression-multinomial.html)
+- [Bayesian regression
+  tables](https://amaltawfik.github.io/spicy/articles/table-regression-bayesian.html)
+- [Categorical
+  predictors](https://amaltawfik.github.io/spicy/articles/categorical-predictors.html)
 - [Summary tables for
   reporting](https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.html)
 

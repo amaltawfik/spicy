@@ -1354,13 +1354,12 @@ table_continuous_svy <- function(
   }
   paste0(
     spicy_str(prefix_key),
-    paste(
+    .join_note_vars(
       vapply(
         names(counts),
         function(nm) spicy_fmt("note_missing_item", nm, counts[[nm]]),
         character(1)
-      ),
-      collapse = ", "
+      )
     ),
     "."
   )

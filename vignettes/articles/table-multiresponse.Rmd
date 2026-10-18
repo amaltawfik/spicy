@@ -26,6 +26,7 @@ source("_pkgdown-helpers.R")
 
 ```{r setup}
 library(spicy)
+library(tibble)
 ```
 
 `table_multiresponse()` tabulates one **"check all that apply"

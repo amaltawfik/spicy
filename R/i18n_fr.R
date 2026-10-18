@@ -301,6 +301,7 @@
   note_exp_with_se_multi = "%s exponenti\u00E9s et affich\u00E9s en %s (selon la famille)\u00A0; erreur standard sur l'\u00E9chelle du rapport affich\u00E9 (%s)\u00A0; %s.%s",
   note_exp_no_se_single = "%s exponenti\u00E9s et affich\u00E9s en %s\u00A0; %s.%s",
   note_exp_no_se_multi = "%s exponenti\u00E9s et affich\u00E9s en %s (selon la famille)\u00A0; %s.%s",
+  note_list_sep_semicolon = "\u00A0; ",
   note_assoc_measure_item = "%s\u00A0: %s",
   note_assoc_measures_sep = "\u00A0; ",
 

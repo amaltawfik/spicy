@@ -458,3 +458,4 @@ test_n1_chisq	reviewed	2026-10-18	test du khi-deux N−1
 test_fisher_midp	reviewed	2026-10-18	test mid-p de Fisher	
 test_pearson_chisq_simulated_in_list	reviewed	2026-10-18	test du khi-deux de Pearson, simulé	
 test_fisher_mc_in_list	reviewed	2026-10-18	test exact de Fisher, Monte-Carlo avec %s réplications	
+note_list_sep_semicolon	reviewed	2026-10-18	<NBSP>; 	

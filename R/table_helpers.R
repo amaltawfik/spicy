@@ -151,6 +151,22 @@ resolve_variable_labels <- function(data, cols, labels) {
   counts
 }
 
+# Internal: join the variable names or labels that a note lists, as in
+# "Missing values removed: sex (2), education (1)." or "Pearson
+# chi-squared test (sex, education)". The items take a comma unless one
+# of them contains a comma ("Internet, websites or apps"): the items of
+# that list then take a semicolon, so the reader can still tell where
+# each one ends (Chicago Manual of Style 6.60). Both separators come from
+# the registry, which gives the French semicolon its no-break space.
+.join_note_vars <- function(items) {
+  key <- if (any(grepl(",", items, fixed = TRUE))) {
+    "note_list_sep_semicolon"
+  } else {
+    "note_list_sep_comma"
+  }
+  paste(items, collapse = spicy_str(key))
+}
+
 # Internal: format a single numeric (or vector) with `formatC()` and
 # the configured decimal mark. NA -> "" so blank cells render
 # cleanly. Vectorized by recursion -- the per-element branch is the

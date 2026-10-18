@@ -1235,6 +1235,29 @@ test_that("the missing-values note names each variable by its row label", {
   )
 })
 
+test_that("a label with a comma turns the missing-values list to semicolons", {
+  df <- data.frame(x = c(1:7, NA), y = c(NA, NA, 3:8))
+  note <- function() {
+    attr(
+      table_continuous(
+        df,
+        select = c("x", "y"),
+        labels = c(y = "Income, monthly")
+      ),
+      "missing_note"
+    )
+  }
+  expect_identical(
+    note(),
+    "Missing values removed: x (1); Income, monthly (2)."
+  )
+  withr::local_options(spicy.language = "fr")
+  expect_identical(
+    note(),
+    "Valeurs manquantes retir\u00e9es\u00a0: x (1)\u00a0; Income, monthly (2)."
+  )
+})
+
 test_that("the by title and the missing-by note follow labels", {
   d <- sochealth[, c("bmi", "income_group")]
   build <- function(...) {

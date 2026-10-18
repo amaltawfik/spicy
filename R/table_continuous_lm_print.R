@@ -216,7 +216,7 @@ print.spicy_continuous_lm_table <- function(x, ...) {
       lines,
       spicy_fmt(
         "note_adjusted_for",
-        paste(covariates, collapse = ", "),
+        .join_note_vars(covariates),
         adjustment_label
       )
     )

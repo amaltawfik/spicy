@@ -464,6 +464,7 @@ if (!setequal(REG$key, names(EN)) || anyDuplicated(REG$key)) {
     "header_lm_mean_level",
     "header_lm_delta",
     "note_group_comparison_item",
+    "note_list_sep_comma",
     "value_summary_units",
     "header_pct_total"
   ),

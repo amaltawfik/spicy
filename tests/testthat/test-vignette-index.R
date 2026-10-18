@@ -4,9 +4,10 @@
 # pkgdown articles under vignettes/articles/, kept out of the tarball by
 # .Rbuildignore and rendered at the same articles/<slug>.html URLs.
 #
-# Three maps point readers at those articles: the "Learn more" section
-# of Get started, the _pkgdown.yml navbar articles menu, and the
-# _pkgdown.yml articles index. All three are maintained by hand, so a
+# Four maps point readers at those articles: the "Learn more" section
+# of Get started, the _pkgdown.yml navbar articles menu, the
+# _pkgdown.yml articles index, and the "Documentation" list of README.md
+# (held to the index). All four are maintained by hand, so a
 # new article can silently miss one. These tests enumerate
 # vignettes/articles/*.Rmd and fail, naming the article, whenever a map
 # is incomplete -- and, conversely, whenever a map references an article
@@ -46,6 +47,23 @@
   start <- grep("^## Learn more", lines)
   if (length(start) != 1L) {
     stop("expected exactly one '## Learn more' heading in ", spicy_rmd)
+  }
+  rest <- lines[seq(start + 1L, length(lines))]
+  next_heading <- grep("^## ", rest)
+  if (length(next_heading)) {
+    rest <- rest[seq_len(next_heading[1L] - 1L)]
+  }
+  rest
+}
+
+# Lines of the "## Documentation" section of README.md (from the heading
+# to the next level-2 heading or end of file). The committed README.md,
+# not README.Rmd: it is the page readers see on GitHub and CRAN.
+.readme_documentation_lines <- function(readme_md) {
+  lines <- readLines(readme_md, warn = FALSE, encoding = "UTF-8")
+  start <- grep("^## Documentation", lines)
+  if (length(start) != 1L) {
+    stop("expected exactly one '## Documentation' heading in ", readme_md)
   }
   rest <- lines[seq(start + 1L, length(lines))]
   next_heading <- grep("^## ", rest)
@@ -226,6 +244,88 @@ test_that("every article appears in the _pkgdown.yml articles index", {
       paste0(
         "The _pkgdown.yml articles index lists entry names with no ",
         "matching source file under vignettes/: %s."
+      ),
+      paste(stale, collapse = ", ")
+    )
+  )
+})
+
+
+test_that("every page of the articles index is linked from the README 'Documentation' list", {
+  vignettes_dir <- test_path("..", "..", "vignettes")
+  pkgdown_yml <- test_path("..", "..", "_pkgdown.yml")
+  readme_md <- test_path("..", "..", "README.md")
+  skip_if(!.have_sources(vignettes_dir), "article sources not available")
+  skip_if(!file.exists(pkgdown_yml), "_pkgdown.yml not available")
+  skip_if(!file.exists(readme_md), "README.md not available")
+
+  # The pages of the articles index, by slug: "articles/<slug>" for the
+  # articles and plain "spicy" for Get started, which pkgdown renders at
+  # articles/spicy.html too. The README links Get started, so it is held
+  # to the list like the articles.
+  yml <- readLines(pkgdown_yml, warn = FALSE, encoding = "UTF-8")
+  entries <- grep(
+    "^\\s+-\\s+[A-Za-z0-9._/-]+\\s*$",
+    .pkgdown_section(yml, "articles"),
+    value = TRUE
+  )
+  pages <- unique(sub(
+    "^articles/",
+    "",
+    trimws(sub("^\\s*-\\s+", "", entries))
+  ))
+  # Only the list counts: an article linked from the quick tour but
+  # missing from the list is still missing from the map.
+  documentation <- paste(
+    .readme_documentation_lines(readme_md),
+    collapse = "\n"
+  )
+
+  linked <- vapply(
+    pages,
+    function(nm) {
+      grepl(
+        sprintf("%s/articles/%s.html", .site_url, nm),
+        documentation,
+        fixed = TRUE
+      )
+    },
+    logical(1)
+  )
+  expect(
+    all(linked),
+    sprintf(
+      paste0(
+        "Page(s) of the _pkgdown.yml articles index missing from the ",
+        "'Documentation' list of README.md: %s. Add a bullet linking to ",
+        "%s/articles/<name>.html in README.Rmd, then run ",
+        "devtools::build_readme()."
+      ),
+      paste(pages[!linked], collapse = ", "),
+      .site_url
+    )
+  )
+
+  # Reverse direction: no stale article link in the list.
+  referenced <- unique(unlist(regmatches(
+    documentation,
+    gregexpr(
+      paste0(.site_url, "/articles/([A-Za-z0-9._-]+)\\.html"),
+      documentation
+    )
+  )))
+  referenced <- sub(
+    paste0("^", .site_url, "/articles/"),
+    "",
+    sub("\\.html$", "", referenced)
+  )
+  stale <- setdiff(referenced, pages)
+  expect(
+    length(stale) == 0L,
+    sprintf(
+      paste0(
+        "The 'Documentation' list of README.md links article page(s) ",
+        "missing from the _pkgdown.yml articles index: %s."
       ),
       paste(stale, collapse = ", ")
     )

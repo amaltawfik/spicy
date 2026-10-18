@@ -1193,9 +1193,8 @@ table_continuous <- function(
         parts,
         paste0(
           spicy_str("note_missing_removed"),
-          paste(
-            spicy_fmt("note_missing_item", names(na_dropped), na_dropped),
-            collapse = ", "
+          .join_note_vars(
+            spicy_fmt("note_missing_item", names(na_dropped), na_dropped)
           ),
           "."
         )
@@ -1206,13 +1205,12 @@ table_continuous <- function(
         parts,
         paste0(
           spicy_str("note_declared_missing_removed"),
-          paste(
+          .join_note_vars(
             spicy_fmt(
               "note_missing_item",
               names(user_na_dropped),
               user_na_dropped
-            ),
-            collapse = ", "
+            )
           ),
           "."
         )
@@ -2540,7 +2538,7 @@ build_test_note <- function(test_used, auto_rank, n_groups) {
           spicy_fmt(
             "note_group_comparison_item",
             lb,
-            paste(by_label[[lb]], collapse = ", ")
+            .join_note_vars(by_label[[lb]])
           )
         },
         character(1)

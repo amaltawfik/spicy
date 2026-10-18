@@ -1615,9 +1615,8 @@ table_continuous_lm <- function(
       missing_parts,
       paste0(
         spicy_str("note_missing_removed"),
-        paste(
-          spicy_fmt("note_missing_item", names(na_dropped), na_dropped),
-          collapse = ", "
+        .join_note_vars(
+          spicy_fmt("note_missing_item", names(na_dropped), na_dropped)
         ),
         "."
       )
@@ -1628,13 +1627,12 @@ table_continuous_lm <- function(
       missing_parts,
       paste0(
         spicy_str("note_declared_missing_removed"),
-        paste(
+        .join_note_vars(
           spicy_fmt(
             "note_missing_item",
             names(user_na_dropped),
             user_na_dropped
-          ),
-          collapse = ", "
+          )
         ),
         "."
       )

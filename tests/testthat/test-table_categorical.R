@@ -4856,6 +4856,109 @@ test_that("the Monte Carlo exact test takes a comma inside a list of tests", {
   )
 })
 
+# smoking takes Fisher's exact test, the two others the chi-squared; smoking
+# loses one value, dentist_12m two.
+.comma_label_tbl <- function(label) {
+  d <- .gts_sh(1:40)
+  d$smoking[3] <- NA
+  d$dentist_12m[1:2] <- NA
+  table_categorical(
+    d,
+    c(smoking, dentist_12m, physical_activity),
+    by = sex,
+    drop_na = TRUE,
+    labels = c(dentist_12m = label)
+  )
+}
+
+test_that("a label with a comma turns its list in a note to semicolons", {
+  assoc <- function() {
+    attr(
+      table_categorical(
+        .gts_sh(),
+        c(smoking, education, self_rated_health),
+        by = sex,
+        labels = c(education = "Education, highest level")
+      ),
+      "assoc_note"
+    )
+  }
+  out <- .comma_label_tbl("Dentist, past 12 months")
+  expect_identical(
+    attr(out, "assoc_note"),
+    paste(
+      "Group comparison: Pearson chi-squared test (Dentist, past 12 months;",
+      "physical_activity); Fisher exact test (smoking)."
+    )
+  )
+  expect_identical(
+    attr(out, "missing_note"),
+    "Missing values removed: smoking (1); Dentist, past 12 months (2)."
+  )
+  expect_match(
+    assoc(),
+    "Note. Phi: smoking; Cramer's V: Education, highest level; self_rated_health.",
+    fixed = TRUE
+  )
+  withr::local_options(spicy.language = "fr")
+  out <- .comma_label_tbl("Dentist, past 12 months")
+  expect_identical(
+    attr(out, "assoc_note"),
+    paste0(
+      "Comparaison des groupes\u00a0: test du khi-deux de Pearson (Dentist, ",
+      "past 12 months\u00a0; physical_activity)\u00a0; test exact de Fisher ",
+      "(smoking)."
+    )
+  )
+  expect_identical(
+    attr(out, "missing_note"),
+    paste0(
+      "Valeurs manquantes retir\u00e9es\u00a0: smoking (1)\u00a0; Dentist, ",
+      "past 12 months (2)."
+    )
+  )
+  expect_match(
+    assoc(),
+    paste0(
+      "Note. Phi\u00a0: smoking\u00a0; V de Cram\u00e9r\u00a0: Education, ",
+      "highest level\u00a0; self_rated_health."
+    ),
+    fixed = TRUE
+  )
+})
+
+test_that("labels without a comma keep the comma join in the notes", {
+  out <- .comma_label_tbl("Dentist in the past 12 months")
+  expect_identical(
+    attr(out, "assoc_note"),
+    paste(
+      "Group comparison: Pearson chi-squared test (Dentist in the past 12",
+      "months, physical_activity); Fisher exact test (smoking)."
+    )
+  )
+  expect_identical(
+    attr(out, "missing_note"),
+    "Missing values removed: smoking (1), Dentist in the past 12 months (2)."
+  )
+  withr::local_options(spicy.language = "fr")
+  out <- .comma_label_tbl("Dentist in the past 12 months")
+  expect_identical(
+    attr(out, "assoc_note"),
+    paste0(
+      "Comparaison des groupes\u00a0: test du khi-deux de Pearson (Dentist ",
+      "in the past 12 months, physical_activity)\u00a0; test exact de Fisher ",
+      "(smoking)."
+    )
+  )
+  expect_identical(
+    attr(out, "missing_note"),
+    paste0(
+      "Valeurs manquantes retir\u00e9es\u00a0: smoking (1), Dentist in the ",
+      "past 12 months (2)."
+    )
+  )
+})
+
 # ---- test = "midp" and "n1": the tests of a 2 x 2 table ---------------------------
 #
 # Complement of the decision of 2026-10-18. Oracles: the research memo of

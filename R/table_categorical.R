@@ -380,7 +380,7 @@
       spicy_fmt(
         "note_assoc_measure_item",
         .assoc_label(m),
-        paste(lab, collapse = ", ")
+        .join_note_vars(lab)
       )
     },
     character(1)
@@ -623,7 +623,7 @@
       spicy_fmt(
         "note_group_comparison_item",
         .cat_test_label(k, simulated, B, in_list = TRUE),
-        paste(rows[tested == k], collapse = ", ")
+        .join_note_vars(rows[tested == k])
       )
     },
     character(1)
@@ -1615,9 +1615,8 @@ table_categorical <- function(
         parts,
         paste0(
           spicy_str("note_missing_removed"),
-          paste(
-            spicy_fmt("note_missing_item", names(na_dropped), na_dropped),
-            collapse = ", "
+          .join_note_vars(
+            spicy_fmt("note_missing_item", names(na_dropped), na_dropped)
           ),
           "."
         )
@@ -1628,13 +1627,12 @@ table_categorical <- function(
         parts,
         paste0(
           spicy_str("note_declared_missing_removed"),
-          paste(
+          .join_note_vars(
             spicy_fmt(
               "note_missing_item",
               names(user_na_dropped),
               user_na_dropped
-            ),
-            collapse = ", "
+            )
           ),
           "."
         )

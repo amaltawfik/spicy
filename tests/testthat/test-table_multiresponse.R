@@ -705,6 +705,54 @@ test_that("the item note names the tests in French", {
   )
 })
 
+test_that("a label with a comma turns its item list in the note to semicolons", {
+  farm_note <- function() {
+    attr(.mr_farm_tbl(labels = c(C = "Radio, television")), "note")
+  }
+  toy_note <- function() {
+    attr(
+      table_multiresponse(
+        .mr_toy(),
+        c(x1, x2, x3, x4),
+        by = g,
+        labels = c(x3 = "Clinic, hospital")
+      ),
+      "note"
+    )
+  }
+  # Only the list holding the comma changes: (A, B, E) keeps its commas.
+  expect_match(
+    farm_note(),
+    paste(
+      "Item p-values: Pearson chi-squared test (Radio, television; D);",
+      "Fisher exact test (A, B, E)."
+    ),
+    fixed = TRUE
+  )
+  expect_match(
+    toy_note(),
+    "Not tested (no variation, shown as \u2013): Clinic, hospital; x4.",
+    fixed = TRUE
+  )
+  withr::local_options(spicy.language = "fr")
+  expect_match(
+    farm_note(),
+    paste0(
+      "Valeurs p des items\u00a0: test du khi-deux de Pearson (Radio, ",
+      "television\u00a0; D)\u00a0; test exact de Fisher (A, B, E)."
+    ),
+    fixed = TRUE
+  )
+  expect_match(
+    toy_note(),
+    paste0(
+      "Non test\u00e9 (sans variation, signal\u00e9 par \u2013)\u00a0: ",
+      "Clinic, hospital\u00a0; x4."
+    ),
+    fixed = TRUE
+  )
+})
+
 # ---- the item tests of a two-group table: `test = "midp"` and `"n1"` ---------------
 
 # The farmer data in two groups, HS or VS (104 respondents) and the other

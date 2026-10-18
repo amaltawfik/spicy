@@ -31,7 +31,9 @@ workbook, or a PDF.
   the labels of 0.13.0. In `table_regression()` and
   `table_regression_uv()`, whose default output does not change,
   `labels = NULL` (their default in 0.13.0) is an error as well, and a
-  name that matches no term is ignored instead of refused.
+  name that matches no term is ignored instead of refused. In the notes,
+  a list of variables is joined with semicolons when one of the labels
+  contains a comma.
 
 * `table_regression()` and `table_regression_uv()` name an interval column
   with a point whatever `decimal_mark`: `97.5% CI` in `as.data.frame()`,

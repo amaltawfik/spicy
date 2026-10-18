@@ -588,6 +588,12 @@
   # recognizer derives its pattern and its offset from the key.
   note_prefix = "Note. ",
   note_prefix_emphasis = "Note.",
+  # The two joiners of the variable names or labels a note lists, chosen
+  # by `.join_note_vars()`: the comma, or the semicolon when an item holds
+  # a comma of its own ("Internet, websites or apps"), so that the reader
+  # still sees where each item ends (Chicago Manual of Style 6.60).
+  note_list_sep_comma = ", ",
+  note_list_sep_semicolon = "; ",
   note_assoc_measure_item = "%s: %s",
   # The joiner of those items in the association-measure note of
   # `table_categorical()`.

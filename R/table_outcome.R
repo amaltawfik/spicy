@@ -1517,7 +1517,7 @@ table_outcome <- function(
           spicy_fmt(
             "note_group_comparison_item",
             lb,
-            paste(by_label[[lb]], collapse = ", ")
+            .join_note_vars(by_label[[lb]])
           )
         },
         character(1)

@@ -1821,7 +1821,7 @@ table_multiresponse <- function(
         parts,
         spicy_fmt(
           "note_multiresponse_not_tested",
-          paste(untested, collapse = ", ")
+          .join_note_vars(untested)
         )
       )
     }
