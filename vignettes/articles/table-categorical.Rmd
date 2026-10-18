@@ -440,58 +440,11 @@ broom::glance(out)
 ## Multiple-response items
 
 A "check all that apply" question is a set of yes/no items answered by
-the same respondent, so it is not one categorical variable: a
-respondent can choose several items, and the counts sum to more than
-the number of respondents. `table_multiresponse()` reads the items as
-one question: one row per item, with the count and the percentage of
-respondents who chose it, and a final row with the number of
-respondents the percentages are computed on. Three yes/no factors of
-`sochealth` stand in for such a question here; `counted` names the
-value that marks a choice (logical and 0/1 columns need none):
-
-```{r multiresponse}
-table_multiresponse(
-  sochealth,
-  select = c(smoking, physical_activity, dentist_12m),
-  by = education,
-  counted = "Yes"
-)
-```
-
-Each item's *p*-value comes from the chi-squared test of its frequency
-across the groups, adjusted by Holm's method by default, because the
-items of one question form one family of tests (`p_adjust = "none"`
-keeps them raw). The global test in the note compares the groups on all
-the items at once. The ordinary chi-squared test of the items-by-groups
-table is not valid here, because one respondent contributes to several
-cells: the global test sums the item statistics and applies the
-second-order Rao-Scott correction, or, with `test = "bootstrap"`, refers
-the same sum to its bootstrap distribution.
-
-The percentages of respondents can sum to more than 100, and the note
-says so. `percent = "responses"` divides by all the choices made in the
-group instead, and `percent = "both"` shows the two. For a descriptive
-report, `p_value = FALSE` removes the *p*-values and the global test
-(`statistic = TRUE` would still show each item's chi-squared):
-
-```{r multiresponse-descriptive}
-table_multiresponse(
-  sochealth,
-  select = c(smoking, physical_activity, dentist_12m),
-  by = sex,
-  counted = "Yes",
-  percent = "both",
-  p_value = FALSE
-)
-```
-
-By default the base is the respondents with at least one non-missing
-item (`base = "valid"`): a respondent who chose nothing counts, one who
-skipped the question does not. `base = "answered"` keeps only the
-respondents who chose at least one item, the default of SPSS and Stata,
-and `base = "all"` uses every row. The counts are the same under the
-three bases. Within the base, a missing item counts as not chosen, for
-the percentages and for the tests alike, and the note names the base.
+the same respondents, so it is not one categorical variable: the
+choices outnumber the respondents, and the chi-squared test of the
+items-by-groups table is not valid. `table_multiresponse()` reads the
+items as one question, with its own bases, percentages, and tests, as
+[*Multiple-response questions*](table-multiresponse.html) explains.
 
 ## Rendered outputs and export
 

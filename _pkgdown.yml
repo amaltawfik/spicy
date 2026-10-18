@@ -65,6 +65,8 @@ navbar:
           href: articles/table-continuous.html
         - text: One outcome across several groupings
           href: articles/table-outcome.html
+        - text: Multiple-response questions
+          href: articles/table-multiresponse.html
         - text: Summary tables from a survey design
           href: articles/survey-tables.html
         - text: Model-based continuous summary tables
@@ -110,6 +112,7 @@ articles:
       - articles/table-continuous
       - articles/table-continuous-lm
       - articles/table-outcome
+      - articles/table-multiresponse
       - articles/survey-tables
       - articles/table-regression
       - articles/table-regression-supported-models

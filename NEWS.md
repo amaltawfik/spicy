@@ -79,7 +79,8 @@ workbook, or a PDF.
   p-values and the global test, and `statistic = TRUE` shows each item's
   chi-squared. `glance()` reports the Rao-Scott design-effect summary
   (`rs_cv`). `inline()` cites its cells, a group selected with `model`
-  and the base row as `"nobs"` (#10).
+  and the base row as `"nobs"`. The article *Multiple-response
+  questions* on the site walks through it (#10).
 
 * `inline()` says when a variable has no levels and how to select a
   group with `model`, where its error printed an empty list of levels.

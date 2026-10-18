@@ -296,7 +296,8 @@
 #' Rao-Scott approach. *International Journal of Testing*, 4(1), 43-59.
 #' \doi{10.1207/s15327574ijt0401_3}
 #'
-#' @seealso [table_categorical()] for single-response variables.
+#' @seealso [table_categorical()] for single-response variables; the article
+#' [Multiple-response questions](https://amaltawfik.github.io/spicy/articles/table-multiresponse.html).
 #'
 #' @examples
 #' # Three yes/no items read as one "check all that apply" question.

@@ -210,8 +210,8 @@ table_multiresponse(
 With `by`, the counts and percentages are given per group and in a
 `Total` margin, each item gets a chi-squared test, and the question a
 global test that allows for several answers per respondent, both
-explained in the [Categorical summary
-tables](https://amaltawfik.github.io/spicy/articles/table-categorical.html#multiple-response-items)
+explained in the [Multiple-response
+questions](https://amaltawfik.github.io/spicy/articles/table-multiresponse.html)
 article. `p_value = FALSE` leaves a descriptive table:
 
 ```{r table-multiresponse-by}
@@ -298,6 +298,9 @@ kept alongside the reference pages and rebuilt with each release.
 - [One outcome across several groupings](https://amaltawfik.github.io/spicy/articles/table-outcome.html)
   — one continuous outcome across several groupings, one block of rows
   per grouping.
+- [Multiple-response questions](https://amaltawfik.github.io/spicy/articles/table-multiresponse.html)
+  — "check all that apply" questions, one row per item, with the tests
+  that allow for several answers per respondent.
 - [Model-based continuous summary tables](https://amaltawfik.github.io/spicy/articles/table-continuous-lm.html)
   — model-based group comparisons (robust SE, weights, covariate
   adjustment).

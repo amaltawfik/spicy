@@ -434,5 +434,6 @@ Rao-Scott approach. \emph{International Journal of Testing}, 4(1), 43-59.
 \doi{10.1207/s15327574ijt0401_3}
 }
 \seealso{
-\code{\link[=table_categorical]{table_categorical()}} for single-response variables.
+\code{\link[=table_categorical]{table_categorical()}} for single-response variables; the article
+\href{https://amaltawfik.github.io/spicy/articles/table-multiresponse.html}{Multiple-response questions}.
 }

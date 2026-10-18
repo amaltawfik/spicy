@@ -86,6 +86,7 @@ EMMEANS
 Econometrica
 Efron
 Efron's
+Egger
 Eicker
 Enders
 EpiRHandbook
@@ -109,6 +110,7 @@ Goulet
 Grambsch
 Greifer
 Grouven
+Gøtzsche
 HAC
 HC
 HDI
@@ -196,6 +198,7 @@ Modélisation
 Moerbeek
 Mulaik
 Mullahy
+Mulrow
 Multimodel
 Multivar
 Multivariable
@@ -218,6 +221,7 @@ ORCID
 ORs
 Olejnik
 Olkin
+PLoS
 POSIXct
 PPML
 PRE
@@ -229,6 +233,7 @@ Pelletier
 Peto
 Picciotto
 Pinheiro
+Pocock
 Pre
 Pustejovsky
 QIC
@@ -265,6 +270,7 @@ Scheepers
 Scherer
 Schielzeth
 Schirm
+Schlesselman
 Schoot
 Shachar
 Sheather
@@ -302,6 +308,7 @@ Univariable
 Uno
 VCV
 Valeurs
+Vandenbroucke
 Vasconcellos
 Vasishth
 Vehtari
@@ -515,6 +522,7 @@ validator
 variational
 varlist
 vcov
+von
 waic
 wellbeing
 ΔAIC
