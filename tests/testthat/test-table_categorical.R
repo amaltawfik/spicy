@@ -4255,6 +4255,9 @@ test_that("a descriptive table leaves the engines no statistic column", {
 })
 
 test_that("p_value = FALSE keeps the SMD, which has its own switch", {
+  # The multinomial SMD of `smoking` (three levels) needs MASS, a
+  # suggestion: the no-Suggests check mode must skip, not fail.
+  skip_if_not_installed("MASS")
   tbl <- .pv_tbl(p_value = FALSE, smd = TRUE)
   ref <- .pv_tbl(smd = TRUE)
   expect_false("p" %in% names(tbl))
