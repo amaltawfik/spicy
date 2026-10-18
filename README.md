@@ -406,7 +406,9 @@ table_categorical(
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  Physical activity │          <.001     .21     
 #>    No              │  54.2                      
-#>    Yes             │  45.8
+#>    Yes             │  45.8                      
+#> 
+#> Group comparison: Pearson chi-squared test.
 ```
 
 ``` r

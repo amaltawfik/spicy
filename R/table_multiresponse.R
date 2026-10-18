@@ -10,7 +10,9 @@
 #   * a count per item, a percentage per respondent ("% of cases", the
 #     default) or per response, and a final row with the base the
 #     percentages are computed on;
-#   * with `by`, the Pearson chi-squared of each item's r x 2 table, and a
+#   * with `by`, the test of each item's r x 2 table (the Pearson
+#     chi-squared, or Fisher's exact test where an expected count is below
+#     5, as `test` chooses), and a
 #     global test of multiple marginal independence: the sum X2_S of the
 #     item statistics, which is not chi-squared under the null because
 #     the items are correlated, referred to a chi-squared by the
@@ -49,7 +51,8 @@
 #' tidyselect syntax.
 #'
 #' With `by`, the counts and percentages are given per group and in a
-#' `Total` margin, each item gets a chi-squared test across the groups,
+#' `Total` margin, each item gets a test across the groups (the
+#' chi-squared, or Fisher's exact test when an expected count is below 5),
 #' and the question gets a global test of all its items together, valid
 #' although one respondent can choose several items.
 #'
@@ -111,18 +114,23 @@
 #'   rows (the column names, or the labels set by `labels`) in the C
 #'   locale, the same on every platform: capitals before lower case,
 #'   accented letters after `z`.
+#' @param test The test of each item's p-value, as in [table_categorical()]:
+#'   `"auto"` (the default) takes Pearson's chi-squared test when every
+#'   expected count of the item's table is at least 5 and Fisher's exact
+#'   test otherwise; `"chisq"` and `"fisher"` take one test for every item.
+#'   The note names the test of each item. See *Tests*.
 #' @param p_value Logical or `NULL`. With `by`, `NULL` (the default) and
 #'   `TRUE` show the item `p` column and the global test in the note.
 #'   `FALSE` removes both from every output, the `p` column of the data
 #'   frames included. `p_value` and `statistic` are independent, as in
 #'   [table_continuous()]. Ignored without `by`, with a warning when
 #'   `TRUE`.
-#' @param test The global test: `"rs2"` (the default), the sum of the item
-#'   chi-squared statistics with the second-order Rao-Scott correction; or
-#'   `"bootstrap"`, the same sum referred to its bootstrap distribution.
-#'   See *Tests*.
-#' @param boot_n Number of bootstrap resamples for `test = "bootstrap"`.
-#'   Defaults to `1999`.
+#' @param global_test The global test: `"rs2"` (the default), the sum of
+#'   the item chi-squared statistics with the second-order Rao-Scott
+#'   correction; or `"bootstrap"`, the same sum referred to its bootstrap
+#'   distribution. See *Tests*.
+#' @param boot_n Number of bootstrap resamples for
+#'   `global_test = "bootstrap"`. Defaults to `1999`.
 #' @param p_adjust Multiple-comparison adjustment of the item `p` column,
 #'   applied to the family of the items tested: `"holm"` (the default),
 #'   `"none"`, or another method of [stats::p.adjust()] (`"hochberg"`,
@@ -132,7 +140,9 @@
 #'   is an error.
 #' @param statistic Logical. If `TRUE`, adds a `Test` column with each
 #'   item's chi-squared statistic and its degrees of freedom, with or
-#'   without the p-values of `p_value`. Defaults to `FALSE`.
+#'   without the p-values of `p_value`; an item whose p-value comes from
+#'   Fisher's exact test has no statistic and shows a dash. Defaults to
+#'   `FALSE`.
 #' @inheritParams table_categorical
 #' @param align Horizontal alignment of the numeric columns in the console
 #'   and in the rendered outputs: `"decimal"` (the default), `"center"`,
@@ -157,13 +167,16 @@
 #'     percentage of each group of `by` and of the `Total` margin
 #'     (`<group> n` and `<group> \%`, or `<group> \% of cases` and
 #'     `<group> \% of responses` under `percent = "both"`; `n` and `\%`
-#'     without `by`), then `Chi2` and `df` when the item tests ran (for
-#'     `p_value` or for `statistic`), `p` with `p_value`, and
-#'     `p_unadjusted` under an adjustment.
+#'     without `by`), then `test_type`, `Chi2` and `df` when the item
+#'     tests ran (for `p_value` or for `statistic`), `p` with `p_value`,
+#'     and `p_unadjusted` under an adjustment. `test_type` names the test
+#'     of each item as in [table_categorical()] (`"chi_squared"`,
+#'     `"fisher_exact"`, `"fisher_exact_mc"`), and `Chi2` and `df` are `NA`
+#'     for an item tested by Fisher's exact test.
 #'   \item `"long"`: one row per item and group, with columns `variable`,
 #'     `group` (with `by`), `n`, `base` (the respondents of the group),
-#'     `pct` (or `pct_cases` and `pct_responses`), and `chi2`, `df`, `p`,
-#'     and `p_unadjusted` as above.
+#'     `pct` (or `pct_cases` and `pct_responses`), and `test_type`,
+#'     `chi2`, `df`, `p`, and `p_unadjusted` as above.
 #'   \item `"tinytable"`, `"gt"`, `"flextable"`: the rendered table object.
 #'   \item `"excel"` / `"word"`: writes to disk and returns the file path
 #'     invisibly.
@@ -175,9 +188,9 @@
 #' has a global test, `attr(x, "global_test")`: a one-row data frame with
 #' `test`, `statistic`, `df`, `p.value`, `boot_n`, `n_items` (the items
 #' tested), `n_groups`, `rs_mean` and `rs_cv` (the design-effect summary of
-#' `test = "rs2"`), and `boot_redraws` (the resamples drawn again under
-#' `test = "bootstrap"`); see *Tests*. [as_structured()] reads the default
-#' object.
+#' `global_test = "rs2"`), and `boot_redraws` (the resamples drawn again
+#' under `global_test = "bootstrap"`); see *Tests*. [as_structured()] reads
+#' the default object.
 #'
 #' @details
 #' # Tests
@@ -190,6 +203,19 @@
 #' correction and no constant added to an empty cell (Agresti and Liu,
 #' 1999).
 #'
+#' The item p-value comes from the test `test` chooses, as in
+#' [table_categorical()]. Under `"auto"`, the default, it is that
+#' chi-squared test when every expected count of the item's table is at
+#' least 5, and Fisher's exact test ([stats::fisher.test()]) otherwise;
+#' when the exact enumeration fails, the p-value is its Monte Carlo
+#' estimate over 2000 tables, which draws from the session's RNG. An item
+#' tested by Fisher's exact test has no statistic: its `Test` cell shows
+#' a dash, and `Chi2` and `df` are `NA` in the data frames. Without
+#' p-values (`p_value = FALSE`), `statistic = TRUE` shows the chi-squared
+#' statistic of every item. The global test sums the Pearson statistics
+#' of the items whatever `test` chooses for their p-values, since its
+#' correction and its bootstrap are defined for that sum.
+#'
 #' The global test sums the item statistics,
 #' \eqn{X^2_S = \sum_j X^2_j}, a value that does not depend on which
 #' answer of an item is coded as chosen (Agresti and Liu, 1999). One
@@ -197,7 +223,7 @@
 #' \eqn{X^2_S} is not chi-squared under the null (Loughin and Scherer,
 #' 1998): its asymptotic distribution is a weighted sum of chi-squared
 #' variables, the weights being the eigenvalues of a design-effect matrix
-#' (Bilder, Loughin and Nettleton, 2000, Appendix A). `test = "rs2"`
+#' (Bilder, Loughin and Nettleton, 2000, Appendix A). `global_test = "rs2"`
 #' matches its first two moments, the second-order Rao-Scott correction
 #' of Thomas and Decady (2004, pp. 48 and 58-59):
 #'
@@ -222,7 +248,7 @@
 #' variation of the \eqn{\lambda_k} when their mean is 1, and `NA` when
 #' that ratio falls below 1.
 #'
-#' `test = "bootstrap"` refers \eqn{X^2_S} to its distribution over
+#' `global_test = "bootstrap"` refers \eqn{X^2_S} to its distribution over
 #' `boot_n` resamples of whole response vectors, drawn with replacement
 #' from the pooled respondents with the group sizes held fixed (Loughin
 #' and Scherer, 1998). The p-value is the share of resamples whose
@@ -349,7 +375,7 @@
 #'   select = c(smoking, physical_activity, dentist_12m),
 #'   by = education,
 #'   counted = "Yes",
-#'   test = "bootstrap",
+#'   global_test = "bootstrap",
 #'   boot_n = 999
 #' )
 #'
@@ -383,8 +409,9 @@ table_multiresponse <- function(
   percent = c("cases", "responses", "both"),
   base = c("valid", "answered", "all"),
   sort = c("", "+", "-", "name+", "name-"),
+  test = c("auto", "chisq", "fisher"),
   p_value = NULL,
-  test = c("rs2", "bootstrap"),
+  global_test = c("rs2", "bootstrap"),
   boot_n = 1999L,
   p_adjust = "holm",
   statistic = FALSE,
@@ -438,6 +465,8 @@ table_multiresponse <- function(
   }
   test_explicit <- !missing(test)
   test <- spicy_match_arg(test)
+  global_test_explicit <- !missing(global_test)
+  global_test <- spicy_match_arg(global_test)
   align <- spicy_match_arg(align)
   output <- spicy_match_arg(output)
   if (is.null(excel_sheet)) {
@@ -641,12 +670,15 @@ table_multiresponse <- function(
       p_value <- FALSE
       no_test_reason <- "groups"
     } else {
+      # `test` chooses the test of the item p-values; without p-values the
+      # statistic column shows the chi-squared of every item.
       test_res <- .mr_test(
         z,
         match(gi, used),
         bases[used],
-        test,
-        boot_n,
+        item_test = if (p_value) test else "chisq",
+        global_test = global_test,
+        boot_n = boot_n,
         global = p_value
       )
     }
@@ -655,14 +687,16 @@ table_multiresponse <- function(
     no_test_reason,
     statistic = statistic_explicit && statistic,
     test = test_explicit,
+    global_test = global_test_explicit,
     boot_n = boot_n_explicit,
     p_adjust = p_adjust_explicit && identical(no_test_reason, "groups"),
-    boot_n_rs2 = boot_n_explicit && p_value && identical(test, "rs2")
+    boot_n_rs2 = boot_n_explicit && p_value && identical(global_test, "rs2")
   )
   show_statistic <- statistic && !is.null(test_res)
 
   item_df <- data.frame(
     item = select_names,
+    test_type = if (is.null(test_res)) NA_character_ else test_res$test_type,
     chi2 = if (is.null(test_res)) NA_real_ else test_res$chi2,
     df = if (is.null(test_res)) NA_real_ else test_res$df,
     p = if (is.null(test_res)) NA_real_ else test_res$p,
@@ -704,18 +738,23 @@ table_multiresponse <- function(
   test_cols <- if (is.null(test_res)) {
     character(0)
   } else if (p_value) {
-    intersect(c("chi2", "df", "p", "p_unadjusted"), names(item_df))
+    intersect(
+      c("test_type", "chi2", "df", "p", "p_unadjusted"),
+      names(item_df)
+    )
   } else {
-    c("chi2", "df")
+    c("test_type", "chi2", "df")
   }
   wide_names <- c(
+    test_type = "test_type",
     chi2 = "Chi2",
     df = "df",
     p = "p",
     p_unadjusted = "p_unadjusted"
   )
   for (nm in test_cols) {
-    wide[[wide_names[[nm]]]] <- c(item_df[[nm]], NA_real_)
+    # The base row carries no test: NA of the column's own type.
+    wide[[wide_names[[nm]]]] <- c(item_df[[nm]], item_df[[nm]][NA_integer_])
   }
   long <- .mr_long(
     item_labels[ord],
@@ -750,6 +789,7 @@ table_multiresponse <- function(
         n_removed_none = n_removed_none,
         test_res = test_res,
         p_value = p_value,
+        item_types = stats::setNames(item_df$test_type, item_labels[ord]),
         untested = untested,
         p_adjust_info = p_adjust_info,
         decimal_mark = decimal_mark,
@@ -808,6 +848,12 @@ table_multiresponse <- function(
     ),
     p_adjust_info
   )
+  if (p_value) {
+    structured <- .struct_attach_test_type(
+      structured,
+      stats::setNames(item_df$test_type, item_df$item)
+    )
+  }
   out <- wide
   attr(out, "display_df") <- display_df
   attr(out, "structured") <- structured
@@ -937,6 +983,7 @@ table_multiresponse <- function(
   reason,
   statistic,
   test,
+  global_test,
   boot_n,
   p_adjust,
   boot_n_rs2
@@ -951,6 +998,7 @@ table_multiresponse <- function(
     args <- c(
       statistic = statistic && !identical(reason, "p_value"),
       test = test,
+      global_test = global_test,
       boot_n = boot_n,
       p_adjust = p_adjust
     )
@@ -964,7 +1012,7 @@ table_multiresponse <- function(
   }
   if (boot_n_rs2) {
     spicy_warn(
-      "`boot_n` is ignored unless `test = \"bootstrap\"`.",
+      "`boot_n` is ignored unless `global_test = \"bootstrap\"`.",
       class = "spicy_ignored_arg"
     )
   }
@@ -1108,18 +1156,55 @@ table_multiresponse <- function(
   unname(x2)
 }
 
+# The replicates of the Monte Carlo version of Fisher's exact test, the
+# default of `stats::fisher.test()` and of `simulate_B` in
+# `table_categorical()`, for an item table the exact enumeration fails on.
+.MR_FISHER_MC_B <- 2000L
+
 # The item tests and, with `global`, the global test of one table. `g`
 # codes the groups that hold respondents (1..r), `n_i` their sizes.
-.mr_test <- function(z, g, n_i, test, boot_n, global = TRUE) {
+#
+# `item_test` chooses the test of each item's p-value with the rule of
+# `table_categorical()` (`.cat_resolve_test()`), on the r x 2 table of the
+# groups by chose / did not choose the item -- no empty margin there: the
+# groups hold respondents and a tested item has variation. An item tested
+# by Fisher's exact test has no statistic. The global test sums the
+# Pearson statistics `x2` whatever `item_test` says.
+.mr_test <- function(
+  z,
+  g,
+  n_i,
+  item_test,
+  global_test,
+  boot_n,
+  global = TRUE
+) {
   r <- length(n_i)
   x2 <- .mr_item_chisq(z, g, n_i)
   tested <- !is.na(x2)
+  chi2 <- x2
+  df <- ifelse(tested, r - 1, NA_real_)
+  p <- stats::pchisq(x2, df = r - 1, lower.tail = FALSE)
+  test_type <- ifelse(tested, .CAT_TEST_CHISQ, NA_character_)
+  if (!identical(item_test, "chisq")) {
+    chosen <- rowsum(z, g, reorder = TRUE)
+    for (j in which(tested)) {
+      tab <- cbind(chosen[, j], n_i - chosen[, j])
+      if (identical(.cat_resolve_test(tab, item_test), "fisher")) {
+        fisher <- .cat_fisher_p(tab, .MR_FISHER_MC_B)
+        p[[j]] <- fisher$p
+        chi2[[j]] <- NA_real_
+        df[[j]] <- NA_real_
+        test_type[[j]] <- fisher$type
+      }
+    }
+  }
   run_global <- global
   global <- NULL
   if (run_global && any(tested)) {
     zt <- z[, tested, drop = FALSE]
     x2_sum <- sum(x2[tested])
-    global <- if (identical(test, "rs2")) {
+    global <- if (identical(global_test, "rs2")) {
       .mr_rs2(zt, g, n_i, x2_sum)
     } else {
       .mr_boot(zt, n_i, x2_sum, boot_n)
@@ -1130,9 +1215,10 @@ table_multiresponse <- function(
     }
   }
   list(
-    chi2 = x2,
-    df = ifelse(tested, r - 1, NA_real_),
-    p = stats::pchisq(x2, df = r - 1, lower.tail = FALSE),
+    chi2 = chi2,
+    df = df,
+    p = p,
+    test_type = test_type,
     tested = tested,
     global = global
   )
@@ -1178,7 +1264,7 @@ table_multiresponse <- function(
     spicy_warn(
       c(
         "The Rao-Scott correction is undefined: the indicators do not vary within any group, so the global test is not reported.",
-        "i" = "`test = \"bootstrap\"` gives a global test on such data."
+        "i" = "`global_test = \"bootstrap\"` gives a global test on such data."
       ),
       class = "spicy_undefined_stat"
     )
@@ -1240,7 +1326,7 @@ table_multiresponse <- function(
             kept,
             boot_n
           ),
-          "i" = "An item chosen by almost every respondent, or by almost none, loses all variation in most resamples; `test = \"rs2\"` needs no resampling."
+          "i" = "An item chosen by almost every respondent, or by almost none, loses all variation in most resamples; `global_test = \"rs2\"` needs no resampling."
         ),
         class = "spicy_resampling_failed"
       )
@@ -1394,7 +1480,7 @@ table_multiresponse <- function(
   }
   if (!is.null(item_df)) {
     for (nm in intersect(
-      c("chi2", "df", "p", "p_unadjusted"),
+      c("test_type", "chi2", "df", "p", "p_unadjusted"),
       names(item_df)
     )) {
       out[[nm]] <- rep(item_df[[nm]], each = nb)
@@ -1615,7 +1701,8 @@ table_multiresponse <- function(
 # indicators, then, under `base = "answered"`, those who chose no item),
 # what the percentages are of, the base
 # and how many in it chose no item (when any did), then the tests -- the
-# item p-values followed, under an adjustment, by the family's sentence
+# item p-values, named by their test (`item_types`, named by the labels
+# the rows print), followed, under an adjustment, by the family's sentence
 # naming the method and the number of tests (with `p_value`), the items
 # without a test (whenever the item tests show, p-values or statistic),
 # and the global test (with `p_value`; `test_res$global` is NULL
@@ -1630,6 +1717,7 @@ table_multiresponse <- function(
   n_removed_none,
   test_res,
   p_value,
+  item_types,
   untested,
   p_adjust_info,
   decimal_mark,
@@ -1673,9 +1761,23 @@ table_multiresponse <- function(
   }
   if (!is.null(test_res)) {
     if (p_value) {
+      phrase <- .cat_test_phrase(
+        unname(item_types),
+        names(item_types),
+        B = .MR_FISHER_MC_B
+      )
       parts <- c(
         parts,
-        spicy_str("note_multiresponse_items_p"),
+        if (!is.null(phrase)) {
+          spicy_fmt(
+            if (phrase$single) {
+              "note_multiresponse_items_p"
+            } else {
+              "note_multiresponse_items_p_mixed"
+            },
+            phrase$text
+          )
+        },
         .desc_p_adjust_note(p_adjust_info)
       )
     }

@@ -292,13 +292,14 @@ as_tibble.spicy_categorical_table <- function(x, ...) {
 #' broom-conventional columns: `outcome`, `level`, `group` (when
 #' applicable), `n`, `proportion` (the percentage divided by 100).
 #'
-#' `glance()` returns one row per outcome with the omnibus
-#' chi-squared test (when `by` is used) and the requested association
-#' measure: `outcome`, `test_type` (`"chi_squared"`), `statistic`
-#' (chi-squared), `df`, `p.value`, `assoc_type`, `assoc_value`,
-#' `assoc_ci_lower`, `assoc_ci_upper`, `n_total`. Without `by`, only
-#' `outcome` and `n_total` are populated; the other columns are `NA`.
-#' The interval bounds are `NA` unless the table was built with
+#' `glance()` returns one row per outcome with its test (when `by` is
+#' used) and the requested association measure: `outcome`, `test_type`
+#' (`"chi_squared"`, `"fisher_exact"`, or `"fisher_exact_mc"`, as in the
+#' data frames of [table_categorical()]), `statistic` (the chi-squared,
+#' `NA` for Fisher's exact test), `df`, `p.value`, `assoc_type`,
+#' `assoc_value`, `assoc_ci_lower`, `assoc_ci_upper`, `n_total`. Without
+#' `by`, only `outcome` and `n_total` are populated; the other columns are
+#' `NA`. The interval bounds are `NA` unless the table was built with
 #' `assoc_ci = TRUE`.
 #'
 #' @param x A `spicy_categorical_table` returned by [table_categorical()].
@@ -406,6 +407,7 @@ glance.spicy_categorical_table <- function(x, ...) {
     "n",
     "pct",
     "percent",
+    "test_type",
     "chi2",
     "df",
     "p",
@@ -470,8 +472,14 @@ glance.spicy_categorical_table <- function(x, ...) {
 
   result <- data.frame(
     outcome = outcomes,
+    # The test each variable took (`test`): the chi-squared or Fisher's
+    # exact test, read from the compute frame like the statistic.
     test_type = if (has_test) {
-      rep("chi_squared", length(outcomes))
+      vapply(
+        by_var,
+        function(b) as.character(pick_first(b, "test_type")),
+        character(1)
+      )
     } else {
       rep(NA_character_, length(outcomes))
     },

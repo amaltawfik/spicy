@@ -1308,7 +1308,15 @@ test_that("an untested item and an empty group refuse with the reason", {
     x1 = c(1, 0, 1, 0, 0, 1, 1),
     x3 = c(0, 0, 0, 0, 0, 0, 0)
   )
-  tbl <- .il_quiet(table_multiresponse(d, c(x1, x3), by = g, statistic = TRUE))
+  # `test = "chisq"`: x1 keeps its chi-squared statistic and p-value; under
+  # "auto" its small groups take Fisher's exact test, with no statistic.
+  tbl <- .il_quiet(table_multiresponse(
+    d,
+    c(x1, x3),
+    by = g,
+    test = "chisq",
+    statistic = TRUE
+  ))
   for (col in c("p", "statistic")) {
     expect_error(
       inline(tbl, x3, column = col),

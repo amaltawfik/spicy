@@ -17,6 +17,7 @@ table_categorical(
   correct = FALSE,
   simulate_p = FALSE,
   simulate_B = 2000,
+  test = c("auto", "chisq", "fisher"),
   p_value = NULL,
   p_adjust = "none",
   percent_digits = 1,
@@ -122,22 +123,43 @@ the default is read from \code{options(spicy.rescale)} (falling back to
 
 \item{correct}{Logical. If \code{FALSE} (the default), no continuity correction is
 applied. If \code{TRUE}, applies Yates correction in 2x2 chi-squared contexts.
-Passed to \code{spicy::cross_tab()}.}
+Passed to \code{spicy::cross_tab()}. A variable tested by Fisher's exact
+test (see \code{test}) takes no correction.}
 
 \item{simulate_p}{Logical. If \code{FALSE} (the default), uses asymptotic p-values.
-If \code{TRUE}, uses Monte Carlo simulation. Passed to \code{spicy::cross_tab()}.}
+If \code{TRUE}, uses Monte Carlo simulation. Passed to \code{spicy::cross_tab()}.
+Applies to the chi-squared test only (see \code{test}).}
 
 \item{simulate_B}{Integer. Number of Monte Carlo replicates when
-\code{simulate_p = TRUE}. Defaults to \code{2000}.}
+\code{simulate_p = TRUE}, and for the Monte Carlo version of Fisher's exact
+test (see \code{test}). Defaults to \code{2000}.}
+
+\item{test}{Character. The test of each variable when \code{by} is used.
+One of \code{"auto"} (default), \code{"chisq"}, or \code{"fisher"}.
+\itemize{
+\item \code{"auto"}: Pearson's chi-squared test when every expected count of
+the variable's table is at least 5, Fisher's exact test otherwise,
+the rule of gtsummary's \code{add_p()}. The choice is made per variable,
+and the note names the test of each.
+\item \code{"chisq"}: Pearson's chi-squared test for every variable, the
+behavior before 0.14.0.
+\item \code{"fisher"}: Fisher's exact test for every variable.
+}
+
+\code{correct} and \code{simulate_p} apply to the chi-squared test only. When
+the exact enumeration of a large sparse table fails, Fisher's p-value
+is its Monte Carlo estimate over \code{simulate_B} tables, and the note
+says so; call \code{\link[=set.seed]{set.seed()}} first to reproduce it. See \emph{Tests}.
+Ignored when \code{by} is not used or when \code{p_value = FALSE}.}
 
 \item{p_value}{Logical or \code{NULL}. If \code{TRUE} and \code{by} is used, adds
-the \emph{p}-value column of the chi-squared test. When \code{NULL} (the
+the \emph{p}-value column of the test chosen by \code{test}. When \code{NULL} (the
 default), the \emph{p}-value is shown automatically whenever \code{by} is
 supplied, and hidden otherwise. Pass \code{p_value = FALSE} to remove
-the test from every output: the \code{p} column, and the \code{Chi2} and
-\code{df} columns of \code{"data.frame"} and \code{"long"}; \code{correct} and
-\code{simulate_p} are then ignored, with a warning. The association
-measure keeps its own switch, so
+the test from every output: the \code{p} column, and the \code{test_type},
+\code{Chi2} and \code{df} columns of \code{"data.frame"} and \code{"long"}; \code{test},
+\code{correct} and \code{simulate_p} are then ignored, with a warning. The
+association measure keeps its own switch, so
 \verb{p_value = FALSE, assoc_measure = "none"} gives a purely
 descriptive table. Ignored when \code{by} is not used.}
 
@@ -163,7 +185,7 @@ convention.}
 to \code{2}.}
 
 \item{assoc_measure}{Which association measure to report alongside the
-chi-squared \emph{p}-value. Accepts four input shapes:
+\emph{p}-value. Accepts four input shapes:
 \itemize{
 \item \code{"none"} -- drop the column entirely.
 \item \code{"auto"} (the default) -- pick a measure per row variable based
@@ -324,12 +346,17 @@ silent (print \code{t} to display the table).
 variable--level combination.
 When \code{by} is used, the columns are \code{Variable}, \code{Level}, and one
 pair of \code{n} / \verb{\\\%} columns per group level (plus \code{Total} when
-\code{include_total = TRUE}), followed by \code{Chi2}, \code{df}, \code{p} (absent
-with \code{p_value = FALSE}), and the association measure column.
+\code{include_total = TRUE}), followed by \code{test_type}, \code{Chi2}, \code{df},
+\code{p} (absent with \code{p_value = FALSE}), and the association measure
+column. \code{test_type} names the test of the variable:
+\code{"chi_squared"}, \code{"fisher_exact"}, or \code{"fisher_exact_mc"} (the
+Monte Carlo estimate of Fisher's exact test); \code{Chi2} and \code{df} are
+\code{NA} for a variable tested by Fisher's exact test.
 When \code{by = NULL}, the columns are \code{Variable}, \code{Level}, \code{n}, \verb{\\\%}.
 \item \code{"long"}: a long \code{data.frame} with columns \code{variable},
-\code{level}, \code{n}, \code{pct} (plus \code{group} when \code{by} is used, and \code{chi2},
-\code{df}, \code{p} unless \code{p_value = FALSE}). The association measure is
+\code{level}, \code{n}, \code{pct} (plus \code{group} when \code{by} is used, and
+\code{test_type}, \code{chi2}, \code{df}, \code{p} unless \code{p_value = FALSE}, as in
+\code{"data.frame"}). The association measure is
 always called \code{effect_size},
 whichever measure it is, and \code{effect_size_type} names that measure
 per row (\code{"cramer_v"}, \code{"phi"}, ...), or is \code{NA} on the rows of a
@@ -368,7 +395,8 @@ Builds a publication-ready frequency or cross-tabulation table for one
 or many categorical variables selected with tidyselect syntax.
 
 With \code{by}, produces grouped cross-tabulation summaries (using
-\code{\link[=cross_tab]{cross_tab()}} internally) with Chi-squared \emph{p}-values and optional
+\code{\link[=cross_tab]{cross_tab()}} internally) with a \emph{p}-value per variable, from Pearson's
+chi-squared test or Fisher's exact test (see \code{test}), and optional
 association measures.
 Without \code{by}, produces one-way frequency-style summaries.
 
@@ -380,14 +408,42 @@ table (\code{"default"}), a wide or long numeric \code{data.frame}
 }
 \section{Tests}{
 When \code{by} is used, each selected variable is cross-tabulated
-against the grouping variable with \code{\link[=cross_tab]{cross_tab()}} and the omnibus
-chi-squared \emph{p}-value is reported in the \code{p} column. See
-\verb{@param correct} / \code{simulate_p} to switch on Yates' continuity
-correction or Monte Carlo \emph{p}-values, and \verb{@param assoc_measure}
-for the per-row dispatch table used by \code{"auto"} (2x2 -> Phi,
-both ordered -> Kendall's Tau-b, otherwise Cramer's V). Without
-\code{by}, the table reports the marginal frequency distribution of
-each variable with no inferential statistics.
+against the grouping variable with \code{\link[=cross_tab]{cross_tab()}} and tested on the
+complete cases of its observed levels, a \code{"(Missing)"} level and a
+declared level nobody holds left out: one \emph{p}-value per variable,
+in the \code{p} column.
+
+The chi-squared approximation is unreliable when expected counts are
+small. Under \code{test = "auto"}, the default, a variable takes Pearson's
+chi-squared test (\code{\link[stats:chisq.test]{stats::chisq.test()}}) when every expected count of
+its table is at least 5, and Fisher's exact test
+(\code{\link[stats:fisher.test]{stats::fisher.test()}}) otherwise: the rule gtsummary's \code{add_p()}
+applies, with the same p-values. Fisher's exact test of a table
+larger than 2x2 is the Freeman-Halton extension. When its exact
+enumeration fails, which happens on large sparse tables, the
+p-value is its Monte Carlo estimate over \code{simulate_B} tables drawn
+with the observed margins: it is random, so call \code{\link[=set.seed]{set.seed()}} first
+to reproduce it. \code{test = "chisq"} tests every variable by the
+chi-squared, the behavior before 0.14.0, and \code{test = "fisher"} every
+variable by the exact test.
+
+The note names the test of every variable, "Group comparison:
+Pearson chi-squared test (sex, education); Fisher exact test
+(smoking).", or the one test when it covers them all. \code{test_type} in
+the data frames gives the same per variable. See \verb{@param correct} /
+\code{simulate_p} to switch on Yates' continuity correction or Monte Carlo
+\emph{p}-values for the chi-squared test, and \verb{@param assoc_measure} for
+the per-row dispatch table used by \code{"auto"} (2x2 -> Phi, both ordered
+-> Kendall's Tau-b, otherwise Cramer's V). Without \code{by}, the table
+reports the marginal frequency distribution of each variable with no
+inferential statistics.
+
+Fisher's exact test conditions on counts. Under \code{weights}, it runs on
+the weighted table when its cells are whole numbers (frequency
+weights); otherwise \code{test = "auto"} keeps the chi-squared test for a
+variable that would take the exact test, with a warning
+(\code{spicy_fallback}), and \code{test = "fisher"} is an error. For survey
+weights, \code{\link[=table_categorical_svy]{table_categorical_svy()}} gives the design-based test.
 
 The test and the measure are two decisions with two arguments:
 \code{p_value = FALSE} removes the test, \code{assoc_measure = "none"} the
@@ -563,6 +619,14 @@ table_categorical(
   by = sex,
   p_value = FALSE,
   assoc_measure = "none"
+)
+
+# A small sample: `smoking` has an expected count below 5 and takes
+# Fisher's exact test; the note names the test of each variable.
+table_categorical(
+  sochealth[1:40, ],
+  select = c(smoking, physical_activity),
+  by = sex
 )
 
 # Pretty labels keyed by column name.

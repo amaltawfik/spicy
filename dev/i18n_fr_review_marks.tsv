@@ -439,7 +439,7 @@ note_multiresponse_cases	corrected	2026-10-18	Plusieurs réponses possibles<NBSP
 note_multiresponse_responses	reviewed	2026-10-17	Plusieurs réponses possibles<NBSP>: pourcentages calculés sur les réponses.	
 note_multiresponse_base_valid	corrected	2026-10-18	Base<NBSP>: personnes ayant répondu à la question, y compris celles qui n'ont choisi aucun item.	
 note_multiresponse_base_all	reviewed	2026-10-17	Base<NBSP>: toutes les personnes.	
-note_multiresponse_items_p	corrected	2026-10-18	Valeurs p des items<NBSP>: test du khi-deux de Pearson de chaque item selon le groupe.	
+note_multiresponse_items_p	reviewed	2026-10-18	Valeurs p des items<NBSP>: %s de chaque item selon le groupe.	
 note_multiresponse_global_rs2	reviewed	2026-10-17	Comparaison des groupes<NBSP>: test du khi-deux d'indépendance marginale multiple avec correction de Rao-Scott du second ordre, %s.	
 note_multiresponse_global_boot	reviewed	2026-10-17	Comparaison des groupes<NBSP>: test bootstrap d'indépendance marginale multiple (%d rééchantillonnages), %s.	
 note_multiresponse_not_tested	corrected	2026-10-18	Non testé (sans variation, signalé par –)<NBSP>: %s.	
@@ -450,3 +450,7 @@ note_multiresponse_none_chosen_one	reviewed	2026-10-18	1 personne n'a coché auc
 note_multiresponse_both	reviewed	2026-10-18	Plusieurs réponses possibles<NBSP>: les pourcentages de personnes peuvent totaliser plus de 100<NBSP>%<NBSP>; les pourcentages de réponses totalisent 100<NBSP>%.	
 note_multiresponse_removed	reviewed	2026-10-18	Personnes retirées faute de réponse à la question<NBSP>: %d.	
 note_multiresponse_removed_none	reviewed	2026-10-18	Personnes retirées faute d'item coché<NBSP>: %d.	
+test_pearson_chisq	reviewed	2026-10-18	test du khi-deux de Pearson	
+test_fisher_exact	reviewed	2026-10-18	test exact de Fisher	
+test_fisher_mc	reviewed	2026-10-18	test exact de Fisher (Monte-Carlo, %s réplications)	
+note_multiresponse_items_p_mixed	reviewed	2026-10-18	Valeurs p des items<NBSP>: %s.	

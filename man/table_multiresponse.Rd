@@ -12,8 +12,9 @@ table_multiresponse(
   percent = c("cases", "responses", "both"),
   base = c("valid", "answered", "all"),
   sort = c("", "+", "-", "name+", "name-"),
+  test = c("auto", "chisq", "fisher"),
   p_value = NULL,
-  test = c("rs2", "bootstrap"),
+  global_test = c("rs2", "bootstrap"),
   boot_n = 1999L,
   p_adjust = "holm",
   statistic = FALSE,
@@ -97,6 +98,12 @@ rows (the column names, or the labels set by \code{labels}) in the C
 locale, the same on every platform: capitals before lower case,
 accented letters after \code{z}.}
 
+\item{test}{The test of each item's p-value, as in \code{\link[=table_categorical]{table_categorical()}}:
+\code{"auto"} (the default) takes Pearson's chi-squared test when every
+expected count of the item's table is at least 5 and Fisher's exact
+test otherwise; \code{"chisq"} and \code{"fisher"} take one test for every item.
+The note names the test of each item. See \emph{Tests}.}
+
 \item{p_value}{Logical or \code{NULL}. With \code{by}, \code{NULL} (the default) and
 \code{TRUE} show the item \code{p} column and the global test in the note.
 \code{FALSE} removes both from every output, the \code{p} column of the data
@@ -104,13 +111,13 @@ frames included. \code{p_value} and \code{statistic} are independent, as in
 \code{\link[=table_continuous]{table_continuous()}}. Ignored without \code{by}, with a warning when
 \code{TRUE}.}
 
-\item{test}{The global test: \code{"rs2"} (the default), the sum of the item
-chi-squared statistics with the second-order Rao-Scott correction; or
-\code{"bootstrap"}, the same sum referred to its bootstrap distribution.
-See \emph{Tests}.}
+\item{global_test}{The global test: \code{"rs2"} (the default), the sum of
+the item chi-squared statistics with the second-order Rao-Scott
+correction; or \code{"bootstrap"}, the same sum referred to its bootstrap
+distribution. See \emph{Tests}.}
 
-\item{boot_n}{Number of bootstrap resamples for \code{test = "bootstrap"}.
-Defaults to \code{1999}.}
+\item{boot_n}{Number of bootstrap resamples for
+\code{global_test = "bootstrap"}. Defaults to \code{1999}.}
 
 \item{p_adjust}{Multiple-comparison adjustment of the item \code{p} column,
 applied to the family of the items tested: \code{"holm"} (the default),
@@ -122,7 +129,9 @@ is an error.}
 
 \item{statistic}{Logical. If \code{TRUE}, adds a \code{Test} column with each
 item's chi-squared statistic and its degrees of freedom, with or
-without the p-values of \code{p_value}. Defaults to \code{FALSE}.}
+without the p-values of \code{p_value}; an item whose p-value comes from
+Fisher's exact test has no statistic and shows a dash. Defaults to
+\code{FALSE}.}
 
 \item{labels}{How each variable is named in the table: in the rows,
 in the title, and in the missing-values notes. Four forms:
@@ -218,13 +227,16 @@ last row with the base. Columns: \code{Variable}, then the count and the
 percentage of each group of \code{by} and of the \code{Total} margin
 (\verb{<group> n} and \verb{<group> \\\%}, or \verb{<group> \\\% of cases} and
 \verb{<group> \\\% of responses} under \code{percent = "both"}; \code{n} and \verb{\\\%}
-without \code{by}), then \code{Chi2} and \code{df} when the item tests ran (for
-\code{p_value} or for \code{statistic}), \code{p} with \code{p_value}, and
-\code{p_unadjusted} under an adjustment.
+without \code{by}), then \code{test_type}, \code{Chi2} and \code{df} when the item
+tests ran (for \code{p_value} or for \code{statistic}), \code{p} with \code{p_value},
+and \code{p_unadjusted} under an adjustment. \code{test_type} names the test
+of each item as in \code{\link[=table_categorical]{table_categorical()}} (\code{"chi_squared"},
+\code{"fisher_exact"}, \code{"fisher_exact_mc"}), and \code{Chi2} and \code{df} are \code{NA}
+for an item tested by Fisher's exact test.
 \item \code{"long"}: one row per item and group, with columns \code{variable},
 \code{group} (with \code{by}), \code{n}, \code{base} (the respondents of the group),
-\code{pct} (or \code{pct_cases} and \code{pct_responses}), and \code{chi2}, \code{df}, \code{p},
-and \code{p_unadjusted} as above.
+\code{pct} (or \code{pct_cases} and \code{pct_responses}), and \code{test_type},
+\code{chi2}, \code{df}, \code{p}, and \code{p_unadjusted} as above.
 \item \code{"tinytable"}, \code{"gt"}, \code{"flextable"}: the rendered table object.
 \item \code{"excel"} / \code{"word"}: writes to disk and returns the file path
 invisibly.
@@ -236,9 +248,9 @@ The data frames carry the note in \code{attr(x, "note")} and, when the table
 has a global test, \code{attr(x, "global_test")}: a one-row data frame with
 \code{test}, \code{statistic}, \code{df}, \code{p.value}, \code{boot_n}, \code{n_items} (the items
 tested), \code{n_groups}, \code{rs_mean} and \code{rs_cv} (the design-effect summary of
-\code{test = "rs2"}), and \code{boot_redraws} (the resamples drawn again under
-\code{test = "bootstrap"}); see \emph{Tests}. \code{\link[=as_structured]{as_structured()}} reads the default
-object.
+\code{global_test = "rs2"}), and \code{boot_redraws} (the resamples drawn again
+under \code{global_test = "bootstrap"}); see \emph{Tests}. \code{\link[=as_structured]{as_structured()}} reads
+the default object.
 }
 \description{
 Tabulates a "check all that apply" question: one row per item, with the
@@ -248,7 +260,8 @@ items are the indicator columns of the question, selected with
 tidyselect syntax.
 
 With \code{by}, the counts and percentages are given per group and in a
-\code{Total} margin, each item gets a chi-squared test across the groups,
+\code{Total} margin, each item gets a test across the groups (the
+chi-squared, or Fisher's exact test when an expected count is below 5),
 and the question gets a global test of all its items together, valid
 although one respondent can choose several items.
 
@@ -267,6 +280,19 @@ the arithmetic of \code{chisq.test(correct = FALSE)}, with no continuity
 correction and no constant added to an empty cell (Agresti and Liu,
 1999).
 
+The item p-value comes from the test \code{test} chooses, as in
+\code{\link[=table_categorical]{table_categorical()}}. Under \code{"auto"}, the default, it is that
+chi-squared test when every expected count of the item's table is at
+least 5, and Fisher's exact test (\code{\link[stats:fisher.test]{stats::fisher.test()}}) otherwise;
+when the exact enumeration fails, the p-value is its Monte Carlo
+estimate over 2000 tables, which draws from the session's RNG. An item
+tested by Fisher's exact test has no statistic: its \code{Test} cell shows
+a dash, and \code{Chi2} and \code{df} are \code{NA} in the data frames. Without
+p-values (\code{p_value = FALSE}), \code{statistic = TRUE} shows the chi-squared
+statistic of every item. The global test sums the Pearson statistics
+of the items whatever \code{test} chooses for their p-values, since its
+correction and its bootstrap are defined for that sum.
+
 The global test sums the item statistics,
 \eqn{X^2_S = \sum_j X^2_j}, a value that does not depend on which
 answer of an item is coded as chosen (Agresti and Liu, 1999). One
@@ -274,7 +300,7 @@ respondent can choose several items, so the items are correlated and
 \eqn{X^2_S} is not chi-squared under the null (Loughin and Scherer,
 1998): its asymptotic distribution is a weighted sum of chi-squared
 variables, the weights being the eigenvalues of a design-effect matrix
-(Bilder, Loughin and Nettleton, 2000, Appendix A). \code{test = "rs2"}
+(Bilder, Loughin and Nettleton, 2000, Appendix A). \code{global_test = "rs2"}
 matches its first two moments, the second-order Rao-Scott correction
 of Thomas and Decady (2004, pp. 48 and 58-59):
 
@@ -299,7 +325,7 @@ Decady (2004, p. 59), defined by
 variation of the \eqn{\lambda_k} when their mean is 1, and \code{NA} when
 that ratio falls below 1.
 
-\code{test = "bootstrap"} refers \eqn{X^2_S} to its distribution over
+\code{global_test = "bootstrap"} refers \eqn{X^2_S} to its distribution over
 \code{boot_n} resamples of whole response vectors, drawn with replacement
 from the pooled respondents with the group sizes held fixed (Loughin
 and Scherer, 1998). The p-value is the share of resamples whose
@@ -393,7 +419,7 @@ table_multiresponse(
   select = c(smoking, physical_activity, dentist_12m),
   by = education,
   counted = "Yes",
-  test = "bootstrap",
+  global_test = "bootstrap",
   boot_n = 999
 )
 

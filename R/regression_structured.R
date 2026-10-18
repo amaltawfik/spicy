@@ -120,6 +120,11 @@
 #                                   # the raw p of each cell (len
 #                                   # nrow(body)); the cells hold the
 #                                   # adjusted values.
+#         test_type = NULL | chr    # categorical / multiresponse, token
+#                                   # "p": the test of each cell (len
+#                                   # nrow(body), NA where the cell is):
+#                                   # "chi_squared", "fisher_exact",
+#                                   # "fisher_exact_mc".
 #       ),
 #       ...
 #     ),

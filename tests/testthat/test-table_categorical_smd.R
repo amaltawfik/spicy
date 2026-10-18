@@ -85,7 +85,9 @@ test_that("the weighted categorical SMD is the SMD of the expanded data", {
   expect_equal(wv, rd$smd[!duplicated(rd$variable)], tolerance = 1e-15)
   # A profile of proportions is invariant to a global rescaling of the
   # weights, so `rescale` cannot move this column -- unlike the
-  # continuous one, where it moves the variance.
+  # continuous one, where it moves the variance. `test = "chisq"`: the
+  # rescaled weights are fractional, which leaves the exact test no
+  # counts, and the point here is the SMD.
   rr <- table_categorical(
     d,
     select = c(bin, k3),
@@ -93,6 +95,7 @@ test_that("the weighted categorical SMD is the SMD of the expanded data", {
     smd = TRUE,
     weights = w,
     rescale = TRUE,
+    test = "chisq",
     output = "long"
   )
   expect_equal(rr$smd[!duplicated(rr$variable)], wv, tolerance = 1e-15)

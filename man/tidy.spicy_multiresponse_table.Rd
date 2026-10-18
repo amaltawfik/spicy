@@ -30,15 +30,17 @@ displayed label), \code{group} (the \code{by} level or the margin, \code{NA} wit
 chose the item), \code{base} (the respondents of the group's base),
 \code{proportion} (\code{n / base}, the share of respondents),
 \code{proportion_responses} (\code{n} over the choices made in the group), and
-the item's test: \code{statistic} (the Pearson chi-squared), \code{df}, \code{p.value}
-(adjusted under \code{p_adjust}) and \code{p.unadjusted}.
+the item's test: \code{test_type} (\code{"chi_squared"}, \code{"fisher_exact"} or
+\code{"fisher_exact_mc"}), \code{statistic} (the Pearson chi-squared, \code{NA} for
+Fisher's exact test), \code{df}, \code{p.value} (adjusted under \code{p_adjust}) and
+\code{p.unadjusted}.
 
 \code{glance()} returns one row for the question. Columns: \code{n_items},
 \code{n_items_tested} (the items the global test kept), \code{n_groups} (the
 groups of \code{by}, \code{NA} without it), \code{nobs} (the respondents of the base),
-\code{test_type} (\code{"rs2"} or \code{"bootstrap"}), \code{statistic}, \code{df}, \code{p.value}
-and \code{boot_n} of the global test, \code{rs_cv} (the \eqn{\hat a} of the
-second-order Rao-Scott correction, see \emph{Tests} in
+\code{test_type} (\code{"rs2"} or \code{"bootstrap"}, from \code{global_test}), \code{statistic},
+\code{df}, \code{p.value} and \code{boot_n} of the global test, \code{rs_cv} (the
+\eqn{\hat a} of the second-order Rao-Scott correction, see \emph{Tests} in
 \code{\link[=table_multiresponse]{table_multiresponse()}}), and \code{p_adjust}, the adjustment of the item
 p-values.
 

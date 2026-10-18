@@ -4,9 +4,9 @@ description: >
   Tabulate a "check all that apply" question in R with
   table_multiresponse(): one row per item, counts with percentages of
   respondents or of responses, a stated base, and, across groups, a
-  chi-squared test per item with a Holm adjustment and a global test
-  with the second-order Rao-Scott correction, rendered by the same
-  output engines as table_categorical().
+  chi-squared or Fisher's exact test per item with a Holm adjustment and
+  a global test with the second-order Rao-Scott correction, rendered by
+  the same output engines as table_categorical().
 output:
   html_document:
     toc: true
@@ -35,9 +35,10 @@ the columns as one question: one row per item, with the number and the
 percentage of respondents who chose it. A last row gives the number of
 respondents behind the percentages.
 
-With `by`, it compares groups. Each item gets a chi-squared test. The
-question gets a global test of all its items together, valid although
-one respondent can choose several items.
+With `by`, it compares groups. Each item gets a chi-squared test, or
+Fisher's exact test when an expected count is below 5. The question
+gets a global test of all its items together, valid although one
+respondent can choose several items.
 
 `sochealth`, the simulated survey shipped with spicy, has no such
 question, so this article builds one. Each respondent rated four
@@ -317,7 +318,17 @@ Each item gets the Pearson chi-squared test of its table of groups by
 chosen or not, on *r* − 1 degrees of freedom for *r* groups. The
 arithmetic is that of `chisq.test(correct = FALSE)`: no continuity
 correction, and no constant added to an empty cell (Agresti and Liu,
-1999). The data frame output keeps the statistics and both p-values:
+1999).
+
+When an expected count of an item's table is below 5, the chi-squared
+approximation is unreliable, and the item takes Fisher's exact test
+instead. This is the rule of `test = "auto"`, the default, shared with
+`table_categorical()` and gtsummary's `add_p()`. An item tested exactly
+has no statistic, and the note names the test of each item.
+`test = "chisq"` and `test = "fisher"` take one test for every item.
+Here every expected count is far above 5, so every item takes the
+chi-squared. The data frame output keeps the test, the statistics and
+both p-values:
 
 ```{r item-tests}
 wide <- table_multiresponse(
@@ -326,7 +337,7 @@ wide <- table_multiresponse(
   by = physical_activity,
   output = "data.frame"
 )
-wide[c("Variable", "Chi2", "df", "p", "p_unadjusted")]
+wide[c("Variable", "test_type", "Chi2", "df", "p", "p_unadjusted")]
 ```
 
 The `p` column is adjusted by Holm's method, and `p_unadjusted` keeps
@@ -359,21 +370,21 @@ sentence of the note. It tests multiple marginal independence: that the
 probability of choosing each item is the same in every group.
 
 Its statistic is the sum of the item chi-squared statistics, 22.00
-here. The sum does not depend on which answer of an item is coded as
-chosen (Agresti and Liu, 1999). It is not chi-squared under the null
-hypothesis: one respondent can choose several items, so the items are
-correlated (Loughin and Scherer, 1998). Its asymptotic distribution is
+here, whatever test the item p-values take. The sum does not depend on
+which answer of an item is coded as chosen (Agresti and Liu, 1999). It
+is not chi-squared under the null hypothesis: one respondent can choose
+several items, so the items are correlated (Loughin and Scherer, 1998). Its asymptotic distribution is
 a weighted sum of chi-squared variables, the weights being the
 eigenvalues of a design-effect matrix (Bilder, Loughin and Nettleton,
 2000, Appendix A).
 
 The mean of those weights is 1, but "individual weights may differ from
-one" (Thomas and Decady, 2004, p. 48). The default, `test = "rs2"`,
-allows for their spread with the second-order Rao-Scott correction of
-Thomas and Decady (2004, pp. 48 and 58-59). It matches the first two
-moments of the distribution and refers the result to a chi-squared on
-fractional degrees of freedom: χ²(3.16) = 17.36 here. The result is
-deterministic.
+one" (Thomas and Decady, 2004, p. 48). The default,
+`global_test = "rs2"`, allows for their spread with the second-order
+Rao-Scott correction of Thomas and Decady (2004, pp. 48 and 58-59). It
+matches the first two moments of the distribution and refers the result
+to a chi-squared on fractional degrees of freedom: χ²(3.16) = 17.36
+here. The result is deterministic.
 
 `glance()` returns the global test as numbers:
 
@@ -393,7 +404,7 @@ decide whether the second order is needed (pp. 53 and 57).
 
 ### The bootstrap
 
-`test = "bootstrap"` refers the same sum to its distribution over
+`global_test = "bootstrap"` refers the same sum to its distribution over
 `boot_n` resamples, 1999 by default. Each resample draws whole response
 vectors with replacement from the pooled respondents, with the group
 sizes held fixed (Loughin and Scherer, 1998). The p-value is the share
@@ -406,7 +417,7 @@ boot <- table_multiresponse(
   domains,
   select = health:standard,
   by = physical_activity,
-  test = "bootstrap"
+  global_test = "bootstrap"
 )
 broom::glance(boot)[c("test_type", "statistic", "df", "p.value", "boot_n")]
 ```

@@ -186,15 +186,17 @@ as_tibble.spicy_multiresponse_table <- function(x, ...) {
 #' chose the item), `base` (the respondents of the group's base),
 #' `proportion` (`n / base`, the share of respondents),
 #' `proportion_responses` (`n` over the choices made in the group), and
-#' the item's test: `statistic` (the Pearson chi-squared), `df`, `p.value`
-#' (adjusted under `p_adjust`) and `p.unadjusted`.
+#' the item's test: `test_type` (`"chi_squared"`, `"fisher_exact"` or
+#' `"fisher_exact_mc"`), `statistic` (the Pearson chi-squared, `NA` for
+#' Fisher's exact test), `df`, `p.value` (adjusted under `p_adjust`) and
+#' `p.unadjusted`.
 #'
 #' `glance()` returns one row for the question. Columns: `n_items`,
 #' `n_items_tested` (the items the global test kept), `n_groups` (the
 #' groups of `by`, `NA` without it), `nobs` (the respondents of the base),
-#' `test_type` (`"rs2"` or `"bootstrap"`), `statistic`, `df`, `p.value`
-#' and `boot_n` of the global test, `rs_cv` (the \eqn{\hat a} of the
-#' second-order Rao-Scott correction, see *Tests* in
+#' `test_type` (`"rs2"` or `"bootstrap"`, from `global_test`), `statistic`,
+#' `df`, `p.value` and `boot_n` of the global test, `rs_cv` (the
+#' \eqn{\hat a} of the second-order Rao-Scott correction, see *Tests* in
 #' [table_multiresponse()]), and `p_adjust`, the adjustment of the item
 #' p-values.
 #'
@@ -245,8 +247,8 @@ tidy.spicy_multiresponse_table <- function(x, ...) {
     FUN = sum
   )
   ratio <- function(a, b) ifelse(b > 0, a / b, NA_real_)
-  field <- function(nm) {
-    if (is.null(long[[nm]])) rep(NA_real_, nrow(long)) else long[[nm]]
+  field <- function(nm, na = NA_real_) {
+    if (is.null(long[[nm]])) rep(na, nrow(long)) else long[[nm]]
   }
   .outcome_as_tbl(data.frame(
     variable = rep(dat$items, each = nrow(long) %/% length(dat$items)),
@@ -257,6 +259,7 @@ tidy.spicy_multiresponse_table <- function(x, ...) {
     base = as.integer(long$base),
     proportion = ratio(long$n, long$base),
     proportion_responses = ratio(long$n, responses),
+    test_type = field("test_type", NA_character_),
     statistic = field("chi2"),
     # A chi-squared on r - 1 degrees of freedom: integer by construction.
     df = as.integer(field("df")),

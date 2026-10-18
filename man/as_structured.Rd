@@ -153,7 +153,11 @@ descriptive tables carry no significance markers.
 Under \code{p_adjust}, the p-value column holds the adjusted values and its
 \code{col_meta} adds \code{p_adjust} (the method), \code{p_adjust_m} (the number of
 tests adjusted together) and \code{p_unadjusted} (the raw p-value of each
-cell, as long as \code{body}).
+cell, as long as \code{body}). In \code{\link[=table_categorical]{table_categorical()}} and
+\code{\link[=table_multiresponse]{table_multiresponse()}}, the p-value column's \code{col_meta} also carries
+\code{test_type}, the test of each cell, as long as \code{body}
+(\code{"chi_squared"}, \code{"fisher_exact"}, \code{"fisher_exact_mc"}, \code{NA} where
+the cell is).
 }
 
 \section{Versioning}{

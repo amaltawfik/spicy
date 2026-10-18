@@ -530,7 +530,9 @@ test_that("a typed comma keeps the leading zero in every family", {
     assoc_ci = TRUE,
     decimal_mark = ","
   ))
-  expect_match(cat_txt, "0,013") # the p cell
+  # The p cell: Fisher's exact test, the cyl table having expected
+  # counts below 5.
+  expect_match(cat_txt, "0,009")
   expect_match(cat_txt, "0,52") # the bounded association measure
   expect_false(stripped(cat_txt))
 

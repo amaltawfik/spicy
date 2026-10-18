@@ -181,7 +181,10 @@ interval (\code{"mean"}) is not. The percentage itself always comes from
 \code{svychisq()} with \code{chisq_statistic = "F"} (the default) is the
 Pearson chi-square with the Rao-Scott second-order correction,
 referred to F(ndf, \code{survey::degf(design)}). It is survey's own
-default and the one Stata's \code{svy: tabulate} reports.
+default and the one Stata's \code{svy: tabulate} reports. The design-based
+test has no exact counterpart, so the switch to Fisher's exact test
+that \code{test} makes in \code{\link[=table_categorical]{table_categorical()}} when an expected count is
+below 5 has no equivalent here.
 
 It runs on the \emph{complete cases} of the two variables, and on their
 observed levels: a \code{(Missing)} row and a declared-but-unobserved

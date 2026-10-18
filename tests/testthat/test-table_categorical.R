@@ -665,7 +665,8 @@ test_that("table_categorical accepts a named per-variable `assoc_measure`", {
     "Note\\. Phi: smoking; Cramer's V: education\\."
   )
 
-  # Force uniform Cramer's V via single-string -> no note
+  # Force uniform Cramer's V via single-string -> no measure note; the
+  # sentence naming the test is all that is left.
   out_uniform <- table_categorical(
     sochealth,
     select = c(smoking, education),
@@ -673,7 +674,10 @@ test_that("table_categorical accepts a named per-variable `assoc_measure`", {
     assoc_measure = "cramer_v",
     output = "default"
   )
-  expect_null(attr(out_uniform, "assoc_note"))
+  expect_identical(
+    attr(out_uniform, "assoc_note"),
+    "Group comparison: Pearson chi-squared test."
+  )
 })
 
 test_that("table_categorical accepts unnamed positional `assoc_measure` and validates length", {
@@ -3155,7 +3159,16 @@ test_that("weighted grouped table is exact in machine outputs, coherent on displ
     g = factor(c("g1", "g1", "g2", "g2", "g1", NA, "g2", "g1")),
     w = c(1.5, 2, 0.5, 1, 2, 1, 3, 0.25)
   )
-  lg <- table_categorical(d, select = x, by = g, weights = w, output = "long")
+  # `test = "chisq"`: the point is the weighted counts, and the exact test
+  # has no counts to condition on in this fractional table.
+  lg <- table_categorical(
+    d,
+    select = x,
+    by = g,
+    weights = w,
+    test = "chisq",
+    output = "long"
+  )
   # Exact weighted counts (oracle xtabs), Total included.
   a <- lg[lg$level == "A", ]
   expect_identical(a$n[a$group == "g1"], 3.75)
@@ -3169,7 +3182,7 @@ test_that("weighted grouped table is exact in machine outputs, coherent on displ
   expect_identical(b$n[b$group == "g2"], 0.5)
   # Display: the SPSS convention -- integers everywhere, cells and
   # Total from the same fmt_n, so displayed rows sum.
-  out <- table_categorical(d, select = x, by = g, weights = w)
+  out <- table_categorical(d, select = x, by = g, weights = w, test = "chisq")
   disp <- attr(out, "display_df")
   ra <- disp[trimws(disp$Variable) == "A", ]
   expect_identical(ra[["g1 n"]], "4")
@@ -4071,21 +4084,28 @@ test_that("p_value defaults to the test with `by`, as in the siblings", {
 test_that("p_value = FALSE: the data frames are the default minus the test", {
   ref <- .pv_tbl(output = "data.frame")
   out <- .pv_tbl(p_value = FALSE, output = "data.frame")
-  expect_identical(names(out), setdiff(names(ref), c("Chi2", "df", "p")))
+  expect_identical(
+    names(out),
+    setdiff(names(ref), c("test_type", "Chi2", "df", "p"))
+  )
   expect_identical(out, ref[names(out)])
 
   ref_l <- .pv_tbl(output = "long")
   out_l <- .pv_tbl(p_value = FALSE, output = "long")
-  expect_identical(names(out_l), setdiff(names(ref_l), c("chi2", "df", "p")))
+  expect_identical(
+    names(out_l),
+    setdiff(names(ref_l), c("test_type", "chi2", "df", "p"))
+  )
   expect_identical(out_l, ref_l[names(out_l)])
 })
 
 test_that("p_value = FALSE: the console table, its typed view and glance()", {
   ref <- .pv_tbl()
   tbl <- .pv_tbl(p_value = FALSE)
-  expect_false(any(c("Chi2", "df", "p") %in% names(tbl)))
+  expect_false(any(c("test_type", "Chi2", "df", "p") %in% names(tbl)))
   expect_false(any(
-    c("chi2", "df", "p", "p_op") %in% names(attr(tbl, "long_data"))
+    c("test_type", "chi2", "df", "p", "p_op") %in%
+      names(attr(tbl, "long_data"))
   ))
 
   disp <- attr(tbl, "display_df")
@@ -4100,8 +4120,14 @@ test_that("p_value = FALSE: the console table, its typed view and glance()", {
   expect_identical(s$spanners, s_ref$spanners)
   expect_identical(s$body$.row_role, s_ref$body$.row_role)
 
-  # The measure note is the measure's: it stays.
-  expect_identical(attr(tbl, "assoc_note"), attr(ref, "assoc_note"))
+  # The measure note is the measure's: it stays. The sentence naming the
+  # test leaves with the test.
+  measure_note <- "Note. Phi: smoking; Cramer's V: education."
+  expect_identical(attr(tbl, "assoc_note"), measure_note)
+  expect_identical(
+    attr(ref, "assoc_note"),
+    paste(measure_note, "Group comparison: Pearson chi-squared test.")
+  )
   printed <- utils::capture.output(print(tbl))
   header <- printed[grepl("Variable", printed, fixed = TRUE)][[1L]]
   expect_match(header, "Female n", fixed = TRUE)
@@ -4141,7 +4167,15 @@ test_that("p_value = FALSE removes the p column from every rendered engine", {
     setdiff(g_ref[["_spanners"]]$spanner_id, g[["_spanners"]]$spanner_id),
     "spn_p"
   )
-  expect_identical(attr(g, "spicy_note"), attr(g_ref, "spicy_note"))
+  expect_identical(
+    attr(g, "spicy_note"),
+    sub(
+      " Group comparison: Pearson chi-squared test.",
+      "",
+      attr(g_ref, "spicy_note"),
+      fixed = TRUE
+    )
+  )
 
   ft <- .pv_tbl(p_value = FALSE, output = "flextable")
   expect_identical(
@@ -4318,4 +4352,467 @@ test_that("correct and simulate_p are ignored without the test", {
   set.seed(1)
   expect_identical(stats::runif(1L), after)
   expect_identical(out, ref)
+})
+
+# ---- test: chi-squared or Fisher's exact test (decision of 2026-10-18) ------------
+#
+# Oracle: gtsummary 2.6.1, not a dependency, run once on 2026-10-18:
+#   tbl_summary(d[c(vars, by)], by = all_of(by), missing = "no") |> add_p()
+# reading `test_name` and `p.value` of the label rows, with the label
+# attributes of sochealth removed. Its rule (R/assign_tests.R, lines
+# 330-357): "chisq.test.no.correct" when every expected count is at least
+# 5, "fisher.test" otherwise. Every p-value below agreed with spicy's to
+# the last digit printed (15 significant).
+
+.gts_sh <- function(rows = NULL) {
+  d <- as.data.frame(sochealth)
+  if (is.null(rows)) d else d[rows, ]
+}
+
+.first_rows <- function(long) long[!duplicated(long$variable), ]
+
+test_that("test = \"auto\": dense tables take the chi-squared test, as in gtsummary", {
+  out <- .first_rows(table_categorical(
+    .gts_sh(),
+    c(smoking, education, physical_activity),
+    by = sex,
+    output = "long"
+  ))
+  expect_identical(out$test_type, rep("chi_squared", 3L))
+  expect_equal(
+    out$p,
+    c(0.712519570026406, 0.343778176322083, 0.831676321336384),
+    tolerance = 1e-10
+  )
+  # The chi-squared of chisq.test(correct = FALSE), complete cases.
+  sh <- .gts_sh()
+  ref <- stats::chisq.test(table(sh$smoking, sh$sex), correct = FALSE)
+  expect_equal(out$chi2[[1L]], unname(ref$statistic), tolerance = 1e-12)
+  expect_equal(out$p[[1L]], ref$p.value, tolerance = 1e-12)
+})
+
+test_that("test = \"auto\": an expected count below 5 takes Fisher's exact test, as in gtsummary", {
+  d <- .gts_sh(1:40)
+  tbl <- table_categorical(
+    d,
+    c(smoking, dentist_12m, physical_activity),
+    by = sex
+  )
+  out <- .first_rows(table_categorical(
+    d,
+    c(smoking, dentist_12m, physical_activity),
+    by = sex,
+    output = "long"
+  ))
+  # Minimum expected counts: 3.6 (smoking), 5.85, 8.55.
+  expect_identical(
+    out$test_type,
+    c("fisher_exact", "chi_squared", "chi_squared")
+  )
+  expect_equal(
+    out$p,
+    c(0.257949447423132, 0.564090263272185, 0.726308097640108),
+    tolerance = 1e-10
+  )
+  expect_equal(
+    out$p[[1L]],
+    stats::fisher.test(table(d$smoking, d$sex))$p.value,
+    tolerance = 1e-12
+  )
+  # A Fisher row has no chi-squared statistic and no degrees of freedom;
+  # its association measure is unchanged.
+  expect_true(is.na(out$chi2[[1L]]) && is.na(out$df[[1L]]))
+  ref <- .first_rows(table_categorical(
+    d,
+    c(smoking, dentist_12m, physical_activity),
+    by = sex,
+    test = "chisq",
+    output = "long"
+  ))
+  expect_identical(out$effect_size, ref$effect_size)
+  # The note names the test of every variable, the chi-squared first.
+  expect_identical(
+    attr(tbl, "assoc_note"),
+    paste(
+      "Group comparison: Pearson chi-squared test (dentist_12m,",
+      "physical_activity); Fisher exact test (smoking)."
+    )
+  )
+  wide <- table_categorical(
+    d,
+    c(smoking, dentist_12m, physical_activity),
+    by = sex,
+    output = "data.frame"
+  )
+  expect_identical(
+    names(wide)[names(wide) %in% c("test_type", "Chi2", "df", "p")],
+    c("test_type", "Chi2", "df", "p")
+  )
+  expect_identical(
+    wide$test_type,
+    rep(c("fisher_exact", "chi_squared", "chi_squared"), each = 2L)
+  )
+  # The typed view and glance() carry the same.
+  s <- as_structured(tbl)
+  hdr <- s$body$.row_role == "factor_header"
+  expect_identical(
+    s$col_meta$p$test_type[hdr],
+    c("fisher_exact", "chi_squared", "chi_squared")
+  )
+  expect_true(all(is.na(s$col_meta$p$test_type[!hdr])))
+  skip_if_not_installed("broom")
+  gl <- broom::glance(tbl)
+  expect_identical(gl$test_type[gl$outcome == "smoking"], "fisher_exact")
+  expect_true(is.na(gl$statistic[gl$outcome == "smoking"]))
+  expect_identical(gl$test_type[gl$outcome == "dentist_12m"], "chi_squared")
+})
+
+test_that("Fisher's exact test of an r x c table reproduces gtsummary", {
+  d <- .gts_sh(1:100)
+  out <- .first_rows(table_categorical(
+    d,
+    c(self_rated_health, employment_status),
+    by = education,
+    output = "long"
+  ))
+  # 4 x 3 tables, minimum expected counts 1.40 and 1.68.
+  expect_identical(out$test_type, rep("fisher_exact", 2L))
+  expect_equal(out$p, c(0.1666469610989, 0.0490952340252815), tolerance = 1e-10)
+  expect_equal(
+    out$p[[1L]],
+    stats::fisher.test(table(d$self_rated_health, d$education))$p.value,
+    tolerance = 1e-12
+  )
+  # A 3 x 4 table.
+  out34 <- .first_rows(table_categorical(
+    d,
+    bmi_category,
+    by = age_group,
+    output = "long"
+  ))
+  expect_identical(out34$test_type, "fisher_exact")
+  expect_equal(out34$p, 0.601196474720587, tolerance = 1e-10)
+})
+
+test_that("a table the exact enumeration cannot handle takes the Monte Carlo test", {
+  d <- .gts_sh(1:300)
+  d$sex_age <- interaction(d$sex, d$age_group, sep = " ")
+  tab <- table(d$region, d$sex_age)
+  # A 6 x 8 table, minimum expected count 3.28: FEXACT gives up.
+  expect_error(stats::fisher.test(tab))
+  set.seed(20261018)
+  tbl <- table_categorical(d, region, by = sex_age)
+  set.seed(20261018)
+  long <- table_categorical(d, region, by = sex_age, output = "long")
+  expect_identical(unique(long$test_type), "fisher_exact_mc")
+  expect_true(all(is.na(long$chi2)))
+  # The same draws as a direct call under the same seed, and within
+  # Monte Carlo error of a 100 000-replicate estimate (0.3036).
+  set.seed(20261018)
+  direct <- stats::fisher.test(tab, simulate.p.value = TRUE, B = 2000)$p.value
+  expect_identical(long$p[[1L]], direct)
+  set.seed(1)
+  big <- stats::fisher.test(tab, simulate.p.value = TRUE, B = 1e5)$p.value
+  expect_lt(abs(long$p[[1L]] - big), 4 * sqrt(big * (1 - big) / 2000))
+  expect_identical(
+    attr(tbl, "assoc_note"),
+    "Group comparison: Fisher exact test (Monte Carlo, 2000 replicates)."
+  )
+  # `simulate_B` sets the replicates, and the note says how many.
+  set.seed(5)
+  b500 <- table_categorical(d, region, by = sex_age, simulate_B = 500)
+  set.seed(5)
+  expect_identical(
+    b500$p[[1L]],
+    stats::fisher.test(tab, simulate.p.value = TRUE, B = 500)$p.value
+  )
+  expect_match(
+    attr(b500, "assoc_note"),
+    "(Monte Carlo, 500 replicates)",
+    fixed = TRUE
+  )
+})
+
+test_that("test = \"chisq\" gives the 0.13.0 p-values, test = \"fisher\" tests every variable exactly", {
+  d <- .gts_sh(1:40)
+  vars <- c("smoking", "dentist_12m", "physical_activity")
+  chisq <- .first_rows(table_categorical(
+    d,
+    vars,
+    by = sex,
+    test = "chisq",
+    output = "long"
+  ))
+  fisher <- .first_rows(table_categorical(
+    d,
+    vars,
+    by = sex,
+    test = "fisher",
+    output = "long"
+  ))
+  expect_identical(chisq$test_type, rep("chi_squared", 3L))
+  expect_identical(fisher$test_type, rep("fisher_exact", 3L))
+  for (j in seq_along(vars)) {
+    tab <- table(d[[vars[[j]]]], d$sex)
+    expect_equal(
+      chisq$p[[j]],
+      suppressWarnings(stats::chisq.test(tab, correct = FALSE))$p.value,
+      tolerance = 1e-12
+    )
+    expect_equal(
+      fisher$p[[j]],
+      stats::fisher.test(tab)$p.value,
+      tolerance = 1e-12
+    )
+  }
+  expect_identical(
+    attr(table_categorical(d, vars, by = sex, test = "fisher"), "assoc_note"),
+    "Group comparison: Fisher exact test."
+  )
+  expect_error(
+    table_categorical(d, smoking, by = sex, test = "exact"),
+    class = "spicy_invalid_input"
+  )
+})
+
+test_that("p_adjust adjusts the p-values the tests produced", {
+  d <- .gts_sh(1:40)
+  out <- .first_rows(table_categorical(
+    d,
+    c(smoking, dentist_12m, physical_activity),
+    by = sex,
+    p_adjust = "holm",
+    output = "long"
+  ))
+  expect_equal(out$p_unadjusted[[1L]], 0.257949447423132, tolerance = 1e-10)
+  expect_equal(out$p, stats::p.adjust(out$p_unadjusted, "holm"))
+})
+
+test_that("correct and simulate_p reach only the variables the chi-squared tests", {
+  d <- .gts_sh(1:40)
+  vars <- c("smoking", "dentist_12m", "physical_activity")
+  # Yates on the two chi-squared 2 x 2 tables; smoking keeps its exact p.
+  expect_no_warning(
+    yates <- table_categorical(d, vars, by = sex, correct = TRUE)
+  )
+  long <- .first_rows(table_categorical(
+    d,
+    vars,
+    by = sex,
+    correct = TRUE,
+    output = "long"
+  ))
+  expect_equal(long$p[[1L]], 0.257949447423132, tolerance = 1e-10)
+  expect_equal(
+    long$p[[2L]],
+    stats::chisq.test(table(d$dentist_12m, d$sex), correct = TRUE)$p.value,
+    tolerance = 1e-12
+  )
+  expect_match(
+    attr(yates, "assoc_note"),
+    "Fisher exact test (smoking). Yates continuity correction applied.",
+    fixed = TRUE
+  )
+  # A simulated chi-squared keeps cross_tab()'s wording.
+  set.seed(2)
+  sim <- table_categorical(d, vars, by = sex, simulate_p = TRUE)
+  expect_match(
+    attr(sim, "assoc_note"),
+    "Pearson chi-squared test (simulated) (dentist_12m, physical_activity)",
+    fixed = TRUE
+  )
+  # Under test = "fisher" neither reaches a variable.
+  ref <- table_categorical(d, vars, by = sex, test = "fisher")
+  expect_warning(
+    out <- table_categorical(
+      d,
+      vars,
+      by = sex,
+      test = "fisher",
+      correct = TRUE
+    ),
+    "`correct` is ignored when `test = \"fisher\"`",
+    class = "spicy_ignored_arg"
+  )
+  expect_identical(out, ref)
+  expect_warning(
+    table_categorical(d, vars, by = sex, test = "fisher", simulate_p = TRUE),
+    "`simulate_p` is ignored when `test = \"fisher\"`",
+    class = "spicy_ignored_arg"
+  )
+})
+
+test_that("test is ignored without `by` or without the p column", {
+  ref <- table_categorical(sochealth, c(smoking, education))
+  expect_warning(
+    out <- table_categorical(sochealth, c(smoking, education), test = "fisher"),
+    "`test` is ignored when `by` is not used",
+    class = "spicy_ignored_arg"
+  )
+  expect_identical(out, ref)
+  expect_no_warning(table_categorical(
+    sochealth,
+    c(smoking, education),
+    test = "auto"
+  ))
+  expect_warning(
+    out <- .pv_tbl(p_value = FALSE, test = "fisher"),
+    "`test` is ignored when `p_value = FALSE`",
+    class = "spicy_ignored_arg"
+  )
+  expect_identical(out, .pv_tbl(p_value = FALSE))
+})
+
+test_that("Fisher's exact test runs on whole-number weights and not on fractional ones", {
+  d <- data.frame(
+    x = factor(c("a", "a", "b", "b", "a", "b")),
+    g = factor(c("u", "v", "u", "v", "v", "u")),
+    w = c(5, 1, 1, 6, 2, 1)
+  )
+  # Frequency weights: the weighted table is the table of counts.
+  out <- .first_rows(table_categorical(
+    d,
+    x,
+    by = g,
+    weights = w,
+    output = "long"
+  ))
+  expanded <- d[rep(seq_len(nrow(d)), d$w), ]
+  expect_identical(out$test_type, "fisher_exact")
+  expect_equal(
+    out$p,
+    stats::fisher.test(table(expanded$x, expanded$g))$p.value,
+    tolerance = 1e-12
+  )
+  # Fractional weights: "auto" keeps the chi-squared, with a warning, and
+  # "fisher" is an error.
+  d$w <- d$w / 3
+  expect_warning(
+    frac <- table_categorical(d, x, by = g, weights = w, output = "long"),
+    class = "spicy_fallback"
+  )
+  expect_identical(unique(frac$test_type), "chi_squared")
+  expect_equal(
+    frac$p,
+    table_categorical(
+      d,
+      x,
+      by = g,
+      weights = w,
+      test = "chisq",
+      output = "long"
+    )$p
+  )
+  expect_error(
+    table_categorical(d, x, by = g, weights = w, test = "fisher"),
+    class = "spicy_unsupported"
+  )
+})
+
+test_that("the test reads the observed table: no (Missing) level, no empty level", {
+  d <- .gts_sh(1:40)
+  # drop_na = FALSE shows a (Missing) level; the test is the complete
+  # cases' all the same.
+  d$smoking[1:3] <- NA
+  shown <- .first_rows(table_categorical(d, smoking, by = sex, output = "long"))
+  cc <- d[!is.na(d$smoking), ]
+  expect_identical(shown$test_type, "fisher_exact")
+  expect_equal(
+    shown$p,
+    stats::fisher.test(table(cc$smoking, cc$sex))$p.value,
+    tolerance = 1e-12
+  )
+  # A declared level nobody holds has no expected count to be small: the
+  # dense table keeps the chi-squared (gtsummary's table() keeps the empty
+  # row and would take the exact test).
+  sh <- .gts_sh()
+  sh$sex <- factor(sh$sex, levels = c("Female", "Male", "Other"))
+  dense <- .first_rows(table_categorical(
+    sh,
+    smoking,
+    by = sex,
+    output = "long"
+  ))
+  expect_identical(dense$test_type, "chi_squared")
+  expect_equal(dense$p, 0.712519570026406, tolerance = 1e-10)
+})
+
+test_that("a variable with nothing to test carries no test type", {
+  d <- data.frame(
+    x = factor(c("a", "a", "a", "a")),
+    y = factor(c("a", "b", "a", "b")),
+    g = factor(c("u", "v", "u", "v"))
+  )
+  out <- .first_rows(table_categorical(d, c(x, y), by = g, output = "long"))
+  expect_true(is.na(out$test_type[[1L]]) && is.na(out$p[[1L]]))
+  expect_identical(out$test_type[[2L]], "fisher_exact")
+  # One test ran: the note names it alone, with no list of variables.
+  expect_match(
+    attr(table_categorical(d, c(x, y), by = g), "assoc_note"),
+    "Group comparison: Fisher exact test.",
+    fixed = TRUE
+  )
+  # No test ran: no sentence, and no test type in the typed view.
+  none <- table_categorical(d, x, by = g)
+  expect_null(attr(none, "assoc_note"))
+  expect_true(all(is.na(as_structured(none)$col_meta$p$test_type)))
+})
+
+test_that("the test helpers read the table cross_tab() tests", {
+  set.seed(3)
+  d <- data.frame(
+    x = factor(sample(c("a", "b", "c"), 200, replace = TRUE)),
+    g = factor(sample(c("u", "v"), 200, replace = TRUE)),
+    w = stats::runif(200, 0.2, 3)
+  )
+  d$w[c(2, 9)] <- NA
+  tab <- spicy:::.cat_test_table(d$x, d$g, d$w, rescale = TRUE)
+  ct <- suppressWarnings(spicy::cross_tab(
+    d$x,
+    d$g,
+    weights = d$w,
+    rescale = TRUE
+  ))
+  expect_equal(
+    unname(suppressWarnings(stats::chisq.test(tab, correct = FALSE))$statistic),
+    attr(ct, "chi2"),
+    tolerance = 1e-12
+  )
+  expect_equal(sum(tab), 198)
+  expect_identical(spicy:::.cat_resolve_test(tab, "chisq"), "chisq")
+  expect_identical(spicy:::.cat_resolve_test(tab, "fisher"), "fisher")
+  expect_identical(
+    spicy:::.cat_resolve_test(matrix(c(5, 5, 5, 5), 2), "auto"),
+    "chisq"
+  )
+  expect_identical(
+    spicy:::.cat_resolve_test(matrix(c(5, 5, 5, 4), 2), "auto"),
+    "fisher"
+  )
+})
+
+test_that("the note names the tests in French", {
+  withr::local_options(spicy.language = "fr")
+  d <- .gts_sh(1:40)
+  expect_identical(
+    attr(
+      table_categorical(
+        d,
+        c(smoking, dentist_12m, physical_activity),
+        by = sex
+      ),
+      "assoc_note"
+    ),
+    paste0(
+      "Comparaison des groupes\u00a0: test du khi-deux de Pearson ",
+      "(dentist_12m, physical_activity)\u00a0; test exact de Fisher (smoking)."
+    )
+  )
+  d300 <- .gts_sh(1:300)
+  d300$sex_age <- interaction(d300$sex, d300$age_group, sep = " ")
+  set.seed(1)
+  expect_identical(
+    attr(table_categorical(d300, region, by = sex_age), "assoc_note"),
+    "Comparaison des groupes\u00a0: test exact de Fisher (Monte-Carlo, 2000 r\u00e9plications)."
+  )
 })

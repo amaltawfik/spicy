@@ -275,7 +275,9 @@
 # ---- oracles: the farmer data ------------------------------------------------
 
 test_that("the item chi-squares reproduce Agresti & Liu (1999) and MRCV", {
-  out <- .mr_farm_tbl(output = "data.frame")
+  # `test = "chisq"`: the published values are the Pearson statistics of
+  # every item, three of which take Fisher's exact test under "auto".
+  out <- .mr_farm_tbl(test = "chisq", output = "data.frame")
   items <- out[seq_len(5L), ]
   # A&L 1999, p. 941.
   expect_identical(round(items$Chi2, 2), c(5.96, 7.89, 4.62, 1.42, 10.95))
@@ -294,7 +296,11 @@ test_that("the item chi-squares reproduce Agresti & Liu (1999) and MRCV", {
 })
 
 test_that("the Bonferroni p-values reproduce the published global 0.136", {
-  out <- .mr_farm_tbl(p_adjust = "bonferroni", output = "data.frame")
+  out <- .mr_farm_tbl(
+    test = "chisq",
+    p_adjust = "bonferroni",
+    output = "data.frame"
+  )
   p <- out$p[seq_len(5L)]
   expect_equal(p, .mrcv_bonferroni_items, tolerance = 1e-3)
   # A&L 1999, p. 941: the overall Bonferroni p.
@@ -325,7 +331,7 @@ test_that("the Rao-Scott global test matches MRCV", {
 })
 
 test_that("Holm is the default adjustment, and the raw p-values stay", {
-  out <- .mr_farm_tbl(output = "data.frame")
+  out <- .mr_farm_tbl(test = "chisq", output = "data.frame")
   items <- out[seq_len(5L), ]
   raw <- stats::pchisq(items$Chi2, 4, lower.tail = FALSE)
   expect_equal(items$p_unadjusted, raw)
@@ -348,14 +354,14 @@ test_that("Holm is the default adjustment, and the raw p-values stay", {
     "m = 2 test(s). Not tested (no variation, shown as \u2013): x3, x4.",
     fixed = TRUE
   )
-  s <- as_structured(.mr_farm_tbl())
+  s <- as_structured(.mr_farm_tbl(test = "chisq"))
   expect_identical(s$col_meta$p$p_adjust, "holm")
   expect_identical(s$col_meta$p$p_adjust_m, 5L)
   expect_equal(s$col_meta$p$p_unadjusted[seq_len(5L)], raw)
 })
 
 test_that("p_adjust = \"none\" leaves the item p-values raw and says so", {
-  out <- .mr_farm_tbl(p_adjust = "none", output = "data.frame")
+  out <- .mr_farm_tbl(test = "chisq", p_adjust = "none", output = "data.frame")
   expect_false("p_unadjusted" %in% names(out))
   expect_equal(
     out$p[seq_len(5L)],
@@ -376,14 +382,17 @@ test_that("p_adjust = \"none\" leaves the item p-values raw and says so", {
 })
 
 test_that("the bootstrap is reproducible and agrees with MRCV within Monte Carlo error", {
+  # The item p-values of the default `test = "auto"` take Fisher's exact
+  # test for three items: exact, so they draw nothing from the RNG and the
+  # bootstrap draws the resamples it drew before they existed.
   set.seed(20261017)
   a <- attr(
-    .mr_farm_tbl(test = "bootstrap", output = "data.frame"),
+    .mr_farm_tbl(global_test = "bootstrap", output = "data.frame"),
     "global_test"
   )
   set.seed(20261017)
   b <- attr(
-    .mr_farm_tbl(test = "bootstrap", output = "data.frame"),
+    .mr_farm_tbl(global_test = "bootstrap", output = "data.frame"),
     "global_test"
   )
   expect_identical(a, b)
@@ -402,7 +411,7 @@ test_that("the bootstrap is reproducible and agrees with MRCV within Monte Carlo
   se_diff <- sqrt(2 * .mrcv_boot_p * (1 - .mrcv_boot_p) / 1999)
   expect_lt(abs(a$p.value - .mrcv_boot_p), 3 * se_diff)
   set.seed(1)
-  tbl <- .mr_farm_tbl(test = "bootstrap", boot_n = 99)
+  tbl <- .mr_farm_tbl(global_test = "bootstrap", boot_n = 99)
   expect_match(attr(tbl, "note"), "(99 resamples)", fixed = TRUE)
 })
 
@@ -421,7 +430,7 @@ test_that("the bootstrap draws again a resample in which an item loses all varia
         d,
         c(x, y),
         by = g,
-        test = "bootstrap",
+        global_test = "bootstrap",
         boot_n = 99,
         output = "data.frame"
       ),
@@ -480,7 +489,10 @@ test_that("the Rao-Scott design-effect summary: rs_mean and rs_cv", {
   expect_true(is.na(ge$rs_cv))
   # The bootstrap has no Rao-Scott summary.
   set.seed(1)
-  gb <- attr(.mr_farm_tbl(test = "bootstrap", boot_n = 99), "global_test")
+  gb <- attr(
+    .mr_farm_tbl(global_test = "bootstrap", boot_n = 99),
+    "global_test"
+  )
   expect_true(is.na(gb$rs_mean))
   expect_true(is.na(gb$rs_cv))
   skip_if_not_installed("broom")
@@ -495,6 +507,204 @@ test_that("the Rao-Scott test draws nothing from the session's RNG", {
   expect_identical(stats::runif(1L), after)
 })
 
+# ---- the item tests: `test` (decision of 2026-10-18) ----------------------------
+
+# The farmer items by education: A, B and E have an expected count below 5
+# in the small groups (VS, 16 respondents; Other, 14), C and D do not.
+.mr_farm_types_auto <- c(
+  "fisher_exact",
+  "fisher_exact",
+  "chi_squared",
+  "chi_squared",
+  "fisher_exact"
+)
+
+test_that("test = \"auto\" takes Fisher's exact test where an expected count is below 5", {
+  farm <- .mr_farmer()
+  out <- .mr_farm_tbl(output = "data.frame")
+  items <- out[seq_len(5L), ]
+  expect_identical(items$test_type, .mr_farm_types_auto)
+  for (j in seq_len(5L)) {
+    tab <- table(farm$ed, farm[[LETTERS[[j]]]])
+    expected <- outer(rowSums(tab), colSums(tab)) / sum(tab)
+    fisher <- identical(.mr_farm_types_auto[[j]], "fisher_exact")
+    expect_identical(any(expected < 5), fisher, info = LETTERS[[j]])
+    ref <- if (fisher) {
+      stats::fisher.test(tab)$p.value
+    } else {
+      stats::chisq.test(tab, correct = FALSE)$p.value
+    }
+    expect_equal(items$p_unadjusted[[j]], ref, tolerance = 1e-12)
+    # A Fisher item has no statistic and no degrees of freedom.
+    expect_identical(is.na(items$Chi2[[j]]), fisher)
+    expect_identical(is.na(items$df[[j]]), fisher)
+  }
+  # Holm runs on the p-values the tests produced.
+  expect_equal(items$p, stats::p.adjust(items$p_unadjusted, "holm"))
+  expect_match(
+    attr(out, "note"),
+    paste(
+      "Item p-values: Pearson chi-squared test (C, D); Fisher exact test",
+      "(A, B, E). P-values adjusted via stats::p.adjust(method = \"holm\");",
+      "m = 5 test(s)."
+    ),
+    fixed = TRUE
+  )
+  long <- .mr_farm_tbl(output = "long")
+  expect_identical(
+    long$test_type[!duplicated(long$variable)],
+    .mr_farm_types_auto
+  )
+  s <- as_structured(.mr_farm_tbl())
+  expect_identical(s$col_meta$p$test_type, c(.mr_farm_types_auto, NA))
+})
+
+test_that("test = \"chisq\" and \"fisher\" take one test for every item", {
+  farm <- .mr_farmer()
+  chisq <- .mr_farm_tbl(test = "chisq", output = "data.frame")
+  fisher <- .mr_farm_tbl(test = "fisher", output = "data.frame")
+  expect_identical(chisq$test_type[1:5], rep("chi_squared", 5L))
+  expect_identical(fisher$test_type[1:5], rep("fisher_exact", 5L))
+  expect_true(all(is.na(fisher$Chi2)) && all(is.na(fisher$df)))
+  for (j in seq_len(5L)) {
+    tab <- table(farm$ed, farm[[LETTERS[[j]]]])
+    expect_equal(
+      fisher$p_unadjusted[[j]],
+      stats::fisher.test(tab)$p.value,
+      tolerance = 1e-12
+    )
+    expect_equal(
+      chisq$p_unadjusted[[j]],
+      stats::pchisq(.mrcv_x2_items[[j]], 4, lower.tail = FALSE),
+      tolerance = 1e-6
+    )
+  }
+  expect_equal(fisher$p[1:5], stats::p.adjust(fisher$p_unadjusted[1:5], "holm"))
+  expect_match(
+    attr(fisher, "note"),
+    "Item p-values: Fisher exact test of each item by group.",
+    fixed = TRUE
+  )
+})
+
+test_that("the global test sums the Pearson statistics whatever `test` says", {
+  ref <- attr(.mr_farm_tbl(test = "chisq"), "global_test")
+  expect_equal(ref$statistic, .mrcv_rs2[["statistic"]], tolerance = 1e-3)
+  expect_equal(ref$df, .mrcv_rs2[["df"]], tolerance = 1e-3)
+  expect_equal(ref$p.value, .mrcv_rs2[["p"]], tolerance = 1e-3)
+  expect_identical(attr(.mr_farm_tbl(), "global_test"), ref)
+  expect_identical(attr(.mr_farm_tbl(test = "fisher"), "global_test"), ref)
+  # The bootstrap refers the same sum, X2_S = 30.84, to its resamples.
+  set.seed(1)
+  gb <- attr(
+    .mr_farm_tbl(test = "fisher", global_test = "bootstrap", boot_n = 99),
+    "global_test"
+  )
+  expect_equal(gb$statistic, sum(.mrcv_x2_items), tolerance = 1e-6)
+})
+
+test_that("an item tested by Fisher's exact test shows a dash for its statistic", {
+  tbl <- .mr_farm_tbl(statistic = TRUE)
+  disp <- attr(tbl, "display_df")
+  dash <- spicy_str("cell_undefined")
+  fisher <- .mr_farm_types_auto == "fisher_exact"
+  expect_identical(disp$Test[1:5][fisher], rep(dash, 3L))
+  expect_identical(
+    disp$Test[[3L]],
+    paste0(spicy_str("symbol_chi_sq"), "(4) = 4.62")
+  )
+  s <- as_structured(tbl)
+  expect_identical(s$cell_status$Test[1:5][fisher], rep("undefined", 3L))
+  expect_true(all(is.na(s$body$Test[1:5][fisher])))
+  # inline() refuses an undefined cell, as it does in every family: it
+  # never pastes the placeholder into a sentence.
+  expect_error(
+    inline(tbl, A, column = "statistic"),
+    class = "spicy_invalid_input"
+  )
+  expect_identical(inline(tbl, C, column = "statistic"), disp$Test[[3L]])
+  # Without p-values `test` has nothing to choose: the statistic is the
+  # chi-squared of every item.
+  expect_warning(
+    out <- .mr_farm_tbl(statistic = TRUE, p_value = FALSE, test = "fisher"),
+    "`test` is ignored when `p_value = FALSE`",
+    class = "spicy_ignored_arg"
+  )
+  expect_false(dash %in% attr(out, "display_df")$Test[1:5])
+  skip_if_not_installed("broom")
+  td <- broom::tidy(tbl)
+  expect_identical(unique(td$test_type[td$variable == "A"]), "fisher_exact")
+  expect_true(all(is.na(td$statistic[td$variable == "A"])))
+  expect_identical(unique(td$test_type[td$variable == "C"]), "chi_squared")
+})
+
+test_that("an item table the exact enumeration cannot handle takes the Monte Carlo test", {
+  # 20 groups of 200, an item chosen 3 to 8 times per group: FEXACT
+  # overflows on this 20 x 2 table.
+  k <- c(6, 5, 7, 4, 6, 8, 5, 6, 7, 3, 6, 5, 4, 7, 6, 5, 8, 6, 5, 4)
+  d <- data.frame(
+    g = factor(rep(sprintf("g%02d", 1:20), each = 200L)),
+    x = unlist(lapply(k, function(m) c(rep(1, m), rep(0, 200 - m)))),
+    y = rep(c(1, 0), 2000L)
+  )
+  tab <- cbind(k, 200 - k)
+  expect_error(stats::fisher.test(tab))
+  set.seed(7)
+  out <- table_multiresponse(
+    d,
+    c(x, y),
+    by = g,
+    test = "fisher",
+    output = "data.frame"
+  )
+  expect_identical(out$test_type[1:2], c("fisher_exact_mc", "fisher_exact"))
+  set.seed(7)
+  expect_identical(
+    out$p_unadjusted[[1L]],
+    stats::fisher.test(tab, simulate.p.value = TRUE, B = 2000)$p.value
+  )
+  expect_match(
+    attr(out, "note"),
+    paste(
+      "Item p-values: Fisher exact test (y); Fisher exact test",
+      "(Monte Carlo, 2000 replicates) (x)."
+    ),
+    fixed = TRUE
+  )
+})
+
+test_that("with no item tested, the note names no item test", {
+  d <- data.frame(
+    g = rep(c("a", "b"), each = 3L),
+    x = rep(1, 6L),
+    y = rep(0, 6L)
+  )
+  tbl <- table_multiresponse(d, c(x, y), by = g)
+  note <- attr(tbl, "note")
+  expect_false(grepl("Item p-values", note, fixed = TRUE))
+  expect_false(grepl("adjusted via", note, fixed = TRUE))
+  expect_match(note, "Not tested (no variation", fixed = TRUE)
+  expect_true(all(is.na(tbl$test_type)))
+  expect_null(attr(tbl, "global_test"))
+})
+
+test_that("the item note names the tests in French", {
+  withr::local_options(spicy.language = "fr")
+  expect_match(
+    attr(.mr_farm_tbl(), "note"),
+    paste0(
+      "Valeurs p des items\u00a0: test du khi-deux de Pearson (C, D)\u00a0; ",
+      "test exact de Fisher (A, B, E)."
+    ),
+    fixed = TRUE
+  )
+  expect_match(
+    attr(.mr_farm_tbl(test = "fisher"), "note"),
+    "Valeurs p des items\u00a0: test exact de Fisher de chaque item selon le groupe.",
+    fixed = TRUE
+  )
+})
+
 test_that("a bootstrap p of zero is reported at the resolution of the resamples", {
   d <- data.frame(
     g = rep(c("a", "b"), each = 20L),
@@ -506,7 +716,7 @@ test_that("a bootstrap p of zero is reported at the resolution of the resamples"
     d,
     c(x, y),
     by = g,
-    test = "bootstrap",
+    global_test = "bootstrap",
     boot_n = 99
   )
   expect_identical(attr(tbl, "global_test")$p.value, 0)
@@ -948,6 +1158,7 @@ test_that("percentages of cases, of responses, or both", {
       "Total n",
       "Total % of cases",
       "Total % of responses",
+      "test_type",
       "Chi2",
       "df",
       "p",
@@ -1108,7 +1319,9 @@ test_that("an item nobody chose keeps its row, at zero", {
 
 test_that("an item without variation leaves the tests, with a note", {
   d <- .mr_toy()
-  tbl <- table_multiresponse(d, c(x1, x2, x3, x4), by = g)
+  # `test = "chisq"` for the Holm oracle below; under "auto" the two
+  # tested items take Fisher's exact test.
+  tbl <- table_multiresponse(d, c(x1, x2, x3, x4), by = g, test = "chisq")
   expect_true(all(is.na(tbl$p[3:4])))
   expect_false(anyNA(tbl$p[1:2]))
   g <- attr(tbl, "global_test")
@@ -1190,7 +1403,7 @@ test_that("p_value = FALSE: the data frames are the default minus the test", {
   out <- .mr_farm_tbl(p_value = FALSE, output = "data.frame")
   expect_identical(
     names(out),
-    setdiff(names(ref), c("Chi2", "df", "p", "p_unadjusted"))
+    setdiff(names(ref), c("test_type", "Chi2", "df", "p", "p_unadjusted"))
   )
   expect_identical(unclass(out)[names(out)], unclass(ref)[names(out)])
   expect_null(attr(out, "global_test"))
@@ -1308,7 +1521,7 @@ test_that("p_adjust typed without a test is an error, its default is not", {
 })
 
 test_that("statistic = TRUE adds the item chi-squared column", {
-  tbl <- .mr_farm_tbl(statistic = TRUE)
+  tbl <- .mr_farm_tbl(statistic = TRUE, test = "chisq")
   disp <- attr(tbl, "display_df")
   expect_identical(utils::tail(names(disp), 2L), c("Test", "p"))
   expect_identical(disp$Test[[1L]], "\u03c7\u00b2(4) = 5.96")
@@ -1330,13 +1543,13 @@ test_that("statistic = TRUE adds the item chi-squared column", {
   long <- .mr_farm_tbl(statistic = TRUE, p_value = FALSE, output = "long")
   expect_identical(
     names(long),
-    c("variable", "group", "n", "base", "pct", "chi2", "df")
+    c("variable", "group", "n", "base", "pct", "test_type", "chi2", "df")
   )
   # The statistic alone draws nothing from the session's RNG, even under
-  # test = "bootstrap": nobody would see the global test.
+  # global_test = "bootstrap": nobody would see the global test.
   set.seed(1)
   expect_warning(
-    .mr_farm_tbl(statistic = TRUE, p_value = FALSE, test = "bootstrap"),
+    .mr_farm_tbl(statistic = TRUE, p_value = FALSE, global_test = "bootstrap"),
     class = "spicy_ignored_arg"
   )
   after <- stats::runif(1L)
@@ -1360,7 +1573,11 @@ test_that("statistic is ignored, with a warning, when no item test can run", {
 
 test_that("arguments the table cannot use are ignored with a warning", {
   expect_warning(
-    table_multiresponse(.mr_farmer(), A:E, test = "bootstrap"),
+    table_multiresponse(.mr_farmer(), A:E, global_test = "bootstrap"),
+    class = "spicy_ignored_arg"
+  )
+  expect_warning(
+    table_multiresponse(.mr_farmer(), A:E, test = "fisher"),
     class = "spicy_ignored_arg"
   )
   expect_warning(.mr_farm_tbl(boot_n = 99), class = "spicy_ignored_arg")
@@ -1471,7 +1688,7 @@ test_that("as.data.frame() and as_tibble() return the data.frame output", {
 
 test_that("tidy() reads one row per item and group, the margin flagged", {
   skip_if_not_installed("broom")
-  td <- broom::tidy(.mr_farm_tbl())
+  td <- broom::tidy(.mr_farm_tbl(test = "chisq"))
   expect_named(
     td,
     c(
@@ -1483,6 +1700,7 @@ test_that("tidy() reads one row per item and group, the margin flagged", {
       "base",
       "proportion",
       "proportion_responses",
+      "test_type",
       "statistic",
       "df",
       "p.value",
@@ -1558,7 +1776,13 @@ test_that("the inputs are validated in the house style", {
   )
   for (bad in list(0, -1, 1.5, NA, "10", c(10, 20))) {
     expect_error(
-      table_multiresponse(d, A:E, by = ed, test = "bootstrap", boot_n = bad),
+      table_multiresponse(
+        d,
+        A:E,
+        by = ed,
+        global_test = "bootstrap",
+        boot_n = bad
+      ),
       class = "spicy_invalid_input"
     )
   }
@@ -1576,6 +1800,18 @@ test_that("the inputs are validated in the house style", {
     table_multiresponse(d, A:E, by = ed, test = "exact"),
     class = "spicy_invalid_input"
   )
+  expect_error(
+    table_multiresponse(d, A:E, by = ed, global_test = "exact"),
+    class = "spicy_invalid_input"
+  )
+  # The global method left `test` with no alias: its old values are
+  # errors there.
+  for (old in c("rs2", "bootstrap")) {
+    expect_error(
+      table_multiresponse(d, A:E, by = ed, test = old),
+      class = "spicy_invalid_input"
+    )
+  }
   expect_error(
     table_multiresponse(d, A:E, p_digits = 0),
     class = "spicy_invalid_input"

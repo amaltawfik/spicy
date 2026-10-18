@@ -682,6 +682,15 @@
   # The joiner of those items.
   note_group_comparison_sep = "; ",
 
+  # -- table_categorical() / table_multiresponse(): the tests of a table ---
+  # The test behind each p-value, named in `note_group_comparison` (or in
+  # `note_multiresponse_items_p`) with the variables it covers. The Monte
+  # Carlo name takes the number of replicates; a simulated chi-squared
+  # keeps `note_chisq_simulated` after its name.
+  test_pearson_chisq = "Pearson chi-squared test",
+  test_fisher_exact = "Fisher exact test",
+  test_fisher_mc = "Fisher exact test (Monte Carlo, %s replicates)",
+
   # -- p_adjust: one sentence for every family that adjusts ------------------
   # `table_regression()` and the descriptive tables share the sentence;
   # only the family size differs: coefficients per model there, tests of
@@ -760,7 +769,11 @@
   # argument, built at the call site from `symbol_chi_sq` and the p-value
   # templates (`note_p_prefix_eq` / `note_p_prefix_lt`) under the table's
   # decimal mark. An adjustment of the item p-values is told by the
-  # family's `note_p_adjusted`, after `note_multiresponse_items_p`.
+  # family's `note_p_adjusted`, after `note_multiresponse_items_p`, whose
+  # hole is the name of the one test every item took
+  # (`test_pearson_chisq`, ...); when the items took several,
+  # `note_multiresponse_items_p_mixed` receives each test with the items it
+  # covers, joined as in `note_group_comparison`.
   # `note_multiresponse_not_tested` quotes the en dash of `cell_undefined`,
   # the marker the cells of those items show.
   title_multiresponse = "Multiple responses",
@@ -778,7 +791,8 @@
   note_multiresponse_base_all = "Base: all respondents.",
   note_multiresponse_none_chosen = "%d respondents chose none of the items.",
   note_multiresponse_none_chosen_one = "1 respondent chose none of the items.",
-  note_multiresponse_items_p = "Item p-values: Pearson chi-squared test of each item by group.",
+  note_multiresponse_items_p = "Item p-values: %s of each item by group.",
+  note_multiresponse_items_p_mixed = "Item p-values: %s.",
   note_multiresponse_global_rs2 = "Group comparison: Rao-Scott second-order corrected chi-squared test of multiple marginal independence, %s.",
   note_multiresponse_global_boot = "Group comparison: bootstrap test of multiple marginal independence (%d resamples), %s.",
   note_multiresponse_not_tested = "Not tested (no variation, shown as \u2013): %s.",

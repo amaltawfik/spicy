@@ -2905,7 +2905,11 @@ output_word <- function(rendered, word_path, word_template = NULL) {
 #' Under `p_adjust`, the p-value column holds the adjusted values and its
 #' `col_meta` adds `p_adjust` (the method), `p_adjust_m` (the number of
 #' tests adjusted together) and `p_unadjusted` (the raw p-value of each
-#' cell, as long as `body`).
+#' cell, as long as `body`). In [table_categorical()] and
+#' [table_multiresponse()], the p-value column's `col_meta` also carries
+#' `test_type`, the test of each cell, as long as `body`
+#' (`"chi_squared"`, `"fisher_exact"`, `"fisher_exact_mc"`, `NA` where
+#' the cell is).
 #'
 #' @section Versioning:
 #' `version` says which contract an object carries. Version `3` moved

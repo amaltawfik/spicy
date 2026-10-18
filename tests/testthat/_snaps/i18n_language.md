@@ -39,10 +39,12 @@
       
        Variable       │  F n    F %     M n    M %     Total n    Total %      p      Phi   
       ────────────────┼─────────────────────────────────────────────────────────────────────
-       smoke          │                                                      0,659    0,17  
+       smoke          │                                                      1,000    0,17  
          No           │   2     50,0     2     50,0       4        50,0                     
          Yes          │   2     50,0     1     25,0       3        37,5                     
          (Manquant)   │   0      0,0     1     25,0       1        12,5                     
+      
+      Comparaison des groupes : test exact de Fisher.
     Code
       print(table_continuous(d, select = c(bmi, age), by = sex))
     Output
@@ -117,7 +119,9 @@
       
        Variable │  p    Phi  
       ──────────┼────────────
-       sex      │ .046  1.00 
+       sex      │ .333  1.00 
          F      │            
          M      │            
+      
+      Group comparison: Fisher exact test.
 

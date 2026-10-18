@@ -7,7 +7,7 @@
       
        Variable   │  1 n    1 %     0 n    0 %     Total n    Total %      p      Effect size  
       ────────────┼────────────────────────────────────────────────────────────────────────────
-       cyl        │                                                       .025        .52      
+       cyl        │                                                       .018        .52      
          6        │   3     23.1     4     21.1       7        21.9                            
          4        │   8     61.5     3     15.8      11        34.4                            
          8        │   2     15.4    12     63.2      14        43.8                            
@@ -21,7 +21,7 @@
          0        │   6     46.2    12     63.2      18        56.2                            
          1        │   7     53.8     7     36.8      14        43.8                            
       
-      Note. Cramer's V: cyl, gear; Phi: vs. P-values adjusted via stats::p.adjust(method = "holm"); m = 3 test(s).
+      Note. Cramer's V: cyl, gear; Phi: vs. Group comparison: Pearson chi-squared test (vs); Fisher exact test (cyl, gear). P-values adjusted via stats::p.adjust(method = "holm"); m = 3 test(s).
 
 ---
 
@@ -32,7 +32,7 @@
       
        Variable   │  1 n    1 %     0 n    0 %     Total n    Total %      p       Taille d'effet  
       ────────────┼────────────────────────────────────────────────────────────────────────────────
-       cyl        │                                                       0,025         0,52       
+       cyl        │                                                       0,018         0,52       
          6        │   3     23,1     4     21,1       7        21,9                                
          4        │   8     61,5     3     15,8      11        34,4                                
          8        │   2     15,4    12     63,2      14        43,8                                
@@ -46,7 +46,7 @@
          0        │   6     46,2    12     63,2      18        56,2                                
          1        │   7     53,8     7     36,8      14        43,8                                
       
-      Note. V de Cramér : cyl, gear ; Phi : vs. Valeurs p ajustées par stats::p.adjust(method = "holm") ; m = 3 test(s).
+      Note. V de Cramér : cyl, gear ; Phi : vs. Comparaison des groupes : test du khi-deux de Pearson (vs) ; test exact de Fisher (cyl, gear). Valeurs p ajustées par stats::p.adjust(method = "holm") ; m = 3 test(s).
 
 # p_value = FALSE with assoc_measure = "none": a purely descriptive table
 

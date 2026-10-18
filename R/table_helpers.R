@@ -752,6 +752,26 @@ make_stronger_indent <- function(x, base_indent, strong_indent, rows) {
   structured
 }
 
+# Record which test produced each p-value, on the same `col_meta`:
+# `test_type`, as long as `body`, the test key of the cell's variable
+# (`"chi_squared"`, `"fisher_exact"`, `"fisher_exact_mc"`) where the cell
+# holds a p-value, NA elsewhere. `types` is named by `.variable`, the key
+# of the test, as the raw p-values above. Called only for a table that
+# shows its p-values.
+.struct_attach_test_type <- function(structured, types) {
+  body <- structured$body
+  for (nm in names(structured$col_meta)) {
+    if (!identical(structured$col_meta[[nm]]$token, "p")) {
+      next
+    }
+    tt <- rep(NA_character_, nrow(body))
+    hit <- !is.na(body[[nm]])
+    tt[hit] <- unname(types[body[[".variable"]][hit]])
+    structured$col_meta[[nm]]$test_type <- tt
+  }
+  structured
+}
+
 # The test block of a compute frame (decision of 2026-10-17, issue #9):
 # the p-value column is kept only with `p_value`, and the rest of the
 # test (its type, statistic and degrees of freedom) only when the test

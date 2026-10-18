@@ -254,7 +254,7 @@
          mid    │  2   33.3   2   33.3     4      33.3                       
          hi     │  2   33.3   2   33.3     4      33.3                       
       
-      Note. Phi: smoking; Cramer's V: health.
+      Note. Phi: smoking; Cramer's V: health. Group comparison: Fisher exact test.
 
 # print.spicy_continuous_lm_table: bivariate fit by group
 
