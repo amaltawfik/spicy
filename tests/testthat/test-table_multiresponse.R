@@ -965,7 +965,7 @@ test_that("percentages of cases, of responses, or both", {
   )
 })
 
-test_that("sort = \"desc\" orders the items by total count, ties in questionnaire order", {
+test_that("sort = \"-\" and \"+\" order the items by total count", {
   d <- data.frame(
     a = c(1, 0, 0, 0),
     b = c(1, 1, 1, 0),
@@ -976,12 +976,123 @@ test_that("sort = \"desc\" orders the items by total count, ties in questionnair
   s <- table_multiresponse(
     d,
     c(a, b, c, e),
-    sort = "desc",
+    sort = "-",
+    output = "data.frame"
+  )
+  up <- table_multiresponse(
+    d,
+    c(a, b, c, e),
+    sort = "+",
     output = "data.frame"
   )
   expect_identical(q$Variable, c("a", "b", "c", "e", "Respondents"))
   expect_identical(s$Variable, c("b", "c", "e", "a", "Respondents"))
   expect_identical(s$n, c(3, 2, 2, 1, 4))
+  expect_identical(up$Variable, c("a", "c", "e", "b", "Respondents"))
+  expect_identical(up$n, c(1, 2, 2, 3, 4))
+  # With `by`, the total count decides, not the first group.
+  g <- data.frame(
+    grp = c("u", "u", "u", "v", "v", "v", "v"),
+    x = c(1, 1, 1, 0, 0, 0, 0),
+    y = c(0, 0, 0, 1, 1, 1, 1)
+  )
+  by_grp <- table_multiresponse(
+    g,
+    c(x, y),
+    by = grp,
+    sort = "-",
+    p_value = FALSE,
+    output = "data.frame"
+  )
+  expect_identical(by_grp$Variable, c("y", "x", "Respondents"))
+})
+
+test_that("items tied on their count keep the order of select", {
+  # c and e are both chosen twice: written e before c, they stay so,
+  # against their order in the data.
+  d <- data.frame(
+    a = c(1, 0, 0, 0),
+    b = c(1, 1, 1, 0),
+    c = c(1, 1, 0, 0),
+    e = c(0, 1, 0, 1)
+  )
+  rows_of <- function(sort) {
+    table_multiresponse(
+      d,
+      c(e, c, b, a),
+      sort = sort,
+      output = "data.frame"
+    )$Variable
+  }
+  expect_identical(rows_of("-"), c("b", "e", "c", "a", "Respondents"))
+  expect_identical(rows_of("+"), c("a", "e", "c", "b", "Respondents"))
+})
+
+test_that("sort = \"\" keeps the order in which select delivers the columns", {
+  d <- data.frame(q_a = c(1, 0, 1), q_b = c(1, 1, 1), q_c = c(0, 0, 1))
+  rows_of <- function(...) {
+    table_multiresponse(d, ..., output = "data.frame")$Variable
+  }
+  expect_identical(rows_of(c(q_c, q_a)), c("q_c", "q_a", "Respondents"))
+  expect_identical(
+    rows_of(c(q_c, q_a), sort = ""),
+    c("q_c", "q_a", "Respondents")
+  )
+  expect_identical(rows_of(c("q_c", "q_a")), c("q_c", "q_a", "Respondents"))
+  expect_identical(
+    rows_of(tidyselect::starts_with("q_")),
+    c("q_a", "q_b", "q_c", "Respondents")
+  )
+})
+
+test_that("sort = \"name+\" and \"name-\" order the labels shown, in the C locale", {
+  d <- data.frame(work = c(1, 0), health = c(1, 1), standard = c(0, 1))
+  rows_of <- function(...) {
+    table_multiresponse(
+      d,
+      c(work, health, standard),
+      ...,
+      output = "data.frame"
+    )$Variable
+  }
+  expect_identical(
+    rows_of(sort = "name+"),
+    c("health", "standard", "work", "Respondents")
+  )
+  expect_identical(
+    rows_of(sort = "name-"),
+    c("work", "standard", "health", "Respondents")
+  )
+  # The labels are sorted, not the names, in the C locale whatever the
+  # session's: capitals before lower case, an accented letter after z.
+  lab <- c(
+    work = "Work",
+    health = "\u00e9tat de sant\u00e9",
+    standard = "standard"
+  )
+  withr::with_collate("en_US.UTF-8", {
+    up_locale <- rows_of(labels = lab, sort = "name+")
+  })
+  up <- rows_of(labels = lab, sort = "name+")
+  expect_identical(up_locale, up)
+  expect_identical(
+    up,
+    c("Work", "standard", "\u00e9tat de sant\u00e9", "Respondents")
+  )
+  expect_identical(
+    rows_of(labels = lab, sort = "name-"),
+    c("\u00e9tat de sant\u00e9", "standard", "Work", "Respondents")
+  )
+})
+
+test_that("the sort values of the first draft are errors, not aliases", {
+  d <- data.frame(a = c(1, 0), b = c(1, 1))
+  for (old in c("questionnaire", "desc")) {
+    expect_error(
+      table_multiresponse(d, c(a, b), sort = old),
+      class = "spicy_invalid_input"
+    )
+  }
 })
 
 test_that("an item nobody chose keeps its row, at zero", {

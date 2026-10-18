@@ -11,7 +11,7 @@ table_multiresponse(
   counted = NULL,
   percent = c("cases", "responses", "both"),
   base = c("valid", "answered", "all"),
-  sort = c("questionnaire", "desc"),
+  sort = c("", "+", "-", "name+", "name-"),
   p_value = NULL,
   test = c("rs2", "bootstrap"),
   boot_n = 1999L,
@@ -38,7 +38,7 @@ table_multiresponse(
 
 \item{select}{The indicator columns of the question, one per item, in
 tidyselect syntax or as a character vector of column names. Their
-order is the order of the rows unless \code{sort = "desc"}.}
+order is the order of the rows, unless \code{sort} sorts them.}
 
 \item{by}{Optional grouping column, unquoted or as a string. Factor
 levels keep their declared order, a declared level with no respondent
@@ -77,9 +77,25 @@ and 107-108), where choosing nothing cannot be told from skipping.
 counts.
 }}
 
-\item{sort}{The order of the item rows: \code{"questionnaire"} (the
-default), the order of \code{select}; or \code{"desc"}, by decreasing total
-count, ties in questionnaire order.}
+\item{sort}{Sorting method for items, as in \code{\link[=freq]{freq()}}:
+\itemize{
+\item \code{""} - no sorting (default)
+\item \code{"+"} - increasing frequency
+\item \code{"-"} - decreasing frequency
+\item \code{"name+"} - alphabetical A-Z
+\item \code{"name-"} - alphabetical Z-A
+}
+
+With no sorting, the rows keep the order in which \code{select} delivers
+the columns: their order in \code{data} with a helper such as
+\code{starts_with()}, or the order written in \code{c()}. The function cannot
+know the questionnaire, so its order comes from the order of the
+columns or the order written in \code{select}. The frequency is the total
+count of each item, and items with the same count keep the order of
+\code{select}. The alphabetical sort reads the labels displayed in the
+rows (the column names, or the labels set by \code{labels}) in the C
+locale, the same on every platform: capitals before lower case,
+accented letters after \code{z}.}
 
 \item{p_value}{Logical or \code{NULL}. With \code{by}, \code{NULL} (the default) and
 \code{TRUE} show the item \code{p} column and the global test in the note.
@@ -368,7 +384,7 @@ sat <- data.frame(
   relationships = sochealth$life_sat_relationships >= 4,
   standard = sochealth$life_sat_standard >= 4
 )
-table_multiresponse(sat, select = names(sat), sort = "desc")
+table_multiresponse(sat, select = names(sat), sort = "-")
 
 # Bootstrap global test: set a seed to reproduce its p-value.
 set.seed(1)

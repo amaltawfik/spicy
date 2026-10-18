@@ -1223,7 +1223,7 @@ test_that("a French multiple-response table cites its cells as displayed", {
 test_that("a multiple-response item renamed by `labels` keeps its address", {
   # As in the other families, the row is found by identity: the column
   # name survives any label, and the displayed label is accepted as a
-  # convenience. `sort = "desc"` moves the rows, never the address.
+  # convenience. `sort = "-"` moves the rows, never the address.
   plain <- .il_mr(by = sex)
   named <- .il_mr(by = sex, labels = c(smoking = "Current smoker"))
   expect_identical(inline(named, smoking, column = "n", model = "Male"), "118")
@@ -1245,7 +1245,7 @@ test_that("a multiple-response item renamed by `labels` keeps its address", {
     "70.5"
   )
   expect_identical(
-    inline(.il_mr(sort = "desc"), smoking, column = "pct"),
+    inline(.il_mr(sort = "-"), smoking, column = "pct"),
     inline(.il_mr(), smoking, column = "pct")
   )
 })

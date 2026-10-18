@@ -62,7 +62,7 @@
 #' @param data A data frame, one row per respondent.
 #' @param select The indicator columns of the question, one per item, in
 #'   tidyselect syntax or as a character vector of column names. Their
-#'   order is the order of the rows unless `sort = "desc"`.
+#'   order is the order of the rows, unless `sort` sorts them.
 #' @param by Optional grouping column, unquoted or as a string. Factor
 #'   levels keep their declared order, a declared level with no respondent
 #'   included; any other column forms groups in order of first appearance
@@ -94,9 +94,23 @@
 #'     and 107-108), where choosing nothing cannot be told from skipping.
 #'   * `"all"`: every row of the group, as `questionr::multi.table()`
 #'     counts.
-#' @param sort The order of the item rows: `"questionnaire"` (the
-#'   default), the order of `select`; or `"desc"`, by decreasing total
-#'   count, ties in questionnaire order.
+#' @param sort Sorting method for items, as in [freq()]:
+#'   * `""` - no sorting (default)
+#'   * `"+"` - increasing frequency
+#'   * `"-"` - decreasing frequency
+#'   * `"name+"` - alphabetical A-Z
+#'   * `"name-"` - alphabetical Z-A
+#'
+#'   With no sorting, the rows keep the order in which `select` delivers
+#'   the columns: their order in `data` with a helper such as
+#'   `starts_with()`, or the order written in `c()`. The function cannot
+#'   know the questionnaire, so its order comes from the order of the
+#'   columns or the order written in `select`. The frequency is the total
+#'   count of each item, and items with the same count keep the order of
+#'   `select`. The alphabetical sort reads the labels displayed in the
+#'   rows (the column names, or the labels set by `labels`) in the C
+#'   locale, the same on every platform: capitals before lower case,
+#'   accented letters after `z`.
 #' @param p_value Logical or `NULL`. With `by`, `NULL` (the default) and
 #'   `TRUE` show the item `p` column and the global test in the note.
 #'   `FALSE` removes both from every output, the `p` column of the data
@@ -326,7 +340,7 @@
 #'   relationships = sochealth$life_sat_relationships >= 4,
 #'   standard = sochealth$life_sat_standard >= 4
 #' )
-#' table_multiresponse(sat, select = names(sat), sort = "desc")
+#' table_multiresponse(sat, select = names(sat), sort = "-")
 #'
 #' # Bootstrap global test: set a seed to reproduce its p-value.
 #' set.seed(1)
@@ -368,7 +382,7 @@ table_multiresponse <- function(
   counted = NULL,
   percent = c("cases", "responses", "both"),
   base = c("valid", "answered", "all"),
-  sort = c("questionnaire", "desc"),
+  sort = c("", "+", "-", "name+", "name-"),
   p_value = NULL,
   test = c("rs2", "bootstrap"),
   boot_n = 1999L,
@@ -417,7 +431,11 @@ table_multiresponse <- function(
   .check_labels_arg(labels)
   percent <- spicy_match_arg(percent)
   base <- spicy_match_arg(base)
-  sort <- spicy_match_arg(sort)
+  # An explicit `""` is taken as typed: `match.arg()` cannot match it,
+  # since `pmatch()` matches the empty string to nothing.
+  if (!identical(sort, "")) {
+    sort <- spicy_match_arg(sort)
+  }
   test_explicit <- !missing(test)
   test <- spicy_match_arg(test)
   align <- spicy_match_arg(align)
@@ -584,10 +602,17 @@ table_multiresponse <- function(
   pct_cases[!is.finite(pct_cases)] <- NA_real_
   pct_responses <- 100 * counts / responses
   pct_responses[!is.finite(pct_responses)] <- NA_real_
-  ord <- if (identical(sort, "desc")) {
-    order(-counts[nrow(counts), ])
-  } else {
+  # The `sort` contract of `freq()`: by total count, or by displayed label
+  # in the C locale of the radix method, whatever the platform. That sort
+  # is stable, so ties keep the order of `select`.
+  ord <- if (identical(sort, "")) {
     seq_along(select_names)
+  } else {
+    order(
+      if (sort %in% c("+", "-")) counts[nrow(counts), ] else item_labels,
+      decreasing = sort %in% c("-", "name-"),
+      method = "radix"
+    )
   }
 
   # ---- the tests -------------------------------------------------------------
