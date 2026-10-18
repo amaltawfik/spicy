@@ -970,7 +970,7 @@ table_multiresponse(
 | Respondents | 599 |      |      | 565 |      |      | 1164 |      |      |
 | Respondents with no answer to the question removed: 36. Several answers possible: percentages of respondents can sum to more than 100%; percentages of responses sum to 100%. Base: respondents who answered the question, including those who chose no item. 67 respondents chose none of the items. |  |  |  |  |  |  |  |  |  |
 
-Multiple responses by Sex {#tinytable_p3x63vkkr48j9pbvr4la .table
+Multiple responses by Sex {#tinytable_a5h9wccgoyq0jayidynp .table
 .tinytable style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 
