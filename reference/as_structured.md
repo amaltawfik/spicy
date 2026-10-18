@@ -173,8 +173,9 @@ cell, as long as `body`). In
 and
 [`table_multiresponse()`](https://amaltawfik.github.io/spicy/reference/table_multiresponse.md),
 the p-value column's `col_meta` also carries `test_type`, the test of
-each cell, as long as `body` (`"chi_squared"`, `"fisher_exact"`,
-`"fisher_exact_mc"`, `NA` where the cell is).
+each cell, as long as `body` (`"chi_squared"`, `"n1_chi_squared"`,
+`"fisher_exact"`, `"fisher_midp"`, `"fisher_exact_mc"`, `NA` where the
+cell holds no p-value).
 
 ## Versioning
 

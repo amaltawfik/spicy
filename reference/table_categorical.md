@@ -30,7 +30,7 @@ table_categorical(
   correct = FALSE,
   simulate_p = FALSE,
   simulate_B = 2000,
-  test = c("auto", "chisq", "fisher"),
+  test = c("auto", "chisq", "fisher", "midp", "n1"),
   p_value = NULL,
   p_adjust = "none",
   percent_digits = 1,
@@ -170,15 +170,15 @@ table_categorical(
   applied. If `TRUE`, applies Yates correction in 2x2 chi-squared
   contexts. Passed to
   [`spicy::cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md).
-  A variable tested by Fisher's exact test (see `test`) takes no
-  correction.
+  A variable tested by Fisher's exact test, its mid-p version, or the
+  N-1 chi-squared (see `test`) takes no correction.
 
 - simulate_p:
 
   Logical. If `FALSE` (the default), uses asymptotic p-values. If
   `TRUE`, uses Monte Carlo simulation. Passed to
   [`spicy::cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md).
-  Applies to the chi-squared test only (see `test`).
+  Applies to the Pearson chi-squared test only (see `test`).
 
 - simulate_B:
 
@@ -189,7 +189,7 @@ table_categorical(
 - test:
 
   Character. The test of each variable when `by` is used. One of
-  `"auto"` (default), `"chisq"`, or `"fisher"`.
+  `"auto"` (default), `"chisq"`, `"fisher"`, `"midp"`, or `"n1"`.
 
   - `"auto"`: Pearson's chi-squared test when every expected count of
     the variable's table is at least 5, Fisher's exact test otherwise,
@@ -201,11 +201,19 @@ table_categorical(
 
   - `"fisher"`: Fisher's exact test for every variable.
 
-  `correct` and `simulate_p` apply to the chi-squared test only. When
-  the exact enumeration of a large sparse table fails, Fisher's p-value
-  is its Monte Carlo estimate over `simulate_B` tables, and the note
-  says so; call [`set.seed()`](https://rdrr.io/r/base/Random.html) first
-  to reproduce it. See *Tests*. Ignored when `by` is not used or when
+  - `"midp"`: the Fisher mid-p test for a 2x2 table.
+
+  - `"n1"`: the N-1 chi-squared test for a 2x2 table whose expected
+    counts are all at least 1, Fisher's exact test for one with a
+    smaller count (Campbell's rule).
+
+  Under `"midp"` and `"n1"`, a variable whose table is not 2x2 follows
+  `"auto"`. `correct` and `simulate_p` apply to the Pearson chi-squared
+  test only. When the exact enumeration of a large sparse table fails,
+  Fisher's p-value is its Monte Carlo estimate over `simulate_B` tables,
+  and the note says so; call
+  [`set.seed()`](https://rdrr.io/r/base/Random.html) first to reproduce
+  it. See *Tests*. Ignored when `by` is not used or when
   `p_value = FALSE`.
 
 - p_value:
@@ -456,11 +464,13 @@ Depends on `output`:
   and one pair of `n` / `\%` columns per group level (plus `Total` when
   `include_total = TRUE`), followed by `test_type`, `Chi2`, `df`, `p`
   (absent with `p_value = FALSE`), and the association measure column.
-  `test_type` names the test of the variable: `"chi_squared"`,
-  `"fisher_exact"`, or `"fisher_exact_mc"` (the Monte Carlo estimate of
-  Fisher's exact test); `Chi2` and `df` are `NA` for a variable tested
-  by Fisher's exact test. When `by = NULL`, the columns are `Variable`,
-  `Level`, `n`, `\%`.
+  `test_type` names the test of the variable: `"chi_squared"`
+  (Pearson's), `"n1_chi_squared"` (the N-1 chi-squared),
+  `"fisher_exact"`, `"fisher_midp"` (the Fisher mid-p test), or
+  `"fisher_exact_mc"` (the Monte Carlo estimate of Fisher's exact test);
+  `Chi2` and `df` hold the statistic of a chi-squared test, Pearson's or
+  the N-1, and are `NA` for a variable tested by an exact test. When
+  `by = NULL`, the columns are `Variable`, `Level`, `n`, `\%`.
 
 - `"long"`: a long `data.frame` with columns `variable`, `level`, `n`,
   `pct` (plus `group` when `by` is used, and `test_type`, `chi2`, `df`,
@@ -508,7 +518,9 @@ grouping variable with
 [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
 and tested on the complete cases of its observed levels, a `"(Missing)"`
 level and a declared level nobody holds left out: one *p*-value per
-variable, in the `p` column.
+variable, in the `p` column. A table left with a single row or column (a
+variable observed at one level, or in one group) is uninformative and
+gets no test, whatever `test` says: its `p` cell shows a dash.
 
 The chi-squared approximation is unreliable when expected counts are
 small. Under `test = "auto"`, the default, a variable takes Pearson's
@@ -526,6 +538,38 @@ reproduce it. `test = "chisq"` tests every variable by the chi-squared,
 the behavior before 0.14.0, and `test = "fisher"` every variable by the
 exact test.
 
+Fisher's exact test is conservative: its actual level is often well
+below the nominal one, at a cost in power. `test = "midp"` gives a 2x2
+table (a two-level variable by two groups) the Fisher mid-p test, as
+Fagerland, Lydersen and Laake (2017, equation 1.12, p. 28, and section
+4.4.6, p. 97) and Lydersen, Fagerland and Laake (2009, equation 12, p.
+1165) define it: the tables with the observed margins are ordered by
+their hypergeometric probability, and the *p*-value adds the
+probabilities of the tables less probable than the observed one to half
+the probabilities of the tables as probable, the observed one included,
+ties being read within the relative tolerance of
+[`stats::fisher.test()`](https://rdrr.io/r/stats/fisher.test.html). The
+mid-p test can exceed the nominal level, usually by little, and
+Fagerland, Lydersen and Laake (2017, p. 175) recommend it for all sample
+sizes. A variable whose table is not 2x2 follows `"auto"`, and the note
+names the test of each variable. The central variant, twice the smaller
+one-sided mid-p (the `exact2x2` and `epitools` packages; Agresti, 2019,
+p. 49), coincides with this one when the row totals or the column totals
+are equal, except that it gives 1 for the most probable table; it
+differs otherwise and is not computed.
+
+`test = "n1"` applies the rule of Campbell (2007, pp. 18-19) to a 2x2
+table. When every expected count is at least 1, the table takes the N-1
+chi-squared test: Pearson's statistic, with no continuity correction,
+multiplied by (N - 1)/N and referred to a chi-squared distribution with
+1 degree of freedom, which is the Mantel-Haenszel statistic of a single
+2x2 table; `Chi2` and `df` hold that statistic. Otherwise it takes
+Fisher's exact test, two-sided by Irwin's rule as
+[`stats::fisher.test()`](https://rdrr.io/r/stats/fisher.test.html)
+computes it. Campbell found the N-1 test close to its nominal level
+under that restriction, not without it. A variable whose table is not
+2x2 follows `"auto"`, and the note names the test of each variable.
+
 The note names the test of every variable, "Group comparison: Pearson
 chi-squared test (sex, education); Fisher exact test (smoking).", or the
 one test when it covers them all. `test_type` in the data frames gives
@@ -536,11 +580,13 @@ table used by `"auto"` (2x2 -\> Phi, both ordered -\> Kendall's Tau-b,
 otherwise Cramer's V). Without `by`, the table reports the marginal
 frequency distribution of each variable with no inferential statistics.
 
-Fisher's exact test conditions on counts. Under `weights`, it runs on
-the weighted table when its cells are whole numbers (frequency weights);
-otherwise `test = "auto"` keeps the chi-squared test for a variable that
-would take the exact test, with a warning (`spicy_fallback`), and
-`test = "fisher"` is an error. For survey weights,
+The exact tests condition on counts. Under `weights`, they run on the
+weighted table when its cells are whole numbers (frequency weights);
+otherwise a variable that a rule sends to Fisher's exact test keeps the
+chi-squared test, Pearson's under `test = "auto"` and the N-1 under
+Campbell's rule, with a warning (`spicy_fallback`), and
+`test = "fisher"`, or `test = "midp"` on a 2x2 table, is an error. For
+survey weights,
 [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md)
 gives the design-based test.
 
@@ -709,6 +755,24 @@ Every function involved offers the same escape hatch: set
 as valid values (the behavior of spicy before 0.13.0). Tagged missing
 values are genuine `NA`s either way; for them, `user_na = FALSE` only
 collapses the per-tag breakdown back into the regular `NA` count.
+
+## References
+
+Agresti, A. (2019). *An Introduction to Categorical Data Analysis* (3rd
+ed.). Wiley.
+
+Campbell, I. (2007). Chi-squared and Fisher-Irwin tests of two-by-two
+tables with small sample recommendations. *Statistics in Medicine*,
+26(19), 3661-3675.
+[doi:10.1002/sim.2832](https://doi.org/10.1002/sim.2832)
+
+Fagerland, M. W., Lydersen, S., & Laake, P. (2017). *Statistical
+Analysis of Contingency Tables*. Chapman and Hall/CRC.
+[doi:10.1201/9781315374116](https://doi.org/10.1201/9781315374116)
+
+Lydersen, S., Fagerland, M. W., & Laake, P. (2009). Recommended tests
+for association in 2 x 2 tables. *Statistics in Medicine*, 28(7),
+1159-1175. [doi:10.1002/sim.3531](https://doi.org/10.1002/sim.3531)
 
 ## See also
 

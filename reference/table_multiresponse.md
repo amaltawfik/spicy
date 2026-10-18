@@ -27,7 +27,7 @@ table_multiresponse(
   percent = c("cases", "responses", "both"),
   base = c("valid", "answered", "all"),
   sort = c("", "+", "-", "name+", "name-"),
-  test = c("auto", "chisq", "fisher"),
+  test = c("auto", "chisq", "fisher", "midp", "n1"),
   p_value = NULL,
   global_test = c("rs2", "bootstrap"),
   boot_n = 1999L,
@@ -141,8 +141,12 @@ table_multiresponse(
   [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md):
   `"auto"` (the default) takes Pearson's chi-squared test when every
   expected count of the item's table is at least 5 and Fisher's exact
-  test otherwise; `"chisq"` and `"fisher"` take one test for every item.
-  The note names the test of each item. See *Tests*.
+  test otherwise; `"chisq"` and `"fisher"` take one test for every item;
+  `"midp"` takes the Fisher mid-p test for an item of a two-group table;
+  `"n1"` takes the N-1 chi-squared test for an item of a two-group table
+  whose expected counts are all at least 1, and Fisher's exact test for
+  one with a smaller count. With more groups, `"midp"` and `"n1"` follow
+  `"auto"`. The note names the test of each item. See *Tests*.
 
 - p_value:
 
@@ -181,8 +185,9 @@ table_multiresponse(
 
   Logical. If `TRUE`, adds a `Test` column with each item's chi-squared
   statistic and its degrees of freedom, with or without the p-values of
-  `p_value`; an item whose p-value comes from Fisher's exact test has no
-  statistic and shows a dash. Defaults to `FALSE`.
+  `p_value`; an item whose p-value comes from Fisher's exact test or its
+  mid-p version has no statistic and shows a dash, and an item tested by
+  the N-1 chi-squared shows that statistic. Defaults to `FALSE`.
 
 - labels:
 
@@ -322,8 +327,9 @@ Depends on `output`:
   `p_unadjusted` under an adjustment. `test_type` names the test of each
   item as in
   [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
-  (`"chi_squared"`, `"fisher_exact"`, `"fisher_exact_mc"`), and `Chi2`
-  and `df` are `NA` for an item tested by Fisher's exact test.
+  (`"chi_squared"`, `"n1_chi_squared"`, `"fisher_exact"`,
+  `"fisher_midp"`, `"fisher_exact_mc"`), and `Chi2` and `df` are `NA`
+  for an item tested by an exact test.
 
 - `"long"`: one row per item and group, with columns `variable`, `group`
   (with `by`), `n`, `base` (the respondents of the group), `pct` (or
@@ -371,6 +377,16 @@ p-values (`p_value = FALSE`), `statistic = TRUE` shows the chi-squared
 statistic of every item. The global test sums the Pearson statistics of
 the items whatever `test` chooses for their p-values, since its
 correction and its bootstrap are defined for that sum.
+
+With two groups, an item's table is 2x2. `test = "midp"` then gives it
+the Fisher mid-p test of Fagerland, Lydersen and Laake (2017, section
+4.4.6), and `test = "n1"` the N-1 chi-squared test of Campbell (2007)
+when its expected counts are all at least 1 and Fisher's exact test
+otherwise, both defined under *Tests* in
+[`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md).
+With more groups, the items follow `"auto"`. An item tested by the mid-p
+test has no statistic (a dash); one tested by the N-1 chi-squared shows
+that statistic, on 1 degree of freedom.
 
 The global test sums the item statistics, \\X^2_S = \sum_j X^2_j\\, a
 value that does not depend on which answer of an item is coded as chosen
@@ -485,6 +501,15 @@ Bilder, C. R., Loughin, T. M., & Nettleton, D. (2000). Multiple marginal
 independence testing for pick any/c variables. *Communications in
 Statistics - Simulation and Computation*, 29(4), 1285-1316.
 [doi:10.1080/03610910008813665](https://doi.org/10.1080/03610910008813665)
+
+Campbell, I. (2007). Chi-squared and Fisher-Irwin tests of two-by-two
+tables with small sample recommendations. *Statistics in Medicine*,
+26(19), 3661-3675.
+[doi:10.1002/sim.2832](https://doi.org/10.1002/sim.2832)
+
+Fagerland, M. W., Lydersen, S., & Laake, P. (2017). *Statistical
+Analysis of Contingency Tables*. Chapman and Hall/CRC.
+[doi:10.1201/9781315374116](https://doi.org/10.1201/9781315374116)
 
 Jann, B. (2005). Tabulation of multiple responses. *The Stata Journal*,
 5(1), 92-122.

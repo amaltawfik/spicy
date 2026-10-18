@@ -926,7 +926,7 @@ table_multiresponse(
 | Respondents | 650 |      |      | 550 |      |      | 1200 |      |      |
 | Several answers possible: percentages of respondents can sum to more than 100%; percentages of responses sum to 100%. Base: respondents who answered the question, including those who chose no item. 204 respondents chose none of the items. |  |  |  |  |  |  |  |  |  |
 
-Multiple responses by physical_activity {#tinytable_x2f1pvv17w6i93bo6uas
+Multiple responses by physical_activity {#tinytable_pge027v6vrf64j5q2xar
 .table .tinytable
 style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}

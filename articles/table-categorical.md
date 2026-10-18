@@ -464,6 +464,50 @@ is its Monte Carlo estimate over `simulate_B` tables, and the note says
 so; set a seed to reproduce it. The data frames give the test of each
 variable in `test_type`.
 
+A 2x2 table, a two-level variable by two groups, has two more tests.
+`test = "midp"` takes the Fisher mid-p test, which counts the tables as
+probable as the observed one at half their probability: it is less
+conservative than Fisher’s exact test, and Fagerland, Lydersen and Laake
+(2017) recommend it at every sample size. `test = "n1"` takes Campbell’s
+N-1 chi-squared test when every expected count is at least 1, and
+Fisher’s exact test otherwise. A larger table keeps the `"auto"` rule,
+and the note names the test of each variable:
+
+``` r
+
+table_categorical(
+  sochealth[1:40, ],
+  select = c(smoking, education),
+  by = sex,
+  test = "midp"
+)
+#> Categorical table by sex
+#> 
+#>  Variable          │ Female n  Female %  Male n  Male %  Total n  Total %   p   
+#> ───────────────────┼────────────────────────────────────────────────────────────
+#>  smoking           │                                                       .184 
+#>    No              │    16       72.7      16     88.9     32      80.0         
+#>    Yes             │     6       27.3       2     11.1      8      20.0         
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  education         │                                                       .461 
+#>    Lower secondary │     6       27.3       2     11.1      8      20.0         
+#>    Upper secondary │    10       45.5       9     50.0     19      47.5         
+#>    Tertiary        │     6       27.3       7     38.9     13      32.5         
+#> 
+#>  Variable          │ Effect size 
+#> ───────────────────┼─────────────
+#>  smoking           │     .20     
+#>    No              │             
+#>    Yes             │             
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  education         │     .21     
+#>    Lower secondary │             
+#>    Upper secondary │             
+#>    Tertiary        │             
+#> 
+#> Note. Phi: smoking; Cramer's V: education. Group comparison: Fisher exact test (education); Fisher mid-p test (smoking).
+```
+
 ## Descriptive tables without tests
 
 The test and the association measure are two separate choices:
@@ -937,7 +981,7 @@ table_categorical(
 |     Yes | 286 | 46.1 | 264 | 45.5 | 550 | 45.8 |      |     |
 | Group comparison: Pearson chi-squared test. |  |  |  |  |  |  |  |  |
 
-Categorical table by sex {#tinytable_pknvpkuk1z4nzrid63oj .table
+Categorical table by sex {#tinytable_xe9a5xwy2vk987eff3mx .table
 .tinytable style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 

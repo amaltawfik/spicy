@@ -113,10 +113,10 @@ displayed label), <code>group</code> (the <code>by</code> level or the margin, <
 chose the item), <code>base</code> (the respondents of the group's base),
 <code>proportion</code> (<code>n / base</code>, the share of respondents),
 <code>proportion_responses</code> (<code>n</code> over the choices made in the group), and
-the item's test: <code>test_type</code> (<code>"chi_squared"</code>, <code>"fisher_exact"</code> or
-<code>"fisher_exact_mc"</code>), <code>statistic</code> (the Pearson chi-squared, <code>NA</code> for
-Fisher's exact test), <code>df</code>, <code>p.value</code> (adjusted under <code>p_adjust</code>) and
-<code>p.unadjusted</code>.</p>
+the item's test: <code>test_type</code> (<code>"chi_squared"</code>, <code>"n1_chi_squared"</code>,
+<code>"fisher_exact"</code>, <code>"fisher_midp"</code> or <code>"fisher_exact_mc"</code>), <code>statistic</code>
+(the chi-squared, Pearson's or the N-1, <code>NA</code> for an exact test), <code>df</code>,
+<code>p.value</code> (adjusted under <code>p_adjust</code>) and <code>p.unadjusted</code>.</p>
 <p><code>glance()</code> returns one row for the question. Columns: <code>n_items</code>,
 <code>n_items_tested</code> (the items the global test kept), <code>n_groups</code> (the
 groups of <code>by</code>, <code>NA</code> without it), <code>nobs</code> (the respondents of the base),

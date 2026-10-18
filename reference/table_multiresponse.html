@@ -127,7 +127,7 @@ table (<code>"default"</code>), a wide or long numeric <code>data.frame</code>
 <span>  percent <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"cases"</span>, <span class="st">"responses"</span>, <span class="st">"both"</span><span class="op">)</span>,</span>
 <span>  base <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"valid"</span>, <span class="st">"answered"</span>, <span class="st">"all"</span><span class="op">)</span>,</span>
 <span>  sort <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">""</span>, <span class="st">"+"</span>, <span class="st">"-"</span>, <span class="st">"name+"</span>, <span class="st">"name-"</span><span class="op">)</span>,</span>
-<span>  test <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"auto"</span>, <span class="st">"chisq"</span>, <span class="st">"fisher"</span><span class="op">)</span>,</span>
+<span>  test <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"auto"</span>, <span class="st">"chisq"</span>, <span class="st">"fisher"</span>, <span class="st">"midp"</span>, <span class="st">"n1"</span><span class="op">)</span>,</span>
 <span>  p_value <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  global_test <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"rs2"</span>, <span class="st">"bootstrap"</span><span class="op">)</span>,</span>
 <span>  boot_n <span class="op">=</span> <span class="fl">1999L</span>,</span>
@@ -229,8 +229,12 @@ accented letters after <code>z</code>.</p></dd>
 <dd><p>The test of each item's p-value, as in <code><a href="table_categorical.html">table_categorical()</a></code>:
 <code>"auto"</code> (the default) takes Pearson's chi-squared test when every
 expected count of the item's table is at least 5 and Fisher's exact
-test otherwise; <code>"chisq"</code> and <code>"fisher"</code> take one test for every item.
-The note names the test of each item. See <em>Tests</em>.</p></dd>
+test otherwise; <code>"chisq"</code> and <code>"fisher"</code> take one test for every item;
+<code>"midp"</code> takes the Fisher mid-p test for an item of a two-group table;
+<code>"n1"</code> takes the N-1 chi-squared test for an item of a two-group table
+whose expected counts are all at least 1, and Fisher's exact test for
+one with a smaller count. With more groups, <code>"midp"</code> and <code>"n1"</code> follow
+<code>"auto"</code>. The note names the test of each item. See <em>Tests</em>.</p></dd>
 
 
 <dt id="arg-p-value">p_value<a class="anchor" aria-label="anchor" href="#arg-p-value"></a></dt>
@@ -268,8 +272,9 @@ is an error.</p></dd>
 <dd><p>Logical. If <code>TRUE</code>, adds a <code>Test</code> column with each
 item's chi-squared statistic and its degrees of freedom, with or
 without the p-values of <code>p_value</code>; an item whose p-value comes from
-Fisher's exact test has no statistic and shows a dash. Defaults to
-<code>FALSE</code>.</p></dd>
+Fisher's exact test or its mid-p version has no statistic and shows a
+dash, and an item tested by the N-1 chi-squared shows that statistic.
+Defaults to <code>FALSE</code>.</p></dd>
 
 
 <dt id="arg-labels">labels<a class="anchor" aria-label="anchor" href="#arg-labels"></a></dt>
@@ -389,8 +394,9 @@ without <code>by</code>), then <code>test_type</code>, <code>Chi2</code> and <co
 tests ran (for <code>p_value</code> or for <code>statistic</code>), <code>p</code> with <code>p_value</code>,
 and <code>p_unadjusted</code> under an adjustment. <code>test_type</code> names the test
 of each item as in <code><a href="table_categorical.html">table_categorical()</a></code> (<code>"chi_squared"</code>,
-<code>"fisher_exact"</code>, <code>"fisher_exact_mc"</code>), and <code>Chi2</code> and <code>df</code> are <code>NA</code>
-for an item tested by Fisher's exact test.</p></li>
+<code>"n1_chi_squared"</code>, <code>"fisher_exact"</code>, <code>"fisher_midp"</code>,
+<code>"fisher_exact_mc"</code>), and <code>Chi2</code> and <code>df</code> are <code>NA</code> for an item
+tested by an exact test.</p></li>
 <li><p><code>"long"</code>: one row per item and group, with columns <code>variable</code>,
 <code>group</code> (with <code>by</code>), <code>n</code>, <code>base</code> (the respondents of the group),
 <code>pct</code> (or <code>pct_cases</code> and <code>pct_responses</code>), and <code>test_type</code>,
@@ -429,6 +435,14 @@ p-values (<code>p_value = FALSE</code>), <code>statistic = TRUE</code> shows the
 statistic of every item. The global test sums the Pearson statistics
 of the items whatever <code>test</code> chooses for their p-values, since its
 correction and its bootstrap are defined for that sum.</p>
+<p>With two groups, an item's table is 2x2. <code>test = "midp"</code> then gives it
+the Fisher mid-p test of Fagerland, Lydersen and Laake (2017, section
+4.4.6), and <code>test = "n1"</code> the N-1 chi-squared test of Campbell (2007)
+when its expected counts are all at least 1 and Fisher's exact test
+otherwise, both defined under <em>Tests</em> in <code><a href="table_categorical.html">table_categorical()</a></code>. With
+more groups, the items follow <code>"auto"</code>. An item tested by the mid-p
+test has no statistic (a dash); one tested by the N-1 chi-squared shows
+that statistic, on 1 degree of freedom.</p>
 <p>The global test sums the item statistics,
 \(X^2_S = \sum_j X^2_j\), a value that does not depend on which
 answer of an item is coded as chosen (Agresti and Liu, 1999). One
@@ -530,6 +544,12 @@ responses. <em>Biometrics</em>, 60(1), 241-248.
 marginal independence testing for pick any/c variables.
 <em>Communications in Statistics - Simulation and Computation</em>, 29(4),
 1285-1316. <a href="https://doi.org/10.1080/03610910008813665" class="external-link">doi:10.1080/03610910008813665</a></p>
+<p>Campbell, I. (2007). Chi-squared and Fisher-Irwin tests of two-by-two
+tables with small sample recommendations. <em>Statistics in Medicine</em>,
+26(19), 3661-3675. <a href="https://doi.org/10.1002/sim.2832" class="external-link">doi:10.1002/sim.2832</a></p>
+<p>Fagerland, M. W., Lydersen, S., &amp; Laake, P. (2017). <em>Statistical
+Analysis of Contingency Tables</em>. Chapman and Hall/CRC.
+<a href="https://doi.org/10.1201/9781315374116" class="external-link">doi:10.1201/9781315374116</a></p>
 <p>Jann, B. (2005). Tabulation of multiple responses. <em>The Stata Journal</em>,
 5(1), 92-122. <a href="https://doi.org/10.1177/1536867x0500500113" class="external-link">doi:10.1177/1536867x0500500113</a></p>
 <p>Loughin, T. M., &amp; Scherer, P. N. (1998). Testing for association in
