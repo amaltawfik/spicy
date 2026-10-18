@@ -2791,9 +2791,10 @@ output_word <- function(rendered, word_path, word_template = NULL) {
 #'   structured contract as spicy's built-in engines.
 #'
 #' @param x A spicy table built with `output = "default"`:
-#'   [table_regression()], [table_categorical()],
-#'   [table_continuous()] or [table_continuous_lm()]. All four return
-#'   the same schema.
+#'   [table_regression()], [table_categorical()], [table_continuous()],
+#'   [table_continuous_lm()], [table_outcome()], [table_multiresponse()]
+#'   or the survey twins [table_categorical_svy()] and
+#'   [table_continuous_svy()]. All return the same schema.
 #'
 #' @return A list with the structured view (see Details for the
 #'   schema).

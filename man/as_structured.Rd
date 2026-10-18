@@ -8,9 +8,10 @@ as_structured(x)
 }
 \arguments{
 \item{x}{A spicy table built with \code{output = "default"}:
-\code{\link[=table_regression]{table_regression()}}, \code{\link[=table_categorical]{table_categorical()}},
-\code{\link[=table_continuous]{table_continuous()}} or \code{\link[=table_continuous_lm]{table_continuous_lm()}}. All four return
-the same schema.}
+\code{\link[=table_regression]{table_regression()}}, \code{\link[=table_categorical]{table_categorical()}}, \code{\link[=table_continuous]{table_continuous()}},
+\code{\link[=table_continuous_lm]{table_continuous_lm()}}, \code{\link[=table_outcome]{table_outcome()}}, \code{\link[=table_multiresponse]{table_multiresponse()}}
+or the survey twins \code{\link[=table_categorical_svy]{table_categorical_svy()}} and
+\code{\link[=table_continuous_svy]{table_continuous_svy()}}. All return the same schema.}
 }
 \value{
 A list with the structured view (see Details for the

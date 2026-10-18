@@ -77,8 +77,12 @@ workbook, or a PDF.
   global test that allows for several answers per respondent, Rao-Scott
   corrected or by bootstrap (`test`). `p_value = FALSE` removes the
   p-values and the global test, and `statistic = TRUE` shows each item's
-  chi-squared. `inline()` cites its cells, a group selected with `model`
+  chi-squared. `glance()` reports the Rao-Scott design-effect summary
+  (`rs_cv`). `inline()` cites its cells, a group selected with `model`
   and the base row as `"nobs"` (#10).
+
+* `inline()` says when a variable has no levels and how to select a
+  group with `model`, where its error printed an empty list of levels.
 
 * `table_regression()` and `table_regression_uv()` take the same four
   `labels` forms. `labels = TRUE` names the outcome, the numeric terms,
