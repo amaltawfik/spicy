@@ -25,7 +25,7 @@ table_multiresponse(
   counted = NULL,
   percent = c("cases", "responses", "both"),
   base = c("valid", "answered", "all"),
-  sort = c("questionnaire", "desc"),
+  sort = c("", "+", "-", "name+", "name-"),
   p_value = NULL,
   test = c("rs2", "bootstrap"),
   boot_n = 1999L,
@@ -58,7 +58,7 @@ table_multiresponse(
 
   The indicator columns of the question, one per item, in tidyselect
   syntax or as a character vector of column names. Their order is the
-  order of the rows unless `sort = "desc"`.
+  order of the rows, unless `sort` sorts them.
 
 - by:
 
@@ -108,9 +108,30 @@ table_multiresponse(
 
 - sort:
 
-  The order of the item rows: `"questionnaire"` (the default), the order
-  of `select`; or `"desc"`, by decreasing total count, ties in
-  questionnaire order.
+  Sorting method for items, as in
+  [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md):
+
+  - `""` - no sorting (default)
+
+  - `"+"` - increasing frequency
+
+  - `"-"` - decreasing frequency
+
+  - `"name+"` - alphabetical A-Z
+
+  - `"name-"` - alphabetical Z-A
+
+  With no sorting, the rows keep the order in which `select` delivers
+  the columns: their order in `data` with a helper such as
+  [`starts_with()`](https://tidyselect.r-lib.org/reference/starts_with.html),
+  or the order written in [`c()`](https://rdrr.io/r/base/c.html). The
+  function cannot know the questionnaire, so its order comes from the
+  order of the columns or the order written in `select`. The frequency
+  is the total count of each item, and items with the same count keep
+  the order of `select`. The alphabetical sort reads the labels
+  displayed in the rows (the column names, or the labels set by
+  `labels`) in the C locale, the same on every platform: capitals before
+  lower case, accented letters after `z`.
 
 - p_value:
 
@@ -535,7 +556,7 @@ sat <- data.frame(
   relationships = sochealth$life_sat_relationships >= 4,
   standard = sochealth$life_sat_standard >= 4
 )
-table_multiresponse(sat, select = names(sat), sort = "desc")
+table_multiresponse(sat, select = names(sat), sort = "-")
 #> Multiple responses
 #> 
 #>  Variable        │   n       %    

@@ -123,7 +123,7 @@ table (<code>"default"</code>), a wide or long numeric <code>data.frame</code>
 <span>  counted <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  percent <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"cases"</span>, <span class="st">"responses"</span>, <span class="st">"both"</span><span class="op">)</span>,</span>
 <span>  base <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"valid"</span>, <span class="st">"answered"</span>, <span class="st">"all"</span><span class="op">)</span>,</span>
-<span>  sort <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"questionnaire"</span>, <span class="st">"desc"</span><span class="op">)</span>,</span>
+<span>  sort <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">""</span>, <span class="st">"+"</span>, <span class="st">"-"</span>, <span class="st">"name+"</span>, <span class="st">"name-"</span><span class="op">)</span>,</span>
 <span>  p_value <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  test <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"rs2"</span>, <span class="st">"bootstrap"</span><span class="op">)</span>,</span>
 <span>  boot_n <span class="op">=</span> <span class="fl">1999L</span>,</span>
@@ -157,7 +157,7 @@ table (<code>"default"</code>), a wide or long numeric <code>data.frame</code>
 <dt id="arg-select">select<a class="anchor" aria-label="anchor" href="#arg-select"></a></dt>
 <dd><p>The indicator columns of the question, one per item, in
 tidyselect syntax or as a character vector of column names. Their
-order is the order of the rows unless <code>sort = "desc"</code>.</p></dd>
+order is the order of the rows, unless <code>sort</code> sorts them.</p></dd>
 
 
 <dt id="arg-by">by<a class="anchor" aria-label="anchor" href="#arg-by"></a></dt>
@@ -204,9 +204,21 @@ counts.</p></li>
 
 
 <dt id="arg-sort">sort<a class="anchor" aria-label="anchor" href="#arg-sort"></a></dt>
-<dd><p>The order of the item rows: <code>"questionnaire"</code> (the
-default), the order of <code>select</code>; or <code>"desc"</code>, by decreasing total
-count, ties in questionnaire order.</p></dd>
+<dd><p>Sorting method for items, as in <code><a href="freq.html">freq()</a></code>:</p><ul><li><p><code>""</code> - no sorting (default)</p></li>
+<li><p><code>"+"</code> - increasing frequency</p></li>
+<li><p><code>"-"</code> - decreasing frequency</p></li>
+<li><p><code>"name+"</code> - alphabetical A-Z</p></li>
+<li><p><code>"name-"</code> - alphabetical Z-A</p></li>
+</ul><p>With no sorting, the rows keep the order in which <code>select</code> delivers
+the columns: their order in <code>data</code> with a helper such as
+<code><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">starts_with()</a></code>, or the order written in <code><a href="https://rdrr.io/r/base/c.html" class="external-link">c()</a></code>. The function cannot
+know the questionnaire, so its order comes from the order of the
+columns or the order written in <code>select</code>. The frequency is the total
+count of each item, and items with the same count keep the order of
+<code>select</code>. The alphabetical sort reads the labels displayed in the
+rows (the column names, or the labels set by <code>labels</code>) in the C
+locale, the same on every platform: capitals before lower case,
+accented letters after <code>z</code>.</p></dd>
 
 
 <dt id="arg-p-value">p_value<a class="anchor" aria-label="anchor" href="#arg-p-value"></a></dt>
@@ -586,7 +598,7 @@ Rao-Scott approach. <em>International Journal of Testing</em>, 4(1), 43-59.
 <span class="r-in"><span>  relationships <span class="op">=</span> <span class="va">sochealth</span><span class="op">$</span><span class="va">life_sat_relationships</span> <span class="op">&gt;=</span> <span class="fl">4</span>,</span></span>
 <span class="r-in"><span>  standard <span class="op">=</span> <span class="va">sochealth</span><span class="op">$</span><span class="va">life_sat_standard</span> <span class="op">&gt;=</span> <span class="fl">4</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="fu">table_multiresponse</span><span class="op">(</span><span class="va">sat</span>, select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">sat</span><span class="op">)</span>, sort <span class="op">=</span> <span class="st">"desc"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">table_multiresponse</span><span class="op">(</span><span class="va">sat</span>, select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">sat</span><span class="op">)</span>, sort <span class="op">=</span> <span class="st">"-"</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Multiple responses</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span>   n       %    </span>

@@ -233,8 +233,10 @@ table_multiresponse(
 ### Labels and order
 
 The rows show the column names by default. A named vector sets the
-wording you publish. `sort = "desc"` ranks the items by their total
-count, ties kept in questionnaire order:
+wording you publish. `sort` takes the values of
+[`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md): `"-"`
+ranks the items by decreasing total count, and items with the same count
+keep the order of `select`:
 
 ``` r
 
@@ -247,7 +249,7 @@ table_multiresponse(
     relationships = "Relationships",
     standard = "Standard of living"
   ),
-  sort = "desc"
+  sort = "-"
 )
 #> Multiple responses
 #> 
@@ -263,8 +265,14 @@ table_multiresponse(
 #> Several answers possible: percentages are of respondents and can sum to more than 100%. Base: respondents who answered the question, including those who chose no item. 204 respondents chose none of the items.
 ```
 
-The default, `sort = "questionnaire"`, keeps the order of `select`,
-normally the order of the questionnaire.
+`"+"` ranks the items by increasing count, and `"name+"` and `"name-"`
+sort them alphabetically on the labels shown. The default, `sort = ""`,
+sorts nothing: the rows keep the order in which `select` delivers the
+columns, their order in the data with `health:standard` or
+[`starts_with()`](https://tidyselect.r-lib.org/reference/starts_with.html),
+or the order written in [`c()`](https://rdrr.io/r/base/c.html). The
+function cannot know the questionnaire, so its order comes from the
+order of the columns or the order written in `select`.
 
 ## Bases and percentages
 
@@ -901,7 +909,7 @@ table_multiresponse(
 | Respondents | 650 |      |      | 550 |      |      | 1200 |      |      |
 | Several answers possible: percentages of respondents can sum to more than 100%; percentages of responses sum to 100%. Base: respondents who answered the question, including those who chose no item. 204 respondents chose none of the items. |  |  |  |  |  |  |  |  |  |
 
-Multiple responses by physical_activity {#tinytable_j8bk4goud9k0ba2g2rkd
+Multiple responses by physical_activity {#tinytable_05v83rot0a43dr2bzyqg
 .table .tinytable
 style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}

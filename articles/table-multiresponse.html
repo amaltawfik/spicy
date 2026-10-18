@@ -322,8 +322,10 @@ so a typo cannot produce a table of zeros:</p>
 <h3 id="labels-and-order">Labels and order<a class="anchor" aria-label="anchor" href="#labels-and-order"></a>
 </h3>
 <p>The rows show the column names by default. A named vector sets the
-wording you publish. <code>sort = "desc"</code> ranks the items by their
-total count, ties kept in questionnaire order:</p>
+wording you publish. <code>sort</code> takes the values of
+<code><a href="../reference/freq.html">freq()</a></code>: <code>"-"</code> ranks the items by decreasing
+total count, and items with the same count keep the order of
+<code>select</code>:</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_multiresponse.html">table_multiresponse</a></span><span class="op">(</span></span>
 <span>  <span class="va">domains</span>,</span>
@@ -334,7 +336,7 @@ total count, ties kept in questionnaire order:</p>
 <span>    relationships <span class="op">=</span> <span class="st">"Relationships"</span>,</span>
 <span>    standard <span class="op">=</span> <span class="st">"Standard of living"</span></span>
 <span>  <span class="op">)</span>,</span>
-<span>  sort <span class="op">=</span> <span class="st">"desc"</span></span>
+<span>  sort <span class="op">=</span> <span class="st">"-"</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Multiple responses</span></span></span>
 <span><span class="co">#&gt; </span></span>
@@ -348,8 +350,14 @@ total count, ties kept in questionnaire order:</p>
 <span><span class="co">#&gt;  Respondents          <span style="color: #9E9E9E;">│</span>  1200          </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Several answers possible: percentages are of respondents and can sum to more than 100%. Base: respondents who answered the question, including those who chose no item. 204 respondents chose none of the items.</span></span></span></code></pre></div>
-<p>The default, <code>sort = "questionnaire"</code>, keeps the order of
-<code>select</code>, normally the order of the questionnaire.</p>
+<p><code>"+"</code> ranks the items by increasing count, and
+<code>"name+"</code> and <code>"name-"</code> sort them alphabetically
+on the labels shown. The default, <code>sort = ""</code>, sorts nothing:
+the rows keep the order in which <code>select</code> delivers the
+columns, their order in the data with <code>health:standard</code> or
+<code><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">starts_with()</a></code>, or the order written in <code><a href="https://rdrr.io/r/base/c.html" class="external-link">c()</a></code>.
+The function cannot know the questionnaire, so its order comes from the
+order of the columns or the order written in <code>select</code>.</p>
 </div>
 </div>
 <div class="section level2">
@@ -1326,42 +1334,42 @@ multiple marginal independence, χ²(3.16) = 17.36, p &lt; .001.
 
     <script src="https://cdn.jsdelivr.net/gh/vincentarelbundock/tinytable@main/inst/tinytable.js"></script><script>
       // Create table-specific functions using external factory
-      const tableFns_j8bk4goud9k0ba2g2rkd = TinyTable.createTableFunctions("tinytable_j8bk4goud9k0ba2g2rkd");
+      const tableFns_05v83rot0a43dr2bzyqg = TinyTable.createTableFunctions("tinytable_05v83rot0a43dr2bzyqg");
       // tinytable span after
       window.addEventListener('load', function () {
           var cellsToStyle = [
             // tinytable style arrays after
-          { positions: [ { i: '4', j: 2 }, { i: '4', j: 3 }, { i: '4', j: 4 }, { i: '4', j: 5 }, { i: '4', j: 6 }, { i: '4', j: 7 }, { i: '4', j: 8 }, { i: '4', j: 9 }, { i: '4', j: 10 } ], css_id: 'tinytable_css_c8yol8utqsboub94fj5d',}, 
-          { positions: [ { i: '1', j: 2 }, { i: '2', j: 2 }, { i: '3', j: 2 }, { i: '1', j: 3 }, { i: '2', j: 3 }, { i: '3', j: 3 }, { i: '1', j: 4 }, { i: '2', j: 4 }, { i: '3', j: 4 }, { i: '1', j: 5 }, { i: '2', j: 5 }, { i: '3', j: 5 }, { i: '1', j: 6 }, { i: '2', j: 6 }, { i: '3', j: 6 }, { i: '1', j: 7 }, { i: '2', j: 7 }, { i: '3', j: 7 }, { i: '1', j: 8 }, { i: '2', j: 8 }, { i: '3', j: 8 }, { i: '1', j: 9 }, { i: '2', j: 9 }, { i: '3', j: 9 }, { i: '1', j: 10 }, { i: '2', j: 10 }, { i: '3', j: 10 } ], css_id: 'tinytable_css_46vand5wmhza05gysa79',}, 
-          { positions: [ { i: '0', j: 2 }, { i: '5', j: 2 }, { i: '0', j: 3 }, { i: '5', j: 3 }, { i: '0', j: 4 }, { i: '5', j: 4 }, { i: '0', j: 5 }, { i: '5', j: 5 }, { i: '0', j: 6 }, { i: '5', j: 6 }, { i: '0', j: 7 }, { i: '5', j: 7 }, { i: '0', j: 8 }, { i: '5', j: 8 }, { i: '0', j: 9 }, { i: '5', j: 9 }, { i: '0', j: 10 }, { i: '5', j: 10 } ], css_id: 'tinytable_css_mquk54t34nivo38qu9du',}, 
-          { positions: [ { i: '-1', j: 2 }, { i: '-1', j: 3 }, { i: '-1', j: 4 }, { i: '-1', j: 5 }, { i: '-1', j: 6 }, { i: '-1', j: 7 }, { i: '-1', j: 8 }, { i: '-1', j: 9 }, { i: '-1', j: 10 } ], css_id: 'tinytable_css_4qiftr6gi4sl5lqksnp2',}, 
-          { positions: [ { i: '4', j: 1 } ], css_id: 'tinytable_css_tje7qhg9o9ijga916wcb',}, 
-          { positions: [ { i: '1', j: 1 }, { i: '2', j: 1 }, { i: '3', j: 1 } ], css_id: 'tinytable_css_6nyq4v0v2o708sj554fj',}, 
-          { positions: [ { i: '0', j: 1 }, { i: '5', j: 1 } ], css_id: 'tinytable_css_m6ds875bsukbfvhisaid',}, 
-          { positions: [ { i: '-1', j: 1 } ], css_id: 'tinytable_css_sh5qh3vh8w2xjud4lixa',}, 
+          { positions: [ { i: '4', j: 2 }, { i: '4', j: 3 }, { i: '4', j: 4 }, { i: '4', j: 5 }, { i: '4', j: 6 }, { i: '4', j: 7 }, { i: '4', j: 8 }, { i: '4', j: 9 }, { i: '4', j: 10 } ], css_id: 'tinytable_css_37d6x0tbelkw61vdy7dp',}, 
+          { positions: [ { i: '1', j: 2 }, { i: '2', j: 2 }, { i: '3', j: 2 }, { i: '1', j: 3 }, { i: '2', j: 3 }, { i: '3', j: 3 }, { i: '1', j: 4 }, { i: '2', j: 4 }, { i: '3', j: 4 }, { i: '1', j: 5 }, { i: '2', j: 5 }, { i: '3', j: 5 }, { i: '1', j: 6 }, { i: '2', j: 6 }, { i: '3', j: 6 }, { i: '1', j: 7 }, { i: '2', j: 7 }, { i: '3', j: 7 }, { i: '1', j: 8 }, { i: '2', j: 8 }, { i: '3', j: 8 }, { i: '1', j: 9 }, { i: '2', j: 9 }, { i: '3', j: 9 }, { i: '1', j: 10 }, { i: '2', j: 10 }, { i: '3', j: 10 } ], css_id: 'tinytable_css_p63lwol3rtzsdpbndrzx',}, 
+          { positions: [ { i: '0', j: 2 }, { i: '5', j: 2 }, { i: '0', j: 3 }, { i: '5', j: 3 }, { i: '0', j: 4 }, { i: '5', j: 4 }, { i: '0', j: 5 }, { i: '5', j: 5 }, { i: '0', j: 6 }, { i: '5', j: 6 }, { i: '0', j: 7 }, { i: '5', j: 7 }, { i: '0', j: 8 }, { i: '5', j: 8 }, { i: '0', j: 9 }, { i: '5', j: 9 }, { i: '0', j: 10 }, { i: '5', j: 10 } ], css_id: 'tinytable_css_kj63rqysoecpqxlwib7y',}, 
+          { positions: [ { i: '-1', j: 2 }, { i: '-1', j: 3 }, { i: '-1', j: 4 }, { i: '-1', j: 5 }, { i: '-1', j: 6 }, { i: '-1', j: 7 }, { i: '-1', j: 8 }, { i: '-1', j: 9 }, { i: '-1', j: 10 } ], css_id: 'tinytable_css_7zn0j1ihp9kvcz4gkupn',}, 
+          { positions: [ { i: '4', j: 1 } ], css_id: 'tinytable_css_lqpnrpk42b58wnrsm9v6',}, 
+          { positions: [ { i: '1', j: 1 }, { i: '2', j: 1 }, { i: '3', j: 1 } ], css_id: 'tinytable_css_yalwvl108du65w9q4ngc',}, 
+          { positions: [ { i: '0', j: 1 }, { i: '5', j: 1 } ], css_id: 'tinytable_css_8csnco11zvjlsgsur25t',}, 
+          { positions: [ { i: '-1', j: 1 } ], css_id: 'tinytable_css_qjvkowq7tzqs6n1aftla',}, 
           ];
 
           // Loop over the arrays to style the cells
           cellsToStyle.forEach(function (group) {
               group.positions.forEach(function (cell) {
-                  tableFns_j8bk4goud9k0ba2g2rkd.styleCell(cell.i, cell.j, group.css_id);
+                  tableFns_05v83rot0a43dr2bzyqg.styleCell(cell.i, cell.j, group.css_id);
               });
           });
       });
     </script><link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/vincentarelbundock/tinytable@main/inst/tinytable.css">
 <style>
     /* tinytable css entries after */
-    #tinytable_j8bk4goud9k0ba2g2rkd td.tinytable_css_c8yol8utqsboub94fj5d, #tinytable_j8bk4goud9k0ba2g2rkd th.tinytable_css_c8yol8utqsboub94fj5d {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
-    #tinytable_j8bk4goud9k0ba2g2rkd td.tinytable_css_46vand5wmhza05gysa79, #tinytable_j8bk4goud9k0ba2g2rkd th.tinytable_css_46vand5wmhza05gysa79 { text-align: center }
-    #tinytable_j8bk4goud9k0ba2g2rkd td.tinytable_css_mquk54t34nivo38qu9du, #tinytable_j8bk4goud9k0ba2g2rkd th.tinytable_css_mquk54t34nivo38qu9du {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
-    #tinytable_j8bk4goud9k0ba2g2rkd td.tinytable_css_4qiftr6gi4sl5lqksnp2, #tinytable_j8bk4goud9k0ba2g2rkd th.tinytable_css_4qiftr6gi4sl5lqksnp2 {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
-    #tinytable_j8bk4goud9k0ba2g2rkd td.tinytable_css_tje7qhg9o9ijga916wcb, #tinytable_j8bk4goud9k0ba2g2rkd th.tinytable_css_tje7qhg9o9ijga916wcb {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
-    #tinytable_j8bk4goud9k0ba2g2rkd td.tinytable_css_6nyq4v0v2o708sj554fj, #tinytable_j8bk4goud9k0ba2g2rkd th.tinytable_css_6nyq4v0v2o708sj554fj { text-align: left }
-    #tinytable_j8bk4goud9k0ba2g2rkd td.tinytable_css_m6ds875bsukbfvhisaid, #tinytable_j8bk4goud9k0ba2g2rkd th.tinytable_css_m6ds875bsukbfvhisaid {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
-    #tinytable_j8bk4goud9k0ba2g2rkd td.tinytable_css_sh5qh3vh8w2xjud4lixa, #tinytable_j8bk4goud9k0ba2g2rkd th.tinytable_css_sh5qh3vh8w2xjud4lixa {  position: relative; --border-bottom: 0; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.1em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
+    #tinytable_05v83rot0a43dr2bzyqg td.tinytable_css_37d6x0tbelkw61vdy7dp, #tinytable_05v83rot0a43dr2bzyqg th.tinytable_css_37d6x0tbelkw61vdy7dp {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
+    #tinytable_05v83rot0a43dr2bzyqg td.tinytable_css_p63lwol3rtzsdpbndrzx, #tinytable_05v83rot0a43dr2bzyqg th.tinytable_css_p63lwol3rtzsdpbndrzx { text-align: center }
+    #tinytable_05v83rot0a43dr2bzyqg td.tinytable_css_kj63rqysoecpqxlwib7y, #tinytable_05v83rot0a43dr2bzyqg th.tinytable_css_kj63rqysoecpqxlwib7y {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
+    #tinytable_05v83rot0a43dr2bzyqg td.tinytable_css_7zn0j1ihp9kvcz4gkupn, #tinytable_05v83rot0a43dr2bzyqg th.tinytable_css_7zn0j1ihp9kvcz4gkupn {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
+    #tinytable_05v83rot0a43dr2bzyqg td.tinytable_css_lqpnrpk42b58wnrsm9v6, #tinytable_05v83rot0a43dr2bzyqg th.tinytable_css_lqpnrpk42b58wnrsm9v6 {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
+    #tinytable_05v83rot0a43dr2bzyqg td.tinytable_css_yalwvl108du65w9q4ngc, #tinytable_05v83rot0a43dr2bzyqg th.tinytable_css_yalwvl108du65w9q4ngc { text-align: left }
+    #tinytable_05v83rot0a43dr2bzyqg td.tinytable_css_8csnco11zvjlsgsur25t, #tinytable_05v83rot0a43dr2bzyqg th.tinytable_css_8csnco11zvjlsgsur25t {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
+    #tinytable_05v83rot0a43dr2bzyqg td.tinytable_css_qjvkowq7tzqs6n1aftla, #tinytable_05v83rot0a43dr2bzyqg th.tinytable_css_qjvkowq7tzqs6n1aftla {  position: relative; --border-bottom: 0; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.1em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
     </style>
 <div class="container">
-      <table class="table tinytable" id="tinytable_j8bk4goud9k0ba2g2rkd" style="width: auto; margin-left: auto; margin-right: auto;" data-quarto-disable-processing="true">
+      <table class="table tinytable" id="tinytable_05v83rot0a43dr2bzyqg" style="width: auto; margin-left: auto; margin-right: auto;" data-quarto-disable-processing="true">
 <caption>Multiple responses by physical_activity</caption>
         <thead>
 <tr>
