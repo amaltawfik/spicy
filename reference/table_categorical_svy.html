@@ -311,7 +311,10 @@ interval (<code>"mean"</code>) is not. The percentage itself always comes from
     <p><code>svychisq()</code> with <code>chisq_statistic = "F"</code> (the default) is the
 Pearson chi-square with the Rao-Scott second-order correction,
 referred to F(ndf, <code>survey::degf(design)</code>). It is survey's own
-default and the one Stata's <code>svy: tabulate</code> reports.</p>
+default and the one Stata's <code>svy: tabulate</code> reports. The design-based
+test has no exact counterpart, so the switch to Fisher's exact test
+that <code>test</code> makes in <code><a href="table_categorical.html">table_categorical()</a></code> when an expected count is
+below 5 has no equivalent here.</p>
 <p>It runs on the <em>complete cases</em> of the two variables, and on their
 observed levels: a <code>(Missing)</code> row and a declared-but-unobserved
 level are descriptive, and neither belongs to the null hypothesis.

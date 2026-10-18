@@ -25,10 +25,10 @@
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet">
 <meta property="og:title" content="Multiple-response questions">
-<meta name="description" content='Tabulate a "check all that apply" question in R with table_multiresponse(): one row per item, counts with percentages of respondents or of responses, a stated base, and, across groups, a chi-squared test per item with a Holm adjustment and a global test with the second-order Rao-Scott correction, rendered by the same output engines as table_categorical().
-'>
-<meta property="og:description" content='Tabulate a "check all that apply" question in R with table_multiresponse(): one row per item, counts with percentages of respondents or of responses, a stated base, and, across groups, a chi-squared test per item with a Holm adjustment and a global test with the second-order Rao-Scott correction, rendered by the same output engines as table_categorical().
-'>
+<meta name="description" content="Tabulate a &quot;check all that apply&quot; question in R with table_multiresponse(): one row per item, counts with percentages of respondents or of responses, a stated base, and, across groups, a chi-squared or Fisher's exact test per item with a Holm adjustment and a global test with the second-order Rao-Scott correction, rendered by the same output engines as table_categorical().
+">
+<meta property="og:description" content="Tabulate a &quot;check all that apply&quot; question in R with table_multiresponse(): one row per item, counts with percentages of respondents or of responses, a stated base, and, across groups, a chi-squared or Fisher's exact test per item with a Holm adjustment and a global test with the second-order Rao-Scott correction, rendered by the same output engines as table_categorical().
+">
 <meta property="og:image" content="https://amaltawfik.github.io/spicy/logo.svg">
 </head>
 <body>
@@ -123,8 +123,9 @@ function reads the columns as one question: one row per item, with the
 number and the percentage of respondents who chose it. A last row gives
 the number of respondents behind the percentages.</p>
 <p>With <code>by</code>, it compares groups. Each item gets a
-chi-squared test. The question gets a global test of all its items
-together, valid although one respondent can choose several items.</p>
+chi-squared test, or Fisher’s exact test when an expected count is below
+5. The question gets a global test of all its items together, valid
+although one respondent can choose several items.</p>
 <p><code>sochealth</code>, the simulated survey shipped with spicy, has
 no such question, so this article builds one. Each respondent rated four
 domains of life from 1 to 5. A rating of 4 or 5 counts here as
@@ -182,7 +183,9 @@ choice, and tabulates it like any categorical variable:</p>
 <span><span class="co">#&gt;    health        <span style="color: #9E9E9E;">│</span> 335   25.6   314   25.2     649     25.4                     </span></span>
 <span><span class="co">#&gt;    work          <span style="color: #9E9E9E;">│</span> 292   22.3   301   24.1     593     23.2                     </span></span>
 <span><span class="co">#&gt;    relationships <span style="color: #9E9E9E;">│</span> 375   28.7   336   26.9     711     27.8                     </span></span>
-<span><span class="co">#&gt;    standard      <span style="color: #9E9E9E;">│</span> 306   23.4   296   23.7     602     23.6</span></span></code></pre></div>
+<span><span class="co">#&gt;    standard      <span style="color: #9E9E9E;">│</span> 306   23.4   296   23.7     602     23.6                     </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Group comparison: Pearson chi-squared test.</span></span></span></code></pre></div>
 <p>That table misreads the question in three ways.</p>
 <ol style="list-style-type: decimal">
 <li>
@@ -501,8 +504,16 @@ the question.</p>
 chosen or not, on <em>r</em> − 1 degrees of freedom for <em>r</em>
 groups. The arithmetic is that of
 <code>chisq.test(correct = FALSE)</code>: no continuity correction, and
-no constant added to an empty cell (Agresti and Liu, 1999). The data
-frame output keeps the statistics and both p-values:</p>
+no constant added to an empty cell (Agresti and Liu, 1999).</p>
+<p>When an expected count of an item’s table is below 5, the chi-squared
+approximation is unreliable, and the item takes Fisher’s exact test
+instead. This is the rule of <code>test = "auto"</code>, the default,
+shared with <code><a href="../reference/table_categorical.html">table_categorical()</a></code> and gtsummary’s
+<code>add_p()</code>. An item tested exactly has no statistic, and the
+note names the test of each item. <code>test = "chisq"</code> and
+<code>test = "fisher"</code> take one test for every item. Here every
+expected count is far above 5, so every item takes the chi-squared. The
+data frame output keeps the test, the statistics and both p-values:</p>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">wide</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/table_multiresponse.html">table_multiresponse</a></span><span class="op">(</span></span>
 <span>  <span class="va">domains</span>,</span>
@@ -510,13 +521,13 @@ frame output keeps the statistics and both p-values:</p>
 <span>  by <span class="op">=</span> <span class="va">physical_activity</span>,</span>
 <span>  output <span class="op">=</span> <span class="st">"data.frame"</span></span>
 <span><span class="op">)</span></span>
-<span><span class="va">wide</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Variable"</span>, <span class="st">"Chi2"</span>, <span class="st">"df"</span>, <span class="st">"p"</span>, <span class="st">"p_unadjusted"</span><span class="op">)</span><span class="op">]</span></span>
-<span><span class="co">#&gt;        Variable      Chi2 df           p p_unadjusted</span></span>
-<span><span class="co">#&gt; 1        health  3.698537  1 0.108920423 0.0544602116</span></span>
-<span><span class="co">#&gt; 2          work 11.456128  1 0.002850345 0.0007125862</span></span>
-<span><span class="co">#&gt; 3 relationships  1.425211  1 0.232547529 0.2325475286</span></span>
-<span><span class="co">#&gt; 4      standard  5.415538  1 0.059874905 0.0199583016</span></span>
-<span><span class="co">#&gt; 5   Respondents        NA NA          NA           NA</span></span></code></pre></div>
+<span><span class="va">wide</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Variable"</span>, <span class="st">"test_type"</span>, <span class="st">"Chi2"</span>, <span class="st">"df"</span>, <span class="st">"p"</span>, <span class="st">"p_unadjusted"</span><span class="op">)</span><span class="op">]</span></span>
+<span><span class="co">#&gt;        Variable   test_type      Chi2 df           p p_unadjusted</span></span>
+<span><span class="co">#&gt; 1        health chi_squared  3.698537  1 0.108920423 0.0544602116</span></span>
+<span><span class="co">#&gt; 2          work chi_squared 11.456128  1 0.002850345 0.0007125862</span></span>
+<span><span class="co">#&gt; 3 relationships chi_squared  1.425211  1 0.232547529 0.2325475286</span></span>
+<span><span class="co">#&gt; 4      standard chi_squared  5.415538  1 0.059874905 0.0199583016</span></span>
+<span><span class="co">#&gt; 5   Respondents        &lt;NA&gt;        NA NA          NA           NA</span></span></code></pre></div>
 <p>The <code>p</code> column is adjusted by Holm’s method, and
 <code>p_unadjusted</code> keeps the raw values. The items of one
 question form a natural family of tests, read together, so the
@@ -548,20 +559,20 @@ that are responsible” (1999, p. 941). The overall test is the last
 sentence of the note. It tests multiple marginal independence: that the
 probability of choosing each item is the same in every group.</p>
 <p>Its statistic is the sum of the item chi-squared statistics, 22.00
-here. The sum does not depend on which answer of an item is coded as
-chosen (Agresti and Liu, 1999). It is not chi-squared under the null
-hypothesis: one respondent can choose several items, so the items are
-correlated (Loughin and Scherer, 1998). Its asymptotic distribution is a
-weighted sum of chi-squared variables, the weights being the eigenvalues
-of a design-effect matrix (Bilder, Loughin and Nettleton, 2000, Appendix
-A).</p>
+here, whatever test the item p-values take. The sum does not depend on
+which answer of an item is coded as chosen (Agresti and Liu, 1999). It
+is not chi-squared under the null hypothesis: one respondent can choose
+several items, so the items are correlated (Loughin and Scherer, 1998).
+Its asymptotic distribution is a weighted sum of chi-squared variables,
+the weights being the eigenvalues of a design-effect matrix (Bilder,
+Loughin and Nettleton, 2000, Appendix A).</p>
 <p>The mean of those weights is 1, but “individual weights may differ
 from one” (Thomas and Decady, 2004, p. 48). The default,
-<code>test = "rs2"</code>, allows for their spread with the second-order
-Rao-Scott correction of Thomas and Decady (2004, pp. 48 and 58-59). It
-matches the first two moments of the distribution and refers the result
-to a chi-squared on fractional degrees of freedom: χ²(3.16) = 17.36
-here. The result is deterministic.</p>
+<code>global_test = "rs2"</code>, allows for their spread with the
+second-order Rao-Scott correction of Thomas and Decady (2004, pp. 48 and
+58-59). It matches the first two moments of the distribution and refers
+the result to a chi-squared on fractional degrees of freedom: χ²(3.16) =
+17.36 here. The result is deterministic.</p>
 <p><code>glance()</code> returns the global test as numbers:</p>
 <div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">broom</span><span class="fu">::</span><span class="fu"><a href="https://generics.r-lib.org/reference/glance.html" class="external-link">glance</a></span><span class="op">(</span><span class="va">tbl</span><span class="op">)</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"test_type"</span>, <span class="st">"statistic"</span>, <span class="st">"df"</span>, <span class="st">"p.value"</span>, <span class="st">"rs_cv"</span><span class="op">)</span><span class="op">]</span></span>
@@ -583,7 +594,7 @@ second order is needed (pp. 53 and 57).</p>
 <div class="section level3">
 <h3 id="the-bootstrap">The bootstrap<a class="anchor" aria-label="anchor" href="#the-bootstrap"></a>
 </h3>
-<p><code>test = "bootstrap"</code> refers the same sum to its
+<p><code>global_test = "bootstrap"</code> refers the same sum to its
 distribution over <code>boot_n</code> resamples, 1999 by default. Each
 resample draws whole response vectors with replacement from the pooled
 respondents, with the group sizes held fixed (Loughin and Scherer,
@@ -595,7 +606,7 @@ observed one. It is random, so set a seed to reproduce it:</p>
 <span>  <span class="va">domains</span>,</span>
 <span>  select <span class="op">=</span> <span class="va">health</span><span class="op">:</span><span class="va">standard</span>,</span>
 <span>  by <span class="op">=</span> <span class="va">physical_activity</span>,</span>
-<span>  test <span class="op">=</span> <span class="st">"bootstrap"</span></span>
+<span>  global_test <span class="op">=</span> <span class="st">"bootstrap"</span></span>
 <span><span class="op">)</span></span>
 <span><span class="fu">broom</span><span class="fu">::</span><span class="fu"><a href="https://generics.r-lib.org/reference/glance.html" class="external-link">glance</a></span><span class="op">(</span><span class="va">boot</span><span class="op">)</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"test_type"</span>, <span class="st">"statistic"</span>, <span class="st">"df"</span>, <span class="st">"p.value"</span>, <span class="st">"boot_n"</span><span class="op">)</span><span class="op">]</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 5</span></span></span>
@@ -748,8 +759,8 @@ after the groups:</p>
 <div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">wide</span><span class="op">)</span></span>
 <span><span class="co">#&gt;  [1] "Variable"     "No n"         "No %"         "Yes n"        "Yes %"       </span></span>
-<span><span class="co">#&gt;  [6] "Total n"      "Total %"      "Chi2"         "df"           "p"           </span></span>
-<span><span class="co">#&gt; [11] "p_unadjusted"</span></span></code></pre></div>
+<span><span class="co">#&gt;  [6] "Total n"      "Total %"      "test_type"    "Chi2"         "df"          </span></span>
+<span><span class="co">#&gt; [11] "p"            "p_unadjusted"</span></span></code></pre></div>
 <p><code>output = "long"</code> returns one row per item and group, with
 the base of the group:</p>
 <div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
@@ -760,10 +771,14 @@ the base of the group:</p>
 <span>  output <span class="op">=</span> <span class="st">"long"</span></span>
 <span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">long</span>, <span class="fl">3</span><span class="op">)</span></span>
-<span><span class="co">#&gt;   variable group   n base      pct     chi2 df         p p_unadjusted</span></span>
-<span><span class="co">#&gt; 1   health    No 335  650 51.53846 3.698537  1 0.1089204   0.05446021</span></span>
-<span><span class="co">#&gt; 2   health   Yes 314  550 57.09091 3.698537  1 0.1089204   0.05446021</span></span>
-<span><span class="co">#&gt; 3   health Total 649 1200 54.08333 3.698537  1 0.1089204   0.05446021</span></span></code></pre></div>
+<span><span class="co">#&gt;   variable group   n base      pct   test_type     chi2 df         p</span></span>
+<span><span class="co">#&gt; 1   health    No 335  650 51.53846 chi_squared 3.698537  1 0.1089204</span></span>
+<span><span class="co">#&gt; 2   health   Yes 314  550 57.09091 chi_squared 3.698537  1 0.1089204</span></span>
+<span><span class="co">#&gt; 3   health Total 649 1200 54.08333 chi_squared 3.698537  1 0.1089204</span></span>
+<span><span class="co">#&gt;   p_unadjusted</span></span>
+<span><span class="co">#&gt; 1   0.05446021</span></span>
+<span><span class="co">#&gt; 2   0.05446021</span></span>
+<span><span class="co">#&gt; 3   0.05446021</span></span></code></pre></div>
 <p>Both frames carry the note in <code>attr(x, "note")</code> and the
 global test in <code>attr(x, "global_test")</code>.</p>
 <p><code>tidy()</code> returns one row per item and group, the margin
@@ -772,7 +787,7 @@ of responses. <code>glance()</code> returns one row for the
 question:</p>
 <div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">broom</span><span class="fu">::</span><span class="fu"><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">tidy</a></span><span class="op">(</span><span class="va">tbl</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 12 × 12</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 12 × 13</span></span></span>
 <span><span class="co">#&gt;    variable      label   group total     n  base proportion proportion_responses</span></span>
 <span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>                <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> health        health  No    FALSE   335   650      0.515                0.256</span></span>
@@ -787,8 +802,8 @@ question:</p>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> standard      standa… No    FALSE   306   650      0.471                0.234</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">11</span> standard      standa… Yes   FALSE   296   550      0.538                0.237</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">12</span> standard      standa… Total TRUE    602  <span style="text-decoration: underline;">1</span>200      0.502                0.236</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 4 more variables: statistic &lt;dbl&gt;, df &lt;int&gt;, p.value &lt;dbl&gt;,</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;">#   p.unadjusted &lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 5 more variables: test_type &lt;chr&gt;, statistic &lt;dbl&gt;, df &lt;int&gt;,</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;">#   p.value &lt;dbl&gt;, p.unadjusted &lt;dbl&gt;</span></span></span>
 <span><span class="fu">broom</span><span class="fu">::</span><span class="fu"><a href="https://generics.r-lib.org/reference/glance.html" class="external-link">glance</a></span><span class="op">(</span><span class="va">tbl</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 11</span></span></span>
 <span><span class="co">#&gt;   n_items n_items_tested n_groups  nobs test_type statistic    df p.value boot_n</span></span>
@@ -1334,42 +1349,42 @@ multiple marginal independence, χ²(3.16) = 17.36, p &lt; .001.
 
     <script src="https://cdn.jsdelivr.net/gh/vincentarelbundock/tinytable@main/inst/tinytable.js"></script><script>
       // Create table-specific functions using external factory
-      const tableFns_74ts6rxmozw7yrftu7cu = TinyTable.createTableFunctions("tinytable_74ts6rxmozw7yrftu7cu");
+      const tableFns_9fq1881zznbegzxpf76o = TinyTable.createTableFunctions("tinytable_9fq1881zznbegzxpf76o");
       // tinytable span after
       window.addEventListener('load', function () {
           var cellsToStyle = [
             // tinytable style arrays after
-          { positions: [ { i: '4', j: 2 }, { i: '4', j: 3 }, { i: '4', j: 4 }, { i: '4', j: 5 }, { i: '4', j: 6 }, { i: '4', j: 7 }, { i: '4', j: 8 }, { i: '4', j: 9 }, { i: '4', j: 10 } ], css_id: 'tinytable_css_uvlnog8u1wci6ny5d2rh',}, 
-          { positions: [ { i: '1', j: 2 }, { i: '2', j: 2 }, { i: '3', j: 2 }, { i: '1', j: 3 }, { i: '2', j: 3 }, { i: '3', j: 3 }, { i: '1', j: 4 }, { i: '2', j: 4 }, { i: '3', j: 4 }, { i: '1', j: 5 }, { i: '2', j: 5 }, { i: '3', j: 5 }, { i: '1', j: 6 }, { i: '2', j: 6 }, { i: '3', j: 6 }, { i: '1', j: 7 }, { i: '2', j: 7 }, { i: '3', j: 7 }, { i: '1', j: 8 }, { i: '2', j: 8 }, { i: '3', j: 8 }, { i: '1', j: 9 }, { i: '2', j: 9 }, { i: '3', j: 9 }, { i: '1', j: 10 }, { i: '2', j: 10 }, { i: '3', j: 10 } ], css_id: 'tinytable_css_9zb9wec50ibpjiol6dky',}, 
-          { positions: [ { i: '0', j: 2 }, { i: '5', j: 2 }, { i: '0', j: 3 }, { i: '5', j: 3 }, { i: '0', j: 4 }, { i: '5', j: 4 }, { i: '0', j: 5 }, { i: '5', j: 5 }, { i: '0', j: 6 }, { i: '5', j: 6 }, { i: '0', j: 7 }, { i: '5', j: 7 }, { i: '0', j: 8 }, { i: '5', j: 8 }, { i: '0', j: 9 }, { i: '5', j: 9 }, { i: '0', j: 10 }, { i: '5', j: 10 } ], css_id: 'tinytable_css_vsfm22torqaf5esvkqgo',}, 
-          { positions: [ { i: '-1', j: 2 }, { i: '-1', j: 3 }, { i: '-1', j: 4 }, { i: '-1', j: 5 }, { i: '-1', j: 6 }, { i: '-1', j: 7 }, { i: '-1', j: 8 }, { i: '-1', j: 9 }, { i: '-1', j: 10 } ], css_id: 'tinytable_css_swuisc88cza3v9txpoa8',}, 
-          { positions: [ { i: '4', j: 1 } ], css_id: 'tinytable_css_rmnoemo92x398fpppsim',}, 
-          { positions: [ { i: '1', j: 1 }, { i: '2', j: 1 }, { i: '3', j: 1 } ], css_id: 'tinytable_css_acfakla4vml3ntilf5le',}, 
-          { positions: [ { i: '0', j: 1 }, { i: '5', j: 1 } ], css_id: 'tinytable_css_sgjxwr66y38lpeieo1i5',}, 
-          { positions: [ { i: '-1', j: 1 } ], css_id: 'tinytable_css_spk8b3sab3kr0238p4gt',}, 
+          { positions: [ { i: '4', j: 2 }, { i: '4', j: 3 }, { i: '4', j: 4 }, { i: '4', j: 5 }, { i: '4', j: 6 }, { i: '4', j: 7 }, { i: '4', j: 8 }, { i: '4', j: 9 }, { i: '4', j: 10 } ], css_id: 'tinytable_css_d0tfuvczktfi4rhd0bny',}, 
+          { positions: [ { i: '1', j: 2 }, { i: '2', j: 2 }, { i: '3', j: 2 }, { i: '1', j: 3 }, { i: '2', j: 3 }, { i: '3', j: 3 }, { i: '1', j: 4 }, { i: '2', j: 4 }, { i: '3', j: 4 }, { i: '1', j: 5 }, { i: '2', j: 5 }, { i: '3', j: 5 }, { i: '1', j: 6 }, { i: '2', j: 6 }, { i: '3', j: 6 }, { i: '1', j: 7 }, { i: '2', j: 7 }, { i: '3', j: 7 }, { i: '1', j: 8 }, { i: '2', j: 8 }, { i: '3', j: 8 }, { i: '1', j: 9 }, { i: '2', j: 9 }, { i: '3', j: 9 }, { i: '1', j: 10 }, { i: '2', j: 10 }, { i: '3', j: 10 } ], css_id: 'tinytable_css_1m2pctyuvxu3ozkxgth1',}, 
+          { positions: [ { i: '0', j: 2 }, { i: '5', j: 2 }, { i: '0', j: 3 }, { i: '5', j: 3 }, { i: '0', j: 4 }, { i: '5', j: 4 }, { i: '0', j: 5 }, { i: '5', j: 5 }, { i: '0', j: 6 }, { i: '5', j: 6 }, { i: '0', j: 7 }, { i: '5', j: 7 }, { i: '0', j: 8 }, { i: '5', j: 8 }, { i: '0', j: 9 }, { i: '5', j: 9 }, { i: '0', j: 10 }, { i: '5', j: 10 } ], css_id: 'tinytable_css_coxo7olio28r1wyhyu1q',}, 
+          { positions: [ { i: '-1', j: 2 }, { i: '-1', j: 3 }, { i: '-1', j: 4 }, { i: '-1', j: 5 }, { i: '-1', j: 6 }, { i: '-1', j: 7 }, { i: '-1', j: 8 }, { i: '-1', j: 9 }, { i: '-1', j: 10 } ], css_id: 'tinytable_css_2vah489ecfljv84cjsrb',}, 
+          { positions: [ { i: '4', j: 1 } ], css_id: 'tinytable_css_12e0tq344xtcqp9rzczz',}, 
+          { positions: [ { i: '1', j: 1 }, { i: '2', j: 1 }, { i: '3', j: 1 } ], css_id: 'tinytable_css_53mvp2uceus2tmsfabn7',}, 
+          { positions: [ { i: '0', j: 1 }, { i: '5', j: 1 } ], css_id: 'tinytable_css_sjo2ccfgrfzpowzulf7n',}, 
+          { positions: [ { i: '-1', j: 1 } ], css_id: 'tinytable_css_f2b6nhk7mq14ww4611fl',}, 
           ];
 
           // Loop over the arrays to style the cells
           cellsToStyle.forEach(function (group) {
               group.positions.forEach(function (cell) {
-                  tableFns_74ts6rxmozw7yrftu7cu.styleCell(cell.i, cell.j, group.css_id);
+                  tableFns_9fq1881zznbegzxpf76o.styleCell(cell.i, cell.j, group.css_id);
               });
           });
       });
     </script><link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/vincentarelbundock/tinytable@main/inst/tinytable.css">
 <style>
     /* tinytable css entries after */
-    #tinytable_74ts6rxmozw7yrftu7cu td.tinytable_css_uvlnog8u1wci6ny5d2rh, #tinytable_74ts6rxmozw7yrftu7cu th.tinytable_css_uvlnog8u1wci6ny5d2rh {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
-    #tinytable_74ts6rxmozw7yrftu7cu td.tinytable_css_9zb9wec50ibpjiol6dky, #tinytable_74ts6rxmozw7yrftu7cu th.tinytable_css_9zb9wec50ibpjiol6dky { text-align: center }
-    #tinytable_74ts6rxmozw7yrftu7cu td.tinytable_css_vsfm22torqaf5esvkqgo, #tinytable_74ts6rxmozw7yrftu7cu th.tinytable_css_vsfm22torqaf5esvkqgo {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
-    #tinytable_74ts6rxmozw7yrftu7cu td.tinytable_css_swuisc88cza3v9txpoa8, #tinytable_74ts6rxmozw7yrftu7cu th.tinytable_css_swuisc88cza3v9txpoa8 {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
-    #tinytable_74ts6rxmozw7yrftu7cu td.tinytable_css_rmnoemo92x398fpppsim, #tinytable_74ts6rxmozw7yrftu7cu th.tinytable_css_rmnoemo92x398fpppsim {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
-    #tinytable_74ts6rxmozw7yrftu7cu td.tinytable_css_acfakla4vml3ntilf5le, #tinytable_74ts6rxmozw7yrftu7cu th.tinytable_css_acfakla4vml3ntilf5le { text-align: left }
-    #tinytable_74ts6rxmozw7yrftu7cu td.tinytable_css_sgjxwr66y38lpeieo1i5, #tinytable_74ts6rxmozw7yrftu7cu th.tinytable_css_sgjxwr66y38lpeieo1i5 {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
-    #tinytable_74ts6rxmozw7yrftu7cu td.tinytable_css_spk8b3sab3kr0238p4gt, #tinytable_74ts6rxmozw7yrftu7cu th.tinytable_css_spk8b3sab3kr0238p4gt {  position: relative; --border-bottom: 0; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.1em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
+    #tinytable_9fq1881zznbegzxpf76o td.tinytable_css_d0tfuvczktfi4rhd0bny, #tinytable_9fq1881zznbegzxpf76o th.tinytable_css_d0tfuvczktfi4rhd0bny {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
+    #tinytable_9fq1881zznbegzxpf76o td.tinytable_css_1m2pctyuvxu3ozkxgth1, #tinytable_9fq1881zznbegzxpf76o th.tinytable_css_1m2pctyuvxu3ozkxgth1 { text-align: center }
+    #tinytable_9fq1881zznbegzxpf76o td.tinytable_css_coxo7olio28r1wyhyu1q, #tinytable_9fq1881zznbegzxpf76o th.tinytable_css_coxo7olio28r1wyhyu1q {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
+    #tinytable_9fq1881zznbegzxpf76o td.tinytable_css_2vah489ecfljv84cjsrb, #tinytable_9fq1881zznbegzxpf76o th.tinytable_css_2vah489ecfljv84cjsrb {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
+    #tinytable_9fq1881zznbegzxpf76o td.tinytable_css_12e0tq344xtcqp9rzczz, #tinytable_9fq1881zznbegzxpf76o th.tinytable_css_12e0tq344xtcqp9rzczz {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
+    #tinytable_9fq1881zznbegzxpf76o td.tinytable_css_53mvp2uceus2tmsfabn7, #tinytable_9fq1881zznbegzxpf76o th.tinytable_css_53mvp2uceus2tmsfabn7 { text-align: left }
+    #tinytable_9fq1881zznbegzxpf76o td.tinytable_css_sjo2ccfgrfzpowzulf7n, #tinytable_9fq1881zznbegzxpf76o th.tinytable_css_sjo2ccfgrfzpowzulf7n {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
+    #tinytable_9fq1881zznbegzxpf76o td.tinytable_css_f2b6nhk7mq14ww4611fl, #tinytable_9fq1881zznbegzxpf76o th.tinytable_css_f2b6nhk7mq14ww4611fl {  position: relative; --border-bottom: 0; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.1em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
     </style>
 <div class="container">
-      <table class="table tinytable" id="tinytable_74ts6rxmozw7yrftu7cu" style="width: auto; margin-left: auto; margin-right: auto;" data-quarto-disable-processing="true">
+      <table class="table tinytable" id="tinytable_9fq1881zznbegzxpf76o" style="width: auto; margin-left: auto; margin-right: auto;" data-quarto-disable-processing="true">
 <caption>Multiple responses by physical_activity</caption>
         <thead>
 <tr>

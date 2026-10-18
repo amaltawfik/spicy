@@ -39,16 +39,17 @@ label), `group` (the `by` level or the margin, `NA` without `by`),
 `total` (whether the row is the margin), `n` (the respondents who chose
 the item), `base` (the respondents of the group's base), `proportion`
 (`n / base`, the share of respondents), `proportion_responses` (`n` over
-the choices made in the group), and the item's test: `statistic` (the
-Pearson chi-squared), `df`, `p.value` (adjusted under `p_adjust`) and
-`p.unadjusted`.
+the choices made in the group), and the item's test: `test_type`
+(`"chi_squared"`, `"fisher_exact"` or `"fisher_exact_mc"`), `statistic`
+(the Pearson chi-squared, `NA` for Fisher's exact test), `df`, `p.value`
+(adjusted under `p_adjust`) and `p.unadjusted`.
 
 `glance()` returns one row for the question. Columns: `n_items`,
 `n_items_tested` (the items the global test kept), `n_groups` (the
 groups of `by`, `NA` without it), `nobs` (the respondents of the base),
-`test_type` (`"rs2"` or `"bootstrap"`), `statistic`, `df`, `p.value` and
-`boot_n` of the global test, `rs_cv` (the \\\hat a\\ of the second-order
-Rao-Scott correction, see *Tests* in
+`test_type` (`"rs2"` or `"bootstrap"`, from `global_test`), `statistic`,
+`df`, `p.value` and `boot_n` of the global test, `rs_cv` (the \\\hat a\\
+of the second-order Rao-Scott correction, see *Tests* in
 [`table_multiresponse()`](https://amaltawfik.github.io/spicy/reference/table_multiresponse.md)),
 and `p_adjust`, the adjustment of the item p-values.
 

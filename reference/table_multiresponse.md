@@ -6,8 +6,9 @@ the number of respondents the percentages are computed on. The items are
 the indicator columns of the question, selected with tidyselect syntax.
 
 With `by`, the counts and percentages are given per group and in a
-`Total` margin, each item gets a chi-squared test across the groups, and
-the question gets a global test of all its items together, valid
+`Total` margin, each item gets a test across the groups (the
+chi-squared, or Fisher's exact test when an expected count is below 5),
+and the question gets a global test of all its items together, valid
 although one respondent can choose several items.
 
 Multiple output formats are available via `output`: a printed ASCII
@@ -26,8 +27,9 @@ table_multiresponse(
   percent = c("cases", "responses", "both"),
   base = c("valid", "answered", "all"),
   sort = c("", "+", "-", "name+", "name-"),
+  test = c("auto", "chisq", "fisher"),
   p_value = NULL,
-  test = c("rs2", "bootstrap"),
+  global_test = c("rs2", "bootstrap"),
   boot_n = 1999L,
   p_adjust = "holm",
   statistic = FALSE,
@@ -133,6 +135,15 @@ table_multiresponse(
   `labels`) in the C locale, the same on every platform: capitals before
   lower case, accented letters after `z`.
 
+- test:
+
+  The test of each item's p-value, as in
+  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md):
+  `"auto"` (the default) takes Pearson's chi-squared test when every
+  expected count of the item's table is at least 5 and Fisher's exact
+  test otherwise; `"chisq"` and `"fisher"` take one test for every item.
+  The note names the test of each item. See *Tests*.
+
 - p_value:
 
   Logical or `NULL`. With `by`, `NULL` (the default) and `TRUE` show the
@@ -142,7 +153,7 @@ table_multiresponse(
   [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md).
   Ignored without `by`, with a warning when `TRUE`.
 
-- test:
+- global_test:
 
   The global test: `"rs2"` (the default), the sum of the item
   chi-squared statistics with the second-order Rao-Scott correction; or
@@ -151,8 +162,8 @@ table_multiresponse(
 
 - boot_n:
 
-  Number of bootstrap resamples for `test = "bootstrap"`. Defaults to
-  `1999`.
+  Number of bootstrap resamples for `global_test = "bootstrap"`.
+  Defaults to `1999`.
 
 - p_adjust:
 
@@ -170,7 +181,8 @@ table_multiresponse(
 
   Logical. If `TRUE`, adds a `Test` column with each item's chi-squared
   statistic and its degrees of freedom, with or without the p-values of
-  `p_value`. Defaults to `FALSE`.
+  `p_value`; an item whose p-value comes from Fisher's exact test has no
+  statistic and shows a dash. Defaults to `FALSE`.
 
 - labels:
 
@@ -305,14 +317,18 @@ Depends on `output`:
   percentage of each group of `by` and of the `Total` margin
   (`<group> n` and `<group> \%`, or `<group> \% of cases` and
   `<group> \% of responses` under `percent = "both"`; `n` and `\%`
-  without `by`), then `Chi2` and `df` when the item tests ran (for
-  `p_value` or for `statistic`), `p` with `p_value`, and `p_unadjusted`
-  under an adjustment.
+  without `by`), then `test_type`, `Chi2` and `df` when the item tests
+  ran (for `p_value` or for `statistic`), `p` with `p_value`, and
+  `p_unadjusted` under an adjustment. `test_type` names the test of each
+  item as in
+  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
+  (`"chi_squared"`, `"fisher_exact"`, `"fisher_exact_mc"`), and `Chi2`
+  and `df` are `NA` for an item tested by Fisher's exact test.
 
 - `"long"`: one row per item and group, with columns `variable`, `group`
   (with `by`), `n`, `base` (the respondents of the group), `pct` (or
-  `pct_cases` and `pct_responses`), and `chi2`, `df`, `p`, and
-  `p_unadjusted` as above.
+  `pct_cases` and `pct_responses`), and `test_type`, `chi2`, `df`, `p`,
+  and `p_unadjusted` as above.
 
 - `"tinytable"`, `"gt"`, `"flextable"`: the rendered table object.
 
@@ -326,8 +342,8 @@ The data frames carry the note in `attr(x, "note")` and, when the table
 has a global test, `attr(x, "global_test")`: a one-row data frame with
 `test`, `statistic`, `df`, `p.value`, `boot_n`, `n_items` (the items
 tested), `n_groups`, `rs_mean` and `rs_cv` (the design-effect summary of
-`test = "rs2"`), and `boot_redraws` (the resamples drawn again under
-`test = "bootstrap"`); see *Tests*.
+`global_test = "rs2"`), and `boot_redraws` (the resamples drawn again
+under `global_test = "bootstrap"`); see *Tests*.
 [`as_structured()`](https://amaltawfik.github.io/spicy/reference/as_structured.md)
 reads the default object.
 
@@ -341,6 +357,21 @@ arithmetic of `chisq.test(correct = FALSE)`, with no continuity
 correction and no constant added to an empty cell (Agresti and Liu,
 1999).
 
+The item p-value comes from the test `test` chooses, as in
+[`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md).
+Under `"auto"`, the default, it is that chi-squared test when every
+expected count of the item's table is at least 5, and Fisher's exact
+test
+([`stats::fisher.test()`](https://rdrr.io/r/stats/fisher.test.html))
+otherwise; when the exact enumeration fails, the p-value is its Monte
+Carlo estimate over 2000 tables, which draws from the session's RNG. An
+item tested by Fisher's exact test has no statistic: its `Test` cell
+shows a dash, and `Chi2` and `df` are `NA` in the data frames. Without
+p-values (`p_value = FALSE`), `statistic = TRUE` shows the chi-squared
+statistic of every item. The global test sums the Pearson statistics of
+the items whatever `test` chooses for their p-values, since its
+correction and its bootstrap are defined for that sum.
+
 The global test sums the item statistics, \\X^2_S = \sum_j X^2_j\\, a
 value that does not depend on which answer of an item is coded as chosen
 (Agresti and Liu, 1999). One respondent can choose several items, so the
@@ -348,8 +379,8 @@ items are correlated and \\X^2_S\\ is not chi-squared under the null
 (Loughin and Scherer, 1998): its asymptotic distribution is a weighted
 sum of chi-squared variables, the weights being the eigenvalues of a
 design-effect matrix (Bilder, Loughin and Nettleton, 2000, Appendix A).
-`test = "rs2"` matches its first two moments, the second-order Rao-Scott
-correction of Thomas and Decady (2004, pp. 48 and 58-59):
+`global_test = "rs2"` matches its first two moments, the second-order
+Rao-Scott correction of Thomas and Decady (2004, pp. 48 and 58-59):
 
 \$\$X^2\_{RS2} = \frac{c(r-1)\\X^2_S}{\sum_k \lambda_k^2}, \qquad \nu =
 \frac{c^2(r-1)^2}{\sum_k \lambda_k^2}\$\$
@@ -371,19 +402,19 @@ defined by \\1 + \hat a^2 = \sum_k \lambda_k^2 / (c(r-1))\\: the
 coefficient of variation of the \\\lambda_k\\ when their mean is 1, and
 `NA` when that ratio falls below 1.
 
-`test = "bootstrap"` refers \\X^2_S\\ to its distribution over `boot_n`
-resamples of whole response vectors, drawn with replacement from the
-pooled respondents with the group sizes held fixed (Loughin and Scherer,
-1998). The p-value is the share of resamples whose statistic is at least
-the observed one. A resample in which an item is chosen by every
-respondent or by none gives that item no statistic: it is discarded and
-drawn again, the practice of Bilder, Loughin and Nettleton (2000, p.
-1298) for resamples whose marginal table has an empty row or column, and
-`attr(x, "global_test")$boot_redraws` counts the resamples drawn again.
-When 100 times `boot_n` draws do not yield `boot_n` usable resamples,
-the function stops with an error. The bootstrap held its level in most
-published settings, with exceptions reported by Bilder, Loughin and
-Nettleton (2000, p. 1305), and no study of multiple marginal
+`global_test = "bootstrap"` refers \\X^2_S\\ to its distribution over
+`boot_n` resamples of whole response vectors, drawn with replacement
+from the pooled respondents with the group sizes held fixed (Loughin and
+Scherer, 1998). The p-value is the share of resamples whose statistic is
+at least the observed one. A resample in which an item is chosen by
+every respondent or by none gives that item no statistic: it is
+discarded and drawn again, the practice of Bilder, Loughin and Nettleton
+(2000, p. 1298) for resamples whose marginal table has an empty row or
+column, and `attr(x, "global_test")$boot_redraws` counts the resamples
+drawn again. When 100 times `boot_n` draws do not yield `boot_n` usable
+resamples, the function stops with an error. The bootstrap held its
+level in most published settings, with exceptions reported by Bilder,
+Loughin and Nettleton (2000, p. 1305), and no study of multiple marginal
 independence compares it with the second-order test. It is random: call
 [`set.seed()`](https://rdrr.io/r/base/Random.html) first to reproduce
 it.
@@ -577,7 +608,7 @@ table_multiresponse(
   select = c(smoking, physical_activity, dentist_12m),
   by = education,
   counted = "Yes",
-  test = "bootstrap",
+  global_test = "bootstrap",
   boot_n = 999
 )
 #> Multiple responses by education
@@ -621,11 +652,11 @@ table_multiresponse(
 #> 2 physical_activity      286 46.12903    264 45.51724     550 45.83333
 #> 3       dentist_12m      437 70.48387    409 70.51724     846 70.50000
 #> 4       Respondents      620       NA    580       NA    1200       NA
-#>          Chi2 df  p p_unadjusted
-#> 1 0.112067560  1  1    0.7378024
-#> 2 0.045178403  1  1    0.8316763
-#> 3 0.000160454  1  1    0.9898934
-#> 4          NA NA NA           NA
+#>     test_type        Chi2 df  p p_unadjusted
+#> 1 chi_squared 0.112067560  1  1    0.7378024
+#> 2 chi_squared 0.045178403  1  1    0.8316763
+#> 3 chi_squared 0.000160454  1  1    0.9898934
+#> 4        <NA>          NA NA NA           NA
 
 # \donttest{
 if (requireNamespace("tinytable", quietly = TRUE)) {

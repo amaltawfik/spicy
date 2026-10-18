@@ -397,7 +397,9 @@ tables for categorical variables:</p>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
 <span><span class="co">#&gt;  dentist_12m       <span style="color: #9E9E9E;">│</span>          &lt;.001     .22     </span></span>
 <span><span class="co">#&gt;    No              <span style="color: #9E9E9E;">│</span>  29.5                      </span></span>
-<span><span class="co">#&gt;    Yes             <span style="color: #9E9E9E;">│</span>  70.5</span></span></code></pre></div>
+<span><span class="co">#&gt;    Yes             <span style="color: #9E9E9E;">│</span>  70.5                      </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Group comparison: Pearson chi-squared test.</span></span></span></code></pre></div>
 <p><code><a href="../reference/table_continuous.html">table_continuous()</a></code> summarizes continuous variables,
 either overall or by a categorical <code>by</code> variable; when
 <code>by</code> is supplied it also reports a group-comparison test (a
@@ -504,9 +506,10 @@ items of <code>sochealth</code> stand in for such a question;
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Several answers possible: percentages are of respondents and can sum to more than 100%. Base: respondents who answered the question, including those who chose no item. 166 respondents chose none of the items.</span></span></span></code></pre></div>
 <p>With <code>by</code>, the counts and percentages are given per group
-and in a <code>Total</code> margin, each item gets a chi-squared test,
-and the question a global test that allows for several answers per
-respondent, both explained in the <a href="https://amaltawfik.github.io/spicy/articles/table-multiresponse.html">Multiple-response
+and in a <code>Total</code> margin, each item gets a chi-squared test
+(Fisher’s exact test when an expected count is below 5), and the
+question a global test that allows for several answers per respondent,
+both explained in the <a href="https://amaltawfik.github.io/spicy/articles/table-multiresponse.html">Multiple-response
 questions</a> article. <code>p_value = FALSE</code> leaves a descriptive
 table:</p>
 <div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">

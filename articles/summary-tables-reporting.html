@@ -179,7 +179,7 @@ methodological options in depth.</p>
 <td align="left">
 <code>select</code>, <code>by</code>
 </td>
-<td align="left">Chi-squared test, association measure
+<td align="left">Chi-squared or Fisher’s exact test, association measure
 (<code>phi</code>, <code>cramer_v</code>, <code>tau_b</code>, …),
 confidence interval</td>
 </tr>
@@ -331,7 +331,9 @@ variables, every one of them carrying a variable label (see
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
 <span><span class="co">#&gt;  Regular physical activity <span style="color: #9E9E9E;">│</span>                               &lt;.001     .21     </span></span>
 <span><span class="co">#&gt;    No                      <span style="color: #9E9E9E;">│</span>    40.8       650     54.2                      </span></span>
-<span><span class="co">#&gt;    Yes                     <span style="color: #9E9E9E;">│</span>    59.2       550     45.8</span></span></code></pre></div>
+<span><span class="co">#&gt;    Yes                     <span style="color: #9E9E9E;">│</span>    59.2       550     45.8                      </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Group comparison: Pearson chi-squared test.</span></span></span></code></pre></div>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_continuous.html">table_continuous</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span>,</span>
@@ -554,7 +556,9 @@ health behaviors, then summarize continuous well-being indicators.</p>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
 <span><span class="co">#&gt;  Visited a dentist in the last 12 months <span style="color: #9E9E9E;">│</span>          &lt;.001     .22     </span></span>
 <span><span class="co">#&gt;    No                                    <span style="color: #9E9E9E;">│</span>  29.5                      </span></span>
-<span><span class="co">#&gt;    Yes                                   <span style="color: #9E9E9E;">│</span>  70.5</span></span></code></pre></div>
+<span><span class="co">#&gt;    Yes                                   <span style="color: #9E9E9E;">│</span>  70.5                      </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Group comparison: Pearson chi-squared test.</span></span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="continuous-variables">Continuous variables<a class="anchor" aria-label="anchor" href="#continuous-variables"></a>
@@ -724,7 +728,7 @@ refusals:</p>
 <span><span class="co">#&gt;    No              <span style="color: #9E9E9E;">│</span>           </span></span>
 <span><span class="co">#&gt;    Yes             <span style="color: #9E9E9E;">│</span>           </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">SMD = standardized mean difference (Female - Male); |SMD| &gt; 0.1 is the usual imbalance threshold.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">SMD = standardized mean difference (Female - Male); |SMD| &gt; 0.1 is the usual imbalance threshold. Group comparison: Pearson chi-squared test.</span></span></span></code></pre></div>
 <p>Exactly two groups, no confidence interval and no <em>p</em>-value on
 the column itself, and the usual rule of thumb (|SMD| &gt; 0.1) quoted
 in the table note without any cell being highlighted. Note the asymmetry
@@ -959,7 +963,9 @@ sourced from the journal’s published author guidelines:</p>
 <span><span class="co">#&gt;  smoking     <span style="color: #9E9E9E;">│</span>                                                       .71  .01 </span></span>
 <span><span class="co">#&gt;    No        <span style="color: #9E9E9E;">│</span>   475       76.6     451     77.8     926     77.2             </span></span>
 <span><span class="co">#&gt;    Yes       <span style="color: #9E9E9E;">│</span>   131       21.1     118     20.3     249     20.8             </span></span>
-<span><span class="co">#&gt;    (Missing) <span style="color: #9E9E9E;">│</span>    14        2.3      11      1.9      25      2.1</span></span></code></pre></div>
+<span><span class="co">#&gt;    (Missing) <span style="color: #9E9E9E;">│</span>    14        2.3      11      1.9      25      2.1             </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Group comparison: Pearson chi-squared test.</span></span></span></code></pre></div>
 <p>The visible change here is the <em>p</em> column: JAMA rounds
 <em>p</em> values to two decimals (<code>.71</code>), where the default
 reports three (<code>.713</code>).</p>
@@ -1071,7 +1077,9 @@ top of whatever language is in force:</p>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">──────────┼────────────────────</span></span></span>
 <span><span class="co">#&gt;  sex      <span style="color: #9E9E9E;">│</span>          .713  .01 </span></span>
 <span><span class="co">#&gt;    Female <span style="color: #9E9E9E;">│</span>  51.7              </span></span>
-<span><span class="co">#&gt;    Male   <span style="color: #9E9E9E;">│</span>  48.3</span></span>
+<span><span class="co">#&gt;    Male   <span style="color: #9E9E9E;">│</span>  48.3              </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Group comparison: Pearson chi-squared test.</span></span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span>spicy.labels <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div>
 <p><code><a href="../reference/spicy_labels.html">spicy_labels()</a></code> is how you find the key for a label you
 want to change: it returns every key with the text it currently resolves
@@ -1153,639 +1161,528 @@ changes what the rendering engine produces.</p>
 <span>    <span class="fu">gt</span><span class="fu">::</span><span class="fu"><a href="https://gt.rstudio.com/reference/md.html" class="external-link">md</a></span><span class="op">(</span><span class="st">"*Percentages are computed within each education group.*"</span><span class="op">)</span></span>
 <span>  <span class="op">)</span></span></code></pre></div>
 <div id="mwlefoodfi" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#mwlefoodfi table {
-  font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-#mwlefoodfi thead, #mwlefoodfi tbody, #mwlefoodfi tfoot, #mwlefoodfi tr, #mwlefoodfi td, #mwlefoodfi th {
-  border-style: none;
-}
-
-#mwlefoodfi p {
-  margin: 0;
-  padding: 0;
-}
-
-#mwlefoodfi .gt_table {
-  display: table;
-  border-collapse: collapse;
-  line-height: normal;
-  margin-left: auto;
-  margin-right: auto;
-  color: #333333;
-  font-size: 16px;
-  font-weight: normal;
-  font-style: normal;
-  background-color: #FFFFFF;
-  width: auto;
-  border-top-style: solid;
-  border-top-width: 0px;
-  border-top-color: #A8A8A8;
-  border-right-style: none;
-  border-right-width: 2px;
-  border-right-color: #D3D3D3;
-  border-bottom-style: solid;
-  border-bottom-width: 0px;
-  border-bottom-color: #A8A8A8;
-  border-left-style: none;
-  border-left-width: 2px;
-  border-left-color: #D3D3D3;
-}
-
-#mwlefoodfi .gt_caption {
-  padding-top: 4px;
-  padding-bottom: 4px;
-}
-
-#mwlefoodfi .gt_title {
-  color: #333333;
-  font-size: 125%;
-  font-weight: initial;
-  padding-top: 4px;
-  padding-bottom: 4px;
-  padding-left: 5px;
-  padding-right: 5px;
-  border-bottom-color: #FFFFFF;
-  border-bottom-width: 0;
-}
-
-#mwlefoodfi .gt_subtitle {
-  color: #333333;
-  font-size: 85%;
-  font-weight: initial;
-  padding-top: 3px;
-  padding-bottom: 5px;
-  padding-left: 5px;
-  padding-right: 5px;
-  border-top-color: #FFFFFF;
-  border-top-width: 0;
-}
-
-#mwlefoodfi .gt_heading {
-  background-color: #FFFFFF;
-  text-align: center;
-  border-bottom-color: #FFFFFF;
-  border-left-style: none;
-  border-left-width: 1px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 1px;
-  border-right-color: #D3D3D3;
-}
-
-#mwlefoodfi .gt_bottom_border {
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-}
-
-#mwlefoodfi .gt_col_headings {
-  border-top-style: solid;
-  border-top-width: 0px;
-  border-top-color: #D3D3D3;
-  border-bottom-style: solid;
-  border-bottom-width: 0px;
-  border-bottom-color: #D3D3D3;
-  border-left-style: none;
-  border-left-width: 1px;
-  border-left-color: rgba(255, 255, 255, 0);
-  border-right-style: none;
-  border-right-width: 1px;
-  border-right-color: rgba(255, 255, 255, 0);
-}
-
-#mwlefoodfi .gt_col_heading {
-  color: #333333;
-  background-color: #FFFFFF;
-  font-size: 100%;
-  font-weight: normal;
-  text-transform: inherit;
-  border-left-style: none;
-  border-left-width: 1px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 1px;
-  border-right-color: #D3D3D3;
-  vertical-align: bottom;
-  padding-top: 5px;
-  padding-bottom: 6px;
-  padding-left: 5px;
-  padding-right: 5px;
-  overflow-x: hidden;
-}
-
-#mwlefoodfi .gt_column_spanner_outer {
-  color: #333333;
-  background-color: #FFFFFF;
-  font-size: 100%;
-  font-weight: normal;
-  text-transform: inherit;
-  padding-top: 0;
-  padding-bottom: 0;
-  padding-left: 4px;
-  padding-right: 4px;
-}
-
-#mwlefoodfi .gt_column_spanner_outer:first-child {
-  padding-left: 0;
-}
-
-#mwlefoodfi .gt_column_spanner_outer:last-child {
-  padding-right: 0;
-}
-
-#mwlefoodfi .gt_column_spanner {
-  border-bottom-style: solid;
-  border-bottom-width: 0px;
-  border-bottom-color: #D3D3D3;
-  vertical-align: bottom;
-  padding-top: 5px;
-  padding-bottom: 5px;
-  overflow-x: hidden;
-  display: inline-block;
-  width: 100%;
-}
-
-#mwlefoodfi .gt_spanner_row {
-  border-bottom-style: hidden;
-}
-
-#mwlefoodfi .gt_group_heading {
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-  color: #333333;
-  background-color: #FFFFFF;
-  font-size: 100%;
-  font-weight: initial;
-  text-transform: inherit;
-  border-top-style: solid;
-  border-top-width: 2px;
-  border-top-color: #D3D3D3;
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-  border-left-style: none;
-  border-left-width: 1px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 1px;
-  border-right-color: #D3D3D3;
-  vertical-align: middle;
-  text-align: left;
-}
-
-#mwlefoodfi .gt_empty_group_heading {
-  padding: 0.5px;
-  color: #333333;
-  background-color: #FFFFFF;
-  font-size: 100%;
-  font-weight: initial;
-  border-top-style: solid;
-  border-top-width: 2px;
-  border-top-color: #D3D3D3;
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-  vertical-align: middle;
-}
-
-#mwlefoodfi .gt_from_md > :first-child {
-  margin-top: 0;
-}
-
-#mwlefoodfi .gt_from_md > :last-child {
-  margin-bottom: 0;
-}
-
-#mwlefoodfi .gt_row {
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-  margin: 10px;
-  border-top-style: solid;
-  border-top-width: 1px;
-  border-top-color: rgba(255, 255, 255, 0);
-  border-left-style: none;
-  border-left-width: 1px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 1px;
-  border-right-color: #D3D3D3;
-  vertical-align: middle;
-  overflow-x: hidden;
-}
-
-#mwlefoodfi .gt_stub {
-  color: #333333;
-  background-color: #FFFFFF;
-  font-size: 100%;
-  font-weight: initial;
-  text-transform: inherit;
-  border-right-style: solid;
-  border-right-width: 2px;
-  border-right-color: #D3D3D3;
-  padding-left: 5px;
-  padding-right: 5px;
-}
-
-#mwlefoodfi .gt_stub_row_group {
-  color: #333333;
-  background-color: #FFFFFF;
-  font-size: 100%;
-  font-weight: initial;
-  text-transform: inherit;
-  border-right-style: solid;
-  border-right-width: 2px;
-  border-right-color: #D3D3D3;
-  padding-left: 5px;
-  padding-right: 5px;
-  vertical-align: top;
-}
-
-#mwlefoodfi .gt_row_group_first td {
-  border-top-width: 2px;
-}
-
-#mwlefoodfi .gt_row_group_first th {
-  border-top-width: 2px;
-}
-
-#mwlefoodfi .gt_summary_row {
-  color: #333333;
-  background-color: #FFFFFF;
-  text-transform: inherit;
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-}
-
-#mwlefoodfi .gt_first_summary_row {
-  border-top-style: solid;
-  border-top-color: #D3D3D3;
-}
-
-#mwlefoodfi .gt_first_summary_row.thick {
-  border-top-width: 2px;
-}
-
-#mwlefoodfi .gt_last_summary_row {
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-}
-
-#mwlefoodfi .gt_grand_summary_row {
-  color: #333333;
-  background-color: #FFFFFF;
-  text-transform: inherit;
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-}
-
-#mwlefoodfi .gt_first_grand_summary_row {
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-  border-top-style: double;
-  border-top-width: 6px;
-  border-top-color: #D3D3D3;
-}
-
-#mwlefoodfi .gt_last_grand_summary_row_top {
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-  border-bottom-style: double;
-  border-bottom-width: 6px;
-  border-bottom-color: #D3D3D3;
-}
-
-#mwlefoodfi .gt_striped {
-  background-color: rgba(128, 128, 128, 0.05);
-}
-
-#mwlefoodfi .gt_table_body {
-  border-top-style: solid;
-  border-top-width: 0px;
-  border-top-color: #D3D3D3;
-  border-bottom-style: solid;
-  border-bottom-width: 0px;
-  border-bottom-color: #D3D3D3;
-}
-
-#mwlefoodfi .gt_footnotes {
-  color: #333333;
-  background-color: #FFFFFF;
-  border-bottom-style: none;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-  border-left-style: none;
-  border-left-width: 2px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 2px;
-  border-right-color: #D3D3D3;
-}
-
-#mwlefoodfi .gt_footnote {
-  margin: 0px;
-  font-size: 90%;
-  padding-top: 4px;
-  padding-bottom: 4px;
-  padding-left: 5px;
-  padding-right: 5px;
-}
-
-#mwlefoodfi .gt_sourcenotes {
-  color: #333333;
-  background-color: #FFFFFF;
-  border-bottom-style: none;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-  border-left-style: none;
-  border-left-width: 2px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 2px;
-  border-right-color: #D3D3D3;
-}
-
-#mwlefoodfi .gt_sourcenote {
-  font-size: 90%;
-  padding-top: 4px;
-  padding-bottom: 4px;
-  padding-left: 5px;
-  padding-right: 5px;
-}
-
-#mwlefoodfi .gt_left {
-  text-align: left;
-}
-
-#mwlefoodfi .gt_center {
-  text-align: center;
-}
-
-#mwlefoodfi .gt_right {
-  text-align: right;
-  font-variant-numeric: tabular-nums;
-}
-
-#mwlefoodfi .gt_font_normal {
-  font-weight: normal;
-}
-
-#mwlefoodfi .gt_font_bold {
-  font-weight: bold;
-}
-
-#mwlefoodfi .gt_font_italic {
-  font-style: italic;
-}
-
-#mwlefoodfi .gt_super {
-  font-size: 65%;
-}
-
-#mwlefoodfi .gt_footnote_marks {
-  font-size: 75%;
-  vertical-align: 0.4em;
-  position: initial;
-}
-
-#mwlefoodfi .gt_asterisk {
-  font-size: 100%;
-  vertical-align: 0;
-}
-
-#mwlefoodfi .gt_indent_1 {
-  text-indent: 5px;
-}
-
-#mwlefoodfi .gt_indent_2 {
-  text-indent: 10px;
-}
-
-#mwlefoodfi .gt_indent_3 {
-  text-indent: 15px;
-}
-
-#mwlefoodfi .gt_indent_4 {
-  text-indent: 20px;
-}
-
-#mwlefoodfi .gt_indent_5 {
-  text-indent: 25px;
-}
-
-#mwlefoodfi .katex-display {
-  display: inline-flex !important;
-  margin-bottom: 0.75em !important;
-}
-
-#mwlefoodfi div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
-  height: 0px !important;
-}
-
-.gt_table thead tr:first-child {
-  border-top: 1px solid currentColor !important;
-}
-
-.gt_table thead tr.gt_spanner_row {
-  border-bottom-style: none !important;
-}
-
-.gt_table thead th, .gt_table thead td {
-  background-color: transparent !important;
-}
-
-.gt_table thead tr:last-child th[id="Lower secondary_n"],
-.gt_table thead tr:last-child th[id="Lower secondary_pct"],
-.gt_table thead tr:last-child th[id="Upper secondary_n"],
-.gt_table thead tr:last-child th[id="Upper secondary_pct"],
-.gt_table thead tr:last-child th[id="Tertiary_n"],
-.gt_table thead tr:last-child th[id="Tertiary_pct"],
-.gt_table thead tr:last-child th[id="Total_n"],
-.gt_table thead tr:last-child th[id="Total_pct"] {
-  border-top: 1px solid currentColor !important;
-}
-
-.gt_table thead tr:last-child {
-  border-bottom: 1px solid currentColor !important;
-}
-
-.gt_table tbody tr:last-child {
-  border-bottom: 1px solid currentColor !important;
-}
-
-.gt_table tbody tr {
-  border-top-style: none !important;
-  border-bottom-style: none !important;
-}
-
+<p><style>#mwlefoodfi table { font-family: system-ui, ‘Segoe UI’,
+Roboto, Helvetica, Arial, sans-serif, ‘Apple Color Emoji’, ‘Segoe UI
+Emoji’, ‘Segoe UI Symbol’, ‘Noto Color Emoji’; -webkit-font-smoothing:
+antialiased; -moz-osx-font-smoothing: grayscale; }</p>
+<p>#mwlefoodfi thead, #mwlefoodfi tbody, #mwlefoodfi tfoot, #mwlefoodfi
+tr, #mwlefoodfi td, #mwlefoodfi th { border-style: none; }</p>
+<p>#mwlefoodfi p { margin: 0; padding: 0; }</p>
+<p>#mwlefoodfi .gt_table { display: table; border-collapse: collapse;
+line-height: normal; margin-left: auto; margin-right: auto; color:
+#333333; font-size: 16px; font-weight: normal; font-style: normal;
+background-color: #FFFFFF; width: auto; border-top-style: solid;
+border-top-width: 0px; border-top-color: #A8A8A8; border-right-style:
+none; border-right-width: 2px; border-right-color: #D3D3D3;
+border-bottom-style: solid; border-bottom-width: 0px;
+border-bottom-color: #A8A8A8; border-left-style: none;
+border-left-width: 2px; border-left-color: #D3D3D3; }</p>
+<p>#mwlefoodfi .gt_caption { padding-top: 4px; padding-bottom: 4px;
+}</p>
+<p>#mwlefoodfi .gt_title { color: #333333; font-size: 125%; font-weight:
+initial; padding-top: 4px; padding-bottom: 4px; padding-left: 5px;
+padding-right: 5px; border-bottom-color: #FFFFFF; border-bottom-width:
+0; }</p>
+<p>#mwlefoodfi .gt_subtitle { color: #333333; font-size: 85%;
+font-weight: initial; padding-top: 3px; padding-bottom: 5px;
+padding-left: 5px; padding-right: 5px; border-top-color: #FFFFFF;
+border-top-width: 0; }</p>
+<p>#mwlefoodfi .gt_heading { background-color: #FFFFFF; text-align:
+center; border-bottom-color: #FFFFFF; border-left-style: none;
+border-left-width: 1px; border-left-color: #D3D3D3; border-right-style:
+none; border-right-width: 1px; border-right-color: #D3D3D3; }</p>
+<p>#mwlefoodfi .gt_bottom_border { border-bottom-style: solid;
+border-bottom-width: 2px; border-bottom-color: #D3D3D3; }</p>
+<p>#mwlefoodfi .gt_col_headings { border-top-style: solid;
+border-top-width: 0px; border-top-color: #D3D3D3; border-bottom-style:
+solid; border-bottom-width: 0px; border-bottom-color: #D3D3D3;
+border-left-style: none; border-left-width: 1px; border-left-color:
+rgba(255, 255, 255, 0); border-right-style: none; border-right-width:
+1px; border-right-color: rgba(255, 255, 255, 0); }</p>
+<p>#mwlefoodfi .gt_col_heading { color: #333333; background-color:
+#FFFFFF; font-size: 100%; font-weight: normal; text-transform: inherit;
+border-left-style: none; border-left-width: 1px; border-left-color:
+#D3D3D3; border-right-style: none; border-right-width: 1px;
+border-right-color: #D3D3D3; vertical-align: bottom; padding-top: 5px;
+padding-bottom: 6px; padding-left: 5px; padding-right: 5px; overflow-x:
+hidden; }</p>
+<p>#mwlefoodfi .gt_column_spanner_outer { color: #333333;
+background-color: #FFFFFF; font-size: 100%; font-weight: normal;
+text-transform: inherit; padding-top: 0; padding-bottom: 0;
+padding-left: 4px; padding-right: 4px; }</p>
+<p>#mwlefoodfi .gt_column_spanner_outer:first-child { padding-left: 0;
+}</p>
+<p>#mwlefoodfi .gt_column_spanner_outer:last-child { padding-right: 0;
+}</p>
+<p>#mwlefoodfi .gt_column_spanner { border-bottom-style: solid;
+border-bottom-width: 0px; border-bottom-color: #D3D3D3; vertical-align:
+bottom; padding-top: 5px; padding-bottom: 5px; overflow-x: hidden;
+display: inline-block; width: 100%; }</p>
+<p>#mwlefoodfi .gt_spanner_row { border-bottom-style: hidden; }</p>
+<p>#mwlefoodfi .gt_group_heading { padding-top: 8px; padding-bottom:
+8px; padding-left: 5px; padding-right: 5px; color: #333333;
+background-color: #FFFFFF; font-size: 100%; font-weight: initial;
+text-transform: inherit; border-top-style: solid; border-top-width: 2px;
+border-top-color: #D3D3D3; border-bottom-style: solid;
+border-bottom-width: 2px; border-bottom-color: #D3D3D3;
+border-left-style: none; border-left-width: 1px; border-left-color:
+#D3D3D3; border-right-style: none; border-right-width: 1px;
+border-right-color: #D3D3D3; vertical-align: middle; text-align: left;
+}</p>
+<p>#mwlefoodfi .gt_empty_group_heading { padding: 0.5px; color: #333333;
+background-color: #FFFFFF; font-size: 100%; font-weight: initial;
+border-top-style: solid; border-top-width: 2px; border-top-color:
+#D3D3D3; border-bottom-style: solid; border-bottom-width: 2px;
+border-bottom-color: #D3D3D3; vertical-align: middle; }</p>
+<p>#mwlefoodfi .gt_from_md &gt; :first-child { margin-top: 0; }</p>
+<p>#mwlefoodfi .gt_from_md &gt; :last-child { margin-bottom: 0; }</p>
+<p>#mwlefoodfi .gt_row { padding-top: 8px; padding-bottom: 8px;
+padding-left: 5px; padding-right: 5px; margin: 10px; border-top-style:
+solid; border-top-width: 1px; border-top-color: rgba(255, 255, 255, 0);
+border-left-style: none; border-left-width: 1px; border-left-color:
+#D3D3D3; border-right-style: none; border-right-width: 1px;
+border-right-color: #D3D3D3; vertical-align: middle; overflow-x: hidden;
+}</p>
+<p>#mwlefoodfi .gt_stub { color: #333333; background-color: #FFFFFF;
+font-size: 100%; font-weight: initial; text-transform: inherit;
+border-right-style: solid; border-right-width: 2px; border-right-color:
+#D3D3D3; padding-left: 5px; padding-right: 5px; }</p>
+<p>#mwlefoodfi .gt_stub_row_group { color: #333333; background-color:
+#FFFFFF; font-size: 100%; font-weight: initial; text-transform: inherit;
+border-right-style: solid; border-right-width: 2px; border-right-color:
+#D3D3D3; padding-left: 5px; padding-right: 5px; vertical-align: top;
+}</p>
+<p>#mwlefoodfi .gt_row_group_first td { border-top-width: 2px; }</p>
+<p>#mwlefoodfi .gt_row_group_first th { border-top-width: 2px; }</p>
+<p>#mwlefoodfi .gt_summary_row { color: #333333; background-color:
+#FFFFFF; text-transform: inherit; padding-top: 8px; padding-bottom: 8px;
+padding-left: 5px; padding-right: 5px; }</p>
+<p>#mwlefoodfi .gt_first_summary_row { border-top-style: solid;
+border-top-color: #D3D3D3; }</p>
+<p>#mwlefoodfi .gt_first_summary_row.thick { border-top-width: 2px;
+}</p>
+<p>#mwlefoodfi .gt_last_summary_row { padding-top: 8px; padding-bottom:
+8px; padding-left: 5px; padding-right: 5px; border-bottom-style: solid;
+border-bottom-width: 2px; border-bottom-color: #D3D3D3; }</p>
+<p>#mwlefoodfi .gt_grand_summary_row { color: #333333; background-color:
+#FFFFFF; text-transform: inherit; padding-top: 8px; padding-bottom: 8px;
+padding-left: 5px; padding-right: 5px; }</p>
+<p>#mwlefoodfi .gt_first_grand_summary_row { padding-top: 8px;
+padding-bottom: 8px; padding-left: 5px; padding-right: 5px;
+border-top-style: double; border-top-width: 6px; border-top-color:
+#D3D3D3; }</p>
+<p>#mwlefoodfi .gt_last_grand_summary_row_top { padding-top: 8px;
+padding-bottom: 8px; padding-left: 5px; padding-right: 5px;
+border-bottom-style: double; border-bottom-width: 6px;
+border-bottom-color: #D3D3D3; }</p>
+<p>#mwlefoodfi .gt_striped { background-color: rgba(128, 128, 128,
+0.05); }</p>
+<p>#mwlefoodfi .gt_table_body { border-top-style: solid;
+border-top-width: 0px; border-top-color: #D3D3D3; border-bottom-style:
+solid; border-bottom-width: 0px; border-bottom-color: #D3D3D3; }</p>
+<p>#mwlefoodfi .gt_footnotes { color: #333333; background-color:
+#FFFFFF; border-bottom-style: none; border-bottom-width: 2px;
+border-bottom-color: #D3D3D3; border-left-style: none;
+border-left-width: 2px; border-left-color: #D3D3D3; border-right-style:
+none; border-right-width: 2px; border-right-color: #D3D3D3; }</p>
+<p>#mwlefoodfi .gt_footnote { margin: 0px; font-size: 90%; padding-top:
+4px; padding-bottom: 4px; padding-left: 5px; padding-right: 5px; }</p>
+<p>#mwlefoodfi .gt_sourcenotes { color: #333333; background-color:
+#FFFFFF; border-bottom-style: none; border-bottom-width: 2px;
+border-bottom-color: #D3D3D3; border-left-style: none;
+border-left-width: 2px; border-left-color: #D3D3D3; border-right-style:
+none; border-right-width: 2px; border-right-color: #D3D3D3; }</p>
+<p>#mwlefoodfi .gt_sourcenote { font-size: 90%; padding-top: 4px;
+padding-bottom: 4px; padding-left: 5px; padding-right: 5px; }</p>
+<p>#mwlefoodfi .gt_left { text-align: left; }</p>
+<p>#mwlefoodfi .gt_center { text-align: center; }</p>
+<p>#mwlefoodfi .gt_right { text-align: right; font-variant-numeric:
+tabular-nums; }</p>
+<p>#mwlefoodfi .gt_font_normal { font-weight: normal; }</p>
+<p>#mwlefoodfi .gt_font_bold { font-weight: bold; }</p>
+<p>#mwlefoodfi .gt_font_italic { font-style: italic; }</p>
+<p>#mwlefoodfi .gt_super { font-size: 65%; }</p>
+<p>#mwlefoodfi .gt_footnote_marks { font-size: 75%; vertical-align:
+0.4em; position: initial; }</p>
+<p>#mwlefoodfi .gt_asterisk { font-size: 100%; vertical-align: 0; }</p>
+<p>#mwlefoodfi .gt_indent_1 { text-indent: 5px; }</p>
+<p>#mwlefoodfi .gt_indent_2 { text-indent: 10px; }</p>
+<p>#mwlefoodfi .gt_indent_3 { text-indent: 15px; }</p>
+<p>#mwlefoodfi .gt_indent_4 { text-indent: 20px; }</p>
+<p>#mwlefoodfi .gt_indent_5 { text-indent: 25px; }</p>
+<p>#mwlefoodfi .katex-display { display: inline-flex !important;
+margin-bottom: 0.75em !important; }</p>
+<p>#mwlefoodfi div.Reactable &gt; div.rt-table &gt; div.rt-thead &gt;
+div.rt-tr.rt-tr-group-header &gt; div.rt-th-group:after { height: 0px
+!important; }</p>
+<p>.gt_table thead tr:first-child { border-top: 1px solid currentColor
+!important; }</p>
+<p>.gt_table thead tr.gt_spanner_row { border-bottom-style: none
+!important; }</p>
+<p>.gt_table thead th, .gt_table thead td { background-color:
+transparent !important; }</p>
+<p>.gt_table thead tr:last-child th[id=“Lower secondary_n”], .gt_table
+thead tr:last-child th[id=“Lower secondary_pct”], .gt_table thead
+tr:last-child th[id=“Upper secondary_n”], .gt_table thead tr:last-child
+th[id=“Upper secondary_pct”], .gt_table thead tr:last-child
+th[id=“Tertiary_n”], .gt_table thead tr:last-child
+th[id=“Tertiary_pct”], .gt_table thead tr:last-child th[id=“Total_n”],
+.gt_table thead tr:last-child th[id=“Total_pct”] { border-top: 1px solid
+currentColor !important; }</p>
+<p>.gt_table thead tr:last-child { border-bottom: 1px solid currentColor
+!important; }</p>
+<p>.gt_table tbody tr:last-child { border-bottom: 1px solid currentColor
+!important; }</p>
+<p>.gt_table tbody tr { border-top-style: none !important;
+border-bottom-style: none !important; }</p>
 .gt_table, .gt_heading, .gt_col_headings, .gt_col_heading,
-.gt_column_spanner_outer, .gt_column_spanner, .gt_title,
-.gt_subtitle, .gt_sourcenotes, .gt_sourcenote {
-  background-color: transparent !important;
-  color: currentColor !important;
-}
-</style>
+.gt_column_spanner_outer, .gt_column_spanner, .gt_title, .gt_subtitle,
+.gt_sourcenotes, .gt_sourcenote { background-color: transparent
+!important; color: currentColor !important; } </style></p>
+<div class="spicy-gt-outer" style="text-align: center;">
+<div class="spicy-gt-wrap" style="display: inline-block; max-width: 100%; text-align: left; vertical-align: top;">
+<style>.spicy-gt-outer th[id^="model_span_"] { position: relative; }.spicy-gt-outer th[id^="model_span_"]::after { content: ""; position: absolute; left: 0.5em; right: 0.5em; bottom: 0; border-bottom: 1px solid #333333; }.spicy-gt-outer .gt_col_headings.gt_spanner_row, .spicy-gt-outer .gt_spanner_row { border-bottom-style: none !important; border-bottom-width: 0 !important; }.spicy-gt-outer .gt_col_heading { border-bottom: 1px solid #333333 !important; }.spicy-gt-outer .gt_table tbody .gt_row { border-top-width: 0 !important; }.spicy-gt-outer .gt_column_spanner { border-bottom-width: 0 !important; border-bottom-color: transparent !important; }</style>
 <table class="table gt_table" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
 <thead>
 <tr class="gt_heading">
-<td colspan="11" class="gt_heading gt_title gt_font_normal" style="text-align: left; border-bottom-width: 0px; border-bottom-style: solid; border-bottom-color: transparent;">Health behaviors by education</td>
-    </tr>
+<td colspan="11" class="gt_heading gt_title gt_font_normal" style="text-align: left; border-bottom-width: 0px; border-bottom-style: solid; border-bottom-color: transparent;">
+Health behaviors by education
+</td>
+</tr>
 <tr class="gt_heading">
-<td colspan="11" class="gt_heading gt_subtitle gt_font_normal gt_bottom_border" style>Categorical summary table</td>
-    </tr>
+<td colspan="11" class="gt_heading gt_subtitle gt_font_normal gt_bottom_border" style>
+Categorical summary table
+</td>
+</tr>
 <tr class="gt_col_headings gt_spanner_row">
 <th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="1" style="text-align: left; border-top-width: 1px; border-top-style: solid; border-top-color: currentColor;" scope="col" id="spn_variable">
-        <div class="gt_column_spanner">Variable</div>
-      </th>
-      <th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="2" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor;" scope="colgroup" id="spn_Lower-secondary_n">
-        <div class="gt_column_spanner">Lower secondary</div>
-      </th>
-      <th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="2" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor;" scope="colgroup" id="spn_Upper-secondary_n">
-        <div class="gt_column_spanner">Upper secondary</div>
-      </th>
-      <th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="2" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor;" scope="colgroup" id="spn_Tertiary_n">
-        <div class="gt_column_spanner">Tertiary</div>
-      </th>
-      <th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="2" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor;" scope="colgroup" id="spn_Total_n">
-        <div class="gt_column_spanner">Total</div>
-      </th>
-      <th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor;" scope="col" id="spn_p">
-        <div class="gt_column_spanner">p</div>
-      </th>
-      <th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor;" scope="col" id="spn_v">
-        <div class="gt_column_spanner">Cramer's V</div>
-      </th>
-    </tr>
+<div class="gt_column_spanner">
+Variable
+</div>
+</th>
+<th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="2" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor;" scope="colgroup" id="spn_Lower-secondary_n">
+<div class="gt_column_spanner">
+Lower secondary
+</div>
+</th>
+<th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="2" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor;" scope="colgroup" id="spn_Upper-secondary_n">
+<div class="gt_column_spanner">
+Upper secondary
+</div>
+</th>
+<th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="2" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor;" scope="colgroup" id="spn_Tertiary_n">
+<div class="gt_column_spanner">
+Tertiary
+</div>
+</th>
+<th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="2" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor;" scope="colgroup" id="spn_Total_n">
+<div class="gt_column_spanner">
+Total
+</div>
+</th>
+<th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor;" scope="col" id="spn_p">
+<div class="gt_column_spanner">
+p
+</div>
+</th>
+<th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor;" scope="col" id="spn_v">
+<div class="gt_column_spanner">
+Cramer’s V
+</div>
+</th>
+</tr>
 <tr class="gt_col_headings">
-<th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;" scope="col" id="Variable"></th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;" scope="col" id="Lower-secondary_n">n</th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;" scope="col" id="Lower-secondary_pct">%</th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;" scope="col" id="Upper-secondary_n">n</th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;" scope="col" id="Upper-secondary_pct">%</th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;" scope="col" id="Tertiary_n">n</th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;" scope="col" id="Tertiary_pct">%</th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;" scope="col" id="Total_n">n</th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;" scope="col" id="Total_pct">%</th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;" scope="col" id="p"></th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;" scope="col" id="assoc_col"></th>
-    </tr>
+<th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;" scope="col" id="Variable">
+</th>
+<th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;" scope="col" id="Lower-secondary_n">
+n
+</th>
+<th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;" scope="col" id="Lower-secondary_pct">
+%
+</th>
+<th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;" scope="col" id="Upper-secondary_n">
+n
+</th>
+<th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;" scope="col" id="Upper-secondary_pct">
+%
+</th>
+<th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;" scope="col" id="Tertiary_n">
+n
+</th>
+<th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;" scope="col" id="Tertiary_pct">
+%
+</th>
+<th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;" scope="col" id="Total_n">
+n
+</th>
+<th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;" scope="col" id="Total_pct">
+%
+</th>
+<th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;" scope="col" id="p">
+</th>
+<th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;" scope="col" id="assoc_col">
+</th>
+</tr>
 </thead>
 <tbody class="gt_table_body">
 <tr>
-<td headers="Variable" class="gt_row gt_left">Smoking status</td>
-<td headers="Lower-secondary_n" class="gt_row gt_center">   </td>
-<td headers="Lower-secondary_pct" class="gt_row gt_center">    </td>
-<td headers="Upper-secondary_n" class="gt_row gt_center">   </td>
-<td headers="Upper-secondary_pct" class="gt_row gt_center">    </td>
-<td headers="Tertiary_n" class="gt_row gt_center">   </td>
-<td headers="Tertiary_pct" class="gt_row gt_center">    </td>
-<td headers="Total_n" class="gt_row gt_center">   </td>
-<td headers="Total_pct" class="gt_row gt_center">    </td>
-<td headers="p" class="gt_row gt_center">&lt;.001</td>
-<td headers="assoc_col" class="gt_row gt_center">.14</td>
+<td headers="Variable" class="gt_row gt_left">
+Smoking status
+</td>
+<td headers="Lower-secondary_n" class="gt_row gt_center">
+   
+</td>
+<td headers="Lower-secondary_pct" class="gt_row gt_center">
+    
+</td>
+<td headers="Upper-secondary_n" class="gt_row gt_center">
+   
+</td>
+<td headers="Upper-secondary_pct" class="gt_row gt_center">
+    
+</td>
+<td headers="Tertiary_n" class="gt_row gt_center">
+   
+</td>
+<td headers="Tertiary_pct" class="gt_row gt_center">
+    
+</td>
+<td headers="Total_n" class="gt_row gt_center">
+   
+</td>
+<td headers="Total_pct" class="gt_row gt_center">
+    
+</td>
+<td headers="p" class="gt_row gt_center">
+&lt;.001
+</td>
+<td headers="assoc_col" class="gt_row gt_center">
+.14
+</td>
 </tr>
 <tr>
-<td headers="Variable" class="gt_row gt_left">    No</td>
-<td headers="Lower-secondary_n" class="gt_row gt_center">179</td>
-<td headers="Lower-secondary_pct" class="gt_row gt_center">68.6</td>
-<td headers="Upper-secondary_n" class="gt_row gt_center">415</td>
-<td headers="Upper-secondary_pct" class="gt_row gt_center">77.0</td>
-<td headers="Tertiary_n" class="gt_row gt_center">332</td>
-<td headers="Tertiary_pct" class="gt_row gt_center">83.0</td>
-<td headers="Total_n" class="gt_row gt_center">926</td>
-<td headers="Total_pct" class="gt_row gt_center">77.2</td>
-<td headers="p" class="gt_row gt_center">     </td>
-<td headers="assoc_col" class="gt_row gt_center">   </td>
+<td headers="Variable" class="gt_row gt_left">
+    No
+</td>
+<td headers="Lower-secondary_n" class="gt_row gt_center">
+179
+</td>
+<td headers="Lower-secondary_pct" class="gt_row gt_center">
+68.6
+</td>
+<td headers="Upper-secondary_n" class="gt_row gt_center">
+415
+</td>
+<td headers="Upper-secondary_pct" class="gt_row gt_center">
+77.0
+</td>
+<td headers="Tertiary_n" class="gt_row gt_center">
+332
+</td>
+<td headers="Tertiary_pct" class="gt_row gt_center">
+83.0
+</td>
+<td headers="Total_n" class="gt_row gt_center">
+926
+</td>
+<td headers="Total_pct" class="gt_row gt_center">
+77.2
+</td>
+<td headers="p" class="gt_row gt_center">
+     
+</td>
+<td headers="assoc_col" class="gt_row gt_center">
+   
+</td>
 </tr>
 <tr>
-<td headers="Variable" class="gt_row gt_left">    Yes</td>
-<td headers="Lower-secondary_n" class="gt_row gt_center"> 78</td>
-<td headers="Lower-secondary_pct" class="gt_row gt_center">29.9</td>
-<td headers="Upper-secondary_n" class="gt_row gt_center">112</td>
-<td headers="Upper-secondary_pct" class="gt_row gt_center">20.8</td>
-<td headers="Tertiary_n" class="gt_row gt_center"> 59</td>
-<td headers="Tertiary_pct" class="gt_row gt_center">14.8</td>
-<td headers="Total_n" class="gt_row gt_center">249</td>
-<td headers="Total_pct" class="gt_row gt_center">20.8</td>
-<td headers="p" class="gt_row gt_center">     </td>
-<td headers="assoc_col" class="gt_row gt_center">   </td>
+<td headers="Variable" class="gt_row gt_left">
+    Yes
+</td>
+<td headers="Lower-secondary_n" class="gt_row gt_center">
+ 78
+</td>
+<td headers="Lower-secondary_pct" class="gt_row gt_center">
+29.9
+</td>
+<td headers="Upper-secondary_n" class="gt_row gt_center">
+112
+</td>
+<td headers="Upper-secondary_pct" class="gt_row gt_center">
+20.8
+</td>
+<td headers="Tertiary_n" class="gt_row gt_center">
+ 59
+</td>
+<td headers="Tertiary_pct" class="gt_row gt_center">
+14.8
+</td>
+<td headers="Total_n" class="gt_row gt_center">
+249
+</td>
+<td headers="Total_pct" class="gt_row gt_center">
+20.8
+</td>
+<td headers="p" class="gt_row gt_center">
+     
+</td>
+<td headers="assoc_col" class="gt_row gt_center">
+   
+</td>
 </tr>
 <tr>
-<td headers="Variable" class="gt_row gt_left" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;">    (Missing)</td>
-<td headers="Lower-secondary_n" class="gt_row gt_center" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;">  4</td>
-<td headers="Lower-secondary_pct" class="gt_row gt_center" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;"> 1.5</td>
-<td headers="Upper-secondary_n" class="gt_row gt_center" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;"> 12</td>
-<td headers="Upper-secondary_pct" class="gt_row gt_center" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;"> 2.2</td>
-<td headers="Tertiary_n" class="gt_row gt_center" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;">  9</td>
-<td headers="Tertiary_pct" class="gt_row gt_center" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;"> 2.2</td>
-<td headers="Total_n" class="gt_row gt_center" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;"> 25</td>
-<td headers="Total_pct" class="gt_row gt_center" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;"> 2.1</td>
-<td headers="p" class="gt_row gt_center" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;">     </td>
-<td headers="assoc_col" class="gt_row gt_center" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;">   </td>
+<td headers="Variable" class="gt_row gt_left" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;">
+    (Missing)
+</td>
+<td headers="Lower-secondary_n" class="gt_row gt_center" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;">
+  4
+</td>
+<td headers="Lower-secondary_pct" class="gt_row gt_center" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;">
+ 1.5
+</td>
+<td headers="Upper-secondary_n" class="gt_row gt_center" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;">
+ 12
+</td>
+<td headers="Upper-secondary_pct" class="gt_row gt_center" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;">
+ 2.2
+</td>
+<td headers="Tertiary_n" class="gt_row gt_center" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;">
+  9
+</td>
+<td headers="Tertiary_pct" class="gt_row gt_center" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;">
+ 2.2
+</td>
+<td headers="Total_n" class="gt_row gt_center" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;">
+ 25
+</td>
+<td headers="Total_pct" class="gt_row gt_center" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;">
+ 2.1
+</td>
+<td headers="p" class="gt_row gt_center" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;">
+     
+</td>
+<td headers="assoc_col" class="gt_row gt_center" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;">
+   
+</td>
 </tr>
 <tr>
-<td headers="Variable" class="gt_row gt_left">Regular physical activity</td>
-<td headers="Lower-secondary_n" class="gt_row gt_center">   </td>
-<td headers="Lower-secondary_pct" class="gt_row gt_center">    </td>
-<td headers="Upper-secondary_n" class="gt_row gt_center">   </td>
-<td headers="Upper-secondary_pct" class="gt_row gt_center">    </td>
-<td headers="Tertiary_n" class="gt_row gt_center">   </td>
-<td headers="Tertiary_pct" class="gt_row gt_center">    </td>
-<td headers="Total_n" class="gt_row gt_center">   </td>
-<td headers="Total_pct" class="gt_row gt_center">    </td>
-<td headers="p" class="gt_row gt_center">&lt;.001</td>
-<td headers="assoc_col" class="gt_row gt_center">.21</td>
+<td headers="Variable" class="gt_row gt_left">
+Regular physical activity
+</td>
+<td headers="Lower-secondary_n" class="gt_row gt_center">
+   
+</td>
+<td headers="Lower-secondary_pct" class="gt_row gt_center">
+    
+</td>
+<td headers="Upper-secondary_n" class="gt_row gt_center">
+   
+</td>
+<td headers="Upper-secondary_pct" class="gt_row gt_center">
+    
+</td>
+<td headers="Tertiary_n" class="gt_row gt_center">
+   
+</td>
+<td headers="Tertiary_pct" class="gt_row gt_center">
+    
+</td>
+<td headers="Total_n" class="gt_row gt_center">
+   
+</td>
+<td headers="Total_pct" class="gt_row gt_center">
+    
+</td>
+<td headers="p" class="gt_row gt_center">
+&lt;.001
+</td>
+<td headers="assoc_col" class="gt_row gt_center">
+.21
+</td>
 </tr>
 <tr>
-<td headers="Variable" class="gt_row gt_left">    No</td>
-<td headers="Lower-secondary_n" class="gt_row gt_center">177</td>
-<td headers="Lower-secondary_pct" class="gt_row gt_center">67.8</td>
-<td headers="Upper-secondary_n" class="gt_row gt_center">310</td>
-<td headers="Upper-secondary_pct" class="gt_row gt_center">57.5</td>
-<td headers="Tertiary_n" class="gt_row gt_center">163</td>
-<td headers="Tertiary_pct" class="gt_row gt_center">40.8</td>
-<td headers="Total_n" class="gt_row gt_center">650</td>
-<td headers="Total_pct" class="gt_row gt_center">54.2</td>
-<td headers="p" class="gt_row gt_center">     </td>
-<td headers="assoc_col" class="gt_row gt_center">   </td>
+<td headers="Variable" class="gt_row gt_left">
+    No
+</td>
+<td headers="Lower-secondary_n" class="gt_row gt_center">
+177
+</td>
+<td headers="Lower-secondary_pct" class="gt_row gt_center">
+67.8
+</td>
+<td headers="Upper-secondary_n" class="gt_row gt_center">
+310
+</td>
+<td headers="Upper-secondary_pct" class="gt_row gt_center">
+57.5
+</td>
+<td headers="Tertiary_n" class="gt_row gt_center">
+163
+</td>
+<td headers="Tertiary_pct" class="gt_row gt_center">
+40.8
+</td>
+<td headers="Total_n" class="gt_row gt_center">
+650
+</td>
+<td headers="Total_pct" class="gt_row gt_center">
+54.2
+</td>
+<td headers="p" class="gt_row gt_center">
+     
+</td>
+<td headers="assoc_col" class="gt_row gt_center">
+   
+</td>
 </tr>
 <tr>
-<td headers="Variable" class="gt_row gt_left" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">    Yes</td>
-<td headers="Lower-secondary_n" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;"> 84</td>
-<td headers="Lower-secondary_pct" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">32.2</td>
-<td headers="Upper-secondary_n" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">229</td>
-<td headers="Upper-secondary_pct" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">42.5</td>
-<td headers="Tertiary_n" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">237</td>
-<td headers="Tertiary_pct" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">59.2</td>
-<td headers="Total_n" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">550</td>
-<td headers="Total_pct" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">45.8</td>
-<td headers="p" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">     </td>
-<td headers="assoc_col" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">   </td>
+<td headers="Variable" class="gt_row gt_left" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">
+    Yes
+</td>
+<td headers="Lower-secondary_n" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">
+ 84
+</td>
+<td headers="Lower-secondary_pct" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">
+32.2
+</td>
+<td headers="Upper-secondary_n" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">
+229
+</td>
+<td headers="Upper-secondary_pct" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">
+42.5
+</td>
+<td headers="Tertiary_n" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">
+237
+</td>
+<td headers="Tertiary_pct" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">
+59.2
+</td>
+<td headers="Total_n" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">
+550
+</td>
+<td headers="Total_pct" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">
+45.8
+</td>
+<td headers="p" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">
+     
+</td>
+<td headers="assoc_col" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">
+   
+</td>
 </tr>
 </tbody>
 <tfoot><tr class="gt_sourcenotes">
-<td class="gt_sourcenote" colspan="11"><span class="gt_from_md"><em>Percentages are computed within each education group.</em></span></td>
-    </tr></tfoot>
+<td class="gt_sourcenote" colspan="11">
+<span class="gt_from_md"><em>Percentages are computed within each
+education group.</em></span>
+</td>
+</tr></tfoot>
 </table>
+<div class="spicy-gt-note" style="width: min-content; min-width: 100%; box-sizing: border-box; padding: 0.5rem 0.5rem 0.2rem 0.5rem; font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji'; font-size: 0.9em; line-height: 1.25; color: #333333; text-align: left;">
+Group comparison: Pearson chi-squared test.
+</div>
+</div>
+</div>
 </div>
 <p>Use <code>tinytable::</code> functions when you want lightweight
 table-specific styling:</p>
@@ -1812,56 +1709,56 @@ table-specific styling:</p>
 
     <script src="https://cdn.jsdelivr.net/gh/vincentarelbundock/tinytable@main/inst/tinytable.js"></script><script>
       // Create table-specific functions using external factory
-      const tableFns_ge34p8zfe4y2t2psmyww = TinyTable.createTableFunctions("tinytable_ge34p8zfe4y2t2psmyww");
+      const tableFns_3mj1ib15mbz1l7xyz5xk = TinyTable.createTableFunctions("tinytable_3mj1ib15mbz1l7xyz5xk");
       // tinytable span after
       window.addEventListener('load', function () {
           var cellsToStyle = [
             // tinytable style arrays after
-          { positions: [ { i: '4', j: 10 }, { i: '4', j: 11 } ], css_id: 'tinytable_css_oy55mqb9a7kypx3hanbu',}, 
-          { positions: [ { i: '1', j: 10 }, { i: '2', j: 10 }, { i: '3', j: 10 }, { i: '5', j: 10 }, { i: '6', j: 10 }, { i: '1', j: 11 }, { i: '2', j: 11 }, { i: '3', j: 11 }, { i: '5', j: 11 }, { i: '6', j: 11 } ], css_id: 'tinytable_css_8c3km4c40jwmcyj1ndiu',}, 
-          { positions: [ { i: '0', j: 10 }, { i: '7', j: 10 }, { i: '0', j: 11 }, { i: '7', j: 11 } ], css_id: 'tinytable_css_bbkry85r271to3vl4rjk',}, 
-          { positions: [ { i: '-1', j: 10 }, { i: '-1', j: 11 } ], css_id: 'tinytable_css_fbechbcrsj319uawrble',}, 
-          { positions: [ { i: '4', j: 2 }, { i: '4', j: 3 }, { i: '4', j: 4 }, { i: '4', j: 5 }, { i: '4', j: 6 }, { i: '4', j: 7 }, { i: '4', j: 8 }, { i: '4', j: 9 } ], css_id: 'tinytable_css_4z57ckmo0v546sxktj4d',}, 
-          { positions: [ { i: '2', j: 2 }, { i: '3', j: 2 }, { i: '2', j: 3 }, { i: '3', j: 3 }, { i: '2', j: 4 }, { i: '3', j: 4 }, { i: '2', j: 5 }, { i: '3', j: 5 } ], css_id: 'tinytable_css_ru43myoolz3pltb4id7u',}, 
-          { positions: [ { i: '1', j: 2 }, { i: '5', j: 2 }, { i: '6', j: 2 }, { i: '1', j: 3 }, { i: '5', j: 3 }, { i: '6', j: 3 }, { i: '1', j: 4 }, { i: '5', j: 4 }, { i: '6', j: 4 }, { i: '1', j: 5 }, { i: '5', j: 5 }, { i: '6', j: 5 }, { i: '1', j: 6 }, { i: '2', j: 6 }, { i: '3', j: 6 }, { i: '5', j: 6 }, { i: '6', j: 6 }, { i: '1', j: 7 }, { i: '2', j: 7 }, { i: '3', j: 7 }, { i: '5', j: 7 }, { i: '6', j: 7 }, { i: '1', j: 8 }, { i: '2', j: 8 }, { i: '3', j: 8 }, { i: '5', j: 8 }, { i: '6', j: 8 }, { i: '1', j: 9 }, { i: '2', j: 9 }, { i: '3', j: 9 }, { i: '5', j: 9 }, { i: '6', j: 9 } ], css_id: 'tinytable_css_qsqxk8zhlmz7bo8tpoxi',}, 
-          { positions: [ { i: '0', j: 2 }, { i: '7', j: 2 }, { i: '0', j: 3 }, { i: '7', j: 3 }, { i: '0', j: 4 }, { i: '7', j: 4 }, { i: '0', j: 5 }, { i: '7', j: 5 }, { i: '0', j: 6 }, { i: '7', j: 6 }, { i: '0', j: 7 }, { i: '7', j: 7 }, { i: '0', j: 8 }, { i: '7', j: 8 }, { i: '0', j: 9 }, { i: '7', j: 9 } ], css_id: 'tinytable_css_jybl0wpc11yonz0pu0ik',}, 
-          { positions: [ { i: '-1', j: 2 }, { i: '-1', j: 3 }, { i: '-1', j: 4 }, { i: '-1', j: 5 }, { i: '-1', j: 6 }, { i: '-1', j: 7 }, { i: '-1', j: 8 }, { i: '-1', j: 9 } ], css_id: 'tinytable_css_4ml16x06dnvdycmz4v3y',}, 
-          { positions: [ { i: '7', j: 1 } ], css_id: 'tinytable_css_lqs4xsdvr9rdi947iy4m',}, 
-          { positions: [ { i: '4', j: 1 } ], css_id: 'tinytable_css_pgqg3cgckems1cjtowwl',}, 
-          { positions: [ { i: '2', j: 1 }, { i: '3', j: 1 }, { i: '6', j: 1 } ], css_id: 'tinytable_css_cskoqpxt0roxgs1tlygx',}, 
-          { positions: [ { i: '1', j: 1 }, { i: '5', j: 1 } ], css_id: 'tinytable_css_jzy6z1meu3l5wzk9s51q',}, 
-          { positions: [ { i: '0', j: 1 } ], css_id: 'tinytable_css_ki9u18id1zxd3r3ejdv5',}, 
-          { positions: [ { i: '-1', j: 1 } ], css_id: 'tinytable_css_11v34290m6exyqerv9gn',}, 
+          { positions: [ { i: '4', j: 10 }, { i: '4', j: 11 } ], css_id: 'tinytable_css_n5av1jlr4b8n9qfhrdpr',}, 
+          { positions: [ { i: '1', j: 10 }, { i: '2', j: 10 }, { i: '3', j: 10 }, { i: '5', j: 10 }, { i: '6', j: 10 }, { i: '1', j: 11 }, { i: '2', j: 11 }, { i: '3', j: 11 }, { i: '5', j: 11 }, { i: '6', j: 11 } ], css_id: 'tinytable_css_5n6dc8fnjc3radigdhy1',}, 
+          { positions: [ { i: '0', j: 10 }, { i: '7', j: 10 }, { i: '0', j: 11 }, { i: '7', j: 11 } ], css_id: 'tinytable_css_k984tja3a4dwl5zxj66b',}, 
+          { positions: [ { i: '-1', j: 10 }, { i: '-1', j: 11 } ], css_id: 'tinytable_css_dpjsd19u7zyduabzt7ja',}, 
+          { positions: [ { i: '4', j: 2 }, { i: '4', j: 3 }, { i: '4', j: 4 }, { i: '4', j: 5 }, { i: '4', j: 6 }, { i: '4', j: 7 }, { i: '4', j: 8 }, { i: '4', j: 9 } ], css_id: 'tinytable_css_ec5033g3zvyuch873jy6',}, 
+          { positions: [ { i: '2', j: 2 }, { i: '3', j: 2 }, { i: '2', j: 3 }, { i: '3', j: 3 }, { i: '2', j: 4 }, { i: '3', j: 4 }, { i: '2', j: 5 }, { i: '3', j: 5 } ], css_id: 'tinytable_css_66vx0r1f5i6b8n6809gm',}, 
+          { positions: [ { i: '1', j: 2 }, { i: '5', j: 2 }, { i: '6', j: 2 }, { i: '1', j: 3 }, { i: '5', j: 3 }, { i: '6', j: 3 }, { i: '1', j: 4 }, { i: '5', j: 4 }, { i: '6', j: 4 }, { i: '1', j: 5 }, { i: '5', j: 5 }, { i: '6', j: 5 }, { i: '1', j: 6 }, { i: '2', j: 6 }, { i: '3', j: 6 }, { i: '5', j: 6 }, { i: '6', j: 6 }, { i: '1', j: 7 }, { i: '2', j: 7 }, { i: '3', j: 7 }, { i: '5', j: 7 }, { i: '6', j: 7 }, { i: '1', j: 8 }, { i: '2', j: 8 }, { i: '3', j: 8 }, { i: '5', j: 8 }, { i: '6', j: 8 }, { i: '1', j: 9 }, { i: '2', j: 9 }, { i: '3', j: 9 }, { i: '5', j: 9 }, { i: '6', j: 9 } ], css_id: 'tinytable_css_hmpzvriicxzh53zwuqoe',}, 
+          { positions: [ { i: '0', j: 2 }, { i: '7', j: 2 }, { i: '0', j: 3 }, { i: '7', j: 3 }, { i: '0', j: 4 }, { i: '7', j: 4 }, { i: '0', j: 5 }, { i: '7', j: 5 }, { i: '0', j: 6 }, { i: '7', j: 6 }, { i: '0', j: 7 }, { i: '7', j: 7 }, { i: '0', j: 8 }, { i: '7', j: 8 }, { i: '0', j: 9 }, { i: '7', j: 9 } ], css_id: 'tinytable_css_271yqcdokgwh1sps0jwz',}, 
+          { positions: [ { i: '-1', j: 2 }, { i: '-1', j: 3 }, { i: '-1', j: 4 }, { i: '-1', j: 5 }, { i: '-1', j: 6 }, { i: '-1', j: 7 }, { i: '-1', j: 8 }, { i: '-1', j: 9 } ], css_id: 'tinytable_css_uqqy1ga4265y7n4a4f1y',}, 
+          { positions: [ { i: '7', j: 1 } ], css_id: 'tinytable_css_k8348wqdp3klkpxrpgrs',}, 
+          { positions: [ { i: '4', j: 1 } ], css_id: 'tinytable_css_qibtkt7c0v21zovul1hl',}, 
+          { positions: [ { i: '2', j: 1 }, { i: '3', j: 1 }, { i: '6', j: 1 } ], css_id: 'tinytable_css_ll6eihturwxnxoae38ta',}, 
+          { positions: [ { i: '1', j: 1 }, { i: '5', j: 1 } ], css_id: 'tinytable_css_1yqltdtj3hmo950r42pf',}, 
+          { positions: [ { i: '0', j: 1 } ], css_id: 'tinytable_css_iuxljkaestzicf1k00vz',}, 
+          { positions: [ { i: '-1', j: 1 } ], css_id: 'tinytable_css_b3v7k6z1jbi2xo84qzxf',}, 
           ];
 
           // Loop over the arrays to style the cells
           cellsToStyle.forEach(function (group) {
               group.positions.forEach(function (cell) {
-                  tableFns_ge34p8zfe4y2t2psmyww.styleCell(cell.i, cell.j, group.css_id);
+                  tableFns_3mj1ib15mbz1l7xyz5xk.styleCell(cell.i, cell.j, group.css_id);
               });
           });
       });
     </script><link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/vincentarelbundock/tinytable@main/inst/tinytable.css">
 <style>
     /* tinytable css entries after */
-    #tinytable_ge34p8zfe4y2t2psmyww td.tinytable_css_oy55mqb9a7kypx3hanbu, #tinytable_ge34p8zfe4y2t2psmyww th.tinytable_css_oy55mqb9a7kypx3hanbu {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center; white-space: nowrap; }
-    #tinytable_ge34p8zfe4y2t2psmyww td.tinytable_css_8c3km4c40jwmcyj1ndiu, #tinytable_ge34p8zfe4y2t2psmyww th.tinytable_css_8c3km4c40jwmcyj1ndiu { text-align: center; white-space: nowrap; }
-    #tinytable_ge34p8zfe4y2t2psmyww td.tinytable_css_bbkry85r271to3vl4rjk, #tinytable_ge34p8zfe4y2t2psmyww th.tinytable_css_bbkry85r271to3vl4rjk {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center; white-space: nowrap; }
-    #tinytable_ge34p8zfe4y2t2psmyww td.tinytable_css_fbechbcrsj319uawrble, #tinytable_ge34p8zfe4y2t2psmyww th.tinytable_css_fbechbcrsj319uawrble {  position: relative; --border-bottom: 0; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.1em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center; white-space: nowrap; }
-    #tinytable_ge34p8zfe4y2t2psmyww td.tinytable_css_4z57ckmo0v546sxktj4d, #tinytable_ge34p8zfe4y2t2psmyww th.tinytable_css_4z57ckmo0v546sxktj4d {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
-    #tinytable_ge34p8zfe4y2t2psmyww td.tinytable_css_ru43myoolz3pltb4id7u, #tinytable_ge34p8zfe4y2t2psmyww th.tinytable_css_ru43myoolz3pltb4id7u { font-weight: bold; text-align: center; color: white; background-color: #FF0000 }
-    #tinytable_ge34p8zfe4y2t2psmyww td.tinytable_css_qsqxk8zhlmz7bo8tpoxi, #tinytable_ge34p8zfe4y2t2psmyww th.tinytable_css_qsqxk8zhlmz7bo8tpoxi { text-align: center }
-    #tinytable_ge34p8zfe4y2t2psmyww td.tinytable_css_jybl0wpc11yonz0pu0ik, #tinytable_ge34p8zfe4y2t2psmyww th.tinytable_css_jybl0wpc11yonz0pu0ik {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
-    #tinytable_ge34p8zfe4y2t2psmyww td.tinytable_css_4ml16x06dnvdycmz4v3y, #tinytable_ge34p8zfe4y2t2psmyww th.tinytable_css_4ml16x06dnvdycmz4v3y {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
-    #tinytable_ge34p8zfe4y2t2psmyww td.tinytable_css_lqs4xsdvr9rdi947iy4m, #tinytable_ge34p8zfe4y2t2psmyww th.tinytable_css_lqs4xsdvr9rdi947iy4m {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left; padding-left: 1em; padding-left: 0.8em; }
-    #tinytable_ge34p8zfe4y2t2psmyww td.tinytable_css_pgqg3cgckems1cjtowwl, #tinytable_ge34p8zfe4y2t2psmyww th.tinytable_css_pgqg3cgckems1cjtowwl {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left; padding-left: 1em; padding-left: 0.8em; }
-    #tinytable_ge34p8zfe4y2t2psmyww td.tinytable_css_cskoqpxt0roxgs1tlygx, #tinytable_ge34p8zfe4y2t2psmyww th.tinytable_css_cskoqpxt0roxgs1tlygx { text-align: left; padding-left: 1em; padding-left: 0.8em; }
-    #tinytable_ge34p8zfe4y2t2psmyww td.tinytable_css_jzy6z1meu3l5wzk9s51q, #tinytable_ge34p8zfe4y2t2psmyww th.tinytable_css_jzy6z1meu3l5wzk9s51q { text-align: left }
-    #tinytable_ge34p8zfe4y2t2psmyww td.tinytable_css_ki9u18id1zxd3r3ejdv5, #tinytable_ge34p8zfe4y2t2psmyww th.tinytable_css_ki9u18id1zxd3r3ejdv5 {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
-    #tinytable_ge34p8zfe4y2t2psmyww td.tinytable_css_11v34290m6exyqerv9gn, #tinytable_ge34p8zfe4y2t2psmyww th.tinytable_css_11v34290m6exyqerv9gn {  position: relative; --border-bottom: 0; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.1em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
+    #tinytable_3mj1ib15mbz1l7xyz5xk td.tinytable_css_n5av1jlr4b8n9qfhrdpr, #tinytable_3mj1ib15mbz1l7xyz5xk th.tinytable_css_n5av1jlr4b8n9qfhrdpr {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center; white-space: nowrap; }
+    #tinytable_3mj1ib15mbz1l7xyz5xk td.tinytable_css_5n6dc8fnjc3radigdhy1, #tinytable_3mj1ib15mbz1l7xyz5xk th.tinytable_css_5n6dc8fnjc3radigdhy1 { text-align: center; white-space: nowrap; }
+    #tinytable_3mj1ib15mbz1l7xyz5xk td.tinytable_css_k984tja3a4dwl5zxj66b, #tinytable_3mj1ib15mbz1l7xyz5xk th.tinytable_css_k984tja3a4dwl5zxj66b {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center; white-space: nowrap; }
+    #tinytable_3mj1ib15mbz1l7xyz5xk td.tinytable_css_dpjsd19u7zyduabzt7ja, #tinytable_3mj1ib15mbz1l7xyz5xk th.tinytable_css_dpjsd19u7zyduabzt7ja {  position: relative; --border-bottom: 0; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.1em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center; white-space: nowrap; }
+    #tinytable_3mj1ib15mbz1l7xyz5xk td.tinytable_css_ec5033g3zvyuch873jy6, #tinytable_3mj1ib15mbz1l7xyz5xk th.tinytable_css_ec5033g3zvyuch873jy6 {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
+    #tinytable_3mj1ib15mbz1l7xyz5xk td.tinytable_css_66vx0r1f5i6b8n6809gm, #tinytable_3mj1ib15mbz1l7xyz5xk th.tinytable_css_66vx0r1f5i6b8n6809gm { font-weight: bold; text-align: center; color: white; background-color: #FF0000 }
+    #tinytable_3mj1ib15mbz1l7xyz5xk td.tinytable_css_hmpzvriicxzh53zwuqoe, #tinytable_3mj1ib15mbz1l7xyz5xk th.tinytable_css_hmpzvriicxzh53zwuqoe { text-align: center }
+    #tinytable_3mj1ib15mbz1l7xyz5xk td.tinytable_css_271yqcdokgwh1sps0jwz, #tinytable_3mj1ib15mbz1l7xyz5xk th.tinytable_css_271yqcdokgwh1sps0jwz {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
+    #tinytable_3mj1ib15mbz1l7xyz5xk td.tinytable_css_uqqy1ga4265y7n4a4f1y, #tinytable_3mj1ib15mbz1l7xyz5xk th.tinytable_css_uqqy1ga4265y7n4a4f1y {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
+    #tinytable_3mj1ib15mbz1l7xyz5xk td.tinytable_css_k8348wqdp3klkpxrpgrs, #tinytable_3mj1ib15mbz1l7xyz5xk th.tinytable_css_k8348wqdp3klkpxrpgrs {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left; padding-left: 1em; padding-left: 0.8em; }
+    #tinytable_3mj1ib15mbz1l7xyz5xk td.tinytable_css_qibtkt7c0v21zovul1hl, #tinytable_3mj1ib15mbz1l7xyz5xk th.tinytable_css_qibtkt7c0v21zovul1hl {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left; padding-left: 1em; padding-left: 0.8em; }
+    #tinytable_3mj1ib15mbz1l7xyz5xk td.tinytable_css_ll6eihturwxnxoae38ta, #tinytable_3mj1ib15mbz1l7xyz5xk th.tinytable_css_ll6eihturwxnxoae38ta { text-align: left; padding-left: 1em; padding-left: 0.8em; }
+    #tinytable_3mj1ib15mbz1l7xyz5xk td.tinytable_css_1yqltdtj3hmo950r42pf, #tinytable_3mj1ib15mbz1l7xyz5xk th.tinytable_css_1yqltdtj3hmo950r42pf { text-align: left }
+    #tinytable_3mj1ib15mbz1l7xyz5xk td.tinytable_css_iuxljkaestzicf1k00vz, #tinytable_3mj1ib15mbz1l7xyz5xk th.tinytable_css_iuxljkaestzicf1k00vz {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
+    #tinytable_3mj1ib15mbz1l7xyz5xk td.tinytable_css_b3v7k6z1jbi2xo84qzxf, #tinytable_3mj1ib15mbz1l7xyz5xk th.tinytable_css_b3v7k6z1jbi2xo84qzxf {  position: relative; --border-bottom: 0; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.1em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
     </style>
 <div class="container">
-      <table class="table tinytable" id="tinytable_ge34p8zfe4y2t2psmyww" style="width: auto; margin-left: auto; margin-right: auto;" data-quarto-disable-processing="true">
+      <table class="table tinytable" id="tinytable_3mj1ib15mbz1l7xyz5xk" style="width: auto; margin-left: auto; margin-right: auto;" data-quarto-disable-processing="true">
 <caption>Categorical table by education</caption>
         <thead>
 <tr>
@@ -1887,6 +1784,7 @@ table-specific styling:</p>
                 <th scope="col" data-row="0" data-col="11"></th>
               </tr>
 </thead>
+<tfoot><tr><td colspan="11" style="font-size: 0.9em; ">Group comparison: Pearson chi-squared test.</td></tr></tfoot>
 <tbody>
 <tr>
 <td data-row="1" data-col="1">Smoking status</td>

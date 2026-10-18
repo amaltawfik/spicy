@@ -238,7 +238,11 @@ descriptive tables carry no significance markers.</p>
 <p>Under <code>p_adjust</code>, the p-value column holds the adjusted values and its
 <code>col_meta</code> adds <code>p_adjust</code> (the method), <code>p_adjust_m</code> (the number of
 tests adjusted together) and <code>p_unadjusted</code> (the raw p-value of each
-cell, as long as <code>body</code>).</p>
+cell, as long as <code>body</code>). In <code><a href="table_categorical.html">table_categorical()</a></code> and
+<code><a href="table_multiresponse.html">table_multiresponse()</a></code>, the p-value column's <code>col_meta</code> also carries
+<code>test_type</code>, the test of each cell, as long as <code>body</code>
+(<code>"chi_squared"</code>, <code>"fisher_exact"</code>, <code>"fisher_exact_mc"</code>, <code>NA</code> where
+the cell is).</p>
     </div>
     <div class="section level2">
     <h2 id="versioning">Versioning<a class="anchor" aria-label="anchor" href="#versioning"></a></h2>

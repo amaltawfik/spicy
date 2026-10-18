@@ -168,7 +168,13 @@ tables carry no significance markers.
 Under `p_adjust`, the p-value column holds the adjusted values and its
 `col_meta` adds `p_adjust` (the method), `p_adjust_m` (the number of
 tests adjusted together) and `p_unadjusted` (the raw p-value of each
-cell, as long as `body`).
+cell, as long as `body`). In
+[`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
+and
+[`table_multiresponse()`](https://amaltawfik.github.io/spicy/reference/table_multiresponse.md),
+the p-value column's `col_meta` also carries `test_type`, the test of
+each cell, as long as `body` (`"chi_squared"`, `"fisher_exact"`,
+`"fisher_exact_mc"`, `NA` where the cell is).
 
 ## Versioning
 

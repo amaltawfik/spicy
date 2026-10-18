@@ -52,7 +52,7 @@ Use the function that matches the unit you want to report:
 
 | Function | Reports | Selection grammar | Typical additions |
 |:---|:---|:---|:---|
-| [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md) | Categorical variables (factors, labelled) | `select`, `by` | Chi-squared test, association measure (`phi`, `cramer_v`, `tau_b`, …), confidence interval |
+| [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md) | Categorical variables (factors, labelled) | `select`, `by` | Chi-squared or Fisher’s exact test, association measure (`phi`, `cramer_v`, `tau_b`, …), confidence interval |
 | [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md) | Numeric / continuous variables | `select`, `by` | Group-comparison test (Student / Welch *t*, Wilcoxon, ANOVA, Kruskal–Wallis), effect size (Hedges’ *g*, η², rank-biserial *r*, ε²) |
 | [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md) | Numeric outcomes through one linear model per outcome | `select`, `by` (single predictor) | Robust / cluster-robust / bootstrap / jackknife SE, case weights, additive covariate adjustment, four effect-size measures with noncentral CIs |
 | [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md) | *One* numeric outcome across the levels of *several* categorical variables | `outcome` (one), `select` (many) | One group comparison per block, an `Overall` marginal row, the same statistic tokens as [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md) |
@@ -157,7 +157,9 @@ table_categorical(
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  Regular physical activity │                               <.001     .21     
 #>    No                      │    40.8       650     54.2                      
-#>    Yes                     │    59.2       550     45.8
+#>    Yes                     │    59.2       550     45.8                      
+#> 
+#> Group comparison: Pearson chi-squared test.
 ```
 
 ``` r
@@ -387,7 +389,9 @@ table_categorical(
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  Visited a dentist in the last 12 months │          <.001     .22     
 #>    No                                    │  29.5                      
-#>    Yes                                   │  70.5
+#>    Yes                                   │  70.5                      
+#> 
+#> Group comparison: Pearson chi-squared test.
 ```
 
 ### Continuous variables
@@ -565,7 +569,7 @@ table_categorical(
 #>    No              │           
 #>    Yes             │           
 #> 
-#> SMD = standardized mean difference (Female - Male); |SMD| > 0.1 is the usual imbalance threshold.
+#> SMD = standardized mean difference (Female - Male); |SMD| > 0.1 is the usual imbalance threshold. Group comparison: Pearson chi-squared test.
 ```
 
 Exactly two groups, no confidence interval and no *p*-value on the
@@ -798,7 +802,9 @@ table_categorical(sochealth, select = smoking, by = sex, style = "jama")
 #>  smoking     │                                                       .71  .01 
 #>    No        │   475       76.6     451     77.8     926     77.2             
 #>    Yes       │   131       21.1     118     20.3     249     20.8             
-#>    (Missing) │    14        2.3      11      1.9      25      2.1
+#>    (Missing) │    14        2.3      11      1.9      25      2.1             
+#> 
+#> Group comparison: Pearson chi-squared test.
 ```
 
 The visible change here is the *p* column: JAMA rounds *p* values to two
@@ -927,7 +933,9 @@ table_categorical(sochealth, select = sex, by = smoking)
 #> ──────────┼────────────────────
 #>  sex      │          .713  .01 
 #>    Female │  51.7              
-#>    Male   │  48.3
+#>    Male   │  48.3              
+#> 
+#> Group comparison: Pearson chi-squared test.
 options(spicy.labels = NULL)
 ```
 
@@ -1021,6 +1029,8 @@ tab |>
 
 [TABLE]
 
+Group comparison: Pearson chi-squared test.
+
 Use `tinytable::` functions when you want lightweight table-specific
 styling:
 
@@ -1057,8 +1067,9 @@ tab |>
 | Regular physical activity |     |      |     |      |     |      |     |      | \<.001 | .21 |
 |     No | 177 | 67.8 | 310 | 57.5 | 163 | 40.8 | 650 | 54.2 |       |     |
 |     Yes |  84 | 32.2 | 229 | 42.5 | 237 | 59.2 | 550 | 45.8 |       |     |
+| Group comparison: Pearson chi-squared test. |  |  |  |  |  |  |  |  |  |  |
 
-Categorical table by education {#tinytable_ge34p8zfe4y2t2psmyww .table
+Categorical table by education {#tinytable_3mj1ib15mbz1l7xyz5xk .table
 .tinytable style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 

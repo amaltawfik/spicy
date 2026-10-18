@@ -331,7 +331,9 @@ table_categorical(
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  dentist_12m       │          <.001     .22     
 #>    No              │  29.5                      
-#>    Yes             │  70.5
+#>    Yes             │  70.5                      
+#> 
+#> Group comparison: Pearson chi-squared test.
 ```
 
 [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
@@ -455,9 +457,10 @@ table_multiresponse(
 ```
 
 With `by`, the counts and percentages are given per group and in a
-`Total` margin, each item gets a chi-squared test, and the question a
-global test that allows for several answers per respondent, both
-explained in the [Multiple-response
+`Total` margin, each item gets a chi-squared test (Fisher’s exact test
+when an expected count is below 5), and the question a global test that
+allows for several answers per respondent, both explained in the
+[Multiple-response
 questions](https://amaltawfik.github.io/spicy/articles/table-multiresponse.html)
 article. `p_value = FALSE` leaves a descriptive table:
 

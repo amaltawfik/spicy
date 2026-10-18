@@ -113,14 +113,16 @@ displayed label), <code>group</code> (the <code>by</code> level or the margin, <
 chose the item), <code>base</code> (the respondents of the group's base),
 <code>proportion</code> (<code>n / base</code>, the share of respondents),
 <code>proportion_responses</code> (<code>n</code> over the choices made in the group), and
-the item's test: <code>statistic</code> (the Pearson chi-squared), <code>df</code>, <code>p.value</code>
-(adjusted under <code>p_adjust</code>) and <code>p.unadjusted</code>.</p>
+the item's test: <code>test_type</code> (<code>"chi_squared"</code>, <code>"fisher_exact"</code> or
+<code>"fisher_exact_mc"</code>), <code>statistic</code> (the Pearson chi-squared, <code>NA</code> for
+Fisher's exact test), <code>df</code>, <code>p.value</code> (adjusted under <code>p_adjust</code>) and
+<code>p.unadjusted</code>.</p>
 <p><code>glance()</code> returns one row for the question. Columns: <code>n_items</code>,
 <code>n_items_tested</code> (the items the global test kept), <code>n_groups</code> (the
 groups of <code>by</code>, <code>NA</code> without it), <code>nobs</code> (the respondents of the base),
-<code>test_type</code> (<code>"rs2"</code> or <code>"bootstrap"</code>), <code>statistic</code>, <code>df</code>, <code>p.value</code>
-and <code>boot_n</code> of the global test, <code>rs_cv</code> (the \(\hat a\) of the
-second-order Rao-Scott correction, see <em>Tests</em> in
+<code>test_type</code> (<code>"rs2"</code> or <code>"bootstrap"</code>, from <code>global_test</code>), <code>statistic</code>,
+<code>df</code>, <code>p.value</code> and <code>boot_n</code> of the global test, <code>rs_cv</code> (the
+\(\hat a\) of the second-order Rao-Scott correction, see <em>Tests</em> in
 <code><a href="table_multiresponse.html">table_multiresponse()</a></code>), and <code>p_adjust</code>, the adjustment of the item
 p-values.</p>
 <p>Both column sets are FIXED: a column the table does not show (a test it

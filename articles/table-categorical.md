@@ -8,13 +8,14 @@ library(spicy)
 [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
 builds publication-ready categorical tables for reports and articles in
 social science and data science research. With `by`, it produces grouped
-cross-tabulation tables with chi-squared \\p\\-values, effect sizes,
-confidence intervals, and multi-level headers. Without `by`, it produces
-one-way frequency-style tables for the selected variables. Export to gt,
-tinytable, flextable, Excel, or Word. Formatting follows APA conventions
-by default; `style = "jama"` (or `"nejm"`, `"lancet"`, `"annals"`,
-`"aer"`) switches the whole table to that journal’s published rules —
-the *House styles* section of [*Summary tables for
+cross-tabulation tables with \\p\\-values from the chi-squared or
+Fisher’s exact test, effect sizes, confidence intervals, and multi-level
+headers. Without `by`, it produces one-way frequency-style tables for
+the selected variables. Export to gt, tinytable, flextable, Excel, or
+Word. Formatting follows APA conventions by default; `style = "jama"`
+(or `"nejm"`, `"lancet"`, `"annals"`, `"aer"`) switches the whole table
+to that journal’s published rules — the *House styles* section of
+[*Summary tables for
 reporting*](https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.md)
 shows each style and the guideline sentence behind every rule. This
 article walks through the main features.
@@ -76,7 +77,9 @@ table_categorical(
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  dentist_12m       │          <.001     .22     
 #>    No              │  29.5                      
-#>    Yes             │  70.5
+#>    Yes             │  70.5                      
+#> 
+#> Group comparison: Pearson chi-squared test.
 ```
 
 The default output is `"default"`, which prints a styled ASCII table to
@@ -86,11 +89,12 @@ the count `n` and the **column percentage** computed within that group –
 percentages sum to 100 down each education group (for smoking within
 “Lower secondary”: 68.6 + 29.9 + 1.5 = 100.0) – and the `Total` pair is
 the margin over all groups combined. In the last panel, `p` is the
-*p*-value of the chi-squared test of association between the row
-variable and `by`, computed once per variable on its full cross-table,
-and the final column is the association measure – here Cramer’s V
-(covered below). Use `output = "data.frame"` for a plain data frame
-suitable for further processing.
+*p*-value of the test of association between the row variable and `by`,
+computed once per variable on its full cross-table (Pearson’s
+chi-squared here, as the note says; see the test section below), and the
+final column is the association measure – here Cramer’s V (covered
+below). Use `output = "data.frame"` for a plain data frame suitable for
+further processing.
 
 ## One-way tables
 
@@ -150,11 +154,11 @@ demonstrated in the final section, together with the file exports.
 
 Use `output = "data.frame"` for a wide data frame with one row per
 level: two character identifier columns (`Variable`, `Level`), numeric
-columns carrying the counts and full-precision percentages, and the
-chi-squared statistic, `df`, *p*-value, and association measure repeated
-on every row of a variable’s block. Use `output = "long"` for a long
-format with one row per level x group, the `Total` margin included as a
-group:
+columns carrying the counts and full-precision percentages, and the test
+(`test_type`), the chi-squared statistic, `df`, *p*-value, and
+association measure repeated on every row of a variable’s block. Use
+`output = "long"` for a long format with one row per level x group, the
+`Total` margin included as a group:
 
 ``` r
 
@@ -168,14 +172,14 @@ table_categorical(
 #> 1  smoking        No               179         68.582375               415
 #> 2  smoking       Yes                78         29.885057               112
 #> 3  smoking (Missing)                 4          1.532567                12
-#>   Upper secondary % Tertiary n Tertiary % Total n   Total %     Chi2 df
-#> 1         76.994434        332      83.00     926 77.166667 21.62672  2
-#> 2         20.779221         59      14.75     249 20.750000 21.62672  2
-#> 3          2.226345          9       2.25      25  2.083333 21.62672  2
-#>              p Cramer's V
-#> 1 2.012877e-05  0.1356677
-#> 2 2.012877e-05  0.1356677
-#> 3 2.012877e-05  0.1356677
+#>   Upper secondary % Tertiary n Tertiary % Total n   Total %   test_type
+#> 1         76.994434        332      83.00     926 77.166667 chi_squared
+#> 2         20.779221         59      14.75     249 20.750000 chi_squared
+#> 3          2.226345          9       2.25      25  2.083333 chi_squared
+#>       Chi2 df            p Cramer's V
+#> 1 21.62672  2 2.012877e-05  0.1356677
+#> 2 21.62672  2 2.012877e-05  0.1356677
+#> 3 21.62672  2 2.012877e-05  0.1356677
 ```
 
 ## Custom labels
@@ -238,7 +242,9 @@ table_categorical(
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  Regular physical activity │                               <.001     .21     
 #>    No                      │    40.8       650     54.2                      
-#>    Yes                     │    59.2       550     45.8
+#>    Yes                     │    59.2       550     45.8                      
+#> 
+#> Group comparison: Pearson chi-squared test.
 ```
 
 ## Association measures and confidence intervals
@@ -295,7 +301,9 @@ table_categorical(
 #>  smoking     │ <.001   .00   
 #>    No        │               
 #>    Yes       │               
-#>    (Missing) │
+#>    (Missing) │               
+#> 
+#> Group comparison: Pearson chi-squared test.
 ```
 
 A significant chi-squared *p*-value next to a lambda of exactly .00 is
@@ -366,7 +374,7 @@ table_categorical(
 #>    Very good       │  24.6                       
 #>    (Missing)       │   1.7                       
 #> 
-#> Note. Cramer's V: smoking; Goodman-Kruskal Gamma: self_rated_health.
+#> Note. Cramer's V: smoking; Goodman-Kruskal Gamma: self_rated_health. Group comparison: Pearson chi-squared test.
 ```
 
 `smoking` keeps its automatic Cramer’s V (.14) while `self_rated_health`
@@ -396,20 +404,70 @@ table_categorical(
 #> 1  smoking        No               179         68.582375               415
 #> 2  smoking       Yes                78         29.885057               112
 #> 3  smoking (Missing)                 4          1.532567                12
-#>   Upper secondary % Tertiary n Tertiary % Total n   Total %     Chi2 df
-#> 1         76.994434        332      83.00     926 77.166667 21.62672  2
-#> 2         20.779221         59      14.75     249 20.750000 21.62672  2
-#> 3          2.226345          9       2.25      25  2.083333 21.62672  2
-#>              p Cramer's V   CI lower  CI upper
-#> 1 2.012877e-05  0.1356677 0.07909264 0.1913716
-#> 2 2.012877e-05  0.1356677 0.07909264 0.1913716
-#> 3 2.012877e-05  0.1356677 0.07909264 0.1913716
+#>   Upper secondary % Tertiary n Tertiary % Total n   Total %   test_type
+#> 1         76.994434        332      83.00     926 77.166667 chi_squared
+#> 2         20.779221         59      14.75     249 20.750000 chi_squared
+#> 3          2.226345          9       2.25      25  2.083333 chi_squared
+#>       Chi2 df            p Cramer's V   CI lower  CI upper
+#> 1 21.62672  2 2.012877e-05  0.1356677 0.07909264 0.1913716
+#> 2 21.62672  2 2.012877e-05  0.1356677 0.07909264 0.1913716
+#> 3 21.62672  2 2.012877e-05  0.1356677 0.07909264 0.1913716
 ```
+
+## Chi-squared or Fisher’s exact test
+
+The chi-squared test is an approximation, unreliable when expected
+counts are small. With `test = "auto"`, the default, each variable takes
+Pearson’s chi-squared test when every expected count of its table is at
+least 5, and Fisher’s exact test otherwise: the rule of gtsummary’s
+`add_p()`. The note names the test of each variable. In the first 40
+respondents, `smoking` has an expected count of 3.6 and takes the exact
+test:
+
+``` r
+
+table_categorical(
+  sochealth[1:40, ],
+  select = c(smoking, physical_activity),
+  by = sex
+)
+#> Categorical table by sex
+#> 
+#>  Variable          │ Female n  Female %  Male n  Male %  Total n  Total %   p   
+#> ───────────────────┼────────────────────────────────────────────────────────────
+#>  smoking           │                                                       .258 
+#>    No              │    16       72.7      16     88.9     32      80.0         
+#>    Yes             │     6       27.3       2     11.1      8      20.0         
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  physical_activity │                                                       .726 
+#>    No              │    11       50.0       8     44.4     19      47.5         
+#>    Yes             │    11       50.0      10     55.6     21      52.5         
+#> 
+#>  Variable          │ Phi 
+#> ───────────────────┼─────
+#>  smoking           │ .20 
+#>    No              │     
+#>    Yes             │     
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌
+#>  physical_activity │ .06 
+#>    No              │     
+#>    Yes             │     
+#> 
+#> Group comparison: Pearson chi-squared test (physical_activity); Fisher exact test (smoking).
+```
+
+`test = "chisq"` tests every variable by the chi-squared, as before
+0.14.0, and `test = "fisher"` tests every variable exactly. Fisher’s
+exact test of a table larger than 2x2 is the Freeman-Halton extension.
+When its exact enumeration fails on a large sparse table, the *p*-value
+is its Monte Carlo estimate over `simulate_B` tables, and the note says
+so; set a seed to reproduce it. The data frames give the test of each
+variable in `test_type`.
 
 ## Descriptive tables without tests
 
 The test and the association measure are two separate choices:
-`p_value = FALSE` removes the chi-squared test (the `p` column, and
+`p_value = FALSE` removes the test (the `p` column, and `test_type`,
 `Chi2` and `df` from the data frames), and `assoc_measure = "none"`
 removes the measure. Together they give a purely descriptive table, with
 the same group columns and headers:
@@ -481,7 +539,7 @@ table_categorical(
 #>    Very good       │                   
 #>    (Missing)       │                   
 #> 
-#> Note. Phi: smoking; Cramer's V: self_rated_health. SMD = standardized mean difference (Female - Male); |SMD| > 0.1 is the usual imbalance threshold. For a variable with more than two categories the SMD is the multivariate (Mahalanobis) distance between the two profiles of proportions, and is therefore unsigned.
+#> Note. Phi: smoking; Cramer's V: self_rated_health. SMD = standardized mean difference (Female - Male); |SMD| > 0.1 is the usual imbalance threshold. For a variable with more than two categories the SMD is the multivariate (Mahalanobis) distance between the two profiles of proportions, and is therefore unsigned. Group comparison: Pearson chi-squared test.
 ```
 
 Two categories give the Bernoulli form, **signed**, group 1 minus group
@@ -557,7 +615,9 @@ table_categorical(
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  physical_activity │          <.001     .19     
 #>    No              │  54.6                      
-#>    Yes             │  45.4
+#>    Yes             │  45.4                      
+#> 
+#> Group comparison: Pearson chi-squared test.
 ```
 
 ## Handling missing values
@@ -606,6 +666,7 @@ table_categorical(
 #>    High         │                        
 #> 
 #> Missing values removed: income_group (18).
+#> Group comparison: Pearson chi-squared test.
 ```
 
 With several selected variables the note lists each variable’s removals
@@ -649,7 +710,9 @@ table_categorical(
 #>  income_group │ <.001        .22       
 #>    (Missing)  │                        
 #>    Low        │                        
-#>    High       │
+#>    High       │                        
+#> 
+#> Group comparison: Pearson chi-squared test.
 ```
 
 `levels_keep` filters the display only: counts, percentages, the
@@ -698,7 +761,9 @@ table_categorical(
 #>  smoking     │ <.0001     .136    
 #>    No        │                    
 #>    Yes       │                    
-#>    (Missing) │
+#>    (Missing) │                    
+#> 
+#> Group comparison: Pearson chi-squared test.
 ```
 
 `p_digits` drives both the displayed precision of the `p` column and the
@@ -761,7 +826,9 @@ table_categorical(
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌
 #>  physical_activity │ .01 
 #>    No              │     
-#>    Yes             │
+#>    Yes             │     
+#> 
+#> Group comparison: Pearson chi-squared test.
 ```
 
 ## Tidying for downstream pipelines
@@ -799,7 +866,7 @@ broom::tidy(out)
 #>  9 physical_activity Yes       Female   286     0.461 
 #> 10 physical_activity Yes       Male     264     0.455
 
-# One row per outcome with the omnibus chi-squared test and the
+# One row per outcome with its test (chi-squared or Fisher) and the
 # chosen association measure (test_type, statistic, df, p.value,
 # assoc_type, assoc_value, assoc_ci_lower / assoc_ci_upper, n_total).
 broom::glance(out)
@@ -843,6 +910,8 @@ pkgdown_dark_gt(
 
 [TABLE]
 
+Group comparison: Pearson chi-squared test.
+
 The `"tinytable"` format applies the same layout conventions through the
 lightweight tinytable engine (here a two-group table by sex):
 
@@ -856,18 +925,19 @@ table_categorical(
 )
 ```
 
-| Variable          | Female |      | Male |      | Total |      | p    | Phi |
-|-------------------|--------|------|------|------|-------|------|------|-----|
-|                   | n      | %    | n    | %    | n     | %    |      |     |
-| smoking           |        |      |      |      |       |      | .713 | .01 |
-|     No            | 475    | 76.6 | 451  | 77.8 | 926   | 77.2 |      |     |
-|     Yes           | 131    | 21.1 | 118  | 20.3 | 249   | 20.8 |      |     |
-|     (Missing)     |  14    |  2.3 |  11  |  1.9 |  25   |  2.1 |      |     |
-| physical_activity |        |      |      |      |       |      | .832 | .01 |
-|     No            | 334    | 53.9 | 316  | 54.5 | 650   | 54.2 |      |     |
-|     Yes           | 286    | 46.1 | 264  | 45.5 | 550   | 45.8 |      |     |
+| Variable | Female |  | Male |  | Total |  | p | Phi |
+|----|----|----|----|----|----|----|----|----|
+|  | n | % | n | % | n | % |  |  |
+| smoking |     |      |     |      |     |      | .713 | .01 |
+|     No | 475 | 76.6 | 451 | 77.8 | 926 | 77.2 |      |     |
+|     Yes | 131 | 21.1 | 118 | 20.3 | 249 | 20.8 |      |     |
+|     (Missing) |  14 |  2.3 |  11 |  1.9 |  25 |  2.1 |      |     |
+| physical_activity |     |      |     |      |     |      | .832 | .01 |
+|     No | 334 | 53.9 | 316 | 54.5 | 650 | 54.2 |      |     |
+|     Yes | 286 | 46.1 | 264 | 45.5 | 550 | 45.8 |      |     |
+| Group comparison: Pearson chi-squared test. |  |  |  |  |  |  |  |  |
 
-Categorical table by sex {#tinytable_fbechbcrsj319uawrble .table
+Categorical table by sex {#tinytable_5n6dc8fnjc3radigdhy1 .table
 .tinytable style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 
@@ -888,6 +958,8 @@ pkgdown_dark_gt(
 ```
 
 [TABLE]
+
+Group comparison: Pearson chi-squared test.
 
 For Excel export, provide a file path:
 

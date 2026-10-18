@@ -44,9 +44,12 @@ A `tbl_df`.
 columns: `outcome`, `level`, `group` (when applicable), `n`,
 `proportion` (the percentage divided by 100).
 
-`glance()` returns one row per outcome with the omnibus chi-squared test
-(when `by` is used) and the requested association measure: `outcome`,
-`test_type` (`"chi_squared"`), `statistic` (chi-squared), `df`,
+`glance()` returns one row per outcome with its test (when `by` is used)
+and the requested association measure: `outcome`, `test_type`
+(`"chi_squared"`, `"fisher_exact"`, or `"fisher_exact_mc"`, as in the
+data frames of
+[`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)),
+`statistic` (the chi-squared, `NA` for Fisher's exact test), `df`,
 `p.value`, `assoc_type`, `assoc_value`, `assoc_ci_lower`,
 `assoc_ci_upper`, `n_total`. Without `by`, only `outcome` and `n_total`
 are populated; the other columns are `NA`. The interval bounds are `NA`

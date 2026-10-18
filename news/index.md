@@ -15,6 +15,14 @@ PDF.
   level of a factor counts as missing, and `difftime` columns no longer
   list their values. DT leaves Suggests.
 
+- [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
+  chooses its test per variable: Pearson’s chi-squared test when every
+  expected count is at least 5, Fisher’s exact test otherwise
+  (`test = "auto"`), and the note names the test of each variable.
+  `test = "chisq"` restores the p-values of 0.13.0, and
+  `test = "fisher"` tests every variable exactly. The data frames gain a
+  `test_type` column.
+
 - [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
   [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
   [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md),
@@ -91,7 +99,7 @@ PDF.
 
 - [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
   gains `p_value`, as its siblings have. `p_value = FALSE` drops the
-  chi-squared test (`p`, and `Chi2` and `df` in the data frames) from
+  test (`p`, and `test_type`, `Chi2` and `df` in the data frames) from
   every output; with `assoc_measure = "none"` as well, the table is
   purely descriptive
   ([\#9](https://github.com/amaltawfik/spicy/issues/9)).
@@ -101,12 +109,13 @@ PDF.
   count and the percentage of respondents who chose it (or of responses,
   or both), and a row with the number of respondents. The note counts
   the respondents left out of the base and those in it who chose no
-  item. With `by`, each item gets a chi-squared test, adjusted by Holm
-  by default (`p_adjust`), and the question a global test that allows
-  for several answers per respondent, Rao-Scott corrected or by
-  bootstrap (`test`). `p_value = FALSE` removes the p-values and the
-  global test, and `statistic = TRUE` shows each item’s chi-squared.
-  `glance()` reports the Rao-Scott design-effect summary (`rs_cv`).
+  item. With `by`, each item gets a chi-squared test, or Fisher’s exact
+  test where an expected count is below 5 (`test`), adjusted by Holm by
+  default (`p_adjust`), and the question a global test that allows for
+  several answers per respondent, Rao-Scott corrected or by bootstrap
+  (`global_test`). `p_value = FALSE` removes the p-values and the global
+  test, and `statistic = TRUE` shows each item’s chi-squared. `glance()`
+  reports the Rao-Scott design-effect summary (`rs_cv`).
   [`inline()`](https://amaltawfik.github.io/spicy/reference/inline.md)
   cites its cells, a group selected with `model` and the base row as
   `"nobs"`. The article *Multiple-response questions* on the site walks

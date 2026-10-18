@@ -245,7 +245,10 @@ so it does not move when `ci_method` does.
 `svychisq()` with `chisq_statistic = "F"` (the default) is the Pearson
 chi-square with the Rao-Scott second-order correction, referred to
 F(ndf, `survey::degf(design)`). It is survey's own default and the one
-Stata's `svy: tabulate` reports.
+Stata's `svy: tabulate` reports. The design-based test has no exact
+counterpart, so the switch to Fisher's exact test that `test` makes in
+[`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
+when an expected count is below 5 has no equivalent here.
 
 It runs on the *complete cases* of the two variables, and on their
 observed levels: a `(Missing)` row and a declared-but-unobserved level

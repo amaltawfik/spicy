@@ -13,9 +13,10 @@ one row per item, with the number and the percentage of respondents who
 chose it. A last row gives the number of respondents behind the
 percentages.
 
-With `by`, it compares groups. Each item gets a chi-squared test. The
-question gets a global test of all its items together, valid although
-one respondent can choose several items.
+With `by`, it compares groups. Each item gets a chi-squared test, or
+Fisher’s exact test when an expected count is below 5. The question gets
+a global test of all its items together, valid although one respondent
+can choose several items.
 
 `sochealth`, the simulated survey shipped with spicy, has no such
 question, so this article builds one. Each respondent rated four domains
@@ -83,7 +84,9 @@ table_categorical(stacked, select = domain, by = physical_activity)
 #>    health        │ 335   25.6   314   25.2     649     25.4                     
 #>    work          │ 292   22.3   301   24.1     593     23.2                     
 #>    relationships │ 375   28.7   336   26.9     711     27.8                     
-#>    standard      │ 306   23.4   296   23.7     602     23.6
+#>    standard      │ 306   23.4   296   23.7     602     23.6                     
+#> 
+#> Group comparison: Pearson chi-squared test.
 ```
 
 That table misreads the question in three ways.
@@ -429,7 +432,17 @@ Each item gets the Pearson chi-squared test of its table of groups by
 chosen or not, on *r* − 1 degrees of freedom for *r* groups. The
 arithmetic is that of `chisq.test(correct = FALSE)`: no continuity
 correction, and no constant added to an empty cell (Agresti and Liu,
-1999). The data frame output keeps the statistics and both p-values:
+1999).
+
+When an expected count of an item’s table is below 5, the chi-squared
+approximation is unreliable, and the item takes Fisher’s exact test
+instead. This is the rule of `test = "auto"`, the default, shared with
+[`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
+and gtsummary’s `add_p()`. An item tested exactly has no statistic, and
+the note names the test of each item. `test = "chisq"` and
+`test = "fisher"` take one test for every item. Here every expected
+count is far above 5, so every item takes the chi-squared. The data
+frame output keeps the test, the statistics and both p-values:
 
 ``` r
 
@@ -439,13 +452,13 @@ wide <- table_multiresponse(
   by = physical_activity,
   output = "data.frame"
 )
-wide[c("Variable", "Chi2", "df", "p", "p_unadjusted")]
-#>        Variable      Chi2 df           p p_unadjusted
-#> 1        health  3.698537  1 0.108920423 0.0544602116
-#> 2          work 11.456128  1 0.002850345 0.0007125862
-#> 3 relationships  1.425211  1 0.232547529 0.2325475286
-#> 4      standard  5.415538  1 0.059874905 0.0199583016
-#> 5   Respondents        NA NA          NA           NA
+wide[c("Variable", "test_type", "Chi2", "df", "p", "p_unadjusted")]
+#>        Variable   test_type      Chi2 df           p p_unadjusted
+#> 1        health chi_squared  3.698537  1 0.108920423 0.0544602116
+#> 2          work chi_squared 11.456128  1 0.002850345 0.0007125862
+#> 3 relationships chi_squared  1.425211  1 0.232547529 0.2325475286
+#> 4      standard chi_squared  5.415538  1 0.059874905 0.0199583016
+#> 5   Respondents        <NA>        NA NA          NA           NA
 ```
 
 The `p` column is adjusted by Holm’s method, and `p_unadjusted` keeps
@@ -479,22 +492,22 @@ that are responsible” (1999, p. 941). The overall test is the last
 sentence of the note. It tests multiple marginal independence: that the
 probability of choosing each item is the same in every group.
 
-Its statistic is the sum of the item chi-squared statistics, 22.00 here.
-The sum does not depend on which answer of an item is coded as chosen
-(Agresti and Liu, 1999). It is not chi-squared under the null
-hypothesis: one respondent can choose several items, so the items are
-correlated (Loughin and Scherer, 1998). Its asymptotic distribution is a
-weighted sum of chi-squared variables, the weights being the eigenvalues
-of a design-effect matrix (Bilder, Loughin and Nettleton, 2000, Appendix
-A).
+Its statistic is the sum of the item chi-squared statistics, 22.00 here,
+whatever test the item p-values take. The sum does not depend on which
+answer of an item is coded as chosen (Agresti and Liu, 1999). It is not
+chi-squared under the null hypothesis: one respondent can choose several
+items, so the items are correlated (Loughin and Scherer, 1998). Its
+asymptotic distribution is a weighted sum of chi-squared variables, the
+weights being the eigenvalues of a design-effect matrix (Bilder, Loughin
+and Nettleton, 2000, Appendix A).
 
 The mean of those weights is 1, but “individual weights may differ from
-one” (Thomas and Decady, 2004, p. 48). The default, `test = "rs2"`,
-allows for their spread with the second-order Rao-Scott correction of
-Thomas and Decady (2004, pp. 48 and 58-59). It matches the first two
-moments of the distribution and refers the result to a chi-squared on
-fractional degrees of freedom: χ²(3.16) = 17.36 here. The result is
-deterministic.
+one” (Thomas and Decady, 2004, p. 48). The default,
+`global_test = "rs2"`, allows for their spread with the second-order
+Rao-Scott correction of Thomas and Decady (2004, pp. 48 and 58-59). It
+matches the first two moments of the distribution and refers the result
+to a chi-squared on fractional degrees of freedom: χ²(3.16) = 17.36
+here. The result is deterministic.
 
 `glance()` returns the global test as numbers:
 
@@ -519,7 +532,7 @@ order is needed (pp. 53 and 57).
 
 ### The bootstrap
 
-`test = "bootstrap"` refers the same sum to its distribution over
+`global_test = "bootstrap"` refers the same sum to its distribution over
 `boot_n` resamples, 1999 by default. Each resample draws whole response
 vectors with replacement from the pooled respondents, with the group
 sizes held fixed (Loughin and Scherer, 1998). The p-value is the share
@@ -533,7 +546,7 @@ boot <- table_multiresponse(
   domains,
   select = health:standard,
   by = physical_activity,
-  test = "bootstrap"
+  global_test = "bootstrap"
 )
 broom::glance(boot)[c("test_type", "statistic", "df", "p.value", "boot_n")]
 #> # A tibble: 1 × 5
@@ -703,8 +716,8 @@ groups:
 
 names(wide)
 #>  [1] "Variable"     "No n"         "No %"         "Yes n"        "Yes %"       
-#>  [6] "Total n"      "Total %"      "Chi2"         "df"           "p"           
-#> [11] "p_unadjusted"
+#>  [6] "Total n"      "Total %"      "test_type"    "Chi2"         "df"          
+#> [11] "p"            "p_unadjusted"
 ```
 
 `output = "long"` returns one row per item and group, with the base of
@@ -719,10 +732,14 @@ long <- table_multiresponse(
   output = "long"
 )
 head(long, 3)
-#>   variable group   n base      pct     chi2 df         p p_unadjusted
-#> 1   health    No 335  650 51.53846 3.698537  1 0.1089204   0.05446021
-#> 2   health   Yes 314  550 57.09091 3.698537  1 0.1089204   0.05446021
-#> 3   health Total 649 1200 54.08333 3.698537  1 0.1089204   0.05446021
+#>   variable group   n base      pct   test_type     chi2 df         p
+#> 1   health    No 335  650 51.53846 chi_squared 3.698537  1 0.1089204
+#> 2   health   Yes 314  550 57.09091 chi_squared 3.698537  1 0.1089204
+#> 3   health Total 649 1200 54.08333 chi_squared 3.698537  1 0.1089204
+#>   p_unadjusted
+#> 1   0.05446021
+#> 2   0.05446021
+#> 3   0.05446021
 ```
 
 Both frames carry the note in `attr(x, "note")` and the global test in
@@ -735,7 +752,7 @@ Both frames carry the note in `attr(x, "note")` and the global test in
 ``` r
 
 broom::tidy(tbl)
-#> # A tibble: 12 × 12
+#> # A tibble: 12 × 13
 #>    variable      label   group total     n  base proportion proportion_responses
 #>    <chr>         <chr>   <chr> <lgl> <int> <int>      <dbl>                <dbl>
 #>  1 health        health  No    FALSE   335   650      0.515                0.256
@@ -750,8 +767,8 @@ broom::tidy(tbl)
 #> 10 standard      standa… No    FALSE   306   650      0.471                0.234
 #> 11 standard      standa… Yes   FALSE   296   550      0.538                0.237
 #> 12 standard      standa… Total TRUE    602  1200      0.502                0.236
-#> # ℹ 4 more variables: statistic <dbl>, df <int>, p.value <dbl>,
-#> #   p.unadjusted <dbl>
+#> # ℹ 5 more variables: test_type <chr>, statistic <dbl>, df <int>,
+#> #   p.value <dbl>, p.unadjusted <dbl>
 broom::glance(tbl)
 #> # A tibble: 1 × 11
 #>   n_items n_items_tested n_groups  nobs test_type statistic    df p.value boot_n
@@ -909,7 +926,7 @@ table_multiresponse(
 | Respondents | 650 |      |      | 550 |      |      | 1200 |      |      |
 | Several answers possible: percentages of respondents can sum to more than 100%; percentages of responses sum to 100%. Base: respondents who answered the question, including those who chose no item. 204 respondents chose none of the items. |  |  |  |  |  |  |  |  |  |
 
-Multiple responses by physical_activity {#tinytable_74ts6rxmozw7yrftu7cu
+Multiple responses by physical_activity {#tinytable_9fq1881zznbegzxpf76o
 .table .tinytable
 style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}

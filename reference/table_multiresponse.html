@@ -5,33 +5,35 @@
       fontURL: "https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/output/chtml/fonts/woff-v2"
     }
   };
-</script><script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/IBM_Plex_Sans-0.4.10/font.css" rel="stylesheet"><link href="../deps/IBM_Plex_Mono-0.4.10/font.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet"><meta property="og:title" content="Multiple-response summary table — table_multiresponse"><meta name="description" content='Tabulates a "check all that apply" question: one row per item, with the
+</script><script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/IBM_Plex_Sans-0.4.10/font.css" rel="stylesheet"><link href="../deps/IBM_Plex_Mono-0.4.10/font.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet"><meta property="og:title" content="Multiple-response summary table — table_multiresponse"><meta name="description" content="Tabulates a &quot;check all that apply&quot; question: one row per item, with the
 number of respondents who chose it and their percentage, then a row
 with the number of respondents the percentages are computed on. The
 items are the indicator columns of the question, selected with
 tidyselect syntax.
 With by, the counts and percentages are given per group and in a
-Total margin, each item gets a chi-squared test across the groups,
+Total margin, each item gets a test across the groups (the
+chi-squared, or Fisher's exact test when an expected count is below 5),
 and the question gets a global test of all its items together, valid
 although one respondent can choose several items.
 Multiple output formats are available via output: a printed ASCII
-table ("default"), a wide or long numeric data.frame
-("data.frame", "long"), or publication-ready tables
-("tinytable", "gt", "flextable", "excel", "clipboard",
-"word").'><meta property="og:description" content='Tabulates a "check all that apply" question: one row per item, with the
+table (&quot;default&quot;), a wide or long numeric data.frame
+(&quot;data.frame&quot;, &quot;long&quot;), or publication-ready tables
+(&quot;tinytable&quot;, &quot;gt&quot;, &quot;flextable&quot;, &quot;excel&quot;, &quot;clipboard&quot;,
+&quot;word&quot;)."><meta property="og:description" content="Tabulates a &quot;check all that apply&quot; question: one row per item, with the
 number of respondents who chose it and their percentage, then a row
 with the number of respondents the percentages are computed on. The
 items are the indicator columns of the question, selected with
 tidyselect syntax.
 With by, the counts and percentages are given per group and in a
-Total margin, each item gets a chi-squared test across the groups,
+Total margin, each item gets a test across the groups (the
+chi-squared, or Fisher's exact test when an expected count is below 5),
 and the question gets a global test of all its items together, valid
 although one respondent can choose several items.
 Multiple output formats are available via output: a printed ASCII
-table ("default"), a wide or long numeric data.frame
-("data.frame", "long"), or publication-ready tables
-("tinytable", "gt", "flextable", "excel", "clipboard",
-"word").'><meta property="og:image" content="https://amaltawfik.github.io/spicy/logo.svg"></head><body>
+table (&quot;default&quot;), a wide or long numeric data.frame
+(&quot;data.frame&quot;, &quot;long&quot;), or publication-ready tables
+(&quot;tinytable&quot;, &quot;gt&quot;, &quot;flextable&quot;, &quot;excel&quot;, &quot;clipboard&quot;,
+&quot;word&quot;)."><meta property="og:image" content="https://amaltawfik.github.io/spicy/logo.svg"></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -104,7 +106,8 @@ with the number of respondents the percentages are computed on. The
 items are the indicator columns of the question, selected with
 tidyselect syntax.</p>
 <p>With <code>by</code>, the counts and percentages are given per group and in a
-<code>Total</code> margin, each item gets a chi-squared test across the groups,
+<code>Total</code> margin, each item gets a test across the groups (the
+chi-squared, or Fisher's exact test when an expected count is below 5),
 and the question gets a global test of all its items together, valid
 although one respondent can choose several items.</p>
 <p>Multiple output formats are available via <code>output</code>: a printed ASCII
@@ -124,8 +127,9 @@ table (<code>"default"</code>), a wide or long numeric <code>data.frame</code>
 <span>  percent <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"cases"</span>, <span class="st">"responses"</span>, <span class="st">"both"</span><span class="op">)</span>,</span>
 <span>  base <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"valid"</span>, <span class="st">"answered"</span>, <span class="st">"all"</span><span class="op">)</span>,</span>
 <span>  sort <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">""</span>, <span class="st">"+"</span>, <span class="st">"-"</span>, <span class="st">"name+"</span>, <span class="st">"name-"</span><span class="op">)</span>,</span>
+<span>  test <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"auto"</span>, <span class="st">"chisq"</span>, <span class="st">"fisher"</span><span class="op">)</span>,</span>
 <span>  p_value <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  test <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"rs2"</span>, <span class="st">"bootstrap"</span><span class="op">)</span>,</span>
+<span>  global_test <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"rs2"</span>, <span class="st">"bootstrap"</span><span class="op">)</span>,</span>
 <span>  boot_n <span class="op">=</span> <span class="fl">1999L</span>,</span>
 <span>  p_adjust <span class="op">=</span> <span class="st">"holm"</span>,</span>
 <span>  statistic <span class="op">=</span> <span class="cn">FALSE</span>,</span>
@@ -221,6 +225,14 @@ locale, the same on every platform: capitals before lower case,
 accented letters after <code>z</code>.</p></dd>
 
 
+<dt id="arg-test">test<a class="anchor" aria-label="anchor" href="#arg-test"></a></dt>
+<dd><p>The test of each item's p-value, as in <code><a href="table_categorical.html">table_categorical()</a></code>:
+<code>"auto"</code> (the default) takes Pearson's chi-squared test when every
+expected count of the item's table is at least 5 and Fisher's exact
+test otherwise; <code>"chisq"</code> and <code>"fisher"</code> take one test for every item.
+The note names the test of each item. See <em>Tests</em>.</p></dd>
+
+
 <dt id="arg-p-value">p_value<a class="anchor" aria-label="anchor" href="#arg-p-value"></a></dt>
 <dd><p>Logical or <code>NULL</code>. With <code>by</code>, <code>NULL</code> (the default) and
 <code>TRUE</code> show the item <code>p</code> column and the global test in the note.
@@ -230,16 +242,16 @@ frames included. <code>p_value</code> and <code>statistic</code> are independent
 <code>TRUE</code>.</p></dd>
 
 
-<dt id="arg-test">test<a class="anchor" aria-label="anchor" href="#arg-test"></a></dt>
-<dd><p>The global test: <code>"rs2"</code> (the default), the sum of the item
-chi-squared statistics with the second-order Rao-Scott correction; or
-<code>"bootstrap"</code>, the same sum referred to its bootstrap distribution.
-See <em>Tests</em>.</p></dd>
+<dt id="arg-global-test">global_test<a class="anchor" aria-label="anchor" href="#arg-global-test"></a></dt>
+<dd><p>The global test: <code>"rs2"</code> (the default), the sum of
+the item chi-squared statistics with the second-order Rao-Scott
+correction; or <code>"bootstrap"</code>, the same sum referred to its bootstrap
+distribution. See <em>Tests</em>.</p></dd>
 
 
 <dt id="arg-boot-n">boot_n<a class="anchor" aria-label="anchor" href="#arg-boot-n"></a></dt>
-<dd><p>Number of bootstrap resamples for <code>test = "bootstrap"</code>.
-Defaults to <code>1999</code>.</p></dd>
+<dd><p>Number of bootstrap resamples for
+<code>global_test = "bootstrap"</code>. Defaults to <code>1999</code>.</p></dd>
 
 
 <dt id="arg-p-adjust">p_adjust<a class="anchor" aria-label="anchor" href="#arg-p-adjust"></a></dt>
@@ -255,7 +267,9 @@ is an error.</p></dd>
 <dt id="arg-statistic">statistic<a class="anchor" aria-label="anchor" href="#arg-statistic"></a></dt>
 <dd><p>Logical. If <code>TRUE</code>, adds a <code>Test</code> column with each
 item's chi-squared statistic and its degrees of freedom, with or
-without the p-values of <code>p_value</code>. Defaults to <code>FALSE</code>.</p></dd>
+without the p-values of <code>p_value</code>; an item whose p-value comes from
+Fisher's exact test has no statistic and shows a dash. Defaults to
+<code>FALSE</code>.</p></dd>
 
 
 <dt id="arg-labels">labels<a class="anchor" aria-label="anchor" href="#arg-labels"></a></dt>
@@ -371,13 +385,16 @@ last row with the base. Columns: <code>Variable</code>, then the count and the
 percentage of each group of <code>by</code> and of the <code>Total</code> margin
 (<code>&lt;group&gt; n</code> and <code>&lt;group&gt; \%</code>, or <code>&lt;group&gt; \% of cases</code> and
 <code>&lt;group&gt; \% of responses</code> under <code>percent = "both"</code>; <code>n</code> and <code>\%</code>
-without <code>by</code>), then <code>Chi2</code> and <code>df</code> when the item tests ran (for
-<code>p_value</code> or for <code>statistic</code>), <code>p</code> with <code>p_value</code>, and
-<code>p_unadjusted</code> under an adjustment.</p></li>
+without <code>by</code>), then <code>test_type</code>, <code>Chi2</code> and <code>df</code> when the item
+tests ran (for <code>p_value</code> or for <code>statistic</code>), <code>p</code> with <code>p_value</code>,
+and <code>p_unadjusted</code> under an adjustment. <code>test_type</code> names the test
+of each item as in <code><a href="table_categorical.html">table_categorical()</a></code> (<code>"chi_squared"</code>,
+<code>"fisher_exact"</code>, <code>"fisher_exact_mc"</code>), and <code>Chi2</code> and <code>df</code> are <code>NA</code>
+for an item tested by Fisher's exact test.</p></li>
 <li><p><code>"long"</code>: one row per item and group, with columns <code>variable</code>,
 <code>group</code> (with <code>by</code>), <code>n</code>, <code>base</code> (the respondents of the group),
-<code>pct</code> (or <code>pct_cases</code> and <code>pct_responses</code>), and <code>chi2</code>, <code>df</code>, <code>p</code>,
-and <code>p_unadjusted</code> as above.</p></li>
+<code>pct</code> (or <code>pct_cases</code> and <code>pct_responses</code>), and <code>test_type</code>,
+<code>chi2</code>, <code>df</code>, <code>p</code>, and <code>p_unadjusted</code> as above.</p></li>
 <li><p><code>"tinytable"</code>, <code>"gt"</code>, <code>"flextable"</code>: the rendered table object.</p></li>
 <li><p><code>"excel"</code> / <code>"word"</code>: writes to disk and returns the file path
 invisibly.</p></li>
@@ -387,9 +404,9 @@ invisibly.</p></li>
 has a global test, <code>attr(x, "global_test")</code>: a one-row data frame with
 <code>test</code>, <code>statistic</code>, <code>df</code>, <code>p.value</code>, <code>boot_n</code>, <code>n_items</code> (the items
 tested), <code>n_groups</code>, <code>rs_mean</code> and <code>rs_cv</code> (the design-effect summary of
-<code>test = "rs2"</code>), and <code>boot_redraws</code> (the resamples drawn again under
-<code>test = "bootstrap"</code>); see <em>Tests</em>. <code><a href="as_structured.html">as_structured()</a></code> reads the default
-object.</p>
+<code>global_test = "rs2"</code>), and <code>boot_redraws</code> (the resamples drawn again
+under <code>global_test = "bootstrap"</code>); see <em>Tests</em>. <code><a href="as_structured.html">as_structured()</a></code> reads
+the default object.</p>
     </div>
     <div class="section level2">
     <h2 id="tests">Tests<a class="anchor" aria-label="anchor" href="#tests"></a></h2>
@@ -400,6 +417,18 @@ table (group by chose the item) with \(r - 1\) degrees of freedom:
 the arithmetic of <code>chisq.test(correct = FALSE)</code>, with no continuity
 correction and no constant added to an empty cell (Agresti and Liu,
 1999).</p>
+<p>The item p-value comes from the test <code>test</code> chooses, as in
+<code><a href="table_categorical.html">table_categorical()</a></code>. Under <code>"auto"</code>, the default, it is that
+chi-squared test when every expected count of the item's table is at
+least 5, and Fisher's exact test (<code><a href="https://rdrr.io/r/stats/fisher.test.html" class="external-link">stats::fisher.test()</a></code>) otherwise;
+when the exact enumeration fails, the p-value is its Monte Carlo
+estimate over 2000 tables, which draws from the session's RNG. An item
+tested by Fisher's exact test has no statistic: its <code>Test</code> cell shows
+a dash, and <code>Chi2</code> and <code>df</code> are <code>NA</code> in the data frames. Without
+p-values (<code>p_value = FALSE</code>), <code>statistic = TRUE</code> shows the chi-squared
+statistic of every item. The global test sums the Pearson statistics
+of the items whatever <code>test</code> chooses for their p-values, since its
+correction and its bootstrap are defined for that sum.</p>
 <p>The global test sums the item statistics,
 \(X^2_S = \sum_j X^2_j\), a value that does not depend on which
 answer of an item is coded as chosen (Agresti and Liu, 1999). One
@@ -407,7 +436,7 @@ respondent can choose several items, so the items are correlated and
 \(X^2_S\) is not chi-squared under the null (Loughin and Scherer,
 1998): its asymptotic distribution is a weighted sum of chi-squared
 variables, the weights being the eigenvalues of a design-effect matrix
-(Bilder, Loughin and Nettleton, 2000, Appendix A). <code>test = "rs2"</code>
+(Bilder, Loughin and Nettleton, 2000, Appendix A). <code>global_test = "rs2"</code>
 matches its first two moments, the second-order Rao-Scott correction
 of Thomas and Decady (2004, pp. 48 and 58-59):</p>
 <p>$$X^2_{RS2} = \frac{c(r-1)\,X^2_S}{\sum_k \lambda_k^2}, \qquad
@@ -429,7 +458,7 @@ Decady (2004, p. 59), defined by
 \(1 + \hat a^2 = \sum_k \lambda_k^2 / (c(r-1))\): the coefficient of
 variation of the \(\lambda_k\) when their mean is 1, and <code>NA</code> when
 that ratio falls below 1.</p>
-<p><code>test = "bootstrap"</code> refers \(X^2_S\) to its distribution over
+<p><code>global_test = "bootstrap"</code> refers \(X^2_S\) to its distribution over
 <code>boot_n</code> resamples of whole response vectors, drawn with replacement
 from the pooled respondents with the group sizes held fixed (Loughin
 and Scherer, 1998). The p-value is the share of resamples whose
@@ -619,7 +648,7 @@ Rao-Scott approach. <em>International Journal of Testing</em>, 4(1), 43-59.
 <span class="r-in"><span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">smoking</span>, <span class="va">physical_activity</span>, <span class="va">dentist_12m</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  by <span class="op">=</span> <span class="va">education</span>,</span></span>
 <span class="r-in"><span>  counted <span class="op">=</span> <span class="st">"Yes"</span>,</span></span>
-<span class="r-in"><span>  test <span class="op">=</span> <span class="st">"bootstrap"</span>,</span></span>
+<span class="r-in"><span>  global_test <span class="op">=</span> <span class="st">"bootstrap"</span>,</span></span>
 <span class="r-in"><span>  boot_n <span class="op">=</span> <span class="fl">999</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Multiple responses by education</span></span>
@@ -663,11 +692,11 @@ Rao-Scott approach. <em>International Journal of Testing</em>, 4(1), 43-59.
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2 physical_activity      286 46.12903    264 45.51724     550 45.83333</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 3       dentist_12m      437 70.48387    409 70.51724     846 70.50000</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 4       Respondents      620       NA    580       NA    1200       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>          Chi2 df  p p_unadjusted</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1 0.112067560  1  1    0.7378024</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2 0.045178403  1  1    0.8316763</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3 0.000160454  1  1    0.9898934</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4          NA NA NA           NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     test_type        Chi2 df  p p_unadjusted</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1 chi_squared 0.112067560  1  1    0.7378024</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2 chi_squared 0.045178403  1  1    0.8316763</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3 chi_squared 0.000160454  1  1    0.9898934</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4        &lt;NA&gt;          NA NA NA           NA</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># \donttest{</span></span></span>
 <span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"tinytable"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span></span>
