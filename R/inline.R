@@ -170,6 +170,14 @@ inline <- function(
   if (is.null(column)) {
     column <- .inline_default_token(s, cols)
   }
+  # A token the table does not carry is refused before any row is
+  # resolved: on a block table the row stage would otherwise answer with
+  # a level hint, which cannot help when the column itself is missing.
+  for (tk in .inline_requested_tokens(column)) {
+    if (length(.inline_token_cols(s, cols, tk)) == 0L) {
+      .inline_abort_no_token(s, tk)
+    }
+  }
   # One family lays its groups out sideways, so `level` addresses a
   # COLUMN there rather than a row.
   narrowed <- .inline_level_cols(s, rows, level, column, cols)
@@ -583,7 +591,11 @@ inline <- function(
   }
   # Spanner indices count the Variable column; col_meta keys do not.
   body_cols <- names(.struct_display_body(s$body))
-  body_cols[spans[[pick]]]
+  # The columns under no spanner belong to no group -- the `p` and the
+  # association measure of a `by` table, the item test of a
+  # multiple-response table -- so they stay addressable whichever group
+  # `model` picks. A multi-model table has none.
+  c(body_cols[spans[[pick]]], setdiff(all_cols, body_cols[unlist(spans)]))
 }
 
 # The default column for a bare inline(tbl, var, level): the row's
@@ -764,6 +776,29 @@ inline <- function(
   hints
 }
 
+# The refusal of a token the table does not carry. One producer, for the
+# up-front check in `inline()` and for `.inline_cell()`, so the message
+# reads the same on every family.
+.inline_abort_no_token <- function(s, token, call = rlang::caller_env()) {
+  tokens <- unique(vapply(
+    setdiff(names(s$col_meta), .REG_KEY_VARIABLE),
+    function(nm) s$col_meta[[nm]]$token %||% "",
+    character(1)
+  ))
+  spicy_abort(
+    c(
+      sprintf("No column with token %s in this table.", .quote_val(token)),
+      "i" = paste0(
+        "Available: ",
+        paste(.quote_val(sort(setdiff(tokens, ""))), collapse = ", "),
+        "."
+      )
+    ),
+    class = "spicy_invalid_input",
+    call = call
+  )
+}
+
 # One formatted cell by (row, token), the interval composed like the
 # console composes it.
 .inline_cell <- function(s, formatted, row, token, cols) {
@@ -777,25 +812,7 @@ inline <- function(
     )
   ]
   if (length(hits) == 0L) {
-    tokens <- unique(vapply(
-      setdiff(names(s$col_meta), .REG_KEY_VARIABLE),
-      function(nm) s$col_meta[[nm]]$token %||% "",
-      character(1)
-    ))
-    spicy_abort(
-      c(
-        sprintf("No column with token %s in this table.", .quote_val(token)),
-        "i" = paste0(
-          "Available: ",
-          paste(
-            .quote_val(sort(setdiff(tokens, ""))),
-            collapse = ", "
-          ),
-          "."
-        )
-      ),
-      class = "spicy_invalid_input"
-    )
+    .inline_abort_no_token(s, token)
   }
   # An interval token names its two BOUNDS, not two competing columns.
   # Selecting by token FIRST is what keeps "ci" apart from "ame_ci",

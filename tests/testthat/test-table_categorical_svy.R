@@ -180,6 +180,27 @@ test_that("the p-value is svychisq's, on the statistic asked for", {
   expect_false(isTRUE(all.equal(st[["Wald"]], st[["adjWald"]])))
 })
 
+test_that("a sparse table lets no warning escape, and keeps survey's p-value", {
+  # survey's chisq.test() warns on expected counts below 5 and hides it
+  # with options(warn = -1), which a calling handler still saw, unclassed
+  # and translated. It is muffled, as table_categorical() muffles it.
+  skip_if_not_installed("survey", "4.5")
+  d <- suppressWarnings(survey::svydesign(ids = ~1, data = sochealth[1:40, ]))
+  expect_no_warning(
+    out <- table_categorical_svy(
+      d,
+      select = c(smoking, physical_activity),
+      by = region,
+      output = "long"
+    )
+  )
+  expect_equal(
+    out$p[[1L]],
+    suppressWarnings(survey::svychisq(~ smoking + region, d))$p.value[[1L]],
+    tolerance = 1e-12
+  )
+})
+
 test_that("`by` gives one column block per domain plus the margin", {
   d <- .svycat_design("clus1")
   out <- .svycat_long(d, select = stype, by = sch.wide)

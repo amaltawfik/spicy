@@ -449,3 +449,4 @@ note_multiresponse_none_chosen	reviewed	2026-10-18	%d personnes n'ont coché auc
 note_multiresponse_none_chosen_one	reviewed	2026-10-18	1 personne n'a coché aucun item.	
 note_multiresponse_both	reviewed	2026-10-18	Plusieurs réponses possibles<NBSP>: les pourcentages de personnes peuvent totaliser plus de 100<NBSP>%<NBSP>; les pourcentages de réponses totalisent 100<NBSP>%.	
 note_multiresponse_removed	reviewed	2026-10-18	Personnes retirées faute de réponse à la question<NBSP>: %d.	
+note_multiresponse_removed_none	reviewed	2026-10-18	Personnes retirées faute d'item coché<NBSP>: %d.	

@@ -298,6 +298,8 @@ as_tibble.spicy_categorical_table <- function(x, ...) {
 #' (chi-squared), `df`, `p.value`, `assoc_type`, `assoc_value`,
 #' `assoc_ci_lower`, `assoc_ci_upper`, `n_total`. Without `by`, only
 #' `outcome` and `n_total` are populated; the other columns are `NA`.
+#' The interval bounds are `NA` unless the table was built with
+#' `assoc_ci = TRUE`.
 #'
 #' @param x A `spicy_categorical_table` returned by [table_categorical()].
 #' @param ... Currently ignored. Present for compatibility with the
@@ -436,7 +438,11 @@ glance.spicy_categorical_table <- function(x, ...) {
     if (length(measure_cols) > 0L) measure_cols[[1L]] else NA_character_
   }
   has_assoc <- !is.na(measure_col)
-  has_assoc_ci <- all(c("ci_lower", "ci_upper") %in% names(long))
+  # `long_data` carries the bounds whatever `assoc_ci` says (the measure
+  # is always computed with its interval); the wide frame has them only
+  # when the table was asked for them, and glance() reports what was.
+  has_assoc_ci <- all(c("ci_lower", "ci_upper") %in% names(long)) &&
+    .CAT_KEY_CI_LL %in% names(x)
 
   by_var <- split(long, long$variable, drop = FALSE)
   outcomes <- names(by_var)

@@ -132,6 +132,21 @@ workbook, or a PDF.
 * `freq()` writes a large declared missing code as it is, `100000`, not
   `1e+05`.
 
+* `glance()` on a `table_categorical()` result leaves `assoc_ci_lower`
+  and `assoc_ci_upper` at `NA` unless the table was built with
+  `assoc_ci = TRUE`. It reported the interval whatever `assoc_ci` said.
+
+* `inline()` with `model` cites the `p` and the association measure of a
+  `table_categorical()` or `table_categorical_svy()` table, which belong
+  to no group. Selecting a group dropped them, and the table's own `p`
+  was refused.
+
+* `inline()` refuses a column the table does not carry with the same
+  message on every table: "No column with token "p" in this table."
+  Without `level`, `table_categorical()`, `table_categorical_svy()`,
+  `table_continuous()`, and `table_outcome()` said to pick a level
+  instead.
+
 * `table_categorical(output = "gt")` shows the note on the association
   measure and the standardized mean difference, as the other outputs do.
 

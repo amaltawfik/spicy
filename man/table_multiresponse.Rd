@@ -330,7 +330,8 @@ are the same under the three bases; the percentages of cases and the
 tests are not. The \code{Respondents} row gives the base of each group, and
 the note says which base the table uses and how many respondents it
 leaves out, all groups together: those who answered none of the
-indicators under \code{"valid"}, those who chose no item under \code{"answered"}.
+indicators, under \code{"valid"} and \code{"answered"}, and those who answered but
+chose no item, under \code{"answered"}, in a sentence of their own.
 Under \code{"valid"} and \code{"all"}, the base can hold respondents who chose no
 item: the note then says how many. Declared missing values of a
 labelled column (\code{na_values}, \code{na_range}) are missing, as under the

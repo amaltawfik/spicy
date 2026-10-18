@@ -2500,6 +2500,30 @@ test_that("glance() picks up assoc CIs when assoc_ci = TRUE", {
   expect_true(gl$assoc_ci_upper >= gl$assoc_value)
 })
 
+test_that("glance() reports no interval when assoc_ci = FALSE", {
+  # The attached long data carries the bounds whatever `assoc_ci` says,
+  # and glance() used to publish them for a table that showed none.
+  skip_if_not_installed("broom")
+  off <- broom::glance(table_categorical(
+    sochealth,
+    select = smoking,
+    by = sex,
+    assoc_ci = FALSE
+  ))
+  on <- broom::glance(table_categorical(
+    sochealth,
+    select = smoking,
+    by = sex,
+    assoc_ci = TRUE
+  ))
+  expect_true(is.finite(off$assoc_value))
+  expect_true(is.na(off$assoc_ci_lower))
+  expect_true(is.na(off$assoc_ci_upper))
+  expect_true(is.finite(on$assoc_ci_lower))
+  expect_true(is.finite(on$assoc_ci_upper))
+  expect_identical(off$assoc_value, on$assoc_value)
+})
+
 # ---- audit fixes (n_total / Total filtering / p_digits threshold) --------
 
 test_that("glance() n_total excludes the synthetic 'Total' group", {

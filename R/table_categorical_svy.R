@@ -226,7 +226,23 @@
     w
   )
   form <- stats::as.formula(paste0("~`", var, "` + `", group_var, "`"))
-  r <- .svy_try(survey::svychisq(form, design, statistic = statistic))
+  # survey gets the Pearson statistic from `chisq.test()`, whose warning on
+  # an expected cell count below 5 speaks of the chi-squared approximation
+  # of the uncorrected test -- a criterion of `chisq.test()`, not of the
+  # Rao-Scott p-value reported here. survey silences it on purpose, but
+  # with `options(warn = -1)`, which a calling handler still sees,
+  # unclassed and translated. It is muffled here, as `table_categorical()`
+  # muffles the same warning (inside `cross_tab()`), and told by its call,
+  # never by its localized text.
+  r <- .svy_try(withCallingHandlers(
+    survey::svychisq(form, design, statistic = statistic),
+    warning = function(w) {
+      cl <- conditionCall(w)
+      if (is.call(cl) && identical(cl[[1L]], quote(chisq.test))) {
+        invokeRestart("muffleWarning")
+      }
+    }
+  ))
   if (is.null(r)) {
     return(list(p = NA_real_, refused = FALSE))
   }

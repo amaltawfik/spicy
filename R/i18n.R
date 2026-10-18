@@ -746,8 +746,12 @@
   # percentage column keeps the family's bare `header_percent_symbol`.
   # The percentage notes are display literals read through `spicy_str()`,
   # hence their bare "%".
-  # The note opens with the respondents outside the base
-  # (`note_multiresponse_removed`), and `note_multiresponse_none_chosen`
+  # The note opens with the respondents outside the base: those who
+  # answered none of the indicators (`note_multiresponse_removed`; under
+  # `base = "all"` they stay in the base), then, under `base = "answered"`
+  # only, those who answered but chose no item
+  # (`note_multiresponse_removed_none`). Each is printed only for a count
+  # of at least 1. `note_multiresponse_none_chosen`
   # follows the base sentence when the base holds respondents who chose no
   # item, counted over the whole base (never under `base = "answered"`,
   # which leaves them out). It is printed only for a count of at least 1,
@@ -765,6 +769,7 @@
   header_pct_cases = "% of cases",
   header_pct_responses = "% of responses",
   note_multiresponse_removed = "Respondents with no answer to the question removed: %d.",
+  note_multiresponse_removed_none = "Respondents who chose no item removed: %d.",
   note_multiresponse_cases = "Several answers possible: percentages are of respondents and can sum to more than 100%.",
   note_multiresponse_responses = "Several answers possible: percentages are of responses.",
   note_multiresponse_both = "Several answers possible: percentages of respondents can sum to more than 100%; percentages of responses sum to 100%.",

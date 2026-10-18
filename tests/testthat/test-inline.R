@@ -1084,6 +1084,87 @@ test_that("a multiple-response table without p-values has no p to cite", {
   )
 })
 
+test_that("`model` keeps the columns that belong to no group", {
+  # The `p` and the association measure of a `by` table, and the item
+  # test of a multiple-response table, sit under no spanner. Selecting a
+  # group used to drop them, and the table's own `p` was refused as a
+  # token the table does not carry.
+  tc <- .il_quiet(table_categorical(sochealth, select = smoking, by = sex))
+  expect_identical(inline(tc, smoking, column = "p", model = "Female"), ".713")
+  expect_identical(
+    inline(tc, smoking, column = "p {p}, {assoc}", model = "Female"),
+    "p .713, .01"
+  )
+  expect_identical(
+    inline(tc, smoking, "Yes", "{n} ({pct}%)", model = "Female"),
+    "131 (21.1%)"
+  )
+  mr <- .il_mr(by = sex, statistic = TRUE)
+  expect_identical(
+    inline(mr, smoking, column = "p", model = "Female"),
+    inline(mr, smoking, column = "p")
+  )
+  expect_identical(
+    inline(mr, smoking, column = "{n} ({pct}%), p {p}", model = "Female"),
+    "131 (21.1%), p 1.000"
+  )
+  expect_identical(
+    inline(mr, smoking, column = "statistic", model = "Male"),
+    inline(mr, smoking, column = "statistic")
+  )
+})
+
+test_that("a column the table does not carry is named before any level hint", {
+  # On a block table the refusal used to be a level hint ("has levels:
+  # pick one with `level`"), which cannot help when the column itself is
+  # missing. It now names the column, with the head every family uses.
+  tc <- .il_quiet(table_categorical(
+    sochealth,
+    select = smoking,
+    by = sex,
+    p_value = FALSE
+  ))
+  err <- expect_error(
+    inline(tc, smoking, column = "p"),
+    "No column with token \"p\" in this table.",
+    class = "spicy_invalid_input",
+    fixed = TRUE
+  )
+  expect_false(grepl("level", conditionMessage(err), fixed = TRUE))
+  na <- .il_quiet(table_categorical(
+    sochealth,
+    select = smoking,
+    by = sex,
+    assoc_measure = "none"
+  ))
+  expect_error(
+    inline(na, smoking, column = "assoc"),
+    "No column with token \"assoc\" in this table.",
+    class = "spicy_invalid_input",
+    fixed = TRUE
+  )
+  # The same head on table_continuous(), with or without a level, and in
+  # a pattern whose other token exists.
+  head_of <- function(expr) {
+    msg <- conditionMessage(expect_error(expr, class = "spicy_invalid_input"))
+    strsplit(msg, "\n", fixed = TRUE)[[1L]][[1L]]
+  }
+  tn <- .il_quiet(table_continuous(
+    sochealth,
+    select = bmi,
+    by = sex,
+    p_value = FALSE
+  ))
+  expect_identical(
+    head_of(inline(tn, bmi, column = "p")),
+    head_of(inline(tc, smoking, column = "p"))
+  )
+  expect_identical(
+    head_of(inline(tn, bmi, "Female", column = "p")),
+    head_of(inline(tc, smoking, "Yes", "{n}, p {p}", model = "Female"))
+  )
+})
+
 test_that("the base row of a multiple-response table is the fit statistic nobs", {
   # The row's `.variable` is the token of table_regression()'s number of
   # observations, so the address does not move with the translated label

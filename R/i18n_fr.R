@@ -343,6 +343,7 @@
   header_pct_cases = "% des cas",
   header_pct_responses = "% des r\u00E9ponses",
   note_multiresponse_removed = "Personnes retir\u00E9es faute de r\u00E9ponse \u00E0 la question\u00A0: %d.",
+  note_multiresponse_removed_none = "Personnes retir\u00E9es faute d'item coch\u00E9\u00A0: %d.",
   note_multiresponse_cases = "Plusieurs r\u00E9ponses possibles\u00A0: les pourcentages, calcul\u00E9s sur les personnes ayant r\u00E9pondu, peuvent totaliser plus de 100\u00A0%.",
   note_multiresponse_responses = "Plusieurs r\u00E9ponses possibles\u00A0: pourcentages calcul\u00E9s sur les r\u00E9ponses.",
   note_multiresponse_both = "Plusieurs r\u00E9ponses possibles\u00A0: les pourcentages de personnes peuvent totaliser plus de 100\u00A0%\u00A0; les pourcentages de r\u00E9ponses totalisent 100\u00A0%.",

@@ -205,9 +205,9 @@ test_that("`level` addresses a column only for a token that spreads", {
 })
 
 
-# ---- inline.R 449: a token the table does not carry falls through ----
+# ---- inline.R: a token the table does not carry is named first ----
 
-test_that("a token the table does not carry gets the message it always got", {
+test_that("a token the table does not carry is named, not met with a level hint", {
   d <- data.frame(
     grp = factor(rep(c("c", "t"), each = 15)),
     trait = factor(rep(c("p", "q", "r"), 10))
@@ -218,23 +218,34 @@ test_that("a token the table does not carry gets the message it always got", {
   # level: the p lives on the variable's own row and resolves there.
   expect_identical(inline(tc, trait, column = "{p}"), "1.000")
 
-  # `smd` is not in this table (it was built without `smd = TRUE`), so
-  # the rule has no columns to reason about and declines to rule. The
-  # caller then gets the plain "pick a level" refusal -- the message
-  # that was there before the header rule existed -- rather than a
-  # header-flavored one about a statistic the table never had.
+  # `smd` is not in this table (it was built without `smd = TRUE`). The
+  # refusal names the missing column before any row is resolved, rather
+  # than the "pick a level" hint it used to give: no level carries it.
   err <- expect_error(
     inline(tc, trait, column = "{smd}"),
     class = "spicy_invalid_input"
   )
   expect_match(
     conditionMessage(err),
-    "\"trait\" has levels: pick one with `level`.",
+    "No column with token \"smd\" in this table.",
     fixed = TRUE
   )
-  expect_match(
-    conditionMessage(err),
-    "Available: \"p\", \"q\", \"r\".",
+  expect_false(grepl("pick one with `level`", conditionMessage(err)))
+
+  # `inline()` no longer hands either helper a token the table lacks, so
+  # their own guards are reached directly: the header rule declines to
+  # rule, and the cell lookup refuses with the same words.
+  s <- as_structured(tc)
+  formatted <- spicy:::.format_structured_to_string_body(s)
+  rows <- which(s$body$.variable == "trait")
+  cols <- setdiff(names(s$col_meta), "Variable")
+  expect_null(
+    spicy:::.inline_header_row(s, formatted, rows, "trait", "smd", cols)
+  )
+  expect_error(
+    spicy:::.inline_cell(s, formatted, rows[[1L]], "smd", cols),
+    "No column with token \"smd\" in this table.",
+    class = "spicy_invalid_input",
     fixed = TRUE
   )
 })

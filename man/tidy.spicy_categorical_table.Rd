@@ -37,6 +37,8 @@ measure: \code{outcome}, \code{test_type} (\code{"chi_squared"}), \code{statisti
 (chi-squared), \code{df}, \code{p.value}, \code{assoc_type}, \code{assoc_value},
 \code{assoc_ci_lower}, \code{assoc_ci_upper}, \code{n_total}. Without \code{by}, only
 \code{outcome} and \code{n_total} are populated; the other columns are \code{NA}.
+The interval bounds are \code{NA} unless the table was built with
+\code{assoc_ci = TRUE}.
 }
 \seealso{
 \code{\link[=as.data.frame.spicy_categorical_table]{as.data.frame.spicy_categorical_table()}} for the raw

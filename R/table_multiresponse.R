@@ -255,7 +255,8 @@
 #' tests are not. The `Respondents` row gives the base of each group, and
 #' the note says which base the table uses and how many respondents it
 #' leaves out, all groups together: those who answered none of the
-#' indicators under `"valid"`, those who chose no item under `"answered"`.
+#' indicators, under `"valid"` and `"answered"`, and those who answered but
+#' chose no item, under `"answered"`, in a sentence of their own.
 #' Under `"valid"` and `"all"`, the base can hold respondents who chose no
 #' item: the note then says how many. Declared missing values of a
 #' labelled column (`na_values`, `na_range`) are missing, as under the
@@ -557,10 +558,13 @@ table_multiresponse <- function(
   # `base = "answered"`, whose base is the respondents who chose one.
   n_none <- sum(rowSums(z) == 0)
   # The respondents left outside the base, all groups together (a missing
-  # `by` has its own sentence): those who answered none of the indicators
-  # under `base = "valid"`, those who chose no item under `"answered"`,
-  # nobody under `"all"`. The note says how many (decision of 2026-10-18).
-  n_removed <- sum(keep & !in_base)
+  # `by` has its own sentence), in two counts the note gives apart: those
+  # who answered none of the indicators (under `"valid"` and `"answered"`)
+  # and, under `"answered"` only, those who answered but chose no item.
+  # Nobody leaves it under `"all"` (decisions of 2026-10-18).
+  answered_any <- rowSums(!is.na(chosen)) > 0L
+  n_removed <- sum(keep & !in_base & !answered_any)
+  n_removed_none <- sum(keep & !in_base & answered_any)
 
   # ---- counts and percentages, one row per block (groups, then margin) -----
   if (has_group) {
@@ -718,6 +722,7 @@ table_multiresponse <- function(
         base = base,
         n_none = n_none,
         n_removed = n_removed,
+        n_removed_none = n_removed_none,
         test_res = test_res,
         p_value = p_value,
         untested = untested,
@@ -1581,7 +1586,9 @@ table_multiresponse <- function(
 # ---- title and note ------------------------------------------------------------
 
 # The note, in reading order: what left the table (a missing `by`, then
-# the respondents outside the base), what the percentages are of, the base
+# the respondents outside the base: those who answered none of the
+# indicators, then, under `base = "answered"`, those who chose no item),
+# what the percentages are of, the base
 # and how many in it chose no item (when any did), then the tests -- the
 # item p-values followed, under an adjustment, by the family's sentence
 # naming the method and the number of tests (with `p_value`), the items
@@ -1595,6 +1602,7 @@ table_multiresponse <- function(
   base,
   n_none,
   n_removed,
+  n_removed_none,
   test_res,
   p_value,
   untested,
@@ -1611,6 +1619,12 @@ table_multiresponse <- function(
   }
   if (n_removed > 0L) {
     parts <- c(parts, spicy_fmt("note_multiresponse_removed", n_removed))
+  }
+  if (n_removed_none > 0L) {
+    parts <- c(
+      parts,
+      spicy_fmt("note_multiresponse_removed_none", n_removed_none)
+    )
   }
   parts <- c(
     parts,

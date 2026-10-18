@@ -787,25 +787,82 @@ test_that("the note counts the respondents left outside the base", {
   # Row 3 answered none of the indicators, rows 2 and 5 chose no item, and
   # row 7, which chose no item, has no group.
   removed <- "Respondents with no answer to the question removed:"
+  none <- "Respondents who chose no item removed:"
   expect_match(.mr_none_note(), paste(removed, "1."), fixed = TRUE)
-  # answered: the respondents who chose no item leave the base as well.
+  expect_false(grepl(none, .mr_none_note(), fixed = TRUE))
+  # answered: the respondents who chose no item leave the base as well,
+  # counted apart, since they did answer.
   expect_match(
     .mr_none_note(base = "answered"),
-    paste(removed, "4."),
+    paste(removed, "1.", none, "3."),
     fixed = TRUE
   )
   # all: nobody leaves it.
   expect_false(grepl(removed, .mr_none_note(base = "all"), fixed = TRUE))
+  expect_false(grepl(none, .mr_none_note(base = "all"), fixed = TRUE))
   # With `by`: one count for the whole table, after the rows a missing
   # group removed, which counts row 7 instead.
   expect_match(
     .mr_none_note(by = g, base = "answered"),
-    paste("Rows with missing g removed: 1.", removed, "3."),
+    paste("Rows with missing g removed: 1.", removed, "1.", none, "2."),
     fixed = TRUE
   )
   expect_match(.mr_none_note(by = g), paste(removed, "1."), fixed = TRUE)
   # Nobody left out, no sentence.
   expect_false(grepl(removed, attr(.mr_farm_tbl(), "note"), fixed = TRUE))
+})
+
+test_that("a respondent who chose no item is not counted as one who skipped", {
+  # Row 2 answered and chose no item, row 3 skipped the question. Only
+  # `base = "answered"` leaves row 2 out, and says so in its own sentence.
+  d <- data.frame(x1 = c(1, 0, NA, 1), x2 = c(0, 0, NA, 1))
+  note <- function(base) {
+    attr(
+      table_multiresponse(d, c(x1, x2), base = base, output = "data.frame"),
+      "note"
+    )
+  }
+  cases <- "Several answers possible: percentages are of respondents and can sum to more than 100%."
+  expect_identical(
+    note("valid"),
+    paste(
+      "Respondents with no answer to the question removed: 1.",
+      cases,
+      "Base: respondents who answered the question, including those who chose no item.",
+      "1 respondent chose none of the items."
+    )
+  )
+  expect_identical(
+    note("answered"),
+    paste(
+      "Respondents with no answer to the question removed: 1.",
+      "Respondents who chose no item removed: 1.",
+      cases,
+      "Base: respondents who chose at least one item."
+    )
+  )
+  expect_identical(
+    note("all"),
+    paste(
+      cases,
+      "Base: all respondents. 2 respondents chose none of the items."
+    )
+  )
+  withr::local_options(spicy.language = "fr")
+  expect_match(
+    note("answered"),
+    paste(
+      "Personnes retir\u00e9es faute de r\u00e9ponse \u00e0 la question\u00a0: 1.",
+      "Personnes retir\u00e9es faute d'item coch\u00e9\u00a0: 1."
+    ),
+    fixed = TRUE
+  )
+  expect_match(
+    note("valid"),
+    "^Personnes retir\u00e9es faute de r\u00e9ponse \u00e0 la question\u00a0: 1\\."
+  )
+  expect_false(grepl("faute d'item", note("valid"), fixed = TRUE))
+  expect_false(grepl("retir\u00e9es", note("all"), fixed = TRUE))
 })
 
 test_that("the note says what the percentages are of, in both languages", {
