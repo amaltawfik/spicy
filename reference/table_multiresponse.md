@@ -100,7 +100,8 @@ table_multiresponse(
 
   - `"answered"`: the respondents who chose at least one item, the
     default of SPSS `MULT RESPONSE` (`MISSING = TABLE`) and of Stata's
-    `mrtab`, where choosing nothing cannot be told from skipping.
+    `mrtab`, whose `include` option gives `"valid"` (Jann, 2005, pp. 98
+    and 107-108), where choosing nothing cannot be told from skipping.
 
   - `"all"`: every row of the group, as `questionr::multi.table()`
     counts.
@@ -212,9 +213,9 @@ table_multiresponse(
 
 - note:
 
-  The table note. `NULL` (the default) builds it: what the percentages
-  are of, the base, and the tests. A single string replaces it, and
-  `FALSE` removes it.
+  The table note. `NULL` (the default) builds it: the respondents left
+  out, what the percentages are of, the base, and the tests. A single
+  string replaces it, and `FALSE` removes it.
 
 - output:
 
@@ -303,7 +304,9 @@ Depends on `output`:
 The data frames carry the note in `attr(x, "note")` and, when the table
 has a global test, `attr(x, "global_test")`: a one-row data frame with
 `test`, `statistic`, `df`, `p.value`, `boot_n`, `n_items` (the items
-tested), and `n_groups`.
+tested), `n_groups`, `rs_mean` and `rs_cv` (the design-effect summary of
+`test = "rs2"`), and `boot_redraws` (the resamples drawn again under
+`test = "bootstrap"`); see *Tests*.
 [`as_structured()`](https://amaltawfik.github.io/spicy/reference/as_structured.md)
 reads the default object.
 
@@ -317,31 +320,52 @@ arithmetic of `chisq.test(correct = FALSE)`, with no continuity
 correction and no constant added to an empty cell (Agresti and Liu,
 1999).
 
-The global test sums the item statistics, \\X^2_S = \sum_j X^2_j\\. One
-respondent can choose several items, so the items are correlated and
-\\X^2_S\\ is not chi-squared under the null: its distribution is a
-weighted sum of chi-squared variables whose weights depend on the joint
-distribution of the items (Loughin and Scherer, 1998). `test = "rs2"`
-matches its first two moments, the second-order Rao-Scott correction
-(Bilder and Loughin, 2004):
+The global test sums the item statistics, \\X^2_S = \sum_j X^2_j\\, a
+value that does not depend on which answer of an item is coded as chosen
+(Agresti and Liu, 1999). One respondent can choose several items, so the
+items are correlated and \\X^2_S\\ is not chi-squared under the null
+(Loughin and Scherer, 1998): its asymptotic distribution is a weighted
+sum of chi-squared variables, the weights being the eigenvalues of a
+design-effect matrix (Bilder, Loughin and Nettleton, 2000, Appendix A).
+`test = "rs2"` matches its first two moments, the second-order Rao-Scott
+correction of Thomas and Decady (2004, pp. 48 and 58-59):
 
 \$\$X^2\_{RS2} = \frac{c(r-1)\\X^2_S}{\sum_k \lambda_k^2}, \qquad \nu =
 \frac{c^2(r-1)^2}{\sum_k \lambda_k^2}\$\$
 
 referred to a chi-squared distribution with \\\nu\\ degrees of freedom,
 usually fractional. Here \\c\\ is the number of items tested and the
-\\\lambda_k\\ are the eigenvalues of the design-effect matrix estimated
-from the within-group covariance of the indicators. The result is
-deterministic.
+\\\lambda_k\\ are the eigenvalues of the design-effect matrix, in the
+second-order form of Bilder and Loughin (2004). The within-group
+covariance of the indicators is centered at the group means, the
+unrestricted estimate of Bilder and Loughin (2004) that the `MRCV`
+package also uses, whereas Thomas and Decady (2004) center it at the
+pooled proportions with divisor \\n(n - 1)\\, which gives p = .068
+instead of .063 on the Kansas farmer data of Loughin and Scherer (1998).
+The result is deterministic. `attr(x, "global_test")` reports `rs_mean`,
+the mean of the \\\lambda_k\\, which is 1 in the population under the
+null and which the correction takes as 1 (Thomas and Decady, 2004, p.
+48), and `rs_cv`, the \\\hat a\\ of Thomas and Decady (2004, p. 59),
+defined by \\1 + \hat a^2 = \sum_k \lambda_k^2 / (c(r-1))\\: the
+coefficient of variation of the \\\lambda_k\\ when their mean is 1, and
+`NA` when that ratio falls below 1.
 
 `test = "bootstrap"` refers \\X^2_S\\ to its distribution over `boot_n`
 resamples of whole response vectors, drawn with replacement from the
-pooled respondents with the group sizes held fixed. The p-value is the
-share of resamples whose statistic is at least the observed one. It
-holds its level most closely in the published simulations, but it is
-random: call [`set.seed()`](https://rdrr.io/r/base/Random.html) first to
-reproduce it. An item that loses all variation in a resample adds 0 to
-the statistic of that resample.
+pooled respondents with the group sizes held fixed (Loughin and Scherer,
+1998). The p-value is the share of resamples whose statistic is at least
+the observed one. A resample in which an item is chosen by every
+respondent or by none gives that item no statistic: it is discarded and
+drawn again, the practice of Bilder, Loughin and Nettleton (2000, p.
+1298) for resamples whose marginal table has an empty row or column, and
+`attr(x, "global_test")$boot_redraws` counts the resamples drawn again.
+When 100 times `boot_n` draws do not yield `boot_n` usable resamples,
+the function stops with an error. The bootstrap held its level in most
+published settings, with exceptions reported by Bilder, Loughin and
+Nettleton (2000, p. 1305), and no study of multiple marginal
+independence compares it with the second-order test. It is random: call
+[`set.seed()`](https://rdrr.io/r/base/Random.html) first to reproduce
+it.
 
 An item chosen by every respondent, or by none, has no test: its `p`
 cell shows a dash, it leaves the global test, and the note names it. Its
@@ -361,6 +385,9 @@ the Bonferroni global p-value of Agresti and Liu (1999). The raw
 p-values stay in the data frames as `p_unadjusted`, and in
 `col_meta$p$p_unadjusted` of
 [`as_structured()`](https://amaltawfik.github.io/spicy/reference/as_structured.md).
+The note names the method and the number of items adjusted together, in
+the sentence of
+[`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md).
 The global test is never adjusted.
 
 ## Base and missing values
@@ -372,10 +399,18 @@ under `base = "valid"`, those who chose at least one item under
 `base = "answered"`, every row under `base = "all"`. The counts are the
 same under the three bases; the percentages of cases and the tests are
 not. The `Respondents` row gives the base of each group, and the note
-says which base the table uses. Declared missing values of a labelled
-column (`na_values`, `na_range`) are missing, as under the
-`user_na = TRUE` default of
+says which base the table uses and how many respondents it leaves out,
+all groups together: those who answered none of the indicators under
+`"valid"`, those who chose no item under `"answered"`. Under `"valid"`
+and `"all"`, the base can hold respondents who chose no item: the note
+then says how many. Declared missing values of a labelled column
+(`na_values`, `na_range`) are missing, as under the `user_na = TRUE`
+default of
 [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md).
+
+A percentage carries no more digits than its denominator, so a base of
+fewer than 100 respondents takes whole percentages (American Medical
+Association, 2020, section 4.1.8): `percent_digits = 0` prints them.
 
 ## References
 
@@ -384,14 +419,32 @@ allowing arbitrarily many category choices. *Biometrics*, 55(3),
 936-943.
 [doi:10.1111/j.0006-341x.1999.00936.x](https://doi.org/10.1111/j.0006-341x.1999.00936.x)
 
+American Medical Association. (2020). *AMA Manual of Style: A Guide for
+Authors and Editors* (11th ed.). Oxford University Press.
+[doi:10.1093/jama/9780190246556.001.0001](https://doi.org/10.1093/jama/9780190246556.001.0001)
+
 Bilder, C. R., & Loughin, T. M. (2004). Testing for marginal
 independence between two categorical variables with multiple responses.
 *Biometrics*, 60(1), 241-248.
 [doi:10.1111/j.0006-341x.2004.00147.x](https://doi.org/10.1111/j.0006-341x.2004.00147.x)
 
+Bilder, C. R., Loughin, T. M., & Nettleton, D. (2000). Multiple marginal
+independence testing for pick any/c variables. *Communications in
+Statistics - Simulation and Computation*, 29(4), 1285-1316.
+[doi:10.1080/03610910008813665](https://doi.org/10.1080/03610910008813665)
+
+Jann, B. (2005). Tabulation of multiple responses. *The Stata Journal*,
+5(1), 92-122.
+[doi:10.1177/1536867x0500500113](https://doi.org/10.1177/1536867x0500500113)
+
 Loughin, T. M., & Scherer, P. N. (1998). Testing for association in
 contingency tables with multiple column responses. *Biometrics*, 54(2),
 630-637. [doi:10.2307/3109769](https://doi.org/10.2307/3109769)
+
+Thomas, D. R., & Decady, Y. J. (2004). Testing for association using
+multiple response survey data: Approximate procedures based on the
+Rao-Scott approach. *International Journal of Testing*, 4(1), 43-59.
+[doi:10.1207/s15327574ijt0401_3](https://doi.org/10.1207/s15327574ijt0401_3)
 
 ## See also
 
@@ -434,7 +487,7 @@ table_multiresponse(
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  Respondents       │                
 #> 
-#> Several answers possible: percentages are of respondents and can sum to more than 100. Base: respondents with at least one answer to the question. Item p-values: Pearson chi-squared test of each item by group, adjusted by "holm". Group comparison: Rao-Scott second-order corrected chi-squared test of multiple marginal independence, χ²(6.07) = 131.71, p < .001.
+#> Several answers possible: percentages are of respondents and can sum to more than 100%. Base: respondents who answered the question, including those who chose no item. 166 respondents chose none of the items. Item p-values: Pearson chi-squared test of each item by group. P-values adjusted via stats::p.adjust(method = "holm"); m = 3 test(s). Group comparison: Rao-Scott second-order corrected chi-squared test of multiple marginal independence, χ²(6.07) = 131.71, p < .001.
 
 # A descriptive table: no tests, percentages of cases and of responses.
 table_multiresponse(
@@ -471,7 +524,7 @@ table_multiresponse(
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  Respondents       │                                        
 #> 
-#> Several answers possible: percentages are of respondents and can sum to more than 100. Base: respondents with at least one answer to the question.
+#> Several answers possible: percentages of respondents can sum to more than 100%; percentages of responses sum to 100%. Base: respondents who answered the question, including those who chose no item. 166 respondents chose none of the items.
 
 # Logical indicators need no `counted`: the life domains rated 4 or 5.
 sat <- data.frame(
@@ -492,7 +545,7 @@ table_multiresponse(sat, select = names(sat), sort = "desc")
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  Respondents     │  1200          
 #> 
-#> Several answers possible: percentages are of respondents and can sum to more than 100. Base: respondents with at least one answer to the question.
+#> Several answers possible: percentages are of respondents and can sum to more than 100%. Base: respondents who answered the question, including those who chose no item. 204 respondents chose none of the items.
 
 # Bootstrap global test: set a seed to reproduce its p-value.
 set.seed(1)
@@ -530,7 +583,7 @@ table_multiresponse(
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  Respondents       │                
 #> 
-#> Several answers possible: percentages are of respondents and can sum to more than 100. Base: respondents with at least one answer to the question. Item p-values: Pearson chi-squared test of each item by group, adjusted by "holm". Group comparison: bootstrap test of multiple marginal independence (999 resamples), χ² = 130.18, p < .002.
+#> Several answers possible: percentages are of respondents and can sum to more than 100%. Base: respondents who answered the question, including those who chose no item. 166 respondents chose none of the items. Item p-values: Pearson chi-squared test of each item by group. P-values adjusted via stats::p.adjust(method = "holm"); m = 3 test(s). Group comparison: bootstrap test of multiple marginal independence (999 resamples), χ² = 130.18, p < .002.
 
 # Wide data frame.
 table_multiresponse(

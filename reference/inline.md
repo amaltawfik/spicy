@@ -23,9 +23,10 @@ inline(x, variable, level = NULL, column = NULL, model = NULL)
   [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
   [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md),
   [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md),
-  [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md)
-  or
+  [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md),
   [`table_continuous_svy()`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md)
+  or
+  [`table_multiresponse()`](https://amaltawfik.github.io/spicy/reference/table_multiresponse.md)
   (default output) – every family
   [`as_structured()`](https://amaltawfik.github.io/spicy/reference/as_structured.md)
   accepts.
@@ -33,7 +34,7 @@ inline(x, variable, level = NULL, column = NULL, model = NULL)
 - variable:
 
   The source variable, unquoted or as a string; or a fit-statistic token
-  (`"n"`, `"r2"`, ...).
+  (`"n"`, `"nobs"`, `"r2"`, ...).
 
 - level:
 
@@ -56,7 +57,9 @@ inline(x, variable, level = NULL, column = NULL, model = NULL)
   `"med_iqr"`) for
   [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
   and the count (`"n"`) for
-  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md).
+  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
+  and
+  [`table_multiresponse()`](https://amaltawfik.github.io/spicy/reference/table_multiresponse.md).
   A row carrying none of them refuses and lists its tokens.
 
 - model:
@@ -93,6 +96,17 @@ whose column you want: `inline(tbl, bmi, "Female", "emmean")`. The
 columns that belong to no group (the contrast, its interval, `p`, `n`)
 are cited without one, as before.
 
+[`table_multiresponse()`](https://amaltawfik.github.io/spicy/reference/table_multiresponse.md)
+has one row per item, addressed by its column name, then the base row,
+the number of respondents, addressed as the fit statistic `"nobs"`. Its
+groups are spanners, as in
+[`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
+so `model` selects one, the margin included:
+`inline(tbl, smoking, column = "pct", model = "Female")`,
+`inline(tbl, "nobs", model = "Total")`. The item `p` and `statistic`
+belong to no group and are cited without `model`
+(`inline(tbl, smoking, column = "p")`).
+
 The column is a **token** of the typed contract (`"b"`, `"se"`, `"p"`,
 `"ci"`, `"or"`, `"ame"`, `"n"`, `"pct"`, `"m"`, ... – see
 [`as_structured()`](https://amaltawfik.github.io/spicy/reference/as_structured.md)'s
@@ -122,9 +136,10 @@ hit the floor.
 Every misaddressing is a classed error that lists the available choices:
 unknown variables list the variables, missing levels list the levels,
 unknown tokens list the table's tokens, ambiguous models list the
-spanner labels. A cell the table itself displays as undefined (an
-aliased coefficient's en-dash) refuses with the reason rather than
-pasting a dash into a sentence.
+spanner labels. A `level` that names a group of a `by` table points to
+`model`. A cell the table itself displays as undefined (an aliased
+coefficient's en-dash) refuses with the reason rather than pasting a
+dash into a sentence.
 
 ## See also
 

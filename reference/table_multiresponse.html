@@ -195,7 +195,8 @@ and one who skipped the question does not, as <code>expss</code> counts its
 valid cases.</p></li>
 <li><p><code>"answered"</code>: the respondents who chose at least one item, the
 default of SPSS <code>MULT RESPONSE</code> (<code>MISSING = TABLE</code>) and of Stata's
-<code>mrtab</code>, where choosing nothing cannot be told from skipping.</p></li>
+<code>mrtab</code>, whose <code>include</code> option gives <code>"valid"</code> (Jann, 2005, pp. 98
+and 107-108), where choosing nothing cannot be told from skipping.</p></li>
 <li><p><code>"all"</code>: every row of the group, as <code>questionr::multi.table()</code>
 counts.</p></li>
 </ul></dd>
@@ -297,9 +298,9 @@ contract; a single string replaces it.</p></dd>
 
 
 <dt id="arg-note">note<a class="anchor" aria-label="anchor" href="#arg-note"></a></dt>
-<dd><p>The table note. <code>NULL</code> (the default) builds it: what the
-percentages are of, the base, and the tests. A single string replaces
-it, and <code>FALSE</code> removes it.</p></dd>
+<dd><p>The table note. <code>NULL</code> (the default) builds it: the
+respondents left out, what the percentages are of, the base, and the
+tests. A single string replaces it, and <code>FALSE</code> removes it.</p></dd>
 
 
 <dt id="arg-output">output<a class="anchor" aria-label="anchor" href="#arg-output"></a></dt>
@@ -372,7 +373,10 @@ invisibly.</p></li>
 </ul><p>The data frames carry the note in <code>attr(x, "note")</code> and, when the table
 has a global test, <code>attr(x, "global_test")</code>: a one-row data frame with
 <code>test</code>, <code>statistic</code>, <code>df</code>, <code>p.value</code>, <code>boot_n</code>, <code>n_items</code> (the items
-tested), and <code>n_groups</code>. <code><a href="as_structured.html">as_structured()</a></code> reads the default object.</p>
+tested), <code>n_groups</code>, <code>rs_mean</code> and <code>rs_cv</code> (the design-effect summary of
+<code>test = "rs2"</code>), and <code>boot_redraws</code> (the resamples drawn again under
+<code>test = "bootstrap"</code>); see <em>Tests</em>. <code><a href="as_structured.html">as_structured()</a></code> reads the default
+object.</p>
     </div>
     <div class="section level2">
     <h2 id="tests">Tests<a class="anchor" aria-label="anchor" href="#tests"></a></h2>
@@ -384,27 +388,49 @@ the arithmetic of <code>chisq.test(correct = FALSE)</code>, with no continuity
 correction and no constant added to an empty cell (Agresti and Liu,
 1999).</p>
 <p>The global test sums the item statistics,
-\(X^2_S = \sum_j X^2_j\). One respondent can choose several items,
-so the items are correlated and \(X^2_S\) is not chi-squared under
-the null: its distribution is a weighted sum of chi-squared variables
-whose weights depend on the joint distribution of the items (Loughin
-and Scherer, 1998). <code>test = "rs2"</code> matches its first two moments, the
-second-order Rao-Scott correction (Bilder and Loughin, 2004):</p>
+\(X^2_S = \sum_j X^2_j\), a value that does not depend on which
+answer of an item is coded as chosen (Agresti and Liu, 1999). One
+respondent can choose several items, so the items are correlated and
+\(X^2_S\) is not chi-squared under the null (Loughin and Scherer,
+1998): its asymptotic distribution is a weighted sum of chi-squared
+variables, the weights being the eigenvalues of a design-effect matrix
+(Bilder, Loughin and Nettleton, 2000, Appendix A). <code>test = "rs2"</code>
+matches its first two moments, the second-order Rao-Scott correction
+of Thomas and Decady (2004, pp. 48 and 58-59):</p>
 <p>$$X^2_{RS2} = \frac{c(r-1)\,X^2_S}{\sum_k \lambda_k^2}, \qquad
 \nu = \frac{c^2(r-1)^2}{\sum_k \lambda_k^2}$$</p>
 <p>referred to a chi-squared distribution with \(\nu\) degrees of
 freedom, usually fractional. Here \(c\) is the number of items tested
-and the \(\lambda_k\) are the eigenvalues of the design-effect matrix
-estimated from the within-group covariance of the indicators. The
-result is deterministic.</p>
+and the \(\lambda_k\) are the eigenvalues of the design-effect matrix,
+in the second-order form of Bilder and Loughin (2004). The within-group
+covariance of the indicators is centered at the group means, the
+unrestricted estimate of Bilder and Loughin (2004) that the <code>MRCV</code>
+package also uses, whereas Thomas and Decady (2004) center it at the
+pooled proportions with divisor \(n(n - 1)\), which gives p = .068
+instead of .063 on the Kansas farmer data of Loughin and Scherer
+(1998). The result is deterministic. <code>attr(x, "global_test")</code> reports
+<code>rs_mean</code>, the mean of the \(\lambda_k\), which is 1 in the
+population under the null and which the correction takes as 1 (Thomas
+and Decady, 2004, p. 48), and <code>rs_cv</code>, the \(\hat a\) of Thomas and
+Decady (2004, p. 59), defined by
+\(1 + \hat a^2 = \sum_k \lambda_k^2 / (c(r-1))\): the coefficient of
+variation of the \(\lambda_k\) when their mean is 1, and <code>NA</code> when
+that ratio falls below 1.</p>
 <p><code>test = "bootstrap"</code> refers \(X^2_S\) to its distribution over
 <code>boot_n</code> resamples of whole response vectors, drawn with replacement
-from the pooled respondents with the group sizes held fixed. The
-p-value is the share of resamples whose statistic is at least the
-observed one. It holds its level most closely in the published
-simulations, but it is random: call <code><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed()</a></code> first to reproduce
-it. An item that loses all variation in a resample adds 0 to the
-statistic of that resample.</p>
+from the pooled respondents with the group sizes held fixed (Loughin
+and Scherer, 1998). The p-value is the share of resamples whose
+statistic is at least the observed one. A resample in which an item is
+chosen by every respondent or by none gives that item no statistic: it
+is discarded and drawn again, the practice of Bilder, Loughin and
+Nettleton (2000, p. 1298) for resamples whose marginal table has an
+empty row or column, and <code>attr(x, "global_test")$boot_redraws</code> counts
+the resamples drawn again. When 100 times <code>boot_n</code> draws do not yield
+<code>boot_n</code> usable resamples, the function stops with an error. The
+bootstrap held its level in most published settings, with exceptions
+reported by Bilder, Loughin and Nettleton (2000, p. 1305), and no study
+of multiple marginal independence compares it with the second-order
+test. It is random: call <code><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed()</a></code> first to reproduce it.</p>
 <p>An item chosen by every respondent, or by none, has no test: its <code>p</code>
 cell shows a dash, it leaves the global test, and the note names it.
 Its row stays. With fewer than two groups holding respondents there is
@@ -421,7 +447,9 @@ family-wise error rate whatever the dependence between the items, and
 its smallest adjusted p-value equals the Bonferroni global p-value of
 Agresti and Liu (1999). The raw p-values stay in the data frames as
 <code>p_unadjusted</code>, and in <code>col_meta$p$p_unadjusted</code> of <code><a href="as_structured.html">as_structured()</a></code>.
-The global test is never adjusted.</p>
+The note names the method and the number of items adjusted together,
+in the sentence of <code><a href="table_categorical.html">table_categorical()</a></code>. The global test is never
+adjusted.</p>
     </div>
     <div class="section level2">
     <h2 id="base-and-missing-values">Base and missing values<a class="anchor" aria-label="anchor" href="#base-and-missing-values"></a></h2>
@@ -432,22 +460,42 @@ indicator under <code>base = "valid"</code>, those who chose at least one item
 under <code>base = "answered"</code>, every row under <code>base = "all"</code>. The counts
 are the same under the three bases; the percentages of cases and the
 tests are not. The <code>Respondents</code> row gives the base of each group, and
-the note says which base the table uses. Declared missing values of a labelled column
-(<code>na_values</code>, <code>na_range</code>) are missing, as under the <code>user_na = TRUE</code>
-default of <code><a href="table_categorical.html">table_categorical()</a></code>.</p>
+the note says which base the table uses and how many respondents it
+leaves out, all groups together: those who answered none of the
+indicators under <code>"valid"</code>, those who chose no item under <code>"answered"</code>.
+Under <code>"valid"</code> and <code>"all"</code>, the base can hold respondents who chose no
+item: the note then says how many. Declared missing values of a
+labelled column (<code>na_values</code>, <code>na_range</code>) are missing, as under the
+<code>user_na = TRUE</code> default of <code><a href="table_categorical.html">table_categorical()</a></code>.</p>
+<p>A percentage carries no more digits than its denominator, so a base of
+fewer than 100 respondents takes whole percentages (American Medical
+Association, 2020, section 4.1.8): <code>percent_digits = 0</code> prints them.</p>
     </div>
     <div class="section level2">
     <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>
     <p>Agresti, A., &amp; Liu, I.-M. (1999). Modeling a categorical variable
 allowing arbitrarily many category choices. <em>Biometrics</em>, 55(3),
 936-943. <a href="https://doi.org/10.1111/j.0006-341x.1999.00936.x" class="external-link">doi:10.1111/j.0006-341x.1999.00936.x</a></p>
+<p>American Medical Association. (2020). <em>AMA Manual of Style: A Guide for
+Authors and Editors</em> (11th ed.). Oxford University Press.
+<a href="https://doi.org/10.1093/jama/9780190246556.001.0001" class="external-link">doi:10.1093/jama/9780190246556.001.0001</a></p>
 <p>Bilder, C. R., &amp; Loughin, T. M. (2004). Testing for marginal
 independence between two categorical variables with multiple
 responses. <em>Biometrics</em>, 60(1), 241-248.
 <a href="https://doi.org/10.1111/j.0006-341x.2004.00147.x" class="external-link">doi:10.1111/j.0006-341x.2004.00147.x</a></p>
+<p>Bilder, C. R., Loughin, T. M., &amp; Nettleton, D. (2000). Multiple
+marginal independence testing for pick any/c variables.
+<em>Communications in Statistics - Simulation and Computation</em>, 29(4),
+1285-1316. <a href="https://doi.org/10.1080/03610910008813665" class="external-link">doi:10.1080/03610910008813665</a></p>
+<p>Jann, B. (2005). Tabulation of multiple responses. <em>The Stata Journal</em>,
+5(1), 92-122. <a href="https://doi.org/10.1177/1536867x0500500113" class="external-link">doi:10.1177/1536867x0500500113</a></p>
 <p>Loughin, T. M., &amp; Scherer, P. N. (1998). Testing for association in
 contingency tables with multiple column responses. <em>Biometrics</em>, 54(2),
 630-637. <a href="https://doi.org/10.2307/3109769" class="external-link">doi:10.2307/3109769</a></p>
+<p>Thomas, D. R., &amp; Decady, Y. J. (2004). Testing for association using
+multiple response survey data: Approximate procedures based on the
+Rao-Scott approach. <em>International Journal of Testing</em>, 4(1), 43-59.
+<a href="https://doi.org/10.1207/s15327574ijt0401_3" class="external-link">doi:10.1207/s15327574ijt0401_3</a></p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
@@ -489,7 +537,7 @@ contingency tables with multiple column responses. <em>Biometrics</em>, 54(2),
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Respondents       <span style="color: #9E9E9E;">│</span>                </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Several answers possible: percentages are of respondents and can sum to more than 100. Base: respondents with at least one answer to the question. Item p-values: Pearson chi-squared test of each item by group, adjusted by "holm". Group comparison: Rao-Scott second-order corrected chi-squared test of multiple marginal independence, χ²(6.07) = 131.71, p &lt; .001.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Several answers possible: percentages are of respondents and can sum to more than 100%. Base: respondents who answered the question, including those who chose no item. 166 respondents chose none of the items. Item p-values: Pearson chi-squared test of each item by group. P-values adjusted via stats::p.adjust(method = "holm"); m = 3 test(s). Group comparison: Rao-Scott second-order corrected chi-squared test of multiple marginal independence, χ²(6.07) = 131.71, p &lt; .001.</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># A descriptive table: no tests, percentages of cases and of responses.</span></span></span>
 <span class="r-in"><span><span class="fu">table_multiresponse</span><span class="op">(</span></span></span>
@@ -526,7 +574,7 @@ contingency tables with multiple column responses. <em>Biometrics</em>, 54(2),
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Respondents       <span style="color: #9E9E9E;">│</span>                                        </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Several answers possible: percentages are of respondents and can sum to more than 100. Base: respondents with at least one answer to the question.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Several answers possible: percentages of respondents can sum to more than 100%; percentages of responses sum to 100%. Base: respondents who answered the question, including those who chose no item. 166 respondents chose none of the items.</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Logical indicators need no `counted`: the life domains rated 4 or 5.</span></span></span>
 <span class="r-in"><span><span class="va">sat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span></span>
@@ -547,7 +595,7 @@ contingency tables with multiple column responses. <em>Biometrics</em>, 54(2),
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Respondents     <span style="color: #9E9E9E;">│</span>  1200          </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Several answers possible: percentages are of respondents and can sum to more than 100. Base: respondents with at least one answer to the question.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Several answers possible: percentages are of respondents and can sum to more than 100%. Base: respondents who answered the question, including those who chose no item. 204 respondents chose none of the items.</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Bootstrap global test: set a seed to reproduce its p-value.</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span></span></span>
@@ -585,7 +633,7 @@ contingency tables with multiple column responses. <em>Biometrics</em>, 54(2),
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Respondents       <span style="color: #9E9E9E;">│</span>                </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Several answers possible: percentages are of respondents and can sum to more than 100. Base: respondents with at least one answer to the question. Item p-values: Pearson chi-squared test of each item by group, adjusted by "holm". Group comparison: bootstrap test of multiple marginal independence (999 resamples), χ² = 130.18, p &lt; .002.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Several answers possible: percentages are of respondents and can sum to more than 100%. Base: respondents who answered the question, including those who chose no item. 166 respondents chose none of the items. Item p-values: Pearson chi-squared test of each item by group. P-values adjusted via stats::p.adjust(method = "holm"); m = 3 test(s). Group comparison: bootstrap test of multiple marginal independence (999 resamples), χ² = 130.18, p &lt; .002.</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Wide data frame.</span></span></span>
 <span class="r-in"><span><span class="fu">table_multiresponse</span><span class="op">(</span></span></span>

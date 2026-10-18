@@ -21,10 +21,15 @@ as_structured(x)
   A spicy table built with `output = "default"`:
   [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md),
   [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
-  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
-  or
-  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md).
-  All four return the same schema.
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md),
+  [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md),
+  [`table_multiresponse()`](https://amaltawfik.github.io/spicy/reference/table_multiresponse.md)
+  or the survey twins
+  [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md)
+  and
+  [`table_continuous_svy()`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md).
+  All return the same schema.
 
 ## Value
 

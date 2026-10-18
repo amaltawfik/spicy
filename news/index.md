@@ -99,13 +99,21 @@ PDF.
 - [`table_multiresponse()`](https://amaltawfik.github.io/spicy/reference/table_multiresponse.md)
   tabulates a “check all that apply” question: one row per item with the
   count and the percentage of respondents who chose it (or of responses,
-  or both), and a row with the number of respondents. With `by`, each
-  item gets a chi-squared test, adjusted by Holm by default
-  (`p_adjust`), and the question a global test that allows for several
-  answers per respondent, Rao-Scott corrected or by bootstrap (`test`).
-  `p_value = FALSE` removes the p-values and the global test, and
-  `statistic = TRUE` shows each item’s chi-squared
-  ([\#10](https://github.com/amaltawfik/spicy/issues/10)).
+  or both), and a row with the number of respondents. The note counts
+  the respondents left out of the base and those in it who chose no
+  item. With `by`, each item gets a chi-squared test, adjusted by Holm
+  by default (`p_adjust`), and the question a global test that allows
+  for several answers per respondent, Rao-Scott corrected or by
+  bootstrap (`test`). `p_value = FALSE` removes the p-values and the
+  global test, and `statistic = TRUE` shows each item’s chi-squared.
+  `glance()` reports the Rao-Scott design-effect summary (`rs_cv`).
+  [`inline()`](https://amaltawfik.github.io/spicy/reference/inline.md)
+  cites its cells, a group selected with `model` and the base row as
+  `"nobs"` ([\#10](https://github.com/amaltawfik/spicy/issues/10)).
+
+- [`inline()`](https://amaltawfik.github.io/spicy/reference/inline.md)
+  says when a variable has no levels and how to select a group with
+  `model`, where its error printed an empty list of levels.
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   and

@@ -47,8 +47,10 @@ Pearson chi-squared), `df`, `p.value` (adjusted under `p_adjust`) and
 `n_items_tested` (the items the global test kept), `n_groups` (the
 groups of `by`, `NA` without it), `nobs` (the respondents of the base),
 `test_type` (`"rs2"` or `"bootstrap"`), `statistic`, `df`, `p.value` and
-`boot_n` of the global test, and `p_adjust`, the adjustment of the item
-p-values.
+`boot_n` of the global test, `rs_cv` (the \\\hat a\\ of the second-order
+Rao-Scott correction, see *Tests* in
+[`table_multiresponse()`](https://amaltawfik.github.io/spicy/reference/table_multiresponse.md)),
+and `p_adjust`, the adjustment of the item p-values.
 
 Both column sets are FIXED: a column the table does not show (a test it
 did not run, an adjustment it did not make) is present and `NA`. Index

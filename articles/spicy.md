@@ -72,7 +72,7 @@ and Quarto 1.7 or later).
 code_book(sochealth, sex, age, smoking, bmi)
 #> Codebook
 #> 
-#> Date: 2026-10-17
+#> Date: 2026-10-18
 #> Observations: 1200
 #> Variables: 4
 #> Note: Counts and percentages are unweighted: they describe the data file and are not estimates for a population.
@@ -418,6 +418,70 @@ For detailed guidance, see the dedicated articles on
 and
 [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md),
 and the final reporting overview tying the summary tables together.
+
+### Multiple-response items
+
+The items of a “check all that apply” question are answered by the same
+respondents, and a plain categorical table misreads them. Stacked into
+one variable, the choices outnumber the respondents, and the chi-squared
+test of the items-by-groups table is not valid, since one respondent
+contributes to several cells.
+[`table_multiresponse()`](https://amaltawfik.github.io/spicy/reference/table_multiresponse.md)
+reads the items as one question: one row per item, with the number of
+respondents who chose it and their percentage, then a row with the
+number of respondents. Three yes/no items of `sochealth` stand in for
+such a question; `counted` names the value that marks a choice, and
+`labels = TRUE` shows the item wording:
+
+``` r
+
+table_multiresponse(
+  sochealth,
+  select = c(smoking, physical_activity, dentist_12m),
+  counted = "Yes",
+  labels = TRUE
+)
+#> Multiple responses
+#> 
+#>  Variable                          │   n       %    
+#> ───────────────────────────────────┼────────────────
+#>  Current smoker                    │   249    20.8  
+#>  Regular physical activity         │   550    45.8  
+#>  Dentist visit in last 12 months   │   846    70.5  
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Respondents                       │  1200          
+#> 
+#> Several answers possible: percentages are of respondents and can sum to more than 100%. Base: respondents who answered the question, including those who chose no item. 166 respondents chose none of the items.
+```
+
+With `by`, the counts and percentages are given per group and in a
+`Total` margin, each item gets a chi-squared test, and the question a
+global test that allows for several answers per respondent, both
+explained in the [Categorical summary
+tables](https://amaltawfik.github.io/spicy/articles/table-categorical.html#multiple-response-items)
+article. `p_value = FALSE` leaves a descriptive table:
+
+``` r
+
+table_multiresponse(
+  sochealth,
+  select = c(smoking, physical_activity, dentist_12m),
+  by = sex,
+  counted = "Yes",
+  p_value = FALSE
+)
+#> Multiple responses by sex
+#> 
+#>  Variable          │ Female n  Female %  Male n  Male %  Total n  Total % 
+#> ───────────────────┼──────────────────────────────────────────────────────
+#>  smoking           │   131       21.1     118     20.3     249     20.8   
+#>  physical_activity │   286       46.1     264     45.5     550     45.8   
+#>  dentist_12m       │   437       70.5     409     70.5     846     70.5   
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Respondents       │   620                580             1200            
+#> 
+#> Several answers possible: percentages are of respondents and can sum to more than 100%. Base: respondents who answered the question, including those who chose no item. 166 respondents chose none of the items.
+```
 
 ## Regression tables
 

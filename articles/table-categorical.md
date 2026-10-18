@@ -858,7 +858,7 @@ table_multiresponse(
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  Respondents       │                
 #> 
-#> Several answers possible: percentages are of respondents and can sum to more than 100. Base: respondents with at least one answer to the question. Item p-values: Pearson chi-squared test of each item by group, adjusted by "holm". Group comparison: Rao-Scott second-order corrected chi-squared test of multiple marginal independence, χ²(6.07) = 131.71, p < .001.
+#> Several answers possible: percentages are of respondents and can sum to more than 100%. Base: respondents who answered the question, including those who chose no item. 166 respondents chose none of the items. Item p-values: Pearson chi-squared test of each item by group. P-values adjusted via stats::p.adjust(method = "holm"); m = 3 test(s). Group comparison: Rao-Scott second-order corrected chi-squared test of multiple marginal independence, χ²(6.07) = 131.71, p < .001.
 ```
 
 Each item’s *p*-value comes from the chi-squared test of its frequency
@@ -913,7 +913,7 @@ table_multiresponse(
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  Respondents       │                                        
 #> 
-#> Several answers possible: percentages are of respondents and can sum to more than 100. Base: respondents with at least one answer to the question.
+#> Several answers possible: percentages of respondents can sum to more than 100%; percentages of responses sum to 100%. Base: respondents who answered the question, including those who chose no item. 166 respondents chose none of the items.
 ```
 
 By default the base is the respondents with at least one non-missing
@@ -968,7 +968,7 @@ table_categorical(
 |     No            | 334    | 53.9 | 316  | 54.5 | 650   | 54.2 |      |     |
 |     Yes           | 286    | 46.1 | 264  | 45.5 | 550   | 45.8 |      |     |
 
-Categorical table by sex {#tinytable_fdkgjqg1752i68qmf9fa .table
+Categorical table by sex {#tinytable_z4uj5fhqahkqsrv5ktee .table
 .tinytable style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 

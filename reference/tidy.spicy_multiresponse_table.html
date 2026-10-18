@@ -118,8 +118,10 @@ the item's test: <code>statistic</code> (the Pearson chi-squared), <code>df</cod
 <code>n_items_tested</code> (the items the global test kept), <code>n_groups</code> (the
 groups of <code>by</code>, <code>NA</code> without it), <code>nobs</code> (the respondents of the base),
 <code>test_type</code> (<code>"rs2"</code> or <code>"bootstrap"</code>), <code>statistic</code>, <code>df</code>, <code>p.value</code>
-and <code>boot_n</code> of the global test, and <code>p_adjust</code>, the adjustment of the
-item p-values.</p>
+and <code>boot_n</code> of the global test, <code>rs_cv</code> (the \(\hat a\) of the
+second-order Rao-Scott correction, see <em>Tests</em> in
+<code><a href="table_multiresponse.html">table_multiresponse()</a></code>), and <code>p_adjust</code>, the adjustment of the item
+p-values.</p>
 <p>Both column sets are FIXED: a column the table does not show (a test it
 did not run, an adjustment it did not make) is present and <code>NA</code>. Index
 by name rather than by position.</p>
