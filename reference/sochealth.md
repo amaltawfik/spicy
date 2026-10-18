@@ -228,4 +228,32 @@ cross_tab(sochealth, education, self_rated_health)
 #> Chi-2(6) = 73.2, p < .001
 #> Kendall's Tau-b = 0.20
 #> Missing values removed: self_rated_health (20).
+table_multiresponse(
+  sochealth,
+  select = starts_with("info_"),
+  by = age_group
+)
+#> Multiple responses by age_group
+#> 
+#>  Variable        │ 25-34 n  25-34 %  35-49 n  35-49 %  50-64 n  50-64 % 
+#> ─────────────────┼──────────────────────────────────────────────────────
+#>  info_doctor     │   113     48.5      208     55.6      215     67.8   
+#>  info_pharmacist │    53     22.7       74     19.8       69     21.8   
+#>  info_internet   │   156     67.0      200     53.5      109     34.4   
+#>  info_family     │    72     30.9      119     31.8       99     31.2   
+#>  info_media      │     9      3.9       36      9.6       41     12.9   
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Respondents     │   233               374               317            
+#> 
+#>  Variable        │ 65-75 n  65-75 %  Total n  Total %    p   
+#> ─────────────────┼───────────────────────────────────────────
+#>  info_doctor     │   185     77.1      721     61.9    <.001 
+#>  info_pharmacist │    60     25.0      256     22.0     .982 
+#>  info_internet   │    58     24.2      523     44.9    <.001 
+#>  info_family     │    70     29.2      360     30.9     .982 
+#>  info_media      │    55     22.9      141     12.1    <.001 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Respondents     │   240              1164                   
+#> 
+#> Respondents with no answer to the question removed: 36. Several answers possible: percentages are of respondents and can sum to more than 100%. Base: respondents who answered the question, including those who chose no item. 67 respondents chose none of the items. Item p-values: Pearson chi-squared test of each item by group. P-values adjusted via stats::p.adjust(method = "holm"); m = 5 test(s). Group comparison: Rao-Scott second-order corrected chi-squared test of multiple marginal independence, χ²(14.40) = 203.03, p < .001.
 ```

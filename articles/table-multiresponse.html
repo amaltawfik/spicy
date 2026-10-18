@@ -126,75 +126,77 @@ the number of respondents behind the percentages.</p>
 chi-squared test, or Fisher’s exact test when an expected count is below
 5. The question gets a global test of all its items together, valid
 although one respondent can choose several items.</p>
-<p><code>sochealth</code>, the simulated survey shipped with spicy, has
-no such question, so this article builds one. Each respondent rated four
-domains of life from 1 to 5. A rating of 4 or 5 counts here as
-satisfied. The four logical columns then read like the answers to “Which
-of these domains of your life are you satisfied with? Check all that
-apply.”</p>
+<p><code>sochealth</code>, the simulated survey shipped with spicy, asks
+one such question: “Sources of health information used in the past 12
+months (check all that apply)”. Its five items are logical columns,
+<code>TRUE</code> when the source was chosen and <code>FALSE</code> when
+it was not:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">domains</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
-<span>  physical_activity <span class="op">=</span> <span class="va">sochealth</span><span class="op">$</span><span class="va">physical_activity</span>,</span>
-<span>  health <span class="op">=</span> <span class="va">sochealth</span><span class="op">$</span><span class="va">life_sat_health</span> <span class="op">&gt;=</span> <span class="fl">4</span>,</span>
-<span>  work <span class="op">=</span> <span class="va">sochealth</span><span class="op">$</span><span class="va">life_sat_work</span> <span class="op">&gt;=</span> <span class="fl">4</span>,</span>
-<span>  relationships <span class="op">=</span> <span class="va">sochealth</span><span class="op">$</span><span class="va">life_sat_relationships</span> <span class="op">&gt;=</span> <span class="fl">4</span>,</span>
-<span>  standard <span class="op">=</span> <span class="va">sochealth</span><span class="op">$</span><span class="va">life_sat_standard</span> <span class="op">&gt;=</span> <span class="fl">4</span></span>
-<span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">domains</span>, <span class="fl">4</span><span class="op">)</span></span>
-<span><span class="co">#&gt;   physical_activity health  work relationships standard</span></span>
-<span><span class="co">#&gt; 1                No   TRUE FALSE          TRUE     TRUE</span></span>
-<span><span class="co">#&gt; 2                No   TRUE  TRUE          TRUE     TRUE</span></span>
-<span><span class="co">#&gt; 3               Yes  FALSE FALSE          TRUE    FALSE</span></span>
-<span><span class="co">#&gt; 4                No  FALSE  TRUE         FALSE    FALSE</span></span></code></pre></div>
-<p>A missing rating stays missing: 31 respondents have one or two, and
-none has all four. <code>physical_activity</code>, regular physical
-activity reported as <code>Yes</code> or <code>No</code>, serves as the
+<code class="sourceCode R"><span><span class="va">info</span> <span class="op">&lt;-</span> <span class="va">sochealth</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/startsWith.html" class="external-link">startsWith</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">sochealth</span><span class="op">)</span>, <span class="st">"info_"</span><span class="op">)</span><span class="op">]</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">info</span>, <span class="fl">4</span><span class="op">)</span></span>
+<span><span class="co">#&gt;   info_doctor info_pharmacist info_internet info_family info_media</span></span>
+<span><span class="co">#&gt; 1        TRUE           FALSE          TRUE       FALSE      FALSE</span></span>
+<span><span class="co">#&gt; 2       FALSE           FALSE          TRUE       FALSE       TRUE</span></span>
+<span><span class="co">#&gt; 3       FALSE           FALSE          TRUE       FALSE      FALSE</span></span>
+<span><span class="co">#&gt; 4       FALSE           FALSE          TRUE       FALSE      FALSE</span></span></code></pre></div>
+<p>The 36 respondents who skipped the question are missing on all five
+items, and a respondent who answered without choosing any source is
+<code>FALSE</code> on all five. <code>sex</code> serves as the
 grouping.</p>
 <div class="section level2">
 <h2 id="one-question-several-answers">One question, several answers<a class="anchor" aria-label="anchor" href="#one-question-several-answers"></a>
 </h2>
-<p>A respondent can be satisfied with several domains, and most
-respondents are:</p>
+<p>A respondent can choose several sources, and most respondents do:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">items</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"health"</span>, <span class="st">"work"</span>, <span class="st">"relationships"</span>, <span class="st">"standard"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/Matrix/man/colSums-methods.html" class="external-link">rowSums</a></span><span class="op">(</span><span class="va">domains</span><span class="op">[</span><span class="va">items</span><span class="op">]</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/Matrix/man/colSums-methods.html" class="external-link">rowSums</a></span><span class="op">(</span><span class="va">info</span><span class="op">)</span>, useNA <span class="op">=</span> <span class="st">"ifany"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;   0   1   2   3   4 </span></span>
-<span><span class="co">#&gt; 204 214 252 283 247</span></span></code></pre></div>
-<p>The 1200 respondents made 2555 choices: 204 of them chose no domain,
-and 782 chose two or more.</p>
+<span><span class="co">#&gt;    0    1    2    3    4    5 &lt;NA&gt; </span></span>
+<span><span class="co">#&gt;   67  462  422  168   34   11   36</span></span></code></pre></div>
+<p>The 1164 respondents who answered made 2001 choices: 67 of them chose
+no source, and 635 chose two or more. The <code>NA</code> column counts
+the 36 who skipped the question.</p>
 <p>A tempting shortcut stacks the choices into one variable, one row per
 choice, and tabulates it like any categorical variable:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">stacked</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
-<span>  physical_activity <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="va">domains</span><span class="op">$</span><span class="va">physical_activity</span>, times <span class="op">=</span> <span class="fl">4</span><span class="op">)</span>,</span>
-<span>  domain <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="va">items</span>, each <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">domains</span><span class="op">)</span><span class="op">)</span>, levels <span class="op">=</span> <span class="va">items</span><span class="op">)</span>,</span>
-<span>  chosen <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/unlist.html" class="external-link">unlist</a></span><span class="op">(</span><span class="va">domains</span><span class="op">[</span><span class="va">items</span><span class="op">]</span>, use.names <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span>  sex <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="va">sochealth</span><span class="op">$</span><span class="va">sex</span>, times <span class="op">=</span> <span class="fl">5</span><span class="op">)</span>,</span>
+<span>  source <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">info</span><span class="op">)</span>, each <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">info</span><span class="op">)</span><span class="op">)</span>, levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">info</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  chosen <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/unlist.html" class="external-link">unlist</a></span><span class="op">(</span><span class="va">info</span>, use.names <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span><span class="va">stacked</span> <span class="op">&lt;-</span> <span class="va">stacked</span><span class="op">[</span><span class="va">stacked</span><span class="op">$</span><span class="va">chosen</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="cn">TRUE</span>, <span class="op">]</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">stacked</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] 2555</span></span>
-<span><span class="fu"><a href="../reference/table_categorical.html">table_categorical</a></span><span class="op">(</span><span class="va">stacked</span>, select <span class="op">=</span> <span class="va">domain</span>, by <span class="op">=</span> <span class="va">physical_activity</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Categorical table by physical_activity</span></span></span>
+<span><span class="co">#&gt; [1] 2001</span></span>
+<span><span class="fu"><a href="../reference/table_categorical.html">table_categorical</a></span><span class="op">(</span><span class="va">stacked</span>, select <span class="op">=</span> <span class="va">source</span>, by <span class="op">=</span> <span class="va">sex</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Categorical table by sex</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable        <span style="color: #9E9E9E;">│</span> No n  No %  Yes n  Yes %  Total n  Total %   p    Cramer's V </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────┼──────────────────────────────────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  domain          <span style="color: #9E9E9E;">│</span>                                             .645     .03     </span></span>
-<span><span class="co">#&gt;    health        <span style="color: #9E9E9E;">│</span> 335   25.6   314   25.2     649     25.4                     </span></span>
-<span><span class="co">#&gt;    work          <span style="color: #9E9E9E;">│</span> 292   22.3   301   24.1     593     23.2                     </span></span>
-<span><span class="co">#&gt;    relationships <span style="color: #9E9E9E;">│</span> 375   28.7   336   26.9     711     27.8                     </span></span>
-<span><span class="co">#&gt;    standard      <span style="color: #9E9E9E;">│</span> 306   23.4   296   23.7     602     23.6                     </span></span>
+<span><span class="co">#&gt;  Variable          <span style="color: #9E9E9E;">│</span> Female n  Female %  Male n  Male %  Total n  Total %   p   </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────┼────────────────────────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  source            <span style="color: #9E9E9E;">│</span>                                                       .053 </span></span>
+<span><span class="co">#&gt;    info_doctor     <span style="color: #9E9E9E;">│</span>   377       34.9     344     37.3     721     36.0         </span></span>
+<span><span class="co">#&gt;    info_pharmacist <span style="color: #9E9E9E;">│</span>   137       12.7     119     12.9     256     12.8         </span></span>
+<span><span class="co">#&gt;    info_internet   <span style="color: #9E9E9E;">│</span>   268       24.8     255     27.7     523     26.1         </span></span>
+<span><span class="co">#&gt;    info_family     <span style="color: #9E9E9E;">│</span>   219       20.3     141     15.3     360     18.0         </span></span>
+<span><span class="co">#&gt;    info_media      <span style="color: #9E9E9E;">│</span>    78        7.2      63      6.8     141      7.0         </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Variable          <span style="color: #9E9E9E;">│</span> Cramer's V </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────┼────────────</span></span></span>
+<span><span class="co">#&gt;  source            <span style="color: #9E9E9E;">│</span>    .07     </span></span>
+<span><span class="co">#&gt;    info_doctor     <span style="color: #9E9E9E;">│</span>            </span></span>
+<span><span class="co">#&gt;    info_pharmacist <span style="color: #9E9E9E;">│</span>            </span></span>
+<span><span class="co">#&gt;    info_internet   <span style="color: #9E9E9E;">│</span>            </span></span>
+<span><span class="co">#&gt;    info_family     <span style="color: #9E9E9E;">│</span>            </span></span>
+<span><span class="co">#&gt;    info_media      <span style="color: #9E9E9E;">│</span>            </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Group comparison: Pearson chi-squared test.</span></span></span></code></pre></div>
 <p>That table misreads the question in three ways.</p>
 <ol style="list-style-type: decimal">
 <li>
-<strong>Its base is the choices.</strong> It has 2555 rows for 1200
+<strong>Its base is the choices.</strong> It has 2001 rows for 1164
 respondents, and its percentages are shares of choices. They sum to 100
-in each group, although one respondent can count in four rows.</li>
+in each group, although one respondent can count in five rows.</li>
 <li>
-<strong>The respondents who chose nothing are gone.</strong> The 204
-respondents without a domain left no row to stack.</li>
+<strong>The respondents who chose nothing are gone.</strong> The 67
+respondents without a source left no row to stack.</li>
 <li>
 <strong>Its chi-squared test is not valid.</strong> The choices of
 one respondent are not independent observations. They violate “the
@@ -205,60 +207,66 @@ of choices, where the question is about respondents (p. 632). In the
 simulations of Loughin and Scherer, it was “a horribly conservative
 procedure” (p. 636).</li>
 </ol>
-<p>The third fault hides a real difference here. Active respondents
-choose more domains on average:</p>
+<p>The third fault hides a real difference here. Women choose more
+sources on average:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/tapply.html" class="external-link">tapply</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/Matrix/man/colSums-methods.html" class="external-link">rowSums</a></span><span class="op">(</span><span class="va">domains</span><span class="op">[</span><span class="va">items</span><span class="op">]</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>, <span class="va">domains</span><span class="op">$</span><span class="va">physical_activity</span>, <span class="va">mean</span><span class="op">)</span></span>
-<span><span class="co">#&gt;       No      Yes </span></span>
-<span><span class="co">#&gt; 2.012308 2.267273</span></span></code></pre></div>
-<p>Every domain gains a little among them, so their shares of choices
-barely move: work is 24.1% of their choices, against 22.3%. Loughin and
-Scherer describe this case: “the units’ multiple responses mask real
-differences between the rows” (1998, p. 632). The share of respondents
-who chose work moves almost ten points, from 44.9% to 54.7%:</p>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/tapply.html" class="external-link">tapply</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/Matrix/man/colSums-methods.html" class="external-link">rowSums</a></span><span class="op">(</span><span class="va">info</span><span class="op">)</span>, <span class="va">sochealth</span><span class="op">$</span><span class="va">sex</span>, <span class="va">mean</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="co">#&gt;   Female     Male </span></span>
+<span><span class="co">#&gt; 1.801336 1.631858</span></span></code></pre></div>
+<p>A share of the stacked table divides by the choices of its group, and
+women make more of them, so their shares come out smaller. The doctor is
+34.9% of women’s choices, against 37.3% of men’s, although a larger
+share of women chose one, 62.9% against 60.9%. Loughin and Scherer
+describe this case: “the units’ multiple responses mask real differences
+between the rows” (1998, p. 632). Family or friends make 20.3% of
+women’s choices, against 15.3% of men’s, a gap of five points. The share
+of respondents who chose them differs by almost twelve, 36.6% against
+25.0%:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">tbl</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/table_multiresponse.html">table_multiresponse</a></span><span class="op">(</span></span>
-<span>  <span class="va">domains</span>,</span>
-<span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">health</span>, <span class="va">work</span>, <span class="va">relationships</span>, <span class="va">standard</span><span class="op">)</span>,</span>
-<span>  by <span class="op">=</span> <span class="va">physical_activity</span></span>
+<span>  <span class="va">sochealth</span>,</span>
+<span>  select <span class="op">=</span> <span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">starts_with</a></span><span class="op">(</span><span class="st">"info_"</span><span class="op">)</span>,</span>
+<span>  by <span class="op">=</span> <span class="va">sex</span></span>
 <span><span class="op">)</span></span>
 <span><span class="va">tbl</span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Multiple responses by physical_activity</span></span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Multiple responses by sex</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable      <span style="color: #9E9E9E;">│</span> No n  No %  Yes n  Yes %  Total n  Total %   p   </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────┼──────────────────────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  health        <span style="color: #9E9E9E;">│</span> 335   51.5   314   57.1     649     54.1    .109 </span></span>
-<span><span class="co">#&gt;  work          <span style="color: #9E9E9E;">│</span> 292   44.9   301   54.7     593     49.4    .003 </span></span>
-<span><span class="co">#&gt;  relationships <span style="color: #9E9E9E;">│</span> 375   57.7   336   61.1     711     59.2    .233 </span></span>
-<span><span class="co">#&gt;  standard      <span style="color: #9E9E9E;">│</span> 306   47.1   296   53.8     602     50.2    .060 </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  Respondents   <span style="color: #9E9E9E;">│</span> 650          550           1200                  </span></span>
+<span><span class="co">#&gt;  Variable        <span style="color: #9E9E9E;">│</span> Female n  Female %  Male n  Male %  Total n  Total %    p   </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────┼─────────────────────────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  info_doctor     <span style="color: #9E9E9E;">│</span>   377       62.9     344     60.9     721     61.9    1.000 </span></span>
+<span><span class="co">#&gt;  info_pharmacist <span style="color: #9E9E9E;">│</span>   137       22.9     119     21.1     256     22.0    1.000 </span></span>
+<span><span class="co">#&gt;  info_internet   <span style="color: #9E9E9E;">│</span>   268       44.7     255     45.1     523     44.9    1.000 </span></span>
+<span><span class="co">#&gt;  info_family     <span style="color: #9E9E9E;">│</span>   219       36.6     141     25.0     360     30.9    &lt;.001 </span></span>
+<span><span class="co">#&gt;  info_media      <span style="color: #9E9E9E;">│</span>    78       13.0      63     11.2     141     12.1    1.000 </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  Respondents     <span style="color: #9E9E9E;">│</span>   599                565             1164                   </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Several answers possible: percentages are of respondents and can sum to more than 100%. Base: respondents who answered the question, including those who chose no item. 204 respondents chose none of the items. Item p-values: Pearson chi-squared test of each item by group. P-values adjusted via stats::p.adjust(method = "holm"); m = 4 test(s). Group comparison: Rao-Scott second-order corrected chi-squared test of multiple marginal independence, χ²(3.16) = 17.36, p &lt; .001.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Respondents with no answer to the question removed: 36. Several answers possible: percentages are of respondents and can sum to more than 100%. Base: respondents who answered the question, including those who chose no item. 67 respondents chose none of the items. Item p-values: Pearson chi-squared test of each item by group. P-values adjusted via stats::p.adjust(method = "holm"); m = 5 test(s). Group comparison: Rao-Scott second-order corrected chi-squared test of multiple marginal independence, χ²(4.61) = 18.78, p = .002.</span></span></span></code></pre></div>
 <p>Each percentage is now a share of the respondents of its group, and
 the <code>Respondents</code> row gives those bases. The note explains
 the percentages and names the tests. Its global test finds the
-difference the stacked table missed: p &lt; .001, against .645. The rest
-of the article reads this table piece by piece.</p>
+difference the stacked table missed: p = .002, against .053. The rest of
+the article reads this table piece by piece.</p>
 </div>
 <div class="section level2">
 <h2 id="a-first-table">A first table<a class="anchor" aria-label="anchor" href="#a-first-table"></a>
 </h2>
 <p>Without <code>by</code>, the table describes the whole sample:</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/table_multiresponse.html">table_multiresponse</a></span><span class="op">(</span><span class="va">domains</span>, select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">health</span>, <span class="va">work</span>, <span class="va">relationships</span>, <span class="va">standard</span><span class="op">)</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/table_multiresponse.html">table_multiresponse</a></span><span class="op">(</span><span class="va">sochealth</span>, select <span class="op">=</span> <span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">starts_with</a></span><span class="op">(</span><span class="st">"info_"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Multiple responses</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable        <span style="color: #9E9E9E;">│</span>   n       %    </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────┼────────────────</span></span></span>
-<span><span class="co">#&gt;  health          <span style="color: #9E9E9E;">│</span>   649    54.1  </span></span>
-<span><span class="co">#&gt;  work            <span style="color: #9E9E9E;">│</span>   593    49.4  </span></span>
-<span><span class="co">#&gt;  relationships   <span style="color: #9E9E9E;">│</span>   711    59.2  </span></span>
-<span><span class="co">#&gt;  standard        <span style="color: #9E9E9E;">│</span>   602    50.2  </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  Respondents     <span style="color: #9E9E9E;">│</span>  1200          </span></span>
+<span><span class="co">#&gt;  Variable          <span style="color: #9E9E9E;">│</span>   n       %    </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────┼────────────────</span></span></span>
+<span><span class="co">#&gt;  info_doctor       <span style="color: #9E9E9E;">│</span>   721    61.9  </span></span>
+<span><span class="co">#&gt;  info_pharmacist   <span style="color: #9E9E9E;">│</span>   256    22.0  </span></span>
+<span><span class="co">#&gt;  info_internet     <span style="color: #9E9E9E;">│</span>   523    44.9  </span></span>
+<span><span class="co">#&gt;  info_family       <span style="color: #9E9E9E;">│</span>   360    30.9  </span></span>
+<span><span class="co">#&gt;  info_media        <span style="color: #9E9E9E;">│</span>   141    12.1  </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  Respondents       <span style="color: #9E9E9E;">│</span>  1164          </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Several answers possible: percentages are of respondents and can sum to more than 100%. Base: respondents who answered the question, including those who chose no item. 204 respondents chose none of the items.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Respondents with no answer to the question removed: 36. Several answers possible: percentages are of respondents and can sum to more than 100%. Base: respondents who answered the question, including those who chose no item. 67 respondents chose none of the items.</span></span></span></code></pre></div>
 <p>Four things to notice:</p>
 <ol style="list-style-type: decimal">
 <li>
@@ -267,8 +275,8 @@ respondents who chose the item, and <code>%</code> is their share of the
 respondents of the base: the percentage of cases.</li>
 <li>
 <strong>The percentages sum to more than 100.</strong> Here they add
-up to 212.9, the mean number of choices per respondent times 100 (Jann,
-2005, p. 107).</li>
+up to 171.9 before rounding, the mean number of choices per respondent
+times 100 (Jann, 2005, p. 107).</li>
 <li>
 <strong>The <code>Respondents</code> row is the base</strong>, the
 number of respondents every percentage is computed on.</li>
@@ -277,46 +285,42 @@ number of respondents every percentage is computed on.</li>
 respondents form the base, and how many of them chose no item.</li>
 </ol>
 <p><code>select</code> takes tidyselect syntax, so
-<code>select = health:standard</code> gives the same table, as in the
-calls below.</p>
+<code>select = info_doctor:info_media</code> and the five names written
+in <code><a href="https://rdrr.io/r/base/c.html" class="external-link">c()</a></code> give the same table.</p>
 <div class="section level3">
 <h3 id="factor-items-and-counted">Factor items and <code>counted</code><a class="anchor" aria-label="anchor" href="#factor-items-and-counted"></a>
 </h3>
 <p>Logical columns, like these, and numeric columns coded 0 and 1 are
 read as they are. A factor, character, or labelled column needs
-<code>counted</code>, the value that marks a choice. Three yes/no
-factors of <code>sochealth</code> show the case, and
-<code>labels = TRUE</code> prints their label attributes in place of
-their names:</p>
+<code>counted</code>, the value that marks a choice. The same items
+recoded as <code>"Yes"</code> and <code>"No"</code> factors show the
+case:</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/table_multiresponse.html">table_multiresponse</a></span><span class="op">(</span></span>
-<span>  <span class="va">sochealth</span>,</span>
-<span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">smoking</span>, <span class="va">physical_activity</span>, <span class="va">dentist_12m</span><span class="op">)</span>,</span>
-<span>  counted <span class="op">=</span> <span class="st">"Yes"</span>,</span>
-<span>  labels <span class="op">=</span> <span class="cn">TRUE</span></span>
-<span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">yes_no</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span></span>
+<span>  <span class="va">info</span>,</span>
+<span>  <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="va">x</span>, levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="cn">FALSE</span>, <span class="cn">TRUE</span><span class="op">)</span>, labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"No"</span>, <span class="st">"Yes"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/table_multiresponse.html">table_multiresponse</a></span><span class="op">(</span><span class="va">yes_no</span>, select <span class="op">=</span> <span class="fu"><a href="https://tidyselect.r-lib.org/reference/everything.html" class="external-link">everything</a></span><span class="op">(</span><span class="op">)</span>, counted <span class="op">=</span> <span class="st">"Yes"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Multiple responses</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable                          <span style="color: #9E9E9E;">│</span>   n       %    </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────────────────────┼────────────────</span></span></span>
-<span><span class="co">#&gt;  Current smoker                    <span style="color: #9E9E9E;">│</span>   249    20.8  </span></span>
-<span><span class="co">#&gt;  Regular physical activity         <span style="color: #9E9E9E;">│</span>   550    45.8  </span></span>
-<span><span class="co">#&gt;  Dentist visit in last 12 months   <span style="color: #9E9E9E;">│</span>   846    70.5  </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  Respondents                       <span style="color: #9E9E9E;">│</span>  1200          </span></span>
+<span><span class="co">#&gt;  Variable          <span style="color: #9E9E9E;">│</span>   n       %    </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────┼────────────────</span></span></span>
+<span><span class="co">#&gt;  info_doctor       <span style="color: #9E9E9E;">│</span>   721    61.9  </span></span>
+<span><span class="co">#&gt;  info_pharmacist   <span style="color: #9E9E9E;">│</span>   256    22.0  </span></span>
+<span><span class="co">#&gt;  info_internet     <span style="color: #9E9E9E;">│</span>   523    44.9  </span></span>
+<span><span class="co">#&gt;  info_family       <span style="color: #9E9E9E;">│</span>   360    30.9  </span></span>
+<span><span class="co">#&gt;  info_media        <span style="color: #9E9E9E;">│</span>   141    12.1  </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  Respondents       <span style="color: #9E9E9E;">│</span>  1164          </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Several answers possible: percentages are of respondents and can sum to more than 100%. Base: respondents who answered the question, including those who chose no item. 166 respondents chose none of the items.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Respondents with no answer to the question removed: 36. Several answers possible: percentages are of respondents and can sum to more than 100%. Base: respondents who answered the question, including those who chose no item. 67 respondents chose none of the items.</span></span></span></code></pre></div>
 <p><code>counted</code> applies to every selected column. Any other
 non-missing value counts as not chosen, and a missing value stays
 missing. A labelled column is chosen where its code or its value label
 equals <code>counted</code>. A value that matches nothing is an error,
 so a typo cannot produce a table of zeros:</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/table_multiresponse.html">table_multiresponse</a></span><span class="op">(</span></span>
-<span>  <span class="va">sochealth</span>,</span>
-<span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">smoking</span>, <span class="va">physical_activity</span>, <span class="va">dentist_12m</span><span class="op">)</span>,</span>
-<span>  counted <span class="op">=</span> <span class="st">"yes"</span></span>
-<span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/table_multiresponse.html">table_multiresponse</a></span><span class="op">(</span><span class="va">yes_no</span>, select <span class="op">=</span> <span class="fu"><a href="https://tidyselect.r-lib.org/reference/everything.html" class="external-link">everything</a></span><span class="op">(</span><span class="op">)</span>, counted <span class="op">=</span> <span class="st">"yes"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #BBBB00; font-weight: bold;">Error</span><span style="font-weight: bold;"> in `table_multiresponse()`:</span></span></span>
 <span><span class="co">#&gt; <span style="color: #BBBB00;">!</span> `counted = "yes"` matches no value of the selected columns.</span></span>
 <span><span class="co">#&gt; <span style="color: #0000BB;">ℹ</span> Values found: "Yes", "No".</span></span></code></pre></div>
@@ -324,43 +328,41 @@ so a typo cannot produce a table of zeros:</p>
 <div class="section level3">
 <h3 id="labels-and-order">Labels and order<a class="anchor" aria-label="anchor" href="#labels-and-order"></a>
 </h3>
-<p>The rows show the column names by default. A named vector sets the
+<p>The rows show the column names by default. <code>labels = TRUE</code>
+prints the label attribute of each column, and a named vector sets the
 wording you publish. <code>sort</code> takes the values of
 <code><a href="../reference/freq.html">freq()</a></code>: <code>"-"</code> ranks the items by decreasing
 total count, and items with the same count keep the order of
 <code>select</code>:</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_multiresponse.html">table_multiresponse</a></span><span class="op">(</span></span>
-<span>  <span class="va">domains</span>,</span>
-<span>  select <span class="op">=</span> <span class="va">health</span><span class="op">:</span><span class="va">standard</span>,</span>
-<span>  labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
-<span>    health <span class="op">=</span> <span class="st">"Health"</span>,</span>
-<span>    work <span class="op">=</span> <span class="st">"Work"</span>,</span>
-<span>    relationships <span class="op">=</span> <span class="st">"Relationships"</span>,</span>
-<span>    standard <span class="op">=</span> <span class="st">"Standard of living"</span></span>
-<span>  <span class="op">)</span>,</span>
+<span>  <span class="va">sochealth</span>,</span>
+<span>  select <span class="op">=</span> <span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">starts_with</a></span><span class="op">(</span><span class="st">"info_"</span><span class="op">)</span>,</span>
+<span>  labels <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  sort <span class="op">=</span> <span class="st">"-"</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Multiple responses</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable             <span style="color: #9E9E9E;">│</span>   n       %    </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">──────────────────────┼────────────────</span></span></span>
-<span><span class="co">#&gt;  Relationships        <span style="color: #9E9E9E;">│</span>   711    59.2  </span></span>
-<span><span class="co">#&gt;  Health               <span style="color: #9E9E9E;">│</span>   649    54.1  </span></span>
-<span><span class="co">#&gt;  Standard of living   <span style="color: #9E9E9E;">│</span>   602    50.2  </span></span>
-<span><span class="co">#&gt;  Work                 <span style="color: #9E9E9E;">│</span>   593    49.4  </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  Respondents          <span style="color: #9E9E9E;">│</span>  1200          </span></span>
+<span><span class="co">#&gt;  Variable                              <span style="color: #9E9E9E;">│</span>   n       %    </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────────────────────────┼────────────────</span></span></span>
+<span><span class="co">#&gt;  Doctor or other health professional   <span style="color: #9E9E9E;">│</span>   721    61.9  </span></span>
+<span><span class="co">#&gt;  Internet, websites or apps            <span style="color: #9E9E9E;">│</span>   523    44.9  </span></span>
+<span><span class="co">#&gt;  Family or friends                     <span style="color: #9E9E9E;">│</span>   360    30.9  </span></span>
+<span><span class="co">#&gt;  Pharmacist                            <span style="color: #9E9E9E;">│</span>   256    22.0  </span></span>
+<span><span class="co">#&gt;  Television, radio or newspapers       <span style="color: #9E9E9E;">│</span>   141    12.1  </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  Respondents                           <span style="color: #9E9E9E;">│</span>  1164          </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Several answers possible: percentages are of respondents and can sum to more than 100%. Base: respondents who answered the question, including those who chose no item. 204 respondents chose none of the items.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Respondents with no answer to the question removed: 36. Several answers possible: percentages are of respondents and can sum to more than 100%. Base: respondents who answered the question, including those who chose no item. 67 respondents chose none of the items.</span></span></span></code></pre></div>
 <p><code>"+"</code> ranks the items by increasing count, and
 <code>"name+"</code> and <code>"name-"</code> sort them alphabetically
 on the labels shown. The default, <code>sort = ""</code>, sorts nothing:
 the rows keep the order in which <code>select</code> delivers the
-columns, their order in the data with <code>health:standard</code> or
-<code><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">starts_with()</a></code>, or the order written in <code><a href="https://rdrr.io/r/base/c.html" class="external-link">c()</a></code>.
-The function cannot know the questionnaire, so its order comes from the
-order of the columns or the order written in <code>select</code>.</p>
+columns, their order in the data with <code><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">starts_with()</a></code> or
+<code>info_doctor:info_media</code>, or the order written in
+<code><a href="https://rdrr.io/r/base/c.html" class="external-link">c()</a></code>. The function cannot know the questionnaire, so its
+order comes from the order of the columns or the order written in
+<code>select</code>.</p>
 </div>
 </div>
 <div class="section level2">
@@ -368,95 +370,74 @@ order of the columns or the order written in <code>select</code>.</p>
 </h2>
 <p>The base is the set of respondents a percentage of cases is computed
 on. Three bases are in use, and they differ on two kinds of respondents:
-those who chose nothing and those who skipped the question. Six invented
-respondents show the difference, for the question “How did you hear
-about the service? Check all that apply”:</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">heard</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
-<span>  radio <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="cn">TRUE</span>, <span class="cn">TRUE</span>, <span class="cn">FALSE</span>, <span class="cn">FALSE</span>, <span class="cn">NA</span>, <span class="cn">TRUE</span><span class="op">)</span>,</span>
-<span>  press <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="cn">TRUE</span>, <span class="cn">FALSE</span>, <span class="cn">TRUE</span>, <span class="cn">FALSE</span>, <span class="cn">NA</span>, <span class="cn">NA</span><span class="op">)</span>,</span>
-<span>  web <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="cn">FALSE</span>, <span class="cn">TRUE</span>, <span class="cn">FALSE</span>, <span class="cn">FALSE</span>, <span class="cn">NA</span>, <span class="cn">FALSE</span><span class="op">)</span></span>
-<span><span class="op">)</span></span>
-<span><span class="va">heard</span></span>
-<span><span class="co">#&gt;   radio press   web</span></span>
-<span><span class="co">#&gt; 1  TRUE  TRUE FALSE</span></span>
-<span><span class="co">#&gt; 2  TRUE FALSE  TRUE</span></span>
-<span><span class="co">#&gt; 3 FALSE  TRUE FALSE</span></span>
-<span><span class="co">#&gt; 4 FALSE FALSE FALSE</span></span>
-<span><span class="co">#&gt; 5    NA    NA    NA</span></span>
-<span><span class="co">#&gt; 6  TRUE    NA FALSE</span></span></code></pre></div>
-<p>Respondent 4 chose nothing, respondent 5 skipped the question, and
-respondent 6 has one missing item.</p>
+those who chose nothing and those who skipped the question.
+<code>sochealth</code> has both: 67 respondents chose no source, and 36
+skipped the question.</p>
 <p>The default, <code>base = "valid"</code>, keeps every respondent with
-at least one non-missing item. Respondent 4 stays, and respondent 5
-leaves:</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/table_multiresponse.html">table_multiresponse</a></span><span class="op">(</span><span class="va">heard</span>, select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">radio</span>, <span class="va">press</span>, <span class="va">web</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Multiple responses</span></span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable      <span style="color: #9E9E9E;">│</span>  n     %    </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────┼─────────────</span></span></span>
-<span><span class="co">#&gt;  radio         <span style="color: #9E9E9E;">│</span>  3    60.0  </span></span>
-<span><span class="co">#&gt;  press         <span style="color: #9E9E9E;">│</span>  2    40.0  </span></span>
-<span><span class="co">#&gt;  web           <span style="color: #9E9E9E;">│</span>  1    20.0  </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  Respondents   <span style="color: #9E9E9E;">│</span>  5          </span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Respondents with no answer to the question removed: 1. Several answers possible: percentages are of respondents and can sum to more than 100%. Base: respondents who answered the question, including those who chose no item. 1 respondent chose none of the items.</span></span></span></code></pre></div>
-<p>Within the base, a missing item counts as not chosen, so respondent 6
-counts for radio only. The note gives the number of respondents removed
-and the number who chose nothing. This is how <code>expss</code> counts
-its valid cases. It is also the base of Stata’s <code>mrtab</code> with
-its <code>include</code> option (Jann, 2005, p. 99). Jann uses that
-option in his own example, because its list of income types “is probably
-not exhaustive” (pp. 107-108).</p>
+at least one non-missing item. It is the base of the first table: the 67
+stay, the 36 leave, and the note gives both counts. Within the base, a
+missing item counts as not chosen, which matters when a respondent skips
+some items and answers others. This is how <code>expss</code> counts its
+valid cases. It is also the base of Stata’s <code>mrtab</code> with its
+<code>include</code> option (Jann, 2005, p. 99). Jann uses that option
+in his own example, because its list of income types “is probably not
+exhaustive” (pp. 107-108).</p>
 <p><code>base = "answered"</code> keeps only the respondents who chose
 at least one item:</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/table_multiresponse.html">table_multiresponse</a></span><span class="op">(</span><span class="va">heard</span>, select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">radio</span>, <span class="va">press</span>, <span class="va">web</span><span class="op">)</span>, base <span class="op">=</span> <span class="st">"answered"</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/table_multiresponse.html">table_multiresponse</a></span><span class="op">(</span></span>
+<span>  <span class="va">sochealth</span>,</span>
+<span>  select <span class="op">=</span> <span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">starts_with</a></span><span class="op">(</span><span class="st">"info_"</span><span class="op">)</span>,</span>
+<span>  base <span class="op">=</span> <span class="st">"answered"</span></span>
+<span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Multiple responses</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable      <span style="color: #9E9E9E;">│</span>  n     %    </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────┼─────────────</span></span></span>
-<span><span class="co">#&gt;  radio         <span style="color: #9E9E9E;">│</span>  3    75.0  </span></span>
-<span><span class="co">#&gt;  press         <span style="color: #9E9E9E;">│</span>  2    50.0  </span></span>
-<span><span class="co">#&gt;  web           <span style="color: #9E9E9E;">│</span>  1    25.0  </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  Respondents   <span style="color: #9E9E9E;">│</span>  4          </span></span>
+<span><span class="co">#&gt;  Variable          <span style="color: #9E9E9E;">│</span>   n       %    </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────┼────────────────</span></span></span>
+<span><span class="co">#&gt;  info_doctor       <span style="color: #9E9E9E;">│</span>   721    65.7  </span></span>
+<span><span class="co">#&gt;  info_pharmacist   <span style="color: #9E9E9E;">│</span>   256    23.3  </span></span>
+<span><span class="co">#&gt;  info_internet     <span style="color: #9E9E9E;">│</span>   523    47.7  </span></span>
+<span><span class="co">#&gt;  info_family       <span style="color: #9E9E9E;">│</span>   360    32.8  </span></span>
+<span><span class="co">#&gt;  info_media        <span style="color: #9E9E9E;">│</span>   141    12.9  </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  Respondents       <span style="color: #9E9E9E;">│</span>  1097          </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Respondents with no answer to the question removed: 1. Respondents who chose no item removed: 1. Several answers possible: percentages are of respondents and can sum to more than 100%. Base: respondents who chose at least one item.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Respondents with no answer to the question removed: 36. Respondents who chose no item removed: 67. Several answers possible: percentages are of respondents and can sum to more than 100%. Base: respondents who chose at least one item.</span></span></span></code></pre></div>
 <p>This is the default of SPSS <code>MULT RESPONSE</code> and of
 <code>mrtab</code> (Jann, 2005, p. 98). Under this base, choosing
-nothing cannot be told from skipping, so respondent 4 leaves with
-respondent 5, and the note counts two respondents removed. Jann states
-the dilemma: “it is often not clear a priori whether the respondent
-refused to answer the question (and thus should be excluded from
-analysis) or whether the correct response is simply ‘none’”
-(p. 107).</p>
+nothing cannot be told from skipping, so the 67 respondents who chose no
+source leave with the 36 who skipped. The note counts the two groups
+apart, and every percentage rises: 65.7% chose a doctor, against 61.9%
+under <code>"valid"</code>. Jann states the dilemma: “it is often not
+clear a priori whether the respondent refused to answer the question
+(and thus should be excluded from analysis) or whether the correct
+response is simply ‘none’” (p. 107).</p>
 <p><code>base = "all"</code> keeps every row, as
 <code>questionr::multi.table()</code> does:</p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/table_multiresponse.html">table_multiresponse</a></span><span class="op">(</span><span class="va">heard</span>, select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">radio</span>, <span class="va">press</span>, <span class="va">web</span><span class="op">)</span>, base <span class="op">=</span> <span class="st">"all"</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/table_multiresponse.html">table_multiresponse</a></span><span class="op">(</span><span class="va">sochealth</span>, select <span class="op">=</span> <span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">starts_with</a></span><span class="op">(</span><span class="st">"info_"</span><span class="op">)</span>, base <span class="op">=</span> <span class="st">"all"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Multiple responses</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable      <span style="color: #9E9E9E;">│</span>  n     %    </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────┼─────────────</span></span></span>
-<span><span class="co">#&gt;  radio         <span style="color: #9E9E9E;">│</span>  3    50.0  </span></span>
-<span><span class="co">#&gt;  press         <span style="color: #9E9E9E;">│</span>  2    33.3  </span></span>
-<span><span class="co">#&gt;  web           <span style="color: #9E9E9E;">│</span>  1    16.7  </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  Respondents   <span style="color: #9E9E9E;">│</span>  6          </span></span>
+<span><span class="co">#&gt;  Variable          <span style="color: #9E9E9E;">│</span>   n       %    </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────┼────────────────</span></span></span>
+<span><span class="co">#&gt;  info_doctor       <span style="color: #9E9E9E;">│</span>   721    60.1  </span></span>
+<span><span class="co">#&gt;  info_pharmacist   <span style="color: #9E9E9E;">│</span>   256    21.3  </span></span>
+<span><span class="co">#&gt;  info_internet     <span style="color: #9E9E9E;">│</span>   523    43.6  </span></span>
+<span><span class="co">#&gt;  info_family       <span style="color: #9E9E9E;">│</span>   360    30.0  </span></span>
+<span><span class="co">#&gt;  info_media        <span style="color: #9E9E9E;">│</span>   141    11.8  </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  Respondents       <span style="color: #9E9E9E;">│</span>  1200          </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Several answers possible: percentages are of respondents and can sum to more than 100%. Base: all respondents. 2 respondents chose none of the items.</span></span></span></code></pre></div>
-<p>Respondent 5 now counts as a respondent who chose nothing, and the
-note says that two did.</p>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Several answers possible: percentages are of respondents and can sum to more than 100%. Base: all respondents. 103 respondents chose none of the items.</span></span></span></code></pre></div>
+<p>The 36 respondents who skipped the question now count as respondents
+who chose nothing, and the note says that 103 did.</p>
 <p>The counts are the same under the three bases. The percentages and
 the tests are not. <code>"valid"</code> assumes that a skipped question
 is coded missing on every item, and that a box left unchecked is coded
-<code>FALSE</code> or 0. In data that code an unchecked box as missing,
-<code>"valid"</code> would drop the respondents who checked nothing.
-<code>"all"</code> keeps them, along with those who skipped the
-question.</p>
+<code>FALSE</code> or 0, as in <code>sochealth</code>. In data that code
+an unchecked box as missing, <code>"valid"</code> would drop the
+respondents who checked nothing. <code>"all"</code> keeps them, along
+with those who skipped the question.</p>
 <div class="section level3">
 <h3 id="percentages-of-cases-or-of-responses">Percentages of cases or of responses<a class="anchor" aria-label="anchor" href="#percentages-of-cases-or-of-responses"></a>
 </h3>
@@ -464,20 +445,25 @@ question.</p>
 <code>"cases"</code>, the default, divides by the respondents of the
 base. <code>"responses"</code> divides by all the choices made in the
 group, so the column sums to 100. <code>"both"</code> shows the two:</p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/table_multiresponse.html">table_multiresponse</a></span><span class="op">(</span><span class="va">domains</span>, select <span class="op">=</span> <span class="va">health</span><span class="op">:</span><span class="va">standard</span>, percent <span class="op">=</span> <span class="st">"both"</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/table_multiresponse.html">table_multiresponse</a></span><span class="op">(</span></span>
+<span>  <span class="va">sochealth</span>,</span>
+<span>  select <span class="op">=</span> <span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">starts_with</a></span><span class="op">(</span><span class="st">"info_"</span><span class="op">)</span>,</span>
+<span>  percent <span class="op">=</span> <span class="st">"both"</span></span>
+<span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Multiple responses</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable        <span style="color: #9E9E9E;">│</span>   n      % of cases    % of responses  </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────┼────────────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  health          <span style="color: #9E9E9E;">│</span>   649       54.1            25.4       </span></span>
-<span><span class="co">#&gt;  work            <span style="color: #9E9E9E;">│</span>   593       49.4            23.2       </span></span>
-<span><span class="co">#&gt;  relationships   <span style="color: #9E9E9E;">│</span>   711       59.2            27.8       </span></span>
-<span><span class="co">#&gt;  standard        <span style="color: #9E9E9E;">│</span>   602       50.2            23.6       </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  Respondents     <span style="color: #9E9E9E;">│</span>  1200                                  </span></span>
+<span><span class="co">#&gt;  Variable          <span style="color: #9E9E9E;">│</span>   n      % of cases    % of responses  </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────┼────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  info_doctor       <span style="color: #9E9E9E;">│</span>   721       61.9            36.0       </span></span>
+<span><span class="co">#&gt;  info_pharmacist   <span style="color: #9E9E9E;">│</span>   256       22.0            12.8       </span></span>
+<span><span class="co">#&gt;  info_internet     <span style="color: #9E9E9E;">│</span>   523       44.9            26.1       </span></span>
+<span><span class="co">#&gt;  info_family       <span style="color: #9E9E9E;">│</span>   360       30.9            18.0       </span></span>
+<span><span class="co">#&gt;  info_media        <span style="color: #9E9E9E;">│</span>   141       12.1             7.0       </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  Respondents       <span style="color: #9E9E9E;">│</span>  1164                                  </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Several answers possible: percentages of respondents can sum to more than 100%; percentages of responses sum to 100%. Base: respondents who answered the question, including those who chose no item. 204 respondents chose none of the items.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Respondents with no answer to the question removed: 36. Several answers possible: percentages of respondents can sum to more than 100%; percentages of responses sum to 100%. Base: respondents who answered the question, including those who chose no item. 67 respondents chose none of the items.</span></span></span></code></pre></div>
 <p>The percentages of responses are the shares of the stacked table, and
 the note now describes both columns. The percentages of cases stay the
 default for three reasons. The papers on these tests tabulate them
@@ -491,12 +477,11 @@ it.</p>
 <div class="section level2">
 <h2 id="comparing-groups">Comparing groups<a class="anchor" aria-label="anchor" href="#comparing-groups"></a>
 </h2>
-<p><code>tbl</code>, the table of the first section, compares the active
-respondents with the others. With <code>by</code>, the counts and
-percentages are given for each group and for the <code>Total</code>
-margin. Rows with a missing <code>by</code> are removed, and the note
-says how many. The tests come in two layers: one per item, and one for
-the question.</p>
+<p><code>tbl</code>, the table of the first section, compares women and
+men. With <code>by</code>, the counts and percentages are given for each
+group and for the <code>Total</code> margin. Rows with a missing
+<code>by</code> are removed, and the note says how many. The tests come
+in two layers: one per item, and one for the question.</p>
 <div class="section level3">
 <h3 id="one-test-per-item">One test per item<a class="anchor" aria-label="anchor" href="#one-test-per-item"></a>
 </h3>
@@ -509,25 +494,64 @@ no constant added to an empty cell (Agresti and Liu, 1999).</p>
 approximation is unreliable, and the item takes Fisher’s exact test
 instead. This is the rule of <code>test = "auto"</code>, the default,
 shared with <code><a href="../reference/table_categorical.html">table_categorical()</a></code> and gtsummary’s
-<code>add_p()</code>. An item tested exactly has no statistic, and the
-note names the test of each item. <code>test = "chisq"</code> and
-<code>test = "fisher"</code> take one test for every item. Here every
-expected count is far above 5, so every item takes the chi-squared. The
-data frame output keeps the test, the statistics and both p-values:</p>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<code>add_p()</code>. In <code>tbl</code>, every expected count is far
+above 5. A smaller sample split into more groups is another matter: in
+the South region, 31 respondents aged 65 to 75 answered the question,
+and the media item has an expected count of 3.2 among them:</p>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/table_multiresponse.html">table_multiresponse</a></span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">sochealth</span>, <span class="va">region</span> <span class="op">==</span> <span class="st">"South"</span><span class="op">)</span>,</span>
+<span>  select <span class="op">=</span> <span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">starts_with</a></span><span class="op">(</span><span class="st">"info_"</span><span class="op">)</span>,</span>
+<span>  by <span class="op">=</span> <span class="va">age_group</span></span>
+<span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Multiple responses by age_group</span></span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Variable        <span style="color: #9E9E9E;">│</span> 25-34 n  25-34 %  35-49 n  35-49 %  50-64 n  50-64 % </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────┼──────────────────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  info_doctor     <span style="color: #9E9E9E;">│</span>   27      57.4      36      52.2      33      67.3   </span></span>
+<span><span class="co">#&gt;  info_pharmacist <span style="color: #9E9E9E;">│</span>    8      17.0      17      24.6      12      24.5   </span></span>
+<span><span class="co">#&gt;  info_internet   <span style="color: #9E9E9E;">│</span>   35      74.5      39      56.5      19      38.8   </span></span>
+<span><span class="co">#&gt;  info_family     <span style="color: #9E9E9E;">│</span>   17      36.2      21      30.4      15      30.6   </span></span>
+<span><span class="co">#&gt;  info_media      <span style="color: #9E9E9E;">│</span>    3       6.4       6       8.7       4       8.2   </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  Respondents     <span style="color: #9E9E9E;">│</span>   47                69                49             </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Variable        <span style="color: #9E9E9E;">│</span> 65-75 n  65-75 %  Total n  Total %    p   </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────┼───────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  info_doctor     <span style="color: #9E9E9E;">│</span>   22      71.0      118     60.2     .624 </span></span>
+<span><span class="co">#&gt;  info_pharmacist <span style="color: #9E9E9E;">│</span>    9      29.0       46     23.5    1.000 </span></span>
+<span><span class="co">#&gt;  info_internet   <span style="color: #9E9E9E;">│</span>    3       9.7       96     49.0    &lt;.001 </span></span>
+<span><span class="co">#&gt;  info_family     <span style="color: #9E9E9E;">│</span>   10      32.3       63     32.1    1.000 </span></span>
+<span><span class="co">#&gt;  info_media      <span style="color: #9E9E9E;">│</span>    7      22.6       20     10.2     .591 </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  Respondents     <span style="color: #9E9E9E;">│</span>   31                196                   </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Respondents with no answer to the question removed: 5. Several answers possible: percentages are of respondents and can sum to more than 100%. Base: respondents who answered the question, including those who chose no item. 10 respondents chose none of the items. Item p-values: Pearson chi-squared test (info_doctor, info_pharmacist, info_internet, info_family); Fisher exact test (info_media). P-values adjusted via stats::p.adjust(method = "holm"); m = 5 test(s). Group comparison: Rao-Scott second-order corrected chi-squared test of multiple marginal independence, χ²(13.78) = 44.16, p &lt; .001.</span></span></span></code></pre></div>
+<p>The note names both tests: the Pearson chi-squared for four items,
+and Fisher’s exact test for <code>info_media</code>, which has no
+statistic. <code>test = "chisq"</code> and <code>test = "fisher"</code>
+take one test for every item. With two groups, as in <code>tbl</code>,
+each item’s table is 2x2, and <code>test = "midp"</code> and
+<code>test = "n1"</code> take the Fisher mid-p test and Campbell’s N-1
+chi-squared test, presented in <a href="table-categorical.html#chi-squared-or-fishers-exact-test"><em>Categorical
+summary tables</em></a>.</p>
+<p>Back in <code>tbl</code>, every item takes the chi-squared. The data
+frame output keeps the test, the statistics and both p-values:</p>
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">wide</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/table_multiresponse.html">table_multiresponse</a></span><span class="op">(</span></span>
-<span>  <span class="va">domains</span>,</span>
-<span>  select <span class="op">=</span> <span class="va">health</span><span class="op">:</span><span class="va">standard</span>,</span>
-<span>  by <span class="op">=</span> <span class="va">physical_activity</span>,</span>
+<span>  <span class="va">sochealth</span>,</span>
+<span>  select <span class="op">=</span> <span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">starts_with</a></span><span class="op">(</span><span class="st">"info_"</span><span class="op">)</span>,</span>
+<span>  by <span class="op">=</span> <span class="va">sex</span>,</span>
 <span>  output <span class="op">=</span> <span class="st">"data.frame"</span></span>
 <span><span class="op">)</span></span>
 <span><span class="va">wide</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Variable"</span>, <span class="st">"test_type"</span>, <span class="st">"Chi2"</span>, <span class="st">"df"</span>, <span class="st">"p"</span>, <span class="st">"p_unadjusted"</span><span class="op">)</span><span class="op">]</span></span>
-<span><span class="co">#&gt;        Variable   test_type      Chi2 df           p p_unadjusted</span></span>
-<span><span class="co">#&gt; 1        health chi_squared  3.698537  1 0.108920423 0.0544602116</span></span>
-<span><span class="co">#&gt; 2          work chi_squared 11.456128  1 0.002850345 0.0007125862</span></span>
-<span><span class="co">#&gt; 3 relationships chi_squared  1.425211  1 0.232547529 0.2325475286</span></span>
-<span><span class="co">#&gt; 4      standard chi_squared  5.415538  1 0.059874905 0.0199583016</span></span>
-<span><span class="co">#&gt; 5   Respondents        &lt;NA&gt;        NA NA          NA           NA</span></span></code></pre></div>
+<span><span class="co">#&gt;          Variable   test_type        Chi2 df            p p_unadjusted</span></span>
+<span><span class="co">#&gt; 1     info_doctor chi_squared  0.51997605  1 1.000000e+00 4.708519e-01</span></span>
+<span><span class="co">#&gt; 2 info_pharmacist chi_squared  0.55490963  1 1.000000e+00 4.563185e-01</span></span>
+<span><span class="co">#&gt; 3   info_internet chi_squared  0.01801149  1 1.000000e+00 8.932390e-01</span></span>
+<span><span class="co">#&gt; 4     info_family chi_squared 18.33047265  1 9.285636e-05 1.857127e-05</span></span>
+<span><span class="co">#&gt; 5      info_media chi_squared  0.95631714  1 1.000000e+00 3.281165e-01</span></span>
+<span><span class="co">#&gt; 6     Respondents        &lt;NA&gt;          NA NA           NA           NA</span></span></code></pre></div>
 <p>The <code>p</code> column is adjusted by Holm’s method, and
 <code>p_unadjusted</code> keeps the raw values. The items of one
 question form a natural family of tests, read together, so the
@@ -539,15 +563,15 @@ variable.</p>
 family-wise error rate, whatever the dependence between the items. R’s
 documentation sees “no reason to use the unmodified Bonferroni
 correction because it is dominated by Holm’s method”
-(<code><a href="https://rdrr.io/r/stats/p.adjust.html" class="external-link">?p.adjust</a></code>). Holm’s smallest adjusted p-value, .003 for
-work, equals the Bonferroni global p-value of Agresti and Liu
-(1999).</p>
+(<code><a href="https://rdrr.io/r/stats/p.adjust.html" class="external-link">?p.adjust</a></code>). Holm’s smallest adjusted p-value, that of
+family, is five times the smallest raw p-value: the Bonferroni global
+p-value of Agresti and Liu (1999).</p>
 <p>The note names the method and the number of items adjusted together.
 <code>p_adjust = "none"</code> keeps the raw p-values, and another
 method of <code><a href="https://rdrr.io/r/stats/p.adjust.html" class="external-link">stats::p.adjust()</a></code> can be named instead.
 <code>statistic = TRUE</code> prints the statistics in a
-<code>Test</code> column, χ²(1) = 11.46 for work, with or without the
-p-values.</p>
+<code>Test</code> column, χ²(1) = 18.33 for family, with or without the
+p-values. An item tested exactly shows a dash there.</p>
 </div>
 <div class="section level3">
 <h3 id="one-test-for-the-question">One test for the question<a class="anchor" aria-label="anchor" href="#one-test-for-the-question"></a>
@@ -558,7 +582,7 @@ chi-squared components provide information about the marginal tables
 that are responsible” (1999, p. 941). The overall test is the last
 sentence of the note. It tests multiple marginal independence: that the
 probability of choosing each item is the same in every group.</p>
-<p>Its statistic is the sum of the item chi-squared statistics, 22.00
+<p>Its statistic is the sum of the item chi-squared statistics, 20.38
 here, whatever test the item p-values take. The sum does not depend on
 which answer of an item is coded as chosen (Agresti and Liu, 1999). It
 is not chi-squared under the null hypothesis: one respondent can choose
@@ -571,23 +595,23 @@ from one” (Thomas and Decady, 2004, p. 48). The default,
 <code>global_test = "rs2"</code>, allows for their spread with the
 second-order Rao-Scott correction of Thomas and Decady (2004, pp. 48 and
 58-59). It matches the first two moments of the distribution and refers
-the result to a chi-squared on fractional degrees of freedom: χ²(3.16) =
-17.36 here. The result is deterministic.</p>
+the result to a chi-squared on fractional degrees of freedom: χ²(4.61) =
+18.78 here. The result is deterministic.</p>
 <p><code>glance()</code> returns the global test as numbers:</p>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">broom</span><span class="fu">::</span><span class="fu"><a href="https://generics.r-lib.org/reference/glance.html" class="external-link">glance</a></span><span class="op">(</span><span class="va">tbl</span><span class="op">)</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"test_type"</span>, <span class="st">"statistic"</span>, <span class="st">"df"</span>, <span class="st">"p.value"</span>, <span class="st">"rs_cv"</span><span class="op">)</span><span class="op">]</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 5</span></span></span>
-<span><span class="co">#&gt;   test_type statistic    df  p.value rs_cv</span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> rs2            17.4  3.16 0.000<span style="text-decoration: underline;">707</span> 0.516</span></span></code></pre></div>
+<span><span class="co">#&gt;   test_type statistic    df p.value rs_cv</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> rs2            18.8  4.61 0.001<span style="text-decoration: underline;">51</span> 0.291</span></span></code></pre></div>
 <p><code>rs_cv</code> measures the spread of those weights: their
 coefficient of variation, their mean being taken as 1. It estimates the
 coefficient <em>a</em> of Thomas and Decady (2004, pp. 48 and 59). The
 correction divides the sum by 1 + <code>rs_cv</code>² and refers it to a
 chi-squared on <em>c</em>(<em>r</em> − 1)/(1 + <code>rs_cv</code>²)
 degrees of freedom, for <em>c</em> items and <em>r</em> groups (p. 48).
-Here 1 + 0.52² = 1.27, so 22.00 on 4 degrees of freedom becomes 17.36 on
-3.16. The closer <code>rs_cv</code> is to 0, the less the correction
+Here 1 + 0.29² = 1.08, so 20.38 on 5 degrees of freedom becomes 18.78 on
+4.61. The closer <code>rs_cv</code> is to 0, the less the correction
 changes. Thomas and Decady read this coefficient to decide whether the
 second order is needed (pp. 53 and 57).</p>
 </div>
@@ -600,24 +624,24 @@ resample draws whole response vectors with replacement from the pooled
 respondents, with the group sizes held fixed (Loughin and Scherer,
 1998). The p-value is the share of resamples whose sum is at least the
 observed one. It is random, so set a seed to reproduce it:</p>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span></span>
 <span><span class="va">boot</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/table_multiresponse.html">table_multiresponse</a></span><span class="op">(</span></span>
-<span>  <span class="va">domains</span>,</span>
-<span>  select <span class="op">=</span> <span class="va">health</span><span class="op">:</span><span class="va">standard</span>,</span>
-<span>  by <span class="op">=</span> <span class="va">physical_activity</span>,</span>
+<span>  <span class="va">sochealth</span>,</span>
+<span>  select <span class="op">=</span> <span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">starts_with</a></span><span class="op">(</span><span class="st">"info_"</span><span class="op">)</span>,</span>
+<span>  by <span class="op">=</span> <span class="va">sex</span>,</span>
 <span>  global_test <span class="op">=</span> <span class="st">"bootstrap"</span></span>
 <span><span class="op">)</span></span>
 <span><span class="fu">broom</span><span class="fu">::</span><span class="fu"><a href="https://generics.r-lib.org/reference/glance.html" class="external-link">glance</a></span><span class="op">(</span><span class="va">boot</span><span class="op">)</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"test_type"</span>, <span class="st">"statistic"</span>, <span class="st">"df"</span>, <span class="st">"p.value"</span>, <span class="st">"boot_n"</span><span class="op">)</span><span class="op">]</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 5</span></span></span>
 <span><span class="co">#&gt;   test_type statistic    df p.value boot_n</span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> bootstrap      22.0    <span style="color: #BB0000;">NA</span> 0.001<span style="text-decoration: underline;">00</span>   <span style="text-decoration: underline;">1</span>999</span></span></code></pre></div>
-<p>The statistic is the uncorrected sum, 22.00, with no degrees of
-freedom. Two of the 1999 resamples reached it, so the p-value is 2/1999,
-printed as p = .001 in the note. A p-value of 0 would only say that no
-resample reached the sum. The note then reports it as below one resample
-in <code>boot_n</code>, rounded up.</p>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> bootstrap      20.4    <span style="color: #BB0000;">NA</span> 0.001<span style="text-decoration: underline;">50</span>   <span style="text-decoration: underline;">1</span>999</span></span></code></pre></div>
+<p>The statistic is the uncorrected sum, 20.38, with no degrees of
+freedom. Three of the 1999 resamples reached it, so the p-value is
+3/1999, printed as p = .002 in the note. A p-value of 0 would only say
+that no resample reached the sum. The note then reports it as below one
+resample in <code>boot_n</code>, rounded up.</p>
 <p>A resample in which an item is chosen by every respondent or by none
 gives that item no statistic. It is drawn again, as Bilder, Loughin and
 Nettleton (2000, p. 1298) do, and
@@ -631,31 +655,32 @@ test.</p>
 <h3 id="items-nobody-chose">Items nobody chose<a class="anchor" aria-label="anchor" href="#items-nobody-chose"></a>
 </h3>
 <p>An item chosen by every respondent, or by none, has no test, but its
-row stays. A fifth domain that nobody chose is added here on
-purpose:</p>
-<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">with_empty</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/transform.html" class="external-link">transform</a></span><span class="op">(</span><span class="va">domains</span>, spirituality <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/table_multiresponse.html">table_multiresponse</a></span><span class="op">(</span></span>
-<span>  <span class="va">with_empty</span>,</span>
-<span>  select <span class="op">=</span> <span class="va">health</span><span class="op">:</span><span class="va">spirituality</span>,</span>
-<span>  by <span class="op">=</span> <span class="va">physical_activity</span></span>
+row stays. A sixth source that nobody chose is added here on purpose,
+missing like the others for the respondents who skipped the
+question:</p>
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">with_empty</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/transform.html" class="external-link">transform</a></span><span class="op">(</span></span>
+<span>  <span class="va">sochealth</span>,</span>
+<span>  info_other <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">info_doctor</span><span class="op">)</span>, <span class="cn">NA</span>, <span class="cn">FALSE</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Multiple responses by physical_activity</span></span></span>
+<span><span class="fu"><a href="../reference/table_multiresponse.html">table_multiresponse</a></span><span class="op">(</span><span class="va">with_empty</span>, select <span class="op">=</span> <span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">starts_with</a></span><span class="op">(</span><span class="st">"info_"</span><span class="op">)</span>, by <span class="op">=</span> <span class="va">sex</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Multiple responses by sex</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable      <span style="color: #9E9E9E;">│</span> No n  No %  Yes n  Yes %  Total n  Total %    p   </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────┼───────────────────────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  health        <span style="color: #9E9E9E;">│</span> 335   51.5   314   57.1     649     54.1     .109 </span></span>
-<span><span class="co">#&gt;  work          <span style="color: #9E9E9E;">│</span> 292   44.9   301   54.7     593     49.4     .003 </span></span>
-<span><span class="co">#&gt;  relationships <span style="color: #9E9E9E;">│</span> 375   57.7   336   61.1     711     59.2     .233 </span></span>
-<span><span class="co">#&gt;  standard      <span style="color: #9E9E9E;">│</span> 306   47.1   296   53.8     602     50.2     .060 </span></span>
-<span><span class="co">#&gt;  spirituality  <span style="color: #9E9E9E;">│</span>   0    0.0     0    0.0       0      0.0     –    </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  Respondents   <span style="color: #9E9E9E;">│</span> 650          550           1200                   </span></span>
+<span><span class="co">#&gt;  Variable        <span style="color: #9E9E9E;">│</span> Female n  Female %  Male n  Male %  Total n  Total %    p   </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────┼─────────────────────────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  info_doctor     <span style="color: #9E9E9E;">│</span>   377       62.9     344     60.9     721     61.9    1.000 </span></span>
+<span><span class="co">#&gt;  info_pharmacist <span style="color: #9E9E9E;">│</span>   137       22.9     119     21.1     256     22.0    1.000 </span></span>
+<span><span class="co">#&gt;  info_internet   <span style="color: #9E9E9E;">│</span>   268       44.7     255     45.1     523     44.9    1.000 </span></span>
+<span><span class="co">#&gt;  info_family     <span style="color: #9E9E9E;">│</span>   219       36.6     141     25.0     360     30.9    &lt;.001 </span></span>
+<span><span class="co">#&gt;  info_media      <span style="color: #9E9E9E;">│</span>    78       13.0      63     11.2     141     12.1    1.000 </span></span>
+<span><span class="co">#&gt;  info_other      <span style="color: #9E9E9E;">│</span>     0        0.0       0      0.0       0      0.0     –    </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  Respondents     <span style="color: #9E9E9E;">│</span>   599                565             1164                   </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Several answers possible: percentages are of respondents and can sum to more than 100%. Base: respondents who answered the question, including those who chose no item. 204 respondents chose none of the items. Item p-values: Pearson chi-squared test of each item by group. P-values adjusted via stats::p.adjust(method = "holm"); m = 4 test(s). Not tested (no variation, shown as –): spirituality. Group comparison: Rao-Scott second-order corrected chi-squared test of multiple marginal independence, χ²(3.16) = 17.36, p &lt; .001.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Respondents with no answer to the question removed: 36. Several answers possible: percentages are of respondents and can sum to more than 100%. Base: respondents who answered the question, including those who chose no item. 67 respondents chose none of the items. Item p-values: Pearson chi-squared test of each item by group. P-values adjusted via stats::p.adjust(method = "holm"); m = 5 test(s). Not tested (no variation, shown as –): info_other. Group comparison: Rao-Scott second-order corrected chi-squared test of multiple marginal independence, χ²(4.61) = 18.78, p = .002.</span></span></span></code></pre></div>
 <p>Its row shows a true zero and its <code>p</code> cell a dash, which
 the note explains. The item leaves the global test, which is unchanged,
-and the Holm adjustment, which still counts four tests. With fewer than
+and the Holm adjustment, which still counts five tests. With fewer than
 two groups holding respondents, there is nothing to compare, and the
 table shows no test.</p>
 </div>
@@ -671,27 +696,28 @@ all.</p>
 <p><code>p_value = FALSE</code> removes the <code>p</code> column and
 the global test from every output, the data frames included. The first
 80 respondents stand in for such a small survey:</p>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">small</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">domains</span>, <span class="fl">80</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">small</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">sochealth</span>, <span class="fl">80</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/table_multiresponse.html">table_multiresponse</a></span><span class="op">(</span></span>
 <span>  <span class="va">small</span>,</span>
-<span>  select <span class="op">=</span> <span class="va">health</span><span class="op">:</span><span class="va">standard</span>,</span>
-<span>  by <span class="op">=</span> <span class="va">physical_activity</span>,</span>
+<span>  select <span class="op">=</span> <span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">starts_with</a></span><span class="op">(</span><span class="st">"info_"</span><span class="op">)</span>,</span>
+<span>  by <span class="op">=</span> <span class="va">sex</span>,</span>
 <span>  p_value <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  percent_digits <span class="op">=</span> <span class="fl">0</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Multiple responses by physical_activity</span></span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Multiple responses by sex</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable        <span style="color: #9E9E9E;">│</span>  No n    No %    Yes n    Yes %    Total n    Total %  </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────┼────────────────────────────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  health          <span style="color: #9E9E9E;">│</span>   18      44      23       59        41         51     </span></span>
-<span><span class="co">#&gt;  work            <span style="color: #9E9E9E;">│</span>   15      37      24       62        39         49     </span></span>
-<span><span class="co">#&gt;  relationships   <span style="color: #9E9E9E;">│</span>   21      51      26       67        47         59     </span></span>
-<span><span class="co">#&gt;  standard        <span style="color: #9E9E9E;">│</span>   19      46      21       54        40         50     </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  Respondents     <span style="color: #9E9E9E;">│</span>   41              39                 80                </span></span>
+<span><span class="co">#&gt;  Variable        <span style="color: #9E9E9E;">│</span> Female n  Female %  Male n  Male %  Total n  Total % </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────┼──────────────────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  info_doctor     <span style="color: #9E9E9E;">│</span>    21        52       19      49      40       51    </span></span>
+<span><span class="co">#&gt;  info_pharmacist <span style="color: #9E9E9E;">│</span>    11        28        8      21      19       24    </span></span>
+<span><span class="co">#&gt;  info_internet   <span style="color: #9E9E9E;">│</span>    19        48       25      64      44       56    </span></span>
+<span><span class="co">#&gt;  info_family     <span style="color: #9E9E9E;">│</span>    11        28        5      13      16       20    </span></span>
+<span><span class="co">#&gt;  info_media      <span style="color: #9E9E9E;">│</span>     5        12        5      13      10       13    </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  Respondents     <span style="color: #9E9E9E;">│</span>    40                 39              79             </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Several answers possible: percentages are of respondents and can sum to more than 100%. Base: respondents who answered the question, including those who chose no item. 12 respondents chose none of the items.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Respondents with no answer to the question removed: 1. Several answers possible: percentages are of respondents and can sum to more than 100%. Base: respondents who answered the question, including those who chose no item. 7 respondents chose none of the items.</span></span></span></code></pre></div>
 <p><code>statistic</code> stays independent of <code>p_value</code>, so
 <code>statistic = TRUE</code> would still show each item’s chi-squared.
 A <code>p_adjust</code> typed with <code>p_value = FALSE</code> is an
@@ -699,7 +725,7 @@ error, since there is nothing to adjust.</p>
 <p><code>percent_digits = 0</code> follows the AMA manual: “A percentage
 or decimal quotient should contain no more than the number of digits in
 the denominator” (American Medical Association, 2020, section 4.1.8).
-Groups of fewer than 100 respondents, 41 and 39 here, therefore take
+Groups of fewer than 100 respondents, 40 and 39 here, therefore take
 whole percentages.</p>
 <p>The note answers two more rules. The AMA manual asks that “any
 discrepancy in the sum of percentages in a tabulation” be explained, and
@@ -721,30 +747,30 @@ number quoted in a sentence cannot drift from the table. An item is
 addressed by its column name. The groups are spanners, so
 <code>model</code> selects one, the <code>Total</code> margin
 included:</p>
-<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/inline.html">inline</a></span><span class="op">(</span><span class="va">tbl</span>, <span class="va">work</span>, column <span class="op">=</span> <span class="st">"pct"</span>, model <span class="op">=</span> <span class="st">"Yes"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] "54.7"</span></span>
-<span><span class="fu"><a href="../reference/inline.html">inline</a></span><span class="op">(</span><span class="va">tbl</span>, <span class="va">work</span>, column <span class="op">=</span> <span class="st">"{n} ({pct}%)"</span>, model <span class="op">=</span> <span class="st">"No"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] "292 (44.9%)"</span></span></code></pre></div>
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/inline.html">inline</a></span><span class="op">(</span><span class="va">tbl</span>, <span class="va">info_family</span>, column <span class="op">=</span> <span class="st">"pct"</span>, model <span class="op">=</span> <span class="st">"Female"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] "36.6"</span></span>
+<span><span class="fu"><a href="../reference/inline.html">inline</a></span><span class="op">(</span><span class="va">tbl</span>, <span class="va">info_family</span>, column <span class="op">=</span> <span class="st">"{n} ({pct}%)"</span>, model <span class="op">=</span> <span class="st">"Male"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] "141 (25.0%)"</span></span></code></pre></div>
 <p>The item <code>p</code> belongs to no group and is cited without
 <code>model</code>. The <code>Respondents</code> row is the fit
 statistic <code>"nobs"</code>:</p>
-<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/inline.html">inline</a></span><span class="op">(</span><span class="va">tbl</span>, <span class="va">work</span>, column <span class="op">=</span> <span class="st">"p"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] ".003"</span></span>
-<span><span class="fu"><a href="../reference/inline.html">inline</a></span><span class="op">(</span><span class="va">tbl</span>, <span class="st">"nobs"</span>, model <span class="op">=</span> <span class="st">"Yes"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] "550"</span></span></code></pre></div>
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/inline.html">inline</a></span><span class="op">(</span><span class="va">tbl</span>, <span class="va">info_family</span>, column <span class="op">=</span> <span class="st">"p"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] "&lt;.001"</span></span>
+<span><span class="fu"><a href="../reference/inline.html">inline</a></span><span class="op">(</span><span class="va">tbl</span>, <span class="st">"nobs"</span>, model <span class="op">=</span> <span class="st">"Female"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] "599"</span></span></code></pre></div>
 <p>The statistic needs a table built with
 <code>statistic = TRUE</code>:</p>
-<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">tbl_stat</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/table_multiresponse.html">table_multiresponse</a></span><span class="op">(</span></span>
-<span>  <span class="va">domains</span>,</span>
-<span>  select <span class="op">=</span> <span class="va">health</span><span class="op">:</span><span class="va">standard</span>,</span>
-<span>  by <span class="op">=</span> <span class="va">physical_activity</span>,</span>
+<span>  <span class="va">sochealth</span>,</span>
+<span>  select <span class="op">=</span> <span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">starts_with</a></span><span class="op">(</span><span class="st">"info_"</span><span class="op">)</span>,</span>
+<span>  by <span class="op">=</span> <span class="va">sex</span>,</span>
 <span>  statistic <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/inline.html">inline</a></span><span class="op">(</span><span class="va">tbl_stat</span>, <span class="va">work</span>, column <span class="op">=</span> <span class="st">"statistic"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] "χ²(1) = 11.46"</span></span></code></pre></div>
+<span><span class="fu"><a href="../reference/inline.html">inline</a></span><span class="op">(</span><span class="va">tbl_stat</span>, <span class="va">info_family</span>, column <span class="op">=</span> <span class="st">"statistic"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] "χ²(1) = 18.33"</span></span></code></pre></div>
 <p>Without <code>column</code>, <code><a href="../reference/inline.html">inline()</a></code> returns the count.
 In a grouped table it still needs <code>model</code>, and its error
 lists the groups. The global test has no cell: it lives in the note and
@@ -756,59 +782,58 @@ in <code>glance()</code>.</p>
 <p><code>output = "data.frame"</code> returns the wide frame at full
 precision: one row per item, a last row with the base, and columns named
 after the groups:</p>
-<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">wide</span><span class="op">)</span></span>
-<span><span class="co">#&gt;  [1] "Variable"     "No n"         "No %"         "Yes n"        "Yes %"       </span></span>
+<span><span class="co">#&gt;  [1] "Variable"     "Female n"     "Female %"     "Male n"       "Male %"      </span></span>
 <span><span class="co">#&gt;  [6] "Total n"      "Total %"      "test_type"    "Chi2"         "df"          </span></span>
 <span><span class="co">#&gt; [11] "p"            "p_unadjusted"</span></span></code></pre></div>
 <p><code>output = "long"</code> returns one row per item and group, with
 the base of the group:</p>
-<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">long</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/table_multiresponse.html">table_multiresponse</a></span><span class="op">(</span></span>
-<span>  <span class="va">domains</span>,</span>
-<span>  select <span class="op">=</span> <span class="va">health</span><span class="op">:</span><span class="va">standard</span>,</span>
-<span>  by <span class="op">=</span> <span class="va">physical_activity</span>,</span>
+<span>  <span class="va">sochealth</span>,</span>
+<span>  select <span class="op">=</span> <span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">starts_with</a></span><span class="op">(</span><span class="st">"info_"</span><span class="op">)</span>,</span>
+<span>  by <span class="op">=</span> <span class="va">sex</span>,</span>
 <span>  output <span class="op">=</span> <span class="st">"long"</span></span>
 <span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">long</span>, <span class="fl">3</span><span class="op">)</span></span>
-<span><span class="co">#&gt;   variable group   n base      pct   test_type     chi2 df         p</span></span>
-<span><span class="co">#&gt; 1   health    No 335  650 51.53846 chi_squared 3.698537  1 0.1089204</span></span>
-<span><span class="co">#&gt; 2   health   Yes 314  550 57.09091 chi_squared 3.698537  1 0.1089204</span></span>
-<span><span class="co">#&gt; 3   health Total 649 1200 54.08333 chi_squared 3.698537  1 0.1089204</span></span>
-<span><span class="co">#&gt;   p_unadjusted</span></span>
-<span><span class="co">#&gt; 1   0.05446021</span></span>
-<span><span class="co">#&gt; 2   0.05446021</span></span>
-<span><span class="co">#&gt; 3   0.05446021</span></span></code></pre></div>
+<span><span class="co">#&gt;      variable  group   n base      pct   test_type      chi2 df p p_unadjusted</span></span>
+<span><span class="co">#&gt; 1 info_doctor Female 377  599 62.93823 chi_squared 0.5199761  1 1    0.4708519</span></span>
+<span><span class="co">#&gt; 2 info_doctor   Male 344  565 60.88496 chi_squared 0.5199761  1 1    0.4708519</span></span>
+<span><span class="co">#&gt; 3 info_doctor  Total 721 1164 61.94158 chi_squared 0.5199761  1 1    0.4708519</span></span></code></pre></div>
 <p>Both frames carry the note in <code>attr(x, "note")</code> and the
 global test in <code>attr(x, "global_test")</code>.</p>
 <p><code>tidy()</code> returns one row per item and group, the margin
 flagged by <code>total</code>, with the proportions of respondents and
 of responses. <code>glance()</code> returns one row for the
 question:</p>
-<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">broom</span><span class="fu">::</span><span class="fu"><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">tidy</a></span><span class="op">(</span><span class="va">tbl</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 12 × 13</span></span></span>
-<span><span class="co">#&gt;    variable      label   group total     n  base proportion proportion_responses</span></span>
-<span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>                <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> health        health  No    FALSE   335   650      0.515                0.256</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> health        health  Yes   FALSE   314   550      0.571                0.252</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> health        health  Total TRUE    649  <span style="text-decoration: underline;">1</span>200      0.541                0.254</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> work          work    No    FALSE   292   650      0.449                0.223</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> work          work    Yes   FALSE   301   550      0.547                0.241</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> work          work    Total TRUE    593  <span style="text-decoration: underline;">1</span>200      0.494                0.232</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> relationships relati… No    FALSE   375   650      0.577                0.287</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> relationships relati… Yes   FALSE   336   550      0.611                0.269</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> relationships relati… Total TRUE    711  <span style="text-decoration: underline;">1</span>200      0.592                0.278</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> standard      standa… No    FALSE   306   650      0.471                0.234</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">11</span> standard      standa… Yes   FALSE   296   550      0.538                0.237</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">12</span> standard      standa… Total TRUE    602  <span style="text-decoration: underline;">1</span>200      0.502                0.236</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 15 × 13</span></span></span>
+<span><span class="co">#&gt;    variable        label group total     n  base proportion proportion_responses</span></span>
+<span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>           <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>                <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> info_doctor     info… Fema… FALSE   377   599      0.629               0.349 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> info_doctor     info… Male  FALSE   344   565      0.609               0.373 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> info_doctor     info… Total TRUE    721  <span style="text-decoration: underline;">1</span>164      0.619               0.360 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> info_pharmacist info… Fema… FALSE   137   599      0.229               0.127 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> info_pharmacist info… Male  FALSE   119   565      0.211               0.129 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> info_pharmacist info… Total TRUE    256  <span style="text-decoration: underline;">1</span>164      0.220               0.128 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> info_internet   info… Fema… FALSE   268   599      0.447               0.248 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> info_internet   info… Male  FALSE   255   565      0.451               0.277 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> info_internet   info… Total TRUE    523  <span style="text-decoration: underline;">1</span>164      0.449               0.261 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> info_family     info… Fema… FALSE   219   599      0.366               0.203 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">11</span> info_family     info… Male  FALSE   141   565      0.250               0.153 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">12</span> info_family     info… Total TRUE    360  <span style="text-decoration: underline;">1</span>164      0.309               0.180 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">13</span> info_media      info… Fema… FALSE    78   599      0.130               0.072<span style="text-decoration: underline;">3</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">14</span> info_media      info… Male  FALSE    63   565      0.112               0.068<span style="text-decoration: underline;">3</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">15</span> info_media      info… Total TRUE    141  <span style="text-decoration: underline;">1</span>164      0.121               0.070<span style="text-decoration: underline;">5</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ 5 more variables: test_type &lt;chr&gt;, statistic &lt;dbl&gt;, df &lt;int&gt;,</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;">#   p.value &lt;dbl&gt;, p.unadjusted &lt;dbl&gt;</span></span></span>
 <span><span class="fu">broom</span><span class="fu">::</span><span class="fu"><a href="https://generics.r-lib.org/reference/glance.html" class="external-link">glance</a></span><span class="op">(</span><span class="va">tbl</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 11</span></span></span>
 <span><span class="co">#&gt;   n_items n_items_tested n_groups  nobs test_type statistic    df p.value boot_n</span></span>
 <span><span class="co">#&gt;     <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>       4              4        2  <span style="text-decoration: underline;">1</span>200 rs2            17.4  3.16 7.07<span style="color: #949494;">e</span><span style="color: #BB0000;">-4</span>     <span style="color: #BB0000;">NA</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>       5              5        2  <span style="text-decoration: underline;">1</span>164 rs2            18.8  4.61 0.001<span style="text-decoration: underline;">51</span>     <span style="color: #BB0000;">NA</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ 2 more variables: rs_cv &lt;dbl&gt;, p_adjust &lt;chr&gt;</span></span></span></code></pre></div>
 <p>Both column sets are fixed: a column the table does not show, such as
 <code>boot_n</code> under the Rao-Scott test, is present and
@@ -879,68 +904,82 @@ with a Rao-Scott global test.</p>
 </h2>
 <p>The same table renders through six further engines, the console being
 the reference.</p>
-<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/table_multiresponse.html">table_multiresponse</a></span><span class="op">(</span><span class="va">domains</span>, select <span class="op">=</span> <span class="va">health</span><span class="op">:</span><span class="va">standard</span>, output <span class="op">=</span> <span class="st">"gt"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/table_multiresponse.html">table_multiresponse</a></span><span class="op">(</span><span class="va">domains</span>, select <span class="op">=</span> <span class="va">health</span><span class="op">:</span><span class="va">standard</span>, output <span class="op">=</span> <span class="st">"tinytable"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/table_multiresponse.html">table_multiresponse</a></span><span class="op">(</span><span class="va">domains</span>, select <span class="op">=</span> <span class="va">health</span><span class="op">:</span><span class="va">standard</span>, output <span class="op">=</span> <span class="st">"flextable"</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/table_multiresponse.html">table_multiresponse</a></span><span class="op">(</span><span class="va">sochealth</span>, select <span class="op">=</span> <span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">starts_with</a></span><span class="op">(</span><span class="st">"info_"</span><span class="op">)</span>, output <span class="op">=</span> <span class="st">"gt"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/table_multiresponse.html">table_multiresponse</a></span><span class="op">(</span></span>
-<span>  <span class="va">domains</span>,</span>
-<span>  select <span class="op">=</span> <span class="va">health</span><span class="op">:</span><span class="va">standard</span>,</span>
+<span>  <span class="va">sochealth</span>,</span>
+<span>  select <span class="op">=</span> <span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">starts_with</a></span><span class="op">(</span><span class="st">"info_"</span><span class="op">)</span>,</span>
+<span>  output <span class="op">=</span> <span class="st">"tinytable"</span></span>
+<span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/table_multiresponse.html">table_multiresponse</a></span><span class="op">(</span></span>
+<span>  <span class="va">sochealth</span>,</span>
+<span>  select <span class="op">=</span> <span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">starts_with</a></span><span class="op">(</span><span class="st">"info_"</span><span class="op">)</span>,</span>
+<span>  output <span class="op">=</span> <span class="st">"flextable"</span></span>
+<span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/table_multiresponse.html">table_multiresponse</a></span><span class="op">(</span></span>
+<span>  <span class="va">sochealth</span>,</span>
+<span>  select <span class="op">=</span> <span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">starts_with</a></span><span class="op">(</span><span class="st">"info_"</span><span class="op">)</span>,</span>
 <span>  output <span class="op">=</span> <span class="st">"excel"</span>,</span>
-<span>  excel_path <span class="op">=</span> <span class="st">"domains.xlsx"</span></span>
+<span>  excel_path <span class="op">=</span> <span class="st">"info_sources.xlsx"</span></span>
 <span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/table_multiresponse.html">table_multiresponse</a></span><span class="op">(</span></span>
-<span>  <span class="va">domains</span>,</span>
-<span>  select <span class="op">=</span> <span class="va">health</span><span class="op">:</span><span class="va">standard</span>,</span>
+<span>  <span class="va">sochealth</span>,</span>
+<span>  select <span class="op">=</span> <span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">starts_with</a></span><span class="op">(</span><span class="st">"info_"</span><span class="op">)</span>,</span>
 <span>  output <span class="op">=</span> <span class="st">"word"</span>,</span>
-<span>  word_path <span class="op">=</span> <span class="st">"domains.docx"</span></span>
+<span>  word_path <span class="op">=</span> <span class="st">"info_sources.docx"</span></span>
 <span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/table_multiresponse.html">table_multiresponse</a></span><span class="op">(</span><span class="va">domains</span>, select <span class="op">=</span> <span class="va">health</span><span class="op">:</span><span class="va">standard</span>, output <span class="op">=</span> <span class="st">"clipboard"</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="../reference/table_multiresponse.html">table_multiresponse</a></span><span class="op">(</span></span>
+<span>  <span class="va">sochealth</span>,</span>
+<span>  select <span class="op">=</span> <span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">starts_with</a></span><span class="op">(</span><span class="st">"info_"</span><span class="op">)</span>,</span>
+<span>  output <span class="op">=</span> <span class="st">"clipboard"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
 <p>A journal style moves the defaults of the whole table, as elsewhere
 in the family. Under <code>style = "jama"</code>, p-values take two
 decimals, and three below .01:</p>
-<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_multiresponse.html">table_multiresponse</a></span><span class="op">(</span></span>
-<span>  <span class="va">domains</span>,</span>
-<span>  select <span class="op">=</span> <span class="va">health</span><span class="op">:</span><span class="va">standard</span>,</span>
-<span>  by <span class="op">=</span> <span class="va">physical_activity</span>,</span>
+<span>  <span class="va">sochealth</span>,</span>
+<span>  select <span class="op">=</span> <span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">starts_with</a></span><span class="op">(</span><span class="st">"info_"</span><span class="op">)</span>,</span>
+<span>  by <span class="op">=</span> <span class="va">sex</span>,</span>
 <span>  style <span class="op">=</span> <span class="st">"jama"</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Multiple responses by physical_activity</span></span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Multiple responses by sex</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable      <span style="color: #9E9E9E;">│</span> No n  No %  Yes n  Yes %  Total n  Total %   p   </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────┼──────────────────────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  health        <span style="color: #9E9E9E;">│</span> 335   51.5   314   57.1     649     54.1    .11  </span></span>
-<span><span class="co">#&gt;  work          <span style="color: #9E9E9E;">│</span> 292   44.9   301   54.7     593     49.4    .003 </span></span>
-<span><span class="co">#&gt;  relationships <span style="color: #9E9E9E;">│</span> 375   57.7   336   61.1     711     59.2    .23  </span></span>
-<span><span class="co">#&gt;  standard      <span style="color: #9E9E9E;">│</span> 306   47.1   296   53.8     602     50.2    .06  </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  Respondents   <span style="color: #9E9E9E;">│</span> 650          550           1200                  </span></span>
+<span><span class="co">#&gt;  Variable        <span style="color: #9E9E9E;">│</span> Female n  Female %  Male n  Male %  Total n  Total %    p   </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────┼─────────────────────────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  info_doctor     <span style="color: #9E9E9E;">│</span>   377       62.9     344     60.9     721     61.9    1.00  </span></span>
+<span><span class="co">#&gt;  info_pharmacist <span style="color: #9E9E9E;">│</span>   137       22.9     119     21.1     256     22.0    1.00  </span></span>
+<span><span class="co">#&gt;  info_internet   <span style="color: #9E9E9E;">│</span>   268       44.7     255     45.1     523     44.9    1.00  </span></span>
+<span><span class="co">#&gt;  info_family     <span style="color: #9E9E9E;">│</span>   219       36.6     141     25.0     360     30.9    &lt;.001 </span></span>
+<span><span class="co">#&gt;  info_media      <span style="color: #9E9E9E;">│</span>    78       13.0      63     11.2     141     12.1    1.00  </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  Respondents     <span style="color: #9E9E9E;">│</span>   599                565             1164                   </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Several answers possible: percentages are of respondents and can sum to more than 100%. Base: respondents who answered the question, including those who chose no item. 204 respondents chose none of the items. Item p-values: Pearson chi-squared test of each item by group. P-values adjusted via stats::p.adjust(method = "holm"); m = 4 test(s). Group comparison: Rao-Scott second-order corrected chi-squared test of multiple marginal independence, χ²(3.16) = 17.36, p &lt; .001.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Respondents with no answer to the question removed: 36. Several answers possible: percentages are of respondents and can sum to more than 100%. Base: respondents who answered the question, including those who chose no item. 67 respondents chose none of the items. Item p-values: Pearson chi-squared test of each item by group. P-values adjusted via stats::p.adjust(method = "holm"); m = 5 test(s). Group comparison: Rao-Scott second-order corrected chi-squared test of multiple marginal independence, χ²(4.61) = 18.78, p = .002.</span></span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="rendered-output">Rendered output<a class="anchor" aria-label="anchor" href="#rendered-output"></a>
 </h2>
-<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">pkgdown_dark_gt</span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="../reference/table_multiresponse.html">table_multiresponse</a></span><span class="op">(</span></span>
-<span>    <span class="va">domains</span>,</span>
-<span>    select <span class="op">=</span> <span class="va">health</span><span class="op">:</span><span class="va">standard</span>,</span>
-<span>    by <span class="op">=</span> <span class="va">physical_activity</span>,</span>
+<span>    <span class="va">sochealth</span>,</span>
+<span>    select <span class="op">=</span> <span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">starts_with</a></span><span class="op">(</span><span class="st">"info_"</span><span class="op">)</span>,</span>
+<span>    by <span class="op">=</span> <span class="va">sex</span>,</span>
+<span>    labels <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>    statistic <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>    output <span class="op">=</span> <span class="st">"gt"</span></span>
 <span>  <span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<div id="bkmzxbfslp" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<p><style>#bkmzxbfslp table { font-family: system-ui, ‘Segoe UI’,
+<div id="vnbdchxhnp" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<p><style>#vnbdchxhnp table { font-family: system-ui, ‘Segoe UI’,
 Roboto, Helvetica, Arial, sans-serif, ‘Apple Color Emoji’, ‘Segoe UI
 Emoji’, ‘Segoe UI Symbol’, ‘Noto Color Emoji’; -webkit-font-smoothing:
 antialiased; -moz-osx-font-smoothing: grayscale; }</p>
-<p>#bkmzxbfslp thead, #bkmzxbfslp tbody, #bkmzxbfslp tfoot, #bkmzxbfslp
-tr, #bkmzxbfslp td, #bkmzxbfslp th { border-style: none; }</p>
-<p>#bkmzxbfslp p { margin: 0; padding: 0; }</p>
-<p>#bkmzxbfslp .gt_table { display: table; border-collapse: collapse;
+<p>#vnbdchxhnp thead, #vnbdchxhnp tbody, #vnbdchxhnp tfoot, #vnbdchxhnp
+tr, #vnbdchxhnp td, #vnbdchxhnp th { border-style: none; }</p>
+<p>#vnbdchxhnp p { margin: 0; padding: 0; }</p>
+<p>#vnbdchxhnp .gt_table { display: table; border-collapse: collapse;
 line-height: normal; margin-left: auto; margin-right: auto; color:
 #333333; font-size: 16px; font-weight: normal; font-style: normal;
 background-color: #FFFFFF; width: auto; border-top-style: solid;
@@ -949,49 +988,49 @@ none; border-right-width: 2px; border-right-color: #D3D3D3;
 border-bottom-style: solid; border-bottom-width: 0px;
 border-bottom-color: #A8A8A8; border-left-style: none;
 border-left-width: 2px; border-left-color: #D3D3D3; }</p>
-<p>#bkmzxbfslp .gt_caption { padding-top: 4px; padding-bottom: 4px;
+<p>#vnbdchxhnp .gt_caption { padding-top: 4px; padding-bottom: 4px;
 }</p>
-<p>#bkmzxbfslp .gt_title { color: #333333; font-size: 125%; font-weight:
+<p>#vnbdchxhnp .gt_title { color: #333333; font-size: 125%; font-weight:
 initial; padding-top: 4px; padding-bottom: 4px; padding-left: 5px;
 padding-right: 5px; border-bottom-color: #FFFFFF; border-bottom-width:
 0; }</p>
-<p>#bkmzxbfslp .gt_subtitle { color: #333333; font-size: 85%;
+<p>#vnbdchxhnp .gt_subtitle { color: #333333; font-size: 85%;
 font-weight: initial; padding-top: 3px; padding-bottom: 5px;
 padding-left: 5px; padding-right: 5px; border-top-color: #FFFFFF;
 border-top-width: 0; }</p>
-<p>#bkmzxbfslp .gt_heading { background-color: #FFFFFF; text-align:
+<p>#vnbdchxhnp .gt_heading { background-color: #FFFFFF; text-align:
 center; border-bottom-color: #FFFFFF; border-left-style: none;
 border-left-width: 1px; border-left-color: #D3D3D3; border-right-style:
 none; border-right-width: 1px; border-right-color: #D3D3D3; }</p>
-<p>#bkmzxbfslp .gt_bottom_border { border-bottom-style: solid;
+<p>#vnbdchxhnp .gt_bottom_border { border-bottom-style: solid;
 border-bottom-width: 2px; border-bottom-color: #D3D3D3; }</p>
-<p>#bkmzxbfslp .gt_col_headings { border-top-style: solid;
+<p>#vnbdchxhnp .gt_col_headings { border-top-style: solid;
 border-top-width: 0px; border-top-color: #D3D3D3; border-bottom-style:
 solid; border-bottom-width: 0px; border-bottom-color: #D3D3D3;
 border-left-style: none; border-left-width: 1px; border-left-color:
 rgba(255, 255, 255, 0); border-right-style: none; border-right-width:
 1px; border-right-color: rgba(255, 255, 255, 0); }</p>
-<p>#bkmzxbfslp .gt_col_heading { color: #333333; background-color:
+<p>#vnbdchxhnp .gt_col_heading { color: #333333; background-color:
 #FFFFFF; font-size: 100%; font-weight: normal; text-transform: inherit;
 border-left-style: none; border-left-width: 1px; border-left-color:
 #D3D3D3; border-right-style: none; border-right-width: 1px;
 border-right-color: #D3D3D3; vertical-align: bottom; padding-top: 5px;
 padding-bottom: 6px; padding-left: 5px; padding-right: 5px; overflow-x:
 hidden; }</p>
-<p>#bkmzxbfslp .gt_column_spanner_outer { color: #333333;
+<p>#vnbdchxhnp .gt_column_spanner_outer { color: #333333;
 background-color: #FFFFFF; font-size: 100%; font-weight: normal;
 text-transform: inherit; padding-top: 0; padding-bottom: 0;
 padding-left: 4px; padding-right: 4px; }</p>
-<p>#bkmzxbfslp .gt_column_spanner_outer:first-child { padding-left: 0;
+<p>#vnbdchxhnp .gt_column_spanner_outer:first-child { padding-left: 0;
 }</p>
-<p>#bkmzxbfslp .gt_column_spanner_outer:last-child { padding-right: 0;
+<p>#vnbdchxhnp .gt_column_spanner_outer:last-child { padding-right: 0;
 }</p>
-<p>#bkmzxbfslp .gt_column_spanner { border-bottom-style: solid;
+<p>#vnbdchxhnp .gt_column_spanner { border-bottom-style: solid;
 border-bottom-width: 0px; border-bottom-color: #D3D3D3; vertical-align:
 bottom; padding-top: 5px; padding-bottom: 5px; overflow-x: hidden;
 display: inline-block; width: 100%; }</p>
-<p>#bkmzxbfslp .gt_spanner_row { border-bottom-style: hidden; }</p>
-<p>#bkmzxbfslp .gt_group_heading { padding-top: 8px; padding-bottom:
+<p>#vnbdchxhnp .gt_spanner_row { border-bottom-style: hidden; }</p>
+<p>#vnbdchxhnp .gt_group_heading { padding-top: 8px; padding-bottom:
 8px; padding-left: 5px; padding-right: 5px; color: #333333;
 background-color: #FFFFFF; font-size: 100%; font-weight: initial;
 text-transform: inherit; border-top-style: solid; border-top-width: 2px;
@@ -1001,90 +1040,90 @@ border-left-style: none; border-left-width: 1px; border-left-color:
 #D3D3D3; border-right-style: none; border-right-width: 1px;
 border-right-color: #D3D3D3; vertical-align: middle; text-align: left;
 }</p>
-<p>#bkmzxbfslp .gt_empty_group_heading { padding: 0.5px; color: #333333;
+<p>#vnbdchxhnp .gt_empty_group_heading { padding: 0.5px; color: #333333;
 background-color: #FFFFFF; font-size: 100%; font-weight: initial;
 border-top-style: solid; border-top-width: 2px; border-top-color:
 #D3D3D3; border-bottom-style: solid; border-bottom-width: 2px;
 border-bottom-color: #D3D3D3; vertical-align: middle; }</p>
-<p>#bkmzxbfslp .gt_from_md &gt; :first-child { margin-top: 0; }</p>
-<p>#bkmzxbfslp .gt_from_md &gt; :last-child { margin-bottom: 0; }</p>
-<p>#bkmzxbfslp .gt_row { padding-top: 8px; padding-bottom: 8px;
+<p>#vnbdchxhnp .gt_from_md &gt; :first-child { margin-top: 0; }</p>
+<p>#vnbdchxhnp .gt_from_md &gt; :last-child { margin-bottom: 0; }</p>
+<p>#vnbdchxhnp .gt_row { padding-top: 8px; padding-bottom: 8px;
 padding-left: 5px; padding-right: 5px; margin: 10px; border-top-style:
 solid; border-top-width: 1px; border-top-color: rgba(255, 255, 255, 0);
 border-left-style: none; border-left-width: 1px; border-left-color:
 #D3D3D3; border-right-style: none; border-right-width: 1px;
 border-right-color: #D3D3D3; vertical-align: middle; overflow-x: hidden;
 }</p>
-<p>#bkmzxbfslp .gt_stub { color: #333333; background-color: #FFFFFF;
+<p>#vnbdchxhnp .gt_stub { color: #333333; background-color: #FFFFFF;
 font-size: 100%; font-weight: initial; text-transform: inherit;
 border-right-style: solid; border-right-width: 2px; border-right-color:
 #D3D3D3; padding-left: 5px; padding-right: 5px; }</p>
-<p>#bkmzxbfslp .gt_stub_row_group { color: #333333; background-color:
+<p>#vnbdchxhnp .gt_stub_row_group { color: #333333; background-color:
 #FFFFFF; font-size: 100%; font-weight: initial; text-transform: inherit;
 border-right-style: solid; border-right-width: 2px; border-right-color:
 #D3D3D3; padding-left: 5px; padding-right: 5px; vertical-align: top;
 }</p>
-<p>#bkmzxbfslp .gt_row_group_first td { border-top-width: 2px; }</p>
-<p>#bkmzxbfslp .gt_row_group_first th { border-top-width: 2px; }</p>
-<p>#bkmzxbfslp .gt_summary_row { color: #333333; background-color:
+<p>#vnbdchxhnp .gt_row_group_first td { border-top-width: 2px; }</p>
+<p>#vnbdchxhnp .gt_row_group_first th { border-top-width: 2px; }</p>
+<p>#vnbdchxhnp .gt_summary_row { color: #333333; background-color:
 #FFFFFF; text-transform: inherit; padding-top: 8px; padding-bottom: 8px;
 padding-left: 5px; padding-right: 5px; }</p>
-<p>#bkmzxbfslp .gt_first_summary_row { border-top-style: solid;
+<p>#vnbdchxhnp .gt_first_summary_row { border-top-style: solid;
 border-top-color: #D3D3D3; }</p>
-<p>#bkmzxbfslp .gt_first_summary_row.thick { border-top-width: 2px;
+<p>#vnbdchxhnp .gt_first_summary_row.thick { border-top-width: 2px;
 }</p>
-<p>#bkmzxbfslp .gt_last_summary_row { padding-top: 8px; padding-bottom:
+<p>#vnbdchxhnp .gt_last_summary_row { padding-top: 8px; padding-bottom:
 8px; padding-left: 5px; padding-right: 5px; border-bottom-style: solid;
 border-bottom-width: 2px; border-bottom-color: #D3D3D3; }</p>
-<p>#bkmzxbfslp .gt_grand_summary_row { color: #333333; background-color:
+<p>#vnbdchxhnp .gt_grand_summary_row { color: #333333; background-color:
 #FFFFFF; text-transform: inherit; padding-top: 8px; padding-bottom: 8px;
 padding-left: 5px; padding-right: 5px; }</p>
-<p>#bkmzxbfslp .gt_first_grand_summary_row { padding-top: 8px;
+<p>#vnbdchxhnp .gt_first_grand_summary_row { padding-top: 8px;
 padding-bottom: 8px; padding-left: 5px; padding-right: 5px;
 border-top-style: double; border-top-width: 6px; border-top-color:
 #D3D3D3; }</p>
-<p>#bkmzxbfslp .gt_last_grand_summary_row_top { padding-top: 8px;
+<p>#vnbdchxhnp .gt_last_grand_summary_row_top { padding-top: 8px;
 padding-bottom: 8px; padding-left: 5px; padding-right: 5px;
 border-bottom-style: double; border-bottom-width: 6px;
 border-bottom-color: #D3D3D3; }</p>
-<p>#bkmzxbfslp .gt_striped { background-color: rgba(128, 128, 128,
+<p>#vnbdchxhnp .gt_striped { background-color: rgba(128, 128, 128,
 0.05); }</p>
-<p>#bkmzxbfslp .gt_table_body { border-top-style: solid;
+<p>#vnbdchxhnp .gt_table_body { border-top-style: solid;
 border-top-width: 0px; border-top-color: #D3D3D3; border-bottom-style:
 solid; border-bottom-width: 0px; border-bottom-color: #D3D3D3; }</p>
-<p>#bkmzxbfslp .gt_footnotes { color: #333333; background-color:
+<p>#vnbdchxhnp .gt_footnotes { color: #333333; background-color:
 #FFFFFF; border-bottom-style: none; border-bottom-width: 2px;
 border-bottom-color: #D3D3D3; border-left-style: none;
 border-left-width: 2px; border-left-color: #D3D3D3; border-right-style:
 none; border-right-width: 2px; border-right-color: #D3D3D3; }</p>
-<p>#bkmzxbfslp .gt_footnote { margin: 0px; font-size: 90%; padding-top:
+<p>#vnbdchxhnp .gt_footnote { margin: 0px; font-size: 90%; padding-top:
 4px; padding-bottom: 4px; padding-left: 5px; padding-right: 5px; }</p>
-<p>#bkmzxbfslp .gt_sourcenotes { color: #333333; background-color:
+<p>#vnbdchxhnp .gt_sourcenotes { color: #333333; background-color:
 #FFFFFF; border-bottom-style: none; border-bottom-width: 2px;
 border-bottom-color: #D3D3D3; border-left-style: none;
 border-left-width: 2px; border-left-color: #D3D3D3; border-right-style:
 none; border-right-width: 2px; border-right-color: #D3D3D3; }</p>
-<p>#bkmzxbfslp .gt_sourcenote { font-size: 90%; padding-top: 4px;
+<p>#vnbdchxhnp .gt_sourcenote { font-size: 90%; padding-top: 4px;
 padding-bottom: 4px; padding-left: 5px; padding-right: 5px; }</p>
-<p>#bkmzxbfslp .gt_left { text-align: left; }</p>
-<p>#bkmzxbfslp .gt_center { text-align: center; }</p>
-<p>#bkmzxbfslp .gt_right { text-align: right; font-variant-numeric:
+<p>#vnbdchxhnp .gt_left { text-align: left; }</p>
+<p>#vnbdchxhnp .gt_center { text-align: center; }</p>
+<p>#vnbdchxhnp .gt_right { text-align: right; font-variant-numeric:
 tabular-nums; }</p>
-<p>#bkmzxbfslp .gt_font_normal { font-weight: normal; }</p>
-<p>#bkmzxbfslp .gt_font_bold { font-weight: bold; }</p>
-<p>#bkmzxbfslp .gt_font_italic { font-style: italic; }</p>
-<p>#bkmzxbfslp .gt_super { font-size: 65%; }</p>
-<p>#bkmzxbfslp .gt_footnote_marks { font-size: 75%; vertical-align:
+<p>#vnbdchxhnp .gt_font_normal { font-weight: normal; }</p>
+<p>#vnbdchxhnp .gt_font_bold { font-weight: bold; }</p>
+<p>#vnbdchxhnp .gt_font_italic { font-style: italic; }</p>
+<p>#vnbdchxhnp .gt_super { font-size: 65%; }</p>
+<p>#vnbdchxhnp .gt_footnote_marks { font-size: 75%; vertical-align:
 0.4em; position: initial; }</p>
-<p>#bkmzxbfslp .gt_asterisk { font-size: 100%; vertical-align: 0; }</p>
-<p>#bkmzxbfslp .gt_indent_1 { text-indent: 5px; }</p>
-<p>#bkmzxbfslp .gt_indent_2 { text-indent: 10px; }</p>
-<p>#bkmzxbfslp .gt_indent_3 { text-indent: 15px; }</p>
-<p>#bkmzxbfslp .gt_indent_4 { text-indent: 20px; }</p>
-<p>#bkmzxbfslp .gt_indent_5 { text-indent: 25px; }</p>
-<p>#bkmzxbfslp .katex-display { display: inline-flex !important;
+<p>#vnbdchxhnp .gt_asterisk { font-size: 100%; vertical-align: 0; }</p>
+<p>#vnbdchxhnp .gt_indent_1 { text-indent: 5px; }</p>
+<p>#vnbdchxhnp .gt_indent_2 { text-indent: 10px; }</p>
+<p>#vnbdchxhnp .gt_indent_3 { text-indent: 15px; }</p>
+<p>#vnbdchxhnp .gt_indent_4 { text-indent: 20px; }</p>
+<p>#vnbdchxhnp .gt_indent_5 { text-indent: 25px; }</p>
+<p>#vnbdchxhnp .katex-display { display: inline-flex !important;
 margin-bottom: 0.75em !important; }</p>
-<p>#bkmzxbfslp div.Reactable &gt; div.rt-table &gt; div.rt-thead &gt;
+<p>#vnbdchxhnp div.Reactable &gt; div.rt-table &gt; div.rt-thead &gt;
 div.rt-tr.rt-tr-group-header &gt; div.rt-th-group:after { height: 0px
 !important; }</p>
 <p>.gt_table thead tr:first-child { border-top: 1px solid currentColor
@@ -1093,11 +1132,12 @@ div.rt-tr.rt-tr-group-header &gt; div.rt-th-group:after { height: 0px
 !important; }</p>
 <p>.gt_table thead th, .gt_table thead td { background-color:
 transparent !important; }</p>
-<p>.gt_table thead tr:last-child th[id=“No n”], .gt_table thead
-tr:last-child th[id=“No %”], .gt_table thead tr:last-child th[id=“Yes
-n”], .gt_table thead tr:last-child th[id=“Yes %”], .gt_table thead
-tr:last-child th[id=“Total n”], .gt_table thead tr:last-child
-th[id=“Total %”] { border-top: 1px solid currentColor !important; }</p>
+<p>.gt_table thead tr:last-child th[id=“Female n”], .gt_table thead
+tr:last-child th[id=“Female %”], .gt_table thead tr:last-child
+th[id=“Male n”], .gt_table thead tr:last-child th[id=“Male %”],
+.gt_table thead tr:last-child th[id=“Total n”], .gt_table thead
+tr:last-child th[id=“Total %”] { border-top: 1px solid currentColor
+!important; }</p>
 <p>.gt_table thead tr:last-child { border-bottom: 1px solid currentColor
 !important; }</p>
 <p>.gt_table tbody tr:last-child { border-bottom: 1px solid currentColor
@@ -1115,7 +1155,7 @@ border-bottom-style: none !important; }</p>
 <thead>
 <tr class="gt_heading">
 <td colspan="9" class="gt_heading gt_title gt_font_normal gt_bottom_border" style="text-align: left; border-bottom-width: 0px; border-bottom-style: solid; border-bottom-color: transparent;">
-Multiple responses by physical_activity
+Multiple responses by Sex
 </td>
 </tr>
 <tr class="gt_col_headings gt_spanner_row">
@@ -1124,14 +1164,14 @@ Multiple responses by physical_activity
 Variable
 </div>
 </th>
-<th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="2" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor;" scope="colgroup" id="spn_No">
+<th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="2" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor;" scope="colgroup" id="spn_Female">
 <div class="gt_column_spanner">
-No
+Female
 </div>
 </th>
-<th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="2" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor;" scope="colgroup" id="spn_Yes">
+<th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="2" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor;" scope="colgroup" id="spn_Male">
 <div class="gt_column_spanner">
-Yes
+Male
 </div>
 </th>
 <th class="gt_center gt_columns_top_border gt_column_spanner_outer" rowspan="1" colspan="2" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor;" scope="colgroup" id="spn_Total">
@@ -1153,16 +1193,16 @@ p
 <tr class="gt_col_headings">
 <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;" scope="col" id="Variable">
 </th>
-<th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;" scope="col" id="No-n">
+<th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;" scope="col" id="Female-n">
 n
 </th>
-<th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;" scope="col" id="No-%">
+<th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;" scope="col" id="Female-%">
 %
 </th>
-<th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;" scope="col" id="Yes-n">
+<th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;" scope="col" id="Male-n">
 n
 </th>
-<th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;" scope="col" id="Yes-%">
+<th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;" scope="col" id="Male-%">
 %
 </th>
 <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="border-top-width: 1px; border-top-style: solid; border-top-color: currentColor; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;" scope="col" id="Total-n">
@@ -1180,138 +1220,167 @@ n
 <tbody class="gt_table_body">
 <tr>
 <td headers="Variable" class="gt_row gt_left">
-health
+Doctor or other health professional
 </td>
-<td headers="No-n" class="gt_row gt_center">
-335
+<td headers="Female-n" class="gt_row gt_center">
+377
 </td>
-<td headers="No-%" class="gt_row gt_center">
-51.5
+<td headers="Female-%" class="gt_row gt_center">
+62.9
 </td>
-<td headers="Yes-n" class="gt_row gt_center">
-314
+<td headers="Male-n" class="gt_row gt_center">
+344
 </td>
-<td headers="Yes-%" class="gt_row gt_center">
-57.1
+<td headers="Male-%" class="gt_row gt_center">
+60.9
 </td>
 <td headers="Total-n" class="gt_row gt_center">
- 649
+ 721
 </td>
 <td headers="Total-%" class="gt_row gt_center">
-54.1
+61.9
 </td>
 <td headers="Test" class="gt_row gt_center">
- χ²(1) = 3.70
+ χ²(1) = 0.52
 </td>
 <td headers="p" class="gt_row gt_center">
-.109
+1.000
 </td>
 </tr>
 <tr>
 <td headers="Variable" class="gt_row gt_left">
-work
+Pharmacist
 </td>
-<td headers="No-n" class="gt_row gt_center">
-292
+<td headers="Female-n" class="gt_row gt_center">
+137
 </td>
-<td headers="No-%" class="gt_row gt_center">
+<td headers="Female-%" class="gt_row gt_center">
+22.9
+</td>
+<td headers="Male-n" class="gt_row gt_center">
+119
+</td>
+<td headers="Male-%" class="gt_row gt_center">
+21.1
+</td>
+<td headers="Total-n" class="gt_row gt_center">
+ 256
+</td>
+<td headers="Total-%" class="gt_row gt_center">
+22.0
+</td>
+<td headers="Test" class="gt_row gt_center">
+ χ²(1) = 0.55
+</td>
+<td headers="p" class="gt_row gt_center">
+1.000
+</td>
+</tr>
+<tr>
+<td headers="Variable" class="gt_row gt_left">
+Internet, websites or apps
+</td>
+<td headers="Female-n" class="gt_row gt_center">
+268
+</td>
+<td headers="Female-%" class="gt_row gt_center">
+44.7
+</td>
+<td headers="Male-n" class="gt_row gt_center">
+255
+</td>
+<td headers="Male-%" class="gt_row gt_center">
+45.1
+</td>
+<td headers="Total-n" class="gt_row gt_center">
+ 523
+</td>
+<td headers="Total-%" class="gt_row gt_center">
 44.9
 </td>
-<td headers="Yes-n" class="gt_row gt_center">
-301
-</td>
-<td headers="Yes-%" class="gt_row gt_center">
-54.7
-</td>
-<td headers="Total-n" class="gt_row gt_center">
- 593
-</td>
-<td headers="Total-%" class="gt_row gt_center">
-49.4
-</td>
 <td headers="Test" class="gt_row gt_center">
-χ²(1) = 11.46
+ χ²(1) = 0.02
 </td>
 <td headers="p" class="gt_row gt_center">
-.003
+1.000
 </td>
 </tr>
 <tr>
 <td headers="Variable" class="gt_row gt_left">
-relationships
+Family or friends
 </td>
-<td headers="No-n" class="gt_row gt_center">
-375
+<td headers="Female-n" class="gt_row gt_center">
+219
 </td>
-<td headers="No-%" class="gt_row gt_center">
-57.7
+<td headers="Female-%" class="gt_row gt_center">
+36.6
 </td>
-<td headers="Yes-n" class="gt_row gt_center">
-336
+<td headers="Male-n" class="gt_row gt_center">
+141
 </td>
-<td headers="Yes-%" class="gt_row gt_center">
-61.1
+<td headers="Male-%" class="gt_row gt_center">
+25.0
 </td>
 <td headers="Total-n" class="gt_row gt_center">
- 711
+ 360
 </td>
 <td headers="Total-%" class="gt_row gt_center">
-59.2
+30.9
 </td>
 <td headers="Test" class="gt_row gt_center">
- χ²(1) = 1.43
+χ²(1) = 18.33
 </td>
 <td headers="p" class="gt_row gt_center">
-.233
+&lt;.001
 </td>
 </tr>
 <tr>
 <td headers="Variable" class="gt_row gt_left" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;">
-standard
+Television, radio or newspapers
 </td>
-<td headers="No-n" class="gt_row gt_center" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;">
-306
+<td headers="Female-n" class="gt_row gt_center" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;">
+ 78
 </td>
-<td headers="No-%" class="gt_row gt_center" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;">
-47.1
+<td headers="Female-%" class="gt_row gt_center" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;">
+13.0
 </td>
-<td headers="Yes-n" class="gt_row gt_center" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;">
-296
+<td headers="Male-n" class="gt_row gt_center" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;">
+ 63
 </td>
-<td headers="Yes-%" class="gt_row gt_center" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;">
-53.8
+<td headers="Male-%" class="gt_row gt_center" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;">
+11.2
 </td>
 <td headers="Total-n" class="gt_row gt_center" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;">
- 602
+ 141
 </td>
 <td headers="Total-%" class="gt_row gt_center" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;">
-50.2
+12.1
 </td>
 <td headers="Test" class="gt_row gt_center" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;">
- χ²(1) = 5.42
+ χ²(1) = 0.96
 </td>
 <td headers="p" class="gt_row gt_center" style="border-bottom-width: 0.5px; border-bottom-style: solid; border-bottom-color: #cccccc;">
-.060
+1.000
 </td>
 </tr>
 <tr>
 <td headers="Variable" class="gt_row gt_left" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">
 Respondents
 </td>
-<td headers="No-n" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">
-650
+<td headers="Female-n" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">
+599
 </td>
-<td headers="No-%" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">
+<td headers="Female-%" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">
     
 </td>
-<td headers="Yes-n" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">
-550
+<td headers="Male-n" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">
+565
 </td>
-<td headers="Yes-%" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">
+<td headers="Male-%" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">
     
 </td>
 <td headers="Total-n" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">
-1200
+1164
 </td>
 <td headers="Total-%" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">
     
@@ -1320,28 +1389,30 @@ Respondents
              
 </td>
 <td headers="p" class="gt_row gt_center" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: currentColor;">
-    
+     
 </td>
 </tr>
 </tbody>
 </table>
 <div class="spicy-gt-note" style="width: min-content; min-width: 100%; box-sizing: border-box; padding: 0.5rem 0.5rem 0.2rem 0.5rem; font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji'; font-size: 0.9em; line-height: 1.25; color: #333333; text-align: left;">
-Several answers possible: percentages are of respondents and can sum to
-more than 100%. Base: respondents who answered the question, including
-those who chose no item. 204 respondents chose none of the items. Item
-p-values: Pearson chi-squared test of each item by group. P-values
-adjusted via stats::p.adjust(method = “holm”); m = 4 test(s). Group
-comparison: Rao-Scott second-order corrected chi-squared test of
-multiple marginal independence, χ²(3.16) = 17.36, p &lt; .001.
+Respondents with no answer to the question removed: 36. Several answers
+possible: percentages are of respondents and can sum to more than 100%.
+Base: respondents who answered the question, including those who chose
+no item. 67 respondents chose none of the items. Item p-values: Pearson
+chi-squared test of each item by group. P-values adjusted via
+stats::p.adjust(method = “holm”); m = 5 test(s). Group comparison:
+Rao-Scott second-order corrected chi-squared test of multiple marginal
+independence, χ²(4.61) = 18.78, p = .002.
 </div>
 </div>
 </div>
 </div>
-<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_multiresponse.html">table_multiresponse</a></span><span class="op">(</span></span>
-<span>  <span class="va">domains</span>,</span>
-<span>  select <span class="op">=</span> <span class="va">health</span><span class="op">:</span><span class="va">standard</span>,</span>
-<span>  by <span class="op">=</span> <span class="va">physical_activity</span>,</span>
+<span>  <span class="va">sochealth</span>,</span>
+<span>  select <span class="op">=</span> <span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">starts_with</a></span><span class="op">(</span><span class="st">"info_"</span><span class="op">)</span>,</span>
+<span>  by <span class="op">=</span> <span class="va">sex</span>,</span>
+<span>  labels <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  percent <span class="op">=</span> <span class="st">"both"</span>,</span>
 <span>  p_value <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  output <span class="op">=</span> <span class="st">"tinytable"</span></span>
@@ -1349,48 +1420,48 @@ multiple marginal independence, χ²(3.16) = 17.36, p &lt; .001.
 
     <script src="https://cdn.jsdelivr.net/gh/vincentarelbundock/tinytable@main/inst/tinytable.js"></script><script>
       // Create table-specific functions using external factory
-      const tableFns_pge027v6vrf64j5q2xar = TinyTable.createTableFunctions("tinytable_pge027v6vrf64j5q2xar");
+      const tableFns_e028be4q4n29dij7ruz8 = TinyTable.createTableFunctions("tinytable_e028be4q4n29dij7ruz8");
       // tinytable span after
       window.addEventListener('load', function () {
           var cellsToStyle = [
             // tinytable style arrays after
-          { positions: [ { i: '4', j: 2 }, { i: '4', j: 3 }, { i: '4', j: 4 }, { i: '4', j: 5 }, { i: '4', j: 6 }, { i: '4', j: 7 }, { i: '4', j: 8 }, { i: '4', j: 9 }, { i: '4', j: 10 } ], css_id: 'tinytable_css_5domr8b9wvitjvrx8lp6',}, 
-          { positions: [ { i: '1', j: 2 }, { i: '2', j: 2 }, { i: '3', j: 2 }, { i: '1', j: 3 }, { i: '2', j: 3 }, { i: '3', j: 3 }, { i: '1', j: 4 }, { i: '2', j: 4 }, { i: '3', j: 4 }, { i: '1', j: 5 }, { i: '2', j: 5 }, { i: '3', j: 5 }, { i: '1', j: 6 }, { i: '2', j: 6 }, { i: '3', j: 6 }, { i: '1', j: 7 }, { i: '2', j: 7 }, { i: '3', j: 7 }, { i: '1', j: 8 }, { i: '2', j: 8 }, { i: '3', j: 8 }, { i: '1', j: 9 }, { i: '2', j: 9 }, { i: '3', j: 9 }, { i: '1', j: 10 }, { i: '2', j: 10 }, { i: '3', j: 10 } ], css_id: 'tinytable_css_zpzc5c42q9rd1ypjchdu',}, 
-          { positions: [ { i: '0', j: 2 }, { i: '5', j: 2 }, { i: '0', j: 3 }, { i: '5', j: 3 }, { i: '0', j: 4 }, { i: '5', j: 4 }, { i: '0', j: 5 }, { i: '5', j: 5 }, { i: '0', j: 6 }, { i: '5', j: 6 }, { i: '0', j: 7 }, { i: '5', j: 7 }, { i: '0', j: 8 }, { i: '5', j: 8 }, { i: '0', j: 9 }, { i: '5', j: 9 }, { i: '0', j: 10 }, { i: '5', j: 10 } ], css_id: 'tinytable_css_cxnuxato058m75jzre9x',}, 
-          { positions: [ { i: '-1', j: 2 }, { i: '-1', j: 3 }, { i: '-1', j: 4 }, { i: '-1', j: 5 }, { i: '-1', j: 6 }, { i: '-1', j: 7 }, { i: '-1', j: 8 }, { i: '-1', j: 9 }, { i: '-1', j: 10 } ], css_id: 'tinytable_css_ud0czspuh42qy7up4f3c',}, 
-          { positions: [ { i: '4', j: 1 } ], css_id: 'tinytable_css_bmc9lsgqe0ehf2gc75og',}, 
-          { positions: [ { i: '1', j: 1 }, { i: '2', j: 1 }, { i: '3', j: 1 } ], css_id: 'tinytable_css_oljxpsra2l1tafge3ud9',}, 
-          { positions: [ { i: '0', j: 1 }, { i: '5', j: 1 } ], css_id: 'tinytable_css_86o7au9zjfs1kxtit2m0',}, 
-          { positions: [ { i: '-1', j: 1 } ], css_id: 'tinytable_css_bk2npcdkopbhnjz3xfpa',}, 
+          { positions: [ { i: '5', j: 2 }, { i: '5', j: 3 }, { i: '5', j: 4 }, { i: '5', j: 5 }, { i: '5', j: 6 }, { i: '5', j: 7 }, { i: '5', j: 8 }, { i: '5', j: 9 }, { i: '5', j: 10 } ], css_id: 'tinytable_css_vu357mik983p60poney0',}, 
+          { positions: [ { i: '1', j: 2 }, { i: '2', j: 2 }, { i: '3', j: 2 }, { i: '4', j: 2 }, { i: '1', j: 3 }, { i: '2', j: 3 }, { i: '3', j: 3 }, { i: '4', j: 3 }, { i: '1', j: 4 }, { i: '2', j: 4 }, { i: '3', j: 4 }, { i: '4', j: 4 }, { i: '1', j: 5 }, { i: '2', j: 5 }, { i: '3', j: 5 }, { i: '4', j: 5 }, { i: '1', j: 6 }, { i: '2', j: 6 }, { i: '3', j: 6 }, { i: '4', j: 6 }, { i: '1', j: 7 }, { i: '2', j: 7 }, { i: '3', j: 7 }, { i: '4', j: 7 }, { i: '1', j: 8 }, { i: '2', j: 8 }, { i: '3', j: 8 }, { i: '4', j: 8 }, { i: '1', j: 9 }, { i: '2', j: 9 }, { i: '3', j: 9 }, { i: '4', j: 9 }, { i: '1', j: 10 }, { i: '2', j: 10 }, { i: '3', j: 10 }, { i: '4', j: 10 } ], css_id: 'tinytable_css_d93lmhfwoy9kw3g8la5p',}, 
+          { positions: [ { i: '0', j: 2 }, { i: '6', j: 2 }, { i: '0', j: 3 }, { i: '6', j: 3 }, { i: '0', j: 4 }, { i: '6', j: 4 }, { i: '0', j: 5 }, { i: '6', j: 5 }, { i: '0', j: 6 }, { i: '6', j: 6 }, { i: '0', j: 7 }, { i: '6', j: 7 }, { i: '0', j: 8 }, { i: '6', j: 8 }, { i: '0', j: 9 }, { i: '6', j: 9 }, { i: '0', j: 10 }, { i: '6', j: 10 } ], css_id: 'tinytable_css_n3n2e0m77k8ycdqk90hi',}, 
+          { positions: [ { i: '-1', j: 2 }, { i: '-1', j: 3 }, { i: '-1', j: 4 }, { i: '-1', j: 5 }, { i: '-1', j: 6 }, { i: '-1', j: 7 }, { i: '-1', j: 8 }, { i: '-1', j: 9 }, { i: '-1', j: 10 } ], css_id: 'tinytable_css_3t34ghsdngrysb6nip4a',}, 
+          { positions: [ { i: '5', j: 1 } ], css_id: 'tinytable_css_0m08y7fkn9hiy85d7p62',}, 
+          { positions: [ { i: '1', j: 1 }, { i: '2', j: 1 }, { i: '3', j: 1 }, { i: '4', j: 1 } ], css_id: 'tinytable_css_xudbh8mp6g4xonydp2bu',}, 
+          { positions: [ { i: '0', j: 1 }, { i: '6', j: 1 } ], css_id: 'tinytable_css_go299rtzamv0vs2qnfbi',}, 
+          { positions: [ { i: '-1', j: 1 } ], css_id: 'tinytable_css_hde5lifrvmzenb7wsnu2',}, 
           ];
 
           // Loop over the arrays to style the cells
           cellsToStyle.forEach(function (group) {
               group.positions.forEach(function (cell) {
-                  tableFns_pge027v6vrf64j5q2xar.styleCell(cell.i, cell.j, group.css_id);
+                  tableFns_e028be4q4n29dij7ruz8.styleCell(cell.i, cell.j, group.css_id);
               });
           });
       });
     </script><link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/vincentarelbundock/tinytable@main/inst/tinytable.css">
 <style>
     /* tinytable css entries after */
-    #tinytable_pge027v6vrf64j5q2xar td.tinytable_css_5domr8b9wvitjvrx8lp6, #tinytable_pge027v6vrf64j5q2xar th.tinytable_css_5domr8b9wvitjvrx8lp6 {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
-    #tinytable_pge027v6vrf64j5q2xar td.tinytable_css_zpzc5c42q9rd1ypjchdu, #tinytable_pge027v6vrf64j5q2xar th.tinytable_css_zpzc5c42q9rd1ypjchdu { text-align: center }
-    #tinytable_pge027v6vrf64j5q2xar td.tinytable_css_cxnuxato058m75jzre9x, #tinytable_pge027v6vrf64j5q2xar th.tinytable_css_cxnuxato058m75jzre9x {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
-    #tinytable_pge027v6vrf64j5q2xar td.tinytable_css_ud0czspuh42qy7up4f3c, #tinytable_pge027v6vrf64j5q2xar th.tinytable_css_ud0czspuh42qy7up4f3c {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
-    #tinytable_pge027v6vrf64j5q2xar td.tinytable_css_bmc9lsgqe0ehf2gc75og, #tinytable_pge027v6vrf64j5q2xar th.tinytable_css_bmc9lsgqe0ehf2gc75og {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
-    #tinytable_pge027v6vrf64j5q2xar td.tinytable_css_oljxpsra2l1tafge3ud9, #tinytable_pge027v6vrf64j5q2xar th.tinytable_css_oljxpsra2l1tafge3ud9 { text-align: left }
-    #tinytable_pge027v6vrf64j5q2xar td.tinytable_css_86o7au9zjfs1kxtit2m0, #tinytable_pge027v6vrf64j5q2xar th.tinytable_css_86o7au9zjfs1kxtit2m0 {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
-    #tinytable_pge027v6vrf64j5q2xar td.tinytable_css_bk2npcdkopbhnjz3xfpa, #tinytable_pge027v6vrf64j5q2xar th.tinytable_css_bk2npcdkopbhnjz3xfpa {  position: relative; --border-bottom: 0; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.1em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
+    #tinytable_e028be4q4n29dij7ruz8 td.tinytable_css_vu357mik983p60poney0, #tinytable_e028be4q4n29dij7ruz8 th.tinytable_css_vu357mik983p60poney0 {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
+    #tinytable_e028be4q4n29dij7ruz8 td.tinytable_css_d93lmhfwoy9kw3g8la5p, #tinytable_e028be4q4n29dij7ruz8 th.tinytable_css_d93lmhfwoy9kw3g8la5p { text-align: center }
+    #tinytable_e028be4q4n29dij7ruz8 td.tinytable_css_n3n2e0m77k8ycdqk90hi, #tinytable_e028be4q4n29dij7ruz8 th.tinytable_css_n3n2e0m77k8ycdqk90hi {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
+    #tinytable_e028be4q4n29dij7ruz8 td.tinytable_css_3t34ghsdngrysb6nip4a, #tinytable_e028be4q4n29dij7ruz8 th.tinytable_css_3t34ghsdngrysb6nip4a {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
+    #tinytable_e028be4q4n29dij7ruz8 td.tinytable_css_0m08y7fkn9hiy85d7p62, #tinytable_e028be4q4n29dij7ruz8 th.tinytable_css_0m08y7fkn9hiy85d7p62 {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
+    #tinytable_e028be4q4n29dij7ruz8 td.tinytable_css_xudbh8mp6g4xonydp2bu, #tinytable_e028be4q4n29dij7ruz8 th.tinytable_css_xudbh8mp6g4xonydp2bu { text-align: left }
+    #tinytable_e028be4q4n29dij7ruz8 td.tinytable_css_go299rtzamv0vs2qnfbi, #tinytable_e028be4q4n29dij7ruz8 th.tinytable_css_go299rtzamv0vs2qnfbi {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
+    #tinytable_e028be4q4n29dij7ruz8 td.tinytable_css_hde5lifrvmzenb7wsnu2, #tinytable_e028be4q4n29dij7ruz8 th.tinytable_css_hde5lifrvmzenb7wsnu2 {  position: relative; --border-bottom: 0; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.1em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
     </style>
 <div class="container">
-      <table class="table tinytable" id="tinytable_pge027v6vrf64j5q2xar" style="width: auto; margin-left: auto; margin-right: auto;" data-quarto-disable-processing="true">
-<caption>Multiple responses by physical_activity</caption>
+      <table class="table tinytable" id="tinytable_e028be4q4n29dij7ruz8" style="width: auto; margin-left: auto; margin-right: auto;" data-quarto-disable-processing="true">
+<caption>Multiple responses by Sex</caption>
         <thead>
 <tr>
 <th scope="col" align="center" colspan="1" data-row="-1" data-col="1">Variable</th>
-<th scope="col" align="center" colspan="3" data-row="-1" data-col="2">No</th>
-<th scope="col" align="center" colspan="3" data-row="-1" data-col="5">Yes</th>
+<th scope="col" align="center" colspan="3" data-row="-1" data-col="2">Female</th>
+<th scope="col" align="center" colspan="3" data-row="-1" data-col="5">Male</th>
 <th scope="col" align="center" colspan="3" data-row="-1" data-col="8">Total</th>
 </tr>
 <tr>
@@ -1406,67 +1477,79 @@ multiple marginal independence, χ²(3.16) = 17.36, p &lt; .001.
                 <th scope="col" data-row="0" data-col="10">% of responses</th>
               </tr>
 </thead>
-<tfoot><tr><td colspan="10" style="font-size: 0.9em; ">Several answers possible: percentages of respondents can sum to more than 100%; percentages of responses sum to 100%. Base: respondents who answered the question, including those who chose no item. 204 respondents chose none of the items.</td></tr></tfoot>
+<tfoot><tr><td colspan="10" style="font-size: 0.9em; ">Respondents with no answer to the question removed: 36. Several answers possible: percentages of respondents can sum to more than 100%; percentages of responses sum to 100%. Base: respondents who answered the question, including those who chose no item. 67 respondents chose none of the items.</td></tr></tfoot>
 <tbody>
 <tr>
-<td data-row="1" data-col="1">health</td>
-                  <td data-row="1" data-col="2">335</td>
-                  <td data-row="1" data-col="3">51.5</td>
-                  <td data-row="1" data-col="4">25.6</td>
-                  <td data-row="1" data-col="5">314</td>
-                  <td data-row="1" data-col="6">57.1</td>
-                  <td data-row="1" data-col="7">25.2</td>
-                  <td data-row="1" data-col="8"> 649</td>
-                  <td data-row="1" data-col="9">54.1</td>
-                  <td data-row="1" data-col="10">25.4</td>
+<td data-row="1" data-col="1">Doctor or other health professional</td>
+                  <td data-row="1" data-col="2">377</td>
+                  <td data-row="1" data-col="3">62.9</td>
+                  <td data-row="1" data-col="4">34.9</td>
+                  <td data-row="1" data-col="5">344</td>
+                  <td data-row="1" data-col="6">60.9</td>
+                  <td data-row="1" data-col="7">37.3</td>
+                  <td data-row="1" data-col="8"> 721</td>
+                  <td data-row="1" data-col="9">61.9</td>
+                  <td data-row="1" data-col="10">36.0</td>
                 </tr>
 <tr>
-<td data-row="2" data-col="1">work</td>
-                  <td data-row="2" data-col="2">292</td>
-                  <td data-row="2" data-col="3">44.9</td>
-                  <td data-row="2" data-col="4">22.3</td>
-                  <td data-row="2" data-col="5">301</td>
-                  <td data-row="2" data-col="6">54.7</td>
-                  <td data-row="2" data-col="7">24.1</td>
-                  <td data-row="2" data-col="8"> 593</td>
-                  <td data-row="2" data-col="9">49.4</td>
-                  <td data-row="2" data-col="10">23.2</td>
+<td data-row="2" data-col="1">Pharmacist</td>
+                  <td data-row="2" data-col="2">137</td>
+                  <td data-row="2" data-col="3">22.9</td>
+                  <td data-row="2" data-col="4">12.7</td>
+                  <td data-row="2" data-col="5">119</td>
+                  <td data-row="2" data-col="6">21.1</td>
+                  <td data-row="2" data-col="7">12.9</td>
+                  <td data-row="2" data-col="8"> 256</td>
+                  <td data-row="2" data-col="9">22.0</td>
+                  <td data-row="2" data-col="10">12.8</td>
                 </tr>
 <tr>
-<td data-row="3" data-col="1">relationships</td>
-                  <td data-row="3" data-col="2">375</td>
-                  <td data-row="3" data-col="3">57.7</td>
-                  <td data-row="3" data-col="4">28.7</td>
-                  <td data-row="3" data-col="5">336</td>
-                  <td data-row="3" data-col="6">61.1</td>
-                  <td data-row="3" data-col="7">26.9</td>
-                  <td data-row="3" data-col="8"> 711</td>
-                  <td data-row="3" data-col="9">59.2</td>
-                  <td data-row="3" data-col="10">27.8</td>
+<td data-row="3" data-col="1">Internet, websites or apps</td>
+                  <td data-row="3" data-col="2">268</td>
+                  <td data-row="3" data-col="3">44.7</td>
+                  <td data-row="3" data-col="4">24.8</td>
+                  <td data-row="3" data-col="5">255</td>
+                  <td data-row="3" data-col="6">45.1</td>
+                  <td data-row="3" data-col="7">27.7</td>
+                  <td data-row="3" data-col="8"> 523</td>
+                  <td data-row="3" data-col="9">44.9</td>
+                  <td data-row="3" data-col="10">26.1</td>
                 </tr>
 <tr>
-<td data-row="4" data-col="1">standard</td>
-                  <td data-row="4" data-col="2">306</td>
-                  <td data-row="4" data-col="3">47.1</td>
-                  <td data-row="4" data-col="4">23.4</td>
-                  <td data-row="4" data-col="5">296</td>
-                  <td data-row="4" data-col="6">53.8</td>
-                  <td data-row="4" data-col="7">23.7</td>
-                  <td data-row="4" data-col="8"> 602</td>
-                  <td data-row="4" data-col="9">50.2</td>
-                  <td data-row="4" data-col="10">23.6</td>
+<td data-row="4" data-col="1">Family or friends</td>
+                  <td data-row="4" data-col="2">219</td>
+                  <td data-row="4" data-col="3">36.6</td>
+                  <td data-row="4" data-col="4">20.3</td>
+                  <td data-row="4" data-col="5">141</td>
+                  <td data-row="4" data-col="6">25.0</td>
+                  <td data-row="4" data-col="7">15.3</td>
+                  <td data-row="4" data-col="8"> 360</td>
+                  <td data-row="4" data-col="9">30.9</td>
+                  <td data-row="4" data-col="10">18.0</td>
                 </tr>
 <tr>
-<td data-row="5" data-col="1">Respondents</td>
-                  <td data-row="5" data-col="2">650</td>
-                  <td data-row="5" data-col="3">    </td>
-                  <td data-row="5" data-col="4">    </td>
-                  <td data-row="5" data-col="5">550</td>
-                  <td data-row="5" data-col="6">    </td>
-                  <td data-row="5" data-col="7">    </td>
-                  <td data-row="5" data-col="8">1200</td>
-                  <td data-row="5" data-col="9">    </td>
-                  <td data-row="5" data-col="10">    </td>
+<td data-row="5" data-col="1">Television, radio or newspapers</td>
+                  <td data-row="5" data-col="2"> 78</td>
+                  <td data-row="5" data-col="3">13.0</td>
+                  <td data-row="5" data-col="4"> 7.2</td>
+                  <td data-row="5" data-col="5"> 63</td>
+                  <td data-row="5" data-col="6">11.2</td>
+                  <td data-row="5" data-col="7"> 6.8</td>
+                  <td data-row="5" data-col="8"> 141</td>
+                  <td data-row="5" data-col="9">12.1</td>
+                  <td data-row="5" data-col="10"> 7.0</td>
+                </tr>
+<tr>
+<td data-row="6" data-col="1">Respondents</td>
+                  <td data-row="6" data-col="2">599</td>
+                  <td data-row="6" data-col="3">    </td>
+                  <td data-row="6" data-col="4">    </td>
+                  <td data-row="6" data-col="5">565</td>
+                  <td data-row="6" data-col="6">    </td>
+                  <td data-row="6" data-col="7">    </td>
+                  <td data-row="6" data-col="8">1164</td>
+                  <td data-row="6" data-col="9">    </td>
+                  <td data-row="6" data-col="10">    </td>
                 </tr>
 </tbody>
 </table>

@@ -568,163 +568,190 @@ Rao-Scott approach. <em>International Journal of Testing</em>, 4(1), 43-59.
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># Three yes/no items read as one "check all that apply" question.</span></span></span>
-<span class="r-in"><span><span class="fu">table_multiresponse</span><span class="op">(</span></span></span>
-<span class="r-in"><span>  <span class="va">sochealth</span>,</span></span>
-<span class="r-in"><span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">smoking</span>, <span class="va">physical_activity</span>, <span class="va">dentist_12m</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>  by <span class="op">=</span> <span class="va">education</span>,</span></span>
-<span class="r-in"><span>  counted <span class="op">=</span> <span class="st">"Yes"</span></span></span>
-<span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Multiple responses by education</span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># The five info_* items of sochealth answer one "check all that apply"</span></span></span>
+<span class="r-in"><span><span class="co"># question: the sources of health information used in the past 12 months.</span></span></span>
+<span class="r-in"><span><span class="fu">table_multiresponse</span><span class="op">(</span><span class="va">sochealth</span>, select <span class="op">=</span> <span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">starts_with</a></span><span class="op">(</span><span class="st">"info_"</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Multiple responses</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable          <span style="color: #9E9E9E;">│</span> Lower secondary n  Lower secondary %  Upper secondary n </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">───────────────────┼─────────────────────────────────────────────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  smoking           <span style="color: #9E9E9E;">│</span>         78               29.9                112        </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  physical_activity <span style="color: #9E9E9E;">│</span>         84               32.2                229        </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  dentist_12m       <span style="color: #9E9E9E;">│</span>        148               56.7                365        </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Respondents       <span style="color: #9E9E9E;">│</span>        261                                   539        </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable          <span style="color: #9E9E9E;">│</span> Upper secondary %  Tertiary n  Tertiary %  Total n </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">───────────────────┼────────────────────────────────────────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  smoking           <span style="color: #9E9E9E;">│</span>       20.8             59         14.8       249   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  physical_activity <span style="color: #9E9E9E;">│</span>       42.5            237         59.2       550   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  dentist_12m       <span style="color: #9E9E9E;">│</span>       67.7            333         83.2       846   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Respondents       <span style="color: #9E9E9E;">│</span>                       400                   1200   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable          <span style="color: #9E9E9E;">│</span> Total %    p   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable          <span style="color: #9E9E9E;">│</span>   n       %    </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">───────────────────┼────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  smoking           <span style="color: #9E9E9E;">│</span>  20.8    &lt;.001 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  physical_activity <span style="color: #9E9E9E;">│</span>  45.8    &lt;.001 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  dentist_12m       <span style="color: #9E9E9E;">│</span>  70.5    &lt;.001 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  info_doctor       <span style="color: #9E9E9E;">│</span>   721    61.9  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  info_pharmacist   <span style="color: #9E9E9E;">│</span>   256    22.0  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  info_internet     <span style="color: #9E9E9E;">│</span>   523    44.9  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  info_family       <span style="color: #9E9E9E;">│</span>   360    30.9  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  info_media        <span style="color: #9E9E9E;">│</span>   141    12.1  </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Respondents       <span style="color: #9E9E9E;">│</span>                </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Respondents       <span style="color: #9E9E9E;">│</span>  1164          </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Several answers possible: percentages are of respondents and can sum to more than 100%. Base: respondents who answered the question, including those who chose no item. 166 respondents chose none of the items. Item p-values: Pearson chi-squared test of each item by group. P-values adjusted via stats::p.adjust(method = "holm"); m = 3 test(s). Group comparison: Rao-Scott second-order corrected chi-squared test of multiple marginal independence, χ²(6.07) = 131.71, p &lt; .001.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Respondents with no answer to the question removed: 36. Several answers possible: percentages are of respondents and can sum to more than 100%. Base: respondents who answered the question, including those who chose no item. 67 respondents chose none of the items.</span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># A descriptive table: no tests, percentages of cases and of responses.</span></span></span>
+<span class="r-in"><span><span class="co"># The labels of the items, sorted by decreasing count.</span></span></span>
 <span class="r-in"><span><span class="fu">table_multiresponse</span><span class="op">(</span></span></span>
 <span class="r-in"><span>  <span class="va">sochealth</span>,</span></span>
-<span class="r-in"><span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">smoking</span>, <span class="va">physical_activity</span>, <span class="va">dentist_12m</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  select <span class="op">=</span> <span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">starts_with</a></span><span class="op">(</span><span class="st">"info_"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  labels <span class="op">=</span> <span class="cn">TRUE</span>,</span></span>
+<span class="r-in"><span>  sort <span class="op">=</span> <span class="st">"-"</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Multiple responses</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable                              <span style="color: #9E9E9E;">│</span>   n       %    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">───────────────────────────────────────┼────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Doctor or other health professional   <span style="color: #9E9E9E;">│</span>   721    61.9  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Internet, websites or apps            <span style="color: #9E9E9E;">│</span>   523    44.9  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Family or friends                     <span style="color: #9E9E9E;">│</span>   360    30.9  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Pharmacist                            <span style="color: #9E9E9E;">│</span>   256    22.0  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Television, radio or newspapers       <span style="color: #9E9E9E;">│</span>   141    12.1  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Respondents                           <span style="color: #9E9E9E;">│</span>  1164          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Respondents with no answer to the question removed: 36. Several answers possible: percentages are of respondents and can sum to more than 100%. Base: respondents who answered the question, including those who chose no item. 67 respondents chose none of the items.</span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># By age group: a test per item and a global test of the question.</span></span></span>
+<span class="r-in"><span><span class="fu">table_multiresponse</span><span class="op">(</span></span></span>
+<span class="r-in"><span>  <span class="va">sochealth</span>,</span></span>
+<span class="r-in"><span>  select <span class="op">=</span> <span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">starts_with</a></span><span class="op">(</span><span class="st">"info_"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  by <span class="op">=</span> <span class="va">age_group</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Multiple responses by age_group</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span> 25-34 n  25-34 %  35-49 n  35-49 %  50-64 n  50-64 % </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────┼──────────────────────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  info_doctor     <span style="color: #9E9E9E;">│</span>   113     48.5      208     55.6      215     67.8   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  info_pharmacist <span style="color: #9E9E9E;">│</span>    53     22.7       74     19.8       69     21.8   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  info_internet   <span style="color: #9E9E9E;">│</span>   156     67.0      200     53.5      109     34.4   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  info_family     <span style="color: #9E9E9E;">│</span>    72     30.9      119     31.8       99     31.2   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  info_media      <span style="color: #9E9E9E;">│</span>     9      3.9       36      9.6       41     12.9   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Respondents     <span style="color: #9E9E9E;">│</span>   233               374               317            </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span> 65-75 n  65-75 %  Total n  Total %    p   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────┼───────────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  info_doctor     <span style="color: #9E9E9E;">│</span>   185     77.1      721     61.9    &lt;.001 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  info_pharmacist <span style="color: #9E9E9E;">│</span>    60     25.0      256     22.0     .982 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  info_internet   <span style="color: #9E9E9E;">│</span>    58     24.2      523     44.9    &lt;.001 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  info_family     <span style="color: #9E9E9E;">│</span>    70     29.2      360     30.9     .982 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  info_media      <span style="color: #9E9E9E;">│</span>    55     22.9      141     12.1    &lt;.001 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Respondents     <span style="color: #9E9E9E;">│</span>   240              1164                   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Respondents with no answer to the question removed: 36. Several answers possible: percentages are of respondents and can sum to more than 100%. Base: respondents who answered the question, including those who chose no item. 67 respondents chose none of the items. Item p-values: Pearson chi-squared test of each item by group. P-values adjusted via stats::p.adjust(method = "holm"); m = 5 test(s). Group comparison: Rao-Scott second-order corrected chi-squared test of multiple marginal independence, χ²(14.40) = 203.03, p &lt; .001.</span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># A descriptive table by sex, on the respondents who chose at least one</span></span></span>
+<span class="r-in"><span><span class="co"># source: percentages of cases and of responses, no tests.</span></span></span>
+<span class="r-in"><span><span class="fu">table_multiresponse</span><span class="op">(</span></span></span>
+<span class="r-in"><span>  <span class="va">sochealth</span>,</span></span>
+<span class="r-in"><span>  select <span class="op">=</span> <span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">starts_with</a></span><span class="op">(</span><span class="st">"info_"</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  by <span class="op">=</span> <span class="va">sex</span>,</span></span>
-<span class="r-in"><span>  counted <span class="op">=</span> <span class="st">"Yes"</span>,</span></span>
 <span class="r-in"><span>  percent <span class="op">=</span> <span class="st">"both"</span>,</span></span>
+<span class="r-in"><span>  base <span class="op">=</span> <span class="st">"answered"</span>,</span></span>
 <span class="r-in"><span>  p_value <span class="op">=</span> <span class="cn">FALSE</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Multiple responses by sex</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable          <span style="color: #9E9E9E;">│</span> Female n  Female % of cases  Female % of responses  Male n </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">───────────────────┼────────────────────────────────────────────────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  smoking           <span style="color: #9E9E9E;">│</span>   131           21.1                 15.3            118   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  physical_activity <span style="color: #9E9E9E;">│</span>   286           46.1                 33.5            264   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  dentist_12m       <span style="color: #9E9E9E;">│</span>   437           70.5                 51.2            409   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Respondents       <span style="color: #9E9E9E;">│</span>   620                                                580   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span> Female n  Female % of cases  Female % of responses  Male n </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────┼────────────────────────────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  info_doctor     <span style="color: #9E9E9E;">│</span>   377           66.4                 34.9            344   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  info_pharmacist <span style="color: #9E9E9E;">│</span>   137           24.1                 12.7            119   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  info_internet   <span style="color: #9E9E9E;">│</span>   268           47.2                 24.8            255   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  info_family     <span style="color: #9E9E9E;">│</span>   219           38.6                 20.3            141   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  info_media      <span style="color: #9E9E9E;">│</span>    78           13.7                  7.2             63   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Respondents     <span style="color: #9E9E9E;">│</span>   568                                                529   </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable          <span style="color: #9E9E9E;">│</span> Male % of cases  Male % of responses  Total n </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">───────────────────┼───────────────────────────────────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  smoking           <span style="color: #9E9E9E;">│</span>      20.3               14.9            249   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  physical_activity <span style="color: #9E9E9E;">│</span>      45.5               33.4            550   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  dentist_12m       <span style="color: #9E9E9E;">│</span>      70.5               51.7            846   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Respondents       <span style="color: #9E9E9E;">│</span>                                        1200   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span> Male % of cases  Male % of responses  Total n </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────┼───────────────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  info_doctor     <span style="color: #9E9E9E;">│</span>      65.0               37.3            721   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  info_pharmacist <span style="color: #9E9E9E;">│</span>      22.5               12.9            256   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  info_internet   <span style="color: #9E9E9E;">│</span>      48.2               27.7            523   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  info_family     <span style="color: #9E9E9E;">│</span>      26.7               15.3            360   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  info_media      <span style="color: #9E9E9E;">│</span>      11.9                6.8            141   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Respondents     <span style="color: #9E9E9E;">│</span>                                        1097   </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable          <span style="color: #9E9E9E;">│</span> Total % of cases  Total % of responses </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">───────────────────┼────────────────────────────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  smoking           <span style="color: #9E9E9E;">│</span>       20.8                15.1         </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  physical_activity <span style="color: #9E9E9E;">│</span>       45.8                33.4         </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  dentist_12m       <span style="color: #9E9E9E;">│</span>       70.5                51.4         </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Respondents       <span style="color: #9E9E9E;">│</span>                                        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span> Total % of cases  Total % of responses </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────┼────────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  info_doctor     <span style="color: #9E9E9E;">│</span>       65.7                36.0         </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  info_pharmacist <span style="color: #9E9E9E;">│</span>       23.3                12.8         </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  info_internet   <span style="color: #9E9E9E;">│</span>       47.7                26.1         </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  info_family     <span style="color: #9E9E9E;">│</span>       32.8                18.0         </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  info_media      <span style="color: #9E9E9E;">│</span>       12.9                 7.0         </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Respondents     <span style="color: #9E9E9E;">│</span>                                        </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Several answers possible: percentages of respondents can sum to more than 100%; percentages of responses sum to 100%. Base: respondents who answered the question, including those who chose no item. 166 respondents chose none of the items.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Respondents with no answer to the question removed: 36. Respondents who chose no item removed: 67. Several answers possible: percentages of respondents can sum to more than 100%; percentages of responses sum to 100%. Base: respondents who chose at least one item.</span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Logical indicators need no `counted`: the life domains rated 4 or 5.</span></span></span>
-<span class="r-in"><span><span class="va">sat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span></span>
-<span class="r-in"><span>  health <span class="op">=</span> <span class="va">sochealth</span><span class="op">$</span><span class="va">life_sat_health</span> <span class="op">&gt;=</span> <span class="fl">4</span>,</span></span>
-<span class="r-in"><span>  work <span class="op">=</span> <span class="va">sochealth</span><span class="op">$</span><span class="va">life_sat_work</span> <span class="op">&gt;=</span> <span class="fl">4</span>,</span></span>
-<span class="r-in"><span>  relationships <span class="op">=</span> <span class="va">sochealth</span><span class="op">$</span><span class="va">life_sat_relationships</span> <span class="op">&gt;=</span> <span class="fl">4</span>,</span></span>
-<span class="r-in"><span>  standard <span class="op">=</span> <span class="va">sochealth</span><span class="op">$</span><span class="va">life_sat_standard</span> <span class="op">&gt;=</span> <span class="fl">4</span></span></span>
-<span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="fu">table_multiresponse</span><span class="op">(</span><span class="va">sat</span>, select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">sat</span><span class="op">)</span>, sort <span class="op">=</span> <span class="st">"-"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="co"># Items coded "Yes" and "No" need `counted`, the value that marks a choice.</span></span></span>
+<span class="r-in"><span><span class="va">yes_no</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>  <span class="va">sochealth</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/startsWith.html" class="external-link">startsWith</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">sochealth</span><span class="op">)</span>, <span class="st">"info_"</span><span class="op">)</span><span class="op">]</span>,</span></span>
+<span class="r-in"><span>  <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="va">x</span>, levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="cn">FALSE</span>, <span class="cn">TRUE</span><span class="op">)</span>, labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"No"</span>, <span class="st">"Yes"</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">table_multiresponse</span><span class="op">(</span><span class="va">yes_no</span>, select <span class="op">=</span> <span class="fu"><a href="https://tidyselect.r-lib.org/reference/everything.html" class="external-link">everything</a></span><span class="op">(</span><span class="op">)</span>, counted <span class="op">=</span> <span class="st">"Yes"</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Multiple responses</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span>   n       %    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────┼────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  relationships   <span style="color: #9E9E9E;">│</span>   711    59.2  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  health          <span style="color: #9E9E9E;">│</span>   649    54.1  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  standard        <span style="color: #9E9E9E;">│</span>   602    50.2  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  work            <span style="color: #9E9E9E;">│</span>   593    49.4  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Respondents     <span style="color: #9E9E9E;">│</span>  1200          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable          <span style="color: #9E9E9E;">│</span>   n       %    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">───────────────────┼────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  info_doctor       <span style="color: #9E9E9E;">│</span>   721    61.9  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  info_pharmacist   <span style="color: #9E9E9E;">│</span>   256    22.0  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  info_internet     <span style="color: #9E9E9E;">│</span>   523    44.9  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  info_family       <span style="color: #9E9E9E;">│</span>   360    30.9  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  info_media        <span style="color: #9E9E9E;">│</span>   141    12.1  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Respondents       <span style="color: #9E9E9E;">│</span>  1164          </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Several answers possible: percentages are of respondents and can sum to more than 100%. Base: respondents who answered the question, including those who chose no item. 204 respondents chose none of the items.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Respondents with no answer to the question removed: 36. Several answers possible: percentages are of respondents and can sum to more than 100%. Base: respondents who answered the question, including those who chose no item. 67 respondents chose none of the items.</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Bootstrap global test: set a seed to reproduce its p-value.</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">table_multiresponse</span><span class="op">(</span></span></span>
 <span class="r-in"><span>  <span class="va">sochealth</span>,</span></span>
-<span class="r-in"><span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">smoking</span>, <span class="va">physical_activity</span>, <span class="va">dentist_12m</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>  by <span class="op">=</span> <span class="va">education</span>,</span></span>
-<span class="r-in"><span>  counted <span class="op">=</span> <span class="st">"Yes"</span>,</span></span>
+<span class="r-in"><span>  select <span class="op">=</span> <span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">starts_with</a></span><span class="op">(</span><span class="st">"info_"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  by <span class="op">=</span> <span class="va">sex</span>,</span></span>
 <span class="r-in"><span>  global_test <span class="op">=</span> <span class="st">"bootstrap"</span>,</span></span>
 <span class="r-in"><span>  boot_n <span class="op">=</span> <span class="fl">999</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Multiple responses by education</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Multiple responses by sex</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable          <span style="color: #9E9E9E;">│</span> Lower secondary n  Lower secondary %  Upper secondary n </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">───────────────────┼─────────────────────────────────────────────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  smoking           <span style="color: #9E9E9E;">│</span>         78               29.9                112        </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  physical_activity <span style="color: #9E9E9E;">│</span>         84               32.2                229        </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  dentist_12m       <span style="color: #9E9E9E;">│</span>        148               56.7                365        </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Respondents       <span style="color: #9E9E9E;">│</span>        261                                   539        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span> Female n  Female %  Male n  Male %  Total n  Total %    p   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────┼─────────────────────────────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  info_doctor     <span style="color: #9E9E9E;">│</span>   377       62.9     344     60.9     721     61.9    1.000 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  info_pharmacist <span style="color: #9E9E9E;">│</span>   137       22.9     119     21.1     256     22.0    1.000 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  info_internet   <span style="color: #9E9E9E;">│</span>   268       44.7     255     45.1     523     44.9    1.000 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  info_family     <span style="color: #9E9E9E;">│</span>   219       36.6     141     25.0     360     30.9    &lt;.001 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  info_media      <span style="color: #9E9E9E;">│</span>    78       13.0      63     11.2     141     12.1    1.000 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Respondents     <span style="color: #9E9E9E;">│</span>   599                565             1164                   </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable          <span style="color: #9E9E9E;">│</span> Upper secondary %  Tertiary n  Tertiary %  Total n </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">───────────────────┼────────────────────────────────────────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  smoking           <span style="color: #9E9E9E;">│</span>       20.8             59         14.8       249   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  physical_activity <span style="color: #9E9E9E;">│</span>       42.5            237         59.2       550   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  dentist_12m       <span style="color: #9E9E9E;">│</span>       67.7            333         83.2       846   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Respondents       <span style="color: #9E9E9E;">│</span>                       400                   1200   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable          <span style="color: #9E9E9E;">│</span> Total %    p   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">───────────────────┼────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  smoking           <span style="color: #9E9E9E;">│</span>  20.8    &lt;.001 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  physical_activity <span style="color: #9E9E9E;">│</span>  45.8    &lt;.001 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  dentist_12m       <span style="color: #9E9E9E;">│</span>  70.5    &lt;.001 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Respondents       <span style="color: #9E9E9E;">│</span>                </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Several answers possible: percentages are of respondents and can sum to more than 100%. Base: respondents who answered the question, including those who chose no item. 166 respondents chose none of the items. Item p-values: Pearson chi-squared test of each item by group. P-values adjusted via stats::p.adjust(method = "holm"); m = 3 test(s). Group comparison: bootstrap test of multiple marginal independence (999 resamples), χ² = 130.18, p &lt; .002.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Respondents with no answer to the question removed: 36. Several answers possible: percentages are of respondents and can sum to more than 100%. Base: respondents who answered the question, including those who chose no item. 67 respondents chose none of the items. Item p-values: Pearson chi-squared test of each item by group. P-values adjusted via stats::p.adjust(method = "holm"); m = 5 test(s). Group comparison: bootstrap test of multiple marginal independence (999 resamples), χ² = 20.38, p = .002.</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Wide data frame.</span></span></span>
 <span class="r-in"><span><span class="fu">table_multiresponse</span><span class="op">(</span></span></span>
 <span class="r-in"><span>  <span class="va">sochealth</span>,</span></span>
-<span class="r-in"><span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">smoking</span>, <span class="va">physical_activity</span>, <span class="va">dentist_12m</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  select <span class="op">=</span> <span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">starts_with</a></span><span class="op">(</span><span class="st">"info_"</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  by <span class="op">=</span> <span class="va">sex</span>,</span></span>
-<span class="r-in"><span>  counted <span class="op">=</span> <span class="st">"Yes"</span>,</span></span>
 <span class="r-in"><span>  output <span class="op">=</span> <span class="st">"data.frame"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>            Variable Female n Female % Male n   Male % Total n  Total %</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1           smoking      131 21.12903    118 20.34483     249 20.75000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2 physical_activity      286 46.12903    264 45.51724     550 45.83333</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3       dentist_12m      437 70.48387    409 70.51724     846 70.50000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4       Respondents      620       NA    580       NA    1200       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     test_type        Chi2 df  p p_unadjusted</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1 chi_squared 0.112067560  1  1    0.7378024</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2 chi_squared 0.045178403  1  1    0.8316763</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3 chi_squared 0.000160454  1  1    0.9898934</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4        &lt;NA&gt;          NA NA NA           NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          Variable Female n Female % Male n   Male % Total n  Total %</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1     info_doctor      377 62.93823    344 60.88496     721 61.94158</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2 info_pharmacist      137 22.87145    119 21.06195     256 21.99313</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3   info_internet      268 44.74124    255 45.13274     523 44.93127</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4     info_family      219 36.56093    141 24.95575     360 30.92784</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5      info_media       78 13.02170     63 11.15044     141 12.11340</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6     Respondents      599       NA    565       NA    1164       NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     test_type        Chi2 df            p p_unadjusted</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1 chi_squared  0.51997605  1 1.000000e+00 4.708519e-01</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2 chi_squared  0.55490963  1 1.000000e+00 4.563185e-01</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3 chi_squared  0.01801149  1 1.000000e+00 8.932390e-01</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4 chi_squared 18.33047265  1 9.285636e-05 1.857127e-05</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5 chi_squared  0.95631714  1 1.000000e+00 3.281165e-01</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6        &lt;NA&gt;          NA NA           NA           NA</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># \donttest{</span></span></span>
 <span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"tinytable"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span></span>
 <span class="r-in"><span>  <span class="va">tt</span> <span class="op">&lt;-</span> <span class="fu">table_multiresponse</span><span class="op">(</span></span></span>
 <span class="r-in"><span>    <span class="va">sochealth</span>,</span></span>
-<span class="r-in"><span>    select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">smoking</span>, <span class="va">physical_activity</span>, <span class="va">dentist_12m</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>    select <span class="op">=</span> <span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">starts_with</a></span><span class="op">(</span><span class="st">"info_"</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>    by <span class="op">=</span> <span class="va">sex</span>,</span></span>
-<span class="r-in"><span>    counted <span class="op">=</span> <span class="st">"Yes"</span>,</span></span>
+<span class="r-in"><span>    labels <span class="op">=</span> <span class="cn">TRUE</span>,</span></span>
 <span class="r-in"><span>    output <span class="op">=</span> <span class="st">"tinytable"</span></span></span>
 <span class="r-in"><span>  <span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span></span></span>

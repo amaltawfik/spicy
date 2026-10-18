@@ -18,49 +18,41 @@ Fisher’s exact test when an expected count is below 5. The question gets
 a global test of all its items together, valid although one respondent
 can choose several items.
 
-`sochealth`, the simulated survey shipped with spicy, has no such
-question, so this article builds one. Each respondent rated four domains
-of life from 1 to 5. A rating of 4 or 5 counts here as satisfied. The
-four logical columns then read like the answers to “Which of these
-domains of your life are you satisfied with? Check all that apply.”
+`sochealth`, the simulated survey shipped with spicy, asks one such
+question: “Sources of health information used in the past 12 months
+(check all that apply)”. Its five items are logical columns, `TRUE` when
+the source was chosen and `FALSE` when it was not:
 
 ``` r
 
-domains <- data.frame(
-  physical_activity = sochealth$physical_activity,
-  health = sochealth$life_sat_health >= 4,
-  work = sochealth$life_sat_work >= 4,
-  relationships = sochealth$life_sat_relationships >= 4,
-  standard = sochealth$life_sat_standard >= 4
-)
-head(domains, 4)
-#>   physical_activity health  work relationships standard
-#> 1                No   TRUE FALSE          TRUE     TRUE
-#> 2                No   TRUE  TRUE          TRUE     TRUE
-#> 3               Yes  FALSE FALSE          TRUE    FALSE
-#> 4                No  FALSE  TRUE         FALSE    FALSE
+info <- sochealth[startsWith(names(sochealth), "info_")]
+head(info, 4)
+#>   info_doctor info_pharmacist info_internet info_family info_media
+#> 1        TRUE           FALSE          TRUE       FALSE      FALSE
+#> 2       FALSE           FALSE          TRUE       FALSE       TRUE
+#> 3       FALSE           FALSE          TRUE       FALSE      FALSE
+#> 4       FALSE           FALSE          TRUE       FALSE      FALSE
 ```
 
-A missing rating stays missing: 31 respondents have one or two, and none
-has all four. `physical_activity`, regular physical activity reported as
-`Yes` or `No`, serves as the grouping.
+The 36 respondents who skipped the question are missing on all five
+items, and a respondent who answered without choosing any source is
+`FALSE` on all five. `sex` serves as the grouping.
 
 ## One question, several answers
 
-A respondent can be satisfied with several domains, and most respondents
-are:
+A respondent can choose several sources, and most respondents do:
 
 ``` r
 
-items <- c("health", "work", "relationships", "standard")
-table(rowSums(domains[items], na.rm = TRUE))
+table(rowSums(info), useNA = "ifany")
 #> 
-#>   0   1   2   3   4 
-#> 204 214 252 283 247
+#>    0    1    2    3    4    5 <NA> 
+#>   67  462  422  168   34   11   36
 ```
 
-The 1200 respondents made 2555 choices: 204 of them chose no domain, and
-782 chose two or more.
+The 1164 respondents who answered made 2001 choices: 67 of them chose no
+source, and 635 chose two or more. The `NA` column counts the 36 who
+skipped the question.
 
 A tempting shortcut stacks the choices into one variable, one row per
 choice, and tabulates it like any categorical variable:
@@ -68,34 +60,44 @@ choice, and tabulates it like any categorical variable:
 ``` r
 
 stacked <- data.frame(
-  physical_activity = rep(domains$physical_activity, times = 4),
-  domain = factor(rep(items, each = nrow(domains)), levels = items),
-  chosen = unlist(domains[items], use.names = FALSE)
+  sex = rep(sochealth$sex, times = 5),
+  source = factor(rep(names(info), each = nrow(info)), levels = names(info)),
+  chosen = unlist(info, use.names = FALSE)
 )
 stacked <- stacked[stacked$chosen %in% TRUE, ]
 nrow(stacked)
-#> [1] 2555
-table_categorical(stacked, select = domain, by = physical_activity)
-#> Categorical table by physical_activity
+#> [1] 2001
+table_categorical(stacked, select = source, by = sex)
+#> Categorical table by sex
 #> 
-#>  Variable        │ No n  No %  Yes n  Yes %  Total n  Total %   p    Cramer's V 
-#> ─────────────────┼──────────────────────────────────────────────────────────────
-#>  domain          │                                             .645     .03     
-#>    health        │ 335   25.6   314   25.2     649     25.4                     
-#>    work          │ 292   22.3   301   24.1     593     23.2                     
-#>    relationships │ 375   28.7   336   26.9     711     27.8                     
-#>    standard      │ 306   23.4   296   23.7     602     23.6                     
+#>  Variable          │ Female n  Female %  Male n  Male %  Total n  Total %   p   
+#> ───────────────────┼────────────────────────────────────────────────────────────
+#>  source            │                                                       .053 
+#>    info_doctor     │   377       34.9     344     37.3     721     36.0         
+#>    info_pharmacist │   137       12.7     119     12.9     256     12.8         
+#>    info_internet   │   268       24.8     255     27.7     523     26.1         
+#>    info_family     │   219       20.3     141     15.3     360     18.0         
+#>    info_media      │    78        7.2      63      6.8     141      7.0         
+#> 
+#>  Variable          │ Cramer's V 
+#> ───────────────────┼────────────
+#>  source            │    .07     
+#>    info_doctor     │            
+#>    info_pharmacist │            
+#>    info_internet   │            
+#>    info_family     │            
+#>    info_media      │            
 #> 
 #> Group comparison: Pearson chi-squared test.
 ```
 
 That table misreads the question in three ways.
 
-1.  **Its base is the choices.** It has 2555 rows for 1200 respondents,
+1.  **Its base is the choices.** It has 2001 rows for 1164 respondents,
     and its percentages are shares of choices. They sum to 100 in each
-    group, although one respondent can count in four rows.
-2.  **The respondents who chose nothing are gone.** The 204 respondents
-    without a domain left no row to stack.
+    group, although one respondent can count in five rows.
+2.  **The respondents who chose nothing are gone.** The 67 respondents
+    without a source left no row to stack.
 3.  **Its chi-squared test is not valid.** The choices of one respondent
     are not independent observations. They violate “the assumption of
     independence among units required by all the usual tests of
@@ -105,49 +107,54 @@ That table misreads the question in three ways.
     In the simulations of Loughin and Scherer, it was “a horribly
     conservative procedure” (p. 636).
 
-The third fault hides a real difference here. Active respondents choose
-more domains on average:
+The third fault hides a real difference here. Women choose more sources
+on average:
 
 ``` r
 
-tapply(rowSums(domains[items], na.rm = TRUE), domains$physical_activity, mean)
-#>       No      Yes 
-#> 2.012308 2.267273
+tapply(rowSums(info), sochealth$sex, mean, na.rm = TRUE)
+#>   Female     Male 
+#> 1.801336 1.631858
 ```
 
-Every domain gains a little among them, so their shares of choices
-barely move: work is 24.1% of their choices, against 22.3%. Loughin and
-Scherer describe this case: “the units’ multiple responses mask real
-differences between the rows” (1998, p. 632). The share of respondents
-who chose work moves almost ten points, from 44.9% to 54.7%:
+A share of the stacked table divides by the choices of its group, and
+women make more of them, so their shares come out smaller. The doctor is
+34.9% of women’s choices, against 37.3% of men’s, although a larger
+share of women chose one, 62.9% against 60.9%. Loughin and Scherer
+describe this case: “the units’ multiple responses mask real differences
+between the rows” (1998, p. 632). Family or friends make 20.3% of
+women’s choices, against 15.3% of men’s, a gap of five points. The share
+of respondents who chose them differs by almost twelve, 36.6% against
+25.0%:
 
 ``` r
 
 tbl <- table_multiresponse(
-  domains,
-  select = c(health, work, relationships, standard),
-  by = physical_activity
+  sochealth,
+  select = starts_with("info_"),
+  by = sex
 )
 tbl
-#> Multiple responses by physical_activity
+#> Multiple responses by sex
 #> 
-#>  Variable      │ No n  No %  Yes n  Yes %  Total n  Total %   p   
-#> ───────────────┼──────────────────────────────────────────────────
-#>  health        │ 335   51.5   314   57.1     649     54.1    .109 
-#>  work          │ 292   44.9   301   54.7     593     49.4    .003 
-#>  relationships │ 375   57.7   336   61.1     711     59.2    .233 
-#>  standard      │ 306   47.1   296   53.8     602     50.2    .060 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Respondents   │ 650          550           1200                  
+#>  Variable        │ Female n  Female %  Male n  Male %  Total n  Total %    p   
+#> ─────────────────┼─────────────────────────────────────────────────────────────
+#>  info_doctor     │   377       62.9     344     60.9     721     61.9    1.000 
+#>  info_pharmacist │   137       22.9     119     21.1     256     22.0    1.000 
+#>  info_internet   │   268       44.7     255     45.1     523     44.9    1.000 
+#>  info_family     │   219       36.6     141     25.0     360     30.9    <.001 
+#>  info_media      │    78       13.0      63     11.2     141     12.1    1.000 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Respondents     │   599                565             1164                   
 #> 
-#> Several answers possible: percentages are of respondents and can sum to more than 100%. Base: respondents who answered the question, including those who chose no item. 204 respondents chose none of the items. Item p-values: Pearson chi-squared test of each item by group. P-values adjusted via stats::p.adjust(method = "holm"); m = 4 test(s). Group comparison: Rao-Scott second-order corrected chi-squared test of multiple marginal independence, χ²(3.16) = 17.36, p < .001.
+#> Respondents with no answer to the question removed: 36. Several answers possible: percentages are of respondents and can sum to more than 100%. Base: respondents who answered the question, including those who chose no item. 67 respondents chose none of the items. Item p-values: Pearson chi-squared test of each item by group. P-values adjusted via stats::p.adjust(method = "holm"); m = 5 test(s). Group comparison: Rao-Scott second-order corrected chi-squared test of multiple marginal independence, χ²(4.61) = 18.78, p = .002.
 ```
 
 Each percentage is now a share of the respondents of its group, and the
 `Respondents` row gives those bases. The note explains the percentages
 and names the tests. Its global test finds the difference the stacked
-table missed: p \< .001, against .645. The rest of the article reads
-this table piece by piece.
+table missed: p = .002, against .053. The rest of the article reads this
+table piece by piece.
 
 ## A first table
 
@@ -155,19 +162,20 @@ Without `by`, the table describes the whole sample:
 
 ``` r
 
-table_multiresponse(domains, select = c(health, work, relationships, standard))
+table_multiresponse(sochealth, select = starts_with("info_"))
 #> Multiple responses
 #> 
-#>  Variable        │   n       %    
-#> ─────────────────┼────────────────
-#>  health          │   649    54.1  
-#>  work            │   593    49.4  
-#>  relationships   │   711    59.2  
-#>  standard        │   602    50.2  
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Respondents     │  1200          
+#>  Variable          │   n       %    
+#> ───────────────────┼────────────────
+#>  info_doctor       │   721    61.9  
+#>  info_pharmacist   │   256    22.0  
+#>  info_internet     │   523    44.9  
+#>  info_family       │   360    30.9  
+#>  info_media        │   141    12.1  
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Respondents       │  1164          
 #> 
-#> Several answers possible: percentages are of respondents and can sum to more than 100%. Base: respondents who answered the question, including those who chose no item. 204 respondents chose none of the items.
+#> Respondents with no answer to the question removed: 36. Several answers possible: percentages are of respondents and can sum to more than 100%. Base: respondents who answered the question, including those who chose no item. 67 respondents chose none of the items.
 ```
 
 Four things to notice:
@@ -175,44 +183,45 @@ Four things to notice:
 1.  **One row per item.** `n` counts the respondents who chose the item,
     and `%` is their share of the respondents of the base: the
     percentage of cases.
-2.  **The percentages sum to more than 100.** Here they add up to 212.9,
-    the mean number of choices per respondent times 100 (Jann, 2005,
-    p. 107).
+2.  **The percentages sum to more than 100.** Here they add up to 171.9
+    before rounding, the mean number of choices per respondent times 100
+    (Jann, 2005, p. 107).
 3.  **The `Respondents` row is the base**, the number of respondents
     every percentage is computed on.
 4.  **The note says what the percentages are of**, which respondents
     form the base, and how many of them chose no item.
 
-`select` takes tidyselect syntax, so `select = health:standard` gives
-the same table, as in the calls below.
+`select` takes tidyselect syntax, so `select = info_doctor:info_media`
+and the five names written in [`c()`](https://rdrr.io/r/base/c.html)
+give the same table.
 
 ### Factor items and `counted`
 
 Logical columns, like these, and numeric columns coded 0 and 1 are read
 as they are. A factor, character, or labelled column needs `counted`,
-the value that marks a choice. Three yes/no factors of `sochealth` show
-the case, and `labels = TRUE` prints their label attributes in place of
-their names:
+the value that marks a choice. The same items recoded as `"Yes"` and
+`"No"` factors show the case:
 
 ``` r
 
-table_multiresponse(
-  sochealth,
-  select = c(smoking, physical_activity, dentist_12m),
-  counted = "Yes",
-  labels = TRUE
-)
+yes_no <- as.data.frame(lapply(
+  info,
+  function(x) factor(x, levels = c(FALSE, TRUE), labels = c("No", "Yes"))
+))
+table_multiresponse(yes_no, select = everything(), counted = "Yes")
 #> Multiple responses
 #> 
-#>  Variable                          │   n       %    
-#> ───────────────────────────────────┼────────────────
-#>  Current smoker                    │   249    20.8  
-#>  Regular physical activity         │   550    45.8  
-#>  Dentist visit in last 12 months   │   846    70.5  
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Respondents                       │  1200          
+#>  Variable          │   n       %    
+#> ───────────────────┼────────────────
+#>  info_doctor       │   721    61.9  
+#>  info_pharmacist   │   256    22.0  
+#>  info_internet     │   523    44.9  
+#>  info_family       │   360    30.9  
+#>  info_media        │   141    12.1  
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Respondents       │  1164          
 #> 
-#> Several answers possible: percentages are of respondents and can sum to more than 100%. Base: respondents who answered the question, including those who chose no item. 166 respondents chose none of the items.
+#> Respondents with no answer to the question removed: 36. Several answers possible: percentages are of respondents and can sum to more than 100%. Base: respondents who answered the question, including those who chose no item. 67 respondents chose none of the items.
 ```
 
 `counted` applies to every selected column. Any other non-missing value
@@ -223,11 +232,7 @@ of zeros:
 
 ``` r
 
-table_multiresponse(
-  sochealth,
-  select = c(smoking, physical_activity, dentist_12m),
-  counted = "yes"
-)
+table_multiresponse(yes_no, select = everything(), counted = "yes")
 #> Error in `table_multiresponse()`:
 #> ! `counted = "yes"` matches no value of the selected columns.
 #> ℹ Values found: "Yes", "No".
@@ -235,8 +240,9 @@ table_multiresponse(
 
 ### Labels and order
 
-The rows show the column names by default. A named vector sets the
-wording you publish. `sort` takes the values of
+The rows show the column names by default. `labels = TRUE` prints the
+label attribute of each column, and a named vector sets the wording you
+publish. `sort` takes the values of
 [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md): `"-"`
 ranks the items by decreasing total count, and items with the same count
 keep the order of `select`:
@@ -244,147 +250,115 @@ keep the order of `select`:
 ``` r
 
 table_multiresponse(
-  domains,
-  select = health:standard,
-  labels = c(
-    health = "Health",
-    work = "Work",
-    relationships = "Relationships",
-    standard = "Standard of living"
-  ),
+  sochealth,
+  select = starts_with("info_"),
+  labels = TRUE,
   sort = "-"
 )
 #> Multiple responses
 #> 
-#>  Variable             │   n       %    
-#> ──────────────────────┼────────────────
-#>  Relationships        │   711    59.2  
-#>  Health               │   649    54.1  
-#>  Standard of living   │   602    50.2  
-#>  Work                 │   593    49.4  
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Respondents          │  1200          
+#>  Variable                              │   n       %    
+#> ───────────────────────────────────────┼────────────────
+#>  Doctor or other health professional   │   721    61.9  
+#>  Internet, websites or apps            │   523    44.9  
+#>  Family or friends                     │   360    30.9  
+#>  Pharmacist                            │   256    22.0  
+#>  Television, radio or newspapers       │   141    12.1  
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Respondents                           │  1164          
 #> 
-#> Several answers possible: percentages are of respondents and can sum to more than 100%. Base: respondents who answered the question, including those who chose no item. 204 respondents chose none of the items.
+#> Respondents with no answer to the question removed: 36. Several answers possible: percentages are of respondents and can sum to more than 100%. Base: respondents who answered the question, including those who chose no item. 67 respondents chose none of the items.
 ```
 
 `"+"` ranks the items by increasing count, and `"name+"` and `"name-"`
 sort them alphabetically on the labels shown. The default, `sort = ""`,
 sorts nothing: the rows keep the order in which `select` delivers the
-columns, their order in the data with `health:standard` or
-[`starts_with()`](https://tidyselect.r-lib.org/reference/starts_with.html),
-or the order written in [`c()`](https://rdrr.io/r/base/c.html). The
-function cannot know the questionnaire, so its order comes from the
-order of the columns or the order written in `select`.
+columns, their order in the data with
+[`starts_with()`](https://tidyselect.r-lib.org/reference/starts_with.html)
+or `info_doctor:info_media`, or the order written in
+[`c()`](https://rdrr.io/r/base/c.html). The function cannot know the
+questionnaire, so its order comes from the order of the columns or the
+order written in `select`.
 
 ## Bases and percentages
 
 The base is the set of respondents a percentage of cases is computed on.
 Three bases are in use, and they differ on two kinds of respondents:
-those who chose nothing and those who skipped the question. Six invented
-respondents show the difference, for the question “How did you hear
-about the service? Check all that apply”:
-
-``` r
-
-heard <- data.frame(
-  radio = c(TRUE, TRUE, FALSE, FALSE, NA, TRUE),
-  press = c(TRUE, FALSE, TRUE, FALSE, NA, NA),
-  web = c(FALSE, TRUE, FALSE, FALSE, NA, FALSE)
-)
-heard
-#>   radio press   web
-#> 1  TRUE  TRUE FALSE
-#> 2  TRUE FALSE  TRUE
-#> 3 FALSE  TRUE FALSE
-#> 4 FALSE FALSE FALSE
-#> 5    NA    NA    NA
-#> 6  TRUE    NA FALSE
-```
-
-Respondent 4 chose nothing, respondent 5 skipped the question, and
-respondent 6 has one missing item.
+those who chose nothing and those who skipped the question. `sochealth`
+has both: 67 respondents chose no source, and 36 skipped the question.
 
 The default, `base = "valid"`, keeps every respondent with at least one
-non-missing item. Respondent 4 stays, and respondent 5 leaves:
-
-``` r
-
-table_multiresponse(heard, select = c(radio, press, web))
-#> Multiple responses
-#> 
-#>  Variable      │  n     %    
-#> ───────────────┼─────────────
-#>  radio         │  3    60.0  
-#>  press         │  2    40.0  
-#>  web           │  1    20.0  
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Respondents   │  5          
-#> 
-#> Respondents with no answer to the question removed: 1. Several answers possible: percentages are of respondents and can sum to more than 100%. Base: respondents who answered the question, including those who chose no item. 1 respondent chose none of the items.
-```
-
-Within the base, a missing item counts as not chosen, so respondent 6
-counts for radio only. The note gives the number of respondents removed
-and the number who chose nothing. This is how `expss` counts its valid
-cases. It is also the base of Stata’s `mrtab` with its `include` option
-(Jann, 2005, p. 99). Jann uses that option in his own example, because
-its list of income types “is probably not exhaustive” (pp. 107-108).
+non-missing item. It is the base of the first table: the 67 stay, the 36
+leave, and the note gives both counts. Within the base, a missing item
+counts as not chosen, which matters when a respondent skips some items
+and answers others. This is how `expss` counts its valid cases. It is
+also the base of Stata’s `mrtab` with its `include` option (Jann, 2005,
+p. 99). Jann uses that option in his own example, because its list of
+income types “is probably not exhaustive” (pp. 107-108).
 
 `base = "answered"` keeps only the respondents who chose at least one
 item:
 
 ``` r
 
-table_multiresponse(heard, select = c(radio, press, web), base = "answered")
+table_multiresponse(
+  sochealth,
+  select = starts_with("info_"),
+  base = "answered"
+)
 #> Multiple responses
 #> 
-#>  Variable      │  n     %    
-#> ───────────────┼─────────────
-#>  radio         │  3    75.0  
-#>  press         │  2    50.0  
-#>  web           │  1    25.0  
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Respondents   │  4          
+#>  Variable          │   n       %    
+#> ───────────────────┼────────────────
+#>  info_doctor       │   721    65.7  
+#>  info_pharmacist   │   256    23.3  
+#>  info_internet     │   523    47.7  
+#>  info_family       │   360    32.8  
+#>  info_media        │   141    12.9  
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Respondents       │  1097          
 #> 
-#> Respondents with no answer to the question removed: 1. Respondents who chose no item removed: 1. Several answers possible: percentages are of respondents and can sum to more than 100%. Base: respondents who chose at least one item.
+#> Respondents with no answer to the question removed: 36. Respondents who chose no item removed: 67. Several answers possible: percentages are of respondents and can sum to more than 100%. Base: respondents who chose at least one item.
 ```
 
 This is the default of SPSS `MULT RESPONSE` and of `mrtab` (Jann, 2005,
 p. 98). Under this base, choosing nothing cannot be told from skipping,
-so respondent 4 leaves with respondent 5, and the note counts two
-respondents removed. Jann states the dilemma: “it is often not clear a
-priori whether the respondent refused to answer the question (and thus
-should be excluded from analysis) or whether the correct response is
-simply ‘none’” (p. 107).
+so the 67 respondents who chose no source leave with the 36 who skipped.
+The note counts the two groups apart, and every percentage rises: 65.7%
+chose a doctor, against 61.9% under `"valid"`. Jann states the dilemma:
+“it is often not clear a priori whether the respondent refused to answer
+the question (and thus should be excluded from analysis) or whether the
+correct response is simply ‘none’” (p. 107).
 
 `base = "all"` keeps every row, as `questionr::multi.table()` does:
 
 ``` r
 
-table_multiresponse(heard, select = c(radio, press, web), base = "all")
+table_multiresponse(sochealth, select = starts_with("info_"), base = "all")
 #> Multiple responses
 #> 
-#>  Variable      │  n     %    
-#> ───────────────┼─────────────
-#>  radio         │  3    50.0  
-#>  press         │  2    33.3  
-#>  web           │  1    16.7  
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Respondents   │  6          
+#>  Variable          │   n       %    
+#> ───────────────────┼────────────────
+#>  info_doctor       │   721    60.1  
+#>  info_pharmacist   │   256    21.3  
+#>  info_internet     │   523    43.6  
+#>  info_family       │   360    30.0  
+#>  info_media        │   141    11.8  
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Respondents       │  1200          
 #> 
-#> Several answers possible: percentages are of respondents and can sum to more than 100%. Base: all respondents. 2 respondents chose none of the items.
+#> Several answers possible: percentages are of respondents and can sum to more than 100%. Base: all respondents. 103 respondents chose none of the items.
 ```
 
-Respondent 5 now counts as a respondent who chose nothing, and the note
-says that two did.
+The 36 respondents who skipped the question now count as respondents who
+chose nothing, and the note says that 103 did.
 
 The counts are the same under the three bases. The percentages and the
 tests are not. `"valid"` assumes that a skipped question is coded
 missing on every item, and that a box left unchecked is coded `FALSE` or
-0. In data that code an unchecked box as missing, `"valid"` would drop
-the respondents who checked nothing. `"all"` keeps them, along with
-those who skipped the question.
+0, as in `sochealth`. In data that code an unchecked box as missing,
+`"valid"` would drop the respondents who checked nothing. `"all"` keeps
+them, along with those who skipped the question.
 
 ### Percentages of cases or of responses
 
@@ -394,19 +368,24 @@ made in the group, so the column sums to 100. `"both"` shows the two:
 
 ``` r
 
-table_multiresponse(domains, select = health:standard, percent = "both")
+table_multiresponse(
+  sochealth,
+  select = starts_with("info_"),
+  percent = "both"
+)
 #> Multiple responses
 #> 
-#>  Variable        │   n      % of cases    % of responses  
-#> ─────────────────┼────────────────────────────────────────
-#>  health          │   649       54.1            25.4       
-#>  work            │   593       49.4            23.2       
-#>  relationships   │   711       59.2            27.8       
-#>  standard        │   602       50.2            23.6       
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Respondents     │  1200                                  
+#>  Variable          │   n      % of cases    % of responses  
+#> ───────────────────┼────────────────────────────────────────
+#>  info_doctor       │   721       61.9            36.0       
+#>  info_pharmacist   │   256       22.0            12.8       
+#>  info_internet     │   523       44.9            26.1       
+#>  info_family       │   360       30.9            18.0       
+#>  info_media        │   141       12.1             7.0       
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Respondents       │  1164                                  
 #> 
-#> Several answers possible: percentages of respondents can sum to more than 100%; percentages of responses sum to 100%. Base: respondents who answered the question, including those who chose no item. 204 respondents chose none of the items.
+#> Respondents with no answer to the question removed: 36. Several answers possible: percentages of respondents can sum to more than 100%; percentages of responses sum to 100%. Base: respondents who answered the question, including those who chose no item. 67 respondents chose none of the items.
 ```
 
 The percentages of responses are the shares of the stacked table, and
@@ -420,11 +399,11 @@ it.
 
 ## Comparing groups
 
-`tbl`, the table of the first section, compares the active respondents
-with the others. With `by`, the counts and percentages are given for
-each group and for the `Total` margin. Rows with a missing `by` are
-removed, and the note says how many. The tests come in two layers: one
-per item, and one for the question.
+`tbl`, the table of the first section, compares women and men. With
+`by`, the counts and percentages are given for each group and for the
+`Total` margin. Rows with a missing `by` are removed, and the note says
+how many. The tests come in two layers: one per item, and one for the
+question.
 
 ### One test per item
 
@@ -438,27 +417,70 @@ When an expected count of an item’s table is below 5, the chi-squared
 approximation is unreliable, and the item takes Fisher’s exact test
 instead. This is the rule of `test = "auto"`, the default, shared with
 [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
-and gtsummary’s `add_p()`. An item tested exactly has no statistic, and
-the note names the test of each item. `test = "chisq"` and
-`test = "fisher"` take one test for every item. Here every expected
-count is far above 5, so every item takes the chi-squared. The data
-frame output keeps the test, the statistics and both p-values:
+and gtsummary’s `add_p()`. In `tbl`, every expected count is far above
+5. A smaller sample split into more groups is another matter: in the
+South region, 31 respondents aged 65 to 75 answered the question, and
+the media item has an expected count of 3.2 among them:
+
+``` r
+
+table_multiresponse(
+  subset(sochealth, region == "South"),
+  select = starts_with("info_"),
+  by = age_group
+)
+#> Multiple responses by age_group
+#> 
+#>  Variable        │ 25-34 n  25-34 %  35-49 n  35-49 %  50-64 n  50-64 % 
+#> ─────────────────┼──────────────────────────────────────────────────────
+#>  info_doctor     │   27      57.4      36      52.2      33      67.3   
+#>  info_pharmacist │    8      17.0      17      24.6      12      24.5   
+#>  info_internet   │   35      74.5      39      56.5      19      38.8   
+#>  info_family     │   17      36.2      21      30.4      15      30.6   
+#>  info_media      │    3       6.4       6       8.7       4       8.2   
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Respondents     │   47                69                49             
+#> 
+#>  Variable        │ 65-75 n  65-75 %  Total n  Total %    p   
+#> ─────────────────┼───────────────────────────────────────────
+#>  info_doctor     │   22      71.0      118     60.2     .624 
+#>  info_pharmacist │    9      29.0       46     23.5    1.000 
+#>  info_internet   │    3       9.7       96     49.0    <.001 
+#>  info_family     │   10      32.3       63     32.1    1.000 
+#>  info_media      │    7      22.6       20     10.2     .591 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Respondents     │   31                196                   
+#> 
+#> Respondents with no answer to the question removed: 5. Several answers possible: percentages are of respondents and can sum to more than 100%. Base: respondents who answered the question, including those who chose no item. 10 respondents chose none of the items. Item p-values: Pearson chi-squared test (info_doctor, info_pharmacist, info_internet, info_family); Fisher exact test (info_media). P-values adjusted via stats::p.adjust(method = "holm"); m = 5 test(s). Group comparison: Rao-Scott second-order corrected chi-squared test of multiple marginal independence, χ²(13.78) = 44.16, p < .001.
+```
+
+The note names both tests: the Pearson chi-squared for four items, and
+Fisher’s exact test for `info_media`, which has no statistic.
+`test = "chisq"` and `test = "fisher"` take one test for every item.
+With two groups, as in `tbl`, each item’s table is 2x2, and
+`test = "midp"` and `test = "n1"` take the Fisher mid-p test and
+Campbell’s N-1 chi-squared test, presented in [*Categorical summary
+tables*](https://amaltawfik.github.io/spicy/articles/table-categorical.html#chi-squared-or-fishers-exact-test).
+
+Back in `tbl`, every item takes the chi-squared. The data frame output
+keeps the test, the statistics and both p-values:
 
 ``` r
 
 wide <- table_multiresponse(
-  domains,
-  select = health:standard,
-  by = physical_activity,
+  sochealth,
+  select = starts_with("info_"),
+  by = sex,
   output = "data.frame"
 )
 wide[c("Variable", "test_type", "Chi2", "df", "p", "p_unadjusted")]
-#>        Variable   test_type      Chi2 df           p p_unadjusted
-#> 1        health chi_squared  3.698537  1 0.108920423 0.0544602116
-#> 2          work chi_squared 11.456128  1 0.002850345 0.0007125862
-#> 3 relationships chi_squared  1.425211  1 0.232547529 0.2325475286
-#> 4      standard chi_squared  5.415538  1 0.059874905 0.0199583016
-#> 5   Respondents        <NA>        NA NA          NA           NA
+#>          Variable   test_type        Chi2 df            p p_unadjusted
+#> 1     info_doctor chi_squared  0.51997605  1 1.000000e+00 4.708519e-01
+#> 2 info_pharmacist chi_squared  0.55490963  1 1.000000e+00 4.563185e-01
+#> 3   info_internet chi_squared  0.01801149  1 1.000000e+00 8.932390e-01
+#> 4     info_family chi_squared 18.33047265  1 9.285636e-05 1.857127e-05
+#> 5      info_media chi_squared  0.95631714  1 1.000000e+00 3.281165e-01
+#> 6     Respondents        <NA>          NA NA           NA           NA
 ```
 
 The `p` column is adjusted by Holm’s method, and `p_unadjusted` keeps
@@ -474,14 +496,15 @@ family-wise error rate, whatever the dependence between the items. R’s
 documentation sees “no reason to use the unmodified Bonferroni
 correction because it is dominated by Holm’s method”
 ([`?p.adjust`](https://rdrr.io/r/stats/p.adjust.html)). Holm’s smallest
-adjusted p-value, .003 for work, equals the Bonferroni global p-value of
-Agresti and Liu (1999).
+adjusted p-value, that of family, is five times the smallest raw
+p-value: the Bonferroni global p-value of Agresti and Liu (1999).
 
 The note names the method and the number of items adjusted together.
 `p_adjust = "none"` keeps the raw p-values, and another method of
 [`stats::p.adjust()`](https://rdrr.io/r/stats/p.adjust.html) can be
 named instead. `statistic = TRUE` prints the statistics in a `Test`
-column, χ²(1) = 11.46 for work, with or without the p-values.
+column, χ²(1) = 18.33 for family, with or without the p-values. An item
+tested exactly shows a dash there.
 
 ### One test for the question
 
@@ -492,7 +515,7 @@ that are responsible” (1999, p. 941). The overall test is the last
 sentence of the note. It tests multiple marginal independence: that the
 probability of choosing each item is the same in every group.
 
-Its statistic is the sum of the item chi-squared statistics, 22.00 here,
+Its statistic is the sum of the item chi-squared statistics, 20.38 here,
 whatever test the item p-values take. The sum does not depend on which
 answer of an item is coded as chosen (Agresti and Liu, 1999). It is not
 chi-squared under the null hypothesis: one respondent can choose several
@@ -506,7 +529,7 @@ one” (Thomas and Decady, 2004, p. 48). The default,
 `global_test = "rs2"`, allows for their spread with the second-order
 Rao-Scott correction of Thomas and Decady (2004, pp. 48 and 58-59). It
 matches the first two moments of the distribution and refers the result
-to a chi-squared on fractional degrees of freedom: χ²(3.16) = 17.36
+to a chi-squared on fractional degrees of freedom: χ²(4.61) = 18.78
 here. The result is deterministic.
 
 `glance()` returns the global test as numbers:
@@ -515,9 +538,9 @@ here. The result is deterministic.
 
 broom::glance(tbl)[c("test_type", "statistic", "df", "p.value", "rs_cv")]
 #> # A tibble: 1 × 5
-#>   test_type statistic    df  p.value rs_cv
-#>   <chr>         <dbl> <dbl>    <dbl> <dbl>
-#> 1 rs2            17.4  3.16 0.000707 0.516
+#>   test_type statistic    df p.value rs_cv
+#>   <chr>         <dbl> <dbl>   <dbl> <dbl>
+#> 1 rs2            18.8  4.61 0.00151 0.291
 ```
 
 `rs_cv` measures the spread of those weights: their coefficient of
@@ -525,8 +548,8 @@ variation, their mean being taken as 1. It estimates the coefficient *a*
 of Thomas and Decady (2004, pp. 48 and 59). The correction divides the
 sum by 1 + `rs_cv`² and refers it to a chi-squared on *c*(*r* − 1)/(1 +
 `rs_cv`²) degrees of freedom, for *c* items and *r* groups (p. 48). Here
-1 + 0.52² = 1.27, so 22.00 on 4 degrees of freedom becomes 17.36 on
-3.16. The closer `rs_cv` is to 0, the less the correction changes.
+1 + 0.29² = 1.08, so 20.38 on 5 degrees of freedom becomes 18.78 on
+4.61. The closer `rs_cv` is to 0, the less the correction changes.
 Thomas and Decady read this coefficient to decide whether the second
 order is needed (pp. 53 and 57).
 
@@ -543,23 +566,23 @@ set a seed to reproduce it:
 
 set.seed(1)
 boot <- table_multiresponse(
-  domains,
-  select = health:standard,
-  by = physical_activity,
+  sochealth,
+  select = starts_with("info_"),
+  by = sex,
   global_test = "bootstrap"
 )
 broom::glance(boot)[c("test_type", "statistic", "df", "p.value", "boot_n")]
 #> # A tibble: 1 × 5
 #>   test_type statistic    df p.value boot_n
 #>   <chr>         <dbl> <dbl>   <dbl>  <int>
-#> 1 bootstrap      22.0    NA 0.00100   1999
+#> 1 bootstrap      20.4    NA 0.00150   1999
 ```
 
-The statistic is the uncorrected sum, 22.00, with no degrees of freedom.
-Two of the 1999 resamples reached it, so the p-value is 2/1999, printed
-as p = .001 in the note. A p-value of 0 would only say that no resample
-reached the sum. The note then reports it as below one resample in
-`boot_n`, rounded up.
+The statistic is the uncorrected sum, 20.38, with no degrees of freedom.
+Three of the 1999 resamples reached it, so the p-value is 3/1999,
+printed as p = .002 in the note. A p-value of 0 would only say that no
+resample reached the sum. The note then reports it as below one resample
+in `boot_n`, rounded up.
 
 A resample in which an item is chosen by every respondent or by none
 gives that item no statistic. It is drawn again, as Bilder, Loughin and
@@ -572,34 +595,35 @@ multiple marginal independence compares it with the second-order test.
 ### Items nobody chose
 
 An item chosen by every respondent, or by none, has no test, but its row
-stays. A fifth domain that nobody chose is added here on purpose:
+stays. A sixth source that nobody chose is added here on purpose,
+missing like the others for the respondents who skipped the question:
 
 ``` r
 
-with_empty <- transform(domains, spirituality = FALSE)
-table_multiresponse(
-  with_empty,
-  select = health:spirituality,
-  by = physical_activity
+with_empty <- transform(
+  sochealth,
+  info_other = ifelse(is.na(info_doctor), NA, FALSE)
 )
-#> Multiple responses by physical_activity
+table_multiresponse(with_empty, select = starts_with("info_"), by = sex)
+#> Multiple responses by sex
 #> 
-#>  Variable      │ No n  No %  Yes n  Yes %  Total n  Total %    p   
-#> ───────────────┼───────────────────────────────────────────────────
-#>  health        │ 335   51.5   314   57.1     649     54.1     .109 
-#>  work          │ 292   44.9   301   54.7     593     49.4     .003 
-#>  relationships │ 375   57.7   336   61.1     711     59.2     .233 
-#>  standard      │ 306   47.1   296   53.8     602     50.2     .060 
-#>  spirituality  │   0    0.0     0    0.0       0      0.0     –    
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Respondents   │ 650          550           1200                   
+#>  Variable        │ Female n  Female %  Male n  Male %  Total n  Total %    p   
+#> ─────────────────┼─────────────────────────────────────────────────────────────
+#>  info_doctor     │   377       62.9     344     60.9     721     61.9    1.000 
+#>  info_pharmacist │   137       22.9     119     21.1     256     22.0    1.000 
+#>  info_internet   │   268       44.7     255     45.1     523     44.9    1.000 
+#>  info_family     │   219       36.6     141     25.0     360     30.9    <.001 
+#>  info_media      │    78       13.0      63     11.2     141     12.1    1.000 
+#>  info_other      │     0        0.0       0      0.0       0      0.0     –    
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Respondents     │   599                565             1164                   
 #> 
-#> Several answers possible: percentages are of respondents and can sum to more than 100%. Base: respondents who answered the question, including those who chose no item. 204 respondents chose none of the items. Item p-values: Pearson chi-squared test of each item by group. P-values adjusted via stats::p.adjust(method = "holm"); m = 4 test(s). Not tested (no variation, shown as –): spirituality. Group comparison: Rao-Scott second-order corrected chi-squared test of multiple marginal independence, χ²(3.16) = 17.36, p < .001.
+#> Respondents with no answer to the question removed: 36. Several answers possible: percentages are of respondents and can sum to more than 100%. Base: respondents who answered the question, including those who chose no item. 67 respondents chose none of the items. Item p-values: Pearson chi-squared test of each item by group. P-values adjusted via stats::p.adjust(method = "holm"); m = 5 test(s). Not tested (no variation, shown as –): info_other. Group comparison: Rao-Scott second-order corrected chi-squared test of multiple marginal independence, χ²(4.61) = 18.78, p = .002.
 ```
 
 Its row shows a true zero and its `p` cell a dash, which the note
 explains. The item leaves the global test, which is unchanged, and the
-Holm adjustment, which still counts four tests. With fewer than two
+Holm adjustment, which still counts five tests. With fewer than two
 groups holding respondents, there is nothing to compare, and the table
 shows no test.
 
@@ -616,26 +640,27 @@ such a small survey:
 
 ``` r
 
-small <- head(domains, 80)
+small <- head(sochealth, 80)
 table_multiresponse(
   small,
-  select = health:standard,
-  by = physical_activity,
+  select = starts_with("info_"),
+  by = sex,
   p_value = FALSE,
   percent_digits = 0
 )
-#> Multiple responses by physical_activity
+#> Multiple responses by sex
 #> 
-#>  Variable        │  No n    No %    Yes n    Yes %    Total n    Total %  
-#> ─────────────────┼────────────────────────────────────────────────────────
-#>  health          │   18      44      23       59        41         51     
-#>  work            │   15      37      24       62        39         49     
-#>  relationships   │   21      51      26       67        47         59     
-#>  standard        │   19      46      21       54        40         50     
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Respondents     │   41              39                 80                
+#>  Variable        │ Female n  Female %  Male n  Male %  Total n  Total % 
+#> ─────────────────┼──────────────────────────────────────────────────────
+#>  info_doctor     │    21        52       19      49      40       51    
+#>  info_pharmacist │    11        28        8      21      19       24    
+#>  info_internet   │    19        48       25      64      44       56    
+#>  info_family     │    11        28        5      13      16       20    
+#>  info_media      │     5        12        5      13      10       13    
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Respondents     │    40                 39              79             
 #> 
-#> Several answers possible: percentages are of respondents and can sum to more than 100%. Base: respondents who answered the question, including those who chose no item. 12 respondents chose none of the items.
+#> Respondents with no answer to the question removed: 1. Several answers possible: percentages are of respondents and can sum to more than 100%. Base: respondents who answered the question, including those who chose no item. 7 respondents chose none of the items.
 ```
 
 `statistic` stays independent of `p_value`, so `statistic = TRUE` would
@@ -645,7 +670,7 @@ still show each item’s chi-squared. A `p_adjust` typed with
 `percent_digits = 0` follows the AMA manual: “A percentage or decimal
 quotient should contain no more than the number of digits in the
 denominator” (American Medical Association, 2020, section 4.1.8). Groups
-of fewer than 100 respondents, 41 and 39 here, therefore take whole
+of fewer than 100 respondents, 40 and 39 here, therefore take whole
 percentages.
 
 The note answers two more rules. The AMA manual asks that “any
@@ -669,10 +694,10 @@ margin included:
 
 ``` r
 
-inline(tbl, work, column = "pct", model = "Yes")
-#> [1] "54.7"
-inline(tbl, work, column = "{n} ({pct}%)", model = "No")
-#> [1] "292 (44.9%)"
+inline(tbl, info_family, column = "pct", model = "Female")
+#> [1] "36.6"
+inline(tbl, info_family, column = "{n} ({pct}%)", model = "Male")
+#> [1] "141 (25.0%)"
 ```
 
 The item `p` belongs to no group and is cited without `model`. The
@@ -680,10 +705,10 @@ The item `p` belongs to no group and is cited without `model`. The
 
 ``` r
 
-inline(tbl, work, column = "p")
-#> [1] ".003"
-inline(tbl, "nobs", model = "Yes")
-#> [1] "550"
+inline(tbl, info_family, column = "p")
+#> [1] "<.001"
+inline(tbl, "nobs", model = "Female")
+#> [1] "599"
 ```
 
 The statistic needs a table built with `statistic = TRUE`:
@@ -691,13 +716,13 @@ The statistic needs a table built with `statistic = TRUE`:
 ``` r
 
 tbl_stat <- table_multiresponse(
-  domains,
-  select = health:standard,
-  by = physical_activity,
+  sochealth,
+  select = starts_with("info_"),
+  by = sex,
   statistic = TRUE
 )
-inline(tbl_stat, work, column = "statistic")
-#> [1] "χ²(1) = 11.46"
+inline(tbl_stat, info_family, column = "statistic")
+#> [1] "χ²(1) = 18.33"
 ```
 
 Without `column`,
@@ -715,7 +740,7 @@ groups:
 ``` r
 
 names(wide)
-#>  [1] "Variable"     "No n"         "No %"         "Yes n"        "Yes %"       
+#>  [1] "Variable"     "Female n"     "Female %"     "Male n"       "Male %"      
 #>  [6] "Total n"      "Total %"      "test_type"    "Chi2"         "df"          
 #> [11] "p"            "p_unadjusted"
 ```
@@ -726,20 +751,16 @@ the group:
 ``` r
 
 long <- table_multiresponse(
-  domains,
-  select = health:standard,
-  by = physical_activity,
+  sochealth,
+  select = starts_with("info_"),
+  by = sex,
   output = "long"
 )
 head(long, 3)
-#>   variable group   n base      pct   test_type     chi2 df         p
-#> 1   health    No 335  650 51.53846 chi_squared 3.698537  1 0.1089204
-#> 2   health   Yes 314  550 57.09091 chi_squared 3.698537  1 0.1089204
-#> 3   health Total 649 1200 54.08333 chi_squared 3.698537  1 0.1089204
-#>   p_unadjusted
-#> 1   0.05446021
-#> 2   0.05446021
-#> 3   0.05446021
+#>      variable  group   n base      pct   test_type      chi2 df p p_unadjusted
+#> 1 info_doctor Female 377  599 62.93823 chi_squared 0.5199761  1 1    0.4708519
+#> 2 info_doctor   Male 344  565 60.88496 chi_squared 0.5199761  1 1    0.4708519
+#> 3 info_doctor  Total 721 1164 61.94158 chi_squared 0.5199761  1 1    0.4708519
 ```
 
 Both frames carry the note in `attr(x, "note")` and the global test in
@@ -752,28 +773,31 @@ Both frames carry the note in `attr(x, "note")` and the global test in
 ``` r
 
 broom::tidy(tbl)
-#> # A tibble: 12 × 13
-#>    variable      label   group total     n  base proportion proportion_responses
-#>    <chr>         <chr>   <chr> <lgl> <int> <int>      <dbl>                <dbl>
-#>  1 health        health  No    FALSE   335   650      0.515                0.256
-#>  2 health        health  Yes   FALSE   314   550      0.571                0.252
-#>  3 health        health  Total TRUE    649  1200      0.541                0.254
-#>  4 work          work    No    FALSE   292   650      0.449                0.223
-#>  5 work          work    Yes   FALSE   301   550      0.547                0.241
-#>  6 work          work    Total TRUE    593  1200      0.494                0.232
-#>  7 relationships relati… No    FALSE   375   650      0.577                0.287
-#>  8 relationships relati… Yes   FALSE   336   550      0.611                0.269
-#>  9 relationships relati… Total TRUE    711  1200      0.592                0.278
-#> 10 standard      standa… No    FALSE   306   650      0.471                0.234
-#> 11 standard      standa… Yes   FALSE   296   550      0.538                0.237
-#> 12 standard      standa… Total TRUE    602  1200      0.502                0.236
+#> # A tibble: 15 × 13
+#>    variable        label group total     n  base proportion proportion_responses
+#>    <chr>           <chr> <chr> <lgl> <int> <int>      <dbl>                <dbl>
+#>  1 info_doctor     info… Fema… FALSE   377   599      0.629               0.349 
+#>  2 info_doctor     info… Male  FALSE   344   565      0.609               0.373 
+#>  3 info_doctor     info… Total TRUE    721  1164      0.619               0.360 
+#>  4 info_pharmacist info… Fema… FALSE   137   599      0.229               0.127 
+#>  5 info_pharmacist info… Male  FALSE   119   565      0.211               0.129 
+#>  6 info_pharmacist info… Total TRUE    256  1164      0.220               0.128 
+#>  7 info_internet   info… Fema… FALSE   268   599      0.447               0.248 
+#>  8 info_internet   info… Male  FALSE   255   565      0.451               0.277 
+#>  9 info_internet   info… Total TRUE    523  1164      0.449               0.261 
+#> 10 info_family     info… Fema… FALSE   219   599      0.366               0.203 
+#> 11 info_family     info… Male  FALSE   141   565      0.250               0.153 
+#> 12 info_family     info… Total TRUE    360  1164      0.309               0.180 
+#> 13 info_media      info… Fema… FALSE    78   599      0.130               0.0723
+#> 14 info_media      info… Male  FALSE    63   565      0.112               0.0683
+#> 15 info_media      info… Total TRUE    141  1164      0.121               0.0705
 #> # ℹ 5 more variables: test_type <chr>, statistic <dbl>, df <int>,
 #> #   p.value <dbl>, p.unadjusted <dbl>
 broom::glance(tbl)
 #> # A tibble: 1 × 11
 #>   n_items n_items_tested n_groups  nobs test_type statistic    df p.value boot_n
 #>     <int>          <int>    <int> <int> <chr>         <dbl> <dbl>   <dbl>  <int>
-#> 1       4              4        2  1200 rs2            17.4  3.16 7.07e-4     NA
+#> 1       5              5        2  1164 rs2            18.8  4.61 0.00151     NA
 #> # ℹ 2 more variables: rs_cv <dbl>, p_adjust <chr>
 ```
 
@@ -835,22 +859,34 @@ the reference.
 
 ``` r
 
-table_multiresponse(domains, select = health:standard, output = "gt")
-table_multiresponse(domains, select = health:standard, output = "tinytable")
-table_multiresponse(domains, select = health:standard, output = "flextable")
+table_multiresponse(sochealth, select = starts_with("info_"), output = "gt")
 table_multiresponse(
-  domains,
-  select = health:standard,
+  sochealth,
+  select = starts_with("info_"),
+  output = "tinytable"
+)
+table_multiresponse(
+  sochealth,
+  select = starts_with("info_"),
+  output = "flextable"
+)
+table_multiresponse(
+  sochealth,
+  select = starts_with("info_"),
   output = "excel",
-  excel_path = "domains.xlsx"
+  excel_path = "info_sources.xlsx"
 )
 table_multiresponse(
-  domains,
-  select = health:standard,
+  sochealth,
+  select = starts_with("info_"),
   output = "word",
-  word_path = "domains.docx"
+  word_path = "info_sources.docx"
 )
-table_multiresponse(domains, select = health:standard, output = "clipboard")
+table_multiresponse(
+  sochealth,
+  select = starts_with("info_"),
+  output = "clipboard"
+)
 ```
 
 A journal style moves the defaults of the whole table, as elsewhere in
@@ -860,23 +896,24 @@ three below .01:
 ``` r
 
 table_multiresponse(
-  domains,
-  select = health:standard,
-  by = physical_activity,
+  sochealth,
+  select = starts_with("info_"),
+  by = sex,
   style = "jama"
 )
-#> Multiple responses by physical_activity
+#> Multiple responses by sex
 #> 
-#>  Variable      │ No n  No %  Yes n  Yes %  Total n  Total %   p   
-#> ───────────────┼──────────────────────────────────────────────────
-#>  health        │ 335   51.5   314   57.1     649     54.1    .11  
-#>  work          │ 292   44.9   301   54.7     593     49.4    .003 
-#>  relationships │ 375   57.7   336   61.1     711     59.2    .23  
-#>  standard      │ 306   47.1   296   53.8     602     50.2    .06  
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Respondents   │ 650          550           1200                  
+#>  Variable        │ Female n  Female %  Male n  Male %  Total n  Total %    p   
+#> ─────────────────┼─────────────────────────────────────────────────────────────
+#>  info_doctor     │   377       62.9     344     60.9     721     61.9    1.00  
+#>  info_pharmacist │   137       22.9     119     21.1     256     22.0    1.00  
+#>  info_internet   │   268       44.7     255     45.1     523     44.9    1.00  
+#>  info_family     │   219       36.6     141     25.0     360     30.9    <.001 
+#>  info_media      │    78       13.0      63     11.2     141     12.1    1.00  
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Respondents     │   599                565             1164                   
 #> 
-#> Several answers possible: percentages are of respondents and can sum to more than 100%. Base: respondents who answered the question, including those who chose no item. 204 respondents chose none of the items. Item p-values: Pearson chi-squared test of each item by group. P-values adjusted via stats::p.adjust(method = "holm"); m = 4 test(s). Group comparison: Rao-Scott second-order corrected chi-squared test of multiple marginal independence, χ²(3.16) = 17.36, p < .001.
+#> Respondents with no answer to the question removed: 36. Several answers possible: percentages are of respondents and can sum to more than 100%. Base: respondents who answered the question, including those who chose no item. 67 respondents chose none of the items. Item p-values: Pearson chi-squared test of each item by group. P-values adjusted via stats::p.adjust(method = "holm"); m = 5 test(s). Group comparison: Rao-Scott second-order corrected chi-squared test of multiple marginal independence, χ²(4.61) = 18.78, p = .002.
 ```
 
 ## Rendered output
@@ -885,9 +922,10 @@ table_multiresponse(
 
 pkgdown_dark_gt(
   table_multiresponse(
-    domains,
-    select = health:standard,
-    by = physical_activity,
+    sochealth,
+    select = starts_with("info_"),
+    by = sex,
+    labels = TRUE,
     statistic = TRUE,
     output = "gt"
   )
@@ -896,39 +934,41 @@ pkgdown_dark_gt(
 
 [TABLE]
 
-Several answers possible: percentages are of respondents and can sum to
-more than 100%. Base: respondents who answered the question, including
-those who chose no item. 204 respondents chose none of the items. Item
-p-values: Pearson chi-squared test of each item by group. P-values
-adjusted via stats::p.adjust(method = “holm”); m = 4 test(s). Group
-comparison: Rao-Scott second-order corrected chi-squared test of
-multiple marginal independence, χ²(3.16) = 17.36, p \< .001.
+Respondents with no answer to the question removed: 36. Several answers
+possible: percentages are of respondents and can sum to more than 100%.
+Base: respondents who answered the question, including those who chose
+no item. 67 respondents chose none of the items. Item p-values: Pearson
+chi-squared test of each item by group. P-values adjusted via
+stats::p.adjust(method = “holm”); m = 5 test(s). Group comparison:
+Rao-Scott second-order corrected chi-squared test of multiple marginal
+independence, χ²(4.61) = 18.78, p = .002.
 
 ``` r
 
 table_multiresponse(
-  domains,
-  select = health:standard,
-  by = physical_activity,
+  sochealth,
+  select = starts_with("info_"),
+  by = sex,
+  labels = TRUE,
   percent = "both",
   p_value = FALSE,
   output = "tinytable"
 )
 ```
 
-| Variable | No |  |  | Yes |  |  | Total |  |  |
+| Variable | Female |  |  | Male |  |  | Total |  |  |
 |----|----|----|----|----|----|----|----|----|----|
 |  | n | % of cases | % of responses | n | % of cases | % of responses | n | % of cases | % of responses |
-| health | 335 | 51.5 | 25.6 | 314 | 57.1 | 25.2 |  649 | 54.1 | 25.4 |
-| work | 292 | 44.9 | 22.3 | 301 | 54.7 | 24.1 |  593 | 49.4 | 23.2 |
-| relationships | 375 | 57.7 | 28.7 | 336 | 61.1 | 26.9 |  711 | 59.2 | 27.8 |
-| standard | 306 | 47.1 | 23.4 | 296 | 53.8 | 23.7 |  602 | 50.2 | 23.6 |
-| Respondents | 650 |      |      | 550 |      |      | 1200 |      |      |
-| Several answers possible: percentages of respondents can sum to more than 100%; percentages of responses sum to 100%. Base: respondents who answered the question, including those who chose no item. 204 respondents chose none of the items. |  |  |  |  |  |  |  |  |  |
+| Doctor or other health professional | 377 | 62.9 | 34.9 | 344 | 60.9 | 37.3 |  721 | 61.9 | 36.0 |
+| Pharmacist | 137 | 22.9 | 12.7 | 119 | 21.1 | 12.9 |  256 | 22.0 | 12.8 |
+| Internet, websites or apps | 268 | 44.7 | 24.8 | 255 | 45.1 | 27.7 |  523 | 44.9 | 26.1 |
+| Family or friends | 219 | 36.6 | 20.3 | 141 | 25.0 | 15.3 |  360 | 30.9 | 18.0 |
+| Television, radio or newspapers |  78 | 13.0 |  7.2 |  63 | 11.2 |  6.8 |  141 | 12.1 |  7.0 |
+| Respondents | 599 |      |      | 565 |      |      | 1164 |      |      |
+| Respondents with no answer to the question removed: 36. Several answers possible: percentages of respondents can sum to more than 100%; percentages of responses sum to 100%. Base: respondents who answered the question, including those who chose no item. 67 respondents chose none of the items. |  |  |  |  |  |  |  |  |  |
 
-Multiple responses by physical_activity {#tinytable_pge027v6vrf64j5q2xar
-.table .tinytable
-style="width: auto; margin-left: auto; margin-right: auto;"
+Multiple responses by Sex {#tinytable_e028be4q4n29dij7ruz8 .table
+.tinytable style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 
 ## See also

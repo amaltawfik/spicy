@@ -533,163 +533,190 @@ questions](https://amaltawfik.github.io/spicy/articles/table-multiresponse.html)
 ## Examples
 
 ``` r
-# Three yes/no items read as one "check all that apply" question.
-table_multiresponse(
-  sochealth,
-  select = c(smoking, physical_activity, dentist_12m),
-  by = education,
-  counted = "Yes"
-)
-#> Multiple responses by education
+# The five info_* items of sochealth answer one "check all that apply"
+# question: the sources of health information used in the past 12 months.
+table_multiresponse(sochealth, select = starts_with("info_"))
+#> Multiple responses
 #> 
-#>  Variable          │ Lower secondary n  Lower secondary %  Upper secondary n 
-#> ───────────────────┼─────────────────────────────────────────────────────────
-#>  smoking           │         78               29.9                112        
-#>  physical_activity │         84               32.2                229        
-#>  dentist_12m       │        148               56.7                365        
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Respondents       │        261                                   539        
-#> 
-#>  Variable          │ Upper secondary %  Tertiary n  Tertiary %  Total n 
-#> ───────────────────┼────────────────────────────────────────────────────
-#>  smoking           │       20.8             59         14.8       249   
-#>  physical_activity │       42.5            237         59.2       550   
-#>  dentist_12m       │       67.7            333         83.2       846   
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Respondents       │                       400                   1200   
-#> 
-#>  Variable          │ Total %    p   
+#>  Variable          │   n       %    
 #> ───────────────────┼────────────────
-#>  smoking           │  20.8    <.001 
-#>  physical_activity │  45.8    <.001 
-#>  dentist_12m       │  70.5    <.001 
+#>  info_doctor       │   721    61.9  
+#>  info_pharmacist   │   256    22.0  
+#>  info_internet     │   523    44.9  
+#>  info_family       │   360    30.9  
+#>  info_media        │   141    12.1  
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Respondents       │                
+#>  Respondents       │  1164          
 #> 
-#> Several answers possible: percentages are of respondents and can sum to more than 100%. Base: respondents who answered the question, including those who chose no item. 166 respondents chose none of the items. Item p-values: Pearson chi-squared test of each item by group. P-values adjusted via stats::p.adjust(method = "holm"); m = 3 test(s). Group comparison: Rao-Scott second-order corrected chi-squared test of multiple marginal independence, χ²(6.07) = 131.71, p < .001.
+#> Respondents with no answer to the question removed: 36. Several answers possible: percentages are of respondents and can sum to more than 100%. Base: respondents who answered the question, including those who chose no item. 67 respondents chose none of the items.
 
-# A descriptive table: no tests, percentages of cases and of responses.
+# The labels of the items, sorted by decreasing count.
 table_multiresponse(
   sochealth,
-  select = c(smoking, physical_activity, dentist_12m),
+  select = starts_with("info_"),
+  labels = TRUE,
+  sort = "-"
+)
+#> Multiple responses
+#> 
+#>  Variable                              │   n       %    
+#> ───────────────────────────────────────┼────────────────
+#>  Doctor or other health professional   │   721    61.9  
+#>  Internet, websites or apps            │   523    44.9  
+#>  Family or friends                     │   360    30.9  
+#>  Pharmacist                            │   256    22.0  
+#>  Television, radio or newspapers       │   141    12.1  
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Respondents                           │  1164          
+#> 
+#> Respondents with no answer to the question removed: 36. Several answers possible: percentages are of respondents and can sum to more than 100%. Base: respondents who answered the question, including those who chose no item. 67 respondents chose none of the items.
+
+# By age group: a test per item and a global test of the question.
+table_multiresponse(
+  sochealth,
+  select = starts_with("info_"),
+  by = age_group
+)
+#> Multiple responses by age_group
+#> 
+#>  Variable        │ 25-34 n  25-34 %  35-49 n  35-49 %  50-64 n  50-64 % 
+#> ─────────────────┼──────────────────────────────────────────────────────
+#>  info_doctor     │   113     48.5      208     55.6      215     67.8   
+#>  info_pharmacist │    53     22.7       74     19.8       69     21.8   
+#>  info_internet   │   156     67.0      200     53.5      109     34.4   
+#>  info_family     │    72     30.9      119     31.8       99     31.2   
+#>  info_media      │     9      3.9       36      9.6       41     12.9   
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Respondents     │   233               374               317            
+#> 
+#>  Variable        │ 65-75 n  65-75 %  Total n  Total %    p   
+#> ─────────────────┼───────────────────────────────────────────
+#>  info_doctor     │   185     77.1      721     61.9    <.001 
+#>  info_pharmacist │    60     25.0      256     22.0     .982 
+#>  info_internet   │    58     24.2      523     44.9    <.001 
+#>  info_family     │    70     29.2      360     30.9     .982 
+#>  info_media      │    55     22.9      141     12.1    <.001 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Respondents     │   240              1164                   
+#> 
+#> Respondents with no answer to the question removed: 36. Several answers possible: percentages are of respondents and can sum to more than 100%. Base: respondents who answered the question, including those who chose no item. 67 respondents chose none of the items. Item p-values: Pearson chi-squared test of each item by group. P-values adjusted via stats::p.adjust(method = "holm"); m = 5 test(s). Group comparison: Rao-Scott second-order corrected chi-squared test of multiple marginal independence, χ²(14.40) = 203.03, p < .001.
+
+# A descriptive table by sex, on the respondents who chose at least one
+# source: percentages of cases and of responses, no tests.
+table_multiresponse(
+  sochealth,
+  select = starts_with("info_"),
   by = sex,
-  counted = "Yes",
   percent = "both",
+  base = "answered",
   p_value = FALSE
 )
 #> Multiple responses by sex
 #> 
-#>  Variable          │ Female n  Female % of cases  Female % of responses  Male n 
-#> ───────────────────┼────────────────────────────────────────────────────────────
-#>  smoking           │   131           21.1                 15.3            118   
-#>  physical_activity │   286           46.1                 33.5            264   
-#>  dentist_12m       │   437           70.5                 51.2            409   
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Respondents       │   620                                                580   
+#>  Variable        │ Female n  Female % of cases  Female % of responses  Male n 
+#> ─────────────────┼────────────────────────────────────────────────────────────
+#>  info_doctor     │   377           66.4                 34.9            344   
+#>  info_pharmacist │   137           24.1                 12.7            119   
+#>  info_internet   │   268           47.2                 24.8            255   
+#>  info_family     │   219           38.6                 20.3            141   
+#>  info_media      │    78           13.7                  7.2             63   
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Respondents     │   568                                                529   
 #> 
-#>  Variable          │ Male % of cases  Male % of responses  Total n 
-#> ───────────────────┼───────────────────────────────────────────────
-#>  smoking           │      20.3               14.9            249   
-#>  physical_activity │      45.5               33.4            550   
-#>  dentist_12m       │      70.5               51.7            846   
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Respondents       │                                        1200   
+#>  Variable        │ Male % of cases  Male % of responses  Total n 
+#> ─────────────────┼───────────────────────────────────────────────
+#>  info_doctor     │      65.0               37.3            721   
+#>  info_pharmacist │      22.5               12.9            256   
+#>  info_internet   │      48.2               27.7            523   
+#>  info_family     │      26.7               15.3            360   
+#>  info_media      │      11.9                6.8            141   
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Respondents     │                                        1097   
 #> 
-#>  Variable          │ Total % of cases  Total % of responses 
-#> ───────────────────┼────────────────────────────────────────
-#>  smoking           │       20.8                15.1         
-#>  physical_activity │       45.8                33.4         
-#>  dentist_12m       │       70.5                51.4         
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Respondents       │                                        
+#>  Variable        │ Total % of cases  Total % of responses 
+#> ─────────────────┼────────────────────────────────────────
+#>  info_doctor     │       65.7                36.0         
+#>  info_pharmacist │       23.3                12.8         
+#>  info_internet   │       47.7                26.1         
+#>  info_family     │       32.8                18.0         
+#>  info_media      │       12.9                 7.0         
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Respondents     │                                        
 #> 
-#> Several answers possible: percentages of respondents can sum to more than 100%; percentages of responses sum to 100%. Base: respondents who answered the question, including those who chose no item. 166 respondents chose none of the items.
+#> Respondents with no answer to the question removed: 36. Respondents who chose no item removed: 67. Several answers possible: percentages of respondents can sum to more than 100%; percentages of responses sum to 100%. Base: respondents who chose at least one item.
 
-# Logical indicators need no `counted`: the life domains rated 4 or 5.
-sat <- data.frame(
-  health = sochealth$life_sat_health >= 4,
-  work = sochealth$life_sat_work >= 4,
-  relationships = sochealth$life_sat_relationships >= 4,
-  standard = sochealth$life_sat_standard >= 4
-)
-table_multiresponse(sat, select = names(sat), sort = "-")
+# Items coded "Yes" and "No" need `counted`, the value that marks a choice.
+yes_no <- as.data.frame(lapply(
+  sochealth[startsWith(names(sochealth), "info_")],
+  function(x) factor(x, levels = c(FALSE, TRUE), labels = c("No", "Yes"))
+))
+table_multiresponse(yes_no, select = everything(), counted = "Yes")
 #> Multiple responses
 #> 
-#>  Variable        │   n       %    
-#> ─────────────────┼────────────────
-#>  relationships   │   711    59.2  
-#>  health          │   649    54.1  
-#>  standard        │   602    50.2  
-#>  work            │   593    49.4  
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Respondents     │  1200          
+#>  Variable          │   n       %    
+#> ───────────────────┼────────────────
+#>  info_doctor       │   721    61.9  
+#>  info_pharmacist   │   256    22.0  
+#>  info_internet     │   523    44.9  
+#>  info_family       │   360    30.9  
+#>  info_media        │   141    12.1  
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Respondents       │  1164          
 #> 
-#> Several answers possible: percentages are of respondents and can sum to more than 100%. Base: respondents who answered the question, including those who chose no item. 204 respondents chose none of the items.
+#> Respondents with no answer to the question removed: 36. Several answers possible: percentages are of respondents and can sum to more than 100%. Base: respondents who answered the question, including those who chose no item. 67 respondents chose none of the items.
 
 # Bootstrap global test: set a seed to reproduce its p-value.
 set.seed(1)
 table_multiresponse(
   sochealth,
-  select = c(smoking, physical_activity, dentist_12m),
-  by = education,
-  counted = "Yes",
+  select = starts_with("info_"),
+  by = sex,
   global_test = "bootstrap",
   boot_n = 999
 )
-#> Multiple responses by education
+#> Multiple responses by sex
 #> 
-#>  Variable          │ Lower secondary n  Lower secondary %  Upper secondary n 
-#> ───────────────────┼─────────────────────────────────────────────────────────
-#>  smoking           │         78               29.9                112        
-#>  physical_activity │         84               32.2                229        
-#>  dentist_12m       │        148               56.7                365        
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Respondents       │        261                                   539        
+#>  Variable        │ Female n  Female %  Male n  Male %  Total n  Total %    p   
+#> ─────────────────┼─────────────────────────────────────────────────────────────
+#>  info_doctor     │   377       62.9     344     60.9     721     61.9    1.000 
+#>  info_pharmacist │   137       22.9     119     21.1     256     22.0    1.000 
+#>  info_internet   │   268       44.7     255     45.1     523     44.9    1.000 
+#>  info_family     │   219       36.6     141     25.0     360     30.9    <.001 
+#>  info_media      │    78       13.0      63     11.2     141     12.1    1.000 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Respondents     │   599                565             1164                   
 #> 
-#>  Variable          │ Upper secondary %  Tertiary n  Tertiary %  Total n 
-#> ───────────────────┼────────────────────────────────────────────────────
-#>  smoking           │       20.8             59         14.8       249   
-#>  physical_activity │       42.5            237         59.2       550   
-#>  dentist_12m       │       67.7            333         83.2       846   
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Respondents       │                       400                   1200   
-#> 
-#>  Variable          │ Total %    p   
-#> ───────────────────┼────────────────
-#>  smoking           │  20.8    <.001 
-#>  physical_activity │  45.8    <.001 
-#>  dentist_12m       │  70.5    <.001 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Respondents       │                
-#> 
-#> Several answers possible: percentages are of respondents and can sum to more than 100%. Base: respondents who answered the question, including those who chose no item. 166 respondents chose none of the items. Item p-values: Pearson chi-squared test of each item by group. P-values adjusted via stats::p.adjust(method = "holm"); m = 3 test(s). Group comparison: bootstrap test of multiple marginal independence (999 resamples), χ² = 130.18, p < .002.
+#> Respondents with no answer to the question removed: 36. Several answers possible: percentages are of respondents and can sum to more than 100%. Base: respondents who answered the question, including those who chose no item. 67 respondents chose none of the items. Item p-values: Pearson chi-squared test of each item by group. P-values adjusted via stats::p.adjust(method = "holm"); m = 5 test(s). Group comparison: bootstrap test of multiple marginal independence (999 resamples), χ² = 20.38, p = .002.
 
 # Wide data frame.
 table_multiresponse(
   sochealth,
-  select = c(smoking, physical_activity, dentist_12m),
+  select = starts_with("info_"),
   by = sex,
-  counted = "Yes",
   output = "data.frame"
 )
-#>            Variable Female n Female % Male n   Male % Total n  Total %
-#> 1           smoking      131 21.12903    118 20.34483     249 20.75000
-#> 2 physical_activity      286 46.12903    264 45.51724     550 45.83333
-#> 3       dentist_12m      437 70.48387    409 70.51724     846 70.50000
-#> 4       Respondents      620       NA    580       NA    1200       NA
-#>     test_type        Chi2 df  p p_unadjusted
-#> 1 chi_squared 0.112067560  1  1    0.7378024
-#> 2 chi_squared 0.045178403  1  1    0.8316763
-#> 3 chi_squared 0.000160454  1  1    0.9898934
-#> 4        <NA>          NA NA NA           NA
+#>          Variable Female n Female % Male n   Male % Total n  Total %
+#> 1     info_doctor      377 62.93823    344 60.88496     721 61.94158
+#> 2 info_pharmacist      137 22.87145    119 21.06195     256 21.99313
+#> 3   info_internet      268 44.74124    255 45.13274     523 44.93127
+#> 4     info_family      219 36.56093    141 24.95575     360 30.92784
+#> 5      info_media       78 13.02170     63 11.15044     141 12.11340
+#> 6     Respondents      599       NA    565       NA    1164       NA
+#>     test_type        Chi2 df            p p_unadjusted
+#> 1 chi_squared  0.51997605  1 1.000000e+00 4.708519e-01
+#> 2 chi_squared  0.55490963  1 1.000000e+00 4.563185e-01
+#> 3 chi_squared  0.01801149  1 1.000000e+00 8.932390e-01
+#> 4 chi_squared 18.33047265  1 9.285636e-05 1.857127e-05
+#> 5 chi_squared  0.95631714  1 1.000000e+00 3.281165e-01
+#> 6        <NA>          NA NA           NA           NA
 
 # \donttest{
 if (requireNamespace("tinytable", quietly = TRUE)) {
   tt <- table_multiresponse(
     sochealth,
-    select = c(smoking, physical_activity, dentist_12m),
+    select = starts_with("info_"),
     by = sex,
-    counted = "Yes",
+    labels = TRUE,
     output = "tinytable"
   )
 }

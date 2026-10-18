@@ -431,29 +431,30 @@ contributes to several cells.
 [`table_multiresponse()`](https://amaltawfik.github.io/spicy/reference/table_multiresponse.md)
 reads the items as one question: one row per item, with the number of
 respondents who chose it and their percentage, then a row with the
-number of respondents. Three yes/no items of `sochealth` stand in for
-such a question; `counted` names the value that marks a choice, and
-`labels = TRUE` shows the item wording:
+number of respondents. In `sochealth`, the five logical `info_*` items
+answer such a question: the sources of health information used in the
+past 12 months. `labels = TRUE` shows the item wording:
 
 ``` r
 
 table_multiresponse(
   sochealth,
-  select = c(smoking, physical_activity, dentist_12m),
-  counted = "Yes",
+  select = starts_with("info_"),
   labels = TRUE
 )
 #> Multiple responses
 #> 
-#>  Variable                          │   n       %    
-#> ───────────────────────────────────┼────────────────
-#>  Current smoker                    │   249    20.8  
-#>  Regular physical activity         │   550    45.8  
-#>  Dentist visit in last 12 months   │   846    70.5  
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Respondents                       │  1200          
+#>  Variable                              │   n       %    
+#> ───────────────────────────────────────┼────────────────
+#>  Doctor or other health professional   │   721    61.9  
+#>  Pharmacist                            │   256    22.0  
+#>  Internet, websites or apps            │   523    44.9  
+#>  Family or friends                     │   360    30.9  
+#>  Television, radio or newspapers       │   141    12.1  
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Respondents                           │  1164          
 #> 
-#> Several answers possible: percentages are of respondents and can sum to more than 100%. Base: respondents who answered the question, including those who chose no item. 166 respondents chose none of the items.
+#> Respondents with no answer to the question removed: 36. Several answers possible: percentages are of respondents and can sum to more than 100%. Base: respondents who answered the question, including those who chose no item. 67 respondents chose none of the items.
 ```
 
 With `by`, the counts and percentages are given per group and in a
@@ -468,22 +469,23 @@ article. `p_value = FALSE` leaves a descriptive table:
 
 table_multiresponse(
   sochealth,
-  select = c(smoking, physical_activity, dentist_12m),
+  select = starts_with("info_"),
   by = sex,
-  counted = "Yes",
   p_value = FALSE
 )
 #> Multiple responses by sex
 #> 
-#>  Variable          │ Female n  Female %  Male n  Male %  Total n  Total % 
-#> ───────────────────┼──────────────────────────────────────────────────────
-#>  smoking           │   131       21.1     118     20.3     249     20.8   
-#>  physical_activity │   286       46.1     264     45.5     550     45.8   
-#>  dentist_12m       │   437       70.5     409     70.5     846     70.5   
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Respondents       │   620                580             1200            
+#>  Variable        │ Female n  Female %  Male n  Male %  Total n  Total % 
+#> ─────────────────┼──────────────────────────────────────────────────────
+#>  info_doctor     │   377       62.9     344     60.9     721     61.9   
+#>  info_pharmacist │   137       22.9     119     21.1     256     22.0   
+#>  info_internet   │   268       44.7     255     45.1     523     44.9   
+#>  info_family     │   219       36.6     141     25.0     360     30.9   
+#>  info_media      │    78       13.0      63     11.2     141     12.1   
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Respondents     │   599                565             1164            
 #> 
-#> Several answers possible: percentages are of respondents and can sum to more than 100%. Base: respondents who answered the question, including those who chose no item. 166 respondents chose none of the items.
+#> Respondents with no answer to the question removed: 36. Several answers possible: percentages are of respondents and can sum to more than 100%. Base: respondents who answered the question, including those who chose no item. 67 respondents chose none of the items.
 ```
 
 ## Regression tables
