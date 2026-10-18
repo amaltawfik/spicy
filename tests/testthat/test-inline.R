@@ -966,3 +966,280 @@ test_that("the role fallback survives a translated missing label", {
   expect_false(spicy:::.inline_addresses_missing("a"))
   expect_false(spicy:::.inline_addresses_missing("(Missing_1)"))
 })
+
+
+# ---- table_multiresponse() ------------------------------------------------
+
+# Three yes/no items of `sochealth` read as one "check all that apply"
+# question, as in the examples of ?table_multiresponse.
+.il_mr <- function(...) {
+  .il_quiet(table_multiresponse(
+    sochealth,
+    select = c(smoking, physical_activity, dentist_12m),
+    counted = "Yes",
+    ...
+  ))
+}
+
+test_that("a multiple-response table cites its items by token", {
+  # One row per item, keyed by its column name. A percentage answers to
+  # the token of what it is a percentage of, whatever its header ("%",
+  # "% of cases", "% of responses").
+  tbl <- .il_mr()
+  expect_identical(inline(tbl, smoking), "249")
+  expect_identical(inline(tbl, smoking), inline(tbl, smoking, column = "n"))
+  expect_identical(inline(tbl, smoking, column = "pct"), "20.8")
+  expect_error(
+    inline(tbl, smoking, column = "pct_responses"),
+    "No column with token",
+    class = "spicy_invalid_input"
+  )
+  both <- .il_mr(percent = "both")
+  expect_identical(inline(both, smoking, column = "pct"), "20.8")
+  expect_identical(inline(both, smoking, column = "pct_responses"), "15.1")
+  expect_identical(
+    inline(both, dentist_12m, column = "pct_responses"),
+    trimws(attr(both, "display_df")[["% of responses"]][[3L]])
+  )
+  resp <- .il_mr(percent = "responses")
+  expect_identical(inline(resp, smoking, column = "pct_responses"), "15.1")
+  expect_error(
+    inline(resp, smoking, column = "pct"),
+    "No column with token",
+    class = "spicy_invalid_input"
+  )
+})
+
+test_that("a multiple-response table by group cites a group, the margin and the item test", {
+  # The groups are spanners, as in table_categorical(): `model` selects
+  # one, the margin included. The item test belongs to no group, and its
+  # p is the adjusted one the table shows (Holm; the raw p is .309).
+  tbl <- .il_mr(by = region, statistic = TRUE)
+  expect_identical(inline(tbl, smoking, column = "n", model = "Central"), "55")
+  expect_identical(
+    inline(tbl, smoking, column = "pct", model = "Central"),
+    "22.4"
+  )
+  expect_identical(inline(tbl, smoking, column = "n", model = "Total"), "249")
+  expect_identical(
+    inline(tbl, smoking, column = "pct", model = "Total"),
+    "20.8"
+  )
+  expect_error(
+    inline(tbl, smoking),
+    "pick one with `model`",
+    class = "spicy_invalid_input"
+  )
+  expect_identical(inline(tbl, smoking, column = "p"), ".926")
+  expect_identical(
+    inline(tbl, smoking, column = "p"),
+    trimws(attr(tbl, "display_df")$p[[1L]])
+  )
+  expect_identical(
+    inline(tbl, smoking, column = "statistic"),
+    "\u03c7\u00b2(5) = 5.98"
+  )
+  expect_identical(
+    inline(tbl, smoking, column = "{statistic}, p = {p}"),
+    "\u03c7\u00b2(5) = 5.98, p = .926"
+  )
+})
+
+test_that("a multiple-response table without p-values has no p to cite", {
+  # `p_value = FALSE` removes the column, so the address is refused like
+  # any token the table does not carry, with the head the other families
+  # use -- not with a level hint: an item row has no level.
+  tbl <- .il_mr(by = region, p_value = FALSE)
+  err <- expect_error(
+    inline(tbl, smoking, column = "p"),
+    "No column with token \"p\" in this table.",
+    class = "spicy_invalid_input",
+    fixed = TRUE
+  )
+  expect_false(grepl("level", conditionMessage(err), fixed = TRUE))
+  tc <- .il_quiet(table_continuous(
+    sochealth,
+    select = bmi,
+    by = region,
+    p_value = FALSE
+  ))
+  err_tc <- expect_error(
+    inline(tc, bmi, "Central", column = "p"),
+    class = "spicy_invalid_input"
+  )
+  expect_identical(
+    strsplit(conditionMessage(err), "\n", fixed = TRUE)[[1L]][[1L]],
+    strsplit(conditionMessage(err_tc), "\n", fixed = TRUE)[[1L]][[1L]]
+  )
+  # `statistic` does not depend on `p_value`: shown alone, cited alone.
+  st <- .il_mr(by = region, p_value = FALSE, statistic = TRUE)
+  expect_identical(
+    inline(st, smoking, column = "statistic"),
+    "\u03c7\u00b2(5) = 5.98"
+  )
+  expect_error(
+    inline(st, smoking, column = "p"),
+    "No column with token",
+    class = "spicy_invalid_input"
+  )
+})
+
+test_that("the base row of a multiple-response table is the fit statistic nobs", {
+  # The row's `.variable` is the token of table_regression()'s number of
+  # observations, so the address does not move with the translated label
+  # ("Respondents"), which is accepted as a convenience.
+  one <- .il_mr()
+  expect_identical(inline(one, "nobs"), "1200")
+  expect_identical(inline(one, "Respondents"), "1200")
+  tbl <- .il_mr(by = region)
+  expect_identical(inline(tbl, "nobs", model = "Central"), "245")
+  expect_identical(inline(tbl, "nobs", model = "Total"), "1200")
+  expect_error(
+    inline(tbl, "nobs"),
+    "pick one with `model`",
+    class = "spicy_invalid_input"
+  )
+  # The base row carries counts only.
+  expect_error(
+    inline(tbl, "nobs", column = "pct", model = "Total"),
+    "empty in the table",
+    class = "spicy_invalid_input"
+  )
+})
+
+test_that("a French multiple-response table cites its cells as displayed", {
+  # The language sets the decimal comma, and the French p keeps its
+  # leading zero. A cell carries no no-break space, as in the other
+  # families: French typography puts them in the note.
+  withr::local_options(spicy.language = "fr")
+  tbl <- .il_mr(by = region, statistic = TRUE)
+  disp <- attr(tbl, "display_df")
+  expect_identical(
+    inline(tbl, smoking, column = "pct", model = "Central"),
+    "22,4"
+  )
+  expect_identical(
+    inline(tbl, smoking, column = "pct", model = "Central"),
+    trimws(disp[["Central %"]][[1L]])
+  )
+  expect_identical(inline(tbl, smoking, column = "p"), "0,926")
+  expect_identical(
+    inline(tbl, smoking, column = "statistic"),
+    "\u03c7\u00b2(5) = 5,98"
+  )
+  expect_false(grepl(
+    "\u00a0",
+    inline(tbl, smoking, column = "{statistic}, p = {p}"),
+    fixed = TRUE
+  ))
+  expect_identical(inline(tbl, "nobs", model = "Central"), "245")
+  expect_identical(
+    inline(tbl, "Personnes ayant r\u00e9pondu", model = "Central"),
+    "245"
+  )
+})
+
+test_that("a multiple-response item renamed by `labels` keeps its address", {
+  # As in the other families, the row is found by identity: the column
+  # name survives any label, and the displayed label is accepted as a
+  # convenience. `sort = "desc"` moves the rows, never the address.
+  plain <- .il_mr(by = sex)
+  named <- .il_mr(by = sex, labels = c(smoking = "Current smoker"))
+  expect_identical(inline(named, smoking, column = "n", model = "Male"), "118")
+  expect_identical(
+    inline(named, smoking, column = "n", model = "Male"),
+    inline(plain, smoking, column = "n", model = "Male")
+  )
+  expect_identical(
+    inline(named, "Current smoker", column = "n", model = "Male"),
+    "118"
+  )
+  from_attr <- .il_mr(by = sex, labels = TRUE)
+  expect_identical(
+    attr(from_attr, "display_df")$Variable[[3L]],
+    "Dentist visit in last 12 months"
+  )
+  expect_identical(
+    inline(from_attr, dentist_12m, column = "pct", model = "Total"),
+    "70.5"
+  )
+  expect_identical(
+    inline(.il_mr(sort = "desc"), smoking, column = "pct"),
+    inline(.il_mr(), smoking, column = "pct")
+  )
+})
+
+test_that("a group given as `level` is pointed to `model`", {
+  # An item row has no level, and the groups of a `by` table are
+  # spanners: `level = "Female"` is the address a reader tries first, and
+  # its refusal used to list nothing ("Available: ."). It now says why,
+  # and names the argument that selects the group.
+  tbl <- .il_mr(by = sex)
+  err <- expect_error(
+    inline(tbl, smoking, "Female", "n"),
+    "No level \"Female\" for \"smoking\".",
+    class = "spicy_invalid_input",
+    fixed = TRUE
+  )
+  msg <- conditionMessage(err)
+  expect_false(grepl("Available: .", msg, fixed = TRUE))
+  expect_match(
+    msg,
+    "\"smoking\" has no levels: leave `level` out.",
+    fixed = TRUE
+  )
+  expect_match(msg, "select it with `model = \"Female\"`.", fixed = TRUE)
+  expect_identical(inline(tbl, smoking, column = "n", model = "Female"), "131")
+  # The same hints on the other families: a categorical variable lists
+  # its levels beside the group, a numeric term with no group says only
+  # that `level` does not apply.
+  tc <- .il_quiet(table_categorical(sochealth, select = smoking, by = sex))
+  msg_tc <- conditionMessage(expect_error(
+    inline(tc, smoking, "Female", "n"),
+    class = "spicy_invalid_input"
+  ))
+  expect_match(
+    msg_tc,
+    "Available: \"No\", \"Yes\", \"(Missing)\".",
+    fixed = TRUE
+  )
+  expect_match(msg_tc, "`model = \"Female\"`", fixed = TRUE)
+  tr <- .il_quiet(table_regression(.il_fit()))
+  msg_tr <- conditionMessage(expect_error(
+    inline(tr, age, "Male", "b"),
+    class = "spicy_invalid_input"
+  ))
+  expect_match(
+    msg_tr,
+    "\"age\" has no levels: leave `level` out.",
+    fixed = TRUE
+  )
+  expect_false(grepl("model", msg_tr, fixed = TRUE))
+})
+
+test_that("an untested item and an empty group refuse with the reason", {
+  # A dash in the table is a cell with no value: an item nobody chose has
+  # no test, and a declared group with no respondent has no percentage.
+  # Both refuse rather than quote the dash; the count of the empty group
+  # is a real zero.
+  d <- data.frame(
+    g = factor(c("a", "a", "a", "b", "b", "b", "b"), levels = c("a", "b", "c")),
+    x1 = c(1, 0, 1, 0, 0, 1, 1),
+    x3 = c(0, 0, 0, 0, 0, 0, 0)
+  )
+  tbl <- .il_quiet(table_multiresponse(d, c(x1, x3), by = g, statistic = TRUE))
+  for (col in c("p", "statistic")) {
+    expect_error(
+      inline(tbl, x3, column = col),
+      "undefined",
+      class = "spicy_invalid_input"
+    )
+  }
+  expect_error(
+    inline(tbl, x1, column = "pct", model = "c"),
+    "undefined",
+    class = "spicy_invalid_input"
+  )
+  expect_identical(inline(tbl, x1, column = "n", model = "c"), "0")
+  expect_identical(inline(tbl, x1, column = "p"), ".659")
+})

@@ -56,6 +56,15 @@
 #' no group (the contrast, its interval, `p`, `n`) are cited without
 #' one, as before.
 #'
+#' [table_multiresponse()] has one row per item, addressed by its column
+#' name, then the base row, the number of respondents, addressed as the
+#' fit statistic `"nobs"`. Its groups are spanners, as in
+#' [table_categorical()], so `model` selects one, the margin included:
+#' `inline(tbl, smoking, column = "pct", model = "Female")`,
+#' `inline(tbl, "nobs", model = "Total")`. The item `p` and `statistic`
+#' belong to no group and are cited without `model`
+#' (`inline(tbl, smoking, column = "p")`).
+#'
 #' The column is a **token** of the typed contract (`"b"`, `"se"`,
 #' `"p"`, `"ci"`, `"or"`, `"ame"`, `"n"`, `"pct"`, `"m"`, ... -- see
 #' `as_structured()`'s `col_meta`), never a display header. `"ci"`
@@ -88,17 +97,19 @@
 #' Every misaddressing is a classed error that lists the available
 #' choices: unknown variables list the variables, missing levels list
 #' the levels, unknown tokens list the table's tokens, ambiguous
-#' models list the spanner labels. A cell the table itself displays
+#' models list the spanner labels. A `level` that names a group of a
+#' `by` table points to `model`. A cell the table itself displays
 #' as undefined (an aliased coefficient's en-dash) refuses with the
 #' reason rather than pasting a dash into a sentence.
 #'
 #' @param x A table returned by [table_regression()],
 #'   [table_categorical()], [table_continuous()],
 #'   [table_continuous_lm()], [table_outcome()],
-#'   [table_categorical_svy()] or [table_continuous_svy()] (default
-#'   output) -- every family [as_structured()] accepts.
+#'   [table_categorical_svy()], [table_continuous_svy()] or
+#'   [table_multiresponse()] (default output) -- every family
+#'   [as_structured()] accepts.
 #' @param variable The source variable, unquoted or as a string; or a
-#'   fit-statistic token (`"n"`, `"r2"`, ...).
+#'   fit-statistic token (`"n"`, `"nobs"`, `"r2"`, ...).
 #' @param level For a factor variable, the level, as a string.
 #'   `"(Missing)"` addresses the missing-value category by role. On
 #'   [table_continuous_lm()], whose groups are columns rather than
@@ -112,8 +123,8 @@
 #'   the slope (`"b"`) for [table_continuous_lm()], the mean (`"m"`)
 #'   or, on a median-only table, the median (`"med"`, `"med_iqr"`) for
 #'   [table_continuous()], and the count (`"n"`) for
-#'   [table_categorical()]. A row carrying none of them refuses and
-#'   lists its tokens.
+#'   [table_categorical()] and [table_multiresponse()]. A row carrying
+#'   none of them refuses and lists its tokens.
 #' @param model In a multi-model table, the model: its label (as
 #'   displayed in the column spanners) or its position.
 #'
@@ -311,16 +322,51 @@ inline <- function(
     spicy_abort(
       c(
         sprintf("No level %s for %s.", .quote_val(level), .quote_val(var_chr)),
-        "i" = paste0(
-          "Available: ",
-          paste(.quote_val(stats::na.omit(body$.level[rows])), collapse = ", "),
-          "."
-        )
+        .inline_level_hints(s, rows, var_chr, level)
       ),
       class = "spicy_invalid_input"
     )
   }
   hit
+}
+
+# What a refused `level` can do instead -- never an empty list. A
+# variable with levels lists them. One without any (a numeric term, an
+# item of `table_multiresponse()`) used to answer "Available: .", a dead
+# end; it now says that `level` does not apply. And a `level` that names
+# a column group -- a `by` group of a categorical or multiple-response
+# table, a spanner there -- is pointed to `model`, the argument that
+# selects it: on a multiple-response table, `level = "Female"` is the
+# address a reader tries first.
+.inline_level_hints <- function(s, rows, var_chr, level) {
+  known <- stats::na.omit(s$body$.level[rows])
+  hints <- if (length(known) > 0L) {
+    c(
+      "i" = paste0(
+        "Available: ",
+        paste(.quote_val(known), collapse = ", "),
+        "."
+      )
+    )
+  } else {
+    c(
+      "i" = sprintf(
+        "%s has no levels: leave `level` out.",
+        .quote_val(var_chr)
+      )
+    )
+  }
+  if (rlang::is_string(level) && level %in% names(s$spanners)) {
+    hints <- c(
+      hints,
+      "i" = sprintf(
+        "%s is a column group of this table: select it with `model = %s`.",
+        .quote_val(level),
+        .quote_val(level)
+      )
+    )
+  }
+  hints
 }
 
 # Is `level` an address for the missing-value category?

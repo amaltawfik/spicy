@@ -193,8 +193,10 @@ as_tibble.spicy_multiresponse_table <- function(x, ...) {
 #' `n_items_tested` (the items the global test kept), `n_groups` (the
 #' groups of `by`, `NA` without it), `nobs` (the respondents of the base),
 #' `test_type` (`"rs2"` or `"bootstrap"`), `statistic`, `df`, `p.value`
-#' and `boot_n` of the global test, and `p_adjust`, the adjustment of the
-#' item p-values.
+#' and `boot_n` of the global test, `rs_cv` (the \eqn{\hat a} of the
+#' second-order Rao-Scott correction, see *Tests* in
+#' [table_multiresponse()]), and `p_adjust`, the adjustment of the item
+#' p-values.
 #'
 #' Both column sets are FIXED: a column the table does not show (a test it
 #' did not run, an adjustment it did not make) is present and `NA`. Index
@@ -295,6 +297,7 @@ glance.spicy_multiresponse_table <- function(x, ...) {
     df = global("df", NA_real_),
     p.value = global("p.value", NA_real_),
     boot_n = global("boot_n", NA_integer_),
+    rs_cv = global("rs_cv", NA_real_),
     p_adjust = if (is.null(p_meta)) {
       NA_character_
     } else {

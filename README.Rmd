@@ -48,6 +48,9 @@ row-wise summaries.
 - **Categorical and continuous summary tables** with
   `table_categorical()` and `table_continuous()`, overall or by
   group.
+- **Multiple-response tables** with `table_multiresponse()`: "check
+  all that apply" items read as one question, overall or by group, with
+  a global test that allows for several answers per respondent.
 - **Outcome-first summary tables** with `table_outcome()`: one
   continuous outcome described across several groupings, one block
   of rows per grouping variable, a group comparison per block, and a
@@ -395,6 +398,24 @@ table_outcome(
   sochealth,
   outcome = bmi,
   select = c(sex, smoking)
+)
+```
+
+A "check all that apply" question gets a table of its own, one row per
+item. Here three logical indicators stand in for one: the life domains a
+respondent is satisfied with, rated 4 or 5 out of 5.
+
+```{r eval=TRUE}
+domains <- data.frame(
+  sex = sochealth$sex,
+  health = sochealth$life_sat_health >= 4,
+  work = sochealth$life_sat_work >= 4,
+  relationships = sochealth$life_sat_relationships >= 4
+)
+table_multiresponse(
+  domains,
+  select = c(health, work, relationships),
+  by = sex
 )
 ```
 

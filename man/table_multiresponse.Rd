@@ -71,7 +71,8 @@ and one who skipped the question does not, as \code{expss} counts its
 valid cases.
 \item \code{"answered"}: the respondents who chose at least one item, the
 default of SPSS \verb{MULT RESPONSE} (\code{MISSING = TABLE}) and of Stata's
-\code{mrtab}, where choosing nothing cannot be told from skipping.
+\code{mrtab}, whose \code{include} option gives \code{"valid"} (Jann, 2005, pp. 98
+and 107-108), where choosing nothing cannot be told from skipping.
 \item \code{"all"}: every row of the group, as \code{questionr::multi.table()}
 counts.
 }}
@@ -151,9 +152,9 @@ or \code{"right"}, as in \code{\link[=table_categorical]{table_categorical()}}.}
 responses", followed by "by" and the \code{by} variable under the \code{labels}
 contract; a single string replaces it.}
 
-\item{note}{The table note. \code{NULL} (the default) builds it: what the
-percentages are of, the base, and the tests. A single string replaces
-it, and \code{FALSE} removes it.}
+\item{note}{The table note. \code{NULL} (the default) builds it: the
+respondents left out, what the percentages are of, the base, and the
+tests. A single string replaces it, and \code{FALSE} removes it.}
 
 \item{output}{Output format. One of:
 \itemize{
@@ -218,7 +219,10 @@ invisibly.
 The data frames carry the note in \code{attr(x, "note")} and, when the table
 has a global test, \code{attr(x, "global_test")}: a one-row data frame with
 \code{test}, \code{statistic}, \code{df}, \code{p.value}, \code{boot_n}, \code{n_items} (the items
-tested), and \code{n_groups}. \code{\link[=as_structured]{as_structured()}} reads the default object.
+tested), \code{n_groups}, \code{rs_mean} and \code{rs_cv} (the design-effect summary of
+\code{test = "rs2"}), and \code{boot_redraws} (the resamples drawn again under
+\code{test = "bootstrap"}); see \emph{Tests}. \code{\link[=as_structured]{as_structured()}} reads the default
+object.
 }
 \description{
 Tabulates a "check all that apply" question: one row per item, with the
@@ -248,30 +252,52 @@ correction and no constant added to an empty cell (Agresti and Liu,
 1999).
 
 The global test sums the item statistics,
-\eqn{X^2_S = \sum_j X^2_j}. One respondent can choose several items,
-so the items are correlated and \eqn{X^2_S} is not chi-squared under
-the null: its distribution is a weighted sum of chi-squared variables
-whose weights depend on the joint distribution of the items (Loughin
-and Scherer, 1998). \code{test = "rs2"} matches its first two moments, the
-second-order Rao-Scott correction (Bilder and Loughin, 2004):
+\eqn{X^2_S = \sum_j X^2_j}, a value that does not depend on which
+answer of an item is coded as chosen (Agresti and Liu, 1999). One
+respondent can choose several items, so the items are correlated and
+\eqn{X^2_S} is not chi-squared under the null (Loughin and Scherer,
+1998): its asymptotic distribution is a weighted sum of chi-squared
+variables, the weights being the eigenvalues of a design-effect matrix
+(Bilder, Loughin and Nettleton, 2000, Appendix A). \code{test = "rs2"}
+matches its first two moments, the second-order Rao-Scott correction
+of Thomas and Decady (2004, pp. 48 and 58-59):
 
 \deqn{X^2_{RS2} = \frac{c(r-1)\,X^2_S}{\sum_k \lambda_k^2}, \qquad
 \nu = \frac{c^2(r-1)^2}{\sum_k \lambda_k^2}}
 
 referred to a chi-squared distribution with \eqn{\nu} degrees of
 freedom, usually fractional. Here \eqn{c} is the number of items tested
-and the \eqn{\lambda_k} are the eigenvalues of the design-effect matrix
-estimated from the within-group covariance of the indicators. The
-result is deterministic.
+and the \eqn{\lambda_k} are the eigenvalues of the design-effect matrix,
+in the second-order form of Bilder and Loughin (2004). The within-group
+covariance of the indicators is centered at the group means, the
+unrestricted estimate of Bilder and Loughin (2004) that the \code{MRCV}
+package also uses, whereas Thomas and Decady (2004) center it at the
+pooled proportions with divisor \eqn{n(n - 1)}, which gives p = .068
+instead of .063 on the Kansas farmer data of Loughin and Scherer
+(1998). The result is deterministic. \code{attr(x, "global_test")} reports
+\code{rs_mean}, the mean of the \eqn{\lambda_k}, which is 1 in the
+population under the null and which the correction takes as 1 (Thomas
+and Decady, 2004, p. 48), and \code{rs_cv}, the \eqn{\hat a} of Thomas and
+Decady (2004, p. 59), defined by
+\eqn{1 + \hat a^2 = \sum_k \lambda_k^2 / (c(r-1))}: the coefficient of
+variation of the \eqn{\lambda_k} when their mean is 1, and \code{NA} when
+that ratio falls below 1.
 
 \code{test = "bootstrap"} refers \eqn{X^2_S} to its distribution over
 \code{boot_n} resamples of whole response vectors, drawn with replacement
-from the pooled respondents with the group sizes held fixed. The
-p-value is the share of resamples whose statistic is at least the
-observed one. It holds its level most closely in the published
-simulations, but it is random: call \code{\link[=set.seed]{set.seed()}} first to reproduce
-it. An item that loses all variation in a resample adds 0 to the
-statistic of that resample.
+from the pooled respondents with the group sizes held fixed (Loughin
+and Scherer, 1998). The p-value is the share of resamples whose
+statistic is at least the observed one. A resample in which an item is
+chosen by every respondent or by none gives that item no statistic: it
+is discarded and drawn again, the practice of Bilder, Loughin and
+Nettleton (2000, p. 1298) for resamples whose marginal table has an
+empty row or column, and \code{attr(x, "global_test")$boot_redraws} counts
+the resamples drawn again. When 100 times \code{boot_n} draws do not yield
+\code{boot_n} usable resamples, the function stops with an error. The
+bootstrap held its level in most published settings, with exceptions
+reported by Bilder, Loughin and Nettleton (2000, p. 1305), and no study
+of multiple marginal independence compares it with the second-order
+test. It is random: call \code{\link[=set.seed]{set.seed()}} first to reproduce it.
 
 An item chosen by every respondent, or by none, has no test: its \code{p}
 cell shows a dash, it leaves the global test, and the note names it.
@@ -289,7 +315,9 @@ family-wise error rate whatever the dependence between the items, and
 its smallest adjusted p-value equals the Bonferroni global p-value of
 Agresti and Liu (1999). The raw p-values stay in the data frames as
 \code{p_unadjusted}, and in \code{col_meta$p$p_unadjusted} of \code{\link[=as_structured]{as_structured()}}.
-The global test is never adjusted.
+The note names the method and the number of items adjusted together,
+in the sentence of \code{\link[=table_categorical]{table_categorical()}}. The global test is never
+adjusted.
 }
 
 \section{Base and missing values}{
@@ -300,9 +328,17 @@ indicator under \code{base = "valid"}, those who chose at least one item
 under \code{base = "answered"}, every row under \code{base = "all"}. The counts
 are the same under the three bases; the percentages of cases and the
 tests are not. The \code{Respondents} row gives the base of each group, and
-the note says which base the table uses. Declared missing values of a labelled column
-(\code{na_values}, \code{na_range}) are missing, as under the \code{user_na = TRUE}
-default of \code{\link[=table_categorical]{table_categorical()}}.
+the note says which base the table uses and how many respondents it
+leaves out, all groups together: those who answered none of the
+indicators under \code{"valid"}, those who chose no item under \code{"answered"}.
+Under \code{"valid"} and \code{"all"}, the base can hold respondents who chose no
+item: the note then says how many. Declared missing values of a
+labelled column (\code{na_values}, \code{na_range}) are missing, as under the
+\code{user_na = TRUE} default of \code{\link[=table_categorical]{table_categorical()}}.
+
+A percentage carries no more digits than its denominator, so a base of
+fewer than 100 respondents takes whole percentages (American Medical
+Association, 2020, section 4.1.8): \code{percent_digits = 0} prints them.
 }
 
 \examples{
@@ -371,14 +407,31 @@ Agresti, A., & Liu, I.-M. (1999). Modeling a categorical variable
 allowing arbitrarily many category choices. \emph{Biometrics}, 55(3),
 936-943. \doi{10.1111/j.0006-341x.1999.00936.x}
 
+American Medical Association. (2020). \emph{AMA Manual of Style: A Guide for
+Authors and Editors} (11th ed.). Oxford University Press.
+\doi{10.1093/jama/9780190246556.001.0001}
+
 Bilder, C. R., & Loughin, T. M. (2004). Testing for marginal
 independence between two categorical variables with multiple
 responses. \emph{Biometrics}, 60(1), 241-248.
 \doi{10.1111/j.0006-341x.2004.00147.x}
 
+Bilder, C. R., Loughin, T. M., & Nettleton, D. (2000). Multiple
+marginal independence testing for pick any/c variables.
+\emph{Communications in Statistics - Simulation and Computation}, 29(4),
+1285-1316. \doi{10.1080/03610910008813665}
+
+Jann, B. (2005). Tabulation of multiple responses. \emph{The Stata Journal},
+5(1), 92-122. \doi{10.1177/1536867x0500500113}
+
 Loughin, T. M., & Scherer, P. N. (1998). Testing for association in
 contingency tables with multiple column responses. \emph{Biometrics}, 54(2),
 630-637. \doi{10.2307/3109769}
+
+Thomas, D. R., & Decady, Y. J. (2004). Testing for association using
+multiple response survey data: Approximate procedures based on the
+Rao-Scott approach. \emph{International Journal of Testing}, 4(1), 43-59.
+\doi{10.1207/s15327574ijt0401_3}
 }
 \seealso{
 \code{\link[=table_categorical]{table_categorical()}} for single-response variables.

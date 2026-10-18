@@ -71,12 +71,14 @@ workbook, or a PDF.
 * `table_multiresponse()` tabulates a "check all that apply" question:
   one row per item with the count and the percentage of respondents who
   chose it (or of responses, or both), and a row with the number of
-  respondents. With `by`, each item gets a chi-squared test, adjusted by
-  Holm by default (`p_adjust`), and the question a global test that
-  allows for several answers per respondent, Rao-Scott corrected or by
-  bootstrap (`test`). `p_value = FALSE` removes the p-values and the
-  global test, and `statistic = TRUE` shows each item's chi-squared
-  (#10).
+  respondents. The note counts the respondents left out of the base and
+  those in it who chose no item. With `by`, each item gets a chi-squared
+  test, adjusted by Holm by default (`p_adjust`), and the question a
+  global test that allows for several answers per respondent, Rao-Scott
+  corrected or by bootstrap (`test`). `p_value = FALSE` removes the
+  p-values and the global test, and `statistic = TRUE` shows each item's
+  chi-squared. `inline()` cites its cells, a group selected with `model`
+  and the base row as `"nobs"` (#10).
 
 * `table_regression()` and `table_regression_uv()` take the same four
   `labels` forms. `labels = TRUE` names the outcome, the numeric terms,

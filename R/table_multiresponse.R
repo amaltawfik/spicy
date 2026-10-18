@@ -90,7 +90,8 @@
 #'     valid cases.
 #'   * `"answered"`: the respondents who chose at least one item, the
 #'     default of SPSS `MULT RESPONSE` (`MISSING = TABLE`) and of Stata's
-#'     `mrtab`, where choosing nothing cannot be told from skipping.
+#'     `mrtab`, whose `include` option gives `"valid"` (Jann, 2005, pp. 98
+#'     and 107-108), where choosing nothing cannot be told from skipping.
 #'   * `"all"`: every row of the group, as `questionr::multi.table()`
 #'     counts.
 #' @param sort The order of the item rows: `"questionnaire"` (the
@@ -125,9 +126,9 @@
 #' @param title The table title. `NULL` (the default) gives "Multiple
 #'   responses", followed by "by" and the `by` variable under the `labels`
 #'   contract; a single string replaces it.
-#' @param note The table note. `NULL` (the default) builds it: what the
-#'   percentages are of, the base, and the tests. A single string replaces
-#'   it, and `FALSE` removes it.
+#' @param note The table note. `NULL` (the default) builds it: the
+#'   respondents left out, what the percentages are of, the base, and the
+#'   tests. A single string replaces it, and `FALSE` removes it.
 #' @param excel_sheet Sheet name for Excel export. `NULL` (the default)
 #'   uses `"Multiple responses"`.
 #' @param word_path File path for `output = "word"`. Defaults to `NULL`.
@@ -159,7 +160,10 @@
 #' The data frames carry the note in `attr(x, "note")` and, when the table
 #' has a global test, `attr(x, "global_test")`: a one-row data frame with
 #' `test`, `statistic`, `df`, `p.value`, `boot_n`, `n_items` (the items
-#' tested), and `n_groups`. [as_structured()] reads the default object.
+#' tested), `n_groups`, `rs_mean` and `rs_cv` (the design-effect summary of
+#' `test = "rs2"`), and `boot_redraws` (the resamples drawn again under
+#' `test = "bootstrap"`); see *Tests*. [as_structured()] reads the default
+#' object.
 #'
 #' @details
 #' # Tests
@@ -173,30 +177,52 @@
 #' 1999).
 #'
 #' The global test sums the item statistics,
-#' \eqn{X^2_S = \sum_j X^2_j}. One respondent can choose several items,
-#' so the items are correlated and \eqn{X^2_S} is not chi-squared under
-#' the null: its distribution is a weighted sum of chi-squared variables
-#' whose weights depend on the joint distribution of the items (Loughin
-#' and Scherer, 1998). `test = "rs2"` matches its first two moments, the
-#' second-order Rao-Scott correction (Bilder and Loughin, 2004):
+#' \eqn{X^2_S = \sum_j X^2_j}, a value that does not depend on which
+#' answer of an item is coded as chosen (Agresti and Liu, 1999). One
+#' respondent can choose several items, so the items are correlated and
+#' \eqn{X^2_S} is not chi-squared under the null (Loughin and Scherer,
+#' 1998): its asymptotic distribution is a weighted sum of chi-squared
+#' variables, the weights being the eigenvalues of a design-effect matrix
+#' (Bilder, Loughin and Nettleton, 2000, Appendix A). `test = "rs2"`
+#' matches its first two moments, the second-order Rao-Scott correction
+#' of Thomas and Decady (2004, pp. 48 and 58-59):
 #'
 #' \deqn{X^2_{RS2} = \frac{c(r-1)\,X^2_S}{\sum_k \lambda_k^2}, \qquad
 #' \nu = \frac{c^2(r-1)^2}{\sum_k \lambda_k^2}}
 #'
 #' referred to a chi-squared distribution with \eqn{\nu} degrees of
 #' freedom, usually fractional. Here \eqn{c} is the number of items tested
-#' and the \eqn{\lambda_k} are the eigenvalues of the design-effect matrix
-#' estimated from the within-group covariance of the indicators. The
-#' result is deterministic.
+#' and the \eqn{\lambda_k} are the eigenvalues of the design-effect matrix,
+#' in the second-order form of Bilder and Loughin (2004). The within-group
+#' covariance of the indicators is centered at the group means, the
+#' unrestricted estimate of Bilder and Loughin (2004) that the `MRCV`
+#' package also uses, whereas Thomas and Decady (2004) center it at the
+#' pooled proportions with divisor \eqn{n(n - 1)}, which gives p = .068
+#' instead of .063 on the Kansas farmer data of Loughin and Scherer
+#' (1998). The result is deterministic. `attr(x, "global_test")` reports
+#' `rs_mean`, the mean of the \eqn{\lambda_k}, which is 1 in the
+#' population under the null and which the correction takes as 1 (Thomas
+#' and Decady, 2004, p. 48), and `rs_cv`, the \eqn{\hat a} of Thomas and
+#' Decady (2004, p. 59), defined by
+#' \eqn{1 + \hat a^2 = \sum_k \lambda_k^2 / (c(r-1))}: the coefficient of
+#' variation of the \eqn{\lambda_k} when their mean is 1, and `NA` when
+#' that ratio falls below 1.
 #'
 #' `test = "bootstrap"` refers \eqn{X^2_S} to its distribution over
 #' `boot_n` resamples of whole response vectors, drawn with replacement
-#' from the pooled respondents with the group sizes held fixed. The
-#' p-value is the share of resamples whose statistic is at least the
-#' observed one. It holds its level most closely in the published
-#' simulations, but it is random: call [set.seed()] first to reproduce
-#' it. An item that loses all variation in a resample adds 0 to the
-#' statistic of that resample.
+#' from the pooled respondents with the group sizes held fixed (Loughin
+#' and Scherer, 1998). The p-value is the share of resamples whose
+#' statistic is at least the observed one. A resample in which an item is
+#' chosen by every respondent or by none gives that item no statistic: it
+#' is discarded and drawn again, the practice of Bilder, Loughin and
+#' Nettleton (2000, p. 1298) for resamples whose marginal table has an
+#' empty row or column, and `attr(x, "global_test")$boot_redraws` counts
+#' the resamples drawn again. When 100 times `boot_n` draws do not yield
+#' `boot_n` usable resamples, the function stops with an error. The
+#' bootstrap held its level in most published settings, with exceptions
+#' reported by Bilder, Loughin and Nettleton (2000, p. 1305), and no study
+#' of multiple marginal independence compares it with the second-order
+#' test. It is random: call [set.seed()] first to reproduce it.
 #'
 #' An item chosen by every respondent, or by none, has no test: its `p`
 #' cell shows a dash, it leaves the global test, and the note names it.
@@ -214,7 +240,9 @@
 #' its smallest adjusted p-value equals the Bonferroni global p-value of
 #' Agresti and Liu (1999). The raw p-values stay in the data frames as
 #' `p_unadjusted`, and in `col_meta$p$p_unadjusted` of [as_structured()].
-#' The global test is never adjusted.
+#' The note names the method and the number of items adjusted together,
+#' in the sentence of [table_categorical()]. The global test is never
+#' adjusted.
 #'
 #' # Base and missing values
 #'
@@ -225,23 +253,48 @@
 #' under `base = "answered"`, every row under `base = "all"`. The counts
 #' are the same under the three bases; the percentages of cases and the
 #' tests are not. The `Respondents` row gives the base of each group, and
-#' the note says which base the table uses. Declared missing values of a labelled column
-#' (`na_values`, `na_range`) are missing, as under the `user_na = TRUE`
-#' default of [table_categorical()].
+#' the note says which base the table uses and how many respondents it
+#' leaves out, all groups together: those who answered none of the
+#' indicators under `"valid"`, those who chose no item under `"answered"`.
+#' Under `"valid"` and `"all"`, the base can hold respondents who chose no
+#' item: the note then says how many. Declared missing values of a
+#' labelled column (`na_values`, `na_range`) are missing, as under the
+#' `user_na = TRUE` default of [table_categorical()].
+#'
+#' A percentage carries no more digits than its denominator, so a base of
+#' fewer than 100 respondents takes whole percentages (American Medical
+#' Association, 2020, section 4.1.8): `percent_digits = 0` prints them.
 #'
 #' @references
 #' Agresti, A., & Liu, I.-M. (1999). Modeling a categorical variable
 #' allowing arbitrarily many category choices. *Biometrics*, 55(3),
 #' 936-943. \doi{10.1111/j.0006-341x.1999.00936.x}
 #'
+#' American Medical Association. (2020). *AMA Manual of Style: A Guide for
+#' Authors and Editors* (11th ed.). Oxford University Press.
+#' \doi{10.1093/jama/9780190246556.001.0001}
+#'
 #' Bilder, C. R., & Loughin, T. M. (2004). Testing for marginal
 #' independence between two categorical variables with multiple
 #' responses. *Biometrics*, 60(1), 241-248.
 #' \doi{10.1111/j.0006-341x.2004.00147.x}
 #'
+#' Bilder, C. R., Loughin, T. M., & Nettleton, D. (2000). Multiple
+#' marginal independence testing for pick any/c variables.
+#' *Communications in Statistics - Simulation and Computation*, 29(4),
+#' 1285-1316. \doi{10.1080/03610910008813665}
+#'
+#' Jann, B. (2005). Tabulation of multiple responses. *The Stata Journal*,
+#' 5(1), 92-122. \doi{10.1177/1536867x0500500113}
+#'
 #' Loughin, T. M., & Scherer, P. N. (1998). Testing for association in
 #' contingency tables with multiple column responses. *Biometrics*, 54(2),
 #' 630-637. \doi{10.2307/3109769}
+#'
+#' Thomas, D. R., & Decady, Y. J. (2004). Testing for association using
+#' multiple response survey data: Approximate procedures based on the
+#' Rao-Scott approach. *International Journal of Testing*, 4(1), 43-59.
+#' \doi{10.1207/s15327574ijt0401_3}
 #'
 #' @seealso [table_categorical()] for single-response variables.
 #'
@@ -497,6 +550,16 @@ table_multiresponse <- function(
   z <- chosen[in_base, , drop = FALSE]
   z[is.na(z)] <- FALSE
   storage.mode(z) <- "double"
+  # The respondents of the base who chose no item, all groups together:
+  # the note says how many, so that ticking nothing stays visible
+  # (maintainer decision of 2026-10-18). Zero by construction under
+  # `base = "answered"`, whose base is the respondents who chose one.
+  n_none <- sum(rowSums(z) == 0)
+  # The respondents left outside the base, all groups together (a missing
+  # `by` has its own sentence): those who answered none of the indicators
+  # under `base = "valid"`, those who chose no item under `"answered"`,
+  # nobody under `"all"`. The note says how many (decision of 2026-10-18).
+  n_removed <- sum(keep & !in_base)
 
   # ---- counts and percentages, one row per block (groups, then margin) -----
   if (has_group) {
@@ -652,10 +715,12 @@ table_multiresponse <- function(
         n_by_na = n_by_na,
         percent = percent,
         base = base,
+        n_none = n_none,
+        n_removed = n_removed,
         test_res = test_res,
         p_value = p_value,
         untested = untested,
-        p_adjust = p_adjust,
+        p_adjust_info = p_adjust_info,
         decimal_mark = decimal_mark,
         p_digits = p_digits
       )
@@ -1060,6 +1125,12 @@ table_multiresponse <- function(
   a <- n_i / sum(n_i)
   p_ij <- rowsum(z, g, reorder = TRUE) / n_i
   pbar <- colMeans(z)
+  # Sigma is centered at each group's own proportions, divisor n_i: the
+  # unrestricted estimate of Bilder & Loughin (2004), which MRCV's
+  # `MI.test()` uses too, hence the oracle pins. Thomas & Decady (2004,
+  # pp. 52 and 59) center their linearized scores at the pooled
+  # proportions instead, with divisor n(n - 1): on the farmer data that
+  # gives p = .068 (statistic 27.13 on 17.60 df), against .063 here.
   sigma <- matrix(0, r * k, r * k)
   for (i in seq_len(r)) {
     dev <- sweep(z[g == i, , drop = FALSE], 2L, p_ij[i, ])
@@ -1085,55 +1156,104 @@ table_multiresponse <- function(
   kk <- (r - 1) * k
   stat <- kk * x2_sum / sum_l2
   df <- kk^2 / sum_l2
+  # The design-effect summary the correction is read through. The mean of
+  # the eigenvalues, tr(M) / kk, is 1 in the population under the null,
+  # X2_S being self-correcting (Thomas & Decady 2004, p. 48), and the
+  # correction takes it as 1; the estimate is reported as it is (0.969 on
+  # the farmer data). a-hat is defined by 1 + a^2 = sum(lambda^2) / kk
+  # (p. 59): the coefficient of variation of the eigenvalues when their
+  # mean is 1, and no real number when that ratio falls below 1.
+  ratio <- sum_l2 / kk
   list(
     test = "rs2",
     statistic = stat,
     df = df,
-    p.value = stats::pchisq(stat, df = df, lower.tail = FALSE)
+    p.value = stats::pchisq(stat, df = df, lower.tail = FALSE),
+    rs_mean = sum(diag(m)) / kk,
+    rs_cv = if (ratio >= 1) sqrt(ratio - 1) else NA_real_
   )
 }
 
 # The bootstrap of X2_S with the group sizes fixed: whole response vectors
 # drawn with replacement from the pooled respondents, the first n_1 to
 # group 1, the next n_2 to group 2, and so on -- the scheme of MRCV's
-# `MI.test(type = "boot")`. No resample is discarded: an item without
-# variation in a resample adds 0 to its statistic. The p-value is the
-# share of resamples at least as large as the observed statistic, with
-# no +1 (B&L 2004, p. 245). It draws from the session's RNG.
-.mr_boot <- function(z, n_i, x2_sum, boot_n) {
+# `MI.test(type = "boot")`.
+#
+# A resample in which an item is chosen by every respondent or by none has
+# no statistic for that item: it is discarded and DRAWN AGAIN, as Bilder,
+# Loughin & Nettleton (2000, p. 1298) replace a resample whose marginal
+# table has an empty row or column. MRCV discards the same resamples
+# ("Discard if any table < rx2") but, with its default `B.max = B`, does
+# not replace them, so its p-value then rests on fewer resamples; here it
+# always rests on `boot_n`. `max_draws` (100 x `boot_n`) caps the draws:
+# reaching it is an error, never a p-value from fewer resamples. Data that
+# never yield such a resample draw exactly the sequence they drew before
+# the redraws existed, so the pinned bootstrap p-values hold.
+#
+# The p-value is the share of kept resamples at least as large as the
+# observed statistic, with no +1 (B&L 2004, p. 245). It draws from the
+# session's RNG.
+.mr_boot <- function(z, n_i, x2_sum, boot_n, max_draws = 100 * boot_n) {
   n <- nrow(z)
   g <- rep.int(seq_along(n_i), n_i)
-  stats_b <- vapply(
-    seq_len(boot_n),
-    function(b) {
-      zb <- z[sample.int(n, n, replace = TRUE), , drop = FALSE]
-      sum(.mr_item_chisq(zb, g, n_i), na.rm = TRUE)
-    },
-    numeric(1)
-  )
+  stats_b <- numeric(boot_n)
+  kept <- 0L
+  draws <- 0
+  while (kept < boot_n) {
+    if (draws >= max_draws) {
+      spicy_abort(
+        c(
+          sprintf(
+            "The bootstrap drew %s resamples and kept %d of the %d it needs: in the others an item was chosen by every respondent or by none.",
+            format(draws, big.mark = ",", scientific = FALSE),
+            kept,
+            boot_n
+          ),
+          "i" = "An item chosen by almost every respondent, or by almost none, loses all variation in most resamples; `test = \"rs2\"` needs no resampling."
+        ),
+        class = "spicy_resampling_failed"
+      )
+    }
+    draws <- draws + 1
+    zb <- z[sample.int(n, n, replace = TRUE), , drop = FALSE]
+    x2_b <- .mr_item_chisq(zb, g, n_i)
+    if (anyNA(x2_b)) {
+      next
+    }
+    kept <- kept + 1L
+    stats_b[[kept]] <- sum(x2_b)
+  }
   list(
     test = "bootstrap",
     statistic = x2_sum,
     df = NA_real_,
     p.value = mean(stats_b >= x2_sum),
-    boot_n = boot_n
+    boot_n = boot_n,
+    boot_redraws = as.integer(draws - boot_n)
   )
 }
 
-# The global test as the one-row frame the data frames carry.
+# The global test as the one-row frame the data frames carry. The fields
+# of the other test are NA: the design-effect summary of the Rao-Scott
+# correction (`rs_mean`, `rs_cv`) under the bootstrap, the resamples drawn
+# again (`boot_redraws`) under the Rao-Scott test.
 .mr_global_df <- function(test_res, boot_n) {
   g <- test_res$global
   if (is.null(g)) {
     return(NULL)
   }
+  boot <- identical(g$test, "bootstrap")
   data.frame(
     test = g$test,
     statistic = g$statistic,
     df = g$df,
     p.value = g$p.value,
-    boot_n = if (identical(g$test, "bootstrap")) boot_n else NA_integer_,
+    boot_n = if (boot) boot_n else NA_integer_,
     n_items = g$n_items,
     n_groups = g$n_groups,
+    rs_mean = g$rs_mean %||% NA_real_,
+    rs_cv = g$rs_cv %||% NA_real_,
+    boot_redraws = if (boot) g$boot_redraws else NA_integer_,
     stringsAsFactors = FALSE
   )
 }
@@ -1459,20 +1579,25 @@ table_multiresponse <- function(
 
 # ---- title and note ------------------------------------------------------------
 
-# The note, in reading order: what left the table, what the percentages
-# are of, the base, then the tests -- the item p-values (with `p_value`),
-# the items without a test (whenever the item tests show, p-values or
-# statistic), and the global test (with `p_value`; `test_res$global` is
-# NULL otherwise).
+# The note, in reading order: what left the table (a missing `by`, then
+# the respondents outside the base), what the percentages are of, the base
+# and how many in it chose no item (when any did), then the tests -- the
+# item p-values followed, under an adjustment, by the family's sentence
+# naming the method and the number of tests (with `p_value`), the items
+# without a test (whenever the item tests show, p-values or statistic),
+# and the global test (with `p_value`; `test_res$global` is NULL
+# otherwise).
 .mr_note <- function(
   by_label,
   n_by_na,
   percent,
   base,
+  n_none,
+  n_removed,
   test_res,
   p_value,
   untested,
-  p_adjust,
+  p_adjust_info,
   decimal_mark,
   p_digits
 ) {
@@ -1483,15 +1608,17 @@ table_multiresponse <- function(
       spicy_fmt("note_rows_missing_by_removed", by_label, n_by_na)
     )
   }
+  if (n_removed > 0L) {
+    parts <- c(parts, spicy_fmt("note_multiresponse_removed", n_removed))
+  }
   parts <- c(
     parts,
-    spicy_str(
-      if (identical(percent, "responses")) {
-        "note_multiresponse_responses"
-      } else {
-        "note_multiresponse_cases"
-      }
-    ),
+    spicy_str(switch(
+      percent,
+      cases = "note_multiresponse_cases",
+      responses = "note_multiresponse_responses",
+      both = "note_multiresponse_both"
+    )),
     spicy_str(switch(
       base,
       valid = "note_multiresponse_base_valid",
@@ -1499,15 +1626,17 @@ table_multiresponse <- function(
       all = "note_multiresponse_base_all"
     ))
   )
+  if (n_none == 1L) {
+    parts <- c(parts, spicy_str("note_multiresponse_none_chosen_one"))
+  } else if (n_none > 1L) {
+    parts <- c(parts, spicy_fmt("note_multiresponse_none_chosen", n_none))
+  }
   if (!is.null(test_res)) {
     if (p_value) {
       parts <- c(
         parts,
-        if (identical(p_adjust, "none")) {
-          spicy_str("note_multiresponse_items_p_none")
-        } else {
-          spicy_fmt("note_multiresponse_items_p", .quote_val(p_adjust))
-        }
+        spicy_str("note_multiresponse_items_p"),
+        .desc_p_adjust_note(p_adjust_info)
       )
     }
     if (length(untested)) {

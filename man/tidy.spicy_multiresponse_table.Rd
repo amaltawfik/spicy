@@ -37,8 +37,10 @@ the item's test: \code{statistic} (the Pearson chi-squared), \code{df}, \code{p.
 \code{n_items_tested} (the items the global test kept), \code{n_groups} (the
 groups of \code{by}, \code{NA} without it), \code{nobs} (the respondents of the base),
 \code{test_type} (\code{"rs2"} or \code{"bootstrap"}), \code{statistic}, \code{df}, \code{p.value}
-and \code{boot_n} of the global test, and \code{p_adjust}, the adjustment of the
-item p-values.
+and \code{boot_n} of the global test, \code{rs_cv} (the \eqn{\hat a} of the
+second-order Rao-Scott correction, see \emph{Tests} in
+\code{\link[=table_multiresponse]{table_multiresponse()}}), and \code{p_adjust}, the adjustment of the item
+p-values.
 
 Both column sets are FIXED: a column the table does not show (a test it
 did not run, an adjustment it did not make) is present and \code{NA}. Index

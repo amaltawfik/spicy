@@ -15,7 +15,7 @@
       ╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
        Respondents │  88          16          31            113            14                262                  
       
-      Several answers possible: percentages are of respondents and can sum to more than 100. Base: respondents with at least one answer to the question. Item p-values: Pearson chi-squared test of each item by group, adjusted by "holm". Group comparison: Rao-Scott second-order corrected chi-squared test of multiple marginal independence, χ²(18.60) = 28.68, p = .063.
+      Several answers possible: percentages are of respondents and can sum to more than 100%. Base: respondents who answered the question, including those who chose no item. Item p-values: Pearson chi-squared test of each item by group. P-values adjusted via stats::p.adjust(method = "holm"); m = 5 test(s). Group comparison: Rao-Scott second-order corrected chi-squared test of multiple marginal independence, χ²(18.60) = 28.68, p = .063.
 
 ---
 
@@ -42,7 +42,7 @@
       ╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
        Respondents │                                           
       
-      Rows with missing g removed: 1. Several answers possible: percentages are of respondents and can sum to more than 100. Base: respondents with at least one answer to the question. Item p-values: Pearson chi-squared test of each item by group, adjusted by "holm". Not tested (no variation): x3, x4. Group comparison: Rao-Scott second-order corrected chi-squared test of multiple marginal independence, χ²(5.06) = 16.87, p = .005.
+      Rows with missing g removed: 1. Respondents with no answer to the question removed: 1. Several answers possible: percentages of respondents can sum to more than 100%; percentages of responses sum to 100%. Base: respondents who answered the question, including those who chose no item. Item p-values: Pearson chi-squared test of each item by group. P-values adjusted via stats::p.adjust(method = "holm"); m = 2 test(s). Not tested (no variation, shown as –): x3, x4. Group comparison: Rao-Scott second-order corrected chi-squared test of multiple marginal independence, χ²(5.06) = 16.87, p = .005.
 
 ---
 
@@ -59,5 +59,5 @@
       ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
        Personnes ayant répondu   │   3              3                 6                         
       
-      Lignes retirées pour valeur manquante sur g : 1. Plusieurs réponses possibles : pourcentages calculés sur les personnes ayant répondu, dont la somme peut dépasser 100. Base : personnes ayant répondu à la question (au moins une indicatrice renseignée). Valeurs p des items : test du khi-deux de Pearson de chaque item selon le groupe, ajustées par "holm". Non testé (sans variation) : x3. Comparaison des groupes : test du khi-deux d'indépendance marginale multiple avec correction de Rao-Scott du second ordre, χ²(5,06) = 16,87, p = 0,005.
+      Lignes retirées pour valeur manquante sur g : 1. Personnes retirées faute de réponse à la question : 1. Plusieurs réponses possibles : les pourcentages, calculés sur les personnes ayant répondu, peuvent totaliser plus de 100 %. Base : personnes ayant répondu à la question, y compris celles qui n'ont choisi aucun item. 1 personne n'a coché aucun item. Valeurs p des items : test du khi-deux de Pearson de chaque item selon le groupe. Valeurs p ajustées par stats::p.adjust(method = "holm") ; m = 2 test(s). Non testé (sans variation, signalé par –) : x3. Comparaison des groupes : test du khi-deux d'indépendance marginale multiple avec correction de Rao-Scott du second ordre, χ²(5,06) = 16,87, p = 0,005.
 

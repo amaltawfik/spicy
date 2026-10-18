@@ -10,11 +10,12 @@ inline(x, variable, level = NULL, column = NULL, model = NULL)
 \item{x}{A table returned by \code{\link[=table_regression]{table_regression()}},
 \code{\link[=table_categorical]{table_categorical()}}, \code{\link[=table_continuous]{table_continuous()}},
 \code{\link[=table_continuous_lm]{table_continuous_lm()}}, \code{\link[=table_outcome]{table_outcome()}},
-\code{\link[=table_categorical_svy]{table_categorical_svy()}} or \code{\link[=table_continuous_svy]{table_continuous_svy()}} (default
-output) -- every family \code{\link[=as_structured]{as_structured()}} accepts.}
+\code{\link[=table_categorical_svy]{table_categorical_svy()}}, \code{\link[=table_continuous_svy]{table_continuous_svy()}} or
+\code{\link[=table_multiresponse]{table_multiresponse()}} (default output) -- every family
+\code{\link[=as_structured]{as_structured()}} accepts.}
 
 \item{variable}{The source variable, unquoted or as a string; or a
-fit-statistic token (\code{"n"}, \code{"r2"}, ...).}
+fit-statistic token (\code{"n"}, \code{"nobs"}, \code{"r2"}, ...).}
 
 \item{level}{For a factor variable, the level, as a string.
 \code{"(Missing)"} addresses the missing-value category by role. On
@@ -30,8 +31,8 @@ its token -- the contrast (\code{"delta"}) or, across a numeric \code{by},
 the slope (\code{"b"}) for \code{\link[=table_continuous_lm]{table_continuous_lm()}}, the mean (\code{"m"})
 or, on a median-only table, the median (\code{"med"}, \code{"med_iqr"}) for
 \code{\link[=table_continuous]{table_continuous()}}, and the count (\code{"n"}) for
-\code{\link[=table_categorical]{table_categorical()}}. A row carrying none of them refuses and
-lists its tokens.}
+\code{\link[=table_categorical]{table_categorical()}} and \code{\link[=table_multiresponse]{table_multiresponse()}}. A row carrying
+none of them refuses and lists its tokens.}
 
 \item{model}{In a multi-model table, the model: its label (as
 displayed in the column spanners) or its position.}
@@ -71,6 +72,15 @@ so there \code{level} names the group whose column you want:
 no group (the contrast, its interval, \code{p}, \code{n}) are cited without
 one, as before.
 
+\code{\link[=table_multiresponse]{table_multiresponse()}} has one row per item, addressed by its column
+name, then the base row, the number of respondents, addressed as the
+fit statistic \code{"nobs"}. Its groups are spanners, as in
+\code{\link[=table_categorical]{table_categorical()}}, so \code{model} selects one, the margin included:
+\code{inline(tbl, smoking, column = "pct", model = "Female")},
+\code{inline(tbl, "nobs", model = "Total")}. The item \code{p} and \code{statistic}
+belong to no group and are cited without \code{model}
+(\code{inline(tbl, smoking, column = "p")}).
+
 The column is a \strong{token} of the typed contract (\code{"b"}, \code{"se"},
 \code{"p"}, \code{"ci"}, \code{"or"}, \code{"ame"}, \code{"n"}, \code{"pct"}, \code{"m"}, ... -- see
 \code{as_structured()}'s \code{col_meta}), never a display header. \code{"ci"}
@@ -102,7 +112,8 @@ may hit the floor.
 Every misaddressing is a classed error that lists the available
 choices: unknown variables list the variables, missing levels list
 the levels, unknown tokens list the table's tokens, ambiguous
-models list the spanner labels. A cell the table itself displays
+models list the spanner labels. A \code{level} that names a group of a
+\code{by} table points to \code{model}. A cell the table itself displays
 as undefined (an aliased coefficient's en-dash) refuses with the
 reason rather than pasting a dash into a sentence.
 }

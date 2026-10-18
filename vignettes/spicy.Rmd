@@ -185,6 +185,45 @@ For detailed guidance, see the dedicated articles on
 `table_continuous_lm()`, and the final reporting overview tying the
 summary tables together.
 
+### Multiple-response items
+
+The items of a "check all that apply" question are answered by the same
+respondents, and a plain categorical table misreads them. Stacked into
+one variable, the choices outnumber the respondents, and the
+chi-squared test of the items-by-groups table is not valid, since one
+respondent contributes to several cells. `table_multiresponse()` reads
+the items as one question: one row per item, with the number of
+respondents who chose it and their percentage, then a row with the
+number of respondents. Three yes/no items of `sochealth` stand in for
+such a question; `counted` names the value that marks a choice, and
+`labels = TRUE` shows the item wording:
+
+```{r table-multiresponse}
+table_multiresponse(
+  sochealth,
+  select = c(smoking, physical_activity, dentist_12m),
+  counted = "Yes",
+  labels = TRUE
+)
+```
+
+With `by`, the counts and percentages are given per group and in a
+`Total` margin, each item gets a chi-squared test, and the question a
+global test that allows for several answers per respondent, both
+explained in the [Categorical summary
+tables](https://amaltawfik.github.io/spicy/articles/table-categorical.html#multiple-response-items)
+article. `p_value = FALSE` leaves a descriptive table:
+
+```{r table-multiresponse-by}
+table_multiresponse(
+  sochealth,
+  select = c(smoking, physical_activity, dentist_12m),
+  by = sex,
+  counted = "Yes",
+  p_value = FALSE
+)
+```
+
 ## Regression tables
 
 `table_regression()` reports the full coefficient table for one or
