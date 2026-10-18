@@ -1,6 +1,6 @@
 # ---------------------------------------------------------------------------
 # Documentation map completeness. The package ships one vignette,
-# vignettes/spicy.Rmd (Get started); the twenty walk-throughs are
+# vignettes/spicy.Rmd (Get started); the twenty-one walk-throughs are
 # pkgdown articles under vignettes/articles/, kept out of the tarball by
 # .Rbuildignore and rendered at the same articles/<slug>.html URLs.
 #
@@ -26,7 +26,7 @@
   dir.exists(vignettes_dir) && dir.exists(file.path(vignettes_dir, "articles"))
 }
 
-# The twenty articles, by slug (vignettes/articles/<slug>.Rmd).
+# The twenty-one articles, by slug (vignettes/articles/<slug>.Rmd).
 .article_names <- function(vignettes_dir) {
   files <- list.files(file.path(vignettes_dir, "articles"), pattern = "\\.Rmd$")
   files <- files[!startsWith(files, "_")]
