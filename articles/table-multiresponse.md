@@ -3,6 +3,7 @@
 ``` r
 
 library(spicy)
+library(tibble)
 ```
 
 [`table_multiresponse()`](https://amaltawfik.github.io/spicy/reference/table_multiresponse.md)
@@ -27,11 +28,13 @@ the source was chosen and `FALSE` when it was not:
 
 info <- sochealth[startsWith(names(sochealth), "info_")]
 head(info, 4)
+#> # A tibble: 4 × 5
 #>   info_doctor info_pharmacist info_internet info_family info_media
-#> 1        TRUE           FALSE          TRUE       FALSE      FALSE
-#> 2       FALSE           FALSE          TRUE       FALSE       TRUE
-#> 3       FALSE           FALSE          TRUE       FALSE      FALSE
-#> 4       FALSE           FALSE          TRUE       FALSE      FALSE
+#>   <lgl>       <lgl>           <lgl>         <lgl>       <lgl>     
+#> 1 TRUE        FALSE           TRUE          FALSE       FALSE     
+#> 2 FALSE       FALSE           TRUE          FALSE       TRUE      
+#> 3 FALSE       FALSE           TRUE          FALSE       FALSE     
+#> 4 FALSE       FALSE           TRUE          FALSE       FALSE
 ```
 
 The 36 respondents who skipped the question are missing on all five
@@ -967,7 +970,7 @@ table_multiresponse(
 | Respondents | 599 |      |      | 565 |      |      | 1164 |      |      |
 | Respondents with no answer to the question removed: 36. Several answers possible: percentages of respondents can sum to more than 100%; percentages of responses sum to 100%. Base: respondents who answered the question, including those who chose no item. 67 respondents chose none of the items. |  |  |  |  |  |  |  |  |  |
 
-Multiple responses by Sex {#tinytable_e028be4q4n29dij7ruz8 .table
+Multiple responses by Sex {#tinytable_p3x63vkkr48j9pbvr4la .table
 .tinytable style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 

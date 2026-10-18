@@ -45,7 +45,8 @@ PDF.
   [`table_regression_uv()`](https://amaltawfik.github.io/spicy/reference/table_regression_uv.md),
   whose default output does not change, `labels = NULL` (their default
   in 0.13.0) is an error as well, and a name that matches no term is
-  ignored instead of refused.
+  ignored instead of refused. In the notes, a list of variables is
+  joined with semicolons when one of the labels contains a comma.
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   and
