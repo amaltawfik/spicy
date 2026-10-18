@@ -168,6 +168,13 @@ reste à examiner dans un second passage.
   colonne vide ; indentation = deux espaces ; pas de fusion verticale.
 - **Orientation.** « The table should be constructed such that the primary
   comparison reads horizontally ».
+- **Totaux et pourcentages qui ne somment pas (p. 2).** « List abbreviations in
+  the footnote section and explain any empty cells. If relevant, add a footnote to
+  explain why numbers may not sum to group totals or percentages do not add to
+  100%. » → fonde la note automatique de `table_multiresponse()` (réponses
+  multiples : pourcentages de cas qui dépassent 100 %) et l'explication des
+  cellules vides ou du tiret. Ajouté le 2026-10-18 (constat de la relecture
+  réponses multiples).
 - **Appels de note.** « Use superscript letters (a, b, c) to mark each footnote ».
   → JAMA n'utilise donc pas l'astérisque, même comme appel de note ; *a fortiori*
   aucune convention d'étoiles de significativité n'y est sanctionnée.
@@ -1295,7 +1302,18 @@ Pour chacun : **à verser dans la bibliothèque de méthodes d'Amal** — le cir
 `master.bib` + magasin de PDF est géré par lui (référence ajoutée dans
 `~/Documents/references/master.bib`, PDF déposé à plat dans
 `~/switchdrive/bibliotheque/` sous `<Nom>_<Annee>_<TitreCourt>.pdf`, champ `file`
-limité au nom de fichier). Aucun de ces documents n'a été téléchargé.
+limité au nom de fichier).
+
+**Mise à jour du 2026-10-18.** 7.1 (AMA, `ama2020manual`) et 7.2 (APA,
+`apa2020publication`) sont désormais dans la bibliothèque, avec le Chicago Manual
+of Style 18e éd. (`chicago2024manual`), SAMPL (`lang2015basic`) et le texte
+d'explication de STROBE (`vandenbroucke2007strengthening`). Ce qu'ils disent des
+pourcentages qui ne totalisent pas 100, des dénominateurs, des décimales et des
+tests multiples est consigné, pages à l'appui, dans le mémo de la relecture
+« réponses multiples » (AMA §4.1.4.7, §4.1.4.10, §4.1.8, §18.7.2, §18.7.3,
+§19.1.3 ; APA §7.12–7.14, §7.17, table 7.7 ; Chicago ¶3.68, ¶3.76, ¶3.82,
+¶3.85–3.86). Les fiches 7.1 et 7.2 ci-dessous gardent leur rédaction d'avant
+l'acquisition.
 
 ### 7.1 AMA Manual of Style, 11e édition (2020)
 
