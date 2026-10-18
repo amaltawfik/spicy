@@ -16,17 +16,22 @@ Un rapport descriptif (PEBSI) rend neuf blocs « cochez tout ce qui s'applique �
    - Renommage avant sortie (2026-10-18) : `sort` reprend le contrat de `freq()` (`sort = c("", "+", "-", "name+", "name-")`), l'ordre du questionnaire n'étant que l'ordre des colonnes sélectionnées.
 6. **Entrée** : colonnes indicatrices par tidyselect ; logiques et 0/1 reconnus d'office ; facteurs, caractères et `haven_labelled` exigent `counted =` (la valeur comptée, « Oui ») ; toute autre valeur non manquante vaut « non choisi » (convention SPSS). Un `by` à un seul groupe ou sans `by` : pas de test.
 
-## Esquisse de signature
+## Signature (telle qu'implémentée, 28427898 ; l'esquisse initiale disait `base = c("valid", "all")`, `sort = c("questionnaire", "desc")`, `digits`)
 
 ```r
 table_multiresponse(data, select, by = NULL, counted = NULL,
-  percent = c("cases", "responses", "both"), base = c("valid", "all"),
-  sort = c("questionnaire", "desc"),
+  percent = c("cases", "responses", "both"),
+  base = c("valid", "answered", "all"),
+  sort = c("", "+", "-", "name+", "name-"),
   p_value = NULL, test = c("rs2", "bootstrap"), boot_n = 1999L,
   p_adjust = "holm", statistic = FALSE,
-  labels = getOption("spicy.var_labels", FALSE), digits = 1, p_digits = 3,
-  decimal_mark = ".", title = NULL, note = NULL,
-  output = <les moteurs de table_categorical()>)
+  labels = getOption("spicy.var_labels", FALSE),
+  percent_digits = 1, p_digits = 3, decimal_mark = ".",
+  align = c("decimal", "center", "right"), title = NULL, note = NULL,
+  output = c("default", "data.frame", "long", "tinytable", "gt",
+             "flextable", "excel", "clipboard", "word"),
+  excel_path = NULL, excel_sheet = NULL, clipboard_delim = "\t",
+  word_path = NULL, style = NULL)
 ```
 
 ## Conséquences
