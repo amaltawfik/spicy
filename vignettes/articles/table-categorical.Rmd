@@ -485,10 +485,12 @@ broom::glance(out)
 ## Multiple-response items
 
 A "check all that apply" question is a set of yes/no items answered by
-the same respondents, so it is not one categorical variable: the
-choices outnumber the respondents, and the chi-squared test of the
-items-by-groups table is not valid. `table_multiresponse()` reads the
-items as one question, with its own bases, percentages, and tests, as
+the same respondents, like the five `info_*` items of `sochealth`, the
+sources of health information used in the past 12 months. It is not
+one categorical variable: the choices outnumber the respondents, and
+the chi-squared test of the items-by-groups table is not valid.
+`table_multiresponse()` reads the items as one question, with its own
+bases, percentages, and tests, as
 [*Multiple-response questions*](table-multiresponse.html) explains.
 
 ## Rendered outputs and export

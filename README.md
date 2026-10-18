@@ -221,7 +221,7 @@ The examples below use the bundled `sochealth` dataset.
 
 ``` r
 varlist(sochealth, tbl = TRUE)
-#> # A tibble: 24 × 7
+#> # A tibble: 29 × 7
 #>    Variable          Label                 Values Class N_distinct N_valid   NAs
 #>    <chr>             <chr>                 <chr>  <chr>      <int>   <int> <int>
 #>  1 sex               Sex                   Femal… fact…          2    1200     0
@@ -234,7 +234,7 @@ varlist(sochealth, tbl = TRUE)
 #>  8 income_group      Household income gro… Low, … orde…          4    1182    18
 #>  9 income            Monthly household in… 1000,… nume…       1052    1200     0
 #> 10 smoking           Current smoker        No, Y… fact…          2    1175    25
-#> # ℹ 14 more rows
+#> # ℹ 19 more rows
 ```
 
 ### Codebooks
@@ -575,35 +575,31 @@ table_outcome(
 ```
 
 A “check all that apply” question gets a table of its own, one row per
-item. Here three logical indicators stand in for one: the life domains a
-respondent is satisfied with, rated 4 or 5 out of 5. The article
+item. In `sochealth`, five logical items record the sources of health
+information a respondent used in the past 12 months. The article
 [Multiple-response
 questions](https://amaltawfik.github.io/spicy/articles/table-multiresponse.html)
 explains the bases, the percentages and the tests.
 
 ``` r
-domains <- data.frame(
-  sex = sochealth$sex,
-  health = sochealth$life_sat_health >= 4,
-  work = sochealth$life_sat_work >= 4,
-  relationships = sochealth$life_sat_relationships >= 4
-)
 table_multiresponse(
-  domains,
-  select = c(health, work, relationships),
+  sochealth,
+  select = starts_with("info_"),
   by = sex
 )
 #> Multiple responses by sex
 #> 
-#>  Variable      │ Female n  Female %  Male n  Male %  Total n  Total %    p   
-#> ───────────────┼─────────────────────────────────────────────────────────────
-#>  health        │   326       52.6     323     55.7     649     54.1     .840 
-#>  work          │   302       48.7     291     50.2     593     49.4    1.000 
-#>  relationships │   368       59.4     343     59.1     711     59.2    1.000 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Respondents   │   620                580             1200                   
+#>  Variable        │ Female n  Female %  Male n  Male %  Total n  Total %    p   
+#> ─────────────────┼─────────────────────────────────────────────────────────────
+#>  info_doctor     │   377       62.9     344     60.9     721     61.9    1.000 
+#>  info_pharmacist │   137       22.9     119     21.1     256     22.0    1.000 
+#>  info_internet   │   268       44.7     255     45.1     523     44.9    1.000 
+#>  info_family     │   219       36.6     141     25.0     360     30.9    <.001 
+#>  info_media      │    78       13.0      63     11.2     141     12.1    1.000 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Respondents     │   599                565             1164                   
 #> 
-#> Several answers possible: percentages are of respondents and can sum to more than 100%. Base: respondents who answered the question, including those who chose no item. 244 respondents chose none of the items. Item p-values: Pearson chi-squared test of each item by group. P-values adjusted via stats::p.adjust(method = "holm"); m = 3 test(s). Group comparison: Rao-Scott second-order corrected chi-squared test of multiple marginal independence, χ²(2.52) = 1.20, p = .665.
+#> Respondents with no answer to the question removed: 36. Several answers possible: percentages are of respondents and can sum to more than 100%. Base: respondents who answered the question, including those who chose no item. 67 respondents chose none of the items. Item p-values: Pearson chi-squared test of each item by group. P-values adjusted via stats::p.adjust(method = "holm"); m = 5 test(s). Group comparison: Rao-Scott second-order corrected chi-squared test of multiple marginal independence, χ²(4.61) = 18.78, p = .002.
 ```
 
 ### Row-wise summaries

@@ -194,15 +194,14 @@ chi-squared test of the items-by-groups table is not valid, since one
 respondent contributes to several cells. `table_multiresponse()` reads
 the items as one question: one row per item, with the number of
 respondents who chose it and their percentage, then a row with the
-number of respondents. Three yes/no items of `sochealth` stand in for
-such a question; `counted` names the value that marks a choice, and
-`labels = TRUE` shows the item wording:
+number of respondents. In `sochealth`, the five logical `info_*` items
+answer such a question: the sources of health information used in the
+past 12 months. `labels = TRUE` shows the item wording:
 
 ```{r table-multiresponse}
 table_multiresponse(
   sochealth,
-  select = c(smoking, physical_activity, dentist_12m),
-  counted = "Yes",
+  select = starts_with("info_"),
   labels = TRUE
 )
 ```
@@ -218,9 +217,8 @@ article. `p_value = FALSE` leaves a descriptive table:
 ```{r table-multiresponse-by}
 table_multiresponse(
   sochealth,
-  select = c(smoking, physical_activity, dentist_12m),
+  select = starts_with("info_"),
   by = sex,
-  counted = "Yes",
   p_value = FALSE
 )
 ```

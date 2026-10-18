@@ -400,40 +400,49 @@ Association, 2020, section 4.1.8): \code{percent_digits = 0} prints them.
 }
 
 \examples{
-# Three yes/no items read as one "check all that apply" question.
+# The five info_* items of sochealth answer one "check all that apply"
+# question: the sources of health information used in the past 12 months.
+table_multiresponse(sochealth, select = starts_with("info_"))
+
+# The labels of the items, sorted by decreasing count.
 table_multiresponse(
   sochealth,
-  select = c(smoking, physical_activity, dentist_12m),
-  by = education,
-  counted = "Yes"
+  select = starts_with("info_"),
+  labels = TRUE,
+  sort = "-"
 )
 
-# A descriptive table: no tests, percentages of cases and of responses.
+# By age group: a test per item and a global test of the question.
 table_multiresponse(
   sochealth,
-  select = c(smoking, physical_activity, dentist_12m),
+  select = starts_with("info_"),
+  by = age_group
+)
+
+# A descriptive table by sex, on the respondents who chose at least one
+# source: percentages of cases and of responses, no tests.
+table_multiresponse(
+  sochealth,
+  select = starts_with("info_"),
   by = sex,
-  counted = "Yes",
   percent = "both",
+  base = "answered",
   p_value = FALSE
 )
 
-# Logical indicators need no `counted`: the life domains rated 4 or 5.
-sat <- data.frame(
-  health = sochealth$life_sat_health >= 4,
-  work = sochealth$life_sat_work >= 4,
-  relationships = sochealth$life_sat_relationships >= 4,
-  standard = sochealth$life_sat_standard >= 4
-)
-table_multiresponse(sat, select = names(sat), sort = "-")
+# Items coded "Yes" and "No" need `counted`, the value that marks a choice.
+yes_no <- as.data.frame(lapply(
+  sochealth[startsWith(names(sochealth), "info_")],
+  function(x) factor(x, levels = c(FALSE, TRUE), labels = c("No", "Yes"))
+))
+table_multiresponse(yes_no, select = everything(), counted = "Yes")
 
 # Bootstrap global test: set a seed to reproduce its p-value.
 set.seed(1)
 table_multiresponse(
   sochealth,
-  select = c(smoking, physical_activity, dentist_12m),
-  by = education,
-  counted = "Yes",
+  select = starts_with("info_"),
+  by = sex,
   global_test = "bootstrap",
   boot_n = 999
 )
@@ -441,9 +450,8 @@ table_multiresponse(
 # Wide data frame.
 table_multiresponse(
   sochealth,
-  select = c(smoking, physical_activity, dentist_12m),
+  select = starts_with("info_"),
   by = sex,
-  counted = "Yes",
   output = "data.frame"
 )
 
@@ -451,9 +459,9 @@ table_multiresponse(
 if (requireNamespace("tinytable", quietly = TRUE)) {
   tt <- table_multiresponse(
     sochealth,
-    select = c(smoking, physical_activity, dentist_12m),
+    select = starts_with("info_"),
     by = sex,
-    counted = "Yes",
+    labels = TRUE,
     output = "tinytable"
   )
 }

@@ -971,7 +971,7 @@ test_that("the role fallback survives a translated missing label", {
 # ---- table_multiresponse() ------------------------------------------------
 
 # Three yes/no items of `sochealth` read as one "check all that apply"
-# question, as in the examples of ?table_multiresponse.
+# question.
 .il_mr <- function(...) {
   .il_quiet(table_multiresponse(
     sochealth,

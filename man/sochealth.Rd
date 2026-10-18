@@ -123,5 +123,10 @@ data(sochealth)
 varlist(sochealth)
 freq(sochealth, education)
 cross_tab(sochealth, education, self_rated_health)
+table_multiresponse(
+  sochealth,
+  select = starts_with("info_"),
+  by = age_group
+)
 }
 \keyword{datasets}

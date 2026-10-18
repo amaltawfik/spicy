@@ -402,22 +402,16 @@ table_outcome(
 ```
 
 A "check all that apply" question gets a table of its own, one row per
-item. Here three logical indicators stand in for one: the life domains a
-respondent is satisfied with, rated 4 or 5 out of 5. The article
+item. In `sochealth`, five logical items record the sources of health
+information a respondent used in the past 12 months. The article
 [Multiple-response
 questions](https://amaltawfik.github.io/spicy/articles/table-multiresponse.html)
 explains the bases, the percentages and the tests.
 
 ```{r eval=TRUE}
-domains <- data.frame(
-  sex = sochealth$sex,
-  health = sochealth$life_sat_health >= 4,
-  work = sochealth$life_sat_work >= 4,
-  relationships = sochealth$life_sat_relationships >= 4
-)
 table_multiresponse(
-  domains,
-  select = c(health, work, relationships),
+  sochealth,
+  select = starts_with("info_"),
   by = sex
 )
 ```
