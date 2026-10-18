@@ -348,8 +348,8 @@ test_that("the PDF compiles with the Typst that Quarto bundles", {
   expect_false(res$visible)
   expect_s3_class(res$value, "spicy_codebook")
   expect_gt(file.size(pdf), 0)
-  # Cover, the page about the data, list, seven pages of sheets, index.
-  expect_identical(cbt_pages(sochealth), 11L)
+  # Cover, the page about the data, list, eight pages of sheets, index.
+  expect_identical(cbt_pages(sochealth), 12L)
 
   two <- withr::local_tempfile(fileext = ".pdf")
   code_book(

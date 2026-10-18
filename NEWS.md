@@ -40,6 +40,11 @@ workbook, or a PDF.
 
 ## New features
 
+* `sochealth` gains a multiple-response question, the sources of health
+  information used in the past 12 months: five logical `info_*` items,
+  missing together for the 36 respondents who skipped the question, as
+  example data for `table_multiresponse()`.
+
 * `code_book()` builds a codebook in three parts, `header`, `variables`,
   and `values` (unweighted counts and percentages per category), and
   prints it as the list of variables.

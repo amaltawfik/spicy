@@ -4,7 +4,8 @@
 #' A simulated dataset of 1200 respondents from a fictional
 #' social-health survey, designed to illustrate the main features of
 #' the spicy package: variable labels, ordered factors, survey
-#' weights, association measures, and publication-ready reporting.
+#' weights, association measures, a multiple-response question, and
+#' publication-ready reporting.
 #'
 #' @details
 #' Every variable carries a `"label"` attribute (read by
@@ -22,7 +23,19 @@
 #' with unweighted means up to sampling noise without further
 #' rescaling.
 #'
-#' @format A tibble with 1200 rows and 24 variables:
+#' The five `info_*` variables answer one multiple-response question,
+#' "Sources of health information used in the past 12 months (check
+#' all that apply)", the example data of [table_multiresponse()]. Each
+#' item is logical: `TRUE` when the source was chosen, `FALSE` when it
+#' was not, and `NA` on all five items for the 36 respondents who
+#' skipped the question. A respondent who answered without choosing
+#' any source is `FALSE` on all five (67 of the 1164 who answered).
+#' Like the rest of the data, the block is simulated: doctor and media
+#' rise with age, internet falls with age and rises with education,
+#' family is more frequent among women, and the pharmacist item depends
+#' on no other variable.
+#'
+#' @format A tibble with 1200 rows and 29 variables:
 #' \describe{
 #'   \item{sex}{Factor. Sex of the respondent.}
 #'   \item{age}{Numeric. Age in years (25--75).}
@@ -46,6 +59,18 @@
 #'     (No, Yes).}
 #'   \item{dentist_12m}{Factor. Dentist visit in the last 12 months
 #'     (No, Yes).}
+#'   \item{info_doctor}{Logical. Source of health information in the
+#'     past 12 months: doctor or other health professional (`TRUE` =
+#'     chosen). Missing for the 36 respondents who skipped the
+#'     question; see `Details`.}
+#'   \item{info_pharmacist}{Logical. Source of health information:
+#'     pharmacist. Missing as `info_doctor`.}
+#'   \item{info_internet}{Logical. Source of health information:
+#'     internet, websites or apps. Missing as `info_doctor`.}
+#'   \item{info_family}{Logical. Source of health information: family
+#'     or friends. Missing as `info_doctor`.}
+#'   \item{info_media}{Logical. Source of health information:
+#'     television, radio or newspapers. Missing as `info_doctor`.}
 #'   \item{self_rated_health}{Ordered factor. Self-rated health
 #'     (Poor, Fair, Good, Very good). Contains missing values.}
 #'   \item{wellbeing_score}{Numeric. WHO-5 wellbeing index
@@ -77,11 +102,12 @@
 #'
 #' @source Simulated data for illustration purposes; reproducible by
 #'   sourcing `data-raw/sochealth.R`. The script seeds the main
-#'   generation block with `set.seed(2025)`, and the two
-#'   missing-value injection blocks with `set.seed(2027)` (the
-#'   four `life_sat_*` items) and `set.seed(2026)` (`smoking`,
-#'   `self_rated_health`, `income_group`, `political_position`,
-#'   `bmi`).
+#'   generation block with `set.seed(2025)`, the two missing-value
+#'   injection blocks with `set.seed(2027)` (the four `life_sat_*`
+#'   items) and `set.seed(2026)` (`smoking`, `self_rated_health`,
+#'   `income_group`, `political_position`, `bmi`), and the
+#'   multiple-response block (the five `info_*` items) with
+#'   `set.seed(2030)`.
 #'
 #' @examples
 #' data(sochealth)

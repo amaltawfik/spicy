@@ -486,5 +486,61 @@ sochealth <- sochealth |>
     weight
   )
 
+# -- Sources of health information (multiple response) ---
+# One "check all that apply" question: "Sources of health information used
+# in the past 12 months". Five logical items: TRUE = chosen, FALSE = not
+# chosen, NA = question skipped. A latent information-seeking propensity
+# (info_z) enters every item, the doctor item more weakly, and consulting a
+# doctor divides the odds of searching the internet by about ten
+# (substitution). Doctor and media rise with age, internet falls with age
+# and rises with education, family is higher for women, and the pharmacist
+# item depends on no covariate. Respondents who chose nothing (all FALSE)
+# arise from the model. The block is drawn after every other variable,
+# from its own seed, so the variables above do not change. The seed is the
+# first from 2028 whose draws show this pattern (pharmacist unrelated to
+# every covariate, family related to sex only). The intercepts give
+# prevalences among respondents of 62, 22, 45, 31 and 12%.
+set.seed(2030)
+info_z <- rnorm(n)
+draw_item <- function(lp) runif(n) < plogis(lp)
+sochealth <- sochealth |>
+  mutate(
+    info_doctor = draw_item(0.51 + 0.35 * (age - 50) / 10 + 0.3 * info_z),
+    info_pharmacist = draw_item(-1.38 + 0.7 * info_z),
+    info_internet = draw_item(
+      0.99 -
+        0.5 * (age - 50) / 10 +
+        case_when(
+          education == "Lower secondary" ~ -0.6,
+          education == "Upper secondary" ~ 0,
+          education == "Tertiary" ~ 0.6
+        ) +
+        0.7 * info_z -
+        2.3 * info_doctor
+    ),
+    info_family = draw_item(
+      -1.23 + if_else(sex == "Female", 0.5, 0) + 0.7 * info_z
+    ),
+    info_media = draw_item(-2.36 + 0.5 * (age - 50) / 10 + 0.7 * info_z)
+  )
+
+# 36 respondents (3%) skipped the question: all five items are missing
+skipped <- sample(seq_len(n), 36)
+sochealth <- sochealth |>
+  mutate(across(starts_with("info_"), \(x) replace(x, skipped, NA)))
+rm(info_z, draw_item, skipped)
+
+labelled::var_label(sochealth) <- list(
+  info_doctor = "Doctor or other health professional",
+  info_pharmacist = "Pharmacist",
+  info_internet = "Internet, websites or apps",
+  info_family = "Family or friends",
+  info_media = "Television, radio or newspapers"
+)
+
+# The five items follow dentist_12m, the other health-care item
+sochealth <- sochealth |>
+  relocate(starts_with("info_"), .after = dentist_12m)
+
 # -- Save ------------------------------------------------
 usethis::use_data(sochealth, overwrite = TRUE)

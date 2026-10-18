@@ -104,7 +104,7 @@ pipeline.
 ## A shared interface
 
 The examples below use `sochealth`, the dataset bundled with spicy: a
-simulated social-health survey of 1200 respondents and 24 variables,
+simulated social-health survey of 1200 respondents and 29 variables,
 every one of them carrying a variable label (see `?sochealth`).
 
 The three descriptive functions share the same core arguments:

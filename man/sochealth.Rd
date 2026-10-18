@@ -5,7 +5,7 @@
 \alias{sochealth}
 \title{Simulated social-health survey}
 \format{
-A tibble with 1200 rows and 24 variables:
+A tibble with 1200 rows and 29 variables:
 \describe{
 \item{sex}{Factor. Sex of the respondent.}
 \item{age}{Numeric. Age in years (25--75).}
@@ -29,6 +29,18 @@ missing values.}
 (No, Yes).}
 \item{dentist_12m}{Factor. Dentist visit in the last 12 months
 (No, Yes).}
+\item{info_doctor}{Logical. Source of health information in the
+past 12 months: doctor or other health professional (\code{TRUE} =
+chosen). Missing for the 36 respondents who skipped the
+question; see \code{Details}.}
+\item{info_pharmacist}{Logical. Source of health information:
+pharmacist. Missing as \code{info_doctor}.}
+\item{info_internet}{Logical. Source of health information:
+internet, websites or apps. Missing as \code{info_doctor}.}
+\item{info_family}{Logical. Source of health information: family
+or friends. Missing as \code{info_doctor}.}
+\item{info_media}{Logical. Source of health information:
+television, radio or newspapers. Missing as \code{info_doctor}.}
 \item{self_rated_health}{Ordered factor. Self-rated health
 (Poor, Fair, Good, Very good). Contains missing values.}
 \item{wellbeing_score}{Numeric. WHO-5 wellbeing index
@@ -61,11 +73,12 @@ of living (1--5 Likert scale). Contains missing values.}
 \source{
 Simulated data for illustration purposes; reproducible by
 sourcing \code{data-raw/sochealth.R}. The script seeds the main
-generation block with \code{set.seed(2025)}, and the two
-missing-value injection blocks with \code{set.seed(2027)} (the
-four \verb{life_sat_*} items) and \code{set.seed(2026)} (\code{smoking},
-\code{self_rated_health}, \code{income_group}, \code{political_position},
-\code{bmi}).
+generation block with \code{set.seed(2025)}, the two missing-value
+injection blocks with \code{set.seed(2027)} (the four \verb{life_sat_*}
+items) and \code{set.seed(2026)} (\code{smoking}, \code{self_rated_health},
+\code{income_group}, \code{political_position}, \code{bmi}), and the
+multiple-response block (the five \verb{info_*} items) with
+\code{set.seed(2030)}.
 }
 \usage{
 sochealth
@@ -74,7 +87,8 @@ sochealth
 A simulated dataset of 1200 respondents from a fictional
 social-health survey, designed to illustrate the main features of
 the spicy package: variable labels, ordered factors, survey
-weights, association measures, and publication-ready reporting.
+weights, association measures, a multiple-response question, and
+publication-ready reporting.
 }
 \details{
 Every variable carries a \code{"label"} attribute (read by
@@ -91,6 +105,18 @@ Survey weights (\code{weight}) are calibrated: they average about 1
 Weighted means therefore agree
 with unweighted means up to sampling noise without further
 rescaling.
+
+The five \verb{info_*} variables answer one multiple-response question,
+"Sources of health information used in the past 12 months (check
+all that apply)", the example data of \code{\link[=table_multiresponse]{table_multiresponse()}}. Each
+item is logical: \code{TRUE} when the source was chosen, \code{FALSE} when it
+was not, and \code{NA} on all five items for the 36 respondents who
+skipped the question. A respondent who answered without choosing
+any source is \code{FALSE} on all five (67 of the 1164 who answered).
+Like the rest of the data, the block is simulated: doctor and media
+rise with age, internet falls with age and rises with education,
+family is more frequent among women, and the pharmacist item depends
+on no other variable.
 }
 \examples{
 data(sochealth)
