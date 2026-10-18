@@ -4,7 +4,7 @@
 
 ## Contexte
 
-Un rapport descriptif (PEBSI) rend neuf blocs « cochez tout ce qui s'applique » par un contournement (`table_categorical()` + `levels_keep = "Oui"` sur des indicatrices) qui écarte en silence les items sans réponse et ne couvre aucun des pièges des réponses multiples (MRCV). Le χ² classique items × groupes est invalide : les réponses d'une même personne ne sont pas indépendantes et les comptes somment à plus de n (Loughin & Scherer 1998, p. 632-633). SPSS (MULT RESPONSE), Stata (`mrtab`), expss et questionr établissent le précédent d'un tableau dédié.
+Un rapport d'enquête rend neuf blocs « cochez tout ce qui s'applique » par un contournement (`table_categorical()` + `levels_keep = "Oui"` sur des indicatrices) qui écarte en silence les items sans réponse et ne couvre aucun des pièges des réponses multiples (MRCV). Le χ² classique items × groupes est invalide : les réponses d'une même personne ne sont pas indépendantes et les comptes somment à plus de n (Loughin & Scherer 1998, p. 632-633). SPSS (MULT RESPONSE), Stata (`mrtab`), expss et questionr établissent le précédent d'un tableau dédié.
 
 ## Décisions
 
@@ -37,4 +37,4 @@ table_multiresponse(data, select, by = NULL, counted = NULL,
 
 ## Conséquences
 
-Même famille que `table_categorical()` : mêmes moteurs de sortie, même vue typée, même registre i18n (anglais et français), même contrat `labels` et `p_value`. Le rapport PEBSI bascule ses neuf tableaux sur la fonction native. Hors périmètre : deux variables multiréponses croisées (SPMI, Bilder & Loughin 2004), plans de sondage (Koziol & Bilder 2014, p. 149), modèles marginaux (Agresti & Liu 1999, 2001).
+Même famille que `table_categorical()` : mêmes moteurs de sortie, même vue typée, même registre i18n (anglais et français), même contrat `labels` et `p_value`. Le rapport d'origine bascule ses neuf tableaux sur la fonction native. Hors périmètre : deux variables multiréponses croisées (SPMI, Bilder & Loughin 2004), plans de sondage (Koziol & Bilder 2014, p. 149), modèles marginaux (Agresti & Liu 1999, 2001).

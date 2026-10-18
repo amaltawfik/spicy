@@ -4,7 +4,7 @@
 
 ## Contexte
 
-Un rapport descriptif (projet PEBSI, trois enquêtes quasi exhaustives à
+Un rapport descriptif (trois enquêtes quasi exhaustives à
 petits effectifs, doctrine sans test) a besoin de
 `table_categorical(..., by =)` sans son bloc inférentiel. Aujourd'hui la
 colonne p reste même avec `assoc_measure = "none"`, qui ne retire que la
