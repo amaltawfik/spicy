@@ -454,3 +454,7 @@ test_pearson_chisq	reviewed	2026-10-18	test du khi-deux de Pearson
 test_fisher_exact	reviewed	2026-10-18	test exact de Fisher	
 test_fisher_mc	reviewed	2026-10-18	test exact de Fisher (Monte-Carlo, %s réplications)	
 note_multiresponse_items_p_mixed	reviewed	2026-10-18	Valeurs p des items<NBSP>: %s.	
+test_n1_chisq	reviewed	2026-10-18	test du khi-deux N−1	
+test_fisher_midp	reviewed	2026-10-18	test mid-p de Fisher	
+test_pearson_chisq_simulated_in_list	reviewed	2026-10-18	test du khi-deux de Pearson, simulé	
+test_fisher_mc_in_list	reviewed	2026-10-18	test exact de Fisher, Monte-Carlo avec %s réplications	

@@ -261,6 +261,24 @@ is its Monte Carlo estimate over `simulate_B` tables, and the note says
 so; set a seed to reproduce it. The data frames give the test of each
 variable in `test_type`.
 
+A 2x2 table, a two-level variable by two groups, has two more tests.
+`test = "midp"` takes the Fisher mid-p test, which counts the tables
+as probable as the observed one at half their probability: it is less
+conservative than Fisher's exact test, and Fagerland, Lydersen and
+Laake (2017) recommend it at every sample size. `test = "n1"` takes
+Campbell's N-1 chi-squared test when every expected count is at least
+1, and Fisher's exact test otherwise. A larger table keeps the `"auto"`
+rule, and the note names the test of each variable:
+
+```{r test-midp}
+table_categorical(
+  sochealth[1:40, ],
+  select = c(smoking, education),
+  by = sex,
+  test = "midp"
+)
+```
+
 ## Descriptive tables without tests
 
 The test and the association measure are two separate choices:

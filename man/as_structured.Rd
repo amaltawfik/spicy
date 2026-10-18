@@ -156,8 +156,9 @@ tests adjusted together) and \code{p_unadjusted} (the raw p-value of each
 cell, as long as \code{body}). In \code{\link[=table_categorical]{table_categorical()}} and
 \code{\link[=table_multiresponse]{table_multiresponse()}}, the p-value column's \code{col_meta} also carries
 \code{test_type}, the test of each cell, as long as \code{body}
-(\code{"chi_squared"}, \code{"fisher_exact"}, \code{"fisher_exact_mc"}, \code{NA} where
-the cell is).
+(\code{"chi_squared"}, \code{"n1_chi_squared"}, \code{"fisher_exact"},
+\code{"fisher_midp"}, \code{"fisher_exact_mc"}, \code{NA} where the cell holds no
+p-value).
 }
 
 \section{Versioning}{

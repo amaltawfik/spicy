@@ -17,7 +17,7 @@ table_categorical(
   correct = FALSE,
   simulate_p = FALSE,
   simulate_B = 2000,
-  test = c("auto", "chisq", "fisher"),
+  test = c("auto", "chisq", "fisher", "midp", "n1"),
   p_value = NULL,
   p_adjust = "none",
   percent_digits = 1,
@@ -124,18 +124,20 @@ the default is read from \code{options(spicy.rescale)} (falling back to
 \item{correct}{Logical. If \code{FALSE} (the default), no continuity correction is
 applied. If \code{TRUE}, applies Yates correction in 2x2 chi-squared contexts.
 Passed to \code{spicy::cross_tab()}. A variable tested by Fisher's exact
-test (see \code{test}) takes no correction.}
+test, its mid-p version, or the N-1 chi-squared (see \code{test}) takes no
+correction.}
 
 \item{simulate_p}{Logical. If \code{FALSE} (the default), uses asymptotic p-values.
 If \code{TRUE}, uses Monte Carlo simulation. Passed to \code{spicy::cross_tab()}.
-Applies to the chi-squared test only (see \code{test}).}
+Applies to the Pearson chi-squared test only (see \code{test}).}
 
 \item{simulate_B}{Integer. Number of Monte Carlo replicates when
 \code{simulate_p = TRUE}, and for the Monte Carlo version of Fisher's exact
 test (see \code{test}). Defaults to \code{2000}.}
 
 \item{test}{Character. The test of each variable when \code{by} is used.
-One of \code{"auto"} (default), \code{"chisq"}, or \code{"fisher"}.
+One of \code{"auto"} (default), \code{"chisq"}, \code{"fisher"}, \code{"midp"}, or
+\code{"n1"}.
 \itemize{
 \item \code{"auto"}: Pearson's chi-squared test when every expected count of
 the variable's table is at least 5, Fisher's exact test otherwise,
@@ -144,13 +146,19 @@ and the note names the test of each.
 \item \code{"chisq"}: Pearson's chi-squared test for every variable, the
 behavior before 0.14.0.
 \item \code{"fisher"}: Fisher's exact test for every variable.
+\item \code{"midp"}: the Fisher mid-p test for a 2x2 table.
+\item \code{"n1"}: the N-1 chi-squared test for a 2x2 table whose expected
+counts are all at least 1, Fisher's exact test for one with a
+smaller count (Campbell's rule).
 }
 
-\code{correct} and \code{simulate_p} apply to the chi-squared test only. When
-the exact enumeration of a large sparse table fails, Fisher's p-value
-is its Monte Carlo estimate over \code{simulate_B} tables, and the note
-says so; call \code{\link[=set.seed]{set.seed()}} first to reproduce it. See \emph{Tests}.
-Ignored when \code{by} is not used or when \code{p_value = FALSE}.}
+Under \code{"midp"} and \code{"n1"}, a variable whose table is not 2x2 follows
+\code{"auto"}. \code{correct} and \code{simulate_p} apply to the Pearson chi-squared
+test only. When the exact enumeration of a large sparse table fails,
+Fisher's p-value is its Monte Carlo estimate over \code{simulate_B}
+tables, and the note says so; call \code{\link[=set.seed]{set.seed()}} first to reproduce
+it. See \emph{Tests}. Ignored when \code{by} is not used or when
+\code{p_value = FALSE}.}
 
 \item{p_value}{Logical or \code{NULL}. If \code{TRUE} and \code{by} is used, adds
 the \emph{p}-value column of the test chosen by \code{test}. When \code{NULL} (the
@@ -349,9 +357,12 @@ pair of \code{n} / \verb{\\\%} columns per group level (plus \code{Total} when
 \code{include_total = TRUE}), followed by \code{test_type}, \code{Chi2}, \code{df},
 \code{p} (absent with \code{p_value = FALSE}), and the association measure
 column. \code{test_type} names the test of the variable:
-\code{"chi_squared"}, \code{"fisher_exact"}, or \code{"fisher_exact_mc"} (the
-Monte Carlo estimate of Fisher's exact test); \code{Chi2} and \code{df} are
-\code{NA} for a variable tested by Fisher's exact test.
+\code{"chi_squared"} (Pearson's), \code{"n1_chi_squared"} (the N-1
+chi-squared), \code{"fisher_exact"}, \code{"fisher_midp"} (the Fisher mid-p
+test), or \code{"fisher_exact_mc"} (the Monte Carlo estimate of Fisher's
+exact test); \code{Chi2} and \code{df} hold the statistic of a chi-squared
+test, Pearson's or the N-1, and are \code{NA} for a variable tested by
+an exact test.
 When \code{by = NULL}, the columns are \code{Variable}, \code{Level}, \code{n}, \verb{\\\%}.
 \item \code{"long"}: a long \code{data.frame} with columns \code{variable},
 \code{level}, \code{n}, \code{pct} (plus \code{group} when \code{by} is used, and
@@ -411,7 +422,9 @@ When \code{by} is used, each selected variable is cross-tabulated
 against the grouping variable with \code{\link[=cross_tab]{cross_tab()}} and tested on the
 complete cases of its observed levels, a \code{"(Missing)"} level and a
 declared level nobody holds left out: one \emph{p}-value per variable,
-in the \code{p} column.
+in the \code{p} column. A table left with a single row or column (a
+variable observed at one level, or in one group) is uninformative and
+gets no test, whatever \code{test} says: its \code{p} cell shows a dash.
 
 The chi-squared approximation is unreliable when expected counts are
 small. Under \code{test = "auto"}, the default, a variable takes Pearson's
@@ -427,6 +440,38 @@ to reproduce it. \code{test = "chisq"} tests every variable by the
 chi-squared, the behavior before 0.14.0, and \code{test = "fisher"} every
 variable by the exact test.
 
+Fisher's exact test is conservative: its actual level is often well
+below the nominal one, at a cost in power. \code{test = "midp"} gives a 2x2
+table (a two-level variable by two groups) the Fisher mid-p test, as
+Fagerland, Lydersen and Laake (2017, equation 1.12, p. 28, and section
+4.4.6, p. 97) and Lydersen, Fagerland and Laake (2009, equation 12,
+p. 1165) define it: the tables with the observed margins are ordered
+by their hypergeometric probability, and the \emph{p}-value adds the
+probabilities of the tables less probable than the observed one to
+half the probabilities of the tables as probable, the observed one
+included, ties being read within the relative tolerance of
+\code{\link[stats:fisher.test]{stats::fisher.test()}}. The mid-p test can exceed the nominal level,
+usually by little, and Fagerland, Lydersen and Laake (2017, p. 175)
+recommend it for all sample sizes. A variable whose table is not 2x2
+follows \code{"auto"}, and the note names the test of each variable. The
+central variant, twice the smaller one-sided mid-p (the \code{exact2x2} and
+\code{epitools} packages; Agresti, 2019, p. 49), coincides with this one
+when the row totals or the column totals are equal, except that it
+gives 1 for the most probable table; it differs otherwise and is not
+computed.
+
+\code{test = "n1"} applies the rule of Campbell (2007, pp. 18-19) to a 2x2
+table. When every expected count is at least 1, the table takes the
+N-1 chi-squared test: Pearson's statistic, with no continuity
+correction, multiplied by (N - 1)/N and referred to a chi-squared
+distribution with 1 degree of freedom, which is the Mantel-Haenszel
+statistic of a single 2x2 table; \code{Chi2} and \code{df} hold that statistic.
+Otherwise it takes Fisher's exact test, two-sided by Irwin's rule as
+\code{\link[stats:fisher.test]{stats::fisher.test()}} computes it. Campbell found the N-1 test close
+to its nominal level under that restriction, not without it. A
+variable whose table is not 2x2 follows \code{"auto"}, and the note names
+the test of each variable.
+
 The note names the test of every variable, "Group comparison:
 Pearson chi-squared test (sex, education); Fisher exact test
 (smoking).", or the one test when it covers them all. \code{test_type} in
@@ -438,12 +483,13 @@ the per-row dispatch table used by \code{"auto"} (2x2 -> Phi, both ordered
 reports the marginal frequency distribution of each variable with no
 inferential statistics.
 
-Fisher's exact test conditions on counts. Under \code{weights}, it runs on
-the weighted table when its cells are whole numbers (frequency
-weights); otherwise \code{test = "auto"} keeps the chi-squared test for a
-variable that would take the exact test, with a warning
-(\code{spicy_fallback}), and \code{test = "fisher"} is an error. For survey
-weights, \code{\link[=table_categorical_svy]{table_categorical_svy()}} gives the design-based test.
+The exact tests condition on counts. Under \code{weights}, they run on the
+weighted table when its cells are whole numbers (frequency weights);
+otherwise a variable that a rule sends to Fisher's exact test keeps
+the chi-squared test, Pearson's under \code{test = "auto"} and the N-1
+under Campbell's rule, with a warning (\code{spicy_fallback}), and
+\code{test = "fisher"}, or \code{test = "midp"} on a 2x2 table, is an error. For
+survey weights, \code{\link[=table_categorical_svy]{table_categorical_svy()}} gives the design-based test.
 
 The test and the measure are two decisions with two arguments:
 \code{p_value = FALSE} removes the test, \code{assoc_measure = "none"} the
@@ -768,6 +814,22 @@ table_categorical(
 )
 }
 
+}
+\references{
+Agresti, A. (2019). \emph{An Introduction to Categorical Data Analysis} (3rd
+ed.). Wiley.
+
+Campbell, I. (2007). Chi-squared and Fisher-Irwin tests of two-by-two
+tables with small sample recommendations. \emph{Statistics in Medicine},
+26(19), 3661-3675. \doi{10.1002/sim.2832}
+
+Fagerland, M. W., Lydersen, S., & Laake, P. (2017). \emph{Statistical
+Analysis of Contingency Tables}. Chapman and Hall/CRC.
+\doi{10.1201/9781315374116}
+
+Lydersen, S., Fagerland, M. W., & Laake, P. (2009). Recommended tests
+for association in 2 x 2 tables. \emph{Statistics in Medicine}, 28(7),
+1159-1175. \doi{10.1002/sim.3531}
 }
 \seealso{
 \code{\link[=table_continuous]{table_continuous()}} for empirical comparisons on

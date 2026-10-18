@@ -26,7 +26,8 @@ Amal : « fais ce qu'il y a de plus pro et robuste pour un package de référenc
 - Hors 2×2 (variable à plus de deux modalités, ou `by` à plus de deux groupes) : la variable suit la règle `"auto"` (Pearson si tous les attendus ≥ 5, sinon Fisher r×c) et la note nomme le test de chaque variable. Pas d'erreur : un tableau mêle des variables de dimensions différentes.
 - Marge nulle (table non informative, Lydersen 2009 p. 1162) : p = NA, tiret, pour tous les tests.
 - Égalités de probabilités : tolérance relative de `fisher.test()` (1 + 1e-7).
-- Noms en note : « 'N−1' chi-squared test », « Fisher mid-p test » ; en français « test du khi-deux « N−1 » », « test mid-p de Fisher ».
+- Noms en note : « N−1 chi-squared test », « Fisher mid-p test » ; en français « test du khi-deux N−1 », « test mid-p de Fisher ».
+- Choix d'implémentation (lot du 2026-10-18) : `correct = TRUE` est ignoré avec avertissement sous `"midp"` et `"n1"` (aucune table 2×2 ne reçoit alors le χ² de Pearson) ; cellules pondérées fractionnaires : `"midp"` refuse comme `"fisher"`, `"n1"` garde le N−1 avec avertissement quand la règle de Campbell enverrait vers Fisher ; la variante centrale vaut 1 pour la table la plus probable (5 5 / 5 5 : 0,828 contre 1), précisé dans l'aide ; types `test_type` : `n1_chi_squared`, `fisher_midp` ; dans une liste par variable, les tests simulés se nomment « Pearson chi-squared test, simulated (x) » et « Fisher exact test, Monte Carlo with 2000 replicates (y) ».
 - Même argument, mêmes valeurs pour les items 2×2 de `table_multiresponse()` ; le test global garde ses composantes de Pearson.
 
 ## Rupture

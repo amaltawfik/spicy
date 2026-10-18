@@ -4613,13 +4613,23 @@ test_that("correct and simulate_p reach only the variables the chi-squared tests
     "Fisher exact test (smoking). Yates continuity correction applied.",
     fixed = TRUE
   )
-  # A simulated chi-squared keeps cross_tab()'s wording.
+  # A simulated chi-squared is named as such; inside the list, where the
+  # variables follow in parentheses, the qualifier takes a comma.
   set.seed(2)
   sim <- table_categorical(d, vars, by = sex, simulate_p = TRUE)
   expect_match(
     attr(sim, "assoc_note"),
-    "Pearson chi-squared test (simulated) (dentist_12m, physical_activity)",
+    "Pearson chi-squared test, simulated (dentist_12m, physical_activity)",
     fixed = TRUE
+  )
+  # Alone, it keeps cross_tab()'s wording.
+  set.seed(2)
+  expect_identical(
+    attr(
+      table_categorical(d, dentist_12m, by = sex, simulate_p = TRUE),
+      "assoc_note"
+    ),
+    "Group comparison: Pearson chi-squared test (simulated)."
   )
   # Under test = "fisher" neither reaches a variable.
   ref <- table_categorical(d, vars, by = sex, test = "fisher")
@@ -4814,5 +4824,493 @@ test_that("the note names the tests in French", {
   expect_identical(
     attr(table_categorical(d300, region, by = sex_age), "assoc_note"),
     "Comparaison des groupes\u00a0: test exact de Fisher (Monte-Carlo, 2000 r\u00e9plications)."
+  )
+})
+
+test_that("the Monte Carlo exact test takes a comma inside a list of tests", {
+  # The 20 x 2 table of x overflows FEXACT; y's does not.
+  k <- c(6, 5, 7, 4, 6, 8, 5, 6, 7, 3, 6, 5, 4, 7, 6, 5, 8, 6, 5, 4)
+  d <- data.frame(
+    g = factor(rep(sprintf("g%02d", 1:20), each = 200L)),
+    x = factor(unlist(lapply(k, function(m) {
+      c(rep("yes", m), rep("no", 200 - m))
+    }))),
+    y = factor(rep(c("yes", "no"), 2000L))
+  )
+  set.seed(9)
+  expect_identical(
+    attr(table_categorical(d, c(x, y), by = g, test = "fisher"), "assoc_note"),
+    paste(
+      "Group comparison: Fisher exact test (y); Fisher exact test, Monte",
+      "Carlo with 2000 replicates (x)."
+    )
+  )
+  withr::local_options(spicy.language = "fr")
+  set.seed(9)
+  expect_identical(
+    attr(table_categorical(d, c(x, y), by = g, test = "fisher"), "assoc_note"),
+    paste0(
+      "Comparaison des groupes\u00a0: test exact de Fisher (y)\u00a0; test ",
+      "exact de Fisher, Monte-Carlo avec 2000 r\u00e9plications (x)."
+    )
+  )
+})
+
+# ---- test = "midp" and "n1": the tests of a 2 x 2 table ---------------------------
+#
+# Complement of the decision of 2026-10-18. Oracles: the research memo of
+# that day, its values reproduced in base R and against exact2x2, epitools,
+# DescTools (the N-1 statistic, to 1e-12) and contingencytables, none of them
+# a dependency. The mid-p is the probability-ordered one, ties at half weight
+# (Fagerland, Lydersen & Laake 2017, Eq. 1.12 and section 4.4.6; Lydersen,
+# Fagerland & Laake 2009, Eq. 12); the N-1 statistic is Pearson's times
+# (N - 1) / N (Campbell 2007).
+
+# A data frame whose table of `g` (rows) by `x` (columns) is a b / c d.
+.mp_2x2 <- function(a, b, c, d) {
+  data.frame(
+    g = factor(rep(c("g1", "g1", "g2", "g2"), c(a, b, c, d)), c("g1", "g2")),
+    x = factor(
+      rep(c("yes", "no", "yes", "no"), c(a, b, c, d)),
+      c("yes", "no")
+    )
+  )
+}
+
+# The test row of that table under `test`.
+.mp_row <- function(v, test) {
+  table_categorical(
+    .mp_2x2(v[[1L]], v[[2L]], v[[3L]], v[[4L]]),
+    x,
+    by = g,
+    test = test,
+    output = "long"
+  )[1L, ]
+}
+
+# A binary variable, a dense and a sparse three-level one, two groups of 30.
+.mp_mixed <- function() {
+  data.frame(
+    g = factor(rep(c("a", "b"), each = 30L)),
+    x = factor(rep(c("yes", "no", "yes", "no"), c(12, 18, 5, 25))),
+    z = factor(rep(c("u", "v", "w", "u", "v", "w"), c(10, 10, 10, 8, 12, 10))),
+    w = factor(rep(c("r", "s", "t", "r", "s", "t"), c(1, 2, 27, 0, 3, 27)))
+  )
+}
+
+test_that("test = \"midp\" reproduces the published Fisher mid-p values", {
+  pins <- list(
+    # Fagerland et al. 2017: tea (p. 100), epinephrine (Table 4.12), GADA
+    # (p. 102), CHRNA4 (Table 4.15); the last two have unequal margins.
+    list(c(3, 1, 1, 3), 0.2571428571),
+    list(c(1, 33, 7, 27), 0.02965625843),
+    list(c(9, 4, 4, 10), 0.03914177672),
+    list(c(0, 16, 15, 57), 0.0446596912),
+    # Campbell 2007, Table I(b), and a dense table.
+    list(c(4, 16, 1, 21), 0.1118332887),
+    list(c(30, 20, 18, 32), 0.01805544078),
+    # The observed table is the most probable one.
+    list(c(5, 5, 5, 5), 0.8281408993)
+  )
+  for (pin in pins) {
+    out <- .mp_row(pin[[1L]], "midp")
+    info <- paste(pin[[1L]], collapse = " ")
+    expect_identical(out$test_type, "fisher_midp", info = info)
+    expect_equal(out$p, pin[[2L]], tolerance = 1e-9, info = info)
+    # An exact test: no chi-squared statistic, no degrees of freedom.
+    expect_true(is.na(out$chi2) && is.na(out$df), info = info)
+  }
+  expect_identical(
+    attr(
+      table_categorical(.mp_2x2(3, 1, 1, 3), x, by = g, test = "midp"),
+      "assoc_note"
+    ),
+    "Group comparison: Fisher mid-p test."
+  )
+})
+
+test_that("the mid-p reads ties within fisher.test()'s tolerance: a table and its mirror agree", {
+  # 2 36 / 8 30 and its mirror are as probable as each other: an exact
+  # comparison gives 0.0680 and 0.0320 (contingencytables 3.1.0).
+  p <- .mp_row(c(2, 36, 8, 30), "midp")$p
+  expect_equal(p, 0.0499865594, tolerance = 1e-9)
+  expect_identical(.mp_row(c(8, 30, 2, 36), "midp")$p, p)
+  # Transposed: the groups as the variable, the variable as the groups.
+  tr <- table_categorical(
+    .mp_2x2(2, 36, 8, 30),
+    g,
+    by = x,
+    test = "midp",
+    output = "long"
+  )
+  expect_equal(tr$p[[1L]], p, tolerance = 1e-12)
+  for (v in list(c(9, 4, 4, 10), c(0, 16, 15, 57), c(4, 16, 1, 21))) {
+    tab <- matrix(v, 2L, byrow = TRUE)
+    ref <- spicy:::.cat_midp_p(tab)
+    expect_equal(spicy:::.cat_midp_p(t(tab)), ref, tolerance = 1e-12)
+    expect_equal(spicy:::.cat_midp_p(tab[2:1, ]), ref, tolerance = 1e-12)
+  }
+})
+
+test_that("the central mid-p coincides at equal margins and nowhere else", {
+  # Twice the smaller one-sided mid-p (exact2x2, epitools; Agresti 2019,
+  # p. 49): documented, not computed by spicy.
+  central <- function(v) {
+    tab <- matrix(v, 2L, byrow = TRUE)
+    m <- sum(tab[, 1L])
+    n <- sum(tab[, 2L])
+    k <- sum(tab[1L, ])
+    a <- tab[1L, 1L]
+    f <- stats::dhyper(a, m, n, k)
+    lower <- stats::phyper(a, m, n, k) - 0.5 * f
+    upper <- stats::phyper(a - 1, m, n, k, lower.tail = FALSE) - 0.5 * f
+    min(1, 2 * min(lower, upper))
+  }
+  # Equal row totals: tea, epinephrine, the dense table, the tie table.
+  equal <- list(
+    c(3, 1, 1, 3),
+    c(1, 33, 7, 27),
+    c(30, 20, 18, 32),
+    c(2, 36, 8, 30)
+  )
+  for (v in equal) {
+    expect_equal(.mp_row(v, "midp")$p, central(v), tolerance = 1e-12)
+  }
+  # Unequal margins: GADA 0.0391 against 0.0468, CHRNA4 0.0447 against
+  # 0.0364.
+  expect_equal(central(c(9, 4, 4, 10)), 0.04678786338, tolerance = 1e-9)
+  expect_equal(central(c(0, 16, 15, 57)), 0.03641394686, tolerance = 1e-9)
+  expect_gt(abs(.mp_row(c(9, 4, 4, 10), "midp")$p - 0.04678786338), 0.007)
+  expect_gt(abs(.mp_row(c(0, 16, 15, 57), "midp")$p - 0.03641394686), 0.008)
+  # Equal margins, the most probable table: 0.828 against 1.
+  expect_equal(central(c(5, 5, 5, 5)), 1, tolerance = 1e-12)
+  expect_equal(.mp_row(c(5, 5, 5, 5), "midp")$p, 0.8281408993, tolerance = 1e-9)
+})
+
+test_that("test = \"n1\" is the N-1 chi-squared of Campbell (2007)", {
+  # Campbell's Table I(b): X2 = 2.3858, N-1 p = 0.1270 (Busing et al. 2016).
+  out <- .mp_row(c(4, 16, 1, 21), "n1")
+  expect_identical(out$test_type, "n1_chi_squared")
+  expect_equal(out$chi2, 2.329041769, tolerance = 1e-9)
+  expect_identical(out$df, 1)
+  expect_equal(out$p, 0.1269800217, tolerance = 1e-9)
+  expect_equal(
+    .mp_row(c(30, 20, 18, 32), "n1")$p,
+    0.0168537629,
+    tolerance = 1e-9
+  )
+  expect_equal(.mp_row(c(9, 4, 4, 10), "n1")$p, 0.03815109231, tolerance = 1e-9)
+  # Pearson's statistic times (N - 1) / N, and the Mantel-Haenszel form
+  # (n11 - E)^2 / V of a single 2 x 2 table.
+  tab <- matrix(c(4, 16, 1, 21), 2L, byrow = TRUE)
+  pearson <- suppressWarnings(stats::chisq.test(tab, correct = FALSE))
+  expect_equal(out$chi2, unname(pearson$statistic) * 41 / 42, tolerance = 1e-12)
+  r <- rowSums(tab)
+  s <- colSums(tab)
+  n <- sum(tab)
+  mh <- (tab[1L, 1L] - r[[1L]] * s[[1L]] / n)^2 /
+    (prod(r, s) / (n^2 * (n - 1)))
+  expect_equal(out$chi2, mh, tolerance = 1e-12)
+  expect_identical(
+    attr(
+      table_categorical(.mp_2x2(4, 16, 1, 21), x, by = g, test = "n1"),
+      "assoc_note"
+    ),
+    "Group comparison: N\u22121 chi-squared test."
+  )
+})
+
+test_that("Campbell's rule sends a table with an expected count below 1 to Fisher's exact test", {
+  # 2 1 / 1 20: smallest expected count 0.375.
+  out <- .mp_row(c(2, 1, 1, 20), "n1")
+  expect_identical(out$test_type, "fisher_exact")
+  expect_equal(out$p, 0.03162055336, tolerance = 1e-9)
+  expect_true(is.na(out$chi2) && is.na(out$df))
+  # One table, two variables: x's smallest expected count is 2.38, y's
+  # 0.95. Each takes its test, and the note names both.
+  d <- .mp_2x2(4, 16, 1, 21)
+  d$y <- factor(rep(c("yes", "no", "no"), c(2, 18, 22)), c("yes", "no"))
+  tbl <- table_categorical(d, c(x, y), by = g, test = "n1")
+  long <- .first_rows(table_categorical(
+    d,
+    c(x, y),
+    by = g,
+    test = "n1",
+    output = "long"
+  ))
+  expect_identical(long$test_type, c("n1_chi_squared", "fisher_exact"))
+  expect_equal(
+    long$p[[2L]],
+    stats::fisher.test(table(d$y, d$g))$p.value,
+    tolerance = 1e-12
+  )
+  expect_identical(
+    attr(tbl, "assoc_note"),
+    "Group comparison: N\u22121 chi-squared test (x); Fisher exact test (y)."
+  )
+  # The rule at its boundary: an expected count of exactly 1 keeps the
+  # N-1 test.
+  expect_identical(
+    spicy:::.cat_resolve_test(matrix(c(1, 1, 9, 9), 2L), "n1"),
+    "n1"
+  )
+  expect_identical(
+    spicy:::.cat_resolve_test(matrix(c(1, 0, 9, 10), 2L), "n1"),
+    "fisher"
+  )
+})
+
+test_that("midp and n1 test 2 x 2 tables only; a larger table follows auto", {
+  d <- .mp_mixed()
+  auto <- .first_rows(table_categorical(
+    d,
+    c(x, z, w),
+    by = g,
+    output = "long"
+  ))
+  # z is dense (expected counts 9 to 11), w sparse (0.5).
+  expect_identical(
+    auto$test_type,
+    c("chi_squared", "chi_squared", "fisher_exact")
+  )
+  midp <- .first_rows(table_categorical(
+    d,
+    c(x, z, w),
+    by = g,
+    test = "midp",
+    output = "long"
+  ))
+  n1 <- .first_rows(table_categorical(
+    d,
+    c(x, z, w),
+    by = g,
+    test = "n1",
+    output = "long"
+  ))
+  expect_identical(
+    midp$test_type,
+    c("fisher_midp", "chi_squared", "fisher_exact")
+  )
+  expect_identical(
+    n1$test_type,
+    c("n1_chi_squared", "chi_squared", "fisher_exact")
+  )
+  expect_identical(midp$p[2:3], auto$p[2:3])
+  expect_identical(n1$p[2:3], auto$p[2:3])
+  # The note names the test of each variable (the measure, Phi or
+  # Cramer's V, would add a sentence of its own).
+  expect_identical(
+    attr(
+      table_categorical(
+        d,
+        c(x, z, w),
+        by = g,
+        test = "midp",
+        assoc_measure = "none"
+      ),
+      "assoc_note"
+    ),
+    paste(
+      "Group comparison: Pearson chi-squared test (z); Fisher exact test",
+      "(w); Fisher mid-p test (x)."
+    )
+  )
+  expect_identical(
+    attr(
+      table_categorical(
+        d,
+        c(x, z),
+        by = g,
+        test = "n1",
+        assoc_measure = "none"
+      ),
+      "assoc_note"
+    ),
+    "Group comparison: Pearson chi-squared test (z); N\u22121 chi-squared test (x)."
+  )
+  # A binary variable by three groups is not 2 x 2 either.
+  d3 <- data.frame(
+    g = factor(rep(c("a", "b", "c"), each = 20L)),
+    x = factor(rep(c("yes", "no"), 30L))
+  )
+  three <- table_categorical(d3, x, by = g, test = "midp", output = "long")
+  expect_identical(unique(three$test_type), "chi_squared")
+  expect_identical(
+    three$p,
+    table_categorical(d3, x, by = g, output = "long")$p
+  )
+})
+
+test_that("a table with an empty row or column gets no test under midp and n1", {
+  # x is observed at one level: its table has an empty row.
+  d <- data.frame(
+    g = factor(rep(c("a", "b"), each = 5L)),
+    x = factor(rep("yes", 10L), levels = c("yes", "no")),
+    y = factor(rep(c("yes", "no"), 5L))
+  )
+  for (tt in c("midp", "n1")) {
+    out <- .first_rows(table_categorical(
+      d,
+      c(x, y),
+      by = g,
+      test = tt,
+      output = "long"
+    ))
+    expect_true(is.na(out$p[[1L]]) && is.na(out$test_type[[1L]]), info = tt)
+    expect_false(is.na(out$p[[2L]]), info = tt)
+  }
+  # The helper refuses such a table whatever the test: the mid-p would
+  # report 0.5 there, and Fisher's exact test 1.
+  tab <- matrix(c(0, 0, 5, 7), 2L)
+  for (kind in c("midp", "n1", "fisher")) {
+    res <- spicy:::.cat_run_test(tab, kind, 2000L)
+    expect_true(is.na(res$p) && is.na(res$type), info = kind)
+  }
+})
+
+test_that("p_adjust adjusts the mid-p values", {
+  d <- .mp_2x2(9, 4, 4, 10)
+  # A second variable on the same 13 + 14 respondents.
+  d$y <- factor(rep(c("yes", "no", "yes", "no"), c(3, 10, 1, 13)))
+  out <- .first_rows(table_categorical(
+    d,
+    c(x, y),
+    by = g,
+    test = "midp",
+    p_adjust = "holm",
+    output = "long"
+  ))
+  expect_equal(out$p_unadjusted[[1L]], 0.03914177672, tolerance = 1e-9)
+  expect_equal(out$p, stats::p.adjust(out$p_unadjusted, "holm"))
+  expect_true(out$p[[1L]] > out$p_unadjusted[[1L]])
+  expect_match(
+    attr(
+      table_categorical(d, c(x, y), by = g, test = "midp", p_adjust = "holm"),
+      "assoc_note"
+    ),
+    "Fisher mid-p test. P-values adjusted via stats::p.adjust(method = \"holm\"); m = 2 test(s).",
+    fixed = TRUE
+  )
+})
+
+test_that("correct is ignored under midp and n1; simulate_p reaches a larger table", {
+  d <- .mp_mixed()
+  for (tt in c("midp", "n1")) {
+    ref <- table_categorical(d, c(x, z), by = g, test = tt)
+    expect_warning(
+      out <- table_categorical(d, c(x, z), by = g, test = tt, correct = TRUE),
+      sprintf("`correct` is ignored when `test = \"%s\"`", tt),
+      class = "spicy_ignored_arg"
+    )
+    expect_identical(out, ref)
+  }
+  # The Monte Carlo p-value of the chi-squared still reaches z, named with
+  # a comma inside the list.
+  set.seed(4)
+  sim <- table_categorical(
+    d,
+    c(x, z),
+    by = g,
+    test = "midp",
+    simulate_p = TRUE,
+    assoc_measure = "none"
+  )
+  expect_identical(
+    attr(sim, "assoc_note"),
+    paste(
+      "Group comparison: Pearson chi-squared test, simulated (z); Fisher",
+      "mid-p test (x)."
+    )
+  )
+})
+
+test_that("the mid-p needs counts; under weights Campbell's rule gives way to the N-1 test", {
+  d <- data.frame(
+    x = factor(c("a", "a", "b", "b", "a", "b")),
+    g = factor(c("u", "v", "u", "v", "v", "u")),
+    w = c(5, 1, 1, 6, 2, 1)
+  )
+  # Frequency weights: the mid-p of the expanded data.
+  expanded <- d[rep(seq_len(nrow(d)), d$w), ]
+  expect_equal(
+    table_categorical(
+      d,
+      x,
+      by = g,
+      weights = w,
+      test = "midp",
+      output = "long"
+    )$p,
+    table_categorical(expanded, x, by = g, test = "midp", output = "long")$p,
+    tolerance = 1e-12
+  )
+  # Fractional weights: the mid-p has no counts to condition on.
+  d$w <- d$w / 3
+  expect_error(
+    table_categorical(d, x, by = g, weights = w, test = "midp"),
+    class = "spicy_unsupported"
+  )
+  # Fractional weights and a smallest expected count of 0.76: Fisher's
+  # exact test is out of reach, so the N-1 test stays, with a warning.
+  f <- data.frame(
+    x = factor(c("a", "a", "b", "b")),
+    g = factor(c("u", "v", "u", "v")),
+    w = c(2.5, 0.2, 0.3, 7)
+  )
+  expect_warning(
+    out <- table_categorical(
+      f,
+      x,
+      by = g,
+      weights = w,
+      test = "n1",
+      output = "long"
+    ),
+    "N-1 chi-squared test although an expected count is below 1",
+    class = "spicy_fallback"
+  )
+  tab <- matrix(c(2.5, 0.3, 0.2, 7), 2L)
+  x2 <- unname(
+    suppressWarnings(stats::chisq.test(tab, correct = FALSE))$statistic
+  )
+  expect_identical(unique(out$test_type), "n1_chi_squared")
+  expect_equal(unique(out$chi2), x2 * 9 / 10, tolerance = 1e-12)
+})
+
+test_that("the notes name the 2 x 2 tests in French", {
+  withr::local_options(spicy.language = "fr")
+  d <- .mp_2x2(4, 16, 1, 21)
+  d$y <- factor(rep(c("yes", "no", "no"), c(2, 18, 22)), c("yes", "no"))
+  expect_identical(
+    attr(table_categorical(d, c(x, y), by = g, test = "n1"), "assoc_note"),
+    paste0(
+      "Comparaison des groupes\u00a0: test du khi-deux N\u22121 (x)\u00a0; ",
+      "test exact de Fisher (y)."
+    )
+  )
+  expect_identical(
+    attr(
+      table_categorical(.mp_2x2(3, 1, 1, 3), x, by = g, test = "midp"),
+      "assoc_note"
+    ),
+    "Comparaison des groupes\u00a0: test mid-p de Fisher."
+  )
+  set.seed(4)
+  expect_identical(
+    attr(
+      table_categorical(
+        .mp_mixed(),
+        c(x, z),
+        by = g,
+        test = "midp",
+        simulate_p = TRUE,
+        assoc_measure = "none"
+      ),
+      "assoc_note"
+    ),
+    paste0(
+      "Comparaison des groupes\u00a0: test du khi-deux de Pearson, ",
+      "simul\u00e9 (z)\u00a0; test mid-p de Fisher (x)."
+    )
   )
 })

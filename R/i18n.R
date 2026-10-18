@@ -690,6 +690,16 @@
   test_pearson_chisq = "Pearson chi-squared test",
   test_fisher_exact = "Fisher exact test",
   test_fisher_mc = "Fisher exact test (Monte Carlo, %s replicates)",
+  # The two tests of a 2 x 2 table, `test = "n1"` and `test = "midp"`. The
+  # sign of "N-1" is the typographic minus, U+2212, not a hyphen.
+  test_n1_chisq = "N\u22121 chi-squared test",
+  test_fisher_midp = "Fisher mid-p test",
+  # The simulated chi-squared and the Monte Carlo exact test inside a list
+  # of tests (`note_group_comparison_item`), where the variables follow in
+  # parentheses: the qualifier takes a comma, so that no item reads
+  # "test (simulated) (sex)".
+  test_pearson_chisq_simulated_in_list = "Pearson chi-squared test, simulated",
+  test_fisher_mc_in_list = "Fisher exact test, Monte Carlo with %s replicates",
 
   # -- p_adjust: one sentence for every family that adjusts ------------------
   # `table_regression()` and the descriptive tables share the sentence;

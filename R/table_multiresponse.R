@@ -117,8 +117,12 @@
 #' @param test The test of each item's p-value, as in [table_categorical()]:
 #'   `"auto"` (the default) takes Pearson's chi-squared test when every
 #'   expected count of the item's table is at least 5 and Fisher's exact
-#'   test otherwise; `"chisq"` and `"fisher"` take one test for every item.
-#'   The note names the test of each item. See *Tests*.
+#'   test otherwise; `"chisq"` and `"fisher"` take one test for every item;
+#'   `"midp"` takes the Fisher mid-p test for an item of a two-group table;
+#'   `"n1"` takes the N-1 chi-squared test for an item of a two-group table
+#'   whose expected counts are all at least 1, and Fisher's exact test for
+#'   one with a smaller count. With more groups, `"midp"` and `"n1"` follow
+#'   `"auto"`. The note names the test of each item. See *Tests*.
 #' @param p_value Logical or `NULL`. With `by`, `NULL` (the default) and
 #'   `TRUE` show the item `p` column and the global test in the note.
 #'   `FALSE` removes both from every output, the `p` column of the data
@@ -141,8 +145,9 @@
 #' @param statistic Logical. If `TRUE`, adds a `Test` column with each
 #'   item's chi-squared statistic and its degrees of freedom, with or
 #'   without the p-values of `p_value`; an item whose p-value comes from
-#'   Fisher's exact test has no statistic and shows a dash. Defaults to
-#'   `FALSE`.
+#'   Fisher's exact test or its mid-p version has no statistic and shows a
+#'   dash, and an item tested by the N-1 chi-squared shows that statistic.
+#'   Defaults to `FALSE`.
 #' @inheritParams table_categorical
 #' @param align Horizontal alignment of the numeric columns in the console
 #'   and in the rendered outputs: `"decimal"` (the default), `"center"`,
@@ -171,8 +176,9 @@
 #'     tests ran (for `p_value` or for `statistic`), `p` with `p_value`,
 #'     and `p_unadjusted` under an adjustment. `test_type` names the test
 #'     of each item as in [table_categorical()] (`"chi_squared"`,
-#'     `"fisher_exact"`, `"fisher_exact_mc"`), and `Chi2` and `df` are `NA`
-#'     for an item tested by Fisher's exact test.
+#'     `"n1_chi_squared"`, `"fisher_exact"`, `"fisher_midp"`,
+#'     `"fisher_exact_mc"`), and `Chi2` and `df` are `NA` for an item
+#'     tested by an exact test.
 #'   \item `"long"`: one row per item and group, with columns `variable`,
 #'     `group` (with `by`), `n`, `base` (the respondents of the group),
 #'     `pct` (or `pct_cases` and `pct_responses`), and `test_type`,
@@ -215,6 +221,15 @@
 #' statistic of every item. The global test sums the Pearson statistics
 #' of the items whatever `test` chooses for their p-values, since its
 #' correction and its bootstrap are defined for that sum.
+#'
+#' With two groups, an item's table is 2x2. `test = "midp"` then gives it
+#' the Fisher mid-p test of Fagerland, Lydersen and Laake (2017, section
+#' 4.4.6), and `test = "n1"` the N-1 chi-squared test of Campbell (2007)
+#' when its expected counts are all at least 1 and Fisher's exact test
+#' otherwise, both defined under *Tests* in [table_categorical()]. With
+#' more groups, the items follow `"auto"`. An item tested by the mid-p
+#' test has no statistic (a dash); one tested by the N-1 chi-squared shows
+#' that statistic, on 1 degree of freedom.
 #'
 #' The global test sums the item statistics,
 #' \eqn{X^2_S = \sum_j X^2_j}, a value that does not depend on which
@@ -325,6 +340,14 @@
 #' *Communications in Statistics - Simulation and Computation*, 29(4),
 #' 1285-1316. \doi{10.1080/03610910008813665}
 #'
+#' Campbell, I. (2007). Chi-squared and Fisher-Irwin tests of two-by-two
+#' tables with small sample recommendations. *Statistics in Medicine*,
+#' 26(19), 3661-3675. \doi{10.1002/sim.2832}
+#'
+#' Fagerland, M. W., Lydersen, S., & Laake, P. (2017). *Statistical
+#' Analysis of Contingency Tables*. Chapman and Hall/CRC.
+#' \doi{10.1201/9781315374116}
+#'
 #' Jann, B. (2005). Tabulation of multiple responses. *The Stata Journal*,
 #' 5(1), 92-122. \doi{10.1177/1536867x0500500113}
 #'
@@ -409,7 +432,7 @@ table_multiresponse <- function(
   percent = c("cases", "responses", "both"),
   base = c("valid", "answered", "all"),
   sort = c("", "+", "-", "name+", "name-"),
-  test = c("auto", "chisq", "fisher"),
+  test = c("auto", "chisq", "fisher", "midp", "n1"),
   p_value = NULL,
   global_test = c("rs2", "bootstrap"),
   boot_n = 1999L,
@@ -1167,9 +1190,11 @@ table_multiresponse <- function(
 # `item_test` chooses the test of each item's p-value with the rule of
 # `table_categorical()` (`.cat_resolve_test()`), on the r x 2 table of the
 # groups by chose / did not choose the item -- no empty margin there: the
-# groups hold respondents and a tested item has variation. An item tested
-# by Fisher's exact test has no statistic. The global test sums the
-# Pearson statistics `x2` whatever `item_test` says.
+# groups hold respondents and a tested item has variation. With two
+# groups the table is 2 x 2, and `"midp"` and `"n1"` apply. An item
+# tested by an exact test has no statistic; one tested by the N-1
+# chi-squared carries that statistic. The global test sums the Pearson
+# statistics `x2` whatever `item_test` says.
 .mr_test <- function(
   z,
   g,
@@ -1190,13 +1215,15 @@ table_multiresponse <- function(
     chosen <- rowsum(z, g, reorder = TRUE)
     for (j in which(tested)) {
       tab <- cbind(chosen[, j], n_i - chosen[, j])
-      if (identical(.cat_resolve_test(tab, item_test), "fisher")) {
-        fisher <- .cat_fisher_p(tab, .MR_FISHER_MC_B)
-        p[[j]] <- fisher$p
-        chi2[[j]] <- NA_real_
-        df[[j]] <- NA_real_
-        test_type[[j]] <- fisher$type
+      kind <- .cat_resolve_test(tab, item_test)
+      if (identical(kind, "chisq")) {
+        next
       }
+      res <- .cat_run_test(tab, kind, .MR_FISHER_MC_B)
+      p[[j]] <- res$p
+      chi2[[j]] <- res$chi2
+      df[[j]] <- res$df
+      test_type[[j]] <- res$type
     }
   }
   run_global <- global

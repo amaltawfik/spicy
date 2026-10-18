@@ -16,7 +16,8 @@ workbook, or a PDF.
   exact test otherwise (`test = "auto"`), and the note names the test of
   each variable. `test = "chisq"` restores the p-values of 0.13.0, and
   `test = "fisher"` tests every variable exactly. The data frames gain a
-  `test_type` column.
+  `test_type` column. `test = "midp"` and `test = "n1"` offer the Fisher
+  mid-p test and Campbell's N-1 chi-squared for 2x2 tables.
 
 * `table_categorical()`, `table_continuous()`, `table_continuous_lm()`,
   `table_outcome()`, `table_categorical_svy()`, and

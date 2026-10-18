@@ -325,6 +325,10 @@
   test_pearson_chisq = "test du khi-deux de Pearson",
   test_fisher_exact = "test exact de Fisher",
   test_fisher_mc = "test exact de Fisher (Monte-Carlo, %s r\u00E9plications)",
+  test_n1_chisq = "test du khi-deux N\u22121",
+  test_fisher_midp = "test mid-p de Fisher",
+  test_pearson_chisq_simulated_in_list = "test du khi-deux de Pearson, simul\u00E9",
+  test_fisher_mc_in_list = "test exact de Fisher, Monte-Carlo avec %s r\u00E9plications",
   note_p_adjusted = "Valeurs p ajust\u00E9es par stats::p.adjust(method = %s)\u00A0; %s.",
   note_p_adjusted_coefficients = "m = %s coefficient(s) par mod\u00E8le",
 

@@ -33,9 +33,10 @@ applicable), \code{n}, \code{proportion} (the percentage divided by 100).
 
 \code{glance()} returns one row per outcome with its test (when \code{by} is
 used) and the requested association measure: \code{outcome}, \code{test_type}
-(\code{"chi_squared"}, \code{"fisher_exact"}, or \code{"fisher_exact_mc"}, as in the
-data frames of \code{\link[=table_categorical]{table_categorical()}}), \code{statistic} (the chi-squared,
-\code{NA} for Fisher's exact test), \code{df}, \code{p.value}, \code{assoc_type},
+(\code{"chi_squared"}, \code{"n1_chi_squared"}, \code{"fisher_exact"},
+\code{"fisher_midp"}, or \code{"fisher_exact_mc"}, as in the data frames of
+\code{\link[=table_categorical]{table_categorical()}}), \code{statistic} (the chi-squared, Pearson's or the
+N-1, \code{NA} for an exact test), \code{df}, \code{p.value}, \code{assoc_type},
 \code{assoc_value}, \code{assoc_ci_lower}, \code{assoc_ci_upper}, \code{n_total}. Without
 \code{by}, only \code{outcome} and \code{n_total} are populated; the other columns are
 \code{NA}. The interval bounds are \code{NA} unless the table was built with

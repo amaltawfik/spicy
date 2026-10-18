@@ -2908,8 +2908,9 @@ output_word <- function(rendered, word_path, word_template = NULL) {
 #' cell, as long as `body`). In [table_categorical()] and
 #' [table_multiresponse()], the p-value column's `col_meta` also carries
 #' `test_type`, the test of each cell, as long as `body`
-#' (`"chi_squared"`, `"fisher_exact"`, `"fisher_exact_mc"`, `NA` where
-#' the cell is).
+#' (`"chi_squared"`, `"n1_chi_squared"`, `"fisher_exact"`,
+#' `"fisher_midp"`, `"fisher_exact_mc"`, `NA` where the cell holds no
+#' p-value).
 #'
 #' @section Versioning:
 #' `version` says which contract an object carries. Version `3` moved

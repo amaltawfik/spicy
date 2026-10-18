@@ -395,18 +395,27 @@
 # -- Internal helpers for the per-variable test ------------------------------
 #
 # `test` chooses, per variable, between Pearson's chi-squared test and
-# Fisher's exact test (decision of 2026-10-18). The helpers below are
-# shared with `table_multiresponse()`, whose item tests follow the same
-# rule.
+# Fisher's exact test (decision of 2026-10-18), and for a 2 x 2 table the
+# Fisher mid-p test or Campbell's N-1 chi-squared (its complement, the
+# same day). The helpers below are shared with `table_multiresponse()`,
+# whose item tests follow the same rule.
 
 # The frozen test keys of the data frames (`test_type`), never a display
 # string: the note words them through the registry. `chi_squared` is the
 # value `glance()` has published since 0.13.0.
 .CAT_TEST_CHISQ <- "chi_squared"
+.CAT_TEST_N1 <- "n1_chi_squared"
 .CAT_TEST_FISHER <- "fisher_exact"
+.CAT_TEST_MIDP <- "fisher_midp"
 .CAT_TEST_FISHER_MC <- "fisher_exact_mc"
 # The order a note names them in, whatever the order of the variables.
-.CAT_TEST_KEYS <- c(.CAT_TEST_CHISQ, .CAT_TEST_FISHER, .CAT_TEST_FISHER_MC)
+.CAT_TEST_KEYS <- c(
+  .CAT_TEST_CHISQ,
+  .CAT_TEST_N1,
+  .CAT_TEST_FISHER,
+  .CAT_TEST_MIDP,
+  .CAT_TEST_FISHER_MC
+)
 
 # The contingency table a variable is tested on: its observed levels by the
 # observed groups, weighted, with the empty rows and columns dropped. It is
@@ -435,11 +444,21 @@
 # read on the table the test runs on (a declared level nobody holds, which
 # gtsummary's `table()` keeps as an empty row, has no expected count to be
 # small), and they are `chisq.test()`'s own, `outer(sr, sc) / n`.
+# `"midp"` and `"n1"` are tests of a 2 x 2 table: any other table follows
+# `"auto"`. `"n1"` is the rule of Campbell (2007, pp. 18-19): the N-1
+# chi-squared when every expected count is at least 1, Fisher's exact test
+# otherwise.
 .cat_resolve_test <- function(tab, test) {
-  if (!identical(test, "auto")) {
+  if (test %in% c("midp", "n1") && !all(dim(tab) == 2L)) {
+    test <- "auto"
+  }
+  if (test %in% c("chisq", "fisher", "midp")) {
     return(test)
   }
   expected <- outer(rowSums(tab), colSums(tab)) / sum(tab)
+  if (identical(test, "n1")) {
+    return(if (all(expected >= 1)) "n1" else "fisher")
+  }
   if (all(expected >= 5)) "chisq" else "fisher"
 }
 
@@ -468,20 +487,111 @@
   )
 }
 
+# Fisher's mid-p test of a 2 x 2 table, two-sided as Fagerland, Lydersen
+# and Laake (2017, Eq. 1.12 p. 28, section 4.4.6 p. 97) and Lydersen,
+# Fagerland and Laake (2009, Eq. 12 p. 1165) define it: the tables with
+# the observed margins are ordered by their hypergeometric probability,
+# and the p-value sums the probabilities of the tables less probable than
+# the observed one plus half those of the tables as probable, the observed
+# one included. Ties are read with the relative tolerance of
+# `stats::fisher.test()`, without which a table and its mirror image can
+# part company.
+.cat_midp_p <- function(tab) {
+  tab <- round(tab)
+  m <- sum(tab[, 1L])
+  n <- sum(tab[, 2L])
+  k <- sum(tab[1L, ])
+  support <- max(0, k - n):min(k, m)
+  d <- stats::dhyper(support, m, n, k)
+  d_obs <- d[support == tab[1L, 1L]]
+  rel_err <- 1 + 1e-7
+  less <- d < d_obs / rel_err
+  tie <- !less & d <= d_obs * rel_err
+  sum(d[less]) + 0.5 * sum(d[tie])
+}
+
+# The N-1 chi-squared of a 2 x 2 table (Campbell 2007, test 3 p. 8):
+# Pearson's statistic, with no continuity correction, times (N - 1) / N,
+# referred to a chi-squared with 1 degree of freedom. It equals the
+# Mantel-Haenszel statistic of a single 2 x 2 table.
+.cat_n1_test <- function(tab) {
+  n <- sum(tab)
+  x2 <- n *
+    (tab[1L, 1L] * tab[2L, 2L] - tab[1L, 2L] * tab[2L, 1L])^2 /
+    prod(rowSums(tab), colSums(tab))
+  statistic <- x2 * (n - 1) / n
+  list(
+    statistic = statistic,
+    p = stats::pchisq(statistic, df = 1, lower.tail = FALSE)
+  )
+}
+
+# The test `.cat_resolve_test()` chose, when it is not the Pearson
+# chi-squared (which `cross_tab()` computes): its p-value, its key, and
+# the statistic and degrees of freedom of a chi-squared (NA for an exact
+# test). A table with an empty row or column is uninformative (Lydersen
+# et al. 2009, p. 1162): no test, as for the chi-squared.
+.cat_run_test <- function(tab, kind, B) {
+  if (any(rowSums(tab) == 0) || any(colSums(tab) == 0)) {
+    return(list(
+      p = NA_real_,
+      chi2 = NA_real_,
+      df = NA_real_,
+      type = NA_character_
+    ))
+  }
+  if (identical(kind, "n1")) {
+    n1 <- .cat_n1_test(tab)
+    return(list(p = n1$p, chi2 = n1$statistic, df = 1, type = .CAT_TEST_N1))
+  }
+  if (identical(kind, "midp")) {
+    return(list(
+      p = .cat_midp_p(tab),
+      chi2 = NA_real_,
+      df = NA_real_,
+      type = .CAT_TEST_MIDP
+    ))
+  }
+  fisher <- .cat_fisher_p(tab, B)
+  list(p = fisher$p, chi2 = NA_real_, df = NA_real_, type = fisher$type)
+}
+
 # The name a note gives a test key. A simulated chi-squared keeps the
 # historical " (simulated)" of `cross_tab()`; the Monte Carlo exact test
-# names its replicates.
-.cat_test_label <- function(type, simulated = FALSE, B = NULL) {
+# names its replicates. Inside a list of tests (`in_list`), where the
+# variables follow in parentheses, those two qualifiers take a comma
+# instead, so no item reads "test (simulated) (sex)".
+.cat_test_label <- function(
+  type,
+  simulated = FALSE,
+  B = NULL,
+  in_list = FALSE
+) {
   if (identical(type, .CAT_TEST_CHISQ)) {
+    if (!simulated) {
+      return(spicy_str("test_pearson_chisq"))
+    }
+    if (in_list) {
+      return(spicy_str("test_pearson_chisq_simulated_in_list"))
+    }
     return(paste0(
       spicy_str("test_pearson_chisq"),
-      if (simulated) spicy_str("note_chisq_simulated")
+      spicy_str("note_chisq_simulated")
     ))
+  }
+  if (identical(type, .CAT_TEST_N1)) {
+    return(spicy_str("test_n1_chisq"))
   }
   if (identical(type, .CAT_TEST_FISHER)) {
     return(spicy_str("test_fisher_exact"))
   }
-  spicy_fmt("test_fisher_mc", as.character(B))
+  if (identical(type, .CAT_TEST_MIDP)) {
+    return(spicy_str("test_fisher_midp"))
+  }
+  spicy_fmt(
+    if (in_list) "test_fisher_mc_in_list" else "test_fisher_mc",
+    as.character(B)
+  )
 }
 
 # The tests behind a set of p-values, worded for a note on the model of
@@ -512,7 +622,7 @@
     function(k) {
       spicy_fmt(
         "note_group_comparison_item",
-        .cat_test_label(k, simulated, B),
+        .cat_test_label(k, simulated, B, in_list = TRUE),
         paste(rows[tested == k], collapse = ", ")
       )
     },
@@ -613,15 +723,17 @@
 #' @param correct Logical. If `FALSE` (the default), no continuity correction is
 #'   applied. If `TRUE`, applies Yates correction in 2x2 chi-squared contexts.
 #'   Passed to `spicy::cross_tab()`. A variable tested by Fisher's exact
-#'   test (see `test`) takes no correction.
+#'   test, its mid-p version, or the N-1 chi-squared (see `test`) takes no
+#'   correction.
 #' @param simulate_p Logical. If `FALSE` (the default), uses asymptotic p-values.
 #'   If `TRUE`, uses Monte Carlo simulation. Passed to `spicy::cross_tab()`.
-#'   Applies to the chi-squared test only (see `test`).
+#'   Applies to the Pearson chi-squared test only (see `test`).
 #' @param simulate_B Integer. Number of Monte Carlo replicates when
 #'   `simulate_p = TRUE`, and for the Monte Carlo version of Fisher's exact
 #'   test (see `test`). Defaults to `2000`.
 #' @param test Character. The test of each variable when `by` is used.
-#'   One of `"auto"` (default), `"chisq"`, or `"fisher"`.
+#'   One of `"auto"` (default), `"chisq"`, `"fisher"`, `"midp"`, or
+#'   `"n1"`.
 #'   - `"auto"`: Pearson's chi-squared test when every expected count of
 #'     the variable's table is at least 5, Fisher's exact test otherwise,
 #'     the rule of gtsummary's `add_p()`. The choice is made per variable,
@@ -629,12 +741,18 @@
 #'   - `"chisq"`: Pearson's chi-squared test for every variable, the
 #'     behavior before 0.14.0.
 #'   - `"fisher"`: Fisher's exact test for every variable.
+#'   - `"midp"`: the Fisher mid-p test for a 2x2 table.
+#'   - `"n1"`: the N-1 chi-squared test for a 2x2 table whose expected
+#'     counts are all at least 1, Fisher's exact test for one with a
+#'     smaller count (Campbell's rule).
 #'
-#'   `correct` and `simulate_p` apply to the chi-squared test only. When
-#'   the exact enumeration of a large sparse table fails, Fisher's p-value
-#'   is its Monte Carlo estimate over `simulate_B` tables, and the note
-#'   says so; call [set.seed()] first to reproduce it. See *Tests*.
-#'   Ignored when `by` is not used or when `p_value = FALSE`.
+#'   Under `"midp"` and `"n1"`, a variable whose table is not 2x2 follows
+#'   `"auto"`. `correct` and `simulate_p` apply to the Pearson chi-squared
+#'   test only. When the exact enumeration of a large sparse table fails,
+#'   Fisher's p-value is its Monte Carlo estimate over `simulate_B`
+#'   tables, and the note says so; call [set.seed()] first to reproduce
+#'   it. See *Tests*. Ignored when `by` is not used or when
+#'   `p_value = FALSE`.
 #' @param p_value Logical or `NULL`. If `TRUE` and `by` is used, adds
 #'   the *p*-value column of the test chosen by `test`. When `NULL` (the
 #'   default), the *p*-value is shown automatically whenever `by` is
@@ -809,9 +927,12 @@
 #'     `include_total = TRUE`), followed by `test_type`, `Chi2`, `df`,
 #'     `p` (absent with `p_value = FALSE`), and the association measure
 #'     column. `test_type` names the test of the variable:
-#'     `"chi_squared"`, `"fisher_exact"`, or `"fisher_exact_mc"` (the
-#'     Monte Carlo estimate of Fisher's exact test); `Chi2` and `df` are
-#'     `NA` for a variable tested by Fisher's exact test.
+#'     `"chi_squared"` (Pearson's), `"n1_chi_squared"` (the N-1
+#'     chi-squared), `"fisher_exact"`, `"fisher_midp"` (the Fisher mid-p
+#'     test), or `"fisher_exact_mc"` (the Monte Carlo estimate of Fisher's
+#'     exact test); `Chi2` and `df` hold the statistic of a chi-squared
+#'     test, Pearson's or the N-1, and are `NA` for a variable tested by
+#'     an exact test.
 #'     When `by = NULL`, the columns are `Variable`, `Level`, `n`, `\%`.
 #'   \item `"long"`: a long `data.frame` with columns `variable`,
 #'     `level`, `n`, `pct` (plus `group` when `by` is used, and
@@ -857,7 +978,9 @@
 #' against the grouping variable with [cross_tab()] and tested on the
 #' complete cases of its observed levels, a `"(Missing)"` level and a
 #' declared level nobody holds left out: one *p*-value per variable,
-#' in the `p` column.
+#' in the `p` column. A table left with a single row or column (a
+#' variable observed at one level, or in one group) is uninformative and
+#' gets no test, whatever `test` says: its `p` cell shows a dash.
 #'
 #' The chi-squared approximation is unreliable when expected counts are
 #' small. Under `test = "auto"`, the default, a variable takes Pearson's
@@ -873,6 +996,38 @@
 #' chi-squared, the behavior before 0.14.0, and `test = "fisher"` every
 #' variable by the exact test.
 #'
+#' Fisher's exact test is conservative: its actual level is often well
+#' below the nominal one, at a cost in power. `test = "midp"` gives a 2x2
+#' table (a two-level variable by two groups) the Fisher mid-p test, as
+#' Fagerland, Lydersen and Laake (2017, equation 1.12, p. 28, and section
+#' 4.4.6, p. 97) and Lydersen, Fagerland and Laake (2009, equation 12,
+#' p. 1165) define it: the tables with the observed margins are ordered
+#' by their hypergeometric probability, and the *p*-value adds the
+#' probabilities of the tables less probable than the observed one to
+#' half the probabilities of the tables as probable, the observed one
+#' included, ties being read within the relative tolerance of
+#' [stats::fisher.test()]. The mid-p test can exceed the nominal level,
+#' usually by little, and Fagerland, Lydersen and Laake (2017, p. 175)
+#' recommend it for all sample sizes. A variable whose table is not 2x2
+#' follows `"auto"`, and the note names the test of each variable. The
+#' central variant, twice the smaller one-sided mid-p (the `exact2x2` and
+#' `epitools` packages; Agresti, 2019, p. 49), coincides with this one
+#' when the row totals or the column totals are equal, except that it
+#' gives 1 for the most probable table; it differs otherwise and is not
+#' computed.
+#'
+#' `test = "n1"` applies the rule of Campbell (2007, pp. 18-19) to a 2x2
+#' table. When every expected count is at least 1, the table takes the
+#' N-1 chi-squared test: Pearson's statistic, with no continuity
+#' correction, multiplied by (N - 1)/N and referred to a chi-squared
+#' distribution with 1 degree of freedom, which is the Mantel-Haenszel
+#' statistic of a single 2x2 table; `Chi2` and `df` hold that statistic.
+#' Otherwise it takes Fisher's exact test, two-sided by Irwin's rule as
+#' [stats::fisher.test()] computes it. Campbell found the N-1 test close
+#' to its nominal level under that restriction, not without it. A
+#' variable whose table is not 2x2 follows `"auto"`, and the note names
+#' the test of each variable.
+#'
 #' The note names the test of every variable, "Group comparison:
 #' Pearson chi-squared test (sex, education); Fisher exact test
 #' (smoking).", or the one test when it covers them all. `test_type` in
@@ -884,12 +1039,13 @@
 #' reports the marginal frequency distribution of each variable with no
 #' inferential statistics.
 #'
-#' Fisher's exact test conditions on counts. Under `weights`, it runs on
-#' the weighted table when its cells are whole numbers (frequency
-#' weights); otherwise `test = "auto"` keeps the chi-squared test for a
-#' variable that would take the exact test, with a warning
-#' (`spicy_fallback`), and `test = "fisher"` is an error. For survey
-#' weights, [table_categorical_svy()] gives the design-based test.
+#' The exact tests condition on counts. Under `weights`, they run on the
+#' weighted table when its cells are whole numbers (frequency weights);
+#' otherwise a variable that a rule sends to Fisher's exact test keeps
+#' the chi-squared test, Pearson's under `test = "auto"` and the N-1
+#' under Campbell's rule, with a warning (`spicy_fallback`), and
+#' `test = "fisher"`, or `test = "midp"` on a 2x2 table, is an error. For
+#' survey weights, [table_categorical_svy()] gives the design-based test.
 #'
 #' The test and the measure are two decisions with two arguments:
 #' `p_value = FALSE` removes the test, `assoc_measure = "none"` the
@@ -1007,6 +1163,22 @@
 #' display as `0` while their `Total` of 1.0 displays as `1`). The
 #' machine outputs (`"data.frame"`, `"long"`) carry the exact
 #' weighted counts and full-precision percentages.
+#'
+#' @references
+#' Agresti, A. (2019). *An Introduction to Categorical Data Analysis* (3rd
+#' ed.). Wiley.
+#'
+#' Campbell, I. (2007). Chi-squared and Fisher-Irwin tests of two-by-two
+#' tables with small sample recommendations. *Statistics in Medicine*,
+#' 26(19), 3661-3675. \doi{10.1002/sim.2832}
+#'
+#' Fagerland, M. W., Lydersen, S., & Laake, P. (2017). *Statistical
+#' Analysis of Contingency Tables*. Chapman and Hall/CRC.
+#' \doi{10.1201/9781315374116}
+#'
+#' Lydersen, S., Fagerland, M. W., & Laake, P. (2009). Recommended tests
+#' for association in 2 x 2 tables. *Statistics in Medicine*, 28(7),
+#' 1159-1175. \doi{10.1002/sim.3531}
 #'
 #' @family spicy tables
 #' @seealso [table_continuous()] for empirical comparisons on
@@ -1202,7 +1374,7 @@ table_categorical <- function(
   correct = FALSE,
   simulate_p = FALSE,
   simulate_B = 2000,
-  test = c("auto", "chisq", "fisher"),
+  test = c("auto", "chisq", "fisher", "midp", "n1"),
   p_value = NULL,
   p_adjust = "none",
   percent_digits = 1,
@@ -1624,22 +1796,27 @@ table_categorical <- function(
   }
   # The exact test has neither a continuity correction nor a simulated
   # chi-squared to take: under `test = "fisher"` the two switches reach
-  # no variable. Under `"auto"` they reach the variables the chi-squared
-  # tests, decided per variable below.
-  if (has_group && p_value && identical(test, "fisher")) {
+  # no variable. Yates' correction belongs to the Pearson chi-squared of a
+  # 2 x 2 table, which `"midp"` and `"n1"` give a test of their own, so it
+  # reaches no variable under them either. Otherwise the switches reach
+  # the variables the Pearson chi-squared tests, decided per variable
+  # below.
+  if (has_group && p_value && test %in% c("fisher", "midp", "n1")) {
     if (correct) {
       spicy_warn(
-        "`correct` is ignored when `test = \"fisher\"`.",
+        sprintf("`correct` is ignored when `test = \"%s\"`.", test),
         class = "spicy_ignored_arg"
       )
     }
+    correct <- FALSE
+  }
+  if (has_group && p_value && identical(test, "fisher")) {
     if (simulate_p) {
       spicy_warn(
         "`simulate_p` is ignored when `test = \"fisher\"`.",
         class = "spicy_ignored_arg"
       )
     }
-    correct <- FALSE
     simulate_p <- FALSE
   }
 
@@ -2928,12 +3105,18 @@ table_categorical <- function(
       if (all(dim(test_tab) > 1L)) {
         test_kind <- .cat_resolve_test(test_tab, test)
       }
-      if (identical(test_kind, "fisher") && !.cat_is_count_table(test_tab)) {
-        if (identical(test, "fisher")) {
+      # The exact tests condition on counts. The test the call asked for
+      # by name stops; one a rule chose (`"auto"`, Campbell's rule of
+      # `"n1"`) gives way to the chi-squared it would otherwise take.
+      if (
+        test_kind %in% c("fisher", "midp") && !.cat_is_count_table(test_tab)
+      ) {
+        if (identical(test_kind, test)) {
           spicy_abort(
             c(
               sprintf(
-                "`test = \"fisher\"` needs counts: the weighted table of `%s` has cells that are not whole numbers.",
+                "`test = \"%s\"` needs counts: the weighted table of `%s` has cells that are not whole numbers.",
+                test,
                 select_names[i]
               ),
               "i" = "Use `test = \"chisq\"` or `\"auto\"`, frequency weights in whole numbers, or `table_categorical_svy()` for survey weights."
@@ -2941,17 +3124,22 @@ table_categorical <- function(
             class = "spicy_unsupported"
           )
         }
+        n1_rule <- identical(test, "n1") && all(dim(test_tab) == 2L)
         spicy_warn(
           c(
             sprintf(
-              "`%s` keeps the chi-squared test although an expected count is below 5: Fisher's exact test needs counts, and its weighted table has cells that are not whole numbers.",
+              if (n1_rule) {
+                "`%s` keeps the N-1 chi-squared test although an expected count is below 1: Fisher's exact test needs counts, and its weighted table has cells that are not whole numbers."
+              } else {
+                "`%s` keeps the chi-squared test although an expected count is below 5: Fisher's exact test needs counts, and its weighted table has cells that are not whole numbers."
+              },
               select_names[i]
             ),
             "i" = "Frequency weights in whole numbers give the exact test; `table_categorical_svy()` gives the design-based test for survey weights."
           ),
           class = "spicy_fallback"
         )
-        test_kind <- "chisq"
+        test_kind <- if (n1_rule) "n1" else "chisq"
       }
     }
     chi_correct <- correct && identical(test_kind, "chisq")
@@ -2987,17 +3175,18 @@ table_categorical <- function(
     } else {
       parse_stats(ct_pct, this_measure)
     }
-    # Fisher's exact test replaces the chi-squared p-value; the
-    # association measure, computed on the same table, stays. A Fisher
-    # row has no chi-squared statistic and no degrees of freedom.
+    # Fisher's exact test, its mid-p version, or the N-1 chi-squared
+    # replaces the Pearson p-value; the association measure, computed on
+    # the same table, stays. An exact test has no chi-squared statistic
+    # and no degrees of freedom; the N-1 row carries its own.
     test_type <- NA_character_
-    if (identical(test_kind, "fisher")) {
-      fisher <- .cat_fisher_p(test_tab, simulate_B)
-      st$p <- fisher$p
+    if (test_kind %in% c("fisher", "midp", "n1")) {
+      res <- .cat_run_test(test_tab, test_kind, simulate_B)
+      st$p <- res$p
       st$p_op <- "="
-      st$chi2 <- NA_real_
-      st$df <- NA_real_
-      test_type <- fisher$type
+      st$chi2 <- res$chi2
+      st$df <- res$df
+      test_type <- res$type
     } else if (identical(test_kind, "chisq") && !is.na(st$p)) {
       test_type <- .CAT_TEST_CHISQ
     }

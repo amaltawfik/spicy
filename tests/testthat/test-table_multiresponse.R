@@ -666,8 +666,8 @@ test_that("an item table the exact enumeration cannot handle takes the Monte Car
   expect_match(
     attr(out, "note"),
     paste(
-      "Item p-values: Fisher exact test (y); Fisher exact test",
-      "(Monte Carlo, 2000 replicates) (x)."
+      "Item p-values: Fisher exact test (y); Fisher exact test, Monte",
+      "Carlo with 2000 replicates (x)."
     ),
     fixed = TRUE
   )
@@ -701,6 +701,150 @@ test_that("the item note names the tests in French", {
   expect_match(
     attr(.mr_farm_tbl(test = "fisher"), "note"),
     "Valeurs p des items\u00a0: test exact de Fisher de chaque item selon le groupe.",
+    fixed = TRUE
+  )
+})
+
+# ---- the item tests of a two-group table: `test = "midp"` and `"n1"` ---------------
+
+# The farmer data in two groups, HS or VS (104 respondents) and the other
+# three (158): every item's table is 2 x 2.
+.mr_farm2 <- function() {
+  farm <- .mr_farmer()
+  farm$ed2 <- factor(
+    ifelse(farm$ed %in% c("HS", "VS"), "HS/VS", "2YC/4YC/Other"),
+    c("HS/VS", "2YC/4YC/Other")
+  )
+  farm
+}
+
+test_that("test = \"midp\" and \"n1\" test the items of a two-group table", {
+  farm <- .mr_farm2()
+  midp <- table_multiresponse(
+    farm,
+    A:E,
+    by = ed2,
+    test = "midp",
+    output = "data.frame"
+  )
+  n1 <- table_multiresponse(
+    farm,
+    A:E,
+    by = ed2,
+    test = "n1",
+    output = "data.frame"
+  )
+  expect_identical(midp$test_type[1:5], rep("fisher_midp", 5L))
+  expect_identical(n1$test_type[1:5], rep("n1_chi_squared", 5L))
+  expect_true(all(is.na(midp$Chi2[1:5])) && all(is.na(midp$df[1:5])))
+  expect_identical(n1$df[1:5], rep(1, 5L))
+  for (j in seq_len(5L)) {
+    tab <- table(farm$ed2, farm[[LETTERS[[j]]]])
+    # The N-1 chi-squared: Pearson's statistic times (N - 1) / N.
+    x2 <- unname(stats::chisq.test(tab, correct = FALSE)$statistic) *
+      261 /
+      262
+    expect_equal(n1$Chi2[[j]], x2, tolerance = 1e-12)
+    expect_equal(
+      n1$p_unadjusted[[j]],
+      stats::pchisq(x2, 1, lower.tail = FALSE),
+      tolerance = 1e-12
+    )
+  }
+  # The mid-p of an item is the one table_categorical() gives its table.
+  tc <- table_categorical(farm, A:E, by = ed2, test = "midp", output = "long")
+  expect_equal(
+    midp$p_unadjusted[1:5],
+    tc$p[!duplicated(tc$variable)],
+    tolerance = 1e-12
+  )
+  expect_equal(midp$p[1:5], stats::p.adjust(midp$p_unadjusted[1:5], "holm"))
+  # The global test keeps the Pearson statistics: Rao-Scott unchanged.
+  ref <- attr(
+    table_multiresponse(farm, A:E, by = ed2, test = "chisq"),
+    "global_test"
+  )
+  expect_identical(attr(midp, "global_test"), ref)
+  expect_identical(attr(n1, "global_test"), ref)
+  expect_match(
+    attr(midp, "note"),
+    "Item p-values: Fisher mid-p test of each item by group.",
+    fixed = TRUE
+  )
+  expect_match(
+    attr(n1, "note"),
+    "Item p-values: N\u22121 chi-squared test of each item by group.",
+    fixed = TRUE
+  )
+})
+
+test_that("an item tested by the N-1 chi-squared shows it, one tested by the mid-p a dash", {
+  farm <- .mr_farm2()
+  n1 <- table_multiresponse(farm, A:E, by = ed2, test = "n1", statistic = TRUE)
+  expect_identical(
+    attr(n1, "display_df")$Test[[1L]],
+    paste0(spicy_str("symbol_chi_sq"), "(1) = 1.42")
+  )
+  midp <- table_multiresponse(
+    farm,
+    A:E,
+    by = ed2,
+    test = "midp",
+    statistic = TRUE
+  )
+  expect_identical(
+    attr(midp, "display_df")$Test[1:5],
+    rep(spicy_str("cell_undefined"), 5L)
+  )
+})
+
+test_that("Campbell's rule sends an item with an expected count below 1 to Fisher's exact test", {
+  # x: one respondent of 20 chose it, an expected count of 0.5; y: 10.
+  d <- data.frame(
+    g = rep(c("a", "b"), each = 10L),
+    x = c(1, rep(0, 19L)),
+    y = rep(c(1, 0), 10L)
+  )
+  out <- table_multiresponse(
+    d,
+    c(x, y),
+    by = g,
+    test = "n1",
+    output = "data.frame"
+  )
+  expect_identical(out$test_type[1:2], c("fisher_exact", "n1_chi_squared"))
+  expect_equal(
+    out$p_unadjusted[[1L]],
+    stats::fisher.test(table(d$g, d$x))$p.value,
+    tolerance = 1e-12
+  )
+  expect_match(
+    attr(out, "note"),
+    "Item p-values: N\u22121 chi-squared test (y); Fisher exact test (x).",
+    fixed = TRUE
+  )
+})
+
+test_that("midp and n1 follow auto for the items of a table with more groups", {
+  auto <- .mr_farm_tbl(output = "data.frame")
+  for (tt in c("midp", "n1")) {
+    out <- .mr_farm_tbl(test = tt, output = "data.frame")
+    expect_identical(out$test_type, auto$test_type, info = tt)
+    expect_identical(out$p, auto$p, info = tt)
+  }
+})
+
+test_that("the item note names the 2 x 2 tests in French", {
+  withr::local_options(spicy.language = "fr")
+  farm <- .mr_farm2()
+  expect_match(
+    attr(table_multiresponse(farm, A:E, by = ed2, test = "midp"), "note"),
+    "Valeurs p des items\u00a0: test mid-p de Fisher de chaque item selon le groupe.",
+    fixed = TRUE
+  )
+  expect_match(
+    attr(table_multiresponse(farm, A:E, by = ed2, test = "n1"), "note"),
+    "Valeurs p des items\u00a0: test du khi-deux N\u22121 de chaque item selon le groupe.",
     fixed = TRUE
   )
 })

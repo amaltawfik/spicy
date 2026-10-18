@@ -186,10 +186,10 @@ as_tibble.spicy_multiresponse_table <- function(x, ...) {
 #' chose the item), `base` (the respondents of the group's base),
 #' `proportion` (`n / base`, the share of respondents),
 #' `proportion_responses` (`n` over the choices made in the group), and
-#' the item's test: `test_type` (`"chi_squared"`, `"fisher_exact"` or
-#' `"fisher_exact_mc"`), `statistic` (the Pearson chi-squared, `NA` for
-#' Fisher's exact test), `df`, `p.value` (adjusted under `p_adjust`) and
-#' `p.unadjusted`.
+#' the item's test: `test_type` (`"chi_squared"`, `"n1_chi_squared"`,
+#' `"fisher_exact"`, `"fisher_midp"` or `"fisher_exact_mc"`), `statistic`
+#' (the chi-squared, Pearson's or the N-1, `NA` for an exact test), `df`,
+#' `p.value` (adjusted under `p_adjust`) and `p.unadjusted`.
 #'
 #' `glance()` returns one row for the question. Columns: `n_items`,
 #' `n_items_tested` (the items the global test kept), `n_groups` (the

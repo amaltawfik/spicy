@@ -294,9 +294,10 @@ as_tibble.spicy_categorical_table <- function(x, ...) {
 #'
 #' `glance()` returns one row per outcome with its test (when `by` is
 #' used) and the requested association measure: `outcome`, `test_type`
-#' (`"chi_squared"`, `"fisher_exact"`, or `"fisher_exact_mc"`, as in the
-#' data frames of [table_categorical()]), `statistic` (the chi-squared,
-#' `NA` for Fisher's exact test), `df`, `p.value`, `assoc_type`,
+#' (`"chi_squared"`, `"n1_chi_squared"`, `"fisher_exact"`,
+#' `"fisher_midp"`, or `"fisher_exact_mc"`, as in the data frames of
+#' [table_categorical()]), `statistic` (the chi-squared, Pearson's or the
+#' N-1, `NA` for an exact test), `df`, `p.value`, `assoc_type`,
 #' `assoc_value`, `assoc_ci_lower`, `assoc_ci_upper`, `n_total`. Without
 #' `by`, only `outcome` and `n_total` are populated; the other columns are
 #' `NA`. The interval bounds are `NA` unless the table was built with

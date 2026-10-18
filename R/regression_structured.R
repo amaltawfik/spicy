@@ -122,9 +122,10 @@
 #                                   # adjusted values.
 #         test_type = NULL | chr    # categorical / multiresponse, token
 #                                   # "p": the test of each cell (len
-#                                   # nrow(body), NA where the cell is):
-#                                   # "chi_squared", "fisher_exact",
-#                                   # "fisher_exact_mc".
+#                                   # nrow(body), NA where the cell holds
+#                                   # no p): "chi_squared",
+#                                   # "n1_chi_squared", "fisher_exact",
+#                                   # "fisher_midp", "fisher_exact_mc".
 #       ),
 #       ...
 #     ),

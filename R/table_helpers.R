@@ -754,8 +754,8 @@ make_stronger_indent <- function(x, base_indent, strong_indent, rows) {
 
 # Record which test produced each p-value, on the same `col_meta`:
 # `test_type`, as long as `body`, the test key of the cell's variable
-# (`"chi_squared"`, `"fisher_exact"`, `"fisher_exact_mc"`) where the cell
-# holds a p-value, NA elsewhere. `types` is named by `.variable`, the key
+# (`.CAT_TEST_KEYS`: `"chi_squared"`, `"fisher_exact"`, ...) where the
+# cell holds a p-value, NA elsewhere. `types` is named by `.variable`, the key
 # of the test, as the raw p-values above. Called only for a table that
 # shows its p-values.
 .struct_attach_test_type <- function(structured, types) {

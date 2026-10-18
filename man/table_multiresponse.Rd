@@ -12,7 +12,7 @@ table_multiresponse(
   percent = c("cases", "responses", "both"),
   base = c("valid", "answered", "all"),
   sort = c("", "+", "-", "name+", "name-"),
-  test = c("auto", "chisq", "fisher"),
+  test = c("auto", "chisq", "fisher", "midp", "n1"),
   p_value = NULL,
   global_test = c("rs2", "bootstrap"),
   boot_n = 1999L,
@@ -101,8 +101,12 @@ accented letters after \code{z}.}
 \item{test}{The test of each item's p-value, as in \code{\link[=table_categorical]{table_categorical()}}:
 \code{"auto"} (the default) takes Pearson's chi-squared test when every
 expected count of the item's table is at least 5 and Fisher's exact
-test otherwise; \code{"chisq"} and \code{"fisher"} take one test for every item.
-The note names the test of each item. See \emph{Tests}.}
+test otherwise; \code{"chisq"} and \code{"fisher"} take one test for every item;
+\code{"midp"} takes the Fisher mid-p test for an item of a two-group table;
+\code{"n1"} takes the N-1 chi-squared test for an item of a two-group table
+whose expected counts are all at least 1, and Fisher's exact test for
+one with a smaller count. With more groups, \code{"midp"} and \code{"n1"} follow
+\code{"auto"}. The note names the test of each item. See \emph{Tests}.}
 
 \item{p_value}{Logical or \code{NULL}. With \code{by}, \code{NULL} (the default) and
 \code{TRUE} show the item \code{p} column and the global test in the note.
@@ -130,8 +134,9 @@ is an error.}
 \item{statistic}{Logical. If \code{TRUE}, adds a \code{Test} column with each
 item's chi-squared statistic and its degrees of freedom, with or
 without the p-values of \code{p_value}; an item whose p-value comes from
-Fisher's exact test has no statistic and shows a dash. Defaults to
-\code{FALSE}.}
+Fisher's exact test or its mid-p version has no statistic and shows a
+dash, and an item tested by the N-1 chi-squared shows that statistic.
+Defaults to \code{FALSE}.}
 
 \item{labels}{How each variable is named in the table: in the rows,
 in the title, and in the missing-values notes. Four forms:
@@ -231,8 +236,9 @@ without \code{by}), then \code{test_type}, \code{Chi2} and \code{df} when the it
 tests ran (for \code{p_value} or for \code{statistic}), \code{p} with \code{p_value},
 and \code{p_unadjusted} under an adjustment. \code{test_type} names the test
 of each item as in \code{\link[=table_categorical]{table_categorical()}} (\code{"chi_squared"},
-\code{"fisher_exact"}, \code{"fisher_exact_mc"}), and \code{Chi2} and \code{df} are \code{NA}
-for an item tested by Fisher's exact test.
+\code{"n1_chi_squared"}, \code{"fisher_exact"}, \code{"fisher_midp"},
+\code{"fisher_exact_mc"}), and \code{Chi2} and \code{df} are \code{NA} for an item
+tested by an exact test.
 \item \code{"long"}: one row per item and group, with columns \code{variable},
 \code{group} (with \code{by}), \code{n}, \code{base} (the respondents of the group),
 \code{pct} (or \code{pct_cases} and \code{pct_responses}), and \code{test_type},
@@ -292,6 +298,15 @@ p-values (\code{p_value = FALSE}), \code{statistic = TRUE} shows the chi-squared
 statistic of every item. The global test sums the Pearson statistics
 of the items whatever \code{test} chooses for their p-values, since its
 correction and its bootstrap are defined for that sum.
+
+With two groups, an item's table is 2x2. \code{test = "midp"} then gives it
+the Fisher mid-p test of Fagerland, Lydersen and Laake (2017, section
+4.4.6), and \code{test = "n1"} the N-1 chi-squared test of Campbell (2007)
+when its expected counts are all at least 1 and Fisher's exact test
+otherwise, both defined under \emph{Tests} in \code{\link[=table_categorical]{table_categorical()}}. With
+more groups, the items follow \code{"auto"}. An item tested by the mid-p
+test has no statistic (a dash); one tested by the N-1 chi-squared shows
+that statistic, on 1 degree of freedom.
 
 The global test sums the item statistics,
 \eqn{X^2_S = \sum_j X^2_j}, a value that does not depend on which
@@ -463,6 +478,14 @@ Bilder, C. R., Loughin, T. M., & Nettleton, D. (2000). Multiple
 marginal independence testing for pick any/c variables.
 \emph{Communications in Statistics - Simulation and Computation}, 29(4),
 1285-1316. \doi{10.1080/03610910008813665}
+
+Campbell, I. (2007). Chi-squared and Fisher-Irwin tests of two-by-two
+tables with small sample recommendations. \emph{Statistics in Medicine},
+26(19), 3661-3675. \doi{10.1002/sim.2832}
+
+Fagerland, M. W., Lydersen, S., & Laake, P. (2017). \emph{Statistical
+Analysis of Contingency Tables}. Chapman and Hall/CRC.
+\doi{10.1201/9781315374116}
 
 Jann, B. (2005). Tabulation of multiple responses. \emph{The Stata Journal},
 5(1), 92-122. \doi{10.1177/1536867x0500500113}
