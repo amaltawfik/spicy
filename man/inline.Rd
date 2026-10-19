@@ -15,7 +15,7 @@ inline(x, variable, level = NULL, column = NULL, model = NULL)
 \code{\link[=as_structured]{as_structured()}} accepts.}
 
 \item{variable}{The source variable, unquoted or as a string; or a
-fit-statistic token (\code{"n"}, \code{"nobs"}, \code{"r2"}, ...).}
+fit-statistic token (\code{"nobs"}, \code{"r2"}, ...) or label (\code{"n"}).}
 
 \item{level}{For a factor variable, the level, as a string.
 \code{"(Missing)"} addresses the missing-value category by role. On
@@ -58,7 +58,12 @@ that matches no source column is looked up among the displayed
 labels before erroring. The missing-value category is addressed by
 \code{level = "(Missing)"} whatever its displayed (possibly deduplicated)
 label, through its row role. Fit statistics are addressed by their
-token as \code{variable} (\code{inline(tbl, "n")}, \code{inline(tbl, "r2")}).
+token as \code{variable} (\code{inline(tbl, "nobs")}, \code{inline(tbl, "r2")}) or by
+their label (\code{inline(tbl, "n")}). Identity comes first: a source column
+wins over a token or a label of the same name, and an exact label over
+a fit statistic's label read regardless of case. A \code{variable} that
+still matches the rows of two variables or statistics is refused, and
+the error names an address for each.
 
 A statistic that belongs to a whole variable rather than to one of
 its levels sits on the variable's own row: the \emph{p} of a
@@ -73,8 +78,9 @@ no group (the contrast, its interval, \code{p}, \code{n}) are cited without
 one, as before.
 
 \code{\link[=table_multiresponse]{table_multiresponse()}} has one row per item, addressed by its column
-name, then the base row, the number of respondents, addressed as the
-fit statistic \code{"nobs"}. Its groups are spanners, as in
+name, then the rows of \code{none_row}, addressed as \code{"none"} and
+\code{"no_data"}, and the base row, the number of respondents, addressed as
+the fit statistic \code{"nobs"}. Its groups are spanners, as in
 \code{\link[=table_categorical]{table_categorical()}}, so \code{model} selects one, the margin included:
 \code{inline(tbl, smoking, column = "pct", model = "Female")},
 \code{inline(tbl, "nobs", model = "Total")}. The item \code{p} and \code{statistic}

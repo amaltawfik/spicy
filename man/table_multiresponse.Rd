@@ -434,9 +434,11 @@ chosen). The base holds the second and leaves out the first under
 default, the respondents of these two kinds that the base holds are
 rows of the table, "(No item chosen)" and "(No data for the question)",
 with their count and percentage in each group, and the note counts only
-those the base leaves out. Declared missing values of a labelled column
-(\code{na_values}, \code{na_range}) are missing, as under the \code{user_na = TRUE}
-default of \code{\link[=table_categorical]{table_categorical()}}.
+those the base leaves out. A row the table adds whose label an item
+also displays takes a numbered suffix, \code{"Respondents_1"} or
+\code{"(No item chosen_1)"}, and the item keeps its label. Declared missing
+values of a labelled column (\code{na_values}, \code{na_range}) are missing, as
+under the \code{user_na = TRUE} default of \code{\link[=table_categorical]{table_categorical()}}.
 
 A percentage carries no more digits than its denominator, so a base of
 fewer than 100 respondents takes whole percentages (American Medical

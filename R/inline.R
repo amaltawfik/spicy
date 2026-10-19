@@ -42,7 +42,12 @@
 #' labels before erroring. The missing-value category is addressed by
 #' `level = "(Missing)"` whatever its displayed (possibly deduplicated)
 #' label, through its row role. Fit statistics are addressed by their
-#' token as `variable` (`inline(tbl, "n")`, `inline(tbl, "r2")`).
+#' token as `variable` (`inline(tbl, "nobs")`, `inline(tbl, "r2")`) or by
+#' their label (`inline(tbl, "n")`). Identity comes first: a source column
+#' wins over a token or a label of the same name, and an exact label over
+#' a fit statistic's label read regardless of case. A `variable` that
+#' still matches the rows of two variables or statistics is refused, and
+#' the error names an address for each.
 #'
 #' A statistic that belongs to a whole variable rather than to one of
 #' its levels sits on the variable's own row: the *p* of a
@@ -57,8 +62,9 @@
 #' one, as before.
 #'
 #' [table_multiresponse()] has one row per item, addressed by its column
-#' name, then the base row, the number of respondents, addressed as the
-#' fit statistic `"nobs"`. Its groups are spanners, as in
+#' name, then the rows of `none_row`, addressed as `"none"` and
+#' `"no_data"`, and the base row, the number of respondents, addressed as
+#' the fit statistic `"nobs"`. Its groups are spanners, as in
 #' [table_categorical()], so `model` selects one, the margin included:
 #' `inline(tbl, smoking, column = "pct", model = "Female")`,
 #' `inline(tbl, "nobs", model = "Total")`. The item `p` and `statistic`
@@ -109,7 +115,7 @@
 #'   [table_multiresponse()] (default output) -- every family
 #'   [as_structured()] accepts.
 #' @param variable The source variable, unquoted or as a string; or a
-#'   fit-statistic token (`"n"`, `"nobs"`, `"r2"`, ...).
+#'   fit-statistic token (`"nobs"`, `"r2"`, ...) or label (`"n"`).
 #' @param level For a factor variable, the level, as a string.
 #'   `"(Missing)"` addresses the missing-value category by role. On
 #'   [table_continuous_lm()], whose groups are columns rather than
@@ -201,52 +207,31 @@ inline <- function(
   rlang::as_name(quo)
 }
 
-# The body rows of one variable, with the documented conveniences: a
-# fit statistic addressed by its token, and a display label accepted
-# where the source column name was expected.
+# The body rows of one variable, found by IDENTITY first. Three tiers,
+# and the first that matches anything decides (`.inline_match_rows()`):
+#
+#   1. a source column name, which wins outright: it is the identity;
+#   2. a displayed label, or the token of a row the table GENERATES (a
+#      fit statistic's "nobs", the "none" and "no_data" rows of
+#      `table_multiresponse()`). A token reaches its row only when no
+#      column carries the same name, which tier 1 has settled;
+#   3. a fit statistic's label whatever its case ("N" for "n").
+#
+# A tier that matches rows of DIFFERENT identities refuses. The resolver
+# used to take the first match, and to try the fit statistics, case
+# folded, before any label: an item labeled "respondents" was answered
+# with the base row ("Respondents"), and the label "(No item chosen)" led
+# to its token, "none", which an item column of that name shared, so the
+# item's count came back. Another row's number, with no error.
 .inline_variable_rows <- function(s, var_chr) {
   body <- s$body
-  rows <- which(body$.variable == var_chr)
-
-  if (length(rows) == 0L) {
-    # Fit statistic by token-as-variable: "n", "r2", ...
-    fit_rows <- which(body$.row_role == "fit_stat")
-    fit_hit <- fit_rows[
-      vapply(
-        fit_rows,
-        function(i) {
-          identical(body$.variable[i], var_chr) ||
-            identical(tolower(body$Variable[i]), tolower(var_chr))
-        },
-        logical(1)
-      )
-    ]
-    if (length(fit_hit) == 1L) {
-      return(fit_hit)
-    }
-    # Convenience: match the displayed label (the console suffixes
-    # factor headers with a colon; strip it before comparing).
-    #
-    # The suffix is DERIVED from the very template that wrote it
-    # (`label_block_header`, filled with an empty caption), never typed
-    # out: French puts a no-break space before the colon, and a
-    # hardcoded ":$" would leave that space behind -- `shown` would then
-    # equal no caption at all and addressing a variable by its displayed
-    # label would abort with "no such variable", silently, in one
-    # language only.
-    blk_suffix <- .escape_regex(spicy_fmt("label_block_header", ""))
-    shown <- sub(paste0(blk_suffix, "$"), "", trimws(body$Variable))
-    lbl_rows <- which(
-      shown == var_chr & body$.row_role == "factor_header"
-    )
-    if (length(lbl_rows) == 0L) {
-      lbl_rows <- which(shown == var_chr)
-    }
-    if (length(lbl_rows) >= 1L) {
-      var_chr <- body$.variable[lbl_rows[1L]]
-      rows <- which(body$.variable == var_chr)
-    }
+  generated <- .inline_generated_rows(body)
+  id <- .inline_row_identity(body, generated)
+  ids <- unique(id[.inline_match_rows(body, var_chr, generated)])
+  if (length(ids) > 1L) {
+    .inline_abort_ambiguous(body, var_chr, ids, id, generated)
   }
+  rows <- which(id %in% ids)
   if (length(rows) == 0L) {
     spicy_abort(
       c(
@@ -264,6 +249,137 @@ inline <- function(
     )
   }
   rows
+}
+
+# Rows the table GENERATES rather than reads from a source variable: the
+# fit statistics (a regression's, and the base row of
+# `table_multiresponse()`) and the rows of `none_row`, whose "missing" row
+# carries no level because it belongs to no variable. Their `.variable` is
+# a token of spicy's, which a source column may also be called.
+.inline_generated_rows <- function(body) {
+  role <- body$.row_role
+  role %in% c("fit_stat", "none") | (role %in% "missing" & is.na(body$.level))
+}
+
+# The identity of each row: its variable, kept apart from a generated row
+# that carries the same token. NA for a row no variable owns (the outcome
+# row of a multi-outcome regression), which no address reaches.
+.inline_row_identity <- function(body, generated) {
+  ifelse(
+    is.na(body$.variable),
+    NA_character_,
+    paste(ifelse(generated, "generated", "variable"), body$.variable)
+  )
+}
+
+# The displayed labels, stripped of indentation and of the suffix of a
+# block header ("sex:").
+#
+# The suffix is DERIVED from the very template that wrote it
+# (`label_block_header`, filled with an empty caption), never typed out:
+# French puts a no-break space before the colon, and a hardcoded ":$"
+# would leave that space behind -- `shown` would then equal no caption at
+# all and addressing a variable by its displayed label would abort with
+# "no such variable", silently, in one language only.
+.inline_shown_labels <- function(body) {
+  blk_suffix <- .escape_regex(spicy_fmt("label_block_header", ""))
+  sub(paste0(blk_suffix, "$"), "", trimws(body$Variable))
+}
+
+# The rows `var_chr` matches, in the first tier that matches any (see
+# `.inline_variable_rows()`). A label is first read on the rows that name
+# a variable, a fit statistic or a generated row, at indent 0; the label of
+# an indented row, a level, is a fallback the resolver has always offered.
+# Case folding applies to the fit statistics only, and when it reaches
+# one, every row whose label folds to the same text is a match as well,
+# so "RESPONDENTS" is not settled in favor of the base row over an item
+# labeled "respondents".
+.inline_match_rows <- function(body, var_chr, generated) {
+  known <- !is.na(body$.variable)
+  hits <- which(known & !generated & body$.variable == var_chr)
+  if (length(hits) > 0L) {
+    return(hits)
+  }
+  shown <- .inline_shown_labels(body)
+  top <- is.na(body$.indent) | body$.indent == 0L
+  hits <- which(
+    known &
+      ((top & shown == var_chr) | (generated & body$.variable == var_chr))
+  )
+  if (length(hits) > 0L) {
+    return(hits)
+  }
+  hits <- which(known & shown == var_chr)
+  if (length(hits) > 0L) {
+    return(hits)
+  }
+  folded <- known & top & tolower(shown) == tolower(var_chr)
+  if (any(folded & body$.row_role == "fit_stat", na.rm = TRUE)) {
+    return(which(folded))
+  }
+  integer(0)
+}
+
+# The refusal of a request that matches rows of different identities. It
+# names, for each, an address that matches that row alone: the column
+# name of a variable, and the token or the displayed label of a generated
+# row, each checked against the resolver itself. A generated row can be
+# left with none (a regression term named like a fit statistic's token
+# and another labeled like its label), and the message says so.
+.inline_abort_ambiguous <- function(body, var_chr, ids, id, generated) {
+  shown <- .inline_shown_labels(body)
+  top <- is.na(body$.indent) | body$.indent == 0L
+  lines <- vapply(
+    ids,
+    function(k) {
+      rows <- which(id == k)
+      gen <- generated[[rows[[1L]]]]
+      what <- if (!gen) {
+        "the variable"
+      } else if (body$.row_role[[rows[[1L]]]] == "fit_stat") {
+        "the fit statistic"
+      } else {
+        "the row"
+      }
+      labels <- shown[rows][
+        top[rows] & !is.na(shown[rows]) & nzchar(shown[rows])
+      ]
+      label <- c(labels, body$.variable[[rows[[1L]]]])[[1L]]
+      candidates <- unique(c(body$.variable[[rows[[1L]]]], if (gen) labels))
+      own <- Filter(
+        function(a) {
+          identical(unique(id[.inline_match_rows(body, a, generated)]), k)
+        },
+        candidates
+      )
+      if (length(own) == 0L) {
+        return(sprintf(
+          "No address of its own for %s shown as %s: give the other row another label.",
+          what,
+          .quote_val(label)
+        ))
+      }
+      sprintf(
+        "%s: %s shown as %s.",
+        .quote_val(own[[1L]]),
+        what,
+        .quote_val(label)
+      )
+    },
+    character(1),
+    USE.NAMES = FALSE
+  )
+  spicy_abort(
+    c(
+      sprintf(
+        "%s matches %d rows of this table: address the one you mean.",
+        .quote_val(var_chr),
+        length(ids)
+      ),
+      stats::setNames(lines, rep("i", length(lines)))
+    ),
+    class = "spicy_invalid_input"
+  )
 }
 
 # Pick THE row among a variable's rows, from `level` and -- when no

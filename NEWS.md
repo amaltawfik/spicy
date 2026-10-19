@@ -186,6 +186,13 @@ workbook, or a PDF.
   `table_continuous()`, and `table_outcome()` said to pick a level
   instead.
 
+* `inline()` matches a label exactly before it reads the label of a fit
+  statistic regardless of case, and refuses a `variable` that matches the
+  rows of two variables or statistics, with an address for each. With a
+  `table_regression()` term labeled "N", `inline(tbl, "N")` cited the
+  number of observations, and of two rows showing one label it cited the
+  first.
+
 * `table_categorical(output = "gt")` shows the note on the association
   measure and the standardized mean difference, as the other outputs do.
 

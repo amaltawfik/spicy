@@ -1360,3 +1360,193 @@ test_that("an untested item and an empty group refuse with the reason", {
   expect_identical(inline(tbl, x1, column = "n", model = "c"), "0")
   expect_identical(inline(tbl, x1, column = "p"), ".659")
 })
+
+
+# ---- identity first: tokens, labels, and their collisions -----------------
+
+# Two items, the second named `nm`: x1 = 4, the item = 3, "(No item
+# chosen)" = 2, "(No data for the question)" = 1, "Respondents" = 7. In
+# group "a" (rows 1 to 3), one respondent chose no item.
+.il_token_item <- function(nm, ...) {
+  d <- data.frame(
+    x1 = c(1, 0, NA, 1, 0, 1, 1),
+    tok = c(0, 0, NA, 1, 0, 1, 1),
+    g = c("a", "a", "a", "b", "b", "b", "b")
+  )
+  names(d)[[2L]] <- nm
+  table_multiresponse(d, select = c("x1", nm), base = "all", ...)
+}
+
+test_that("an item column named like a generated row's token keeps both rows", {
+  # The item and the generated row shared the token, so the label of the
+  # generated row led back to it and returned the item's count. The
+  # column now owns the token; the generated row keeps its label.
+  generated <- c(none = "2", no_data = "1", nobs = "7")
+  for (nm in names(generated)) {
+    tbl <- .il_token_item(nm)
+    expect_identical(inline(tbl, !!nm), "3")
+    for (other in setdiff(names(generated), nm)) {
+      expect_identical(inline(tbl, !!other), generated[[other]])
+    }
+    expect_identical(inline(tbl, "(No item chosen)"), "2")
+    expect_identical(inline(tbl, "(No data for the question)"), "1")
+    expect_identical(inline(tbl, "Respondents"), "7")
+  }
+  # The token names the item, which has no level.
+  expect_error(
+    inline(.il_token_item("no_data"), "no_data", "(Missing)"),
+    "No level",
+    class = "spicy_invalid_input"
+  )
+  by_g <- .il_token_item("none", by = g)
+  expect_identical(inline(by_g, none, model = "Total"), "3")
+  expect_identical(inline(by_g, "(No item chosen)", model = "Total"), "2")
+  expect_identical(inline(by_g, "(No item chosen)", model = "a"), "1")
+})
+
+test_that("an item labeled like a generated row's token is told apart", {
+  # The label of x1 and the token of "(No item chosen)" are both exact
+  # matches of "none"; the token used to win.
+  tbl <- .il_token_item("x2", labels = c(x1 = "none"))
+  msg <- conditionMessage(expect_error(
+    inline(tbl, "none"),
+    class = "spicy_invalid_input"
+  ))
+  expect_match(msg, "\"x1\": the variable shown as \"none\".", fixed = TRUE)
+  expect_match(
+    msg,
+    "\"(No item chosen)\": the row shown as \"(No item chosen)\".",
+    fixed = TRUE
+  )
+  expect_identical(inline(tbl, x1), "4")
+  expect_identical(inline(tbl, "(No item chosen)"), "2")
+})
+
+test_that("an exact label wins over a fit statistic's label read regardless of case", {
+  d <- data.frame(
+    x1 = c(1, 0, NA, 1, 0, 1, 1),
+    x2 = c(0, 0, NA, 1, 0, 1, 1)
+  )
+  tbl <- table_multiresponse(
+    d,
+    c(x1, x2),
+    base = "all",
+    labels = c(x1 = "respondents")
+  )
+  expect_identical(inline(tbl, "respondents"), "4")
+  expect_identical(inline(tbl, "Respondents"), "7")
+  # Both labels fold to the request: refused, not settled for the base.
+  expect_error(inline(tbl, "RESPONDENTS"), class = "spicy_invalid_input")
+  plain <- table_multiresponse(d, c(x1, x2), base = "all")
+  expect_identical(inline(plain, "RESPONDENTS"), "7")
+  # The same order on a released family: a term labeled "N" (nitrogen)
+  # was answered with the number of observations, "n".
+  tr <- table_regression(lm(mpg ~ wt + hp, data = mtcars), labels = c(wt = "N"))
+  expect_identical(inline(tr, "N"), "-3.88")
+  expect_identical(inline(tr, "n"), "32")
+  expect_identical(inline(tr, "nobs"), "32")
+  # A column wins over the token or label of a fit statistic.
+  tc <- table_regression(lm(
+    mpg ~ wt + nobs,
+    data = transform(mtcars, nobs = qsec)
+  ))
+  expect_identical(inline(tc, nobs), "0.93")
+  expect_identical(inline(tc, "n"), "32")
+})
+
+test_that("a variable that matches two rows is refused with an address for each", {
+  tbl <- table_regression(
+    lm(mpg ~ wt + hp, data = mtcars),
+    show_fit_stats = c("nobs", "aic"),
+    labels = c(wt = "AIC", hp = "n")
+  )
+  msg <- conditionMessage(expect_error(
+    inline(tbl, "AIC"),
+    class = "spicy_invalid_input"
+  ))
+  expect_match(
+    msg,
+    "\"AIC\" matches 2 rows of this table: address the one you mean.",
+    fixed = TRUE
+  )
+  expect_match(msg, "\"wt\": the variable shown as \"AIC\".", fixed = TRUE)
+  expect_match(
+    msg,
+    "\"aic\": the fit statistic shown as \"AIC\".",
+    fixed = TRUE
+  )
+  msg <- conditionMessage(expect_error(
+    inline(tbl, "n"),
+    class = "spicy_invalid_input"
+  ))
+  expect_match(msg, "\"hp\": the variable shown as \"n\".", fixed = TRUE)
+  expect_match(msg, "\"nobs\": the fit statistic shown as \"n\".", fixed = TRUE)
+  # The addresses it names reach one row each.
+  expect_identical(inline(tbl, "wt"), "-3.88")
+  expect_identical(inline(tbl, "aic"), "156.7")
+  expect_identical(inline(tbl, "hp"), "-0.03")
+  expect_identical(inline(tbl, "nobs"), "32")
+  # A fit statistic whose token is a column name and whose label is
+  # another term's has no address of its own, and the error says so.
+  shadowed <- table_regression(
+    lm(mpg ~ wt + aic, data = transform(mtcars, aic = qsec)),
+    show_fit_stats = c("nobs", "aic"),
+    labels = c(wt = "AIC")
+  )
+  expect_error(
+    inline(shadowed, "AIC"),
+    "No address of its own for the fit statistic shown as \"AIC\"",
+    class = "spicy_invalid_input",
+    fixed = TRUE
+  )
+  # Two variables showing one label, and a generated label shown by a
+  # variable: the descriptive families refuse alike.
+  two <- table_continuous(
+    mtcars,
+    c(mpg, hp),
+    labels = c(mpg = "Same", hp = "Same")
+  )
+  msg <- conditionMessage(expect_error(
+    inline(two, "Same"),
+    class = "spicy_invalid_input"
+  ))
+  expect_match(msg, "\"mpg\": the variable shown as \"Same\".", fixed = TRUE)
+  expect_match(msg, "\"hp\": the variable shown as \"Same\".", fixed = TRUE)
+  d <- data.frame(y = c(1, 2, 3, 4, 5, 6), g = c("a", "a", "b", "b", "a", "b"))
+  to <- .il_quiet(table_outcome(d, y, select = g, labels = c(g = "Overall")))
+  msg <- conditionMessage(expect_error(
+    inline(to, "Overall"),
+    class = "spicy_invalid_input"
+  ))
+  expect_match(msg, "\"y\": the variable shown as \"Overall\".", fixed = TRUE)
+  expect_match(msg, "\"g\": the variable shown as \"Overall\".", fixed = TRUE)
+  expect_identical(inline(to, y), "3.50")
+  expect_identical(inline(to, g, "a"), "2.67")
+})
+
+test_that("a level's label leads to its variable only when one variable has it", {
+  # The fallback reads the indented rows after the variables' own labels:
+  # a variable labeled "u" wins over a level "u" of another variable.
+  one <- .il_quiet(table_categorical(sochealth, select = smoking))
+  expect_identical(inline(one, "Yes", "Yes"), "249")
+  dc <- data.frame(
+    a = factor(c("u", "v", "u", "v", "u")),
+    b = factor(c("v", "v", "u", "u", "u"))
+  )
+  tu <- .il_quiet(table_categorical(dc, select = c(a, b), labels = c(a = "u")))
+  expect_identical(inline(tu, "u", "v"), inline(tu, a, "v"))
+  # Two variables with a level "Yes": the first one was cited.
+  two <- .il_quiet(table_categorical(
+    sochealth,
+    select = c(smoking, physical_activity)
+  ))
+  msg <- conditionMessage(expect_error(
+    inline(two, "Yes", "Yes"),
+    class = "spicy_invalid_input"
+  ))
+  expect_match(
+    msg,
+    "\"physical_activity\": the variable shown as \"physical_activity\".",
+    fixed = TRUE
+  )
+})

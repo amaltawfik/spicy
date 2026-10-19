@@ -363,9 +363,11 @@
 #' default, the respondents of these two kinds that the base holds are
 #' rows of the table, "(No item chosen)" and "(No data for the question)",
 #' with their count and percentage in each group, and the note counts only
-#' those the base leaves out. Declared missing values of a labelled column
-#' (`na_values`, `na_range`) are missing, as under the `user_na = TRUE`
-#' default of [table_categorical()].
+#' those the base leaves out. A row the table adds whose label an item
+#' also displays takes a numbered suffix, `"Respondents_1"` or
+#' `"(No item chosen_1)"`, and the item keeps its label. Declared missing
+#' values of a labelled column (`na_values`, `na_range`) are missing, as
+#' under the `user_na = TRUE` default of [table_categorical()].
 #'
 #' A percentage carries no more digits than its denominator, so a base of
 #' fewer than 100 respondents takes whole percentages (American Medical
