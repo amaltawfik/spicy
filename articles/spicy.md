@@ -430,10 +430,11 @@ test of the items-by-groups table is not valid, since one respondent
 contributes to several cells.
 [`table_multiresponse()`](https://amaltawfik.github.io/spicy/reference/table_multiresponse.md)
 reads the items as one question: one row per item, with the number of
-respondents who chose it and their percentage, then a row with the
-number of respondents. In `sochealth`, the five logical `info_*` items
-answer such a question: the sources of health information used in the
-past 12 months. `labels = TRUE` shows the item wording:
+respondents who chose it and their percentage, a row for those who chose
+none, then a row with the number of respondents. In `sochealth`, the
+five logical `info_*` items answer such a question: the sources of
+health information used in the past 12 months. `labels = TRUE` shows the
+item wording:
 
 ``` r
 
@@ -451,10 +452,11 @@ table_multiresponse(
 #>  Internet, websites or apps            │   523    44.9  
 #>  Family or friends                     │   360    30.9  
 #>  Television, radio or newspapers       │   141    12.1  
+#>  (No item chosen)                      │    67     5.8  
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  Respondents                           │  1164          
 #> 
-#> Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents with data for the question, including 67 with no item chosen (excluded: 36 with no data for the question).
+#> Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents with data for the question (excluded: 36 with no data for the question).
 ```
 
 With `by`, the counts and percentages are given per group and in a
@@ -475,17 +477,18 @@ table_multiresponse(
 )
 #> Multiple responses by sex
 #> 
-#>  Variable        │ Female n  Female %  Male n  Male %  Total n  Total % 
-#> ─────────────────┼──────────────────────────────────────────────────────
-#>  info_doctor     │   377       62.9     344     60.9     721     61.9   
-#>  info_pharmacist │   137       22.9     119     21.1     256     22.0   
-#>  info_internet   │   268       44.7     255     45.1     523     44.9   
-#>  info_family     │   219       36.6     141     25.0     360     30.9   
-#>  info_media      │    78       13.0      63     11.2     141     12.1   
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Respondents     │   599                565             1164            
+#>  Variable         │ Female n  Female %  Male n  Male %  Total n  Total % 
+#> ──────────────────┼──────────────────────────────────────────────────────
+#>  info_doctor      │   377       62.9     344     60.9     721     61.9   
+#>  info_pharmacist  │   137       22.9     119     21.1     256     22.0   
+#>  info_internet    │   268       44.7     255     45.1     523     44.9   
+#>  info_family      │   219       36.6     141     25.0     360     30.9   
+#>  info_media       │    78       13.0      63     11.2     141     12.1   
+#>  (No item chosen) │    31        5.2      36      6.4      67      5.8   
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Respondents      │   599                565             1164            
 #> 
-#> Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents with data for the question, including 67 with no item chosen (excluded: 36 with no data for the question).
+#> Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents with data for the question (excluded: 36 with no data for the question).
 ```
 
 ## Regression tables

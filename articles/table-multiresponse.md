@@ -140,17 +140,18 @@ tbl <- table_multiresponse(
 tbl
 #> Multiple responses by sex
 #> 
-#>  Variable        │ Female n  Female %  Male n  Male %  Total n  Total %    p   
-#> ─────────────────┼─────────────────────────────────────────────────────────────
-#>  info_doctor     │   377       62.9     344     60.9     721     61.9    1.000 
-#>  info_pharmacist │   137       22.9     119     21.1     256     22.0    1.000 
-#>  info_internet   │   268       44.7     255     45.1     523     44.9    1.000 
-#>  info_family     │   219       36.6     141     25.0     360     30.9    <.001 
-#>  info_media      │    78       13.0      63     11.2     141     12.1    1.000 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Respondents     │   599                565             1164                   
+#>  Variable         │ Female n  Female %  Male n  Male %  Total n  Total %    p   
+#> ──────────────────┼─────────────────────────────────────────────────────────────
+#>  info_doctor      │   377       62.9     344     60.9     721     61.9    1.000 
+#>  info_pharmacist  │   137       22.9     119     21.1     256     22.0    1.000 
+#>  info_internet    │   268       44.7     255     45.1     523     44.9    1.000 
+#>  info_family      │   219       36.6     141     25.0     360     30.9    <.001 
+#>  info_media       │    78       13.0      63     11.2     141     12.1    1.000 
+#>  (No item chosen) │    31        5.2      36      6.4      67      5.8     –    
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Respondents      │   599                565             1164                   
 #> 
-#> Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents with data for the question, including 67 with no item chosen (excluded: 36 with no data for the question). Item p-values: Pearson chi-squared test of each item by group. P-values adjusted for 5 tests (Holm method). Overall group comparison: Rao-Scott second-order corrected chi-squared test of multiple marginal independence, χ²(4.61) = 18.78, p = .002.
+#> Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents with data for the question (excluded: 36 with no data for the question). Item p-values: Pearson chi-squared test of each item by group. P-values adjusted for 5 tests (Holm method). Overall group comparison: Rao-Scott second-order corrected chi-squared test of multiple marginal independence, χ²(4.61) = 18.78, p = .002.
 ```
 
 Each percentage is now a share of the respondents of its group, and the
@@ -168,17 +169,18 @@ Without `by`, the table describes the whole sample:
 table_multiresponse(sochealth, select = starts_with("info_"))
 #> Multiple responses
 #> 
-#>  Variable          │   n       %    
-#> ───────────────────┼────────────────
-#>  info_doctor       │   721    61.9  
-#>  info_pharmacist   │   256    22.0  
-#>  info_internet     │   523    44.9  
-#>  info_family       │   360    30.9  
-#>  info_media        │   141    12.1  
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Respondents       │  1164          
+#>  Variable           │   n       %    
+#> ────────────────────┼────────────────
+#>  info_doctor        │   721    61.9  
+#>  info_pharmacist    │   256    22.0  
+#>  info_internet      │   523    44.9  
+#>  info_family        │   360    30.9  
+#>  info_media         │   141    12.1  
+#>  (No item chosen)   │    67     5.8  
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Respondents        │  1164          
 #> 
-#> Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents with data for the question, including 67 with no item chosen (excluded: 36 with no data for the question).
+#> Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents with data for the question (excluded: 36 with no data for the question).
 ```
 
 Four things to notice:
@@ -190,10 +192,13 @@ Four things to notice:
     before rounding, the mean number of choices per respondent times 100
     (Jann, 2005, p. 107).
 3.  **The `Respondents` row is the base**, the number of respondents
-    every percentage is computed on.
+    every percentage is computed on. The `(No item chosen)` row above it
+    counts the 67 of them who answered without choosing a source. Its
+    parentheses, like those of `(Missing)` in
+    [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
+    mark it as not an item.
 4.  **The note says what the percentages sum to** and which respondents
-    form the base: the 67 with no item chosen are in it, and the 36 with
-    no data for the question are not.
+    form the base: the 36 with no data for the question are not in it.
 
 `select` takes tidyselect syntax, so `select = info_doctor:info_media`
 and the five names written in [`c()`](https://rdrr.io/r/base/c.html)
@@ -215,17 +220,18 @@ yes_no <- as.data.frame(lapply(
 table_multiresponse(yes_no, select = everything(), counted = "Yes")
 #> Multiple responses
 #> 
-#>  Variable          │   n       %    
-#> ───────────────────┼────────────────
-#>  info_doctor       │   721    61.9  
-#>  info_pharmacist   │   256    22.0  
-#>  info_internet     │   523    44.9  
-#>  info_family       │   360    30.9  
-#>  info_media        │   141    12.1  
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Respondents       │  1164          
+#>  Variable           │   n       %    
+#> ────────────────────┼────────────────
+#>  info_doctor        │   721    61.9  
+#>  info_pharmacist    │   256    22.0  
+#>  info_internet      │   523    44.9  
+#>  info_family        │   360    30.9  
+#>  info_media         │   141    12.1  
+#>  (No item chosen)   │    67     5.8  
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Respondents        │  1164          
 #> 
-#> Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents with data for the question, including 67 with no item chosen (excluded: 36 with no data for the question).
+#> Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents with data for the question (excluded: 36 with no data for the question).
 ```
 
 `counted` applies to every selected column. Any other non-missing value
@@ -268,10 +274,11 @@ table_multiresponse(
 #>  Family or friends                     │   360    30.9  
 #>  Pharmacist                            │   256    22.0  
 #>  Television, radio or newspapers       │   141    12.1  
+#>  (No item chosen)                      │    67     5.8  
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  Respondents                           │  1164          
 #> 
-#> Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents with data for the question, including 67 with no item chosen (excluded: 36 with no data for the question).
+#> Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents with data for the question (excluded: 36 with no data for the question).
 ```
 
 `"+"` ranks the items by increasing count, and `"name+"` and `"name-"`
@@ -292,13 +299,13 @@ those who chose nothing and those who skipped the question. `sochealth`
 has both: 67 respondents chose no source, and 36 skipped the question.
 
 The default, `base = "valid"`, keeps every respondent with at least one
-non-missing item. It is the base of the first table: the 67 stay, the 36
-leave, and the note gives both counts. Within the base, a missing item
-counts as not chosen, which matters when a respondent skips some items
-and answers others. This is how `expss` counts its valid cases. It is
-also the base of Stata’s `mrtab` with its `include` option (Jann, 2005,
-p. 99). Jann uses that option in his own example, because its list of
-income types “is probably not exhaustive” (pp. 107-108).
+non-missing item. It is the base of the first table: the 67 stay, in
+their own row, and the 36 leave, counted in the note. Within the base, a
+missing item counts as not chosen, which matters when a respondent skips
+some items and answers others. This is how `expss` counts its valid
+cases. It is also the base of Stata’s `mrtab` with its `include` option
+(Jann, 2005, p. 99). Jann uses that option in his own example, because
+its list of income types “is probably not exhaustive” (pp. 107-108).
 
 `base = "answered"` keeps only the respondents who chose at least one
 item:
@@ -341,26 +348,36 @@ correct response is simply ‘none’” (p. 107).
 table_multiresponse(sochealth, select = starts_with("info_"), base = "all")
 #> Multiple responses
 #> 
-#>  Variable          │   n       %    
-#> ───────────────────┼────────────────
-#>  info_doctor       │   721    60.1  
-#>  info_pharmacist   │   256    21.3  
-#>  info_internet     │   523    43.6  
-#>  info_family       │   360    30.0  
-#>  info_media        │   141    11.8  
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Respondents       │  1200          
+#>  Variable                     │   n       %    
+#> ──────────────────────────────┼────────────────
+#>  info_doctor                  │   721    60.1  
+#>  info_pharmacist              │   256    21.3  
+#>  info_internet                │   523    43.6  
+#>  info_family                  │   360    30.0  
+#>  info_media                   │   141    11.8  
+#>  (No item chosen)             │    67     5.6  
+#>  (No data for the question)   │    36     3.0  
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Respondents                  │  1200          
 #> 
-#> Note. Multiple answers possible: percentages can sum to more than 100%. Base: all respondents, including 36 with no data for the question and 67 with no item chosen.
+#> Note. Multiple answers possible: percentages can sum to more than 100%. Base: all respondents.
 ```
 
 The 36 respondents who skipped the question now enter the base, and
-every percentage counts them as choosing nothing. The note still keeps
-them apart from the 67 who chose no source: the base includes 36 with no
-data for the question and 67 with no item chosen.
+every percentage counts them as choosing nothing. The table still keeps
+them apart from the 67 who chose no source: each group has its row,
+`(No data for the question)` and `(No item chosen)`.
 
-The counts are the same under the three bases. The percentages and the
-tests are not. `"valid"` assumes that a skipped question is coded
+These rows count respondents, not answers. Each gives a count and a
+percentage of cases per group, on the base of the column as for an item,
+and appears only when its count is above 0. They take no test and have
+no percentage of responses, so those cells show a dash, and `sort`
+leaves them after the items. Under `"answered"` both groups are outside
+the base and neither row appears. `none_row = FALSE` removes the rows
+and gives their counts in the note instead.
+
+The item counts are the same under the three bases. The percentages and
+the tests are not. `"valid"` assumes that a skipped question is coded
 missing on every item, and that a box left unchecked is coded `FALSE` or
 0, as in `sochealth`. In data that code an unchecked box as missing,
 `"valid"` would drop the respondents who checked nothing. `"all"` keeps
@@ -381,17 +398,18 @@ table_multiresponse(
 )
 #> Multiple responses
 #> 
-#>  Variable          │   n      % of cases    % of responses  
-#> ───────────────────┼────────────────────────────────────────
-#>  info_doctor       │   721       61.9            36.0       
-#>  info_pharmacist   │   256       22.0            12.8       
-#>  info_internet     │   523       44.9            26.1       
-#>  info_family       │   360       30.9            18.0       
-#>  info_media        │   141       12.1             7.0       
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Respondents       │  1164                                  
+#>  Variable           │   n      % of cases    % of responses  
+#> ────────────────────┼────────────────────────────────────────
+#>  info_doctor        │   721       61.9            36.0       
+#>  info_pharmacist    │   256       22.0            12.8       
+#>  info_internet      │   523       44.9            26.1       
+#>  info_family        │   360       30.9            18.0       
+#>  info_media         │   141       12.1             7.0       
+#>  (No item chosen)   │    67        5.8              –        
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Respondents        │  1164                                  
 #> 
-#> Note. Multiple answers possible: percentages of cases can sum to more than 100%, and percentages of responses sum to 100%. Base: respondents with data for the question, including 67 with no item chosen (excluded: 36 with no data for the question).
+#> Note. Multiple answers possible: percentages of cases can sum to more than 100%, and percentages of responses sum to 100%. Base: respondents with data for the question (excluded: 36 with no data for the question).
 ```
 
 The percentages of responses are the shares of the stacked table, and
@@ -437,27 +455,29 @@ table_multiresponse(
 )
 #> Multiple responses by age_group
 #> 
-#>  Variable        │ 25-34 n  25-34 %  35-49 n  35-49 %  50-64 n  50-64 % 
-#> ─────────────────┼──────────────────────────────────────────────────────
-#>  info_doctor     │   27      57.4      36      52.2      33      67.3   
-#>  info_pharmacist │    8      17.0      17      24.6      12      24.5   
-#>  info_internet   │   35      74.5      39      56.5      19      38.8   
-#>  info_family     │   17      36.2      21      30.4      15      30.6   
-#>  info_media      │    3       6.4       6       8.7       4       8.2   
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Respondents     │   47                69                49             
+#>  Variable         │ 25-34 n  25-34 %  35-49 n  35-49 %  50-64 n  50-64 % 
+#> ──────────────────┼──────────────────────────────────────────────────────
+#>  info_doctor      │   27      57.4      36      52.2      33      67.3   
+#>  info_pharmacist  │    8      17.0      17      24.6      12      24.5   
+#>  info_internet    │   35      74.5      39      56.5      19      38.8   
+#>  info_family      │   17      36.2      21      30.4      15      30.6   
+#>  info_media       │    3       6.4       6       8.7       4       8.2   
+#>  (No item chosen) │    2       4.3       5       7.2       0       0.0   
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Respondents      │   47                69                49             
 #> 
-#>  Variable        │ 65-75 n  65-75 %  Total n  Total %    p   
-#> ─────────────────┼───────────────────────────────────────────
-#>  info_doctor     │   22      71.0      118     60.2     .624 
-#>  info_pharmacist │    9      29.0       46     23.5    1.000 
-#>  info_internet   │    3       9.7       96     49.0    <.001 
-#>  info_family     │   10      32.3       63     32.1    1.000 
-#>  info_media      │    7      22.6       20     10.2     .591 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Respondents     │   31                196                   
+#>  Variable         │ 65-75 n  65-75 %  Total n  Total %    p   
+#> ──────────────────┼───────────────────────────────────────────
+#>  info_doctor      │   22      71.0      118     60.2     .624 
+#>  info_pharmacist  │    9      29.0       46     23.5    1.000 
+#>  info_internet    │    3       9.7       96     49.0    <.001 
+#>  info_family      │   10      32.3       63     32.1    1.000 
+#>  info_media       │    7      22.6       20     10.2     .591 
+#>  (No item chosen) │    3       9.7       10      5.1     –    
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Respondents      │   31                196                   
 #> 
-#> Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents with data for the question, including 10 with no item chosen (excluded: 5 with no data for the question). Item p-values: Pearson chi-squared test (info_doctor, info_pharmacist, info_internet, info_family); Fisher exact test (info_media). P-values adjusted for 5 tests (Holm method). Overall group comparison: Rao-Scott second-order corrected chi-squared test of multiple marginal independence, χ²(13.78) = 44.16, p < .001.
+#> Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents with data for the question (excluded: 5 with no data for the question). Item p-values: Pearson chi-squared test (info_doctor, info_pharmacist, info_internet, info_family); Fisher exact test (info_media). P-values adjusted for 5 tests (Holm method). Overall group comparison: Rao-Scott second-order corrected chi-squared test of multiple marginal independence, χ²(13.78) = 44.16, p < .001.
 ```
 
 The note names both tests: the Pearson chi-squared for four items, and
@@ -480,13 +500,14 @@ wide <- table_multiresponse(
   output = "data.frame"
 )
 wide[c("Variable", "test_type", "Chi2", "df", "p", "p_unadjusted")]
-#>          Variable   test_type        Chi2 df            p p_unadjusted
-#> 1     info_doctor chi_squared  0.51997605  1 1.000000e+00 4.708519e-01
-#> 2 info_pharmacist chi_squared  0.55490963  1 1.000000e+00 4.563185e-01
-#> 3   info_internet chi_squared  0.01801149  1 1.000000e+00 8.932390e-01
-#> 4     info_family chi_squared 18.33047265  1 9.285636e-05 1.857127e-05
-#> 5      info_media chi_squared  0.95631714  1 1.000000e+00 3.281165e-01
-#> 6     Respondents        <NA>          NA NA           NA           NA
+#>           Variable   test_type        Chi2 df            p p_unadjusted
+#> 1      info_doctor chi_squared  0.51997605  1 1.000000e+00 4.708519e-01
+#> 2  info_pharmacist chi_squared  0.55490963  1 1.000000e+00 4.563185e-01
+#> 3    info_internet chi_squared  0.01801149  1 1.000000e+00 8.932390e-01
+#> 4      info_family chi_squared 18.33047265  1 9.285636e-05 1.857127e-05
+#> 5       info_media chi_squared  0.95631714  1 1.000000e+00 3.281165e-01
+#> 6 (No item chosen)        <NA>          NA NA           NA           NA
+#> 7      Respondents        <NA>          NA NA           NA           NA
 ```
 
 The `p` column is adjusted by Holm’s method, and `p_unadjusted` keeps
@@ -613,18 +634,19 @@ with_empty <- transform(
 table_multiresponse(with_empty, select = starts_with("info_"), by = sex)
 #> Multiple responses by sex
 #> 
-#>  Variable        │ Female n  Female %  Male n  Male %  Total n  Total %    p   
-#> ─────────────────┼─────────────────────────────────────────────────────────────
-#>  info_doctor     │   377       62.9     344     60.9     721     61.9    1.000 
-#>  info_pharmacist │   137       22.9     119     21.1     256     22.0    1.000 
-#>  info_internet   │   268       44.7     255     45.1     523     44.9    1.000 
-#>  info_family     │   219       36.6     141     25.0     360     30.9    <.001 
-#>  info_media      │    78       13.0      63     11.2     141     12.1    1.000 
-#>  info_other      │     0        0.0       0      0.0       0      0.0     –    
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Respondents     │   599                565             1164                   
+#>  Variable         │ Female n  Female %  Male n  Male %  Total n  Total %    p   
+#> ──────────────────┼─────────────────────────────────────────────────────────────
+#>  info_doctor      │   377       62.9     344     60.9     721     61.9    1.000 
+#>  info_pharmacist  │   137       22.9     119     21.1     256     22.0    1.000 
+#>  info_internet    │   268       44.7     255     45.1     523     44.9    1.000 
+#>  info_family      │   219       36.6     141     25.0     360     30.9    <.001 
+#>  info_media       │    78       13.0      63     11.2     141     12.1    1.000 
+#>  info_other       │     0        0.0       0      0.0       0      0.0     –    
+#>  (No item chosen) │    31        5.2      36      6.4      67      5.8     –    
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Respondents      │   599                565             1164                   
 #> 
-#> Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents with data for the question, including 67 with no item chosen (excluded: 36 with no data for the question). Item p-values: Pearson chi-squared test of each item by group. P-values adjusted for 5 tests (Holm method). Not tested (no variation, shown as –): info_other. Overall group comparison: Rao-Scott second-order corrected chi-squared test of multiple marginal independence, χ²(4.61) = 18.78, p = .002.
+#> Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents with data for the question (excluded: 36 with no data for the question). Item p-values: Pearson chi-squared test of each item by group. P-values adjusted for 5 tests (Holm method). Not tested (no variation, shown as –): info_other. Overall group comparison: Rao-Scott second-order corrected chi-squared test of multiple marginal independence, χ²(4.61) = 18.78, p = .002.
 ```
 
 Its row shows a true zero and its `p` cell a dash, which the note
@@ -656,17 +678,18 @@ table_multiresponse(
 )
 #> Multiple responses by sex
 #> 
-#>  Variable        │ Female n  Female %  Male n  Male %  Total n  Total % 
-#> ─────────────────┼──────────────────────────────────────────────────────
-#>  info_doctor     │    21        52       19      49      40       51    
-#>  info_pharmacist │    11        28        8      21      19       24    
-#>  info_internet   │    19        48       25      64      44       56    
-#>  info_family     │    11        28        5      13      16       20    
-#>  info_media      │     5        12        5      13      10       13    
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Respondents     │    40                 39              79             
+#>  Variable         │ Female n  Female %  Male n  Male %  Total n  Total % 
+#> ──────────────────┼──────────────────────────────────────────────────────
+#>  info_doctor      │    21        52       19      49      40       51    
+#>  info_pharmacist  │    11        28        8      21      19       24    
+#>  info_internet    │    19        48       25      64      44       56    
+#>  info_family      │    11        28        5      13      16       20    
+#>  info_media       │     5        12        5      13      10       13    
+#>  (No item chosen) │     3         8        4      10       7        9    
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Respondents      │    40                 39              79             
 #> 
-#> Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents with data for the question, including 7 with no item chosen (excluded: 1 with no data for the question).
+#> Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents with data for the question (excluded: 1 with no data for the question).
 ```
 
 `statistic` stays independent of `p_value`, so `statistic = TRUE` would
@@ -740,19 +763,21 @@ note and in `glance()`.
 ## Downstream: the raw frame and the broom views
 
 `output = "data.frame"` returns the wide frame at full precision: one
-row per item, a last row with the base, and columns named after the
-groups:
+row per item, the `(No item chosen)` row, a last row with the base, and
+columns named after the groups. `.row_role` tells the rows apart:
+`"summary"` for an item, `"none"` and `"missing"` for the two rows of
+`none_row`, `"fit_stat"` for the base:
 
 ``` r
 
 names(wide)
-#>  [1] "Variable"     "Female n"     "Female %"     "Male n"       "Male %"      
-#>  [6] "Total n"      "Total %"      "test_type"    "Chi2"         "df"          
-#> [11] "p"            "p_unadjusted"
+#>  [1] "Variable"     ".row_role"    "Female n"     "Female %"     "Male n"      
+#>  [6] "Male %"       "Total n"      "Total %"      "test_type"    "Chi2"        
+#> [11] "df"           "p"            "p_unadjusted"
 ```
 
-`output = "long"` returns one row per item and group, with the base of
-the group:
+`output = "long"` returns one row per item, or row of `none_row`, and
+group, with the base of the group:
 
 ``` r
 
@@ -763,18 +788,22 @@ long <- table_multiresponse(
   output = "long"
 )
 head(long, 3)
-#>      variable  group   n base      pct   test_type      chi2 df p p_unadjusted
-#> 1 info_doctor Female 377  599 62.93823 chi_squared 0.5199761  1 1    0.4708519
-#> 2 info_doctor   Male 344  565 60.88496 chi_squared 0.5199761  1 1    0.4708519
-#> 3 info_doctor  Total 721 1164 61.94158 chi_squared 0.5199761  1 1    0.4708519
+#>      variable .row_role  group   n base      pct   test_type      chi2 df p
+#> 1 info_doctor   summary Female 377  599 62.93823 chi_squared 0.5199761  1 1
+#> 2 info_doctor   summary   Male 344  565 60.88496 chi_squared 0.5199761  1 1
+#> 3 info_doctor   summary  Total 721 1164 61.94158 chi_squared 0.5199761  1 1
+#>   p_unadjusted
+#> 1    0.4708519
+#> 2    0.4708519
+#> 3    0.4708519
 ```
 
 Both frames carry the note in `attr(x, "note")` and the global test in
 `attr(x, "global_test")`.
 
-`tidy()` returns one row per item and group, the margin flagged by
-`total`, with the proportions of respondents and of responses.
-`glance()` returns one row for the question:
+`tidy()` returns one row per item and group, the items only, the margin
+flagged by `total`, with the proportions of respondents and of
+responses. `glance()` returns one row for the question:
 
 ``` r
 
@@ -855,7 +884,8 @@ tests.
 
 [`table_multiresponse()`](https://amaltawfik.github.io/spicy/reference/table_multiresponse.md)
 makes its four choices explicit: percentages of cases, the `"valid"`
-base with both counts in the note, items nobody chose kept at zero, and
+base with a row for the respondents who chose nothing and the count of
+those who skipped in the note, items nobody chose kept at zero, and
 Holm-adjusted item tests with a Rao-Scott global test.
 
 ## Output engines
@@ -909,17 +939,18 @@ table_multiresponse(
 )
 #> Multiple responses by sex
 #> 
-#>  Variable        │ Female n  Female %  Male n  Male %  Total n  Total %    p   
-#> ─────────────────┼─────────────────────────────────────────────────────────────
-#>  info_doctor     │   377       62.9     344     60.9     721     61.9    1.00  
-#>  info_pharmacist │   137       22.9     119     21.1     256     22.0    1.00  
-#>  info_internet   │   268       44.7     255     45.1     523     44.9    1.00  
-#>  info_family     │   219       36.6     141     25.0     360     30.9    <.001 
-#>  info_media      │    78       13.0      63     11.2     141     12.1    1.00  
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Respondents     │   599                565             1164                   
+#>  Variable         │ Female n  Female %  Male n  Male %  Total n  Total %    p   
+#> ──────────────────┼─────────────────────────────────────────────────────────────
+#>  info_doctor      │   377       62.9     344     60.9     721     61.9    1.00  
+#>  info_pharmacist  │   137       22.9     119     21.1     256     22.0    1.00  
+#>  info_internet    │   268       44.7     255     45.1     523     44.9    1.00  
+#>  info_family      │   219       36.6     141     25.0     360     30.9    <.001 
+#>  info_media       │    78       13.0      63     11.2     141     12.1    1.00  
+#>  (No item chosen) │    31        5.2      36      6.4      67      5.8     –    
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Respondents      │   599                565             1164                   
 #> 
-#> Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents with data for the question, including 67 with no item chosen (excluded: 36 with no data for the question). Item p-values: Pearson chi-squared test of each item by group. P-values adjusted for 5 tests (Holm method). Overall group comparison: Rao-Scott second-order corrected chi-squared test of multiple marginal independence, χ²(4.61) = 18.78, p = .002.
+#> Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents with data for the question (excluded: 36 with no data for the question). Item p-values: Pearson chi-squared test of each item by group. P-values adjusted for 5 tests (Holm method). Overall group comparison: Rao-Scott second-order corrected chi-squared test of multiple marginal independence, χ²(4.61) = 18.78, p = .002.
 ```
 
 ## Rendered output
@@ -941,12 +972,11 @@ pkgdown_dark_gt(
 [TABLE]
 
 *Note.* Multiple answers possible: percentages can sum to more than
-100%. Base: respondents with data for the question, including 67 with no
-item chosen (excluded: 36 with no data for the question). Item p-values:
-Pearson chi-squared test of each item by group. P-values adjusted for 5
-tests (Holm method). Overall group comparison: Rao-Scott second-order
-corrected chi-squared test of multiple marginal independence, χ²(4.61) =
-18.78, p = .002.
+100%. Base: respondents with data for the question (excluded: 36 with no
+data for the question). Item p-values: Pearson chi-squared test of each
+item by group. P-values adjusted for 5 tests (Holm method). Overall
+group comparison: Rao-Scott second-order corrected chi-squared test of
+multiple marginal independence, χ²(4.61) = 18.78, p = .002.
 
 ``` r
 
@@ -969,10 +999,11 @@ table_multiresponse(
 | Internet, websites or apps | 268 | 44.7 | 24.8 | 255 | 45.1 | 27.7 |  523 | 44.9 | 26.1 |
 | Family or friends | 219 | 36.6 | 20.3 | 141 | 25.0 | 15.3 |  360 | 30.9 | 18.0 |
 | Television, radio or newspapers |  78 | 13.0 |  7.2 |  63 | 11.2 |  6.8 |  141 | 12.1 |  7.0 |
+| (No item chosen) |  31 |  5.2 |   –  |  36 |  6.4 |   –  |   67 |  5.8 |   –  |
 | Respondents | 599 |      |      | 565 |      |      | 1164 |      |      |
-| *Note.* Multiple answers possible: percentages of cases can sum to more than 100%, and percentages of responses sum to 100%. Base: respondents with data for the question, including 67 with no item chosen (excluded: 36 with no data for the question). |  |  |  |  |  |  |  |  |  |
+| *Note.* Multiple answers possible: percentages of cases can sum to more than 100%, and percentages of responses sum to 100%. Base: respondents with data for the question (excluded: 36 with no data for the question). |  |  |  |  |  |  |  |  |  |
 
-Multiple responses by Sex {#tinytable_7r83i33kvi35v8lc5edh .table
+Multiple responses by Sex {#tinytable_p6w5tpyww8g73frl5j9i .table
 .tinytable style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 
@@ -983,8 +1014,9 @@ quarto-disable-processing="true"}
   for single-response variables, one block of levels per variable.
 - [*The structured
   view*](https://amaltawfik.github.io/spicy/articles/as-structured.md)
-  for the typed view behind this table: one `summary` row per item, and
-  the base as a `fit_stat` row whose `.variable` is `"nobs"`.
+  for the typed view behind this table: one `summary` row per item, a
+  `none` row for the respondents who chose nothing, and the base as a
+  `fit_stat` row whose `.variable` is `"nobs"`.
 - [*Summary tables for
   reporting*](https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.md)
   for the cross-function reporting workflow and the journal styles.

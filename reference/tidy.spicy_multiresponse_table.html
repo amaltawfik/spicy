@@ -107,7 +107,8 @@ object returned by <code><a href="table_multiresponse.html">table_multiresponse(
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p><code>tidy()</code> returns one row per (item x group), the margin included and
-flagged. Columns: <code>variable</code> (the item's column), <code>label</code> (its
+flagged, and the items only: the rows of <code>none_row</code> and the base row
+are left out. Columns: <code>variable</code> (the item's column), <code>label</code> (its
 displayed label), <code>group</code> (the <code>by</code> level or the margin, <code>NA</code> without
 <code>by</code>), <code>total</code> (whether the row is the margin), <code>n</code> (the respondents who
 chose the item), <code>base</code> (the respondents of the group's base),

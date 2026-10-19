@@ -149,14 +149,15 @@ PDF.
   count and the percentage of respondents who chose it (or of responses,
   or both), and a row with the number of respondents. The note gives the
   base and counts, in it or out of it, the respondents with no data for
-  the question and those with no item chosen. With `by`, each item gets
-  a chi-squared test, or Fisher’s exact test where an expected count is
-  below 5 (`test`), adjusted by Holm by default (`p_adjust`), and the
-  question a global test that allows for several answers per respondent,
-  Rao-Scott corrected or by bootstrap (`global_test`). `p_value = FALSE`
-  removes the p-values and the global test, and `statistic = TRUE` shows
-  each item’s chi-squared. `glance()` reports the Rao-Scott
-  design-effect summary (`rs_cv`).
+  the question and those with no item chosen, those in the base shown
+  instead as rows of their own by default (`none_row`). With `by`, each
+  item gets a chi-squared test, or Fisher’s exact test where an expected
+  count is below 5 (`test`), adjusted by Holm by default (`p_adjust`),
+  and the question a global test that allows for several answers per
+  respondent, Rao-Scott corrected or by bootstrap (`global_test`).
+  `p_value = FALSE` removes the p-values and the global test, and
+  `statistic = TRUE` shows each item’s chi-squared. `glance()` reports
+  the Rao-Scott design-effect summary (`rs_cv`).
   [`inline()`](https://amaltawfik.github.io/spicy/reference/inline.md)
   cites its cells, a group selected with `model` and the base row as
   `"nobs"`. The article *Multiple-response questions* on the site walks

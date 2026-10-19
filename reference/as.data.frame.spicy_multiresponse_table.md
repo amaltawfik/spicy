@@ -47,7 +47,8 @@ A plain `data.frame` (or `tbl_df`).
 The returned data is identical to what `output = "data.frame"` returns
 directly from
 [`table_multiresponse()`](https://amaltawfik.github.io/spicy/reference/table_multiresponse.md):
-one row per item, then the base.
+one row per item, the rows of `none_row`, then the base, told apart by
+`.row_role`.
 
 ## See also
 

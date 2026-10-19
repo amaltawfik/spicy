@@ -153,11 +153,12 @@ row); <code>NA</code> outside a factor.</p></li>
 <code>"factor_header"</code>, <code>"level"</code>, <code>"reference"</code>, <code>"fit_stat"</code>,
 <code>"outcome"</code>, <code>"vc"</code> (variance component) in a regression table,
 plus <code>"summary"</code> (a row summarizing one variable), <code>"group"</code> (a
-row keyed by one level of <code>by</code>) and <code>"missing"</code> (a row keyed by
-the <em>missing</em> value) in the descriptive ones. The role is the
-key a consumer matches on: <code>"(Missing)"</code> is a display label –
-auto-renamed on collision, translatable – and the role survives
-both.</p></li>
+row keyed by one level of <code>by</code>), <code>"missing"</code> (a row keyed by
+the <em>missing</em> value) and <code>"none"</code> (the respondents who chose no
+item of a multiple-response question) in the descriptive ones. The
+role is the key a consumer matches on: <code>"(Missing)"</code> is a display
+label – auto-renamed on collision, translatable – and the role
+survives both.</p></li>
 <li><p><code>body$.indent</code> – display indent depth of the label (<code>0</code> or <code>1</code>).
 Renderers indent <code>.indent &gt; 0</code> rows; the label text itself is
 already indented in the character body only.</p></li>
@@ -224,11 +225,14 @@ Tokens: <code>"emmean"</code> (a marginal mean; the column says which level
 in <code>col_meta$&lt;col&gt;$level</code>), <code>"delta"</code> (the contrast), <code>"b"</code> (a
 numeric predictor's slope), <code>"ci"</code>, <code>"statistic"</code>, <code>"p"</code>,
 <code>"r2"</code>, <code>"es"</code>, <code>"n"</code>, <code>"weighted_n"</code>.</p></li>
-<li><p><code><a href="table_multiresponse.html">table_multiresponse()</a></code> – one <code>"summary"</code> row per item, then one
-<code>"fit_stat"</code> row (<code>.variable == "nobs"</code>) holding the respondents of
-each group. Tokens: <code>"n"</code>, <code>"pct"</code> (percentage of cases),
-<code>"pct_responses"</code> (percentage of responses), <code>"statistic"</code> and
-<code>"p"</code>. Each group owns its columns under its own spanner, and the
+<li><p><code><a href="table_multiresponse.html">table_multiresponse()</a></code> – one <code>"summary"</code> row per item, then the
+rows of <code>none_row</code>: a <code>"none"</code> row (<code>.variable == "none"</code>) for the
+respondents of the base with no item chosen and a <code>"missing"</code> row
+(<code>.variable == "no_data"</code>) for those with no data for the question,
+then one <code>"fit_stat"</code> row (<code>.variable == "nobs"</code>) holding the
+respondents of each group. Tokens: <code>"n"</code>, <code>"pct"</code> (percentage of
+cases), <code>"pct_responses"</code> (percentage of responses), <code>"statistic"</code>
+and <code>"p"</code>. Each group owns its columns under its own spanner, and the
 margin is flagged <code>col_meta$&lt;col&gt;$total</code>.</p></li>
 </ul><p>Cells the console builds from more than one number – a
 <code>"Med [Q1, Q3]"</code>, a test gloss, an effect size with its interval –
@@ -266,8 +270,9 @@ that produced it. An object carrying a <em>newer</em> contract than the
 spicy reading it is refused as well.</p>
 <p>Version <code>3</code> also opened the accessor to the descriptive families,
 which had no typed view before: <code>.row_role</code> gained <code>"summary"</code>,
-<code>"group"</code> and <code>"missing"</code>. The vocabulary is extended by addition
-– an existing role never changes meaning.</p>
+<code>"group"</code> and <code>"missing"</code>, then <code>"none"</code> with <code><a href="table_multiresponse.html">table_multiresponse()</a></code>.
+The vocabulary is extended by addition – an existing role never
+changes meaning.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>

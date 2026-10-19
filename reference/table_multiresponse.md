@@ -1,9 +1,11 @@
 # Multiple-response summary table
 
 Tabulates a "check all that apply" question: one row per item, with the
-number of respondents who chose it and their percentage, then a row with
-the number of respondents the percentages are computed on. The items are
-the indicator columns of the question, selected with tidyselect syntax.
+number of respondents who chose it and their percentage, a row for the
+respondents who chose none of the items when there are any (see
+`none_row`), then a row with the number of respondents the percentages
+are computed on. The items are the indicator columns of the question,
+selected with tidyselect syntax.
 
 With `by`, the counts and percentages are given per group and in a
 `Total` margin, each item gets a test across the groups (the
@@ -26,6 +28,7 @@ table_multiresponse(
   counted = NULL,
   percent = c("cases", "responses", "both"),
   base = c("valid", "answered", "all"),
+  none_row = TRUE,
   sort = c("", "+", "-", "name+", "name-"),
   test = c("auto", "chisq", "fisher", "midp", "n1"),
   p_value = NULL,
@@ -120,6 +123,21 @@ table_multiresponse(
   keeps the filtered respondents in the base: recode it to `NA` first
   (SPSS user-missing values declared as such are already read as
   missing).
+
+- none_row:
+
+  Logical. If `TRUE` (the default), the respondents of the base who
+  chose no item get a row of their own, after the items and before the
+  `Respondents` row: "(No item chosen)" under `base = "valid"` and
+  `"all"`, and, under `"all"`, "(No data for the question)" for the
+  respondents with every indicator missing. Each row appears only when
+  its count is above 0. `base = "answered"` leaves both groups out of
+  the base and shows neither row. A row gives the count and the
+  percentage of cases of each group and of the margin, on the base of
+  the column, as the items do. Its percentage of responses and its test
+  cells show a dash: these respondents gave no answer, and the rows take
+  no part in the tests or in `sort`. The note then no longer counts the
+  respondents a row shows. `FALSE` gives these counts in the note only.
 
 - sort:
 
@@ -332,11 +350,15 @@ Depends on `output`:
   as attributes (S3 class `"spicy_multiresponse_table"`), returned
   visibly, so a bare call prints the ASCII table.
 
-- `"data.frame"`: a wide `data.frame` with one row per item and a last
-  row with the base. Columns: `Variable`, then the count and the
-  percentage of each group of `by` and of the `Total` margin
-  (`<group> n` and `<group> \%`, or `<group> \% of cases` and
-  `<group> \% of responses` under `percent = "both"`; `n` and `\%`
+- `"data.frame"`: a wide `data.frame` with one row per item, the rows of
+  `none_row`, and a last row with the base. Columns: `Variable`,
+  `.row_role` (what the row is: `"summary"` for an item, `"none"` for
+  "(No item chosen)", `"missing"` for "(No data for the question)",
+  `"fit_stat"` for the base, the roles of
+  [`as_structured()`](https://amaltawfik.github.io/spicy/reference/as_structured.md)),
+  then the count and the percentage of each group of `by` and of the
+  `Total` margin (`<group> n` and `<group> \%`, or `<group> \% of cases`
+  and `<group> \% of responses` under `percent = "both"`; `n` and `\%`
   without `by`), then `test_type`, `Chi2` and `df` when the item tests
   ran (for `p_value` or for `statistic`), `p` with `p_value`, and
   `p_unadjusted` under an adjustment. `test_type` names the test of each
@@ -344,9 +366,11 @@ Depends on `output`:
   [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
   (`"chi_squared"`, `"n1_chi_squared"`, `"fisher_exact"`,
   `"fisher_midp"`, `"fisher_exact_mc"`), and `Chi2` and `df` are `NA`
-  for an item tested by an exact test.
+  for an item tested by an exact test. The rows of `none_row` are `NA`
+  in the percentage of responses and in the test columns.
 
-- `"long"`: one row per item and group, with columns `variable`, `group`
+- `"long"`: one row per item and group, then one per row of `none_row`
+  and group, with columns `variable`, `.row_role` as above, `group`
   (with `by`), `n`, `base` (the respondents of the group), `pct` (or
   `pct_cases` and `pct_responses`), and `test_type`, `chi2`, `df`, `p`,
   and `p_unadjusted` as above.
@@ -368,7 +392,10 @@ The default object and the data frames carry the note as printed in
 `global_test = "rs2"`), and `boot_redraws` (the resamples drawn again
 under `global_test = "bootstrap"`); see *Tests*.
 [`as_structured()`](https://amaltawfik.github.io/spicy/reference/as_structured.md)
-reads the default object.
+reads the default object, with the same `.row_role` and a `.variable` of
+`"none"` and `"no_data"` on the rows of `none_row`;
+[tidy()](https://amaltawfik.github.io/spicy/reference/tidy.spicy_multiresponse_table.md)
+reads the items only.
 
 ## Tests
 
@@ -489,7 +516,11 @@ the respondents with no data for the question (every indicator missing)
 and those with no item chosen (data, but no item chosen). The base holds
 the second and leaves out the first under `"valid"`, leaves out both
 under `"answered"`, and holds both under `"all"`; a count of zero is not
-mentioned. Declared missing values of a labelled column (`na_values`,
+mentioned. Under `none_row = TRUE`, the default, the respondents of
+these two kinds that the base holds are rows of the table, "(No item
+chosen)" and "(No data for the question)", with their count and
+percentage in each group, and the note counts only those the base leaves
+out. Declared missing values of a labelled column (`na_values`,
 `na_range`) are missing, as under the `user_na = TRUE` default of
 [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md).
 
@@ -554,17 +585,18 @@ questions](https://amaltawfik.github.io/spicy/articles/table-multiresponse.html)
 table_multiresponse(sochealth, select = starts_with("info_"))
 #> Multiple responses
 #> 
-#>  Variable          │   n       %    
-#> ───────────────────┼────────────────
-#>  info_doctor       │   721    61.9  
-#>  info_pharmacist   │   256    22.0  
-#>  info_internet     │   523    44.9  
-#>  info_family       │   360    30.9  
-#>  info_media        │   141    12.1  
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Respondents       │  1164          
+#>  Variable           │   n       %    
+#> ────────────────────┼────────────────
+#>  info_doctor        │   721    61.9  
+#>  info_pharmacist    │   256    22.0  
+#>  info_internet      │   523    44.9  
+#>  info_family        │   360    30.9  
+#>  info_media         │   141    12.1  
+#>  (No item chosen)   │    67     5.8  
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Respondents        │  1164          
 #> 
-#> Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents with data for the question, including 67 with no item chosen (excluded: 36 with no data for the question).
+#> Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents with data for the question (excluded: 36 with no data for the question).
 
 # The labels of the items, sorted by decreasing count.
 table_multiresponse(
@@ -582,10 +614,11 @@ table_multiresponse(
 #>  Family or friends                     │   360    30.9  
 #>  Pharmacist                            │   256    22.0  
 #>  Television, radio or newspapers       │   141    12.1  
+#>  (No item chosen)                      │    67     5.8  
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  Respondents                           │  1164          
 #> 
-#> Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents with data for the question, including 67 with no item chosen (excluded: 36 with no data for the question).
+#> Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents with data for the question (excluded: 36 with no data for the question).
 
 # By age group: a test per item and a global test of the question.
 table_multiresponse(
@@ -595,27 +628,29 @@ table_multiresponse(
 )
 #> Multiple responses by age_group
 #> 
-#>  Variable        │ 25-34 n  25-34 %  35-49 n  35-49 %  50-64 n  50-64 % 
-#> ─────────────────┼──────────────────────────────────────────────────────
-#>  info_doctor     │   113     48.5      208     55.6      215     67.8   
-#>  info_pharmacist │    53     22.7       74     19.8       69     21.8   
-#>  info_internet   │   156     67.0      200     53.5      109     34.4   
-#>  info_family     │    72     30.9      119     31.8       99     31.2   
-#>  info_media      │     9      3.9       36      9.6       41     12.9   
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Respondents     │   233               374               317            
+#>  Variable         │ 25-34 n  25-34 %  35-49 n  35-49 %  50-64 n  50-64 % 
+#> ──────────────────┼──────────────────────────────────────────────────────
+#>  info_doctor      │   113     48.5      208     55.6      215     67.8   
+#>  info_pharmacist  │    53     22.7       74     19.8       69     21.8   
+#>  info_internet    │   156     67.0      200     53.5      109     34.4   
+#>  info_family      │    72     30.9      119     31.8       99     31.2   
+#>  info_media       │     9      3.9       36      9.6       41     12.9   
+#>  (No item chosen) │    12      5.2       22      5.9       22      6.9   
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Respondents      │   233               374               317            
 #> 
-#>  Variable        │ 65-75 n  65-75 %  Total n  Total %    p   
-#> ─────────────────┼───────────────────────────────────────────
-#>  info_doctor     │   185     77.1      721     61.9    <.001 
-#>  info_pharmacist │    60     25.0      256     22.0     .982 
-#>  info_internet   │    58     24.2      523     44.9    <.001 
-#>  info_family     │    70     29.2      360     30.9     .982 
-#>  info_media      │    55     22.9      141     12.1    <.001 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Respondents     │   240              1164                   
+#>  Variable         │ 65-75 n  65-75 %  Total n  Total %    p   
+#> ──────────────────┼───────────────────────────────────────────
+#>  info_doctor      │   185     77.1      721     61.9    <.001 
+#>  info_pharmacist  │    60     25.0      256     22.0     .982 
+#>  info_internet    │    58     24.2      523     44.9    <.001 
+#>  info_family      │    70     29.2      360     30.9     .982 
+#>  info_media       │    55     22.9      141     12.1    <.001 
+#>  (No item chosen) │    11      4.6       67      5.8     –    
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Respondents      │   240              1164                   
 #> 
-#> Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents with data for the question, including 67 with no item chosen (excluded: 36 with no data for the question). Item p-values: Pearson chi-squared test of each item by group. P-values adjusted for 5 tests (Holm method). Overall group comparison: Rao-Scott second-order corrected chi-squared test of multiple marginal independence, χ²(14.40) = 203.03, p < .001.
+#> Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents with data for the question (excluded: 36 with no data for the question). Item p-values: Pearson chi-squared test of each item by group. P-values adjusted for 5 tests (Holm method). Overall group comparison: Rao-Scott second-order corrected chi-squared test of multiple marginal independence, χ²(14.40) = 203.03, p < .001.
 
 # A descriptive table by sex, on the respondents who chose at least one
 # source: percentages of cases and of responses, no tests.
@@ -669,17 +704,18 @@ yes_no <- as.data.frame(lapply(
 table_multiresponse(yes_no, select = everything(), counted = "Yes")
 #> Multiple responses
 #> 
-#>  Variable          │   n       %    
-#> ───────────────────┼────────────────
-#>  info_doctor       │   721    61.9  
-#>  info_pharmacist   │   256    22.0  
-#>  info_internet     │   523    44.9  
-#>  info_family       │   360    30.9  
-#>  info_media        │   141    12.1  
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Respondents       │  1164          
+#>  Variable           │   n       %    
+#> ────────────────────┼────────────────
+#>  info_doctor        │   721    61.9  
+#>  info_pharmacist    │   256    22.0  
+#>  info_internet      │   523    44.9  
+#>  info_family        │   360    30.9  
+#>  info_media         │   141    12.1  
+#>  (No item chosen)   │    67     5.8  
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Respondents        │  1164          
 #> 
-#> Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents with data for the question, including 67 with no item chosen (excluded: 36 with no data for the question).
+#> Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents with data for the question (excluded: 36 with no data for the question).
 
 # Bootstrap global test: set a seed to reproduce its p-value.
 set.seed(1)
@@ -692,17 +728,18 @@ table_multiresponse(
 )
 #> Multiple responses by sex
 #> 
-#>  Variable        │ Female n  Female %  Male n  Male %  Total n  Total %    p   
-#> ─────────────────┼─────────────────────────────────────────────────────────────
-#>  info_doctor     │   377       62.9     344     60.9     721     61.9    1.000 
-#>  info_pharmacist │   137       22.9     119     21.1     256     22.0    1.000 
-#>  info_internet   │   268       44.7     255     45.1     523     44.9    1.000 
-#>  info_family     │   219       36.6     141     25.0     360     30.9    <.001 
-#>  info_media      │    78       13.0      63     11.2     141     12.1    1.000 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Respondents     │   599                565             1164                   
+#>  Variable         │ Female n  Female %  Male n  Male %  Total n  Total %    p   
+#> ──────────────────┼─────────────────────────────────────────────────────────────
+#>  info_doctor      │   377       62.9     344     60.9     721     61.9    1.000 
+#>  info_pharmacist  │   137       22.9     119     21.1     256     22.0    1.000 
+#>  info_internet    │   268       44.7     255     45.1     523     44.9    1.000 
+#>  info_family      │   219       36.6     141     25.0     360     30.9    <.001 
+#>  info_media       │    78       13.0      63     11.2     141     12.1    1.000 
+#>  (No item chosen) │    31        5.2      36      6.4      67      5.8     –    
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Respondents      │   599                565             1164                   
 #> 
-#> Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents with data for the question, including 67 with no item chosen (excluded: 36 with no data for the question). Item p-values: Pearson chi-squared test of each item by group. P-values adjusted for 5 tests (Holm method). Overall group comparison: bootstrap test of multiple marginal independence (999 resamples), χ² = 20.38, p = .002.
+#> Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents with data for the question (excluded: 36 with no data for the question). Item p-values: Pearson chi-squared test of each item by group. P-values adjusted for 5 tests (Holm method). Overall group comparison: bootstrap test of multiple marginal independence (999 resamples), χ² = 20.38, p = .002.
 
 # Wide data frame.
 table_multiresponse(
@@ -711,20 +748,22 @@ table_multiresponse(
   by = sex,
   output = "data.frame"
 )
-#>          Variable Female n Female % Male n   Male % Total n  Total %
-#> 1     info_doctor      377 62.93823    344 60.88496     721 61.94158
-#> 2 info_pharmacist      137 22.87145    119 21.06195     256 21.99313
-#> 3   info_internet      268 44.74124    255 45.13274     523 44.93127
-#> 4     info_family      219 36.56093    141 24.95575     360 30.92784
-#> 5      info_media       78 13.02170     63 11.15044     141 12.11340
-#> 6     Respondents      599       NA    565       NA    1164       NA
-#>     test_type        Chi2 df            p p_unadjusted
-#> 1 chi_squared  0.51997605  1 1.000000e+00 4.708519e-01
-#> 2 chi_squared  0.55490963  1 1.000000e+00 4.563185e-01
-#> 3 chi_squared  0.01801149  1 1.000000e+00 8.932390e-01
-#> 4 chi_squared 18.33047265  1 9.285636e-05 1.857127e-05
-#> 5 chi_squared  0.95631714  1 1.000000e+00 3.281165e-01
-#> 6        <NA>          NA NA           NA           NA
+#>           Variable .row_role Female n  Female % Male n    Male % Total n
+#> 1      info_doctor   summary      377 62.938230    344 60.884956     721
+#> 2  info_pharmacist   summary      137 22.871452    119 21.061947     256
+#> 3    info_internet   summary      268 44.741235    255 45.132743     523
+#> 4      info_family   summary      219 36.560935    141 24.955752     360
+#> 5       info_media   summary       78 13.021703     63 11.150442     141
+#> 6 (No item chosen)      none       31  5.175292     36  6.371681      67
+#> 7      Respondents  fit_stat      599        NA    565        NA    1164
+#>     Total %   test_type        Chi2 df            p p_unadjusted
+#> 1 61.941581 chi_squared  0.51997605  1 1.000000e+00 4.708519e-01
+#> 2 21.993127 chi_squared  0.55490963  1 1.000000e+00 4.563185e-01
+#> 3 44.931271 chi_squared  0.01801149  1 1.000000e+00 8.932390e-01
+#> 4 30.927835 chi_squared 18.33047265  1 9.285636e-05 1.857127e-05
+#> 5 12.113402 chi_squared  0.95631714  1 1.000000e+00 3.281165e-01
+#> 6  5.756014        <NA>          NA NA           NA           NA
+#> 7        NA        <NA>          NA NA           NA           NA
 
 # \donttest{
 if (requireNamespace("tinytable", quietly = TRUE)) {

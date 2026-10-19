@@ -6,10 +6,11 @@
     }
   };
 </script><script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/IBM_Plex_Sans-0.4.10/font.css" rel="stylesheet"><link href="../deps/IBM_Plex_Mono-0.4.10/font.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet"><meta property="og:title" content="Multiple-response summary table — table_multiresponse"><meta name="description" content="Tabulates a &quot;check all that apply&quot; question: one row per item, with the
-number of respondents who chose it and their percentage, then a row
-with the number of respondents the percentages are computed on. The
-items are the indicator columns of the question, selected with
-tidyselect syntax.
+number of respondents who chose it and their percentage, a row for the
+respondents who chose none of the items when there are any (see
+none_row), then a row with the number of respondents the percentages
+are computed on. The items are the indicator columns of the question,
+selected with tidyselect syntax.
 With by, the counts and percentages are given per group and in a
 Total margin, each item gets a test across the groups (the
 chi-squared, or Fisher's exact test when an expected count is below 5),
@@ -20,10 +21,11 @@ table (&quot;default&quot;), a wide or long numeric data.frame
 (&quot;data.frame&quot;, &quot;long&quot;), or publication-ready tables
 (&quot;tinytable&quot;, &quot;gt&quot;, &quot;flextable&quot;, &quot;excel&quot;, &quot;clipboard&quot;,
 &quot;word&quot;)."><meta property="og:description" content="Tabulates a &quot;check all that apply&quot; question: one row per item, with the
-number of respondents who chose it and their percentage, then a row
-with the number of respondents the percentages are computed on. The
-items are the indicator columns of the question, selected with
-tidyselect syntax.
+number of respondents who chose it and their percentage, a row for the
+respondents who chose none of the items when there are any (see
+none_row), then a row with the number of respondents the percentages
+are computed on. The items are the indicator columns of the question,
+selected with tidyselect syntax.
 With by, the counts and percentages are given per group and in a
 Total margin, each item gets a test across the groups (the
 chi-squared, or Fisher's exact test when an expected count is below 5),
@@ -101,10 +103,11 @@ table (&quot;default&quot;), a wide or long numeric data.frame
 
     <div class="ref-description section level2">
     <p>Tabulates a "check all that apply" question: one row per item, with the
-number of respondents who chose it and their percentage, then a row
-with the number of respondents the percentages are computed on. The
-items are the indicator columns of the question, selected with
-tidyselect syntax.</p>
+number of respondents who chose it and their percentage, a row for the
+respondents who chose none of the items when there are any (see
+<code>none_row</code>), then a row with the number of respondents the percentages
+are computed on. The items are the indicator columns of the question,
+selected with tidyselect syntax.</p>
 <p>With <code>by</code>, the counts and percentages are given per group and in a
 <code>Total</code> margin, each item gets a test across the groups (the
 chi-squared, or Fisher's exact test when an expected count is below 5),
@@ -126,6 +129,7 @@ table (<code>"default"</code>), a wide or long numeric <code>data.frame</code>
 <span>  counted <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  percent <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"cases"</span>, <span class="st">"responses"</span>, <span class="st">"both"</span><span class="op">)</span>,</span>
 <span>  base <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"valid"</span>, <span class="st">"answered"</span>, <span class="st">"all"</span><span class="op">)</span>,</span>
+<span>  none_row <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  sort <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">""</span>, <span class="st">"+"</span>, <span class="st">"-"</span>, <span class="st">"name+"</span>, <span class="st">"name-"</span><span class="op">)</span>,</span>
 <span>  test <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"auto"</span>, <span class="st">"chisq"</span>, <span class="st">"fisher"</span>, <span class="st">"midp"</span>, <span class="st">"n1"</span><span class="op">)</span>,</span>
 <span>  p_value <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -216,6 +220,21 @@ declared missing (for example -1 "not applicable" kept as an ordinary
 value) counts as "not chosen" and keeps the filtered respondents in
 the base: recode it to <code>NA</code> first (SPSS user-missing values declared
 as such are already read as missing).</p></dd>
+
+
+<dt id="arg-none-row">none_row<a class="anchor" aria-label="anchor" href="#arg-none-row"></a></dt>
+<dd><p>Logical. If <code>TRUE</code> (the default), the respondents of the
+base who chose no item get a row of their own, after the items and
+before the <code>Respondents</code> row: "(No item chosen)" under <code>base = "valid"</code>
+and <code>"all"</code>, and, under <code>"all"</code>, "(No data for the question)" for the
+respondents with every indicator missing. Each row appears only when
+its count is above 0. <code>base = "answered"</code> leaves both groups out of
+the base and shows neither row. A row gives the count and the
+percentage of cases of each group and of the margin, on the base of
+the column, as the items do. Its percentage of responses and its test
+cells show a dash: these respondents gave no answer, and the rows take
+no part in the tests or in <code>sort</code>. The note then no longer counts the
+respondents a row shows. <code>FALSE</code> gives these counts in the note only.</p></dd>
 
 
 <dt id="arg-sort">sort<a class="anchor" aria-label="anchor" href="#arg-sort"></a></dt>
@@ -398,9 +417,13 @@ error.</p></dd>
     <p>Depends on <code>output</code>:</p><ul><li><p><code>"default"</code>: the wide <code>data.frame</code> below, with the rendering
 metadata as attributes (S3 class <code>"spicy_multiresponse_table"</code>),
 returned visibly, so a bare call prints the ASCII table.</p></li>
-<li><p><code>"data.frame"</code>: a wide <code>data.frame</code> with one row per item and a
-last row with the base. Columns: <code>Variable</code>, then the count and the
-percentage of each group of <code>by</code> and of the <code>Total</code> margin
+<li><p><code>"data.frame"</code>: a wide <code>data.frame</code> with one row per item, the
+rows of <code>none_row</code>, and a last row with the base. Columns:
+<code>Variable</code>, <code>.row_role</code> (what the row is: <code>"summary"</code> for an item,
+<code>"none"</code> for "(No item chosen)", <code>"missing"</code> for "(No data for the
+question)", <code>"fit_stat"</code> for the base, the roles of
+<code><a href="as_structured.html">as_structured()</a></code>), then the count and the percentage of each
+group of <code>by</code> and of the <code>Total</code> margin
 (<code>&lt;group&gt; n</code> and <code>&lt;group&gt; \%</code>, or <code>&lt;group&gt; \% of cases</code> and
 <code>&lt;group&gt; \% of responses</code> under <code>percent = "both"</code>; <code>n</code> and <code>\%</code>
 without <code>by</code>), then <code>test_type</code>, <code>Chi2</code> and <code>df</code> when the item
@@ -409,11 +432,13 @@ and <code>p_unadjusted</code> under an adjustment. <code>test_type</code> names 
 of each item as in <code><a href="table_categorical.html">table_categorical()</a></code> (<code>"chi_squared"</code>,
 <code>"n1_chi_squared"</code>, <code>"fisher_exact"</code>, <code>"fisher_midp"</code>,
 <code>"fisher_exact_mc"</code>), and <code>Chi2</code> and <code>df</code> are <code>NA</code> for an item
-tested by an exact test.</p></li>
-<li><p><code>"long"</code>: one row per item and group, with columns <code>variable</code>,
-<code>group</code> (with <code>by</code>), <code>n</code>, <code>base</code> (the respondents of the group),
-<code>pct</code> (or <code>pct_cases</code> and <code>pct_responses</code>), and <code>test_type</code>,
-<code>chi2</code>, <code>df</code>, <code>p</code>, and <code>p_unadjusted</code> as above.</p></li>
+tested by an exact test. The rows of <code>none_row</code> are <code>NA</code> in the
+percentage of responses and in the test columns.</p></li>
+<li><p><code>"long"</code>: one row per item and group, then one per row of
+<code>none_row</code> and group, with columns <code>variable</code>, <code>.row_role</code> as
+above, <code>group</code> (with <code>by</code>), <code>n</code>, <code>base</code> (the respondents of the
+group), <code>pct</code> (or <code>pct_cases</code> and <code>pct_responses</code>), and
+<code>test_type</code>, <code>chi2</code>, <code>df</code>, <code>p</code>, and <code>p_unadjusted</code> as above.</p></li>
 <li><p><code>"tinytable"</code>, <code>"gt"</code>, <code>"flextable"</code>: the rendered table object.</p></li>
 <li><p><code>"excel"</code> / <code>"word"</code>: writes to disk and returns the file path
 invisibly.</p></li>
@@ -427,7 +452,9 @@ invisibly.</p></li>
 tested), <code>n_groups</code>, <code>rs_mean</code> and <code>rs_cv</code> (the design-effect summary of
 <code>global_test = "rs2"</code>), and <code>boot_redraws</code> (the resamples drawn again
 under <code>global_test = "bootstrap"</code>); see <em>Tests</em>. <code><a href="as_structured.html">as_structured()</a></code> reads
-the default object.</p>
+the default object, with the same <code>.row_role</code> and a <code>.variable</code> of
+<code>"none"</code> and <code>"no_data"</code> on the rows of <code>none_row</code>;
+<a href="tidy.spicy_multiresponse_table.html">tidy()</a> reads the items only.</p>
     </div>
     <div class="section level2">
     <h2 id="tests">Tests<a class="anchor" aria-label="anchor" href="#tests"></a></h2>
@@ -536,9 +563,13 @@ together: the respondents with no data for the question (every
 indicator missing) and those with no item chosen (data, but no item
 chosen). The base holds the second and leaves out the first under
 <code>"valid"</code>, leaves out both under <code>"answered"</code>, and holds both under
-<code>"all"</code>; a count of zero is not mentioned. Declared missing values of a
-labelled column (<code>na_values</code>, <code>na_range</code>) are missing, as under the
-<code>user_na = TRUE</code> default of <code><a href="table_categorical.html">table_categorical()</a></code>.</p>
+<code>"all"</code>; a count of zero is not mentioned. Under <code>none_row = TRUE</code>, the
+default, the respondents of these two kinds that the base holds are
+rows of the table, "(No item chosen)" and "(No data for the question)",
+with their count and percentage in each group, and the note counts only
+those the base leaves out. Declared missing values of a labelled column
+(<code>na_values</code>, <code>na_range</code>) are missing, as under the <code>user_na = TRUE</code>
+default of <code><a href="table_categorical.html">table_categorical()</a></code>.</p>
 <p>A percentage carries no more digits than its denominator, so a base of
 fewer than 100 respondents takes whole percentages (American Medical
 Association, 2020, section 4.1.8): <code>percent_digits = 0</code> prints them.</p>
@@ -588,17 +619,18 @@ Rao-Scott approach. <em>International Journal of Testing</em>, 4(1), 43-59.
 <span class="r-in"><span><span class="fu">table_multiresponse</span><span class="op">(</span><span class="va">sochealth</span>, select <span class="op">=</span> <span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">starts_with</a></span><span class="op">(</span><span class="st">"info_"</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Multiple responses</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable          <span style="color: #9E9E9E;">│</span>   n       %    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">───────────────────┼────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  info_doctor       <span style="color: #9E9E9E;">│</span>   721    61.9  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  info_pharmacist   <span style="color: #9E9E9E;">│</span>   256    22.0  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  info_internet     <span style="color: #9E9E9E;">│</span>   523    44.9  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  info_family       <span style="color: #9E9E9E;">│</span>   360    30.9  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  info_media        <span style="color: #9E9E9E;">│</span>   141    12.1  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Respondents       <span style="color: #9E9E9E;">│</span>  1164          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable           <span style="color: #9E9E9E;">│</span>   n       %    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">────────────────────┼────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  info_doctor        <span style="color: #9E9E9E;">│</span>   721    61.9  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  info_pharmacist    <span style="color: #9E9E9E;">│</span>   256    22.0  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  info_internet      <span style="color: #9E9E9E;">│</span>   523    44.9  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  info_family        <span style="color: #9E9E9E;">│</span>   360    30.9  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  info_media         <span style="color: #9E9E9E;">│</span>   141    12.1  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  (No item chosen)   <span style="color: #9E9E9E;">│</span>    67     5.8  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Respondents        <span style="color: #9E9E9E;">│</span>  1164          </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents with data for the question, including 67 with no item chosen (excluded: 36 with no data for the question).</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents with data for the question (excluded: 36 with no data for the question).</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># The labels of the items, sorted by decreasing count.</span></span></span>
 <span class="r-in"><span><span class="fu">table_multiresponse</span><span class="op">(</span></span></span>
@@ -616,10 +648,11 @@ Rao-Scott approach. <em>International Journal of Testing</em>, 4(1), 43-59.
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Family or friends                     <span style="color: #9E9E9E;">│</span>   360    30.9  </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Pharmacist                            <span style="color: #9E9E9E;">│</span>   256    22.0  </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Television, radio or newspapers       <span style="color: #9E9E9E;">│</span>   141    12.1  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  (No item chosen)                      <span style="color: #9E9E9E;">│</span>    67     5.8  </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Respondents                           <span style="color: #9E9E9E;">│</span>  1164          </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents with data for the question, including 67 with no item chosen (excluded: 36 with no data for the question).</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents with data for the question (excluded: 36 with no data for the question).</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># By age group: a test per item and a global test of the question.</span></span></span>
 <span class="r-in"><span><span class="fu">table_multiresponse</span><span class="op">(</span></span></span>
@@ -629,27 +662,29 @@ Rao-Scott approach. <em>International Journal of Testing</em>, 4(1), 43-59.
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Multiple responses by age_group</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span> 25-34 n  25-34 %  35-49 n  35-49 %  50-64 n  50-64 % </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────┼──────────────────────────────────────────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  info_doctor     <span style="color: #9E9E9E;">│</span>   113     48.5      208     55.6      215     67.8   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  info_pharmacist <span style="color: #9E9E9E;">│</span>    53     22.7       74     19.8       69     21.8   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  info_internet   <span style="color: #9E9E9E;">│</span>   156     67.0      200     53.5      109     34.4   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  info_family     <span style="color: #9E9E9E;">│</span>    72     30.9      119     31.8       99     31.2   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  info_media      <span style="color: #9E9E9E;">│</span>     9      3.9       36      9.6       41     12.9   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Respondents     <span style="color: #9E9E9E;">│</span>   233               374               317            </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable         <span style="color: #9E9E9E;">│</span> 25-34 n  25-34 %  35-49 n  35-49 %  50-64 n  50-64 % </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">──────────────────┼──────────────────────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  info_doctor      <span style="color: #9E9E9E;">│</span>   113     48.5      208     55.6      215     67.8   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  info_pharmacist  <span style="color: #9E9E9E;">│</span>    53     22.7       74     19.8       69     21.8   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  info_internet    <span style="color: #9E9E9E;">│</span>   156     67.0      200     53.5      109     34.4   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  info_family      <span style="color: #9E9E9E;">│</span>    72     30.9      119     31.8       99     31.2   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  info_media       <span style="color: #9E9E9E;">│</span>     9      3.9       36      9.6       41     12.9   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  (No item chosen) <span style="color: #9E9E9E;">│</span>    12      5.2       22      5.9       22      6.9   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Respondents      <span style="color: #9E9E9E;">│</span>   233               374               317            </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span> 65-75 n  65-75 %  Total n  Total %    p   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────┼───────────────────────────────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  info_doctor     <span style="color: #9E9E9E;">│</span>   185     77.1      721     61.9    &lt;.001 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  info_pharmacist <span style="color: #9E9E9E;">│</span>    60     25.0      256     22.0     .982 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  info_internet   <span style="color: #9E9E9E;">│</span>    58     24.2      523     44.9    &lt;.001 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  info_family     <span style="color: #9E9E9E;">│</span>    70     29.2      360     30.9     .982 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  info_media      <span style="color: #9E9E9E;">│</span>    55     22.9      141     12.1    &lt;.001 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Respondents     <span style="color: #9E9E9E;">│</span>   240              1164                   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable         <span style="color: #9E9E9E;">│</span> 65-75 n  65-75 %  Total n  Total %    p   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">──────────────────┼───────────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  info_doctor      <span style="color: #9E9E9E;">│</span>   185     77.1      721     61.9    &lt;.001 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  info_pharmacist  <span style="color: #9E9E9E;">│</span>    60     25.0      256     22.0     .982 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  info_internet    <span style="color: #9E9E9E;">│</span>    58     24.2      523     44.9    &lt;.001 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  info_family      <span style="color: #9E9E9E;">│</span>    70     29.2      360     30.9     .982 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  info_media       <span style="color: #9E9E9E;">│</span>    55     22.9      141     12.1    &lt;.001 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  (No item chosen) <span style="color: #9E9E9E;">│</span>    11      4.6       67      5.8     –    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Respondents      <span style="color: #9E9E9E;">│</span>   240              1164                   </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents with data for the question, including 67 with no item chosen (excluded: 36 with no data for the question). Item p-values: Pearson chi-squared test of each item by group. P-values adjusted for 5 tests (Holm method). Overall group comparison: Rao-Scott second-order corrected chi-squared test of multiple marginal independence, χ²(14.40) = 203.03, p &lt; .001.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents with data for the question (excluded: 36 with no data for the question). Item p-values: Pearson chi-squared test of each item by group. P-values adjusted for 5 tests (Holm method). Overall group comparison: Rao-Scott second-order corrected chi-squared test of multiple marginal independence, χ²(14.40) = 203.03, p &lt; .001.</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># A descriptive table by sex, on the respondents who chose at least one</span></span></span>
 <span class="r-in"><span><span class="co"># source: percentages of cases and of responses, no tests.</span></span></span>
@@ -703,17 +738,18 @@ Rao-Scott approach. <em>International Journal of Testing</em>, 4(1), 43-59.
 <span class="r-in"><span><span class="fu">table_multiresponse</span><span class="op">(</span><span class="va">yes_no</span>, select <span class="op">=</span> <span class="fu"><a href="https://tidyselect.r-lib.org/reference/everything.html" class="external-link">everything</a></span><span class="op">(</span><span class="op">)</span>, counted <span class="op">=</span> <span class="st">"Yes"</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Multiple responses</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable          <span style="color: #9E9E9E;">│</span>   n       %    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">───────────────────┼────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  info_doctor       <span style="color: #9E9E9E;">│</span>   721    61.9  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  info_pharmacist   <span style="color: #9E9E9E;">│</span>   256    22.0  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  info_internet     <span style="color: #9E9E9E;">│</span>   523    44.9  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  info_family       <span style="color: #9E9E9E;">│</span>   360    30.9  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  info_media        <span style="color: #9E9E9E;">│</span>   141    12.1  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Respondents       <span style="color: #9E9E9E;">│</span>  1164          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable           <span style="color: #9E9E9E;">│</span>   n       %    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">────────────────────┼────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  info_doctor        <span style="color: #9E9E9E;">│</span>   721    61.9  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  info_pharmacist    <span style="color: #9E9E9E;">│</span>   256    22.0  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  info_internet      <span style="color: #9E9E9E;">│</span>   523    44.9  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  info_family        <span style="color: #9E9E9E;">│</span>   360    30.9  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  info_media         <span style="color: #9E9E9E;">│</span>   141    12.1  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  (No item chosen)   <span style="color: #9E9E9E;">│</span>    67     5.8  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Respondents        <span style="color: #9E9E9E;">│</span>  1164          </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents with data for the question, including 67 with no item chosen (excluded: 36 with no data for the question).</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents with data for the question (excluded: 36 with no data for the question).</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Bootstrap global test: set a seed to reproduce its p-value.</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span></span></span>
@@ -726,17 +762,18 @@ Rao-Scott approach. <em>International Journal of Testing</em>, 4(1), 43-59.
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Multiple responses by sex</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span> Female n  Female %  Male n  Male %  Total n  Total %    p   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────┼─────────────────────────────────────────────────────────────</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  info_doctor     <span style="color: #9E9E9E;">│</span>   377       62.9     344     60.9     721     61.9    1.000 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  info_pharmacist <span style="color: #9E9E9E;">│</span>   137       22.9     119     21.1     256     22.0    1.000 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  info_internet   <span style="color: #9E9E9E;">│</span>   268       44.7     255     45.1     523     44.9    1.000 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  info_family     <span style="color: #9E9E9E;">│</span>   219       36.6     141     25.0     360     30.9    &lt;.001 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  info_media      <span style="color: #9E9E9E;">│</span>    78       13.0      63     11.2     141     12.1    1.000 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Respondents     <span style="color: #9E9E9E;">│</span>   599                565             1164                   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable         <span style="color: #9E9E9E;">│</span> Female n  Female %  Male n  Male %  Total n  Total %    p   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">──────────────────┼─────────────────────────────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  info_doctor      <span style="color: #9E9E9E;">│</span>   377       62.9     344     60.9     721     61.9    1.000 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  info_pharmacist  <span style="color: #9E9E9E;">│</span>   137       22.9     119     21.1     256     22.0    1.000 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  info_internet    <span style="color: #9E9E9E;">│</span>   268       44.7     255     45.1     523     44.9    1.000 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  info_family      <span style="color: #9E9E9E;">│</span>   219       36.6     141     25.0     360     30.9    &lt;.001 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  info_media       <span style="color: #9E9E9E;">│</span>    78       13.0      63     11.2     141     12.1    1.000 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  (No item chosen) <span style="color: #9E9E9E;">│</span>    31        5.2      36      6.4      67      5.8     –    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Respondents      <span style="color: #9E9E9E;">│</span>   599                565             1164                   </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents with data for the question, including 67 with no item chosen (excluded: 36 with no data for the question). Item p-values: Pearson chi-squared test of each item by group. P-values adjusted for 5 tests (Holm method). Overall group comparison: bootstrap test of multiple marginal independence (999 resamples), χ² = 20.38, p = .002.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents with data for the question (excluded: 36 with no data for the question). Item p-values: Pearson chi-squared test of each item by group. P-values adjusted for 5 tests (Holm method). Overall group comparison: bootstrap test of multiple marginal independence (999 resamples), χ² = 20.38, p = .002.</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Wide data frame.</span></span></span>
 <span class="r-in"><span><span class="fu">table_multiresponse</span><span class="op">(</span></span></span>
@@ -745,20 +782,22 @@ Rao-Scott approach. <em>International Journal of Testing</em>, 4(1), 43-59.
 <span class="r-in"><span>  by <span class="op">=</span> <span class="va">sex</span>,</span></span>
 <span class="r-in"><span>  output <span class="op">=</span> <span class="st">"data.frame"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>          Variable Female n Female % Male n   Male % Total n  Total %</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1     info_doctor      377 62.93823    344 60.88496     721 61.94158</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2 info_pharmacist      137 22.87145    119 21.06195     256 21.99313</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3   info_internet      268 44.74124    255 45.13274     523 44.93127</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4     info_family      219 36.56093    141 24.95575     360 30.92784</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5      info_media       78 13.02170     63 11.15044     141 12.11340</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6     Respondents      599       NA    565       NA    1164       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     test_type        Chi2 df            p p_unadjusted</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1 chi_squared  0.51997605  1 1.000000e+00 4.708519e-01</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2 chi_squared  0.55490963  1 1.000000e+00 4.563185e-01</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3 chi_squared  0.01801149  1 1.000000e+00 8.932390e-01</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4 chi_squared 18.33047265  1 9.285636e-05 1.857127e-05</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5 chi_squared  0.95631714  1 1.000000e+00 3.281165e-01</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6        &lt;NA&gt;          NA NA           NA           NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           Variable .row_role Female n  Female % Male n    Male % Total n</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1      info_doctor   summary      377 62.938230    344 60.884956     721</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2  info_pharmacist   summary      137 22.871452    119 21.061947     256</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3    info_internet   summary      268 44.741235    255 45.132743     523</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4      info_family   summary      219 36.560935    141 24.955752     360</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5       info_media   summary       78 13.021703     63 11.150442     141</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6 (No item chosen)      none       31  5.175292     36  6.371681      67</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 7      Respondents  fit_stat      599        NA    565        NA    1164</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     Total %   test_type        Chi2 df            p p_unadjusted</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1 61.941581 chi_squared  0.51997605  1 1.000000e+00 4.708519e-01</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2 21.993127 chi_squared  0.55490963  1 1.000000e+00 4.563185e-01</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3 44.931271 chi_squared  0.01801149  1 1.000000e+00 8.932390e-01</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4 30.927835 chi_squared 18.33047265  1 9.285636e-05 1.857127e-05</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5 12.113402 chi_squared  0.95631714  1 1.000000e+00 3.281165e-01</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6  5.756014        &lt;NA&gt;          NA NA           NA           NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 7        NA        &lt;NA&gt;          NA NA           NA           NA</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># \donttest{</span></span></span>
 <span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"tinytable"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span></span>

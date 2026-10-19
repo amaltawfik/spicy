@@ -642,17 +642,18 @@ table_multiresponse(
 )
 #> Multiple responses by sex
 #> 
-#>  Variable        │ Female n  Female %  Male n  Male %  Total n  Total %    p   
-#> ─────────────────┼─────────────────────────────────────────────────────────────
-#>  info_doctor     │   377       62.9     344     60.9     721     61.9    1.000 
-#>  info_pharmacist │   137       22.9     119     21.1     256     22.0    1.000 
-#>  info_internet   │   268       44.7     255     45.1     523     44.9    1.000 
-#>  info_family     │   219       36.6     141     25.0     360     30.9    <.001 
-#>  info_media      │    78       13.0      63     11.2     141     12.1    1.000 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Respondents     │   599                565             1164                   
+#>  Variable         │ Female n  Female %  Male n  Male %  Total n  Total %    p   
+#> ──────────────────┼─────────────────────────────────────────────────────────────
+#>  info_doctor      │   377       62.9     344     60.9     721     61.9    1.000 
+#>  info_pharmacist  │   137       22.9     119     21.1     256     22.0    1.000 
+#>  info_internet    │   268       44.7     255     45.1     523     44.9    1.000 
+#>  info_family      │   219       36.6     141     25.0     360     30.9    <.001 
+#>  info_media       │    78       13.0      63     11.2     141     12.1    1.000 
+#>  (No item chosen) │    31        5.2      36      6.4      67      5.8     –    
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Respondents      │   599                565             1164                   
 #> 
-#> Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents with data for the question, including 67 with no item chosen (excluded: 36 with no data for the question). Item p-values: Pearson chi-squared test of each item by group. P-values adjusted for 5 tests (Holm method). Overall group comparison: Rao-Scott second-order corrected chi-squared test of multiple marginal independence, χ²(4.61) = 18.78, p = .002.
+#> Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents with data for the question (excluded: 36 with no data for the question). Item p-values: Pearson chi-squared test of each item by group. P-values adjusted for 5 tests (Holm method). Overall group comparison: Rao-Scott second-order corrected chi-squared test of multiple marginal independence, χ²(4.61) = 18.78, p = .002.
 ```
 
 ### Row-wise summaries
