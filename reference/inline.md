@@ -34,7 +34,7 @@ inline(x, variable, level = NULL, column = NULL, model = NULL)
 - variable:
 
   The source variable, unquoted or as a string; or a fit-statistic token
-  (`"n"`, `"nobs"`, `"r2"`, ...).
+  (`"nobs"`, `"r2"`, ...) or label (`"n"`).
 
 - level:
 
@@ -81,7 +81,12 @@ column is looked up among the displayed labels before erroring. The
 missing-value category is addressed by `level = "(Missing)"` whatever
 its displayed (possibly deduplicated) label, through its row role. Fit
 statistics are addressed by their token as `variable`
-(`inline(tbl, "n")`, `inline(tbl, "r2")`).
+(`inline(tbl, "nobs")`, `inline(tbl, "r2")`) or by their label
+(`inline(tbl, "n")`). Identity comes first: a source column wins over a
+token or a label of the same name, and an exact label over a fit
+statistic's label read regardless of case. A `variable` that still
+matches the rows of two variables or statistics is refused, and the
+error names an address for each.
 
 A statistic that belongs to a whole variable rather than to one of its
 levels sits on the variable's own row: the *p* of a
@@ -97,8 +102,9 @@ columns that belong to no group (the contrast, its interval, `p`, `n`)
 are cited without one, as before.
 
 [`table_multiresponse()`](https://amaltawfik.github.io/spicy/reference/table_multiresponse.md)
-has one row per item, addressed by its column name, then the base row,
-the number of respondents, addressed as the fit statistic `"nobs"`. Its
+has one row per item, addressed by its column name, then the rows of
+`none_row`, addressed as `"none"` and `"no_data"`, and the base row, the
+number of respondents, addressed as the fit statistic `"nobs"`. Its
 groups are spanners, as in
 [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
 so `model` selects one, the margin included:

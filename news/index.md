@@ -258,6 +258,14 @@ PDF.
   [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md)
   said to pick a level instead.
 
+- [`inline()`](https://amaltawfik.github.io/spicy/reference/inline.md)
+  matches a label exactly before it reads the label of a fit statistic
+  regardless of case, and refuses a `variable` that matches the rows of
+  two variables or statistics, with an address for each. With a
+  [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  term labeled “N”, `inline(tbl, "N")` cited the number of observations,
+  and of two rows showing one label it cited the first.
+
 - `table_categorical(output = "gt")` shows the note on the association
   measure and the standardized mean difference, as the other outputs do.
 

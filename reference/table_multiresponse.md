@@ -520,8 +520,11 @@ mentioned. Under `none_row = TRUE`, the default, the respondents of
 these two kinds that the base holds are rows of the table, "(No item
 chosen)" and "(No data for the question)", with their count and
 percentage in each group, and the note counts only those the base leaves
-out. Declared missing values of a labelled column (`na_values`,
-`na_range`) are missing, as under the `user_na = TRUE` default of
+out. A row the table adds whose label an item also displays takes a
+numbered suffix, `"Respondents_1"` or `"(No item chosen_1)"`, and the
+item keeps its label. Declared missing values of a labelled column
+(`na_values`, `na_range`) are missing, as under the `user_na = TRUE`
+default of
 [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md).
 
 A percentage carries no more digits than its denominator, so a base of

@@ -224,11 +224,13 @@ when available.</p></dd>
 displayed as a dedicated <code>"(Missing)"</code> level (and, under <code>by</code>, a
 <code>"(Missing)"</code> group column) – the field convention for descriptive
 tables (gtsummary's "Unknown" row, janitor's <code>NA</code> row; see the
-Epidemiologist R Handbook, Descriptive tables). If <code>TRUE</code>, rows with
-<code>NA</code> in the tabulated variable (and in <code>by</code>, when supplied) are
-removed BEFORE each cross-tabulation, and the removal is disclosed
-in a table note ("Missing values removed: ...") rather than silent.
-Before 0.13.0 the default was <code>TRUE</code> with no disclosure.</p></dd>
+Epidemiologist R Handbook, Descriptive tables). A level literally
+named <code>"(Missing)"</code> keeps its label, and the missing-value row and
+column take a numbered suffix, <code>"(Missing_1)"</code>. If <code>TRUE</code>,
+rows with <code>NA</code> in the tabulated variable (and in <code>by</code>, when supplied)
+are removed BEFORE each cross-tabulation, and the removal is
+disclosed in a table note ("Missing values removed: ...") rather than
+silent. Before 0.13.0 the default was <code>TRUE</code> with no disclosure.</p></dd>
 
 
 <dt id="arg-weights">weights<a class="anchor" aria-label="anchor" href="#arg-weights"></a></dt>

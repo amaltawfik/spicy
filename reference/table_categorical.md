@@ -143,11 +143,13 @@ table_categorical(
   dedicated `"(Missing)"` level (and, under `by`, a `"(Missing)"` group
   column) – the field convention for descriptive tables (gtsummary's
   "Unknown" row, janitor's `NA` row; see the Epidemiologist R Handbook,
-  Descriptive tables). If `TRUE`, rows with `NA` in the tabulated
-  variable (and in `by`, when supplied) are removed BEFORE each
-  cross-tabulation, and the removal is disclosed in a table note
-  ("Missing values removed: ...") rather than silent. Before 0.13.0 the
-  default was `TRUE` with no disclosure.
+  Descriptive tables). A level literally named `"(Missing)"` keeps its
+  label, and the missing-value row and column take a numbered suffix,
+  `"(Missing_1)"`. If `TRUE`, rows with `NA` in the tabulated variable
+  (and in `by`, when supplied) are removed BEFORE each cross-tabulation,
+  and the removal is disclosed in a table note ("Missing values removed:
+  ...") rather than silent. Before 0.13.0 the default was `TRUE` with no
+  disclosure.
 
 - weights:
 
