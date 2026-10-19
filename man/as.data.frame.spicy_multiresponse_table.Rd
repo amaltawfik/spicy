@@ -33,7 +33,8 @@ continues to render the formatted table.
 }
 \details{
 The returned data is identical to what \code{output = "data.frame"} returns
-directly from \code{\link[=table_multiresponse]{table_multiresponse()}}: one row per item, then the base.
+directly from \code{\link[=table_multiresponse]{table_multiresponse()}}: one row per item, the rows of
+\code{none_row}, then the base, told apart by \code{.row_role}.
 }
 \seealso{
 \code{\link[=tidy.spicy_multiresponse_table]{tidy.spicy_multiresponse_table()}},

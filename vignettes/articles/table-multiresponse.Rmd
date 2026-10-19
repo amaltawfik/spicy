@@ -146,10 +146,12 @@ Four things to notice:
    before rounding, the mean number of choices per respondent times 100
    (Jann, 2005, p. 107).
 3. **The `Respondents` row is the base**, the number of respondents
-   every percentage is computed on.
+   every percentage is computed on. The `(No item chosen)` row above it
+   counts the 67 of them who answered without choosing a source. Its
+   parentheses, like those of `(Missing)` in `table_categorical()`, mark
+   it as not an item.
 4. **The note says what the percentages sum to** and which respondents
-   form the base: the 67 with no item chosen are in it, and the 36 with
-   no data for the question are not.
+   form the base: the 36 with no data for the question are not in it.
 
 `select` takes tidyselect syntax, so `select = info_doctor:info_media`
 and the five names written in `c()` give the same table.
@@ -213,10 +215,10 @@ question. `sochealth` has both: 67 respondents chose no source, and 36
 skipped the question.
 
 The default, `base = "valid"`, keeps every respondent with at least one
-non-missing item. It is the base of the first table: the 67 stay, the
-36 leave, and the note gives both counts. Within the base, a missing
-item counts as not chosen, which matters when a respondent skips some
-items and answers others. This is how `expss` counts its valid cases.
+non-missing item. It is the base of the first table: the 67 stay, in
+their own row, and the 36 leave, counted in the note. Within the base,
+a missing item counts as not chosen, which matters when a respondent
+skips some items and answers others. This is how `expss` counts its valid cases.
 It is also the base of Stata's `mrtab` with its `include` option (Jann,
 2005, p. 99). Jann uses that option in his own example, because its
 list of income types "is probably not exhaustive" (pp. 107-108).
@@ -248,12 +250,20 @@ table_multiresponse(sochealth, select = starts_with("info_"), base = "all")
 ```
 
 The 36 respondents who skipped the question now enter the base, and
-every percentage counts them as choosing nothing. The note still keeps
-them apart from the 67 who chose no source: the base includes 36 with
-no data for the question and 67 with no item chosen.
+every percentage counts them as choosing nothing. The table still keeps
+them apart from the 67 who chose no source: each group has its row,
+`(No data for the question)` and `(No item chosen)`.
 
-The counts are the same under the three bases. The percentages and the
-tests are not. `"valid"` assumes that a skipped question is coded
+These rows count respondents, not answers. Each gives a count and a
+percentage of cases per group, on the base of the column as for an
+item, and appears only when its count is above 0. They take no test and
+have no percentage of responses, so those cells show a dash, and `sort`
+leaves them after the items. Under `"answered"` both groups are outside
+the base and neither row appears. `none_row = FALSE` removes the rows
+and gives their counts in the note instead.
+
+The item counts are the same under the three bases. The percentages
+and the tests are not. `"valid"` assumes that a skipped question is coded
 missing on every item, and that a box left unchecked is coded `FALSE`
 or 0, as in `sochealth`. In data that code an unchecked box as missing,
 `"valid"` would drop the respondents who checked nothing. `"all"` keeps
@@ -537,15 +547,17 @@ has no cell: it lives in the note and in `glance()`.
 ## Downstream: the raw frame and the broom views
 
 `output = "data.frame"` returns the wide frame at full precision: one
-row per item, a last row with the base, and columns named after the
-groups:
+row per item, the `(No item chosen)` row, a last row with the base, and
+columns named after the groups. `.row_role` tells the rows apart:
+`"summary"` for an item, `"none"` and `"missing"` for the two rows of
+`none_row`, `"fit_stat"` for the base:
 
 ```{r wide-names}
 names(wide)
 ```
 
-`output = "long"` returns one row per item and group, with the base of
-the group:
+`output = "long"` returns one row per item, or row of `none_row`, and
+group, with the base of the group:
 
 ```{r long}
 long <- table_multiresponse(
@@ -560,8 +572,9 @@ head(long, 3)
 Both frames carry the note in `attr(x, "note")` and the global test in
 `attr(x, "global_test")`.
 
-`tidy()` returns one row per item and group, the margin flagged by
-`total`, with the proportions of respondents and of responses.
+`tidy()` returns one row per item and group, the items only, the margin
+flagged by `total`, with the proportions of respondents and of
+responses.
 `glance()` returns one row for the question:
 
 ```{r broom}
@@ -615,7 +628,8 @@ answer, and the tests.
   (1998), pinned in the package tests.
 
 `table_multiresponse()` makes its four choices explicit: percentages of
-cases, the `"valid"` base with both counts in the note, items nobody
+cases, the `"valid"` base with a row for the respondents who chose
+nothing and the count of those who skipped in the note, items nobody
 chose kept at zero, and Holm-adjusted item tests with a Rao-Scott
 global test.
 
@@ -700,8 +714,9 @@ table_multiresponse(
 - [*Categorical summary tables*](table-categorical.html) for
   single-response variables, one block of levels per variable.
 - [*The structured view*](as-structured.html) for the typed view behind
-  this table: one `summary` row per item, and the base as a `fit_stat`
-  row whose `.variable` is `"nobs"`.
+  this table: one `summary` row per item, a `none` row for the
+  respondents who chose nothing, and the base as a `fit_stat` row whose
+  `.variable` is `"nobs"`.
 - [*Summary tables for reporting*](summary-tables-reporting.html) for
   the cross-function reporting workflow and the journal styles.
 

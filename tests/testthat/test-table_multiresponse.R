@@ -923,8 +923,9 @@ test_that("logical and 0/1 columns are read as they are", {
     c = c(0, 0, 1, NA)
   )
   out <- table_multiresponse(d, c(a, b, c), output = "data.frame")
-  expect_identical(out$n, c(2, 2, 1, 4))
-  expect_named(out, c("Variable", "n", "%"))
+  # Row 2 chose no item: the row of `none_row`, before the base.
+  expect_identical(out$n, c(2, 2, 1, 1, 4))
+  expect_named(out, c("Variable", ".row_role", "n", "%"))
 })
 
 test_that("other columns need `counted`, which applies to every column", {
@@ -943,13 +944,13 @@ test_that("other columns need `counted`, which applies to every column", {
     counted = "Oui",
     output = "data.frame"
   )
-  expect_identical(out$n, c(2, 2, 4))
+  expect_identical(out$n, c(2, 2, 1, 4))
   # A numeric column coded 1/2 is not 0/1 either.
   d2 <- data.frame(z = c(1, 2, 2))
   expect_error(table_multiresponse(d2, z), class = "spicy_invalid_input")
   expect_identical(
     table_multiresponse(d2, z, counted = 2, output = "data.frame")$n,
-    c(2, 3)
+    c(2, 1, 3)
   )
 })
 
@@ -971,7 +972,7 @@ test_that("a `counted` that matches nothing, or is not one value, is an error", 
   f <- data.frame(q = factor(c("Non", "Non"), levels = c("Non", "Oui")))
   expect_identical(
     table_multiresponse(f, q, counted = "Oui", output = "data.frame")$n,
-    c(0, 2)
+    c(0, 2, 2)
   )
 })
 
@@ -1000,13 +1001,14 @@ test_that("a labelled column takes a code or a value label, and its declared mis
     output = "data.frame"
   )
   expect_identical(by_label, by_code)
-  expect_identical(by_label[["1 n"]], c(1, 1, 2))
-  expect_identical(by_label[["2 n"]], c(1, 2, 3))
+  # Row 5 chose no item: the "(No item chosen)" row, 0 in group 1.
+  expect_identical(by_label[["1 n"]], c(1, 1, 0, 2))
+  expect_identical(by_label[["2 n"]], c(1, 2, 1, 3))
   # The declared 9 is missing, never a "not chosen" answer: asked about y1
   # alone, the respondent whose only answer is the 9 skipped the question
   # and leaves the base.
   long <- table_multiresponse(d, y1, by = g, counted = "Oui", output = "long")
-  expect_identical(long$base, c(2, 2, 4))
+  expect_identical(long$base[long$.row_role == "summary"], c(2, 2, 4))
 })
 
 # ---- base, percentages, order ---------------------------------------------------
@@ -1025,15 +1027,21 @@ test_that("base = \"valid\" leaves out the respondent who skipped the question",
   expect_identical(all$base[1:3], c(3, 4, 7))
   expect_equal(valid$pct, 100 * valid$n / valid$base)
   expect_equal(all$pct, 100 * all$n / all$base)
-  # Row 6 has no data for the question, row 2 chose neither item.
-  expect_match(
-    attr(all, "note"),
-    "Base: all respondents, including 1 with no data for the question and 1 with no item chosen.",
-    fixed = TRUE
+  # Row 6 has no data for the question, row 2 chose neither item: the
+  # rows of `none_row` show them, and the note counts only the one the
+  # base leaves out.
+  expect_identical(
+    unique(all$variable[all$.row_role != "summary"]),
+    c("(No item chosen)", "(No data for the question)")
   )
+  expect_identical(
+    unique(valid$variable[valid$.row_role != "summary"]),
+    "(No item chosen)"
+  )
+  expect_match(attr(all, "note"), "Base: all respondents.", fixed = TRUE)
   expect_match(
     attr(valid, "note"),
-    "Base: respondents with data for the question, including 1 with no item chosen (excluded: 1 with no data for the question).",
+    "Base: respondents with data for the question (excluded: 1 with no data for the question).",
     fixed = TRUE
   )
 })
@@ -1047,7 +1055,14 @@ test_that("base = \"answered\" keeps the respondents who chose an item", {
     x2 = c(0, 0, NA, 1, NA, 0)
   )
   long <- function(base) {
-    table_multiresponse(d, c(x1, x2), by = g, base = base, output = "long")
+    table_multiresponse(
+      d,
+      c(x1, x2),
+      by = g,
+      base = base,
+      none_row = FALSE,
+      output = "long"
+    )
   }
   valid <- long("valid")
   answered <- long("answered")
@@ -1084,9 +1099,17 @@ test_that("base = \"answered\" keeps the respondents who chose an item", {
   )
 }
 
-.mr_none_note <- function(data = .mr_none(), ...) {
+# The note with both counts in it: under `none_row = FALSE`, the note of
+# the tables before `none_row` existed, pinned word for word below.
+.mr_none_note <- function(data = .mr_none(), none_row = FALSE, ...) {
   attr(
-    table_multiresponse(data, c(x1, x2), output = "data.frame", ...),
+    table_multiresponse(
+      data,
+      c(x1, x2),
+      none_row = none_row,
+      output = "data.frame",
+      ...
+    ),
     "note"
   )
 }
@@ -1094,7 +1117,7 @@ test_that("base = \"answered\" keeps the respondents who chose an item", {
 # The sentence that opens every note of `.mr_none()` without `by`.
 .mr_cases_en <- "Note. Multiple answers possible: percentages can sum to more than 100%."
 
-test_that("the base sentence puts each count in the base or out of it", {
+test_that("none_row = FALSE: the base sentence puts each count in the base or out of it", {
   # Without `by`: row 3 has no data for the question, rows 2, 5 and 7 have
   # data and chose no item.
   expect_identical(
@@ -1130,7 +1153,10 @@ test_that("the base sentence puts each count in the base or out of it", {
   expect_identical(substr(with_by, 1L, nchar(opening)), opening)
   # The table and its data frames carry the same note.
   expect_identical(
-    attr(table_multiresponse(.mr_none(), c(x1, x2), by = g), "note"),
+    attr(
+      table_multiresponse(.mr_none(), c(x1, x2), by = g, none_row = FALSE),
+      "note"
+    ),
     with_by
   )
 })
@@ -1139,15 +1165,15 @@ test_that("under base = \"all\", no data for the question is not counted as no i
   # Before issue #11 the note said "103 respondents chose none of the
   # items": the 36 who skipped the question counted with the 67 who chose
   # nothing.
-  note <- attr(
+  mr <- function(...) {
     table_multiresponse(
       sochealth,
       starts_with("info_"),
-      base = "all",
+      ...,
       output = "data.frame"
-    ),
-    "note"
-  )
+    )
+  }
+  note <- attr(mr(base = "all", none_row = FALSE), "note")
   expect_match(
     note,
     "Base: all respondents, including 36 with no data for the question and 67 with no item chosen.",
@@ -1155,20 +1181,17 @@ test_that("under base = \"all\", no data for the question is not counted as no i
   )
   expect_false(grepl("103", note, fixed = TRUE))
   expect_match(
-    attr(
-      table_multiresponse(
-        sochealth,
-        starts_with("info_"),
-        output = "data.frame"
-      ),
-      "note"
-    ),
+    attr(mr(none_row = FALSE), "note"),
     "including 67 with no item chosen (excluded: 36 with no data for the question).",
     fixed = TRUE
   )
+  # By default the two counts are two rows of the table.
+  all <- mr(base = "all")
+  expect_identical(all$n[all$.row_role == "none"], 67)
+  expect_identical(all$n[all$.row_role == "missing"], 36)
 })
 
-test_that("a count of zero drops its clause, and the parentheses with it", {
+test_that("none_row = FALSE: a count of zero drops its clause, and the parentheses with it", {
   d <- .mr_none()
   # No row without data: rows 2, 5 and 7 chose no item.
   no_nodata <- d[-3L, ]
@@ -1232,7 +1255,7 @@ test_that("a count of zero drops its clause, and the parentheses with it", {
   )
 })
 
-test_that("the French base sentence assembles the same clauses", {
+test_that("none_row = FALSE: the French base sentence assembles the same clauses", {
   withr::local_options(spicy.language = "fr")
   cases <- "Note. Plusieurs r\u00e9ponses possibles\u00a0: les pourcentages peuvent totaliser plus de 100\u00a0%."
   expect_identical(
@@ -1421,6 +1444,7 @@ test_that("percentages of cases, of responses, or both", {
     both,
     c(
       "Variable",
+      ".row_role",
       "a n",
       "a % of cases",
       "a % of responses",
@@ -1439,7 +1463,7 @@ test_that("percentages of cases, of responses, or both", {
   )
   expect_named(
     table_multiresponse(d, sel, percent = "both", output = "long"),
-    c("variable", "n", "base", "pct_cases", "pct_responses")
+    c("variable", ".row_role", "n", "base", "pct_cases", "pct_responses")
   )
   expect_match(
     attr(resp, "note"),
@@ -1516,12 +1540,11 @@ test_that("sort = \"\" keeps the order in which select delivers the columns", {
   rows_of <- function(...) {
     table_multiresponse(d, ..., output = "data.frame")$Variable
   }
-  expect_identical(rows_of(c(q_c, q_a)), c("q_c", "q_a", "Respondents"))
-  expect_identical(
-    rows_of(c(q_c, q_a), sort = ""),
-    c("q_c", "q_a", "Respondents")
-  )
-  expect_identical(rows_of(c("q_c", "q_a")), c("q_c", "q_a", "Respondents"))
+  # Row 2 chose neither q_c nor q_a: its row follows the items.
+  q_ca <- c("q_c", "q_a", "(No item chosen)", "Respondents")
+  expect_identical(rows_of(c(q_c, q_a)), q_ca)
+  expect_identical(rows_of(c(q_c, q_a), sort = ""), q_ca)
+  expect_identical(rows_of(c("q_c", "q_a")), q_ca)
   expect_identical(
     rows_of(tidyselect::starts_with("q_")),
     c("q_a", "q_b", "q_c", "Respondents")
@@ -1581,7 +1604,10 @@ test_that("the sort values of the first draft are errors, not aliases", {
 test_that("an item nobody chose keeps its row, at zero", {
   d <- .mr_toy()
   out <- table_multiresponse(d, c(x1, x3), by = g, output = "data.frame")
-  expect_identical(out$Variable, c("x1", "x3", "Respondents"))
+  expect_identical(
+    out$Variable,
+    c("x1", "x3", "(No item chosen)", "Respondents")
+  )
   expect_identical(
     unlist(out[2L, c("a n", "b n", "Total n")], use.names = FALSE),
     c(0, 0, 0)
@@ -1632,7 +1658,7 @@ test_that("a `by` with one group has no test and no error", {
   expect_false(any(c("Chi2", "df", "p") %in% names(out)))
   expect_null(attr(out, "global_test"))
   # The declared level with no respondent keeps its columns.
-  expect_identical(out[["b n"]], c(0, 0, 0))
+  expect_identical(out[["b n"]], c(0, 0, 0, 0))
   expect_identical(attr(out, "display_df")[["b %"]][1:2], rep("\u2013", 2L))
   expect_warning(
     table_multiresponse(d, c(x1, x2), by = g, p_value = TRUE),
@@ -1647,12 +1673,363 @@ test_that("rows with a missing `by` are removed, and the note says how many", {
     by = g,
     output = "data.frame"
   )
-  expect_identical(out[["Total n"]][[3L]], 6)
+  expect_identical(out[["Total n"]][out$.row_role == "fit_stat"], 6)
   expect_match(
     attr(out, "note"),
     "Rows with missing g removed: 1.",
     fixed = TRUE
   )
+})
+
+# ---- the rows of `none_row` (decision of 2026-10-19) ------------------------------
+
+# `.mr_none()` by g, row 7 removed for its missing group. Group a: row 1
+# chose x1, row 2 chose nothing, row 3 has no data. Group b: row 4 chose
+# both, row 5 chose nothing (x2 missing), row 6 chose x1.
+.mr_none_tbl <- function(..., output = "data.frame") {
+  table_multiresponse(.mr_none(), c(x1, x2), by = g, ..., output = output)
+}
+
+.mr_cells <- function(df, row, cols) {
+  unlist(df[row, cols], use.names = FALSE)
+}
+
+test_that("each base shows its rows: valid one, all two, answered none", {
+  valid <- .mr_none_tbl()
+  expect_identical(
+    valid$Variable,
+    c("x1", "x2", "(No item chosen)", "Respondents")
+  )
+  expect_identical(valid$.row_role, c("summary", "summary", "none", "fit_stat"))
+  expect_identical(.mr_cells(valid, 3L, c("a n", "b n", "Total n")), c(1, 1, 2))
+  # The percentage of cases is on the base of its column, as for an item.
+  expect_equal(
+    .mr_cells(valid, 3L, c("a %", "b %", "Total %")),
+    100 * c(1 / 2, 1 / 3, 2 / 5)
+  )
+  all <- .mr_none_tbl(base = "all")
+  expect_identical(
+    all$Variable,
+    c(
+      "x1",
+      "x2",
+      "(No item chosen)",
+      "(No data for the question)",
+      "Respondents"
+    )
+  )
+  expect_identical(
+    all$.row_role,
+    c("summary", "summary", "none", "missing", "fit_stat")
+  )
+  expect_identical(.mr_cells(all, 3L, c("a n", "b n", "Total n")), c(1, 1, 2))
+  expect_identical(.mr_cells(all, 4L, c("a n", "b n", "Total n")), c(1, 0, 1))
+  expect_equal(
+    .mr_cells(all, 4L, c("a %", "b %", "Total %")),
+    100 * c(1 / 3, 0, 1 / 6)
+  )
+  expect_identical(.mr_cells(all, 5L, c("a n", "b n", "Total n")), c(3, 3, 6))
+  # "answered" leaves both groups out of its base: no row, and the table
+  # of none_row = FALSE, note included.
+  answered <- .mr_none_tbl(base = "answered")
+  expect_identical(answered$.row_role, c("summary", "summary", "fit_stat"))
+  expect_identical(answered, .mr_none_tbl(base = "answered", none_row = FALSE))
+  # Without `by`, the one column counts every respondent.
+  one <- table_multiresponse(
+    .mr_none(),
+    c(x1, x2),
+    base = "all",
+    output = "data.frame"
+  )
+  expect_identical(one$n, c(3, 1, 3, 1, 7))
+})
+
+test_that("a row of none_row shows only when its count is above 0", {
+  d <- .mr_none()
+  rows_of <- function(data, ...) {
+    table_multiresponse(data, c(x1, x2), ..., output = "data.frame")$.row_role
+  }
+  # Everyone has data: under "all", the "(No item chosen)" row alone.
+  expect_identical(
+    rows_of(d[-3L, ], base = "all"),
+    c("summary", "summary", "none", "fit_stat")
+  )
+  # Nobody with data chose nothing: no row under "valid", the no-data row
+  # alone under "all".
+  no_none <- d[c(1L, 3L, 4L, 6L), ]
+  expect_identical(rows_of(no_none), c("summary", "summary", "fit_stat"))
+  expect_identical(
+    rows_of(no_none, base = "all"),
+    c("summary", "summary", "missing", "fit_stat")
+  )
+  # A count of 0 in one group: the row shows, at 0 there.
+  all <- .mr_none_tbl(base = "all")
+  expect_identical(all[["b n"]][all$.row_role == "missing"], 0)
+})
+
+test_that("none_row = FALSE gives the table without the rows, and its note", {
+  for (b in c("valid", "all")) {
+    with <- .mr_none_tbl(base = b, output = "default")
+    without <- .mr_none_tbl(base = b, none_row = FALSE, output = "default")
+    expect_identical(without$.row_role, c("summary", "summary", "fit_stat"))
+    kept <- with$.row_role %in% c("summary", "fit_stat")
+    for (nm in names(without)) {
+      expect_identical(without[[nm]], with[[nm]][kept])
+    }
+    disp_with <- attr(with, "display_df")
+    disp_without <- attr(without, "display_df")
+    for (nm in names(disp_without)) {
+      expect_identical(disp_without[[nm]], disp_with[[nm]][kept])
+    }
+    expect_identical(attr(without, "global_test"), attr(with, "global_test"))
+  }
+  # The note of none_row = FALSE counts both groups, as before the rows.
+  expect_match(
+    attr(.mr_none_tbl(none_row = FALSE), "note"),
+    "Base: respondents with data for the question, including 2 with no item chosen (excluded: 1 with no data for the question).",
+    fixed = TRUE
+  )
+  expect_match(
+    attr(.mr_none_tbl(base = "all", none_row = FALSE), "note"),
+    "Base: all respondents, including 1 with no data for the question and 2 with no item chosen.",
+    fixed = TRUE
+  )
+})
+
+test_that("a row of none_row: % of cases on the base, % of responses and tests dashed", {
+  dash <- spicy_str("cell_undefined")
+  cases <- .mr_none_tbl(statistic = TRUE, test = "chisq", output = "default")
+  r <- which(cases$.row_role == "none")
+  disp <- attr(cases, "display_df")
+  expect_identical(disp[["a n"]][[r]], "1")
+  expect_identical(disp[["a %"]][[r]], "50.0")
+  expect_identical(disp[["Total %"]][[r]], "40.0")
+  expect_identical(disp$Test[[r]], dash)
+  expect_identical(disp$p[[r]], dash)
+  expect_true(all(is.na(unlist(cases[r, c("test_type", "Chi2", "df", "p")]))))
+  resp <- .mr_none_tbl(percent = "responses", output = "default")
+  expect_true(is.na(resp[["Total %"]][[r]]))
+  expect_identical(attr(resp, "display_df")[["Total %"]][[r]], dash)
+  expect_identical(attr(resp, "display_df")[["Total n"]][[r]], "2")
+  # The items' percentages of responses still sum to 100.
+  expect_equal(sum(resp[["Total %"]][1:2]), 100)
+  both <- .mr_none_tbl(percent = "both", output = "default")
+  both_disp <- attr(both, "display_df")
+  expect_identical(both_disp[["Total % of cases"]][[r]], "40.0")
+  expect_identical(both_disp[["Total % of responses"]][[r]], dash)
+  s <- as_structured(both)
+  expect_identical(s$cell_status[["Total % of responses"]][[r]], "undefined")
+  expect_identical(s$cell_status$p[[r]], "undefined")
+  expect_equal(s$body[["Total % of cases"]][[r]], 40)
+})
+
+test_that("the rows of none_row take no test: p-values, Holm and the global test do not move", {
+  run <- function(none_row) {
+    table_multiresponse(
+      .mr_toy(),
+      c(x1, x2, x3),
+      by = g,
+      test = "chisq",
+      none_row = none_row
+    )
+  }
+  with <- run(TRUE)
+  without <- run(FALSE)
+  items <- with$.row_role == "summary"
+  expect_true("none" %in% with$.row_role)
+  for (nm in c("test_type", "Chi2", "df", "p", "p_unadjusted")) {
+    expect_identical(with[[nm]][items], without[[nm]][1:3])
+    expect_true(all(is.na(with[[nm]][!items])))
+  }
+  expect_identical(attr(with, "global_test"), attr(without, "global_test"))
+  p_with <- as_structured(with)$col_meta$p
+  p_without <- as_structured(without)$col_meta$p
+  expect_equal(p_with$p_adjust_m, 2)
+  expect_identical(p_with$p_adjust_m, p_without$p_adjust_m)
+  # The test sentences of the note are the same: the row is not "Not
+  # tested", x3 alone is.
+  tests_of <- function(x) sub("^.*Item p-values:", "", attr(x, "note"))
+  expect_identical(tests_of(with), tests_of(without))
+  expect_match(
+    attr(with, "note"),
+    "Not tested (no variation, shown as –): x3.",
+    fixed = TRUE
+  )
+})
+
+test_that("the note no longer counts the respondents a row shows", {
+  note <- function(...) .mr_none_note(none_row = TRUE, ...)
+  # "valid": the row shows the no-item respondents, the excluded clause
+  # stays.
+  expect_identical(
+    note(),
+    paste(
+      .mr_cases_en,
+      "Base: respondents with data for the question (excluded: 1 with no data for the question)."
+    )
+  )
+  # "all": both rows show, and the whole "including" clause goes.
+  expect_identical(
+    note(base = "all"),
+    paste(.mr_cases_en, "Base: all respondents.")
+  )
+  # One row shown under "all": its fragment goes, there is no other.
+  d <- .mr_none()
+  expect_identical(
+    note(d[-3L, ], base = "all"),
+    paste(.mr_cases_en, "Base: all respondents.")
+  )
+  expect_identical(
+    note(d[c(1L, 3L, 4L, 6L), ], base = "all"),
+    paste(.mr_cases_en, "Base: all respondents.")
+  )
+  # "answered" shows no row: the note of none_row = FALSE.
+  expect_identical(note(base = "answered"), .mr_none_note(base = "answered"))
+  withr::local_options(spicy.language = "fr")
+  expect_identical(
+    note(),
+    paste(
+      "Note. Plusieurs réponses possibles : les pourcentages peuvent totaliser plus de 100 %.",
+      "Base : personnes ayant des données pour la question (hors base : 1 sans donnée pour la question)."
+    )
+  )
+})
+
+test_that("sort never moves the rows of none_row", {
+  for (s in c("-", "+", "name+", "name-")) {
+    expect_identical(
+      .mr_none_tbl(base = "all", sort = s)$.row_role,
+      c("summary", "summary", "none", "missing", "fit_stat")
+    )
+  }
+  expect_identical(
+    .mr_none_tbl(sort = "+")$Variable,
+    c("x2", "x1", "(No item chosen)", "Respondents")
+  )
+})
+
+test_that("the rows of none_row are translated", {
+  withr::local_options(spicy.language = "fr")
+  expect_identical(
+    .mr_none_tbl(base = "all")$Variable[3:5],
+    c(
+      "(Aucun item coché)",
+      "(Sans donnée pour la question)",
+      "Personnes"
+    )
+  )
+})
+
+test_that("data.frame, long and the typed view mark the rows of none_row by role", {
+  wide <- .mr_none_tbl(base = "all")
+  long <- .mr_none_tbl(base = "all", output = "long")
+  expect_identical(
+    long$.row_role,
+    rep(c("summary", "summary", "none", "missing"), each = 3L)
+  )
+  expect_identical(long$base[long$.row_role == "none"], c(3, 3, 6))
+  expect_equal(long$pct[long$.row_role == "missing"], 100 * c(1 / 3, 0, 1 / 6))
+  expect_true(all(is.na(long$p[long$.row_role != "summary"])))
+  tbl <- .mr_none_tbl(base = "all", output = "default")
+  expect_identical(as.data.frame(tbl), wide)
+  s <- as_structured(tbl)
+  expect_identical(s$body$.row_role, wide$.row_role)
+  expect_identical(s$body$.variable, c("x1", "x2", "none", "no_data", "nobs"))
+  expect_identical(s$body$.indent, rep(0L, 5L))
+  expect_true(all(s$body$.row_role %in% spicy:::.STRUCT_ROW_ROLES))
+  # The console rules off the base row alone: the rows follow the items
+  # unruled, as "(Missing)" follows the levels in table_categorical().
+  printed <- utils::capture.output(print(tbl))
+  resp <- grep("Respondents", printed, fixed = TRUE)
+  first <- grep("x1", printed, fixed = TRUE)[[1L]]
+  expect_true(all(grepl("[[:alpha:]]", printed[first:(resp - 2L)])))
+  expect_false(grepl("[[:alpha:]]", printed[[resp - 1L]]))
+  expect_match(
+    printed[[resp - 2L]],
+    "(No data for the question)",
+    fixed = TRUE
+  )
+})
+
+test_that("tidy() reads the items only, and glance() does not move", {
+  skip_if_not_installed("broom")
+  with <- .mr_none_tbl(base = "all", output = "default")
+  without <- .mr_none_tbl(base = "all", none_row = FALSE, output = "default")
+  td <- broom::tidy(with)
+  expect_identical(td, broom::tidy(without))
+  expect_identical(unique(td$variable), c("x1", "x2"))
+  expect_identical(broom::glance(with), broom::glance(without))
+})
+
+# One smoke block per engine: the rows render between the items and the
+# base row.
+.mr_none_order <- function(cells) {
+  pos <- match(
+    c("x2", "(No item chosen)", "(No data for the question)", "Respondents"),
+    trimws(cells)
+  )
+  !anyNA(pos) && !is.unsorted(pos)
+}
+
+test_that("tinytable renders the rows of none_row", {
+  skip_if_not_installed("tinytable")
+  tt <- .mr_none_tbl(base = "all", output = "tinytable")
+  md <- tinytable::save_tt(tt, output = "markdown")
+  lines <- strsplit(md, "\n", fixed = TRUE)[[1L]]
+  first <- vapply(strsplit(lines, "|", fixed = TRUE), `[`, "", 2L)
+  expect_true(.mr_none_order(first))
+})
+
+test_that("gt renders the rows of none_row", {
+  skip_if_not_installed("gt")
+  g <- .mr_none_tbl(base = "all", output = "gt")
+  expect_true(.mr_none_order(g[["_data"]][[1L]]))
+})
+
+test_that("flextable renders the rows of none_row", {
+  skip_if_not_installed("flextable")
+  ft <- .mr_none_tbl(base = "all", output = "flextable")
+  expect_true(.mr_none_order(ft$body$dataset[[1L]]))
+})
+
+test_that("word renders the rows of none_row", {
+  skip_if_not_installed("flextable")
+  skip_if_not_installed("officer")
+  docx <- tempfile(fileext = ".docx")
+  on.exit(unlink(docx), add = TRUE)
+  .mr_none_tbl(base = "all", output = "word", word_path = docx)
+  cells <- officer::docx_summary(officer::read_docx(docx))
+  cells <- cells[cells$content_type == "table cell" & cells$cell_id == 1L, ]
+  expect_true(.mr_none_order(cells$text[order(cells$row_id)]))
+})
+
+test_that("excel renders the rows of none_row", {
+  skip_if_not_installed("openxlsx2")
+  xlsx <- tempfile(fileext = ".xlsx")
+  on.exit(unlink(xlsx), add = TRUE)
+  .mr_none_tbl(base = "all", output = "excel", excel_path = xlsx)
+  grid <- as.matrix(openxlsx2::wb_to_df(
+    openxlsx2::wb_load(xlsx),
+    col_names = FALSE
+  ))
+  expect_true(.mr_none_order(grid[, 1L]))
+})
+
+test_that("the clipboard carries the rows of none_row", {
+  skip_if_not_installed("clipr")
+  clip <- NULL
+  testthat::local_mocked_bindings(
+    clipr_available = function(...) TRUE,
+    write_clip = function(x, ...) {
+      clip <<- x
+      invisible(NULL)
+    },
+    .package = "clipr"
+  )
+  suppressMessages(.mr_none_tbl(base = "all", output = "clipboard"))
+  lines <- strsplit(clip, "\n", fixed = TRUE)[[1L]]
+  first <- vapply(strsplit(lines, "\t", fixed = TRUE), `[`, "", 1L)
+  expect_true(.mr_none_order(first))
 })
 
 # ---- the test switch ---------------------------------------------------------------
@@ -1681,7 +2058,10 @@ test_that("p_value = FALSE: the data frames are the default minus the test", {
   expect_null(attr(out, "global_test"))
   ref_l <- .mr_farm_tbl(output = "long")
   out_l <- .mr_farm_tbl(p_value = FALSE, output = "long")
-  expect_identical(names(out_l), c("variable", "group", "n", "base", "pct"))
+  expect_identical(
+    names(out_l),
+    c("variable", ".row_role", "group", "n", "base", "pct")
+  )
   expect_identical(out_l$n, ref_l$n)
   expect_null(attr(out_l, "global_test"))
   # The note keeps what the table shows, and no test.
@@ -1819,7 +2199,17 @@ test_that("statistic = TRUE adds the item chi-squared column", {
   long <- .mr_farm_tbl(statistic = TRUE, p_value = FALSE, output = "long")
   expect_identical(
     names(long),
-    c("variable", "group", "n", "base", "pct", "test_type", "chi2", "df")
+    c(
+      "variable",
+      ".row_role",
+      "group",
+      "n",
+      "base",
+      "pct",
+      "test_type",
+      "chi2",
+      "df"
+    )
   )
   # The statistic alone draws nothing from the session's RNG, even under
   # global_test = "bootstrap": nobody would see the global test.
@@ -2068,6 +2458,15 @@ test_that("the inputs are validated in the house style", {
       class = "spicy_invalid_input"
     )
   }
+  # `none_row`, right after `base`, is TRUE or FALSE.
+  arg_names <- names(formals(table_multiresponse))
+  expect_identical(match("none_row", arg_names), match("base", arg_names) + 1L)
+  for (bad in list(NA, "yes", c(TRUE, FALSE), 1, NULL)) {
+    expect_error(
+      table_multiresponse(d, A:E, none_row = bad),
+      class = "spicy_invalid_input"
+    )
+  }
   expect_error(
     table_multiresponse(d, A:E, percent = "rows"),
     class = "spicy_invalid_input"
@@ -2109,7 +2508,7 @@ test_that("a group literally named Total keeps its name, and the margin moves", 
     class = "spicy_renamed_column"
   )
   expect_true(all(c("Total n", "x n", "Total_1 n") %in% names(out)))
-  expect_identical(out[["Total_1 n"]], c(3, 4))
+  expect_identical(out[["Total_1 n"]], c(3, 1, 4))
 })
 
 test_that("a survey design is refused, with the reason", {
@@ -2137,6 +2536,29 @@ test_that("the console table is pinned", {
     percent = "both",
     statistic = TRUE
   )))
-  withr::local_options(spicy.language = "fr")
-  expect_snapshot(print(table_multiresponse(.mr_toy(), c(x1, x2, x3), by = g)))
+  withr::with_options(list(spicy.language = "fr"), {
+    # `none_row = FALSE` prints the table of before `none_row`, unchanged.
+    expect_snapshot(print(table_multiresponse(
+      .mr_toy(),
+      c(x1, x2, x3),
+      by = g,
+      none_row = FALSE
+    )))
+    expect_snapshot(print(table_multiresponse(
+      .mr_toy(),
+      c(x1, x2, x3),
+      by = g
+    )))
+  })
+  # The rows of `none_row`, both shown under base = "all", their % of
+  # responses and test cells dashed.
+  expect_snapshot(print(table_multiresponse(
+    .mr_none(),
+    c(x1, x2),
+    by = g,
+    base = "all",
+    percent = "both",
+    statistic = TRUE,
+    test = "chisq"
+  )))
 })

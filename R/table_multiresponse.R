@@ -8,7 +8,8 @@
 # question:
 #
 #   * a count per item, a percentage per respondent ("% of cases", the
-#     default) or per response, and a final row with the base the
+#     default) or per response, the rows of the respondents of the base
+#     without a choice (`none_row`), and a final row with the base the
 #     percentages are computed on;
 #   * with `by`, the test of each item's r x 2 table (the Pearson
 #     chi-squared, or Fisher's exact test where an expected count is below
@@ -40,15 +41,23 @@
 # `table_regression()` gives its number of observations.
 .MR_BASE_TOKEN <- "nobs"
 
+# The `.variable` of the two rows of `none_row` in the typed view, which no
+# source variable owns: the respondents of the base with data and no item
+# chosen (`.row_role` "none"), and those with no data for the question
+# (`.row_role` "missing", the role of a row keyed by the missing value).
+.MR_NONE_TOKEN <- "none"
+.MR_NODATA_TOKEN <- "no_data"
+
 
 #' Multiple-response summary table
 #'
 #' @description
 #' Tabulates a "check all that apply" question: one row per item, with the
-#' number of respondents who chose it and their percentage, then a row
-#' with the number of respondents the percentages are computed on. The
-#' items are the indicator columns of the question, selected with
-#' tidyselect syntax.
+#' number of respondents who chose it and their percentage, a row for the
+#' respondents who chose none of the items when there are any (see
+#' `none_row`), then a row with the number of respondents the percentages
+#' are computed on. The items are the indicator columns of the question,
+#' selected with tidyselect syntax.
 #'
 #' With `by`, the counts and percentages are given per group and in a
 #' `Total` margin, each item gets a test across the groups (the
@@ -110,6 +119,18 @@
 #'   value) counts as "not chosen" and keeps the filtered respondents in
 #'   the base: recode it to `NA` first (SPSS user-missing values declared
 #'   as such are already read as missing).
+#' @param none_row Logical. If `TRUE` (the default), the respondents of the
+#'   base who chose no item get a row of their own, after the items and
+#'   before the `Respondents` row: "(No item chosen)" under `base = "valid"`
+#'   and `"all"`, and, under `"all"`, "(No data for the question)" for the
+#'   respondents with every indicator missing. Each row appears only when
+#'   its count is above 0. `base = "answered"` leaves both groups out of
+#'   the base and shows neither row. A row gives the count and the
+#'   percentage of cases of each group and of the margin, on the base of
+#'   the column, as the items do. Its percentage of responses and its test
+#'   cells show a dash: these respondents gave no answer, and the rows take
+#'   no part in the tests or in `sort`. The note then no longer counts the
+#'   respondents a row shows. `FALSE` gives these counts in the note only.
 #' @param sort Sorting method for items, as in [freq()]:
 #'   * `""` - no sorting (default)
 #'   * `"+"` - increasing frequency
@@ -182,9 +203,13 @@
 #'   \item `"default"`: the wide `data.frame` below, with the rendering
 #'     metadata as attributes (S3 class `"spicy_multiresponse_table"`),
 #'     returned visibly, so a bare call prints the ASCII table.
-#'   \item `"data.frame"`: a wide `data.frame` with one row per item and a
-#'     last row with the base. Columns: `Variable`, then the count and the
-#'     percentage of each group of `by` and of the `Total` margin
+#'   \item `"data.frame"`: a wide `data.frame` with one row per item, the
+#'     rows of `none_row`, and a last row with the base. Columns:
+#'     `Variable`, `.row_role` (what the row is: `"summary"` for an item,
+#'     `"none"` for "(No item chosen)", `"missing"` for "(No data for the
+#'     question)", `"fit_stat"` for the base, the roles of
+#'     [as_structured()]), then the count and the percentage of each
+#'     group of `by` and of the `Total` margin
 #'     (`<group> n` and `<group> \%`, or `<group> \% of cases` and
 #'     `<group> \% of responses` under `percent = "both"`; `n` and `\%`
 #'     without `by`), then `test_type`, `Chi2` and `df` when the item
@@ -193,11 +218,13 @@
 #'     of each item as in [table_categorical()] (`"chi_squared"`,
 #'     `"n1_chi_squared"`, `"fisher_exact"`, `"fisher_midp"`,
 #'     `"fisher_exact_mc"`), and `Chi2` and `df` are `NA` for an item
-#'     tested by an exact test.
-#'   \item `"long"`: one row per item and group, with columns `variable`,
-#'     `group` (with `by`), `n`, `base` (the respondents of the group),
-#'     `pct` (or `pct_cases` and `pct_responses`), and `test_type`,
-#'     `chi2`, `df`, `p`, and `p_unadjusted` as above.
+#'     tested by an exact test. The rows of `none_row` are `NA` in the
+#'     percentage of responses and in the test columns.
+#'   \item `"long"`: one row per item and group, then one per row of
+#'     `none_row` and group, with columns `variable`, `.row_role` as
+#'     above, `group` (with `by`), `n`, `base` (the respondents of the
+#'     group), `pct` (or `pct_cases` and `pct_responses`), and
+#'     `test_type`, `chi2`, `df`, `p`, and `p_unadjusted` as above.
 #'   \item `"tinytable"`, `"gt"`, `"flextable"`: the rendered table object.
 #'   \item `"excel"` / `"word"`: writes to disk and returns the file path
 #'     invisibly.
@@ -213,7 +240,9 @@
 #' tested), `n_groups`, `rs_mean` and `rs_cv` (the design-effect summary of
 #' `global_test = "rs2"`), and `boot_redraws` (the resamples drawn again
 #' under `global_test = "bootstrap"`); see *Tests*. [as_structured()] reads
-#' the default object.
+#' the default object, with the same `.row_role` and a `.variable` of
+#' `"none"` and `"no_data"` on the rows of `none_row`;
+#' [tidy()][tidy.spicy_multiresponse_table] reads the items only.
 #'
 #' @details
 #' # Tests
@@ -330,9 +359,13 @@
 #' indicator missing) and those with no item chosen (data, but no item
 #' chosen). The base holds the second and leaves out the first under
 #' `"valid"`, leaves out both under `"answered"`, and holds both under
-#' `"all"`; a count of zero is not mentioned. Declared missing values of a
-#' labelled column (`na_values`, `na_range`) are missing, as under the
-#' `user_na = TRUE` default of [table_categorical()].
+#' `"all"`; a count of zero is not mentioned. Under `none_row = TRUE`, the
+#' default, the respondents of these two kinds that the base holds are
+#' rows of the table, "(No item chosen)" and "(No data for the question)",
+#' with their count and percentage in each group, and the note counts only
+#' those the base leaves out. Declared missing values of a labelled column
+#' (`na_values`, `na_range`) are missing, as under the `user_na = TRUE`
+#' default of [table_categorical()].
 #'
 #' A percentage carries no more digits than its denominator, so a base of
 #' fewer than 100 respondents takes whole percentages (American Medical
@@ -456,6 +489,7 @@ table_multiresponse <- function(
   counted = NULL,
   percent = c("cases", "responses", "both"),
   base = c("valid", "answered", "all"),
+  none_row = TRUE,
   sort = c("", "+", "-", "name+", "name-"),
   test = c("auto", "chisq", "fisher", "midp", "n1"),
   p_value = NULL,
@@ -524,6 +558,7 @@ table_multiresponse <- function(
   statistic_explicit <- !missing(statistic)
   p_adjust_explicit <- !missing(p_adjust)
   .mr_check_scalars(
+    none_row = none_row,
     p_value = p_value,
     statistic = statistic,
     boot_n = boot_n,
@@ -654,29 +689,53 @@ table_multiresponse <- function(
   # coding, not what the respondent meant, and they do not depend on the
   # base: the base only decides which of them are in it and which are
   # left out (issue #11). Under `"all"`, the first are in the base too,
-  # and were counted with the second before.
+  # and were counted with the second before. Under `none_row`, those the
+  # base holds are rows of the table instead (decision of 2026-10-19).
   answered_any <- rowSums(!is.na(chosen)) > 0L
+  chose_none <- answered_any & rowSums(chosen, na.rm = TRUE) == 0
   n_nodata <- sum(keep & !answered_any)
-  n_none <- sum(keep & answered_any & rowSums(chosen, na.rm = TRUE) == 0)
+  n_none <- sum(keep & chose_none)
+  # The same two kinds of respondents within the base, for the rows of
+  # `none_row`: "answered" holds neither, "valid" the first only.
+  without <- cbind(chose_none, !answered_any)[in_base, , drop = FALSE] * 1
 
   # ---- counts and percentages, one row per block (groups, then margin) -----
   if (has_group) {
     gi <- match(as.character(g0)[in_base], group_levels)
     member <- outer(gi, seq_along(group_levels), "==") * 1
     counts <- rbind(crossprod(member, z), colSums(z))
+    extra_counts <- rbind(crossprod(member, without), colSums(without))
     bases <- c(colSums(member), nrow(z))
     blocks <- c(group_levels, margin_key)
   } else {
     counts <- matrix(colSums(z), nrow = 1L)
+    extra_counts <- matrix(colSums(without), nrow = 1L)
     bases <- nrow(z)
     blocks <- NA_character_
   }
   dimnames(counts) <- NULL
+  dimnames(extra_counts) <- NULL
   responses <- rowSums(counts)
   pct_cases <- 100 * counts / bases
   pct_cases[!is.finite(pct_cases)] <- NA_real_
   pct_responses <- 100 * counts / responses
   pct_responses[!is.finite(pct_responses)] <- NA_real_
+  # The rows of `none_row`, in this order, each shown when the base holds
+  # any such respondent: their percentage is of cases, on the base of the
+  # column, and they have no percentage of responses, having given none.
+  extra_pct <- 100 * extra_counts / bases
+  extra_pct[!is.finite(extra_pct)] <- NA_real_
+  extra_keep <- none_row & extra_counts[nrow(extra_counts), ] > 0
+  extra_counts <- extra_counts[, extra_keep, drop = FALSE]
+  extra_pct <- extra_pct[, extra_keep, drop = FALSE]
+  extra_role <- c("none", "missing")[extra_keep]
+  extra_labels <- vapply(
+    c("row_multiresponse_none", "row_multiresponse_nodata")[extra_keep],
+    spicy_str,
+    character(1),
+    USE.NAMES = FALSE
+  )
+  n_extra <- length(extra_role)
   # The `sort` contract of `freq()`: by total count, or by displayed label
   # in the C locale of the radix method, whatever the platform. That sort
   # is stable, so ties keep the order of `select`.
@@ -760,16 +819,19 @@ table_multiresponse <- function(
   # ---- frames ----------------------------------------------------------------
   cols <- .mr_columns(blocks, margin_key, percent, show_statistic, p_value)
   base_label <- spicy_str("row_multiresponse_base")
+  # The rows in display order: the items, the rows of `none_row`, the base.
+  # `.row_role` says what each is, in the vocabulary of `as_structured()`.
   value_of <- function(e, b) {
     switch(
       e$token,
-      n = c(counts[b, ord], bases[[b]]),
-      pct = c(pct_cases[b, ord], NA_real_),
-      pct_responses = c(pct_responses[b, ord], NA_real_)
+      n = c(counts[b, ord], extra_counts[b, ], bases[[b]]),
+      pct = c(pct_cases[b, ord], extra_pct[b, ], NA_real_),
+      pct_responses = c(pct_responses[b, ord], rep(NA_real_, n_extra + 1L))
     )
   }
   wide <- data.frame(
-    Variable = c(item_labels[ord], base_label),
+    Variable = c(item_labels[ord], extra_labels, base_label),
+    .row_role = c(rep("summary", length(ord)), extra_role, "fit_stat"),
     stringsAsFactors = FALSE,
     check.names = FALSE
   )
@@ -798,20 +860,25 @@ table_multiresponse <- function(
     p = "p",
     p_unadjusted = "p_unadjusted"
   )
+  # The rows of `none_row` and the base carry no test: NA of the column's
+  # own type.
+  no_test <- rep(NA_integer_, n_extra + 1L)
   for (nm in test_cols) {
-    # The base row carries no test: NA of the column's own type.
-    wide[[wide_names[[nm]]]] <- c(item_df[[nm]], item_df[[nm]][NA_integer_])
+    wide[[wide_names[[nm]]]] <- c(item_df[[nm]], item_df[[nm]][no_test])
   }
   long <- .mr_long(
-    item_labels[ord],
+    c(item_labels[ord], extra_labels),
+    c(rep("summary", length(ord)), extra_role),
     blocks,
     has_group,
-    counts[, ord, drop = FALSE],
+    cbind(counts[, ord, drop = FALSE], extra_counts),
     bases,
-    pct_cases[, ord, drop = FALSE],
-    pct_responses[, ord, drop = FALSE],
+    cbind(pct_cases[, ord, drop = FALSE], extra_pct),
+    cbind(pct_responses[, ord, drop = FALSE], extra_counts * NA_real_),
     percent,
-    if (length(test_cols)) item_df[test_cols]
+    if (length(test_cols)) {
+      item_df[c(seq_along(ord), no_test[-1L]), test_cols, drop = FALSE]
+    }
   )
 
   global_df <- .mr_global_df(test_res, boot_n)
@@ -832,6 +899,7 @@ table_multiresponse <- function(
         base = base,
         n_nodata = n_nodata,
         n_none = n_none,
+        none_row = none_row,
         test_res = test_res,
         p_value = p_value,
         item_types = stats::setNames(item_df$test_type, item_labels[ord]),
@@ -866,7 +934,9 @@ table_multiresponse <- function(
       stub_keys = .CAT_KEY_VARIABLE,
       align = align,
       decimal_mark = decimal_mark,
-      # The base row opens a block of its own, ruled off from the items.
+      # The base row opens a block of its own, ruled off from the rows
+      # above; those of `none_row` follow the items unruled, as
+      # "(Missing)" follows the levels in `table_categorical()`.
       sep_rows = base_row,
       indent_rows = integer(0),
       title = title_txt,
@@ -924,6 +994,7 @@ table_multiresponse <- function(
 
 # The scalar arguments, in the house style: one classed error each.
 .mr_check_scalars <- function(
+  none_row,
   p_value,
   statistic,
   boot_n,
@@ -941,6 +1012,9 @@ table_multiresponse <- function(
   is_flag <- function(x) is.logical(x) && length(x) == 1L && !is.na(x)
   is_string <- function(x) {
     is.character(x) && length(x) == 1L && !is.na(x) && nzchar(x)
+  }
+  if (!is_flag(none_row)) {
+    bad("`none_row` must be TRUE or FALSE.")
   }
   if (!is.null(p_value) && !is_flag(p_value)) {
     bad("`p_value` must be TRUE, FALSE, or NULL.")
@@ -1495,9 +1569,11 @@ table_multiresponse <- function(
   out
 }
 
-# The long frame: one row per item and block.
+# The long frame: one row per row of the table (items, then the rows of
+# `none_row`) and block, `roles` giving the `.row_role` of each.
 .mr_long <- function(
   labels,
+  roles,
   blocks,
   has_group,
   counts,
@@ -1511,6 +1587,7 @@ table_multiresponse <- function(
   ni <- length(labels)
   out <- data.frame(
     variable = rep(labels, each = nb),
+    .row_role = rep(roles, each = nb),
     stringsAsFactors = FALSE,
     check.names = FALSE
   )
@@ -1540,11 +1617,11 @@ table_multiresponse <- function(
 
 # The display frame the console and the engines render. A cell that
 # applies but has no value -- a percentage of an empty group, the test of
-# an item without variation -- is the undefined dash; the base row
-# carries counts only, and its other cells are blank.
+# an item without variation, the percentage of responses and the test of
+# a row of `none_row` -- is the undefined dash; the base row carries
+# counts only, and its other cells are blank.
 .mr_display_df <- function(wide, cols, percent_digits, p_digits, decimal_mark) {
-  n_rows <- nrow(wide)
-  is_base <- seq_len(n_rows) == n_rows
+  is_base <- wide$.row_role == "fit_stat"
   dash <- spicy_str("cell_undefined")
   num <- function(x, d) {
     out <- formatC(x, format = "f", digits = d, decimal.mark = ".")
@@ -1642,9 +1719,11 @@ table_multiresponse <- function(
 
 # ---- typed view ------------------------------------------------------------------
 
-# One `summary` row per item, then the base as a `fit_stat` row whose
-# `.variable` is the observations token. Each group owns its columns under
-# its own spanner, the margin flagged `total`, as in the categorical family.
+# One `summary` row per item, the rows of `none_row` (`none`, `missing`),
+# then the base as a `fit_stat` row whose `.variable` is the observations
+# token; the roles are read from `wide$.row_role`. Each group owns its
+# columns under its own spanner, the margin flagged `total`, as in the
+# categorical family.
 .build_multiresponse_structured <- function(
   wide,
   display_df,
@@ -1691,7 +1770,8 @@ table_multiresponse <- function(
   n_rows <- nrow(wide)
   rows <- vector("list", n_rows)
   for (i in seq_len(n_rows)) {
-    is_base <- i == n_rows
+    role <- wide$.row_role[[i]]
+    is_base <- identical(role, "fit_stat")
     values <- list()
     display <- character(0)
     status <- character(0)
@@ -1717,9 +1797,15 @@ table_multiresponse <- function(
     rows[[i]] <- list(
       label = display_df$Variable[[i]],
       values = values,
-      variable = if (is_base) .MR_BASE_TOKEN else items[[i]],
+      variable = switch(
+        role,
+        summary = items[[i]],
+        none = .MR_NONE_TOKEN,
+        missing = .MR_NODATA_TOKEN,
+        fit_stat = .MR_BASE_TOKEN
+      ),
       level = NA_character_,
-      role = if (is_base) "fit_stat" else "summary",
+      role = role,
       indent = 0L,
       display = display,
       status = status
@@ -1747,13 +1833,14 @@ table_multiresponse <- function(
 
 # The note, in reading order: the rows removed for a missing `by`, what
 # the percentages sum to, the base with the two counts it includes or
-# leaves out (`.mr_base_sentence()`), then the tests -- the item
-# p-values, named by their test (`item_types`, named by the labels the
-# rows print), followed, under an adjustment, by the family's sentence
-# naming the method and the number of tests (with `p_value`), the items
-# without a test (whenever the item tests show, p-values or statistic),
-# and the global test (with `p_value`; `test_res$global` is NULL
-# otherwise). It opens with "Note.", as every automatic note of the
+# leaves out (`.mr_base_sentence()`; under `none_row`, the counts it
+# includes are rows of the table and leave the note), then the tests --
+# the item p-values, named by their test (`item_types`, named by the
+# labels the rows print), followed, under an adjustment, by the family's
+# sentence naming the method and the number of tests (with `p_value`),
+# the items without a test (whenever the item tests show, p-values or
+# statistic), and the global test (with `p_value`; `test_res$global` is
+# NULL otherwise). It opens with "Note.", as every automatic note of the
 # family does; a `note` the user typed never comes here.
 .mr_note <- function(
   by_label,
@@ -1762,6 +1849,7 @@ table_multiresponse <- function(
   base,
   n_nodata,
   n_none,
+  none_row,
   test_res,
   p_value,
   item_types,
@@ -1785,7 +1873,7 @@ table_multiresponse <- function(
       responses = "note_multiresponse_pct_responses",
       both = "note_multiresponse_pct_both"
     )),
-    .mr_base_sentence(base, n_nodata, n_none)
+    .mr_base_sentence(base, n_nodata, n_none, none_row)
   )
   if (!is.null(test_res)) {
     if (p_value) {
@@ -1838,16 +1926,21 @@ table_multiresponse <- function(
 #   all       including both
 #
 # A count of zero drops its fragment, and a clause left with no fragment
-# drops with it, parentheses included. Assembled from the registry
-# templates; their comment in R/i18n.R gives the order.
-.mr_base_sentence <- function(base, n_nodata, n_none) {
+# drops with it, parentheses included. Under `none_row`, the table shows
+# each count the base holds as a row, exactly when it is above zero, so
+# the "including" clause goes: nothing is counted twice. The "excluded"
+# clause stays. Assembled from the registry templates; their comment in
+# R/i18n.R gives the order.
+.mr_base_sentence <- function(base, n_nodata, n_none, none_row = FALSE) {
   nodata <- if (n_nodata > 0L) {
     spicy_fmt("note_multiresponse_n_nodata", n_nodata)
   }
   none <- if (n_none > 0L) {
     spicy_fmt("note_multiresponse_n_none", n_none)
   }
-  inside <- switch(base, valid = none, answered = NULL, all = c(nodata, none))
+  inside <- if (!none_row) {
+    switch(base, valid = none, answered = NULL, all = c(nodata, none))
+  }
   outside <- switch(
     base,
     valid = nodata,

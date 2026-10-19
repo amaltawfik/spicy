@@ -17,14 +17,15 @@ Un rapport d'enquête rend neuf blocs « cochez tout ce qui s'applique » par un
    - Renommage avant sortie (2026-10-18) : `sort` reprend le contrat de `freq()` (`sort = c("", "+", "-", "name+", "name-")`), l'ordre du questionnaire n'étant que l'ordre des colonnes sélectionnées.
 6. **Entrée** : colonnes indicatrices par tidyselect ; logiques et 0/1 reconnus d'office ; facteurs, caractères et `haven_labelled` exigent `counted =` (la valeur comptée, « Oui ») ; toute autre valeur non manquante vaut « non choisi » (convention SPSS). Un `by` à un seul groupe ou sans `by` : pas de test.
 
-## Signature (telle qu'implémentée, 28427898 ; l'esquisse initiale disait `base = c("valid", "all")`, `sort = c("questionnaire", "desc")`, `digits`)
+## Signature (telle qu'implémentée au 2026-10-19 ; l'esquisse initiale disait `base = c("valid", "all")`, `sort = c("questionnaire", "desc")`, `digits`, et 28427898 `test = c("rs2", "bootstrap")` pour le test global)
 
 ```r
 table_multiresponse(data, select, by = NULL, counted = NULL,
   percent = c("cases", "responses", "both"),
-  base = c("valid", "answered", "all"),
+  base = c("valid", "answered", "all"), none_row = TRUE,
   sort = c("", "+", "-", "name+", "name-"),
-  p_value = NULL, test = c("rs2", "bootstrap"), boot_n = 1999L,
+  test = c("auto", "chisq", "fisher", "midp", "n1"), p_value = NULL,
+  global_test = c("rs2", "bootstrap"), boot_n = 1999L,
   p_adjust = "holm", statistic = FALSE,
   labels = getOption("spicy.var_labels", FALSE),
   percent_digits = 1, p_digits = 3, decimal_mark = ".",
@@ -38,3 +39,5 @@ table_multiresponse(data, select, by = NULL, counted = NULL,
 ## Conséquences
 
 Même famille que `table_categorical()` : mêmes moteurs de sortie, même vue typée, même registre i18n (anglais et français), même contrat `labels` et `p_value`. Le rapport d'origine bascule ses neuf tableaux sur la fonction native. Hors périmètre : deux variables multiréponses croisées (SPMI, Bilder & Loughin 2004), plans de sondage (Koziol & Bilder 2014, p. 149), modèles marginaux (Agresti & Liu 1999, 2001).
+
+**Ligne des personnes sans choix (2026-10-19, décision d'Amal).** Nouvel argument `none_row = TRUE`, placé après `base`. Sous `base = "valid"` et `"all"`, les personnes de la base qui n'ont coché aucun item forment une ligne « (No item chosen) » / « (Aucun item coché) », après les items et avant la ligne de base. Sous `"all"`, celles sans donnée pour la question (toutes les indicatrices manquantes) forment une seconde ligne « (No data for the question) » / « (Sans donnée pour la question) ». Sous `"answered"` ces personnes sont hors base et aucune ligne n'apparaît. Chaque ligne n'apparaît que si son effectif dépasse 0, comme « (Missing) » dans `table_categorical()`, dont elle reprend les parenthèses. Elle donne n et % des cas par groupe et au total, sur la base de la colonne. Son % des réponses et ses cellules de test portent le tiret : ces personnes n'ont rien répondu, la ligne n'entre ni dans la famille de Holm ni dans le test global et `sort` ne la déplace pas. La note ne compte plus les personnes qu'une ligne montre (la clause « including » tombe) et garde la clause « excluded ». `none_row = FALSE` restitue le tableau et la note d'avant. Dans les data frames et la vue typée, `.row_role` distingue les lignes : `"summary"` pour un item, `"none"` (rôle ajouté au vocabulaire de `as_structured()`) et `"missing"` pour les deux lignes nouvelles, `"fit_stat"` pour la base. `tidy()` ne lit que les items. Précédents : la pratique SAS (Keene 1989, Thornton 2013), JMP et les « toplines » de Pew montrent ces personnes comme une ligne du tableau et non en note. Nom : `none_row`, parce que `drop_none` et `show_none` se lisent à rebours en anglais.

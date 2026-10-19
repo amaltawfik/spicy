@@ -471,3 +471,5 @@ note_p_adjust_method_by	reviewed	2026-10-19	Benjamini-Yekutieli
 note_p_adjusted_per_model_unequal	reviewed	2026-10-19	Valeurs p ajustées dans chaque modèle (méthode de %s), pour %s tests respectivement.	
 note_list_and_pair	reviewed	2026-10-19	 et 	
 note_list_and_last	reviewed	2026-10-19	 et 	
+row_multiresponse_none	reviewed	2026-10-19	(Aucun item coché)	
+row_multiresponse_nodata	reviewed	2026-10-19	(Sans donnée pour la question)	

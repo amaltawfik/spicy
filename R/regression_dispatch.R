@@ -2819,11 +2819,12 @@ output_word <- function(rendered, word_path, word_template = NULL) {
 #'   `"factor_header"`, `"level"`, `"reference"`, `"fit_stat"`,
 #'   `"outcome"`, `"vc"` (variance component) in a regression table,
 #'   plus `"summary"` (a row summarizing one variable), `"group"` (a
-#'   row keyed by one level of `by`) and `"missing"` (a row keyed by
-#'   the *missing* value) in the descriptive ones. The role is the
-#'   key a consumer matches on: `"(Missing)"` is a display label --
-#'   auto-renamed on collision, translatable -- and the role survives
-#'   both.
+#'   row keyed by one level of `by`), `"missing"` (a row keyed by
+#'   the *missing* value) and `"none"` (the respondents who chose no
+#'   item of a multiple-response question) in the descriptive ones. The
+#'   role is the key a consumer matches on: `"(Missing)"` is a display
+#'   label -- auto-renamed on collision, translatable -- and the role
+#'   survives both.
 #' * `body$.indent` -- display indent depth of the label (`0` or `1`).
 #'   Renderers indent `.indent > 0` rows; the label text itself is
 #'   already indented in the character body only.
@@ -2889,11 +2890,14 @@ output_word <- function(rendered, word_path, word_template = NULL) {
 #'   in `col_meta$<col>$level`), `"delta"` (the contrast), `"b"` (a
 #'   numeric predictor's slope), `"ci"`, `"statistic"`, `"p"`,
 #'   `"r2"`, `"es"`, `"n"`, `"weighted_n"`.
-#' * [table_multiresponse()] -- one `"summary"` row per item, then one
-#'   `"fit_stat"` row (`.variable == "nobs"`) holding the respondents of
-#'   each group. Tokens: `"n"`, `"pct"` (percentage of cases),
-#'   `"pct_responses"` (percentage of responses), `"statistic"` and
-#'   `"p"`. Each group owns its columns under its own spanner, and the
+#' * [table_multiresponse()] -- one `"summary"` row per item, then the
+#'   rows of `none_row`: a `"none"` row (`.variable == "none"`) for the
+#'   respondents of the base with no item chosen and a `"missing"` row
+#'   (`.variable == "no_data"`) for those with no data for the question,
+#'   then one `"fit_stat"` row (`.variable == "nobs"`) holding the
+#'   respondents of each group. Tokens: `"n"`, `"pct"` (percentage of
+#'   cases), `"pct_responses"` (percentage of responses), `"statistic"`
+#'   and `"p"`. Each group owns its columns under its own spanner, and the
 #'   margin is flagged `col_meta$<col>$total`.
 #'
 #' Cells the console builds from more than one number -- a
@@ -2934,8 +2938,9 @@ output_word <- function(rendered, word_path, word_template = NULL) {
 #'
 #' Version `3` also opened the accessor to the descriptive families,
 #' which had no typed view before: `.row_role` gained `"summary"`,
-#' `"group"` and `"missing"`. The vocabulary is extended by addition
-#' -- an existing role never changes meaning.
+#' `"group"` and `"missing"`, then `"none"` with [table_multiresponse()].
+#' The vocabulary is extended by addition -- an existing role never
+#' changes meaning.
 #'
 #' @seealso [table_regression()], [table_categorical()],
 #'   [table_continuous()], [table_continuous_lm()] for the

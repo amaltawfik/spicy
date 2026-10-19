@@ -821,9 +821,17 @@
   # covers, joined as in `note_group_comparison`.
   # `note_multiresponse_not_tested` quotes the en dash of `cell_undefined`,
   # the marker the cells of those items show.
+  # Under `none_row` (the default), the respondents of the two counts that
+  # the base holds are rows of the table, between the items and the base
+  # row: `row_multiresponse_none` (data, no item chosen) and
+  # `row_multiresponse_nodata` (no data for the question), in parentheses
+  # like `row_missing_level` so that they do not read as items. A count
+  # shown as a row leaves the "including" clause of the base sentence.
   title_multiresponse = "Multiple responses",
   title_multiresponse_by = "Multiple responses by %s",
   row_multiresponse_base = "Respondents",
+  row_multiresponse_none = "(No item chosen)",
+  row_multiresponse_nodata = "(No data for the question)",
   header_pct_cases = "% of cases",
   header_pct_responses = "% of responses",
   note_multiresponse_pct_cases = "Multiple answers possible: percentages can sum to more than 100%.",

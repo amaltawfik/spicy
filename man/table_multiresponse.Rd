@@ -11,6 +11,7 @@ table_multiresponse(
   counted = NULL,
   percent = c("cases", "responses", "both"),
   base = c("valid", "answered", "all"),
+  none_row = TRUE,
   sort = c("", "+", "-", "name+", "name-"),
   test = c("auto", "chisq", "fisher", "midp", "n1"),
   p_value = NULL,
@@ -90,6 +91,19 @@ declared missing (for example -1 "not applicable" kept as an ordinary
 value) counts as "not chosen" and keeps the filtered respondents in
 the base: recode it to \code{NA} first (SPSS user-missing values declared
 as such are already read as missing).}
+
+\item{none_row}{Logical. If \code{TRUE} (the default), the respondents of the
+base who chose no item get a row of their own, after the items and
+before the \code{Respondents} row: "(No item chosen)" under \code{base = "valid"}
+and \code{"all"}, and, under \code{"all"}, "(No data for the question)" for the
+respondents with every indicator missing. Each row appears only when
+its count is above 0. \code{base = "answered"} leaves both groups out of
+the base and shows neither row. A row gives the count and the
+percentage of cases of each group and of the margin, on the base of
+the column, as the items do. Its percentage of responses and its test
+cells show a dash: these respondents gave no answer, and the rows take
+no part in the tests or in \code{sort}. The note then no longer counts the
+respondents a row shows. \code{FALSE} gives these counts in the note only.}
 
 \item{sort}{Sorting method for items, as in \code{\link[=freq]{freq()}}:
 \itemize{
@@ -242,9 +256,13 @@ Depends on \code{output}:
 \item \code{"default"}: the wide \code{data.frame} below, with the rendering
 metadata as attributes (S3 class \code{"spicy_multiresponse_table"}),
 returned visibly, so a bare call prints the ASCII table.
-\item \code{"data.frame"}: a wide \code{data.frame} with one row per item and a
-last row with the base. Columns: \code{Variable}, then the count and the
-percentage of each group of \code{by} and of the \code{Total} margin
+\item \code{"data.frame"}: a wide \code{data.frame} with one row per item, the
+rows of \code{none_row}, and a last row with the base. Columns:
+\code{Variable}, \code{.row_role} (what the row is: \code{"summary"} for an item,
+\code{"none"} for "(No item chosen)", \code{"missing"} for "(No data for the
+question)", \code{"fit_stat"} for the base, the roles of
+\code{\link[=as_structured]{as_structured()}}), then the count and the percentage of each
+group of \code{by} and of the \code{Total} margin
 (\verb{<group> n} and \verb{<group> \\\%}, or \verb{<group> \\\% of cases} and
 \verb{<group> \\\% of responses} under \code{percent = "both"}; \code{n} and \verb{\\\%}
 without \code{by}), then \code{test_type}, \code{Chi2} and \code{df} when the item
@@ -253,11 +271,13 @@ and \code{p_unadjusted} under an adjustment. \code{test_type} names the test
 of each item as in \code{\link[=table_categorical]{table_categorical()}} (\code{"chi_squared"},
 \code{"n1_chi_squared"}, \code{"fisher_exact"}, \code{"fisher_midp"},
 \code{"fisher_exact_mc"}), and \code{Chi2} and \code{df} are \code{NA} for an item
-tested by an exact test.
-\item \code{"long"}: one row per item and group, with columns \code{variable},
-\code{group} (with \code{by}), \code{n}, \code{base} (the respondents of the group),
-\code{pct} (or \code{pct_cases} and \code{pct_responses}), and \code{test_type},
-\code{chi2}, \code{df}, \code{p}, and \code{p_unadjusted} as above.
+tested by an exact test. The rows of \code{none_row} are \code{NA} in the
+percentage of responses and in the test columns.
+\item \code{"long"}: one row per item and group, then one per row of
+\code{none_row} and group, with columns \code{variable}, \code{.row_role} as
+above, \code{group} (with \code{by}), \code{n}, \code{base} (the respondents of the
+group), \code{pct} (or \code{pct_cases} and \code{pct_responses}), and
+\code{test_type}, \code{chi2}, \code{df}, \code{p}, and \code{p_unadjusted} as above.
 \item \code{"tinytable"}, \code{"gt"}, \code{"flextable"}: the rendered table object.
 \item \code{"excel"} / \code{"word"}: writes to disk and returns the file path
 invisibly.
@@ -273,14 +293,17 @@ The default object and the data frames carry the note as printed in
 tested), \code{n_groups}, \code{rs_mean} and \code{rs_cv} (the design-effect summary of
 \code{global_test = "rs2"}), and \code{boot_redraws} (the resamples drawn again
 under \code{global_test = "bootstrap"}); see \emph{Tests}. \code{\link[=as_structured]{as_structured()}} reads
-the default object.
+the default object, with the same \code{.row_role} and a \code{.variable} of
+\code{"none"} and \code{"no_data"} on the rows of \code{none_row};
+\link[=tidy.spicy_multiresponse_table]{tidy()} reads the items only.
 }
 \description{
 Tabulates a "check all that apply" question: one row per item, with the
-number of respondents who chose it and their percentage, then a row
-with the number of respondents the percentages are computed on. The
-items are the indicator columns of the question, selected with
-tidyselect syntax.
+number of respondents who chose it and their percentage, a row for the
+respondents who chose none of the items when there are any (see
+\code{none_row}), then a row with the number of respondents the percentages
+are computed on. The items are the indicator columns of the question,
+selected with tidyselect syntax.
 
 With \code{by}, the counts and percentages are given per group and in a
 \code{Total} margin, each item gets a test across the groups (the
@@ -407,9 +430,13 @@ together: the respondents with no data for the question (every
 indicator missing) and those with no item chosen (data, but no item
 chosen). The base holds the second and leaves out the first under
 \code{"valid"}, leaves out both under \code{"answered"}, and holds both under
-\code{"all"}; a count of zero is not mentioned. Declared missing values of a
-labelled column (\code{na_values}, \code{na_range}) are missing, as under the
-\code{user_na = TRUE} default of \code{\link[=table_categorical]{table_categorical()}}.
+\code{"all"}; a count of zero is not mentioned. Under \code{none_row = TRUE}, the
+default, the respondents of these two kinds that the base holds are
+rows of the table, "(No item chosen)" and "(No data for the question)",
+with their count and percentage in each group, and the note counts only
+those the base leaves out. Declared missing values of a labelled column
+(\code{na_values}, \code{na_range}) are missing, as under the \code{user_na = TRUE}
+default of \code{\link[=table_categorical]{table_categorical()}}.
 
 A percentage carries no more digits than its denominator, so a base of
 fewer than 100 respondents takes whole percentages (American Medical

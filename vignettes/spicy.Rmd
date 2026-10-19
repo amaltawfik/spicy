@@ -193,8 +193,9 @@ one variable, the choices outnumber the respondents, and the
 chi-squared test of the items-by-groups table is not valid, since one
 respondent contributes to several cells. `table_multiresponse()` reads
 the items as one question: one row per item, with the number of
-respondents who chose it and their percentage, then a row with the
-number of respondents. In `sochealth`, the five logical `info_*` items
+respondents who chose it and their percentage, a row for those who
+chose none, then a row with the number of respondents. In `sochealth`,
+the five logical `info_*` items
 answer such a question: the sources of health information used in the
 past 12 months. `labels = TRUE` shows the item wording:
 

@@ -63,11 +63,12 @@ row); \code{NA} outside a factor.
 \code{"factor_header"}, \code{"level"}, \code{"reference"}, \code{"fit_stat"},
 \code{"outcome"}, \code{"vc"} (variance component) in a regression table,
 plus \code{"summary"} (a row summarizing one variable), \code{"group"} (a
-row keyed by one level of \code{by}) and \code{"missing"} (a row keyed by
-the \emph{missing} value) in the descriptive ones. The role is the
-key a consumer matches on: \code{"(Missing)"} is a display label --
-auto-renamed on collision, translatable -- and the role survives
-both.
+row keyed by one level of \code{by}), \code{"missing"} (a row keyed by
+the \emph{missing} value) and \code{"none"} (the respondents who chose no
+item of a multiple-response question) in the descriptive ones. The
+role is the key a consumer matches on: \code{"(Missing)"} is a display
+label -- auto-renamed on collision, translatable -- and the role
+survives both.
 \item \code{body$.indent} -- display indent depth of the label (\code{0} or \code{1}).
 Renderers indent \code{.indent > 0} rows; the label text itself is
 already indented in the character body only.
@@ -136,11 +137,14 @@ Tokens: \code{"emmean"} (a marginal mean; the column says which level
 in \verb{col_meta$<col>$level}), \code{"delta"} (the contrast), \code{"b"} (a
 numeric predictor's slope), \code{"ci"}, \code{"statistic"}, \code{"p"},
 \code{"r2"}, \code{"es"}, \code{"n"}, \code{"weighted_n"}.
-\item \code{\link[=table_multiresponse]{table_multiresponse()}} -- one \code{"summary"} row per item, then one
-\code{"fit_stat"} row (\code{.variable == "nobs"}) holding the respondents of
-each group. Tokens: \code{"n"}, \code{"pct"} (percentage of cases),
-\code{"pct_responses"} (percentage of responses), \code{"statistic"} and
-\code{"p"}. Each group owns its columns under its own spanner, and the
+\item \code{\link[=table_multiresponse]{table_multiresponse()}} -- one \code{"summary"} row per item, then the
+rows of \code{none_row}: a \code{"none"} row (\code{.variable == "none"}) for the
+respondents of the base with no item chosen and a \code{"missing"} row
+(\code{.variable == "no_data"}) for those with no data for the question,
+then one \code{"fit_stat"} row (\code{.variable == "nobs"}) holding the
+respondents of each group. Tokens: \code{"n"}, \code{"pct"} (percentage of
+cases), \code{"pct_responses"} (percentage of responses), \code{"statistic"}
+and \code{"p"}. Each group owns its columns under its own spanner, and the
 margin is flagged \verb{col_meta$<col>$total}.
 }
 
@@ -185,8 +189,9 @@ spicy reading it is refused as well.
 
 Version \code{3} also opened the accessor to the descriptive families,
 which had no typed view before: \code{.row_role} gained \code{"summary"},
-\code{"group"} and \code{"missing"}. The vocabulary is extended by addition
--- an existing role never changes meaning.
+\code{"group"} and \code{"missing"}, then \code{"none"} with \code{\link[=table_multiresponse]{table_multiresponse()}}.
+The vocabulary is extended by addition -- an existing role never
+changes meaning.
 }
 
 \examples{

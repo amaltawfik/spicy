@@ -24,7 +24,8 @@ object returned by \code{\link[=table_multiresponse]{table_multiresponse()}}.
 }
 \details{
 \code{tidy()} returns one row per (item x group), the margin included and
-flagged. Columns: \code{variable} (the item's column), \code{label} (its
+flagged, and the items only: the rows of \code{none_row} and the base row
+are left out. Columns: \code{variable} (the item's column), \code{label} (its
 displayed label), \code{group} (the \code{by} level or the margin, \code{NA} without
 \code{by}), \code{total} (whether the row is the margin), \code{n} (the respondents who
 chose the item), \code{base} (the respondents of the group's base),

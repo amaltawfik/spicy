@@ -1084,6 +1084,34 @@ test_that("a multiple-response table without p-values has no p to cite", {
   )
 })
 
+test_that("the rows of none_row leave the items and the base row addressable", {
+  # The "(No item chosen)" row sits between the items and the base row
+  # (every respondent answered one of the three items). The items keep
+  # their column names, the base its "nobs" token and its label, and the
+  # row answers to its `.variable` token.
+  tbl <- .il_mr(by = sex, base = "all")
+  ref <- .il_mr(by = sex, base = "all", none_row = FALSE)
+  s <- as_structured(tbl)
+  expect_identical(s$body$.row_role[4:5], c("none", "fit_stat"))
+  for (m in c("Female", "Total")) {
+    expect_identical(
+      inline(tbl, smoking, column = "{n} ({pct}%)", model = m),
+      inline(ref, smoking, column = "{n} ({pct}%)", model = m)
+    )
+    expect_identical(
+      inline(tbl, "nobs", model = m),
+      inline(ref, "nobs", model = m)
+    )
+  }
+  expect_identical(inline(tbl, "Respondents", model = "Total"), "1200")
+  expect_identical(
+    inline(tbl, smoking, column = "p"),
+    inline(ref, smoking, column = "p")
+  )
+  expect_identical(inline(tbl, "none", model = "Total"), "166")
+  expect_identical(inline(tbl, "(No item chosen)", model = "Total"), "166")
+})
+
 test_that("`model` keeps the columns that belong to no group", {
   # The `p` and the association measure of a `by` table, and the item
   # test of a multiple-response table, sit under no spanner. Selecting a

@@ -83,7 +83,7 @@ print.spicy_multiresponse_table <- function(x, ...) {
     bottom_line = FALSE,
     align_left_cols = 1L,
     align_center_cols = align_center,
-    # The base row is ruled off from the items, from its typed role.
+    # The base row is ruled off from the rows above, from its typed role.
     group_sep_rows = which(s$body$.row_role == "fit_stat"),
     display_labels = header_labels
   )
@@ -134,7 +134,8 @@ unclass_spicy_multiresponse_table <- function(x) {
 #' continues to render the formatted table.
 #'
 #' The returned data is identical to what `output = "data.frame"` returns
-#' directly from [table_multiresponse()]: one row per item, then the base.
+#' directly from [table_multiresponse()]: one row per item, the rows of
+#' `none_row`, then the base, told apart by `.row_role`.
 #'
 #' @param x A `spicy_multiresponse_table` returned by
 #'   [table_multiresponse()].
@@ -180,7 +181,8 @@ as_tibble.spicy_multiresponse_table <- function(x, ...) {
 #' object returned by [table_multiresponse()].
 #'
 #' `tidy()` returns one row per (item x group), the margin included and
-#' flagged. Columns: `variable` (the item's column), `label` (its
+#' flagged, and the items only: the rows of `none_row` and the base row
+#' are left out. Columns: `variable` (the item's column), `label` (its
 #' displayed label), `group` (the `by` level or the margin, `NA` without
 #' `by`), `total` (whether the row is the margin), `n` (the respondents who
 #' chose the item), `base` (the respondents of the group's base),
@@ -215,7 +217,8 @@ as_tibble.spicy_multiresponse_table <- function(x, ...) {
 NULL
 
 # Internal: the long frame and the item columns tidy() and glance() read,
-# refused when the object no longer carries them.
+# refused when the object no longer carries them. The rows of `none_row`
+# are not items: the long frame is restricted to the items.
 .mr_broom_data <- function(x, fn) {
   long <- attr(x, "long_data", exact = TRUE)
   items <- attr(x, "items", exact = TRUE)
@@ -229,6 +232,7 @@ NULL
       call = rlang::caller_env()
     )
   }
+  long <- long[long$.row_role == "summary", , drop = FALSE]
   list(long = long, items = items)
 }
 

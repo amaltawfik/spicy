@@ -353,10 +353,13 @@
   # population, then ", dont ..." for the counts in the base and
   # " (hors base : ...)" for those left out, two fragments joined by " et ".
   # "Personnes" alone: the base row holds all three bases, and under
-  # "valid" or "all" not everyone in it answered.
+  # "valid" or "all" not everyone in it answered. The two rows of
+  # `none_row` are in parentheses, like `row_missing_level`.
   title_multiresponse = "R\u00E9ponses multiples",
   title_multiresponse_by = "R\u00E9ponses multiples selon %s",
   row_multiresponse_base = "Personnes",
+  row_multiresponse_none = "(Aucun item coch\u00E9)",
+  row_multiresponse_nodata = "(Sans donn\u00E9e pour la question)",
   header_pct_cases = "% des cas",
   header_pct_responses = "% des r\u00E9ponses",
   note_multiresponse_pct_cases = "Plusieurs r\u00E9ponses possibles\u00A0: les pourcentages peuvent totaliser plus de 100\u00A0%.",

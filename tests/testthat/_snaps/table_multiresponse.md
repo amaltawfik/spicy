@@ -47,7 +47,7 @@
 ---
 
     Code
-      print(table_multiresponse(.mr_toy(), c(x1, x2, x3), by = g))
+      print(table_multiresponse(.mr_toy(), c(x1, x2, x3), by = g, none_row = FALSE))
     Output
       Réponses multiples selon g
       
@@ -60,4 +60,49 @@
        Personnes   │   3              3                 6                         
       
       Note. Lignes retirées pour valeur manquante sur g : 1. Plusieurs réponses possibles : les pourcentages peuvent totaliser plus de 100 %. Base : personnes ayant des données pour la question, dont 1 sans aucun item coché (hors base : 1 sans donnée pour la question). Valeurs p des items : test exact de Fisher de chaque item selon le groupe. Valeurs p ajustées pour 2 tests (méthode de Holm). Non testé (sans variation, signalé par –) : x3. Comparaison globale des groupes : test du khi-deux d'indépendance marginale multiple avec correction de Rao-Scott du second ordre, χ²(5,06) = 16,87, p = 0,005.
+
+---
+
+    Code
+      print(table_multiresponse(.mr_toy(), c(x1, x2, x3), by = g))
+    Output
+      Réponses multiples selon g
+      
+       Variable             │  a n    a %     b n     b %     Total n    Total %      p    
+      ──────────────────────┼──────────────────────────────────────────────────────────────
+       x1                   │   2     66,7     1      33,3       3        50,0      1,000  
+       x2                   │   0      0,0     3     100,0       3        50,0      0,200  
+       x3                   │   0      0,0     0       0,0       0         0,0       –     
+       (Aucun item coché)   │   1     33,3     0       0,0       1        16,7       –     
+      ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+       Personnes            │   3              3                 6                         
+      
+      Note. Lignes retirées pour valeur manquante sur g : 1. Plusieurs réponses possibles : les pourcentages peuvent totaliser plus de 100 %. Base : personnes ayant des données pour la question (hors base : 1 sans donnée pour la question). Valeurs p des items : test exact de Fisher de chaque item selon le groupe. Valeurs p ajustées pour 2 tests (méthode de Holm). Non testé (sans variation, signalé par –) : x3. Comparaison globale des groupes : test du khi-deux d'indépendance marginale multiple avec correction de Rao-Scott du second ordre, χ²(5,06) = 16,87, p = 0,005.
+
+---
+
+    Code
+      print(table_multiresponse(.mr_none(), c(x1, x2), by = g, base = "all", percent = "both", statistic = TRUE, test = "chisq"))
+    Output
+      Multiple responses by g
+      
+       Variable                   │ a n  a % of cases  a % of responses  b n  b % of cases  b % of responses  Total n 
+      ────────────────────────────┼───────────────────────────────────────────────────────────────────────────────────
+       x1                         │  1       33.3           100.0         2       66.7            66.7           3    
+       x2                         │  0        0.0             0.0         1       33.3            33.3           1    
+       (No item chosen)           │  1       33.3              –          1       33.3              –            2    
+       (No data for the question) │  1       33.3              –          0        0.0              –            1    
+      ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+       Respondents                │  3                                    3                                      6    
+      
+       Variable                   │ Total % of cases  Total % of responses      Test        p   
+      ────────────────────────────┼─────────────────────────────────────────────────────────────
+       x1                         │       50.0                75.0          χ²(1) = 0.67   .547 
+       x2                         │       16.7                25.0          χ²(1) = 1.20   .547 
+       (No item chosen)           │       33.3                  –                    –     –    
+       (No data for the question) │       16.7                  –                    –     –    
+      ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+       Respondents                │                                                             
+      
+      Note. Rows with missing g removed: 1. Multiple answers possible: percentages of cases can sum to more than 100%, and percentages of responses sum to 100%. Base: all respondents. Item p-values: Pearson chi-squared test of each item by group. P-values adjusted for 2 tests (Holm method). Overall group comparison: Rao-Scott second-order corrected chi-squared test of multiple marginal independence, χ²(2.49) = 2.32, p = .410.
 

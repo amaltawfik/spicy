@@ -109,7 +109,8 @@ workbook, or a PDF.
   chose it (or of responses, or both), and a row with the number of
   respondents. The note gives the base and counts, in it or out of it,
   the respondents with no data for the question and those with no item
-  chosen. With `by`, each item gets a chi-squared
+  chosen, those in the base shown instead as rows of their own by
+  default (`none_row`). With `by`, each item gets a chi-squared
   test, or Fisher's exact test where an expected count is below 5
   (`test`), adjusted by Holm by default (`p_adjust`), and the question a
   global test that allows for several answers per respondent, Rao-Scott

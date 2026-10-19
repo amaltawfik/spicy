@@ -15,7 +15,8 @@
 #     marginal-mean / contrast tokens for the linear-model one);
 #   * the row roles a family emits (`factor_header` + `level` for the
 #     categorical table, `summary` / `group` for the continuous ones,
-#     `missing` wherever a row is keyed by the missing value).
+#     `missing` wherever a row is keyed by the missing value, `none` for
+#     the respondents of a multiple-response table who chose no item).
 #
 # What is NOT family-specific: everything else. A consumer written
 # against a regression view reads a descriptive one unchanged --

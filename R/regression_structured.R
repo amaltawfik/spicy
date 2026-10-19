@@ -37,8 +37,8 @@
 #                                   #                "fit_stat" |
 #                                   #                "outcome" | "vc" |
 #                                   #                "summary" | "group" |
-#                                   #                "missing"
-#                                   #                (the last three are
+#                                   #                "missing" | "none"
+#                                   #                (the last four are
 #                                   #                emitted by the
 #                                   #                descriptive families)
 #                                   #  .indent   int display indent (0/1)
@@ -237,7 +237,8 @@
   "vc",
   "summary",
   "group",
-  "missing"
+  "missing",
+  "none"
 )
 
 # Value (displayable) columns of a structured body: everything but the
