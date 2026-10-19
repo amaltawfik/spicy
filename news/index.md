@@ -278,6 +278,11 @@ PDF.
   [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
   does: with `labels = TRUE`, “Categorical table by Sex”, not “by sex”.
 
+- [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
+  no longer fails when two variables display the same label; both rows
+  show, as in the other tables. A column named twice in `select` is
+  shown once.
+
 - [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
   [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
   [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md),
@@ -318,6 +323,13 @@ PDF.
 - [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md)
   sets a no-break space before the semicolon that joins the tests of its
   comparison note in French.
+
+- [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md)
+  names its marginal row “Overall_1”, in the table and in its note, when
+  a `select` variable is labeled “Overall”, so the variable keeps its
+  label and
+  [`inline()`](https://amaltawfik.github.io/spicy/reference/inline.md)
+  reaches both rows.
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   writes the reference rows `(réf.)` under

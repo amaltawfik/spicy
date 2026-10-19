@@ -286,6 +286,9 @@ where frequencies add up. This row is the whole analytic sample, where a
 mean is recomputed over every observation and nothing is added. A mean
 is not a total.
 
+A `select` variable labeled `"Overall"` keeps its label, and the row
+takes a numbered suffix, `"Overall_1"`, in the table and in its note.
+
 ## Choosing the `select` columns
 
 The canonical form is `select = where(is.factor)`, or an explicit
