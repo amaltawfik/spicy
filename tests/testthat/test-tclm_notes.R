@@ -430,7 +430,7 @@ test_that("bootstrap note reports the valid replicate count", {
     vcov = "bootstrap",
     boot_n = 200
   )
-  note <- spicy:::.tclm_note_text(tbl)
+  note <- attr(tbl, "note")
   expect_match(note, "nonparametric bootstrap (200 replicates).", fixed = TRUE)
 })
 

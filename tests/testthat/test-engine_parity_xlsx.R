@@ -481,7 +481,7 @@ test_that("table_continuous writes its console title and missing note", {
   expect_equal(.xl_at(m, 1L, "A"), "Descriptive statistics by sex")
   expect_equal(.xl_at(m, 3L, "A"), "Variable")
   expect_equal(.xl_at(m, 4L, "G"), "LL")
-  expect_true(attr(obj, "missing_note") %in% m[, "A"])
+  expect_true(attr(obj, "note") %in% m[, "A"])
 })
 
 test_that("table_continuous_lm writes the title above its table", {

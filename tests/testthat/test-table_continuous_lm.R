@@ -1703,9 +1703,10 @@ test_that("as.data.frame.spicy_continuous_lm_table strips spicy classes/attrs", 
   expect_identical(class(df), "data.frame")
   expect_setequal(
     setdiff(names(attributes(df)), c("names", "row.names", "class")),
-    "by_var"
+    c("by_var", "note")
   )
   expect_equal(attr(df, "by_var"), "sex")
+  expect_identical(attr(df, "note"), attr(out, "note"))
   # Same content: 28 columns + same number of rows.
   expect_equal(ncol(df), 29L) # + boot_n_valid (2026-07-09)
   expect_equal(nrow(df), nrow(out))
@@ -4585,8 +4586,8 @@ test_that("rows dropped for missing by / weights are disclosed in the note", {
   )
   out <- table_continuous_lm(d, select = y, by = grp, weights = w)
   expect_equal(
-    attr(out, "missing_note"),
-    "Rows with missing grp removed: 1. Rows with missing w removed: 1."
+    attr(out, "note"),
+    "Note. Rows with missing grp removed: 1. Rows with missing w removed: 1."
   )
   printed <- paste(utils::capture.output(print(out)), collapse = "\n")
   expect_match(printed, "Rows with missing grp removed: 1.", fixed = TRUE)
@@ -4597,7 +4598,7 @@ test_that("rows dropped for missing by / weights are disclosed in the note", {
     select = y,
     by = g
   )
-  expect_null(attr(clean, "missing_note"))
+  expect_null(attr(clean, "note"))
 })
 
 test_that("proportional emmeans use the case weights (Stata margins)", {
@@ -4995,12 +4996,12 @@ test_that("missing values are disclosed in the table note (decision 14)", {
     ))),
     collapse = "\n"
   )
-  # The outcome is named by its row label, the covariate by its name, as
-  # in the "Adjusted for" line (even under `labels = TRUE`).
+  # The outcome is named by its row label, and the covariate by its label
+  # too, as in the "Adjusted for" line.
   expect_match(
     txt,
     sprintf(
-      "Missing values removed: Body mass index (%d), age (%d).",
+      "Missing values removed: Body mass index (%d), Age (years) (%d).",
       n_bmi,
       n_age
     ),
@@ -5011,7 +5012,7 @@ test_that("missing values are disclosed in the table note (decision 14)", {
     table_continuous_lm(d, select = bmi, by = sex, labels = c(bmi = "BMI"))
   )
   expect_match(
-    attr(relabelled, "missing_note"),
+    attr(relabelled, "note"),
     sprintf("Missing values removed: BMI (%d).", n_bmi),
     fixed = TRUE
   )
@@ -5056,7 +5057,7 @@ test_that("labels names the outcomes and the by variable (title, note)", {
     expect_identical(attr(out, "by_label"), by)
     expect_identical(unique(out$label), c(rows, "plain", "na_lab", "empty"))
     expect_match(
-      attr(out, "missing_note"),
+      attr(out, "note"),
       sprintf("Rows with missing %s removed: 3.", by),
       fixed = TRUE
     )

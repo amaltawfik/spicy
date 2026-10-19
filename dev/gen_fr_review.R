@@ -569,7 +569,12 @@ if (!setequal(REG$key, names(EN)) || anyDuplicated(REG$key)) {
     "header_max",
     "header_test",
     "note_vcov_jackknife_plain",
-    "note_p_adjusted_tests",
+    "note_p_adjust_method_holm",
+    "note_p_adjust_method_hochberg",
+    "note_p_adjust_method_hommel",
+    "note_p_adjust_method_bonferroni",
+    "note_p_adjust_method_bh",
+    "note_p_adjust_method_by",
     "note_exp_scope_all",
     # code_book(), added after 2026-08-23
     "excel_sheet_codebook",

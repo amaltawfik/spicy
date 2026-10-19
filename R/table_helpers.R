@@ -19,8 +19,8 @@
 # Internal: resolve display labels for a set of columns. One contract
 # for the descriptive family (`table_categorical()`, `table_continuous()`,
 # `table_continuous_lm()`, `table_outcome()` and the two survey twins),
-# wherever a variable is named for the reader: rows, the `by` title, the
-# missing-values notes. `labels` has passed `.check_labels_arg()`:
+# wherever a variable is named for the reader: rows, the `by` title, every
+# mention in the notes. `labels` has passed `.check_labels_arg()`:
 #   * FALSE: the column name;
 #   * TRUE: the column's `label` attribute (haven, labelled,
 #     `label_from_names()`) when it is a non-empty string, else the name;
@@ -737,10 +737,62 @@ make_stronger_indent <- function(x, base_indent, strong_indent, rows) {
   if (is.null(info) || info$m == 0L) {
     return(NULL)
   }
+  .p_adjust_sentence(info$method, info$m)
+}
+
+# The p_adjust sentence of every family, "P-values adjusted for 5 tests
+# (Holm method).", worded for the reader of the table rather than for the
+# R call. `m` is the family size, one per model in a regression table:
+# several models are adjusted within each model, and when their counts
+# differ the sentence gives them in the order of the models, "2 and 1
+# tests respectively". A family of one test has its own keys, so no
+# language needs a plural rule.
+.p_adjust_sentence <- function(method, m) {
+  method_name <- switch(
+    method,
+    holm = spicy_str("note_p_adjust_method_holm"),
+    hochberg = spicy_str("note_p_adjust_method_hochberg"),
+    hommel = spicy_str("note_p_adjust_method_hommel"),
+    bonferroni = spicy_str("note_p_adjust_method_bonferroni"),
+    BH = ,
+    fdr = spicy_str("note_p_adjust_method_bh"),
+    BY = spicy_str("note_p_adjust_method_by")
+  )
+  one <- all(m == 1L)
+  if (length(m) == 1L) {
+    if (one) {
+      return(spicy_fmt("note_p_adjusted_one", method_name))
+    }
+    return(spicy_fmt("note_p_adjusted", as.character(m), method_name))
+  }
+  if (one) {
+    return(spicy_fmt("note_p_adjusted_per_model_one", method_name))
+  }
+  if (length(unique(m)) == 1L) {
+    return(spicy_fmt(
+      "note_p_adjusted_per_model",
+      as.character(m[[1L]]),
+      method_name
+    ))
+  }
   spicy_fmt(
-    "note_p_adjusted",
-    .quote_val(info$method),
-    spicy_fmt("note_p_adjusted_tests", info$m)
+    "note_p_adjusted_per_model_unequal",
+    method_name,
+    .join_and(as.character(m))
+  )
+}
+
+# A list of two or more items joined with the conjunction of the language:
+# "2 and 1", "2, 1, and 3" in English, "2 et 1", "2, 1 et 3" in French.
+.join_and <- function(items) {
+  n <- length(items)
+  if (n == 2L) {
+    return(paste(items, collapse = spicy_str("note_list_and_pair")))
+  }
+  paste0(
+    paste(items[-n], collapse = spicy_str("note_list_sep_comma")),
+    spicy_str("note_list_and_last"),
+    items[[n]]
   )
 }
 

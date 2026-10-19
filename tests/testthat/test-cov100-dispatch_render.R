@@ -368,8 +368,9 @@ test_that("p_adjust on an intercept-only model is a documented no-op", {
   # Oracle: intercept p ~ 1.5e-18 < .001 in both tables.
   expect_lt(summary(fit0)$coefficients["(Intercept)", "Pr(>|t|)"], 0.001)
   expect_identical(trimws(t_adj$p[1]), "<.001")
-  # The footer still documents the (empty) adjustment family.
-  expect_match(attr(t_adj, "note"), "m = 0 coefficient", fixed = TRUE)
+  # Nothing was adjusted, and the footer does not say it was.
+  expect_false(grepl("adjusted", attr(t_adj, "note"), fixed = TRUE))
+  expect_identical(attr(t_adj, "note"), attr(t_raw, "note"))
 })
 
 

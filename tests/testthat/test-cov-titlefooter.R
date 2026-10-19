@@ -382,16 +382,10 @@ test_that("RE footer summary returns NULL when nothing informative survives", {
 
 # ---- p.adjust footer: empty coefs and differing per-model sizes ----------
 
-test_that("p.adjust footer counts 0 for a frame with no coefs", {
+test_that("p.adjust footer says nothing for a frame with no coefs", {
   frame <- list(coefs = NULL)
   out <- spicy:::build_p_adjust_footer_block_from_frames(list(frame), "holm")
-  expect_identical(
-    out,
-    paste0(
-      "P-values adjusted via stats::p.adjust(method = \"holm\"); ",
-      "m = 0 coefficient(s) per model."
-    )
-  )
+  expect_null(out)
 })
 
 test_that("p.adjust footer lists per-model m when sizes differ", {
@@ -410,10 +404,7 @@ test_that("p.adjust footer lists per-model m when sizes differ", {
   )
   expect_identical(
     out,
-    paste0(
-      "P-values adjusted via stats::p.adjust(method = \"holm\"); ",
-      "m = (2, 3) coefficient(s) per model."
-    )
+    "P-values adjusted within each model (Holm method), for 2 and 3 tests respectively."
   )
 })
 

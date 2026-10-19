@@ -152,7 +152,7 @@ dash, and an item tested by the N-1 chi-squared shows that statistic.
 Defaults to \code{FALSE}.}
 
 \item{labels}{How each variable is named in the table: in the rows,
-in the title, and in the missing-values notes. Four forms:
+in the title, and in the notes. Four forms:
 \itemize{
 \item \code{labels = FALSE} shows the column name.
 \item \code{labels = TRUE} shows the column's \code{label} attribute (as set by
@@ -265,8 +265,10 @@ invisibly.
 \code{data.frame} invisibly.
 }
 
-The data frames carry the note in \code{attr(x, "note")} and, when the table
-has a global test, \code{attr(x, "global_test")}: a one-row data frame with
+The default object and the data frames carry the note as printed in
+\code{attr(x, "note")} ("Note." included, the \code{note} you typed verbatim,
+\code{NULL} under \code{note = FALSE}) and, when the table has a global test,
+\code{attr(x, "global_test")}: a one-row data frame with
 \code{test}, \code{statistic}, \code{df}, \code{p.value}, \code{boot_n}, \code{n_items} (the items
 tested), \code{n_groups}, \code{rs_mean} and \code{rs_cv} (the design-effect summary of
 \code{global_test = "rs2"}), and \code{boot_redraws} (the resamples drawn again

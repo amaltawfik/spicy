@@ -105,7 +105,8 @@ test_that("smd = TRUE changes nothing but the column it adds", {
     smd = TRUE,
     output = "data.frame"
   )
-  expect_identical(cat_on[names(cat_off)], cat_off)
+  # The note glosses the SMD; nothing else moves.
+  expect_identical(cat_on[names(cat_off)], structure(cat_off, note = NULL))
   expect_identical(names(cat_on), c(names(cat_off), .CAT_KEY_SMD))
 
   skip_if_not_installed("flextable")

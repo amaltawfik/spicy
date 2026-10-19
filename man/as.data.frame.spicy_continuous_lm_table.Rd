@@ -30,10 +30,11 @@ These S3 methods strip the \code{"spicy_continuous_lm_table"} /
 (\code{digits}, \code{decimal_mark}, \code{ci_level}, ...) from an object returned
 by \code{\link[=table_continuous_lm]{table_continuous_lm()}} so the underlying long-format data can
 be manipulated with downstream tools (\code{dplyr}, \code{tidyr}, etc.) under
-the standard \code{data.frame} / \code{tbl_df} contract. The single attribute
-\code{"by_var"} is preserved as a lightweight provenance marker; all
-other spicy attributes are dropped. The original \code{x} is unaffected,
-and \code{print(x)} continues to render the formatted ASCII table.
+the standard \code{data.frame} / \code{tbl_df} contract. The attribute
+\code{"by_var"} is preserved as a lightweight provenance marker, and
+\code{"note"}, the note as printed; all other spicy attributes are
+dropped. The original \code{x} is unaffected, and \code{print(x)} continues to
+render the formatted ASCII table.
 }
 \seealso{
 \code{\link[=tidy.spicy_continuous_lm_table]{tidy.spicy_continuous_lm_table()}},

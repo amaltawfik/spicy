@@ -1451,7 +1451,7 @@ test_that("p_adjust adjusts the one design-based test of each variable", {
   expect_equal(meta$p_unadjusted[!is.na(meta$p_unadjusted)], raw_p)
   expect_match(
     attr(tbl, "note"),
-    'P-values adjusted via stats::p.adjust(method = "holm"); m = 3 test(s).',
+    'P-values adjusted for 3 tests (Holm method).',
     fixed = TRUE
   )
 })

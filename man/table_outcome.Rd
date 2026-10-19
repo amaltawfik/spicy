@@ -53,7 +53,7 @@ names. One block of rows per variable, in the order given. As
 everywhere in the family, \code{select} is what structures the rows.}
 
 \item{labels}{How each variable is named in the table: in the rows,
-in the title, and in the missing-values notes. The outcome follows
+in the title, and in the notes. The outcome follows
 the same rule as the \code{select} variables. Four forms:
 \itemize{
 \item \code{labels = FALSE} shows the column name.
@@ -142,7 +142,9 @@ destinations, as in \code{\link[=table_continuous]{table_continuous()}}.}
 A \code{spicy_outcome_table}: the compute frame, with the display
 frame and the typed view attached. \code{output = "data.frame"} /
 \code{"long"} returns the compute frame unclassed -- the two tokens are
-synonyms and return identical objects.
+synonyms and return identical objects. The three carry the whole
+note as printed, "Note." included, in \code{attr(x, "note")} (\code{NULL} when
+there is nothing to say).
 }
 \description{
 Summarizes \emph{one} continuous outcome across the levels of \emph{several}
@@ -268,7 +270,7 @@ returned no p-value stays out of the family.
 
 The adjustment runs before any formatting, so the \code{p} column and its
 \verb{<.001} threshold show the adjusted values, and the table note gives
-the method and the family size \code{m}. The raw p-values stay in the
+the number of tests and the method. The raw p-values stay in the
 object: a \code{p_unadjusted} column next to the p-value column of the
 returned data frames, and \code{col_meta$p$p_unadjusted} (with the method
 in \code{p_adjust} and the family size in \code{p_adjust_m}) in

@@ -156,14 +156,12 @@ print.spicy_continuous_table <- function(x, ...) {
     padding <- 0L
   }
 
-  # drop_na disclosure ("Missing values removed: ...") set by
-  # table_continuous(); NULL when nothing was removed.
-  missing_note <- attr(x, "missing_note")
-
   spicy_print_table(
     display_df,
     title = title,
-    note = missing_note,
+    # The note table_continuous() assembled, "Note." included; NULL when
+    # there is nothing to say.
+    note = attr(x, "note"),
     padding = padding,
     first_column_line = TRUE,
     row_total_line = FALSE,
@@ -197,10 +195,11 @@ print.spicy_continuous_table <- function(x, ...) {
 
 # Internal: drop spicy classes and rendering-only attributes from an
 # object returned by table_continuous(), keeping only the data.frame
-# contract plus the `group_var` provenance attribute. Used by every
-# coercion / broom S3 method.
+# contract plus the `group_var` provenance attribute and the `note`.
+# Used by every coercion / broom S3 method.
 unclass_spicy_continuous_table <- function(x) {
   group_var <- attr(x, "group_var", exact = TRUE)
+  note <- attr(x, "note", exact = TRUE)
   attr_names <- names(attributes(x))
   drop <- setdiff(attr_names, c("names", "row.names", "class"))
   for (nm in drop) {
@@ -210,6 +209,7 @@ unclass_spicy_continuous_table <- function(x) {
   if (!is.null(group_var)) {
     attr(x, "group_var") <- group_var
   }
+  attr(x, "note") <- note
   x
 }
 
@@ -221,10 +221,10 @@ unclass_spicy_continuous_table <- function(x) {
 #' from an object returned by [table_continuous()] so the underlying
 #' long-format data can be manipulated with downstream tools (`dplyr`,
 #' `tidyr`, etc.) under the standard `data.frame` / `tbl_df` contract.
-#' The single attribute `"group_var"` is preserved as a lightweight
-#' provenance marker; all other spicy attributes are dropped. The
-#' original `x` is unaffected, and `print(x)` continues to render the
-#' formatted ASCII table.
+#' The attribute `"group_var"` is preserved as a lightweight provenance
+#' marker, and `"note"`, the note as printed; all other spicy attributes
+#' are dropped. The original `x` is unaffected, and `print(x)` continues
+#' to render the formatted ASCII table.
 #'
 #' The returned data is identical to what `output = "long"` (or
 #' `output = "data.frame"`) returns directly from [table_continuous()];

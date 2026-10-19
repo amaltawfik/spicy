@@ -343,7 +343,7 @@ test_that("Holm is the default adjustment, and the raw p-values stay", {
     attr(out, "note"),
     paste(
       "Item p-values: Pearson chi-squared test of each item by group.",
-      "P-values adjusted via stats::p.adjust(method = \"holm\"); m = 5 test(s)."
+      "P-values adjusted for 5 tests (Holm method)."
     ),
     fixed = TRUE
   )
@@ -351,7 +351,7 @@ test_that("Holm is the default adjustment, and the raw p-values stay", {
   toy <- table_multiresponse(.mr_toy(), c(x1, x2, x3, x4), by = g)
   expect_match(
     attr(toy, "note"),
-    "m = 2 test(s). Not tested (no variation, shown as \u2013): x3, x4.",
+    "2 tests (Holm method). Not tested (no variation, shown as \u2013): x3, x4.",
     fixed = TRUE
   )
   s <- as_structured(.mr_farm_tbl(test = "chisq"))
@@ -372,10 +372,10 @@ test_that("p_adjust = \"none\" leaves the item p-values raw and says so", {
     "each item by group. Overall group comparison:",
     fixed = TRUE
   )
-  expect_false(grepl("adjusted via", attr(out, "note"), fixed = TRUE))
+  expect_false(grepl("adjusted for", attr(out, "note"), fixed = TRUE))
   # Without p-values there is nothing to adjust, and nothing is said.
   expect_false(grepl(
-    "adjusted via",
+    "adjusted for",
     attr(.mr_farm_tbl(p_value = FALSE, output = "data.frame"), "note"),
     fixed = TRUE
   ))
@@ -545,8 +545,7 @@ test_that("test = \"auto\" takes Fisher's exact test where an expected count is 
     attr(out, "note"),
     paste(
       "Item p-values: Pearson chi-squared test (C, D); Fisher exact test",
-      "(A, B, E). P-values adjusted via stats::p.adjust(method = \"holm\");",
-      "m = 5 test(s)."
+      "(A, B, E). P-values adjusted for 5 tests (Holm method)."
     ),
     fixed = TRUE
   )
@@ -682,7 +681,7 @@ test_that("with no item tested, the note names no item test", {
   tbl <- table_multiresponse(d, c(x, y), by = g)
   note <- attr(tbl, "note")
   expect_false(grepl("Item p-values", note, fixed = TRUE))
-  expect_false(grepl("adjusted via", note, fixed = TRUE))
+  expect_false(grepl("adjusted for", note, fixed = TRUE))
   expect_match(note, "Not tested (no variation", fixed = TRUE)
   expect_true(all(is.na(tbl$test_type)))
   expect_null(attr(tbl, "global_test"))
@@ -1916,7 +1915,7 @@ test_that("the French table translates its title, headers, base row and notes", 
   expect_match(note, "Plusieurs r\u00e9ponses possibles\u00a0:", fixed = TRUE)
   expect_match(
     note,
-    "Valeurs p ajust\u00e9es par stats::p.adjust(method = \"holm\")\u00a0; m = 5 test(s).",
+    "Valeurs p ajust\u00e9es pour 5 tests (m\u00e9thode de Holm).",
     fixed = TRUE
   )
   expect_match(

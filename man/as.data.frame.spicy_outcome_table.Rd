@@ -28,7 +28,8 @@ rendering-only attributes from an object returned by
 \code{\link[=table_outcome]{table_outcome()}}, so the underlying long-format data can be
 manipulated with downstream tools under the standard \code{data.frame} /
 \code{tbl_df} contract. The \code{"outcome"} and \code{"select"} attributes are kept as
-lightweight provenance markers. The original \code{x} is unaffected, and
+lightweight provenance markers, and \code{"note"}, the note as printed. The
+original \code{x} is unaffected, and
 \code{print(x)} continues to render the formatted table.
 }
 \details{

@@ -30,7 +30,7 @@ unclass_spicy_continuous_svy_table <- function(x) {
   keep <- list(
     group_var = attr(x, "group_var", exact = TRUE),
     design_meta = attr(x, "design_meta", exact = TRUE),
-    note = attr(x, "missing_note", exact = TRUE)
+    note = attr(x, "note", exact = TRUE)
   )
   out <- as.data.frame(unclass(x), check.names = FALSE)
   attributes(out) <- attributes(out)[

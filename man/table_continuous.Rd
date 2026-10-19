@@ -221,7 +221,7 @@ access. Defaults to \code{TRUE}. The CI level is taken from \code{ci_level}.
 Ignored (with a warning) when \code{show_columns} is supplied.}
 
 \item{labels}{How each variable is named in the table: in the rows,
-in the title, and in the missing-values notes. Four forms:
+in the title, and in the notes. Four forms:
 \itemize{
 \item \code{labels = FALSE} shows the column name.
 \item \code{labels = TRUE} shows the column's \code{label} attribute (as set by
@@ -398,11 +398,11 @@ and rows removed for a missing \code{by} value under \code{drop_na = TRUE})
 travels with the table on every route, not just the console:
 \code{"default"} prints it under the ASCII table, \code{"tinytable"} / \code{"gt"} /
 \code{"flextable"} / \code{"word"} carry it as a table note, \code{"excel"} writes
-it below the body, and
-\code{"data.frame"} / \code{"long"} keep the note verbatim, opening "Note.", in
-the \code{missing_note} attribute (\code{attr(x, "missing_note")}, \code{NULL} when
-there is nothing to say) so a pipeline that renders the numbers itself
-can still state what left the table. On the \code{"tinytable"} route the
+it below the body, and the default object and the data frames of
+\code{"data.frame"} / \code{"long"} keep the whole note as printed, "Note."
+included, in \code{attr(x, "note")} (\code{NULL} when there is nothing to say),
+so a pipeline that renders the numbers itself can still state what
+left the table. On the \code{"tinytable"} route the
 note is set one size down; \code{options(spicy.note_style)} governs that
 (see \code{\link[=table_regression]{table_regression()}}).
 
@@ -706,7 +706,7 @@ returned no p-value stays out of the family.
 
 The adjustment runs before any formatting, so the \code{p} column and its
 \verb{<.001} threshold show the adjusted values, and the table note gives
-the method and the family size \code{m}. The raw p-values stay in the
+the number of tests and the method. The raw p-values stay in the
 object: a \code{p_unadjusted} column next to the p-value column of the
 returned data frames, and \code{col_meta$p$p_unadjusted} (with the method
 in \code{p_adjust} and the family size in \code{p_adjust_m}) in

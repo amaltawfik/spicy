@@ -813,18 +813,71 @@ test_that("the p_adjust sentence of the regression follows the language", {
     )
   )
   en <- spicy:::build_p_adjust_footer_block_from_frames(list(frame), "holm")
-  expect_identical(
-    en,
-    'P-values adjusted via stats::p.adjust(method = "holm"); m = 2 coefficient(s) per model.'
-  )
+  expect_identical(en, "P-values adjusted for 2 tests (Holm method).")
   withr::local_options(spicy.language = "fr")
   fr <- spicy:::build_p_adjust_footer_block_from_frames(list(frame), "holm")
   expect_identical(
     fr,
-    paste0(
-      "Valeurs p ajust\u00E9es par stats::p.adjust(method = \"holm\")\u00A0; ",
-      "m = 2 coefficient(s) par mod\u00E8le."
+    "Valeurs p ajust\u00E9es pour 2 tests (m\u00E9thode de Holm)."
+  )
+})
+
+test_that("the p_adjust sentence names every method and counts in the language", {
+  methods <- c(
+    holm = "Holm",
+    hochberg = "Hochberg",
+    hommel = "Hommel",
+    bonferroni = "Bonferroni",
+    BH = "Benjamini-Hochberg",
+    fdr = "Benjamini-Hochberg",
+    BY = "Benjamini-Yekutieli"
+  )
+  for (m in names(methods)) {
+    expect_identical(
+      spicy:::.p_adjust_sentence(m, 4L),
+      sprintf("P-values adjusted for 4 tests (%s method).", methods[[m]])
     )
+  }
+  expect_identical(
+    spicy:::.p_adjust_sentence("holm", 1L),
+    "P-values adjusted for 1 test (Holm method)."
+  )
+  expect_identical(
+    spicy:::.p_adjust_sentence("BY", c(3L, 3L)),
+    "P-values adjusted within each model for 3 tests (Benjamini-Yekutieli method)."
+  )
+  expect_identical(
+    spicy:::.p_adjust_sentence("holm", c(1L, 1L)),
+    "P-values adjusted within each model for 1 test (Holm method)."
+  )
+  expect_identical(
+    spicy:::.p_adjust_sentence("holm", c(2L, 1L)),
+    "P-values adjusted within each model (Holm method), for 2 and 1 tests respectively."
+  )
+  expect_identical(
+    spicy:::.p_adjust_sentence("holm", c(2L, 1L, 3L)),
+    "P-values adjusted within each model (Holm method), for 2, 1, and 3 tests respectively."
+  )
+  withr::local_options(spicy.language = "fr")
+  expect_identical(
+    spicy:::.p_adjust_sentence("fdr", 1L),
+    "Valeurs p ajust\u00E9es pour 1 test (m\u00E9thode de Benjamini-Hochberg)."
+  )
+  expect_identical(
+    spicy:::.p_adjust_sentence("BY", c(3L, 3L)),
+    "Valeurs p ajust\u00E9es dans chaque mod\u00E8le pour 3 tests (m\u00E9thode de Benjamini-Yekutieli)."
+  )
+  expect_identical(
+    spicy:::.p_adjust_sentence("hommel", c(1L, 1L)),
+    "Valeurs p ajust\u00E9es dans chaque mod\u00E8le pour 1 test (m\u00E9thode de Hommel)."
+  )
+  expect_identical(
+    spicy:::.p_adjust_sentence("bonferroni", c(2L, 5L)),
+    "Valeurs p ajust\u00E9es dans chaque mod\u00E8le (m\u00E9thode de Bonferroni), pour 2 et 5 tests respectivement."
+  )
+  expect_identical(
+    spicy:::.p_adjust_sentence("holm", c(2L, 1L, 3L)),
+    "Valeurs p ajust\u00E9es dans chaque mod\u00E8le (m\u00E9thode de Holm), pour 2, 1 et 3 tests respectivement."
   )
 })
 
@@ -1138,7 +1191,7 @@ test_that("the group-comparison note of table_continuous() joins in the language
         ),
         output = "long"
       ),
-      "missing_note"
+      "note"
     )
   }
   expect_match(
@@ -1372,7 +1425,7 @@ test_that("the abbreviation and association-measure notes join in the language",
   )
   expect_identical(
     assoc(),
-    "Cramer's V: Smoking; Kendall's Tau-b: Education."
+    "Cramer's V: Smoking. Kendall's Tau-b: Education."
   )
   withr::local_options(spicy.language = "fr")
   expect_identical(
@@ -1384,7 +1437,7 @@ test_that("the abbreviation and association-measure notes join in the language",
   )
   expect_identical(
     assoc(),
-    "V de Cram\u00E9r\u00A0: Smoking\u00A0; Tau-b de Kendall\u00A0: Education."
+    "V de Cram\u00E9r\u00A0: Smoking. Tau-b de Kendall\u00A0: Education."
   )
 })
 

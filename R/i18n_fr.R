@@ -302,8 +302,7 @@
   note_exp_no_se_single = "%s exponenti\u00E9s et affich\u00E9s en %s\u00A0; %s.%s",
   note_exp_no_se_multi = "%s exponenti\u00E9s et affich\u00E9s en %s (selon la famille)\u00A0; %s.%s",
   note_list_sep_semicolon = "\u00A0; ",
-  note_assoc_measure_item = "%s\u00A0: %s",
-  note_assoc_measures_sep = "\u00A0; ",
+  note_assoc_measure_item = "%s\u00A0: %s.",
 
   # -- table_continuous(): column headers -----------------------------------
   header_group = "Groupe",
@@ -330,8 +329,13 @@
   test_fisher_midp = "test mid-p de Fisher",
   test_pearson_chisq_simulated_in_list = "test du khi-deux de Pearson, simul\u00E9",
   test_fisher_mc_in_list = "test exact de Fisher, Monte-Carlo avec %s r\u00E9plications",
-  note_p_adjusted = "Valeurs p ajust\u00E9es par stats::p.adjust(method = %s)\u00A0; %s.",
-  note_p_adjusted_coefficients = "m = %s coefficient(s) par mod\u00E8le",
+  note_p_adjusted = "Valeurs p ajust\u00E9es pour %s tests (m\u00E9thode de %s).",
+  note_p_adjusted_one = "Valeurs p ajust\u00E9es pour 1 test (m\u00E9thode de %s).",
+  note_p_adjusted_per_model = "Valeurs p ajust\u00E9es dans chaque mod\u00E8le pour %s tests (m\u00E9thode de %s).",
+  note_p_adjusted_per_model_one = "Valeurs p ajust\u00E9es dans chaque mod\u00E8le pour 1 test (m\u00E9thode de %s).",
+  note_p_adjusted_per_model_unequal = "Valeurs p ajust\u00E9es dans chaque mod\u00E8le (m\u00E9thode de %s), pour %s tests respectivement.",
+  note_list_and_pair = " et ",
+  note_list_and_last = " et ",
 
   # -- table_outcome(): the marginal row and the two disclosures ------------
   row_overall = "Ensemble",

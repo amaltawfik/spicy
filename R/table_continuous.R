@@ -184,7 +184,7 @@
 #'   access. Defaults to `TRUE`. The CI level is taken from `ci_level`.
 #'   Ignored (with a warning) when `show_columns` is supplied.
 #' @param labels How each variable is named in the table: in the rows,
-#'   in the title, and in the missing-values notes. Four forms:
+#'   in the title, and in the notes. Four forms:
 #'   * `labels = FALSE` shows the column name.
 #'   * `labels = TRUE` shows the column's `label` attribute (as set by
 #'     `haven`, `labelled`, or [label_from_names()]) when it is present,
@@ -345,11 +345,11 @@
 #' travels with the table on every route, not just the console:
 #' `"default"` prints it under the ASCII table, `"tinytable"` / `"gt"` /
 #' `"flextable"` / `"word"` carry it as a table note, `"excel"` writes
-#' it below the body, and
-#' `"data.frame"` / `"long"` keep the note verbatim, opening "Note.", in
-#' the `missing_note` attribute (`attr(x, "missing_note")`, `NULL` when
-#' there is nothing to say) so a pipeline that renders the numbers itself
-#' can still state what left the table. On the `"tinytable"` route the
+#' it below the body, and the default object and the data frames of
+#' `"data.frame"` / `"long"` keep the whole note as printed, "Note."
+#' included, in `attr(x, "note")` (`NULL` when there is nothing to say),
+#' so a pipeline that renders the numbers itself can still state what
+#' left the table. On the `"tinytable"` route the
 #' note is set one size down; `options(spicy.note_style)` governs that
 #' (see [table_regression()]).
 #'
@@ -1766,20 +1766,25 @@ table_continuous <- function(
   # appended to the same note: they exist only when `show_columns`
   # changes the display, so the default table's note is untouched.
   # The whole note is assembled here, so it opens with "Note." here.
-  missing_note <- .note_with_prefix(paste_note_parts(c(
+  table_note <- .note_with_prefix(paste_note_parts(c(
     build_weights_note(),
     build_missing_note(),
-    build_test_note(test_used, auto_rank, n_test_groups),
+    build_test_note(
+      test_used,
+      auto_rank,
+      n_test_groups,
+      stats::setNames(var_labels, numeric_cols)
+    ),
     build_column_glosses(tokens_union, result, ci_level, decimal_mark),
     build_smd_note(do_smd, real_group_levels, decimal_mark),
     .desc_p_adjust_note(p_adjust_info)
   )))
 
   if (output %in% c("data.frame", "long")) {
-    # The raw frame keeps the ledger as an attribute: a pipeline that
+    # The raw frame keeps the note as an attribute: a pipeline that
     # re-renders the numbers itself must still be able to state what was
     # removed. See the `output` section of the docs.
-    attr(result, "missing_note") <- missing_note
+    attr(result, "note") <- table_note
     return(result)
   }
 
@@ -1829,14 +1834,14 @@ table_continuous <- function(
         excel_sheet = excel_sheet,
         clipboard_delim = clipboard_delim,
         word_path = word_path,
-        note = missing_note
+        note = table_note
       )
     )
   }
 
   # --- return ---
   # Disclosure note: print() renders it under the table.
-  attr(result, "missing_note") <- missing_note
+  attr(result, "note") <- table_note
   # Typed view for `as_structured()`: the numbers come from `result`
   # (the compute frame), the composite cells from the very display
   # frame print() renders, so the two can never word a cell
@@ -2513,8 +2518,9 @@ continuous_test_label <- function(method, n_groups) {
 
 # Disclose the test per variable, but ONLY when the display forced at
 # least one variable onto the rank family: with a uniform, unswitched
-# default the table keeps its historical note.
-build_test_note <- function(test_used, auto_rank, n_groups) {
+# default the table keeps its historical note. Each variable is named as
+# its rows name it: `var_labels` is named by column, like `test_used`.
+build_test_note <- function(test_used, auto_rank, n_groups, var_labels) {
   if (!any(auto_rank) || all(is.na(test_used))) {
     return(NULL)
   }
@@ -2539,7 +2545,7 @@ build_test_note <- function(test_used, auto_rank, n_groups) {
           spicy_fmt(
             "note_group_comparison_item",
             lb,
-            .join_note_vars(by_label[[lb]])
+            .join_note_vars(unname(var_labels[by_label[[lb]]]))
           )
         },
         character(1)

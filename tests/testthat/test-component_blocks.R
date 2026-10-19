@@ -286,7 +286,11 @@ test_that("p_adjust footer m matches the family actually adjusted (component int
   out <- table_regression(fit, p_adjust = "holm")
   note <- paste(attr(out, "note"), collapse = "\n")
   # Family: 4 count slopes + 1 zero slope; both intercepts excluded.
-  expect_match(note, "m = 5 coefficient(s) per model", fixed = TRUE)
+  expect_match(
+    note,
+    "P-values adjusted for 5 tests (Holm method).",
+    fixed = TRUE
+  )
 })
 
 

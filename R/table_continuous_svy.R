@@ -558,7 +558,7 @@ order_continuous_svy_tokens <- function(tokens) {
 #'   keeps the default display.
 #' @param ci,ci_level The mean's confidence interval and its level.
 #' @param labels How each variable is named in the table: in the rows,
-#'   in the title, and in the missing-values notes. Four forms:
+#'   in the title, and in the notes. Four forms:
 #'   * `labels = FALSE` shows the column name.
 #'   * `labels = TRUE` shows the column's `label` attribute (as set by
 #'     `haven`, `labelled`, or [label_from_names()]) when it is present,
@@ -595,7 +595,8 @@ order_continuous_svy_tokens <- function(tokens) {
 #' @return A `spicy_continuous_svy_table`: the compute frame, with the
 #'   display frame and the typed view attached. `output = "data.frame"`
 #'   / `"long"` returns the compute frame unclassed -- the two tokens
-#'   are synonyms and return identical objects.
+#'   are synonyms and return identical objects. The three carry the
+#'   whole note as printed, "Note." included, in `attr(x, "note")`.
 #'
 #' @seealso [table_continuous()] for the data-frame sibling,
 #'   [table_categorical_svy()] for categorical variables,
@@ -1089,7 +1090,7 @@ table_continuous_svy <- function(
     rep(list(tokens), length(numeric_cols)),
     numeric_cols
   )
-  attr(result, "missing_note") <- note
+  attr(result, "note") <- note
   attr(result, "design_meta") <- meta
   class(result) <- c("spicy_continuous_svy_table", "data.frame")
 

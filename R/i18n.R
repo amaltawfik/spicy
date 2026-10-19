@@ -594,10 +594,11 @@
   # still sees where each item ends (Chicago Manual of Style 6.60).
   note_list_sep_comma = ", ",
   note_list_sep_semicolon = "; ",
-  note_assoc_measure_item = "%s: %s",
-  # The joiner of those items in the association-measure note of
-  # `table_categorical()`.
-  note_assoc_measures_sep = "; ",
+  # One sentence per measure in the association-measure note of
+  # `table_categorical()`, "Phi: smoking. Cramer's V: education.": the
+  # list inside a measure takes the semicolon of `.join_note_vars()` when
+  # a label holds a comma, so the measures cannot be joined by one too.
+  note_assoc_measure_item = "%s: %s.",
 
   # -- table_continuous(): column headers ------------------------------------
   # The column NAME and the `col_meta` key stay frozen English -- they are
@@ -708,14 +709,34 @@
   test_fisher_mc_in_list = "Fisher exact test, Monte Carlo with %s replicates",
 
   # -- p_adjust: one sentence for every family that adjusts ------------------
-  # `table_regression()` and the descriptive tables share the sentence;
-  # only the family size differs: coefficients per model there, tests of
-  # the table here. Two holes: the quoted method (an API identifier,
-  # never translated), then the family-size fragment. The coefficient
-  # fragment takes a string ("3", or "(3, 4)" when the models differ).
-  note_p_adjusted = "P-values adjusted via stats::p.adjust(method = %s); %s.",
-  note_p_adjusted_coefficients = "m = %s coefficient(s) per model",
-  note_p_adjusted_tests = "m = %d test(s)",
+  # `table_regression()` and the descriptive tables share the sentence,
+  # assembled by `.p_adjust_sentence()`. Two holes: the number of tests,
+  # then the name of the method (`note_p_adjust_method_*`). The family of
+  # a regression table is the coefficients of each model, so a table of
+  # several models says the adjustment ran within each model: one number
+  # when the models agree, or (`_unequal`, method first) the numbers of the
+  # models in order, joined by `.join_and()`, "2 and 1 tests
+  # respectively". A family of one test takes the `_one` keys, so that no
+  # language needs a plural rule.
+  note_p_adjusted = "P-values adjusted for %s tests (%s method).",
+  note_p_adjusted_one = "P-values adjusted for 1 test (%s method).",
+  note_p_adjusted_per_model = "P-values adjusted within each model for %s tests (%s method).",
+  note_p_adjusted_per_model_one = "P-values adjusted within each model for 1 test (%s method).",
+  note_p_adjusted_per_model_unequal = "P-values adjusted within each model (%s method), for %s tests respectively.",
+  # The conjunction of a list of numbers, "2 and 1", "2, 1, and 3": the
+  # joiner of two items, then the one before the last of three or more
+  # (the others take `note_list_sep_comma`). US English writes the serial
+  # comma; French has none before "et".
+  note_list_and_pair = " and ",
+  note_list_and_last = ", and ",
+  # The methods of `stats::p.adjust()` by the names a reader knows. "BH"
+  # and its alias "fdr" are one method.
+  note_p_adjust_method_holm = "Holm",
+  note_p_adjust_method_hochberg = "Hochberg",
+  note_p_adjust_method_hommel = "Hommel",
+  note_p_adjust_method_bonferroni = "Bonferroni",
+  note_p_adjust_method_bh = "Benjamini-Hochberg",
+  note_p_adjust_method_by = "Benjamini-Yekutieli",
 
   # -- table_outcome(): the marginal row and the two disclosures ------------
   # NOT `label_total` / `header_margin_total`, which both read "Total".

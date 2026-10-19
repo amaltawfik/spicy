@@ -357,13 +357,14 @@
   per_row
 }
 
-# Build the sentence listing which measure was used for which variable
+# Build the sentences listing which measure was used for which variable
 # when the rows of a `table_categorical()` table use more than one
-# association measure. It carries no "Note." prefix: the note opens
-# with it once, in `.categorical_note()`, whatever sentence comes first.
+# association measure, one sentence per measure. It carries no "Note."
+# prefix: the note opens with it once, in `.categorical_note()`, whatever
+# sentence comes first.
 #
 # Example output:
-#   "Cramer's V: smoking, education; Kendall's Tau-b: self_rated_health."
+#   "Cramer's V: smoking, education. Kendall's Tau-b: self_rated_health."
 .assoc_note_apa <- function(per_row_measures, labels) {
   shown <- per_row_measures[per_row_measures != "none"]
   if (length(shown) == 0L) {
@@ -386,7 +387,7 @@
     },
     character(1)
   )
-  paste0(paste(parts, collapse = spicy_str("note_assoc_measures_sep")), ".")
+  paste(parts, collapse = " ")
 }
 
 # -- Internal helpers for the per-variable test ------------------------------
@@ -671,7 +672,7 @@
 #'   and [table_continuous_lm()]); declared missing values follow
 #'   `user_na` as usual.
 #' @param labels How each variable is named in the table: in the rows,
-#'   in the title, and in the missing-values notes. Four forms:
+#'   in the title, and in the notes. Four forms:
 #'   * `labels = FALSE` shows the column name.
 #'   * `labels = TRUE` shows the column's `label` attribute (as set by
 #'     `haven`, `labelled`, or [label_from_names()]) when it is present,
@@ -953,16 +954,16 @@
 #'     `data.frame` invisibly.
 #' }
 #'
-#' The `drop_na = TRUE` disclosure travels with the table on every
-#' route, not just the console: `"default"` prints it under the ASCII
-#' table, `"tinytable"` / `"gt"` / `"flextable"` / `"word"` carry it as
-#' a table note, `"excel"` writes it below the body, and
-#' `"data.frame"` keeps the sentence verbatim in the
-#' `missing_note` attribute (`attr(x, "missing_note")`, `NULL` when
-#' nothing was removed) so a pipeline that renders the numbers itself
-#' can still state what left the table. On the `"tinytable"` route the
-#' note is set one size down; `options(spicy.note_style)` governs that
-#' (see [table_regression()]).
+#' The note, the `drop_na = TRUE` disclosure included, travels with the
+#' table on every route, not just the console: `"default"` prints it
+#' under the ASCII table, `"tinytable"` / `"gt"` / `"flextable"` /
+#' `"word"` carry it as a table note, `"excel"` writes it below the body,
+#' and the default object and the data frames of `"data.frame"` /
+#' `"long"` keep the whole note as printed, "Note." included, in
+#' `attr(x, "note")` (`NULL` when there is nothing to say), so a pipeline
+#' that renders the numbers itself can still state what left the table.
+#' On the `"tinytable"` route the note is set one size down;
+#' `options(spicy.note_style)` governs that (see [table_regression()]).
 #'
 #' The Excel sheet carries the same title the console prints on its
 #' first row; the table itself starts on row 3.
@@ -1070,7 +1071,7 @@
 #'
 #' The adjustment runs before any formatting, so the `p` column and its
 #' `<.001` threshold show the adjusted values, and the table note gives
-#' the method and the family size `m`. The raw p-values stay in the
+#' the number of tests and the method. The raw p-values stay in the
 #' object: a `p_unadjusted` column next to the p-value column of the
 #' returned data frames, and `col_meta$p$p_unadjusted` (with the method
 #' in `p_adjust` and the family size in `p_adjust_m`) in
@@ -2203,6 +2204,8 @@ table_categorical <- function(
     }
 
     if (output == "long") {
+      # Every data frame carries the note as print() shows it.
+      attr(long_raw, "note") <- .categorical_note(build_missing_note(), NULL)
       return(long_raw)
     }
 
@@ -2227,10 +2230,10 @@ table_categorical <- function(
     }
 
     if (output == "data.frame") {
-      # The raw frame keeps the ledger as an attribute: a pipeline that
+      # The raw frame keeps the note as an attribute: a pipeline that
       # re-renders the numbers itself must still be able to state what
       # was removed. See the `output` section of the docs.
-      attr(wide_raw, "missing_note") <- build_missing_note()
+      attr(wide_raw, "note") <- .categorical_note(build_missing_note(), NULL)
       return(wide_raw)
     }
 
@@ -2356,6 +2359,9 @@ table_categorical <- function(
       out <- wide_raw
       attr(out, "display_df") <- report_wide_char
       attr(out, "group_var") <- NULL
+      # The whole note, as print() shows it; `missing_note` stays the part
+      # print() assembles it from.
+      attr(out, "note") <- oneway_note
       attr(out, "missing_note") <- missing_note
       attr(out, "indent_text") <- indent_text
       attr(out, "align") <- align
@@ -3582,6 +3588,11 @@ table_categorical <- function(
       names(out)[names(out) == ".smd"] <- "smd"
       names(out)[names(out) == ".smd_type"] <- "smd_type"
     }
+    # Every data frame carries the note as print() shows it.
+    attr(out, "note") <- .categorical_note(
+      build_missing_note(),
+      assoc_note_text
+    )
     return(out)
   }
   # Only the long output publishes the per-row measure key; the display
@@ -3677,10 +3688,10 @@ table_categorical <- function(
   # same disclosure, not print() alone.
   missing_note <- build_missing_note()
   if (output == "data.frame") {
-    # The raw frame keeps the ledger as an attribute: a pipeline that
+    # The raw frame keeps the note as an attribute: a pipeline that
     # re-renders the numbers itself must still be able to state what was
     # removed. See the `output` section of the docs.
-    attr(wide_raw, "missing_note") <- missing_note
+    attr(wide_raw, "note") <- .categorical_note(missing_note, assoc_note_text)
     return(wide_raw)
   }
 
@@ -3884,6 +3895,9 @@ table_categorical <- function(
   if (output == "default") {
     out <- wide_raw
     attr(out, "display_df") <- report_wide_char
+    # The whole note, as print() shows it; `missing_note` and `assoc_note`
+    # stay the two parts print() assembles it from.
+    attr(out, "note") <- .categorical_note(missing_note, assoc_note_text)
     attr(out, "missing_note") <- missing_note
     attr(out, "group_var") <- by_name
     attr(out, "group_label") <- by_label

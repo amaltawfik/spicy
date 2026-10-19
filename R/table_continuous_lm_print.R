@@ -134,15 +134,14 @@ print.spicy_continuous_lm_table <- function(x, ...) {
     padding <- 0L
   }
 
-  # APA-style footer: covariate-adjustment estimand + non-classical
-  # SE-estimator disclosure, built by the shared helper so the console
-  # and every rich exporter carry the same note.
-  note <- .tclm_note_text(x)
-
   spicy_print_table(
     display_df,
     title = .continuous_lm_title(by_label),
-    note = note,
+    # APA-style footer (covariate adjustment, non-classical SE estimator,
+    # missing data), built once by `.tclm_note_text()` in
+    # table_continuous_lm(), so the console and every rich exporter carry
+    # the same note.
+    note = attr(x, "note"),
     padding = padding,
     first_column_line = TRUE,
     row_total_line = FALSE,
@@ -168,9 +167,11 @@ print.spicy_continuous_lm_table <- function(x, ...) {
 
 # ---- Shared note builder ---------------------------------------------------
 
-# Internal: build the table note shared by the console print method
-# and every rich exporter from the attributes stored on a
-# `spicy_continuous_lm_table` object.
+# Internal: build the table note from the attributes of the compute
+# frame, once, in `table_continuous_lm()`: the console print method and
+# every rich exporter read the result, the `note` attribute.
+# `missing_note` is the missing-data disclosure, and `covariates` the
+# covariates as the note names them (their labels).
 #
 #   * Line 1 (covariate-adjusted models only): names the covariate(s)
 #     and the adjustment estimand explicitly because the
@@ -187,8 +188,11 @@ print.spicy_continuous_lm_table <- function(x, ...) {
 # string with "Note. " prefixed to the FIRST line and lines joined by
 # "\n" (the console renderer prints multi-line notes as-is; the rich
 # engines collapse the newlines themselves).
-.tclm_note_text <- function(x) {
-  covariates <- attr(x, "covariates") %||% character()
+.tclm_note_text <- function(
+  x,
+  missing_note = NULL,
+  covariates = attr(x, "covariates") %||% character()
+) {
   adjustment <- attr(x, "adjustment") %||% NA_character_
   vcov_type <- attr(x, "vcov_type") %||% "classical"
   cluster_name <- attr(x, "cluster_name") %||% NA_character_
@@ -233,7 +237,6 @@ print.spicy_continuous_lm_table <- function(x, ...) {
   # Missing-data disclosure (rows dropped for a missing `by` value or
   # a missing weight), assembled by table_continuous_lm() -- the same
   # ledger convention as table_continuous() / table_categorical().
-  missing_note <- attr(x, "missing_note")
   if (!is.null(missing_note)) {
     lines <- c(lines, missing_note)
   }
@@ -296,10 +299,11 @@ print.spicy_continuous_lm_table <- function(x, ...) {
 
 # Internal: drop spicy classes and rendering-only attributes from an
 # object returned by table_continuous_lm(), keeping only the
-# data.frame contract plus the `by_var` provenance attribute. Used by
-# every coercion / broom S3 method.
+# data.frame contract plus the `by_var` provenance attribute and the
+# `note`. Used by every coercion / broom S3 method.
 unclass_spicy_continuous_lm_table <- function(x) {
   by_var <- attr(x, "by_var", exact = TRUE)
+  note <- attr(x, "note", exact = TRUE)
   attr_names <- names(attributes(x))
   drop <- setdiff(attr_names, c("names", "row.names", "class"))
   for (nm in drop) {
@@ -309,6 +313,7 @@ unclass_spicy_continuous_lm_table <- function(x) {
   if (!is.null(by_var)) {
     attr(x, "by_var") <- by_var
   }
+  attr(x, "note") <- note
   x
 }
 
@@ -319,10 +324,11 @@ unclass_spicy_continuous_lm_table <- function(x) {
 #' (`digits`, `decimal_mark`, `ci_level`, ...) from an object returned
 #' by [table_continuous_lm()] so the underlying long-format data can
 #' be manipulated with downstream tools (`dplyr`, `tidyr`, etc.) under
-#' the standard `data.frame` / `tbl_df` contract. The single attribute
-#' `"by_var"` is preserved as a lightweight provenance marker; all
-#' other spicy attributes are dropped. The original `x` is unaffected,
-#' and `print(x)` continues to render the formatted ASCII table.
+#' the standard `data.frame` / `tbl_df` contract. The attribute
+#' `"by_var"` is preserved as a lightweight provenance marker, and
+#' `"note"`, the note as printed; all other spicy attributes are
+#' dropped. The original `x` is unaffected, and `print(x)` continues to
+#' render the formatted ASCII table.
 #'
 #' @param x A `spicy_continuous_lm_table` returned by
 #'   [table_continuous_lm()].

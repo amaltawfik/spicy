@@ -306,8 +306,7 @@
 #'   in the wide and rendered outputs when a single contrast is shown.
 #'   Defaults to `TRUE`.
 #' @param labels How each variable is named in the table: in the rows,
-#'   in the title, and in the missing-values notes. The covariates keep
-#'   their names. Four forms:
+#'   in the title, and in the notes, the covariates included. Four forms:
 #'   * `labels = FALSE` shows the column name.
 #'   * `labels = TRUE` shows the column's `label` attribute (as set by
 #'     `haven`, `labelled`, or [label_from_names()]) when it is present,
@@ -447,7 +446,9 @@
 #'
 #' The Excel sheet carries the same title the console prints on its
 #' first row; the table itself starts on row 3, and the note lines sit
-#' below the body.
+#' below the body. The default object and the data frames of
+#' `"data.frame"` and `"long"` carry the whole note as printed, "Note."
+#' included, in `attr(x, "note")` (`NULL` when there is nothing to say).
 #'
 #' If no numeric outcome columns remain after applying `select`, `exclude`,
 #' and `regex`, the function emits a warning and returns an empty
@@ -1604,9 +1605,13 @@ table_continuous_lm <- function(
       na_dropped[[.nm]] <- .nd
     }
   }
-  # An outcome is named as its row names it; a covariate keeps its name,
-  # as in the "Adjusted for" line.
-  label_of <- stats::setNames(outcome_labels, numeric_outcomes)
+  # An outcome is named as its row names it, and a covariate by its label
+  # too, as in the "Adjusted for" line.
+  covariate_labels <- resolve_variable_labels(data, covariates_names, labels)
+  label_of <- stats::setNames(
+    c(outcome_labels, covariate_labels),
+    c(numeric_outcomes, covariates_names)
+  )
   na_dropped <- .label_counts(na_dropped, label_of)
   user_na_dropped <- .label_counts(user_na_dropped, label_of)
   missing_parts <- character(0)
@@ -1658,9 +1663,15 @@ table_continuous_lm <- function(
       )
     }
   }
-  if (length(missing_parts) > 0L) {
-    attr(result, "missing_note") <- paste(missing_parts, collapse = " ")
-  }
+  # The whole note, for every route: print() shows it as it is here.
+  table_note <- .tclm_note_text(
+    result,
+    missing_note = if (length(missing_parts) > 0L) {
+      paste(missing_parts, collapse = " ")
+    },
+    covariates = covariate_labels
+  )
+  attr(result, "note") <- table_note
 
   if (identical(output, "long")) {
     return(result)
@@ -1699,6 +1710,7 @@ table_continuous_lm <- function(
     spec = spec
   )
   if (identical(output, "data.frame")) {
+    attr(wide_raw, "note") <- table_note
     return(wide_raw)
   }
 
@@ -1763,7 +1775,7 @@ table_continuous_lm <- function(
     excel_sheet = excel_sheet,
     clipboard_delim = clipboard_delim,
     word_path = word_path,
-    note = .tclm_note_text(result),
+    note = table_note,
     title = .continuous_lm_title(by_label),
     labels = .lm_spec_labels(spec)
   )

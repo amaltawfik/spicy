@@ -139,11 +139,13 @@ print.spicy_outcome_table <- function(x, ...) {
 
 # Internal: drop the spicy classes and the rendering-only attributes,
 # keeping the data.frame contract plus the two provenance markers that
-# say what the table was about. Used by every coercion / broom method.
+# say what the table was about, and the note. Used by every coercion /
+# broom method.
 unclass_spicy_outcome_table <- function(x) {
   keep <- list(
     outcome = attr(x, "outcome", exact = TRUE),
-    select = attr(x, "select", exact = TRUE)
+    select = attr(x, "select", exact = TRUE),
+    note = attr(x, "note", exact = TRUE)
   )
   for (nm in setdiff(names(attributes(x)), c("names", "row.names", "class"))) {
     attr(x, nm) <- NULL
@@ -164,7 +166,8 @@ unclass_spicy_outcome_table <- function(x) {
 #' [table_outcome()], so the underlying long-format data can be
 #' manipulated with downstream tools under the standard `data.frame` /
 #' `tbl_df` contract. The `"outcome"` and `"select"` attributes are kept as
-#' lightweight provenance markers. The original `x` is unaffected, and
+#' lightweight provenance markers, and `"note"`, the note as printed. The
+#' original `x` is unaffected, and
 #' `print(x)` continues to render the formatted table.
 #'
 #' The returned data is identical to what `output = "long"` (or

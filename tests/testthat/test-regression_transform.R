@@ -202,8 +202,11 @@ test_that("table_regression – p_adjust = 'bonferroni' multiplies p, footer not
   b_raw <- td_raw[td_raw$estimate_type == "B" & !td_raw$is_intercept, ]
   b_adj <- td_adj[td_adj$estimate_type == "B" & !td_adj$is_intercept, ]
   expect_equal(b_adj$p.value, pmin(1, b_raw$p.value * m), tolerance = 1e-12)
-  expect_match(attr(adj, "note"), "P-values adjusted via stats::p\\.adjust")
-  expect_match(attr(adj, "note"), "bonferroni")
+  expect_match(
+    attr(adj, "note"),
+    sprintf("P-values adjusted for %d tests (Bonferroni method).", m),
+    fixed = TRUE
+  )
 })
 
 test_that("table_regression – invalid p_adjust errors spicy_invalid_input", {

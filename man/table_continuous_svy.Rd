@@ -100,7 +100,7 @@ keeps the default display.}
 \item{ci, ci_level}{The mean's confidence interval and its level.}
 
 \item{labels}{How each variable is named in the table: in the rows,
-in the title, and in the missing-values notes. Four forms:
+in the title, and in the notes. Four forms:
 \itemize{
 \item \code{labels = FALSE} shows the column name.
 \item \code{labels = TRUE} shows the column's \code{label} attribute (as set by
@@ -147,7 +147,8 @@ destinations, as in \code{\link[=table_continuous]{table_continuous()}}.}
 A \code{spicy_continuous_svy_table}: the compute frame, with the
 display frame and the typed view attached. \code{output = "data.frame"}
 / \code{"long"} returns the compute frame unclassed -- the two tokens
-are synonyms and return identical objects.
+are synonyms and return identical objects. The three carry the
+whole note as printed, "Note." included, in \code{attr(x, "note")}.
 }
 \description{
 The design twin of \code{\link[=table_continuous]{table_continuous()}}: the same table of means,
@@ -267,7 +268,7 @@ returned no p-value stays out of the family.
 
 The adjustment runs before any formatting, so the \code{p} column and its
 \verb{<.001} threshold show the adjusted values, and the table note gives
-the method and the family size \code{m}. The raw p-values stay in the
+the number of tests and the method. The raw p-values stay in the
 object: a \code{p_unadjusted} column next to the p-value column of the
 returned data frames, and \code{col_meta$p$p_unadjusted} (with the method
 in \code{p_adjust} and the family size in \code{p_adjust_m}) in

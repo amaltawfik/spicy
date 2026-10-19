@@ -31,10 +31,10 @@ These S3 methods strip the \code{"spicy_continuous_table"} /
 from an object returned by \code{\link[=table_continuous]{table_continuous()}} so the underlying
 long-format data can be manipulated with downstream tools (\code{dplyr},
 \code{tidyr}, etc.) under the standard \code{data.frame} / \code{tbl_df} contract.
-The single attribute \code{"group_var"} is preserved as a lightweight
-provenance marker; all other spicy attributes are dropped. The
-original \code{x} is unaffected, and \code{print(x)} continues to render the
-formatted ASCII table.
+The attribute \code{"group_var"} is preserved as a lightweight provenance
+marker, and \code{"note"}, the note as printed; all other spicy attributes
+are dropped. The original \code{x} is unaffected, and \code{print(x)} continues
+to render the formatted ASCII table.
 }
 \details{
 The returned data is identical to what \code{output = "long"} (or

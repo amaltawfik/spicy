@@ -31,5 +31,5 @@
          b      │  1   25.0   2   66.7     3      42.9                       
          c      │  1   25.0   0    0.0     1      14.3                       
       
-      Note. Phi: bin; Cramer's V: k3. Group comparison: Fisher exact test.
+      Note. Phi: bin. Cramer's V: k3. Group comparison: Fisher exact test.
 

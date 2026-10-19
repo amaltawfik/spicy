@@ -46,7 +46,7 @@ design's variables.}
 \item{by}{A single grouping column: one column block per level.}
 
 \item{labels}{How each variable is named in the table: in the rows,
-in the title, and in the missing-values notes. Four forms:
+in the title, and in the notes. Four forms:
 \itemize{
 \item \code{labels = FALSE} shows the column name.
 \item \code{labels = TRUE} shows the column's \code{label} attribute (as set by
@@ -147,7 +147,8 @@ A \code{spicy_categorical_svy_table}: the wide compute frame,
 with the display frame and the typed view attached.
 \code{output = "data.frame"} / \code{"long"} returns the compute frame
 unclassed -- the two tokens are synonyms and return identical
-objects.
+objects. The three carry the whole note as printed, "Note."
+included, in \code{attr(x, "note")}.
 }
 \description{
 The design twin of \code{\link[=table_categorical]{table_categorical()}}: counts and estimated
@@ -240,7 +241,7 @@ returned no p-value stays out of the family.
 
 The adjustment runs before any formatting, so the \code{p} column and its
 \verb{<.001} threshold show the adjusted values, and the table note gives
-the method and the family size \code{m}. The raw p-values stay in the
+the number of tests and the method. The raw p-values stay in the
 object: a \code{p_unadjusted} column next to the p-value column of the
 returned data frames, and \code{col_meta$p$p_unadjusted} (with the method
 in \code{p_adjust} and the family size in \code{p_adjust_m}) in

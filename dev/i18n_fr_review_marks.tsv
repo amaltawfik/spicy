@@ -49,7 +49,7 @@ note_nonconvergence	corrected	2026-10-17	Problème de convergence du modèle<NBS
 note_estimand_method	corrected	2026-10-17	<NBSP>; ajustée par g-computation à partir du modèle estimé, erreurs standards par bootstrap non paramétrique (%s réplications).	
 note_estimand_method_stratified	corrected	2026-10-17	<NBSP>; ajustée par g-computation à partir du modèle estimé (risques de base par strate), erreurs standards par bootstrap non paramétrique (%s réplications).	
 test_welch_oneway_anova	corrected	2026-10-17	ANOVA de Welch à un facteur	
-note_p_adjusted	corrected	2026-10-17	Valeurs p ajustées par stats::p.adjust(method = %s)<NBSP>; %s.	
+note_p_adjusted	reviewed	2026-10-19	Valeurs p ajustées pour %s tests (méthode de %s).	
 note_outcome_overall	corrected	2026-10-17	Ensemble = l'échantillon d'analyse complet.	
 note_gloss_med_ci_undefined	corrected	2026-10-17	«<NBSP>%s<NBSP>» lorsque l'échantillon est trop petit pour cette modalité.	
 note_gloss_smd_multinomial	corrected	2026-10-17	Pour une variable à plus de deux modalités, la %s est la distance multivariée (de Mahalanobis) entre les deux profils de proportions, et n'est donc pas signée.	
@@ -309,8 +309,7 @@ note_exp_with_se_single	reviewed	2026-10-17	%s exponentiés et affichés en %s<N
 note_exp_with_se_multi	reviewed	2026-10-17	%s exponentiés et affichés en %s (selon la famille)<NBSP>; erreur standard sur l'échelle du rapport affiché (%s)<NBSP>; %s.%s	
 note_exp_no_se_single	reviewed	2026-10-17	%s exponentiés et affichés en %s<NBSP>; %s.%s	
 note_exp_no_se_multi	reviewed	2026-10-17	%s exponentiés et affichés en %s (selon la famille)<NBSP>; %s.%s	
-note_assoc_measure_item	reviewed	2026-10-17	%s<NBSP>: %s	
-note_assoc_measures_sep	reviewed	2026-10-17	<NBSP>; 	
+note_assoc_measure_item	reviewed	2026-10-19	%s<NBSP>: %s.	
 test_wilcoxon_rank_sum	reviewed	2026-10-17	test de Wilcoxon-Mann-Whitney	
 test_kruskal_wallis	reviewed	2026-10-17	test de Kruskal-Wallis	
 test_student_t	reviewed	2026-10-17	test t de Student	
@@ -318,7 +317,6 @@ test_oneway_anova	reviewed	2026-10-17	ANOVA à un facteur
 test_welch_t	reviewed	2026-10-17	test t de Welch	
 note_group_comparison	reviewed	2026-10-17	Comparaison des groupes<NBSP>: %s.	
 note_group_comparison_sep	reviewed	2026-10-17	<NBSP>; 	
-note_p_adjusted_coefficients	reviewed	2026-10-17	m = %s coefficient(s) par modèle	
 note_gloss_iqr	reviewed	2026-10-17	%s = écart interquartile (%s - %s).	
 note_gloss_med_iqr	reviewed	2026-10-17	%s = médiane [premier quartile, troisième quartile].	
 note_gloss_med_ci	reviewed	2026-10-17	%1$s = intervalle de confiance exact de la médiane fondé sur les statistiques d'ordre (couverture d'au moins %2$s).	
@@ -461,3 +459,15 @@ note_multiresponse_population_all	reviewed	2026-10-19	toutes les personnes
 note_multiresponse_n_nodata	reviewed	2026-10-19	%d sans donnée pour la question	
 note_multiresponse_n_none	reviewed	2026-10-19	%d sans aucun item coché	
 note_multiresponse_and	reviewed	2026-10-19	 et 	
+note_p_adjusted_one	reviewed	2026-10-19	Valeurs p ajustées pour 1 test (méthode de %s).	
+note_p_adjusted_per_model	reviewed	2026-10-19	Valeurs p ajustées dans chaque modèle pour %s tests (méthode de %s).	
+note_p_adjusted_per_model_one	reviewed	2026-10-19	Valeurs p ajustées dans chaque modèle pour 1 test (méthode de %s).	
+note_p_adjust_method_holm	reviewed	2026-10-19	Holm	
+note_p_adjust_method_hochberg	reviewed	2026-10-19	Hochberg	
+note_p_adjust_method_hommel	reviewed	2026-10-19	Hommel	
+note_p_adjust_method_bonferroni	reviewed	2026-10-19	Bonferroni	
+note_p_adjust_method_bh	reviewed	2026-10-19	Benjamini-Hochberg	
+note_p_adjust_method_by	reviewed	2026-10-19	Benjamini-Yekutieli	
+note_p_adjusted_per_model_unequal	reviewed	2026-10-19	Valeurs p ajustées dans chaque modèle (méthode de %s), pour %s tests respectivement.	
+note_list_and_pair	reviewed	2026-10-19	 et 	
+note_list_and_last	reviewed	2026-10-19	 et 	

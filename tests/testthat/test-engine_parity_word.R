@@ -389,7 +389,7 @@ test_that("the association gloss reaches the Word document", {
       word_path = p
     )
   })
-  # Console oracle: "Note. Phi: smoking; Cramer's V: education."
+  # Console oracle: "Note. Phi: smoking. Cramer's V: education."
   note <- .wd_note(.wd_rows(path))
   expect_match(note, "Phi: smoking", fixed = TRUE)
   expect_match(note, "V: education", fixed = TRUE)

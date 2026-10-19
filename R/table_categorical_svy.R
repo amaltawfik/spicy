@@ -348,7 +348,7 @@
 #'   design's variables.
 #' @param by A single grouping column: one column block per level.
 #' @param labels How each variable is named in the table: in the rows,
-#'   in the title, and in the missing-values notes. Four forms:
+#'   in the title, and in the notes. Four forms:
 #'   * `labels = FALSE` shows the column name.
 #'   * `labels = TRUE` shows the column's `label` attribute (as set by
 #'     `haven`, `labelled`, or [label_from_names()]) when it is present,
@@ -428,7 +428,8 @@
 #'   with the display frame and the typed view attached.
 #'   `output = "data.frame"` / `"long"` returns the compute frame
 #'   unclassed -- the two tokens are synonyms and return identical
-#'   objects.
+#'   objects. The three carry the whole note as printed, "Note."
+#'   included, in `attr(x, "note")`.
 #'
 #' @seealso [table_categorical()] for the data-frame sibling,
 #'   [table_continuous_svy()] for continuous variables.

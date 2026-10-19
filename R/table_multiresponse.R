@@ -205,8 +205,10 @@
 #'     `data.frame` invisibly.
 #' }
 #'
-#' The data frames carry the note in `attr(x, "note")` and, when the table
-#' has a global test, `attr(x, "global_test")`: a one-row data frame with
+#' The default object and the data frames carry the note as printed in
+#' `attr(x, "note")` ("Note." included, the `note` you typed verbatim,
+#' `NULL` under `note = FALSE`) and, when the table has a global test,
+#' `attr(x, "global_test")`: a one-row data frame with
 #' `test`, `statistic`, `df`, `p.value`, `boot_n`, `n_items` (the items
 #' tested), `n_groups`, `rs_mean` and `rs_cv` (the design-effect summary of
 #' `global_test = "rs2"`), and `boot_redraws` (the resamples drawn again

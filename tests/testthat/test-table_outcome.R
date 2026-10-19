@@ -865,7 +865,7 @@ test_that("p_adjust: the typed view, the note and an engine agree", {
   expect_equal(meta$p_unadjusted[tested], raw_p)
   expect_identical(meta$p_adjust, "BH")
   expect_identical(meta$p_adjust_m, 3L)
-  note <- 'P-values adjusted via stats::p.adjust(method = "BH"); m = 3 test(s).'
+  note <- 'P-values adjusted for 3 tests (Benjamini-Hochberg method).'
   expect_match(attr(tbl, "note"), note, fixed = TRUE)
 
   skip_if_not_installed("gt")
@@ -888,7 +888,7 @@ test_that("p_adjust: the adjustment follows the tests, before the blocks", {
     note,
     paste0(
       "Welch t-test (am, vs). ",
-      'P-values adjusted via stats::p.adjust(method = "BH"); m = 3 test(s). ',
+      'P-values adjusted for 3 tests (Benjamini-Hochberg method). ',
       "Each block compares mpg"
     ),
     fixed = TRUE

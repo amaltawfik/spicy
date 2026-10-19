@@ -19,6 +19,10 @@ workbook, or a PDF.
   `test_type` column. `test = "midp"` and `test = "n1"` offer the Fisher
   mid-p test and Campbell's N-1 chi-squared for 2x2 tables.
 
+* `table_categorical()` gives each association measure of its note a
+  sentence of its own: "Phi: smoking. Cramer's V: education." A
+  semicolon joined them.
+
 * `table_categorical()`, `table_continuous()`, `table_continuous_lm()`,
   `table_outcome()`, `table_categorical_svy()`, and
   `table_continuous_svy()` show column names by default. The `label`
@@ -37,17 +41,26 @@ workbook, or a PDF.
 
 * `table_categorical()`, `table_continuous()`, `table_outcome()`, and
   their survey twins open their notes with "Note.", as
-  `table_regression()` does, in italics in the rendered tables. The
-  `missing_note` attribute of `table_continuous()` and the `note`
-  attribute of the survey twins start with it too. `table_categorical()`
-  printed "Note." in the middle of the note when `drop_na = TRUE`
-  removed values.
+  `table_regression()` does, in italics in the rendered tables.
+  `table_categorical()` printed "Note." in the middle of the note when
+  `drop_na = TRUE` removed values.
+
+* `table_categorical()`, `table_continuous()`, `table_continuous_lm()`,
+  `table_outcome()`, and their survey twins carry the whole note, as
+  printed, in `attr(x, "note")`: the printed object and the data frames
+  of `output = "data.frame"` and `"long"`. The `missing_note` attribute
+  of `table_categorical()` and `table_continuous()` is now `note`.
 
 * `table_regression()` and `table_regression_uv()` name an interval column
   with a point whatever `decimal_mark`: `97.5% CI` in `as.data.frame()`,
   and `97.5% CI: LL` and `97.5% CI: UL` in `as_structured()`. They were
   `97,5% CI` under `decimal_mark = ","`. The header still follows the
   mark, and the names at 95% are unchanged.
+
+* `table_regression()` words its `p_adjust` note for the reader:
+  "P-values adjusted for 5 tests (Holm method)." A table of several
+  models says the adjustment ran within each model. The note quoted the
+  `stats::p.adjust()` call.
 
 ## New features
 
@@ -185,11 +198,12 @@ workbook, or a PDF.
 
 * `table_categorical()`, `table_continuous()`, `table_continuous_lm()`,
   `table_outcome()`, `table_categorical_svy()`, and
-  `table_continuous_svy()` name each variable of the missing-values notes
-  as its row and the title name it: with `labels = TRUE`, "Missing values
-  removed: Body mass index (12)", "Rows with missing Sex removed: 3".
-  They used the column name whatever `labels` said. A covariate of
-  `table_continuous_lm()` keeps its name.
+  `table_continuous_svy()` name each variable of their notes as the rows
+  and the title name it: with `labels = TRUE`, "Missing values removed:
+  Body mass index (12)", "Rows with missing Sex removed: 3", "Group
+  comparison: Welch t-test (Sex)", and the covariates of
+  `table_continuous_lm()` after "Adjusted for". They used the column
+  name whatever `labels` said.
 
 * `table_categorical_svy()` and `table_continuous_svy()` with
   `labels = TRUE` keep the label of the `by` variable in the title, and

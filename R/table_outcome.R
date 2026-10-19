@@ -551,7 +551,7 @@ abort_outcome_by_renamed <- function() {
 #'   names. One block of rows per variable, in the order given. As
 #'   everywhere in the family, `select` is what structures the rows.
 #' @param labels How each variable is named in the table: in the rows,
-#'   in the title, and in the missing-values notes. The outcome follows
+#'   in the title, and in the notes. The outcome follows
 #'   the same rule as the `select` variables. Four forms:
 #'   * `labels = FALSE` shows the column name.
 #'   * `labels = TRUE` shows the column's `label` attribute (as set by
@@ -618,7 +618,9 @@ abort_outcome_by_renamed <- function() {
 #' @return A `spicy_outcome_table`: the compute frame, with the display
 #'   frame and the typed view attached. `output = "data.frame"` /
 #'   `"long"` returns the compute frame unclassed -- the two tokens are
-#'   synonyms and return identical objects.
+#'   synonyms and return identical objects. The three carry the whole
+#'   note as printed, "Note." included, in `attr(x, "note")` (`NULL` when
+#'   there is nothing to say).
 #'
 #' @seealso [table_continuous()] for the transposed shape,
 #'   [table_categorical()] for categorical outcomes.
@@ -1145,6 +1147,7 @@ table_outcome <- function(
     decimal_mark = decimal_mark,
     test_used = test_used,
     n_groups = n_groups,
+    var_labels = all_labels[select_names],
     # The RESULT, not the request. A table whose every block was too
     # thin to compare shows an empty `p` column, and a note promising
     # that "each block compares ..." describes something the reader
@@ -1169,6 +1172,8 @@ table_outcome <- function(
     attributes(result) <- attributes(result)[
       names(attributes(result)) %in% c("names", "row.names", "class")
     ]
+    # The one attribute kept: the note, as print() shows it.
+    attr(result, "note") <- note
     return(result)
   }
 
@@ -1411,6 +1416,7 @@ table_outcome <- function(
   decimal_mark,
   test_used,
   n_groups,
+  var_labels,
   show_comparison,
   overall,
   p_adjust_info = NULL
@@ -1471,7 +1477,7 @@ table_outcome <- function(
     )
   }
   if (show_comparison) {
-    parts <- c(parts, .outcome_test_note(test_used, n_groups))
+    parts <- c(parts, .outcome_test_note(test_used, n_groups, var_labels))
   }
   parts <- c(parts, .desc_p_adjust_note(p_adjust_info))
   parts <- c(
@@ -1494,8 +1500,9 @@ table_outcome <- function(
 # variable was switched onto the rank family. Here every block has its
 # own level count, so `test = "welch"` can be the Welch t-test in one
 # block and the Welch one-way ANOVA in the next; the reader is owed
-# that, always, not only after a switch.
-.outcome_test_note <- function(test_used, n_groups) {
+# that, always, not only after a switch. Each block is named as its header
+# row names it: `var_labels` is named by column, like `test_used`.
+.outcome_test_note <- function(test_used, n_groups, var_labels) {
   ran <- names(test_used)[!is.na(test_used)]
   if (length(ran) == 0L) {
     return(NULL)
@@ -1518,7 +1525,7 @@ table_outcome <- function(
           spicy_fmt(
             "note_group_comparison_item",
             lb,
-            .join_note_vars(by_label[[lb]])
+            .join_note_vars(unname(var_labels[by_label[[lb]]]))
           )
         },
         character(1)

@@ -2497,20 +2497,14 @@ build_p_adjust_footer_block_from_frames <- function(frames, p_adjust) {
     },
     integer(1)
   )
-  size_part <- spicy_fmt(
-    "note_p_adjusted_coefficients",
-    if (length(unique(sizes)) == 1L) {
-      as.character(sizes[1L])
-    } else {
-      sprintf("(%s)", paste(sizes, collapse = ", "))
-    }
-  )
-  # `.quote_val()` (see R/abort.R) gives a platform-independent
-  # double-quoted method name; this footer is rendered text, so a
-  # quote that flipped with the operating system would land in the
-  # table itself. The sentence is shared with the descriptive tables
-  # (`.desc_p_adjust_note()`), which name tests instead of coefficients.
-  spicy_fmt("note_p_adjusted", .quote_val(p_adjust), size_part)
+  # No coefficient tested, nothing adjusted: no sentence, as in the
+  # descriptive tables.
+  if (all(sizes == 0L)) {
+    return(NULL)
+  }
+  # The sentence of the descriptive tables (`.desc_p_adjust_note()`): each
+  # coefficient is a test, and the family is one model.
+  .p_adjust_sentence(p_adjust, sizes)
 }
 
 

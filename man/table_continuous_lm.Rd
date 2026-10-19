@@ -363,8 +363,7 @@ in the wide and rendered outputs when a single contrast is shown.
 Defaults to \code{TRUE}.}
 
 \item{labels}{How each variable is named in the table: in the rows,
-in the title, and in the missing-values notes. The covariates keep
-their names. Four forms:
+in the title, and in the notes, the covariates included. Four forms:
 \itemize{
 \item \code{labels = FALSE} shows the column name.
 \item \code{labels = TRUE} shows the column's \code{label} attribute (as set by
@@ -523,7 +522,9 @@ and sample size (\code{n}, \code{weighted_n}).
 
 The Excel sheet carries the same title the console prints on its
 first row; the table itself starts on row 3, and the note lines sit
-below the body.
+below the body. The default object and the data frames of
+\code{"data.frame"} and \code{"long"} carry the whole note as printed, "Note."
+included, in \code{attr(x, "note")} (\code{NULL} when there is nothing to say).
 
 If no numeric outcome columns remain after applying \code{select}, \code{exclude},
 and \code{regex}, the function emits a warning and returns an empty

@@ -121,14 +121,14 @@ test_that("`deff = \"replace\"` is the other design effect, and says so", {
   expect_equal(out$deff, 1.1655661714535266, tolerance = 1e-12)
   tbl <- table_continuous_svy(d, select = api00, deff = "replace")
   expect_match(
-    attr(tbl, "missing_note"),
+    attr(tbl, "note"),
     "WITH replacement",
     fixed = TRUE
   )
   # And the default form does not carry that sentence.
   expect_false(grepl(
     "WITH replacement",
-    attr(table_continuous_svy(d, select = api00, deff = TRUE), "missing_note"),
+    attr(table_continuous_svy(d, select = api00, deff = TRUE), "note"),
     fixed = TRUE
   ))
 })
@@ -203,7 +203,7 @@ test_that("`qrule` reaches survey, and \"spicy\" is the type-7 rule", {
         show_columns = c("m", "med"),
         qrule = function(x, w, p) rep(-1, length(p))
       ),
-      "missing_note"
+      "note"
     ),
     'qrule = "<function>"',
     fixed = TRUE
@@ -332,7 +332,7 @@ test_that("a replicate design gives the same point estimate, its own SE", {
   expect_equal(rep$weighted_n, 6194.0003242492676, tolerance = 1e-12)
   note <- attr(
     table_continuous_svy(.svyc_design("rep1"), select = api00),
-    "missing_note"
+    "note"
   )
   expect_match(note, "replicate weights (JK1), 15 replicates", fixed = TRUE)
   expect_match(
@@ -399,7 +399,7 @@ test_that("a calibrated domain counts only the rows it kept", {
   # domain's weights sum to.
   expect_equal(out$weighted_n, c(4421, 755, 1018), tolerance = 1e-8)
   expect_match(
-    attr(table_continuous_svy(cal, select = api00), "missing_note"),
+    attr(table_continuous_svy(cal, select = api00), "note"),
     "calibrated / post-stratified",
     fixed = TRUE
   )
@@ -451,7 +451,7 @@ test_that("a negative calibration weight is an observation, not a hole", {
   expect_equal(out$se, 4.3269670987437925, tolerance = 1e-12)
   # And the cell now agrees with the footer of its own table.
   expect_match(
-    attr(table_continuous_svy(cal, select = api00), "missing_note"),
+    attr(table_continuous_svy(cal, select = api00), "note"),
     "N = 183 (weighted 6194).",
     fixed = TRUE
   )
@@ -478,7 +478,7 @@ test_that("negative weights refuse the test, keep the cells, and say so", {
     tbl <- table_continuous_svy(d, select = api00, by = stype),
     class = "spicy_negative_weights_no_test"
   )
-  note <- attr(tbl, "missing_note")
+  note <- attr(tbl, "note")
   # One block: the exact count, the consequence, and the refusal.
   expect_match(note, "gave 28 of 183 rows a negative weight", fixed = TRUE)
   expect_match(note, "fall outside the observed range", fixed = TRUE)
@@ -589,7 +589,7 @@ test_that("a calibrated design with no negative weight says nothing", {
   expect_identical(.design_negative_weights(d), 0L)
   note <- attr(
     table_continuous_svy(d, select = api00, by = stype),
-    "missing_note"
+    "note"
   )
   expect_match(note, "calibrated / post-stratified", fixed = TRUE)
   expect_false(grepl("negative weight", note, fixed = TRUE))
@@ -603,7 +603,7 @@ test_that("the footer gives the df span when the groups disagree", {
   skip_if_not_installed("survey", "4.5")
   tbl <- table_continuous_svy(.svyc_design("clus1"), select = api00, by = stype)
   expect_match(
-    attr(tbl, "missing_note"),
+    attr(tbl, "note"),
     "degrees of freedom vary by group (7 to 14)",
     fixed = TRUE
   )
@@ -611,7 +611,7 @@ test_that("the footer gives the df span when the groups disagree", {
   expect_match(
     attr(
       table_continuous_svy(.svyc_design("clus1"), select = api00),
-      "missing_note"
+      "note"
     ),
     "14 degrees of freedom",
     fixed = TRUE
@@ -657,7 +657,7 @@ test_that("the sample-size sentence counts the analytic sample", {
   des <- survey::svydesign(id = ~dnum, weights = ~pw, data = dat, fpc = ~fpc)
   # 180, not the 183 the design was built on: the three rows left.
   expect_match(
-    attr(table_continuous_svy(des, select = api00, by = stype), "missing_note"),
+    attr(table_continuous_svy(des, select = api00, by = stype), "note"),
     "N = 180 (weighted 6092).",
     fixed = TRUE
   )
@@ -671,7 +671,7 @@ test_that("rows with a missing `by` leave the table and the note says so", {
   des <- survey::svydesign(id = ~dnum, weights = ~pw, data = dat, fpc = ~fpc)
   tbl <- table_continuous_svy(des, select = api00, by = stype)
   expect_match(
-    attr(tbl, "missing_note"),
+    attr(tbl, "note"),
     "Rows with missing stype removed: 3.",
     fixed = TRUE
   )
@@ -698,7 +698,7 @@ test_that("rows with a missing `by` leave the table and the note says so", {
     labels = TRUE
   )
   expect_match(
-    attr(tbl_lab, "missing_note"),
+    attr(tbl_lab, "note"),
     "Rows with missing School type removed: 3.",
     fixed = TRUE
   )
@@ -901,7 +901,7 @@ test_that("`df` moves the intervals, and only the intervals", {
       df = 3,
       statistic = TRUE
     ),
-    "missing_note"
+    "note"
   )
   expect_match(note, "degrees of freedom vary by group (9 to 14)", fixed = TRUE)
   expect_match(
@@ -1170,7 +1170,7 @@ test_that("declared missing codes leave the statistics and the note", {
   expect_equal(out$mean, 3)
   tbl <- table_continuous_svy(des, select = y)
   expect_match(
-    attr(tbl, "missing_note"),
+    attr(tbl, "note"),
     "Declared missing values removed: y (1).",
     fixed = TRUE
   )
@@ -1186,7 +1186,7 @@ test_that("ordinary missing values are counted in the note", {
   des <- survey::svydesign(id = ~1, weights = ~w, data = d)
   tbl <- table_continuous_svy(des, select = y)
   expect_match(
-    attr(tbl, "missing_note"),
+    attr(tbl, "note"),
     "Missing values removed: y (1).",
     fixed = TRUE
   )
@@ -1200,7 +1200,7 @@ test_that("the note opens with \"Note.\" once, on the attribute and in print", {
     survey::svydesign(id = ~1, weights = ~w, data = d),
     select = y
   )
-  note <- attr(tbl, "missing_note")
+  note <- attr(tbl, "note")
   expect_true(startsWith(note, "Note. Missing values removed: y (1). N = 4"))
   expect_identical(lengths(gregexpr("Note.", note, fixed = TRUE)), 1L)
   printed <- utils::capture.output(print(tbl))
@@ -1224,7 +1224,7 @@ test_that("the note opens with \"Note.\" once, on the attribute and in print", {
         survey::svydesign(id = ~1, weights = ~w, data = d),
         select = y
       ),
-      "missing_note"
+      "note"
     ),
     "Note. Valeurs manquantes retir\u00e9es\u00a0: y (1). N = 4"
   ))
@@ -1254,14 +1254,14 @@ test_that("the missing-values note names each variable by its row label", {
     tbl <- build(...)
     expect_identical(unique(tbl$label), rows)
     expect_match(
-      attr(tbl, "missing_note"),
+      attr(tbl, "note"),
       sprintf("Missing values removed: %s (1), %s (1).", row_y, row_z),
       fixed = TRUE
     )
     grouped <- build(by = g, ...)
     expect_identical(attr(grouped, "group_label"), by)
     expect_match(
-      attr(grouped, "missing_note"),
+      attr(grouped, "note"),
       sprintf("Rows with missing %s removed: 1.", by),
       fixed = TRUE
     )
@@ -1614,8 +1614,8 @@ test_that("p_adjust adjusts the one design-based test of each variable", {
   expect_identical(meta$p_adjust_m, 3L)
   expect_equal(meta$p_unadjusted[!is.na(meta$p_unadjusted)], raw_p)
   expect_match(
-    attr(tbl, "missing_note"),
-    'P-values adjusted via stats::p.adjust(method = "BH"); m = 3 test(s).',
+    attr(tbl, "note"),
+    'P-values adjusted for 3 tests (Benjamini-Hochberg method).',
     fixed = TRUE
   )
 })

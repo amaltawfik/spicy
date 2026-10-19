@@ -264,6 +264,204 @@ test_that("every table class exposes working broom tidy()/glance() methods", {
   }
 })
 
+# ---- The notes of the descriptive family ---------------------------------
+#
+# Column names that no label, and no fixed word of a note, can contain;
+# every variable carries a label of its own, and a missing value, so each
+# kind of sentence that names a variable is written.
+.fp_note_data <- function() {
+  set.seed(42)
+  n <- 240
+  d <- data.frame(
+    qa1 = round(stats::rnorm(n, 50, 10), 1),
+    qb2 = round(stats::rexp(n, 0.1), 1),
+    qc3 = factor(sample(c("no", "yes"), n, TRUE)),
+    qd4 = factor(sample(c("low", "mid", "high"), n, TRUE)),
+    qe5 = factor(sample(c("ctl", "trt"), n, TRUE)),
+    qf6 = round(stats::rnorm(n), 2),
+    qg7 = factor(sample(c("a", "b", "c"), n, TRUE, prob = c(0.9, 0.07, 0.03))),
+    mq1 = sample(c(TRUE, FALSE), n, TRUE),
+    mq2 = sample(c(TRUE, FALSE), n, TRUE, prob = c(0.05, 0.95)),
+    mq3 = sample(c(TRUE, FALSE), n, TRUE),
+    mq4 = FALSE,
+    ww = stats::runif(n, 0.5, 2)
+  )
+  d$qa1[1:4] <- NA
+  d$qb2[5:6] <- NA
+  d$qc3[7:9] <- NA
+  d$qd4[10] <- NA
+  d$qe5[11:13] <- NA
+  d$qf6[14:15] <- NA
+  d$qg7[16] <- NA
+  d[17:18, c("mq1", "mq2", "mq3", "mq4")] <- NA
+  d
+}
+.fp_note_labels <- c(
+  qa1 = "Alpha score",
+  qb2 = "Beta score",
+  qc3 = "Gamma flag",
+  qd4 = "Delta level",
+  qe5 = "Epsilon group",
+  qf6 = "Zeta covariate",
+  qg7 = "Eta rare",
+  mq1 = "Item one",
+  mq2 = "Item two",
+  mq3 = "Item three",
+  mq4 = "Item four"
+)
+# The note block of a printed table: from the line that opens with
+# "Note." to the end.
+.fp_note_block <- function(x) {
+  out <- utils::capture.output(print(x))
+  i <- grep("^Note\\.", out)
+  if (length(i) == 0L) {
+    return(NULL)
+  }
+  sub("\n+$", "", paste(out[i[[1L]]:length(out)], collapse = "\n"))
+}
+# One builder per function, by output: the variables involved (`select`,
+# `by`, `outcome`, `covariates`) all labelled, and the options that make
+# the notes name them (dropped values, a test list, an adjustment).
+.fp_note_builders <- function() {
+  d <- .fp_note_data()
+  lab <- .fp_note_labels
+  q <- function(e) suppressMessages(suppressWarnings(e))
+  out <- list(
+    table_categorical = function(o) {
+      q(table_categorical(
+        d,
+        select = c(qc3, qd4, qg7),
+        by = qe5,
+        labels = lab,
+        drop_na = TRUE,
+        p_adjust = "holm",
+        output = o
+      ))
+    },
+    table_continuous = function(o) {
+      q(table_continuous(
+        d,
+        select = c(qa1, qb2),
+        by = qe5,
+        labels = lab,
+        show_columns = list(qa1 = c("m", "sd"), qb2 = c("med", "iqr")),
+        smd = TRUE,
+        p_adjust = "holm",
+        output = o
+      ))
+    },
+    table_continuous_lm = function(o) {
+      q(table_continuous_lm(
+        d,
+        select = c(qa1, qb2),
+        by = qe5,
+        covariates = c(qf6, qd4),
+        vcov = "HC3",
+        labels = lab,
+        output = o
+      ))
+    },
+    table_outcome = function(o) {
+      q(table_outcome(
+        d,
+        outcome = qa1,
+        select = c(qe5, qd4),
+        labels = lab,
+        drop_na = TRUE,
+        p_adjust = "holm",
+        output = o
+      ))
+    },
+    table_multiresponse = function(o) {
+      q(table_multiresponse(
+        d,
+        select = c(mq1, mq2, mq3, mq4),
+        by = qe5,
+        labels = lab,
+        output = o
+      ))
+    }
+  )
+  if (
+    requireNamespace("survey", quietly = TRUE) &&
+      utils::packageVersion("survey") >= "4.5"
+  ) {
+    des <- survey::svydesign(ids = ~1, weights = ~ww, data = d)
+    out$table_categorical_svy <- function(o) {
+      q(table_categorical_svy(
+        des,
+        select = c(qc3, qd4),
+        by = qe5,
+        labels = lab,
+        drop_na = TRUE,
+        p_adjust = "holm",
+        output = o
+      ))
+    }
+    out$table_continuous_svy <- function(o) {
+      q(table_continuous_svy(
+        des,
+        select = c(qa1, qb2),
+        by = qe5,
+        labels = lab,
+        p_adjust = "holm",
+        output = o
+      ))
+    }
+  }
+  out
+}
+
+test_that("every note of the family names a variable as the table does", {
+  raw <- names(.fp_note_labels)
+  builders <- .fp_note_builders()
+  for (fn in names(builders)) {
+    x <- builders[[fn]]("default")
+    for (txt in list(.fp_note_block(x), attr(x, "note"))) {
+      expect_true(!is.null(txt), info = fn)
+      hits <- raw[vapply(
+        raw,
+        function(r) grepl(paste0("\\b", r, "\\b"), txt),
+        logical(1)
+      )]
+      expect_identical(hits, character(0), info = fn)
+    }
+  }
+})
+
+test_that("every table of the family carries its printed note as `note`", {
+  builders <- .fp_note_builders()
+  for (fn in names(builders)) {
+    x <- builders[[fn]]("default")
+    block <- .fp_note_block(x)
+    expect_true(startsWith(block, "Note. "), info = fn)
+    expect_identical(attr(x, "note"), block, info = fn)
+    for (o in c("data.frame", "long")) {
+      expect_identical(
+        attr(builders[[fn]](o), "note"),
+        block,
+        info = paste(fn, o)
+      )
+    }
+    expect_identical(
+      attr(as.data.frame(x), "note"),
+      block,
+      info = paste(fn, "as.data.frame()")
+    )
+  }
+  # Nothing to say: no note, printed or attached.
+  plain <- table_categorical(mtcars, select = cyl)
+  expect_null(.fp_note_block(plain))
+  expect_null(attr(plain, "note"))
+  expect_null(attr(table_continuous(mtcars, select = mpg), "note"))
+  # A note the user typed is the note, verbatim; `note = FALSE` removes it.
+  d <- .fp_note_data()
+  typed <- table_multiresponse(d, c(mq1, mq3), note = "Source: survey.")
+  expect_identical(attr(typed, "note"), "Source: survey.")
+  expect_true("Source: survey." %in% utils::capture.output(print(typed)))
+  expect_null(attr(table_multiresponse(d, c(mq1, mq3), note = FALSE), "note"))
+})
+
 test_that("every export belongs to exactly one API-stability tier in ?spicy", {
   # Doc-consistency guard: parse the tier lists out of
   # R/spicy-package.R and compare with the actual exports, so a new

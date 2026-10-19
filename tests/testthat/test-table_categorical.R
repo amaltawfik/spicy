@@ -663,7 +663,7 @@ test_that("table_categorical accepts a named per-variable `assoc_measure`", {
   # attribute is the statistics part of the note, without its "Note.".
   expect_match(
     attr(out_default, "assoc_note"),
-    "^Phi: smoking; Cramer's V: education\\."
+    "^Phi: smoking\\. Cramer's V: education\\."
   )
 
   # Force uniform Cramer's V via single-string -> no measure note; the
@@ -2305,7 +2305,7 @@ test_that("clipboard payload carries the console title and notes", {
   )
   expect_match(
     lines[length(lines)],
-    "^Phi: smoking; Cramer's V: education\\."
+    "^Phi: smoking\\. Cramer's V: education\\."
   )
   # Title / note rows are padded to the full grid, so every line of
   # the payload holds the same number of fields (trailing empty
@@ -3063,7 +3063,7 @@ test_that("the note opens with \"Note.\" once, drop_na disclosure first or not",
     "Note. Missing values removed: smoking (25)."
   )
   expect_true(
-    "Phi: smoking; Cramer's V: education. Group comparison: Pearson chi-squared test." %in%
+    "Phi: smoking. Cramer's V: education. Group comparison: Pearson chi-squared test." %in%
       printed
   )
   # The two attributes are the parts, without the prefix; the assembled
@@ -3078,13 +3078,13 @@ test_that("the note opens with \"Note.\" once, drop_na disclosure first or not",
     attr(by_sex(drop_na = TRUE, output = "gt"), "spicy_note"),
     paste0(
       "Note. Missing values removed: smoking (25).\n",
-      "Phi: smoking; Cramer's V: education. Group comparison: Pearson chi-squared test."
+      "Phi: smoking. Cramer's V: education. Group comparison: Pearson chi-squared test."
     )
   )
   # Without drop_na, the statistics part opens the note.
   printed <- utils::capture.output(print(by_sex()))
   expect_true(
-    "Note. Phi: smoking; Cramer's V: education. Group comparison: Pearson chi-squared test." %in%
+    "Note. Phi: smoking. Cramer's V: education. Group comparison: Pearson chi-squared test." %in%
       printed
   )
   # One-way, drop_na alone; nothing to say, no note.
@@ -3823,9 +3823,10 @@ test_that("the missing disclosure rides along on output = 'data.frame'", {
     output = "data.frame"
   )
   expect_identical(
-    attr(out, "missing_note"),
-    "Missing values removed: income_group (18), smoking (25)."
+    attr(out, "note"),
+    "Note. Missing values removed: income_group (18), smoking (25)."
   )
+  expect_null(attr(out, "missing_note"))
 
   out_by <- table_categorical(
     d,
@@ -3835,7 +3836,7 @@ test_that("the missing disclosure rides along on output = 'data.frame'", {
     output = "data.frame"
   )
   expect_match(
-    attr(out_by, "missing_note"),
+    attr(out_by, "note"),
     "Rows with missing sex_na removed: 40.",
     fixed = TRUE
   )
@@ -3846,7 +3847,7 @@ test_that("the missing disclosure rides along on output = 'data.frame'", {
     drop_na = TRUE,
     output = "data.frame"
   )
-  expect_null(attr(clean, "missing_note"))
+  expect_null(attr(clean, "note"))
 })
 
 
@@ -4047,7 +4048,7 @@ test_that("p_adjust: the displayed p, the object and the note agree", {
 
   expect_match(
     attr(tbl, "assoc_note"),
-    'P-values adjusted via stats::p.adjust(method = "holm"); m = 3 test(s).',
+    'P-values adjusted for 3 tests (Holm method).',
     fixed = TRUE
   )
 })
@@ -4094,7 +4095,7 @@ test_that("p_adjust needs `by`, and validates its method", {
 test_that("p_adjust: the note reaches the gt and flextable engines", {
   skip_if_not_installed("gt")
   skip_if_not_installed("flextable")
-  note <- 'P-values adjusted via stats::p.adjust(method = "BH"); m = 3 test(s).'
+  note <- 'P-values adjusted for 3 tests (Benjamini-Hochberg method).'
   g <- table_categorical(
     mtcars,
     c(cyl, gear, vs),
@@ -4105,7 +4106,11 @@ test_that("p_adjust: the note reaches the gt and flextable engines", {
   expect_match(attr(g, "spicy_note"), note, fixed = TRUE)
   # The whole statistics note, as the other routes print it: before,
   # the gt route dropped the measure note of a mixed table.
-  expect_match(attr(g, "spicy_note"), "Cramer's V: cyl, gear;", fixed = TRUE)
+  expect_match(
+    attr(g, "spicy_note"),
+    "Cramer's V: cyl, gear. Phi: vs.",
+    fixed = TRUE
+  )
   ft <- table_categorical(
     mtcars,
     c(cyl, gear, vs),
@@ -4159,7 +4164,12 @@ test_that("p_value = FALSE: the data frames are the default minus the test", {
     names(out),
     setdiff(names(ref), c("test_type", "Chi2", "df", "p"))
   )
-  expect_identical(out, ref[names(out)])
+  # The note loses the test too.
+  expect_identical(
+    attr(out, "note"),
+    "Note. Phi: smoking. Cramer's V: education."
+  )
+  expect_identical(structure(out, note = NULL), ref[names(out)])
 
   ref_l <- .pv_tbl(output = "long")
   out_l <- .pv_tbl(p_value = FALSE, output = "long")
@@ -4167,7 +4177,8 @@ test_that("p_value = FALSE: the data frames are the default minus the test", {
     names(out_l),
     setdiff(names(ref_l), c("test_type", "chi2", "df", "p"))
   )
-  expect_identical(out_l, ref_l[names(out_l)])
+  expect_identical(attr(out_l, "note"), attr(out, "note"))
+  expect_identical(structure(out_l, note = NULL), ref_l[names(out_l)])
 })
 
 test_that("p_value = FALSE: the console table, its typed view and glance()", {
@@ -4193,7 +4204,7 @@ test_that("p_value = FALSE: the console table, its typed view and glance()", {
 
   # The measure note is the measure's: it stays. The sentence naming the
   # test leaves with the test.
-  measure_note <- "Phi: smoking; Cramer's V: education."
+  measure_note <- "Phi: smoking. Cramer's V: education."
   expect_identical(attr(tbl, "assoc_note"), measure_note)
   expect_identical(
     attr(ref, "assoc_note"),
@@ -4968,7 +4979,7 @@ test_that("a label with a comma turns its list in a note to semicolons", {
   )
   expect_match(
     assoc(),
-    "Phi: smoking; Cramer's V: Education, highest level; self_rated_health.",
+    "Phi: smoking. Cramer's V: Education, highest level; self_rated_health.",
     fixed = TRUE
   )
   withr::local_options(spicy.language = "fr")
@@ -4991,7 +5002,7 @@ test_that("a label with a comma turns its list in a note to semicolons", {
   expect_match(
     assoc(),
     paste0(
-      "Phi\u00a0: smoking\u00a0; V de Cram\u00e9r\u00a0: Education, ",
+      "Phi\u00a0: smoking. V de Cram\u00e9r\u00a0: Education, ",
       "highest level\u00a0; self_rated_health."
     ),
     fixed = TRUE
@@ -5362,7 +5373,7 @@ test_that("p_adjust adjusts the mid-p values", {
       table_categorical(d, c(x, y), by = g, test = "midp", p_adjust = "holm"),
       "assoc_note"
     ),
-    "Fisher mid-p test. P-values adjusted via stats::p.adjust(method = \"holm\"); m = 2 test(s).",
+    "Fisher mid-p test. P-values adjusted for 2 tests (Holm method).",
     fixed = TRUE
   )
 })

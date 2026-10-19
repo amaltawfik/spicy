@@ -210,10 +210,11 @@ print.spicy_categorical_table <- function(x, ...) {
 
 # Internal: drop spicy classes and rendering-only attributes from an
 # object returned by table_categorical(), keeping only the data.frame
-# contract plus the `group_var` provenance attribute. Used by every
-# coercion / broom S3 method.
+# contract plus the `group_var` provenance attribute and the `note`.
+# Used by every coercion / broom S3 method.
 unclass_spicy_categorical_table <- function(x) {
   group_var <- attr(x, "group_var", exact = TRUE)
+  note <- attr(x, "note", exact = TRUE)
   attr_names <- names(attributes(x))
   drop <- setdiff(attr_names, c("names", "row.names", "class"))
   for (nm in drop) {
@@ -223,6 +224,7 @@ unclass_spicy_categorical_table <- function(x) {
   if (!is.null(group_var)) {
     attr(x, "group_var") <- group_var
   }
+  attr(x, "note") <- note
   x
 }
 
@@ -234,10 +236,11 @@ unclass_spicy_categorical_table <- function(x) {
 #' `long_data`, ...) from an object returned by [table_categorical()]
 #' so the underlying wide-format data can be manipulated with
 #' downstream tools (`dplyr`, `tidyr`, etc.) under the standard
-#' `data.frame` / `tbl_df` contract. The single attribute
-#' `"group_var"` is preserved as a lightweight provenance marker; all
-#' other spicy attributes are dropped. The original `x` is unaffected,
-#' and `print(x)` continues to render the formatted ASCII table.
+#' `data.frame` / `tbl_df` contract. The attribute `"group_var"` is
+#' preserved as a lightweight provenance marker, and `"note"`, the note
+#' as printed; all other spicy attributes are dropped. The original `x`
+#' is unaffected, and `print(x)` continues to render the formatted ASCII
+#' table.
 #'
 #' The returned data is the wide raw representation (one row per
 #' `(variable x level)`, group columns side by side). For the

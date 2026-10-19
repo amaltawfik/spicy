@@ -1198,20 +1198,20 @@ test_that("table_continuous discloses removed NAs in a table note", {
   df <- data.frame(x = c(1:7, NA), y = c(NA, NA, 3:8))
   out <- table_continuous(df, select = c("x", "y"))
   expect_equal(
-    attr(out, "missing_note"),
+    attr(out, "note"),
     "Note. Missing values removed: x (1), y (2)."
   )
   printed <- paste(capture.output(print(out)), collapse = "\n")
   expect_match(printed, "Missing values removed: x (1), y (2).", fixed = TRUE)
   # No NAs -> no note.
   clean <- table_continuous(data.frame(x = 1:5), select = "x")
-  expect_null(attr(clean, "missing_note"))
+  expect_null(attr(clean, "note"))
 })
 
 test_that("the missing-values note names each variable by its row label", {
   out <- table_continuous(sochealth, select = c(age, bmi), by = sex)
   expect_identical(
-    attr(out, "missing_note"),
+    attr(out, "note"),
     "Note. Missing values removed: bmi (12)."
   )
   attr_lab <- table_continuous(
@@ -1221,7 +1221,7 @@ test_that("the missing-values note names each variable by its row label", {
     labels = TRUE
   )
   expect_identical(
-    attr(attr_lab, "missing_note"),
+    attr(attr_lab, "note"),
     "Note. Missing values removed: Body mass index (12)."
   )
   relabelled <- table_continuous(
@@ -1230,7 +1230,7 @@ test_that("the missing-values note names each variable by its row label", {
     labels = c(bmi = "BMI (kg/m2)")
   )
   expect_identical(
-    attr(relabelled, "missing_note"),
+    attr(relabelled, "note"),
     "Note. Missing values removed: BMI (kg/m2) (12)."
   )
 })
@@ -1244,7 +1244,7 @@ test_that("a label with a comma turns the missing-values list to semicolons", {
         select = c("x", "y"),
         labels = c(y = "Income, monthly")
       ),
-      "missing_note"
+      "note"
     )
   }
   expect_identical(
@@ -1266,7 +1266,7 @@ test_that("the by title and the missing-by note follow labels", {
   check <- function(out, by, row) {
     expect_identical(attr(out, "group_label"), by)
     expect_identical(
-      attr(out, "missing_note"),
+      attr(out, "note"),
       sprintf(
         "Note. Missing values removed: %s (12). Rows with missing %s removed: 18.",
         row,
@@ -1311,7 +1311,7 @@ test_that("drop_na = TRUE discloses removed missing-by rows in the note", {
   )
   out <- suppressWarnings(table_continuous(df, select = "x", by = "g"))
   expect_equal(
-    attr(out, "missing_note"),
+    attr(out, "note"),
     "Note. Missing values removed: x (1). Rows with missing g removed: 2."
   )
 })
@@ -1319,7 +1319,7 @@ test_that("drop_na = TRUE discloses removed missing-by rows in the note", {
 test_that("the note opens with \"Note.\" once, on the attribute and in print", {
   tbl <- table_continuous(sochealth, select = c(bmi, age), by = sex)
   expect_identical(
-    attr(tbl, "missing_note"),
+    attr(tbl, "note"),
     "Note. Missing values removed: bmi (12)."
   )
   printed <- utils::capture.output(print(tbl))
@@ -1333,7 +1333,7 @@ test_that("the note opens with \"Note.\" once, on the attribute and in print", {
       by = sex,
       p_adjust = "holm"
     ),
-    "missing_note"
+    "note"
   )
   expect_true(startsWith(
     note,
@@ -1343,13 +1343,13 @@ test_that("the note opens with \"Note.\" once, on the attribute and in print", {
   # Nothing to say: no note, and no bare prefix.
   expect_null(attr(
     table_continuous(data.frame(x = 1:5), select = "x"),
-    "missing_note"
+    "note"
   ))
   withr::local_options(spicy.language = "fr")
   expect_identical(
     attr(
       table_continuous(sochealth, select = c(bmi, age), by = sex),
-      "missing_note"
+      "note"
     ),
     "Note. Valeurs manquantes retir\u00e9es\u00a0: bmi (12)."
   )
@@ -1421,18 +1421,18 @@ test_that("drop_na = FALSE without by warns spicy_ignored_arg", {
   )
 })
 
-test_that("table_continuous raw outputs carry the missing_note attribute", {
+test_that("table_continuous raw outputs carry the note attribute", {
   # Reversal of the pre-0.13 contract: a raw frame that a pipeline
   # re-renders itself must still be able to state what was removed.
   df <- data.frame(x = c(1:7, NA))
   out <- table_continuous(df, select = "x", output = "data.frame")
   expect_identical(
-    attr(out, "missing_note"),
+    attr(out, "note"),
     "Note. Missing values removed: x (1)."
   )
   long <- table_continuous(df, select = "x", output = "long")
   expect_identical(
-    attr(long, "missing_note"),
+    attr(long, "note"),
     "Note. Missing values removed: x (1)."
   )
   # Nothing removed -> nothing to disclose.
@@ -1441,7 +1441,7 @@ test_that("table_continuous raw outputs carry the missing_note attribute", {
     select = "x",
     output = "data.frame"
   )
-  expect_null(attr(clean, "missing_note"))
+  expect_null(attr(clean, "note"))
 })
 
 test_that("fmt_p uses non-breaking space in display", {
@@ -3837,7 +3837,7 @@ test_that("show_columns = NULL reproduces the historical display exactly", {
     c("m", "sd", "min", "max")
   )
   # No gloss is appended to a default table's note.
-  expect_null(attr(out, "missing_note"))
+  expect_null(attr(out, "note"))
 })
 
 test_that("median / quartile columns equal stats::median() and quantile() type 7", {
@@ -4051,7 +4051,7 @@ test_that("a variable shown as a median is tested as one, per variable", {
     stats::t.test(age ~ g, data = d)$p.value
   )
   # The note discloses the test per variable when they differ.
-  note <- attr(out, "missing_note")
+  note <- attr(out, "note")
   expect_match(note, "Wilcoxon rank-sum test (skewed)", fixed = TRUE)
   expect_match(note, "Welch t-test (age)", fixed = TRUE)
 
@@ -4067,7 +4067,7 @@ test_that("a variable shown as a median is tested as one, per variable", {
   )
   expect_identical(out3$test_type[1], "kruskal")
   expect_match(
-    attr(out3, "missing_note"),
+    attr(out3, "note"),
     "Group comparison: Kruskal-Wallis test.",
     fixed = TRUE
   )
@@ -4112,7 +4112,7 @@ test_that("an explicit test stays sovereign but raises a caveat", {
   # claims a rank test the table did not run.
   expect_false(grepl(
     "Group comparison",
-    attr(out, "missing_note"),
+    attr(out, "note"),
     fixed = TRUE
   ))
 })
@@ -4284,7 +4284,7 @@ test_that("the note glosses only the columns actually displayed", {
   d <- data.frame(x = as.numeric(1:40))
   n_iqr <- attr(
     table_continuous(d, show_columns = c("med", "iqr"), output = "long"),
-    "missing_note"
+    "note"
   )
   expect_match(n_iqr, "IQR = interquartile range (Q3 - Q1).", fixed = TRUE)
   expect_false(grepl("order-statistic", n_iqr, fixed = TRUE))
@@ -4295,7 +4295,7 @@ test_that("the note glosses only the columns actually displayed", {
       show_columns = c("med_iqr", "med_ci"),
       output = "long"
     ),
-    "missing_note"
+    "note"
   )
   expect_match(n_full, "Med [Q1, Q3] = median", fixed = TRUE)
   expect_match(n_full, "coverage at least 95%", fixed = TRUE)
@@ -4304,7 +4304,7 @@ test_that("the note glosses only the columns actually displayed", {
   # A plain M / SD selection adds nothing to the note.
   expect_null(attr(
     table_continuous(d, show_columns = c("m", "sd"), output = "long"),
-    "missing_note"
+    "note"
   ))
 })
 
@@ -4505,12 +4505,16 @@ test_that("p_adjust: the displayed p, the object and the note agree", {
   expect_identical(meta$p_adjust_m, 3L)
 
   expect_match(
-    attr(tbl, "missing_note"),
-    'P-values adjusted via stats::p.adjust(method = "holm"); m = 3 test(s).',
+    attr(tbl, "note"),
+    'P-values adjusted for 3 tests (Holm method).',
     fixed = TRUE
   )
   out <- capture.output(print(tbl))
-  expect_true(any(grepl("m = 3 test(s).", out, fixed = TRUE)))
+  expect_true(any(grepl(
+    "P-values adjusted for 3 tests (Holm method).",
+    out,
+    fixed = TRUE
+  )))
 })
 
 test_that("p_adjust leaves a test without a p-value out of the family", {
@@ -4542,7 +4546,7 @@ test_that("p_adjust leaves a test without a p-value out of the family", {
     class = "spicy_warning"
   )
   expect_identical(as_structured(none)$col_meta$p$p_adjust_m, 0L)
-  expect_false(grepl("p.adjust", attr(none, "missing_note") %||% ""))
+  expect_false(grepl("adjusted for", attr(none, "note") %||% ""))
 })
 
 test_that("p_adjust needs `by` and the p-value column", {
@@ -4578,7 +4582,7 @@ test_that("p_adjust: the note reaches the tinytable engine", {
   )
   expect_match(
     paste(unlist(tt@notes), collapse = " "),
-    'P-values adjusted via stats::p.adjust(method = "bonferroni"); m = 2 test(s).',
+    'P-values adjusted for 2 tests (Bonferroni method).',
     fixed = TRUE
   )
 })
