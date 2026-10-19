@@ -184,7 +184,7 @@ and <code><a href="table_continuous_lm.html">table_continuous_lm()</a></code>); 
 
 <dt id="arg-labels">labels<a class="anchor" aria-label="anchor" href="#arg-labels"></a></dt>
 <dd><p>How each variable is named in the table: in the rows,
-in the title, and in the missing-values notes. Four forms:</p><ul><li><p><code>labels = FALSE</code> shows the column name.</p></li>
+in the title, and in the notes. Four forms:</p><ul><li><p><code>labels = FALSE</code> shows the column name.</p></li>
 <li><p><code>labels = TRUE</code> shows the column's <code>label</code> attribute (as set by
 <code>haven</code>, <code>labelled</code>, or <code><a href="label_from_names.html">label_from_names()</a></code>) when it is present,
 not <code>NA</code>, and not empty, and the column name otherwise.</p></li>
@@ -542,16 +542,16 @@ when the statistic is not requested.</p></li>
 path invisibly.</p></li>
 <li><p><code>"clipboard"</code>: copies the table and returns the display
 <code>data.frame</code> invisibly.</p></li>
-</ul><p>The <code>drop_na = TRUE</code> disclosure travels with the table on every
-route, not just the console: <code>"default"</code> prints it under the ASCII
-table, <code>"tinytable"</code> / <code>"gt"</code> / <code>"flextable"</code> / <code>"word"</code> carry it as
-a table note, <code>"excel"</code> writes it below the body, and
-<code>"data.frame"</code> keeps the sentence verbatim in the
-<code>missing_note</code> attribute (<code>attr(x, "missing_note")</code>, <code>NULL</code> when
-nothing was removed) so a pipeline that renders the numbers itself
-can still state what left the table. On the <code>"tinytable"</code> route the
-note is set one size down; <code>options(spicy.note_style)</code> governs that
-(see <code><a href="table_regression.html">table_regression()</a></code>).</p>
+</ul><p>The note, the <code>drop_na = TRUE</code> disclosure included, travels with the
+table on every route, not just the console: <code>"default"</code> prints it
+under the ASCII table, <code>"tinytable"</code> / <code>"gt"</code> / <code>"flextable"</code> /
+<code>"word"</code> carry it as a table note, <code>"excel"</code> writes it below the body,
+and the default object and the data frames of <code>"data.frame"</code> /
+<code>"long"</code> keep the whole note as printed, "Note." included, in
+<code>attr(x, "note")</code> (<code>NULL</code> when there is nothing to say), so a pipeline
+that renders the numbers itself can still state what left the table.
+On the <code>"tinytable"</code> route the note is set one size down;
+<code>options(spicy.note_style)</code> governs that (see <code><a href="table_regression.html">table_regression()</a></code>).</p>
 <p>The Excel sheet carries the same title the console prints on its
 first row; the table itself starts on row 3.</p>
     </div>
@@ -648,7 +648,7 @@ screening one; <code><a href="table_regression.html">table_regression()</a></cod
 returned no p-value stays out of the family.</p>
 <p>The adjustment runs before any formatting, so the <code>p</code> column and its
 <code>&lt;.001</code> threshold show the adjusted values, and the table note gives
-the method and the family size <code>m</code>. The raw p-values stay in the
+the number of tests and the method. The raw p-values stay in the
 object: a <code>p_unadjusted</code> column next to the p-value column of the
 returned data frames, and <code>col_meta$p$p_unadjusted</code> (with the method
 in <code>p_adjust</code> and the family size in <code>p_adjust_m</code>) in
@@ -1054,7 +1054,7 @@ one-way frequency tables.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    Upper secondary <span style="color: #9E9E9E;">│</span>             </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    Tertiary        <span style="color: #9E9E9E;">│</span>             </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Phi: smoking; Cramer's V: education. Group comparison: Pearson chi-squared test.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Phi: smoking. Cramer's V: education. Group comparison: Pearson chi-squared test.</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Force a uniform measure across all row variables.</span></span></span>
 <span class="r-in"><span><span class="fu">table_categorical</span><span class="op">(</span></span></span>
@@ -1142,7 +1142,7 @@ one-way frequency tables.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    Very good       <span style="color: #9E9E9E;">│</span>             </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    (Missing)       <span style="color: #9E9E9E;">│</span>             </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Phi: smoking; Cramer's V: education; Kendall's Tau-b: self_rated_health. Group comparison: Pearson chi-squared test.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Phi: smoking. Cramer's V: education. Kendall's Tau-b: self_rated_health. Group comparison: Pearson chi-squared test.</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># --- Output formats -----------------------------------------------------</span></span></span>
 <span class="r-in"><span></span></span>

@@ -95,7 +95,7 @@ table_categorical(
 - labels:
 
   How each variable is named in the table: in the rows, in the title,
-  and in the missing-values notes. Four forms:
+  and in the notes. Four forms:
 
   - `labels = FALSE` shows the column name.
 
@@ -497,15 +497,15 @@ Depends on `output`:
 - `"clipboard"`: copies the table and returns the display `data.frame`
   invisibly.
 
-The `drop_na = TRUE` disclosure travels with the table on every route,
-not just the console: `"default"` prints it under the ASCII table,
-`"tinytable"` / `"gt"` / `"flextable"` / `"word"` carry it as a table
-note, `"excel"` writes it below the body, and `"data.frame"` keeps the
-sentence verbatim in the `missing_note` attribute
-(`attr(x, "missing_note")`, `NULL` when nothing was removed) so a
-pipeline that renders the numbers itself can still state what left the
-table. On the `"tinytable"` route the note is set one size down;
-`options(spicy.note_style)` governs that (see
+The note, the `drop_na = TRUE` disclosure included, travels with the
+table on every route, not just the console: `"default"` prints it under
+the ASCII table, `"tinytable"` / `"gt"` / `"flextable"` / `"word"` carry
+it as a table note, `"excel"` writes it below the body, and the default
+object and the data frames of `"data.frame"` / `"long"` keep the whole
+note as printed, "Note." included, in `attr(x, "note")` (`NULL` when
+there is nothing to say), so a pipeline that renders the numbers itself
+can still state what left the table. On the `"tinytable"` route the note
+is set one size down; `options(spicy.note_style)` governs that (see
 [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)).
 
 The Excel sheet carries the same title the console prints on its first
@@ -622,7 +622,7 @@ family.
 
 The adjustment runs before any formatting, so the `p` column and its
 `<.001` threshold show the adjusted values, and the table note gives the
-method and the family size `m`. The raw p-values stay in the object: a
+number of tests and the method. The raw p-values stay in the object: a
 `p_unadjusted` column next to the p-value column of the returned data
 frames, and `col_meta$p$p_unadjusted` (with the method in `p_adjust` and
 the family size in `p_adjust_m`) in
@@ -1060,7 +1060,7 @@ table_categorical(
 #>    Upper secondary │             
 #>    Tertiary        │             
 #> 
-#> Note. Phi: smoking; Cramer's V: education. Group comparison: Pearson chi-squared test.
+#> Note. Phi: smoking. Cramer's V: education. Group comparison: Pearson chi-squared test.
 
 # Force a uniform measure across all row variables.
 table_categorical(
@@ -1148,7 +1148,7 @@ table_categorical(
 #>    Very good       │             
 #>    (Missing)       │             
 #> 
-#> Note. Phi: smoking; Cramer's V: education; Kendall's Tau-b: self_rated_health. Group comparison: Pearson chi-squared test.
+#> Note. Phi: smoking. Cramer's V: education. Kendall's Tau-b: self_rated_health. Group comparison: Pearson chi-squared test.
 
 # --- Output formats -----------------------------------------------------
 

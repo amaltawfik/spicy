@@ -10,18 +10,20 @@
 (digits, decimal_mark, ci_level, ...) from an object returned
 by table_continuous_lm() so the underlying long-format data can
 be manipulated with downstream tools (dplyr, tidyr, etc.) under
-the standard data.frame / tbl_df contract. The single attribute
-"by_var" is preserved as a lightweight provenance marker; all
-other spicy attributes are dropped. The original x is unaffected,
-and print(x) continues to render the formatted ASCII table.'><meta property="og:description" content='These S3 methods strip the "spicy_continuous_lm_table" /
+the standard data.frame / tbl_df contract. The attribute
+"by_var" is preserved as a lightweight provenance marker, and
+"note", the note as printed; all other spicy attributes are
+dropped. The original x is unaffected, and print(x) continues to
+render the formatted ASCII table.'><meta property="og:description" content='These S3 methods strip the "spicy_continuous_lm_table" /
 "spicy_table" classes and the rendering-only attributes
 (digits, decimal_mark, ci_level, ...) from an object returned
 by table_continuous_lm() so the underlying long-format data can
 be manipulated with downstream tools (dplyr, tidyr, etc.) under
-the standard data.frame / tbl_df contract. The single attribute
-"by_var" is preserved as a lightweight provenance marker; all
-other spicy attributes are dropped. The original x is unaffected,
-and print(x) continues to render the formatted ASCII table.'><meta property="og:image" content="https://amaltawfik.github.io/spicy/logo.svg"></head><body>
+the standard data.frame / tbl_df contract. The attribute
+"by_var" is preserved as a lightweight provenance marker, and
+"note", the note as printed; all other spicy attributes are
+dropped. The original x is unaffected, and print(x) continues to
+render the formatted ASCII table.'><meta property="og:image" content="https://amaltawfik.github.io/spicy/logo.svg"></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -93,10 +95,11 @@ and print(x) continues to render the formatted ASCII table.'><meta property="og:
 (<code>digits</code>, <code>decimal_mark</code>, <code>ci_level</code>, ...) from an object returned
 by <code><a href="table_continuous_lm.html">table_continuous_lm()</a></code> so the underlying long-format data can
 be manipulated with downstream tools (<code>dplyr</code>, <code>tidyr</code>, etc.) under
-the standard <code>data.frame</code> / <code>tbl_df</code> contract. The single attribute
-<code>"by_var"</code> is preserved as a lightweight provenance marker; all
-other spicy attributes are dropped. The original <code>x</code> is unaffected,
-and <code>print(x)</code> continues to render the formatted ASCII table.</p>
+the standard <code>data.frame</code> / <code>tbl_df</code> contract. The attribute
+<code>"by_var"</code> is preserved as a lightweight provenance marker, and
+<code>"note"</code>, the note as printed; all other spicy attributes are
+dropped. The original <code>x</code> is unaffected, and <code>print(x)</code> continues to
+render the formatted ASCII table.</p>
     </div>
 
     <div class="section level2">

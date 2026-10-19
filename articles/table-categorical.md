@@ -374,7 +374,7 @@ table_categorical(
 #>    Very good       │  24.6                       
 #>    (Missing)       │   1.7                       
 #> 
-#> Note. Cramer's V: smoking; Goodman-Kruskal Gamma: self_rated_health. Group comparison: Pearson chi-squared test.
+#> Note. Cramer's V: smoking. Goodman-Kruskal Gamma: self_rated_health. Group comparison: Pearson chi-squared test.
 ```
 
 `smoking` keeps its automatic Cramer’s V (.14) while `self_rated_health`
@@ -505,7 +505,7 @@ table_categorical(
 #>    Upper secondary │             
 #>    Tertiary        │             
 #> 
-#> Note. Phi: smoking; Cramer's V: education. Group comparison: Fisher exact test (education); Fisher mid-p test (smoking).
+#> Note. Phi: smoking. Cramer's V: education. Group comparison: Fisher exact test (education); Fisher mid-p test (smoking).
 ```
 
 ## Descriptive tables without tests
@@ -583,7 +583,7 @@ table_categorical(
 #>    Very good       │                   
 #>    (Missing)       │                   
 #> 
-#> Note. Phi: smoking; Cramer's V: self_rated_health. SMD = standardized mean difference (Female - Male); |SMD| > 0.1 is the usual imbalance threshold. For a variable with more than two categories the SMD is the multivariate (Mahalanobis) distance between the two profiles of proportions, and is therefore unsigned. Group comparison: Pearson chi-squared test.
+#> Note. Phi: smoking. Cramer's V: self_rated_health. SMD = standardized mean difference (Female - Male); |SMD| > 0.1 is the usual imbalance threshold. For a variable with more than two categories the SMD is the multivariate (Mahalanobis) distance between the two profiles of proportions, and is therefore unsigned. Group comparison: Pearson chi-squared test.
 ```
 
 Two categories give the Bernoulli form, **signed**, group 1 minus group
@@ -982,7 +982,7 @@ table_categorical(
 |     Yes | 286 | 46.1 | 264 | 45.5 | 550 | 45.8 |      |     |
 | *Note.* Group comparison: Pearson chi-squared test. |  |  |  |  |  |  |  |  |
 
-Categorical table by sex {#tinytable_r3e0l9f95c9gmtclpo5t .table
+Categorical table by sex {#tinytable_ksawmk8dblufouvxhubn .table
 .tinytable style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 

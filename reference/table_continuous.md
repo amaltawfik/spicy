@@ -293,7 +293,7 @@ table_continuous(
 - labels:
 
   How each variable is named in the table: in the rows, in the title,
-  and in the missing-values notes. Four forms:
+  and in the notes. Four forms:
 
   - `labels = FALSE` shows the column name.
 
@@ -521,11 +521,12 @@ rows removed for a missing `by` value under `drop_na = TRUE`) travels
 with the table on every route, not just the console: `"default"` prints
 it under the ASCII table, `"tinytable"` / `"gt"` / `"flextable"` /
 `"word"` carry it as a table note, `"excel"` writes it below the body,
-and `"data.frame"` / `"long"` keep the note verbatim, opening "Note.",
-in the `missing_note` attribute (`attr(x, "missing_note")`, `NULL` when
-there is nothing to say) so a pipeline that renders the numbers itself
-can still state what left the table. On the `"tinytable"` route the note
-is set one size down; `options(spicy.note_style)` governs that (see
+and the default object and the data frames of `"data.frame"` / `"long"`
+keep the whole note as printed, "Note." included, in `attr(x, "note")`
+(`NULL` when there is nothing to say), so a pipeline that renders the
+numbers itself can still state what left the table. On the `"tinytable"`
+route the note is set one size down; `options(spicy.note_style)` governs
+that (see
 [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)).
 
 The Excel sheet carries the same title the console prints on its first
@@ -819,7 +820,7 @@ family.
 
 The adjustment runs before any formatting, so the `p` column and its
 `<.001` threshold show the adjusted values, and the table note gives the
-method and the family size `m`. The raw p-values stay in the object: a
+number of tests and the method. The raw p-values stay in the object: a
 `p_unadjusted` column next to the p-value column of the returned data
 frames, and `col_meta$p$p_unadjusted` (with the method in `p_adjust` and
 the family size in `p_adjust_m`) in

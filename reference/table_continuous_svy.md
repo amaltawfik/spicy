@@ -164,7 +164,7 @@ table_continuous_svy(
 - labels:
 
   How each variable is named in the table: in the rows, in the title,
-  and in the missing-values notes. Four forms:
+  and in the notes. Four forms:
 
   - `labels = FALSE` shows the column name.
 
@@ -232,7 +232,8 @@ table_continuous_svy(
 A `spicy_continuous_svy_table`: the compute frame, with the display
 frame and the typed view attached. `output = "data.frame"` / `"long"`
 returns the compute frame unclassed – the two tokens are synonyms and
-return identical objects.
+return identical objects. The three carry the whole note as printed,
+"Note." included, in `attr(x, "note")`.
 
 ## Which function do I need?
 
@@ -357,7 +358,7 @@ family.
 
 The adjustment runs before any formatting, so the `p` column and its
 `<.001` threshold show the adjusted values, and the table note gives the
-method and the family size `m`. The raw p-values stay in the object: a
+number of tests and the method. The raw p-values stay in the object: a
 `p_unadjusted` column next to the p-value column of the returned data
 frames, and `col_meta$p$p_unadjusted` (with the method in `p_adjust` and
 the family size in `p_adjust_m`) in

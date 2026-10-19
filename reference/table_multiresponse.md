@@ -205,7 +205,7 @@ table_multiresponse(
 - labels:
 
   How each variable is named in the table: in the rows, in the title,
-  and in the missing-values notes. Four forms:
+  and in the notes. Four forms:
 
   - `labels = FALSE` shows the column name.
 
@@ -359,10 +359,12 @@ Depends on `output`:
 - `"clipboard"`: copies the table and returns the display `data.frame`
   invisibly.
 
-The data frames carry the note in `attr(x, "note")` and, when the table
-has a global test, `attr(x, "global_test")`: a one-row data frame with
-`test`, `statistic`, `df`, `p.value`, `boot_n`, `n_items` (the items
-tested), `n_groups`, `rs_mean` and `rs_cv` (the design-effect summary of
+The default object and the data frames carry the note as printed in
+`attr(x, "note")` ("Note." included, the `note` you typed verbatim,
+`NULL` under `note = FALSE`) and, when the table has a global test,
+`attr(x, "global_test")`: a one-row data frame with `test`, `statistic`,
+`df`, `p.value`, `boot_n`, `n_items` (the items tested), `n_groups`,
+`rs_mean` and `rs_cv` (the design-effect summary of
 `global_test = "rs2"`), and `boot_redraws` (the resamples drawn again
 under `global_test = "bootstrap"`); see *Tests*.
 [`as_structured()`](https://amaltawfik.github.io/spicy/reference/as_structured.md)
@@ -613,7 +615,7 @@ table_multiresponse(
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  Respondents     │   240              1164                   
 #> 
-#> Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents with data for the question, including 67 with no item chosen (excluded: 36 with no data for the question). Item p-values: Pearson chi-squared test of each item by group. P-values adjusted via stats::p.adjust(method = "holm"); m = 5 test(s). Overall group comparison: Rao-Scott second-order corrected chi-squared test of multiple marginal independence, χ²(14.40) = 203.03, p < .001.
+#> Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents with data for the question, including 67 with no item chosen (excluded: 36 with no data for the question). Item p-values: Pearson chi-squared test of each item by group. P-values adjusted for 5 tests (Holm method). Overall group comparison: Rao-Scott second-order corrected chi-squared test of multiple marginal independence, χ²(14.40) = 203.03, p < .001.
 
 # A descriptive table by sex, on the respondents who chose at least one
 # source: percentages of cases and of responses, no tests.
@@ -700,7 +702,7 @@ table_multiresponse(
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  Respondents     │   599                565             1164                   
 #> 
-#> Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents with data for the question, including 67 with no item chosen (excluded: 36 with no data for the question). Item p-values: Pearson chi-squared test of each item by group. P-values adjusted via stats::p.adjust(method = "holm"); m = 5 test(s). Overall group comparison: bootstrap test of multiple marginal independence (999 resamples), χ² = 20.38, p = .002.
+#> Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents with data for the question, including 67 with no item chosen (excluded: 36 with no data for the question). Item p-values: Pearson chi-squared test of each item by group. P-values adjusted for 5 tests (Holm method). Overall group comparison: bootstrap test of multiple marginal independence (999 resamples), χ² = 20.38, p = .002.
 
 # Wide data frame.
 table_multiresponse(

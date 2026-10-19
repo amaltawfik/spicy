@@ -6,10 +6,10 @@ These S3 methods strip the `"spicy_continuous_lm_table"` /
 [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
 so the underlying long-format data can be manipulated with downstream
 tools (`dplyr`, `tidyr`, etc.) under the standard `data.frame` /
-`tbl_df` contract. The single attribute `"by_var"` is preserved as a
-lightweight provenance marker; all other spicy attributes are dropped.
-The original `x` is unaffected, and `print(x)` continues to render the
-formatted ASCII table.
+`tbl_df` contract. The attribute `"by_var"` is preserved as a
+lightweight provenance marker, and `"note"`, the note as printed; all
+other spicy attributes are dropped. The original `x` is unaffected, and
+`print(x)` continues to render the formatted ASCII table.
 
 ## Usage
 

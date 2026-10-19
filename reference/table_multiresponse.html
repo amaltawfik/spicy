@@ -290,7 +290,7 @@ Defaults to <code>FALSE</code>.</p></dd>
 
 <dt id="arg-labels">labels<a class="anchor" aria-label="anchor" href="#arg-labels"></a></dt>
 <dd><p>How each variable is named in the table: in the rows,
-in the title, and in the missing-values notes. Four forms:</p><ul><li><p><code>labels = FALSE</code> shows the column name.</p></li>
+in the title, and in the notes. Four forms:</p><ul><li><p><code>labels = FALSE</code> shows the column name.</p></li>
 <li><p><code>labels = TRUE</code> shows the column's <code>label</code> attribute (as set by
 <code>haven</code>, <code>labelled</code>, or <code><a href="label_from_names.html">label_from_names()</a></code>) when it is present,
 not <code>NA</code>, and not empty, and the column name otherwise.</p></li>
@@ -419,8 +419,10 @@ tested by an exact test.</p></li>
 invisibly.</p></li>
 <li><p><code>"clipboard"</code>: copies the table and returns the display
 <code>data.frame</code> invisibly.</p></li>
-</ul><p>The data frames carry the note in <code>attr(x, "note")</code> and, when the table
-has a global test, <code>attr(x, "global_test")</code>: a one-row data frame with
+</ul><p>The default object and the data frames carry the note as printed in
+<code>attr(x, "note")</code> ("Note." included, the <code>note</code> you typed verbatim,
+<code>NULL</code> under <code>note = FALSE</code>) and, when the table has a global test,
+<code>attr(x, "global_test")</code>: a one-row data frame with
 <code>test</code>, <code>statistic</code>, <code>df</code>, <code>p.value</code>, <code>boot_n</code>, <code>n_items</code> (the items
 tested), <code>n_groups</code>, <code>rs_mean</code> and <code>rs_cv</code> (the design-effect summary of
 <code>global_test = "rs2"</code>), and <code>boot_redraws</code> (the resamples drawn again
@@ -647,7 +649,7 @@ Rao-Scott approach. <em>International Journal of Testing</em>, 4(1), 43-59.
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Respondents     <span style="color: #9E9E9E;">│</span>   240              1164                   </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents with data for the question, including 67 with no item chosen (excluded: 36 with no data for the question). Item p-values: Pearson chi-squared test of each item by group. P-values adjusted via stats::p.adjust(method = "holm"); m = 5 test(s). Overall group comparison: Rao-Scott second-order corrected chi-squared test of multiple marginal independence, χ²(14.40) = 203.03, p &lt; .001.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents with data for the question, including 67 with no item chosen (excluded: 36 with no data for the question). Item p-values: Pearson chi-squared test of each item by group. P-values adjusted for 5 tests (Holm method). Overall group comparison: Rao-Scott second-order corrected chi-squared test of multiple marginal independence, χ²(14.40) = 203.03, p &lt; .001.</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># A descriptive table by sex, on the respondents who chose at least one</span></span></span>
 <span class="r-in"><span><span class="co"># source: percentages of cases and of responses, no tests.</span></span></span>
@@ -734,7 +736,7 @@ Rao-Scott approach. <em>International Journal of Testing</em>, 4(1), 43-59.
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Respondents     <span style="color: #9E9E9E;">│</span>   599                565             1164                   </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents with data for the question, including 67 with no item chosen (excluded: 36 with no data for the question). Item p-values: Pearson chi-squared test of each item by group. P-values adjusted via stats::p.adjust(method = "holm"); m = 5 test(s). Overall group comparison: bootstrap test of multiple marginal independence (999 resamples), χ² = 20.38, p = .002.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents with data for the question, including 67 with no item chosen (excluded: 36 with no data for the question). Item p-values: Pearson chi-squared test of each item by group. P-values adjusted for 5 tests (Holm method). Overall group comparison: bootstrap test of multiple marginal independence (999 resamples), χ² = 20.38, p = .002.</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Wide data frame.</span></span></span>
 <span class="r-in"><span><span class="fu">table_multiresponse</span><span class="op">(</span></span></span>

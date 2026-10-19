@@ -24,6 +24,10 @@ PDF.
   `test_type` column. `test = "midp"` and `test = "n1"` offer the Fisher
   mid-p test and Campbell’s N-1 chi-squared for 2x2 tables.
 
+- [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
+  gives each association measure of its note a sentence of its own:
+  “Phi: smoking. Cramer’s V: education.” A semicolon joined them.
+
 - [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
   [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
   [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md),
@@ -53,13 +57,22 @@ PDF.
   [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md),
   and their survey twins open their notes with “Note.”, as
   [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
-  does, in italics in the rendered tables. The `missing_note` attribute
-  of
-  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
-  and the `note` attribute of the survey twins start with it too.
+  does, in italics in the rendered tables.
   [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
   printed “Note.” in the middle of the note when `drop_na = TRUE`
   removed values.
+
+- [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md),
+  [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md),
+  and their survey twins carry the whole note, as printed, in
+  `attr(x, "note")`: the printed object and the data frames of
+  `output = "data.frame"` and `"long"`. The `missing_note` attribute of
+  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
+  and
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
+  is now `note`.
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   and
@@ -71,6 +84,12 @@ PDF.
   [`as_structured()`](https://amaltawfik.github.io/spicy/reference/as_structured.md).
   They were `97,5% CI` under `decimal_mark = ","`. The header still
   follows the mark, and the names at 95% are unchanged.
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  words its `p_adjust` note for the reader: “P-values adjusted for 5
+  tests (Holm method).” A table of several models says the adjustment
+  ran within each model. The note quoted the
+  [`stats::p.adjust()`](https://rdrr.io/r/stats/p.adjust.html) call.
 
 ### New features
 
@@ -257,12 +276,13 @@ PDF.
   [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md),
   and
   [`table_continuous_svy()`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md)
-  name each variable of the missing-values notes as its row and the
-  title name it: with `labels = TRUE`, “Missing values removed: Body
-  mass index (12)”, “Rows with missing Sex removed: 3”. They used the
-  column name whatever `labels` said. A covariate of
+  name each variable of their notes as the rows and the title name it:
+  with `labels = TRUE`, “Missing values removed: Body mass index (12)”,
+  “Rows with missing Sex removed: 3”, “Group comparison: Welch t-test
+  (Sex)”, and the covariates of
   [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
-  keeps its name.
+  after “Adjusted for”. They used the column name whatever `labels`
+  said.
 
 - [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md)
   and

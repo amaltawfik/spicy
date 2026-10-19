@@ -6,10 +6,10 @@ classes and the rendering-only attributes (`digits`, `decimal_mark`,
 [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
 so the underlying long-format data can be manipulated with downstream
 tools (`dplyr`, `tidyr`, etc.) under the standard `data.frame` /
-`tbl_df` contract. The single attribute `"group_var"` is preserved as a
-lightweight provenance marker; all other spicy attributes are dropped.
-The original `x` is unaffected, and `print(x)` continues to render the
-formatted ASCII table.
+`tbl_df` contract. The attribute `"group_var"` is preserved as a
+lightweight provenance marker, and `"note"`, the note as printed; all
+other spicy attributes are dropped. The original `x` is unaffected, and
+`print(x)` continues to render the formatted ASCII table.
 
 ## Usage
 

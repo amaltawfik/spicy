@@ -475,8 +475,7 @@ table_continuous_lm(
 - labels:
 
   How each variable is named in the table: in the rows, in the title,
-  and in the missing-values notes. The covariates keep their names. Four
-  forms:
+  and in the notes, the covariates included. Four forms:
 
   - `labels = FALSE` shows the column name.
 
@@ -682,7 +681,9 @@ Depends on `output`:
 
 The Excel sheet carries the same title the console prints on its first
 row; the table itself starts on row 3, and the note lines sit below the
-body.
+body. The default object and the data frames of `"data.frame"` and
+`"long"` carry the whole note as printed, "Note." included, in
+`attr(x, "note")` (`NULL` when there is nothing to say).
 
 If no numeric outcome columns remain after applying `select`, `exclude`,
 and `regex`, the function emits a warning and returns an empty
