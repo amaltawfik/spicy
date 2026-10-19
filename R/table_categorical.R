@@ -1495,7 +1495,7 @@ table_categorical <- function(
     error = function(e) NULL
   )
   select_names <- if (is.character(select_val)) {
-    select_val
+    unique(select_val)
   } else {
     tryCatch(
       names(tidyselect::eval_select(select_quo, data)),
@@ -1565,6 +1565,10 @@ table_categorical <- function(
     resolve_variable_labels(data, by_name, labels)
   }
   labels <- resolve_variable_labels(data, select_names, labels)
+  # The rows are keyed by column name, which no two variables share; two
+  # may show the same label. The label replaces the key where a frame is
+  # published.
+  label_of_key <- function(key) labels[match(key, select_names)]
 
   if (
     !is.logical(include_total) ||
@@ -2147,7 +2151,7 @@ table_categorical <- function(
           next # nocov: lv_use is built from raw_levels (a subset of `vals`), so match() is never NA here. Defensive.
         }
         rows[[rr]] <- data.frame(
-          variable = labels[i],
+          variable = select_names[i],
           level = lv,
           # Per-variable display rank: the global level factor used to
           # impose the FIRST variable's ordering on every later one,
@@ -2178,7 +2182,7 @@ table_categorical <- function(
     }
 
     if (nrow(long_raw) > 0) {
-      long_raw$variable <- factor(long_raw$variable, levels = labels)
+      long_raw$variable <- factor(long_raw$variable, levels = select_names)
       if (!is.null(levels_keep)) {
         long_raw$level <- factor(
           long_raw$level,
@@ -2206,13 +2210,14 @@ table_categorical <- function(
     }
 
     if (output == "long") {
+      long_raw$variable <- label_of_key(long_raw$variable)
       # Every data frame carries the note as print() shows it.
       attr(long_raw, "note") <- .categorical_note(build_missing_note(), NULL)
       return(long_raw)
     }
 
     wide_raw <- data.frame(
-      Variable = long_raw$variable,
+      Variable = label_of_key(long_raw$variable),
       Level = long_raw$level,
       n = long_raw$n,
       check.names = FALSE
@@ -2279,8 +2284,9 @@ table_categorical <- function(
 
       out <- list()
       z <- 1L
-      for (lab in labels) {
-        sv <- long_raw[long_raw$variable == lab, , drop = FALSE]
+      for (k in seq_along(labels)) {
+        lab <- labels[[k]]
+        sv <- long_raw[long_raw$variable == select_names[[k]], , drop = FALSE]
         if (nrow(sv) == 0) {
           next
         }
@@ -2368,6 +2374,9 @@ table_categorical <- function(
       attr(out, "indent_text") <- indent_text
       attr(out, "align") <- align
       attr(out, "decimal_mark") <- decimal_mark
+      # `long_data` keeps the column name beside the label, for glance().
+      long_raw$.variable <- long_raw$variable
+      long_raw$variable <- label_of_key(long_raw$variable)
       attr(out, "long_data") <- long_raw
       attr(out, "structured") <- structured
       # See `.style_stamp()`: the style levers with no argument have to
@@ -3332,7 +3341,7 @@ table_categorical <- function(
           0
         }
         row_df <- data.frame(
-          variable = labels[i],
+          variable = select_names[i],
           level = lv,
           # Per-variable display rank (see the no-by branch): keeps
           # each block's own level order under the global sort.
@@ -3468,7 +3477,7 @@ table_categorical <- function(
   }
 
   if (nrow(long_raw) > 0) {
-    long_raw$variable <- factor(long_raw$variable, levels = labels)
+    long_raw$variable <- factor(long_raw$variable, levels = select_names)
     if (!is.null(levels_keep)) {
       long_raw$level <- factor(
         long_raw$level,
@@ -3510,8 +3519,8 @@ table_categorical <- function(
   # `p_adjust`: one test per variable, every row of a variable carrying
   # it. Adjusted here, before the wide, display and typed frames read
   # `p`; the sentence joins the statistics note, which every route
-  # prints. The raw p-values are keyed by the variable NAME for the
-  # typed view, whose `.variable` is the name, not the label.
+  # prints. The raw p-values are keyed by the variable NAME, the key of
+  # the rows and of the typed view's `.variable`.
   # The test behind each p-value (decision of 2026-10-18): one sentence
   # naming the test of every variable, then Yates' correction where it
   # reached one, both before the adjustment sentence that reads them.
@@ -3537,9 +3546,6 @@ table_categorical <- function(
   long_raw <- adj$df
   p_adjust_info <- adj$info
   if (!is.null(p_adjust_info)) {
-    names(p_adjust_info$raw) <- select_names[
-      match(names(p_adjust_info$raw), labels)
-    ]
     assoc_note_text <- paste(
       c(
         assoc_note_text[nzchar(assoc_note_text)],
@@ -3560,6 +3566,7 @@ table_categorical <- function(
 
   if (output == "long") {
     out <- long_raw
+    out$variable <- label_of_key(out$variable)
     out$p_op <- NULL
     if (!show_assoc || !assoc_ci) {
       out$ci_lower <- NULL
@@ -3639,7 +3646,7 @@ table_categorical <- function(
         drop = FALSE
       ]
       r <- as.list(setNames(rep(NA, length(cols)), cols))
-      r$Variable <- key$variable[k]
+      r$Variable <- label_of_key(key$variable[k])
       r$Level <- key$level[k]
 
       for (gr in group_levels) {
@@ -3768,8 +3775,9 @@ table_categorical <- function(
     out <- list()
     z <- 1L
 
-    for (lab in labels) {
-      sv <- ldf[ldf$variable == lab, , drop = FALSE]
+    for (k in seq_along(labels)) {
+      lab <- labels[[k]]
+      sv <- ldf[ldf$variable == select_names[[k]], , drop = FALSE]
       if (nrow(sv) == 0) {
         next
       }
@@ -3906,6 +3914,9 @@ table_categorical <- function(
     attr(out, "indent_text") <- indent_text
     attr(out, "align") <- align
     attr(out, "decimal_mark") <- decimal_mark
+    # `long_data` keeps the column name beside the label, for glance().
+    long_raw$.variable <- long_raw$variable
+    long_raw$variable <- label_of_key(long_raw$variable)
     attr(out, "long_data") <- long_raw
     attr(out, "assoc_note") <- assoc_note_text
     attr(out, "structured") <- structured

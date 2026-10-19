@@ -744,8 +744,12 @@
   # COUNT margin -- the column of `table_categorical()` where
   # frequencies add up -- while this row is the whole analytic sample,
   # where a mean is recomputed and nothing is added. Calling a mean a
-  # total would be a reading error.
+  # total would be a reading error. When a `select` variable displays
+  # that label, the row takes its `_dedup` variant with the first free
+  # index, as `table_categorical()` turns `row_missing_level` into
+  # `row_missing_level_dedup`: the variable keeps its label.
   row_overall = "Overall",
+  row_overall_dedup = "Overall_%d",
   # The honest sentence a stack of blocks needs: each block is its own
   # one-way comparison, and the table adjusts none of them for any
   # other.
@@ -754,6 +758,9 @@
     "blocks are not adjusted for one another."
   ),
   note_outcome_overall = "Overall = the whole analytic sample.",
+  # The same sentence for a renamed row. One hole: its
+  # `row_overall_dedup` label.
+  note_outcome_overall_dedup = "%s = the whole analytic sample.",
   # The cell of a statistic that applies but has no number (an SD on
   # n = 1, an interval on an empty group) and of a reference level.
   # One glyph for the whole package: U+2013, the Chicago / NEJM / JAMA

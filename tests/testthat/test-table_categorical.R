@@ -2871,6 +2871,122 @@ test_that("var_labels() renames on the attribute base, whatever the option", {
   check(build())
 })
 
+test_that("two variables showing one label keep a block each", {
+  # Rows are keyed by column name: the factor of labels failed with
+  # "factor level [2] is duplicated", in every output.
+  build <- function(...) {
+    table_categorical(
+      sochealth,
+      select = c(smoking, physical_activity),
+      ...
+    )
+  }
+  same <- c(smoking = "Same", physical_activity = "Same")
+  ref <- build(by = sex, output = "long")
+  lg <- build(by = sex, labels = same, output = "long")
+  expect_identical(lg$variable, rep("Same", nrow(ref)))
+  expect_identical(lg$level, ref$level)
+  expect_identical(lg$n, ref$n)
+  expect_identical(lg$p, ref$p)
+  df <- build(by = sex, labels = same, output = "data.frame")
+  expect_identical(df$Variable, rep("Same", 5L))
+  expect_identical(df$Level, c("No", "Yes", "(Missing)", "No", "Yes"))
+  one <- build(labels = same, output = "long")
+  expect_identical(one$n, build(output = "long")$n)
+  # A label equal to another selected column's name.
+  expect_identical(
+    build(labels = c(smoking = "physical_activity"), output = "long")$n,
+    build(output = "long")$n
+  )
+  adj <- build(by = sex, labels = same, p_adjust = "holm", output = "long")
+  expect_match(attr(adj, "note"), "adjusted for 2 tests", fixed = TRUE)
+  # A column named twice is tabulated once.
+  expect_identical(
+    table_categorical(sochealth, select = c("smoking", "smoking"))$n,
+    table_categorical(sochealth, select = "smoking")$n
+  )
+
+  tbl <- build(by = sex, labels = same)
+  expect_identical(
+    attr(tbl, "display_df")$Variable,
+    c("Same", "  No", "  Yes", "  (Missing)", "Same", "  No", "  Yes")
+  )
+  body <- as_structured(tbl)$body
+  expect_identical(
+    body$.variable[body$.row_role == "factor_header"],
+    c("smoking", "physical_activity")
+  )
+  msg <- conditionMessage(expect_error(
+    inline(tbl, "Same", "Yes"),
+    class = "spicy_invalid_input"
+  ))
+  expect_match(
+    msg,
+    "\"smoking\": the variable shown as \"Same\".",
+    fixed = TRUE
+  )
+  expect_match(
+    msg,
+    "\"physical_activity\": the variable shown as \"Same\".",
+    fixed = TRUE
+  )
+  plain <- build(by = sex)
+  expect_identical(
+    inline(tbl, smoking, "Yes", model = "Female"),
+    inline(plain, smoking, "Yes", model = "Female")
+  )
+  expect_identical(
+    inline(tbl, physical_activity, "Yes", model = "Female"),
+    inline(plain, physical_activity, "Yes", model = "Female")
+  )
+  expect_identical(
+    inline(tbl, physical_activity, column = "p"),
+    inline(plain, physical_activity, column = "p")
+  )
+
+  skip_if_not_installed("flextable")
+  ft <- build(by = sex, labels = same, output = "flextable")
+  expect_identical(sum(ft$body$dataset[[1L]] == "Same"), 2L)
+})
+
+test_that("glance() gives each variable a row, whatever the labels", {
+  skip_if_not_installed("broom")
+  build <- function(...) {
+    table_categorical(
+      sochealth,
+      select = c(smoking, physical_activity),
+      by = sex,
+      ...
+    )
+  }
+  plain <- build()
+  gp <- broom::glance(plain)
+  # Distinct labels: the rows of split() on the labels, alphabetical.
+  long <- attr(plain, "long_data")
+  by_label <- split(long, long$variable)
+  expect_identical(gp$outcome, names(by_label))
+  expect_identical(
+    gp$p.value,
+    unname(vapply(by_label, function(b) b$p[[1L]], numeric(1)))
+  )
+  # One label shown by two variables: a row each, in the order of
+  # `select`. The rows were merged, with the first p-value and the sum of
+  # both counts.
+  gs <- broom::glance(build(
+    labels = c(smoking = "Same", physical_activity = "Same")
+  ))
+  expect_identical(gs$outcome, c("Same", "Same"))
+  ord <- match(c("smoking", "physical_activity"), gp$outcome)
+  expect_identical(gs$p.value, gp$p.value[ord])
+  expect_identical(gs$n_total, gp$n_total[ord])
+  # The column name stays internal.
+  expect_false(".variable" %in% names(build(output = "long")))
+  expect_identical(
+    names(broom::tidy(plain)),
+    c("outcome", "level", "group", "n", "proportion")
+  )
+})
+
 # ---- select: optional, defaults to eligible categorical columns -----------
 
 test_that("select-less call tabulates every eligible categorical column", {

@@ -429,11 +429,11 @@
   if (nrow(long_raw) > 0L) {
     for (li in seq_along(labels)) {
       lab <- labels[[li]]
-      sv <- long_raw[long_raw$variable == lab, , drop = FALSE]
+      var_name <- select_names[[li]]
+      sv <- long_raw[long_raw$variable == var_name, , drop = FALSE]
       if (nrow(sv) == 0L) {
         next
       }
-      var_name <- select_names[[li]]
       lv_use <- if (is.null(levels_keep)) {
         unique(sv$level)
       } else {

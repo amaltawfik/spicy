@@ -339,8 +339,10 @@
 
   # -- table_outcome(): the marginal row and the two disclosures ------------
   row_overall = "Ensemble",
+  row_overall_dedup = "Ensemble_%d",
   note_outcome_blocks = "Chaque bloc compare %s entre les modalit\u00E9s d'une variable\u00A0; les blocs ne sont pas ajust\u00E9s les uns sur les autres.",
   note_outcome_overall = "Ensemble = l'\u00E9chantillon d'analyse complet.",
+  note_outcome_overall_dedup = "%s = l'\u00E9chantillon d'analyse complet.",
   note_gloss_iqr = "%s = \u00E9cart interquartile (%s - %s).",
   note_gloss_med_iqr = "%s = m\u00E9diane [premier quartile, troisi\u00E8me quartile].",
   note_gloss_med_ci = "%1$s = intervalle de confiance exact de la m\u00E9diane fond\u00E9 sur les statistiques d'ordre (couverture d'au moins %2$s).",

@@ -413,6 +413,9 @@ glance.spicy_categorical_table <- function(x, ...) {
   has_test <- "p" %in% names(long)
   std_cols <- c(
     "variable",
+    # The column name `long_data` keeps beside the label: the key of the
+    # rows below, never a measure.
+    ".variable",
     "level",
     "group",
     "n",
@@ -457,8 +460,19 @@ glance.spicy_categorical_table <- function(x, ...) {
   has_assoc_ci <- all(c("ci_lower", "ci_upper") %in% names(long)) &&
     .CAT_KEY_CI_LL %in% names(x)
 
-  by_var <- split(long, long$variable, drop = FALSE)
-  outcomes <- names(by_var)
+  # One row per variable, keyed by its column name (`.variable`; a
+  # hand-built object has only the label): two variables may show one
+  # label. The rows keep the alphabetical order of the labels, which
+  # `split()` on the labels gave, and variables sharing a label follow
+  # `select`.
+  key <- long[[".variable"]] %||% long$variable
+  keys <- unique(key)
+  keys <- keys[order(
+    as.integer(factor(long$variable[match(keys, key)])),
+    method = "radix"
+  )]
+  by_var <- split(long, factor(key, levels = keys), drop = FALSE)
+  outcomes <- long$variable[match(keys, key)]
   # In a cross-tab with `include_total = TRUE` (the default), the
   # long format also stores a synthetic margin group whose `n` are
   # already the sum across the real groups. Its key comes from the

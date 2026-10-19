@@ -229,6 +229,9 @@ deliberate. \emph{Total} is the word of a COUNT margin: the column of
 \code{\link[=table_categorical]{table_categorical()}} where frequencies add up. This row is the
 whole analytic sample, where a mean is recomputed over every
 observation and nothing is added. A mean is not a total.
+
+A \code{select} variable labeled \code{"Overall"} keeps its label, and the row
+takes a numbered suffix, \code{"Overall_1"}, in the table and in its note.
 }
 
 \section{Choosing the \code{select} columns}{

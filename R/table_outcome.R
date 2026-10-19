@@ -43,8 +43,12 @@
 # analytic sample: a mean is recomputed on it and nothing is added, so
 # calling it a total would be a reading error a translator would then
 # carry into every language.
-.outcome_overall_label <- function() {
-  spicy_str("row_overall")
+#
+# `taken` holds the labels of the `select` variables: when one of them
+# reads "Overall", the row becomes "Overall_1" and the variable keeps
+# its label, as with the generated rows of `table_multiresponse()`.
+.outcome_overall_label <- function(taken = character(0)) {
+  .generated_row_label("row_overall", "row_overall_dedup", taken)
 }
 
 # Internal: the default Excel sheet name (decision 16 -- `excel_sheet =
@@ -62,17 +66,26 @@
 # actually shown.
 #
 # The second says what the marginal row is, so nobody reads it as a
-# total of the block below.
+# total of the block below. A renamed row ("Overall_1") has a sentence
+# of its own that names it; `note_outcome_overall` keeps its fixed
+# wording, so an `options(spicy.labels)` entry for it still applies.
 .outcome_structure_notes <- function(
   outcome_label,
   show_comparison,
-  overall
+  overall,
+  overall_label = .outcome_overall_label()
 ) {
   c(
     if (isTRUE(show_comparison)) {
       spicy_fmt("note_outcome_blocks", outcome_label)
     },
-    if (isTRUE(overall)) spicy_str("note_outcome_overall")
+    if (isTRUE(overall)) {
+      if (identical(overall_label, spicy_str("row_overall"))) {
+        spicy_str("note_outcome_overall")
+      } else {
+        spicy_fmt("note_outcome_overall_dedup", overall_label)
+      }
+    }
   )
 }
 
@@ -519,6 +532,9 @@ abort_outcome_by_renamed <- function() {
 #' [table_categorical()] where frequencies add up. This row is the
 #' whole analytic sample, where a mean is recomputed over every
 #' observation and nothing is added. A mean is not a total.
+#'
+#' A `select` variable labeled `"Overall"` keeps its label, and the row
+#' takes a numbered suffix, `"Overall_1"`, in the table and in its note.
 #'
 #' # Choosing the `select` columns
 #'
@@ -1334,7 +1350,7 @@ table_outcome <- function(
 
   labels <- ifelse(
     result$.row_role == "summary",
-    .outcome_overall_label(),
+    .outcome_overall_label(result$label[is_header]),
     ifelse(is_header, result$label, paste0(indent_text, result$level))
   )
   df <- stats::setNames(
@@ -1486,7 +1502,12 @@ table_outcome <- function(
   )
   parts <- c(
     parts,
-    .outcome_structure_notes(outcome_label, show_comparison, overall)
+    .outcome_structure_notes(
+      outcome_label,
+      show_comparison,
+      overall,
+      .outcome_overall_label(result$label[result$.row_role == "factor_header"])
+    )
   )
   # The note every route prints, so it opens with "Note." here, once.
   .note_with_prefix(paste_note_parts(parts))

@@ -732,12 +732,12 @@ table_multiresponse <- function(
   extra_pct <- extra_pct[, extra_keep, drop = FALSE]
   extra_role <- c("none", "missing")[extra_keep]
   extra_labels <- c(
-    .mr_row_label(
+    .generated_row_label(
       "row_multiresponse_none",
       "row_multiresponse_none_dedup",
       item_labels
     ),
-    .mr_row_label(
+    .generated_row_label(
       "row_multiresponse_nodata",
       "row_multiresponse_nodata_dedup",
       item_labels
@@ -826,7 +826,7 @@ table_multiresponse <- function(
 
   # ---- frames ----------------------------------------------------------------
   cols <- .mr_columns(blocks, margin_key, percent, show_statistic, p_value)
-  base_label <- .mr_row_label(
+  base_label <- .generated_row_label(
     "row_multiresponse_base",
     "row_multiresponse_base_dedup",
     item_labels
@@ -1104,21 +1104,6 @@ table_multiresponse <- function(
     class = "spicy_renamed_column"
   )
   key
-}
-
-# A row label the table generates (the base row, the rows of `none_row`),
-# renamed when an item displays it, as `table_categorical()` renames its
-# "(Missing)" row: the `_dedup` variant with the first free index
-# ("Respondents_1"). The item keeps its label, and a generated row never
-# repeats one.
-.mr_row_label <- function(key, dedup_key, taken) {
-  label <- spicy_str(key)
-  idx <- 1L
-  while (label %in% taken) {
-    label <- spicy_fmt(dedup_key, idx)
-    idx <- idx + 1L
-  }
-  label
 }
 
 # The arguments a table without p-values has no use for, each named with

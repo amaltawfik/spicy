@@ -451,6 +451,44 @@ test_that("the disclosures follow the arguments that cause them", {
   expect_false(grepl("Group comparison", attr(tbl3, "note"), fixed = TRUE))
 })
 
+test_that("a select labeled Overall keeps it and the marginal row is Overall_1", {
+  d <- data.frame(
+    y = c(1, 2, 3, 4, 5, 6),
+    g = c("a", "a", "b", "b", "a", "b")
+  )
+  tbl <- .to_quiet(table_outcome(d, y, select = g, labels = c(g = "Overall")))
+  expect_identical(
+    attr(tbl, "display_df")$Variable,
+    c("Overall_1", "Overall", "  a", "  b")
+  )
+  expect_match(
+    attr(tbl, "note"),
+    "Overall_1 = the whole analytic sample.",
+    fixed = TRUE
+  )
+  expect_identical(inline(tbl, "Overall_1"), inline(tbl, y))
+  expect_identical(inline(tbl, "Overall", "a"), inline(tbl, g, "a"))
+  # An override of the fixed sentence, written for 0.13.0, still applies.
+  withr::with_options(
+    list(spicy.labels = list(note_outcome_overall = "Overall: everyone.")),
+    expect_match(
+      attr(.to_quiet(table_outcome(d, y, select = g)), "note"),
+      "Overall: everyone.",
+      fixed = TRUE
+    )
+  )
+
+  withr::local_options(spicy.language = "fr")
+  fr <- .to_quiet(table_outcome(d, y, select = g, labels = c(g = "Ensemble")))
+  expect_identical(
+    attr(fr, "display_df")$Variable,
+    c("Ensemble_1", "Ensemble", "  a", "  b")
+  )
+  expect_match(attr(fr, "note"), " Ensemble_1 = l'", fixed = TRUE)
+  expect_identical(inline(fr, "Ensemble_1"), inline(fr, y))
+  expect_identical(inline(fr, "Ensemble", "a"), inline(fr, g, "a"))
+})
+
 test_that("the note opens with \"Note.\" once, on the attribute and in print", {
   tbl <- .to_quiet(table_outcome(.to_sh(), bmi, select = c(sex, region)))
   note <- attr(tbl, "note")

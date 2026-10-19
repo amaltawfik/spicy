@@ -1499,8 +1499,9 @@ test_that("a variable that matches two rows is refused with an address for each"
     class = "spicy_invalid_input",
     fixed = TRUE
   )
-  # Two variables showing one label, and a generated label shown by a
-  # variable: the descriptive families refuse alike.
+  # Two variables showing one label: the descriptive families refuse
+  # alike. A generated row whose label a variable shows takes a suffix,
+  # so each row keeps an address.
   two <- table_continuous(
     mtcars,
     c(mpg, hp),
@@ -1514,12 +1515,8 @@ test_that("a variable that matches two rows is refused with an address for each"
   expect_match(msg, "\"hp\": the variable shown as \"Same\".", fixed = TRUE)
   d <- data.frame(y = c(1, 2, 3, 4, 5, 6), g = c("a", "a", "b", "b", "a", "b"))
   to <- .il_quiet(table_outcome(d, y, select = g, labels = c(g = "Overall")))
-  msg <- conditionMessage(expect_error(
-    inline(to, "Overall"),
-    class = "spicy_invalid_input"
-  ))
-  expect_match(msg, "\"y\": the variable shown as \"Overall\".", fixed = TRUE)
-  expect_match(msg, "\"g\": the variable shown as \"Overall\".", fixed = TRUE)
+  expect_identical(inline(to, "Overall_1"), "3.50")
+  expect_identical(inline(to, "Overall", "a"), "2.67")
   expect_identical(inline(to, y), "3.50")
   expect_identical(inline(to, g, "a"), "2.67")
 })

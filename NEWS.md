@@ -204,6 +204,10 @@ workbook, or a PDF.
   variable, as `table_continuous()` does: with `labels = TRUE`,
   "Categorical table by Sex", not "by sex".
 
+* `table_categorical()` no longer fails when two variables display the
+  same label; both rows show, as in the other tables. A column named
+  twice in `select` is shown once.
+
 * `table_categorical()`, `table_continuous()`, `table_continuous_lm()`,
   `table_outcome()`, `table_categorical_svy()`, and
   `table_continuous_svy()` name each variable of their notes as the rows
@@ -231,6 +235,10 @@ workbook, or a PDF.
 
 * `table_outcome()` sets a no-break space before the semicolon that joins
   the tests of its comparison note in French.
+
+* `table_outcome()` names its marginal row "Overall_1", in the table and
+  in its note, when a `select` variable is labeled "Overall", so the
+  variable keeps its label and `inline()` reaches both rows.
 
 * `table_regression()` writes the reference rows `(réf.)` under
   `options(spicy.language = "fr")`: `reference_label` now defaults to
