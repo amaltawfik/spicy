@@ -2032,6 +2032,141 @@ test_that("the clipboard carries the rows of none_row", {
   expect_true(.mr_none_order(first))
 })
 
+# A generated row label that an item displays: the row takes the `_dedup`
+# variant with the first free index, as "(Missing)" does in
+# table_categorical(), and the item keeps its label.
+test_that("a generated label an item displays takes the first free index", {
+  labs <- c(x1 = "(No item chosen)", x2 = "Respondents")
+  shown <- c(
+    "(No item chosen)",
+    "Respondents",
+    "(No item chosen_1)",
+    "(No data for the question)",
+    "Respondents_1"
+  )
+  tbl <- .mr_none_tbl(base = "all", labels = labs, output = "default")
+  expect_identical(tbl$Variable, shown)
+  expect_identical(
+    tbl$.row_role,
+    c("summary", "summary", "none", "missing", "fit_stat")
+  )
+  expect_identical(attr(tbl, "display_df")$Variable, shown)
+  s <- as_structured(tbl)
+  expect_identical(s$body$Variable, shown)
+  expect_identical(s$body$.variable, c("x1", "x2", "none", "no_data", "nobs"))
+  expect_identical(.mr_none_tbl(base = "all", labels = labs)$Variable, shown)
+  long <- .mr_none_tbl(base = "all", labels = labs, output = "long")
+  expect_identical(unique(long$variable), shown[1:4])
+  printed <- utils::capture.output(print(tbl))
+  for (lab in shown[3:5]) {
+    expect_length(grep(lab, printed, fixed = TRUE), 1L)
+  }
+  nodata <- .mr_none_tbl(
+    base = "all",
+    labels = c(x2 = "(No data for the question)")
+  )
+  expect_identical(nodata$Variable[[4L]], "(No data for the question_1)")
+})
+
+test_that("a label taken with _1 moves the row to _2, a look-alike renames nothing", {
+  taken <- .mr_none_tbl(
+    base = "all",
+    labels = c(x1 = "Respondents", x2 = "Respondents_1")
+  )
+  expect_identical(taken$Variable[[5L]], "Respondents_2")
+  taken <- .mr_none_tbl(
+    base = "all",
+    labels = c(x1 = "(No item chosen_1)", x2 = "(No item chosen)")
+  )
+  expect_identical(taken$Variable[[3L]], "(No item chosen_2)")
+  alike <- .mr_none_tbl(
+    base = "all",
+    labels = c(x1 = "Respondents_1", x2 = "(No item chosen_1)")
+  )
+  expect_identical(
+    alike$Variable,
+    c(
+      "Respondents_1",
+      "(No item chosen_1)",
+      "(No item chosen)",
+      "(No data for the question)",
+      "Respondents"
+    )
+  )
+})
+
+test_that("the renamed labels are translated, and only a displayed label collides", {
+  withr::local_options(spicy.language = "fr")
+  fr <- .mr_none_tbl(
+    base = "all",
+    labels = c(x1 = "(Aucun item coché)", x2 = "Personnes")
+  )
+  expect_identical(
+    fr$Variable[3:5],
+    c("(Aucun item coché_1)", "(Sans donnée pour la question)", "Personnes_1")
+  )
+  nodata <- .mr_none_tbl(
+    base = "all",
+    labels = c(x2 = "(Sans donnée pour la question)")
+  )
+  expect_identical(nodata$Variable[[4L]], "(Sans donnée pour la question_1)")
+  # The English labels are not displayed in French: nothing collides.
+  en <- .mr_none_tbl(
+    base = "all",
+    labels = c(x1 = "(No item chosen)", x2 = "Respondents")
+  )
+  expect_identical(
+    en$Variable[3:5],
+    c("(Aucun item coché)", "(Sans donnée pour la question)", "Personnes")
+  )
+})
+
+test_that("an engine renders the renamed labels", {
+  skip_if_not_installed("gt")
+  g <- .mr_none_tbl(
+    base = "all",
+    labels = c(x1 = "(No item chosen)", x2 = "Respondents"),
+    output = "gt"
+  )
+  expect_identical(
+    trimws(g[["_data"]][[1L]]),
+    c(
+      "(No item chosen)",
+      "Respondents",
+      "(No item chosen_1)",
+      "(No data for the question)",
+      "Respondents_1"
+    )
+  )
+})
+
+test_that("inline() reaches an item by its label and a renamed row by its token", {
+  # Before the rename, "Respondents" reached the base row, not the item.
+  tbl <- table_multiresponse(
+    .mr_none(),
+    c(x1, x2),
+    base = "all",
+    labels = c(x1 = "Respondents", x2 = "(No item chosen)")
+  )
+  expect_identical(inline(tbl, "Respondents"), inline(tbl, x1))
+  expect_identical(inline(tbl, "Respondents"), "3")
+  expect_identical(inline(tbl, "(No item chosen)"), "1")
+  expect_identical(inline(tbl, "nobs"), "7")
+  expect_identical(inline(tbl, "Respondents_1"), "7")
+  expect_identical(inline(tbl, "none"), "3")
+  expect_identical(inline(tbl, "(No item chosen_1)"), "3")
+  nodata <- table_multiresponse(
+    .mr_none(),
+    c(x1, x2),
+    base = "all",
+    labels = c(x1 = "(No data for the question)")
+  )
+  expect_identical(inline(nodata, "(No data for the question)"), "3")
+  expect_identical(inline(nodata, "no_data"), "1")
+  expect_identical(inline(nodata, "no_data", "(Missing)"), "1")
+  expect_identical(inline(nodata, "(No data for the question_1)"), "1")
+})
+
 # ---- the test switch ---------------------------------------------------------------
 
 test_that("p_value defaults to the tests with `by` and to none without", {

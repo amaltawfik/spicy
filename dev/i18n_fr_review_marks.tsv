@@ -473,3 +473,6 @@ note_list_and_pair	reviewed	2026-10-19	 et
 note_list_and_last	reviewed	2026-10-19	 et 	
 row_multiresponse_none	reviewed	2026-10-19	(Aucun item coché)	
 row_multiresponse_nodata	reviewed	2026-10-19	(Sans donnée pour la question)	
+row_multiresponse_base_dedup	reviewed	2026-10-19	Personnes_%d	
+row_multiresponse_none_dedup	reviewed	2026-10-19	(Aucun item coché_%d)	
+row_multiresponse_nodata_dedup	reviewed	2026-10-19	(Sans donnée pour la question_%d)	
