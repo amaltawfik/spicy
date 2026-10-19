@@ -659,10 +659,11 @@ test_that("table_categorical accepts a named per-variable `assoc_measure`", {
     by = sex,
     output = "default"
   )
-  # The note lists display labels: the column names by default.
+  # The note lists display labels: the column names by default. The
+  # attribute is the statistics part of the note, without its "Note.".
   expect_match(
     attr(out_default, "assoc_note"),
-    "Note\\. Phi: smoking; Cramer's V: education\\."
+    "^Phi: smoking; Cramer's V: education\\."
   )
 
   # Force uniform Cramer's V via single-string -> no measure note; the
@@ -2300,11 +2301,11 @@ test_that("clipboard payload carries the console title and notes", {
   expect_identical(cells[[1L]][1L], "Categorical table by sex")
   expect_match(
     lines[length(lines) - 1L],
-    "^Missing values removed: smoking \\(65\\)\\."
+    "^Note\\. Missing values removed: smoking \\(65\\)\\."
   )
   expect_match(
     lines[length(lines)],
-    "^Note\\. Phi: smoking; Cramer's V: education\\."
+    "^Phi: smoking; Cramer's V: education\\."
   )
   # Title / note rows are padded to the full grid, so every line of
   # the payload holds the same number of fields (trailing empty
@@ -3043,6 +3044,71 @@ test_that("drop_na = TRUE disclosure note names the dropped counts", {
   expect_null(attr(out_full, "missing_note"))
 })
 
+test_that("the note opens with \"Note.\" once, drop_na disclosure first or not", {
+  by_sex <- function(...) {
+    table_categorical(
+      sochealth,
+      select = c(smoking, education),
+      by = sex,
+      ...
+    )
+  }
+  # drop_na = TRUE: the missing-values sentence comes first, and the
+  # prefix opens the note there, never between its two parts (issue #11).
+  tbl <- by_sex(drop_na = TRUE)
+  printed <- utils::capture.output(print(tbl))
+  expect_identical(sum(grepl("Note.", printed, fixed = TRUE)), 1L)
+  expect_identical(
+    printed[grepl("Note.", printed, fixed = TRUE)],
+    "Note. Missing values removed: smoking (25)."
+  )
+  expect_true(
+    "Phi: smoking; Cramer's V: education. Group comparison: Pearson chi-squared test." %in%
+      printed
+  )
+  # The two attributes are the parts, without the prefix; the assembled
+  # note is what every engine carries.
+  expect_identical(
+    attr(tbl, "missing_note"),
+    "Missing values removed: smoking (25)."
+  )
+  expect_false(grepl("Note.", attr(tbl, "assoc_note"), fixed = TRUE))
+  skip_if_not_installed("gt")
+  expect_identical(
+    attr(by_sex(drop_na = TRUE, output = "gt"), "spicy_note"),
+    paste0(
+      "Note. Missing values removed: smoking (25).\n",
+      "Phi: smoking; Cramer's V: education. Group comparison: Pearson chi-squared test."
+    )
+  )
+  # Without drop_na, the statistics part opens the note.
+  printed <- utils::capture.output(print(by_sex()))
+  expect_true(
+    "Note. Phi: smoking; Cramer's V: education. Group comparison: Pearson chi-squared test." %in%
+      printed
+  )
+  # One-way, drop_na alone; nothing to say, no note.
+  printed <- utils::capture.output(print(
+    table_categorical(sochealth, select = smoking, drop_na = TRUE)
+  ))
+  expect_identical(sum(grepl("Note.", printed, fixed = TRUE)), 1L)
+  expect_true("Note. Missing values removed: smoking (25)." %in% printed)
+  expect_false(any(grepl(
+    "Note.",
+    utils::capture.output(print(table_categorical(
+      sochealth,
+      select = smoking
+    ))),
+    fixed = TRUE
+  )))
+  withr::local_options(spicy.language = "fr")
+  printed <- utils::capture.output(print(by_sex(drop_na = TRUE)))
+  expect_identical(sum(grepl("Note.", printed, fixed = TRUE)), 1L)
+  expect_true(
+    "Note. Valeurs manquantes retir\u00e9es\u00a0: smoking (25)." %in% printed
+  )
+})
+
 # ---- audit Phase 2: level order, labels, margins, full precision ----------
 
 test_that("ordinal measures respect the declared order under default drop_na", {
@@ -3626,7 +3692,7 @@ test_that("the missing disclosure reaches tinytable, one-way and by", {
   )
   expect_identical(
     paste(unlist(x@notes), collapse = " "),
-    "Missing values removed: income_group (18), smoking (25)."
+    "Note. Missing values removed: income_group (18), smoking (25)."
   )
   # And it survives rendering, not just the slot.
   expect_match(
@@ -3675,7 +3741,7 @@ test_that("the missing disclosure reaches gt, one-way and by", {
   expect_s3_class(g, "spicy_gt")
   expect_identical(
     attr(g, "spicy_note"),
-    "Missing values removed: income_group (18), smoking (25)."
+    "Note. Missing values removed: income_group (18), smoking (25)."
   )
 
   g_by <- table_categorical(
@@ -4047,7 +4113,12 @@ test_that("p_adjust: the note reaches the gt and flextable engines", {
     p_adjust = "BH",
     output = "flextable"
   )
-  expect_match(ft$footer$dataset[[1L]], note, fixed = TRUE)
+  # The footer is a paragraph: an italic "Note." chunk, then the rest.
+  expect_match(
+    paste(ft$footer$content$data[[1L, 1L]]$txt, collapse = ""),
+    note,
+    fixed = TRUE
+  )
 })
 
 test_that("p_adjust under holm is pinned, in English and in French", {
@@ -4122,7 +4193,7 @@ test_that("p_value = FALSE: the console table, its typed view and glance()", {
 
   # The measure note is the measure's: it stays. The sentence naming the
   # test leaves with the test.
-  measure_note <- "Note. Phi: smoking; Cramer's V: education."
+  measure_note <- "Phi: smoking; Cramer's V: education."
   expect_identical(attr(tbl, "assoc_note"), measure_note)
   expect_identical(
     attr(ref, "assoc_note"),
@@ -4897,7 +4968,7 @@ test_that("a label with a comma turns its list in a note to semicolons", {
   )
   expect_match(
     assoc(),
-    "Note. Phi: smoking; Cramer's V: Education, highest level; self_rated_health.",
+    "Phi: smoking; Cramer's V: Education, highest level; self_rated_health.",
     fixed = TRUE
   )
   withr::local_options(spicy.language = "fr")
@@ -4920,7 +4991,7 @@ test_that("a label with a comma turns its list in a note to semicolons", {
   expect_match(
     assoc(),
     paste0(
-      "Note. Phi\u00a0: smoking\u00a0; V de Cram\u00e9r\u00a0: Education, ",
+      "Phi\u00a0: smoking\u00a0; V de Cram\u00e9r\u00a0: Education, ",
       "highest level\u00a0; self_rated_health."
     ),
     fixed = TRUE

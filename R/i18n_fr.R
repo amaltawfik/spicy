@@ -345,25 +345,32 @@
   note_gloss_smd_multinomial = "Pour une variable \u00E0 plus de deux modalit\u00E9s, la %s est la distance multivari\u00E9e (de Mahalanobis) entre les deux profils de proportions, et n'est donc pas sign\u00E9e.",
 
   # -- table_multiresponse(): title, headers, base row and notes ------------
+  # The base sentence is assembled as in English (see R/i18n.R): the
+  # population, then ", dont ..." for the counts in the base and
+  # " (hors base : ...)" for those left out, two fragments joined by " et ".
+  # "Personnes" alone: the base row holds all three bases, and under
+  # "valid" or "all" not everyone in it answered.
   title_multiresponse = "R\u00E9ponses multiples",
   title_multiresponse_by = "R\u00E9ponses multiples selon %s",
-  row_multiresponse_base = "Personnes ayant r\u00E9pondu",
+  row_multiresponse_base = "Personnes",
   header_pct_cases = "% des cas",
   header_pct_responses = "% des r\u00E9ponses",
-  note_multiresponse_removed = "Personnes retir\u00E9es faute de r\u00E9ponse \u00E0 la question\u00A0: %d.",
-  note_multiresponse_removed_none = "Personnes retir\u00E9es faute d'item coch\u00E9\u00A0: %d.",
-  note_multiresponse_cases = "Plusieurs r\u00E9ponses possibles\u00A0: les pourcentages, calcul\u00E9s sur les personnes ayant r\u00E9pondu, peuvent totaliser plus de 100\u00A0%.",
-  note_multiresponse_responses = "Plusieurs r\u00E9ponses possibles\u00A0: pourcentages calcul\u00E9s sur les r\u00E9ponses.",
-  note_multiresponse_both = "Plusieurs r\u00E9ponses possibles\u00A0: les pourcentages de personnes peuvent totaliser plus de 100\u00A0%\u00A0; les pourcentages de r\u00E9ponses totalisent 100\u00A0%.",
-  note_multiresponse_base_valid = "Base\u00A0: personnes ayant r\u00E9pondu \u00E0 la question, y compris celles qui n'ont choisi aucun item.",
-  note_multiresponse_base_answered = "Base\u00A0: personnes ayant coch\u00E9 au moins un item.",
-  note_multiresponse_base_all = "Base\u00A0: toutes les personnes.",
-  note_multiresponse_none_chosen = "%d personnes n'ont coch\u00E9 aucun item.",
-  note_multiresponse_none_chosen_one = "1 personne n'a coch\u00E9 aucun item.",
+  note_multiresponse_pct_cases = "Plusieurs r\u00E9ponses possibles\u00A0: les pourcentages peuvent totaliser plus de 100\u00A0%.",
+  note_multiresponse_pct_responses = "Plusieurs r\u00E9ponses possibles\u00A0: les pourcentages portent sur l'ensemble des r\u00E9ponses et totalisent 100\u00A0%.",
+  note_multiresponse_pct_both = "Plusieurs r\u00E9ponses possibles\u00A0: les pourcentages des cas peuvent totaliser plus de 100\u00A0%, ceux des r\u00E9ponses totalisent 100\u00A0%.",
+  note_multiresponse_base = "Base\u00A0: %s.",
+  note_multiresponse_base_including = "%s, dont %s",
+  note_multiresponse_base_excluded = "%s (hors base\u00A0: %s)",
+  note_multiresponse_population_valid = "personnes ayant des donn\u00E9es pour la question",
+  note_multiresponse_population_answered = "personnes ayant coch\u00E9 au moins un item",
+  note_multiresponse_population_all = "toutes les personnes",
+  note_multiresponse_n_nodata = "%d sans donn\u00E9e pour la question",
+  note_multiresponse_n_none = "%d sans aucun item coch\u00E9",
+  note_multiresponse_and = " et ",
   note_multiresponse_items_p = "Valeurs p des items\u00A0: %s de chaque item selon le groupe.",
   note_multiresponse_items_p_mixed = "Valeurs p des items\u00A0: %s.",
-  note_multiresponse_global_rs2 = "Comparaison des groupes\u00A0: test du khi-deux d'ind\u00E9pendance marginale multiple avec correction de Rao-Scott du second ordre, %s.",
-  note_multiresponse_global_boot = "Comparaison des groupes\u00A0: test bootstrap d'ind\u00E9pendance marginale multiple (%d r\u00E9\u00E9chantillonnages), %s.",
+  note_multiresponse_global_rs2 = "Comparaison globale des groupes\u00A0: test du khi-deux d'ind\u00E9pendance marginale multiple avec correction de Rao-Scott du second ordre, %s.",
+  note_multiresponse_global_boot = "Comparaison globale des groupes\u00A0: test bootstrap d'ind\u00E9pendance marginale multiple (%d r\u00E9\u00E9chantillonnages), %s.",
   note_multiresponse_not_tested = "Non test\u00E9 (sans variation, signal\u00E9 par \u2013)\u00A0: %s.",
   excel_sheet_multiresponse = "R\u00E9ponses multiples",
 

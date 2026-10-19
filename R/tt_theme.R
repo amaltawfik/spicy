@@ -173,6 +173,12 @@
 # `</td>` would otherwise be indistinguishable from the cell boundary
 # the styling loop below splits on, and would survive the escape as
 # the separator that re-joins the pieces.
+#
+# The same substitution sets a leading "Note." in italics (APA Manual 7
+# Section 7.14), wrapped in <em> AFTER escaping, as
+# `.spicy_tt_note_div()` does for the two families that lift the note
+# out of the grid. A note that does not open with the prefix is left
+# as it is.
 .spicy_tt_note_tfoot <- function(s, notes = NULL) {
   m <- regexpr("<tfoot>[\\s\\S]*?</tfoot>", s, perl = TRUE)
   if (m < 0L) {
@@ -182,7 +188,12 @@
   block <- regmatches(s, m)
   for (note in .spicy_note_texts(notes)) {
     if (nzchar(note)) {
-      block <- sub(note, .spicy_html_escape(note), block, fixed = TRUE)
+      note_html <- sub(
+        .note_prefix_pattern(),
+        paste0("<em>", spicy_str("note_prefix_emphasis"), "</em>"),
+        .spicy_html_escape(note)
+      )
+      block <- sub(note, note_html, block, fixed = TRUE)
     }
   }
   # Split on cell boundaries so the transformation applies to note

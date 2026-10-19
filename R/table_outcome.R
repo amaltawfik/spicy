@@ -1390,7 +1390,7 @@ table_outcome <- function(
   df
 }
 
-# Internal: the note under an outcome table.
+# Internal: the note under an outcome table, opened with "Note.".
 #
 # In reading order: what left the table, then how it was weighted, then
 # how the blocks were compared and how their p-values were adjusted, then
@@ -1482,7 +1482,8 @@ table_outcome <- function(
     parts,
     .outcome_structure_notes(outcome_label, show_comparison, overall)
   )
-  paste_note_parts(parts)
+  # The note every route prints, so it opens with "Note." here, once.
+  .note_with_prefix(paste_note_parts(parts))
 }
 
 # Internal: the group-comparison disclosure of an outcome table.

@@ -451,6 +451,21 @@ test_that("the disclosures follow the arguments that cause them", {
   expect_false(grepl("Group comparison", attr(tbl3, "note"), fixed = TRUE))
 })
 
+test_that("the note opens with \"Note.\" once, on the attribute and in print", {
+  tbl <- .to_quiet(table_outcome(.to_sh(), bmi, select = c(sex, region)))
+  note <- attr(tbl, "note")
+  expect_true(startsWith(note, "Note. Missing values removed: bmi (12). "))
+  expect_identical(lengths(gregexpr("Note.", note, fixed = TRUE)), 1L)
+  printed <- utils::capture.output(print(tbl))
+  expect_identical(sum(grepl("Note.", printed, fixed = TRUE)), 1L)
+  expect_identical(sum(startsWith(printed, "Note. ")), 1L)
+  withr::local_options(spicy.language = "fr")
+  expect_true(startsWith(
+    attr(.to_quiet(table_outcome(.to_sh(), bmi, select = sex)), "note"),
+    "Note. Valeurs manquantes retir\u00e9es\u00a0: bmi (12). "
+  ))
+})
+
 test_that("labels names the outcome and the blocks: title, rows, notes", {
   d <- .to_sh()
   d$plain <- as.character(d$sex)

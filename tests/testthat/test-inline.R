@@ -1215,7 +1215,7 @@ test_that("a French multiple-response table cites its cells as displayed", {
   ))
   expect_identical(inline(tbl, "nobs", model = "Central"), "245")
   expect_identical(
-    inline(tbl, "Personnes ayant r\u00e9pondu", model = "Central"),
+    inline(tbl, "Personnes", model = "Central"),
     "245"
   )
 })

@@ -114,11 +114,11 @@ test_that("weights = 1 collapses to the unweighted table, plus its disclosure", 
     expect_identical(w[[col]], u[[col]])
   }
   expect_identical(w$weighted_n, 7)
-  # The console differs by exactly one line: the weighting disclosure
-  # (the family prints its notes bare, without the "Note." prefix).
+  # The console differs by exactly one line: the weighting disclosure,
+  # which opens the note and so carries its "Note." prefix.
   ou <- capture.output(print(table_continuous(d, select = x)))
   ow <- capture.output(print(table_continuous(d, select = x, weights = one)))
-  expect_identical(setdiff(ow, ou), "Statistics weighted by one.")
+  expect_identical(setdiff(ow, ou), "Note. Statistics weighted by one.")
 })
 
 test_that("a zero-weight row leaves every statistic, min and max included", {

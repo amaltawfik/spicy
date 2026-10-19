@@ -147,8 +147,9 @@ Four things to notice:
    (Jann, 2005, p. 107).
 3. **The `Respondents` row is the base**, the number of respondents
    every percentage is computed on.
-4. **The note says what the percentages are of**, which respondents
-   form the base, and how many of them chose no item.
+4. **The note says what the percentages sum to** and which respondents
+   form the base: the 67 with no item chosen are in it, and the 36 with
+   no data for the question are not.
 
 `select` takes tidyselect syntax, so `select = info_doctor:info_media`
 and the five names written in `c()` give the same table.
@@ -246,8 +247,10 @@ whether the correct response is simply 'none'" (p. 107).
 table_multiresponse(sochealth, select = starts_with("info_"), base = "all")
 ```
 
-The 36 respondents who skipped the question now count as respondents
-who chose nothing, and the note says that 103 did.
+The 36 respondents who skipped the question now enter the base, and
+every percentage counts them as choosing nothing. The note still keeps
+them apart from the 67 who chose no source: the base includes 36 with
+no data for the question and 67 with no item chosen.
 
 The counts are the same under the three bases. The percentages and the
 tests are not. `"valid"` assumes that a skipped question is coded

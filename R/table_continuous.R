@@ -346,9 +346,9 @@
 #' `"default"` prints it under the ASCII table, `"tinytable"` / `"gt"` /
 #' `"flextable"` / `"word"` carry it as a table note, `"excel"` writes
 #' it below the body, and
-#' `"data.frame"` / `"long"` keep the sentence verbatim in the
-#' `missing_note` attribute (`attr(x, "missing_note")`, `NULL` when
-#' nothing was removed) so a pipeline that renders the numbers itself
+#' `"data.frame"` / `"long"` keep the note verbatim, opening "Note.", in
+#' the `missing_note` attribute (`attr(x, "missing_note")`, `NULL` when
+#' there is nothing to say) so a pipeline that renders the numbers itself
 #' can still state what left the table. On the `"tinytable"` route the
 #' note is set one size down; `options(spicy.note_style)` governs that
 #' (see [table_regression()]).
@@ -1765,14 +1765,15 @@ table_continuous <- function(
   # test each variable carries, what the new abbreviations mean) are
   # appended to the same note: they exist only when `show_columns`
   # changes the display, so the default table's note is untouched.
-  missing_note <- paste_note_parts(c(
+  # The whole note is assembled here, so it opens with "Note." here.
+  missing_note <- .note_with_prefix(paste_note_parts(c(
     build_weights_note(),
     build_missing_note(),
     build_test_note(test_used, auto_rank, n_test_groups),
     build_column_glosses(tokens_union, result, ci_level, decimal_mark),
     build_smd_note(do_smd, real_group_levels, decimal_mark),
     .desc_p_adjust_note(p_adjust_info)
-  ))
+  )))
 
   if (output %in% c("data.frame", "long")) {
     # The raw frame keeps the ledger as an attribute: a pipeline that

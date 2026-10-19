@@ -44,7 +44,7 @@
          Yes          │   2     50,0     1     25,0       3        37,5                     
          (Manquant)   │   0      0,0     1     25,0       1        12,5                     
       
-      Comparaison des groupes : test exact de Fisher.
+      Note. Comparaison des groupes : test exact de Fisher.
     Code
       print(table_continuous(d, select = c(bmi, age), by = sex))
     Output
@@ -83,7 +83,7 @@
          Yes          │  24,30    2,25    22,10    26,60       18,71           29,89        3           
          (Manquant)   │  23,30     –      23,30    23,30         –               –          1           
       
-      Comparaison des groupes : test t de Welch. Chaque bloc compare bmi entre les modalités d'une variable ; les blocs ne sont pas ajustés les uns sur les autres. Ensemble = l'échantillon d'analyse complet.
+      Note. Comparaison des groupes : test t de Welch. Chaque bloc compare bmi entre les modalités d'une variable ; les blocs ne sont pas ajustés les uns sur les autres. Ensemble = l'échantillon d'analyse complet.
     Code
       print(table_regression(stats::lm(bmi ~ age + sex, data = d)))
     Output
@@ -123,5 +123,5 @@
          F      │            
          M      │            
       
-      Group comparison: Fisher exact test.
+      Note. Group comparison: Fisher exact test.
 

@@ -35,6 +35,14 @@ workbook, or a PDF.
   a list of variables is joined with semicolons when one of the labels
   contains a comma.
 
+* `table_categorical()`, `table_continuous()`, `table_outcome()`, and
+  their survey twins open their notes with "Note.", as
+  `table_regression()` does, in italics in the rendered tables. The
+  `missing_note` attribute of `table_continuous()` and the `note`
+  attribute of the survey twins start with it too. `table_categorical()`
+  printed "Note." in the middle of the note when `drop_na = TRUE`
+  removed values.
+
 * `table_regression()` and `table_regression_uv()` name an interval column
   with a point whatever `decimal_mark`: `97.5% CI` in `as.data.frame()`,
   and `97.5% CI: LL` and `97.5% CI: UL` in `as_structured()`. They were
@@ -86,8 +94,9 @@ workbook, or a PDF.
 * `table_multiresponse()` tabulates a "check all that apply" question:
   one row per item with the count and the percentage of respondents who
   chose it (or of responses, or both), and a row with the number of
-  respondents. The note counts the respondents left out of the base and
-  those in it who chose no item. With `by`, each item gets a chi-squared
+  respondents. The note gives the base and counts, in it or out of it,
+  the respondents with no data for the question and those with no item
+  chosen. With `by`, each item gets a chi-squared
   test, or Fisher's exact test where an expected count is below 5
   (`test`), adjusted by Holm by default (`p_adjust`), and the question a
   global test that allows for several answers per respondent, Rao-Scott

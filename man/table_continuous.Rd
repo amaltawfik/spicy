@@ -399,9 +399,9 @@ travels with the table on every route, not just the console:
 \code{"default"} prints it under the ASCII table, \code{"tinytable"} / \code{"gt"} /
 \code{"flextable"} / \code{"word"} carry it as a table note, \code{"excel"} writes
 it below the body, and
-\code{"data.frame"} / \code{"long"} keep the sentence verbatim in the
-\code{missing_note} attribute (\code{attr(x, "missing_note")}, \code{NULL} when
-nothing was removed) so a pipeline that renders the numbers itself
+\code{"data.frame"} / \code{"long"} keep the note verbatim, opening "Note.", in
+the \code{missing_note} attribute (\code{attr(x, "missing_note")}, \code{NULL} when
+there is nothing to say) so a pipeline that renders the numbers itself
 can still state what left the table. On the \code{"tinytable"} route the
 note is set one size down; \code{options(spicy.note_style)} governs that
 (see \code{\link[=table_regression]{table_regression()}}).

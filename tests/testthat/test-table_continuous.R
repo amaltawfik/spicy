@@ -1199,7 +1199,7 @@ test_that("table_continuous discloses removed NAs in a table note", {
   out <- table_continuous(df, select = c("x", "y"))
   expect_equal(
     attr(out, "missing_note"),
-    "Missing values removed: x (1), y (2)."
+    "Note. Missing values removed: x (1), y (2)."
   )
   printed <- paste(capture.output(print(out)), collapse = "\n")
   expect_match(printed, "Missing values removed: x (1), y (2).", fixed = TRUE)
@@ -1212,7 +1212,7 @@ test_that("the missing-values note names each variable by its row label", {
   out <- table_continuous(sochealth, select = c(age, bmi), by = sex)
   expect_identical(
     attr(out, "missing_note"),
-    "Missing values removed: bmi (12)."
+    "Note. Missing values removed: bmi (12)."
   )
   attr_lab <- table_continuous(
     sochealth,
@@ -1222,7 +1222,7 @@ test_that("the missing-values note names each variable by its row label", {
   )
   expect_identical(
     attr(attr_lab, "missing_note"),
-    "Missing values removed: Body mass index (12)."
+    "Note. Missing values removed: Body mass index (12)."
   )
   relabelled <- table_continuous(
     sochealth,
@@ -1231,7 +1231,7 @@ test_that("the missing-values note names each variable by its row label", {
   )
   expect_identical(
     attr(relabelled, "missing_note"),
-    "Missing values removed: BMI (kg/m2) (12)."
+    "Note. Missing values removed: BMI (kg/m2) (12)."
   )
 })
 
@@ -1249,12 +1249,12 @@ test_that("a label with a comma turns the missing-values list to semicolons", {
   }
   expect_identical(
     note(),
-    "Missing values removed: x (1); Income, monthly (2)."
+    "Note. Missing values removed: x (1); Income, monthly (2)."
   )
   withr::local_options(spicy.language = "fr")
   expect_identical(
     note(),
-    "Valeurs manquantes retir\u00e9es\u00a0: x (1)\u00a0; Income, monthly (2)."
+    "Note. Valeurs manquantes retir\u00e9es\u00a0: x (1)\u00a0; Income, monthly (2)."
   )
 })
 
@@ -1268,7 +1268,7 @@ test_that("the by title and the missing-by note follow labels", {
     expect_identical(
       attr(out, "missing_note"),
       sprintf(
-        "Missing values removed: %s (12). Rows with missing %s removed: 18.",
+        "Note. Missing values removed: %s (12). Rows with missing %s removed: 18.",
         row,
         by
       )
@@ -1312,7 +1312,46 @@ test_that("drop_na = TRUE discloses removed missing-by rows in the note", {
   out <- suppressWarnings(table_continuous(df, select = "x", by = "g"))
   expect_equal(
     attr(out, "missing_note"),
-    "Missing values removed: x (1). Rows with missing g removed: 2."
+    "Note. Missing values removed: x (1). Rows with missing g removed: 2."
+  )
+})
+
+test_that("the note opens with \"Note.\" once, on the attribute and in print", {
+  tbl <- table_continuous(sochealth, select = c(bmi, age), by = sex)
+  expect_identical(
+    attr(tbl, "missing_note"),
+    "Note. Missing values removed: bmi (12)."
+  )
+  printed <- utils::capture.output(print(tbl))
+  expect_identical(sum(grepl("Note.", printed, fixed = TRUE)), 1L)
+  expect_true("Note. Missing values removed: bmi (12)." %in% printed)
+  # Several sentences, one prefix.
+  note <- attr(
+    table_continuous(
+      sochealth,
+      select = c(bmi, age),
+      by = sex,
+      p_adjust = "holm"
+    ),
+    "missing_note"
+  )
+  expect_true(startsWith(
+    note,
+    "Note. Missing values removed: bmi (12). P-values"
+  ))
+  expect_identical(lengths(gregexpr("Note.", note, fixed = TRUE)), 1L)
+  # Nothing to say: no note, and no bare prefix.
+  expect_null(attr(
+    table_continuous(data.frame(x = 1:5), select = "x"),
+    "missing_note"
+  ))
+  withr::local_options(spicy.language = "fr")
+  expect_identical(
+    attr(
+      table_continuous(sochealth, select = c(bmi, age), by = sex),
+      "missing_note"
+    ),
+    "Note. Valeurs manquantes retir\u00e9es\u00a0: bmi (12)."
   )
 })
 
@@ -1387,9 +1426,15 @@ test_that("table_continuous raw outputs carry the missing_note attribute", {
   # re-renders itself must still be able to state what was removed.
   df <- data.frame(x = c(1:7, NA))
   out <- table_continuous(df, select = "x", output = "data.frame")
-  expect_identical(attr(out, "missing_note"), "Missing values removed: x (1).")
+  expect_identical(
+    attr(out, "missing_note"),
+    "Note. Missing values removed: x (1)."
+  )
   long <- table_continuous(df, select = "x", output = "long")
-  expect_identical(attr(long, "missing_note"), "Missing values removed: x (1).")
+  expect_identical(
+    attr(long, "missing_note"),
+    "Note. Missing values removed: x (1)."
+  )
   # Nothing removed -> nothing to disclose.
   clean <- table_continuous(
     data.frame(x = 1:5),
@@ -3658,7 +3703,7 @@ test_that("table_continuous discloses dropped rows on the rich outputs", {
   )
   expect_identical(
     paste(unlist(x@notes), collapse = " "),
-    "Rows with missing sex_na removed: 40."
+    "Note. Rows with missing sex_na removed: 40."
   )
   expect_match(
     tinytable::save_tt(x, output = "html"),
@@ -3672,7 +3717,7 @@ test_that("table_continuous discloses dropped rows on the rich outputs", {
   expect_s3_class(g, "spicy_gt")
   expect_identical(
     attr(g, "spicy_note"),
-    "Rows with missing sex_na removed: 40."
+    "Note. Rows with missing sex_na removed: 40."
   )
 
   f <- suppressWarnings(

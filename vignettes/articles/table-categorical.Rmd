@@ -162,8 +162,8 @@ based on the variable type (`assoc_measure = "auto"`, the default):
 * otherwise -> Cramer's `V`.
 
 When the chosen measures differ across rows, the column header
-collapses to `"Effect size"` and an APA-style `Note.` line documents
-which measure was used for each variable.
+collapses to `"Effect size"` and the table note names the measure
+used for each variable.
 
 Seven measures are available: `"cramer_v"`, `"phi"`, `"gamma"`,
 `"tau_b"`, `"tau_c"`, `"somers_d"`, and `"lambda"`; `assoc_measure =
@@ -215,7 +215,7 @@ table_categorical(
 `self_rated_health` switches from the automatic Tau-b (.20) to Gamma
 (.31) -- Gamma is larger on the same table because it ignores tied
 pairs. Since the two measures differ, the header collapses to
-`"Effect size"` and the `Note.` line documents the per-row choice.
+`"Effect size"` and the note documents the per-row choice.
 
 Add confidence intervals with `assoc_ci = TRUE`. In the rendered
 formats (`gt`, `tinytable`, `flextable`, `word`) the CI is shown

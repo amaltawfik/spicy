@@ -585,6 +585,33 @@ test_that("declared missing codes leave the table and the note", {
   expect_identical(sum(kept$n, na.rm = TRUE), 6L)
 })
 
+test_that("the note opens with \"Note.\" once, on the attribute and in print", {
+  tbl <- table_categorical_svy(.svycat_design(), select = stype, by = awards)
+  note <- attr(tbl, "note")
+  expect_true(startsWith(note, "Note. N = 183"))
+  expect_identical(lengths(gregexpr("Note.", note, fixed = TRUE)), 1L)
+  printed <- utils::capture.output(print(tbl))
+  expect_identical(sum(grepl("Note.", printed, fixed = TRUE)), 1L)
+  expect_identical(sum(startsWith(printed, "Note. ")), 1L)
+  expect_identical(
+    attr(
+      table_categorical_svy(
+        .svycat_design(),
+        select = stype,
+        by = awards,
+        output = "data.frame"
+      ),
+      "note"
+    ),
+    note
+  )
+  withr::local_options(spicy.language = "fr")
+  expect_true(startsWith(
+    attr(table_categorical_svy(.svycat_design(), select = stype), "note"),
+    "Note. N = 183"
+  ))
+})
+
 test_that("`drop_na` also governs the missing-`by` domain", {
   skip_if_not_installed("survey")
   data(api, package = "survey", envir = environment())

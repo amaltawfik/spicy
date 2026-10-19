@@ -8,14 +8,30 @@
 # under their own group spanners and expect it full width. Keeping the
 # native footer costs the note the out-of-grid placement and keeps the
 # borders intact on every route (HTML, docx, console).
+#
+# The leading "Note." is set in italics and the rest in regular type
+# (APA Manual 7 Section 7.14), as `output_flextable()` sets the
+# regression note. `as_i()` sets only the italic: every other property
+# of the two chunks is left to the footer's own formatting, since these
+# builders force no font. A note that does not open with the prefix (a
+# `note` the user typed) is one plain chunk.
 .spicy_ft_attach_note <- function(ft, note) {
   if (is.null(note) || !nzchar(note)) {
     return(ft)
   }
+  note_one_line <- gsub("\n", " ", note, fixed = TRUE)
+  note_split <- .note_prefix_split(note_one_line)
   flextable::add_footer_lines(
     ft,
     top = FALSE,
-    values = gsub("\n", " ", note, fixed = TRUE)
+    values = if (is.null(note_split)) {
+      note_one_line
+    } else {
+      flextable::as_paragraph(
+        flextable::as_i(note_split$marker),
+        note_split$rest
+      )
+    }
   )
 }
 

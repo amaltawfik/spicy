@@ -1055,7 +1055,10 @@ table_continuous_svy <- function(
     n_negative_weights = .design_negative_weights(design),
     test_refused = test_refused
   )
-  note <- paste_note_parts(c(note, .desc_p_adjust_note(p_adjust_info)))
+  # The whole note, for every route: it opens with "Note." here, once.
+  note <- .note_with_prefix(
+    paste_note_parts(c(note, .desc_p_adjust_note(p_adjust_info)))
+  )
   .warn_negative_weights_no_test(test_refused)
 
   # `output = "data.frame"` and `output = "long"` return the SAME

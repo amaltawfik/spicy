@@ -97,6 +97,19 @@
 #'     and 107-108), where choosing nothing cannot be told from skipping.
 #'   * `"all"`: every row of the group, as `questionr::multi.table()`
 #'     counts.
+#'
+#'   In a "check all that apply" question, an item left unchecked cannot
+#'   tell "none applies" from "skipped": `"valid"` reads a respondent with
+#'   no item chosen as "none applies", `"answered"` (the convention of SPSS
+#'   and Stata) as nonresponse. `"answered"` suits a questionnaire with
+#'   neither a "None of these" option nor a required answer. An export
+#'   that leaves every unchecked box missing gives both bases the same
+#'   respondents, and only `"answered"` describes them in the note. A
+#'   filter code that is not
+#'   declared missing (for example -1 "not applicable" kept as an ordinary
+#'   value) counts as "not chosen" and keeps the filtered respondents in
+#'   the base: recode it to `NA` first (SPSS user-missing values declared
+#'   as such are already read as missing).
 #' @param sort Sorting method for items, as in [freq()]:
 #'   * `""` - no sorting (default)
 #'   * `"+"` - increasing frequency
@@ -155,9 +168,11 @@
 #' @param title The table title. `NULL` (the default) gives "Multiple
 #'   responses", followed by "by" and the `by` variable under the `labels`
 #'   contract; a single string replaces it.
-#' @param note The table note. `NULL` (the default) builds it: the
-#'   respondents left out, what the percentages are of, the base, and the
-#'   tests. A single string replaces it, and `FALSE` removes it.
+#' @param note The table note. `NULL` (the default) builds it, opening
+#'   with "Note.": the rows removed for a missing `by`, what the
+#'   percentages sum to, the base with the respondents it holds or leaves
+#'   out, and the tests. A single string replaces it and is printed as
+#'   typed, and `FALSE` removes it.
 #' @param excel_sheet Sheet name for Excel export. `NULL` (the default)
 #'   uses `"Multiple responses"`.
 #' @param word_path File path for `output = "word"`. Defaults to `NULL`.
@@ -308,12 +323,12 @@
 #' under `base = "answered"`, every row under `base = "all"`. The counts
 #' are the same under the three bases; the percentages of cases and the
 #' tests are not. The `Respondents` row gives the base of each group, and
-#' the note says which base the table uses and how many respondents it
-#' leaves out, all groups together: those who answered none of the
-#' indicators, under `"valid"` and `"answered"`, and those who answered but
-#' chose no item, under `"answered"`, in a sentence of their own.
-#' Under `"valid"` and `"all"`, the base can hold respondents who chose no
-#' item: the note then says how many. Declared missing values of a
+#' the note says which base the table uses, with two counts, all groups
+#' together: the respondents with no data for the question (every
+#' indicator missing) and those with no item chosen (data, but no item
+#' chosen). The base holds the second and leaves out the first under
+#' `"valid"`, leaves out both under `"answered"`, and holds both under
+#' `"all"`; a count of zero is not mentioned. Declared missing values of a
 #' labelled column (`na_values`, `na_range`) are missing, as under the
 #' `user_na = TRUE` default of [table_categorical()].
 #'
@@ -630,19 +645,17 @@ table_multiresponse <- function(
   z <- chosen[in_base, , drop = FALSE]
   z[is.na(z)] <- FALSE
   storage.mode(z) <- "double"
-  # The respondents of the base who chose no item, all groups together:
-  # the note says how many, so that ticking nothing stays visible
-  # (maintainer decision of 2026-10-18). Zero by construction under
-  # `base = "answered"`, whose base is the respondents who chose one.
-  n_none <- sum(rowSums(z) == 0)
-  # The respondents left outside the base, all groups together (a missing
-  # `by` has its own sentence), in two counts the note gives apart: those
-  # who answered none of the indicators (under `"valid"` and `"answered"`)
-  # and, under `"answered"` only, those who answered but chose no item.
-  # Nobody leaves it under `"all"` (decisions of 2026-10-18).
+  # The two counts the base sentence of the note gives, all groups
+  # together and after the rows with a missing `by` (a sentence of their
+  # own): the rows with no data for the question (every indicator
+  # missing) and the rows with data but no item chosen. They describe the
+  # coding, not what the respondent meant, and they do not depend on the
+  # base: the base only decides which of them are in it and which are
+  # left out (issue #11). Under `"all"`, the first are in the base too,
+  # and were counted with the second before.
   answered_any <- rowSums(!is.na(chosen)) > 0L
-  n_removed <- sum(keep & !in_base & !answered_any)
-  n_removed_none <- sum(keep & !in_base & answered_any)
+  n_nodata <- sum(keep & !answered_any)
+  n_none <- sum(keep & answered_any & rowSums(chosen, na.rm = TRUE) == 0)
 
   # ---- counts and percentages, one row per block (groups, then margin) -----
   if (has_group) {
@@ -815,9 +828,8 @@ table_multiresponse <- function(
         n_by_na = n_by_na,
         percent = percent,
         base = base,
+        n_nodata = n_nodata,
         n_none = n_none,
-        n_removed = n_removed,
-        n_removed_none = n_removed_none,
         test_res = test_res,
         p_value = p_value,
         item_types = stats::setNames(item_df$test_type, item_labels[ord]),
@@ -1731,25 +1743,23 @@ table_multiresponse <- function(
 
 # ---- title and note ------------------------------------------------------------
 
-# The note, in reading order: what left the table (a missing `by`, then
-# the respondents outside the base: those who answered none of the
-# indicators, then, under `base = "answered"`, those who chose no item),
-# what the percentages are of, the base
-# and how many in it chose no item (when any did), then the tests -- the
-# item p-values, named by their test (`item_types`, named by the labels
-# the rows print), followed, under an adjustment, by the family's sentence
+# The note, in reading order: the rows removed for a missing `by`, what
+# the percentages sum to, the base with the two counts it includes or
+# leaves out (`.mr_base_sentence()`), then the tests -- the item
+# p-values, named by their test (`item_types`, named by the labels the
+# rows print), followed, under an adjustment, by the family's sentence
 # naming the method and the number of tests (with `p_value`), the items
 # without a test (whenever the item tests show, p-values or statistic),
 # and the global test (with `p_value`; `test_res$global` is NULL
-# otherwise).
+# otherwise). It opens with "Note.", as every automatic note of the
+# family does; a `note` the user typed never comes here.
 .mr_note <- function(
   by_label,
   n_by_na,
   percent,
   base,
+  n_nodata,
   n_none,
-  n_removed,
-  n_removed_none,
   test_res,
   p_value,
   item_types,
@@ -1765,35 +1775,16 @@ table_multiresponse <- function(
       spicy_fmt("note_rows_missing_by_removed", by_label, n_by_na)
     )
   }
-  if (n_removed > 0L) {
-    parts <- c(parts, spicy_fmt("note_multiresponse_removed", n_removed))
-  }
-  if (n_removed_none > 0L) {
-    parts <- c(
-      parts,
-      spicy_fmt("note_multiresponse_removed_none", n_removed_none)
-    )
-  }
   parts <- c(
     parts,
     spicy_str(switch(
       percent,
-      cases = "note_multiresponse_cases",
-      responses = "note_multiresponse_responses",
-      both = "note_multiresponse_both"
+      cases = "note_multiresponse_pct_cases",
+      responses = "note_multiresponse_pct_responses",
+      both = "note_multiresponse_pct_both"
     )),
-    spicy_str(switch(
-      base,
-      valid = "note_multiresponse_base_valid",
-      answered = "note_multiresponse_base_answered",
-      all = "note_multiresponse_base_all"
-    ))
+    .mr_base_sentence(base, n_nodata, n_none)
   )
-  if (n_none == 1L) {
-    parts <- c(parts, spicy_str("note_multiresponse_none_chosen_one"))
-  } else if (n_none > 1L) {
-    parts <- c(parts, spicy_fmt("note_multiresponse_none_chosen", n_none))
-  }
   if (!is.null(test_res)) {
     if (p_value) {
       phrase <- .cat_test_phrase(
@@ -1832,7 +1823,57 @@ table_multiresponse <- function(
       )
     }
   }
-  paste_note_parts(parts)
+  .note_with_prefix(paste_note_parts(parts))
+}
+
+# The base sentence: who the base is, then the two counts of
+# `table_multiresponse()` -- the rows with no data for the question and
+# the rows with no item chosen -- each placed in the base ("including")
+# or out of it ("excluded") by `base`:
+#
+#   valid     including the no-item rows, excluding the no-data rows
+#   answered  excluding both
+#   all       including both
+#
+# A count of zero drops its fragment, and a clause left with no fragment
+# drops with it, parentheses included. Assembled from the registry
+# templates; their comment in R/i18n.R gives the order.
+.mr_base_sentence <- function(base, n_nodata, n_none) {
+  nodata <- if (n_nodata > 0L) {
+    spicy_fmt("note_multiresponse_n_nodata", n_nodata)
+  }
+  none <- if (n_none > 0L) {
+    spicy_fmt("note_multiresponse_n_none", n_none)
+  }
+  inside <- switch(base, valid = none, answered = NULL, all = c(nodata, none))
+  outside <- switch(
+    base,
+    valid = nodata,
+    answered = c(nodata, none),
+    all = NULL
+  )
+  and <- spicy_str("note_multiresponse_and")
+  txt <- spicy_str(switch(
+    base,
+    valid = "note_multiresponse_population_valid",
+    answered = "note_multiresponse_population_answered",
+    all = "note_multiresponse_population_all"
+  ))
+  if (length(inside)) {
+    txt <- spicy_fmt(
+      "note_multiresponse_base_including",
+      txt,
+      paste(inside, collapse = and)
+    )
+  }
+  if (length(outside)) {
+    txt <- spicy_fmt(
+      "note_multiresponse_base_excluded",
+      txt,
+      paste(outside, collapse = and)
+    )
+  }
+  spicy_fmt("note_multiresponse_base", txt)
 }
 
 # The global-test sentence. Its hole receives the statistic written with

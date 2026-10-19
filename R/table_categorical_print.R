@@ -190,13 +190,20 @@ print.spicy_categorical_table <- function(x, ...) {
 # disclosure prepended to the association-measure gloss, so the reader
 # sees what left the table before reading the statistics computed on
 # what remains. Either part may be absent; `NULL` when both are.
+#
+# The one place the note is assembled, for every route (console, the
+# rich engines, Excel, the clipboard), so the one place it opens with
+# "Note.": the prefix belongs to the note, never to one of its parts,
+# which is what left it in the middle when the drop_na disclosure came
+# first. The `missing_note` and `assoc_note` attributes stay the two
+# parts, unprefixed.
 .categorical_note <- function(missing_note, assoc_note) {
   parts <- c(missing_note, assoc_note) # c() drops the absent ones
   parts <- parts[nzchar(parts)]
   if (length(parts) == 0L) {
     return(NULL)
   }
-  paste(parts, collapse = "\n")
+  .note_with_prefix(paste(parts, collapse = "\n"))
 }
 
 # ---- Coercion to plain data.frame / tibble --------------------------------

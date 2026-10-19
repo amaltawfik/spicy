@@ -369,7 +369,7 @@ test_that("p_adjust = \"none\" leaves the item p-values raw and says so", {
   )
   expect_match(
     attr(out, "note"),
-    "each item by group. Group comparison:",
+    "each item by group. Overall group comparison:",
     fixed = TRUE
   )
   expect_false(grepl("adjusted via", attr(out, "note"), fixed = TRUE))
@@ -1026,14 +1026,15 @@ test_that("base = \"valid\" leaves out the respondent who skipped the question",
   expect_identical(all$base[1:3], c(3, 4, 7))
   expect_equal(valid$pct, 100 * valid$n / valid$base)
   expect_equal(all$pct, 100 * all$n / all$base)
+  # Row 6 has no data for the question, row 2 chose neither item.
   expect_match(
     attr(all, "note"),
-    "Base: all respondents.",
+    "Base: all respondents, including 1 with no data for the question and 1 with no item chosen.",
     fixed = TRUE
   )
   expect_match(
     attr(valid, "note"),
-    "Base: respondents who answered the question, including those who chose no item.",
+    "Base: respondents with data for the question, including 1 with no item chosen (excluded: 1 with no data for the question).",
     fixed = TRUE
   )
 })
@@ -1062,13 +1063,13 @@ test_that("base = \"answered\" keeps the respondents who chose an item", {
   expect_equal(answered$pct, 100 * answered$n / answered$base)
   expect_match(
     attr(answered, "note"),
-    "Base: respondents who chose at least one item.",
+    "Base: respondents with at least one item chosen (excluded: 1 with no data for the question and 2 with no item chosen).",
     fixed = TRUE
   )
   withr::local_options(spicy.language = "fr")
   expect_match(
     attr(long("answered"), "note"),
-    "Base\u00a0: personnes ayant coch\u00e9 au moins un item.",
+    "Base\u00a0: personnes ayant coch\u00e9 au moins un item (hors base\u00a0: 1 sans donn\u00e9e pour la question et 2 sans aucun item coch\u00e9).",
     fixed = TRUE
   )
 })
@@ -1091,183 +1092,185 @@ test_that("base = \"answered\" keeps the respondents who chose an item", {
   )
 }
 
-test_that("the note counts the respondents of the base who chose no item", {
-  # valid: rows 2, 5 and 7, after the base sentence; the skipped row 3 is
-  # outside the base, and the note opens with it.
+# The sentence that opens every note of `.mr_none()` without `by`.
+.mr_cases_en <- "Note. Multiple answers possible: percentages can sum to more than 100%."
+
+test_that("the base sentence puts each count in the base or out of it", {
+  # Without `by`: row 3 has no data for the question, rows 2, 5 and 7 have
+  # data and chose no item.
   expect_identical(
     .mr_none_note(),
     paste(
-      "Respondents with no answer to the question removed: 1.",
-      "Several answers possible: percentages are of respondents and can sum to more than 100%.",
-      "Base: respondents who answered the question, including those who chose no item.",
-      "3 respondents chose none of the items."
+      .mr_cases_en,
+      "Base: respondents with data for the question, including 3 with no item chosen (excluded: 1 with no data for the question)."
     )
   )
-  # all: row 3 joins them.
-  expect_match(
-    .mr_none_note(base = "all"),
-    "Base: all respondents. 4 respondents chose none of the items.",
-    fixed = TRUE
-  )
-  # answered: they are outside the base, so the sentence never appears.
-  for (by_g in c(FALSE, TRUE)) {
-    note <- if (by_g) {
-      .mr_none_note(by = g, base = "answered")
-    } else {
-      .mr_none_note(base = "answered")
-    }
-    expect_false(grepl("chose none", note, fixed = TRUE))
-  }
-  # With `by`: one count over the whole base, all groups together (row 7
-  # leaves with its missing group), before the tests.
-  expect_match(
-    .mr_none_note(by = g),
+  expect_identical(
+    .mr_none_note(base = "answered"),
     paste(
-      "including those who chose no item.",
-      "2 respondents chose none of the items. Item p-values:"
-    ),
-    fixed = TRUE
+      .mr_cases_en,
+      "Base: respondents with at least one item chosen (excluded: 1 with no data for the question and 3 with no item chosen)."
+    )
   )
-  expect_match(
-    .mr_none_note(by = g, base = "all"),
-    "Base: all respondents. 3 respondents chose none of the items.",
-    fixed = TRUE
+  expect_identical(
+    .mr_none_note(base = "all"),
+    paste(
+      .mr_cases_en,
+      "Base: all respondents, including 1 with no data for the question and 3 with no item chosen."
+    )
   )
+  # With `by`: after the rows a missing group removed (row 7), one count of
+  # each for all groups together, before the tests.
+  with_by <- .mr_none_note(by = g)
+  opening <- paste(
+    "Note. Rows with missing g removed: 1.",
+    "Multiple answers possible: percentages can sum to more than 100%.",
+    "Base: respondents with data for the question, including 2 with no item chosen (excluded: 1 with no data for the question).",
+    "Item p-values:"
+  )
+  expect_identical(substr(with_by, 1L, nchar(opening)), opening)
   # The table and its data frames carry the same note.
   expect_identical(
     attr(table_multiresponse(.mr_none(), c(x1, x2), by = g), "note"),
-    .mr_none_note(by = g)
+    with_by
   )
 })
 
-test_that("one respondent who chose no item has a sentence of its own, none has none", {
-  d <- .mr_none()
-  expect_match(
-    .mr_none_note(d[c(1L, 2L, 4L), ]),
-    "chose no item. 1 respondent chose none of the items.",
-    fixed = TRUE
-  )
-  expect_match(
-    .mr_none_note(d[-5L, ], by = g),
-    "chose no item. 1 respondent chose none of the items. Item p-values:",
-    fixed = TRUE
-  )
-  expect_false(grepl(
-    "chose none",
-    .mr_none_note(d[c(1L, 4L, 6L), ]),
-    fixed = TRUE
-  ))
-  expect_false(grepl("chose none", attr(.mr_farm_tbl(), "note"), fixed = TRUE))
-})
-
-test_that("the French note counts them too", {
-  withr::local_options(spicy.language = "fr")
-  d <- .mr_none()
-  expect_match(
-    .mr_none_note(base = "all"),
-    "Base\u00a0: toutes les personnes. 4 personnes n'ont coch\u00e9 aucun item.",
-    fixed = TRUE
-  )
-  expect_match(
-    .mr_none_note(d[-5L, ], by = g),
-    "n'ont choisi aucun item. 1 personne n'a coch\u00e9 aucun item.",
-    fixed = TRUE
-  )
-  expect_false(grepl(
-    "aucun item",
-    .mr_none_note(base = "answered"),
-    fixed = TRUE
-  ))
-  expect_match(
-    .mr_none_note(),
-    "Personnes retir\u00e9es faute de r\u00e9ponse \u00e0 la question\u00a0: 1.",
-    fixed = TRUE
-  )
-})
-
-test_that("the note counts the respondents left outside the base", {
-  # Row 3 answered none of the indicators, rows 2 and 5 chose no item, and
-  # row 7, which chose no item, has no group.
-  removed <- "Respondents with no answer to the question removed:"
-  none <- "Respondents who chose no item removed:"
-  expect_match(.mr_none_note(), paste(removed, "1."), fixed = TRUE)
-  expect_false(grepl(none, .mr_none_note(), fixed = TRUE))
-  # answered: the respondents who chose no item leave the base as well,
-  # counted apart, since they did answer.
-  expect_match(
-    .mr_none_note(base = "answered"),
-    paste(removed, "1.", none, "3."),
-    fixed = TRUE
-  )
-  # all: nobody leaves it.
-  expect_false(grepl(removed, .mr_none_note(base = "all"), fixed = TRUE))
-  expect_false(grepl(none, .mr_none_note(base = "all"), fixed = TRUE))
-  # With `by`: one count for the whole table, after the rows a missing
-  # group removed, which counts row 7 instead.
-  expect_match(
-    .mr_none_note(by = g, base = "answered"),
-    paste("Rows with missing g removed: 1.", removed, "1.", none, "2."),
-    fixed = TRUE
-  )
-  expect_match(.mr_none_note(by = g), paste(removed, "1."), fixed = TRUE)
-  # Nobody left out, no sentence.
-  expect_false(grepl(removed, attr(.mr_farm_tbl(), "note"), fixed = TRUE))
-})
-
-test_that("a respondent who chose no item is not counted as one who skipped", {
-  # Row 2 answered and chose no item, row 3 skipped the question. Only
-  # `base = "answered"` leaves row 2 out, and says so in its own sentence.
-  d <- data.frame(x1 = c(1, 0, NA, 1), x2 = c(0, 0, NA, 1))
-  note <- function(base) {
-    attr(
-      table_multiresponse(d, c(x1, x2), base = base, output = "data.frame"),
-      "note"
-    )
-  }
-  cases <- "Several answers possible: percentages are of respondents and can sum to more than 100%."
-  expect_identical(
-    note("valid"),
-    paste(
-      "Respondents with no answer to the question removed: 1.",
-      cases,
-      "Base: respondents who answered the question, including those who chose no item.",
-      "1 respondent chose none of the items."
-    )
-  )
-  expect_identical(
-    note("answered"),
-    paste(
-      "Respondents with no answer to the question removed: 1.",
-      "Respondents who chose no item removed: 1.",
-      cases,
-      "Base: respondents who chose at least one item."
-    )
-  )
-  expect_identical(
-    note("all"),
-    paste(
-      cases,
-      "Base: all respondents. 2 respondents chose none of the items."
-    )
-  )
-  withr::local_options(spicy.language = "fr")
-  expect_match(
-    note("answered"),
-    paste(
-      "Personnes retir\u00e9es faute de r\u00e9ponse \u00e0 la question\u00a0: 1.",
-      "Personnes retir\u00e9es faute d'item coch\u00e9\u00a0: 1."
+test_that("under base = \"all\", no data for the question is not counted as no item chosen", {
+  # Before issue #11 the note said "103 respondents chose none of the
+  # items": the 36 who skipped the question counted with the 67 who chose
+  # nothing.
+  note <- attr(
+    table_multiresponse(
+      sochealth,
+      starts_with("info_"),
+      base = "all",
+      output = "data.frame"
     ),
-    fixed = TRUE
+    "note"
   )
   expect_match(
-    note("valid"),
-    "^Personnes retir\u00e9es faute de r\u00e9ponse \u00e0 la question\u00a0: 1\\."
+    note,
+    "Base: all respondents, including 36 with no data for the question and 67 with no item chosen.",
+    fixed = TRUE
   )
-  expect_false(grepl("faute d'item", note("valid"), fixed = TRUE))
-  expect_false(grepl("retir\u00e9es", note("all"), fixed = TRUE))
+  expect_false(grepl("103", note, fixed = TRUE))
+  expect_match(
+    attr(
+      table_multiresponse(
+        sochealth,
+        starts_with("info_"),
+        output = "data.frame"
+      ),
+      "note"
+    ),
+    "including 67 with no item chosen (excluded: 36 with no data for the question).",
+    fixed = TRUE
+  )
 })
 
-test_that("the note says what the percentages are of, in both languages", {
+test_that("a count of zero drops its clause, and the parentheses with it", {
+  d <- .mr_none()
+  # No row without data: rows 2, 5 and 7 chose no item.
+  no_nodata <- d[-3L, ]
+  expect_identical(
+    .mr_none_note(no_nodata),
+    paste(
+      .mr_cases_en,
+      "Base: respondents with data for the question, including 3 with no item chosen."
+    )
+  )
+  expect_identical(
+    .mr_none_note(no_nodata, base = "answered"),
+    paste(
+      .mr_cases_en,
+      "Base: respondents with at least one item chosen (excluded: 3 with no item chosen)."
+    )
+  )
+  expect_identical(
+    .mr_none_note(no_nodata, base = "all"),
+    paste(
+      .mr_cases_en,
+      "Base: all respondents, including 3 with no item chosen."
+    )
+  )
+  # No row with data and no item chosen: row 3 alone has no data.
+  no_none <- d[c(1L, 3L, 4L, 6L), ]
+  expect_identical(
+    .mr_none_note(no_none),
+    paste(
+      .mr_cases_en,
+      "Base: respondents with data for the question (excluded: 1 with no data for the question)."
+    )
+  )
+  expect_identical(
+    .mr_none_note(no_none, base = "answered"),
+    paste(
+      .mr_cases_en,
+      "Base: respondents with at least one item chosen (excluded: 1 with no data for the question)."
+    )
+  )
+  expect_identical(
+    .mr_none_note(no_none, base = "all"),
+    paste(
+      .mr_cases_en,
+      "Base: all respondents, including 1 with no data for the question."
+    )
+  )
+  # Neither: the sentence names the base alone.
+  neither <- d[c(1L, 4L, 6L), ]
+  expect_identical(
+    .mr_none_note(neither),
+    paste(.mr_cases_en, "Base: respondents with data for the question.")
+  )
+  expect_identical(
+    .mr_none_note(neither, base = "answered"),
+    paste(.mr_cases_en, "Base: respondents with at least one item chosen.")
+  )
+  expect_identical(
+    .mr_none_note(neither, base = "all"),
+    paste(.mr_cases_en, "Base: all respondents.")
+  )
+})
+
+test_that("the French base sentence assembles the same clauses", {
+  withr::local_options(spicy.language = "fr")
+  cases <- "Note. Plusieurs r\u00e9ponses possibles\u00a0: les pourcentages peuvent totaliser plus de 100\u00a0%."
+  expect_identical(
+    .mr_none_note(),
+    paste(
+      cases,
+      "Base\u00a0: personnes ayant des donn\u00e9es pour la question, dont 3 sans aucun item coch\u00e9 (hors base\u00a0: 1 sans donn\u00e9e pour la question)."
+    )
+  )
+  expect_identical(
+    .mr_none_note(base = "answered"),
+    paste(
+      cases,
+      "Base\u00a0: personnes ayant coch\u00e9 au moins un item (hors base\u00a0: 1 sans donn\u00e9e pour la question et 3 sans aucun item coch\u00e9)."
+    )
+  )
+  expect_identical(
+    .mr_none_note(base = "all"),
+    paste(
+      cases,
+      "Base\u00a0: toutes les personnes, dont 1 sans donn\u00e9e pour la question et 3 sans aucun item coch\u00e9."
+    )
+  )
+  expect_identical(
+    .mr_none_note(.mr_none()[-3L, ]),
+    paste(
+      cases,
+      "Base\u00a0: personnes ayant des donn\u00e9es pour la question, dont 3 sans aucun item coch\u00e9."
+    )
+  )
+  expect_identical(
+    .mr_none_note(.mr_none()[c(1L, 4L, 6L), ], base = "all"),
+    paste(cases, "Base\u00a0: toutes les personnes.")
+  )
+})
+
+test_that("the note says what the percentages sum to, in both languages", {
   note <- function(percent) {
     attr(
       table_multiresponse(
@@ -1279,35 +1282,113 @@ test_that("the note says what the percentages are of, in both languages", {
       "note"
     )
   }
+  opening <- function(x, start) substr(x, 1L, nchar(start))
+  en <- c(
+    cases = "Note. Multiple answers possible: percentages can sum to more than 100%. Base:",
+    responses = "Note. Multiple answers possible: percentages are of all answers given and sum to 100%. Base:",
+    both = "Note. Multiple answers possible: percentages of cases can sum to more than 100%, and percentages of responses sum to 100%. Base:"
+  )
+  for (p in names(en)) {
+    expect_identical(opening(note(p), en[[p]]), en[[p]])
+  }
+  withr::local_options(spicy.language = "fr")
+  fr <- c(
+    cases = "Note. Plusieurs r\u00e9ponses possibles\u00a0: les pourcentages peuvent totaliser plus de 100\u00a0%. Base\u00a0:",
+    responses = "Note. Plusieurs r\u00e9ponses possibles\u00a0: les pourcentages portent sur l'ensemble des r\u00e9ponses et totalisent 100\u00a0%. Base\u00a0:",
+    both = "Note. Plusieurs r\u00e9ponses possibles\u00a0: les pourcentages des cas peuvent totaliser plus de 100\u00a0%, ceux des r\u00e9ponses totalisent 100\u00a0%. Base\u00a0:"
+  )
+  for (p in names(fr)) {
+    expect_identical(opening(note(p), fr[[p]]), fr[[p]])
+  }
+})
+
+test_that("the automatic note opens with \"Note.\" once, a typed note is printed as typed", {
+  tbl <- .mr_farm_tbl()
+  note <- attr(tbl, "note")
+  expect_true(startsWith(note, "Note. Multiple answers possible:"))
+  expect_identical(lengths(gregexpr("Note.", note, fixed = TRUE)), 1L)
+  printed <- utils::capture.output(print(tbl))
+  expect_identical(sum(grepl("Note.", printed, fixed = TRUE)), 1L)
+  expect_identical(sum(startsWith(printed, "Note. ")), 1L)
+  # A note the user typed: no prefix added, on any route.
+  typed <- .mr_farm_tbl(note = "Source: L&S.")
+  expect_identical(attr(typed, "note"), "Source: L&S.")
+  printed <- utils::capture.output(print(typed))
+  expect_true("Source: L&S." %in% printed)
+  expect_false(any(grepl("Note.", printed, fixed = TRUE)))
+  # `note = FALSE`: no note at all.
+  none <- .mr_farm_tbl(note = FALSE)
+  expect_null(attr(none, "note"))
+  expect_false(any(grepl(
+    "Note.",
+    utils::capture.output(print(none)),
+    fixed = TRUE
+  )))
+  withr::local_options(spicy.language = "fr")
+  expect_true(startsWith(
+    attr(.mr_farm_tbl(), "note"),
+    "Note. Plusieurs r\u00e9ponses possibles\u00a0:"
+  ))
+})
+
+test_that("the engines set the automatic \"Note.\" in italics, a typed note in regular type", {
+  skip_if_not_installed("flextable")
+  skip_if_not_installed("tinytable")
+  skip_if_not_installed("gt")
+  chunks <- .mr_farm_tbl(output = "flextable")$footer$content$data[[1L, 1L]]
+  expect_identical(chunks$txt[[1L]], "Note.")
+  expect_true(chunks$italic[[1L]])
+  expect_false(isTRUE(chunks$italic[[2L]]))
+  expect_true(startsWith(chunks$txt[[2L]], " Multiple answers possible:"))
+  typed <- .mr_farm_tbl(note = "Source: L&S.", output = "flextable")
+  typed <- typed$footer$content$data[[1L, 1L]]
+  expect_identical(typed$txt, "Source: L&S.")
+  expect_false(isTRUE(typed$italic))
+  html <- tinytable::save_tt(
+    .mr_farm_tbl(output = "tinytable"),
+    output = "html"
+  )
+  expect_match(html, "<em>Note.</em> Multiple answers possible:", fixed = TRUE)
+  html <- tinytable::save_tt(
+    .mr_farm_tbl(note = "Source: L&S.", output = "tinytable"),
+    output = "html"
+  )
+  expect_false(grepl("<em>", html, fixed = TRUE))
+  g <- .mr_farm_tbl(output = "gt")
   expect_match(
-    note("cases"),
-    "Several answers possible: percentages are of respondents and can sum to more than 100%.",
+    spicy:::.spicy_gt_html_postprocess(
+      as.character(gt::as_raw_html(g, inline_css = FALSE)),
+      attr(g, "spicy_note")
+    ),
+    "<em>Note.</em> Multiple answers possible:",
     fixed = TRUE
   )
+})
+
+test_that("the global test is the overall group comparison, in both languages", {
   expect_match(
-    note("responses"),
-    "Several answers possible: percentages are of responses.",
+    attr(.mr_farm_tbl(), "note"),
+    "Overall group comparison: Rao-Scott second-order corrected chi-squared test",
     fixed = TRUE
   )
+  set.seed(1)
   expect_match(
-    note("both"),
-    "Several answers possible: percentages of respondents can sum to more than 100%; percentages of responses sum to 100%.",
+    attr(.mr_farm_tbl(global_test = "bootstrap", boot_n = 99), "note"),
+    "Overall group comparison: bootstrap test of multiple marginal independence (99 resamples)",
     fixed = TRUE
+  )
+  # table_categorical() keeps its own wording.
+  expect_identical(
+    attr(
+      table_categorical(sochealth, select = smoking, by = sex),
+      "assoc_note"
+    ),
+    "Group comparison: Pearson chi-squared test."
   )
   withr::local_options(spicy.language = "fr")
   expect_match(
-    note("cases"),
-    "Plusieurs r\u00e9ponses possibles\u00a0: les pourcentages, calcul\u00e9s sur les personnes ayant r\u00e9pondu, peuvent totaliser plus de 100\u00a0%.",
-    fixed = TRUE
-  )
-  expect_match(
-    note("both"),
-    "Plusieurs r\u00e9ponses possibles\u00a0: les pourcentages de personnes peuvent totaliser plus de 100\u00a0%\u00a0; les pourcentages de r\u00e9ponses totalisent 100\u00a0%.",
-    fixed = TRUE
-  )
-  expect_match(
-    .mr_none_note(),
-    "Base\u00a0: personnes ayant r\u00e9pondu \u00e0 la question, y compris celles qui n'ont choisi aucun item.",
+    attr(.mr_farm_tbl(), "note"),
+    "Comparaison globale des groupes\u00a0: test du khi-deux d'ind\u00e9pendance marginale multiple",
     fixed = TRUE
   )
 })
@@ -1363,7 +1444,7 @@ test_that("percentages of cases, of responses, or both", {
   )
   expect_match(
     attr(resp, "note"),
-    "Several answers possible: percentages are of responses.",
+    "Multiple answers possible: percentages are of all answers given and sum to 100%.",
     fixed = TRUE
   )
 })
@@ -1606,7 +1687,7 @@ test_that("p_value = FALSE: the data frames are the default minus the test", {
   expect_null(attr(out_l, "global_test"))
   # The note keeps what the table shows, and no test.
   note <- attr(out, "note")
-  expect_false(grepl("p-values|Group comparison", note))
+  expect_false(grepl("p-values|group comparison", note, ignore.case = TRUE))
 })
 
 test_that("p_value = FALSE: the console table and its typed view", {
@@ -1679,7 +1760,7 @@ test_that("p_value = FALSE removes the test from every rendered engine", {
   clip_top <- strsplit(lines[[2L]], "\t")[[1L]]
   expect_false("p" %in% clip_top)
   expect_true(all(c("HS", "Total") %in% clip_top))
-  expect_false(any(grepl("Group comparison", lines, fixed = TRUE)))
+  expect_false(any(grepl("group comparison", lines, ignore.case = TRUE)))
 })
 
 test_that("the engines render the tested table, title and note included", {
@@ -1728,7 +1809,11 @@ test_that("statistic = TRUE adds the item chi-squared column", {
   expect_false("p" %in% names(disp_out))
   expect_identical(disp_out$Test, disp$Test)
   expect_null(attr(out, "global_test"))
-  expect_false(grepl("p-values|Group comparison", attr(out, "note")))
+  expect_false(grepl(
+    "p-values|group comparison",
+    attr(out, "note"),
+    ignore.case = TRUE
+  ))
   df <- .mr_farm_tbl(statistic = TRUE, p_value = FALSE, output = "data.frame")
   expect_true(all(c("Chi2", "df") %in% names(df)))
   expect_false(any(c("p", "p_unadjusted") %in% names(df)))
@@ -1819,7 +1904,7 @@ test_that("the French table translates its title, headers, base row and notes", 
   expect_identical(attr(tbl, "title"), "R\u00e9ponses multiples selon ed")
   expect_identical(
     utils::tail(tbl$Variable, 1L),
-    "Personnes ayant r\u00e9pondu"
+    "Personnes"
   )
   s <- as_structured(tbl)
   expect_identical(s$col_meta[["HS % of cases"]]$display_label, "HS % des cas")

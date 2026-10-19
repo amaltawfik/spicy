@@ -769,19 +769,27 @@
   # A "check all that apply" question, one row per item. The two
   # percentage headers are used only under `percent = "both"`: a single
   # percentage column keeps the family's bare `header_percent_symbol`.
-  # The percentage notes are display literals read through `spicy_str()`,
-  # hence their bare "%".
-  # The note opens with the respondents outside the base: those who
-  # answered none of the indicators (`note_multiresponse_removed`; under
-  # `base = "all"` they stay in the base), then, under `base = "answered"`
-  # only, those who answered but chose no item
-  # (`note_multiresponse_removed_none`). Each is printed only for a count
-  # of at least 1. `note_multiresponse_none_chosen`
-  # follows the base sentence when the base holds respondents who chose no
-  # item, counted over the whole base (never under `base = "answered"`,
-  # which leaves them out). It is printed only for a count of at least 1,
-  # and a count of exactly 1 takes its own key, so neither language needs
-  # a plural rule. The global-test lines take their statistic as an
+  # The percentage sentences (`note_multiresponse_pct_*`) are display
+  # literals read through `spicy_str()`, hence their bare "%".
+  # After the rows removed for a missing `by` (the family's
+  # `note_rows_missing_by_removed`), the note says what the percentages
+  # sum to, then gives the base in one sentence that `.mr_base_sentence()`
+  # assembles from the inside out:
+  #   1. the population of the base, `note_multiresponse_population_*`;
+  #   2. `note_multiresponse_base_including` adds the counts the base
+  #      holds, then `note_multiresponse_base_excluded` the counts it
+  #      leaves out: two holes each, the text so far and one or two
+  #      fragments joined by `note_multiresponse_and`;
+  #   3. `note_multiresponse_base` makes the result a sentence.
+  # The two fragments are the two counts, named by the coding and not by
+  # what the respondent meant: `note_multiresponse_n_nodata`, the rows
+  # missing on every item, and `note_multiresponse_n_none`, the rows with
+  # data and no item chosen. `base = "valid"` holds the second and leaves
+  # out the first, `"answered"` leaves out both, `"all"` holds both. A
+  # count of 0 drops its fragment, and a clause left with no fragment
+  # drops with it, parentheses included. The number opens its fragment
+  # and agrees with nothing, in either language, so no fragment needs a
+  # singular key. The global-test lines take their statistic as an
   # argument, built at the call site from `symbol_chi_sq` and the p-value
   # templates (`note_p_prefix_eq` / `note_p_prefix_lt`) under the table's
   # decimal mark. An adjustment of the item p-values is told by the
@@ -797,20 +805,24 @@
   row_multiresponse_base = "Respondents",
   header_pct_cases = "% of cases",
   header_pct_responses = "% of responses",
-  note_multiresponse_removed = "Respondents with no answer to the question removed: %d.",
-  note_multiresponse_removed_none = "Respondents who chose no item removed: %d.",
-  note_multiresponse_cases = "Several answers possible: percentages are of respondents and can sum to more than 100%.",
-  note_multiresponse_responses = "Several answers possible: percentages are of responses.",
-  note_multiresponse_both = "Several answers possible: percentages of respondents can sum to more than 100%; percentages of responses sum to 100%.",
-  note_multiresponse_base_valid = "Base: respondents who answered the question, including those who chose no item.",
-  note_multiresponse_base_answered = "Base: respondents who chose at least one item.",
-  note_multiresponse_base_all = "Base: all respondents.",
-  note_multiresponse_none_chosen = "%d respondents chose none of the items.",
-  note_multiresponse_none_chosen_one = "1 respondent chose none of the items.",
+  note_multiresponse_pct_cases = "Multiple answers possible: percentages can sum to more than 100%.",
+  note_multiresponse_pct_responses = "Multiple answers possible: percentages are of all answers given and sum to 100%.",
+  note_multiresponse_pct_both = "Multiple answers possible: percentages of cases can sum to more than 100%, and percentages of responses sum to 100%.",
+  note_multiresponse_base = "Base: %s.",
+  note_multiresponse_base_including = "%s, including %s",
+  note_multiresponse_base_excluded = "%s (excluded: %s)",
+  note_multiresponse_population_valid = "respondents with data for the question",
+  note_multiresponse_population_answered = "respondents with at least one item chosen",
+  note_multiresponse_population_all = "all respondents",
+  note_multiresponse_n_nodata = "%d with no data for the question",
+  note_multiresponse_n_none = "%d with no item chosen",
+  note_multiresponse_and = " and ",
   note_multiresponse_items_p = "Item p-values: %s of each item by group.",
   note_multiresponse_items_p_mixed = "Item p-values: %s.",
-  note_multiresponse_global_rs2 = "Group comparison: Rao-Scott second-order corrected chi-squared test of multiple marginal independence, %s.",
-  note_multiresponse_global_boot = "Group comparison: bootstrap test of multiple marginal independence (%d resamples), %s.",
+  # "Overall": the test of the whole question, after the item tests.
+  # `table_categorical()` keeps its own `note_group_comparison`.
+  note_multiresponse_global_rs2 = "Overall group comparison: Rao-Scott second-order corrected chi-squared test of multiple marginal independence, %s.",
+  note_multiresponse_global_boot = "Overall group comparison: bootstrap test of multiple marginal independence (%d resamples), %s.",
   note_multiresponse_not_tested = "Not tested (no variation, shown as \u2013): %s.",
   excel_sheet_multiresponse = "Multiple responses",
 
@@ -1701,6 +1713,20 @@ spicy_labels <- function(language = NULL) {
 # changes -- silently, since a regex that fails to match raises nothing.
 .escape_regex <- function(x) {
   gsub("([][{}()*+?.\\\\^$|])", "\\\\\\1", x)
+}
+
+# Open an automatic note with the APA prefix. Each descriptive family calls
+# it ONCE, on the note it assembles for every route (console, the rich
+# engines, Excel, the clipboard, the note attribute), the way
+# `table_regression()` and `table_continuous_lm()` open theirs. Nothing to
+# say stays nothing: NULL or "" comes back as it went in, so a table with no
+# disclosure prints no bare "Note.". A note the user typed never comes
+# through here: it is printed as typed.
+.note_with_prefix <- function(note) {
+  if (is.null(note) || !nzchar(note)) {
+    return(note)
+  }
+  paste0(spicy_str("note_prefix"), note)
 }
 
 # Split a rendered note into (emphasized prefix, remainder), or NULL when the

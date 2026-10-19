@@ -357,12 +357,13 @@
   per_row
 }
 
-# Build the APA-style "Note." line listing which measure was used for
-# which variable when the rows of a `table_categorical()` table use
-# more than one association measure.
+# Build the sentence listing which measure was used for which variable
+# when the rows of a `table_categorical()` table use more than one
+# association measure. It carries no "Note." prefix: the note opens
+# with it once, in `.categorical_note()`, whatever sentence comes first.
 #
 # Example output:
-#   "Note. Cramer's V: smoking, education; Kendall's Tau-b: self_rated_health."
+#   "Cramer's V: smoking, education; Kendall's Tau-b: self_rated_health."
 .assoc_note_apa <- function(per_row_measures, labels) {
   shown <- per_row_measures[per_row_measures != "none"]
   if (length(shown) == 0L) {
@@ -385,11 +386,7 @@
     },
     character(1)
   )
-  paste0(
-    spicy_str("note_prefix"),
-    paste(parts, collapse = spicy_str("note_assoc_measures_sep")),
-    "."
-  )
+  paste0(paste(parts, collapse = spicy_str("note_assoc_measures_sep")), ".")
 }
 
 # -- Internal helpers for the per-variable test ------------------------------
@@ -801,9 +798,8 @@
 #'   When a single measure is used for every row, the column header is
 #'   that measure's name (e.g. `"Cramer's V"`). When multiple measures
 #'   are used (typically with `"auto"` on a heterogeneous `select`),
-#'   the header collapses to `"Effect size"` and an APA-style
-#'   `Note.` line is appended documenting which measure was used for
-#'   which variable.
+#'   the header collapses to `"Effect size"` and the table note names
+#'   the measure used for each variable.
 #'
 #'   `phi` requires a 2x2 table; if explicitly requested for a
 #'   non-2x2 variable, an error is raised so the user can choose
@@ -1254,8 +1250,8 @@
 #' # Default (`assoc_measure = "auto"`): one measure per row variable based on
 #' # the variable type (2x2 -> Phi, both ordered factors -> Kendall's Tau-b,
 #' # otherwise Cramer's V). When the chosen measures differ across rows, the
-#' # column header collapses to `"Effect size"` and an APA-style `Note.` line
-#' # documents which measure was used for which variable.
+#' # column header collapses to `"Effect size"` and the note names the
+#' # measure used for each variable.
 #' table_categorical(
 #'   sochealth,
 #'   select = c(smoking, education),
@@ -2331,8 +2327,11 @@ table_categorical <- function(
     report_wide_excel <- make_report_wide_oneway("excel")
 
     # Read the ledger once, here: every output route below must carry
-    # the same disclosure, not print() alone.
+    # the same disclosure, not print() alone. `oneway_note` is that
+    # disclosure as the note the engines print, assembled (and opened
+    # with "Note.") by the same `.categorical_note()` as print().
     missing_note <- build_missing_note()
+    oneway_note <- .categorical_note(missing_note, NULL)
 
     # Typed view of the SAME rows the display frames hold, built from
     # the compute frame, never parsed back from a label string. Every
@@ -2409,7 +2408,7 @@ table_categorical <- function(
       tt <- tinytable::tt(
         dat_tt,
         caption = .categorical_title(NULL),
-        notes = missing_note
+        notes = oneway_note
       )
       tt <- .spicy_tt_bare(tt)
       # User data reaches the cells (level labels, variable labels):
@@ -2567,7 +2566,7 @@ table_categorical <- function(
       }
       # The same title the five other engines print.
       tbl <- .spicy_gt_apa_title(tbl, .categorical_title(NULL))
-      return(.spicy_gt_attach_note(tbl, missing_note))
+      return(.spicy_gt_attach_note(tbl, oneway_note))
     }
 
     build_flextable_oneway <- function(df) {
@@ -2654,7 +2653,7 @@ table_categorical <- function(
         )
       }
       ft <- flextable::autofit(ft)
-      ft <- .spicy_ft_attach_note(ft, missing_note)
+      ft <- .spicy_ft_attach_note(ft, oneway_note)
       class(ft) <- c("spicy_flextable", class(ft))
       ft
     }
@@ -2812,7 +2811,7 @@ table_categorical <- function(
       # export uses. Same text the console prints.
       wb <- .spicy_xl_add_note(
         wb,
-        note = .categorical_note(missing_note, NULL),
+        note = oneway_note,
         start_row = last_row + 2L
       )
       # Widths from the DISPLAY strings (the char body), not from the
@@ -2839,7 +2838,7 @@ table_categorical <- function(
         clip_mat,
         clipboard_delim,
         title = .categorical_title(NULL),
-        note = .categorical_note(missing_note, NULL)
+        note = oneway_note
       )
       clipr::write_clip(txt)
       spicy_inform("Categorical table copied to clipboard.")

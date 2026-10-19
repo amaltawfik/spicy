@@ -1193,6 +1193,43 @@ test_that("ordinary missing values are counted in the note", {
   expect_identical(tbl$n, 3L)
 })
 
+test_that("the note opens with \"Note.\" once, on the attribute and in print", {
+  skip_if_not_installed("survey")
+  d <- data.frame(y = c(1, 2, NA, 4), w = rep(1, 4))
+  tbl <- table_continuous_svy(
+    survey::svydesign(id = ~1, weights = ~w, data = d),
+    select = y
+  )
+  note <- attr(tbl, "missing_note")
+  expect_true(startsWith(note, "Note. Missing values removed: y (1). N = 4"))
+  expect_identical(lengths(gregexpr("Note.", note, fixed = TRUE)), 1L)
+  printed <- utils::capture.output(print(tbl))
+  expect_identical(sum(grepl("Note.", printed, fixed = TRUE)), 1L)
+  expect_identical(sum(startsWith(printed, "Note. ")), 1L)
+  expect_identical(
+    attr(
+      table_continuous_svy(
+        survey::svydesign(id = ~1, weights = ~w, data = d),
+        select = y,
+        output = "data.frame"
+      ),
+      "note"
+    ),
+    note
+  )
+  withr::local_options(spicy.language = "fr")
+  expect_true(startsWith(
+    attr(
+      table_continuous_svy(
+        survey::svydesign(id = ~1, weights = ~w, data = d),
+        select = y
+      ),
+      "missing_note"
+    ),
+    "Note. Valeurs manquantes retir\u00e9es\u00a0: y (1). N = 4"
+  ))
+})
+
 test_that("the missing-values note names each variable by its row label", {
   skip_if_not_installed("survey")
   d <- data.frame(

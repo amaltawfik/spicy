@@ -76,7 +76,20 @@ default of SPSS \verb{MULT RESPONSE} (\code{MISSING = TABLE}) and of Stata's
 and 107-108), where choosing nothing cannot be told from skipping.
 \item \code{"all"}: every row of the group, as \code{questionr::multi.table()}
 counts.
-}}
+}
+
+In a "check all that apply" question, an item left unchecked cannot
+tell "none applies" from "skipped": \code{"valid"} reads a respondent with
+no item chosen as "none applies", \code{"answered"} (the convention of SPSS
+and Stata) as nonresponse. \code{"answered"} suits a questionnaire with
+neither a "None of these" option nor a required answer. An export
+that leaves every unchecked box missing gives both bases the same
+respondents, and only \code{"answered"} describes them in the note. A
+filter code that is not
+declared missing (for example -1 "not applicable" kept as an ordinary
+value) counts as "not chosen" and keeps the filtered respondents in
+the base: recode it to \code{NA} first (SPSS user-missing values declared
+as such are already read as missing).}
 
 \item{sort}{Sorting method for items, as in \code{\link[=freq]{freq()}}:
 \itemize{
@@ -182,9 +195,11 @@ or \code{"right"}, as in \code{\link[=table_categorical]{table_categorical()}}.}
 responses", followed by "by" and the \code{by} variable under the \code{labels}
 contract; a single string replaces it.}
 
-\item{note}{The table note. \code{NULL} (the default) builds it: the
-respondents left out, what the percentages are of, the base, and the
-tests. A single string replaces it, and \code{FALSE} removes it.}
+\item{note}{The table note. \code{NULL} (the default) builds it, opening
+with "Note.": the rows removed for a missing \code{by}, what the
+percentages sum to, the base with the respondents it holds or leaves
+out, and the tests. A single string replaces it and is printed as
+typed, and \code{FALSE} removes it.}
 
 \item{output}{Output format. One of:
 \itemize{
@@ -385,12 +400,12 @@ indicator under \code{base = "valid"}, those who chose at least one item
 under \code{base = "answered"}, every row under \code{base = "all"}. The counts
 are the same under the three bases; the percentages of cases and the
 tests are not. The \code{Respondents} row gives the base of each group, and
-the note says which base the table uses and how many respondents it
-leaves out, all groups together: those who answered none of the
-indicators, under \code{"valid"} and \code{"answered"}, and those who answered but
-chose no item, under \code{"answered"}, in a sentence of their own.
-Under \code{"valid"} and \code{"all"}, the base can hold respondents who chose no
-item: the note then says how many. Declared missing values of a
+the note says which base the table uses, with two counts, all groups
+together: the respondents with no data for the question (every
+indicator missing) and those with no item chosen (data, but no item
+chosen). The base holds the second and leaves out the first under
+\code{"valid"}, leaves out both under \code{"answered"}, and holds both under
+\code{"all"}; a count of zero is not mentioned. Declared missing values of a
 labelled column (\code{na_values}, \code{na_range}) are missing, as under the
 \code{user_na = TRUE} default of \code{\link[=table_categorical]{table_categorical()}}.
 
