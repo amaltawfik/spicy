@@ -333,7 +333,7 @@ variables, every one of them carrying a variable label (see
 <span><span class="co">#&gt;    No                      <span style="color: #9E9E9E;">│</span>    40.8       650     54.2                      </span></span>
 <span><span class="co">#&gt;    Yes                     <span style="color: #9E9E9E;">│</span>    59.2       550     45.8                      </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Group comparison: Pearson chi-squared test.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Group comparison: Pearson chi-squared test.</span></span></span></code></pre></div>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_continuous.html">table_continuous</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span>,</span>
@@ -375,7 +375,7 @@ variables, every one of them carrying a variable label (see
 <span><span class="co">#&gt;                           <span style="color: #9E9E9E;">│</span> Upper secondary     3.43       3.63    534        </span></span>
 <span><span class="co">#&gt;                           <span style="color: #9E9E9E;">│</span> Tertiary            4.01       4.21    399        </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Missing values removed: Body mass index (12), Satisfaction with health (8).</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Missing values removed: Body mass index (12), Satisfaction with health (8).</span></span></span></code></pre></div>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_continuous_lm.html">table_continuous_lm</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span>,</span>
@@ -558,7 +558,7 @@ health behaviors, then summarize continuous well-being indicators.</p>
 <span><span class="co">#&gt;    No                                    <span style="color: #9E9E9E;">│</span>  29.5                      </span></span>
 <span><span class="co">#&gt;    Yes                                   <span style="color: #9E9E9E;">│</span>  70.5                      </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Group comparison: Pearson chi-squared test.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Group comparison: Pearson chi-squared test.</span></span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="continuous-variables">Continuous variables<a class="anchor" aria-label="anchor" href="#continuous-variables"></a>
@@ -620,7 +620,7 @@ health behaviors, then summarize continuous well-being indicators.</p>
 <span><span class="co">#&gt;                           <span style="color: #9E9E9E;">│</span> Upper secondary            </span></span>
 <span><span class="co">#&gt;                           <span style="color: #9E9E9E;">│</span> Tertiary                   </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Missing values removed: Body mass index (12), Satisfaction with health (8).</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Missing values removed: Body mass index (12), Satisfaction with health (8).</span></span></span></code></pre></div>
 <p>This keeps the reporting structure consistent while still using the
 function that fits each variable type.</p>
 </div>
@@ -696,7 +696,7 @@ refusals:</p>
 <span><span class="co">#&gt;  wellbeing_score <span style="color: #9E9E9E;">│</span> Female  620  -0.25 </span></span>
 <span><span class="co">#&gt;                  <span style="color: #9E9E9E;">│</span> Male    580        </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Missing values removed: bmi (12). SMD = standardized mean difference (Female - Male); |SMD| &gt; 0.1 is the usual imbalance threshold.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12). SMD = standardized mean difference (Female - Male); |SMD| &gt; 0.1 is the usual imbalance threshold.</span></span></span></code></pre></div>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_categorical.html">table_categorical</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span>,</span>
@@ -728,7 +728,7 @@ refusals:</p>
 <span><span class="co">#&gt;    No              <span style="color: #9E9E9E;">│</span>           </span></span>
 <span><span class="co">#&gt;    Yes             <span style="color: #9E9E9E;">│</span>           </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">SMD = standardized mean difference (Female - Male); |SMD| &gt; 0.1 is the usual imbalance threshold. Group comparison: Pearson chi-squared test.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. SMD = standardized mean difference (Female - Male); |SMD| &gt; 0.1 is the usual imbalance threshold. Group comparison: Pearson chi-squared test.</span></span></span></code></pre></div>
 <p>Exactly two groups, no confidence interval and no <em>p</em>-value on
 the column itself, and the usual rule of thumb (|SMD| &gt; 0.1) quoted
 in the table note without any cell being highlighted. Note the asymmetry
@@ -965,7 +965,7 @@ sourced from the journal’s published author guidelines:</p>
 <span><span class="co">#&gt;    Yes       <span style="color: #9E9E9E;">│</span>   131       21.1     118     20.3     249     20.8             </span></span>
 <span><span class="co">#&gt;    (Missing) <span style="color: #9E9E9E;">│</span>    14        2.3      11      1.9      25      2.1             </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Group comparison: Pearson chi-squared test.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Group comparison: Pearson chi-squared test.</span></span></span></code></pre></div>
 <p>The visible change here is the <em>p</em> column: JAMA rounds
 <em>p</em> values to two decimals (<code>.71</code>), where the default
 reports three (<code>.713</code>).</p>
@@ -1001,7 +1001,7 @@ with them:</p>
 <span><span class="co">#&gt;  bmi      <span style="color: #9E9E9E;">│</span> Female  0,018 </span></span>
 <span><span class="co">#&gt;           <span style="color: #9E9E9E;">│</span> Male          </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Valeurs manquantes retirées : bmi (12).</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Valeurs manquantes retirées : bmi (12).</span></span></span></code></pre></div>
 <p>One gesture, one coherent table. A language brings its typography
 with it: the decimal comma, and the leading zero French typography keeps
 on a <em>p</em> value (<code>0,003</code> where the English default
@@ -1031,7 +1031,7 @@ and a French JAMA table keeps the comma:</p>
 <span><span class="co">#&gt;  bmi      <span style="color: #9E9E9E;">│</span> Female  ,02 </span></span>
 <span><span class="co">#&gt;           <span style="color: #9E9E9E;">│</span> Male        </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Valeurs manquantes retirées : bmi (12).</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Valeurs manquantes retirées : bmi (12).</span></span></span></code></pre></div>
 <p>Where the two do meet, the theme wins — you asked for it by name.
 JAMA’s own rule drops the leading zero of a <em>p</em> value, so the
 table above writes <code>,02</code> rather than <code>0,02</code>;
@@ -1057,7 +1057,7 @@ since the leading-zero rule is a style lever, not an argument:</p>
 <span><span class="co">#&gt;  bmi      <span style="color: #9E9E9E;">│</span> Female  0.018 </span></span>
 <span><span class="co">#&gt;           <span style="color: #9E9E9E;">│</span> Male          </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Valeurs manquantes retirées : bmi (12).</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Valeurs manquantes retirées : bmi (12).</span></span></span></code></pre></div>
 <p>When one word has to change and a language does not — a questionnaire
 where a missing category means a refusal, not an absent value —
 <code>options(spicy.labels = )</code> overrides labels one at a time, on
@@ -1079,7 +1079,7 @@ top of whatever language is in force:</p>
 <span><span class="co">#&gt;    Female <span style="color: #9E9E9E;">│</span>  51.7              </span></span>
 <span><span class="co">#&gt;    Male   <span style="color: #9E9E9E;">│</span>  48.3              </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Group comparison: Pearson chi-squared test.</span></span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Group comparison: Pearson chi-squared test.</span></span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span>spicy.labels <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div>
 <p><code><a href="../reference/spicy_labels.html">spicy_labels()</a></code> is how you find the key for a label you
 want to change: it returns every key with the text it currently resolves
@@ -1679,7 +1679,7 @@ education group.</em></span>
 </tr></tfoot>
 </table>
 <div class="spicy-gt-note" style="width: min-content; min-width: 100%; box-sizing: border-box; padding: 0.5rem 0.5rem 0.2rem 0.5rem; font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji'; font-size: 0.9em; line-height: 1.25; color: #333333; text-align: left;">
-Group comparison: Pearson chi-squared test.
+<em>Note.</em> Group comparison: Pearson chi-squared test.
 </div>
 </div>
 </div>
@@ -1709,56 +1709,56 @@ table-specific styling:</p>
 
     <script src="https://cdn.jsdelivr.net/gh/vincentarelbundock/tinytable@main/inst/tinytable.js"></script><script>
       // Create table-specific functions using external factory
-      const tableFns_wp4zbu7uztovurgohlwu = TinyTable.createTableFunctions("tinytable_wp4zbu7uztovurgohlwu");
+      const tableFns_602vfhhkexs5j2fv7tmb = TinyTable.createTableFunctions("tinytable_602vfhhkexs5j2fv7tmb");
       // tinytable span after
       window.addEventListener('load', function () {
           var cellsToStyle = [
             // tinytable style arrays after
-          { positions: [ { i: '4', j: 10 }, { i: '4', j: 11 } ], css_id: 'tinytable_css_u7x06nhtdvm88af591v3',}, 
-          { positions: [ { i: '1', j: 10 }, { i: '2', j: 10 }, { i: '3', j: 10 }, { i: '5', j: 10 }, { i: '6', j: 10 }, { i: '1', j: 11 }, { i: '2', j: 11 }, { i: '3', j: 11 }, { i: '5', j: 11 }, { i: '6', j: 11 } ], css_id: 'tinytable_css_4kz7og7hf65jkcopjrow',}, 
-          { positions: [ { i: '0', j: 10 }, { i: '7', j: 10 }, { i: '0', j: 11 }, { i: '7', j: 11 } ], css_id: 'tinytable_css_thfpim3y9ox2ein440iv',}, 
-          { positions: [ { i: '-1', j: 10 }, { i: '-1', j: 11 } ], css_id: 'tinytable_css_lmwbicowz7maor52upni',}, 
-          { positions: [ { i: '4', j: 2 }, { i: '4', j: 3 }, { i: '4', j: 4 }, { i: '4', j: 5 }, { i: '4', j: 6 }, { i: '4', j: 7 }, { i: '4', j: 8 }, { i: '4', j: 9 } ], css_id: 'tinytable_css_ty46y0gfezunktiml086',}, 
-          { positions: [ { i: '2', j: 2 }, { i: '3', j: 2 }, { i: '2', j: 3 }, { i: '3', j: 3 }, { i: '2', j: 4 }, { i: '3', j: 4 }, { i: '2', j: 5 }, { i: '3', j: 5 } ], css_id: 'tinytable_css_y2wun0rkssz942txtj14',}, 
-          { positions: [ { i: '1', j: 2 }, { i: '5', j: 2 }, { i: '6', j: 2 }, { i: '1', j: 3 }, { i: '5', j: 3 }, { i: '6', j: 3 }, { i: '1', j: 4 }, { i: '5', j: 4 }, { i: '6', j: 4 }, { i: '1', j: 5 }, { i: '5', j: 5 }, { i: '6', j: 5 }, { i: '1', j: 6 }, { i: '2', j: 6 }, { i: '3', j: 6 }, { i: '5', j: 6 }, { i: '6', j: 6 }, { i: '1', j: 7 }, { i: '2', j: 7 }, { i: '3', j: 7 }, { i: '5', j: 7 }, { i: '6', j: 7 }, { i: '1', j: 8 }, { i: '2', j: 8 }, { i: '3', j: 8 }, { i: '5', j: 8 }, { i: '6', j: 8 }, { i: '1', j: 9 }, { i: '2', j: 9 }, { i: '3', j: 9 }, { i: '5', j: 9 }, { i: '6', j: 9 } ], css_id: 'tinytable_css_x93lv4y620zwcnfqfbq7',}, 
-          { positions: [ { i: '0', j: 2 }, { i: '7', j: 2 }, { i: '0', j: 3 }, { i: '7', j: 3 }, { i: '0', j: 4 }, { i: '7', j: 4 }, { i: '0', j: 5 }, { i: '7', j: 5 }, { i: '0', j: 6 }, { i: '7', j: 6 }, { i: '0', j: 7 }, { i: '7', j: 7 }, { i: '0', j: 8 }, { i: '7', j: 8 }, { i: '0', j: 9 }, { i: '7', j: 9 } ], css_id: 'tinytable_css_zw1jec3dniug63wm07cl',}, 
-          { positions: [ { i: '-1', j: 2 }, { i: '-1', j: 3 }, { i: '-1', j: 4 }, { i: '-1', j: 5 }, { i: '-1', j: 6 }, { i: '-1', j: 7 }, { i: '-1', j: 8 }, { i: '-1', j: 9 } ], css_id: 'tinytable_css_x44e4r1mbvxxcd1f2eta',}, 
-          { positions: [ { i: '7', j: 1 } ], css_id: 'tinytable_css_923kqxzrjy019bbxn1bn',}, 
-          { positions: [ { i: '4', j: 1 } ], css_id: 'tinytable_css_fei3vinufh7xulr8c1jn',}, 
-          { positions: [ { i: '2', j: 1 }, { i: '3', j: 1 }, { i: '6', j: 1 } ], css_id: 'tinytable_css_fngsu85vm1l085lqfbgz',}, 
-          { positions: [ { i: '1', j: 1 }, { i: '5', j: 1 } ], css_id: 'tinytable_css_i8d22hynscb7rqvpfcoz',}, 
-          { positions: [ { i: '0', j: 1 } ], css_id: 'tinytable_css_7tgybtli6l36ondefxq4',}, 
-          { positions: [ { i: '-1', j: 1 } ], css_id: 'tinytable_css_hdm6vuvyc406xi6wiw57',}, 
+          { positions: [ { i: '4', j: 10 }, { i: '4', j: 11 } ], css_id: 'tinytable_css_re525a5nf6py1180spis',}, 
+          { positions: [ { i: '1', j: 10 }, { i: '2', j: 10 }, { i: '3', j: 10 }, { i: '5', j: 10 }, { i: '6', j: 10 }, { i: '1', j: 11 }, { i: '2', j: 11 }, { i: '3', j: 11 }, { i: '5', j: 11 }, { i: '6', j: 11 } ], css_id: 'tinytable_css_l69b6ft2gox710icixpr',}, 
+          { positions: [ { i: '0', j: 10 }, { i: '7', j: 10 }, { i: '0', j: 11 }, { i: '7', j: 11 } ], css_id: 'tinytable_css_5764zt2qfwt9piszsbau',}, 
+          { positions: [ { i: '-1', j: 10 }, { i: '-1', j: 11 } ], css_id: 'tinytable_css_daqrxn9ivens99ued177',}, 
+          { positions: [ { i: '4', j: 2 }, { i: '4', j: 3 }, { i: '4', j: 4 }, { i: '4', j: 5 }, { i: '4', j: 6 }, { i: '4', j: 7 }, { i: '4', j: 8 }, { i: '4', j: 9 } ], css_id: 'tinytable_css_swlmq8q9xi72gll868ge',}, 
+          { positions: [ { i: '2', j: 2 }, { i: '3', j: 2 }, { i: '2', j: 3 }, { i: '3', j: 3 }, { i: '2', j: 4 }, { i: '3', j: 4 }, { i: '2', j: 5 }, { i: '3', j: 5 } ], css_id: 'tinytable_css_jxrigq16apj30tb2ikwx',}, 
+          { positions: [ { i: '1', j: 2 }, { i: '5', j: 2 }, { i: '6', j: 2 }, { i: '1', j: 3 }, { i: '5', j: 3 }, { i: '6', j: 3 }, { i: '1', j: 4 }, { i: '5', j: 4 }, { i: '6', j: 4 }, { i: '1', j: 5 }, { i: '5', j: 5 }, { i: '6', j: 5 }, { i: '1', j: 6 }, { i: '2', j: 6 }, { i: '3', j: 6 }, { i: '5', j: 6 }, { i: '6', j: 6 }, { i: '1', j: 7 }, { i: '2', j: 7 }, { i: '3', j: 7 }, { i: '5', j: 7 }, { i: '6', j: 7 }, { i: '1', j: 8 }, { i: '2', j: 8 }, { i: '3', j: 8 }, { i: '5', j: 8 }, { i: '6', j: 8 }, { i: '1', j: 9 }, { i: '2', j: 9 }, { i: '3', j: 9 }, { i: '5', j: 9 }, { i: '6', j: 9 } ], css_id: 'tinytable_css_6p2mv7z7ceznuyc589p6',}, 
+          { positions: [ { i: '0', j: 2 }, { i: '7', j: 2 }, { i: '0', j: 3 }, { i: '7', j: 3 }, { i: '0', j: 4 }, { i: '7', j: 4 }, { i: '0', j: 5 }, { i: '7', j: 5 }, { i: '0', j: 6 }, { i: '7', j: 6 }, { i: '0', j: 7 }, { i: '7', j: 7 }, { i: '0', j: 8 }, { i: '7', j: 8 }, { i: '0', j: 9 }, { i: '7', j: 9 } ], css_id: 'tinytable_css_ewi66bbjbdevr9o6f9yg',}, 
+          { positions: [ { i: '-1', j: 2 }, { i: '-1', j: 3 }, { i: '-1', j: 4 }, { i: '-1', j: 5 }, { i: '-1', j: 6 }, { i: '-1', j: 7 }, { i: '-1', j: 8 }, { i: '-1', j: 9 } ], css_id: 'tinytable_css_uw36x0y639m81qwds5he',}, 
+          { positions: [ { i: '7', j: 1 } ], css_id: 'tinytable_css_75awsbstlggc70k3dfgs',}, 
+          { positions: [ { i: '4', j: 1 } ], css_id: 'tinytable_css_upc1sicvq31luchc29bp',}, 
+          { positions: [ { i: '2', j: 1 }, { i: '3', j: 1 }, { i: '6', j: 1 } ], css_id: 'tinytable_css_0kaegt0mjsxhvl8egdfg',}, 
+          { positions: [ { i: '1', j: 1 }, { i: '5', j: 1 } ], css_id: 'tinytable_css_sxt1w2rc6xt3htnbmrfk',}, 
+          { positions: [ { i: '0', j: 1 } ], css_id: 'tinytable_css_mofr6v5uxdue6r977meu',}, 
+          { positions: [ { i: '-1', j: 1 } ], css_id: 'tinytable_css_q3ou4abem7flyynmfm27',}, 
           ];
 
           // Loop over the arrays to style the cells
           cellsToStyle.forEach(function (group) {
               group.positions.forEach(function (cell) {
-                  tableFns_wp4zbu7uztovurgohlwu.styleCell(cell.i, cell.j, group.css_id);
+                  tableFns_602vfhhkexs5j2fv7tmb.styleCell(cell.i, cell.j, group.css_id);
               });
           });
       });
     </script><link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/vincentarelbundock/tinytable@main/inst/tinytable.css">
 <style>
     /* tinytable css entries after */
-    #tinytable_wp4zbu7uztovurgohlwu td.tinytable_css_u7x06nhtdvm88af591v3, #tinytable_wp4zbu7uztovurgohlwu th.tinytable_css_u7x06nhtdvm88af591v3 {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center; white-space: nowrap; }
-    #tinytable_wp4zbu7uztovurgohlwu td.tinytable_css_4kz7og7hf65jkcopjrow, #tinytable_wp4zbu7uztovurgohlwu th.tinytable_css_4kz7og7hf65jkcopjrow { text-align: center; white-space: nowrap; }
-    #tinytable_wp4zbu7uztovurgohlwu td.tinytable_css_thfpim3y9ox2ein440iv, #tinytable_wp4zbu7uztovurgohlwu th.tinytable_css_thfpim3y9ox2ein440iv {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center; white-space: nowrap; }
-    #tinytable_wp4zbu7uztovurgohlwu td.tinytable_css_lmwbicowz7maor52upni, #tinytable_wp4zbu7uztovurgohlwu th.tinytable_css_lmwbicowz7maor52upni {  position: relative; --border-bottom: 0; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.1em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center; white-space: nowrap; }
-    #tinytable_wp4zbu7uztovurgohlwu td.tinytable_css_ty46y0gfezunktiml086, #tinytable_wp4zbu7uztovurgohlwu th.tinytable_css_ty46y0gfezunktiml086 {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
-    #tinytable_wp4zbu7uztovurgohlwu td.tinytable_css_y2wun0rkssz942txtj14, #tinytable_wp4zbu7uztovurgohlwu th.tinytable_css_y2wun0rkssz942txtj14 { font-weight: bold; text-align: center; color: white; background-color: #FF0000 }
-    #tinytable_wp4zbu7uztovurgohlwu td.tinytable_css_x93lv4y620zwcnfqfbq7, #tinytable_wp4zbu7uztovurgohlwu th.tinytable_css_x93lv4y620zwcnfqfbq7 { text-align: center }
-    #tinytable_wp4zbu7uztovurgohlwu td.tinytable_css_zw1jec3dniug63wm07cl, #tinytable_wp4zbu7uztovurgohlwu th.tinytable_css_zw1jec3dniug63wm07cl {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
-    #tinytable_wp4zbu7uztovurgohlwu td.tinytable_css_x44e4r1mbvxxcd1f2eta, #tinytable_wp4zbu7uztovurgohlwu th.tinytable_css_x44e4r1mbvxxcd1f2eta {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
-    #tinytable_wp4zbu7uztovurgohlwu td.tinytable_css_923kqxzrjy019bbxn1bn, #tinytable_wp4zbu7uztovurgohlwu th.tinytable_css_923kqxzrjy019bbxn1bn {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left; padding-left: 1em; padding-left: 0.8em; }
-    #tinytable_wp4zbu7uztovurgohlwu td.tinytable_css_fei3vinufh7xulr8c1jn, #tinytable_wp4zbu7uztovurgohlwu th.tinytable_css_fei3vinufh7xulr8c1jn {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left; padding-left: 1em; padding-left: 0.8em; }
-    #tinytable_wp4zbu7uztovurgohlwu td.tinytable_css_fngsu85vm1l085lqfbgz, #tinytable_wp4zbu7uztovurgohlwu th.tinytable_css_fngsu85vm1l085lqfbgz { text-align: left; padding-left: 1em; padding-left: 0.8em; }
-    #tinytable_wp4zbu7uztovurgohlwu td.tinytable_css_i8d22hynscb7rqvpfcoz, #tinytable_wp4zbu7uztovurgohlwu th.tinytable_css_i8d22hynscb7rqvpfcoz { text-align: left }
-    #tinytable_wp4zbu7uztovurgohlwu td.tinytable_css_7tgybtli6l36ondefxq4, #tinytable_wp4zbu7uztovurgohlwu th.tinytable_css_7tgybtli6l36ondefxq4 {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
-    #tinytable_wp4zbu7uztovurgohlwu td.tinytable_css_hdm6vuvyc406xi6wiw57, #tinytable_wp4zbu7uztovurgohlwu th.tinytable_css_hdm6vuvyc406xi6wiw57 {  position: relative; --border-bottom: 0; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.1em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
+    #tinytable_602vfhhkexs5j2fv7tmb td.tinytable_css_re525a5nf6py1180spis, #tinytable_602vfhhkexs5j2fv7tmb th.tinytable_css_re525a5nf6py1180spis {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center; white-space: nowrap; }
+    #tinytable_602vfhhkexs5j2fv7tmb td.tinytable_css_l69b6ft2gox710icixpr, #tinytable_602vfhhkexs5j2fv7tmb th.tinytable_css_l69b6ft2gox710icixpr { text-align: center; white-space: nowrap; }
+    #tinytable_602vfhhkexs5j2fv7tmb td.tinytable_css_5764zt2qfwt9piszsbau, #tinytable_602vfhhkexs5j2fv7tmb th.tinytable_css_5764zt2qfwt9piszsbau {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center; white-space: nowrap; }
+    #tinytable_602vfhhkexs5j2fv7tmb td.tinytable_css_daqrxn9ivens99ued177, #tinytable_602vfhhkexs5j2fv7tmb th.tinytable_css_daqrxn9ivens99ued177 {  position: relative; --border-bottom: 0; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.1em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center; white-space: nowrap; }
+    #tinytable_602vfhhkexs5j2fv7tmb td.tinytable_css_swlmq8q9xi72gll868ge, #tinytable_602vfhhkexs5j2fv7tmb th.tinytable_css_swlmq8q9xi72gll868ge {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
+    #tinytable_602vfhhkexs5j2fv7tmb td.tinytable_css_jxrigq16apj30tb2ikwx, #tinytable_602vfhhkexs5j2fv7tmb th.tinytable_css_jxrigq16apj30tb2ikwx { font-weight: bold; text-align: center; color: white; background-color: #FF0000 }
+    #tinytable_602vfhhkexs5j2fv7tmb td.tinytable_css_6p2mv7z7ceznuyc589p6, #tinytable_602vfhhkexs5j2fv7tmb th.tinytable_css_6p2mv7z7ceznuyc589p6 { text-align: center }
+    #tinytable_602vfhhkexs5j2fv7tmb td.tinytable_css_ewi66bbjbdevr9o6f9yg, #tinytable_602vfhhkexs5j2fv7tmb th.tinytable_css_ewi66bbjbdevr9o6f9yg {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
+    #tinytable_602vfhhkexs5j2fv7tmb td.tinytable_css_uw36x0y639m81qwds5he, #tinytable_602vfhhkexs5j2fv7tmb th.tinytable_css_uw36x0y639m81qwds5he {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
+    #tinytable_602vfhhkexs5j2fv7tmb td.tinytable_css_75awsbstlggc70k3dfgs, #tinytable_602vfhhkexs5j2fv7tmb th.tinytable_css_75awsbstlggc70k3dfgs {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left; padding-left: 1em; padding-left: 0.8em; }
+    #tinytable_602vfhhkexs5j2fv7tmb td.tinytable_css_upc1sicvq31luchc29bp, #tinytable_602vfhhkexs5j2fv7tmb th.tinytable_css_upc1sicvq31luchc29bp {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left; padding-left: 1em; padding-left: 0.8em; }
+    #tinytable_602vfhhkexs5j2fv7tmb td.tinytable_css_0kaegt0mjsxhvl8egdfg, #tinytable_602vfhhkexs5j2fv7tmb th.tinytable_css_0kaegt0mjsxhvl8egdfg { text-align: left; padding-left: 1em; padding-left: 0.8em; }
+    #tinytable_602vfhhkexs5j2fv7tmb td.tinytable_css_sxt1w2rc6xt3htnbmrfk, #tinytable_602vfhhkexs5j2fv7tmb th.tinytable_css_sxt1w2rc6xt3htnbmrfk { text-align: left }
+    #tinytable_602vfhhkexs5j2fv7tmb td.tinytable_css_mofr6v5uxdue6r977meu, #tinytable_602vfhhkexs5j2fv7tmb th.tinytable_css_mofr6v5uxdue6r977meu {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
+    #tinytable_602vfhhkexs5j2fv7tmb td.tinytable_css_q3ou4abem7flyynmfm27, #tinytable_602vfhhkexs5j2fv7tmb th.tinytable_css_q3ou4abem7flyynmfm27 {  position: relative; --border-bottom: 0; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.1em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
     </style>
 <div class="container">
-      <table class="table tinytable" id="tinytable_wp4zbu7uztovurgohlwu" style="width: auto; margin-left: auto; margin-right: auto;" data-quarto-disable-processing="true">
+      <table class="table tinytable" id="tinytable_602vfhhkexs5j2fv7tmb" style="width: auto; margin-left: auto; margin-right: auto;" data-quarto-disable-processing="true">
 <caption>Categorical table by education</caption>
         <thead>
 <tr>
@@ -1784,7 +1784,8 @@ table-specific styling:</p>
                 <th scope="col" data-row="0" data-col="11"></th>
               </tr>
 </thead>
-<tfoot><tr><td colspan="11" style="font-size: 0.9em; ">Group comparison: Pearson chi-squared test.</td></tr></tfoot>
+<tfoot><tr><td colspan="11" style="font-size: 0.9em; ">
+<em>Note.</em> Group comparison: Pearson chi-squared test.</td></tr></tfoot>
 <tbody>
 <tr>
 <td data-row="1" data-col="1">Smoking status</td>

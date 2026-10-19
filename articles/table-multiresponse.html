@@ -190,7 +190,7 @@ choice, and tabulates it like any categorical variable:</p>
 <span><span class="co">#&gt;    info_family     <span style="color: #9E9E9E;">│</span>            </span></span>
 <span><span class="co">#&gt;    info_media      <span style="color: #9E9E9E;">│</span>            </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Group comparison: Pearson chi-squared test.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Group comparison: Pearson chi-squared test.</span></span></span></code></pre></div>
 <p>That table misreads the question in three ways.</p>
 <ol style="list-style-type: decimal">
 <li>
@@ -244,7 +244,7 @@ of respondents who chose them differs by almost twelve, 36.6% against
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
 <span><span class="co">#&gt;  Respondents     <span style="color: #9E9E9E;">│</span>   599                565             1164                   </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Respondents with no answer to the question removed: 36. Several answers possible: percentages are of respondents and can sum to more than 100%. Base: respondents who answered the question, including those who chose no item. 67 respondents chose none of the items. Item p-values: Pearson chi-squared test of each item by group. P-values adjusted via stats::p.adjust(method = "holm"); m = 5 test(s). Group comparison: Rao-Scott second-order corrected chi-squared test of multiple marginal independence, χ²(4.61) = 18.78, p = .002.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents with data for the question, including 67 with no item chosen (excluded: 36 with no data for the question). Item p-values: Pearson chi-squared test of each item by group. P-values adjusted via stats::p.adjust(method = "holm"); m = 5 test(s). Overall group comparison: Rao-Scott second-order corrected chi-squared test of multiple marginal independence, χ²(4.61) = 18.78, p = .002.</span></span></span></code></pre></div>
 <p>Each percentage is now a share of the respondents of its group, and
 the <code>Respondents</code> row gives those bases. The note explains
 the percentages and names the tests. Its global test finds the
@@ -269,7 +269,7 @@ the article reads this table piece by piece.</p>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
 <span><span class="co">#&gt;  Respondents       <span style="color: #9E9E9E;">│</span>  1164          </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Respondents with no answer to the question removed: 36. Several answers possible: percentages are of respondents and can sum to more than 100%. Base: respondents who answered the question, including those who chose no item. 67 respondents chose none of the items.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents with data for the question, including 67 with no item chosen (excluded: 36 with no data for the question).</span></span></span></code></pre></div>
 <p>Four things to notice:</p>
 <ol style="list-style-type: decimal">
 <li>
@@ -284,8 +284,9 @@ times 100 (Jann, 2005, p. 107).</li>
 <strong>The <code>Respondents</code> row is the base</strong>, the
 number of respondents every percentage is computed on.</li>
 <li>
-<strong>The note says what the percentages are of</strong>, which
-respondents form the base, and how many of them chose no item.</li>
+<strong>The note says what the percentages sum to</strong> and which
+respondents form the base: the 67 with no item chosen are in it, and the
+36 with no data for the question are not.</li>
 </ol>
 <p><code>select</code> takes tidyselect syntax, so
 <code>select = info_doctor:info_media</code> and the five names written
@@ -316,7 +317,7 @@ case:</p>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
 <span><span class="co">#&gt;  Respondents       <span style="color: #9E9E9E;">│</span>  1164          </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Respondents with no answer to the question removed: 36. Several answers possible: percentages are of respondents and can sum to more than 100%. Base: respondents who answered the question, including those who chose no item. 67 respondents chose none of the items.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents with data for the question, including 67 with no item chosen (excluded: 36 with no data for the question).</span></span></span></code></pre></div>
 <p><code>counted</code> applies to every selected column. Any other
 non-missing value counts as not chosen, and a missing value stays
 missing. A labelled column is chosen where its code or its value label
@@ -356,7 +357,7 @@ total count, and items with the same count keep the order of
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
 <span><span class="co">#&gt;  Respondents                           <span style="color: #9E9E9E;">│</span>  1164          </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Respondents with no answer to the question removed: 36. Several answers possible: percentages are of respondents and can sum to more than 100%. Base: respondents who answered the question, including those who chose no item. 67 respondents chose none of the items.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents with data for the question, including 67 with no item chosen (excluded: 36 with no data for the question).</span></span></span></code></pre></div>
 <p><code>"+"</code> ranks the items by increasing count, and
 <code>"name+"</code> and <code>"name-"</code> sort them alphabetically
 on the labels shown. The default, <code>sort = ""</code>, sorts nothing:
@@ -405,7 +406,7 @@ at least one item:</p>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
 <span><span class="co">#&gt;  Respondents       <span style="color: #9E9E9E;">│</span>  1097          </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Respondents with no answer to the question removed: 36. Respondents who chose no item removed: 67. Several answers possible: percentages are of respondents and can sum to more than 100%. Base: respondents who chose at least one item.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents with at least one item chosen (excluded: 36 with no data for the question and 67 with no item chosen).</span></span></span></code></pre></div>
 <p>This is the default of SPSS <code>MULT RESPONSE</code> and of
 <code>mrtab</code> (Jann, 2005, p. 98). Under this base, choosing
 nothing cannot be told from skipping, so the 67 respondents who chose no
@@ -431,9 +432,11 @@ response is simply ‘none’” (p. 107).</p>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
 <span><span class="co">#&gt;  Respondents       <span style="color: #9E9E9E;">│</span>  1200          </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Several answers possible: percentages are of respondents and can sum to more than 100%. Base: all respondents. 103 respondents chose none of the items.</span></span></span></code></pre></div>
-<p>The 36 respondents who skipped the question now count as respondents
-who chose nothing, and the note says that 103 did.</p>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Multiple answers possible: percentages can sum to more than 100%. Base: all respondents, including 36 with no data for the question and 67 with no item chosen.</span></span></span></code></pre></div>
+<p>The 36 respondents who skipped the question now enter the base, and
+every percentage counts them as choosing nothing. The note still keeps
+them apart from the 67 who chose no source: the base includes 36 with no
+data for the question and 67 with no item chosen.</p>
 <p>The counts are the same under the three bases. The percentages and
 the tests are not. <code>"valid"</code> assumes that a skipped question
 is coded missing on every item, and that a box left unchecked is coded
@@ -466,7 +469,7 @@ group, so the column sums to 100. <code>"both"</code> shows the two:</p>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
 <span><span class="co">#&gt;  Respondents       <span style="color: #9E9E9E;">│</span>  1164                                  </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Respondents with no answer to the question removed: 36. Several answers possible: percentages of respondents can sum to more than 100%; percentages of responses sum to 100%. Base: respondents who answered the question, including those who chose no item. 67 respondents chose none of the items.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Multiple answers possible: percentages of cases can sum to more than 100%, and percentages of responses sum to 100%. Base: respondents with data for the question, including 67 with no item chosen (excluded: 36 with no data for the question).</span></span></span></code></pre></div>
 <p>The percentages of responses are the shares of the stacked table, and
 the note now describes both columns. The percentages of cases stay the
 default for three reasons. The papers on these tests tabulate them
@@ -529,7 +532,7 @@ and the media item has an expected count of 3.2 among them:</p>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
 <span><span class="co">#&gt;  Respondents     <span style="color: #9E9E9E;">│</span>   31                196                   </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Respondents with no answer to the question removed: 5. Several answers possible: percentages are of respondents and can sum to more than 100%. Base: respondents who answered the question, including those who chose no item. 10 respondents chose none of the items. Item p-values: Pearson chi-squared test (info_doctor, info_pharmacist, info_internet, info_family); Fisher exact test (info_media). P-values adjusted via stats::p.adjust(method = "holm"); m = 5 test(s). Group comparison: Rao-Scott second-order corrected chi-squared test of multiple marginal independence, χ²(13.78) = 44.16, p &lt; .001.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents with data for the question, including 10 with no item chosen (excluded: 5 with no data for the question). Item p-values: Pearson chi-squared test (info_doctor, info_pharmacist, info_internet, info_family); Fisher exact test (info_media). P-values adjusted via stats::p.adjust(method = "holm"); m = 5 test(s). Overall group comparison: Rao-Scott second-order corrected chi-squared test of multiple marginal independence, χ²(13.78) = 44.16, p &lt; .001.</span></span></span></code></pre></div>
 <p>The note names both tests: the Pearson chi-squared for four items,
 and Fisher’s exact test for <code>info_media</code>, which has no
 statistic. <code>test = "chisq"</code> and <code>test = "fisher"</code>
@@ -680,7 +683,7 @@ question:</p>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
 <span><span class="co">#&gt;  Respondents     <span style="color: #9E9E9E;">│</span>   599                565             1164                   </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Respondents with no answer to the question removed: 36. Several answers possible: percentages are of respondents and can sum to more than 100%. Base: respondents who answered the question, including those who chose no item. 67 respondents chose none of the items. Item p-values: Pearson chi-squared test of each item by group. P-values adjusted via stats::p.adjust(method = "holm"); m = 5 test(s). Not tested (no variation, shown as –): info_other. Group comparison: Rao-Scott second-order corrected chi-squared test of multiple marginal independence, χ²(4.61) = 18.78, p = .002.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents with data for the question, including 67 with no item chosen (excluded: 36 with no data for the question). Item p-values: Pearson chi-squared test of each item by group. P-values adjusted via stats::p.adjust(method = "holm"); m = 5 test(s). Not tested (no variation, shown as –): info_other. Overall group comparison: Rao-Scott second-order corrected chi-squared test of multiple marginal independence, χ²(4.61) = 18.78, p = .002.</span></span></span></code></pre></div>
 <p>Its row shows a true zero and its <code>p</code> cell a dash, which
 the note explains. The item leaves the global test, which is unchanged,
 and the Holm adjustment, which still counts five tests. With fewer than
@@ -720,7 +723,7 @@ the global test from every output, the data frames included. The first
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
 <span><span class="co">#&gt;  Respondents     <span style="color: #9E9E9E;">│</span>    40                 39              79             </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Respondents with no answer to the question removed: 1. Several answers possible: percentages are of respondents and can sum to more than 100%. Base: respondents who answered the question, including those who chose no item. 7 respondents chose none of the items.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents with data for the question, including 7 with no item chosen (excluded: 1 with no data for the question).</span></span></span></code></pre></div>
 <p><code>statistic</code> stays independent of <code>p_value</code>, so
 <code>statistic = TRUE</code> would still show each item’s chi-squared.
 A <code>p_adjust</code> typed with <code>p_value = FALSE</code> is an
@@ -958,7 +961,7 @@ decimals, and three below .01:</p>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
 <span><span class="co">#&gt;  Respondents     <span style="color: #9E9E9E;">│</span>   599                565             1164                   </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Respondents with no answer to the question removed: 36. Several answers possible: percentages are of respondents and can sum to more than 100%. Base: respondents who answered the question, including those who chose no item. 67 respondents chose none of the items. Item p-values: Pearson chi-squared test of each item by group. P-values adjusted via stats::p.adjust(method = "holm"); m = 5 test(s). Group comparison: Rao-Scott second-order corrected chi-squared test of multiple marginal independence, χ²(4.61) = 18.78, p = .002.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents with data for the question, including 67 with no item chosen (excluded: 36 with no data for the question). Item p-values: Pearson chi-squared test of each item by group. P-values adjusted via stats::p.adjust(method = "holm"); m = 5 test(s). Overall group comparison: Rao-Scott second-order corrected chi-squared test of multiple marginal independence, χ²(4.61) = 18.78, p = .002.</span></span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="rendered-output">Rendered output<a class="anchor" aria-label="anchor" href="#rendered-output"></a>
@@ -1398,14 +1401,13 @@ Respondents
 </tbody>
 </table>
 <div class="spicy-gt-note" style="width: min-content; min-width: 100%; box-sizing: border-box; padding: 0.5rem 0.5rem 0.2rem 0.5rem; font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji'; font-size: 0.9em; line-height: 1.25; color: #333333; text-align: left;">
-Respondents with no answer to the question removed: 36. Several answers
-possible: percentages are of respondents and can sum to more than 100%.
-Base: respondents who answered the question, including those who chose
-no item. 67 respondents chose none of the items. Item p-values: Pearson
-chi-squared test of each item by group. P-values adjusted via
-stats::p.adjust(method = “holm”); m = 5 test(s). Group comparison:
-Rao-Scott second-order corrected chi-squared test of multiple marginal
-independence, χ²(4.61) = 18.78, p = .002.
+<em>Note.</em> Multiple answers possible: percentages can sum to more
+than 100%. Base: respondents with data for the question, including 67
+with no item chosen (excluded: 36 with no data for the question). Item
+p-values: Pearson chi-squared test of each item by group. P-values
+adjusted via stats::p.adjust(method = “holm”); m = 5 test(s). Overall
+group comparison: Rao-Scott second-order corrected chi-squared test of
+multiple marginal independence, χ²(4.61) = 18.78, p = .002.
 </div>
 </div>
 </div>
@@ -1423,42 +1425,42 @@ independence, χ²(4.61) = 18.78, p = .002.
 
     <script src="https://cdn.jsdelivr.net/gh/vincentarelbundock/tinytable@main/inst/tinytable.js"></script><script>
       // Create table-specific functions using external factory
-      const tableFns_a5h9wccgoyq0jayidynp = TinyTable.createTableFunctions("tinytable_a5h9wccgoyq0jayidynp");
+      const tableFns_4s0vupgj0y9ky74kupff = TinyTable.createTableFunctions("tinytable_4s0vupgj0y9ky74kupff");
       // tinytable span after
       window.addEventListener('load', function () {
           var cellsToStyle = [
             // tinytable style arrays after
-          { positions: [ { i: '5', j: 2 }, { i: '5', j: 3 }, { i: '5', j: 4 }, { i: '5', j: 5 }, { i: '5', j: 6 }, { i: '5', j: 7 }, { i: '5', j: 8 }, { i: '5', j: 9 }, { i: '5', j: 10 } ], css_id: 'tinytable_css_dnl0m7jiq71si8j84ufn',}, 
-          { positions: [ { i: '1', j: 2 }, { i: '2', j: 2 }, { i: '3', j: 2 }, { i: '4', j: 2 }, { i: '1', j: 3 }, { i: '2', j: 3 }, { i: '3', j: 3 }, { i: '4', j: 3 }, { i: '1', j: 4 }, { i: '2', j: 4 }, { i: '3', j: 4 }, { i: '4', j: 4 }, { i: '1', j: 5 }, { i: '2', j: 5 }, { i: '3', j: 5 }, { i: '4', j: 5 }, { i: '1', j: 6 }, { i: '2', j: 6 }, { i: '3', j: 6 }, { i: '4', j: 6 }, { i: '1', j: 7 }, { i: '2', j: 7 }, { i: '3', j: 7 }, { i: '4', j: 7 }, { i: '1', j: 8 }, { i: '2', j: 8 }, { i: '3', j: 8 }, { i: '4', j: 8 }, { i: '1', j: 9 }, { i: '2', j: 9 }, { i: '3', j: 9 }, { i: '4', j: 9 }, { i: '1', j: 10 }, { i: '2', j: 10 }, { i: '3', j: 10 }, { i: '4', j: 10 } ], css_id: 'tinytable_css_5skzqrhl95hzulv3nqj5',}, 
-          { positions: [ { i: '0', j: 2 }, { i: '6', j: 2 }, { i: '0', j: 3 }, { i: '6', j: 3 }, { i: '0', j: 4 }, { i: '6', j: 4 }, { i: '0', j: 5 }, { i: '6', j: 5 }, { i: '0', j: 6 }, { i: '6', j: 6 }, { i: '0', j: 7 }, { i: '6', j: 7 }, { i: '0', j: 8 }, { i: '6', j: 8 }, { i: '0', j: 9 }, { i: '6', j: 9 }, { i: '0', j: 10 }, { i: '6', j: 10 } ], css_id: 'tinytable_css_m8kutah5j78a2qw974vy',}, 
-          { positions: [ { i: '-1', j: 2 }, { i: '-1', j: 3 }, { i: '-1', j: 4 }, { i: '-1', j: 5 }, { i: '-1', j: 6 }, { i: '-1', j: 7 }, { i: '-1', j: 8 }, { i: '-1', j: 9 }, { i: '-1', j: 10 } ], css_id: 'tinytable_css_xopv26bcr3saogaqmugs',}, 
-          { positions: [ { i: '5', j: 1 } ], css_id: 'tinytable_css_fkibactrq23ysdzzg9qg',}, 
-          { positions: [ { i: '1', j: 1 }, { i: '2', j: 1 }, { i: '3', j: 1 }, { i: '4', j: 1 } ], css_id: 'tinytable_css_c85uiuh58c1dyk7nxf0z',}, 
-          { positions: [ { i: '0', j: 1 }, { i: '6', j: 1 } ], css_id: 'tinytable_css_qia3nryrzavn7nitse36',}, 
-          { positions: [ { i: '-1', j: 1 } ], css_id: 'tinytable_css_c0f4hosm9rzv7fpyryx2',}, 
+          { positions: [ { i: '5', j: 2 }, { i: '5', j: 3 }, { i: '5', j: 4 }, { i: '5', j: 5 }, { i: '5', j: 6 }, { i: '5', j: 7 }, { i: '5', j: 8 }, { i: '5', j: 9 }, { i: '5', j: 10 } ], css_id: 'tinytable_css_m2ccokb8qn7a86ay81ll',}, 
+          { positions: [ { i: '1', j: 2 }, { i: '2', j: 2 }, { i: '3', j: 2 }, { i: '4', j: 2 }, { i: '1', j: 3 }, { i: '2', j: 3 }, { i: '3', j: 3 }, { i: '4', j: 3 }, { i: '1', j: 4 }, { i: '2', j: 4 }, { i: '3', j: 4 }, { i: '4', j: 4 }, { i: '1', j: 5 }, { i: '2', j: 5 }, { i: '3', j: 5 }, { i: '4', j: 5 }, { i: '1', j: 6 }, { i: '2', j: 6 }, { i: '3', j: 6 }, { i: '4', j: 6 }, { i: '1', j: 7 }, { i: '2', j: 7 }, { i: '3', j: 7 }, { i: '4', j: 7 }, { i: '1', j: 8 }, { i: '2', j: 8 }, { i: '3', j: 8 }, { i: '4', j: 8 }, { i: '1', j: 9 }, { i: '2', j: 9 }, { i: '3', j: 9 }, { i: '4', j: 9 }, { i: '1', j: 10 }, { i: '2', j: 10 }, { i: '3', j: 10 }, { i: '4', j: 10 } ], css_id: 'tinytable_css_xtndurpwq44h3v6hkrbd',}, 
+          { positions: [ { i: '0', j: 2 }, { i: '6', j: 2 }, { i: '0', j: 3 }, { i: '6', j: 3 }, { i: '0', j: 4 }, { i: '6', j: 4 }, { i: '0', j: 5 }, { i: '6', j: 5 }, { i: '0', j: 6 }, { i: '6', j: 6 }, { i: '0', j: 7 }, { i: '6', j: 7 }, { i: '0', j: 8 }, { i: '6', j: 8 }, { i: '0', j: 9 }, { i: '6', j: 9 }, { i: '0', j: 10 }, { i: '6', j: 10 } ], css_id: 'tinytable_css_s2llibcl9afscy0of5qo',}, 
+          { positions: [ { i: '-1', j: 2 }, { i: '-1', j: 3 }, { i: '-1', j: 4 }, { i: '-1', j: 5 }, { i: '-1', j: 6 }, { i: '-1', j: 7 }, { i: '-1', j: 8 }, { i: '-1', j: 9 }, { i: '-1', j: 10 } ], css_id: 'tinytable_css_haa0ye2fd6gbabf7nn52',}, 
+          { positions: [ { i: '5', j: 1 } ], css_id: 'tinytable_css_7udlsi3hdd2ae0tvca5i',}, 
+          { positions: [ { i: '1', j: 1 }, { i: '2', j: 1 }, { i: '3', j: 1 }, { i: '4', j: 1 } ], css_id: 'tinytable_css_4npeg99o8qzym70t4a5s',}, 
+          { positions: [ { i: '0', j: 1 }, { i: '6', j: 1 } ], css_id: 'tinytable_css_g7ibh34g9c9onpw51s90',}, 
+          { positions: [ { i: '-1', j: 1 } ], css_id: 'tinytable_css_9fa1o74v5eb7qwupyf1v',}, 
           ];
 
           // Loop over the arrays to style the cells
           cellsToStyle.forEach(function (group) {
               group.positions.forEach(function (cell) {
-                  tableFns_a5h9wccgoyq0jayidynp.styleCell(cell.i, cell.j, group.css_id);
+                  tableFns_4s0vupgj0y9ky74kupff.styleCell(cell.i, cell.j, group.css_id);
               });
           });
       });
     </script><link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/vincentarelbundock/tinytable@main/inst/tinytable.css">
 <style>
     /* tinytable css entries after */
-    #tinytable_a5h9wccgoyq0jayidynp td.tinytable_css_dnl0m7jiq71si8j84ufn, #tinytable_a5h9wccgoyq0jayidynp th.tinytable_css_dnl0m7jiq71si8j84ufn {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
-    #tinytable_a5h9wccgoyq0jayidynp td.tinytable_css_5skzqrhl95hzulv3nqj5, #tinytable_a5h9wccgoyq0jayidynp th.tinytable_css_5skzqrhl95hzulv3nqj5 { text-align: center }
-    #tinytable_a5h9wccgoyq0jayidynp td.tinytable_css_m8kutah5j78a2qw974vy, #tinytable_a5h9wccgoyq0jayidynp th.tinytable_css_m8kutah5j78a2qw974vy {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
-    #tinytable_a5h9wccgoyq0jayidynp td.tinytable_css_xopv26bcr3saogaqmugs, #tinytable_a5h9wccgoyq0jayidynp th.tinytable_css_xopv26bcr3saogaqmugs {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
-    #tinytable_a5h9wccgoyq0jayidynp td.tinytable_css_fkibactrq23ysdzzg9qg, #tinytable_a5h9wccgoyq0jayidynp th.tinytable_css_fkibactrq23ysdzzg9qg {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
-    #tinytable_a5h9wccgoyq0jayidynp td.tinytable_css_c85uiuh58c1dyk7nxf0z, #tinytable_a5h9wccgoyq0jayidynp th.tinytable_css_c85uiuh58c1dyk7nxf0z { text-align: left }
-    #tinytable_a5h9wccgoyq0jayidynp td.tinytable_css_qia3nryrzavn7nitse36, #tinytable_a5h9wccgoyq0jayidynp th.tinytable_css_qia3nryrzavn7nitse36 {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
-    #tinytable_a5h9wccgoyq0jayidynp td.tinytable_css_c0f4hosm9rzv7fpyryx2, #tinytable_a5h9wccgoyq0jayidynp th.tinytable_css_c0f4hosm9rzv7fpyryx2 {  position: relative; --border-bottom: 0; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.1em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
+    #tinytable_4s0vupgj0y9ky74kupff td.tinytable_css_m2ccokb8qn7a86ay81ll, #tinytable_4s0vupgj0y9ky74kupff th.tinytable_css_m2ccokb8qn7a86ay81ll {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
+    #tinytable_4s0vupgj0y9ky74kupff td.tinytable_css_xtndurpwq44h3v6hkrbd, #tinytable_4s0vupgj0y9ky74kupff th.tinytable_css_xtndurpwq44h3v6hkrbd { text-align: center }
+    #tinytable_4s0vupgj0y9ky74kupff td.tinytable_css_s2llibcl9afscy0of5qo, #tinytable_4s0vupgj0y9ky74kupff th.tinytable_css_s2llibcl9afscy0of5qo {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
+    #tinytable_4s0vupgj0y9ky74kupff td.tinytable_css_haa0ye2fd6gbabf7nn52, #tinytable_4s0vupgj0y9ky74kupff th.tinytable_css_haa0ye2fd6gbabf7nn52 {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
+    #tinytable_4s0vupgj0y9ky74kupff td.tinytable_css_7udlsi3hdd2ae0tvca5i, #tinytable_4s0vupgj0y9ky74kupff th.tinytable_css_7udlsi3hdd2ae0tvca5i {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
+    #tinytable_4s0vupgj0y9ky74kupff td.tinytable_css_4npeg99o8qzym70t4a5s, #tinytable_4s0vupgj0y9ky74kupff th.tinytable_css_4npeg99o8qzym70t4a5s { text-align: left }
+    #tinytable_4s0vupgj0y9ky74kupff td.tinytable_css_g7ibh34g9c9onpw51s90, #tinytable_4s0vupgj0y9ky74kupff th.tinytable_css_g7ibh34g9c9onpw51s90 {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
+    #tinytable_4s0vupgj0y9ky74kupff td.tinytable_css_9fa1o74v5eb7qwupyf1v, #tinytable_4s0vupgj0y9ky74kupff th.tinytable_css_9fa1o74v5eb7qwupyf1v {  position: relative; --border-bottom: 0; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.1em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
     </style>
 <div class="container">
-      <table class="table tinytable" id="tinytable_a5h9wccgoyq0jayidynp" style="width: auto; margin-left: auto; margin-right: auto;" data-quarto-disable-processing="true">
+      <table class="table tinytable" id="tinytable_4s0vupgj0y9ky74kupff" style="width: auto; margin-left: auto; margin-right: auto;" data-quarto-disable-processing="true">
 <caption>Multiple responses by Sex</caption>
         <thead>
 <tr>
@@ -1480,7 +1482,8 @@ independence, χ²(4.61) = 18.78, p = .002.
                 <th scope="col" data-row="0" data-col="10">% of responses</th>
               </tr>
 </thead>
-<tfoot><tr><td colspan="10" style="font-size: 0.9em; ">Respondents with no answer to the question removed: 36. Several answers possible: percentages of respondents can sum to more than 100%; percentages of responses sum to 100%. Base: respondents who answered the question, including those who chose no item. 67 respondents chose none of the items.</td></tr></tfoot>
+<tfoot><tr><td colspan="10" style="font-size: 0.9em; ">
+<em>Note.</em> Multiple answers possible: percentages of cases can sum to more than 100%, and percentages of responses sum to 100%. Base: respondents with data for the question, including 67 with no item chosen (excluded: 36 with no data for the question).</td></tr></tfoot>
 <tbody>
 <tr>
 <td data-row="1" data-col="1">Doctor or other health professional</td>

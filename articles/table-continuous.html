@@ -145,7 +145,7 @@ to summarize:</p>
 <span><span class="co">#&gt;  wellbeing_score <span style="color: #9E9E9E;">│</span> 69.04  15.62  18.70  100.00    68.16      69.93    1200 </span></span>
 <span><span class="co">#&gt;  life_sat_health <span style="color: #9E9E9E;">│</span>  3.55   1.25   1.00    5.00     3.48       3.62    1192 </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Missing values removed: bmi (12), life_sat_health (8).</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12), life_sat_health (8).</span></span></span></code></pre></div>
 <p>If you omit <code>select</code>, <code><a href="../reference/table_continuous.html">table_continuous()</a></code>
 scans the data frame and keeps numeric columns. Non-numeric columns are
 dropped silently; set <code>verbose = TRUE</code> to list them in a
@@ -180,7 +180,7 @@ message:</p>
 <span><span class="co">#&gt;  life_sat_standard      <span style="color: #9E9E9E;">│</span>     3.46   1192 </span></span>
 <span><span class="co">#&gt;  weight                 <span style="color: #9E9E9E;">│</span>     1.02   1200 </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Missing values removed: bmi (12), political_position (15), life_sat_health (8), life_sat_work (8), life_sat_relationships (8), life_sat_standard (8).</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12), political_position (15), life_sat_health (8), life_sat_work (8), life_sat_relationships (8), life_sat_standard (8).</span></span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="grouped-summaries">Grouped summaries<a class="anchor" aria-label="anchor" href="#grouped-summaries"></a>
@@ -224,7 +224,7 @@ categories. When <code>by</code> is supplied, a Welch-test
 <span><span class="co">#&gt;                  <span style="color: #9E9E9E;">│</span> Upper secondary     3.63    534        </span></span>
 <span><span class="co">#&gt;                  <span style="color: #9E9E9E;">│</span> Tertiary            4.21    399        </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Missing values removed: bmi (12), life_sat_health (8).</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12), life_sat_health (8).</span></span></span></code></pre></div>
 <p>This is the main pattern for reporting continuous variables across
 groups such as education, sex, treatment arm, or survey wave. Pass
 <code>p_value = FALSE</code> to suppress the test column and keep the
@@ -317,7 +317,7 @@ alongside the default <em>p</em>-value column:</p>
 <span><span class="co">#&gt;                  <span style="color: #9E9E9E;">│</span> Upper secondary                                </span></span>
 <span><span class="co">#&gt;                  <span style="color: #9E9E9E;">│</span> Tertiary                                       </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Missing values removed: bmi (12), life_sat_health (8).</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12), life_sat_health (8).</span></span></span></code></pre></div>
 <p>Use <code>test = "student"</code> for equal-variance parametric tests
 or <code>test = "nonparametric"</code> for rank-based comparisons:</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
@@ -361,7 +361,7 @@ or <code>test = "nonparametric"</code> for rank-based comparisons:</p>
 <span><span class="co">#&gt;                  <span style="color: #9E9E9E;">│</span> Upper secondary            </span></span>
 <span><span class="co">#&gt;                  <span style="color: #9E9E9E;">│</span> Tertiary                   </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Missing values removed: bmi (12).</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12).</span></span></span></code></pre></div>
 <p><code>effect_size = "auto"</code> selects the canonical measure for
 the chosen <code>test</code> and number of groups: Hedges’ <em>g</em>
 (parametric, 2 groups), eta-squared (parametric, 3+ groups),
@@ -474,7 +474,7 @@ time:</p>
 <span><span class="co">#&gt;  wellbeing_score <span style="color: #9E9E9E;">│</span> Female  620  -0.25 </span></span>
 <span><span class="co">#&gt;                  <span style="color: #9E9E9E;">│</span> Male    580        </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Missing values removed: bmi (12). SMD = standardized mean difference (Female - Male); |SMD| &gt; 0.1 is the usual imbalance threshold.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12). SMD = standardized mean difference (Female - Male); |SMD| &gt; 0.1 is the usual imbalance threshold.</span></span></span></code></pre></div>
 <p>The two arguments are independent — turning the SMD on turns nothing
 else off, so you have to write both. The rule of thumb the table note
 quotes is |SMD| &gt; 0.1; spicy prints the number and never highlights
@@ -514,7 +514,7 @@ they cannot hide:</p>
 <span><span class="co">#&gt;  bmi      <span style="color: #9E9E9E;">│</span> Female  g = -1.3057  -1.5194 </span></span>
 <span><span class="co">#&gt;           <span style="color: #9E9E9E;">│</span> Male                         </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">SMD = standardized mean difference (Female - Male); |SMD| &gt; 0.1 is the usual imbalance threshold.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. SMD = standardized mean difference (Female - Male); |SMD| &gt; 0.1 is the usual imbalance threshold.</span></span></span></code></pre></div>
 <p>Both standardize a mean difference, but by different denominators.
 Austin’s SMD divides by the root <strong>mean of the two group
 variances</strong>; <em>g</em> divides by the degrees-of-freedom pooled
@@ -577,7 +577,7 @@ to drop.</p>
 <span><span class="co">#&gt;  life_sat_standard      <span style="color: #9E9E9E;">│</span> Female  615  .453 </span></span>
 <span><span class="co">#&gt;                         <span style="color: #9E9E9E;">│</span> Male    577       </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Missing values removed: life_sat_health (8), life_sat_work (8), life_sat_relationships (8), life_sat_standard (8).</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Missing values removed: life_sat_health (8), life_sat_work (8), life_sat_relationships (8), life_sat_standard (8).</span></span></span></code></pre></div>
 <p>For more programmatic selection, set <code>regex = TRUE</code>:</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_continuous.html">table_continuous</a></span><span class="op">(</span></span>
@@ -672,7 +672,7 @@ two explicit removals:</p>
 <span><span class="co">#&gt;  life_sat_health <span style="color: #9E9E9E;">│</span> Female  616   .267 </span></span>
 <span><span class="co">#&gt;                  <span style="color: #9E9E9E;">│</span> Male    576        </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Missing values removed: bmi (12), life_sat_health (8).</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12), life_sat_health (8).</span></span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="handling-missing-values">Handling missing values<a class="anchor" aria-label="anchor" href="#handling-missing-values"></a>
@@ -692,7 +692,7 @@ note rather than staying silent:</p>
 <span><span class="co">#&gt;  bmi             <span style="color: #9E9E9E;">│</span> 25.93  3.72  16.00  38.90    25.72      26.14    1188 </span></span>
 <span><span class="co">#&gt;  life_sat_health <span style="color: #9E9E9E;">│</span>  3.55  1.25   1.00   5.00     3.48       3.62    1192 </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Missing values removed: bmi (12), life_sat_health (8).</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12), life_sat_health (8).</span></span></span></code></pre></div>
 <p>Missing values in <code>by</code> are removed by default
 (<code>drop_na = TRUE</code>), and the removal is again disclosed rather
 than silent – here in the note (“Rows with missing income_group
@@ -720,7 +720,7 @@ removed”) and in a warning:</p>
 <span><span class="co">#&gt;           <span style="color: #9E9E9E;">│</span> Upper middle        </span></span>
 <span><span class="co">#&gt;           <span style="color: #9E9E9E;">│</span> High                </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Missing values removed: bmi (12). Rows with missing income_group removed: 18.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12). Rows with missing income_group removed: 18.</span></span></span></code></pre></div>
 <p>Set <code>drop_na = FALSE</code> to display those rows as a dedicated
 “(Missing)” group instead. The group-comparison test and effect size
 still cover the observed groups only, matching
@@ -750,7 +750,7 @@ still cover the observed groups only, matching
 <span><span class="co">#&gt;           <span style="color: #9E9E9E;">│</span> High                </span></span>
 <span><span class="co">#&gt;           <span style="color: #9E9E9E;">│</span> (Missing)           </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Missing values removed: bmi (12).</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12).</span></span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="weights">Weights<a class="anchor" aria-label="anchor" href="#weights"></a>
@@ -773,7 +773,7 @@ the table says so in its note:</p>
 <span><span class="co">#&gt;  bmi             <span style="color: #9E9E9E;">│</span> 25.72   3.69  16.00   38.90    25.51      25.94    1188 </span></span>
 <span><span class="co">#&gt;  wellbeing_score <span style="color: #9E9E9E;">│</span> 68.78  15.54  18.70  100.00    67.90      69.66    1200 </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Statistics weighted by weight. Missing values removed: bmi (12).</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Statistics weighted by weight. Missing values removed: bmi (12).</span></span></span></code></pre></div>
 <p>Two conventions coexist for weighted statistics, and spicy makes the
 choice explicit instead of silent. Without <code>rescale</code>, weights
 are taken as <em>frequencies</em>: integer weights reproduce, exactly,
@@ -837,7 +837,7 @@ weights:</p>
 <span><span class="co">#&gt;  bmi      <span style="color: #9E9E9E;">│</span> Female  -0.13 </span></span>
 <span><span class="co">#&gt;           <span style="color: #9E9E9E;">│</span> Male          </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Statistics weighted by weight. Missing values removed: bmi (12). SMD = standardized mean difference (Female - Male); |SMD| &gt; 0.1 is the usual imbalance threshold.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Statistics weighted by weight. Missing values removed: bmi (12). SMD = standardized mean difference (Female - Male); |SMD| &gt; 0.1 is the usual imbalance threshold.</span></span></span></code></pre></div>
 <p>It is a descriptive balance diagnostic with no <em>p</em> and no
 interval — which is precisely why the balance literature substitutes it
 for the test — and it is computed from the same weighted means and
@@ -885,7 +885,7 @@ you publish: the listed columns take them, and the others follow
 <span><span class="co">#&gt;  life_sat_health          <span style="color: #9E9E9E;">│</span> Female     3.61    616   .267 </span></span>
 <span><span class="co">#&gt;                           <span style="color: #9E9E9E;">│</span> Male       3.69    576        </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Missing values removed: life_sat_health (8).</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Missing values removed: life_sat_health (8).</span></span></span></code></pre></div>
 <p><code><a href="../reference/var_labels.html">var_labels()</a></code> renames the same way while the other
 columns, and the <code>by</code> variable in the title, keep their label
 attribute:</p>
@@ -914,7 +914,7 @@ attribute:</p>
 <span><span class="co">#&gt;  Satisfaction with health (1-5) <span style="color: #9E9E9E;">│</span> Female     3.41       3.61    616   .267 </span></span>
 <span><span class="co">#&gt;                                 <span style="color: #9E9E9E;">│</span> Male       3.49       3.69    576        </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Missing values removed: Satisfaction with health (1-5) (8).</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Missing values removed: Satisfaction with health (1-5) (8).</span></span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="display-options">Display options<a class="anchor" aria-label="anchor" href="#display-options"></a>
@@ -962,7 +962,7 @@ code.</li>
 <span><span class="co">#&gt;  wellbeing_score   <span style="color: #9E9E9E;">│</span> Female     67.16    14.80    19.60    100.00    &lt;.0001  </span></span>
 <span><span class="co">#&gt;                    <span style="color: #9E9E9E;">│</span> Male       71.05    16.23    18.70    100.00            </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Missing values removed: bmi (12).</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12).</span></span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="tidying-for-downstream-pipelines">Tidying for downstream pipelines<a class="anchor" aria-label="anchor" href="#tidying-for-downstream-pipelines"></a>
@@ -1627,7 +1627,7 @@ Tertiary
 </tbody>
 </table>
 <div class="spicy-gt-note" style="width: min-content; min-width: 100%; box-sizing: border-box; padding: 0.5rem 0.5rem 0.2rem 0.5rem; font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji'; font-size: 0.9em; line-height: 1.25; color: #333333; text-align: left;">
-Missing values removed: bmi (12), life_sat_health (8).
+<em>Note.</em> Missing values removed: bmi (12), life_sat_health (8).
 </div>
 </div>
 </div>
@@ -1644,44 +1644,44 @@ documents:</p>
 
     <script src="https://cdn.jsdelivr.net/gh/vincentarelbundock/tinytable@main/inst/tinytable.js"></script><script>
       // Create table-specific functions using external factory
-      const tableFns_7bgwshqdvjyxxhl6h6xu = TinyTable.createTableFunctions("tinytable_7bgwshqdvjyxxhl6h6xu");
+      const tableFns_h13zwcdvvx1h52pffhqb = TinyTable.createTableFunctions("tinytable_h13zwcdvvx1h52pffhqb");
       // tinytable span after
       window.addEventListener('load', function () {
           var cellsToStyle = [
             // tinytable style arrays after
-          { positions: [ { i: '-1', j: 7 }, { i: '-1', j: 8 } ], css_id: 'tinytable_css_qia3nryrzavn7nitse36',}, 
-          { positions: [ { i: '3', j: 3 }, { i: '6', j: 3 }, { i: '3', j: 4 }, { i: '6', j: 4 }, { i: '3', j: 5 }, { i: '6', j: 5 }, { i: '3', j: 6 }, { i: '6', j: 6 }, { i: '3', j: 7 }, { i: '6', j: 7 }, { i: '3', j: 8 }, { i: '6', j: 8 }, { i: '3', j: 9 }, { i: '6', j: 9 }, { i: '3', j: 10 }, { i: '6', j: 10 } ], css_id: 'tinytable_css_c0f4hosm9rzv7fpyryx2',}, 
-          { positions: [ { i: '1', j: 3 }, { i: '2', j: 3 }, { i: '4', j: 3 }, { i: '5', j: 3 }, { i: '7', j: 3 }, { i: '8', j: 3 }, { i: '1', j: 4 }, { i: '2', j: 4 }, { i: '4', j: 4 }, { i: '5', j: 4 }, { i: '7', j: 4 }, { i: '8', j: 4 }, { i: '1', j: 5 }, { i: '2', j: 5 }, { i: '4', j: 5 }, { i: '5', j: 5 }, { i: '7', j: 5 }, { i: '8', j: 5 }, { i: '1', j: 6 }, { i: '2', j: 6 }, { i: '4', j: 6 }, { i: '5', j: 6 }, { i: '7', j: 6 }, { i: '8', j: 6 }, { i: '1', j: 7 }, { i: '2', j: 7 }, { i: '4', j: 7 }, { i: '5', j: 7 }, { i: '7', j: 7 }, { i: '8', j: 7 }, { i: '1', j: 8 }, { i: '2', j: 8 }, { i: '4', j: 8 }, { i: '5', j: 8 }, { i: '7', j: 8 }, { i: '8', j: 8 }, { i: '1', j: 9 }, { i: '2', j: 9 }, { i: '4', j: 9 }, { i: '5', j: 9 }, { i: '7', j: 9 }, { i: '8', j: 9 }, { i: '1', j: 10 }, { i: '2', j: 10 }, { i: '4', j: 10 }, { i: '5', j: 10 }, { i: '7', j: 10 }, { i: '8', j: 10 } ], css_id: 'tinytable_css_a5h9wccgoyq0jayidynp',}, 
-          { positions: [ { i: '0', j: 3 }, { i: '9', j: 3 }, { i: '0', j: 4 }, { i: '9', j: 4 }, { i: '0', j: 5 }, { i: '9', j: 5 }, { i: '0', j: 6 }, { i: '9', j: 6 }, { i: '0', j: 7 }, { i: '9', j: 7 }, { i: '0', j: 8 }, { i: '9', j: 8 }, { i: '0', j: 9 }, { i: '9', j: 9 }, { i: '0', j: 10 }, { i: '9', j: 10 } ], css_id: 'tinytable_css_pqvw7iah9ylalnn4bcin',}, 
-          { positions: [ { i: '-1', j: 3 }, { i: '-1', j: 4 }, { i: '-1', j: 5 }, { i: '-1', j: 6 }, { i: '-1', j: 9 }, { i: '-1', j: 10 } ], css_id: 'tinytable_css_54g05acipati30x3nqka',}, 
-          { positions: [ { i: '3', j: 1 }, { i: '6', j: 1 }, { i: '3', j: 2 }, { i: '6', j: 2 } ], css_id: 'tinytable_css_he1qblsm71tykye2dmqg',}, 
-          { positions: [ { i: '1', j: 1 }, { i: '2', j: 1 }, { i: '4', j: 1 }, { i: '5', j: 1 }, { i: '7', j: 1 }, { i: '8', j: 1 }, { i: '1', j: 2 }, { i: '2', j: 2 }, { i: '4', j: 2 }, { i: '5', j: 2 }, { i: '7', j: 2 }, { i: '8', j: 2 } ], css_id: 'tinytable_css_5uel9r6m1vh78re8mcn2',}, 
-          { positions: [ { i: '0', j: 1 }, { i: '9', j: 1 }, { i: '0', j: 2 }, { i: '9', j: 2 } ], css_id: 'tinytable_css_jm35elrq8m23qo49386w',}, 
-          { positions: [ { i: '-1', j: 1 }, { i: '-1', j: 2 } ], css_id: 'tinytable_css_e13t9wf9m41e62x9gngo',}, 
+          { positions: [ { i: '-1', j: 7 }, { i: '-1', j: 8 } ], css_id: 'tinytable_css_4npeg99o8qzym70t4a5s',}, 
+          { positions: [ { i: '3', j: 3 }, { i: '6', j: 3 }, { i: '3', j: 4 }, { i: '6', j: 4 }, { i: '3', j: 5 }, { i: '6', j: 5 }, { i: '3', j: 6 }, { i: '6', j: 6 }, { i: '3', j: 7 }, { i: '6', j: 7 }, { i: '3', j: 8 }, { i: '6', j: 8 }, { i: '3', j: 9 }, { i: '6', j: 9 }, { i: '3', j: 10 }, { i: '6', j: 10 } ], css_id: 'tinytable_css_g7ibh34g9c9onpw51s90',}, 
+          { positions: [ { i: '1', j: 3 }, { i: '2', j: 3 }, { i: '4', j: 3 }, { i: '5', j: 3 }, { i: '7', j: 3 }, { i: '8', j: 3 }, { i: '1', j: 4 }, { i: '2', j: 4 }, { i: '4', j: 4 }, { i: '5', j: 4 }, { i: '7', j: 4 }, { i: '8', j: 4 }, { i: '1', j: 5 }, { i: '2', j: 5 }, { i: '4', j: 5 }, { i: '5', j: 5 }, { i: '7', j: 5 }, { i: '8', j: 5 }, { i: '1', j: 6 }, { i: '2', j: 6 }, { i: '4', j: 6 }, { i: '5', j: 6 }, { i: '7', j: 6 }, { i: '8', j: 6 }, { i: '1', j: 7 }, { i: '2', j: 7 }, { i: '4', j: 7 }, { i: '5', j: 7 }, { i: '7', j: 7 }, { i: '8', j: 7 }, { i: '1', j: 8 }, { i: '2', j: 8 }, { i: '4', j: 8 }, { i: '5', j: 8 }, { i: '7', j: 8 }, { i: '8', j: 8 }, { i: '1', j: 9 }, { i: '2', j: 9 }, { i: '4', j: 9 }, { i: '5', j: 9 }, { i: '7', j: 9 }, { i: '8', j: 9 }, { i: '1', j: 10 }, { i: '2', j: 10 }, { i: '4', j: 10 }, { i: '5', j: 10 }, { i: '7', j: 10 }, { i: '8', j: 10 } ], css_id: 'tinytable_css_9fa1o74v5eb7qwupyf1v',}, 
+          { positions: [ { i: '0', j: 3 }, { i: '9', j: 3 }, { i: '0', j: 4 }, { i: '9', j: 4 }, { i: '0', j: 5 }, { i: '9', j: 5 }, { i: '0', j: 6 }, { i: '9', j: 6 }, { i: '0', j: 7 }, { i: '9', j: 7 }, { i: '0', j: 8 }, { i: '9', j: 8 }, { i: '0', j: 9 }, { i: '9', j: 9 }, { i: '0', j: 10 }, { i: '9', j: 10 } ], css_id: 'tinytable_css_4s0vupgj0y9ky74kupff',}, 
+          { positions: [ { i: '-1', j: 3 }, { i: '-1', j: 4 }, { i: '-1', j: 5 }, { i: '-1', j: 6 }, { i: '-1', j: 9 }, { i: '-1', j: 10 } ], css_id: 'tinytable_css_lx6u6tayty3zjzh88g3d',}, 
+          { positions: [ { i: '3', j: 1 }, { i: '6', j: 1 }, { i: '3', j: 2 }, { i: '6', j: 2 } ], css_id: 'tinytable_css_6hvxqulxvfpotr2puzj4',}, 
+          { positions: [ { i: '1', j: 1 }, { i: '2', j: 1 }, { i: '4', j: 1 }, { i: '5', j: 1 }, { i: '7', j: 1 }, { i: '8', j: 1 }, { i: '1', j: 2 }, { i: '2', j: 2 }, { i: '4', j: 2 }, { i: '5', j: 2 }, { i: '7', j: 2 }, { i: '8', j: 2 } ], css_id: 'tinytable_css_8bmh54gzup2h5fjlp7nq',}, 
+          { positions: [ { i: '0', j: 1 }, { i: '9', j: 1 }, { i: '0', j: 2 }, { i: '9', j: 2 } ], css_id: 'tinytable_css_rmewy6hrgnnjpofkgm40',}, 
+          { positions: [ { i: '-1', j: 1 }, { i: '-1', j: 2 } ], css_id: 'tinytable_css_881oasj2wt1zjphu99g5',}, 
           ];
 
           // Loop over the arrays to style the cells
           cellsToStyle.forEach(function (group) {
               group.positions.forEach(function (cell) {
-                  tableFns_7bgwshqdvjyxxhl6h6xu.styleCell(cell.i, cell.j, group.css_id);
+                  tableFns_h13zwcdvvx1h52pffhqb.styleCell(cell.i, cell.j, group.css_id);
               });
           });
       });
     </script><link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/vincentarelbundock/tinytable@main/inst/tinytable.css">
 <style>
     /* tinytable css entries after */
-    #tinytable_7bgwshqdvjyxxhl6h6xu td.tinytable_css_qia3nryrzavn7nitse36, #tinytable_7bgwshqdvjyxxhl6h6xu th.tinytable_css_qia3nryrzavn7nitse36 {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
-    #tinytable_7bgwshqdvjyxxhl6h6xu td.tinytable_css_c0f4hosm9rzv7fpyryx2, #tinytable_7bgwshqdvjyxxhl6h6xu th.tinytable_css_c0f4hosm9rzv7fpyryx2 {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
-    #tinytable_7bgwshqdvjyxxhl6h6xu td.tinytable_css_a5h9wccgoyq0jayidynp, #tinytable_7bgwshqdvjyxxhl6h6xu th.tinytable_css_a5h9wccgoyq0jayidynp { text-align: center }
-    #tinytable_7bgwshqdvjyxxhl6h6xu td.tinytable_css_pqvw7iah9ylalnn4bcin, #tinytable_7bgwshqdvjyxxhl6h6xu th.tinytable_css_pqvw7iah9ylalnn4bcin {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
-    #tinytable_7bgwshqdvjyxxhl6h6xu td.tinytable_css_54g05acipati30x3nqka, #tinytable_7bgwshqdvjyxxhl6h6xu th.tinytable_css_54g05acipati30x3nqka {  position: relative; --border-bottom: 0; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.1em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
-    #tinytable_7bgwshqdvjyxxhl6h6xu td.tinytable_css_he1qblsm71tykye2dmqg, #tinytable_7bgwshqdvjyxxhl6h6xu th.tinytable_css_he1qblsm71tykye2dmqg {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
-    #tinytable_7bgwshqdvjyxxhl6h6xu td.tinytable_css_5uel9r6m1vh78re8mcn2, #tinytable_7bgwshqdvjyxxhl6h6xu th.tinytable_css_5uel9r6m1vh78re8mcn2 { text-align: left }
-    #tinytable_7bgwshqdvjyxxhl6h6xu td.tinytable_css_jm35elrq8m23qo49386w, #tinytable_7bgwshqdvjyxxhl6h6xu th.tinytable_css_jm35elrq8m23qo49386w {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
-    #tinytable_7bgwshqdvjyxxhl6h6xu td.tinytable_css_e13t9wf9m41e62x9gngo, #tinytable_7bgwshqdvjyxxhl6h6xu th.tinytable_css_e13t9wf9m41e62x9gngo {  position: relative; --border-bottom: 0; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.1em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
+    #tinytable_h13zwcdvvx1h52pffhqb td.tinytable_css_4npeg99o8qzym70t4a5s, #tinytable_h13zwcdvvx1h52pffhqb th.tinytable_css_4npeg99o8qzym70t4a5s {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
+    #tinytable_h13zwcdvvx1h52pffhqb td.tinytable_css_g7ibh34g9c9onpw51s90, #tinytable_h13zwcdvvx1h52pffhqb th.tinytable_css_g7ibh34g9c9onpw51s90 {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
+    #tinytable_h13zwcdvvx1h52pffhqb td.tinytable_css_9fa1o74v5eb7qwupyf1v, #tinytable_h13zwcdvvx1h52pffhqb th.tinytable_css_9fa1o74v5eb7qwupyf1v { text-align: center }
+    #tinytable_h13zwcdvvx1h52pffhqb td.tinytable_css_4s0vupgj0y9ky74kupff, #tinytable_h13zwcdvvx1h52pffhqb th.tinytable_css_4s0vupgj0y9ky74kupff {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
+    #tinytable_h13zwcdvvx1h52pffhqb td.tinytable_css_lx6u6tayty3zjzh88g3d, #tinytable_h13zwcdvvx1h52pffhqb th.tinytable_css_lx6u6tayty3zjzh88g3d {  position: relative; --border-bottom: 0; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.1em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
+    #tinytable_h13zwcdvvx1h52pffhqb td.tinytable_css_6hvxqulxvfpotr2puzj4, #tinytable_h13zwcdvvx1h52pffhqb th.tinytable_css_6hvxqulxvfpotr2puzj4 {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
+    #tinytable_h13zwcdvvx1h52pffhqb td.tinytable_css_8bmh54gzup2h5fjlp7nq, #tinytable_h13zwcdvvx1h52pffhqb th.tinytable_css_8bmh54gzup2h5fjlp7nq { text-align: left }
+    #tinytable_h13zwcdvvx1h52pffhqb td.tinytable_css_rmewy6hrgnnjpofkgm40, #tinytable_h13zwcdvvx1h52pffhqb th.tinytable_css_rmewy6hrgnnjpofkgm40 {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
+    #tinytable_h13zwcdvvx1h52pffhqb td.tinytable_css_881oasj2wt1zjphu99g5, #tinytable_h13zwcdvvx1h52pffhqb th.tinytable_css_881oasj2wt1zjphu99g5 {  position: relative; --border-bottom: 0; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.1em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
     </style>
 <div class="container">
-      <table class="table tinytable" id="tinytable_7bgwshqdvjyxxhl6h6xu" style="width: auto; margin-left: auto; margin-right: auto;" data-quarto-disable-processing="true">
+      <table class="table tinytable" id="tinytable_h13zwcdvvx1h52pffhqb" style="width: auto; margin-left: auto; margin-right: auto;" data-quarto-disable-processing="true">
 <caption>Descriptive statistics by education</caption>
         <thead>
 <tr>
@@ -1708,7 +1708,8 @@ documents:</p>
                 <th scope="col" data-row="0" data-col="10"></th>
               </tr>
 </thead>
-<tfoot><tr><td colspan="10" style="font-size: 0.9em; ">Missing values removed: bmi (12), life_sat_health (8).</td></tr></tfoot>
+<tfoot><tr><td colspan="10" style="font-size: 0.9em; ">
+<em>Note.</em> Missing values removed: bmi (12), life_sat_health (8).</td></tr></tfoot>
 <tbody>
 <tr>
 <td data-row="1" data-col="1">bmi</td>

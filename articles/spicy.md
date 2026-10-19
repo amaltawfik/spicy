@@ -72,7 +72,7 @@ and Quarto 1.7 or later).
 code_book(sochealth, sex, age, smoking, bmi)
 #> Codebook
 #> 
-#> Date: 2026-10-18
+#> Date: 2026-10-19
 #> Observations: 1200
 #> Variables: 4
 #> Note: Counts and percentages are unweighted: they describe the data file and are not estimates for a population.
@@ -333,7 +333,7 @@ table_categorical(
 #>    No              │  29.5                      
 #>    Yes             │  70.5                      
 #> 
-#> Group comparison: Pearson chi-squared test.
+#> Note. Group comparison: Pearson chi-squared test.
 ```
 
 [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
@@ -370,7 +370,7 @@ table_continuous(
 #>                  │ Upper secondary     3.63    534        
 #>                  │ Tertiary            4.21    399        
 #> 
-#> Missing values removed: bmi (12), life_sat_health (8).
+#> Note. Missing values removed: bmi (12), life_sat_health (8).
 ```
 
 [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
@@ -454,7 +454,7 @@ table_multiresponse(
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  Respondents                           │  1164          
 #> 
-#> Respondents with no answer to the question removed: 36. Several answers possible: percentages are of respondents and can sum to more than 100%. Base: respondents who answered the question, including those who chose no item. 67 respondents chose none of the items.
+#> Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents with data for the question, including 67 with no item chosen (excluded: 36 with no data for the question).
 ```
 
 With `by`, the counts and percentages are given per group and in a
@@ -485,7 +485,7 @@ table_multiresponse(
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  Respondents     │   599                565             1164            
 #> 
-#> Respondents with no answer to the question removed: 36. Several answers possible: percentages are of respondents and can sum to more than 100%. Base: respondents who answered the question, including those who chose no item. 67 respondents chose none of the items.
+#> Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents with data for the question, including 67 with no item chosen (excluded: 36 with no data for the question).
 ```
 
 ## Regression tables

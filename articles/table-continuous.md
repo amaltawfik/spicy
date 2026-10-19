@@ -35,7 +35,7 @@ table_continuous(
 #>  wellbeing_score │ 69.04  15.62  18.70  100.00    68.16      69.93    1200 
 #>  life_sat_health │  3.55   1.25   1.00    5.00     3.48       3.62    1192 
 #> 
-#> Missing values removed: bmi (12), life_sat_health (8).
+#> Note. Missing values removed: bmi (12), life_sat_health (8).
 ```
 
 If you omit `select`,
@@ -74,7 +74,7 @@ table_continuous(sochealth)
 #>  life_sat_standard      │     3.46   1192 
 #>  weight                 │     1.02   1200 
 #> 
-#> Missing values removed: bmi (12), political_position (15), life_sat_health (8), life_sat_work (8), life_sat_relationships (8), life_sat_standard (8).
+#> Note. Missing values removed: bmi (12), political_position (15), life_sat_health (8), life_sat_work (8), life_sat_relationships (8), life_sat_standard (8).
 ```
 
 ## Grouped summaries
@@ -119,7 +119,7 @@ table_continuous(
 #>                  │ Upper secondary     3.63    534        
 #>                  │ Tertiary            4.21    399        
 #> 
-#> Missing values removed: bmi (12), life_sat_health (8).
+#> Note. Missing values removed: bmi (12), life_sat_health (8).
 ```
 
 This is the main pattern for reporting continuous variables across
@@ -220,7 +220,7 @@ table_continuous(
 #>                  │ Upper secondary                                
 #>                  │ Tertiary                                       
 #> 
-#> Missing values removed: bmi (12), life_sat_health (8).
+#> Note. Missing values removed: bmi (12), life_sat_health (8).
 ```
 
 Use `test = "student"` for equal-variance parametric tests or
@@ -268,7 +268,7 @@ table_continuous(
 #>                  │ Upper secondary            
 #>                  │ Tertiary                   
 #> 
-#> Missing values removed: bmi (12).
+#> Note. Missing values removed: bmi (12).
 ```
 
 `effect_size = "auto"` selects the canonical measure for the chosen
@@ -387,7 +387,7 @@ table_continuous(
 #>  wellbeing_score │ Female  620  -0.25 
 #>                  │ Male    580        
 #> 
-#> Missing values removed: bmi (12). SMD = standardized mean difference (Female - Male); |SMD| > 0.1 is the usual imbalance threshold.
+#> Note. Missing values removed: bmi (12). SMD = standardized mean difference (Female - Male); |SMD| > 0.1 is the usual imbalance threshold.
 ```
 
 The two arguments are independent — turning the SMD on turns nothing
@@ -431,7 +431,7 @@ table_continuous(
 #>  bmi      │ Female  g = -1.3057  -1.5194 
 #>           │ Male                         
 #> 
-#> SMD = standardized mean difference (Female - Male); |SMD| > 0.1 is the usual imbalance threshold.
+#> Note. SMD = standardized mean difference (Female - Male); |SMD| > 0.1 is the usual imbalance threshold.
 ```
 
 Both standardize a mean difference, but by different denominators.
@@ -492,7 +492,7 @@ table_continuous(
 #>  life_sat_standard      │ Female  615  .453 
 #>                         │ Male    577       
 #> 
-#> Missing values removed: life_sat_health (8), life_sat_work (8), life_sat_relationships (8), life_sat_standard (8).
+#> Note. Missing values removed: life_sat_health (8), life_sat_work (8), life_sat_relationships (8), life_sat_standard (8).
 ```
 
 For more programmatic selection, set `regex = TRUE`:
@@ -595,7 +595,7 @@ table_continuous(
 #>  life_sat_health │ Female  616   .267 
 #>                  │ Male    576        
 #> 
-#> Missing values removed: bmi (12), life_sat_health (8).
+#> Note. Missing values removed: bmi (12), life_sat_health (8).
 ```
 
 ## Handling missing values
@@ -617,7 +617,7 @@ table_continuous(
 #>  bmi             │ 25.93  3.72  16.00  38.90    25.72      26.14    1188 
 #>  life_sat_health │  3.55  1.25   1.00   5.00     3.48       3.62    1192 
 #> 
-#> Missing values removed: bmi (12), life_sat_health (8).
+#> Note. Missing values removed: bmi (12), life_sat_health (8).
 ```
 
 Missing values in `by` are removed by default (`drop_na = TRUE`), and
@@ -648,7 +648,7 @@ table_continuous(
 #>           │ Upper middle        
 #>           │ High                
 #> 
-#> Missing values removed: bmi (12). Rows with missing income_group removed: 18.
+#> Note. Missing values removed: bmi (12). Rows with missing income_group removed: 18.
 ```
 
 Set `drop_na = FALSE` to display those rows as a dedicated “(Missing)”
@@ -682,7 +682,7 @@ table_continuous(
 #>           │ High                
 #>           │ (Missing)           
 #> 
-#> Missing values removed: bmi (12).
+#> Note. Missing values removed: bmi (12).
 ```
 
 ## Weights
@@ -706,7 +706,7 @@ table_continuous(
 #>  bmi             │ 25.72   3.69  16.00   38.90    25.51      25.94    1188 
 #>  wellbeing_score │ 68.78  15.54  18.70  100.00    67.90      69.66    1200 
 #> 
-#> Statistics weighted by weight. Missing values removed: bmi (12).
+#> Note. Statistics weighted by weight. Missing values removed: bmi (12).
 ```
 
 Two conventions coexist for weighted statistics, and spicy makes the
@@ -779,7 +779,7 @@ table_continuous(
 #>  bmi      │ Female  -0.13 
 #>           │ Male          
 #> 
-#> Statistics weighted by weight. Missing values removed: bmi (12). SMD = standardized mean difference (Female - Male); |SMD| > 0.1 is the usual imbalance threshold.
+#> Note. Statistics weighted by weight. Missing values removed: bmi (12). SMD = standardized mean difference (Female - Male); |SMD| > 0.1 is the usual imbalance threshold.
 ```
 
 It is a descriptive balance diagnostic with no *p* and no interval —
@@ -829,7 +829,7 @@ table_continuous(
 #>  life_sat_health          │ Female     3.61    616   .267 
 #>                           │ Male       3.69    576        
 #> 
-#> Missing values removed: life_sat_health (8).
+#> Note. Missing values removed: life_sat_health (8).
 ```
 
 [`var_labels()`](https://amaltawfik.github.io/spicy/reference/var_labels.md)
@@ -862,7 +862,7 @@ table_continuous(
 #>  Satisfaction with health (1-5) │ Female     3.41       3.61    616   .267 
 #>                                 │ Male       3.49       3.69    576        
 #> 
-#> Missing values removed: Satisfaction with health (1-5) (8).
+#> Note. Missing values removed: Satisfaction with health (1-5) (8).
 ```
 
 ## Display options
@@ -905,7 +905,7 @@ table_continuous(
 #>  wellbeing_score   │ Female     67.16    14.80    19.60    100.00    <.0001  
 #>                    │ Male       71.05    16.23    18.70    100.00            
 #> 
-#> Missing values removed: bmi (12).
+#> Note. Missing values removed: bmi (12).
 ```
 
 ## Tidying for downstream pipelines
@@ -1001,7 +1001,7 @@ table_continuous(
 
 [TABLE]
 
-Missing values removed: bmi (12), life_sat_health (8).
+*Note.* Missing values removed: bmi (12), life_sat_health (8).
 
 `output = "tinytable"` works well in Quarto and R Markdown documents:
 
@@ -1027,9 +1027,9 @@ table_continuous(
 | life_sat_health | Lower secondary |  2.71 |  1.20 |  1.00 |   5.00 |  2.57 |  2.86 | 259 | \<.001 |
 |  | Upper secondary |  3.53 |  1.19 |  1.00 |   5.00 |  3.43 |  3.63 | 534 |       |
 |  | Tertiary |  4.11 |  1.04 |  1.00 |   5.00 |  4.01 |  4.21 | 399 |       |
-| Missing values removed: bmi (12), life_sat_health (8). |  |  |  |  |  |  |  |  |  |
+| *Note.* Missing values removed: bmi (12), life_sat_health (8). |  |  |  |  |  |  |  |  |  |
 
-Descriptive statistics by education {#tinytable_7bgwshqdvjyxxhl6h6xu
+Descriptive statistics by education {#tinytable_h13zwcdvvx1h52pffhqb
 .table .tinytable
 style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}

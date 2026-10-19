@@ -108,6 +108,19 @@ table_multiresponse(
   - `"all"`: every row of the group, as `questionr::multi.table()`
     counts.
 
+  In a "check all that apply" question, an item left unchecked cannot
+  tell "none applies" from "skipped": `"valid"` reads a respondent with
+  no item chosen as "none applies", `"answered"` (the convention of SPSS
+  and Stata) as nonresponse. `"answered"` suits a questionnaire with
+  neither a "None of these" option nor a required answer. An export that
+  leaves every unchecked box missing gives both bases the same
+  respondents, and only `"answered"` describes them in the note. A
+  filter code that is not declared missing (for example -1 "not
+  applicable" kept as an ordinary value) counts as "not chosen" and
+  keeps the filtered respondents in the base: recode it to `NA` first
+  (SPSS user-missing values declared as such are already read as
+  missing).
+
 - sort:
 
   Sorting method for items, as in
@@ -251,9 +264,11 @@ table_multiresponse(
 
 - note:
 
-  The table note. `NULL` (the default) builds it: the respondents left
-  out, what the percentages are of, the base, and the tests. A single
-  string replaces it, and `FALSE` removes it.
+  The table note. `NULL` (the default) builds it, opening with "Note.":
+  the rows removed for a missing `by`, what the percentages sum to, the
+  base with the respondents it holds or leaves out, and the tests. A
+  single string replaces it and is printed as typed, and `FALSE` removes
+  it.
 
 - output:
 
@@ -467,14 +482,13 @@ under `base = "valid"`, those who chose at least one item under
 `base = "answered"`, every row under `base = "all"`. The counts are the
 same under the three bases; the percentages of cases and the tests are
 not. The `Respondents` row gives the base of each group, and the note
-says which base the table uses and how many respondents it leaves out,
-all groups together: those who answered none of the indicators, under
-`"valid"` and `"answered"`, and those who answered but chose no item,
-under `"answered"`, in a sentence of their own. Under `"valid"` and
-`"all"`, the base can hold respondents who chose no item: the note then
-says how many. Declared missing values of a labelled column
-(`na_values`, `na_range`) are missing, as under the `user_na = TRUE`
-default of
+says which base the table uses, with two counts, all groups together:
+the respondents with no data for the question (every indicator missing)
+and those with no item chosen (data, but no item chosen). The base holds
+the second and leaves out the first under `"valid"`, leaves out both
+under `"answered"`, and holds both under `"all"`; a count of zero is not
+mentioned. Declared missing values of a labelled column (`na_values`,
+`na_range`) are missing, as under the `user_na = TRUE` default of
 [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md).
 
 A percentage carries no more digits than its denominator, so a base of
@@ -548,7 +562,7 @@ table_multiresponse(sochealth, select = starts_with("info_"))
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  Respondents       │  1164          
 #> 
-#> Respondents with no answer to the question removed: 36. Several answers possible: percentages are of respondents and can sum to more than 100%. Base: respondents who answered the question, including those who chose no item. 67 respondents chose none of the items.
+#> Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents with data for the question, including 67 with no item chosen (excluded: 36 with no data for the question).
 
 # The labels of the items, sorted by decreasing count.
 table_multiresponse(
@@ -569,7 +583,7 @@ table_multiresponse(
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  Respondents                           │  1164          
 #> 
-#> Respondents with no answer to the question removed: 36. Several answers possible: percentages are of respondents and can sum to more than 100%. Base: respondents who answered the question, including those who chose no item. 67 respondents chose none of the items.
+#> Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents with data for the question, including 67 with no item chosen (excluded: 36 with no data for the question).
 
 # By age group: a test per item and a global test of the question.
 table_multiresponse(
@@ -599,7 +613,7 @@ table_multiresponse(
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  Respondents     │   240              1164                   
 #> 
-#> Respondents with no answer to the question removed: 36. Several answers possible: percentages are of respondents and can sum to more than 100%. Base: respondents who answered the question, including those who chose no item. 67 respondents chose none of the items. Item p-values: Pearson chi-squared test of each item by group. P-values adjusted via stats::p.adjust(method = "holm"); m = 5 test(s). Group comparison: Rao-Scott second-order corrected chi-squared test of multiple marginal independence, χ²(14.40) = 203.03, p < .001.
+#> Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents with data for the question, including 67 with no item chosen (excluded: 36 with no data for the question). Item p-values: Pearson chi-squared test of each item by group. P-values adjusted via stats::p.adjust(method = "holm"); m = 5 test(s). Overall group comparison: Rao-Scott second-order corrected chi-squared test of multiple marginal independence, χ²(14.40) = 203.03, p < .001.
 
 # A descriptive table by sex, on the respondents who chose at least one
 # source: percentages of cases and of responses, no tests.
@@ -643,7 +657,7 @@ table_multiresponse(
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  Respondents     │                                        
 #> 
-#> Respondents with no answer to the question removed: 36. Respondents who chose no item removed: 67. Several answers possible: percentages of respondents can sum to more than 100%; percentages of responses sum to 100%. Base: respondents who chose at least one item.
+#> Note. Multiple answers possible: percentages of cases can sum to more than 100%, and percentages of responses sum to 100%. Base: respondents with at least one item chosen (excluded: 36 with no data for the question and 67 with no item chosen).
 
 # Items coded "Yes" and "No" need `counted`, the value that marks a choice.
 yes_no <- as.data.frame(lapply(
@@ -663,7 +677,7 @@ table_multiresponse(yes_no, select = everything(), counted = "Yes")
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  Respondents       │  1164          
 #> 
-#> Respondents with no answer to the question removed: 36. Several answers possible: percentages are of respondents and can sum to more than 100%. Base: respondents who answered the question, including those who chose no item. 67 respondents chose none of the items.
+#> Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents with data for the question, including 67 with no item chosen (excluded: 36 with no data for the question).
 
 # Bootstrap global test: set a seed to reproduce its p-value.
 set.seed(1)
@@ -686,7 +700,7 @@ table_multiresponse(
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  Respondents     │   599                565             1164                   
 #> 
-#> Respondents with no answer to the question removed: 36. Several answers possible: percentages are of respondents and can sum to more than 100%. Base: respondents who answered the question, including those who chose no item. 67 respondents chose none of the items. Item p-values: Pearson chi-squared test of each item by group. P-values adjusted via stats::p.adjust(method = "holm"); m = 5 test(s). Group comparison: bootstrap test of multiple marginal independence (999 resamples), χ² = 20.38, p = .002.
+#> Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents with data for the question, including 67 with no item chosen (excluded: 36 with no data for the question). Item p-values: Pearson chi-squared test of each item by group. P-values adjusted via stats::p.adjust(method = "holm"); m = 5 test(s). Overall group comparison: bootstrap test of multiple marginal independence (999 resamples), χ² = 20.38, p = .002.
 
 # Wide data frame.
 table_multiresponse(

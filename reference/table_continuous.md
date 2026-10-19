@@ -521,11 +521,11 @@ rows removed for a missing `by` value under `drop_na = TRUE`) travels
 with the table on every route, not just the console: `"default"` prints
 it under the ASCII table, `"tinytable"` / `"gt"` / `"flextable"` /
 `"word"` carry it as a table note, `"excel"` writes it below the body,
-and `"data.frame"` / `"long"` keep the sentence verbatim in the
-`missing_note` attribute (`attr(x, "missing_note")`, `NULL` when nothing
-was removed) so a pipeline that renders the numbers itself can still
-state what left the table. On the `"tinytable"` route the note is set
-one size down; `options(spicy.note_style)` governs that (see
+and `"data.frame"` / `"long"` keep the note verbatim, opening "Note.",
+in the `missing_note` attribute (`attr(x, "missing_note")`, `NULL` when
+there is nothing to say) so a pipeline that renders the numbers itself
+can still state what left the table. On the `"tinytable"` route the note
+is set one size down; `options(spicy.note_style)` governs that (see
 [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)).
 
 The Excel sheet carries the same title the console prints on its first
@@ -865,7 +865,7 @@ table_continuous(
 #>  bmi             │ 25.93   3.72  16.00   38.90    25.72      26.14    1188 
 #>  wellbeing_score │ 69.04  15.62  18.70  100.00    68.16      69.93    1200 
 #> 
-#> Missing values removed: bmi (12).
+#> Note. Missing values removed: bmi (12).
 
 # Grouped by education (Welch p-value added by default).
 table_continuous(
@@ -895,7 +895,7 @@ table_continuous(
 #>                  │ Upper secondary    70.12    539        
 #>                  │ Tertiary           78.15    400        
 #> 
-#> Missing values removed: bmi (12).
+#> Note. Missing values removed: bmi (12).
 
 # Test statistic alongside the p-value.
 table_continuous(
@@ -936,7 +936,7 @@ table_continuous(
 #>                  │ Upper secondary        
 #>                  │ Tertiary               
 #> 
-#> Missing values removed: bmi (12).
+#> Note. Missing values removed: bmi (12).
 
 # --- Choosing the statistics --------------------------------------------
 
@@ -953,7 +953,7 @@ table_continuous(
 #>  bmi               │  25.90 [23.40, 28.60]    1188  
 #>  wellbeing_score   │  70.25 [58.90, 79.23]    1200  
 #> 
-#> Missing values removed: bmi (12). Med [Q1, Q3] = median [first quartile, third quartile].
+#> Note. Missing values removed: bmi (12). Med [Q1, Q3] = median [first quartile, third quartile].
 
 # Median with its exact (order-statistic) confidence interval.
 table_continuous(
@@ -967,7 +967,7 @@ table_continuous(
 #> ────────────┼───────────────────────────────────────────────────────────
 #>  bmi        │  25.90    5.20        25.70            26.20        1188  
 #> 
-#> Missing values removed: bmi (12). IQR = interquartile range (Q3 - Q1). Med 95% CI = exact order-statistic confidence interval for the median (coverage at least 95%).
+#> Note. Missing values removed: bmi (12). IQR = interquartile range (Q3 - Q1). Med 95% CI = exact order-statistic confidence interval for the median (coverage at least 95%).
 
 # One selection per variable. A skewed variable that a scoring
 # protocol requires in median and IQR (the IPAQ case) sits next to
@@ -995,7 +995,7 @@ table_continuous(
 #>  wellbeing_score │ Female  67.16  14.80                     620  <.001 
 #>                  │ Male    71.05  16.23                     580        
 #> 
-#> Missing values removed: bmi (12), life_sat_health (8). Group comparison: Welch t-test (bmi, wellbeing_score); Wilcoxon rank-sum test (life_sat_health). Med [Q1, Q3] = median [first quartile, third quartile].
+#> Note. Missing values removed: bmi (12), life_sat_health (8). Group comparison: Welch t-test (bmi, wellbeing_score); Wilcoxon rank-sum test (life_sat_health). Med [Q1, Q3] = median [first quartile, third quartile].
 
 # --- Effect sizes -------------------------------------------------------
 
@@ -1066,7 +1066,7 @@ table_continuous(
 #>  life_sat_relationships │ 3.72  1.10  1.00  5.00    3.66       3.79     1192 
 #>  life_sat_standard      │ 3.40  1.16  1.00  5.00    3.33       3.46     1192 
 #> 
-#> Missing values removed: life_sat_health (8), life_sat_work (8), life_sat_relationships (8), life_sat_standard (8).
+#> Note. Missing values removed: life_sat_health (8), life_sat_work (8), life_sat_relationships (8), life_sat_standard (8).
 
 # Pretty labels keyed by column name.
 table_continuous(
@@ -1089,7 +1089,7 @@ table_continuous(
 #>  Body mass index          │ 1188 
 #>  Satisfaction with health │ 1192 
 #> 
-#> Missing values removed: Body mass index (12), Satisfaction with health (8).
+#> Note. Missing values removed: Body mass index (12), Satisfaction with health (8).
 
 # --- Output formats -----------------------------------------------------
 

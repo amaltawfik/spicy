@@ -161,6 +161,6 @@ table_categorical(sochealth, select = sex, by = smoking)
 #>    Female │  51.7              
 #>    Male   │  48.3              
 #> 
-#> Group comparison: Pearson chi-squared test.
+#> Note. Group comparison: Pearson chi-squared test.
 options(old)
 ```

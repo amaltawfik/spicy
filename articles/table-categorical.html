@@ -188,7 +188,7 @@ variables, and a grouping variable:</p>
 <span><span class="co">#&gt;    No              <span style="color: #9E9E9E;">│</span>  29.5                      </span></span>
 <span><span class="co">#&gt;    Yes             <span style="color: #9E9E9E;">│</span>  70.5                      </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Group comparison: Pearson chi-squared test.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Group comparison: Pearson chi-squared test.</span></span></span></code></pre></div>
 <p>The default output is <code>"default"</code>, which prints a styled
 ASCII table to the console, folded into successive panels when it is
 wider than the console. Reading the table: each level of <code>by</code>
@@ -380,7 +380,7 @@ before 0.13.0, now raise an error.)</p>
 <span><span class="co">#&gt;    No                      <span style="color: #9E9E9E;">│</span>    40.8       650     54.2                      </span></span>
 <span><span class="co">#&gt;    Yes                     <span style="color: #9E9E9E;">│</span>    59.2       550     45.8                      </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Group comparison: Pearson chi-squared test.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Group comparison: Pearson chi-squared test.</span></span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="association-measures-and-confidence-intervals">Association measures and confidence intervals<a class="anchor" aria-label="anchor" href="#association-measures-and-confidence-intervals"></a>
@@ -396,9 +396,8 @@ row variable based on the variable type
 <li>otherwise -&gt; Cramer’s <code>V</code>.</li>
 </ul>
 <p>When the chosen measures differ across rows, the column header
-collapses to <code>"Effect size"</code> and an APA-style
-<code>Note.</code> line documents which measure was used for each
-variable.</p>
+collapses to <code>"Effect size"</code> and the table note names the
+measure used for each variable.</p>
 <p>Seven measures are available: <code>"cramer_v"</code>,
 <code>"phi"</code>, <code>"gamma"</code>, <code>"tau_b"</code>,
 <code>"tau_c"</code>, <code>"somers_d"</code>, and
@@ -439,7 +438,7 @@ uniform application, or with a named vector to mix measures per row:</p>
 <span><span class="co">#&gt;    Yes       <span style="color: #9E9E9E;">│</span>               </span></span>
 <span><span class="co">#&gt;    (Missing) <span style="color: #9E9E9E;">│</span>               </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Group comparison: Pearson chi-squared test.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Group comparison: Pearson chi-squared test.</span></span></span></code></pre></div>
 <p>A significant chi-squared <em>p</em>-value next to a lambda of
 exactly .00 is not a contradiction. Goodman-Kruskal lambda measures the
 proportional reduction in the error of predicting the row variable once
@@ -511,8 +510,8 @@ keeps the former and replaces the latter with Goodman-Kruskal Gamma:</p>
 <code>self_rated_health</code> switches from the automatic Tau-b (.20)
 to Gamma (.31) – Gamma is larger on the same table because it ignores
 tied pairs. Since the two measures differ, the header collapses to
-<code>"Effect size"</code> and the <code>Note.</code> line documents the
-per-row choice.</p>
+<code>"Effect size"</code> and the note documents the per-row
+choice.</p>
 <p>Add confidence intervals with <code>assoc_ci = TRUE</code>. In the
 rendered formats (<code>gt</code>, <code>tinytable</code>,
 <code>flextable</code>, <code>word</code>) the CI is shown inline after
@@ -582,7 +581,7 @@ expected count of 3.6 and takes the exact test:</p>
 <span><span class="co">#&gt;    No              <span style="color: #9E9E9E;">│</span>     </span></span>
 <span><span class="co">#&gt;    Yes             <span style="color: #9E9E9E;">│</span>     </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Group comparison: Pearson chi-squared test (physical_activity); Fisher exact test (smoking).</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Group comparison: Pearson chi-squared test (physical_activity); Fisher exact test (smoking).</span></span></span></code></pre></div>
 <p><code>test = "chisq"</code> tests every variable by the chi-squared,
 as before 0.14.0, and <code>test = "fisher"</code> tests every variable
 exactly. Fisher’s exact test of a table larger than 2x2 is the
@@ -786,7 +785,7 @@ fractional weighted counts:</p>
 <span><span class="co">#&gt;    No              <span style="color: #9E9E9E;">│</span>  54.6                      </span></span>
 <span><span class="co">#&gt;    Yes             <span style="color: #9E9E9E;">│</span>  45.4                      </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Group comparison: Pearson chi-squared test.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Group comparison: Pearson chi-squared test.</span></span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="handling-missing-values">Handling missing values<a class="anchor" aria-label="anchor" href="#handling-missing-values"></a>
@@ -833,7 +832,7 @@ a table note rather than silent:</p>
 <span><span class="co">#&gt;    Upper middle <span style="color: #9E9E9E;">│</span>                        </span></span>
 <span><span class="co">#&gt;    High         <span style="color: #9E9E9E;">│</span>                        </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Missing values removed: income_group (18).</span></span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Missing values removed: income_group (18).</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; Group comparison: Pearson chi-squared test.</span></span></span></code></pre></div>
 <p>With several selected variables the note lists each variable’s
 removals separately: selecting <code>smoking</code> and
@@ -878,7 +877,7 @@ placing “(Missing)” first to highlight missingness:</p>
 <span><span class="co">#&gt;    Low        <span style="color: #9E9E9E;">│</span>                        </span></span>
 <span><span class="co">#&gt;    High       <span style="color: #9E9E9E;">│</span>                        </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Group comparison: Pearson chi-squared test.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Group comparison: Pearson chi-squared test.</span></span></span></code></pre></div>
 <p><code>levels_keep</code> filters the display only: counts,
 percentages, the chi-squared test, and the association measure are all
 still computed on the full cross-table. That is why the displayed
@@ -925,7 +924,7 @@ association measure:</p>
 <span><span class="co">#&gt;    Yes       <span style="color: #9E9E9E;">│</span>                    </span></span>
 <span><span class="co">#&gt;    (Missing) <span style="color: #9E9E9E;">│</span>                    </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Group comparison: Pearson chi-squared test.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Group comparison: Pearson chi-squared test.</span></span></span></code></pre></div>
 <p><code>p_digits</code> drives both the displayed precision of the
 <code>p</code> column and the small-<em>p</em> threshold
 (<code>p_digits = 3</code> -&gt; <code>&lt;.001</code>,
@@ -987,7 +986,7 @@ alignment:</p>
 <span><span class="co">#&gt;    No              <span style="color: #9E9E9E;">│</span>     </span></span>
 <span><span class="co">#&gt;    Yes             <span style="color: #9E9E9E;">│</span>     </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Group comparison: Pearson chi-squared test.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Group comparison: Pearson chi-squared test.</span></span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="tidying-for-downstream-pipelines">Tidying for downstream pipelines<a class="anchor" aria-label="anchor" href="#tidying-for-downstream-pipelines"></a>
@@ -1674,7 +1673,7 @@ dentist_12m
 </tbody>
 </table>
 <div class="spicy-gt-note" style="width: min-content; min-width: 100%; box-sizing: border-box; padding: 0.5rem 0.5rem 0.2rem 0.5rem; font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji'; font-size: 0.9em; line-height: 1.25; color: #333333; text-align: left;">
-Group comparison: Pearson chi-squared test.
+<em>Note.</em> Group comparison: Pearson chi-squared test.
 </div>
 </div>
 </div>
@@ -1692,54 +1691,54 @@ table by sex):</p>
 
     <script src="https://cdn.jsdelivr.net/gh/vincentarelbundock/tinytable@main/inst/tinytable.js"></script><script>
       // Create table-specific functions using external factory
-      const tableFns_rzs6r89jajtb6du4lqd6 = TinyTable.createTableFunctions("tinytable_rzs6r89jajtb6du4lqd6");
+      const tableFns_r3e0l9f95c9gmtclpo5t = TinyTable.createTableFunctions("tinytable_r3e0l9f95c9gmtclpo5t");
       // tinytable span after
       window.addEventListener('load', function () {
           var cellsToStyle = [
             // tinytable style arrays after
-          { positions: [ { i: '4', j: 8 }, { i: '4', j: 9 } ], css_id: 'tinytable_css_r8g4lfd0rb43p2f9hoiu',}, 
-          { positions: [ { i: '1', j: 8 }, { i: '2', j: 8 }, { i: '3', j: 8 }, { i: '5', j: 8 }, { i: '6', j: 8 }, { i: '1', j: 9 }, { i: '2', j: 9 }, { i: '3', j: 9 }, { i: '5', j: 9 }, { i: '6', j: 9 } ], css_id: 'tinytable_css_m3ksg5rjexo5m8ocwedl',}, 
-          { positions: [ { i: '0', j: 8 }, { i: '7', j: 8 }, { i: '0', j: 9 }, { i: '7', j: 9 } ], css_id: 'tinytable_css_gvrf16i3l09q1znhj7ck',}, 
-          { positions: [ { i: '-1', j: 8 }, { i: '-1', j: 9 } ], css_id: 'tinytable_css_or1i1c5j9ndq02hyvisa',}, 
-          { positions: [ { i: '4', j: 2 }, { i: '4', j: 3 }, { i: '4', j: 4 }, { i: '4', j: 5 }, { i: '4', j: 6 }, { i: '4', j: 7 } ], css_id: 'tinytable_css_cuu7aln410vug0ywdpth',}, 
-          { positions: [ { i: '1', j: 2 }, { i: '2', j: 2 }, { i: '3', j: 2 }, { i: '5', j: 2 }, { i: '6', j: 2 }, { i: '1', j: 3 }, { i: '2', j: 3 }, { i: '3', j: 3 }, { i: '5', j: 3 }, { i: '6', j: 3 }, { i: '1', j: 4 }, { i: '2', j: 4 }, { i: '3', j: 4 }, { i: '5', j: 4 }, { i: '6', j: 4 }, { i: '1', j: 5 }, { i: '2', j: 5 }, { i: '3', j: 5 }, { i: '5', j: 5 }, { i: '6', j: 5 }, { i: '1', j: 6 }, { i: '2', j: 6 }, { i: '3', j: 6 }, { i: '5', j: 6 }, { i: '6', j: 6 }, { i: '1', j: 7 }, { i: '2', j: 7 }, { i: '3', j: 7 }, { i: '5', j: 7 }, { i: '6', j: 7 } ], css_id: 'tinytable_css_0s6v1n8gfa4uj72nb3bg',}, 
-          { positions: [ { i: '0', j: 2 }, { i: '7', j: 2 }, { i: '0', j: 3 }, { i: '7', j: 3 }, { i: '0', j: 4 }, { i: '7', j: 4 }, { i: '0', j: 5 }, { i: '7', j: 5 }, { i: '0', j: 6 }, { i: '7', j: 6 }, { i: '0', j: 7 }, { i: '7', j: 7 } ], css_id: 'tinytable_css_ivw00jngwks3ggrkidzg',}, 
-          { positions: [ { i: '-1', j: 2 }, { i: '-1', j: 3 }, { i: '-1', j: 4 }, { i: '-1', j: 5 }, { i: '-1', j: 6 }, { i: '-1', j: 7 } ], css_id: 'tinytable_css_t3q06g147ghu6qoksnqs',}, 
-          { positions: [ { i: '7', j: 1 } ], css_id: 'tinytable_css_aa5whfidb02l3v0kywz1',}, 
-          { positions: [ { i: '4', j: 1 } ], css_id: 'tinytable_css_hsld7om3qslx9g68f3d7',}, 
-          { positions: [ { i: '2', j: 1 }, { i: '3', j: 1 }, { i: '6', j: 1 } ], css_id: 'tinytable_css_v7gh13nnnqa0yz0igwzf',}, 
-          { positions: [ { i: '1', j: 1 }, { i: '5', j: 1 } ], css_id: 'tinytable_css_7ae8u6zs30do4y5khs13',}, 
-          { positions: [ { i: '0', j: 1 } ], css_id: 'tinytable_css_46xz44kgo9lfuwjcsl79',}, 
-          { positions: [ { i: '-1', j: 1 } ], css_id: 'tinytable_css_evyic1n0auxnbeub48nr',}, 
+          { positions: [ { i: '4', j: 8 }, { i: '4', j: 9 } ], css_id: 'tinytable_css_427rezkk3nixv7tb115a',}, 
+          { positions: [ { i: '1', j: 8 }, { i: '2', j: 8 }, { i: '3', j: 8 }, { i: '5', j: 8 }, { i: '6', j: 8 }, { i: '1', j: 9 }, { i: '2', j: 9 }, { i: '3', j: 9 }, { i: '5', j: 9 }, { i: '6', j: 9 } ], css_id: 'tinytable_css_zoyjwkmvc05yjfd11w7g',}, 
+          { positions: [ { i: '0', j: 8 }, { i: '7', j: 8 }, { i: '0', j: 9 }, { i: '7', j: 9 } ], css_id: 'tinytable_css_4va69vdaytuhz0cmn46v',}, 
+          { positions: [ { i: '-1', j: 8 }, { i: '-1', j: 9 } ], css_id: 'tinytable_css_6f57sq90abhvn1msu2i4',}, 
+          { positions: [ { i: '4', j: 2 }, { i: '4', j: 3 }, { i: '4', j: 4 }, { i: '4', j: 5 }, { i: '4', j: 6 }, { i: '4', j: 7 } ], css_id: 'tinytable_css_hljwgcsqx38jii62cqpt',}, 
+          { positions: [ { i: '1', j: 2 }, { i: '2', j: 2 }, { i: '3', j: 2 }, { i: '5', j: 2 }, { i: '6', j: 2 }, { i: '1', j: 3 }, { i: '2', j: 3 }, { i: '3', j: 3 }, { i: '5', j: 3 }, { i: '6', j: 3 }, { i: '1', j: 4 }, { i: '2', j: 4 }, { i: '3', j: 4 }, { i: '5', j: 4 }, { i: '6', j: 4 }, { i: '1', j: 5 }, { i: '2', j: 5 }, { i: '3', j: 5 }, { i: '5', j: 5 }, { i: '6', j: 5 }, { i: '1', j: 6 }, { i: '2', j: 6 }, { i: '3', j: 6 }, { i: '5', j: 6 }, { i: '6', j: 6 }, { i: '1', j: 7 }, { i: '2', j: 7 }, { i: '3', j: 7 }, { i: '5', j: 7 }, { i: '6', j: 7 } ], css_id: 'tinytable_css_bf9lads14zhn6kcfz2i8',}, 
+          { positions: [ { i: '0', j: 2 }, { i: '7', j: 2 }, { i: '0', j: 3 }, { i: '7', j: 3 }, { i: '0', j: 4 }, { i: '7', j: 4 }, { i: '0', j: 5 }, { i: '7', j: 5 }, { i: '0', j: 6 }, { i: '7', j: 6 }, { i: '0', j: 7 }, { i: '7', j: 7 } ], css_id: 'tinytable_css_jscg7x4rlju08kezornu',}, 
+          { positions: [ { i: '-1', j: 2 }, { i: '-1', j: 3 }, { i: '-1', j: 4 }, { i: '-1', j: 5 }, { i: '-1', j: 6 }, { i: '-1', j: 7 } ], css_id: 'tinytable_css_02f3dc7iaivb8w6z4l89',}, 
+          { positions: [ { i: '7', j: 1 } ], css_id: 'tinytable_css_25ray98rgbbajtjfrjj0',}, 
+          { positions: [ { i: '4', j: 1 } ], css_id: 'tinytable_css_64t9m0phep9tkv4bqhkq',}, 
+          { positions: [ { i: '2', j: 1 }, { i: '3', j: 1 }, { i: '6', j: 1 } ], css_id: 'tinytable_css_4sf6r01fnvowcndqk20o',}, 
+          { positions: [ { i: '1', j: 1 }, { i: '5', j: 1 } ], css_id: 'tinytable_css_1iflz2i0q75uhcqe42yd',}, 
+          { positions: [ { i: '0', j: 1 } ], css_id: 'tinytable_css_vrxb9bve04hpao025ekg',}, 
+          { positions: [ { i: '-1', j: 1 } ], css_id: 'tinytable_css_9bm9vub8vjierhoqy1om',}, 
           ];
 
           // Loop over the arrays to style the cells
           cellsToStyle.forEach(function (group) {
               group.positions.forEach(function (cell) {
-                  tableFns_rzs6r89jajtb6du4lqd6.styleCell(cell.i, cell.j, group.css_id);
+                  tableFns_r3e0l9f95c9gmtclpo5t.styleCell(cell.i, cell.j, group.css_id);
               });
           });
       });
     </script><link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/vincentarelbundock/tinytable@main/inst/tinytable.css">
 <style>
     /* tinytable css entries after */
-    #tinytable_rzs6r89jajtb6du4lqd6 td.tinytable_css_r8g4lfd0rb43p2f9hoiu, #tinytable_rzs6r89jajtb6du4lqd6 th.tinytable_css_r8g4lfd0rb43p2f9hoiu {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center; white-space: nowrap; }
-    #tinytable_rzs6r89jajtb6du4lqd6 td.tinytable_css_m3ksg5rjexo5m8ocwedl, #tinytable_rzs6r89jajtb6du4lqd6 th.tinytable_css_m3ksg5rjexo5m8ocwedl { text-align: center; white-space: nowrap; }
-    #tinytable_rzs6r89jajtb6du4lqd6 td.tinytable_css_gvrf16i3l09q1znhj7ck, #tinytable_rzs6r89jajtb6du4lqd6 th.tinytable_css_gvrf16i3l09q1znhj7ck {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center; white-space: nowrap; }
-    #tinytable_rzs6r89jajtb6du4lqd6 td.tinytable_css_or1i1c5j9ndq02hyvisa, #tinytable_rzs6r89jajtb6du4lqd6 th.tinytable_css_or1i1c5j9ndq02hyvisa {  position: relative; --border-bottom: 0; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.1em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center; white-space: nowrap; }
-    #tinytable_rzs6r89jajtb6du4lqd6 td.tinytable_css_cuu7aln410vug0ywdpth, #tinytable_rzs6r89jajtb6du4lqd6 th.tinytable_css_cuu7aln410vug0ywdpth {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
-    #tinytable_rzs6r89jajtb6du4lqd6 td.tinytable_css_0s6v1n8gfa4uj72nb3bg, #tinytable_rzs6r89jajtb6du4lqd6 th.tinytable_css_0s6v1n8gfa4uj72nb3bg { text-align: center }
-    #tinytable_rzs6r89jajtb6du4lqd6 td.tinytable_css_ivw00jngwks3ggrkidzg, #tinytable_rzs6r89jajtb6du4lqd6 th.tinytable_css_ivw00jngwks3ggrkidzg {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
-    #tinytable_rzs6r89jajtb6du4lqd6 td.tinytable_css_t3q06g147ghu6qoksnqs, #tinytable_rzs6r89jajtb6du4lqd6 th.tinytable_css_t3q06g147ghu6qoksnqs {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
-    #tinytable_rzs6r89jajtb6du4lqd6 td.tinytable_css_aa5whfidb02l3v0kywz1, #tinytable_rzs6r89jajtb6du4lqd6 th.tinytable_css_aa5whfidb02l3v0kywz1 {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left; padding-left: 1em; padding-left: 0.8em; }
-    #tinytable_rzs6r89jajtb6du4lqd6 td.tinytable_css_hsld7om3qslx9g68f3d7, #tinytable_rzs6r89jajtb6du4lqd6 th.tinytable_css_hsld7om3qslx9g68f3d7 {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left; padding-left: 1em; padding-left: 0.8em; }
-    #tinytable_rzs6r89jajtb6du4lqd6 td.tinytable_css_v7gh13nnnqa0yz0igwzf, #tinytable_rzs6r89jajtb6du4lqd6 th.tinytable_css_v7gh13nnnqa0yz0igwzf { text-align: left; padding-left: 1em; padding-left: 0.8em; }
-    #tinytable_rzs6r89jajtb6du4lqd6 td.tinytable_css_7ae8u6zs30do4y5khs13, #tinytable_rzs6r89jajtb6du4lqd6 th.tinytable_css_7ae8u6zs30do4y5khs13 { text-align: left }
-    #tinytable_rzs6r89jajtb6du4lqd6 td.tinytable_css_46xz44kgo9lfuwjcsl79, #tinytable_rzs6r89jajtb6du4lqd6 th.tinytable_css_46xz44kgo9lfuwjcsl79 {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
-    #tinytable_rzs6r89jajtb6du4lqd6 td.tinytable_css_evyic1n0auxnbeub48nr, #tinytable_rzs6r89jajtb6du4lqd6 th.tinytable_css_evyic1n0auxnbeub48nr {  position: relative; --border-bottom: 0; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.1em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
+    #tinytable_r3e0l9f95c9gmtclpo5t td.tinytable_css_427rezkk3nixv7tb115a, #tinytable_r3e0l9f95c9gmtclpo5t th.tinytable_css_427rezkk3nixv7tb115a {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center; white-space: nowrap; }
+    #tinytable_r3e0l9f95c9gmtclpo5t td.tinytable_css_zoyjwkmvc05yjfd11w7g, #tinytable_r3e0l9f95c9gmtclpo5t th.tinytable_css_zoyjwkmvc05yjfd11w7g { text-align: center; white-space: nowrap; }
+    #tinytable_r3e0l9f95c9gmtclpo5t td.tinytable_css_4va69vdaytuhz0cmn46v, #tinytable_r3e0l9f95c9gmtclpo5t th.tinytable_css_4va69vdaytuhz0cmn46v {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center; white-space: nowrap; }
+    #tinytable_r3e0l9f95c9gmtclpo5t td.tinytable_css_6f57sq90abhvn1msu2i4, #tinytable_r3e0l9f95c9gmtclpo5t th.tinytable_css_6f57sq90abhvn1msu2i4 {  position: relative; --border-bottom: 0; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.1em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center; white-space: nowrap; }
+    #tinytable_r3e0l9f95c9gmtclpo5t td.tinytable_css_hljwgcsqx38jii62cqpt, #tinytable_r3e0l9f95c9gmtclpo5t th.tinytable_css_hljwgcsqx38jii62cqpt {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
+    #tinytable_r3e0l9f95c9gmtclpo5t td.tinytable_css_bf9lads14zhn6kcfz2i8, #tinytable_r3e0l9f95c9gmtclpo5t th.tinytable_css_bf9lads14zhn6kcfz2i8 { text-align: center }
+    #tinytable_r3e0l9f95c9gmtclpo5t td.tinytable_css_jscg7x4rlju08kezornu, #tinytable_r3e0l9f95c9gmtclpo5t th.tinytable_css_jscg7x4rlju08kezornu {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
+    #tinytable_r3e0l9f95c9gmtclpo5t td.tinytable_css_02f3dc7iaivb8w6z4l89, #tinytable_r3e0l9f95c9gmtclpo5t th.tinytable_css_02f3dc7iaivb8w6z4l89 {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
+    #tinytable_r3e0l9f95c9gmtclpo5t td.tinytable_css_25ray98rgbbajtjfrjj0, #tinytable_r3e0l9f95c9gmtclpo5t th.tinytable_css_25ray98rgbbajtjfrjj0 {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left; padding-left: 1em; padding-left: 0.8em; }
+    #tinytable_r3e0l9f95c9gmtclpo5t td.tinytable_css_64t9m0phep9tkv4bqhkq, #tinytable_r3e0l9f95c9gmtclpo5t th.tinytable_css_64t9m0phep9tkv4bqhkq {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left; padding-left: 1em; padding-left: 0.8em; }
+    #tinytable_r3e0l9f95c9gmtclpo5t td.tinytable_css_4sf6r01fnvowcndqk20o, #tinytable_r3e0l9f95c9gmtclpo5t th.tinytable_css_4sf6r01fnvowcndqk20o { text-align: left; padding-left: 1em; padding-left: 0.8em; }
+    #tinytable_r3e0l9f95c9gmtclpo5t td.tinytable_css_1iflz2i0q75uhcqe42yd, #tinytable_r3e0l9f95c9gmtclpo5t th.tinytable_css_1iflz2i0q75uhcqe42yd { text-align: left }
+    #tinytable_r3e0l9f95c9gmtclpo5t td.tinytable_css_vrxb9bve04hpao025ekg, #tinytable_r3e0l9f95c9gmtclpo5t th.tinytable_css_vrxb9bve04hpao025ekg {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
+    #tinytable_r3e0l9f95c9gmtclpo5t td.tinytable_css_9bm9vub8vjierhoqy1om, #tinytable_r3e0l9f95c9gmtclpo5t th.tinytable_css_9bm9vub8vjierhoqy1om {  position: relative; --border-bottom: 0; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.1em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
     </style>
 <div class="container">
-      <table class="table tinytable" id="tinytable_rzs6r89jajtb6du4lqd6" style="width: auto; margin-left: auto; margin-right: auto;" data-quarto-disable-processing="true">
+      <table class="table tinytable" id="tinytable_r3e0l9f95c9gmtclpo5t" style="width: auto; margin-left: auto; margin-right: auto;" data-quarto-disable-processing="true">
 <caption>Categorical table by sex</caption>
         <thead>
 <tr>
@@ -1762,7 +1761,8 @@ table by sex):</p>
                 <th scope="col" data-row="0" data-col="9"></th>
               </tr>
 </thead>
-<tfoot><tr><td colspan="9" style="font-size: 0.9em; ">Group comparison: Pearson chi-squared test.</td></tr></tfoot>
+<tfoot><tr><td colspan="9" style="font-size: 0.9em; ">
+<em>Note.</em> Group comparison: Pearson chi-squared test.</td></tr></tfoot>
 <tbody>
 <tr>
 <td data-row="1" data-col="1">smoking</td>
@@ -2365,7 +2365,7 @@ physical_activity
 </tbody>
 </table>
 <div class="spicy-gt-note" style="width: min-content; min-width: 100%; box-sizing: border-box; padding: 0.5rem 0.5rem 0.2rem 0.5rem; font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji'; font-size: 0.9em; line-height: 1.25; color: #333333; text-align: left;">
-Group comparison: Pearson chi-squared test.
+<em>Note.</em> Group comparison: Pearson chi-squared test.
 </div>
 </div>
 </div>

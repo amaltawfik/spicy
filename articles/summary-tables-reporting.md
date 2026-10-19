@@ -159,7 +159,7 @@ table_categorical(
 #>    No                      │    40.8       650     54.2                      
 #>    Yes                     │    59.2       550     45.8                      
 #> 
-#> Group comparison: Pearson chi-squared test.
+#> Note. Group comparison: Pearson chi-squared test.
 ```
 
 ``` r
@@ -204,7 +204,7 @@ table_continuous(
 #>                           │ Upper secondary     3.43       3.63    534        
 #>                           │ Tertiary            4.01       4.21    399        
 #> 
-#> Missing values removed: Body mass index (12), Satisfaction with health (8).
+#> Note. Missing values removed: Body mass index (12), Satisfaction with health (8).
 ```
 
 ``` r
@@ -391,7 +391,7 @@ table_categorical(
 #>    No                                    │  29.5                      
 #>    Yes                                   │  70.5                      
 #> 
-#> Group comparison: Pearson chi-squared test.
+#> Note. Group comparison: Pearson chi-squared test.
 ```
 
 ### Continuous variables
@@ -454,7 +454,7 @@ table_continuous(
 #>                           │ Upper secondary            
 #>                           │ Tertiary                   
 #> 
-#> Missing values removed: Body mass index (12), Satisfaction with health (8).
+#> Note. Missing values removed: Body mass index (12), Satisfaction with health (8).
 ```
 
 This keeps the reporting structure consistent while still using the
@@ -534,7 +534,7 @@ table_continuous(
 #>  wellbeing_score │ Female  620  -0.25 
 #>                  │ Male    580        
 #> 
-#> Missing values removed: bmi (12). SMD = standardized mean difference (Female - Male); |SMD| > 0.1 is the usual imbalance threshold.
+#> Note. Missing values removed: bmi (12). SMD = standardized mean difference (Female - Male); |SMD| > 0.1 is the usual imbalance threshold.
 ```
 
 ``` r
@@ -569,7 +569,7 @@ table_categorical(
 #>    No              │           
 #>    Yes             │           
 #> 
-#> SMD = standardized mean difference (Female - Male); |SMD| > 0.1 is the usual imbalance threshold. Group comparison: Pearson chi-squared test.
+#> Note. SMD = standardized mean difference (Female - Male); |SMD| > 0.1 is the usual imbalance threshold. Group comparison: Pearson chi-squared test.
 ```
 
 Exactly two groups, no confidence interval and no *p*-value on the
@@ -804,7 +804,7 @@ table_categorical(sochealth, select = smoking, by = sex, style = "jama")
 #>    Yes       │   131       21.1     118     20.3     249     20.8             
 #>    (Missing) │    14        2.3      11      1.9      25      2.1             
 #> 
-#> Group comparison: Pearson chi-squared test.
+#> Note. Group comparison: Pearson chi-squared test.
 ```
 
 The visible change here is the *p* column: JAMA rounds *p* values to two
@@ -842,7 +842,7 @@ table_continuous(sochealth, select = bmi, by = sex)
 #>  bmi      │ Female  0,018 
 #>           │ Male          
 #> 
-#> Valeurs manquantes retirées : bmi (12).
+#> Note. Valeurs manquantes retirées : bmi (12).
 ```
 
 One gesture, one coherent table. A language brings its typography with
@@ -879,7 +879,7 @@ table_continuous(sochealth, select = bmi, by = sex, style = "jama")
 #>  bmi      │ Female  ,02 
 #>           │ Male        
 #> 
-#> Valeurs manquantes retirées : bmi (12).
+#> Note. Valeurs manquantes retirées : bmi (12).
 ```
 
 Where the two do meet, the theme wins — you asked for it by name. JAMA’s
@@ -909,7 +909,7 @@ table_continuous(sochealth, select = bmi, by = sex, decimal_mark = ".")
 #>  bmi      │ Female  0.018 
 #>           │ Male          
 #> 
-#> Valeurs manquantes retirées : bmi (12).
+#> Note. Valeurs manquantes retirées : bmi (12).
 ```
 
 When one word has to change and a language does not — a questionnaire
@@ -935,7 +935,7 @@ table_categorical(sochealth, select = sex, by = smoking)
 #>    Female │  51.7              
 #>    Male   │  48.3              
 #> 
-#> Group comparison: Pearson chi-squared test.
+#> Note. Group comparison: Pearson chi-squared test.
 options(spicy.labels = NULL)
 ```
 
@@ -1029,7 +1029,7 @@ tab |>
 
 [TABLE]
 
-Group comparison: Pearson chi-squared test.
+*Note.* Group comparison: Pearson chi-squared test.
 
 Use `tinytable::` functions when you want lightweight table-specific
 styling:
@@ -1067,9 +1067,9 @@ tab |>
 | Regular physical activity |     |      |     |      |     |      |     |      | \<.001 | .21 |
 |     No | 177 | 67.8 | 310 | 57.5 | 163 | 40.8 | 650 | 54.2 |       |     |
 |     Yes |  84 | 32.2 | 229 | 42.5 | 237 | 59.2 | 550 | 45.8 |       |     |
-| Group comparison: Pearson chi-squared test. |  |  |  |  |  |  |  |  |  |  |
+| *Note.* Group comparison: Pearson chi-squared test. |  |  |  |  |  |  |  |  |  |  |
 
-Categorical table by education {#tinytable_wp4zbu7uztovurgohlwu .table
+Categorical table by education {#tinytable_602vfhhkexs5j2fv7tmb .table
 .tinytable style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 

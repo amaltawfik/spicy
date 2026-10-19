@@ -281,8 +281,8 @@ table_categorical(
   When a single measure is used for every row, the column header is that
   measure's name (e.g. `"Cramer's V"`). When multiple measures are used
   (typically with `"auto"` on a heterogeneous `select`), the header
-  collapses to `"Effect size"` and an APA-style `Note.` line is appended
-  documenting which measure was used for which variable.
+  collapses to `"Effect size"` and the table note names the measure used
+  for each variable.
 
   `phi` requires a 2x2 table; if explicitly requested for a non-2x2
   variable, an error is raised so the user can choose another measure or
@@ -826,7 +826,7 @@ table_categorical(
 #>    No              │     
 #>    Yes             │     
 #> 
-#> Group comparison: Pearson chi-squared test.
+#> Note. Group comparison: Pearson chi-squared test.
 
 # One-way frequency-style table (no `by`).
 table_categorical(
@@ -896,7 +896,7 @@ table_categorical(
 #>    No              │     
 #>    Yes             │     
 #> 
-#> Group comparison: Pearson chi-squared test (physical_activity); Fisher exact test (smoking).
+#> Note. Group comparison: Pearson chi-squared test (physical_activity); Fisher exact test (smoking).
 
 # Pretty labels keyed by column name.
 table_categorical(
@@ -943,7 +943,7 @@ table_categorical(
 #>    No              │  54.2                      
 #>    Yes             │  45.8                      
 #> 
-#> Group comparison: Pearson chi-squared test.
+#> Note. Group comparison: Pearson chi-squared test.
 
 # Survey weights with rescaling.
 table_categorical(
@@ -988,7 +988,7 @@ table_categorical(
 #>    No              │  54.6                      
 #>    Yes             │  45.4                      
 #> 
-#> Group comparison: Pearson chi-squared test.
+#> Note. Group comparison: Pearson chi-squared test.
 
 # Confidence interval for the association measure.
 table_categorical(
@@ -1020,15 +1020,15 @@ table_categorical(
 #>    Yes       │                                       
 #>    (Missing) │                                       
 #> 
-#> Group comparison: Pearson chi-squared test.
+#> Note. Group comparison: Pearson chi-squared test.
 
 # --- Per-variable association measure ----------------------------------
 
 # Default (`assoc_measure = "auto"`): one measure per row variable based on
 # the variable type (2x2 -> Phi, both ordered factors -> Kendall's Tau-b,
 # otherwise Cramer's V). When the chosen measures differ across rows, the
-# column header collapses to `"Effect size"` and an APA-style `Note.` line
-# documents which measure was used for which variable.
+# column header collapses to `"Effect size"` and the note names the
+# measure used for each variable.
 table_categorical(
   sochealth,
   select = c(smoking, education),
@@ -1095,7 +1095,7 @@ table_categorical(
 #>    Upper secondary │            
 #>    Tertiary        │            
 #> 
-#> Group comparison: Pearson chi-squared test.
+#> Note. Group comparison: Pearson chi-squared test.
 
 # Per-variable override (recommended named form).
 table_categorical(

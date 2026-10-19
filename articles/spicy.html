@@ -172,7 +172,7 @@ the quarto package and Quarto 1.7 or later).</p>
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/code_book.html">code_book</a></span><span class="op">(</span><span class="va">sochealth</span>, <span class="va">sex</span>, <span class="va">age</span>, <span class="va">smoking</span>, <span class="va">bmi</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Codebook</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Date: 2026-10-18</span></span>
+<span><span class="co">#&gt; Date: 2026-10-19</span></span>
 <span><span class="co">#&gt; Observations: 1200</span></span>
 <span><span class="co">#&gt; Variables: 4</span></span>
 <span><span class="co">#&gt; Note: Counts and percentages are unweighted: they describe the data file and are not estimates for a population.</span></span>
@@ -399,7 +399,7 @@ tables for categorical variables:</p>
 <span><span class="co">#&gt;    No              <span style="color: #9E9E9E;">│</span>  29.5                      </span></span>
 <span><span class="co">#&gt;    Yes             <span style="color: #9E9E9E;">│</span>  70.5                      </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Group comparison: Pearson chi-squared test.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Group comparison: Pearson chi-squared test.</span></span></span></code></pre></div>
 <p><code><a href="../reference/table_continuous.html">table_continuous()</a></code> summarizes continuous variables,
 either overall or by a categorical <code>by</code> variable; when
 <code>by</code> is supplied it also reports a group-comparison test (a
@@ -432,7 +432,7 @@ Welch test by default):</p>
 <span><span class="co">#&gt;                  <span style="color: #9E9E9E;">│</span> Upper secondary     3.63    534        </span></span>
 <span><span class="co">#&gt;                  <span style="color: #9E9E9E;">│</span> Tertiary            4.21    399        </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Missing values removed: bmi (12), life_sat_health (8).</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12), life_sat_health (8).</span></span></span></code></pre></div>
 <p><code><a href="../reference/table_continuous_lm.html">table_continuous_lm()</a></code> covers the same reporting
 territory when you want to stay in a linear-model framework, for example
 with robust or cluster-robust standard errors, case weights, or additive
@@ -505,7 +505,7 @@ past 12 months. <code>labels = TRUE</code> shows the item wording:</p>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
 <span><span class="co">#&gt;  Respondents                           <span style="color: #9E9E9E;">│</span>  1164          </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Respondents with no answer to the question removed: 36. Several answers possible: percentages are of respondents and can sum to more than 100%. Base: respondents who answered the question, including those who chose no item. 67 respondents chose none of the items.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents with data for the question, including 67 with no item chosen (excluded: 36 with no data for the question).</span></span></span></code></pre></div>
 <p>With <code>by</code>, the counts and percentages are given per group
 and in a <code>Total</code> margin, each item gets a chi-squared test
 (Fisher’s exact test when an expected count is below 5), and the
@@ -532,7 +532,7 @@ table:</p>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
 <span><span class="co">#&gt;  Respondents     <span style="color: #9E9E9E;">│</span>   599                565             1164            </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Respondents with no answer to the question removed: 36. Several answers possible: percentages are of respondents and can sum to more than 100%. Base: respondents who answered the question, including those who chose no item. 67 respondents chose none of the items.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents with data for the question, including 67 with no item chosen (excluded: 36 with no data for the question).</span></span></span></code></pre></div>
 </div>
 </div>
 <div class="section level2">

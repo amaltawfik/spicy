@@ -91,7 +91,7 @@ table_categorical(stacked, select = source, by = sex)
 #>    info_family     │            
 #>    info_media      │            
 #> 
-#> Group comparison: Pearson chi-squared test.
+#> Note. Group comparison: Pearson chi-squared test.
 ```
 
 That table misreads the question in three ways.
@@ -150,7 +150,7 @@ tbl
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  Respondents     │   599                565             1164                   
 #> 
-#> Respondents with no answer to the question removed: 36. Several answers possible: percentages are of respondents and can sum to more than 100%. Base: respondents who answered the question, including those who chose no item. 67 respondents chose none of the items. Item p-values: Pearson chi-squared test of each item by group. P-values adjusted via stats::p.adjust(method = "holm"); m = 5 test(s). Group comparison: Rao-Scott second-order corrected chi-squared test of multiple marginal independence, χ²(4.61) = 18.78, p = .002.
+#> Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents with data for the question, including 67 with no item chosen (excluded: 36 with no data for the question). Item p-values: Pearson chi-squared test of each item by group. P-values adjusted via stats::p.adjust(method = "holm"); m = 5 test(s). Overall group comparison: Rao-Scott second-order corrected chi-squared test of multiple marginal independence, χ²(4.61) = 18.78, p = .002.
 ```
 
 Each percentage is now a share of the respondents of its group, and the
@@ -178,7 +178,7 @@ table_multiresponse(sochealth, select = starts_with("info_"))
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  Respondents       │  1164          
 #> 
-#> Respondents with no answer to the question removed: 36. Several answers possible: percentages are of respondents and can sum to more than 100%. Base: respondents who answered the question, including those who chose no item. 67 respondents chose none of the items.
+#> Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents with data for the question, including 67 with no item chosen (excluded: 36 with no data for the question).
 ```
 
 Four things to notice:
@@ -191,8 +191,9 @@ Four things to notice:
     (Jann, 2005, p. 107).
 3.  **The `Respondents` row is the base**, the number of respondents
     every percentage is computed on.
-4.  **The note says what the percentages are of**, which respondents
-    form the base, and how many of them chose no item.
+4.  **The note says what the percentages sum to** and which respondents
+    form the base: the 67 with no item chosen are in it, and the 36 with
+    no data for the question are not.
 
 `select` takes tidyselect syntax, so `select = info_doctor:info_media`
 and the five names written in [`c()`](https://rdrr.io/r/base/c.html)
@@ -224,7 +225,7 @@ table_multiresponse(yes_no, select = everything(), counted = "Yes")
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  Respondents       │  1164          
 #> 
-#> Respondents with no answer to the question removed: 36. Several answers possible: percentages are of respondents and can sum to more than 100%. Base: respondents who answered the question, including those who chose no item. 67 respondents chose none of the items.
+#> Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents with data for the question, including 67 with no item chosen (excluded: 36 with no data for the question).
 ```
 
 `counted` applies to every selected column. Any other non-missing value
@@ -270,7 +271,7 @@ table_multiresponse(
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  Respondents                           │  1164          
 #> 
-#> Respondents with no answer to the question removed: 36. Several answers possible: percentages are of respondents and can sum to more than 100%. Base: respondents who answered the question, including those who chose no item. 67 respondents chose none of the items.
+#> Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents with data for the question, including 67 with no item chosen (excluded: 36 with no data for the question).
 ```
 
 `"+"` ranks the items by increasing count, and `"name+"` and `"name-"`
@@ -321,7 +322,7 @@ table_multiresponse(
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  Respondents       │  1097          
 #> 
-#> Respondents with no answer to the question removed: 36. Respondents who chose no item removed: 67. Several answers possible: percentages are of respondents and can sum to more than 100%. Base: respondents who chose at least one item.
+#> Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents with at least one item chosen (excluded: 36 with no data for the question and 67 with no item chosen).
 ```
 
 This is the default of SPSS `MULT RESPONSE` and of `mrtab` (Jann, 2005,
@@ -350,11 +351,13 @@ table_multiresponse(sochealth, select = starts_with("info_"), base = "all")
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  Respondents       │  1200          
 #> 
-#> Several answers possible: percentages are of respondents and can sum to more than 100%. Base: all respondents. 103 respondents chose none of the items.
+#> Note. Multiple answers possible: percentages can sum to more than 100%. Base: all respondents, including 36 with no data for the question and 67 with no item chosen.
 ```
 
-The 36 respondents who skipped the question now count as respondents who
-chose nothing, and the note says that 103 did.
+The 36 respondents who skipped the question now enter the base, and
+every percentage counts them as choosing nothing. The note still keeps
+them apart from the 67 who chose no source: the base includes 36 with no
+data for the question and 67 with no item chosen.
 
 The counts are the same under the three bases. The percentages and the
 tests are not. `"valid"` assumes that a skipped question is coded
@@ -388,7 +391,7 @@ table_multiresponse(
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  Respondents       │  1164                                  
 #> 
-#> Respondents with no answer to the question removed: 36. Several answers possible: percentages of respondents can sum to more than 100%; percentages of responses sum to 100%. Base: respondents who answered the question, including those who chose no item. 67 respondents chose none of the items.
+#> Note. Multiple answers possible: percentages of cases can sum to more than 100%, and percentages of responses sum to 100%. Base: respondents with data for the question, including 67 with no item chosen (excluded: 36 with no data for the question).
 ```
 
 The percentages of responses are the shares of the stacked table, and
@@ -454,7 +457,7 @@ table_multiresponse(
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  Respondents     │   31                196                   
 #> 
-#> Respondents with no answer to the question removed: 5. Several answers possible: percentages are of respondents and can sum to more than 100%. Base: respondents who answered the question, including those who chose no item. 10 respondents chose none of the items. Item p-values: Pearson chi-squared test (info_doctor, info_pharmacist, info_internet, info_family); Fisher exact test (info_media). P-values adjusted via stats::p.adjust(method = "holm"); m = 5 test(s). Group comparison: Rao-Scott second-order corrected chi-squared test of multiple marginal independence, χ²(13.78) = 44.16, p < .001.
+#> Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents with data for the question, including 10 with no item chosen (excluded: 5 with no data for the question). Item p-values: Pearson chi-squared test (info_doctor, info_pharmacist, info_internet, info_family); Fisher exact test (info_media). P-values adjusted via stats::p.adjust(method = "holm"); m = 5 test(s). Overall group comparison: Rao-Scott second-order corrected chi-squared test of multiple marginal independence, χ²(13.78) = 44.16, p < .001.
 ```
 
 The note names both tests: the Pearson chi-squared for four items, and
@@ -621,7 +624,7 @@ table_multiresponse(with_empty, select = starts_with("info_"), by = sex)
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  Respondents     │   599                565             1164                   
 #> 
-#> Respondents with no answer to the question removed: 36. Several answers possible: percentages are of respondents and can sum to more than 100%. Base: respondents who answered the question, including those who chose no item. 67 respondents chose none of the items. Item p-values: Pearson chi-squared test of each item by group. P-values adjusted via stats::p.adjust(method = "holm"); m = 5 test(s). Not tested (no variation, shown as –): info_other. Group comparison: Rao-Scott second-order corrected chi-squared test of multiple marginal independence, χ²(4.61) = 18.78, p = .002.
+#> Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents with data for the question, including 67 with no item chosen (excluded: 36 with no data for the question). Item p-values: Pearson chi-squared test of each item by group. P-values adjusted via stats::p.adjust(method = "holm"); m = 5 test(s). Not tested (no variation, shown as –): info_other. Overall group comparison: Rao-Scott second-order corrected chi-squared test of multiple marginal independence, χ²(4.61) = 18.78, p = .002.
 ```
 
 Its row shows a true zero and its `p` cell a dash, which the note
@@ -663,7 +666,7 @@ table_multiresponse(
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  Respondents     │    40                 39              79             
 #> 
-#> Respondents with no answer to the question removed: 1. Several answers possible: percentages are of respondents and can sum to more than 100%. Base: respondents who answered the question, including those who chose no item. 7 respondents chose none of the items.
+#> Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents with data for the question, including 7 with no item chosen (excluded: 1 with no data for the question).
 ```
 
 `statistic` stays independent of `p_value`, so `statistic = TRUE` would
@@ -916,7 +919,7 @@ table_multiresponse(
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  Respondents     │   599                565             1164                   
 #> 
-#> Respondents with no answer to the question removed: 36. Several answers possible: percentages are of respondents and can sum to more than 100%. Base: respondents who answered the question, including those who chose no item. 67 respondents chose none of the items. Item p-values: Pearson chi-squared test of each item by group. P-values adjusted via stats::p.adjust(method = "holm"); m = 5 test(s). Group comparison: Rao-Scott second-order corrected chi-squared test of multiple marginal independence, χ²(4.61) = 18.78, p = .002.
+#> Note. Multiple answers possible: percentages can sum to more than 100%. Base: respondents with data for the question, including 67 with no item chosen (excluded: 36 with no data for the question). Item p-values: Pearson chi-squared test of each item by group. P-values adjusted via stats::p.adjust(method = "holm"); m = 5 test(s). Overall group comparison: Rao-Scott second-order corrected chi-squared test of multiple marginal independence, χ²(4.61) = 18.78, p = .002.
 ```
 
 ## Rendered output
@@ -937,14 +940,13 @@ pkgdown_dark_gt(
 
 [TABLE]
 
-Respondents with no answer to the question removed: 36. Several answers
-possible: percentages are of respondents and can sum to more than 100%.
-Base: respondents who answered the question, including those who chose
-no item. 67 respondents chose none of the items. Item p-values: Pearson
-chi-squared test of each item by group. P-values adjusted via
-stats::p.adjust(method = “holm”); m = 5 test(s). Group comparison:
-Rao-Scott second-order corrected chi-squared test of multiple marginal
-independence, χ²(4.61) = 18.78, p = .002.
+*Note.* Multiple answers possible: percentages can sum to more than
+100%. Base: respondents with data for the question, including 67 with no
+item chosen (excluded: 36 with no data for the question). Item p-values:
+Pearson chi-squared test of each item by group. P-values adjusted via
+stats::p.adjust(method = “holm”); m = 5 test(s). Overall group
+comparison: Rao-Scott second-order corrected chi-squared test of
+multiple marginal independence, χ²(4.61) = 18.78, p = .002.
 
 ``` r
 
@@ -968,9 +970,9 @@ table_multiresponse(
 | Family or friends | 219 | 36.6 | 20.3 | 141 | 25.0 | 15.3 |  360 | 30.9 | 18.0 |
 | Television, radio or newspapers |  78 | 13.0 |  7.2 |  63 | 11.2 |  6.8 |  141 | 12.1 |  7.0 |
 | Respondents | 599 |      |      | 565 |      |      | 1164 |      |      |
-| Respondents with no answer to the question removed: 36. Several answers possible: percentages of respondents can sum to more than 100%; percentages of responses sum to 100%. Base: respondents who answered the question, including those who chose no item. 67 respondents chose none of the items. |  |  |  |  |  |  |  |  |  |
+| *Note.* Multiple answers possible: percentages of cases can sum to more than 100%, and percentages of responses sum to 100%. Base: respondents with data for the question, including 67 with no item chosen (excluded: 36 with no data for the question). |  |  |  |  |  |  |  |  |  |
 
-Multiple responses by Sex {#tinytable_a5h9wccgoyq0jayidynp .table
+Multiple responses by Sex {#tinytable_4s0vupgj0y9ky74kupff .table
 .tinytable style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 

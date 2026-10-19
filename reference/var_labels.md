@@ -83,7 +83,7 @@ table_continuous(
 #>  BMI (kg/m2) │ 25.93   3.72  16.00  38.90    25.72      26.14    1188 
 #>  Age (years) │ 49.26  14.70  25.00  75.00    48.43      50.10    1200 
 #> 
-#> Missing values removed: BMI (kg/m2) (12).
+#> Note. Missing values removed: BMI (kg/m2) (12).
 
 # A vector of renames kept for a whole project, spliced.
 renames <- c(bmi = "BMI (kg/m2)", smoking = "Smoker")

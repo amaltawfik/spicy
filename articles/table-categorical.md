@@ -79,7 +79,7 @@ table_categorical(
 #>    No              │  29.5                      
 #>    Yes             │  70.5                      
 #> 
-#> Group comparison: Pearson chi-squared test.
+#> Note. Group comparison: Pearson chi-squared test.
 ```
 
 The default output is `"default"`, which prints a styled ASCII table to
@@ -244,7 +244,7 @@ table_categorical(
 #>    No                      │    40.8       650     54.2                      
 #>    Yes                     │    59.2       550     45.8                      
 #> 
-#> Group comparison: Pearson chi-squared test.
+#> Note. Group comparison: Pearson chi-squared test.
 ```
 
 ## Association measures and confidence intervals
@@ -258,8 +258,8 @@ type (`assoc_measure = "auto"`, the default):
 - otherwise -\> Cramer’s `V`.
 
 When the chosen measures differ across rows, the column header collapses
-to `"Effect size"` and an APA-style `Note.` line documents which measure
-was used for each variable.
+to `"Effect size"` and the table note names the measure used for each
+variable.
 
 Seven measures are available: `"cramer_v"`, `"phi"`, `"gamma"`,
 `"tau_b"`, `"tau_c"`, `"somers_d"`, and `"lambda"`;
@@ -303,7 +303,7 @@ table_categorical(
 #>    Yes       │               
 #>    (Missing) │               
 #> 
-#> Group comparison: Pearson chi-squared test.
+#> Note. Group comparison: Pearson chi-squared test.
 ```
 
 A significant chi-squared *p*-value next to a lambda of exactly .00 is
@@ -380,8 +380,8 @@ table_categorical(
 `smoking` keeps its automatic Cramer’s V (.14) while `self_rated_health`
 switches from the automatic Tau-b (.20) to Gamma (.31) – Gamma is larger
 on the same table because it ignores tied pairs. Since the two measures
-differ, the header collapses to `"Effect size"` and the `Note.` line
-documents the per-row choice.
+differ, the header collapses to `"Effect size"` and the note documents
+the per-row choice.
 
 Add confidence intervals with `assoc_ci = TRUE`. In the rendered formats
 (`gt`, `tinytable`, `flextable`, `word`) the CI is shown inline after
@@ -453,7 +453,7 @@ table_categorical(
 #>    No              │     
 #>    Yes             │     
 #> 
-#> Group comparison: Pearson chi-squared test (physical_activity); Fisher exact test (smoking).
+#> Note. Group comparison: Pearson chi-squared test (physical_activity); Fisher exact test (smoking).
 ```
 
 `test = "chisq"` tests every variable by the chi-squared, as before
@@ -661,7 +661,7 @@ table_categorical(
 #>    No              │  54.6                      
 #>    Yes             │  45.4                      
 #> 
-#> Group comparison: Pearson chi-squared test.
+#> Note. Group comparison: Pearson chi-squared test.
 ```
 
 ## Handling missing values
@@ -709,7 +709,7 @@ table_categorical(
 #>    Upper middle │                        
 #>    High         │                        
 #> 
-#> Missing values removed: income_group (18).
+#> Note. Missing values removed: income_group (18).
 #> Group comparison: Pearson chi-squared test.
 ```
 
@@ -756,7 +756,7 @@ table_categorical(
 #>    Low        │                        
 #>    High       │                        
 #> 
-#> Group comparison: Pearson chi-squared test.
+#> Note. Group comparison: Pearson chi-squared test.
 ```
 
 `levels_keep` filters the display only: counts, percentages, the
@@ -807,7 +807,7 @@ table_categorical(
 #>    Yes       │                    
 #>    (Missing) │                    
 #> 
-#> Group comparison: Pearson chi-squared test.
+#> Note. Group comparison: Pearson chi-squared test.
 ```
 
 `p_digits` drives both the displayed precision of the `p` column and the
@@ -872,7 +872,7 @@ table_categorical(
 #>    No              │     
 #>    Yes             │     
 #> 
-#> Group comparison: Pearson chi-squared test.
+#> Note. Group comparison: Pearson chi-squared test.
 ```
 
 ## Tidying for downstream pipelines
@@ -955,7 +955,7 @@ pkgdown_dark_gt(
 
 [TABLE]
 
-Group comparison: Pearson chi-squared test.
+*Note.* Group comparison: Pearson chi-squared test.
 
 The `"tinytable"` format applies the same layout conventions through the
 lightweight tinytable engine (here a two-group table by sex):
@@ -980,9 +980,9 @@ table_categorical(
 | physical_activity |     |      |     |      |     |      | .832 | .01 |
 |     No | 334 | 53.9 | 316 | 54.5 | 650 | 54.2 |      |     |
 |     Yes | 286 | 46.1 | 264 | 45.5 | 550 | 45.8 |      |     |
-| Group comparison: Pearson chi-squared test. |  |  |  |  |  |  |  |  |
+| *Note.* Group comparison: Pearson chi-squared test. |  |  |  |  |  |  |  |  |
 
-Categorical table by sex {#tinytable_rzs6r89jajtb6du4lqd6 .table
+Categorical table by sex {#tinytable_r3e0l9f95c9gmtclpo5t .table
 .tinytable style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 
@@ -1004,7 +1004,7 @@ pkgdown_dark_gt(
 
 [TABLE]
 
-Group comparison: Pearson chi-squared test.
+*Note.* Group comparison: Pearson chi-squared test.
 
 For Excel export, provide a file path:
 

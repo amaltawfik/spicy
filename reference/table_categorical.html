@@ -349,9 +349,8 @@ positional (<code>c("phi", "tau_b", "auto")</code>, paired up with
 </ul><p>When a single measure is used for every row, the column header is
 that measure's name (e.g. <code>"Cramer's V"</code>). When multiple measures
 are used (typically with <code>"auto"</code> on a heterogeneous <code>select</code>),
-the header collapses to <code>"Effect size"</code> and an APA-style
-<code>Note.</code> line is appended documenting which measure was used for
-which variable.</p>
+the header collapses to <code>"Effect size"</code> and the table note names
+the measure used for each variable.</p>
 <p><code>phi</code> requires a 2x2 table; if explicitly requested for a
 non-2x2 variable, an error is raised so the user can choose
 another measure or fall back to <code>"auto"</code>.</p></dd>
@@ -821,7 +820,7 @@ one-way frequency tables.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    No              <span style="color: #9E9E9E;">│</span>     </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    Yes             <span style="color: #9E9E9E;">│</span>     </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Group comparison: Pearson chi-squared test.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Group comparison: Pearson chi-squared test.</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># One-way frequency-style table (no `by`).</span></span></span>
 <span class="r-in"><span><span class="fu">table_categorical</span><span class="op">(</span></span></span>
@@ -891,7 +890,7 @@ one-way frequency tables.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    No              <span style="color: #9E9E9E;">│</span>     </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    Yes             <span style="color: #9E9E9E;">│</span>     </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Group comparison: Pearson chi-squared test (physical_activity); Fisher exact test (smoking).</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Group comparison: Pearson chi-squared test (physical_activity); Fisher exact test (smoking).</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Pretty labels keyed by column name.</span></span></span>
 <span class="r-in"><span><span class="fu">table_categorical</span><span class="op">(</span></span></span>
@@ -938,7 +937,7 @@ one-way frequency tables.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    No              <span style="color: #9E9E9E;">│</span>  54.2                      </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    Yes             <span style="color: #9E9E9E;">│</span>  45.8                      </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Group comparison: Pearson chi-squared test.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Group comparison: Pearson chi-squared test.</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Survey weights with rescaling.</span></span></span>
 <span class="r-in"><span><span class="fu">table_categorical</span><span class="op">(</span></span></span>
@@ -983,7 +982,7 @@ one-way frequency tables.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    No              <span style="color: #9E9E9E;">│</span>  54.6                      </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    Yes             <span style="color: #9E9E9E;">│</span>  45.4                      </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Group comparison: Pearson chi-squared test.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Group comparison: Pearson chi-squared test.</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Confidence interval for the association measure.</span></span></span>
 <span class="r-in"><span><span class="fu">table_categorical</span><span class="op">(</span></span></span>
@@ -1015,15 +1014,15 @@ one-way frequency tables.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    Yes       <span style="color: #9E9E9E;">│</span>                                       </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    (Missing) <span style="color: #9E9E9E;">│</span>                                       </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Group comparison: Pearson chi-squared test.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Group comparison: Pearson chi-squared test.</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># --- Per-variable association measure ----------------------------------</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Default (`assoc_measure = "auto"`): one measure per row variable based on</span></span></span>
 <span class="r-in"><span><span class="co"># the variable type (2x2 -&gt; Phi, both ordered factors -&gt; Kendall's Tau-b,</span></span></span>
 <span class="r-in"><span><span class="co"># otherwise Cramer's V). When the chosen measures differ across rows, the</span></span></span>
-<span class="r-in"><span><span class="co"># column header collapses to `"Effect size"` and an APA-style `Note.` line</span></span></span>
-<span class="r-in"><span><span class="co"># documents which measure was used for which variable.</span></span></span>
+<span class="r-in"><span><span class="co"># column header collapses to `"Effect size"` and the note names the</span></span></span>
+<span class="r-in"><span><span class="co"># measure used for each variable.</span></span></span>
 <span class="r-in"><span><span class="fu">table_categorical</span><span class="op">(</span></span></span>
 <span class="r-in"><span>  <span class="va">sochealth</span>,</span></span>
 <span class="r-in"><span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">smoking</span>, <span class="va">education</span><span class="op">)</span>,</span></span>
@@ -1090,7 +1089,7 @@ one-way frequency tables.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    Upper secondary <span style="color: #9E9E9E;">│</span>            </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    Tertiary        <span style="color: #9E9E9E;">│</span>            </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Group comparison: Pearson chi-squared test.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Group comparison: Pearson chi-squared test.</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Per-variable override (recommended named form).</span></span></span>
 <span class="r-in"><span><span class="fu">table_categorical</span><span class="op">(</span></span></span>

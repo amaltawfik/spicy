@@ -48,6 +48,19 @@ PDF.
   ignored instead of refused. In the notes, a list of variables is
   joined with semicolons when one of the labels contains a comma.
 
+- [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
+  [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md),
+  and their survey twins open their notes with “Note.”, as
+  [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  does, in italics in the rendered tables. The `missing_note` attribute
+  of
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
+  and the `note` attribute of the survey twins start with it too.
+  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
+  printed “Note.” in the middle of the note when `drop_na = TRUE`
+  removed values.
+
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   and
   [`table_regression_uv()`](https://amaltawfik.github.io/spicy/reference/table_regression_uv.md)
@@ -115,15 +128,16 @@ PDF.
 - [`table_multiresponse()`](https://amaltawfik.github.io/spicy/reference/table_multiresponse.md)
   tabulates a “check all that apply” question: one row per item with the
   count and the percentage of respondents who chose it (or of responses,
-  or both), and a row with the number of respondents. The note counts
-  the respondents left out of the base and those in it who chose no
-  item. With `by`, each item gets a chi-squared test, or Fisher’s exact
-  test where an expected count is below 5 (`test`), adjusted by Holm by
-  default (`p_adjust`), and the question a global test that allows for
-  several answers per respondent, Rao-Scott corrected or by bootstrap
-  (`global_test`). `p_value = FALSE` removes the p-values and the global
-  test, and `statistic = TRUE` shows each item’s chi-squared. `glance()`
-  reports the Rao-Scott design-effect summary (`rs_cv`).
+  or both), and a row with the number of respondents. The note gives the
+  base and counts, in it or out of it, the respondents with no data for
+  the question and those with no item chosen. With `by`, each item gets
+  a chi-squared test, or Fisher’s exact test where an expected count is
+  below 5 (`test`), adjusted by Holm by default (`p_adjust`), and the
+  question a global test that allows for several answers per respondent,
+  Rao-Scott corrected or by bootstrap (`global_test`). `p_value = FALSE`
+  removes the p-values and the global test, and `statistic = TRUE` shows
+  each item’s chi-squared. `glance()` reports the Rao-Scott
+  design-effect summary (`rs_cv`).
   [`inline()`](https://amaltawfik.github.io/spicy/reference/inline.md)
   cites its cells, a group selected with `model` and the base row as
   `"nobs"`. The article *Multiple-response questions* on the site walks
