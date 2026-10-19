@@ -25,6 +25,7 @@ listés pour mémoire.
 | sandwich 3.1-3 | courriel au mainteneur : bread.gam() omet la dispersion, sandwich d'un gam déflaté de φ² pour les familles à dispersion libre, patch testé | 2026-10-10 | corrigé en dev le 2026-10-12 (codeberg #1, PR #2) ; vcovCL gaussien passe à HC1 par défaut, oracles à surveiller | [sandwich-bread-gam-dispersion.md](sandwich-bread-gam-dispersion.md) |
 | mgcv 1.9-4 | courriel au mainteneur : residuals(type = "working") de bam() = résidus de déviance, de gam() à lien non canonique = résidu de Newton (y − μ)/(mu.eta·α), $weights = poids de Fisher | 2026-10-10 | envoyé, sans réponse | [mgcv-working-residuals.md](mgcv-working-residuals.md) |
 | gt 1.3.0 | attribut headers= sur le nom brut de colonne | non envoyé | dossier prêt | [gt-headers-attribute-raw-column-name.md](gt-headers-attribute-raw-column-name.md) |
+| contingencytables 3.1.0 | [#62](https://github.com/ocbe-uio/contingencytables/issues/62) Fisher_midP_test_2x2() et Fisher_exact_test_2x2() manquent les égalités de tables (comparaison stricte), correctif de deux lignes testé | 2026-10-20 | ouvert ; quatre autres signalements annoncés | [contingencytables-fisher-ties.md](contingencytables-fisher-ties.md) |
 
 À la fermeture d'un rapport : noter la version corrigée dans l'en-tête du
 dossier et retirer le contournement côté spicy dans le même commit.
