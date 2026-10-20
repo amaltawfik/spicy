@@ -213,6 +213,15 @@ they are looking at.
 the default \code{"logit"} is bounded inside 0 to 100, which the Wald
 interval (\code{"mean"}) is not. The percentage itself always comes from
 \code{survey::svymean()}, so it does not move when \code{ci_method} does.
+
+A percentage of 0 or 100 has no design-based interval: its estimated
+variance is zero. Whatever \code{ci_method}, such a cell gets the exact
+binomial (Clopper-Pearson) interval on the unweighted count of its
+column, with no degrees-of-freedom factor. This is the rule of Korn
+and Graubard (1998, p. 194) for an estimate of 0, which the NCHS data
+presentation standards for proportions apply to its complement as well
+(Parker et al. 2017, pp. 2-3). The note says so when such a cell is
+shown.
 }
 
 \section{The test}{
@@ -302,6 +311,15 @@ table_categorical_svy(
   deff = TRUE
 )
 \dontshow{\}) # examplesIf}
+}
+\references{
+Korn, E. L., & Graubard, B. I. (1998). Confidence intervals for
+proportions with small expected number of positive counts estimated
+from survey data. \emph{Survey Methodology}, 24(2), 193-201.
+
+Parker, J. D., Talih, M., Malec, D. J., et al. (2017). \emph{National Center
+for Health Statistics data presentation standards for proportions}.
+Vital and Health Statistics, Series 2, No. 175.
 }
 \seealso{
 \code{\link[=table_categorical]{table_categorical()}} for the data-frame sibling,

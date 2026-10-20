@@ -73,8 +73,9 @@ test_that("a categorical variable with no observation is refused, not blank", {
   expect_match(conditionMessage(err), "no level to display", fixed = TRUE)
   # With `drop_na = FALSE` the (Missing) level IS the table, and it is
   # 100% by ARITHMETIC: survey cannot say so (`svymean(~f)` aborts on a
-  # one-level factor), and the interval and the design effect of a
-  # degenerate proportion are not estimable, so they stay undefined.
+  # one-level factor). The design effect of a degenerate proportion is
+  # not estimable and stays undefined; its interval is the exact binomial
+  # one of 6 events out of 6, as for any percentage of 100.
   out <- table_categorical_svy(
     des,
     select = g,
@@ -85,7 +86,11 @@ test_that("a categorical variable with no observation is refused, not blank", {
   expect_identical(out$level, c(NA, "(Missing)"))
   expect_equal(out[["%"]][[2L]], 100)
   expect_identical(out$n[[2L]], 6)
-  expect_true(is.na(out[["% CI lower"]][[2L]]))
+  expect_equal(
+    c(out[["% CI lower"]][[2L]], out[["% CI upper"]][[2L]]),
+    c(100 * stats::qbeta(0.025, 6, 1), 100),
+    tolerance = 1e-10
+  )
   expect_true(is.na(out$DEff[[2L]]))
 })
 

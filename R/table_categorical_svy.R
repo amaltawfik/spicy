@@ -85,7 +85,9 @@
     pct = rep(NA_real_, k),
     ll = rep(NA_real_, k),
     ul = rep(NA_real_, k),
-    deff = rep(NA_real_, k)
+    deff = rep(NA_real_, k),
+    # TRUE where the interval is the exact one of a percentage of 0 or 100.
+    exact = rep(FALSE, k)
   )
   x <- as.character(design$variables[[var]])
   w <- .design_weights(design)
@@ -102,20 +104,22 @@
   # A variable with ONE level is 100% by construction, and survey
   # cannot say so: `svymean(~f)` builds a model matrix and aborts with
   # "contrasts can be applied only to factors with 2 or more levels".
-  # The percentage is not estimated here, it is arithmetic; its
-  # interval and its design effect are not estimable at all, and stay
-  # undefined.
-  if (nlevels(design$variables[[var]]) == 1L) {
+  # The percentage is not estimated here, it is arithmetic; its design
+  # effect is not estimable and stays undefined, and its interval is the
+  # exact one of a percentage of 100 (`.cat_svy_exact_ci()`).
+  one_level <- nlevels(design$variables[[var]]) == 1L
+  if (one_level) {
     out$pct[[1L]] <- 1
-    return(out)
   }
   form <- .svy_formula(var)
-  m <- .svy_try(survey::svymean(
-    form,
-    design,
-    na.rm = TRUE,
-    deff = if (isFALSE(deff_mode)) FALSE else deff_mode
-  ))
+  m <- if (!one_level) {
+    .svy_try(survey::svymean(
+      form,
+      design,
+      na.rm = TRUE,
+      deff = if (isFALSE(deff_mode)) FALSE else deff_mode
+    ))
+  }
   if (!is.null(m)) {
     # `svymean()` on a factor names its coefficients "<var><level>";
     # the levels are matched by that construction rather than by
@@ -148,8 +152,18 @@
     # which is why nothing red showed. Cutting here puts the interval on
     # the same rows the percentage describes.
     dom_i <- .design_subset(design, !is.na(design$variables[[var]]))
+    # The unweighted count of the column: the denominator of its
+    # percentages, at least 1 here (an empty column returned above).
+    n_col <- sum(ok & !is.na(x))
     for (i in seq_len(k)) {
       if (is.na(out$pct[[i]])) {
+        next
+      }
+      if (.cat_svy_at_bound(out$pct[[i]])) {
+        ci <- .cat_svy_exact_ci(out$pct[[i]], n_col, ci_level)
+        out$ll[[i]] <- ci[[1L]]
+        out$ul[[i]] <- ci[[2L]]
+        out$exact[[i]] <- TRUE
         next
       }
       ci <- .svy_try(stats::confint(survey::svyciprop(
@@ -177,6 +191,28 @@
     var,
     encodeString(level, quote = "\"")
   ))
+}
+
+# A percentage of 0 or 100 has no design-based interval: its estimated
+# variance is zero, and survey 4.5 has none to give there. "logit"
+# returns a fit that did not converge (a glm.fit warning, an interval
+# printing "[0.0, 0.0]"), "likelihood" fails, "mean" returns [0, 0] and
+# the four others NaN. Whatever `ci_method`, such a cell is not handed
+# to survey: it gets the exact binomial (Clopper-Pearson) interval on the
+# unweighted count of its column, with no degrees-of-freedom factor.
+# Korn and Graubard (1998, p. 194) set the effective sample size to n
+# when the estimate is 0, and the NCHS standards (Parker et al. 2017,
+# pp. 2-3) do the same for its complement.
+.cat_svy_at_bound <- function(p) {
+  tol <- sqrt(.Machine$double.eps)
+  !is.na(p) & (abs(p) < tol | abs(1 - p) < tol)
+}
+
+# `binom.test()` is the Clopper-Pearson interval: [0, qbeta(1 - a/2, 1,
+# n)] for 0 events, [qbeta(a/2, n, 1), 1] for n.
+.cat_svy_exact_ci <- function(p, n, ci_level) {
+  x <- if (p > 0.5) n else 0L
+  as.numeric(stats::binom.test(x, n, conf.level = ci_level)$conf.int)
 }
 
 # The design-based test of association, delegated whole.
@@ -294,6 +330,15 @@
 #' the default `"logit"` is bounded inside 0 to 100, which the Wald
 #' interval (`"mean"`) is not. The percentage itself always comes from
 #' `survey::svymean()`, so it does not move when `ci_method` does.
+#'
+#' A percentage of 0 or 100 has no design-based interval: its estimated
+#' variance is zero. Whatever `ci_method`, such a cell gets the exact
+#' binomial (Clopper-Pearson) interval on the unweighted count of its
+#' column, with no degrees-of-freedom factor. This is the rule of Korn
+#' and Graubard (1998, p. 194) for an estimate of 0, which the NCHS data
+#' presentation standards for proportions apply to its complement as well
+#' (Parker et al. 2017, pp. 2-3). The note says so when such a cell is
+#' shown.
 #'
 #' # The test
 #'
@@ -467,6 +512,15 @@
 #' printed, "Note." included, in `attr(x, "note")`.
 #' [tidy()][tidy.spicy_categorical_svy_table] reports the proportions
 #' between 0 and 1.
+#'
+#' @references
+#' Korn, E. L., & Graubard, B. I. (1998). Confidence intervals for
+#' proportions with small expected number of positive counts estimated
+#' from survey data. *Survey Methodology*, 24(2), 193-201.
+#'
+#' Parker, J. D., Talih, M., Malec, D. J., et al. (2017). *National Center
+#' for Health Statistics data presentation standards for proportions*.
+#' Vital and Health Statistics, Series 2, No. 175.
 #'
 #' @seealso [table_categorical()] for the data-frame sibling,
 #'   [table_continuous_svy()] for continuous variables.
@@ -752,6 +806,8 @@ table_categorical_svy <- function(
   # The tests that returned a p-value: the note names the test only when
   # one ran (a one-level `by` or a constant variable runs none).
   n_test_ran <- 0L
+  # Whether a displayed percentage of 0 or 100 got the exact interval.
+  ci_bound <- FALSE
   for (i in seq_along(select_names)) {
     nm <- select_names[[i]]
     lv <- .svy_by_levels(.tab_factor(vars[[nm]]), drop_na, nm)
@@ -838,6 +894,7 @@ table_categorical_svy <- function(
         proportion_ci,
         degf_dom = dom_df
       )
+      ci_bound <- ci_bound || any(st$exact)
       for (j in seq_along(levels_i)) {
         body[[j]][[.cat_svy_key_n(b)]] <- st$n[[j]]
         body[[j]][[.cat_svy_key_pct(b)]] <- st$pct[[j]] * 100
@@ -904,6 +961,7 @@ table_categorical_svy <- function(
     decimal_mark = decimal_mark,
     proportion_ci = proportion_ci,
     ci_method = ci_method,
+    ci_bound = ci_bound,
     deff = deff,
     p_value = p_value && n_test_ran > 0L,
     chisq_statistic = chisq_statistic,

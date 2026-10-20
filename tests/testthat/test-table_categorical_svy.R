@@ -437,6 +437,163 @@ test_that("every ci_method returns an interval on a variable with NA", {
   )
 })
 
+# "b" is absent from domain y, 150 rows: 0% there, and "a" 100%.
+.svycat_absent <- function() {
+  skip_if_not_installed("survey", "4.5")
+  d <- data.frame(psu = rep(1:30, each = 10))
+  d$w <- rep(c(0.5, 1, 2, 4), length.out = 300)
+  d$h <- factor(ifelse(d$psu <= 15, "x", "y"))
+  d$g <- factor(ifelse(d$h == "x" & seq_len(300) %% 3 == 0, "b", "a"))
+  survey::svydesign(ids = ~psu, weights = ~w, data = d)
+}
+
+# The exact binomial interval of n and of 0 events out of n, in percent:
+# the two lower bounds, then the two upper bounds.
+.svycat_exact <- function(n, level = 0.95) {
+  a <- 1 - level
+  100 * c(stats::qbeta(a / 2, n, 1), 0, 1, stats::qbeta(1 - a / 2, 1, n))
+}
+
+test_that("a percentage of 0 or 100 gets the exact binomial interval", {
+  # survey has none there: "logit" printed [0.0, 0.0] and [100.0, 100.0]
+  # with an unclassed glm.fit warning, "mean" [0, 0], the others NaN.
+  # Whatever `ci_method`, the interval is Clopper-Pearson's on the
+  # unweighted count of the column (150), and survey is not asked.
+  d <- .svycat_absent()
+  dom_x <- subset(d, h == "x")
+  tables <- list()
+  for (m in c(
+    "logit",
+    "likelihood",
+    "asin",
+    "beta",
+    "mean",
+    "xlogit",
+    "wilson"
+  )) {
+    expect_no_warning(
+      tbl <- table_categorical_svy(
+        d,
+        select = g,
+        by = h,
+        proportion_ci = TRUE,
+        ci_method = m
+      )
+    )
+    tables[[m]] <- tbl
+    lv <- tbl$.row_role == "level"
+    expect_equal(tbl[["y %"]][lv], c(100, 0))
+    expect_equal(
+      c(tbl[["y % CI lower"]][lv], tbl[["y % CI upper"]][lv]),
+      .svycat_exact(150),
+      tolerance = 1e-10,
+      info = m
+    )
+    # Said right after the sentence naming the method.
+    expect_match(
+      attr(tbl, "note"),
+      paste(
+        spicy_fmt("note_ci_prop_method", m),
+        spicy_str("note_ci_prop_bound")
+      ),
+      fixed = TRUE
+    )
+    # A cell strictly between 0 and 100 keeps survey's interval.
+    ref <- 100 *
+      as.numeric(stats::confint(survey::svyciprop(
+        ~ I(g == "b"),
+        dom_x,
+        method = m,
+        df = survey::degf(dom_x)
+      )))
+    expect_equal(
+      c(tbl[["x % CI lower"]][lv][[2L]], tbl[["x % CI upper"]][lv][[2L]]),
+      ref,
+      tolerance = 1e-10,
+      info = m
+    )
+  }
+  long <- table_categorical_svy(
+    d,
+    select = g,
+    by = h,
+    proportion_ci = TRUE,
+    output = "long"
+  )
+  y <- long$group == "y"
+  expect_equal(
+    c(long$ci_lower[y], long$ci_upper[y]),
+    .svycat_exact(150),
+    tolerance = 1e-10
+  )
+  # The coverage is `ci_level`'s.
+  t90 <- table_categorical_svy(
+    d,
+    select = g,
+    by = h,
+    proportion_ci = TRUE,
+    ci_level = 0.90
+  )
+  lv <- t90$.row_role == "level"
+  expect_equal(
+    c(t90[["y % CI lower"]][lv], t90[["y % CI upper"]][lv]),
+    .svycat_exact(150, 0.90),
+    tolerance = 1e-10
+  )
+  # Only when such a cell is shown: the one-way table has none.
+  one_way <- table_categorical_svy(d, select = g, proportion_ci = TRUE)
+  expect_false(grepl(
+    spicy_str("note_ci_prop_bound"),
+    attr(one_way, "note"),
+    fixed = TRUE
+  ))
+  withr::local_options(spicy.language = "fr")
+  fr <- attr(
+    table_categorical_svy(d, select = g, by = h, proportion_ci = TRUE),
+    "note"
+  )
+  expect_match(
+    fr,
+    paste(
+      spicy_fmt("note_ci_prop_method", "logit"),
+      spicy_str("note_ci_prop_bound")
+    ),
+    fixed = TRUE
+  )
+  expect_match(fr, "Pourcentages de 0 ou 100", fixed = TRUE)
+  expect_match(fr, "binomial exact sur l'effectif non pond", fixed = TRUE)
+  skip_if_not_installed("broom")
+  for (m in names(tables)) {
+    td <- broom::tidy(tables[[m]])
+    y <- td$group == "y"
+    expect_equal(
+      c(td$conf.low[y], td$conf.high[y]),
+      .svycat_exact(150) / 100,
+      tolerance = 1e-10,
+      info = m
+    )
+  }
+})
+
+test_that("the exact interval at 0 and 100 has the published values", {
+  # The research case: group y holds 100 rows, every one "a". Korn and
+  # Graubard (1998, p. 194): [0, 0.03621669] at 0, and its complement at
+  # 1 (NCHS, Parker et al. 2017, pp. 2-3).
+  skip_if_not_installed("survey", "4.5")
+  d <- data.frame(
+    w = withr::with_seed(2, stats::runif(200, 0.5, 2)),
+    psu = rep(1:20, each = 10),
+    g = factor(rep(c("b", "a"), c(6, 194)), levels = c("a", "b", "c")),
+    h = factor(rep(c("x", "y"), each = 100))
+  )
+  des <- survey::svydesign(ids = ~psu, weights = ~w, data = d)
+  out <- table_categorical_svy(des, select = g, by = h, proportion_ci = TRUE)
+  lv <- out$.row_role == "level"
+  expect_identical(out$level[lv], c("a", "b"))
+  expect_equal(out[["y % CI lower"]][lv], c(96.37833, 0), tolerance = 1e-6)
+  expect_equal(out[["y % CI upper"]][lv], c(100, 3.621669), tolerance = 1e-6)
+})
+
 test_that("the p tests the rows the percentages describe", {
   # `svychisq()` has no `na.rm` either. On the full design the
   # statistic is right and the reference distribution is not: the

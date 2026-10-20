@@ -421,6 +421,7 @@
   test_design_adj_wald = "test de Wald ajust\u00E9 des proportions des cellules, fond\u00E9 sur le plan de sondage",
   test_design_saddlepoint = "khi-deux (approximation du point de selle) fond\u00E9 sur le plan de sondage",
   note_ci_prop_method = "IC des pourcentages\u00A0: %s (survey::svyciprop).",
+  note_ci_prop_bound = "Pourcentages de 0 ou 100\u00A0: intervalle binomial exact sur l'effectif non pond\u00E9r\u00E9.",
   note_gloss_pct_svy = "%s = pourcentage estim\u00E9 au sein de la colonne (survey::svymean).",
   note_gloss_n_svy = "%s = effectif observ\u00E9 (non pond\u00E9r\u00E9).",
 

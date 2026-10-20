@@ -446,6 +446,10 @@ p-values, and notes.
   ran, which a one-level `by` or a constant variable prevents.
   `table_outcome()` no longer names a test that failed.
 
+* `table_categorical_svy()` no longer prints a zero-width interval around
+  a percentage of 0 or 100: such a cell gets the exact binomial interval
+  on its unweighted count, whatever `ci_method`, and the note says so.
+
 * `table_continuous_svy()` leaves the comparison of a variable with no
   variance blank, with a `spicy_undefined_stat` warning, as
   `table_continuous()` does. It printed the p-value survey returns there.

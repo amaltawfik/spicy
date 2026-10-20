@@ -455,7 +455,8 @@
   p_value,
   chisq_statistic,
   n_negative_weights = 0L,
-  test_refused = "none"
+  test_refused = "none",
+  ci_bound = FALSE
 ) {
   parts <- c(
     .svy_missing_note(na_dropped, "note_missing_removed"),
@@ -513,6 +514,10 @@
   )
   if (isTRUE(proportion_ci)) {
     parts <- c(parts, spicy_fmt("note_ci_prop_method", ci_method))
+    # Only when a percentage of 0 or 100 got the exact interval.
+    if (isTRUE(ci_bound)) {
+      parts <- c(parts, spicy_str("note_ci_prop_bound"))
+    }
   }
   if (identical(deff, "replace")) {
     parts <- c(parts, spicy_str("note_deff_replace"))

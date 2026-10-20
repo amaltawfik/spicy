@@ -972,6 +972,8 @@
   # One hole: the method name, a survey identifier ("logit",
   # "wilson", ...), never translated.
   note_ci_prop_method = "Percentage CIs: %s (survey::svyciprop).",
+  # Said after the sentence above, only when such a cell is shown.
+  note_ci_prop_bound = "Percentages of 0 or 100: exact binomial interval on the unweighted count.",
   # The two glosses a design categorical table owes its reader: the
   # percentage is an ESTIMATE and the count is not.
   note_gloss_pct_svy = "%s = estimated percentage within the column (survey::svymean).",
