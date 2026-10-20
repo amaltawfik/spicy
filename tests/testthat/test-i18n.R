@@ -102,6 +102,53 @@ test_that("each engine's note markup follows the prefix, or its absence", {
   expect_identical(.note_markdown("Linear regression."), "Linear regression.")
 })
 
+test_that("each lead-in of the note has its two keys, in each language", {
+  # `spicy_style(note_label = )` picks one pair of keys: what a note
+  # builder prepends, and the part the rich engines set in italics, which
+  # must open it. French spells Chicago's colon with a no-break space.
+  for (lang in c("en", "fr")) {
+    lab <- spicy_labels(lang)
+    for (k in c("note_prefix", "note_prefix_colon")) {
+      expect_true(
+        startsWith(lab[[k]], lab[[paste0(k, "_emphasis")]]),
+        info = paste(lang, k)
+      )
+    }
+  }
+  expect_identical(spicy_labels("en")[["note_prefix_colon"]], "Note: ")
+  expect_identical(spicy_labels("fr")[["note_prefix_colon"]], "Note\u00a0: ")
+  expect_identical(spicy_labels("fr")[["note_prefix"]], "Note. ")
+})
+
+test_that("the lead-in in force follows note_label, as the language spells it", {
+  under <- function(label) {
+    .style_push(list(note_label = label))
+    on.exit(.style_pop())
+    c(.note_prefix_text(), .note_lead(), .note_with_prefix("Body."))
+  }
+  expect_identical(under("Note."), c("Note. ", "Note.", "Note. Body."))
+  expect_identical(under("Note:"), c("Note: ", "Note:", "Note: Body."))
+  expect_identical(under(""), c("", "", "Body."))
+  # No style: the APA default, read from the registry's own keys.
+  expect_identical(.note_lead(), spicy_str("note_prefix_emphasis"))
+  expect_identical(
+    .note_with_prefix("Body."),
+    paste0(spicy_str("note_prefix"), "Body.")
+  )
+  withr::local_options(spicy.language = "fr")
+  expect_identical(under("Note:")[[3L]], "Note\u00a0: Body.")
+  # The recognizer reads the lead-in it is handed, not the registry.
+  expect_identical(
+    .note_prefix_split("Note: Body.", lead = "Note:"),
+    list(marker = "Note:", rest = " Body.")
+  )
+  expect_null(.note_prefix_split("Note: Body.", lead = ""))
+  expect_identical(
+    .note_markdown("Note\u00a0: a", lead = "Note\u00a0:"),
+    "*Note\u00a0:* a"
+  )
+})
+
 test_that("every frozen categorical key equals its English display label", {
   # The column NAME and the header are two layers that hold the same
   # string in English and are free to diverge at stage 2. Nothing else

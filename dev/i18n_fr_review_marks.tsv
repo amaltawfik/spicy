@@ -473,3 +473,5 @@ note_list_and_last	reviewed	2026-10-19	 et
 row_multiresponse_none	reviewed	2026-10-19	(Aucun item coché)	
 row_multiresponse_nodata	reviewed	2026-10-19	(Sans donnée pour la question)	
 note_outcome_overall_relabeled	reviewed	2026-10-20	%s = l'échantillon d'analyse complet.	
+note_prefix_colon	reviewed	2026-10-20	Note<NBSP>: 	
+note_prefix_colon_emphasis	reviewed	2026-10-20	Note<NBSP>:	

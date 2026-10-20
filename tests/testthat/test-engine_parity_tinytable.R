@@ -24,6 +24,13 @@
 .pt_latex <- function(tt) tinytable::save_tt(tt, output = "latex")
 .pt_html <- function(tt) tinytable::save_tt(tt, output = "html")
 .pt_typst <- function(tt) tinytable::save_tt(tt, output = "typst")
+# The markdown grid as a document gets it, while knitr runs.
+.pt_markdown <- function(tt) {
+  withr::with_options(
+    list(knitr.in.progress = TRUE),
+    tinytable::save_tt(tt, output = "markdown")
+  )
+}
 
 # Body rows of the rendered LaTeX table (header rows included, in the
 # order tabularray counts them for `hline{i}`). Read below the inner
@@ -457,7 +464,7 @@ test_that("the note prefix is in italics in Typst, LaTeX and markdown", {
         info = info
       )
       expect_match(
-        tinytable::save_tt(tt, output = "markdown"),
+        .pt_markdown(tt),
         paste0("| *", p, "* "),
         fixed = TRUE,
         info = info
@@ -474,15 +481,38 @@ test_that("the note prefix is in italics in Typst, LaTeX and markdown", {
 
 test_that("the markdown note is one paragraph, inside its grid", {
   skip_if_not_installed("tinytable")
-  md <- tinytable::save_tt(.pt_multiline_note("tinytable"), output = "markdown")
-  grid <- strsplit(md, "\n", fixed = TRUE)[[1L]]
-  grid <- grid[nzchar(grid) & !startsWith(grid, "Table:")]
-  # Every line opens and closes on the border, the note's lines too: a
-  # newline written into the grid broke it, and pandoc dropped the note
-  # from a Word document.
-  expect_true(all(grepl("^[|+].*[|+]$", trimws(grid, "right"))))
-  expect_length(unique(nchar(trimws(grid, "right"))), 1L)
-  expect_match(md, "| *Note.* OLS: linear regression;", fixed = TRUE)
+  tt <- .pt_multiline_note("tinytable")
+  for (md in list(
+    .pt_markdown(tt),
+    tinytable::save_tt(tt, output = "markdown")
+  )) {
+    grid <- strsplit(md, "\n", fixed = TRUE)[[1L]]
+    grid <- grid[nzchar(grid) & !startsWith(grid, "Table:")]
+    # Every line opens and closes on the border, the note's lines too: a
+    # newline written into the grid broke it, and pandoc dropped the note
+    # from a Word document.
+    expect_true(all(grepl("^[|+].*[|+]$", trimws(grid, "right"))))
+    expect_length(unique(nchar(trimws(grid, "right"))), 1L)
+  }
+  expect_match(
+    .pt_markdown(tt),
+    "| *Note.* OLS: linear regression;",
+    fixed = TRUE
+  )
+})
+
+test_that("a tinytable printed in a terminal keeps its note plain", {
+  # The markdown grid is the console print of a tinytable as well as the
+  # table of a Word document: the emphasis is markup for pandoc, and a
+  # terminal printed it as two stars.
+  skip_if_not_installed("tinytable")
+  fit <- stats::lm(wellbeing_score ~ age, data = .pt_data())
+  tt <- table_regression(fit, output = "tinytable")
+  withr::local_options(knitr.in.progress = NULL)
+  md <- tinytable::save_tt(tt, output = "markdown")
+  expect_match(md, "| Note. Linear regression.", fixed = TRUE)
+  expect_no_match(md, "*", fixed = TRUE)
+  expect_match(.pt_markdown(tt), "| *Note.* Linear regression.", fixed = TRUE)
 })
 
 test_that("a note that does not open with the prefix is left as typed", {
@@ -499,11 +529,7 @@ test_that("a note that does not open with the prefix is left as typed", {
     "note{}={\\small Source: a survey.}",
     fixed = TRUE
   )
-  expect_match(
-    tinytable::save_tt(tt, output = "markdown"),
-    "| Source: a survey.",
-    fixed = TRUE
-  )
+  expect_match(.pt_markdown(tt), "| Source: a survey.", fixed = TRUE)
   expect_no_match(.pt_typst(tt), "#emph[", fixed = TRUE)
   expect_no_match(.pt_latex(tt), "\\emph{", fixed = TRUE)
   expect_no_match(.pt_html(tt), "<em>", fixed = TRUE)
@@ -538,6 +564,134 @@ test_that("the LaTeX note is escaped like the cells around it", {
       "\\textasciicircum{}4 \\{5\\} \\textbackslash{}6}"
     ),
     fixed = TRUE
+  )
+})
+
+test_that("the Typst note is escaped like the cells around it", {
+  skip_if_not_installed("tinytable")
+  fit <- stats::lm(wellbeing_score ~ age + sex, data = .pt_data())
+  # The significance legend: read as markup, its stars turned to bold and
+  # vanished, and Typst warned of a strong emphasis with no text.
+  typ <- .pt_typst(table_regression(fit, stars = TRUE, output = "tinytable"))
+  expect_match(
+    typ,
+    "\\*\\*\\* p \\< .001, \\*\\* p \\< .01, \\* p \\< .05.",
+    fixed = TRUE
+  )
+  # A URL, whose `//` opened a Typst comment and broke the compilation,
+  # and every other character of tinytable's Typst set, in one note.
+  tt <- table_regression(
+    fit,
+    note = "Note. See https://x.org/a_b #1 $2 <x> @y [z] `c` ~d \"e\" f-g h=i j+k \\l",
+    output = "tinytable"
+  )
+  expect_match(
+    .pt_typst(tt),
+    paste0(
+      "[#emph[Note.] See https:\\/\\/x.org\\/a\\_b \\#1 \\$2 \\<x\\> \\@y ",
+      "\\[z\\] \\`c\\` \\~d \\\"e\\\" f\\-g h\\=i j\\+k \\\\l])"
+    ),
+    fixed = TRUE
+  )
+})
+
+test_that("Typst sizes the columns with the inset the table is set with", {
+  # tinytable measured each column with Typst's default 5pt inset, the
+  # table took the document's: Quarto sets 6pt, so every column came out
+  # 2pt short and its widest cell wrapped ("Fe-male"). And Quarto
+  # justifies paragraphs, which hyphenates them: the table is set ragged
+  # right, so a cell wraps between words, never inside one.
+  skip_if_not_installed("tinytable")
+  typ <- .pt_typst(table_continuous(
+    .pt_data(),
+    c(bmi, life_sat_health),
+    by = sex,
+    output = "tinytable"
+  ))
+  expect_match(
+    typ,
+    "measure(grid(columns: 1, inset: table.inset, ..col))",
+    fixed = TRUE
+  )
+  expect_no_match(typ, "inset: 5pt", fixed = TRUE)
+  expect_match(
+    typ,
+    "// start block\n  #set par(justify: false)\n",
+    fixed = TRUE
+  )
+  # Substitutions on tinytable's template: a string without its lines
+  # comes back as it went in.
+  expect_identical(spicy:::.spicy_tt_typst_layout("#table()"), "#table()")
+})
+
+test_that("Typst widens the columns under a group label wider than them", {
+  # The natural widths tinytable measures read each column's cells and
+  # name, not the group labels above them: three `by` levels over narrow
+  # n and % columns ran into each other ("EmployeursParticipants").
+  skip_if_not_installed("tinytable")
+  d <- .pt_data()[1:90, ]
+  roles <- c("Employeurs", "Participants", "Etudiants")
+  d$role <- factor(roles[as.integer(d$education)], levels = roles)
+  typ <- .pt_typst(table_categorical(d, sex, by = role, output = "tinytable"))
+  expect_match(
+    typ,
+    paste0(
+      "for (spicy_from, spicy_to, spicy_label) in ((0, 0, [Variable]), ",
+      "(1, 2, [Employeurs]), (3, 4, [Participants]), (5, 6, [Etudiants]), ",
+      "(7, 8, [Total]), (9, 9, [p]), (10, 10, [Cramer's V]),) {"
+    ),
+    fixed = TRUE
+  )
+  # Measured before the total width is taken from the columns.
+  expect_lt(
+    as.integer(regexpr("spicy_label) in", typ, fixed = TRUE)),
+    as.integer(regexpr("let tinytable-total", typ, fixed = TRUE))
+  )
+  # No note, no measure: tinytable gives Typst `auto` columns, which
+  # Typst widens for a spanning cell itself.
+  bare <- .pt_typst(table_categorical(
+    d,
+    sex,
+    by = role,
+    p_value = FALSE,
+    assoc_measure = "none",
+    output = "tinytable"
+  ))
+  expect_match(bare, "columns: (auto,", fixed = TRUE)
+  expect_no_match(bare, "spicy_label", fixed = TRUE)
+  expect_identical(spicy:::.spicy_tt_typst_spans("x", NULL), "x")
+})
+
+test_that("a LaTeX table wider than the text block is scaled down to it", {
+  skip_if_not_installed("tinytable")
+  tt <- table_categorical(
+    .pt_data(),
+    c(sex, smoking),
+    by = educ,
+    output = "tinytable"
+  )
+  tex <- .pt_latex(tt)
+  # Scaled to the line width only when wider: a narrow table keeps its
+  # size. The note of a talltblr is inside the box, so it follows.
+  expect_match(
+    tex,
+    paste0(
+      "\\resizebox{\\ifdim\\width>\\linewidth\\linewidth\\else\\width\\fi}",
+      "{!}{%\n\\begin{talltblr}"
+    ),
+    fixed = TRUE
+  )
+  expect_match(tex, "\\end{talltblr}%\n}", fixed = TRUE)
+  # A table sent across pages is not one box: the conversion to a
+  # longtblr, asked for after spicy built the table, is left unscaled.
+  tex <- .pt_latex(tinytable::theme_latex(tt, multipage = TRUE))
+  expect_match(tex, "\\begin{longtblr}", fixed = TRUE)
+  expect_no_match(tex, "\\resizebox", fixed = TRUE)
+  # A resize the user asked for is left as it is, not doubled.
+  tex <- .pt_latex(tinytable::theme_latex(tt, resize_direction = "both"))
+  expect_identical(
+    lengths(regmatches(tex, gregexpr("\\resizebox", tex, fixed = TRUE))),
+    1L
   )
 })
 
@@ -649,18 +803,26 @@ test_that("factor levels are indented once, by the engine", {
   } else {
     sprintf("library(spicy, lib.loc = '%s')", dirname(pkg))
   }
+  # The lead-in each table opens its note with: the APA default, none
+  # (`jama`), Chicago's. The fifth table is wider than the text block;
+  # in the eighth, three group labels are wider than the two narrow
+  # columns under each of them.
   calls <- c(
-    "table_multiresponse(d, select = c(info_doctor, info_pharmacist, info_internet), by = sex, output = 'tinytable')",
-    "table_continuous(d, c(bmi, life_sat_health), by = sex, output = 'tinytable')",
-    "table_regression(fit, output = 'tinytable')",
-    "withr::with_options(list(spicy.language = 'fr'), table_regression(fit, output = 'tinytable'))"
+    "Note." = "table_multiresponse(d, select = c(info_doctor, info_pharmacist, info_internet), by = sex, output = 'tinytable')",
+    "Note." = "table_continuous(d, c(bmi, life_sat_health), by = sex, output = 'tinytable')",
+    "Note." = "table_regression(fit, stars = TRUE, output = 'tinytable')",
+    "Note." = "withr::with_options(list(spicy.language = 'fr'), table_regression(fit, output = 'tinytable'))",
+    "Note." = "table_categorical(d, c(sex, smoking, income_group), by = education, output = 'tinytable')",
+    " " = "table_regression(fit, style = 'jama', output = 'tinytable')",
+    "Note:" = "table_regression(fit, style = spicy_style(note_label = 'Note:'), output = 'tinytable')",
+    "Note." = "table_categorical(small, c(sex, smoking), by = role, output = 'tinytable')"
   )
   chunk <- function(...) c("```{r}", ..., "```", "")
   qmd <- c(
     "---",
     "format:",
     if (identical(format, "pdf")) {
-      c("  pdf:", "    latex-auto-install: false")
+      c("  pdf:", "    latex-auto-install: false", "    latex-clean: false")
     } else {
       "  typst: default"
     },
@@ -673,6 +835,9 @@ test_that("factor levels are indented once, by the engine", {
       load,
       "d <- as.data.frame(sochealth)",
       "fit <- stats::lm(wellbeing_score ~ age + sex, data = d)",
+      "small <- d[1:90, ]",
+      "roles <- c('Employeurs', 'Participants', 'Etudiants')",
+      "small$role <- factor(roles[as.integer(small$education)], levels = roles)",
       sprintf(
         "saveRDS(lapply(list(%s), function(x) unlist(x@notes)), 'notes.rds')",
         paste(calls, collapse = ", ")
@@ -685,16 +850,35 @@ test_that("factor levels are indented once, by the engine", {
   withr::with_dir(dir, quarto::quarto_render("notes.qmd", quiet = TRUE))
   pdf <- file.path(dir, "notes.pdf")
   expect_true(file.exists(pdf))
-  list(pdf = pdf, notes = readRDS(file.path(dir, "notes.rds")))
+  list(
+    pdf = pdf,
+    notes = readRDS(file.path(dir, "notes.rds")),
+    leads = trimws(names(calls)),
+    log = file.path(dir, "notes.log")
+  )
 }
 
-# Every "Note." of the PDF is set in an italic font, one per table, and
-# every note is there in full.
+# Every lead-in of the PDF is set in an italic font, one per table that
+# has one, and every note is there in full, with no word broken in the
+# middle and no line running past the text block.
 .pt_expect_compiled_notes <- function(out) {
   words <- do.call(rbind, pdftools::pdf_data(out$pdf, font_info = TRUE))
-  prefix <- words[words$text == "Note.", ]
-  expect_identical(nrow(prefix), length(out$notes))
-  expect_true(all(grepl("Italic|Oblique", prefix$font_name)))
+  for (lead in c("Note.", "Note:")) {
+    prefix <- words[words$text == lead, ]
+    expect_identical(nrow(prefix), sum(out$leads == lead), info = lead)
+    expect_true(all(grepl("Italic|Oblique", prefix$font_name)), info = lead)
+  }
+  # Typst marks the break of a hyphenated word with a soft hyphen.
+  expect_false(any(endsWith(words$text, intToUtf8(0x00AD))))
+  # Group labels wider than their columns: they ran into each other
+  # ("EmployeursParticipants") until the columns made room for them.
+  expect_true(all(c("Employeurs", "Participants", "Etudiants") %in% words$text))
+  if (file.exists(out$log)) {
+    log <- readLines(out$log, warn = FALSE)
+    over <- regmatches(log, regexpr("Overfull \\\\hbox \\([0-9.]+pt", log))
+    over <- as.numeric(sub("^.*\\(([0-9.]+)pt$", "\\1", over))
+    expect_true(all(over < 1), info = paste(over, collapse = ", "))
+  }
   # Text compared with every kind of space, hyphen and quote folded, the
   # ligatures unbound, and the math-italic chi of LaTeX, with its
   # superscript set as a plain 2, read as the letter it stands for.

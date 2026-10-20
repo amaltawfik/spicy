@@ -214,3 +214,70 @@ test_that("latex target: spicy_gt writes a LaTeX every engine compiles", {
   # gt's LaTeX packages still travel with the table.
   expect_true(length(attr(out, "knit_meta")) > 0L)
 })
+
+test_that("latex target: spicy_gt titles at the table's size, apostrophes curl", {
+  skip_if_not_installed("gt")
+  gtb <- table_regression(
+    .fit_qw(),
+    note = "Note. The model's fit.",
+    output = "gt"
+  )
+  s <- paste(
+    as.character(.with_pandoc_to("latex", knitr::knit_print(gtb))),
+    collapse = ""
+  )
+  # gt read the 100% of the HTML title against 16pt and set the title at
+  # 16pt (20pt in the descriptive tables), over a table set at 12pt.
+  expect_match(s, "\\caption*{\n{\\fontsize{12}{15}\\selectfont", fixed = TRUE)
+  # The note goes through markdown, whose escaped apostrophe gt set as
+  # the straight `\textquotesingle{}`; LaTeX's own `'` is typographic.
+  expect_match(s, "The model's fit.", fixed = TRUE)
+  expect_no_match(s, "textquotesingle", fixed = TRUE)
+})
+
+test_that("latex target: spicy_gt matches its HTML header and fits the line", {
+  skip_if_not_installed("gt")
+  skip_if_not_installed("rmarkdown")
+  gtb <- table_regression(.fit_qw(), output = "gt")
+  out <- .with_pandoc_to("latex", knitr::knit_print(gtb))
+  s <- paste(as.character(out), collapse = "")
+  # The rules under the one-column label spanners (Variable, B, SE, p),
+  # which HTML hides, are gone; the one under "95% CI" stays.
+  expect_no_match(s, "\\\\cmidrule\\(lr\\)\\{([0-9]+)-\\1\\}")
+  expect_match(s, "\\cmidrule(lr){4-5}", fixed = TRUE)
+  # The title flush left, as in HTML, through the caption package gt
+  # loads itself.
+  expect_match(
+    s,
+    "\\captionsetup{justification=raggedright,singlelinecheck=false}",
+    fixed = TRUE
+  )
+  pkgs <- vapply(attr(out, "knit_meta"), function(m) m$name, character(1))
+  expect_true(all(c("caption", "graphicx") %in% pkgs))
+  # Measured at its natural width, scaled down to the line only when
+  # wider, set as gt wrote it otherwise.
+  expect_match(s, "\\setbox0\\hbox{\\begin{tabular}{@{}lccccc}", fixed = TRUE)
+  expect_match(
+    s,
+    "\\ifdim\\wd0>\\linewidth\\noindent\\resizebox{\\linewidth}{!}{\\box0}",
+    fixed = TRUE
+  )
+  expect_match(
+    s,
+    "\\begin{tabular*}{\\linewidth}{@{\\extracolsep{\\fill}}lccccc}",
+    fixed = TRUE
+  )
+  # A model spanner keeps its rule even over one column: the rows above
+  # the lowest spanner row are left as gt wrote them.
+  two <- table_regression(
+    list(A = .fit_qw(), B = .fit_qw()),
+    show_columns = "b",
+    output = "gt"
+  )
+  s2 <- paste(
+    as.character(.with_pandoc_to("latex", knitr::knit_print(two))),
+    collapse = ""
+  )
+  expect_match(s2, "\n\\cmidrule(lr){2-2} \\cmidrule(lr){3-3}\n", fixed = TRUE)
+  expect_no_match(s2, "\\cmidrule(lr){1-1}", fixed = TRUE)
+})

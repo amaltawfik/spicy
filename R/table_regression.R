@@ -734,7 +734,8 @@
 #'     long-format tibble.
 #'   \item `"gt"` / `"flextable"` / `"tinytable"` -- rich-format
 #'     HTML / Word / PDF tables (require the corresponding
-#'     Suggests package).
+#'     Suggests package). In a PDF, a `"flextable"` table wider than
+#'     the page can be fitted with `flextable::fit_to_width()`.
 #'   \item `"excel"` -- writes to `excel_path` via
 #'     [openxlsx2::write_xlsx()].
 #'   \item `"word"` -- writes to `word_path` via

@@ -185,7 +185,8 @@ print.spicy_continuous_lm_table <- function(x, ...) {
 #     labeled -- same doctrine as table_regression()'s footers.
 #
 # Returns NULL when there is nothing to disclose; otherwise a single
-# string with "Note. " prefixed to the FIRST line and lines joined by
+# string with the lead-in in force ("Note. " by default, see
+# `.note_lead_keys()`) prefixed to the FIRST line and lines joined by
 # "\n" (the console renderer prints multi-line notes as-is; the rich
 # engines collapse the newlines themselves).
 .tclm_note_text <- function(
@@ -243,7 +244,7 @@ print.spicy_continuous_lm_table <- function(x, ...) {
   if (length(lines) == 0L) {
     return(NULL)
   }
-  lines[1L] <- paste0(spicy_str("note_prefix"), lines[1L])
+  lines[1L] <- paste0(.note_prefix_text(), lines[1L])
   paste(lines, collapse = "\n")
 }
 

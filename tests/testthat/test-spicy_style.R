@@ -82,6 +82,9 @@ test_that("spicy_style() validates every field hard", {
     spicy_style(percent_digits = "one"),
     class = "spicy_invalid_input"
   )
+  for (bad in list("Note", "Notes.", NA_character_, c("Note.", "Note:"), 1)) {
+    expect_error(spicy_style(note_label = bad), class = "spicy_invalid_input")
+  }
 })
 
 test_that("spicy_style() accepts the well-formed values of each lever", {
@@ -99,12 +102,15 @@ test_that("spicy_style() accepts the well-formed values of each lever", {
     fit_digits = 2,
     ic_digits = 1,
     percent_digits = 0,
-    v_digits = 2
+    v_digits = 2,
+    note_label = "Note:"
   )
-  expect_length(s, 14L)
+  expect_length(s, 15L)
   expect_identical(s$p_digits, 4L)
   expect_identical(s$ci_brackets, c("(", ")"))
   expect_identical(spicy_style(stars = FALSE)$stars, FALSE)
+  expect_identical(spicy_style(note_label = "")$note_label, "")
+  expect_identical(spicy_style(note_label = "Note.")$note_label, "Note.")
 })
 
 test_that("spicy_style() validates p_bands as a band table", {
@@ -403,6 +409,7 @@ test_that("apa pins spicy's defaults rather than changing them", {
   expect_identical(st$digits, 2L)
   expect_identical(st$ci_brackets, c("[", "]"))
   expect_identical(st$ci_sep, ", ")
+  expect_identical(st$note_label, "Note.")
 })
 
 test_that("apa encodes no star rule, and its rule list says none", {
@@ -442,6 +449,86 @@ test_that("aer's star ban still yields to an explicit argument", {
   # caller types may override it -- that is the precedence rule.
   txt <- console(table_regression(fixed_fit(), style = "aer", stars = TRUE))
   expect_true(grepl("*", txt, fixed = TRUE))
+})
+
+
+# ---- The note's lead-in ----------------------------------------------------
+#
+# dev/journal_styles_sources.md, section 5 bis: APA 7 section 7.14 opens
+# the general note with "Note." in italics, Chicago 18 paragraphs
+# 3.77-3.81 with "Note:", the AMA Manual 11 section 4.1.4.10 with no
+# lead-in word, and The Lancet's model tables and 38 of 38 table notes
+# of its 2025-2026 articles with none either. No source was found for
+# NEJM, Annals and the AER: those themes encode no rule.
+
+test_that("jama and lancet open the note without a lead-in word", {
+  fit <- fixed_fit()
+  for (th in spicy_style_names()) {
+    note <- attr(quietly(table_regression(fit, style = th)), "note")
+    if (th %in% c("jama", "lancet")) {
+      expect_identical(spicy_style(th)$note_label, "", info = th)
+      expect_true(startsWith(note, "Linear regression."), info = th)
+      rules <- attr(spicy_style(th), "provenance")$rules
+      expect_true(any(grepl("lead-in", rules, fixed = TRUE)), info = th)
+    } else {
+      # APA pins its own rule, the spicy default; the others state none.
+      expected <- if (identical(th, "apa")) "Note." else NULL
+      expect_identical(spicy_style(th)$note_label, expected, info = th)
+      expect_true(startsWith(note, "Note. Linear regression."), info = th)
+    }
+  }
+  # A descriptive table, and its print, which rebuilds the note after the
+  # call that built the table.
+  x <- quietly(table_categorical(
+    fixed_data(),
+    "cyl",
+    by = am,
+    style = "lancet"
+  ))
+  expect_false(startsWith(attr(x, "note"), "Note"))
+  expect_false(grepl("Note", console(x), fixed = TRUE))
+  expect_true(grepl(attr(x, "note"), console(x), fixed = TRUE))
+})
+
+test_that("the lead-in follows the style argument, then the option", {
+  fit <- fixed_fit()
+  note <- function(...) attr(quietly(table_regression(fit, ...)), "note")
+  withr::local_options(spicy.style = "jama")
+  expect_true(startsWith(note(), "Linear regression."))
+  expect_true(startsWith(note(style = "apa"), "Note. Linear regression."))
+  expect_true(startsWith(
+    note(style = spicy_style(note_label = "Note:")),
+    "Note: Linear regression."
+  ))
+  # A lever typed in spicy_style() beats the theme it starts from.
+  expect_true(startsWith(
+    note(style = spicy_style("jama", note_label = "Note.")),
+    "Note. Linear regression."
+  ))
+  # The option reaches the descriptive families, their print, and
+  # table_regression_uv(), which hands `style` on to table_regression().
+  withr::local_options(spicy.style = spicy_style(note_label = "Note:"))
+  x <- quietly(table_categorical(fixed_data(), "cyl", by = am))
+  expect_true(startsWith(attr(x, "note"), "Note: "))
+  expect_match(console(x), "\nNote: ", fixed = TRUE)
+  uv <- function(...) {
+    attr(
+      quietly(table_regression_uv(
+        fixed_data(),
+        outcome = mpg,
+        predictors = c(wt, hp),
+        ...
+      )),
+      "note"
+    )
+  }
+  expect_true(startsWith(uv(), "Note: "))
+  expect_false(startsWith(uv(style = "jama"), "Note"))
+})
+
+test_that("print() shows the lead-in lever, an empty one too", {
+  expect_match(console(spicy_style(note_label = "Note:")), "note_label +Note:")
+  expect_match(console(spicy_style("jama")), "note_label +\"\"")
 })
 
 

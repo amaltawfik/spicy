@@ -587,6 +587,11 @@
   # recognizer derives its pattern and its offset from the key.
   note_prefix = "Note. ",
   note_prefix_emphasis = "Note.",
+  # The same pair for the Chicago lead-in, `spicy_style(note_label =
+  # "Note:")` (Chicago Manual of Style 18, paragraphs 3.77-3.81). Chosen by
+  # `.note_lead_keys()`.
+  note_prefix_colon = "Note: ",
+  note_prefix_colon_emphasis = "Note:",
   # The two joiners of the variable names or labels a note lists, chosen
   # by `.join_note_vars()`: the comma, or the semicolon when an item holds
   # a comma of its own ("Internet, websites or apps"), so that the reader
@@ -1752,41 +1757,92 @@ spicy_labels <- function(language = NULL) {
   gsub("([][{}()*+?.\\\\^$|])", "\\\\\\1", x)
 }
 
-# Open an automatic note with the APA prefix. Each descriptive family calls
-# it ONCE, on the note it assembles for every route (console, the rich
-# engines, Excel, the clipboard, the note attribute), the way
-# `table_regression()` and `table_continuous_lm()` open theirs. Nothing to
-# say stays nothing: NULL or "" comes back as it went in, so a table with no
-# disclosure prints no bare "Note.". A note the user typed never comes
-# through here: it is printed as typed.
+# The lead-in of the general note under a table: the `note_label` lever of
+# the style in force (`spicy_style()`), "Note." by default (APA Manual 7
+# Section 7.14), "Note:" (Chicago Manual of Style 18, paragraphs 3.77-3.81)
+# or no lead-in word at all (""). Each form is a pair of registry keys --
+# what a note BUILDER prepends, and the part the rich engines set in
+# italics -- so the language spells it (French puts a no-break space
+# before the colon).
+#
+# How the lead-in travels. It is decided where the note is built, from the
+# call-scoped style context (`.style_fmt()`), which the descriptive
+# families restore from their `style_fmt` attribute when they rebuild a
+# note at print time. Every renderer that runs inside that call -- Excel,
+# Word, the construction of a flextable, gt or tinytable object -- reads
+# the same context, so it recognizes the lead-in the note was built with.
+# The renderers that run LATER, once the context is gone, are handed the
+# lead-in captured at build time with the object: `.spicy_tt_bare()` keeps
+# it in the preparation and finalizing steps of a tinytable (they run when
+# the table is printed or saved), and a `spicy_gt` or `spicy_flextable`
+# carries it in its `spicy_note_lead` attribute, next to `spicy_note`,
+# for its `print()` and `knit_print()` methods. No renderer falls back on
+# the registry default when it was given the lead-in actually used.
+.note_lead_keys <- function() {
+  label <- .style_fmt()$note_label
+  if (is.null(label)) {
+    label <- "Note."
+  }
+  switch(
+    label,
+    "Note." = c(prefix = "note_prefix", emphasis = "note_prefix_emphasis"),
+    "Note:" = c(
+      prefix = "note_prefix_colon",
+      emphasis = "note_prefix_colon_emphasis"
+    ),
+    NULL
+  )
+}
+
+# What a note builder prepends: "Note. ", "Note: ", or "".
+.note_prefix_text <- function() {
+  keys <- .note_lead_keys()
+  if (is.null(keys)) "" else spicy_str(keys[["prefix"]])
+}
+
+# The part the rich engines set in italics: "Note.", "Note:", or "".
+.note_lead <- function() {
+  keys <- .note_lead_keys()
+  if (is.null(keys)) "" else spicy_str(keys[["emphasis"]])
+}
+
+# Open an automatic note with the lead-in in force (`.note_lead_keys()`).
+# Each descriptive family calls it ONCE, on the note it assembles for every
+# route (console, the rich engines, Excel, the clipboard, the note
+# attribute), the way `table_regression()` and `table_continuous_lm()` open
+# theirs. Nothing to say stays nothing: NULL or "" comes back as it went
+# in, so a table with no disclosure prints no bare "Note.". A note the user
+# typed never comes through here: it is printed as typed.
 .note_with_prefix <- function(note) {
   if (is.null(note) || !nzchar(note)) {
     return(note)
   }
-  paste0(spicy_str("note_prefix"), note)
+  paste0(.note_prefix_text(), note)
 }
 
-# Split a rendered note into (emphasized prefix, remainder), or NULL when the
-# note does not open with the prefix. The rich engines (tinytable, gt,
-# flextable / Word, Excel) italicize the first element and leave the second
-# in regular type -- none of them may re-type the prefix or hardcode its
-# length. A prefix removed through `options(spicy.labels)` is no prefix: an
-# empty marker returns NULL, so no engine writes an empty emphasis.
-.note_prefix_split <- function(note) {
-  marker <- spicy_str("note_prefix_emphasis")
-  if (!nzchar(marker) || !startsWith(note, marker)) {
+# Split a rendered note into (emphasized lead-in, remainder), or NULL when
+# the note does not open with the lead-in `lead` -- the one the note was
+# built with, see `.note_lead_keys()`. The rich engines (tinytable, gt,
+# flextable / Word, Excel) italicize the first element and leave the
+# second in regular type -- none of them may re-type the lead-in or
+# hardcode its length. An empty lead-in (`note_label = ""`, or a prefix
+# removed through `options(spicy.labels)`) is no lead-in: it returns NULL,
+# so no engine writes an empty emphasis.
+.note_prefix_split <- function(note, lead = .note_lead()) {
+  if (!nzchar(lead) || !startsWith(note, lead)) {
     return(NULL)
   }
-  list(marker = marker, rest = substring(note, nchar(marker) + 1L))
+  list(marker = lead, rest = substring(note, nchar(lead) + 1L))
 }
 
-# A note as one engine's markup: the prefix and the rest escaped by
-# `escape()` separately, the escaped prefix wrapped by `emph()` (APA Manual
-# 7 Section 7.14 sets it in italics). Splitting BEFORE escaping keeps the
-# prefix recognizable whatever characters it holds. A note that does not
-# open with the prefix is escaped whole, with no emphasis.
-.note_markup <- function(note, escape, emph) {
-  split <- .note_prefix_split(note)
+# A note as one engine's markup: the lead-in and the rest escaped by
+# `escape()` separately, the escaped lead-in wrapped by `emph()` (APA
+# Manual 7 Section 7.14 and Chicago 18 paragraph 3.77 set it in italics).
+# Splitting BEFORE escaping keeps the lead-in recognizable whatever
+# characters it holds. A note that does not open with the lead-in is
+# escaped whole, with no emphasis.
+.note_markup <- function(note, escape, emph, lead = .note_lead()) {
+  split <- .note_prefix_split(note, lead)
   if (is.null(split)) {
     return(escape(note))
   }
@@ -1798,8 +1854,8 @@ spicy_labels <- function(language = NULL) {
 # end of the text, so a prefix with no space after it, or one with a
 # space at either end, is left unmarked instead of being printed between
 # two literal asterisks.
-.note_markdown <- function(note, escape = identity) {
-  split <- .note_prefix_split(note)
+.note_markdown <- function(note, escape = identity, lead = .note_lead()) {
+  split <- .note_prefix_split(note, lead)
   if (
     is.null(split) ||
       grepl("^\\s|\\s$", split$marker) ||

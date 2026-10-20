@@ -262,7 +262,9 @@ build_regression_footer_from_frames <- function(
   if (length(themes) == 0L) {
     return(NULL)
   }
-  paste0(spicy_str("note_prefix"), paste(themes, collapse = "\n"))
+  # The lead-in of the style in force: "Note. " unless `note_label` asks
+  # for another (`.note_lead_keys()`, R/i18n.R).
+  paste0(.note_prefix_text(), paste(themes, collapse = "\n"))
 }
 
 capitalize_first <- function(s) {

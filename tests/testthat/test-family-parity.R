@@ -566,6 +566,34 @@ test_that("every table of the family carries its printed note as `note`", {
   expect_null(attr(table_multiresponse(d, c(mq1, mq3), note = FALSE), "note"))
 })
 
+test_that("every table of the family opens its note with the lead-in in force", {
+  # `spicy_style(note_label = )`, document-wide through the option: the
+  # note attribute and the print, which some families rebuild, agree.
+  builders <- .fp_note_builders()
+  withr::local_options(spicy.style = spicy_style(note_label = "Note:"))
+  for (fn in names(builders)) {
+    x <- builders[[fn]]("default")
+    out <- utils::capture.output(print(x))
+    expect_true(startsWith(attr(x, "note"), "Note: "), info = fn)
+    expect_true(
+      any(startsWith(out, sub("\n.*$", "", attr(x, "note")))),
+      info = fn
+    )
+    expect_false(any(grepl("^Note\\.", out)), info = fn)
+  }
+  withr::local_options(spicy.style = "jama")
+  for (fn in names(builders)) {
+    x <- builders[[fn]]("default")
+    out <- utils::capture.output(print(x))
+    expect_false(startsWith(attr(x, "note"), "Note"), info = fn)
+    expect_true(
+      any(startsWith(out, sub("\n.*$", "", attr(x, "note")))),
+      info = fn
+    )
+    expect_false(any(grepl("^Note[.:]", out)), info = fn)
+  }
+})
+
 test_that("every export belongs to exactly one API-stability tier in ?spicy", {
   # Doc-consistency guard: parse the tier lists out of
   # R/spicy-package.R and compare with the actual exports, so a new

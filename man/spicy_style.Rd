@@ -22,7 +22,8 @@ spicy_style(
   fit_digits = NULL,
   ic_digits = NULL,
   percent_digits = NULL,
-  v_digits = NULL
+  v_digits = NULL,
+  note_label = NULL
 )
 
 spicy_style_names()
@@ -83,6 +84,16 @@ the matching argument.}
 
 \item{percent_digits, v_digits}{Decimal places for percentages and
 for the association measure of \code{\link[=table_categorical]{table_categorical()}}.}
+
+\item{note_label}{The word that opens the note under the table, set
+in italics in every rendered output: \code{"Note."} (the default, APA
+Manual 7 section 7.14), \code{"Note:"} (Chicago Manual of Style 18,
+paragraphs 3.77-3.81), or \code{""} for no lead-in word (AMA Manual of
+Style 11, section 4.1.4.10). The language spells it: under
+\code{options(spicy.language = "fr")}, \code{"Note:"} prints with the
+no-break space French puts before a colon. A \code{note} you type is
+printed as typed; its opening word is set in italics when it is the
+lead-in in force.}
 }
 \value{
 \code{spicy_style()} returns an object of class \code{spicy_style}: a
@@ -96,7 +107,8 @@ available theme names.
 A \emph{style} is a small set of number-formatting rules -- how many
 decimals a p-value gets, where it bottoms out, whether it keeps its
 leading zero, what the decimal mark is, how a confidence interval is
-written. \code{spicy_style()} composes one by hand; the named themes
+written -- and the word that opens the note under the table.
+\code{spicy_style()} composes one by hand; the named themes
 (\code{"jama"}, \code{"nejm"}, \code{"lancet"}, \code{"annals"}, \code{"apa"}, \code{"aer"} --
 \code{spicy_style_names()} returns the list) are pre-composed ones, each
 encoding rules taken verbatim from an official document of the
@@ -110,10 +122,11 @@ returned here, and by \code{options(spicy.style = )} for document-wide
 scope.
 }
 \section{What a theme claims, and what it does not}{
-A theme covers \strong{numeric formatting conformity only} -- not full
-editorial conformity. It does not check reporting guidelines, table
-structure, footnote symbols, units, abbreviation policy, or anything
-else a journal's instructions ask of a manuscript. Each theme below
+A theme covers \strong{numeric formatting conformity}, and the word that
+opens the table note, \strong{only} -- not full editorial conformity. It
+does not check reporting guidelines, table structure, footnote
+symbols, units, abbreviation policy, or anything else a journal's
+instructions ask of a manuscript. Each theme below
 lists the exact rules it encodes, with the sentence it encodes them
 from; anything not listed is spicy's own default, not the journal's
 rule.
@@ -202,6 +215,11 @@ reported to exact numbers to 2 digits past the decimal point,
 regardless of statistical significance. For values lower than
 .01, present the P value to 3 digits. Express any values lower
 than .001 as P<.001."
+\item no lead-in word before the note under the table
+(\code{note_label = ""}) -- the \emph{AMA Manual of Style}, 11th edition
+(2020), section 4.1.4.10, gives table footnotes none: a footnote
+on the whole table is called by a letter "placed after the table
+title".
 }
 
 Not encoded: everything else in that document (percentages carrying
@@ -268,6 +286,11 @@ the intervals printed throughout the journal's own model tables
 and figures (\verb{0[.]78 (0[.]60-1[.]00)}) and is encoded as
 conformity to the journal's published examples, nothing
 stronger.
+\item no lead-in word before the note under the table
+(\code{note_label = ""}). \strong{Not a written rule either}: the model
+tables of the two formatting guidelines open their note on "Data
+are n (\%)", and none of the 38 table notes of 15 research articles
+published in 2025-2026, checked on 2026-10-20, opens with "Note".
 }
 
 Not encoded: the empty-cell filler, the ban on p-values in a
@@ -334,6 +357,10 @@ and inferential statistics (t, F, chi-square) to two decimals."
 \item confidence intervals in square brackets, bounds separated by
 a comma -- the \emph{Sample tables} page gives
 \verb{95\% CI [LL, UL]} as one of the two official layouts.
+\item the note under the table opens with "Note." in italics
+(\code{note_label = "Note."}) -- the \emph{Publication Manual}, 7th edition
+(2020), section 7.14: the general note is "designated by the word
+'Note' (italicized) followed by a period".
 }
 
 Not encoded: the one-decimal rule for means of integer scales

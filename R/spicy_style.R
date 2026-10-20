@@ -46,14 +46,16 @@
 )
 
 # The levers with no formal anywhere; they travel in the call-scoped
-# format context and are read by the formatters.
+# format context and are read by the formatters -- and, for
+# `note_label`, by the note builders (`.note_lead_keys()`, R/i18n.R).
 .STYLE_FMT_FIELDS <- c(
   "p_style",
   "p_floor",
   "p_bands",
   "p_sigfig",
   "ci_sep",
-  "ci_brackets"
+  "ci_brackets",
+  "note_label"
 )
 
 .STYLE_FIELDS <- c(.STYLE_ARG_FIELDS, .STYLE_FMT_FIELDS)
@@ -66,7 +68,8 @@
 #' A *style* is a small set of number-formatting rules -- how many
 #' decimals a p-value gets, where it bottoms out, whether it keeps its
 #' leading zero, what the decimal mark is, how a confidence interval is
-#' written. `spicy_style()` composes one by hand; the named themes
+#' written -- and the word that opens the note under the table.
+#' `spicy_style()` composes one by hand; the named themes
 #' (`"jama"`, `"nejm"`, `"lancet"`, `"annals"`, `"apa"`, `"aer"` --
 #' `spicy_style_names()` returns the list) are pre-composed ones, each
 #' encoding rules taken verbatim from an official document of the
@@ -80,10 +83,11 @@
 #'
 #' # What a theme claims, and what it does not
 #'
-#' A theme covers **numeric formatting conformity only** -- not full
-#' editorial conformity. It does not check reporting guidelines, table
-#' structure, footnote symbols, units, abbreviation policy, or anything
-#' else a journal's instructions ask of a manuscript. Each theme below
+#' A theme covers **numeric formatting conformity**, and the word that
+#' opens the table note, **only** -- not full editorial conformity. It
+#' does not check reporting guidelines, table structure, footnote
+#' symbols, units, abbreviation policy, or anything else a journal's
+#' instructions ask of a manuscript. Each theme below
 #' lists the exact rules it encodes, with the sentence it encodes them
 #' from; anything not listed is spicy's own default, not the journal's
 #' rule.
@@ -172,6 +176,11 @@
 #'     regardless of statistical significance. For values lower than
 #'     .01, present the P value to 3 digits. Express any values lower
 #'     than .001 as P<.001."
+#'   \item no lead-in word before the note under the table
+#'     (`note_label = ""`) -- the *AMA Manual of Style*, 11th edition
+#'     (2020), section 4.1.4.10, gives table footnotes none: a footnote
+#'     on the whole table is called by a letter "placed after the table
+#'     title".
 #' }
 #'
 #' Not encoded: everything else in that document (percentages carrying
@@ -236,6 +245,11 @@
 #'     and figures (`0[.]78 (0[.]60-1[.]00)`) and is encoded as
 #'     conformity to the journal's published examples, nothing
 #'     stronger.
+#'   \item no lead-in word before the note under the table
+#'     (`note_label = ""`). **Not a written rule either**: the model
+#'     tables of the two formatting guidelines open their note on "Data
+#'     are n (%)", and none of the 38 table notes of 15 research articles
+#'     published in 2025-2026, checked on 2026-10-20, opens with "Note".
 #' }
 #'
 #' Not encoded: the empty-cell filler, the ban on p-values in a
@@ -300,6 +314,10 @@
 #'   \item confidence intervals in square brackets, bounds separated by
 #'     a comma -- the *Sample tables* page gives
 #'     `95% CI [LL, UL]` as one of the two official layouts.
+#'   \item the note under the table opens with "Note." in italics
+#'     (`note_label = "Note."`) -- the *Publication Manual*, 7th edition
+#'     (2020), section 7.14: the general note is "designated by the word
+#'     'Note' (italicized) followed by a period".
 #' }
 #'
 #' Not encoded: the one-decimal rule for means of integer scales
@@ -406,6 +424,15 @@
 #'   the matching argument.
 #' @param percent_digits,v_digits Decimal places for percentages and
 #'   for the association measure of [table_categorical()].
+#' @param note_label The word that opens the note under the table, set
+#'   in italics in every rendered output: `"Note."` (the default, APA
+#'   Manual 7 section 7.14), `"Note:"` (Chicago Manual of Style 18,
+#'   paragraphs 3.77-3.81), or `""` for no lead-in word (AMA Manual of
+#'   Style 11, section 4.1.4.10). The language spells it: under
+#'   `options(spicy.language = "fr")`, `"Note:"` prints with the
+#'   no-break space French puts before a colon. A `note` you type is
+#'   printed as typed; its opening word is set in italics when it is the
+#'   lead-in in force.
 #'
 #' @return `spicy_style()` returns an object of class `spicy_style`: a
 #'   named list holding only the levers that were set. Themes returned
@@ -455,7 +482,8 @@ spicy_style <- function(
   fit_digits = NULL,
   ic_digits = NULL,
   percent_digits = NULL,
-  v_digits = NULL
+  v_digits = NULL,
+  note_label = NULL
 ) {
   if (...length() > 0L) {
     # A lever spicy does not know is a typo, and a silently ignored
@@ -496,6 +524,11 @@ spicy_style <- function(
     min = 0L
   )
   v_digits <- .style_check_count(v_digits, "v_digits", min = 0L)
+  note_label <- .style_check_enum(
+    note_label,
+    "note_label",
+    c("Note.", "Note:", "")
+  )
 
   if (!is.null(p_bands) && !is.null(p_sigfig)) {
     spicy_abort(
@@ -525,7 +558,8 @@ spicy_style <- function(
     fit_digits = fit_digits,
     ic_digits = ic_digits,
     percent_digits = percent_digits,
-    v_digits = v_digits
+    v_digits = v_digits,
+    note_label = note_label
   )
   out <- out[!vapply(out, is.null, logical(1))]
 
@@ -754,17 +788,26 @@ spicy_style <- function(
       date = "2016-02-23, consulted 2026-08-14",
       rules = c(
         "p-values: 2 decimals, 3 below .01, floor <.001, no leading zero",
+        paste0(
+          "table note: no lead-in word (AMA Manual of Style, 11th edition, ",
+          "section 4.1.4.10)"
+        ),
         "everything else in the source is table construction, not number format"
       ),
       # "All P values should be reported to exact numbers to 2 digits
       # past the decimal point ... For values lower than .01, present
       # the P value to 3 digits. Express any values lower than .001 as
       # P<.001." The rule writes ".01" / ".001": no leading zero.
+      # note_label: the AMA Manual of Style, 11th edition (2020), section
+      # 4.1.4.10, p. 124-127, gives the table footnote no lead-in word; a
+      # note on the whole table takes a letter placed after the title
+      # (dev/journal_styles_sources.md, section 5 bis).
       style = spicy_style(
         p_style = "apa",
         p_digits = 2L,
         p_bands = list(c(0.01, 3), c(Inf, 2)),
-        p_floor = 0.001
+        p_floor = 0.001,
+        note_label = ""
       )
     ),
     nejm = list(
@@ -826,6 +869,10 @@ spicy_style <- function(
         paste0(
           "confidence intervals: en dash between bounds (matches the ",
           "journal's published examples; not a written rule)"
+        ),
+        paste0(
+          "table note: no lead-in word (matches the journal's model tables ",
+          "and its published tables; not a written rule)"
         )
       ),
       # "Type decimal points midline (ie, 23[U+00B7]4, not 23.4)."
@@ -833,13 +880,19 @@ spicy_style <- function(
       #  decimal places), or p<0[U+00B7]0001."
       # The en dash is OBSERVED in the journal's model tables
       # ("0[U+00B7]78 (0[U+00B7]60-1[U+00B7]00)"), never stated as a rule.
+      # note_label: OBSERVED as well, never stated. The model tables of the
+      # two formatting guidelines (2025, p. 3) open their note on "Data are
+      # n (%) ...", and none of the 38 table notes of 15 research articles
+      # of 2025-2026 checked on 2026-10-20 opens with "Note" or "Notes"
+      # (dev/journal_styles_sources.md, section 5 bis).
       style = spicy_style(
         decimal_mark = "\u00b7",
         p_style = "standard",
         p_sigfig = 2L,
         p_digits = 4L,
         p_floor = 0.0001,
-        ci_sep = "\u2013"
+        ci_sep = "\u2013",
+        note_label = ""
       )
     ),
     annals = list(
@@ -882,6 +935,10 @@ spicy_style <- function(
         "p-values: 3 decimals, floor <.001, no leading zero",
         "estimates and dispersion: 2 decimals",
         "confidence intervals: square brackets, bounds separated by a comma",
+        paste0(
+          "table note: opens with \"Note.\" in italics (Publication Manual, ",
+          "7th edition, section 7.14)"
+        ),
         "a pinning theme: spicy's defaults already follow the guide"
       ),
       # "Report exact p values to two or three decimals"; "report p
@@ -898,6 +955,11 @@ spicy_style <- function(
       # switch stars on for every APA table. The three thresholds are
       # spicy's own default for `stars = TRUE`, and agree with the
       # guide; ?spicy_style says so under "Not encoded".
+      # note_label: the Publication Manual, 7th edition (2020), section
+      # 7.14, p. 203-204: the general note is "designated by the word
+      # 'Note' (italicized) followed by a period"
+      # (dev/journal_styles_sources.md, section 5 bis). spicy's default
+      # already, pinned like the rest.
       style = spicy_style(
         p_style = "apa",
         p_digits = 3L,
@@ -905,7 +967,8 @@ spicy_style <- function(
         digits = 2L,
         effect_size_digits = 2L,
         ci_brackets = c("[", "]"),
-        ci_sep = ", "
+        ci_sep = ", ",
+        note_label = "Note."
       )
     ),
     aer = list(
@@ -1014,7 +1077,7 @@ print.spicy_style <- function(x, ...) {
       ))
     }
     cat(
-      "\nEncoded rules (numeric formatting only, not editorial conformity):\n"
+      "\nEncoded rules (formatting only, not editorial conformity):\n"
     )
     for (r in prov$rules) {
       cat(paste0(" - ", r, "\n"))
@@ -1060,6 +1123,10 @@ print.spicy_style <- function(x, ...) {
   }
   if (isFALSE(v)) {
     return("FALSE")
+  }
+  # `note_label = ""`: an empty value would print as nothing at all.
+  if (identical(v, "")) {
+    return("\"\"")
   }
   if (!is.null(names(v))) {
     return(paste(

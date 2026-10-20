@@ -64,20 +64,23 @@
   }
   tbl <- gt::tab_source_note(tbl, source_note = .spicy_gt_note_md(note))
   attr(tbl, "spicy_note") <- note
+  # The lead-in the note was built with, for the display methods, which
+  # run after the table function returns (`.note_lead_keys()`, R/i18n.R).
+  attr(tbl, "spicy_note_lead") <- .note_lead()
   class(tbl) <- c("spicy_gt", class(tbl))
   tbl
 }
 
 # The native gt source note, in markdown: `md()` is the one text form gt
 # renders in every output it writes (HTML, LaTeX, RTF, Word), so the
-# prefix is set in italics there (APA Manual 7 Section 7.14) as in the
-# HTML display path. Every ASCII punctuation character is backslash-
+# lead-in `lead` is set in italics there (APA Manual 7 Section 7.14) as in
+# the HTML display path. Every ASCII punctuation character is backslash-
 # escaped, which CommonMark reads as that character, so the rest prints
 # exactly as typed: the stars of a significance legend, the underscore
 # of a variable name. One line, like the HTML display path:
 # `.spicy_gt_drop_source_note()` matches this row on its TEXT, and a note
 # carrying a newline would not match itself.
-.spicy_gt_note_md <- function(note) {
+.spicy_gt_note_md <- function(note, lead = .note_lead()) {
   escape <- function(x) {
     gsub(
       "([\\x21-\\x2F\\x3A-\\x40\\x5B-\\x60\\x7B-\\x7E])",
@@ -86,7 +89,7 @@
       perl = TRUE
     )
   }
-  gt::md(.note_markdown(gsub("\n", " ", note, fixed = TRUE), escape))
+  gt::md(.note_markdown(gsub("\n", " ", note, fixed = TRUE), escape, lead))
 }
 
 
@@ -105,11 +108,18 @@
 # it: a table that announces itself on screen must announce itself in
 # every engine, and the two layouts must not drift apart.
 #
+# The title is set at the size of the table text (`100%`), as in APA
+# tables and as `table_regression()` already set it; the descriptive
+# families kept gt's default `125%`. On the gt object, so every route
+# (print, knit_print, gtsave, as_raw_html) carries it; the LaTeX route
+# translates it in `knit_print.spicy_gt()`.
+#
 # `title = NULL` / "" returns the table untouched.
 .spicy_gt_apa_title <- function(tbl, title) {
   if (is.null(title) || !nzchar(title)) {
     return(tbl)
   }
+  tbl <- gt::tab_options(tbl, heading.title.font.size = "100%")
   tbl <- gt::tab_header(tbl, title = title)
   gt::tab_style(
     tbl,

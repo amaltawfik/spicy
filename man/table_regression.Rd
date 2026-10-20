@@ -1561,7 +1561,8 @@ Peto, put it as "it probably doesn't make much difference"
 long-format tibble.
 \item \code{"gt"} / \code{"flextable"} / \code{"tinytable"} -- rich-format
 HTML / Word / PDF tables (require the corresponding
-Suggests package).
+Suggests package). In a PDF, a \code{"flextable"} table wider than
+the page can be fitted with \code{flextable::fit_to_width()}.
 \item \code{"excel"} -- writes to \code{excel_path} via
 \code{\link[openxlsx2:write_xlsx]{openxlsx2::write_xlsx()}}.
 \item \code{"word"} -- writes to \code{word_path} via

@@ -82,6 +82,10 @@ p-values, and notes.
   models says the adjustment ran within each model. The note quoted the
   `stats::p.adjust()` call.
 
+* The `jama` and `lancet` themes of `spicy_style()` open the note under
+  the table without a lead-in word, as the AMA manual and The Lancet do.
+  It opened with "Note.".
+
 ## New features
 
 * `sochealth` gains a multiple-response question, the sources of health
@@ -112,6 +116,10 @@ p-values, and notes.
   (categorical (nominal), categorical (ordinal), categorical (labelled
   codes), numeric, logical, text, date, date-time, time), in English or
   in French with `options(spicy.language)`.
+
+* `spicy_style()` gains `note_label`, the word that opens the note under
+  a table: "Note." (APA, the default), "Note:" (Chicago), or `""` for
+  none. It is set in italics in every rendered output.
 
 * `table_categorical()`, `table_continuous()`, `table_outcome()`, and
   their survey twins gain `p_adjust`, the multiple-comparison adjustment
@@ -174,14 +182,31 @@ p-values, and notes.
 ## Bug fixes
 
 * The note of every table opens with *Note.* in italics in Typst, LaTeX,
-  markdown, and Excel output, and in gt's LaTeX, RTF, and Word output, as
-  in HTML, Word, and PowerPoint. LaTeX output compiles when a note
-  contains `%` or `_`, centers each tinytable spanner over its columns,
-  and keeps the Greek letters and the decimal alignment the default font
-  dropped, under each of the three LaTeX engines. A note of several lines
-  no longer drops out of a Word document built from tinytable, and
-  `table_continuous_lm(output = "gt")` keeps its note in `gt::as_latex()`,
-  `gt::gtsave()`, and the other gt outputs.
+  Markdown documents, and Excel output, and in gt's LaTeX, RTF, and Word
+  output, as in HTML, Word, and PowerPoint. LaTeX output compiles when a
+  note contains `%` or `_`, centers each tinytable spanner over its
+  columns, and keeps the Greek letters and the decimal alignment the
+  default font dropped, under each of the three LaTeX engines. A note of
+  several lines no longer drops out of a Word document built from
+  tinytable, and `table_continuous_lm(output = "gt")` keeps its note in
+  `gt::as_latex()`, `gt::gtsave()`, and the other gt outputs.
+
+* Typst output prints the note as text, as the other outputs do. The
+  stars of the `stars = TRUE` legend turned into bold and vanished, and
+  the `//` of a URL stopped the compilation. Typst also no longer breaks
+  a label in the middle of a word ("Fe-male"), and widens the columns
+  under a group label wider than them, where neighboring labels ran into
+  each other (#11).
+
+* LaTeX output of `output = "tinytable"` scales a table wider than the
+  text block down to it, note included. It ran off the page. A table
+  that fits keeps its size.
+
+* `output = "gt"` sets the title of every table at the size of the table
+  text, as `table_regression()` did. The descriptive tables used gt's
+  125%. In LaTeX output, the title is also flush left, a one-column
+  header has no rule under it, as in HTML, and a table wider than the
+  text block is scaled down to it.
 
 * `table_continuous()`, `table_outcome()`, `table_categorical_svy()`, and
   `table_continuous_svy()` with `p_value = FALSE` no longer keep a p-value

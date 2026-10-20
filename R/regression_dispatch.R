@@ -543,12 +543,11 @@ output_tinytable <- function(rendered) {
   #      an HTML tag by the browser. Skipped for LaTeX / typst output
   #      (those backends do their own escaping).
   #      The note is deliberately EXCLUDED (tinytable's "all" minus
-  #      "notes"): the table_*() descriptive families never escape it,
-  #      and escaping it broke Typst compilation -- the typst escape
-  #      set covers "[" / "]", so a note carrying markup such as
-  #      #text(8pt)[...] came out as \#text(8pt)\[...\], leaving
-  #      text() without a body ("missing argument: body"). Cell escaping
-  #      still applies, so real CI brackets stay protected.
+  #      "notes"): tinytable writes it inside Typst's text([...]) and
+  #      LaTeX's note{}={...}, and its escaper cannot tell the text from
+  #      that wrapper. The finalizer of .spicy_tt_bare() escapes the note
+  #      for each output instead (R/tt_theme.R). Cell escaping still
+  #      applies, so real CI brackets stay protected.
   #   3. alignment ("l" on Variable, "c" on numeric cols -- pre-padded
   #      via .pad_for_decimal_align so center-aligning yields true
   #      decimal alignment in any digit-width-figure-space font).
@@ -1118,6 +1117,9 @@ output_gt <- function(rendered) {
   if (!is.null(note) && nzchar(note)) {
     tbl <- gt::tab_source_note(tbl, source_note = .spicy_gt_note_md(note))
     attr(tbl, "spicy_note") <- note
+    # The lead-in the note was built with, for the display methods, which
+    # run after this call (`.note_lead_keys()`, R/i18n.R).
+    attr(tbl, "spicy_note_lead") <- .note_lead()
   }
   class(tbl) <- c("spicy_gt", class(tbl))
   tbl
@@ -1163,7 +1165,7 @@ output_gt <- function(rendered) {
 # a `<div>` sibling immediately after `</table>`. The wrapping +
 # note-styling mirror `output_tinytable` so the visual reading of
 # the note matches across engines.
-.spicy_gt_html_postprocess <- function(html_str, note) {
+.spicy_gt_html_postprocess <- function(html_str, note, lead = .note_lead()) {
   if (is.null(note) || !nzchar(note)) {
     return(html_str)
   }
@@ -1174,8 +1176,13 @@ output_gt <- function(rendered) {
   # `<tfoot>` row carrying it. Source notes the user added themselves
   # are left alone -- only the row whose text is ours is removed.
   html_str <- .spicy_gt_drop_source_note(html_str, note_one_line)
-  # Escaped, with the prefix in <em> (APA Manual 7 Section 7.14).
-  note_html <- .note_markup(note_one_line, .spicy_html_escape, .spicy_html_em)
+  # Escaped, with the lead-in in <em> (APA Manual 7 Section 7.14).
+  note_html <- .note_markup(
+    note_one_line,
+    .spicy_html_escape,
+    .spicy_html_em,
+    lead
+  )
   note_div <- paste0(
     "<div class=\"spicy-gt-note\" style=\"",
     "width: min-content; min-width: 100%; box-sizing: border-box; ",
@@ -1304,6 +1311,9 @@ output_gt <- function(rendered) {
 #' @exportS3Method print spicy_gt
 print.spicy_gt <- function(x, ...) {
   note <- attr(x, "spicy_note")
+  # The lead-in the note was built with; an object without it is read with
+  # the default of the session.
+  lead <- attr(x, "spicy_note_lead") %||% .note_lead()
   class(x) <- setdiff(class(x), "spicy_gt")
   if (
     interactive() &&
@@ -1311,16 +1321,99 @@ print.spicy_gt <- function(x, ...) {
       requireNamespace("htmltools", quietly = TRUE)
   ) {
     h_str <- as.character(gt::as_raw_html(x, inline_css = FALSE))
-    h_str <- .spicy_gt_html_postprocess(h_str, note)
+    h_str <- .spicy_gt_html_postprocess(h_str, note, lead)
     print(htmltools::browsable(htmltools::HTML(h_str)))
     return(invisible(NULL))
   }
   NextMethod()
 }
 
+# The LaTeX a gt table knits into a PDF, brought in line with its HTML
+# design (`.spicy_gt_html_postprocess()`). Three edits of the string gt
+# writes, none of which gt's API (1.4.0) offers:
+#
+# * The rule under a one-column spanner. spicy lifts the label of every
+#   column without a spanner of its own (Variable, B, SE, p) into a
+#   one-column spanner, so that it sits in the top header row, and gt
+#   draws `\cmidrule(lr){k-k}` under every spanner; the HTML display
+#   hides those rules. They are dropped from the lowest spanner row, the
+#   one those labels sit in. The rules under a real spanner -- "95% CI"
+#   over LL and UL, a group over its n and %, and any model spanner in
+#   the row above -- stay.
+# * The title. gt writes it as `\caption*{}`, which the caption package
+#   gt loads centers; APA sets a title flush left, as the HTML does. A
+#   `\captionsetup` local to the table sets it flush left.
+# * The width. gt sets the table in a `tabular*` of the line width, its
+#   columns spread by `\extracolsep{\fill}`, so a table whose columns
+#   need more than the line ran off the page (12 to 103pt). The table is
+#   measured at its natural width first: wider than the line, it is set
+#   at that width and scaled down to the line (graphicx's `\resizebox`,
+#   the device of the tinytable output); otherwise it is set exactly as
+#   gt wrote it. The body is written once per branch, and TeX skips the
+#   branch it does not take.
+#
+# A string gt wrote differently (longtable, a set `table.width`) keeps
+# the parts that do not match.
+.spicy_gt_latex_layout <- function(s) {
+  lines <- strsplit(s, "\n", fixed = TRUE)[[1L]]
+  rule_one <- "\\\\cmidrule\\(lr\\)\\{([0-9]+)-([0-9]+)\\}"
+  mid <- grep("^\\\\midrule", lines)[1L]
+  if (!is.na(mid) && mid > 1L) {
+    rows <- grep(
+      paste0("^\\s*(", rule_one, "\\s*)+$"),
+      lines[seq_len(mid - 1L)]
+    )
+    if (length(rows) > 0L) {
+      k <- rows[[length(rows)]]
+      rules <- regmatches(lines[k], gregexpr(rule_one, lines[k]))[[1L]]
+      single <- sub(rule_one, "\\1", rules) == sub(rule_one, "\\2", rules)
+      if (all(single)) {
+        lines <- lines[-k]
+      } else {
+        lines[k] <- paste(rules[!single], collapse = " ")
+      }
+    }
+  }
+  if (any(grepl("\\caption*{", lines, fixed = TRUE))) {
+    at <- grep("^\\\\begin\\{table\\}", lines)[1L]
+    if (!is.na(at)) {
+      lines <- append(
+        lines,
+        "\\captionsetup{justification=raggedright,singlelinecheck=false}",
+        after = at
+      )
+    }
+  }
+  open <- "^\\\\begin\\{tabular\\*\\}\\{\\\\linewidth\\}\\{@\\{\\\\extracolsep\\{\\\\fill\\}\\}(.*)\\}\\s*$"
+  b <- grep(open, lines)
+  e <- grep("^\\\\end\\{tabular\\*\\}", lines)
+  if (length(b) == 1L && length(e) == 1L && e > b + 1L) {
+    spec <- sub(open, "\\1", lines[b])
+    body <- lines[(b + 1L):(e - 1L)]
+    # The line end after the scaled box is the space gt leaves after its
+    # `tabular*`: the break before the note's minipage.
+    fit <- c(
+      sprintf("\\setbox0\\hbox{\\begin{tabular}{@{}%s}", spec),
+      body,
+      "\\end{tabular}}%",
+      "\\ifdim\\wd0>\\linewidth\\noindent\\resizebox{\\linewidth}{!}{\\box0}",
+      "\\else",
+      lines[b:e],
+      "\\fi"
+    )
+    lines <- c(
+      lines[seq_len(b - 1L)],
+      fit,
+      if (e < length(lines)) lines[(e + 1L):length(lines)]
+    )
+  }
+  paste(lines, collapse = "\n")
+}
+
 #' @exportS3Method knitr::knit_print spicy_gt
 knit_print.spicy_gt <- function(x, ...) {
   note <- attr(x, "spicy_note")
+  lead <- attr(x, "spicy_note_lead") %||% .note_lead()
   class(x) <- setdiff(class(x), "spicy_gt")
   # Non-HTML knit targets (Quarto / R Markdown -> docx, pptx, pdf):
   # pandoc DROPS raw HTML, so the as_raw_html path below rendered an
@@ -1334,7 +1427,16 @@ knit_print.spicy_gt <- function(x, ...) {
   if (!is.null(pandoc_to) && !isTRUE(knitr::is_html_output())) {
     has_source_note <- length(x[["_source_notes"]]) > 0L
     if (!is.null(note) && nzchar(note) && !has_source_note) {
-      x <- gt::tab_source_note(x, source_note = .spicy_gt_note_md(note))
+      x <- gt::tab_source_note(x, source_note = .spicy_gt_note_md(note, lead))
+    }
+    latex <- isTRUE(knitr::is_latex_output())
+    if (latex) {
+      # The title at the size of the table, as in HTML: gt's LaTeX writer
+      # reads a relative size against 16pt, not against the 12pt it sets
+      # the table in, and so set the title of a table at 16 or 20pt.
+      # "default" is gt's own value for "the size of the table". Its
+      # alignment is set by `.spicy_gt_latex_layout()` below.
+      x <- gt::tab_options(x, heading.title.font.size = "default")
     }
     out <- knitr::knit_print(x, ...)
     # LaTeX: gt writes the characters spicy puts in a table as they are.
@@ -1342,13 +1444,31 @@ knit_print.spicy_gt <- function(x, ...) {
     # default font of xelatex and lualatex has no lowercase Greek: they
     # are mapped as in the tinytable output. The knit metadata (gt's
     # LaTeX packages) is kept.
-    if (isTRUE(knitr::is_latex_output())) {
+    if (latex) {
       out[] <- .spicy_latex_unicode(out)
+      # The note goes through markdown, where `.spicy_gt_note_md()`
+      # escapes the apostrophe so it prints as typed; gt's LaTeX writer
+      # then sets an escaped apostrophe as the straight
+      # `\textquotesingle{}`. A bare `'` is LaTeX's typographic
+      # apostrophe, the one the tinytable and flextable outputs print.
+      out[] <- gsub("\\textquotesingle{}", "'", out, fixed = TRUE)
+      out[] <- .spicy_gt_latex_layout(out)
+      # The scaling box is graphicx's, which gt does not load itself: it
+      # joins gt's packages in the document's preamble.
+      if (
+        grepl("\\resizebox", out, fixed = TRUE) &&
+          requireNamespace("rmarkdown", quietly = TRUE)
+      ) {
+        attr(out, "knit_meta") <- c(
+          attr(out, "knit_meta"),
+          list(rmarkdown::latex_dependency("graphicx"))
+        )
+      }
     }
     return(out)
   }
   h_str <- as.character(gt::as_raw_html(x, inline_css = FALSE))
-  h_str <- .spicy_gt_html_postprocess(h_str, note)
+  h_str <- .spicy_gt_html_postprocess(h_str, note, lead)
   knitr::asis_output(h_str)
 }
 
@@ -1778,6 +1898,9 @@ output_flextable <- function(rendered) {
   # in-table footer is preserved for docx fidelity.
   if (!is.null(note) && nzchar(note)) {
     attr(ft, "spicy_note") <- note
+    # The lead-in the note was built with, for the display methods, which
+    # run after this call (`.note_lead_keys()`, R/i18n.R).
+    attr(ft, "spicy_note_lead") <- .note_lead()
   }
   class(ft) <- c("spicy_flextable", class(ft))
   ft
@@ -1790,13 +1913,18 @@ output_flextable <- function(rendered) {
 # inline-block so the note inherits the table's content width
 # without contributing to it. See the analogous comment in
 # `output_tinytable` for the CSS rationale.
-.spicy_ft_html_postprocess <- function(html_str, note) {
+.spicy_ft_html_postprocess <- function(html_str, note, lead = .note_lead()) {
   if (is.null(note) || !nzchar(note)) {
     return(html_str)
   }
   note_one_line <- gsub("\n", " ", note, fixed = TRUE)
-  # Escaped, with the prefix in <em> (APA Manual 7 Section 7.14).
-  note_html <- .note_markup(note_one_line, .spicy_html_escape, .spicy_html_em)
+  # Escaped, with the lead-in in <em> (APA Manual 7 Section 7.14).
+  note_html <- .note_markup(
+    note_one_line,
+    .spicy_html_escape,
+    .spicy_html_em,
+    lead
+  )
   note_div <- paste0(
     "<div class=\"spicy-ft-note\" style=\"",
     "width: min-content; min-width: 100%; box-sizing: border-box; ",
@@ -1904,6 +2032,9 @@ output_flextable <- function(rendered) {
 #' @exportS3Method print spicy_flextable
 print.spicy_flextable <- function(x, ...) {
   note <- attr(x, "spicy_note")
+  # The lead-in the note was built with; an object without it is read with
+  # the default of the session.
+  lead <- attr(x, "spicy_note_lead") %||% .note_lead()
   class(x) <- setdiff(class(x), "spicy_flextable")
   if (
     interactive() &&
@@ -1912,7 +2043,7 @@ print.spicy_flextable <- function(x, ...) {
   ) {
     h <- flextable::htmltools_value(x = x)
     h_str <- as.character(h)
-    h_str <- .spicy_ft_html_postprocess(h_str, note)
+    h_str <- .spicy_ft_html_postprocess(h_str, note, lead)
     print(htmltools::browsable(htmltools::HTML(h_str)))
     return(invisible(NULL))
   }
@@ -1948,6 +2079,7 @@ as_flextable.spicy_flextable <- function(x, ...) {
 #' @exportS3Method knitr::knit_print spicy_flextable
 knit_print.spicy_flextable <- function(x, ...) {
   note <- attr(x, "spicy_note")
+  lead <- attr(x, "spicy_note_lead") %||% .note_lead()
   class(x) <- setdiff(class(x), "spicy_flextable")
   # Non-HTML knit targets (Quarto / R Markdown -> docx, pptx, pdf):
   # pandoc DROPS raw HTML, so the htmltools path below rendered an
@@ -1972,7 +2104,7 @@ knit_print.spicy_flextable <- function(x, ...) {
   }
   h <- flextable::htmltools_value(x = x)
   h_str <- as.character(h)
-  h_str <- .spicy_ft_html_postprocess(h_str, note)
+  h_str <- .spicy_ft_html_postprocess(h_str, note, lead)
   knitr::asis_output(h_str)
 }
 

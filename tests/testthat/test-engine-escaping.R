@@ -147,8 +147,8 @@ test_that("a tag-shaped caption and the note are both escaped", {
 
   # The note is package prose, but it INTERPOLATES the outcome label,
   # so a tag-shaped label used to reach the `<tfoot>` live. It is now
-  # escaped on the HTML branch of the finalizer only -- see the Typst
-  # counterpart below, which must stay untouched.
+  # escaped by the HTML branch of the finalizer -- each output escapes it
+  # with its own set, see the Typst counterpart below.
   foot <- sub(".*<tfoot>", "", html)
   expect_false(grepl("<sub>kg</sub>", foot, fixed = TRUE))
   expect_true(grepl("&lt;sub&gt;kg&lt;/sub&gt;", foot, fixed = TRUE))
@@ -210,11 +210,17 @@ test_that("a note carrying a cell boundary does not survive the escape", {
   expect_true(grepl("&lt;/td&gt;&lt;/tr&gt;", foot, fixed = TRUE))
 })
 
-test_that("the note escape is engine-aware: Typst output is untouched", {
+test_that("the note escape is engine-aware: Typst escapes it with its own set", {
   # Escaping the note upstream, where it is composed, is not an option:
-  # the same string feeds Typst, whose escape set covers the brackets a
-  # `#text(8pt)[...]` note needs. The escape therefore lives in the
-  # finalizer branch that only sees HTML.
+  # the same string feeds HTML, Typst and LaTeX, each with its own escape
+  # set, and the console prints it as it is. Each finalizer branch
+  # escapes the note for the one output it sees.
+  #
+  # Typst used to print the note verbatim, so that a note typed as Typst
+  # markup (`#text(8pt)[...]`) was rendered. It was the one engine that
+  # read the note as markup: the stars of a significance legend turned
+  # to bold and vanished, and the `//` of a URL broke the compilation.
+  # The note is plain text everywhere now, markup typed in it included.
   skip_if_not_installed("tinytable")
   d <- .esc_hostile()
   obj <- .esc_quiet(table_outcome(
@@ -224,10 +230,9 @@ test_that("the note escape is engine-aware: Typst output is untouched", {
     labels = c(y = "BMI [kg] <sub>x</sub>"),
     output = "tinytable"
   ))
-  # One object, two backends: the same note comes out raw in Typst and
-  # escaped in HTML. The Typst note is the `table.cell(align: left,
-  # colspan: N, text([...]))` line -- read it alone, because the CELLS
-  # around it carry the same label and ARE escaped.
+  # One object, two backends, each escape set on the same note. The Typst
+  # note is the `table.cell(align: left, colspan: N, text([...]))` line
+  # -- read it alone, because the CELLS around it carry the same label.
   typ <- strsplit(
     as.character(tinytable::save_tt(obj, "typst")),
     "\n",
@@ -236,12 +241,15 @@ test_that("the note escape is engine-aware: Typst output is untouched", {
   note_line <- grep("table.cell(align: left, colspan:", typ, fixed = TRUE)
   expect_length(note_line, 1L)
   note_typ <- typ[[note_line]]
-  expect_true(grepl("<sub>x</sub>", note_typ, fixed = TRUE))
+  expect_true(grepl(
+    "BMI \\[kg\\] \\<sub\\>x\\<\\/sub\\>",
+    note_typ,
+    fixed = TRUE
+  ))
   expect_false(grepl("&lt;", note_typ, fixed = TRUE))
-  # The brackets are the reason the note stays out of tinytable's own
-  # escape set: `\[` leaves a Typst `text()` without a body.
-  expect_true(grepl("BMI [kg]", note_typ, fixed = TRUE))
-  expect_false(grepl("\\[kg\\]", note_typ, fixed = TRUE))
+  # The note's own brackets are escaped, the `text([...])` around it is
+  # not: the cell keeps its body.
+  expect_true(grepl("text(size: 0.9em, [", note_typ, fixed = TRUE))
   foot <- sub(".*<tfoot>", "", .esc_tt_html(obj))
   expect_true(grepl("&lt;sub&gt;x&lt;/sub&gt;", foot, fixed = TRUE))
 })

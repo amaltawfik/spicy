@@ -21,10 +21,16 @@
     x@lazy_style
   )
   x@lazy_style <- lapply(spans, function(e) structure(e, output = "latex"))
-  # The one preparation step spicy registers itself: the italic note
-  # prefix of the markdown output, set before tinytable lays the note
-  # out (see `.spicy_tt_note_markdown()`).
-  x@lazy_prepare <- list(.spicy_tt_note_markdown)
+  # The lead-in of the note: decided by the style in force in THIS call,
+  # where the note was built (`.note_lead_keys()`, R/i18n.R), and handed
+  # to the preparation and finalizing steps below, which run when the
+  # table is printed or saved -- after the call, its style context gone.
+  lead <- .note_lead()
+  # The two preparation steps spicy registers itself: the note of the
+  # markdown output, set before tinytable lays it out
+  # (`.spicy_tt_note_markdown()`), and the fit of a LaTeX table to the
+  # text block (`.spicy_tt_latex_fit`).
+  x@lazy_prepare <- list(.spicy_tt_note_markdown(lead), .spicy_tt_latex_fit)
   # tinytable hard-codes `column-gutter: 5pt` into the Typst #table()
   # call whenever the table has column groups (group_tt(j = )) -- an
   # argument-level value no document `#set` rule can override. In a
@@ -47,20 +53,190 @@
   notes <- x@notes
   tinytable::style_tt(x, finalize = function(tbl) {
     if (identical(tbl@output, "typst")) {
-      tbl@table_string <- sub(
-        "\\s*column-gutter: 5pt,",
-        "",
-        tbl@table_string
-      )
-      tbl@table_string <- .spicy_tt_note_typst(tbl@table_string, notes)
+      s <- sub("\\s*column-gutter: 5pt,", "", tbl@table_string)
+      groups <- tryCatch(tbl@group_data_j, error = function(e) NULL)
+      s <- .spicy_tt_typst_layout(s, groups)
+      tbl@table_string <- .spicy_tt_note_typst(s, notes, lead)
     } else if (identical(tbl@output, "html")) {
-      tbl@table_string <- .spicy_tt_note_tfoot(tbl@table_string, notes)
+      tbl@table_string <- .spicy_tt_note_tfoot(tbl@table_string, notes, lead)
     } else if (identical(tbl@output, "latex")) {
-      tbl@table_string <- .spicy_tt_note_latex(tbl@table_string, notes)
+      tbl@table_string <- .spicy_tt_note_latex(tbl@table_string, notes, lead)
     }
     tbl
   })
 }
+
+# Typst: three repairs of the layout tinytable writes for a table with a
+# note, all behind words broken in the middle ("Fe-male", "(No item
+# cho-sen)") or run into each other ("EmployeursParticipants").
+#
+# * tinytable sizes such a table's columns from their natural widths,
+#   each measured as a one-column grid with `inset: 5pt`, Typst's default
+#   -- while the table takes the inset of the document's `#set table()`
+#   rule, and Quarto's Typst template sets 6pt. Every column came out 2pt
+#   narrower than its widest cell, which wrapped. The measure now uses
+#   the inset the table will have, `table.inset`, read in the `context`
+#   the measure already runs in.
+# * The same measure reads the cells of each column and its name, not
+#   the column-group labels above them (`group_tt(j = )`: a `by` level
+#   over its n and %, "95% CI" over LL and UL, "p" and "Cramer's V" in
+#   the top header row). A label wider than the columns under it ran
+#   into the next one, or wrapped. Each label is measured as well, and
+#   the columns it spans are widened, evenly, until it fits
+#   (`.spicy_tt_typst_spans()`). Without a note, tinytable gives Typst
+#   `auto` columns, which Typst widens for a spanning cell itself.
+# * Quarto's template justifies paragraphs, and Typst hyphenates
+#   justified text, table cells and notes included. No other engine
+#   justifies a cell. The table is set ragged right, which also stops the
+#   hyphenation: a column narrower than its words -- a table wider than
+#   the page, which tinytable shrinks to it -- wraps between words, never
+#   inside one, and the note reads flush left as in HTML and Word.
+#
+# Each is a substitution on a line of tinytable's template; on another
+# template it matches nothing and the table is left as it came.
+.spicy_tt_typst_layout <- function(s, groups = NULL) {
+  s <- gsub(
+    "measure(grid(columns: 1, inset: 5pt, ..col))",
+    "measure(grid(columns: 1, inset: table.inset, ..col))",
+    s,
+    fixed = TRUE
+  )
+  s <- .spicy_tt_typst_spans(s, groups)
+  sub(
+    "// start block\n",
+    "// start block\n  #set par(justify: false)\n",
+    s,
+    fixed = TRUE
+  )
+}
+
+# The column-group labels of a tinytable (`groups`, its `group_data_j`:
+# one row per header row of groups, the label in the first column of
+# its span, blank in the columns the span continues over, NA where no
+# group sits) as Typst code that widens the measured natural widths
+# until every label fits over its span. The spans are read as tinytable
+# reads them when it writes the header (`parse_group_spans()`); the
+# labels are already escaped for Typst when the finalizer runs, exactly
+# as the header prints them. The code goes right after the line that
+# measures the columns, before the total width is taken from them.
+.spicy_tt_typst_spans <- function(s, groups) {
+  anchor <- "let tinytable-naturals = tinytable-coldata.map("
+  if (
+    !is.data.frame(groups) ||
+      nrow(groups) == 0L ||
+      !grepl(anchor, s, fixed = TRUE)
+  ) {
+    return(s)
+  }
+  spans <- character(0)
+  for (r in seq_len(nrow(groups))) {
+    row <- as.character(unlist(groups[r, ], use.names = FALSE))
+    pos <- 1L
+    while (pos <= length(row)) {
+      label <- row[[pos]]
+      if (is.na(label)) {
+        pos <- pos + 1L
+        next
+      }
+      start <- pos
+      pos <- pos + 1L
+      while (
+        pos <= length(row) && !is.na(row[[pos]]) && !nzchar(trimws(row[[pos]]))
+      ) {
+        pos <- pos + 1L
+      }
+      if (nzchar(trimws(label)) && !grepl("\n", label, fixed = TRUE)) {
+        spans <- c(
+          spans,
+          sprintf("(%d, %d, [%s])", start - 1L, pos - 2L, label)
+        )
+      }
+    }
+  }
+  if (length(spans) == 0L) {
+    return(s)
+  }
+  code <- c(
+    "    // spicy: a column-group label wider than its columns widens them",
+    sprintf(
+      "    for (spicy_from, spicy_to, spicy_label) in (%s,) {",
+      paste(spans, collapse = ", ")
+    ),
+    paste0(
+      "      let spicy_need = measure(grid(columns: 1, inset: table.inset, ",
+      "spicy_label)).width"
+    ),
+    paste0(
+      "      let spicy_have = ",
+      "tinytable-naturals.slice(spicy_from, spicy_to + 1).sum()"
+    ),
+    "      if spicy_need > spicy_have {",
+    "        for k in range(spicy_from, spicy_to + 1) {",
+    paste0(
+      "          tinytable-naturals.at(k) += ",
+      "(spicy_need - spicy_have) / (spicy_to - spicy_from + 1)"
+    ),
+    "        }",
+    "      }",
+    "    }"
+  )
+  lines <- strsplit(s, "\n", fixed = TRUE)[[1L]]
+  at <- grep(anchor, lines, fixed = TRUE)[[1L]]
+  paste(append(lines, code, after = at), collapse = "\n")
+}
+
+# LaTeX: a table wider than the text block is scaled down to it, a
+# narrower one is left at its size -- the `resize_direction = "down"` of
+# `tinytable::theme_latex()`, whose `\resizebox` this writes. tabularray
+# sets a table at its natural width, so a wide one ran off the page (73
+# to 90pt for a categorical table by a four-level group), its note with
+# it: the note of a `talltblr` is as wide as the table. Scaled with the
+# table, the note wraps inside the page.
+#
+# Not through `theme_latex()` itself. Its finalizer would be registered
+# when spicy builds the table, and run BEFORE a `theme_latex(multipage =
+# TRUE)` the user adds afterwards: that conversion to a page-breaking
+# `longtblr` drops the line that opens the box and keeps the one that
+# closes it, and the document no longer compiles. Its finalizer also
+# stops on a table it finds no `tblr` in. So this is a preparation step,
+# which appends the finalizer when the table is built for output, after
+# every finalizer registered by then; and the finalizer leaves alone a
+# `longtblr` -- a table that breaks across pages is not one box, and
+# tinytable refuses that combination itself -- and a table already in a
+# `\resizebox`, which the user asked for.
+.spicy_tt_latex_fit <- structure(
+  function(tbl) {
+    fit <- function(t) {
+      s <- t@table_string
+      open <- "(\\\\begin\\{(talltblr|tblr|tabular)\\})"
+      close <- "(\\\\end\\{(talltblr|tblr|tabular)\\})"
+      if (
+        grepl("\\\\begin\\{longtblr\\}|\\\\resizebox", s) ||
+          !grepl(open, s) ||
+          !grepl(close, s)
+      ) {
+        return(t)
+      }
+      # `%` ends each added line, so no space enters the box.
+      s <- sub(
+        open,
+        paste0(
+          "\\\\resizebox{\\\\ifdim\\\\width>\\\\linewidth",
+          "\\\\linewidth\\\\else\\\\width\\\\fi}{!}{%\n\\1"
+        ),
+        s
+      )
+      t@table_string <- sub(close, "\\1%\n}", s)
+      t
+    }
+    tbl@lazy_finalize <- c(
+      tbl@lazy_finalize,
+      list(structure(fit, output = "latex"))
+    )
+    tbl
+  },
+  output = "latex"
+)
 
 
 # ---- Table notes: subordination by size ----------------------------------
@@ -159,16 +335,18 @@
   paste(parts, collapse = br)
 }
 
-# Escape sets for LaTeX and Typst. The LaTeX note must be escaped: it is
+# Escape sets for LaTeX and Typst. The note must be escaped: it is
 # package prose, but it interpolates user data (a variable name such as
 # `life_sat_health`, a label holding `&`) and its own wording carries
-# syntax characters (the `%` of "more than 100%"), and tinytable escapes
-# the cells, captions and headers of the table (`format_tt(escape =
-# TRUE)`) but never the note -- an unescaped `%` commented out the rest
-# of the note with its closing brace, an `_` stopped the compilation.
-# In Typst only the note PREFIX is escaped (see `.spicy_tt_note_typst()`).
-# The two sets are tinytable's own, so a note escapes exactly like the
-# text around it; each special character is replaced in one pass, so a
+# syntax characters (the `%` of "more than 100%", the stars of a
+# significance legend), and tinytable escapes the cells, captions and
+# headers of the table (`format_tt(escape = TRUE)`) but never the note.
+# In LaTeX an unescaped `%` commented out the rest of the note with its
+# closing brace, an `_` stopped the compilation; in Typst the legend
+# `*** p < .001, ** p < .01, * p < .05.` lost its stars to bold markup,
+# and the `//` of a URL opened a comment that broke the compilation. The
+# two sets are tinytable's own, so a note escapes exactly like the text
+# around it; each special character is replaced in one pass, so a
 # replacement is never escaped twice.
 .spicy_latex_escape <- function(x) {
   chars <- c(
@@ -212,22 +390,30 @@
 
 # Markdown: tinytable wraps the note into the last row of its grid table
 # (the console print of a tinytable, and the table of a Quarto or R
-# Markdown Word document, which pandoc reads as markdown). The prefix is
-# set in `*...*` on the note TEXT, before tinytable lays it out, so the
-# grid stays aligned. A grid cell holds no line break: the newline of a
-# note of several lines was written into the grid as it was, broke the
-# row that closes it, and pandoc left the note out of the Word document.
-# So the note is one paragraph there, as in Word and gt. Registered by
-# `.spicy_tt_bare()` as a preparation step for the markdown output only.
-.spicy_tt_note_markdown <- structure(
-  function(tbl) {
-    tbl@notes <- .spicy_map_notes(tbl@notes, function(n) {
-      .note_markdown(gsub("[ \t]*\n[ \t]*", " ", n))
-    })
-    tbl
-  },
-  output = "markdown"
-)
+# Markdown Word document, which pandoc reads as markdown). A grid cell
+# holds no line break: the newline of a note of several lines was written
+# into the grid as it was, broke the row that closes it, and pandoc left
+# the note out of the Word document. So the note is one paragraph there,
+# as in Word and gt. In a document, the lead-in `lead` is set in `*...*`
+# on the note TEXT, before tinytable lays it out, so the grid stays
+# aligned; printed in a terminal, the grid is plain text and the note
+# stays as the console prints it, with no markup. "A document" is a knit
+# in progress -- Quarto and R Markdown -- which is also how
+# `print.spicy_gt()` tells the two apart. Registered by `.spicy_tt_bare()`
+# as a preparation step for the markdown output only.
+.spicy_tt_note_markdown <- function(lead) {
+  structure(
+    function(tbl) {
+      knit <- isTRUE(getOption("knitr.in.progress"))
+      tbl@notes <- .spicy_map_notes(tbl@notes, function(n) {
+        n <- gsub("[ \t]*\n[ \t]*", " ", n)
+        if (knit) .note_markdown(n, lead = lead) else n
+      })
+      tbl
+    },
+    output = "markdown"
+  )
+}
 
 # The note strings a tinytable was built with, as a plain character
 # vector. `tt(notes = )` accepts a string, a (possibly named) list of
@@ -259,12 +445,11 @@
 # outcome label, the grouping variable's name, the levels a measure was
 # computed on -- so a label shaped like a tag reached the `<tfoot>`
 # live. Escaping it upstream, where the note is composed, is not an
-# option: the same string feeds the Typst and LaTeX backends, and
-# running it through tinytable's escaper left `text()` without a body.
-# So the escape is ENGINE-AWARE: each finalizer branch treats the note
-# for the one output it sees -- escaped for HTML here and for LaTeX in
-# `.spicy_tt_note_latex()`, left as typed in Typst
-# (`.spicy_tt_note_typst()`).
+# option: the same string feeds the Typst, LaTeX and markdown backends,
+# each with its own escape set, and the console prints it as it is. So
+# the escape is ENGINE-AWARE: each finalizer branch treats the note for
+# the one output it sees -- escaped for HTML here, for LaTeX in
+# `.spicy_tt_note_latex()`, for Typst in `.spicy_tt_note_typst()`.
 #
 # It is applied by exact substitution of each note the table was built
 # with, rather than to the rendered cell text: a label carrying
@@ -272,10 +457,10 @@
 # the styling loop below splits on, and would survive the escape as
 # the separator that re-joins the pieces.
 #
-# The same substitution sets the note prefix in italics (APA Manual 7
+# The same substitution sets the lead-in `lead` in italics (APA Manual 7
 # Section 7.14) through `.note_markup()`, as every engine does. A note
-# that does not open with the prefix is escaped and left unmarked.
-.spicy_tt_note_tfoot <- function(s, notes = NULL) {
+# that does not open with the lead-in is escaped and left unmarked.
+.spicy_tt_note_tfoot <- function(s, notes = NULL, lead = .note_lead()) {
   m <- regexpr("<tfoot>[\\s\\S]*?</tfoot>", s, perl = TRUE)
   if (m < 0L) {
     return(s)
@@ -284,7 +469,12 @@
   block <- regmatches(s, m)
   for (note in .spicy_note_texts(notes)) {
     if (nzchar(note)) {
-      note_html <- .note_markup(note, .spicy_html_escape, .spicy_html_em)
+      note_html <- .note_markup(
+        note,
+        .spicy_html_escape,
+        .spicy_html_em,
+        lead
+      )
       block <- sub(note, note_html, block, fixed = TRUE)
     }
   }
@@ -317,18 +507,22 @@
 
 # Typst: tinytable emits the note as
 # `table.cell(align: left, colspan: N, text([...])),`, the text exactly
-# as given -- and it stays as given, Typst markup included (a `note`
-# typed as `#text(8pt)[...]` is rendered, not printed). Three repairs,
-# inside each note cell. The prefix is set in `#emph[...]` (APA Manual
-# 7 Section 7.14, as in HTML), found by exact substitution of each note
-# the table was built with (`notes`), as the HTML branch does; the
-# prefix itself is escaped, a registry value being text, and `#emph[]`
-# holds whatever follows it unambiguously. The embedded newlines (Typst
+# as given, so Typst read it as markup: the stars of the significance
+# legend `*** p < .001, ** p < .01, * p < .05.` turned into bold and
+# vanished, and the `//` of a URL opened a comment that broke the
+# compilation. The note is plain text in every other engine (HTML and
+# LaTeX escape it), and Typst now escapes it too: a note typed as Typst
+# markup (`#text(8pt)[...]`) prints as typed, as it does in HTML.
+#
+# Three repairs, inside each note cell. The note is escaped and its
+# lead-in `lead` set in `#emph[...]` (APA Manual 7 Section 7.14, as in
+# HTML), found by exact substitution of each note the table was built
+# with (`notes`), as the HTML branch does. The embedded newlines (Typst
 # collapses them exactly as HTML does) become forced line breaks with
 # their indentation kept as no-break spaces. And the whole note is
 # wrapped at 0.9em, unless it was already styled through
 # `tinytable::style_tt(i = "notes")` -- an explicit user style wins.
-.spicy_tt_note_typst <- function(s, notes = NULL) {
+.spicy_tt_note_typst <- function(s, notes = NULL, lead = .note_lead()) {
   lines <- strsplit(s, "\n", fixed = TRUE)[[1L]]
   cell_open <- "^\\s*table\\.cell\\(align: left, colspan: [0-9]+, "
   starts <- grep(cell_open, lines)
@@ -351,7 +545,7 @@
       if (grepl(note, cell, fixed = TRUE)) {
         cell <- sub(
           note,
-          .note_markup(note, identity, .spicy_typst_emph),
+          .note_markup(note, .spicy_typst_escape, .spicy_typst_emph, lead),
           cell,
           fixed = TRUE
         )
@@ -389,27 +583,28 @@
   paste(lines, collapse = "\n")
 }
 
-.spicy_typst_emph <- function(p) {
-  paste0("#emph[", .spicy_typst_escape(p), "]")
-}
+# The lead-in reaches it escaped (`.note_markup()`), as in the other
+# engines.
+.spicy_typst_emph <- function(p) paste0("#emph[", p, "]")
 
 # LaTeX: tinytable's tabularray template writes each note as
 # `note{}={...}`, the text exactly as given -- the `%` of a
 # multiple-response note commented out the rest of it with its closing
 # brace, and the `_` of a variable name stopped the compilation. The
-# note is substituted there escaped for LaTeX, its prefix in `\emph{}`
-# (APA Manual 7 Section 7.14, as in HTML and Typst), one disclosure per
-# line and one size down (`\small`) as in those two outputs. Then the
-# characters spicy writes that LaTeX cannot set with every engine and
-# font are mapped, for the whole table (`.spicy_latex_unicode()`).
-.spicy_tt_note_latex <- function(s, notes = NULL) {
+# note is substituted there escaped for LaTeX, its lead-in `lead` in
+# `\emph{}` (APA Manual 7 Section 7.14, as in HTML and Typst), one
+# disclosure per line and one size down (`\small`) as in those two
+# outputs. Then the characters spicy writes that LaTeX cannot set with
+# every engine and font are mapped, for the whole table
+# (`.spicy_latex_unicode()`).
+.spicy_tt_note_latex <- function(s, notes = NULL, lead = .note_lead()) {
   size <- if (isTRUE(.spicy_note_style()$resize)) "\\small " else ""
   for (note in .spicy_note_texts(notes)) {
     key <- paste0("note{}={", note, "}")
     if (!nzchar(note) || !grepl(key, s, fixed = TRUE)) {
       next
     }
-    tex <- .note_markup(note, .spicy_latex_escape, .spicy_latex_emph)
+    tex <- .note_markup(note, .spicy_latex_escape, .spicy_latex_emph, lead)
     tex <- .spicy_note_lines(tex, br = "\\\\\n", space = "~")
     s <- sub(key, paste0("note{}={", size, tex, "}"), s, fixed = TRUE)
   }
@@ -488,9 +683,10 @@
 # push the inline-block wrapper wider than the table; `min-width: 100%`
 # then forces the rendered note to fill the wrapper, which is exactly
 # the table's content width.
-.spicy_tt_note_div <- function(note) {
-  # Escaped, with the prefix in <em> (APA Manual 7 Section 7.14).
-  note_html <- .note_markup(note, .spicy_html_escape, .spicy_html_em)
+.spicy_tt_note_div <- function(note, lead = .note_lead()) {
+  # Escaped, with the lead-in in <em> (APA Manual 7 Section 7.14). Called
+  # where the table is built, so the default is the lead-in of the note.
+  note_html <- .note_markup(note, .spicy_html_escape, .spicy_html_em, lead)
   note_html <- .spicy_note_lines(note_html)
   paste0(
     "<div class=\"spicy-tt-note\" style=\"",
@@ -552,13 +748,12 @@
 # one engine that does not.
 #
 # The slot list is `table_regression()`'s, and `"notes"` is left OUT of
-# it on purpose: escaping the note here broke Typst compilation (the
-# typst escape set covers `[` / `]`, and a note carrying markup such as
-# `#text(8pt)[...]` came out as `\#text(8pt)\[...\]`, leaving `text()`
-# without a body). The finalizer of `.spicy_tt_bare()` handles the note
-# instead, for the one output it renders: escaped in HTML and LaTeX,
-# as typed in Typst, its prefix in italics in all three. Cell escaping
-# still applies, so real CI brackets stay protected.
+# it on purpose: tinytable writes the note inside a Typst `text([...])`
+# call and a LaTeX `note{}={...}` key, and its escaper cannot tell the
+# note's text from that wrapper. The finalizer of `.spicy_tt_bare()`
+# handles the note instead, for the one output it renders: escaped in
+# HTML, LaTeX and Typst, its lead-in in italics in all three. Cell
+# escaping still applies, so real CI brackets stay protected.
 #
 # `format_tt(escape = TRUE)` escapes for the output being rendered, so
 # the same call protects the LaTeX and Typst cells (`wellbeing\_score`).

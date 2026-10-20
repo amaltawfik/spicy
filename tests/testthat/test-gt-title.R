@@ -122,6 +122,34 @@ test_that("the bivariate linear-model gt table carries the console title", {
   expect_identical(apa$border_color, "transparent")
 })
 
+test_that("every family sets its gt title at the size of the table text", {
+  # table_regression() set 100%, the descriptive families kept gt's
+  # default 125%: one family, one size, in every gt route (the option
+  # lives on the object).
+  skip_if_no_gt()
+  d <- spicy::sochealth
+  fit <- stats::lm(wellbeing_score ~ age, data = d)
+  tables <- list(
+    regression = table_regression(fit, output = "gt"),
+    categorical = table_categorical(d, "smoking", by = "sex", output = "gt"),
+    continuous = table_continuous(d, "bmi", output = "gt"),
+    continuous_lm = table_continuous_lm(d, "bmi", by = "sex", output = "gt"),
+    outcome = table_outcome(d, bmi, select = sex, output = "gt"),
+    multiresponse = table_multiresponse(
+      d,
+      c(info_doctor, info_internet),
+      output = "gt"
+    )
+  )
+  for (nm in names(tables)) {
+    opts <- tables[[nm]][["_options"]]
+    size <- opts$value[[which(opts$parameter == "heading_title_font_size")]]
+    expect_identical(size, "100%", info = nm)
+    html <- as.character(gt::as_raw_html(tables[[nm]], inline_css = FALSE))
+    expect_match(html, "\\.gt_title \\{[^}]*font-size: 100%", info = nm)
+  }
+})
+
 test_that("the gt title equals the title the console prints", {
   skip_if_no_gt()
   d <- spicy::sochealth

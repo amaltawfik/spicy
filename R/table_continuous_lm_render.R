@@ -1234,6 +1234,7 @@ export_continuous_lm_table <- function(
     # contexts (same trick as the tinytable branch above).
     if (!is.null(note) && nzchar(note)) {
       attr(ft, "spicy_note") <- note
+      attr(ft, "spicy_note_lead") <- .note_lead() # see .note_lead_keys()
     }
     # Same title the console prints -- for a by-table it names the
     # grouping variable, which nothing else in the table states.

@@ -14,6 +14,11 @@
 #' @keywords internal
 #' @export
 print.spicy_categorical_table <- function(x, ...) {
+  # The note is rebuilt below, so the style the table was built with is
+  # put back in force for it (`.style_stamp()`): its `note_label` decides
+  # the lead-in. With no style it is a no-op.
+  .style_pushed <- .style_restore(x)
+  on.exit(.style_end(.style_pushed), add = TRUE)
   display_df <- attr(x, "display_df")
   group_var <- attr(x, "group_var")
   indent_text <- attr(x, "indent_text") %||% "  "

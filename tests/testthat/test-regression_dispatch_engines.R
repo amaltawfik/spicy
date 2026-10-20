@@ -109,7 +109,7 @@ test_that("output = 'tinytable' attaches caption + notes from title / footer", {
   expect_true(inherits(out, "tinytable"))
 })
 
-test_that("output = 'tinytable' escapes cells but leaves the note verbatim", {
+test_that("output = 'tinytable' escapes cells and the note for each backend", {
   skip_if_not_installed("tinytable")
   fit <- lm(mpg ~ wt, data = mt)
   tt <- table_regression(
@@ -118,16 +118,16 @@ test_that("output = 'tinytable' escapes cells but leaves the note verbatim", {
     note = "#text(8pt)[a_note_]"
   )
   typ <- tinytable::save_tt(tt, output = "typst")
-  # The note keeps its Typst markup: escaping "[" left text() bodyless
-  # and Typst aborted with "missing argument: body".
-  expect_match(typ, "#text(8pt)[a_note_]", fixed = TRUE)
+  # The note is text in Typst as in HTML and LaTeX: markup typed in it
+  # prints as typed. Escaped by spicy's finalizer, not by tinytable's
+  # escaper, which would also escape the `text([...])` around it and
+  # leave that call without a body ("missing argument: body").
+  expect_match(typ, "[\\#text(8pt)\\[a\\_note\\_\\]])", fixed = TRUE)
   # Cells are still escaped on both backends.
   expect_match(typ, "\\<.001", fixed = TRUE)
-  expect_match(
-    tinytable::save_tt(tt, output = "html"),
-    "&lt;.001",
-    fixed = TRUE
-  )
+  html <- tinytable::save_tt(tt, output = "html")
+  expect_match(html, "&lt;.001", fixed = TRUE)
+  expect_match(html, "#text(8pt)[a_note_]", fixed = TRUE)
 })
 
 test_that("Typst output strips the forced column gutter on grouped headers", {
