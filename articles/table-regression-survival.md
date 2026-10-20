@@ -625,15 +625,24 @@ Excel, or Word table:
 ``` r
 
 table_regression(cx, exponentiate = TRUE, output = "data.frame")
-#>        Variable      HR   SE       95% CI     p
-#> 1           age    1.01 0.01 [0.99, 1.03]  .225
-#> 2          sex:                                
-#> 3   Male (ref.)     –    –        –        –   
-#> 4        Female    0.57 0.10 [0.41, 0.80] <.001
-#> 5       ph.ecog    1.60 0.18 [1.28, 2.00] <.001
-#> 6             n  226                           
-#> 7      N events  163                           
-#> 8           AIC 1454.2
+#>   variable    label  level     .row_role           HR          SE 95% CI: LL
+#> 1      age      age   <NA>          coef    1.0112955 0.009366725  0.9931027
+#> 2      sex      sex   <NA> factor_header           NA          NA         NA
+#> 3      sex      sex   Male     reference           NA          NA         NA
+#> 4      sex      sex Female         level    0.5731583 0.096331299  0.4122990
+#> 5  ph.ecog  ph.ecog   <NA>          coef    1.5987409 0.182720743  1.2778913
+#> 6     nobs        n   <NA>      fit_stat  226.0000000          NA         NA
+#> 7 n_events N events   <NA>      fit_stat  163.0000000          NA         NA
+#> 8      aic      AIC   <NA>      fit_stat 1454.2385062          NA         NA
+#>   95% CI: UL            p
+#> 1  1.0298216 2.252442e-01
+#> 2         NA           NA
+#> 3         NA           NA
+#> 4  0.7967772 9.274556e-04
+#> 5  2.0001486 4.034848e-05
+#> 6         NA           NA
+#> 7         NA           NA
+#> 8         NA           NA
 ```
 
 ``` r

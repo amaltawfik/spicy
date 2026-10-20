@@ -279,10 +279,11 @@ table_continuous_lm(
     requires `cluster`. `"CR2"` is the modern default (Bell and
     McCaffrey 2002; Pustejovsky and Tipton 2018), with Satterthwaite
     degrees of freedom for inference; the fractional df is reported in
-    the `df2` column and in the `t(df)` / `F(df1, df2)` test header.
-    `"CR1"` applies the G/(G-1) correction only; Stata's
-    `, vce(cluster id)` uses the larger G(N-1)/((G-1)(N-p)) factor with
-    t(G-1) inference (clubSandwich's `"CR1S"`; exposed for `lm` fits in
+    the long output (in `df` beside a *t*, in `df.residual` beside an
+    *F*) and in the `t(df)` / `F(df1, df2)` test header. `"CR1"` applies
+    the G/(G-1) correction only; Stata's `, vce(cluster id)` uses the
+    larger G(N-1)/((G-1)(N-p)) factor with t(G-1) inference
+    (clubSandwich's `"CR1S"`; exposed for `lm` fits in
     [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md),
     not here), so `"CR1"` does not reproduce Stata. Cluster-robust
     variants are dispatched to
@@ -588,9 +589,10 @@ table_continuous_lm(
 
   - `"default"`: an ASCII table object, printed when the call is bare
 
-  - `"data.frame"`: a plain wide `data.frame`
+  - `"data.frame"`: the displayed table with its numbers, one row per
+    outcome
 
-  - `"long"`: a raw long `data.frame`
+  - `"long"`: one row per level of `by` and outcome, with every estimate
 
   - `"tinytable"` (requires `tinytable`)
 
@@ -656,30 +658,36 @@ table_continuous_lm(
 
 Depends on `output`:
 
-- `"default"`: the underlying long `data.frame` with class
-  `"spicy_continuous_lm_table"` / `"spicy_table"`. The object is
-  returned visibly, so a bare `table_continuous_lm(...)` call
-  auto-prints the styled ASCII table at the console while
-  `t <- table_continuous_lm(...)` stays silent (print `t` to display the
-  table).
+- `"default"`: the compute frame with class
+  `"spicy_continuous_lm_table"` / `"spicy_table"`, carrying the
+  rendering metadata as attributes (the `by` column and its label as
+  `group_var` and `group_label`). The object is returned visibly, so a
+  bare `table_continuous_lm(...)` call auto-prints the styled ASCII
+  table at the console while `t <- table_continuous_lm(...)` stays
+  silent (print `t` to display the table).
 
-- `"data.frame"`: a plain wide `data.frame` with one row per outcome and
-  numeric columns for means (categorical `by`) or slope (numeric `by`),
-  optional contrast and CI, optional test statistic, `p`, fit statistic
-  (`\eqn{R^2}{R^2}` or adjusted `\eqn{R^2}{R^2}`), effect size, optional
-  `es_ci_lower` / `es_ci_upper` (when `effect_size_ci = TRUE`), `n`, and
-  `Weighted n`.
+- `"data.frame"`: the displayed table with its numbers, what
+  [as.data.frame()](https://amaltawfik.github.io/spicy/reference/as.data.frame.spicy_continuous_lm_table.md)
+  of the default object returns: one row per outcome, the key columns
+  `variable` (the column name of the outcome) and `label` (the label
+  displayed), then the printed columns under their names – the means
+  (categorical `by`) or the slope (numeric `by`), the contrast and its
+  interval bounds, the test statistic, `p`, the fit statistic, the
+  effect size (with `es_ci_lower` / `es_ci_upper` beside it when
+  `effect_size_ci = TRUE`), `n`, and `Weighted n`.
 
-- `"long"`: a raw `data.frame` with one block per outcome and 28 columns
-  covering identification (`variable`, `label`, `predictor_type`,
+- `"long"`: one block per outcome, one row per level of `by`, with every
+  estimate: identification (`variable`, `label`, `predictor_type`,
   `predictor_label`, `level`, `reference`), fitted means and their CI
   (`emmean`, `emmean_se`, `emmean_ci_lower`, `emmean_ci_upper`),
   contrast or slope estimates and CI (`estimate_type`, `estimate`,
   `estimate_se`, `estimate_ci_lower`, `estimate_ci_upper`), inferential
-  output (`test_type`, `statistic`, `df1`, `df2`, `p.value`), effect
-  size with its CI (`es_type`, `es_value`, `es_ci_lower`,
-  `es_ci_upper`), fit (`r2`, `adj_r2`), and sample size (`n`,
-  `weighted_n`).
+  output (`test_type`, `statistic`, `df`, `df.residual`, `p.value`: the
+  *F* of a factor has both degrees of freedom, the *t* of a contrast or
+  a slope has its own in `df` and none in `df.residual`), effect size
+  with its CI (`es_type`, `es_value`, `es_ci_lower`, `es_ci_upper`), fit
+  (`r.squared`, `adj.r.squared`), and the size of the model (`nobs`,
+  `weighted_nobs`, repeated on each row of an outcome).
 
 - `"tinytable"`: a `tinytable` object.
 
@@ -687,7 +695,8 @@ Depends on `output`:
 
 - `"flextable"`: a `flextable` object.
 
-- `"excel"` / `"word"`: writes to disk and returns the file path.
+- `"excel"` / `"word"`: writes to disk and returns the file path
+  invisibly.
 
 - `"clipboard"`: copies the wide table and returns it invisibly.
 
@@ -843,15 +852,16 @@ for the variance and to
 (multi-coefficient Hotelling-T-squared with Satterthwaite df, "HTZ") for
 inference. `"CR2"` (Bell and McCaffrey 2002; Pustejovsky and Tipton
 2018) is the modern recommended default; it generally produces
-fractional Satterthwaite degrees of freedom in `df2`, which the
-displayed `t(df)` / `F(df1, df2)` header renders to one decimal. `"CR1"`
-applies the G/(G-1) correction only – Stata's `, vce(cluster id)` uses
-the larger G(N-1)/((G-1)(N-p)) factor with t(G-1) inference
-(clubSandwich's `"CR1S"`; exposed for `lm` fits in
+fractional Satterthwaite degrees of freedom (in `df` beside a *t*, in
+`df.residual` beside an *F*), which the displayed `t(df)` /
+`F(df1, df2)` header renders to one decimal. `"CR1"` applies the G/(G-1)
+correction only – Stata's `, vce(cluster id)` uses the larger
+G(N-1)/((G-1)(N-p)) factor with t(G-1) inference (clubSandwich's
+`"CR1S"`; exposed for `lm` fits in
 [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md),
 not here), so `"CR1"` does not reproduce Stata. Effect sizes remain
 invariant to `vcov` (including `CR*`); only the SE, CI, test statistic,
-and `df2` of the contrast change.
+and degrees of freedom of the contrast change.
 
 Two resampling-based estimators are also available without adding any
 dependency: `vcov = "bootstrap"` (nonparametric resampling-cases
@@ -1459,12 +1469,12 @@ table_continuous_lm(
   by = sex,
   output = "data.frame"
 )
-#>                        Variable M (Female) M (Male) Δ (Male - Female)
-#> wellbeing_score wellbeing_score   67.16194 71.04879         3.8868576
-#> bmi                         bmi   25.68506 26.19685         0.5117882
-#>                  95% CI LL 95% CI UL            p          R²    n
-#> wellbeing_score 2.12952733 5.6441879 1.548898e-05 0.015475137 1200
-#> bmi             0.08879857 0.9347778 1.776254e-02 0.004728908 1188
+#>          variable           label M (Female) M (Male) Δ (Male - Female)
+#> 1 wellbeing_score wellbeing_score   67.16194 71.04879         3.8868576
+#> 2             bmi             bmi   25.68506 26.19685         0.5117882
+#>    95% CI LL 95% CI UL            p          R²    n
+#> 1 2.12952733 5.6441879 1.548898e-05 0.015475137 1200
+#> 2 0.08879857 0.9347778 1.776254e-02 0.004728908 1188
 
 # Raw long data.frame (one block per outcome).
 table_continuous_lm(
@@ -1488,16 +1498,16 @@ table_continuous_lm(
 #> 2 3.8868576   0.8957077        2.12952733         5.6441879         t  4.339426
 #> 3        NA          NA                NA                NA         F  5.635133
 #> 4 0.5117882   0.2155948        0.08879857         0.9347778         t  2.373843
-#>   df1  df2      p.value es_type es_value es_ci_lower es_ci_upper          r2
-#> 1   1 1198 1.548898e-05    <NA>       NA          NA          NA 0.015475137
-#> 2   1 1198 1.548898e-05    <NA>       NA          NA          NA          NA
-#> 3   1 1186 1.776254e-02    <NA>       NA          NA          NA 0.004728908
-#> 4   1 1186 1.776254e-02    <NA>       NA          NA          NA          NA
-#>        adj_r2    n weighted_n boot_n_valid
-#> 1 0.014653330 1200         NA           NA
-#> 2          NA 1200         NA           NA
-#> 3 0.003889725 1188         NA           NA
-#> 4          NA 1188         NA           NA
+#>     df df.residual      p.value es_type es_value es_ci_lower es_ci_upper
+#> 1    1        1198 1.548898e-05    <NA>       NA          NA          NA
+#> 2 1198          NA 1.548898e-05    <NA>       NA          NA          NA
+#> 3    1        1186 1.776254e-02    <NA>       NA          NA          NA
+#> 4 1186          NA 1.776254e-02    <NA>       NA          NA          NA
+#>     r.squared adj.r.squared nobs weighted_nobs boot_n_valid
+#> 1 0.015475137   0.014653330 1200            NA           NA
+#> 2          NA            NA 1200            NA           NA
+#> 3 0.004728908   0.003889725 1188            NA           NA
+#> 4          NA            NA 1188            NA           NA
 
 # \donttest{
 # Rendered HTML / docx objects -- best viewed inside a

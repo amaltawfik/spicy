@@ -1,12 +1,18 @@
 # Coerce a `spicy_multiresponse_table` to a plain data frame or tibble
 
-These S3 methods strip the `"spicy_multiresponse_table"` /
-`"spicy_table"` classes and the rendering-only attributes from an object
-returned by
-[`table_multiresponse()`](https://amaltawfik.github.io/spicy/reference/table_multiresponse.md),
-so the underlying wide data can be manipulated with downstream tools
-under the standard `data.frame` / `tbl_df` contract. The `"note"` and
-`"global_test"` attributes are kept. The original `x` is unaffected, and
+[`as.data.frame()`](https://rdrr.io/r/base/as.data.frame.html) returns
+the table
+[`table_multiresponse()`](https://amaltawfik.github.io/spicy/reference/table_multiresponse.md)
+displays, with its numbers: exactly what `output = "data.frame"`
+returns. One row per printed row – the items, the rows of `none_row`,
+then the base – with the key columns `variable` (the item's column, or
+the token of a row the table adds: `"none"`, `"no_data"`, `"nobs"` for
+the base), `label` (the label displayed) and `.row_role` (`"summary"`
+for an item, `"none"`, `"missing"`, or `"fit_stat"` for the base), then
+the printed columns under their names (`"<group> n"`, `"<group> \%"`,
+..., `"Test"` with `df` beside it under `statistic = TRUE`, `"p"`). The
+`"note"` and `"global_test"` attributes are kept. `as_tibble()` returns
+the same table as a tibble. The original `x` is unaffected, and
 `print(x)` continues to render the formatted table.
 
 ## Usage
@@ -40,15 +46,8 @@ as_tibble(x, ...)
 
 ## Value
 
-A plain `data.frame` (or `tbl_df`).
-
-## Details
-
-The returned data is identical to what `output = "data.frame"` returns
-directly from
-[`table_multiresponse()`](https://amaltawfik.github.io/spicy/reference/table_multiresponse.md):
-one row per item, the rows of `none_row`, then the base, told apart by
-`.row_role`.
+A plain `data.frame` (or `tbl_df`), identical to the
+`output = "data.frame"` of the same call.
 
 ## See also
 

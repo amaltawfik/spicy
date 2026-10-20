@@ -108,16 +108,19 @@ object returned by <code><a href="table_continuous_svy.html">table_continuous_sv
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p><code>tidy()</code> returns one row per displayed row: one per variable, or one
 per (variable x group) with <code>by</code>. Columns: <code>variable</code>, <code>label</code>,
-<code>group</code> (<code>NA</code> without <code>by</code>), <code>estimate</code> (the mean), <code>std.error</code> (the
-design-based standard error, from <code><a href="https://rdrr.io/pkg/survey/man/surveysummary.html" class="external-link">survey::svymean()</a></code> and never
-recomputed from <code>sd / sqrt(n)</code> – under a design those are different
-quantities), <code>conf.low</code>, <code>conf.high</code>, <code>df</code> (the degrees of freedom
-the interval used), <code>n</code> (observed), <code>weighted.n</code> (the sum of the
-sampling weights), <code>median</code>, <code>q1</code>, <code>q3</code>, <code>min</code>, <code>max</code>, <code>sd</code>, <code>deff</code>.</p>
+<code>group</code> (<code>NA</code> without <code>by</code>), <code>.group_role</code> (the role of <code>group</code>:
+<code>"group"</code>, or <code>"missing"</code> for the group of missing <code>by</code> values; <code>NA</code>
+without <code>by</code>),
+<code>estimate</code> (the mean), <code>std.error</code> (the design-based standard error,
+from <code><a href="https://rdrr.io/pkg/survey/man/surveysummary.html" class="external-link">survey::svymean()</a></code> and never recomputed from <code>sd / sqrt(n)</code> –
+under a design those are different quantities), <code>conf.low</code>,
+<code>conf.high</code>, <code>df</code> (the degrees of freedom the interval used), <code>n</code>
+(observed), <code>weighted_n</code> (the sum of the sampling weights), <code>median</code>,
+<code>q1</code>, <code>q3</code>, <code>min</code>, <code>max</code>, <code>sd</code>, <code>deff</code>.</p>
 <p><code>glance()</code> returns one row per variable with its group comparison:
 <code>variable</code>, <code>label</code>, <code>n_groups</code>, <code>test_type</code>, <code>statistic</code>, <code>df</code>,
 <code>df.residual</code>, <code>p.value</code>, <code>degf</code> (the design's own), <code>nobs</code>,
-<code>weighted.nobs</code>. One row per variable even without <code>by</code>, where the
+<code>weighted_nobs</code>. One row per variable even without <code>by</code>, where the
 comparison columns are <code>NA</code> – a fixed schema a pipeline can index
 into by NAME.</p>
     </div>

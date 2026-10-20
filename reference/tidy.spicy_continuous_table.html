@@ -118,25 +118,27 @@ tidyverse-stats pipeline.</p>
     <p><code>tidy()</code> returns one row per <code>(variable x group)</code> (or per
 <code>variable</code> when <code>by</code> is not used) with broom-conventional columns:
 <code>variable</code> (the column name), <code>label</code> (the label the rows display
-for it, see <code>labels</code>), <code>group</code> (when applicable), <code>estimate</code> (the
-empirical mean), <code>std.error</code> (<code>sd / sqrt(n)</code>), <code>conf.low</code>,
-<code>conf.high</code> (the mean confidence interval at <code>ci_level</code>), <code>n</code>,
-<code>min</code>, <code>max</code>, <code>sd</code>.</p>
+for it, see <code>labels</code>), <code>group</code> (<code>NA</code> without <code>by</code>), <code>.group_role</code>
+(the role of <code>group</code>: <code>"group"</code>, or <code>"missing"</code> for the group of
+missing <code>by</code> values; <code>NA</code> without <code>by</code>), <code>estimate</code> (the empirical
+mean), <code>std.error</code>
+(<code>sd / sqrt(n)</code>), <code>conf.low</code>, <code>conf.high</code> (the mean confidence
+interval at <code>ci_level</code>), <code>n</code>, <code>weighted_n</code> (the sum of the weights,
+<code>NA</code> without <code>weights</code>), <code>median</code>, <code>q1</code>, <code>q3</code>, <code>min</code>, <code>max</code>, <code>sd</code>:
+the columns of <code><a href="tidy.spicy_continuous_svy_table.html">tidy.spicy_continuous_svy_table()</a></code>, the design ones
+(<code>df</code>, <code>deff</code>) aside.</p>
 <p><code>glance()</code> returns one row per variable with the omnibus group
 comparison (when <code>by</code> is used), the requested effect size and the
 balance diagnostic. Columns: <code>variable</code>, <code>label</code>, <code>test_type</code>,
 <code>statistic</code>, <code>df</code>, <code>df.residual</code>, <code>p.value</code>, <code>es_type</code>, <code>es_value</code>,
-<code>es_ci_lower</code>, <code>es_ci_upper</code>, <code>smd_type</code>, <code>smd_value</code>, <code>n_total</code>.
-Without <code>by</code>, only <code>variable</code>, <code>label</code>, and <code>n_total</code> are populated;
+<code>es_ci_lower</code>, <code>es_ci_upper</code>, <code>smd_type</code>, <code>smd_value</code>, <code>nobs</code>.
+Without <code>by</code>, only <code>variable</code>, <code>label</code>, and <code>nobs</code> are populated;
 the other columns are <code>NA</code>. The schema is fixed: <code>smd_type</code> /
 <code>smd_value</code> are present whether or not <code>smd = TRUE</code>, like every
 other comparison column here, and are <code>NA</code> when the table carries
-no standardized mean difference. They sit before <code>n_total</code>, so
-index this frame by NAME rather than by position.</p>
-<p><code><a href="tidy.spicy_categorical_table.html">glance.spicy_categorical_table()</a></code> does <strong>not</strong> carry the SMD: each
-family documents its own broom contract, and the categorical one
-publishes the association measure alone. On a mixed balance table,
-read the categorical SMD from <code>output = "long"</code>.</p>
+no standardized mean difference, as in
+<code><a href="tidy.spicy_categorical_table.html">glance.spicy_categorical_table()</a></code>. Index this frame by NAME rather
+than by position.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>

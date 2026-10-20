@@ -590,7 +590,10 @@ rule — every token must live on the same row:</p>
 <h2 id="downstream-the-raw-frame-and-the-broom-views">Downstream: the raw frame and the broom views<a class="anchor" aria-label="anchor" href="#downstream-the-raw-frame-and-the-broom-views"></a>
 </h2>
 <p><code>output = "long"</code> returns the compute frame: one row per
-displayed row, with <code>.row_role</code> saying what each row is.</p>
+displayed row, with <code>.row_role</code> saying what each row is and
+every statistic the table computes. <code>output = "data.frame"</code>,
+and <code><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame()</a></code> on the table, give the same rows with
+the printed columns only.</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="../reference/table_outcome.html">table_outcome</a></span><span class="op">(</span><span class="va">sochealth</span>, <span class="va">bmi</span>, select <span class="op">=</span> <span class="va">sex</span>, output <span class="op">=</span> <span class="st">"long"</span><span class="op">)</span>, <span class="fl">4</span><span class="op">)</span></span>
 <span><span class="co">#&gt;   variable label  level     .row_role     mean       sd min  max ci_lower</span></span>
@@ -603,48 +606,47 @@ displayed row, with <code>.row_role</code> saying what each row is.</p>
 <span><span class="co">#&gt; 2       NA     NA     NA     NA   NA           NA           NA   NA         NA</span></span>
 <span><span class="co">#&gt; 3 25.98425   25.7 23.100 28.600 5.50         25.4         26.1  616         NA</span></span>
 <span><span class="co">#&gt; 4 26.49563   26.1 23.875 28.625 4.75         25.8         26.6  572         NA</span></span>
-<span><span class="co">#&gt;   test_type statistic      df1 df2    p.value es_type es_value es_ci_lower</span></span>
-<span><span class="co">#&gt; 1      &lt;NA&gt;        NA       NA  NA         NA    &lt;NA&gt;       NA          NA</span></span>
-<span><span class="co">#&gt; 2   welch_t -2.377237 1184.497  NA 0.01760093    &lt;NA&gt;       NA          NA</span></span>
-<span><span class="co">#&gt; 3      &lt;NA&gt;        NA       NA  NA         NA    &lt;NA&gt;       NA          NA</span></span>
-<span><span class="co">#&gt; 4      &lt;NA&gt;        NA       NA  NA         NA    &lt;NA&gt;       NA          NA</span></span>
-<span><span class="co">#&gt;   es_ci_upper smd_type smd_value</span></span>
-<span><span class="co">#&gt; 1          NA     &lt;NA&gt;        NA</span></span>
-<span><span class="co">#&gt; 2          NA     &lt;NA&gt;        NA</span></span>
-<span><span class="co">#&gt; 3          NA     &lt;NA&gt;        NA</span></span>
-<span><span class="co">#&gt; 4          NA     &lt;NA&gt;        NA</span></span></code></pre></div>
+<span><span class="co">#&gt;   test_type statistic       df df.residual    p.value es_type es_value</span></span>
+<span><span class="co">#&gt; 1      &lt;NA&gt;        NA       NA          NA         NA    &lt;NA&gt;       NA</span></span>
+<span><span class="co">#&gt; 2   welch_t -2.377237 1184.497          NA 0.01760093    &lt;NA&gt;       NA</span></span>
+<span><span class="co">#&gt; 3      &lt;NA&gt;        NA       NA          NA         NA    &lt;NA&gt;       NA</span></span>
+<span><span class="co">#&gt; 4      &lt;NA&gt;        NA       NA          NA         NA    &lt;NA&gt;       NA</span></span>
+<span><span class="co">#&gt;   es_ci_lower es_ci_upper</span></span>
+<span><span class="co">#&gt; 1          NA          NA</span></span>
+<span><span class="co">#&gt; 2          NA          NA</span></span>
+<span><span class="co">#&gt; 3          NA          NA</span></span>
+<span><span class="co">#&gt; 4          NA          NA</span></span></code></pre></div>
 <p><code>tidy()</code> returns the described rows — the marginal row and
 one row per (grouping x level) — and <code>glance()</code> returns one
 row per <strong>block</strong>, carrying that block’s own
 comparison:</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">broom</span><span class="fu">::</span><span class="fu"><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">tidy</a></span><span class="op">(</span><span class="va">tbl</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 12</span></span></span>
-<span><span class="co">#&gt;   outcome variable label level estimate std.error conf.low conf.high     n   min</span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> bmi     bmi      bmi   <span style="color: #BB0000;">NA</span>        25.9     0.108     25.7      26.1  <span style="text-decoration: underline;">1</span>188  16  </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> bmi     sex      sex   Fema…     25.7     0.152     25.4      26.0   616  16  </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> bmi     sex      sex   Male      26.2     0.152     25.9      26.5   572  16  </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> bmi     smoking  smok… No        26.0     0.124     25.7      26.2   915  16  </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> bmi     smoking  smok… Yes       25.9     0.227     25.5      26.4   248  16.8</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> bmi     smoking  smok… (Mis…     24.7     0.726     23.2      26.2    25  17.6</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 2 more variables: max &lt;dbl&gt;, sd &lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 17</span></span></span>
+<span><span class="co">#&gt;   outcome variable label   level .row_role estimate std.error conf.low conf.high</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> bmi     bmi      bmi     <span style="color: #BB0000;">NA</span>    summary       25.9     0.108     25.7      26.1</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> bmi     sex      sex     Fema… level         25.7     0.152     25.4      26.0</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> bmi     sex      sex     Male  level         26.2     0.152     25.9      26.5</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> bmi     smoking  smoking No    level         26.0     0.124     25.7      26.2</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> bmi     smoking  smoking Yes   level         25.9     0.227     25.5      26.4</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> bmi     smoking  smoking (Mis… missing       24.7     0.726     23.2      26.2</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 8 more variables: n &lt;int&gt;, weighted_n &lt;dbl&gt;, median &lt;dbl&gt;, q1 &lt;dbl&gt;,</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;">#   q3 &lt;dbl&gt;, min &lt;dbl&gt;, max &lt;dbl&gt;, sd &lt;dbl&gt;</span></span></span>
 <span><span class="fu">broom</span><span class="fu">::</span><span class="fu"><a href="https://generics.r-lib.org/reference/glance.html" class="external-link">glance</a></span><span class="op">(</span><span class="va">tbl</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 2 × 16</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 2 × 14</span></span></span>
 <span><span class="co">#&gt;   outcome variable label  n_levels test_type statistic    df df.residual p.value</span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> bmi     sex      sex           2 welch_t      -<span style="color: #BB0000;">2.38</span>  <span style="text-decoration: underline;">1</span>184.          <span style="color: #BB0000;">NA</span>  0.017<span style="text-decoration: underline;">6</span></span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> bmi     smoking  smoki…        3 welch_t       0.122  407.          <span style="color: #BB0000;">NA</span>  0.903 </span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 7 more variables: es_type &lt;chr&gt;, es_value &lt;dbl&gt;, es_ci_lower &lt;dbl&gt;,</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;">#   es_ci_upper &lt;dbl&gt;, smd_type &lt;chr&gt;, smd_value &lt;dbl&gt;, n_total &lt;int&gt;</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 5 more variables: es_type &lt;chr&gt;, es_value &lt;dbl&gt;, es_ci_lower &lt;dbl&gt;,</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;">#   es_ci_upper &lt;dbl&gt;, nobs &lt;int&gt;</span></span></span></code></pre></div>
 <p>Two identity columns rather than one, and deliberately:
 <code>outcome</code> is constant down the frame, <code>variable</code>
 names the block. A single column would have to mean two different things
 depending on the row.</p>
-<p>The <code>glance()</code> schema is fixed. <code>smd_type</code> and
-<code>smd_value</code> are present and <code>NA</code> from the first
-version, so the day a standardized mean difference enters this table it
-cannot break a pipeline that indexes the frame. Index by name, never by
+<p>The <code>glance()</code> schema is fixed: a column the table does
+not fill is present and <code>NA</code>. Index by name, never by
 position.</p>
 </div>
 <div class="section level2">
@@ -1277,46 +1279,46 @@ another. Overall = the whole analytic sample.
 
     <script src="https://cdn.jsdelivr.net/gh/vincentarelbundock/tinytable@main/inst/tinytable.js"></script><script>
       // Create table-specific functions using external factory
-      const tableFns_t5yara2x6tc1jwd80ojn = TinyTable.createTableFunctions("tinytable_t5yara2x6tc1jwd80ojn");
+      const tableFns_rcvbxazcrr5ydbqw1amc = TinyTable.createTableFunctions("tinytable_rcvbxazcrr5ydbqw1amc");
       // tinytable span after
       window.addEventListener('load', function () {
           var cellsToStyle = [
             // tinytable style arrays after
-          { positions: [ { i: '8', j: 2 }, { i: '8', j: 3 }, { i: '8', j: 4 } ], css_id: 'tinytable_css_cxmfro4vyng8kxd4fbtk',}, 
-          { positions: [ { i: '2', j: 2 }, { i: '3', j: 2 }, { i: '5', j: 2 }, { i: '6', j: 2 }, { i: '7', j: 2 }, { i: '2', j: 3 }, { i: '3', j: 3 }, { i: '5', j: 3 }, { i: '6', j: 3 }, { i: '7', j: 3 }, { i: '2', j: 4 }, { i: '3', j: 4 }, { i: '5', j: 4 }, { i: '6', j: 4 }, { i: '7', j: 4 } ], css_id: 'tinytable_css_4ldxgqqv1xjqhmxkk6ea',}, 
-          { positions: [ { i: '1', j: 2 }, { i: '4', j: 2 }, { i: '1', j: 3 }, { i: '4', j: 3 }, { i: '1', j: 4 }, { i: '4', j: 4 } ], css_id: 'tinytable_css_2izxtnf60xaihpi7ay3y',}, 
-          { positions: [ { i: '0', j: 2 }, { i: '0', j: 3 }, { i: '0', j: 4 } ], css_id: 'tinytable_css_rbhj3ilxz5n7i84jmqck',}, 
-          { positions: [ { i: '8', j: 1 } ], css_id: 'tinytable_css_h9t5ino89miho4imm7rm',}, 
-          { positions: [ { i: '4', j: 1 } ], css_id: 'tinytable_css_kszbigadz2lgm9ql1f7n',}, 
-          { positions: [ { i: '3', j: 1 }, { i: '6', j: 1 }, { i: '7', j: 1 } ], css_id: 'tinytable_css_7z2lppb1j5xvpe5be8xe',}, 
-          { positions: [ { i: '2', j: 1 }, { i: '5', j: 1 } ], css_id: 'tinytable_css_ugimxengqoz3px6q0xws',}, 
-          { positions: [ { i: '1', j: 1 } ], css_id: 'tinytable_css_guuhy9ittre7fanhn8lz',}, 
-          { positions: [ { i: '0', j: 1 } ], css_id: 'tinytable_css_687daa04ud2l5tn99wof',}, 
+          { positions: [ { i: '8', j: 2 }, { i: '8', j: 3 }, { i: '8', j: 4 } ], css_id: 'tinytable_css_k1kay68c4lso5wvi63hm',}, 
+          { positions: [ { i: '2', j: 2 }, { i: '3', j: 2 }, { i: '5', j: 2 }, { i: '6', j: 2 }, { i: '7', j: 2 }, { i: '2', j: 3 }, { i: '3', j: 3 }, { i: '5', j: 3 }, { i: '6', j: 3 }, { i: '7', j: 3 }, { i: '2', j: 4 }, { i: '3', j: 4 }, { i: '5', j: 4 }, { i: '6', j: 4 }, { i: '7', j: 4 } ], css_id: 'tinytable_css_wm1drjp5vpb7zin1bncf',}, 
+          { positions: [ { i: '1', j: 2 }, { i: '4', j: 2 }, { i: '1', j: 3 }, { i: '4', j: 3 }, { i: '1', j: 4 }, { i: '4', j: 4 } ], css_id: 'tinytable_css_3xdvvkgubq4zcymtorxq',}, 
+          { positions: [ { i: '0', j: 2 }, { i: '0', j: 3 }, { i: '0', j: 4 } ], css_id: 'tinytable_css_jurzn3bbf8o1xqx4mfnj',}, 
+          { positions: [ { i: '8', j: 1 } ], css_id: 'tinytable_css_09myn6acdhk92albq5g5',}, 
+          { positions: [ { i: '4', j: 1 } ], css_id: 'tinytable_css_o1qfuz7haik7vgx5g412',}, 
+          { positions: [ { i: '3', j: 1 }, { i: '6', j: 1 }, { i: '7', j: 1 } ], css_id: 'tinytable_css_dgd31frsnostlvvek353',}, 
+          { positions: [ { i: '2', j: 1 }, { i: '5', j: 1 } ], css_id: 'tinytable_css_t4csg01tyy4ez67mkkk2',}, 
+          { positions: [ { i: '1', j: 1 } ], css_id: 'tinytable_css_sot270pzcowzk3jn7757',}, 
+          { positions: [ { i: '0', j: 1 } ], css_id: 'tinytable_css_2069kg6liroml1ubijw2',}, 
           ];
 
           // Loop over the arrays to style the cells
           cellsToStyle.forEach(function (group) {
               group.positions.forEach(function (cell) {
-                  tableFns_t5yara2x6tc1jwd80ojn.styleCell(cell.i, cell.j, group.css_id);
+                  tableFns_rcvbxazcrr5ydbqw1amc.styleCell(cell.i, cell.j, group.css_id);
               });
           });
       });
     </script><link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/vincentarelbundock/tinytable@main/inst/tinytable.css">
 <style>
     /* tinytable css entries after */
-    #tinytable_t5yara2x6tc1jwd80ojn td.tinytable_css_cxmfro4vyng8kxd4fbtk, #tinytable_t5yara2x6tc1jwd80ojn th.tinytable_css_cxmfro4vyng8kxd4fbtk {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
-    #tinytable_t5yara2x6tc1jwd80ojn td.tinytable_css_4ldxgqqv1xjqhmxkk6ea, #tinytable_t5yara2x6tc1jwd80ojn th.tinytable_css_4ldxgqqv1xjqhmxkk6ea { text-align: center }
-    #tinytable_t5yara2x6tc1jwd80ojn td.tinytable_css_2izxtnf60xaihpi7ay3y, #tinytable_t5yara2x6tc1jwd80ojn th.tinytable_css_2izxtnf60xaihpi7ay3y {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
-    #tinytable_t5yara2x6tc1jwd80ojn td.tinytable_css_rbhj3ilxz5n7i84jmqck, #tinytable_t5yara2x6tc1jwd80ojn th.tinytable_css_rbhj3ilxz5n7i84jmqck {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
-    #tinytable_t5yara2x6tc1jwd80ojn td.tinytable_css_h9t5ino89miho4imm7rm, #tinytable_t5yara2x6tc1jwd80ojn th.tinytable_css_h9t5ino89miho4imm7rm {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left; padding-left: 1em; padding-left: 0.8em; }
-    #tinytable_t5yara2x6tc1jwd80ojn td.tinytable_css_kszbigadz2lgm9ql1f7n, #tinytable_t5yara2x6tc1jwd80ojn th.tinytable_css_kszbigadz2lgm9ql1f7n {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left; padding-left: 1em; padding-left: 0.8em; }
-    #tinytable_t5yara2x6tc1jwd80ojn td.tinytable_css_7z2lppb1j5xvpe5be8xe, #tinytable_t5yara2x6tc1jwd80ojn th.tinytable_css_7z2lppb1j5xvpe5be8xe { text-align: left; padding-left: 1em; padding-left: 0.8em; }
-    #tinytable_t5yara2x6tc1jwd80ojn td.tinytable_css_ugimxengqoz3px6q0xws, #tinytable_t5yara2x6tc1jwd80ojn th.tinytable_css_ugimxengqoz3px6q0xws { text-align: left }
-    #tinytable_t5yara2x6tc1jwd80ojn td.tinytable_css_guuhy9ittre7fanhn8lz, #tinytable_t5yara2x6tc1jwd80ojn th.tinytable_css_guuhy9ittre7fanhn8lz {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
-    #tinytable_t5yara2x6tc1jwd80ojn td.tinytable_css_687daa04ud2l5tn99wof, #tinytable_t5yara2x6tc1jwd80ojn th.tinytable_css_687daa04ud2l5tn99wof {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
+    #tinytable_rcvbxazcrr5ydbqw1amc td.tinytable_css_k1kay68c4lso5wvi63hm, #tinytable_rcvbxazcrr5ydbqw1amc th.tinytable_css_k1kay68c4lso5wvi63hm {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
+    #tinytable_rcvbxazcrr5ydbqw1amc td.tinytable_css_wm1drjp5vpb7zin1bncf, #tinytable_rcvbxazcrr5ydbqw1amc th.tinytable_css_wm1drjp5vpb7zin1bncf { text-align: center }
+    #tinytable_rcvbxazcrr5ydbqw1amc td.tinytable_css_3xdvvkgubq4zcymtorxq, #tinytable_rcvbxazcrr5ydbqw1amc th.tinytable_css_3xdvvkgubq4zcymtorxq {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
+    #tinytable_rcvbxazcrr5ydbqw1amc td.tinytable_css_jurzn3bbf8o1xqx4mfnj, #tinytable_rcvbxazcrr5ydbqw1amc th.tinytable_css_jurzn3bbf8o1xqx4mfnj {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
+    #tinytable_rcvbxazcrr5ydbqw1amc td.tinytable_css_09myn6acdhk92albq5g5, #tinytable_rcvbxazcrr5ydbqw1amc th.tinytable_css_09myn6acdhk92albq5g5 {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left; padding-left: 1em; padding-left: 0.8em; }
+    #tinytable_rcvbxazcrr5ydbqw1amc td.tinytable_css_o1qfuz7haik7vgx5g412, #tinytable_rcvbxazcrr5ydbqw1amc th.tinytable_css_o1qfuz7haik7vgx5g412 {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left; padding-left: 1em; padding-left: 0.8em; }
+    #tinytable_rcvbxazcrr5ydbqw1amc td.tinytable_css_dgd31frsnostlvvek353, #tinytable_rcvbxazcrr5ydbqw1amc th.tinytable_css_dgd31frsnostlvvek353 { text-align: left; padding-left: 1em; padding-left: 0.8em; }
+    #tinytable_rcvbxazcrr5ydbqw1amc td.tinytable_css_t4csg01tyy4ez67mkkk2, #tinytable_rcvbxazcrr5ydbqw1amc th.tinytable_css_t4csg01tyy4ez67mkkk2 { text-align: left }
+    #tinytable_rcvbxazcrr5ydbqw1amc td.tinytable_css_sot270pzcowzk3jn7757, #tinytable_rcvbxazcrr5ydbqw1amc th.tinytable_css_sot270pzcowzk3jn7757 {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
+    #tinytable_rcvbxazcrr5ydbqw1amc td.tinytable_css_2069kg6liroml1ubijw2, #tinytable_rcvbxazcrr5ydbqw1amc th.tinytable_css_2069kg6liroml1ubijw2 {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
     </style>
 <div class="container">
-      <table class="table tinytable" id="tinytable_t5yara2x6tc1jwd80ojn" style="width: auto; margin-left: auto; margin-right: auto;" data-quarto-disable-processing="true">
+      <table class="table tinytable" id="tinytable_rcvbxazcrr5ydbqw1amc" style="width: auto; margin-left: auto; margin-right: auto;" data-quarto-disable-processing="true">
 <caption>Descriptive statistics of wellbeing_score</caption>
         <thead><tr>
 <th scope="col" data-row="0" data-col="1">Variable</th>

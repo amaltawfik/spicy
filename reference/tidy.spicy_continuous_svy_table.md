@@ -35,17 +35,19 @@ A `tbl_df` (or `data.frame` when tibble is not installed).
 
 `tidy()` returns one row per displayed row: one per variable, or one per
 (variable x group) with `by`. Columns: `variable`, `label`, `group`
-(`NA` without `by`), `estimate` (the mean), `std.error` (the
-design-based standard error, from
+(`NA` without `by`), `.group_role` (the role of `group`: `"group"`, or
+`"missing"` for the group of missing `by` values; `NA` without `by`),
+`estimate` (the mean), `std.error` (the design-based standard error,
+from
 [`survey::svymean()`](https://rdrr.io/pkg/survey/man/surveysummary.html)
 and never recomputed from `sd / sqrt(n)` – under a design those are
 different quantities), `conf.low`, `conf.high`, `df` (the degrees of
-freedom the interval used), `n` (observed), `weighted.n` (the sum of the
+freedom the interval used), `n` (observed), `weighted_n` (the sum of the
 sampling weights), `median`, `q1`, `q3`, `min`, `max`, `sd`, `deff`.
 
 `glance()` returns one row per variable with its group comparison:
 `variable`, `label`, `n_groups`, `test_type`, `statistic`, `df`,
 `df.residual`, `p.value`, `degf` (the design's own), `nobs`,
-`weighted.nobs`. One row per variable even without `by`, where the
+`weighted_nobs`. One row per variable even without `by`, where the
 comparison columns are `NA` – a fixed schema a pipeline can index into
 by NAME.

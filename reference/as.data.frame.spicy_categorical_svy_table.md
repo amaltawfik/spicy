@@ -1,8 +1,17 @@
 # Coerce a `spicy_categorical_svy_table` to a data frame or tibble
 
-These S3 methods strip the `"spicy_categorical_svy_table"` class and the
-rendering-only attributes, keeping the wide compute frame and the three
-provenance markers (`group_var`, `design_meta`, `note`).
+[`as.data.frame()`](https://rdrr.io/r/base/as.data.frame.html) returns
+the table
+[`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md)
+displays, with its numbers: exactly what `output = "data.frame"`
+returns. One row per printed row – the header row of each variable,
+which carries its *p*-value, then one row per level – and the printed
+columns under their names (`"Female n"`, `"Female \%"`, the interval
+bounds `"Female \% CI lower"` and `"Female \% CI upper"`,
+`"Female DEff"`, ..., `"p"`), plus the key columns `variable`, `label`,
+`level` and `.row_role` (`"factor_header"`, `"level"`, or `"missing"`).
+The note, as printed, is kept in `attr(, "note")`. `as_tibble()` returns
+the same table as a tibble.
 
 ## Usage
 
@@ -27,7 +36,8 @@ as_tibble(x, ...)
 
 ## Value
 
-A plain `data.frame` (or a `tbl_df` for `as_tibble()`).
+A plain `data.frame` (or a `tbl_df` for `as_tibble()`), identical to the
+`output = "data.frame"` of the same call.
 
 ## See also
 

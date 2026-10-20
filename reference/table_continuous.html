@@ -15,10 +15,11 @@ effect sizes (effect_size / effect_size_ci). Set p_value = FALSE
 to suppress the p-value column. Without by, produces one-way
 descriptive summaries.
 Multiple output formats are available via output: a printed ASCII
-table ("default"), a plain data.frame ("data.frame" or
-"long" – synonyms for the underlying long-format data, see
-Details), or publication-ready tables ("tinytable", "gt",
-"flextable", "excel", "clipboard", "word").
+table ("default"), a plain data.frame ("data.frame", the
+displayed table with its numbers, or "long", every statistic of
+each variable and group; see Value), or publication-ready tables
+("tinytable", "gt", "flextable", "excel", "clipboard",
+"word").
 This is the descriptive companion to table_continuous_lm(). The
 two functions share their layout, alignment, and reporting precision
 so descriptive and model-based analyses of the same data look
@@ -36,10 +37,11 @@ effect sizes (effect_size / effect_size_ci). Set p_value = FALSE
 to suppress the p-value column. Without by, produces one-way
 descriptive summaries.
 Multiple output formats are available via output: a printed ASCII
-table ("default"), a plain data.frame ("data.frame" or
-"long" – synonyms for the underlying long-format data, see
-Details), or publication-ready tables ("tinytable", "gt",
-"flextable", "excel", "clipboard", "word").
+table ("default"), a plain data.frame ("data.frame", the
+displayed table with its numbers, or "long", every statistic of
+each variable and group; see Value), or publication-ready tables
+("tinytable", "gt", "flextable", "excel", "clipboard",
+"word").
 This is the descriptive companion to table_continuous_lm(). The
 two functions share their layout, alignment, and reporting precision
 so descriptive and model-based analyses of the same data look
@@ -124,10 +126,11 @@ effect sizes (<code>effect_size</code> / <code>effect_size_ci</code>). Set <code
 to suppress the <em>p</em>-value column. Without <code>by</code>, produces one-way
 descriptive summaries.</p>
 <p>Multiple output formats are available via <code>output</code>: a printed ASCII
-table (<code>"default"</code>), a plain <code>data.frame</code> (<code>"data.frame"</code> or
-<code>"long"</code> – synonyms for the underlying long-format data, see
-Details), or publication-ready tables (<code>"tinytable"</code>, <code>"gt"</code>,
-<code>"flextable"</code>, <code>"excel"</code>, <code>"clipboard"</code>, <code>"word"</code>).</p>
+table (<code>"default"</code>), a plain <code>data.frame</code> (<code>"data.frame"</code>, the
+displayed table with its numbers, or <code>"long"</code>, every statistic of
+each variable and group; see <em>Value</em>), or publication-ready tables
+(<code>"tinytable"</code>, <code>"gt"</code>, <code>"flextable"</code>, <code>"excel"</code>, <code>"clipboard"</code>,
+<code>"word"</code>).</p>
 <p>This is the descriptive companion to <code><a href="table_continuous_lm.html">table_continuous_lm()</a></code>. The
 two functions share their layout, alignment, and reporting precision
 so descriptive and model-based analyses of the same data look
@@ -321,8 +324,8 @@ column in the printed ASCII table and in every rendered output
 (<code>tinytable</code>, <code>gt</code>, <code>flextable</code>, <code>word</code>, <code>excel</code>, <code>clipboard</code>).
 Set to <code>FALSE</code> to drop the <code>n</code> column structurally from those
 outputs (no empty placeholder, no spanner). The <code>n</code> column is
-always present in the raw <code>output = "data.frame"</code> /
-<code>"long"</code> for downstream programmatic access. Defaults to <code>TRUE</code>.
+always present in <code>output = "long"</code> for downstream programmatic
+access. Defaults to <code>TRUE</code>.
 Ignored (with a warning) when <code>show_columns</code> is supplied.</p></dd>
 
 
@@ -392,9 +395,9 @@ spanner in the printed ASCII table and in every rendered output
 Set to <code>FALSE</code> to drop both columns and the CI spanner
 structurally from those outputs (no empty placeholders, no
 border lines under an empty header). The CI bounds are always
-present as <code>ci_lower</code> / <code>ci_upper</code> in the raw
-<code>output = "data.frame"</code> / <code>"long"</code> for downstream programmatic
-access. Defaults to <code>TRUE</code>. The CI level is taken from <code>ci_level</code>.
+present as <code>ci_lower</code> / <code>ci_upper</code> in <code>output = "long"</code> for
+downstream programmatic access. Defaults to <code>TRUE</code>. The CI level is
+taken from <code>ci_level</code>.
 Ignored (with a warning) when <code>show_columns</code> is supplied.</p></dd>
 
 
@@ -483,11 +486,11 @@ whose <code>excel</code> output still uses that convention at every <code>align<
 
 <dt id="arg-output">output<a class="anchor" aria-label="anchor" href="#arg-output"></a></dt>
 <dd><p>Output format. One of:</p><ul><li><p><code>"default"</code>: an ASCII table object, printed when the call is bare.</p></li>
-<li><p><code>"data.frame"</code> / <code>"long"</code>: a plain <code>data.frame</code> with one row
-per <code>(variable x group)</code> (or one row per <code>variable</code> when <code>by</code>
-is not used). The two names are synonyms; pick whichever reads
-better in your pipeline (<code>"long"</code> matches
-<code><a href="table_continuous_lm.html">table_continuous_lm()</a></code>'s naming).</p></li>
+<li><p><code>"data.frame"</code>: the displayed table with its numbers, one row
+per printed row.</p></li>
+<li><p><code>"long"</code>: one row per <code>(variable x group)</code> (or one row per
+<code>variable</code> when <code>by</code> is not used), with every statistic the
+table computes.</p></li>
 <li><p><code>"tinytable"</code> (requires <code>tinytable</code>)</p></li>
 <li><p><code>"gt"</code> (requires <code>gt</code>)</p></li>
 <li><p><code>"flextable"</code> (requires <code>flextable</code>)</p></li>
@@ -555,32 +558,49 @@ auto-prints the styled ASCII table at the console while
 the table). The object can be re-coerced via
 <code><a href="as.data.frame.spicy_continuous_table.html">as.data.frame.spicy_continuous_table()</a></code> or piped into
 <code><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">broom::tidy()</a></code> / <code><a href="https://generics.r-lib.org/reference/glance.html" class="external-link">broom::glance()</a></code>.</p></li>
-<li><p><code>"data.frame"</code> / <code>"long"</code>: a plain <code>data.frame</code> with
-columns <code>variable</code>, <code>label</code>, <code>group</code> (when <code>by</code> is used),
-<code>mean</code>, <code>sd</code>, <code>min</code>, <code>max</code>, <code>ci_lower</code>, <code>ci_upper</code>, <code>median</code>,
-<code>q1</code>, <code>q3</code>, <code>iqr</code>, <code>med_ci_lower</code>, <code>med_ci_upper</code>, <code>n</code>. Every
+<li><p><code>"data.frame"</code>: the displayed table with its numbers, what
+<a href="as.data.frame.spicy_continuous_table.html">as.data.frame()</a> of the
+default object returns: one row per printed row, the key columns
+<code>variable</code> (the column name), <code>label</code> (the label displayed for
+it) and, with <code>by</code>, <code>group</code> and <code>.row_role</code> (<code>"group"</code>, or
+<code>"missing"</code> for the group of missing <code>by</code> values), then the
+printed columns under their names (<code>"M"</code>, <code>"SD"</code>, <code>"Min"</code>,
+<code>"Max"</code>, <code>"95\% CI LL"</code>, <code>"95\% CI UL"</code>, <code>"n"</code>, <code>"Test"</code>, <code>"p"</code>,
+<code>"ES"</code>, <code>"SMD"</code>, the columns <code>show_columns</code> asks for). A cell that
+prints several numbers keeps the first in its column and the
+others beside it under their names in the long output: <code>df</code> and
+<code>df.residual</code> after <code>"Test"</code>, <code>es_ci_lower</code> and <code>es_ci_upper</code>
+after <code>"ES"</code> when its interval is printed, <code>q1</code> and <code>q3</code> after
+<code>"Med [Q1, Q3]"</code>.</p></li>
+<li><p><code>"long"</code>: a plain <code>data.frame</code> with one row per
+<code>(variable x group)</code> and columns <code>variable</code>, <code>label</code>, <code>group</code> and
+<code>.group_role</code> (the role of <code>group</code>: <code>"group"</code>, or <code>"missing"</code> for
+the group of missing <code>by</code> values) when <code>by</code> is used, <code>mean</code>, <code>sd</code>,
+<code>min</code>, <code>max</code>,
+<code>ci_lower</code>, <code>ci_upper</code>, <code>median</code>, <code>q1</code>, <code>q3</code>, <code>iqr</code>,
+<code>med_ci_lower</code>, <code>med_ci_upper</code>, <code>n</code>, <code>weighted_n</code>. Every
 statistic is computed whatever <code>show_columns</code> displays. When
-<code>by</code> is used together with <code>p_value = TRUE</code>, <code>statistic = TRUE</code>,
-or <code>effect_size != "none"</code>, additional columns are appended
-(populated on the first row of each variable block only):</p><ul><li><p><code>test_type</code> – test identifier (e.g., <code>"welch_t"</code>,
+<code>by</code> is used, the comparison columns follow (populated on the
+first row of each variable block only):</p><ul><li><p><code>test_type</code> – test identifier (e.g., <code>"welch_t"</code>,
 <code>"welch_anova"</code>, <code>"student_t"</code>, <code>"anova"</code>, <code>"wilcoxon"</code>,
-<code>"kruskal"</code>).</p></li>
-<li><p><code>statistic</code>, <code>df1</code>, <code>df2</code> – the test statistic and its
-degrees of freedom.</p></li>
-<li><p><code>p.value</code> – with <code>p_value = TRUE</code> only.</p></li>
+<code>"kruskal"</code>), with <code>statistic</code>, <code>df</code> and <code>df.residual</code> (the
+degrees of freedom of a t statistic in <code>df</code>, those of an F
+statistic in <code>df</code> and <code>df.residual</code>, as <code><a href="https://generics.r-lib.org/reference/glance.html" class="external-link">broom::glance()</a></code>
+names them), when the test ran (for <code>p_value</code>, <code>statistic</code> or
+an effect size).</p></li>
+<li><p><code>p.value</code> – with the <em>p</em>-value only, and <code>p_unadjusted</code>
+under <code>p_adjust</code>.</p></li>
 <li><p><code>es_type</code> – effect-size identifier (<code>"hedges_g"</code>,
-<code>"eta_sq"</code>, <code>"r_rb"</code>, or <code>"epsilon_sq"</code>), when
-<code>effect_size != "none"</code>.</p></li>
-<li><p><code>es_value</code>, <code>es_ci_lower</code>, <code>es_ci_upper</code> – effect-size
-estimate and confidence interval bounds.</p></li>
-</ul><p>A <code>by</code> frame ALSO carries <code>smd_type</code> and <code>smd_value</code>
-unconditionally – <code>NA</code> throughout when <code>smd = FALSE</code> – so the
-schema a pipeline indexes into does not move with an argument
-(the <code>weighted_n</code> rule). <code>smd_type</code> names the kernel the value
-came from: <code>"continuous"</code> here.
-The two names <code>"data.frame"</code> and <code>"long"</code> are synonyms (the
-descriptive output is naturally already long). Pick whichever
-reads better in your code.</p></li>
+<code>"eta_sq"</code>, <code>"r_rb"</code>, or <code>"epsilon_sq"</code>), <code>es_value</code>,
+<code>es_ci_lower</code>, <code>es_ci_upper</code> – the effect size and its
+interval.</p></li>
+<li><p><code>smd_type</code>, <code>smd_value</code> – the standardized mean
+difference; <code>smd_type</code> names the kernel the value came from:
+<code>"continuous"</code> here.</p></li>
+</ul><p>The effect-size and SMD columns are there whether or not they were
+requested, <code>NA</code> when not, so the schema a pipeline indexes into
+does not move with an argument (the <code>weighted_n</code> rule); the test
+columns follow <code>p_value</code>.</p></li>
 <li><p><code>"tinytable"</code>: a <code>tinytable</code> object.</p></li>
 <li><p><code>"gt"</code>: a <code>gt_tbl</code> object.</p></li>
 <li><p><code>"flextable"</code>: a <code>flextable</code> object.</p></li>
@@ -1115,21 +1135,16 @@ contrasts, fitted means);
 <span class="r-in"><span>  by <span class="op">=</span> <span class="va">sex</span>,</span></span>
 <span class="r-in"><span>  output <span class="op">=</span> <span class="st">"data.frame"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>          variable           label  group     mean        sd  min   max ci_lower</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1             bmi             bmi Female 25.68506  3.781113 16.0  38.9 25.38588</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2             bmi             bmi   Male 26.19685  3.638092 16.0  37.7 25.89808</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3 wellbeing_score wellbeing_score Female 67.16194 14.798488 19.6 100.0 65.99480</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4 wellbeing_score wellbeing_score   Male 71.04879 16.227304 18.7 100.0 69.72540</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   ci_upper median     q1     q3    iqr med_ci_lower med_ci_upper   n weighted_n</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1 25.98425   25.7 23.100 28.600  5.500         25.4         26.1 616         NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2 26.49563   26.1 23.875 28.625  4.750         25.8         26.6 572         NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3 68.32907   68.2 57.300 77.525 20.225         66.6         69.7 620         NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4 72.37219   72.3 61.275 81.575 20.300         70.8         73.2 580         NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   test_type statistic      df1 df2      p.value smd_type smd_value</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1   welch_t -2.377237 1184.497  NA 1.760093e-02     &lt;NA&gt;        NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2      &lt;NA&gt;        NA       NA  NA           NA     &lt;NA&gt;        NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3   welch_t -4.326141 1168.700  NA 1.647005e-05     &lt;NA&gt;        NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4      &lt;NA&gt;        NA       NA  NA           NA     &lt;NA&gt;        NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          variable           label  group .row_role        M        SD  Min</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1             bmi             bmi Female     group 25.68506  3.781113 16.0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2             bmi             bmi   Male     group 26.19685  3.638092 16.0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3 wellbeing_score wellbeing_score Female     group 67.16194 14.798488 19.6</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4 wellbeing_score wellbeing_score   Male     group 71.04879 16.227304 18.7</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     Max 95% CI LL 95% CI UL   n            p</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1  38.9  25.38588  25.98425 616 1.760093e-02</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2  37.7  25.89808  26.49563 572           NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3 100.0  65.99480  68.32907 620 1.647005e-05</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4 100.0  69.72540  72.37219 580           NA</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># \donttest{</span></span></span>
 <span class="r-in"><span><span class="co"># Rendered HTML / docx objects -- best viewed inside a</span></span></span>

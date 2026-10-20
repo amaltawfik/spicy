@@ -1476,15 +1476,24 @@ format.
 ``` r
 
 head(table_regression(fit, output = "data.frame"), 8)
-#>                          Variable       B   SE           95% CI     p
-#> 1                     (Intercept)  251.41 6.82 [237.01, 265.80] <.001
-#> 2                            Days   10.47 1.55 [  7.21,  13.73] <.001
-#> 3                 Random effects:                                    
-#> 4           σ Subject (Intercept)   24.74 5.84 [  6.79,  34.32]  –   
-#> 5                  σ Subject Days    5.92 1.25 [  2.47,   8.00]  –   
-#> 6   ρ Subject ((Intercept), Days)    0.07 0.33 [ -0.57,   0.70]  –   
-#> 7                    σ (Residual)   25.59 1.51 [ 22.44,  28.39]  –   
-#> 8                               n  180
+#>         variable          label                         level     .row_role            B        SE
+#> 1    (Intercept)    (Intercept)                          <NA>          coef 251.40510485 6.8245967
+#> 2           Days           Days                          <NA>          coef  10.46728596 1.5457896
+#> 3 Random effects Random effects                          <NA> factor_header           NA        NA
+#> 4 Random effects Random effects         σ Subject (Intercept)            vc  24.74065799 5.8362639
+#> 5 Random effects Random effects                σ Subject Days            vc   5.92213766 1.2480355
+#> 6 Random effects Random effects ρ Subject ((Intercept), Days)            vc   0.06555124 0.3250232
+#> 7 Random effects Random effects                  σ (Residual)            vc  25.59179572 1.5080110
+#> 8           nobs              n                          <NA>      fit_stat 180.00000000        NA
+#>    95% CI: LL  95% CI: UL            p
+#> 1 237.0064468 265.8037629 1.171558e-17
+#> 2   7.2059547  13.7286173 3.263824e-06
+#> 3          NA          NA           NA
+#> 4   6.7889586  34.3236122           NA
+#> 5   2.4696919   8.0027527           NA
+#> 6  -0.5714826   0.7025851           NA
+#> 7  22.4423565  28.3940249           NA
+#> 8          NA          NA           NA
 ```
 
 ``` r

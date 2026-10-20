@@ -181,12 +181,10 @@ table_outcome(
 
   One of `"default"`, `"data.frame"`, `"long"`, or a rendering engine:
   `"tinytable"`, `"gt"`, `"flextable"`, `"excel"`, `"clipboard"`,
-  `"word"`. `"data.frame"` and `"long"` are synonyms and return the same
-  object: the compute frame is already long (one row per level, plus the
-  block header and the overall row). Both names are kept so the argument
-  reads the same here as in
-  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
-  where the pair is also synonymous.
+  `"word"`. `"data.frame"` is the displayed table with its numbers,
+  `"long"` the compute frame with every statistic, as in
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md);
+  see *Value*.
 
 - indent_text, indent_text_excel_clipboard:
 
@@ -214,11 +212,44 @@ table_outcome(
 
 ## Value
 
-A `spicy_outcome_table`: the compute frame, with the display frame and
-the typed view attached. `output = "data.frame"` / `"long"` returns the
-compute frame unclassed – the two tokens are synonyms and return
-identical objects. The three carry the whole note as printed, "Note."
-included, in `attr(x, "note")` (`NULL` when there is nothing to say).
+Depends on `output`:
+
+- `"default"`: a `spicy_outcome_table` (a `data.frame` subclass, with
+  the parent class `"spicy_table"`), printed when the call is bare; its
+  columns are the table's compute frame, and the display frame and the
+  typed view are attached.
+
+- `"data.frame"`: the displayed table with its numbers, what
+  [as.data.frame()](https://amaltawfik.github.io/spicy/reference/as.data.frame.spicy_outcome_table.md)
+  of the default object returns: one row per printed row, the key
+  columns `variable` (the outcome on the `Overall` row, the grouping
+  variable elsewhere), `label`, `level` and `.row_role` (`"summary"` for
+  the `Overall` row, `"factor_header"`, `"level"`, or `"missing"`), then
+  the printed columns under their names (`"M"`, `"SD"`, ..., `"n"`,
+  `"p"`), a cell that prints several numbers keeping the others beside
+  it as in
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md).
+
+- `"long"`: the compute frame, one row per printed row with every
+  statistic the table computes, whatever it displays: `variable`,
+  `label`, `level`, `.row_role`, `mean`, `sd`, `min`, `max`, `ci_lower`,
+  `ci_upper`, `median`, `q1`, `q3`, `iqr`, `med_ci_lower`,
+  `med_ci_upper`, `n`, `weighted_n`, the test of each block on its
+  header row (`test_type`, `statistic`, `df`, `df.residual`, `p.value`,
+  and `p_unadjusted` under `p_adjust`) and its effect size (`es_type`,
+  `es_value`, `es_ci_lower`, `es_ci_upper`, `NA` when none was
+  requested).
+
+- `"tinytable"`, `"gt"`, `"flextable"`: the rendered table.
+
+- `"excel"` / `"word"`: writes the file and returns its path invisibly.
+
+- `"clipboard"`: copies the table and returns the display `data.frame`
+  invisibly.
+
+The default object and the two data frames carry the whole note as
+printed, "Note." included, in `attr(x, "note")` (`NULL` when there is
+nothing to say).
 
 ## Which shape do I need?
 

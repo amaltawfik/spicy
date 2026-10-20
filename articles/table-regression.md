@@ -1577,10 +1577,12 @@ tables*](https://amaltawfik.github.io/spicy/articles/table-regression-mixed.md).
 ## Output formats
 
 The default print method draws an ASCII table to the console. The same
-content is available as a plain `data.frame` (`output = "data.frame"`),
-a long broom-style data.frame (`output = "long"`), or as a rich-format
-table for `gt`, `tinytable`, `flextable`, `excel`, `word`, or
-`clipboard`:
+content is available as a plain `data.frame` with its numbers
+(`output = "data.frame"`: one row per printed row, the interval in two
+bounds, the key columns `variable`, `label`, `level` and `.row_role` in
+front), a long broom-style data.frame (`output = "long"`), or as a
+rich-format table for `gt`, `tinytable`, `flextable`, `excel`, `word`,
+or `clipboard`:
 
 ``` r
 
@@ -1589,176 +1591,17 @@ out <- table_regression(
   output = "data.frame"
 )
 str(out)
-#> 'data.frame':    11 obs. of  5 variables:
-#>  $ Variable: chr  "(Intercept)" "age" "sex:" "  Female (ref.)" ...
-#>  $ B       : chr  "  65.20" "   0.05" "       " "    –  " ...
-#>  $ SE      : chr  "1.66" "0.03" "    " " –  " ...
-#>  $ 95% CI  : chr  "[61.95, 68.45]" "[-0.01,  0.11]" "              " "      –       " ...
-#>  $ p       : chr  "<.001" " .130" "     " " –   " ...
-#>  - attr(*, "title")= chr "Linear regression: wellbeing_score"
+#> 'data.frame':    11 obs. of  9 variables:
+#>  $ variable  : chr  "(Intercept)" "age" "sex" "sex" ...
+#>  $ label     : chr  "(Intercept)" "age" "sex" "sex" ...
+#>  $ level     : chr  NA NA NA "Female" ...
+#>  $ .row_role : chr  "coef" "coef" "factor_header" "reference" ...
+#>  $ B         : num  65.2009 0.0465 NA NA 3.8558 ...
+#>  $ SE        : num  1.6567 0.0307 NA NA 0.9053 ...
+#>  $ 95% CI: LL: num  61.9504 -0.0137 NA NA 2.0796 ...
+#>  $ 95% CI: UL: num  68.451 0.107 NA NA 5.632 ...
+#>  $ p         : num  1.59e-216 1.30e-01 NA NA 2.22e-05 ...
 #>  - attr(*, "note")= chr "Note. Linear regression.\nStd. errors: classical (OLS)."
-#>  - attr(*, "col_spec")=List of 4
-#>   ..$ :List of 7
-#>   .. ..$ col_name     : chr "B"
-#>   .. ..$ display_label: chr "B"
-#>   .. ..$ token        : chr "b"
-#>   .. ..$ model_id     : chr "M1"
-#>   .. ..$ estimate_type: chr "B"
-#>   .. ..$ fields       : chr "estimate"
-#>   .. ..$ outcome_level: chr NA
-#>   ..$ :List of 7
-#>   .. ..$ col_name     : chr "SE"
-#>   .. ..$ display_label: chr "SE"
-#>   .. ..$ token        : chr "se"
-#>   .. ..$ model_id     : chr "M1"
-#>   .. ..$ estimate_type: chr "B"
-#>   .. ..$ fields       : chr "se"
-#>   .. ..$ outcome_level: chr NA
-#>   ..$ :List of 7
-#>   .. ..$ col_name     : chr "95% CI"
-#>   .. ..$ display_label: chr "95% CI"
-#>   .. ..$ token        : chr "ci"
-#>   .. ..$ model_id     : chr "M1"
-#>   .. ..$ estimate_type: chr "B"
-#>   .. ..$ fields       : chr [1:2] "ci_low" "ci_high"
-#>   .. ..$ outcome_level: chr NA
-#>   ..$ :List of 7
-#>   .. ..$ col_name     : chr "p"
-#>   .. ..$ display_label: chr "p"
-#>   .. ..$ token        : chr "p"
-#>   .. ..$ model_id     : chr "M1"
-#>   .. ..$ estimate_type: chr "B"
-#>   .. ..$ fields       : chr "p_value"
-#>   .. ..$ outcome_level: chr NA
-#>  - attr(*, "group_sep_rows")= int 9
-#>  - attr(*, "section_sep_rows")= int(0) 
-#>  - attr(*, "align")= chr "decimal"
-#>  - attr(*, "decimal_mark")= chr "."
-#>  - attr(*, "structured")=List of 9
-#>   ..$ version              : int 3
-#>   ..$ body                 :'data.frame':    11 obs. of  10 variables:
-#>   .. ..$ Variable  : chr [1:11] "(Intercept)" "age" "sex:" "  Female (ref.)" ...
-#>   .. ..$ B         : num [1:11] 65.2009 0.0465 NA NA 3.8558 ...
-#>   .. ..$ SE        : num [1:11] 1.6567 0.0307 NA NA 0.9053 ...
-#>   .. ..$ 95% CI: LL: num [1:11] 61.9504 -0.0137 NA NA 2.0796 ...
-#>   .. ..$ 95% CI: UL: num [1:11] 68.451 0.107 NA NA 5.632 ...
-#>   .. ..$ p         : num [1:11] 1.59e-216 1.30e-01 NA NA 2.22e-05 ...
-#>   .. ..$ .variable : chr [1:11] "(Intercept)" "age" "sex" "sex" ...
-#>   .. ..$ .level    : chr [1:11] NA NA NA "Female" ...
-#>   .. ..$ .row_role : chr [1:11] "coef" "coef" "factor_header" "reference" ...
-#>   .. ..$ .indent   : int [1:11] 0 0 0 1 1 0 1 1 0 0 ...
-#>   ..$ stars                : NULL
-#>   ..$ cell_status          :List of 5
-#>   .. ..$ B         : chr [1:11] "" "" "" "reference" ...
-#>   .. ..$ SE        : chr [1:11] "" "" "" "reference" ...
-#>   .. ..$ 95% CI: LL: chr [1:11] "" "" "" "reference" ...
-#>   .. ..$ 95% CI: UL: chr [1:11] "" "" "" "reference" ...
-#>   .. ..$ p         : chr [1:11] "" "" "" "reference" ...
-#>   ..$ outcome_labels_by_col: chr(0) 
-#>   ..$ col_meta             :List of 5
-#>   .. ..$ B         :List of 13
-#>   .. .. ..$ token             : chr "b"
-#>   .. .. ..$ model_id          : chr "M1"
-#>   .. .. ..$ source_field      : chr "estimate"
-#>   .. .. ..$ precision         : int 2
-#>   .. .. ..$ p_style           : NULL
-#>   .. .. ..$ threshold         : NULL
-#>   .. .. ..$ signif            : NULL
-#>   .. .. ..$ ci_role           : NULL
-#>   .. .. ..$ ci_pair           : NULL
-#>   .. .. ..$ ci_label          : NULL
-#>   .. .. ..$ is_df             : logi FALSE
-#>   .. .. ..$ display_label     : chr "B"
-#>   .. .. ..$ fit_stat_overrides:List of 3
-#>   .. .. .. ..$ :List of 5
-#>   .. .. .. .. ..$ fit_stat : chr "nobs"
-#>   .. .. .. .. ..$ precision: int 0
-#>   .. .. .. .. ..$ p_style  : NULL
-#>   .. .. .. .. ..$ threshold: NULL
-#>   .. .. .. .. ..$ row      : int 9
-#>   .. .. .. ..$ :List of 5
-#>   .. .. .. .. ..$ fit_stat : chr "r2"
-#>   .. .. .. .. ..$ precision: int 2
-#>   .. .. .. .. ..$ p_style  : NULL
-#>   .. .. .. .. ..$ threshold: NULL
-#>   .. .. .. .. ..$ row      : int 10
-#>   .. .. .. ..$ :List of 5
-#>   .. .. .. .. ..$ fit_stat : chr "adj_r2"
-#>   .. .. .. .. ..$ precision: int 2
-#>   .. .. .. .. ..$ p_style  : NULL
-#>   .. .. .. .. ..$ threshold: NULL
-#>   .. .. .. .. ..$ row      : int 11
-#>   .. ..$ SE        :List of 12
-#>   .. .. ..$ token        : chr "se"
-#>   .. .. ..$ model_id     : chr "M1"
-#>   .. .. ..$ source_field : chr "se"
-#>   .. .. ..$ precision    : int 2
-#>   .. .. ..$ p_style      : NULL
-#>   .. .. ..$ threshold    : NULL
-#>   .. .. ..$ signif       : NULL
-#>   .. .. ..$ ci_role      : NULL
-#>   .. .. ..$ ci_pair      : NULL
-#>   .. .. ..$ ci_label     : NULL
-#>   .. .. ..$ is_df        : logi FALSE
-#>   .. .. ..$ display_label: chr "SE"
-#>   .. ..$ 95% CI: LL:List of 12
-#>   .. .. ..$ token        : chr "ci"
-#>   .. .. ..$ model_id     : chr "M1"
-#>   .. .. ..$ source_field : chr "ci_low"
-#>   .. .. ..$ precision    : int 2
-#>   .. .. ..$ p_style      : NULL
-#>   .. .. ..$ threshold    : NULL
-#>   .. .. ..$ signif       : NULL
-#>   .. .. ..$ ci_role      : chr "LL"
-#>   .. .. ..$ ci_pair      : chr "95% CI: UL"
-#>   .. .. ..$ ci_label     : chr "95% CI"
-#>   .. .. ..$ is_df        : logi FALSE
-#>   .. .. ..$ display_label: chr "95% CI"
-#>   .. ..$ 95% CI: UL:List of 12
-#>   .. .. ..$ token        : chr "ci"
-#>   .. .. ..$ model_id     : chr "M1"
-#>   .. .. ..$ source_field : chr "ci_high"
-#>   .. .. ..$ precision    : int 2
-#>   .. .. ..$ p_style      : NULL
-#>   .. .. ..$ threshold    : NULL
-#>   .. .. ..$ signif       : NULL
-#>   .. .. ..$ ci_role      : chr "UL"
-#>   .. .. ..$ ci_pair      : chr "95% CI: LL"
-#>   .. .. ..$ ci_label     : chr "95% CI"
-#>   .. .. ..$ is_df        : logi FALSE
-#>   .. .. ..$ display_label: chr "95% CI"
-#>   .. ..$ p         :List of 12
-#>   .. .. ..$ token        : chr "p"
-#>   .. .. ..$ model_id     : chr "M1"
-#>   .. .. ..$ source_field : chr "p_value"
-#>   .. .. ..$ precision    : int 3
-#>   .. .. ..$ p_style      : chr "apa"
-#>   .. .. ..$ threshold    : num 0.001
-#>   .. .. ..$ signif       : NULL
-#>   .. .. ..$ ci_role      : NULL
-#>   .. .. ..$ ci_pair      : NULL
-#>   .. .. ..$ ci_label     : NULL
-#>   .. .. ..$ is_df        : logi FALSE
-#>   .. .. ..$ display_label: chr "p"
-#>   ..$ spanners             : NULL
-#>   ..$ ci_pairs             :List of 1
-#>   .. ..$ :List of 2
-#>   .. .. ..$ label: chr "95% CI"
-#>   .. .. ..$ cols : int [1:2] 4 5
-#>   ..$ format_spec          :List of 9
-#>   .. ..$ decimal_mark      : chr "."
-#>   .. ..$ digits            : int 2
-#>   .. ..$ p_digits          : int 3
-#>   .. ..$ effect_size_digits: int 2
-#>   .. ..$ fit_digits        : int 2
-#>   .. ..$ ic_digits         : int 1
-#>   .. ..$ p_style           : chr "apa"
-#>   .. ..$ p_threshold       : num 0.001
-#>   .. ..$ ci_level          : num 0.95
-#>  - attr(*, "padding")= int 0
-#>  - attr(*, "fit_stats_layout")= chr "first_col"
-#>  - attr(*, "model_ids")= chr "M1"
-#>  - attr(*, "outcome")= chr "wellbeing_score"
 ```
 
 ``` r

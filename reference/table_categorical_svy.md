@@ -196,12 +196,10 @@ table_categorical_svy(
 
   One of `"default"`, `"data.frame"`, `"long"`, or a rendering engine:
   `"tinytable"`, `"gt"`, `"flextable"`, `"excel"`, `"clipboard"`,
-  `"word"`. `"data.frame"` and `"long"` are synonyms here and return the
-  same object: the wide compute frame, one row per level with a pair of
-  columns per group. Note the difference from
-  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
-  where the two tokens return genuinely different shapes – this design
-  carries a single compute frame, and both names reach it.
+  `"word"`. `"data.frame"` is the displayed table with its numbers,
+  `"long"` one row per variable, level and group, as in
+  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md);
+  see *Value*.
 
 - indent_text, indent_text_excel_clipboard:
 
@@ -224,11 +222,49 @@ table_categorical_svy(
 
 ## Value
 
-A `spicy_categorical_svy_table`: the wide compute frame, with the
-display frame and the typed view attached. `output = "data.frame"` /
-`"long"` returns the compute frame unclassed – the two tokens are
-synonyms and return identical objects. The three carry the whole note as
+Depends on `output`:
+
+- `"default"`: a `spicy_categorical_svy_table` (a `data.frame` subclass,
+  with the parent class `"spicy_table"`), printed when the call is bare;
+  its columns are the table's compute frame, and the display frame and
+  the typed view are attached.
+
+- `"data.frame"`: the displayed table with its numbers, what
+  [as.data.frame()](https://amaltawfik.github.io/spicy/reference/as.data.frame.spicy_categorical_svy_table.md)
+  of the default object returns: one row per printed row (the header row
+  of each variable, which carries its *p*-value, then its levels), the
+  key columns `variable` (the column name), `label` (the label
+  displayed), `level` and `.row_role` (`"factor_header"`, `"level"`, or
+  `"missing"` on the row of missing values the table adds), then the
+  printed columns in their order: per block of `by` (and the `Total`
+  margin) `<group> n`, `<group> \%`, with `proportion_ci` the interval
+  bounds `<group> \% CI lower` and `<group> \% CI upper`, with `deff`
+  `<group> DEff`, and last `p`. Without `by`, the columns of the one
+  block are `n`, `\%`, ...
+
+- `"long"`: one row per variable, level and group, in the order of the
+  table, with `variable`, `label`, `level`, `.row_role` (the role of
+  `level`: `"level"`, or `"missing"`), with `by` `group`, `.group_role`
+  (the role of `group`: `"group"`, `"missing"` for the column of missing
+  `by` values, or `"total"`) and `total` (`TRUE` on the rows of the
+  margin), then `n` (observed), `pct` (the estimated percentage),
+  `ci_lower`, `ci_upper` (its interval, `NA` without `proportion_ci`),
+  `deff` (`NA` without `deff`), and, with `by` and the *p*-value,
+  `test_type` (the statistic of
+  [`survey::svychisq()`](https://rdrr.io/pkg/survey/man/svychisq.html),
+  `chisq_statistic`), `p.value` and, under `p_adjust`, `p_unadjusted`.
+
+- `"tinytable"`, `"gt"`, `"flextable"`: the rendered table.
+
+- `"excel"` / `"word"`: writes the file and returns its path invisibly.
+
+- `"clipboard"`: copies the table and returns the display `data.frame`
+  invisibly.
+
+The default object and the two data frames carry the whole note as
 printed, "Note." included, in `attr(x, "note")`.
+[tidy()](https://amaltawfik.github.io/spicy/reference/tidy.spicy_categorical_svy_table.md)
+reports the proportions between 0 and 1.
 
 ## What the columns are
 

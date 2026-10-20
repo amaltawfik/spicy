@@ -304,8 +304,12 @@ Allowed values are `"none"` (default), `"auto"` (= legacy `TRUE`),
 explicit choices (e.g. `"eta_sq"` with two groups, or `"hedges_g"` with
 `test = "nonparametric"`) trigger an actionable error.
 
-When you need the underlying columns for further processing, use
-`output = "data.frame"`:
+When you need the numbers for further processing, use
+`output = "data.frame"` for the table as it is displayed, one row per
+printed row: the key columns `variable`, `label`, `group` and
+`.row_role`, then the printed columns. A cell that prints several
+numbers keeps the others beside it: the test statistic `Test` its
+degrees of freedom `df` and `df.residual`:
 
 ``` r
 
@@ -317,35 +321,32 @@ table_continuous(
   effect_size = "auto",
   output = "data.frame"
 )
-#>          variable           label           group     mean        sd  min   max
-#> 1             bmi             bmi Lower secondary 28.08731  3.471744 18.2  38.9
-#> 2             bmi             bmi Upper secondary 26.01891  3.434736 16.0  37.1
-#> 3             bmi             bmi        Tertiary 24.39036  3.520150 16.0  33.0
-#> 4 wellbeing_score wellbeing_score Lower secondary 57.21571 15.444587 18.7  97.9
-#> 5 wellbeing_score wellbeing_score Upper secondary 68.96920 13.621193 26.7 100.0
-#> 6 wellbeing_score wellbeing_score        Tertiary 76.85250 13.226818 40.4 100.0
-#>   ci_lower ci_upper median    q1     q3    iqr med_ci_lower med_ci_upper   n
-#> 1 27.66333 28.51129   28.2 25.70 29.900  4.200         27.6         28.7 260
-#> 2 25.72693 26.31090   26.1 23.50 28.500  5.000         25.7         26.5 534
-#> 3 24.04170 24.73901   24.5 22.00 26.775  4.775         24.1         24.9 394
-#> 4 55.33323 59.09819   57.9 45.40 68.500 23.100         55.5         60.2 261
-#> 5 67.81669 70.12172   69.5 60.85 77.300 16.450         68.1         70.9 539
-#> 6 75.55235 78.15265   77.2 68.60 86.150 17.550         76.2         78.5 400
-#>   weighted_n   test_type statistic df1      df2      p.value es_type  es_value
-#> 1         NA welch_anova  87.95902   2 654.4758 1.467916e-34  eta_sq 0.1307679
-#> 2         NA        <NA>        NA  NA       NA           NA    <NA>        NA
-#> 3         NA        <NA>        NA  NA       NA           NA    <NA>        NA
-#> 4         NA welch_anova 144.35083   2 638.5873 1.888362e-52  eta_sq 0.2081970
-#> 5         NA        <NA>        NA  NA       NA           NA    <NA>        NA
-#> 6         NA        <NA>        NA  NA       NA           NA    <NA>        NA
-#>   es_ci_lower es_ci_upper smd_type smd_value
-#> 1  0.09667861   0.1654516     <NA>        NA
-#> 2          NA          NA     <NA>        NA
-#> 3          NA          NA     <NA>        NA
-#> 4  0.16901207   0.2461732     <NA>        NA
-#> 5          NA          NA     <NA>        NA
-#> 6          NA          NA     <NA>        NA
+#>          variable           label           group .row_role        M        SD
+#> 1             bmi             bmi Lower secondary     group 28.08731  3.471744
+#> 2             bmi             bmi Upper secondary     group 26.01891  3.434736
+#> 3             bmi             bmi        Tertiary     group 24.39036  3.520150
+#> 4 wellbeing_score wellbeing_score Lower secondary     group 57.21571 15.444587
+#> 5 wellbeing_score wellbeing_score Upper secondary     group 68.96920 13.621193
+#> 6 wellbeing_score wellbeing_score        Tertiary     group 76.85250 13.226818
+#>    Min   Max 95% CI LL 95% CI UL   n      Test df df.residual            p
+#> 1 18.2  38.9  27.66333  28.51129 260  87.95902  2    654.4758 1.467916e-34
+#> 2 16.0  37.1  25.72693  26.31090 534        NA NA          NA           NA
+#> 3 16.0  33.0  24.04170  24.73901 394        NA NA          NA           NA
+#> 4 18.7  97.9  55.33323  59.09819 261 144.35083  2    638.5873 1.888362e-52
+#> 5 26.7 100.0  67.81669  70.12172 539        NA NA          NA           NA
+#> 6 40.4 100.0  75.55235  78.15265 400        NA NA          NA           NA
+#>          ES
+#> 1 0.1307679
+#> 2        NA
+#> 3        NA
+#> 4 0.2081970
+#> 5        NA
+#> 6        NA
 ```
+
+`output = "long"` gives every statistic the table computes, whatever it
+displays, one row per variable and group, in the vocabulary of `broom`
+(`statistic`, `df`, `df.residual`, `p.value`, `es_type`, `es_value`).
 
 ## Balance: the standardized mean difference
 
@@ -506,58 +507,32 @@ table_continuous(
   by = education,
   output = "data.frame"
 )
-#>                  variable                  label           group     mean
-#> 1         life_sat_health        life_sat_health Lower secondary 2.714286
-#> 2         life_sat_health        life_sat_health Upper secondary 3.533708
-#> 3         life_sat_health        life_sat_health        Tertiary 4.110276
-#> 4           life_sat_work          life_sat_work Lower secondary 2.570881
-#> 5           life_sat_work          life_sat_work Upper secondary 3.422430
-#> 6           life_sat_work          life_sat_work        Tertiary 3.851010
-#> 7  life_sat_relationships life_sat_relationships Lower secondary 3.023077
-#> 8  life_sat_relationships life_sat_relationships Upper secondary 3.743446
-#> 9  life_sat_relationships life_sat_relationships        Tertiary 4.158291
-#> 10      life_sat_standard      life_sat_standard Lower secondary 2.666667
-#> 11      life_sat_standard      life_sat_standard Upper secondary 3.387218
-#> 12      life_sat_standard      life_sat_standard        Tertiary 3.887218
-#>           sd min max ci_lower ci_upper median q1  q3 iqr med_ci_lower
-#> 1  1.2021575   1   5 2.567189 2.861382      3  2 3.5 1.5            3
-#> 2  1.1853493   1   5 3.432943 3.634473      4  3 5.0 2.0            3
-#> 3  1.0432216   1   5 4.007602 4.212950      4  3 5.0 2.0            4
-#> 4  1.1467994   1   5 2.431102 2.710660      3  2 3.0 1.0            2
-#> 5  1.1037312   1   5 3.328691 3.516169      4  3 4.0 1.0            3
-#> 6  1.0314174   1   5 3.749112 3.952909      4  3 5.0 2.0            4
-#> 7  1.2268891   1   5 2.873246 3.172908      3  2 4.0 2.0            3
-#> 8  0.9645227   1   5 3.661453 3.825439      4  3 5.0 2.0            4
-#> 9  0.9322485   1   5 4.066423 4.250159      4  4 5.0 1.0            4
-#> 10 1.1635489   1   5 2.524846 2.808487      3  2 3.0 1.0            2
-#> 11 1.1065913   1   5 3.292970 3.481466      4  3 4.0 1.0            3
-#> 12 0.9588582   1   5 3.792847 3.981589      4  3 5.0 2.0            4
-#>    med_ci_upper   n weighted_n   test_type statistic df1      df2      p.value
-#> 1             3 259         NA welch_anova 118.73585   2 652.0775 1.063917e-44
-#> 2             4 534         NA        <NA>        NA  NA       NA           NA
-#> 3             5 399         NA        <NA>        NA  NA       NA           NA
-#> 4             3 261         NA welch_anova 105.98821   2 651.9434 1.398117e-40
-#> 5             4 535         NA        <NA>        NA  NA       NA           NA
-#> 6             4 396         NA        <NA>        NA  NA       NA           NA
-#> 7             3 260         NA welch_anova  82.35074   2 617.9668 1.969764e-32
-#> 8             4 534         NA        <NA>        NA  NA       NA           NA
-#> 9             5 398         NA        <NA>        NA  NA       NA           NA
-#> 10            3 261         NA welch_anova 101.31672   2 648.7723 5.105889e-39
-#> 11            4 532         NA        <NA>        NA  NA       NA           NA
-#> 12            4 399         NA        <NA>        NA  NA       NA           NA
-#>    smd_type smd_value
-#> 1      <NA>        NA
-#> 2      <NA>        NA
-#> 3      <NA>        NA
-#> 4      <NA>        NA
-#> 5      <NA>        NA
-#> 6      <NA>        NA
-#> 7      <NA>        NA
-#> 8      <NA>        NA
-#> 9      <NA>        NA
-#> 10     <NA>        NA
-#> 11     <NA>        NA
-#> 12     <NA>        NA
+#>                  variable                  label           group .row_role
+#> 1         life_sat_health        life_sat_health Lower secondary     group
+#> 2         life_sat_health        life_sat_health Upper secondary     group
+#> 3         life_sat_health        life_sat_health        Tertiary     group
+#> 4           life_sat_work          life_sat_work Lower secondary     group
+#> 5           life_sat_work          life_sat_work Upper secondary     group
+#> 6           life_sat_work          life_sat_work        Tertiary     group
+#> 7  life_sat_relationships life_sat_relationships Lower secondary     group
+#> 8  life_sat_relationships life_sat_relationships Upper secondary     group
+#> 9  life_sat_relationships life_sat_relationships        Tertiary     group
+#> 10      life_sat_standard      life_sat_standard Lower secondary     group
+#> 11      life_sat_standard      life_sat_standard Upper secondary     group
+#> 12      life_sat_standard      life_sat_standard        Tertiary     group
+#>           M        SD Min Max 95% CI LL 95% CI UL   n            p
+#> 1  2.714286 1.2021575   1   5  2.567189  2.861382 259 1.063917e-44
+#> 2  3.533708 1.1853493   1   5  3.432943  3.634473 534           NA
+#> 3  4.110276 1.0432216   1   5  4.007602  4.212950 399           NA
+#> 4  2.570881 1.1467994   1   5  2.431102  2.710660 261 1.398117e-40
+#> 5  3.422430 1.1037312   1   5  3.328691  3.516169 535           NA
+#> 6  3.851010 1.0314174   1   5  3.749112  3.952909 396           NA
+#> 7  3.023077 1.2268891   1   5  2.873246  3.172908 260 1.969764e-32
+#> 8  3.743446 0.9645227   1   5  3.661453  3.825439 534           NA
+#> 9  4.158291 0.9322485   1   5  4.066423  4.250159 398           NA
+#> 10 2.666667 1.1635489   1   5  2.524846  2.808487 261 5.105889e-39
+#> 11 3.387218 1.1065913   1   5  3.292970  3.481466 532           NA
+#> 12 3.887218 0.9588582   1   5  3.792847  3.981589 399           NA
 ```
 
 Use `exclude` when you want a broad selection with one or two explicit
@@ -882,7 +857,7 @@ formatting vocabulary as
 - `show_n = FALSE` and `ci = FALSE` drop the corresponding columns (and
   the CI spanner / borders) structurally from every output; the
   underlying `n` and `ci_lower` / `ci_upper` are always present in
-  `output = "data.frame"` / `"long"` for downstream code.
+  `output = "long"` for downstream code.
 
 ``` r
 
@@ -911,7 +886,7 @@ table_continuous(
 
 [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
 returns an object that can be coerced to a plain `data.frame` / `tbl_df`
-(stripping the spicy formatting attributes) or piped into
+(the displayed table, as with `output = "data.frame"`) or piped into
 [`broom::tidy()`](https://generics.r-lib.org/reference/tidy.html) /
 [`broom::glance()`](https://generics.r-lib.org/reference/glance.html)
 for any downstream tidyverse stats workflow:
@@ -925,21 +900,23 @@ out <- table_continuous(
 )
 
 # Long descriptive rows: one per (variable x group) with broom-style
-# columns (variable, label, group, estimate = mean, std.error,
-# conf.low / conf.high, n, min, max, sd).
+# columns (variable, label, group, .group_role, estimate = mean,
+# std.error, conf.low / conf.high, n, weighted_n, median, q1, q3, min,
+# max, sd).
 broom::tidy(out)
-#> # A tibble: 4 × 11
-#>   variable   label group estimate std.error conf.low conf.high     n   min   max
-#>   <chr>      <chr> <chr>    <dbl>     <dbl>    <dbl>     <dbl> <int> <dbl> <dbl>
-#> 1 bmi        bmi   Fema…     25.7     0.152     25.4      26.0   616  16    38.9
-#> 2 bmi        bmi   Male      26.2     0.152     25.9      26.5   572  16    37.7
-#> 3 wellbeing… well… Fema…     67.2     0.594     66.0      68.3   620  19.6 100  
-#> 4 wellbeing… well… Male      71.0     0.674     69.7      72.4   580  18.7 100  
-#> # ℹ 1 more variable: sd <dbl>
+#> # A tibble: 4 × 16
+#>   variable   label group .group_role estimate std.error conf.low conf.high     n
+#>   <chr>      <chr> <chr> <chr>          <dbl>     <dbl>    <dbl>     <dbl> <int>
+#> 1 bmi        bmi   Fema… group           25.7     0.152     25.4      26.0   616
+#> 2 bmi        bmi   Male  group           26.2     0.152     25.9      26.5   572
+#> 3 wellbeing… well… Fema… group           67.2     0.594     66.0      68.3   620
+#> 4 wellbeing… well… Male  group           71.0     0.674     69.7      72.4   580
+#> # ℹ 7 more variables: weighted_n <dbl>, median <dbl>, q1 <dbl>, q3 <dbl>,
+#> #   min <dbl>, max <dbl>, sd <dbl>
 
 # One row per variable with the omnibus test + effect-size summary
 # (test_type, statistic, df, df.residual, p.value, es_type, es_value,
-# es_ci_lower / es_ci_upper, n_total).
+# es_ci_lower / es_ci_upper, smd_type, smd_value, nobs).
 broom::glance(out)
 #> # A tibble: 2 × 14
 #>   variable  label test_type statistic    df df.residual p.value es_type es_value
@@ -947,25 +924,20 @@ broom::glance(out)
 #> 1 bmi       bmi   welch_t       -2.38 1184.          NA 1.76e-2 NA            NA
 #> 2 wellbein… well… welch_t       -4.33 1169.          NA 1.65e-5 NA            NA
 #> # ℹ 5 more variables: es_ci_lower <dbl>, es_ci_upper <dbl>, smd_type <chr>,
-#> #   smd_value <dbl>, n_total <int>
+#> #   smd_value <dbl>, nobs <int>
 
-# Or just unbox to a plain data.frame (long-format underlying data)
+# Or the displayed table as a plain data.frame
 head(as.data.frame(out))
-#>          variable           label  group     mean        sd  min   max ci_lower
-#> 1             bmi             bmi Female 25.68506  3.781113 16.0  38.9 25.38588
-#> 2             bmi             bmi   Male 26.19685  3.638092 16.0  37.7 25.89808
-#> 3 wellbeing_score wellbeing_score Female 67.16194 14.798488 19.6 100.0 65.99480
-#> 4 wellbeing_score wellbeing_score   Male 71.04879 16.227304 18.7 100.0 69.72540
-#>   ci_upper median     q1     q3    iqr med_ci_lower med_ci_upper   n weighted_n
-#> 1 25.98425   25.7 23.100 28.600  5.500         25.4         26.1 616         NA
-#> 2 26.49563   26.1 23.875 28.625  4.750         25.8         26.6 572         NA
-#> 3 68.32907   68.2 57.300 77.525 20.225         66.6         69.7 620         NA
-#> 4 72.37219   72.3 61.275 81.575 20.300         70.8         73.2 580         NA
-#>   test_type statistic      df1 df2      p.value smd_type smd_value
-#> 1   welch_t -2.377237 1184.497  NA 1.760093e-02     <NA>        NA
-#> 2      <NA>        NA       NA  NA           NA     <NA>        NA
-#> 3   welch_t -4.326141 1168.700  NA 1.647005e-05     <NA>        NA
-#> 4      <NA>        NA       NA  NA           NA     <NA>        NA
+#>          variable           label  group .row_role        M        SD  Min
+#> 1             bmi             bmi Female     group 25.68506  3.781113 16.0
+#> 2             bmi             bmi   Male     group 26.19685  3.638092 16.0
+#> 3 wellbeing_score wellbeing_score Female     group 67.16194 14.798488 19.6
+#> 4 wellbeing_score wellbeing_score   Male     group 71.04879 16.227304 18.7
+#>     Max 95% CI LL 95% CI UL   n            p
+#> 1  38.9  25.38588  25.98425 616 1.760093e-02
+#> 2  37.7  25.89808  26.49563 572           NA
+#> 3 100.0  65.99480  68.32907 620 1.647005e-05
+#> 4 100.0  69.72540  72.37219 580           NA
 ```
 
 ## Output formats
@@ -977,7 +949,8 @@ supports the same reporting-oriented outputs as
 | `output` value | Returned object |
 |:---|:---|
 | `"default"` | Styled ASCII console table |
-| `"data.frame"` / `"long"` | Plain `data.frame` with the underlying long-format rows (synonyms; pick whichever reads better in your code) |
+| `"data.frame"` | Plain `data.frame`: the displayed table, with its numbers |
+| `"long"` | Plain `data.frame`: every statistic, one row per variable and group |
 | `"tinytable"` | Formatted tinytable |
 | `"gt"` | Formatted gt table |
 | `"flextable"` | Formatted flextable |
@@ -1028,7 +1001,7 @@ table_continuous(
 |  | Tertiary |  4.11 |  1.04 |  1.00 |   5.00 |  4.01 |  4.21 | 399 |       |
 | *Note.* Missing values removed: bmi (12), life_sat_health (8). |  |  |  |  |  |  |  |  |  |
 
-Descriptive statistics by education {#tinytable_wff4nwwxk2088pm8pkbg
+Descriptive statistics by education {#tinytable_2d70ntq0kz9ou9ntcnew
 .table .tinytable
 style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}

@@ -488,31 +488,32 @@ With two groups, as in `tbl`, each item’s table is 2x2, and
 Campbell’s N-1 chi-squared test, presented in [*Categorical summary
 tables*](https://amaltawfik.github.io/spicy/articles/table-categorical.html#chi-squared-or-fishers-exact-test).
 
-Back in `tbl`, every item takes the chi-squared. The data frame output
-keeps the test, the statistics and both p-values:
+Back in `tbl`, every item takes the chi-squared. The long output keeps
+the test, the statistics and both p-values, on each row of an item:
 
 ``` r
 
-wide <- table_multiresponse(
+long <- table_multiresponse(
   sochealth,
   select = starts_with("info_"),
   by = sex,
-  output = "data.frame"
+  output = "long"
 )
-wide[c("Variable", "test_type", "Chi2", "df", "p", "p_unadjusted")]
-#>           Variable   test_type        Chi2 df            p p_unadjusted
-#> 1      info_doctor chi_squared  0.51997605  1 1.000000e+00 4.708519e-01
-#> 2  info_pharmacist chi_squared  0.55490963  1 1.000000e+00 4.563185e-01
-#> 3    info_internet chi_squared  0.01801149  1 1.000000e+00 8.932390e-01
-#> 4      info_family chi_squared 18.33047265  1 9.285636e-05 1.857127e-05
-#> 5       info_media chi_squared  0.95631714  1 1.000000e+00 3.281165e-01
-#> 6 (No item chosen)        <NA>          NA NA           NA           NA
-#> 7      Respondents        <NA>          NA NA           NA           NA
+long[long$group == "Total", c(
+  "variable", "test_type", "statistic", "df", "p.value", "p_unadjusted"
+)]
+#>           variable   test_type   statistic df      p.value p_unadjusted
+#> 3      info_doctor chi_squared  0.51997605  1 1.000000e+00 4.708519e-01
+#> 6  info_pharmacist chi_squared  0.55490963  1 1.000000e+00 4.563185e-01
+#> 9    info_internet chi_squared  0.01801149  1 1.000000e+00 8.932390e-01
+#> 12     info_family chi_squared 18.33047265  1 9.285636e-05 1.857127e-05
+#> 15      info_media chi_squared  0.95631714  1 1.000000e+00 3.281165e-01
+#> 18            none        <NA>          NA NA           NA           NA
 ```
 
-The `p` column is adjusted by Holm’s method, and `p_unadjusted` keeps
-the raw values. The items of one question form a natural family of
-tests, read together, so the adjustment is on by default.
+The p-value is adjusted by Holm’s method, and `p_unadjusted` keeps the
+raw values. The items of one question form a natural family of tests,
+read together, so the adjustment is on by default.
 [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
 defaults to `"none"`, because there each test belongs to a different
 variable.
@@ -762,40 +763,40 @@ note and in `glance()`.
 
 ## Downstream: the raw frame and the broom views
 
-`output = "data.frame"` returns the wide frame at full precision: one
-row per item, the `(No item chosen)` row, a last row with the base, and
-columns named after the groups. `.row_role` tells the rows apart:
+`output = "data.frame"` returns the displayed table at full precision:
+one row per item, the `(No item chosen)` row, a last row with the base,
+the key columns `variable`, `label` and `.row_role`, and the printed
+columns, named after the groups. `.row_role` tells the rows apart:
 `"summary"` for an item, `"none"` and `"missing"` for the two rows of
 `none_row`, `"fit_stat"` for the base:
 
 ``` r
 
-names(wide)
-#>  [1] "Variable"     ".row_role"    "Female n"     "Female %"     "Male n"      
-#>  [6] "Male %"       "Total n"      "Total %"      "test_type"    "Chi2"        
-#> [11] "df"           "p"            "p_unadjusted"
-```
-
-`output = "long"` returns one row per item, or row of `none_row`, and
-group, with the base of the group:
-
-``` r
-
-long <- table_multiresponse(
+wide <- table_multiresponse(
   sochealth,
   select = starts_with("info_"),
   by = sex,
-  output = "long"
+  output = "data.frame"
 )
+names(wide)
+#>  [1] "variable"  "label"     ".row_role" "Female n"  "Female %"  "Male n"   
+#>  [7] "Male %"    "Total n"   "Total %"   "p"
+```
+
+`output = "long"` returns one row per item, or row of `none_row`, and
+group, with the base of the group and the margin flagged by `total`:
+
+``` r
+
 head(long, 3)
-#>      variable       label .row_role  group   n base      pct   test_type
-#> 1 info_doctor info_doctor   summary Female 377  599 62.93823 chi_squared
-#> 2 info_doctor info_doctor   summary   Male 344  565 60.88496 chi_squared
-#> 3 info_doctor info_doctor   summary  Total 721 1164 61.94158 chi_squared
-#>        chi2 df p p_unadjusted
-#> 1 0.5199761  1 1    0.4708519
-#> 2 0.5199761  1 1    0.4708519
-#> 3 0.5199761  1 1    0.4708519
+#>      variable       label .row_role  group .group_role total   n base pct_cases
+#> 1 info_doctor info_doctor   summary Female       group FALSE 377  599  62.93823
+#> 2 info_doctor info_doctor   summary   Male       group FALSE 344  565  60.88496
+#> 3 info_doctor info_doctor   summary  Total       total  TRUE 721 1164  61.94158
+#>     test_type statistic df p.value p_unadjusted
+#> 1 chi_squared 0.5199761  1       1    0.4708519
+#> 2 chi_squared 0.5199761  1       1    0.4708519
+#> 3 chi_squared 0.5199761  1       1    0.4708519
 ```
 
 Both frames carry the note in `attr(x, "note")` and the global test in
@@ -808,26 +809,26 @@ responses. `glance()` returns one row for the question:
 ``` r
 
 broom::tidy(tbl)
-#> # A tibble: 15 × 13
-#>    variable        label group total     n  base proportion proportion_responses
-#>    <chr>           <chr> <chr> <lgl> <int> <int>      <dbl>                <dbl>
-#>  1 info_doctor     info… Fema… FALSE   377   599      0.629               0.349 
-#>  2 info_doctor     info… Male  FALSE   344   565      0.609               0.373 
-#>  3 info_doctor     info… Total TRUE    721  1164      0.619               0.360 
-#>  4 info_pharmacist info… Fema… FALSE   137   599      0.229               0.127 
-#>  5 info_pharmacist info… Male  FALSE   119   565      0.211               0.129 
-#>  6 info_pharmacist info… Total TRUE    256  1164      0.220               0.128 
-#>  7 info_internet   info… Fema… FALSE   268   599      0.447               0.248 
-#>  8 info_internet   info… Male  FALSE   255   565      0.451               0.277 
-#>  9 info_internet   info… Total TRUE    523  1164      0.449               0.261 
-#> 10 info_family     info… Fema… FALSE   219   599      0.366               0.203 
-#> 11 info_family     info… Male  FALSE   141   565      0.250               0.153 
-#> 12 info_family     info… Total TRUE    360  1164      0.309               0.180 
-#> 13 info_media      info… Fema… FALSE    78   599      0.130               0.0723
-#> 14 info_media      info… Male  FALSE    63   565      0.112               0.0683
-#> 15 info_media      info… Total TRUE    141  1164      0.121               0.0705
-#> # ℹ 5 more variables: test_type <chr>, statistic <dbl>, df <int>,
-#> #   p.value <dbl>, p.unadjusted <dbl>
+#> # A tibble: 15 × 14
+#>    variable        label    group .group_role total     n  base proportion_cases
+#>    <chr>           <chr>    <chr> <chr>       <lgl> <int> <int>            <dbl>
+#>  1 info_doctor     info_do… Fema… group       FALSE   377   599            0.629
+#>  2 info_doctor     info_do… Male  group       FALSE   344   565            0.609
+#>  3 info_doctor     info_do… Total total       TRUE    721  1164            0.619
+#>  4 info_pharmacist info_ph… Fema… group       FALSE   137   599            0.229
+#>  5 info_pharmacist info_ph… Male  group       FALSE   119   565            0.211
+#>  6 info_pharmacist info_ph… Total total       TRUE    256  1164            0.220
+#>  7 info_internet   info_in… Fema… group       FALSE   268   599            0.447
+#>  8 info_internet   info_in… Male  group       FALSE   255   565            0.451
+#>  9 info_internet   info_in… Total total       TRUE    523  1164            0.449
+#> 10 info_family     info_fa… Fema… group       FALSE   219   599            0.366
+#> 11 info_family     info_fa… Male  group       FALSE   141   565            0.250
+#> 12 info_family     info_fa… Total total       TRUE    360  1164            0.309
+#> 13 info_media      info_me… Fema… group       FALSE    78   599            0.130
+#> 14 info_media      info_me… Male  group       FALSE    63   565            0.112
+#> 15 info_media      info_me… Total total       TRUE    141  1164            0.121
+#> # ℹ 6 more variables: proportion_responses <dbl>, test_type <chr>,
+#> #   statistic <dbl>, df <int>, p.value <dbl>, p_unadjusted <dbl>
 broom::glance(tbl)
 #> # A tibble: 1 × 11
 #>   n_items n_items_tested n_groups  nobs test_type statistic    df p.value boot_n
@@ -1003,7 +1004,7 @@ table_multiresponse(
 | Respondents | 599 |      |      | 565 |      |      | 1164 |      |      |
 | *Note.* Multiple answers possible: percentages of cases can sum to more than 100%, and percentages of responses sum to 100%. Base: respondents with data for the question (excluded: 36 with no data for the question). |  |  |  |  |  |  |  |  |  |
 
-Multiple responses by Sex {#tinytable_gvk0h8wlsi1a4260y3el .table
+Multiple responses by Sex {#tinytable_xi4s0azlgaesxmb4eszn .table
 .tinytable style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 

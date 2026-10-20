@@ -563,25 +563,27 @@ each item’s table is 2x2, and <code>test = "midp"</code> and
 <code>test = "n1"</code> take the Fisher mid-p test and Campbell’s N-1
 chi-squared test, presented in <a href="table-categorical.html#chi-squared-or-fishers-exact-test"><em>Categorical
 summary tables</em></a>.</p>
-<p>Back in <code>tbl</code>, every item takes the chi-squared. The data
-frame output keeps the test, the statistics and both p-values:</p>
+<p>Back in <code>tbl</code>, every item takes the chi-squared. The long
+output keeps the test, the statistics and both p-values, on each row of
+an item:</p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">wide</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/table_multiresponse.html">table_multiresponse</a></span><span class="op">(</span></span>
+<code class="sourceCode R"><span><span class="va">long</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/table_multiresponse.html">table_multiresponse</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span>,</span>
 <span>  select <span class="op">=</span> <span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">starts_with</a></span><span class="op">(</span><span class="st">"info_"</span><span class="op">)</span>,</span>
 <span>  by <span class="op">=</span> <span class="va">sex</span>,</span>
-<span>  output <span class="op">=</span> <span class="st">"data.frame"</span></span>
+<span>  output <span class="op">=</span> <span class="st">"long"</span></span>
 <span><span class="op">)</span></span>
-<span><span class="va">wide</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Variable"</span>, <span class="st">"test_type"</span>, <span class="st">"Chi2"</span>, <span class="st">"df"</span>, <span class="st">"p"</span>, <span class="st">"p_unadjusted"</span><span class="op">)</span><span class="op">]</span></span>
-<span><span class="co">#&gt;           Variable   test_type        Chi2 df            p p_unadjusted</span></span>
-<span><span class="co">#&gt; 1      info_doctor chi_squared  0.51997605  1 1.000000e+00 4.708519e-01</span></span>
-<span><span class="co">#&gt; 2  info_pharmacist chi_squared  0.55490963  1 1.000000e+00 4.563185e-01</span></span>
-<span><span class="co">#&gt; 3    info_internet chi_squared  0.01801149  1 1.000000e+00 8.932390e-01</span></span>
-<span><span class="co">#&gt; 4      info_family chi_squared 18.33047265  1 9.285636e-05 1.857127e-05</span></span>
-<span><span class="co">#&gt; 5       info_media chi_squared  0.95631714  1 1.000000e+00 3.281165e-01</span></span>
-<span><span class="co">#&gt; 6 (No item chosen)        &lt;NA&gt;          NA NA           NA           NA</span></span>
-<span><span class="co">#&gt; 7      Respondents        &lt;NA&gt;          NA NA           NA           NA</span></span></code></pre></div>
-<p>The <code>p</code> column is adjusted by Holm’s method, and
+<span><span class="va">long</span><span class="op">[</span><span class="va">long</span><span class="op">$</span><span class="va">group</span> <span class="op">==</span> <span class="st">"Total"</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
+<span>  <span class="st">"variable"</span>, <span class="st">"test_type"</span>, <span class="st">"statistic"</span>, <span class="st">"df"</span>, <span class="st">"p.value"</span>, <span class="st">"p_unadjusted"</span></span>
+<span><span class="op">)</span><span class="op">]</span></span>
+<span><span class="co">#&gt;           variable   test_type   statistic df      p.value p_unadjusted</span></span>
+<span><span class="co">#&gt; 3      info_doctor chi_squared  0.51997605  1 1.000000e+00 4.708519e-01</span></span>
+<span><span class="co">#&gt; 6  info_pharmacist chi_squared  0.55490963  1 1.000000e+00 4.563185e-01</span></span>
+<span><span class="co">#&gt; 9    info_internet chi_squared  0.01801149  1 1.000000e+00 8.932390e-01</span></span>
+<span><span class="co">#&gt; 12     info_family chi_squared 18.33047265  1 9.285636e-05 1.857127e-05</span></span>
+<span><span class="co">#&gt; 15      info_media chi_squared  0.95631714  1 1.000000e+00 3.281165e-01</span></span>
+<span><span class="co">#&gt; 18            none        &lt;NA&gt;          NA NA           NA           NA</span></span></code></pre></div>
+<p>The p-value is adjusted by Holm’s method, and
 <code>p_unadjusted</code> keeps the raw values. The items of one
 question form a natural family of tests, read together, so the
 adjustment is on by default. <code><a href="../reference/table_categorical.html">table_categorical()</a></code> defaults
@@ -810,35 +812,37 @@ in <code>glance()</code>.</p>
 <div class="section level2">
 <h2 id="downstream-the-raw-frame-and-the-broom-views">Downstream: the raw frame and the broom views<a class="anchor" aria-label="anchor" href="#downstream-the-raw-frame-and-the-broom-views"></a>
 </h2>
-<p><code>output = "data.frame"</code> returns the wide frame at full
-precision: one row per item, the <code>(No item chosen)</code> row, a
-last row with the base, and columns named after the groups.
-<code>.row_role</code> tells the rows apart: <code>"summary"</code> for
-an item, <code>"none"</code> and <code>"missing"</code> for the two rows
-of <code>none_row</code>, <code>"fit_stat"</code> for the base:</p>
+<p><code>output = "data.frame"</code> returns the displayed table at
+full precision: one row per item, the <code>(No item chosen)</code> row,
+a last row with the base, the key columns <code>variable</code>,
+<code>label</code> and <code>.row_role</code>, and the printed columns,
+named after the groups. <code>.row_role</code> tells the rows apart:
+<code>"summary"</code> for an item, <code>"none"</code> and
+<code>"missing"</code> for the two rows of <code>none_row</code>,
+<code>"fit_stat"</code> for the base:</p>
 <div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">wide</span><span class="op">)</span></span>
-<span><span class="co">#&gt;  [1] "Variable"     ".row_role"    "Female n"     "Female %"     "Male n"      </span></span>
-<span><span class="co">#&gt;  [6] "Male %"       "Total n"      "Total %"      "test_type"    "Chi2"        </span></span>
-<span><span class="co">#&gt; [11] "df"           "p"            "p_unadjusted"</span></span></code></pre></div>
-<p><code>output = "long"</code> returns one row per item, or row of
-<code>none_row</code>, and group, with the base of the group:</p>
-<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">long</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/table_multiresponse.html">table_multiresponse</a></span><span class="op">(</span></span>
+<code class="sourceCode R"><span><span class="va">wide</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/table_multiresponse.html">table_multiresponse</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span>,</span>
 <span>  select <span class="op">=</span> <span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">starts_with</a></span><span class="op">(</span><span class="st">"info_"</span><span class="op">)</span>,</span>
 <span>  by <span class="op">=</span> <span class="va">sex</span>,</span>
-<span>  output <span class="op">=</span> <span class="st">"long"</span></span>
+<span>  output <span class="op">=</span> <span class="st">"data.frame"</span></span>
 <span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">long</span>, <span class="fl">3</span><span class="op">)</span></span>
-<span><span class="co">#&gt;      variable       label .row_role  group   n base      pct   test_type</span></span>
-<span><span class="co">#&gt; 1 info_doctor info_doctor   summary Female 377  599 62.93823 chi_squared</span></span>
-<span><span class="co">#&gt; 2 info_doctor info_doctor   summary   Male 344  565 60.88496 chi_squared</span></span>
-<span><span class="co">#&gt; 3 info_doctor info_doctor   summary  Total 721 1164 61.94158 chi_squared</span></span>
-<span><span class="co">#&gt;        chi2 df p p_unadjusted</span></span>
-<span><span class="co">#&gt; 1 0.5199761  1 1    0.4708519</span></span>
-<span><span class="co">#&gt; 2 0.5199761  1 1    0.4708519</span></span>
-<span><span class="co">#&gt; 3 0.5199761  1 1    0.4708519</span></span></code></pre></div>
+<span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">wide</span><span class="op">)</span></span>
+<span><span class="co">#&gt;  [1] "variable"  "label"     ".row_role" "Female n"  "Female %"  "Male n"   </span></span>
+<span><span class="co">#&gt;  [7] "Male %"    "Total n"   "Total %"   "p"</span></span></code></pre></div>
+<p><code>output = "long"</code> returns one row per item, or row of
+<code>none_row</code>, and group, with the base of the group and the
+margin flagged by <code>total</code>:</p>
+<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">long</span>, <span class="fl">3</span><span class="op">)</span></span>
+<span><span class="co">#&gt;      variable       label .row_role  group .group_role total   n base pct_cases</span></span>
+<span><span class="co">#&gt; 1 info_doctor info_doctor   summary Female       group FALSE 377  599  62.93823</span></span>
+<span><span class="co">#&gt; 2 info_doctor info_doctor   summary   Male       group FALSE 344  565  60.88496</span></span>
+<span><span class="co">#&gt; 3 info_doctor info_doctor   summary  Total       total  TRUE 721 1164  61.94158</span></span>
+<span><span class="co">#&gt;     test_type statistic df p.value p_unadjusted</span></span>
+<span><span class="co">#&gt; 1 chi_squared 0.5199761  1       1    0.4708519</span></span>
+<span><span class="co">#&gt; 2 chi_squared 0.5199761  1       1    0.4708519</span></span>
+<span><span class="co">#&gt; 3 chi_squared 0.5199761  1       1    0.4708519</span></span></code></pre></div>
 <p>Both frames carry the note in <code>attr(x, "note")</code> and the
 global test in <code>attr(x, "global_test")</code>.</p>
 <p><code>tidy()</code> returns one row per item and group, the items
@@ -847,26 +851,26 @@ respondents and of responses. <code>glance()</code> returns one row for
 the question:</p>
 <div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">broom</span><span class="fu">::</span><span class="fu"><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">tidy</a></span><span class="op">(</span><span class="va">tbl</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 15 × 13</span></span></span>
-<span><span class="co">#&gt;    variable        label group total     n  base proportion proportion_responses</span></span>
-<span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>           <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>                <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> info_doctor     info… Fema… FALSE   377   599      0.629               0.349 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> info_doctor     info… Male  FALSE   344   565      0.609               0.373 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> info_doctor     info… Total TRUE    721  <span style="text-decoration: underline;">1</span>164      0.619               0.360 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> info_pharmacist info… Fema… FALSE   137   599      0.229               0.127 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> info_pharmacist info… Male  FALSE   119   565      0.211               0.129 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> info_pharmacist info… Total TRUE    256  <span style="text-decoration: underline;">1</span>164      0.220               0.128 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> info_internet   info… Fema… FALSE   268   599      0.447               0.248 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> info_internet   info… Male  FALSE   255   565      0.451               0.277 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> info_internet   info… Total TRUE    523  <span style="text-decoration: underline;">1</span>164      0.449               0.261 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> info_family     info… Fema… FALSE   219   599      0.366               0.203 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">11</span> info_family     info… Male  FALSE   141   565      0.250               0.153 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">12</span> info_family     info… Total TRUE    360  <span style="text-decoration: underline;">1</span>164      0.309               0.180 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">13</span> info_media      info… Fema… FALSE    78   599      0.130               0.072<span style="text-decoration: underline;">3</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">14</span> info_media      info… Male  FALSE    63   565      0.112               0.068<span style="text-decoration: underline;">3</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">15</span> info_media      info… Total TRUE    141  <span style="text-decoration: underline;">1</span>164      0.121               0.070<span style="text-decoration: underline;">5</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 5 more variables: test_type &lt;chr&gt;, statistic &lt;dbl&gt;, df &lt;int&gt;,</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;">#   p.value &lt;dbl&gt;, p.unadjusted &lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 15 × 14</span></span></span>
+<span><span class="co">#&gt;    variable        label    group .group_role total     n  base proportion_cases</span></span>
+<span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>           <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> info_doctor     info_do… Fema… group       FALSE   377   599            0.629</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> info_doctor     info_do… Male  group       FALSE   344   565            0.609</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> info_doctor     info_do… Total total       TRUE    721  <span style="text-decoration: underline;">1</span>164            0.619</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> info_pharmacist info_ph… Fema… group       FALSE   137   599            0.229</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> info_pharmacist info_ph… Male  group       FALSE   119   565            0.211</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> info_pharmacist info_ph… Total total       TRUE    256  <span style="text-decoration: underline;">1</span>164            0.220</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> info_internet   info_in… Fema… group       FALSE   268   599            0.447</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> info_internet   info_in… Male  group       FALSE   255   565            0.451</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> info_internet   info_in… Total total       TRUE    523  <span style="text-decoration: underline;">1</span>164            0.449</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> info_family     info_fa… Fema… group       FALSE   219   599            0.366</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">11</span> info_family     info_fa… Male  group       FALSE   141   565            0.250</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">12</span> info_family     info_fa… Total total       TRUE    360  <span style="text-decoration: underline;">1</span>164            0.309</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">13</span> info_media      info_me… Fema… group       FALSE    78   599            0.130</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">14</span> info_media      info_me… Male  group       FALSE    63   565            0.112</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">15</span> info_media      info_me… Total total       TRUE    141  <span style="text-decoration: underline;">1</span>164            0.121</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 6 more variables: proportion_responses &lt;dbl&gt;, test_type &lt;chr&gt;,</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;">#   statistic &lt;dbl&gt;, df &lt;int&gt;, p.value &lt;dbl&gt;, p_unadjusted &lt;dbl&gt;</span></span></span>
 <span><span class="fu">broom</span><span class="fu">::</span><span class="fu"><a href="https://generics.r-lib.org/reference/glance.html" class="external-link">glance</a></span><span class="op">(</span><span class="va">tbl</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 11</span></span></span>
 <span><span class="co">#&gt;   n_items n_items_tested n_groups  nobs test_type statistic    df p.value boot_n</span></span>
@@ -1487,42 +1491,42 @@ test of multiple marginal independence, χ²(4.61) = 18.78, p = .002.
 
     <script src="https://cdn.jsdelivr.net/gh/vincentarelbundock/tinytable@main/inst/tinytable.js"></script><script>
       // Create table-specific functions using external factory
-      const tableFns_gvk0h8wlsi1a4260y3el = TinyTable.createTableFunctions("tinytable_gvk0h8wlsi1a4260y3el");
+      const tableFns_xi4s0azlgaesxmb4eszn = TinyTable.createTableFunctions("tinytable_xi4s0azlgaesxmb4eszn");
       // tinytable span after
       window.addEventListener('load', function () {
           var cellsToStyle = [
             // tinytable style arrays after
-          { positions: [ { i: '6', j: 2 }, { i: '6', j: 3 }, { i: '6', j: 4 }, { i: '6', j: 5 }, { i: '6', j: 6 }, { i: '6', j: 7 }, { i: '6', j: 8 }, { i: '6', j: 9 }, { i: '6', j: 10 } ], css_id: 'tinytable_css_7z2lppb1j5xvpe5be8xe',}, 
-          { positions: [ { i: '1', j: 2 }, { i: '2', j: 2 }, { i: '3', j: 2 }, { i: '4', j: 2 }, { i: '5', j: 2 }, { i: '1', j: 3 }, { i: '2', j: 3 }, { i: '3', j: 3 }, { i: '4', j: 3 }, { i: '5', j: 3 }, { i: '1', j: 4 }, { i: '2', j: 4 }, { i: '3', j: 4 }, { i: '4', j: 4 }, { i: '5', j: 4 }, { i: '1', j: 5 }, { i: '2', j: 5 }, { i: '3', j: 5 }, { i: '4', j: 5 }, { i: '5', j: 5 }, { i: '1', j: 6 }, { i: '2', j: 6 }, { i: '3', j: 6 }, { i: '4', j: 6 }, { i: '5', j: 6 }, { i: '1', j: 7 }, { i: '2', j: 7 }, { i: '3', j: 7 }, { i: '4', j: 7 }, { i: '5', j: 7 }, { i: '1', j: 8 }, { i: '2', j: 8 }, { i: '3', j: 8 }, { i: '4', j: 8 }, { i: '5', j: 8 }, { i: '1', j: 9 }, { i: '2', j: 9 }, { i: '3', j: 9 }, { i: '4', j: 9 }, { i: '5', j: 9 }, { i: '1', j: 10 }, { i: '2', j: 10 }, { i: '3', j: 10 }, { i: '4', j: 10 }, { i: '5', j: 10 } ], css_id: 'tinytable_css_ugimxengqoz3px6q0xws',}, 
-          { positions: [ { i: '0', j: 2 }, { i: '7', j: 2 }, { i: '0', j: 3 }, { i: '7', j: 3 }, { i: '0', j: 4 }, { i: '7', j: 4 }, { i: '0', j: 5 }, { i: '7', j: 5 }, { i: '0', j: 6 }, { i: '7', j: 6 }, { i: '0', j: 7 }, { i: '7', j: 7 }, { i: '0', j: 8 }, { i: '7', j: 8 }, { i: '0', j: 9 }, { i: '7', j: 9 }, { i: '0', j: 10 }, { i: '7', j: 10 } ], css_id: 'tinytable_css_guuhy9ittre7fanhn8lz',}, 
-          { positions: [ { i: '-1', j: 2 }, { i: '-1', j: 3 }, { i: '-1', j: 4 }, { i: '-1', j: 5 }, { i: '-1', j: 6 }, { i: '-1', j: 7 }, { i: '-1', j: 8 }, { i: '-1', j: 9 }, { i: '-1', j: 10 } ], css_id: 'tinytable_css_687daa04ud2l5tn99wof',}, 
-          { positions: [ { i: '6', j: 1 } ], css_id: 'tinytable_css_t5yara2x6tc1jwd80ojn',}, 
-          { positions: [ { i: '1', j: 1 }, { i: '2', j: 1 }, { i: '3', j: 1 }, { i: '4', j: 1 }, { i: '5', j: 1 } ], css_id: 'tinytable_css_6xp6wsgen4u9dwdtt3a2',}, 
-          { positions: [ { i: '0', j: 1 }, { i: '7', j: 1 } ], css_id: 'tinytable_css_uhlvphr1fotkv27blki8',}, 
-          { positions: [ { i: '-1', j: 1 } ], css_id: 'tinytable_css_3jq7n215ulp0fbhjvp6p',}, 
+          { positions: [ { i: '6', j: 2 }, { i: '6', j: 3 }, { i: '6', j: 4 }, { i: '6', j: 5 }, { i: '6', j: 6 }, { i: '6', j: 7 }, { i: '6', j: 8 }, { i: '6', j: 9 }, { i: '6', j: 10 } ], css_id: 'tinytable_css_sot270pzcowzk3jn7757',}, 
+          { positions: [ { i: '1', j: 2 }, { i: '2', j: 2 }, { i: '3', j: 2 }, { i: '4', j: 2 }, { i: '5', j: 2 }, { i: '1', j: 3 }, { i: '2', j: 3 }, { i: '3', j: 3 }, { i: '4', j: 3 }, { i: '5', j: 3 }, { i: '1', j: 4 }, { i: '2', j: 4 }, { i: '3', j: 4 }, { i: '4', j: 4 }, { i: '5', j: 4 }, { i: '1', j: 5 }, { i: '2', j: 5 }, { i: '3', j: 5 }, { i: '4', j: 5 }, { i: '5', j: 5 }, { i: '1', j: 6 }, { i: '2', j: 6 }, { i: '3', j: 6 }, { i: '4', j: 6 }, { i: '5', j: 6 }, { i: '1', j: 7 }, { i: '2', j: 7 }, { i: '3', j: 7 }, { i: '4', j: 7 }, { i: '5', j: 7 }, { i: '1', j: 8 }, { i: '2', j: 8 }, { i: '3', j: 8 }, { i: '4', j: 8 }, { i: '5', j: 8 }, { i: '1', j: 9 }, { i: '2', j: 9 }, { i: '3', j: 9 }, { i: '4', j: 9 }, { i: '5', j: 9 }, { i: '1', j: 10 }, { i: '2', j: 10 }, { i: '3', j: 10 }, { i: '4', j: 10 }, { i: '5', j: 10 } ], css_id: 'tinytable_css_2069kg6liroml1ubijw2',}, 
+          { positions: [ { i: '0', j: 2 }, { i: '7', j: 2 }, { i: '0', j: 3 }, { i: '7', j: 3 }, { i: '0', j: 4 }, { i: '7', j: 4 }, { i: '0', j: 5 }, { i: '7', j: 5 }, { i: '0', j: 6 }, { i: '7', j: 6 }, { i: '0', j: 7 }, { i: '7', j: 7 }, { i: '0', j: 8 }, { i: '7', j: 8 }, { i: '0', j: 9 }, { i: '7', j: 9 }, { i: '0', j: 10 }, { i: '7', j: 10 } ], css_id: 'tinytable_css_rcvbxazcrr5ydbqw1amc',}, 
+          { positions: [ { i: '-1', j: 2 }, { i: '-1', j: 3 }, { i: '-1', j: 4 }, { i: '-1', j: 5 }, { i: '-1', j: 6 }, { i: '-1', j: 7 }, { i: '-1', j: 8 }, { i: '-1', j: 9 }, { i: '-1', j: 10 } ], css_id: 'tinytable_css_zkralx1afk2pyid7t30h',}, 
+          { positions: [ { i: '6', j: 1 } ], css_id: 'tinytable_css_or7kgy9cnmlrl9qrjnk1',}, 
+          { positions: [ { i: '1', j: 1 }, { i: '2', j: 1 }, { i: '3', j: 1 }, { i: '4', j: 1 }, { i: '5', j: 1 } ], css_id: 'tinytable_css_2btogjfqujwlkzso6sdp',}, 
+          { positions: [ { i: '0', j: 1 }, { i: '7', j: 1 } ], css_id: 'tinytable_css_ndqxzgv3wkll86nzaj8k',}, 
+          { positions: [ { i: '-1', j: 1 } ], css_id: 'tinytable_css_hqgnvw3f7cr1qnord9r7',}, 
           ];
 
           // Loop over the arrays to style the cells
           cellsToStyle.forEach(function (group) {
               group.positions.forEach(function (cell) {
-                  tableFns_gvk0h8wlsi1a4260y3el.styleCell(cell.i, cell.j, group.css_id);
+                  tableFns_xi4s0azlgaesxmb4eszn.styleCell(cell.i, cell.j, group.css_id);
               });
           });
       });
     </script><link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/vincentarelbundock/tinytable@main/inst/tinytable.css">
 <style>
     /* tinytable css entries after */
-    #tinytable_gvk0h8wlsi1a4260y3el td.tinytable_css_7z2lppb1j5xvpe5be8xe, #tinytable_gvk0h8wlsi1a4260y3el th.tinytable_css_7z2lppb1j5xvpe5be8xe {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
-    #tinytable_gvk0h8wlsi1a4260y3el td.tinytable_css_ugimxengqoz3px6q0xws, #tinytable_gvk0h8wlsi1a4260y3el th.tinytable_css_ugimxengqoz3px6q0xws { text-align: center }
-    #tinytable_gvk0h8wlsi1a4260y3el td.tinytable_css_guuhy9ittre7fanhn8lz, #tinytable_gvk0h8wlsi1a4260y3el th.tinytable_css_guuhy9ittre7fanhn8lz {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
-    #tinytable_gvk0h8wlsi1a4260y3el td.tinytable_css_687daa04ud2l5tn99wof, #tinytable_gvk0h8wlsi1a4260y3el th.tinytable_css_687daa04ud2l5tn99wof {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
-    #tinytable_gvk0h8wlsi1a4260y3el td.tinytable_css_t5yara2x6tc1jwd80ojn, #tinytable_gvk0h8wlsi1a4260y3el th.tinytable_css_t5yara2x6tc1jwd80ojn {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
-    #tinytable_gvk0h8wlsi1a4260y3el td.tinytable_css_6xp6wsgen4u9dwdtt3a2, #tinytable_gvk0h8wlsi1a4260y3el th.tinytable_css_6xp6wsgen4u9dwdtt3a2 { text-align: left }
-    #tinytable_gvk0h8wlsi1a4260y3el td.tinytable_css_uhlvphr1fotkv27blki8, #tinytable_gvk0h8wlsi1a4260y3el th.tinytable_css_uhlvphr1fotkv27blki8 {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
-    #tinytable_gvk0h8wlsi1a4260y3el td.tinytable_css_3jq7n215ulp0fbhjvp6p, #tinytable_gvk0h8wlsi1a4260y3el th.tinytable_css_3jq7n215ulp0fbhjvp6p {  position: relative; --border-bottom: 0; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.1em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
+    #tinytable_xi4s0azlgaesxmb4eszn td.tinytable_css_sot270pzcowzk3jn7757, #tinytable_xi4s0azlgaesxmb4eszn th.tinytable_css_sot270pzcowzk3jn7757 {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
+    #tinytable_xi4s0azlgaesxmb4eszn td.tinytable_css_2069kg6liroml1ubijw2, #tinytable_xi4s0azlgaesxmb4eszn th.tinytable_css_2069kg6liroml1ubijw2 { text-align: center }
+    #tinytable_xi4s0azlgaesxmb4eszn td.tinytable_css_rcvbxazcrr5ydbqw1amc, #tinytable_xi4s0azlgaesxmb4eszn th.tinytable_css_rcvbxazcrr5ydbqw1amc {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
+    #tinytable_xi4s0azlgaesxmb4eszn td.tinytable_css_zkralx1afk2pyid7t30h, #tinytable_xi4s0azlgaesxmb4eszn th.tinytable_css_zkralx1afk2pyid7t30h {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
+    #tinytable_xi4s0azlgaesxmb4eszn td.tinytable_css_or7kgy9cnmlrl9qrjnk1, #tinytable_xi4s0azlgaesxmb4eszn th.tinytable_css_or7kgy9cnmlrl9qrjnk1 {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
+    #tinytable_xi4s0azlgaesxmb4eszn td.tinytable_css_2btogjfqujwlkzso6sdp, #tinytable_xi4s0azlgaesxmb4eszn th.tinytable_css_2btogjfqujwlkzso6sdp { text-align: left }
+    #tinytable_xi4s0azlgaesxmb4eszn td.tinytable_css_ndqxzgv3wkll86nzaj8k, #tinytable_xi4s0azlgaesxmb4eszn th.tinytable_css_ndqxzgv3wkll86nzaj8k {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
+    #tinytable_xi4s0azlgaesxmb4eszn td.tinytable_css_hqgnvw3f7cr1qnord9r7, #tinytable_xi4s0azlgaesxmb4eszn th.tinytable_css_hqgnvw3f7cr1qnord9r7 {  position: relative; --border-bottom: 0; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.1em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
     </style>
 <div class="container">
-      <table class="table tinytable" id="tinytable_gvk0h8wlsi1a4260y3el" style="width: auto; margin-left: auto; margin-right: auto;" data-quarto-disable-processing="true">
+      <table class="table tinytable" id="tinytable_xi4s0azlgaesxmb4eszn" style="width: auto; margin-left: auto; margin-right: auto;" data-quarto-disable-processing="true">
 <caption>Multiple responses by Sex</caption>
         <thead>
 <tr>

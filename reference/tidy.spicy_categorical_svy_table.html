@@ -107,15 +107,22 @@ object returned by <code><a href="table_categorical_svy.html">table_categorical_
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p><code>tidy()</code> returns one row per (variable x level x column block), which
-is the LONG reading of a table whose blocks are columns. Columns:
-<code>variable</code>, <code>label</code>, <code>level</code>, <code>group</code> (the <code>by</code> level, or the margin,
-<code>NA</code> without <code>by</code>), <code>total</code> (whether that block is the margin),
-<code>n</code> (observed), <code>estimate</code> (the estimated percentage), <code>conf.low</code>,
-<code>conf.high</code>, <code>deff</code>. The header rows carry no level statistic and do
-not appear; their p-value is what <code>glance()</code> is for.</p>
+is the LONG reading of a table whose blocks are columns, in the order
+of the table (variable, then level, then block). Columns: <code>variable</code>,
+<code>label</code>, <code>level</code>, <code>.row_role</code> (the role of <code>level</code>: <code>"missing"</code> on the
+row of missing values the table adds, <code>"level"</code> otherwise), <code>group</code>
+(the <code>by</code> level, or the margin, <code>NA</code> without <code>by</code>), <code>.group_role</code> (the
+role of <code>group</code>: <code>"group"</code>, <code>"missing"</code> for the column of missing <code>by</code>
+values, <code>"total"</code> for the margin, <code>NA</code> without <code>by</code>), <code>total</code> (whether
+that block is the margin),
+<code>n</code> (observed), <code>proportion</code> (the estimated proportion, between 0 and
+1), <code>conf.low</code>, <code>conf.high</code> (its interval, on the same scale), <code>deff</code>.
+The header rows carry no level statistic and do not appear; their
+p-value is what <code>glance()</code> is for.</p>
 <p><code>glance()</code> returns one row per variable: <code>variable</code>, <code>label</code>,
-<code>n_levels</code>, <code>p.value</code>, <code>statistic_type</code> (the <code>svychisq()</code> statistic
-asked for), <code>degf</code> (the design's own), <code>nobs</code>, <code>weighted.nobs</code>.</p>
+<code>n_levels</code>, <code>test_type</code> (the <code>svychisq()</code> statistic of the test,
+<code>chisq_statistic</code>; <code>NA</code> where no test ran), <code>p.value</code>, <code>degf</code> (the
+design's own), <code>nobs</code>, <code>weighted_nobs</code>.</p>
 <p><code>n_levels</code> counts the levels the TABLE displays, so a <code>(Missing)</code>
 display level counts; the test behind <code>p.value</code> runs on the complete
 cases and the observed levels only, as it does in

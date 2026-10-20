@@ -262,12 +262,9 @@ and the p-value column. See <em>Multiple-comparison adjustment</em>.</p></dd>
 <dt id="arg-output">output<a class="anchor" aria-label="anchor" href="#arg-output"></a></dt>
 <dd><p>One of <code>"default"</code>, <code>"data.frame"</code>, <code>"long"</code>, or a
 rendering engine: <code>"tinytable"</code>, <code>"gt"</code>, <code>"flextable"</code>,
-<code>"excel"</code>, <code>"clipboard"</code>, <code>"word"</code>. <code>"data.frame"</code> and <code>"long"</code>
-are synonyms here and return the same object: the wide compute
-frame, one row per level with a pair of columns per group. Note
-the difference from <code><a href="table_categorical.html">table_categorical()</a></code>, where the two tokens
-return genuinely different shapes – this design carries a single
-compute frame, and both names reach it.</p></dd>
+<code>"excel"</code>, <code>"clipboard"</code>, <code>"word"</code>. <code>"data.frame"</code> is the displayed
+table with its numbers, <code>"long"</code> one row per variable, level and
+group, as in <code><a href="table_categorical.html">table_categorical()</a></code>; see <em>Value</em>.</p></dd>
 
 
 <dt id="arg-indent-text-indent-text-excel-clipboard">indent_text, indent_text_excel_clipboard<a class="anchor" aria-label="anchor" href="#arg-indent-text-indent-text-excel-clipboard"></a></dt>
@@ -290,12 +287,43 @@ destinations, as in <code><a href="table_categorical.html">table_categorical()</
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A <code>spicy_categorical_svy_table</code>: the wide compute frame,
-with the display frame and the typed view attached.
-<code>output = "data.frame"</code> / <code>"long"</code> returns the compute frame
-unclassed – the two tokens are synonyms and return identical
-objects. The three carry the whole note as printed, "Note."
-included, in <code>attr(x, "note")</code>.</p>
+    <p>Depends on <code>output</code>:</p><ul><li><p><code>"default"</code>: a <code>spicy_categorical_svy_table</code> (a <code>data.frame</code>
+subclass, with the parent class <code>"spicy_table"</code>), printed when the
+call is bare; its columns are the table's compute frame, and the
+display frame and the typed view are attached.</p></li>
+<li><p><code>"data.frame"</code>: the displayed table with its numbers, what
+<a href="as.data.frame.spicy_categorical_svy_table.html">as.data.frame()</a> of the
+default object returns: one row per printed row (the header row of
+each variable, which carries its <em>p</em>-value, then its levels), the
+key columns <code>variable</code> (the column name), <code>label</code> (the label
+displayed), <code>level</code> and <code>.row_role</code> (<code>"factor_header"</code>, <code>"level"</code>,
+or <code>"missing"</code> on the row of missing values the table adds), then
+the printed columns in their order: per block of <code>by</code> (and the
+<code>Total</code> margin) <code>&lt;group&gt; n</code>, <code>&lt;group&gt; \%</code>, with <code>proportion_ci</code> the
+interval bounds <code>&lt;group&gt; \% CI lower</code> and <code>&lt;group&gt; \% CI upper</code>,
+with <code>deff</code> <code>&lt;group&gt; DEff</code>, and last <code>p</code>. Without <code>by</code>, the
+columns of the one block are <code>n</code>, <code>\%</code>, ...</p></li>
+<li><p><code>"long"</code>: one row per variable, level and group, in the order
+of the table, with <code>variable</code>, <code>label</code>, <code>level</code>, <code>.row_role</code> (the
+role of <code>level</code>: <code>"level"</code>, or <code>"missing"</code>), with <code>by</code> <code>group</code>,
+<code>.group_role</code> (the role of <code>group</code>: <code>"group"</code>, <code>"missing"</code> for the
+column of missing <code>by</code> values, or <code>"total"</code>) and <code>total</code> (<code>TRUE</code> on
+the rows of the margin), then <code>n</code> (observed), <code>pct</code> (the estimated
+percentage), <code>ci_lower</code>,
+<code>ci_upper</code> (its interval, <code>NA</code> without <code>proportion_ci</code>), <code>deff</code>
+(<code>NA</code> without <code>deff</code>), and, with <code>by</code> and the <em>p</em>-value,
+<code>test_type</code> (the statistic of <code><a href="https://rdrr.io/pkg/survey/man/svychisq.html" class="external-link">survey::svychisq()</a></code>,
+<code>chisq_statistic</code>), <code>p.value</code> and, under <code>p_adjust</code>,
+<code>p_unadjusted</code>.</p></li>
+<li><p><code>"tinytable"</code>, <code>"gt"</code>, <code>"flextable"</code>: the rendered table.</p></li>
+<li><p><code>"excel"</code> / <code>"word"</code>: writes the file and returns its path
+invisibly.</p></li>
+<li><p><code>"clipboard"</code>: copies the table and returns the display
+<code>data.frame</code> invisibly.</p></li>
+</ul><p>The default object and the two data frames carry the whole note as
+printed, "Note." included, in <code>attr(x, "note")</code>.
+<a href="tidy.spicy_categorical_svy_table.html">tidy()</a> reports the proportions
+between 0 and 1.</p>
     </div>
     <div class="section level2">
     <h2 id="what-the-columns-are">What the columns are<a class="anchor" aria-label="anchor" href="#what-the-columns-are"></a></h2>

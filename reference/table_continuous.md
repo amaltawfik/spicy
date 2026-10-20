@@ -12,10 +12,10 @@ suppress the *p*-value column. Without `by`, produces one-way
 descriptive summaries.
 
 Multiple output formats are available via `output`: a printed ASCII
-table (`"default"`), a plain `data.frame` (`"data.frame"` or `"long"` –
-synonyms for the underlying long-format data, see Details), or
-publication-ready tables (`"tinytable"`, `"gt"`, `"flextable"`,
-`"excel"`, `"clipboard"`, `"word"`).
+table (`"default"`), a plain `data.frame` (`"data.frame"`, the displayed
+table with its numbers, or `"long"`, every statistic of each variable
+and group; see *Value*), or publication-ready tables (`"tinytable"`,
+`"gt"`, `"flextable"`, `"excel"`, `"clipboard"`, `"word"`).
 
 This is the descriptive companion to
 [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md).
@@ -221,10 +221,9 @@ table_continuous(
   ASCII table and in every rendered output (`tinytable`, `gt`,
   `flextable`, `word`, `excel`, `clipboard`). Set to `FALSE` to drop the
   `n` column structurally from those outputs (no empty placeholder, no
-  spanner). The `n` column is always present in the raw
-  `output = "data.frame"` / `"long"` for downstream programmatic access.
-  Defaults to `TRUE`. Ignored (with a warning) when `show_columns` is
-  supplied.
+  spanner). The `n` column is always present in `output = "long"` for
+  downstream programmatic access. Defaults to `TRUE`. Ignored (with a
+  warning) when `show_columns` is supplied.
 
 - show_columns:
 
@@ -295,10 +294,10 @@ table_continuous(
   `flextable`, `word`, `excel`, `clipboard`). Set to `FALSE` to drop
   both columns and the CI spanner structurally from those outputs (no
   empty placeholders, no border lines under an empty header). The CI
-  bounds are always present as `ci_lower` / `ci_upper` in the raw
-  `output = "data.frame"` / `"long"` for downstream programmatic access.
-  Defaults to `TRUE`. The CI level is taken from `ci_level`. Ignored
-  (with a warning) when `show_columns` is supplied.
+  bounds are always present as `ci_lower` / `ci_upper` in
+  `output = "long"` for downstream programmatic access. Defaults to
+  `TRUE`. The CI level is taken from `ci_level`. Ignored (with a
+  warning) when `show_columns` is supplied.
 
 - labels:
 
@@ -403,12 +402,12 @@ table_continuous(
 
   - `"default"`: an ASCII table object, printed when the call is bare.
 
-  - `"data.frame"` / `"long"`: a plain `data.frame` with one row per
-    `(variable x group)` (or one row per `variable` when `by` is not
-    used). The two names are synonyms; pick whichever reads better in
-    your pipeline (`"long"` matches
-    [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)'s
-    naming).
+  - `"data.frame"`: the displayed table with its numbers, one row per
+    printed row.
+
+  - `"long"`: one row per `(variable x group)` (or one row per
+    `variable` when `by` is not used), with every statistic the table
+    computes.
 
   - `"tinytable"` (requires `tinytable`)
 
@@ -486,36 +485,54 @@ Depends on `output`:
   [`broom::tidy()`](https://generics.r-lib.org/reference/tidy.html) /
   [`broom::glance()`](https://generics.r-lib.org/reference/glance.html).
 
-- `"data.frame"` / `"long"`: a plain `data.frame` with columns
-  `variable`, `label`, `group` (when `by` is used), `mean`, `sd`, `min`,
-  `max`, `ci_lower`, `ci_upper`, `median`, `q1`, `q3`, `iqr`,
-  `med_ci_lower`, `med_ci_upper`, `n`. Every statistic is computed
-  whatever `show_columns` displays. When `by` is used together with
-  `p_value = TRUE`, `statistic = TRUE`, or `effect_size != "none"`,
-  additional columns are appended (populated on the first row of each
-  variable block only):
+- `"data.frame"`: the displayed table with its numbers, what
+  [as.data.frame()](https://amaltawfik.github.io/spicy/reference/as.data.frame.spicy_continuous_table.md)
+  of the default object returns: one row per printed row, the key
+  columns `variable` (the column name), `label` (the label displayed for
+  it) and, with `by`, `group` and `.row_role` (`"group"`, or `"missing"`
+  for the group of missing `by` values), then the printed columns under
+  their names (`"M"`, `"SD"`, `"Min"`, `"Max"`, `"95\% CI LL"`,
+  `"95\% CI UL"`, `"n"`, `"Test"`, `"p"`, `"ES"`, `"SMD"`, the columns
+  `show_columns` asks for). A cell that prints several numbers keeps the
+  first in its column and the others beside it under their names in the
+  long output: `df` and `df.residual` after `"Test"`, `es_ci_lower` and
+  `es_ci_upper` after `"ES"` when its interval is printed, `q1` and `q3`
+  after `"Med [Q1, Q3]"`.
+
+- `"long"`: a plain `data.frame` with one row per `(variable x group)`
+  and columns `variable`, `label`, `group` and `.group_role` (the role
+  of `group`: `"group"`, or `"missing"` for the group of missing `by`
+  values) when `by` is used, `mean`, `sd`, `min`, `max`, `ci_lower`,
+  `ci_upper`, `median`, `q1`, `q3`, `iqr`, `med_ci_lower`,
+  `med_ci_upper`, `n`, `weighted_n`. Every statistic is computed
+  whatever `show_columns` displays. When `by` is used, the comparison
+  columns follow (populated on the first row of each variable block
+  only):
 
   - `test_type` – test identifier (e.g., `"welch_t"`, `"welch_anova"`,
-    `"student_t"`, `"anova"`, `"wilcoxon"`, `"kruskal"`).
+    `"student_t"`, `"anova"`, `"wilcoxon"`, `"kruskal"`), with
+    `statistic`, `df` and `df.residual` (the degrees of freedom of a t
+    statistic in `df`, those of an F statistic in `df` and
+    `df.residual`, as
+    [`broom::glance()`](https://generics.r-lib.org/reference/glance.html)
+    names them), when the test ran (for `p_value`, `statistic` or an
+    effect size).
 
-  - `statistic`, `df1`, `df2` – the test statistic and its degrees of
-    freedom.
-
-  - `p.value` – with `p_value = TRUE` only.
+  - `p.value` – with the *p*-value only, and `p_unadjusted` under
+    `p_adjust`.
 
   - `es_type` – effect-size identifier (`"hedges_g"`, `"eta_sq"`,
-    `"r_rb"`, or `"epsilon_sq"`), when `effect_size != "none"`.
+    `"r_rb"`, or `"epsilon_sq"`), `es_value`, `es_ci_lower`,
+    `es_ci_upper` – the effect size and its interval.
 
-  - `es_value`, `es_ci_lower`, `es_ci_upper` – effect-size estimate and
-    confidence interval bounds.
+  - `smd_type`, `smd_value` – the standardized mean difference;
+    `smd_type` names the kernel the value came from: `"continuous"`
+    here.
 
-  A `by` frame ALSO carries `smd_type` and `smd_value` unconditionally –
-  `NA` throughout when `smd = FALSE` – so the schema a pipeline indexes
-  into does not move with an argument (the `weighted_n` rule).
-  `smd_type` names the kernel the value came from: `"continuous"` here.
-  The two names `"data.frame"` and `"long"` are synonyms (the
-  descriptive output is naturally already long). Pick whichever reads
-  better in your code.
+  The effect-size and SMD columns are there whether or not they were
+  requested, `NA` when not, so the schema a pipeline indexes into does
+  not move with an argument (the `weighted_n` rule); the test columns
+  follow `p_value`.
 
 - `"tinytable"`: a `tinytable` object.
 
@@ -1122,21 +1139,16 @@ table_continuous(
   by = sex,
   output = "data.frame"
 )
-#>          variable           label  group     mean        sd  min   max ci_lower
-#> 1             bmi             bmi Female 25.68506  3.781113 16.0  38.9 25.38588
-#> 2             bmi             bmi   Male 26.19685  3.638092 16.0  37.7 25.89808
-#> 3 wellbeing_score wellbeing_score Female 67.16194 14.798488 19.6 100.0 65.99480
-#> 4 wellbeing_score wellbeing_score   Male 71.04879 16.227304 18.7 100.0 69.72540
-#>   ci_upper median     q1     q3    iqr med_ci_lower med_ci_upper   n weighted_n
-#> 1 25.98425   25.7 23.100 28.600  5.500         25.4         26.1 616         NA
-#> 2 26.49563   26.1 23.875 28.625  4.750         25.8         26.6 572         NA
-#> 3 68.32907   68.2 57.300 77.525 20.225         66.6         69.7 620         NA
-#> 4 72.37219   72.3 61.275 81.575 20.300         70.8         73.2 580         NA
-#>   test_type statistic      df1 df2      p.value smd_type smd_value
-#> 1   welch_t -2.377237 1184.497  NA 1.760093e-02     <NA>        NA
-#> 2      <NA>        NA       NA  NA           NA     <NA>        NA
-#> 3   welch_t -4.326141 1168.700  NA 1.647005e-05     <NA>        NA
-#> 4      <NA>        NA       NA  NA           NA     <NA>        NA
+#>          variable           label  group .row_role        M        SD  Min
+#> 1             bmi             bmi Female     group 25.68506  3.781113 16.0
+#> 2             bmi             bmi   Male     group 26.19685  3.638092 16.0
+#> 3 wellbeing_score wellbeing_score Female     group 67.16194 14.798488 19.6
+#> 4 wellbeing_score wellbeing_score   Male     group 71.04879 16.227304 18.7
+#>     Max 95% CI LL 95% CI UL   n            p
+#> 1  38.9  25.38588  25.98425 616 1.760093e-02
+#> 2  37.7  25.89808  26.49563 572           NA
+#> 3 100.0  65.99480  68.32907 620 1.647005e-05
+#> 4 100.0  69.72540  72.37219 580           NA
 
 # \donttest{
 # Rendered HTML / docx objects -- best viewed inside a

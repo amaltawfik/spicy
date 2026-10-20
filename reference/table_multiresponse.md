@@ -191,8 +191,9 @@ table_multiresponse(
 
   Logical or `NULL`. With `by`, `NULL` (the default) and `TRUE` show the
   item `p` column and the global test in the note. `FALSE` removes both
-  from every output, the `p` column of the data frames included.
-  `p_value` and `statistic` are independent, as in
+  from every output, the `p` column of the data frame and the `p.value`
+  column of the long output included. `p_value` and `statistic` are
+  independent, as in
   [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md).
   Ignored without `by`, with a warning when `TRUE`.
 
@@ -304,7 +305,7 @@ table_multiresponse(
 
   - `"default"` (an ASCII table object, printed when the call is bare)
 
-  - `"data.frame"` (a wide numeric `data.frame`)
+  - `"data.frame"` (the displayed table, numeric)
 
   - `"long"` (a long numeric `data.frame`)
 
@@ -357,35 +358,44 @@ table_multiresponse(
 
 Depends on `output`:
 
-- `"default"`: the wide `data.frame` below, with the rendering metadata
-  as attributes (S3 class `"spicy_multiresponse_table"`), returned
-  visibly, so a bare call prints the ASCII table.
+- `"default"`: a `spicy_multiresponse_table` (a `data.frame` subclass),
+  with the rendering metadata as attributes, returned visibly, so a bare
+  call prints the ASCII table.
 
-- `"data.frame"`: a wide `data.frame` with one row per item, the rows of
-  `none_row`, and a last row with the base. Columns: `Variable`,
-  `.row_role` (what the row is: `"summary"` for an item, `"none"` for
-  "(No item chosen)", `"missing"` for "(No data for the question)",
-  `"fit_stat"` for the base, the roles of
+- `"data.frame"`: the displayed table with its numbers, what
+  [as.data.frame()](https://amaltawfik.github.io/spicy/reference/as.data.frame.spicy_multiresponse_table.md)
+  of the default object returns: one row per item, the rows of
+  `none_row`, and a last row with the base. Columns: `variable` (the
+  item's column, `"none"`, `"no_data"`, or `"nobs"` on the base row),
+  `label` (the label the row displays), `.row_role` (what the row is:
+  `"summary"` for an item, `"none"` for "(No item chosen)", `"missing"`
+  for "(No data for the question)", `"fit_stat"` for the base, the roles
+  of
   [`as_structured()`](https://amaltawfik.github.io/spicy/reference/as_structured.md)),
-  then the count and the percentage of each group of `by` and of the
-  `Total` margin (`<group> n` and `<group> \%`, or `<group> \% of cases`
-  and `<group> \% of responses` under `percent = "both"`; `n` and `\%`
-  without `by`), then `test_type`, `Chi2` and `df` when the item tests
-  ran (for `p_value` or for `statistic`), `p` with `p_value`, and
-  `p_unadjusted` under an adjustment. `test_type` names the test of each
-  item as in
-  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
-  (`"chi_squared"`, `"n1_chi_squared"`, `"fisher_exact"`,
-  `"fisher_midp"`, `"fisher_exact_mc"`), and `Chi2` and `df` are `NA`
-  for an item tested by an exact test. The rows of `none_row` are `NA`
-  in the percentage of responses and in the test columns.
+  then the printed columns: the count and the percentage of each group
+  of `by` and of the `Total` margin (`<group> n` and `<group> \%`, or
+  `<group> \% of cases` and `<group> \% of responses` under
+  `percent = "both"`; `n` and `\%` without `by`), `Test` (the
+  chi-squared of the item, with `df` beside it) under
+  `statistic = TRUE`, and `p` with `p_value`.
 
 - `"long"`: one row per item and group, then one per row of `none_row`
   and group, with columns `variable` (the item's column, `"none"` or
   `"no_data"` on the rows of `none_row`), `label` (the label the row
-  displays), `.row_role` as above, `group` (with `by`), `n`, `base` (the
-  respondents of the group), `pct` (or `pct_cases` and `pct_responses`),
-  and `test_type`, `chi2`, `df`, `p`, and `p_unadjusted` as above.
+  displays), `.row_role` as above, with `by` `group`, `.group_role` (the
+  role of `group`: `"group"`, or `"total"` for the margin) and `total`
+  (`TRUE` on the rows of the margin), `n`, `base` (the respondents of
+  the group), the percentage named by its base: `pct_cases` (of the
+  respondents) or `pct_responses` (of the choices made), as `percent`
+  asks, both under `percent = "both"`, and, when the item tests ran (for
+  `p_value` or for `statistic`), `test_type` (the test of the item, as
+  in
+  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md):
+  `"chi_squared"`, `"n1_chi_squared"`, `"fisher_exact"`,
+  `"fisher_midp"`, `"fisher_exact_mc"`), `statistic` and `df` (`NA` for
+  an item tested by an exact test), `p.value` with `p_value`, and
+  `p_unadjusted` under an adjustment. The rows of `none_row` are `NA` in
+  the test columns.
 
 - `"tinytable"`, `"gt"`, `"flextable"`: the rendered table object.
 
@@ -428,11 +438,11 @@ test
 otherwise; when the exact enumeration fails, the p-value is its Monte
 Carlo estimate over 2000 tables, which draws from the session's RNG. An
 item tested by Fisher's exact test has no statistic: its `Test` cell
-shows a dash, and `Chi2` and `df` are `NA` in the data frames. Without
-p-values (`p_value = FALSE`), `statistic = TRUE` shows the chi-squared
-statistic of every item. The global test sums the Pearson statistics of
-the items whatever `test` chooses for their p-values, since its
-correction and its bootstrap are defined for that sum.
+shows a dash, and `statistic` and `df` are `NA` in the long output.
+Without p-values (`p_value = FALSE`), `statistic = TRUE` shows the
+chi-squared statistic of every item. The global test sums the Pearson
+statistics of the items whatever `test` chooses for their p-values,
+since its correction and its bootstrap are defined for that sum.
 
 With two groups, an item's table is 2x2. `test = "midp"` then gives it
 the Fisher mid-p test of Fagerland, Lydersen and Laake (2017, section
@@ -764,22 +774,22 @@ table_multiresponse(
   by = sex,
   output = "data.frame"
 )
-#>           Variable .row_role Female n  Female % Male n    Male % Total n
-#> 1      info_doctor   summary      377 62.938230    344 60.884956     721
-#> 2  info_pharmacist   summary      137 22.871452    119 21.061947     256
-#> 3    info_internet   summary      268 44.741235    255 45.132743     523
-#> 4      info_family   summary      219 36.560935    141 24.955752     360
-#> 5       info_media   summary       78 13.021703     63 11.150442     141
-#> 6 (No item chosen)      none       31  5.175292     36  6.371681      67
-#> 7      Respondents  fit_stat      599        NA    565        NA    1164
-#>     Total %   test_type        Chi2 df            p p_unadjusted
-#> 1 61.941581 chi_squared  0.51997605  1 1.000000e+00 4.708519e-01
-#> 2 21.993127 chi_squared  0.55490963  1 1.000000e+00 4.563185e-01
-#> 3 44.931271 chi_squared  0.01801149  1 1.000000e+00 8.932390e-01
-#> 4 30.927835 chi_squared 18.33047265  1 9.285636e-05 1.857127e-05
-#> 5 12.113402 chi_squared  0.95631714  1 1.000000e+00 3.281165e-01
-#> 6  5.756014        <NA>          NA NA           NA           NA
-#> 7        NA        <NA>          NA NA           NA           NA
+#>          variable            label .row_role Female n  Female % Male n
+#> 1     info_doctor      info_doctor   summary      377 62.938230    344
+#> 2 info_pharmacist  info_pharmacist   summary      137 22.871452    119
+#> 3   info_internet    info_internet   summary      268 44.741235    255
+#> 4     info_family      info_family   summary      219 36.560935    141
+#> 5      info_media       info_media   summary       78 13.021703     63
+#> 6            none (No item chosen)      none       31  5.175292     36
+#> 7            nobs      Respondents  fit_stat      599        NA    565
+#>      Male % Total n   Total %            p
+#> 1 60.884956     721 61.941581 1.000000e+00
+#> 2 21.061947     256 21.993127 1.000000e+00
+#> 3 45.132743     523 44.931271 1.000000e+00
+#> 4 24.955752     360 30.927835 9.285636e-05
+#> 5 11.150442     141 12.113402 1.000000e+00
+#> 6  6.371681      67  5.756014           NA
+#> 7        NA    1164        NA           NA
 
 # \donttest{
 if (requireNamespace("tinytable", quietly = TRUE)) {

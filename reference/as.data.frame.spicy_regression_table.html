@@ -5,17 +5,41 @@
       fontURL: "https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/output/chtml/fonts/woff-v2"
     }
   };
-</script><script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/IBM_Plex_Sans-0.4.10/font.css" rel="stylesheet"><link href="../deps/IBM_Plex_Mono-0.4.10/font.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet"><meta property="og:title" content="Convert a spicy_regression_table to a plain data.frame / tibble — as.data.frame.spicy_regression_table"><meta name="description" content="Strips the spicy_regression_table / spicy_table classes and
-the internal analytic attributes (spicy_long, spicy_fit_stats),
-returning the wide character display as a plain data.frame (or
-tbl_df via as_tibble()). The title, note, provenance
-(model_ids, outcome), and rendering (col_spec) attributes are
-preserved."><meta property="og:description" content="Strips the spicy_regression_table / spicy_table classes and
-the internal analytic attributes (spicy_long, spicy_fit_stats),
-returning the wide character display as a plain data.frame (or
-tbl_df via as_tibble()). The title, note, provenance
-(model_ids, outcome), and rendering (col_spec) attributes are
-preserved."><meta property="og:image" content="https://amaltawfik.github.io/spicy/logo.svg"></head><body>
+</script><script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/IBM_Plex_Sans-0.4.10/font.css" rel="stylesheet"><link href="../deps/IBM_Plex_Mono-0.4.10/font.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet"><meta property="og:title" content="Convert a spicy_regression_table to a plain data.frame / tibble — as.data.frame.spicy_regression_table"><meta name="description" content="as.data.frame() returns the table table_regression() displays,
+with its numbers: exactly what output = &quot;data.frame&quot; returns. One
+row per printed row – the coefficients, the header and the levels of
+each factor, the reference levels, the fit statistics – with the key
+columns variable (the variable of the row: the term of a
+coefficient, the factor of a level, the token of a fit statistic such
+as &quot;nobs&quot; or &quot;r2&quot;), label (the label displayed for that
+variable, or the text of a fit-statistic row), level (the level of a
+factor row) and .row_role (&quot;coef&quot;, &quot;factor_header&quot;, &quot;level&quot;,
+&quot;reference&quot;, &quot;fit_stat&quot;, ..., the roles of as_structured()),
+then the printed columns under their names, numeric: the interval of
+a coefficient is split into its two bounds (&quot;95\% CI: LL&quot;,
+&quot;95\% CI: UL&quot;), a fit statistic sits in the first column of its
+model, and a cell of events over a total (n_events) keeps the
+events in its column and the total beside it (&quot;&amp;lt;column&amp;gt;: N&quot;). With
+several models each column name starts with the model's label. The
+note, as printed, is kept in attr(, &quot;note&quot;). as_tibble() returns
+the same table as a tibble."><meta property="og:description" content="as.data.frame() returns the table table_regression() displays,
+with its numbers: exactly what output = &quot;data.frame&quot; returns. One
+row per printed row – the coefficients, the header and the levels of
+each factor, the reference levels, the fit statistics – with the key
+columns variable (the variable of the row: the term of a
+coefficient, the factor of a level, the token of a fit statistic such
+as &quot;nobs&quot; or &quot;r2&quot;), label (the label displayed for that
+variable, or the text of a fit-statistic row), level (the level of a
+factor row) and .row_role (&quot;coef&quot;, &quot;factor_header&quot;, &quot;level&quot;,
+&quot;reference&quot;, &quot;fit_stat&quot;, ..., the roles of as_structured()),
+then the printed columns under their names, numeric: the interval of
+a coefficient is split into its two bounds (&quot;95\% CI: LL&quot;,
+&quot;95\% CI: UL&quot;), a fit statistic sits in the first column of its
+model, and a cell of events over a total (n_events) keeps the
+events in its column and the total beside it (&quot;&amp;lt;column&amp;gt;: N&quot;). With
+several models each column name starts with the model's label. The
+note, as printed, is kept in attr(, &quot;note&quot;). as_tibble() returns
+the same table as a tibble."><meta property="og:image" content="https://amaltawfik.github.io/spicy/logo.svg"></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -82,12 +106,24 @@ preserved."><meta property="og:image" content="https://amaltawfik.github.io/spic
     </div>
 
     <div class="ref-description section level2">
-    <p>Strips the <code>spicy_regression_table</code> / <code>spicy_table</code> classes and
-the internal analytic attributes (<code>spicy_long</code>, <code>spicy_fit_stats</code>),
-returning the wide character display as a plain <code>data.frame</code> (or
-<code>tbl_df</code> via <code>as_tibble()</code>). The <code>title</code>, <code>note</code>, provenance
-(<code>model_ids</code>, <code>outcome</code>), and rendering (<code>col_spec</code>) attributes are
-preserved.</p>
+    <p><code><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame()</a></code> returns the table <code><a href="table_regression.html">table_regression()</a></code> displays,
+with its numbers: exactly what <code>output = "data.frame"</code> returns. One
+row per printed row – the coefficients, the header and the levels of
+each factor, the reference levels, the fit statistics – with the key
+columns <code>variable</code> (the variable of the row: the term of a
+coefficient, the factor of a level, the token of a fit statistic such
+as <code>"nobs"</code> or <code>"r2"</code>), <code>label</code> (the label displayed for that
+variable, or the text of a fit-statistic row), <code>level</code> (the level of a
+factor row) and <code>.row_role</code> (<code>"coef"</code>, <code>"factor_header"</code>, <code>"level"</code>,
+<code>"reference"</code>, <code>"fit_stat"</code>, ..., the roles of <code><a href="as_structured.html">as_structured()</a></code>),
+then the printed columns under their names, numeric: the interval of
+a coefficient is split into its two bounds (<code>"95\% CI: LL"</code>,
+<code>"95\% CI: UL"</code>), a fit statistic sits in the first column of its
+model, and a cell of events over a total (<code>n_events</code>) keeps the
+events in its column and the total beside it (<code>"&lt;column&gt;: N"</code>). With
+several models each column name starts with the model's label. The
+note, as printed, is kept in <code>attr(, "note")</code>. <code>as_tibble()</code> returns
+the same table as a tibble.</p>
     </div>
 
     <div class="section level2">
@@ -120,13 +156,13 @@ preserved.</p>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>A plain <code>data.frame</code> (for <code><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame()</a></code>) or a
-<code>tbl_df</code> (for <code>as_tibble()</code>).</p>
+<code>tbl_df</code> (for <code>as_tibble()</code>), identical to the
+<code>output = "data.frame"</code> of the same call.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p><code><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame()</a></code> is equivalent to passing <code>output = "data.frame"</code>
-to <code><a href="table_regression.html">table_regression()</a></code>: the two paths return identical objects
-(same cells, classes, and attributes).</p>
+    <p>For one row per coefficient with the broom names, use
+<code>output = "long"</code> or <code><a href="tidy.spicy_regression_table.html">tidy.spicy_regression_table()</a></code>.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>

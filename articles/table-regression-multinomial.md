@@ -733,20 +733,20 @@ Excel, or Word table:
 ``` r
 
 head(table_regression(fit, exponentiate = TRUE, output = "data.frame"))
-#>          Variable Student: OR Student: SE Student: p Unemployed: OR Unemployed: SE Unemployed: p Inactive: OR Inactive: SE
-#> 1     (Intercept)        0.24        0.09      <.001           0.49           0.16          .030         0.17         0.07
-#> 2             age        0.99        0.01       .097           1.00           0.01          .562         1.00         0.01
-#> 3            sex:                                                                                                         
-#> 4   Female (ref.)         –           –         –               –              –            –             –            –  
-#> 5            Male        1.12        0.21       .520           1.26           0.22          .172         1.15         0.23
-#> 6      education:                                                                                                         
-#>   Inactive: p
-#> 1       <.001
-#> 2        .719
-#> 3            
-#> 4        –   
-#> 5        .464
-#> 6
+#>      variable       label  level     .row_role Student: OR Student: SE   Student: p Unemployed: OR Unemployed: SE Unemployed: p
+#> 1 (Intercept) (Intercept)   <NA>          coef   0.2397767 0.092470702 0.0002131244      0.4851122    0.161326063    0.02961438
+#> 2         age         age   <NA>          coef   0.9896476 0.006206042 0.0970241398      0.9966235    0.005809884    0.56178784
+#> 3         sex         sex   <NA> factor_header          NA          NA           NA             NA             NA            NA
+#> 4         sex         sex Female     reference          NA          NA           NA             NA             NA            NA
+#> 5         sex         sex   Male         level   1.1247715 0.205697813 0.5202656238      1.2626494    0.215741964    0.17228591
+#> 6   education   education   <NA> factor_header          NA          NA           NA             NA             NA            NA
+#>   Inactive: OR Inactive: SE  Inactive: p
+#> 1     0.173810  0.069560329 1.230027e-05
+#> 2     1.002405  0.006689761 7.188705e-01
+#> 3           NA           NA           NA
+#> 4           NA           NA           NA
+#> 5     1.154396  0.226471040 4.642549e-01
+#> 6           NA           NA           NA
 ```
 
 ``` r

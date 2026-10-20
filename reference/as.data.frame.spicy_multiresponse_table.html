@@ -5,19 +5,29 @@
       fontURL: "https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/output/chtml/fonts/woff-v2"
     }
   };
-</script><script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/IBM_Plex_Sans-0.4.10/font.css" rel="stylesheet"><link href="../deps/IBM_Plex_Mono-0.4.10/font.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet"><meta property="og:title" content="Coerce a spicy_multiresponse_table to a plain data frame or tibble — as.data.frame.spicy_multiresponse_table"><meta name="description" content='These S3 methods strip the "spicy_multiresponse_table" /
-"spicy_table" classes and the rendering-only attributes from an
-object returned by table_multiresponse(), so the underlying wide data
-can be manipulated with downstream tools under the standard
-data.frame / tbl_df contract. The "note" and "global_test"
-attributes are kept. The original x is unaffected, and print(x)
-continues to render the formatted table.'><meta property="og:description" content='These S3 methods strip the "spicy_multiresponse_table" /
-"spicy_table" classes and the rendering-only attributes from an
-object returned by table_multiresponse(), so the underlying wide data
-can be manipulated with downstream tools under the standard
-data.frame / tbl_df contract. The "note" and "global_test"
-attributes are kept. The original x is unaffected, and print(x)
-continues to render the formatted table.'><meta property="og:image" content="https://amaltawfik.github.io/spicy/logo.svg"></head><body>
+</script><script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/IBM_Plex_Sans-0.4.10/font.css" rel="stylesheet"><link href="../deps/IBM_Plex_Mono-0.4.10/font.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet"><meta property="og:title" content="Coerce a spicy_multiresponse_table to a plain data frame or tibble — as.data.frame.spicy_multiresponse_table"><meta name="description" content="as.data.frame() returns the table table_multiresponse() displays,
+with its numbers: exactly what output = &quot;data.frame&quot; returns. One row
+per printed row – the items, the rows of none_row, then the base –
+with the key columns variable (the item's column, or the token of a
+row the table adds: &quot;none&quot;, &quot;no_data&quot;, &quot;nobs&quot; for the base),
+label (the label displayed) and .row_role (&quot;summary&quot; for an item,
+&quot;none&quot;, &quot;missing&quot;, or &quot;fit_stat&quot; for the base), then the printed
+columns under their names (&quot;&amp;lt;group&amp;gt; n&quot;, &quot;&amp;lt;group&amp;gt; \%&quot;, ...,
+&quot;Test&quot; with df beside it under statistic = TRUE, &quot;p&quot;). The
+&quot;note&quot; and &quot;global_test&quot; attributes are kept. as_tibble()
+returns the same table as a tibble. The original x is unaffected,
+and print(x) continues to render the formatted table."><meta property="og:description" content="as.data.frame() returns the table table_multiresponse() displays,
+with its numbers: exactly what output = &quot;data.frame&quot; returns. One row
+per printed row – the items, the rows of none_row, then the base –
+with the key columns variable (the item's column, or the token of a
+row the table adds: &quot;none&quot;, &quot;no_data&quot;, &quot;nobs&quot; for the base),
+label (the label displayed) and .row_role (&quot;summary&quot; for an item,
+&quot;none&quot;, &quot;missing&quot;, or &quot;fit_stat&quot; for the base), then the printed
+columns under their names (&quot;&amp;lt;group&amp;gt; n&quot;, &quot;&amp;lt;group&amp;gt; \%&quot;, ...,
+&quot;Test&quot; with df beside it under statistic = TRUE, &quot;p&quot;). The
+&quot;note&quot; and &quot;global_test&quot; attributes are kept. as_tibble()
+returns the same table as a tibble. The original x is unaffected,
+and print(x) continues to render the formatted table."><meta property="og:image" content="https://amaltawfik.github.io/spicy/logo.svg"></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -84,13 +94,18 @@ continues to render the formatted table.'><meta property="og:image" content="htt
     </div>
 
     <div class="ref-description section level2">
-    <p>These S3 methods strip the <code>"spicy_multiresponse_table"</code> /
-<code>"spicy_table"</code> classes and the rendering-only attributes from an
-object returned by <code><a href="table_multiresponse.html">table_multiresponse()</a></code>, so the underlying wide data
-can be manipulated with downstream tools under the standard
-<code>data.frame</code> / <code>tbl_df</code> contract. The <code>"note"</code> and <code>"global_test"</code>
-attributes are kept. The original <code>x</code> is unaffected, and <code>print(x)</code>
-continues to render the formatted table.</p>
+    <p><code><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame()</a></code> returns the table <code><a href="table_multiresponse.html">table_multiresponse()</a></code> displays,
+with its numbers: exactly what <code>output = "data.frame"</code> returns. One row
+per printed row – the items, the rows of <code>none_row</code>, then the base –
+with the key columns <code>variable</code> (the item's column, or the token of a
+row the table adds: <code>"none"</code>, <code>"no_data"</code>, <code>"nobs"</code> for the base),
+<code>label</code> (the label displayed) and <code>.row_role</code> (<code>"summary"</code> for an item,
+<code>"none"</code>, <code>"missing"</code>, or <code>"fit_stat"</code> for the base), then the printed
+columns under their names (<code>"&lt;group&gt; n"</code>, <code>"&lt;group&gt; \%"</code>, ...,
+<code>"Test"</code> with <code>df</code> beside it under <code>statistic = TRUE</code>, <code>"p"</code>). The
+<code>"note"</code> and <code>"global_test"</code> attributes are kept. <code>as_tibble()</code>
+returns the same table as a tibble. The original <code>x</code> is unaffected,
+and <code>print(x)</code> continues to render the formatted table.</p>
     </div>
 
     <div class="section level2">
@@ -123,13 +138,8 @@ tibble method) or ignored.</p></dd>
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A plain <code>data.frame</code> (or <code>tbl_df</code>).</p>
-    </div>
-    <div class="section level2">
-    <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>The returned data is identical to what <code>output = "data.frame"</code> returns
-directly from <code><a href="table_multiresponse.html">table_multiresponse()</a></code>: one row per item, the rows of
-<code>none_row</code>, then the base, told apart by <code>.row_role</code>.</p>
+    <p>A plain <code>data.frame</code> (or <code>tbl_df</code>), identical to the
+<code>output = "data.frame"</code> of the same call.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>

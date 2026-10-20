@@ -34,16 +34,22 @@ A `tbl_df` (or `data.frame` when tibble is not installed).
 ## Details
 
 `tidy()` returns one row per (variable x level x column block), which is
-the LONG reading of a table whose blocks are columns. Columns:
-`variable`, `label`, `level`, `group` (the `by` level, or the margin,
-`NA` without `by`), `total` (whether that block is the margin), `n`
-(observed), `estimate` (the estimated percentage), `conf.low`,
-`conf.high`, `deff`. The header rows carry no level statistic and do not
-appear; their p-value is what `glance()` is for.
+the LONG reading of a table whose blocks are columns, in the order of
+the table (variable, then level, then block). Columns: `variable`,
+`label`, `level`, `.row_role` (the role of `level`: `"missing"` on the
+row of missing values the table adds, `"level"` otherwise), `group` (the
+`by` level, or the margin, `NA` without `by`), `.group_role` (the role
+of `group`: `"group"`, `"missing"` for the column of missing `by`
+values, `"total"` for the margin, `NA` without `by`), `total` (whether
+that block is the margin), `n` (observed), `proportion` (the estimated
+proportion, between 0 and 1), `conf.low`, `conf.high` (its interval, on
+the same scale), `deff`. The header rows carry no level statistic and do
+not appear; their p-value is what `glance()` is for.
 
 `glance()` returns one row per variable: `variable`, `label`,
-`n_levels`, `p.value`, `statistic_type` (the `svychisq()` statistic
-asked for), `degf` (the design's own), `nobs`, `weighted.nobs`.
+`n_levels`, `test_type` (the `svychisq()` statistic of the test,
+`chisq_statistic`; `NA` where no test ran), `p.value`, `degf` (the
+design's own), `nobs`, `weighted_nobs`.
 
 `n_levels` counts the levels the TABLE displays, so a `(Missing)`
 display level counts; the test behind `p.value` runs on the complete

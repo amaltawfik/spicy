@@ -37,8 +37,12 @@ A `tbl_df` (or `data.frame` when tibble is not installed).
 row per (grouping x level). Columns: `outcome` (the outcome name,
 constant down the frame), `variable` (the grouping, or the outcome
 itself on the marginal row), `label`, `level` (`NA` on the marginal
-row), `estimate` (the mean), `std.error` (`sd / sqrt(n)`), `conf.low`,
-`conf.high`, `n`, `min`, `max`, `sd`.
+row), `.row_role` (`"summary"` on the marginal row, `"missing"` on the
+row of missing values the table adds, `"level"` otherwise), `estimate`
+(the mean), `std.error` (`sd / sqrt(n)`), `conf.low`, `conf.high`, `n`,
+`weighted_n` (the sum of the weights, `NA` without `weights`), `median`,
+`q1`, `q3`, `min`, `max`, `sd`: the statistics of
+[`tidy.spicy_continuous_table()`](https://amaltawfik.github.io/spicy/reference/tidy.spicy_continuous_table.md).
 
 Two identity columns where the sibling has one, and deliberately: here
 the outcome is fixed and the variable changes, so a single `outcome`
@@ -48,14 +52,9 @@ schema reads without knowing which function produced it.
 `glance()` returns one row per grouping – one BLOCK – with that block's
 own comparison. Columns: `outcome`, `variable`, `label`, `n_levels`,
 `test_type`, `statistic`, `df`, `df.residual`, `p.value`, `es_type`,
-`es_value`, `es_ci_lower`, `es_ci_upper`, `smd_type`, `smd_value`,
-`n_total`.
+`es_value`, `es_ci_lower`, `es_ci_upper`, `nobs`. Index by NAME rather
+than by position.
 
 `n_levels` counts the levels the TABLE displays, so a missing-value
 display level counts; the comparison behind `test_type` runs on the
 observed levels only, as it does everywhere in the family.
-
-The schema is FIXED: `smd_type` / `smd_value` are present and `NA` from
-the first version, so the day a standardized mean difference enters this
-table it cannot break a pipeline that indexes the frame. Index by NAME
-rather than by position.

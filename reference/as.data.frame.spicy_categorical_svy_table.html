@@ -5,11 +5,23 @@
       fontURL: "https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/output/chtml/fonts/woff-v2"
     }
   };
-</script><script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/IBM_Plex_Sans-0.4.10/font.css" rel="stylesheet"><link href="../deps/IBM_Plex_Mono-0.4.10/font.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet"><meta property="og:title" content="Coerce a spicy_categorical_svy_table to a data frame or tibble — as.data.frame.spicy_categorical_svy_table"><meta name="description" content='These S3 methods strip the "spicy_categorical_svy_table" class and
-the rendering-only attributes, keeping the wide compute frame and the
-three provenance markers (group_var, design_meta, note).'><meta property="og:description" content='These S3 methods strip the "spicy_categorical_svy_table" class and
-the rendering-only attributes, keeping the wide compute frame and the
-three provenance markers (group_var, design_meta, note).'><meta property="og:image" content="https://amaltawfik.github.io/spicy/logo.svg"></head><body>
+</script><script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/IBM_Plex_Sans-0.4.10/font.css" rel="stylesheet"><link href="../deps/IBM_Plex_Mono-0.4.10/font.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet"><meta property="og:title" content="Coerce a spicy_categorical_svy_table to a data frame or tibble — as.data.frame.spicy_categorical_svy_table"><meta name="description" content='as.data.frame() returns the table table_categorical_svy()
+displays, with its numbers: exactly what output = "data.frame"
+returns. One row per printed row – the header row of each variable,
+which carries its p-value, then one row per level – and the printed
+columns under their names ("Female n", "Female \%", the interval
+bounds "Female \% CI lower" and "Female \% CI upper", "Female DEff", ..., "p"), plus the key columns variable, label,
+level and .row_role ("factor_header", "level", or "missing").
+The note, as printed, is kept in attr(, "note"). as_tibble()
+returns the same table as a tibble.'><meta property="og:description" content='as.data.frame() returns the table table_categorical_svy()
+displays, with its numbers: exactly what output = "data.frame"
+returns. One row per printed row – the header row of each variable,
+which carries its p-value, then one row per level – and the printed
+columns under their names ("Female n", "Female \%", the interval
+bounds "Female \% CI lower" and "Female \% CI upper", "Female DEff", ..., "p"), plus the key columns variable, label,
+level and .row_role ("factor_header", "level", or "missing").
+The note, as printed, is kept in attr(, "note"). as_tibble()
+returns the same table as a tibble.'><meta property="og:image" content="https://amaltawfik.github.io/spicy/logo.svg"></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -76,9 +88,15 @@ three provenance markers (group_var, design_meta, note).'><meta property="og:ima
     </div>
 
     <div class="ref-description section level2">
-    <p>These S3 methods strip the <code>"spicy_categorical_svy_table"</code> class and
-the rendering-only attributes, keeping the wide compute frame and the
-three provenance markers (<code>group_var</code>, <code>design_meta</code>, <code>note</code>).</p>
+    <p><code><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame()</a></code> returns the table <code><a href="table_categorical_svy.html">table_categorical_svy()</a></code>
+displays, with its numbers: exactly what <code>output = "data.frame"</code>
+returns. One row per printed row – the header row of each variable,
+which carries its <em>p</em>-value, then one row per level – and the printed
+columns under their names (<code>"Female n"</code>, <code>"Female \%"</code>, the interval
+bounds <code>"Female \% CI lower"</code> and <code>"Female \% CI upper"</code>, <code>"Female DEff"</code>, ..., <code>"p"</code>), plus the key columns <code>variable</code>, <code>label</code>,
+<code>level</code> and <code>.row_role</code> (<code>"factor_header"</code>, <code>"level"</code>, or <code>"missing"</code>).
+The note, as printed, is kept in <code>attr(, "note")</code>. <code>as_tibble()</code>
+returns the same table as a tibble.</p>
     </div>
 
     <div class="section level2">
@@ -106,7 +124,8 @@ ignored.</p></dd>
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A plain <code>data.frame</code> (or a <code>tbl_df</code> for <code>as_tibble()</code>).</p>
+    <p>A plain <code>data.frame</code> (or a <code>tbl_df</code> for <code>as_tibble()</code>),
+identical to the <code>output = "data.frame"</code> of the same call.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>

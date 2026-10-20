@@ -115,23 +115,31 @@ table can be consumed by any downstream tidyverse-stats pipeline.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p><code>tidy()</code> returns one row per <code>(variable x level)</code> – or per
-<code>(variable x level x group)</code> when <code>by</code> is used – with columns
-<code>variable</code> (the column name), <code>label</code> (the label the rows display for
-it, see <code>labels</code>), <code>level</code>, <code>group</code> (when applicable), <code>n</code>,
-<code>proportion</code> (the percentage divided by 100).</p>
+    <p><code>tidy()</code> returns one row per <code>(variable x level x group)</code>, the groups
+of <code>by</code> and the <code>Total</code> margin included, with columns <code>variable</code> (the
+column name), <code>label</code> (the label the rows display for it, see
+<code>labels</code>), <code>level</code>, <code>.row_role</code> (the role of <code>level</code>: <code>"missing"</code> on
+the row of missing values the table adds, <code>"level"</code> otherwise),
+<code>group</code> (<code>NA</code> without <code>by</code>), <code>.group_role</code> (the role of <code>group</code>:
+<code>"missing"</code> on the column of missing <code>by</code> values, <code>"total"</code> on the
+margin, <code>"group"</code> otherwise, <code>NA</code> without <code>by</code>), <code>total</code> (<code>TRUE</code> on the
+rows of the margin), <code>n</code>, and <code>proportion</code> (between 0 and 1). Filter
+on the role columns and <code>total</code> rather than on the displayed labels,
+which follow the display language.</p>
 <p><code>glance()</code> returns one row per variable, in the order of <code>select</code>, with
-its test (when <code>by</code> is used) and the requested association measure:
-<code>variable</code>, <code>label</code>, <code>test_type</code> (<code>"chi_squared"</code>, <code>"n1_chi_squared"</code>,
-<code>"fisher_exact"</code>, <code>"fisher_midp"</code>, or <code>"fisher_exact_mc"</code>, as in the
-data frames of <code><a href="table_categorical.html">table_categorical()</a></code>), <code>statistic</code> (the chi-squared,
-Pearson's or the N-1, <code>NA</code> for an exact test), <code>df</code>, <code>p.value</code>,
-<code>assoc_type</code> (the key of the measure the variable carries, as
-<code>effect_size_type</code> in the long output: <code>"phi"</code>, <code>"cramer_v"</code>, ...),
-<code>assoc_value</code>, <code>assoc_ci_lower</code>, <code>assoc_ci_upper</code>,
-<code>n_total</code>. Without <code>by</code>, only <code>variable</code>, <code>label</code> and <code>n_total</code> are
+its test (when <code>by</code> is used), the requested association measure and
+the standardized mean difference: <code>variable</code>, <code>label</code>, <code>test_type</code>
+(<code>"chi_squared"</code>, <code>"n1_chi_squared"</code>, <code>"fisher_exact"</code>,
+<code>"fisher_midp"</code>, or <code>"fisher_exact_mc"</code>, as in the long output of
+<code><a href="table_categorical.html">table_categorical()</a></code>), <code>statistic</code> (the chi-squared, Pearson's or the
+N-1, <code>NA</code> for an exact test), <code>df</code>, <code>p.value</code>, <code>es_type</code> (the key of
+the measure the variable carries: <code>"phi"</code>, <code>"cramer_v"</code>, ...),
+<code>es_value</code>, <code>es_ci_lower</code>, <code>es_ci_upper</code>, <code>smd_type</code>, <code>smd_value</code>, and
+<code>nobs</code> (the observations of the variable, the margin not counted
+twice). Without <code>by</code>, only <code>variable</code>, <code>label</code> and <code>nobs</code> are
 populated; the other columns are <code>NA</code>. The interval bounds are <code>NA</code>
-unless the table was built with <code>assoc_ci = TRUE</code>.</p>
+unless the table was built with <code>assoc_ci = TRUE</code>, and the SMD columns
+unless it was built with <code>smd = TRUE</code>.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>

@@ -208,10 +208,10 @@ table_continuous_svy(
 
   One of `"default"`, `"data.frame"`, `"long"`, or a rendering engine:
   `"tinytable"`, `"gt"`, `"flextable"`, `"excel"`, `"clipboard"`,
-  `"word"`. `"data.frame"` and `"long"` are synonyms and return the same
-  object: the compute frame is already long, one row per
-  `(variable x group)`. Same pair, same reason, as in
-  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md).
+  `"word"`. `"data.frame"` is the displayed table with its numbers,
+  `"long"` one row per `(variable x group)` with every statistic, as in
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md);
+  see *Value*.
 
 - excel_path, excel_sheet, clipboard_delim, word_path:
 
@@ -234,11 +234,43 @@ table_continuous_svy(
 
 ## Value
 
-A `spicy_continuous_svy_table`: the compute frame, with the display
-frame and the typed view attached. `output = "data.frame"` / `"long"`
-returns the compute frame unclassed – the two tokens are synonyms and
-return identical objects. The three carry the whole note as printed,
-"Note." included, in `attr(x, "note")`.
+Depends on `output`:
+
+- `"default"`: a `spicy_continuous_svy_table` (a `data.frame` subclass,
+  with the parent class `"spicy_table"`), printed when the call is bare;
+  its columns are the table's compute frame, and the display frame and
+  the typed view are attached.
+
+- `"data.frame"`: the displayed table with its numbers, what
+  [as.data.frame()](https://amaltawfik.github.io/spicy/reference/as.data.frame.spicy_continuous_svy_table.md)
+  of the default object returns: one row per printed row, the key
+  columns `variable`, `label` and, with `by`, `group` and `.row_role`
+  (`"group"`, or `"missing"` for the group of missing `by` values), then
+  the printed columns under their names (`"M"`, `"SD"`, `"SE"`,
+  `"95\% CI LL"`, ..., `"n"`, `"p"`), as in
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md).
+
+- `"long"`: one row per `(variable x group)` (per variable without `by`)
+  with every statistic the table computes, whatever it displays:
+  `variable`, `label`, `group` and `.group_role` (with `by`, as in
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)),
+  `mean`, `sd`, `se`, `min`, `max`, `ci_lower`, `ci_upper`, `median`,
+  `q1`, `q3`, `iqr`, `med_ci_lower`, `med_ci_upper`, `n` (observed),
+  `weighted_n` (the estimated population), `deff`, `degf` (the degrees
+  of freedom of the domain), and, with `by`, the test on the first row
+  of each variable: `test_type` (`"design_t"` or `"design_f"`),
+  `statistic`, `df`, `df.residual`, `p.value` (with the *p*-value) and,
+  under `p_adjust`, `p_unadjusted`.
+
+- `"tinytable"`, `"gt"`, `"flextable"`: the rendered table.
+
+- `"excel"` / `"word"`: writes the file and returns its path invisibly.
+
+- `"clipboard"`: copies the table and returns the display `data.frame`
+  invisibly.
+
+The default object and the two data frames carry the whole note as
+printed, "Note." included, in `attr(x, "note")`.
 
 ## Which function do I need?
 

@@ -39,9 +39,9 @@ the descriptive tables one contract for labels, p-values, and notes.
   expected count is at least 5, Fisher’s exact test otherwise
   (`test = "auto"`), and the note names the test of each variable.
   `test = "chisq"` restores the p-values of 0.13.0, and
-  `test = "fisher"` tests every variable exactly. The data frames gain a
-  `test_type` column. `test = "midp"` and `test = "n1"` offer the Fisher
-  mid-p test and Campbell’s N-1 chi-squared for 2x2 tables.
+  `test = "fisher"` tests every variable exactly. The long output gains
+  a `test_type` column. `test = "midp"` and `test = "n1"` offer the
+  Fisher mid-p test and Campbell’s N-1 chi-squared for 2x2 tables.
 
 - [`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md)
   returns a `spicy_codebook` object and no longer opens a DT widget;
@@ -107,6 +107,77 @@ the descriptive tables one contract for labels, p-values, and notes.
   table and [`tidy()`](https://generics.r-lib.org/reference/tidy.html)
   do. It sorted them by label.
 
+- The machine outputs of the table functions (`output = "long"`,
+  [`tidy()`](https://generics.r-lib.org/reference/tidy.html),
+  `glance()`) give one name to each statistic, broom’s where broom has
+  one, as listed in
+  [`?spicy`](https://amaltawfik.github.io/spicy/reference/spicy-package.md):
+  `p.value` (was `p`), `statistic` (`chi2`), `df` and `df.residual`
+  (`df1` and `df2`), `test_type` (`statistic_type`), `es_type`,
+  `es_value`, `es_ci_lower` and `es_ci_upper` (`effect_size_type`,
+  `effect_size`, `assoc_type`, `assoc_value`, `assoc_ci_lower`,
+  `assoc_ci_upper`, and the `ci_lower` / `ci_upper` of an association
+  measure), `smd_value` (`smd`), `nobs` (`n_total`, and `n_obs` in
+  [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)),
+  `weighted_nobs` (`weighted.nobs`), `weighted_n` (`weighted.n`),
+  `r.squared` and `adj.r.squared` (`r2` and `adj_r2`). In
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md),
+  the size of the model is `nobs` and `weighted_nobs`, where the long
+  output had `n` and `weighted_n` and `glance()` had `weighted_n`, and
+  the attributes naming the `by` column are `group_var` and
+  `group_label`, as in the other tables (`by_var` and `by_label`). There
+  too, a *t*, the test of a contrast or a slope, carries its own degrees
+  of freedom in `df` and leaves `df.residual` empty, where the long
+  output and `glance()` gave the 1 and the residual df of the equivalent
+  *F*; a *z* or a chi-squared (`vcov = "bootstrap"` or `"jackknife"`)
+  leaves `df.residual` empty too, and `df` is a double.
+
+- `output = "data.frame"` returns the table as it is displayed, with its
+  numbers, in every table function: one row per printed row, the printed
+  columns, and the key columns `variable` and `label`, with `level`,
+  `group`, and `.row_role` where they apply.
+  [`as.data.frame()`](https://rdrr.io/r/base/as.data.frame.html) on a
+  table returns the same frame, with the note as its one attribute.
+  `output = "long"` gives one row per variable, level, and group. In
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
+  [`table_continuous_svy()`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md),
+  and
+  [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md),
+  `"data.frame"` was the long frame, in
+  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
+  a frame of levels (its `Chi2`, `df` and `test_type` columns are now in
+  `"long"` only), and in
+  [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  the text of the printed table. The `"long"` output of
+  [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md)
+  was its wide frame, and
+  [`as.data.frame()`](https://rdrr.io/r/base/as.data.frame.html) of
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
+  its long frame.
+
+- [`tidy()`](https://generics.r-lib.org/reference/tidy.html) on a
+  [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md)
+  result reports `proportion`, between 0 and 1, and its interval on the
+  same scale, in the order of the table. It reported the percentage in
+  `estimate`.
+
+- [`tidy()`](https://generics.r-lib.org/reference/tidy.html) on a
+  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
+  result keeps the rows of the `Total` margin and flags them with
+  `total`, as
+  [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md)
+  does. It dropped them.
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  and
+  [`table_regression_uv()`](https://amaltawfik.github.io/spicy/reference/table_regression_uv.md)
+  return the path of the file, invisibly, with `output = "excel"` or
+  `"word"`, as the other tables do. They returned the table.
+
+- [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md)
+  no longer has the `smd_type` and `smd_value` columns, which were
+  always `NA`, in its long output and `glance()`.
+
 - [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
   gives each association measure of its note a sentence of its own:
   “Phi: smoking. Cramer’s V: education.” A semicolon joined them.
@@ -115,12 +186,12 @@ the descriptive tables one contract for labels, p-values, and notes.
   and
   [`table_regression_uv()`](https://amaltawfik.github.io/spicy/reference/table_regression_uv.md)
   name an interval column with a point whatever `decimal_mark`:
-  `97.5% CI` in
-  [`as.data.frame()`](https://rdrr.io/r/base/as.data.frame.html), and
   `97.5% CI: LL` and `97.5% CI: UL` in
-  [`as_structured()`](https://amaltawfik.github.io/spicy/reference/as_structured.md).
-  They were `97,5% CI` under `decimal_mark = ","`. The header still
-  follows the mark, and the names at 95% are unchanged.
+  [`as.data.frame()`](https://rdrr.io/r/base/as.data.frame.html) and
+  [`as_structured()`](https://amaltawfik.github.io/spicy/reference/as_structured.md),
+  `97.5% CI` in the printed object. They were `97,5% CI` under
+  `decimal_mark = ","`. The header still follows the mark, and the names
+  at 95% are unchanged.
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   words its `p_adjust` note for the reader: “P-values adjusted for 5
@@ -222,10 +293,9 @@ the descriptive tables one contract for labels, p-values, and notes.
 
 - `glance()` on a
   [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
-  result gives in `assoc_type` the measure of each variable, as in the
-  `effect_size_type` column of `output = "long"` (`"phi"`,
-  `"cramer_v"`). It gave the column header, “Effect size” on every row
-  when the variables used different measures.
+  result gives in `es_type` the measure of each variable, as the long
+  output does (`"phi"`, `"cramer_v"`). It gave the column header,
+  “Effect size” on every row when the variables used different measures.
 
 - [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
   refuses a `NaN` weight, as the other tables do. It dropped the row, as
@@ -254,6 +324,38 @@ the descriptive tables one contract for labels, p-values, and notes.
   were `spicy_invalid_input` errors.
 
 ### New features
+
+- The long output and
+  [`tidy()`](https://generics.r-lib.org/reference/tidy.html) of the
+  tables mark the rows they add by a key rather than by their label,
+  which follows the display language: `.row_role` gives the role of
+  `level` (`"missing"` on the row of missing values of
+  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
+  and
+  [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md)),
+  `.group_role` the role of `group` (`"missing"` on the group of missing
+  `by` values, `"total"` on the margin, `"group"` otherwise), and
+  `total` flags the `Total` margin.
+  [`tidy()`](https://generics.r-lib.org/reference/tidy.html) always has
+  a `group` column, `NA` without `by`, and that of
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
+  and
+  [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md)
+  gains `weighted_n`, `median`, `q1`, and `q3`, as the survey twin has.
+  `glance()` of
+  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
+  gains `smd_type` and `smd_value`, and in a table that compares groups
+  the long output keeps the effect-size and SMD columns, `NA` when they
+  were not requested.
+
+- [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md),
+  [`table_continuous_svy()`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md),
+  and
+  [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md)
+  results inherit the class `spicy_table`, as the other tables do, and
+  the long output of
+  [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  carries the note in `attr(x, "note")`.
 
 - `sochealth` gains a multiple-response question, the sources of health
   information used in the past 12 months: five logical `info_*` items,
@@ -306,9 +408,9 @@ the descriptive tables one contract for labels, p-values, and notes.
 
 - [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
   gains `p_value`, as its siblings have. `p_value = FALSE` drops the
-  test (`p`, and `test_type`, `Chi2` and `df` in the data frames) from
-  every output; with `assoc_measure = "none"` as well, the table is
-  purely descriptive
+  test (`p`, and `test_type`, `statistic`, `df` and `p.value` in the
+  long output) from every output; with `assoc_measure = "none"` as well,
+  the table is purely descriptive
   ([\#9](https://github.com/amaltawfik/spicy/issues/9)).
 
 - [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
@@ -428,9 +530,8 @@ the descriptive tables one contract for labels, p-values, and notes.
   [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md),
   and
   [`table_continuous_svy()`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md)
-  with `p_value = FALSE` no longer keep a p-value in
-  `output = "data.frame"` and `"long"` when `statistic = TRUE` or an
-  effect size ran the test, and
+  with `p_value = FALSE` no longer keep a p-value in `output = "long"`
+  when `statistic = TRUE` or an effect size ran the test, and
   [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md)
   and
   [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md)
@@ -455,9 +556,15 @@ the descriptive tables one contract for labels, p-values, and notes.
 
 - `glance()` on a
   [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
-  result leaves `assoc_ci_lower` and `assoc_ci_upper` at `NA` unless the
-  table was built with `assoc_ci = TRUE`. It reported the interval
-  whatever `assoc_ci` said.
+  result leaves `es_ci_lower` and `es_ci_upper` at `NA` unless the table
+  was built with `assoc_ci = TRUE`. It reported the interval whatever
+  `assoc_ci` said.
+
+- `glance()` on a
+  [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md)
+  result names no test when the table has none, without `by` or for a
+  variable whose test was withheld. It named the `chisq_statistic` on
+  every row.
 
 - `glance()` on a
   [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md)

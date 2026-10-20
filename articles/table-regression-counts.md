@@ -739,21 +739,36 @@ targets:
 ``` r
 
 table_regression(fit_zip, output = "data.frame")
-#>           Variable       B   SE         95% CI     p
-#> 1      (Intercept)    0.61 0.07 [ 0.48,  0.74] <.001
-#> 2             fem:                                  
-#> 3       Men (ref.)     –    –         –         –   
-#> 4            Women   -0.22 0.06 [-0.33, -0.10] <.001
-#> 5             mar:                                  
-#> 6    Single (ref.)     –    –         –         –   
-#> 7          Married    0.13 0.07 [ 0.01,  0.26]  .041
-#> 8             kid5   -0.16 0.04 [-0.25, -0.08] <.001
-#> 9             ment    0.02 0.00 [ 0.01,  0.02] <.001
-#> 10 Zero-inflation:                                  
-#> 11     (Intercept)   -0.69 0.21 [-1.09, -0.28] <.001
-#> 12            ment   -0.13 0.04 [-0.21, -0.05]  .001
-#> 13               n  915                             
-#> 14             AIC 3225.5
+#>          variable          label       level     .row_role             B
+#> 1     (Intercept)    (Intercept)        <NA>          coef    0.60947554
+#> 2             fem            fem        <NA> factor_header            NA
+#> 3             fem            fem         Men     reference            NA
+#> 4             fem            fem       Women         level   -0.21826157
+#> 5             mar            mar        <NA> factor_header            NA
+#> 6             mar            mar      Single     reference            NA
+#> 7             mar            mar     Married         level    0.13483078
+#> 8            kid5           kid5        <NA>          coef   -0.16276665
+#> 9            ment           ment        <NA>          coef    0.01818571
+#> 10 Zero-inflation Zero-inflation        <NA> factor_header            NA
+#> 11 Zero-inflation Zero-inflation (Intercept)         level   -0.68569024
+#> 12 Zero-inflation Zero-inflation        ment         level   -0.13007253
+#> 13           nobs              n        <NA>      fit_stat  915.00000000
+#> 14            aic            AIC        <NA>      fit_stat 3225.51736808
+#>             SE   95% CI: LL  95% CI: UL            p
+#> 1  0.067760782  0.476666850  0.74228423 2.372719e-19
+#> 2           NA           NA          NA           NA
+#> 3           NA           NA          NA           NA
+#> 4  0.058778884 -0.333466061 -0.10305707 2.046025e-04
+#> 5           NA           NA          NA           NA
+#> 6           NA           NA          NA           NA
+#> 7  0.065871411  0.005725192  0.26393638 4.067000e-02
+#> 8  0.043368679 -0.247767696 -0.07776560 1.746667e-04
+#> 9  0.002210413  0.013853380  0.02251804 1.914939e-16
+#> 10          NA           NA          NA           NA
+#> 11 0.205476431 -1.088416650 -0.28296384 8.466512e-04
+#> 12 0.040228751 -0.208919436 -0.05122563 1.223593e-03
+#> 13          NA           NA          NA           NA
+#> 14          NA           NA          NA           NA
 ```
 
 ``` r

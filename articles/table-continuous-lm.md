@@ -229,8 +229,9 @@ table_continuous_lm(
 ```
 
 When you need the underlying returned data for further processing, use
-`output = "data.frame"` for the wide raw table or `output = "long"` for
-the analytic long table.
+`output = "data.frame"` for the displayed table with its numbers, one
+row per outcome, or `output = "long"` for the analytic long table, one
+row per level of `by`.
 
 ## Covariate adjustment
 
@@ -537,8 +538,8 @@ table_continuous_lm(
 ```
 
 The CI level follows `ci_level` (default `0.95`). For programmatic
-access, the wide raw output exposes separate numeric columns, and the
-long output always includes them:
+access, `output = "data.frame"` keeps the bounds beside the effect size
+as separate numeric columns, and the long output always includes them:
 
 ``` r
 
@@ -550,12 +551,10 @@ table_continuous_lm(
   effect_size_ci = TRUE,
   output = "data.frame"
 )
-#>                        Variable   M (No)  M (Yes) Δ (Yes - No) 95% CI LL
-#> wellbeing_score wellbeing_score 69.36317 67.64538    -1.717793 -3.906437
-#>                 95% CI UL         p          R²          g es_ci_lower
-#> wellbeing_score 0.4708504 0.1238546 0.002017481 -0.1098571  -0.2497291
-#>                 es_ci_upper    n
-#> wellbeing_score  0.03006164 1175
+#>          variable           label   M (No)  M (Yes) Δ (Yes - No) 95% CI LL
+#> 1 wellbeing_score wellbeing_score 69.36317 67.64538    -1.717793 -3.906437
+#>   95% CI UL         p          R²          g es_ci_lower es_ci_upper    n
+#> 1 0.4708504 0.1238546 0.002017481 -0.1098571  -0.2497291  0.03006164 1175
 ```
 
 ``` r
@@ -645,7 +644,7 @@ removed: bmi (12), life_sat_health (8).
 
 [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
 returns an object that can be coerced to a plain `data.frame` / `tbl_df`
-(stripping the spicy formatting attributes) or piped into
+(the displayed table, as with `output = "data.frame"`) or piped into
 [`broom::tidy()`](https://generics.r-lib.org/reference/tidy.html) /
 [`broom::glance()`](https://generics.r-lib.org/reference/glance.html)
 for any downstream tidyverse-stats workflow:
@@ -675,17 +674,17 @@ broom::tidy(out)
 #> # ℹ 2 more variables: statistic <dbl>, p.value <dbl>
 
 # One row per outcome with model-level statistics: r.squared,
-# adj.r.squared, F / t, df, p.value, nobs, weighted_n, plus the
+# adj.r.squared, F / t, df, p.value, nobs, weighted_nobs, plus the
 # effect-size summary.
 broom::glance(out)
 #> # A tibble: 2 × 16
 #>   variable    label predictor_type test_type statistic    df df.residual p.value
-#>   <chr>       <chr> <chr>          <chr>         <dbl> <int>       <dbl>   <dbl>
+#>   <chr>       <chr> <chr>          <chr>         <dbl> <dbl>       <dbl>   <dbl>
 #> 1 wellbeing_… well… categorical    F             18.8      1        1198 1.55e-5
 #> 2 bmi         bmi   categorical    F              5.64     1        1186 1.78e-2
 #> # ℹ 8 more variables: r.squared <dbl>, adj.r.squared <dbl>, es_type <chr>,
 #> #   es_value <dbl>, es_ci_lower <dbl>, es_ci_upper <dbl>, nobs <int>,
-#> #   weighted_n <dbl>
+#> #   weighted_nobs <dbl>
 ```
 
 ## See also

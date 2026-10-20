@@ -1,8 +1,15 @@
 # Coerce a `spicy_continuous_svy_table` to a plain data frame or tibble
 
-These S3 methods strip the `"spicy_continuous_svy_table"` class and the
-rendering-only attributes, keeping the long compute frame and the three
-provenance markers (`group_var`, `design_meta`, `note`).
+[`as.data.frame()`](https://rdrr.io/r/base/as.data.frame.html) returns
+the table
+[`table_continuous_svy()`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md)
+displays, with its numbers: exactly what `output = "data.frame"`
+returns, the shape of
+[`as.data.frame.spicy_continuous_table()`](https://amaltawfik.github.io/spicy/reference/as.data.frame.spicy_continuous_table.md)
+(the key columns `variable`, `label` and, with `by`, `group` and
+`.row_role`, then the printed columns under their names). The note, as
+printed, is kept in `attr(, "note")`. `as_tibble()` returns the same
+table as a tibble.
 
 ## Usage
 
@@ -27,7 +34,8 @@ as_tibble(x, ...)
 
 ## Value
 
-A plain `data.frame` (or a `tbl_df` for `as_tibble()`).
+A plain `data.frame` (or a `tbl_df` for `as_tibble()`), identical to the
+`output = "data.frame"` of the same call.
 
 ## See also
 

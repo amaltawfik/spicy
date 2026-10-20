@@ -59,9 +59,11 @@ Standard broom columns: `variable`, `label`, `term`, `estimate_type`,
 `glance()` returns one row per outcome with model-level statistics.
 Columns: `variable`, `label`, `predictor_type` (`"categorical"` or
 `"continuous"`), `test_type` (`"F"` for categorical predictors, `"t"`
-for continuous ones), `statistic`, `df`, `df.residual`, `p.value`,
-`r.squared`, `adj.r.squared`, `es_type`, `es_value`, `es_ci_lower`,
-`es_ci_upper`, `nobs`, `weighted_n`.
+for continuous ones), `statistic`, `df`, `df.residual` (the degrees of
+freedom follow the statistic: an *F* has both, a *t* has its own in `df`
+and none in `df.residual`), `p.value`, `r.squared`, `adj.r.squared`,
+`es_type`, `es_value`, `es_ci_lower`, `es_ci_upper`, `nobs`,
+`weighted_nobs` (the sum of the weights, `NA` without `weights`).
 
 ## See also
 

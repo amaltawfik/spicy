@@ -1663,187 +1663,31 @@ tables</em></a>.</p>
 <h2 id="output-formats">Output formats<a class="anchor" aria-label="anchor" href="#output-formats"></a>
 </h2>
 <p>The default print method draws an ASCII table to the console. The
-same content is available as a plain <code>data.frame</code>
-(<code>output = "data.frame"</code>), a long broom-style data.frame
-(<code>output = "long"</code>), or as a rich-format table for
-<code>gt</code>, <code>tinytable</code>, <code>flextable</code>,
-<code>excel</code>, <code>word</code>, or <code>clipboard</code>:</p>
+same content is available as a plain <code>data.frame</code> with its
+numbers (<code>output = "data.frame"</code>: one row per printed row,
+the interval in two bounds, the key columns <code>variable</code>,
+<code>label</code>, <code>level</code> and <code>.row_role</code> in
+front), a long broom-style data.frame (<code>output = "long"</code>), or
+as a rich-format table for <code>gt</code>, <code>tinytable</code>,
+<code>flextable</code>, <code>excel</code>, <code>word</code>, or
+<code>clipboard</code>:</p>
 <div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">wellbeing_score</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">smoking</span>, data <span class="op">=</span> <span class="va">sochealth</span><span class="op">)</span>,</span>
 <span>  output <span class="op">=</span> <span class="st">"data.frame"</span></span>
 <span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/str.html" class="external-link">str</a></span><span class="op">(</span><span class="va">out</span><span class="op">)</span></span>
-<span><span class="co">#&gt; 'data.frame':    11 obs. of  5 variables:</span></span>
-<span><span class="co">#&gt;  $ Variable: chr  "(Intercept)" "age" "sex:" "  Female (ref.)" ...</span></span>
-<span><span class="co">#&gt;  $ B       : chr  "  65.20" "   0.05" "       " "    –  " ...</span></span>
-<span><span class="co">#&gt;  $ SE      : chr  "1.66" "0.03" "    " " –  " ...</span></span>
-<span><span class="co">#&gt;  $ 95% CI  : chr  "[61.95, 68.45]" "[-0.01,  0.11]" "              " "      –       " ...</span></span>
-<span><span class="co">#&gt;  $ p       : chr  "&lt;.001" " .130" "     " " –   " ...</span></span>
-<span><span class="co">#&gt;  - attr(*, "title")= chr "Linear regression: wellbeing_score"</span></span>
-<span><span class="co">#&gt;  - attr(*, "note")= chr "Note. Linear regression.\nStd. errors: classical (OLS)."</span></span>
-<span><span class="co">#&gt;  - attr(*, "col_spec")=List of 4</span></span>
-<span><span class="co">#&gt;   ..$ :List of 7</span></span>
-<span><span class="co">#&gt;   .. ..$ col_name     : chr "B"</span></span>
-<span><span class="co">#&gt;   .. ..$ display_label: chr "B"</span></span>
-<span><span class="co">#&gt;   .. ..$ token        : chr "b"</span></span>
-<span><span class="co">#&gt;   .. ..$ model_id     : chr "M1"</span></span>
-<span><span class="co">#&gt;   .. ..$ estimate_type: chr "B"</span></span>
-<span><span class="co">#&gt;   .. ..$ fields       : chr "estimate"</span></span>
-<span><span class="co">#&gt;   .. ..$ outcome_level: chr NA</span></span>
-<span><span class="co">#&gt;   ..$ :List of 7</span></span>
-<span><span class="co">#&gt;   .. ..$ col_name     : chr "SE"</span></span>
-<span><span class="co">#&gt;   .. ..$ display_label: chr "SE"</span></span>
-<span><span class="co">#&gt;   .. ..$ token        : chr "se"</span></span>
-<span><span class="co">#&gt;   .. ..$ model_id     : chr "M1"</span></span>
-<span><span class="co">#&gt;   .. ..$ estimate_type: chr "B"</span></span>
-<span><span class="co">#&gt;   .. ..$ fields       : chr "se"</span></span>
-<span><span class="co">#&gt;   .. ..$ outcome_level: chr NA</span></span>
-<span><span class="co">#&gt;   ..$ :List of 7</span></span>
-<span><span class="co">#&gt;   .. ..$ col_name     : chr "95% CI"</span></span>
-<span><span class="co">#&gt;   .. ..$ display_label: chr "95% CI"</span></span>
-<span><span class="co">#&gt;   .. ..$ token        : chr "ci"</span></span>
-<span><span class="co">#&gt;   .. ..$ model_id     : chr "M1"</span></span>
-<span><span class="co">#&gt;   .. ..$ estimate_type: chr "B"</span></span>
-<span><span class="co">#&gt;   .. ..$ fields       : chr [1:2] "ci_low" "ci_high"</span></span>
-<span><span class="co">#&gt;   .. ..$ outcome_level: chr NA</span></span>
-<span><span class="co">#&gt;   ..$ :List of 7</span></span>
-<span><span class="co">#&gt;   .. ..$ col_name     : chr "p"</span></span>
-<span><span class="co">#&gt;   .. ..$ display_label: chr "p"</span></span>
-<span><span class="co">#&gt;   .. ..$ token        : chr "p"</span></span>
-<span><span class="co">#&gt;   .. ..$ model_id     : chr "M1"</span></span>
-<span><span class="co">#&gt;   .. ..$ estimate_type: chr "B"</span></span>
-<span><span class="co">#&gt;   .. ..$ fields       : chr "p_value"</span></span>
-<span><span class="co">#&gt;   .. ..$ outcome_level: chr NA</span></span>
-<span><span class="co">#&gt;  - attr(*, "group_sep_rows")= int 9</span></span>
-<span><span class="co">#&gt;  - attr(*, "section_sep_rows")= int(0) </span></span>
-<span><span class="co">#&gt;  - attr(*, "align")= chr "decimal"</span></span>
-<span><span class="co">#&gt;  - attr(*, "decimal_mark")= chr "."</span></span>
-<span><span class="co">#&gt;  - attr(*, "structured")=List of 9</span></span>
-<span><span class="co">#&gt;   ..$ version              : int 3</span></span>
-<span><span class="co">#&gt;   ..$ body                 :'data.frame':    11 obs. of  10 variables:</span></span>
-<span><span class="co">#&gt;   .. ..$ Variable  : chr [1:11] "(Intercept)" "age" "sex:" "  Female (ref.)" ...</span></span>
-<span><span class="co">#&gt;   .. ..$ B         : num [1:11] 65.2009 0.0465 NA NA 3.8558 ...</span></span>
-<span><span class="co">#&gt;   .. ..$ SE        : num [1:11] 1.6567 0.0307 NA NA 0.9053 ...</span></span>
-<span><span class="co">#&gt;   .. ..$ 95% CI: LL: num [1:11] 61.9504 -0.0137 NA NA 2.0796 ...</span></span>
-<span><span class="co">#&gt;   .. ..$ 95% CI: UL: num [1:11] 68.451 0.107 NA NA 5.632 ...</span></span>
-<span><span class="co">#&gt;   .. ..$ p         : num [1:11] 1.59e-216 1.30e-01 NA NA 2.22e-05 ...</span></span>
-<span><span class="co">#&gt;   .. ..$ .variable : chr [1:11] "(Intercept)" "age" "sex" "sex" ...</span></span>
-<span><span class="co">#&gt;   .. ..$ .level    : chr [1:11] NA NA NA "Female" ...</span></span>
-<span><span class="co">#&gt;   .. ..$ .row_role : chr [1:11] "coef" "coef" "factor_header" "reference" ...</span></span>
-<span><span class="co">#&gt;   .. ..$ .indent   : int [1:11] 0 0 0 1 1 0 1 1 0 0 ...</span></span>
-<span><span class="co">#&gt;   ..$ stars                : NULL</span></span>
-<span><span class="co">#&gt;   ..$ cell_status          :List of 5</span></span>
-<span><span class="co">#&gt;   .. ..$ B         : chr [1:11] "" "" "" "reference" ...</span></span>
-<span><span class="co">#&gt;   .. ..$ SE        : chr [1:11] "" "" "" "reference" ...</span></span>
-<span><span class="co">#&gt;   .. ..$ 95% CI: LL: chr [1:11] "" "" "" "reference" ...</span></span>
-<span><span class="co">#&gt;   .. ..$ 95% CI: UL: chr [1:11] "" "" "" "reference" ...</span></span>
-<span><span class="co">#&gt;   .. ..$ p         : chr [1:11] "" "" "" "reference" ...</span></span>
-<span><span class="co">#&gt;   ..$ outcome_labels_by_col: chr(0) </span></span>
-<span><span class="co">#&gt;   ..$ col_meta             :List of 5</span></span>
-<span><span class="co">#&gt;   .. ..$ B         :List of 13</span></span>
-<span><span class="co">#&gt;   .. .. ..$ token             : chr "b"</span></span>
-<span><span class="co">#&gt;   .. .. ..$ model_id          : chr "M1"</span></span>
-<span><span class="co">#&gt;   .. .. ..$ source_field      : chr "estimate"</span></span>
-<span><span class="co">#&gt;   .. .. ..$ precision         : int 2</span></span>
-<span><span class="co">#&gt;   .. .. ..$ p_style           : NULL</span></span>
-<span><span class="co">#&gt;   .. .. ..$ threshold         : NULL</span></span>
-<span><span class="co">#&gt;   .. .. ..$ signif            : NULL</span></span>
-<span><span class="co">#&gt;   .. .. ..$ ci_role           : NULL</span></span>
-<span><span class="co">#&gt;   .. .. ..$ ci_pair           : NULL</span></span>
-<span><span class="co">#&gt;   .. .. ..$ ci_label          : NULL</span></span>
-<span><span class="co">#&gt;   .. .. ..$ is_df             : logi FALSE</span></span>
-<span><span class="co">#&gt;   .. .. ..$ display_label     : chr "B"</span></span>
-<span><span class="co">#&gt;   .. .. ..$ fit_stat_overrides:List of 3</span></span>
-<span><span class="co">#&gt;   .. .. .. ..$ :List of 5</span></span>
-<span><span class="co">#&gt;   .. .. .. .. ..$ fit_stat : chr "nobs"</span></span>
-<span><span class="co">#&gt;   .. .. .. .. ..$ precision: int 0</span></span>
-<span><span class="co">#&gt;   .. .. .. .. ..$ p_style  : NULL</span></span>
-<span><span class="co">#&gt;   .. .. .. .. ..$ threshold: NULL</span></span>
-<span><span class="co">#&gt;   .. .. .. .. ..$ row      : int 9</span></span>
-<span><span class="co">#&gt;   .. .. .. ..$ :List of 5</span></span>
-<span><span class="co">#&gt;   .. .. .. .. ..$ fit_stat : chr "r2"</span></span>
-<span><span class="co">#&gt;   .. .. .. .. ..$ precision: int 2</span></span>
-<span><span class="co">#&gt;   .. .. .. .. ..$ p_style  : NULL</span></span>
-<span><span class="co">#&gt;   .. .. .. .. ..$ threshold: NULL</span></span>
-<span><span class="co">#&gt;   .. .. .. .. ..$ row      : int 10</span></span>
-<span><span class="co">#&gt;   .. .. .. ..$ :List of 5</span></span>
-<span><span class="co">#&gt;   .. .. .. .. ..$ fit_stat : chr "adj_r2"</span></span>
-<span><span class="co">#&gt;   .. .. .. .. ..$ precision: int 2</span></span>
-<span><span class="co">#&gt;   .. .. .. .. ..$ p_style  : NULL</span></span>
-<span><span class="co">#&gt;   .. .. .. .. ..$ threshold: NULL</span></span>
-<span><span class="co">#&gt;   .. .. .. .. ..$ row      : int 11</span></span>
-<span><span class="co">#&gt;   .. ..$ SE        :List of 12</span></span>
-<span><span class="co">#&gt;   .. .. ..$ token        : chr "se"</span></span>
-<span><span class="co">#&gt;   .. .. ..$ model_id     : chr "M1"</span></span>
-<span><span class="co">#&gt;   .. .. ..$ source_field : chr "se"</span></span>
-<span><span class="co">#&gt;   .. .. ..$ precision    : int 2</span></span>
-<span><span class="co">#&gt;   .. .. ..$ p_style      : NULL</span></span>
-<span><span class="co">#&gt;   .. .. ..$ threshold    : NULL</span></span>
-<span><span class="co">#&gt;   .. .. ..$ signif       : NULL</span></span>
-<span><span class="co">#&gt;   .. .. ..$ ci_role      : NULL</span></span>
-<span><span class="co">#&gt;   .. .. ..$ ci_pair      : NULL</span></span>
-<span><span class="co">#&gt;   .. .. ..$ ci_label     : NULL</span></span>
-<span><span class="co">#&gt;   .. .. ..$ is_df        : logi FALSE</span></span>
-<span><span class="co">#&gt;   .. .. ..$ display_label: chr "SE"</span></span>
-<span><span class="co">#&gt;   .. ..$ 95% CI: LL:List of 12</span></span>
-<span><span class="co">#&gt;   .. .. ..$ token        : chr "ci"</span></span>
-<span><span class="co">#&gt;   .. .. ..$ model_id     : chr "M1"</span></span>
-<span><span class="co">#&gt;   .. .. ..$ source_field : chr "ci_low"</span></span>
-<span><span class="co">#&gt;   .. .. ..$ precision    : int 2</span></span>
-<span><span class="co">#&gt;   .. .. ..$ p_style      : NULL</span></span>
-<span><span class="co">#&gt;   .. .. ..$ threshold    : NULL</span></span>
-<span><span class="co">#&gt;   .. .. ..$ signif       : NULL</span></span>
-<span><span class="co">#&gt;   .. .. ..$ ci_role      : chr "LL"</span></span>
-<span><span class="co">#&gt;   .. .. ..$ ci_pair      : chr "95% CI: UL"</span></span>
-<span><span class="co">#&gt;   .. .. ..$ ci_label     : chr "95% CI"</span></span>
-<span><span class="co">#&gt;   .. .. ..$ is_df        : logi FALSE</span></span>
-<span><span class="co">#&gt;   .. .. ..$ display_label: chr "95% CI"</span></span>
-<span><span class="co">#&gt;   .. ..$ 95% CI: UL:List of 12</span></span>
-<span><span class="co">#&gt;   .. .. ..$ token        : chr "ci"</span></span>
-<span><span class="co">#&gt;   .. .. ..$ model_id     : chr "M1"</span></span>
-<span><span class="co">#&gt;   .. .. ..$ source_field : chr "ci_high"</span></span>
-<span><span class="co">#&gt;   .. .. ..$ precision    : int 2</span></span>
-<span><span class="co">#&gt;   .. .. ..$ p_style      : NULL</span></span>
-<span><span class="co">#&gt;   .. .. ..$ threshold    : NULL</span></span>
-<span><span class="co">#&gt;   .. .. ..$ signif       : NULL</span></span>
-<span><span class="co">#&gt;   .. .. ..$ ci_role      : chr "UL"</span></span>
-<span><span class="co">#&gt;   .. .. ..$ ci_pair      : chr "95% CI: LL"</span></span>
-<span><span class="co">#&gt;   .. .. ..$ ci_label     : chr "95% CI"</span></span>
-<span><span class="co">#&gt;   .. .. ..$ is_df        : logi FALSE</span></span>
-<span><span class="co">#&gt;   .. .. ..$ display_label: chr "95% CI"</span></span>
-<span><span class="co">#&gt;   .. ..$ p         :List of 12</span></span>
-<span><span class="co">#&gt;   .. .. ..$ token        : chr "p"</span></span>
-<span><span class="co">#&gt;   .. .. ..$ model_id     : chr "M1"</span></span>
-<span><span class="co">#&gt;   .. .. ..$ source_field : chr "p_value"</span></span>
-<span><span class="co">#&gt;   .. .. ..$ precision    : int 3</span></span>
-<span><span class="co">#&gt;   .. .. ..$ p_style      : chr "apa"</span></span>
-<span><span class="co">#&gt;   .. .. ..$ threshold    : num 0.001</span></span>
-<span><span class="co">#&gt;   .. .. ..$ signif       : NULL</span></span>
-<span><span class="co">#&gt;   .. .. ..$ ci_role      : NULL</span></span>
-<span><span class="co">#&gt;   .. .. ..$ ci_pair      : NULL</span></span>
-<span><span class="co">#&gt;   .. .. ..$ ci_label     : NULL</span></span>
-<span><span class="co">#&gt;   .. .. ..$ is_df        : logi FALSE</span></span>
-<span><span class="co">#&gt;   .. .. ..$ display_label: chr "p"</span></span>
-<span><span class="co">#&gt;   ..$ spanners             : NULL</span></span>
-<span><span class="co">#&gt;   ..$ ci_pairs             :List of 1</span></span>
-<span><span class="co">#&gt;   .. ..$ :List of 2</span></span>
-<span><span class="co">#&gt;   .. .. ..$ label: chr "95% CI"</span></span>
-<span><span class="co">#&gt;   .. .. ..$ cols : int [1:2] 4 5</span></span>
-<span><span class="co">#&gt;   ..$ format_spec          :List of 9</span></span>
-<span><span class="co">#&gt;   .. ..$ decimal_mark      : chr "."</span></span>
-<span><span class="co">#&gt;   .. ..$ digits            : int 2</span></span>
-<span><span class="co">#&gt;   .. ..$ p_digits          : int 3</span></span>
-<span><span class="co">#&gt;   .. ..$ effect_size_digits: int 2</span></span>
-<span><span class="co">#&gt;   .. ..$ fit_digits        : int 2</span></span>
-<span><span class="co">#&gt;   .. ..$ ic_digits         : int 1</span></span>
-<span><span class="co">#&gt;   .. ..$ p_style           : chr "apa"</span></span>
-<span><span class="co">#&gt;   .. ..$ p_threshold       : num 0.001</span></span>
-<span><span class="co">#&gt;   .. ..$ ci_level          : num 0.95</span></span>
-<span><span class="co">#&gt;  - attr(*, "padding")= int 0</span></span>
-<span><span class="co">#&gt;  - attr(*, "fit_stats_layout")= chr "first_col"</span></span>
-<span><span class="co">#&gt;  - attr(*, "model_ids")= chr "M1"</span></span>
-<span><span class="co">#&gt;  - attr(*, "outcome")= chr "wellbeing_score"</span></span></code></pre></div>
+<span><span class="co">#&gt; 'data.frame':    11 obs. of  9 variables:</span></span>
+<span><span class="co">#&gt;  $ variable  : chr  "(Intercept)" "age" "sex" "sex" ...</span></span>
+<span><span class="co">#&gt;  $ label     : chr  "(Intercept)" "age" "sex" "sex" ...</span></span>
+<span><span class="co">#&gt;  $ level     : chr  NA NA NA "Female" ...</span></span>
+<span><span class="co">#&gt;  $ .row_role : chr  "coef" "coef" "factor_header" "reference" ...</span></span>
+<span><span class="co">#&gt;  $ B         : num  65.2009 0.0465 NA NA 3.8558 ...</span></span>
+<span><span class="co">#&gt;  $ SE        : num  1.6567 0.0307 NA NA 0.9053 ...</span></span>
+<span><span class="co">#&gt;  $ 95% CI: LL: num  61.9504 -0.0137 NA NA 2.0796 ...</span></span>
+<span><span class="co">#&gt;  $ 95% CI: UL: num  68.451 0.107 NA NA 5.632 ...</span></span>
+<span><span class="co">#&gt;  $ p         : num  1.59e-216 1.30e-01 NA NA 2.22e-05 ...</span></span>
+<span><span class="co">#&gt;  - attr(*, "note")= chr "Note. Linear regression.\nStd. errors: classical (OLS)."</span></span></code></pre></div>
 <div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">wellbeing_score</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">smoking</span>, data <span class="op">=</span> <span class="va">sochealth</span><span class="op">)</span>,</span>

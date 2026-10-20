@@ -509,7 +509,10 @@ inline(tbl, smoking, column = "{p}")
 ## Downstream: the raw frame and the broom views
 
 `output = "long"` returns the compute frame: one row per displayed row,
-with `.row_role` saying what each row is.
+with `.row_role` saying what each row is and every statistic the table
+computes. `output = "data.frame"`, and
+[`as.data.frame()`](https://rdrr.io/r/base/as.data.frame.html) on the
+table, give the same rows with the printed columns only.
 
 ``` r
 
@@ -524,16 +527,16 @@ head(table_outcome(sochealth, bmi, select = sex, output = "long"), 4)
 #> 2       NA     NA     NA     NA   NA           NA           NA   NA         NA
 #> 3 25.98425   25.7 23.100 28.600 5.50         25.4         26.1  616         NA
 #> 4 26.49563   26.1 23.875 28.625 4.75         25.8         26.6  572         NA
-#>   test_type statistic      df1 df2    p.value es_type es_value es_ci_lower
-#> 1      <NA>        NA       NA  NA         NA    <NA>       NA          NA
-#> 2   welch_t -2.377237 1184.497  NA 0.01760093    <NA>       NA          NA
-#> 3      <NA>        NA       NA  NA         NA    <NA>       NA          NA
-#> 4      <NA>        NA       NA  NA         NA    <NA>       NA          NA
-#>   es_ci_upper smd_type smd_value
-#> 1          NA     <NA>        NA
-#> 2          NA     <NA>        NA
-#> 3          NA     <NA>        NA
-#> 4          NA     <NA>        NA
+#>   test_type statistic       df df.residual    p.value es_type es_value
+#> 1      <NA>        NA       NA          NA         NA    <NA>       NA
+#> 2   welch_t -2.377237 1184.497          NA 0.01760093    <NA>       NA
+#> 3      <NA>        NA       NA          NA         NA    <NA>       NA
+#> 4      <NA>        NA       NA          NA         NA    <NA>       NA
+#>   es_ci_lower es_ci_upper
+#> 1          NA          NA
+#> 2          NA          NA
+#> 3          NA          NA
+#> 4          NA          NA
 ```
 
 `tidy()` returns the described rows — the marginal row and one row per
@@ -543,34 +546,33 @@ carrying that block’s own comparison:
 ``` r
 
 broom::tidy(tbl)
-#> # A tibble: 6 × 12
-#>   outcome variable label level estimate std.error conf.low conf.high     n   min
-#>   <chr>   <chr>    <chr> <chr>    <dbl>     <dbl>    <dbl>     <dbl> <int> <dbl>
-#> 1 bmi     bmi      bmi   NA        25.9     0.108     25.7      26.1  1188  16  
-#> 2 bmi     sex      sex   Fema…     25.7     0.152     25.4      26.0   616  16  
-#> 3 bmi     sex      sex   Male      26.2     0.152     25.9      26.5   572  16  
-#> 4 bmi     smoking  smok… No        26.0     0.124     25.7      26.2   915  16  
-#> 5 bmi     smoking  smok… Yes       25.9     0.227     25.5      26.4   248  16.8
-#> 6 bmi     smoking  smok… (Mis…     24.7     0.726     23.2      26.2    25  17.6
-#> # ℹ 2 more variables: max <dbl>, sd <dbl>
+#> # A tibble: 6 × 17
+#>   outcome variable label   level .row_role estimate std.error conf.low conf.high
+#>   <chr>   <chr>    <chr>   <chr> <chr>        <dbl>     <dbl>    <dbl>     <dbl>
+#> 1 bmi     bmi      bmi     NA    summary       25.9     0.108     25.7      26.1
+#> 2 bmi     sex      sex     Fema… level         25.7     0.152     25.4      26.0
+#> 3 bmi     sex      sex     Male  level         26.2     0.152     25.9      26.5
+#> 4 bmi     smoking  smoking No    level         26.0     0.124     25.7      26.2
+#> 5 bmi     smoking  smoking Yes   level         25.9     0.227     25.5      26.4
+#> 6 bmi     smoking  smoking (Mis… missing       24.7     0.726     23.2      26.2
+#> # ℹ 8 more variables: n <int>, weighted_n <dbl>, median <dbl>, q1 <dbl>,
+#> #   q3 <dbl>, min <dbl>, max <dbl>, sd <dbl>
 broom::glance(tbl)
-#> # A tibble: 2 × 16
+#> # A tibble: 2 × 14
 #>   outcome variable label  n_levels test_type statistic    df df.residual p.value
 #>   <chr>   <chr>    <chr>     <int> <chr>         <dbl> <dbl>       <dbl>   <dbl>
 #> 1 bmi     sex      sex           2 welch_t      -2.38  1184.          NA  0.0176
 #> 2 bmi     smoking  smoki…        3 welch_t       0.122  407.          NA  0.903 
-#> # ℹ 7 more variables: es_type <chr>, es_value <dbl>, es_ci_lower <dbl>,
-#> #   es_ci_upper <dbl>, smd_type <chr>, smd_value <dbl>, n_total <int>
+#> # ℹ 5 more variables: es_type <chr>, es_value <dbl>, es_ci_lower <dbl>,
+#> #   es_ci_upper <dbl>, nobs <int>
 ```
 
 Two identity columns rather than one, and deliberately: `outcome` is
 constant down the frame, `variable` names the block. A single column
 would have to mean two different things depending on the row.
 
-The `glance()` schema is fixed. `smd_type` and `smd_value` are present
-and `NA` from the first version, so the day a standardized mean
-difference enters this table it cannot break a pipeline that indexes the
-frame. Index by name, never by position.
+The `glance()` schema is fixed: a column the table does not fill is
+present and `NA`. Index by name, never by position.
 
 ## Comparison with `gtsummary::tbl_continuous()`
 
@@ -695,7 +697,7 @@ table_outcome(
 | *Note.* Group comparison: Wilcoxon rank-sum test. Med \[Q1, Q3\] = median \[first quartile, third quartile\]. Each block compares wellbeing_score across the levels of one variable; blocks are not adjusted for one another. Overall = the whole analytic sample. |  |  |  |
 
 Descriptive statistics of wellbeing_score
-{#tinytable_t5yara2x6tc1jwd80ojn .table .tinytable
+{#tinytable_rcvbxazcrr5ydbqw1amc .table .tinytable
 style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 

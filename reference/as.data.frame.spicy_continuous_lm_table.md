@@ -1,14 +1,17 @@
 # Coerce a `spicy_continuous_lm_table` to a plain data frame or tibble
 
-These S3 methods strip the `"spicy_continuous_lm_table"` /
-`"spicy_table"` classes and the rendering-only attributes (`digits`,
-`decimal_mark`, `ci_level`, ...) from an object returned by
+[`as.data.frame()`](https://rdrr.io/r/base/as.data.frame.html) returns
+the table
 [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
-so the underlying long-format data can be manipulated with downstream
-tools (`dplyr`, `tidyr`, etc.) under the standard `data.frame` /
-`tbl_df` contract. The attribute `"by_var"` is preserved as a
-lightweight provenance marker, and `"note"`, the note as printed; all
-other spicy attributes are dropped. The original `x` is unaffected, and
+displays, with its numbers: exactly what `output = "data.frame"`
+returns. One row per outcome, the key columns `variable` (the column
+name of the outcome) and `label` (the label displayed for it), then the
+printed columns under their names (`"M (<level>)"`, the contrast, the
+interval bounds, the test statistic, `"p"`, the fit statistic, the
+effect size, `"n"`, `"Weighted n"`); an effect size printed with its
+interval keeps the bounds beside it as `es_ci_lower` and `es_ci_upper`.
+The note, as printed, is kept in `attr(, "note")`. `as_tibble()` returns
+the same table as a tibble. The original `x` is unaffected, and
 `print(x)` continues to render the formatted ASCII table.
 
 ## Usage
@@ -32,8 +35,7 @@ as_tibble(x, ...)
 
   Standard
   [`base::as.data.frame()`](https://rdrr.io/r/base/as.data.frame.html)
-  arguments. Currently ignored: the long format already carries integer
-  row names and explicit columns.
+  arguments. Currently ignored.
 
 - ...:
 
@@ -45,9 +47,16 @@ as_tibble(x, ...)
 
 ## Value
 
-A plain `data.frame` (or `tbl_df`) with the same rows and columns as the
-long output of
-[`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md).
+A plain `data.frame` (or `tbl_df`), identical to the
+`output = "data.frame"` of the same call.
+
+## Details
+
+For one row per level of `by` with every estimate, use
+`output = "long"`,
+[`tidy.spicy_continuous_lm_table()`](https://amaltawfik.github.io/spicy/reference/tidy.spicy_continuous_lm_table.md)
+or
+[`glance.spicy_continuous_lm_table()`](https://amaltawfik.github.io/spicy/reference/tidy.spicy_continuous_lm_table.md).
 
 ## See also
 

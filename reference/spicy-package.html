@@ -163,15 +163,34 @@ without notice – avoid calling directly from downstream code):</p><ul><li><p>A
 <code>spicy_categorical_table</code>, <code>spicy_categorical_svy_table</code>,
 <code>spicy_continuous_table</code>, <code>spicy_continuous_svy_table</code>,
 <code>spicy_continuous_lm_table</code>, <code>spicy_outcome_table</code>,
-<code>spicy_multiresponse_table</code>, and <code>spicy_regression_table</code>, follow
-the standard broom column conventions (<code>outcome</code>, <code>term</code>,
-<code>estimate</code>, <code>std.error</code>, <code>conf.low</code>, <code>conf.high</code>, <code>statistic</code>,
-<code>p.value</code>, <code>df</code>, <code>df.residual</code>, <code>r.squared</code>, <code>adj.r.squared</code>,
-<code>nobs</code>, ...). In the descriptive tables, <code>variable</code> holds the name
-of the column a row describes and <code>label</code> its displayed label.
-<code>outcome</code> names the response of a regression model and the single
-outcome of <code><a href="table_outcome.html">table_outcome()</a></code>. The set of columns produced by each
-method is considered <strong>stabilizing</strong>: existing columns will not be
+<code>spicy_multiresponse_table</code>, and <code>spicy_regression_table</code>, and the
+<code>output = "long"</code> frame of every table function, speak one
+vocabulary: broom's name wherever broom defines one, and one
+snake_case name per concept otherwise, the same in every function.</p><table class="table table"><tr><td>Concept</td><td>Column</td></tr><tr><td>the variable a row describes, its displayed label</td><td><code>variable</code>, <code>label</code></td></tr><tr><td>the level of a categorical variable, the group of <code>by</code></td><td><code>level</code>, <code>group</code></td></tr><tr><td>the role of the row's <code>level</code> (or item): a level, the row of missing values, ...</td><td><code>.row_role</code> (<code>"level"</code>, <code>"missing"</code>, <code>"summary"</code>, ...)</td></tr><tr><td>the role of <code>group</code>: a group, the column of missing <code>by</code> values, the margin</td><td><code>.group_role</code> (<code>"group"</code>, <code>"missing"</code>, <code>"total"</code>)</td></tr><tr><td>the <code>Total</code> margin of the groups</td><td><code>total</code> (logical)</td></tr><tr><td>a count, a percentage, a proportion between 0 and 1</td><td><code>n</code>, <code>pct</code>, <code>proportion</code>, named by their base where a table has two (<code>pct_cases</code>, <code>pct_responses</code>, <code>proportion_cases</code>, <code>proportion_responses</code>)</td></tr><tr><td>the estimate of a row, its standard error and interval</td><td><code>estimate</code>, <code>std.error</code>, <code>conf.low</code>, <code>conf.high</code></td></tr><tr><td>the test: its name and statistic</td><td><code>test_type</code>, <code>statistic</code></td></tr><tr><td>the degrees of freedom, which follow the statistic</td><td><code>df</code> for a <em>t</em> or a chi-squared (<code>Inf</code> for a <em>z</em>); <code>df</code> and <code>df.residual</code> for an <em>F</em>, the Rao-Scott <em>F</em> and the <em>F</em> of a linear model included</td></tr><tr><td>the p-value, and the raw one under <code>p_adjust</code></td><td><code>p.value</code>, <code>p_unadjusted</code></td></tr><tr><td>the effect size: its measure, value and interval</td><td><code>es_type</code>, <code>es_value</code>, <code>es_ci_lower</code>, <code>es_ci_upper</code></td></tr><tr><td>the standardized mean difference</td><td><code>smd_type</code>, <code>smd_value</code></td></tr><tr><td>the observations of a variable or of a model, and their weighted count</td><td><code>nobs</code>, <code>weighted_nobs</code></td></tr><tr><td>the weighted count of a group (beside its <code>n</code>)</td><td><code>weighted_n</code></td></tr><tr><td>the counts of the groups of <code>by</code>, of the categories of a variable</td><td><code>n_groups</code>, <code>n_levels</code></td></tr><tr><td>the fit of a model</td><td><code>r.squared</code>, <code>adj.r.squared</code></td></tr></table><p><code>variable</code> holds the name of the column a row describes and <code>label</code>
+its displayed label. <code>outcome</code> names the response of a regression
+model and the single outcome of <code><a href="table_outcome.html">table_outcome()</a></code>. The proportions of
+<code>tidy()</code> are between 0 and 1, and the <code>Total</code> rows stay, flagged by
+<code>total</code>. Each role column describes the key column it follows,
+whatever the orientation of the printed table: <code>.row_role</code> the row's
+<code>level</code>, <code>.group_role</code> its <code>group</code>. A level or a group added for
+missing values is told apart by its role, <code>"missing"</code>, never by its
+label, which follows the display language. In a table that compares
+groups, the long output carries the effect-size and SMD columns
+whether or not they were requested (<code>NA</code> then), and <code>glance()</code> has a
+fixed set of columns; <code>p_value = FALSE</code> removes the test columns.
+Model-level statistics (<code>nobs</code>, <code>r.squared</code>, ...) are in <code>glance()</code>,
+and in the long output only for <code><a href="table_regression_uv.html">table_regression_uv()</a></code>, whose rows
+are separate models. The printed objects carry the <code>by</code> column and its
+label in the attributes <code>group_var</code> and <code>group_label</code>.</p>
+<p><code>output = "data.frame"</code> and <code><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame()</a></code> return the table as it
+is displayed, one row per printed row, with numbers: the key columns
+<code>variable</code>, <code>label</code> (and the <code>level</code> or <code>group</code> of the row, and
+<code>.row_role</code>, the role of the printed row, where the table adds rows),
+then the printed columns under their names. The two are identical for
+every class. <code>output = "excel"</code> and <code>"word"</code> return the path of the
+file, invisibly.</p>
+<p>The set of columns produced by each method is considered
+<strong>stabilizing</strong>: existing columns will not be
 silently renamed or have their semantics changed within <code>0.y.z</code>,
 and any breaking change is announced in <code>NEWS.md</code>. Adding optional new
 columns (e.g. covariate-adjustment metadata) is not a breaking

@@ -816,7 +816,8 @@ table_regression(
 - output:
 
   Output type. `"default"` (a printable `spicy_regression_table`);
-  `"data.frame"` / `"long"` (raw data); `"gt"` / `"flextable"` /
+  `"data.frame"` (the displayed table with its numbers); `"long"` (one
+  row per coefficient, broom's names); `"gt"` / `"flextable"` /
   `"tinytable"` (rich-format tables); `"excel"` (writes to
   `excel_path`); `"clipboard"` (copies to system clipboard); `"word"`
   (writes flextable to `word_path`).
@@ -917,9 +918,16 @@ A `spicy_regression_table` object (a `data.frame` subclass with classes
 `output = "default"`. The result carries rendering attributes (`title`,
 `note`, `align`, `padding`) and provenance attributes (`outcome`,
 `model_ids`) consumed by the print method and the broom methods. For
-other `output` values, returns the format-specific object (`gt_tbl`,
-`flextable`, `tinytable`, `data.frame`, `tbl_df`, or `invisible(x)` for
-side-effect outputs).
+other `output` values, returns the format-specific object: `gt_tbl`,
+`flextable`, `tinytable`; for `"data.frame"` the displayed table as a
+`data.frame` (see
+[`as.data.frame.spicy_regression_table()`](https://amaltawfik.github.io/spicy/reference/as.data.frame.spicy_regression_table.md));
+for `"long"` a `tbl_df` (`model_id`, `outcome`, `term`, `estimate_type`,
+`estimate`, `std.error`, `conf.low`, `conf.high`, `statistic`, `df`,
+`p.value`, `test_type`, `nobs`, `r.squared`, `adj.r.squared`, ...); the
+file path, invisibly, for `"excel"` and `"word"`; the table, invisibly,
+for `"clipboard"`. The two data frames carry the note as printed in
+`attr(x, "note")`.
 
 ## Vocabulary tokens
 
@@ -1207,8 +1215,8 @@ would need two spanner levels. `tidy()` and `output = "long"` always
 return the long form (`"<category>: <term>"` rows), whatever the
 display;
 [`as_structured()`](https://amaltawfik.github.io/spicy/reference/as_structured.md)
-mirrors the displayed table (one column set per category), as it does
-for every other layout.
+and `output = "data.frame"` mirror the displayed table (one column set
+per category), as they do for every other layout.
 
 ### Robust SE availability by model class
 
@@ -1674,7 +1682,14 @@ as "it probably doesn't make much difference" (Efron 1977).
   printed via
   [`spicy_print_table()`](https://amaltawfik.github.io/spicy/reference/spicy_print_table.md).
 
-- `"data.frame"` / `"long"` – raw data.frame / long-format tibble.
+- `"data.frame"` – the displayed table with its numbers,
+  [as.data.frame()](https://amaltawfik.github.io/spicy/reference/as.data.frame.spicy_regression_table.md)
+  of the default object: one row per printed row, the key columns
+  `variable`, `label`, `level` and `.row_role`, then the printed
+  columns, numeric, each interval split into its two bounds.
+
+- `"long"` – the long-format tibble, one row per
+  `(model_id, term, estimate_type)`, with broom's column names.
 
 - `"gt"` / `"flextable"` / `"tinytable"` – rich-format HTML / Word / PDF
   tables (require the corresponding Suggests package). In a PDF, a
@@ -1682,10 +1697,12 @@ as "it probably doesn't make much difference" (Efron 1977).
   [`flextable::fit_to_width()`](https://davidgohel.github.io/flextable/reference/fit_to_width.html).
 
 - `"excel"` – writes to `excel_path` via
-  [`openxlsx2::write_xlsx()`](https://janmarvin.github.io/openxlsx2/reference/write_xlsx.html).
+  [`openxlsx2::write_xlsx()`](https://janmarvin.github.io/openxlsx2/reference/write_xlsx.html)
+  and returns the path invisibly.
 
 - `"word"` – writes to `word_path` via
-  [`flextable::save_as_docx()`](https://davidgohel.github.io/flextable/reference/save_as_docx.html).
+  [`flextable::save_as_docx()`](https://davidgohel.github.io/flextable/reference/save_as_docx.html)
+  and returns the path invisibly.
 
 - `"clipboard"` – copies to the system clipboard via
   [`clipr::write_clip()`](http://matthewlincoln.net/clipr/reference/write_clip.md).

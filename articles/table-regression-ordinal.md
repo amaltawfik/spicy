@@ -835,13 +835,20 @@ per-category AME matrix included) carries through to every format.
 ``` r
 
 head(table_regression(fit, show_columns = c("b", "ame"), output = "data.frame"))
-#>          Variable       B AME Poor AME Fair AME Good AME Very good
-#> 1             age   -0.00     0.00     0.00    -0.00         -0.00
-#> 2            sex:                                                 
-#> 3   Female (ref.)     –        –        –        –             –  
-#> 4            Male    0.02    -0.00    -0.00     0.00          0.00
-#> 5        smoking:                                                 
-#> 6       No (ref.)     –        –        –        –             –
+#>   variable   label  level     .row_role             B      AME Poor
+#> 1      age     age   <NA>          coef -0.0007938203  3.909756e-05
+#> 2      sex     sex   <NA> factor_header            NA            NA
+#> 3      sex     sex Female     reference            NA            NA
+#> 4      sex     sex   Male         level  0.0173001570 -8.518457e-04
+#> 5  smoking smoking   <NA> factor_header            NA            NA
+#> 6  smoking smoking     No     reference            NA            NA
+#>        AME Fair      AME Good AME Very good
+#> 1  0.0001204229 -1.204959e-05 -0.0001474709
+#> 2            NA            NA            NA
+#> 3            NA            NA            NA
+#> 4 -0.0026242919  2.617766e-04  0.0032143610
+#> 5            NA            NA            NA
+#> 6            NA            NA            NA
 ```
 
 ``` r
@@ -868,8 +875,8 @@ broom::tidy(table_regression(fit, show_columns = c("b", "ame")))
 #>    <chr>    <chr>           <chr>         <chr> <chr>            <dbl>     <dbl>
 #>  1 M1       self_rated_hea… Poor          age   ame            3.91e-5 0.000183 
 #>  2 M1       self_rated_hea… Fair          age   ame            1.20e-4 0.000565 
-#>  3 M1       self_rated_hea… Good          age   ame           -1.20e-5 0.0000571
-#>  4 M1       self_rated_hea… Very good     age   ame           -1.47e-4 0.000691 
+#>  3 M1       self_rated_hea… Good          age   ame           -1.20e-5 0.0000570
+#>  4 M1       self_rated_hea… Very good     age   ame           -1.47e-4 0.000692 
 #>  5 M1       self_rated_hea… NA            age   B             -7.94e-4 0.00372  
 #>  6 M1       self_rated_hea… Poor          sexM… ame           -8.52e-4 0.00539  
 #>  7 M1       self_rated_hea… Fair          sexM… ame           -2.62e-3 0.0166   

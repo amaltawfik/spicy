@@ -272,10 +272,9 @@ the wording you set here.</p></dd>
 <dt id="arg-output">output<a class="anchor" aria-label="anchor" href="#arg-output"></a></dt>
 <dd><p>One of <code>"default"</code>, <code>"data.frame"</code>, <code>"long"</code>, or a
 rendering engine: <code>"tinytable"</code>, <code>"gt"</code>, <code>"flextable"</code>,
-<code>"excel"</code>, <code>"clipboard"</code>, <code>"word"</code>. <code>"data.frame"</code> and <code>"long"</code>
-are synonyms and return the same object: the compute frame is
-already long, one row per <code>(variable x group)</code>. Same pair, same
-reason, as in <code><a href="table_continuous.html">table_continuous()</a></code>.</p></dd>
+<code>"excel"</code>, <code>"clipboard"</code>, <code>"word"</code>. <code>"data.frame"</code> is the displayed
+table with its numbers, <code>"long"</code> one row per <code>(variable x group)</code>
+with every statistic, as in <code><a href="table_continuous.html">table_continuous()</a></code>; see <em>Value</em>.</p></dd>
 
 
 <dt id="arg-excel-path-excel-sheet-clipboard-delim-word-path">excel_path, excel_sheet, clipboard_delim, word_path<a class="anchor" aria-label="anchor" href="#arg-excel-path-excel-sheet-clipboard-delim-word-path"></a></dt>
@@ -297,11 +296,35 @@ destinations, as in <code><a href="table_continuous.html">table_continuous()</a>
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A <code>spicy_continuous_svy_table</code>: the compute frame, with the
-display frame and the typed view attached. <code>output = "data.frame"</code>
-/ <code>"long"</code> returns the compute frame unclassed – the two tokens
-are synonyms and return identical objects. The three carry the
-whole note as printed, "Note." included, in <code>attr(x, "note")</code>.</p>
+    <p>Depends on <code>output</code>:</p><ul><li><p><code>"default"</code>: a <code>spicy_continuous_svy_table</code> (a <code>data.frame</code>
+subclass, with the parent class <code>"spicy_table"</code>), printed when the
+call is bare; its columns are the table's compute frame, and the
+display frame and the typed view are attached.</p></li>
+<li><p><code>"data.frame"</code>: the displayed table with its numbers, what
+<a href="as.data.frame.spicy_continuous_svy_table.html">as.data.frame()</a> of the
+default object returns: one row per printed row, the key columns
+<code>variable</code>, <code>label</code> and, with <code>by</code>, <code>group</code> and <code>.row_role</code>
+(<code>"group"</code>, or <code>"missing"</code> for the group of missing <code>by</code> values),
+then the printed columns under their names (<code>"M"</code>, <code>"SD"</code>, <code>"SE"</code>,
+<code>"95\% CI LL"</code>, ..., <code>"n"</code>, <code>"p"</code>), as in <code><a href="table_continuous.html">table_continuous()</a></code>.</p></li>
+<li><p><code>"long"</code>: one row per <code>(variable x group)</code> (per variable
+without <code>by</code>) with every statistic the table computes, whatever it
+displays: <code>variable</code>, <code>label</code>, <code>group</code> and <code>.group_role</code> (with
+<code>by</code>, as in <code><a href="table_continuous.html">table_continuous()</a></code>), <code>mean</code>, <code>sd</code>, <code>se</code>, <code>min</code>,
+<code>max</code>, <code>ci_lower</code>, <code>ci_upper</code>, <code>median</code>,
+<code>q1</code>, <code>q3</code>, <code>iqr</code>, <code>med_ci_lower</code>, <code>med_ci_upper</code>, <code>n</code> (observed),
+<code>weighted_n</code> (the estimated population), <code>deff</code>, <code>degf</code> (the
+degrees of freedom of the domain), and, with <code>by</code>, the test on the
+first row of each variable: <code>test_type</code> (<code>"design_t"</code> or
+<code>"design_f"</code>), <code>statistic</code>, <code>df</code>, <code>df.residual</code>, <code>p.value</code> (with
+the <em>p</em>-value) and, under <code>p_adjust</code>, <code>p_unadjusted</code>.</p></li>
+<li><p><code>"tinytable"</code>, <code>"gt"</code>, <code>"flextable"</code>: the rendered table.</p></li>
+<li><p><code>"excel"</code> / <code>"word"</code>: writes the file and returns its path
+invisibly.</p></li>
+<li><p><code>"clipboard"</code>: copies the table and returns the display
+<code>data.frame</code> invisibly.</p></li>
+</ul><p>The default object and the two data frames carry the whole note as
+printed, "Note." included, in <code>attr(x, "note")</code>.</p>
     </div>
     <div class="section level2">
     <h2 id="which-function-do-i-need-">Which function do I need?<a class="anchor" aria-label="anchor" href="#which-function-do-i-need-"></a></h2>

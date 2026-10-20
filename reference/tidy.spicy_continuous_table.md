@@ -42,27 +42,27 @@ A `tbl_df`.
 `tidy()` returns one row per `(variable x group)` (or per `variable`
 when `by` is not used) with broom-conventional columns: `variable` (the
 column name), `label` (the label the rows display for it, see `labels`),
-`group` (when applicable), `estimate` (the empirical mean), `std.error`
+`group` (`NA` without `by`), `.group_role` (the role of `group`:
+`"group"`, or `"missing"` for the group of missing `by` values; `NA`
+without `by`), `estimate` (the empirical mean), `std.error`
 (`sd / sqrt(n)`), `conf.low`, `conf.high` (the mean confidence interval
-at `ci_level`), `n`, `min`, `max`, `sd`.
+at `ci_level`), `n`, `weighted_n` (the sum of the weights, `NA` without
+`weights`), `median`, `q1`, `q3`, `min`, `max`, `sd`: the columns of
+[`tidy.spicy_continuous_svy_table()`](https://amaltawfik.github.io/spicy/reference/tidy.spicy_continuous_svy_table.md),
+the design ones (`df`, `deff`) aside.
 
 `glance()` returns one row per variable with the omnibus group
 comparison (when `by` is used), the requested effect size and the
 balance diagnostic. Columns: `variable`, `label`, `test_type`,
 `statistic`, `df`, `df.residual`, `p.value`, `es_type`, `es_value`,
-`es_ci_lower`, `es_ci_upper`, `smd_type`, `smd_value`, `n_total`.
-Without `by`, only `variable`, `label`, and `n_total` are populated; the
-other columns are `NA`. The schema is fixed: `smd_type` / `smd_value`
-are present whether or not `smd = TRUE`, like every other comparison
-column here, and are `NA` when the table carries no standardized mean
-difference. They sit before `n_total`, so index this frame by NAME
-rather than by position.
-
-[`glance.spicy_categorical_table()`](https://amaltawfik.github.io/spicy/reference/tidy.spicy_categorical_table.md)
-does **not** carry the SMD: each family documents its own broom
-contract, and the categorical one publishes the association measure
-alone. On a mixed balance table, read the categorical SMD from
-`output = "long"`.
+`es_ci_lower`, `es_ci_upper`, `smd_type`, `smd_value`, `nobs`. Without
+`by`, only `variable`, `label`, and `nobs` are populated; the other
+columns are `NA`. The schema is fixed: `smd_type` / `smd_value` are
+present whether or not `smd = TRUE`, like every other comparison column
+here, and are `NA` when the table carries no standardized mean
+difference, as in
+[`glance.spicy_categorical_table()`](https://amaltawfik.github.io/spicy/reference/tidy.spicy_categorical_table.md).
+Index this frame by NAME rather than by position.
 
 ## See also
 

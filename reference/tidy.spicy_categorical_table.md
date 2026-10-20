@@ -39,25 +39,33 @@ A `tbl_df`.
 
 ## Details
 
-`tidy()` returns one row per `(variable x level)` – or per
-`(variable x level x group)` when `by` is used – with columns `variable`
-(the column name), `label` (the label the rows display for it, see
-`labels`), `level`, `group` (when applicable), `n`, `proportion` (the
-percentage divided by 100).
+`tidy()` returns one row per `(variable x level x group)`, the groups of
+`by` and the `Total` margin included, with columns `variable` (the
+column name), `label` (the label the rows display for it, see `labels`),
+`level`, `.row_role` (the role of `level`: `"missing"` on the row of
+missing values the table adds, `"level"` otherwise), `group` (`NA`
+without `by`), `.group_role` (the role of `group`: `"missing"` on the
+column of missing `by` values, `"total"` on the margin, `"group"`
+otherwise, `NA` without `by`), `total` (`TRUE` on the rows of the
+margin), `n`, and `proportion` (between 0 and 1). Filter on the role
+columns and `total` rather than on the displayed labels, which follow
+the display language.
 
 `glance()` returns one row per variable, in the order of `select`, with
-its test (when `by` is used) and the requested association measure:
-`variable`, `label`, `test_type` (`"chi_squared"`, `"n1_chi_squared"`,
-`"fisher_exact"`, `"fisher_midp"`, or `"fisher_exact_mc"`, as in the
-data frames of
+its test (when `by` is used), the requested association measure and the
+standardized mean difference: `variable`, `label`, `test_type`
+(`"chi_squared"`, `"n1_chi_squared"`, `"fisher_exact"`, `"fisher_midp"`,
+or `"fisher_exact_mc"`, as in the long output of
 [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)),
 `statistic` (the chi-squared, Pearson's or the N-1, `NA` for an exact
-test), `df`, `p.value`, `assoc_type` (the key of the measure the
-variable carries, as `effect_size_type` in the long output: `"phi"`,
-`"cramer_v"`, ...), `assoc_value`, `assoc_ci_lower`, `assoc_ci_upper`,
-`n_total`. Without `by`, only `variable`, `label` and `n_total` are
-populated; the other columns are `NA`. The interval bounds are `NA`
-unless the table was built with `assoc_ci = TRUE`.
+test), `df`, `p.value`, `es_type` (the key of the measure the variable
+carries: `"phi"`, `"cramer_v"`, ...), `es_value`, `es_ci_lower`,
+`es_ci_upper`, `smd_type`, `smd_value`, and `nobs` (the observations of
+the variable, the margin not counted twice). Without `by`, only
+`variable`, `label` and `nobs` are populated; the other columns are
+`NA`. The interval bounds are `NA` unless the table was built with
+`assoc_ci = TRUE`, and the SMD columns unless it was built with
+`smd = TRUE`.
 
 ## See also
 

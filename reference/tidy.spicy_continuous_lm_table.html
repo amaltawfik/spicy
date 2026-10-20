@@ -132,9 +132,12 @@ it (see <code>labels</code>).</p>
 statistics. Columns: <code>variable</code>, <code>label</code>, <code>predictor_type</code>
 (<code>"categorical"</code> or <code>"continuous"</code>), <code>test_type</code> (<code>"F"</code> for
 categorical predictors, <code>"t"</code> for continuous ones),
-<code>statistic</code>, <code>df</code>, <code>df.residual</code>, <code>p.value</code>, <code>r.squared</code>,
+<code>statistic</code>, <code>df</code>, <code>df.residual</code> (the degrees of freedom follow the
+statistic: an <em>F</em> has both, a <em>t</em> has its own in <code>df</code> and none in
+<code>df.residual</code>), <code>p.value</code>, <code>r.squared</code>,
 <code>adj.r.squared</code>, <code>es_type</code>, <code>es_value</code>, <code>es_ci_lower</code>,
-<code>es_ci_upper</code>, <code>nobs</code>, <code>weighted_n</code>.</p>
+<code>es_ci_upper</code>, <code>nobs</code>, <code>weighted_nobs</code> (the sum of the weights, <code>NA</code>
+without <code>weights</code>).</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>

@@ -1,15 +1,20 @@
 # Coerce a `spicy_continuous_table` to a plain data frame or tibble
 
-These S3 methods strip the `"spicy_continuous_table"` / `"spicy_table"`
-classes and the rendering-only attributes (`digits`, `decimal_mark`,
-`ci_level`, `align`, `p_digits`, ...) from an object returned by
+[`as.data.frame()`](https://rdrr.io/r/base/as.data.frame.html) returns
+the table
 [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
-so the underlying long-format data can be manipulated with downstream
-tools (`dplyr`, `tidyr`, etc.) under the standard `data.frame` /
-`tbl_df` contract. The attribute `"group_var"` is preserved as a
-lightweight provenance marker, and `"note"`, the note as printed; all
-other spicy attributes are dropped. The original `x` is unaffected, and
-`print(x)` continues to render the formatted ASCII table.
+displays, with its numbers: exactly what `output = "data.frame"`
+returns. One row per printed row, the key columns `variable` (the column
+name), `label` (the label displayed for it) and, with `by`, `group` and
+`.row_role` (`"group"`, or `"missing"` for the group of missing `by`
+values), then the printed columns under their names (`"M"`, `"SD"`,
+`"95\% CI LL"`, ..., `"n"`, `"p"`). A cell that prints several numbers
+keeps the first in its column and the others beside it under their names
+in the long output: `df` and `df.residual` after the test statistic
+`"Test"`, `es_ci_lower` and `es_ci_upper` after the effect size `"ES"`
+when its interval is printed, `q1` and `q3` after `"Med [Q1, Q3]"`. The
+note, as printed, is kept in `attr(, "note")`. `as_tibble()` returns the
+same table as a tibble.
 
 ## Usage
 
@@ -32,8 +37,7 @@ as_tibble(x, ...)
 
   Standard
   [`base::as.data.frame()`](https://rdrr.io/r/base/as.data.frame.html)
-  arguments. Currently ignored: the long format already carries integer
-  row names and explicit columns.
+  arguments. Currently ignored.
 
 - ...:
 
@@ -45,15 +49,16 @@ as_tibble(x, ...)
 
 ## Value
 
-A plain `data.frame` (or `tbl_df`) with one row per `(variable x group)`
-(or one row per `variable` when `by` is not used).
+A plain `data.frame` (or `tbl_df`), identical to the
+`output = "data.frame"` of the same call.
 
 ## Details
 
-The returned data is identical to what `output = "long"` (or
-`output = "data.frame"`) returns directly from
-[`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md);
-use whichever entry point reads better in your pipeline.
+For every statistic the table computes, whatever it displays, use
+`output = "long"` or
+[`tidy.spicy_continuous_table()`](https://amaltawfik.github.io/spicy/reference/tidy.spicy_continuous_table.md).
+The original `x` is unaffected, and `print(x)` continues to render the
+formatted ASCII table.
 
 ## See also
 

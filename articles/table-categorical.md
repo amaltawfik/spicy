@@ -138,7 +138,7 @@ supports several output formats. The table below summarizes the options:
 | Format         | Description                                 |
 |----------------|---------------------------------------------|
 | `"default"`    | Styled ASCII table in the console (default) |
-| `"data.frame"` | Wide data frame, one row per level          |
+| `"data.frame"` | The displayed table, with its numbers       |
 | `"long"`       | Long data frame, one row per level x group  |
 | `"gt"`         | Formatted gt table                          |
 | `"tinytable"`  | Formatted tinytable                         |
@@ -152,13 +152,15 @@ demonstrated in the final section, together with the file exports.
 
 ### Data frame output
 
-Use `output = "data.frame"` for a wide data frame with one row per
-level: two character identifier columns (`Variable`, `Level`), numeric
-columns carrying the counts and full-precision percentages, and the test
-(`test_type`), the chi-squared statistic, `df`, *p*-value, and
-association measure repeated on every row of a variable’s block. Use
-`output = "long"` for a long format with one row per level x group, the
-`Total` margin included as a group:
+Use `output = "data.frame"` for the table as it is displayed, with its
+numbers: one row per printed row, the key columns `variable` (the column
+name), `label`, `level` and `.row_role` (`"factor_header"` for the row
+of a variable, which carries its *p*-value and association measure,
+`"level"`, or `"missing"` for the row of missing values), then the
+counts, the full-precision percentages, `p` and the measure under the
+names the table prints.
+[`as.data.frame()`](https://rdrr.io/r/base/as.data.frame.html) on the
+printed table returns the same frame:
 
 ``` r
 
@@ -168,18 +170,51 @@ table_categorical(
   by = education,
   output = "data.frame"
 )
-#>   Variable     Level Lower secondary n Lower secondary % Upper secondary n
-#> 1  smoking        No               179         68.582375               415
-#> 2  smoking       Yes                78         29.885057               112
-#> 3  smoking (Missing)                 4          1.532567                12
-#>   Upper secondary % Tertiary n Tertiary % Total n   Total %   test_type
-#> 1         76.994434        332      83.00     926 77.166667 chi_squared
-#> 2         20.779221         59      14.75     249 20.750000 chi_squared
-#> 3          2.226345          9       2.25      25  2.083333 chi_squared
-#>       Chi2 df            p Cramer's V
-#> 1 21.62672  2 2.012877e-05  0.1356677
-#> 2 21.62672  2 2.012877e-05  0.1356677
-#> 3 21.62672  2 2.012877e-05  0.1356677
+#>   variable   label     level     .row_role Lower secondary n Lower secondary %
+#> 1  smoking smoking      <NA> factor_header                NA                NA
+#> 2  smoking smoking        No         level               179         68.582375
+#> 3  smoking smoking       Yes         level                78         29.885057
+#> 4  smoking smoking (Missing)       missing                 4          1.532567
+#>   Upper secondary n Upper secondary % Tertiary n Tertiary % Total n   Total %
+#> 1                NA                NA         NA         NA      NA        NA
+#> 2               415         76.994434        332      83.00     926 77.166667
+#> 3               112         20.779221         59      14.75     249 20.750000
+#> 4                12          2.226345          9       2.25      25  2.083333
+#>              p Cramer's V
+#> 1 2.012877e-05  0.1356677
+#> 2           NA         NA
+#> 3           NA         NA
+#> 4           NA         NA
+```
+
+Use `output = "long"` for one row per level and group, the `Total`
+margin included and flagged by `total`, with the test of each variable
+(`test_type`, `statistic`, `df`, `p.value`) and its association measure
+(`es_type`, `es_value`) on every row of its block:
+
+``` r
+
+head(table_categorical(
+  sochealth,
+  select = smoking,
+  by = education,
+  output = "long"
+), 4)
+#>   variable   label level .row_role           group .group_role total   n
+#> 1  smoking smoking    No     level Lower secondary       group FALSE 179
+#> 2  smoking smoking    No     level Upper secondary       group FALSE 415
+#> 3  smoking smoking    No     level        Tertiary       group FALSE 332
+#> 4  smoking smoking    No     level           Total       total  TRUE 926
+#>        pct   test_type statistic df      p.value  es_type  es_value es_ci_lower
+#> 1 68.58238 chi_squared  21.62672  2 2.012877e-05 cramer_v 0.1356677          NA
+#> 2 76.99443 chi_squared  21.62672  2 2.012877e-05 cramer_v 0.1356677          NA
+#> 3 83.00000 chi_squared  21.62672  2 2.012877e-05 cramer_v 0.1356677          NA
+#> 4 77.16667 chi_squared  21.62672  2 2.012877e-05 cramer_v 0.1356677          NA
+#>   es_ci_upper smd_type smd_value
+#> 1          NA     <NA>        NA
+#> 2          NA     <NA>        NA
+#> 3          NA     <NA>        NA
+#> 4          NA     <NA>        NA
 ```
 
 ## Custom labels
@@ -386,10 +421,10 @@ the per-row choice.
 Add confidence intervals with `assoc_ci = TRUE`. In the rendered formats
 (`gt`, `tinytable`, `flextable`, `word`) the CI is shown inline after
 the measure, e.g. `.14 [.08, .19]` (demonstrated in the final section).
-In the default console table and in the wide data formats
-(`"data.frame"`, `"excel"`, `"clipboard"`), separate `CI lower` and
-`CI upper` columns are added; in the long format (`"long"`) the bounds
-appear as `ci_lower` / `ci_upper`:
+In the default console table and in the `"data.frame"`, `"excel"` and
+`"clipboard"` outputs, separate `CI lower` and `CI upper` columns are
+added; in the long format (`"long"`) the bounds fill `es_ci_lower` /
+`es_ci_upper`:
 
 ``` r
 
@@ -400,18 +435,21 @@ table_categorical(
   assoc_ci = TRUE,
   output = "data.frame"
 )
-#>   Variable     Level Lower secondary n Lower secondary % Upper secondary n
-#> 1  smoking        No               179         68.582375               415
-#> 2  smoking       Yes                78         29.885057               112
-#> 3  smoking (Missing)                 4          1.532567                12
-#>   Upper secondary % Tertiary n Tertiary % Total n   Total %   test_type
-#> 1         76.994434        332      83.00     926 77.166667 chi_squared
-#> 2         20.779221         59      14.75     249 20.750000 chi_squared
-#> 3          2.226345          9       2.25      25  2.083333 chi_squared
-#>       Chi2 df            p Cramer's V   CI lower  CI upper
-#> 1 21.62672  2 2.012877e-05  0.1356677 0.07909264 0.1913716
-#> 2 21.62672  2 2.012877e-05  0.1356677 0.07909264 0.1913716
-#> 3 21.62672  2 2.012877e-05  0.1356677 0.07909264 0.1913716
+#>   variable   label     level     .row_role Lower secondary n Lower secondary %
+#> 1  smoking smoking      <NA> factor_header                NA                NA
+#> 2  smoking smoking        No         level               179         68.582375
+#> 3  smoking smoking       Yes         level                78         29.885057
+#> 4  smoking smoking (Missing)       missing                 4          1.532567
+#>   Upper secondary n Upper secondary % Tertiary n Tertiary % Total n   Total %
+#> 1                NA                NA         NA         NA      NA        NA
+#> 2               415         76.994434        332      83.00     926 77.166667
+#> 3               112         20.779221         59      14.75     249 20.750000
+#> 4                12          2.226345          9       2.25      25  2.083333
+#>              p Cramer's V   CI lower  CI upper
+#> 1 2.012877e-05  0.1356677 0.07909264 0.1913716
+#> 2           NA         NA         NA        NA
+#> 3           NA         NA         NA        NA
+#> 4           NA         NA         NA        NA
 ```
 
 ## Chi-squared or Fisher’s exact test
@@ -461,7 +499,7 @@ table_categorical(
 exact test of a table larger than 2x2 is the Freeman-Halton extension.
 When its exact enumeration fails on a large sparse table, the *p*-value
 is its Monte Carlo estimate over `simulate_B` tables, and the note says
-so; set a seed to reproduce it. The data frames give the test of each
+so; set a seed to reproduce it. The long output gives the test of each
 variable in `test_type`.
 
 A 2x2 table, a two-level variable by two groups, has two more tests.
@@ -512,9 +550,9 @@ table_categorical(
 
 The test and the association measure are two separate choices:
 `p_value = FALSE` removes the test (the `p` column, and `test_type`,
-`Chi2` and `df` from the data frames), and `assoc_measure = "none"`
-removes the measure. Together they give a purely descriptive table, with
-the same group columns and headers:
+`statistic`, `df` and `p.value` from the long output), and
+`assoc_measure = "none"` removes the measure. Together they give a
+purely descriptive table, with the same group columns and headers:
 
 ``` r
 
@@ -886,7 +924,7 @@ table_categorical(
 
 [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
 returns an object that can be coerced to a plain `data.frame` / `tbl_df`
-(stripping the spicy formatting attributes) or piped into
+(the displayed table, as with `output = "data.frame"`) or piped into
 [`broom::tidy()`](https://generics.r-lib.org/reference/tidy.html) /
 [`broom::glance()`](https://generics.r-lib.org/reference/glance.html)
 for any downstream tidyverse-stats workflow:
@@ -900,35 +938,42 @@ out <- table_categorical(
 )
 
 # One row per (variable x level x group) with broom-style columns
-# (variable, label, level, group, n, proportion): the column name and
-# the label displayed. The synthetic Total margin is excluded so each
-# observation is counted once.
+# (variable, label, level, .row_role, group, .group_role, total, n,
+# proportion): the column name and the label displayed. The Total
+# margin is flagged by `total`; filter it out with `!total` to count
+# each observation once.
 broom::tidy(out)
-#> # A tibble: 10 × 6
-#>    variable          label             level     group      n proportion
-#>    <chr>             <chr>             <chr>     <chr>  <int>      <dbl>
-#>  1 smoking           smoking           No        Female   475     0.766 
-#>  2 smoking           smoking           No        Male     451     0.778 
-#>  3 smoking           smoking           Yes       Female   131     0.211 
-#>  4 smoking           smoking           Yes       Male     118     0.203 
-#>  5 smoking           smoking           (Missing) Female    14     0.0226
-#>  6 smoking           smoking           (Missing) Male      11     0.0190
-#>  7 physical_activity physical_activity No        Female   334     0.539 
-#>  8 physical_activity physical_activity No        Male     316     0.545 
-#>  9 physical_activity physical_activity Yes       Female   286     0.461 
-#> 10 physical_activity physical_activity Yes       Male     264     0.455
+#> # A tibble: 15 × 9
+#>    variable       label level .row_role group .group_role total     n proportion
+#>    <chr>          <chr> <chr> <chr>     <chr> <chr>       <lgl> <int>      <dbl>
+#>  1 smoking        smok… No    level     Fema… group       FALSE   475     0.766 
+#>  2 smoking        smok… No    level     Male  group       FALSE   451     0.778 
+#>  3 smoking        smok… No    level     Total total       TRUE    926     0.772 
+#>  4 smoking        smok… Yes   level     Fema… group       FALSE   131     0.211 
+#>  5 smoking        smok… Yes   level     Male  group       FALSE   118     0.203 
+#>  6 smoking        smok… Yes   level     Total total       TRUE    249     0.208 
+#>  7 smoking        smok… (Mis… missing   Fema… group       FALSE    14     0.0226
+#>  8 smoking        smok… (Mis… missing   Male  group       FALSE    11     0.0190
+#>  9 smoking        smok… (Mis… missing   Total total       TRUE     25     0.0208
+#> 10 physical_acti… phys… No    level     Fema… group       FALSE   334     0.539 
+#> 11 physical_acti… phys… No    level     Male  group       FALSE   316     0.545 
+#> 12 physical_acti… phys… No    level     Total total       TRUE    650     0.542 
+#> 13 physical_acti… phys… Yes   level     Fema… group       FALSE   286     0.461 
+#> 14 physical_acti… phys… Yes   level     Male  group       FALSE   264     0.455 
+#> 15 physical_acti… phys… Yes   level     Total total       TRUE    550     0.458
 
 # One row per variable, in the order of `select`, with its test
 # (chi-squared or Fisher) and the chosen association measure
-# (test_type, statistic, df, p.value, assoc_type, assoc_value,
-# assoc_ci_lower / assoc_ci_upper, n_total).
+# (test_type, statistic, df, p.value, es_type, es_value,
+# es_ci_lower / es_ci_upper, smd_type, smd_value, nobs).
 broom::glance(out)
-#> # A tibble: 2 × 11
-#>   variable        label test_type statistic    df p.value assoc_type assoc_value
-#>   <chr>           <chr> <chr>         <dbl> <int>   <dbl> <chr>            <dbl>
-#> 1 smoking         smok… chi_squa…    0.136      1   0.713 phi            0.0107 
-#> 2 physical_activ… phys… chi_squa…    0.0452     1   0.832 phi            0.00614
-#> # ℹ 3 more variables: assoc_ci_lower <dbl>, assoc_ci_upper <dbl>, n_total <int>
+#> # A tibble: 2 × 13
+#>   variable  label test_type statistic    df p.value es_type es_value es_ci_lower
+#>   <chr>     <chr> <chr>         <dbl> <int>   <dbl> <chr>      <dbl>       <dbl>
+#> 1 smoking   smok… chi_squa…    0.136      1   0.713 phi      0.0107           NA
+#> 2 physical… phys… chi_squa…    0.0452     1   0.832 phi      0.00614          NA
+#> # ℹ 4 more variables: es_ci_upper <dbl>, smd_type <chr>, smd_value <dbl>,
+#> #   nobs <int>
 ```
 
 ## Multiple-response items
@@ -991,7 +1036,7 @@ table_categorical(
 |     Yes | 286 | 46.1 | 264 | 45.5 | 550 | 45.8 |      |     |
 | *Note.* Group comparison: Pearson chi-squared test. |  |  |  |  |  |  |  |  |
 
-Categorical table by sex {#tinytable_u1f05ikq35hy5fnqcmh3 .table
+Categorical table by sex {#tinytable_zjsv1h8a1q8zt38xyilr .table
 .tinytable style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 

@@ -10,9 +10,10 @@ test or Fisher's exact test (see `test`), and optional association
 measures. Without `by`, produces one-way frequency-style summaries.
 
 Multiple output formats are available via `output`: a printed ASCII
-table (`"default"`), a wide or long numeric `data.frame`
-(`"data.frame"`, `"long"`), or publication-ready tables (`"tinytable"`,
-`"gt"`, `"flextable"`, `"excel"`, `"clipboard"`, `"word"`).
+table (`"default"`), a numeric `data.frame` (`"data.frame"`, the
+displayed table, or `"long"`, one row per variable, level and group), or
+publication-ready tables (`"tinytable"`, `"gt"`, `"flextable"`,
+`"excel"`, `"clipboard"`, `"word"`).
 
 ## Usage
 
@@ -244,8 +245,8 @@ table_categorical(
   column of the test chosen by `test`. When `NULL` (the default), the
   *p*-value is shown automatically whenever `by` is supplied, and hidden
   otherwise. Pass `p_value = FALSE` to remove the test from every
-  output: the `p` column, and the `test_type`, `Chi2` and `df` columns
-  of `"data.frame"` and `"long"`; `test`, `correct` and `simulate_p` are
+  output: the `p` column, and the `test_type`, `statistic`, `df` and
+  `p.value` columns of `"long"`; `test`, `correct` and `simulate_p` are
   then ignored, with a warning. The association measure keeps its own
   switch, so `p_value = FALSE, assoc_measure = "none"` gives a purely
   descriptive table. Ignored when `by` is not used.
@@ -317,12 +318,12 @@ table_categorical(
   Passed to
   [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md).
   If `TRUE`, includes the confidence interval of the association
-  measure. In wide raw outputs (`"data.frame"`, `"excel"`,
-  `"clipboard"`), two extra columns `CI lower` / `CI upper` are added;
-  in the long raw output (`"long"`) the bounds appear as `ci_lower` /
-  `ci_upper`. In rendered formats (`"gt"`, `"tinytable"`, `"flextable"`,
-  `"word"`), the CI is shown inline (e.g., `.14 [.08, .19]`). Defaults
-  to `FALSE`.
+  measure. In the console and in the `"data.frame"`, `"excel"` and
+  `"clipboard"` outputs, two extra columns `CI lower` / `CI upper` are
+  added; in the long output (`"long"`) the bounds fill `es_ci_lower` /
+  `es_ci_upper`. In rendered formats (`"gt"`, `"tinytable"`,
+  `"flextable"`, `"word"`), the CI is shown inline (e.g.,
+  `.14 [.08, .19]`). Defaults to `FALSE`.
 
 - smd:
 
@@ -386,7 +387,7 @@ table_categorical(
 
   - `"default"` (an ASCII table object, printed when the call is bare)
 
-  - `"data.frame"` (a wide numeric `data.frame`)
+  - `"data.frame"` (the displayed table, numeric)
 
   - `"long"` (a long numeric `data.frame`)
 
@@ -423,8 +424,9 @@ table_categorical(
 
 - blank_na_wide:
 
-  Logical. If `FALSE` (the default), `NA` values are kept as-is in wide
-  raw output. If `TRUE`, replaces them with empty strings.
+  Logical. If `FALSE` (the default), `NA` values are kept as-is in
+  `output = "data.frame"`. If `TRUE`, the empty cells of its statistic
+  columns become empty strings (the columns become text).
 
 - excel_path:
 
@@ -485,32 +487,43 @@ Depends on `output`:
   `t <- table_categorical(...)` stays silent (print `t` to display the
   table).
 
-- `"data.frame"`: a wide `data.frame` with one row per variable–level
-  combination. When `by` is used, the columns are `Variable`, `Level`,
-  and one pair of `n` / `\%` columns per group level (plus `Total` when
-  `include_total = TRUE`), followed by `test_type`, `Chi2`, `df`, `p`
-  (absent with `p_value = FALSE`), and the association measure column.
-  `test_type` names the test of the variable: `"chi_squared"`
-  (Pearson's), `"n1_chi_squared"` (the N-1 chi-squared),
-  `"fisher_exact"`, `"fisher_midp"` (the Fisher mid-p test), or
-  `"fisher_exact_mc"` (the Monte Carlo estimate of Fisher's exact test);
-  `Chi2` and `df` hold the statistic of a chi-squared test, Pearson's or
-  the N-1, and are `NA` for a variable tested by an exact test. When
-  `by = NULL`, the columns are `Variable`, `Level`, `n`, `\%`.
+- `"data.frame"`: the displayed table with its numbers, what
+  [as.data.frame()](https://amaltawfik.github.io/spicy/reference/as.data.frame.spicy_categorical_table.md)
+  of the default object returns: one row per printed row – the header
+  row of each variable, which carries its *p*-value and its association
+  measure, then one row per level. The key columns are `variable` (the
+  column name), `label` (the label the rows display for it, see
+  `labels`), `level` and `.row_role` (`"factor_header"`, `"level"`, or
+  `"missing"` for the row of missing values the table adds), then the
+  printed columns: one pair `<group> n` / `<group> \%` per group level
+  (plus `Total` when `include_total = TRUE`), `p` (absent with
+  `p_value = FALSE`), the association measure (named after the measure,
+  or `Effect size` when the row variables do not share one), its bounds
+  `CI lower` / `CI upper` with `assoc_ci = TRUE`, and `SMD` with
+  `smd = TRUE`. When `by = NULL`, the printed columns are `n` and `\%`.
 
-- `"long"`: a long `data.frame` with columns `variable` (the column
-  name), `label` (the label the rows display for it, see `labels`),
-  `level`, `n`, `pct` (plus `group` when `by` is used, and `test_type`,
-  `chi2`, `df`, `p` unless `p_value = FALSE`, as in `"data.frame"`). The
-  association measure is always called `effect_size`, whichever measure
-  it is, and `effect_size_type` names that measure per row
-  (`"cramer_v"`, `"phi"`, ...), or is `NA` on the rows of a variable
-  given `assoc_measure = "none"`. The wide outputs instead name the
-  column after the measure, or `Effect size` when the row variables do
-  not share one. With `smd = TRUE` this output also carries `smd` and
-  `smd_type` (`"binary"` or `"multinomial"`, the kernel the value came
-  from); the wide outputs name that column `SMD`. Like the association
-  columns, both are ABSENT when the statistic is not requested.
+- `"long"`: a long `data.frame`, one row per variable, level and group,
+  with columns `variable`, `label`, `level`, `.row_role` (the role of
+  `level`: `"level"`, or `"missing"` for the row of missing values),
+  then, when `by` is used, `group`, `.group_role` (the role of `group`:
+  `"group"`, `"missing"` for the column of missing `by` values, or
+  `"total"` for the margin) and `total` (`TRUE` on the rows of the
+  margin), then `n`, `pct` (the percentage), then, with `by`, the test
+  of the variable unless `p_value = FALSE`: `test_type` (`"chi_squared"`
+  for Pearson's, `"n1_chi_squared"` for the N-1 chi-squared,
+  `"fisher_exact"`, `"fisher_midp"` for the Fisher mid-p test, or
+  `"fisher_exact_mc"` for the Monte Carlo estimate of Fisher's exact
+  test), `statistic` and `df` (the chi-squared, Pearson's or the N-1,
+  `NA` for a variable tested by an exact test), `p.value` (and
+  `p_unadjusted` under `p_adjust`); and the association measure,
+  whichever measure it is: `es_type` names it per row (`"cramer_v"`,
+  `"phi"`, ...), `es_value` holds it, `es_ci_lower` / `es_ci_upper` its
+  interval (`NA` unless `assoc_ci = TRUE`), and `smd_type` (`"binary"`
+  or `"multinomial"`, the kernel the value came from) / `smd_value` the
+  standardized mean difference. The measure and SMD columns are there
+  whether or not they were requested, `NA` when not, so the schema does
+  not move with an argument. The statistics of a variable sit on every
+  row of its block.
 
 - `"tinytable"`: a `tinytable` object.
 
@@ -590,8 +603,8 @@ table. When every expected count is at least 1, the table takes the N-1
 chi-squared test: Pearson's statistic, with no continuity correction,
 multiplied by (N - 1)/N and referred to a chi-squared distribution with
 1 degree of freedom, which is the Mantel-Haenszel statistic of a single
-2x2 table; `Chi2` and `df` hold that statistic. Otherwise it takes
-Fisher's exact test, two-sided by Irwin's rule as
+2x2 table; `statistic` and `df` hold that statistic in the long output.
+Otherwise it takes Fisher's exact test, two-sided by Irwin's rule as
 [`stats::fisher.test()`](https://rdrr.io/r/stats/fisher.test.html)
 computes it. Campbell found the N-1 test close to its nominal level
 under that restriction, not without it. A variable whose table is not
@@ -599,7 +612,7 @@ under that restriction, not without it. A variable whose table is not
 
 The note names the test of every variable, "Group comparison: Pearson
 chi-squared test (sex, education); Fisher exact test (smoking).", or the
-one test when it covers them all. `test_type` in the data frames gives
+one test when it covers them all. `test_type` in the long output gives
 the same per variable. See `@param correct` / `simulate_p` to switch on
 Yates' continuity correction or Monte Carlo *p*-values for the
 chi-squared test, and `@param assoc_measure` for the per-row dispatch
@@ -1194,18 +1207,22 @@ table_categorical(
   by = sex,
   output = "data.frame"
 )
-#>            Variable     Level Female n  Female % Male n    Male % Total n
-#> 1           smoking        No      475 76.612903    451 77.758621     926
-#> 2           smoking       Yes      131 21.129032    118 20.344828     249
-#> 3           smoking (Missing)       14  2.258065     11  1.896552      25
-#> 4 physical_activity        No      334 53.870968    316 54.482759     650
-#> 5 physical_activity       Yes      286 46.129032    264 45.517241     550
-#>     Total %   test_type      Chi2 df         p         Phi
-#> 1 77.166667 chi_squared 0.1357733  1 0.7125196 0.010749501
-#> 2 20.750000 chi_squared 0.1357733  1 0.7125196 0.010749501
-#> 3  2.083333 chi_squared 0.1357733  1 0.7125196 0.010749501
-#> 4 54.166667 chi_squared 0.0451784  1 0.8316763 0.006135851
-#> 5 45.833333 chi_squared 0.0451784  1 0.8316763 0.006135851
+#>            variable             label     level     .row_role Female n
+#> 1           smoking           smoking      <NA> factor_header       NA
+#> 2           smoking           smoking        No         level      475
+#> 3           smoking           smoking       Yes         level      131
+#> 4           smoking           smoking (Missing)       missing       14
+#> 5 physical_activity physical_activity      <NA> factor_header       NA
+#> 6 physical_activity physical_activity        No         level      334
+#> 7 physical_activity physical_activity       Yes         level      286
+#>    Female % Male n    Male % Total n   Total %         p         Phi
+#> 1        NA     NA        NA      NA        NA 0.7125196 0.010749501
+#> 2 76.612903    451 77.758621     926 77.166667        NA          NA
+#> 3 21.129032    118 20.344828     249 20.750000        NA          NA
+#> 4  2.258065     11  1.896552      25  2.083333        NA          NA
+#> 5        NA     NA        NA      NA        NA 0.8316763 0.006135851
+#> 6 53.870968    316 54.482759     650 54.166667        NA          NA
+#> 7 46.129032    264 45.517241     550 45.833333        NA          NA
 
 # Long data.frame (one row per (modality x group)).
 table_categorical(
@@ -1214,38 +1231,54 @@ table_categorical(
   by = sex,
   output = "long"
 )
-#>             variable             label     level  group   n       pct
-#> 1            smoking           smoking        No Female 475 76.612903
-#> 2            smoking           smoking        No   Male 451 77.758621
-#> 3            smoking           smoking        No  Total 926 77.166667
-#> 4            smoking           smoking       Yes Female 131 21.129032
-#> 5            smoking           smoking       Yes   Male 118 20.344828
-#> 6            smoking           smoking       Yes  Total 249 20.750000
-#> 7            smoking           smoking (Missing) Female  14  2.258065
-#> 8            smoking           smoking (Missing)   Male  11  1.896552
-#> 9            smoking           smoking (Missing)  Total  25  2.083333
-#> 10 physical_activity physical_activity        No Female 334 53.870968
-#> 11 physical_activity physical_activity        No   Male 316 54.482759
-#> 12 physical_activity physical_activity        No  Total 650 54.166667
-#> 13 physical_activity physical_activity       Yes Female 286 46.129032
-#> 14 physical_activity physical_activity       Yes   Male 264 45.517241
-#> 15 physical_activity physical_activity       Yes  Total 550 45.833333
-#>      test_type      chi2 df         p effect_size effect_size_type
-#> 1  chi_squared 0.1357733  1 0.7125196 0.010749501              phi
-#> 2  chi_squared 0.1357733  1 0.7125196 0.010749501              phi
-#> 3  chi_squared 0.1357733  1 0.7125196 0.010749501              phi
-#> 4  chi_squared 0.1357733  1 0.7125196 0.010749501              phi
-#> 5  chi_squared 0.1357733  1 0.7125196 0.010749501              phi
-#> 6  chi_squared 0.1357733  1 0.7125196 0.010749501              phi
-#> 7  chi_squared 0.1357733  1 0.7125196 0.010749501              phi
-#> 8  chi_squared 0.1357733  1 0.7125196 0.010749501              phi
-#> 9  chi_squared 0.1357733  1 0.7125196 0.010749501              phi
-#> 10 chi_squared 0.0451784  1 0.8316763 0.006135851              phi
-#> 11 chi_squared 0.0451784  1 0.8316763 0.006135851              phi
-#> 12 chi_squared 0.0451784  1 0.8316763 0.006135851              phi
-#> 13 chi_squared 0.0451784  1 0.8316763 0.006135851              phi
-#> 14 chi_squared 0.0451784  1 0.8316763 0.006135851              phi
-#> 15 chi_squared 0.0451784  1 0.8316763 0.006135851              phi
+#>             variable             label     level .row_role  group .group_role
+#> 1            smoking           smoking        No     level Female       group
+#> 2            smoking           smoking        No     level   Male       group
+#> 3            smoking           smoking        No     level  Total       total
+#> 4            smoking           smoking       Yes     level Female       group
+#> 5            smoking           smoking       Yes     level   Male       group
+#> 6            smoking           smoking       Yes     level  Total       total
+#> 7            smoking           smoking (Missing)   missing Female       group
+#> 8            smoking           smoking (Missing)   missing   Male       group
+#> 9            smoking           smoking (Missing)   missing  Total       total
+#> 10 physical_activity physical_activity        No     level Female       group
+#> 11 physical_activity physical_activity        No     level   Male       group
+#> 12 physical_activity physical_activity        No     level  Total       total
+#> 13 physical_activity physical_activity       Yes     level Female       group
+#> 14 physical_activity physical_activity       Yes     level   Male       group
+#> 15 physical_activity physical_activity       Yes     level  Total       total
+#>    total   n       pct   test_type statistic df   p.value es_type    es_value
+#> 1  FALSE 475 76.612903 chi_squared 0.1357733  1 0.7125196     phi 0.010749501
+#> 2  FALSE 451 77.758621 chi_squared 0.1357733  1 0.7125196     phi 0.010749501
+#> 3   TRUE 926 77.166667 chi_squared 0.1357733  1 0.7125196     phi 0.010749501
+#> 4  FALSE 131 21.129032 chi_squared 0.1357733  1 0.7125196     phi 0.010749501
+#> 5  FALSE 118 20.344828 chi_squared 0.1357733  1 0.7125196     phi 0.010749501
+#> 6   TRUE 249 20.750000 chi_squared 0.1357733  1 0.7125196     phi 0.010749501
+#> 7  FALSE  14  2.258065 chi_squared 0.1357733  1 0.7125196     phi 0.010749501
+#> 8  FALSE  11  1.896552 chi_squared 0.1357733  1 0.7125196     phi 0.010749501
+#> 9   TRUE  25  2.083333 chi_squared 0.1357733  1 0.7125196     phi 0.010749501
+#> 10 FALSE 334 53.870968 chi_squared 0.0451784  1 0.8316763     phi 0.006135851
+#> 11 FALSE 316 54.482759 chi_squared 0.0451784  1 0.8316763     phi 0.006135851
+#> 12  TRUE 650 54.166667 chi_squared 0.0451784  1 0.8316763     phi 0.006135851
+#> 13 FALSE 286 46.129032 chi_squared 0.0451784  1 0.8316763     phi 0.006135851
+#> 14 FALSE 264 45.517241 chi_squared 0.0451784  1 0.8316763     phi 0.006135851
+#> 15  TRUE 550 45.833333 chi_squared 0.0451784  1 0.8316763     phi 0.006135851
+#>    es_ci_lower es_ci_upper smd_type smd_value
+#> 1           NA          NA     <NA>        NA
+#> 2           NA          NA     <NA>        NA
+#> 3           NA          NA     <NA>        NA
+#> 4           NA          NA     <NA>        NA
+#> 5           NA          NA     <NA>        NA
+#> 6           NA          NA     <NA>        NA
+#> 7           NA          NA     <NA>        NA
+#> 8           NA          NA     <NA>        NA
+#> 9           NA          NA     <NA>        NA
+#> 10          NA          NA     <NA>        NA
+#> 11          NA          NA     <NA>        NA
+#> 12          NA          NA     <NA>        NA
+#> 13          NA          NA     <NA>        NA
+#> 14          NA          NA     <NA>        NA
+#> 15          NA          NA     <NA>        NA
 
 # \donttest{
 # Rendered HTML / docx objects -- best viewed inside a

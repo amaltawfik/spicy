@@ -1,13 +1,20 @@
 # Coerce a `spicy_outcome_table` to a plain data frame or tibble
 
-These S3 methods strip the `"spicy_outcome_table"` class and the
-rendering-only attributes from an object returned by
-[`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md),
-so the underlying long-format data can be manipulated with downstream
-tools under the standard `data.frame` / `tbl_df` contract. The
-`"outcome"` and `"select"` attributes are kept as lightweight provenance
-markers, and `"note"`, the note as printed. The original `x` is
-unaffected, and `print(x)` continues to render the formatted table.
+[`as.data.frame()`](https://rdrr.io/r/base/as.data.frame.html) returns
+the table
+[`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md)
+displays, with its numbers: exactly what `output = "data.frame"`
+returns. One row per printed row – the `Overall` row, then for each
+grouping its header row, which carries the block's comparison, and its
+levels – with the key columns `variable` (the outcome on the `Overall`
+row, the grouping elsewhere), `label`, `level` and `.row_role`
+(`"summary"`, `"factor_header"`, `"level"`, or `"missing"`), then the
+printed columns under their names (`"M"`, `"SD"`, ..., `"n"`, `"p"`). A
+cell that prints several numbers keeps the others beside it, as in
+[`as.data.frame.spicy_continuous_table()`](https://amaltawfik.github.io/spicy/reference/as.data.frame.spicy_continuous_table.md).
+The note, as printed, is kept in `attr(, "note")`. `as_tibble()` returns
+the same table as a tibble. The original `x` is unaffected, and
+`print(x)` continues to render the formatted table.
 
 ## Usage
 
@@ -40,14 +47,13 @@ as_tibble(x, ...)
 
 ## Value
 
-A plain `data.frame` (or `tbl_df`), one row per displayed row of the
-table.
+A plain `data.frame` (or `tbl_df`), identical to the
+`output = "data.frame"` of the same call.
 
 ## Details
 
-The returned data is identical to what `output = "long"` (or
-`output = "data.frame"`) returns directly from
-[`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md).
+For every statistic the table computes, use `output = "long"` or
+[`tidy.spicy_outcome_table()`](https://amaltawfik.github.io/spicy/reference/tidy.spicy_outcome_table.md).
 
 ## See also
 
