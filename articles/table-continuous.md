@@ -926,11 +926,11 @@ out <- table_continuous(
 )
 
 # Long descriptive rows: one per (variable x group) with broom-style
-# columns (outcome, label, group, estimate = mean, std.error,
+# columns (variable, label, group, estimate = mean, std.error,
 # conf.low / conf.high, n, min, max, sd).
 broom::tidy(out)
 #> # A tibble: 4 × 11
-#>   outcome    label group estimate std.error conf.low conf.high     n   min   max
+#>   variable   label group estimate std.error conf.low conf.high     n   min   max
 #>   <chr>      <chr> <chr>    <dbl>     <dbl>    <dbl>     <dbl> <int> <dbl> <dbl>
 #> 1 bmi        bmi   Fema…     25.7     0.152     25.4      26.0   616  16    38.9
 #> 2 bmi        bmi   Male      26.2     0.152     25.9      26.5   572  16    37.7
@@ -938,12 +938,12 @@ broom::tidy(out)
 #> 4 wellbeing… well… Male      71.0     0.674     69.7      72.4   580  18.7 100  
 #> # ℹ 1 more variable: sd <dbl>
 
-# One row per outcome with the omnibus test + effect-size summary
+# One row per variable with the omnibus test + effect-size summary
 # (test_type, statistic, df, df.residual, p.value, es_type, es_value,
 # es_ci_lower / es_ci_upper, n_total).
 broom::glance(out)
 #> # A tibble: 2 × 14
-#>   outcome   label test_type statistic    df df.residual p.value es_type es_value
+#>   variable  label test_type statistic    df df.residual p.value es_type es_value
 #>   <chr>     <chr> <chr>         <dbl> <dbl>       <dbl>   <dbl> <chr>      <dbl>
 #> 1 bmi       bmi   welch_t       -2.38 1184.          NA 1.76e-2 NA            NA
 #> 2 wellbein… well… welch_t       -4.33 1169.          NA 1.65e-5 NA            NA
@@ -1029,7 +1029,7 @@ table_continuous(
 |  | Tertiary |  4.11 |  1.04 |  1.00 |   5.00 |  4.01 |  4.21 | 399 |       |
 | *Note.* Missing values removed: bmi (12), life_sat_health (8). |  |  |  |  |  |  |  |  |  |
 
-Descriptive statistics by education {#tinytable_owjpcx0788iue8gxbwzv
+Descriptive statistics by education {#tinytable_tbzeh6xuq8sxuudzc70u
 .table .tinytable
 style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}

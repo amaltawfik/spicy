@@ -123,12 +123,13 @@ for categorical predictors, with the level name in <code>term</code>.</p></li>
 when a binary contrast is shown, with <code>term = "&lt;level2&gt; - &lt;level1&gt;"</code>.</p></li>
 <li><p>One row per <strong>slope</strong> (<code>estimate_type = "slope"</code>) for
 numeric predictors, with <code>term = predictor_label</code>.</p></li>
-</ul><p>Standard broom columns: <code>outcome</code>, <code>label</code>, <code>term</code>,
+</ul><p>Standard broom columns: <code>variable</code>, <code>label</code>, <code>term</code>,
 <code>estimate_type</code>, <code>estimate</code>, <code>std.error</code>, <code>conf.low</code>, <code>conf.high</code>,
-<code>statistic</code>, <code>p.value</code>. The <code>outcome</code> column carries the original
-variable name; <code>label</code> carries the human-readable label.</p>
+<code>statistic</code>, <code>p.value</code>. The <code>variable</code> column carries the column
+name of the outcome; <code>label</code> carries the label the rows display for
+it (see <code>labels</code>).</p>
 <p><code>glance()</code> returns one row per outcome with model-level
-statistics. Columns: <code>outcome</code>, <code>label</code>, <code>predictor_type</code>
+statistics. Columns: <code>variable</code>, <code>label</code>, <code>predictor_type</code>
 (<code>"categorical"</code> or <code>"continuous"</code>), <code>test_type</code> (<code>"F"</code> for
 categorical predictors, <code>"t"</code> for continuous ones),
 <code>statistic</code>, <code>df</code>, <code>df.residual</code>, <code>p.value</code>, <code>r.squared</code>,

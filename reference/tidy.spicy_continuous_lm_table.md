@@ -51,13 +51,13 @@ outcomes:
 - One row per **slope** (`estimate_type = "slope"`) for numeric
   predictors, with `term = predictor_label`.
 
-Standard broom columns: `outcome`, `label`, `term`, `estimate_type`,
+Standard broom columns: `variable`, `label`, `term`, `estimate_type`,
 `estimate`, `std.error`, `conf.low`, `conf.high`, `statistic`,
-`p.value`. The `outcome` column carries the original variable name;
-`label` carries the human-readable label.
+`p.value`. The `variable` column carries the column name of the outcome;
+`label` carries the label the rows display for it (see `labels`).
 
 `glance()` returns one row per outcome with model-level statistics.
-Columns: `outcome`, `label`, `predictor_type` (`"categorical"` or
+Columns: `variable`, `label`, `predictor_type` (`"categorical"` or
 `"continuous"`), `test_type` (`"F"` for categorical predictors, `"t"`
 for continuous ones), `statistic`, `df`, `df.residual`, `p.value`,
 `r.squared`, `adj.r.squared`, `es_type`, `es_value`, `es_ci_lower`,

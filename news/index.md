@@ -87,18 +87,25 @@ the descriptive tables one contract for labels, p-values, and notes.
   [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
   is now `note`.
 
-- [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
-  gives the column name in `variable` and the displayed label in
-  `label`, in `output = "long"`,
-  [`tidy()`](https://generics.r-lib.org/reference/tidy.html), and
-  `glance()`, as
+- In [`tidy()`](https://generics.r-lib.org/reference/tidy.html) and
+  `glance()`,
+  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
+  and
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
+  call `variable` the column they called `outcome`, as
   [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md)
-  does. `variable` held the label, and
-  [`tidy()`](https://generics.r-lib.org/reference/tidy.html) and
-  `glance()` called it `outcome`. `glance()` now lists the variables in
-  the order of `select`, as the table and
-  [`tidy()`](https://generics.r-lib.org/reference/tidy.html) do; it
-  sorted them by label.
+  and
+  [`table_continuous_svy()`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md)
+  do. It holds the column name, and `label` the displayed label. In
+  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
+  `outcome` held the displayed label and there was no `label` column.
+  `output = "long"` of
+  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
+  also gives the column name in `variable`, where it gave the label, and
+  its `glance()` lists the variables in the order of `select`, as the
+  table and [`tidy()`](https://generics.r-lib.org/reference/tidy.html)
+  do. It sorted them by label.
 
 - [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
   gives each association measure of its note a sentence of its own:

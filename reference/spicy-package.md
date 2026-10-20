@@ -118,17 +118,21 @@ methods on `spicy_categorical_table`, `spicy_continuous_table`,
 `spicy_categorical_svy_table`, and `spicy_regression_table` follow the
 standard broom column conventions (`outcome`, `term`, `estimate`,
 `std.error`, `conf.low`, `conf.high`, `statistic`, `p.value`, `df`,
-`df.residual`, `r.squared`, `adj.r.squared`, `nobs`, ...). The set of
-columns produced by each method is considered **stabilizing**: existing
-columns will not be silently renamed or have their semantics changed
-within `0.y.z`, and any breaking change is announced in `NEWS.md`.
-Adding optional new columns (e.g. covariate-adjustment metadata) is not
-a breaking change. Numeric columns keep the types downstream
-broom-consumers expect: test degrees of freedom that are integer by
-construction (chi-squared, factor-comparison F tests) stay integer,
-while every degrees-of-freedom column that can be fractional –
-`df.residual`, the regression method's per-coefficient `df`, and
-Welch-corrected test `df` – is numeric double, so
+`df.residual`, `r.squared`, `adj.r.squared`, `nobs`, ...). In the
+descriptive tables, `variable` holds the name of the column a row
+describes and `label` its displayed label. `outcome` names the response
+of a regression model and the single outcome of
+[`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md).
+The set of columns produced by each method is considered
+**stabilizing**: existing columns will not be silently renamed or have
+their semantics changed within `0.y.z`, and any breaking change is
+announced in `NEWS.md`. Adding optional new columns (e.g.
+covariate-adjustment metadata) is not a breaking change. Numeric columns
+keep the types downstream broom-consumers expect: test degrees of
+freedom that are integer by construction (chi-squared, factor-comparison
+F tests) stay integer, while every degrees-of-freedom column that can be
+fractional – `df.residual`, the regression method's per-coefficient
+`df`, and Welch-corrected test `df` – is numeric double, so
 Satterthwaite-corrected degrees of freedom from cluster-robust variance
 modes are preserved verbatim (matching `lmerTest::glance()` and the
 `afex` output convention).

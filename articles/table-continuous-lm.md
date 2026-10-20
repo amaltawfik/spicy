@@ -664,7 +664,7 @@ out <- table_continuous_lm(
 # binary predictors, slope for numeric predictors.
 broom::tidy(out)
 #> # A tibble: 6 × 10
-#>   outcome        label term  estimate_type estimate std.error conf.low conf.high
+#>   variable       label term  estimate_type estimate std.error conf.low conf.high
 #>   <chr>          <chr> <chr> <chr>            <dbl>     <dbl>    <dbl>     <dbl>
 #> 1 wellbeing_sco… well… Fema… emmean          67.2       0.623  65.9       68.4  
 #> 2 wellbeing_sco… well… Male  emmean          71.0       0.644  69.8       72.3  
@@ -679,7 +679,7 @@ broom::tidy(out)
 # effect-size summary.
 broom::glance(out)
 #> # A tibble: 2 × 16
-#>   outcome     label predictor_type test_type statistic    df df.residual p.value
+#>   variable    label predictor_type test_type statistic    df df.residual p.value
 #>   <chr>       <chr> <chr>          <chr>         <dbl> <int>       <dbl>   <dbl>
 #> 1 wellbeing_… well… categorical    F             18.8      1        1198 1.55e-5
 #> 2 bmi         bmi   categorical    F              5.64     1        1186 1.78e-2

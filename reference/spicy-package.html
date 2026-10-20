@@ -166,10 +166,13 @@ without notice – avoid calling directly from downstream code):</p><ul><li><p>A
 the standard broom column conventions (<code>outcome</code>, <code>term</code>,
 <code>estimate</code>, <code>std.error</code>, <code>conf.low</code>, <code>conf.high</code>, <code>statistic</code>,
 <code>p.value</code>, <code>df</code>, <code>df.residual</code>, <code>r.squared</code>, <code>adj.r.squared</code>,
-<code>nobs</code>, ...). The set of columns produced by each method is
-considered <strong>stabilizing</strong>: existing columns will not be silently
-renamed or have their semantics changed within <code>0.y.z</code>, and any
-breaking change is announced in <code>NEWS.md</code>. Adding optional new
+<code>nobs</code>, ...). In the descriptive tables, <code>variable</code> holds the name
+of the column a row describes and <code>label</code> its displayed label.
+<code>outcome</code> names the response of a regression model and the single
+outcome of <code><a href="table_outcome.html">table_outcome()</a></code>. The set of columns produced by each
+method is considered <strong>stabilizing</strong>: existing columns will not be
+silently renamed or have their semantics changed within <code>0.y.z</code>,
+and any breaking change is announced in <code>NEWS.md</code>. Adding optional new
 columns (e.g. covariate-adjustment metadata) is not a breaking
 change. Numeric columns keep the types downstream
 broom-consumers expect: test degrees of freedom that are integer

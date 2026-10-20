@@ -117,17 +117,17 @@ tidyverse-stats pipeline.</p>
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p><code>tidy()</code> returns one row per <code>(variable x group)</code> (or per
 <code>variable</code> when <code>by</code> is not used) with broom-conventional columns:
-<code>outcome</code>, <code>label</code>, <code>group</code> (when applicable), <code>estimate</code> (the
+<code>variable</code> (the column name), <code>label</code> (the label the rows display
+for it, see <code>labels</code>), <code>group</code> (when applicable), <code>estimate</code> (the
 empirical mean), <code>std.error</code> (<code>sd / sqrt(n)</code>), <code>conf.low</code>,
 <code>conf.high</code> (the mean confidence interval at <code>ci_level</code>), <code>n</code>,
-<code>min</code>, <code>max</code>, <code>sd</code>. The <code>outcome</code> column carries the variable name
-and <code>label</code> the human-readable label.</p>
-<p><code>glance()</code> returns one row per outcome with the omnibus group
+<code>min</code>, <code>max</code>, <code>sd</code>.</p>
+<p><code>glance()</code> returns one row per variable with the omnibus group
 comparison (when <code>by</code> is used), the requested effect size and the
-balance diagnostic. Columns: <code>outcome</code>, <code>label</code>, <code>test_type</code>,
+balance diagnostic. Columns: <code>variable</code>, <code>label</code>, <code>test_type</code>,
 <code>statistic</code>, <code>df</code>, <code>df.residual</code>, <code>p.value</code>, <code>es_type</code>, <code>es_value</code>,
 <code>es_ci_lower</code>, <code>es_ci_upper</code>, <code>smd_type</code>, <code>smd_value</code>, <code>n_total</code>.
-Without <code>by</code>, only <code>outcome</code>, <code>label</code>, and <code>n_total</code> are populated;
+Without <code>by</code>, only <code>variable</code>, <code>label</code>, and <code>n_total</code> are populated;
 the other columns are <code>NA</code>. The schema is fixed: <code>smd_type</code> /
 <code>smd_value</code> are present whether or not <code>smd = TRUE</code>, like every
 other comparison column here, and are <code>NA</code> when the table carries
