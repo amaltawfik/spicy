@@ -711,6 +711,108 @@
   .design_meta(design)
 }
 
+# The columns of `design$variables` that are the design's own machinery,
+# not variables to describe: the sampling weights (or probabilities),
+# the replicate weights, the cluster identifiers of every stage and the
+# finite population corrections. The twins keep them out of `select`, as
+# the plain tables keep out their `weights` column. Strata are not among
+# them: a stratification variable, a region say, is often a variable of
+# interest.
+#
+# Read off the slots where survey 4.5 records each column, never off a
+# column name:
+#   * `allprob`, the weights or probabilities of `svydesign()`, one
+#     column per variable, named after it. `[`, `subset()`, `update()`,
+#     `postStratify()`, `calibrate()`, `rake()` and `trimWeights()` keep
+#     it as built (they move `prob`), where all but `[` overwrite `call`.
+#   * `cluster` and the columns of `fpc$popsize`, one per stage, named
+#     after their variables, through the same steps. A single stage of
+#     single rows is no clustering, and its column stays a variable.
+#   * the column names of `repweights`, when `svrepdesign()` read the
+#     replicate weights from the data; every later step keeps them.
+#   * the `weights` formula of the `svrepdesign()` call. A replicate
+#     design keeps its sampling weights as a bare vector (`pweights`),
+#     so the call is their only record, and `subset()`, `update()` and
+#     the reweighting steps overwrite it.
+# `as.svrepdesign()` records none of these columns: its replicate
+# weights are computed, its clusters and fpc folded into them, its call
+# its own. A two-phase design is refused before any selection.
+#
+# survey also names what nobody declared (`ids` for a vector of
+# identifiers, `weights` for a vector of weights, `probs` for none), so
+# a name counts only when the column holds what the slot holds: the
+# weights or their inverse, the identifiers (which a later stage, or
+# `nest = TRUE`, prefixes with the stages and strata above it), the
+# population sizes or fractions.
+#
+# The column names, each named by its role, as the refusal of
+# `.resolve_selection_without()` words it.
+.design_columns <- function(design) {
+  vars <- design[["variables"]]
+  holds <- function(x, nm) {
+    is.numeric(vars[[nm]]) &&
+      isTRUE(all.equal(
+        as.numeric(x),
+        as.numeric(vars[[nm]]),
+        check.attributes = FALSE
+      ))
+  }
+  stage <- function(role, k, n) {
+    if (n > 1L) sprintf("stage %d %s", k, role) else role
+  }
+  cols <- character(0)
+  prob <- design[["allprob"]]
+  for (nm in intersect(names(prob), names(vars))) {
+    if (holds(1 / prob[[nm]], nm)) {
+      cols <- c(cols, "sampling weights" = nm)
+    } else if (holds(prob[[nm]], nm)) {
+      cols <- c(cols, "sampling probabilities" = nm)
+    }
+  }
+  ids <- design[["cluster"]]
+  # One observation per primary sampling unit is no clustering, as the
+  # note says (`.design_scheme_parts()`), and it is what `ids = ~1`
+  # builds under its made-up `id`, which a data column `id = 1:n` holds
+  # too: a single stage of single rows has no cluster column.
+  if (!is.null(ids) && ncol(ids) == 1L && !anyDuplicated(ids[[1L]])) {
+    ids <- NULL
+  }
+  for (k in which(names(ids) %in% names(vars))) {
+    nm <- names(ids)[[k]]
+    id <- as.character(ids[[k]])
+    v <- as.character(vars[[nm]])
+    if (isTRUE(all(id == v | endsWith(id, paste0(".", v))))) {
+      cols <- c(cols, stats::setNames(nm, stage("cluster", k, ncol(ids))))
+    }
+  }
+  pop <- design[["fpc"]][["popsize"]]
+  for (k in which(colnames(pop) %in% names(vars))) {
+    nm <- colnames(pop)[[k]]
+    frac <- design[["fpc"]][["sampsize"]][, k] / pop[, k]
+    if (holds(pop[, k], nm) || holds(frac, nm)) {
+      role <- stage("finite population correction", k, ncol(pop))
+      cols <- c(cols, stats::setNames(nm, role))
+    }
+  }
+  reps <- design[["repweights"]]
+  if (inherits(reps, "repweights_compressed")) {
+    reps <- reps[["weights"]]
+  }
+  reps <- names(vars)[names(vars) %in% colnames(reps)]
+  cols <- c(cols, stats::setNames(reps, rep("replicate weights", length(reps))))
+  if (inherits(design, "svyrep.design")) {
+    f <- design[["call"]][["weights"]]
+    if (is.call(f) && identical(f[[1L]], as.name("~"))) {
+      for (nm in intersect(all.vars(f), names(vars))) {
+        if (holds(design[["pweights"]], nm)) {
+          cols <- c(cols, "sampling weights" = nm)
+        }
+      }
+    }
+  }
+  cols[!duplicated(cols)]
+}
+
 # The clause naming the sampling scheme, e.g.
 # "stratified (stype), 200 PSU, with finite population correction" or
 # "replicate weights (JK1), 15 replicates".

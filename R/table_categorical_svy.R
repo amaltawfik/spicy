@@ -390,7 +390,20 @@
 #' @param design A survey design: `survey::svydesign()` or
 #'   `survey::as.svrepdesign()`.
 #' @param select Columns to tabulate, as a tidyselect expression on the
-#'   design's variables.
+#'   design's variables. The design's own columns are not variables to
+#'   describe: its sampling weights, replicate weights, cluster
+#'   identifiers (every stage, unless each cluster of a one-stage design
+#'   is a single observation) and finite population corrections.
+#'   `everything()` and the other selection helpers skip them, and naming
+#'   one, or giving its position, is an error; [table_categorical()]
+#'   describes it from the data. Strata stay variables, since a
+#'   stratification variable such as a region is often one of interest.
+#'   These columns are read from the design object. A design made by
+#'   `survey::as.svrepdesign()` records none of them, and one made by
+#'   `survey::svrepdesign()` names its sampling weights only in its call,
+#'   as a formula, until `subset()`, `update()`, `postStratify()`,
+#'   `calibrate()`, `rake()` or `trimWeights()` replaces the call: leave
+#'   such a column out with a negation (`select = !w`).
 #' @param by A single grouping column: one column block per level.
 #' @param labels How each variable is named in the table: in the rows,
 #'   in the title, and in the notes. Four forms:
@@ -686,12 +699,15 @@ table_categorical_svy <- function(
   }
 
   # --- column selection ----------------------------------------------------
-  # The `by` column is outside the selection, as in the sibling.
+  # The `by` column is outside the selection, as in the sibling, and so
+  # are the design's weights, clusters and fpc, as the sibling's weights.
   select_names <- .resolve_selection_without(
     rlang::enquo(select),
     vars,
     roles = c(by = group_col_name),
-    where = "`design`"
+    where = "`design`",
+    design_columns = .design_columns(design),
+    plain_fn = "table_categorical"
   )
   if (length(select_names) == 0L) {
     .abort_empty_selection("select")

@@ -539,7 +539,21 @@ order_continuous_svy_tokens <- function(tokens) {
 #'   the design's variables. As in [table_continuous()], the `by` column
 #'   is not part of the selection (naming it, or giving its position, is
 #'   an error), a name that is not a column is an error, and so is a
-#'   selection with no numeric column.
+#'   selection with no numeric column. The design's own columns are not
+#'   part of it either, since they are not variables to describe: its
+#'   sampling weights, replicate weights, cluster identifiers (every
+#'   stage, unless each cluster of a one-stage design is a single
+#'   observation) and finite population corrections. `everything()`, the
+#'   other selection helpers and `regex` skip them, and naming one, or
+#'   giving its position, is an error; [table_continuous()] describes it
+#'   from the data. Strata stay variables, since a stratification
+#'   variable such as a region is often one of interest. These columns
+#'   are read from the design object. A design made by
+#'   `survey::as.svrepdesign()` records none of them, and one made by
+#'   `survey::svrepdesign()` names its sampling weights only in its call,
+#'   as a formula, until `subset()`, `update()`, `postStratify()`,
+#'   `calibrate()`, `rake()` or `trimWeights()` replaces the call: leave
+#'   such a column out with a negation (`select = !w`).
 #' @param by A single grouping column. One domain per level. A `by` that
 #'   no observation holds is an error under `drop_na = TRUE`.
 #' @param exclude Columns to drop from `select`.
@@ -812,7 +826,9 @@ table_continuous_svy <- function(
   do_test <- (p_value || statistic) && has_group
 
   # --- column selection ----------------------------------------------------
-  # The `by` column is outside the selection, as in the sibling.
+  # The `by` column is outside the selection, as in the sibling, and so
+  # are the design's weights, clusters and fpc, as the sibling's weights.
+  design_cols <- .design_columns(design)
   if (regex) {
     if (missing(select)) {
       select <- ".*"
@@ -825,7 +841,7 @@ table_continuous_svy <- function(
     }
     sel_names <- grep(
       select,
-      setdiff(names(vars), group_col_name),
+      setdiff(names(vars), c(group_col_name, design_cols)),
       value = TRUE
     )
   } else {
@@ -833,7 +849,9 @@ table_continuous_svy <- function(
       rlang::enquo(select),
       vars,
       roles = c(by = group_col_name),
-      where = "`design`"
+      where = "`design`",
+      design_columns = design_cols,
+      plain_fn = "table_continuous"
     )
   }
   exclude_names <- resolve_multi_column_selection(

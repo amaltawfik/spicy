@@ -105,23 +105,43 @@ resolve_multi_column_selection <- function(
 # describe a variable across its own levels or an outcome by itself.
 #
 # `roles` is a character vector of column names, each named by the
-# argument that gives it its role (`c(by = "sex")`).
+# argument that gives it its role (`c(by = "sex")`). `design_columns`
+# are the columns of a survey design that are its own machinery, named
+# by their role (`.design_columns()`): they are outside the selection
+# the same way, and the refusal sends the caller to `plain_fn`, the
+# data-frame table that describes them. A column that is both is
+# refused as the role argument the caller typed.
 .resolve_selection_without <- function(
   quo,
   data,
   roles,
   arg = "select",
   where = "`data`",
-  call = rlang::caller_env()
+  call = rlang::caller_env(),
+  design_columns = NULL,
+  plain_fn = NULL
 ) {
   sel <- resolve_multi_column_selection(quo, data, arg, where, call)
   roles <- roles[!is.na(roles) & roles %in% names(data)]
-  for (col in intersect(sel, roles)) {
+  cols <- c(unname(roles), unname(design_columns))
+  what <- c(
+    sprintf("`%s`", names(roles)),
+    sprintf("design's %s", names(design_columns))
+  )
+  for (col in intersect(sel, cols)) {
     if (.selection_points_at(quo, data, sel, col, arg, where)) {
-      .abort_role_in_selection(col, arg, names(roles)[match(col, roles)], call)
+      i <- match(col, cols)
+      hint <- if (i > length(roles)) {
+        sprintf(
+          "To describe it, use `%s(<data>, select = %s)`.",
+          plain_fn,
+          if (identical(make.names(col), col)) col else .quote_val(col)
+        )
+      }
+      .abort_role_in_selection(col, arg, what[[i]], call, hint)
     }
   }
-  setdiff(sel, roles)
+  setdiff(sel, cols)
 }
 
 # Does the selection `sel` point at the column `col`, by name or by
@@ -307,15 +327,20 @@ resolve_multi_column_selection <- function(
   )
 }
 
-# A column with a role of its own (`role`, the argument that gives it)
-# named in the selection `arg`.
-.abort_role_in_selection <- function(col, arg, role, call) {
+# A column with a role of its own named in the selection `arg`: `role`
+# says which, "`by`" for the argument that gives it or "design's
+# sampling weights" for a column of a survey design, and `hint` where to
+# describe it.
+.abort_role_in_selection <- function(col, arg, role, call, hint = NULL) {
   spicy_abort(
-    sprintf(
-      "`%s` cannot contain the `%s` column (%s).",
-      arg,
-      role,
-      .quote_val(col)
+    c(
+      sprintf(
+        "`%s` cannot contain the %s column (%s).",
+        arg,
+        role,
+        .quote_val(col)
+      ),
+      if (!is.null(hint)) c("i" = hint)
     ),
     class = "spicy_invalid_input",
     call = call

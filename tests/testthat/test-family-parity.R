@@ -1270,6 +1270,72 @@ test_that("the weights and cluster columns are outside the selection", {
   }
 })
 
+test_that("a survey twin selects the columns its data-frame twin selects", {
+  skip_if_not_installed("survey")
+  skip_if_not_installed("clubSandwich")
+  # The design's weights and clusters are outside the selection as the
+  # `weights` and `cluster` columns of a data-frame table are, and naming
+  # one is the same error.
+  d <- data.frame(
+    g = factor(rep(c("a", "b"), 20)),
+    y = sin(1:40),
+    x = cos(1:40),
+    f = factor(rep(c("u", "v", "v", "u"), 10)),
+    w = 1 + (1:40 %% 3) / 2,
+    psu = rep(1:8, each = 5)
+  )
+  iid <- survey::svydesign(ids = ~1, weights = ~w, data = d)
+  clus <- survey::svydesign(ids = ~psu, weights = ~w, data = d)
+  vars <- function(x) unique(as.character(x$variable))
+  quiet <- function(x) suppressWarnings(x)
+  expect_identical(
+    vars(quiet(table_continuous_svy(iid, output = "long"))),
+    vars(table_continuous(d, weights = w, output = "long"))
+  )
+  expect_identical(
+    vars(quiet(table_categorical_svy(iid, select = !c(y, x), output = "long"))),
+    vars(quiet(table_categorical(
+      d,
+      select = !c(y, x),
+      weights = w,
+      output = "long"
+    )))
+  )
+  expect_identical(
+    vars(quiet(table_continuous_svy(clus, by = g, output = "long"))),
+    vars(quiet(table_continuous_lm(
+      d,
+      by = g,
+      weights = w,
+      cluster = psu,
+      vcov = "CR2",
+      output = "long"
+    )))
+  )
+  for (cl in alist(
+    table_continuous(d, select = c(y, w), weights = w),
+    table_continuous_svy(iid, select = c(y, w)),
+    table_categorical(d, select = c(f, w), weights = w),
+    table_categorical_svy(iid, select = c(f, w)),
+    table_continuous_lm(
+      d,
+      select = c(y, psu),
+      by = g,
+      cluster = psu,
+      vcov = "CR2"
+    ),
+    table_continuous_svy(clus, select = c(y, psu), by = g)
+  )) {
+    err <- tryCatch(eval(cl), error = identity)
+    expect_s3_class(err, "spicy_invalid_input")
+    expect_match(
+      conditionMessage(err),
+      "^`select` cannot contain the (`weights`|design's sampling weights|`cluster`|design's cluster) column \\(\"(w|psu)\"\\)\\.",
+      info = deparse(cl)
+    )
+  }
+})
+
 test_that("a `by` no observation holds is refused under `drop_na = TRUE`", {
   skip_if_not_installed("survey")
   d <- data.frame(

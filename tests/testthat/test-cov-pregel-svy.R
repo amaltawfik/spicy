@@ -239,11 +239,14 @@ test_that("`regex = TRUE` without `select` summarizes every numeric column", {
   numeric_cols <- names(des$variables)[
     vapply(des$variables, is.numeric, logical(1))
   ]
-  expect_identical(unique(as.character(out$variable)), numeric_cols)
-  # The missing `select` becomes ".*", not "nothing selected": the
-  # design's own bookkeeping columns are numeric and are summarized
-  # with the rest.
-  expect_true(all(c("fpc", "pw") %in% out$variable))
+  # The missing `select` becomes ".*", not "nothing selected", and the
+  # pattern skips the design's own columns (cluster, weights, fpc), as
+  # the selection helpers do.
+  expect_identical(
+    unique(as.character(out$variable)),
+    setdiff(numeric_cols, c("dnum", "pw", "fpc"))
+  )
+  expect_false(any(c("dnum", "fpc", "pw") %in% out$variable))
   # A pattern narrows that default, which is what makes it a default.
   narrowed <- table_continuous_svy(des, select = "^api", regex = TRUE)
   expect_identical(

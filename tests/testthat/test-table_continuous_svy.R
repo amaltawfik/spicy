@@ -1817,3 +1817,93 @@ test_that("`by` named in `select` is refused; a helper skips it", {
     class = "spicy_missing_column"
   )
 })
+
+test_that("the design's weights, clusters and fpc are outside the selection", {
+  skip_if_not_installed("survey")
+  d <- data.frame(
+    w = 1 + (1:40 %% 3) / 2,
+    psu = rep(1:8, each = 5),
+    st = rep(1:2, each = 20),
+    N = 100,
+    y = sin(1:40),
+    z = cos(1:40),
+    rep1 = rep(c(0.5, 1.5), 20),
+    rep2 = rep(c(1.5, 0.5), 20)
+  )
+  des <- survey::svydesign(
+    ids = ~psu,
+    strata = ~st,
+    weights = ~w,
+    fpc = ~N,
+    data = d[1:6],
+    nest = TRUE
+  )
+  vars <- function(...) unique(.svyc_long(...)$variable)
+  # A helper or a pattern skips them. The strata stay a variable, and a
+  # design column is a `by` like any other.
+  expect_identical(vars(des), c("st", "y", "z"))
+  expect_identical(
+    vars(des, select = tidyselect::where(is.numeric)),
+    c("st", "y", "z")
+  )
+  expect_identical(vars(des, select = ".", regex = TRUE), c("st", "y", "z"))
+  expect_identical(vars(des, select = c(y, z), by = st), c("y", "z"))
+  expect_identical(vars(des, select = y, by = psu, p_value = FALSE), "y")
+  # Named, as a name, a string or a position, one is refused, and the
+  # error says where to describe it.
+  cases <- list(
+    list(
+      quote(table_continuous_svy(des, select = c(y, w))),
+      "sampling weights",
+      "w"
+    ),
+    list(
+      quote(table_continuous_svy(des, select = c("y", "psu"))),
+      "cluster",
+      "psu"
+    ),
+    list(
+      quote(table_continuous_svy(des, select = c(5, 4))),
+      "finite population correction",
+      "N"
+    )
+  )
+  for (case in cases) {
+    err <- tryCatch(eval(case[[1L]]), error = identity)
+    expect_s3_class(err, "spicy_invalid_input")
+    expect_match(
+      conditionMessage(err),
+      sprintf(
+        "`select` cannot contain the design's %s column (\"%s\").",
+        case[[2L]],
+        case[[3L]]
+      ),
+      fixed = TRUE
+    )
+    expect_match(
+      conditionMessage(err),
+      sprintf("`table_continuous(<data>, select = %s)`", case[[3L]]),
+      fixed = TRUE
+    )
+  }
+  # A column that is both is refused as the `by` the caller typed.
+  expect_error(
+    table_continuous_svy(des, select = c(y, psu), by = psu),
+    "`select` cannot contain the `by` column (\"psu\").",
+    fixed = TRUE,
+    class = "spicy_invalid_input"
+  )
+  rep_des <- survey::svrepdesign(
+    data = d[c("w", "y", "rep1", "rep2")],
+    repweights = "rep[0-9]+",
+    weights = ~w,
+    type = "bootstrap"
+  )
+  expect_identical(vars(rep_des), "y")
+  expect_error(
+    table_continuous_svy(rep_des, select = rep2),
+    "the design's replicate weights column (\"rep2\")",
+    fixed = TRUE,
+    class = "spicy_invalid_input"
+  )
+})

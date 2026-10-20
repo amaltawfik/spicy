@@ -333,6 +333,201 @@ test_that("`.design_meta()` reads a replicate design", {
   expect_equal(m$sum_weights, 6194.0003242492676, tolerance = 1e-12)
 })
 
+# ---- the design's own columns ---------------------------------------------
+
+.svy_columns_data <- function() {
+  data.frame(
+    id = 1000L + (1:40 * 7L) %% 40L,
+    w = 1 + (1:40 %% 3) / 2,
+    psu = rep(1:8, each = 5),
+    st = rep(1:2, each = 20),
+    sex = factor(rep(c("F", "M"), 20)),
+    frac = 0.08,
+    y = sin(1:40),
+    rep1 = rep(c(0.5, 1.5), 20),
+    rep2 = rep(c(1.5, 0.5), 20),
+    p = 1 / (1 + (1:40 %% 3) / 2)
+  )
+}
+
+test_that("`.design_columns()` reads the weights, clusters and fpc of a design", {
+  skip_if_not_installed("survey")
+  data(api, package = "survey", envir = environment())
+  clus1 <- c(
+    "sampling weights" = "pw",
+    cluster = "dnum",
+    "finite population correction" = "fpc"
+  )
+  des <- .svy_fixture("clus1")
+  expect_identical(.design_columns(des), clus1)
+  # The slots outlive the steps that overwrite `design$call`.
+  pop <- data.frame(stype = c("E", "H", "M"), Freq = c(4421, 755, 1018))
+  steps <- list(
+    des[apiclus1$stype == "E", ],
+    subset(des, stype == "E"),
+    stats::update(des, gain = api00 - api99),
+    survey::postStratify(des, ~stype, pop),
+    .svy_fixture("cal"),
+    survey::rake(des, list(~stype), list(pop)),
+    survey::trimWeights(survey::postStratify(des, ~stype, pop), upper = 45)
+  )
+  for (step in steps) {
+    expect_identical(.design_columns(step), clus1)
+  }
+  # Every stage. The strata are no design column.
+  expect_identical(
+    .design_columns(.svy_fixture("clus2")),
+    c(
+      "stage 1 cluster" = "dnum",
+      "stage 2 cluster" = "snum",
+      "stage 1 finite population correction" = "fpc1",
+      "stage 2 finite population correction" = "fpc2"
+    )
+  )
+  expect_identical(
+    .design_columns(.svy_fixture("strat")),
+    c("sampling weights" = "pw", "finite population correction" = "fpc")
+  )
+  # A replicate design made from one records none of them.
+  expect_length(.design_columns(.svy_fixture("rep1")), 0L)
+})
+
+test_that("`.design_columns()` keeps a name survey made up out", {
+  skip_if_not_installed("survey")
+  d <- .svy_columns_data()
+  # `ids = ~1` names its cluster `id`: the data's own `id` is a variable,
+  # nested in the strata or not, and even when it is the row number. One
+  # row per primary sampling unit is no clustering, declared or not.
+  for (data in list(d, transform(d, id = seq_len(nrow(d))))) {
+    expect_identical(
+      .design_columns(survey::svydesign(ids = ~1, weights = ~w, data = data)),
+      c("sampling weights" = "w")
+    )
+    expect_identical(
+      .design_columns(survey::svydesign(
+        ids = ~1,
+        strata = ~st,
+        weights = ~w,
+        data = data,
+        nest = TRUE
+      )),
+      c("sampling weights" = "w")
+    )
+  }
+  expect_identical(
+    .design_columns(survey::svydesign(ids = ~id, weights = ~w, data = d)),
+    c("sampling weights" = "w")
+  )
+  expect_identical(
+    .design_columns(survey::svydesign(
+      ids = ~psu,
+      strata = ~st,
+      weights = ~w,
+      data = d,
+      nest = TRUE
+    )),
+    c("sampling weights" = "w", cluster = "psu")
+  )
+  # A vector of weights is no column; probabilities and a sampling
+  # fraction are columns.
+  expect_identical(
+    .design_columns(survey::svydesign(ids = ~psu, weights = d$w, data = d)),
+    c(cluster = "psu")
+  )
+  expect_identical(
+    .design_columns(survey::svydesign(ids = ~1, probs = ~p, data = d)),
+    c("sampling probabilities" = "p")
+  )
+  expect_identical(
+    .design_columns(survey::svydesign(
+      ids = ~psu,
+      fpc = ~frac,
+      weights = ~w,
+      data = d
+    )),
+    c(
+      "sampling weights" = "w",
+      cluster = "psu",
+      "finite population correction" = "frac"
+    )
+  )
+})
+
+test_that("`.design_columns()` reads the columns of a replicate design", {
+  skip_if_not_installed("survey")
+  d <- .svy_columns_data()
+  reps <- c("replicate weights" = "rep1", "replicate weights" = "rep2")
+  all_cols <- c(reps, "sampling weights" = "w")
+  des <- survey::svrepdesign(
+    data = d,
+    repweights = "rep[0-9]+",
+    weights = ~w,
+    type = "bootstrap"
+  )
+  expect_identical(.design_columns(des), all_cols)
+  expect_identical(.design_columns(des[d$y > 0, ]), all_cols)
+  expect_identical(
+    .design_columns(survey::svrepdesign(
+      data = d,
+      repweights = ~ rep1 + rep2,
+      weights = ~w,
+      type = "bootstrap"
+    )),
+    all_cols
+  )
+  expect_identical(
+    .design_columns(survey::svrepdesign(
+      data = d,
+      repweights = survey::compressWeights(d[c("rep1", "rep2")]),
+      weights = ~w,
+      type = "bootstrap"
+    )),
+    all_cols
+  )
+  # The call is read as typed: a vector, or a formula held in an object,
+  # names no column.
+  expect_identical(
+    .design_columns(survey::svrepdesign(
+      data = d,
+      repweights = "rep[0-9]+",
+      weights = d$w,
+      type = "bootstrap"
+    )),
+    reps
+  )
+  wts <- ~w
+  expect_identical(
+    .design_columns(survey::svrepdesign(
+      data = d,
+      repweights = "rep[0-9]+",
+      weights = wts,
+      type = "bootstrap"
+    )),
+    reps
+  )
+  # Every later step keeps the replicate weights. The sampling weights
+  # are a bare vector, named in the call alone, which these steps
+  # overwrite. (survey 4.5 calibrates replicate weights held in a data
+  # frame only with `compress = FALSE`.)
+  pop <- data.frame(sex = c("F", "M"), Freq = c(400, 600))
+  steps <- list(
+    subset(des, y > 0),
+    stats::update(des, y2 = y^2),
+    survey::postStratify(des, ~sex, pop),
+    survey::calibrate(
+      des,
+      ~sex,
+      c(`(Intercept)` = 1000, sexM = 600),
+      compress = FALSE
+    ),
+    survey::rake(des, list(~sex), list(pop)),
+    survey::trimWeights(des, upper = 1.5)
+  )
+  for (step in steps) {
+    expect_identical(.design_columns(step), reps)
+  }
+})
+
 # ---- the self-documenting footer ------------------------------------------
 
 test_that("the design footer says what the design is, in three sentences", {

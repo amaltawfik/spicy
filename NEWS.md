@@ -148,6 +148,14 @@ p-values, and notes.
   with `by` first is refused), and `everything()` and the other
   selection helpers skip all these columns.
 
+* `table_categorical_svy()` and `table_continuous_svy()` leave the
+  design's own columns out of `select`: its sampling weights, replicate
+  weights, cluster identifiers, and finite population corrections.
+  `everything()` and the other selection helpers skip them, and naming
+  one is an error that points to `table_categorical()` or
+  `table_continuous()`. They described these columns as variables.
+  Strata stay variables.
+
 * In `table_continuous()`, `table_continuous_svy()`, and
   `table_categorical_svy()`, a position in `select` (`select = 2:3`)
   counts the columns of the data, the `by` column included, as in the

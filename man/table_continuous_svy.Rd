@@ -47,7 +47,21 @@ multiframe designs are refused with a classed error.}
 the design's variables. As in \code{\link[=table_continuous]{table_continuous()}}, the \code{by} column
 is not part of the selection (naming it, or giving its position, is
 an error), a name that is not a column is an error, and so is a
-selection with no numeric column.}
+selection with no numeric column. The design's own columns are not
+part of it either, since they are not variables to describe: its
+sampling weights, replicate weights, cluster identifiers (every
+stage, unless each cluster of a one-stage design is a single
+observation) and finite population corrections. \code{everything()}, the
+other selection helpers and \code{regex} skip them, and naming one, or
+giving its position, is an error; \code{\link[=table_continuous]{table_continuous()}} describes it
+from the data. Strata stay variables, since a stratification
+variable such as a region is often one of interest. These columns
+are read from the design object. A design made by
+\code{survey::as.svrepdesign()} records none of them, and one made by
+\code{survey::svrepdesign()} names its sampling weights only in its call,
+as a formula, until \code{subset()}, \code{update()}, \code{postStratify()},
+\code{calibrate()}, \code{rake()} or \code{trimWeights()} replaces the call: leave
+such a column out with a negation (\code{select = !w}).}
 
 \item{by}{A single grouping column. One domain per level. A \code{by} that
 no observation holds is an error under \code{drop_na = TRUE}.}

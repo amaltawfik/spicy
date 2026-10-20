@@ -1891,3 +1891,55 @@ test_that("`by` named in `select` is refused; a helper skips it", {
     class = "spicy_missing_column"
   )
 })
+
+test_that("the design's weights, clusters and fpc are outside the selection", {
+  skip_if_not_installed("survey")
+  d <- data.frame(
+    w = rep(c(1, 2, 3, 4), 10),
+    psu = rep(1:8, each = 5),
+    st = factor(rep(c("north", "south"), each = 20)),
+    sex = factor(rep(c("F", "M"), 20)),
+    smoker = factor(rep(c("no", "no", "yes"), length.out = 40))
+  )
+  des <- survey::svydesign(
+    ids = ~psu,
+    strata = ~st,
+    weights = ~w,
+    data = d,
+    nest = TRUE
+  )
+  vars <- function(...) unique(.svycat_df(des, ...)$variable)
+  # A helper skips them. The strata stay a variable, and a design column
+  # is a `by` like any other.
+  expect_identical(vars(), c("st", "sex", "smoker"))
+  expect_identical(vars(select = c(sex, smoker), by = st), c("sex", "smoker"))
+  expect_identical(vars(select = sex, by = psu, p_value = FALSE), "sex")
+  # Named, as a name, a string or a position, one is refused, and the
+  # error says where to describe it.
+  for (cl in alist(
+    table_categorical_svy(des, select = c(sex, w)),
+    table_categorical_svy(des, select = "w"),
+    table_categorical_svy(des, select = c(4, 1))
+  )) {
+    err <- tryCatch(eval(cl), error = identity)
+    expect_s3_class(err, "spicy_invalid_input")
+    expect_match(
+      conditionMessage(err),
+      "`select` cannot contain the design's sampling weights column (\"w\").",
+      fixed = TRUE,
+      info = deparse(cl)
+    )
+    expect_match(
+      conditionMessage(err),
+      "`table_categorical(<data>, select = w)`",
+      fixed = TRUE,
+      info = deparse(cl)
+    )
+  }
+  expect_error(
+    table_categorical_svy(des, select = c(sex, psu)),
+    "the design's cluster column (\"psu\")",
+    fixed = TRUE,
+    class = "spicy_invalid_input"
+  )
+})

@@ -41,7 +41,20 @@ table_categorical_svy(
 \code{survey::as.svrepdesign()}.}
 
 \item{select}{Columns to tabulate, as a tidyselect expression on the
-design's variables.}
+design's variables. The design's own columns are not variables to
+describe: its sampling weights, replicate weights, cluster
+identifiers (every stage, unless each cluster of a one-stage design
+is a single observation) and finite population corrections.
+\code{everything()} and the other selection helpers skip them, and naming
+one, or giving its position, is an error; \code{\link[=table_categorical]{table_categorical()}}
+describes it from the data. Strata stay variables, since a
+stratification variable such as a region is often one of interest.
+These columns are read from the design object. A design made by
+\code{survey::as.svrepdesign()} records none of them, and one made by
+\code{survey::svrepdesign()} names its sampling weights only in its call,
+as a formula, until \code{subset()}, \code{update()}, \code{postStratify()},
+\code{calibrate()}, \code{rake()} or \code{trimWeights()} replaces the call: leave
+such a column out with a negation (\code{select = !w}).}
 
 \item{by}{A single grouping column: one column block per level.}
 
