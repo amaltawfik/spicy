@@ -768,8 +768,9 @@
 #' * **`options(spicy.note_style = )`** -- how the table note is
 #'   rendered by the `"tinytable"` engine (all four table families).
 #'   A note is subordinate to the table it documents, so it is set
-#'   one size down, in black: `0.9em`, matching the `"gt"` engine and
-#'   the 10pt-on-11pt of the Word engine. Two opt-ins:
+#'   one size down, in black: `0.9em` (`\small` in LaTeX), matching
+#'   the `"gt"` engine and the 10pt-on-11pt of the Word engine. Two
+#'   opt-ins:
 #'   \itemize{
 #'     \item `"none"` -- no intervention; the note is rendered
 #'       exactly as the receiving document template styles it.

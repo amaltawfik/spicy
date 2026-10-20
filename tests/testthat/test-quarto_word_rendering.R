@@ -199,3 +199,18 @@ test_that("latex target: spicy_flextable delegates to native LaTeX", {
   expect_match(s, "{=latex}", fixed = TRUE)
   expect_false(grepl("spicy-ft-note", s, fixed = TRUE))
 })
+
+test_that("latex target: spicy_gt writes a LaTeX every engine compiles", {
+  skip_if_not_installed("gt")
+  gtb <- table_regression(.fit_qw(), output = "gt")
+  out <- .with_pandoc_to("latex", knitr::knit_print(gtb))
+  s <- paste(as.character(out), collapse = "")
+  # The prefix in italics, through gt's own markdown rendering.
+  expect_match(s, "\\emph{Note.}", fixed = TRUE)
+  # The figure space of the decimal alignment, which pdflatex refused
+  # and Latin Modern lacks, as a phantom digit.
+  expect_match(s, "\\hphantom{0}", fixed = TRUE)
+  expect_false(grepl(intToUtf8(0x2007), s, fixed = TRUE))
+  # gt's LaTeX packages still travel with the table.
+  expect_true(length(attr(out, "knit_meta")) > 0L)
+})

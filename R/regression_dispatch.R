@@ -1116,10 +1116,7 @@ output_gt <- function(rendered) {
   #    `print.spicy_gt()` / `knit_print.spicy_gt()` move it to a
   #    `<div>` sibling outside the table.
   if (!is.null(note) && nzchar(note)) {
-    tbl <- gt::tab_source_note(
-      tbl,
-      source_note = gsub("\n", " ", note, fixed = TRUE)
-    )
+    tbl <- gt::tab_source_note(tbl, source_note = .spicy_gt_note_md(note))
     attr(tbl, "spicy_note") <- note
   }
   class(tbl) <- c("spicy_gt", class(tbl))
@@ -1140,14 +1137,20 @@ output_gt <- function(rendered) {
   if (length(blocks) == 0L) {
     return(html_str)
   }
+  # The row is rendered from markdown (`.spicy_gt_note_md()`), which
+  # writes the double quote as an entity as well, and the comparison is
+  # made on the text with its whitespace runs collapsed.
   unescape <- function(s) {
     s <- gsub("&lt;", "<", s, fixed = TRUE)
     s <- gsub("&gt;", ">", s, fixed = TRUE)
-    gsub("&amp;", "&", s)
+    s <- gsub("&quot;", "\"", s, fixed = TRUE)
+    s <- gsub("&#39;", "'", s, fixed = TRUE)
+    gsub("&amp;", "&", s, fixed = TRUE)
   }
-  target <- trimws(note_one_line)
+  squish <- function(s) gsub("\\s+", " ", trimws(s))
+  target <- squish(note_one_line)
   for (b in blocks) {
-    txt <- trimws(unescape(gsub("<[^>]*>", "", b)))
+    txt <- squish(unescape(gsub("<[^>]*>", "", b)))
     if (identical(txt, target)) {
       html_str <- sub(b, "", html_str, fixed = TRUE)
     }
@@ -1164,12 +1167,6 @@ output_gt <- function(rendered) {
   if (is.null(note) || !nzchar(note)) {
     return(html_str)
   }
-  esc <- function(s) {
-    s <- gsub("&", "&amp;", s, fixed = TRUE)
-    s <- gsub("<", "&lt;", s, fixed = TRUE)
-    s <- gsub(">", "&gt;", s, fixed = TRUE)
-    s
-  }
   note_one_line <- gsub("\n", " ", note, fixed = TRUE)
   # The same note also sits on the gt object as a native source note
   # (so `gtsave()` / `as_raw_html()` / a non-interactive `print()` keep
@@ -1177,12 +1174,8 @@ output_gt <- function(rendered) {
   # `<tfoot>` row carrying it. Source notes the user added themselves
   # are left alone -- only the row whose text is ours is removed.
   html_str <- .spicy_gt_drop_source_note(html_str, note_one_line)
-  note_html <- esc(note_one_line)
-  note_html <- sub(
-    .note_prefix_pattern(),
-    paste0("<em>", spicy_str("note_prefix_emphasis"), "</em>"),
-    note_html
-  )
+  # Escaped, with the prefix in <em> (APA Manual 7 Section 7.14).
+  note_html <- .note_markup(note_one_line, .spicy_html_escape, .spicy_html_em)
   note_div <- paste0(
     "<div class=\"spicy-gt-note\" style=\"",
     "width: min-content; min-width: 100%; box-sizing: border-box; ",
@@ -1341,12 +1334,18 @@ knit_print.spicy_gt <- function(x, ...) {
   if (!is.null(pandoc_to) && !isTRUE(knitr::is_html_output())) {
     has_source_note <- length(x[["_source_notes"]]) > 0L
     if (!is.null(note) && nzchar(note) && !has_source_note) {
-      x <- gt::tab_source_note(
-        x,
-        source_note = gsub("\n", " ", note, fixed = TRUE)
-      )
+      x <- gt::tab_source_note(x, source_note = .spicy_gt_note_md(note))
     }
-    return(knitr::knit_print(x, ...))
+    out <- knitr::knit_print(x, ...)
+    # LaTeX: gt writes the characters spicy puts in a table as they are.
+    # pdflatex refused the figure space of the decimal alignment, and the
+    # default font of xelatex and lualatex has no lowercase Greek: they
+    # are mapped as in the tinytable output. The knit metadata (gt's
+    # LaTeX packages) is kept.
+    if (isTRUE(knitr::is_latex_output())) {
+      out[] <- .spicy_latex_unicode(out)
+    }
+    return(out)
   }
   h_str <- as.character(gt::as_raw_html(x, inline_css = FALSE))
   h_str <- .spicy_gt_html_postprocess(h_str, note)
@@ -1795,19 +1794,9 @@ output_flextable <- function(rendered) {
   if (is.null(note) || !nzchar(note)) {
     return(html_str)
   }
-  esc <- function(s) {
-    s <- gsub("&", "&amp;", s, fixed = TRUE)
-    s <- gsub("<", "&lt;", s, fixed = TRUE)
-    s <- gsub(">", "&gt;", s, fixed = TRUE)
-    s
-  }
   note_one_line <- gsub("\n", " ", note, fixed = TRUE)
-  note_html <- esc(note_one_line)
-  note_html <- sub(
-    .note_prefix_pattern(),
-    paste0("<em>", spicy_str("note_prefix_emphasis"), "</em>"),
-    note_html
-  )
+  # Escaped, with the prefix in <em> (APA Manual 7 Section 7.14).
+  note_html <- .note_markup(note_one_line, .spicy_html_escape, .spicy_html_em)
   note_div <- paste0(
     "<div class=\"spicy-ft-note\" style=\"",
     "width: min-content; min-width: 100%; box-sizing: border-box; ",
@@ -2547,16 +2536,12 @@ output_excel <- function(rendered, excel_path, excel_sheet) {
     }
   }
 
-  if (!is.null(note) && nzchar(note)) {
-    foot_row <- body_end_row + 2L
-    note_lines <- strsplit(note, "\n", fixed = TRUE)[[1]]
-    wb <- .spicy_xl_add_data(
-      wb,
-      sheet = excel_sheet,
-      x = note_lines,
-      start_row = foot_row
-    )
-  }
+  wb <- .spicy_xl_add_note(
+    wb,
+    note = note,
+    start_row = body_end_row + 2L,
+    sheet = excel_sheet
+  )
 
   # Column widths from the text each column carries (header labels +
   # the display strings), so the row labels are readable on open.

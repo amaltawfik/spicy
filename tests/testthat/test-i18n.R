@@ -40,8 +40,18 @@ test_that("no dead keys: every registry key is consumed in R/", {
   )
   files <- list.files(r_dir, pattern = "[.][Rr]$", full.names = TRUE)
   files <- files[basename(files) != "i18n.R"]
+  # The helpers defined in i18n.R itself consume keys too (the note
+  # prefix recognizer reads `note_prefix_emphasis` there and nowhere
+  # else); its comments and roxygen, which quote keys in examples, do
+  # not count, and the registry names its keys unquoted.
+  i18n_code <- grep(
+    "^\\s*#",
+    readLines(file.path(r_dir, "i18n.R"), warn = FALSE),
+    value = TRUE,
+    invert = TRUE
+  )
   src <- paste(
-    unlist(lapply(files, readLines, warn = FALSE)),
+    c(unlist(lapply(files, readLines, warn = FALSE)), i18n_code),
     collapse = "\n"
   )
   ks <- names(.spicy_strings)
@@ -70,6 +80,26 @@ test_that("the emphasized note prefix really is a prefix of the note prefix", {
     paste0(spicy_str("note_prefix"), "body.")
   )
   expect_null(.note_prefix_split("no prefix here"))
+})
+
+test_that("each engine's note markup follows the prefix, or its absence", {
+  html <- function(x) .note_markup(x, .spicy_html_escape, .spicy_html_em)
+  expect_identical(html("Note. a < b"), "<em>Note.</em> a &lt; b")
+  expect_identical(html("Source: a < b"), "Source: a &lt; b")
+  expect_identical(.note_markdown("Note. a"), "*Note.* a")
+  # CommonMark closes `*...*` only before a space or the end: a prefix
+  # glued to the next word is left unmarked, not wrapped in stars.
+  withr::local_options(
+    spicy.labels = list(note_prefix = "Note.", note_prefix_emphasis = "Note.")
+  )
+  expect_identical(.note_markdown("Note.a"), "Note.a")
+  # A removed prefix is no prefix: nothing to emphasize, anywhere.
+  withr::local_options(
+    spicy.labels = list(note_prefix = "", note_prefix_emphasis = "")
+  )
+  expect_null(.note_prefix_split("Linear regression."))
+  expect_identical(html("Linear regression."), "Linear regression.")
+  expect_identical(.note_markdown("Linear regression."), "Linear regression.")
 })
 
 test_that("every frozen categorical key equals its English display label", {

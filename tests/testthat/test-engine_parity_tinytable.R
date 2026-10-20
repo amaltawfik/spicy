@@ -26,9 +26,11 @@
 .pt_typst <- function(tt) tinytable::save_tt(tt, output = "typst")
 
 # Body rows of the rendered LaTeX table (header rows included, in the
-# order tabularray counts them for `hline{i}`).
+# order tabularray counts them for `hline{i}`). Read below the inner
+# specification: the note above it breaks its lines with `\\` as well.
 .pt_rows <- function(latex) {
   ln <- strsplit(latex, "\n", fixed = TRUE)[[1L]]
+  ln <- ln[-seq_len(grep("tabularray inner close", ln, fixed = TRUE)[1L])]
   ln[grepl("\\\\\\\\$", ln)]
 }
 
@@ -298,7 +300,12 @@ test_that("notes are subordinated by size, in black, by default", {
   fit <- stats::lm(wellbeing_score ~ age, data = d)
   tt <- table_regression(fit, output = "tinytable")
   expect_match(.pt_html(tt), "font-size: 0.9em;", fixed = TRUE)
-  expect_match(.pt_typst(tt), "text(size: 0.9em, [Note.", fixed = TRUE)
+  expect_match(
+    .pt_typst(tt),
+    "text(size: 0.9em, [#emph[Note.]",
+    fixed = TRUE
+  )
+  expect_match(.pt_latex(tt), "note{}={\\small \\emph{Note.}", fixed = TRUE)
   # The descriptive families keep tinytable's own <tfoot> cell: it is
   # restyled in place.
   cat_tt <- table_categorical(
@@ -331,7 +338,8 @@ test_that("options(spicy.note_style) opts out or adds Typst styling", {
   withr::with_options(list(spicy.note_style = "none"), {
     tt <- table_regression(fit, output = "tinytable")
     expect_no_match(.pt_html(tt), "font-size: 0.9em", fixed = TRUE)
-    expect_match(.pt_typst(tt), "text([Note.", fixed = TRUE)
+    expect_match(.pt_typst(tt), "text([#emph[Note.]", fixed = TRUE)
+    expect_match(.pt_latex(tt), "note{}={\\emph{Note.}", fixed = TRUE)
     cat_tt <- table_categorical(d, sex, drop_na = TRUE, output = "tinytable")
     expect_no_match(.pt_html(cat_tt), "font-size", fixed = TRUE)
   })
@@ -340,7 +348,7 @@ test_that("options(spicy.note_style) opts out or adds Typst styling", {
     tt <- table_regression(fit, output = "tinytable")
     expect_match(
       .pt_typst(tt),
-      "text(size: 0.9em, fill: luma(89), [Note.",
+      "text(size: 0.9em, fill: luma(89), [#emph[Note.]",
       fixed = TRUE
     )
     # Typst-only: the HTML note keeps the plain size.
@@ -375,15 +383,222 @@ test_that("the note rewriters leave a string they do not recognize alone", {
     sep = "\n"
   )
   expect_identical(spicy:::.spicy_tt_note_typst(broken), broken)
+  # Not even to set its prefix in italics, when handed the note.
+  expect_identical(
+    spicy:::.spicy_tt_note_typst(broken, "Note. One\nstill going"),
+    broken
+  )
   # Nothing to wrap in a table that carries no note.
   expect_identical(spicy:::.spicy_tt_note_typst("#table()"), "#table()")
+  expect_identical(
+    spicy:::.spicy_tt_note_latex("\\begin{tblr}", "Note. x"),
+    "\\begin{tblr}"
+  )
   # Nothing to restyle in a table that carries no note.
   expect_identical(
     spicy:::.spicy_tt_note_tfoot("<table><tr><td>1</td></tr></table>"),
     "<table><tr><td>1</td></tr></table>"
   )
   # A single-line note is passed through untouched.
-  expect_identical(spicy:::.spicy_note_html_lines("one line"), "one line")
+  expect_identical(spicy:::.spicy_note_lines("one line"), "one line")
+})
+
+
+# ---- the note prefix in italics, in every output --------------------------
+#
+# APA Manual 7 Section 7.14: the note opens with "Note." in italics. HTML
+# had it; Typst, LaTeX and markdown printed it in roman. The prefix is
+# read from the registry, so the expectations are too.
+
+.pt_mr <- function(o = "tinytable") {
+  table_multiresponse(
+    .pt_data(),
+    select = c(info_doctor, info_pharmacist, info_internet),
+    by = sex,
+    output = o
+  )
+}
+
+test_that("the note prefix is in italics in Typst, LaTeX and markdown", {
+  skip_if_not_installed("tinytable")
+  d <- .pt_data()
+  fit <- stats::lm(wellbeing_score ~ age + sex, data = d)
+  for (lang in c("en", "fr")) {
+    withr::local_options(spicy.language = lang)
+    p <- spicy_str("note_prefix_emphasis")
+    tables <- list(
+      multiresponse = .pt_mr(),
+      continuous = table_continuous(
+        d,
+        c(bmi, wellbeing_score),
+        output = "tinytable"
+      ),
+      continuous_by = table_continuous(
+        d,
+        c(bmi, life_sat_health),
+        by = sex,
+        output = "tinytable"
+      ),
+      regression = table_regression(fit, output = "tinytable")
+    )
+    for (nm in names(tables)) {
+      tt <- tables[[nm]]
+      info <- paste(lang, nm)
+      expect_match(
+        .pt_typst(tt),
+        paste0("[#emph[", p, "]"),
+        fixed = TRUE,
+        info = info
+      )
+      expect_match(
+        .pt_latex(tt),
+        paste0("\\emph{", p, "}"),
+        fixed = TRUE,
+        info = info
+      )
+      expect_match(
+        tinytable::save_tt(tt, output = "markdown"),
+        paste0("| *", p, "* "),
+        fixed = TRUE,
+        info = info
+      )
+      expect_match(
+        .pt_html(tt),
+        paste0("<em>", p, "</em>"),
+        fixed = TRUE,
+        info = info
+      )
+    }
+  }
+})
+
+test_that("the markdown note is one paragraph, inside its grid", {
+  skip_if_not_installed("tinytable")
+  md <- tinytable::save_tt(.pt_multiline_note("tinytable"), output = "markdown")
+  grid <- strsplit(md, "\n", fixed = TRUE)[[1L]]
+  grid <- grid[nzchar(grid) & !startsWith(grid, "Table:")]
+  # Every line opens and closes on the border, the note's lines too: a
+  # newline written into the grid broke it, and pandoc dropped the note
+  # from a Word document.
+  expect_true(all(grepl("^[|+].*[|+]$", trimws(grid, "right"))))
+  expect_length(unique(nchar(trimws(grid, "right"))), 1L)
+  expect_match(md, "| *Note.* OLS: linear regression;", fixed = TRUE)
+})
+
+test_that("a note that does not open with the prefix is left as typed", {
+  skip_if_not_installed("tinytable")
+  fit <- stats::lm(wellbeing_score ~ age, data = .pt_data())
+  tt <- table_regression(fit, note = "Source: a survey.", output = "tinytable")
+  expect_match(
+    .pt_typst(tt),
+    "text(size: 0.9em, [Source: a survey.])",
+    fixed = TRUE
+  )
+  expect_match(
+    .pt_latex(tt),
+    "note{}={\\small Source: a survey.}",
+    fixed = TRUE
+  )
+  expect_match(
+    tinytable::save_tt(tt, output = "markdown"),
+    "| Source: a survey.",
+    fixed = TRUE
+  )
+  expect_no_match(.pt_typst(tt), "#emph[", fixed = TRUE)
+  expect_no_match(.pt_latex(tt), "\\emph{", fixed = TRUE)
+  expect_no_match(.pt_html(tt), "<em>", fixed = TRUE)
+})
+
+test_that("the LaTeX note is escaped like the cells around it", {
+  skip_if_not_installed("tinytable")
+  # The multiple-response note says "more than 100%": unescaped, the
+  # `%` commented out the rest of the note and its closing brace.
+  tex <- .pt_latex(.pt_mr())
+  expect_match(tex, "more than 100\\%.", fixed = TRUE)
+  # A variable name in the missing-values note: an unescaped `_` stopped
+  # the compilation.
+  tex <- .pt_latex(table_continuous(
+    .pt_data(),
+    c(bmi, life_sat_health),
+    by = sex,
+    output = "tinytable"
+  ))
+  expect_match(tex, "life\\_sat\\_health (8)", fixed = TRUE)
+  # Every character of the set, in one note.
+  fit <- stats::lm(wellbeing_score ~ age, data = .pt_data())
+  tt <- table_regression(
+    fit,
+    note = "Note. 5% & a_b #1 $2 ~3 ^4 {5} \\6",
+    output = "tinytable"
+  )
+  expect_match(
+    .pt_latex(tt),
+    paste0(
+      "\\emph{Note.} 5\\% \\& a\\_b \\#1 \\$2 \\textasciitilde{}3 ",
+      "\\textasciicircum{}4 \\{5\\} \\textbackslash{}6}"
+    ),
+    fixed = TRUE
+  )
+})
+
+test_that("the LaTeX note keeps one disclosure per line, as HTML and Typst", {
+  skip_if_not_installed("tinytable")
+  tex <- .pt_latex(.pt_multiline_note("tinytable"))
+  expect_match(tex, "\\\\\nStd. errors:\\\\\n~~OLS:", fixed = TRUE)
+})
+
+test_that("LaTeX output sets the characters spicy writes in every engine", {
+  skip_if_not_installed("tinytable")
+  d <- .pt_data()
+  cp <- function(x) intToUtf8(x)
+  # The chi-squared of the multiple-response note, in math mode: Latin
+  # Modern, the default font of xelatex and lualatex, has no Greek.
+  tex <- .pt_latex(.pt_mr())
+  expect_match(tex, "\\ensuremath{\\chi^{2}}(", fixed = TRUE)
+  expect_no_match(tex, cp(0x03C7), fixed = TRUE)
+  # The figure space of the decimal alignment, as a phantom digit.
+  fit <- stats::lm(wellbeing_score ~ age + sex, data = d)
+  tex <- .pt_latex(table_regression(fit, output = "tinytable"))
+  expect_match(tex, "\\hphantom{0}", fixed = TRUE)
+  expect_no_match(tex, cp(0x2007), fixed = TRUE)
+  # The Delta of the linear-model family's difference column.
+  tex <- .pt_latex(table_continuous_lm(
+    d,
+    select = wellbeing_score,
+    by = sex,
+    output = "tinytable"
+  ))
+  expect_match(tex, "\\ensuremath{\\Delta}", fixed = TRUE)
+  expect_no_match(tex, cp(0x0394), fixed = TRUE)
+  # The mapping itself: accented letters first, squared letters as a
+  # superscript, every other character left to the engine.
+  map <- spicy:::.spicy_latex_unicode
+  expect_identical(
+    map(cp(c(0x03C3, 0x0302))),
+    "\\ensuremath{\\hat{\\sigma}}"
+  )
+  expect_identical(
+    map(cp(c(0x03C7, 0x0304, 0x00B2))),
+    "\\ensuremath{\\bar{\\chi}^{2}}"
+  )
+  expect_identical(map(cp(0x2212)), "\\ensuremath{-}")
+  expect_identical(
+    map(cp(c(0x00E9, 0x2013, 0x00A0))),
+    cp(c(0x00E9, 0x2013, 0x00A0))
+  )
+})
+
+test_that("LaTeX merges a spanner across its columns, as HTML and Typst do", {
+  skip_if_not_installed("tinytable")
+  d <- .pt_data()
+  fit <- stats::lm(wellbeing_score ~ age + sex, data = d)
+  # "95% CI" over LL / UL: column 4, two wide.
+  tex <- .pt_latex(table_regression(fit, output = "tinytable"))
+  expect_match(tex, "cell{1}{4}={c=2}", fixed = TRUE)
+  # Each group over its n and %.
+  tex <- .pt_latex(.pt_mr())
+  expect_match(tex, "cell{1}{2}={c=2}", fixed = TRUE)
+  expect_match(tex, "cell{1}{4}={c=2}", fixed = TRUE)
 })
 
 
@@ -403,4 +618,115 @@ test_that("factor levels are indented once, by the engine", {
   expect_false(any(grepl("^\\s", tt@data[[1L]])))
   expect_match(.pt_latex(tt), "preto={\\hspace{1em}}", fixed = TRUE)
   expect_match(.pt_html(tt), "padding-left: 1.4em;", fixed = TRUE)
+})
+
+
+# ---- compiled documents (local only) --------------------------------------
+#
+# The sources above are the contract; a compiled document is the proof.
+# Quarto renders the same tables to a PDF through LaTeX (its default
+# engine, lualatex) and through Typst, and the PDF is read back: the font
+# of every "Note." word, and the text of every note, which a `%` or a
+# glyph missing from the font would cut short. Local only: they need the
+# Quarto CLI, a LaTeX distribution with tabularray, and about a minute.
+
+.pt_compile <- function(format, env = parent.frame()) {
+  skip_on_cran()
+  skip_on_ci()
+  skip_if_not_installed("tinytable")
+  skip_if_not_installed("quarto")
+  skip_if_not_installed("pdftools")
+  skip_if(is.null(quarto::quarto_path()), "the Quarto CLI is not installed")
+  if (identical(format, "pdf")) {
+    skip_if(!nzchar(Sys.which("lualatex")), "lualatex is not installed")
+  }
+  dir <- withr::local_tempdir(.local_envir = env)
+  # The spicy under test: the sources under devtools::test(), the
+  # installed copy under R CMD check.
+  pkg <- normalizePath(find.package("spicy"), winslash = "/")
+  load <- if (file.exists(file.path(pkg, "R", "tt_theme.R"))) {
+    sprintf("pkgload::load_all('%s', quiet = TRUE)", pkg)
+  } else {
+    sprintf("library(spicy, lib.loc = '%s')", dirname(pkg))
+  }
+  calls <- c(
+    "table_multiresponse(d, select = c(info_doctor, info_pharmacist, info_internet), by = sex, output = 'tinytable')",
+    "table_continuous(d, c(bmi, life_sat_health), by = sex, output = 'tinytable')",
+    "table_regression(fit, output = 'tinytable')",
+    "withr::with_options(list(spicy.language = 'fr'), table_regression(fit, output = 'tinytable'))"
+  )
+  chunk <- function(...) c("```{r}", ..., "```", "")
+  qmd <- c(
+    "---",
+    "format:",
+    if (identical(format, "pdf")) {
+      c("  pdf:", "    latex-auto-install: false")
+    } else {
+      "  typst: default"
+    },
+    "execute:",
+    "  echo: false",
+    "---",
+    "",
+    chunk(
+      "#| include: false",
+      load,
+      "d <- as.data.frame(sochealth)",
+      "fit <- stats::lm(wellbeing_score ~ age + sex, data = d)",
+      sprintf(
+        "saveRDS(lapply(list(%s), function(x) unlist(x@notes)), 'notes.rds')",
+        paste(calls, collapse = ", ")
+      )
+    ),
+    unlist(lapply(calls, chunk))
+  )
+  writeLines(qmd, file.path(dir, "notes.qmd"), useBytes = TRUE)
+  withr::local_envvar(QUARTO_R = R.home("bin"))
+  withr::with_dir(dir, quarto::quarto_render("notes.qmd", quiet = TRUE))
+  pdf <- file.path(dir, "notes.pdf")
+  expect_true(file.exists(pdf))
+  list(pdf = pdf, notes = readRDS(file.path(dir, "notes.rds")))
+}
+
+# Every "Note." of the PDF is set in an italic font, one per table, and
+# every note is there in full.
+.pt_expect_compiled_notes <- function(out) {
+  words <- do.call(rbind, pdftools::pdf_data(out$pdf, font_info = TRUE))
+  prefix <- words[words$text == "Note.", ]
+  expect_identical(nrow(prefix), length(out$notes))
+  expect_true(all(grepl("Italic|Oblique", prefix$font_name)))
+  # Text compared with every kind of space, hyphen and quote folded, the
+  # ligatures unbound, and the math-italic chi of LaTeX, with its
+  # superscript set as a plain 2, read as the letter it stands for.
+  fold <- function(x) {
+    cp <- function(...) intToUtf8(c(...), multiple = TRUE)
+    map <- c("2", "'", "ff", "fi", "fl", "ffi", "ffl", cp(0x03C7))
+    names(map) <- cp(
+      0x00B2,
+      0x2019,
+      0xFB00,
+      0xFB01,
+      0xFB02,
+      0xFB03,
+      0xFB04,
+      0x1D712
+    )
+    for (k in names(map)) {
+      x <- gsub(k, map[[k]], x, fixed = TRUE)
+    }
+    blank <- paste(cp(0x00A0, 0x202F, 0x00AD), collapse = "")
+    gsub(paste0("[[:space:]", blank, "-]"), "", x, perl = TRUE)
+  }
+  text <- fold(paste(pdftools::pdf_text(out$pdf), collapse = " "))
+  for (n in out$notes) {
+    expect_true(grepl(fold(n), text, fixed = TRUE), info = n)
+  }
+}
+
+test_that("a PDF compiled through LaTeX sets every note prefix in italics", {
+  .pt_expect_compiled_notes(.pt_compile("pdf"))
+})
+
+test_that("a PDF compiled through Typst sets every note prefix in italics", {
+  .pt_expect_compiled_notes(.pt_compile("typst"))
 })

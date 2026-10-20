@@ -1074,18 +1074,12 @@ export_continuous_lm_table <- function(
     # The same title the five other engines print.
     tbl <- .spicy_gt_apa_title(tbl, title)
 
-    # Note: NOT added via gt's native `tab_source_note()` (its
-    # `<tfoot>` colspan cell widens the table in narrow viewports;
-    # same pathology as the tinytable / flextable tfoot). Instead
-    # stash the raw note + tag the `spicy_gt` sub-class; the shared
-    # `print.spicy_gt` / `knit_print.spicy_gt` methods
-    # (regression_dispatch.R) post-process the rendered HTML to
-    # inject the note as a `<div>` outside the table.
-    if (!is.null(note) && nzchar(note)) {
-      attr(tbl, "spicy_note") <- note
-      class(tbl) <- c("spicy_gt", class(tbl))
-    }
-    return(tbl)
+    # The note rides on the gt object as a native source note, so
+    # `gtsave()`, `as_latex()`, `as_rtf()` and `as_word()` keep it --
+    # stashed alone, it reached none of them -- and as the `spicy_gt`
+    # tag, whose HTML display path moves it into a `<div>` outside the
+    # table. Same helper as the descriptive families.
+    return(.spicy_gt_attach_note(tbl, note))
   }
 
   if (output %in% c("flextable", "word")) {

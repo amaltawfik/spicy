@@ -173,6 +173,16 @@ p-values, and notes.
 
 ## Bug fixes
 
+* The note of every table opens with *Note.* in italics in Typst, LaTeX,
+  markdown, and Excel output, and in gt's LaTeX, RTF, and Word output, as
+  in HTML, Word, and PowerPoint. LaTeX output compiles when a note
+  contains `%` or `_`, centers each tinytable spanner over its columns,
+  and keeps the Greek letters and the decimal alignment the default font
+  dropped, under each of the three LaTeX engines. A note of several lines
+  no longer drops out of a Word document built from tinytable, and
+  `table_continuous_lm(output = "gt")` keeps its note in `gt::as_latex()`,
+  `gt::gtsave()`, and the other gt outputs.
+
 * `table_continuous()`, `table_outcome()`, `table_categorical_svy()`, and
   `table_continuous_svy()` with `p_value = FALSE` no longer keep a p-value
   in `output = "data.frame"` and `"long"` when `statistic = TRUE` or an

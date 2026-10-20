@@ -1768,20 +1768,46 @@ spicy_labels <- function(language = NULL) {
 
 # Split a rendered note into (emphasized prefix, remainder), or NULL when the
 # note does not open with the prefix. The rich engines (tinytable, gt,
-# flextable / Word) italicize the first element and leave the second in
-# regular type -- none of them may re-type the prefix or hardcode its length.
+# flextable / Word, Excel) italicize the first element and leave the second
+# in regular type -- none of them may re-type the prefix or hardcode its
+# length. A prefix removed through `options(spicy.labels)` is no prefix: an
+# empty marker returns NULL, so no engine writes an empty emphasis.
 .note_prefix_split <- function(note) {
   marker <- spicy_str("note_prefix_emphasis")
-  if (!startsWith(note, marker)) {
+  if (!nzchar(marker) || !startsWith(note, marker)) {
     return(NULL)
   }
   list(marker = marker, rest = substring(note, nchar(marker) + 1L))
 }
 
-# `^<prefix>` as a regular expression, for the HTML engines that wrap the
-# prefix in <em> with a single anchored substitution.
-.note_prefix_pattern <- function() {
-  paste0("^", .escape_regex(spicy_str("note_prefix_emphasis")))
+# A note as one engine's markup: the prefix and the rest escaped by
+# `escape()` separately, the escaped prefix wrapped by `emph()` (APA Manual
+# 7 Section 7.14 sets it in italics). Splitting BEFORE escaping keeps the
+# prefix recognizable whatever characters it holds. A note that does not
+# open with the prefix is escaped whole, with no emphasis.
+.note_markup <- function(note, escape, emph) {
+  split <- .note_prefix_split(note)
+  if (is.null(split)) {
+    return(escape(note))
+  }
+  paste0(emph(escape(split$marker)), escape(split$rest))
+}
+
+# The same in markdown (gt's `md()`, tinytable's grid table), where the
+# emphasis is `*...*`. CommonMark closes it only before a space or the
+# end of the text, so a prefix with no space after it, or one with a
+# space at either end, is left unmarked instead of being printed between
+# two literal asterisks.
+.note_markdown <- function(note, escape = identity) {
+  split <- .note_prefix_split(note)
+  if (
+    is.null(split) ||
+      grepl("^\\s|\\s$", split$marker) ||
+      (nzchar(split$rest) && !grepl("^\\s", split$rest))
+  ) {
+    return(escape(note))
+  }
+  paste0("*", escape(split$marker), "*", escape(split$rest))
 }
 
 # Pattern matching a "companion" column header -- a sub-column that only means

@@ -593,6 +593,38 @@ test_that(".spicy_xl_add_note writes one row per line and skips empties", {
   expect_equal(unname(m[, "A"]), c("one", "two"))
 })
 
+test_that("the note prefix is in italics in the sheet, as in Word", {
+  .xl_skip()
+  d <- .xl_data()
+  obj <- table_continuous(d, c(bmi, wellbeing_score), by = sex)
+  path <- .xl_write(function(p) {
+    table_continuous(
+      d,
+      c(bmi, wellbeing_score),
+      by = sex,
+      output = "excel",
+      excel_path = p
+    )
+  })
+  cc <- openxlsx2::wb_load(path)$worksheets[[1L]]$sheet_data$cc
+  rich <- cc$is[grepl("<i/>", cc$is, fixed = TRUE)]
+  # One rich-text cell: an italic run holding the prefix, a regular one
+  # holding the rest of the line.
+  expect_length(rich, 1L)
+  p <- spicy_str("note_prefix_emphasis")
+  expect_match(
+    rich,
+    paste0("<r><rPr><i/></rPr><t>", p, "</t></r>"),
+    fixed = TRUE
+  )
+  # It reads back as the plain text the console prints.
+  expect_true(attr(obj, "note") %in% .xl_grid(path)[, "A"])
+  # A line that does not open with the prefix stays one plain cell.
+  wb <- openxlsx2::wb_add_worksheet(openxlsx2::wb_workbook(), "S")
+  wb <- .spicy_xl_add_note(wb, note = "Source: a survey.", start_row = 1L)
+  expect_false(any(grepl("<r>", wb$worksheets[[1L]]$sheet_data$cc$is)))
+})
+
 
 # ---- (h) block rules: every rule the console draws ------------------------
 

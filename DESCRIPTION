@@ -89,6 +89,7 @@ Suggests:
     officer,
     openxlsx2,
     parameters,
+    pdftools,
     performance,
     rmarkdown,
     spelling,

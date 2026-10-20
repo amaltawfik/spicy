@@ -321,9 +321,12 @@ test_that("a note-less gt gains the spicy note as a source note off HTML", {
   # is a plain gt again (the spicy tag is off).
   expect_false(inherits(handed_on, "spicy_gt"))
   expect_length(handed_on[["_source_notes"]], 1L)
-  # Newlines flattened to spaces: a source note is one run of text.
+  # Newlines flattened to spaces: a source note is one run of text, in
+  # markdown with its punctuation escaped (`.spicy_gt_note_md()`).
+  src <- handed_on[["_source_notes"]][[1L]]
+  expect_s3_class(src, "from_markdown")
   expect_identical(
-    as.character(handed_on[["_source_notes"]][[1L]]),
+    gsub("\\\\(.)", "\\1", as.character(src)),
     "First line. Second line."
   )
 })

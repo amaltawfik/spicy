@@ -43,9 +43,12 @@
 }
 
 # Write a table note below the body, one worksheet row per line --
-# the placement `output_excel()` uses for regression tables. `note`
-# may be NULL / "" (nothing is written), and may hold several lines
-# separated by "\n". Returns the workbook.
+# the placement every Excel export uses. `note` may be NULL / ""
+# (nothing is written), and may hold several lines separated by "\n".
+# The prefix that opens the first line is set in italics (APA Manual 7
+# Section 7.14), as in Word: that cell is written as rich text, an
+# italic run and a regular one; it reads back as the same plain text.
+# Returns the workbook.
 .spicy_xl_add_note <- function(
   wb,
   note,
@@ -56,12 +59,21 @@
     return(wb)
   }
   lines <- unlist(strsplit(note, "\n", fixed = TRUE), use.names = FALSE)
-  .spicy_xl_add_data(
+  wb <- .spicy_xl_add_data(
     wb,
     sheet = sheet,
     x = lines,
     start_row = start_row
   )
+  split <- .note_prefix_split(lines[[1L]])
+  if (is.null(split)) {
+    return(wb)
+  }
+  rich <- openxlsx2::fmt_txt(split$marker, italic = TRUE)
+  if (nzchar(split$rest)) {
+    rich <- rich + openxlsx2::fmt_txt(split$rest)
+  }
+  openxlsx2::wb_add_data(wb, sheet = sheet, x = rich, start_row = start_row)
 }
 
 # Write `x` with an empty cell for every NA and every empty string. An NA

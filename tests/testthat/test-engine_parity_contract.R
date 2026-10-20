@@ -401,6 +401,183 @@ test_that("the HTML display path moves the note out of the table, once", {
     spicy:::.spicy_gt_drop_source_note("<table></table>", "x"),
     "<table></table>"
   )
+  # The native note is markdown, rendered with entities a plain-text
+  # note never had (the double quote): it is still recognized as ours.
+  g3 <- table_regression(
+    fit,
+    note = "Note. \"Quoted\" & <tagged> *starred*.",
+    output = "gt"
+  )
+  html3 <- as.character(gt::as_raw_html(g3, inline_css = FALSE))
+  out3 <- spicy:::.spicy_gt_html_postprocess(html3, attr(g3, "spicy_note"))
+  expect_false(grepl("<tfoot", out3, fixed = TRUE))
+  expect_true(grepl("&lt;tagged&gt; *starred*.</div>", out3, fixed = TRUE))
+})
+
+test_that("the linear-model family carries its note on the gt object", {
+  skip_if_not_installed("gt")
+  g <- table_continuous_lm(
+    .ep_data(),
+    select = c(wellbeing_score, bmi),
+    by = sex,
+    vcov = "HC3",
+    output = "gt"
+  )
+  # Stashed in an attribute alone, the note reached no route gt renders
+  # itself: `as_latex()`, `as_rtf()`, `gtsave()`.
+  expect_length(g[["_source_notes"]], 1L)
+  expect_true(grepl(
+    "heteroskedasticity-robust (HC3)",
+    as.character(gt::as_latex(g)),
+    fixed = TRUE
+  ))
+})
+
+
+# ---- the note prefix in every engine ---------------------------------------
+#
+# APA Manual 7 Section 7.14 sets the note prefix in italics, and each rich
+# engine writes it its own way; the console, the clipboard and the TSV
+# stay plain. The prefix comes from the registry, so a user can change it
+# (Chicago's "Note:") or remove it: every engine then sets the new prefix
+# in italics, or prints the note with no prefix and no empty emphasis.
+
+# The note of one regression table, rendered by every rich engine.
+.ep_note_renders <- function(fit) {
+  out <- list()
+  tt <- table_regression(fit, output = "tinytable")
+  for (o in c("html", "typst", "latex", "markdown")) {
+    out[[paste0("tt_", o)]] <- tinytable::save_tt(tt, output = o)
+  }
+  g <- table_regression(fit, output = "gt")
+  out$gt_html <- as.character(gt::as_raw_html(g, inline_css = FALSE))
+  out$gt_display <- spicy:::.spicy_gt_html_postprocess(
+    out$gt_html,
+    attr(g, "spicy_note")
+  )
+  out$gt_latex <- as.character(gt::as_latex(g))
+  out$gt_rtf <- as.character(gt::as_rtf(g))
+  out$gt_word <- as.character(gt::as_word(g))
+  ft <- table_regression(fit, output = "flextable")
+  out$ft_html <- spicy:::.spicy_ft_html_postprocess(
+    as.character(flextable::htmltools_value(flextable::as_flextable(ft))),
+    attr(ft, "spicy_note")
+  )
+  docx <- withr::local_tempfile(fileext = ".docx")
+  table_regression(fit, output = "word", word_path = docx)
+  dir <- withr::local_tempdir()
+  utils::unzip(docx, files = "word/document.xml", exdir = dir)
+  out$word <- paste(
+    readLines(file.path(dir, "word", "document.xml"), warn = FALSE),
+    collapse = "\n"
+  )
+  xlsx <- withr::local_tempfile(fileext = ".xlsx")
+  table_regression(fit, output = "excel", excel_path = xlsx)
+  cc <- openxlsx2::wb_load(xlsx)$worksheets[[1L]]$sheet_data$cc
+  out$excel <- paste(cc$is, collapse = "\n")
+  out
+}
+
+# The runs of an OOXML fragment (`w:r` in Word, `r` in a sheet) holding
+# exactly `text`, and whether each is italic.
+.ep_runs <- function(xml, text, run, t) {
+  runs <- regmatches(
+    xml,
+    gregexpr(sprintf("(?s)<%s>.*?</%s>", run, run), xml, perl = TRUE)
+  )[[1L]]
+  runs[grepl(paste0(">", text, "</", t, ">"), runs, fixed = TRUE)]
+}
+.ep_italic <- "<w:i/>|<w:i w:val=\"(true|1)\"/>|<i/>"
+
+.ep_expect_prefix_italic <- function(out, p) {
+  expect_true(grepl(paste0("<em>", p, "</em>"), out$tt_html, fixed = TRUE))
+  expect_true(grepl(paste0("[#emph[", p, "]"), out$tt_typst, fixed = TRUE))
+  expect_true(grepl(paste0("\\emph{", p, "}"), out$tt_latex, fixed = TRUE))
+  expect_true(grepl(paste0("| *", p, "* "), out$tt_markdown, fixed = TRUE))
+  expect_true(grepl(paste0("<em>", p, "</em>"), out$gt_html, fixed = TRUE))
+  expect_true(grepl(paste0("<em>", p, "</em>"), out$gt_display, fixed = TRUE))
+  expect_true(grepl(paste0("\\emph{", p, "}"), out$gt_latex, fixed = TRUE))
+  expect_true(grepl(paste0("{\\i ", p, "}"), out$gt_rtf, fixed = TRUE))
+  expect_true(grepl(paste0("<em>", p, "</em>"), out$ft_html, fixed = TRUE))
+  for (eng in c("gt_word", "word")) {
+    runs <- .ep_runs(out[[eng]], p, "w:r", "w:t")
+    expect_true(length(runs) > 0L && all(grepl(.ep_italic, runs)), info = eng)
+  }
+  runs <- .ep_runs(out$excel, p, "r", "t")
+  expect_true(length(runs) == 1L && grepl("<i/>", runs), info = "excel")
+}
+
+test_that("every rich engine sets the note prefix in italics", {
+  skip_if_not_installed("tinytable")
+  skip_if_not_installed("gt")
+  skip_if_not_installed("flextable")
+  skip_if_not_installed("officer")
+  skip_if_not_installed("openxlsx2")
+  fit <- stats::lm(wellbeing_score ~ age, data = .ep_data())
+  .ep_expect_prefix_italic(
+    .ep_note_renders(fit),
+    spicy_str("note_prefix_emphasis")
+  )
+  # A changed prefix is followed everywhere.
+  withr::local_options(
+    spicy.labels = list(note_prefix = "Note: ", note_prefix_emphasis = "Note:")
+  )
+  out <- .ep_note_renders(fit)
+  .ep_expect_prefix_italic(out, "Note:")
+  expect_false(grepl("Note.", out$tt_latex, fixed = TRUE))
+})
+
+test_that("a removed prefix leaves no empty emphasis in any engine", {
+  skip_if_not_installed("tinytable")
+  skip_if_not_installed("gt")
+  skip_if_not_installed("flextable")
+  skip_if_not_installed("officer")
+  skip_if_not_installed("openxlsx2")
+  withr::local_options(
+    spicy.labels = list(note_prefix = "", note_prefix_emphasis = "")
+  )
+  fit <- stats::lm(wellbeing_score ~ age, data = .ep_data())
+  expect_true(startsWith(attr(table_regression(fit), "note"), "Linear"))
+  out <- .ep_note_renders(fit)
+  empty <- c(
+    tt_html = "<em></em>",
+    tt_typst = "#emph[]",
+    tt_latex = "\\emph{}",
+    tt_markdown = "**",
+    gt_html = "<em></em>",
+    gt_display = "<em></em>",
+    gt_latex = "\\emph{}",
+    gt_rtf = "{\\i }",
+    ft_html = "<em></em>"
+  )
+  for (eng in names(empty)) {
+    expect_false(grepl(empty[[eng]], out[[eng]], fixed = TRUE), info = eng)
+    expect_true(
+      grepl("Linear regression.", out[[eng]], fixed = TRUE),
+      info = eng
+    )
+  }
+  # No italic run, empty or not, in the note of the Word and Excel files.
+  runs <- regmatches(
+    out$word,
+    gregexpr("(?s)<w:r>.*?</w:r>", out$word, perl = TRUE)
+  )[[1L]]
+  note_run <- runs[grepl(">Linear regression.", runs, fixed = TRUE)]
+  expect_length(note_run, 1L)
+  expect_false(grepl(.ep_italic, note_run))
+  expect_false(any(grepl(.ep_italic, .ep_runs(out$word, "", "w:r", "w:t"))))
+  expect_false(grepl("<i/>", out$excel, fixed = TRUE))
+})
+
+test_that("the console, the clipboard and the TSV keep the note plain", {
+  fit <- stats::lm(wellbeing_score ~ age, data = .ep_data())
+  tbl <- table_regression(fit)
+  printed <- paste(utils::capture.output(print(tbl)), collapse = "\n")
+  clip <- spicy:::clipboard_payload(tbl, "\t")
+  for (txt in list(printed, clip)) {
+    expect_true(grepl("Note. Linear regression.", txt, fixed = TRUE))
+    expect_false(grepl("<em>|\\\\emph|#emph|\\*Note", txt))
+  }
 })
 
 

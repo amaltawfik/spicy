@@ -62,16 +62,31 @@
   if (is.null(note) || !nzchar(note)) {
     return(tbl)
   }
-  # One line, like the regression family: `.spicy_gt_drop_source_note()`
-  # matches this row on its TEXT to remove it from the HTML path, and a
-  # note carrying a newline would not match itself.
-  tbl <- gt::tab_source_note(
-    tbl,
-    source_note = gsub("\n", " ", note, fixed = TRUE)
-  )
+  tbl <- gt::tab_source_note(tbl, source_note = .spicy_gt_note_md(note))
   attr(tbl, "spicy_note") <- note
   class(tbl) <- c("spicy_gt", class(tbl))
   tbl
+}
+
+# The native gt source note, in markdown: `md()` is the one text form gt
+# renders in every output it writes (HTML, LaTeX, RTF, Word), so the
+# prefix is set in italics there (APA Manual 7 Section 7.14) as in the
+# HTML display path. Every ASCII punctuation character is backslash-
+# escaped, which CommonMark reads as that character, so the rest prints
+# exactly as typed: the stars of a significance legend, the underscore
+# of a variable name. One line, like the HTML display path:
+# `.spicy_gt_drop_source_note()` matches this row on its TEXT, and a note
+# carrying a newline would not match itself.
+.spicy_gt_note_md <- function(note) {
+  escape <- function(x) {
+    gsub(
+      "([\\x21-\\x2F\\x3A-\\x40\\x5B-\\x60\\x7B-\\x7E])",
+      "\\\\\\1",
+      x,
+      perl = TRUE
+    )
+  }
+  gt::md(.note_markdown(gsub("\n", " ", note, fixed = TRUE), escape))
 }
 
 
