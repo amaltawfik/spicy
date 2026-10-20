@@ -84,7 +84,7 @@ test_that("tidy.spicy_continuous_lm_table returns a plain data.frame without tib
   expect_s3_class(res, "data.frame")
   expect_false(inherits(res, "tbl_df"))
   expect_true(all(
-    c("outcome", "term", "estimate_type", "estimate", "p.value") %in%
+    c("variable", "term", "estimate_type", "estimate", "p.value") %in%
       names(res)
   ))
   expect_gt(nrow(res), 0L)
@@ -110,7 +110,7 @@ test_that("glance.spicy_continuous_lm_table returns a plain data.frame without t
   # One row per outcome (Sepal.Length, Petal.Width).
   expect_equal(nrow(res), 2L)
   expect_true(all(
-    c("outcome", "predictor_type", "test_type", "r.squared", "nobs") %in%
+    c("variable", "predictor_type", "test_type", "r.squared", "nobs") %in%
       names(res)
   ))
 })

@@ -90,10 +90,13 @@ The \code{broom::tidy()} and \code{broom::glance()} methods on
 the standard broom column conventions (\code{outcome}, \code{term},
 \code{estimate}, \code{std.error}, \code{conf.low}, \code{conf.high}, \code{statistic},
 \code{p.value}, \code{df}, \code{df.residual}, \code{r.squared}, \code{adj.r.squared},
-\code{nobs}, ...). The set of columns produced by each method is
-considered \strong{stabilizing}: existing columns will not be silently
-renamed or have their semantics changed within \verb{0.y.z}, and any
-breaking change is announced in \code{NEWS.md}. Adding optional new
+\code{nobs}, ...). In the descriptive tables, \code{variable} holds the name
+of the column a row describes and \code{label} its displayed label.
+\code{outcome} names the response of a regression model and the single
+outcome of \code{\link[=table_outcome]{table_outcome()}}. The set of columns produced by each
+method is considered \strong{stabilizing}: existing columns will not be
+silently renamed or have their semantics changed within \verb{0.y.z},
+and any breaking change is announced in \code{NEWS.md}. Adding optional new
 columns (e.g. covariate-adjustment metadata) is not a breaking
 change. Numeric columns keep the types downstream
 broom-consumers expect: test degrees of freedom that are integer

@@ -264,6 +264,110 @@ test_that("every table class exposes working broom tidy()/glance() methods", {
   }
 })
 
+test_that("tidy() and glance() of the descriptive tables name `variable` and `label` alike", {
+  skip_if_not_installed("broom")
+  # `variable` is the column of `select` a row describes, by its name, and
+  # `label` the label the table displays for it: here its `label`
+  # attribute, read under `labels = TRUE`. table_outcome() puts its one
+  # `outcome` before them.
+  d <- sochealth
+  shown <- function(v) {
+    vapply(
+      v,
+      function(x) attr(d[[x]], "label", exact = TRUE),
+      character(1),
+      USE.NAMES = FALSE
+    )
+  }
+  expect_pair <- function(fr, lead, vars, info) {
+    expect_identical(names(fr)[seq_along(lead)], lead, info = info)
+    expect_identical(unique(fr$variable), vars, info = info)
+    expect_identical(fr$label, shown(fr$variable), info = info)
+  }
+  cats <- c("smoking", "education")
+  nums <- c("bmi", "wellbeing_score")
+  items <- c(
+    "info_doctor",
+    "info_pharmacist",
+    "info_internet",
+    "info_family",
+    "info_media"
+  )
+  tabs <- list(
+    table_categorical = list(
+      table_categorical(d, c(smoking, education), by = sex, labels = TRUE),
+      cats
+    ),
+    table_continuous = list(
+      table_continuous(d, c(bmi, wellbeing_score), by = sex, labels = TRUE),
+      nums
+    ),
+    table_continuous_lm = list(
+      table_continuous_lm(d, c(bmi, wellbeing_score), by = sex, labels = TRUE),
+      nums
+    ),
+    table_multiresponse = list(
+      table_multiresponse(
+        d,
+        c(info_doctor, info_pharmacist, info_internet, info_family, info_media),
+        by = sex,
+        labels = TRUE
+      ),
+      items
+    )
+  )
+  if (
+    requireNamespace("survey", quietly = TRUE) &&
+      utils::packageVersion("survey") >= "4.5"
+  ) {
+    des <- survey::svydesign(ids = ~1, weights = ~weight, data = d)
+    tabs$table_categorical_svy <- list(
+      table_categorical_svy(
+        des,
+        c(smoking, education),
+        by = sex,
+        labels = TRUE
+      ),
+      cats
+    )
+    tabs$table_continuous_svy <- list(
+      table_continuous_svy(
+        des,
+        c(bmi, wellbeing_score),
+        by = sex,
+        labels = TRUE
+      ),
+      nums
+    )
+  }
+  for (fn in names(tabs)) {
+    x <- tabs[[fn]][[1L]]
+    vars <- tabs[[fn]][[2L]]
+    expect_pair(broom::tidy(x), c("variable", "label"), vars, paste(fn, "tidy"))
+    gl <- broom::glance(x)
+    if (fn == "table_multiresponse") {
+      # Exempt: one row for the whole question, which no single item owns.
+      expect_identical(nrow(gl), 1L)
+      expect_false(any(c("variable", "label") %in% names(gl)))
+    } else {
+      expect_pair(gl, c("variable", "label"), vars, paste(fn, "glance"))
+    }
+  }
+  to <- table_outcome(
+    d,
+    outcome = bmi,
+    select = c(sex, education),
+    labels = TRUE
+  )
+  td <- broom::tidy(to)
+  gl <- broom::glance(to)
+  # The marginal row of tidy() describes the outcome itself.
+  lead <- c("outcome", "variable", "label")
+  expect_pair(td, lead, c("bmi", "sex", "education"), "table_outcome tidy")
+  expect_pair(gl, lead, c("sex", "education"), "table_outcome glance")
+  expect_true(all(c(td$outcome, gl$outcome) == "bmi"))
+})
+
 # ---- The notes of the descriptive family ---------------------------------
 #
 # Column names that no label, and no fixed word of a note, can contain;

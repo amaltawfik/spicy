@@ -446,11 +446,11 @@ out <- table_continuous(
 )
 
 # Long descriptive rows: one per (variable x group) with broom-style
-# columns (outcome, label, group, estimate = mean, std.error,
+# columns (variable, label, group, estimate = mean, std.error,
 # conf.low / conf.high, n, min, max, sd).
 broom::tidy(out)
 
-# One row per outcome with the omnibus test + effect-size summary
+# One row per variable with the omnibus test + effect-size summary
 # (test_type, statistic, df, df.residual, p.value, es_type, es_value,
 # es_ci_lower / es_ci_upper, n_total).
 broom::glance(out)

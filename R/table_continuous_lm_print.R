@@ -390,13 +390,14 @@ as_tibble.spicy_continuous_lm_table <- function(x, ...) {
 #'   \item One row per **slope** (`estimate_type = "slope"`) for
 #'     numeric predictors, with `term = predictor_label`.
 #' }
-#' Standard broom columns: `outcome`, `label`, `term`,
+#' Standard broom columns: `variable`, `label`, `term`,
 #' `estimate_type`, `estimate`, `std.error`, `conf.low`, `conf.high`,
-#' `statistic`, `p.value`. The `outcome` column carries the original
-#' variable name; `label` carries the human-readable label.
+#' `statistic`, `p.value`. The `variable` column carries the column
+#' name of the outcome; `label` carries the label the rows display for
+#' it (see `labels`).
 #'
 #' `glance()` returns one row per outcome with model-level
-#' statistics. Columns: `outcome`, `label`, `predictor_type`
+#' statistics. Columns: `variable`, `label`, `predictor_type`
 #' (`"categorical"` or `"continuous"`), `test_type` (`"F"` for
 #' categorical predictors, `"t"` for continuous ones),
 #' `statistic`, `df`, `df.residual`, `p.value`, `r.squared`,
@@ -424,7 +425,7 @@ tidy.spicy_continuous_lm_table <- function(x, ...) {
 
   emmean_idx <- !is.na(long$emmean)
   emmean_df <- data.frame(
-    outcome = long$variable[emmean_idx],
+    variable = long$variable[emmean_idx],
     label = long$label[emmean_idx],
     term = long$level[emmean_idx],
     estimate_type = rep("emmean", sum(emmean_idx)),
@@ -454,7 +455,7 @@ tidy.spicy_continuous_lm_table <- function(x, ...) {
       )
     )
     effect_df <- data.frame(
-      outcome = long$variable[effect_idx],
+      variable = long$variable[effect_idx],
       label = long$label[effect_idx],
       term = term_strings,
       estimate_type = types,
@@ -474,7 +475,7 @@ tidy.spicy_continuous_lm_table <- function(x, ...) {
   if (nrow(result) > 0L) {
     result <- result[
       order(
-        match(result$outcome, unique(long$variable)),
+        match(result$variable, unique(long$variable)),
         result$estimate_type != "emmean",
         seq_len(nrow(result))
       ),
@@ -499,7 +500,7 @@ glance.spicy_continuous_lm_table <- function(x, ...) {
   per_outcome <- long[first_idx, , drop = FALSE]
 
   result <- data.frame(
-    outcome = per_outcome$variable,
+    variable = per_outcome$variable,
     label = per_outcome$label,
     predictor_type = per_outcome$predictor_type,
     test_type = per_outcome$test_type,

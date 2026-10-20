@@ -28,18 +28,18 @@ tidyverse-stats pipeline.
 \details{
 \code{tidy()} returns one row per \verb{(variable x group)} (or per
 \code{variable} when \code{by} is not used) with broom-conventional columns:
-\code{outcome}, \code{label}, \code{group} (when applicable), \code{estimate} (the
+\code{variable} (the column name), \code{label} (the label the rows display
+for it, see \code{labels}), \code{group} (when applicable), \code{estimate} (the
 empirical mean), \code{std.error} (\code{sd / sqrt(n)}), \code{conf.low},
 \code{conf.high} (the mean confidence interval at \code{ci_level}), \code{n},
-\code{min}, \code{max}, \code{sd}. The \code{outcome} column carries the variable name
-and \code{label} the human-readable label.
+\code{min}, \code{max}, \code{sd}.
 
-\code{glance()} returns one row per outcome with the omnibus group
+\code{glance()} returns one row per variable with the omnibus group
 comparison (when \code{by} is used), the requested effect size and the
-balance diagnostic. Columns: \code{outcome}, \code{label}, \code{test_type},
+balance diagnostic. Columns: \code{variable}, \code{label}, \code{test_type},
 \code{statistic}, \code{df}, \code{df.residual}, \code{p.value}, \code{es_type}, \code{es_value},
 \code{es_ci_lower}, \code{es_ci_upper}, \code{smd_type}, \code{smd_value}, \code{n_total}.
-Without \code{by}, only \code{outcome}, \code{label}, and \code{n_total} are populated;
+Without \code{by}, only \code{variable}, \code{label}, and \code{n_total} are populated;
 the other columns are \code{NA}. The schema is fixed: \code{smd_type} /
 \code{smd_value} are present whether or not \code{smd = TRUE}, like every
 other comparison column here, and are \code{NA} when the table carries

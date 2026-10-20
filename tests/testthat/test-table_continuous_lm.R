@@ -1754,7 +1754,7 @@ test_that("tidy() returns one row per parameter for binary categorical by", {
   # Standard broom columns present.
   expect_true(all(
     c(
-      "outcome",
+      "variable",
       "label",
       "term",
       "estimate_type",
@@ -1813,7 +1813,7 @@ test_that("glance() returns one row per outcome with model-level stats", {
   expect_equal(nrow(glance_out), 2L)
   expect_true(all(
     c(
-      "outcome",
+      "variable",
       "label",
       "predictor_type",
       "test_type",
@@ -4910,7 +4910,7 @@ test_that("tidy/glance column sets are frozen (stabilizing contract)", {
   expect_identical(
     names(broom::tidy(out)),
     c(
-      "outcome",
+      "variable",
       "label",
       "term",
       "estimate_type",
@@ -4925,7 +4925,7 @@ test_that("tidy/glance column sets are frozen (stabilizing contract)", {
   expect_identical(
     names(broom::glance(out)),
     c(
-      "outcome",
+      "variable",
       "label",
       "predictor_type",
       "test_type",

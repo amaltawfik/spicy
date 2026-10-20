@@ -37,13 +37,14 @@ when a binary contrast is shown, with \code{term = "<level2> - <level1>"}.
 \item One row per \strong{slope} (\code{estimate_type = "slope"}) for
 numeric predictors, with \code{term = predictor_label}.
 }
-Standard broom columns: \code{outcome}, \code{label}, \code{term},
+Standard broom columns: \code{variable}, \code{label}, \code{term},
 \code{estimate_type}, \code{estimate}, \code{std.error}, \code{conf.low}, \code{conf.high},
-\code{statistic}, \code{p.value}. The \code{outcome} column carries the original
-variable name; \code{label} carries the human-readable label.
+\code{statistic}, \code{p.value}. The \code{variable} column carries the column
+name of the outcome; \code{label} carries the label the rows display for
+it (see \code{labels}).
 
 \code{glance()} returns one row per outcome with model-level
-statistics. Columns: \code{outcome}, \code{label}, \code{predictor_type}
+statistics. Columns: \code{variable}, \code{label}, \code{predictor_type}
 (\code{"categorical"} or \code{"continuous"}), \code{test_type} (\code{"F"} for
 categorical predictors, \code{"t"} for continuous ones),
 \code{statistic}, \code{df}, \code{df.residual}, \code{p.value}, \code{r.squared},

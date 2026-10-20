@@ -57,12 +57,15 @@ p-values, and notes.
   of `output = "data.frame"` and `"long"`. The `missing_note` attribute
   of `table_categorical()` and `table_continuous()` is now `note`.
 
-* `table_categorical()` gives the column name in `variable` and the
-  displayed label in `label`, in `output = "long"`, `tidy()`, and
-  `glance()`, as `table_categorical_svy()` does. `variable` held the
-  label, and `tidy()` and `glance()` called it `outcome`. `glance()` now
-  lists the variables in the order of `select`, as the table and
-  `tidy()` do; it sorted them by label.
+* In `tidy()` and `glance()`, `table_categorical()`, `table_continuous()`,
+  and `table_continuous_lm()` call `variable` the column they called
+  `outcome`, as `table_categorical_svy()` and `table_continuous_svy()`
+  do. It holds the column name, and `label` the displayed label. In
+  `table_categorical()`, `outcome` held the displayed label and there was
+  no `label` column. `output = "long"` of `table_categorical()` also
+  gives the column name in `variable`, where it gave the label, and its
+  `glance()` lists the variables in the order of `select`, as the table
+  and `tidy()` do. It sorted them by label.
 
 * `table_categorical()` gives each association measure of its note a
   sentence of its own: "Phi: smoking. Cramer's V: education." A

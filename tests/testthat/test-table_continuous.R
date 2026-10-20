@@ -3017,7 +3017,7 @@ test_that("tidy() returns one row per (variable x group) with broom columns", {
   expect_setequal(
     names(td),
     c(
-      "outcome",
+      "variable",
       "label",
       "group",
       "estimate",
@@ -3031,7 +3031,7 @@ test_that("tidy() returns one row per (variable x group) with broom columns", {
     )
   )
   # estimate equals empirical mean
-  setosa_sl <- td[td$outcome == "Sepal.Length" & td$group == "setosa", ]
+  setosa_sl <- td[td$variable == "Sepal.Length" & td$group == "setosa", ]
   expect_equal(
     setosa_sl$estimate,
     mean(iris$Sepal.Length[iris$Species == "setosa"])
@@ -3057,7 +3057,7 @@ test_that("glance() returns one row per outcome with omnibus test + ES", {
   expect_setequal(
     names(gl),
     c(
-      "outcome",
+      "variable",
       "label",
       "test_type",
       "statistic",
@@ -3675,7 +3675,7 @@ test_that("tidy/glance column sets are frozen (stabilizing contract)", {
   expect_identical(
     names(broom::tidy(out)),
     c(
-      "outcome",
+      "variable",
       "label",
       "group",
       "estimate",
@@ -3691,7 +3691,7 @@ test_that("tidy/glance column sets are frozen (stabilizing contract)", {
   expect_identical(
     names(broom::glance(out)),
     c(
-      "outcome",
+      "variable",
       "label",
       "test_type",
       "statistic",

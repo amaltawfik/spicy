@@ -281,18 +281,18 @@ as_tibble.spicy_continuous_table <- function(x, ...) {
 #'
 #' `tidy()` returns one row per `(variable x group)` (or per
 #' `variable` when `by` is not used) with broom-conventional columns:
-#' `outcome`, `label`, `group` (when applicable), `estimate` (the
+#' `variable` (the column name), `label` (the label the rows display
+#' for it, see `labels`), `group` (when applicable), `estimate` (the
 #' empirical mean), `std.error` (`sd / sqrt(n)`), `conf.low`,
 #' `conf.high` (the mean confidence interval at `ci_level`), `n`,
-#' `min`, `max`, `sd`. The `outcome` column carries the variable name
-#' and `label` the human-readable label.
+#' `min`, `max`, `sd`.
 #'
-#' `glance()` returns one row per outcome with the omnibus group
+#' `glance()` returns one row per variable with the omnibus group
 #' comparison (when `by` is used), the requested effect size and the
-#' balance diagnostic. Columns: `outcome`, `label`, `test_type`,
+#' balance diagnostic. Columns: `variable`, `label`, `test_type`,
 #' `statistic`, `df`, `df.residual`, `p.value`, `es_type`, `es_value`,
 #' `es_ci_lower`, `es_ci_upper`, `smd_type`, `smd_value`, `n_total`.
-#' Without `by`, only `outcome`, `label`, and `n_total` are populated;
+#' Without `by`, only `variable`, `label`, and `n_total` are populated;
 #' the other columns are `NA`. The schema is fixed: `smd_type` /
 #' `smd_value` are present whether or not `smd = TRUE`, like every
 #' other comparison column here, and are `NA` when the table carries
@@ -331,7 +331,7 @@ tidy.spicy_continuous_table <- function(x, ...) {
   )
 
   base_cols <- list(
-    outcome = long$variable,
+    variable = long$variable,
     label = long$label
   )
   if (has_group) {
@@ -389,7 +389,7 @@ glance.spicy_continuous_table <- function(x, ...) {
   }
 
   result <- data.frame(
-    outcome = per_outcome$variable,
+    variable = per_outcome$variable,
     label = per_outcome$label,
     test_type = if (has_test) per_outcome$test_type else NA_character_,
     statistic = if (has_test) per_outcome$statistic else NA_real_,
