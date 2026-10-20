@@ -72,7 +72,10 @@ table_multiresponse(
   any other column forms groups in order of first appearance (a labelled
   column by its codes), as in
   [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md).
-  Rows with a missing `by` are removed, and the note says how many.
+  Rows with a missing `by` are removed, and the note says how many. A
+  level displayed with the label of the `Total` margin is an error, as
+  in
+  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md).
 
 - counted:
 
@@ -370,10 +373,11 @@ Depends on `output`:
   in the percentage of responses and in the test columns.
 
 - `"long"`: one row per item and group, then one per row of `none_row`
-  and group, with columns `variable`, `.row_role` as above, `group`
-  (with `by`), `n`, `base` (the respondents of the group), `pct` (or
-  `pct_cases` and `pct_responses`), and `test_type`, `chi2`, `df`, `p`,
-  and `p_unadjusted` as above.
+  and group, with columns `variable` (the item's column, `"none"` or
+  `"no_data"` on the rows of `none_row`), `label` (the label the row
+  displays), `.row_role` as above, `group` (with `by`), `n`, `base` (the
+  respondents of the group), `pct` (or `pct_cases` and `pct_responses`),
+  and `test_type`, `chi2`, `df`, `p`, and `p_unadjusted` as above.
 
 - `"tinytable"`, `"gt"`, `"flextable"`: the rendered table object.
 
@@ -520,11 +524,12 @@ mentioned. Under `none_row = TRUE`, the default, the respondents of
 these two kinds that the base holds are rows of the table, "(No item
 chosen)" and "(No data for the question)", with their count and
 percentage in each group, and the note counts only those the base leaves
-out. A row the table adds whose label an item also displays takes a
-numbered suffix, `"Respondents_1"` or `"(No item chosen_1)"`, and the
-item keeps its label. Declared missing values of a labelled column
-(`na_values`, `na_range`) are missing, as under the `user_na = TRUE`
-default of
+out. An item displayed with the label of a row the table adds is an
+error (class `spicy_label_collision`): choose another label in `labels`,
+or give the row another label, for example
+`options(spicy.labels = list(row_multiresponse_base = "Base"))`.
+Declared missing values of a labelled column (`na_values`, `na_range`)
+are missing, as under the `user_na = TRUE` default of
 [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md).
 
 A percentage carries no more digits than its denominator, so a base of

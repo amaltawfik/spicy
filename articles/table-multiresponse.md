@@ -788,14 +788,14 @@ long <- table_multiresponse(
   output = "long"
 )
 head(long, 3)
-#>      variable .row_role  group   n base      pct   test_type      chi2 df p
-#> 1 info_doctor   summary Female 377  599 62.93823 chi_squared 0.5199761  1 1
-#> 2 info_doctor   summary   Male 344  565 60.88496 chi_squared 0.5199761  1 1
-#> 3 info_doctor   summary  Total 721 1164 61.94158 chi_squared 0.5199761  1 1
-#>   p_unadjusted
-#> 1    0.4708519
-#> 2    0.4708519
-#> 3    0.4708519
+#>      variable       label .row_role  group   n base      pct   test_type
+#> 1 info_doctor info_doctor   summary Female 377  599 62.93823 chi_squared
+#> 2 info_doctor info_doctor   summary   Male 344  565 60.88496 chi_squared
+#> 3 info_doctor info_doctor   summary  Total 721 1164 61.94158 chi_squared
+#>        chi2 df p p_unadjusted
+#> 1 0.5199761  1 1    0.4708519
+#> 2 0.5199761  1 1    0.4708519
+#> 3 0.5199761  1 1    0.4708519
 ```
 
 Both frames carry the note in `attr(x, "note")` and the global test in
@@ -1003,7 +1003,7 @@ table_multiresponse(
 | Respondents | 599 |      |      | 565 |      |      | 1164 |      |      |
 | *Note.* Multiple answers possible: percentages of cases can sum to more than 100%, and percentages of responses sum to 100%. Base: respondents with data for the question (excluded: 36 with no data for the question). |  |  |  |  |  |  |  |  |  |
 
-Multiple responses by Sex {#tinytable_ko3wstcn0vqawb2g50mc .table
+Multiple responses by Sex {#tinytable_fsu5ly89tnbwfi1e9it1 .table
 .tinytable style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 

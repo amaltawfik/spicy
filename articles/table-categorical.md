@@ -718,6 +718,13 @@ separately: selecting `smoking` and `physical_activity` together under
 `drop_na = TRUE` keeps 1175 and 1200 complete cases respectively, in the
 same table.
 
+A level of your data that already reads “(Missing)” would sit beside
+that category under the same label, and a level of `by` named “Total”
+beside the margin. The table then stops with an error that gives the two
+ways out: rename the level, or give the category another label with
+`options(spicy.labels = list(row_missing_level = "(Not stated)"))` (the
+margin’s key is `header_margin_total`).
+
 ## Filtering and reordering levels
 
 Use `levels_keep` to display only specific levels. The order you specify
@@ -893,32 +900,34 @@ out <- table_categorical(
 )
 
 # One row per (variable x level x group) with broom-style columns
-# (outcome, level, group, n, proportion). The synthetic Total
-# margin is excluded so each observation is counted once.
+# (variable, label, level, group, n, proportion): the column name and
+# the label displayed. The synthetic Total margin is excluded so each
+# observation is counted once.
 broom::tidy(out)
-#> # A tibble: 10 × 5
-#>    outcome           level     group      n proportion
-#>    <chr>             <chr>     <chr>  <int>      <dbl>
-#>  1 smoking           No        Female   475     0.766 
-#>  2 smoking           No        Male     451     0.778 
-#>  3 smoking           Yes       Female   131     0.211 
-#>  4 smoking           Yes       Male     118     0.203 
-#>  5 smoking           (Missing) Female    14     0.0226
-#>  6 smoking           (Missing) Male      11     0.0190
-#>  7 physical_activity No        Female   334     0.539 
-#>  8 physical_activity No        Male     316     0.545 
-#>  9 physical_activity Yes       Female   286     0.461 
-#> 10 physical_activity Yes       Male     264     0.455
+#> # A tibble: 10 × 6
+#>    variable          label             level     group      n proportion
+#>    <chr>             <chr>             <chr>     <chr>  <int>      <dbl>
+#>  1 smoking           smoking           No        Female   475     0.766 
+#>  2 smoking           smoking           No        Male     451     0.778 
+#>  3 smoking           smoking           Yes       Female   131     0.211 
+#>  4 smoking           smoking           Yes       Male     118     0.203 
+#>  5 smoking           smoking           (Missing) Female    14     0.0226
+#>  6 smoking           smoking           (Missing) Male      11     0.0190
+#>  7 physical_activity physical_activity No        Female   334     0.539 
+#>  8 physical_activity physical_activity No        Male     316     0.545 
+#>  9 physical_activity physical_activity Yes       Female   286     0.461 
+#> 10 physical_activity physical_activity Yes       Male     264     0.455
 
-# One row per outcome with its test (chi-squared or Fisher) and the
-# chosen association measure (test_type, statistic, df, p.value,
-# assoc_type, assoc_value, assoc_ci_lower / assoc_ci_upper, n_total).
+# One row per variable, in the order of `select`, with its test
+# (chi-squared or Fisher) and the chosen association measure
+# (test_type, statistic, df, p.value, assoc_type, assoc_value,
+# assoc_ci_lower / assoc_ci_upper, n_total).
 broom::glance(out)
-#> # A tibble: 2 × 10
-#>   outcome           test_type   statistic    df p.value assoc_type assoc_value
-#>   <chr>             <chr>           <dbl> <int>   <dbl> <chr>            <dbl>
-#> 1 physical_activity chi_squared    0.0452     1   0.832 Phi            0.00614
-#> 2 smoking           chi_squared    0.136      1   0.713 Phi            0.0107 
+#> # A tibble: 2 × 11
+#>   variable        label test_type statistic    df p.value assoc_type assoc_value
+#>   <chr>           <chr> <chr>         <dbl> <int>   <dbl> <chr>            <dbl>
+#> 1 smoking         smok… chi_squa…    0.136      1   0.713 Phi            0.0107 
+#> 2 physical_activ… phys… chi_squa…    0.0452     1   0.832 Phi            0.00614
 #> # ℹ 3 more variables: assoc_ci_lower <dbl>, assoc_ci_upper <dbl>, n_total <int>
 ```
 
@@ -982,7 +991,7 @@ table_categorical(
 |     Yes | 286 | 46.1 | 264 | 45.5 | 550 | 45.8 |      |     |
 | *Note.* Group comparison: Pearson chi-squared test. |  |  |  |  |  |  |  |  |
 
-Categorical table by sex {#tinytable_353p6zvaa8o9t9a0fvh4 .table
+Categorical table by sex {#tinytable_viqly7xtyne4zolmrzql .table
 .tinytable style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 

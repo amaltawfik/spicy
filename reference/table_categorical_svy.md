@@ -109,13 +109,18 @@ table_categorical_svy(
 - include_total:
 
   Add a `Total` column block with the whole design's percentages
-  (default `TRUE`, only with `by`).
+  (default `TRUE`, only with `by`). A group displayed with the label of
+  that block is an error, as in
+  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md).
 
 - drop_na:
 
   Drop missing values (default `FALSE`: they show as a `(Missing)`
-  level). Shown or dropped, they never enter the test: the p-value is
-  computed on the complete cases either way, which is the convention
+  level, and a level displayed with that label beside them is an error,
+  as in
+  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)).
+  Shown or dropped, they never enter the test: the p-value is computed
+  on the complete cases either way, which is the convention
   [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
   applies.
 

@@ -216,7 +216,10 @@ available level strings.</p></dd>
 
 <dt id="arg-include-total">include_total<a class="anchor" aria-label="anchor" href="#arg-include-total"></a></dt>
 <dd><p>Logical. If <code>TRUE</code> (the default), includes a <code>Total</code> group
-when available.</p></dd>
+when available. A level of <code>by</code> displayed with the label of that
+margin is then an error (class <code>spicy_label_collision</code>): rename the
+level, or give the margin another label with
+<code>options(spicy.labels = list(header_margin_total = "All"))</code>.</p></dd>
 
 
 <dt id="arg-drop-na">drop_na<a class="anchor" aria-label="anchor" href="#arg-drop-na"></a></dt>
@@ -224,13 +227,16 @@ when available.</p></dd>
 displayed as a dedicated <code>"(Missing)"</code> level (and, under <code>by</code>, a
 <code>"(Missing)"</code> group column) – the field convention for descriptive
 tables (gtsummary's "Unknown" row, janitor's <code>NA</code> row; see the
-Epidemiologist R Handbook, Descriptive tables). A level literally
-named <code>"(Missing)"</code> keeps its label, and the missing-value row and
-column take a numbered suffix, <code>"(Missing_1)"</code>. If <code>TRUE</code>,
-rows with <code>NA</code> in the tabulated variable (and in <code>by</code>, when supplied)
-are removed BEFORE each cross-tabulation, and the removal is
-disclosed in a table note ("Missing values removed: ...") rather than
-silent. Before 0.13.0 the default was <code>TRUE</code> with no disclosure.</p></dd>
+Epidemiologist R Handbook, Descriptive tables). A level displayed
+beside that row or column with its label is an error (class
+<code>spicy_label_collision</code>): rename the level, or give the row another
+label with
+<code>options(spicy.labels = list(row_missing_level = "(Not stated)"))</code>.
+If <code>TRUE</code>, rows with <code>NA</code> in the tabulated variable (and in <code>by</code>,
+when supplied) are removed BEFORE each cross-tabulation, and the
+removal is disclosed in a table note ("Missing values removed: ...")
+rather than silent. Before 0.13.0 the default was <code>TRUE</code> with no
+disclosure.</p></dd>
 
 
 <dt id="arg-weights">weights<a class="anchor" aria-label="anchor" href="#arg-weights"></a></dt>
@@ -523,8 +529,9 @@ exact test); <code>Chi2</code> and <code>df</code> hold the statistic of a chi-s
 test, Pearson's or the N-1, and are <code>NA</code> for a variable tested by
 an exact test.
 When <code>by = NULL</code>, the columns are <code>Variable</code>, <code>Level</code>, <code>n</code>, <code>\%</code>.</p></li>
-<li><p><code>"long"</code>: a long <code>data.frame</code> with columns <code>variable</code>,
-<code>level</code>, <code>n</code>, <code>pct</code> (plus <code>group</code> when <code>by</code> is used, and
+<li><p><code>"long"</code>: a long <code>data.frame</code> with columns <code>variable</code> (the
+column name), <code>label</code> (the label the rows display for it, see
+<code>labels</code>), <code>level</code>, <code>n</code>, <code>pct</code> (plus <code>group</code> when <code>by</code> is used, and
 <code>test_type</code>, <code>chi2</code>, <code>df</code>, <code>p</code> unless <code>p_value = FALSE</code>, as in
 <code>"data.frame"</code>). The association measure is
 always called <code>effect_size</code>,
@@ -1183,38 +1190,38 @@ one-way frequency tables.</p>
 <span class="r-in"><span>  by <span class="op">=</span> <span class="va">sex</span>,</span></span>
 <span class="r-in"><span>  output <span class="op">=</span> <span class="st">"long"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             variable     level  group   n       pct   test_type      chi2 df</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1            smoking        No Female 475 76.612903 chi_squared 0.1357733  1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2            smoking        No   Male 451 77.758621 chi_squared 0.1357733  1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3            smoking        No  Total 926 77.166667 chi_squared 0.1357733  1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4            smoking       Yes Female 131 21.129032 chi_squared 0.1357733  1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5            smoking       Yes   Male 118 20.344828 chi_squared 0.1357733  1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6            smoking       Yes  Total 249 20.750000 chi_squared 0.1357733  1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 7            smoking (Missing) Female  14  2.258065 chi_squared 0.1357733  1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 8            smoking (Missing)   Male  11  1.896552 chi_squared 0.1357733  1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 9            smoking (Missing)  Total  25  2.083333 chi_squared 0.1357733  1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 10 physical_activity        No Female 334 53.870968 chi_squared 0.0451784  1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 11 physical_activity        No   Male 316 54.482759 chi_squared 0.0451784  1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 12 physical_activity        No  Total 650 54.166667 chi_squared 0.0451784  1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 13 physical_activity       Yes Female 286 46.129032 chi_squared 0.0451784  1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 14 physical_activity       Yes   Male 264 45.517241 chi_squared 0.0451784  1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 15 physical_activity       Yes  Total 550 45.833333 chi_squared 0.0451784  1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>            p effect_size effect_size_type</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1  0.7125196 0.010749501              phi</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2  0.7125196 0.010749501              phi</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3  0.7125196 0.010749501              phi</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4  0.7125196 0.010749501              phi</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5  0.7125196 0.010749501              phi</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6  0.7125196 0.010749501              phi</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 7  0.7125196 0.010749501              phi</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 8  0.7125196 0.010749501              phi</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 9  0.7125196 0.010749501              phi</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 10 0.8316763 0.006135851              phi</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 11 0.8316763 0.006135851              phi</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 12 0.8316763 0.006135851              phi</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 13 0.8316763 0.006135851              phi</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 14 0.8316763 0.006135851              phi</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 15 0.8316763 0.006135851              phi</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             variable             label     level  group   n       pct</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1            smoking           smoking        No Female 475 76.612903</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2            smoking           smoking        No   Male 451 77.758621</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3            smoking           smoking        No  Total 926 77.166667</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4            smoking           smoking       Yes Female 131 21.129032</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5            smoking           smoking       Yes   Male 118 20.344828</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6            smoking           smoking       Yes  Total 249 20.750000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 7            smoking           smoking (Missing) Female  14  2.258065</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 8            smoking           smoking (Missing)   Male  11  1.896552</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 9            smoking           smoking (Missing)  Total  25  2.083333</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 10 physical_activity physical_activity        No Female 334 53.870968</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 11 physical_activity physical_activity        No   Male 316 54.482759</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 12 physical_activity physical_activity        No  Total 650 54.166667</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 13 physical_activity physical_activity       Yes Female 286 46.129032</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 14 physical_activity physical_activity       Yes   Male 264 45.517241</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 15 physical_activity physical_activity       Yes  Total 550 45.833333</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      test_type      chi2 df         p effect_size effect_size_type</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1  chi_squared 0.1357733  1 0.7125196 0.010749501              phi</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2  chi_squared 0.1357733  1 0.7125196 0.010749501              phi</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3  chi_squared 0.1357733  1 0.7125196 0.010749501              phi</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4  chi_squared 0.1357733  1 0.7125196 0.010749501              phi</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5  chi_squared 0.1357733  1 0.7125196 0.010749501              phi</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6  chi_squared 0.1357733  1 0.7125196 0.010749501              phi</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 7  chi_squared 0.1357733  1 0.7125196 0.010749501              phi</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 8  chi_squared 0.1357733  1 0.7125196 0.010749501              phi</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 9  chi_squared 0.1357733  1 0.7125196 0.010749501              phi</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 10 chi_squared 0.0451784  1 0.8316763 0.006135851              phi</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 11 chi_squared 0.0451784  1 0.8316763 0.006135851              phi</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 12 chi_squared 0.0451784  1 0.8316763 0.006135851              phi</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 13 chi_squared 0.0451784  1 0.8316763 0.006135851              phi</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 14 chi_squared 0.0451784  1 0.8316763 0.006135851              phi</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 15 chi_squared 0.0451784  1 0.8316763 0.006135851              phi</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># \donttest{</span></span></span>
 <span class="r-in"><span><span class="co"># Rendered HTML / docx objects -- best viewed inside a</span></span></span>

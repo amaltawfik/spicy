@@ -107,7 +107,8 @@ table_outcome(
 
   Drop rows with a missing `select` value from that block (default
   `FALSE`: they are shown as a `(Missing)` level and excluded from the
-  comparison).
+  comparison, and a level displayed with that label is an error, as in
+  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)).
 
 - weights, rescale:
 
@@ -286,8 +287,10 @@ where frequencies add up. This row is the whole analytic sample, where a
 mean is recomputed over every observation and nothing is added. A mean
 is not a total.
 
-A `select` variable labeled `"Overall"` keeps its label, and the row
-takes a numbered suffix, `"Overall_1"`, in the table and in its note.
+A `select` variable displayed as `"Overall"` is an error (class
+`spicy_label_collision`): choose another label in `labels`, or give the
+row another label with
+`options(spicy.labels = list(row_overall = "Whole sample"))`.
 
 ## Choosing the `select` columns
 

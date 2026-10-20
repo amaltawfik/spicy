@@ -2,18 +2,37 @@
 
 ## spicy 0.14.0
 
+This release adds
+[`table_multiresponse()`](https://amaltawfik.github.io/spicy/reference/table_multiresponse.md)
+for “check all that apply” questions, makes
 [`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md)
-becomes a codebook you can deliver: an object, an Excel workbook, or a
-PDF.
+a codebook you can deliver (an object, an Excel workbook, or a PDF),
+lets the categorical tables choose their test per variable, and gives
+the descriptive tables one contract for labels, p-values, and notes.
 
 ### Breaking changes
 
-- [`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md)
-  returns a `spicy_codebook` object and no longer opens a DT widget;
-  `output` writes the file. `filename` and `include_na` are defunct,
-  `values` is now a number of categories (default 100), an explicit `NA`
-  level of a factor counts as missing, and `difftime` columns no longer
-  list their values. DT leaves Suggests.
+- [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md),
+  [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md),
+  [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md),
+  and
+  [`table_continuous_svy()`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md)
+  show column names by default. The `label` attribute is read only with
+  `labels = TRUE`: add it to keep the labels of 0.13.0.
+  `labels = c(bmi = "Body mass index")` sets the labels you publish, and
+  the other columns follow `options(spicy.var_labels)`. With the new
+  [`var_labels()`](https://amaltawfik.github.io/spicy/reference/var_labels.md),
+  as in `labels = var_labels(bmi = "IMC")`, the other columns keep their
+  `label` attribute. Names that match no column are ignored, and
+  `labels = NULL` is an error. In
+  [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  and
+  [`table_regression_uv()`](https://amaltawfik.github.io/spicy/reference/table_regression_uv.md),
+  whose default output does not change, `labels = NULL` (their default
+  in 0.13.0) is an error as well, and a name that matches no term is
+  ignored instead of refused.
 
 - [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
   chooses its test per variable: Pearson’s chi-squared test when every
@@ -24,33 +43,26 @@ PDF.
   `test_type` column. `test = "midp"` and `test = "n1"` offer the Fisher
   mid-p test and Campbell’s N-1 chi-squared for 2x2 tables.
 
-- [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
-  gives each association measure of its note a sentence of its own:
-  “Phi: smoking. Cramer’s V: education.” A semicolon joined them.
+- [`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md)
+  returns a `spicy_codebook` object and no longer opens a DT widget;
+  `output` writes the file. `filename` and `include_na` are defunct,
+  `values` is now a number of categories (default 100), an explicit `NA`
+  level of a factor counts as missing, and `difftime` columns no longer
+  list their values. DT leaves Suggests.
 
-- [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
-  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
-  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md),
-  [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md),
+- [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
+  stops with an error (class `spicy_label_collision`) when a level of a
+  variable or of `by` reads like the row or column it adds for missing
+  values, or like its `Total` margin. It renamed the added row or column
+  `"(Missing_1)"` or `"Total_1"`. Rename the level, or give the added
+  row or column another label with `options(spicy.labels)`, as the
+  message shows.
   [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md),
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
+  [`table_continuous_svy()`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md),
   and
-  [`table_continuous_svy()`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md)
-  show column names by default. The `label` attribute is read only with
-  `labels = TRUE`. `labels = c(bmi = "Body mass index")` sets the labels
-  you publish, and the other columns follow `options(spicy.var_labels)`.
-  With the new
-  [`var_labels()`](https://amaltawfik.github.io/spicy/reference/var_labels.md),
-  as in `labels = var_labels(bmi = "IMC")`, the other columns keep their
-  `label` attribute. Names that match no column are ignored, and
-  `labels = NULL` is an error. Add `labels = TRUE` to keep the labels of
-  0.13.0. In
-  [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
-  and
-  [`table_regression_uv()`](https://amaltawfik.github.io/spicy/reference/table_regression_uv.md),
-  whose default output does not change, `labels = NULL` (their default
-  in 0.13.0) is an error as well, and a name that matches no term is
-  ignored instead of refused. In the notes, a list of variables is
-  joined with semicolons when one of the labels contains a comma.
+  [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md)
+  refuse such a level the same way.
 
 - [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
   [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
@@ -60,7 +72,8 @@ PDF.
   does, in italics in the rendered tables.
   [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
   printed “Note.” in the middle of the note when `drop_na = TRUE`
-  removed values.
+  removed values
+  ([\#11](https://github.com/amaltawfik/spicy/issues/11)).
 
 - [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
   [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
@@ -73,6 +86,23 @@ PDF.
   and
   [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
   is now `note`.
+
+- [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
+  gives the column name in `variable` and the displayed label in
+  `label`, in `output = "long"`,
+  [`tidy()`](https://generics.r-lib.org/reference/tidy.html), and
+  `glance()`, as
+  [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md)
+  does. `variable` held the label, and
+  [`tidy()`](https://generics.r-lib.org/reference/tidy.html) and
+  `glance()` called it `outcome`. `glance()` now lists the variables in
+  the order of `select`, as the table and
+  [`tidy()`](https://generics.r-lib.org/reference/tidy.html) do; it
+  sorted them by label.
+
+- [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
+  gives each association measure of its note a sentence of its own:
+  “Phi: smoking. Cramer’s V: education.” A semicolon joined them.
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   and
@@ -146,22 +176,23 @@ PDF.
 
 - [`table_multiresponse()`](https://amaltawfik.github.io/spicy/reference/table_multiresponse.md)
   tabulates a “check all that apply” question: one row per item with the
-  count and the percentage of respondents who chose it (or of responses,
-  or both), and a row with the number of respondents. The note gives the
-  base and counts, in it or out of it, the respondents with no data for
-  the question and those with no item chosen, those in the base shown
-  instead as rows of their own by default (`none_row`). With `by`, each
-  item gets a chi-squared test, or Fisher’s exact test where an expected
-  count is below 5 (`test`), adjusted by Holm by default (`p_adjust`),
-  and the question a global test that allows for several answers per
-  respondent, Rao-Scott corrected or by bootstrap (`global_test`).
-  `p_value = FALSE` removes the p-values and the global test, and
+  count and the percentage of respondents who chose it (`percent` also
+  gives percentages of responses, or both), and a row with the number of
+  respondents in the base (`base`). Respondents of the base who chose no
+  item get a row of their own (`none_row`), and the note says what the
+  percentages sum to and who is in the base. With `by`, each item gets a
+  test (`test`: chi-squared, or Fisher’s exact test where an expected
+  count is below 5, or the mid-p and N-1 tests for 2x2 tables), adjusted
+  by Holm by default (`p_adjust`), and the question gets a global test
+  that allows for several answers per respondent, Rao-Scott corrected or
+  by bootstrap (`global_test`). `p_value = FALSE` removes the tests, and
   `statistic = TRUE` shows each item’s chi-squared. `glance()` reports
-  the Rao-Scott design-effect summary (`rs_cv`).
+  the Rao-Scott design-effect summary (`rs_cv`), and
   [`inline()`](https://amaltawfik.github.io/spicy/reference/inline.md)
-  cites its cells, a group selected with `model` and the base row as
+  cites the cells, a group selected with `model` and the base row as
   `"nobs"`. The article *Multiple-response questions* on the site walks
-  through it ([\#10](https://github.com/amaltawfik/spicy/issues/10)).
+  through it ([\#10](https://github.com/amaltawfik/spicy/issues/10),
+  [\#11](https://github.com/amaltawfik/spicy/issues/11)).
 
 - [`inline()`](https://amaltawfik.github.io/spicy/reference/inline.md)
   says when a variable has no levels and how to select a group with
@@ -240,6 +271,11 @@ PDF.
   table was built with `assoc_ci = TRUE`. It reported the interval
   whatever `assoc_ci` said.
 
+- `glance()` on a
+  [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md)
+  result built with `include_total = FALSE` counts the whole sample in
+  `nobs`. It counted the last group only.
+
 - [`inline()`](https://amaltawfik.github.io/spicy/reference/inline.md)
   with `model` cites the `p` and the association measure of a
   [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
@@ -296,7 +332,8 @@ PDF.
   (Sex)”, and the covariates of
   [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
   after “Adjusted for”. They used the column name whatever `labels`
-  said.
+  said. A list of variables in a note is joined with semicolons when one
+  of the labels contains a comma.
 
 - [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md)
   and
@@ -325,11 +362,11 @@ PDF.
   comparison note in French.
 
 - [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md)
-  names its marginal row “Overall_1”, in the table and in its note, when
-  a `select` variable is labeled “Overall”, so the variable keeps its
-  label and
-  [`inline()`](https://amaltawfik.github.io/spicy/reference/inline.md)
-  reaches both rows.
+  stops with an error when a `select` variable is displayed as
+  “Overall”, the label of its marginal row, where the table showed two
+  rows “Overall”. Choose another label in `labels`, or relabel the row
+  with `options(spicy.labels)`, and the note then names the row as the
+  table shows it.
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   writes the reference rows `(réf.)` under
@@ -352,26 +389,20 @@ PDF.
   reads `Taille d'effet`.
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
-  writes its `p_adjust` note in French under
-  `options(spicy.language = "fr")`.
-
-- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
-  writes the robust standard-error line of every model class, not only
-  `lm` and `glm`, the model-based one of `lmer`, `lme`, and `gls`, the
-  standardized-coefficient legend, the p-value line and the
-  likelihood-ratio test of the random effects of mixed models, and the
-  REML refit note of `nested = TRUE` in French under
-  `options(spicy.language = "fr")`. In French, nested models are now
+  writes these notes in French under `options(spicy.language = "fr")`:
+  the robust standard-error line of every model class, not only `lm` and
+  `glm`, the model-based one of `lmer`, `lme`, and `gls`, the
+  standardized-coefficient legend, the p-value line, the `p_adjust`
+  note, the likelihood-ratio test of the random effects of mixed models,
+  the REML refit note of `nested = TRUE`, the exponentiation, component,
+  threshold, and scale-effect notes, and the notes of Bayesian models
+  (sampler diagnostics, predictive accuracy). Nested models are
   `modèles emboîtés` in the title, RR is glossed `risque relatif`, and
   [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
   and
   [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md)
-  write `ajusté sur`. The exponentiation, component, threshold, and
-  scale-effect notes are translated too. The whole French set was read
-  through and corrected
-  ([\#7](https://github.com/amaltawfik/spicy/issues/7)). The footer
-  notes of Bayesian models, sampler diagnostics and predictive accuracy,
-  are translated too.
+  write `ajusté sur`. The French wording was reviewed and corrected
+  throughout ([\#7](https://github.com/amaltawfik/spicy/issues/7)).
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   handles [`glmer()`](https://rdrr.io/pkg/lme4/man/glmer.html) fits with
@@ -424,7 +455,8 @@ PDF.
   for [`mgcv::gam()`](https://rdrr.io/pkg/mgcv/man/gam.html) and
   [`mgcv::bam()`](https://rdrr.io/pkg/mgcv/man/bam.html) fits, whose
   test is no longer dropped when rounding leaves the added degrees of
-  freedom just under one.
+  freedom just under one
+  ([\#6](https://github.com/amaltawfik/spicy/issues/6)).
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   names the supported model classes when it refuses a model. It pointed

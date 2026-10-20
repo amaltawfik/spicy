@@ -173,7 +173,9 @@ order is the order of the rows, unless <code>sort</code> sorts them.</p></dd>
 levels keep their declared order, a declared level with no respondent
 included; any other column forms groups in order of first appearance
 (a labelled column by its codes), as in <code><a href="table_categorical.html">table_categorical()</a></code>. Rows
-with a missing <code>by</code> are removed, and the note says how many.</p></dd>
+with a missing <code>by</code> are removed, and the note says how many. A level
+displayed with the label of the <code>Total</code> margin is an error, as in
+<code><a href="table_categorical.html">table_categorical()</a></code>.</p></dd>
 
 
 <dt id="arg-counted">counted<a class="anchor" aria-label="anchor" href="#arg-counted"></a></dt>
@@ -435,8 +437,10 @@ of each item as in <code><a href="table_categorical.html">table_categorical()</a
 tested by an exact test. The rows of <code>none_row</code> are <code>NA</code> in the
 percentage of responses and in the test columns.</p></li>
 <li><p><code>"long"</code>: one row per item and group, then one per row of
-<code>none_row</code> and group, with columns <code>variable</code>, <code>.row_role</code> as
-above, <code>group</code> (with <code>by</code>), <code>n</code>, <code>base</code> (the respondents of the
+<code>none_row</code> and group, with columns <code>variable</code> (the item's column,
+<code>"none"</code> or <code>"no_data"</code> on the rows of <code>none_row</code>), <code>label</code> (the
+label the row displays), <code>.row_role</code> as above, <code>group</code> (with
+<code>by</code>), <code>n</code>, <code>base</code> (the respondents of the
 group), <code>pct</code> (or <code>pct_cases</code> and <code>pct_responses</code>), and
 <code>test_type</code>, <code>chi2</code>, <code>df</code>, <code>p</code>, and <code>p_unadjusted</code> as above.</p></li>
 <li><p><code>"tinytable"</code>, <code>"gt"</code>, <code>"flextable"</code>: the rendered table object.</p></li>
@@ -567,11 +571,13 @@ chosen). The base holds the second and leaves out the first under
 default, the respondents of these two kinds that the base holds are
 rows of the table, "(No item chosen)" and "(No data for the question)",
 with their count and percentage in each group, and the note counts only
-those the base leaves out. A row the table adds whose label an item
-also displays takes a numbered suffix, <code>"Respondents_1"</code> or
-<code>"(No item chosen_1)"</code>, and the item keeps its label. Declared missing
-values of a labelled column (<code>na_values</code>, <code>na_range</code>) are missing, as
-under the <code>user_na = TRUE</code> default of <code><a href="table_categorical.html">table_categorical()</a></code>.</p>
+those the base leaves out. An item displayed with the label of a row the
+table adds is an error (class <code>spicy_label_collision</code>): choose another
+label in <code>labels</code>, or give the row another label, for example
+<code>options(spicy.labels = list(row_multiresponse_base = "Base"))</code>.
+Declared missing values of a labelled column (<code>na_values</code>, <code>na_range</code>)
+are missing, as under the <code>user_na = TRUE</code> default of
+<code><a href="table_categorical.html">table_categorical()</a></code>.</p>
 <p>A percentage carries no more digits than its denominator, so a base of
 fewer than 100 respondents takes whole percentages (American Medical
 Association, 2020, section 4.1.8): <code>percent_digits = 0</code> prints them.</p>

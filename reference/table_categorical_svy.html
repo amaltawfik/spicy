@@ -180,14 +180,17 @@ variables) or a named list (per variable).</p></dd>
 
 <dt id="arg-include-total">include_total<a class="anchor" aria-label="anchor" href="#arg-include-total"></a></dt>
 <dd><p>Add a <code>Total</code> column block with the whole
-design's percentages (default <code>TRUE</code>, only with <code>by</code>).</p></dd>
+design's percentages (default <code>TRUE</code>, only with <code>by</code>). A group
+displayed with the label of that block is an error, as in
+<code><a href="table_categorical.html">table_categorical()</a></code>.</p></dd>
 
 
 <dt id="arg-drop-na">drop_na<a class="anchor" aria-label="anchor" href="#arg-drop-na"></a></dt>
 <dd><p>Drop missing values (default <code>FALSE</code>: they show as a
-<code>(Missing)</code> level). Shown or dropped, they never enter the test:
-the p-value is computed on the complete cases either way, which is
-the convention <code><a href="table_categorical.html">table_categorical()</a></code> applies.</p></dd>
+<code>(Missing)</code> level, and a level displayed with that label beside them
+is an error, as in <code><a href="table_categorical.html">table_categorical()</a></code>). Shown or dropped, they
+never enter the test: the p-value is computed on the complete cases
+either way, which is the convention <code><a href="table_categorical.html">table_categorical()</a></code> applies.</p></dd>
 
 
 <dt id="arg-proportion-ci">proportion_ci<a class="anchor" aria-label="anchor" href="#arg-proportion-ci"></a></dt>

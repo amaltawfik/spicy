@@ -40,20 +40,22 @@ A `tbl_df`.
 ## Details
 
 `tidy()` returns one row per `(variable x level)` – or per
-`(variable x level x group)` when `by` is used – with broom-conventional
-columns: `outcome`, `level`, `group` (when applicable), `n`,
-`proportion` (the percentage divided by 100).
+`(variable x level x group)` when `by` is used – with columns `variable`
+(the column name), `label` (the label the rows display for it, see
+`labels`), `level`, `group` (when applicable), `n`, `proportion` (the
+percentage divided by 100).
 
-`glance()` returns one row per outcome with its test (when `by` is used)
-and the requested association measure: `outcome`, `test_type`
-(`"chi_squared"`, `"n1_chi_squared"`, `"fisher_exact"`, `"fisher_midp"`,
-or `"fisher_exact_mc"`, as in the data frames of
+`glance()` returns one row per variable, in the order of `select`, with
+its test (when `by` is used) and the requested association measure:
+`variable`, `label`, `test_type` (`"chi_squared"`, `"n1_chi_squared"`,
+`"fisher_exact"`, `"fisher_midp"`, or `"fisher_exact_mc"`, as in the
+data frames of
 [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)),
 `statistic` (the chi-squared, Pearson's or the N-1, `NA` for an exact
 test), `df`, `p.value`, `assoc_type`, `assoc_value`, `assoc_ci_lower`,
-`assoc_ci_upper`, `n_total`. Without `by`, only `outcome` and `n_total`
-are populated; the other columns are `NA`. The interval bounds are `NA`
-unless the table was built with `assoc_ci = TRUE`.
+`assoc_ci_upper`, `n_total`. Without `by`, only `variable`, `label` and
+`n_total` are populated; the other columns are `NA`. The interval bounds
+are `NA` unless the table was built with `assoc_ci = TRUE`.
 
 ## See also
 

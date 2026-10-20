@@ -1029,7 +1029,7 @@ table_continuous(
 |  | Tertiary |  4.11 |  1.04 |  1.00 |   5.00 |  4.01 |  4.21 | 399 |       |
 | *Note.* Missing values removed: bmi (12), life_sat_health (8). |  |  |  |  |  |  |  |  |  |
 
-Descriptive statistics by education {#tinytable_klis829ijzvji5dd08ff
+Descriptive statistics by education {#tinytable_lxkjcnvmyh21dll4i6q6
 .table .tinytable
 style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}

@@ -150,8 +150,8 @@ the level (<code>.level</code>). Custom <code>labels</code>, a <code>style</code
 display never change the call. As a convenience, a <code>variable</code>
 that matches no source column is looked up among the displayed
 labels before erroring. The missing-value category is addressed by
-<code>level = "(Missing)"</code> whatever its displayed (possibly deduplicated)
-label, through its row role. Fit statistics are addressed by their
+<code>level = "(Missing)"</code> whatever its displayed (possibly translated or
+relabeled) label, through its row role. Fit statistics are addressed by their
 token as <code>variable</code> (<code>inline(tbl, "nobs")</code>, <code>inline(tbl, "r2")</code>) or by
 their label (<code>inline(tbl, "n")</code>). Identity comes first: a source column
 wins over a token or a label of the same name, and an exact label over

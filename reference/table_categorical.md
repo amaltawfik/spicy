@@ -135,7 +135,10 @@ table_categorical(
 - include_total:
 
   Logical. If `TRUE` (the default), includes a `Total` group when
-  available.
+  available. A level of `by` displayed with the label of that margin is
+  then an error (class `spicy_label_collision`): rename the level, or
+  give the margin another label with
+  `options(spicy.labels = list(header_margin_total = "All"))`.
 
 - drop_na:
 
@@ -143,13 +146,14 @@ table_categorical(
   dedicated `"(Missing)"` level (and, under `by`, a `"(Missing)"` group
   column) – the field convention for descriptive tables (gtsummary's
   "Unknown" row, janitor's `NA` row; see the Epidemiologist R Handbook,
-  Descriptive tables). A level literally named `"(Missing)"` keeps its
-  label, and the missing-value row and column take a numbered suffix,
-  `"(Missing_1)"`. If `TRUE`, rows with `NA` in the tabulated variable
-  (and in `by`, when supplied) are removed BEFORE each cross-tabulation,
-  and the removal is disclosed in a table note ("Missing values removed:
-  ...") rather than silent. Before 0.13.0 the default was `TRUE` with no
-  disclosure.
+  Descriptive tables). A level displayed beside that row or column with
+  its label is an error (class `spicy_label_collision`): rename the
+  level, or give the row another label with
+  `options(spicy.labels = list(row_missing_level = "(Not stated)"))`. If
+  `TRUE`, rows with `NA` in the tabulated variable (and in `by`, when
+  supplied) are removed BEFORE each cross-tabulation, and the removal is
+  disclosed in a table note ("Missing values removed: ...") rather than
+  silent. Before 0.13.0 the default was `TRUE` with no disclosure.
 
 - weights:
 
@@ -474,15 +478,16 @@ Depends on `output`:
   the N-1, and are `NA` for a variable tested by an exact test. When
   `by = NULL`, the columns are `Variable`, `Level`, `n`, `\%`.
 
-- `"long"`: a long `data.frame` with columns `variable`, `level`, `n`,
-  `pct` (plus `group` when `by` is used, and `test_type`, `chi2`, `df`,
-  `p` unless `p_value = FALSE`, as in `"data.frame"`). The association
-  measure is always called `effect_size`, whichever measure it is, and
-  `effect_size_type` names that measure per row (`"cramer_v"`, `"phi"`,
-  ...), or is `NA` on the rows of a variable given
-  `assoc_measure = "none"`. The wide outputs instead name the column
-  after the measure, or `Effect size` when the row variables do not
-  share one. With `smd = TRUE` this output also carries `smd` and
+- `"long"`: a long `data.frame` with columns `variable` (the column
+  name), `label` (the label the rows display for it, see `labels`),
+  `level`, `n`, `pct` (plus `group` when `by` is used, and `test_type`,
+  `chi2`, `df`, `p` unless `p_value = FALSE`, as in `"data.frame"`). The
+  association measure is always called `effect_size`, whichever measure
+  it is, and `effect_size_type` names that measure per row
+  (`"cramer_v"`, `"phi"`, ...), or is `NA` on the rows of a variable
+  given `assoc_measure = "none"`. The wide outputs instead name the
+  column after the measure, or `Effect size` when the row variables do
+  not share one. With `smd = TRUE` this output also carries `smd` and
   `smd_type` (`"binary"` or `"multinomial"`, the kernel the value came
   from); the wide outputs name that column `SMD`. Like the association
   columns, both are ABSENT when the statistic is not requested.
@@ -1189,38 +1194,38 @@ table_categorical(
   by = sex,
   output = "long"
 )
-#>             variable     level  group   n       pct   test_type      chi2 df
-#> 1            smoking        No Female 475 76.612903 chi_squared 0.1357733  1
-#> 2            smoking        No   Male 451 77.758621 chi_squared 0.1357733  1
-#> 3            smoking        No  Total 926 77.166667 chi_squared 0.1357733  1
-#> 4            smoking       Yes Female 131 21.129032 chi_squared 0.1357733  1
-#> 5            smoking       Yes   Male 118 20.344828 chi_squared 0.1357733  1
-#> 6            smoking       Yes  Total 249 20.750000 chi_squared 0.1357733  1
-#> 7            smoking (Missing) Female  14  2.258065 chi_squared 0.1357733  1
-#> 8            smoking (Missing)   Male  11  1.896552 chi_squared 0.1357733  1
-#> 9            smoking (Missing)  Total  25  2.083333 chi_squared 0.1357733  1
-#> 10 physical_activity        No Female 334 53.870968 chi_squared 0.0451784  1
-#> 11 physical_activity        No   Male 316 54.482759 chi_squared 0.0451784  1
-#> 12 physical_activity        No  Total 650 54.166667 chi_squared 0.0451784  1
-#> 13 physical_activity       Yes Female 286 46.129032 chi_squared 0.0451784  1
-#> 14 physical_activity       Yes   Male 264 45.517241 chi_squared 0.0451784  1
-#> 15 physical_activity       Yes  Total 550 45.833333 chi_squared 0.0451784  1
-#>            p effect_size effect_size_type
-#> 1  0.7125196 0.010749501              phi
-#> 2  0.7125196 0.010749501              phi
-#> 3  0.7125196 0.010749501              phi
-#> 4  0.7125196 0.010749501              phi
-#> 5  0.7125196 0.010749501              phi
-#> 6  0.7125196 0.010749501              phi
-#> 7  0.7125196 0.010749501              phi
-#> 8  0.7125196 0.010749501              phi
-#> 9  0.7125196 0.010749501              phi
-#> 10 0.8316763 0.006135851              phi
-#> 11 0.8316763 0.006135851              phi
-#> 12 0.8316763 0.006135851              phi
-#> 13 0.8316763 0.006135851              phi
-#> 14 0.8316763 0.006135851              phi
-#> 15 0.8316763 0.006135851              phi
+#>             variable             label     level  group   n       pct
+#> 1            smoking           smoking        No Female 475 76.612903
+#> 2            smoking           smoking        No   Male 451 77.758621
+#> 3            smoking           smoking        No  Total 926 77.166667
+#> 4            smoking           smoking       Yes Female 131 21.129032
+#> 5            smoking           smoking       Yes   Male 118 20.344828
+#> 6            smoking           smoking       Yes  Total 249 20.750000
+#> 7            smoking           smoking (Missing) Female  14  2.258065
+#> 8            smoking           smoking (Missing)   Male  11  1.896552
+#> 9            smoking           smoking (Missing)  Total  25  2.083333
+#> 10 physical_activity physical_activity        No Female 334 53.870968
+#> 11 physical_activity physical_activity        No   Male 316 54.482759
+#> 12 physical_activity physical_activity        No  Total 650 54.166667
+#> 13 physical_activity physical_activity       Yes Female 286 46.129032
+#> 14 physical_activity physical_activity       Yes   Male 264 45.517241
+#> 15 physical_activity physical_activity       Yes  Total 550 45.833333
+#>      test_type      chi2 df         p effect_size effect_size_type
+#> 1  chi_squared 0.1357733  1 0.7125196 0.010749501              phi
+#> 2  chi_squared 0.1357733  1 0.7125196 0.010749501              phi
+#> 3  chi_squared 0.1357733  1 0.7125196 0.010749501              phi
+#> 4  chi_squared 0.1357733  1 0.7125196 0.010749501              phi
+#> 5  chi_squared 0.1357733  1 0.7125196 0.010749501              phi
+#> 6  chi_squared 0.1357733  1 0.7125196 0.010749501              phi
+#> 7  chi_squared 0.1357733  1 0.7125196 0.010749501              phi
+#> 8  chi_squared 0.1357733  1 0.7125196 0.010749501              phi
+#> 9  chi_squared 0.1357733  1 0.7125196 0.010749501              phi
+#> 10 chi_squared 0.0451784  1 0.8316763 0.006135851              phi
+#> 11 chi_squared 0.0451784  1 0.8316763 0.006135851              phi
+#> 12 chi_squared 0.0451784  1 0.8316763 0.006135851              phi
+#> 13 chi_squared 0.0451784  1 0.8316763 0.006135851              phi
+#> 14 chi_squared 0.0451784  1 0.8316763 0.006135851              phi
+#> 15 chi_squared 0.0451784  1 0.8316763 0.006135851              phi
 
 # \donttest{
 # Rendered HTML / docx objects -- best viewed inside a

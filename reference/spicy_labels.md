@@ -129,12 +129,12 @@ for the journal styles, which outrank the language's own typography.
 
 ``` r
 head(spicy_labels())
-#>                   row_missing_level             row_missing_level_dedup 
-#>                         "(Missing)"                      "(Missing_%d)" 
-#>                note_missing_removed       note_declared_missing_removed 
-#>          "Missing values removed: " "Declared missing values removed: " 
-#>                   note_missing_item             note_missing_rows_total 
-#>                           "%s (%d)"                "; %d rows in total" 
+#>                   row_missing_level                note_missing_removed 
+#>                         "(Missing)"          "Missing values removed: " 
+#>       note_declared_missing_removed                   note_missing_item 
+#> "Declared missing values removed: "                           "%s (%d)" 
+#>             note_missing_rows_total        note_rows_missing_by_removed 
+#>                "; %d rows in total" "Rows with missing %s removed: %d." 
 
 # The same keys in French.
 fr <- spicy_labels("fr")

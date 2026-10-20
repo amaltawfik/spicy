@@ -130,8 +130,9 @@ table_continuous(
   Descriptive tables) – while the group-comparison test and effect size
   are still computed on the observed groups only (show the missing, test
   the observed, matching
-  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)).
-  Ignored (with a warning) when `by` is not used.
+  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md));
+  a level of `by` displayed with the label of that group is an error, as
+  there. Ignored (with a warning) when `by` is not used.
 
 - weights:
 

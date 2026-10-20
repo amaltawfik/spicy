@@ -78,8 +78,8 @@ This is the right entry point for users who want to:
   `"missing"` (a row keyed by the *missing* value) and `"none"` (the
   respondents who chose no item of a multiple-response question) in the
   descriptive ones. The role is the key a consumer matches on:
-  `"(Missing)"` is a display label – auto-renamed on collision,
-  translatable – and the role survives both.
+  `"(Missing)"` is a display label – translatable, and relabeled through
+  `options(spicy.labels)` – and the role survives both.
 
 - `body$.indent` – display indent depth of the label (`0` or `1`).
   Renderers indent `.indent > 0` rows; the label text itself is already

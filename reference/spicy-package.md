@@ -203,6 +203,12 @@ parent class plus a leaf class describing the specific cause:
     has none of its accepted shapes. Signaled together with
     `spicy_invalid_input`.
 
+  - `spicy_label_collision` – a label a summary table adds (the row or
+    column of missing values, the margin, a base row, the `Overall` row)
+    would be displayed beside a level, a value or a label of yours that
+    reads the same. Signaled together with `spicy_invalid_input`; the
+    message gives the two ways out.
+
   - `spicy_internal` – an internal precondition failed; this is a bug in
     spicy, please report it.
 

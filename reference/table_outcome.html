@@ -182,7 +182,8 @@ the wording you set here.</p></dd>
 <dt id="arg-drop-na">drop_na<a class="anchor" aria-label="anchor" href="#arg-drop-na"></a></dt>
 <dd><p>Drop rows with a missing <code>select</code> value from that block
 (default <code>FALSE</code>: they are shown as a <code>(Missing)</code> level and
-excluded from the comparison).</p></dd>
+excluded from the comparison, and a level displayed with that label
+is an error, as in <code><a href="table_categorical.html">table_categorical()</a></code>).</p></dd>
 
 
 <dt id="arg-weights-rescale">weights, rescale<a class="anchor" aria-label="anchor" href="#arg-weights-rescale"></a></dt>
@@ -353,8 +354,10 @@ deliberate. <em>Total</em> is the word of a COUNT margin: the column of
 <code><a href="table_categorical.html">table_categorical()</a></code> where frequencies add up. This row is the
 whole analytic sample, where a mean is recomputed over every
 observation and nothing is added. A mean is not a total.</p>
-<p>A <code>select</code> variable labeled <code>"Overall"</code> keeps its label, and the row
-takes a numbered suffix, <code>"Overall_1"</code>, in the table and in its note.</p>
+<p>A <code>select</code> variable displayed as <code>"Overall"</code> is an error (class
+<code>spicy_label_collision</code>): choose another label in <code>labels</code>, or give the
+row another label with
+<code>options(spicy.labels = list(row_overall = "Whole sample"))</code>.</p>
     </div>
     <div class="section level2">
     <h2 id="choosing-the-select-columns">Choosing the <code>select</code> columns<a class="anchor" aria-label="anchor" href="#choosing-the-select-columns"></a></h2>

@@ -79,8 +79,8 @@ the source column (`.variable` in the typed body), `level` the level
 change the call. As a convenience, a `variable` that matches no source
 column is looked up among the displayed labels before erroring. The
 missing-value category is addressed by `level = "(Missing)"` whatever
-its displayed (possibly deduplicated) label, through its row role. Fit
-statistics are addressed by their token as `variable`
+its displayed (possibly translated or relabeled) label, through its row
+role. Fit statistics are addressed by their token as `variable`
 (`inline(tbl, "nobs")`, `inline(tbl, "r2")`) or by their label
 (`inline(tbl, "n")`). Identity comes first: a source column wins over a
 token or a label of the same name, and an exact label over a fit
