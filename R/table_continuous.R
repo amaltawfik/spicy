@@ -65,8 +65,9 @@
 #'   Epidemiologist R Handbook, Descriptive tables) -- while the
 #'   group-comparison test and effect size are still computed on the
 #'   observed groups only (show the missing, test the observed,
-#'   matching [table_categorical()]). Ignored (with a warning) when
-#'   `by` is not used.
+#'   matching [table_categorical()]); a level of `by` displayed with the
+#'   label of that group is an error, as there. Ignored (with a warning)
+#'   when `by` is not used.
 #' @param weights Optional case weights: an unquoted column name, a
 #'   character column name, or a numeric vector of length `nrow(data)`.
 #'   Weights must be non-negative and finite; rows with `NA` or zero
@@ -1354,8 +1355,8 @@ table_continuous <- function(
   n_test_groups <- NA_integer_
   # Display label of the missing-`by` group when one is shown (NA
   # otherwise). Recorded here so the typed view can flag that row by
-  # its KEY: the label itself is a display string, auto-renamed on
-  # collision with a real group value.
+  # its KEY: the label itself is a display string, and a translated one
+  # at that.
   missing_group_label <- NA_character_
   # The two group levels the SMD subtracts, in display order. Empty
   # without `by`, where the column does not exist.
@@ -1395,11 +1396,10 @@ table_continuous <- function(
     }
     # The REAL groups of the table, captured at their construction site
     # and BEFORE the "(Missing)" pseudo-level is appended below. The SMD
-    # counts on this, and on nothing derived by name: a user level
-    # homonymous with the missing label would make a `setdiff()` on the
-    # augmented vector lie, and the missing label is itself auto-renamed
-    # on collision. One missing `by` value must not turn a two-group
-    # table into a refused three-group one.
+    # counts on this, and on nothing derived by name: the missing label
+    # is a display string, translated or relabeled. One missing `by`
+    # value must not turn a two-group table into a refused three-group
+    # one.
     real_group_levels <- as.character(group_levels)
     if (do_smd && length(real_group_levels) != 2L) {
       spicy_abort(
@@ -1419,20 +1419,25 @@ table_continuous <- function(
       )
     }
     if (!drop_na && n_na_groups > 0L) {
-      # Display label for the missing-`by` group, guarded against a
-      # collision with a real group value (mirrors table_categorical()).
-      # The scan covers DECLARED factor levels as well as observed
-      # values: a declared-but-unobserved level literally named
-      # "(Missing)" would otherwise duplicate the group.
+      # Display label for the missing-`by` group. Every level of `by` is
+      # displayed, a declared one nobody holds included (an empty group),
+      # so one with this label is refused, as in table_categorical()
+      # (`.abort_label_collision()`).
       missing_label <- spicy_str("row_missing_level")
       g_values <- unique(c(
         as.character(groups[!is.na(groups)]),
         as.character(group_levels)
       ))
-      idx_lab <- 1L
-      while (missing_label %in% g_values) {
-        missing_label <- spicy_fmt("row_missing_level_dedup", idx_lab)
-        idx_lab <- idx_lab + 1L
+      if (missing_label %in% g_values) {
+        .abort_label_collision(
+          missing_label,
+          group_col_name,
+          "level",
+          "the row spicy adds for missing values",
+          "row",
+          "row_missing_level",
+          "(Not stated)"
+        )
       }
       group_levels <- c(as.character(group_levels), missing_label)
       groups <- as.character(groups)

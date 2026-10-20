@@ -32,7 +32,6 @@
 .spicy_strings <- c(
   # -- missing values: display level and disclosure notes ------------------
   row_missing_level = "(Missing)",
-  row_missing_level_dedup = "(Missing_%d)",
   note_missing_removed = "Missing values removed: ",
   note_declared_missing_removed = "Declared missing values removed: ",
   note_missing_item = "%s (%d)",
@@ -117,9 +116,9 @@
   header_ci_lower = "CI lower",
   header_ci_upper = "CI upper",
   # The margin COLUMN of table_categorical(), distinct from the totals ROW
-  # of freq() / cross_tab() (`label_total`): it carries a deduplication
-  # mechanic the row has not, and a language may want one word in the stub
-  # and another over a column.
+  # of freq() / cross_tab() (`label_total`): a level of `by` displayed with
+  # it is refused (`.cat_margin_key()`), and a language may want one word
+  # in the stub and another over a column.
   header_margin_total = "Total",
 
   # -- association measures: one key per measure, shared by the three
@@ -744,12 +743,10 @@
   # COUNT margin -- the column of `table_categorical()` where
   # frequencies add up -- while this row is the whole analytic sample,
   # where a mean is recomputed and nothing is added. Calling a mean a
-  # total would be a reading error. When a `select` variable displays
-  # that label, the row takes its `_dedup` variant with the first free
-  # index, as `table_categorical()` turns `row_missing_level` into
-  # `row_missing_level_dedup`: the variable keeps its label.
+  # total would be a reading error. A `select` variable displaying that
+  # label is refused, as is every collision with a label a table adds
+  # (`.abort_label_collision()`).
   row_overall = "Overall",
-  row_overall_dedup = "Overall_%d",
   # The honest sentence a stack of blocks needs: each block is its own
   # one-way comparison, and the table adjusts none of them for any
   # other.
@@ -758,9 +755,11 @@
     "blocks are not adjusted for one another."
   ),
   note_outcome_overall = "Overall = the whole analytic sample.",
-  # The same sentence for a renamed row. One hole: its
-  # `row_overall_dedup` label.
-  note_outcome_overall_dedup = "%s = the whole analytic sample.",
+  # The same sentence when `options(spicy.labels)` relabels the row and
+  # leaves the sentence alone, as the refusal of a `select` variable
+  # displaying the row's label suggests: one hole, the row's label, so the
+  # note never names a row the table does not show.
+  note_outcome_overall_relabeled = "%s = the whole analytic sample.",
   # The cell of a statistic that applies but has no number (an SD on
   # n = 1, an interval on an empty group) and of a reference level.
   # One glyph for the whole package: U+2013, the Chicago / NEJM / JAMA
@@ -834,18 +833,13 @@
   # `row_multiresponse_nodata` (no data for the question), in parentheses
   # like `row_missing_level` so that they do not read as items. A count
   # shown as a row leaves the "including" clause of the base sentence.
-  # When an item displays one of the three row labels, the generated row
-  # takes its `_dedup` variant with the first free index, as
-  # `table_categorical()` turns `row_missing_level` into
-  # `row_missing_level_dedup`: the item keeps its label.
+  # An item displaying one of the three row labels is refused
+  # (`.abort_label_collision()`).
   title_multiresponse = "Multiple responses",
   title_multiresponse_by = "Multiple responses by %s",
   row_multiresponse_base = "Respondents",
-  row_multiresponse_base_dedup = "Respondents_%d",
   row_multiresponse_none = "(No item chosen)",
-  row_multiresponse_none_dedup = "(No item chosen_%d)",
   row_multiresponse_nodata = "(No data for the question)",
-  row_multiresponse_nodata_dedup = "(No data for the question_%d)",
   header_pct_cases = "% of cases",
   header_pct_responses = "% of responses",
   note_multiresponse_pct_cases = "Multiple answers possible: percentages can sum to more than 100%.",

@@ -80,7 +80,8 @@ the wording you set here.}
 
 \item{drop_na}{Drop rows with a missing \code{select} value from that block
 (default \code{FALSE}: they are shown as a \code{(Missing)} level and
-excluded from the comparison).}
+excluded from the comparison, and a level displayed with that label
+is an error, as in \code{\link[=table_categorical]{table_categorical()}}).}
 
 \item{weights, rescale}{Frequency weights and whether to rescale them
 to sum to the sample size, as in \code{\link[=table_continuous]{table_continuous()}}.}
@@ -230,8 +231,10 @@ deliberate. \emph{Total} is the word of a COUNT margin: the column of
 whole analytic sample, where a mean is recomputed over every
 observation and nothing is added. A mean is not a total.
 
-A \code{select} variable labeled \code{"Overall"} keeps its label, and the row
-takes a numbered suffix, \code{"Overall_1"}, in the table and in its note.
+A \code{select} variable displayed as \code{"Overall"} is an error (class
+\code{spicy_label_collision}): choose another label in \code{labels}, or give the
+row another label with
+\code{options(spicy.labels = list(row_overall = "Whole sample"))}.
 }
 
 \section{Choosing the \code{select} columns}{

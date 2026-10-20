@@ -1377,10 +1377,28 @@ test_that("drop_na = FALSE displays a (Missing) group and tests the observed", {
   expect_equal(out$p.value[1], ref$p.value[1])
 })
 
-test_that("drop_na = FALSE guards against a real (Missing) group value", {
+test_that("drop_na = FALSE refuses a real (Missing) group value", {
   df <- data.frame(
     x = 1:6,
     g = c("(Missing)", "(Missing)", "B", "B", NA, NA)
+  )
+  err <- expect_error(
+    table_continuous(df, select = "x", by = "g", drop_na = FALSE),
+    class = "spicy_label_collision"
+  )
+  msg <- conditionMessage(err)
+  expect_match(msg, "The level \"(Missing)\" of `g`", fixed = TRUE)
+  expect_match(msg, "row_missing_level", fixed = TRUE)
+  # `drop_na = TRUE`, the default here, adds no group: no error.
+  expect_identical(
+    suppressWarnings(
+      table_continuous(df, select = "x", by = "g", output = "data.frame")
+    )$group,
+    c("(Missing)", "B")
+  )
+  # Another label for the group of missing values.
+  withr::local_options(
+    spicy.labels = list(row_missing_level = "(Not stated)")
   )
   out <- table_continuous(
     df,
@@ -1389,17 +1407,25 @@ test_that("drop_na = FALSE guards against a real (Missing) group value", {
     drop_na = FALSE,
     output = "data.frame"
   )
-  expect_equal(unique(out$group), c("(Missing)", "B", "(Missing_1)"))
+  expect_equal(unique(out$group), c("(Missing)", "B", "(Not stated)"))
+  expect_identical(out$n[out$group == "(Not stated)"], 2L)
 })
 
-test_that("drop_na = FALSE guards against a declared-only (Missing) level", {
-  # Audit phase 2 delta (sibling of R2/R3/R8): the collision guard
-  # scanned only observed values, so a factor `by` DECLARING an
+test_that("drop_na = FALSE refuses a declared-only (Missing) level", {
+  # Audit phase 2 delta (sibling of R2/R3/R8): a factor `by` DECLARING an
   # unobserved "(Missing)" level plus real NAs used to display the
-  # missing-`by` group twice under the same duplicated label.
+  # missing-`by` group twice under the same duplicated label. A declared
+  # level is an empty group of the table, displayed, so it collides.
   df <- data.frame(
     y = c(1, 2, 3, 4, 5, 6),
     g = factor(c("u", "u", "v", "v", NA, NA), levels = c("u", "v", "(Missing)"))
+  )
+  expect_error(
+    table_continuous(df, select = "y", by = "g", drop_na = FALSE),
+    class = "spicy_label_collision"
+  )
+  withr::local_options(
+    spicy.labels = list(row_missing_level = "(Not stated)")
   )
   out <- table_continuous(
     df,
@@ -1408,9 +1434,9 @@ test_that("drop_na = FALSE guards against a declared-only (Missing) level", {
     drop_na = FALSE,
     output = "data.frame"
   )
-  expect_equal(unique(out$group), c("u", "v", "(Missing)", "(Missing_1)"))
+  expect_equal(unique(out$group), c("u", "v", "(Missing)", "(Not stated)"))
   expect_identical(out$n[out$group == "(Missing)"], 0L)
-  expect_identical(out$n[out$group == "(Missing_1)"], 2L)
+  expect_identical(out$n[out$group == "(Not stated)"], 2L)
 })
 
 test_that("drop_na = FALSE without by warns spicy_ignored_arg", {

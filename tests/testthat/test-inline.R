@@ -308,14 +308,17 @@ test_that("an out-of-range or unknown `model` is refused, unchanged", {
 
 test_that("a real level named (Missing) wins over the role shortcut", {
   # This block used to assert the opposite, and it was pinning a bug.
-  # With a REAL level literally named "(Missing)", the missing category
-  # auto-renames itself "(Missing_1)" and the table shows both rows;
-  # resolving "(Missing)" by role handed back the OTHER row's number,
-  # silently. Identity now comes first, so the address a reader types
-  # reaches the row a reader sees.
+  # With a REAL level literally named "(Missing)" beside the missing
+  # category (relabeled here, since the tables refuse the two under one
+  # label), resolving "(Missing)" by role handed back the OTHER row's
+  # number, silently. Identity now comes first, so the address a reader
+  # types reaches the row a reader sees.
   d <- as.data.frame(sochealth)
   d$smoking <- as.character(d$smoking)
   d$smoking[d$smoking == "Yes"] <- "(Missing)"
+  withr::local_options(
+    spicy.labels = list(row_missing_level = "(Not stated)")
+  )
   tc <- .il_quiet(table_categorical(d, select = smoking, drop_na = FALSE))
   s <- as_structured(tc)
   real_row <- which(s$body$.level == "(Missing)")
@@ -330,9 +333,9 @@ test_that("a real level named (Missing) wins over the role shortcut", {
     inline(tc, smoking, "(Missing)", "n"),
     as.character(s$body$n[real_row])
   )
-  # The auto-renamed missing row keeps its own address.
+  # The relabeled missing row keeps its own address.
   expect_identical(
-    inline(tc, smoking, "(Missing_1)", "n"),
+    inline(tc, smoking, "(Not stated)", "n"),
     as.character(s$body$n[miss_row])
   )
 })
@@ -892,10 +895,11 @@ test_that("the header rule needs the statistic blank on every level", {
 test_that("a real level named (Missing) is not shadowed by the role", {
   # F1, adversarial review of the table-outcome train. The role
   # shortcut used to run FIRST, so a variable carrying a real level
-  # literally named "(Missing)" -- which makes the missing category
-  # auto-rename itself "(Missing_1)" -- returned the OTHER row's
-  # number. Silently: no error, no warning, and the table on screen
-  # showed both rows with different values.
+  # literally named "(Missing)" beside the missing category returned the
+  # OTHER row's number. Silently: no error, no warning, and the table on
+  # screen showed both rows with different values. The tables now refuse
+  # the two under one label; relabeled, the missing row still answers to
+  # `level = "(Missing)"` by role, and the real level must win.
   #
   # Pinned across all three families that share `.inline_resolve_row()`,
   # and on VALUES that differ between the two rows, so a regression
@@ -905,20 +909,23 @@ test_that("a real level named (Missing) is not shadowed by the role", {
     levels = c("(Missing)", "a")
   )
   d <- data.frame(g = g, y = seq_along(g))
+  withr::local_options(
+    spicy.labels = list(row_missing_level = "(Not stated)")
+  )
 
   to <- .il_quiet(table_outcome(d, y, select = g))
   shown <- attr(to, "display_df")
   expect_identical(
     trimws(shown$Variable),
-    c("Overall", "g", "(Missing)", "a", "(Missing_1)")
+    c("Overall", "g", "(Missing)", "a", "(Not stated)")
   )
   expect_identical(trimws(shown$n), c("10", "", "5", "3", "2"))
   expect_identical(inline(to, g, "(Missing)", "n"), "5")
-  expect_identical(inline(to, g, "(Missing_1)", "n"), "2")
+  expect_identical(inline(to, g, "(Not stated)", "n"), "2")
 
   ct <- .il_quiet(table_categorical(d, select = g))
   expect_identical(inline(ct, g, "(Missing)", "n"), "5")
-  expect_identical(inline(ct, g, "(Missing_1)", "n"), "2")
+  expect_identical(inline(ct, g, "(Not stated)", "n"), "2")
 
   cn <- .il_quiet(table_continuous(
     d,
@@ -928,7 +935,7 @@ test_that("a real level named (Missing) is not shadowed by the role", {
     drop_na = FALSE
   ))
   expect_identical(inline(cn, y, "(Missing)", "n"), "5")
-  expect_identical(inline(cn, y, "(Missing_1)", "n"), "2")
+  expect_identical(inline(cn, y, "(Not stated)", "n"), "2")
 })
 
 test_that("the missing category is still addressed by its documented name", {
@@ -965,6 +972,10 @@ test_that("the role fallback survives a translated missing label", {
   expect_true(spicy:::.inline_addresses_missing(spicy_str("row_missing_level")))
   expect_false(spicy:::.inline_addresses_missing("a"))
   expect_false(spicy:::.inline_addresses_missing("(Missing_1)"))
+  withr::local_options(
+    spicy.labels = list(row_missing_level = "(Not stated)")
+  )
+  expect_true(spicy:::.inline_addresses_missing("(Not stated)"))
 })
 
 
@@ -1500,8 +1511,8 @@ test_that("a variable that matches two rows is refused with an address for each"
     fixed = TRUE
   )
   # Two variables showing one label: the descriptive families refuse
-  # alike. A generated row whose label a variable shows takes a suffix,
-  # so each row keeps an address.
+  # alike. A generated row whose label a variable would show is refused
+  # by the table itself; relabeled, each row keeps an address.
   two <- table_continuous(
     mtcars,
     c(mpg, hp),
@@ -1514,8 +1525,9 @@ test_that("a variable that matches two rows is refused with an address for each"
   expect_match(msg, "\"mpg\": the variable shown as \"Same\".", fixed = TRUE)
   expect_match(msg, "\"hp\": the variable shown as \"Same\".", fixed = TRUE)
   d <- data.frame(y = c(1, 2, 3, 4, 5, 6), g = c("a", "a", "b", "b", "a", "b"))
+  withr::local_options(spicy.labels = list(row_overall = "Whole sample"))
   to <- .il_quiet(table_outcome(d, y, select = g, labels = c(g = "Overall")))
-  expect_identical(inline(to, "Overall_1"), "3.50")
+  expect_identical(inline(to, "Whole sample"), "3.50")
   expect_identical(inline(to, "Overall", "a"), "2.67")
   expect_identical(inline(to, y), "3.50")
   expect_identical(inline(to, g, "a"), "2.67")

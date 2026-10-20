@@ -169,17 +169,20 @@ test_that("as_structured() types a one-way categorical table", {
 
 test_that("the (Missing) category is identified by role, not by label", {
   sh <- sh_desc()
-  # A real category literally named "(Missing)" pushes the display
-  # label of the missing one to "(Missing_1)". The ROLE must follow
-  # the key, not the string -- the property an i18n pass depends on.
+  # A real category literally named "(Missing)" beside a missing row
+  # relabeled "(Not stated)". The ROLE must follow the key, not the
+  # string -- the property an i18n pass depends on.
   sh$smoking <- as.character(sh$smoking)
   sh$smoking[sh$smoking == "Yes"] <- "(Missing)"
+  withr::local_options(
+    spicy.labels = list(row_missing_level = "(Not stated)")
+  )
   tbl <- quiet(table_categorical(sh, smoking, drop_na = FALSE))
   s <- as_structured(tbl)
 
-  expect_true("(Missing_1)" %in% s$body$.level)
+  expect_true("(Not stated)" %in% s$body$.level)
   expect_identical(
-    s$body$.row_role[which(s$body$.level == "(Missing_1)")],
+    s$body$.row_role[which(s$body$.level == "(Not stated)")],
     "missing"
   )
   # The decoy keeps the ordinary level role.

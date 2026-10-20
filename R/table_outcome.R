@@ -34,22 +34,15 @@
   spicy_fmt("title_outcome", outcome_label)
 }
 
-# Internal: the label of the marginal row.
-#
-# `"Overall"`, not `"Total"` (decision 32bis), and the two are separate
-# registry keys because they are separate things. `label_total` /
-# `header_margin_total` is the word of a COUNT margin -- the column of
-# `table_categorical()` where frequencies add up. This row is the whole
-# analytic sample: a mean is recomputed on it and nothing is added, so
-# calling it a total would be a reading error a translator would then
-# carry into every language.
-#
-# `taken` holds the labels of the `select` variables: when one of them
-# reads "Overall", the row becomes "Overall_1" and the variable keeps
-# its label, as with the generated rows of `table_multiresponse()`.
-.outcome_overall_label <- function(taken = character(0)) {
-  .generated_row_label("row_overall", "row_overall_dedup", taken)
-}
+# The label of the marginal row is `row_overall`: `"Overall"`, not
+# `"Total"` (decision 32bis), and the two are separate registry keys
+# because they are separate things. `label_total` / `header_margin_total`
+# is the word of a COUNT margin -- the column of `table_categorical()`
+# where frequencies add up. This row is the whole analytic sample: a mean
+# is recomputed on it and nothing is added, so calling it a total would be
+# a reading error a translator would then carry into every language. A
+# `select` variable displaying that label is refused (`table_outcome()`,
+# `.abort_label_collision()`).
 
 # Internal: the default Excel sheet name (decision 16 -- `excel_sheet =
 # NULL` in the signature, resolved from the registry here, so the
@@ -66,27 +59,39 @@
 # actually shown.
 #
 # The second says what the marginal row is, so nobody reads it as a
-# total of the block below. A renamed row ("Overall_1") has a sentence
-# of its own that names it; `note_outcome_overall` keeps its fixed
-# wording, so an `options(spicy.labels)` entry for it still applies.
-.outcome_structure_notes <- function(
-  outcome_label,
-  show_comparison,
-  overall,
-  overall_label = .outcome_overall_label()
-) {
+# total of the block below.
+.outcome_structure_notes <- function(outcome_label, show_comparison, overall) {
   c(
     if (isTRUE(show_comparison)) {
       spicy_fmt("note_outcome_blocks", outcome_label)
     },
     if (isTRUE(overall)) {
-      if (identical(overall_label, spicy_str("row_overall"))) {
-        spicy_str("note_outcome_overall")
-      } else {
-        spicy_fmt("note_outcome_overall_dedup", overall_label)
-      }
+      .outcome_overall_note()
     }
   )
+}
+
+# Internal: the sentence that says what the marginal row is. It quotes
+# the row, so when `options(spicy.labels)` relabels the row and leaves the
+# sentence alone -- the second way out of a `select` variable displaying
+# the row's label -- the sentence takes the row's label as an argument
+# (`note_outcome_overall_relabeled`) and never names a row the table does
+# not show. A sentence the user rewrote is printed as written, and a
+# language's own pair as it ships.
+.outcome_overall_note <- function() {
+  opt <- getOption("spicy.labels", NULL)
+  overridden <- if (is.null(opt)) {
+    character(0)
+  } else {
+    names(.spicy_labels_option(opt))
+  }
+  if (
+    "row_overall" %in% overridden && !"note_outcome_overall" %in% overridden
+  ) {
+    spicy_fmt("note_outcome_overall_relabeled", spicy_str("row_overall"))
+  } else {
+    spicy_str("note_outcome_overall")
+  }
 }
 
 # Internal: the display levels of one `select` variable, and the vector
@@ -99,11 +104,15 @@
 # and `cross_tab()`.
 #
 # With `drop_na = FALSE` the missing values become a display level of
-# their own, guarded against a collision with a real value the way the
-# rest of the family guards it: the scan covers declared levels as well
-# as observed ones, so a declared-but-unobserved level literally named
-# "(Missing)" cannot duplicate the row.
-.outcome_by_levels <- function(g, drop_na) {
+# their own. Every declared level is displayed, so one with the label of
+# that row is refused, the way the rest of the family refuses it
+# (`.abort_label_collision()`); `var` names the variable for the message.
+.outcome_by_levels <- function(
+  g,
+  drop_na,
+  var = NULL,
+  call = rlang::caller_env()
+) {
   declared <- if (is.factor(g)) levels(g) else unique(g[!is.na(g)])
   declared <- as.character(declared)
   n_na <- sum(is.na(g))
@@ -111,11 +120,17 @@
   missing_label <- NA_character_
   if (!drop_na && n_na > 0L) {
     missing_label <- spicy_str("row_missing_level")
-    seen <- unique(c(as.character(g[!is.na(g)]), declared))
-    idx <- 1L
-    while (missing_label %in% seen) {
-      missing_label <- spicy_fmt("row_missing_level_dedup", idx)
-      idx <- idx + 1L
+    if (missing_label %in% declared) {
+      .abort_label_collision(
+        missing_label,
+        var,
+        "level",
+        "the row spicy adds for missing values",
+        "row",
+        "row_missing_level",
+        "(Not stated)",
+        call = call
+      )
     }
     declared <- c(declared, missing_label)
     values[is.na(values)] <- missing_label
@@ -293,7 +308,8 @@
   do_es = FALSE,
   effect_size = "none",
   effect_size_explicit = FALSE,
-  overall = TRUE
+  overall = TRUE,
+  call = rlang::caller_env()
 ) {
   w_var <- .prep_variable_weights(outcome, weights_vec, rescale)
   empty_block <- data.frame(
@@ -359,7 +375,7 @@
   for (j in seq_along(select_list)) {
     nm <- names(select_list)[[j]]
     g <- select_list[[j]]
-    geom <- .outcome_by_levels(g, drop_na)
+    geom <- .outcome_by_levels(g, drop_na, nm, call = call)
     missing_labels[[nm]] <- geom$missing_label
     if (drop_na && geom$n_na > 0L) {
       select_na_dropped[[nm]] <- geom$n_na
@@ -533,8 +549,10 @@ abort_outcome_by_renamed <- function() {
 #' whole analytic sample, where a mean is recomputed over every
 #' observation and nothing is added. A mean is not a total.
 #'
-#' A `select` variable labeled `"Overall"` keeps its label, and the row
-#' takes a numbered suffix, `"Overall_1"`, in the table and in its note.
+#' A `select` variable displayed as `"Overall"` is an error (class
+#' `spicy_label_collision`): choose another label in `labels`, or give the
+#' row another label with
+#' `options(spicy.labels = list(row_overall = "Whole sample"))`.
 #'
 #' # Choosing the `select` columns
 #'
@@ -590,7 +608,8 @@ abort_outcome_by_renamed <- function() {
 #' @param overall Show the marginal `Overall` row (default `TRUE`).
 #' @param drop_na Drop rows with a missing `select` value from that block
 #'   (default `FALSE`: they are shown as a `(Missing)` level and
-#'   excluded from the comparison).
+#'   excluded from the comparison, and a level displayed with that label
+#'   is an error, as in [table_categorical()]).
 #' @param weights,rescale Frequency weights and whether to rescale them
 #'   to sum to the sample size, as in [table_continuous()].
 #' @param test Group comparison for every block: `"welch"` (default),
@@ -1108,6 +1127,22 @@ table_outcome <- function(
   )
   names(all_labels) <- c(outcome_name, select_names)
   outcome_label <- all_labels[[outcome_name]]
+  # The marginal row and the variables' own rows share the stub at the
+  # same indent: a variable displaying the row's label is refused.
+  if (overall) {
+    hit <- match(spicy_str("row_overall"), all_labels[select_names])
+    if (!is.na(hit)) {
+      .abort_label_collision(
+        spicy_str("row_overall"),
+        select_names[[hit]],
+        "label",
+        "the row spicy adds for the whole sample",
+        "row",
+        "row_overall",
+        "Whole sample"
+      )
+    }
+  }
 
   # --- compute ------------------------------------------------------------
   result <- .outcome_compute(
@@ -1350,7 +1385,7 @@ table_outcome <- function(
 
   labels <- ifelse(
     result$.row_role == "summary",
-    .outcome_overall_label(result$label[is_header]),
+    spicy_str("row_overall"),
     ifelse(is_header, result$label, paste0(indent_text, result$level))
   )
   df <- stats::setNames(
@@ -1502,12 +1537,7 @@ table_outcome <- function(
   )
   parts <- c(
     parts,
-    .outcome_structure_notes(
-      outcome_label,
-      show_comparison,
-      overall,
-      .outcome_overall_label(result$label[result$.row_role == "factor_header"])
-    )
+    .outcome_structure_notes(outcome_label, show_comparison, overall)
   )
   # The note every route prints, so it opens with "Note." here, once.
   .note_with_prefix(paste_note_parts(parts))

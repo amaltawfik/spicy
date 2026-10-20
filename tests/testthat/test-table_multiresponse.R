@@ -1031,11 +1031,15 @@ test_that("base = \"valid\" leaves out the respondent who skipped the question",
   # rows of `none_row` show them, and the note counts only the one the
   # base leaves out.
   expect_identical(
-    unique(all$variable[all$.row_role != "summary"]),
+    unique(all$label[all$.row_role != "summary"]),
     c("(No item chosen)", "(No data for the question)")
   )
   expect_identical(
-    unique(valid$variable[valid$.row_role != "summary"]),
+    unique(all$variable[all$.row_role != "summary"]),
+    c("none", "no_data")
+  )
+  expect_identical(
+    unique(valid$label[valid$.row_role != "summary"]),
     "(No item chosen)"
   )
   expect_match(attr(all, "note"), "Base: all respondents.", fixed = TRUE)
@@ -1463,7 +1467,15 @@ test_that("percentages of cases, of responses, or both", {
   )
   expect_named(
     table_multiresponse(d, sel, percent = "both", output = "long"),
-    c("variable", ".row_role", "n", "base", "pct_cases", "pct_responses")
+    c(
+      "variable",
+      "label",
+      ".row_role",
+      "n",
+      "base",
+      "pct_cases",
+      "pct_responses"
+    )
   )
   expect_match(
     attr(resp, "note"),
@@ -2032,17 +2044,75 @@ test_that("the clipboard carries the rows of none_row", {
   expect_true(.mr_none_order(first))
 })
 
-# A generated row label that an item displays: the row takes the `_dedup`
-# variant with the first free index, as "(Missing)" does in
-# table_categorical(), and the item keeps its label.
-test_that("a generated label an item displays takes the first free index", {
+# An item displayed with the label of a row the table adds: the table
+# stops, as table_categorical() does for its row of missing values, and
+# the message gives both ways out.
+test_that("an item displaying a label the table adds is refused", {
+  cases <- list(
+    list(
+      labels = c(x2 = "Respondents"),
+      key = "row_multiresponse_base",
+      what = "the row spicy adds for the base"
+    ),
+    list(
+      labels = c(x1 = "(No item chosen)"),
+      key = "row_multiresponse_none",
+      what = "the respondents with no item chosen"
+    ),
+    list(
+      labels = c(x2 = "(No data for the question)"),
+      key = "row_multiresponse_nodata",
+      what = "the respondents with no data for the question"
+    )
+  )
+  for (cs in cases) {
+    err <- expect_error(
+      .mr_none_tbl(base = "all", labels = cs$labels),
+      class = "spicy_label_collision"
+    )
+    expect_s3_class(err, "spicy_invalid_input")
+    msg <- conditionMessage(err)
+    expect_match(
+      msg,
+      sprintf("The label \"%s\" of `%s`", cs$labels, names(cs$labels)),
+      fixed = TRUE
+    )
+    expect_match(msg, cs$what, fixed = TRUE)
+    expect_match(msg, "Choose another label in `labels`", fixed = TRUE)
+    expect_match(msg, paste0("list(", cs$key, " = "), fixed = TRUE)
+  }
+})
+
+test_that("both ways out of the refusal work", {
   labs <- c(x1 = "(No item chosen)", x2 = "Respondents")
+  # Way out 1: other labels in `labels`.
+  ok <- .mr_none_tbl(
+    base = "all",
+    labels = c(x1 = "Chose none (item)", x2 = "Respondent count")
+  )
+  expect_identical(
+    ok$Variable,
+    c(
+      "Chose none (item)",
+      "Respondent count",
+      "(No item chosen)",
+      "(No data for the question)",
+      "Respondents"
+    )
+  )
+  # Way out 2: other labels for the rows the table adds.
+  withr::local_options(
+    spicy.labels = list(
+      row_multiresponse_none = "(None of these)",
+      row_multiresponse_base = "All respondents"
+    )
+  )
   shown <- c(
     "(No item chosen)",
     "Respondents",
-    "(No item chosen_1)",
+    "(None of these)",
     "(No data for the question)",
-    "Respondents_1"
+    "All respondents"
   )
   tbl <- .mr_none_tbl(base = "all", labels = labs, output = "default")
   expect_identical(tbl$Variable, shown)
@@ -2054,117 +2124,99 @@ test_that("a generated label an item displays takes the first free index", {
   s <- as_structured(tbl)
   expect_identical(s$body$Variable, shown)
   expect_identical(s$body$.variable, c("x1", "x2", "none", "no_data", "nobs"))
-  expect_identical(.mr_none_tbl(base = "all", labels = labs)$Variable, shown)
-  long <- .mr_none_tbl(base = "all", labels = labs, output = "long")
-  expect_identical(unique(long$variable), shown[1:4])
   printed <- utils::capture.output(print(tbl))
   for (lab in shown[3:5]) {
     expect_length(grep(lab, printed, fixed = TRUE), 1L)
   }
-  nodata <- .mr_none_tbl(
-    base = "all",
-    labels = c(x2 = "(No data for the question)")
-  )
-  expect_identical(nodata$Variable[[4L]], "(No data for the question_1)")
-})
-
-test_that("a label taken with _1 moves the row to _2, a look-alike renames nothing", {
-  taken <- .mr_none_tbl(
-    base = "all",
-    labels = c(x1 = "Respondents", x2 = "Respondents_1")
-  )
-  expect_identical(taken$Variable[[5L]], "Respondents_2")
-  taken <- .mr_none_tbl(
-    base = "all",
-    labels = c(x1 = "(No item chosen_1)", x2 = "(No item chosen)")
-  )
-  expect_identical(taken$Variable[[3L]], "(No item chosen_2)")
-  alike <- .mr_none_tbl(
-    base = "all",
-    labels = c(x1 = "Respondents_1", x2 = "(No item chosen_1)")
+  # The long frame names each row (the item's column, or the token of a
+  # row of `none_row`) and gives the label it displays.
+  long <- .mr_none_tbl(base = "all", labels = labs, output = "long")
+  expect_identical(names(long)[1:3], c("variable", "label", ".row_role"))
+  expect_identical(unique(long$variable), c("x1", "x2", "none", "no_data"))
+  expect_identical(unique(long$label), shown[1:4])
+  td <- broom::tidy(tbl)
+  expect_identical(unique(td$variable), c("x1", "x2"))
+  expect_identical(unique(td$label), shown[1:2])
+  # inline() reaches an item by its label, and each row by its token.
+  expect_identical(
+    inline(tbl, "Respondents", model = "Total"),
+    inline(tbl, x2, model = "Total")
   )
   expect_identical(
-    alike$Variable,
-    c(
-      "Respondents_1",
-      "(No item chosen_1)",
-      "(No item chosen)",
-      "(No data for the question)",
-      "Respondents"
-    )
+    inline(tbl, "(No item chosen)", model = "Total"),
+    inline(tbl, x1, model = "Total")
   )
+  expect_identical(inline(tbl, "All respondents", model = "Total"), "6")
+  expect_identical(inline(tbl, "nobs", model = "Total"), "6")
+  expect_identical(inline(tbl, "none", model = "Total"), "2")
+  expect_identical(inline(tbl, "(None of these)", model = "Total"), "2")
 })
 
-test_that("the renamed labels are translated, and only a displayed label collides", {
+test_that("only a displayed row collides, and the French labels do", {
+  # A row of `none_row` the table does not show cannot collide: under
+  # `base = "valid"` there is no row of respondents without data, under
+  # `"answered"` no row at all, and `none_row = FALSE` shows neither.
+  expect_identical(
+    .mr_none_tbl(labels = c(x2 = "(No data for the question)"))$Variable,
+    c("x1", "(No data for the question)", "(No item chosen)", "Respondents")
+  )
+  none <- c(x1 = "(No item chosen)")
+  expect_identical(
+    .mr_none_tbl(base = "answered", labels = none)$Variable,
+    c("(No item chosen)", "x2", "Respondents")
+  )
+  expect_identical(
+    .mr_none_tbl(none_row = FALSE, labels = none)$Variable,
+    c("(No item chosen)", "x2", "Respondents")
+  )
   withr::local_options(spicy.language = "fr")
-  fr <- .mr_none_tbl(
-    base = "all",
-    labels = c(x1 = "(Aucun item coché)", x2 = "Personnes")
-  )
-  expect_identical(
-    fr$Variable[3:5],
-    c("(Aucun item coché_1)", "(Sans donnée pour la question)", "Personnes_1")
-  )
-  nodata <- .mr_none_tbl(
-    base = "all",
-    labels = c(x2 = "(Sans donnée pour la question)")
-  )
-  expect_identical(nodata$Variable[[4L]], "(Sans donnée pour la question_1)")
+  for (labs in list(
+    c(x1 = "(Aucun item coché)"),
+    c(x2 = "Personnes"),
+    c(x2 = "(Sans donnée pour la question)")
+  )) {
+    expect_error(
+      .mr_none_tbl(base = "all", labels = labs),
+      class = "spicy_label_collision"
+    )
+  }
   # The English labels are not displayed in French: nothing collides.
   en <- .mr_none_tbl(
     base = "all",
     labels = c(x1 = "(No item chosen)", x2 = "Respondents")
   )
   expect_identical(
-    en$Variable[3:5],
-    c("(Aucun item coché)", "(Sans donnée pour la question)", "Personnes")
+    en$Variable,
+    c(
+      "(No item chosen)",
+      "Respondents",
+      "(Aucun item coché)",
+      "(Sans donnée pour la question)",
+      "Personnes"
+    )
   )
 })
 
-test_that("an engine renders the renamed labels", {
+test_that("an engine renders the relabeled rows", {
   skip_if_not_installed("gt")
+  withr::local_options(
+    spicy.labels = list(row_multiresponse_base = "Base")
+  )
   g <- .mr_none_tbl(
     base = "all",
-    labels = c(x1 = "(No item chosen)", x2 = "Respondents"),
+    labels = c(x2 = "Respondents"),
     output = "gt"
   )
   expect_identical(
     trimws(g[["_data"]][[1L]]),
     c(
-      "(No item chosen)",
+      "x1",
       "Respondents",
-      "(No item chosen_1)",
+      "(No item chosen)",
       "(No data for the question)",
-      "Respondents_1"
+      "Base"
     )
   )
-})
-
-test_that("inline() reaches an item by its label and a renamed row by its token", {
-  # Before the rename, "Respondents" reached the base row, not the item.
-  tbl <- table_multiresponse(
-    .mr_none(),
-    c(x1, x2),
-    base = "all",
-    labels = c(x1 = "Respondents", x2 = "(No item chosen)")
-  )
-  expect_identical(inline(tbl, "Respondents"), inline(tbl, x1))
-  expect_identical(inline(tbl, "Respondents"), "3")
-  expect_identical(inline(tbl, "(No item chosen)"), "1")
-  expect_identical(inline(tbl, "nobs"), "7")
-  expect_identical(inline(tbl, "Respondents_1"), "7")
-  expect_identical(inline(tbl, "none"), "3")
-  expect_identical(inline(tbl, "(No item chosen_1)"), "3")
-  nodata <- table_multiresponse(
-    .mr_none(),
-    c(x1, x2),
-    base = "all",
-    labels = c(x1 = "(No data for the question)")
-  )
-  expect_identical(inline(nodata, "(No data for the question)"), "3")
-  expect_identical(inline(nodata, "no_data"), "1")
-  expect_identical(inline(nodata, "no_data", "(Missing)"), "1")
-  expect_identical(inline(nodata, "(No data for the question_1)"), "1")
 })
 
 # ---- the test switch ---------------------------------------------------------------
@@ -2195,7 +2247,7 @@ test_that("p_value = FALSE: the data frames are the default minus the test", {
   out_l <- .mr_farm_tbl(p_value = FALSE, output = "long")
   expect_identical(
     names(out_l),
-    c("variable", ".row_role", "group", "n", "base", "pct")
+    c("variable", "label", ".row_role", "group", "n", "base", "pct")
   )
   expect_identical(out_l$n, ref_l$n)
   expect_null(attr(out_l, "global_test"))
@@ -2336,6 +2388,7 @@ test_that("statistic = TRUE adds the item chi-squared column", {
     names(long),
     c(
       "variable",
+      "label",
       ".row_role",
       "group",
       "n",
@@ -2636,14 +2689,30 @@ test_that("the inputs are validated in the house style", {
   )
 })
 
-test_that("a group literally named Total keeps its name, and the margin moves", {
+test_that("a group displayed with the margin's label is refused", {
   d <- data.frame(g = c("Total", "Total", "x", "x"), a = c(1, 0, 1, 1))
-  expect_warning(
-    out <- table_multiresponse(d, a, by = g, output = "data.frame"),
-    class = "spicy_renamed_column"
+  err <- expect_error(
+    table_multiresponse(d, a, by = g),
+    class = "spicy_label_collision"
   )
+  expect_match(
+    conditionMessage(err),
+    "The level \"Total\" of `g` has the label of the margin column",
+    fixed = TRUE
+  )
+  # The margin relabeled: the group keeps its name, the margin its own
+  # key, displayed under the new label.
+  withr::local_options(spicy.labels = list(header_margin_total = "All"))
+  out <- table_multiresponse(d, a, by = g, output = "data.frame")
   expect_true(all(c("Total n", "x n", "Total_1 n") %in% names(out)))
   expect_identical(out[["Total_1 n"]], c(3, 1, 4))
+  tbl <- table_multiresponse(d, a, by = g)
+  expect_identical(attr(tbl, "margin_key"), "Total_1")
+  printed <- utils::capture.output(print(tbl))
+  expect_true(any(grepl("All n", printed, fixed = TRUE)))
+  expect_false(any(grepl("Total_1", printed, fixed = TRUE)))
+  td <- broom::tidy(tbl)
+  expect_identical(td$total, c(FALSE, FALSE, TRUE))
 })
 
 test_that("a survey design is refused, with the reason", {

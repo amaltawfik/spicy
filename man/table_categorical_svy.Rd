@@ -72,12 +72,15 @@ the wording you set here.}
 variables) or a named list (per variable).}
 
 \item{include_total}{Add a \code{Total} column block with the whole
-design's percentages (default \code{TRUE}, only with \code{by}).}
+design's percentages (default \code{TRUE}, only with \code{by}). A group
+displayed with the label of that block is an error, as in
+\code{\link[=table_categorical]{table_categorical()}}.}
 
 \item{drop_na}{Drop missing values (default \code{FALSE}: they show as a
-\code{(Missing)} level). Shown or dropped, they never enter the test:
-the p-value is computed on the complete cases either way, which is
-the convention \code{\link[=table_categorical]{table_categorical()}} applies.}
+\code{(Missing)} level, and a level displayed with that label beside them
+is an error, as in \code{\link[=table_categorical]{table_categorical()}}). Shown or dropped, they
+never enter the test: the p-value is computed on the complete cases
+either way, which is the convention \code{\link[=table_categorical]{table_categorical()}} applies.}
 
 \item{proportion_ci}{Add the confidence interval of each percentage.}
 

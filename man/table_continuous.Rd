@@ -85,8 +85,9 @@ descriptive tables (gtsummary's "Unknown" row; see the
 Epidemiologist R Handbook, Descriptive tables) -- while the
 group-comparison test and effect size are still computed on the
 observed groups only (show the missing, test the observed,
-matching \code{\link[=table_categorical]{table_categorical()}}). Ignored (with a warning) when
-\code{by} is not used.}
+matching \code{\link[=table_categorical]{table_categorical()}}); a level of \code{by} displayed with the
+label of that group is an error, as there. Ignored (with a warning)
+when \code{by} is not used.}
 
 \item{weights}{Optional case weights: an unquoted column name, a
 character column name, or a numeric vector of length \code{nrow(data)}.

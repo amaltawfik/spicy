@@ -167,22 +167,6 @@ resolve_variable_labels <- function(data, cols, labels) {
   paste(items, collapse = spicy_str(key))
 }
 
-# Internal: the label of a row the table generates (the base row and the
-# rows of `none_row` in `table_multiresponse()`, the Overall row of
-# `table_outcome()`), renamed when a row of the data displays it, as
-# `table_categorical()` renames its "(Missing)" row: the `_dedup` variant
-# with the first free index ("Respondents_1", "Overall_1"). The data keeps
-# its label, and a generated row never repeats one.
-.generated_row_label <- function(key, dedup_key, taken) {
-  label <- spicy_str(key)
-  idx <- 1L
-  while (label %in% taken) {
-    label <- spicy_fmt(dedup_key, idx)
-    idx <- idx + 1L
-  }
-  label
-}
-
 # Internal: format a single numeric (or vector) with `formatC()` and
 # the configured decimal mark. NA -> "" so blank cells render
 # cleanly. Vectorized by recursion -- the per-element branch is the

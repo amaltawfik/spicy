@@ -405,7 +405,7 @@ if (!setequal(REG$key, names(EN)) || anyDuplicated(REG$key)) {
   if (k %in% c("label_ref", "label_ref_annotation", "label_vs_annotation")) {
     return(r("row", "row label (reference level)"))
   }
-  if (k %in% c("row_missing_level", "row_missing_level_dedup")) {
+  if (identical(k, "row_missing_level")) {
     return(r("row", "row label; column name under `by`"))
   }
   if (startsWith(k, "row_") || startsWith(k, "label_")) {
@@ -1427,7 +1427,6 @@ out <- c(
   "",
   "Change one half and the other must follow.",
   "",
-  "* `row_missing_level` / `row_missing_level_dedup`.",
   "* `row_overall` / `note_outcome_overall`: the note quotes the row.",
   "* `header_effect_size` / `header_effect_size_short`: one French string for both, by choice.",
   "* The standard-error vocabulary: `header_se` (\"ES\"), `note_gloss_se`, `note_std_errors_single`, `note_std_errors_multi`, `note_abbrev_mcse`, `note_estimand_method`, `note_estimand_method_stratified` all say \"erreur(s) standard(s)\".",

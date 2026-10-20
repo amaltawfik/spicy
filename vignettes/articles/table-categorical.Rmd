@@ -379,6 +379,13 @@ removals separately: selecting `smoking` and `physical_activity`
 together under `drop_na = TRUE` keeps 1175 and 1200 complete cases
 respectively, in the same table.
 
+A level of your data that already reads "(Missing)" would sit beside
+that category under the same label, and a level of `by` named "Total"
+beside the margin. The table then stops with an error that gives the
+two ways out: rename the level, or give the category another label with
+`options(spicy.labels = list(row_missing_level = "(Not stated)"))` (the
+margin's key is `header_margin_total`).
+
 ## Filtering and reordering levels
 
 Use `levels_keep` to display only specific levels. The order you
@@ -472,13 +479,15 @@ out <- table_categorical(
 )
 
 # One row per (variable x level x group) with broom-style columns
-# (outcome, level, group, n, proportion). The synthetic Total
-# margin is excluded so each observation is counted once.
+# (variable, label, level, group, n, proportion): the column name and
+# the label displayed. The synthetic Total margin is excluded so each
+# observation is counted once.
 broom::tidy(out)
 
-# One row per outcome with its test (chi-squared or Fisher) and the
-# chosen association measure (test_type, statistic, df, p.value,
-# assoc_type, assoc_value, assoc_ci_lower / assoc_ci_upper, n_total).
+# One row per variable, in the order of `select`, with its test
+# (chi-squared or Fisher) and the chosen association measure
+# (test_type, statistic, df, p.value, assoc_type, assoc_value,
+# assoc_ci_lower / assoc_ci_upper, n_total).
 broom::glance(out)
 ```
 

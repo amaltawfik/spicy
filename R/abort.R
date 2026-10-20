@@ -27,6 +27,78 @@ spicy_abort <- function(
 }
 
 
+# Refuse a label a summary table generates -- the row or column of missing
+# values, the margin, the base row and the rows of `none_row` of
+# `table_multiresponse()`, the Overall row of `table_outcome()` -- when the
+# table would display it beside a level, a value or a label of the user's
+# that reads the same. A numbered suffix ("(Missing_1)", the idiom of
+# `make.unique()` and of vctrs name repair) keeps KEYS unique, and the
+# machine outputs keep it for theirs; on a published label it is an
+# artifact the reader cannot interpret. So the table stops, and the message
+# gives both ways out: rename the user's element, or give the generated one
+# another label through `options(spicy.labels)`. `cross_tab()` and `freq()`
+# are console tools and keep their rename with a `spicy_renamed_column`
+# warning. Decision record: dev/decisions/2026-10-20-generated-label-
+# collisions.md.
+#
+# Leaf class `spicy_label_collision`, signaled together with
+# `spicy_invalid_input`, so a generic input handler still catches it.
+#   shown      the text both elements display
+#   var        the column the user's element belongs to
+#   type       "level": a level or value of `var`, renamed in the data;
+#              "label": the label `var` displays, set with `labels`
+#   generated  the element spicy adds, "the row spicy adds for the base"
+#   kind       "row" or "column", how the hint names that element
+#   key        the registry key of its label, and `example` a label it
+#              could take instead
+.abort_label_collision <- function(
+  shown,
+  var,
+  type = c("level", "label"),
+  generated,
+  kind,
+  key,
+  example,
+  call = rlang::caller_env()
+) {
+  type <- match.arg(type)
+  lead <- if (identical(type, "level")) {
+    sprintf(
+      "The level %s of `%s` has the label of %s.",
+      .quote_val(shown),
+      var,
+      generated
+    )
+  } else {
+    sprintf(
+      "The label %s of `%s` is that of %s.",
+      .quote_val(shown),
+      var,
+      generated
+    )
+  }
+  fix <- if (identical(type, "level")) {
+    "Rename the level"
+  } else {
+    "Choose another label in `labels`"
+  }
+  spicy_abort(
+    c(
+      lead,
+      "i" = sprintf(
+        "%s, or give that %s another label: `options(spicy.labels = list(%s = %s))`.",
+        fix,
+        kind,
+        key,
+        .quote_val(example)
+      )
+    ),
+    class = c("spicy_label_collision", "spicy_invalid_input"),
+    call = call
+  )
+}
+
+
 # Quote a value for message text. `shQuote()` is SHELL quoting: it
 # renders '...' on Unix and "..." on Windows, so the same error would
 # read differently depending on where it was raised -- and a test that

@@ -23,6 +23,24 @@ workbook, or a PDF.
   sentence of its own: "Phi: smoking. Cramer's V: education." A
   semicolon joined them.
 
+* `table_categorical()` stops with an error (class
+  `spicy_label_collision`) when a level of a variable or of `by` reads
+  like the row or column it adds for missing values, or like its `Total`
+  margin. It renamed the added row or column `"(Missing_1)"` or
+  `"Total_1"`. Rename the level, or give the added row or column another
+  label with `options(spicy.labels)`, as the message shows.
+  `table_categorical_svy()`, `table_continuous()`,
+  `table_continuous_svy()`, and `table_outcome()` refuse such a level the
+  same way.
+
+* `table_categorical()`: `glance()` lists the variables in the order of
+  `select`, as the table and `tidy()` do. It sorted them by label.
+
+* `table_categorical()` gives the column name in `variable` and the
+  displayed label in `label`, in `output = "long"`, `tidy()`, and
+  `glance()`, as `table_categorical_svy()` does. `variable` held the
+  label, and `tidy()` and `glance()` called it `outcome`.
+
 * `table_categorical()`, `table_continuous()`, `table_continuous_lm()`,
   `table_outcome()`, `table_categorical_svy()`, and
   `table_continuous_svy()` show column names by default. The `label`
@@ -175,6 +193,10 @@ workbook, or a PDF.
   and `assoc_ci_upper` at `NA` unless the table was built with
   `assoc_ci = TRUE`. It reported the interval whatever `assoc_ci` said.
 
+* `glance()` on a `table_categorical_svy()` result built with
+  `include_total = FALSE` counts the whole sample in `nobs`. It counted
+  the last group only.
+
 * `inline()` with `model` cites the `p` and the association measure of a
   `table_categorical()` or `table_categorical_svy()` table, which belong
   to no group. Selecting a group dropped them, and the table's own `p`
@@ -236,9 +258,11 @@ workbook, or a PDF.
 * `table_outcome()` sets a no-break space before the semicolon that joins
   the tests of its comparison note in French.
 
-* `table_outcome()` names its marginal row "Overall_1", in the table and
-  in its note, when a `select` variable is labeled "Overall", so the
-  variable keeps its label and `inline()` reaches both rows.
+* `table_outcome()` stops with an error when a `select` variable is
+  displayed as "Overall", the label of its marginal row, where the table
+  showed two rows "Overall". Choose another label in `labels`, or relabel
+  the row with `options(spicy.labels)`, and the note then names the row as
+  the table shows it.
 
 * `table_regression()` writes the reference rows `(réf.)` under
   `options(spicy.language = "fr")`: `reference_label` now defaults to

@@ -40,8 +40,8 @@
 #' display never change the call. As a convenience, a `variable`
 #' that matches no source column is looked up among the displayed
 #' labels before erroring. The missing-value category is addressed by
-#' `level = "(Missing)"` whatever its displayed (possibly deduplicated)
-#' label, through its row role. Fit statistics are addressed by their
+#' `level = "(Missing)"` whatever its displayed (possibly translated or
+#' relabeled) label, through its row role. Fit statistics are addressed by their
 #' token as `variable` (`inline(tbl, "nobs")`, `inline(tbl, "r2")`) or by
 #' their label (`inline(tbl, "n")`). Identity comes first: a source column
 #' wins over a token or a label of the same name, and an exact label over
@@ -429,10 +429,11 @@ inline <- function(
   # IDENTITY FIRST, role second. The role shortcut exists because the
   # missing category's displayed label can be translated, and a caller
   # writing `level = "(Missing)"` should still reach it. But taken
-  # first it SHADOWED a real level literally named "(Missing)": the
-  # missing row is then auto-renamed "(Missing_1)", the table shows
-  # both, and `inline(tbl, g, "(Missing)")` quietly returned the other
-  # row's number -- the one thing this function must never do.
+  # first it SHADOWS a real level literally named "(Missing)" beside a
+  # missing row relabeled through `options(spicy.labels)` (the tables
+  # refuse the two under one label), and `inline(tbl, g, "(Missing)")`
+  # quietly returned the other row's number -- the one thing this
+  # function must never do.
   #
   # So: match `.level` exactly, and fall back to the role only when
   # nothing carries that level literally. With no collision the two

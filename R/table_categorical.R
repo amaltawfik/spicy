@@ -100,22 +100,120 @@
 
 # Display label of a group column. Group levels are DATA and travel
 # verbatim; the margin is the one member of `group_levels` that is a word
-# of ours -- but only while it keeps its default key. Renamed on collision
-# ("Total_1") it must show the disambiguated key, or a reader could no
-# longer tell the margin from the user's homonymous group.
+# of ours, whatever its key (see `.cat_margin_key()`): a level displayed
+# with the margin's label is refused before any header is built, so the
+# margin never needs another word to stand apart.
 #
 # One resolver for every engine: split it and the margin would translate
 # in some outputs and not in others.
 .cat_group_label <- function(g, margin_key = NULL) {
   if (
-    !is.null(margin_key) &&
-      identical(g, margin_key) &&
-      identical(margin_key, .CAT_MARGIN_KEY)
+    length(margin_key) == 1L &&
+      !is.na(margin_key) &&
+      identical(g, margin_key)
   ) {
     spicy_str("header_margin_total")
   } else {
     g
   }
+}
+
+# The KEY of the margin column of `table_categorical()`, its survey twin
+# and `table_multiresponse()`, and the refusal of a margin whose label one
+# of the group columns displays.
+#
+# `shown` are the group columns the table displays: the levels of `by`,
+# and the column of missing values when there is one (`missing_label`).
+# With `check`, a margin labeled like one of them is refused
+# (`.abort_label_collision()`): the reader could not tell the two columns
+# apart, and a numbered suffix on either would be an artifact.
+#
+# The key is another matter. It names the columns of the machine outputs
+# ("Total n") and is frozen English, so a level "Total" displayed beside a
+# margin relabeled through `options(spicy.labels)` still holds the key
+# "Total": the margin then takes the first free "Total_<i>", the repair
+# `make.unique()` makes on names, displayed under the margin's label and
+# recorded where the outputs name it (`total_group`, `margin_key`). The
+# repair runs without `check` too, so that a key never matches a group
+# the reading code would mistake for the margin.
+.cat_margin_key <- function(
+  shown,
+  by_name,
+  check = TRUE,
+  missing_label = NA_character_,
+  call = rlang::caller_env()
+) {
+  if (check) {
+    label <- spicy_str("header_margin_total")
+    if (identical(label, missing_label)) {
+      spicy_abort(
+        c(
+          sprintf(
+            "The column spicy adds for the missing values of `%s` and the margin column have the same label, %s.",
+            by_name,
+            .quote_val(label)
+          ),
+          "i" = "Give one of them another label: `options(spicy.labels = list(header_margin_total = \"All\"))`."
+        ),
+        class = c("spicy_label_collision", "spicy_invalid_input"),
+        call = call
+      )
+    }
+    if (label %in% shown) {
+      .abort_label_collision(
+        label,
+        by_name,
+        "level",
+        "the margin column spicy adds",
+        "column",
+        "header_margin_total",
+        "All",
+        call = call
+      )
+    }
+  }
+  key <- .CAT_MARGIN_KEY
+  idx <- 1L
+  while (key %in% shown) {
+    key <- paste0(.CAT_MARGIN_KEY, "_", idx)
+    idx <- idx + 1L
+  }
+  key
+}
+
+# The row of missing values of one variable, before it is appended
+# (`.add_missing_level()`): refused when the variable displays a level
+# with its label (`.abort_label_collision()`). A declared level with that
+# label and no observation is never displayed (the rows show the observed
+# levels), so it is dropped instead: the two cannot share one factor.
+# `levels_keep` names levels by their label and cannot tell the two rows
+# apart, so it does not lift the refusal.
+.cat_missing_row_guard <- function(
+  x,
+  missing_label,
+  var,
+  call = rlang::caller_env()
+) {
+  if (!missing_label %in% levels(x)) {
+    return(x)
+  }
+  if (any(x == missing_label, na.rm = TRUE)) {
+    .abort_label_collision(
+      missing_label,
+      var,
+      "level",
+      "the row spicy adds for missing values",
+      "row",
+      "row_missing_level",
+      "(Not stated)",
+      call = call
+    )
+  }
+  factor(
+    x,
+    levels = setdiff(levels(x), missing_label),
+    ordered = is.ordered(x)
+  )
 }
 
 # Coerce a column selected for tabulation to the factor that flows
@@ -700,18 +798,24 @@
 #'   with a classed warning (`spicy_no_selection`) listing the
 #'   available level strings.
 #' @param include_total Logical. If `TRUE` (the default), includes a `Total` group
-#'   when available.
+#'   when available. A level of `by` displayed with the label of that
+#'   margin is then an error (class `spicy_label_collision`): rename the
+#'   level, or give the margin another label with
+#'   `options(spicy.labels = list(header_margin_total = "All"))`.
 #' @param drop_na Logical. If `FALSE` (the default), missing values are
 #'   displayed as a dedicated `"(Missing)"` level (and, under `by`, a
 #'   `"(Missing)"` group column) -- the field convention for descriptive
 #'   tables (gtsummary's "Unknown" row, janitor's `NA` row; see the
-#'   Epidemiologist R Handbook, Descriptive tables). A level literally
-#'   named `"(Missing)"` keeps its label, and the missing-value row and
-#'   column take a numbered suffix, `"(Missing_1)"`. If `TRUE`,
-#'   rows with `NA` in the tabulated variable (and in `by`, when supplied)
-#'   are removed BEFORE each cross-tabulation, and the removal is
-#'   disclosed in a table note ("Missing values removed: ...") rather than
-#'   silent. Before 0.13.0 the default was `TRUE` with no disclosure.
+#'   Epidemiologist R Handbook, Descriptive tables). A level displayed
+#'   beside that row or column with its label is an error (class
+#'   `spicy_label_collision`): rename the level, or give the row another
+#'   label with
+#'   `options(spicy.labels = list(row_missing_level = "(Not stated)"))`.
+#'   If `TRUE`, rows with `NA` in the tabulated variable (and in `by`,
+#'   when supplied) are removed BEFORE each cross-tabulation, and the
+#'   removal is disclosed in a table note ("Missing values removed: ...")
+#'   rather than silent. Before 0.13.0 the default was `TRUE` with no
+#'   disclosure.
 #' @param weights Optional weights. Either `NULL` (the default), a numeric vector
 #'   of length `nrow(data)`, or a single column in `data` supplied as an
 #'   unquoted name or a character string.
@@ -933,8 +1037,9 @@
 #'     test, Pearson's or the N-1, and are `NA` for a variable tested by
 #'     an exact test.
 #'     When `by = NULL`, the columns are `Variable`, `Level`, `n`, `\%`.
-#'   \item `"long"`: a long `data.frame` with columns `variable`,
-#'     `level`, `n`, `pct` (plus `group` when `by` is used, and
+#'   \item `"long"`: a long `data.frame` with columns `variable` (the
+#'     column name), `label` (the label the rows display for it, see
+#'     `labels`), `level`, `n`, `pct` (plus `group` when `by` is used, and
 #'     `test_type`, `chi2`, `df`, `p` unless `p_value = FALSE`, as in
 #'     `"data.frame"`). The association measure is
 #'     always called `effect_size`,
@@ -1566,9 +1671,16 @@ table_categorical <- function(
   }
   labels <- resolve_variable_labels(data, select_names, labels)
   # The rows are keyed by column name, which no two variables share; two
-  # may show the same label. The label replaces the key where a frame is
-  # published.
+  # may show the same label. The wide frames show the label in place of
+  # the key; the long frames publish both, as `table_continuous()` does:
+  # `variable` the column name, `label` beside it the label displayed.
   label_of_key <- function(key) labels[match(key, select_names)]
+  with_label <- function(df) {
+    nm <- names(df)
+    at <- match("variable", nm)
+    df$label <- label_of_key(df$variable)
+    df[c(nm[seq_len(at)], "label", nm[-seq_len(at)])]
+  }
 
   if (
     !is.logical(include_total) ||
@@ -1832,30 +1944,15 @@ table_categorical <- function(
     rescale <- FALSE
   }
 
-  # Scan DECLARED factor levels as well as observed values: a level
-  # literally named "(Missing)" that is declared but never observed
-  # would otherwise slip past the guard, and .add_missing_level()
-  # would then build factor(levels = c(..., "(Missing)", "(Missing)"))
-  # -- a raw "factor level is duplicated" crash.
-  all_values <- unique(unlist(
-    lapply(c(select_names, by_name), function(nm) {
-      col <- data[[nm]]
-      c(as.character(col), levels(col))
-    }),
-    use.names = FALSE
-  ))
+  # The label of the row (and, under `by`, the column) of missing values.
+  # A variable that displays a level with this label beside that row is
+  # refused where the row is appended (`.cat_missing_row_guard()`), and so
+  # is a `by` beside that column, so the label is never renamed. The rows
+  # of missing values are those of the variables in `missing_vars`, which
+  # the typed view reads: a level with this label in a variable without
+  # missing values is a level.
   missing_label <- spicy_str("row_missing_level")
-  if (missing_label %in% all_values) {
-    idx <- 1L
-    repeat {
-      candidate <- spicy_fmt("row_missing_level_dedup", idx)
-      if (!(candidate %in% all_values)) {
-        missing_label <- candidate
-        break
-      }
-      idx <- idx + 1L
-    }
-  }
+  missing_vars <- character(0)
 
   # `measure_key` is the measure the caller ASKED this row for, as a key
   # ("cramer_v", ..., or "none"). It rides through in `measure` so the
@@ -2108,8 +2205,11 @@ table_categorical <- function(
       if (!length(x)) {
         next
       }
-      if (!drop_na && anyNA(x)) {
+      x_has_na <- !drop_na && anyNA(x)
+      if (x_has_na) {
+        x <- .cat_missing_row_guard(x, missing_label, select_names[i])
         x <- .add_missing_level(x, missing_label)
+        missing_vars <- c(missing_vars, select_names[i])
       }
 
       ft <- if (is.null(w)) {
@@ -2132,9 +2232,12 @@ table_categorical <- function(
       raw_levels <- vals[!is.na(vals)]
 
       lv_use <- if (is.null(levels_keep)) {
-        known <- intersect(var_level_order, raw_levels)
-        extra <- setdiff(raw_levels, c(var_level_order, missing_label))
-        missing_end <- intersect(raw_levels, missing_label)
+        # The row of missing values goes last, and only a variable that
+        # has one: elsewhere a level with its label keeps its own place.
+        ml <- if (x_has_na) missing_label else character(0)
+        known <- intersect(setdiff(var_level_order, ml), raw_levels)
+        extra <- setdiff(raw_levels, c(var_level_order, ml))
+        missing_end <- intersect(raw_levels, ml)
         c(known, extra, missing_end)
       } else {
         intersect(as.character(levels_keep), raw_levels)
@@ -2210,7 +2313,7 @@ table_categorical <- function(
     }
 
     if (output == "long") {
-      long_raw$variable <- label_of_key(long_raw$variable)
+      long_raw <- with_label(long_raw)
       # Every data frame carries the note as print() shows it.
       attr(long_raw, "note") <- .categorical_note(build_missing_note(), NULL)
       return(long_raw)
@@ -2356,6 +2459,7 @@ table_categorical <- function(
       labels = labels,
       levels_keep = levels_keep,
       missing_label = missing_label,
+      missing_vars = missing_vars,
       indent_text = indent_text,
       percent_digits = percent_digits,
       p_digits = p_digits,
@@ -2374,10 +2478,8 @@ table_categorical <- function(
       attr(out, "indent_text") <- indent_text
       attr(out, "align") <- align
       attr(out, "decimal_mark") <- decimal_mark
-      # `long_data` keeps the column name beside the label, for glance().
-      long_raw$.variable <- long_raw$variable
-      long_raw$variable <- label_of_key(long_raw$variable)
-      attr(out, "long_data") <- long_raw
+      # The long frame of `output = "long"`, for tidy() and glance().
+      attr(out, "long_data") <- with_label(long_raw)
       attr(out, "structured") <- structured
       # See `.style_stamp()`: the style levers with no argument have to
       # outlive this call, because `inline()` re-formats the typed body
@@ -2892,8 +2994,8 @@ table_categorical <- function(
   # refuse a legitimate two-group table (`include_total = TRUE` is the
   # default, so the naive count is off by one on EVERY grouped table),
   # and a `setdiff()` by name would be defeated by a user level
-  # homonymous with either -- both of which are auto-renamed on
-  # collision, precisely because they are display strings.
+  # homonymous with the margin's key once it is relabeled (see
+  # `.cat_margin_key()`).
   real_group_levels <- group_levels
   if (do_smd && length(real_group_levels) != 2L) {
     spicy_abort(
@@ -2921,8 +3023,22 @@ table_categorical <- function(
   } else {
     factor(as.character(g0), levels = group_levels)
   }
+  # The column of missing values of `by`. Every level of `by` is displayed,
+  # a declared one nobody holds included (a zero column), so one with the
+  # label of that column is refused.
   if (!drop_na && any(is.na(g0))) {
-    group_levels <- unique(c(group_levels, missing_label))
+    if (missing_label %in% group_levels) {
+      .abort_label_collision(
+        missing_label,
+        by_name,
+        "level",
+        "the column spicy adds for missing values",
+        "column",
+        "row_missing_level",
+        "(Not stated)"
+      )
+    }
+    group_levels <- c(group_levels, missing_label)
   }
   # No group left to tabulate. The group columns are keyed
   # `paste0(<level>, " n")`, and `paste0(character(0), " n")` is " n" --
@@ -2959,51 +3075,26 @@ table_categorical <- function(
   # `total_group` attribute, and every site that recognizes the margin --
   # the wide and report fills, the typed view's `total` flag, tidy() and
   # glance() -- compares it against another key, never against a rendered
-  # header.
-  #
-  # The key is "Total" unless the by-variable has a level literally named
-  # "Total", in which case the first free "Total_<i>" is used -- mirroring
-  # cross_tab()'s own margin auto-rename -- so the user's group keeps its
-  # name and position among the group columns while the true margin is
-  # always present and unambiguous. (Before 0.13.0 the margin silently
-  # vanished and the user's "Total" group posed as it.)
-  margin_key <- .CAT_MARGIN_KEY
-  if (margin_key %in% group_levels) {
-    idx <- 1L
-    repeat {
-      candidate <- paste0(.CAT_MARGIN_KEY, "_", idx)
-      if (!(candidate %in% group_levels)) {
-        margin_key <- candidate
-        break
-      }
-      idx <- idx + 1L
-    }
-  }
+  # header. A level of `by` displayed with the margin's label is refused
+  # (`.cat_margin_key()`); the key is "Total" unless a level holds it, as
+  # under a margin relabeled through `options(spicy.labels)`. (Before
+  # 0.13.0 the margin silently vanished and the user's "Total" group posed
+  # as it.)
+  margin_key <- .cat_margin_key(
+    group_levels,
+    by_name,
+    check = include_total,
+    missing_label = if (!drop_na && any(is.na(g0))) missing_label
+  )
   if (include_total) {
-    if (!identical(margin_key, .CAT_MARGIN_KEY)) {
-      spicy_warn(
-        c(
-          sprintf(
-            "`%s` has a group level literally named \"Total\", which collides with the margin column; the margin is displayed as \"%s\".",
-            by_name,
-            margin_key
-          ),
-          "i" = "Rename the conflicting `by` level to restore the default margin label."
-        ),
-        class = "spicy_renamed_column"
-      )
-    }
     group_levels <- c(group_levels, margin_key)
   }
   # The margin key names a COLUMN only when the margin is displayed;
   # otherwise it is a disambiguation artifact with no header to label.
-  # Stage-2 note: the collision loop above compares `by` levels to the
-  # KEY, so once the margin's header is translated a user level may
-  # print the same word as the margin without triggering the rename.
   margin_col_key <- if (include_total) margin_key else NULL
-  # The margin collision is disclosed once, above; the identical
-  # per-call disclosures the internal cross_tab() calls would emit
-  # (three per variable) are muffled as redundant noise.
+  # The internal cross_tab() calls rename their own margin when `g` has a
+  # level "Total" (the margin then relabeled here), with a warning that
+  # names a column this table never shows: muffled as noise.
   quiet_margin <- function(expr) {
     withCallingHandlers(
       expr,
@@ -3061,7 +3152,9 @@ table_categorical <- function(
       x_has_na <- anyNA(x)
       g_has_na <- anyNA(g)
       if (x_has_na) {
+        x <- .cat_missing_row_guard(x, missing_label, select_names[i])
         x <- .add_missing_level(x, missing_label)
+        missing_vars <- c(missing_vars, select_names[i])
       }
       if (g_has_na) {
         g <- .add_missing_level(g, missing_label)
@@ -3102,10 +3195,15 @@ table_categorical <- function(
     # `simulate_p` reach only a variable the chi-squared tests -- a Yates
     # warning about a table the exact test reads, or Monte Carlo draws for
     # a chi-squared nobody sees, would be noise.
-    cc <- if (has_missing_level) {
-      x != missing_label & g != missing_label
-    } else {
-      rep(TRUE, length(x))
+    # Each side drops its OWN row or column of missing values, and only
+    # when it has one: a level with that label on the other side is a
+    # level and is tested.
+    cc <- rep(TRUE, length(x))
+    if (x_has_na) {
+      cc <- cc & x != missing_label
+    }
+    if (g_has_na) {
+      cc <- cc & g != missing_label
     }
     test_kind <- NA_character_
     test_tab <- NULL
@@ -3222,8 +3320,11 @@ table_categorical <- function(
     smd_kind <- NA_character_
     if (do_smd) {
       cc <- !is.na(x) & !is.na(g)
-      if (has_missing_level) {
-        cc <- cc & x != missing_label & g != missing_label
+      if (x_has_na) {
+        cc <- cc & x != missing_label
+      }
+      if (g_has_na) {
+        cc <- cc & g != missing_label
       }
       if (!is.null(w)) {
         cc <- cc & !is.na(w) & w > 0
@@ -3288,10 +3389,13 @@ table_categorical <- function(
     margin_rows_n <- attr(ct_n, "total_row_idx")
     raw_levels <- unique(vals_n[setdiff(seq_along(vals_n), margin_rows_n)])
     lv_use <- if (is.null(levels_keep)) {
-      # Reorder to match original factor/occurrence order
-      known <- intersect(var_level_order, raw_levels)
-      extra <- setdiff(raw_levels, c(var_level_order, missing_label))
-      missing_end <- intersect(raw_levels, missing_label)
+      # Reorder to match original factor/occurrence order, the row of
+      # missing values last in the variable that has one (see the no-by
+      # branch).
+      ml <- if (x_has_na) missing_label else character(0)
+      known <- intersect(setdiff(var_level_order, ml), raw_levels)
+      extra <- setdiff(raw_levels, c(var_level_order, ml))
+      missing_end <- intersect(raw_levels, ml)
       c(known, extra, missing_end)
     } else {
       intersect(as.character(levels_keep), vals_n)
@@ -3565,8 +3669,7 @@ table_categorical <- function(
   )
 
   if (output == "long") {
-    out <- long_raw
-    out$variable <- label_of_key(out$variable)
+    out <- with_label(long_raw)
     out$p_op <- NULL
     if (!show_assoc || !assoc_ci) {
       out$ci_lower <- NULL
@@ -3883,6 +3986,7 @@ table_categorical <- function(
     labels = labels,
     levels_keep = levels_keep,
     missing_label = missing_label,
+    missing_vars = missing_vars,
     indent_text = indent_text,
     percent_digits = percent_digits,
     p_digits = p_digits,
@@ -3914,17 +4018,16 @@ table_categorical <- function(
     attr(out, "indent_text") <- indent_text
     attr(out, "align") <- align
     attr(out, "decimal_mark") <- decimal_mark
-    # `long_data` keeps the column name beside the label, for glance().
-    long_raw$.variable <- long_raw$variable
-    long_raw$variable <- label_of_key(long_raw$variable)
-    attr(out, "long_data") <- long_raw
+    # The long frame of `output = "long"`, for tidy() and glance().
+    attr(out, "long_data") <- with_label(long_raw)
     attr(out, "assoc_note") <- assoc_note_text
     attr(out, "structured") <- structured
     if (include_total) {
-      # The internal key of the margin group in `long_data` ("Total",
-      # or the auto-renamed "Total_<i>" when a `by` level collides).
-      # Read by tidy() / glance() to drop the margin without ever
-      # mistaking a user group named "Total" for it.
+      # The internal key of the margin group in `long_data` ("Total", or
+      # the first free "Total_<i>" when a `by` level holds that key beside
+      # a relabeled margin; see `.cat_margin_key()`). Read by tidy() /
+      # glance() to drop the margin without ever mistaking a user group
+      # named "Total" for it.
       attr(out, "total_group") <- margin_key
     }
     # See `.style_stamp()`: the style levers with no argument have to

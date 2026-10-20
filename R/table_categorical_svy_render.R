@@ -334,7 +334,8 @@
       # puts on its group columns, so a consumer written against
       # `table_categorical()` reads this table with no change. The
       # margin is told apart by a FLAG, never by its label -- "Total"
-      # is a display string and is auto-renamed on collision.
+      # is a display string, and its key can be "Total_1"
+      # (`.cat_margin_key()`).
       meta$group <- e$block
       if (identical(e$block, margin_key)) {
         meta$total <- TRUE

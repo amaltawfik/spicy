@@ -217,8 +217,18 @@ glance.spicy_categorical_svy_table <- function(x, ...) {
   wide <- unclass_spicy_categorical_svy_table(x)
   meta <- attr(x, "design_meta", exact = TRUE)
   blocks <- attr(x, "blocks", exact = TRUE)
-  margin <- if (is.na(blocks[[1L]])) NA_character_ else blocks[[length(blocks)]]
-  n_key <- .cat_svy_key_n(if (is.na(margin)) NA_character_ else margin)
+  margin <- attr(x, "margin_key", exact = TRUE)
+  # The observed count of the whole sample: the one-way block, or the
+  # margin. Without a margin (`include_total = FALSE`) the groups partition
+  # the sample and their counts add up; the last block, read before, was a
+  # group.
+  n_keys <- if (is.na(blocks[[1L]])) {
+    .cat_svy_key_n(NA_character_)
+  } else if (length(margin) == 1L && !is.na(margin)) {
+    .cat_svy_key_n(margin)
+  } else {
+    vapply(blocks, .cat_svy_key_n, character(1))
+  }
   headers <- wide$.row_role == "factor_header"
   vars <- wide$variable[headers]
   .svy_as_tbl(data.frame(
@@ -242,7 +252,10 @@ glance.spicy_categorical_svy_table <- function(x, ...) {
     degf = rep(meta$degf %||% NA_real_, length(vars)),
     nobs = vapply(
       vars,
-      function(v) sum(wide[[n_key]][!headers & wide$variable == v]),
+      function(v) {
+        rows <- !headers & wide$variable == v
+        sum(unlist(wide[rows, n_keys, drop = FALSE], use.names = FALSE))
+      },
       numeric(1),
       USE.NAMES = FALSE
     ),

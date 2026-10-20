@@ -1372,20 +1372,85 @@ test_that("`labels`, a comma mark and a journal style all reach the table", {
   )
 })
 
-test_that("a group whose name collides with the margin is disambiguated", {
+test_that("a group displayed with the margin's label is refused", {
   skip_if_not_installed("survey")
   data(api, package = "survey", envir = environment())
   dat <- apiclus1
   dat$g <- ifelse(dat$sch.wide == "Yes", "Total", "other")
   des <- survey::svydesign(id = ~dnum, weights = ~pw, data = dat, fpc = ~fpc)
+  err <- expect_error(
+    table_categorical_svy(des, select = stype, by = g),
+    class = "spicy_label_collision"
+  )
+  expect_match(conditionMessage(err), "header_margin_total", fixed = TRUE)
+  # Without the margin, nothing collides.
+  expect_true(
+    "Total n" %in%
+      names(.svycat_long(des, select = stype, by = g, include_total = FALSE))
+  )
+  # The margin relabeled: the user's "Total" keeps its own columns; the
+  # margin, displayed "All", takes the disambiguated key.
+  withr::local_options(spicy.labels = list(header_margin_total = "All"))
   out <- .svycat_long(des, select = stype, by = g)
-  # The user's "Total" keeps its own columns; the margin takes the
-  # disambiguated key.
   expect_true("Total n" %in% names(out))
   expect_true("Total_1 n" %in% names(out))
   s <- as_structured(table_categorical_svy(des, select = stype, by = g))
   expect_true(isTRUE(s$col_meta[["Total_1 %"]]$total))
+  expect_identical(s$col_meta[["Total_1 %"]]$display_label, "All %")
   expect_null(s$col_meta[["Total %"]]$total)
+})
+
+test_that("a level displayed beside the row of missing values is refused", {
+  skip_if_not_installed("survey")
+  data(api, package = "survey", envir = environment())
+  dat <- apiclus1
+  levels(dat$stype)[levels(dat$stype) == "M"] <- "(Missing)"
+  dat$stype[1:3] <- NA
+  des <- survey::svydesign(id = ~dnum, weights = ~pw, data = dat, fpc = ~fpc)
+  err <- expect_error(
+    table_categorical_svy(des, select = stype),
+    class = "spicy_label_collision"
+  )
+  expect_match(
+    conditionMessage(err),
+    "The level \"(Missing)\" of `stype` has the label of the row spicy adds",
+    fixed = TRUE
+  )
+  # `drop_na = TRUE` adds no row.
+  expect_s3_class(
+    table_categorical_svy(des, select = stype, drop_na = TRUE),
+    "spicy_categorical_svy_table"
+  )
+  withr::local_options(
+    spicy.labels = list(row_missing_level = "(Not stated)")
+  )
+  tbl <- table_categorical_svy(des, select = stype)
+  expect_identical(
+    tbl$level[tbl$.row_role != "factor_header"],
+    c("E", "H", "(Missing)", "(Not stated)")
+  )
+  expect_identical(
+    tbl$.row_role[tbl$.row_role != "factor_header"],
+    c("level", "level", "level", "missing")
+  )
+})
+
+test_that("glance() counts the whole sample without a margin", {
+  # `nobs` read the LAST block, which is a group under
+  # `include_total = FALSE`: 160 of the 183 schools.
+  skip_if_not_installed("survey")
+  des <- .svycat_design("clus1")
+  with_total <- broom::glance(
+    table_categorical_svy(des, select = c(stype, awards), by = sch.wide)
+  )
+  without <- broom::glance(table_categorical_svy(
+    des,
+    select = c(stype, awards),
+    by = sch.wide,
+    include_total = FALSE
+  ))
+  expect_identical(with_total$nobs, c(183, 183))
+  expect_identical(without$nobs, with_total$nobs)
 })
 
 

@@ -257,8 +257,10 @@
 # Row geometry is the console's: one `factor_header` row per variable,
 # then one row per displayed level -- `level`, or `missing` when the
 # level is the missing-value display category. The role is the KEY,
-# never the label: `(Missing)` renamed on collision (`(Missing_1)`,
-# ...) or translated one day still reads as `missing`.
+# never the label: `missing_vars` names the variables whose row of
+# missing values the table added, so a translated `(Missing)` still
+# reads as `missing`, and a level with that label in another variable
+# (one without missing values) as `level`.
 #
 # Columns: `n` / `pct` per group (one spanner per group level in a
 # `by` table, the margin flagged `total = TRUE` in its `col_meta`),
@@ -279,6 +281,7 @@
   decimal_mark,
   group_levels = NULL,
   margin_key = NULL,
+  missing_vars = character(0),
   measure_col = NULL,
   measure_label = NULL,
   show_p = TRUE,
@@ -327,8 +330,9 @@
       )
       if (identical(g, margin_key)) {
         # The margin, told apart from a user group by a FLAG rather
-        # than by its label: "Total" is a display string (and is
-        # auto-renamed on collision), the flag is the key.
+        # than by its label: "Total" is a display string (and its key
+        # can be "Total_1", see `.cat_margin_key()`), the flag is the
+        # key.
         col_meta[[n_col]]$total <- TRUE
         col_meta[[p_col]]$total <- TRUE
       }
@@ -483,7 +487,13 @@
           values = values,
           variable = var_name,
           level = lv,
-          role = if (identical(lv, missing_label)) "missing" else "level",
+          role = if (
+            var_name %in% missing_vars && identical(lv, missing_label)
+          ) {
+            "missing"
+          } else {
+            "level"
+          },
           indent = 1L
         )
       }

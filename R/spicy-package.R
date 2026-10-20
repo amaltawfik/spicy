@@ -152,6 +152,12 @@
 #'       \item \code{spicy_bad_authors} -- the `authors` argument of
 #'         [code_book()] has none of its accepted shapes. Signaled
 #'         together with \code{spicy_invalid_input}.
+#'       \item \code{spicy_label_collision} -- a label a summary table
+#'         adds (the row or column of missing values, the margin, a base
+#'         row, the `Overall` row) would be displayed beside a level, a
+#'         value or a label of yours that reads the same. Signaled
+#'         together with \code{spicy_invalid_input}; the message gives
+#'         the two ways out.
 #'       \item \code{spicy_internal} -- an internal precondition
 #'         failed; this is a bug in spicy, please report it.
 #'       \item \code{spicy_internal_invariant} -- an internal

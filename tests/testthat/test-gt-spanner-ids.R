@@ -71,48 +71,40 @@ test_that(".gt_safe_ids is still the identity on ordinary keys", {
 # ---- n. 219: a `by` level literally named "Total" ------------------------
 
 # The register recorded this as the dedup "leaking from the id into the
-# visible label". It does not: the USER's level prints verbatim and it is
-# the MARGIN -- spicy's own column -- that takes the disambiguated key, on
-# purpose, with a warning, so a reader can still tell the two apart.
-test_that("a by level named Total keeps its name; the margin is renamed", {
+# visible label". The margin used to take the label "Total_1"; a level
+# displayed beside the margin under its label is now refused, and the
+# margin, relabeled, keeps the disambiguated KEY only.
+test_that("a by level named Total beside the margin is refused", {
   d <- .spn_data(c("Total", "Other"))
-  tbl <- withCallingHandlers(
+  expect_error(
     table_categorical(d, f, by = g),
-    spicy_renamed_column = function(w) invokeRestart("muffleWarning")
+    class = "spicy_label_collision"
   )
-  out <- paste(capture.output(print(tbl)), collapse = "\n")
+  withr::local_options(spicy.labels = list(header_margin_total = "All"))
+  out <- paste(
+    capture.output(print(table_categorical(d, f, by = g))),
+    collapse = "\n"
+  )
   expect_match(out, "Total n", fixed = TRUE) # the user's level, verbatim
   expect_match(out, "Other n", fixed = TRUE)
-  expect_match(out, "Total_1 n", fixed = TRUE) # the margin, disambiguated
-})
-
-test_that("the margin rename is disclosed, not silent", {
-  d <- .spn_data(c("Total", "Other"))
-  expect_warning(
-    table_categorical(d, f, by = g),
-    class = "spicy_renamed_column"
-  )
-  expect_warning(
-    table_categorical(d, f, by = g),
-    "collides with the margin column"
-  )
+  expect_match(out, "All n", fixed = TRUE) # the margin, relabeled
+  expect_no_match(out, "Total_1", fixed = TRUE)
 })
 
 test_that("the gt spanners carry three distinct ids built from the n columns", {
   skip_if_not_installed("gt")
   d <- .spn_data(c("Total", "Other"))
-  tbl <- withCallingHandlers(
-    table_categorical(d, f, by = g, output = "gt"),
-    spicy_renamed_column = function(w) invokeRestart("muffleWarning")
-  )
+  withr::local_options(spicy.labels = list(header_margin_total = "All"))
+  tbl <- table_categorical(d, f, by = g, output = "gt")
   ids <- .spn_html_ids(tbl)
   expect_identical(anyDuplicated(ids), 0L)
   # The spanner id is `spn_` + the machine id of the group's n column
-  # (gt >= 1.4.0 writes it on the spanner `<th>`); the visible labels
-  # stay "Total", "Other" and the renamed margin "Total_1".
+  # (gt >= 1.4.0 writes it on the spanner `<th>`), so the margin's id
+  # follows its key; the visible labels are "Total", "Other" and "All".
   expect_true(all(
     c('id="spn_Total_n"', 'id="spn_Other_n"', 'id="spn_Total_1_n"') %in% ids
   ))
   labels <- tbl[["_spanners"]][["spanner_label"]]
-  expect_true(all(c("Total", "Other", "Total_1") %in% labels))
+  expect_true(all(c("Total", "Other", "All") %in% labels))
+  expect_false("Total_1" %in% labels)
 })

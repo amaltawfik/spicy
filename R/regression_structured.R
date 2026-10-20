@@ -104,8 +104,8 @@
 #         total = NULL | TRUE,      # descriptive: the column belongs
 #                                   # to the MARGIN group. A flag, not
 #                                   # a label match: "Total" is a
-#                                   # display string and is auto-
-#                                   # renamed on collision.
+#                                   # display string, and its key can
+#                                   # be "Total_1".
 #         display_cells = NULL | chr  # per-cell display override, len
 #                                   # nrow(body), NA where the numeric
 #                                   # value formats normally. Carries
@@ -218,8 +218,9 @@
 # three the descriptive families add (R/tables_structured.R). The
 # vocabulary is EXTENDED, never re-worded: a role says what a row IS,
 # so it is the key a consumer matches on -- never the displayed label,
-# which is a display string ("(Missing)", auto-renamed on collision,
-# translatable) and can change without the row changing.
+# which is a display string ("(Missing)", translatable, relabeled
+# through `options(spicy.labels)`) and can change without the row
+# changing.
 #   summary  a row that summarizes one variable with no sub-key (a
 #            continuous variable, a modeled outcome).
 #   group    a row keyed by one level of the `by` variable.

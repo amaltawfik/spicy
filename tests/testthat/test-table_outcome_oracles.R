@@ -177,7 +177,7 @@ test_that("we open on a marginal row, gtsummary has none", {
   expect_identical(tbl$.row_role[[1L]], "summary")
   expect_identical(
     attr(tbl, "display_df")$Variable[[1L]],
-    spicy:::.outcome_overall_label()
+    spicy_str("row_overall")
   )
 })
 

@@ -370,11 +370,14 @@
 #' @param levels_keep Levels to keep, as a character vector (all
 #'   variables) or a named list (per variable).
 #' @param include_total Add a `Total` column block with the whole
-#'   design's percentages (default `TRUE`, only with `by`).
+#'   design's percentages (default `TRUE`, only with `by`). A group
+#'   displayed with the label of that block is an error, as in
+#'   [table_categorical()].
 #' @param drop_na Drop missing values (default `FALSE`: they show as a
-#'   `(Missing)` level). Shown or dropped, they never enter the test:
-#'   the p-value is computed on the complete cases either way, which is
-#'   the convention [table_categorical()] applies.
+#'   `(Missing)` level, and a level displayed with that label beside them
+#'   is an error, as in [table_categorical()]). Shown or dropped, they
+#'   never enter the test: the p-value is computed on the complete cases
+#'   either way, which is the convention [table_categorical()] applies.
 #' @param proportion_ci Add the confidence interval of each percentage.
 #' @param ci_method Interval method passed to `survey::svyciprop()`:
 #'   `"logit"` (default), `"likelihood"`, `"asin"`, `"beta"`,
@@ -659,26 +662,37 @@ table_categorical_svy <- function(
   group_keys <- NA_character_
   missing_group_label <- NA_character_
   if (has_group) {
-    geom <- .svy_by_levels(vars[[group_col_name]], drop_na)
+    geom <- .svy_by_levels(
+      vars[[group_col_name]],
+      drop_na,
+      group_col_name,
+      "column"
+    )
     if (drop_na && geom$n_na > 0L) {
       by_na_dropped <- geom$n_na
       design <- .design_subset(design, !is.na(vars[[group_col_name]]))
       vars <- design$variables
-      geom <- .svy_by_levels(vars[[group_col_name]], drop_na)
+      geom <- .svy_by_levels(
+        vars[[group_col_name]],
+        drop_na,
+        group_col_name,
+        "column"
+      )
     }
     group_keys <- geom$levels
     missing_group_label <- geom$missing_label
   }
   # The margin is the LAST block and carries the whole design, which is
-  # what makes it the denominator a reader checks the others against.
+  # what makes it the denominator a reader checks the others against. A
+  # group displayed with its label is refused, as in `table_categorical()`
+  # (`.cat_margin_key()`).
   margin_key <- NA_character_
   if (include_total) {
-    margin_key <- .CAT_MARGIN_KEY
-    idx <- 1L
-    while (margin_key %in% group_keys) {
-      margin_key <- paste0(.CAT_MARGIN_KEY, "_", idx)
-      idx <- idx + 1L
-    }
+    margin_key <- .cat_margin_key(
+      group_keys,
+      group_col_name,
+      missing_label = missing_group_label
+    )
   }
   blocks <- if (has_group) {
     c(group_keys, margin_key[!is.na(margin_key)])
@@ -717,7 +731,7 @@ table_categorical_svy <- function(
   n_test_refused <- 0L
   for (i in seq_along(select_names)) {
     nm <- select_names[[i]]
-    lv <- .svy_by_levels(.tab_factor(vars[[nm]]), drop_na)
+    lv <- .svy_by_levels(.tab_factor(vars[[nm]]), drop_na, nm)
     if (lv$n_na > 0L && drop_na) {
       na_dropped[[nm]] <- lv$n_na
     }
@@ -764,7 +778,7 @@ table_categorical_svy <- function(
     for (b in blocks) {
       dom <- domains[[.cat_svy_block_id(b)]]
       dom$variables[[nm]] <- factor(
-        .svy_by_levels(.tab_factor(dom$variables[[nm]]), drop_na)$values,
+        .svy_by_levels(.tab_factor(dom$variables[[nm]]), drop_na, nm)$values,
         levels = levels_all
       )
       domains[[.cat_svy_block_id(b)]] <- dom

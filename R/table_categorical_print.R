@@ -298,20 +298,21 @@ as_tibble.spicy_categorical_table <- function(x, ...) {
 #' table can be consumed by any downstream tidyverse-stats pipeline.
 #'
 #' `tidy()` returns one row per `(variable x level)` -- or per
-#' `(variable x level x group)` when `by` is used -- with
-#' broom-conventional columns: `outcome`, `level`, `group` (when
-#' applicable), `n`, `proportion` (the percentage divided by 100).
+#' `(variable x level x group)` when `by` is used -- with columns
+#' `variable` (the column name), `label` (the label the rows display for
+#' it, see `labels`), `level`, `group` (when applicable), `n`,
+#' `proportion` (the percentage divided by 100).
 #'
-#' `glance()` returns one row per outcome with its test (when `by` is
-#' used) and the requested association measure: `outcome`, `test_type`
-#' (`"chi_squared"`, `"n1_chi_squared"`, `"fisher_exact"`,
-#' `"fisher_midp"`, or `"fisher_exact_mc"`, as in the data frames of
-#' [table_categorical()]), `statistic` (the chi-squared, Pearson's or the
-#' N-1, `NA` for an exact test), `df`, `p.value`, `assoc_type`,
-#' `assoc_value`, `assoc_ci_lower`, `assoc_ci_upper`, `n_total`. Without
-#' `by`, only `outcome` and `n_total` are populated; the other columns are
-#' `NA`. The interval bounds are `NA` unless the table was built with
-#' `assoc_ci = TRUE`.
+#' `glance()` returns one row per variable, in the order of `select`, with
+#' its test (when `by` is used) and the requested association measure:
+#' `variable`, `label`, `test_type` (`"chi_squared"`, `"n1_chi_squared"`,
+#' `"fisher_exact"`, `"fisher_midp"`, or `"fisher_exact_mc"`, as in the
+#' data frames of [table_categorical()]), `statistic` (the chi-squared,
+#' Pearson's or the N-1, `NA` for an exact test), `df`, `p.value`,
+#' `assoc_type`, `assoc_value`, `assoc_ci_lower`, `assoc_ci_upper`,
+#' `n_total`. Without `by`, only `variable`, `label` and `n_total` are
+#' populated; the other columns are `NA`. The interval bounds are `NA`
+#' unless the table was built with `assoc_ci = TRUE`.
 #'
 #' @param x A `spicy_categorical_table` returned by [table_categorical()].
 #' @param ... Currently ignored. Present for compatibility with the
@@ -346,9 +347,9 @@ tidy.spicy_categorical_table <- function(x, ...) {
   # TRUE`, the default). It is a marginal aggregate, not a real group
   # level, and including it would mean `tidy()` reports each
   # observation twice. Its key is carried by the `total_group`
-  # attribute ("Total", or the auto-renamed "Total_<i>" when a `by`
-  # level is literally called "Total"), so a user group named "Total"
-  # is never mistaken for the margin. Users who need the marginal can
+  # attribute ("Total", or "Total_<i>" when a `by` level holds that key
+  # beside a relabeled margin), so a user group named "Total" is never
+  # mistaken for the margin. Users who need the marginal can
   # derive it via `dplyr::summarise()` on the tidy output.
   if (has_group) {
     margin_key <- attr(x, "total_group", exact = TRUE)
@@ -365,8 +366,11 @@ tidy.spicy_categorical_table <- function(x, ...) {
     rep(NA_real_, nrow(long))
   }
 
+  # `variable` holds the column name and `label` the label the rows
+  # display, as in the long output and in the other summary tables.
   cols <- list(
-    outcome = long$variable,
+    variable = long$variable,
+    label = long$label %||% long$variable,
     level = long$level
   )
   if (has_group) {
@@ -413,9 +417,7 @@ glance.spicy_categorical_table <- function(x, ...) {
   has_test <- "p" %in% names(long)
   std_cols <- c(
     "variable",
-    # The column name `long_data` keeps beside the label: the key of the
-    # rows below, never a measure.
-    ".variable",
+    "label",
     "level",
     "group",
     "n",
@@ -460,25 +462,17 @@ glance.spicy_categorical_table <- function(x, ...) {
   has_assoc_ci <- all(c("ci_lower", "ci_upper") %in% names(long)) &&
     .CAT_KEY_CI_LL %in% names(x)
 
-  # One row per variable, keyed by its column name (`.variable`; a
-  # hand-built object has only the label): two variables may show one
-  # label. The rows keep the alphabetical order of the labels, which
-  # `split()` on the labels gave, and variables sharing a label follow
-  # `select`.
-  key <- long[[".variable"]] %||% long$variable
-  keys <- unique(key)
-  keys <- keys[order(
-    as.integer(factor(long$variable[match(keys, key)])),
-    method = "radix"
-  )]
-  by_var <- split(long, factor(key, levels = keys), drop = FALSE)
-  outcomes <- long$variable[match(keys, key)]
+  # One row per variable, keyed by its column name, in the order of
+  # `select`, which the long frame keeps: two variables may show one
+  # label, and the table, tidy() and glance() list the variables alike.
+  keys <- unique(long$variable)
+  by_var <- split(long, factor(long$variable, levels = keys), drop = FALSE)
+  labels <- (long$label %||% long$variable)[match(keys, long$variable)]
   # In a cross-tab with `include_total = TRUE` (the default), the
   # long format also stores a synthetic margin group whose `n` are
   # already the sum across the real groups. Its key comes from the
-  # `total_group` attribute ("Total", or the auto-renamed
-  # "Total_<i>" when a `by` level is literally called "Total");
-  # excluding those rows before summing avoids double-counting.
+  # `total_group` attribute (see tidy() above); excluding those rows
+  # before summing avoids double-counting.
   glance_margin <- attr(x, "total_group", exact = TRUE)
   n_total <- vapply(
     by_var,
@@ -496,7 +490,8 @@ glance.spicy_categorical_table <- function(x, ...) {
   }
 
   result <- data.frame(
-    outcome = outcomes,
+    variable = keys,
+    label = labels,
     # The test each variable took (`test`): the chi-squared or Fisher's
     # exact test, read from the compute frame like the statistic.
     test_type = if (has_test) {
@@ -506,12 +501,12 @@ glance.spicy_categorical_table <- function(x, ...) {
         character(1)
       )
     } else {
-      rep(NA_character_, length(outcomes))
+      rep(NA_character_, length(keys))
     },
     statistic = if (has_test) {
       vapply(by_var, function(b) pick_first(b, "chi2"), numeric(1))
     } else {
-      rep(NA_real_, length(outcomes))
+      rep(NA_real_, length(keys))
     },
     df = if (has_test) {
       vapply(
@@ -520,32 +515,32 @@ glance.spicy_categorical_table <- function(x, ...) {
         integer(1)
       )
     } else {
-      rep(NA_integer_, length(outcomes))
+      rep(NA_integer_, length(keys))
     },
     p.value = if (has_test) {
       vapply(by_var, function(b) pick_first(b, "p"), numeric(1))
     } else {
-      rep(NA_real_, length(outcomes))
+      rep(NA_real_, length(keys))
     },
     assoc_type = if (has_assoc) {
-      rep(measure_col, length(outcomes))
+      rep(measure_col, length(keys))
     } else {
-      rep(NA_character_, length(outcomes))
+      rep(NA_character_, length(keys))
     },
     assoc_value = if (has_assoc) {
       vapply(by_var, function(b) pick_first(b, measure_col), numeric(1))
     } else {
-      rep(NA_real_, length(outcomes))
+      rep(NA_real_, length(keys))
     },
     assoc_ci_lower = if (has_assoc_ci) {
       vapply(by_var, function(b) pick_first(b, "ci_lower"), numeric(1))
     } else {
-      rep(NA_real_, length(outcomes))
+      rep(NA_real_, length(keys))
     },
     assoc_ci_upper = if (has_assoc_ci) {
       vapply(by_var, function(b) pick_first(b, "ci_upper"), numeric(1))
     } else {
-      rep(NA_real_, length(outcomes))
+      rep(NA_real_, length(keys))
     },
     n_total = unname(n_total),
     stringsAsFactors = FALSE,

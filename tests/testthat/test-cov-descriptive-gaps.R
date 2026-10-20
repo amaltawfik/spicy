@@ -257,25 +257,18 @@ test_that(".user_na_info handles an integer vector with no value labels", {
 })
 
 
-# ---- table_categorical.R line 2298: margin key collision loop ------------
+# ---- .cat_margin_key(): the key repair loop ---------------------------------
 
 test_that("table_categorical() skips past an occupied Total_1 margin key", {
-  # `by` carries levels literally named "Total" AND "Total_1", so the
-  # auto-rename loop must iterate before it finds a free key.
+  # `by` carries levels literally named "Total" AND "Total_1": displayed
+  # beside a margin relabeled "All", they leave it the KEY "Total_2", and
+  # the repair loop must iterate before it finds it.
   d <- data.frame(
     v1 = factor(rep(c("a", "b"), 18)),
     g = factor(rep(c("Total", "Total_1", "Z"), each = 12))
   )
-  cond <- tryCatch(
-    utils::capture.output(table_categorical(d, select = v1, by = g)),
-    warning = function(w) w
-  )
-  expect_s3_class(cond, "spicy_renamed_column")
-  expect_match(conditionMessage(cond), "\"Total_2\"", fixed = TRUE)
-
-  suppressWarnings(
-    utils::capture.output(res <- table_categorical(d, select = v1, by = g))
-  )
+  withr::local_options(spicy.labels = list(header_margin_total = "All"))
+  expect_no_warning(res <- table_categorical(d, select = v1, by = g))
   expect_identical(attr(res, "total_group"), "Total_2")
   # The user's own "Total" / "Total_1" groups keep their names and the
   # true margin is present under the free key.

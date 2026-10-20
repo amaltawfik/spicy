@@ -99,19 +99,25 @@ with a classed warning (\code{spicy_no_selection}) listing the
 available level strings.}
 
 \item{include_total}{Logical. If \code{TRUE} (the default), includes a \code{Total} group
-when available.}
+when available. A level of \code{by} displayed with the label of that
+margin is then an error (class \code{spicy_label_collision}): rename the
+level, or give the margin another label with
+\code{options(spicy.labels = list(header_margin_total = "All"))}.}
 
 \item{drop_na}{Logical. If \code{FALSE} (the default), missing values are
 displayed as a dedicated \code{"(Missing)"} level (and, under \code{by}, a
 \code{"(Missing)"} group column) -- the field convention for descriptive
 tables (gtsummary's "Unknown" row, janitor's \code{NA} row; see the
-Epidemiologist R Handbook, Descriptive tables). A level literally
-named \code{"(Missing)"} keeps its label, and the missing-value row and
-column take a numbered suffix, \code{"(Missing_1)"}. If \code{TRUE},
-rows with \code{NA} in the tabulated variable (and in \code{by}, when supplied)
-are removed BEFORE each cross-tabulation, and the removal is
-disclosed in a table note ("Missing values removed: ...") rather than
-silent. Before 0.13.0 the default was \code{TRUE} with no disclosure.}
+Epidemiologist R Handbook, Descriptive tables). A level displayed
+beside that row or column with its label is an error (class
+\code{spicy_label_collision}): rename the level, or give the row another
+label with
+\code{options(spicy.labels = list(row_missing_level = "(Not stated)"))}.
+If \code{TRUE}, rows with \code{NA} in the tabulated variable (and in \code{by},
+when supplied) are removed BEFORE each cross-tabulation, and the
+removal is disclosed in a table note ("Missing values removed: ...")
+rather than silent. Before 0.13.0 the default was \code{TRUE} with no
+disclosure.}
 
 \item{weights}{Optional weights. Either \code{NULL} (the default), a numeric vector
 of length \code{nrow(data)}, or a single column in \code{data} supplied as an
@@ -365,8 +371,9 @@ exact test); \code{Chi2} and \code{df} hold the statistic of a chi-squared
 test, Pearson's or the N-1, and are \code{NA} for a variable tested by
 an exact test.
 When \code{by = NULL}, the columns are \code{Variable}, \code{Level}, \code{n}, \verb{\\\%}.
-\item \code{"long"}: a long \code{data.frame} with columns \code{variable},
-\code{level}, \code{n}, \code{pct} (plus \code{group} when \code{by} is used, and
+\item \code{"long"}: a long \code{data.frame} with columns \code{variable} (the
+column name), \code{label} (the label the rows display for it, see
+\code{labels}), \code{level}, \code{n}, \code{pct} (plus \code{group} when \code{by} is used, and
 \code{test_type}, \code{chi2}, \code{df}, \code{p} unless \code{p_value = FALSE}, as in
 \code{"data.frame"}). The association measure is
 always called \code{effect_size},

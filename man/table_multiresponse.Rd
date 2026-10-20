@@ -46,7 +46,9 @@ order is the order of the rows, unless \code{sort} sorts them.}
 levels keep their declared order, a declared level with no respondent
 included; any other column forms groups in order of first appearance
 (a labelled column by its codes), as in \code{\link[=table_categorical]{table_categorical()}}. Rows
-with a missing \code{by} are removed, and the note says how many.}
+with a missing \code{by} are removed, and the note says how many. A level
+displayed with the label of the \code{Total} margin is an error, as in
+\code{\link[=table_categorical]{table_categorical()}}.}
 
 \item{counted}{The value that marks a choice. \code{NULL} (the default)
 reads logical columns (\code{TRUE} is chosen) and numeric columns coded 0
@@ -274,8 +276,10 @@ of each item as in \code{\link[=table_categorical]{table_categorical()}} (\code{
 tested by an exact test. The rows of \code{none_row} are \code{NA} in the
 percentage of responses and in the test columns.
 \item \code{"long"}: one row per item and group, then one per row of
-\code{none_row} and group, with columns \code{variable}, \code{.row_role} as
-above, \code{group} (with \code{by}), \code{n}, \code{base} (the respondents of the
+\code{none_row} and group, with columns \code{variable} (the item's column,
+\code{"none"} or \code{"no_data"} on the rows of \code{none_row}), \code{label} (the
+label the row displays), \code{.row_role} as above, \code{group} (with
+\code{by}), \code{n}, \code{base} (the respondents of the
 group), \code{pct} (or \code{pct_cases} and \code{pct_responses}), and
 \code{test_type}, \code{chi2}, \code{df}, \code{p}, and \code{p_unadjusted} as above.
 \item \code{"tinytable"}, \code{"gt"}, \code{"flextable"}: the rendered table object.
@@ -434,11 +438,13 @@ chosen). The base holds the second and leaves out the first under
 default, the respondents of these two kinds that the base holds are
 rows of the table, "(No item chosen)" and "(No data for the question)",
 with their count and percentage in each group, and the note counts only
-those the base leaves out. A row the table adds whose label an item
-also displays takes a numbered suffix, \code{"Respondents_1"} or
-\code{"(No item chosen_1)"}, and the item keeps its label. Declared missing
-values of a labelled column (\code{na_values}, \code{na_range}) are missing, as
-under the \code{user_na = TRUE} default of \code{\link[=table_categorical]{table_categorical()}}.
+those the base leaves out. An item displayed with the label of a row the
+table adds is an error (class \code{spicy_label_collision}): choose another
+label in \code{labels}, or give the row another label, for example
+\code{options(spicy.labels = list(row_multiresponse_base = "Base"))}.
+Declared missing values of a labelled column (\code{na_values}, \code{na_range})
+are missing, as under the \code{user_na = TRUE} default of
+\code{\link[=table_categorical]{table_categorical()}}.
 
 A percentage carries no more digits than its denominator, so a base of
 fewer than 100 respondents takes whole percentages (American Medical

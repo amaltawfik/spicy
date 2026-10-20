@@ -63,7 +63,6 @@
 .spicy_strings_fr <- c(
   # -- missing values: display level and disclosure notes ------------------
   row_missing_level = "(Manquant)",
-  row_missing_level_dedup = "(Manquant_%d)",
   note_missing_removed = "Valeurs manquantes retir\u00E9es\u00A0: ",
   note_declared_missing_removed = "Valeurs manquantes d\u00E9clar\u00E9es retir\u00E9es\u00A0: ",
   note_missing_rows_total = "\u00A0; %d lignes au total",
@@ -339,10 +338,9 @@
 
   # -- table_outcome(): the marginal row and the two disclosures ------------
   row_overall = "Ensemble",
-  row_overall_dedup = "Ensemble_%d",
   note_outcome_blocks = "Chaque bloc compare %s entre les modalit\u00E9s d'une variable\u00A0; les blocs ne sont pas ajust\u00E9s les uns sur les autres.",
   note_outcome_overall = "Ensemble = l'\u00E9chantillon d'analyse complet.",
-  note_outcome_overall_dedup = "%s = l'\u00E9chantillon d'analyse complet.",
+  note_outcome_overall_relabeled = "%s = l'\u00E9chantillon d'analyse complet.",
   note_gloss_iqr = "%s = \u00E9cart interquartile (%s - %s).",
   note_gloss_med_iqr = "%s = m\u00E9diane [premier quartile, troisi\u00E8me quartile].",
   note_gloss_med_ci = "%1$s = intervalle de confiance exact de la m\u00E9diane fond\u00E9 sur les statistiques d'ordre (couverture d'au moins %2$s).",
@@ -360,11 +358,8 @@
   title_multiresponse = "R\u00E9ponses multiples",
   title_multiresponse_by = "R\u00E9ponses multiples selon %s",
   row_multiresponse_base = "Personnes",
-  row_multiresponse_base_dedup = "Personnes_%d",
   row_multiresponse_none = "(Aucun item coch\u00E9)",
-  row_multiresponse_none_dedup = "(Aucun item coch\u00E9_%d)",
   row_multiresponse_nodata = "(Sans donn\u00E9e pour la question)",
-  row_multiresponse_nodata_dedup = "(Sans donn\u00E9e pour la question_%d)",
   header_pct_cases = "% des cas",
   header_pct_responses = "% des r\u00E9ponses",
   note_multiresponse_pct_cases = "Plusieurs r\u00E9ponses possibles\u00A0: les pourcentages peuvent totaliser plus de 100\u00A0%.",

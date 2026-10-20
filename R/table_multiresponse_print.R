@@ -255,8 +255,8 @@ tidy.spicy_multiresponse_table <- function(x, ...) {
     if (is.null(long[[nm]])) rep(na, nrow(long)) else long[[nm]]
   }
   .outcome_as_tbl(data.frame(
-    variable = rep(dat$items, each = nrow(long) %/% length(dat$items)),
-    label = long$variable,
+    variable = long$variable,
+    label = long$label,
     group = group,
     total = !is.na(group) & group %in% margin,
     n = as.integer(long$n),

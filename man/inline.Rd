@@ -56,8 +56,8 @@ the level (\code{.level}). Custom \code{labels}, a \code{style}, or a translated
 display never change the call. As a convenience, a \code{variable}
 that matches no source column is looked up among the displayed
 labels before erroring. The missing-value category is addressed by
-\code{level = "(Missing)"} whatever its displayed (possibly deduplicated)
-label, through its row role. Fit statistics are addressed by their
+\code{level = "(Missing)"} whatever its displayed (possibly translated or
+relabeled) label, through its row role. Fit statistics are addressed by their
 token as \code{variable} (\code{inline(tbl, "nobs")}, \code{inline(tbl, "r2")}) or by
 their label (\code{inline(tbl, "n")}). Identity comes first: a source column
 wins over a token or a label of the same name, and an exact label over

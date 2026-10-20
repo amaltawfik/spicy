@@ -899,14 +899,14 @@ table_continuous_svy <- function(
   domains <- list()
   missing_group_label <- NA_character_
   if (has_group) {
-    geom <- .svy_by_levels(vars[[group_col_name]], drop_na)
+    geom <- .svy_by_levels(vars[[group_col_name]], drop_na, group_col_name)
     group_levels <- geom$levels
     missing_group_label <- geom$missing_label
     if (drop_na && geom$n_na > 0L) {
       by_na_dropped <- geom$n_na
       design <- .design_subset(design, !is.na(vars[[group_col_name]]))
       vars <- design$variables
-      geom <- .svy_by_levels(vars[[group_col_name]], drop_na)
+      geom <- .svy_by_levels(vars[[group_col_name]], drop_na, group_col_name)
       group_levels <- geom$levels
     }
     for (lv in group_levels) {

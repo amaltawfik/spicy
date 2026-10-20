@@ -27,20 +27,21 @@ table can be consumed by any downstream tidyverse-stats pipeline.
 }
 \details{
 \code{tidy()} returns one row per \verb{(variable x level)} -- or per
-\verb{(variable x level x group)} when \code{by} is used -- with
-broom-conventional columns: \code{outcome}, \code{level}, \code{group} (when
-applicable), \code{n}, \code{proportion} (the percentage divided by 100).
+\verb{(variable x level x group)} when \code{by} is used -- with columns
+\code{variable} (the column name), \code{label} (the label the rows display for
+it, see \code{labels}), \code{level}, \code{group} (when applicable), \code{n},
+\code{proportion} (the percentage divided by 100).
 
-\code{glance()} returns one row per outcome with its test (when \code{by} is
-used) and the requested association measure: \code{outcome}, \code{test_type}
-(\code{"chi_squared"}, \code{"n1_chi_squared"}, \code{"fisher_exact"},
-\code{"fisher_midp"}, or \code{"fisher_exact_mc"}, as in the data frames of
-\code{\link[=table_categorical]{table_categorical()}}), \code{statistic} (the chi-squared, Pearson's or the
-N-1, \code{NA} for an exact test), \code{df}, \code{p.value}, \code{assoc_type},
-\code{assoc_value}, \code{assoc_ci_lower}, \code{assoc_ci_upper}, \code{n_total}. Without
-\code{by}, only \code{outcome} and \code{n_total} are populated; the other columns are
-\code{NA}. The interval bounds are \code{NA} unless the table was built with
-\code{assoc_ci = TRUE}.
+\code{glance()} returns one row per variable, in the order of \code{select}, with
+its test (when \code{by} is used) and the requested association measure:
+\code{variable}, \code{label}, \code{test_type} (\code{"chi_squared"}, \code{"n1_chi_squared"},
+\code{"fisher_exact"}, \code{"fisher_midp"}, or \code{"fisher_exact_mc"}, as in the
+data frames of \code{\link[=table_categorical]{table_categorical()}}), \code{statistic} (the chi-squared,
+Pearson's or the N-1, \code{NA} for an exact test), \code{df}, \code{p.value},
+\code{assoc_type}, \code{assoc_value}, \code{assoc_ci_lower}, \code{assoc_ci_upper},
+\code{n_total}. Without \code{by}, only \code{variable}, \code{label} and \code{n_total} are
+populated; the other columns are \code{NA}. The interval bounds are \code{NA}
+unless the table was built with \code{assoc_ci = TRUE}.
 }
 \seealso{
 \code{\link[=as.data.frame.spicy_categorical_table]{as.data.frame.spicy_categorical_table()}} for the raw

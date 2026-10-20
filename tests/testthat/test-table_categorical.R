@@ -185,62 +185,133 @@ test_that("table_categorical works without by in long raw output", {
   expect_true(any(grepl("Missing", out$level)))
 })
 
-test_that("table_categorical renames generated missing labels when needed", {
+test_that("a level displayed beside the missing row is refused, with both ways out", {
   df <- data.frame(v1 = c("(Missing)", NA, "Yes"))
-
-  out <- table_categorical(
-    data = df,
-    select = v1,
-    drop_na = FALSE,
-    output = "long"
+  err <- expect_error(
+    table_categorical(df, select = v1, output = "long"),
+    class = "spicy_label_collision"
   )
+  expect_s3_class(err, "spicy_invalid_input")
+  msg <- conditionMessage(err)
+  expect_match(msg, "The level \"(Missing)\" of `v1`", fixed = TRUE)
+  expect_match(msg, "Rename the level", fixed = TRUE)
+  expect_match(msg, "row_missing_level = \"(Not stated)\"", fixed = TRUE)
 
-  expect_true("(Missing)" %in% out$level)
-  expect_true("(Missing_1)" %in% out$level)
-})
+  # Way out 1: rename the level.
+  renamed <- data.frame(v1 = c("(Coded missing)", NA, "Yes"))
+  out <- table_categorical(renamed, select = v1, output = "long")
+  expect_identical(out$level, c("(Coded missing)", "Yes", "(Missing)"))
 
-test_that("de-duplication leaves each Missing row with its own count", {
-  # The names were pinned; the VALUES were not. `.add_missing_level()`
-  # appends the RESOLVED label, so the literal level keeps "(Missing)"
-  # and the real NAs take "(Missing_1)" -- and that direction is what a
-  # values witness has to fix. The three counts are deliberately
-  # different, so a regression that swapped the two rows cannot pass by
-  # having them agree with each other.
-  df <- data.frame(
+  # Way out 2: give the missing row another label. Each row keeps its own
+  # count, the level its place, the row of missing values the last one.
+  withr::local_options(
+    spicy.labels = list(row_missing_level = "(Not stated)")
+  )
+  dx <- data.frame(
     x = factor(
       c("(Missing)", "(Missing)", "(Missing)", "Yes", "Yes", NA),
       levels = c("(Missing)", "Yes")
     )
   )
-  out <- table_categorical(df, select = x, drop_na = FALSE, output = "long")
-  expect_identical(out$n[out$level == "(Missing)"], 3)
-  expect_identical(out$n[out$level == "(Missing_1)"], 1)
-  expect_identical(out$n[out$level == "Yes"], 2)
+  out <- table_categorical(dx, select = x, output = "long")
+  expect_identical(out$level, c("(Missing)", "Yes", "(Not stated)"))
+  expect_identical(out$n, c(3, 2, 1))
+  s <- as_structured(table_categorical(dx, select = x))
+  expect_identical(
+    s$body$.row_role,
+    c("factor_header", "level", "level", "missing")
+  )
 })
 
-test_that("a declared-but-unobserved '(Missing)' level does not crash", {
-  # Audit phase 2 delta, R2/R3/R8: the collision guard scanned only
-  # observed values, so a factor DECLARING a "(Missing)" level with no
-  # observations plus a real NA used to kill the whole table with a
-  # raw "factor level [4] is duplicated" error.
+test_that("the refusal fires only when both rows are displayed", {
+  # A declared level nobody holds is not displayed: no error, and the row
+  # of missing values keeps its label (the declared level used to make
+  # the table crash on a duplicated factor level, then rename the row).
   dx <- data.frame(
     x = factor(c("A", "B", NA), levels = c("A", "B", "(Missing)"))
   )
   lg <- table_categorical(dx, select = x, output = "long")
-  expect_identical(lg$level, c("A", "B", "(Missing_1)"))
-  expect_identical(lg$n[lg$level == "(Missing_1)"], 1)
+  expect_identical(lg$level, c("A", "B", "(Missing)"))
+  expect_identical(lg$n, c(1, 1, 1))
   lg2 <- table_categorical(dx, select = x, drop_na = TRUE, output = "long")
   expect_identical(lg2$level, c("A", "B"))
+  # The same declared level and an observed one, grouped: the same.
+  grouped <- table_categorical(
+    data.frame(
+      x = factor(c("A", "B", NA, "A"), levels = c("A", "(Missing)", "B")),
+      g = c("u", "v", "u", "v")
+    ),
+    select = x,
+    by = g,
+    output = "long"
+  )
+  expect_identical(
+    unique(grouped$level),
+    c("A", "B", "(Missing)")
+  )
 
-  # Same declaration on the `by` side.
+  # A level "(Missing)" with no missing value: no row is added.
+  lv <- table_categorical(
+    data.frame(x = c("(Missing)", "A", "A")),
+    select = x,
+    output = "long"
+  )
+  expect_identical(lv$level, c("(Missing)", "A"))
+  # `drop_na = TRUE` adds no row either.
+  expect_identical(
+    table_categorical(
+      data.frame(x = c("(Missing)", NA, "A")),
+      select = x,
+      drop_na = TRUE,
+      output = "long"
+    )$level,
+    c("(Missing)", "A")
+  )
+})
+
+test_that("each variable is judged on its own rows", {
+  # `x1` displays a level "(Missing)" and has no missing value; `x2` gets
+  # the row of missing values. Two blocks, no collision: the typed view
+  # calls the first a level and the second the missing row, and the test
+  # of `x1` keeps its level.
+  d <- data.frame(
+    x1 = c("(Missing)", "A", "A", "(Missing)"),
+    x2 = c("B", NA, "C", "C"),
+    g = c("u", "v", "u", "v")
+  )
+  tbl <- table_categorical(d, select = c(x1, x2), by = g)
+  s <- as_structured(tbl)
+  roles <- s$body$.row_role[!is.na(s$body$.level)]
+  expect_identical(
+    roles[s$body$.level[!is.na(s$body$.level)] == "(Missing)"],
+    c("level", "missing")
+  )
+  lg <- table_categorical(d, select = c(x1, x2), by = g, output = "long")
+  expect_identical(unique(lg$level[lg$variable == "x1"]), c("(Missing)", "A"))
+  expect_identical(
+    unique(lg$level[lg$variable == "x2"]),
+    c("B", "C", "(Missing)")
+  )
+  # The test of `x1` reads its two levels: a 2 x 2 table.
+  expect_identical(lg$test_type[lg$variable == "x1"][[1L]], "fisher_exact")
+})
+
+test_that("a `by` level displayed beside the missing column is refused", {
+  # Every level of `by` is displayed, a declared one nobody holds
+  # included (a zero column), so a declared "(Missing)" collides too.
   db <- data.frame(
     x = factor(c("A", "B", "A", "B")),
     g = factor(c("u", "v", NA, "u"), levels = c("u", "v", "(Missing)"))
   )
-  lgb <- table_categorical(db, select = x, by = g, output = "long")
-  expect_identical(lgb$n[lgb$level == "A" & lgb$group == "(Missing_1)"], 1)
-  # The declared-but-unobserved "(Missing)" level stays a zero group.
-  expect_identical(lgb$n[lgb$level == "A" & lgb$group == "(Missing)"], 0)
+  err <- expect_error(
+    table_categorical(db, select = x, by = g),
+    class = "spicy_label_collision"
+  )
+  msg <- conditionMessage(err)
+  expect_match(msg, "The level \"(Missing)\" of `g`", fixed = TRUE)
+  expect_match(msg, "the column spicy adds for missing values", fixed = TRUE)
+  expect_match(msg, "row_missing_level", fixed = TRUE)
+  # `drop_na = TRUE` adds no column: no error.
   lgb2 <- table_categorical(
     db,
     select = x,
@@ -248,7 +319,14 @@ test_that("a declared-but-unobserved '(Missing)' level does not crash", {
     drop_na = TRUE,
     output = "long"
   )
-  expect_false("(Missing_1)" %in% lgb2$group)
+  expect_identical(lgb2$n[lgb2$level == "A" & lgb2$group == "(Missing)"], 0)
+  # Way out: another label for the column of missing values.
+  withr::local_options(
+    spicy.labels = list(row_missing_level = "(Not stated)")
+  )
+  lgb <- table_categorical(db, select = x, by = g, output = "long")
+  expect_identical(lgb$n[lgb$level == "A" & lgb$group == "(Not stated)"], 1)
+  expect_identical(lgb$n[lgb$level == "A" & lgb$group == "(Missing)"], 0)
 })
 
 test_that("table_categorical handles one-way empty results after dropping missing", {
@@ -1649,14 +1727,17 @@ test_that("table_categorical one-way weighted with rescale", {
   expect_equal(sum(out$n), nrow(df), tolerance = 0.01)
 })
 
-test_that("table_categorical handles Missing_ label collision", {
+test_that("a look-alike of the missing label is a level like any other", {
+  # Only the label itself collides: "(Missing_1)", which the table used to
+  # give its own row on a collision, is now an ordinary level.
   df <- data.frame(
-    x = factor(c("(Missing)", "(Missing_1)", NA, "B")),
-    stringsAsFactors = FALSE
+    x = factor(
+      c("(Missing_1)", "(missing)", NA, "B"),
+      levels = c("(Missing_1)", "(missing)", "B")
+    )
   )
-  out <- table_categorical(df, select = x, drop_na = FALSE, output = "long")
-  expect_true(any(grepl("Missing", out$level)))
-  # Should not have duplicate level names
+  out <- table_categorical(df, select = x, output = "long")
+  expect_identical(out$level, c("(Missing_1)", "(missing)", "B", "(Missing)"))
   expect_equal(length(unique(out$level)), nrow(out))
 })
 
@@ -2356,13 +2437,15 @@ test_that("tidy() returns long-format with broom-conventional columns (cross-tab
     by = sex
   )
   td <- broom::tidy(out)
-  expect_setequal(
+  expect_identical(
     names(td),
-    c("outcome", "level", "group", "n", "proportion")
+    c("variable", "label", "level", "group", "n", "proportion")
   )
   expect_true(all(td$proportion >= 0 & td$proportion <= 1))
-  # `outcome` carries the display labels: the column names by default.
-  expect_equal(unique(td$outcome), c("smoking", "physical_activity"))
+  # `variable` carries the column names, `label` the labels displayed:
+  # the column names too by default.
+  expect_equal(unique(td$variable), c("smoking", "physical_activity"))
+  expect_equal(unique(td$label), c("smoking", "physical_activity"))
   # Real groups appear; the synthetic "Total" marginal is excluded
   # by `tidy()` (one row per real group, broom convention).
   expect_setequal(unique(td$group), c("Female", "Male"))
@@ -2372,7 +2455,58 @@ test_that("tidy() returns no group column without by", {
   out <- table_categorical(sochealth, select = smoking)
   td <- broom::tidy(out)
   expect_false("group" %in% names(td))
-  expect_setequal(names(td), c("outcome", "level", "n", "proportion"))
+  expect_identical(
+    names(td),
+    c("variable", "label", "level", "n", "proportion")
+  )
+})
+
+test_that("the long output, tidy() and glance() name the column and the label", {
+  # `variable` is the column name whatever `labels` says, `label` the label
+  # the rows display: code can tell which column a row comes from.
+  build <- function(labels, by = TRUE, output = "default") {
+    if (by) {
+      table_categorical(
+        sochealth,
+        select = c(smoking, physical_activity),
+        by = sex,
+        labels = labels,
+        output = output
+      )
+    } else {
+      table_categorical(
+        sochealth,
+        select = c(smoking, physical_activity),
+        labels = labels,
+        output = output
+      )
+    }
+  }
+  for (by in c(TRUE, FALSE)) {
+    for (lab in list(FALSE, TRUE)) {
+      shown <- if (isTRUE(lab)) {
+        c(
+          attr(sochealth$smoking, "label"),
+          attr(sochealth$physical_activity, "label")
+        )
+      } else {
+        c("smoking", "physical_activity")
+      }
+      lg <- build(lab, by, "long")
+      expect_identical(names(lg)[1:3], c("variable", "label", "level"))
+      expect_identical(unique(lg$variable), c("smoking", "physical_activity"))
+      expect_identical(unique(lg$label), shown)
+      expect_false(".variable" %in% names(lg))
+      tbl <- build(lab, by)
+      td <- broom::tidy(tbl)
+      expect_identical(unique(td$variable), c("smoking", "physical_activity"))
+      expect_identical(unique(td$label), shown)
+      gl <- broom::glance(tbl)
+      expect_identical(gl$variable, c("smoking", "physical_activity"))
+      expect_identical(gl$label, shown)
+      expect_false(".variable" %in% names(attr(tbl, "long_data")))
+    }
+  }
 })
 
 test_that("glance() returns chi-squared test + association measure (cross-tab)", {
@@ -2382,10 +2516,11 @@ test_that("glance() returns chi-squared test + association measure (cross-tab)",
     by = sex
   )
   gl <- broom::glance(out)
-  expect_setequal(
+  expect_identical(
     names(gl),
     c(
-      "outcome",
+      "variable",
+      "label",
       "test_type",
       "statistic",
       "df",
@@ -2435,13 +2570,13 @@ test_that("a row whose variable asked for no measure has no effect_size_type", {
     output = "long"
   )
   expect_true(all(c("effect_size", "effect_size_type") %in% names(out)))
-  expect_true(all(is.na(out$effect_size_type[out$variable == "Smoking"])))
-  expect_true(all(is.na(out$effect_size[out$variable == "Smoking"])))
+  expect_true(all(is.na(out$effect_size_type[out$label == "Smoking"])))
+  expect_true(all(is.na(out$effect_size[out$variable == "smoking"])))
   expect_identical(
-    unique(out$effect_size_type[out$variable == "Education"]),
+    unique(out$effect_size_type[out$label == "Education"]),
     "cramer_v"
   )
-  expect_false(any(is.na(out$effect_size[out$variable == "Education"])))
+  expect_false(any(is.na(out$effect_size[out$variable == "education"])))
 })
 
 test_that("print() survives a typed view that outlived its display frame", {
@@ -2726,7 +2861,9 @@ test_that("labels: names by default, the label attribute under TRUE", {
       output = "long",
       ...
     )
-    as.character(unique(out$variable))
+    # `variable` keeps the column names whatever `labels` says.
+    expect_identical(unique(out$variable), c("smk", "act", "na_lab", "empty"))
+    unique(out$label)
   }
   expect_identical(rows(), c("smk", "act", "na_lab", "empty"))
   # No attribute, an NA one and an empty one fall back to the name.
@@ -2774,7 +2911,8 @@ test_that("labels refuses every other form with one classed error", {
     labels = TRUE,
     output = "long"
   )
-  expect_identical(as.character(unique(out$variable)), "Current smoker")
+  expect_identical(unique(out$label), "Current smoker")
+  expect_identical(unique(out$variable), "smoking")
 })
 
 test_that("labels accepts a named character vector keyed by column name", {
@@ -2788,7 +2926,7 @@ test_that("labels accepts a named character vector keyed by column name", {
     output = "long"
   )
   expect_setequal(
-    unique(out$variable),
+    unique(out$label),
     c("Current smoker", "Physical activity")
   )
 })
@@ -2800,7 +2938,7 @@ test_that("named labels relabel a subset; the others keep their names", {
     labels = c(smoking = "CS only"),
     output = "long"
   )
-  expect_setequal(unique(out$variable), c("CS only", "physical_activity"))
+  expect_setequal(unique(out$label), c("CS only", "physical_activity"))
 })
 
 test_that("named labels with unknown names are ignored", {
@@ -2810,7 +2948,7 @@ test_that("named labels with unknown names are ignored", {
     labels = c(bogus = "X"),
     output = "long"
   )
-  expect_identical(as.character(unique(out$variable)), "smoking")
+  expect_identical(unique(out$label), "smoking")
 })
 
 test_that("non-character labels rejected at boundary", {
@@ -2884,7 +3022,8 @@ test_that("two variables showing one label keep a block each", {
   same <- c(smoking = "Same", physical_activity = "Same")
   ref <- build(by = sex, output = "long")
   lg <- build(by = sex, labels = same, output = "long")
-  expect_identical(lg$variable, rep("Same", nrow(ref)))
+  expect_identical(lg$label, rep("Same", nrow(ref)))
+  expect_identical(lg$variable, ref$variable)
   expect_identical(lg$level, ref$level)
   expect_identical(lg$n, ref$n)
   expect_identical(lg$p, ref$p)
@@ -2961,13 +3100,11 @@ test_that("glance() gives each variable a row, whatever the labels", {
   }
   plain <- build()
   gp <- broom::glance(plain)
-  # Distinct labels: the rows of split() on the labels, alphabetical.
   long <- attr(plain, "long_data")
-  by_label <- split(long, long$variable)
-  expect_identical(gp$outcome, names(by_label))
+  expect_identical(gp$variable, c("smoking", "physical_activity"))
   expect_identical(
     gp$p.value,
-    unname(vapply(by_label, function(b) b$p[[1L]], numeric(1)))
+    long$p[match(gp$variable, long$variable)]
   )
   # One label shown by two variables: a row each, in the order of
   # `select`. The rows were merged, with the first p-value and the sum of
@@ -2975,16 +3112,40 @@ test_that("glance() gives each variable a row, whatever the labels", {
   gs <- broom::glance(build(
     labels = c(smoking = "Same", physical_activity = "Same")
   ))
-  expect_identical(gs$outcome, c("Same", "Same"))
-  ord <- match(c("smoking", "physical_activity"), gp$outcome)
-  expect_identical(gs$p.value, gp$p.value[ord])
-  expect_identical(gs$n_total, gp$n_total[ord])
-  # The column name stays internal.
-  expect_false(".variable" %in% names(build(output = "long")))
-  expect_identical(
-    names(broom::tidy(plain)),
-    c("outcome", "level", "group", "n", "proportion")
+  expect_identical(gs$label, c("Same", "Same"))
+  expect_identical(gs$variable, gp$variable)
+  expect_identical(gs$p.value, gp$p.value)
+  expect_identical(gs$n_total, gp$n_total)
+})
+
+test_that("glance() follows the order of select, as the table and tidy() do", {
+  skip_if_not_installed("broom")
+  # Alphabetical by label, glance() used to list physical_activity first
+  # and education before both.
+  tbl <- table_categorical(
+    sochealth,
+    select = c(smoking, physical_activity, education),
+    by = sex,
+    labels = c(smoking = "Zz smoking", education = "Aa education")
   )
+  gl <- broom::glance(tbl)
+  expect_identical(gl$variable, c("smoking", "physical_activity", "education"))
+  expect_identical(
+    gl$label,
+    c("Zz smoking", "physical_activity", "Aa education")
+  )
+  expect_identical(unique(broom::tidy(tbl)$variable), gl$variable)
+  body <- as_structured(tbl)$body
+  expect_identical(
+    body$.variable[body$.row_role == "factor_header"],
+    gl$variable
+  )
+  # Without `by`, the same order.
+  one <- broom::glance(table_categorical(
+    sochealth,
+    select = c(smoking, physical_activity, education)
+  ))
+  expect_identical(one$variable, c("smoking", "physical_activity", "education"))
 })
 
 # ---- select: optional, defaults to eligible categorical columns -----------
@@ -3432,80 +3593,97 @@ test_that("labelled columns display value labels under the drop_na default", {
   )
 })
 
-test_that("a by-level literally named 'Total' keeps both group and margin", {
+test_that("a by level displayed beside the margin is refused, with both ways out", {
   d1 <- data.frame(
     x = factor(c("A", "B", "A", "B", "A")),
     g = factor(c("Total", "Total", "g2", "g2", "Total"))
   )
-  cnds <- list()
-  lg <- withCallingHandlers(
-    table_categorical(d1, select = x, by = g, output = "long"),
-    spicy_renamed_column = function(w) {
-      cnds[[length(cnds) + 1L]] <<- w
-      invokeRestart("muffleWarning")
-    }
+  err <- expect_error(
+    table_categorical(d1, select = x, by = g),
+    class = "spicy_label_collision"
   )
-  expect_length(cnds, 1L)
-  # The user's "Total" group survives with its own counts...
+  expect_s3_class(err, "spicy_invalid_input")
+  msg <- conditionMessage(err)
+  expect_match(msg, "The level \"Total\" of `g`", fixed = TRUE)
+  expect_match(msg, "the margin column spicy adds", fixed = TRUE)
+  expect_match(msg, "header_margin_total = \"All\"", fixed = TRUE)
+  # The warning that announced "Total_1" is gone with the rename.
+  expect_no_warning(
+    try(table_categorical(d1, select = x, by = g), silent = TRUE),
+    class = "spicy_renamed_column"
+  )
+
+  # Way out 1: rename the level.
+  d2 <- d1
+  levels(d2$g)[levels(d2$g) == "Total"] <- "Group 1"
+  wd <- table_categorical(d2, select = x, by = g, output = "data.frame")
+  expect_identical(wd[["Total n"]], c(3, 2))
+
+  # Way out 2: give the margin another label. The user's "Total" group
+  # keeps its counts and its key; the margin is displayed under its new
+  # label, and its KEY, which the machine outputs name, is the first free
+  # "Total_<i>".
+  withr::local_options(spicy.labels = list(header_margin_total = "All"))
+  lg <- table_categorical(d1, select = x, by = g, output = "long")
   expect_identical(lg$n[lg$level == "A" & lg$group == "Total"], 2)
   expect_identical(lg$n[lg$level == "B" & lg$group == "Total"], 1)
-  # ...and the true margin is always present, under the renamed key.
   expect_identical(lg$n[lg$level == "A" & lg$group == "Total_1"], 3)
   expect_identical(lg$n[lg$level == "B" & lg$group == "Total_1"], 2)
-  wd <- suppressWarnings(
-    table_categorical(d1, select = x, by = g, output = "data.frame")
-  )
+  wd <- table_categorical(d1, select = x, by = g, output = "data.frame")
   expect_true(all(c("Total n", "Total_1 n") %in% names(wd)))
   expect_identical(wd[["Total_1 n"]], c(3, 2))
+  tbl <- table_categorical(d1, select = x, by = g)
+  expect_identical(attr(tbl, "total_group"), "Total_1")
+  s <- as_structured(tbl)
+  expect_identical(s$col_meta[["Total_1 n"]]$display_label, "All n")
+  expect_true(isTRUE(s$col_meta[["Total_1 n"]]$total))
+  expect_identical(s$col_meta[["Total n"]]$display_label, "Total n")
+  expect_null(s$col_meta[["Total n"]]$total)
+  printed <- utils::capture.output(print(tbl))
+  expect_true(any(grepl("All n", printed, fixed = TRUE)))
+  expect_false(any(grepl("Total_1", printed, fixed = TRUE)))
+  # tidy() drops the margin, never the user's group.
+  td <- broom::tidy(tbl)
+  expect_setequal(unique(td$group), c("g2", "Total"))
+  expect_identical(sum(td$n), 5L)
+  expect_identical(broom::glance(tbl)$n_total, 5L)
 })
 
-test_that("a declared-but-unobserved 'Total' by level keeps a real margin", {
+test_that("a declared-but-unobserved 'Total' by level is a displayed group", {
   # Audit phase 2 delta, R7: cross_tab() renames its margin only on an
   # OBSERVED collision, so with a declared-only "Total" level the last
   # column is literally named "Total" and the name-based group read
   # used to hand the margin counts to the user's zero-observation
-  # group -- the margin appeared twice, once under each key.
+  # group -- the margin appeared twice, once under each key. A declared
+  # level is a zero column of the table, so it collides like any other.
   d1 <- data.frame(
     x = factor(c("A", "B", "A", "B", "A")),
     g = factor(c("g1", "g1", "g2", "g2", "g1"), levels = c("g1", "g2", "Total"))
   )
-  cnds <- list()
-  lg <- withCallingHandlers(
-    table_categorical(d1, select = x, by = g, output = "long"),
-    spicy_renamed_column = function(w) {
-      cnds[[length(cnds) + 1L]] <<- w
-      invokeRestart("muffleWarning")
-    }
+  expect_error(
+    table_categorical(d1, select = x, by = g),
+    class = "spicy_label_collision"
   )
-  expect_length(cnds, 1L)
-  # The declared-but-unobserved user group is a zero group...
-  expect_identical(lg$n[lg$level == "A" & lg$group == "Total"], 0)
-  expect_identical(lg$n[lg$level == "B" & lg$group == "Total"], 0)
-  # ...and the true margin lives under the renamed key only.
-  expect_identical(lg$n[lg$level == "A" & lg$group == "Total_1"], 3)
-  expect_identical(lg$n[lg$level == "B" & lg$group == "Total_1"], 2)
-  wd <- suppressWarnings(
-    table_categorical(d1, select = x, by = g, output = "data.frame")
+  withr::with_options(list(spicy.labels = list(header_margin_total = "All")), {
+    lg <- table_categorical(d1, select = x, by = g, output = "long")
+    # The declared-but-unobserved user group is a zero group...
+    expect_identical(lg$n[lg$level == "A" & lg$group == "Total"], 0)
+    expect_identical(lg$n[lg$level == "B" & lg$group == "Total"], 0)
+    # ...and the true margin lives under its own key only.
+    expect_identical(lg$n[lg$level == "A" & lg$group == "Total_1"], 3)
+    expect_identical(lg$n[lg$level == "B" & lg$group == "Total_1"], 2)
+    wd <- table_categorical(d1, select = x, by = g, output = "data.frame")
+    expect_identical(wd[["Total n"]], c(0, 0))
+    expect_identical(wd[["Total_1 n"]], c(3, 2))
+  })
+  # No margin displayed -> no collision, zero group intact.
+  lg2 <- table_categorical(
+    d1,
+    select = x,
+    by = g,
+    include_total = FALSE,
+    output = "long"
   )
-  expect_true(all(c("Total n", "Total_1 n") %in% names(wd)))
-  expect_identical(wd[["Total n"]], c(0, 0))
-  expect_identical(wd[["Total_1 n"]], c(3, 2))
-  # No margin displayed -> no rename to disclose, zero group intact.
-  cnds2 <- list()
-  lg2 <- withCallingHandlers(
-    table_categorical(
-      d1,
-      select = x,
-      by = g,
-      include_total = FALSE,
-      output = "long"
-    ),
-    spicy_renamed_column = function(w) {
-      cnds2[[length(cnds2) + 1L]] <<- w
-      invokeRestart("muffleWarning")
-    }
-  )
-  expect_length(cnds2, 0L)
   expect_setequal(unique(lg2$group), c("g1", "g2", "Total"))
   expect_identical(lg2$n[lg2$level == "A" & lg2$group == "Total"], 0)
 })
@@ -3515,39 +3693,41 @@ test_that("include_total = FALSE keeps a user group named 'Total'", {
     x = factor(c("A", "B", "A", "B", "A")),
     g = factor(c("Total", "Total", "g2", "g2", "Total"))
   )
-  cnds <- list()
-  lg <- withCallingHandlers(
-    table_categorical(
+  expect_no_warning(
+    lg <- table_categorical(
       d1,
       select = x,
       by = g,
       include_total = FALSE,
       output = "long"
-    ),
-    spicy_renamed_column = function(w) {
-      cnds[[length(cnds) + 1L]] <<- w
-      invokeRestart("muffleWarning")
-    }
+    )
   )
-  # No margin displayed -> no rename to disclose.
-  expect_length(cnds, 0L)
   expect_setequal(unique(lg$group), c("g2", "Total"))
   expect_identical(lg$n[lg$level == "A" & lg$group == "Total"], 2)
+  # tidy() keeps it: the table has no margin to drop.
+  td <- broom::tidy(table_categorical(
+    d1,
+    select = x,
+    by = g,
+    include_total = FALSE
+  ))
+  expect_setequal(unique(td$group), c("g2", "Total"))
 })
 
-test_that("tidy() drops the margin, not a user group named 'Total'", {
-  d1 <- data.frame(
-    x = factor(c("A", "B", "A", "B", "A")),
-    g = factor(c("Total", "Total", "g2", "g2", "Total"))
+test_that("the margin and the missing column cannot share one label", {
+  # Two labels spicy adds, set alike through options(spicy.labels): the
+  # reader could not tell the margin from the missing values of `by`.
+  d <- data.frame(x = c("A", "B", "A", "B"), g = c("u", NA, "v", "u"))
+  withr::local_options(spicy.labels = list(row_missing_level = "Total"))
+  err <- expect_error(
+    table_categorical(d, select = x, by = g),
+    class = "spicy_label_collision"
   )
-  suppressWarnings(capture.output(
-    out <- table_categorical(d1, select = x, by = g)
-  ))
-  td <- broom::tidy(out)
-  expect_setequal(unique(td$group), c("g2", "Total"))
-  expect_identical(sum(td$n), 5L)
-  gl <- broom::glance(out)
-  expect_identical(gl$n_total, 5L)
+  expect_match(conditionMessage(err), "header_margin_total", fixed = TRUE)
+  expect_s3_class(
+    table_categorical(d, select = x, by = g, include_total = FALSE),
+    "spicy_categorical_table"
+  )
 })
 
 test_that("percent_digits >= 2 renders true decimals with by", {
@@ -3700,12 +3880,13 @@ test_that("tidy/glance column sets are frozen (stabilizing contract)", {
   out <- table_categorical(mtcars, select = "cyl", by = "am")
   expect_identical(
     names(broom::tidy(out)),
-    c("outcome", "level", "group", "n", "proportion")
+    c("variable", "label", "level", "group", "n", "proportion")
   )
   expect_identical(
     names(broom::glance(out)),
     c(
-      "outcome",
+      "variable",
+      "label",
       "test_type",
       "statistic",
       "df",
@@ -4449,7 +4630,7 @@ test_that("p_value = FALSE with assoc_measure = \"none\": a purely descriptive t
   )
   expect_identical(
     names(.pv_tbl(p_value = FALSE, assoc_measure = "none", output = "long")),
-    c("variable", "level", "group", "n", "pct")
+    c("variable", "label", "level", "group", "n", "pct")
   )
   withr::local_options(width = 100)
   expect_snapshot(print(tbl))
@@ -4660,9 +4841,9 @@ test_that("test = \"auto\": an expected count below 5 takes Fisher's exact test,
   expect_true(all(is.na(s$col_meta$p$test_type[!hdr])))
   skip_if_not_installed("broom")
   gl <- broom::glance(tbl)
-  expect_identical(gl$test_type[gl$outcome == "smoking"], "fisher_exact")
-  expect_true(is.na(gl$statistic[gl$outcome == "smoking"]))
-  expect_identical(gl$test_type[gl$outcome == "dentist_12m"], "chi_squared")
+  expect_identical(gl$test_type[gl$variable == "smoking"], "fisher_exact")
+  expect_true(is.na(gl$statistic[gl$variable == "smoking"]))
+  expect_identical(gl$test_type[gl$variable == "dentist_12m"], "chi_squared")
 })
 
 test_that("Fisher's exact test of an r x c table reproduces gtsummary", {

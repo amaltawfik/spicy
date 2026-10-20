@@ -67,8 +67,8 @@ row keyed by one level of \code{by}), \code{"missing"} (a row keyed by
 the \emph{missing} value) and \code{"none"} (the respondents who chose no
 item of a multiple-response question) in the descriptive ones. The
 role is the key a consumer matches on: \code{"(Missing)"} is a display
-label -- auto-renamed on collision, translatable -- and the role
-survives both.
+label -- translatable, and relabeled through \code{options(spicy.labels)}
+-- and the role survives both.
 \item \code{body$.indent} -- display indent depth of the label (\code{0} or \code{1}).
 Renderers indent \code{.indent > 0} rows; the label text itself is
 already indented in the character body only.

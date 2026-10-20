@@ -146,7 +146,6 @@ header_field	reviewed	2026-10-17	Champ
 header_value	reviewed	2026-10-17	Valeur	
 header_marker_missing	reviewed	2026-10-17	Manquant	
 row_missing_level	reviewed	2026-10-17	(Manquant)	
-row_missing_level_dedup	reviewed	2026-10-17	(Manquant_%d)	
 row_valid	reviewed	2026-10-17	Valide	
 row_missing_block	reviewed	2026-10-17	Manquant	
 label_weighted_n	reviewed	2026-10-17	n pondéré	
@@ -473,8 +472,4 @@ note_list_and_pair	reviewed	2026-10-19	 et
 note_list_and_last	reviewed	2026-10-19	 et 	
 row_multiresponse_none	reviewed	2026-10-19	(Aucun item coché)	
 row_multiresponse_nodata	reviewed	2026-10-19	(Sans donnée pour la question)	
-row_multiresponse_base_dedup	reviewed	2026-10-19	Personnes_%d	
-row_multiresponse_none_dedup	reviewed	2026-10-19	(Aucun item coché_%d)	
-row_multiresponse_nodata_dedup	reviewed	2026-10-19	(Sans donnée pour la question_%d)	
-row_overall_dedup	reviewed	2026-10-20	Ensemble_%d	
-note_outcome_overall_dedup	reviewed	2026-10-20	%s = l'échantillon d'analyse complet.	
+note_outcome_overall_relabeled	reviewed	2026-10-20	%s = l'échantillon d'analyse complet.	

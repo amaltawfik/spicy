@@ -79,7 +79,9 @@
 #'   levels keep their declared order, a declared level with no respondent
 #'   included; any other column forms groups in order of first appearance
 #'   (a labelled column by its codes), as in [table_categorical()]. Rows
-#'   with a missing `by` are removed, and the note says how many.
+#'   with a missing `by` are removed, and the note says how many. A level
+#'   displayed with the label of the `Total` margin is an error, as in
+#'   [table_categorical()].
 #' @param counted The value that marks a choice. `NULL` (the default)
 #'   reads logical columns (`TRUE` is chosen) and numeric columns coded 0
 #'   and 1 (`1` is chosen) as they are; any other column needs `counted`,
@@ -221,8 +223,10 @@
 #'     tested by an exact test. The rows of `none_row` are `NA` in the
 #'     percentage of responses and in the test columns.
 #'   \item `"long"`: one row per item and group, then one per row of
-#'     `none_row` and group, with columns `variable`, `.row_role` as
-#'     above, `group` (with `by`), `n`, `base` (the respondents of the
+#'     `none_row` and group, with columns `variable` (the item's column,
+#'     `"none"` or `"no_data"` on the rows of `none_row`), `label` (the
+#'     label the row displays), `.row_role` as above, `group` (with
+#'     `by`), `n`, `base` (the respondents of the
 #'     group), `pct` (or `pct_cases` and `pct_responses`), and
 #'     `test_type`, `chi2`, `df`, `p`, and `p_unadjusted` as above.
 #'   \item `"tinytable"`, `"gt"`, `"flextable"`: the rendered table object.
@@ -363,11 +367,13 @@
 #' default, the respondents of these two kinds that the base holds are
 #' rows of the table, "(No item chosen)" and "(No data for the question)",
 #' with their count and percentage in each group, and the note counts only
-#' those the base leaves out. A row the table adds whose label an item
-#' also displays takes a numbered suffix, `"Respondents_1"` or
-#' `"(No item chosen_1)"`, and the item keeps its label. Declared missing
-#' values of a labelled column (`na_values`, `na_range`) are missing, as
-#' under the `user_na = TRUE` default of [table_categorical()].
+#' those the base leaves out. An item displayed with the label of a row the
+#' table adds is an error (class `spicy_label_collision`): choose another
+#' label in `labels`, or give the row another label, for example
+#' `options(spicy.labels = list(row_multiresponse_base = "Base"))`.
+#' Declared missing values of a labelled column (`na_values`, `na_range`)
+#' are missing, as under the `user_na = TRUE` default of
+#' [table_categorical()].
 #'
 #' A percentage carries no more digits than its denominator, so a base of
 #' fewer than 100 respondents takes whole percentages (American Medical
@@ -671,7 +677,7 @@ table_multiresponse <- function(
     }
     keep <- !is.na(g0)
     n_by_na <- sum(!keep)
-    margin_key <- .mr_margin_key(group_levels, by_name)
+    margin_key <- .cat_margin_key(group_levels, by_name)
   }
   # The base: who the percentages of cases, and the tests, are computed on.
   in_base <- keep &
@@ -731,19 +737,21 @@ table_multiresponse <- function(
   extra_counts <- extra_counts[, extra_keep, drop = FALSE]
   extra_pct <- extra_pct[, extra_keep, drop = FALSE]
   extra_role <- c("none", "missing")[extra_keep]
-  extra_labels <- c(
-    .generated_row_label(
-      "row_multiresponse_none",
-      "row_multiresponse_none_dedup",
-      item_labels
-    ),
-    .generated_row_label(
-      "row_multiresponse_nodata",
-      "row_multiresponse_nodata_dedup",
-      item_labels
-    )
-  )[extra_keep]
+  extra_keys <- c("row_multiresponse_none", "row_multiresponse_nodata")
+  extra_labels <- vapply(extra_keys, spicy_str, "", USE.NAMES = FALSE)[
+    extra_keep
+  ]
+  # The `.variable` of these rows in the typed view, and their `variable`
+  # in the long frame: no column owns them.
+  extra_tokens <- c(.MR_NONE_TOKEN, .MR_NODATA_TOKEN)[extra_keep]
   n_extra <- length(extra_role)
+  # The rows the table adds, the base row always among them, refused when
+  # an item displays one of their labels.
+  .mr_check_row_labels(
+    item_labels,
+    select_names,
+    c(extra_keys[extra_keep], "row_multiresponse_base")
+  )
   # The `sort` contract of `freq()`: by total count, or by displayed label
   # in the C locale of the radix method, whatever the platform. That sort
   # is stable, so ties keep the order of `select`.
@@ -826,11 +834,7 @@ table_multiresponse <- function(
 
   # ---- frames ----------------------------------------------------------------
   cols <- .mr_columns(blocks, margin_key, percent, show_statistic, p_value)
-  base_label <- .generated_row_label(
-    "row_multiresponse_base",
-    "row_multiresponse_base_dedup",
-    item_labels
-  )
+  base_label <- spicy_str("row_multiresponse_base")
   # The rows in display order: the items, the rows of `none_row`, the base.
   # `.row_role` says what each is, in the vocabulary of `as_structured()`.
   value_of <- function(e, b) {
@@ -879,6 +883,7 @@ table_multiresponse <- function(
     wide[[wide_names[[nm]]]] <- c(item_df[[nm]], item_df[[nm]][no_test])
   }
   long <- .mr_long(
+    c(select_names[ord], extra_tokens),
     c(item_labels[ord], extra_labels),
     c(rep("summary", length(ord)), extra_role),
     blocks,
@@ -989,7 +994,7 @@ table_multiresponse <- function(
   attr(out, "global_test") <- global_df
   attr(out, "long_data") <- long
   # Read by tidy() / glance(): the item columns in row order, and the
-  # margin's key (never its label: "Total" is renamed on collision).
+  # margin's key (never its label; see `.cat_margin_key()`).
   attr(out, "items") <- select_names[ord]
   attr(out, "margin_key") <- margin_key
   attr(out, "group_var") <- by_name
@@ -1080,30 +1085,43 @@ table_multiresponse <- function(
   invisible(NULL)
 }
 
-# The margin's KEY, as in `table_categorical()`: "Total" unless a group is
-# literally called so, in which case the first free "Total_<i>", announced.
-.mr_margin_key <- function(group_levels, by_name) {
-  key <- .CAT_MARGIN_KEY
-  if (!key %in% group_levels) {
-    return(key)
-  }
-  idx <- 1L
-  while (paste0(.CAT_MARGIN_KEY, "_", idx) %in% group_levels) {
-    idx <- idx + 1L
-  }
-  key <- paste0(.CAT_MARGIN_KEY, "_", idx)
-  spicy_warn(
-    c(
-      sprintf(
-        "`%s` has a group level literally named \"Total\", which collides with the margin column; the margin is displayed as \"%s\".",
-        by_name,
-        key
-      ),
-      "i" = "Rename the conflicting `by` level to restore the default margin label."
-    ),
-    class = "spicy_renamed_column"
+# The rows the table adds below the items -- those of `none_row` it shows
+# (`keys`) and the base row -- refused when an item displays one of their
+# labels (`.abort_label_collision()`), as `table_categorical()` refuses a
+# level labeled like its row of missing values. The item's label comes
+# from `labels`, so that is the first way out.
+.mr_check_row_labels <- function(
+  item_labels,
+  select_names,
+  keys,
+  call = rlang::caller_env()
+) {
+  what <- c(
+    row_multiresponse_none = "the row spicy adds for the respondents with no item chosen",
+    row_multiresponse_nodata = "the row spicy adds for the respondents with no data for the question",
+    row_multiresponse_base = "the row spicy adds for the base"
   )
-  key
+  example <- c(
+    row_multiresponse_none = "(None of these)",
+    row_multiresponse_nodata = "(Question skipped)",
+    row_multiresponse_base = "Base"
+  )
+  for (k in keys) {
+    hit <- match(spicy_str(k), item_labels)
+    if (!is.na(hit)) {
+      .abort_label_collision(
+        item_labels[[hit]],
+        select_names[[hit]],
+        "label",
+        what[[k]],
+        "row",
+        k,
+        example[[k]],
+        call = call
+      )
+    }
+  }
+  invisible(NULL)
 }
 
 # The arguments a table without p-values has no use for, each named with
@@ -1582,8 +1600,11 @@ table_multiresponse <- function(
 }
 
 # The long frame: one row per row of the table (items, then the rows of
-# `none_row`) and block, `roles` giving the `.row_role` of each.
+# `none_row`) and block. `variables` names the row (the item's column, or
+# the token of a row of `none_row`), `labels` gives the label it displays
+# and `roles` its `.row_role`, the pair the other summary tables publish.
 .mr_long <- function(
+  variables,
   labels,
   roles,
   blocks,
@@ -1598,7 +1619,8 @@ table_multiresponse <- function(
   nb <- length(blocks)
   ni <- length(labels)
   out <- data.frame(
-    variable = rep(labels, each = nb),
+    variable = rep(variables, each = nb),
+    label = rep(labels, each = nb),
     .row_role = rep(roles, each = nb),
     stringsAsFactors = FALSE,
     check.names = FALSE

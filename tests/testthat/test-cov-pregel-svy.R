@@ -335,14 +335,12 @@ test_that("tidy() keeps the `group` column, empty, on a table without `by`", {
 })
 
 
-# ---- survey_helpers.R 620-621: the "(Missing)" display label dedup ----
+# ---- survey_helpers.R: a real "(Missing)" level beside the missing domain ----
 
-test_that("a real `(Missing)` level and the missing domain stay distinct", {
+test_that("a real `(Missing)` level beside the missing domain is refused", {
   # `g` carries a genuine level literally spelled "(Missing)" AND true
-  # NAs. With `drop_na = FALSE` the NA domain needs a display name and
-  # the one it wants is taken, so it is numbered until it is free. The
-  # real level keeps its own name, and neither column is lost to the
-  # collision.
+  # NAs. With `drop_na = FALSE` the NA domain would be displayed under
+  # the same label: the table stops, and the message gives both ways out.
   skip_if_not_installed("survey")
   d <- data.frame(
     id = 1:60,
@@ -351,26 +349,56 @@ test_that("a real `(Missing)` level and the missing domain stay distinct", {
     v = factor(rep(c("x", "y"), 30))
   )
   des <- survey::svydesign(id = ~1, weights = ~w, data = d)
-  tbl <- table_categorical_svy(des, v, by = g, drop_na = FALSE)
+  err <- expect_error(
+    table_categorical_svy(des, v, by = g, drop_na = FALSE),
+    class = "spicy_label_collision"
+  )
+  expect_match(
+    conditionMessage(err),
+    "the column spicy adds for missing values",
+    fixed = TRUE
+  )
+  err <- expect_error(
+    table_continuous_svy(des, select = id, by = g, drop_na = FALSE),
+    class = "spicy_label_collision"
+  )
+  expect_match(
+    conditionMessage(err),
+    "the row spicy adds for missing values",
+    fixed = TRUE
+  )
 
+  # Another label for the domain: three domains of twenty units each,
+  # separately readable, plus the margin.
+  withr::local_options(
+    spicy.labels = list(row_missing_level = "(Not stated)")
+  )
+  tbl <- table_categorical_svy(des, v, by = g, drop_na = FALSE)
   expect_identical(
     attr(tbl, "blocks"),
-    c("(Missing)", "real", "(Missing_1)", "Total")
+    c("(Missing)", "real", "(Not stated)", "Total")
   )
-  # Three domains of twenty units each, separately readable, plus the
-  # margin: the renaming cost no column.
   lv <- tbl$.row_role == "level"
   expect_identical(tbl[["(Missing) n"]][lv], c(10L, 10L))
   expect_identical(tbl[["real n"]][lv], c(10L, 10L))
-  expect_identical(tbl[["(Missing_1) n"]][lv], c(10L, 10L))
+  expect_identical(tbl[["(Not stated) n"]][lv], c(10L, 10L))
   expect_identical(tbl[["Total n"]][lv], c(30L, 30L))
-
-  # The helper renames the DOMAIN, never the observed level, and the
-  # scan that finds the collision covers declared levels as well.
   lvl <- spicy:::.svy_by_levels(d$g, drop_na = FALSE)
-  expect_identical(lvl$levels, c("(Missing)", "real", "(Missing_1)"))
-  expect_identical(lvl$missing_label, "(Missing_1)")
+  expect_identical(lvl$levels, c("(Missing)", "real", "(Not stated)"))
+  expect_identical(lvl$missing_label, "(Not stated)")
   expect_identical(lvl$n_na, 20L)
+})
+
+test_that("an empty declared `(Missing)` level is dropped, not refused", {
+  # The design twins drop a declared level nobody holds before anything
+  # is displayed, so it cannot collide.
+  skip_if_not_installed("survey")
+  lvl <- spicy:::.svy_by_levels(
+    factor(c("a", NA, "b"), levels = c("a", "b", "(Missing)")),
+    drop_na = FALSE
+  )
+  expect_identical(lvl$levels, c("a", "b", "(Missing)"))
+  expect_identical(lvl$missing_label, "(Missing)")
 })
 
 

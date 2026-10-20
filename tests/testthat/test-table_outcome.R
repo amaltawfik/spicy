@@ -44,7 +44,7 @@ test_that("Overall is not the word Total, and that is deliberate", {
   # Decision 32bis. "Total" is the word of a COUNT margin, where
   # frequencies add up; this row is the whole analytic sample, where a
   # mean is recomputed and nothing is added.
-  expect_identical(spicy:::.outcome_overall_label(), "Overall")
+  expect_identical(spicy_str("row_overall"), "Overall")
   expect_identical(spicy_str("label_total"), "Total")
   expect_false(identical(
     spicy_str("row_overall"),
@@ -451,24 +451,69 @@ test_that("the disclosures follow the arguments that cause them", {
   expect_false(grepl("Group comparison", attr(tbl3, "note"), fixed = TRUE))
 })
 
-test_that("a select labeled Overall keeps it and the marginal row is Overall_1", {
+test_that("a select displayed as Overall is refused, with both ways out", {
   d <- data.frame(
     y = c(1, 2, 3, 4, 5, 6),
     g = c("a", "a", "b", "b", "a", "b")
   )
-  tbl <- .to_quiet(table_outcome(d, y, select = g, labels = c(g = "Overall")))
+  err <- expect_error(
+    table_outcome(d, y, select = g, labels = c(g = "Overall")),
+    class = "spicy_label_collision"
+  )
+  expect_s3_class(err, "spicy_invalid_input")
+  msg <- conditionMessage(err)
+  expect_match(msg, "The label \"Overall\" of `g`", fixed = TRUE)
+  expect_match(msg, "the row spicy adds for the whole sample", fixed = TRUE)
+  expect_match(msg, "Choose another label in `labels`", fixed = TRUE)
+  expect_match(msg, "row_overall = \"Whole sample\"", fixed = TRUE)
+  # A column named Overall collides the same way, and without the row
+  # nothing does.
+  named <- data.frame(y = d$y, Overall = d$g)
+  expect_error(
+    table_outcome(named, y, select = Overall),
+    class = "spicy_label_collision"
+  )
   expect_identical(
-    attr(tbl, "display_df")$Variable,
-    c("Overall_1", "Overall", "  a", "  b")
+    attr(
+      .to_quiet(table_outcome(named, y, select = Overall, overall = FALSE)),
+      "display_df"
+    )$Variable,
+    c("Overall", "  a", "  b")
   )
-  expect_match(
-    attr(tbl, "note"),
-    "Overall_1 = the whole analytic sample.",
-    fixed = TRUE
+
+  # Way out 1: another label in `labels`.
+  ok <- .to_quiet(table_outcome(d, y, select = g, labels = c(g = "Group")))
+  expect_identical(
+    attr(ok, "display_df")$Variable,
+    c("Overall", "Group", "  a", "  b")
   )
-  expect_identical(inline(tbl, "Overall_1"), inline(tbl, y))
-  expect_identical(inline(tbl, "Overall", "a"), inline(tbl, g, "a"))
-  # An override of the fixed sentence, written for 0.13.0, still applies.
+
+  # Way out 2: another label for the row. The note names the row as the
+  # table shows it.
+  withr::with_options(
+    list(spicy.labels = list(row_overall = "Whole sample")),
+    {
+      tbl <- .to_quiet(table_outcome(
+        d,
+        y,
+        select = g,
+        labels = c(g = "Overall")
+      ))
+      expect_identical(
+        attr(tbl, "display_df")$Variable,
+        c("Whole sample", "Overall", "  a", "  b")
+      )
+      expect_match(
+        attr(tbl, "note"),
+        "Whole sample = the whole analytic sample.",
+        fixed = TRUE
+      )
+      expect_identical(inline(tbl, "Whole sample"), inline(tbl, y))
+      expect_identical(inline(tbl, "Overall", "a"), inline(tbl, g, "a"))
+    }
+  )
+  # An override of the fixed sentence, written for 0.13.0, still applies,
+  # with or without a relabeled row.
   withr::with_options(
     list(spicy.labels = list(note_outcome_overall = "Overall: everyone.")),
     expect_match(
@@ -477,16 +522,71 @@ test_that("a select labeled Overall keeps it and the marginal row is Overall_1",
       fixed = TRUE
     )
   )
+  withr::with_options(
+    list(
+      spicy.labels = list(
+        row_overall = "All",
+        note_outcome_overall = "All: everyone."
+      )
+    ),
+    expect_match(
+      attr(.to_quiet(table_outcome(d, y, select = g)), "note"),
+      "All: everyone.",
+      fixed = TRUE
+    )
+  )
 
   withr::local_options(spicy.language = "fr")
-  fr <- .to_quiet(table_outcome(d, y, select = g, labels = c(g = "Ensemble")))
+  expect_error(
+    table_outcome(d, y, select = g, labels = c(g = "Ensemble")),
+    class = "spicy_label_collision"
+  )
+  # The English label is not displayed in French: nothing collides.
+  fr <- .to_quiet(table_outcome(d, y, select = g, labels = c(g = "Overall")))
   expect_identical(
     attr(fr, "display_df")$Variable,
-    c("Ensemble_1", "Ensemble", "  a", "  b")
+    c("Ensemble", "Overall", "  a", "  b")
   )
-  expect_match(attr(fr, "note"), " Ensemble_1 = l'", fixed = TRUE)
-  expect_identical(inline(fr, "Ensemble_1"), inline(fr, y))
-  expect_identical(inline(fr, "Ensemble", "a"), inline(fr, g, "a"))
+  expect_match(attr(fr, "note"), "Ensemble = l'", fixed = TRUE)
+  withr::local_options(spicy.labels = list(row_overall = "Tous"))
+  fr2 <- .to_quiet(table_outcome(d, y, select = g, labels = c(g = "Ensemble")))
+  expect_match(attr(fr2, "note"), " Tous = l'", fixed = TRUE)
+})
+
+test_that("a level displayed beside the row of missing values is refused", {
+  # Every declared level of a block is displayed, so a declared
+  # "(Missing)" collides too.
+  for (g in list(
+    c("(Missing)", "a", NA, "a", "b", "b"),
+    factor(c("b", "a", NA, "a", "b", "b"), levels = c("a", "b", "(Missing)"))
+  )) {
+    d <- data.frame(y = 1:6, g = g)
+    err <- expect_error(
+      table_outcome(d, y, select = g),
+      class = "spicy_label_collision"
+    )
+    expect_match(
+      conditionMessage(err),
+      "The level \"(Missing)\" of `g` has the label of the row spicy adds",
+      fixed = TRUE
+    )
+    expect_s3_class(
+      .to_quiet(table_outcome(d, y, select = g, drop_na = TRUE)),
+      "spicy_outcome_table"
+    )
+    withr::with_options(
+      list(spicy.labels = list(row_missing_level = "(Not stated)")),
+      {
+        tbl <- .to_quiet(table_outcome(d, y, select = g))
+        lv <- tbl$level[tbl$.row_role %in% c("level", "missing")]
+        expect_true(all(c("(Missing)", "(Not stated)") %in% lv))
+        expect_identical(
+          tbl$.row_role[tbl$level %in% "(Not stated)"],
+          "missing"
+        )
+      }
+    )
+  }
 })
 
 test_that("the note opens with \"Note.\" once, on the attribute and in print", {

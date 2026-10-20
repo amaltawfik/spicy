@@ -601,10 +601,19 @@
 # LABEL is not a legitimate level: `design[is.na(g), ]` is an ordinary
 # subpopulation, with its own PSU, its own strata and therefore its own
 # degrees of freedom, which survey computes exactly as it does for any
-# other. The label is guarded against a collision with a real value the
-# way the rest of the family guards it -- the scan covers declared
-# levels as well as observed ones.
-.svy_by_levels <- function(g, drop_na) {
+# other. A level displayed beside that domain with its label is refused,
+# the way the rest of the family refuses it (`.abort_label_collision()`):
+# `var` names the variable and `kind` the element the table adds for it,
+# a "row" (the levels of a categorical variable, the groups of a
+# continuous table) or a "column" (the groups of a categorical table).
+# The empty declared levels are dropped above, so they never collide.
+.svy_by_levels <- function(
+  g,
+  drop_na,
+  var = NULL,
+  kind = "row",
+  call = rlang::caller_env()
+) {
   declared <- if (is.factor(g)) levels(g) else unique(g[!is.na(g)])
   declared <- as.character(declared)
   observed <- as.character(g[!is.na(g)])
@@ -614,11 +623,17 @@
   missing_label <- NA_character_
   if (!drop_na && n_na > 0L) {
     missing_label <- spicy_str("row_missing_level")
-    seen <- unique(c(observed, declared))
-    idx <- 1L
-    while (missing_label %in% seen) {
-      missing_label <- spicy_fmt("row_missing_level_dedup", idx)
-      idx <- idx + 1L
+    if (missing_label %in% declared) {
+      .abort_label_collision(
+        missing_label,
+        var,
+        "level",
+        sprintf("the %s spicy adds for missing values", kind),
+        kind,
+        "row_missing_level",
+        "(Not stated)",
+        call = call
+      )
     }
     declared <- c(declared, missing_label)
     values[is.na(values)] <- missing_label
