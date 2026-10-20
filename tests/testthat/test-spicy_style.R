@@ -71,7 +71,8 @@ test_that("spicy_style() validates every field hard", {
   expect_error(spicy_style(stars = TRUE), class = "spicy_invalid_input")
   expect_error(spicy_style(stars = c("*" = 2)), class = "spicy_invalid_input")
   expect_error(spicy_style(digits = -1), class = "spicy_invalid_input")
-  expect_error(spicy_style(v_digits = "two"), class = "spicy_invalid_input")
+  # `v_digits` was renamed `effect_size_digits` in 0.14.0.
+  expect_error(spicy_style(v_digits = 2), class = "spicy_defunct")
   expect_error(
     spicy_style(effect_size_digits = -1),
     class = "spicy_invalid_input"
@@ -102,10 +103,9 @@ test_that("spicy_style() accepts the well-formed values of each lever", {
     fit_digits = 2,
     ic_digits = 1,
     percent_digits = 0,
-    v_digits = 2,
     note_label = "Note:"
   )
-  expect_length(s, 15L)
+  expect_length(s, 14L)
   expect_identical(s$p_digits, 4L)
   expect_identical(s$ci_brackets, c("(", ")"))
   expect_identical(spicy_style(stars = FALSE)$stars, FALSE)
@@ -1168,7 +1168,7 @@ test_that(".signif_decimals rounds before measuring the exponent", {
 test_that("a lever the function has no argument for is simply ignored", {
   # `percent_digits` belongs to table_categorical(); a regression table
   # must neither apply it nor complain about it.
-  s <- spicy_style(percent_digits = 0, v_digits = 3)
+  s <- spicy_style(percent_digits = 0)
   expect_silent(invisible(table_regression(fixed_fit(), style = s)))
   txt <- console(table_categorical(fixed_data(), "cyl", by = am, style = s))
   expect_match(txt, "34 ") # percentages with no decimals

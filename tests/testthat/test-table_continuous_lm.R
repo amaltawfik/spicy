@@ -604,7 +604,7 @@ test_that("table_continuous_lm validates core user arguments", {
       statistic = NA,
       output = "long"
     ),
-    "TRUE/FALSE"
+    "must be TRUE or FALSE"
   )
 })
 
@@ -1223,7 +1223,7 @@ test_that("table_continuous_lm word output works", {
 
 # ---- effect sizes ----
 
-test_that("effect_size = 'd' matches beta / sigma from lm for binary by", {
+test_that("effect_size = 'cohens_d' matches beta / sigma from lm for binary by", {
   df <- iris[iris$Species != "virginica", ]
   df$Species <- droplevels(df$Species)
   fit <- lm(Sepal.Length ~ Species, data = df)
@@ -1233,15 +1233,15 @@ test_that("effect_size = 'd' matches beta / sigma from lm for binary by", {
     df,
     select = Sepal.Length,
     by = Species,
-    effect_size = "d",
+    effect_size = "cohens_d",
     output = "long"
   )
 
-  expect_equal(out$es_type[1], "d")
+  expect_equal(out$es_type[1], "cohens_d")
   expect_equal(out$es_value[1], expected_d)
 })
 
-test_that("effect_size = 'g' applies the Hedges small-sample correction", {
+test_that("effect_size = 'hedges_g' applies the Hedges small-sample correction", {
   df <- iris[iris$Species != "virginica", ]
   df$Species <- droplevels(df$Species)
   fit <- lm(Sepal.Length ~ Species, data = df)
@@ -1253,15 +1253,15 @@ test_that("effect_size = 'g' applies the Hedges small-sample correction", {
     df,
     select = Sepal.Length,
     by = Species,
-    effect_size = "g",
+    effect_size = "hedges_g",
     output = "long"
   )
 
-  expect_equal(out$es_type[1], "g")
+  expect_equal(out$es_type[1], "hedges_g")
   expect_equal(out$es_value[1], expected_g)
 })
 
-test_that("effect_size = 'd' / 'g' work with weights via the WLS fit", {
+test_that("effect_size = 'cohens_d' / 'hedges_g' work with weights via the WLS fit", {
   df <- data.frame(
     y = c(1, 2, 3, 5, 6, 8, 10, 12),
     g = factor(c("A", "A", "A", "A", "B", "B", "B", "B")),
@@ -1276,7 +1276,7 @@ test_that("effect_size = 'd' / 'g' work with weights via the WLS fit", {
     select = y,
     by = g,
     weights = w,
-    effect_size = "d",
+    effect_size = "cohens_d",
     output = "long"
   )
   out_g <- table_continuous_lm(
@@ -1284,7 +1284,7 @@ test_that("effect_size = 'd' / 'g' work with weights via the WLS fit", {
     select = y,
     by = g,
     weights = w,
-    effect_size = "g",
+    effect_size = "hedges_g",
     output = "long"
   )
 
@@ -1292,13 +1292,13 @@ test_that("effect_size = 'd' / 'g' work with weights via the WLS fit", {
   expect_equal(out_g$es_value[1], expected_g)
 })
 
-test_that("effect_size = 'd' / 'g' error when by is not a 2-level categorical", {
+test_that("effect_size = 'cohens_d' / 'hedges_g' error when by is not a 2-level categorical", {
   expect_error(
     table_continuous_lm(
       iris,
       select = Sepal.Length,
       by = Species,
-      effect_size = "d",
+      effect_size = "cohens_d",
       output = "long"
     ),
     "exactly two non-empty levels"
@@ -1308,7 +1308,7 @@ test_that("effect_size = 'd' / 'g' error when by is not a 2-level categorical", 
       iris,
       select = Sepal.Length,
       by = Species,
-      effect_size = "g",
+      effect_size = "hedges_g",
       output = "long"
     ),
     "exactly two non-empty levels"
@@ -1318,7 +1318,7 @@ test_that("effect_size = 'd' / 'g' error when by is not a 2-level categorical", 
       iris,
       select = Sepal.Length,
       by = Petal.Width,
-      effect_size = "d",
+      effect_size = "cohens_d",
       output = "long"
     ),
     "exactly two non-empty levels"
@@ -1366,7 +1366,7 @@ test_that("effect sizes are invariant to the choice of vcov", {
     x = factor(c("A", "A", "A", "B", "B", "B"))
   )
 
-  for (es in c("f2", "d", "g", "omega2")) {
+  for (es in c("f2", "cohens_d", "hedges_g", "omega2")) {
     classical <- table_continuous_lm(
       df,
       select = y,
@@ -1395,14 +1395,14 @@ test_that("effect_size column header reflects the chosen metric in wide outputs"
     df,
     select = Sepal.Length,
     by = Species,
-    effect_size = "d",
+    effect_size = "cohens_d",
     output = "data.frame"
   )
   out_g <- table_continuous_lm(
     df,
     select = Sepal.Length,
     by = Species,
-    effect_size = "g",
+    effect_size = "hedges_g",
     output = "data.frame"
   )
   out_omega <- table_continuous_lm(
@@ -1422,7 +1422,7 @@ test_that("effect_size_ci computes valid noncentral CIs containing the point est
   df <- iris[iris$Species != "virginica", ]
   df$Species <- droplevels(df$Species)
 
-  for (es in c("d", "g")) {
+  for (es in c("cohens_d", "hedges_g")) {
     out <- table_continuous_lm(
       df,
       select = Sepal.Length,
@@ -1462,7 +1462,7 @@ test_that("effect_size_ci CIs match effectsize package for d and g (nct)", {
     df,
     select = Sepal.Length,
     by = Species,
-    effect_size = "d",
+    effect_size = "cohens_d",
     effect_size_ci = TRUE,
     output = "long"
   )
@@ -1482,7 +1482,7 @@ test_that("effect_size_ci CIs match effectsize package for d and g (nct)", {
     df,
     select = Sepal.Length,
     by = Species,
-    effect_size = "g",
+    effect_size = "hedges_g",
     effect_size_ci = TRUE,
     output = "long"
   )
@@ -1504,7 +1504,7 @@ test_that("effect_size_ci is invariant to vcov choice", {
     y = c(1, 1.2, 1.1, 5, 7.5, 10),
     x = factor(c("A", "A", "A", "B", "B", "B"))
   )
-  for (es in c("f2", "d", "g", "omega2")) {
+  for (es in c("f2", "cohens_d", "hedges_g", "omega2")) {
     classical <- table_continuous_lm(
       df,
       select = y,
@@ -1535,7 +1535,7 @@ test_that("effect_size_ci = TRUE adds bracket notation in wide display", {
     df,
     select = Sepal.Length,
     by = Species,
-    effect_size = "g",
+    effect_size = "hedges_g",
     effect_size_ci = TRUE,
     digits = 2L,
     effect_size_digits = 2L
@@ -1549,7 +1549,7 @@ test_that("effect_size_ci = TRUE adds bracket notation in wide display", {
     show_statistic = FALSE,
     show_p_value = TRUE,
     show_n = TRUE,
-    effect_size = "g",
+    effect_size = "hedges_g",
     effect_size_ci = TRUE,
     r2_type = "r2",
     ci = TRUE
@@ -1565,7 +1565,7 @@ test_that("effect_size_ci = TRUE adds numeric LL/UL columns in wide raw", {
     df,
     select = Sepal.Length,
     by = Species,
-    effect_size = "d",
+    effect_size = "cohens_d",
     effect_size_ci = TRUE,
     output = "data.frame"
   )
@@ -1587,7 +1587,7 @@ test_that("effect_size_ci = TRUE adds numeric LL/UL columns in wide raw", {
     df,
     select = Sepal.Length,
     by = Species,
-    effect_size = "d",
+    effect_size = "cohens_d",
     effect_size_ci = TRUE,
     output = "long"
   )
@@ -1619,7 +1619,7 @@ test_that("effect_size_ci validates as logical scalar", {
       effect_size_ci = NA,
       output = "long"
     ),
-    "effect_size_ci.*TRUE/FALSE"
+    "effect_size_ci.*TRUE or FALSE"
   )
 })
 
@@ -1630,7 +1630,7 @@ test_that("ci_level controls effect-size CI width", {
     df,
     select = Sepal.Length,
     by = Species,
-    effect_size = "d",
+    effect_size = "cohens_d",
     effect_size_ci = TRUE,
     ci_level = 0.95,
     output = "long"
@@ -1639,7 +1639,7 @@ test_that("ci_level controls effect-size CI width", {
     df,
     select = Sepal.Length,
     by = Species,
-    effect_size = "d",
+    effect_size = "cohens_d",
     effect_size_ci = TRUE,
     ci_level = 0.99,
     output = "long"
@@ -2223,7 +2223,7 @@ test_that("p_digits validates as a single positive integer", {
       by = sex,
       p_digits = 0
     ),
-    "integer >= 1"
+    "positive whole number"
   )
   expect_error(
     table_continuous_lm(
@@ -2232,7 +2232,7 @@ test_that("p_digits validates as a single positive integer", {
       by = sex,
       p_digits = -1
     ),
-    "integer >= 1"
+    "positive whole number"
   )
   expect_error(
     table_continuous_lm(
@@ -2241,7 +2241,7 @@ test_that("p_digits validates as a single positive integer", {
       by = sex,
       p_digits = c(2, 3)
     ),
-    "integer >= 1"
+    "positive whole number"
   )
   expect_error(
     table_continuous_lm(
@@ -2250,7 +2250,7 @@ test_that("p_digits validates as a single positive integer", {
       by = sex,
       p_digits = NA
     ),
-    "integer >= 1"
+    "positive whole number"
   )
 })
 
@@ -2341,7 +2341,7 @@ test_that("align='decimal' produces dot-aligned numeric columns", {
     select = c(wellbeing_score, bmi),
     by = sex,
     statistic = TRUE,
-    effect_size = "g",
+    effect_size = "hedges_g",
     effect_size_ci = TRUE
   )
   display <- spicy:::build_wide_display_df_continuous_lm(
@@ -2354,7 +2354,7 @@ test_that("align='decimal' produces dot-aligned numeric columns", {
     show_statistic = TRUE,
     show_p_value = TRUE,
     show_n = TRUE,
-    effect_size = "g",
+    effect_size = "hedges_g",
     effect_size_ci = TRUE,
     r2_type = "r2",
     ci = TRUE
@@ -2537,7 +2537,7 @@ test_that("effect-size CI bracket separator switches with decimal_mark", {
     sochealth,
     select = wellbeing_score,
     by = sex,
-    effect_size = "g",
+    effect_size = "hedges_g",
     effect_size_ci = TRUE,
     decimal_mark = ".",
     output = "default"
@@ -2546,7 +2546,7 @@ test_that("effect-size CI bracket separator switches with decimal_mark", {
     sochealth,
     select = wellbeing_score,
     by = sex,
-    effect_size = "g",
+    effect_size = "hedges_g",
     effect_size_ci = TRUE,
     decimal_mark = ",",
     output = "default"
@@ -2562,7 +2562,7 @@ test_that("effect-size CI bracket separator switches with decimal_mark", {
     show_statistic = FALSE,
     show_p_value = TRUE,
     show_n = TRUE,
-    effect_size = "g",
+    effect_size = "hedges_g",
     effect_size_ci = TRUE,
     r2_type = "r2",
     ci = TRUE
@@ -2577,7 +2577,7 @@ test_that("effect-size CI bracket separator switches with decimal_mark", {
     show_statistic = FALSE,
     show_p_value = TRUE,
     show_n = TRUE,
-    effect_size = "g",
+    effect_size = "hedges_g",
     effect_size_ci = TRUE,
     r2_type = "r2",
     ci = TRUE
@@ -2728,7 +2728,7 @@ test_that("effect sizes are invariant to vcov = 'CR2'", {
     select = extra,
     by = group,
     vcov = "classical",
-    effect_size = "g",
+    effect_size = "hedges_g",
     effect_size_ci = TRUE,
     output = "long"
   )
@@ -2738,7 +2738,7 @@ test_that("effect sizes are invariant to vcov = 'CR2'", {
     by = group,
     vcov = "CR2",
     cluster = ID,
-    effect_size = "g",
+    effect_size = "hedges_g",
     effect_size_ci = TRUE,
     output = "long"
   )
@@ -3002,7 +3002,7 @@ test_that("bootstrap and jackknife leave the effect sizes unchanged", {
     sleep,
     select = extra,
     by = group,
-    effect_size = "g",
+    effect_size = "hedges_g",
     effect_size_ci = TRUE,
     output = "long"
   )
@@ -3013,7 +3013,7 @@ test_that("bootstrap and jackknife leave the effect sizes unchanged", {
     by = group,
     vcov = "bootstrap",
     boot_n = 200,
-    effect_size = "g",
+    effect_size = "hedges_g",
     effect_size_ci = TRUE,
     output = "long"
   )
@@ -3022,7 +3022,7 @@ test_that("bootstrap and jackknife leave the effect sizes unchanged", {
     select = extra,
     by = group,
     vcov = "jackknife",
-    effect_size = "g",
+    effect_size = "hedges_g",
     effect_size_ci = TRUE,
     output = "long"
   )
@@ -3055,16 +3055,30 @@ test_that("multi-way clustering errors with a clear message", {
   )
 })
 
-test_that("boot_n validates as a positive integer >= 50", {
+test_that("boot_n validates as a positive whole number", {
+  # One validator for the three tables that bootstrap: no floor of 50,
+  # and a fraction refused rather than truncated.
   expect_error(
     table_continuous_lm(
       sleep,
       select = extra,
       by = group,
       vcov = "bootstrap",
-      boot_n = 10
+      boot_n = 10.5
     ),
-    "boot_n.*>= 50"
+    class = "spicy_invalid_input"
+  )
+  # A bootstrap variance needs 10 replicates: below, the request is
+  # refused before any refit.
+  expect_error(
+    table_continuous_lm(
+      sleep,
+      select = extra,
+      by = group,
+      vcov = "bootstrap",
+      boot_n = 9
+    ),
+    "at least 10 replicates"
   )
   expect_error(
     table_continuous_lm(
@@ -3572,7 +3586,7 @@ test_that("pick_es_value_lm fails fast on unknown effect_size", {
   )
   expect_equal(spicy:::pick_es_value_lm(ms, "none"), NA_real_)
   expect_equal(spicy:::pick_es_value_lm(ms, "f2"), 1)
-  expect_equal(spicy:::pick_es_value_lm(ms, "g"), 0.45)
+  expect_equal(spicy:::pick_es_value_lm(ms, "hedges_g"), 0.45)
 })
 
 test_that("compute_model_vcov refuses when sandwich errors", {
@@ -3845,8 +3859,8 @@ test_that("get_test_header_lm returns the raw test_type for unknown labels", {
 
 test_that("format_effect_size_header_lm passes through unknown labels", {
   expect_equal(spicy:::format_effect_size_header_lm("custom"), "custom")
-  expect_equal(spicy:::format_effect_size_header_lm("d"), "d")
-  expect_equal(spicy:::format_effect_size_header_lm("g"), "g")
+  expect_equal(spicy:::format_effect_size_header_lm("cohens_d"), "d")
+  expect_equal(spicy:::format_effect_size_header_lm("hedges_g"), "g")
 })
 
 # ---- coverage: omega2 / smd CI degenerate paths ----
@@ -4175,8 +4189,19 @@ test_that("compute_resample_vcov_bootstrap errors when 0 valid replicates", {
     .package = "stats"
   )
   expect_error(
-    spicy:::compute_resample_vcov_bootstrap(fit, boot_n = 5L),
+    spicy:::compute_resample_vcov_bootstrap(fit, boot_n = 20L),
     class = "spicy_resampling_failed"
+  )
+})
+
+test_that("compute_resample_vcov_bootstrap refuses fewer than 10 replicates", {
+  # Below 10 valid replicates the covariance is refused, so a `boot_n`
+  # under 10 is refused before any refit, with that reason.
+  fit <- stats::lm(mpg ~ wt, data = mtcars)
+  expect_error(
+    spicy:::compute_resample_vcov_bootstrap(fit, boot_n = 5L),
+    "at least 10 replicates",
+    class = "spicy_invalid_input"
   )
 })
 

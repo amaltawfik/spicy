@@ -287,8 +287,8 @@ test_that("the clipboard payload carries the SMD column and its gloss", {
 test_that("a journal style reaches the SMD column without a new argument", {
   skip_if_not_installed("MASS")
   d <- .smd_eng_data()
-  # The precision lever is `effect_size_digits` / `v_digits`, both of
-  # which the style table already carries. A dedicated `smd_digits`
+  # The precision lever is `effect_size_digits`, in both tables, which
+  # the style table already carries. A dedicated `smd_digits`
   # would sit outside it and no theme would ever set it, with no test
   # failing -- which is why there is none.
   con3 <- paste(
@@ -309,7 +309,7 @@ test_that("a journal style reaches the SMD column without a new argument", {
       select = bin,
       by = g,
       smd = TRUE,
-      v_digits = 3
+      effect_size_digits = 3
     ))),
     collapse = "\n"
   )

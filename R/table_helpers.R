@@ -810,6 +810,166 @@ make_stronger_indent <- function(x, base_indent, strong_indent, rows) {
   )
 }
 
+# The order of the groups a column forms (decision 4 of the ADR of
+# 2026-10-20), one rule for every table that groups -- by `by`, by the
+# groupings of `table_outcome()` -- and for the rows of a categorical
+# variable: a factor keeps its levels, the way to choose another order;
+# any other column is sorted, text in the C locale (`method = "radix"`:
+# capitals before lower case, accented letters after `z`, the same on every
+# machine), `FALSE` before `TRUE`, numbers and the codes of a labelled
+# vector ascending. This is the order of `freq()` and `cross_tab()`, and it
+# depends neither on the order of the rows nor on the locale. Missing
+# values form no level here: the caller appends the missing group last
+# when it shows one. Returns the levels as a character vector.
+.group_levels <- function(x) {
+  if (is.factor(x)) {
+    return(levels(x))
+  }
+  vals <- x[!is.na(x)]
+  if (inherits(vals, "haven_labelled")) {
+    vals <- unclass(vals)
+    attributes(vals) <- NULL
+  }
+  vals <- unique(vals)
+  if (length(vals) < 2L) {
+    return(as.character(vals))
+  }
+  as.character(sort(vals, method = "radix"))
+}
+
+# The one rule for an argument with no effect (V12 of the coherence audit
+# of 2026-10-20): an argument the caller TYPED whose request the table
+# cannot honor warns, class `spicy_ignored_arg`, one warning per argument,
+# so that the arguments named are those typed and the message of one
+# argument reads the same in every function. `args` are their names,
+# `when` the condition that voids them ("when `by` is not used").
+.warn_ignored <- function(args, when) {
+  for (arg in args) {
+    spicy_warn(
+      sprintf("`%s` is ignored %s.", arg, when),
+      class = "spicy_ignored_arg"
+    )
+  }
+  invisible(NULL)
+}
+
+# Why `drop_na = FALSE` reaches nothing in a continuous table without
+# `by`: one wording for `table_continuous()` and `table_continuous_svy()`.
+.drop_na_ignored_reason <- function() {
+  paste(
+    "when `by` is not used: a continuous summary has no \"(Missing)\"",
+    "display row. NAs are always excluded from each variable's statistics",
+    "and disclosed in the table note"
+  )
+}
+
+# The arguments of the table functions that act on one route only, and
+# the `output` values they serve. Typed with another `output`, they reach
+# nothing and say so (`.warn_ignored_output_args()`).
+.OUTPUT_SCOPED_ARGS <- list(
+  excel_path = "excel",
+  excel_sheet = "excel",
+  add_multilevel_header = "excel",
+  indent_text_excel_clipboard = c("excel", "clipboard"),
+  clipboard_delim = "clipboard",
+  word_path = "word",
+  word_template = "word",
+  blank_na_wide = "data.frame"
+)
+
+# `typed` is the set of arguments the caller typed: the names of the
+# table function's `match.call()`.
+.warn_ignored_output_args <- function(output, typed) {
+  for (arg in intersect(names(.OUTPUT_SCOPED_ARGS), typed)) {
+    serves <- .OUTPUT_SCOPED_ARGS[[arg]]
+    if (!output %in% serves) {
+      .warn_ignored(
+        arg,
+        sprintf(
+          "when `output = \"%s\"`: it applies to %s",
+          output,
+          paste0("`output = \"", serves, "\"`", collapse = " and ")
+        )
+      )
+    }
+  }
+  invisible(NULL)
+}
+
+# `effect_size` values renamed in 0.14.0 so that a measure has one
+# spelling across the family (decision 2 of the ADR of 2026-10-20): a
+# squared measure ends in `2` (`eta2`, `epsilon2`, as the regression
+# tokens `partial_eta2` and the fit statistic `omega2`), an estimator named
+# after its author carries the name (`cohens_d`, `hedges_g`). The old value
+# is refused with the new one, as the logical above; no alias. `renamed`
+# maps each old value to its new spelling.
+.check_effect_size_renamed <- function(
+  effect_size,
+  renamed,
+  call = rlang::caller_env()
+) {
+  if (
+    !is.character(effect_size) ||
+      length(effect_size) != 1L ||
+      is.na(effect_size) ||
+      !effect_size %in% names(renamed)
+  ) {
+    return(invisible(NULL))
+  }
+  new <- renamed[[effect_size]]
+  spicy_abort(
+    c(
+      sprintf(
+        "`effect_size = \"%s\"` is defunct: the measure is spelled `\"%s\"`.",
+        effect_size,
+        new
+      ),
+      "i" = sprintf(
+        "Replace `effect_size = \"%s\"` with `effect_size = \"%s\"`.",
+        effect_size,
+        new
+      )
+    ),
+    class = c("spicy_defunct", "spicy_invalid_input"),
+    call = call
+  )
+}
+
+# The values `.check_effect_size_renamed()` refuses, by table: the
+# descriptive pair (`table_continuous()`, `table_outcome()`) and
+# `table_continuous_lm()`.
+.ES_RENAMED_DESC <- c(eta_sq = "eta2", epsilon_sq = "epsilon2")
+.ES_RENAMED_LM <- c(d = "cohens_d", g = "hedges_g")
+
+# A formal renamed before 1.0 survives as a default-less formal at the END
+# of the signature, so that a call still typing the old name gets the new
+# one instead of R's bare "unused argument" error: the device of
+# `abort_styled_defunct()` (R/cross_tab.R) and `abort_outcome_by_renamed()`
+# (R/table_outcome.R). No alias: the old name never reaches the code.
+# `value` is the expression the caller typed, deparsed.
+.abort_renamed_arg <- function(
+  fn,
+  old,
+  new,
+  value,
+  call = rlang::caller_env()
+) {
+  spicy_abort(
+    c(
+      sprintf("`%s` was renamed `%s` in `%s()`.", old, new, fn),
+      "i" = sprintf(
+        "Replace `%s = %s` with `%s = %s`.",
+        old,
+        value,
+        new,
+        value
+      )
+    ),
+    class = c("spicy_defunct", "spicy_invalid_input"),
+    call = call
+  )
+}
+
 # A grouping column no observation holds leaves no group to describe:
 # refused when the missing values are removed (`drop_na = TRUE`), as in
 # table_continuous_lm(). Under `drop_na = FALSE` they form the one

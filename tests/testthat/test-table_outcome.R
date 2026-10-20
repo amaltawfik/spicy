@@ -160,7 +160,7 @@ test_that("each block carries its own one-way comparison", {
   expect_equal(r$df1[h2], 2, tolerance = 1e-12)
   expect_equal(r$df2[h2], 3.2843793820103295, tolerance = 1e-12)
   expect_equal(r$p.value[h2], 0.93960667111306229, tolerance = 1e-12)
-  expect_identical(r$es_type[h2], "eta_sq")
+  expect_identical(r$es_type[h2], "eta2")
   expect_equal(r$es_value[h2], 0.024272377814387697, tolerance = 1e-12)
 })
 
@@ -176,7 +176,7 @@ test_that("the rank family answers on the same blocks", {
   expect_equal(r$statistic[h2], 1.1388888888888893, tolerance = 1e-12)
   expect_equal(r$df1[h2], 2, tolerance = 1e-12)
   expect_equal(r$p.value[h2], 0.56583970678742257, tolerance = 1e-12)
-  expect_identical(r$es_type[h2], "epsilon_sq")
+  expect_identical(r$es_type[h2], "epsilon2")
 })
 
 test_that("the block counts sum to the marginal count", {

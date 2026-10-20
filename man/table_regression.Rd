@@ -48,7 +48,7 @@ table_regression(
   labels = getOption("spicy.var_labels", FALSE),
   title = NULL,
   note = NULL,
-  output = c("default", "data.frame", "long", "gt", "flextable", "tinytable", "excel",
+  output = c("default", "data.frame", "long", "tinytable", "gt", "flextable", "excel",
     "clipboard", "word"),
   excel_path = NULL,
   excel_sheet = NULL,
@@ -160,8 +160,14 @@ Requesting \code{"hdi"} for a frequentist fit, or \code{"profile"} /
 \code{spicy_invalid_input}.}
 
 \item{boot_n}{Number of bootstrap replicates when
-\code{vcov = "bootstrap"}. Single positive integer. Default
-\code{1000L}.}
+\code{vcov = "bootstrap"}, and of the bootstrap of the RMST and
+risk-difference columns: a positive whole number, as in
+\code{\link[=table_continuous_lm]{table_continuous_lm()}} and \code{\link[=table_multiresponse]{table_multiresponse()}}. Default
+\code{1000L}, the default of \code{\link[=table_continuous_lm]{table_continuous_lm()}}, which computes the
+same bootstrap variance. That variance, of a \code{lm} or \code{glm} fit, needs
+at least 10 valid replicates: a smaller \code{boot_n} is an error.
+Typed in a table that runs no bootstrap, it is ignored with a
+warning (class \code{spicy_ignored_arg}).}
 
 \item{tau}{RMST horizon: the \code{"rmst"} column family reports the
 restricted-mean-survival-time difference over \verb{[0, tau]}
@@ -637,8 +643,9 @@ effect-size fit stats (\code{r2}, \code{adj_r2}, \code{r2_change},
 \item{ic_digits}{Decimals for information criteria (\code{AIC},
 \code{AICc}, \code{BIC}, and their \verb{_change} form). Default \code{1L}.}
 
-\item{decimal_mark}{Decimal mark used in numeric display.
-\code{"."} (default) or \code{","} (European convention). When
+\item{decimal_mark}{The decimal mark, a single character: \code{"."} (the
+default) or \code{","} in most styles; the Lancet style of
+\code{\link[=spicy_style]{spicy_style()}} uses the middle dot. When
 \code{","} is used, the CI bracket separator switches to \code{"; "}
 automatically to avoid \code{"0,18 [0,07, 0,30]"} ambiguity.
 With \code{output = "excel"} a numeric cell is displayed by Excel
@@ -731,7 +738,7 @@ structure, not to the banner.}
 \item{output}{Output type. \code{"default"} (a printable
 \code{spicy_regression_table}); \code{"data.frame"} (the displayed table
 with its numbers); \code{"long"} (one row per coefficient, broom's
-names); \code{"gt"} / \code{"flextable"} / \code{"tinytable"} (rich-format
+names); \code{"tinytable"} / \code{"gt"} / \code{"flextable"} (rich-format
 tables); \code{"excel"} (writes to \code{excel_path}); \code{"clipboard"}
 (copies to system clipboard); \code{"word"} (writes flextable to
 \code{word_path}).}
@@ -1575,7 +1582,7 @@ default object: one row per printed row, the key columns
 columns, numeric, each interval split into its two bounds.
 \item \code{"long"} -- the long-format tibble, one row per
 \verb{(model_id, term, estimate_type)}, with broom's column names.
-\item \code{"gt"} / \code{"flextable"} / \code{"tinytable"} -- rich-format
+\item \code{"tinytable"} / \code{"gt"} / \code{"flextable"} -- rich-format
 HTML / Word / PDF tables (require the corresponding
 Suggests package). In a PDF, a \code{"flextable"} table wider than
 the page can be fitted with \code{flextable::fit_to_width()}.
@@ -1598,9 +1605,11 @@ numeric so cluster-robust Satterthwaite df is preserved.
 \section{Global options}{
 \itemize{
 \item \strong{\code{options(spicy.style = )}} -- the journal style applied by
-default to all four table families
-(\code{table_regression()}, \code{table_categorical()},
-\code{table_continuous()}, \code{table_continuous_lm()}). Takes a theme
+default to all nine table functions (\code{\link[=table_categorical]{table_categorical()}},
+\code{\link[=table_categorical_svy]{table_categorical_svy()}}, \code{\link[=table_continuous]{table_continuous()}},
+\code{\link[=table_continuous_svy]{table_continuous_svy()}}, \code{\link[=table_continuous_lm]{table_continuous_lm()}},
+\code{\link[=table_outcome]{table_outcome()}}, \code{\link[=table_multiresponse]{table_multiresponse()}}, \code{table_regression()}
+and \code{\link[=table_regression_uv]{table_regression_uv()}}). Takes a theme
 name (\code{"jama"}, \code{"nejm"}, \code{"lancet"}, \code{"annals"}, \code{"apa"},
 \code{"aer"}) or a \code{\link[=spicy_style]{spicy_style()}} object. The style of a report is a
 property of the document, so it is set once in the setup chunk;
@@ -1610,7 +1619,7 @@ restores spicy's own defaults. See \code{\link[=spicy_style]{spicy_style()}} for
 rules each theme encodes and the official document they come
 from.
 \item \strong{\code{options(spicy.note_style = )}} -- how the table note is
-rendered by the \code{"tinytable"} engine (all four table families).
+rendered by the \code{"tinytable"} engine (all nine table functions).
 A note is subordinate to the table it documents, so it is set
 one size down, in black: \verb{0.9em} (\verb{\\small} in LaTeX), matching
 the \code{"gt"} engine and the 10pt-on-11pt of the Word engine. Two

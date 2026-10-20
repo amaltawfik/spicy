@@ -17,8 +17,9 @@
 #' Inference adapts via `vcov`: classical OLS, `"HC0"`-`"HC5"`
 #' (heteroscedasticity-consistent), `"CR0"`-`"CR3"` (cluster-robust,
 #' requires `cluster`), or `"bootstrap"` / `"jackknife"` resampling.
-#' Effect sizes (Cohen's `"d"`, Hedges' `"g"`, Hays' `"omega2"`,
-#' Cohen's `"f2"`) are reported with optional noncentral *t* / *F*
+#' Effect sizes (Cohen's *d* `"cohens_d"`, Hedges' *g* `"hedges_g"`,
+#' Hays' `"omega2"`, Cohen's `"f2"`) are reported with optional
+#' noncentral *t* / *F*
 #' confidence intervals via `effect_size_ci`, and adapt under
 #' covariate adjustment (see `effect_size`).
 #'
@@ -49,25 +50,29 @@
 #'     The ordering only determines the display order and the reference
 #'     level; per-level means, the displayed difference, and its CI are
 #'     identical to those of an unordered factor with the same levels.
-#'   - **character**: coerced to factor with `factor(by)`, which orders the
-#'     levels alphabetically. To control the reference level, supply `by`
-#'     as an explicit factor with the desired level ordering (e.g. via
-#'     [forcats::fct_relevel()] or `factor(..., levels = ...)`).
+#'   - **character**: coerced to factor with its values sorted in the C
+#'     locale (capitals before lower case, the same on every machine), the
+#'     order of the groups in the whole family ([table_categorical()],
+#'     [table_continuous()], ...): the first value in that order is the
+#'     reference level, whatever the order of the rows. To control the
+#'     reference level, supply `by` as an explicit factor with the desired
+#'     level ordering (e.g. via [forcats::fct_relevel()] or
+#'     `factor(..., levels = ...)`).
 #'   - **logical**: coerced to factor with levels `"FALSE"`, `"TRUE"` (in
 #'     that order, since `FALSE < TRUE`). The reference level is `"FALSE"`,
 #'     so a binary contrast displays as `Delta (TRUE - FALSE)`.
 #'   - **haven labelled with value labels** (an SPSS / Stata import):
 #'     treated as categorical over the raw codes, in ascending code
 #'     order (the reference level is the lowest code; the model needs
-#'     a fixed level order). [table_continuous()] and
-#'     [table_categorical()] form the same groups from such a column
-#'     but display them in order of first appearance in the data, so
-#'     the group ORDER can differ between the sibling tables. A
+#'     a fixed level order), the order in which [table_continuous()] and
+#'     [table_categorical()] display the same groups. A
 #'     labelled vector without value labels is treated as a continuous
 #'     regressor. Declared missing values follow `user_na` as usual.
 #'
 #'   Rows with `NA` in `by` are excluded from the analytic sample for each
-#'   outcome (NAs in `y` and `weights` are also excluded; see Details).
+#'   outcome (NAs in `y` and `weights` are also excluded; see Details), the
+#'   rule of a table that computes (see `drop_na` in
+#'   [table_continuous()]); this table has no `drop_na`.
 #' @param covariates Optional additive covariates to adjust each per-outcome
 #'   linear model for. Accepts a tidyselect expression (e.g.
 #'   `covariates = c(age, sex)`, `covariates = tidyselect::all_of(cov_vec)`,
@@ -102,7 +107,8 @@
 #'   existing `by` / `weights` NA handling).
 #' @param adjustment How the covariate-adjusted estimated marginal
 #'   means (the `emmean` / `emmean_se` / `emmean_ci_*` columns) are
-#'   computed when `covariates` is non-empty. One of:
+#'   computed when `covariates` is non-empty (typed without covariates,
+#'   it is ignored with a warning, class `spicy_ignored_arg`). One of:
 #'   - `"proportional"` (the default; matches Stata `margins` and
 #'     [marginaleffects::avg_predictions()]): G-computation on the
 #'     observed sample. For each focal level of `by`, the model
@@ -203,7 +209,8 @@
 #'
 #'   The `HC*` variants are computed via [sandwich::vcovHC()].
 #'   Coefficients (means, contrasts, slopes), `\eqn{R^2}{R^2}`, and the standardized
-#'   effect sizes (`f2`, `d`, `g`, `omega2`) are point estimates from the
+#'   effect sizes (`f2`, `cohens_d`, `hedges_g`, `omega2`) are point
+#'   estimates from the
 #'   OLS/WLS fit and are not affected by `vcov`; only their standard errors,
 #'   CIs, and the test statistic of the contrast change.
 #' @param cluster Cluster identifier for cluster-aware variance
@@ -227,14 +234,18 @@
 #'   required. Multi-way clustering (a list / data.frame of multiple
 #'   cluster vectors) is not supported; use [sandwich::vcovCL()] or
 #'   [clubSandwich::vcovCR()] directly on the fitted model for that case.
-#' @param boot_n Integer. Number of bootstrap replicates used when
-#'   `vcov = "bootstrap"`. Defaults to `1000`. Ignored otherwise.
-#'   Must be at least `50` (values below that floor raise an error:
-#'   fewer replicates make the variance estimate too noisy to use);
-#'   non-integer values are truncated (e.g. `500.9` becomes `500`).
+#' @param boot_n Number of bootstrap replicates used when
+#'   `vcov = "bootstrap"`: a positive whole number, as in
+#'   [table_regression()] and [table_multiresponse()] (a fraction is an
+#'   error). Defaults to `1000`, the default of [table_regression()],
+#'   which computes the same bootstrap variance. That variance needs at
+#'   least 10 valid replicates: a smaller `boot_n` is an error.
 #'   Larger values reduce Monte-Carlo error in the bootstrap variance;
-#'   typical values for inference are `500`-`2000`.
-#' @param contrast Contrast display for categorical predictors. One of:
+#'   typical values for inference are `500`-`2000`. Typed with another
+#'   `vcov`, it is ignored with a warning (class `spicy_ignored_arg`).
+#' @param contrast Contrast display for categorical predictors (typed with
+#'   a numeric `by`, it is ignored with a warning, class
+#'   `spicy_ignored_arg`). One of:
 #'   - `"auto"` (default): show a single reference contrast
 #'     `Delta (level2 - level1)` only when `by` has exactly two non-empty
 #'     levels. The reference level is the **first level of the factor**
@@ -256,25 +267,29 @@
 #'   includes a `Weighted n` column equal to the sum of case weights in the
 #'   analytic sample. Defaults to `FALSE`.
 #' @param effect_size Character. Effect-size column to include in the wide and
-#'   rendered outputs (a logical is an error, class `spicy_defunct`). One
+#'   rendered outputs (a logical is an error, class `spicy_defunct`). An
+#'   estimator named after its author carries the name, as `"hedges_g"`
+#'   does in [table_continuous()]: `"d"` and `"g"`, the spellings before
+#'   0.14.0, are an error of the same class that gives the new one. One
 #'   of:
 #'   - `"none"` (the default): no effect-size column.
 #'   - `"f2"`: Cohen's `\eqn{f^2}{f^2} = \eqn{R^2}{R^2} / (1 - \eqn{R^2}{R^2})`. Defined for any predictor type.
 #'     Familiar from Cohen (1988); standard input for a-priori power analysis.
 #'     Note that for a single-predictor model, `\eqn{f^2}{f^2}` is a monotone transform of
 #'     `\eqn{R^2}{R^2}` and adds no information beyond it.
-#'   - `"d"`: Cohen's `d = beta_hat / sigma_hat`, where `beta_hat` is the
-#'     model coefficient (the displayed difference) and `sigma_hat` is the
+#'   - `"cohens_d"`: Cohen's `d = beta_hat / sigma_hat`, where `beta_hat` is
+#'     the model coefficient (the displayed difference) and `sigma_hat` is the
 #'     residual standard deviation from the fitted model. Defined only when
 #'     `by` has exactly two non-empty levels; otherwise the function errors.
 #'     The sign matches the displayed `Delta (level2 - level1)`.
-#'   - `"g"`: Hedges' `g = J * d` with the small-sample correction
-#'     `J = 1 - 3 / (4 * df_resid - 1)`. Same domain as `"d"`.
+#'   - `"hedges_g"`: Hedges' `g = J * d` with the small-sample correction
+#'     `J = 1 - 3 / (4 * df_resid - 1)`. Same domain as `"cohens_d"`.
 #'   - `"omega2"`: Hays' `omega-squared`, a bias-corrected estimator of the
 #'     population variance explained, less optimistic than `\eqn{R^2}{R^2}` for small
 #'     samples. Defined for any predictor type and truncated at 0.
 #'
-#'   When `weights` is supplied, `"d"`, `"g"`, and `"omega2"` are derived from
+#'   When `weights` is supplied, `"cohens_d"`, `"hedges_g"`, and `"omega2"`
+#'   are derived from
 #'   the weighted least-squares fit (using weighted sums of squares and the
 #'   model's weighted residual standard deviation), keeping them consistent
 #'   with the weighted contrast and its CI shown in the table. All effect
@@ -289,14 +304,16 @@
 #'     the correctly-defined effect size when the model is adjusted.
 #'     For numeric `by`, partial *\eqn{f^2}{f^2}* equals the squared partial
 #'     correlation of `by` with the outcome, divided by `(1 - r^2_partial)`.
-#'   - `"d"` and `"g"` raise a `spicy_unsupported` error: Cohen's *d*
-#'     and Hedges' *g* have no canonical extension to adjusted models
+#'   - `"cohens_d"` and `"hedges_g"` raise a `spicy_unsupported` error:
+#'     Cohen's *d* and Hedges' *g* have no canonical extension to adjusted
+#'     models
 #'     (the pooled SD is undefined under adjustment). Use `"f2"` or
 #'     `"omega2"` instead -- both generalize via partial *F*.
 #' @param effect_size_ci Logical. If `TRUE` and `effect_size != "none"`, adds
 #'   a confidence interval for the effect size derived from inversion of the
-#'   appropriate noncentral distribution (noncentral t for `"d"` / `"g"`;
-#'   noncentral F for `"omega2"` / `"f2"`). The CI level is taken from
+#'   appropriate noncentral distribution (noncentral t for `"cohens_d"` /
+#'   `"hedges_g"`; noncentral F for `"omega2"` / `"f2"`). The CI level is
+#'   taken from
 #'   `ci_level`. In the long output (`output = "long"`), the bounds are always
 #'   present in `es_ci_lower` / `es_ci_upper` (numeric). In the wide raw
 #'   output (`output = "data.frame"`), the bounds appear under the same
@@ -339,7 +356,7 @@
 #'   variable label documents the data file; a published table carries
 #'   the wording you set here.
 #' @param ci_level Confidence level for coefficient and model-based mean
-#'   intervals (default: `0.95`). Must be between 0 and 1 exclusive.
+#'   intervals (default: `0.95`): a number strictly between 0 and 1.
 #' @param digits Number of decimal places for descriptive values, regression
 #'   coefficients, and test statistics (default: `2`). Must be a single
 #'   non-negative whole number: a fraction (`2.9`) is an error. Same
@@ -359,8 +376,9 @@
 #'   small, or for journals using a coarser convention. Leading zeros
 #'   are always stripped, following APA convention. Values below `1`
 #'   and fractions (`3.7`) raise an error.
-#' @param decimal_mark Character used as decimal separator. Either `"."`
-#'   (default) or `","`.
+#' @param decimal_mark The decimal mark, a single character: `"."` (the
+#'   default) or `","` in most styles; the Lancet style of
+#'   [spicy_style()] uses the middle dot.
 #' @param align Horizontal alignment of numeric columns in the printed
 #'   ASCII table and in the `tinytable`, `gt`, `flextable`, `word`, and
 #'   `clipboard` outputs. The first column (`Variable`) is always
@@ -520,8 +538,9 @@
 #'     for any predictor type. For a single-predictor model, `\eqn{f^2}{f^2}` is a
 #'     monotone transform of `\eqn{R^2}{R^2}` and adds no information beyond it; its
 #'     primary use is in *a priori* power analysis (e.g. G*Power).
-#'   \item `"d"`, `"g"`: standardized mean difference (Cohen's *d* or Hedges'
-#'     *g*), defined only when `by` has exactly two non-empty levels.
+#'   \item `"cohens_d"`, `"hedges_g"`: standardized mean difference
+#'     (Cohen's *d* or Hedges' *g*), defined only when `by` has exactly two
+#'     non-empty levels.
 #'     `d = beta_hat / sigma_hat` with `sigma_hat = summary(fit)$sigma` (the
 #'     pooled within-group SD for the unweighted two-group case);
 #'     `g = J * d` with `J = 1 - 3 / (4 * df_resid - 1)` (Hedges and Olkin
@@ -546,7 +565,8 @@
 #' `"omega2"` become the partial *\eqn{f^2}{f^2}* / partial *\eqn{\omega^2}{omega^2}* of `by`, derived
 #' from the partial *F* restricted to the focal term (the Type-II
 #' test of `by` after all covariates, equal to [stats::drop1()] in
-#' this additive setting). `"d"` and `"g"` raise a `spicy_unsupported` error: the pooled
+#' this additive setting). `"cohens_d"` and `"hedges_g"` raise a
+#' `spicy_unsupported` error: the pooled
 #' standard deviation has no canonical extension under adjustment, so
 #' Cohen's *d* and Hedges' *g* are undefined for adjusted models. See
 #' `effect_size` for the full dispatch.
@@ -558,7 +578,8 @@
 #' `PROC GLM EFFECTSIZE` 14.2+) and in mainstream R packages
 #' (`effectsize`, `MOTE`, `TOSTER`, `effsize`):
 #' \itemize{
-#'   \item `"d"`, `"g"`: noncentral *t* inversion (Steiger and Fouladi 1997;
+#'   \item `"cohens_d"`, `"hedges_g"`: noncentral *t* inversion (Steiger
+#'     and Fouladi 1997;
 #'     Goulet-Pelletier and Cousineau 2018). Empirical coverage is nominal
 #'     across sample sizes (Fitts 2021), unlike the
 #'     older Hedges-Olkin normal approximation which is biased for small
@@ -856,7 +877,7 @@
 #'   sochealth,
 #'   select = c(wellbeing_score, bmi),
 #'   by = sex,
-#'   effect_size = "d"
+#'   effect_size = "cohens_d"
 #' )
 #'
 #' # Hedges' g with weighted analysis and weighted n column.
@@ -866,7 +887,7 @@
 #'   by = sex,
 #'   weights = weight,
 #'   statistic = TRUE,
-#'   effect_size = "g",
+#'   effect_size = "hedges_g",
 #'   show_weighted_n = TRUE
 #' )
 #'
@@ -875,7 +896,7 @@
 #'   sochealth,
 #'   select = c(wellbeing_score, bmi),
 #'   by = sex,
-#'   effect_size = "g",
+#'   effect_size = "hedges_g",
 #'   effect_size_ci = TRUE
 #' )
 #'
@@ -887,7 +908,8 @@
 #'   effect_size = "f2"
 #' )
 #'
-#' # Hays' omega-squared for a 3-level predictor (d / g would error here).
+#' # Hays' omega-squared for a 3-level predictor ("cohens_d" and
+#' # "hedges_g" need two groups).
 #' table_continuous_lm(
 #'   sochealth,
 #'   select = c(wellbeing_score, bmi),
@@ -1095,7 +1117,7 @@ table_continuous_lm <- function(
   p_value = NULL,
   show_n = TRUE,
   show_weighted_n = FALSE,
-  effect_size = c("none", "f2", "d", "g", "omega2"),
+  effect_size = c("none", "f2", "cohens_d", "hedges_g", "omega2"),
   effect_size_ci = FALSE,
   r2 = c("r2", "adj_r2", "none"),
   ci = TRUE,
@@ -1133,18 +1155,7 @@ table_continuous_lm <- function(
   public_call <- sys.call()
 
   .check_data_frame(data, "table_continuous_lm")
-  if (
-    !is.numeric(ci_level) ||
-      length(ci_level) != 1L ||
-      is.na(ci_level) ||
-      ci_level <= 0 ||
-      ci_level >= 1
-  ) {
-    spicy_abort(
-      "`ci_level` must be a single number between 0 and 1.",
-      class = "spicy_invalid_input"
-    )
-  }
+  validate_ci_level(ci_level)
   digits <- validate_digit_arg(digits, "digits")
   fit_digits <- validate_digit_arg(fit_digits, "fit_digits")
   effect_size_digits <- validate_digit_arg(
@@ -1152,24 +1163,9 @@ table_continuous_lm <- function(
     "effect_size_digits"
   )
   p_digits <- validate_digit_arg(p_digits, "p_digits", min = 1L)
-  if (
-    !is.numeric(boot_n) ||
-      length(boot_n) != 1L ||
-      is.na(boot_n) ||
-      boot_n < 50
-  ) {
-    spicy_abort(
-      "`boot_n` must be a single positive integer (>= 50).",
-      class = "spicy_invalid_input"
-    )
-  }
-  boot_n <- as.integer(boot_n)
-  if (!.is_single_char(decimal_mark)) {
-    spicy_abort(
-      '`decimal_mark` must be a single character (e.g. "." or ",").',
-      class = "spicy_invalid_input"
-    )
-  }
+  boot_n_explicit <- !missing(boot_n)
+  boot_n <- validate_boot_n(boot_n)
+  validate_decimal_mark(decimal_mark)
   .check_labels_arg(labels)
   # `p_value = NULL` is the family's automatic default: the p-value is
   # shown whenever `by` is supplied, and `by` is required here.
@@ -1195,29 +1191,31 @@ table_continuous_lm <- function(
     "effect_size_ci",
     "user_na"
   )) {
-    .val <- get(.arg)
-    if (!is.logical(.val) || length(.val) != 1L || is.na(.val)) {
-      spicy_abort(
-        sprintf("`%s` must be TRUE/FALSE.", .arg),
-        class = "spicy_invalid_input"
-      )
-    }
+    validate_logical_scalar(get(.arg), .arg)
   }
 
   output <- spicy_match_arg(output)
+  .warn_ignored_output_args(output, names(match.call()))
   # Decision 16: NULL resolves to the family's registry sheet name,
   # keeping the usage line of the Rd clean of a display string.
   if (is.null(excel_sheet)) {
     excel_sheet <- spicy_str("excel_sheet_continuous_lm")
   }
   vcov <- spicy_match_arg(vcov)
+  if (boot_n_explicit && !identical(vcov, "bootstrap")) {
+    .warn_boot_n_ignored("`vcov = \"bootstrap\"`")
+  }
+  contrast_explicit <- !missing(contrast)
+  adjustment_explicit <- !missing(adjustment)
   contrast <- spicy_match_arg(contrast)
   # `effect_size` names a measure; a logical is refused, as in the
-  # siblings that once took one.
+  # siblings that once took one, and so are the spellings renamed in
+  # 0.14.0.
   .check_effect_size_not_logical(
     effect_size,
-    "one of `\"f2\"`, `\"d\"`, `\"g\"`, `\"omega2\"`"
+    "one of `\"f2\"`, `\"cohens_d\"`, `\"hedges_g\"`, `\"omega2\"`"
   )
+  .check_effect_size_renamed(effect_size, .ES_RENAMED_LM)
   effect_size <- spicy_match_arg(effect_size)
   r2 <- spicy_match_arg(r2)
   align <- spicy_match_arg(align)
@@ -1248,9 +1246,8 @@ table_continuous_lm <- function(
   # the categorical path instead of silently fitting a slope on the
   # codes. Levels are in ascending CODE order (factor() default; the
   # model needs a fixed order and the lowest code is the natural
-  # reference), whereas the sibling tables display the same groups in
-  # order of first appearance -- same grouping, potentially different
-  # display order. A labelled vector without value labels stays
+  # reference), the order in which the sibling tables display the same
+  # groups (`.group_levels()`). A labelled vector without value labels stays
   # continuous. `resolve_user_na()` has already applied the `user_na`
   # contract, so declared-missing codes are NA (default) or ordinary
   # values (user_na = FALSE) here.
@@ -1290,7 +1287,7 @@ table_continuous_lm <- function(
     }
   }
 
-  if (effect_size %in% c("d", "g")) {
+  if (effect_size %in% c("cohens_d", "hedges_g")) {
     is_two_level <- !is.numeric(by_vector) &&
       nlevels(droplevels(coerce_lm_factor(by_vector))) == 2L
     if (!is_two_level) {
@@ -1411,6 +1408,15 @@ table_continuous_lm <- function(
     data,
     by_name = by_name
   )
+  # Arguments of one setting only, typed in a call without it, reach
+  # nothing: `adjustment` chooses how the means are adjusted for the
+  # covariates, `contrast` the contrast of a categorical `by`.
+  if (adjustment_explicit && length(covariates_names) == 0L) {
+    .warn_ignored("adjustment", "when `covariates` is empty")
+  }
+  if (contrast_explicit && is.numeric(by_vector)) {
+    .warn_ignored("contrast", "when `by` is numeric: a slope has no contrast")
+  }
 
   excluded_names <- resolve_multi_column_selection(
     rlang::enquo(exclude),
@@ -1480,7 +1486,9 @@ table_continuous_lm <- function(
   # Cohen's d / Hedges' g are undefined under covariate adjustment.
   # Reject up front so the user gets a clean error rather than a
   # silent dispatch to an inappropriate formula.
-  if (length(covariates_names) > 0L && effect_size %in% c("d", "g")) {
+  if (
+    length(covariates_names) > 0L && effect_size %in% c("cohens_d", "hedges_g")
+  ) {
     spicy_abort(
       c(
         sprintf(

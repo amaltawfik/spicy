@@ -31,14 +31,14 @@ test_that("`model` on a table without spanners is refused", {
   expect_null(as_structured(tbl)$spanners)
   expect_error(
     inline(tbl, age, column = "b", model = 1),
-    "`model` was supplied but this table has no model spanners.",
+    "`model` was supplied but this table has no model or group to select.",
     class = "spicy_invalid_input",
     fixed = TRUE
   )
   # A label rather than a position takes the same arm.
   expect_error(
     inline(tbl, age, column = "b", model = "Model 1"),
-    "no model spanners",
+    "no model or group to select",
     class = "spicy_invalid_input"
   )
 })

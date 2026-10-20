@@ -1443,17 +1443,17 @@ test_that("`inline()` cites a cell of a design table", {
     show_columns = c("m", "se", "ci", "n"),
     deff = TRUE
   )
-  expect_identical(inline(tbl, "api00", level = "E", column = "m"), "648.87")
-  expect_identical(inline(tbl, "api00", level = "E", column = "se"), "22.36")
+  expect_identical(inline(tbl, "api00", model = "E", column = "m"), "648.87")
+  expect_identical(inline(tbl, "api00", model = "E", column = "se"), "22.36")
   expect_identical(
-    inline(tbl, "api00", level = "E", column = "ci"),
+    inline(tbl, "api00", model = "E", column = "ci"),
     "[600.91, 696.83]"
   )
   # The omnibus p sits on the FIRST group row, so it is cited with
-  # that level -- the same addressing `table_continuous()` needs, and
+  # that group -- the same addressing `table_continuous()` needs, and
   # for the same reason: this family puts the comparison on a row of
   # the block rather than on a header of its own.
-  expect_identical(inline(tbl, "api00", level = "E", column = "p"), ".314")
+  expect_identical(inline(tbl, "api00", model = "E", column = "p"), ".314")
 })
 
 test_that("`output = \"data.frame\"` is the displayed table, `\"long\"` every statistic", {

@@ -58,32 +58,43 @@
 #' one row of the variable alone carries the statistic, that row is the
 #' address.
 #'
-#' [table_continuous_lm()] lays its groups out sideways -- one row per
-#' outcome, the `by` levels as columns (`M (Female)`, `M (Male)`) --
-#' so there `level` names the group whose column you want:
-#' `inline(tbl, bmi, "Female", "emmean")`. The columns that belong to
-#' no group (the contrast, its interval, `p`, `n`) are cited without
-#' one, as before.
+#' # Groups and models
+#'
+#' `model` selects a group of `by` in every table, by its label or its
+#' position, wherever the table sets the groups out: the column
+#' spanners of [table_categorical()], [table_categorical_svy()] and
+#' [table_multiresponse()], the margin included
+#' (`inline(tbl, smoking, "Yes", "pct", model = "Female")`), the
+#' per-group columns of [table_continuous_lm()], headed `M (Female)`,
+#' `M (Male)` (`inline(tbl, bmi, column = "emmean", model = "Female")`),
+#' and the rows of [table_continuous()] and [table_continuous_svy()],
+#' one per group (`inline(tbl, bmi, model = "Female")`). The group of
+#' missing `by` values is `model = "(Missing)"`. In a multi-model table,
+#' `model` selects the model the same way. The cells that belong to no
+#' group (a *p*, the contrast of [table_continuous_lm()] and its
+#' interval, an association measure) are cited without `model`.
+#'
+#' `level` names a category shown as a row: the level of a variable,
+#' its row of missing values. Until spicy 0.14.0 it also selected the
+#' groups of [table_continuous()], [table_continuous_svy()] and
+#' [table_continuous_lm()]: that use is an error (class `spicy_defunct`)
+#' whose message gives the `model` call.
 #'
 #' [table_multiresponse()] has one row per item, addressed by its column
 #' name, then the rows of `none_row`, addressed as `"none"` and
 #' `"no_data"`, and the base row, the number of respondents, addressed as
-#' the fit statistic `"nobs"`. Its groups are spanners, as in
-#' [table_categorical()], so `model` selects one, the margin included:
-#' `inline(tbl, smoking, column = "pct", model = "Female")`,
-#' `inline(tbl, "nobs", model = "Total")`. The item `p` and `statistic`
-#' belong to no group and are cited without `model`
-#' (`inline(tbl, smoking, column = "p")`).
+#' the fit statistic `"nobs"`: `inline(tbl, "nobs", model = "Total")`.
+#' The item `p` and `statistic` belong to no group and are cited without
+#' `model` (`inline(tbl, smoking, column = "p")`).
+#'
+#' # Columns
 #'
 #' The column is a **token** of the typed contract (`"b"`, `"se"`,
 #' `"p"`, `"ci"`, `"or"`, `"ame"`, `"n"`, `"pct"`, `"m"`, ... -- see
 #' `as_structured()`'s `col_meta`), never a display header. `"ci"`
 #' composes the interval with the style's brackets and separator, and
 #' so does every other interval token the table carries (`"med_ci"`,
-#' `"ame_ci"`, `"assoc_ci"`): each addresses its own bounds. In
-#' a multi-model table, `model` selects the model by its spanner
-#' label or position; in a `by` table, the spanners are the groups,
-#' so `model` selects the group the same way.
+#' `"ame_ci"`, `"assoc_ci"`): each addresses its own bounds.
 #'
 #' # Patterns
 #'
@@ -107,7 +118,7 @@
 #' Every misaddressing is a classed error that lists the available
 #' choices: unknown variables list the variables, missing levels list
 #' the levels, unknown tokens list the table's tokens, ambiguous
-#' models list the spanner labels. A `level` that names a group of a
+#' models and groups list them. A `level` that names a group of a
 #' `by` table points to `model`. A cell the table itself displays
 #' as undefined (an aliased coefficient's en-dash) refuses with the
 #' reason rather than pasting a dash into a sentence.
@@ -120,10 +131,9 @@
 #'   [as_structured()] accepts.
 #' @param variable The source variable, unquoted or as a string; or a
 #'   fit-statistic token (`"nobs"`, `"r2"`, ...) or label (`"n"`).
-#' @param level For a factor variable, the level, as a string.
-#'   `"(Missing)"` addresses the missing-value category by role. On
-#'   [table_continuous_lm()], whose groups are columns rather than
-#'   rows, it names the group.
+#' @param level For a factor variable, the level, as a string: a
+#'   category shown as a row. `"(Missing)"` addresses the missing-value
+#'   category by role. A group of `by` is selected with `model`.
 #' @param column A column token, or a `{token}` pattern. `NULL` (the
 #'   default) returns the estimate-like column of the row when it is
 #'   unambiguous: the family's primary estimate. That is the
@@ -135,8 +145,8 @@
 #'   [table_continuous()], and the count (`"n"`) for
 #'   [table_categorical()] and [table_multiresponse()]. A row carrying
 #'   none of them refuses and lists its tokens.
-#' @param model In a multi-model table, the model: its label (as
-#'   displayed in the column spanners) or its position.
+#' @param model A group of `by`, or in a multi-model table the model:
+#'   its label (as displayed) or its position. See *Groups and models*.
 #'
 #' @return A character scalar.
 #'
@@ -150,6 +160,14 @@
 #' inline(tbl, age, column = "b")
 #' inline(tbl, sex, "Male", "{b} ({ci_label} {ci}; p {p})")
 #' inline(tbl, "n")
+#'
+#' # A group of `by` is a `model`, whether the table sets it out as
+#' # columns or as rows.
+#' ct <- table_categorical(sochealth, select = smoking, by = sex)
+#' inline(ct, smoking, "Yes", "pct", model = "Female")
+#' cn <- table_continuous(sochealth, select = bmi, by = sex)
+#' inline(cn, bmi, model = "Female")
+#' inline(cn, bmi, column = "p")
 inline <- function(
   x,
   variable,
@@ -175,7 +193,20 @@ inline <- function(
   # on the column asked for (a `p` sits on the block header, a mean on
   # a level), and `column` is only known once its default is filled in.
   rows <- .inline_variable_rows(s, var_chr)
-  cols <- .inline_model_cols(s, model)
+  # `model` selects a group of `by` in every table, whether the table
+  # sets its groups out as columns (the spanners of a categorical table,
+  # the per-group columns of `table_continuous_lm()`) or as rows
+  # (`table_continuous()`, `table_continuous_svy()`); `level` names a
+  # category shown as a row (decision 10 of the ADR of 2026-10-20). A
+  # `level` that names a group is refused with the `model` call.
+  .inline_check_level_not_group(s, rows, level, var_chr, column)
+  group_rows <- .inline_group_rows(s, rows)
+  if (length(group_rows) > 0L && !is.null(model)) {
+    rows <- .inline_pick_group_row(s, group_rows, model)
+    cols <- .inline_model_cols(s, NULL)
+  } else {
+    cols <- .inline_model_cols(s, model)
+  }
 
   if (is.null(column)) {
     column <- .inline_default_token(s, cols)
@@ -188,11 +219,6 @@ inline <- function(
       .inline_abort_no_token(s, tk)
     }
   }
-  # One family lays its groups out sideways, so `level` addresses a
-  # COLUMN there rather than a row.
-  narrowed <- .inline_level_cols(s, rows, level, column, cols)
-  cols <- narrowed$cols
-  level <- narrowed$level
 
   row <- .inline_resolve_row(s, formatted, rows, var_chr, level, column, cols)
   if (grepl("{", column, fixed = TRUE)) {
@@ -427,9 +453,22 @@ inline <- function(
       if (length(carriers) == 1L) {
         return(carriers)
       }
+      # The rows of the groups of `by` are selected with `model`, the
+      # levels of a variable with `level`.
+      by_groups <- length(.inline_group_rows(s, rows)) > 0L
       spicy_abort(
         c(
-          sprintf("%s has levels: pick one with `level`.", .quote_val(var_chr)),
+          if (by_groups) {
+            sprintf(
+              "%s has a row per group of `by`: pick one with `model`.",
+              .quote_val(var_chr)
+            )
+          } else {
+            sprintf(
+              "%s has levels: pick one with `level`.",
+              .quote_val(var_chr)
+            )
+          },
           "i" = paste0(
             "Available: ",
             paste(
@@ -482,6 +521,21 @@ inline <- function(
 # selects it: on a multiple-response table, `level = "Female"` is the
 # address a reader tries first.
 .inline_level_hints <- function(s, rows, var_chr, level) {
+  # Rows that are the groups of `by` carry no level `level` can name:
+  # they are selected with `model`.
+  if (length(.inline_group_rows(s, rows)) > 0L) {
+    return(c(
+      "i" = sprintf(
+        "%s has no levels: its rows are the groups of `by`, selected with `model`.",
+        .quote_val(var_chr)
+      ),
+      "i" = paste0(
+        "Available: ",
+        paste(.quote_val(stats::na.omit(s$body$.level[rows])), collapse = ", "),
+        "."
+      )
+    ))
+  }
   known <- stats::na.omit(s$body$.level[rows])
   hints <- if (length(known) > 0L) {
     c(
@@ -533,64 +587,147 @@ inline <- function(
   setdiff(unique(substring(braced, 2L, nchar(braced) - 1L)), "ci_label")
 }
 
-# `level` as a COLUMN address, on the one family that lays its groups
-# out sideways.
+# ---- groups of `by` -------------------------------------------------------
 #
-# `table_continuous_lm()` prints one row per outcome and puts the `by`
-# levels in the HEADERS ("M (Female)", "M (Male)"), with the level
-# carried as data in `col_meta$level` precisely so a consumer never
-# parses the header back. `inline()` reads row identity only, so those
-# two columns were an ambiguity it asked the caller to settle with
-# `model` -- on a table that has no spanners, listing nothing
-# ("Available: ."), while `model` itself refused with "this table has
-# no model spanners". Both remedies it named were dead ends, and a
-# token of the published contract was unreachable.
-#
-# The rule is narrow, and both halves are load-bearing: it fires only
-# when the variable's own rows carry no `.level` (so `level` cannot be
-# a row address) AND the token asked for really does spread over
-# several columns that carry one. Everywhere else `level` keeps
-# meaning the row it has always meant.
-.inline_level_cols <- function(s, rows, level, column, cols) {
-  unchanged <- list(cols = cols, level = level)
-  if (is.null(level) || any(!is.na(s$body$.level[rows]))) {
-    return(unchanged)
-  }
+# `model` addresses a group of `by` in every table (decision 10 of the
+# ADR of 2026-10-20). Three layouts carry the groups:
+#   * spanners over the columns (`table_categorical()`, its survey twin,
+#     `table_multiresponse()`), read by `.inline_model_cols()`;
+#   * per-group columns with no spanner (`table_continuous_lm()`, whose
+#     headers read "M (Female)", "M (Male)"), the group carried as data in
+#     `col_meta$level` so that no consumer parses a header back;
+#   * one row per group (`table_continuous()`, `table_continuous_svy()`),
+#     rows of role "group", and "missing" for the group of missing `by`
+#     values.
+# Until 0.14.0, `level` reached the groups of the last two layouts, and
+# `level = "(Missing)"` the missing group: that use is refused with the
+# `model` call (`.inline_check_level_not_group()`), with no alias.
+
+# The groups of the per-group columns, in column order (empty when the
+# table has none).
+.inline_column_groups <- function(s) {
   lv <- vapply(
-    cols,
+    setdiff(names(s$col_meta), .REG_KEY_VARIABLE),
     function(nm) s$col_meta[[nm]]$level %||% NA_character_,
     character(1)
   )
-  if (all(is.na(lv))) {
-    return(unchanged)
+  unique(stats::na.omit(lv))
+}
+
+# The rows of `rows` that are groups of `by`, the missing group included
+# (empty when the variable's rows are not groups).
+.inline_group_rows <- function(s, rows) {
+  role <- s$body$.row_role[rows]
+  if (!any(role %in% "group")) {
+    return(integer(0))
   }
-  spread <- FALSE
-  for (tk in .inline_requested_tokens(column)) {
-    same <- .inline_token_cols(s, cols, tk)
-    if (length(same) > 1L && any(!is.na(lv[same]))) {
-      spread <- TRUE
-    }
-  }
-  if (!spread) {
-    return(unchanged)
-  }
-  pick <- !is.na(lv) & lv == level
-  if (!any(pick)) {
+  rows[role %in% c("group", "missing")]
+}
+
+# The row of the group `model` names, by its label or its position, the
+# missing group by the address `?inline` documents for it. `call` is the
+# frame of `inline()`, which the errors name.
+.inline_pick_group_row <- function(
+  s,
+  group_rows,
+  model,
+  call = rlang::caller_env()
+) {
+  if (length(model) != 1L) {
     spicy_abort(
-      c(
-        sprintf("No group %s in this table.", .quote_val(level)),
-        "i" = paste0(
-          "Available: ",
-          paste(.quote_val(unique(stats::na.omit(lv))), collapse = ", "),
-          "."
-        )
-      ),
-      class = "spicy_invalid_input"
+      sprintf("`model` must be a single value, not length %d.", length(model)),
+      class = "spicy_invalid_input",
+      call = call
     )
   }
-  # The columns that carry no level at all (`p`, `n`, the contrast and
-  # its interval) belong to no group and stay addressable.
-  list(cols = cols[is.na(lv) | pick], level = NULL)
+  lv <- s$body$.level[group_rows]
+  hit <- if (is.numeric(model)) {
+    if (model >= 1L && model <= length(group_rows)) {
+      group_rows[[as.integer(model)]]
+    }
+  } else {
+    m <- group_rows[!is.na(lv) & lv == model]
+    if (length(m) != 1L && .inline_addresses_missing(model)) {
+      m <- group_rows[s$body$.row_role[group_rows] == "missing"]
+    }
+    if (length(m) == 1L) m
+  }
+  if (is.null(hit)) {
+    .inline_abort_no_group(model, lv, call = call)
+  }
+  hit
+}
+
+.inline_abort_no_group <- function(model, groups, call = rlang::caller_env()) {
+  spicy_abort(
+    c(
+      sprintf("No group %s in this table.", .quote_val(as.character(model))),
+      "i" = paste0(
+        "Available: ",
+        paste(.quote_val(unique(stats::na.omit(groups))), collapse = ", "),
+        "."
+      )
+    ),
+    class = "spicy_invalid_input",
+    call = call
+  )
+}
+
+# `level` naming a group of `by`: refused, with the call that reaches it.
+# A group of the per-group columns is one only when the variable's own
+# rows carry no level (so that `level` cannot be a row address there); a
+# group of the rows is one of the `.level` values of those rows. `call` is
+# the frame of `inline()`, which the error names.
+.inline_check_level_not_group <- function(
+  s,
+  rows,
+  level,
+  var_chr,
+  column,
+  call = rlang::caller_env()
+) {
+  if (!rlang::is_string(level)) {
+    return(invisible(NULL))
+  }
+  group_rows <- .inline_group_rows(s, rows)
+  is_group <- if (length(group_rows) > 0L) {
+    lv <- s$body$.level[group_rows]
+    any(!is.na(lv) & lv == level) ||
+      (.inline_addresses_missing(level) &&
+        any(s$body$.row_role[group_rows] == "missing"))
+  } else {
+    all(is.na(s$body$.level[rows])) &&
+      level %in% .inline_column_groups(s)
+  }
+  if (!is_group) {
+    return(invisible(NULL))
+  }
+  var_txt <- if (identical(make.names(var_chr), var_chr)) {
+    var_chr
+  } else {
+    .quote_val(var_chr)
+  }
+  col_txt <- if (is.null(column)) {
+    ""
+  } else {
+    paste0(", column = ", .quote_val(column))
+  }
+  spicy_abort(
+    c(
+      sprintf(
+        "`level` no longer selects a group of `by`: %s is a group of this table.",
+        .quote_val(level)
+      ),
+      "i" = sprintf(
+        "Select it with `model`: `inline(x, %s, model = %s%s)`.",
+        var_txt,
+        .quote_val(level),
+        col_txt
+      )
+    ),
+    class = c("spicy_defunct", "spicy_invalid_input"),
+    call = call
+  )
 }
 
 # The columns of `cols` carrying `token` (a pair for an interval).
@@ -714,11 +851,31 @@ inline <- function(
       class = "spicy_invalid_input"
     )
   }
-  if (is.null(spans)) {
-    spicy_abort(
-      "`model` was supplied but this table has no model spanners.",
-      class = "spicy_invalid_input"
+  if (length(spans) == 0L) {
+    # The per-group columns of `table_continuous_lm()`: the group's own
+    # columns, and those of no group (`p`, `n`, the contrast and its
+    # interval), which stay addressable.
+    groups <- .inline_column_groups(s)
+    if (length(groups) == 0L) {
+      spicy_abort(
+        "`model` was supplied but this table has no model or group to select.",
+        class = "spicy_invalid_input"
+      )
+    }
+    pick <- if (is.numeric(model)) {
+      if (model >= 1L && model <= length(groups)) groups[[as.integer(model)]]
+    } else if (model %in% groups) {
+      model
+    }
+    if (is.null(pick)) {
+      .inline_abort_no_group(model, groups)
+    }
+    lv <- vapply(
+      all_cols,
+      function(nm) s$col_meta[[nm]]$level %||% NA_character_,
+      character(1)
     )
+    return(all_cols[is.na(lv) | lv == pick])
   }
   # `model = k` addresses the k-th MODEL. Since `.model_spanner_ranges()`
   # emits one entry per model, in model order, the k-th entry of `spans`
@@ -874,7 +1031,7 @@ inline <- function(
 #     table, never by naming the argument that produced it: `inline()`
 #     reads the structured view and has no sight of the call.
 # (2) Some other token spreads over columns that carry a group. Those
-#     ARE addressable, and `level` is the argument that reaches them --
+#     ARE addressable, and `model` is the argument that reaches them --
 #     the remedy the reader needs and could not guess.
 .inline_empty_cell_hints <- function(s, token, formatted, cols) {
   if (is.null(s) || is.null(formatted) || is.null(cols)) {
@@ -916,7 +1073,7 @@ inline <- function(
     hints <- c(
       hints,
       "i" = sprintf(
-        "Per-group columns ARE addressable: `level = %s, column = %s`.",
+        "Per-group columns ARE addressable: `model = %s, column = %s`.",
         .quote_val(levels_by_token[[tk]][1L]),
         .quote_val(tk)
       )
@@ -924,7 +1081,7 @@ inline <- function(
     hints <- c(
       hints,
       "i" = paste0(
-        "Available levels: ",
+        "Available groups: ",
         paste(.quote_val(levels_by_token[[tk]]), collapse = ", "),
         "."
       )
@@ -1001,23 +1158,21 @@ inline <- function(
     return(paste0(br[[1L]], lo, sep, hi, br[[2L]]))
   }
   if (length(hits) > 1L) {
-    # Which argument settles this one? Columns that carry a group in
-    # `col_meta$level` are told apart by `level`; anything else is a
-    # multi-model table, where the spanner labels are the choices.
+    # `model` settles it: the columns of a group of `by` carry it in
+    # `col_meta$level` (the per-group columns of `table_continuous_lm()`),
+    # those of a spanner are the spanners' (a multi-model or a by table).
     groups <- unique(stats::na.omit(vapply(
       hits,
       function(nm) s$col_meta[[nm]]$level %||% NA_character_,
       character(1)
     )))
-    arg <- if (length(groups) > 1L) "level" else "model"
     choices <- if (length(groups) > 1L) groups else names(s$spanners)
     spicy_abort(
       c(
         sprintf(
-          "Token %s matches %d columns: pick one with `%s`.",
+          "Token %s matches %d columns: pick one with `model`.",
           .quote_val(token),
-          length(hits),
-          arg
+          length(hits)
         ),
         "i" = paste0(
           "Available: ",

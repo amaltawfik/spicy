@@ -17,10 +17,9 @@ inline(x, variable, level = NULL, column = NULL, model = NULL)
 \item{variable}{The source variable, unquoted or as a string; or a
 fit-statistic token (\code{"nobs"}, \code{"r2"}, ...) or label (\code{"n"}).}
 
-\item{level}{For a factor variable, the level, as a string.
-\code{"(Missing)"} addresses the missing-value category by role. On
-\code{\link[=table_continuous_lm]{table_continuous_lm()}}, whose groups are columns rather than
-rows, it names the group.}
+\item{level}{For a factor variable, the level, as a string: a
+category shown as a row. \code{"(Missing)"} addresses the missing-value
+category by role. A group of \code{by} is selected with \code{model}.}
 
 \item{column}{A column token, or a \code{{token}} pattern. \code{NULL} (the
 default) returns the estimate-like column of the row when it is
@@ -34,8 +33,8 @@ or, on a median-only table, the median (\code{"med"}, \code{"med_iqr"}) for
 \code{\link[=table_categorical]{table_categorical()}} and \code{\link[=table_multiresponse]{table_multiresponse()}}. A row carrying
 none of them refuses and lists its tokens.}
 
-\item{model}{In a multi-model table, the model: its label (as
-displayed in the column spanners) or its position.}
+\item{model}{A group of \code{by}, or in a multi-model table the model:
+its label (as displayed) or its position. See \emph{Groups and models}.}
 }
 \value{
 A character scalar.
@@ -73,33 +72,44 @@ same call cites the \emph{p} of a by-group \code{\link[=table_continuous]{table_
 \code{\link[=table_continuous_svy]{table_continuous_svy()}}, which sits on the first group's row: when
 one row of the variable alone carries the statistic, that row is the
 address.
+}
 
-\code{\link[=table_continuous_lm]{table_continuous_lm()}} lays its groups out sideways -- one row per
-outcome, the \code{by} levels as columns (\code{M (Female)}, \code{M (Male)}) --
-so there \code{level} names the group whose column you want:
-\code{inline(tbl, bmi, "Female", "emmean")}. The columns that belong to
-no group (the contrast, its interval, \code{p}, \code{n}) are cited without
-one, as before.
+\section{Groups and models}{
+\code{model} selects a group of \code{by} in every table, by its label or its
+position, wherever the table sets the groups out: the column
+spanners of \code{\link[=table_categorical]{table_categorical()}}, \code{\link[=table_categorical_svy]{table_categorical_svy()}} and
+\code{\link[=table_multiresponse]{table_multiresponse()}}, the margin included
+(\code{inline(tbl, smoking, "Yes", "pct", model = "Female")}), the
+per-group columns of \code{\link[=table_continuous_lm]{table_continuous_lm()}}, headed \code{M (Female)},
+\code{M (Male)} (\code{inline(tbl, bmi, column = "emmean", model = "Female")}),
+and the rows of \code{\link[=table_continuous]{table_continuous()}} and \code{\link[=table_continuous_svy]{table_continuous_svy()}},
+one per group (\code{inline(tbl, bmi, model = "Female")}). The group of
+missing \code{by} values is \code{model = "(Missing)"}. In a multi-model table,
+\code{model} selects the model the same way. The cells that belong to no
+group (a \emph{p}, the contrast of \code{\link[=table_continuous_lm]{table_continuous_lm()}} and its
+interval, an association measure) are cited without \code{model}.
+
+\code{level} names a category shown as a row: the level of a variable,
+its row of missing values. Until spicy 0.14.0 it also selected the
+groups of \code{\link[=table_continuous]{table_continuous()}}, \code{\link[=table_continuous_svy]{table_continuous_svy()}} and
+\code{\link[=table_continuous_lm]{table_continuous_lm()}}: that use is an error (class \code{spicy_defunct})
+whose message gives the \code{model} call.
 
 \code{\link[=table_multiresponse]{table_multiresponse()}} has one row per item, addressed by its column
 name, then the rows of \code{none_row}, addressed as \code{"none"} and
 \code{"no_data"}, and the base row, the number of respondents, addressed as
-the fit statistic \code{"nobs"}. Its groups are spanners, as in
-\code{\link[=table_categorical]{table_categorical()}}, so \code{model} selects one, the margin included:
-\code{inline(tbl, smoking, column = "pct", model = "Female")},
-\code{inline(tbl, "nobs", model = "Total")}. The item \code{p} and \code{statistic}
-belong to no group and are cited without \code{model}
-(\code{inline(tbl, smoking, column = "p")}).
+the fit statistic \code{"nobs"}: \code{inline(tbl, "nobs", model = "Total")}.
+The item \code{p} and \code{statistic} belong to no group and are cited without
+\code{model} (\code{inline(tbl, smoking, column = "p")}).
+}
 
+\section{Columns}{
 The column is a \strong{token} of the typed contract (\code{"b"}, \code{"se"},
 \code{"p"}, \code{"ci"}, \code{"or"}, \code{"ame"}, \code{"n"}, \code{"pct"}, \code{"m"}, ... -- see
 \code{as_structured()}'s \code{col_meta}), never a display header. \code{"ci"}
 composes the interval with the style's brackets and separator, and
 so does every other interval token the table carries (\code{"med_ci"},
-\code{"ame_ci"}, \code{"assoc_ci"}): each addresses its own bounds. In
-a multi-model table, \code{model} selects the model by its spanner
-label or position; in a \code{by} table, the spanners are the groups,
-so \code{model} selects the group the same way.
+\code{"ame_ci"}, \code{"assoc_ci"}): each addresses its own bounds.
 }
 
 \section{Patterns}{
@@ -122,7 +132,7 @@ may hit the floor.
 Every misaddressing is a classed error that lists the available
 choices: unknown variables list the variables, missing levels list
 the levels, unknown tokens list the table's tokens, ambiguous
-models list the spanner labels. A \code{level} that names a group of a
+models and groups list them. A \code{level} that names a group of a
 \code{by} table points to \code{model}. A cell the table itself displays
 as undefined (an aliased coefficient's en-dash) refuses with the
 reason rather than pasting a dash into a sentence.
@@ -134,6 +144,14 @@ tbl <- table_regression(fit)
 inline(tbl, age, column = "b")
 inline(tbl, sex, "Male", "{b} ({ci_label} {ci}; p {p})")
 inline(tbl, "n")
+
+# A group of `by` is a `model`, whether the table sets it out as
+# columns or as rows.
+ct <- table_categorical(sochealth, select = smoking, by = sex)
+inline(ct, smoking, "Yes", "pct", model = "Female")
+cn <- table_continuous(sochealth, select = bmi, by = sex)
+inline(cn, bmi, model = "Female")
+inline(cn, bmi, column = "p")
 }
 \seealso{
 \code{\link[=as_structured]{as_structured()}} for the typed contract behind the

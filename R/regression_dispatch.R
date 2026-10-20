@@ -3080,7 +3080,7 @@ output_word <- function(rendered, word_path, word_template = NULL) {
 #'
 #' @export
 as_structured <- function(x) {
-  # The four table families that carry a structured view, mapped to
+  # The eight table classes that carry a structured view, mapped to
   # the function that builds one -- named in the error so a user who
   # passed the wrong object is told what to call.
   builders <- c(

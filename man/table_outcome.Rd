@@ -12,14 +12,14 @@ table_outcome(
   overall = TRUE,
   drop_na = FALSE,
   weights = NULL,
-  rescale = FALSE,
+  rescale = getOption("spicy.rescale", FALSE),
   test = c("welch", "student", "nonparametric"),
   p_value = NULL,
   p_adjust = "none",
   statistic = FALSE,
   show_n = TRUE,
   show_columns = NULL,
-  effect_size = c("none", "auto", "hedges_g", "eta_sq", "r_rb", "epsilon_sq"),
+  effect_size = c("none", "auto", "hedges_g", "eta2", "r_rb", "epsilon2"),
   effect_size_ci = FALSE,
   ci = TRUE,
   ci_level = 0.95,
@@ -49,7 +49,11 @@ Exactly one column.}
 
 \item{select}{The grouping characteristics to describe the outcome
 across, as a tidyselect expression or a character vector of column
-names. One block of rows per variable, in the order given. As
+names. One block of rows per variable, in the order given, and in
+each block one row per level: the levels of a factor in their order,
+any other variable sorted, as the groups of \code{by} are in
+\code{\link[=table_continuous]{table_continuous()}} (text in the C locale, \code{FALSE} before \code{TRUE},
+numbers and codes ascending), whatever the order of the rows. As
 everywhere in the family, \code{select} is what structures the rows. The
 outcome and the \code{weights} column are not part of the selection: a
 selection helper skips them, and naming one in \code{select}, or giving
@@ -83,15 +87,39 @@ the wording you set here.}
 
 \item{overall}{Show the marginal \code{Overall} row (default \code{TRUE}).}
 
-\item{drop_na}{Drop rows with a missing \code{select} value from that block
-(default \code{FALSE}: they are shown as a \code{(Missing)} level and
-excluded from the comparison, and a level displayed with that label
-is an error, as in \code{\link[=table_categorical]{table_categorical()}}). Under \code{drop_na = TRUE}, a
+\item{drop_na}{Drop rows with a missing \code{select} value from that
+block. The rule of the family: the categories a table counts keep
+their missing values as a row by default, as in
+\code{\link[=table_categorical]{table_categorical()}}; the values it computes on lose them, counted
+in the note, as in \code{\link[=table_continuous]{table_continuous()}}. The blocks of this table are
+categories, so \code{FALSE} (the default) shows the missing values of a
+\code{select} variable as a \code{(Missing)} level, excluded from the
+comparison, and a level displayed with that label is an error, as in
+\code{\link[=table_categorical]{table_categorical()}}; the missing values of the outcome are always
+removed and counted in the note. Under \code{drop_na = TRUE}, a
 grouping that no observation holds is an error (class
 \code{spicy_invalid_data}).}
 
-\item{weights, rescale}{Frequency weights and whether to rescale them
-to sum to the sample size, as in \code{\link[=table_continuous]{table_continuous()}}.}
+\item{weights}{Optional case weights: an unquoted column name, a
+character column name, or a numeric vector of length \code{nrow(data)}.
+Weights must be non-negative and finite; rows with \code{NA} or zero
+weight leave every statistic (including \code{Min} / \code{Max}) and \code{NA}
+weights are disclosed in the table note. The weighted formulas
+follow the frequency-expansion convention -- see the \strong{Weights}
+section. The weighted table names its weights in the note
+("Statistics weighted by ..."). Group tests and effect sizes are
+not computed under weights: use \code{\link[=table_continuous_lm]{table_continuous_lm()}} for
+weighted comparisons.}
+
+\item{rescale}{Logical. If \code{TRUE}, weights are first normalized so
+that they sum to the number of observations used for each
+variable -- the same \code{rescale} grammar as \code{\link[=table_categorical]{table_categorical()}}.
+This is the
+sampling-weights reading: results become invariant to the scale
+of the weights, and the weighted SD then equals Stata's
+\verb{[aweight]} / \code{survey::svyvar()} value exactly. \code{FALSE} uses the
+weights as given (frequency reading). The default reads
+\code{options(spicy.rescale)}, \code{FALSE} when it is unset.}
 
 \item{test}{Group comparison for every block: \code{"welch"} (default),
 \code{"student"} or \code{"nonparametric"}. An outcome with no variance in a
@@ -109,25 +137,94 @@ p-value per block). One of \code{"none"} (default), \code{"holm"},
 \code{\link[stats:p.adjust]{stats::p.adjust()}}. Needs the p-value column. See
 \emph{Multiple-comparison adjustment}.}
 
-\item{statistic}{Show the test statistic column.}
+\item{statistic}{Logical. If \code{TRUE}, the test statistic of each block
+is shown in an additional column, with or without the \emph{p}-value:
+\code{p_value} and \code{statistic} are independent. Defaults to \code{FALSE}.}
 
-\item{show_n}{Show the count column.}
+\item{show_n}{Logical. If \code{TRUE}, includes an unweighted \code{n}
+column in the printed ASCII table and in every rendered output
+(\code{tinytable}, \code{gt}, \code{flextable}, \code{word}, \code{excel}, \code{clipboard}).
+Set to \code{FALSE} to drop the \code{n} column structurally from those
+outputs (no empty placeholder, no spanner). The \code{n} column is
+always present in \code{output = "long"} for downstream programmatic
+access. Defaults to \code{TRUE}.
+Ignored (with a warning) when \code{show_columns} is supplied.}
 
-\item{show_columns}{Character vector of statistic tokens; \code{NULL}
-keeps the historical display.}
+\item{show_columns}{Statistics to display, as a character vector of
+the tokens of \code{\link[=table_continuous]{table_continuous()}} (see \emph{Choosing the statistics}).
+\code{NULL} (the default) shows the mean, SD, min, max, the mean CI (see
+\code{ci}) and \code{n} (see \code{show_n}).}
 
 \item{effect_size, effect_size_ci}{Effect size per block and its
 confidence interval, as in \code{\link[=table_continuous]{table_continuous()}} (a logical
 \code{effect_size} is an error there and here).}
 
-\item{ci, ci_level}{The mean's confidence interval and its level.}
+\item{ci}{Logical. If \code{TRUE}, includes the mean confidence
+interval columns (\verb{<level>\% CI LL} / \verb{<level>\% CI UL}) and their
+spanner in the printed ASCII table and in every rendered output
+(\code{tinytable}, \code{gt}, \code{flextable}, \code{word}, \code{excel}, \code{clipboard}).
+Set to \code{FALSE} to drop both columns and the CI spanner
+structurally from those outputs (no empty placeholders, no
+border lines under an empty header). The CI bounds are always
+present as \code{ci_lower} / \code{ci_upper} in \code{output = "long"} for
+downstream programmatic access. Defaults to \code{TRUE}. The CI level is
+taken from \code{ci_level}.
+Ignored (with a warning) when \code{show_columns} is supplied.}
 
-\item{digits, effect_size_digits, p_digits, decimal_mark}{Number
-formatting. The \verb{*_digits} arguments are whole numbers, \code{p_digits}
-at least 1.}
+\item{ci_level}{Confidence level for the mean confidence interval
+(default: \code{0.95}): a number strictly between 0 and 1.}
 
-\item{align}{Numeric-cell alignment: \code{"decimal"}, \code{"center"} or
-\code{"right"}.}
+\item{digits}{Number of decimal places for descriptive values and test
+statistics (default: \code{2}). A whole number: a fraction is an error,
+as for every \verb{*_digits} argument.}
+
+\item{effect_size_digits}{Number of decimal places for effect-size values
+in formatted displays (default: \code{2}).}
+
+\item{p_digits}{Integer >= 1. Number of decimal places used to
+render \emph{p}-values in the \code{p} column (default: \code{3}, the APA
+Publication Manual standard). Both the displayed precision and
+the small-\emph{p} threshold derive from this argument: \code{p_digits = 3}
+prints \code{.045} and \verb{<.001}; \code{p_digits = 4} prints \code{.0451} and
+\verb{<.0001}; \code{p_digits = 2} prints \code{.05} and \verb{<.01}. Useful for
+genomics / GWAS contexts with very small \emph{p}-values, or for
+journals using a coarser convention. Leading zeros are always
+stripped, following APA convention.}
+
+\item{decimal_mark}{The decimal mark, a single character: \code{"."} (the
+default) or \code{","} in most styles; the Lancet style of
+\code{\link[=spicy_style]{spicy_style()}} uses the middle dot.}
+
+\item{align}{Horizontal alignment of numeric columns in the printed
+ASCII table and in the \code{tinytable}, \code{gt}, \code{flextable}, \code{word},
+\code{excel}, and \code{clipboard} outputs. The first column (\code{Variable}) and
+\code{Group} (when present) are always left-aligned. One of:
+\itemize{
+\item \code{"decimal"} (default): align numeric columns on the decimal
+mark, the standard scientific-publication convention used by
+SPSS, SAS, and LaTeX \code{siunitx}. Numeric cells are pre-padded
+with figure-spaces (U+2007, digit-width) so every string in a
+column has the same width with the decimal mark at the same
+internal position; centering those uniform-width strings then
+stacks the decimal points vertically. The same pad-then-center
+strategy is applied on every rendering engine (\code{gt},
+\code{tinytable}, \code{flextable}, \code{word}, ASCII print) for a
+homogeneous rendering, matching \code{table_regression()} and
+\code{table_continuous_lm()}. The \code{clipboard} output is delimited
+text meant to be parsed rather than read at a fixed width, so
+its cells travel unpadded (a padded number pastes as text
+next to an unpadded number).
+\item \code{"center"}: center-align all numeric columns.
+\item \code{"right"}: right-align all numeric columns.
+}
+
+\code{"center"} and \code{"right"} reach the \code{excel} output too. \code{"decimal"}
+does not: Excel cells are written unpadded, because cell-string
+padding does not align decimals under a proportional font, so the
+workbook keeps the engine's own convention instead -- counts and
+the \emph{p}-value right-aligned, the other numeric columns centered.
+Same default and same three values as \code{\link[=table_continuous_lm]{table_continuous_lm()}},
+whose \code{excel} output still uses that convention at every \code{align}.}
 
 \item{output}{One of \code{"default"}, \code{"data.frame"}, \code{"long"}, or a
 rendering engine: \code{"tinytable"}, \code{"gt"}, \code{"flextable"},
@@ -135,15 +232,42 @@ rendering engine: \code{"tinytable"}, \code{"gt"}, \code{"flextable"},
 table with its numbers, \code{"long"} the compute frame with every
 statistic, as in \code{\link[=table_continuous]{table_continuous()}}; see \emph{Value}.}
 
-\item{indent_text, indent_text_excel_clipboard}{Level-row
-indentation, for the console and for the plain-text engines.}
+\item{indent_text}{Prefix used for modality labels in report table building.
+Defaults to \code{"  "} (two spaces).}
 
-\item{excel_path, excel_sheet, clipboard_delim, word_path}{Output
-destinations, as in \code{\link[=table_continuous]{table_continuous()}}.}
+\item{indent_text_excel_clipboard}{Stronger indentation used in Excel and
+clipboard exports. Defaults to six non-breaking spaces.}
 
-\item{user_na}{Honor declared missing values (see \code{?freq}).}
+\item{excel_path}{File path for \code{output = "excel"}, ending in
+\code{".xlsx"}, in a directory that exists.}
 
-\item{style}{A journal style; see \code{\link[=spicy_style]{spicy_style()}}.}
+\item{excel_sheet}{Sheet name for \code{output = "excel"}. \code{NULL} (the
+default) uses \code{"Outcome"}.}
+
+\item{clipboard_delim}{Delimiter for \code{output = "clipboard"}
+(default: \code{"\\t"}). A cell holding the delimiter itself, a double
+quote or a line break is quoted RFC 4180-style, so the grid
+survives whatever delimiter you choose.}
+
+\item{word_path}{File path for \code{output = "word"}, ending in
+\code{".docx"}, in a directory that exists.}
+
+\item{user_na}{Logical. If \code{TRUE} (the default), declared missing
+values are treated as missing: those of the outcome leave its
+statistics and are disclosed in the table note (\verb{Declared missing values removed: ...}), those of a \code{select} variable join its
+\code{(Missing)} level under \code{drop_na = FALSE}. If \code{FALSE}, the declared
+codes are ordinary values. See the "Declared missing values" section
+of \code{\link[=freq]{freq()}}.}
+
+\item{style}{A journal style: a theme name (\code{"jama"}, \code{"nejm"},
+\code{"lancet"}, \code{"annals"}, \code{"apa"}, \code{"aer"}), a
+\code{\link[=spicy_style]{spicy_style()}} object, or \code{NULL} (the default). A style only
+changes DEFAULTS -- any argument you pass explicitly wins over it.
+Set \code{options(spicy.style = )} for document-wide scope. A theme
+covers numeric formatting conformity only, not full editorial
+conformity; \code{?spicy_style} lists the exact rules each one encodes
+and the official document they come from. An unknown name is an
+error.}
 
 \item{by}{Defunct. The grouping characteristics are selected with
 \code{select} since spicy 0.13.0; supplying \code{by} is an error.}
@@ -278,7 +402,7 @@ row another label with
 The canonical form is \code{select = where(is.factor)}, or an explicit
 enumeration. Negation (\code{select = -c(x, y)}) is not recommended: it
 sweeps in every remaining column, and a numeric one becomes a block
-with one LEVEL per distinct value, in order of first appearance. A
+with one LEVEL per distinct value, in ascending order. A
 variable producing more than 20 levels raises a warning for that
 reason -- an arbitrary threshold, but a sixty-row block where a
 reader expects a handful of categories is not a table.

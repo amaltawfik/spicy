@@ -4,11 +4,15 @@ is_supported_lm_predictor <- function(x) {
   is.numeric(x) || is.factor(x) || is.character(x) || is.logical(x)
 }
 
+# A categorical `by` as the factor the models are fitted on: a factor
+# verbatim, any other column in the family's order of the groups
+# (`.group_levels()`, the C locale), whose first level is the reference
+# of the contrasts. `factor()` sorted text in the locale of the machine.
 coerce_lm_factor <- function(x) {
   if (is.factor(x)) {
     return(x)
   }
-  factor(x)
+  factor(x, levels = .group_levels(x))
 }
 
 detect_weights_column_name <- function(quo, data) {

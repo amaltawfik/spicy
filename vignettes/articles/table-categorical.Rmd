@@ -235,9 +235,10 @@ pairs. Since the two measures differ, the header collapses to
 Add confidence intervals with `assoc_ci = TRUE`. In the rendered
 formats (`gt`, `tinytable`, `flextable`, `word`) the CI is shown
 inline after the measure, e.g. `.14 [.08, .19]` (demonstrated in the
-final section). In the default console table and in the
-`"data.frame"`, `"excel"` and `"clipboard"` outputs, separate
-`CI lower` and `CI upper` columns are added; in the long format
+final section). In the default console table and in the `"excel"`
+and `"clipboard"` outputs, separate columns headed `95% CI LL` and
+`95% CI UL` are added, the level stated as the other tables state it
+(`"data.frame"` names them `CI lower` and `CI upper`); in the long format
 (`"long"`) the bounds fill `es_ci_lower` / `es_ci_upper`:
 
 ```{r ci-data}
@@ -439,7 +440,7 @@ table_categorical(
   by = education,
   percent_digits = 2,
   p_digits = 4,
-  v_digits = 3
+  effect_size_digits = 3
 )
 ```
 

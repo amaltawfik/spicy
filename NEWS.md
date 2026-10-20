@@ -220,6 +220,47 @@ p-values, and notes.
   that is not a data frame with class `spicy_invalid_data`, as the other
   tables do. Both were `spicy_invalid_input` errors.
 
+* The tables sort the groups of a character or logical `by` in the C
+  locale, capitals before lower case and the same on every machine,
+  `FALSE` before `TRUE`, and a numeric or labelled `by` in ascending
+  order, as `cross_tab()` does; a factor keeps the order of its levels.
+  `table_categorical()`, `table_categorical_svy()`, `table_continuous()`,
+  and `table_continuous_svy()` followed the order of first appearance in
+  the data, and `table_continuous_lm()` sorted text in the locale of the
+  machine, which chose its reference group. The levels of a variable of
+  `table_categorical()` and `table_categorical_svy()`, and the groupings
+  of `table_outcome()`, follow the same order.
+
+* `inline()` selects a group of `by` with `model` in every table, as in
+  `table_categorical()`: `inline(tbl, bmi, model = "Female")` in
+  `table_continuous()` and `table_continuous_svy()`,
+  `inline(tbl, bmi, column = "emmean", model = "Female")` in
+  `table_continuous_lm()`. `level` naming such a group is an error (class
+  `spicy_defunct`) that gives the `model` call.
+
+* `table_categorical()` and `spicy_style()` call `effect_size_digits` the
+  argument they called `v_digits`, as the other tables do, so the
+  `effect_size_digits` of a style reaches the association measure and the
+  SMD of `table_categorical()`. `v_digits` is an error (class
+  `spicy_defunct`) that names the new argument.
+
+* `table_categorical()` heads the bounds of the association interval
+  `95% CI LL` and `95% CI UL` in the console, Excel, and clipboard
+  outputs, stating its level as the other tables do. They read
+  `CI lower` and `CI upper`, and the keys `header_ci_lower` and
+  `header_ci_upper` of `options(spicy.labels)` are gone.
+
+* `table_continuous()` and `table_outcome()` spell their effect sizes
+  `"eta2"` and `"epsilon2"`, and `table_continuous_lm()` `"cohens_d"` and
+  `"hedges_g"`, in `effect_size` and in `es_type`: a squared measure ends
+  in 2, as in `table_regression()`, and an estimator named after its
+  author carries the name. `"eta_sq"`, `"epsilon_sq"`, `"d"`, and `"g"`
+  are an error (class `spicy_defunct`) that gives the new value.
+
+* `table_continuous_lm()` checks `boot_n` as `table_regression()` does: a
+  positive whole number. It truncated a fraction (`500.9` gave 500) and
+  required 50 replicates; a bootstrap variance needs 10, in both tables.
+
 ## New features
 
 * The long output and `tidy()` of the tables mark the rows they add by a
@@ -289,22 +330,24 @@ p-values, and notes.
   `levels_keep = list(smoking = "Yes")`. A list was read as one vector
   for every variable, and the variables it did not match were dropped.
 
-* `table_multiresponse()` tabulates a "check all that apply" question:
-  one row per item with the count and the percentage of respondents who
-  chose it (`percent` also gives percentages of responses, or both), and
-  a row with the number of respondents in the base (`base`). Respondents
-  of the base who chose no item get a row of their own (`none_row`), and
-  the note says what the percentages sum to and who is in the base. With
-  `by`, each item gets a test (`test`: chi-squared, or Fisher's exact
-  test where an expected count is below 5, or the mid-p and N-1 tests
-  for 2x2 tables), adjusted by Holm by default (`p_adjust`), and the
-  question gets a global test that allows for several answers per
-  respondent, Rao-Scott corrected or by bootstrap (`global_test`).
-  `p_value = FALSE` removes the tests, and `statistic = TRUE` shows each
-  item's chi-squared. `glance()` reports the Rao-Scott design-effect
-  summary (`rs_cv`), and `inline()` cites the cells, a group selected
-  with `model` and the base row as `"nobs"`. The article
-  *Multiple-response questions* on the site walks through it (#10, #11).
+* `table_multiresponse()`, experimental in this release, tabulates a
+  "check all that apply" question: one row per item with the count and
+  the percentage of respondents who chose it (`percent` also gives
+  percentages of responses, or both), and a row with the number of
+  respondents in the base (`base`). Respondents of the base who chose no
+  item get a row of their own (`none_row`), and the note says what the
+  percentages sum to and who is in the base. With `by`, each item gets a
+  test (`test`: chi-squared, or Fisher's exact test where an expected
+  count is below 5, or the mid-p and N-1 tests for 2x2 tables), adjusted
+  by Holm by default (`p_adjust`), and the question gets a global test
+  that allows for several answers per respondent, Rao-Scott corrected or
+  by bootstrap (`global_test`). `p_value = FALSE` removes the tests, and
+  `statistic = TRUE` shows each item's chi-squared. `glance()` reports
+  the Rao-Scott design-effect summary (`rs_cv`), and `inline()` cites the
+  cells, a group selected with `model` and the base row as `"nobs"`.
+  `title = FALSE` removes the title, as in `table_regression()`. The
+  article *Multiple-response questions* on the site walks through it
+  (#10, #11).
 
 * `inline()` says when a variable has no levels and how to select a
   group with `model`, where its error printed an empty list of levels.
@@ -337,6 +380,22 @@ p-values, and notes.
   family, and the other `vcov` types are refused.
 
 ## Bug fixes
+
+* The table functions warn (class `spicy_ignored_arg`) when an argument
+  typed in the call has no effect, and name only the arguments typed:
+  `excel_path` or `excel_sheet` without `output = "excel"`, `word_path`
+  without `"word"`, `clipboard_delim` without `"clipboard"`, a `boot_n`
+  that no bootstrap uses, `adjustment` without covariates and `contrast`
+  with a numeric `by` in `table_continuous_lm()`, and `drop_na = FALSE`
+  without `by` in `table_continuous_svy()` as in `table_continuous()`.
+  Without `by`, the continuous tables named `statistic` when only
+  `p_value` was typed, and `table_categorical()` warned about a `rescale`
+  set by `options(spicy.rescale)`.
+
+* The table functions word a check of the same argument the same way:
+  "`ci_level` must be a number strictly between 0 and 1.", "`digits`
+  must be a non-negative whole number.", "`drop_na` must be TRUE or
+  FALSE.".
 
 * The note of every table opens with *Note.* in italics in Typst, LaTeX,
   Markdown documents, and Excel output, and in gt's LaTeX, RTF, and Word

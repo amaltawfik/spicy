@@ -277,7 +277,7 @@
   indent_text,
   percent_digits,
   p_digits,
-  v_digits,
+  effect_size_digits,
   decimal_mark,
   group_levels = NULL,
   margin_key = NULL,
@@ -359,7 +359,7 @@
       # although the APA leading-zero strip applies to both.
       col_meta[[measure_col]] <- list(
         token = "assoc",
-        precision = as.integer(v_digits),
+        precision = as.integer(effect_size_digits),
         p_style = .style_p_style_token(decimal_mark),
         value_range = c(-1, 1),
         display_label = measure_label %||% measure_col
@@ -379,19 +379,26 @@
           spicy_str("header_ci_label_confidence")
         )
         for (nm in c(ll, ul)) {
+          # A bound with no spanner above it names its own coverage
+          # ("95% CI LL"), as the standalone bounds of the other tables do
+          # (`.cat_svy_base_label()`, the mean interval of
+          # `table_continuous()`): the level is `assoc_ci_level`, the one
+          # the interval is computed at.
           col_meta[[nm]] <- list(
             token = "assoc_ci",
-            precision = as.integer(v_digits),
+            precision = as.integer(effect_size_digits),
             p_style = .style_p_style_token(decimal_mark),
             value_range = c(-1, 1),
             ci_role = if (identical(nm, ll)) "LL" else "UL",
             ci_pair = if (identical(nm, ll)) ul else ll,
             ci_label = ci_label,
-            display_label = if (identical(nm, ll)) {
-              spicy_str("header_ci_lower")
-            } else {
-              spicy_str("header_ci_upper")
-            }
+            display_label = spicy_fmt(
+              "header_ci_bound",
+              ci_label,
+              spicy_str(
+                if (identical(nm, ll)) "header_ci_ll" else "header_ci_ul"
+              )
+            )
           )
         }
         ci_pairs <- list(list(
@@ -410,7 +417,7 @@
       # measure) while "SMD" prints 0.45.
       col_meta[[.CAT_KEY_SMD]] <- list(
         token = "smd",
-        precision = as.integer(v_digits),
+        precision = as.integer(effect_size_digits),
         display_label = spicy_str("header_smd")
       )
     }
@@ -512,7 +519,7 @@
       digits = as.integer(percent_digits),
       percent_digits = as.integer(percent_digits),
       p_digits = as.integer(p_digits),
-      v_digits = as.integer(v_digits),
+      effect_size_digits = as.integer(effect_size_digits),
       p_style = .style_p_style_token(decimal_mark),
       p_threshold = .style_p_floor(p_digits),
       ci_level = assoc_ci_level

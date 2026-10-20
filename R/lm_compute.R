@@ -149,8 +149,8 @@ pick_es_value_lm <- function(model_stats, effect_size) {
   switch(
     effect_size,
     f2 = model_stats$f2,
-    d = model_stats$d,
-    g = model_stats$g,
+    cohens_d = model_stats$d,
+    hedges_g = model_stats$g,
     omega2 = model_stats$omega2,
     spicy_abort(
       paste0("Unknown `effect_size`: ", effect_size),
@@ -697,8 +697,8 @@ compute_es_ci_lm <- function(fit, effect_size, ci_level, focal_term = NULL) {
   switch(
     effect_size,
     f2 = compute_f2_ci_lm(fit, ci_level, focal_term = focal_term),
-    d = compute_smd_ci_lm(fit, ci_level, hedges_correct = FALSE),
-    g = compute_smd_ci_lm(fit, ci_level, hedges_correct = TRUE),
+    cohens_d = compute_smd_ci_lm(fit, ci_level, hedges_correct = FALSE),
+    hedges_g = compute_smd_ci_lm(fit, ci_level, hedges_correct = TRUE),
     omega2 = compute_omega2_ci_lm(fit, ci_level, focal_term = focal_term),
     spicy_abort(
       paste0("Unknown `effect_size`: ", effect_size),

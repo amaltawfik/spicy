@@ -22,7 +22,7 @@ table_continuous_lm(
   p_value = NULL,
   show_n = TRUE,
   show_weighted_n = FALSE,
-  effect_size = c("none", "f2", "d", "g", "omega2"),
+  effect_size = c("none", "f2", "cohens_d", "hedges_g", "omega2"),
   effect_size_ci = FALSE,
   r2 = c("r2", "adj_r2", "none"),
   ci = TRUE,
@@ -71,26 +71,30 @@ polynomial contrasts (\code{contr.poly}) \code{lm()} would apply by default.
 The ordering only determines the display order and the reference
 level; per-level means, the displayed difference, and its CI are
 identical to those of an unordered factor with the same levels.
-\item \strong{character}: coerced to factor with \code{factor(by)}, which orders the
-levels alphabetically. To control the reference level, supply \code{by}
-as an explicit factor with the desired level ordering (e.g. via
-\code{\link[forcats:fct_relevel]{forcats::fct_relevel()}} or \code{factor(..., levels = ...)}).
+\item \strong{character}: coerced to factor with its values sorted in the C
+locale (capitals before lower case, the same on every machine), the
+order of the groups in the whole family (\code{\link[=table_categorical]{table_categorical()}},
+\code{\link[=table_continuous]{table_continuous()}}, ...): the first value in that order is the
+reference level, whatever the order of the rows. To control the
+reference level, supply \code{by} as an explicit factor with the desired
+level ordering (e.g. via \code{\link[forcats:fct_relevel]{forcats::fct_relevel()}} or
+\code{factor(..., levels = ...)}).
 \item \strong{logical}: coerced to factor with levels \code{"FALSE"}, \code{"TRUE"} (in
 that order, since \code{FALSE < TRUE}). The reference level is \code{"FALSE"},
 so a binary contrast displays as \code{Delta (TRUE - FALSE)}.
 \item \strong{haven labelled with value labels} (an SPSS / Stata import):
 treated as categorical over the raw codes, in ascending code
 order (the reference level is the lowest code; the model needs
-a fixed level order). \code{\link[=table_continuous]{table_continuous()}} and
-\code{\link[=table_categorical]{table_categorical()}} form the same groups from such a column
-but display them in order of first appearance in the data, so
-the group ORDER can differ between the sibling tables. A
+a fixed level order), the order in which \code{\link[=table_continuous]{table_continuous()}} and
+\code{\link[=table_categorical]{table_categorical()}} display the same groups. A
 labelled vector without value labels is treated as a continuous
 regressor. Declared missing values follow \code{user_na} as usual.
 }
 
 Rows with \code{NA} in \code{by} are excluded from the analytic sample for each
-outcome (NAs in \code{y} and \code{weights} are also excluded; see Details).}
+outcome (NAs in \code{y} and \code{weights} are also excluded; see Details), the
+rule of a table that computes (see \code{drop_na} in
+\code{\link[=table_continuous]{table_continuous()}}); this table has no \code{drop_na}.}
 
 \item{covariates}{Optional additive covariates to adjust each per-outcome
 linear model for. Accepts a tidyselect expression (e.g.
@@ -127,7 +131,8 @@ existing \code{by} / \code{weights} NA handling).}
 
 \item{adjustment}{How the covariate-adjusted estimated marginal
 means (the \code{emmean} / \code{emmean_se} / \verb{emmean_ci_*} columns) are
-computed when \code{covariates} is non-empty. One of:
+computed when \code{covariates} is non-empty (typed without covariates,
+it is ignored with a warning, class \code{spicy_ignored_arg}). One of:
 \itemize{
 \item \code{"proportional"} (the default; matches Stata \code{margins} and
 \code{\link[marginaleffects:avg_predictions]{marginaleffects::avg_predictions()}}): G-computation on the
@@ -238,7 +243,8 @@ when \code{cluster} is supplied (Quenouille 1956; MacKinnon and White
 
 The \verb{HC*} variants are computed via \code{\link[sandwich:vcovHC]{sandwich::vcovHC()}}.
 Coefficients (means, contrasts, slopes), \verb{\eqn{R^2}{R^2}}, and the standardized
-effect sizes (\code{f2}, \code{d}, \code{g}, \code{omega2}) are point estimates from the
+effect sizes (\code{f2}, \code{cohens_d}, \code{hedges_g}, \code{omega2}) are point
+estimates from the
 OLS/WLS fit and are not affected by \code{vcov}; only their standard errors,
 CIs, and the test statistic of the contrast change.}
 
@@ -265,15 +271,19 @@ required. Multi-way clustering (a list / data.frame of multiple
 cluster vectors) is not supported; use \code{\link[sandwich:vcovCL]{sandwich::vcovCL()}} or
 \code{\link[clubSandwich:vcovCR]{clubSandwich::vcovCR()}} directly on the fitted model for that case.}
 
-\item{boot_n}{Integer. Number of bootstrap replicates used when
-\code{vcov = "bootstrap"}. Defaults to \code{1000}. Ignored otherwise.
-Must be at least \code{50} (values below that floor raise an error:
-fewer replicates make the variance estimate too noisy to use);
-non-integer values are truncated (e.g. \code{500.9} becomes \code{500}).
+\item{boot_n}{Number of bootstrap replicates used when
+\code{vcov = "bootstrap"}: a positive whole number, as in
+\code{\link[=table_regression]{table_regression()}} and \code{\link[=table_multiresponse]{table_multiresponse()}} (a fraction is an
+error). Defaults to \code{1000}, the default of \code{\link[=table_regression]{table_regression()}},
+which computes the same bootstrap variance. That variance needs at
+least 10 valid replicates: a smaller \code{boot_n} is an error.
 Larger values reduce Monte-Carlo error in the bootstrap variance;
-typical values for inference are \code{500}-\code{2000}.}
+typical values for inference are \code{500}-\code{2000}. Typed with another
+\code{vcov}, it is ignored with a warning (class \code{spicy_ignored_arg}).}
 
-\item{contrast}{Contrast display for categorical predictors. One of:
+\item{contrast}{Contrast display for categorical predictors (typed with
+a numeric \code{by}, it is ignored with a warning, class
+\code{spicy_ignored_arg}). One of:
 \itemize{
 \item \code{"auto"} (default): show a single reference contrast
 \code{Delta (level2 - level1)} only when \code{by} has exactly two non-empty
@@ -302,7 +312,10 @@ includes a \verb{Weighted n} column equal to the sum of case weights in the
 analytic sample. Defaults to \code{FALSE}.}
 
 \item{effect_size}{Character. Effect-size column to include in the wide and
-rendered outputs (a logical is an error, class \code{spicy_defunct}). One
+rendered outputs (a logical is an error, class \code{spicy_defunct}). An
+estimator named after its author carries the name, as \code{"hedges_g"}
+does in \code{\link[=table_continuous]{table_continuous()}}: \code{"d"} and \code{"g"}, the spellings before
+0.14.0, are an error of the same class that gives the new one. One
 of:
 \itemize{
 \item \code{"none"} (the default): no effect-size column.
@@ -310,19 +323,20 @@ of:
 Familiar from Cohen (1988); standard input for a-priori power analysis.
 Note that for a single-predictor model, \verb{\eqn{f^2}{f^2}} is a monotone transform of
 \verb{\eqn{R^2}{R^2}} and adds no information beyond it.
-\item \code{"d"}: Cohen's \code{d = beta_hat / sigma_hat}, where \code{beta_hat} is the
-model coefficient (the displayed difference) and \code{sigma_hat} is the
+\item \code{"cohens_d"}: Cohen's \code{d = beta_hat / sigma_hat}, where \code{beta_hat} is
+the model coefficient (the displayed difference) and \code{sigma_hat} is the
 residual standard deviation from the fitted model. Defined only when
 \code{by} has exactly two non-empty levels; otherwise the function errors.
 The sign matches the displayed \code{Delta (level2 - level1)}.
-\item \code{"g"}: Hedges' \code{g = J * d} with the small-sample correction
-\code{J = 1 - 3 / (4 * df_resid - 1)}. Same domain as \code{"d"}.
+\item \code{"hedges_g"}: Hedges' \code{g = J * d} with the small-sample correction
+\code{J = 1 - 3 / (4 * df_resid - 1)}. Same domain as \code{"cohens_d"}.
 \item \code{"omega2"}: Hays' \code{omega-squared}, a bias-corrected estimator of the
 population variance explained, less optimistic than \verb{\eqn{R^2}{R^2}} for small
 samples. Defined for any predictor type and truncated at 0.
 }
 
-When \code{weights} is supplied, \code{"d"}, \code{"g"}, and \code{"omega2"} are derived from
+When \code{weights} is supplied, \code{"cohens_d"}, \code{"hedges_g"}, and \code{"omega2"}
+are derived from
 the weighted least-squares fit (using weighted sums of squares and the
 model's weighted residual standard deviation), keeping them consistent
 with the weighted contrast and its CI shown in the table. All effect
@@ -338,16 +352,18 @@ additive setting) --
 the correctly-defined effect size when the model is adjusted.
 For numeric \code{by}, partial \emph{\eqn{f^2}{f^2}} equals the squared partial
 correlation of \code{by} with the outcome, divided by \verb{(1 - r^2_partial)}.
-\item \code{"d"} and \code{"g"} raise a \code{spicy_unsupported} error: Cohen's \emph{d}
-and Hedges' \emph{g} have no canonical extension to adjusted models
+\item \code{"cohens_d"} and \code{"hedges_g"} raise a \code{spicy_unsupported} error:
+Cohen's \emph{d} and Hedges' \emph{g} have no canonical extension to adjusted
+models
 (the pooled SD is undefined under adjustment). Use \code{"f2"} or
 \code{"omega2"} instead -- both generalize via partial \emph{F}.
 }}
 
 \item{effect_size_ci}{Logical. If \code{TRUE} and \code{effect_size != "none"}, adds
 a confidence interval for the effect size derived from inversion of the
-appropriate noncentral distribution (noncentral t for \code{"d"} / \code{"g"};
-noncentral F for \code{"omega2"} / \code{"f2"}). The CI level is taken from
+appropriate noncentral distribution (noncentral t for \code{"cohens_d"} /
+\code{"hedges_g"}; noncentral F for \code{"omega2"} / \code{"f2"}). The CI level is
+taken from
 \code{ci_level}. In the long output (\code{output = "long"}), the bounds are always
 present in \code{es_ci_lower} / \code{es_ci_upper} (numeric). In the wide raw
 output (\code{output = "data.frame"}), the bounds appear under the same
@@ -398,7 +414,7 @@ variable label documents the data file; a published table carries
 the wording you set here.}
 
 \item{ci_level}{Confidence level for coefficient and model-based mean
-intervals (default: \code{0.95}). Must be between 0 and 1 exclusive.}
+intervals (default: \code{0.95}): a number strictly between 0 and 1.}
 
 \item{digits}{Number of decimal places for descriptive values, regression
 coefficients, and test statistics (default: \code{2}). Must be a single
@@ -423,8 +439,9 @@ small, or for journals using a coarser convention. Leading zeros
 are always stripped, following APA convention. Values below \code{1}
 and fractions (\code{3.7}) raise an error.}
 
-\item{decimal_mark}{Character used as decimal separator. Either \code{"."}
-(default) or \code{","}.}
+\item{decimal_mark}{The decimal mark, a single character: \code{"."} (the
+default) or \code{","} in most styles; the Lancet style of
+\code{\link[=spicy_style]{spicy_style()}} uses the middle dot.}
 
 \item{align}{Horizontal alignment of numeric columns in the printed
 ASCII table and in the \code{tinytable}, \code{gt}, \code{flextable}, \code{word}, and
@@ -571,8 +588,9 @@ interval.
 Inference adapts via \code{vcov}: classical OLS, \code{"HC0"}-\code{"HC5"}
 (heteroscedasticity-consistent), \code{"CR0"}-\code{"CR3"} (cluster-robust,
 requires \code{cluster}), or \code{"bootstrap"} / \code{"jackknife"} resampling.
-Effect sizes (Cohen's \code{"d"}, Hedges' \code{"g"}, Hays' \code{"omega2"},
-Cohen's \code{"f2"}) are reported with optional noncentral \emph{t} / \emph{F}
+Effect sizes (Cohen's \emph{d} \code{"cohens_d"}, Hedges' \emph{g} \code{"hedges_g"},
+Hays' \code{"omega2"}, Cohen's \code{"f2"}) are reported with optional
+noncentral \emph{t} / \emph{F}
 confidence intervals via \code{effect_size_ci}, and adapt under
 covariate adjustment (see \code{effect_size}).
 
@@ -620,8 +638,9 @@ internally consistent with the rest of the table.
 for any predictor type. For a single-predictor model, \verb{\eqn{f^2}{f^2}} is a
 monotone transform of \verb{\eqn{R^2}{R^2}} and adds no information beyond it; its
 primary use is in \emph{a priori} power analysis (e.g. G*Power).
-\item \code{"d"}, \code{"g"}: standardized mean difference (Cohen's \emph{d} or Hedges'
-\emph{g}), defined only when \code{by} has exactly two non-empty levels.
+\item \code{"cohens_d"}, \code{"hedges_g"}: standardized mean difference
+(Cohen's \emph{d} or Hedges' \emph{g}), defined only when \code{by} has exactly two
+non-empty levels.
 \code{d = beta_hat / sigma_hat} with \code{sigma_hat = summary(fit)$sigma} (the
 pooled within-group SD for the unweighted two-group case);
 \code{g = J * d} with \code{J = 1 - 3 / (4 * df_resid - 1)} (Hedges and Olkin
@@ -645,7 +664,8 @@ itself.
 \code{"omega2"} become the partial \emph{\eqn{f^2}{f^2}} / partial \emph{\eqn{\omega^2}{omega^2}} of \code{by}, derived
 from the partial \emph{F} restricted to the focal term (the Type-II
 test of \code{by} after all covariates, equal to \code{\link[stats:drop1]{stats::drop1()}} in
-this additive setting). \code{"d"} and \code{"g"} raise a \code{spicy_unsupported} error: the pooled
+this additive setting). \code{"cohens_d"} and \code{"hedges_g"} raise a
+\code{spicy_unsupported} error: the pooled
 standard deviation has no canonical extension under adjustment, so
 Cohen's \emph{d} and Hedges' \emph{g} are undefined for adjusted models. See
 \code{effect_size} for the full dispatch.
@@ -657,7 +677,8 @@ software (Stata \code{esize} / \verb{estat esize}, SAS \verb{PROC TTEST} and
 \verb{PROC GLM EFFECTSIZE} 14.2+) and in mainstream R packages
 (\code{effectsize}, \code{MOTE}, \code{TOSTER}, \code{effsize}):
 \itemize{
-\item \code{"d"}, \code{"g"}: noncentral \emph{t} inversion (Steiger and Fouladi 1997;
+\item \code{"cohens_d"}, \code{"hedges_g"}: noncentral \emph{t} inversion (Steiger
+and Fouladi 1997;
 Goulet-Pelletier and Cousineau 2018). Empirical coverage is nominal
 across sample sizes (Fitts 2021), unlike the
 older Hedges-Olkin normal approximation which is biased for small
@@ -853,7 +874,7 @@ table_continuous_lm(
   sochealth,
   select = c(wellbeing_score, bmi),
   by = sex,
-  effect_size = "d"
+  effect_size = "cohens_d"
 )
 
 # Hedges' g with weighted analysis and weighted n column.
@@ -863,7 +884,7 @@ table_continuous_lm(
   by = sex,
   weights = weight,
   statistic = TRUE,
-  effect_size = "g",
+  effect_size = "hedges_g",
   show_weighted_n = TRUE
 )
 
@@ -872,7 +893,7 @@ table_continuous_lm(
   sochealth,
   select = c(wellbeing_score, bmi),
   by = sex,
-  effect_size = "g",
+  effect_size = "hedges_g",
   effect_size_ci = TRUE
 )
 
@@ -884,7 +905,8 @@ table_continuous_lm(
   effect_size = "f2"
 )
 
-# Hays' omega-squared for a 3-level predictor (d / g would error here).
+# Hays' omega-squared for a 3-level predictor ("cohens_d" and
+# "hedges_g" need two groups).
 table_continuous_lm(
   sochealth,
   select = c(wellbeing_score, bmi),

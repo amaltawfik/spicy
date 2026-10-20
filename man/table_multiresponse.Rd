@@ -48,9 +48,14 @@ and so is an empty selection.}
 
 \item{by}{Optional grouping column, unquoted or as a string. Factor
 levels keep their declared order, a declared level with no respondent
-included; any other column forms groups in order of first appearance
-(a labelled column by its codes), as in \code{\link[=table_categorical]{table_categorical()}}. Rows
-with a missing \code{by} are removed, and the note says how many; a \code{by}
+included; any other column is sorted, as in \code{\link[=table_categorical]{table_categorical()}}:
+text in the C locale, \code{FALSE} before \code{TRUE}, numbers and the codes of
+a labelled column ascending, whatever the order of the rows. The
+missing answers to the question are counted (see \code{base} and
+\code{none_row}), as a table that counts does (see \code{drop_na} in
+\code{\link[=table_categorical]{table_categorical()}}), but a missing \code{by} has no group to be counted
+in: rows with a missing \code{by} are removed, and the note says how
+many, so this table has no \code{drop_na}; a \code{by}
 that no observation holds is an error (class \code{spicy_invalid_data}).
 A level displayed with the label of the \code{Total} margin is an error,
 as in \code{\link[=table_categorical]{table_categorical()}}.}
@@ -155,7 +160,11 @@ correction; or \code{"bootstrap"}, the same sum referred to its bootstrap
 distribution. See \emph{Tests}.}
 
 \item{boot_n}{Number of bootstrap resamples for
-\code{global_test = "bootstrap"}. Defaults to \code{1999}.}
+\code{global_test = "bootstrap"}: a positive whole number, as in
+\code{\link[=table_regression]{table_regression()}} and \code{\link[=table_continuous_lm]{table_continuous_lm()}}. Defaults to \code{1999},
+the default of the \code{MRCV} package for the same bootstrap test. Typed
+with \code{global_test = "rs2"}, or in a table without a global test, it
+is ignored with a warning (class \code{spicy_ignored_arg}).}
 
 \item{p_adjust}{Multiple-comparison adjustment of the item \code{p} column,
 applied to the family of the items tested: \code{"holm"} (the default),
@@ -197,7 +206,7 @@ the wording you set here.}
 
 \item{percent_digits}{Number of digits for percentages in report outputs.
 Defaults to \code{1}. A whole number: a fraction is an error, as for
-\code{p_digits} and \code{v_digits}.}
+every \verb{*_digits} argument.}
 
 \item{p_digits}{Integer >= 1. Number of decimal places used to
 render \emph{p}-values in the \code{p} column (default: \code{3}, the APA
@@ -207,7 +216,9 @@ prints \code{.045} and \verb{<.001}; \code{p_digits = 4} prints \code{.0451} and
 \verb{<.0001}. Leading zeros are always stripped, following APA
 convention.}
 
-\item{decimal_mark}{Decimal separator (\code{"."} or \code{","}). Defaults to \code{"."}.}
+\item{decimal_mark}{The decimal mark, a single character: \code{"."} (the
+default) or \code{","} in most styles; the Lancet style of
+\code{\link[=spicy_style]{spicy_style()}} uses the middle dot.}
 
 \item{align}{Horizontal alignment of the numeric columns in the console
 and in the rendered outputs: \code{"decimal"} (the default), \code{"center"},
@@ -215,7 +226,8 @@ or \code{"right"}, as in \code{\link[=table_categorical]{table_categorical()}}.}
 
 \item{title}{The table title. \code{NULL} (the default) gives "Multiple
 responses", followed by "by" and the \code{by} variable under the \code{labels}
-contract; a single string replaces it.}
+contract; a single string replaces it, and \code{FALSE} removes it, as in
+\code{\link[=table_regression]{table_regression()}}.}
 
 \item{note}{The table note. \code{NULL} (the default) builds it, opening
 with "Note.": the rows removed for a missing \code{by}, what the

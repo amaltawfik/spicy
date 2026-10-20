@@ -2482,8 +2482,8 @@ validate_token_vector <- function(x, valid, arg, call = rlang::caller_env()) {
 
 # Step 15: digit args (whole-number scalar). The one validator of every
 # number of decimals in the table family: `digits`, `p_digits`,
-# `effect_size_digits`, `fit_digits`, `ic_digits`, `percent_digits`,
-# `v_digits`. A fraction is refused rather than truncated. `min = 1` for
+# `effect_size_digits`, `fit_digits`, `ic_digits`, `percent_digits`.
+# A fraction is refused rather than truncated. `min = 1` for
 # `p_digits`: a p-value printed with no decimal reads ".015" in the table
 # and "<1" in `inline()`. Returns the value as an integer.
 validate_digit_arg <- function(
@@ -2501,15 +2501,7 @@ validate_digit_arg <- function(
     x == trunc(x)
   if (!ok) {
     spicy_abort(
-      if (min == 0L) {
-        sprintf("`%s` must be a single non-negative integer.", name)
-      } else {
-        sprintf(
-          "`%s` must be a single integer >= %d (typically 2-4).",
-          name,
-          as.integer(min)
-        )
-      },
+      .digit_arg_message(name, min),
       class = "spicy_invalid_input",
       call = call
     )
@@ -2517,7 +2509,25 @@ validate_digit_arg <- function(
   invisible(as.integer(x))
 }
 
-# Step 16: ci_level
+# The one wording of a number-of-decimals check, shared with the levers of
+# `spicy_style()` (`.style_check_count()`): only `min = 0` and `min = 1`
+# occur.
+.digit_arg_message <- function(name, min = 0L) {
+  if (min == 0L) {
+    sprintf("`%s` must be a non-negative whole number.", name)
+  } else if (min == 1L) {
+    sprintf("`%s` must be a positive whole number.", name)
+  } else {
+    sprintf(
+      "`%s` must be a whole number of at least %d.",
+      name,
+      as.integer(min)
+    )
+  }
+}
+
+# Step 16: ci_level. The one check of a confidence level in the table
+# family, the descriptive tables included.
 validate_ci_level <- function(ci_level, call = rlang::caller_env()) {
   ok <- length(ci_level) == 1L &&
     is.numeric(ci_level) &&
@@ -2527,7 +2537,7 @@ validate_ci_level <- function(ci_level, call = rlang::caller_env()) {
     ci_level < 1
   if (!ok) {
     spicy_abort(
-      "`ci_level` must be a single number in (0, 1) exclusive.",
+      "`ci_level` must be a number strictly between 0 and 1.",
       class = "spicy_invalid_input",
       call = call
     )
@@ -2535,34 +2545,54 @@ validate_ci_level <- function(ci_level, call = rlang::caller_env()) {
   invisible(NULL)
 }
 
-# Step 17: boot_n
+# Step 17: boot_n. The one check of a number of bootstrap replicates, in
+# `table_regression()` (and `table_regression_uv()` through it),
+# `table_continuous_lm()` and `table_multiresponse()`: a whole number of
+# at least 1, a fraction refused rather than truncated, as for the
+# numbers of decimals. No function has a floor of its own: the 50 that
+# `table_continuous_lm()` required came with its bootstrap (d84ae365)
+# and stated no constraint of the code. The constraint the code does
+# have belongs to the bootstrap VARIANCE, whatever the function:
+# `compute_resample_vcov_bootstrap()` needs 10 valid replicates.
+# Returns the value as an integer.
 validate_boot_n <- function(boot_n, call = rlang::caller_env()) {
   ok <- length(boot_n) == 1L &&
     is.numeric(boot_n) &&
     !is.na(boot_n) &&
     is.finite(boot_n) &&
     boot_n >= 1 &&
-    boot_n == as.integer(boot_n)
+    boot_n <= .Machine$integer.max &&
+    boot_n == trunc(boot_n)
   if (!ok) {
     spicy_abort(
-      paste0(
-        "`boot_n` must be a single positive integer ",
-        "(number of bootstrap replicates)."
+      paste(
+        "`boot_n` must be a positive whole number:",
+        "the number of bootstrap replicates."
       ),
       class = "spicy_invalid_input",
       call = call
     )
   }
-  invisible(NULL)
+  invisible(as.integer(boot_n))
 }
 
-# Step 18: logical scalar args. Reused for `show_intercept`,
-# `group_factor_levels`, `nested`.
+# The one wording of a `boot_n` typed in a call that runs no bootstrap.
+# `applies_to` names what would use it in the calling function.
+.warn_boot_n_ignored <- function(applies_to) {
+  .warn_ignored(
+    "boot_n",
+    sprintf("when no bootstrap runs: it applies to %s", applies_to)
+  )
+}
+
+# Step 18: logical scalar args. The one check of a TRUE / FALSE switch in
+# the table family: `show_intercept`, `nested`, and the switches of the
+# descriptive tables.
 validate_logical_scalar <- function(x, name, call = rlang::caller_env()) {
   ok <- length(x) == 1L && is.logical(x) && !is.na(x)
   if (!ok) {
     spicy_abort(
-      sprintf("`%s` must be a single TRUE or FALSE.", name),
+      sprintf("`%s` must be TRUE or FALSE.", name),
       class = "spicy_invalid_input",
       call = call
     )

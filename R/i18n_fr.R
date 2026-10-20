@@ -112,8 +112,6 @@
   header_effect_size = "Taille d'effet",
   # No established French abbreviation (SPSS, jamovi and JASP spell it out), and the cell names the statistic (g, d, omega squared): the full word in both widths.
   header_effect_size_short = "Taille d'effet",
-  header_ci_lower = "IC inf.",
-  header_ci_upper = "IC sup.",
 
   # -- association measures -------------------------------------------------
   stat_cramer_v = "V de Cram\u00E9r",

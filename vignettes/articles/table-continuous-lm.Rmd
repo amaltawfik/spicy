@@ -273,7 +273,7 @@ Adding covariates changes which effect sizes remain meaningful:
   `stats::drop1()` in this additive setting) — the correct
   generalization of the bivariate effect size to a
   covariate-adjusted model.
-* `effect_size = "d"` and `"g"` raise `spicy_unsupported`: Cohen's
+* `effect_size = "cohens_d"` and `"hedges_g"` raise `spicy_unsupported`: Cohen's
   *d* and Hedges' *g* have no defined extension under adjustment
   (the pooled SD has no canonical analog). The error message
   points to `f2` / `omega2` as the partial-F generalizations.
@@ -312,7 +312,7 @@ table_continuous_lm(
   sochealth,
   select = c(wellbeing_score, bmi),
   by = smoking,
-  effect_size = "d"
+  effect_size = "cohens_d"
 )
 ```
 
@@ -325,7 +325,7 @@ table_continuous_lm(
   sochealth,
   select = c(wellbeing_score, bmi),
   by = smoking,
-  effect_size = "g"
+  effect_size = "hedges_g"
 )
 ```
 
@@ -367,7 +367,7 @@ software (Stata `esize` / `estat esize`, SAS `PROC TTEST` and
 `noncentral = TRUE`, its default being the central-*t*
 approximation):
 
-- Noncentral *t* inversion for `"d"` and `"g"` (Steiger and Fouladi
+- Noncentral *t* inversion for `"cohens_d"` and `"hedges_g"` (Steiger and Fouladi
   1997; Goulet-Pelletier and Cousineau 2018; Fitts 2021), which has
   nominal coverage across sample
   sizes — unlike the older Hedges-Olkin normal approximation that is
@@ -383,7 +383,7 @@ table_continuous_lm(
   sochealth,
   select = c(wellbeing_score, bmi),
   by = smoking,
-  effect_size = "g",
+  effect_size = "hedges_g",
   effect_size_ci = TRUE
 )
 ```
@@ -397,7 +397,7 @@ table_continuous_lm(
   sochealth,
   select = wellbeing_score,
   by = smoking,
-  effect_size = "g",
+  effect_size = "hedges_g",
   effect_size_ci = TRUE,
   output = "data.frame"
 )
@@ -408,7 +408,7 @@ out <- table_continuous_lm(
   sochealth,
   select = wellbeing_score,
   by = smoking,
-  effect_size = "g",
+  effect_size = "hedges_g",
   effect_size_ci = TRUE,
   output = "long"
 )
@@ -437,7 +437,7 @@ table_continuous_lm(
     wellbeing_score = "WHO-5 wellbeing (0-100)",
     bmi = "Body-mass index (kg/m²)"
   ),
-  effect_size = "g",
+  effect_size = "hedges_g",
   effect_size_ci = TRUE,
   decimal_mark = ","
 )
@@ -474,7 +474,7 @@ out <- table_continuous_lm(
   sochealth,
   select = c(wellbeing_score, bmi),
   by = sex,
-  effect_size = "g",
+  effect_size = "hedges_g",
   effect_size_ci = TRUE
 )
 

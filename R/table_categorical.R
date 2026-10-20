@@ -226,7 +226,9 @@
 # * factors (ordered or not) pass through verbatim;
 # * labelled vectors use the same conversion as freq():
 #   "[code] label" levels in code order;
-# * anything else becomes a factor in order of first appearance.
+# * anything else becomes a factor in the family's order of the groups
+#   (`.group_levels()`): sorted in the C locale, as `freq()` and
+#   `cross_tab()` order it.
 .tab_factor <- function(x) {
   if (is.factor(x)) {
     return(x)
@@ -234,7 +236,7 @@
   if (labelled::is.labelled(x)) {
     return(labelled::to_factor(x, levels = "prefixed", nolabel_to_na = FALSE))
   }
-  factor(x, levels = unique(x[!is.na(x)]))
+  factor(x, levels = .group_levels(x))
 }
 
 # Append the "(Missing)" display level -- always LAST -- and recode the
@@ -862,14 +864,18 @@
 #'   naming one in `select`, or giving its position, is an error. A name
 #'   that is not a column of `data` is an error (class
 #'   `spicy_missing_column`), and so is a selection with no column to
-#'   tabulate.
+#'   tabulate. The levels of a variable are its rows in the order `by`
+#'   gives its groups (see `by`); a labelled variable keeps the order of
+#'   its codes.
 #' @param by Optional grouping column used for columns/groups. Accepts an
 #'   unquoted column name or a single character column name. Factor
-#'   levels keep their declared order; any other `by` (character,
-#'   numeric, haven labelled) forms group columns in order of first
-#'   appearance in the data -- the same convention as
-#'   [table_continuous()]. For a haven labelled `by`, the group
-#'   headers are the raw codes (value labels are not used for group
+#'   levels keep their declared order, which is the way to choose another
+#'   order; any other `by` is sorted, as in [freq()] and [cross_tab()]:
+#'   text in the C locale (capitals before lower case, the same on every
+#'   machine), `FALSE` before `TRUE`, numbers and the codes of a haven
+#'   labelled column ascending, whatever the order of the rows. The
+#'   column of missing values comes last. For a haven labelled `by`, the
+#'   group headers are the raw codes (value labels are not used for group
 #'   headers -- the family convention shared with [table_continuous()]
 #'   and [table_continuous_lm()]); declared missing values follow
 #'   `user_na` as usual.
@@ -912,29 +918,32 @@
 #'   margin is then an error (class `spicy_label_collision`): rename the
 #'   level, or give the margin another label with
 #'   `options(spicy.labels = list(header_margin_total = "All"))`.
-#' @param drop_na Logical. If `FALSE` (the default), missing values are
-#'   displayed as a dedicated `"(Missing)"` level (and, under `by`, a
-#'   `"(Missing)"` group column) -- the field convention for descriptive
-#'   tables (gtsummary's "Unknown" row, janitor's `NA` row; see the
-#'   Epidemiologist R Handbook, Descriptive tables). A level displayed
-#'   beside that row or column with its label is an error (class
-#'   `spicy_label_collision`): rename the level, or give the row another
-#'   label with
+#' @param drop_na Logical. The rule of the family: a table that counts
+#'   shows the missing values by default, as a frequency table reports
+#'   how many answers are missing; a table that computes a statistic
+#'   removes them by default and counts them in the note (see
+#'   [table_continuous()]). This table counts, so `FALSE` (the default)
+#'   displays the missing values as a dedicated `"(Missing)"` level (and,
+#'   under `by`, a `"(Missing)"` group column) -- the field convention for
+#'   descriptive tables (gtsummary's "Unknown" row, janitor's `NA` row;
+#'   see the Epidemiologist R Handbook, Descriptive tables). A level
+#'   displayed beside that row or column with its label is an error
+#'   (class `spicy_label_collision`): rename the level, or give the row
+#'   another label with
 #'   `options(spicy.labels = list(row_missing_level = "(Not stated)"))`.
 #'   If `TRUE`, rows with `NA` in the tabulated variable (and in `by`,
 #'   when supplied) are removed BEFORE each cross-tabulation, and the
 #'   removal is disclosed in a table note ("Missing values removed: ...")
 #'   rather than silent; a `by` that no observation holds is then an
-#'   error (class `spicy_invalid_data`). Before 0.13.0 the default was
-#'   `TRUE` with no disclosure.
+#'   error (class `spicy_invalid_data`).
 #' @param weights Optional weights. Either `NULL` (the default), a numeric vector
 #'   of length `nrow(data)`, or a single column in `data` supplied as an
 #'   unquoted name or a character string.
-#' @param rescale Logical. If `FALSE` (the default), weights are used as-is.
+#' @param rescale Logical. If `FALSE`, weights are used as-is.
 #'   If `TRUE`, rescales weights so total weighted N matches raw N.
-#'   Passed to `spicy::cross_tab()`. When the argument is not supplied,
-#'   the default is read from `options(spicy.rescale)` (falling back to
-#'   `FALSE`), matching [cross_tab()].
+#'   Passed to `spicy::cross_tab()`. The default reads
+#'   `options(spicy.rescale)`, `FALSE` when it is unset, matching
+#'   [cross_tab()].
 #' @param correct Logical. If `FALSE` (the default), no continuity correction is
 #'   applied. If `TRUE`, applies Yates correction in 2x2 chi-squared contexts.
 #'   Passed to `spicy::cross_tab()`. A variable tested by Fisher's exact
@@ -986,7 +995,7 @@
 #'   `by` and the `p` column. See *Multiple-comparison adjustment*.
 #' @param percent_digits Number of digits for percentages in report outputs.
 #'   Defaults to `1`. A whole number: a fraction is an error, as for
-#'   `p_digits` and `v_digits`.
+#'   every `*_digits` argument.
 #' @param p_digits Integer >= 1. Number of decimal places used to
 #'   render *p*-values in the `p` column (default: `3`, the APA
 #'   Publication Manual standard). Both the displayed precision and
@@ -994,8 +1003,9 @@
 #'   prints `.045` and `<.001`; `p_digits = 4` prints `.0451` and
 #'   `<.0001`. Leading zeros are always stripped, following APA
 #'   convention.
-#' @param v_digits Number of digits for the association measure. Defaults
-#'   to `2`.
+#' @param effect_size_digits Number of digits for the association measure,
+#'   its confidence interval and the SMD, as for the effect sizes of the
+#'   other table functions. Defaults to `2`.
 #' @param assoc_measure Which association measure to report alongside the
 #'   *p*-value. Accepts four input shapes:
 #'
@@ -1024,9 +1034,11 @@
 #'   non-2x2 variable, an error is raised so the user can choose
 #'   another measure or fall back to `"auto"`.
 #' @param assoc_ci Passed to [cross_tab()]. If `TRUE`, includes the
-#'   confidence interval of the association measure. In the console
-#'   and in the `"data.frame"`, `"excel"` and `"clipboard"` outputs,
-#'   two extra columns `CI lower` / `CI upper` are added; in the long
+#'   95\% confidence interval of the association measure. In the console
+#'   and in the `"excel"` and `"clipboard"` outputs, two extra columns
+#'   headed `95\% CI LL` / `95\% CI UL` are added, the level stated as the
+#'   other tables state it (the `"data.frame"` output names them
+#'   `CI lower` / `CI upper`); in the long
 #'   output (`"long"`) the bounds fill `es_ci_lower` / `es_ci_upper`.
 #'   In rendered formats (`"gt"`, `"tinytable"`, `"flextable"`,
 #'   `"word"`), the CI is shown inline (e.g., `.14 [.08, .19]`).
@@ -1038,10 +1050,12 @@
 #'   `p`, never on a level row. Signed for a two-category variable
 #'   (group 1 minus group 2 on the second category), unsigned for
 #'   three or more, where it is a distance. No confidence interval
-#'   and no p-value, by design. Rounded with `v_digits`. See the
+#'   and no p-value, by design. Rounded with `effect_size_digits`. See the
 #'   "Standardized mean difference" section below. Defaults to
 #'   `FALSE`.
-#' @param decimal_mark Decimal separator (`"."` or `","`). Defaults to `"."`.
+#' @param decimal_mark The decimal mark, a single character: `"."` (the
+#'   default) or `","` in most styles; the Lancet style of
+#'   [spicy_style()] uses the middle dot.
 #' @param align Horizontal alignment of numeric columns in the
 #'   printed ASCII table and in the `tinytable`, `gt`, `flextable`,
 #'   `word`, and `clipboard` outputs. The first column (`Variable`)
@@ -1088,10 +1102,11 @@
 #'   clipboard exports. Defaults to six non-breaking spaces.
 #' @param add_multilevel_header Logical. If `TRUE` (the default), merges top
 #'   headers in Excel export. Only consulted for `output = "excel"` on a
-#'   grouped table (`by` supplied); like the other output-scoped
-#'   presentation arguments (`excel_sheet`, `clipboard_delim`, ...), it
-#'   is silently unused in every other output and in one-way tables,
-#'   which have a single header row to begin with.
+#'   grouped table (`by` supplied): typed with another `output`, it is
+#'   ignored with a warning (class `spicy_ignored_arg`), like the other
+#'   arguments of one output (`excel_path`, `excel_sheet`,
+#'   `clipboard_delim`, `word_path`, ...), and a one-way table, which has
+#'   a single header row to begin with, does not use it.
 #' @param blank_na_wide Logical. If `FALSE` (the default), `NA` values are kept
 #'   as-is in `output = "data.frame"`. If `TRUE`, the empty cells of its
 #'   statistic columns become empty strings (the columns become text).
@@ -1108,8 +1123,8 @@
 #'   `NULL`. Before 0.13.0, supplying it with `output = "flextable"`
 #'   also wrote a `.docx` as a side effect; it is now used exclusively
 #'   by `output = "word"` (the contract shared with the rest of the
-#'   table family) and is ignored, with a warning, under
-#'   `output = "flextable"`.
+#'   table family) and is ignored, with a warning, under any other
+#'   `output`.
 #' @param user_na Logical. If `TRUE` (the default), declared missing
 #'   values in the row variables and in `by` are treated as missing:
 #'   they join the `"(Missing)"` level under `drop_na = FALSE`, and
@@ -1127,6 +1142,9 @@
 #'   conformity; `?spicy_style` lists the exact rules each one encodes
 #'   and the official document they come from. An unknown name is an
 #'   error.
+#' @param v_digits Defunct. Renamed `effect_size_digits` in spicy 0.14.0,
+#'   as in the other table functions; supplying `v_digits` is an error
+#'   (class `spicy_defunct`).
 #'
 #' @inheritSection freq Declared missing values
 #'
@@ -1599,7 +1617,7 @@ table_categorical <- function(
   include_total = TRUE,
   drop_na = FALSE,
   weights = NULL,
-  rescale = FALSE,
+  rescale = getOption("spicy.rescale", FALSE),
   correct = FALSE,
   simulate_p = FALSE,
   simulate_B = 2000,
@@ -1608,7 +1626,7 @@ table_categorical <- function(
   p_adjust = "none",
   percent_digits = 1,
   p_digits = 3,
-  v_digits = 2,
+  effect_size_digits = 2,
   assoc_measure = "auto",
   assoc_ci = FALSE,
   smd = FALSE,
@@ -1634,8 +1652,19 @@ table_categorical <- function(
   clipboard_delim = "\t",
   word_path = NULL,
   user_na = TRUE,
-  style = NULL
+  style = NULL,
+  v_digits
 ) {
+  # Migration guard first, so an old `v_digits =` call gets the new name
+  # before any other validation can fire.
+  if (!missing(v_digits)) {
+    .abort_renamed_arg(
+      "table_categorical",
+      "v_digits",
+      "effect_size_digits",
+      deparse1(substitute(v_digits))
+    )
+  }
   select_missing <- missing(select)
   # A journal / locale style only moves DEFAULTS (see `?spicy_style`).
   .style_pushed <- .style_begin(style, match.call(), environment())
@@ -1649,30 +1678,8 @@ table_categorical <- function(
   align <- spicy_match_arg(align)
   test <- spicy_match_arg(test)
 
-  # Global options (mirrors cross_tab()): an explicitly supplied
-  # argument always wins; the option only fills in the default.
-  if (missing(rescale)) {
-    rescale <- getOption("spicy.rescale", FALSE)
-  }
-
   .check_data_frame(data, "table_categorical")
   .check_labels_arg(labels)
-  # `word_path` is a save path for `output = "word"` only (the contract
-  # shared with the rest of the table family). Before 0.13.0,
-  # `output = "flextable"` also wrote a .docx as a side effect when
-  # `word_path` was supplied; warn so old callers see the change
-  # instead of silently getting no file.
-  if (
-    !is.null(word_path) && nzchar(word_path) && identical(output, "flextable")
-  ) {
-    spicy_warn(
-      c(
-        "`word_path` is ignored when `output = \"flextable\"`.",
-        "i" = "Use `output = \"word\"` to write a .docx, or save the returned object with `flextable::save_as_docx()`."
-      ),
-      class = "spicy_ignored_arg"
-    )
-  }
   by_quo <- rlang::enquo(by)
   has_group <- !rlang::quo_is_null(by_quo)
   by_name <- NULL
@@ -1708,9 +1715,8 @@ table_categorical <- function(
   # Validated HERE rather than beside the other logicals below: the
   # refusal of a `by`-less `smd` reads it a few lines from now, and a
   # non-logical value must not reach `&&` first.
-  if (!is.logical(smd) || length(smd) != 1 || is.na(smd)) {
-    spicy_abort("`smd` must be TRUE/FALSE.", class = "spicy_invalid_input")
-  }
+  validate_logical_scalar(smd, "smd")
+  validate_logical_scalar(assoc_ci, "assoc_ci")
   if (smd && !has_group) {
     spicy_warn(
       "`smd` is ignored when `by` is not used: a standardized mean difference compares two groups.",
@@ -1826,20 +1832,9 @@ table_categorical <- function(
     )
   }
 
-  if (
-    !is.logical(include_total) ||
-      length(include_total) != 1 ||
-      is.na(include_total)
-  ) {
-    spicy_abort(
-      "`include_total` must be TRUE/FALSE.",
-      class = "spicy_invalid_input"
-    )
-  }
-  if (!is.logical(drop_na) || length(drop_na) != 1 || is.na(drop_na)) {
-    spicy_abort("`drop_na` must be TRUE/FALSE.", class = "spicy_invalid_input")
-  }
-  validate_varlist_logical(user_na, "user_na")
+  validate_logical_scalar(include_total, "include_total")
+  validate_logical_scalar(drop_na, "drop_na")
+  validate_logical_scalar(user_na, "user_na")
   # Declared missing values (see the "Declared missing values" section
   # of ?freq): with `user_na = TRUE` declared codes become regular NA
   # up front, so they join the "(Missing)" level under drop_na = FALSE
@@ -1905,18 +1900,9 @@ table_categorical <- function(
     }
     if (length(parts)) paste(parts, collapse = " ") else NULL
   }
-  if (!is.logical(rescale) || length(rescale) != 1 || is.na(rescale)) {
-    spicy_abort("`rescale` must be TRUE/FALSE.", class = "spicy_invalid_input")
-  }
-  if (!is.logical(correct) || length(correct) != 1 || is.na(correct)) {
-    spicy_abort("`correct` must be TRUE/FALSE.", class = "spicy_invalid_input")
-  }
-  if (!is.logical(simulate_p) || length(simulate_p) != 1 || is.na(simulate_p)) {
-    spicy_abort(
-      "`simulate_p` must be TRUE/FALSE.",
-      class = "spicy_invalid_input"
-    )
-  }
+  validate_logical_scalar(rescale, "rescale")
+  validate_logical_scalar(correct, "correct")
+  validate_logical_scalar(simulate_p, "simulate_p")
   if (
     !is.numeric(simulate_B) ||
       length(simulate_B) != 1 ||
@@ -1929,39 +1915,23 @@ table_categorical <- function(
     )
   }
   simulate_B <- as.integer(simulate_B)
-  if (
-    !is.logical(add_multilevel_header) ||
-      length(add_multilevel_header) != 1 ||
-      is.na(add_multilevel_header)
-  ) {
-    spicy_abort(
-      "`add_multilevel_header` must be TRUE/FALSE.",
-      class = "spicy_invalid_input"
-    )
-  }
-  if (
-    !is.logical(blank_na_wide) ||
-      length(blank_na_wide) != 1 ||
-      is.na(blank_na_wide)
-  ) {
-    spicy_abort(
-      "`blank_na_wide` must be TRUE/FALSE.",
-      class = "spicy_invalid_input"
-    )
-  }
-  if (!.is_single_char(decimal_mark)) {
-    spicy_abort(
-      '`decimal_mark` must be a single character (e.g. "." or ",").',
-      class = "spicy_invalid_input"
-    )
-  }
+  validate_logical_scalar(add_multilevel_header, "add_multilevel_header")
+  validate_logical_scalar(blank_na_wide, "blank_na_wide")
+  validate_decimal_mark(decimal_mark)
   percent_digits <- validate_digit_arg(percent_digits, "percent_digits")
-  v_digits <- validate_digit_arg(v_digits, "v_digits")
+  effect_size_digits <- validate_digit_arg(
+    effect_size_digits,
+    "effect_size_digits"
+  )
   # `p_digits` has a stricter floor than the other digits arguments:
   # a 0-decimal p-value is meaningless, and `format_p_value()` would
   # silently fall back to 3 decimals. Same classed check as
   # table_continuous() / table_continuous_lm() / cross_tab().
   p_digits <- validate_digit_arg(p_digits, "p_digits", min = 1L)
+  # An argument of one route only (`word_path` is a save path for
+  # `output = "word"`, ...) typed with another `output` reaches nothing:
+  # the family's warning says so, once the arguments are valid.
+  .warn_ignored_output_args(output, names(match.call()))
 
   if (!has_group) {
     if (!include_total) {
@@ -2062,11 +2032,12 @@ table_categorical <- function(
   # accept (NA allowed, an all-zero vector too).
   .check_weights_values(weights_vec, require_positive = FALSE)
 
+  # Without weights there is nothing to rescale: a `rescale = TRUE` typed
+  # in the call warns, one read from `options(spicy.rescale)` does not.
   if (isTRUE(rescale) && is.null(weights_vec)) {
-    spicy_warn(
-      "`rescale = TRUE` has no effect without `weights`; using `rescale = FALSE`.",
-      class = "spicy_ignored_arg"
-    )
+    if (!missing(rescale)) {
+      .warn_ignored("rescale", "when `weights` is not supplied")
+    }
     rescale <- FALSE
   }
 
@@ -2242,7 +2213,12 @@ table_categorical <- function(
     if (is.na(v)) {
       return("")
     }
-    s <- formatC(v, format = "f", digits = v_digits, decimal.mark = ".")
+    s <- formatC(
+      v,
+      format = "f",
+      digits = effect_size_digits,
+      decimal.mark = "."
+    )
     # The association measure is bounded, so it follows the same
     # leading-zero policy as a p-value: dropped under a decimal point,
     # kept under a comma mark or under a style that says so
@@ -2269,7 +2245,12 @@ table_categorical <- function(
     if (is.na(v)) {
       return(spicy_str("cell_undefined"))
     }
-    s <- formatC(v, format = "f", digits = v_digits, decimal.mark = ".")
+    s <- formatC(
+      v,
+      format = "f",
+      digits = effect_size_digits,
+      decimal.mark = "."
+    )
     if (decimal_mark != ".") {
       s <- sub("\\.", decimal_mark, s)
     }
@@ -2562,7 +2543,7 @@ table_categorical <- function(
       indent_text = indent_text,
       percent_digits = percent_digits,
       p_digits = p_digits,
-      v_digits = v_digits,
+      effect_size_digits = effect_size_digits,
       decimal_mark = decimal_mark
     )
 
@@ -3087,12 +3068,9 @@ table_categorical <- function(
   if (!show_assoc) {
     assoc_ci <- FALSE
   }
-  group_levels <- if (is.factor(g0)) {
-    levels(g0)
-  } else {
-    unique(as.character(g0[!is.na(g0)]))
-  }
-  group_levels <- as.character(group_levels)
+  # The family's order of the groups (`.group_levels()`): a factor keeps
+  # its levels, any other `by` is sorted in the C locale.
+  group_levels <- .group_levels(g0)
   # The REAL groups of the table, captured here and used by the SMD --
   # BEFORE the "(Missing)" level is appended below and BEFORE the margin
   # key joins the vector. Both would otherwise inflate the count and
@@ -4044,7 +4022,7 @@ table_categorical <- function(
     indent_text = indent_text,
     percent_digits = percent_digits,
     p_digits = p_digits,
-    v_digits = v_digits,
+    effect_size_digits = effect_size_digits,
     decimal_mark = decimal_mark,
     group_levels = group_levels,
     margin_key = margin_col_key,
@@ -4744,9 +4722,14 @@ table_categorical <- function(
     return(invisible(word_path))
   }
 
-  # Extend headers with CI columns for data/export formats
+  # Extend headers with CI columns for data/export formats. The headers
+  # are those of the typed view, which states the level of the interval
+  # ("95% CI LL"), the console's.
   if (assoc_ci) {
-    ci_headers <- c(spicy_str("header_ci_lower"), spicy_str("header_ci_upper"))
+    ci_headers <- c(
+      structured$col_meta[[.CAT_KEY_CI_LL]]$display_label,
+      structured$col_meta[[.CAT_KEY_CI_UL]]$display_label
+    )
     # INSERTED before the SMD header, not appended after it: the CI
     # bounds sit between the measure and the SMD in `report_cols`, so
     # appending would print "SMD" over a CI column and a bound header

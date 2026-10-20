@@ -159,8 +159,6 @@ test_that("every frozen categorical key equals its English display label", {
     list(.CAT_KEY_VARIABLE, "header_variable"),
     list(.CAT_KEY_P, "header_p"),
     list(.CAT_MARGIN_KEY, "header_margin_total"),
-    list(.CAT_KEY_CI_LL, "header_ci_lower"),
-    list(.CAT_KEY_CI_UL, "header_ci_upper"),
     list(.CAT_KEY_EFFECT_SIZE, "header_effect_size"),
     # The first effect column of this family with a FIXED name: the
     # measure column beside it is named after the measure and only
@@ -172,6 +170,13 @@ test_that("every frozen categorical key equals its English display label", {
   for (cp in couples) {
     expect_identical(cp[[1L]], spicy_str(cp[[2L]]), info = cp[[2L]])
   }
+  # The bounds of the association interval keep frozen keys, as the
+  # "% CI lower" of the survey twin, and are headed with the level they
+  # state ("95% CI LL"): the one couple whose key and label differ.
+  expect_identical(
+    c(.CAT_KEY_CI_LL, .CAT_KEY_CI_UL),
+    c("CI lower", "CI upper")
+  )
   # One string, one role, both families: the SMD header is the single
   # registry key the continuous and the categorical table share.
   expect_identical(.CAT_KEY_SMD, .CON_KEY_SMD)
@@ -327,7 +332,7 @@ test_that("every frozen linear-model key equals its English display label", {
   for (tok in c("r2", "adj_r2", "no_such_r2")) {
     expect_identical(format_r2_header_lm(tok), .lm_r2_label(tok), info = tok)
   }
-  for (tok in c("f2", "d", "g", "omega2", "no_such_es")) {
+  for (tok in c("f2", "cohens_d", "hedges_g", "omega2", "no_such_es")) {
     expect_identical(
       format_effect_size_header_lm(tok),
       .lm_es_label(tok),

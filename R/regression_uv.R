@@ -246,26 +246,8 @@ table_regression_uv <- function(
   method <- spicy_match_arg(method)
   .check_data_frame(data, "table_regression_uv")
   .check_labels_arg(labels)
-  if (
-    !is.logical(multivariable) ||
-      length(multivariable) != 1L ||
-      is.na(multivariable)
-  ) {
-    spicy_abort(
-      "`multivariable` must be TRUE/FALSE.",
-      class = "spicy_invalid_input"
-    )
-  }
-  if (
-    !is.logical(complete_cases) ||
-      length(complete_cases) != 1L ||
-      is.na(complete_cases)
-  ) {
-    spicy_abort(
-      "`complete_cases` must be TRUE/FALSE.",
-      class = "spicy_invalid_input"
-    )
-  }
+  validate_logical_scalar(multivariable, "multivariable")
+  validate_logical_scalar(complete_cases, "complete_cases")
   if (identical(method, "coxph") && family_supplied) {
     spicy_abort(
       c(
@@ -505,16 +487,7 @@ table_regression_uv <- function(
       class = "spicy_invalid_input"
     )
   }
-  if (
-    !is.logical(show_intercept) ||
-      length(show_intercept) != 1L ||
-      is.na(show_intercept)
-  ) {
-    spicy_abort(
-      "`show_intercept` must be TRUE/FALSE.",
-      class = "spicy_invalid_input"
-    )
-  }
+  validate_logical_scalar(show_intercept, "show_intercept")
   # Explicit formal (default FALSE, the gtsummary tbl_regression
   # convention) rather than inherited through `...`: the flipped
   # default relative to table_regression() must be visible in the

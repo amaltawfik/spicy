@@ -2052,3 +2052,483 @@ test_that("every table of the family inherits `spicy_table`", {
     expect_identical(class(x)[[3L]], "data.frame", info = fn)
   }
 })
+
+# ---- The arguments and addresses of the family -----------------------------
+#
+# Decisions 2, 3, 4, 10 and 12 of the ADR of 2026-10-20, and the rule for
+# an argument with no effect (V12 of the coherence audit): one test per
+# rule, so that no sibling drifts from it again.
+
+test_that("one spelling per effect-size measure across the family", {
+  # A squared measure ends in 2 (`eta2`, `epsilon2`, `omega2`, `f2`), an
+  # estimator named after its author carries the name (`cohens_d`,
+  # `hedges_g`), in the argument and in the `es_type` of the outputs.
+  allowed <- c(
+    "none",
+    "auto",
+    "hedges_g",
+    "cohens_d",
+    "r_rb",
+    "eta2",
+    "epsilon2",
+    "omega2",
+    "f2"
+  )
+  for (fn in c("table_continuous", "table_outcome", "table_continuous_lm")) {
+    vals <- eval(formals(get(fn, envir = asNamespace("spicy")))$effect_size)
+    expect_true(all(vals %in% allowed), info = fn)
+  }
+  d <- sochealth
+  q <- function(e) suppressMessages(suppressWarnings(e))
+  es <- c(
+    q(table_continuous(
+      d,
+      select = bmi,
+      by = education,
+      effect_size = "eta2",
+      output = "long"
+    ))$es_type,
+    q(table_continuous(
+      d,
+      select = bmi,
+      by = education,
+      test = "nonparametric",
+      effect_size = "epsilon2",
+      output = "long"
+    ))$es_type,
+    q(table_outcome(
+      d,
+      bmi,
+      select = c(sex, education),
+      effect_size = "auto",
+      output = "long"
+    ))$es_type,
+    q(table_continuous_lm(
+      d,
+      select = bmi,
+      by = sex,
+      effect_size = "cohens_d",
+      output = "long"
+    ))$es_type,
+    q(table_continuous_lm(
+      d,
+      select = bmi,
+      by = sex,
+      effect_size = "hedges_g",
+      output = "long"
+    ))$es_type
+  )
+  es <- unique(stats::na.omit(es))
+  expect_true(all(es %in% allowed))
+  expect_setequal(es, c("eta2", "epsilon2", "hedges_g", "cohens_d"))
+
+  # Every spelling of 0.13.0 is refused, and the message gives the new one.
+  old <- list(
+    list(fn = "table_continuous", old = "eta_sq", new = "eta2"),
+    list(fn = "table_continuous", old = "epsilon_sq", new = "epsilon2"),
+    list(fn = "table_outcome", old = "eta_sq", new = "eta2"),
+    list(fn = "table_outcome", old = "epsilon_sq", new = "epsilon2"),
+    list(fn = "table_continuous_lm", old = "d", new = "cohens_d"),
+    list(fn = "table_continuous_lm", old = "g", new = "hedges_g")
+  )
+  call_with <- function(fn, value) {
+    switch(
+      fn,
+      table_continuous = table_continuous(
+        d,
+        select = bmi,
+        by = sex,
+        effect_size = value
+      ),
+      table_outcome = table_outcome(d, bmi, select = sex, effect_size = value),
+      table_continuous_lm = table_continuous_lm(
+        d,
+        select = bmi,
+        by = sex,
+        effect_size = value
+      )
+    )
+  }
+  for (o in old) {
+    err <- expect_error(
+      call_with(o$fn, o$old),
+      class = "spicy_defunct",
+      info = paste(o$fn, o$old)
+    )
+    expect_s3_class(err, "spicy_invalid_input")
+    expect_match(
+      conditionMessage(err),
+      sprintf("effect_size = \"%s\"", o$new),
+      fixed = TRUE,
+      info = paste(o$fn, o$old)
+    )
+  }
+})
+
+test_that("`v_digits` is `effect_size_digits` in table_categorical() and spicy_style()", {
+  d <- sochealth
+  err <- expect_error(
+    table_categorical(d, select = smoking, by = sex, v_digits = 3),
+    class = "spicy_defunct"
+  )
+  expect_match(conditionMessage(err), "effect_size_digits = 3", fixed = TRUE)
+  err <- expect_error(spicy_style(v_digits = 3), class = "spicy_defunct")
+  expect_match(conditionMessage(err), "effect_size_digits = 3", fixed = TRUE)
+  # The lever of a style reaches the association measure and the SMD.
+  s <- as_structured(suppressWarnings(table_categorical(
+    d,
+    select = smoking,
+    by = sex,
+    smd = TRUE,
+    style = spicy_style(effect_size_digits = 4)
+  )))
+  expect_identical(s$col_meta[["SMD"]]$precision, 4L)
+  expect_identical(s$format_spec$effect_size_digits, 4L)
+})
+
+# A character `by` with capitals and an accented letter, a logical one,
+# and a factor whose level order is not the alphabetical one, the rows
+# given in two orders.
+.fg_data <- function() {
+  set.seed(11)
+  g <- rep(c("b", "B", "a", "\u00e9", "A", "e"), each = 10)
+  data.frame(
+    g = g,
+    l = rep(c(TRUE, FALSE), 30),
+    f = factor(rep(c("z", "a", "m"), 20), levels = c("z", "a", "m")),
+    y = stats::rnorm(60),
+    s = factor(rep(c("no", "yes"), 30)),
+    i1 = rep(c(TRUE, FALSE, TRUE), 20),
+    i2 = rep(c(FALSE, TRUE), 30),
+    w = 1,
+    stringsAsFactors = FALSE
+  )
+}
+
+# The groups each builder displays for the grouping column `by` (a column
+# name), in their order; the groupings of `table_outcome()` are its rows.
+.fg_groups <- function(d, by) {
+  q <- function(e) suppressMessages(suppressWarnings(e))
+  grp <- function(x) setdiff(unique(as.character(stats::na.omit(x))), "Total")
+  out <- list(
+    table_categorical = grp(
+      q(table_categorical(d, select = s, by = by, output = "long"))$group
+    ),
+    table_continuous = grp(
+      q(table_continuous(d, select = y, by = by, output = "long"))$group
+    ),
+    table_continuous_lm = grp(
+      q(table_continuous_lm(d, select = y, by = by, output = "long"))$level
+    ),
+    table_multiresponse = grp(
+      q(table_multiresponse(
+        d,
+        select = c(i1, i2),
+        by = by,
+        output = "long"
+      ))$group
+    ),
+    table_outcome = grp(
+      q(table_outcome(d, y, select = by, output = "long"))$level
+    )
+  )
+  if (
+    requireNamespace("survey", quietly = TRUE) &&
+      utils::packageVersion("survey") >= "4.5"
+  ) {
+    des <- survey::svydesign(ids = ~1, weights = ~w, data = d)
+    out$table_categorical_svy <- grp(
+      q(table_categorical_svy(des, select = s, by = by, output = "long"))$group
+    )
+    out$table_continuous_svy <- grp(
+      q(table_continuous_svy(des, select = y, by = by, output = "long"))$group
+    )
+  }
+  out
+}
+
+test_that("every grouping table orders its groups one way", {
+  # Decision 4: a character or logical grouping is sorted in the C locale
+  # (capitals before lower case, accented letters after `z`, the same on
+  # every machine), FALSE before TRUE; a factor keeps its levels. The
+  # order of the rows does not matter.
+  d <- .fg_data()
+  shuffled <- d[rev(seq_len(nrow(d))), ]
+  expected <- list(
+    g = c("A", "B", "a", "b", "e", "\u00e9"),
+    l = c("FALSE", "TRUE"),
+    f = c("z", "a", "m")
+  )
+  for (by in names(expected)) {
+    got <- .fg_groups(d, by)
+    got_shuffled <- .fg_groups(shuffled, by)
+    for (fn in names(got)) {
+      expect_identical(got[[fn]], expected[[by]], info = paste(fn, by))
+      expect_identical(got_shuffled[[fn]], expected[[by]], info = paste(fn, by))
+    }
+  }
+})
+
+test_that("the levels of a character variable follow the order of the groups", {
+  # The same rule applied to rows: the levels of a character `select`
+  # variable, as `cross_tab()` orders them.
+  d <- .fg_data()
+  q <- function(e) suppressMessages(suppressWarnings(e))
+  expected <- c("A", "B", "a", "b", "e", "\u00e9")
+  lv <- unique(q(table_categorical(d, select = g, output = "long"))$level)
+  expect_identical(lv, expected)
+  ct <- q(cross_tab(d, g, s, output = "data.frame"))
+  expect_identical(as.character(ct[[1L]][seq_along(expected)]), expected)
+  skip_if_not_installed("survey", "4.5")
+  des <- survey::svydesign(ids = ~1, weights = ~w, data = d)
+  lv_svy <- unique(
+    q(table_categorical_svy(des, select = g, output = "long"))$level
+  )
+  expect_identical(lv_svy, expected)
+})
+
+test_that("`model` selects a group of `by` in every table that has groups", {
+  # Decision 10: `model` names a group whether the table sets the groups
+  # out as columns (spanners, the per-group columns of
+  # table_continuous_lm()) or as rows (the continuous pair); `level` names
+  # a category shown as a row, and naming a group with it is refused.
+  d <- as.data.frame(sochealth)
+  q <- function(e) suppressMessages(suppressWarnings(e))
+  fem <- !is.na(d$sex) & d$sex == "Female"
+  ct <- q(table_categorical(d, select = smoking, by = sex))
+  expect_identical(
+    inline(ct, smoking, "Yes", "n", model = "Female"),
+    as.character(sum(fem & d$smoking %in% "Yes"))
+  )
+  mr <- q(table_multiresponse(
+    d,
+    select = tidyselect::starts_with("info_"),
+    by = sex
+  ))
+  expect_identical(
+    inline(mr, info_doctor, column = "n", model = "Female"),
+    as.character(sum(fem & d$info_doctor %in% TRUE))
+  )
+  m_fem <- formatC(mean(d$bmi[fem], na.rm = TRUE), format = "f", digits = 2)
+  cn <- q(table_continuous(d, select = bmi, by = sex))
+  expect_identical(inline(cn, bmi, model = "Female"), m_fem)
+  lm_tbl <- q(table_continuous_lm(d, select = bmi, by = sex))
+  expect_identical(
+    inline(lm_tbl, bmi, column = "emmean", model = "Female"),
+    m_fem
+  )
+  for (x in list(cn, lm_tbl)) {
+    err <- expect_error(
+      inline(
+        x,
+        bmi,
+        "Female",
+        column = if (inherits(x, "spicy_continuous_lm_table")) "emmean"
+      ),
+      class = "spicy_defunct"
+    )
+    expect_match(conditionMessage(err), "model = \"Female\"", fixed = TRUE)
+  }
+  skip_if_not_installed("survey", "4.5")
+  des <- survey::svydesign(ids = ~1, weights = ~weight, data = d)
+  cs <- q(table_categorical_svy(des, select = smoking, by = sex))
+  expect_identical(
+    inline(cs, smoking, "Yes", "n", model = "Female"),
+    as.character(sum(fem & d$smoking %in% "Yes"))
+  )
+  cvs <- q(table_continuous_svy(des, select = bmi, by = sex))
+  expect_identical(
+    inline(cvs, bmi, column = "n", model = "Female"),
+    as.character(sum(fem & !is.na(d$bmi)))
+  )
+  err <- expect_error(inline(cvs, bmi, "Female", "n"), class = "spicy_defunct")
+  expect_match(conditionMessage(err), "model = \"Female\"", fixed = TRUE)
+})
+
+test_that("`boot_n` has one validator, one message, one warning", {
+  # Decision 12: the three tables that bootstrap check `boot_n` the same
+  # way, and a `boot_n` typed in a call that runs no bootstrap warns with
+  # the same words.
+  d <- sochealth
+  fit <- lm(bmi ~ sex, data = d)
+  calls <- list(
+    table_continuous_lm = function(...) {
+      table_continuous_lm(d, select = bmi, by = sex, ...)
+    },
+    table_regression = function(...) table_regression(fit, ...),
+    table_multiresponse = function(...) {
+      table_multiresponse(
+        d,
+        select = tidyselect::starts_with("info_"),
+        by = sex,
+        ...
+      )
+    }
+  )
+  boot <- list(
+    table_continuous_lm = list(vcov = "bootstrap"),
+    table_regression = list(vcov = "bootstrap"),
+    table_multiresponse = list(global_test = "bootstrap")
+  )
+  msgs <- vapply(
+    names(calls),
+    function(fn) {
+      err <- expect_error(
+        do.call(calls[[fn]], c(boot[[fn]], list(boot_n = 2.5))),
+        class = "spicy_invalid_input",
+        info = fn
+      )
+      conditionMessage(err)
+    },
+    character(1)
+  )
+  expect_length(unique(msgs), 1L)
+  for (fn in names(calls)) {
+    seen <- character(0)
+    suppressMessages(suppressWarnings(withCallingHandlers(
+      calls[[fn]](boot_n = 500),
+      spicy_ignored_arg = function(w) {
+        seen <<- c(seen, conditionMessage(w))
+        invokeRestart("muffleWarning")
+      }
+    )))
+    expect_length(seen, 1L)
+    expect_match(
+      seen,
+      "`boot_n` is ignored when no bootstrap runs: it applies to",
+      fixed = TRUE,
+      info = fn
+    )
+  }
+})
+
+test_that("an argument typed with no effect warns, naming only itself", {
+  # V12 of the coherence audit: one rule for an argument the call typed
+  # and that reaches nothing, in every function that has it.
+  d <- sochealth
+  ignored <- function(expr) {
+    seen <- character(0)
+    suppressMessages(suppressWarnings(withCallingHandlers(
+      expr,
+      spicy_ignored_arg = function(w) {
+        seen <<- c(seen, conditionMessage(w))
+        invokeRestart("muffleWarning")
+      }
+    )))
+    seen
+  }
+  path_docx <- file.path(tempdir(), "never-written.docx")
+  path_xlsx <- file.path(tempdir(), "never-written.xlsx")
+  calls <- list(
+    table_categorical = function(...) {
+      table_categorical(d, select = smoking, by = sex, ...)
+    },
+    table_continuous = function(...) {
+      table_continuous(d, select = bmi, by = sex, ...)
+    },
+    table_continuous_lm = function(...) {
+      table_continuous_lm(d, select = bmi, by = sex, ...)
+    },
+    table_outcome = function(...) table_outcome(d, bmi, select = sex, ...),
+    table_multiresponse = function(...) {
+      table_multiresponse(d, select = tidyselect::starts_with("info_"), ...)
+    },
+    table_regression = function(...) {
+      table_regression(lm(bmi ~ sex, data = d), ...)
+    },
+    table_regression_uv = function(...) {
+      table_regression_uv(d, outcome = bmi, predictors = c(age, sex), ...)
+    }
+  )
+  if (
+    requireNamespace("survey", quietly = TRUE) &&
+      utils::packageVersion("survey") >= "4.5"
+  ) {
+    des <- survey::svydesign(ids = ~1, weights = ~weight, data = d)
+    calls$table_categorical_svy <- function(...) {
+      table_categorical_svy(des, select = smoking, by = sex, ...)
+    }
+    calls$table_continuous_svy <- function(...) {
+      table_continuous_svy(des, select = bmi, by = sex, ...)
+    }
+  }
+  for (fn in names(calls)) {
+    w <- ignored(calls[[fn]](word_path = path_docx))
+    expect_length(w, 1L)
+    expect_match(w, "`word_path` is ignored", fixed = TRUE, info = fn)
+    w <- ignored(calls[[fn]](excel_path = path_xlsx))
+    expect_length(w, 1L)
+    expect_match(w, "`excel_path` is ignored", fixed = TRUE, info = fn)
+  }
+  expect_false(file.exists(path_docx))
+  expect_false(file.exists(path_xlsx))
+
+  # Without `by`: the continuous pair names what was typed and nothing
+  # else, and both treat `drop_na = FALSE` alike.
+  w <- ignored(table_continuous(d, select = bmi, p_value = TRUE))
+  expect_identical(w, "`p_value` is ignored when `by` is not used.")
+  w_drop <- ignored(table_continuous(d, select = bmi, drop_na = FALSE))
+  expect_length(w_drop, 1L)
+  expect_match(
+    w_drop,
+    "`drop_na` is ignored when `by` is not used",
+    fixed = TRUE
+  )
+  skip_if_not_installed("survey", "4.5")
+  des <- survey::svydesign(ids = ~1, weights = ~weight, data = d)
+  expect_identical(
+    ignored(table_continuous_svy(des, select = bmi, p_value = TRUE)),
+    w
+  )
+  expect_identical(
+    ignored(table_continuous_svy(des, select = bmi, drop_na = FALSE)),
+    w_drop
+  )
+})
+
+test_that("identical checks of the family give identical messages", {
+  # V13 of the coherence audit: one wording per check, from the shared
+  # validators.
+  d <- sochealth
+  fit <- lm(bmi ~ sex, data = d)
+  msg <- function(expr) {
+    conditionMessage(expect_error(expr, class = "spicy_invalid_input"))
+  }
+  head1 <- function(m) strsplit(m, "\n", fixed = TRUE)[[1L]][[1L]]
+  ci <- c(
+    msg(table_continuous(d, select = bmi, ci_level = 2)),
+    msg(table_continuous_lm(d, select = bmi, by = sex, ci_level = 2)),
+    msg(table_outcome(d, bmi, select = sex, ci_level = 2)),
+    msg(table_regression(fit, ci_level = 2))
+  )
+  expect_identical(
+    unique(ci),
+    "`ci_level` must be a number strictly between 0 and 1."
+  )
+  digits <- c(
+    msg(table_continuous(d, select = bmi, digits = 1.5)),
+    msg(table_continuous_lm(d, select = bmi, by = sex, digits = 1.5)),
+    msg(table_regression(fit, digits = 1.5))
+  )
+  expect_identical(
+    unique(digits),
+    "`digits` must be a non-negative whole number."
+  )
+  flags <- c(
+    msg(table_categorical(d, select = smoking, drop_na = NA)),
+    msg(table_continuous(d, select = bmi, drop_na = NA)),
+    msg(table_outcome(d, bmi, select = sex, drop_na = NA))
+  )
+  expect_identical(unique(flags), "`drop_na` must be TRUE or FALSE.")
+  marks <- c(
+    msg(table_categorical(d, select = smoking, decimal_mark = 1)),
+    msg(table_continuous(d, select = bmi, decimal_mark = 1)),
+    msg(table_multiresponse(
+      d,
+      select = tidyselect::starts_with("info_"),
+      decimal_mark = 1
+    )),
+    msg(table_regression(fit, decimal_mark = 1))
+  )
+  expect_length(unique(vapply(marks, head1, "")), 1L)
+})

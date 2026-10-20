@@ -554,14 +554,18 @@ order_continuous_svy_tokens <- function(tokens) {
 #'   as a formula, until `subset()`, `update()`, `postStratify()`,
 #'   `calibrate()`, `rake()` or `trimWeights()` replaces the call: leave
 #'   such a column out with a negation (`select = !w`).
-#' @param by A single grouping column. One domain per level. A `by` that
-#'   no observation holds is an error under `drop_na = TRUE`.
-#' @param exclude Columns to drop from `select`.
-#' @param regex Treat `select` as a regular expression.
-#' @param drop_na Drop observations with a missing `by` value
-#'   (default `TRUE`). With `FALSE` they form a `(Missing)` domain of
+#' @param by A single grouping column. One domain per level, in the order
+#'   of [table_continuous()]: a factor's levels, any other column sorted
+#'   (text in the C locale, `FALSE` before `TRUE`, numbers ascending). A
+#'   `by` that no observation holds is an error under `drop_na = TRUE`.
+#' @param drop_na Drop observations with a missing `by` value. A table
+#'   that computes removes the missing values by default and counts them
+#'   in the note, the rule of [table_continuous()]: `TRUE` (the default)
+#'   removes them, and the missing values of each summarized variable are
+#'   always removed. With `FALSE` they form a `(Missing)` domain of
 #'   their own -- an ordinary subpopulation, with its own degrees of
-#'   freedom -- which is excluded from the group comparison.
+#'   freedom -- which is excluded from the group comparison. Ignored
+#'   (with a warning) when `by` is not used.
 #' @param deff Show the design effect: `FALSE` (default), `TRUE`
 #'   (against sampling without replacement) or `"replace"` (against
 #'   sampling with replacement, ignoring the finite population
@@ -580,8 +584,6 @@ order_continuous_svy_tokens <- function(tokens) {
 #'   change sign. Its estimates are still reported, the note says which
 #'   comparisons were withheld, and the call warns
 #'   (`spicy_negative_weights_no_test`).
-#' @param p_value Show the p-value column (defaults to `TRUE` with
-#'   `by`).
 #' @param p_adjust Multiple-comparison adjustment of the p-value
 #'   column, applied to the family of every test in the table (one
 #'   design-based p-value per variable; a withheld test stays out). One
@@ -589,11 +591,8 @@ order_continuous_svy_tokens <- function(tokens) {
 #'   `"bonferroni"`, `"BH"` / `"fdr"`, or `"BY"`, as in
 #'   [table_regression()]; delegated to [stats::p.adjust()]. Needs `by`
 #'   and the p-value column. See *Multiple-comparison adjustment*.
-#' @param statistic Show the test-statistic column.
-#' @param show_n Show the count column.
 #' @param show_columns Character vector of statistic tokens; `NULL`
 #'   keeps the default display.
-#' @param ci,ci_level The mean's confidence interval and its level.
 #' @param labels How each variable is named in the table: in the rows,
 #'   in the title, and in the notes. Four forms:
 #'   * `labels = FALSE` shows the column name.
@@ -614,19 +613,12 @@ order_continuous_svy_tokens <- function(tokens) {
 #'   call wins over it. Any other value, `NULL` included, is an error. A
 #'   variable label documents the data file; a published table carries
 #'   the wording you set here.
-#' @param digits,p_digits,decimal_mark Number formatting.
-#' @param align Numeric-cell alignment: `"decimal"`, `"center"` or
-#'   `"right"`.
 #' @param output One of `"default"`, `"data.frame"`, `"long"`, or a
 #'   rendering engine: `"tinytable"`, `"gt"`, `"flextable"`,
 #'   `"excel"`, `"clipboard"`, `"word"`. `"data.frame"` is the displayed
 #'   table with its numbers, `"long"` one row per `(variable x group)`
 #'   with every statistic, as in [table_continuous()]; see *Value*.
-#' @param excel_path,excel_sheet,clipboard_delim,word_path Output
-#'   destinations, as in [table_continuous()].
-#' @param verbose Report the columns skipped as non-numeric.
-#' @param user_na Honor declared missing values (see `?freq`).
-#' @param style A journal style; see [spicy_style()].
+#' @inheritParams table_continuous
 #'
 #' @return Depends on `output`:
 #' \itemize{
@@ -755,13 +747,7 @@ table_continuous_svy <- function(
     "verbose",
     "user_na"
   )) {
-    .lval <- get(.lname)
-    if (!is.logical(.lval) || length(.lval) != 1L || is.na(.lval)) {
-      spicy_abort(
-        sprintf("`%s` must be TRUE/FALSE.", .lname),
-        class = "spicy_invalid_input"
-      )
-    }
+    validate_logical_scalar(get(.lname), .lname)
   }
   if (
     !is.null(p_value) &&
@@ -772,6 +758,7 @@ table_continuous_svy <- function(
       class = "spicy_invalid_input"
     )
   }
+  .warn_ignored_output_args(output, names(match.call()))
   test_explicit <- !missing(test)
   show_n_explicit <- !missing(show_n)
   ci_explicit <- !missing(ci)
@@ -808,19 +795,25 @@ table_continuous_svy <- function(
   if (!p_value_explicit) {
     p_value <- has_group
   }
-  if ((p_value || statistic) && !has_group) {
-    if (p_value_explicit || statistic) {
-      spicy_warn(
-        "`p_value` and `statistic` are ignored when `by` is not used.",
-        class = "spicy_ignored_arg"
-      )
-    }
+  if (!has_group) {
+    # Without `by` there is nothing to compare, as in the sibling: the
+    # warning names the arguments typed and nothing else.
+    .warn_ignored(
+      c("p_value", "statistic", "test")[c(
+        p_value_explicit && p_value,
+        statistic,
+        test_explicit
+      )],
+      "when `by` is not used"
+    )
     p_value <- FALSE
-  }
-  if (test_explicit && !p_value && !statistic) {
-    spicy_warn(
-      "`test` is ignored when `p_value` and `statistic` are both turned off.",
-      class = "spicy_ignored_arg"
+    if (!drop_na) {
+      .warn_ignored("drop_na", .drop_na_ignored_reason())
+    }
+  } else if (test_explicit && !p_value && !statistic) {
+    .warn_ignored(
+      "test",
+      "when `p_value` and `statistic` are both turned off"
     )
   }
   do_test <- (p_value || statistic) && has_group
@@ -1253,27 +1246,9 @@ table_continuous_svy <- function(
   if (!.is_supported_design(design)) {
     .abort_unsupported_design(design, fn, call = call)
   }
-  if (
-    !is.numeric(ci_level) ||
-      length(ci_level) != 1L ||
-      is.na(ci_level) ||
-      ci_level <= 0 ||
-      ci_level >= 1
-  ) {
-    spicy_abort(
-      "`ci_level` must be a single number between 0 and 1.",
-      class = "spicy_invalid_input",
-      call = call
-    )
-  }
+  validate_ci_level(ci_level, call = call)
   p_digits <- validate_digit_arg(p_digits, "p_digits", min = 1L, call = call)
-  if (!.is_single_char(decimal_mark)) {
-    spicy_abort(
-      '`decimal_mark` must be a single character (e.g. "." or ",").',
-      class = "spicy_invalid_input",
-      call = call
-    )
-  }
+  validate_decimal_mark(decimal_mark, call = call)
   # The family's one validator, its error naming the entry point.
   .check_labels_arg(labels, call = call)
   if (!(isTRUE(deff) || isFALSE(deff) || identical(deff, "replace"))) {

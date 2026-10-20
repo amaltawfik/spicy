@@ -2541,8 +2541,17 @@ test_that("title and note can be replaced, and the note removed", {
   expect_identical(attr(tbl, "title"), "Sources of information")
   expect_identical(attr(tbl, "note"), "Source: L&S.")
   expect_null(attr(.mr_farm_tbl(note = FALSE), "note"))
-  expect_error(.mr_farm_tbl(title = ""), class = "spicy_invalid_input")
   expect_error(.mr_farm_tbl(note = TRUE), class = "spicy_invalid_input")
+  # The `title` contract of table_regression(): FALSE removes it, a string
+  # (`""` included) replaces it, anything else is refused with its words.
+  expect_null(attr(.mr_farm_tbl(title = FALSE), "title"))
+  expect_identical(attr(.mr_farm_tbl(title = ""), "title"), "")
+  err_mr <- expect_error(.mr_farm_tbl(title = 1), class = "spicy_invalid_input")
+  err_reg <- expect_error(
+    table_regression(lm(mpg ~ wt, mtcars), title = 1),
+    class = "spicy_invalid_input"
+  )
+  expect_identical(conditionMessage(err_mr), conditionMessage(err_reg))
 })
 
 test_that("the French table translates its title, headers, base row and notes", {

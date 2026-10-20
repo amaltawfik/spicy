@@ -404,7 +404,10 @@
 #'   as a formula, until `subset()`, `update()`, `postStratify()`,
 #'   `calibrate()`, `rake()` or `trimWeights()` replaces the call: leave
 #'   such a column out with a negation (`select = !w`).
-#' @param by A single grouping column: one column block per level.
+#' @param by A single grouping column: one column block per level, in the
+#'   order of [table_categorical()] (a factor's levels, any other column
+#'   sorted: text in the C locale, `FALSE` before `TRUE`, numbers
+#'   ascending), the order the levels of each variable follow too.
 #' @param labels How each variable is named in the table: in the rows,
 #'   in the title, and in the notes. Four forms:
 #'   * `labels = FALSE` shows the column name.
@@ -431,9 +434,10 @@
 #'   design's percentages (default `TRUE`, only with `by`). A group
 #'   displayed with the label of that block is an error, as in
 #'   [table_categorical()].
-#' @param drop_na Drop missing values (default `FALSE`: they show as a
-#'   `(Missing)` level, and a level displayed with that label beside them
-#'   is an error, as in [table_categorical()]). Shown or dropped, they
+#' @param drop_na Drop missing values. A table that counts shows them by
+#'   default, the rule of [table_categorical()]: `FALSE` (the default)
+#'   shows them as a `(Missing)` level, and a level displayed with that
+#'   label beside them is an error, as there. Shown or dropped, they
 #'   never enter the test: the p-value is computed on the complete cases
 #'   either way, which is the convention [table_categorical()] applies.
 #'   Under `drop_na = TRUE`, a `by` that no observation holds is an error
@@ -442,7 +446,8 @@
 #' @param ci_method Interval method passed to `survey::svyciprop()`:
 #'   `"logit"` (default), `"likelihood"`, `"asin"`, `"beta"`,
 #'   `"mean"`, `"xlogit"` or `"wilson"`.
-#' @param ci_level Coverage of the interval.
+#' @param ci_level Confidence level of the intervals of `proportion_ci`
+#'   (default `0.95`): a number strictly between 0 and 1.
 #' @param chisq_statistic Statistic for `survey::svychisq()`: `"F"`
 #'   (default), `"Chisq"`, `"Wald"`, `"adjWald"` or `"saddlepoint"`.
 #'   `"saddlepoint"` is refused on a replicate-weights design: survey
@@ -469,20 +474,17 @@
 #'   `"bonferroni"`, `"BH"` / `"fdr"`, or `"BY"`, as in
 #'   [table_regression()]; delegated to [stats::p.adjust()]. Needs `by`
 #'   and the p-value column. See *Multiple-comparison adjustment*.
-#' @param percent_digits,p_digits,decimal_mark Number formatting.
-#' @param align Numeric-cell alignment: `"decimal"`, `"center"` or
-#'   `"right"`.
+#' @param align Horizontal alignment of the numeric columns: `"decimal"`
+#'   (the default), `"center"` or `"right"`, as in [table_continuous()],
+#'   whose rendering engines this table shares, its Excel output included.
 #' @param output One of `"default"`, `"data.frame"`, `"long"`, or a
 #'   rendering engine: `"tinytable"`, `"gt"`, `"flextable"`,
 #'   `"excel"`, `"clipboard"`, `"word"`. `"data.frame"` is the displayed
 #'   table with its numbers, `"long"` one row per variable, level and
 #'   group, as in [table_categorical()]; see *Value*.
-#' @param indent_text,indent_text_excel_clipboard Level-row
-#'   indentation, for the console and for the plain-text engines.
-#' @param excel_path,excel_sheet,clipboard_delim,word_path Output
-#'   destinations, as in [table_categorical()].
-#' @param user_na Honor declared missing values (see `?freq`).
-#' @param style A journal style; see [spicy_style()].
+#' @param word_path File path for `output = "word"`, ending in `".docx"`,
+#'   in a directory that exists. Defaults to `NULL`.
+#' @inheritParams table_categorical
 #'
 #' @return Depends on `output`:
 #' \itemize{
@@ -606,6 +608,7 @@ table_categorical_svy <- function(
   .require_survey("table_categorical_svy")
   output <- spicy_match_arg(output)
   align <- spicy_match_arg(align)
+  chisq_statistic_explicit <- !missing(chisq_statistic)
   ci_method <- spicy_match_arg(ci_method)
   cfg <- .svy_validate_common(
     design = design,
@@ -648,13 +651,7 @@ table_categorical_svy <- function(
     "proportion_ci",
     "user_na"
   )) {
-    .lval <- get(.lname)
-    if (!is.logical(.lval) || length(.lval) != 1L || is.na(.lval)) {
-      spicy_abort(
-        sprintf("`%s` must be TRUE/FALSE.", .lname),
-        class = "spicy_invalid_input"
-      )
-    }
+    validate_logical_scalar(get(.lname), .lname)
   }
   if (
     !is.null(p_value) &&
@@ -665,6 +662,7 @@ table_categorical_svy <- function(
       class = "spicy_invalid_input"
     )
   }
+  .warn_ignored_output_args(output, names(match.call()))
 
   vars <- design$variables
 
@@ -685,16 +683,18 @@ table_categorical_svy <- function(
   if (!p_value_explicit) {
     p_value <- has_group
   }
-  if (p_value && !has_group) {
-    if (p_value_explicit) {
-      spicy_warn(
-        "`p_value` is ignored when `by` is not used.",
-        class = "spicy_ignored_arg"
-      )
-    }
+  if (!has_group) {
+    # What the call asked of the comparison and of the `Total` block
+    # reaches nothing without `by`, as in `table_categorical()`.
+    .warn_ignored(
+      c("p_value", "include_total", "chisq_statistic")[c(
+        p_value_explicit && p_value,
+        !missing(include_total) && !include_total,
+        chisq_statistic_explicit
+      )],
+      "when `by` is not used"
+    )
     p_value <- FALSE
-  }
-  if (include_total && !has_group) {
     include_total <- FALSE
   }
 

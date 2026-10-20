@@ -738,7 +738,7 @@
 #'     columns, numeric, each interval split into its two bounds.
 #'   \item `"long"` -- the long-format tibble, one row per
 #'     `(model_id, term, estimate_type)`, with broom's column names.
-#'   \item `"gt"` / `"flextable"` / `"tinytable"` -- rich-format
+#'   \item `"tinytable"` / `"gt"` / `"flextable"` -- rich-format
 #'     HTML / Word / PDF tables (require the corresponding
 #'     Suggests package). In a PDF, a `"flextable"` table wider than
 #'     the page can be fitted with `flextable::fit_to_width()`.
@@ -760,9 +760,11 @@
 #' # Global options
 #'
 #' * **`options(spicy.style = )`** -- the journal style applied by
-#'   default to all four table families
-#'   (`table_regression()`, `table_categorical()`,
-#'   `table_continuous()`, `table_continuous_lm()`). Takes a theme
+#'   default to all nine table functions ([table_categorical()],
+#'   [table_categorical_svy()], [table_continuous()],
+#'   [table_continuous_svy()], [table_continuous_lm()],
+#'   [table_outcome()], [table_multiresponse()], `table_regression()`
+#'   and [table_regression_uv()]). Takes a theme
 #'   name (`"jama"`, `"nejm"`, `"lancet"`, `"annals"`, `"apa"`,
 #'   `"aer"`) or a [spicy_style()] object. The style of a report is a
 #'   property of the document, so it is set once in the setup chunk;
@@ -773,7 +775,7 @@
 #'   from.
 #'
 #' * **`options(spicy.note_style = )`** -- how the table note is
-#'   rendered by the `"tinytable"` engine (all four table families).
+#'   rendered by the `"tinytable"` engine (all nine table functions).
 #'   A note is subordinate to the table it documents, so it is set
 #'   one size down, in black: `0.9em` (`\small` in LaTeX), matching
 #'   the `"gt"` engine and the 10pt-on-11pt of the Word engine. Two
@@ -867,8 +869,14 @@
 #' @param ci_level Confidence level for all reported CIs (B, \eqn{\beta}{beta},
 #'   AME, partial effect sizes). Default `0.95`.
 #' @param boot_n Number of bootstrap replicates when
-#'   `vcov = "bootstrap"`. Single positive integer. Default
-#'   `1000L`.
+#'   `vcov = "bootstrap"`, and of the bootstrap of the RMST and
+#'   risk-difference columns: a positive whole number, as in
+#'   [table_continuous_lm()] and [table_multiresponse()]. Default
+#'   `1000L`, the default of [table_continuous_lm()], which computes the
+#'   same bootstrap variance. That variance, of a `lm` or `glm` fit, needs
+#'   at least 10 valid replicates: a smaller `boot_n` is an error.
+#'   Typed in a table that runs no bootstrap, it is ignored with a
+#'   warning (class `spicy_ignored_arg`).
 #' @param ci_method CI construction. `"wald"` (default) uses
 #'   `estimate +/- z x SE` (`t x SE` for `lm`). `"profile"`
 #'   (`glm` and ordinal `MASS::polr` / `ordinal::clm`) uses the
@@ -1348,8 +1356,9 @@
 #'   `rmse`). Default `2L`.
 #' @param ic_digits Decimals for information criteria (`AIC`,
 #'   `AICc`, `BIC`, and their `_change` form). Default `1L`.
-#' @param decimal_mark Decimal mark used in numeric display.
-#'   `"."` (default) or `","` (European convention). When
+#' @param decimal_mark The decimal mark, a single character: `"."` (the
+#'   default) or `","` in most styles; the Lancet style of
+#'   [spicy_style()] uses the middle dot. When
 #'   `","` is used, the CI bracket separator switches to `"; "`
 #'   automatically to avoid `"0,18 [0,07, 0,30]"` ambiguity.
 #'   With `output = "excel"` a numeric cell is displayed by Excel
@@ -1435,7 +1444,7 @@
 #' @param output Output type. `"default"` (a printable
 #'   `spicy_regression_table`); `"data.frame"` (the displayed table
 #'   with its numbers); `"long"` (one row per coefficient, broom's
-#'   names); `"gt"` / `"flextable"` / `"tinytable"` (rich-format
+#'   names); `"tinytable"` / `"gt"` / `"flextable"` (rich-format
 #'   tables); `"excel"` (writes to `excel_path`); `"clipboard"`
 #'   (copies to system clipboard); `"word"` (writes flextable to
 #'   `word_path`).
@@ -1804,9 +1813,9 @@ table_regression <- function(
     "default",
     "data.frame",
     "long",
+    "tinytable",
     "gt",
     "flextable",
-    "tinytable",
     "excel",
     "clipboard",
     "word"
@@ -2681,6 +2690,34 @@ table_regression <- function(
       )
     }
   }
+  # `boot_n` reaches the bootstrap variance and the survival estimands
+  # (g-computation, bootstrapped whatever `vcov`); typed in a call that
+  # runs neither, it reaches nothing.
+  if (!missing(boot_n)) {
+    vcov_all <- if (is.list(vcov)) vcov else list(vcov)
+    runs_boot <- any(vapply(vcov_all, identical, logical(1), "bootstrap")) ||
+      any(
+        c(
+          "rmst",
+          "rmst_se",
+          "rmst_ci",
+          "rmst_p",
+          "risk_diff",
+          "risk_diff_se",
+          "risk_diff_ci",
+          "risk_diff_p"
+        ) %in%
+          show_columns
+      )
+    if (!runs_boot) {
+      .warn_boot_n_ignored(
+        "`vcov = \"bootstrap\"` and to the RMST and risk-difference columns"
+      )
+    }
+  }
+  # An argument of one route only (`word_path` for `output = "word"`,
+  # ...) typed with another `output` reaches nothing.
+  .warn_ignored_output_args(output, names(match.call()))
 
   # Phase F -- output-dependent resource validation (file paths,
   # optional packages). Fires only for the selected output.

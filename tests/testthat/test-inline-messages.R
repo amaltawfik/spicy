@@ -28,8 +28,8 @@ test_that("an empty delta cell names the table-wide emptiness and the remedy", {
   msg <- conditionMessage(err)
   expect_match(msg, "The \"delta\" cell of this row is empty", fixed = TRUE)
   expect_match(msg, "empty on EVERY row", fixed = TRUE)
-  expect_match(msg, "level = \"Female\", column = \"emmean\"", fixed = TRUE)
-  expect_match(msg, "Available levels: \"Female\", \"Male\".", fixed = TRUE)
+  expect_match(msg, "model = \"Female\", column = \"emmean\"", fixed = TRUE)
+  expect_match(msg, "Available groups: \"Female\", \"Male\".", fixed = TRUE)
 })
 
 test_that("the same hints reach an explicitly addressed delta", {
@@ -47,10 +47,10 @@ test_that("the remedy the message names actually works", {
   d <- .inline_msg_data()
   tbl <- table_continuous_lm(d, c(bmi, chol), by = sex, contrast = "none")
   expect_identical(
-    inline(tbl, bmi, level = "Female", column = "emmean"),
+    inline(tbl, bmi, column = "emmean", model = "Female"),
     "26.59"
   )
-  expect_identical(inline(tbl, bmi, level = "Male", column = "emmean"), "25.22")
+  expect_identical(inline(tbl, bmi, column = "emmean", model = "Male"), "25.22")
 })
 
 test_that("a table that HAS a contrast is unaffected", {
@@ -64,22 +64,22 @@ test_that("a table that HAS a contrast is unaffected", {
 
 # The register recorded inline(tbl, bmi, "Female", "p") on a
 # table_continuous() as still answering "Available: .". It no longer does:
-# the p is addressable with the level of its own row, and the ambiguity
-# refusal that fires without a level lists the levels, not nothing.
-test_that("a p addressed by level resolves on table_continuous", {
+# the p is addressable with the group of its own row, and the ambiguity
+# refusal that fires without a group lists the groups, not nothing.
+test_that("a p addressed by its group resolves on table_continuous", {
   d <- .inline_msg_data()
   tbl <- table_continuous(d, c(bmi, chol), by = sex)
-  expect_identical(inline(tbl, bmi, "Female", "p"), ".146")
-  expect_identical(inline(tbl, chol, "Female", "p"), ".247")
+  expect_identical(inline(tbl, bmi, column = "p", model = "Female"), ".146")
+  expect_identical(inline(tbl, chol, column = "p", model = "Female"), ".247")
 })
 
 test_that("no refusal on this table lists an empty set of alternatives", {
   d <- .inline_msg_data()
   tbl <- table_continuous(d, c(bmi, chol), by = sex)
-  # The `p` sits on one row of the block only: cited without `level`.
+  # The `p` sits on one row of the block only: cited without `model`.
   expect_identical(
     inline(tbl, bmi, column = "p"),
-    inline(tbl, bmi, "Female", "p")
+    inline(tbl, bmi, column = "p", model = "Female")
   )
   msgs <- c(
     # A statistic every group carries needs its group.
@@ -89,14 +89,17 @@ test_that("no refusal on this table lists an empty set of alternatives", {
     tryCatch(inline(tbl, bmi, "Nope", "p"), error = function(e) {
       conditionMessage(e)
     }),
-    tryCatch(inline(tbl, bmi, "Female", "mean"), error = function(e) {
-      conditionMessage(e)
-    })
+    tryCatch(
+      inline(tbl, bmi, column = "mean", model = "Female"),
+      error = function(e) {
+        conditionMessage(e)
+      }
+    )
   )
   for (m in msgs) {
     expect_false(grepl("Available: .", m, fixed = TRUE))
     expect_match(m, "Available")
   }
-  expect_match(msgs[1L], "pick one with `level`", fixed = TRUE)
+  expect_match(msgs[1L], "pick one with `model`", fixed = TRUE)
   expect_match(msgs[1L], "\"Female\", \"Male\"", fixed = TRUE)
 })

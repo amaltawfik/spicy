@@ -592,11 +592,12 @@
 # The display domains of a `by =` variable, and the vector that keys
 # them.
 #
-# Factors keep their DECLARED order, anything else takes the order of
-# first appearance -- the family convention `table_categorical()` /
-# `cross_tab()` / `table_outcome()` share. An EMPTY declared level is
-# dropped: a domain with no observation has no degrees of freedom and
-# every one of its cells would be the undefined dash.
+# Factors keep their DECLARED order, anything else is sorted in the C
+# locale -- the family's order of the groups (`.group_levels()`), shared
+# with `table_categorical()`, `table_outcome()` and `cross_tab()`. An
+# EMPTY declared level is dropped: a domain with no observation has no
+# degrees of freedom and every one of its cells would be the undefined
+# dash.
 #
 # With `drop_na = FALSE` the missing values become a domain of their
 # own. That is legitimate under a design in a way a missing GROUP
@@ -616,8 +617,7 @@
   kind = "row",
   call = rlang::caller_env()
 ) {
-  declared <- if (is.factor(g)) levels(g) else unique(g[!is.na(g)])
-  declared <- as.character(declared)
+  declared <- .group_levels(g)
   observed <- as.character(g[!is.na(g)])
   declared <- declared[declared %in% observed]
   n_na <- sum(is.na(g))

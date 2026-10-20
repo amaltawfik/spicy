@@ -22,8 +22,8 @@ spicy_style(
   fit_digits = NULL,
   ic_digits = NULL,
   percent_digits = NULL,
-  v_digits = NULL,
-  note_label = NULL
+  note_label = NULL,
+  v_digits
 )
 
 spicy_style_names()
@@ -80,10 +80,10 @@ named numeric vector of symbol-to-threshold pairs such as
 \item{digits, effect_size_digits, fit_digits, ic_digits}{Decimal places
 for estimates, effect sizes, fit statistics and information
 criteria. Each is applied only by the table functions that have
-the matching argument.}
+the matching argument: \code{effect_size_digits} reaches the association
+measure and the SMD of \code{\link[=table_categorical]{table_categorical()}} too.}
 
-\item{percent_digits, v_digits}{Decimal places for percentages and
-for the association measure of \code{\link[=table_categorical]{table_categorical()}}.}
+\item{percent_digits}{Decimal places for percentages.}
 
 \item{note_label}{The word that opens the note under the table, set
 in italics in every rendered output: \code{"Note."} (the default, APA
@@ -94,6 +94,9 @@ Style 11, section 4.1.4.10). The language spells it: under
 no-break space French puts before a colon. A \code{note} you type is
 printed as typed; its opening word is set in italics when it is the
 lead-in in force.}
+
+\item{v_digits}{Defunct. Renamed \code{effect_size_digits} in spicy 0.14.0;
+supplying \code{v_digits} is an error (class \code{spicy_defunct}).}
 }
 \value{
 \code{spicy_style()} returns an object of class \code{spicy_style}: a
@@ -115,11 +118,13 @@ encoding rules taken verbatim from an official document of the
 institution.
 }
 \details{
-A style is accepted by the \code{style} argument of \code{\link[=table_regression]{table_regression()}},
-\code{\link[=table_categorical]{table_categorical()}}, \code{\link[=table_continuous]{table_continuous()}} and
-\code{\link[=table_continuous_lm]{table_continuous_lm()}}, either as a theme name or as the object
-returned here, and by \code{options(spicy.style = )} for document-wide
-scope.
+A style is accepted by the \code{style} argument of the nine table
+functions (\code{\link[=table_categorical]{table_categorical()}}, \code{\link[=table_categorical_svy]{table_categorical_svy()}},
+\code{\link[=table_continuous]{table_continuous()}}, \code{\link[=table_continuous_svy]{table_continuous_svy()}},
+\code{\link[=table_continuous_lm]{table_continuous_lm()}}, \code{\link[=table_outcome]{table_outcome()}}, \code{\link[=table_multiresponse]{table_multiresponse()}},
+\code{\link[=table_regression]{table_regression()}} and \code{\link[=table_regression_uv]{table_regression_uv()}}), either as a theme
+name or as the object returned here, and by
+\code{options(spicy.style = )} for document-wide scope.
 }
 \section{What a theme claims, and what it does not}{
 A theme covers \strong{numeric formatting conformity}, and the word that

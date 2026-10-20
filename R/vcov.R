@@ -367,6 +367,23 @@ compute_resample_vcov_bootstrap <- function(
   weights = NULL,
   boot_n = 1000L
 ) {
+  # The covariance is refused below 10 valid replicates (after the loop),
+  # so a `boot_n` under 10 can never give one: refused before any refit,
+  # with that reason rather than as a failure of the resamples. The
+  # validator of `boot_n` (`validate_boot_n()`) accepts any count, the
+  # floor being the variance's, whichever function asks for it.
+  if (boot_n < 10L) {
+    spicy_abort(
+      c(
+        sprintf(
+          "A bootstrap variance needs at least 10 replicates: `boot_n = %d`.",
+          as.integer(boot_n)
+        ),
+        "i" = "Increase `boot_n`, or use an analytic `vcov` (\"HC3\", \"CR2\", ...)."
+      ),
+      class = "spicy_invalid_input"
+    )
+  }
   # Each replicate refits on resampled rows of the FIXED evaluated design
   # (model.matrix / model.response), not by re-evaluating the formula on
   # a resampled model frame. Formula re-evaluation cannot see wrapped

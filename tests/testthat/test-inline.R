@@ -124,7 +124,10 @@ test_that("a cited cell carries the style levers that have no formal", {
     by = sex,
     style = "jama"
   ))
-  expect_identical(inline(tj, wellbeing_score, "Female", "p"), "<.001")
+  expect_identical(
+    inline(tj, wellbeing_score, column = "p", model = "Female"),
+    "<.001"
+  )
 })
 
 test_that("categorical and continuous families answer by token", {
@@ -303,7 +306,7 @@ test_that("an out-of-range or unknown `model` is refused, unchanged", {
   one <- .il_quiet(table_regression(lm(wellbeing_score ~ age, data = d)))
   err <- tryCatch(inline(one, age, column = "b", model = 1), error = identity)
   expect_s3_class(err, "spicy_invalid_input")
-  expect_match(conditionMessage(err), "no model spanners")
+  expect_match(conditionMessage(err), "no model or group to select")
 })
 
 test_that("a real level named (Missing) wins over the role shortcut", {
@@ -598,19 +601,25 @@ test_that("inline() cites a continuous SMD cell, byte for byte", {
   ))
   s <- as_structured(tbl)
   formatted <- spicy:::.format_structured_to_string_body(s)
-  expect_identical(inline(tbl, x, "A", column = "smd"), formatted$SMD[[1L]])
-  expect_identical(inline(tbl, x, "A", column = "smd"), "-0.51")
+  expect_identical(
+    inline(tbl, x, column = "smd", model = "A"),
+    formatted$SMD[[1L]]
+  )
+  expect_identical(inline(tbl, x, column = "smd", model = "A"), "-0.51")
 
   # Non-regression: `"smd"` is not in the default column preference,
-  # and must not be. A bare `inline(tbl, x, "A")` cites the MEAN --
-  # asserted against the value, not against another inline() call:
+  # and must not be. A bare `inline(tbl, x, model = "A")` cites the MEAN
+  # -- asserted against the value, not against another inline() call:
   # comparing two inline() calls agrees with itself whatever the
   # default resolves to, which is how "n" passed for the mean here.
-  expect_identical(inline(tbl, x, "A"), "3.00")
-  expect_identical(inline(tbl, x, "A"), inline(tbl, x, "A", column = "m"))
+  expect_identical(inline(tbl, x, model = "A"), "3.00")
+  expect_identical(
+    inline(tbl, x, model = "A"),
+    inline(tbl, x, column = "m", model = "A")
+  )
   expect_false(identical(
-    inline(tbl, x, "A"),
-    inline(tbl, x, "A", column = "n")
+    inline(tbl, x, model = "A"),
+    inline(tbl, x, model = "A", column = "n")
   ))
 
   # A statistic that lives on the BLOCK is addressed without a level:
@@ -652,9 +661,12 @@ test_that("a bare inline() cites the family's primary estimate", {
 
   # Continuous: the mean (M = 3.00 in group A), not the group's n (4).
   tc <- .il_quiet(table_continuous(d, select = x, by = g, p_value = FALSE))
-  expect_identical(inline(tc, x, "A"), "3.00")
-  expect_identical(inline(tc, x, "A"), inline(tc, x, "A", column = "m"))
-  expect_identical(inline(tc, x, "A", column = "n"), "4")
+  expect_identical(inline(tc, x, model = "A"), "3.00")
+  expect_identical(
+    inline(tc, x, model = "A"),
+    inline(tc, x, column = "m", model = "A")
+  )
+  expect_identical(inline(tc, x, column = "n", model = "A"), "4")
 
   # And with no `by`: still the mean over all seven observations.
   tc1 <- .il_quiet(table_continuous(d, select = x))
@@ -701,16 +713,14 @@ test_that("a bare inline() on a factor `by` cites the contrast, not n", {
   expect_error(inline(tn, mpg, column = "delta"), "No column with token")
 })
 
-test_that("`level` cites a group column of table_continuous_lm()", {
+test_that("`model` cites a group column of table_continuous_lm()", {
   # This family lays its groups out SIDEWAYS: one row per outcome, the
   # `by` levels in the headers ("M (Female)", "M (Male)"), with the
   # level carried as data in `col_meta$level` precisely so a consumer
-  # never parses the header back. `inline()` read row identity only, so
-  # the two marginal-mean columns were an ambiguity it told the caller
-  # to settle with `model` -- on a table with no spanners, listing
-  # nothing ("Available: ."), while `model` itself refused with "this
-  # table has no model spanners". Both remedies were dead ends and
-  # `"emmean"`, a token of the published contract, was unreachable.
+  # never parses the header back. `model` selects a group there, as it
+  # does over the spanners of a categorical table (decision 10 of the
+  # ADR of 2026-10-20); `level`, which did until 0.14.0, is refused with
+  # the `model` call.
   d <- as.data.frame(sochealth)
   tl <- .il_quiet(table_continuous_lm(d, select = bmi, by = sex))
   s <- as_structured(tl)
@@ -721,29 +731,44 @@ test_that("`level` cites a group column of table_continuous_lm()", {
   )
   expect_setequal(stats::na.omit(unname(lv)), c("Female", "Male"))
 
-  expect_identical(inline(tl, bmi, "Female", "emmean"), "25.69")
-  expect_identical(inline(tl, bmi, "Male", "emmean"), "26.20")
   expect_identical(
-    inline(tl, bmi, "Female", "{emmean} (n = {n})"),
+    inline(tl, bmi, column = "emmean", model = "Female"),
+    "25.69"
+  )
+  expect_identical(inline(tl, bmi, column = "emmean", model = "Male"), "26.20")
+  expect_identical(inline(tl, bmi, column = "emmean", model = 2), "26.20")
+  expect_identical(
+    inline(tl, bmi, column = "{emmean} (n = {n})", model = "Female"),
     "25.69 (n = 1188)"
   )
-  # A group the table does not have refuses with the groups it has --
-  # the message that used to name `model` and list nothing.
-  err <- tryCatch(inline(tl, bmi, "Nope", "emmean"), error = identity)
+  err <- expect_error(
+    inline(tl, bmi, "Female", "emmean"),
+    class = "spicy_defunct"
+  )
+  expect_match(
+    conditionMessage(err),
+    "inline(x, bmi, model = \"Female\", column = \"emmean\")",
+    fixed = TRUE
+  )
+  # A group the table does not have refuses with the groups it has.
+  err <- tryCatch(
+    inline(tl, bmi, column = "emmean", model = "Nope"),
+    error = identity
+  )
   expect_s3_class(err, "spicy_invalid_input")
   expect_match(conditionMessage(err), "No group \"Nope\"", fixed = TRUE)
   expect_match(conditionMessage(err), "\"Female\", \"Male\"", fixed = TRUE)
-  # Omitting it names `level`, not `model`, and lists the groups.
+  # Omitting it names `model` and lists the groups.
   err <- tryCatch(inline(tl, bmi, column = "emmean"), error = identity)
-  expect_match(conditionMessage(err), "pick one with `level`", fixed = TRUE)
+  expect_match(conditionMessage(err), "pick one with `model`", fixed = TRUE)
   expect_match(conditionMessage(err), "\"Female\", \"Male\"", fixed = TRUE)
 
   # The columns that belong to no group are cited without one, and the
-  # rule does not spill onto the families whose levels are rows.
+  # rule does not spill onto the levels of a factor term.
   expect_identical(inline(tl, bmi, column = "delta"), "0.51")
   expect_identical(inline(tl, bmi, column = "p"), ".018")
   tc <- .il_quiet(table_continuous(d, select = bmi, by = sex))
-  expect_identical(inline(tc, bmi, "Female", "m"), "25.69")
+  expect_identical(inline(tc, bmi, column = "m", model = "Female"), "25.69")
   tr <- .il_quiet(table_regression(lm(wellbeing_score ~ age + sex, data = d)))
   expect_identical(inline(tr, sex, "Male", "b"), "3.90")
   expect_error(
@@ -770,9 +795,12 @@ test_that("a bare inline() on a median-only table cites the median, not n", {
     show_columns = c("n", "med"),
     p_value = FALSE
   ))
-  expect_identical(inline(tm, x, "A"), inline(tm, x, "A", column = "med"))
-  expect_identical(inline(tm, x, "A"), "3.00")
-  expect_identical(inline(tm, x, "A", column = "n"), "4")
+  expect_identical(
+    inline(tm, x, model = "A"),
+    inline(tm, x, column = "med", model = "A")
+  )
+  expect_identical(inline(tm, x, model = "A"), "3.00")
+  expect_identical(inline(tm, x, column = "n", model = "A"), "4")
 
   tq <- .il_quiet(table_continuous(
     d,
@@ -782,10 +810,10 @@ test_that("a bare inline() on a median-only table cites the median, not n", {
     p_value = FALSE
   ))
   expect_identical(
-    inline(tq, x, "A"),
-    inline(tq, x, "A", column = "med_iqr")
+    inline(tq, x, model = "A"),
+    inline(tq, x, column = "med_iqr", model = "A")
   )
-  expect_false(identical(inline(tq, x, "A"), "4"))
+  expect_false(identical(inline(tq, x, model = "A"), "4"))
 })
 
 test_that("an exponentiated table's bare inline() still finds token 'b'", {
@@ -934,8 +962,8 @@ test_that("a real level named (Missing) is not shadowed by the role", {
     p_value = FALSE,
     drop_na = FALSE
   ))
-  expect_identical(inline(cn, y, "(Missing)", "n"), "5")
-  expect_identical(inline(cn, y, "(Not stated)", "n"), "2")
+  expect_identical(inline(cn, y, column = "n", model = "(Missing)"), "5")
+  expect_identical(inline(cn, y, column = "n", model = "(Not stated)"), "2")
 })
 
 test_that("the missing category is still addressed by its documented name", {
@@ -960,7 +988,7 @@ test_that("the missing category is still addressed by its documented name", {
     # under test only exists when the row is shown.
     drop_na = FALSE
   ))
-  expect_identical(inline(cn, y, "(Missing)", "n"), "2")
+  expect_identical(inline(cn, y, column = "n", model = "(Missing)"), "2")
 })
 
 test_that("the role fallback survives a translated missing label", {
@@ -1075,7 +1103,7 @@ test_that("a multiple-response table without p-values has no p to cite", {
     p_value = FALSE
   ))
   err_tc <- expect_error(
-    inline(tc, bmi, "Central", column = "p"),
+    inline(tc, bmi, column = "p", model = "Central"),
     class = "spicy_invalid_input"
   )
   expect_identical(
@@ -1199,7 +1227,7 @@ test_that("a column the table does not carry is named before any level hint", {
     head_of(inline(tc, smoking, column = "p"))
   )
   expect_identical(
-    head_of(inline(tn, bmi, "Female", column = "p")),
+    head_of(inline(tn, bmi, column = "p", model = "Female")),
     head_of(inline(tc, smoking, "Yes", "{n}, p {p}", model = "Female"))
   )
 })
@@ -1560,25 +1588,25 @@ test_that("a level's label leads to its variable only when one variable has it",
   )
 })
 
-test_that("the p of a by-group continuous table is cited without `level`", {
+test_that("the p of a by-group continuous table is cited without `model`", {
   # The p-value sits on the first group's row only: that row alone carries
-  # it, so it is the address, as `?inline` says ("leave `level` out").
+  # it, so it is the address.
   x <- table_continuous(sochealth, select = bmi, by = sex)
   expect_identical(
     inline(x, bmi, column = "p"),
-    inline(x, bmi, "Female", column = "p")
+    inline(x, bmi, column = "p", model = "Female")
   )
   # A statistic every group carries still needs its group.
   expect_error(inline(x, bmi, column = "m"), class = "spicy_invalid_input")
   expect_false(identical(
-    inline(x, bmi, "Male", column = "m"),
-    inline(x, bmi, "Female", column = "m")
+    inline(x, bmi, column = "m", model = "Male"),
+    inline(x, bmi, column = "m", model = "Female")
   ))
   skip_if_not_installed("survey")
   des <- survey::svydesign(ids = ~1, weights = ~weight, data = sochealth)
   xs <- table_continuous_svy(des, select = bmi, by = sex)
   expect_identical(
     inline(xs, bmi, column = "p"),
-    inline(xs, bmi, "Female", column = "p")
+    inline(xs, bmi, column = "p", model = "Female")
   )
 })

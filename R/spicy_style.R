@@ -40,7 +40,6 @@
   "fit_digits",
   "ic_digits",
   "percent_digits",
-  "v_digits",
   "decimal_mark",
   "stars"
 )
@@ -75,11 +74,13 @@
 #' encoding rules taken verbatim from an official document of the
 #' institution.
 #'
-#' A style is accepted by the `style` argument of [table_regression()],
-#' [table_categorical()], [table_continuous()] and
-#' [table_continuous_lm()], either as a theme name or as the object
-#' returned here, and by `options(spicy.style = )` for document-wide
-#' scope.
+#' A style is accepted by the `style` argument of the nine table
+#' functions ([table_categorical()], [table_categorical_svy()],
+#' [table_continuous()], [table_continuous_svy()],
+#' [table_continuous_lm()], [table_outcome()], [table_multiresponse()],
+#' [table_regression()] and [table_regression_uv()]), either as a theme
+#' name or as the object returned here, and by
+#' `options(spicy.style = )` for document-wide scope.
 #'
 #' # What a theme claims, and what it does not
 #'
@@ -421,9 +422,9 @@
 #' @param digits,effect_size_digits,fit_digits,ic_digits Decimal places
 #'   for estimates, effect sizes, fit statistics and information
 #'   criteria. Each is applied only by the table functions that have
-#'   the matching argument.
-#' @param percent_digits,v_digits Decimal places for percentages and
-#'   for the association measure of [table_categorical()].
+#'   the matching argument: `effect_size_digits` reaches the association
+#'   measure and the SMD of [table_categorical()] too.
+#' @param percent_digits Decimal places for percentages.
 #' @param note_label The word that opens the note under the table, set
 #'   in italics in every rendered output: `"Note."` (the default, APA
 #'   Manual 7 section 7.14), `"Note:"` (Chicago Manual of Style 18,
@@ -433,6 +434,8 @@
 #'   no-break space French puts before a colon. A `note` you type is
 #'   printed as typed; its opening word is set in italics when it is the
 #'   lead-in in force.
+#' @param v_digits Defunct. Renamed `effect_size_digits` in spicy 0.14.0;
+#'   supplying `v_digits` is an error (class `spicy_defunct`).
 #'
 #' @return `spicy_style()` returns an object of class `spicy_style`: a
 #'   named list holding only the levers that were set. Themes returned
@@ -482,9 +485,18 @@ spicy_style <- function(
   fit_digits = NULL,
   ic_digits = NULL,
   percent_digits = NULL,
-  v_digits = NULL,
-  note_label = NULL
+  note_label = NULL,
+  v_digits
 ) {
+  # Renamed in 0.14.0; refused with the new name before anything else.
+  if (!missing(v_digits)) {
+    .abort_renamed_arg(
+      "spicy_style",
+      "v_digits",
+      "effect_size_digits",
+      deparse1(substitute(v_digits))
+    )
+  }
   if (...length() > 0L) {
     # A lever spicy does not know is a typo, and a silently ignored
     # lever is exactly what a style system must not do.
@@ -523,7 +535,6 @@ spicy_style <- function(
     "percent_digits",
     min = 0L
   )
-  v_digits <- .style_check_count(v_digits, "v_digits", min = 0L)
   note_label <- .style_check_enum(
     note_label,
     "note_label",
@@ -558,7 +569,6 @@ spicy_style <- function(
     fit_digits = fit_digits,
     ic_digits = ic_digits,
     percent_digits = percent_digits,
-    v_digits = v_digits,
     note_label = note_label
   )
   out <- out[!vapply(out, is.null, logical(1))]
@@ -620,7 +630,7 @@ spicy_style <- function(
     x >= min
   if (!ok) {
     spicy_abort(
-      sprintf("`%s` must be a single whole number >= %d.", field, min),
+      .digit_arg_message(field, min),
       class = "spicy_invalid_input"
     )
   }

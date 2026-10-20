@@ -1314,7 +1314,12 @@ test_that("table_categorical warns when rescale = TRUE without weights", {
   df <- data.frame(g = c("A", "B"), v = c("x", "y"))
   expect_warning(
     table_categorical(df, "v", "g", rescale = TRUE, output = "data.frame"),
-    "rescale = TRUE.*no effect"
+    class = "spicy_ignored_arg"
+  )
+  # A `rescale` read from the option was not typed: no warning.
+  withr::local_options(spicy.rescale = TRUE)
+  expect_no_warning(
+    table_categorical(df, "v", "g", output = "data.frame")
   )
 })
 
@@ -1346,16 +1351,17 @@ test_that("table_categorical rejects p_digits < 1 with a classed error", {
   )
   expect_error(
     table_categorical(df, "v", "g", p_digits = 0, output = "long"),
-    "integer >= 1"
+    "positive whole number"
   )
-  # percent_digits / v_digits keep their >= 0 bound: 0 is legitimate.
+  # percent_digits / effect_size_digits keep their >= 0 bound: 0 is
+  # legitimate.
   expect_silent(
     table_categorical(
       df,
       "v",
       "g",
       percent_digits = 0,
-      v_digits = 0,
+      effect_size_digits = 0,
       output = "long"
     )
   )
@@ -1437,7 +1443,9 @@ test_that("table_categorical grouped word and clipboard outputs work", {
   ))
   expect_type(txt, "character")
   expect_match(clip_text, "Cramer's V")
-  expect_match(clip_text, "CI lower")
+  # The bounds state the level of the interval, as in the other tables.
+  expect_match(clip_text, "95% CI LL", fixed = TRUE)
+  expect_match(clip_text, "95% CI UL", fixed = TRUE)
 })
 
 test_that("table_categorical requires file paths for word and excel outputs", {
@@ -1550,9 +1558,21 @@ test_that("table_categorical rejects invalid digit arguments", {
     "p_digits"
   )
   expect_error(
-    table_categorical(df, "v1", "grp", v_digits = NA, output = "long"),
-    "v_digits"
+    table_categorical(
+      df,
+      "v1",
+      "grp",
+      effect_size_digits = NA,
+      output = "long"
+    ),
+    "effect_size_digits"
   )
+  # The name of 0.13.0 is refused with the new one.
+  err <- expect_error(
+    table_categorical(df, "v1", "grp", v_digits = 3, output = "long"),
+    class = "spicy_defunct"
+  )
+  expect_match(conditionMessage(err), "effect_size_digits = 3", fixed = TRUE)
 })
 
 # ---- Level ordering ------------------------------------------------------

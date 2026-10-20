@@ -29,7 +29,7 @@ test_that("resolve_effect_size_choice('auto') maps to the test/group default", {
   )
   expect_identical(
     spicy:::resolve_effect_size_choice("auto", 3L, "welch"),
-    "eta_sq"
+    "eta2"
   )
   expect_identical(
     spicy:::resolve_effect_size_choice("auto", 2L, "nonparametric"),
@@ -37,7 +37,7 @@ test_that("resolve_effect_size_choice('auto') maps to the test/group default", {
   )
   expect_identical(
     spicy:::resolve_effect_size_choice("auto", 3L, "nonparametric"),
-    "epsilon_sq"
+    "epsilon2"
   )
 })
 
@@ -65,7 +65,7 @@ test_that("resolve_effect_size_choice silently falls back when not explicit", {
   # multi-group measure with 2 groups -> auto two-group default
   expect_identical(
     spicy:::resolve_effect_size_choice(
-      "eta_sq",
+      "eta2",
       2L,
       "welch",
       explicit = FALSE
@@ -80,7 +80,7 @@ test_that("resolve_effect_size_choice silently falls back when not explicit", {
       "welch",
       explicit = FALSE
     ),
-    "eta_sq"
+    "eta2"
   )
 })
 
@@ -94,7 +94,7 @@ test_that("resolve_effect_size_choice aborts on explicit incompatible measures",
     class = "spicy_invalid_input"
   )
   expect_error(
-    spicy:::resolve_effect_size_choice("eta_sq", 2L, "welch"),
+    spicy:::resolve_effect_size_choice("eta2", 2L, "welch"),
     class = "spicy_invalid_input"
   )
   expect_error(
@@ -134,7 +134,7 @@ test_that("compute_effect_size auto-resolves multi-group types", {
   g <- factor(rep(c("a", "b", "c"), each = 15))
 
   row <- spicy:::compute_effect_size(x, g, 3L, "welch", 0.95, type = NULL)
-  expect_identical(row$es_type, "eta_sq")
+  expect_identical(row$es_type, "eta2")
 
   row_np <- spicy:::compute_effect_size(
     x,
@@ -144,7 +144,7 @@ test_that("compute_effect_size auto-resolves multi-group types", {
     0.95,
     type = NULL
   )
-  expect_identical(row_np$es_type, "epsilon_sq")
+  expect_identical(row_np$es_type, "epsilon2")
 })
 
 test_that("compute_effect_size aborts on an unknown effect-size type", {

@@ -69,17 +69,21 @@ lm_display <- function(x) {
 # columns the typed body does not carry (`Group`, which names the row
 # and travels in `.level`) are excluded from the comparison.
 #
-# Column matching goes through `col_meta$display_label` (decision 13):
-# the structured column NAME is the frozen programmatic key, the
-# label is what the console prints. The two are identical strings
-# today, so this comparison is byte-for-byte the old one -- but the
-# helper is ready for the day a label is translated while the key
-# stays put.
+# Column matching goes through the KEY when the console frame is keyed
+# by it, and through `col_meta$display_label` (decision 13) otherwise:
+# the structured column NAME is the frozen programmatic key, the label
+# is what the console prints. The two are identical strings for most
+# columns; the bounds of the association interval of
+# `table_categorical()` are keyed "CI lower" / "CI upper" and headed
+# "95% CI LL" / "95% CI UL", the level of the interval stated.
 expect_faithful <- function(struct, display, skip_cols = character(0)) {
   formatted <- spicy:::.format_structured_to_string_body(struct)
   shown <- vapply(
     names(formatted),
     function(nm) {
+      if (nm %in% names(display)) {
+        return(nm)
+      }
       lbl <- struct$col_meta[[nm]]$display_label
       if (is.null(lbl)) nm else lbl
     },
@@ -313,6 +317,14 @@ test_that("a signed association measure is not read as a bad p-value", {
         c("CI lower", "CI upper")
       )
     ))
+  )
+  # The bounds state the level of the interval, as the other tables do.
+  expect_identical(
+    c(
+      s$col_meta[["CI lower"]]$display_label,
+      s$col_meta[["CI upper"]]$display_label
+    ),
+    c("95% CI LL", "95% CI UL")
   )
   expect_faithful(s, cat_display(tbl))
 })
@@ -602,7 +614,7 @@ test_that("as_structured() types a two-level bivariate model table", {
     c(age, bmi),
     by = sex,
     statistic = TRUE,
-    effect_size = "g",
+    effect_size = "hedges_g",
     effect_size_ci = TRUE
   ))
   s <- as_structured(tbl)

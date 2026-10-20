@@ -44,8 +44,7 @@
 #' \itemize{
 #'   \item Summary table builders: [table_categorical()],
 #'         [table_continuous()], [table_continuous_lm()],
-#'         [table_outcome()], [table_multiresponse()], and
-#'         [var_labels()] for their `labels`
+#'         [table_outcome()], and [var_labels()] for their `labels`
 #'   \item Survey-design summary tables:
 #'         [table_continuous_svy()], [table_categorical_svy()]
 #'   \item Regression tables: [table_regression()],
@@ -65,6 +64,8 @@
 #'         since 0.13.0
 #'   \item Codebooks: [code_book()] (the `spicy_codebook` object, its
 #'         Excel workbook, and its PDF), in the development version
+#'   \item Multiple-response questions: [table_multiresponse()], in the
+#'         development version
 #' }
 #'
 #' **Internal API** (not part of the public surface; can change
@@ -129,7 +130,8 @@
 #' file, invisibly.
 #'
 #' The set of columns produced by each method is considered
-#' **stabilizing**: existing columns will not be
+#' **stabilizing** (**experimental** for [table_multiresponse()], as the
+#' function itself): existing columns will not be
 #' silently renamed or have their semantics changed within `0.y.z`,
 #' and any breaking change is announced in `NEWS.md`. Adding optional new
 #' columns (e.g. covariate-adjustment metadata) is not a breaking
@@ -207,10 +209,11 @@
 #'       \item \code{spicy_resampling_failed} -- bootstrap /
 #'         jackknife resampling produced too few valid replicates to
 #'         estimate the requested statistic.
-#'       \item \code{spicy_defunct} -- an argument removed in a
-#'         pre-1.0 hard break; the message names the replacement.
-#'         Signaled together with \code{spicy_invalid_input} so
-#'         generic input handlers still catch it.
+#'       \item \code{spicy_defunct} -- an argument, or a value of an
+#'         argument, removed or renamed in a pre-1.0 hard break (e.g.,
+#'         `v_digits`, `effect_size = "eta_sq"`); the message names the
+#'         replacement. Signaled together with \code{spicy_invalid_input}
+#'         so generic input handlers still catch it.
 #'       \item \code{spicy_bad_authors} -- the `authors` argument of
 #'         [code_book()] has none of its accepted shapes. Signaled
 #'         together with \code{spicy_invalid_input}.
@@ -243,9 +246,10 @@
 #'       \item \code{spicy_dropped_na} -- `NA` observations were
 #'         silently excluded from the computation (e.g., `NA`
 #'         weights).
-#'       \item \code{spicy_ignored_arg} -- an argument was ignored
-#'         due to context (e.g., `correct = TRUE` on a non-2x2
-#'         table).
+#'       \item \code{spicy_ignored_arg} -- an argument the call typed
+#'         has no effect in its context (e.g., `correct = TRUE` on a
+#'         non-2x2 table, `excel_path` without `output = "excel"`); the
+#'         warning names that argument and no other.
 #'       \item \code{spicy_no_selection} -- a selection or a filter
 #'         matched nothing, and an empty result is returned rather than
 #'         an error (the row-wise summaries, [varlist()], a `levels_keep`

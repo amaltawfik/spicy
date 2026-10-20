@@ -214,8 +214,8 @@ table_outcome(
 
 Negation (`select = -c(x, y)`) is **not** recommended, and the reason is
 worth a paragraph. It sweeps in every remaining column, and a numeric
-one becomes a block with one *level* per distinct value, in order of
-first appearance — a single block sixty rows long, where a reader
+one becomes a block with one *level* per distinct value, in ascending
+order — a single block sixty rows long, where a reader
 expects a handful of categories. The comparison still runs, so the
 block is not empty; it is unreadable, which is worse, because it looks
 like an answer. A variable producing more than twenty levels raises a
@@ -232,8 +232,10 @@ get the labels in the stub.
 The order of the blocks is the order you write, and the order of the
 levels inside a block is the variable's own: a factor keeps its
 declared level order (empty levels included — a level nobody chose is
-information about the instrument), anything else takes the order of
-first appearance.
+information about the instrument), anything else is sorted, text in
+the C locale (capitals before lower case, the same on every machine),
+`FALSE` before `TRUE`, numbers and codes ascending, whatever the order
+of the rows.
 
 ## Weights
 

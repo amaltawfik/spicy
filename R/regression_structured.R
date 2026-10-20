@@ -191,10 +191,11 @@
 # that carries no `col_meta` entry, because it holds no statistic. Its
 # HEADER is `header_variable`, resolved at render time.
 #
-# The four families share the string and each names it for its own file
-# set (`.CAT_KEY_VARIABLE`, `.CON_KEY_VARIABLE`, `.LM_KEY_VARIABLE`); the
-# two `.struct_*` helpers just below are shared by all four, and read
-# this one.
+# Every table class shares the string. Four file sets name it for
+# themselves (this one, `.CAT_KEY_VARIABLE`, `.CON_KEY_VARIABLE`,
+# `.LM_KEY_VARIABLE`), and the survey twins, `table_outcome()` and
+# `table_multiresponse()` reuse one of them; the two `.struct_*` helpers
+# just below serve every class, and read this one.
 .REG_KEY_VARIABLE <- "Variable"
 
 # The two interval bounds. `.REG_CI_ROLE_*` is the `col_meta$ci_role`

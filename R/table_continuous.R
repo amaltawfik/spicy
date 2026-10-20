@@ -42,9 +42,12 @@
 #'   or a single character column name. Coerced to factor for
 #'   grouping; non-numeric grouping columns (factor, character,
 #'   logical) are supported as-is. Factor levels keep their declared
-#'   order; any other `by` (character, numeric, haven labelled) forms
-#'   groups in order of first appearance in the data -- the same
-#'   convention as [table_categorical()]. For a haven labelled `by`,
+#'   order, which is the way to choose another order; any other `by` is
+#'   sorted, as in [table_categorical()]: text in the C locale (capitals
+#'   before lower case, the same on every machine), `FALSE` before
+#'   `TRUE`, numbers and the codes of a haven labelled column ascending,
+#'   whatever the order of the rows. The group of missing values comes
+#'   last. For a haven labelled `by`,
 #'   the group headers are the raw codes (value labels are not used
 #'   for grouping headers -- the family convention shared with
 #'   [table_categorical()] and [table_continuous_lm()]); declared
@@ -55,15 +58,16 @@
 #'   helpers. If `TRUE`, the `select` argument is treated as a regular
 #'   expression.
 #' @param drop_na Logical. Controls how missing values in the `by`
-#'   column are handled -- the same argument as [table_categorical()],
-#'   with one structural difference: a continuous summary has no
-#'   `"(Missing)"` row for the summarized variable itself (a mean
-#'   cannot include `NA`), so `NA`s in each summarized variable are
-#'   always excluded from that variable's statistics and the exclusion
-#'   is disclosed in a table note ("Missing values removed: ...")
-#'   rather than silent. If `TRUE` (the default, preserving this
-#'   function's historical behavior; [table_categorical()] defaults to
-#'   `FALSE`), rows with `NA` in `by` are removed from the grouped
+#'   column are handled, under the rule of the family: a table that
+#'   counts shows the missing values by default (a frequency table
+#'   reports how many answers are missing, as a `"(Missing)"` row and,
+#'   under `by`, a `"(Missing)"` column: [table_categorical()]); a table
+#'   that computes removes them by default and counts them in the note.
+#'   This table computes: a mean is computed on the observed values, so
+#'   the `NA`s of each summarized variable are always excluded from that
+#'   variable's statistics, and the exclusion is disclosed in a table
+#'   note ("Missing values removed: ...") rather than silent. If `TRUE`
+#'   (the default), rows with `NA` in `by` are removed from the grouped
 #'   summaries, and a note line says so ("Rows with missing ...
 #'   removed"). If `FALSE`, rows with `NA` in `by` form a
 #'   dedicated `"(Missing)"` group -- the field convention for
@@ -87,12 +91,13 @@
 #'   weighted comparisons.
 #' @param rescale Logical. If `TRUE`, weights are first normalized so
 #'   that they sum to the number of observations used for each
-#'   variable -- the same `rescale` grammar as [table_categorical()],
-#'   read from `options(spicy.rescale)` when not supplied. This is the
+#'   variable -- the same `rescale` grammar as [table_categorical()].
+#'   This is the
 #'   sampling-weights reading: results become invariant to the scale
 #'   of the weights, and the weighted SD then equals Stata's
-#'   `[aweight]` / `survey::svyvar()` value exactly. The default
-#'   `FALSE` uses the weights as given (frequency reading).
+#'   `[aweight]` / `survey::svyvar()` value exactly. `FALSE` uses the
+#'   weights as given (frequency reading). The default reads
+#'   `options(spicy.rescale)`, `FALSE` when it is unset.
 #' @param test Character. Statistical test to use when comparing groups.
 #'   One of `"welch"` (default), `"student"`, or `"nonparametric"`.
 #'   - `"welch"`: Welch *t*-test (2 groups) or Welch one-way ANOVA
@@ -152,20 +157,23 @@
 #'   - `"hedges_g"`: Hedges' *g* (bias-corrected standardized mean
 #'     difference, 2 groups, parametric). CI via the Hedges & Olkin
 #'     normal approximation.
-#'   - `"eta_sq"`: Eta-squared (\eqn{\eta^2}, parametric ANOVA-style
+#'   - `"eta2"`: Eta-squared (\eqn{\eta^2}, parametric ANOVA-style
 #'     `SS_between / SS_total`). CI via inversion of the noncentral
 #'     *F* distribution.
 #'   - `"r_rb"`: Rank-biserial *r* from the Wilcoxon / Mann-Whitney
 #'     statistic (2 groups, nonparametric). CI via Fisher
 #'     *z*-transform.
-#'   - `"epsilon_sq"`: Epsilon-squared (\eqn{\varepsilon^2}) from the
+#'   - `"epsilon2"`: Epsilon-squared (\eqn{\varepsilon^2}) from the
 #'     Kruskal-Wallis statistic (3+ groups, nonparametric). CI via
 #'     percentile bootstrap (2 000 replicates).
 #'
-#'   A logical value is an error (class `spicy_defunct`): use `"auto"`
+#'   A squared measure ends in `2`, as in [table_continuous_lm()] and
+#'   [table_regression()]: `"eta_sq"` and `"epsilon_sq"`, the spellings
+#'   before 0.14.0, are an error (class `spicy_defunct`) that gives the new
+#'   one. A logical value is an error of the same class: use `"auto"`
 #'   for `TRUE` and `"none"` for `FALSE`.
 #'   Explicit choices are validated against the active `test` and the
-#'   number of groups; an incompatible request (e.g. `"eta_sq"` with
+#'   number of groups; an incompatible request (e.g. `"eta2"` with
 #'   two groups, or `"hedges_g"` with `test = "nonparametric"`)
 #'   triggers an actionable error. Ignored when `by` is not used.
 #' @param effect_size_ci Logical. If `TRUE`, appends the confidence
@@ -215,7 +223,7 @@
 #'   variable label documents the data file; a published table carries
 #'   the wording you set here.
 #' @param ci_level Confidence level for the mean confidence interval
-#'   (default: `0.95`). Must be between 0 and 1 exclusive.
+#'   (default: `0.95`): a number strictly between 0 and 1.
 #' @param digits Number of decimal places for descriptive values and test
 #'   statistics (default: `2`). A whole number: a fraction is an error,
 #'   as for every `*_digits` argument.
@@ -230,8 +238,9 @@
 #'   genomics / GWAS contexts with very small *p*-values, or for
 #'   journals using a coarser convention. Leading zeros are always
 #'   stripped, following APA convention.
-#' @param decimal_mark Character used as decimal separator.
-#'   Either `"."` (default) or `","`.
+#' @param decimal_mark The decimal mark, a single character: `"."` (the
+#'   default) or `","` in most styles; the Lancet style of
+#'   [spicy_style()] uses the middle dot.
 #' @param align Horizontal alignment of numeric columns in the printed
 #'   ASCII table and in the `tinytable`, `gt`, `flextable`, `word`,
 #'   `excel`, and `clipboard` outputs. The first column (`Variable`) and
@@ -351,7 +360,7 @@
 #'       \item `p.value` -- with the *p*-value only, and `p_unadjusted`
 #'         under `p_adjust`.
 #'       \item `es_type` -- effect-size identifier (`"hedges_g"`,
-#'         `"eta_sq"`, `"r_rb"`, or `"epsilon_sq"`), `es_value`,
+#'         `"eta2"`, `"r_rb"`, or `"epsilon2"`), `es_value`,
 #'         `es_ci_lower`, `es_ci_upper` -- the effect size and its
 #'         interval.
 #'       \item `smd_type`, `smd_value` -- the standardized mean
@@ -692,7 +701,7 @@
 #'   sochealth,
 #'   select = wellbeing_score,
 #'   by = education,
-#'   effect_size = "eta_sq",
+#'   effect_size = "eta2",
 #'   effect_size_ci = TRUE,
 #'   effect_size_digits = 3
 #' )
@@ -795,7 +804,7 @@ table_continuous <- function(
   regex = FALSE,
   drop_na = TRUE,
   weights = NULL,
-  rescale = FALSE,
+  rescale = getOption("spicy.rescale", FALSE),
   test = c("welch", "student", "nonparametric"),
   p_value = NULL,
   p_adjust = "none",
@@ -806,9 +815,9 @@ table_continuous <- function(
     "none",
     "auto",
     "hedges_g",
-    "eta_sq",
+    "eta2",
     "r_rb",
-    "epsilon_sq"
+    "epsilon2"
   ),
   effect_size_ci = FALSE,
   smd = FALSE,
@@ -845,30 +854,14 @@ table_continuous <- function(
 
   # --- validation ---
   .check_data_frame(data, "table_continuous")
-  if (
-    !is.numeric(ci_level) ||
-      length(ci_level) != 1L ||
-      is.na(ci_level) ||
-      ci_level <= 0 ||
-      ci_level >= 1
-  ) {
-    spicy_abort(
-      "`ci_level` must be a single number between 0 and 1.",
-      class = "spicy_invalid_input"
-    )
-  }
+  validate_ci_level(ci_level)
   digits <- validate_digit_arg(digits, "digits")
   effect_size_digits <- validate_digit_arg(
     effect_size_digits,
     "effect_size_digits"
   )
   p_digits <- validate_digit_arg(p_digits, "p_digits", min = 1L)
-  if (!.is_single_char(decimal_mark)) {
-    spicy_abort(
-      '`decimal_mark` must be a single character (e.g. "." or ",").',
-      class = "spicy_invalid_input"
-    )
-  }
+  validate_decimal_mark(decimal_mark)
   .check_labels_arg(labels)
   for (.lname in c(
     "statistic",
@@ -881,17 +874,13 @@ table_continuous <- function(
     "verbose",
     "user_na"
   )) {
-    .lval <- get(.lname)
-    if (!is.logical(.lval) || length(.lval) != 1L || is.na(.lval)) {
-      spicy_abort(
-        sprintf("`%s` must be TRUE/FALSE.", .lname),
-        class = "spicy_invalid_input"
-      )
-    }
+    validate_logical_scalar(get(.lname), .lname)
   }
 
-  # `effect_size` names a measure; the logical it once took is defunct.
+  # `effect_size` names a measure; the logical it once took is defunct,
+  # and so are the spellings renamed in 0.14.0.
   .check_effect_size_not_logical(effect_size, "`effect_size = \"auto\"`")
+  .check_effect_size_renamed(effect_size, .ES_RENAMED_DESC)
   effect_size_explicit <- !missing(effect_size)
   effect_size <- spicy_match_arg(effect_size)
 
@@ -905,6 +894,7 @@ table_continuous <- function(
     )
   }
   output <- spicy_match_arg(output)
+  .warn_ignored_output_args(output, names(match.call()))
   # Decision 16: NULL resolves to the family's registry sheet name,
   # keeping the usage line of the Rd clean of a display string.
   if (is.null(excel_sheet)) {
@@ -934,50 +924,47 @@ table_continuous <- function(
   if (!p_value_explicit) {
     p_value <- has_group
   }
-  if ((p_value || statistic) && !has_group) {
-    if (p_value_explicit || statistic) {
-      spicy_warn(
-        "`p_value` and `statistic` are ignored when `by` is not used.",
-        class = "spicy_ignored_arg"
-      )
-    }
-    p_value <- FALSE
-  }
   has_es_request <- !identical(effect_size, "none")
-  if (
+  if (!has_group) {
+    # Without `by` there is nothing to compare: what the call asked of the
+    # comparison is ignored, and the warning names what it typed and
+    # nothing else.
+    .warn_ignored(
+      c("p_value", "statistic", "test", "effect_size", "effect_size_ci")[c(
+        p_value_explicit && p_value,
+        statistic,
+        test_explicit,
+        effect_size_explicit && has_es_request,
+        effect_size_ci
+      )],
+      "when `by` is not used"
+    )
+    p_value <- FALSE
+  } else if (
     test_explicit &&
       !p_value &&
       !statistic &&
       !has_es_request &&
       !effect_size_ci
   ) {
-    spicy_warn(
-      "`test` is ignored when `p_value`, `statistic`, `effect_size`, and `effect_size_ci` are all turned off.",
-      class = "spicy_ignored_arg"
+    .warn_ignored(
+      "test",
+      "when `p_value`, `statistic`, `effect_size`, and `effect_size_ci` are all turned off"
     )
   }
   do_test <- (p_value || statistic) && has_group
 
-  if ((has_es_request || effect_size_ci) && !has_group) {
-    spicy_warn(
-      "`effect_size` is ignored when `by` is not used.",
-      class = "spicy_ignored_arg"
-    )
-  }
   if (smd && !has_group) {
-    spicy_warn(
-      "`smd` is ignored when `by` is not used: a standardized mean difference compares two groups.",
-      class = "spicy_ignored_arg"
+    .warn_ignored(
+      "smd",
+      "when `by` is not used: a standardized mean difference compares two groups"
     )
   }
   do_smd <- smd && has_group
   if (!drop_na && !has_group) {
-    spicy_warn(
-      "`drop_na = FALSE` is ignored when `by` is not used: a continuous summary has no \"(Missing)\" display row. NAs are always excluded from each variable's statistics and disclosed in the table note.",
-      class = "spicy_ignored_arg"
-    )
+    .warn_ignored("drop_na", .drop_na_ignored_reason())
   }
-  if (effect_size_ci && !has_es_request) {
+  if (effect_size_ci && !has_es_request && has_group) {
     spicy_warn(
       "`effect_size_ci` implies `effect_size != \"none\"`. Defaulting to `effect_size = \"auto\"`.",
       class = "spicy_ignored_arg"
@@ -998,15 +985,7 @@ table_continuous <- function(
   weights_quo <- rlang::enquo(weights)
   weights_name <- detect_weights_column_name(weights_quo, data)
   weights_vec <- resolve_weights_argument(weights_quo, data, "weights")
-  if (missing(rescale)) {
-    rescale <- getOption("spicy.rescale", FALSE)
-  }
-  if (!is.logical(rescale) || length(rescale) != 1L || is.na(rescale)) {
-    spicy_abort(
-      "`rescale` must be TRUE or FALSE.",
-      class = "spicy_invalid_input"
-    )
-  }
+  validate_logical_scalar(rescale, "rescale")
   n_na_weights <- 0L
   if (!is.null(weights_vec)) {
     # NA weights are legal: those rows leave the analytic sample and
@@ -1048,10 +1027,7 @@ table_continuous <- function(
       )
     }
   } else if (isTRUE(rescale) && !missing(rescale)) {
-    spicy_warn(
-      "`rescale = TRUE` has no effect when `weights` is not supplied.",
-      class = "spicy_ignored_arg"
-    )
+    .warn_ignored("rescale", "when `weights` is not supplied")
   }
 
   # --- column selection ---
@@ -1341,15 +1317,10 @@ table_continuous <- function(
     # "(Missing)" group (drop_na = FALSE) -- show the missing, test
     # the observed, matching table_categorical().
     groups_obs <- groups
-    group_levels <- if (is.factor(groups)) {
-      levels(groups)
-    } else {
-      # Non-factor `by` (character, numeric, haven labelled): groups
-      # in order of first appearance -- the family convention shared
-      # with table_categorical() / cross_tab() (audit phase 2,
-      # finding 17). Factors keep their declared level order above.
-      unique(groups[!is.na(groups)])
-    }
+    # The family's order of the groups (`.group_levels()`): a factor
+    # keeps its declared levels, any other `by` (character, logical,
+    # numeric, haven labelled) is sorted in the C locale.
+    group_levels <- .group_levels(groups)
     # The REAL groups of the table, captured at their construction site
     # and BEFORE the "(Missing)" pseudo-level is appended below. The SMD
     # counts on this, and on nothing derived by name: the missing label
@@ -1620,7 +1591,9 @@ table_continuous <- function(
 
       for (j in seq_along(group_levels)) {
         g <- group_levels[j]
-        idx <- which(groups == g)
+        # The levels are character (`.group_levels()`): compared with the
+        # column as text, a labelled or logical `by` included.
+        idx <- which(as.character(groups) == g)
         desc <- .continuous_compute_one(
           work[[nm]][idx],
           ci_level,
@@ -2715,8 +2688,8 @@ run_group_test <- function(xvec, gvec, n_groups, method) {
 # Internal: resolve a user-supplied effect_size value (a logical is
 # refused at the public boundary) to the actual
 # measure to compute, given the test method and group count. Returns
-# `"none"` (compute nothing), `"hedges_g"`, `"eta_sq"`, `"r_rb"`, or
-# `"epsilon_sq"`. When `explicit = TRUE` and the user-requested
+# `"none"` (compute nothing), `"hedges_g"`, `"eta2"`, `"r_rb"`, or
+# `"epsilon2"`. When `explicit = TRUE` and the user-requested
 # measure is incompatible with `(method, n_groups)`, an actionable
 # error is raised; when `explicit = FALSE` the function silently
 # falls back to "auto" -- this is the case e.g. when the user wrote
@@ -2733,9 +2706,9 @@ resolve_effect_size_choice <- function(
   }
 
   auto_choice <- if (method == "nonparametric") {
-    if (n_groups == 2L) "r_rb" else "epsilon_sq"
+    if (n_groups == 2L) "r_rb" else "epsilon2"
   } else {
-    if (n_groups == 2L) "hedges_g" else "eta_sq"
+    if (n_groups == 2L) "hedges_g" else "eta2"
   }
 
   if (identical(effect_size, "auto")) {
@@ -2743,8 +2716,8 @@ resolve_effect_size_choice <- function(
   }
 
   is_parametric <- method %in% c("welch", "student")
-  parametric_es <- c("hedges_g", "eta_sq")
-  np_es <- c("r_rb", "epsilon_sq")
+  parametric_es <- c("hedges_g", "eta2")
+  np_es <- c("r_rb", "epsilon2")
 
   if (is_parametric && effect_size %in% np_es) {
     if (!explicit) {
@@ -2752,7 +2725,7 @@ resolve_effect_size_choice <- function(
     }
     spicy_abort(
       sprintf(
-        "Effect size `%s` is a nonparametric measure; switch `test = \"nonparametric\"` or pick `\"hedges_g\"` / `\"eta_sq\"`.",
+        "Effect size `%s` is a nonparametric measure; switch `test = \"nonparametric\"` or pick `\"hedges_g\"` / `\"eta2\"`.",
         effect_size
       ),
       class = "spicy_invalid_input"
@@ -2764,7 +2737,7 @@ resolve_effect_size_choice <- function(
     }
     spicy_abort(
       sprintf(
-        "Effect size `%s` is a parametric measure; switch `test` to `\"welch\"` / `\"student\"` or pick `\"r_rb\"` / `\"epsilon_sq\"`.",
+        "Effect size `%s` is a parametric measure; switch `test` to `\"welch\"` / `\"student\"` or pick `\"r_rb\"` / `\"epsilon2\"`.",
         effect_size
       ),
       class = "spicy_invalid_input"
@@ -2772,7 +2745,7 @@ resolve_effect_size_choice <- function(
   }
 
   two_group_only <- c("hedges_g", "r_rb")
-  multi_group_only <- c("eta_sq", "epsilon_sq")
+  multi_group_only <- c("eta2", "epsilon2")
 
   if (n_groups == 2L && effect_size %in% multi_group_only) {
     if (!explicit) {
@@ -2792,7 +2765,7 @@ resolve_effect_size_choice <- function(
     }
     spicy_abort(
       sprintf(
-        "Effect size `%s` requires exactly two groups; with %d groups, pick `\"eta_sq\"` (parametric) or `\"epsilon_sq\"` (nonparametric).",
+        "Effect size `%s` requires exactly two groups; with %d groups, pick `\"eta2\"` (parametric) or `\"epsilon2\"` (nonparametric).",
         effect_size,
         n_groups
       ),
@@ -2804,7 +2777,7 @@ resolve_effect_size_choice <- function(
 }
 
 # --- internal: compute effect size ---
-# `type` is one of `"hedges_g"`, `"eta_sq"`, `"r_rb"`, `"epsilon_sq"`,
+# `type` is one of `"hedges_g"`, `"eta2"`, `"r_rb"`, `"epsilon2"`,
 # already resolved by `resolve_effect_size_choice()` against the
 # (method, n_groups) compatibility matrix.
 compute_effect_size <- function(
@@ -2826,9 +2799,9 @@ compute_effect_size <- function(
 
   if (is.null(type)) {
     type <- if (method == "nonparametric") {
-      if (n_groups == 2L) "r_rb" else "epsilon_sq"
+      if (n_groups == 2L) "r_rb" else "epsilon2"
     } else {
-      if (n_groups == 2L) "hedges_g" else "eta_sq"
+      if (n_groups == 2L) "hedges_g" else "eta2"
     }
   }
 
@@ -2855,12 +2828,12 @@ compute_effect_size <- function(
       row$es_ci_lower <- tanh(z - z_crit * se_z)
       row$es_ci_upper <- tanh(z + z_crit * se_z)
     }
-  } else if (identical(type, "epsilon_sq")) {
+  } else if (identical(type, "epsilon2")) {
     # Epsilon-squared from Kruskal-Wallis H
     kt <- stats::kruskal.test(xvec ~ gvec)
     h <- unname(kt$statistic)
     n_total <- length(xvec)
-    row$es_type <- "epsilon_sq"
+    row$es_type <- "epsilon2"
     row$es_value <- max(0, (h - n_groups + 1) / (n_total - n_groups))
     # Bootstrap CI for epsilon-squared
     ci <- epsilon_sq_boot_ci(xvec, gvec, n_groups, ci_level)
@@ -2890,7 +2863,7 @@ compute_effect_size <- function(
     z_crit <- stats::qnorm(1 - alpha / 2)
     row$es_ci_lower <- g - z_crit * se_g
     row$es_ci_upper <- g + z_crit * se_g
-  } else if (identical(type, "eta_sq")) {
+  } else if (identical(type, "eta2")) {
     # Eta-squared from one-way ANOVA (SS_between / SS_total)
     grand_mean <- mean(xvec)
     grp_levels <- if (is.factor(gvec)) {
@@ -2905,7 +2878,7 @@ compute_effect_size <- function(
     }
     ss_total <- sum((xvec - grand_mean)^2)
     eta_sq <- ss_between / ss_total
-    row$es_type <- "eta_sq"
+    row$es_type <- "eta2"
     row$es_value <- eta_sq
     # CI via noncentral F
     n_total <- length(xvec)
@@ -3094,9 +3067,9 @@ epsilon_sq_boot_ci <- function(xvec, gvec, n_groups, ci_level, n_boot = 2000L) {
 
   es_labels <- c(
     hedges_g = "g",
-    eta_sq = "\u03b7\u00b2",
+    eta2 = "\u03b7\u00b2",
     r_rb = "r_rb",
-    epsilon_sq = "\u03b5\u00b2"
+    epsilon2 = "\u03b5\u00b2"
   )
 
   fmt_es <- function(es_type, es_value, ci_lower, ci_upper, show_ci) {
@@ -3526,6 +3499,7 @@ export_desc_table <- function(
   indent_text = "  ",
   indent_text_excel_clipboard = strrep("\u00A0", 6),
   title = NULL,
+  untitled = FALSE,
   excel_path,
   excel_sheet,
   clipboard_delim,
@@ -3538,12 +3512,17 @@ export_desc_table <- function(
   # The title is the CALLER's: each family words it from its own
   # registry key, and this function must never invent one. Refusing
   # here rather than defaulting keeps a family that forgets it from
-  # shipping six untitled engines.
-  if (is.null(title) || !nzchar(title)) {
+  # shipping six untitled engines. A table the user asked to leave
+  # untitled (`title = FALSE` or `""` in `table_multiresponse()`) says
+  # so with `untitled`, and every engine then sets no title.
+  if (!isTRUE(untitled) && (is.null(title) || !nzchar(title))) {
     spicy_abort(
       "Internal: export_desc_table() needs the caller's title.",
       class = "spicy_internal_invariant"
     )
+  }
+  if (isTRUE(untitled)) {
+    title <- NULL
   }
   # The file is checked before any engine runs, and the errors name the
   # table function the user called.
@@ -4190,14 +4169,17 @@ export_desc_table <- function(
     wb <- openxlsx2::wb_add_worksheet(wb, excel_sheet)
 
     # Same title the console prints, from the same helper, then the
-    # two header rows two lines below.
-    wb <- .spicy_xl_add_data(
-      wb,
-      x = title,
-      start_row = 1
-    )
+    # two header rows two lines below; an untitled table starts on the
+    # first row, as in `table_regression()`.
+    if (!is.null(title)) {
+      wb <- .spicy_xl_add_data(
+        wb,
+        x = title,
+        start_row = 1
+      )
+    }
     # With no spanner, one header row: the "bottom" row is the top one.
-    top_header_row <- 3L
+    top_header_row <- if (is.null(title)) 1L else 3L
     bot_header_row <- top_header_row + as.integer(hdrs$spanned)
     first_body_row <- bot_header_row + 1L
 

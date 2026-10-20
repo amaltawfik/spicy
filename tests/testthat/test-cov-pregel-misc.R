@@ -167,19 +167,19 @@ test_that("the missing category answers to `(Missing)` in every language", {
 
 # ---- inline.R 386: a token that does not spread keeps `level` as a row ----
 
-test_that("`level` addresses a column only for a token that spreads", {
+test_that("`model` addresses a group column, `level` none", {
   d <- mtcars
   d$grp <- factor(ifelse(d$am == 1, "manual", "auto"))
   tl <- table_continuous_lm(d, c(mpg, hp), by = grp)
 
-  # The group means DO spread sideways -- one column per `by` level --
-  # so there `level` is a column address and picks one of them.
+  # The group means spread sideways -- one column per `by` level --
+  # and `model` picks one of them, as it picks a spanner elsewhere.
   expect_identical(
-    inline(tl, mpg, column = "{emmean}", level = "manual"),
+    inline(tl, mpg, column = "{emmean}", model = "manual"),
     "24.39"
   )
   expect_identical(
-    inline(tl, mpg, column = "{emmean}", level = "auto"),
+    inline(tl, mpg, column = "{emmean}", model = "auto"),
     "17.15"
   )
   # Without one, the ambiguity is named.
@@ -189,19 +189,16 @@ test_that("`level` addresses a column only for a token that spreads", {
     class = "spicy_invalid_input"
   )
 
-  # The p belongs to the comparison, not to a group: it occupies ONE
-  # column, so the column rule does not engage and `level` keeps meaning
-  # the row it has always meant -- of which this table has none.
+  # The p belongs to the comparison, not to a group: it is cited with or
+  # without a group.
   expect_identical(inline(tl, mpg, column = "{p}"), "<.001")
+  expect_identical(inline(tl, mpg, column = "{p}", model = "manual"), "<.001")
+  # `level` names a group no longer: refused with the `model` call.
   err <- expect_error(
     inline(tl, mpg, column = "{p}", level = "manual"),
-    class = "spicy_invalid_input"
+    class = "spicy_defunct"
   )
-  expect_match(
-    conditionMessage(err),
-    "No level \"manual\" for \"mpg\".",
-    fixed = TRUE
-  )
+  expect_match(conditionMessage(err), "model = \"manual\"", fixed = TRUE)
 })
 
 

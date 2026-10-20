@@ -56,7 +56,10 @@ as a formula, until \code{subset()}, \code{update()}, \code{postStratify()},
 \code{calibrate()}, \code{rake()} or \code{trimWeights()} replaces the call: leave
 such a column out with a negation (\code{select = !w}).}
 
-\item{by}{A single grouping column: one column block per level.}
+\item{by}{A single grouping column: one column block per level, in the
+order of \code{\link[=table_categorical]{table_categorical()}} (a factor's levels, any other column
+sorted: text in the C locale, \code{FALSE} before \code{TRUE}, numbers
+ascending), the order the levels of each variable follow too.}
 
 \item{labels}{How each variable is named in the table: in the rows,
 in the title, and in the notes. Four forms:
@@ -89,9 +92,10 @@ design's percentages (default \code{TRUE}, only with \code{by}). A group
 displayed with the label of that block is an error, as in
 \code{\link[=table_categorical]{table_categorical()}}.}
 
-\item{drop_na}{Drop missing values (default \code{FALSE}: they show as a
-\code{(Missing)} level, and a level displayed with that label beside them
-is an error, as in \code{\link[=table_categorical]{table_categorical()}}). Shown or dropped, they
+\item{drop_na}{Drop missing values. A table that counts shows them by
+default, the rule of \code{\link[=table_categorical]{table_categorical()}}: \code{FALSE} (the default)
+shows them as a \code{(Missing)} level, and a level displayed with that
+label beside them is an error, as there. Shown or dropped, they
 never enter the test: the p-value is computed on the complete cases
 either way, which is the convention \code{\link[=table_categorical]{table_categorical()}} applies.
 Under \code{drop_na = TRUE}, a \code{by} that no observation holds is an error
@@ -103,7 +107,8 @@ Under \code{drop_na = TRUE}, a \code{by} that no observation holds is an error
 \code{"logit"} (default), \code{"likelihood"}, \code{"asin"}, \code{"beta"},
 \code{"mean"}, \code{"xlogit"} or \code{"wilson"}.}
 
-\item{ci_level}{Coverage of the interval.}
+\item{ci_level}{Confidence level of the intervals of \code{proportion_ci}
+(default \code{0.95}): a number strictly between 0 and 1.}
 
 \item{chisq_statistic}{Statistic for \code{survey::svychisq()}: \code{"F"}
 (default), \code{"Chisq"}, \code{"Wald"}, \code{"adjWald"} or \code{"saddlepoint"}.
@@ -136,10 +141,25 @@ of \code{"none"} (default), \code{"holm"}, \code{"hochberg"}, \code{"hommel"},
 \code{\link[=table_regression]{table_regression()}}; delegated to \code{\link[stats:p.adjust]{stats::p.adjust()}}. Needs \code{by}
 and the p-value column. See \emph{Multiple-comparison adjustment}.}
 
-\item{percent_digits, p_digits, decimal_mark}{Number formatting.}
+\item{percent_digits}{Number of digits for percentages in report outputs.
+Defaults to \code{1}. A whole number: a fraction is an error, as for
+every \verb{*_digits} argument.}
 
-\item{align}{Numeric-cell alignment: \code{"decimal"}, \code{"center"} or
-\code{"right"}.}
+\item{p_digits}{Integer >= 1. Number of decimal places used to
+render \emph{p}-values in the \code{p} column (default: \code{3}, the APA
+Publication Manual standard). Both the displayed precision and
+the small-\emph{p} threshold derive from this argument: \code{p_digits = 3}
+prints \code{.045} and \verb{<.001}; \code{p_digits = 4} prints \code{.0451} and
+\verb{<.0001}. Leading zeros are always stripped, following APA
+convention.}
+
+\item{decimal_mark}{The decimal mark, a single character: \code{"."} (the
+default) or \code{","} in most styles; the Lancet style of
+\code{\link[=spicy_style]{spicy_style()}} uses the middle dot.}
+
+\item{align}{Horizontal alignment of the numeric columns: \code{"decimal"}
+(the default), \code{"center"} or \code{"right"}, as in \code{\link[=table_continuous]{table_continuous()}},
+whose rendering engines this table shares, its Excel output included.}
 
 \item{output}{One of \code{"default"}, \code{"data.frame"}, \code{"long"}, or a
 rendering engine: \code{"tinytable"}, \code{"gt"}, \code{"flextable"},
@@ -147,15 +167,43 @@ rendering engine: \code{"tinytable"}, \code{"gt"}, \code{"flextable"},
 table with its numbers, \code{"long"} one row per variable, level and
 group, as in \code{\link[=table_categorical]{table_categorical()}}; see \emph{Value}.}
 
-\item{indent_text, indent_text_excel_clipboard}{Level-row
-indentation, for the console and for the plain-text engines.}
+\item{indent_text}{Prefix used for modality labels in report table building.
+Defaults to \code{"  "} (two spaces).}
 
-\item{excel_path, excel_sheet, clipboard_delim, word_path}{Output
-destinations, as in \code{\link[=table_categorical]{table_categorical()}}.}
+\item{indent_text_excel_clipboard}{Stronger indentation used in Excel and
+clipboard exports. Defaults to six non-breaking spaces.}
 
-\item{user_na}{Honor declared missing values (see \code{?freq}).}
+\item{excel_path}{Path for \code{output = "excel"}, ending in \code{".xlsx"}, in
+a directory that exists. Defaults to \code{NULL}.}
 
-\item{style}{A journal style; see \code{\link[=spicy_style]{spicy_style()}}.}
+\item{excel_sheet}{Sheet name for Excel export. \code{NULL} (the
+default) uses \code{"Categorical"}.}
+
+\item{clipboard_delim}{Delimiter for clipboard text export. Defaults
+to \code{"\\t"}. A cell holding the delimiter itself, a double quote or
+a line break is quoted RFC 4180-style, so the grid survives
+whatever delimiter you choose.}
+
+\item{word_path}{File path for \code{output = "word"}, ending in \code{".docx"},
+in a directory that exists. Defaults to \code{NULL}.}
+
+\item{user_na}{Logical. If \code{TRUE} (the default), declared missing
+values in the row variables and in \code{by} are treated as missing:
+they join the \code{"(Missing)"} level under \code{drop_na = FALSE}, and
+under \code{drop_na = TRUE} they are removed with a dedicated
+disclosure line (\verb{Declared missing values removed: ...}). If
+\code{FALSE}, the declared codes stay valid categories. See the
+"Declared missing values" section of \code{\link[=freq]{freq()}}.}
+
+\item{style}{A journal style: a theme name (\code{"jama"}, \code{"nejm"},
+\code{"lancet"}, \code{"annals"}, \code{"apa"}, \code{"aer"}), a
+\code{\link[=spicy_style]{spicy_style()}} object, or \code{NULL} (the default). A style only
+changes DEFAULTS -- any argument you pass explicitly wins over it.
+Set \code{options(spicy.style = )} for document-wide scope. A theme
+covers numeric formatting conformity only, not full editorial
+conformity; \code{?spicy_style} lists the exact rules each one encodes
+and the official document they come from. An unknown name is an
+error.}
 }
 \value{
 Depends on \code{output}:

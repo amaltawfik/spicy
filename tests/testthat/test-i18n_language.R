@@ -520,7 +520,8 @@ test_that("the read-through headers and row labels follow the language", {
   bounds <- Filter(function(m) !is.null(m$ci_role), cat_meta)
   expect_identical(
     unname(vapply(bounds, `[[`, character(1), "display_label")),
-    c("IC inf.", "IC sup.")
+    # The level of the interval stated, as the other tables state it.
+    c("IC \u00e0 95\u00a0% LI", "IC \u00e0 95\u00a0% LS")
   )
   con <- table_continuous(sochealth, select = bmi, show_columns = c("med", "n"))
   expect_identical(

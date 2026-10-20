@@ -99,9 +99,9 @@
 #
 # Factors keep their DECLARED order (empty levels included: a declared
 # level that nobody chose is information about the instrument). Anything
-# else -- character, numeric, haven-labelled -- takes the order of first
-# appearance, the family convention shared with `table_categorical()`
-# and `cross_tab()`.
+# else -- character, logical, numeric, haven-labelled -- is sorted in the
+# C locale, the family's order of the groups (`.group_levels()`), shared
+# with `table_categorical()` and `cross_tab()`.
 #
 # With `drop_na = FALSE` the missing values become a display level of
 # their own. Every declared level is displayed, so one with the label of
@@ -113,8 +113,7 @@
   var = NULL,
   call = rlang::caller_env()
 ) {
-  declared <- if (is.factor(g)) levels(g) else unique(g[!is.na(g)])
-  declared <- as.character(declared)
+  declared <- .group_levels(g)
   n_na <- sum(is.na(g))
   values <- as.character(g)
   missing_label <- NA_character_
@@ -573,7 +572,7 @@ abort_outcome_by_renamed <- function() {
 #' The canonical form is `select = where(is.factor)`, or an explicit
 #' enumeration. Negation (`select = -c(x, y)`) is not recommended: it
 #' sweeps in every remaining column, and a numeric one becomes a block
-#' with one LEVEL per distinct value, in order of first appearance. A
+#' with one LEVEL per distinct value, in ascending order. A
 #' variable producing more than 20 levels raises a warning for that
 #' reason -- an arbitrary threshold, but a sixty-row block where a
 #' reader expects a handful of categories is not a table.
@@ -596,7 +595,11 @@ abort_outcome_by_renamed <- function() {
 #'   Exactly one column.
 #' @param select The grouping characteristics to describe the outcome
 #'   across, as a tidyselect expression or a character vector of column
-#'   names. One block of rows per variable, in the order given. As
+#'   names. One block of rows per variable, in the order given, and in
+#'   each block one row per level: the levels of a factor in their order,
+#'   any other variable sorted, as the groups of `by` are in
+#'   [table_continuous()] (text in the C locale, `FALSE` before `TRUE`,
+#'   numbers and codes ascending), whatever the order of the rows. As
 #'   everywhere in the family, `select` is what structures the rows. The
 #'   outcome and the `weights` column are not part of the selection: a
 #'   selection helper skips them, and naming one in `select`, or giving
@@ -625,14 +628,18 @@ abort_outcome_by_renamed <- function() {
 #'   variable label documents the data file; a published table carries
 #'   the wording you set here.
 #' @param overall Show the marginal `Overall` row (default `TRUE`).
-#' @param drop_na Drop rows with a missing `select` value from that block
-#'   (default `FALSE`: they are shown as a `(Missing)` level and
-#'   excluded from the comparison, and a level displayed with that label
-#'   is an error, as in [table_categorical()]). Under `drop_na = TRUE`, a
+#' @param drop_na Drop rows with a missing `select` value from that
+#'   block. The rule of the family: the categories a table counts keep
+#'   their missing values as a row by default, as in
+#'   [table_categorical()]; the values it computes on lose them, counted
+#'   in the note, as in [table_continuous()]. The blocks of this table are
+#'   categories, so `FALSE` (the default) shows the missing values of a
+#'   `select` variable as a `(Missing)` level, excluded from the
+#'   comparison, and a level displayed with that label is an error, as in
+#'   [table_categorical()]; the missing values of the outcome are always
+#'   removed and counted in the note. Under `drop_na = TRUE`, a
 #'   grouping that no observation holds is an error (class
 #'   `spicy_invalid_data`).
-#' @param weights,rescale Frequency weights and whether to rescale them
-#'   to sum to the sample size, as in [table_continuous()].
 #' @param test Group comparison for every block: `"welch"` (default),
 #'   `"student"` or `"nonparametric"`. An outcome with no variance in a
 #'   block has no test there, whichever is chosen: the block's test cells
@@ -646,32 +653,34 @@ abort_outcome_by_renamed <- function() {
 #'   `"BY"`, as in [table_regression()]; delegated to
 #'   [stats::p.adjust()]. Needs the p-value column. See
 #'   *Multiple-comparison adjustment*.
-#' @param statistic Show the test statistic column.
-#' @param show_n Show the count column.
-#' @param show_columns Character vector of statistic tokens; `NULL`
-#'   keeps the historical display.
+#' @param statistic Logical. If `TRUE`, the test statistic of each block
+#'   is shown in an additional column, with or without the *p*-value:
+#'   `p_value` and `statistic` are independent. Defaults to `FALSE`.
+#' @param show_columns Statistics to display, as a character vector of
+#'   the tokens of [table_continuous()] (see *Choosing the statistics*).
+#'   `NULL` (the default) shows the mean, SD, min, max, the mean CI (see
+#'   `ci`) and `n` (see `show_n`).
 #' @param effect_size,effect_size_ci Effect size per block and its
 #'   confidence interval, as in [table_continuous()] (a logical
 #'   `effect_size` is an error there and here).
-#' @param ci,ci_level The mean's confidence interval and its level.
-#' @param digits,effect_size_digits,p_digits,decimal_mark Number
-#'   formatting. The `*_digits` arguments are whole numbers, `p_digits`
-#'   at least 1.
-#' @param align Numeric-cell alignment: `"decimal"`, `"center"` or
-#'   `"right"`.
 #' @param output One of `"default"`, `"data.frame"`, `"long"`, or a
 #'   rendering engine: `"tinytable"`, `"gt"`, `"flextable"`,
 #'   `"excel"`, `"clipboard"`, `"word"`. `"data.frame"` is the displayed
 #'   table with its numbers, `"long"` the compute frame with every
 #'   statistic, as in [table_continuous()]; see *Value*.
-#' @param indent_text,indent_text_excel_clipboard Level-row
-#'   indentation, for the console and for the plain-text engines.
-#' @param excel_path,excel_sheet,clipboard_delim,word_path Output
-#'   destinations, as in [table_continuous()].
-#' @param user_na Honor declared missing values (see `?freq`).
-#' @param style A journal style; see [spicy_style()].
+#' @param excel_sheet Sheet name for `output = "excel"`. `NULL` (the
+#'   default) uses `"Outcome"`.
+#' @param user_na Logical. If `TRUE` (the default), declared missing
+#'   values are treated as missing: those of the outcome leave its
+#'   statistics and are disclosed in the table note (`Declared missing
+#'   values removed: ...`), those of a `select` variable join its
+#'   `(Missing)` level under `drop_na = FALSE`. If `FALSE`, the declared
+#'   codes are ordinary values. See the "Declared missing values" section
+#'   of [freq()].
 #' @param by Defunct. The grouping characteristics are selected with
 #'   `select` since spicy 0.13.0; supplying `by` is an error.
+#' @inheritParams table_continuous
+#' @inheritParams table_categorical
 #'
 #' @return Depends on `output`:
 #' \itemize{
@@ -723,7 +732,7 @@ table_outcome <- function(
   overall = TRUE,
   drop_na = FALSE,
   weights = NULL,
-  rescale = FALSE,
+  rescale = getOption("spicy.rescale", FALSE),
   test = c("welch", "student", "nonparametric"),
   p_value = NULL,
   p_adjust = "none",
@@ -734,9 +743,9 @@ table_outcome <- function(
     "none",
     "auto",
     "hedges_g",
-    "eta_sq",
+    "eta2",
     "r_rb",
-    "epsilon_sq"
+    "epsilon2"
   ),
   effect_size_ci = FALSE,
   ci = TRUE,
@@ -814,30 +823,14 @@ table_outcome <- function(
 
   # --- scalar validation, shared with the sibling ------------------------
   .check_data_frame(data, "table_outcome")
-  if (
-    !is.numeric(ci_level) ||
-      length(ci_level) != 1L ||
-      is.na(ci_level) ||
-      ci_level <= 0 ||
-      ci_level >= 1
-  ) {
-    spicy_abort(
-      "`ci_level` must be a single number between 0 and 1.",
-      class = "spicy_invalid_input"
-    )
-  }
+  validate_ci_level(ci_level)
   digits <- validate_digit_arg(digits, "digits")
   effect_size_digits <- validate_digit_arg(
     effect_size_digits,
     "effect_size_digits"
   )
   p_digits <- validate_digit_arg(p_digits, "p_digits", min = 1L)
-  if (!.is_single_char(decimal_mark)) {
-    spicy_abort(
-      '`decimal_mark` must be a single character (e.g. "." or ",").',
-      class = "spicy_invalid_input"
-    )
-  }
+  validate_decimal_mark(decimal_mark)
   .check_labels_arg(labels)
   for (.lname in c(
     "overall",
@@ -848,16 +841,12 @@ table_outcome <- function(
     "ci",
     "user_na"
   )) {
-    .lval <- get(.lname)
-    if (!is.logical(.lval) || length(.lval) != 1L || is.na(.lval)) {
-      spicy_abort(
-        sprintf("`%s` must be TRUE/FALSE.", .lname),
-        class = "spicy_invalid_input"
-      )
-    }
+    validate_logical_scalar(get(.lname), .lname)
   }
-  # `effect_size` names a measure; the logical it once took is defunct.
+  # `effect_size` names a measure; the logical it once took is defunct,
+  # and so are the spellings renamed in 0.14.0.
   .check_effect_size_not_logical(effect_size, "`effect_size = \"auto\"`")
+  .check_effect_size_renamed(effect_size, .ES_RENAMED_DESC)
   effect_size_explicit <- !missing(effect_size)
   effect_size <- spicy_match_arg(effect_size)
   if (
@@ -876,6 +865,9 @@ table_outcome <- function(
   ci_explicit <- !missing(ci)
   test <- spicy_match_arg(test)
   align <- spicy_match_arg(align)
+  # An argument of one route only (`word_path` for `output = "word"`,
+  # ...) typed with another `output` reaches nothing.
+  .warn_ignored_output_args(output, names(match.call()))
 
   # --- the outcome: exactly one continuous column ------------------------
   outcome_names <- resolve_multi_column_selection(
@@ -970,25 +962,14 @@ table_outcome <- function(
 
   # --- weights (decision 17) ---------------------------------------------
   weights_vec <- resolve_weights_argument(weights_quo, data, "weights")
-  if (missing(rescale)) {
-    rescale <- getOption("spicy.rescale", FALSE)
-  }
-  if (!is.logical(rescale) || length(rescale) != 1L || is.na(rescale)) {
-    spicy_abort(
-      "`rescale` must be TRUE or FALSE.",
-      class = "spicy_invalid_input"
-    )
-  }
+  validate_logical_scalar(rescale, "rescale")
   if (!is.null(weights_vec)) {
     # NA weights are legal: those rows leave the analytic sample and
     # the exclusion is disclosed. Only genuinely non-finite values are
     # rejected.
     .check_weights_values(weights_vec)
   } else if (isTRUE(rescale) && !missing(rescale)) {
-    spicy_warn(
-      "`rescale = TRUE` has no effect when `weights` is not supplied.",
-      class = "spicy_ignored_arg"
-    )
+    .warn_ignored("rescale", "when `weights` is not supplied")
   }
 
   # --- what the table shows and what it tests -----------------------------

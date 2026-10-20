@@ -178,8 +178,8 @@
   switch(
     effect_size,
     f2 = spicy_str("symbol_f2_partial"),
-    d = spicy_str("symbol_cohens_d"),
-    g = spicy_str("symbol_hedges_g"),
+    cohens_d = spicy_str("symbol_cohens_d"),
+    hedges_g = spicy_str("symbol_hedges_g"),
     omega2 = spicy_str("symbol_omega_sq_partial"),
     effect_size
   )
@@ -1622,8 +1622,8 @@ format_effect_size_header_lm <- function(effect_size = "f2") {
   switch(
     effect_size,
     f2 = "f\u00B2",
-    d = "d",
-    g = "g",
+    cohens_d = "d",
+    hedges_g = "g",
     omega2 = "\u03C9\u00B2",
     effect_size
   )

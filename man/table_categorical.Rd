@@ -13,7 +13,7 @@ table_categorical(
   include_total = TRUE,
   drop_na = FALSE,
   weights = NULL,
-  rescale = FALSE,
+  rescale = getOption("spicy.rescale", FALSE),
   correct = FALSE,
   simulate_p = FALSE,
   simulate_B = 2000,
@@ -22,7 +22,7 @@ table_categorical(
   p_adjust = "none",
   percent_digits = 1,
   p_digits = 3,
-  v_digits = 2,
+  effect_size_digits = 2,
   assoc_measure = "auto",
   assoc_ci = FALSE,
   smd = FALSE,
@@ -39,7 +39,8 @@ table_categorical(
   clipboard_delim = "\\t",
   word_path = NULL,
   user_na = TRUE,
-  style = NULL
+  style = NULL,
+  v_digits
 )
 }
 \arguments{
@@ -58,15 +59,19 @@ selection: \code{everything()} and the other helpers skip them, and
 naming one in \code{select}, or giving its position, is an error. A name
 that is not a column of \code{data} is an error (class
 \code{spicy_missing_column}), and so is a selection with no column to
-tabulate.}
+tabulate. The levels of a variable are its rows in the order \code{by}
+gives its groups (see \code{by}); a labelled variable keeps the order of
+its codes.}
 
 \item{by}{Optional grouping column used for columns/groups. Accepts an
 unquoted column name or a single character column name. Factor
-levels keep their declared order; any other \code{by} (character,
-numeric, haven labelled) forms group columns in order of first
-appearance in the data -- the same convention as
-\code{\link[=table_continuous]{table_continuous()}}. For a haven labelled \code{by}, the group
-headers are the raw codes (value labels are not used for group
+levels keep their declared order, which is the way to choose another
+order; any other \code{by} is sorted, as in \code{\link[=freq]{freq()}} and \code{\link[=cross_tab]{cross_tab()}}:
+text in the C locale (capitals before lower case, the same on every
+machine), \code{FALSE} before \code{TRUE}, numbers and the codes of a haven
+labelled column ascending, whatever the order of the rows. The
+column of missing values comes last. For a haven labelled \code{by}, the
+group headers are the raw codes (value labels are not used for group
 headers -- the family convention shared with \code{\link[=table_continuous]{table_continuous()}}
 and \code{\link[=table_continuous_lm]{table_continuous_lm()}}); declared missing values follow
 \code{user_na} as usual.}
@@ -117,31 +122,34 @@ margin is then an error (class \code{spicy_label_collision}): rename the
 level, or give the margin another label with
 \code{options(spicy.labels = list(header_margin_total = "All"))}.}
 
-\item{drop_na}{Logical. If \code{FALSE} (the default), missing values are
-displayed as a dedicated \code{"(Missing)"} level (and, under \code{by}, a
-\code{"(Missing)"} group column) -- the field convention for descriptive
-tables (gtsummary's "Unknown" row, janitor's \code{NA} row; see the
-Epidemiologist R Handbook, Descriptive tables). A level displayed
-beside that row or column with its label is an error (class
-\code{spicy_label_collision}): rename the level, or give the row another
-label with
+\item{drop_na}{Logical. The rule of the family: a table that counts
+shows the missing values by default, as a frequency table reports
+how many answers are missing; a table that computes a statistic
+removes them by default and counts them in the note (see
+\code{\link[=table_continuous]{table_continuous()}}). This table counts, so \code{FALSE} (the default)
+displays the missing values as a dedicated \code{"(Missing)"} level (and,
+under \code{by}, a \code{"(Missing)"} group column) -- the field convention for
+descriptive tables (gtsummary's "Unknown" row, janitor's \code{NA} row;
+see the Epidemiologist R Handbook, Descriptive tables). A level
+displayed beside that row or column with its label is an error
+(class \code{spicy_label_collision}): rename the level, or give the row
+another label with
 \code{options(spicy.labels = list(row_missing_level = "(Not stated)"))}.
 If \code{TRUE}, rows with \code{NA} in the tabulated variable (and in \code{by},
 when supplied) are removed BEFORE each cross-tabulation, and the
 removal is disclosed in a table note ("Missing values removed: ...")
 rather than silent; a \code{by} that no observation holds is then an
-error (class \code{spicy_invalid_data}). Before 0.13.0 the default was
-\code{TRUE} with no disclosure.}
+error (class \code{spicy_invalid_data}).}
 
 \item{weights}{Optional weights. Either \code{NULL} (the default), a numeric vector
 of length \code{nrow(data)}, or a single column in \code{data} supplied as an
 unquoted name or a character string.}
 
-\item{rescale}{Logical. If \code{FALSE} (the default), weights are used as-is.
+\item{rescale}{Logical. If \code{FALSE}, weights are used as-is.
 If \code{TRUE}, rescales weights so total weighted N matches raw N.
-Passed to \code{spicy::cross_tab()}. When the argument is not supplied,
-the default is read from \code{options(spicy.rescale)} (falling back to
-\code{FALSE}), matching \code{\link[=cross_tab]{cross_tab()}}.}
+Passed to \code{spicy::cross_tab()}. The default reads
+\code{options(spicy.rescale)}, \code{FALSE} when it is unset, matching
+\code{\link[=cross_tab]{cross_tab()}}.}
 
 \item{correct}{Logical. If \code{FALSE} (the default), no continuity correction is
 applied. If \code{TRUE}, applies Yates correction in 2x2 chi-squared contexts.
@@ -202,7 +210,7 @@ variable). One of \code{"none"} (default), \code{"holm"}, \code{"hochberg"},
 
 \item{percent_digits}{Number of digits for percentages in report outputs.
 Defaults to \code{1}. A whole number: a fraction is an error, as for
-\code{p_digits} and \code{v_digits}.}
+every \verb{*_digits} argument.}
 
 \item{p_digits}{Integer >= 1. Number of decimal places used to
 render \emph{p}-values in the \code{p} column (default: \code{3}, the APA
@@ -212,8 +220,9 @@ prints \code{.045} and \verb{<.001}; \code{p_digits = 4} prints \code{.0451} and
 \verb{<.0001}. Leading zeros are always stripped, following APA
 convention.}
 
-\item{v_digits}{Number of digits for the association measure. Defaults
-to \code{2}.}
+\item{effect_size_digits}{Number of digits for the association measure,
+its confidence interval and the SMD, as for the effect sizes of the
+other table functions. Defaults to \code{2}.}
 
 \item{assoc_measure}{Which association measure to report alongside the
 \emph{p}-value. Accepts four input shapes:
@@ -245,9 +254,11 @@ non-2x2 variable, an error is raised so the user can choose
 another measure or fall back to \code{"auto"}.}
 
 \item{assoc_ci}{Passed to \code{\link[=cross_tab]{cross_tab()}}. If \code{TRUE}, includes the
-confidence interval of the association measure. In the console
-and in the \code{"data.frame"}, \code{"excel"} and \code{"clipboard"} outputs,
-two extra columns \verb{CI lower} / \verb{CI upper} are added; in the long
+95\\% confidence interval of the association measure. In the console
+and in the \code{"excel"} and \code{"clipboard"} outputs, two extra columns
+headed \verb{95\\\% CI LL} / \verb{95\\\% CI UL} are added, the level stated as the
+other tables state it (the \code{"data.frame"} output names them
+\verb{CI lower} / \verb{CI upper}); in the long
 output (\code{"long"}) the bounds fill \code{es_ci_lower} / \code{es_ci_upper}.
 In rendered formats (\code{"gt"}, \code{"tinytable"}, \code{"flextable"},
 \code{"word"}), the CI is shown inline (e.g., \code{.14 [.08, .19]}).
@@ -260,11 +271,13 @@ exactly two groups; the value sits on the variable row beside
 \code{p}, never on a level row. Signed for a two-category variable
 (group 1 minus group 2 on the second category), unsigned for
 three or more, where it is a distance. No confidence interval
-and no p-value, by design. Rounded with \code{v_digits}. See the
+and no p-value, by design. Rounded with \code{effect_size_digits}. See the
 "Standardized mean difference" section below. Defaults to
 \code{FALSE}.}
 
-\item{decimal_mark}{Decimal separator (\code{"."} or \code{","}). Defaults to \code{"."}.}
+\item{decimal_mark}{The decimal mark, a single character: \code{"."} (the
+default) or \code{","} in most styles; the Lancet style of
+\code{\link[=spicy_style]{spicy_style()}} uses the middle dot.}
 
 \item{align}{Horizontal alignment of numeric columns in the
 printed ASCII table and in the \code{tinytable}, \code{gt}, \code{flextable},
@@ -320,10 +333,11 @@ clipboard exports. Defaults to six non-breaking spaces.}
 
 \item{add_multilevel_header}{Logical. If \code{TRUE} (the default), merges top
 headers in Excel export. Only consulted for \code{output = "excel"} on a
-grouped table (\code{by} supplied); like the other output-scoped
-presentation arguments (\code{excel_sheet}, \code{clipboard_delim}, ...), it
-is silently unused in every other output and in one-way tables,
-which have a single header row to begin with.}
+grouped table (\code{by} supplied): typed with another \code{output}, it is
+ignored with a warning (class \code{spicy_ignored_arg}), like the other
+arguments of one output (\code{excel_path}, \code{excel_sheet},
+\code{clipboard_delim}, \code{word_path}, ...), and a one-way table, which has
+a single header row to begin with, does not use it.}
 
 \item{blank_na_wide}{Logical. If \code{FALSE} (the default), \code{NA} values are kept
 as-is in \code{output = "data.frame"}. If \code{TRUE}, the empty cells of its
@@ -345,8 +359,8 @@ in a directory that exists. Defaults to
 \code{NULL}. Before 0.13.0, supplying it with \code{output = "flextable"}
 also wrote a \code{.docx} as a side effect; it is now used exclusively
 by \code{output = "word"} (the contract shared with the rest of the
-table family) and is ignored, with a warning, under
-\code{output = "flextable"}.}
+table family) and is ignored, with a warning, under any other
+\code{output}.}
 
 \item{user_na}{Logical. If \code{TRUE} (the default), declared missing
 values in the row variables and in \code{by} are treated as missing:
@@ -365,6 +379,10 @@ covers numeric formatting conformity only, not full editorial
 conformity; \code{?spicy_style} lists the exact rules each one encodes
 and the official document they come from. An unknown name is an
 error.}
+
+\item{v_digits}{Defunct. Renamed \code{effect_size_digits} in spicy 0.14.0,
+as in the other table functions; supplying \code{v_digits} is an error
+(class \code{spicy_defunct}).}
 }
 \value{
 Depends on \code{output}:

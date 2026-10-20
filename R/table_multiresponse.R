@@ -81,9 +81,14 @@
 #'   and so is an empty selection.
 #' @param by Optional grouping column, unquoted or as a string. Factor
 #'   levels keep their declared order, a declared level with no respondent
-#'   included; any other column forms groups in order of first appearance
-#'   (a labelled column by its codes), as in [table_categorical()]. Rows
-#'   with a missing `by` are removed, and the note says how many; a `by`
+#'   included; any other column is sorted, as in [table_categorical()]:
+#'   text in the C locale, `FALSE` before `TRUE`, numbers and the codes of
+#'   a labelled column ascending, whatever the order of the rows. The
+#'   missing answers to the question are counted (see `base` and
+#'   `none_row`), as a table that counts does (see `drop_na` in
+#'   [table_categorical()]), but a missing `by` has no group to be counted
+#'   in: rows with a missing `by` are removed, and the note says how
+#'   many, so this table has no `drop_na`; a `by`
 #'   that no observation holds is an error (class `spicy_invalid_data`).
 #'   A level displayed with the label of the `Total` margin is an error,
 #'   as in [table_categorical()].
@@ -175,7 +180,11 @@
 #'   correction; or `"bootstrap"`, the same sum referred to its bootstrap
 #'   distribution. See *Tests*.
 #' @param boot_n Number of bootstrap resamples for
-#'   `global_test = "bootstrap"`. Defaults to `1999`.
+#'   `global_test = "bootstrap"`: a positive whole number, as in
+#'   [table_regression()] and [table_continuous_lm()]. Defaults to `1999`,
+#'   the default of the `MRCV` package for the same bootstrap test. Typed
+#'   with `global_test = "rs2"`, or in a table without a global test, it
+#'   is ignored with a warning (class `spicy_ignored_arg`).
 #' @param p_adjust Multiple-comparison adjustment of the item `p` column,
 #'   applied to the family of the items tested: `"holm"` (the default),
 #'   `"none"`, or another method of [stats::p.adjust()] (`"hochberg"`,
@@ -195,7 +204,8 @@
 #'   or `"right"`, as in [table_categorical()].
 #' @param title The table title. `NULL` (the default) gives "Multiple
 #'   responses", followed by "by" and the `by` variable under the `labels`
-#'   contract; a single string replaces it.
+#'   contract; a single string replaces it, and `FALSE` removes it, as in
+#'   [table_regression()].
 #' @param note The table note. `NULL` (the default) builds it, opening
 #'   with "Note.": the rows removed for a missing `by`, what the
 #'   percentages sum to, the base with the respondents it holds or leaves
@@ -589,6 +599,7 @@ table_multiresponse <- function(
     note = note,
     counted = counted
   )
+  .warn_ignored_output_args(output, names(match.call()))
   boot_n <- as.integer(boot_n)
   percent_digits <- as.integer(percent_digits)
   p_digits <- as.integer(p_digits)
@@ -659,9 +670,9 @@ table_multiresponse <- function(
       sprintf("`by` (`%s`)", by_name),
       drop_na_hint = FALSE
     )
-    group_levels <- as.character(
-      if (is.factor(g0)) levels(g0) else unique(g0[!is.na(g0)])
-    )
+    # The family's order of the groups: a factor keeps its levels, any
+    # other `by` is sorted in the C locale.
+    group_levels <- .group_levels(g0)
     if (!length(group_levels)) {
       spicy_abort(
         c(
@@ -900,7 +911,7 @@ table_multiresponse <- function(
   } else {
     item_labels[ord][!test_res$tested[ord]]
   }
-  title_txt <- title %||% .mr_title(by_label)
+  title_txt <- if (isFALSE(title)) NULL else title %||% .mr_title(by_label)
   note_txt <- if (isFALSE(note)) {
     NULL
   } else {
@@ -976,6 +987,8 @@ table_multiresponse <- function(
       sep_rows = base_row,
       indent_rows = integer(0),
       title = title_txt,
+      # `title = FALSE` and `title = ""` leave the table untitled.
+      untitled = is.null(title_txt) || !nzchar(title_txt),
       excel_path = excel_path,
       excel_sheet = excel_sheet,
       clipboard_delim = clipboard_delim,
@@ -1055,33 +1068,18 @@ table_multiresponse <- function(
   is_string <- function(x) {
     is.character(x) && length(x) == 1L && !is.na(x) && nzchar(x)
   }
-  if (!is_flag(none_row)) {
-    bad("`none_row` must be TRUE or FALSE.")
-  }
+  validate_logical_scalar(none_row, "none_row", call = call)
   if (!is.null(p_value) && !is_flag(p_value)) {
     bad("`p_value` must be TRUE, FALSE, or NULL.")
   }
-  if (!is_flag(statistic)) {
-    bad("`statistic` must be TRUE or FALSE.")
-  }
-  if (
-    !is.numeric(boot_n) ||
-      length(boot_n) != 1L ||
-      !is.finite(boot_n) ||
-      boot_n < 1 ||
-      boot_n != round(boot_n) ||
-      boot_n > .Machine$integer.max
-  ) {
-    bad("`boot_n` must be a positive whole number.")
-  }
+  validate_logical_scalar(statistic, "statistic", call = call)
+  validate_boot_n(boot_n, call = call)
   validate_digit_arg(percent_digits, "percent_digits", call = call)
   validate_digit_arg(p_digits, "p_digits", min = 1L, call = call)
-  if (!.is_single_char(decimal_mark)) {
-    bad('`decimal_mark` must be a single character (e.g. "." or ",").')
-  }
-  if (!is.null(title) && !is_string(title)) {
-    bad("`title` must be NULL or a single non-empty string.")
-  }
+  validate_decimal_mark(decimal_mark, call = call)
+  # The `title` contract of `table_regression()`: NULL builds it, FALSE
+  # removes it, a string (`""` included) replaces it.
+  validate_caption_arg(title, "title", call = call)
   if (!is.null(note) && !isFALSE(note) && !is_string(note)) {
     bad("`note` must be NULL, FALSE, or a single non-empty string.")
   }
@@ -1162,19 +1160,11 @@ table_multiresponse <- function(
       boot_n = boot_n,
       p_adjust = p_adjust
     )
-    for (arg in names(args)[args]) {
-      spicy_warn(
-        sprintf("`%s` is ignored %s.", arg, why),
-        class = "spicy_ignored_arg"
-      )
-    }
+    .warn_ignored(names(args)[args], why)
     return(invisible(NULL))
   }
   if (boot_n_rs2) {
-    spicy_warn(
-      "`boot_n` is ignored unless `global_test = \"bootstrap\"`.",
-      class = "spicy_ignored_arg"
-    )
+    .warn_boot_n_ignored("`global_test = \"bootstrap\"`")
   }
   invisible(NULL)
 }

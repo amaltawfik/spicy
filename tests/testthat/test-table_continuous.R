@@ -455,13 +455,13 @@ test_that("table_continuous grouped with multiple variables", {
   )
 })
 
-test_that("table_continuous non-factor by groups in order of appearance", {
-  # Audit phase 2, finding 17: the family convention (locked for
-  # table_categorical()) is order of first appearance for a
-  # non-factor `by`; table_continuous() used to sort.
+test_that("table_continuous sorts the groups of a non-factor by", {
+  # Decision 4 of the ADR of 2026-10-20: a non-factor `by` is sorted, in
+  # the C locale for text, whatever the order of the rows (it followed
+  # the order of first appearance until 0.14.0).
   df <- data.frame(g = c("Z", "A", "Z", "A"), x = c(1, 2, 3, 4))
   out <- table_continuous(df, by = g, output = "data.frame")
-  expect_equal(out$group, c("Z", "A"))
+  expect_equal(out$group, c("A", "Z"))
 
   # Numeric by, same convention, matching table_categorical().
   set.seed(7)
@@ -490,8 +490,8 @@ test_that("the test direction follows the displayed group order", {
     statistic = TRUE,
     output = "long"
   )
-  expect_equal(unique(out$group), c("Z", "A"))
-  tt <- stats::t.test(df$x[df$g == "Z"], df$x[df$g == "A"])
+  expect_equal(unique(out$group), c("A", "Z"))
+  tt <- stats::t.test(df$x[df$g == "A"], df$x[df$g == "Z"])
   expect_equal(out$statistic[1], unname(tt$statistic), tolerance = 1e-12)
   expect_equal(out$p.value[1], tt$p.value, tolerance = 1e-12)
 })
@@ -699,7 +699,7 @@ test_that("p_value = FALSE drops p.value when another argument runs the test (is
   ))
   expect_false("p.value" %in% names(st))
   # An effect size keeps the test it comes from, not its p-value.
-  es <- build(p_value = FALSE, effect_size = "eta_sq", output = "long")
+  es <- build(p_value = FALSE, effect_size = "eta2", output = "long")
   expect_true(all(
     c("test_type", "statistic", "df", "df.residual") %in% names(es)
   ))
@@ -867,7 +867,7 @@ test_that("the test-ignored warning states the full trigger condition", {
       test = "student",
       p_value = FALSE,
       statistic = FALSE,
-      effect_size = "eta_sq",
+      effect_size = "eta2",
       output = "data.frame"
     )
   )
@@ -2024,7 +2024,7 @@ test_that("table_continuous eta-squared for 3+ groups (welch)", {
     effect_size = "auto",
     output = "long"
   )
-  expect_equal(out$es_type[1], "eta_sq")
+  expect_equal(out$es_type[1], "eta2")
   expect_false(is.na(out$es_ci_lower[1]))
   expect_false(is.na(out$es_ci_upper[1]))
   # Manual eta-squared
@@ -2063,7 +2063,7 @@ test_that("table_continuous nonparametric 3+ groups gives epsilon-squared", {
     effect_size = "auto",
     output = "long"
   )
-  expect_equal(out$es_type[1], "epsilon_sq")
+  expect_equal(out$es_type[1], "epsilon2")
   expect_false(is.na(out$es_ci_lower[1]))
   expect_false(is.na(out$es_ci_upper[1]))
 })
@@ -2093,7 +2093,7 @@ test_that("table_continuous effect_size_ci without effect_size warns and enables
     "effect_size_ci"
   )
   # The long frame always holds the columns; enabled means populated.
-  expect_identical(out$es_type[1], "eta_sq")
+  expect_identical(out$es_type[1], "eta2")
   expect_false(is.na(out$es_value[1]))
   expect_false(is.na(out$es_ci_lower[1]))
 })
@@ -2238,7 +2238,7 @@ test_that("table_continuous does not warn about test when effect_size uses it", 
     )
   )
 
-  expect_equal(out$es_type[1], "eta_sq")
+  expect_equal(out$es_type[1], "eta2")
   expect_equal(out$test_type[1], "anova")
 })
 
@@ -2259,7 +2259,7 @@ test_that("table_continuous effect_size with test='student' 2 groups gives hedge
   expect_equal(out$test_type[1], "student_t")
 })
 
-test_that("table_continuous effect_size with test='student' 3+ groups gives eta_sq", {
+test_that("table_continuous effect_size with test='student' 3+ groups gives eta2", {
   out <- table_continuous(
     iris,
     select = Sepal.Length,
@@ -2268,7 +2268,7 @@ test_that("table_continuous effect_size with test='student' 3+ groups gives eta_
     effect_size = "auto",
     output = "long"
   )
-  expect_equal(out$es_type[1], "eta_sq")
+  expect_equal(out$es_type[1], "eta2")
   expect_equal(out$test_type[1], "anova")
 })
 
@@ -2810,10 +2810,10 @@ test_that("effect_size character explicit choices dispatch correctly", {
     iris,
     select = Sepal.Length,
     by = Species,
-    effect_size = "eta_sq",
+    effect_size = "eta2",
     output = "long"
   )
-  expect_equal(unique(out_eta$es_type[!is.na(out_eta$es_type)]), "eta_sq")
+  expect_equal(unique(out_eta$es_type[!is.na(out_eta$es_type)]), "eta2")
 
   out_rrb <- table_continuous(
     sleep,
@@ -2830,16 +2830,16 @@ test_that("effect_size character explicit choices dispatch correctly", {
     select = Sepal.Length,
     by = Species,
     test = "nonparametric",
-    effect_size = "epsilon_sq",
+    effect_size = "epsilon2",
     output = "long"
   )
-  expect_equal(unique(out_eps$es_type[!is.na(out_eps$es_type)]), "epsilon_sq")
+  expect_equal(unique(out_eps$es_type[!is.na(out_eps$es_type)]), "epsilon2")
 })
 
 test_that("effect_size mismatched explicit choice errors clearly", {
-  # eta_sq requires k > 2; sleep has 2 groups
+  # eta2 requires k > 2; sleep has 2 groups
   expect_error(
-    table_continuous(sleep, select = extra, by = group, effect_size = "eta_sq"),
+    table_continuous(sleep, select = extra, by = group, effect_size = "eta2"),
     "requires more than two groups"
   )
   # hedges_g requires k = 2; iris$Species has 3
@@ -3134,7 +3134,7 @@ test_that("glance() returns one row per outcome with omnibus test + ES", {
     iris,
     select = c(Sepal.Length, Sepal.Width),
     by = Species,
-    effect_size = "eta_sq"
+    effect_size = "eta2"
   )
   gl <- broom::glance(out)
   expect_equal(nrow(gl), 2L)
@@ -3157,7 +3157,7 @@ test_that("glance() returns one row per outcome with omnibus test + ES", {
       "nobs"
     )
   )
-  expect_equal(unique(gl$es_type), "eta_sq")
+  expect_equal(unique(gl$es_type), "eta2")
   expect_true(all(gl$nobs == 150L))
 })
 

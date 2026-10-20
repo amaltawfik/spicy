@@ -12,14 +12,14 @@ table_continuous(
   regex = FALSE,
   drop_na = TRUE,
   weights = NULL,
-  rescale = FALSE,
+  rescale = getOption("spicy.rescale", FALSE),
   test = c("welch", "student", "nonparametric"),
   p_value = NULL,
   p_adjust = "none",
   statistic = FALSE,
   show_n = TRUE,
   show_columns = NULL,
-  effect_size = c("none", "auto", "hedges_g", "eta_sq", "r_rb", "epsilon_sq"),
+  effect_size = c("none", "auto", "hedges_g", "eta2", "r_rb", "epsilon2"),
   effect_size_ci = FALSE,
   smd = FALSE,
   ci = TRUE,
@@ -58,9 +58,12 @@ numeric column.}
 or a single character column name. Coerced to factor for
 grouping; non-numeric grouping columns (factor, character,
 logical) are supported as-is. Factor levels keep their declared
-order; any other \code{by} (character, numeric, haven labelled) forms
-groups in order of first appearance in the data -- the same
-convention as \code{\link[=table_categorical]{table_categorical()}}. For a haven labelled \code{by},
+order, which is the way to choose another order; any other \code{by} is
+sorted, as in \code{\link[=table_categorical]{table_categorical()}}: text in the C locale (capitals
+before lower case, the same on every machine), \code{FALSE} before
+\code{TRUE}, numbers and the codes of a haven labelled column ascending,
+whatever the order of the rows. The group of missing values comes
+last. For a haven labelled \code{by},
 the group headers are the raw codes (value labels are not used
 for grouping headers -- the family convention shared with
 \code{\link[=table_categorical]{table_categorical()}} and \code{\link[=table_continuous_lm]{table_continuous_lm()}}); declared
@@ -74,15 +77,16 @@ helpers. If \code{TRUE}, the \code{select} argument is treated as a regular
 expression.}
 
 \item{drop_na}{Logical. Controls how missing values in the \code{by}
-column are handled -- the same argument as \code{\link[=table_categorical]{table_categorical()}},
-with one structural difference: a continuous summary has no
-\code{"(Missing)"} row for the summarized variable itself (a mean
-cannot include \code{NA}), so \code{NA}s in each summarized variable are
-always excluded from that variable's statistics and the exclusion
-is disclosed in a table note ("Missing values removed: ...")
-rather than silent. If \code{TRUE} (the default, preserving this
-function's historical behavior; \code{\link[=table_categorical]{table_categorical()}} defaults to
-\code{FALSE}), rows with \code{NA} in \code{by} are removed from the grouped
+column are handled, under the rule of the family: a table that
+counts shows the missing values by default (a frequency table
+reports how many answers are missing, as a \code{"(Missing)"} row and,
+under \code{by}, a \code{"(Missing)"} column: \code{\link[=table_categorical]{table_categorical()}}); a table
+that computes removes them by default and counts them in the note.
+This table computes: a mean is computed on the observed values, so
+the \code{NA}s of each summarized variable are always excluded from that
+variable's statistics, and the exclusion is disclosed in a table
+note ("Missing values removed: ...") rather than silent. If \code{TRUE}
+(the default), rows with \code{NA} in \code{by} are removed from the grouped
 summaries, and a note line says so ("Rows with missing ...
 removed"). If \code{FALSE}, rows with \code{NA} in \code{by} form a
 dedicated \code{"(Missing)"} group -- the field convention for
@@ -108,12 +112,13 @@ weighted comparisons.}
 
 \item{rescale}{Logical. If \code{TRUE}, weights are first normalized so
 that they sum to the number of observations used for each
-variable -- the same \code{rescale} grammar as \code{\link[=table_categorical]{table_categorical()}},
-read from \code{options(spicy.rescale)} when not supplied. This is the
+variable -- the same \code{rescale} grammar as \code{\link[=table_categorical]{table_categorical()}}.
+This is the
 sampling-weights reading: results become invariant to the scale
 of the weights, and the weighted SD then equals Stata's
-\verb{[aweight]} / \code{survey::svyvar()} value exactly. The default
-\code{FALSE} uses the weights as given (frequency reading).}
+\verb{[aweight]} / \code{survey::svyvar()} value exactly. \code{FALSE} uses the
+weights as given (frequency reading). The default reads
+\code{options(spicy.rescale)}, \code{FALSE} when it is unset.}
 
 \item{test}{Character. Statistical test to use when comparing groups.
 One of \code{"welch"} (default), \code{"student"}, or \code{"nonparametric"}.
@@ -183,21 +188,24 @@ groups).
 \item \code{"hedges_g"}: Hedges' \emph{g} (bias-corrected standardized mean
 difference, 2 groups, parametric). CI via the Hedges & Olkin
 normal approximation.
-\item \code{"eta_sq"}: Eta-squared (\eqn{\eta^2}, parametric ANOVA-style
+\item \code{"eta2"}: Eta-squared (\eqn{\eta^2}, parametric ANOVA-style
 \code{SS_between / SS_total}). CI via inversion of the noncentral
 \emph{F} distribution.
 \item \code{"r_rb"}: Rank-biserial \emph{r} from the Wilcoxon / Mann-Whitney
 statistic (2 groups, nonparametric). CI via Fisher
 \emph{z}-transform.
-\item \code{"epsilon_sq"}: Epsilon-squared (\eqn{\varepsilon^2}) from the
+\item \code{"epsilon2"}: Epsilon-squared (\eqn{\varepsilon^2}) from the
 Kruskal-Wallis statistic (3+ groups, nonparametric). CI via
 percentile bootstrap (2 000 replicates).
 }
 
-A logical value is an error (class \code{spicy_defunct}): use \code{"auto"}
+A squared measure ends in \code{2}, as in \code{\link[=table_continuous_lm]{table_continuous_lm()}} and
+\code{\link[=table_regression]{table_regression()}}: \code{"eta_sq"} and \code{"epsilon_sq"}, the spellings
+before 0.14.0, are an error (class \code{spicy_defunct}) that gives the new
+one. A logical value is an error of the same class: use \code{"auto"}
 for \code{TRUE} and \code{"none"} for \code{FALSE}.
 Explicit choices are validated against the active \code{test} and the
-number of groups; an incompatible request (e.g. \code{"eta_sq"} with
+number of groups; an incompatible request (e.g. \code{"eta2"} with
 two groups, or \code{"hedges_g"} with \code{test = "nonparametric"})
 triggers an actionable error. Ignored when \code{by} is not used.}
 
@@ -254,7 +262,7 @@ variable label documents the data file; a published table carries
 the wording you set here.}
 
 \item{ci_level}{Confidence level for the mean confidence interval
-(default: \code{0.95}). Must be between 0 and 1 exclusive.}
+(default: \code{0.95}): a number strictly between 0 and 1.}
 
 \item{digits}{Number of decimal places for descriptive values and test
 statistics (default: \code{2}). A whole number: a fraction is an error,
@@ -273,8 +281,9 @@ genomics / GWAS contexts with very small \emph{p}-values, or for
 journals using a coarser convention. Leading zeros are always
 stripped, following APA convention.}
 
-\item{decimal_mark}{Character used as decimal separator.
-Either \code{"."} (default) or \code{","}.}
+\item{decimal_mark}{The decimal mark, a single character: \code{"."} (the
+default) or \code{","} in most styles; the Lancet style of
+\code{\link[=spicy_style]{spicy_style()}} uses the middle dot.}
 
 \item{align}{Horizontal alignment of numeric columns in the printed
 ASCII table and in the \code{tinytable}, \code{gt}, \code{flextable}, \code{word},
@@ -403,7 +412,7 @@ an effect size).
 \item \code{p.value} -- with the \emph{p}-value only, and \code{p_unadjusted}
 under \code{p_adjust}.
 \item \code{es_type} -- effect-size identifier (\code{"hedges_g"},
-\code{"eta_sq"}, \code{"r_rb"}, or \code{"epsilon_sq"}), \code{es_value},
+\code{"eta2"}, \code{"r_rb"}, or \code{"epsilon2"}), \code{es_value},
 \code{es_ci_lower}, \code{es_ci_upper} -- the effect size and its
 interval.
 \item \code{smd_type}, \code{smd_value} -- the standardized mean
@@ -817,7 +826,7 @@ table_continuous(
   sochealth,
   select = wellbeing_score,
   by = education,
-  effect_size = "eta_sq",
+  effect_size = "eta2",
   effect_size_ci = TRUE,
   effect_size_digits = 3
 )

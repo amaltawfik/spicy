@@ -347,7 +347,7 @@ test_that("table_continuous_lm: 3-level `by` with a covariate uses partial F", {
   expect_equal(out$es_value[1], expected_f2, tolerance = 1e-9)
 })
 
-test_that("table_continuous_lm: effect_size = \"d\" + covariates errors with spicy_unsupported", {
+test_that("table_continuous_lm: effect_size = \"cohens_d\" + covariates errors with spicy_unsupported", {
   set.seed(5L)
   n <- 60
   df <- data.frame(
@@ -361,13 +361,13 @@ test_that("table_continuous_lm: effect_size = \"d\" + covariates errors with spi
       select = bmi,
       by = sex,
       covariates = age,
-      effect_size = "d"
+      effect_size = "cohens_d"
     ),
     class = "spicy_unsupported"
   )
 })
 
-test_that("table_continuous_lm: effect_size = \"g\" + covariates errors with spicy_unsupported", {
+test_that("table_continuous_lm: effect_size = \"hedges_g\" + covariates errors with spicy_unsupported", {
   set.seed(6L)
   n <- 60
   df <- data.frame(
@@ -381,7 +381,7 @@ test_that("table_continuous_lm: effect_size = \"g\" + covariates errors with spi
       select = bmi,
       by = sex,
       covariates = age,
-      effect_size = "g"
+      effect_size = "hedges_g"
     ),
     class = "spicy_unsupported"
   )
@@ -434,18 +434,25 @@ test_that("adjustment: NULL covariates -> attr is NA, both methods identical", {
     bmi = rnorm(n, 25),
     sex = factor(rep(c("F", "M"), each = n / 2))
   )
-  # The printed objects: `adjustment` is a rendering attribute.
-  out_p <- table_continuous_lm(
-    df,
-    select = bmi,
-    by = sex,
-    adjustment = "proportional"
+  # The printed objects: `adjustment` is a rendering attribute. Typed
+  # without covariates, it reaches nothing and says so.
+  expect_warning(
+    out_p <- table_continuous_lm(
+      df,
+      select = bmi,
+      by = sex,
+      adjustment = "proportional"
+    ),
+    class = "spicy_ignored_arg"
   )
-  out_b <- table_continuous_lm(
-    df,
-    select = bmi,
-    by = sex,
-    adjustment = "balanced"
+  expect_warning(
+    out_b <- table_continuous_lm(
+      df,
+      select = bmi,
+      by = sex,
+      adjustment = "balanced"
+    ),
+    class = "spicy_ignored_arg"
   )
   expect_identical(attr(out_p, "adjustment"), NA_character_)
   expect_identical(attr(out_b, "adjustment"), NA_character_)

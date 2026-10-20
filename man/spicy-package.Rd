@@ -50,8 +50,7 @@ changes):
 \itemize{
 \item Summary table builders: \code{\link[=table_categorical]{table_categorical()}},
 \code{\link[=table_continuous]{table_continuous()}}, \code{\link[=table_continuous_lm]{table_continuous_lm()}},
-\code{\link[=table_outcome]{table_outcome()}}, \code{\link[=table_multiresponse]{table_multiresponse()}}, and
-\code{\link[=var_labels]{var_labels()}} for their \code{labels}
+\code{\link[=table_outcome]{table_outcome()}}, and \code{\link[=var_labels]{var_labels()}} for their \code{labels}
 \item Survey-design summary tables:
 \code{\link[=table_continuous_svy]{table_continuous_svy()}}, \code{\link[=table_categorical_svy]{table_categorical_svy()}}
 \item Regression tables: \code{\link[=table_regression]{table_regression()}},
@@ -71,6 +70,8 @@ OWN clock rather than the parent family's):
 since 0.13.0
 \item Codebooks: \code{\link[=code_book]{code_book()}} (the \code{spicy_codebook} object, its
 Excel workbook, and its PDF), in the development version
+\item Multiple-response questions: \code{\link[=table_multiresponse]{table_multiresponse()}}, in the
+development version
 }
 
 \strong{Internal API} (not part of the public surface; can change
@@ -137,7 +138,8 @@ every class. \code{output = "excel"} and \code{"word"} return the path of the
 file, invisibly.
 
 The set of columns produced by each method is considered
-\strong{stabilizing}: existing columns will not be
+\strong{stabilizing} (\strong{experimental} for \code{\link[=table_multiresponse]{table_multiresponse()}}, as the
+function itself): existing columns will not be
 silently renamed or have their semantics changed within \verb{0.y.z},
 and any breaking change is announced in \code{NEWS.md}. Adding optional new
 columns (e.g. covariate-adjustment metadata) is not a breaking
@@ -217,10 +219,11 @@ rebuild the table with the current spicy.
 \item \code{spicy_resampling_failed} -- bootstrap /
 jackknife resampling produced too few valid replicates to
 estimate the requested statistic.
-\item \code{spicy_defunct} -- an argument removed in a
-pre-1.0 hard break; the message names the replacement.
-Signaled together with \code{spicy_invalid_input} so
-generic input handlers still catch it.
+\item \code{spicy_defunct} -- an argument, or a value of an
+argument, removed or renamed in a pre-1.0 hard break (e.g.,
+\code{v_digits}, \code{effect_size = "eta_sq"}); the message names the
+replacement. Signaled together with \code{spicy_invalid_input}
+so generic input handlers still catch it.
 \item \code{spicy_bad_authors} -- the \code{authors} argument of
 \code{\link[=code_book]{code_book()}} has none of its accepted shapes. Signaled
 together with \code{spicy_invalid_input}.
@@ -253,9 +256,10 @@ reported and the table note says so.
 \item \code{spicy_dropped_na} -- \code{NA} observations were
 silently excluded from the computation (e.g., \code{NA}
 weights).
-\item \code{spicy_ignored_arg} -- an argument was ignored
-due to context (e.g., \code{correct = TRUE} on a non-2x2
-table).
+\item \code{spicy_ignored_arg} -- an argument the call typed
+has no effect in its context (e.g., \code{correct = TRUE} on a
+non-2x2 table, \code{excel_path} without \code{output = "excel"}); the
+warning names that argument and no other.
 \item \code{spicy_no_selection} -- a selection or a filter
 matched nothing, and an empty result is returned rather than
 an error (the row-wise summaries, \code{\link[=varlist]{varlist()}}, a \code{levels_keep}

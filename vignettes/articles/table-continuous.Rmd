@@ -139,8 +139,8 @@ table_continuous(
 ```
 
 Allowed values are `"none"` (default), `"auto"` (= legacy `TRUE`),
-`"hedges_g"`, `"eta_sq"`, `"r_rb"`, and `"epsilon_sq"`. Incompatible
-explicit choices (e.g. `"eta_sq"` with two groups, or `"hedges_g"`
+`"hedges_g"`, `"eta2"`, `"r_rb"`, and `"epsilon2"`. Incompatible
+explicit choices (e.g. `"eta2"` with two groups, or `"hedges_g"`
 with `test = "nonparametric"`) trigger an actionable error.
 
 When you need the numbers for further processing, use

@@ -80,7 +80,7 @@ test_that("rescale = TRUE without weights warns and leaves the table unweighted"
       show_columns = c("m", "n"),
       output = "long"
     ),
-    "`rescale = TRUE` has no effect when `weights` is not supplied\\.",
+    "`rescale` is ignored when `weights` is not supplied\\.",
     class = "spicy_ignored_arg"
   )
   expect_identical(out$n, 32L)
@@ -314,14 +314,14 @@ test_that("r_rb takes sorted group order for a non-factor `by`", {
   )
 })
 
-test_that("eta_sq takes sorted group order for a non-factor `by`", {
+test_that("eta2 takes sorted group order for a non-factor `by`", {
   # 2505: the `sort(unique(gvec))` else-arm of the eta-squared block.
   # eta-squared is order-free, so the assertion is equality with the
   # declared-level factor plus the pinned value.
   x <- c(30, 32, 34, 20, 22, 24, 10, 12, 14)
   g <- c("c", "c", "c", "b", "b", "b", "a", "a", "a")
-  row <- spicy:::compute_effect_size(x, g, 3L, "welch", 0.95, type = "eta_sq")
-  expect_identical(row$es_type, "eta_sq")
+  row <- spicy:::compute_effect_size(x, g, 3L, "welch", 0.95, type = "eta2")
+  expect_identical(row$es_type, "eta2")
   expect_equal(row$es_value, 0.96153846153846156, tolerance = 1e-12)
   expect_identical(
     row,
@@ -331,7 +331,7 @@ test_that("eta_sq takes sorted group order for a non-factor `by`", {
       3L,
       "welch",
       0.95,
-      type = "eta_sq"
+      type = "eta2"
     )
   )
 })

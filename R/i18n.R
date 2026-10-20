@@ -113,8 +113,6 @@
   # ROLE is the registry's rule, not one key per string.
   header_group_qualified = "%s %s",
   header_effect_size = "Effect size",
-  header_ci_lower = "CI lower",
-  header_ci_upper = "CI upper",
   # The margin COLUMN of table_categorical(), distinct from the totals ROW
   # of freq() / cross_tab() (`label_total`): a level of `by` displayed with
   # it is refused (`.cat_margin_key()`), and a language may want one word
@@ -636,9 +634,11 @@
   # quantity playing a single role, so the continuous and the categorical
   # table put the same word over it.
   header_smd = "SMD",
-  # The bounds of an interval carried by a SPANNER. Deliberately not
-  # `header_ci_lower` / `header_ci_upper` ("CI lower" / "CI upper", lot A),
-  # which name standalone columns with no spanner above them.
+  # The bounds of an interval. Under a SPANNER they are the whole header;
+  # a standalone bound names its interval first (`header_ci_bound`:
+  # "95% CI LL"), the association interval of `table_categorical()`
+  # included, whose own keys `header_ci_lower` / `header_ci_upper` ("CI
+  # lower" / "CI upper") went with 0.14.0.
   header_ci_ll = "LL",
   header_ci_ul = "UL",
   # Two holes: the interval header ("95% CI"), then the bound. The order is
