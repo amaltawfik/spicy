@@ -1324,7 +1324,12 @@ test_that("?spicy lists every condition class the package signals", {
   # given to spicy_abort() / spicy_warn() / spicy_inform() in R/ must each
   # be listed in the "Classed conditions" section of R/spicy-package.R.
   src_dir <- test_path("..", "..", "R")
-  skip_if(!dir.exists(src_dir), "package sources not available")
+  # An installed package has an R/ folder too (the lazy-load database),
+  # so test for the source file itself, as covr runs the installed copy.
+  skip_if(
+    !file.exists(file.path(src_dir, "spicy-package.R")),
+    "package sources not available"
+  )
   doc <- paste(
     readLines(file.path(src_dir, "spicy-package.R"), encoding = "UTF-8"),
     collapse = "\n"
