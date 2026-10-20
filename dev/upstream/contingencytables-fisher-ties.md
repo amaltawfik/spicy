@@ -6,7 +6,7 @@
   de l'organisation a été suivi : recherche préalable, reproduction,
   comportement attendu et observé)
 - **Envoyé** : 2026-10-20, par Amal (compte amaltawfik), texte ci-dessous tel quel
-- **Statut** : ouvert
+- **Statut** : ouvert. Réponse du mainteneur (Waldir Leoncio) le 2026-10-20 : invitation à ouvrir une pull request. Pull request [#63](https://github.com/ocbe-uio/contingencytables/pull/63) ouverte le 2026-10-20 depuis amaltawfik/contingencytables, branche fix/fisher-ties (un commit : les deux lignes, tests/testthat/test-issue62.R, NEWS), texte ci-dessous tel qu'envoyé.
 - **Côté spicy** : aucun contournement. spicy calcule son propre mid-p
   (`test = "midp"` de table_categorical() et table_multiresponse(),
   définition 1.12 du livre, égalités à la tolérance de fisher.test()) et
@@ -93,3 +93,16 @@ In `R/Fisher_exact_test_2x2.R`:
 With these two changes, no table of the two sets differs from the definition or from `fisher.test()`, the p-values with `statistic = "Pearson"` do not change on these tables, and the expectations of `tests/testthat/test-issue51.R` still hold. I can open a pull request with these changes and tests for the tables above.
 
 While checking, I also found problems with `statistic = "LR"` in these two functions and problems in six other functions. I will report them in separate issues.
+
+## Pull request #63, titre
+
+Fix ties in Fisher_midP_test_2x2() and Fisher_exact_test_2x2() (#62)
+
+## Pull request #63, corps tel qu'envoyé
+
+Fixes #62.
+
+- The statistics are compared with a relative tolerance of 1e-7, as in `stats::fisher.test()`.
+- With `statistic = "LR"`, some p-values change too: mirror tables are now found as ties.
+- Tests in `tests/testthat/test-issue62.R`. The existing tests are unchanged.
+- NEWS entry.
