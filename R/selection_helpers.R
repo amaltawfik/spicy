@@ -39,7 +39,7 @@ resolve_single_column_selection <- function(
     return(rlang::as_string(expr))
   }
 
-  probe <- .selection_probe(quo)
+  probe <- .selection_probe(quo, data)
   if (probe$ok && is.character(probe$value)) {
     val <- unique(probe$value)
     .check_selection_names(val, data, arg, where, call)
@@ -83,7 +83,7 @@ resolve_multi_column_selection <- function(
     return(rlang::as_string(expr))
   }
 
-  probe <- .selection_probe(quo)
+  probe <- .selection_probe(quo, data)
   if (probe$ok && is.null(probe$value)) {
     return(character())
   }
@@ -150,25 +150,38 @@ resolve_multi_column_selection <- function(
 # column, a selection that names it cannot be read, a position or a range
 # of names still takes it and leaves the copy, and a helper or a negation
 # takes both. Without `col`, a range of names reads the same other
-# columns, where a position shifts to another one or past the end.
+# columns, where a position shifts to another one or past the end. In
+# both, tidyselect would look the name `col` up in the caller's
+# environment, where a same-named object would stand in for the column:
+# the name is masked there, unless the selection reads that object on the
+# data as given (the argument of a helper).
 .selection_points_at <- function(quo, data, sel, col, arg, where) {
   if (rlang::is_symbol(rlang::quo_get_expr(quo), col)) {
     return(TRUE)
   }
-  read <- function(d) {
+  read <- function(d, q) {
     tryCatch(
-      resolve_multi_column_selection(quo, d, arg, where),
+      resolve_multi_column_selection(q, d, arg, where),
       error = function(e) NULL
     )
+  }
+  mask <- new.env(parent = rlang::quo_get_env(quo))
+  assign(col, quote(expr = ), envir = mask)
+  masked <- rlang::quo_set_env(quo, mask)
+  if (identical(read(data, masked), sel)) {
+    quo <- masked
   }
   cols <- as.list(data)
   names(cols)[names(cols) == col] <- ".spicy_role"
   cols[[".spicy_role_copy"]] <- data[[col]]
-  moved <- read(structure(
-    cols,
-    class = "data.frame",
-    row.names = c(NA_integer_, -nrow(data))
-  ))
+  moved <- read(
+    structure(
+      cols,
+      class = "data.frame",
+      row.names = c(NA_integer_, -nrow(data))
+    ),
+    quo
+  )
   if (is.null(moved)) {
     return(TRUE)
   }
@@ -176,17 +189,22 @@ resolve_multi_column_selection <- function(
     return(FALSE)
   }
   # dplyr, not `[`: a data.table reads a character `i` as a join.
-  without <- read(dplyr::select(data, !tidyselect::all_of(col)))
+  without <- read(dplyr::select(data, !tidyselect::all_of(col)), quo)
   is.null(without) || !setequal(without, setdiff(sel, col))
 }
 
 # The selection evaluated outside the data, to tell a character vector (a
 # column name held in an object, or typed as a string) from a tidyselect
 # expression. `ok` is FALSE when it cannot be evaluated there, which is
-# the case of every bare column name and of every selection helper. The
-# warnings are muffled: tidyselect deprecates `all_of()` outside a
-# selecting function, and this probe is not one.
-.selection_probe <- function(quo) {
+# the case of every selection helper, and when it names a column of
+# `data`: a name that is a column is that column, never a same-named
+# object of the caller's environment. The warnings are muffled:
+# tidyselect deprecates `all_of()` outside a selecting function, and this
+# probe is not one.
+.selection_probe <- function(quo, data) {
+  if (any(all.vars(rlang::quo_get_expr(quo)) %in% names(data))) {
+    return(list(ok = FALSE, value = NULL))
+  }
   tryCatch(
     list(
       ok = TRUE,

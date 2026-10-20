@@ -249,3 +249,85 @@ test_that("data-first precedence holds end-to-end in the three table functions",
     expect_equal(tclm$emmean, c(2, 11), tolerance = 1e-12)
   })
 })
+
+test_that("a name that is a column is that column inside a call too", {
+  local({
+    x <- "y" # traps: every name of the call is bound in the environment
+    w <- "y"
+    expect_identical(
+      spicy:::resolve_multi_column_selection(rlang::quo(c(x, w)), df, "select"),
+      c("x", "w")
+    )
+    expect_identical(
+      spicy:::resolve_single_column_selection(rlang::quo(c(x)), df, "by"),
+      "x"
+    )
+  })
+  local({
+    x <- 5
+    expect_identical(
+      spicy:::resolve_multi_column_selection(
+        rlang::quo(c(x, "y")),
+        df,
+        "select"
+      ),
+      c("x", "y")
+    )
+  })
+})
+
+test_that("a role column named in the selection is refused whatever the environment holds", {
+  withr::local_options(lifecycle_verbosity = "warning")
+  roles <- c(by = "y")
+  local({
+    y <- "w" # trap: the role column's name, holding another column's name
+    for (q in list(
+      rlang::quo(c(x, y)),
+      rlang::quo(c(y, "x")),
+      rlang::quo(y:w)
+    )) {
+      expect_no_warning(expect_error(
+        spicy:::.resolve_selection_without(q, df, roles),
+        "`by` column (\"y\")",
+        fixed = TRUE,
+        class = "spicy_invalid_input"
+      ))
+    }
+    expect_identical(
+      spicy:::.resolve_selection_without(
+        rlang::quo(tidyselect::everything()),
+        df,
+        roles
+      ),
+      c("x", "w")
+    )
+  })
+  # The argument of a helper is read in the environment, as tidyselect
+  # reads it: the role column the helper reaches is skipped.
+  d <- data.frame(region = 1:2, reg_x = 3:4, z = 5:6)
+  local({
+    region <- "reg"
+    expect_identical(
+      spicy:::.resolve_selection_without(
+        rlang::quo(tidyselect::starts_with(region)),
+        d,
+        c(by = "region")
+      ),
+      "reg_x"
+    )
+  })
+  d <- data.frame(
+    g = factor(rep(c("a", "b"), 10)),
+    x = sin(1:20),
+    y = cos(1:20)
+  )
+  local({
+    g <- "y"
+    expect_no_warning(expect_error(
+      table_continuous(d, select = c(x, g), by = g),
+      "`by` column (\"g\")",
+      fixed = TRUE,
+      class = "spicy_invalid_input"
+    ))
+  })
+})

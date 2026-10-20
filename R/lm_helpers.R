@@ -20,10 +20,9 @@ detect_weights_column_name <- function(quo, data) {
     return(NULL)
   }
 
-  val <- tryCatch(
-    rlang::eval_tidy(quo, env = rlang::quo_get_env(quo)),
-    error = function(e) NULL
-  )
+  # Data first, as resolve_weights_argument() reads the weights: a name
+  # that is a column is that column (`.selection_probe()`).
+  val <- .selection_probe(quo, data)$value
   if (is.character(val) && length(val) == 1L && val %in% names(data)) {
     return(val)
   }
@@ -235,32 +234,18 @@ resolve_covariates_argument <- function(
     )
   }
 
-  # Try `eval_tidy` first to detect a literal character vector
-  # (`covariates = c("age", "sex")`). Bare-name expressions like
-  # `c(age, sex)` and tidyselect helpers like `starts_with("bmi")`
-  # cannot be evaluated outside a tidyselect data mask, so they
-  # land in the sentinel branch and we fall through to tidyselect.
-  #
-  # `suppressWarnings()`: the probe is an internal heuristic, and
-  # tidyselect 1.2+ emits a deprecation warning when `all_of()` is
-  # called outside a selecting function. The actual selection
-  # happens via `tidyselect::eval_select()` below, where `all_of()`
-  # is called correctly; muting the probe-time warning prevents
-  # noise leaking to the user on every call.
-  sentinel <- new.env(parent = emptyenv())
-  val <- tryCatch(
-    suppressWarnings(
-      rlang::eval_tidy(quo, env = rlang::quo_get_env(quo))
-    ),
-    error = function(e) sentinel
-  )
-
-  if (is.null(val)) {
+  # A literal character vector (`covariates = c("age", "sex")`) is taken
+  # as is; bare names (`c(age, sex)`) and tidyselect helpers
+  # (`starts_with("bmi")`) go to tidyselect. A name that is a column is
+  # that column, whatever the caller's environment holds
+  # (`.selection_probe()`).
+  probe <- .selection_probe(quo, data)
+  if (probe$ok && is.null(probe$value)) {
     return(character())
   }
 
-  cov_names <- if (!identical(val, sentinel) && is.character(val)) {
-    val
+  cov_names <- if (probe$ok && is.character(probe$value)) {
+    probe$value
   } else {
     pos <- tryCatch(
       tidyselect::eval_select(quo, data),

@@ -117,10 +117,8 @@
     matched <- grep(select, names(data), value = TRUE)
     data <- data[, matched, drop = FALSE]
   } else {
-    sel_val <- tryCatch(
-      rlang::eval_tidy(select_quo, env = rlang::quo_get_env(select_quo)),
-      error = function(e) NULL
-    )
+    # A name that is a column is that column (`.selection_probe()`).
+    sel_val <- .selection_probe(select_quo, data)$value
     data <- if (is.character(sel_val)) {
       dplyr::select(data, tidyselect::all_of(sel_val))
     } else {

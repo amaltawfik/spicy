@@ -432,6 +432,13 @@ p-values, and notes.
   `spicy_not_implemented` error a `spicy_unsupported` one, and `?spicy`
   lists every class.
 
+* A column name given to a table function, or to the `select` of
+  `mean_n()`, `sum_n()`, and `count_n()`, always means that column, even
+  when an object of the same name exists in the calling environment. The
+  object took the column's place: with `w <- "z"`, `weights = w` weighted
+  by `w` while the note named `z`, and `covariates = age` adjusted for the
+  column the object `age` named.
+
 * `table_continuous()`, `table_outcome()`, `table_categorical_svy()`, and
   `table_continuous_svy()` with `p_value = FALSE` no longer keep a p-value
   in `output = "long"` when `statistic = TRUE` or an effect size ran the

@@ -1336,6 +1336,61 @@ test_that("a survey twin selects the columns its data-frame twin selects", {
   }
 })
 
+test_that("a role column named in the selection is refused whatever the environment holds", {
+  skip_if_not_installed("survey")
+  skip_if_not_installed("clubSandwich")
+  withr::local_options(lifecycle_verbosity = "warning")
+  d <- data.frame(
+    g = factor(rep(c("a", "b"), 20)),
+    y = sin(1:40),
+    x = cos(1:40),
+    f = factor(rep(c("u", "v", "v", "u"), 10)),
+    w = 1 + (1:40 %% 3) / 2,
+    psu = rep(1:8, each = 5)
+  )
+  iid <- survey::svydesign(ids = ~1, weights = ~w, data = d)
+  clus <- survey::svydesign(ids = ~psu, weights = ~w, data = d)
+  # Traps: each role column's name also names an object here, holding the
+  # name of another column. The name is the column all the same.
+  g <- y <- w <- psu <- "x"
+  calls <- alist(
+    table_continuous(d, select = c(y, g), by = g),
+    table_outcome(d, y, select = c(f, y), p_value = FALSE),
+    table_regression_uv(d, outcome = y, predictors = c(x, y)),
+    table_continuous_lm(d, select = c(y, w), by = g, covariates = w),
+    table_categorical(d, select = c(f, w), weights = w),
+    table_continuous_lm(
+      d,
+      select = c(y, psu),
+      by = g,
+      cluster = psu,
+      vcov = "CR2"
+    ),
+    table_continuous_svy(iid, select = c(y, w)),
+    table_categorical_svy(clus, select = c(f, psu))
+  )
+  refused <- c(
+    "`by` column (\"g\")",
+    "`outcome` column (\"y\")",
+    "`outcome` column (\"y\")",
+    "`covariates` column (\"w\")",
+    "`weights` column (\"w\")",
+    "`cluster` column (\"psu\")",
+    "design's sampling weights column (\"w\")",
+    "design's cluster column (\"psu\")"
+  )
+  for (i in seq_along(calls)) {
+    err <- expect_no_warning(tryCatch(eval(calls[[i]]), error = identity))
+    expect_s3_class(err, "spicy_invalid_input")
+    expect_match(
+      conditionMessage(err),
+      refused[[i]],
+      fixed = TRUE,
+      info = deparse(calls[[i]])
+    )
+  }
+})
+
 test_that("a `by` no observation holds is refused under `drop_na = TRUE`", {
   skip_if_not_installed("survey")
   d <- data.frame(

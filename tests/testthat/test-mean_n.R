@@ -95,6 +95,14 @@ test_that("mean_n works with character vector select", {
   expect_equal(mean_n(df, select = items), c(2, 3))
 })
 
+test_that("mean_n reads a name that is a column as that column", {
+  df <- tibble::tibble(a = c(1, 2), b = c(3, 4), c = c(5, 6))
+  a <- "c" # traps: same names as columns, holding another one
+  b <- "c"
+  expect_equal(mean_n(df, select = a), c(1, 2))
+  expect_equal(mean_n(df, select = c(a, b)), c(2, 3))
+})
+
 test_that("mean_n digits argument rounds result", {
   df <- tibble::tibble(a = c(1, 2), b = c(2, 3), c = c(3, 4))
   res <- mean_n(df, digits = 1)

@@ -255,6 +255,20 @@ test_that("resolve_covariates_argument: every error inherits from spicy_error", 
   )
 })
 
+test_that("resolve_covariates_argument: a name that is a column is that column", {
+  data <- data.frame(age = 1:3, sex = c("F", "M", "F"), bmi = 1:3)
+  age <- "bmi" # traps: same names as columns, holding another one
+  sex <- "bmi"
+  expect_identical(
+    spicy:::resolve_covariates_argument(rlang::quo(age), data),
+    "age"
+  )
+  expect_identical(
+    spicy:::resolve_covariates_argument(rlang::quo(c(age, sex)), data),
+    c("age", "sex")
+  )
+})
+
 # ---- table_continuous_lm() end-to-end with covariates ---------------------
 
 test_that("table_continuous_lm: numeric outcome by 2-level factor adjusted for one covariate", {
@@ -780,6 +794,34 @@ test_that("resolve_cluster_argument: nrow=1 single-string cluster ID still flows
     spicy:::resolve_cluster_argument(rlang::quo("clinic_a"), data),
     "clinic_a"
   )
+})
+
+test_that("the weights and cluster columns are the columns their names give", {
+  skip_if_not_installed("clubSandwich")
+  withr::local_options(lifecycle_verbosity = "warning")
+  d <- data.frame(
+    g = factor(rep(c("a", "b"), 20)),
+    y = sin(1:40),
+    z = cos(1:40),
+    w = rep(c(1, 2, 2, 1), 10),
+    cl = rep(1:8, 5)
+  )
+  vars <- function(x) unique(as.character(x$variable))
+  w <- "z" # traps: same names as columns, holding another one
+  cl <- "z"
+  expect_identical(spicy:::detect_weights_column_name(rlang::quo(w), d), "w")
+  expect_identical(
+    vars(expect_no_warning(table_continuous(d, weights = w, output = "long"))),
+    c("y", "z", "cl")
+  )
+  fits <- expect_no_warning(table_continuous_lm(
+    d,
+    by = g,
+    vcov = "CR2",
+    cluster = cl,
+    output = "long"
+  ))
+  expect_identical(vars(fits), c("y", "z", "w"))
 })
 
 test_that("adjustment: invalid value rejected with a classed error", {
