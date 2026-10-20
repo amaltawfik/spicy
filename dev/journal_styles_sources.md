@@ -1315,6 +1315,81 @@ défaut, contraire à l'AMA (sourcé) et aux modèles du Lancet (observé).
 
 ---
 
+## 5 ter. Les abréviations dans la note (collecte du 2026-10-20)
+
+Question d'Amal : faut-il définir M, SD et les autres sigles sous un tableau ?
+Collecte par des agents sur les manuels du magasin, les documents de
+`dev/journal_styles/` et des articles publiés (XML JATS de PubMed Central).
+Le rapport complet, avec les comptes tableau par tableau, est resté dans le
+scratchpad de la session (`abbrev_research/`). L'essentiel est ici. La
+décision qui en découle est l'ADR `dev/decisions/2026-10-20-note-abbreviations.md`.
+
+- **APA 7 (2020).** §6.44 (p. 182-183, l'index du manuel varie d'une page) :
+  « Do not define symbols or abbreviations that represent statistics (e.g.,
+  M, SD, F, t, df, p, N, n, OR, r) but define the other abbreviations in
+  Table 6.5 (e.g., AIC, ANOVA, BIC, CFA, CI, NFI, RMSEA, SEM). » §7.15 (p. 205)
+  ajoute SE : « (e.g., M, SD, SE, F, df, n, p) … used in tables without
+  defining them in a note ». §6.25 (p. 173-174) fait définir toute autre
+  abréviation « within each table and figure, even if … already defined in
+  the text ». §7.14 (p. 203-205) place les définitions à la fin de la note
+  générale, dans l'ordre d'apparition : « M = match process; N = nonmatch
+  process. » Les tableaux modèles ne définissent jamais M, SD, SE, n, N ni p.
+  Le tableau de régression (p. 219) laisse aussi B, β, R² et ΔR² sans
+  définition. Tous écrivent « CI = confidence interval; LL = lower limit;
+  UL = upper limit ». Mdn figure dans la Table 6.5 sans être classé : NON
+  TROUVÉ.
+- **AMA 11 (2020).** §4.1.7 (p. 129) : « Abbreviations or acronyms (but not
+  abbreviations used to indicate units of measure) should be explained in a
+  footnote ». §4.1.4.10 (p. 125) : cette note vient en premier, « set off with
+  an introductory word or phrase instead of a letter », et « abbreviations are
+  expanded in alphabetical order ». Ligne modèle (p. 127) : « Abbreviations:
+  OR, odds ratio; RR, relative risk. » Les tableaux d'exemple écrivent
+  « Abbreviation: » au singulier. SD, SE, SEM et CI portent la mention « no
+  need to expand » (§13.11, p. 608 et 625). §19.6 (p. 1084-1087) : « The
+  following may be used without expansion except where noted », ce qui couvre
+  n, N et P. OR, HR et RR y portent « expand at first mention ». IQR n'a
+  d'exemption nulle part et les tableaux d'exemple 4.1-1 et 4.1-6 le
+  développent (« Abbreviation: IQR, interquartile range. »). L'AMA écrit
+  « mean (SD) » et « median (IQR) » en toutes lettres dans le talon (§4.1.5,
+  p. 128) : M et Mdn n'y existent pas comme abréviations.
+- **Chicago 18 (2024).** ¶3.63 (p. 165) : « Any nonstandard abbreviations
+  must be defined in a note to the table ». « Nonstandard » n'est pas défini.
+  ¶10.56 (p. 655-656) range CI, HR, IQR, OR, N, n, p, SD, SE et SEM parmi les
+  abréviations statistiques sans dire s'il faut les définir. Format d'une clé
+  d'abréviations : NON TROUVÉ.
+- **The Lancet.** Guide de mise en forme (p. 1) : « please list and spell out
+  all abbreviations in the table ». Le tableau 1 modèle (guides de 2025, p. 3)
+  laisse pourtant n, IQR et SD sans définition : « Data are n (%), median
+  (IQR), mean (SD), or n/N (%). ECOG=Eastern Cooperative Oncology Group.
+  BMI=body-mass index. » Pratique sur 13 articles mis en page par l'éditeur
+  (35 tableaux) : SD défini 0 fois sur 6, IQR 0 sur 5, CI 0 sur 12, n 0 sur 15,
+  p 0 sur 7, HR 1 sur 1. Forme : « BMI=body-mass index. », une phrase par
+  abréviation, sans espace ni mot d'appel, par ordre alphabétique dans 15
+  tableaux sur 19, après la phrase « Data are … ».
+- **JAMA Network Open.** 10 articles d'octobre 2026 (21 tableaux) : SD défini
+  0 fois sur 10, IQR 0 sur 3, CI 0 sur 6, P 0 sur 7. La ligne « Abbreviations: »
+  ouvre le pied dans 17 tableaux sur 21, en paires « ABBR, expansion »
+  séparées par « ; » et par ordre alphabétique dans 14 lignes sur 16. Les
+  tableaux du JAMA lui-même ne sont pas dans PubMed Central : NON TROUVÉ.
+- **BMJ.** 5 articles (20 tableaux) : SD défini 7 fois sur 8, CI 9 sur 9, IQR
+  2 sur 2, HR 2 sur 2, OR 1 sur 1, n 0 sur 16, P 0 sur 6. Forme « SD=standard
+  deviation; CI=confidence interval », sans mot d'appel.
+- **NEJM.** Seuls des manuscrits d'auteurs sont dans PubMed Central : pratique
+  de l'éditeur NON TROUVÉE. Les manuscrits écrivent « IQR denotes interquartile
+  range. ».
+- **Logiciels (faits, pas autorité).** gtsummary 2.6.1 écrit sous une
+  régression « Abbreviations: CI = Confidence Interval, OR = Odds Ratio » et
+  n'écrit aucune ligne d'abréviations sous `tbl_summary()`, dont la note
+  « Mean (SD); n (%) » laisse SD sans définition. Ses thèmes de revue ne
+  changent pas cette ligne. gt, flextable, modelsummary, tableone et sjPlot
+  n'écrivent aucune note d'abréviations.
+
+**Bilan.** Aucun style ni aucune revue ne définit n, N ou p. HR et RR sont
+définis partout où ils paraissent. Les styles divergent sur CI, SD, IQR et OR,
+ainsi que sur la forme et la place de la définition.
+
+---
+
 ## 6. Tableau récapitulatif
 
 | Revue / norme | Document officiel | Règles p | Format IC | Étoiles | Décimales | Prêt-pour-thème |
