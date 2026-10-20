@@ -92,7 +92,13 @@ A statistic that belongs to a whole variable rather than to one of its
 levels sits on the variable's own row: the *p* of a
 [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
 block, its association measure, its SMD. Leave `level` out to cite it
-(`inline(tbl, smoking, column = "p")`).
+(`inline(tbl, smoking, column = "p")`). The same call cites the *p* of a
+by-group
+[`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
+or
+[`table_continuous_svy()`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md),
+which sits on the first group's row: when one row of the variable alone
+carries the statistic, that row is the address.
 
 [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
 lays its groups out sideways – one row per outcome, the `by` levels as

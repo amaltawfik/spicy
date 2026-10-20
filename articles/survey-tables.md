@@ -539,7 +539,7 @@ design.
 ``` r
 
 table_regression(gl, vcov = "HC3")
-#> Error in `validate_vcov_cluster_lists()`:
+#> Error in `table_regression()`:
 #> ! `vcov = "HC3"` is not available for `svyglm` models.
 #> ℹ The fit's own design-based (Taylor / replicate) variance is already the robust variance for the declared design.
 #> ℹ To account for clustering, declare it in the design: survey::svydesign(ids = ~cluster, ...), then refit.

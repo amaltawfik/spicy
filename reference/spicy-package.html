@@ -202,6 +202,11 @@ raised by spicy. Leaves:</p><ul><li><p><code>spicy_invalid_input</code> – bad 
 <li><p><code>spicy_invalid_data</code> – bad data shape or content
 (not a data.frame, length mismatch, <code><a href="https://bit64.r-lib.org/reference/bit64-package.html" class="external-link">bit64::integer64</a></code>
 columns, degenerate grouping).</p></li>
+<li><p><code>spicy_wrong_regime</code> – signaled together with
+<code>spicy_invalid_data</code> when a table receives the wrong kind
+of data for its regime: a survey design handed to a plain table,
+or a data frame handed to a survey twin. The message names the
+function to use instead.</p></li>
 <li><p><code>spicy_missing_pkg</code> – a Suggests dependency
 is required by the requested operation but not installed.</p></li>
 <li><p><code>spicy_missing_quarto</code> – <code><a href="code_book.html">code_book()</a></code> was asked
@@ -211,10 +216,18 @@ not found.</p></li>
 PDF of <code><a href="code_book.html">code_book()</a></code>; the condition carries its messages in
 <code>stderr</code>.</p></li>
 <li><p><code>spicy_missing_column</code> – a referenced column
-is not in <code>data</code>.</p></li>
+is not in <code>data</code>; the message names it. Signaled together
+with <code>spicy_invalid_input</code>.</p></li>
 <li><p><code>spicy_unsupported</code> – the operation is not
 applicable to this input (e.g., Phi requested on a
 non-2x2 table).</p></li>
+<li><p><code>spicy_not_implemented</code> – signaled together with
+<code>spicy_unsupported</code> when the request is well formed but
+spicy does not compute it (e.g., weighted group tests in
+<code><a href="table_continuous.html">table_continuous()</a></code>); the message names an alternative.</p></li>
+<li><p><code>spicy_empty_table</code> – <code><a href="table_regression.html">table_regression()</a></code> has no row
+left to show for a model once the requested row blocks are
+switched off.</p></li>
 <li><p><code>spicy_ame_satt_unsupported_formula</code> – signaled
 together with <code>spicy_unsupported</code> when AME
 Satterthwaite degrees of freedom are unavailable for the
@@ -230,6 +243,9 @@ mode is not available for this model class.</p></li>
 <li><p><code>spicy_invalid_frame</code> – an object failed the
 structural validation of the internal regression-frame
 contract behind <code><a href="table_regression.html">table_regression()</a></code>.</p></li>
+<li><p><code>spicy_structured_version</code> – <code><a href="as_structured.html">as_structured()</a></code> received
+a table built under an older version of the typed contract;
+rebuild the table with the current spicy.</p></li>
 <li><p><code>spicy_resampling_failed</code> – bootstrap /
 jackknife resampling produced too few valid replicates to
 estimate the requested statistic.</p></li>
@@ -271,9 +287,14 @@ weights).</p></li>
 <li><p><code>spicy_ignored_arg</code> – an argument was ignored
 due to context (e.g., <code>correct = TRUE</code> on a non-2x2
 table).</p></li>
-<li><p><code>spicy_no_selection</code> – a column selector
-produced an empty set; an empty result is returned
-rather than erroring.</p></li>
+<li><p><code>spicy_no_selection</code> – a selection or a filter
+matched nothing, and an empty result is returned rather than
+an error (the row-wise summaries, <code><a href="varlist.html">varlist()</a></code>, a <code>levels_keep</code>
+of <code><a href="table_categorical.html">table_categorical()</a></code> that matches no level of a variable,
+which is left out). In the table functions an empty column
+selection is an error (<code>spicy_invalid_input</code>).</p></li>
+<li><p><code>spicy_no_match</code> – a <code>keep</code> or <code>drop</code> pattern of
+<code><a href="table_regression.html">table_regression()</a></code> matched no coefficient term.</p></li>
 <li><p><code>spicy_fallback</code> – the requested computation
 failed; a simpler estimator was used instead.</p></li>
 <li><p><code>spicy_caveat</code> – the computation succeeded but

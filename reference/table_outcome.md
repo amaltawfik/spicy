@@ -66,7 +66,11 @@ table_outcome(
   The grouping characteristics to describe the outcome across, as a
   tidyselect expression or a character vector of column names. One block
   of rows per variable, in the order given. As everywhere in the family,
-  `select` is what structures the rows.
+  `select` is what structures the rows. The outcome and the `weights`
+  column are not part of the selection: a selection helper skips them,
+  and naming one in `select`, or giving its position, is an error. A
+  name that is not a column of `data` is an error (class
+  `spicy_missing_column`), and so is an empty selection.
 
 - labels:
 
@@ -109,6 +113,8 @@ table_outcome(
   `FALSE`: they are shown as a `(Missing)` level and excluded from the
   comparison, and a level displayed with that label is an error, as in
   [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)).
+  Under `drop_na = TRUE`, a grouping that no observation holds is an
+  error (class `spicy_invalid_data`).
 
 - weights, rescale:
 
@@ -119,11 +125,14 @@ table_outcome(
 - test:
 
   Group comparison for every block: `"welch"` (default), `"student"` or
-  `"nonparametric"`.
+  `"nonparametric"`. An outcome with no variance in a block has no test
+  there, whichever is chosen: the block's test cells are left blank,
+  with a warning (class `spicy_undefined_stat`).
 
 - p_value:
 
-  Show the p-value column (default `TRUE`).
+  Show the p-value column: `TRUE`, `FALSE`, or `NULL` (the default),
+  which shows it, every block being a comparison.
 
 - p_adjust:
 
@@ -152,7 +161,8 @@ table_outcome(
 - effect_size, effect_size_ci:
 
   Effect size per block and its confidence interval, as in
-  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md).
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
+  (a logical `effect_size` is an error there and here).
 
 - ci, ci_level:
 
@@ -160,7 +170,8 @@ table_outcome(
 
 - digits, effect_size_digits, p_digits, decimal_mark:
 
-  Number formatting.
+  Number formatting. The `*_digits` arguments are whole numbers,
+  `p_digits` at least 1.
 
 - align:
 

@@ -150,7 +150,12 @@ Exactly one column.</p></dd>
 <dd><p>The grouping characteristics to describe the outcome
 across, as a tidyselect expression or a character vector of column
 names. One block of rows per variable, in the order given. As
-everywhere in the family, <code>select</code> is what structures the rows.</p></dd>
+everywhere in the family, <code>select</code> is what structures the rows. The
+outcome and the <code>weights</code> column are not part of the selection: a
+selection helper skips them, and naming one in <code>select</code>, or giving
+its position, is an error. A name that is not a column of <code>data</code> is
+an error (class <code>spicy_missing_column</code>), and so is an empty
+selection.</p></dd>
 
 
 <dt id="arg-labels">labels<a class="anchor" aria-label="anchor" href="#arg-labels"></a></dt>
@@ -183,7 +188,9 @@ the wording you set here.</p></dd>
 <dd><p>Drop rows with a missing <code>select</code> value from that block
 (default <code>FALSE</code>: they are shown as a <code>(Missing)</code> level and
 excluded from the comparison, and a level displayed with that label
-is an error, as in <code><a href="table_categorical.html">table_categorical()</a></code>).</p></dd>
+is an error, as in <code><a href="table_categorical.html">table_categorical()</a></code>). Under <code>drop_na = TRUE</code>, a
+grouping that no observation holds is an error (class
+<code>spicy_invalid_data</code>).</p></dd>
 
 
 <dt id="arg-weights-rescale">weights, rescale<a class="anchor" aria-label="anchor" href="#arg-weights-rescale"></a></dt>
@@ -193,11 +200,14 @@ to sum to the sample size, as in <code><a href="table_continuous.html">table_con
 
 <dt id="arg-test">test<a class="anchor" aria-label="anchor" href="#arg-test"></a></dt>
 <dd><p>Group comparison for every block: <code>"welch"</code> (default),
-<code>"student"</code> or <code>"nonparametric"</code>.</p></dd>
+<code>"student"</code> or <code>"nonparametric"</code>. An outcome with no variance in a
+block has no test there, whichever is chosen: the block's test cells
+are left blank, with a warning (class <code>spicy_undefined_stat</code>).</p></dd>
 
 
 <dt id="arg-p-value">p_value<a class="anchor" aria-label="anchor" href="#arg-p-value"></a></dt>
-<dd><p>Show the p-value column (default <code>TRUE</code>).</p></dd>
+<dd><p>Show the p-value column: <code>TRUE</code>, <code>FALSE</code>, or <code>NULL</code>
+(the default), which shows it, every block being a comparison.</p></dd>
 
 
 <dt id="arg-p-adjust">p_adjust<a class="anchor" aria-label="anchor" href="#arg-p-adjust"></a></dt>
@@ -225,7 +235,8 @@ keeps the historical display.</p></dd>
 
 <dt id="arg-effect-size-effect-size-ci">effect_size, effect_size_ci<a class="anchor" aria-label="anchor" href="#arg-effect-size-effect-size-ci"></a></dt>
 <dd><p>Effect size per block and its
-confidence interval, as in <code><a href="table_continuous.html">table_continuous()</a></code>.</p></dd>
+confidence interval, as in <code><a href="table_continuous.html">table_continuous()</a></code> (a logical
+<code>effect_size</code> is an error there and here).</p></dd>
 
 
 <dt id="arg-ci-ci-level">ci, ci_level<a class="anchor" aria-label="anchor" href="#arg-ci-ci-level"></a></dt>
@@ -234,7 +245,8 @@ confidence interval, as in <code><a href="table_continuous.html">table_continuou
 
 <dt id="arg-digits-effect-size-digits-p-digits-decimal-mark">digits, effect_size_digits, p_digits, decimal_mark<a class="anchor" aria-label="anchor" href="#arg-digits-effect-size-digits-p-digits-decimal-mark"></a></dt>
 <dd><p>Number
-formatting.</p></dd>
+formatting. The <code>*_digits</code> arguments are whole numbers, <code>p_digits</code>
+at least 1.</p></dd>
 
 
 <dt id="arg-align">align<a class="anchor" aria-label="anchor" href="#arg-align"></a></dt>

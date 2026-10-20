@@ -408,7 +408,7 @@ table_continuous(
     life_sat_health = "Satisfaction with health"
   ),
   p_value = TRUE,
-  effect_size = TRUE
+  effect_size = "auto"
 )
 #> Descriptive statistics by education
 #> 
@@ -1072,7 +1072,7 @@ tab |>
 |     Yes |  84 | 32.2 | 229 | 42.5 | 237 | 59.2 | 550 | 45.8 |       |     |
 | *Note.* Group comparison: Pearson chi-squared test. |  |  |  |  |  |  |  |  |  |  |
 
-Categorical table by education {#tinytable_j2dlqn8b7igskqulc8gc .table
+Categorical table by education {#tinytable_dk522d54uxzg21kjai73 .table
 .tinytable style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 

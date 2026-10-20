@@ -762,7 +762,8 @@ the classes it covers and its small-sample caution.</p></dd>
 <dd><p>Decimal places for p-values (<code>p</code>, <code>ame_p</code>,
 <code>p_change</code>). APA-strict: leading zero stripped, <code>&lt;.001</code> (or
 <code>&lt;.0001</code> etc. depending on <code>p_digits</code>) for small values.
-Default <code>3L</code>.</p></dd>
+Default <code>3L</code>; at least <code>1L</code>, as in the descriptive tables. Every
+<code>*_digits</code> argument is a whole number: a fraction is an error.</p></dd>
 
 
 <dt id="arg-effect-size-digits">effect_size_digits<a class="anchor" aria-label="anchor" href="#arg-effect-size-digits"></a></dt>
@@ -886,8 +887,9 @@ tables); <code>"excel"</code> (writes to <code>excel_path</code>); <code>"clipbo
 
 
 <dt id="arg-excel-path">excel_path<a class="anchor" aria-label="anchor" href="#arg-excel-path"></a></dt>
-<dd><p>File path for <code>output = "excel"</code>. Default
-<code>NULL</code> (required when <code>output = "excel"</code>).</p></dd>
+<dd><p>File path for <code>output = "excel"</code>, ending in
+<code>".xlsx"</code>, in a directory that exists. Default <code>NULL</code> (required when
+<code>output = "excel"</code>).</p></dd>
 
 
 <dt id="arg-excel-sheet">excel_sheet<a class="anchor" aria-label="anchor" href="#arg-excel-sheet"></a></dt>
@@ -924,7 +926,8 @@ with borders and alignment pre-applied, use
 
 
 <dt id="arg-word-path">word_path<a class="anchor" aria-label="anchor" href="#arg-word-path"></a></dt>
-<dd><p>File path for <code>output = "word"</code>. Default
+<dd><p>File path for <code>output = "word"</code>, ending in
+<code>".docx"</code>, in a directory that exists. Default
 <code>NULL</code> (required when <code>output = "word"</code>). The Word table inherits
 the flextable styling (Calibri font, APA borders, decimal-aligned
 numerics) and adds Word-specific features: an auto-numbered

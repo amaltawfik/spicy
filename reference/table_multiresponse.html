@@ -165,7 +165,11 @@ table (<code>"default"</code>), a wide or long numeric <code>data.frame</code>
 <dt id="arg-select">select<a class="anchor" aria-label="anchor" href="#arg-select"></a></dt>
 <dd><p>The indicator columns of the question, one per item, in
 tidyselect syntax or as a character vector of column names. Their
-order is the order of the rows, unless <code>sort</code> sorts them.</p></dd>
+order is the order of the rows, unless <code>sort</code> sorts them. The <code>by</code>
+column is not part of the selection: a selection helper skips it,
+and naming it, or giving its position, is an error. A name that is
+not a column of <code>data</code> is an error (class <code>spicy_missing_column</code>),
+and so is an empty selection.</p></dd>
 
 
 <dt id="arg-by">by<a class="anchor" aria-label="anchor" href="#arg-by"></a></dt>
@@ -173,9 +177,10 @@ order is the order of the rows, unless <code>sort</code> sorts them.</p></dd>
 levels keep their declared order, a declared level with no respondent
 included; any other column forms groups in order of first appearance
 (a labelled column by its codes), as in <code><a href="table_categorical.html">table_categorical()</a></code>. Rows
-with a missing <code>by</code> are removed, and the note says how many. A level
-displayed with the label of the <code>Total</code> margin is an error, as in
-<code><a href="table_categorical.html">table_categorical()</a></code>.</p></dd>
+with a missing <code>by</code> are removed, and the note says how many; a <code>by</code>
+that no observation holds is an error (class <code>spicy_invalid_data</code>).
+A level displayed with the label of the <code>Total</code> margin is an error,
+as in <code><a href="table_categorical.html">table_categorical()</a></code>.</p></dd>
 
 
 <dt id="arg-counted">counted<a class="anchor" aria-label="anchor" href="#arg-counted"></a></dt>
@@ -332,7 +337,8 @@ the wording you set here.</p></dd>
 
 <dt id="arg-percent-digits">percent_digits<a class="anchor" aria-label="anchor" href="#arg-percent-digits"></a></dt>
 <dd><p>Number of digits for percentages in report outputs.
-Defaults to <code>1</code>.</p></dd>
+Defaults to <code>1</code>. A whole number: a fraction is an error, as for
+<code>p_digits</code> and <code>v_digits</code>.</p></dd>
 
 
 <dt id="arg-p-digits">p_digits<a class="anchor" aria-label="anchor" href="#arg-p-digits"></a></dt>
@@ -383,7 +389,8 @@ typed, and <code>FALSE</code> removes it.</p></dd>
 
 
 <dt id="arg-excel-path">excel_path<a class="anchor" aria-label="anchor" href="#arg-excel-path"></a></dt>
-<dd><p>Path for <code>output = "excel"</code>. Defaults to <code>NULL</code>.</p></dd>
+<dd><p>Path for <code>output = "excel"</code>, ending in <code>".xlsx"</code>, in
+a directory that exists. Defaults to <code>NULL</code>.</p></dd>
 
 
 <dt id="arg-excel-sheet">excel_sheet<a class="anchor" aria-label="anchor" href="#arg-excel-sheet"></a></dt>

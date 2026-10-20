@@ -133,6 +133,126 @@ the descriptive tables one contract for labels, p-values, and notes.
   open the note under the table without a lead-in word, as the AMA
   manual and The Lancet do. It opened with “Note.”.
 
+- The table functions refuse a `by` column named in `select`, all with
+  the same error.
+  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
+  crossed it with itself,
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
+  dropped it, and the others said it did not exist. The outcome named in
+  the `predictors` of
+  [`table_regression_uv()`](https://amaltawfik.github.io/spicy/reference/table_regression_uv.md)
+  and the covariates named in the `select` of
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md),
+  which were dropped, are refused the same way, as the outcome in the
+  `select` of
+  [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md)
+  already was. So is the weights column, which
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
+  and
+  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
+  described as a variable, and the cluster column of
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md),
+  which it dropped with the weights. A position counts as a name
+  (`select = 1:2` with `by` first is refused), and
+  [`everything()`](https://tidyselect.r-lib.org/reference/everything.html)
+  and the other selection helpers skip all these columns.
+
+- In
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
+  [`table_continuous_svy()`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md),
+  and
+  [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md),
+  a position in `select` (`select = 2:3`) counts the columns of the
+  data, the `by` column included, as in the other tables and in
+  [`dplyr::select()`](https://dplyr.tidyverse.org/reference/select.html).
+  They counted them without the `by` column, and so picked other
+  columns.
+
+- The table functions refuse a column that is not in the data, in
+  `select`, `by`, `exclude`, `outcome`, or `predictors`, with an error
+  of class `spicy_missing_column` that names it, and the column it is
+  likely a typo of when one name is close. The class and the wording
+  varied, some errors came from tidyselect unclassed, and a name in a
+  character `exclude` was ignored. A `by` of two columns is a
+  `spicy_invalid_input` error.
+
+- [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
+  and
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
+  stop with an error when `select` leaves no numeric column, as the
+  other tables do, and
+  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
+  when it is called without `select` on data with no categorical column.
+  They warned and returned an empty data frame.
+
+- The table functions refuse a number of decimals that is not a whole
+  number (`digits = 2.5`), as
+  [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  did. They truncated it.
+  [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  and
+  [`table_regression_uv()`](https://amaltawfik.github.io/spicy/reference/table_regression_uv.md)
+  also refuse `p_digits = 0`, as the descriptive tables do: the table
+  printed `.015` and
+  [`inline()`](https://amaltawfik.github.io/spicy/reference/inline.md)
+  `<1`.
+
+- [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
+  and
+  [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md)
+  refuse `effect_size = TRUE` and `FALSE` (class `spicy_defunct`): use
+  `"auto"` and `"none"`.
+
+- With `output = "excel"` or `"word"`, the table functions refuse an
+  `excel_path` or `word_path` that is not a single path ending in
+  `.xlsx` or `.docx`, in a directory that exists. A `.csv` path was
+  written as a workbook anyway, and the other mistakes failed in the
+  package writing the file, with an unclassed error.
+
+- [`table_regression_uv()`](https://amaltawfik.github.io/spicy/reference/table_regression_uv.md)
+  refuses an argument of `...` that is not an argument of
+  [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md),
+  or that abbreviates one, and names it. An unknown name failed with
+  base R’s “unused argument” error, and `effect_size = TRUE` reached
+  `effect_size_digits`.
+
+- [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
+  no longer warns when its default `drop_na = TRUE` removes rows with a
+  missing `by`. The note gives their number, as in the other tables.
+
+- `glance()` on a
+  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
+  result gives in `assoc_type` the measure of each variable, as in the
+  `effect_size_type` column of `output = "long"` (`"phi"`,
+  `"cramer_v"`). It gave the column header, “Effect size” on every row
+  when the variables used different measures.
+
+- [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
+  refuses a `NaN` weight, as the other tables do. It dropped the row, as
+  for a missing weight.
+
+- Under `drop_na = TRUE`, a `by` that no observation holds is an error
+  of class `spicy_invalid_data` in every table, as in
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md),
+  and so is such a grouping in the `select` of
+  [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md).
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
+  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
+  and
+  [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md)
+  printed empty groups,
+  [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md)
+  said the variable had no level to display, and
+  [`table_continuous_svy()`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md)
+  failed with a base R error.
+
+- [`table_regression_uv()`](https://amaltawfik.github.io/spicy/reference/table_regression_uv.md)
+  refuses a survey design with a pointer to
+  [`survey::svyglm()`](https://rdrr.io/pkg/survey/man/svyglm.html)
+  (class `spicy_wrong_regime`), and any other object that is not a data
+  frame with class `spicy_invalid_data`, as the other tables do. Both
+  were `spicy_invalid_input` errors.
+
 ### New features
 
 - `sochealth` gains a multiple-response question, the sources of health
@@ -190,6 +310,13 @@ the descriptive tables one contract for labels, p-values, and notes.
   every output; with `assoc_measure = "none"` as well, the table is
   purely descriptive
   ([\#9](https://github.com/amaltawfik/spicy/issues/9)).
+
+- [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
+  takes a named list in `levels_keep`, one entry per variable, as
+  [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md)
+  does: `levels_keep = list(smoking = "Yes")`. A list was read as one
+  vector for every variable, and the variables it did not match were
+  dropped.
 
 - [`table_multiresponse()`](https://amaltawfik.github.io/spicy/reference/table_multiresponse.md)
   tabulates a “check all that apply” question: one row per item with the
@@ -282,6 +409,20 @@ the descriptive tables one contract for labels, p-values, and notes.
   is also flush left, a one-column header has no rule under it, as in
   HTML, and a table wider than the text block is scaled down to it.
 
+- Every error of a table function names that function. Some named an
+  internal helper,
+  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
+  named
+  [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
+  for a negative weight, and
+  [`table_regression_uv()`](https://amaltawfik.github.io/spicy/reference/table_regression_uv.md)
+  named none. A survey design handed to a plain table is now a
+  `spicy_invalid_data` error too, a `spicy_missing_column` error a
+  `spicy_invalid_input` one, a `spicy_not_implemented` error a
+  `spicy_unsupported` one, and
+  [`?spicy`](https://amaltawfik.github.io/spicy/reference/spicy-package.md)
+  lists every class.
+
 - [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
   [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md),
   [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md),
@@ -330,6 +471,14 @@ the descriptive tables one contract for labels, p-values, and notes.
   [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md)
   table, which belong to no group. Selecting a group dropped them, and
   the table’s own `p` was refused.
+
+- [`inline()`](https://amaltawfik.github.io/spicy/reference/inline.md)
+  cites the `p` of a by-group
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
+  or
+  [`table_continuous_svy()`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md)
+  without `level`, as its help says. It asked for a level, though the
+  first group’s row alone carries the value.
 
 - [`inline()`](https://amaltawfik.github.io/spicy/reference/inline.md)
   refuses a column the table does not carry with the same message on
@@ -383,12 +532,41 @@ the descriptive tables one contract for labels, p-values, and notes.
   of the labels contains a comma.
 
 - [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md)
+  names its test in the note only when a test ran, which a one-level
+  `by` or a constant variable prevents.
+  [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md)
+  no longer names a test that failed.
+
+- [`table_continuous_svy()`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md)
+  leaves the comparison of a variable with no variance blank, with a
+  `spicy_undefined_stat` warning, as
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
+  does. It printed the p-value survey returns there.
+
+- [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
+  and
+  [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md)
+  leave the rank test of a variable with no variance blank, with a
+  `spicy_undefined_stat` warning, as they leave the Welch test. They
+  printed p = 1.000 for two groups.
+
+- [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md)
   and
   [`table_continuous_svy()`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md)
   with `labels = TRUE` keep the label of the `by` variable in the title,
   and
   [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md)
   the labels of its rows, when rows with a missing `by` are dropped.
+
+- [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
+  [`table_continuous_svy()`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md),
+  and
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
+  give their `verbose` message one wording and the class `spicy_info`.
+
+- [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
+  accepts `p_value = NULL`, now its default as in the rest of the
+  family: the p-value is shown, `by` being required.
 
 - `table_continuous(ci = FALSE)` and `table_continuous_lm(ci = FALSE)`
   render one header row in tinytable, gt, flextable, Word, and Excel

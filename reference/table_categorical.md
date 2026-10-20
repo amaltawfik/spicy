@@ -74,7 +74,12 @@ table_categorical(
   [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md).
   An explicit `select` is taken verbatim (numeric columns included), so
   numeric-coded categorical variables can still be tabulated by naming
-  them.
+  them. The `by` and `weights` columns are not part of the selection:
+  [`everything()`](https://tidyselect.r-lib.org/reference/everything.html)
+  and the other helpers skip them, and naming one in `select`, or giving
+  its position, is an error. A name that is not a column of `data` is an
+  error (class `spicy_missing_column`), and so is a selection with no
+  column to tabulate.
 
 - by:
 
@@ -124,13 +129,22 @@ table_categorical(
 
 - levels_keep:
 
-  Optional character vector of levels to keep/order for row modalities.
-  If `NULL`, all observed levels are kept. Entries must match the level
-  strings the table displays (for labelled columns these are the
-  `"[code] label"` strings, not the bare label text). When nothing
-  matches for a selected variable, that variable is dropped from the
-  table with a classed warning (`spicy_no_selection`) listing the
-  available level strings.
+  Levels to keep, in the order to display them. If `NULL` (the default),
+  all observed levels are kept. Entries must match the level strings the
+  table displays (for labelled columns these are the `"[code] label"`
+  strings, not the bare label text). Two forms, as in
+  [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md):
+
+  - a character vector applies to every variable: each keeps the levels
+    it has, and a variable with none of them is dropped from the table
+    with a classed warning (`spicy_no_selection`) listing its level
+    strings;
+
+  - a named list applies per variable
+    (`levels_keep = list(smoking = "Yes")`): each name must be a
+    variable of the table, each level one the variable displays (an
+    error otherwise), and the variables it does not name keep all their
+    levels.
 
 - include_total:
 
@@ -153,7 +167,9 @@ table_categorical(
   `TRUE`, rows with `NA` in the tabulated variable (and in `by`, when
   supplied) are removed BEFORE each cross-tabulation, and the removal is
   disclosed in a table note ("Missing values removed: ...") rather than
-  silent. Before 0.13.0 the default was `TRUE` with no disclosure.
+  silent; a `by` that no observation holds is then an error (class
+  `spicy_invalid_data`). Before 0.13.0 the default was `TRUE` with no
+  disclosure.
 
 - weights:
 
@@ -247,7 +263,9 @@ table_categorical(
 
 - percent_digits:
 
-  Number of digits for percentages in report outputs. Defaults to `1`.
+  Number of digits for percentages in report outputs. Defaults to `1`. A
+  whole number: a fraction is an error, as for `p_digits` and
+  `v_digits`.
 
 - p_digits:
 
@@ -410,7 +428,8 @@ table_categorical(
 
 - excel_path:
 
-  Path for `output = "excel"`. Defaults to `NULL`.
+  Path for `output = "excel"`, ending in `".xlsx"`, in a directory that
+  exists. Defaults to `NULL`.
 
 - excel_sheet:
 
@@ -425,11 +444,12 @@ table_categorical(
 
 - word_path:
 
-  File path for `output = "word"`. Defaults to `NULL`. Before 0.13.0,
-  supplying it with `output = "flextable"` also wrote a `.docx` as a
-  side effect; it is now used exclusively by `output = "word"` (the
-  contract shared with the rest of the table family) and is ignored,
-  with a warning, under `output = "flextable"`.
+  File path for `output = "word"`, ending in `".docx"`, in a directory
+  that exists. Defaults to `NULL`. Before 0.13.0, supplying it with
+  `output = "flextable"` also wrote a `.docx` as a side effect; it is
+  now used exclusively by `output = "word"` (the contract shared with
+  the rest of the table family) and is ignored, with a warning, under
+  `output = "flextable"`.
 
 - user_na:
 

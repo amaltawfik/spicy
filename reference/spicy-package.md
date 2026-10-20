@@ -159,6 +159,11 @@ parent class plus a leaf class describing the specific cause:
     [`bit64::integer64`](https://bit64.r-lib.org/reference/bit64-package.html)
     columns, degenerate grouping).
 
+  - `spicy_wrong_regime` – signaled together with `spicy_invalid_data`
+    when a table receives the wrong kind of data for its regime: a
+    survey design handed to a plain table, or a data frame handed to a
+    survey twin. The message names the function to use instead.
+
   - `spicy_missing_pkg` – a Suggests dependency is required by the
     requested operation but not installed.
 
@@ -171,10 +176,22 @@ parent class plus a leaf class describing the specific cause:
     [`code_book()`](https://amaltawfik.github.io/spicy/reference/code_book.md);
     the condition carries its messages in `stderr`.
 
-  - `spicy_missing_column` – a referenced column is not in `data`.
+  - `spicy_missing_column` – a referenced column is not in `data`; the
+    message names it. Signaled together with `spicy_invalid_input`.
 
   - `spicy_unsupported` – the operation is not applicable to this input
     (e.g., Phi requested on a non-2x2 table).
+
+  - `spicy_not_implemented` – signaled together with `spicy_unsupported`
+    when the request is well formed but spicy does not compute it (e.g.,
+    weighted group tests in
+    [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md));
+    the message names an alternative.
+
+  - `spicy_empty_table` –
+    [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+    has no row left to show for a model once the requested row blocks
+    are switched off.
 
   - `spicy_ame_satt_unsupported_formula` – signaled together with
     `spicy_unsupported` when AME Satterthwaite degrees of freedom are
@@ -195,6 +212,11 @@ parent class plus a leaf class describing the specific cause:
   - `spicy_invalid_frame` – an object failed the structural validation
     of the internal regression-frame contract behind
     [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md).
+
+  - `spicy_structured_version` –
+    [`as_structured()`](https://amaltawfik.github.io/spicy/reference/as_structured.md)
+    received a table built under an older version of the typed contract;
+    rebuild the table with the current spicy.
 
   - `spicy_resampling_failed` – bootstrap / jackknife resampling
     produced too few valid replicates to estimate the requested
@@ -245,8 +267,19 @@ parent class plus a leaf class describing the specific cause:
   - `spicy_ignored_arg` – an argument was ignored due to context (e.g.,
     `correct = TRUE` on a non-2x2 table).
 
-  - `spicy_no_selection` – a column selector produced an empty set; an
-    empty result is returned rather than erroring.
+  - `spicy_no_selection` – a selection or a filter matched nothing, and
+    an empty result is returned rather than an error (the row-wise
+    summaries,
+    [`varlist()`](https://amaltawfik.github.io/spicy/reference/varlist.md),
+    a `levels_keep` of
+    [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
+    that matches no level of a variable, which is left out). In the
+    table functions an empty column selection is an error
+    (`spicy_invalid_input`).
+
+  - `spicy_no_match` – a `keep` or `drop` pattern of
+    [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+    matched no coefficient term.
 
   - `spicy_fallback` – the requested computation failed; a simpler
     estimator was used instead.

@@ -151,11 +151,15 @@ multiframe designs are refused with a classed error.</p></dd>
 
 <dt id="arg-select">select<a class="anchor" aria-label="anchor" href="#arg-select"></a></dt>
 <dd><p>Columns to summarize, as a tidyselect expression on
-the design's variables.</p></dd>
+the design's variables. As in <code><a href="table_continuous.html">table_continuous()</a></code>, the <code>by</code> column
+is not part of the selection (naming it, or giving its position, is
+an error), a name that is not a column is an error, and so is a
+selection with no numeric column.</p></dd>
 
 
 <dt id="arg-by">by<a class="anchor" aria-label="anchor" href="#arg-by"></a></dt>
-<dd><p>A single grouping column. One domain per level.</p></dd>
+<dd><p>A single grouping column. One domain per level. A <code>by</code> that
+no observation holds is an error under <code>drop_na = TRUE</code>.</p></dd>
 
 
 <dt id="arg-exclude">exclude<a class="anchor" aria-label="anchor" href="#arg-exclude"></a></dt>
@@ -364,7 +368,9 @@ pairwise ones: <code><a href="https://rdrr.io/pkg/survey/man/svyttest.html" clas
 or <code><a href="https://rdrr.io/pkg/survey/man/svyranktest.html" class="external-link">survey::svyranktest()</a></code> under <code>test = "nonparametric"</code>. Under a
 design the Welch / Student distinction does not exist – the
 variance is the design's – so <code>test = "student"</code> warns and behaves
-like <code>"welch"</code>.</p>
+like <code>"welch"</code>. A variable with no variance has no comparison: its
+test cells are left blank, with a warning (class
+<code>spicy_undefined_stat</code>), where survey would still return a p-value.</p>
     </div>
     <div class="section level2">
     <h2 id="stability">Stability<a class="anchor" aria-label="anchor" href="#stability"></a></h2>

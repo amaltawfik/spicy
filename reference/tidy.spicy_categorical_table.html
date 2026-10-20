@@ -126,7 +126,9 @@ its test (when <code>by</code> is used) and the requested association measure:
 <code>"fisher_exact"</code>, <code>"fisher_midp"</code>, or <code>"fisher_exact_mc"</code>, as in the
 data frames of <code><a href="table_categorical.html">table_categorical()</a></code>), <code>statistic</code> (the chi-squared,
 Pearson's or the N-1, <code>NA</code> for an exact test), <code>df</code>, <code>p.value</code>,
-<code>assoc_type</code>, <code>assoc_value</code>, <code>assoc_ci_lower</code>, <code>assoc_ci_upper</code>,
+<code>assoc_type</code> (the key of the measure the variable carries, as
+<code>effect_size_type</code> in the long output: <code>"phi"</code>, <code>"cramer_v"</code>, ...),
+<code>assoc_value</code>, <code>assoc_ci_lower</code>, <code>assoc_ci_upper</code>,
 <code>n_total</code>. Without <code>by</code>, only <code>variable</code>, <code>label</code> and <code>n_total</code> are
 populated; the other columns are <code>NA</code>. The interval bounds are <code>NA</code>
 unless the table was built with <code>assoc_ci = TRUE</code>.</p>

@@ -190,7 +190,12 @@ adjustment.</p>
 <dd><p>Columns to include. If <code>regex = FALSE</code>, use tidyselect
 syntax or a character vector of column names (default:
 <code><a href="https://tidyselect.r-lib.org/reference/everything.html" class="external-link">tidyselect::everything()</a></code>). If <code>regex = TRUE</code>, provide a regular
-expression pattern (character string).</p></dd>
+expression pattern (character string). The <code>by</code> and <code>weights</code>
+columns are not part of the selection: <code><a href="https://tidyselect.r-lib.org/reference/everything.html" class="external-link">everything()</a></code> and the other
+helpers skip them, and naming one in <code>select</code>, or giving its
+position, is an error. A name that is not a column of <code>data</code> is an
+error (class <code>spicy_missing_column</code>), and so is a selection with no
+numeric column.</p></dd>
 
 
 <dt id="arg-by">by<a class="anchor" aria-label="anchor" href="#arg-by"></a></dt>
@@ -229,16 +234,17 @@ is disclosed in a table note ("Missing values removed: ...")
 rather than silent. If <code>TRUE</code> (the default, preserving this
 function's historical behavior; <code><a href="table_categorical.html">table_categorical()</a></code> defaults to
 <code>FALSE</code>), rows with <code>NA</code> in <code>by</code> are removed from the grouped
-summaries, with a warning and a dedicated note line ("Rows with
-missing ... removed"). If <code>FALSE</code>, rows with <code>NA</code> in <code>by</code> form a
+summaries, and a note line says so ("Rows with missing ...
+removed"). If <code>FALSE</code>, rows with <code>NA</code> in <code>by</code> form a
 dedicated <code>"(Missing)"</code> group – the field convention for
 descriptive tables (gtsummary's "Unknown" row; see the
 Epidemiologist R Handbook, Descriptive tables) – while the
 group-comparison test and effect size are still computed on the
 observed groups only (show the missing, test the observed,
 matching <code><a href="table_categorical.html">table_categorical()</a></code>); a level of <code>by</code> displayed with the
-label of that group is an error, as there. Ignored (with a warning)
-when <code>by</code> is not used.</p></dd>
+label of that group is an error, as there. Under <code>drop_na = TRUE</code>, a
+<code>by</code> that no observation holds is an error (class
+<code>spicy_invalid_data</code>). Ignored (with a warning) when <code>by</code> is not used.</p></dd>
 
 
 <dt id="arg-weights">weights<a class="anchor" aria-label="anchor" href="#arg-weights"></a></dt>
@@ -274,9 +280,12 @@ ANOVA (3+ groups). Assumes equal variances.</p></li>
 <li><p><code>"nonparametric"</code>: Wilcoxon rank-sum / Mann–Whitney <em>U</em>
 (2 groups) or Kruskal–Wallis <em>H</em> (3+ groups).</p></li>
 </ul><p>Used whenever <code>by</code> is supplied (since <code>p_value</code> defaults to <code>TRUE</code>
-in that case) or when <code>statistic = TRUE</code> / <code>effect_size = TRUE</code>.
+in that case) or when <code>statistic = TRUE</code> or an <code>effect_size</code> is
+requested.
 Ignored when <code>by</code> is not used, or when all three display toggles
-are turned off.</p></dd>
+are turned off. A variable with no variance has no test, whichever
+is chosen: its test cells are left blank, with a warning (class
+<code>spicy_undefined_stat</code>).</p></dd>
 
 
 <dt id="arg-p-value">p_value<a class="anchor" aria-label="anchor" href="#arg-p-value"></a></dt>
@@ -346,8 +355,8 @@ statistic (2 groups, nonparametric). CI via Fisher
 <li><p><code>"epsilon_sq"</code>: Epsilon-squared (\(\varepsilon^2\)) from the
 Kruskal-Wallis statistic (3+ groups, nonparametric). CI via
 percentile bootstrap (2 000 replicates).</p></li>
-</ul><p>For backward compatibility, <code>effect_size = TRUE</code> is silently
-coerced to <code>"auto"</code> and <code>effect_size = FALSE</code> to <code>"none"</code>.
+</ul><p>A logical value is an error (class <code>spicy_defunct</code>): use <code>"auto"</code>
+for <code>TRUE</code> and <code>"none"</code> for <code>FALSE</code>.
 Explicit choices are validated against the active <code>test</code> and the
 number of groups; an incompatible request (e.g. <code>"eta_sq"</code> with
 two groups, or <code>"hedges_g"</code> with <code>test = "nonparametric"</code>)
@@ -417,7 +426,8 @@ the wording you set here.</p></dd>
 
 <dt id="arg-digits">digits<a class="anchor" aria-label="anchor" href="#arg-digits"></a></dt>
 <dd><p>Number of decimal places for descriptive values and test
-statistics (default: <code>2</code>).</p></dd>
+statistics (default: <code>2</code>). A whole number: a fraction is an error,
+as for every <code>*_digits</code> argument.</p></dd>
 
 
 <dt id="arg-effect-size-digits">effect_size_digits<a class="anchor" aria-label="anchor" href="#arg-effect-size-digits"></a></dt>
@@ -488,7 +498,8 @@ better in your pipeline (<code>"long"</code> matches
 
 
 <dt id="arg-excel-path">excel_path<a class="anchor" aria-label="anchor" href="#arg-excel-path"></a></dt>
-<dd><p>File path for <code>output = "excel"</code>.</p></dd>
+<dd><p>File path for <code>output = "excel"</code>, ending in
+<code>".xlsx"</code>, in a directory that exists.</p></dd>
 
 
 <dt id="arg-excel-sheet">excel_sheet<a class="anchor" aria-label="anchor" href="#arg-excel-sheet"></a></dt>
@@ -504,12 +515,13 @@ survives whatever delimiter you choose.</p></dd>
 
 
 <dt id="arg-word-path">word_path<a class="anchor" aria-label="anchor" href="#arg-word-path"></a></dt>
-<dd><p>File path for <code>output = "word"</code>.</p></dd>
+<dd><p>File path for <code>output = "word"</code>, ending in
+<code>".docx"</code>, in a directory that exists.</p></dd>
 
 
 <dt id="arg-verbose">verbose<a class="anchor" aria-label="anchor" href="#arg-verbose"></a></dt>
-<dd><p>Logical. If <code>TRUE</code>, prints messages about excluded
-non-numeric columns (default: <code>FALSE</code>).</p></dd>
+<dd><p>Logical. If <code>TRUE</code>, a message (class <code>spicy_info</code>)
+names the non-numeric columns left out (default: <code>FALSE</code>).</p></dd>
 
 
 <dt id="arg-user-na">user_na<a class="anchor" aria-label="anchor" href="#arg-user-na"></a></dt>

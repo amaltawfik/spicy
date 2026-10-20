@@ -155,7 +155,7 @@ covariate adjustment (see <code>effect_size</code>).</p>
 <span>  boot_n <span class="op">=</span> <span class="fl">1000</span>,</span>
 <span>  contrast <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"auto"</span>, <span class="st">"none"</span><span class="op">)</span>,</span>
 <span>  statistic <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  p_value <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  p_value <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  show_n <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  show_weighted_n <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  effect_size <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"none"</span>, <span class="st">"f2"</span>, <span class="st">"d"</span>, <span class="st">"g"</span>, <span class="st">"omega2"</span><span class="op">)</span>,</span>
@@ -194,7 +194,11 @@ covariate adjustment (see <code>effect_size</code>).</p>
 <dd><p>Outcome columns to include. If <code>regex = FALSE</code>, use tidyselect
 syntax or a character vector of column names (default:
 <code><a href="https://tidyselect.r-lib.org/reference/everything.html" class="external-link">tidyselect::everything()</a></code>). If <code>regex = TRUE</code>, provide a regular expression
-pattern (character string).</p></dd>
+pattern (character string). The <code>by</code> column and the <code>covariates</code> are
+not part of the selection: <code><a href="https://tidyselect.r-lib.org/reference/everything.html" class="external-link">everything()</a></code> and the other helpers skip
+them, and naming one in <code>select</code> is an error. A name that is not a
+column of <code>data</code> is an error (class <code>spicy_missing_column</code>), and so
+is a selection with no numeric column.</p></dd>
 
 
 <dt id="arg-by">by<a class="anchor" aria-label="anchor" href="#arg-by"></a></dt>
@@ -236,11 +240,12 @@ linear model for. Accepts a tidyselect expression (e.g.
 <code>covariates = c(age, sex)</code>, <code>covariates = tidyselect::all_of(cov_vec)</code>,
 <code>covariates = tidyselect::starts_with("control_")</code>) or a literal
 character vector of column names. Each covariate must be numeric,
-integer, logical, factor, or character; covariates that also appear
-in <code>select</code> are silently auto-excluded from the outcome list (a
-variable cannot be both outcome and adjustment), and a covariate
-that equals <code>by</code> raises an error (a variable cannot be both
-predictor and adjustment).</p>
+integer, logical, factor, or character. A variable cannot be both
+outcome and adjustment: the covariates are left out of the outcome
+selection (<code>select = everything()</code> skips them), and naming one in
+<code>select</code>, or giving its position, raises an error; a covariate that
+equals <code>by</code> raises an error too (a variable cannot be both predictor
+and adjustment).</p>
 <p>When non-empty, each model is fitted as <code>lm(y ~ by + cov1 + cov2 + ...)</code>
 and the reported estimate / SE / p-value / CI on <code>by</code> are
 covariate-adjusted via the focal coefficient. For categorical <code>by</code>,
@@ -317,7 +322,9 @@ environment.</p></li>
 </ul><p>Validation: weights must be finite, non-negative, and contain at least
 one positive value (otherwise the function errors). Rows with <code>NA</code> in
 <code>weights</code> are excluded from the analytic sample for each outcome,
-alongside rows with <code>NA</code> in <code>y</code> or <code>by</code>. When supplied, weights are
+alongside rows with <code>NA</code> in <code>y</code> or <code>by</code>. A weights column is not an
+outcome: <code>select = everything()</code> skips it, and naming it in
+<code>select</code>, or giving its position, is an error. When supplied, weights are
 passed to <code>lm(..., weights = ...)</code>, so coefficients become weighted
 least-squares estimates and <code>\eqn{R^2}{R^2}</code>, adjusted <code>\eqn{R^2}{R^2}</code>, and the four effect
 sizes are computed from the corresponding weighted sums of squares
@@ -387,7 +394,8 @@ for the other (independent-observation) variants. Accepts:</p><ul><li><p><code>N
 environment (factor, character, integer, etc.).</p></li>
 </ul><p>Rows with <code>NA</code> in <code>cluster</code> are excluded from the analytic sample
 for each outcome (alongside rows with <code>NA</code> in <code>y</code>, <code>by</code>, or
-<code>weights</code>). At least two distinct non-missing cluster values are
+<code>weights</code>). A cluster column is not an outcome: <code>select = everything()</code> skips it, and naming it in <code>select</code>, or giving its
+position, is an error. At least two distinct non-missing cluster values are
 required. Multi-way clustering (a list / data.frame of multiple
 cluster vectors) is not supported; use <code><a href="https://zeileis.codeberg.page/sandwich/reference/vcovCL.html" class="external-link">sandwich::vcovCL()</a></code> or
 <code><a href="http://jepusto.github.io/clubSandwich/reference/vcovCR.html" class="external-link">clubSandwich::vcovCR()</a></code> directly on the fitted model for that case.</p></dd>
@@ -422,8 +430,10 @@ wide and rendered outputs. Defaults to <code>FALSE</code>.</p></dd>
 
 
 <dt id="arg-p-value">p_value<a class="anchor" aria-label="anchor" href="#arg-p-value"></a></dt>
-<dd><p>Logical. If <code>TRUE</code>, includes a <code>p</code> column in the wide and
-rendered outputs. Defaults to <code>TRUE</code>.</p></dd>
+<dd><p>Logical or <code>NULL</code>. If <code>TRUE</code>, includes a <code>p</code> column in
+the wide and rendered outputs. <code>NULL</code> (the default) shows it whenever
+<code>by</code> is supplied, as in the rest of the family; <code>by</code> is required
+here, so <code>NULL</code> means <code>TRUE</code>. Pass <code>p_value = FALSE</code> to suppress it.</p></dd>
 
 
 <dt id="arg-show-n">show_n<a class="anchor" aria-label="anchor" href="#arg-show-n"></a></dt>
@@ -439,7 +449,8 @@ analytic sample. Defaults to <code>FALSE</code>.</p></dd>
 
 <dt id="arg-effect-size">effect_size<a class="anchor" aria-label="anchor" href="#arg-effect-size"></a></dt>
 <dd><p>Character. Effect-size column to include in the wide and
-rendered outputs. One of:</p><ul><li><p><code>"none"</code> (the default): no effect-size column.</p></li>
+rendered outputs (a logical is an error, class <code>spicy_defunct</code>). One
+of:</p><ul><li><p><code>"none"</code> (the default): no effect-size column.</p></li>
 <li><p><code>"f2"</code>: Cohen's <code>\eqn{f^2}{f^2} = \eqn{R^2}{R^2} / (1 - \eqn{R^2}{R^2})</code>. Defined for any predictor type.
 Familiar from Cohen (1988); standard input for a-priori power analysis.
 Note that for a single-predictor model, <code>\eqn{f^2}{f^2}</code> is a monotone transform of
@@ -535,9 +546,8 @@ intervals (default: <code>0.95</code>). Must be between 0 and 1 exclusive.</p></
 <dt id="arg-digits">digits<a class="anchor" aria-label="anchor" href="#arg-digits"></a></dt>
 <dd><p>Number of decimal places for descriptive values, regression
 coefficients, and test statistics (default: <code>2</code>). Must be a single
-non-negative number; non-integer values are truncated (e.g. <code>2.9</code>
-becomes <code>2</code>). Same constraint for <code>fit_digits</code> and
-<code>effect_size_digits</code>.</p></dd>
+non-negative whole number: a fraction (<code>2.9</code>) is an error. Same
+constraint for <code>fit_digits</code> and <code>effect_size_digits</code>.</p></dd>
 
 
 <dt id="arg-fit-digits">fit_digits<a class="anchor" aria-label="anchor" href="#arg-fit-digits"></a></dt>
@@ -561,8 +571,7 @@ prints <code>.045</code> and <code>&lt;.001</code>; <code>p_digits = 4</code> pr
 genomics / GWAS contexts where adjusted <em>p</em>-values can be very
 small, or for journals using a coarser convention. Leading zeros
 are always stripped, following APA convention. Values below <code>1</code>
-raise an error; non-integer values are truncated (e.g. <code>3.7</code>
-becomes <code>3</code>).</p></dd>
+and fractions (<code>3.7</code>) raise an error.</p></dd>
 
 
 <dt id="arg-decimal-mark">decimal_mark<a class="anchor" aria-label="anchor" href="#arg-decimal-mark"></a></dt>
@@ -609,7 +618,8 @@ format would require a separate refactor.</p></dd>
 
 
 <dt id="arg-excel-path">excel_path<a class="anchor" aria-label="anchor" href="#arg-excel-path"></a></dt>
-<dd><p>File path for <code>output = "excel"</code>.</p></dd>
+<dd><p>File path for <code>output = "excel"</code>, ending in
+<code>".xlsx"</code>, in a directory that exists.</p></dd>
 
 
 <dt id="arg-excel-sheet">excel_sheet<a class="anchor" aria-label="anchor" href="#arg-excel-sheet"></a></dt>
@@ -625,12 +635,14 @@ delimiter you choose.</p></dd>
 
 
 <dt id="arg-word-path">word_path<a class="anchor" aria-label="anchor" href="#arg-word-path"></a></dt>
-<dd><p>File path for <code>output = "word"</code>.</p></dd>
+<dd><p>File path for <code>output = "word"</code>, ending in <code>".docx"</code>,
+in a directory that exists.</p></dd>
 
 
 <dt id="arg-verbose">verbose<a class="anchor" aria-label="anchor" href="#arg-verbose"></a></dt>
-<dd><p>Logical. If <code>TRUE</code>, prints messages about ignored
-non-numeric selected outcomes (default: <code>FALSE</code>).</p></dd>
+<dd><p>Logical. If <code>TRUE</code>, a message (class <code>spicy_info</code>)
+names the non-numeric columns left out of the outcomes (default:
+<code>FALSE</code>).</p></dd>
 
 
 <dt id="arg-user-na">user_na<a class="anchor" aria-label="anchor" href="#arg-user-na"></a></dt>
@@ -689,8 +701,8 @@ below the body. The default object and the data frames of
 <code>"data.frame"</code> and <code>"long"</code> carry the whole note as printed, "Note."
 included, in <code>attr(x, "note")</code> (<code>NULL</code> when there is nothing to say).</p>
 <p>If no numeric outcome columns remain after applying <code>select</code>, <code>exclude</code>,
-and <code>regex</code>, the function emits a warning and returns an empty
-<code><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame()</a></code> regardless of <code>output</code>.</p>
+and <code>regex</code>, the function stops with an error (class
+<code>spicy_invalid_input</code>), as the other tables of the family do.</p>
     </div>
     <div class="section level2">
     <h2 id="model-and-outputs">Model and outputs<a class="anchor" aria-label="anchor" href="#model-and-outputs"></a></h2>
@@ -714,8 +726,9 @@ consistent.</p>
 companion: choose it when you want heteroskedasticity-consistent standard
 errors (<code>vcov = "HC*"</code>), model fit statistics, or case weights via
 <code>lm(..., weights = ...)</code>. Because the function exists to report a fitted
-model, its inferential output is on by default: <code>p_value = TRUE</code> and
-<code>r2 = "r2"</code> are the defaults; set <code>p_value = FALSE</code> or <code>r2 = "none"</code> to
+model, its inferential output is on by default: the <em>p</em>-value is shown
+(<code>p_value = NULL</code>, the default, shows it with <code>by</code>, which is required
+here) and <code>r2 = "r2"</code>; set <code>p_value = FALSE</code> or <code>r2 = "none"</code> to
 suppress them.</p>
     </div>
     <div class="section level2">

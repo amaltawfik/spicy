@@ -161,7 +161,11 @@ the error names an address for each.</p>
 <p>A statistic that belongs to a whole variable rather than to one of
 its levels sits on the variable's own row: the <em>p</em> of a
 <code><a href="table_categorical.html">table_categorical()</a></code> block, its association measure, its SMD. Leave
-<code>level</code> out to cite it (<code>inline(tbl, smoking, column = "p")</code>).</p>
+<code>level</code> out to cite it (<code>inline(tbl, smoking, column = "p")</code>). The
+same call cites the <em>p</em> of a by-group <code><a href="table_continuous.html">table_continuous()</a></code> or
+<code><a href="table_continuous_svy.html">table_continuous_svy()</a></code>, which sits on the first group's row: when
+one row of the variable alone carries the statistic, that row is the
+address.</p>
 <p><code><a href="table_continuous_lm.html">table_continuous_lm()</a></code> lays its groups out sideways – one row per
 outcome, the <code>by</code> levels as columns (<code>M (Female)</code>, <code>M (Male)</code>) –
 so there <code>level</code> names the group whose column you want:

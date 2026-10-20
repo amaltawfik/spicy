@@ -689,7 +689,9 @@ table_regression(
 
   Decimal places for p-values (`p`, `ame_p`, `p_change`). APA-strict:
   leading zero stripped, `<.001` (or `<.0001` etc. depending on
-  `p_digits`) for small values. Default `3L`.
+  `p_digits`) for small values. Default `3L`; at least `1L`, as in the
+  descriptive tables. Every `*_digits` argument is a whole number: a
+  fraction is an error.
 
 - effect_size_digits:
 
@@ -821,8 +823,8 @@ table_regression(
 
 - excel_path:
 
-  File path for `output = "excel"`. Default `NULL` (required when
-  `output = "excel"`).
+  File path for `output = "excel"`, ending in `".xlsx"`, in a directory
+  that exists. Default `NULL` (required when `output = "excel"`).
 
 - excel_sheet:
 
@@ -857,15 +859,16 @@ table_regression(
 
 - word_path:
 
-  File path for `output = "word"`. Default `NULL` (required when
-  `output = "word"`). The Word table inherits the flextable styling
-  (Calibri font, APA borders, decimal-aligned numerics) and adds
-  Word-specific features: an auto-numbered caption ("Table 1: ...",
-  "Table 2: ...") via Word's `SEQ` field so multiple
-  `table_regression()` calls in one document number consecutively; a
-  re-printed header row on each page break; row split prevention so a
-  single coefficient row never wraps across two pages; and an APA-styled
-  note line (`*Note.*` italic prefix per APA Manual 7 §7.14).
+  File path for `output = "word"`, ending in `".docx"`, in a directory
+  that exists. Default `NULL` (required when `output = "word"`). The
+  Word table inherits the flextable styling (Calibri font, APA borders,
+  decimal-aligned numerics) and adds Word-specific features: an
+  auto-numbered caption ("Table 1: ...", "Table 2: ...") via Word's
+  `SEQ` field so multiple `table_regression()` calls in one document
+  number consecutively; a re-printed header row on each page break; row
+  split prevention so a single coefficient row never wraps across two
+  pages; and an APA-styled note line (`*Note.*` italic prefix per APA
+  Manual 7 §7.14).
 
   **R Markdown / Quarto:** for embedded use, prefer
   `output = "flextable"` (returns the flextable object that knits to

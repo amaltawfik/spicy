@@ -75,11 +75,16 @@ table_continuous_svy(
 - select:
 
   Columns to summarize, as a tidyselect expression on the design's
-  variables.
+  variables. As in
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
+  the `by` column is not part of the selection (naming it, or giving its
+  position, is an error), a name that is not a column is an error, and
+  so is a selection with no numeric column.
 
 - by:
 
-  A single grouping column. One domain per level.
+  A single grouping column. One domain per level. A `by` that no
+  observation holds is an error under `drop_na = TRUE`.
 
 - exclude:
 
@@ -319,7 +324,10 @@ three or more, or
 [`survey::svyranktest()`](https://rdrr.io/pkg/survey/man/svyranktest.html)
 under `test = "nonparametric"`. Under a design the Welch / Student
 distinction does not exist – the variance is the design's – so
-`test = "student"` warns and behaves like `"welch"`.
+`test = "student"` warns and behaves like `"welch"`. A variable with no
+variance has no comparison: its test cells are left blank, with a
+warning (class `spicy_undefined_stat`), where survey would still return
+a p-value.
 
 ## Stability
 

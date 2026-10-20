@@ -116,7 +116,8 @@ presentation of applied epidemiology (the
 
 
 <dl><dt id="arg-data">data<a class="anchor" aria-label="anchor" href="#arg-data"></a></dt>
-<dd><p>A data frame.</p></dd>
+<dd><p>A data frame. A survey design is refused with a pointer to
+the design-based route (class <code>spicy_wrong_regime</code>).</p></dd>
 
 
 <dt id="arg-outcome">outcome<a class="anchor" aria-label="anchor" href="#arg-outcome"></a></dt>
@@ -128,7 +129,11 @@ in <code>data</code> (the <code>tbl_uvregression</code> convention).</p></dd>
 <dt id="arg-predictors">predictors<a class="anchor" aria-label="anchor" href="#arg-predictors"></a></dt>
 <dd><p>Candidate predictor columns (tidyselect, e.g.
 <code>c(age, sex, education)</code> or <code>where(is.numeric)</code>). The outcome
-column(s) are dropped from the selection automatically.</p></dd>
+column(s) are not part of the selection: <code><a href="https://tidyselect.r-lib.org/reference/everything.html" class="external-link">everything()</a></code> and the
+other helpers skip them, and naming one in <code>predictors</code>, or giving
+its position, is an error.
+A name that is not a column of <code>data</code> is an error (class
+<code>spicy_missing_column</code>).</p></dd>
 
 
 <dt id="arg-method">method<a class="anchor" aria-label="anchor" href="#arg-method"></a></dt>
@@ -225,7 +230,8 @@ table carries the wording you set here.</p></dd>
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
 <dd><p>Passed to <code><a href="table_regression.html">table_regression()</a></code> (<code>exponentiate</code>, <code>vcov</code>,
-<code>cluster</code>, <code>p_adjust</code>, <code>digits</code>, <code>output</code>, ...).
+<code>cluster</code>, <code>p_adjust</code>, <code>digits</code>, <code>output</code>, ...), each by its full
+name: an unknown or abbreviated name is an error.
 <code>nested</code> is not
 meaningful for a screen and is refused. <code>cluster</code> must be a
 single vector with one value per row of <code>data</code>; it is aligned to

@@ -31,7 +31,8 @@ table_regression_uv(
 
 - data:
 
-  A data frame.
+  A data frame. A survey design is refused with a pointer to the
+  design-based route (class `spicy_wrong_regime`).
 
 - outcome:
 
@@ -42,8 +43,12 @@ table_regression_uv(
 - predictors:
 
   Candidate predictor columns (tidyselect, e.g. `c(age, sex, education)`
-  or `where(is.numeric)`). The outcome column(s) are dropped from the
-  selection automatically.
+  or `where(is.numeric)`). The outcome column(s) are not part of the
+  selection:
+  [`everything()`](https://tidyselect.r-lib.org/reference/everything.html)
+  and the other helpers skip them, and naming one in `predictors`, or
+  giving its position, is an error. A name that is not a column of
+  `data` is an error (class `spicy_missing_column`).
 
 - method:
 
@@ -151,7 +156,8 @@ table_regression_uv(
   Passed to
   [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   (`exponentiate`, `vcov`, `cluster`, `p_adjust`, `digits`, `output`,
-  ...). `nested` is not meaningful for a screen and is refused.
+  ...), each by its full name: an unknown or abbreviated name is an
+  error. `nested` is not meaningful for a screen and is refused.
   `cluster` must be a single vector with one value per row of `data`; it
   is aligned to each fit's own estimation sample automatically.
 

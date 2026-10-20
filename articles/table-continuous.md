@@ -631,7 +631,6 @@ table_continuous(
   select = bmi,
   by = income_group
 )
-#> Warning: 18 observation(s) with NA in `income_group` were excluded.
 #> Descriptive statistics by income_group
 #> 
 #>  Variable │ Group           M     SD    Min    Max   95% CI LL  95% CI UL   n  
@@ -1029,7 +1028,7 @@ table_continuous(
 |  | Tertiary |  4.11 |  1.04 |  1.00 |   5.00 |  4.01 |  4.21 | 399 |       |
 | *Note.* Missing values removed: bmi (12), life_sat_health (8). |  |  |  |  |  |  |  |  |  |
 
-Descriptive statistics by education {#tinytable_mtuhombq5dwulduvweof
+Descriptive statistics by education {#tinytable_wff4nwwxk2088pm8pkbg
 .table .tinytable
 style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}

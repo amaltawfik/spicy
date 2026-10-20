@@ -122,7 +122,8 @@ table_categorical_svy(
   Shown or dropped, they never enter the test: the p-value is computed
   on the complete cases either way, which is the convention
   [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
-  applies.
+  applies. Under `drop_na = TRUE`, a `by` that no observation holds is
+  an error (class `spicy_invalid_data`).
 
 - proportion_ci:
 

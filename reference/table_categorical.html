@@ -166,7 +166,12 @@ excluding the <code>by</code> column – matching the select-less defaults of
 <code><a href="table_continuous.html">table_continuous()</a></code> and <code><a href="table_continuous_lm.html">table_continuous_lm()</a></code>. An explicit
 <code>select</code> is taken verbatim (numeric columns included), so
 numeric-coded categorical variables can still be tabulated by
-naming them.</p></dd>
+naming them. The <code>by</code> and <code>weights</code> columns are not part of the
+selection: <code><a href="https://tidyselect.r-lib.org/reference/everything.html" class="external-link">everything()</a></code> and the other helpers skip them, and
+naming one in <code>select</code>, or giving its position, is an error. A name
+that is not a column of <code>data</code> is an error (class
+<code>spicy_missing_column</code>), and so is a selection with no column to
+tabulate.</p></dd>
 
 
 <dt id="arg-by">by<a class="anchor" aria-label="anchor" href="#arg-by"></a></dt>
@@ -204,14 +209,20 @@ the wording you set here.</p></dd>
 
 
 <dt id="arg-levels-keep">levels_keep<a class="anchor" aria-label="anchor" href="#arg-levels-keep"></a></dt>
-<dd><p>Optional character vector of levels to keep/order for row
-modalities. If <code>NULL</code>, all observed levels are kept. Entries must
+<dd><p>Levels to keep, in the order to display them. If
+<code>NULL</code> (the default), all observed levels are kept. Entries must
 match the level strings the table displays (for labelled columns
-these are the <code>"[code] label"</code> strings, not the bare label
-text). When nothing matches
-for a selected variable, that variable is dropped from the table
-with a classed warning (<code>spicy_no_selection</code>) listing the
-available level strings.</p></dd>
+these are the <code>"[code] label"</code> strings, not the bare label text).
+Two forms, as in <code><a href="table_categorical_svy.html">table_categorical_svy()</a></code>:</p><ul><li><p>a character vector applies to every variable: each keeps the
+levels it has, and a variable with none of them is dropped from
+the table with a classed warning (<code>spicy_no_selection</code>) listing
+its level strings;</p></li>
+<li><p>a named list applies per variable
+(<code>levels_keep = list(smoking = "Yes")</code>): each name must be a
+variable of the table, each level one the variable displays (an
+error otherwise), and the variables it does not name keep all
+their levels.</p></li>
+</ul></dd>
 
 
 <dt id="arg-include-total">include_total<a class="anchor" aria-label="anchor" href="#arg-include-total"></a></dt>
@@ -235,8 +246,9 @@ label with
 If <code>TRUE</code>, rows with <code>NA</code> in the tabulated variable (and in <code>by</code>,
 when supplied) are removed BEFORE each cross-tabulation, and the
 removal is disclosed in a table note ("Missing values removed: ...")
-rather than silent. Before 0.13.0 the default was <code>TRUE</code> with no
-disclosure.</p></dd>
+rather than silent; a <code>by</code> that no observation holds is then an
+error (class <code>spicy_invalid_data</code>). Before 0.13.0 the default was
+<code>TRUE</code> with no disclosure.</p></dd>
 
 
 <dt id="arg-weights">weights<a class="anchor" aria-label="anchor" href="#arg-weights"></a></dt>
@@ -320,7 +332,8 @@ variable). One of <code>"none"</code> (default), <code>"holm"</code>, <code>"hoc
 
 <dt id="arg-percent-digits">percent_digits<a class="anchor" aria-label="anchor" href="#arg-percent-digits"></a></dt>
 <dd><p>Number of digits for percentages in report outputs.
-Defaults to <code>1</code>.</p></dd>
+Defaults to <code>1</code>. A whole number: a fraction is an error, as for
+<code>p_digits</code> and <code>v_digits</code>.</p></dd>
 
 
 <dt id="arg-p-digits">p_digits<a class="anchor" aria-label="anchor" href="#arg-p-digits"></a></dt>
@@ -461,7 +474,8 @@ as-is in wide raw output. If <code>TRUE</code>, replaces them with empty strings
 
 
 <dt id="arg-excel-path">excel_path<a class="anchor" aria-label="anchor" href="#arg-excel-path"></a></dt>
-<dd><p>Path for <code>output = "excel"</code>. Defaults to <code>NULL</code>.</p></dd>
+<dd><p>Path for <code>output = "excel"</code>, ending in <code>".xlsx"</code>, in
+a directory that exists. Defaults to <code>NULL</code>.</p></dd>
 
 
 <dt id="arg-excel-sheet">excel_sheet<a class="anchor" aria-label="anchor" href="#arg-excel-sheet"></a></dt>
@@ -477,7 +491,8 @@ whatever delimiter you choose.</p></dd>
 
 
 <dt id="arg-word-path">word_path<a class="anchor" aria-label="anchor" href="#arg-word-path"></a></dt>
-<dd><p>File path for <code>output = "word"</code>. Defaults to
+<dd><p>File path for <code>output = "word"</code>, ending in <code>".docx"</code>,
+in a directory that exists. Defaults to
 <code>NULL</code>. Before 0.13.0, supplying it with <code>output = "flextable"</code>
 also wrote a <code>.docx</code> as a side effect; it is now used exclusively
 by <code>output = "word"</code> (the contract shared with the rest of the

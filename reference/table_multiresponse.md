@@ -63,7 +63,11 @@ table_multiresponse(
 
   The indicator columns of the question, one per item, in tidyselect
   syntax or as a character vector of column names. Their order is the
-  order of the rows, unless `sort` sorts them.
+  order of the rows, unless `sort` sorts them. The `by` column is not
+  part of the selection: a selection helper skips it, and naming it, or
+  giving its position, is an error. A name that is not a column of
+  `data` is an error (class `spicy_missing_column`), and so is an empty
+  selection.
 
 - by:
 
@@ -72,9 +76,10 @@ table_multiresponse(
   any other column forms groups in order of first appearance (a labelled
   column by its codes), as in
   [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md).
-  Rows with a missing `by` are removed, and the note says how many. A
-  level displayed with the label of the `Total` margin is an error, as
-  in
+  Rows with a missing `by` are removed, and the note says how many; a
+  `by` that no observation holds is an error (class
+  `spicy_invalid_data`). A level displayed with the label of the `Total`
+  margin is an error, as in
   [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md).
 
 - counted:
@@ -255,7 +260,9 @@ table_multiresponse(
 
 - percent_digits:
 
-  Number of digits for percentages in report outputs. Defaults to `1`.
+  Number of digits for percentages in report outputs. Defaults to `1`. A
+  whole number: a fraction is an error, as for `p_digits` and
+  `v_digits`.
 
 - p_digits:
 
@@ -315,7 +322,8 @@ table_multiresponse(
 
 - excel_path:
 
-  Path for `output = "excel"`. Defaults to `NULL`.
+  Path for `output = "excel"`, ending in `".xlsx"`, in a directory that
+  exists. Defaults to `NULL`.
 
 - excel_sheet:
 

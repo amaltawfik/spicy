@@ -401,7 +401,7 @@ An unsupported class fails fast with a classed error
 
 fit <- loess(dist ~ speed, data = cars)
 table_regression(fit)
-#> Error in `validate_models_input()`:
+#> Error in `table_regression()`:
 #> ! Some `models` are not supported by `table_regression()`.
 #> Position 1: `loess` – not a supported model class. If support would be useful, please open an issue: https://github.com/amaltawfik/spicy/issues
 #> ℹ Supported model classes: lm, glm, negbin, rlm, nls, lm_robust, iv_robust, ivreg, tobit, rq, fixest, lmerMod, glmerMod, glmmTMB, lme, gls, geeglm, polr, clm, clmm, multinom, mlogit, zeroinfl, hurdle, coxph, survreg, cph, flexsurvreg, svyglm, svyolr, svycoxph, gam, betareg, selection, ols, lrm, Glm, stanreg, brmsfit. `table_regression_models()` lists them with their engines.

@@ -42,7 +42,7 @@ table_continuous_lm(
   boot_n = 1000,
   contrast = c("auto", "none"),
   statistic = FALSE,
-  p_value = TRUE,
+  p_value = NULL,
   show_n = TRUE,
   show_weighted_n = FALSE,
   effect_size = c("none", "f2", "d", "g", "omega2"),
@@ -81,7 +81,12 @@ table_continuous_lm(
   or a character vector of column names (default:
   [`tidyselect::everything()`](https://tidyselect.r-lib.org/reference/everything.html)).
   If `regex = TRUE`, provide a regular expression pattern (character
-  string).
+  string). The `by` column and the `covariates` are not part of the
+  selection:
+  [`everything()`](https://tidyselect.r-lib.org/reference/everything.html)
+  and the other helpers skip them, and naming one in `select` is an
+  error. A name that is not a column of `data` is an error (class
+  `spicy_missing_column`), and so is a selection with no numeric column.
 
 - by:
 
@@ -135,11 +140,12 @@ table_continuous_lm(
   `covariates = tidyselect::all_of(cov_vec)`,
   `covariates = tidyselect::starts_with("control_")`) or a literal
   character vector of column names. Each covariate must be numeric,
-  integer, logical, factor, or character; covariates that also appear in
-  `select` are silently auto-excluded from the outcome list (a variable
-  cannot be both outcome and adjustment), and a covariate that equals
-  `by` raises an error (a variable cannot be both predictor and
-  adjustment).
+  integer, logical, factor, or character. A variable cannot be both
+  outcome and adjustment: the covariates are left out of the outcome
+  selection (`select = everything()` skips them), and naming one in
+  `select`, or giving its position, raises an error; a covariate that
+  equals `by` raises an error too (a variable cannot be both predictor
+  and adjustment).
 
   When non-empty, each model is fitted as
   `lm(y ~ by + cov1 + cov2 + ...)` and the reported estimate / SE /
@@ -229,8 +235,10 @@ table_continuous_lm(
   Validation: weights must be finite, non-negative, and contain at least
   one positive value (otherwise the function errors). Rows with `NA` in
   `weights` are excluded from the analytic sample for each outcome,
-  alongside rows with `NA` in `y` or `by`. When supplied, weights are
-  passed to `lm(..., weights = ...)`, so coefficients become weighted
+  alongside rows with `NA` in `y` or `by`. A weights column is not an
+  outcome: `select = everything()` skips it, and naming it in `select`,
+  or giving its position, is an error. When supplied, weights are passed
+  to `lm(..., weights = ...)`, so coefficients become weighted
   least-squares estimates and `\eqn{R^2}{R^2}`, adjusted
   `\eqn{R^2}{R^2}`, and the four effect sizes are computed from the
   corresponding weighted sums of squares (see the *Weights* section in
@@ -326,7 +334,9 @@ table_continuous_lm(
     environment (factor, character, integer, etc.).
 
   Rows with `NA` in `cluster` are excluded from the analytic sample for
-  each outcome (alongside rows with `NA` in `y`, `by`, or `weights`). At
+  each outcome (alongside rows with `NA` in `y`, `by`, or `weights`). A
+  cluster column is not an outcome: `select = everything()` skips it,
+  and naming it in `select`, or giving its position, is an error. At
   least two distinct non-missing cluster values are required. Multi-way
   clustering (a list / data.frame of multiple cluster vectors) is not
   supported; use
@@ -368,8 +378,10 @@ table_continuous_lm(
 
 - p_value:
 
-  Logical. If `TRUE`, includes a `p` column in the wide and rendered
-  outputs. Defaults to `TRUE`.
+  Logical or `NULL`. If `TRUE`, includes a `p` column in the wide and
+  rendered outputs. `NULL` (the default) shows it whenever `by` is
+  supplied, as in the rest of the family; `by` is required here, so
+  `NULL` means `TRUE`. Pass `p_value = FALSE` to suppress it.
 
 - show_n:
 
@@ -385,7 +397,7 @@ table_continuous_lm(
 - effect_size:
 
   Character. Effect-size column to include in the wide and rendered
-  outputs. One of:
+  outputs (a logical is an error, class `spicy_defunct`). One of:
 
   - `"none"` (the default): no effect-size column.
 
@@ -511,9 +523,8 @@ table_continuous_lm(
 
   Number of decimal places for descriptive values, regression
   coefficients, and test statistics (default: `2`). Must be a single
-  non-negative number; non-integer values are truncated (e.g. `2.9`
-  becomes `2`). Same constraint for `fit_digits` and
-  `effect_size_digits`.
+  non-negative whole number: a fraction (`2.9`) is an error. Same
+  constraint for `fit_digits` and `effect_size_digits`.
 
 - fit_digits:
 
@@ -536,8 +547,7 @@ table_continuous_lm(
   `.05` and `<.01`. Useful for genomics / GWAS contexts where adjusted
   *p*-values can be very small, or for journals using a coarser
   convention. Leading zeros are always stripped, following APA
-  convention. Values below `1` raise an error; non-integer values are
-  truncated (e.g. `3.7` becomes `3`).
+  convention. Values below `1` and fractions (`3.7`) raise an error.
 
 - decimal_mark:
 
@@ -596,7 +606,8 @@ table_continuous_lm(
 
 - excel_path:
 
-  File path for `output = "excel"`.
+  File path for `output = "excel"`, ending in `".xlsx"`, in a directory
+  that exists.
 
 - excel_sheet:
 
@@ -611,12 +622,13 @@ table_continuous_lm(
 
 - word_path:
 
-  File path for `output = "word"`.
+  File path for `output = "word"`, ending in `".docx"`, in a directory
+  that exists.
 
 - verbose:
 
-  Logical. If `TRUE`, prints messages about ignored non-numeric selected
-  outcomes (default: `FALSE`).
+  Logical. If `TRUE`, a message (class `spicy_info`) names the
+  non-numeric columns left out of the outcomes (default: `FALSE`).
 
 - user_na:
 
@@ -686,9 +698,8 @@ body. The default object and the data frames of `"data.frame"` and
 `attr(x, "note")` (`NULL` when there is nothing to say).
 
 If no numeric outcome columns remain after applying `select`, `exclude`,
-and `regex`, the function emits a warning and returns an empty
-[`data.frame()`](https://rdrr.io/r/base/data.frame.html) regardless of
-`output`.
+and `regex`, the function stops with an error (class
+`spicy_invalid_input`), as the other tables of the family do.
 
 ## Model and outputs
 
@@ -714,7 +725,8 @@ this function is the model-based companion: choose it when you want
 heteroskedasticity-consistent standard errors (`vcov = "HC*"`), model
 fit statistics, or case weights via `lm(..., weights = ...)`. Because
 the function exists to report a fitted model, its inferential output is
-on by default: `p_value = TRUE` and `r2 = "r2"` are the defaults; set
+on by default: the *p*-value is shown (`p_value = NULL`, the default,
+shows it with `by`, which is required here) and `r2 = "r2"`; set
 `p_value = FALSE` or `r2 = "none"` to suppress them.
 
 ## Effect sizes

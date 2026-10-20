@@ -926,8 +926,8 @@ broom::glance(out)
 #> # A tibble: 2 × 11
 #>   variable        label test_type statistic    df p.value assoc_type assoc_value
 #>   <chr>           <chr> <chr>         <dbl> <int>   <dbl> <chr>            <dbl>
-#> 1 smoking         smok… chi_squa…    0.136      1   0.713 Phi            0.0107 
-#> 2 physical_activ… phys… chi_squa…    0.0452     1   0.832 Phi            0.00614
+#> 1 smoking         smok… chi_squa…    0.136      1   0.713 phi            0.0107 
+#> 2 physical_activ… phys… chi_squa…    0.0452     1   0.832 phi            0.00614
 #> # ℹ 3 more variables: assoc_ci_lower <dbl>, assoc_ci_upper <dbl>, n_total <int>
 ```
 
@@ -991,7 +991,7 @@ table_categorical(
 |     Yes | 286 | 46.1 | 264 | 45.5 | 550 | 45.8 |      |     |
 | *Note.* Group comparison: Pearson chi-squared test. |  |  |  |  |  |  |  |  |
 
-Categorical table by sex {#tinytable_2xf4rcv8x552calibuzd .table
+Categorical table by sex {#tinytable_u1f05ikq35hy5fnqcmh3 .table
 .tinytable style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 

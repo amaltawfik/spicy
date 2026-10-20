@@ -80,7 +80,12 @@ table_continuous(
   character vector of column names (default:
   [`tidyselect::everything()`](https://tidyselect.r-lib.org/reference/everything.html)).
   If `regex = TRUE`, provide a regular expression pattern (character
-  string).
+  string). The `by` and `weights` columns are not part of the selection:
+  [`everything()`](https://tidyselect.r-lib.org/reference/everything.html)
+  and the other helpers skip them, and naming one in `select`, or giving
+  its position, is an error. A name that is not a column of `data` is an
+  error (class `spicy_missing_column`), and so is a selection with no
+  numeric column.
 
 - by:
 
@@ -123,16 +128,18 @@ table_continuous(
   behavior;
   [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
   defaults to `FALSE`), rows with `NA` in `by` are removed from the
-  grouped summaries, with a warning and a dedicated note line ("Rows
-  with missing ... removed"). If `FALSE`, rows with `NA` in `by` form a
-  dedicated `"(Missing)"` group – the field convention for descriptive
-  tables (gtsummary's "Unknown" row; see the Epidemiologist R Handbook,
+  grouped summaries, and a note line says so ("Rows with missing ...
+  removed"). If `FALSE`, rows with `NA` in `by` form a dedicated
+  `"(Missing)"` group – the field convention for descriptive tables
+  (gtsummary's "Unknown" row; see the Epidemiologist R Handbook,
   Descriptive tables) – while the group-comparison test and effect size
   are still computed on the observed groups only (show the missing, test
   the observed, matching
   [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md));
   a level of `by` displayed with the label of that group is an error, as
-  there. Ignored (with a warning) when `by` is not used.
+  there. Under `drop_na = TRUE`, a `by` that no observation holds is an
+  error (class `spicy_invalid_data`). Ignored (with a warning) when `by`
+  is not used.
 
 - weights:
 
@@ -175,9 +182,11 @@ table_continuous(
     or Kruskal–Wallis *H* (3+ groups).
 
   Used whenever `by` is supplied (since `p_value` defaults to `TRUE` in
-  that case) or when `statistic = TRUE` / `effect_size = TRUE`. Ignored
-  when `by` is not used, or when all three display toggles are turned
-  off.
+  that case) or when `statistic = TRUE` or an `effect_size` is
+  requested. Ignored when `by` is not used, or when all three display
+  toggles are turned off. A variable with no variance has no test,
+  whichever is chosen: its test cells are left blank, with a warning
+  (class `spicy_undefined_stat`).
 
 - p_value:
 
@@ -252,12 +261,12 @@ table_continuous(
     Kruskal-Wallis statistic (3+ groups, nonparametric). CI via
     percentile bootstrap (2 000 replicates).
 
-  For backward compatibility, `effect_size = TRUE` is silently coerced
-  to `"auto"` and `effect_size = FALSE` to `"none"`. Explicit choices
-  are validated against the active `test` and the number of groups; an
-  incompatible request (e.g. `"eta_sq"` with two groups, or `"hedges_g"`
-  with `test = "nonparametric"`) triggers an actionable error. Ignored
-  when `by` is not used.
+  A logical value is an error (class `spicy_defunct`): use `"auto"` for
+  `TRUE` and `"none"` for `FALSE`. Explicit choices are validated
+  against the active `test` and the number of groups; an incompatible
+  request (e.g. `"eta_sq"` with two groups, or `"hedges_g"` with
+  `test = "nonparametric"`) triggers an actionable error. Ignored when
+  `by` is not used.
 
 - effect_size_ci:
 
@@ -329,7 +338,8 @@ table_continuous(
 - digits:
 
   Number of decimal places for descriptive values and test statistics
-  (default: `2`).
+  (default: `2`). A whole number: a fraction is an error, as for every
+  `*_digits` argument.
 
 - effect_size_digits:
 
@@ -414,7 +424,8 @@ table_continuous(
 
 - excel_path:
 
-  File path for `output = "excel"`.
+  File path for `output = "excel"`, ending in `".xlsx"`, in a directory
+  that exists.
 
 - excel_sheet:
 
@@ -429,12 +440,13 @@ table_continuous(
 
 - word_path:
 
-  File path for `output = "word"`.
+  File path for `output = "word"`, ending in `".docx"`, in a directory
+  that exists.
 
 - verbose:
 
-  Logical. If `TRUE`, prints messages about excluded non-numeric columns
-  (default: `FALSE`).
+  Logical. If `TRUE`, a message (class `spicy_info`) names the
+  non-numeric columns left out (default: `FALSE`).
 
 - user_na:
 
