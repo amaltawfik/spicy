@@ -1265,6 +1265,56 @@ la version française de la Brochure SI du BIPM (5.1) — qui, depuis la décisi
 
 ---
 
+## 5 bis. La note générale sous le tableau (collecte du 2026-10-20)
+
+Question d'Amal : la forme de « *Note.* » sous un tableau varie-t-elle selon
+la revue ? Oui. Collecte par un agent sur les manuels du magasin et les
+documents de `dev/journal_styles/` ; citations complètes, copies datées des
+pages web et journal d'accès dans le scratchpad de la session
+(`note_styles/`), à reverser ici si un thème encode la règle.
+
+- **APA 7 (2020), §7.14, p. 203-204** : la note générale est « designated by
+  the word "Note" (italicized) followed by a period ». Ordre : générale, puis
+  spécifiques (lettres en exposant a, b, c), puis probabilité, chaque sorte à
+  la ligne. Abréviations à la fin de la note générale, sans mot d'appel
+  (« M = match process; N = nonmatch process. »). Italique du point : NON
+  TROUVÉ (la page d'exemples de l'APA le balise des deux façons). Réserve :
+  la copie PDF du magasin est une conversion de livre numérique (filigrane
+  tiers), numéros de page tirés de l'index du manuel.
+- **Chicago 18 (2024), ¶3.77-3.81, p. 171-174, et ¶2.36** : « *Note:* » et
+  « *Source:* » en italique suivis d'un deux-points ; « other treatments are
+  acceptable if consistently followed ». Ordre : source, générale,
+  spécifiques, seuils de signification.
+- **AMA 11 (2020), §4.1.4.10, p. 124-127, et §4.1.8, p. 129** : aucun mot
+  d'appel. Une note qui vaut pour tout le tableau reçoit une lettre « placed
+  after the table title » ; ligne « Abbreviations: OR, odds ratio; RR,
+  relative risk. » en premier, par ordre alphabétique ; puis notes en
+  lettres en exposant, une par ligne.
+- **The Lancet** : règle NON TROUVÉE ; les tableaux modèles officiels des
+  guides de mise en forme (2025, p. 3) n'ont pas de mot d'appel et ouvrent
+  sur « Data are n (%) … » (observé dans les modèles, non énoncé).
+  Pratique vérifiée le 2026-10-20 sur la version éditeur (XML JATS de PubMed
+  Central) de 15 articles de recherche du Lancet parus en 2025-2026 : 38
+  tableaux à note, aucune ne commence par « Note » ou « Notes ». Elles
+  ouvrent sur « Data are … » (17), « Data in … » (5), les abréviations au
+  format « CVD=cardiovascular disease. » ou un appel « * ». Exemples :
+  doi 10.1016/S0140-6736(26)00759-2 (essai Duality),
+  10.1016/S0140-6736(25)01637-X, 10.1016/S0140-6736(25)00765-2.
+- **ICMJE (janvier 2026), IV.A.3.h, p. 18-19** : renvoie aux revues
+  (« Symbols may vary from journal to journal »).
+- **NEJM, BMJ** : NON TROUVÉ (accès refusé). Annals, Epidemiology, AER,
+  Science, Nature, PNAS, PLOS Medicine : seule la forme des appels de note est
+  énoncée (lettres ou symboles), jamais un mot d'appel de la note générale.
+- **Logiciels (faits, pas autorité)** : gt, gtsummary, flextable, tinytable
+  et modelsummary n'ajoutent aucun mot d'appel ; stargazer écrit « Note: » ;
+  apaTables, papaja et rempsyc écrivent « *Note.* ».
+
+**Conséquence pour spicy.** Le mot d'appel « *Note.* » est le défaut APA.
+Les thèmes `jama` et `lancet` de `spicy_style()` héritent aujourd'hui de ce
+défaut, contraire à l'AMA (sourcé) et aux modèles du Lancet (observé).
+
+---
+
 ## 6. Tableau récapitulatif
 
 | Revue / norme | Document officiel | Règles p | Format IC | Étoiles | Décimales | Prêt-pour-thème |
