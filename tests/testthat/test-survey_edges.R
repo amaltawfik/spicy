@@ -80,11 +80,11 @@ test_that("a categorical variable with no observation is refused, not blank", {
     select = g,
     proportion_ci = TRUE,
     deff = TRUE,
-    output = "long"
+    output = "data.frame"
   )
   expect_identical(out$level, c(NA, "(Missing)"))
   expect_equal(out[["%"]][[2L]], 100)
-  expect_identical(out$n[[2L]], 6L)
+  expect_identical(out$n[[2L]], 6)
   expect_true(is.na(out[["% CI lower"]][[2L]]))
   expect_true(is.na(out$DEff[[2L]]))
 })
@@ -96,7 +96,7 @@ test_that("a level nobody chose leaves the table with the others intact", {
     w = rep(1, 6)
   )
   des <- survey::svydesign(id = ~1, weights = ~w, data = d)
-  out <- table_categorical_svy(des, select = g, output = "long")
+  out <- table_categorical_svy(des, select = g, output = "data.frame")
   # "c" is declared and unobserved: a domain with no observation has no
   # degrees of freedom, and every one of its cells would be a dash.
   expect_identical(out$level, c(NA, "a", "b"))
@@ -130,12 +130,21 @@ test_that("the console honors `align = \"center\"` and `\"right\"`", {
 
 test_that("a one-way table coerces without a grouping marker", {
   d <- .svyedge_design()
-  cont <- as.data.frame(table_continuous_svy(d, select = api00))
+  cont_tbl <- table_continuous_svy(d, select = api00)
+  cont <- as.data.frame(cont_tbl)
+  # No `by`: no group column, no row role, and of the attributes the
+  # note alone.
+  expect_identical(names(cont)[1:3], c("variable", "label", "M"))
   expect_null(attr(cont, "group_var"))
-  expect_false(is.null(attr(cont, "design_meta")))
+  expect_null(attr(cont, "design_meta"))
+  expect_identical(attr(cont, "note"), attr(cont_tbl, "note"))
   cat_tbl <- as.data.frame(table_categorical_svy(d, select = stype))
   expect_null(attr(cat_tbl, "group_var"))
   expect_identical(nrow(cat_tbl), 4L)
+  expect_identical(
+    names(cat_tbl),
+    c("variable", "label", "level", ".row_role", "n", "%")
+  )
 })
 
 test_that("a delegation that fails leaves an undefined cell, not an error", {
@@ -177,9 +186,9 @@ test_that("a failing test leaves the p empty rather than the table broken", {
     d,
     select = stype,
     by = sch.wide,
-    output = "long"
+    output = "data.frame"
   )
-  expect_true(all(is.na(out$p)))
+  expect_identical(unique(out$p), NA_real_)
   expect_false(is.na(out[["Yes %"]][[2L]]))
 })
 
@@ -208,6 +217,11 @@ test_that("a failing design effect leaves its column undefined", {
   )
   out <- table_continuous_svy(d, select = api00, deff = TRUE, output = "long")
   expect_true(is.na(out$deff))
-  out2 <- table_categorical_svy(d, select = stype, deff = TRUE, output = "long")
-  expect_true(all(is.na(out2$DEff)))
+  out2 <- table_categorical_svy(
+    d,
+    select = stype,
+    deff = TRUE,
+    output = "data.frame"
+  )
+  expect_identical(unique(out2$DEff), NA_real_)
 })

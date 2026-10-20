@@ -130,12 +130,9 @@ and the p-value column. See \emph{Multiple-comparison adjustment}.}
 
 \item{output}{One of \code{"default"}, \code{"data.frame"}, \code{"long"}, or a
 rendering engine: \code{"tinytable"}, \code{"gt"}, \code{"flextable"},
-\code{"excel"}, \code{"clipboard"}, \code{"word"}. \code{"data.frame"} and \code{"long"}
-are synonyms here and return the same object: the wide compute
-frame, one row per level with a pair of columns per group. Note
-the difference from \code{\link[=table_categorical]{table_categorical()}}, where the two tokens
-return genuinely different shapes -- this design carries a single
-compute frame, and both names reach it.}
+\code{"excel"}, \code{"clipboard"}, \code{"word"}. \code{"data.frame"} is the displayed
+table with its numbers, \code{"long"} one row per variable, level and
+group, as in \code{\link[=table_categorical]{table_categorical()}}; see \emph{Value}.}
 
 \item{indent_text, indent_text_excel_clipboard}{Level-row
 indentation, for the console and for the plain-text engines.}
@@ -148,12 +145,47 @@ destinations, as in \code{\link[=table_categorical]{table_categorical()}}.}
 \item{style}{A journal style; see \code{\link[=spicy_style]{spicy_style()}}.}
 }
 \value{
-A \code{spicy_categorical_svy_table}: the wide compute frame,
-with the display frame and the typed view attached.
-\code{output = "data.frame"} / \code{"long"} returns the compute frame
-unclassed -- the two tokens are synonyms and return identical
-objects. The three carry the whole note as printed, "Note."
-included, in \code{attr(x, "note")}.
+Depends on \code{output}:
+\itemize{
+\item \code{"default"}: a \code{spicy_categorical_svy_table} (a \code{data.frame}
+subclass, with the parent class \code{"spicy_table"}), printed when the
+call is bare; its columns are the table's compute frame, and the
+display frame and the typed view are attached.
+\item \code{"data.frame"}: the displayed table with its numbers, what
+\link[=as.data.frame.spicy_categorical_svy_table]{as.data.frame()} of the
+default object returns: one row per printed row (the header row of
+each variable, which carries its \emph{p}-value, then its levels), the
+key columns \code{variable} (the column name), \code{label} (the label
+displayed), \code{level} and \code{.row_role} (\code{"factor_header"}, \code{"level"},
+or \code{"missing"} on the row of missing values the table adds), then
+the printed columns in their order: per block of \code{by} (and the
+\code{Total} margin) \verb{<group> n}, \verb{<group> \\\%}, with \code{proportion_ci} the
+interval bounds \verb{<group> \\\% CI lower} and \verb{<group> \\\% CI upper},
+with \code{deff} \verb{<group> DEff}, and last \code{p}. Without \code{by}, the
+columns of the one block are \code{n}, \verb{\\\%}, ...
+\item \code{"long"}: one row per variable, level and group, in the order
+of the table, with \code{variable}, \code{label}, \code{level}, \code{.row_role} (the
+role of \code{level}: \code{"level"}, or \code{"missing"}), with \code{by} \code{group},
+\code{.group_role} (the role of \code{group}: \code{"group"}, \code{"missing"} for the
+column of missing \code{by} values, or \code{"total"}) and \code{total} (\code{TRUE} on
+the rows of the margin), then \code{n} (observed), \code{pct} (the estimated
+percentage), \code{ci_lower},
+\code{ci_upper} (its interval, \code{NA} without \code{proportion_ci}), \code{deff}
+(\code{NA} without \code{deff}), and, with \code{by} and the \emph{p}-value,
+\code{test_type} (the statistic of \code{survey::svychisq()},
+\code{chisq_statistic}), \code{p.value} and, under \code{p_adjust},
+\code{p_unadjusted}.
+\item \code{"tinytable"}, \code{"gt"}, \code{"flextable"}: the rendered table.
+\item \code{"excel"} / \code{"word"}: writes the file and returns its path
+invisibly.
+\item \code{"clipboard"}: copies the table and returns the display
+\code{data.frame} invisibly.
+}
+
+The default object and the two data frames carry the whole note as
+printed, "Note." included, in \code{attr(x, "note")}.
+\link[=tidy.spicy_categorical_svy_table]{tidy()} reports the proportions
+between 0 and 1.
 }
 \description{
 The design twin of \code{\link[=table_categorical]{table_categorical()}}: counts and estimated

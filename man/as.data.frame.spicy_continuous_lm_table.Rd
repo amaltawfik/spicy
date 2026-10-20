@@ -14,27 +14,33 @@
 \code{\link[=table_continuous_lm]{table_continuous_lm()}}.}
 
 \item{row.names, optional}{Standard \code{\link[base:as.data.frame]{base::as.data.frame()}}
-arguments. Currently ignored: the long format already carries
-integer row names and explicit columns.}
+arguments. Currently ignored.}
 
 \item{...}{Further arguments passed to \code{\link[tibble:as_tibble]{tibble::as_tibble()}} (for
 the tibble method) or ignored (for the \code{as.data.frame()} method).}
 }
 \value{
-A plain \code{data.frame} (or \code{tbl_df}) with the same rows and
-columns as the long output of \code{\link[=table_continuous_lm]{table_continuous_lm()}}.
+A plain \code{data.frame} (or \code{tbl_df}), identical to the
+\code{output = "data.frame"} of the same call.
 }
 \description{
-These S3 methods strip the \code{"spicy_continuous_lm_table"} /
-\code{"spicy_table"} classes and the rendering-only attributes
-(\code{digits}, \code{decimal_mark}, \code{ci_level}, ...) from an object returned
-by \code{\link[=table_continuous_lm]{table_continuous_lm()}} so the underlying long-format data can
-be manipulated with downstream tools (\code{dplyr}, \code{tidyr}, etc.) under
-the standard \code{data.frame} / \code{tbl_df} contract. The attribute
-\code{"by_var"} is preserved as a lightweight provenance marker, and
-\code{"note"}, the note as printed; all other spicy attributes are
-dropped. The original \code{x} is unaffected, and \code{print(x)} continues to
-render the formatted ASCII table.
+\code{as.data.frame()} returns the table \code{\link[=table_continuous_lm]{table_continuous_lm()}} displays,
+with its numbers: exactly what \code{output = "data.frame"} returns. One
+row per outcome, the key columns \code{variable} (the column name of the
+outcome) and \code{label} (the label displayed for it), then the printed
+columns under their names (\code{"M (<level>)"}, the contrast, the
+interval bounds, the test statistic, \code{"p"}, the fit statistic, the
+effect size, \code{"n"}, \code{"Weighted n"}); an effect size printed with its
+interval keeps the bounds beside it as \code{es_ci_lower} and
+\code{es_ci_upper}. The note, as printed, is kept in \code{attr(, "note")}.
+\code{as_tibble()} returns the same table as a tibble. The original \code{x} is
+unaffected, and \code{print(x)} continues to render the formatted ASCII
+table.
+}
+\details{
+For one row per level of \code{by} with every estimate, use
+\code{output = "long"}, \code{\link[=tidy.spicy_continuous_lm_table]{tidy.spicy_continuous_lm_table()}} or
+\code{\link[=glance.spicy_continuous_lm_table]{glance.spicy_continuous_lm_table()}}.
 }
 \seealso{
 \code{\link[=tidy.spicy_continuous_lm_table]{tidy.spicy_continuous_lm_table()}},

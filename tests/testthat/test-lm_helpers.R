@@ -265,12 +265,12 @@ test_that("table_continuous_lm: numeric outcome by 2-level factor adjusted for o
     age = rnorm(n, 50, 10),
     sex = factor(rep(c("F", "M"), each = n / 2))
   )
+  # The printed object: `covariates` is one of its rendering attributes.
   out <- table_continuous_lm(
     df,
     select = bmi,
     by = sex,
-    covariates = age,
-    output = "long"
+    covariates = age
   )
   expect_equal(nrow(out), 2L) # one row per level of sex
   expect_identical(attr(out, "covariates"), "age")
@@ -313,8 +313,7 @@ test_that("table_continuous_lm: numeric `by` adjusted for a categorical covariat
     df,
     select = bmi,
     by = age,
-    covariates = group,
-    output = "long"
+    covariates = group
   )
   expect_equal(nrow(out), 1L) # numeric by -> single slope row
   expect_identical(attr(out, "covariates"), "group")
@@ -403,7 +402,7 @@ test_that("table_continuous_lm: NA in covariate triggers complete-cases drop", {
     covariates = age,
     output = "long"
   )
-  expect_equal(out$n[1], n - 3L)
+  expect_equal(out$nobs[1], n - 3L)
 })
 
 test_that("table_continuous_lm: covariates attribute round-trips through default print path", {
@@ -418,8 +417,7 @@ test_that("table_continuous_lm: covariates attribute round-trips through default
     df,
     select = bmi,
     by = sex,
-    covariates = age,
-    output = "long"
+    covariates = age
   )
   # The render layer (Commit C) will read these attributes to emit
   # the "Adjusted for: ..." footer with the chosen estimand.
@@ -436,19 +434,18 @@ test_that("adjustment: NULL covariates -> attr is NA, both methods identical", {
     bmi = rnorm(n, 25),
     sex = factor(rep(c("F", "M"), each = n / 2))
   )
+  # The printed objects: `adjustment` is a rendering attribute.
   out_p <- table_continuous_lm(
     df,
     select = bmi,
     by = sex,
-    adjustment = "proportional",
-    output = "long"
+    adjustment = "proportional"
   )
   out_b <- table_continuous_lm(
     df,
     select = bmi,
     by = sex,
-    adjustment = "balanced",
-    output = "long"
+    adjustment = "balanced"
   )
   expect_identical(attr(out_p, "adjustment"), NA_character_)
   expect_identical(attr(out_b, "adjustment"), NA_character_)

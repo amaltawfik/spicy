@@ -29,22 +29,25 @@ test_that("table_categorical returns expected long raw structure", {
 
   expect_s3_class(out, "data.frame")
   # The long measure column has a stable name; the measure it holds is
-  # a key in `effect_size_type`. 2x2 + 2x2 -> auto rule picks phi (was
+  # a key in `es_type`. 2x2 + 2x2 -> auto rule picks phi (was
   # cramer_v before 0.11.0; see NEWS).
   expect_true(all(
     c(
       "variable",
       "level",
+      ".row_role",
       "group",
+      ".group_role",
+      "total",
       "n",
       "pct",
-      "p",
-      "effect_size",
-      "effect_size_type"
+      "p.value",
+      "es_value",
+      "es_type"
     ) %in%
       names(out)
   ))
-  expect_identical(unique(out$effect_size_type), "phi")
+  expect_identical(unique(out$es_type), "phi")
   expect_true(nrow(out) > 0)
 })
 
@@ -126,7 +129,7 @@ test_that("table_categorical accepts tidyselect-style select and unquoted by", {
     output = "data.frame"
   )
 
-  expect_true(all(c("v1", "v2") %in% out$Variable))
+  expect_true(all(c("v1", "v2") %in% out$variable))
 })
 
 test_that("table_categorical accepts by as a character object", {
@@ -347,7 +350,7 @@ test_that("table_categorical handles one-way empty results after dropping missin
 
   expect_equal(nrow(out_long), 0L)
   expect_equal(nrow(out_wide), 0L)
-  expect_named(out_wide, c("Variable", "Level", "n", "%"))
+  expect_named(out_wide, c("variable", "label", "level", ".row_role", "n", "%"))
 })
 
 test_that("table_categorical handles grouped empty results after dropping missing", {
@@ -381,8 +384,8 @@ test_that("table_categorical handles grouped empty results after dropping missin
   expect_equal(nrow(out_long), 0L)
   expect_equal(nrow(out_wide), 0L)
   expect_equal(nrow(out_default), 0L)
-  expect_true("Variable" %in% names(out_wide))
-  expect_true("Variable" %in% names(out_default))
+  expect_true("variable" %in% names(out_wide))
+  expect_true("variable" %in% names(out_default))
 })
 
 test_that("table_categorical warns about ignored grouped options without by", {
@@ -452,7 +455,7 @@ test_that("table_categorical returns visibly and is silent when assigned", {
   expect_identical(capture.output(print(tb)), bare_by)
 })
 
-test_that("table_categorical default output with output = 'data.frame' returns wide raw data", {
+test_that("table_categorical output = 'data.frame' returns the displayed table", {
   out <- table_categorical(
     sochealth,
     select = smoking,
@@ -460,7 +463,7 @@ test_that("table_categorical default output with output = 'data.frame' returns w
   )
 
   expect_s3_class(out, "data.frame")
-  expect_true(all(c("Variable", "Level", "n", "%") %in% names(out)))
+  expect_named(out, c("variable", "label", "level", ".row_role", "n", "%"))
 })
 
 test_that("table_categorical validates weights and simulate_B", {
@@ -680,9 +683,9 @@ test_that("table_categorical default column is Cramer's V", {
     output = "long"
   )
   # 2x2 -> auto rule now picks phi (see NEWS for 0.11.0).
-  expect_true("effect_size" %in% names(out))
-  expect_identical(unique(out$effect_size_type), "phi")
-  # The wide output still names the column after the measure.
+  expect_true("es_value" %in% names(out))
+  expect_identical(unique(out$es_type), "phi")
+  # The data.frame output names the column after the measure.
   wide <- table_categorical(
     df,
     "v1",
@@ -703,13 +706,13 @@ test_that("table_categorical auto-rule picks Phi for 2x2, Cramer's V otherwise (
     output = "long"
   )
   # Long: one stable column, the per-row measure keys beside it.
-  expect_true("effect_size" %in% names(out))
-  expect_setequal(unique(out$effect_size_type), c("phi", "cramer_v"))
+  expect_true("es_value" %in% names(out))
+  expect_setequal(unique(out$es_type), c("phi", "cramer_v"))
   # The long output's column names do not depend on the measure at all,
   # so a negative membership on "Phi" / "Cramer's V" over `names(out)`
-  # could not fail at any setting. The WIDE output is where a measure
-  # names a column -- single-measure tables carry the measure's own
-  # name, and only the mixed case collapses to the generic header --
+  # could not fail at any setting. The data.frame output is where a
+  # measure names a column -- single-measure tables carry the measure's
+  # own name, and only the mixed case collapses to the generic header --
   # so that is where both halves of this assertion belong.
   expect_true(
     "Phi" %in%
@@ -783,8 +786,8 @@ test_that("table_categorical accepts unnamed positional `assoc_measure` and vali
     assoc_measure = c("phi", "cramer_v"),
     output = "long"
   )
-  expect_true("effect_size" %in% names(out))
-  expect_setequal(unique(out$effect_size_type), c("phi", "cramer_v"))
+  expect_true("es_value" %in% names(out))
+  expect_setequal(unique(out$es_type), c("phi", "cramer_v"))
 
   # Length mismatch (positional vec longer than select) -> actionable error.
   # NB: length-1 unnamed is treated as a uniform single-string application,
@@ -864,7 +867,10 @@ test_that("table_categorical drops association column when assoc_measure is none
 
   expect_false("Cramer's V" %in% names(out_long))
   expect_false(any(grepl("Cramer's V", names(out_wide), fixed = TRUE)))
-  expect_true("p" %in% names(out_long))
+  # The long output keeps its measure columns, empty (stable schema).
+  expect_true(all(is.na(out_long$es_value)))
+  expect_true(all(is.na(out_long$es_type)))
+  expect_true("p.value" %in% names(out_long))
   expect_true("p" %in% names(out_wide))
 })
 
@@ -881,9 +887,9 @@ test_that("table_categorical uses dynamic column name with assoc_measure = 'gamm
     assoc_measure = "gamma",
     output = "long"
   )
-  expect_identical(unique(out$effect_size_type), "gamma")
+  expect_identical(unique(out$es_type), "gamma")
   # As above: the long output never names a column after the measure,
-  # so the exclusion has to be asserted on the wide one, where the
+  # so the exclusion has to be asserted on the data.frame, where the
   # default measure WOULD have produced "Cramer's V". The positive
   # control is the same table's own column name.
   expect_true(
@@ -909,7 +915,7 @@ test_that("table_categorical uses dynamic column name with assoc_measure = 'gamm
   expect_true("Goodman-Kruskal Gamma" %in% names(wide))
 })
 
-test_that("assoc_ci adds CI columns in wide raw output", {
+test_that("assoc_ci adds CI columns in the data.frame output", {
   out <- table_categorical(
     sochealth,
     "smoking",
@@ -920,10 +926,13 @@ test_that("assoc_ci adds CI columns in wide raw output", {
   expect_true("CI lower" %in% names(out))
   expect_true("CI upper" %in% names(out))
   expect_true(is.numeric(out[["CI lower"]]))
-  expect_true(all(!is.na(out[["CI lower"]])))
+  # The bounds sit on the header row, beside the measure, as printed.
+  hdr <- out$.row_role == "factor_header"
+  expect_true(all(!is.na(out[["CI lower"]][hdr])))
+  expect_true(all(is.na(out[["CI lower"]][!hdr])))
 })
 
-test_that("assoc_ci = FALSE omits CI columns in wide raw output", {
+test_that("assoc_ci = FALSE omits CI columns in the data.frame output", {
   # Positive control: the two bound headers ARE column names with
   # `assoc_ci = TRUE`, so the negatives below keep biting if either is
   # renamed instead of silently ceasing to match.
@@ -967,7 +976,7 @@ test_that("the association CI label ignores decimal_mark at its integer coverage
   expect_identical(lab_of(s_of(",")), lab_of(s_of(".")))
 })
 
-test_that("assoc_ci adds CI columns in long raw output", {
+test_that("assoc_ci fills the CI columns of the long output", {
   out <- table_categorical(
     sochealth,
     "smoking",
@@ -975,9 +984,13 @@ test_that("assoc_ci adds CI columns in long raw output", {
     output = "long",
     assoc_ci = TRUE
   )
-  expect_true("ci_lower" %in% names(out))
-  expect_true("ci_upper" %in% names(out))
-  expect_true(is.numeric(out$ci_lower))
+  expect_true("es_ci_lower" %in% names(out))
+  expect_true("es_ci_upper" %in% names(out))
+  expect_true(is.numeric(out$es_ci_lower))
+  expect_false(anyNA(out$es_ci_lower))
+  # Without assoc_ci the columns stay, empty.
+  off <- table_categorical(sochealth, "smoking", "education", output = "long")
+  expect_true(all(is.na(off$es_ci_lower) & is.na(off$es_ci_upper)))
 })
 
 test_that("assoc_ci shows inline CI in rendered formats", {
@@ -1018,7 +1031,7 @@ test_that("table_categorical levels_keep filters and reorders levels", {
     levels_keep = c("Yes"),
     output = "data.frame"
   )
-  expect_true(all(out$Level == "Yes", na.rm = TRUE))
+  expect_identical(out$level[!is.na(out$level)], "Yes")
 })
 
 test_that("table_categorical levels_keep with (Missing)", {
@@ -1030,7 +1043,7 @@ test_that("table_categorical levels_keep with (Missing)", {
     levels_keep = c("Low", "High", "(Missing)"),
     output = "data.frame"
   )
-  lvls <- out$Level[!is.na(out$Level) & out$Level != ""]
+  lvls <- out$level[!is.na(out$level) & out$level != ""]
   expect_equal(lvls, c("Low", "High", "(Missing)"))
 })
 
@@ -1078,8 +1091,8 @@ test_that("table_categorical levels_keep no-match keeps the matching variable", 
     ),
     class = "spicy_no_selection"
   )
-  expect_true(all(out$Level %in% c("x", "y")))
-  expect_true(nrow(out) > 0L)
+  expect_identical(unique(out$variable), "a")
+  expect_identical(out$level[out$.row_role != "factor_header"], c("x", "y"))
 })
 
 test_that("table_categorical grouped levels_keep no-match warns per variable", {
@@ -1197,10 +1210,10 @@ test_that("table_categorical blank_na_wide replaces NA with empty strings", {
     output = "data.frame",
     blank_na_wide = TRUE
   )
-  chr_cols <- vapply(out, is.character, logical(1))
-  if (any(chr_cols)) {
-    expect_false(any(is.na(out[chr_cols])))
-  }
+  # Every column turns to text, its empty cells to "".
+  expect_true(all(vapply(out, is.character, logical(1))))
+  expect_false(anyNA(out))
+  expect_identical(out$p[out$.row_role == "level"], rep("", 2L))
 })
 
 # ---- Validation errors ---------------------------------------------------
@@ -1309,7 +1322,7 @@ test_that("table_categorical honors options(spicy.rescale)", {
   df <- data.frame(v = rep(c("a", "b"), 5), w = rep(2, 10))
   withr::local_options(spicy.rescale = TRUE)
   out <- table_categorical(df, "v", weights = "w", output = "data.frame")
-  expect_equal(sum(out$n), 10)
+  expect_equal(sum(out$n, na.rm = TRUE), 10)
 })
 
 test_that("explicit rescale overrides options(spicy.rescale)", {
@@ -1322,7 +1335,7 @@ test_that("explicit rescale overrides options(spicy.rescale)", {
     rescale = FALSE,
     output = "data.frame"
   )
-  expect_equal(sum(out$n), 20)
+  expect_equal(sum(out$n, na.rm = TRUE), 20)
 })
 
 test_that("table_categorical rejects p_digits < 1 with a classed error", {
@@ -1357,7 +1370,7 @@ test_that("table_categorical handles multiple select in wide output", {
     education,
     output = "data.frame"
   )
-  expect_true(all(c("smoking", "physical_activity") %in% out$Variable))
+  expect_true(all(c("smoking", "physical_activity") %in% out$variable))
 })
 
 # ---- include_total = FALSE -----------------------------------------------
@@ -1460,7 +1473,7 @@ test_that("table_categorical writes excel file", {
 
 # ---- assoc_measure = "none" ----------------------------------------------
 
-test_that("table_categorical assoc_measure = 'none' omits association column", {
+test_that("table_categorical assoc_measure = 'none' empties the association columns", {
   out <- table_categorical(
     sochealth,
     "smoking",
@@ -1468,20 +1481,19 @@ test_that("table_categorical assoc_measure = 'none' omits association column", {
     assoc_measure = "none",
     output = "long"
   )
-  # This used to assert that a column named after the measure was
-  # absent. The long output names its association column `effect_size`
-  # whatever the measure is, so no such column can ever exist and the
-  # assertion was vacuous by construction, not merely fragile to a
-  # rename. The columns the output CAN carry are what carries it now,
-  # with a positive control on the same call minus `assoc_measure`.
+  # The long output names its association columns `es_value` / `es_type`
+  # whatever the measure is, and keeps them whether or not a measure was
+  # asked for (a stable schema): `"none"` leaves them NA. Positive
+  # control: the same call minus `assoc_measure` fills them.
   kept <- table_categorical(
     sochealth,
     "smoking",
     "education",
     output = "long"
   )
-  expect_true(all(c("effect_size", "effect_size_type") %in% names(kept)))
-  expect_false(any(c("effect_size", "effect_size_type") %in% names(out)))
+  expect_identical(names(out), names(kept))
+  expect_false(anyNA(kept$es_value) || anyNA(kept$es_type))
+  expect_true(all(is.na(out$es_value) & is.na(out$es_type)))
 })
 test_that("table_categorical with assoc_ci includes CI columns in raw long", {
   out <- table_categorical(
@@ -1491,7 +1503,9 @@ test_that("table_categorical with assoc_ci includes CI columns in raw long", {
     assoc_ci = TRUE,
     output = "long"
   )
-  expect_true("CI lower" %in% names(out) || "ci_lower" %in% names(out))
+  expect_true(all(c("es_ci_lower", "es_ci_upper") %in% names(out)))
+  expect_true(all(out$es_ci_lower <= out$es_value))
+  expect_true(all(out$es_ci_upper >= out$es_value))
 })
 
 test_that("table_categorical simulate_p works in long output", {
@@ -1603,18 +1617,21 @@ test_that("table_categorical rescale warning includes call. = FALSE", {
   expect_null(w$call)
 })
 
-# ---- grouped empty data returns character columns, not logical ----
+# ---- grouped empty data returns typed columns, not logical ----
 
-test_that("grouped table with empty data returns character(0) columns", {
+test_that("grouped table with empty data returns typed zero-length columns", {
   df <- data.frame(
     x = factor(levels = c("a", "b")),
     g = factor(levels = c("A", "B")),
     stringsAsFactors = FALSE
   )
   out <- table_categorical(df, select = "x", by = "g", output = "data.frame")
-  # All columns should be character, not logical
+  expect_equal(nrow(out), 0L)
+  # Text keys, numeric statistics: never the logical of an all-NA column.
   col_types <- vapply(out, typeof, character(1))
-  expect_true(all(col_types == "character"))
+  keys <- c("variable", "label", "level", ".row_role")
+  expect_true(all(col_types[keys] == "character"))
+  expect_true(all(col_types[setdiff(names(out), keys)] == "double"))
 })
 
 test_that("table_categorical gt output omits association header when assoc_measure = 'none'", {
@@ -1654,9 +1671,9 @@ test_that("table_categorical one-way with weights", {
   )
   out <- table_categorical(df, select = x, weights = w, output = "data.frame")
   expect_s3_class(out, "data.frame")
-  expect_true(all(c("Variable", "Level", "n", "%") %in% names(out)))
-  # Weighted n should reflect weights
-  expect_equal(sum(out$n), sum(df$w))
+  expect_true(all(c("variable", "level", "n", "%") %in% names(out)))
+  # Weighted n should reflect weights (the header row carries no count).
+  expect_equal(sum(out$n, na.rm = TRUE), sum(df$w))
 })
 
 test_that("table_categorical one-way with levels_keep filters levels", {
@@ -1669,7 +1686,7 @@ test_that("table_categorical one-way with levels_keep filters levels", {
     levels_keep = c("B", "A"),
     output = "data.frame"
   )
-  expect_equal(as.character(out$Level), c("B", "A"))
+  expect_equal(out$level[out$.row_role == "level"], c("B", "A"))
 })
 
 test_that("table_categorical one-way with levels_keep and long output", {
@@ -1763,18 +1780,17 @@ test_that("table_categorical grouped with assoc_measure = none", {
     assoc_measure = "none",
     output = "long"
   )
-  # No association measure column. As in the test above, the long
-  # output never names one after the measure, so the stable column
-  # names are what carries this; the positive control is the same call
-  # with the default measure.
+  # No association measure: the stable columns stay, empty. The
+  # positive control is the same call with the default measure.
   kept <- table_categorical(
     data = sochealth,
     select = smoking,
     by = sex,
     output = "long"
   )
-  expect_true(all(c("effect_size", "effect_size_type") %in% names(kept)))
-  expect_false(any(c("effect_size", "effect_size_type") %in% names(out)))
+  expect_identical(names(out), names(kept))
+  expect_identical(unique(kept$es_type), "phi")
+  expect_true(all(is.na(out$es_value) & is.na(out$es_type)))
 })
 
 test_that("table_categorical grouped empty after dropping NA", {
@@ -1813,7 +1829,7 @@ test_that("table_categorical one-way weighted with rescale", {
     output = "data.frame"
   )
   # After rescaling, total n should equal nrow(df)
-  expect_equal(sum(out$n), nrow(df), tolerance = 0.01)
+  expect_equal(sum(out$n, na.rm = TRUE), nrow(df), tolerance = 0.01)
 })
 
 test_that("a look-alike of the missing label is a level like any other", {
@@ -1908,7 +1924,10 @@ test_that("table_categorical one-way with levels_keep that filters some levels",
     output = "data.frame"
   )
   # Should only have matching levels
-  expect_true(all(out$Level %in% c("A", "C", "P")))
+  expect_identical(
+    out$level[out$.row_role != "factor_header"],
+    c("A", "C", "P")
+  )
 })
 
 test_that("table_categorical grouped with decimal_mark comma and default output", {
@@ -2015,8 +2034,9 @@ test_that("table_categorical one-way levels_keep with no match returns empty", {
       output = "data.frame"
     )
   )
-  expect_equal(nrow(out2), 1L)
-  expect_equal(as.character(out2$Level), "A")
+  # The header row of `x`, then its one level.
+  expect_identical(out2$.row_role, c("factor_header", "level"))
+  expect_equal(out2$level[[2L]], "A")
   # Also test default output path (covers make_report_wide_oneway empty path)
   expect_warning(
     out3 <- table_categorical(
@@ -2508,8 +2528,22 @@ test_that("as.data.frame() strips spicy classes and rendering attrs", {
   expect_null(attr(df, "display_df"))
   expect_null(attr(df, "long_data"))
   expect_null(attr(df, "align"))
-  # group_var preserved as provenance
-  expect_equal(attr(df, "group_var"), "sex")
+  # Only the note rides along (no `group_var` any more), and the frame is
+  # the `output = "data.frame"` of the same call.
+  expect_null(attr(df, "group_var"))
+  expect_identical(
+    setdiff(names(attributes(df)), c("names", "row.names", "class")),
+    "note"
+  )
+  expect_identical(
+    df,
+    table_categorical(
+      sochealth,
+      select = smoking,
+      by = sex,
+      output = "data.frame"
+    )
+  )
 })
 
 test_that("as_tibble() returns a tbl_df", {
@@ -2528,26 +2562,52 @@ test_that("tidy() returns long-format with broom-conventional columns (cross-tab
   td <- broom::tidy(out)
   expect_identical(
     names(td),
-    c("variable", "label", "level", "group", "n", "proportion")
+    c(
+      "variable",
+      "label",
+      "level",
+      ".row_role",
+      "group",
+      ".group_role",
+      "total",
+      "n",
+      "proportion"
+    )
   )
   expect_true(all(td$proportion >= 0 & td$proportion <= 1))
   # `variable` carries the column names, `label` the labels displayed:
   # the column names too by default.
   expect_equal(unique(td$variable), c("smoking", "physical_activity"))
   expect_equal(unique(td$label), c("smoking", "physical_activity"))
-  # Real groups appear; the synthetic "Total" marginal is excluded
-  # by `tidy()` (one row per real group, broom convention).
-  expect_setequal(unique(td$group), c("Female", "Male"))
+  # Real groups appear, and the "Total" margin too, flagged by `total`.
+  expect_setequal(unique(td$group), c("Female", "Male", "Total"))
+  expect_setequal(unique(td$group[!td$total]), c("Female", "Male"))
+  expect_identical(unique(td$group[td$total]), "Total")
+  # `.group_role` is the role of `group`: the margin is "total".
+  expect_identical(td$.group_role, ifelse(td$total, "total", "group"))
 })
 
-test_that("tidy() returns no group column without by", {
+test_that("tidy() returns an NA group column without by", {
   out <- table_categorical(sochealth, select = smoking)
   td <- broom::tidy(out)
-  expect_false("group" %in% names(td))
   expect_identical(
     names(td),
-    c("variable", "label", "level", "n", "proportion")
+    c(
+      "variable",
+      "label",
+      "level",
+      ".row_role",
+      "group",
+      ".group_role",
+      "total",
+      "n",
+      "proportion"
+    )
   )
+  expect_true(all(is.na(td$group)))
+  expect_true(all(is.na(td$.group_role)))
+  expect_false(any(td$total))
+  expect_identical(td$.row_role, c("level", "level", "missing"))
 })
 
 test_that("the long output, tidy() and glance() name the column and the label", {
@@ -2614,11 +2674,13 @@ test_that("glance() returns chi-squared test + association measure (cross-tab)",
       "statistic",
       "df",
       "p.value",
-      "assoc_type",
-      "assoc_value",
-      "assoc_ci_lower",
-      "assoc_ci_upper",
-      "n_total"
+      "es_type",
+      "es_value",
+      "es_ci_lower",
+      "es_ci_upper",
+      "smd_type",
+      "smd_value",
+      "nobs"
     )
   )
   expect_equal(nrow(gl), 2L)
@@ -2627,9 +2689,11 @@ test_that("glance() returns chi-squared test + association measure (cross-tab)",
   expect_true(all(gl$df >= 1L))
   expect_true(all(gl$p.value >= 0 & gl$p.value <= 1))
   # smoking and physical_activity are both binary, sex is binary -> 2x2
-  # auto-rule picks Phi (see NEWS for 0.11.0). `assoc_type` is the key of
-  # the measure, as `effect_size_type` in the long output.
-  expect_true(all(gl$assoc_type == "phi"))
+  # auto-rule picks Phi (see NEWS for 0.11.0). `es_type` is the key of
+  # the measure, as in the long output.
+  expect_true(all(gl$es_type == "phi"))
+  # No SMD asked for: its columns are there, empty.
+  expect_true(all(is.na(gl$smd_type) & is.na(gl$smd_value)))
 })
 
 test_that("glance() gives each variable the key of its own measure", {
@@ -2641,21 +2705,21 @@ test_that("glance() gives each variable the key of its own measure", {
     by = sex,
     output = "long"
   )
-  expect_identical(gl$assoc_type, c("phi", "cramer_v"))
+  expect_identical(gl$es_type, c("phi", "cramer_v"))
   expect_identical(
-    gl$assoc_type,
+    gl$es_type,
     vapply(
       gl$variable,
-      function(v) long$effect_size_type[long$variable == v][[1L]],
+      function(v) long$es_type[long$variable == v][[1L]],
       character(1),
       USE.NAMES = FALSE
     )
   )
   # The column header of a mixed table names no measure: "Effect size".
-  expect_false(any(gl$assoc_type == "Effect size"))
+  expect_false(any(gl$es_type == "Effect size"))
 })
 
-test_that("glance() returns NA test/ES, populated n_total without by", {
+test_that("glance() returns NA test/ES, populated nobs without by", {
   out <- table_categorical(sochealth, select = smoking)
   gl <- broom::glance(out)
   expect_equal(nrow(gl), 1L)
@@ -2663,16 +2727,16 @@ test_that("glance() returns NA test/ES, populated n_total without by", {
   expect_true(is.na(gl$statistic))
   expect_true(is.na(gl$p.value))
   # Default drop_na = FALSE (0.13.0): the tabulated sample includes the
-  # displayed "(Missing)" level, so n_total is the full 1200; opting
+  # displayed "(Missing)" level, so nobs is the full 1200; opting
   # into drop_na = TRUE recovers the observed-only 1175.
-  expect_equal(gl$n_total, 1200L)
+  expect_equal(gl$nobs, 1200L)
   out_cc <- table_categorical(sochealth, select = smoking, drop_na = TRUE)
-  expect_equal(broom::glance(out_cc)$n_total, 1175L)
+  expect_equal(broom::glance(out_cc)$nobs, 1175L)
 })
 
-test_that("a row whose variable asked for no measure has no effect_size_type", {
+test_that("a row whose variable asked for no measure has no es_type", {
   # The only route to the NA arm: a mixed vector where one variable opts
-  # out. Its rows still sit in the shared `effect_size` column -- empty --
+  # out. Its rows still sit in the shared `es_value` column -- empty --
   # but they name no measure.
   out <- table_categorical(
     sochealth,
@@ -2682,14 +2746,14 @@ test_that("a row whose variable asked for no measure has no effect_size_type", {
     assoc_measure = c(smoking = "none", education = "cramer_v"),
     output = "long"
   )
-  expect_true(all(c("effect_size", "effect_size_type") %in% names(out)))
-  expect_true(all(is.na(out$effect_size_type[out$label == "Smoking"])))
-  expect_true(all(is.na(out$effect_size[out$variable == "smoking"])))
+  expect_true(all(c("es_value", "es_type") %in% names(out)))
+  expect_true(all(is.na(out$es_type[out$label == "Smoking"])))
+  expect_true(all(is.na(out$es_value[out$variable == "smoking"])))
   expect_identical(
-    unique(out$effect_size_type[out$label == "Education"]),
+    unique(out$es_type[out$label == "Education"]),
     "cramer_v"
   )
-  expect_false(any(is.na(out$effect_size[out$variable == "education"])))
+  expect_false(any(is.na(out$es_value[out$variable == "education"])))
 })
 
 test_that("print() survives a typed view that outlived its display frame", {
@@ -2724,15 +2788,16 @@ test_that("an empty display cell does not break the width decision", {
 
 test_that("glance() names the measure column from the typed view", {
   out <- table_categorical(sochealth, select = smoking, by = education)
-  expect_identical(broom::glance(out)$assoc_type, "cramer_v")
+  expect_identical(broom::glance(out)$es_type, "cramer_v")
   expect_equal(
-    broom::glance(out)$assoc_value,
+    broom::glance(out)$es_value,
     out[["Cramer's V"]][!is.na(out[["Cramer's V"]])][[1L]]
   )
   # Stripped of its typed view, the exclusion rule answers the same.
   bare <- out
   attr(bare, "structured") <- NULL
-  expect_identical(broom::glance(bare)$assoc_type, "cramer_v")
+  expect_identical(broom::glance(bare)$es_type, "cramer_v")
+  expect_equal(broom::glance(bare)$es_value, broom::glance(out)$es_value)
   # A table with no measure has no assoc column to find on either route.
   none <- table_categorical(
     sochealth,
@@ -2740,7 +2805,7 @@ test_that("glance() names the measure column from the typed view", {
     by = education,
     assoc_measure = "none"
   )
-  expect_true(is.na(broom::glance(none)$assoc_type))
+  expect_true(is.na(broom::glance(none)$es_type))
 })
 
 test_that("glance() picks up assoc CIs when assoc_ci = TRUE", {
@@ -2751,10 +2816,10 @@ test_that("glance() picks up assoc CIs when assoc_ci = TRUE", {
     assoc_ci = TRUE
   )
   gl <- broom::glance(out)
-  expect_true(is.finite(gl$assoc_ci_lower))
-  expect_true(is.finite(gl$assoc_ci_upper))
-  expect_true(gl$assoc_ci_lower <= gl$assoc_value)
-  expect_true(gl$assoc_ci_upper >= gl$assoc_value)
+  expect_true(is.finite(gl$es_ci_lower))
+  expect_true(is.finite(gl$es_ci_upper))
+  expect_true(gl$es_ci_lower <= gl$es_value)
+  expect_true(gl$es_ci_upper >= gl$es_value)
 })
 
 test_that("glance() reports no interval when assoc_ci = FALSE", {
@@ -2773,17 +2838,17 @@ test_that("glance() reports no interval when assoc_ci = FALSE", {
     by = sex,
     assoc_ci = TRUE
   ))
-  expect_true(is.finite(off$assoc_value))
-  expect_true(is.na(off$assoc_ci_lower))
-  expect_true(is.na(off$assoc_ci_upper))
-  expect_true(is.finite(on$assoc_ci_lower))
-  expect_true(is.finite(on$assoc_ci_upper))
-  expect_identical(off$assoc_value, on$assoc_value)
+  expect_true(is.finite(off$es_value))
+  expect_true(is.na(off$es_ci_lower))
+  expect_true(is.na(off$es_ci_upper))
+  expect_true(is.finite(on$es_ci_lower))
+  expect_true(is.finite(on$es_ci_upper))
+  expect_identical(off$es_value, on$es_value)
 })
 
-# ---- audit fixes (n_total / Total filtering / p_digits threshold) --------
+# ---- audit fixes (nobs / Total margin / p_digits threshold) --------------
 
-test_that("glance() n_total excludes the synthetic 'Total' group", {
+test_that("glance() nobs excludes the synthetic 'Total' group", {
   # smoking x sex with include_total = TRUE (default) should not
   # double-count: the underlying analytic sample is the count of
   # observations with non-NA smoking (1175 in sochealth), NOT
@@ -2794,25 +2859,25 @@ test_that("glance() n_total excludes the synthetic 'Total' group", {
   # Displayed sample under the drop_na = FALSE default: 1200 (incl. the
   # "(Missing)" level) -- and NOT 2 * 1200, which is what summing across
   # Female + Male + Total would give.
-  expect_equal(gl$n_total, nrow(sochealth))
+  expect_equal(gl$nobs, nrow(sochealth))
   out_cc <- table_categorical(
     sochealth,
     select = smoking,
     by = sex,
     drop_na = TRUE
   )
-  expect_equal(broom::glance(out_cc)$n_total, sum(!is.na(sochealth$smoking)))
+  expect_equal(broom::glance(out_cc)$nobs, sum(!is.na(sochealth$smoking)))
 
   # Triple group setting with iris: 150 observations, three Species
-  # plus a Total marginal -> n_total must remain 150, not 4 * 50.
+  # plus a Total marginal -> nobs must remain 150, not 4 * 50.
   iris2 <- iris
   iris2$pet_size <- factor(iris2$Petal.Length > 4, labels = c("small", "large"))
   out_iris <- table_categorical(iris2, select = pet_size, by = Species)
   gl_iris <- broom::glance(out_iris)
-  expect_equal(gl_iris$n_total, 150L)
+  expect_equal(gl_iris$nobs, 150L)
 })
 
-test_that("glance() n_total stays correct when include_total = FALSE", {
+test_that("glance() nobs stays correct when include_total = FALSE", {
   out <- table_categorical(
     sochealth,
     select = smoking,
@@ -2820,7 +2885,7 @@ test_that("glance() n_total stays correct when include_total = FALSE", {
     include_total = FALSE
   )
   gl <- broom::glance(out)
-  expect_equal(gl$n_total, nrow(sochealth))
+  expect_equal(gl$nobs, nrow(sochealth))
   out_cc <- table_categorical(
     sochealth,
     select = smoking,
@@ -2828,14 +2893,21 @@ test_that("glance() n_total stays correct when include_total = FALSE", {
     include_total = FALSE,
     drop_na = TRUE
   )
-  expect_equal(broom::glance(out_cc)$n_total, sum(!is.na(sochealth$smoking)))
+  expect_equal(broom::glance(out_cc)$nobs, sum(!is.na(sochealth$smoking)))
 })
 
-test_that("tidy() drops the synthetic 'Total' group", {
+test_that("tidy() keeps the synthetic 'Total' group, flagged by `total`", {
   out <- table_categorical(sochealth, select = smoking, by = sex)
   td <- broom::tidy(out)
-  expect_false("Total" %in% td$group)
-  expect_setequal(unique(td$group), c("Female", "Male"))
+  expect_true("Total" %in% td$group)
+  expect_identical(td$total, td$group == "Total")
+  expect_setequal(unique(td$group[!td$total]), c("Female", "Male"))
+  # The margin rows are the sums of the group rows, level by level.
+  real <- td[!td$total, ]
+  expect_equal(
+    td$n[td$total],
+    as.vector(tapply(real$n, factor(real$level, unique(real$level)), sum))
+  )
 })
 
 test_that("tidy() respects include_total = FALSE without spurious Total rows", {
@@ -2859,6 +2931,7 @@ test_that("tidy() respects include_total = FALSE without spurious Total rows", {
       )$group
   )
   expect_false("Total" %in% td$group)
+  expect_false(any(td$total))
   expect_setequal(unique(td$group), c("Female", "Male"))
 })
 
@@ -3117,7 +3190,7 @@ test_that("var_labels() renames on the attribute base, whatever the option", {
   check <- function(out) {
     expect_identical(attr(out, "group_label"), "Sex")
     expect_identical(
-      unique(as.data.frame(out)$Variable),
+      unique(as.data.frame(out)$label),
       c("Fumeur", "Regular physical activity")
     )
   }
@@ -3143,10 +3216,17 @@ test_that("two variables showing one label keep a block each", {
   expect_identical(lg$variable, ref$variable)
   expect_identical(lg$level, ref$level)
   expect_identical(lg$n, ref$n)
-  expect_identical(lg$p, ref$p)
+  expect_identical(lg$p.value, ref$p.value)
   df <- build(by = sex, labels = same, output = "data.frame")
-  expect_identical(df$Variable, rep("Same", 5L))
-  expect_identical(df$Level, c("No", "Yes", "(Missing)", "No", "Yes"))
+  expect_identical(df$label, rep("Same", 7L))
+  expect_identical(
+    df$variable,
+    rep(c("smoking", "physical_activity"), c(4L, 3L))
+  )
+  expect_identical(
+    df$level,
+    c(NA, "No", "Yes", "(Missing)", NA, "No", "Yes")
+  )
   one <- build(labels = same, output = "long")
   expect_identical(one$n, build(output = "long")$n)
   # A label equal to another selected column's name.
@@ -3232,7 +3312,8 @@ test_that("glance() gives each variable a row, whatever the labels", {
   expect_identical(gs$label, c("Same", "Same"))
   expect_identical(gs$variable, gp$variable)
   expect_identical(gs$p.value, gp$p.value)
-  expect_identical(gs$n_total, gp$n_total)
+  expect_identical(gs$nobs, gp$nobs)
+  expect_false(anyNA(gs$nobs))
 })
 
 test_that("glance() follows the order of select, as the table and tidy() do", {
@@ -3393,7 +3474,8 @@ test_that("association stats ignore the (Missing) display level", {
   )
   expect_equal(gl_show$statistic, gl_drop$statistic, tolerance = 1e-12)
   expect_equal(gl_show$p.value, gl_drop$p.value, tolerance = 1e-12)
-  expect_equal(gl_show$assoc_value, gl_drop$assoc_value, tolerance = 1e-12)
+  expect_false(anyNA(gl_show$es_value))
+  expect_equal(gl_show$es_value, gl_drop$es_value, tolerance = 1e-12)
   # And the displayed table nevertheless carries the (Missing) column.
   df <- as.data.frame(table_categorical(d, select = smoking, by = sex_na))
   expect_true(any(grepl("(Missing)", names(df), fixed = TRUE)))
@@ -3512,9 +3594,9 @@ test_that("ordinal measures respect the declared order under default drop_na", {
     by = self_rated_health,
     output = "long"
   )
-  expect_equal(unique(out$effect_size), 0.2045524108, tolerance = 1e-9)
-  expect_identical(unique(out$effect_size_type), "tau_b")
-  expect_equal(unique(out$chi2), 73.2444140723, tolerance = 1e-9)
+  expect_equal(unique(out$es_value), 0.2045524108, tolerance = 1e-9)
+  expect_identical(unique(out$es_type), "tau_b")
+  expect_equal(unique(out$statistic), 73.2444140723, tolerance = 1e-9)
 })
 
 test_that("ordinal measures are drop_na-invariant on NA-free ordered data", {
@@ -3549,19 +3631,20 @@ test_that("ordinal measures are drop_na-invariant on NA-free ordered data", {
       drop_na = TRUE,
       output = "long"
     )
-    expect_identical(unique(l_show$effect_size), unique(l_drop$effect_size))
-    expect_identical(unique(l_show$effect_size_type), m)
+    expect_false(anyNA(l_show$es_value))
+    expect_identical(unique(l_show$es_value), unique(l_drop$es_value))
+    expect_identical(unique(l_show$es_type), m)
   }
   # And the auto tau-b matches the integer-rank oracle.
   l_auto <- table_categorical(d, select = xo, by = yo, output = "long")
   expect_equal(
-    unique(l_auto$effect_size),
+    unique(l_auto$es_value),
     stats::cor(as.integer(d$xo), as.integer(d$yo), method = "kendall"),
     tolerance = 1e-12
   )
 })
 
-test_that("wide data.frame output carries Chi2 and df matching long/glance", {
+test_that("the long output and glance() carry the statistic and df; the data.frame the p", {
   wd <- table_categorical(
     sochealth,
     select = smoking,
@@ -3574,16 +3657,29 @@ test_that("wide data.frame output carries Chi2 and df matching long/glance", {
     by = education,
     output = "long"
   )
-  expect_true(all(c("Chi2", "df") %in% names(wd)))
-  expect_equal(unique(wd$Chi2), unique(lg$chi2))
-  expect_equal(unique(wd$df), unique(lg$df))
+  # The displayed table prints no statistic and no df: its header row
+  # carries the p-value of the long output.
+  expect_false(any(c("Chi2", "df", "test_type") %in% names(wd)))
+  expect_equal(wd$p[wd$.row_role == "factor_header"], unique(lg$p.value))
   # Complete-case oracle: chisq.test on the observed 2x3 table.
   oracle <- suppressWarnings(stats::chisq.test(
     table(sochealth$smoking, sochealth$education),
     correct = FALSE
   ))
-  expect_equal(unique(wd$Chi2), as.numeric(oracle$statistic), tolerance = 1e-9)
-  expect_equal(unique(wd$df), as.numeric(oracle$parameter))
+  expect_equal(
+    unique(lg$statistic),
+    as.numeric(oracle$statistic),
+    tolerance = 1e-9
+  )
+  expect_equal(unique(lg$df), as.numeric(oracle$parameter))
+  skip_if_not_installed("broom")
+  gl <- broom::glance(table_categorical(
+    sochealth,
+    select = smoking,
+    by = education
+  ))
+  expect_equal(unique(lg$statistic), gl$statistic)
+  expect_equal(unique(lg$df), gl$df)
 })
 
 test_that("ignored `correct` warns once, with the tested-table dimensions", {
@@ -3730,7 +3826,7 @@ test_that("a by level displayed beside the margin is refused, with both ways out
   d2 <- d1
   levels(d2$g)[levels(d2$g) == "Total"] <- "Group 1"
   wd <- table_categorical(d2, select = x, by = g, output = "data.frame")
-  expect_identical(wd[["Total n"]], c(3, 2))
+  expect_identical(wd[["Total n"]][wd$.row_role == "level"], c(3, 2))
 
   # Way out 2: give the margin another label. The user's "Total" group
   # keeps its counts and its key; the margin is displayed under its new
@@ -3744,7 +3840,7 @@ test_that("a by level displayed beside the margin is refused, with both ways out
   expect_identical(lg$n[lg$level == "B" & lg$group == "Total_1"], 2)
   wd <- table_categorical(d1, select = x, by = g, output = "data.frame")
   expect_true(all(c("Total n", "Total_1 n") %in% names(wd)))
-  expect_identical(wd[["Total_1 n"]], c(3, 2))
+  expect_identical(wd[["Total_1 n"]][wd$.row_role == "level"], c(3, 2))
   tbl <- table_categorical(d1, select = x, by = g)
   expect_identical(attr(tbl, "total_group"), "Total_1")
   s <- as_structured(tbl)
@@ -3755,11 +3851,13 @@ test_that("a by level displayed beside the margin is refused, with both ways out
   printed <- utils::capture.output(print(tbl))
   expect_true(any(grepl("All n", printed, fixed = TRUE)))
   expect_false(any(grepl("Total_1", printed, fixed = TRUE)))
-  # tidy() drops the margin, never the user's group.
+  # tidy() flags the margin by its key, never the user's group.
   td <- broom::tidy(tbl)
-  expect_setequal(unique(td$group), c("g2", "Total"))
-  expect_identical(sum(td$n), 5L)
-  expect_identical(broom::glance(tbl)$n_total, 5L)
+  expect_setequal(unique(td$group), c("g2", "Total", "Total_1"))
+  expect_identical(unique(td$group[td$total]), "Total_1")
+  expect_setequal(unique(td$group[!td$total]), c("g2", "Total"))
+  expect_identical(sum(td$n[!td$total]), 5L)
+  expect_identical(broom::glance(tbl)$nobs, 5L)
 })
 
 test_that("a declared-but-unobserved 'Total' by level is a displayed group", {
@@ -3786,8 +3884,9 @@ test_that("a declared-but-unobserved 'Total' by level is a displayed group", {
     expect_identical(lg$n[lg$level == "A" & lg$group == "Total_1"], 3)
     expect_identical(lg$n[lg$level == "B" & lg$group == "Total_1"], 2)
     wd <- table_categorical(d1, select = x, by = g, output = "data.frame")
-    expect_identical(wd[["Total n"]], c(0, 0))
-    expect_identical(wd[["Total_1 n"]], c(3, 2))
+    lv <- wd$.row_role == "level"
+    expect_identical(wd[["Total n"]][lv], c(0, 0))
+    expect_identical(wd[["Total_1 n"]][lv], c(3, 2))
   })
   # No margin displayed -> no collision, zero group intact.
   lg2 <- table_categorical(
@@ -3817,7 +3916,7 @@ test_that("include_total = FALSE keeps a user group named 'Total'", {
   )
   expect_setequal(unique(lg$group), c("g2", "Total"))
   expect_identical(lg$n[lg$level == "A" & lg$group == "Total"], 2)
-  # tidy() keeps it: the table has no margin to drop.
+  # tidy() keeps it, and does not take it for the margin.
   td <- broom::tidy(table_categorical(
     d1,
     select = x,
@@ -3825,6 +3924,7 @@ test_that("include_total = FALSE keeps a user group named 'Total'", {
     include_total = FALSE
   ))
   expect_setequal(unique(td$group), c("g2", "Total"))
+  expect_false(any(td$total))
 })
 
 test_that("the margin and the missing column cannot share one label", {
@@ -3865,8 +3965,9 @@ test_that("a declared-but-unobserved by level is a zero column in wide and long"
     g = factor(rep(c("m", "f"), 5), levels = c("m", "f", "ghost"))
   )
   wide <- table_categorical(d, select = x, by = g, output = "data.frame")
-  expect_equal(wide[["ghost n"]], c(0, 0))
-  expect_equal(wide[["ghost %"]], c(0, 0))
+  lv <- wide$.row_role == "level"
+  expect_equal(wide[["ghost n"]][lv], c(0, 0))
+  expect_equal(wide[["ghost %"]][lv], c(0, 0))
   long <- table_categorical(d, select = x, by = g, output = "long")
   ghost <- long[long$group == "ghost", ]
   expect_equal(nrow(ghost), 2L)
@@ -3886,7 +3987,7 @@ test_that("a declared-but-unobserved by level is a zero column in wide and long"
     drop_na = TRUE,
     output = "data.frame"
   )
-  expect_equal(wide_dn[["ghost n"]], c(0, 0))
+  expect_equal(wide_dn[["ghost n"]][wide_dn$.row_role == "level"], c(0, 0))
 })
 
 test_that("user_na = FALSE surfaces phi's hard error instead of a silent NA", {
@@ -3920,8 +4021,8 @@ test_that("user_na = FALSE surfaces phi's hard error instead of a silent NA", {
     user_na = FALSE,
     output = "long"
   )
-  expect_identical(unique(auto$effect_size_type), "cramer_v")
-  expect_false(any(is.na(auto$effect_size)))
+  expect_identical(unique(auto$es_type), "cramer_v")
+  expect_false(any(is.na(auto$es_value)))
   # With user_na = TRUE the table is a true 2x2: phi works and is
   # exact against the chi-squared oracle.
   ok <- table_categorical(
@@ -3939,9 +4040,9 @@ test_that("user_na = FALSE surfaces phi's hard error instead of a silent NA", {
       correct = FALSE
     )
   )
-  expect_identical(unique(ok$effect_size_type), "phi")
+  expect_identical(unique(ok$es_type), "phi")
   expect_equal(
-    ok$effect_size[1],
+    ok$es_value[1],
     unname(sqrt(chi$statistic / sum(keep))),
     tolerance = 1e-10
   )
@@ -3974,7 +4075,8 @@ test_that("table_categorical() rejects bit64::integer64 columns", {
   # categorical-eligibility filter, so the call still works.
   res <- table_categorical(d, output = "data.frame")
   expect_s3_class(res, "data.frame")
-  expect_false(any(grepl("code", res$Variable, fixed = TRUE)))
+  expect_identical(unique(res$variable), "g")
+  expect_false(any(grepl("code", res$variable, fixed = TRUE)))
 })
 
 
@@ -3993,7 +4095,17 @@ test_that("tidy/glance column sets are frozen (stabilizing contract)", {
   out <- table_categorical(mtcars, select = "cyl", by = "am")
   expect_identical(
     names(broom::tidy(out)),
-    c("variable", "label", "level", "group", "n", "proportion")
+    c(
+      "variable",
+      "label",
+      "level",
+      ".row_role",
+      "group",
+      ".group_role",
+      "total",
+      "n",
+      "proportion"
+    )
   )
   expect_identical(
     names(broom::glance(out)),
@@ -4004,11 +4116,13 @@ test_that("tidy/glance column sets are frozen (stabilizing contract)", {
       "statistic",
       "df",
       "p.value",
-      "assoc_type",
-      "assoc_value",
-      "assoc_ci_lower",
-      "assoc_ci_upper",
-      "n_total"
+      "es_type",
+      "es_value",
+      "es_ci_lower",
+      "es_ci_upper",
+      "smd_type",
+      "smd_value",
+      "nobs"
     )
   )
 })
@@ -4029,19 +4143,29 @@ test_that("each variable keeps its own level order in multi-variable tables", {
     drop_na = FALSE,
     output = "data.frame"
   )
-  lv <- trimws(out$Level)
-  block <- cumsum(nzchar(trimws(out$Variable)))
-  for (b in split(seq_along(lv), block)) {
-    m <- which(lv[b] == "(Missing)")
-    if (length(m)) expect_identical(max(m), length(b))
+  # The "(Missing)" row closes the block of its own variable.
+  missing_last <- function(df) {
+    blocks <- split(
+      seq_len(nrow(df)),
+      factor(df$variable, unique(df$variable))
+    )
+    for (b in blocks) {
+      m <- which(df$level[b] == "(Missing)")
+      expect_length(m, 1L)
+      expect_identical(m, length(b))
+    }
   }
+  missing_last(out)
   # Homonymous levels with opposite declared orders stay per-variable.
   d2 <- data.frame(
     u = factor(c("Oui", "Non", "Oui"), levels = c("Oui", "Non")),
     v = factor(c("Non", "Oui", "Non"), levels = c("Non", "Oui"))
   )
   o2 <- table_categorical(d2, select = c(u, v), output = "data.frame")
-  expect_identical(trimws(o2$Level), c("Oui", "Non", "Non", "Oui"))
+  expect_identical(
+    o2$level[o2$.row_role == "level"],
+    c("Oui", "Non", "Non", "Oui")
+  )
   # The by path orders identically.
   outb <- table_categorical(
     d,
@@ -4050,12 +4174,7 @@ test_that("each variable keeps its own level order in multi-variable tables", {
     drop_na = FALSE,
     output = "data.frame"
   )
-  lvb <- trimws(outb$Level)
-  blockb <- cumsum(nzchar(trimws(outb$Variable)))
-  for (b in split(seq_along(lvb), blockb)) {
-    m <- which(lvb[b] == "(Missing)")
-    if (length(m)) expect_identical(max(m), length(b))
-  }
+  missing_last(outb)
 })
 
 test_that("spicy tinytables keep tinytable's format finalizers alive", {
@@ -4406,7 +4525,8 @@ test_that("the refusal states the reason the DATA gives, not a generic one", {
 
 test_that("p_adjust adjusts the one test of each variable, together", {
   raw <- table_categorical(mtcars, c(cyl, gear, vs), by = am, output = "long")
-  raw_p <- raw$p[!duplicated(raw$variable)]
+  raw_p <- raw$p.value[!duplicated(raw$variable)]
+  expect_length(raw_p, 3L)
   for (method in c("holm", "BH", "bonferroni")) {
     adj <- table_categorical(
       mtcars,
@@ -4416,18 +4536,18 @@ test_that("p_adjust adjusts the one test of each variable, together", {
       output = "long"
     )
     expect_equal(
-      adj$p[!duplicated(adj$variable)],
+      adj$p.value[!duplicated(adj$variable)],
       stats::p.adjust(raw_p, method = method)
     )
     # Every row of a variable carries its variable's adjusted p-value.
     expect_equal(
-      adj$p,
+      adj$p.value,
       stats::p.adjust(raw_p, method = method)[match(
         adj$variable,
         unique(adj$variable)
       )]
     )
-    expect_identical(adj$p_unadjusted, raw$p)
+    expect_identical(adj$p_unadjusted, raw$p.value)
   }
 })
 
@@ -4566,17 +4686,19 @@ test_that("p_value defaults to the test with `by`, as in the siblings", {
   ref <- .pv_tbl()
   expect_true(all(c("Chi2", "df", "p") %in% names(ref)))
   expect_identical(.pv_tbl(p_value = TRUE), ref)
-  expect_true(all(c("chi2", "df", "p") %in% names(.pv_tbl(output = "long"))))
+  expect_true(all(
+    c("test_type", "statistic", "df", "p.value") %in%
+      names(.pv_tbl(output = "long"))
+  ))
+  expect_true("p" %in% names(.pv_tbl(output = "data.frame")))
   expect_true("p" %in% names(as_structured(ref)$col_meta))
 })
 
 test_that("p_value = FALSE: the data frames are the default minus the test", {
   ref <- .pv_tbl(output = "data.frame")
   out <- .pv_tbl(p_value = FALSE, output = "data.frame")
-  expect_identical(
-    names(out),
-    setdiff(names(ref), c("test_type", "Chi2", "df", "p"))
-  )
+  # The displayed table prints the test as its `p` column alone.
+  expect_identical(names(out), setdiff(names(ref), "p"))
   # The note loses the test too.
   expect_identical(
     attr(out, "note"),
@@ -4588,7 +4710,7 @@ test_that("p_value = FALSE: the data frames are the default minus the test", {
   out_l <- .pv_tbl(p_value = FALSE, output = "long")
   expect_identical(
     names(out_l),
-    setdiff(names(ref_l), c("test_type", "chi2", "df", "p"))
+    setdiff(names(ref_l), c("test_type", "statistic", "df", "p.value"))
   )
   expect_identical(attr(out_l, "note"), attr(out, "note"))
   expect_identical(structure(out_l, note = NULL), ref_l[names(out_l)])
@@ -4633,7 +4755,8 @@ test_that("p_value = FALSE: the console table, its typed view and glance()", {
   expect_true(all(is.na(gl$test_type)))
   expect_true(all(is.na(gl$statistic)))
   expect_true(all(is.na(gl$p.value)))
-  expect_false(anyNA(gl$assoc_value))
+  expect_length(gl$es_value, 2L)
+  expect_false(anyNA(gl$es_value))
 })
 
 test_that("p_value = FALSE removes the p column from every rendered engine", {
@@ -4734,8 +4857,10 @@ test_that("p_value = FALSE with assoc_measure = \"none\": a purely descriptive t
       output = "data.frame"
     )),
     c(
-      "Variable",
-      "Level",
+      "variable",
+      "label",
+      "level",
+      ".row_role",
       "Female n",
       "Female %",
       "Male n",
@@ -4744,10 +4869,32 @@ test_that("p_value = FALSE with assoc_measure = \"none\": a purely descriptive t
       "Total %"
     )
   )
-  expect_identical(
-    names(.pv_tbl(p_value = FALSE, assoc_measure = "none", output = "long")),
-    c("variable", "label", "level", "group", "n", "pct")
+  # The long output keeps its stable measure and SMD columns, all empty.
+  lg <- .pv_tbl(p_value = FALSE, assoc_measure = "none", output = "long")
+  es_smd <- c(
+    "es_type",
+    "es_value",
+    "es_ci_lower",
+    "es_ci_upper",
+    "smd_type",
+    "smd_value"
   )
+  expect_identical(
+    names(lg),
+    c(
+      "variable",
+      "label",
+      "level",
+      ".row_role",
+      "group",
+      ".group_role",
+      "total",
+      "n",
+      "pct",
+      es_smd
+    )
+  )
+  expect_true(all(is.na(lg[es_smd])))
   withr::local_options(width = 100)
   expect_snapshot(print(tbl))
 })
@@ -4792,8 +4939,9 @@ test_that("p_value = FALSE keeps the SMD, which has its own switch", {
   expect_false("p" %in% names(tbl))
   expect_identical(tbl$SMD, ref$SMD)
   long <- .pv_tbl(p_value = FALSE, smd = TRUE, output = "long")
-  expect_true(all(c("smd", "smd_type") %in% names(long)))
-  expect_false("p" %in% names(long))
+  expect_true(all(c("smd_value", "smd_type") %in% names(long)))
+  expect_false(anyNA(long$smd_value))
+  expect_false("p.value" %in% names(long))
   expect_identical(
     as_structured(tbl)$col_meta$SMD,
     as_structured(ref)$col_meta$SMD
@@ -4875,15 +5023,15 @@ test_that("test = \"auto\": dense tables take the chi-squared test, as in gtsumm
   ))
   expect_identical(out$test_type, rep("chi_squared", 3L))
   expect_equal(
-    out$p,
+    out$p.value,
     c(0.712519570026406, 0.343778176322083, 0.831676321336384),
     tolerance = 1e-10
   )
   # The chi-squared of chisq.test(correct = FALSE), complete cases.
   sh <- .gts_sh()
   ref <- stats::chisq.test(table(sh$smoking, sh$sex), correct = FALSE)
-  expect_equal(out$chi2[[1L]], unname(ref$statistic), tolerance = 1e-12)
-  expect_equal(out$p[[1L]], ref$p.value, tolerance = 1e-12)
+  expect_equal(out$statistic[[1L]], unname(ref$statistic), tolerance = 1e-12)
+  expect_equal(out$p.value[[1L]], ref$p.value, tolerance = 1e-12)
 })
 
 test_that("test = \"auto\": an expected count below 5 takes Fisher's exact test, as in gtsummary", {
@@ -4905,18 +5053,18 @@ test_that("test = \"auto\": an expected count below 5 takes Fisher's exact test,
     c("fisher_exact", "chi_squared", "chi_squared")
   )
   expect_equal(
-    out$p,
+    out$p.value,
     c(0.257949447423132, 0.564090263272185, 0.726308097640108),
     tolerance = 1e-10
   )
   expect_equal(
-    out$p[[1L]],
+    out$p.value[[1L]],
     stats::fisher.test(table(d$smoking, d$sex))$p.value,
     tolerance = 1e-12
   )
   # A Fisher row has no chi-squared statistic and no degrees of freedom;
   # its association measure is unchanged.
-  expect_true(is.na(out$chi2[[1L]]) && is.na(out$df[[1L]]))
+  expect_true(is.na(out$statistic[[1L]]) && is.na(out$df[[1L]]))
   ref <- .first_rows(table_categorical(
     d,
     c(smoking, dentist_12m, physical_activity),
@@ -4924,7 +5072,8 @@ test_that("test = \"auto\": an expected count below 5 takes Fisher's exact test,
     test = "chisq",
     output = "long"
   ))
-  expect_identical(out$effect_size, ref$effect_size)
+  expect_false(anyNA(out$es_value))
+  expect_identical(out$es_value, ref$es_value)
   # The note names the test of every variable, the chi-squared first.
   expect_identical(
     attr(tbl, "assoc_note"),
@@ -4933,6 +5082,8 @@ test_that("test = \"auto\": an expected count below 5 takes Fisher's exact test,
       "physical_activity); Fisher exact test (smoking)."
     )
   )
+  # The displayed table prints the p-value alone, on each header row; the
+  # test type is the long output's (above), the typed view's and glance()'s.
   wide <- table_categorical(
     d,
     c(smoking, dentist_12m, physical_activity),
@@ -4940,12 +5091,12 @@ test_that("test = \"auto\": an expected count below 5 takes Fisher's exact test,
     output = "data.frame"
   )
   expect_identical(
-    names(wide)[names(wide) %in% c("test_type", "Chi2", "df", "p")],
-    c("test_type", "Chi2", "df", "p")
+    intersect(names(wide), c("test_type", "Chi2", "df", "p")),
+    "p"
   )
   expect_identical(
-    wide$test_type,
-    rep(c("fisher_exact", "chi_squared", "chi_squared"), each = 2L)
+    wide$p[wide$.row_role == "factor_header"],
+    out$p.value
   )
   # The typed view and glance() carry the same.
   s <- as_structured(tbl)
@@ -4972,9 +5123,13 @@ test_that("Fisher's exact test of an r x c table reproduces gtsummary", {
   ))
   # 4 x 3 tables, minimum expected counts 1.40 and 1.68.
   expect_identical(out$test_type, rep("fisher_exact", 2L))
-  expect_equal(out$p, c(0.1666469610989, 0.0490952340252815), tolerance = 1e-10)
   expect_equal(
-    out$p[[1L]],
+    out$p.value,
+    c(0.1666469610989, 0.0490952340252815),
+    tolerance = 1e-10
+  )
+  expect_equal(
+    out$p.value[[1L]],
     stats::fisher.test(table(d$self_rated_health, d$education))$p.value,
     tolerance = 1e-12
   )
@@ -4986,7 +5141,7 @@ test_that("Fisher's exact test of an r x c table reproduces gtsummary", {
     output = "long"
   ))
   expect_identical(out34$test_type, "fisher_exact")
-  expect_equal(out34$p, 0.601196474720587, tolerance = 1e-10)
+  expect_equal(out34$p.value, 0.601196474720587, tolerance = 1e-10)
 })
 
 test_that("a table the exact enumeration cannot handle takes the Monte Carlo test", {
@@ -5000,15 +5155,15 @@ test_that("a table the exact enumeration cannot handle takes the Monte Carlo tes
   set.seed(20261018)
   long <- table_categorical(d, region, by = sex_age, output = "long")
   expect_identical(unique(long$test_type), "fisher_exact_mc")
-  expect_true(all(is.na(long$chi2)))
+  expect_true(all(is.na(long$statistic)))
   # The same draws as a direct call under the same seed, and within
   # Monte Carlo error of a 100 000-replicate estimate (0.3036).
   set.seed(20261018)
   direct <- stats::fisher.test(tab, simulate.p.value = TRUE, B = 2000)$p.value
-  expect_identical(long$p[[1L]], direct)
+  expect_identical(long$p.value[[1L]], direct)
   set.seed(1)
   big <- stats::fisher.test(tab, simulate.p.value = TRUE, B = 1e5)$p.value
-  expect_lt(abs(long$p[[1L]] - big), 4 * sqrt(big * (1 - big) / 2000))
+  expect_lt(abs(long$p.value[[1L]] - big), 4 * sqrt(big * (1 - big) / 2000))
   expect_identical(
     attr(tbl, "assoc_note"),
     "Group comparison: Fisher exact test (Monte Carlo, 2000 replicates)."
@@ -5050,12 +5205,12 @@ test_that("test = \"chisq\" gives the 0.13.0 p-values, test = \"fisher\" tests e
   for (j in seq_along(vars)) {
     tab <- table(d[[vars[[j]]]], d$sex)
     expect_equal(
-      chisq$p[[j]],
+      chisq$p.value[[j]],
       suppressWarnings(stats::chisq.test(tab, correct = FALSE))$p.value,
       tolerance = 1e-12
     )
     expect_equal(
-      fisher$p[[j]],
+      fisher$p.value[[j]],
       stats::fisher.test(tab)$p.value,
       tolerance = 1e-12
     )
@@ -5080,7 +5235,7 @@ test_that("p_adjust adjusts the p-values the tests produced", {
     output = "long"
   ))
   expect_equal(out$p_unadjusted[[1L]], 0.257949447423132, tolerance = 1e-10)
-  expect_equal(out$p, stats::p.adjust(out$p_unadjusted, "holm"))
+  expect_equal(out$p.value, stats::p.adjust(out$p_unadjusted, "holm"))
 })
 
 test_that("correct and simulate_p reach only the variables the chi-squared tests", {
@@ -5097,9 +5252,9 @@ test_that("correct and simulate_p reach only the variables the chi-squared tests
     correct = TRUE,
     output = "long"
   ))
-  expect_equal(long$p[[1L]], 0.257949447423132, tolerance = 1e-10)
+  expect_equal(long$p.value[[1L]], 0.257949447423132, tolerance = 1e-10)
   expect_equal(
-    long$p[[2L]],
+    long$p.value[[2L]],
     stats::chisq.test(table(d$dentist_12m, d$sex), correct = TRUE)$p.value,
     tolerance = 1e-12
   )
@@ -5185,7 +5340,7 @@ test_that("Fisher's exact test runs on whole-number weights and not on fractiona
   expanded <- d[rep(seq_len(nrow(d)), d$w), ]
   expect_identical(out$test_type, "fisher_exact")
   expect_equal(
-    out$p,
+    out$p.value,
     stats::fisher.test(table(expanded$x, expanded$g))$p.value,
     tolerance = 1e-12
   )
@@ -5197,8 +5352,9 @@ test_that("Fisher's exact test runs on whole-number weights and not on fractiona
     class = "spicy_fallback"
   )
   expect_identical(unique(frac$test_type), "chi_squared")
+  expect_false(anyNA(frac$p.value))
   expect_equal(
-    frac$p,
+    frac$p.value,
     table_categorical(
       d,
       x,
@@ -5206,7 +5362,7 @@ test_that("Fisher's exact test runs on whole-number weights and not on fractiona
       weights = w,
       test = "chisq",
       output = "long"
-    )$p
+    )$p.value
   )
   expect_error(
     table_categorical(d, x, by = g, weights = w, test = "fisher"),
@@ -5223,7 +5379,7 @@ test_that("the test reads the observed table: no (Missing) level, no empty level
   cc <- d[!is.na(d$smoking), ]
   expect_identical(shown$test_type, "fisher_exact")
   expect_equal(
-    shown$p,
+    shown$p.value,
     stats::fisher.test(table(cc$smoking, cc$sex))$p.value,
     tolerance = 1e-12
   )
@@ -5239,7 +5395,7 @@ test_that("the test reads the observed table: no (Missing) level, no empty level
     output = "long"
   ))
   expect_identical(dense$test_type, "chi_squared")
-  expect_equal(dense$p, 0.712519570026406, tolerance = 1e-10)
+  expect_equal(dense$p.value, 0.712519570026406, tolerance = 1e-10)
 })
 
 test_that("a variable with nothing to test carries no test type", {
@@ -5249,7 +5405,7 @@ test_that("a variable with nothing to test carries no test type", {
     g = factor(c("u", "v", "u", "v"))
   )
   out <- .first_rows(table_categorical(d, c(x, y), by = g, output = "long"))
-  expect_true(is.na(out$test_type[[1L]]) && is.na(out$p[[1L]]))
+  expect_true(is.na(out$test_type[[1L]]) && is.na(out$p.value[[1L]]))
   expect_identical(out$test_type[[2L]], "fisher_exact")
   # One test ran: the note names it alone, with no list of variables.
   expect_match(
@@ -5514,9 +5670,9 @@ test_that("test = \"midp\" reproduces the published Fisher mid-p values", {
     out <- .mp_row(pin[[1L]], "midp")
     info <- paste(pin[[1L]], collapse = " ")
     expect_identical(out$test_type, "fisher_midp", info = info)
-    expect_equal(out$p, pin[[2L]], tolerance = 1e-9, info = info)
+    expect_equal(out$p.value, pin[[2L]], tolerance = 1e-9, info = info)
     # An exact test: no chi-squared statistic, no degrees of freedom.
-    expect_true(is.na(out$chi2) && is.na(out$df), info = info)
+    expect_true(is.na(out$statistic) && is.na(out$df), info = info)
   }
   expect_identical(
     attr(
@@ -5530,9 +5686,9 @@ test_that("test = \"midp\" reproduces the published Fisher mid-p values", {
 test_that("the mid-p reads ties within fisher.test()'s tolerance: a table and its mirror agree", {
   # 2 36 / 8 30 and its mirror are as probable as each other: an exact
   # comparison gives 0.0680 and 0.0320 (contingencytables 3.1.0).
-  p <- .mp_row(c(2, 36, 8, 30), "midp")$p
+  p <- .mp_row(c(2, 36, 8, 30), "midp")$p.value
   expect_equal(p, 0.0499865594, tolerance = 1e-9)
-  expect_identical(.mp_row(c(8, 30, 2, 36), "midp")$p, p)
+  expect_identical(.mp_row(c(8, 30, 2, 36), "midp")$p.value, p)
   # Transposed: the groups as the variable, the variable as the groups.
   tr <- table_categorical(
     .mp_2x2(2, 36, 8, 30),
@@ -5541,7 +5697,7 @@ test_that("the mid-p reads ties within fisher.test()'s tolerance: a table and it
     test = "midp",
     output = "long"
   )
-  expect_equal(tr$p[[1L]], p, tolerance = 1e-12)
+  expect_equal(tr$p.value[[1L]], p, tolerance = 1e-12)
   for (v in list(c(9, 4, 4, 10), c(0, 16, 15, 57), c(4, 16, 1, 21))) {
     tab <- matrix(v, 2L, byrow = TRUE)
     ref <- spicy:::.cat_midp_p(tab)
@@ -5572,43 +5728,61 @@ test_that("the central mid-p coincides at equal margins and nowhere else", {
     c(2, 36, 8, 30)
   )
   for (v in equal) {
-    expect_equal(.mp_row(v, "midp")$p, central(v), tolerance = 1e-12)
+    expect_equal(.mp_row(v, "midp")$p.value, central(v), tolerance = 1e-12)
   }
   # Unequal margins: GADA 0.0391 against 0.0468, CHRNA4 0.0447 against
   # 0.0364.
   expect_equal(central(c(9, 4, 4, 10)), 0.04678786338, tolerance = 1e-9)
   expect_equal(central(c(0, 16, 15, 57)), 0.03641394686, tolerance = 1e-9)
-  expect_gt(abs(.mp_row(c(9, 4, 4, 10), "midp")$p - 0.04678786338), 0.007)
-  expect_gt(abs(.mp_row(c(0, 16, 15, 57), "midp")$p - 0.03641394686), 0.008)
+  expect_gt(
+    abs(.mp_row(c(9, 4, 4, 10), "midp")$p.value - 0.04678786338),
+    0.007
+  )
+  expect_gt(
+    abs(.mp_row(c(0, 16, 15, 57), "midp")$p.value - 0.03641394686),
+    0.008
+  )
   # Equal margins, the most probable table: 0.828 against 1.
   expect_equal(central(c(5, 5, 5, 5)), 1, tolerance = 1e-12)
-  expect_equal(.mp_row(c(5, 5, 5, 5), "midp")$p, 0.8281408993, tolerance = 1e-9)
+  expect_equal(
+    .mp_row(c(5, 5, 5, 5), "midp")$p.value,
+    0.8281408993,
+    tolerance = 1e-9
+  )
 })
 
 test_that("test = \"n1\" is the N-1 chi-squared of Campbell (2007)", {
   # Campbell's Table I(b): X2 = 2.3858, N-1 p = 0.1270 (Busing et al. 2016).
   out <- .mp_row(c(4, 16, 1, 21), "n1")
   expect_identical(out$test_type, "n1_chi_squared")
-  expect_equal(out$chi2, 2.329041769, tolerance = 1e-9)
+  expect_equal(out$statistic, 2.329041769, tolerance = 1e-9)
   expect_identical(out$df, 1)
-  expect_equal(out$p, 0.1269800217, tolerance = 1e-9)
+  expect_equal(out$p.value, 0.1269800217, tolerance = 1e-9)
   expect_equal(
-    .mp_row(c(30, 20, 18, 32), "n1")$p,
+    .mp_row(c(30, 20, 18, 32), "n1")$p.value,
     0.0168537629,
     tolerance = 1e-9
   )
-  expect_equal(.mp_row(c(9, 4, 4, 10), "n1")$p, 0.03815109231, tolerance = 1e-9)
+  expect_equal(
+    .mp_row(c(9, 4, 4, 10), "n1")$p.value,
+    0.03815109231,
+    tolerance = 1e-9
+  )
   # Pearson's statistic times (N - 1) / N, and the Mantel-Haenszel form
   # (n11 - E)^2 / V of a single 2 x 2 table.
   tab <- matrix(c(4, 16, 1, 21), 2L, byrow = TRUE)
   pearson <- suppressWarnings(stats::chisq.test(tab, correct = FALSE))
-  expect_equal(out$chi2, unname(pearson$statistic) * 41 / 42, tolerance = 1e-12)
+  expect_equal(
+    out$statistic,
+    unname(pearson$statistic) * 41 / 42,
+    tolerance = 1e-12
+  )
   r <- rowSums(tab)
   s <- colSums(tab)
   n <- sum(tab)
   mh <- (tab[1L, 1L] - r[[1L]] * s[[1L]] / n)^2 /
     (prod(r, s) / (n^2 * (n - 1)))
-  expect_equal(out$chi2, mh, tolerance = 1e-12)
+  expect_equal(out$statistic, mh, tolerance = 1e-12)
   expect_identical(
     attr(
       table_categorical(.mp_2x2(4, 16, 1, 21), x, by = g, test = "n1"),
@@ -5622,8 +5796,8 @@ test_that("Campbell's rule sends a table with an expected count below 1 to Fishe
   # 2 1 / 1 20: smallest expected count 0.375.
   out <- .mp_row(c(2, 1, 1, 20), "n1")
   expect_identical(out$test_type, "fisher_exact")
-  expect_equal(out$p, 0.03162055336, tolerance = 1e-9)
-  expect_true(is.na(out$chi2) && is.na(out$df))
+  expect_equal(out$p.value, 0.03162055336, tolerance = 1e-9)
+  expect_true(is.na(out$statistic) && is.na(out$df))
   # One table, two variables: x's smallest expected count is 2.38, y's
   # 0.95. Each takes its test, and the note names both.
   d <- .mp_2x2(4, 16, 1, 21)
@@ -5638,7 +5812,7 @@ test_that("Campbell's rule sends a table with an expected count below 1 to Fishe
   ))
   expect_identical(long$test_type, c("n1_chi_squared", "fisher_exact"))
   expect_equal(
-    long$p[[2L]],
+    long$p.value[[2L]],
     stats::fisher.test(table(d$y, d$g))$p.value,
     tolerance = 1e-12
   )
@@ -5693,8 +5867,9 @@ test_that("midp and n1 test 2 x 2 tables only; a larger table follows auto", {
     n1$test_type,
     c("n1_chi_squared", "chi_squared", "fisher_exact")
   )
-  expect_identical(midp$p[2:3], auto$p[2:3])
-  expect_identical(n1$p[2:3], auto$p[2:3])
+  expect_false(anyNA(auto$p.value))
+  expect_identical(midp$p.value[2:3], auto$p.value[2:3])
+  expect_identical(n1$p.value[2:3], auto$p.value[2:3])
   # The note names the test of each variable (the measure, Phi or
   # Cramer's V, would add a sentence of its own).
   expect_identical(
@@ -5733,9 +5908,10 @@ test_that("midp and n1 test 2 x 2 tables only; a larger table follows auto", {
   )
   three <- table_categorical(d3, x, by = g, test = "midp", output = "long")
   expect_identical(unique(three$test_type), "chi_squared")
+  expect_false(anyNA(three$p.value))
   expect_identical(
-    three$p,
-    table_categorical(d3, x, by = g, output = "long")$p
+    three$p.value,
+    table_categorical(d3, x, by = g, output = "long")$p.value
   )
 })
 
@@ -5754,8 +5930,11 @@ test_that("a table with an empty row or column gets no test under midp and n1", 
       test = tt,
       output = "long"
     ))
-    expect_true(is.na(out$p[[1L]]) && is.na(out$test_type[[1L]]), info = tt)
-    expect_false(is.na(out$p[[2L]]), info = tt)
+    expect_true(
+      is.na(out$p.value[[1L]]) && is.na(out$test_type[[1L]]),
+      info = tt
+    )
+    expect_false(is.na(out$p.value[[2L]]), info = tt)
   }
   # The helper refuses such a table whatever the test: the mid-p would
   # report 0.5 there, and Fisher's exact test 1.
@@ -5779,8 +5958,8 @@ test_that("p_adjust adjusts the mid-p values", {
     output = "long"
   ))
   expect_equal(out$p_unadjusted[[1L]], 0.03914177672, tolerance = 1e-9)
-  expect_equal(out$p, stats::p.adjust(out$p_unadjusted, "holm"))
-  expect_true(out$p[[1L]] > out$p_unadjusted[[1L]])
+  expect_equal(out$p.value, stats::p.adjust(out$p_unadjusted, "holm"))
+  expect_true(out$p.value[[1L]] > out$p_unadjusted[[1L]])
   expect_match(
     attr(
       table_categorical(d, c(x, y), by = g, test = "midp", p_adjust = "holm"),
@@ -5830,16 +6009,24 @@ test_that("the mid-p needs counts; under weights Campbell's rule gives way to th
   )
   # Frequency weights: the mid-p of the expanded data.
   expanded <- d[rep(seq_len(nrow(d)), d$w), ]
+  weighted <- table_categorical(
+    d,
+    x,
+    by = g,
+    weights = w,
+    test = "midp",
+    output = "long"
+  )
+  expect_false(anyNA(weighted$p.value))
   expect_equal(
+    weighted$p.value,
     table_categorical(
-      d,
+      expanded,
       x,
       by = g,
-      weights = w,
       test = "midp",
       output = "long"
-    )$p,
-    table_categorical(expanded, x, by = g, test = "midp", output = "long")$p,
+    )$p.value,
     tolerance = 1e-12
   )
   # Fractional weights: the mid-p has no counts to condition on.
@@ -5872,7 +6059,7 @@ test_that("the mid-p needs counts; under weights Campbell's rule gives way to th
     suppressWarnings(stats::chisq.test(tab, correct = FALSE))$statistic
   )
   expect_identical(unique(out$test_type), "n1_chi_squared")
-  expect_equal(unique(out$chi2), x2 * 9 / 10, tolerance = 1e-12)
+  expect_equal(unique(out$statistic), x2 * 9 / 10, tolerance = 1e-12)
 })
 
 test_that("the notes name the 2 x 2 tests in French", {

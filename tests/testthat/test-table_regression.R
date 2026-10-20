@@ -123,7 +123,7 @@ test_that("table_regression – nested = TRUE injects change-stat rows + Hierarc
   m2 <- lm(mpg ~ wt + cyl, data = mt)
   out <- table_regression(list(m1, m2), nested = TRUE)
   expect_identical(attr(out, "title"), "Hierarchical linear regression: mpg")
-  vars <- trimws(as.data.frame(out, stringsAsFactors = FALSE)$Variable)
+  vars <- trimws(out$Variable)
   expect_true("ΔR²" %in% vars)
   expect_true("F-change" %in% vars)
   expect_true("p (change)" %in% vars)
@@ -141,6 +141,9 @@ test_that("output = 'data.frame' returns plain data.frame", {
   out <- table_regression(fit, output = "data.frame")
   expect_s3_class(out, "data.frame")
   expect_false(inherits(out, "spicy_regression_table"))
+  # The displayed table with its numbers: as.data.frame() of the default.
+  expect_identical(out, as.data.frame(table_regression(fit)))
+  expect_type(out$B, "double")
 })
 
 test_that("output = 'long' returns broom-style long format", {
@@ -1500,7 +1503,7 @@ test_that("ordered factor – grouped under header, poly-order, auto footer note
   )
   fit <- lm(y ~ x + edu, df)
   out <- table_regression(fit)
-  vars <- trimws(as.data.frame(out, stringsAsFactors = FALSE)$Variable)
+  vars <- trimws(out$Variable)
   expect_true("edu:" %in% vars)
   # Poly-order: .L < .Q < .C (alphabetical sort would yield .C first).
   l_pos <- which(vars == ".L")
@@ -1535,7 +1538,7 @@ test_that("ordered factor – fitting with factor(ordered = FALSE) restores trea
   df$edu_t <- factor(df$edu, ordered = FALSE)
   fit <- lm(y ~ edu_t, df)
   out <- table_regression(fit)
-  vars <- trimws(as.data.frame(out, stringsAsFactors = FALSE)$Variable)
+  vars <- trimws(out$Variable)
   expect_true("edu_t:" %in% vars)
   expect_true("Low (ref.)" %in% vars) # vars is trimws()'d above
   # No poly footer for this fit.
@@ -1602,13 +1605,13 @@ test_that("reference row always FIRST in its factor group regardless of group_fa
   fit <- lm(y ~ age + sex, df)
 
   out_t <- table_regression(fit, factor_layout = "grouped")
-  vars_t <- as.data.frame(out_t, stringsAsFactors = FALSE)$Variable
+  vars_t <- out_t$Variable
   ref_t <- which(vars_t == "  Female (ref.)")
   male_t <- which(vars_t == "  Male")
   expect_true(ref_t < male_t)
 
   out_f <- table_regression(fit, factor_layout = "flat")
-  vars_f <- as.data.frame(out_f, stringsAsFactors = FALSE)$Variable
+  vars_f <- out_f$Variable
   ref_f <- which(vars_f == "sexFemale (ref.)")
   male_f <- which(vars_f == "sexMale")
   expect_true(ref_f < male_f)
@@ -1637,7 +1640,7 @@ test_that("reference_style = \"annotation\" + factor_layout = \"flat\" inlines [
     reference_style = "annotation",
     factor_layout = "flat"
   )
-  vars <- as.data.frame(out, stringsAsFactors = FALSE)$Variable
+  vars <- out$Variable
   # 2-level factor: the single non-ref dummy carries [vs Female]
   expect_true("sexMale [vs Female]" %in% vars)
   # 3-level factor: FIRST non-ref dummy carries [vs Lower]; second does not
@@ -1662,7 +1665,8 @@ test_that("reference_style = \"footer\" adds a single 'Reference categories: ...
   )
   fit <- lm(y ~ sex + edu, df)
   out <- table_regression(fit, reference_style = "footer")
-  vars <- as.data.frame(out, stringsAsFactors = FALSE)$Variable
+  vars <- out$Variable
+  expect_true("  Male" %in% vars) # the rows are read
   # Ref rows dropped from body; no inline annotation
   expect_false(any(grepl("(ref.)", vars, fixed = TRUE)))
   expect_false(any(grepl("[vs ", vars, fixed = TRUE)))
@@ -1696,7 +1700,8 @@ test_that("reference_style = \"none\" shows no reference info anywhere", {
     ),
     spicy_info = function(c) invokeRestart("muffleMessage")
   )
-  vars <- as.data.frame(out, stringsAsFactors = FALSE)$Variable
+  vars <- out$Variable
+  expect_true("sexMale" %in% vars) # the rows are read
   expect_false(any(grepl("(ref.)", vars, fixed = TRUE)))
   expect_false(any(grepl("[vs ", vars, fixed = TRUE)))
   # Footer carries the regression-type / vcov declaration but
@@ -1770,7 +1775,7 @@ test_that("reference_style = \"none\" with NO factors: no spicy_inform (nothing 
 test_that("factor_layout = \"flat\" produces concatenated <var><level> labels", {
   fit <- lm(mpg ~ wt + cyl, data = mt)
   out <- table_regression(fit, factor_layout = "flat")
-  vars <- as.data.frame(out, stringsAsFactors = FALSE)$Variable
+  vars <- out$Variable
   # No "cyl:" factor header in flat mode
   expect_false("cyl:" %in% vars)
   # Each level row uses the concatenated `<var><level>` form
@@ -1781,7 +1786,7 @@ test_that("factor_layout = \"flat\" produces concatenated <var><level> labels", 
 test_that("factor_layout = \"grouped\" (default) inserts factor header + indents", {
   fit <- lm(mpg ~ wt + cyl, data = mt)
   out <- table_regression(fit) # default grouped
-  vars <- as.data.frame(out, stringsAsFactors = FALSE)$Variable
+  vars <- out$Variable
   expect_true("cyl:" %in% vars)
   expect_true(any(grepl("^  6$", vars)))
   expect_true(any(grepl("^  8$", vars)))
@@ -2054,9 +2059,7 @@ test_that("change tokens render under nested = TRUE and are inert without it", {
     nested = TRUE,
     show_fit_stats = c("r2", "r2_change")
   )
-  vars_nested <- trimws(
-    as.data.frame(o_nested, stringsAsFactors = FALSE)$Variable
-  )
+  vars_nested <- trimws(o_nested$Variable)
   expect_true("ΔR²" %in% vars_nested)
   # Same request without nested = TRUE: the change row is simply absent
   # (inert), the table still renders.
@@ -2064,7 +2067,7 @@ test_that("change tokens render under nested = TRUE and are inert without it", {
     list(m1, m2),
     show_fit_stats = c("r2", "r2_change")
   )
-  vars_flat <- trimws(as.data.frame(o_flat, stringsAsFactors = FALSE)$Variable)
+  vars_flat <- trimws(o_flat$Variable)
   expect_false("ΔR²" %in% vars_flat)
   expect_true("R²" %in% vars_flat)
 })
@@ -2078,7 +2081,8 @@ test_that("digits controls B/SE/CI/t decimals; p and AIC are untouched", {
     show_columns = c("b", "se", "ci", "t", "p"),
     show_fit_stats = c("aic")
   )
-  d3 <- as.data.frame(o3, stringsAsFactors = FALSE)
+  # The printed table: its columns are the displayed cells.
+  d3 <- structure(o3, class = "data.frame")
   wt_row <- d3[trimws(d3$Variable) == "wt", ]
   expect_match(trimws(wt_row$B), "^-?[0-9]+\\.[0-9]{3}$")
   expect_match(trimws(wt_row$SE), "^[0-9]+\\.[0-9]{3}$")
@@ -2096,11 +2100,9 @@ test_that("digits controls B/SE/CI/t decimals; p and AIC are untouched", {
 test_that("p_digits formats rendered p cells APA-strict at any width", {
   # rd-core:p-digits-apa
   fit <- lm(mpg ~ wt + cyl, data = mt)
-  d3 <- as.data.frame(table_regression(fit), stringsAsFactors = FALSE)
-  d4 <- as.data.frame(
-    table_regression(fit, p_digits = 4L),
-    stringsAsFactors = FALSE
-  )
+  # The printed tables: their columns are the displayed cells.
+  d3 <- table_regression(fit)
+  d4 <- table_regression(fit, p_digits = 4L)
   keep <- c("(Intercept)", "wt", "6", "8")
   p3 <- trimws(d3$p[trimws(d3$Variable) %in% keep])
   p4 <- trimws(d4$p[trimws(d4$Variable) %in% keep])
@@ -2120,9 +2122,9 @@ test_that("fit_digits controls R² decimals while AIC keeps ic_digits", {
     show_fit_stats = c("r2", "aic"),
     fit_digits = 4L
   )
-  d <- as.data.frame(out, stringsAsFactors = FALSE)
-  r2_cell <- trimws(d$B[trimws(d$Variable) == "R²"])
-  aic_cell <- trimws(d$B[trimws(d$Variable) == "AIC"])
+  # The printed table: its columns are the displayed cells.
+  r2_cell <- trimws(out$B[trimws(out$Variable) == "R²"])
+  aic_cell <- trimws(out$B[trimws(out$Variable) == "AIC"])
   expect_identical(
     r2_cell,
     format(round(summary(fit)$r.squared, 4), nsmall = 4)
@@ -2130,10 +2132,7 @@ test_that("fit_digits controls R² decimals while AIC keeps ic_digits", {
   expect_match(aic_cell, "^[0-9]+\\.[0-9]$")
   # default fit_digits = 2L
   expect_identical(formals(table_regression)$fit_digits, 2L)
-  d2 <- as.data.frame(
-    table_regression(fit, show_fit_stats = "r2"),
-    stringsAsFactors = FALSE
-  )
+  d2 <- table_regression(fit, show_fit_stats = "r2")
   expect_match(trimws(d2$B[trimws(d2$Variable) == "R²"]), "^0\\.[0-9]{2}$")
 })
 
@@ -2142,7 +2141,8 @@ test_that("effect_size_digits scopes partial_f2 only (B keeps digits)", {
   fit <- lm(mpg ~ wt + cyl, data = mt)
   expect_identical(formals(table_regression)$effect_size_digits, 2L)
   o2 <- table_regression(fit, show_columns = c("b", "partial_f2"))
-  d2 <- as.data.frame(o2, stringsAsFactors = FALSE)
+  # The printed tables: their columns are the displayed cells.
+  d2 <- structure(o2, class = "data.frame")
   wt2 <- d2[trimws(d2$Variable) == "wt", ]
   expect_match(trimws(wt2$`f²`), "^[0-9]+\\.[0-9]{2}$")
   o3 <- table_regression(
@@ -2150,7 +2150,7 @@ test_that("effect_size_digits scopes partial_f2 only (B keeps digits)", {
     show_columns = c("b", "partial_f2"),
     effect_size_digits = 3L
   )
-  d3 <- as.data.frame(o3, stringsAsFactors = FALSE)
+  d3 <- structure(o3, class = "data.frame")
   wt3 <- d3[trimws(d3$Variable) == "wt", ]
   expect_match(trimws(wt3$`f²`), "^[0-9]+\\.[0-9]{3}$")
   # B keeps the default 2-decimal `digits`
@@ -2206,7 +2206,7 @@ test_that("factor_layout grouped applies to character predictors", {
   df$gear_chr <- as.character(df$gear)
   fit <- lm(mpg ~ wt + gear_chr, data = df)
   out <- table_regression(fit)
-  vars <- as.data.frame(out, stringsAsFactors = FALSE)$Variable
+  vars <- out$Variable
   expect_true("gear_chr:" %in% vars)
   expect_true(any(grepl("^  4$", vars)))
   ref_idx <- grep("\\(ref\\.\\)", vars)
@@ -2220,7 +2220,7 @@ test_that("factor_layout grouped applies to logical predictors", {
   df$am_lgl <- df$am == 1
   fit <- lm(mpg ~ wt + am_lgl, data = df)
   out <- table_regression(fit)
-  vars <- as.data.frame(out, stringsAsFactors = FALSE)$Variable
+  vars <- out$Variable
   expect_true("am_lgl:" %in% vars)
   expect_true(any(grepl("^  TRUE$", vars)))
   ref_idx <- grep("\\(ref\\.\\)", vars)
@@ -2231,7 +2231,7 @@ test_that("factor_layout grouped applies to logical predictors", {
   # AME rows align on the same grouped rows (no orphan `am_lgl` row).
   skip_if_not_installed("marginaleffects")
   out_ame <- table_regression(fit, show_columns = c("b", "ame"))
-  d <- as.data.frame(out_ame, stringsAsFactors = FALSE)
+  d <- structure(out_ame, class = "data.frame")
   expect_false("am_lgl" %in% trimws(d$Variable))
   true_row <- d[trimws(d$Variable) == "TRUE", ]
   expect_identical(nrow(true_row), 1L)
@@ -2245,15 +2245,11 @@ test_that("reference_label defaults to '(ref.)' and only acts in row mode", {
   expect_null(formals(table_regression)$reference_label)
   expect_true(any(grepl(
     "(ref.)",
-    as.data.frame(table_regression(fit), stringsAsFactors = FALSE)$Variable,
+    table_regression(fit)$Variable,
     fixed = TRUE
   )))
   o_row <- table_regression(fit, reference_label = "(base)")
-  expect_true(any(grepl(
-    "(base)",
-    as.data.frame(o_row, stringsAsFactors = FALSE)$Variable,
-    fixed = TRUE
-  )))
+  expect_true(any(grepl("(base)", o_row$Variable, fixed = TRUE)))
   # annotation / footer / none ignore the argument entirely: same
   # output as with the default label.
   for (style in c("annotation", "footer", "none")) {
@@ -2266,42 +2262,35 @@ test_that("reference_label defaults to '(ref.)' and only acts in row mode", {
       fit,
       reference_style = style
     ))
+    # The printed tables, cells and attributes.
     expect_identical(
-      as.data.frame(o_custom, stringsAsFactors = FALSE),
-      as.data.frame(o_default, stringsAsFactors = FALSE)
+      structure(o_custom, class = "data.frame"),
+      structure(o_default, class = "data.frame")
     )
     expect_identical(attr(o_custom, "note"), attr(o_default, "note"))
-    expect_false(any(grepl(
-      "(base)",
-      as.data.frame(o_custom, stringsAsFactors = FALSE)$Variable,
-      fixed = TRUE
-    )))
+    expect_true("wt" %in% o_custom$Variable) # the rows are read
+    expect_false(any(grepl("(base)", o_custom$Variable, fixed = TRUE)))
   }
 })
 
 test_that("the default reference_label follows the language, a typed one does not", {
   fit <- lm(mpg ~ wt + cyl, data = mt)
   withr::local_options(spicy.language = "fr")
-  vars <- as.data.frame(
-    table_regression(fit),
-    stringsAsFactors = FALSE
-  )$Variable
+  vars <- table_regression(fit)$Variable
   expect_true(any(grepl("(r\u00e9f.)", vars, fixed = TRUE)))
   expect_false(any(grepl("(ref.)", vars, fixed = TRUE)))
   typed <- table_regression(fit, reference_label = "(ref.)")
-  expect_true(any(grepl(
-    "(ref.)",
-    as.data.frame(typed, stringsAsFactors = FALSE)$Variable,
-    fixed = TRUE
-  )))
+  expect_true(any(grepl("(ref.)", typed$Variable, fixed = TRUE)))
 })
 
 test_that("align – CI anchors are each column-aligned in decimal mode", {
   # rd-core:align-decimal-ci-anchors (per-anchor positions)
   fit <- lm(mpg ~ wt + cyl, data = mt)
   out <- table_regression(fit)
-  ci <- as.data.frame(out, stringsAsFactors = FALSE)$`95% CI`
+  # The displayed cells of the CI column of the printed table.
+  ci <- out[["95% CI"]]
   ci <- ci[grepl("[0-9]", ci)]
+  expect_length(ci, 4L)
   anchor_pos <- function(cells, pattern, which_match = 1L) {
     vapply(
       cells,
@@ -2520,26 +2509,32 @@ test_that("polr frequency weights reach the per-category AME", {
 # Phase 3 matrix – rd-methods / rd-uv-estimands: output contract (lot T3)
 # ============================================================================
 
-test_that("side-effect outputs return the table invisibly", {
-  # rd-methods:output-class-mapping (invisible(x) half; the gt /
-  # flextable / tinytable / data.frame class halves are pinned in the
-  # per-output tests above)
+test_that("output = 'excel' returns the file path invisibly", {
+  # rd-methods:output-class-mapping (file outputs return their path; the
+  # gt / flextable / tinytable / data.frame class halves are pinned in
+  # the per-output tests above)
   fit <- lm(mpg ~ wt, data = mt)
   skip_if_not_installed("openxlsx2")
   path <- tempfile(fileext = ".xlsx")
   on.exit(unlink(path), add = TRUE)
-  expect_invisible(table_regression(fit, output = "excel", excel_path = path))
+  res <- expect_invisible(
+    table_regression(fit, output = "excel", excel_path = path)
+  )
+  expect_identical(res, path)
   expect_true(file.exists(path))
 })
 
-test_that("output = 'word' returns the table invisibly", {
-  # rd-methods:output-class-mapping (invisible(x), word engine)
+test_that("output = 'word' returns the file path invisibly", {
+  # rd-methods:output-class-mapping (file outputs, word engine)
   skip_if_not_installed("flextable")
   skip_if_not_installed("officer")
   fit <- lm(mpg ~ wt, data = mt)
   path <- tempfile(fileext = ".docx")
   on.exit(unlink(path), add = TRUE)
-  expect_invisible(table_regression(fit, output = "word", word_path = path))
+  res <- expect_invisible(
+    table_regression(fit, output = "word", word_path = path)
+  )
+  expect_identical(res, path)
   expect_true(file.exists(path))
 })
 
@@ -2575,10 +2570,15 @@ test_that("console shows bare deduped labels; data.frame keeps unique names", {
   con <- paste(capture.output(print(out)), collapse = "\n")
   expect_false(grepl("CI.2", con, fixed = TRUE))
   expect_false(grepl("p.2", con, fixed = TRUE))
-  nms <- names(as.data.frame(out, stringsAsFactors = FALSE))
+  # The printed object keeps the deduplicated programmatic names ...
+  nms <- names(out)
   expect_true("95% CI.2" %in% nms)
   expect_true("p.2" %in% nms)
   expect_identical(sum(nms == "95% CI.2"), 1L)
+  # ... and so does the data frame, each interval in its two bounds.
+  dnms <- names(as.data.frame(out))
+  expect_true(all(c("95% CI.2: LL", "95% CI.2: UL", "p.2") %in% dnms))
+  expect_false(anyDuplicated(dnms) > 0L)
 })
 
 test_that("print honors the padding attr unless overridden at print time", {
@@ -2680,7 +2680,8 @@ test_that("eta2 and omega2 CI cells are identical; reference row stays blank", {
       "partial_omega2_ci"
     )
   )
-  df <- as.data.frame(tbl)
+  # The printed table: its columns are the displayed cells.
+  df <- structure(tbl, class = "data.frame")
   eta_ci_col <- grep("η² .*CI", names(df))
   om_ci_col <- grep("ω² .*CI", names(df))
   expect_length(eta_ci_col, 1L)
@@ -2759,9 +2760,7 @@ test_that("p_digits must be at least 1, as in the descriptive tables", {
   )
   # At the floor, the table and the sentence agree.
   tbl <- table_regression(fit, p_digits = 1)
-  expect_true(
-    inline(tbl, sex, "Male", "p") %in% trimws(as.data.frame(tbl)$p)
-  )
+  expect_true(inline(tbl, sex, "Male", "p") %in% trimws(tbl$p))
 })
 
 test_that("an output path is a single path with the extension of its format", {

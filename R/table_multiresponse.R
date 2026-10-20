@@ -167,7 +167,7 @@
 #' @param p_value Logical or `NULL`. With `by`, `NULL` (the default) and
 #'   `TRUE` show the item `p` column and the global test in the note.
 #'   `FALSE` removes both from every output, the `p` column of the data
-#'   frames included. `p_value` and `statistic` are independent, as in
+#'   frame and the `p.value` column of the long output included. `p_value` and `statistic` are independent, as in
 #'   [table_continuous()]. Ignored without `by`, with a warning when
 #'   `TRUE`.
 #' @param global_test The global test: `"rs2"` (the default), the sum of
@@ -207,33 +207,40 @@
 #'
 #' @return Depends on `output`:
 #' \itemize{
-#'   \item `"default"`: the wide `data.frame` below, with the rendering
-#'     metadata as attributes (S3 class `"spicy_multiresponse_table"`),
-#'     returned visibly, so a bare call prints the ASCII table.
-#'   \item `"data.frame"`: a wide `data.frame` with one row per item, the
-#'     rows of `none_row`, and a last row with the base. Columns:
-#'     `Variable`, `.row_role` (what the row is: `"summary"` for an item,
-#'     `"none"` for "(No item chosen)", `"missing"` for "(No data for the
-#'     question)", `"fit_stat"` for the base, the roles of
-#'     [as_structured()]), then the count and the percentage of each
-#'     group of `by` and of the `Total` margin
-#'     (`<group> n` and `<group> \%`, or `<group> \% of cases` and
-#'     `<group> \% of responses` under `percent = "both"`; `n` and `\%`
-#'     without `by`), then `test_type`, `Chi2` and `df` when the item
-#'     tests ran (for `p_value` or for `statistic`), `p` with `p_value`,
-#'     and `p_unadjusted` under an adjustment. `test_type` names the test
-#'     of each item as in [table_categorical()] (`"chi_squared"`,
-#'     `"n1_chi_squared"`, `"fisher_exact"`, `"fisher_midp"`,
-#'     `"fisher_exact_mc"`), and `Chi2` and `df` are `NA` for an item
-#'     tested by an exact test. The rows of `none_row` are `NA` in the
-#'     percentage of responses and in the test columns.
+#'   \item `"default"`: a `spicy_multiresponse_table` (a `data.frame`
+#'     subclass), with the rendering metadata as attributes, returned
+#'     visibly, so a bare call prints the ASCII table.
+#'   \item `"data.frame"`: the displayed table with its numbers, what
+#'     [as.data.frame()][as.data.frame.spicy_multiresponse_table] of the
+#'     default object returns: one row per item, the rows of `none_row`,
+#'     and a last row with the base. Columns: `variable` (the item's
+#'     column, `"none"`, `"no_data"`, or `"nobs"` on the base row),
+#'     `label` (the label the row displays), `.row_role` (what the row
+#'     is: `"summary"` for an item, `"none"` for "(No item chosen)",
+#'     `"missing"` for "(No data for the question)", `"fit_stat"` for the
+#'     base, the roles of [as_structured()]), then the printed columns:
+#'     the count and the percentage of each group of `by` and of the
+#'     `Total` margin (`<group> n` and `<group> \%`, or
+#'     `<group> \% of cases` and `<group> \% of responses` under
+#'     `percent = "both"`; `n` and `\%` without `by`), `Test` (the
+#'     chi-squared of the item, with `df` beside it) under
+#'     `statistic = TRUE`, and `p` with `p_value`.
 #'   \item `"long"`: one row per item and group, then one per row of
 #'     `none_row` and group, with columns `variable` (the item's column,
 #'     `"none"` or `"no_data"` on the rows of `none_row`), `label` (the
-#'     label the row displays), `.row_role` as above, `group` (with
-#'     `by`), `n`, `base` (the respondents of the
-#'     group), `pct` (or `pct_cases` and `pct_responses`), and
-#'     `test_type`, `chi2`, `df`, `p`, and `p_unadjusted` as above.
+#'     label the row displays), `.row_role` as above, with `by` `group`,
+#'     `.group_role` (the role of `group`: `"group"`, or `"total"` for
+#'     the margin) and `total` (`TRUE` on the rows of the margin), `n`,
+#'     `base` (the respondents of the group), the percentage named by its
+#'     base: `pct_cases` (of the respondents) or `pct_responses` (of the
+#'     choices made), as `percent` asks, both under `percent = "both"`,
+#'     and, when the item tests ran (for `p_value` or
+#'     for `statistic`), `test_type` (the test of the item, as in
+#'     [table_categorical()]: `"chi_squared"`, `"n1_chi_squared"`,
+#'     `"fisher_exact"`, `"fisher_midp"`, `"fisher_exact_mc"`),
+#'     `statistic` and `df` (`NA` for an item tested by an exact test),
+#'     `p.value` with `p_value`, and `p_unadjusted` under an adjustment.
+#'     The rows of `none_row` are `NA` in the test columns.
 #'   \item `"tinytable"`, `"gt"`, `"flextable"`: the rendered table object.
 #'   \item `"excel"` / `"word"`: writes to disk and returns the file path
 #'     invisibly.
@@ -271,7 +278,7 @@
 #' when the exact enumeration fails, the p-value is its Monte Carlo
 #' estimate over 2000 tables, which draws from the session's RNG. An item
 #' tested by Fisher's exact test has no statistic: its `Test` cell shows
-#' a dash, and `Chi2` and `df` are `NA` in the data frames. Without
+#' a dash, and `statistic` and `df` are `NA` in the long output. Without
 #' p-values (`p_value = FALSE`), `statistic = TRUE` shows the chi-squared
 #' statistic of every item. The global test sums the Pearson statistics
 #' of the items whatever `test` chooses for their p-values, since its
@@ -916,8 +923,31 @@ table_multiresponse <- function(
       )
   }
 
-  if (output %in% c("data.frame", "long")) {
-    out <- if (identical(output, "data.frame")) wide else long
+  # The long output, in the vocabulary of the family (decision 1 of the
+  # ADR of 2026-10-20): each percentage named by its base whatever
+  # `percent` displays (`pct_cases`, `pct_responses`), the role of `group`
+  # beside it and the margin flagged by `total`, as in tidy().
+  if (identical(output, "long")) {
+    out <- .rename_cols(
+      long,
+      c(
+        chi2 = "statistic",
+        p = "p.value",
+        pct = if (identical(percent, "responses")) {
+          "pct_responses"
+        } else {
+          "pct_cases"
+        }
+      )
+    )
+    if (has_group) {
+      total <- !is.na(out$group) & out$group %in% margin_key
+      out <- .insert_cols_after(
+        out,
+        list(.group_role = ifelse(total, "total", "group"), total = total),
+        "group"
+      )
+    }
     attr(out, "note") <- note_txt
     attr(out, "global_test") <- global_df
     return(out)
@@ -932,7 +962,7 @@ table_multiresponse <- function(
   )
   base_row <- nrow(display_df)
 
-  if (!identical(output, "default")) {
+  if (!output %in% c("default", "data.frame")) {
     return(export_desc_table(
       display_df,
       output = output,
@@ -992,6 +1022,12 @@ table_multiresponse <- function(
   attr(out, "decimal_mark") <- decimal_mark
   out <- .style_stamp(out)
   class(out) <- c("spicy_multiresponse_table", "spicy_table", "data.frame")
+  # `output = "data.frame"` is the displayed table with its numbers,
+  # `as.data.frame()` of the object the call would print (decision 5 of
+  # the ADR of 2026-10-20).
+  if (identical(output, "data.frame")) {
+    return(as.data.frame(out))
+  }
   out
 }
 
@@ -1603,8 +1639,10 @@ table_multiresponse <- function(
   if (has_group) {
     out$group <- rep(blocks, times = ni)
   }
-  out$n <- as.vector(counts)
-  out$base <- rep(bases, times = ni)
+  # Counts of respondents, whole by construction (the table takes no
+  # weights): integer, as tidy() reports them, with or without `by`.
+  out$n <- as.integer(round(as.vector(counts)))
+  out$base <- as.integer(round(rep(bases, times = ni)))
   if (identical(percent, "both")) {
     out$pct_cases <- as.vector(pct_cases)
     out$pct_responses <- as.vector(pct_responses)

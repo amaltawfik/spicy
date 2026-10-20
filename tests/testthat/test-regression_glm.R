@@ -150,7 +150,7 @@ test_that("glm: default show_fit_stats = NULL resolves to pseudo_r2 family", {
   # Pin the rendered fit-stat cells to runtime oracles (single-model
   # table: fit-stat values render in the "B" column; pseudo-R2 rows
   # use 2 decimals, AIC uses 1 decimal per the renderer contract).
-  body <- as.data.frame(out, stringsAsFactors = FALSE, check.names = FALSE)
+  body <- structure(out, class = "data.frame")
   cell <- function(pat) {
     trimws(body[grep(pat, body$Variable, fixed = TRUE), "B"])
   }
@@ -684,7 +684,7 @@ test_that("glm: partial_chi2 with y = FALSE + matrix response matches y stored",
 test_that("glm: partial_chi2 cell renders 'value (df)' format", {
   fit <- glm(am ~ mpg + wt, data = mt, family = binomial)
   out <- table_regression(fit, show_columns = c("b", "partial_chi2"))
-  body <- as.data.frame(out, stringsAsFactors = FALSE)
+  body <- structure(out, class = "data.frame")
   chi_col <- grep("χ", names(body), value = TRUE)
   expect_length(chi_col, 1L)
   # mpg row: chi2 = 1.99, df = 1 -> "1.99 (1)"
@@ -722,7 +722,7 @@ test_that("mixed lm + glm with partial_chi2 - validator passes; lm en-dashed", {
       show_columns = c("b", "partial_chi2")
     )
   )
-  body <- as.data.frame(out, stringsAsFactors = FALSE)
+  body <- structure(out, class = "data.frame")
   chi_cols <- grep("χ", names(body), value = TRUE)
   # Two models -> two chi-squared columns; lm column is all en-dash
   expect_length(chi_cols, 2L)
@@ -1118,7 +1118,7 @@ test_that("glm hierarchical: lrt_change cell matches anova(test='LRT')", {
   m1 <- glm(am ~ mpg, data = mt, family = binomial)
   m2 <- glm(am ~ mpg + wt, data = mt, family = binomial)
   out <- table_regression(list(m1, m2), nested = TRUE)
-  body <- as.data.frame(out, stringsAsFactors = FALSE, check.names = FALSE)
+  body <- structure(out, class = "data.frame")
   lrt_row <- body[trimws(body$Variable) == "Δχ²", , drop = FALSE]
   # M2's first sub-column carries the lrt_change cell
   m2_col <- names(body)[5L]
@@ -1295,7 +1295,7 @@ test_that("E2E: poisson IRR + nested LRT hierarchy", {
     fixed = TRUE
   )
   # Change rows in the body (not in the footer)
-  vars <- trimws(as.data.frame(out, stringsAsFactors = FALSE)$Variable)
+  vars <- trimws(out$Variable)
   expect_true("Δχ²" %in% vars)
 })
 
@@ -1344,7 +1344,7 @@ test_that("E2E: CR2 + glm + AME + Satterthwaite + nested Wald test", {
   )
   # Change rows live in the body now. Under CR2 the change test is the
   # HTZ Wald test of the added block, an F, in place of the LRT.
-  vars <- trimws(as.data.frame(out, stringsAsFactors = FALSE)$Variable)
+  vars <- trimws(out$Variable)
   expect_true("Wald F-change" %in% vars)
   expect_false("Δχ²" %in% vars)
   # AME df_Satt is finite (not Inf) under CR2
@@ -2028,7 +2028,7 @@ test_that("AUDIT B5: non-alphabetical model names map to correct columns", {
   m1 <- lm(mpg ~ wt, data = mtcars)
   m2 <- lm(mpg ~ wt + cyl, data = mtcars)
   out <- table_regression(list("Z" = m1, "A" = m2))
-  df <- as.data.frame(out, stringsAsFactors = FALSE)
+  df <- structure(out, class = "data.frame")
   # Z has only intercept + wt; A has intercept + wt + cyl.
   # Z: B for the cyl row must be blank (Z lacks cyl); A: B has -1.51.
   cyl_row <- df[df$Variable == "cyl", , drop = FALSE]
@@ -2051,7 +2051,7 @@ test_that("AUDIT B5: mixed lm + glm with non-alphabetical labels", {
     list("OLS" = m_lm, "Logit" = m_glm),
     exponentiate = TRUE
   )
-  df <- as.data.frame(out, stringsAsFactors = FALSE)
+  df <- structure(out, class = "data.frame")
   # OLS column header must be "OLS: B" (no exp on lm)
   expect_true("OLS: B" %in% names(df))
   # Logit column header must be "Logit: OR" (binomial logit -> OR)
@@ -2072,7 +2072,7 @@ test_that("AUDIT B5: mixed lm + glm with non-alphabetical labels", {
     exponentiate = TRUE,
     outcome_labels = c("mpg", "am")
   )
-  df2 <- as.data.frame(out2, stringsAsFactors = FALSE)
+  df2 <- structure(out2, class = "data.frame")
   out_row <- df2[df2$Variable == "Outcome", , drop = FALSE]
   expect_equal(trimws(out_row$`OLS: B`), "mpg")
   expect_equal(trimws(out_row$`Logit: OR`), "am")
@@ -2171,11 +2171,7 @@ test_that("AUDIT B7: ordered factor with poly contrasts -- grouped under header"
     family = binomial
   )
   out <- table_regression(fit)
-  vars <- as.data.frame(
-    out,
-    stringsAsFactors = FALSE,
-    check.names = FALSE
-  )$Variable
+  vars <- out$Variable
   vars_trimmed <- trimws(vars)
   # The factor header IS present (poly factors are now grouped).
   expect_true(any(vars == "education:"))
@@ -2209,7 +2205,7 @@ test_that("AUDIT B7: treatment-coded factor unchanged (regression check)", {
   mt$cyl <- factor(mt$cyl) # unordered factor -> contr.treatment
   fit <- glm(am ~ mpg + cyl, data = mt, family = binomial)
   out <- table_regression(fit)
-  vars <- as.data.frame(out, stringsAsFactors = FALSE)$Variable
+  vars <- out$Variable
   expect_true(any(vars == "cyl:")) # factor header present
   expect_true("4 (ref.)" %in% trimws(vars)) # ref row for cyl=4
 })
@@ -2250,7 +2246,7 @@ test_that("AUDIT B8: zero stays as 0.00 (no scientific)", {
 test_that("AUDIT B8: glm exp huge OR display is readable", {
   fit <- glm(am ~ mpg + wt, data = mtcars, family = binomial)
   out <- table_regression(fit, exponentiate = TRUE)
-  df <- as.data.frame(out, stringsAsFactors = FALSE)
+  df <- structure(out, class = "data.frame")
   int_row <- df[df$Variable == "(Intercept)", , drop = FALSE]
   # Intercept OR ~ 1.75e+11 -- must be in scientific notation, not
   # 12 digits wide
@@ -2371,10 +2367,7 @@ test_that("AUDIT: Helmert and sum contrasts render without bogus ref row", {
   d$cyl_h <- factor(d$cyl)
   contrasts(d$cyl_h) <- contr.helmert(3)
   fit_h <- glm(am ~ cyl_h, data = d, family = binomial)
-  vars_h <- as.data.frame(
-    table_regression(fit_h),
-    stringsAsFactors = FALSE
-  )$Variable
+  vars_h <- table_regression(fit_h)$Variable
   expect_false(any(grepl("ref", vars_h))) # no ref row, ever
   expect_true("cyl_h:" %in% vars_h) # grouped header row
   expect_true(any(trimws(vars_h) == "1")) # contrast-column label
@@ -2382,10 +2375,7 @@ test_that("AUDIT: Helmert and sum contrasts render without bogus ref row", {
   d$cyl_s <- factor(d$cyl)
   contrasts(d$cyl_s) <- contr.sum(3)
   fit_s <- glm(am ~ cyl_s, data = d, family = binomial)
-  vars_s <- as.data.frame(
-    table_regression(fit_s),
-    stringsAsFactors = FALSE
-  )$Variable
+  vars_s <- table_regression(fit_s)$Variable
   expect_false(any(grepl("ref", vars_s)))
   expect_true("cyl_s:" %in% vars_s)
   expect_true(any(trimws(vars_s) == "2"))
@@ -2400,7 +2390,7 @@ test_that("AUDIT: long predictor names render correctly", {
     family = binomial
   )
   out <- table_regression(fit)
-  vars <- as.data.frame(out, stringsAsFactors = FALSE)$Variable
+  vars <- out$Variable
   expect_true("very_long_predictor_name_1" %in% vars)
   expect_true("super_long_predictor_2" %in% vars)
 })
@@ -3238,7 +3228,7 @@ test_that("pseudo_r2_tjur: binomial oracle value; no row for other families", {
     list(bin = gfit, pois = pfit),
     show_fit_stats = c("nobs", "pseudo_r2_tjur")
   )
-  dm <- as.data.frame(outm, stringsAsFactors = FALSE)
+  dm <- structure(outm, class = "data.frame")
   varsm <- trimws(dm$Variable)
   bin_col <- grep("^bin", names(dm), value = TRUE)[1L]
   pois_col <- grep("^pois", names(dm), value = TRUE)[1L]
@@ -3250,7 +3240,7 @@ test_that("partial_chi2 renders as 'value (df)' and is refused for lm", {
   # rd-core:show-columns-partial-chi2-glm-format
   gfit <- glm(am ~ mpg + factor(cyl), data = mtcars, family = binomial)
   out <- table_regression(gfit, show_columns = c("b", "partial_chi2"))
-  d <- as.data.frame(out, stringsAsFactors = FALSE)
+  d <- structure(out, class = "data.frame")
   chi_col <- d[["χ²"]]
   mpg_cell <- trimws(chi_col[trimws(d$Variable) == "mpg"])
   # Display format: value (df) – numeric term = 1 df

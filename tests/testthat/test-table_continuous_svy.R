@@ -470,7 +470,7 @@ test_that("negative weights refuse the test, keep the cells, and say so", {
   # The cells are complete: every row with a non-zero weight.
   expect_identical(sum(out$n), 183L)
   # The test is refused, not computed on a sub-sample.
-  expect_true(all(is.na(out$p)))
+  expect_identical(unique(out$p.value), NA_real_)
 
   # The refusal is CLASSED (ARB-2): a note is read by whoever prints
   # the table, a condition is what a script can catch.
@@ -596,7 +596,7 @@ test_that("a calibrated design with no negative weight says nothing", {
   # And the comparison still runs.
   expect_match(note, "Group comparison:", fixed = TRUE)
   out <- .svyc_long(d, select = api00, by = stype, show_columns = c("m", "n"))
-  expect_false(all(is.na(out$p)))
+  expect_false(all(is.na(out$p.value)))
 })
 
 test_that("the footer gives the df span when the groups disagree", {
@@ -716,14 +716,14 @@ test_that("two groups take the design-based t-test, three the Wald F", {
   two <- .svyc_long(d, select = api00, by = sch.wide, statistic = TRUE)
   expect_identical(two$test_type[[1L]], "design_t")
   expect_equal(two$statistic[[1L]], 2.108989847792919203, tolerance = 1e-12)
-  expect_equal(two$df1[[1L]], 13)
-  expect_true(is.na(two$df2[[1L]]))
+  expect_equal(two$df[[1L]], 13)
+  expect_true(is.na(two$df.residual[[1L]]))
   expect_equal(two$p.value[[1L]], 0.054908817089046651, tolerance = 1e-12)
 
   three <- .svyc_long(d, select = api00, by = stype, statistic = TRUE)
   expect_identical(three$test_type[[1L]], "design_f")
   expect_equal(three$statistic[[1L]], 1.27820074251777616, tolerance = 1e-12)
-  expect_equal(c(three$df1[[1L]], three$df2[[1L]]), c(2, 12))
+  expect_equal(c(three$df[[1L]], three$df.residual[[1L]]), c(2, 12))
   expect_equal(three$p.value[[1L]], 0.31387976824321751, tolerance = 1e-12)
 
   # The two-group shortcut is a RENDERING choice, not a second method:
@@ -752,7 +752,7 @@ test_that("the rank tests are survey's, including the documented shape swap", {
   )
   expect_identical(two$test_type[[1L]], "design_t")
   expect_equal(two$statistic[[1L]], 2.229818667888981754, tolerance = 1e-12)
-  expect_equal(two$df1[[1L]], 13)
+  expect_equal(two$df[[1L]], 13)
   expect_equal(two$p.value[[1L]], 0.044015702394679203, tolerance = 1e-12)
 
   # Three groups: `?svyranktest` says `statistic` holds the NUMERATOR
@@ -772,7 +772,7 @@ test_that("the rank tests are survey's, including the documented shape swap", {
     2.22397482137552860 / 2,
     tolerance = 1e-12
   )
-  expect_equal(c(three$df1[[1L]], three$df2[[1L]]), c(2, 12))
+  expect_equal(c(three$df[[1L]], three$df.residual[[1L]]), c(2, 12))
   expect_equal(three$p.value[[1L]], 0.36054678485732611, tolerance = 1e-12)
 })
 
@@ -838,7 +838,7 @@ test_that("a declared but unobserved `by` level does not reach the test", {
     tolerance = 1e-12
   )
   expect_equal(out$statistic[[1L]], -2.108989847792919203, tolerance = 1e-12)
-  expect_equal(out$df1[[1L]], 13)
+  expect_equal(out$df[[1L]], 13)
   expect_equal(out$p.value[[1L]], 0.054908817089046651, tolerance = 1e-12)
   # The column is alive: without `droplevels()` it is entirely NA.
   expect_false(is.na(out$p.value[[1L]]))
@@ -915,7 +915,7 @@ test_that("`df` moves the intervals, and only the intervals", {
     fixed = TRUE
   )
   expect_false(grepl("use the design degrees of freedom", note, fixed = TRUE))
-  expect_identical(moved$df1[[1L]], 13)
+  expect_identical(moved$df[[1L]], 13)
 })
 
 test_that("`df` does not reach the categorical test either", {
@@ -933,7 +933,8 @@ test_that("`df` does not reach the categorical test either", {
     df = 3,
     output = "long"
   ))
-  expect_equal(a$p[[1L]], b$p[[1L]], tolerance = 1e-12)
+  expect_false(is.na(a$p.value[[1L]]))
+  expect_equal(a$p.value[[1L]], b$p.value[[1L]], tolerance = 1e-12)
   expect_match(
     attr(
       table_categorical_svy(d, select = stype, by = sch.wide, df = 3),
@@ -1455,18 +1456,69 @@ test_that("`inline()` cites a cell of a design table", {
   expect_identical(inline(tbl, "api00", level = "E", column = "p"), ".314")
 })
 
-test_that("`output = \"data.frame\"` and `\"long\"` are the same frame", {
+test_that("`output = \"data.frame\"` is the displayed table, `\"long\"` every statistic", {
   d <- .svyc_design("clus1")
+  tbl <- table_continuous_svy(d, select = api00, by = stype, statistic = TRUE)
   a <- table_continuous_svy(
     d,
     select = api00,
     by = stype,
+    statistic = TRUE,
     output = "data.frame"
   )
-  b <- table_continuous_svy(d, select = api00, by = stype, output = "long")
-  expect_identical(a, b)
+  # The data frame is as.data.frame() of the table: the printed columns
+  # under their keys, the test statistic with its degrees of freedom.
+  expect_identical(a, as.data.frame(tbl))
   expect_s3_class(a, "data.frame")
   expect_false(inherits(a, "spicy_continuous_svy_table"))
+  expect_identical(
+    names(a),
+    c(
+      "variable",
+      "label",
+      "group",
+      ".row_role",
+      "M",
+      "SD",
+      "Min",
+      "Max",
+      "95% CI LL",
+      "95% CI UL",
+      "n",
+      "Test",
+      "df",
+      "df.residual",
+      "p"
+    )
+  )
+  expect_identical(a$.row_role, rep("group", 3L))
+  expect_equal(a$Test[[1L]], 1.27820074251777616, tolerance = 1e-12)
+  expect_identical(c(a$df[[1L]], a$df.residual[[1L]]), c(2, 12))
+  # The long frame: every statistic the table computes, in the
+  # vocabulary of the family, the note its only attribute.
+  b <- table_continuous_svy(
+    d,
+    select = api00,
+    by = stype,
+    statistic = TRUE,
+    output = "long"
+  )
+  expect_false(inherits(b, "spicy_continuous_svy_table"))
+  expect_identical(
+    names(b)[1:5],
+    c("variable", "label", "group", ".group_role", "mean")
+  )
+  expect_false(".row_role" %in% names(b))
+  expect_true(all(c("se", "deff", "degf", "df", "df.residual") %in% names(b)))
+  expect_false(any(c("df1", "df2") %in% names(b)))
+  expect_equal(b$mean, a$M, tolerance = 1e-12)
+  expect_equal(b$p.value, a$p, tolerance = 1e-12)
+  for (x in list(a, b)) {
+    expect_identical(
+      setdiff(names(attributes(x)), c("names", "row.names", "class")),
+      "note"
+    )
+  }
 })
 
 test_that("broom tidy() and glance() read a design table", {
@@ -1490,17 +1542,20 @@ test_that("broom tidy() and glance() read a design table", {
       "variable",
       "label",
       "group",
+      ".group_role",
       "estimate",
       "std.error",
       "conf.low",
       "conf.high",
       "df",
       "n",
-      "weighted.n",
+      "weighted_n",
       "deff"
     ) %in%
       names(td)
   ))
+  expect_identical(td$.group_role, rep("group", 6L))
+  expect_false(".row_role" %in% names(td))
   # `std.error` is survey's design-based SE, never `sd / sqrt(n)`:
   # under a design those are different quantities.
   expect_equal(td$std.error[[1L]], 22.362408893831887, tolerance = 1e-12)
@@ -1513,6 +1568,11 @@ test_that("broom tidy() and glance() read a design table", {
   expect_identical(gl$test_type[[1L]], "design_f")
   expect_identical(gl$degf, c(14, 14))
   expect_identical(gl$nobs, c(183, 183))
+  expect_equal(
+    gl$weighted_nobs[[1L]],
+    sum(td$weighted_n[td$variable == "api00"]),
+    tolerance = 1e-12
+  )
 
   # A one-way table has the same schema with the comparison columns NA.
   gl1 <- broom::glance(table_continuous_svy(d, select = api00))
@@ -1520,17 +1580,30 @@ test_that("broom tidy() and glance() read a design table", {
   expect_identical(gl1$nobs, 183)
 })
 
-test_that("coercion keeps the frame and the provenance markers", {
+test_that("coercion returns the displayed table, with the note alone", {
   d <- .svyc_design("clus1")
   tbl <- table_continuous_svy(d, select = api00, by = stype)
+  expect_identical(
+    class(tbl),
+    c("spicy_continuous_svy_table", "spicy_table", "data.frame")
+  )
   df <- as.data.frame(tbl)
-  expect_false(inherits(df, "spicy_continuous_svy_table"))
-  expect_identical(attr(df, "group_var"), "stype")
-  expect_identical(attr(df, "design_meta")$degf, 14)
+  expect_identical(class(df), "data.frame")
+  expect_identical(
+    df,
+    table_continuous_svy(d, select = api00, by = stype, output = "data.frame")
+  )
+  # The provenance markers stay on the table; the coerced frame keeps
+  # the note only.
+  expect_null(attr(df, "group_var"))
+  expect_null(attr(df, "design_meta"))
+  expect_identical(attr(df, "note"), attr(tbl, "note"))
+  expect_identical(attr(tbl, "group_var"), "stype")
   skip_if_not_installed("tibble")
   tb <- tibble::as_tibble(tbl)
   expect_s3_class(tb, "tbl_df")
   expect_identical(nrow(tb), 3L)
+  expect_identical(names(tb), names(df))
 })
 
 test_that("`labels` renames the stub, and a journal style reaches the cells", {
@@ -1553,13 +1626,13 @@ test_that("`labels` renames the stub, and a journal style reaches the cells", {
 })
 
 
-# ---- "data.frame" and "long" are synonyms, and the docs say so ----------
+# ---- "data.frame" and "long": one table, two shapes ---------------------
 
-test_that("output = 'data.frame' and output = 'long' return one object", {
-  # Pinned because ?table_continuous_svy now promises it. The compute
-  # frame is already long -- one row per (variable x group) -- so there
-  # is no wide form for the pair to straddle, exactly as in
-  # table_continuous(), whose own pair is documented as synonymous.
+test_that("output = 'data.frame' and output = 'long' carry the same numbers", {
+  # Two shapes since the ADR of 2026-10-20, as in table_continuous():
+  # the displayed table under its printed keys, and the compute frame
+  # under the names of the family. One row per (variable x group) in
+  # both, in the same order.
   d <- .svyc_design("clus1")
   as_df <- suppressWarnings(table_continuous_svy(
     d,
@@ -1573,8 +1646,23 @@ test_that("output = 'data.frame' and output = 'long' return one object", {
     by = stype,
     output = "long"
   ))
-  expect_identical(as_df, as_long)
-  expect_true(all(c("variable", "group", "mean") %in% names(as_df)))
+  expect_true(all(
+    c("variable", "group", "M", "SD", "n", "p") %in% names(as_df)
+  ))
+  expect_true(all(
+    c("variable", "group", "mean", "sd", "n") %in% names(as_long)
+  ))
+  expect_false(any(c("mean", "sd") %in% names(as_df)))
+  for (k in c("variable", "label", "group")) {
+    expect_identical(as_df[[k]], as_long[[k]])
+  }
+  # The role of the printed row is, in the long frame, that of its group.
+  expect_identical(as_df$.row_role, as_long$.group_role)
+  expect_equal(as_df$M, as_long$mean, tolerance = 1e-12)
+  expect_equal(as_df$SD, as_long$sd, tolerance = 1e-12)
+  expect_equal(as_df[["95% CI LL"]], as_long$ci_lower, tolerance = 1e-12)
+  expect_equal(as_df$n, as_long$n)
+  expect_equal(as_df$p, as_long$p.value, tolerance = 1e-12)
 })
 
 # ---- p_adjust ---------------------------------------------------------------

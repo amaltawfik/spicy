@@ -26,8 +26,12 @@ object returned by \code{\link[=table_outcome]{table_outcome()}}.
 one row per (grouping x level). Columns: \code{outcome} (the outcome
 name, constant down the frame), \code{variable} (the grouping, or the
 outcome itself on the marginal row), \code{label}, \code{level} (\code{NA} on the
-marginal row), \code{estimate} (the mean), \code{std.error} (\code{sd / sqrt(n)}),
-\code{conf.low}, \code{conf.high}, \code{n}, \code{min}, \code{max}, \code{sd}.
+marginal row), \code{.row_role} (\code{"summary"} on the marginal row,
+\code{"missing"} on the row of missing values the table adds, \code{"level"}
+otherwise), \code{estimate} (the mean), \code{std.error} (\code{sd / sqrt(n)}),
+\code{conf.low}, \code{conf.high}, \code{n}, \code{weighted_n} (the sum of the weights,
+\code{NA} without \code{weights}), \code{median}, \code{q1}, \code{q3}, \code{min}, \code{max}, \code{sd}:
+the statistics of \code{\link[=tidy.spicy_continuous_table]{tidy.spicy_continuous_table()}}.
 
 Two identity columns where the sibling has one, and deliberately:
 here the outcome is fixed and the variable changes, so a single
@@ -38,15 +42,10 @@ frame. The schema reads without knowing which function produced it.
 block's own comparison. Columns: \code{outcome}, \code{variable}, \code{label},
 \code{n_levels}, \code{test_type}, \code{statistic}, \code{df}, \code{df.residual},
 \code{p.value}, \code{es_type}, \code{es_value}, \code{es_ci_lower}, \code{es_ci_upper},
-\code{smd_type}, \code{smd_value}, \code{n_total}.
+\code{nobs}. Index by NAME rather than by position.
 
 \code{n_levels} counts the levels the TABLE displays, so a missing-value
 display level counts; the comparison behind \code{test_type} runs on the
 observed levels only, as it does everywhere in the family.
-
-The schema is FIXED: \code{smd_type} / \code{smd_value} are present and \code{NA}
-from the first version, so the day a standardized mean difference
-enters this table it cannot break a pipeline that indexes the
-frame. Index by NAME rather than by position.
 }
 \keyword{internal}

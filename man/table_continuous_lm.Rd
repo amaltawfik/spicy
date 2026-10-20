@@ -214,8 +214,9 @@ estimators for non-independent observations (Liang and Zeger
 1986); requires \code{cluster}. \code{"CR2"} is the modern default
 (Bell and McCaffrey 2002; Pustejovsky and Tipton 2018), with
 Satterthwaite degrees of freedom for inference; the
-fractional df is reported in the \code{df2} column and in the
-\code{t(df)} / \code{F(df1, df2)} test header. \code{"CR1"} applies the
+fractional df is reported in the long output (in \code{df} beside a
+\emph{t}, in \code{df.residual} beside an \emph{F}) and in the \code{t(df)} /
+\code{F(df1, df2)} test header. \code{"CR1"} applies the
 G/(G-1) correction only; Stata's \verb{, vce(cluster id)} uses the
 larger G(N-1)/((G-1)(N-p)) factor with t(G-1) inference
 (clubSandwich's \code{"CR1S"}; exposed for \code{lm} fits in
@@ -455,8 +456,10 @@ format would require a separate refactor.}
 \item{output}{Output format. One of:
 \itemize{
 \item \code{"default"}: an ASCII table object, printed when the call is bare
-\item \code{"data.frame"}: a plain wide \code{data.frame}
-\item \code{"long"}: a raw long \code{data.frame}
+\item \code{"data.frame"}: the displayed table with its numbers, one row per
+outcome
+\item \code{"long"}: one row per level of \code{by} and outcome, with every
+estimate
 \item \code{"tinytable"} (requires \code{tinytable})
 \item \code{"gt"} (requires \code{gt})
 \item \code{"flextable"} (requires \code{flextable})
@@ -503,32 +506,41 @@ error.}
 \value{
 Depends on \code{output}:
 \itemize{
-\item \code{"default"}: the underlying long \code{data.frame} with class
-\code{"spicy_continuous_lm_table"} / \code{"spicy_table"}. The object is
+\item \code{"default"}: the compute frame with class
+\code{"spicy_continuous_lm_table"} / \code{"spicy_table"}, carrying the
+rendering metadata as attributes (the \code{by} column and its label as
+\code{group_var} and \code{group_label}). The object is
 returned visibly, so a bare \code{table_continuous_lm(...)} call
 auto-prints the styled ASCII table at the console while
 \code{t <- table_continuous_lm(...)} stays silent (print \code{t} to
 display the table).
-\item \code{"data.frame"}: a plain wide \code{data.frame} with one row per
-outcome and numeric columns for means (categorical \code{by}) or slope
-(numeric \code{by}), optional contrast and CI, optional test statistic,
-\code{p}, fit statistic (\verb{\eqn{R^2}{R^2}} or adjusted \verb{\eqn{R^2}{R^2}}), effect size, optional
-\code{es_ci_lower} / \code{es_ci_upper} (when
-\code{effect_size_ci = TRUE}), \code{n}, and \verb{Weighted n}.
-\item \code{"long"}: a raw \code{data.frame} with one block per outcome and 28
-columns covering identification (\code{variable}, \code{label},
+\item \code{"data.frame"}: the displayed table with its numbers, what
+\link[=as.data.frame.spicy_continuous_lm_table]{as.data.frame()} of the
+default object returns: one row per outcome, the key columns
+\code{variable} (the column name of the outcome) and \code{label} (the label
+displayed), then the printed columns under their names -- the
+means (categorical \code{by}) or the slope (numeric \code{by}), the contrast
+and its interval bounds, the test statistic, \code{p}, the fit
+statistic, the effect size (with \code{es_ci_lower} / \code{es_ci_upper}
+beside it when \code{effect_size_ci = TRUE}), \code{n}, and \verb{Weighted n}.
+\item \code{"long"}: one block per outcome, one row per level of \code{by},
+with every estimate: identification (\code{variable}, \code{label},
 \code{predictor_type}, \code{predictor_label}, \code{level}, \code{reference}),
 fitted means and their CI (\code{emmean}, \code{emmean_se}, \code{emmean_ci_lower},
 \code{emmean_ci_upper}), contrast or slope estimates and CI
 (\code{estimate_type}, \code{estimate}, \code{estimate_se}, \code{estimate_ci_lower},
 \code{estimate_ci_upper}), inferential output (\code{test_type}, \code{statistic},
-\code{df1}, \code{df2}, \code{p.value}), effect size with its CI (\code{es_type},
-\code{es_value}, \code{es_ci_lower}, \code{es_ci_upper}), fit (\code{r2}, \code{adj_r2}),
-and sample size (\code{n}, \code{weighted_n}).
+\code{df}, \code{df.residual}, \code{p.value}: the \emph{F} of a factor has both
+degrees of freedom, the \emph{t} of a contrast or a slope has its own in
+\code{df} and none in \code{df.residual}), effect size with its CI
+(\code{es_type}, \code{es_value}, \code{es_ci_lower}, \code{es_ci_upper}), fit
+(\code{r.squared}, \code{adj.r.squared}), and the size of the model (\code{nobs},
+\code{weighted_nobs}, repeated on each row of an outcome).
 \item \code{"tinytable"}: a \code{tinytable} object.
 \item \code{"gt"}: a \code{gt_tbl} object.
 \item \code{"flextable"}: a \code{flextable} object.
-\item \code{"excel"} / \code{"word"}: writes to disk and returns the file path.
+\item \code{"excel"} / \code{"word"}: writes to disk and returns the file path
+invisibly.
 \item \code{"clipboard"}: copies the wide table and returns it invisibly.
 }
 
@@ -702,15 +714,16 @@ Satterthwaite \emph{t}) and \code{\link[clubSandwich:Wald_test]{clubSandwich::Wa
 Hotelling-T-squared with Satterthwaite df, "HTZ") for inference.
 \code{"CR2"} (Bell and McCaffrey 2002; Pustejovsky and Tipton 2018) is the
 modern recommended default; it generally produces fractional
-Satterthwaite degrees of freedom in \code{df2}, which the displayed
-\code{t(df)} / \code{F(df1, df2)} header renders to one decimal. \code{"CR1"}
+Satterthwaite degrees of freedom (in \code{df} beside a \emph{t}, in
+\code{df.residual} beside an \emph{F}), which the displayed \code{t(df)} /
+\code{F(df1, df2)} header renders to one decimal. \code{"CR1"}
 applies the G/(G-1) correction only -- Stata's \verb{, vce(cluster id)}
 uses the larger G(N-1)/((G-1)(N-p)) factor with t(G-1) inference
 (clubSandwich's \code{"CR1S"}; exposed for \code{lm} fits in
 \code{\link[=table_regression]{table_regression()}}, not here), so \code{"CR1"} does not
 reproduce Stata. Effect sizes remain invariant
 to \code{vcov} (including \verb{CR*}); only the SE, CI, test statistic, and
-\code{df2} of the contrast change.
+degrees of freedom of the contrast change.
 
 Two resampling-based estimators are also available without adding
 any dependency: \code{vcov = "bootstrap"} (nonparametric resampling-cases

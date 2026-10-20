@@ -729,8 +729,9 @@ stat rows are \emph{not} affected -- they belong to the table
 structure, not to the banner.}
 
 \item{output}{Output type. \code{"default"} (a printable
-\code{spicy_regression_table}); \code{"data.frame"} / \code{"long"} (raw
-data); \code{"gt"} / \code{"flextable"} / \code{"tinytable"} (rich-format
+\code{spicy_regression_table}); \code{"data.frame"} (the displayed table
+with its numbers); \code{"long"} (one row per coefficient, broom's
+names); \code{"gt"} / \code{"flextable"} / \code{"tinytable"} (rich-format
 tables); \code{"excel"} (writes to \code{excel_path}); \code{"clipboard"}
 (copies to system clipboard); \code{"word"} (writes flextable to
 \code{word_path}).}
@@ -827,9 +828,15 @@ The result carries rendering attributes (\code{title}, \code{note},
 \code{align}, \code{padding}) and provenance attributes (\code{outcome},
 \code{model_ids}) consumed by the print method and the broom
 methods. For other \code{output} values, returns the
-format-specific object (\code{gt_tbl}, \code{flextable}, \code{tinytable},
-\code{data.frame}, \code{tbl_df}, or \code{invisible(x)} for side-effect
-outputs).
+format-specific object: \code{gt_tbl}, \code{flextable}, \code{tinytable}; for
+\code{"data.frame"} the displayed table as a \code{data.frame} (see
+\code{\link[=as.data.frame.spicy_regression_table]{as.data.frame.spicy_regression_table()}}); for \code{"long"} a \code{tbl_df}
+(\code{model_id}, \code{outcome}, \code{term}, \code{estimate_type}, \code{estimate},
+\code{std.error}, \code{conf.low}, \code{conf.high}, \code{statistic}, \code{df}, \code{p.value},
+\code{test_type}, \code{nobs}, \code{r.squared}, \code{adj.r.squared}, ...); the file
+path, invisibly, for \code{"excel"} and \code{"word"}; the table, invisibly,
+for \code{"clipboard"}. The two data frames carry the note as printed in
+\code{attr(x, "note")}.
 }
 \description{
 Publication-ready coefficient table from one or more fitted
@@ -1116,8 +1123,9 @@ tables keep the one-row-per-(category, predictor) layout --
 categories-within-models would need two spanner levels.
 \code{tidy()} and \code{output = "long"} always return the long form
 (\code{"<category>: <term>"} rows), whatever the display;
-\code{as_structured()} mirrors the displayed table (one column set per
-category), as it does for every other layout.
+\code{as_structured()} and \code{output = "data.frame"} mirror the displayed
+table (one column set per category), as they do for every other
+layout.
 }
 
 \subsection{Robust SE availability by model class}{
@@ -1560,16 +1568,21 @@ Peto, put it as "it probably doesn't make much difference"
 \itemize{
 \item \code{"default"} -- a \code{spicy_regression_table}
 (\code{data.frame} subclass) printed via \code{\link[=spicy_print_table]{spicy_print_table()}}.
-\item \code{"data.frame"} / \code{"long"} -- raw data.frame /
-long-format tibble.
+\item \code{"data.frame"} -- the displayed table with its numbers,
+\link[=as.data.frame.spicy_regression_table]{as.data.frame()} of the
+default object: one row per printed row, the key columns
+\code{variable}, \code{label}, \code{level} and \code{.row_role}, then the printed
+columns, numeric, each interval split into its two bounds.
+\item \code{"long"} -- the long-format tibble, one row per
+\verb{(model_id, term, estimate_type)}, with broom's column names.
 \item \code{"gt"} / \code{"flextable"} / \code{"tinytable"} -- rich-format
 HTML / Word / PDF tables (require the corresponding
 Suggests package). In a PDF, a \code{"flextable"} table wider than
 the page can be fitted with \code{flextable::fit_to_width()}.
 \item \code{"excel"} -- writes to \code{excel_path} via
-\code{\link[openxlsx2:write_xlsx]{openxlsx2::write_xlsx()}}.
+\code{\link[openxlsx2:write_xlsx]{openxlsx2::write_xlsx()}} and returns the path invisibly.
 \item \code{"word"} -- writes to \code{word_path} via
-\code{flextable::save_as_docx()}.
+\code{flextable::save_as_docx()} and returns the path invisibly.
 \item \code{"clipboard"} -- copies to the system clipboard via
 \code{\link[clipr:write_clip]{clipr::write_clip()}}.
 }

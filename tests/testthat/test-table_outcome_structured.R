@@ -184,16 +184,34 @@ test_that("addressing survives custom labels", {
 # Coercion and the broom methods
 # ============================================================================
 
-test_that("coercion strips the rendering attributes, keeps provenance", {
+test_that("coercion returns the displayed table and keeps only the note", {
   tbl <- .tos_tbl(bmi, select = c(sex, smoking))
+  # The class tree of the family.
+  expect_identical(
+    class(tbl),
+    c("spicy_outcome_table", "spicy_table", "data.frame")
+  )
   plain <- as.data.frame(tbl)
-  expect_false(inherits(plain, "spicy_outcome_table"))
-  expect_identical(attr(plain, "outcome"), "bmi")
-  expect_identical(attr(plain, "select"), c("sex", "smoking"))
-  # The old spellings of the two renamed attributes are gone, not
-  # aliased: `"by"` became `"select"` (kept, provenance) and
-  # `"by_na_dropped"` became `"select_na_dropped"` (rendering-only,
-  # stripped here like every other rendering attribute).
+  expect_identical(class(plain), "data.frame")
+  # The displayed table with its numbers, exactly `output = "data.frame"`
+  # (decision 5 of the ADR of 2026-10-20), one row per printed row.
+  expect_identical(
+    plain,
+    .tos_tbl(bmi, select = c(sex, smoking), output = "data.frame")
+  )
+  expect_identical(nrow(plain), nrow(as_structured(tbl)$body))
+  # The note is the one attribute that travels: the provenance
+  # (`outcome`, `select`) and the rendering attributes stay on the
+  # printed object. The old spellings of the two renamed attributes are
+  # gone, not aliased (`"by"` became `"select"`, `"by_na_dropped"`
+  # became `"select_na_dropped"`).
+  expect_identical(
+    setdiff(names(attributes(plain)), c("names", "row.names", "class")),
+    "note"
+  )
+  expect_identical(attr(plain, "note"), attr(tbl, "note"))
+  expect_null(attr(plain, "outcome"))
+  expect_null(attr(plain, "select"))
   expect_null(attr(plain, "by"))
   expect_null(attr(plain, "by_na_dropped"))
   expect_null(attr(plain, "select_na_dropped"))
@@ -202,10 +220,13 @@ test_that("coercion strips the rendering attributes, keeps provenance", {
   # The original object is untouched and still prints.
   expect_s3_class(tbl, "spicy_outcome_table")
   expect_false(is.null(attr(tbl, "display_df")))
+  expect_identical(attr(tbl, "outcome"), "bmi")
+  expect_identical(attr(tbl, "select"), c("sex", "smoking"))
 
   skip_if_not_installed("tibble")
   tb <- tibble::as_tibble(tbl)
   expect_s3_class(tb, "tbl_df")
+  expect_identical(names(tb), names(plain))
   expect_identical(nrow(tb), nrow(plain))
 })
 
@@ -219,11 +240,16 @@ test_that("tidy() returns the described rows only", {
       "variable",
       "label",
       "level",
+      ".row_role",
       "estimate",
       "std.error",
       "conf.low",
       "conf.high",
       "n",
+      "weighted_n",
+      "median",
+      "q1",
+      "q3",
       "min",
       "max",
       "sd"
@@ -237,8 +263,14 @@ test_that("tidy() returns the described rows only", {
   expect_identical(unique(td$outcome), "bmi")
   expect_identical(unique(td$variable), c("bmi", "sex", "smoking"))
   expect_true(is.na(td$level[[1L]]))
+  # Each row says what it is: the marginal row, the levels, and the
+  # missing display level of `smoking`.
+  expect_identical(
+    td$.row_role,
+    c("summary", "level", "level", "level", "level", "missing")
+  )
 
-  raw <- as.data.frame(tbl)
+  raw <- .tos_tbl(bmi, select = c(sex, smoking), output = "long")
   keep <- raw$.row_role != "factor_header"
   expect_equal(td$estimate, raw$mean[keep], tolerance = 1e-12)
   expect_equal(
@@ -246,6 +278,11 @@ test_that("tidy() returns the described rows only", {
     raw$sd[keep] / sqrt(raw$n[keep]),
     tolerance = 1e-12
   )
+  expect_equal(td$median, raw$median[keep], tolerance = 1e-12)
+  expect_equal(td$q1, raw$q1[keep], tolerance = 1e-12)
+  expect_equal(td$q3, raw$q3[keep], tolerance = 1e-12)
+  # No weights: no weighted count.
+  expect_true(all(is.na(td$weighted_n)))
 })
 
 test_that("glance() returns one row per block", {
@@ -267,9 +304,7 @@ test_that("glance() returns one row per block", {
       "es_value",
       "es_ci_lower",
       "es_ci_upper",
-      "smd_type",
-      "smd_value",
-      "n_total"
+      "nobs"
     )
   )
   expect_identical(nrow(gl), 2L)
@@ -278,24 +313,33 @@ test_that("glance() returns one row per block", {
   # `n_levels` counts DISPLAYED levels; `smoking` shows a missing one.
   expect_identical(gl$n_levels, c(2L, 3L))
   # Every block's count sums to the marginal count.
-  overall_n <- as.data.frame(tbl)$n[[1L]]
-  expect_true(all(gl$n_total == overall_n))
+  raw <- .tos_tbl(
+    bmi,
+    select = c(sex, smoking),
+    effect_size = "auto",
+    output = "long"
+  )
+  overall_n <- raw$n[[1L]]
+  expect_identical(raw$.row_role[[1L]], "summary")
+  expect_true(all(gl$nobs == overall_n))
 
-  raw <- as.data.frame(tbl)
   hdr <- raw[raw$.row_role == "factor_header", ]
   expect_equal(gl$p.value, hdr$p.value, tolerance = 1e-12)
   expect_equal(gl$statistic, hdr$statistic, tolerance = 1e-12)
+  # One vocabulary for the long frame and glance().
+  expect_equal(gl$df, hdr$df, tolerance = 1e-12)
+  expect_equal(gl$df.residual, hdr$df.residual, tolerance = 1e-12)
   expect_identical(gl$es_type, hdr$es_type)
 })
 
-test_that("the glance schema is fixed, SMD columns included", {
-  # `smd_type` / `smd_value` are present and NA from the first
-  # version: adding the statistic later must not break a pipeline that
-  # indexes this frame.
-  gl <- broom::glance(.tos_tbl(bmi, select = sex))
-  expect_true(all(c("smd_type", "smd_value") %in% names(gl)))
-  expect_true(all(is.na(gl$smd_type)))
-  expect_true(all(is.na(gl$smd_value)))
+test_that("the glance schema is fixed, with no SMD columns", {
+  # Decision 9 of the ADR of 2026-10-20: this table has no `smd`
+  # argument, so the two always-NA SMD columns are gone from glance(),
+  # as from the long output and the printed object.
+  tbl <- .tos_tbl(bmi, select = sex)
+  gl <- broom::glance(tbl)
+  expect_false(any(c("smd_type", "smd_value") %in% names(gl)))
+  expect_false(any(c("smd_type", "smd_value") %in% names(tbl)))
   # And the same schema with no comparison at all.
   gl2 <- broom::glance(.tos_tbl(bmi, select = sex, p_value = FALSE))
   expect_identical(names(gl2), names(gl))

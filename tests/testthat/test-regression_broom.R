@@ -155,36 +155,72 @@ test_that("glance – df.residual is numeric (not integer) – Satterthwaite-saf
 # as.data.frame / as_tibble
 # ============================================================================
 
-test_that("as.data.frame – strips spicy classes, keeps title/note", {
+test_that("as.data.frame – strips spicy classes, keeps the note alone", {
   fit <- lm(mpg ~ wt, data = mt)
   out <- table_regression(fit)
   df <- as.data.frame(out)
-  expect_s3_class(df, "data.frame")
-  expect_false(inherits(df, "spicy_regression_table"))
-  expect_false(inherits(df, "spicy_table"))
-  expect_match(attr(df, "title"), "^Linear regression: mpg")
+  expect_identical(class(df), "data.frame")
   expect_match(attr(df, "note"), "^Note\\.")
+  expect_identical(attr(df, "note"), attr(out, "note"))
+  # The title stays with the printed table.
+  expect_type(attr(out, "title"), "character")
+  expect_null(attr(df, "title"))
 })
 
-test_that("as.data.frame – same row content as default output", {
+test_that("as.data.frame – the printed rows, with their numbers", {
   fit <- lm(mpg ~ wt, data = mt)
   out <- table_regression(fit)
   df <- as.data.frame(out)
-  # Both have identical Variable column and B column values
-  expect_equal(df$Variable, out$Variable)
-  expect_equal(df$B, out$B)
+  body <- as_structured(out)$body
+  # One row per printed row, in the printed order.
+  expect_identical(nrow(df), nrow(out))
+  expect_identical(nrow(df), nrow(body))
+  expect_identical(
+    names(df),
+    c(
+      "variable",
+      "label",
+      "level",
+      ".row_role",
+      "B",
+      "SE",
+      "95% CI: LL",
+      "95% CI: UL",
+      "p"
+    )
+  )
+  expect_identical(df$variable, c("(Intercept)", "wt", "nobs", "r2", "adj_r2"))
+  expect_identical(df$.row_role, body$.row_role)
+  # The labels are the printed stubs; the cells are numbers.
+  expect_identical(df$label, trimws(out$Variable))
+  expect_type(df$B, "double")
+  expect_identical(df$B, body$B)
+  expect_equal(df$B[1:2], unname(coef(fit)), tolerance = 1e-12)
+  ci <- unname(confint(fit))
+  expect_equal(df[["95% CI: LL"]][1:2], ci[, 1], tolerance = 1e-12)
+  expect_equal(df[["95% CI: UL"]][1:2], ci[, 2], tolerance = 1e-12)
+  expect_equal(df$B[df$variable == "nobs"], 32)
+  # A label given to a term is the `label` of its row; `variable` keeps
+  # the term.
+  dl <- as.data.frame(table_regression(fit, labels = c(wt = "Weight")))
+  expect_identical(dl$label[dl$variable == "wt"], "Weight")
 })
 
-test_that("as.data.frame – strips internal spicy_long / spicy_fit_stats attrs", {
+test_that("as.data.frame – carries no internal or rendering attribute", {
   fit <- lm(mpg ~ wt, data = mt)
   out <- table_regression(fit)
   df <- as.data.frame(out)
   expect_null(attr(df, "spicy_long"))
   expect_null(attr(df, "spicy_fit_stats"))
-  # `col_spec` is kept: the documented equivalence with
-  # `output = "data.frame"` requires both paths to carry the same
-  # attribute set (rd-methods:asdf-roundtrip-output-dataframe).
-  expect_identical(attr(df, "col_spec"), attr(out, "col_spec"))
+  # The rendering attributes stay with the printed table: the data frame
+  # carries the note alone.
+  expect_false(is.null(attr(out, "col_spec")))
+  expect_null(attr(df, "col_spec"))
+  expect_null(attr(df, "structured"))
+  expect_setequal(
+    names(attributes(df)),
+    c("names", "row.names", "class", "note")
+  )
 })
 
 test_that("as_tibble – returns tbl_df", {
@@ -451,15 +487,17 @@ test_that("as.data.frame – row.names and optional are ignored", {
   )
 })
 
-test_that("as_tibble – keeps title/note and the data.frame cells", {
-  # rd-methods:asdf-preserves-title-note (as_tibble half)
+test_that("as_tibble – keeps the note and the data.frame cells", {
+  # rd-methods:asdf-preserves-title-note (as_tibble half): the note
+  # travels, the title stays with the printed table.
   # rd-methods:astibble-returns-tbldf (cell-equality half)
   fit <- lm(mpg ~ wt + cyl, data = mt)
   out <- table_regression(fit)
   tb <- tibble::as_tibble(out)
   expect_s3_class(tb, "tbl_df")
-  expect_identical(attr(tb, "title"), attr(out, "title"))
+  expect_type(attr(out, "note"), "character")
   expect_identical(attr(tb, "note"), attr(out, "note"))
+  expect_null(attr(tb, "title"))
   strip <- function(d) {
     attributes(d) <- attributes(d)[c("names", "row.names", "class")]
     class(d) <- "data.frame"
@@ -470,7 +508,7 @@ test_that("as_tibble – keeps title/note and the data.frame cells", {
 
 test_that("as.data.frame equals output = 'data.frame' cell-for-cell", {
   # rd-methods:asdf-roundtrip-output-dataframe (content contract; the
-  # strict attribute-identity half is the FIXME below)
+  # strict attribute-identity half is the test below)
   fit <- lm(mpg ~ wt + cyl, data = mt)
   d1 <- as.data.frame(table_regression(fit))
   d2 <- table_regression(fit, output = "data.frame")
@@ -482,24 +520,52 @@ test_that("as.data.frame equals output = 'data.frame' cell-for-cell", {
     d
   }
   expect_identical(strip(d1), strip(d2))
-  expect_identical(attr(d1, "title"), attr(d2, "title"))
+  # Both carry the note, neither the title.
+  expect_type(attr(d2, "note"), "character")
   expect_identical(attr(d1, "note"), attr(d2, "note"))
+  expect_null(attr(d1, "title"))
+  expect_null(attr(d2, "title"))
 })
 
 test_that("as.data.frame and output = 'data.frame' are attribute-identical", {
   # rd-methods:asdf-roundtrip-output-dataframe (strict half): the Rd
-  # Details say the two paths are equivalent -- identical objects,
-  # attributes included. Both carry the provenance pair
-  # (model_ids / outcome) and the rendering attributes (col_spec,
-  # structured, ...); neither carries spicy_long / spicy_fit_stats.
+  # Details say the two paths return identical objects, attributes
+  # included: the note alone, no provenance (model_ids / outcome) nor
+  # rendering attribute (col_spec, structured, ...).
   fit <- lm(mpg ~ wt + cyl, data = mt)
   d1 <- as.data.frame(table_regression(fit))
   d2 <- table_regression(fit, output = "data.frame")
   expect_identical(d1, d2)
-  # Multi-model path too (provenance pair has one entry per model).
+  expect_setequal(
+    names(attributes(d2)),
+    c("names", "row.names", "class", "note")
+  )
+  # Multi-model path too: each column name starts with its model's label.
   fit2 <- lm(mpg ~ wt + hp, data = mt)
   e1 <- as.data.frame(table_regression(list(A = fit, B = fit2)))
   e2 <- table_regression(list(A = fit, B = fit2), output = "data.frame")
   expect_identical(e1, e2)
-  expect_identical(attr(e1, "model_ids"), c("A", "B"))
+  expect_null(attr(e1, "model_ids"))
+  expect_identical(
+    names(e1),
+    c(
+      "variable",
+      "label",
+      "level",
+      ".row_role",
+      "A: B",
+      "A: SE",
+      "A: p",
+      "B: B",
+      "B: SE",
+      "B: p"
+    )
+  )
+  expect_equal(
+    e1[["B: B"]][e1$variable == "hp"],
+    unname(coef(fit2)["hp"]),
+    tolerance = 1e-12
+  )
+  # A term a model does not hold is NA under that model.
+  expect_true(is.na(e1[["A: B"]][e1$variable == "hp"]))
 })

@@ -663,11 +663,11 @@ test_that("a display column outside the linear-model spec aborts the typed view"
   # mislabeled with someone else's token -- the safety net of the rule
   # that every comparison in this family is key against key. Reachable
   # only from inside the package, so it is pinned directly.
+  # The printed object: the builders read its internal names.
   lg <- quiet(table_continuous_lm(
     sh_desc(),
     bmi,
-    by = sex,
-    output = "long"
+    by = sex
   ))
   spec <- spicy:::.lm_column_spec(lg)
   wide_raw <- spicy:::build_wide_raw_continuous_lm(lg, spec = spec)

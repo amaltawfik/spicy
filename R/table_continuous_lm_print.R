@@ -25,7 +25,7 @@ print.spicy_continuous_lm_table <- function(x, ...) {
   p_digits <- attr(x, "p_digits") %||% 3L
   decimal_mark <- attr(x, "decimal_mark") %||% "."
   ci_level <- attr(x, "ci_level") %||% 0.95
-  by_label <- attr(x, "by_label") %||%
+  by_label <- attr(x, "group_label") %||%
     spicy_str("title_continuous_lm_by_fallback")
   show_statistic <- attr(x, "show_statistic") %||% FALSE
   show_p_value <- attr(x, "show_p_value") %||% TRUE
@@ -299,48 +299,119 @@ print.spicy_continuous_lm_table <- function(x, ...) {
 # ---- Coercion to plain data.frame / tibble --------------------------------
 
 # Internal: drop spicy classes and rendering-only attributes from an
-# object returned by table_continuous_lm(), keeping only the
-# data.frame contract plus the `by_var` provenance attribute and the
-# `note`. Used by every coercion / broom S3 method.
+# object returned by table_continuous_lm(), keeping the compute frame
+# under its internal names. Read by tidy() and glance().
 unclass_spicy_continuous_lm_table <- function(x) {
-  by_var <- attr(x, "by_var", exact = TRUE)
-  note <- attr(x, "note", exact = TRUE)
   attr_names <- names(attributes(x))
   drop <- setdiff(attr_names, c("names", "row.names", "class"))
   for (nm in drop) {
     attr(x, nm) <- NULL
   }
   class(x) <- "data.frame"
-  if (!is.null(by_var)) {
-    attr(x, "by_var") <- by_var
-  }
-  attr(x, "note") <- note
   x
+}
+
+# The `output = "long"` frame, in the vocabulary of the family (decision
+# 1 of the ADR of 2026-10-20): the compute frame with broom's names for
+# the test's degrees of freedom and the fit, and `nobs` / `weighted_nobs`
+# for the counts of the MODEL, which every row of an outcome repeats (the
+# `n` of the descriptive tables is a group's). Only the note stays as an
+# attribute.
+.continuous_lm_publish_long <- function(x) {
+  out <- .rename_cols(
+    unclass_spicy_continuous_lm_table(x),
+    c(
+      df1 = "df",
+      df2 = "df.residual",
+      r2 = "r.squared",
+      adj_r2 = "adj.r.squared",
+      n = "nobs",
+      weighted_n = "weighted_nobs"
+    )
+  )
+  dfs <- .lm_df_cols(out$test_type, out$df, out$df.residual)
+  out$df <- dfs$df
+  out$df.residual <- dfs$df.residual
+  attr(out, "note") <- attr(x, "note", exact = TRUE)
+  out
+}
+
+# The degrees of freedom follow the statistic, in the long output and in
+# glance() (decision of 2026-10-20): a t carries its own in `df` -- the
+# residual df of the model, or the Satterthwaite df of a cluster-robust
+# contrast -- and leaves `df.residual` empty, as the Welch t of
+# table_continuous() does; so does its asymptotic twin z (`df = Inf`, as
+# in table_regression()), and a chi-squared carries its one df. An F
+# keeps its numerator and denominator. The compute frame keeps the F
+# convention (`df1` = 1 beside a t), which the printed `t(df)` header
+# reads, so the display does not move.
+.lm_df_cols <- function(test_type, df1, df2) {
+  one_df <- !is.na(test_type) & test_type %in% c("t", "z")
+  no_denominator <- one_df | (!is.na(test_type) & test_type == "chi2")
+  list(
+    df = ifelse(one_df, as.numeric(df2), as.numeric(df1)),
+    df.residual = ifelse(no_denominator, NA_real_, as.numeric(df2))
+  )
+}
+
+# The displayed table as a data frame (decision 5 of the ADR of
+# 2026-10-20): `as.data.frame()` and `output = "data.frame"` both call
+# it, on the object the table prints. The typed view holds one row per
+# outcome; an effect size printed with its interval keeps the bounds
+# beside it, under their names in the long output.
+.continuous_lm_data_frame <- function(x) {
+  st <- as_structured(x)
+  first <- match(st$body[[".variable"]], x$variable)
+  parts <- list()
+  es_col <- names(st$col_meta)[vapply(
+    st$col_meta,
+    function(m) identical(m$token, "es"),
+    logical(1)
+  )]
+  if (length(es_col) && isTRUE(attr(x, "show_effect_size_ci", exact = TRUE))) {
+    parts[[es_col[[1L]]]] <- list(
+      es_ci_lower = x$es_ci_lower[first],
+      es_ci_upper = x$es_ci_upper[first]
+    )
+  }
+  .table_data_frame(
+    st,
+    stats::setNames(x$label, x$variable),
+    key = NULL,
+    row_role = FALSE,
+    parts = parts,
+    note = attr(x, "note", exact = TRUE)
+  )
 }
 
 #' Coerce a `spicy_continuous_lm_table` to a plain data frame or tibble
 #'
-#' These S3 methods strip the `"spicy_continuous_lm_table"` /
-#' `"spicy_table"` classes and the rendering-only attributes
-#' (`digits`, `decimal_mark`, `ci_level`, ...) from an object returned
-#' by [table_continuous_lm()] so the underlying long-format data can
-#' be manipulated with downstream tools (`dplyr`, `tidyr`, etc.) under
-#' the standard `data.frame` / `tbl_df` contract. The attribute
-#' `"by_var"` is preserved as a lightweight provenance marker, and
-#' `"note"`, the note as printed; all other spicy attributes are
-#' dropped. The original `x` is unaffected, and `print(x)` continues to
-#' render the formatted ASCII table.
+#' `as.data.frame()` returns the table [table_continuous_lm()] displays,
+#' with its numbers: exactly what `output = "data.frame"` returns. One
+#' row per outcome, the key columns `variable` (the column name of the
+#' outcome) and `label` (the label displayed for it), then the printed
+#' columns under their names (`"M (<level>)"`, the contrast, the
+#' interval bounds, the test statistic, `"p"`, the fit statistic, the
+#' effect size, `"n"`, `"Weighted n"`); an effect size printed with its
+#' interval keeps the bounds beside it as `es_ci_lower` and
+#' `es_ci_upper`. The note, as printed, is kept in `attr(, "note")`.
+#' `as_tibble()` returns the same table as a tibble. The original `x` is
+#' unaffected, and `print(x)` continues to render the formatted ASCII
+#' table.
+#'
+#' For one row per level of `by` with every estimate, use
+#' `output = "long"`, [tidy.spicy_continuous_lm_table()] or
+#' [glance.spicy_continuous_lm_table()].
 #'
 #' @param x A `spicy_continuous_lm_table` returned by
 #'   [table_continuous_lm()].
 #' @param row.names,optional Standard [base::as.data.frame()]
-#'   arguments. Currently ignored: the long format already carries
-#'   integer row names and explicit columns.
+#'   arguments. Currently ignored.
 #' @param ... Further arguments passed to [tibble::as_tibble()] (for
 #'   the tibble method) or ignored (for the `as.data.frame()` method).
 #'
-#' @return A plain `data.frame` (or `tbl_df`) with the same rows and
-#'   columns as the long output of [table_continuous_lm()].
+#' @return A plain `data.frame` (or `tbl_df`), identical to the
+#'   `output = "data.frame"` of the same call.
 #'
 #' @seealso [tidy.spicy_continuous_lm_table()],
 #'   [glance.spicy_continuous_lm_table()] for cleaner broom-style
@@ -358,7 +429,7 @@ as.data.frame.spicy_continuous_lm_table <- function(
   optional = FALSE,
   ...
 ) {
-  unclass_spicy_continuous_lm_table(x)
+  .continuous_lm_data_frame(x)
 }
 
 #' @rdname as.data.frame.spicy_continuous_lm_table
@@ -367,7 +438,7 @@ as_tibble.spicy_continuous_lm_table <- function(x, ...) {
   if (!requireNamespace("tibble", quietly = TRUE)) {
     spicy_abort("Install package 'tibble'.", class = "spicy_missing_pkg")
   }
-  tibble::as_tibble(unclass_spicy_continuous_lm_table(x), ...)
+  tibble::as_tibble(.continuous_lm_data_frame(x), ...)
 }
 
 # ---- broom integration ----------------------------------------------------
@@ -401,9 +472,12 @@ as_tibble.spicy_continuous_lm_table <- function(x, ...) {
 #' statistics. Columns: `variable`, `label`, `predictor_type`
 #' (`"categorical"` or `"continuous"`), `test_type` (`"F"` for
 #' categorical predictors, `"t"` for continuous ones),
-#' `statistic`, `df`, `df.residual`, `p.value`, `r.squared`,
+#' `statistic`, `df`, `df.residual` (the degrees of freedom follow the
+#' statistic: an *F* has both, a *t* has its own in `df` and none in
+#' `df.residual`), `p.value`, `r.squared`,
 #' `adj.r.squared`, `es_type`, `es_value`, `es_ci_lower`,
-#' `es_ci_upper`, `nobs`, `weighted_n`.
+#' `es_ci_upper`, `nobs`, `weighted_nobs` (the sum of the weights, `NA`
+#' without `weights`).
 #'
 #' @param x A `spicy_continuous_lm_table` returned by
 #'   [table_continuous_lm()].
@@ -499,6 +573,13 @@ glance.spicy_continuous_lm_table <- function(x, ...) {
 
   first_idx <- !duplicated(long$variable)
   per_outcome <- long[first_idx, , drop = FALSE]
+  # The degrees of freedom follow the statistic (`.lm_df_cols()`), and
+  # stay numeric: for CR* the df of a t, or the denominator df of an F,
+  # is the Satterthwaite df, genuinely fractional (e.g. 38.7) or an
+  # integer with FP noise (47.999... would truncate to 47). Mirrors the
+  # broom convention for Satterthwaite-corrected models (e.g.
+  # lmerTest::glance, afex output).
+  dfs <- .lm_df_cols(per_outcome$test_type, per_outcome$df1, per_outcome$df2)
 
   result <- data.frame(
     variable = per_outcome$variable,
@@ -506,16 +587,8 @@ glance.spicy_continuous_lm_table <- function(x, ...) {
     predictor_type = per_outcome$predictor_type,
     test_type = per_outcome$test_type,
     statistic = per_outcome$statistic,
-    df = as.integer(per_outcome$df1),
-    # `df2` is the denominator df. For classical / HC* it is an
-    # integer (`df.residual(fit)`); for CR* it is the Satterthwaite df,
-    # which is genuinely fractional (e.g. 38.7) and may also arrive as
-    # integer-but-with-FP-noise (e.g. 47.999999... very close to 48).
-    # Coercing to integer truncates both genuinely-fractional values
-    # and FP-noisy near-integers (47.999... -> 47), so keep it
-    # numeric. Mirrors the broom convention for Satterthwaite-corrected
-    # models (e.g. lmerTest::glance, afex output).
-    df.residual = as.numeric(per_outcome$df2),
+    df = dfs$df,
+    df.residual = dfs$df.residual,
     p.value = per_outcome$p.value,
     r.squared = per_outcome$r2,
     adj.r.squared = per_outcome$adj_r2,
@@ -524,13 +597,8 @@ glance.spicy_continuous_lm_table <- function(x, ...) {
     es_ci_lower = per_outcome$es_ci_lower,
     es_ci_upper = per_outcome$es_ci_upper,
     nobs = as.integer(per_outcome$n),
-    weighted_n = per_outcome$weighted_n,
+    weighted_nobs = per_outcome$weighted_n,
     stringsAsFactors = FALSE
   )
-  rownames(result) <- NULL
-
-  if (requireNamespace("tibble", quietly = TRUE)) {
-    return(tibble::as_tibble(result))
-  }
-  result
+  .as_broom_tbl(result)
 }

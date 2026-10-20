@@ -17,12 +17,19 @@
 ignored.}
 }
 \value{
-A plain \code{data.frame} (or a \code{tbl_df} for \code{as_tibble()}).
+A plain \code{data.frame} (or a \code{tbl_df} for \code{as_tibble()}),
+identical to the \code{output = "data.frame"} of the same call.
 }
 \description{
-These S3 methods strip the \code{"spicy_categorical_svy_table"} class and
-the rendering-only attributes, keeping the wide compute frame and the
-three provenance markers (\code{group_var}, \code{design_meta}, \code{note}).
+\code{as.data.frame()} returns the table \code{\link[=table_categorical_svy]{table_categorical_svy()}}
+displays, with its numbers: exactly what \code{output = "data.frame"}
+returns. One row per printed row -- the header row of each variable,
+which carries its \emph{p}-value, then one row per level -- and the printed
+columns under their names (\code{"Female n"}, \code{"Female \\\%"}, the interval
+bounds \code{"Female \\\% CI lower"} and \code{"Female \\\% CI upper"}, \code{"Female DEff"}, ..., \code{"p"}), plus the key columns \code{variable}, \code{label},
+\code{level} and \code{.row_role} (\code{"factor_header"}, \code{"level"}, or \code{"missing"}).
+The note, as printed, is kept in \code{attr(, "note")}. \code{as_tibble()}
+returns the same table as a tibble.
 }
 \seealso{
 \code{\link[=table_categorical_svy]{table_categorical_svy()}}.

@@ -544,9 +544,7 @@ test_that("the read-through headers and row labels follow the language", {
     data = survival::lung
   )
   rows <- trimws(
-    as.data.frame(
-      table_regression(cox, show_fit_stats = c("nobs", "n_events"))
-    )$Variable
+    table_regression(cox, show_fit_stats = c("nobs", "n_events"))$Variable
   )
   expect_true("Nombre d'\u00E9v\u00E9nements" %in% rows)
 })

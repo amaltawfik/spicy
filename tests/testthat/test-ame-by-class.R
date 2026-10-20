@@ -469,16 +469,9 @@ test_that("character predictor AME aligns level rows exactly like factor()", {
   d$g_f <- factor(d$g_ch)
   fit_ch <- lm(mpg ~ wt + g_ch, data = d)
   fit_f <- lm(mpg ~ wt + g_f, data = d)
-  df_ch <- table_regression(
-    fit_ch,
-    show_columns = c("b", "ame"),
-    output = "data.frame"
-  )
-  df_f <- table_regression(
-    fit_f,
-    show_columns = c("b", "ame"),
-    output = "data.frame"
-  )
+  # The printed tables: their columns are the displayed cells.
+  df_ch <- table_regression(fit_ch, show_columns = c("b", "ame"))
+  df_f <- table_regression(fit_f, show_columns = c("b", "ame"))
   # Same geometry: same rows (modulo the variable name in the header).
   expect_identical(nrow(df_ch), nrow(df_f))
   v_ch <- sub("^g_ch", "g", trimws(df_ch$Variable))

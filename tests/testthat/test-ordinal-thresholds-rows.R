@@ -24,7 +24,7 @@ thr_terms <- c("Poor | Fair", "Fair | Good", "Good | Very good")
 test_that("polr thresholds render as a labeled Thresholds block (default)", {
   skip_if_not_installed("MASS")
   fit <- MASS::polr(yc ~ x1 + smoke, data = make_ord(), Hess = TRUE)
-  df <- table_regression(fit, output = "data.frame")
+  df <- table_regression(fit)
   expect_true(any(grepl("^Thresholds", trimws(df$Variable)))) # header row
   expect_setequal(trimws(df$Variable)[grepl("\\|", df$Variable)], thr_terms)
 })
@@ -32,7 +32,7 @@ test_that("polr thresholds render as a labeled Thresholds block (default)", {
 test_that("clm thresholds render as a labeled Thresholds block (default)", {
   skip_if_not_installed("ordinal")
   fit <- ordinal::clm(yc ~ x1 + smoke, data = make_ord())
-  df <- table_regression(fit, output = "data.frame")
+  df <- table_regression(fit)
   expect_true(any(grepl("^Thresholds", trimws(df$Variable))))
   expect_setequal(trimws(df$Variable)[grepl("\\|", df$Variable)], thr_terms)
 })
@@ -91,7 +91,7 @@ test_that(".append_threshold_rows matches summary.clm incl. p-value", {
 test_that("thresholds are NOT exponentiated under exponentiate = TRUE", {
   skip_if_not_installed("MASS")
   fit <- MASS::polr(yc ~ x1 + smoke, data = make_ord(), Hess = TRUE)
-  df <- table_regression(fit, exponentiate = TRUE, output = "data.frame")
+  df <- table_regression(fit, exponentiate = TRUE)
   est_col <- setdiff(names(df), "Variable")[1] # "OR" header under exp
   tr <- df[trimws(df$Variable) == "Poor | Fair", , drop = FALSE]
   shown <- as.numeric(trimws(tr[[est_col]]))
@@ -129,7 +129,7 @@ test_that("footer builder switches between gloss (rows) and compact line", {
 test_that("show_thresholds = FALSE drops the rows (footer fallback)", {
   skip_if_not_installed("MASS")
   fit <- MASS::polr(yc ~ x1 + smoke, data = make_ord(), Hess = TRUE)
-  df <- table_regression(fit, show_thresholds = FALSE, output = "data.frame")
+  df <- table_regression(fit, show_thresholds = FALSE)
   expect_false(any(grepl("\\|", df$Variable)))
   expect_false(any(grepl("^Thresholds", trimws(df$Variable))))
 })
@@ -138,13 +138,13 @@ test_that("ame-only show_columns does not promote thresholds to empty rows", {
   skip_if_not_installed("MASS")
   skip_if_not_installed("marginaleffects")
   fit <- MASS::polr(yc ~ x1 + smoke, data = make_ord(), Hess = TRUE)
-  df <- table_regression(fit, show_columns = "ame", output = "data.frame")
+  df <- table_regression(fit, show_columns = "ame")
   expect_false(any(grepl("\\|", df$Variable)))
 })
 
 test_that("non-ordinal fits are unaffected by show_thresholds", {
   fit <- lm(mpg ~ wt + hp, data = mtcars)
-  df <- table_regression(fit, output = "data.frame")
+  df <- table_regression(fit)
   expect_false(any(grepl("Thresholds", df$Variable)))
 })
 
@@ -171,7 +171,7 @@ test_that("polr/clm default fit-stats = n + McFadden + Nagelkerke + AIC", {
     MASS::polr(yc ~ x1 + smoke, data = make_ord(), Hess = TRUE),
     ordinal::clm(yc ~ x1 + smoke, data = make_ord())
   )) {
-    df <- table_regression(fit, output = "data.frame")
+    df <- table_regression(fit)
     v <- trimws(df$Variable)
     expect_true(any(v == "n"))
     expect_true(any(grepl("McFadden", v)))
@@ -219,7 +219,7 @@ test_that("ordinal pseudo-R2 survives a refit-hostile scope (update() would fail
   f <- function() {
     d <- make_ord()
     fit <- MASS::polr(yc ~ x1 + smoke, data = d, Hess = TRUE)
-    table_regression(fit, output = "data.frame")
+    table_regression(fit)
   }
   df <- f()
   mcf <- trimws(df[grepl("McFadden", df$Variable), 2])

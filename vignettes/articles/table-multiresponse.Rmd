@@ -333,21 +333,23 @@ Fisher's exact test for `info_media`, which has no statistic.
 Campbell's N-1 chi-squared test, presented in [*Categorical summary
 tables*](table-categorical.html#chi-squared-or-fishers-exact-test).
 
-Back in `tbl`, every item takes the chi-squared. The data frame output
-keeps the test, the statistics and both p-values:
+Back in `tbl`, every item takes the chi-squared. The long output keeps
+the test, the statistics and both p-values, on each row of an item:
 
 ```{r item-tests}
-wide <- table_multiresponse(
+long <- table_multiresponse(
   sochealth,
   select = starts_with("info_"),
   by = sex,
-  output = "data.frame"
+  output = "long"
 )
-wide[c("Variable", "test_type", "Chi2", "df", "p", "p_unadjusted")]
+long[long$group == "Total", c(
+  "variable", "test_type", "statistic", "df", "p.value", "p_unadjusted"
+)]
 ```
 
-The `p` column is adjusted by Holm's method, and `p_unadjusted` keeps
-the raw values. The items of one question form a natural family of
+The p-value is adjusted by Holm's method, and `p_unadjusted` keeps the
+raw values. The items of one question form a natural family of
 tests, read together, so the adjustment is on by default.
 `table_categorical()` defaults to `"none"`, because there each test
 belongs to a different variable.
@@ -546,26 +548,27 @@ has no cell: it lives in the note and in `glance()`.
 
 ## Downstream: the raw frame and the broom views
 
-`output = "data.frame"` returns the wide frame at full precision: one
-row per item, the `(No item chosen)` row, a last row with the base, and
-columns named after the groups. `.row_role` tells the rows apart:
+`output = "data.frame"` returns the displayed table at full precision:
+one row per item, the `(No item chosen)` row, a last row with the base,
+the key columns `variable`, `label` and `.row_role`, and the printed
+columns, named after the groups. `.row_role` tells the rows apart:
 `"summary"` for an item, `"none"` and `"missing"` for the two rows of
 `none_row`, `"fit_stat"` for the base:
 
 ```{r wide-names}
+wide <- table_multiresponse(
+  sochealth,
+  select = starts_with("info_"),
+  by = sex,
+  output = "data.frame"
+)
 names(wide)
 ```
 
 `output = "long"` returns one row per item, or row of `none_row`, and
-group, with the base of the group:
+group, with the base of the group and the margin flagged by `total`:
 
 ```{r long}
-long <- table_multiresponse(
-  sochealth,
-  select = starts_with("info_"),
-  by = sex,
-  output = "long"
-)
 head(long, 3)
 ```
 

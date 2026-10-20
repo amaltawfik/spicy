@@ -45,10 +45,8 @@ test_that("as_tibble.spicy_continuous_lm_table aborts when tibble is absent", {
   out <- table_continuous_lm(
     iris,
     select = Sepal.Length,
-    by = Species,
-    output = "long"
+    by = Species
   )
-  class(out) <- c("spicy_continuous_lm_table", "spicy_table", "data.frame")
 
   testthat::local_mocked_bindings(
     requireNamespace = function(package, ...) {

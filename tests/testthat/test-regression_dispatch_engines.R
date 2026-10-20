@@ -15,14 +15,15 @@ test_that("output = 'excel' writes a workbook to the supplied path", {
   fit <- lm(mpg ~ wt + cyl, data = mt)
   path <- tempfile(fileext = ".xlsx")
   on.exit(unlink(path), add = TRUE)
-  out <- table_regression(
+  out <- withVisible(table_regression(
     fit,
     output = "excel",
     excel_path = path,
     excel_sheet = "Reg"
-  )
-  # The dispatcher returns invisible(rendered) for side-effect outputs
-  expect_true(inherits(out, "data.frame"))
+  ))
+  # A file output returns the path it wrote, invisibly.
+  expect_false(out$visible)
+  expect_identical(out$value, path)
   expect_true(file.exists(path))
   expect_gt(file.info(path)$size, 0L)
 })
@@ -88,8 +89,10 @@ test_that("output = 'word' writes a docx file via flextable + officer", {
   fit <- lm(mpg ~ wt + cyl, data = mt)
   path <- tempfile(fileext = ".docx")
   on.exit(unlink(path), add = TRUE)
-  out <- table_regression(fit, output = "word", word_path = path)
-  expect_true(inherits(out, "data.frame"))
+  out <- withVisible(table_regression(fit, output = "word", word_path = path))
+  # A file output returns the path it wrote, invisibly.
+  expect_false(out$visible)
+  expect_identical(out$value, path)
   expect_true(file.exists(path))
   expect_gt(file.info(path)$size, 0L)
 })
@@ -521,7 +524,7 @@ test_that(".fit_stat_merge_ranges returns empty list when no fit-stats present",
     show_fit_stats = FALSE
   )
   specs <- spicy:::.fit_stat_merge_ranges(
-    as.data.frame(r),
+    structure(r, class = "data.frame"),
     attr(r, "spanners"),
     attr(r, "group_sep_rows")
   )
@@ -755,7 +758,8 @@ test_that("fit_stats_layout = 'first_col' puts values in B, siblings empty", {
   # rd-core:fit-stats-layout-first-col
   fit <- lm(mpg ~ wt + cyl, data = mt)
   out <- table_regression(fit, show_fit_stats = c("r2", "nobs"))
-  d <- as.data.frame(out, stringsAsFactors = FALSE)
+  # The printed table: its columns are the displayed cells.
+  d <- structure(out, class = "data.frame")
   r2_row <- d[trimws(d$Variable) == "R²", ]
   expect_match(trimws(r2_row$B), "^0\\.[0-9]{2}$")
   expect_identical(trimws(r2_row$SE), "")
@@ -830,7 +834,8 @@ test_that("decimal alignment holds on fit-stat rows in both layout modes", {
       fit_stats_layout = layout,
       show_fit_stats = c("r2", "aic", "nobs")
     )
-    d <- as.data.frame(out, stringsAsFactors = FALSE)
+    # The printed table: its columns are the displayed cells.
+    d <- structure(out, class = "data.frame")
     # B sub-column of each model: decimal marks line up across
     # coefficient rows AND fit-stat rows (R² 0.xx, AIC xxx.x).
     for (col in c("Model 1: B", "Model 2: B")) {
@@ -851,7 +856,7 @@ test_that("title/note suppression leaves nested change rows + spanners intact", 
   )
   expect_null(attr(out, "title"))
   expect_null(attr(out, "note"))
-  vars <- trimws(as.data.frame(out, stringsAsFactors = FALSE)$Variable)
+  vars <- trimws(out$Variable)
   expect_true(all(c("ΔR²", "F-change", "p (change)") %in% vars))
   s <- as_structured(out)
   expect_identical(names(s$spanners), c("Model 1", "Model 2"))

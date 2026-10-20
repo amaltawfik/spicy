@@ -19,22 +19,27 @@ arguments, currently ignored.}
 the tibble method) or ignored.}
 }
 \value{
-A plain \code{data.frame} (or \code{tbl_df}), one row per displayed
-row of the table.
+A plain \code{data.frame} (or \code{tbl_df}), identical to the
+\code{output = "data.frame"} of the same call.
 }
 \description{
-These S3 methods strip the \code{"spicy_outcome_table"} class and the
-rendering-only attributes from an object returned by
-\code{\link[=table_outcome]{table_outcome()}}, so the underlying long-format data can be
-manipulated with downstream tools under the standard \code{data.frame} /
-\code{tbl_df} contract. The \code{"outcome"} and \code{"select"} attributes are kept as
-lightweight provenance markers, and \code{"note"}, the note as printed. The
-original \code{x} is unaffected, and
-\code{print(x)} continues to render the formatted table.
+\code{as.data.frame()} returns the table \code{\link[=table_outcome]{table_outcome()}} displays, with
+its numbers: exactly what \code{output = "data.frame"} returns. One row per
+printed row -- the \code{Overall} row, then for each grouping its header
+row, which carries the block's comparison, and its levels -- with the
+key columns \code{variable} (the outcome on the \code{Overall} row, the
+grouping elsewhere), \code{label}, \code{level} and \code{.row_role} (\code{"summary"},
+\code{"factor_header"}, \code{"level"}, or \code{"missing"}), then the printed
+columns under their names (\code{"M"}, \code{"SD"}, ..., \code{"n"}, \code{"p"}). A cell
+that prints several numbers keeps the others beside it, as in
+\code{\link[=as.data.frame.spicy_continuous_table]{as.data.frame.spicy_continuous_table()}}. The note, as printed, is
+kept in \code{attr(, "note")}. \code{as_tibble()} returns the same table as a
+tibble. The original \code{x} is unaffected, and \code{print(x)} continues to
+render the formatted table.
 }
 \details{
-The returned data is identical to what \code{output = "long"} (or
-\code{output = "data.frame"}) returns directly from \code{\link[=table_outcome]{table_outcome()}}.
+For every statistic the table computes, use \code{output = "long"} or
+\code{\link[=tidy.spicy_outcome_table]{tidy.spicy_outcome_table()}}.
 }
 \seealso{
 \code{\link[=tidy.spicy_outcome_table]{tidy.spicy_outcome_table()}}, \code{\link[=glance.spicy_outcome_table]{glance.spicy_outcome_table()}}.

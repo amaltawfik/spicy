@@ -843,10 +843,10 @@
 #' Without `by`, produces one-way frequency-style summaries.
 #'
 #' Multiple output formats are available via `output`: a printed ASCII
-#' table (`"default"`), a wide or long numeric `data.frame`
-#' (`"data.frame"`, `"long"`), or publication-ready tables
-#' (`"tinytable"`, `"gt"`, `"flextable"`, `"excel"`, `"clipboard"`,
-#' `"word"`).
+#' table (`"default"`), a numeric `data.frame` (`"data.frame"`, the
+#' displayed table, or `"long"`, one row per variable, level and group),
+#' or publication-ready tables (`"tinytable"`, `"gt"`, `"flextable"`,
+#' `"excel"`, `"clipboard"`, `"word"`).
 #'
 #' @param data A data frame.
 #' @param select Columns to include as row variables. Supports tidyselect
@@ -973,7 +973,7 @@
 #'   default), the *p*-value is shown automatically whenever `by` is
 #'   supplied, and hidden otherwise. Pass `p_value = FALSE` to remove
 #'   the test from every output: the `p` column, and the `test_type`,
-#'   `Chi2` and `df` columns of `"data.frame"` and `"long"`; `test`,
+#'   `statistic`, `df` and `p.value` columns of `"long"`; `test`,
 #'   `correct` and `simulate_p` are then ignored, with a warning. The
 #'   association measure keeps its own switch, so
 #'   `p_value = FALSE, assoc_measure = "none"` gives a purely
@@ -1024,10 +1024,10 @@
 #'   non-2x2 variable, an error is raised so the user can choose
 #'   another measure or fall back to `"auto"`.
 #' @param assoc_ci Passed to [cross_tab()]. If `TRUE`, includes the
-#'   confidence interval of the association measure. In wide raw
-#'   outputs (`"data.frame"`, `"excel"`, `"clipboard"`), two extra
-#'   columns `CI lower` / `CI upper` are added; in the long raw
-#'   output (`"long"`) the bounds appear as `ci_lower` / `ci_upper`.
+#'   confidence interval of the association measure. In the console
+#'   and in the `"data.frame"`, `"excel"` and `"clipboard"` outputs,
+#'   two extra columns `CI lower` / `CI upper` are added; in the long
+#'   output (`"long"`) the bounds fill `es_ci_lower` / `es_ci_upper`.
 #'   In rendered formats (`"gt"`, `"tinytable"`, `"flextable"`,
 #'   `"word"`), the CI is shown inline (e.g., `.14 [.08, .19]`).
 #'   Defaults to `FALSE`.
@@ -1074,7 +1074,7 @@
 #'   `table_continuous_lm()` applies that convention at every `align`.
 #' @param output Output format. One of:
 #'   - `"default"` (an ASCII table object, printed when the call is bare)
-#'   - `"data.frame"` (a wide numeric `data.frame`)
+#'   - `"data.frame"` (the displayed table, numeric)
 #'   - `"long"` (a long numeric `data.frame`)
 #'   - `"tinytable"` (requires `tinytable`)
 #'   - `"gt"` (requires `gt`)
@@ -1093,7 +1093,8 @@
 #'   is silently unused in every other output and in one-way tables,
 #'   which have a single header row to begin with.
 #' @param blank_na_wide Logical. If `FALSE` (the default), `NA` values are kept
-#'   as-is in wide raw output. If `TRUE`, replaces them with empty strings.
+#'   as-is in `output = "data.frame"`. If `TRUE`, the empty cells of its
+#'   statistic columns become empty strings (the columns become text).
 #' @param excel_path Path for `output = "excel"`, ending in `".xlsx"`, in
 #'   a directory that exists. Defaults to `NULL`.
 #' @param excel_sheet Sheet name for Excel export. `NULL` (the
@@ -1137,35 +1138,44 @@
 #'     a bare `table_categorical(...)` call auto-prints the styled ASCII
 #'     table at the console while `t <- table_categorical(...)` stays
 #'     silent (print `t` to display the table).
-#'   \item `"data.frame"`: a wide `data.frame` with one row per
-#'     variable--level combination.
-#'     When `by` is used, the columns are `Variable`, `Level`, and one
-#'     pair of `n` / `\%` columns per group level (plus `Total` when
-#'     `include_total = TRUE`), followed by `test_type`, `Chi2`, `df`,
-#'     `p` (absent with `p_value = FALSE`), and the association measure
-#'     column. `test_type` names the test of the variable:
-#'     `"chi_squared"` (Pearson's), `"n1_chi_squared"` (the N-1
-#'     chi-squared), `"fisher_exact"`, `"fisher_midp"` (the Fisher mid-p
-#'     test), or `"fisher_exact_mc"` (the Monte Carlo estimate of Fisher's
-#'     exact test); `Chi2` and `df` hold the statistic of a chi-squared
-#'     test, Pearson's or the N-1, and are `NA` for a variable tested by
-#'     an exact test.
-#'     When `by = NULL`, the columns are `Variable`, `Level`, `n`, `\%`.
-#'   \item `"long"`: a long `data.frame` with columns `variable` (the
-#'     column name), `label` (the label the rows display for it, see
-#'     `labels`), `level`, `n`, `pct` (plus `group` when `by` is used, and
-#'     `test_type`, `chi2`, `df`, `p` unless `p_value = FALSE`, as in
-#'     `"data.frame"`). The association measure is
-#'     always called `effect_size`,
-#'     whichever measure it is, and `effect_size_type` names that measure
-#'     per row (`"cramer_v"`, `"phi"`, ...), or is `NA` on the rows of a
-#'     variable given `assoc_measure = "none"`. The wide outputs instead
-#'     name the column after the measure, or `Effect size` when the row
-#'     variables do not share one. With `smd = TRUE` this output also
-#'     carries `smd` and `smd_type` (`"binary"` or `"multinomial"`,
-#'     the kernel the value came from); the wide outputs name that
-#'     column `SMD`. Like the association columns, both are ABSENT
-#'     when the statistic is not requested.
+#'   \item `"data.frame"`: the displayed table with its numbers, what
+#'     [as.data.frame()][as.data.frame.spicy_categorical_table] of the
+#'     default object returns: one row per printed row -- the header row
+#'     of each variable, which carries its *p*-value and its association
+#'     measure, then one row per level. The key columns are `variable`
+#'     (the column name), `label` (the label the rows display for it,
+#'     see `labels`), `level` and `.row_role` (`"factor_header"`,
+#'     `"level"`, or `"missing"` for the row of missing values the table
+#'     adds), then the printed columns: one pair `<group> n` /
+#'     `<group> \%` per group level (plus `Total` when
+#'     `include_total = TRUE`), `p` (absent with `p_value = FALSE`), the
+#'     association measure (named after the measure, or `Effect size`
+#'     when the row variables do not share one), its bounds `CI lower` /
+#'     `CI upper` with `assoc_ci = TRUE`, and `SMD` with `smd = TRUE`.
+#'     When `by = NULL`, the printed columns are `n` and `\%`.
+#'   \item `"long"`: a long `data.frame`, one row per variable, level and
+#'     group, with columns `variable`, `label`, `level`, `.row_role` (the
+#'     role of `level`: `"level"`, or `"missing"` for the row of missing
+#'     values), then, when `by` is used, `group`, `.group_role` (the role
+#'     of `group`: `"group"`, `"missing"` for the column of missing `by`
+#'     values, or `"total"` for the margin) and `total` (`TRUE` on the
+#'     rows of the margin), then `n`, `pct` (the percentage),
+#'     then, with `by`, the test of the variable unless
+#'     `p_value = FALSE`: `test_type` (`"chi_squared"` for Pearson's,
+#'     `"n1_chi_squared"` for the N-1 chi-squared, `"fisher_exact"`,
+#'     `"fisher_midp"` for the Fisher mid-p test, or `"fisher_exact_mc"`
+#'     for the Monte Carlo estimate of Fisher's exact test), `statistic`
+#'     and `df` (the chi-squared, Pearson's or the N-1, `NA` for a
+#'     variable tested by an exact test), `p.value` (and `p_unadjusted`
+#'     under `p_adjust`); and the association measure, whichever measure
+#'     it is: `es_type` names it per row (`"cramer_v"`, `"phi"`, ...),
+#'     `es_value` holds it, `es_ci_lower` / `es_ci_upper` its interval
+#'     (`NA` unless `assoc_ci = TRUE`), and `smd_type` (`"binary"` or
+#'     `"multinomial"`, the kernel the value came from) / `smd_value` the
+#'     standardized mean difference. The measure and SMD columns are
+#'     there whether or not they were requested, `NA` when not, so the
+#'     schema does not move with an argument. The statistics of a
+#'     variable sit on every row of its block.
 #'   \item `"tinytable"`: a `tinytable` object.
 #'   \item `"gt"`: a `gt_tbl` object.
 #'   \item `"flextable"`: a `flextable` object.
@@ -1239,7 +1249,8 @@
 #' N-1 chi-squared test: Pearson's statistic, with no continuity
 #' correction, multiplied by (N - 1)/N and referred to a chi-squared
 #' distribution with 1 degree of freedom, which is the Mantel-Haenszel
-#' statistic of a single 2x2 table; `Chi2` and `df` hold that statistic.
+#' statistic of a single 2x2 table; `statistic` and `df` hold that
+#' statistic in the long output.
 #' Otherwise it takes Fisher's exact test, two-sided by Irwin's rule as
 #' [stats::fisher.test()] computes it. Campbell found the N-1 test close
 #' to its nominal level under that restriction, not without it. A
@@ -1249,7 +1260,7 @@
 #' The note names the test of every variable, "Group comparison:
 #' Pearson chi-squared test (sex, education); Fisher exact test
 #' (smoking).", or the one test when it covers them all. `test_type` in
-#' the data frames gives the same per variable. See `@param correct` /
+#' the long output gives the same per variable. See `@param correct` /
 #' `simulate_p` to switch on Yates' continuity correction or Monte Carlo
 #' *p*-values for the chi-squared test, and `@param assoc_measure` for
 #' the per-row dispatch table used by `"auto"` (2x2 -> Phi, both ordered
@@ -1778,6 +1789,42 @@ table_categorical <- function(
     df$label <- label_of_key(df$variable)
     df[c(nm[seq_len(at)], "label", nm[-seq_len(at)])]
   }
+  # The fixed keys of the rows a long frame carries (O10 of the coherence
+  # audit), each beside the key column it describes: `.row_role` is the
+  # role of `level` ("missing" on the row of missing values the table
+  # adds, "level" elsewhere), `.group_role` the role of `group` ("missing"
+  # on the column of missing `by` values, "total" on the margin, "group"
+  # elsewhere), and `total` flags the margin. The KEY, never the label: a
+  # translated "(Missing)" still reads as "missing", and a level of
+  # another variable that happens to read the same as "level" -- the rule
+  # of the typed view. `missing_vars`, `missing_group`, `missing_label`
+  # and `margin_key` are read when the frame is built.
+  with_keys <- function(df) {
+    role <- ifelse(
+      df$variable %in% missing_vars & df$level == missing_label,
+      "missing",
+      "level"
+    )
+    df <- .insert_cols_after(df, list(.row_role = role), "level")
+    if (!"group" %in% names(df)) {
+      return(df)
+    }
+    total <- if (isTRUE(include_total)) {
+      df$group == margin_key
+    } else {
+      rep(FALSE, nrow(df))
+    }
+    group_role <- ifelse(
+      total,
+      "total",
+      ifelse(missing_group & df$group == missing_label, "missing", "group")
+    )
+    .insert_cols_after(
+      df,
+      list(.group_role = group_role, total = total),
+      "group"
+    )
+  }
 
   if (
     !is.logical(include_total) ||
@@ -2032,6 +2079,8 @@ table_categorical <- function(
   # missing values is a level.
   missing_label <- spicy_str("row_missing_level")
   missing_vars <- character(0)
+  # Whether `by` has a column of missing values (set where it is added).
+  missing_group <- FALSE
 
   # `measure_key` is the measure the caller ASKED this row for, as a key
   # ("cramer_v", ..., or "none"). It rides through in `measure` so the
@@ -2382,7 +2431,7 @@ table_categorical <- function(
     }
 
     if (output == "long") {
-      long_raw <- with_label(long_raw)
+      long_raw <- with_keys(with_label(long_raw))
       # Every data frame carries the note as print() shows it.
       attr(long_raw, "note") <- .categorical_note(build_missing_note(), NULL)
       return(long_raw)
@@ -2395,26 +2444,6 @@ table_categorical <- function(
       check.names = FALSE
     )
     wide_raw[["%"]] <- long_raw$pct
-
-    if (blank_na_wide && nrow(wide_raw) > 0) {
-      for (j in seq_len(ncol(wide_raw))) {
-        if (j > 2) {
-          wide_raw[[j]] <- ifelse(
-            is.na(wide_raw[[j]]),
-            "",
-            as.character(wide_raw[[j]])
-          )
-        }
-      }
-    }
-
-    if (output == "data.frame") {
-      # The raw frame keeps the note as an attribute: a pipeline that
-      # re-renders the numbers itself must still be able to state what
-      # was removed. See the `output` section of the docs.
-      attr(wide_raw, "note") <- .categorical_note(build_missing_note(), NULL)
-      return(wide_raw)
-    }
 
     report_cols <- c(.CAT_KEY_VARIABLE, "n", "%")
     # The header each output route prints, indexed BY the frozen column
@@ -2537,7 +2566,7 @@ table_categorical <- function(
       decimal_mark = decimal_mark
     )
 
-    if (output == "default") {
+    if (output %in% c("default", "data.frame")) {
       out <- wide_raw
       attr(out, "display_df") <- report_wide_char
       attr(out, "group_var") <- NULL
@@ -2549,13 +2578,19 @@ table_categorical <- function(
       attr(out, "align") <- align
       attr(out, "decimal_mark") <- decimal_mark
       # The long frame of `output = "long"`, for tidy() and glance().
-      attr(out, "long_data") <- with_label(long_raw)
+      attr(out, "long_data") <- with_keys(with_label(long_raw))
       attr(out, "structured") <- structured
       # See `.style_stamp()`: the style levers with no argument have to
       # outlive this call, because `inline()` re-formats the typed body
       # to cite a cell.
       out <- .style_stamp(out)
       class(out) <- c("spicy_categorical_table", "spicy_table", "data.frame")
+      # `output = "data.frame"` is the displayed table with its numbers,
+      # read off the object the call would print, so it is
+      # `as.data.frame()` of that object by construction.
+      if (output == "data.frame") {
+        return(.categorical_blank_na(as.data.frame(out), blank_na_wide))
+      }
       # Return VISIBLY and let standard auto-print dispatch to
       # print.spicy_categorical_table(): a bare table_categorical(...)
       # call still displays the table, while `t <- table_categorical(...)`
@@ -3109,6 +3144,7 @@ table_categorical <- function(
       )
     }
     group_levels <- c(group_levels, missing_label)
+    missing_group <- TRUE
   }
   # No group left to tabulate. The group columns are keyed
   # `paste0(<level>, " n")`, and `paste0(character(0), " n")` is " n" --
@@ -3719,37 +3755,14 @@ table_categorical <- function(
   )
 
   if (output == "long") {
-    out <- with_label(long_raw)
-    out$p_op <- NULL
-    if (!show_assoc || !assoc_ci) {
-      out$ci_lower <- NULL
-      out$ci_upper <- NULL
-    }
-    if (show_assoc) {
-      # The long format is the machine-readable one: its measure column
-      # has a STABLE name, and the measure each row carries travels
-      # beside it as a key. Renaming, not assigning, so both keep the
-      # position they were built in.
-      names(out)[names(out) == measure_col] <- "effect_size"
-      names(out)[names(out) == ".assoc_type"] <- "effect_size_type"
-    }
-    if (do_smd) {
-      # `smd` / `smd_type`, mirroring `effect_size` / `effect_size_type`
-      # beside them -- NOT the `smd_value` of the continuous frame,
-      # whose neighbor is `es_value`. Each frame mirrors its own.
-      #
-      # RULED, knowingly: one quantity therefore has two raw names
-      # across the two families. The alternative -- one name everywhere
-      # -- would make this column the only one here NOT matching its
-      # neighbor, and the inter-family split it would fix predates the
-      # SMD: `es_value`/`es_type` versus `effect_size`/`effect_size_type`
-      # are already two spellings of one idea. Aligning all three pairs
-      # is a pre-1.0 naming decision of its own, on the register; doing
-      # it for the newest pair alone would leave the older two split
-      # and add a third convention.
-      names(out)[names(out) == ".smd"] <- "smd"
-      names(out)[names(out) == ".smd_type"] <- "smd_type"
-    }
+    # The machine-readable frame, in the vocabulary of the family: the
+    # measure column has a STABLE name whatever measure it holds, and the
+    # measure each row carries travels beside it as a key.
+    out <- .categorical_publish_long(
+      with_keys(with_label(long_raw)),
+      measure_col = if (show_assoc) measure_col,
+      assoc_ci = show_assoc && assoc_ci
+    )
     # Every data frame carries the note as print() shows it.
     attr(out, "note") <- .categorical_note(
       build_missing_note(),
@@ -3757,11 +3770,12 @@ table_categorical <- function(
     )
     return(out)
   }
-  # Only the long output publishes the per-row measure key; the display
-  # and export routes below read the measure column by name. `glance()`
-  # reads it too, from the `long_data` the default object carries, so
-  # it is kept aside for that copy.
+  # Only the long output publishes the per-row measure and SMD keys; the
+  # display and export routes below read the measure column by name.
+  # `glance()` reads them too, from the `long_data` the default object
+  # carries, so they are kept aside for that copy.
   assoc_type_rows <- long_raw$.assoc_type
+  smd_type_rows <- long_raw$.smd_type
   long_raw$.assoc_type <- NULL
   long_raw$.smd_type <- NULL
 
@@ -3838,27 +3852,13 @@ table_categorical <- function(
       )
     }
 
-    w <- do.call(rbind, out)
-
-    if (blank_na_wide) {
-      for (j in seq_len(ncol(w))) {
-        if (j > 2) w[[j]] <- ifelse(is.na(w[[j]]), "", as.character(w[[j]]))
-      }
-    }
-    w
+    do.call(rbind, out)
   }
 
   wide_raw <- make_wide_raw(long_raw)
   # Read the ledger once, here: every output route below must carry the
   # same disclosure, not print() alone.
   missing_note <- build_missing_note()
-  if (output == "data.frame") {
-    # The raw frame keeps the note as an attribute: a pipeline that
-    # re-renders the numbers itself must still be able to state what was
-    # removed. See the `output` section of the docs.
-    attr(wide_raw, "note") <- .categorical_note(missing_note, assoc_note_text)
-    return(wide_raw)
-  }
 
   # ---------------- REPORT WIDE ----------------
   report_cols <- c(
@@ -4060,7 +4060,7 @@ table_categorical <- function(
     structured <- .struct_attach_test_type(structured, test_types)
   }
 
-  if (output == "default") {
+  if (output %in% c("default", "data.frame")) {
     out <- wide_raw
     attr(out, "display_df") <- report_wide_char
     # The whole note, as print() shows it; `missing_note` and `assoc_note`
@@ -4072,12 +4072,15 @@ table_categorical <- function(
     attr(out, "indent_text") <- indent_text
     attr(out, "align") <- align
     attr(out, "decimal_mark") <- decimal_mark
-    # The long frame of `output = "long"`, for tidy() and glance(), with
-    # the measure key of each row (`.assoc_type`), which glance() reports
-    # per variable.
-    long_data <- with_label(long_raw)
+    # The compute frame of `output = "long"`, under its internal names,
+    # for tidy() and glance(), with the measure and SMD keys of each row
+    # (`.assoc_type`, `.smd_type`), which glance() reports per variable.
+    long_data <- with_keys(with_label(long_raw))
     if (show_assoc) {
       long_data$.assoc_type <- assoc_type_rows
+    }
+    if (do_smd) {
+      long_data$.smd_type <- smd_type_rows
     }
     attr(out, "long_data") <- long_data
     attr(out, "assoc_note") <- assoc_note_text
@@ -4095,6 +4098,11 @@ table_categorical <- function(
     # cite a cell.
     out <- .style_stamp(out)
     class(out) <- c("spicy_categorical_table", "spicy_table", "data.frame")
+    # `output = "data.frame"` is `as.data.frame()` of the object the call
+    # would print (see the one-way branch).
+    if (output == "data.frame") {
+      return(.categorical_blank_na(as.data.frame(out), blank_na_wide))
+    }
     # Return VISIBLY and let standard auto-print dispatch to
     # print.spicy_categorical_table(): a bare table_categorical(...) call
     # still displays the table, while `t <- table_categorical(...)` is

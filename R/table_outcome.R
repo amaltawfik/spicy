@@ -338,8 +338,6 @@
     es_value = NA_real_,
     es_ci_lower = NA_real_,
     es_ci_upper = NA_real_,
-    smd_type = NA_character_,
-    smd_value = NA_real_,
     stringsAsFactors = FALSE
   )
   identity_row <- function(variable, label, level, role) {
@@ -410,16 +408,14 @@
     )
     test_used[[nm]] <- inf$test_used
     n_groups[[nm]] <- inf$n_groups
+    # No standardized mean difference: this table has no `smd`
+    # argument, and the two columns it once carried were always NA
+    # (decision 9 of the ADR of 2026-10-20).
     rows[[length(rows) + 1L]] <- cbind(
       identity_row(nm, select_labels[[nm]], NA_character_, "factor_header"),
       blank_desc,
       inf$test,
-      inf$es,
-      data.frame(
-        smd_type = NA_character_,
-        smd_value = NA_real_,
-        stringsAsFactors = FALSE
-      )
+      inf$es
     )
     for (lv in geom$levels) {
       idx <- which(geom$values == lv)
@@ -441,7 +437,9 @@
   attr(result, "test_used") <- test_used
   attr(result, "select_na_dropped") <- select_na_dropped
   attr(result, "missing_labels") <- missing_labels
-  attr(result, "n_groups") <- n_groups
+  # The levels of each `select` variable the test compares (`NA` when no
+  # test ran): `n_levels`, the family's name for a count of categories.
+  attr(result, "n_levels") <- n_groups
   result
 }
 
@@ -663,12 +661,9 @@ abort_outcome_by_renamed <- function() {
 #'   `"right"`.
 #' @param output One of `"default"`, `"data.frame"`, `"long"`, or a
 #'   rendering engine: `"tinytable"`, `"gt"`, `"flextable"`,
-#'   `"excel"`, `"clipboard"`, `"word"`. `"data.frame"` and `"long"`
-#'   are synonyms and return the same object: the compute frame is
-#'   already long (one row per level, plus the block header and the
-#'   overall row). Both names are kept so the argument reads the same
-#'   here as in [table_continuous()], where the pair is also
-#'   synonymous.
+#'   `"excel"`, `"clipboard"`, `"word"`. `"data.frame"` is the displayed
+#'   table with its numbers, `"long"` the compute frame with every
+#'   statistic, as in [table_continuous()]; see *Value*.
 #' @param indent_text,indent_text_excel_clipboard Level-row
 #'   indentation, for the console and for the plain-text engines.
 #' @param excel_path,excel_sheet,clipboard_delim,word_path Output
@@ -678,12 +673,40 @@ abort_outcome_by_renamed <- function() {
 #' @param by Defunct. The grouping characteristics are selected with
 #'   `select` since spicy 0.13.0; supplying `by` is an error.
 #'
-#' @return A `spicy_outcome_table`: the compute frame, with the display
-#'   frame and the typed view attached. `output = "data.frame"` /
-#'   `"long"` returns the compute frame unclassed -- the two tokens are
-#'   synonyms and return identical objects. The three carry the whole
-#'   note as printed, "Note." included, in `attr(x, "note")` (`NULL` when
-#'   there is nothing to say).
+#' @return Depends on `output`:
+#' \itemize{
+#'   \item `"default"`: a `spicy_outcome_table` (a `data.frame` subclass,
+#'     with the parent class `"spicy_table"`), printed when the call is
+#'     bare; its columns are the table's compute frame, and the display
+#'     frame and the typed view are attached.
+#'   \item `"data.frame"`: the displayed table with its numbers, what
+#'     [as.data.frame()][as.data.frame.spicy_outcome_table] of the default
+#'     object returns: one row per printed row, the key columns
+#'     `variable` (the outcome on the `Overall` row, the grouping variable
+#'     elsewhere), `label`, `level` and `.row_role` (`"summary"` for the
+#'     `Overall` row, `"factor_header"`, `"level"`, or `"missing"`), then
+#'     the printed columns under their names (`"M"`, `"SD"`, ..., `"n"`,
+#'     `"p"`), a cell that prints several numbers keeping the others
+#'     beside it as in [table_continuous()].
+#'   \item `"long"`: the compute frame, one row per printed row with every
+#'     statistic the table computes, whatever it displays: `variable`,
+#'     `label`, `level`, `.row_role`, `mean`, `sd`, `min`, `max`,
+#'     `ci_lower`, `ci_upper`, `median`, `q1`, `q3`, `iqr`,
+#'     `med_ci_lower`, `med_ci_upper`, `n`, `weighted_n`, the test of each
+#'     block on its header row (`test_type`, `statistic`, `df`,
+#'     `df.residual`, `p.value`, and `p_unadjusted` under `p_adjust`) and
+#'     its effect size (`es_type`, `es_value`, `es_ci_lower`,
+#'     `es_ci_upper`, `NA` when none was requested).
+#'   \item `"tinytable"`, `"gt"`, `"flextable"`: the rendered table.
+#'   \item `"excel"` / `"word"`: writes the file and returns its path
+#'     invisibly.
+#'   \item `"clipboard"`: copies the table and returns the display
+#'     `data.frame` invisibly.
+#' }
+#'
+#' The default object and the two data frames carry the whole note as
+#' printed, "Note." included, in `attr(x, "note")` (`NULL` when there is
+#' nothing to say).
 #'
 #' @seealso [table_continuous()] for the transposed shape,
 #'   [table_categorical()] for categorical outcomes.
@@ -1142,7 +1165,7 @@ table_outcome <- function(
   )
   select_na_dropped <- attr(result, "select_na_dropped")
   test_used <- attr(result, "test_used")
-  n_groups <- attr(result, "n_groups")
+  n_groups <- attr(result, "n_levels")
   missing_labels <- attr(result, "missing_labels")
 
   # `p_adjust`: one test per block, its p-value on the block header.
@@ -1189,21 +1212,20 @@ table_outcome <- function(
     p_adjust_info = p_adjust_info
   )
 
-  # `output = "data.frame"` and `output = "long"` return the SAME
-  # object, and the documentation says so. This shape has no wide form
-  # to be the other half of the pair: the compute frame is already one
-  # row per level (plus the block header and the overall row), which is
-  # what `.row_role` marks. The two names coexist for harmonization with
-  # `table_continuous()`, where the pair is synonymous for the same
-  # reason, and with `table_continuous_lm()`, where it is not. A real
-  # pivot would have to invent a second shape, not reveal one.
-  if (output %in% c("data.frame", "long")) {
-    attributes(result) <- attributes(result)[
-      names(attributes(result)) %in% c("names", "row.names", "class")
-    ]
+  # The two machine shapes of the family (decision 5 of the ADR of
+  # 2026-10-20): `"long"` is the compute frame -- one row per level, plus
+  # the block header and the overall row, which `.row_role` marks -- in
+  # the vocabulary of the family; `"data.frame"` is the displayed table
+  # with its numbers, `as.data.frame()` of the object built below.
+  if (identical(output, "long")) {
+    out <- .rename_cols(
+      as.data.frame(unclass(result), stringsAsFactors = FALSE),
+      c(df1 = "df", df2 = "df.residual")
+    )
+    rownames(out) <- NULL
     # The one attribute kept: the note, as print() shows it.
-    attr(result, "note") <- note
-    return(result)
+    attr(out, "note") <- note
+    return(out)
   }
 
   attr(result, "ci_level") <- ci_level
@@ -1228,7 +1250,7 @@ table_outcome <- function(
   attr(result, "indent_text_excel_clipboard") <- indent_text_excel_clipboard
   attr(result, "note") <- note
   attr(result, "missing_labels") <- missing_labels
-  class(result) <- c("spicy_outcome_table", "data.frame")
+  class(result) <- c("spicy_outcome_table", "spicy_table", "data.frame")
 
   display_df <- .outcome_display_df(
     result,
@@ -1245,7 +1267,7 @@ table_outcome <- function(
     indent_text = indent_text
   )
 
-  if (!identical(output, "default")) {
+  if (!output %in% c("default", "data.frame")) {
     # The block geometry is handed over rather than derived: the
     # exporter's own fallback reads the label column, and every row of
     # this shape carries a label. Both vectors come from the typed
@@ -1291,6 +1313,9 @@ table_outcome <- function(
     ),
     p_adjust_info
   )
+  if (identical(output, "data.frame")) {
+    return(as.data.frame(result))
+  }
   result
 }
 

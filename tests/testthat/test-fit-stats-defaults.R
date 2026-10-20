@@ -1,8 +1,9 @@
 # Class-aware show_fit_stats default resolution, including the universal
 # nobs + AIC safety net for classes not matched by a tailored branch.
 
+# The displayed row labels: the `Variable` column of the printed table.
 fs_labels <- function(fit, ...) {
-  df <- table_regression(fit, output = "data.frame", ...)
+  df <- table_regression(fit, ...)
   trimws(df$Variable)
 }
 
@@ -72,6 +73,7 @@ test_that("an explicit show_fit_stats still overrides the fallback", {
   expect_false(any(v == "AIC")) # AIC not requested -> absent
   # and FALSE suppresses the whole block
   v0 <- fs_labels(fit, show_fit_stats = FALSE)
+  expect_true("x" %in% v0) # the rows are read
   expect_false(any(v0 == "AIC"))
   expect_false(any(v0 == "n"))
 })
@@ -85,8 +87,7 @@ test_that("mixed lm + glm default is the union of both class defaults", {
   m_lm <- lm(mpg ~ wt, data = mtcars)
   m_glm <- glm(am ~ mpg, data = mtcars, family = binomial)
   out <- table_regression(list(OLS = m_lm, Logit = m_glm))
-  d <- as.data.frame(out, stringsAsFactors = FALSE)
-  vars <- trimws(d$Variable)
+  vars <- trimws(out$Variable)
   # Union of lm (n, R2, adj_R2) and glm (n, McFadden, Nagelkerke, AIC)
   expect_true(all(
     c("n", "R²", "Adj. R²", "R² (McFadden)", "R² (Nagelkerke)", "AIC") %in% vars
@@ -113,7 +114,8 @@ test_that("mixed lm + glm alien fit-stat cells render an en-dash", {
   m_lm <- lm(mpg ~ wt, data = mtcars)
   m_glm <- glm(am ~ mpg, data = mtcars, family = binomial)
   out <- table_regression(list(OLS = m_lm, Logit = m_glm))
-  d <- as.data.frame(out, stringsAsFactors = FALSE)
+  # The printed table: its columns are the displayed cells.
+  d <- structure(out, class = "data.frame")
   vars <- trimws(d$Variable)
   # First (display) sub-column of each model carries the fit stats.
   ols_col <- grep("^OLS", names(d), value = TRUE)[1L]
@@ -154,7 +156,8 @@ test_that("n_events fills for Cox and stays blank for glm in a mixed table", {
     list(Cox = cx, Logit = gl),
     show_fit_stats = c("nobs", "n_events", "aic")
   )
-  dd <- as.data.frame(out, stringsAsFactors = FALSE)
+  # The printed table: its columns are the displayed cells.
+  dd <- structure(out, class = "data.frame")
   vars <- trimws(dd$Variable)
   cox_col <- grep("^Cox", names(dd), value = TRUE)[1L]
   logit_col <- grep("^Logit", names(dd), value = TRUE)[1L]
@@ -172,7 +175,7 @@ test_that("n_events fills for Cox and stays blank for glm in a mixed table", {
   expect_true(is.na(b[["Logit: B"]][trimws(b$Variable) == "N events"]))
   # The class-aware Cox default resolves to the documented triple.
   out_def <- table_regression(cx)
-  v <- trimws(as.data.frame(out_def, stringsAsFactors = FALSE)$Variable)
+  v <- trimws(out_def$Variable)
   k <- length(v)
   expect_identical(v[(k - 2):k], c("n", "N events", "AIC"))
   s_def <- as_structured(out_def)

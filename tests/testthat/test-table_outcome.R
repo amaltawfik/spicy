@@ -802,24 +802,40 @@ test_that("a high-cardinality grouping is announced, never refused", {
   expect_s3_class(tbl, "spicy_outcome_table")
 })
 
-test_that("the raw outputs are the plain compute frame", {
+test_that("the long output is the plain compute frame", {
   d <- .to_sh()
   raw <- .to_quiet(table_outcome(d, bmi, select = sex, output = "long"))
   expect_s3_class(raw, "data.frame")
   expect_false(inherits(raw, "spicy_outcome_table"))
   expect_true(all(
-    c("variable", "label", "level", "mean", "sd", "n", "p.value") %in%
+    c(
+      "variable",
+      "label",
+      "level",
+      ".row_role",
+      "mean",
+      "sd",
+      "n",
+      "df",
+      "df.residual",
+      "p.value"
+    ) %in%
       names(raw)
   ))
-  # The schema is FIXED: the SMD columns are present and NA from the
-  # first version, so adding the statistic later cannot break a
-  # pipeline that indexes into the frame.
-  expect_true(all(c("smd_type", "smd_value") %in% names(raw)))
-  expect_true(all(is.na(raw$smd_value)))
+  # The family's vocabulary (ADR of 2026-10-20): broom's names for the
+  # degrees of freedom, and no SMD columns -- this table computes none
+  # (decision 9), so the two always-NA columns are gone.
+  expect_false(any(c("df1", "df2", "smd_type", "smd_value") %in% names(raw)))
+  # The note is the one attribute kept.
   expect_identical(
-    .to_quiet(table_outcome(d, bmi, select = sex, output = "data.frame")),
-    raw
+    setdiff(names(attributes(raw)), c("names", "row.names", "class")),
+    "note"
   )
+  # `output = "data.frame"` is no synonym: it is the displayed table,
+  # one row per row of the compute frame.
+  df <- .to_quiet(table_outcome(d, bmi, select = sex, output = "data.frame"))
+  expect_false(identical(df, raw))
+  expect_identical(nrow(df), nrow(raw))
 })
 
 test_that("the console shape is pinned", {
@@ -943,15 +959,15 @@ test_that("the `by` migration still fires before the missing-arg guards", {
 })
 
 
-# ---- "data.frame" and "long" are synonyms, and the docs say so ----------
+# ---- "data.frame" is the displayed table, "long" the compute frame -------
 
-test_that("output = 'data.frame' and output = 'long' return one object", {
-  # Pinned because ?table_outcome now promises it. The compute frame is
-  # already long -- one row per level, plus the block header and the
-  # overall row, which is what `.row_role` marks -- so there is no wide
-  # form for the pair to straddle. Same reason `table_continuous()`
-  # documents its own pair as synonymous.
+test_that("output = 'data.frame' is the displayed table, 'long' every statistic", {
+  # Decision 5 of the ADR of 2026-10-20: the two tokens are no longer
+  # synonyms. "data.frame" is what as.data.frame() of the printed object
+  # returns -- the displayed columns under their keys, with numbers --
+  # and "long" the compute frame, with every statistic.
   d <- .to_sh()
+  tbl <- .to_quiet(table_outcome(d, bmi, select = c(sex, smoking)))
   as_df <- .to_quiet(table_outcome(
     d,
     bmi,
@@ -964,10 +980,25 @@ test_that("output = 'data.frame' and output = 'long' return one object", {
     select = c(sex, smoking),
     output = "long"
   ))
-  expect_identical(as_df, as_long)
-  # And it really is the long shape, not a wide one under a long name.
-  expect_true(".row_role" %in% names(as_df))
+  expect_identical(as_df, as.data.frame(tbl))
+  expect_false(identical(as_df, as_long))
+  # Both are long in rows: one row per printed row, which `.row_role`
+  # marks.
+  expect_identical(
+    names(as_df)[1:4],
+    c("variable", "label", "level", ".row_role")
+  )
+  expect_identical(as_df$.row_role, as_long$.row_role)
   expect_true(all(c("level", "summary") %in% as_df$.row_role))
+  # The displayed columns hold the numbers of the compute frame.
+  expect_identical(
+    names(as_df)[-(1:4)],
+    c("M", "SD", "Min", "Max", "95% CI LL", "95% CI UL", "n", "p")
+  )
+  expect_type(as_df$M, "double")
+  expect_equal(as_df$M, as_long$mean, tolerance = 1e-12)
+  expect_equal(as_df$p, as_long$p.value, tolerance = 1e-12)
+  expect_false("mean" %in% names(as_df))
 })
 
 # ---- p_adjust ---------------------------------------------------------------
@@ -1051,20 +1082,21 @@ test_that("p_adjust needs the p-value column", {
 })
 
 test_that("p_value = FALSE leaves no p-value and no empty test column (issue #9)", {
-  test_cols <- c("test_type", "statistic", "df1", "df2", "p.value")
+  # The compute frame, under the family's names (`output = "long"`).
+  test_cols <- c("test_type", "statistic", "df", "df.residual", "p.value")
   build <- function(...) {
     .to_quiet(table_outcome(.to_sh(), bmi, select = c(sex, smoking), ...))
   }
-  ref <- build(output = "data.frame")
+  ref <- build(output = "long")
   # Absent, not NA columns; the rest of the frame is the default's.
-  out <- build(p_value = FALSE, output = "data.frame")
+  out <- build(p_value = FALSE, output = "long")
   expect_identical(names(out), setdiff(names(ref), test_cols))
   expect_identical(as.list(out)[names(out)], as.list(ref)[names(out)])
   # The statistic and an effect size keep the test they show or come
   # from; the p-value still goes.
   for (st in list(
-    build(p_value = FALSE, statistic = TRUE, output = "data.frame"),
-    build(p_value = FALSE, effect_size = "auto", output = "data.frame")
+    build(p_value = FALSE, statistic = TRUE, output = "long"),
+    build(p_value = FALSE, effect_size = "auto", output = "long")
   )) {
     expect_identical(
       intersect(test_cols, names(st)),
@@ -1072,6 +1104,9 @@ test_that("p_value = FALSE leaves no p-value and no empty test column (issue #9)
     )
     expect_identical(st$statistic, ref$statistic)
   }
+  # The displayed table loses its p column the same way.
+  expect_true("p" %in% names(build(output = "data.frame")))
+  expect_false("p" %in% names(build(p_value = FALSE, output = "data.frame")))
   # glance() keeps its fixed schema, NA where the frame has no column.
   gl <- broom::glance(build(p_value = FALSE, statistic = TRUE))
   gl0 <- broom::glance(build(p_value = FALSE))

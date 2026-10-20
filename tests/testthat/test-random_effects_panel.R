@@ -267,11 +267,7 @@ test_that("panel header annotates lmer (REML=FALSE) with '(ML)'", {
 test_that("lme4 correlation row shows rho with SE + CI (rows layout)", {
   skip_if_not_installed("merDeriv")
   fit <- .fit_lmer_slope_panel()
-  df <- table_regression(
-    fit,
-    show_columns = c("b", "se", "ci"),
-    output = "data.frame"
-  )
+  df <- table_regression(fit, show_columns = c("b", "se", "ci"))
   # the correlation row's label ends in ", Days)"; unique to it
   rho <- df[grepl(", Days)", df$Variable, fixed = TRUE), , drop = FALSE]
   expect_equal(nrow(rho), 1L)

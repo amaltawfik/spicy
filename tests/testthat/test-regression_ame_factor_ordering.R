@@ -101,7 +101,7 @@ test_that("ordered factor + AME: synthetic reference row is emitted", {
     glm(smoking ~ sex + age + education, data = sochealth, family = binomial),
     show_columns = c("b", "p", "ame", "ame_ci", "ame_p")
   )
-  body <- as.data.frame(out, stringsAsFactors = FALSE)
+  body <- structure(out, class = "data.frame")
   vars <- trimws(body$Variable)
   # The reference row appears with the "(ref.)" annotation. For an
   # ordered factor whose first level is "Lower secondary", the row
@@ -113,7 +113,7 @@ test_that("ordered factor WITHOUT AME: no synthetic reference row", {
   out <- table_regression(
     glm(smoking ~ sex + age + education, data = sochealth, family = binomial)
   )
-  body <- as.data.frame(out, stringsAsFactors = FALSE)
+  body <- structure(out, class = "data.frame")
   vars <- trimws(body$Variable)
   # When no AME is requested, the poly trends `.L` / `.Q` stand alone
   # with no reference anchor (they're not contrasts against a baseline).
@@ -135,7 +135,7 @@ test_that("annotation mode marks the first AME row, never the poly rows", {
     reference_style = "annotation",
     factor_layout = "flat"
   ))
-  vars <- trimws(as.data.frame(out, stringsAsFactors = FALSE)$Variable)
+  vars <- trimws(out$Variable)
   expect_true("gear_o.L" %in% vars)
   expect_true("gear_o.Q" %in% vars)
   expect_true("gear_o4 [vs 3]" %in% vars)
@@ -148,7 +148,7 @@ test_that("annotation mode marks the first AME row, never the poly rows", {
     show_columns = c("b", "ame"),
     reference_style = "annotation"
   ))
-  vars_g <- trimws(as.data.frame(out_g, stringsAsFactors = FALSE)$Variable)
+  vars_g <- trimws(out_g$Variable)
   expect_true("gear_o: [ref: 3]" %in% vars_g)
   expect_false(any(grepl("[vs 3]", vars_g, fixed = TRUE)))
 })
@@ -197,7 +197,7 @@ test_that("ref-row en-dashes follow estimate_type semantics (plain factor: B + A
   # the position in show_columns.
   fit <- glm(smoking ~ sex + age, data = sochealth, family = binomial)
   out <- table_regression(fit, show_columns = c("ame_p", "ame", "b", "p"))
-  body <- as.data.frame(out, stringsAsFactors = FALSE, check.names = FALSE)
+  body <- structure(out, class = "data.frame")
   ref_row <- body[trimws(body$Variable) == "Female (ref.)", , drop = FALSE]
   expect_equal(nrow(ref_row), 1L)
   # Every data column of the ref-row contains an en-dash, because
@@ -219,8 +219,7 @@ test_that("stars = TRUE suffixes stars to AME cells (independent of ame_p column
   fit <- glm(smoking ~ sex + education, data = sochealth, family = binomial)
 
   pull_cells <- function(out, col_name) {
-    body <- as.data.frame(out, stringsAsFactors = FALSE, check.names = FALSE)
-    body[[col_name]]
+    out[[col_name]]
   }
 
   # AME alone
@@ -254,7 +253,7 @@ test_that("ref-row en-dashes follow estimate_type semantics (ordered factor: AME
   # WHICH estimate type the reference applies to.
   fit <- glm(smoking ~ sex + education, data = sochealth, family = binomial)
   out <- table_regression(fit, show_columns = c("b", "p", "ame", "ame_p"))
-  body <- as.data.frame(out, stringsAsFactors = FALSE, check.names = FALSE)
+  body <- structure(out, class = "data.frame")
   ref_row <- body[
     trimws(body$Variable) == "Lower secondary (ref.)",
     ,
@@ -285,7 +284,7 @@ test_that("multi-model: ref-row of a factor missing from a model is BLANK in tha
   m1 <- glm(smoking ~ sex + physical_activity, data = sh, family = binomial)
   m2 <- glm(smoking ~ sex, data = sh, family = binomial)
   out <- table_regression(list(M1 = m1, M2 = m2))
-  body <- as.data.frame(out, stringsAsFactors = FALSE, check.names = FALSE)
+  body <- structure(out, class = "data.frame")
   ref_row <- body[trimws(body$Variable) == "No (ref.)", , drop = FALSE]
   expect_equal(nrow(ref_row), 1L)
   # M1 columns: en-dash (factor present, reference level).
@@ -316,7 +315,7 @@ test_that("2-level ordered factor + AME: ref row + .L + 1 AME row, in order", {
     lm(y ~ grp, data = df),
     show_columns = c("b", "p", "ame", "ame_p")
   )
-  body <- as.data.frame(out, stringsAsFactors = FALSE)
+  body <- structure(out, class = "data.frame")
   vars <- trimws(body$Variable)
   ref_pos <- which(grepl("^Lo \\(ref\\.\\)$", vars))
   poly_pos <- which(vars == ".L")

@@ -416,12 +416,9 @@
 #'   `"right"`.
 #' @param output One of `"default"`, `"data.frame"`, `"long"`, or a
 #'   rendering engine: `"tinytable"`, `"gt"`, `"flextable"`,
-#'   `"excel"`, `"clipboard"`, `"word"`. `"data.frame"` and `"long"`
-#'   are synonyms here and return the same object: the wide compute
-#'   frame, one row per level with a pair of columns per group. Note
-#'   the difference from [table_categorical()], where the two tokens
-#'   return genuinely different shapes -- this design carries a single
-#'   compute frame, and both names reach it.
+#'   `"excel"`, `"clipboard"`, `"word"`. `"data.frame"` is the displayed
+#'   table with its numbers, `"long"` one row per variable, level and
+#'   group, as in [table_categorical()]; see *Value*.
 #' @param indent_text,indent_text_excel_clipboard Level-row
 #'   indentation, for the console and for the plain-text engines.
 #' @param excel_path,excel_sheet,clipboard_delim,word_path Output
@@ -429,12 +426,47 @@
 #' @param user_na Honor declared missing values (see `?freq`).
 #' @param style A journal style; see [spicy_style()].
 #'
-#' @return A `spicy_categorical_svy_table`: the wide compute frame,
-#'   with the display frame and the typed view attached.
-#'   `output = "data.frame"` / `"long"` returns the compute frame
-#'   unclassed -- the two tokens are synonyms and return identical
-#'   objects. The three carry the whole note as printed, "Note."
-#'   included, in `attr(x, "note")`.
+#' @return Depends on `output`:
+#' \itemize{
+#'   \item `"default"`: a `spicy_categorical_svy_table` (a `data.frame`
+#'     subclass, with the parent class `"spicy_table"`), printed when the
+#'     call is bare; its columns are the table's compute frame, and the
+#'     display frame and the typed view are attached.
+#'   \item `"data.frame"`: the displayed table with its numbers, what
+#'     [as.data.frame()][as.data.frame.spicy_categorical_svy_table] of the
+#'     default object returns: one row per printed row (the header row of
+#'     each variable, which carries its *p*-value, then its levels), the
+#'     key columns `variable` (the column name), `label` (the label
+#'     displayed), `level` and `.row_role` (`"factor_header"`, `"level"`,
+#'     or `"missing"` on the row of missing values the table adds), then
+#'     the printed columns in their order: per block of `by` (and the
+#'     `Total` margin) `<group> n`, `<group> \%`, with `proportion_ci` the
+#'     interval bounds `<group> \% CI lower` and `<group> \% CI upper`,
+#'     with `deff` `<group> DEff`, and last `p`. Without `by`, the
+#'     columns of the one block are `n`, `\%`, ...
+#'   \item `"long"`: one row per variable, level and group, in the order
+#'     of the table, with `variable`, `label`, `level`, `.row_role` (the
+#'     role of `level`: `"level"`, or `"missing"`), with `by` `group`,
+#'     `.group_role` (the role of `group`: `"group"`, `"missing"` for the
+#'     column of missing `by` values, or `"total"`) and `total` (`TRUE` on
+#'     the rows of the margin), then `n` (observed), `pct` (the estimated
+#'     percentage), `ci_lower`,
+#'     `ci_upper` (its interval, `NA` without `proportion_ci`), `deff`
+#'     (`NA` without `deff`), and, with `by` and the *p*-value,
+#'     `test_type` (the statistic of `survey::svychisq()`,
+#'     `chisq_statistic`), `p.value` and, under `p_adjust`,
+#'     `p_unadjusted`.
+#'   \item `"tinytable"`, `"gt"`, `"flextable"`: the rendered table.
+#'   \item `"excel"` / `"word"`: writes the file and returns its path
+#'     invisibly.
+#'   \item `"clipboard"`: copies the table and returns the display
+#'     `data.frame` invisibly.
+#' }
+#'
+#' The default object and the two data frames carry the whole note as
+#' printed, "Note." included, in `attr(x, "note")`.
+#' [tidy()][tidy.spicy_categorical_svy_table] reports the proportions
+#' between 0 and 1.
 #'
 #' @seealso [table_categorical()] for the data-frame sibling,
 #'   [table_continuous_svy()] for continuous variables.
@@ -884,17 +916,6 @@ table_categorical_svy <- function(
   )
   .warn_negative_weights_no_test(test_refused)
 
-  # `output = "data.frame"` and `output = "long"` return the SAME
-  # object, and the documentation says so. Unlike table_categorical(),
-  # which really does build a second, long shape, this design has one
-  # compute frame -- wide, one row per level with a pair of columns per
-  # group -- and both names reach it. The pair is kept so the argument
-  # reads the same across the family.
-  if (output %in% c("data.frame", "long")) {
-    attr(result, "note") <- note
-    return(result)
-  }
-
   attr(result, "ci_level") <- ci_level
   attr(result, "percent_digits") <- percent_digits
   attr(result, "p_digits") <- p_digits
@@ -914,12 +935,22 @@ table_categorical_svy <- function(
   attr(result, "note") <- note
   attr(result, "design_meta") <- meta
   attr(result, "chisq_statistic") <- chisq_statistic
-  class(result) <- c("spicy_categorical_svy_table", "data.frame")
+  class(result) <- c("spicy_categorical_svy_table", "spicy_table", "data.frame")
+
+  # The two machine shapes of the family (decision 5 of the ADR of
+  # 2026-10-20): `"long"` reads the compute frame one row per variable,
+  # level and group; `"data.frame"` is the displayed table with its
+  # numbers, `as.data.frame()` of the object below.
+  if (identical(output, "long")) {
+    out <- .cat_svy_publish_long(result)
+    attr(out, "note") <- note
+    return(out)
+  }
 
   display_df <- .cat_svy_display_df(result)
   layout <- .cat_svy_header_layout(result)
 
-  if (!identical(output, "default")) {
+  if (!output %in% c("default", "data.frame")) {
     geom_rows <- list(body = .cat_svy_body_geometry(result))
     return(export_desc_table(
       display_df,
@@ -948,6 +979,9 @@ table_categorical_svy <- function(
     .build_categorical_svy_structured(result, display_df),
     p_adjust_info
   )
+  if (identical(output, "data.frame")) {
+    return(as.data.frame(result))
+  }
   result
 }
 

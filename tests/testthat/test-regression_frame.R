@@ -514,13 +514,9 @@ test_that("supports$partial_effect_size gates the partial columns", {
   fit <- stats::lm(mpg ~ wt + factor(cyl), data = mtcars)
 
   # Declared TRUE (the real .lm_supports()): the column is produced.
-  ok <- table_regression(
-    fit,
-    show_columns = c("b", "partial_eta2"),
-    output = "data.frame"
-  )
+  ok <- table_regression(fit, show_columns = c("b", "partial_eta2"))
   expect_length(names(ok), 3L)
-  expect_true(any(nzchar(ok[[3L]])))
+  expect_true(any(nzchar(trimws(ok[[3L]]))))
 
   # Declared FALSE, nothing else changed: the request is refused rather
   # than rendered as a column of dashes.
@@ -659,13 +655,12 @@ test_that("a logistic screen still fills the glm partial token", {
     outcome = high,
     predictors = c(age, sex),
     method = "glm",
-    show_columns = c("b", "partial_chi2"),
-    output = "data.frame"
+    show_columns = c("b", "partial_chi2")
   )
   # The column exists AND carries at least one value: unwrapping the
   # bundle must not turn the legitimate case into a refusal.
   chi_col <- names(tbl)[length(names(tbl))]
-  expect_true(any(nzchar(tbl[[chi_col]])))
+  expect_true(any(nzchar(trimws(tbl[[chi_col]]))))
 })
 
 test_that("a screen refusal names the wrapped classes, not `uv_screen`", {

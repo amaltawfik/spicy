@@ -15,18 +15,19 @@
 #
 #   default     -- printable spicy_regression_table (data.frame subclass);
 #                 print() delegates to spicy_print_table().
-#   data.frame  -- plain wide data.frame (stripped of spicy classes)
+#   data.frame  -- the displayed table with its numbers: as.data.frame()
+#                 of the default object
 #   long        -- broom-style long tibble (one row per
 #                 model_id x term x estimate_type)
 #   tinytable   -- tinytable::tt() wrapper
 #   gt          -- gt::gt() wrapper
 #   flextable   -- flextable::flextable() wrapper
 #   excel       -- openxlsx2::write_xlsx() side-effect; returns
-#                 invisible(rendered)
+#                 invisible(excel_path), as the descriptive tables do
 #   clipboard   -- clipr::write_clip() side-effect; returns
 #                 invisible(rendered)
 #   word        -- flextable + officer save_as_docx; returns
-#                 invisible(rendered)
+#                 invisible(word_path)
 #
 # All optional-engine outputs guard with requireNamespace() and
 # spicy_missing_pkg if absent. File-path outputs validate the path
@@ -40,7 +41,8 @@ dispatch_regression_output <- function(
   excel_sheet = NULL,
   clipboard_delim = "\t",
   word_path = NULL,
-  word_template = NULL
+  word_template = NULL,
+  labels = NULL
 ) {
   output <- match.arg(
     output,
@@ -59,9 +61,9 @@ dispatch_regression_output <- function(
 
   switch(
     output,
-    default = output_default(rendered, aligned),
-    data.frame = output_data_frame(rendered, aligned),
-    long = output_long(aligned),
+    default = output_default(rendered, aligned, labels),
+    data.frame = as.data.frame(output_default(rendered, aligned, labels)),
+    long = output_long(aligned, note = attr(rendered, "note", exact = TRUE)),
     tinytable = output_tinytable(rendered),
     gt = output_gt(rendered),
     flextable = output_flextable(rendered),
@@ -82,9 +84,7 @@ dispatch_regression_output <- function(
 
 # Provenance attributes promised by the \value section: the model ids
 # in table order, and each model's outcome variable (lifted from the
-# per-row values carried in the aligned long frame). Shared by the
-# default and data.frame outputs so `as.data.frame()` on the default
-# object and `output = "data.frame"` carry the same attribute set.
+# per-row values carried in the aligned long frame).
 .regression_provenance <- function(aligned) {
   cf <- aligned$coefs_aligned
   model_ids <- aligned$model_ids %||% unique(cf$model_id)
@@ -106,13 +106,16 @@ dispatch_regression_output <- function(
 }
 
 # Carries the analytic data as attributes so broom methods (tidy,
-# glance) can read them without re-running the pipeline.
-output_default <- function(rendered, aligned) {
+# glance) can read them without re-running the pipeline, and the label
+# of each term (`labels`, the renderer's map) for the `label` column of
+# `as.data.frame()`.
+output_default <- function(rendered, aligned, labels = NULL) {
   attr(rendered, "spicy_long") <- aligned$coefs_aligned
   attr(rendered, "spicy_fit_stats") <- aligned$fit_stats_aligned
   prov <- .regression_provenance(aligned)
   attr(rendered, "model_ids") <- prov$model_ids
   attr(rendered, "outcome") <- prov$outcome
+  attr(rendered, "var_labels") <- labels
   # This family bakes its display strings at build time, so the style
   # never had to survive the call -- until `inline()` re-formatted the
   # same body from the typed contract to cite one cell. The levers with
@@ -123,48 +126,41 @@ output_default <- function(rendered, aligned) {
   rendered
 }
 
-# ---- data.frame: plain wide ----------------------------------------------
-
-output_data_frame <- function(rendered, aligned) {
-  out <- as.data.frame(rendered, stringsAsFactors = FALSE)
-  attr(out, "title") <- attr(rendered, "title")
-  attr(out, "note") <- attr(rendered, "note")
-  # Same provenance pair as the default output, so this path and
-  # `as.data.frame()` on the default object return identical objects
-  # (the documented equivalence in ?as.data.frame.spicy_regression_table).
-  prov <- .regression_provenance(aligned)
-  attr(out, "model_ids") <- prov$model_ids
-  attr(out, "outcome") <- prov$outcome
-  out
-}
-
 # ---- long: broom-style long format ---------------------------------------
 
 # Returns the aligned long extract with broom-canonical column names,
 # as the long-format tibble (`tbl_df`) documented in the \value
-# section. Columns:
+# section, with the note as printed (the attribute every data frame of
+# the family carries). Columns:
 #   model_id, term, estimate_type, estimate, std.error, conf.low,
-#   conf.high, statistic, df, p.value, test_type, is_singular,
-#   is_intercept, is_reference, factor_term, factor_level
-output_long <- function(aligned) {
+#   conf.high, statistic, df, p.value, test_type, nobs, r.squared,
+#   adj.r.squared, ..., is_singular, is_intercept, is_reference,
+#   factor_term, factor_level
+output_long <- function(aligned, note = NULL) {
   long <- aligned$coefs_aligned
   if (is.null(long)) {
     long <- empty_coefs_aligned()
   }
-  # Rename to broom convention
-  ren <- c(
-    se = "std.error",
-    ci_low = "conf.low",
-    ci_high = "conf.high",
-    p_value = "p.value"
+  # broom's names (decision 1 of the ADR of 2026-10-20), the sample size
+  # and the fit of a row's own fit included, under the names glance()
+  # gives them: a univariable screen fills them per predictor; a single
+  # model leaves them NA here, its values are glance()'s.
+  long <- .rename_cols(
+    long,
+    c(
+      se = "std.error",
+      ci_low = "conf.low",
+      ci_high = "conf.high",
+      p_value = "p.value",
+      n_obs = "nobs",
+      r2 = "r.squared",
+      adj_r2 = "adj.r.squared"
+    )
   )
-  for (old in names(ren)) {
-    if (old %in% names(long)) {
-      names(long)[names(long) == old] <- ren[[old]]
-    }
-  }
   long$order_idx <- NULL
-  maybe_as_tibble(long)
+  out <- maybe_as_tibble(long)
+  attr(out, "note") <- note
+  out
 }
 
 # ---- spanner helpers (shared by rich-output dispatchers) -----------------
@@ -2684,7 +2680,9 @@ output_excel <- function(rendered, excel_path, excel_sheet) {
   )
 
   openxlsx2::wb_save(wb, file = excel_path, overwrite = TRUE)
-  invisible(rendered)
+  # The path of the file, invisibly: the contract of every file output of
+  # the family (decision 8 of the ADR of 2026-10-20).
+  invisible(excel_path)
 }
 
 # ---- clipboard -----------------------------------------------------------
@@ -2879,7 +2877,7 @@ output_word <- function(rendered, word_path, word_template = NULL) {
     split = FALSE
   )
   print(doc, target = word_path)
-  invisible(rendered)
+  invisible(word_path)
 }
 
 # ---- as_structured() accessor --------------------------------------------
@@ -3222,12 +3220,16 @@ print.spicy_regression_table <- function(x, ...) {
   align <- attr(x, "align") %||% "decimal"
   spanners <- attr(x, "spanners")
 
-  body <- as.data.frame(x, stringsAsFactors = FALSE, check.names = FALSE)
+  # The printed cells are the object's own columns. Not `as.data.frame()`,
+  # whose method returns the table with its numbers (`output =
+  # "data.frame"`), not the strings the console shows.
+  body <- x
+  class(body) <- "data.frame"
   # Build a parallel `display_labels` vector that overrides the body's
   # `colnames()` for the PRINTED header text only. The data.frame
   # itself keeps its deduplicated, model-prefixed column names so the
-  # caller (`output = "data.frame"` / `"long"`) sees the unambiguous
-  # programmatic names. The display vector lifts the bare label
+  # caller (`output = "data.frame"`, `as_structured()`) sees the
+  # unambiguous programmatic names. The display vector lifts the bare label
   # (`display_label` field stored on each `col_meta` entry by
   # `build_col_spec()`) — already stripped of both the dedup `.N`
   # suffix AND the `"Model X: "` prefix — so the console shows

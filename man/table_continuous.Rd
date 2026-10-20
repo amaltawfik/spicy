@@ -160,8 +160,8 @@ column in the printed ASCII table and in every rendered output
 (\code{tinytable}, \code{gt}, \code{flextable}, \code{word}, \code{excel}, \code{clipboard}).
 Set to \code{FALSE} to drop the \code{n} column structurally from those
 outputs (no empty placeholder, no spanner). The \code{n} column is
-always present in the raw \code{output = "data.frame"} /
-\code{"long"} for downstream programmatic access. Defaults to \code{TRUE}.
+always present in \code{output = "long"} for downstream programmatic
+access. Defaults to \code{TRUE}.
 Ignored (with a warning) when \code{show_columns} is supplied.}
 
 \item{show_columns}{Statistics to display, as a character vector of
@@ -225,9 +225,9 @@ spanner in the printed ASCII table and in every rendered output
 Set to \code{FALSE} to drop both columns and the CI spanner
 structurally from those outputs (no empty placeholders, no
 border lines under an empty header). The CI bounds are always
-present as \code{ci_lower} / \code{ci_upper} in the raw
-\code{output = "data.frame"} / \code{"long"} for downstream programmatic
-access. Defaults to \code{TRUE}. The CI level is taken from \code{ci_level}.
+present as \code{ci_lower} / \code{ci_upper} in \code{output = "long"} for
+downstream programmatic access. Defaults to \code{TRUE}. The CI level is
+taken from \code{ci_level}.
 Ignored (with a warning) when \code{show_columns} is supplied.}
 
 \item{labels}{How each variable is named in the table: in the rows,
@@ -310,11 +310,11 @@ whose \code{excel} output still uses that convention at every \code{align}.}
 \item{output}{Output format. One of:
 \itemize{
 \item \code{"default"}: an ASCII table object, printed when the call is bare.
-\item \code{"data.frame"} / \code{"long"}: a plain \code{data.frame} with one row
-per \verb{(variable x group)} (or one row per \code{variable} when \code{by}
-is not used). The two names are synonyms; pick whichever reads
-better in your pipeline (\code{"long"} matches
-\code{\link[=table_continuous_lm]{table_continuous_lm()}}'s naming).
+\item \code{"data.frame"}: the displayed table with its numbers, one row
+per printed row.
+\item \code{"long"}: one row per \verb{(variable x group)} (or one row per
+\code{variable} when \code{by} is not used), with every statistic the
+table computes.
 \item \code{"tinytable"} (requires \code{tinytable})
 \item \code{"gt"} (requires \code{gt})
 \item \code{"flextable"} (requires \code{flextable})
@@ -368,35 +368,52 @@ auto-prints the styled ASCII table at the console while
 the table). The object can be re-coerced via
 \code{\link[=as.data.frame.spicy_continuous_table]{as.data.frame.spicy_continuous_table()}} or piped into
 \code{broom::tidy()} / \code{broom::glance()}.
-\item \code{"data.frame"} / \code{"long"}: a plain \code{data.frame} with
-columns \code{variable}, \code{label}, \code{group} (when \code{by} is used),
-\code{mean}, \code{sd}, \code{min}, \code{max}, \code{ci_lower}, \code{ci_upper}, \code{median},
-\code{q1}, \code{q3}, \code{iqr}, \code{med_ci_lower}, \code{med_ci_upper}, \code{n}. Every
+\item \code{"data.frame"}: the displayed table with its numbers, what
+\link[=as.data.frame.spicy_continuous_table]{as.data.frame()} of the
+default object returns: one row per printed row, the key columns
+\code{variable} (the column name), \code{label} (the label displayed for
+it) and, with \code{by}, \code{group} and \code{.row_role} (\code{"group"}, or
+\code{"missing"} for the group of missing \code{by} values), then the
+printed columns under their names (\code{"M"}, \code{"SD"}, \code{"Min"},
+\code{"Max"}, \code{"95\\\% CI LL"}, \code{"95\\\% CI UL"}, \code{"n"}, \code{"Test"}, \code{"p"},
+\code{"ES"}, \code{"SMD"}, the columns \code{show_columns} asks for). A cell that
+prints several numbers keeps the first in its column and the
+others beside it under their names in the long output: \code{df} and
+\code{df.residual} after \code{"Test"}, \code{es_ci_lower} and \code{es_ci_upper}
+after \code{"ES"} when its interval is printed, \code{q1} and \code{q3} after
+\code{"Med [Q1, Q3]"}.
+\item \code{"long"}: a plain \code{data.frame} with one row per
+\verb{(variable x group)} and columns \code{variable}, \code{label}, \code{group} and
+\code{.group_role} (the role of \code{group}: \code{"group"}, or \code{"missing"} for
+the group of missing \code{by} values) when \code{by} is used, \code{mean}, \code{sd},
+\code{min}, \code{max},
+\code{ci_lower}, \code{ci_upper}, \code{median}, \code{q1}, \code{q3}, \code{iqr},
+\code{med_ci_lower}, \code{med_ci_upper}, \code{n}, \code{weighted_n}. Every
 statistic is computed whatever \code{show_columns} displays. When
-\code{by} is used together with \code{p_value = TRUE}, \code{statistic = TRUE},
-or \code{effect_size != "none"}, additional columns are appended
-(populated on the first row of each variable block only):
+\code{by} is used, the comparison columns follow (populated on the
+first row of each variable block only):
 \itemize{
 \item \code{test_type} -- test identifier (e.g., \code{"welch_t"},
 \code{"welch_anova"}, \code{"student_t"}, \code{"anova"}, \code{"wilcoxon"},
-\code{"kruskal"}).
-\item \code{statistic}, \code{df1}, \code{df2} -- the test statistic and its
-degrees of freedom.
-\item \code{p.value} -- with \code{p_value = TRUE} only.
+\code{"kruskal"}), with \code{statistic}, \code{df} and \code{df.residual} (the
+degrees of freedom of a t statistic in \code{df}, those of an F
+statistic in \code{df} and \code{df.residual}, as \code{\link[broom:glance]{broom::glance()}}
+names them), when the test ran (for \code{p_value}, \code{statistic} or
+an effect size).
+\item \code{p.value} -- with the \emph{p}-value only, and \code{p_unadjusted}
+under \code{p_adjust}.
 \item \code{es_type} -- effect-size identifier (\code{"hedges_g"},
-\code{"eta_sq"}, \code{"r_rb"}, or \code{"epsilon_sq"}), when
-\code{effect_size != "none"}.
-\item \code{es_value}, \code{es_ci_lower}, \code{es_ci_upper} -- effect-size
-estimate and confidence interval bounds.
+\code{"eta_sq"}, \code{"r_rb"}, or \code{"epsilon_sq"}), \code{es_value},
+\code{es_ci_lower}, \code{es_ci_upper} -- the effect size and its
+interval.
+\item \code{smd_type}, \code{smd_value} -- the standardized mean
+difference; \code{smd_type} names the kernel the value came from:
+\code{"continuous"} here.
 }
-A \code{by} frame ALSO carries \code{smd_type} and \code{smd_value}
-unconditionally -- \code{NA} throughout when \code{smd = FALSE} -- so the
-schema a pipeline indexes into does not move with an argument
-(the \code{weighted_n} rule). \code{smd_type} names the kernel the value
-came from: \code{"continuous"} here.
-The two names \code{"data.frame"} and \code{"long"} are synonyms (the
-descriptive output is naturally already long). Pick whichever
-reads better in your code.
+The effect-size and SMD columns are there whether or not they were
+requested, \code{NA} when not, so the schema a pipeline indexes into
+does not move with an argument (the \code{weighted_n} rule); the test
+columns follow \code{p_value}.
 \item \code{"tinytable"}: a \code{tinytable} object.
 \item \code{"gt"}: a \code{gt_tbl} object.
 \item \code{"flextable"}: a \code{flextable} object.
@@ -435,10 +452,11 @@ to suppress the \emph{p}-value column. Without \code{by}, produces one-way
 descriptive summaries.
 
 Multiple output formats are available via \code{output}: a printed ASCII
-table (\code{"default"}), a plain \code{data.frame} (\code{"data.frame"} or
-\code{"long"} -- synonyms for the underlying long-format data, see
-Details), or publication-ready tables (\code{"tinytable"}, \code{"gt"},
-\code{"flextable"}, \code{"excel"}, \code{"clipboard"}, \code{"word"}).
+table (\code{"default"}), a plain \code{data.frame} (\code{"data.frame"}, the
+displayed table with its numbers, or \code{"long"}, every statistic of
+each variable and group; see \emph{Value}), or publication-ready tables
+(\code{"tinytable"}, \code{"gt"}, \code{"flextable"}, \code{"excel"}, \code{"clipboard"},
+\code{"word"}).
 
 This is the descriptive companion to \code{\link[=table_continuous_lm]{table_continuous_lm()}}. The
 two functions share their layout, alignment, and reporting precision

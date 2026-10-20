@@ -1,10 +1,32 @@
 # ---- structure ----
 
 test_that("table_continuous returns correct structure", {
+  # output = "data.frame": the displayed table, its numbers under the
+  # printed column names.
   out <- table_continuous(iris, output = "data.frame")
   expect_s3_class(out, "data.frame")
   expect_named(
     out,
+    c(
+      "variable",
+      "label",
+      "M",
+      "SD",
+      "Min",
+      "Max",
+      "95% CI LL",
+      "95% CI UL",
+      "n"
+    )
+  )
+  expect_equal(nrow(out), 4L)
+  expect_true(all(vapply(out[-(1:2)], is.numeric, logical(1))))
+
+  # output = "long": every statistic the table computes.
+  long <- table_continuous(iris, output = "long")
+  expect_s3_class(long, "data.frame")
+  expect_named(
+    long,
     c(
       "variable",
       "label",
@@ -26,7 +48,9 @@ test_that("table_continuous returns correct structure", {
       "weighted_n"
     )
   )
-  expect_equal(nrow(out), 4L)
+  expect_equal(nrow(long), 4L)
+  # No `level` and no `group`: no role column.
+  expect_false(any(c(".row_role", ".group_role") %in% names(long)))
 })
 
 test_that("table_continuous returns spicy_continuous_table class when default output", {
@@ -97,7 +121,7 @@ test_that("table_continuous accepts by as a character object without warnings", 
 
 test_that("table_continuous computes correct values", {
   df <- data.frame(x = c(1, 2, 3, 4, 5))
-  out <- table_continuous(df, output = "data.frame")
+  out <- table_continuous(df, output = "long")
   expect_equal(out$mean, 3)
   expect_equal(out$sd, sd(c(1, 2, 3, 4, 5)))
   expect_equal(out$min, 1)
@@ -107,7 +131,7 @@ test_that("table_continuous computes correct values", {
 
 test_that("table_continuous CI is t-based", {
   df <- data.frame(x = c(10, 20, 30))
-  out <- table_continuous(df, ci_level = 0.95, output = "data.frame")
+  out <- table_continuous(df, ci_level = 0.95, output = "long")
   m <- mean(c(10, 20, 30))
   se <- sd(c(10, 20, 30)) / sqrt(3)
   t_crit <- qt(0.975, df = 2)
@@ -117,8 +141,8 @@ test_that("table_continuous CI is t-based", {
 
 test_that("table_continuous ci_level affects width", {
   df <- data.frame(x = 1:100)
-  out90 <- table_continuous(df, ci_level = 0.90, output = "data.frame")
-  out99 <- table_continuous(df, ci_level = 0.99, output = "data.frame")
+  out90 <- table_continuous(df, ci_level = 0.90, output = "long")
+  out99 <- table_continuous(df, ci_level = 0.99, output = "long")
   expect_gt(
     out99$ci_upper - out99$ci_lower,
     out90$ci_upper - out90$ci_lower
@@ -126,7 +150,7 @@ test_that("table_continuous ci_level affects width", {
 })
 
 test_that("table_continuous handles multiple numeric variables", {
-  out <- table_continuous(iris, output = "data.frame")
+  out <- table_continuous(iris, output = "long")
   expect_equal(nrow(out), 4L)
   expect_equal(
     out$variable,
@@ -140,14 +164,14 @@ test_that("table_continuous handles multiple numeric variables", {
 
 test_that("table_continuous handles NAs", {
   df <- data.frame(x = c(1, NA, 3, NA, 5))
-  out <- table_continuous(df, output = "data.frame")
+  out <- table_continuous(df, output = "long")
   expect_equal(out$n, 3L)
   expect_equal(out$mean, mean(c(1, 3, 5)))
 })
 
 test_that("table_continuous handles all-NA column", {
   df <- data.frame(x = rep(NA_real_, 5))
-  out <- table_continuous(df, output = "data.frame")
+  out <- table_continuous(df, output = "long")
   expect_equal(out$n, 0L)
   expect_true(is.na(out$mean))
   expect_true(is.na(out$sd))
@@ -159,7 +183,7 @@ test_that("table_continuous handles all-NA column", {
 
 test_that("table_continuous n=1 gives NA for sd and CI", {
   df <- data.frame(x = 42)
-  out <- table_continuous(df, output = "data.frame")
+  out <- table_continuous(df, output = "long")
   expect_equal(out$n, 1L)
   expect_equal(out$mean, 42)
   expect_equal(out$min, 42)
@@ -390,7 +414,7 @@ test_that("table_continuous grouped stats are correct", {
     iris,
     select = Sepal.Length,
     by = Species,
-    output = "data.frame"
+    output = "long"
   )
   setosa_data <- iris$Sepal.Length[iris$Species == "setosa"]
   setosa_row <- out[out$group == "setosa", ]
@@ -479,11 +503,20 @@ test_that("table_continuous p_value adds p column without Test column", {
     iris,
     select = Sepal.Length,
     by = Species,
-    p_value = TRUE,
-    output = "data.frame"
+    p_value = TRUE
   )
   expect_true("p.value" %in% names(out))
   expect_true("statistic" %in% names(out))
+  # The data frame of the displayed table: a p column, no Test column.
+  df <- table_continuous(
+    iris,
+    select = Sepal.Length,
+    by = Species,
+    p_value = TRUE,
+    output = "data.frame"
+  )
+  expect_true("p" %in% names(df))
+  expect_false("Test" %in% names(df))
   display <- spicy:::build_display_df(
     out,
     2L,
@@ -515,9 +548,9 @@ test_that("table_continuous p_value + statistic adds both columns", {
     select = Sepal.Length,
     by = Species,
     p_value = TRUE,
-    statistic = TRUE,
-    output = "data.frame"
+    statistic = TRUE
   )
+  expect_true(all(c("Test", "p") %in% names(as.data.frame(out))))
   display <- spicy:::build_display_df(
     out,
     2L,
@@ -535,8 +568,7 @@ test_that("table_continuous statistic alone shows Test column without p", {
     iris,
     select = Sepal.Length,
     by = Species,
-    statistic = TRUE,
-    output = "data.frame"
+    statistic = TRUE
   )
   expect_true("statistic" %in% names(out))
   display <- spicy:::build_display_df(
@@ -570,7 +602,7 @@ test_that("table_continuous p_value without by warns", {
       iris,
       select = Sepal.Length,
       p_value = TRUE,
-      output = "data.frame"
+      output = "long"
     ),
     "ignored"
   )
@@ -583,7 +615,7 @@ test_that("table_continuous statistic without by warns", {
       iris,
       select = Sepal.Length,
       statistic = TRUE,
-      output = "data.frame"
+      output = "long"
     ),
     "ignored"
   )
@@ -629,8 +661,7 @@ test_that("table_continuous p_value auto-shows when by is supplied", {
   out <- table_continuous(
     iris,
     select = Sepal.Length,
-    by = Species,
-    output = "data.frame"
+    by = Species
   )
   expect_true("p.value" %in% names(out))
   expect_true(attr(out, "show_p"))
@@ -640,8 +671,7 @@ test_that("table_continuous p_value auto-shows when by is supplied", {
 test_that("table_continuous p_value stays hidden when by is absent", {
   out <- table_continuous(
     iris,
-    select = Sepal.Length,
-    output = "data.frame"
+    select = Sepal.Length
   )
   expect_false("p.value" %in% names(out))
   expect_false(isTRUE(attr(out, "show_p")))
@@ -652,8 +682,7 @@ test_that("table_continuous p_value = FALSE suppresses column when by is supplie
     iris,
     select = Sepal.Length,
     by = Species,
-    p_value = FALSE,
-    output = "data.frame"
+    p_value = FALSE
   )
   expect_false("p.value" %in% names(out))
   expect_false(attr(out, "show_p"))
@@ -664,12 +693,16 @@ test_that("p_value = FALSE drops p.value when another argument runs the test (is
     table_continuous(iris, select = Sepal.Length, by = Species, ...)
   }
   # The statistic keeps its own switch; the p-value follows `p_value`.
-  st <- build(p_value = FALSE, statistic = TRUE, output = "data.frame")
-  expect_true(all(c("test_type", "statistic", "df1", "df2") %in% names(st)))
+  st <- build(p_value = FALSE, statistic = TRUE, output = "long")
+  expect_true(all(
+    c("test_type", "statistic", "df", "df.residual") %in% names(st)
+  ))
   expect_false("p.value" %in% names(st))
   # An effect size keeps the test it comes from, not its p-value.
-  es <- build(p_value = FALSE, effect_size = "eta_sq", output = "data.frame")
-  expect_true(all(c("test_type", "statistic", "df1", "df2") %in% names(es)))
+  es <- build(p_value = FALSE, effect_size = "eta_sq", output = "long")
+  expect_true(all(
+    c("test_type", "statistic", "df", "df.residual") %in% names(es)
+  ))
   expect_false("p.value" %in% names(es))
   expect_false(is.na(es$es_value[1]))
   # glance() keeps its fixed schema, NA where the frame has no column.
@@ -714,7 +747,7 @@ test_that("table_continuous print works with p_value + statistic", {
 
 test_that("table_continuous test='welch' is the default (2 groups)", {
   df <- data.frame(g = rep(c("A", "B"), each = 20), x = rnorm(40))
-  out <- table_continuous(df, by = g, p_value = TRUE, output = "data.frame")
+  out <- table_continuous(df, by = g, p_value = TRUE, output = "long")
   expect_equal(out$test_type[1], "welch_t")
 })
 test_that("table_continuous test='welch' with 3+ groups uses welch_anova", {
@@ -723,7 +756,7 @@ test_that("table_continuous test='welch' with 3+ groups uses welch_anova", {
     select = Sepal.Length,
     by = Species,
     p_value = TRUE,
-    output = "data.frame"
+    output = "long"
   )
   expect_equal(out$test_type[1], "welch_anova")
 })
@@ -735,7 +768,7 @@ test_that("table_continuous test='student' uses student_t for 2 groups", {
     by = g,
     test = "student",
     p_value = TRUE,
-    output = "data.frame"
+    output = "long"
   )
   expect_equal(out$test_type[1], "student_t")
 })
@@ -747,10 +780,10 @@ test_that("table_continuous test='student' uses anova for 3+ groups", {
     by = Species,
     test = "student",
     p_value = TRUE,
-    output = "data.frame"
+    output = "long"
   )
   expect_equal(out$test_type[1], "anova")
-  expect_false(is.na(out$df2[1]))
+  expect_false(is.na(out$df.residual[1]))
 })
 
 test_that("table_continuous test='nonparametric' uses wilcoxon for 2 groups", {
@@ -760,10 +793,10 @@ test_that("table_continuous test='nonparametric' uses wilcoxon for 2 groups", {
     by = g,
     test = "nonparametric",
     p_value = TRUE,
-    output = "data.frame"
+    output = "long"
   )
   expect_equal(out$test_type[1], "wilcoxon")
-  expect_true(is.na(out$df1[1]))
+  expect_true(is.na(out$df[1]))
 })
 
 test_that("table_continuous test='nonparametric' uses kruskal for 3+ groups", {
@@ -773,10 +806,10 @@ test_that("table_continuous test='nonparametric' uses kruskal for 3+ groups", {
     by = Species,
     test = "nonparametric",
     p_value = TRUE,
-    output = "data.frame"
+    output = "long"
   )
   expect_equal(out$test_type[1], "kruskal")
-  expect_false(is.na(out$df1[1]))
+  expect_false(is.na(out$df[1]))
 })
 
 test_that("table_continuous test attribute is stored", {
@@ -846,8 +879,7 @@ test_that("table_continuous nonparametric statistic display uses W and H", {
     df2,
     by = g,
     test = "nonparametric",
-    statistic = TRUE,
-    output = "data.frame"
+    statistic = TRUE
   )
   display2 <- spicy:::build_display_df(
     out2,
@@ -864,8 +896,7 @@ test_that("table_continuous nonparametric statistic display uses W and H", {
     select = Sepal.Length,
     by = Species,
     test = "nonparametric",
-    statistic = TRUE,
-    output = "data.frame"
+    statistic = TRUE
   )
   display3 <- spicy:::build_display_df(
     out3,
@@ -884,8 +915,7 @@ test_that("table_continuous student statistic display uses t and F", {
     df2,
     by = g,
     test = "student",
-    statistic = TRUE,
-    output = "data.frame"
+    statistic = TRUE
   )
   display2 <- spicy:::build_display_df(
     out2,
@@ -902,8 +932,7 @@ test_that("table_continuous student statistic display uses t and F", {
     select = Sepal.Length,
     by = Species,
     test = "student",
-    statistic = TRUE,
-    output = "data.frame"
+    statistic = TRUE
   )
   display3 <- spicy:::build_display_df(
     out3,
@@ -923,7 +952,7 @@ test_that("table_continuous test='nonparametric' p-values match base R", {
     by = Species,
     test = "nonparametric",
     p_value = TRUE,
-    output = "data.frame"
+    output = "long"
   )
   ref <- kruskal.test(Sepal.Length ~ Species, data = iris)
   expect_equal(out$p.value[1], ref$p.value)
@@ -1369,14 +1398,16 @@ test_that("drop_na = FALSE displays a (Missing) group and tests the observed", {
     select = "x",
     by = "g",
     drop_na = FALSE,
-    output = "data.frame"
+    output = "long"
   )
   expect_equal(unique(out$group), c("A", "B", "(Missing)"))
+  expect_identical(out$.group_role, c("group", "group", "missing"))
   expect_equal(out$n[out$group == "(Missing)"], 2L)
   # Show the missing, test the observed: same p as drop_na = TRUE.
   ref <- suppressWarnings(
-    table_continuous(df, select = "x", by = "g", output = "data.frame")
+    table_continuous(df, select = "x", by = "g", output = "long")
   )
+  expect_false(is.na(ref$p.value[1]))
   expect_equal(out$p.value[1], ref$p.value[1])
 })
 
@@ -1408,10 +1439,12 @@ test_that("drop_na = FALSE refuses a real (Missing) group value", {
     select = "x",
     by = "g",
     drop_na = FALSE,
-    output = "data.frame"
+    output = "long"
   )
   expect_equal(unique(out$group), c("(Missing)", "B", "(Not stated)"))
   expect_identical(out$n[out$group == "(Not stated)"], 2L)
+  # The role names the group of missing values, not the real "(Missing)".
+  expect_identical(out$.group_role, c("group", "group", "missing"))
 })
 
 test_that("drop_na = FALSE refuses a declared-only (Missing) level", {
@@ -1435,7 +1468,7 @@ test_that("drop_na = FALSE refuses a declared-only (Missing) level", {
     select = "y",
     by = "g",
     drop_na = FALSE,
-    output = "data.frame"
+    output = "long"
   )
   expect_equal(unique(out$group), c("u", "v", "(Missing)", "(Not stated)"))
   expect_identical(out$n[out$group == "(Missing)"], 0L)
@@ -1805,8 +1838,7 @@ test_that("build_display_df ungrouped has correct column names", {
   # than that the header has been renamed.
   grouped <- table_continuous(
     data.frame(x = 1:10, g = rep(1:2, 5)),
-    by = g,
-    output = "data.frame"
+    by = g
   )
   expect_true(
     "Group" %in%
@@ -1845,7 +1877,7 @@ test_that("table_continuous NAs in grouped data are handled", {
     g = c("A", "A", "B", "B", "B"),
     x = c(1, NA, 3, NA, 5)
   )
-  out <- table_continuous(df, by = g, output = "data.frame")
+  out <- table_continuous(df, by = g, output = "long")
   a_row <- out[out$group == "A", ]
   b_row <- out[out$group == "B", ]
   expect_equal(a_row$n, 1L)
@@ -1940,7 +1972,7 @@ test_that("table_continuous effect_size=TRUE adds es columns (welch, 2 groups)",
     select = Sepal.Length,
     by = Species,
     effect_size = "auto",
-    output = "data.frame"
+    output = "long"
   )
   expect_true("es_type" %in% names(out))
   expect_true("es_value" %in% names(out))
@@ -1948,6 +1980,18 @@ test_that("table_continuous effect_size=TRUE adds es columns (welch, 2 groups)",
   expect_true("es_ci_upper" %in% names(out))
   expect_equal(out$es_type[1], "hedges_g")
   expect_false(is.na(out$es_value[1]))
+  # The displayed table gains the ES column, and only on request.
+  shown <- function(...) {
+    names(table_continuous(
+      df,
+      select = Sepal.Length,
+      by = Species,
+      ...,
+      output = "data.frame"
+    ))
+  }
+  expect_true("ES" %in% shown(effect_size = "auto"))
+  expect_false("ES" %in% shown())
 })
 
 test_that("table_continuous Hedges' g matches manual calculation", {
@@ -1958,7 +2002,7 @@ test_that("table_continuous Hedges' g matches manual calculation", {
     select = Sepal.Length,
     by = Species,
     effect_size = "auto",
-    output = "data.frame"
+    output = "long"
   )
   x1 <- df$Sepal.Length[df$Species == "setosa"]
   x2 <- df$Sepal.Length[df$Species == "versicolor"]
@@ -1978,7 +2022,7 @@ test_that("table_continuous eta-squared for 3+ groups (welch)", {
     select = Sepal.Length,
     by = Species,
     effect_size = "auto",
-    output = "data.frame"
+    output = "long"
   )
   expect_equal(out$es_type[1], "eta_sq")
   expect_false(is.na(out$es_ci_lower[1]))
@@ -2003,7 +2047,7 @@ test_that("table_continuous nonparametric 2 groups gives rank-biserial r", {
     by = Species,
     test = "nonparametric",
     effect_size = "auto",
-    output = "data.frame"
+    output = "long"
   )
   expect_equal(out$es_type[1], "r_rb")
   expect_false(is.na(out$es_ci_lower[1]))
@@ -2017,7 +2061,7 @@ test_that("table_continuous nonparametric 3+ groups gives epsilon-squared", {
     by = Species,
     test = "nonparametric",
     effect_size = "auto",
-    output = "data.frame"
+    output = "long"
   )
   expect_equal(out$es_type[1], "epsilon_sq")
   expect_false(is.na(out$es_ci_lower[1]))
@@ -2030,7 +2074,7 @@ test_that("table_continuous effect_size without by warns", {
       iris,
       select = Sepal.Length,
       effect_size = "auto",
-      output = "data.frame"
+      output = "long"
     ),
     "ignored"
   )
@@ -2044,11 +2088,14 @@ test_that("table_continuous effect_size_ci without effect_size warns and enables
       select = Sepal.Length,
       by = Species,
       effect_size_ci = TRUE,
-      output = "data.frame"
+      output = "long"
     ),
     "effect_size_ci"
   )
-  expect_true("es_type" %in% names(out))
+  # The long frame always holds the columns; enabled means populated.
+  expect_identical(out$es_type[1], "eta_sq")
+  expect_false(is.na(out$es_value[1]))
+  expect_false(is.na(out$es_ci_lower[1]))
 })
 
 test_that("table_continuous effect_size default output carries attributes", {
@@ -2118,7 +2165,7 @@ test_that("table_continuous es values only on first row of each variable block",
     select = Sepal.Length,
     by = Species,
     effect_size = "auto",
-    output = "data.frame"
+    output = "long"
   )
   # 3 groups x 1 var = 3 rows; es_value only on first row
   expect_false(is.na(out$es_value[1]))
@@ -2147,8 +2194,7 @@ test_that("table_continuous effect_size=TRUE alone adds es but not test columns"
     iris,
     select = Sepal.Length,
     by = Species,
-    effect_size = "auto",
-    output = "data.frame"
+    effect_size = "auto"
   )
   expect_true("es_type" %in% names(out))
   expect_true("es_value" %in% names(out))
@@ -2188,7 +2234,7 @@ test_that("table_continuous does not warn about test when effect_size uses it", 
       effect_size = "auto",
       p_value = FALSE,
       statistic = FALSE,
-      output = "data.frame"
+      output = "long"
     )
   )
 
@@ -2207,7 +2253,7 @@ test_that("table_continuous effect_size with test='student' 2 groups gives hedge
     by = Species,
     test = "student",
     effect_size = "auto",
-    output = "data.frame"
+    output = "long"
   )
   expect_equal(out$es_type[1], "hedges_g")
   expect_equal(out$test_type[1], "student_t")
@@ -2220,7 +2266,7 @@ test_that("table_continuous effect_size with test='student' 3+ groups gives eta_
     by = Species,
     test = "student",
     effect_size = "auto",
-    output = "data.frame"
+    output = "long"
   )
   expect_equal(out$es_type[1], "eta_sq")
   expect_equal(out$test_type[1], "anova")
@@ -2264,8 +2310,9 @@ test_that("table_continuous effect_size with untestable group gives NA", {
     effect_size = "auto",
     output = "data.frame"
   )
-  expect_true("es_type" %in% names(out))
-  expect_true(is.na(out$es_value[1]))
+  # The requested column is displayed, and empty.
+  expect_true("ES" %in% names(out))
+  expect_true(is.na(out$ES[1]))
 })
 
 # ---- effect size: nonparametric rank-biserial CI small n ----
@@ -2280,7 +2327,7 @@ test_that("table_continuous rank-biserial r_rb has CI with small n", {
     by = g,
     test = "nonparametric",
     effect_size = "auto",
-    output = "data.frame"
+    output = "long"
   )
   expect_equal(out$es_type[1], "r_rb")
   # n_total = 4 > 3, so CI should be computed
@@ -2295,7 +2342,7 @@ test_that("table_continuous effect_size with multiple variables", {
     select = c(Sepal.Length, Sepal.Width),
     by = Species,
     effect_size = "auto",
-    output = "data.frame"
+    output = "long"
   )
   sl_es <- out$es_value[out$variable == "Sepal.Length" & !is.na(out$es_value)]
   sw_es <- out$es_value[out$variable == "Sepal.Width" & !is.na(out$es_value)]
@@ -2693,8 +2740,7 @@ test_that("effect-size CI bracket separator switches with decimal_mark", {
     by = Species,
     test = "student",
     effect_size = "auto",
-    effect_size_ci = TRUE,
-    output = "data.frame"
+    effect_size_ci = TRUE
   )
 
   display_dot <- spicy:::build_display_df(
@@ -2955,7 +3001,9 @@ test_that("ci = FALSE drops the CI columns from the rendered display df", {
   expect_false(any(grepl("CI", names(display))))
 })
 
-test_that("output = 'long' is a synonym for output = 'data.frame'", {
+test_that("output = 'data.frame' is the displayed table, 'long' the compute frame", {
+  # No longer synonyms: "data.frame" is as.data.frame() of the printed
+  # table, "long" every statistic the table computes.
   out_df <- table_continuous(
     sleep,
     select = extra,
@@ -2963,7 +3011,37 @@ test_that("output = 'long' is a synonym for output = 'data.frame'", {
     output = "data.frame"
   )
   out_lg <- table_continuous(sleep, select = extra, by = group, output = "long")
-  expect_identical(unclass(out_df), unclass(out_lg))
+  expect_identical(
+    out_df,
+    as.data.frame(table_continuous(sleep, select = extra, by = group))
+  )
+  expect_named(
+    out_df,
+    c(
+      "variable",
+      "label",
+      "group",
+      ".row_role",
+      "M",
+      "SD",
+      "Min",
+      "Max",
+      "95% CI LL",
+      "95% CI UL",
+      "n",
+      "p"
+    )
+  )
+  expect_true(all(
+    c("mean", "sd", "ci_lower", "median", "q1", "q3", "df", "p.value") %in%
+      names(out_lg)
+  ))
+  # One row per printed row, the same numbers in both.
+  expect_identical(out_df$group, out_lg$group)
+  expect_identical(out_df$.row_role, out_lg$.group_role)
+  expect_equal(out_df$M, out_lg$mean)
+  expect_equal(out_df[["95% CI LL"]], out_lg$ci_lower)
+  expect_equal(out_df$p, out_lg$p.value)
 })
 
 # ---- broom S3 methods -----------------------------------------------------
@@ -2978,8 +3056,17 @@ test_that("as.data.frame() strips spicy classes and rendering attrs", {
   expect_null(attr(df, "digits"))
   expect_null(attr(df, "decimal_mark"))
   expect_null(attr(df, "align"))
-  # group_var preserved as provenance
-  expect_equal(attr(df, "group_var"), "group")
+  # Only the note travels: no group_var; the group is a column.
+  expect_null(attr(df, "group_var"))
+  expect_true("group" %in% names(df))
+  expect_true(all(
+    names(attributes(df)) %in% c("names", "row.names", "class", "note")
+  ))
+  # The same frame as output = "data.frame".
+  expect_identical(
+    df,
+    table_continuous(sleep, select = extra, by = group, output = "data.frame")
+  )
 })
 
 test_that("as_tibble() returns a tbl_df", {
@@ -3004,11 +3091,16 @@ test_that("tidy() returns one row per (variable x group) with broom columns", {
       "variable",
       "label",
       "group",
+      ".group_role",
       "estimate",
       "std.error",
       "conf.low",
       "conf.high",
       "n",
+      "weighted_n",
+      "median",
+      "q1",
+      "q3",
       "min",
       "max",
       "sd"
@@ -3020,13 +3112,21 @@ test_that("tidy() returns one row per (variable x group) with broom columns", {
     setosa_sl$estimate,
     mean(iris$Sepal.Length[iris$Species == "setosa"])
   )
+  expect_equal(
+    setosa_sl$median,
+    stats::median(iris$Sepal.Length[iris$Species == "setosa"])
+  )
+  expect_identical(unique(td$.group_role), "group")
 })
 
 test_that("tidy() works without by (one row per variable)", {
   out <- table_continuous(iris, select = c(Sepal.Length, Sepal.Width))
   td <- broom::tidy(out)
   expect_equal(nrow(td), 2L)
-  expect_false("group" %in% names(td))
+  # `group` is always there, NA without `by`, as in the survey twin.
+  expect_true("group" %in% names(td))
+  expect_true(all(is.na(td$group)))
+  expect_identical(td$.group_role, c(NA_character_, NA_character_))
 })
 
 test_that("glance() returns one row per outcome with omnibus test + ES", {
@@ -3054,20 +3154,20 @@ test_that("glance() returns one row per outcome with omnibus test + ES", {
       "es_ci_upper",
       "smd_type",
       "smd_value",
-      "n_total"
+      "nobs"
     )
   )
   expect_equal(unique(gl$es_type), "eta_sq")
-  expect_true(all(gl$n_total == 150L))
+  expect_true(all(gl$nobs == 150L))
 })
 
-test_that("glance() without by returns NA test/ES, populated n_total", {
+test_that("glance() without by returns NA test/ES, populated nobs", {
   out <- table_continuous(iris, select = Sepal.Length)
   gl <- broom::glance(out)
   expect_equal(nrow(gl), 1L)
   expect_true(is.na(gl$test_type))
   expect_true(is.na(gl$p.value))
-  expect_equal(gl$n_total, 150L)
+  expect_equal(gl$nobs, 150L)
 })
 
 # ---- ci = FALSE / show_n = FALSE: structural omission across engines -----
@@ -3101,12 +3201,12 @@ test_that("ci = FALSE / show_n = FALSE render across every output (smoke matrix)
   }
 })
 
-test_that("raw data.frame / long outputs always carry analytic ci_lower / ci_upper / n", {
-  # `ci = FALSE` and `show_n = FALSE` only suppress the formatted
-  # display columns; the raw analytic data exposed via
-  # `output = "data.frame"` / `"long"` always carries the underlying
-  # CI bounds and `n` so downstream code (broom::tidy, gtsummary, ...)
-  # has access to them.
+test_that("the long output always carries analytic ci_lower / ci_upper / n", {
+  # `ci = FALSE` and `show_n = FALSE` only suppress the display
+  # columns; `output = "long"` always carries the underlying CI bounds
+  # and `n` so downstream code (broom::tidy, gtsummary, ...) has access
+  # to them. `output = "data.frame"` is the displayed table, so it
+  # follows the display.
   out_df <- table_continuous(
     sleep,
     select = extra,
@@ -3123,8 +3223,9 @@ test_that("raw data.frame / long outputs always carry analytic ci_lower / ci_upp
     show_n = FALSE,
     output = "long"
   )
-  expect_true(all(c("ci_lower", "ci_upper", "n") %in% names(out_df)))
   expect_true(all(c("ci_lower", "ci_upper", "n") %in% names(out_lg)))
+  expect_false(any(c("95% CI LL", "95% CI UL", "n") %in% names(out_df)))
+  expect_true(all(c("M", "SD") %in% names(out_df)))
 })
 
 test_that("ci = FALSE structurally removes CI cols from the build_display_df output", {
@@ -3516,7 +3617,7 @@ test_that("a constant column reports exact SD 0 and a degenerate CI", {
   out <- table_continuous(
     data.frame(k = rep(5, 4)),
     select = k,
-    output = "data.frame"
+    output = "long"
   )
   expect_equal(out$mean, 5)
   expect_equal(out$sd, 0)
@@ -3526,7 +3627,7 @@ test_that("a constant column reports exact SD 0 and a degenerate CI", {
   one <- table_continuous(
     data.frame(k = 5),
     select = k,
-    output = "data.frame"
+    output = "long"
   )
   expect_true(is.na(one$sd))
   expect_true(is.na(one$ci_lower))
@@ -3662,11 +3763,16 @@ test_that("tidy/glance column sets are frozen (stabilizing contract)", {
       "variable",
       "label",
       "group",
+      ".group_role",
       "estimate",
       "std.error",
       "conf.low",
       "conf.high",
       "n",
+      "weighted_n",
+      "median",
+      "q1",
+      "q3",
       "min",
       "max",
       "sd"
@@ -3688,7 +3794,7 @@ test_that("tidy/glance column sets are frozen (stabilizing contract)", {
       "es_ci_upper",
       "smd_type",
       "smd_value",
-      "n_total"
+      "nobs"
     )
   )
 })
@@ -3828,7 +3934,8 @@ test_that("show_columns = NULL reproduces the historical display exactly", {
   expect_false(any(grepl("Med", base_no_by, fixed = TRUE)))
   expect_false(any(grepl("IQR", base_no_by, fixed = TRUE)))
 
-  out <- table_continuous(sleep, select = extra, by = group, output = "long")
+  # The token set is a rendering attribute of the printed object.
+  out <- table_continuous(sleep, select = extra, by = group)
   expect_identical(
     attr(out, "show_columns"),
     c("m", "sd", "min", "max", "ci", "n")
@@ -3839,8 +3946,7 @@ test_that("show_columns = NULL reproduces the historical display exactly", {
         sleep,
         select = extra,
         ci = FALSE,
-        show_n = FALSE,
-        output = "long"
+        show_n = FALSE
       ),
       "show_columns"
     ),
@@ -3848,6 +3954,10 @@ test_that("show_columns = NULL reproduces the historical display exactly", {
   )
   # No gloss is appended to a default table's note.
   expect_null(attr(out, "note"))
+  expect_null(attr(
+    table_continuous(sleep, select = extra, by = group, output = "long"),
+    "note"
+  ))
 })
 
 test_that("median / quartile columns equal stats::median() and quantile() type 7", {
@@ -3971,8 +4081,7 @@ test_that("a named list gives each variable its own columns, blanks the rest", {
       mvpa = c("med_iqr", "n"),
       sitting = c("med_iqr", "n"),
       .default = c("m", "sd", "n")
-    ),
-    output = "long"
+    )
   )
   expect_identical(attr(out, "show_columns"), c("m", "sd", "med_iqr", "n"))
   display <- spicy:::build_display_df(
@@ -4132,28 +4241,25 @@ test_that("ci without m is dropped and points at med_ci; med_ci mirrors it", {
     out <- table_continuous(
       sleep,
       select = extra,
-      show_columns = c("med", "ci", "n"),
-      output = "long"
+      show_columns = c("med", "ci", "n")
     ),
     class = "spicy_ignored_arg"
   )
-  expect_false("ci" %in% attr(out, "show_columns"))
+  expect_identical(attr(out, "show_columns"), c("med", "n"))
   expect_warning(
     out2 <- table_continuous(
       sleep,
       select = extra,
-      show_columns = c("m", "med_ci"),
-      output = "long"
+      show_columns = c("m", "med_ci")
     ),
     class = "spicy_ignored_arg"
   )
-  expect_false("med_ci" %in% attr(out2, "show_columns"))
+  expect_identical(attr(out2, "show_columns"), "m")
   # med_iqr also displays the median, so it satisfies med_ci.
   out3 <- table_continuous(
     sleep,
     select = extra,
-    show_columns = c("med_iqr", "med_ci"),
-    output = "long"
+    show_columns = c("med_iqr", "med_ci")
   )
   expect_true("med_ci" %in% attr(out3, "show_columns"))
 })
@@ -4164,12 +4270,11 @@ test_that("show_columns overrules a contradictory show_n / ci", {
       sleep,
       select = extra,
       show_columns = c("m", "sd"),
-      show_n = TRUE,
-      output = "long"
+      show_n = TRUE
     ),
     class = "spicy_ignored_arg"
   )
-  expect_false("n" %in% attr(out, "show_columns"))
+  expect_identical(attr(out, "show_columns"), c("m", "sd"))
   expect_warning(
     table_continuous(
       sleep,
@@ -4210,7 +4315,7 @@ test_that("show_columns reaches every output engine with the same columns", {
     skewed = c("med", "med_iqr", "med_ci", "n"),
     age = c("m", "sd", "ci", "n")
   )
-  # data.frame / long: every statistic present whatever is displayed.
+  # long: every statistic present whatever is displayed.
   lg <- table_continuous(
     d,
     select = c(skewed, age),
@@ -4222,19 +4327,26 @@ test_that("show_columns reaches every output engine with the same columns", {
     c("median", "q1", "q3", "iqr", "med_ci_lower", "med_ci_upper") %in%
       names(lg)
   ))
+  # The token set rides on the printed object.
+  tbl <- table_continuous(
+    d,
+    select = c(skewed, age),
+    by = g,
+    show_columns = spec
+  )
   expect_identical(
-    attr(lg, "show_columns"),
+    attr(tbl, "show_columns"),
     c("m", "sd", "med", "med_iqr", "ci", "med_ci", "n")
   )
 
   display <- spicy:::build_display_df(
-    lg,
+    tbl,
     digits = 2,
     decimal_mark = ".",
     ci_level = 0.95,
     show_p = TRUE,
-    tokens_union = attr(lg, "show_columns"),
-    tokens_by_var = attr(lg, "show_columns_by_var")
+    tokens_union = attr(tbl, "show_columns"),
+    tokens_by_var = attr(tbl, "show_columns_by_var")
   )
   expect_named(
     display,

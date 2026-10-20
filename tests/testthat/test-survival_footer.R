@@ -73,7 +73,7 @@ test_that("n_events fit-stat: Cox event count, blank for non-Cox columns", {
     list(Cox = cx, OLS = ols),
     show_fit_stats = c("nobs", "n_events")
   )
-  d <- as.data.frame(out, stringsAsFactors = FALSE)
+  d <- structure(out, class = "data.frame")
   ev_row <- d[trimws(d$Variable) == "N events", , drop = FALSE]
   expect_identical(nrow(ev_row), 1L)
   # Cox column carries the event count ...
@@ -97,7 +97,7 @@ test_that("rms::cph: events move to the n_events fit-stat row", {
   out <- spicy:::build_survival_footer_block_from_frames(list(fr))
   expect_null(out)
   expect_identical(fr$info$fit_stats$n_events, 165L)
-  df <- as.data.frame(table_regression(fit))
+  df <- structure(table_regression(fit), class = "data.frame")
   ev <- df[trimws(df$Variable) == "N events", -1L, drop = FALSE]
   expect_true(any(grepl("165", unlist(ev))))
 })

@@ -270,11 +270,8 @@ test_that("n_groups fit-stat row leaves a blank cell under a non-mixed model", {
   mm <- lme4::lmer(Reaction ~ Days + (1 | Subject), data = sl)
   ml <- lm(Reaction ~ Days, data = sl)
 
-  tb <- table_regression(
-    list(mm, ml),
-    show_fit_stats = c("nobs", "n_groups"),
-    output = "data.frame"
-  )
+  # The printed table: its columns are the displayed cells.
+  tb <- table_regression(list(mm, ml), show_fit_stats = c("nobs", "n_groups"))
 
   # Shared single grouping factor -> dynamic "N (Subject)" label.
   ngrow <- which(trimws(tb$Variable) == "N (Subject)")
@@ -357,8 +354,9 @@ test_that("subordinate-block rows with NA/empty factor_level fall back to the te
 
 test_that("p_adjust on an intercept-only model is a documented no-op", {
   fit0 <- lm(mpg ~ 1, data = mtcars)
-  t_adj <- table_regression(fit0, p_adjust = "holm", output = "data.frame")
-  t_raw <- table_regression(fit0, output = "data.frame")
+  # The printed tables: their columns are the displayed cells.
+  t_adj <- table_regression(fit0, p_adjust = "holm")
+  t_raw <- table_regression(fit0)
 
   # Intercepts are excluded from the family -> zero adjustable p-values
   # -> every displayed cell is untouched.

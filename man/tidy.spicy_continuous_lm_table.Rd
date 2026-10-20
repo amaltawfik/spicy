@@ -47,9 +47,12 @@ it (see \code{labels}).
 statistics. Columns: \code{variable}, \code{label}, \code{predictor_type}
 (\code{"categorical"} or \code{"continuous"}), \code{test_type} (\code{"F"} for
 categorical predictors, \code{"t"} for continuous ones),
-\code{statistic}, \code{df}, \code{df.residual}, \code{p.value}, \code{r.squared},
+\code{statistic}, \code{df}, \code{df.residual} (the degrees of freedom follow the
+statistic: an \emph{F} has both, a \emph{t} has its own in \code{df} and none in
+\code{df.residual}), \code{p.value}, \code{r.squared},
 \code{adj.r.squared}, \code{es_type}, \code{es_value}, \code{es_ci_lower},
-\code{es_ci_upper}, \code{nobs}, \code{weighted_n}.
+\code{es_ci_upper}, \code{nobs}, \code{weighted_nobs} (the sum of the weights, \code{NA}
+without \code{weights}).
 }
 \seealso{
 \code{\link[=as.data.frame.spicy_continuous_lm_table]{as.data.frame.spicy_continuous_lm_table()}} for the raw

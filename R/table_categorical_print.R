@@ -33,7 +33,10 @@ print.spicy_categorical_table <- function(x, ...) {
   )
 
   if (is.null(display_df)) {
-    display_df <- x
+    # The object's own columns, as a plain frame: its class would send
+    # the printer's `as.data.frame()` to the method that returns the
+    # table with its numbers, a frame of another shape.
+    display_df <- structure(x, class = "data.frame")
   }
 
   align_left <- 1L
@@ -213,45 +216,103 @@ print.spicy_categorical_table <- function(x, ...) {
 
 # ---- Coercion to plain data.frame / tibble --------------------------------
 
-# Internal: drop spicy classes and rendering-only attributes from an
-# object returned by table_categorical(), keeping only the data.frame
-# contract plus the `group_var` provenance attribute and the `note`.
-# Used by every coercion / broom S3 method.
-unclass_spicy_categorical_table <- function(x) {
-  group_var <- attr(x, "group_var", exact = TRUE)
-  note <- attr(x, "note", exact = TRUE)
-  attr_names <- names(attributes(x))
-  drop <- setdiff(attr_names, c("names", "row.names", "class"))
-  for (nm in drop) {
-    attr(x, nm) <- NULL
+# The displayed table as a data frame (decision 5 of the ADR of
+# 2026-10-20): `as.data.frame()` and `output = "data.frame"` both call
+# it, on the object the table prints. The typed view is read through
+# `as_structured()`, whose error says what to do with a table that has
+# none.
+.categorical_data_frame <- function(x) {
+  long <- attr(x, "long_data", exact = TRUE)
+  labels <- stats::setNames(long$label %||% long$variable, long$variable)
+  .table_data_frame(
+    as_structured(x),
+    labels[!duplicated(names(labels))],
+    key = "level",
+    note = attr(x, "note", exact = TRUE)
+  )
+}
+
+# `blank_na_wide = TRUE`: the empty cells of the data frame as empty
+# strings -- the level of a header row, the statistics of the rows that
+# do not print them -- every column turned to text.
+.categorical_blank_na <- function(df, blank) {
+  if (!isTRUE(blank) || nrow(df) == 0L) {
+    return(df)
   }
-  class(x) <- "data.frame"
-  if (!is.null(group_var)) {
-    attr(x, "group_var") <- group_var
+  for (nm in names(df)) {
+    df[[nm]] <- ifelse(is.na(df[[nm]]), "", as.character(df[[nm]]))
   }
-  attr(x, "note") <- note
-  x
+  df
+}
+
+# The long output of a crossed categorical table, in the vocabulary of
+# the family (decision 1 of the ADR of 2026-10-20). `df` is the compute
+# frame under its internal names, with its label and its keys. The
+# statistics of a variable sit on every row of its block. The columns of
+# the effect size and of the SMD are there whether or not the table
+# asked for them, `NA` when it did not -- the stable schema
+# `table_continuous()` gave its SMD and its weighted count -- while the
+# test columns follow `p_value` (decision of 2026-10-17).
+.categorical_publish_long <- function(
+  df,
+  measure_col = NULL,
+  assoc_ci = FALSE
+) {
+  n <- nrow(df)
+  col_or <- function(nm, na) {
+    if (!is.null(nm) && nm %in% names(df)) df[[nm]] else rep(na, n)
+  }
+  es <- list(
+    es_type = col_or(".assoc_type", NA_character_),
+    es_value = col_or(measure_col, NA_real_),
+    es_ci_lower = if (assoc_ci) {
+      col_or("ci_lower", NA_real_)
+    } else {
+      rep(NA_real_, n)
+    },
+    es_ci_upper = if (assoc_ci) {
+      col_or("ci_upper", NA_real_)
+    } else {
+      rep(NA_real_, n)
+    },
+    smd_type = col_or(".smd_type", NA_character_),
+    smd_value = col_or(".smd", NA_real_)
+  )
+  internal <- c(
+    "p_op",
+    "ci_lower",
+    "ci_upper",
+    ".assoc_type",
+    ".smd",
+    ".smd_type",
+    measure_col
+  )
+  df <- df[setdiff(names(df), internal)]
+  df <- .rename_cols(df, c(chi2 = "statistic", p = "p.value"))
+  for (nm in names(es)) {
+    df[[nm]] <- es[[nm]]
+  }
+  rownames(df) <- NULL
+  df
 }
 
 #' Coerce a `spicy_categorical_table` to a plain data frame or tibble
 #'
-#' These S3 methods strip the `"spicy_categorical_table"` /
-#' `"spicy_table"` classes and the rendering-only attributes
-#' (`display_df`, `indent_text`, `align`, `decimal_mark`,
-#' `long_data`, ...) from an object returned by [table_categorical()]
-#' so the underlying wide-format data can be manipulated with
-#' downstream tools (`dplyr`, `tidyr`, etc.) under the standard
-#' `data.frame` / `tbl_df` contract. The attribute `"group_var"` is
-#' preserved as a lightweight provenance marker, and `"note"`, the note
-#' as printed; all other spicy attributes are dropped. The original `x`
-#' is unaffected, and `print(x)` continues to render the formatted ASCII
-#' table.
+#' `as.data.frame()` returns the table [table_categorical()] displays,
+#' with its numbers: exactly what `output = "data.frame"` returns. One
+#' row per printed row -- the header row of each variable, which
+#' carries its *p*-value and its association measure, then one row per
+#' level -- and the printed columns under their names (`"Female n"`,
+#' `"Female \%"`, ..., `"p"`, the measure), plus the key columns
+#' `variable` (the column name), `label` (the label displayed for it),
+#' `level`, and `.row_role` (`"factor_header"`, `"level"`, or
+#' `"missing"` for the row of missing values the table adds). The note,
+#' as printed, is kept in `attr(, "note")`. `as_tibble()` returns the
+#' same table as a tibble.
 #'
-#' The returned data is the wide raw representation (one row per
-#' `(variable x level)`, group columns side by side). For the
-#' tidy long format -- one row per `(variable x level x group)` --
-#' use [tidy.spicy_categorical_table()] or call [table_categorical()]
-#' directly with `output = "long"`.
+#' For one row per variable, level and group, use `output = "long"` or
+#' [tidy.spicy_categorical_table()]. The original `x` is unaffected, and
+#' `print(x)` continues to render the formatted ASCII table.
 #'
 #' @param x A `spicy_categorical_table` returned by [table_categorical()].
 #' @param row.names,optional Standard [base::as.data.frame()] arguments.
@@ -259,8 +320,8 @@ unclass_spicy_categorical_table <- function(x) {
 #' @param ... Further arguments passed to [tibble::as_tibble()] (for
 #'   the tibble method) or ignored (for the `as.data.frame()` method).
 #'
-#' @return A plain `data.frame` (or `tbl_df`) with the same rows and
-#'   columns as the wide raw output of [table_categorical()].
+#' @return A plain `data.frame` (or `tbl_df`), identical to the
+#'   `output = "data.frame"` of the same call.
 #'
 #' @seealso [tidy.spicy_categorical_table()],
 #'   [glance.spicy_categorical_table()].
@@ -277,7 +338,7 @@ as.data.frame.spicy_categorical_table <- function(
   optional = FALSE,
   ...
 ) {
-  unclass_spicy_categorical_table(x)
+  .categorical_data_frame(x)
 }
 
 #' @rdname as.data.frame.spicy_categorical_table
@@ -289,7 +350,7 @@ as_tibble.spicy_categorical_table <- function(x, ...) {
     spicy_abort("Install package 'tibble'.", class = "spicy_missing_pkg")
   }
   # nocov end
-  tibble::as_tibble(unclass_spicy_categorical_table(x), ...)
+  tibble::as_tibble(.categorical_data_frame(x), ...)
 }
 
 # ---- broom integration ----------------------------------------------------
@@ -302,24 +363,32 @@ as_tibble.spicy_categorical_table <- function(x, ...) {
 #' `"long_data"` attribute) into the two canonical broom views so the
 #' table can be consumed by any downstream tidyverse-stats pipeline.
 #'
-#' `tidy()` returns one row per `(variable x level)` -- or per
-#' `(variable x level x group)` when `by` is used -- with columns
-#' `variable` (the column name), `label` (the label the rows display for
-#' it, see `labels`), `level`, `group` (when applicable), `n`,
-#' `proportion` (the percentage divided by 100).
+#' `tidy()` returns one row per `(variable x level x group)`, the groups
+#' of `by` and the `Total` margin included, with columns `variable` (the
+#' column name), `label` (the label the rows display for it, see
+#' `labels`), `level`, `.row_role` (the role of `level`: `"missing"` on
+#' the row of missing values the table adds, `"level"` otherwise),
+#' `group` (`NA` without `by`), `.group_role` (the role of `group`:
+#' `"missing"` on the column of missing `by` values, `"total"` on the
+#' margin, `"group"` otherwise, `NA` without `by`), `total` (`TRUE` on the
+#' rows of the margin), `n`, and `proportion` (between 0 and 1). Filter
+#' on the role columns and `total` rather than on the displayed labels,
+#' which follow the display language.
 #'
 #' `glance()` returns one row per variable, in the order of `select`, with
-#' its test (when `by` is used) and the requested association measure:
-#' `variable`, `label`, `test_type` (`"chi_squared"`, `"n1_chi_squared"`,
-#' `"fisher_exact"`, `"fisher_midp"`, or `"fisher_exact_mc"`, as in the
-#' data frames of [table_categorical()]), `statistic` (the chi-squared,
-#' Pearson's or the N-1, `NA` for an exact test), `df`, `p.value`,
-#' `assoc_type` (the key of the measure the variable carries, as
-#' `effect_size_type` in the long output: `"phi"`, `"cramer_v"`, ...),
-#' `assoc_value`, `assoc_ci_lower`, `assoc_ci_upper`,
-#' `n_total`. Without `by`, only `variable`, `label` and `n_total` are
+#' its test (when `by` is used), the requested association measure and
+#' the standardized mean difference: `variable`, `label`, `test_type`
+#' (`"chi_squared"`, `"n1_chi_squared"`, `"fisher_exact"`,
+#' `"fisher_midp"`, or `"fisher_exact_mc"`, as in the long output of
+#' [table_categorical()]), `statistic` (the chi-squared, Pearson's or the
+#' N-1, `NA` for an exact test), `df`, `p.value`, `es_type` (the key of
+#' the measure the variable carries: `"phi"`, `"cramer_v"`, ...),
+#' `es_value`, `es_ci_lower`, `es_ci_upper`, `smd_type`, `smd_value`, and
+#' `nobs` (the observations of the variable, the margin not counted
+#' twice). Without `by`, only `variable`, `label` and `nobs` are
 #' populated; the other columns are `NA`. The interval bounds are `NA`
-#' unless the table was built with `assoc_ci = TRUE`.
+#' unless the table was built with `assoc_ci = TRUE`, and the SMD columns
+#' unless it was built with `smd = TRUE`.
 #'
 #' @param x A `spicy_categorical_table` returned by [table_categorical()].
 #' @param ... Currently ignored. Present for compatibility with the
@@ -348,57 +417,45 @@ tidy.spicy_categorical_table <- function(x, ...) {
       class = "spicy_invalid_data"
     )
   }
+  n_rows <- nrow(long)
   has_group <- "group" %in% names(long)
 
-  # Drop the synthetic margin group (added under `include_total =
-  # TRUE`, the default). It is a marginal aggregate, not a real group
-  # level, and including it would mean `tidy()` reports each
-  # observation twice. Its key is carried by the `total_group`
-  # attribute ("Total", or "Total_<i>" when a `by` level holds that key
-  # beside a relabeled margin), so a user group named "Total" is never
-  # mistaken for the margin. Users who need the marginal can
-  # derive it via `dplyr::summarise()` on the tidy output.
-  if (has_group) {
-    margin_key <- attr(x, "total_group", exact = TRUE)
-    if (!is.null(margin_key)) {
-      long <- long[long$group != margin_key, , drop = FALSE]
+  # The margin rows stay, flagged by `total` (decision 7 of the ADR of
+  # 2026-10-20, the rule of the survey twin and of
+  # `table_multiresponse()`): a reader filters them out with
+  # `!total` rather than by recognizing the label "Total", which a
+  # relabeled margin or another display language changes. `total` was set
+  # from the margin's KEY ("Total", or "Total_<i>" when a `by` level holds
+  # that key beside a relabeled margin), so a user group named "Total" is
+  # never mistaken for it.
+  total <- long[["total"]] %||% rep(FALSE, n_rows)
+  # The role of `group` ("group", "missing", "total"), `NA` without `by`.
+  group_role <- long[[".group_role"]]
+  if (is.null(group_role)) {
+    group_role <- if (has_group) {
+      ifelse(total, "total", "group")
+    } else {
+      rep(NA_character_, n_rows)
     }
   }
-
-  pct_col <- if ("pct" %in% names(long)) {
-    long$pct
-  } else if ("percent" %in% names(long)) {
-    long$percent
-  } else {
-    rep(NA_real_, nrow(long))
-  }
-
-  # `variable` holds the column name and `label` the label the rows
-  # display, as in the long output and in the other summary tables.
-  cols <- list(
+  result <- data.frame(
     variable = long$variable,
-    label = long$label %||% long$variable,
-    level = long$level
+    label = long[["label"]] %||% long$variable,
+    level = long$level,
+    .row_role = long[[".row_role"]] %||% rep("level", n_rows),
+    group = if (has_group) long$group else rep(NA_character_, n_rows),
+    .group_role = group_role,
+    total = total,
+    stringsAsFactors = FALSE,
+    check.names = FALSE
   )
-  if (has_group) {
-    cols$group <- long$group
-  }
   # Unweighted counts stay integer; weighted counts keep their exact
   # fractional values (they are only rounded at display time).
   int_like <- all(is.na(long$n) | abs(long$n - round(long$n)) < 1e-8)
-  cols$n <- if (int_like) as.integer(round(long$n)) else long$n
-  cols$proportion <- pct_col / 100
-
-  result <- do.call(
-    data.frame,
-    c(cols, list(stringsAsFactors = FALSE, check.names = FALSE))
-  )
-  rownames(result) <- NULL
-
-  if (requireNamespace("tibble", quietly = TRUE)) {
-    return(tibble::as_tibble(result))
-  }
-  result # nocov: tibble is a hard dep of the test/CI matrix, so this plain-data.frame fallback is never hit
+  result$n <- if (int_like) as.integer(round(long$n)) else long$n
+  pct <- long[["pct"]] %||% long[["percent"]] %||% rep(NA_real_, n_rows)
+  result$proportion <- pct / 100
+  .as_broom_tbl(result)
 }
 
 #' @rdname tidy.spicy_categorical_table
@@ -422,11 +479,19 @@ glance.spicy_categorical_table <- function(x, ...) {
   # is not. The exclusion rule stays as the fallback for a degraded
   # object stripped of its typed view.
   has_test <- "p" %in% names(long)
+  # Every column of `long_data` that is not the measure: the fallback
+  # below takes the FIRST leftover column as the association measure, so
+  # an unlisted column on a degraded object (one stripped of its typed
+  # view) would be published under `es_value` -- the SMD, a balance
+  # diagnostic, wearing the name of an effect size.
   std_cols <- c(
     "variable",
     "label",
     "level",
     "group",
+    ".row_role",
+    ".group_role",
+    "total",
     "n",
     "pct",
     "percent",
@@ -434,19 +499,10 @@ glance.spicy_categorical_table <- function(x, ...) {
     "chi2",
     "df",
     "p",
+    "p_unadjusted",
     "p_op",
     "ci_lower",
     "ci_upper",
-    # The SMD must be listed here even though this method does not
-    # publish it: the fallback below takes the FIRST leftover column as
-    # the association measure, so an unlisted `smd` on a degraded
-    # object (one stripped of its typed view) would be published under
-    # `assoc_value` / `assoc_type` -- a balance diagnostic wearing the
-    # name of an association measure. Both spellings: the long output
-    # publishes `smd`, the attached `long_data` keeps the internal
-    # `.smd`.
-    "smd",
-    "smd_type",
     ".smd",
     ".smd_type",
     ".assoc_type"
@@ -533,7 +589,7 @@ glance.spicy_categorical_table <- function(x, ...) {
     # The measure each variable carries, as the key of the long output
     # (`"phi"`, `"cramer_v"`, ...): one table can use several, and the
     # column header ("Effect size" then) names none of them.
-    assoc_type = if (has_assoc && ".assoc_type" %in% names(long)) {
+    es_type = if (has_assoc && ".assoc_type" %in% names(long)) {
       vapply(
         by_var,
         function(b) as.character(pick_first(b, ".assoc_type")),
@@ -542,29 +598,41 @@ glance.spicy_categorical_table <- function(x, ...) {
     } else {
       rep(NA_character_, length(keys))
     },
-    assoc_value = if (has_assoc) {
+    es_value = if (has_assoc) {
       vapply(by_var, function(b) pick_first(b, measure_col), numeric(1))
     } else {
       rep(NA_real_, length(keys))
     },
-    assoc_ci_lower = if (has_assoc_ci) {
+    es_ci_lower = if (has_assoc_ci) {
       vapply(by_var, function(b) pick_first(b, "ci_lower"), numeric(1))
     } else {
       rep(NA_real_, length(keys))
     },
-    assoc_ci_upper = if (has_assoc_ci) {
+    es_ci_upper = if (has_assoc_ci) {
       vapply(by_var, function(b) pick_first(b, "ci_upper"), numeric(1))
     } else {
       rep(NA_real_, length(keys))
     },
-    n_total = unname(n_total),
+    # The balance diagnostic beside the effect size, as in the glance()
+    # of `table_continuous()`: present whether or not `smd = TRUE`, NA
+    # when the table carries none.
+    smd_type = if (".smd_type" %in% names(long)) {
+      vapply(
+        by_var,
+        function(b) as.character(pick_first(b, ".smd_type")),
+        character(1)
+      )
+    } else {
+      rep(NA_character_, length(keys))
+    },
+    smd_value = if (".smd" %in% names(long)) {
+      vapply(by_var, function(b) as.numeric(pick_first(b, ".smd")), numeric(1))
+    } else {
+      rep(NA_real_, length(keys))
+    },
+    nobs = unname(n_total),
     stringsAsFactors = FALSE,
     check.names = FALSE
   )
-  rownames(result) <- NULL
-
-  if (requireNamespace("tibble", quietly = TRUE)) {
-    return(tibble::as_tibble(result))
-  }
-  result # nocov: tibble is a hard dep of the test/CI matrix, so this plain-data.frame fallback is never hit
+  .as_broom_tbl(result)
 }

@@ -904,7 +904,10 @@ test_that("the Bayesian footer and interval header follow the language", {
     vapply(as_structured(tbl)$ci_pairs, `[[`, character(1), "label"),
     "ICr \u00E0 95\u00A0%"
   )
-  expect_true("95% CrI" %in% names(as.data.frame(tbl)))
+  expect_true("95% CrI" %in% names(tbl))
+  expect_true(all(
+    c("95% CrI: LL", "95% CrI: UL") %in% names(as.data.frame(tbl))
+  ))
 })
 
 

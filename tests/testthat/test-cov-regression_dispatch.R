@@ -32,6 +32,12 @@ test_that("output = 'long' renames to broom columns and drops order_idx", {
   expect_false("se" %in% names(lo))
   expect_false("order_idx" %in% names(lo))
   expect_gt(nrow(lo), 0L)
+  # The size and fit columns under glance()'s names, and the note as
+  # printed.
+  expect_true(all(c("nobs", "r.squared", "adj.r.squared") %in% names(lo)))
+  expect_false(any(c("n_obs", "r2", "adj_r2") %in% names(lo)))
+  expect_type(attr(lo, "note"), "character")
+  expect_identical(attr(lo, "note"), attr(table_regression(fit), "note"))
 })
 
 test_that("output_long returns a tbl_df for empty / NULL coefs too", {
@@ -403,7 +409,8 @@ test_that("output = 'word' renders from a user-supplied template", {
     word_path = out_path,
     word_template = tmpl
   )
-  expect_true(inherits(res, "data.frame"))
+  # A file output returns the path it wrote.
+  expect_identical(res, out_path)
   expect_true(file.exists(out_path))
   expect_gt(file.info(out_path)$size, 0L)
 })

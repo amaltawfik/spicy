@@ -106,8 +106,7 @@ test_that("re_columns = 'est' en-dashes SE and CI on the RE rows", {
   df <- table_regression(
     fit,
     show_columns = c("b", "se", "ci"),
-    re_columns = "est",
-    output = "data.frame"
+    re_columns = "est"
   )
   se_col <- grep("SE", names(df), value = TRUE)[1]
   ci_col <- grep("CI", names(df), value = TRUE)[1]
@@ -123,8 +122,7 @@ test_that("re_columns = c('est', 'se') keeps SE, en-dashes CI on the RE rows", {
   df <- table_regression(
     fit,
     show_columns = c("b", "se", "ci"),
-    re_columns = c("est", "se"),
-    output = "data.frame"
+    re_columns = c("est", "se")
   )
   se_col <- grep("SE", names(df), value = TRUE)[1]
   ci_col <- grep("CI", names(df), value = TRUE)[1]
@@ -138,8 +136,7 @@ test_that("re_columns = c('est', 'ci') keeps CI, en-dashes SE on the RE rows", {
   df <- table_regression(
     fit,
     show_columns = c("b", "se", "ci"),
-    re_columns = c("est", "ci"),
-    output = "data.frame"
+    re_columns = c("est", "ci")
   )
   se_col <- grep("SE", names(df), value = TRUE)[1]
   ci_col <- grep("CI", names(df), value = TRUE)[1]
@@ -150,11 +147,7 @@ test_that("re_columns = c('est', 'ci') keeps CI, en-dashes SE on the RE rows", {
 test_that("re_columns default (all three) shows estimate + SE + CI on RE rows", {
   skip_if_not_installed("merDeriv")
   fit <- .fit_lmer_api()
-  df <- table_regression(
-    fit,
-    show_columns = c("b", "se", "ci"),
-    output = "data.frame"
-  )
+  df <- table_regression(fit, show_columns = c("b", "se", "ci"))
   se_col <- grep("SE", names(df), value = TRUE)[1]
   ci_col <- grep("CI", names(df), value = TRUE)[1]
   expect_true(.re_cell_has_num(df, se_col))

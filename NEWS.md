@@ -25,7 +25,7 @@ p-values, and notes.
   chi-squared test when every expected count is at least 5, Fisher's
   exact test otherwise (`test = "auto"`), and the note names the test of
   each variable. `test = "chisq"` restores the p-values of 0.13.0, and
-  `test = "fisher"` tests every variable exactly. The data frames gain a
+  `test = "fisher"` tests every variable exactly. The long output gains a
   `test_type` column. `test = "midp"` and `test = "n1"` offer the Fisher
   mid-p test and Campbell's N-1 chi-squared for 2x2 tables.
 
@@ -67,15 +67,64 @@ p-values, and notes.
   `glance()` lists the variables in the order of `select`, as the table
   and `tidy()` do. It sorted them by label.
 
+* The machine outputs of the table functions (`output = "long"`,
+  `tidy()`, `glance()`) give one name to each statistic, broom's where
+  broom has one, as listed in `?spicy`: `p.value` (was `p`),
+  `statistic` (`chi2`), `df` and `df.residual` (`df1` and `df2`),
+  `test_type` (`statistic_type`), `es_type`, `es_value`, `es_ci_lower`
+  and `es_ci_upper` (`effect_size_type`, `effect_size`, `assoc_type`,
+  `assoc_value`, `assoc_ci_lower`, `assoc_ci_upper`, and the `ci_lower` /
+  `ci_upper` of an association measure), `smd_value` (`smd`), `nobs`
+  (`n_total`, and `n_obs` in `table_regression()`), `weighted_nobs`
+  (`weighted.nobs`), `weighted_n` (`weighted.n`), `r.squared` and
+  `adj.r.squared` (`r2` and `adj_r2`). In `table_continuous_lm()`, the
+  size of the model is `nobs` and `weighted_nobs`, where the long output
+  had `n` and `weighted_n` and `glance()` had `weighted_n`, and the
+  attributes naming the `by` column are `group_var` and `group_label`, as
+  in the other tables (`by_var` and `by_label`). There too, a *t*, the
+  test of a contrast or a slope, carries its own degrees of freedom in
+  `df` and leaves `df.residual` empty, where the long output and
+  `glance()` gave the 1 and the residual df of the equivalent *F*; a *z*
+  or a chi-squared (`vcov = "bootstrap"` or `"jackknife"`) leaves
+  `df.residual` empty too, and `df` is a double.
+
+* `output = "data.frame"` returns the table as it is displayed, with its
+  numbers, in every table function: one row per printed row, the printed
+  columns, and the key columns `variable` and `label`, with `level`,
+  `group`, and `.row_role` where they apply. `as.data.frame()` on a table
+  returns the same frame, with the note as its one attribute.
+  `output = "long"` gives one row per variable, level, and group. In
+  `table_continuous()`, `table_continuous_svy()`, and `table_outcome()`,
+  `"data.frame"` was the long frame, in `table_categorical()` a frame of
+  levels (its `Chi2`, `df` and `test_type` columns are now in `"long"`
+  only), and in `table_regression()` the text of the printed table. The
+  `"long"` output of `table_categorical_svy()` was its wide frame, and
+  `as.data.frame()` of `table_continuous_lm()` its long frame.
+
+* `tidy()` on a `table_categorical_svy()` result reports `proportion`,
+  between 0 and 1, and its interval on the same scale, in the order of
+  the table. It reported the percentage in `estimate`.
+
+* `tidy()` on a `table_categorical()` result keeps the rows of the `Total`
+  margin and flags them with `total`, as `table_categorical_svy()` does.
+  It dropped them.
+
+* `table_regression()` and `table_regression_uv()` return the path of the
+  file, invisibly, with `output = "excel"` or `"word"`, as the other
+  tables do. They returned the table.
+
+* `table_outcome()` no longer has the `smd_type` and `smd_value` columns,
+  which were always `NA`, in its long output and `glance()`.
+
 * `table_categorical()` gives each association measure of its note a
   sentence of its own: "Phi: smoking. Cramer's V: education." A
   semicolon joined them.
 
 * `table_regression()` and `table_regression_uv()` name an interval column
-  with a point whatever `decimal_mark`: `97.5% CI` in `as.data.frame()`,
-  and `97.5% CI: LL` and `97.5% CI: UL` in `as_structured()`. They were
-  `97,5% CI` under `decimal_mark = ","`. The header still follows the
-  mark, and the names at 95% are unchanged.
+  with a point whatever `decimal_mark`: `97.5% CI: LL` and `97.5% CI: UL`
+  in `as.data.frame()` and `as_structured()`, `97.5% CI` in the printed
+  object. They were `97,5% CI` under `decimal_mark = ","`. The header
+  still follows the mark, and the names at 95% are unchanged.
 
 * `table_regression()` words its `p_adjust` note for the reader:
   "P-values adjusted for 5 tests (Holm method)." A table of several
@@ -142,10 +191,10 @@ p-values, and notes.
   removes rows with a missing `by`. The note gives their number, as in the
   other tables.
 
-* `glance()` on a `table_categorical()` result gives in `assoc_type` the
-  measure of each variable, as in the `effect_size_type` column of
-  `output = "long"` (`"phi"`, `"cramer_v"`). It gave the column header,
-  "Effect size" on every row when the variables used different measures.
+* `glance()` on a `table_categorical()` result gives in `es_type` the
+  measure of each variable, as the long output does (`"phi"`,
+  `"cramer_v"`). It gave the column header, "Effect size" on every row
+  when the variables used different measures.
 
 * `table_categorical()` refuses a `NaN` weight, as the other tables do. It
   dropped the row, as for a missing weight.
@@ -164,6 +213,24 @@ p-values, and notes.
   tables do. Both were `spicy_invalid_input` errors.
 
 ## New features
+
+* The long output and `tidy()` of the tables mark the rows they add by a
+  key rather than by their label, which follows the display language:
+  `.row_role` gives the role of `level` (`"missing"` on the row of missing
+  values of `table_categorical()` and `table_categorical_svy()`),
+  `.group_role` the role of `group` (`"missing"` on the group of missing
+  `by` values, `"total"` on the margin, `"group"` otherwise), and `total`
+  flags the `Total` margin. `tidy()` always has a `group`
+  column, `NA` without `by`, and that of `table_continuous()` and
+  `table_outcome()` gains `weighted_n`, `median`, `q1`, and `q3`, as the
+  survey twin has. `glance()` of `table_categorical()` gains `smd_type` and
+  `smd_value`, and in a table that compares groups the long output keeps
+  the effect-size and SMD columns, `NA` when they were not requested.
+
+* `table_categorical_svy()`, `table_continuous_svy()`, and
+  `table_outcome()` results inherit the class `spicy_table`, as the other
+  tables do, and the long output of `table_regression()` carries the note
+  in `attr(x, "note")`.
 
 * `sochealth` gains a multiple-response question, the sources of health
   information used in the past 12 months: five logical `info_*` items,
@@ -205,9 +272,9 @@ p-values, and notes.
   raw p-values stay in the object as `p_unadjusted`.
 
 * `table_categorical()` gains `p_value`, as its siblings have.
-  `p_value = FALSE` drops the test (`p`, and `test_type`, `Chi2` and `df`
-  in the data frames) from every output; with `assoc_measure = "none"`
-  as well, the table is purely descriptive (#9).
+  `p_value = FALSE` drops the test (`p`, and `test_type`, `statistic`,
+  `df` and `p.value` in the long output) from every output; with
+  `assoc_measure = "none"` as well, the table is purely descriptive (#9).
 
 * `table_categorical()` takes a named list in `levels_keep`, one entry
   per variable, as `table_categorical_svy()` does:
@@ -300,9 +367,9 @@ p-values, and notes.
 
 * `table_continuous()`, `table_outcome()`, `table_categorical_svy()`, and
   `table_continuous_svy()` with `p_value = FALSE` no longer keep a p-value
-  in `output = "data.frame"` and `"long"` when `statistic = TRUE` or an
-  effect size ran the test, and `table_outcome()` and
-  `table_categorical_svy()` no longer leave empty test columns there.
+  in `output = "long"` when `statistic = TRUE` or an effect size ran the
+  test, and `table_outcome()` and `table_categorical_svy()` no longer
+  leave empty test columns there.
 
 * `varlist()` and `code_book()` keep only the selected columns of an sf
   object. The geometry column came along.
@@ -316,9 +383,13 @@ p-values, and notes.
 * `freq()` writes a large declared missing code as it is, `100000`, not
   `1e+05`.
 
-* `glance()` on a `table_categorical()` result leaves `assoc_ci_lower`
-  and `assoc_ci_upper` at `NA` unless the table was built with
-  `assoc_ci = TRUE`. It reported the interval whatever `assoc_ci` said.
+* `glance()` on a `table_categorical()` result leaves `es_ci_lower` and
+  `es_ci_upper` at `NA` unless the table was built with `assoc_ci = TRUE`.
+  It reported the interval whatever `assoc_ci` said.
+
+* `glance()` on a `table_categorical_svy()` result names no test when the
+  table has none, without `by` or for a variable whose test was withheld.
+  It named the `chisq_statistic` on every row.
 
 * `glance()` on a `table_categorical_svy()` result built with
   `include_total = FALSE` counts the whole sample in `nobs`. It counted

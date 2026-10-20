@@ -198,7 +198,7 @@ test_that("clm with scale/nominal component refuses CR* cleanly", {
   # works.
   np <- table_regression(m_nom, output = "data.frame")
   expect_s3_class(np, "data.frame")
-  expect_true(any(grepl("Non-proportional", np$Variable)))
+  expect_true(any(grepl("Non-proportional", np$variable)))
 })
 
 ## ---- betareg --------------------------------------------------------------

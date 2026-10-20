@@ -47,16 +47,20 @@ unclass_spicy_continuous_svy_table <- function(x) {
 #' Coerce a `spicy_continuous_svy_table` to a plain data frame or tibble
 #'
 #' @description
-#' These S3 methods strip the `"spicy_continuous_svy_table"` class and
-#' the rendering-only attributes, keeping the long compute frame and the
-#' three provenance markers (`group_var`, `design_meta`, `note`).
+#' `as.data.frame()` returns the table [table_continuous_svy()] displays,
+#' with its numbers: exactly what `output = "data.frame"` returns, the
+#' shape of [as.data.frame.spicy_continuous_table()] (the key columns
+#' `variable`, `label` and, with `by`, `group` and `.row_role`, then the
+#' printed columns under their names). The note, as printed, is kept in
+#' `attr(, "note")`. `as_tibble()` returns the same table as a tibble.
 #'
 #' @param x A `spicy_continuous_svy_table` returned by
 #'   [table_continuous_svy()].
 #' @param row.names,optional,... Passed on for method compatibility;
 #'   ignored.
 #'
-#' @return A plain `data.frame` (or a `tbl_df` for `as_tibble()`).
+#' @return A plain `data.frame` (or a `tbl_df` for `as_tibble()`),
+#'   identical to the `output = "data.frame"` of the same call.
 #'
 #' @seealso [table_continuous_svy()].
 #' @name as.data.frame.spicy_continuous_svy_table
@@ -71,7 +75,7 @@ as.data.frame.spicy_continuous_svy_table <- function(
   optional = FALSE,
   ...
 ) {
-  unclass_spicy_continuous_svy_table(x)
+  .continuous_data_frame(x)
 }
 
 #' @rdname as.data.frame.spicy_continuous_svy_table
@@ -80,7 +84,7 @@ as_tibble.spicy_continuous_svy_table <- function(x, ...) {
   if (!requireNamespace("tibble", quietly = TRUE)) {
     spicy_abort("Install package 'tibble'.", class = "spicy_missing_pkg") # nocov
   }
-  tibble::as_tibble(unclass_spicy_continuous_svy_table(x), ...)
+  tibble::as_tibble(.continuous_data_frame(x), ...)
 }
 
 # ---- broom integration ----------------------------------------------------
@@ -92,17 +96,20 @@ as_tibble.spicy_continuous_svy_table <- function(x, ...) {
 #'
 #' `tidy()` returns one row per displayed row: one per variable, or one
 #' per (variable x group) with `by`. Columns: `variable`, `label`,
-#' `group` (`NA` without `by`), `estimate` (the mean), `std.error` (the
-#' design-based standard error, from `survey::svymean()` and never
-#' recomputed from `sd / sqrt(n)` -- under a design those are different
-#' quantities), `conf.low`, `conf.high`, `df` (the degrees of freedom
-#' the interval used), `n` (observed), `weighted.n` (the sum of the
-#' sampling weights), `median`, `q1`, `q3`, `min`, `max`, `sd`, `deff`.
+#' `group` (`NA` without `by`), `.group_role` (the role of `group`:
+#' `"group"`, or `"missing"` for the group of missing `by` values; `NA`
+#' without `by`),
+#' `estimate` (the mean), `std.error` (the design-based standard error,
+#' from `survey::svymean()` and never recomputed from `sd / sqrt(n)` --
+#' under a design those are different quantities), `conf.low`,
+#' `conf.high`, `df` (the degrees of freedom the interval used), `n`
+#' (observed), `weighted_n` (the sum of the sampling weights), `median`,
+#' `q1`, `q3`, `min`, `max`, `sd`, `deff`.
 #'
 #' `glance()` returns one row per variable with its group comparison:
 #' `variable`, `label`, `n_groups`, `test_type`, `statistic`, `df`,
 #' `df.residual`, `p.value`, `degf` (the design's own), `nobs`,
-#' `weighted.nobs`. One row per variable even without `by`, where the
+#' `weighted_nobs`. One row per variable even without `by`, where the
 #' comparison columns are `NA` -- a fixed schema a pipeline can index
 #' into by NAME.
 #'
@@ -133,21 +140,19 @@ NULL
 #' @exportS3Method broom::tidy
 tidy.spicy_continuous_svy_table <- function(x, ...) {
   long <- unclass_spicy_continuous_svy_table(x)
+  has_group <- !is.null(long$group)
   .svy_as_tbl(data.frame(
     variable = long$variable,
     label = long$label,
-    group = if (is.null(long$group)) {
-      rep(NA_character_, nrow(long))
-    } else {
-      long$group
-    },
+    group = if (has_group) long$group else rep(NA_character_, nrow(long)),
+    .group_role = .continuous_group_role(x, has_group, nrow(long)),
     estimate = long$mean,
     std.error = long$se,
     conf.low = long$ci_lower,
     conf.high = long$ci_upper,
     df = long$degf,
     n = as.integer(long$n),
-    weighted.n = long$weighted_n,
+    weighted_n = long$weighted_n,
     median = long$median,
     q1 = long$q1,
     q3 = long$q3,
@@ -208,7 +213,7 @@ glance.spicy_continuous_svy_table <- function(x, ...) {
       numeric(1),
       USE.NAMES = FALSE
     ),
-    weighted.nobs = vapply(
+    weighted_nobs = vapply(
       vars,
       function(v) sum(long$weighted_n[long$variable == v], na.rm = TRUE),
       numeric(1),

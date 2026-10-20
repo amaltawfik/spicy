@@ -29,27 +29,28 @@ tidyverse-stats pipeline.
 \code{tidy()} returns one row per \verb{(variable x group)} (or per
 \code{variable} when \code{by} is not used) with broom-conventional columns:
 \code{variable} (the column name), \code{label} (the label the rows display
-for it, see \code{labels}), \code{group} (when applicable), \code{estimate} (the
-empirical mean), \code{std.error} (\code{sd / sqrt(n)}), \code{conf.low},
-\code{conf.high} (the mean confidence interval at \code{ci_level}), \code{n},
-\code{min}, \code{max}, \code{sd}.
+for it, see \code{labels}), \code{group} (\code{NA} without \code{by}), \code{.group_role}
+(the role of \code{group}: \code{"group"}, or \code{"missing"} for the group of
+missing \code{by} values; \code{NA} without \code{by}), \code{estimate} (the empirical
+mean), \code{std.error}
+(\code{sd / sqrt(n)}), \code{conf.low}, \code{conf.high} (the mean confidence
+interval at \code{ci_level}), \code{n}, \code{weighted_n} (the sum of the weights,
+\code{NA} without \code{weights}), \code{median}, \code{q1}, \code{q3}, \code{min}, \code{max}, \code{sd}:
+the columns of \code{\link[=tidy.spicy_continuous_svy_table]{tidy.spicy_continuous_svy_table()}}, the design ones
+(\code{df}, \code{deff}) aside.
 
 \code{glance()} returns one row per variable with the omnibus group
 comparison (when \code{by} is used), the requested effect size and the
 balance diagnostic. Columns: \code{variable}, \code{label}, \code{test_type},
 \code{statistic}, \code{df}, \code{df.residual}, \code{p.value}, \code{es_type}, \code{es_value},
-\code{es_ci_lower}, \code{es_ci_upper}, \code{smd_type}, \code{smd_value}, \code{n_total}.
-Without \code{by}, only \code{variable}, \code{label}, and \code{n_total} are populated;
+\code{es_ci_lower}, \code{es_ci_upper}, \code{smd_type}, \code{smd_value}, \code{nobs}.
+Without \code{by}, only \code{variable}, \code{label}, and \code{nobs} are populated;
 the other columns are \code{NA}. The schema is fixed: \code{smd_type} /
 \code{smd_value} are present whether or not \code{smd = TRUE}, like every
 other comparison column here, and are \code{NA} when the table carries
-no standardized mean difference. They sit before \code{n_total}, so
-index this frame by NAME rather than by position.
-
-\code{glance.spicy_categorical_table()} does \strong{not} carry the SMD: each
-family documents its own broom contract, and the categorical one
-publishes the association measure alone. On a mixed balance table,
-read the categorical SMD from \code{output = "long"}.
+no standardized mean difference, as in
+\code{\link[=glance.spicy_categorical_table]{glance.spicy_categorical_table()}}. Index this frame by NAME rather
+than by position.
 }
 \seealso{
 \code{\link[=as.data.frame.spicy_continuous_table]{as.data.frame.spicy_continuous_table()}} for the raw

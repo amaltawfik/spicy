@@ -435,13 +435,17 @@ test_that("bootstrap note reports the valid replicate count", {
 })
 
 test_that("classical fits carry an all-NA boot_n_valid and no SE note", {
+  # `boot_n_valid` is a column of the long frame; the displayed table
+  # (`output = "data.frame"`) has none.
   out <- table_continuous_lm(
     sochealth,
     select = wellbeing_score,
     by = physical_activity,
-    output = "data.frame"
+    output = "long"
   )
+  expect_true("boot_n_valid" %in% names(out))
   expect_true(all(is.na(out$boot_n_valid)))
+  expect_null(attr(out, "note"))
 })
 
 test_that(".tclm_vcov_label ranges heterogeneous replicate counts", {

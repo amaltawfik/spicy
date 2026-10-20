@@ -324,7 +324,7 @@ test_that("geeglm: capability flags (no likelihood machinery)", {
 test_that("geeglm: default table shows n, N (id), max cluster size", {
   fit <- .fit_gee_gaussian()
   out <- table_regression(fit)
-  vars <- as.data.frame(out)[[1L]]
+  vars <- out$Variable
   expect_true("N (Pig)" %in% vars)
   expect_true("Max cluster size" %in% vars)
   expect_false(any(grepl("AIC", vars)))
@@ -411,7 +411,7 @@ test_that("geeglm: opt-in qic / qicu / scale rows render", {
     fit,
     show_fit_stats = c("nobs", "qic", "qicu", "scale")
   )
-  vars <- as.data.frame(out)[[1L]]
+  vars <- out$Variable
   expect_true(all(c("QIC", "QICu", "Scale") %in% vars))
 })
 
@@ -541,7 +541,7 @@ test_that("geeglm binomial: exponentiate yields OR with the GEE footer", {
   )
   # Displayed OR = exp(B) of the fit's own coefficients.
   b_treat <- unname(coef(fit)[["treatP"]])
-  df_out <- as.data.frame(out)
+  df_out <- structure(out, class = "data.frame")
   row <- which(trimws(df_out[[1L]]) == "P")
   expect_identical(
     trimws(df_out[row, 2L]),
@@ -640,7 +640,7 @@ test_that("geeglm: AME oracle pin holds on the logit scale too", {
 test_that("geeglm binomial: n_events column carries events/N per level", {
   fit <- .fit_gee_binomial()
   out <- table_regression(fit, show_columns = c("n_events", "b", "p"))
-  df_out <- as.data.frame(out)
+  df_out <- structure(out, class = "data.frame")
   mf <- model.frame(fit)
   # Continuous rows carry the model total ...
   total <- sprintf("%d/%d", sum(mf$outcome), nrow(mf))
@@ -673,7 +673,7 @@ test_that("geeglm sits next to an lm in a mixed table (blank alien cells)", {
   fit_gee <- .fit_gee_gaussian()
   fit_lm <- lm(mpg ~ wt, data = mtcars)
   out <- table_regression(list(OLS = fit_lm, GEE = fit_gee))
-  vars <- as.data.frame(out)[[1L]]
+  vars <- out$Variable
   expect_true("N (Pig)" %in% vars)
   expect_true("Max cluster size" %in% vars)
   expect_true(any(grepl("R²", vars)))
@@ -687,7 +687,7 @@ test_that("geeglm next to a glm keeps the glm defaults (gate carve-out)", {
   fit_gee <- .fit_gee_binomial()
   fit_glm <- glm(am ~ wt, data = mtcars, family = binomial)
   out <- table_regression(list(Logit = fit_glm, GEE = fit_gee))
-  vars <- as.data.frame(out)[[1L]]
+  vars <- out$Variable
   expect_true("AIC" %in% vars)
   expect_true("N (subject)" %in% vars)
 })

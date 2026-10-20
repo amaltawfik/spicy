@@ -145,7 +145,7 @@ one with a smaller count. With more groups, \code{"midp"} and \code{"n1"} follow
 \item{p_value}{Logical or \code{NULL}. With \code{by}, \code{NULL} (the default) and
 \code{TRUE} show the item \code{p} column and the global test in the note.
 \code{FALSE} removes both from every output, the \code{p} column of the data
-frames included. \code{p_value} and \code{statistic} are independent, as in
+frame and the \code{p.value} column of the long output included. \code{p_value} and \code{statistic} are independent, as in
 \code{\link[=table_continuous]{table_continuous()}}. Ignored without \code{by}, with a warning when
 \code{TRUE}.}
 
@@ -226,7 +226,7 @@ typed, and \code{FALSE} removes it.}
 \item{output}{Output format. One of:
 \itemize{
 \item \code{"default"} (an ASCII table object, printed when the call is bare)
-\item \code{"data.frame"} (a wide numeric \code{data.frame})
+\item \code{"data.frame"} (the displayed table, numeric)
 \item \code{"long"} (a long numeric \code{data.frame})
 \item \code{"tinytable"} (requires \code{tinytable})
 \item \code{"gt"} (requires \code{gt})
@@ -262,33 +262,40 @@ error.}
 \value{
 Depends on \code{output}:
 \itemize{
-\item \code{"default"}: the wide \code{data.frame} below, with the rendering
-metadata as attributes (S3 class \code{"spicy_multiresponse_table"}),
-returned visibly, so a bare call prints the ASCII table.
-\item \code{"data.frame"}: a wide \code{data.frame} with one row per item, the
-rows of \code{none_row}, and a last row with the base. Columns:
-\code{Variable}, \code{.row_role} (what the row is: \code{"summary"} for an item,
-\code{"none"} for "(No item chosen)", \code{"missing"} for "(No data for the
-question)", \code{"fit_stat"} for the base, the roles of
-\code{\link[=as_structured]{as_structured()}}), then the count and the percentage of each
-group of \code{by} and of the \code{Total} margin
-(\verb{<group> n} and \verb{<group> \\\%}, or \verb{<group> \\\% of cases} and
-\verb{<group> \\\% of responses} under \code{percent = "both"}; \code{n} and \verb{\\\%}
-without \code{by}), then \code{test_type}, \code{Chi2} and \code{df} when the item
-tests ran (for \code{p_value} or for \code{statistic}), \code{p} with \code{p_value},
-and \code{p_unadjusted} under an adjustment. \code{test_type} names the test
-of each item as in \code{\link[=table_categorical]{table_categorical()}} (\code{"chi_squared"},
-\code{"n1_chi_squared"}, \code{"fisher_exact"}, \code{"fisher_midp"},
-\code{"fisher_exact_mc"}), and \code{Chi2} and \code{df} are \code{NA} for an item
-tested by an exact test. The rows of \code{none_row} are \code{NA} in the
-percentage of responses and in the test columns.
+\item \code{"default"}: a \code{spicy_multiresponse_table} (a \code{data.frame}
+subclass), with the rendering metadata as attributes, returned
+visibly, so a bare call prints the ASCII table.
+\item \code{"data.frame"}: the displayed table with its numbers, what
+\link[=as.data.frame.spicy_multiresponse_table]{as.data.frame()} of the
+default object returns: one row per item, the rows of \code{none_row},
+and a last row with the base. Columns: \code{variable} (the item's
+column, \code{"none"}, \code{"no_data"}, or \code{"nobs"} on the base row),
+\code{label} (the label the row displays), \code{.row_role} (what the row
+is: \code{"summary"} for an item, \code{"none"} for "(No item chosen)",
+\code{"missing"} for "(No data for the question)", \code{"fit_stat"} for the
+base, the roles of \code{\link[=as_structured]{as_structured()}}), then the printed columns:
+the count and the percentage of each group of \code{by} and of the
+\code{Total} margin (\verb{<group> n} and \verb{<group> \\\%}, or
+\verb{<group> \\\% of cases} and \verb{<group> \\\% of responses} under
+\code{percent = "both"}; \code{n} and \verb{\\\%} without \code{by}), \code{Test} (the
+chi-squared of the item, with \code{df} beside it) under
+\code{statistic = TRUE}, and \code{p} with \code{p_value}.
 \item \code{"long"}: one row per item and group, then one per row of
 \code{none_row} and group, with columns \code{variable} (the item's column,
 \code{"none"} or \code{"no_data"} on the rows of \code{none_row}), \code{label} (the
-label the row displays), \code{.row_role} as above, \code{group} (with
-\code{by}), \code{n}, \code{base} (the respondents of the
-group), \code{pct} (or \code{pct_cases} and \code{pct_responses}), and
-\code{test_type}, \code{chi2}, \code{df}, \code{p}, and \code{p_unadjusted} as above.
+label the row displays), \code{.row_role} as above, with \code{by} \code{group},
+\code{.group_role} (the role of \code{group}: \code{"group"}, or \code{"total"} for
+the margin) and \code{total} (\code{TRUE} on the rows of the margin), \code{n},
+\code{base} (the respondents of the group), the percentage named by its
+base: \code{pct_cases} (of the respondents) or \code{pct_responses} (of the
+choices made), as \code{percent} asks, both under \code{percent = "both"},
+and, when the item tests ran (for \code{p_value} or
+for \code{statistic}), \code{test_type} (the test of the item, as in
+\code{\link[=table_categorical]{table_categorical()}}: \code{"chi_squared"}, \code{"n1_chi_squared"},
+\code{"fisher_exact"}, \code{"fisher_midp"}, \code{"fisher_exact_mc"}),
+\code{statistic} and \code{df} (\code{NA} for an item tested by an exact test),
+\code{p.value} with \code{p_value}, and \code{p_unadjusted} under an adjustment.
+The rows of \code{none_row} are \code{NA} in the test columns.
 \item \code{"tinytable"}, \code{"gt"}, \code{"flextable"}: the rendered table object.
 \item \code{"excel"} / \code{"word"}: writes to disk and returns the file path
 invisibly.
@@ -344,7 +351,7 @@ least 5, and Fisher's exact test (\code{\link[stats:fisher.test]{stats::fisher.t
 when the exact enumeration fails, the p-value is its Monte Carlo
 estimate over 2000 tables, which draws from the session's RNG. An item
 tested by Fisher's exact test has no statistic: its \code{Test} cell shows
-a dash, and \code{Chi2} and \code{df} are \code{NA} in the data frames. Without
+a dash, and \code{statistic} and \code{df} are \code{NA} in the long output. Without
 p-values (\code{p_value = FALSE}), \code{statistic = TRUE} shows the chi-squared
 statistic of every item. The global test sums the Pearson statistics
 of the items whatever \code{test} chooses for their p-values, since its

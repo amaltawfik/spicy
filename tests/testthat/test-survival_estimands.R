@@ -727,7 +727,7 @@ test_that("transformed terms get no orphan estimand row; note + caveat fire", {
     exponentiate = TRUE,
     boot_n = 20
   )
-  df <- as.data.frame(out)
+  df <- structure(out, class = "data.frame")
   expect_false(any(trimws(df$Variable) == "age"))
   expect_true(any(trimws(df$Variable) == "I(age/10)"))
   expect_match(

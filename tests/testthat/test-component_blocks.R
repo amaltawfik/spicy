@@ -30,19 +30,20 @@
 ## ---- 1. Blocks render, per-semantics labels -------------------------------
 
 test_that("zeroinfl renders a Zero-inflation block; hurdle a Zero hurdle block", {
-  df_z <- table_regression(.cb_zeroinfl(), output = "data.frame")
+  # The printed tables: `$Variable` holds the displayed row labels.
+  df_z <- table_regression(.cb_zeroinfl())
   v_z <- trimws(df_z$Variable)
   expect_true(any(grepl("Zero-inflation", v_z, fixed = TRUE)))
   expect_true(any(v_z == "fem: Women"))
 
-  df_h <- table_regression(.cb_hurdle(), output = "data.frame")
+  df_h <- table_regression(.cb_hurdle())
   v_h <- trimws(df_h$Variable)
   expect_true(any(grepl("Zero hurdle", v_h, fixed = TRUE)))
   expect_false(any(grepl("Zero-inflation", v_h, fixed = TRUE)))
 })
 
 test_that("glmmTMB renders zi + Dispersion blocks before the Random effects", {
-  df <- table_regression(.cb_tmb(), output = "data.frame")
+  df <- table_regression(.cb_tmb())
   v <- trimws(df$Variable)
   i_zi <- which(grepl("Zero-inflation", v, fixed = TRUE))[1]
   i_dp <- which(grepl("Dispersion", v, fixed = TRUE))[1]
@@ -58,7 +59,9 @@ test_that("the Dispersion block only appears when dispersion was modeled", {
     family = glmmTMB::nbinom2,
     data = Salamanders
   )) # free dispersion parameter, but NO disp model
-  df <- table_regression(m, output = "data.frame")
+  df <- table_regression(m)
+  # Positive control: the rows are read, so the absence below bites.
+  expect_true("(Intercept)" %in% trimws(df$Variable))
   expect_false(any(grepl("Dispersion", df$Variable, fixed = TRUE)))
 })
 
@@ -135,7 +138,7 @@ test_that("component rows join the p_adjust family; their intercept does not", {
 
 test_that("stars apply to component rows", {
   m <- .cb_zeroinfl()
-  df <- table_regression(m, stars = TRUE, output = "data.frame")
+  df <- table_regression(m, stars = TRUE)
   b_col <- names(df)[2]
   zi_int <- grepl("[0-9]", df[[b_col]]) &
     grepl("(Intercept)", df$Variable, fixed = TRUE)
@@ -196,7 +199,8 @@ test_that("pscl AME column is populated and matches avg_slopes (response)", {
 
 test_that("show_components = FALSE omits the blocks; validation is fail-fast", {
   m <- .cb_zeroinfl()
-  df <- table_regression(m, show_components = FALSE, output = "data.frame")
+  df <- table_regression(m, show_components = FALSE)
+  expect_true("(Intercept)" %in% trimws(df$Variable))
   expect_false(any(grepl("Zero-inflation", df$Variable, fixed = TRUE)))
   expect_error(
     table_regression(m, show_components = "yes"),
@@ -206,7 +210,7 @@ test_that("show_components = FALSE omits the blocks; validation is fail-fast", {
 
 test_that("keep/drop never mutilates a component block", {
   m <- .cb_zeroinfl()
-  df <- table_regression(m, keep = "mar", output = "data.frame")
+  df <- table_regression(m, keep = "mar")
   v <- trimws(df$Variable)
   expect_true(any(grepl("Zero-inflation", v, fixed = TRUE)))
   expect_true(any(v == "fem: Women")) # block intact
@@ -301,10 +305,7 @@ test_that("mixed multi-model table: the zero block stays blank for the model wit
   data("bioChemists", package = "pscl", envir = environment())
   fp <- glm(art ~ fem + ment, family = poisson, data = bioChemists)
   fz <- pscl::zeroinfl(art ~ fem + ment | ment, data = bioChemists)
-  df <- table_regression(
-    list(Poisson = fp, ZIP = fz),
-    output = "data.frame"
-  )
+  df <- table_regression(list(Poisson = fp, ZIP = fz))
   v <- trimws(df$Variable)
   zi_header <- which(grepl("Zero-inflation", v, fixed = TRUE))
   expect_length(zi_header, 1L)
@@ -331,7 +332,7 @@ test_that("two-part AME: zero-component rows carry no AME of their own", {
   skip_if_not_installed("marginaleffects")
   data("bioChemists", package = "pscl", envir = environment())
   m <- pscl::zeroinfl(art ~ fem + ment | ment, data = bioChemists)
-  df <- table_regression(m, show_columns = c("b", "ame"), output = "data.frame")
+  df <- table_regression(m, show_columns = c("b", "ame"))
   v <- trimws(df$Variable)
   ame_col <- grep("AME", names(df), value = TRUE)[1L]
   zi_header <- which(grepl("Zero-inflation", v, fixed = TRUE))

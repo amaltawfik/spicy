@@ -46,9 +46,9 @@ test_that("events/N cells match direct counts on the estimation sample", {
 test_that("the reference row shows its counts, not an en-dash", {
   d <- .nev_soc()
   fit <- stats::glm(smoking ~ sex, family = stats::binomial(), data = d)
-  df <- as.data.frame(
-    table_regression(fit, show_columns = c("b", "n_events", "p"))
-  )
+  tbl <- table_regression(fit, show_columns = c("b", "n_events", "p"))
+  # The printed table: its columns are the displayed cells.
+  df <- structure(tbl, class = "data.frame")
   ref_row <- df[grepl("Female", df$Variable, fixed = TRUE), ]
   ev_col <- names(df)[grepl("Events/N", names(df), fixed = TRUE)]
   expect_identical(length(ev_col), 1L)
@@ -56,6 +56,18 @@ test_that("the reference row shows its counts, not an en-dash", {
   # The estimate cell keeps the reference en-dash.
   b_col <- names(df)[grepl("^\\s*B\\s*$|OR", names(df))][1]
   expect_match(ref_row[[b_col]], "–")
+  # The data frame keeps the two numbers of the cell: the events in the
+  # column, the total beside it.
+  num <- as.data.frame(tbl)
+  ref_num <- num[num$.row_role == "reference", ]
+  expect_identical(nrow(ref_num), 1L)
+  expect_identical(ref_num$level, "Female")
+  expect_equal(ref_num[["Events/N"]], 131)
+  expect_equal(ref_num[["Events/N: N"]], 606)
+  expect_true(is.na(ref_num$B))
+  male <- num[num$.row_role == "level", ]
+  expect_equal(male[["Events/N"]], 118)
+  expect_equal(male[["Events/N: N"]], 569)
 })
 
 

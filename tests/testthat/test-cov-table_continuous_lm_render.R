@@ -21,13 +21,13 @@ test_that("build_wide_display_df_continuous_lm renders integer n and weighted n"
     g = factor(c("A", "A", "B", "B")),
     w = c(1, 1, 1, 5)
   )
+  # The printed object: the builder reads its internal names.
   out <- table_continuous_lm(
     df,
     select = y,
     by = g,
     weights = w,
-    show_weighted_n = TRUE,
-    output = "long"
+    show_weighted_n = TRUE
   )
 
   disp <- spicy:::build_wide_display_df_continuous_lm(
@@ -52,14 +52,14 @@ test_that("build_wide_display_df_continuous_lm renders integer n and weighted n"
 })
 
 test_that("build_wide_display_df_continuous_lm blanks NA n and NA weighted n", {
-  # Hand-build a one-variable long block whose n / weighted_n are NA so
-  # the is.na() arms of the n and Weighted-n formatters fire.
+  # Hand-build a one-variable block whose n / weighted_n are NA so the
+  # is.na() arms of the n and Weighted-n formatters fire. The printed
+  # object carries the internal names the builder reads.
   out <- table_continuous_lm(
     iris,
     select = Sepal.Length,
     by = Petal.Width,
-    show_weighted_n = FALSE,
-    output = "long"
+    show_weighted_n = FALSE
   )
   out$n <- NA_integer_
   out$weighted_n <- NA_real_

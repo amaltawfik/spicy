@@ -37,22 +37,25 @@ test_that("the categorical SMD reproduces tableone on both kernels", {
   # k3 1.1126972805283739109683. The binary sign is ours (A - B, the
   # display order); tableone publishes magnitudes.
   expect_equal(
-    per_var$smd[[1L]],
+    per_var$smd_value[[1L]],
     -0.9205746178983232885784,
     tolerance = 1e-15
   )
   expect_equal(
-    per_var$smd[[2L]],
+    per_var$smd_value[[2L]],
     1.1126972805283739109683,
     tolerance = 1e-15
   )
   # `smd_type` names the kernel, hence whether the value is signed.
   expect_identical(per_var$smd_type, c("binary", "multinomial"))
-  expect_lt(per_var$smd[[1L]], 0)
-  expect_gt(per_var$smd[[2L]], 1)
+  expect_lt(per_var$smd_value[[1L]], 0)
+  expect_gt(per_var$smd_value[[2L]], 1)
   # The value lives on the VARIABLE, so every row of a block repeats
-  # it -- like `chi2`, `p` and the association measure beside it.
-  expect_true(all(r$smd[r$variable == "bin"] == per_var$smd[[1L]]))
+  # it -- like `statistic`, `p.value` and the association measure beside
+  # it.
+  expect_true(all(
+    r$smd_value[r$variable == "bin"] == per_var$smd_value[[1L]]
+  ))
 })
 
 test_that("the weighted categorical SMD is the SMD of the expanded data", {
@@ -66,7 +69,7 @@ test_that("the weighted categorical SMD is the SMD of the expanded data", {
     weights = w,
     output = "long"
   )
-  wv <- rw$smd[!duplicated(rw$variable)]
+  wv <- rw$smd_value[!duplicated(rw$variable)]
   # tableone on the survey design gives 0.6912858353783117859592 and
   # 1.3601470508735444830961: the categorical arms do NOT diverge
   # between the frequency and the design conventions, because the
@@ -82,7 +85,7 @@ test_that("the weighted categorical SMD is the SMD of the expanded data", {
     smd = TRUE,
     output = "long"
   )
-  expect_equal(wv, rd$smd[!duplicated(rd$variable)], tolerance = 1e-15)
+  expect_equal(wv, rd$smd_value[!duplicated(rd$variable)], tolerance = 1e-15)
   # A profile of proportions is invariant to a global rescaling of the
   # weights, so `rescale` cannot move this column -- unlike the
   # continuous one, where it moves the variance. `test = "chisq"`: the
@@ -98,7 +101,7 @@ test_that("the weighted categorical SMD is the SMD of the expanded data", {
     test = "chisq",
     output = "long"
   )
-  expect_equal(rr$smd[!duplicated(rr$variable)], wv, tolerance = 1e-15)
+  expect_equal(rr$smd_value[!duplicated(rr$variable)], wv, tolerance = 1e-15)
 })
 
 test_that("the SMD sits on the variable row, never on a level row", {
@@ -172,11 +175,13 @@ test_that("the RENDERED level rows carry an empty SMD cell, by contract", {
 test_that("the raw frames name the SMD by their own convention", {
   skip_if_not_installed("MASS")
   d <- .smd_cat_data()
-  # `long` mirrors `effect_size` / `effect_size_type` beside it.
+  # `long` mirrors `es_value` / `es_type` beside it, as the continuous
+  # frame does.
   lg <- table_categorical(d, select = bin, by = g, smd = TRUE, output = "long")
-  expect_true(all(c("smd", "smd_type") %in% names(lg)))
-  # `data.frame` is the WIDE frame, which carries display names
-  # ("Phi", never `effect_size`), so the SMD enters under its frozen key.
+  expect_true(all(c("smd_value", "smd_type") %in% names(lg)))
+  # `data.frame` is the displayed table, which carries display names
+  # ("Phi", never `es_value`), so the SMD enters under its frozen key, on
+  # the header row of the variable.
   wd <- table_categorical(
     d,
     select = bin,
@@ -185,22 +190,18 @@ test_that("the raw frames name the SMD by their own convention", {
     output = "data.frame"
   )
   expect_true(.CAT_KEY_SMD %in% names(wd))
+  expect_identical(wd$.row_role[[1L]], "factor_header")
   expect_equal(
     wd[[.CAT_KEY_SMD]][[1L]],
     -0.92057461789832329,
     tolerance = 1e-15
   )
-  # This family DROPS the column when it is not asked for -- its own
-  # rule for `.assoc`, and the opposite of the continuous frame's.
-  expect_false(any(
-    c("smd", "smd_type") %in%
-      names(table_categorical(
-        d,
-        select = bin,
-        by = g,
-        output = "long"
-      ))
-  ))
+  # Not asked for, the long output keeps the columns, empty (a stable
+  # schema, as in the continuous frame); the displayed table prints no
+  # SMD column.
+  off <- table_categorical(d, select = bin, by = g, output = "long")
+  expect_true(all(c("smd_value", "smd_type") %in% names(off)))
+  expect_true(all(is.na(off$smd_value) & is.na(off$smd_type)))
   expect_false(
     .CAT_KEY_SMD %in%
       names(table_categorical(
@@ -229,8 +230,13 @@ test_that("glance() never publishes the SMD as an association measure", {
   bare <- tb
   attr(bare, "structured") <- NULL
   gl <- broom::glance(bare)
-  expect_true(all(is.na(gl$assoc_value)))
-  expect_true(all(is.na(gl$assoc_type)))
+  expect_true(all(is.na(gl$es_value)))
+  expect_true(all(is.na(gl$es_type)))
+  # It is published under its own name instead, on either route.
+  expect_identical(gl$smd_type, "binary")
+  expect_equal(gl$smd_value, -0.92057461789832329, tolerance = 1e-15)
+  smd_cols <- c("smd_type", "smd_value")
+  expect_identical(broom::glance(tb)[smd_cols], gl[smd_cols])
 })
 
 test_that("the SMD refuses more than two groups, on the REAL groups only", {
@@ -271,7 +277,7 @@ test_that("the SMD refuses more than two groups, on the REAL groups only", {
         output = "long"
       ))
       expect_false(
-        is.na(r$smd[[1L]]),
+        is.na(r$smd_value[[1L]]),
         info = paste("include_total", tot, "drop_na", dna_mode)
       )
     }
@@ -294,7 +300,7 @@ test_that("the SMD refuses more than two groups, on the REAL groups only", {
     drop_na = TRUE,
     output = "long"
   ))
-  expect_identical(keep$smd[[1L]], drop$smd[[1L]])
+  expect_identical(keep$smd_value[[1L]], drop$smd_value[[1L]])
   st <- as_structured(suppressWarnings(table_categorical(
     dna,
     select = bin,
@@ -344,7 +350,9 @@ test_that("an undefined categorical SMD is disclosed and NA", {
     smd = TRUE,
     output = "long"
   ))
-  expect_true(is.na(r$smd[[1L]]))
+  expect_true(is.na(r$smd_value[[1L]]))
+  # The kernel is named all the same: the value is undefined, not absent.
+  expect_identical(r$smd_type[[1L]], "multinomial")
   # Disjoint supports on four categories: `all(S == 0)` is FALSE, so
   # tableone's own guard never fires and it publishes a finite sqrt(2)
   # where the true distance is infinite.
@@ -364,7 +372,7 @@ test_that("an undefined categorical SMD is disclosed and NA", {
     smd = TRUE,
     output = "long"
   ))
-  expect_true(is.na(r4$smd[[1L]]))
+  expect_true(is.na(r4$smd_value[[1L]]))
   # The cell shows the en-dash of "applies but not estimable", never a
   # blank and never a number.
   txt <- paste(
@@ -519,7 +527,7 @@ test_that("a single-level variable is perfectly balanced, not an error", {
     smd = TRUE,
     output = "long"
   )
-  expect_identical(r$smd[r$variable == "one"][[1L]], 0)
+  expect_identical(r$smd_value[r$variable == "one"][[1L]], 0)
   txt <- paste(
     capture.output(print(table_categorical(
       d,

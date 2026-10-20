@@ -352,11 +352,8 @@ test_that("nlme::lme (age | Subject): rho row has finite SE + CI", {
 test_that("table_regression(lmer slope) renders the rho row with SE + CI", {
   skip_if_not_installed("merDeriv")
   fit <- .fit_lmer_slope_corr()
-  df <- table_regression(
-    fit,
-    show_columns = c("b", "se", "ci"),
-    output = "data.frame"
-  )
+  # The printed table: its columns are the displayed cells.
+  df <- table_regression(fit, show_columns = c("b", "se", "ci"))
   # the correlation row's label ends in ", Days)"; unique to it
   rho <- df[grepl(", Days)", df$Variable, fixed = TRUE), , drop = FALSE]
   expect_equal(nrow(rho), 1L)

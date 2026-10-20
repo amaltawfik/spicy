@@ -25,17 +25,20 @@ object returned by \code{\link[=table_continuous_svy]{table_continuous_svy()}}.
 \details{
 \code{tidy()} returns one row per displayed row: one per variable, or one
 per (variable x group) with \code{by}. Columns: \code{variable}, \code{label},
-\code{group} (\code{NA} without \code{by}), \code{estimate} (the mean), \code{std.error} (the
-design-based standard error, from \code{survey::svymean()} and never
-recomputed from \code{sd / sqrt(n)} -- under a design those are different
-quantities), \code{conf.low}, \code{conf.high}, \code{df} (the degrees of freedom
-the interval used), \code{n} (observed), \code{weighted.n} (the sum of the
-sampling weights), \code{median}, \code{q1}, \code{q3}, \code{min}, \code{max}, \code{sd}, \code{deff}.
+\code{group} (\code{NA} without \code{by}), \code{.group_role} (the role of \code{group}:
+\code{"group"}, or \code{"missing"} for the group of missing \code{by} values; \code{NA}
+without \code{by}),
+\code{estimate} (the mean), \code{std.error} (the design-based standard error,
+from \code{survey::svymean()} and never recomputed from \code{sd / sqrt(n)} --
+under a design those are different quantities), \code{conf.low},
+\code{conf.high}, \code{df} (the degrees of freedom the interval used), \code{n}
+(observed), \code{weighted_n} (the sum of the sampling weights), \code{median},
+\code{q1}, \code{q3}, \code{min}, \code{max}, \code{sd}, \code{deff}.
 
 \code{glance()} returns one row per variable with its group comparison:
 \code{variable}, \code{label}, \code{n_groups}, \code{test_type}, \code{statistic}, \code{df},
 \code{df.residual}, \code{p.value}, \code{degf} (the design's own), \code{nobs},
-\code{weighted.nobs}. One row per variable even without \code{by}, where the
+\code{weighted_nobs}. One row per variable even without \code{by}, where the
 comparison columns are \code{NA} -- a fixed schema a pipeline can index
 into by NAME.
 }

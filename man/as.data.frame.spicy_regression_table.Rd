@@ -20,20 +20,32 @@
 }
 \value{
 A plain \code{data.frame} (for \code{as.data.frame()}) or a
-\code{tbl_df} (for \code{as_tibble()}).
+\code{tbl_df} (for \code{as_tibble()}), identical to the
+\code{output = "data.frame"} of the same call.
 }
 \description{
-Strips the \code{spicy_regression_table} / \code{spicy_table} classes and
-the internal analytic attributes (\code{spicy_long}, \code{spicy_fit_stats}),
-returning the wide character display as a plain \code{data.frame} (or
-\code{tbl_df} via \code{as_tibble()}). The \code{title}, \code{note}, provenance
-(\code{model_ids}, \code{outcome}), and rendering (\code{col_spec}) attributes are
-preserved.
+\code{as.data.frame()} returns the table \code{\link[=table_regression]{table_regression()}} displays,
+with its numbers: exactly what \code{output = "data.frame"} returns. One
+row per printed row -- the coefficients, the header and the levels of
+each factor, the reference levels, the fit statistics -- with the key
+columns \code{variable} (the variable of the row: the term of a
+coefficient, the factor of a level, the token of a fit statistic such
+as \code{"nobs"} or \code{"r2"}), \code{label} (the label displayed for that
+variable, or the text of a fit-statistic row), \code{level} (the level of a
+factor row) and \code{.row_role} (\code{"coef"}, \code{"factor_header"}, \code{"level"},
+\code{"reference"}, \code{"fit_stat"}, ..., the roles of \code{\link[=as_structured]{as_structured()}}),
+then the printed columns under their names, numeric: the interval of
+a coefficient is split into its two bounds (\code{"95\\\% CI: LL"},
+\code{"95\\\% CI: UL"}), a fit statistic sits in the first column of its
+model, and a cell of events over a total (\code{n_events}) keeps the
+events in its column and the total beside it (\code{"<column>: N"}). With
+several models each column name starts with the model's label. The
+note, as printed, is kept in \code{attr(, "note")}. \code{as_tibble()} returns
+the same table as a tibble.
 }
 \details{
-\code{as.data.frame()} is equivalent to passing \code{output = "data.frame"}
-to \code{\link[=table_regression]{table_regression()}}: the two paths return identical objects
-(same cells, classes, and attributes).
+For one row per coefficient with the broom names, use
+\code{output = "long"} or \code{\link[=tidy.spicy_regression_table]{tidy.spicy_regression_table()}}.
 }
 \seealso{
 \code{\link[=tidy.spicy_regression_table]{tidy.spicy_regression_table()}},

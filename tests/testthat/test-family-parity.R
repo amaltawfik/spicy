@@ -1376,3 +1376,613 @@ test_that("?spicy lists every condition class the package signals", {
     )
   )
 })
+
+# ---- The machine outputs of the family -------------------------------------
+#
+# Decisions 1 and 5 to 9 of the ADR of 2026-10-20: one vocabulary in
+# `output = "long"`, tidy() and glance(); `output = "data.frame"` is the
+# displayed table and `as.data.frame()` returns it; proportions between 0
+# and 1; the Total rows kept and flagged; the file outputs return their
+# path; one parent class. One builder per function of the family, `by`
+# and the options that bring out the optional columns.
+.fo_builders <- function() {
+  d <- sochealth
+  q <- function(e) suppressMessages(suppressWarnings(e))
+  out <- list(
+    table_categorical = function(o = "default", ...) {
+      q(table_categorical(
+        d,
+        select = c(smoking, education),
+        by = sex,
+        labels = TRUE,
+        assoc_ci = TRUE,
+        smd = TRUE,
+        p_adjust = "holm",
+        output = o,
+        ...
+      ))
+    },
+    table_continuous = function(o = "default", ...) {
+      q(table_continuous(
+        d,
+        select = c(bmi, wellbeing_score),
+        by = sex,
+        labels = TRUE,
+        statistic = TRUE,
+        effect_size = "auto",
+        effect_size_ci = TRUE,
+        smd = TRUE,
+        p_adjust = "holm",
+        output = o,
+        ...
+      ))
+    },
+    table_continuous_lm = function(o = "default", ...) {
+      q(table_continuous_lm(
+        d,
+        select = c(bmi, wellbeing_score),
+        by = education,
+        weights = weight,
+        statistic = TRUE,
+        effect_size = "omega2",
+        effect_size_ci = TRUE,
+        show_weighted_n = TRUE,
+        labels = TRUE,
+        output = o,
+        ...
+      ))
+    },
+    table_outcome = function(o = "default", ...) {
+      q(table_outcome(
+        d,
+        outcome = bmi,
+        select = c(sex, smoking),
+        labels = TRUE,
+        statistic = TRUE,
+        effect_size = "auto",
+        effect_size_ci = TRUE,
+        p_adjust = "holm",
+        output = o,
+        ...
+      ))
+    },
+    table_multiresponse = function(o = "default", ...) {
+      q(table_multiresponse(
+        d,
+        select = tidyselect::starts_with("info_"),
+        by = sex,
+        statistic = TRUE,
+        labels = TRUE,
+        output = o,
+        ...
+      ))
+    },
+    table_regression = function(o = "default", ...) {
+      q(table_regression(
+        lm(bmi ~ age + sex + education, data = d),
+        labels = TRUE,
+        output = o,
+        ...
+      ))
+    },
+    table_regression_uv = function(o = "default", ...) {
+      q(table_regression_uv(
+        d,
+        outcome = bmi,
+        predictors = c(age, sex),
+        labels = TRUE,
+        output = o,
+        ...
+      ))
+    }
+  )
+  if (
+    requireNamespace("survey", quietly = TRUE) &&
+      utils::packageVersion("survey") >= "4.5"
+  ) {
+    des <- survey::svydesign(ids = ~1, weights = ~weight, data = d)
+    out$table_categorical_svy <- function(o = "default", ...) {
+      q(table_categorical_svy(
+        des,
+        select = c(smoking, education),
+        by = sex,
+        labels = TRUE,
+        proportion_ci = TRUE,
+        deff = TRUE,
+        p_adjust = "holm",
+        output = o,
+        ...
+      ))
+    }
+    out$table_continuous_svy <- function(o = "default", ...) {
+      q(table_continuous_svy(
+        des,
+        select = c(bmi, wellbeing_score),
+        by = sex,
+        labels = TRUE,
+        statistic = TRUE,
+        deff = TRUE,
+        p_adjust = "holm",
+        output = o,
+        ...
+      ))
+    }
+  }
+  out
+}
+
+# The machine frames of one builder: the long output, tidy() and glance().
+.fo_machine_frames <- function(b) {
+  x <- b()
+  list(
+    long = b("long"),
+    tidy = broom::tidy(x),
+    glance = broom::glance(x)
+  )
+}
+
+test_that("the machine outputs of the family speak one vocabulary", {
+  skip_if_not_installed("broom")
+  # Each concept has ONE name: broom's where broom has one, one snake_case
+  # name otherwise. The other spellings the family once used are refused
+  # everywhere.
+  vocabulary <- list(
+    p.value = c("p", "pvalue", "p_value"),
+    p_unadjusted = "p.unadjusted",
+    statistic = c("chi2", "Chi2", "stat"),
+    df = "df1",
+    df.residual = "df2",
+    test_type = "statistic_type",
+    es_value = c("effect_size", "assoc_value"),
+    es_type = c("effect_size_type", "assoc_type"),
+    es_ci_lower = "assoc_ci_lower",
+    es_ci_upper = "assoc_ci_upper",
+    smd_value = "smd",
+    weighted_n = "weighted.n",
+    weighted_nobs = "weighted.nobs",
+    nobs = c("n_total", "n_obs"),
+    r.squared = "r2",
+    adj.r.squared = "adj_r2"
+  )
+  refused <- unlist(vocabulary, use.names = FALSE)
+  builders <- .fo_builders()
+  for (fn in names(builders)) {
+    frames <- .fo_machine_frames(builders[[fn]])
+    for (k in names(frames)) {
+      bad <- intersect(names(frames[[k]]), refused)
+      expect_identical(bad, character(0), info = paste(fn, k))
+    }
+  }
+  # The test, when a table carries one, is named alike everywhere.
+  for (fn in setdiff(names(builders), "table_multiresponse")) {
+    gl <- broom::glance(builders[[fn]]())
+    expect_true(
+      all(c("test_type", "p.value") %in% names(gl)) ||
+        fn %in% c("table_regression", "table_regression_uv"),
+      info = fn
+    )
+  }
+  # Counts of groups and of levels: `n_groups` counts the groups of `by`,
+  # `n_levels` the categories of a variable, never the reverse.
+  if (!is.null(builders$table_categorical_svy)) {
+    gl <- broom::glance(builders$table_categorical_svy())
+    expect_true("n_levels" %in% names(gl))
+    expect_false("n_groups" %in% names(gl))
+    gl <- broom::glance(builders$table_continuous_svy())
+    expect_true("n_groups" %in% names(gl))
+    expect_false("n_levels" %in% names(gl))
+  }
+  gl <- broom::glance(builders$table_outcome())
+  expect_true("n_levels" %in% names(gl))
+  expect_false("n_groups" %in% names(gl))
+  # So does the attribute of table_outcome() that counts the levels of
+  # each `select` variable its test compares.
+  x <- builders$table_outcome()
+  expect_identical(attr(x, "n_levels"), c(sex = 2L, smoking = 2L))
+  expect_null(attr(x, "n_groups"))
+  # The attributes name the `by` column and its label alike.
+  by_of <- c(
+    table_categorical = "sex",
+    table_categorical_svy = "sex",
+    table_continuous = "sex",
+    table_continuous_svy = "sex",
+    table_continuous_lm = "education",
+    table_multiresponse = "sex"
+  )
+  for (fn in intersect(names(by_of), names(builders))) {
+    x <- builders[[fn]]()
+    expect_identical(attr(x, "group_var"), by_of[[fn]], info = fn)
+    expect_false(is.null(attr(x, "group_label")), info = fn)
+    expect_false(
+      any(c("by_var", "by_label") %in% names(attributes(x))),
+      info = fn
+    )
+  }
+})
+
+test_that("the degrees of freedom follow the statistic", {
+  skip_if_not_installed("broom")
+  # A t (Welch's, Student's, the design-based one, the contrast or the
+  # slope of a linear model) carries its own degrees of freedom in `df`
+  # and never a `df.residual`; an F carries both.
+  is_t <- function(tt) !is.na(tt) & grepl("(^|_)t$", tt)
+  is_f <- function(tt) {
+    !is.na(tt) & (tt %in% c("F", "anova", "welch_anova", "design_f"))
+  }
+  q <- function(e) suppressMessages(suppressWarnings(e))
+  lm_by <- function(by, o = "default") {
+    q(table_continuous_lm(
+      sochealth,
+      select = bmi,
+      by = !!rlang::sym(by),
+      statistic = TRUE,
+      output = o
+    ))
+  }
+  builders <- .fo_builders()
+  frames <- list()
+  for (fn in names(builders)) {
+    frames[[paste(fn, "long")]] <- builders[[fn]]("long")
+    frames[[paste(fn, "glance")]] <- broom::glance(builders[[fn]]())
+  }
+  for (b in c("sex", "age")) {
+    frames[[paste("table_continuous_lm", b, "long")]] <- lm_by(b, "long")
+    frames[[paste("table_continuous_lm", b, "glance")]] <- broom::glance(
+      lm_by(b)
+    )
+  }
+  n_t <- 0L
+  n_f <- 0L
+  for (k in names(frames)) {
+    fr <- frames[[k]]
+    if (!all(c("test_type", "df", "df.residual") %in% names(fr))) {
+      next
+    }
+    t_rows <- is_t(fr$test_type)
+    f_rows <- is_f(fr$test_type)
+    n_t <- n_t + sum(t_rows)
+    n_f <- n_f + sum(f_rows)
+    expect_true(all(is.na(fr$df.residual[t_rows])), info = k)
+    expect_true(all(fr$df[t_rows] > 1), info = k)
+    expect_false(
+      anyNA(fr$df[f_rows]) || anyNA(fr$df.residual[f_rows]),
+      info = k
+    )
+  }
+  # Both kinds were met, so the assertions above are not vacuous.
+  expect_gt(n_t, 0L)
+  expect_gt(n_f, 0L)
+  # The t of a linear model reports the residual df of the model, which
+  # its printed header names as before.
+  lg <- lm_by("sex", "long")
+  expect_identical(lg$df[lg$test_type %in% "t"], 1186)
+  expect_match(
+    paste(capture.output(print(lm_by("sex"))), collapse = "\n"),
+    "t(1186)",
+    fixed = TRUE
+  )
+})
+
+test_that("tidy() of a descriptive table always carries `group`", {
+  skip_if_not_installed("broom")
+  d <- sochealth
+  tabs <- list(
+    table_categorical(d, select = smoking),
+    table_continuous(d, select = bmi),
+    table_multiresponse(d, select = tidyselect::starts_with("info_"))
+  )
+  if (
+    requireNamespace("survey", quietly = TRUE) &&
+      utils::packageVersion("survey") >= "4.5"
+  ) {
+    des <- survey::svydesign(ids = ~1, weights = ~weight, data = d)
+    tabs <- c(
+      tabs,
+      list(
+        table_categorical_svy(des, select = smoking),
+        table_continuous_svy(des, select = bmi)
+      )
+    )
+  }
+  for (x in tabs) {
+    td <- broom::tidy(suppressWarnings(x))
+    expect_true("group" %in% names(td), info = class(x)[[1L]])
+    expect_true(all(is.na(td$group)), info = class(x)[[1L]])
+  }
+})
+
+test_that("`output = \"data.frame\"` is the displayed table, as.data.frame() of the object", {
+  builders <- .fo_builders()
+  keys <- c("variable", "label", "level", "group", ".row_role")
+  for (fn in names(builders)) {
+    x <- builders[[fn]]()
+    df <- builders[[fn]]("data.frame")
+    expect_identical(as.data.frame(x), df, info = fn)
+    expect_identical(
+      tibble::as_tibble(x),
+      tibble::as_tibble(df),
+      info = paste(fn, "as_tibble()")
+    )
+    # The key columns first, then the printed columns, numbers throughout.
+    expect_identical(names(df)[1:2], c("variable", "label"), info = fn)
+    vals <- setdiff(names(df), keys)
+    expect_true(
+      all(vapply(df[vals], is.numeric, logical(1))),
+      info = paste(fn, "numeric cells")
+    )
+    # One row per printed row: the typed view the engines render.
+    expect_identical(nrow(df), nrow(as_structured(x)$body), info = fn)
+    # The note is the one attribute of the family's data frames (the
+    # global test of a multiple-response table aside).
+    extra <- setdiff(
+      names(attributes(df)),
+      c("names", "row.names", "class", "note", "global_test")
+    )
+    expect_identical(extra, character(0), info = fn)
+    expect_identical(attr(df, "note"), attr(x, "note"), info = fn)
+    # The long output carries the same note.
+    expect_identical(
+      attr(builders[[fn]]("long"), "note"),
+      attr(x, "note"),
+      info = fn
+    )
+  }
+})
+
+test_that("tidy() reports proportions between 0 and 1", {
+  skip_if_not_installed("broom")
+  builders <- .fo_builders()
+  for (fn in intersect(
+    names(builders),
+    c("table_categorical", "table_categorical_svy", "table_multiresponse")
+  )) {
+    td <- broom::tidy(builders[[fn]]())
+    # A table with two bases names each proportion by its base.
+    props <- if (identical(fn, "table_multiresponse")) {
+      c("proportion_cases", "proportion_responses")
+    } else {
+      "proportion"
+    }
+    expect_true(all(props %in% names(td)), info = fn)
+    for (nm in intersect(c(props, "conf.low", "conf.high"), names(td))) {
+      v <- td[[nm]][!is.na(td[[nm]])]
+      expect_true(length(v) > 0L, info = paste(fn, nm))
+      expect_true(all(v >= 0 & v <= 1), info = paste(fn, nm))
+    }
+  }
+})
+
+test_that("tidy() keeps the Total rows and flags them", {
+  skip_if_not_installed("broom")
+  builders <- .fo_builders()
+  for (fn in intersect(
+    names(builders),
+    c("table_categorical", "table_categorical_svy", "table_multiresponse")
+  )) {
+    x <- builders[[fn]]()
+    td <- broom::tidy(x)
+    expect_type(td$total, "logical")
+    # One margin among the three blocks (Female, Male, Total).
+    expect_identical(sum(td$total), nrow(td) %/% 3L, info = fn)
+    expect_true(all(td$group[td$total] == "Total"), info = fn)
+    # The long output flags the same rows.
+    lg <- builders[[fn]]("long")
+    expect_identical(lg$group[lg$total], rep("Total", sum(lg$total)), info = fn)
+  }
+  # Without `include_total`, no row is the margin.
+  td <- broom::tidy(table_categorical(
+    sochealth,
+    select = smoking,
+    by = sex,
+    include_total = FALSE
+  ))
+  expect_false(any(td$total))
+})
+
+test_that("the missing category is keyed, never recognized by its label", {
+  skip_if_not_installed("broom")
+  withr::local_options(spicy.language = "fr")
+  d <- sochealth
+  missing_label <- spicy_str("row_missing_level")
+  expect_false(identical(missing_label, "(Missing)"))
+  x <- table_categorical(d, select = smoking, by = sex)
+  for (fr in list(
+    table_categorical(d, select = smoking, by = sex, output = "long"),
+    broom::tidy(x)
+  )) {
+    expect_identical(unique(fr$level[fr$.row_role == "missing"]), missing_label)
+    expect_false(any(fr$level[fr$.row_role == "level"] == missing_label))
+  }
+  # The group of missing `by` values: `.group_role`, the role of `group`,
+  # in the long output and tidy() of every table with a `group` key.
+  frames <- list(
+    categorical_long = table_categorical(
+      d,
+      select = sex,
+      by = smoking,
+      drop_na = FALSE,
+      output = "long"
+    ),
+    categorical_tidy = broom::tidy(table_categorical(
+      d,
+      select = sex,
+      by = smoking,
+      drop_na = FALSE
+    )),
+    continuous_long = suppressWarnings(table_continuous(
+      d,
+      select = bmi,
+      by = smoking,
+      drop_na = FALSE,
+      output = "long"
+    )),
+    continuous_tidy = broom::tidy(suppressWarnings(table_continuous(
+      d,
+      select = bmi,
+      by = smoking,
+      drop_na = FALSE
+    )))
+  )
+  if (
+    requireNamespace("survey", quietly = TRUE) &&
+      utils::packageVersion("survey") >= "4.5"
+  ) {
+    des <- survey::svydesign(ids = ~1, weights = ~weight, data = d)
+    svy_cat <- function(o = "default") {
+      suppressWarnings(table_categorical_svy(
+        des,
+        select = sex,
+        by = smoking,
+        drop_na = FALSE,
+        output = o
+      ))
+    }
+    svy_con <- function(o = "default") {
+      suppressWarnings(table_continuous_svy(
+        des,
+        select = bmi,
+        by = smoking,
+        drop_na = FALSE,
+        output = o
+      ))
+    }
+    frames$categorical_svy_long <- svy_cat("long")
+    frames$categorical_svy_tidy <- broom::tidy(svy_cat())
+    frames$continuous_svy_long <- svy_con("long")
+    frames$continuous_svy_tidy <- broom::tidy(svy_con())
+  }
+  for (k in names(frames)) {
+    fr <- frames[[k]]
+    expect_identical(
+      unique(fr$group[fr$.group_role == "missing"]),
+      missing_label,
+      info = k
+    )
+    expect_false(
+      any(fr$group[fr$.group_role != "missing"] == missing_label),
+      info = k
+    )
+  }
+  # A continuous table has no `level`, so no `.row_role`: the role of its
+  # rows is that of their group.
+  lg <- frames$continuous_long
+  expect_false(".row_role" %in% names(lg))
+  expect_identical(
+    lg$.group_role[lg$group != missing_label],
+    c("group", "group")
+  )
+})
+
+test_that("each role column follows the key it describes", {
+  skip_if_not_installed("broom")
+  builders <- .fo_builders()
+  roles <- c("group", "missing", "total")
+  for (fn in setdiff(
+    names(builders),
+    c("table_regression", "table_regression_uv")
+  )) {
+    x <- builders[[fn]]()
+    for (k in c("long", "tidy")) {
+      fr <- if (identical(k, "long")) builders[[fn]]("long") else broom::tidy(x)
+      nm <- names(fr)
+      info <- paste(fn, k)
+      if ("group" %in% nm) {
+        # `.group_role` right after `group`, `NA` where `group` is.
+        expect_identical(
+          nm[match("group", nm) + 1L],
+          ".group_role",
+          info = info
+        )
+        has <- !is.na(fr$group)
+        expect_true(all(fr$.group_role[has] %in% roles), info = info)
+        expect_true(all(is.na(fr$.group_role[!has])), info = info)
+        if ("total" %in% nm) {
+          expect_identical(
+            fr$.group_role[has] == "total",
+            fr$total[has],
+            info = info
+          )
+        }
+      } else {
+        expect_false(".group_role" %in% nm, info = info)
+      }
+      # `.row_role` right after the `level` it describes. The `level` of
+      # table_continuous_lm() is a level of `by`, and that table keeps no
+      # role column.
+      if ("level" %in% nm && !identical(fn, "table_continuous_lm")) {
+        expect_identical(nm[match("level", nm) + 1L], ".row_role", info = info)
+      }
+      if (fn %in% c("table_continuous", "table_continuous_svy")) {
+        expect_false(".row_role" %in% nm, info = info)
+      }
+    }
+  }
+})
+
+test_that("a multiple-response table names each share by its base", {
+  skip_if_not_installed("broom")
+  mr <- function(...) {
+    suppressWarnings(table_multiresponse(
+      sochealth,
+      select = tidyselect::starts_with("info_"),
+      by = sex,
+      ...
+    ))
+  }
+  shares <- function(fr, stem) grep(paste0("^", stem), names(fr), value = TRUE)
+  # The long output: the percentage `percent` displays, under the name of
+  # its base.
+  expect_identical(shares(mr(output = "long"), "pct"), "pct_cases")
+  expect_identical(
+    shares(mr(percent = "responses", output = "long"), "pct"),
+    "pct_responses"
+  )
+  expect_identical(
+    shares(mr(percent = "both", output = "long"), "pct"),
+    c("pct_cases", "pct_responses")
+  )
+  # tidy(): both proportions, whatever `percent` displays.
+  for (p in c("cases", "responses", "both")) {
+    expect_identical(
+      shares(broom::tidy(mr(percent = p)), "proportion"),
+      c("proportion_cases", "proportion_responses"),
+      info = p
+    )
+  }
+  # The same numbers, on the two scales.
+  lg <- mr(percent = "both", output = "long")
+  lg <- lg[lg$.row_role == "summary", ]
+  td <- broom::tidy(mr(percent = "both"))
+  expect_equal(lg$pct_cases / 100, td$proportion_cases)
+  expect_equal(lg$pct_responses / 100, td$proportion_responses)
+})
+
+test_that("every file output of the family returns its path, invisibly", {
+  skip_if_not_installed("openxlsx2")
+  skip_if_not_installed("flextable")
+  skip_if_not_installed("officer")
+  builders <- .fo_builders()
+  dir <- withr::local_tempdir()
+  for (fn in names(builders)) {
+    xl <- file.path(dir, paste0(fn, ".xlsx"))
+    res <- withVisible(builders[[fn]]("excel", excel_path = xl))
+    expect_false(res$visible, info = paste(fn, "excel"))
+    expect_identical(res$value, xl, info = paste(fn, "excel"))
+    expect_true(file.exists(xl), info = paste(fn, "excel"))
+    wd <- file.path(dir, paste0(fn, ".docx"))
+    res <- withVisible(builders[[fn]]("word", word_path = wd))
+    expect_false(res$visible, info = paste(fn, "word"))
+    expect_identical(res$value, wd, info = paste(fn, "word"))
+    expect_true(file.exists(wd), info = paste(fn, "word"))
+  }
+})
+
+test_that("every table of the family inherits `spicy_table`", {
+  builders <- .fo_builders()
+  for (fn in names(builders)) {
+    x <- builders[[fn]]()
+    expect_true(inherits(x, "spicy_table"), info = fn)
+    expect_identical(class(x)[[2L]], "spicy_table", info = fn)
+    expect_identical(class(x)[[3L]], "data.frame", info = fn)
+  }
+})

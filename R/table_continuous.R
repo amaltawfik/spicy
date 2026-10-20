@@ -13,10 +13,11 @@
 #' descriptive summaries.
 #'
 #' Multiple output formats are available via `output`: a printed ASCII
-#' table (`"default"`), a plain `data.frame` (`"data.frame"` or
-#' `"long"` -- synonyms for the underlying long-format data, see
-#' Details), or publication-ready tables (`"tinytable"`, `"gt"`,
-#' `"flextable"`, `"excel"`, `"clipboard"`, `"word"`).
+#' table (`"default"`), a plain `data.frame` (`"data.frame"`, the
+#' displayed table with its numbers, or `"long"`, every statistic of
+#' each variable and group; see *Value*), or publication-ready tables
+#' (`"tinytable"`, `"gt"`, `"flextable"`, `"excel"`, `"clipboard"`,
+#' `"word"`).
 #'
 #' This is the descriptive companion to [table_continuous_lm()]. The
 #' two functions share their layout, alignment, and reporting precision
@@ -131,8 +132,8 @@
 #'   (`tinytable`, `gt`, `flextable`, `word`, `excel`, `clipboard`).
 #'   Set to `FALSE` to drop the `n` column structurally from those
 #'   outputs (no empty placeholder, no spanner). The `n` column is
-#'   always present in the raw `output = "data.frame"` /
-#'   `"long"` for downstream programmatic access. Defaults to `TRUE`.
+#'   always present in `output = "long"` for downstream programmatic
+#'   access. Defaults to `TRUE`.
 #'   Ignored (with a warning) when `show_columns` is supplied.
 #' @param show_columns Statistics to display, as a character vector of
 #'   tokens or a named list of such vectors (one per variable). `NULL`
@@ -189,9 +190,9 @@
 #'   Set to `FALSE` to drop both columns and the CI spanner
 #'   structurally from those outputs (no empty placeholders, no
 #'   border lines under an empty header). The CI bounds are always
-#'   present as `ci_lower` / `ci_upper` in the raw
-#'   `output = "data.frame"` / `"long"` for downstream programmatic
-#'   access. Defaults to `TRUE`. The CI level is taken from `ci_level`.
+#'   present as `ci_lower` / `ci_upper` in `output = "long"` for
+#'   downstream programmatic access. Defaults to `TRUE`. The CI level is
+#'   taken from `ci_level`.
 #'   Ignored (with a warning) when `show_columns` is supplied.
 #' @param labels How each variable is named in the table: in the rows,
 #'   in the title, and in the notes. Four forms:
@@ -261,11 +262,11 @@
 #'   whose `excel` output still uses that convention at every `align`.
 #' @param output Output format. One of:
 #'   - `"default"`: an ASCII table object, printed when the call is bare.
-#'   - `"data.frame"` / `"long"`: a plain `data.frame` with one row
-#'     per `(variable x group)` (or one row per `variable` when `by`
-#'     is not used). The two names are synonyms; pick whichever reads
-#'     better in your pipeline (`"long"` matches
-#'     [table_continuous_lm()]'s naming).
+#'   - `"data.frame"`: the displayed table with its numbers, one row
+#'     per printed row.
+#'   - `"long"`: one row per `(variable x group)` (or one row per
+#'     `variable` when `by` is not used), with every statistic the
+#'     table computes.
 #'   - `"tinytable"` (requires `tinytable`)
 #'   - `"gt"` (requires `gt`)
 #'   - `"flextable"` (requires `flextable`)
@@ -315,35 +316,52 @@
 #'     the table). The object can be re-coerced via
 #'     [as.data.frame.spicy_continuous_table()] or piped into
 #'     `broom::tidy()` / `broom::glance()`.
-#'   \item `"data.frame"` / `"long"`: a plain `data.frame` with
-#'     columns `variable`, `label`, `group` (when `by` is used),
-#'     `mean`, `sd`, `min`, `max`, `ci_lower`, `ci_upper`, `median`,
-#'     `q1`, `q3`, `iqr`, `med_ci_lower`, `med_ci_upper`, `n`. Every
+#'   \item `"data.frame"`: the displayed table with its numbers, what
+#'     [as.data.frame()][as.data.frame.spicy_continuous_table] of the
+#'     default object returns: one row per printed row, the key columns
+#'     `variable` (the column name), `label` (the label displayed for
+#'     it) and, with `by`, `group` and `.row_role` (`"group"`, or
+#'     `"missing"` for the group of missing `by` values), then the
+#'     printed columns under their names (`"M"`, `"SD"`, `"Min"`,
+#'     `"Max"`, `"95\% CI LL"`, `"95\% CI UL"`, `"n"`, `"Test"`, `"p"`,
+#'     `"ES"`, `"SMD"`, the columns `show_columns` asks for). A cell that
+#'     prints several numbers keeps the first in its column and the
+#'     others beside it under their names in the long output: `df` and
+#'     `df.residual` after `"Test"`, `es_ci_lower` and `es_ci_upper`
+#'     after `"ES"` when its interval is printed, `q1` and `q3` after
+#'     `"Med [Q1, Q3]"`.
+#'   \item `"long"`: a plain `data.frame` with one row per
+#'     `(variable x group)` and columns `variable`, `label`, `group` and
+#'     `.group_role` (the role of `group`: `"group"`, or `"missing"` for
+#'     the group of missing `by` values) when `by` is used, `mean`, `sd`,
+#'     `min`, `max`,
+#'     `ci_lower`, `ci_upper`, `median`, `q1`, `q3`, `iqr`,
+#'     `med_ci_lower`, `med_ci_upper`, `n`, `weighted_n`. Every
 #'     statistic is computed whatever `show_columns` displays. When
-#'     `by` is used together with `p_value = TRUE`, `statistic = TRUE`,
-#'     or `effect_size != "none"`, additional columns are appended
-#'     (populated on the first row of each variable block only):
+#'     `by` is used, the comparison columns follow (populated on the
+#'     first row of each variable block only):
 #'     \itemize{
 #'       \item `test_type` -- test identifier (e.g., `"welch_t"`,
 #'         `"welch_anova"`, `"student_t"`, `"anova"`, `"wilcoxon"`,
-#'         `"kruskal"`).
-#'       \item `statistic`, `df1`, `df2` -- the test statistic and its
-#'         degrees of freedom.
-#'       \item `p.value` -- with `p_value = TRUE` only.
+#'         `"kruskal"`), with `statistic`, `df` and `df.residual` (the
+#'         degrees of freedom of a t statistic in `df`, those of an F
+#'         statistic in `df` and `df.residual`, as [broom::glance()]
+#'         names them), when the test ran (for `p_value`, `statistic` or
+#'         an effect size).
+#'       \item `p.value` -- with the *p*-value only, and `p_unadjusted`
+#'         under `p_adjust`.
 #'       \item `es_type` -- effect-size identifier (`"hedges_g"`,
-#'         `"eta_sq"`, `"r_rb"`, or `"epsilon_sq"`), when
-#'         `effect_size != "none"`.
-#'       \item `es_value`, `es_ci_lower`, `es_ci_upper` -- effect-size
-#'         estimate and confidence interval bounds.
+#'         `"eta_sq"`, `"r_rb"`, or `"epsilon_sq"`), `es_value`,
+#'         `es_ci_lower`, `es_ci_upper` -- the effect size and its
+#'         interval.
+#'       \item `smd_type`, `smd_value` -- the standardized mean
+#'         difference; `smd_type` names the kernel the value came from:
+#'         `"continuous"` here.
 #'     }
-#'     A `by` frame ALSO carries `smd_type` and `smd_value`
-#'     unconditionally -- `NA` throughout when `smd = FALSE` -- so the
-#'     schema a pipeline indexes into does not move with an argument
-#'     (the `weighted_n` rule). `smd_type` names the kernel the value
-#'     came from: `"continuous"` here.
-#'     The two names `"data.frame"` and `"long"` are synonyms (the
-#'     descriptive output is naturally already long). Pick whichever
-#'     reads better in your code.
+#'     The effect-size and SMD columns are there whether or not they were
+#'     requested, `NA` when not, so the schema a pipeline indexes into
+#'     does not move with an argument (the `weighted_n` rule); the test
+#'     columns follow `p_value`.
 #'   \item `"tinytable"`: a `tinytable` object.
 #'   \item `"gt"`: a `gt_tbl` object.
 #'   \item `"flextable"`: a `flextable` object.
@@ -1715,15 +1733,11 @@ table_continuous <- function(
   attr(result, "show_columns") <- tokens_union
   attr(result, "show_columns_by_var") <- tokens_by_var
 
-  # --- raw long-format return (one row per variable x group) ---
-  # `output = "data.frame"` and `output = "long"` both return the
-  # underlying long-format data.frame. The two names coexist for
-  # harmonization with `table_continuous_lm()`, where `"data.frame"`
-  # is the wide formatted output and `"long"` is the raw analytic
-  # data. In `table_continuous()` the descriptive output is naturally
-  # already long (one row per (variable x group)), so the two are
-  # synonyms and return identical content; pick whichever name reads
-  # better in your pipeline.
+  # --- the long output (one row per variable x group) ---
+  # `output = "long"` is the compute frame in the vocabulary of the
+  # family; `output = "data.frame"` is the displayed table with its
+  # numbers, `as.data.frame()` of the object built at the end (decision
+  # 5 of the ADR of 2026-10-20).
   # Read the ledger once, here: every output route below must carry the
   # same disclosure, not print() alone. The statistical glosses (which
   # test each variable carries, what the new abbreviations mean) are
@@ -1744,16 +1758,17 @@ table_continuous <- function(
     .desc_p_adjust_note(p_adjust_info)
   )))
 
-  if (output %in% c("data.frame", "long")) {
+  if (identical(output, "long")) {
     # The raw frame keeps the note as an attribute: a pipeline that
     # re-renders the numbers itself must still be able to state what was
     # removed. See the `output` section of the docs.
-    attr(result, "note") <- table_note
-    return(result)
+    out <- .continuous_publish_long(result, missing_group_label)
+    attr(out, "note") <- table_note
+    return(out)
   }
 
   # --- raw return for non-default outputs ---
-  if (output != "default") {
+  if (!output %in% c("default", "data.frame")) {
     display_df <- build_display_df(
       result,
       digits = digits,
@@ -1843,11 +1858,66 @@ table_continuous <- function(
     p_adjust_info
   )
   class(result) <- c("spicy_continuous_table", "spicy_table", class(result))
+  # `output = "data.frame"` is the displayed table with its numbers,
+  # `as.data.frame()` of the object the call would print (decision 5 of
+  # the ADR of 2026-10-20).
+  if (identical(output, "data.frame")) {
+    return(as.data.frame(result))
+  }
   # Return VISIBLY and let standard auto-print dispatch to
   # print.spicy_continuous_table(): a bare table_continuous(...) call
   # still displays the table, while `t <- table_continuous(...)` is
   # silent (the freq() / cross_tab() model).
   result
+}
+
+# The `output = "long"` frame of the continuous family, in the vocabulary
+# of the family (decision 1 of the ADR of 2026-10-20): the compute frame,
+# one row per variable and group, with `.group_role` beside `group`
+# ("group", or "missing" for the group of missing `by` values: the key,
+# never the translated label; no `level`, so no `.row_role`), the test's
+# degrees of freedom as `df` and `df.residual`, and -- in a table that
+# compares groups -- the effect-size columns whether or not one was
+# requested, `NA` when not, as the SMD columns beside them (the stable
+# schema of `weighted_n`). Only the note stays as an attribute; the
+# rendering metadata belongs to the printed object.
+.continuous_publish_long <- function(
+  result,
+  missing_group_label = NA_character_,
+  effect_size = TRUE
+) {
+  has_group <- "group" %in% names(result)
+  out <- as.data.frame(
+    unclass(result),
+    stringsAsFactors = FALSE,
+    check.names = FALSE
+  )
+  if (has_group) {
+    role <- if (is.na(missing_group_label)) {
+      rep("group", nrow(out))
+    } else {
+      ifelse(out$group == missing_group_label, "missing", "group")
+    }
+    out <- .insert_cols_after(out, list(.group_role = role), "group")
+  }
+  if (has_group && isTRUE(effect_size) && !"es_value" %in% names(out)) {
+    n <- nrow(out)
+    es <- list(
+      es_type = rep(NA_character_, n),
+      es_value = rep(NA_real_, n),
+      es_ci_lower = rep(NA_real_, n),
+      es_ci_upper = rep(NA_real_, n)
+    )
+    before <- match("smd_type", names(out))
+    out <- if (is.na(before)) {
+      .insert_cols_after(out, es, names(out)[ncol(out)])
+    } else {
+      .insert_cols_after(out, es, names(out)[before - 1L])
+    }
+  }
+  out <- .rename_cols(out, c(df1 = "df", df2 = "df.residual"))
+  rownames(out) <- NULL
+  out
 }
 
 
@@ -1889,9 +1959,9 @@ order_continuous_tokens <- function(tokens) {
 
 # ---- frozen column keys ----------------------------------------------------
 
-# Decision 13 (i18n stage 1.5, lot B). `table_continuous(output = )` hands
-# back the COMPUTE frame, so these strings are not a `data.frame` contract
-# -- but they are the names of the display frame, the `col_meta` index of
+# Decision 13 (i18n stage 1.5, lot B). These strings are a `data.frame`
+# contract: the column names of `output = "data.frame"` and
+# `as.data.frame()`, and of the display frame, the `col_meta` index of
 # `as_structured()`, the flextable `col_keys`, the gt column ids and the
 # targets of the gt CSS selector. Frozen English, one constant per key,
 # compared key against key at every read path; the HEADER a reader sees is

@@ -67,6 +67,12 @@ test_that("tidy() reads a 'percent' column when 'pct' is absent", {
   expect_equal(td$proportion, c(0.3, 0.7))
   expect_equal(td$n, c(3L, 7L))
   expect_equal(td$level, c("a", "b"))
+  # A frame without the keys gets their defaults: no group, level rows,
+  # no margin, the column name as its label.
+  expect_true(all(is.na(td$group)))
+  expect_identical(td$.row_role, c("level", "level"))
+  expect_identical(td$total, c(FALSE, FALSE))
+  expect_identical(td$label, td$variable)
 })
 
 test_that("tidy() yields NA proportions when neither pct nor percent exist", {

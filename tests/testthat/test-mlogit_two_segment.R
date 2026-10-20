@@ -25,7 +25,8 @@
 
 test_that("two segments: generic block first, then per-alternative sections", {
   fit <- .fit_mlogit_fishing_2s()
-  df <- as.data.frame(table_regression(fit))
+  # The printed table: `$Variable` holds the displayed row labels.
+  df <- table_regression(fit)
   v <- trimws(df$Variable)
   # Section headers present, in order: generic block leads.
   idx <- vapply(
@@ -76,8 +77,7 @@ test_that("'Reference alternative:' footer note names the base", {
 
 test_that("generic-only model: single block, no reference note", {
   fit <- .fit_mlogit_fishing_2s(mode ~ price + catch | 0)
-  df <- as.data.frame(table_regression(fit))
-  v <- trimws(df$Variable)
+  v <- trimws(table_regression(fit)$Variable)
   expect_true("Alternative-invariant:" %in% v)
   expect_true(all(c("price", "catch") %in% v))
   out <- paste(capture.output(print(table_regression(fit))), collapse = "\n")
@@ -94,7 +94,7 @@ test_that("keep/drop operate on the native '<term>:<alt>' names", {
     sort(lg$term),
     sort(c("income_k:boat", "income_k:charter", "income_k:pier"))
   )
-  df <- as.data.frame(table_regression(fit, keep = "^income_k:"))
+  df <- table_regression(fit, keep = "^income_k:")
   expect_identical(sum(trimws(df$Variable) == "income_k"), 3L)
 })
 
@@ -117,7 +117,7 @@ test_that("multi-model mlogit keeps the sectioned layout side by side", {
 test_that("the alternative-invariant caption follows the language", {
   fit <- .fit_mlogit_fishing_2s()
   withr::local_options(spicy.language = "fr")
-  v <- trimws(as.data.frame(table_regression(fit))$Variable)
+  v <- trimws(table_regression(fit)$Variable)
   expect_true("Invariant entre alternatives\u00A0:" %in% v)
   expect_false(any(grepl("Alternative-invariant", v, fixed = TRUE)))
   # The identity the frame publishes stays English.

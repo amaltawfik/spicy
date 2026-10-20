@@ -212,24 +212,21 @@ test_that("the structured body carries no empty fit-stat rows either", {
     outcome = wellbeing_score,
     method = "lm",
     predictors = c(age, bmi),
-    multivariable = FALSE,
-    output = "data.frame"
+    multivariable = FALSE
   )
-  st <- attr(df, "structured")
+  st <- as_structured(df)
   expect_false(any(st$body$.row_role == "fit_stat"))
   # Positive control for the label half: `.row_role` is drift-proof, the
   # two typed-out stubs are not. Pin that both name real fit-stat rows
   # when the screen is asked for them.
-  with_stats <- attr(
+  with_stats <- as_structured(
     table_regression_uv(
       d,
       outcome = wellbeing_score,
       method = "lm",
       predictors = c(age, bmi),
-      show_fit_stats = c("nobs", "aic"),
-      output = "data.frame"
-    ),
-    "structured"
+      show_fit_stats = c("nobs", "aic")
+    )
   )
   expect_true(all(c("n", "AIC") %in% trimws(with_stats$body$Variable)))
   expect_false(any(st$body$Variable %in% c("n", "AIC")))
@@ -302,10 +299,9 @@ test_that("the r2 / adj_r2 tokens carry each predictor's own R-squared", {
     method = "lm",
     predictors = c(age, bmi, sex),
     multivariable = FALSE,
-    show_columns = c("b", "ci", "p", "r2", "adj_r2"),
-    output = "data.frame"
+    show_columns = c("b", "ci", "p", "r2", "adj_r2")
   )
-  st <- attr(df, "structured")
+  st <- as_structured(df)
   r2_col <- grep("(^|: )R²$", names(st$body), value = TRUE)
   adj_col <- grep("Adj\\. R²$", names(st$body), value = TRUE)
   expect_length(r2_col, 1L)
@@ -343,10 +339,9 @@ test_that("the r2 / adj_r2 tokens carry each predictor's own R-squared", {
     method = "lm",
     predictors = c(age, bmi, sex),
     multivariable = FALSE,
-    show_columns = c("b", "partial_eta2"),
-    output = "data.frame"
+    show_columns = c("b", "partial_eta2")
   )
-  eta_st <- attr(eta, "structured")
+  eta_st <- as_structured(eta)
   eta_col <- grep("η²", names(eta_st$body), value = TRUE)[1L]
   eta_vals <- eta_st$body[[eta_col]][!is.na(eta_st$body[[eta_col]])]
   expect_equal(eta_vals, got_r2, tolerance = 1e-10)
@@ -363,7 +358,8 @@ test_that("the R-squared column is one value per block, blank elsewhere", {
     multivariable = FALSE,
     show_columns = c("n", "b", "p", "r2")
   )
-  body <- as.data.frame(tbl)
+  # The printed table: its columns are the displayed cells.
+  body <- structure(tbl, class = "data.frame")
   r2_col <- grep("(^|: )R²$", names(body), value = TRUE)
   expect_length(r2_col, 1L)
   cells <- trimws(body[[r2_col]], whitespace = "[\\h\\v]")
@@ -385,7 +381,8 @@ test_that("the multivariable side keeps R-squared as a fit-stat row", {
     predictors = c(age, bmi),
     show_columns = c("n", "b", "p", "r2")
   )
-  body <- as.data.frame(tbl)
+  # The printed table: its columns are the displayed cells.
+  body <- structure(tbl, class = "data.frame")
   # One R^2 COLUMN only -- the univariable one; the multivariable group
   # reports a single model-level value, so it stays a row.
   expect_length(grep("(^|: )R²$", names(body), value = TRUE), 1L)
@@ -404,19 +401,16 @@ test_that("the multivariable side keeps R-squared as a fit-stat row", {
 
   # A single model (no screen) has nothing to put in the column: it is
   # dropped for that group, exactly as the N column is.
-  df <- table_regression(
-    m_full,
-    show_columns = c("b", "r2"),
-    output = "data.frame"
-  )
+  df <- table_regression(m_full, show_columns = c("b", "r2"))
   expect_identical(names(df), c("Variable", "B"))
 })
 
 
 test_that("the R-squared column follows `fit_digits`, like the R2 row", {
   d <- .uv_soc()
+  # The displayed cells of the R² column of the printed table.
   r2_cells <- function(...) {
-    body <- as.data.frame(table_regression_uv(
+    body <- table_regression_uv(
       d,
       outcome = wellbeing_score,
       method = "lm",
@@ -424,7 +418,7 @@ test_that("the R-squared column follows `fit_digits`, like the R2 row", {
       multivariable = FALSE,
       show_columns = c("b", "r2"),
       ...
-    ))
+    )
     trimws(body[[grep("(^|: )R²$", names(body))]], whitespace = "[\\h\\v]")
   }
   expect_identical(r2_cells(), c("0.00", "0.02"))

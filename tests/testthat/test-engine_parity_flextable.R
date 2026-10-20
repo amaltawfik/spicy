@@ -167,7 +167,7 @@ test_that("every console separator is drawn, not only the first", {
   skip_if_not_installed("MASS")
   d <- .pf_data()
   fit <- MASS::polr(srh ~ age + sex, data = d, Hess = TRUE)
-  tbl <- table_regression(fit, output = "data.frame")
+  tbl <- table_regression(fit)
   group_sep <- as.integer(attr(tbl, "group_sep_rows"))
   section_sep <- as.integer(attr(tbl, "section_sep_rows"))
   expect_true(length(group_sep) == 1L && length(section_sep) == 1L)

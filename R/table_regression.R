@@ -287,8 +287,9 @@
 #' categories-within-models would need two spanner levels.
 #' `tidy()` and `output = "long"` always return the long form
 #' (`"<category>: <term>"` rows), whatever the display;
-#' `as_structured()` mirrors the displayed table (one column set per
-#' category), as it does for every other layout.
+#' `as_structured()` and `output = "data.frame"` mirror the displayed
+#' table (one column set per category), as they do for every other
+#' layout.
 #'
 #' ## Robust SE availability by model class
 #'
@@ -730,16 +731,21 @@
 #' \itemize{
 #'   \item `"default"` -- a `spicy_regression_table`
 #'     (`data.frame` subclass) printed via [spicy_print_table()].
-#'   \item `"data.frame"` / `"long"` -- raw data.frame /
-#'     long-format tibble.
+#'   \item `"data.frame"` -- the displayed table with its numbers,
+#'     [as.data.frame()][as.data.frame.spicy_regression_table] of the
+#'     default object: one row per printed row, the key columns
+#'     `variable`, `label`, `level` and `.row_role`, then the printed
+#'     columns, numeric, each interval split into its two bounds.
+#'   \item `"long"` -- the long-format tibble, one row per
+#'     `(model_id, term, estimate_type)`, with broom's column names.
 #'   \item `"gt"` / `"flextable"` / `"tinytable"` -- rich-format
 #'     HTML / Word / PDF tables (require the corresponding
 #'     Suggests package). In a PDF, a `"flextable"` table wider than
 #'     the page can be fitted with `flextable::fit_to_width()`.
 #'   \item `"excel"` -- writes to `excel_path` via
-#'     [openxlsx2::write_xlsx()].
+#'     [openxlsx2::write_xlsx()] and returns the path invisibly.
 #'   \item `"word"` -- writes to `word_path` via
-#'     `flextable::save_as_docx()`.
+#'     `flextable::save_as_docx()` and returns the path invisibly.
 #'   \item `"clipboard"` -- copies to the system clipboard via
 #'     [clipr::write_clip()].
 #' }
@@ -1427,8 +1433,9 @@
 #'   stat rows are *not* affected -- they belong to the table
 #'   structure, not to the banner.
 #' @param output Output type. `"default"` (a printable
-#'   `spicy_regression_table`); `"data.frame"` / `"long"` (raw
-#'   data); `"gt"` / `"flextable"` / `"tinytable"` (rich-format
+#'   `spicy_regression_table`); `"data.frame"` (the displayed table
+#'   with its numbers); `"long"` (one row per coefficient, broom's
+#'   names); `"gt"` / `"flextable"` / `"tinytable"` (rich-format
 #'   tables); `"excel"` (writes to `excel_path`); `"clipboard"`
 #'   (copies to system clipboard); `"word"` (writes flextable to
 #'   `word_path`).
@@ -1518,9 +1525,15 @@
 #'   `align`, `padding`) and provenance attributes (`outcome`,
 #'   `model_ids`) consumed by the print method and the broom
 #'   methods. For other `output` values, returns the
-#'   format-specific object (`gt_tbl`, `flextable`, `tinytable`,
-#'   `data.frame`, `tbl_df`, or `invisible(x)` for side-effect
-#'   outputs).
+#'   format-specific object: `gt_tbl`, `flextable`, `tinytable`; for
+#'   `"data.frame"` the displayed table as a `data.frame` (see
+#'   [as.data.frame.spicy_regression_table()]); for `"long"` a `tbl_df`
+#'   (`model_id`, `outcome`, `term`, `estimate_type`, `estimate`,
+#'   `std.error`, `conf.low`, `conf.high`, `statistic`, `df`, `p.value`,
+#'   `test_type`, `nobs`, `r.squared`, `adj.r.squared`, ...); the file
+#'   path, invisibly, for `"excel"` and `"word"`; the table, invisibly,
+#'   for `"clipboard"`. The two data frames carry the note as printed in
+#'   `attr(x, "note")`.
 #'
 #' @section Classed conditions:
 #' Every error and warning emitted by `table_regression()` carries
@@ -3667,7 +3680,8 @@ table_regression <- function(
     excel_sheet = excel_sheet,
     clipboard_delim = clipboard_delim,
     word_path = word_path,
-    word_template = word_template
+    word_template = word_template,
+    labels = var_labs$terms
   )
 }
 

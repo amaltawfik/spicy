@@ -29,7 +29,7 @@
 }
 
 .ep_console <- function(tbl) {
-  .ep_df(as.data.frame(tbl, stringsAsFactors = FALSE))
+  .ep_df(structure(tbl, class = "data.frame"))
 }
 .ep_structured <- function(tbl) {
   .ep_df(spicy:::.format_structured_to_string_body(as_structured(tbl)))

@@ -187,7 +187,7 @@ the \emph{p}-value column of the test chosen by \code{test}. When \code{NULL} (t
 default), the \emph{p}-value is shown automatically whenever \code{by} is
 supplied, and hidden otherwise. Pass \code{p_value = FALSE} to remove
 the test from every output: the \code{p} column, and the \code{test_type},
-\code{Chi2} and \code{df} columns of \code{"data.frame"} and \code{"long"}; \code{test},
+\code{statistic}, \code{df} and \code{p.value} columns of \code{"long"}; \code{test},
 \code{correct} and \code{simulate_p} are then ignored, with a warning. The
 association measure keeps its own switch, so
 \verb{p_value = FALSE, assoc_measure = "none"} gives a purely
@@ -245,10 +245,10 @@ non-2x2 variable, an error is raised so the user can choose
 another measure or fall back to \code{"auto"}.}
 
 \item{assoc_ci}{Passed to \code{\link[=cross_tab]{cross_tab()}}. If \code{TRUE}, includes the
-confidence interval of the association measure. In wide raw
-outputs (\code{"data.frame"}, \code{"excel"}, \code{"clipboard"}), two extra
-columns \verb{CI lower} / \verb{CI upper} are added; in the long raw
-output (\code{"long"}) the bounds appear as \code{ci_lower} / \code{ci_upper}.
+confidence interval of the association measure. In the console
+and in the \code{"data.frame"}, \code{"excel"} and \code{"clipboard"} outputs,
+two extra columns \verb{CI lower} / \verb{CI upper} are added; in the long
+output (\code{"long"}) the bounds fill \code{es_ci_lower} / \code{es_ci_upper}.
 In rendered formats (\code{"gt"}, \code{"tinytable"}, \code{"flextable"},
 \code{"word"}), the CI is shown inline (e.g., \code{.14 [.08, .19]}).
 Defaults to \code{FALSE}.}
@@ -302,7 +302,7 @@ right-aligns only the counts and the \emph{p}-value there, and
 \item{output}{Output format. One of:
 \itemize{
 \item \code{"default"} (an ASCII table object, printed when the call is bare)
-\item \code{"data.frame"} (a wide numeric \code{data.frame})
+\item \code{"data.frame"} (the displayed table, numeric)
 \item \code{"long"} (a long numeric \code{data.frame})
 \item \code{"tinytable"} (requires \code{tinytable})
 \item \code{"gt"} (requires \code{gt})
@@ -326,7 +326,8 @@ is silently unused in every other output and in one-way tables,
 which have a single header row to begin with.}
 
 \item{blank_na_wide}{Logical. If \code{FALSE} (the default), \code{NA} values are kept
-as-is in wide raw output. If \code{TRUE}, replaces them with empty strings.}
+as-is in \code{output = "data.frame"}. If \code{TRUE}, the empty cells of its
+statistic columns become empty strings (the columns become text).}
 
 \item{excel_path}{Path for \code{output = "excel"}, ending in \code{".xlsx"}, in
 a directory that exists. Defaults to \code{NULL}.}
@@ -374,35 +375,44 @@ rendering metadata as attributes (S3 class
 a bare \code{table_categorical(...)} call auto-prints the styled ASCII
 table at the console while \code{t <- table_categorical(...)} stays
 silent (print \code{t} to display the table).
-\item \code{"data.frame"}: a wide \code{data.frame} with one row per
-variable--level combination.
-When \code{by} is used, the columns are \code{Variable}, \code{Level}, and one
-pair of \code{n} / \verb{\\\%} columns per group level (plus \code{Total} when
-\code{include_total = TRUE}), followed by \code{test_type}, \code{Chi2}, \code{df},
-\code{p} (absent with \code{p_value = FALSE}), and the association measure
-column. \code{test_type} names the test of the variable:
-\code{"chi_squared"} (Pearson's), \code{"n1_chi_squared"} (the N-1
-chi-squared), \code{"fisher_exact"}, \code{"fisher_midp"} (the Fisher mid-p
-test), or \code{"fisher_exact_mc"} (the Monte Carlo estimate of Fisher's
-exact test); \code{Chi2} and \code{df} hold the statistic of a chi-squared
-test, Pearson's or the N-1, and are \code{NA} for a variable tested by
-an exact test.
-When \code{by = NULL}, the columns are \code{Variable}, \code{Level}, \code{n}, \verb{\\\%}.
-\item \code{"long"}: a long \code{data.frame} with columns \code{variable} (the
-column name), \code{label} (the label the rows display for it, see
-\code{labels}), \code{level}, \code{n}, \code{pct} (plus \code{group} when \code{by} is used, and
-\code{test_type}, \code{chi2}, \code{df}, \code{p} unless \code{p_value = FALSE}, as in
-\code{"data.frame"}). The association measure is
-always called \code{effect_size},
-whichever measure it is, and \code{effect_size_type} names that measure
-per row (\code{"cramer_v"}, \code{"phi"}, ...), or is \code{NA} on the rows of a
-variable given \code{assoc_measure = "none"}. The wide outputs instead
-name the column after the measure, or \verb{Effect size} when the row
-variables do not share one. With \code{smd = TRUE} this output also
-carries \code{smd} and \code{smd_type} (\code{"binary"} or \code{"multinomial"},
-the kernel the value came from); the wide outputs name that
-column \code{SMD}. Like the association columns, both are ABSENT
-when the statistic is not requested.
+\item \code{"data.frame"}: the displayed table with its numbers, what
+\link[=as.data.frame.spicy_categorical_table]{as.data.frame()} of the
+default object returns: one row per printed row -- the header row
+of each variable, which carries its \emph{p}-value and its association
+measure, then one row per level. The key columns are \code{variable}
+(the column name), \code{label} (the label the rows display for it,
+see \code{labels}), \code{level} and \code{.row_role} (\code{"factor_header"},
+\code{"level"}, or \code{"missing"} for the row of missing values the table
+adds), then the printed columns: one pair \verb{<group> n} /
+\verb{<group> \\\%} per group level (plus \code{Total} when
+\code{include_total = TRUE}), \code{p} (absent with \code{p_value = FALSE}), the
+association measure (named after the measure, or \verb{Effect size}
+when the row variables do not share one), its bounds \verb{CI lower} /
+\verb{CI upper} with \code{assoc_ci = TRUE}, and \code{SMD} with \code{smd = TRUE}.
+When \code{by = NULL}, the printed columns are \code{n} and \verb{\\\%}.
+\item \code{"long"}: a long \code{data.frame}, one row per variable, level and
+group, with columns \code{variable}, \code{label}, \code{level}, \code{.row_role} (the
+role of \code{level}: \code{"level"}, or \code{"missing"} for the row of missing
+values), then, when \code{by} is used, \code{group}, \code{.group_role} (the role
+of \code{group}: \code{"group"}, \code{"missing"} for the column of missing \code{by}
+values, or \code{"total"} for the margin) and \code{total} (\code{TRUE} on the
+rows of the margin), then \code{n}, \code{pct} (the percentage),
+then, with \code{by}, the test of the variable unless
+\code{p_value = FALSE}: \code{test_type} (\code{"chi_squared"} for Pearson's,
+\code{"n1_chi_squared"} for the N-1 chi-squared, \code{"fisher_exact"},
+\code{"fisher_midp"} for the Fisher mid-p test, or \code{"fisher_exact_mc"}
+for the Monte Carlo estimate of Fisher's exact test), \code{statistic}
+and \code{df} (the chi-squared, Pearson's or the N-1, \code{NA} for a
+variable tested by an exact test), \code{p.value} (and \code{p_unadjusted}
+under \code{p_adjust}); and the association measure, whichever measure
+it is: \code{es_type} names it per row (\code{"cramer_v"}, \code{"phi"}, ...),
+\code{es_value} holds it, \code{es_ci_lower} / \code{es_ci_upper} its interval
+(\code{NA} unless \code{assoc_ci = TRUE}), and \code{smd_type} (\code{"binary"} or
+\code{"multinomial"}, the kernel the value came from) / \code{smd_value} the
+standardized mean difference. The measure and SMD columns are
+there whether or not they were requested, \code{NA} when not, so the
+schema does not move with an argument. The statistics of a
+variable sit on every row of its block.
 \item \code{"tinytable"}: a \code{tinytable} object.
 \item \code{"gt"}: a \code{gt_tbl} object.
 \item \code{"flextable"}: a \code{flextable} object.
@@ -437,10 +447,10 @@ association measures.
 Without \code{by}, produces one-way frequency-style summaries.
 
 Multiple output formats are available via \code{output}: a printed ASCII
-table (\code{"default"}), a wide or long numeric \code{data.frame}
-(\code{"data.frame"}, \code{"long"}), or publication-ready tables
-(\code{"tinytable"}, \code{"gt"}, \code{"flextable"}, \code{"excel"}, \code{"clipboard"},
-\code{"word"}).
+table (\code{"default"}), a numeric \code{data.frame} (\code{"data.frame"}, the
+displayed table, or \code{"long"}, one row per variable, level and group),
+or publication-ready tables (\code{"tinytable"}, \code{"gt"}, \code{"flextable"},
+\code{"excel"}, \code{"clipboard"}, \code{"word"}).
 }
 \section{Tests}{
 When \code{by} is used, each selected variable is cross-tabulated
@@ -490,7 +500,8 @@ table. When every expected count is at least 1, the table takes the
 N-1 chi-squared test: Pearson's statistic, with no continuity
 correction, multiplied by (N - 1)/N and referred to a chi-squared
 distribution with 1 degree of freedom, which is the Mantel-Haenszel
-statistic of a single 2x2 table; \code{Chi2} and \code{df} hold that statistic.
+statistic of a single 2x2 table; \code{statistic} and \code{df} hold that
+statistic in the long output.
 Otherwise it takes Fisher's exact test, two-sided by Irwin's rule as
 \code{\link[stats:fisher.test]{stats::fisher.test()}} computes it. Campbell found the N-1 test close
 to its nominal level under that restriction, not without it. A
@@ -500,7 +511,7 @@ the test of each variable.
 The note names the test of every variable, "Group comparison:
 Pearson chi-squared test (sex, education); Fisher exact test
 (smoking).", or the one test when it covers them all. \code{test_type} in
-the data frames gives the same per variable. See \verb{@param correct} /
+the long output gives the same per variable. See \verb{@param correct} /
 \code{simulate_p} to switch on Yates' continuity correction or Monte Carlo
 \emph{p}-values for the chi-squared test, and \verb{@param assoc_measure} for
 the per-row dispatch table used by \code{"auto"} (2x2 -> Phi, both ordered

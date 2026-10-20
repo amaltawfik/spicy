@@ -202,7 +202,15 @@ build_ascii_table <- function(
   padding <- .validate_padding(padding)
   spanners <- .validate_spanners(spanners, ncol(x))
 
-  df <- as.data.frame(x, check.names = FALSE)
+  # The cells handed here, whatever the class. The `as.data.frame()`
+  # method of a table of the family returns the table with its numbers
+  # (`output = "data.frame"`), a frame of another shape than the one the
+  # caller measured.
+  df <- if (inherits(x, "spicy_table")) {
+    structure(x, class = "data.frame")
+  } else {
+    as.data.frame(x, check.names = FALSE)
+  }
   # A missing cell is an EMPTY cell. `stringr::str_pad(NA, w)` returns NA
   # rather than a padded blank, and `build_line()` then adds NA to its
   # running position, so a single missing value used to leave the row

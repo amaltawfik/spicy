@@ -344,6 +344,7 @@ test_that("every frozen linear-model key equals its English display label", {
     g = factor(c("x", "x", "x", "y", "y", "y")),
     w = c(1, 1, 2, 1, 3, 0.5)
   )
+  # The printed object: the builders read its internal names.
   lg <- table_continuous_lm(
     d,
     select = c(a, b),
@@ -352,8 +353,7 @@ test_that("every frozen linear-model key equals its English display label", {
     statistic = TRUE,
     effect_size = "f2",
     r2 = "adj_r2",
-    show_weighted_n = TRUE,
-    output = "long"
+    show_weighted_n = TRUE
   )
   spec <- .lm_column_spec(
     lg,

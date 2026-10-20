@@ -558,7 +558,8 @@ test_that("lm: factor levels containing ':' stay inside the factor block", {
   # No row is named after the raw coefficient.
   expect_false(any(grepl("employmentPart-time", body$.variable, fixed = TRUE)))
 
-  df <- table_regression(fit, output = "data.frame")
+  # The printed table: `$Variable` holds the displayed row labels.
+  df <- table_regression(fit)
   expect_identical(
     trimws(df$Variable)[3:6],
     c("employment:", "Full-time (ref.)", COLON_LEVELS)
@@ -580,7 +581,7 @@ test_that("glm(binomial): colon levels stay in the block under exponentiate", {
   # The level rows carry real odds ratios, not the reference dashes.
   expect_true(all(is.finite(lv$OR) & lv$OR > 0))
 
-  df <- table_regression(fit, exponentiate = TRUE, output = "data.frame")
+  df <- table_regression(fit, exponentiate = TRUE)
   expect_true(all(COLON_LEVELS %in% trimws(df$Variable)))
   expect_false(any(grepl("employmentPart-time", df$Variable, fixed = TRUE)))
 })
@@ -674,7 +675,7 @@ test_that("colon levels: the sTayS minimal reproduction (two factors, 2026-09-16
     h = factor(sample(hl, n, TRUE), levels = hl)
   )
   m <- lm(y ~ g + h, data = d)
-  df <- table_regression(m, output = "data.frame")
+  df <- table_regression(m)
   v <- trimws(df$Variable)
   # Every level sits under its own header, in declared order; no raw name.
   expect_identical(

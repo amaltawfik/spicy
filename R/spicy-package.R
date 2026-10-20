@@ -79,15 +79,57 @@
 #' `spicy_categorical_table`, `spicy_categorical_svy_table`,
 #' `spicy_continuous_table`, `spicy_continuous_svy_table`,
 #' `spicy_continuous_lm_table`, `spicy_outcome_table`,
-#' `spicy_multiresponse_table`, and `spicy_regression_table`, follow
-#' the standard broom column conventions (`outcome`, `term`,
-#' `estimate`, `std.error`, `conf.low`, `conf.high`, `statistic`,
-#' `p.value`, `df`, `df.residual`, `r.squared`, `adj.r.squared`,
-#' `nobs`, ...). In the descriptive tables, `variable` holds the name
-#' of the column a row describes and `label` its displayed label.
-#' `outcome` names the response of a regression model and the single
-#' outcome of [table_outcome()]. The set of columns produced by each
-#' method is considered **stabilizing**: existing columns will not be
+#' `spicy_multiresponse_table`, and `spicy_regression_table`, and the
+#' `output = "long"` frame of every table function, speak one
+#' vocabulary: broom's name wherever broom defines one, and one
+#' snake_case name per concept otherwise, the same in every function.
+#'
+#' | Concept | Column |
+#' |---|---|
+#' | the variable a row describes, its displayed label | `variable`, `label` |
+#' | the level of a categorical variable, the group of `by` | `level`, `group` |
+#' | the role of the row's `level` (or item): a level, the row of missing values, ... | `.row_role` (`"level"`, `"missing"`, `"summary"`, ...) |
+#' | the role of `group`: a group, the column of missing `by` values, the margin | `.group_role` (`"group"`, `"missing"`, `"total"`) |
+#' | the `Total` margin of the groups | `total` (logical) |
+#' | a count, a percentage, a proportion between 0 and 1 | `n`, `pct`, `proportion`, named by their base where a table has two (`pct_cases`, `pct_responses`, `proportion_cases`, `proportion_responses`) |
+#' | the estimate of a row, its standard error and interval | `estimate`, `std.error`, `conf.low`, `conf.high` |
+#' | the test: its name and statistic | `test_type`, `statistic` |
+#' | the degrees of freedom, which follow the statistic | `df` for a *t* or a chi-squared (`Inf` for a *z*); `df` and `df.residual` for an *F*, the Rao-Scott *F* and the *F* of a linear model included |
+#' | the p-value, and the raw one under `p_adjust` | `p.value`, `p_unadjusted` |
+#' | the effect size: its measure, value and interval | `es_type`, `es_value`, `es_ci_lower`, `es_ci_upper` |
+#' | the standardized mean difference | `smd_type`, `smd_value` |
+#' | the observations of a variable or of a model, and their weighted count | `nobs`, `weighted_nobs` |
+#' | the weighted count of a group (beside its `n`) | `weighted_n` |
+#' | the counts of the groups of `by`, of the categories of a variable | `n_groups`, `n_levels` |
+#' | the fit of a model | `r.squared`, `adj.r.squared` |
+#'
+#' `variable` holds the name of the column a row describes and `label`
+#' its displayed label. `outcome` names the response of a regression
+#' model and the single outcome of [table_outcome()]. The proportions of
+#' `tidy()` are between 0 and 1, and the `Total` rows stay, flagged by
+#' `total`. Each role column describes the key column it follows,
+#' whatever the orientation of the printed table: `.row_role` the row's
+#' `level`, `.group_role` its `group`. A level or a group added for
+#' missing values is told apart by its role, `"missing"`, never by its
+#' label, which follows the display language. In a table that compares
+#' groups, the long output carries the effect-size and SMD columns
+#' whether or not they were requested (`NA` then), and `glance()` has a
+#' fixed set of columns; `p_value = FALSE` removes the test columns.
+#' Model-level statistics (`nobs`, `r.squared`, ...) are in `glance()`,
+#' and in the long output only for [table_regression_uv()], whose rows
+#' are separate models. The printed objects carry the `by` column and its
+#' label in the attributes `group_var` and `group_label`.
+#'
+#' `output = "data.frame"` and `as.data.frame()` return the table as it
+#' is displayed, one row per printed row, with numbers: the key columns
+#' `variable`, `label` (and the `level` or `group` of the row, and
+#' `.row_role`, the role of the printed row, where the table adds rows),
+#' then the printed columns under their names. The two are identical for
+#' every class. `output = "excel"` and `"word"` return the path of the
+#' file, invisibly.
+#'
+#' The set of columns produced by each method is considered
+#' **stabilizing**: existing columns will not be
 #' silently renamed or have their semantics changed within `0.y.z`,
 #' and any breaking change is announced in `NEWS.md`. Adding optional new
 #' columns (e.g. covariate-adjustment metadata) is not a breaking

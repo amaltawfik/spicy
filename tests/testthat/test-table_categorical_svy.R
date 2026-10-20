@@ -34,15 +34,17 @@
   )
 }
 
-.svycat_long <- function(...) {
-  suppressWarnings(table_categorical_svy(..., output = "long"))
+# The displayed table with its numbers: the header row of each variable,
+# which carries its p, then its levels, a pair of columns per block.
+.svycat_df <- function(...) {
+  suppressWarnings(table_categorical_svy(..., output = "data.frame"))
 }
 
 # ---- oracles --------------------------------------------------------------
 
 test_that("the percentages are svymean's, in percent", {
   skip_if_not_installed("survey", "4.5")
-  out <- .svycat_long(.svycat_design("clus1"), select = stype)
+  out <- .svycat_df(.svycat_design("clus1"), select = stype)
   expect_identical(out$.row_role, c("factor_header", "level", "level", "level"))
   expect_identical(out$level, c(NA, "E", "H", "M"))
   expect_equal(
@@ -53,13 +55,13 @@ test_that("the percentages are svymean's, in percent", {
   )
   # `n` is the OBSERVED count (decision 28), not `svytotal()`'s
   # 4873.9674682617188 / 473.85794830322266 / 846.17490768432617.
-  expect_identical(out$n[-1L], c(144L, 14L, 25L))
+  expect_identical(out$n[-1L], c(144, 14, 25))
   expect_true(is.na(out[["%"]][[1L]]))
 })
 
 test_that("the design effects are svymean(deff = )'s, per level", {
   skip_if_not_installed("survey", "4.5")
-  out <- .svycat_long(.svycat_design("clus1"), select = stype, deff = TRUE)
+  out <- .svycat_df(.svycat_design("clus1"), select = stype, deff = TRUE)
   expect_equal(
     out$DEff[-1L],
     c(2.4011450687604481, 1.9080248395269468, 1.3977271807412359),
@@ -81,7 +83,7 @@ test_that("the design effects are svymean(deff = )'s, per level", {
 
 test_that("the percentage intervals are svyciprop's, and the point is not", {
   d <- .svycat_design("clus1")
-  out <- .svycat_long(d, select = stype, proportion_ci = TRUE)
+  out <- .svycat_df(d, select = stype, proportion_ci = TRUE)
   expect_equal(
     c(out[["% CI lower"]][[2L]], out[["% CI upper"]][[2L]]),
     100 * c(0.67120113442222151, 0.86976478763647846),
@@ -93,7 +95,7 @@ test_that("the percentage intervals are svyciprop's, and the point is not", {
   # point from there would make the displayed percentage move with
   # `ci_method`, which is a property of the interval.
   expect_equal(out[["%"]][[2L]], 100 * 0.78688524590163933, tolerance = 1e-12)
-  wilson <- .svycat_long(
+  wilson <- .svycat_df(
     d,
     select = stype,
     proportion_ci = TRUE,
@@ -106,7 +108,7 @@ test_that("the percentage intervals are svyciprop's, and the point is not", {
     tolerance = 1e-8
   )))
   # `"mean"` is the Wald interval, i.e. `confint(svymean(), df = degf)`.
-  mean_ci <- .svycat_long(
+  mean_ci <- .svycat_df(
     d,
     select = stype,
     proportion_ci = TRUE,
@@ -130,25 +132,25 @@ test_that("the percentage intervals are svyciprop's, and the point is not", {
 
 test_that("the p-value is svychisq's, on the statistic asked for", {
   d <- .svycat_design("clus1")
-  out <- .svycat_long(d, select = stype, by = sch.wide)
+  out <- .svycat_df(d, select = stype, by = sch.wide)
   expect_equal(out$p[[1L]], 0.021747462370796899, tolerance = 1e-12)
   expect_true(all(is.na(out$p[-1L])))
 
-  wald <- .svycat_long(
+  wald <- .svycat_df(
     d,
     select = awards,
     by = sch.wide,
     chisq_statistic = "Wald"
   )
   expect_equal(wald$p[[1L]], 6.8927149345038578e-04, tolerance = 1e-12)
-  chisq <- .svycat_long(
+  chisq <- .svycat_df(
     d,
     select = awards,
     by = sch.wide,
     chisq_statistic = "Chisq"
   )
   expect_equal(chisq$p[[1L]], 8.9607421807117829e-44, tolerance = 1e-12)
-  f <- .svycat_long(d, select = awards, by = sch.wide)
+  f <- .svycat_df(d, select = awards, by = sch.wide)
   expect_equal(f$p[[1L]], 1.4209570188054670e-09, tolerance = 1e-12)
   # The five statistics are genuinely different tests, not five
   # renderings of one. Pinned on `stype`, whose p-values are far from
@@ -157,7 +159,7 @@ test_that("the p-value is svychisq's, on the statistic asked for", {
   st <- vapply(
     c("F", "Chisq", "Wald", "adjWald", "saddlepoint"),
     function(k) {
-      .svycat_long(d, select = stype, by = sch.wide, chisq_statistic = k)$p[[
+      .svycat_df(d, select = stype, by = sch.wide, chisq_statistic = k)$p[[
         1L
       ]]
     },
@@ -194,8 +196,9 @@ test_that("a sparse table lets no warning escape, and keeps survey's p-value", {
       output = "long"
     )
   )
+  # The long frame carries the p of a variable on each of its rows.
   expect_equal(
-    out$p[[1L]],
+    out$p.value[[1L]],
     suppressWarnings(survey::svychisq(~ smoking + region, d))$p.value[[1L]],
     tolerance = 1e-12
   )
@@ -203,7 +206,7 @@ test_that("a sparse table lets no warning escape, and keeps survey's p-value", {
 
 test_that("`by` gives one column block per domain plus the margin", {
   d <- .svycat_design("clus1")
-  out <- .svycat_long(d, select = stype, by = sch.wide)
+  out <- .svycat_df(d, select = stype, by = sch.wide)
   expect_true(all(
     c("No n", "No %", "Yes n", "Yes %", "Total n", "Total %", "p") %in%
       names(out)
@@ -218,14 +221,14 @@ test_that("`by` gives one column block per domain plus the margin", {
     100 * c(0.825000000000000067, 0.068750000000000006, 0.106250000000000011),
     tolerance = 1e-12
   )
-  expect_identical(out[["Yes n"]][-1L], c(132L, 11L, 17L))
+  expect_identical(out[["Yes n"]][-1L], c(132, 11, 17))
   # The margin is the whole design: the same numbers as the one-way
   # table, to the bit.
-  overall <- .svycat_long(d, select = stype)
+  overall <- .svycat_df(d, select = stype)
   expect_equal(out[["Total %"]][-1L], overall[["%"]][-1L], tolerance = 1e-12)
   expect_identical(out[["Total n"]][-1L], overall$n[-1L])
   # `include_total = FALSE` drops it and nothing else.
-  no_total <- .svycat_long(
+  no_total <- .svycat_df(
     d,
     select = stype,
     by = sch.wide,
@@ -251,10 +254,10 @@ test_that("a calibrated domain counts only the rows it kept", {
     ~stype,
     pop = c(`(Intercept)` = 6194, stypeH = 755, stypeM = 1018)
   )
-  out <- .svycat_long(cal, select = awards, by = stype)
-  expect_identical(sum(out[["E n"]], na.rm = TRUE), 144L)
-  expect_identical(sum(out[["H n"]], na.rm = TRUE), 14L)
-  expect_identical(sum(out[["Total n"]], na.rm = TRUE), 183L)
+  out <- .svycat_df(cal, select = awards, by = stype)
+  expect_identical(sum(out[["E n"]], na.rm = TRUE), 144)
+  expect_identical(sum(out[["H n"]], na.rm = TRUE), 14)
+  expect_identical(sum(out[["Total n"]], na.rm = TRUE), 183)
 })
 
 test_that("a negative calibration weight is counted, not dropped", {
@@ -274,19 +277,19 @@ test_that("a negative calibration weight is counted, not dropped", {
     calfun = "linear"
   )
   expect_identical(sum(.design_weights(cal) < 0), 28L)
-  out <- .svycat_long(cal, select = stype)
-  expect_identical(out$n[-1L], c(144L, 14L, 25L))
-  expect_identical(sum(out$n, na.rm = TRUE), 183L)
+  out <- .svycat_df(cal, select = stype)
+  expect_identical(out$n[-1L], c(144, 14, 25))
+  expect_identical(sum(out$n, na.rm = TRUE), 183)
 })
 
 test_that("a replicate design gives the same percentages, its own intervals", {
   skip_if_not_installed("survey", "4.5")
-  lin <- .svycat_long(
+  lin <- .svycat_df(
     .svycat_design("clus1"),
     select = stype,
     proportion_ci = TRUE
   )
-  rep <- .svycat_long(
+  rep <- .svycat_df(
     .svycat_design("rep1"),
     select = stype,
     proportion_ci = TRUE
@@ -316,9 +319,9 @@ test_that("missing values are a level of their own by default", {
   dat <- apiclus1
   dat$stype[1:5] <- NA
   des <- survey::svydesign(id = ~dnum, weights = ~pw, data = dat, fpc = ~fpc)
-  out <- .svycat_long(des, select = stype)
+  out <- .svycat_df(des, select = stype)
   expect_identical(out$level, c(NA, "E", "H", "M", "(Missing)"))
-  expect_identical(out$n[[5L]], 5L)
+  expect_identical(out$n[[5L]], 5)
   expect_equal(sum(out[["%"]][-1L]), 100, tolerance = 1e-9)
   expect_identical(
     as_structured(table_categorical_svy(des, select = stype))$body$.row_role,
@@ -402,7 +405,7 @@ test_that("every ci_method returns an interval on a variable with NA", {
     "xlogit",
     "wilson"
   )) {
-    out <- .svycat_long(
+    out <- .svycat_df(
       d,
       select = stype,
       proportion_ci = TRUE,
@@ -420,7 +423,7 @@ test_that("every ci_method returns an interval on a variable with NA", {
   }
   # "wilson" is the method that justifies the `survey (>= 4.5)` floor,
   # and it was one of the five. Pinned against survey on the domain.
-  wil <- .svycat_long(
+  wil <- .svycat_df(
     d,
     select = stype,
     proportion_ci = TRUE,
@@ -449,7 +452,7 @@ test_that("the p tests the rows the percentages describe", {
   expect_equal(as.numeric(dom), 0.061856261403043983, tolerance = 1e-12)
   expect_equal(as.numeric(uncut), 0.057098653216302274, tolerance = 1e-12)
 
-  kept <- .svycat_long(d, select = stype, by = sch.wide)
+  kept <- .svycat_df(d, select = stype, by = sch.wide)
   expect_equal(kept$p[[1L]], as.numeric(dom), tolerance = 1e-12)
   expect_false(isTRUE(all.equal(kept$p[[1L]], as.numeric(uncut))))
 
@@ -459,7 +462,7 @@ test_that("the p tests the rows the percentages describe", {
   # applied. Before this, showing the row tested a 4x2 table (p =
   # 0.0949) and hiding it tested an uncut 3x2 (p = 0.0571): two
   # different hypotheses from one argument that only governs display.
-  dropped <- .svycat_long(d, select = stype, by = sch.wide, drop_na = TRUE)
+  dropped <- .svycat_df(d, select = stype, by = sch.wide, drop_na = TRUE)
   expect_equal(kept$p[[1L]], dropped$p[[1L]], tolerance = 1e-12)
   expect_identical(kept$level[[5L]], "(Missing)")
   expect_false("(Missing)" %in% dropped$level)
@@ -498,7 +501,7 @@ test_that("a calibrated design tests the same table, and not NaN", {
   )
   expect_equal(oracle, 0.064102060782059461, tolerance = 1e-12)
 
-  kept <- .svycat_long(cal, select = stype, by = sch.wide, drop_na = FALSE)
+  kept <- .svycat_df(cal, select = stype, by = sch.wide, drop_na = FALSE)
   expect_false(is.nan(kept$p[[1L]]))
   expect_equal(kept$p[[1L]], oracle, tolerance = 1e-12)
 
@@ -506,8 +509,8 @@ test_that("a calibrated design tests the same table, and not NaN", {
   # not part of what was tested -- the p is the one `drop_na = TRUE`
   # gives, which never saw them.
   expect_identical(kept$level[[5L]], "(Missing)")
-  expect_identical(kept[["Total n"]][[5L]], 20L)
-  dropped <- .svycat_long(cal, select = stype, by = sch.wide, drop_na = TRUE)
+  expect_identical(kept[["Total n"]][[5L]], 20)
+  dropped <- .svycat_df(cal, select = stype, by = sch.wide, drop_na = TRUE)
   expect_false("(Missing)" %in% dropped$level)
   expect_equal(kept$p[[1L]], dropped$p[[1L]], tolerance = 1e-12)
 })
@@ -528,22 +531,22 @@ test_that("a declared level nobody chose does not enter the test", {
   dat$stype <- factor(as.character(dat$stype), levels = c("E", "H", "M", "Z"))
   ghost <- survey::svydesign(id = ~dnum, weights = ~pw, data = dat, fpc = ~fpc)
   expect_equal(
-    .svycat_long(ghost, select = stype, by = sch.wide)$p[[1L]],
-    .svycat_long(plain, select = stype, by = sch.wide)$p[[1L]],
+    .svycat_df(ghost, select = stype, by = sch.wide)$p[[1L]],
+    .svycat_df(plain, select = stype, by = sch.wide)$p[[1L]],
     tolerance = 1e-12
   )
 })
 
 test_that("`levels_keep` selects levels, as a vector or per variable", {
   d <- .svycat_design("clus1")
-  out <- .svycat_long(d, select = stype, levels_keep = c("E", "M"))
+  out <- .svycat_df(d, select = stype, levels_keep = c("E", "M"))
   expect_identical(out$level, c(NA, "E", "M"))
   # The percentages are NOT renormalized: they are estimates of the
   # whole variable's distribution, and dropping a display row does not
   # change what the remaining ones estimate.
-  full <- .svycat_long(d, select = stype)
+  full <- .svycat_df(d, select = stype)
   expect_equal(out[["%"]][[2L]], full[["%"]][[2L]], tolerance = 1e-12)
-  per_var <- .svycat_long(
+  per_var <- .svycat_df(
     d,
     select = c(stype, awards),
     levels_keep = list(stype = "E")
@@ -618,9 +621,9 @@ test_that("`drop_na` also governs the missing-`by` domain", {
   dat <- apiclus1
   dat$sch.wide[1:4] <- NA
   des <- survey::svydesign(id = ~dnum, weights = ~pw, data = dat, fpc = ~fpc)
-  kept <- .svycat_long(des, select = stype, by = sch.wide)
+  kept <- .svycat_df(des, select = stype, by = sch.wide)
   expect_true("(Missing) n" %in% names(kept))
-  dropped <- .svycat_long(des, select = stype, by = sch.wide, drop_na = TRUE)
+  dropped <- .svycat_df(des, select = stype, by = sch.wide, drop_na = TRUE)
   expect_false("(Missing) n" %in% names(dropped))
   expect_match(
     attr(
@@ -927,7 +930,7 @@ test_that("the missing-Suggests guard covers this entry point too", {
 
 test_that("`df` overrides the design df, and the footer changes with it", {
   d <- .svycat_design("clus1")
-  out <- .svycat_long(d, select = stype, proportion_ci = TRUE, df = 100)
+  out <- .svycat_df(d, select = stype, proportion_ci = TRUE, df = 100)
   ref <- 100 *
     as.numeric(stats::confint(
       survey::svyciprop(~ I(stype == "E"), d, method = "logit", df = 100)
@@ -1019,10 +1022,12 @@ test_that("negative weights refuse svychisq too, and say so", {
     ),
     class = "spicy_negative_weights_no_test"
   )
-  expect_true(all(is.na(out$p)))
+  # No test ran: the test columns are there, and empty.
+  expect_identical(unique(out$p.value), NA_real_)
+  expect_identical(unique(out$test_type), NA_character_)
   # The percentages are all there: the refusal is the test's, not the
   # sample's.
-  expect_identical(sum(out[["Total n"]], na.rm = TRUE), 183L)
+  expect_identical(sum(out$n[out$total]), 183L)
   note <- attr(out, "note")
   expect_match(note, "gave 28 of 183 rows a negative weight", fixed = TRUE)
   expect_match(note, "The group comparison is not reported", fixed = TRUE)
@@ -1059,8 +1064,11 @@ test_that("the categorical refusal clause says how far it reached", {
     fixed = TRUE,
     class = "spicy_negative_weights_no_test"
   )
-  expect_true(all(is.na(mixed$p[mixed$variable == "awards"])))
-  expect_false(all(is.na(mixed$p[mixed$variable == "awardsb"])))
+  expect_identical(
+    unique(mixed$p.value[mixed$variable == "awards"]),
+    NA_real_
+  )
+  expect_false(anyNA(mixed$p.value[mixed$variable == "awardsb"]))
   note <- attr(mixed, "note")
   expect_match(note, "Group comparison:", fixed = TRUE)
   expect_match(
@@ -1089,7 +1097,7 @@ test_that("the categorical refusal clause says how far it reached", {
     }
   )
   expect_identical(n_signalled, 1L)
-  expect_true(all(is.na(all_ref$p)))
+  expect_identical(unique(all_ref$p.value), NA_real_)
 })
 
 # ---- restitution ----------------------------------------------------------
@@ -1205,7 +1213,7 @@ test_that("a domain with no degrees of freedom has no design effect", {
   dat <- apiclus1
   dat$sch.wide[1:3] <- NA
   des <- survey::svydesign(id = ~dnum, weights = ~pw, data = dat, fpc = ~fpc)
-  out <- .svycat_long(des, select = stype, by = sch.wide, deff = TRUE)
+  out <- .svycat_df(des, select = stype, by = sch.wide, deff = TRUE)
   expect_true(all(is.na(out[["(Missing) DEff"]])))
   # The percentage is still estimable and still shown.
   expect_false(any(is.na(out[["(Missing) %"]][-1L])))
@@ -1275,17 +1283,75 @@ test_that("`inline()` cites a cell of a design categorical table", {
   )
 })
 
-test_that("`output = \"data.frame\"` and `\"long\"` are the same frame", {
+test_that("`output = \"data.frame\"` is the displayed table, `\"long\"` one row per cell", {
   d <- .svycat_design("clus1")
+  tbl <- table_categorical_svy(d, select = stype, by = sch.wide)
   a <- table_categorical_svy(
     d,
     select = stype,
     by = sch.wide,
     output = "data.frame"
   )
-  b <- table_categorical_svy(d, select = stype, by = sch.wide, output = "long")
-  expect_identical(a, b)
+  # The data frame is as.data.frame() of the table: one row per printed
+  # row, the key columns first and the p last.
+  expect_identical(a, as.data.frame(tbl))
   expect_false(inherits(a, "spicy_categorical_svy_table"))
+  expect_identical(nrow(a), nrow(as_structured(tbl)$body))
+  expect_identical(
+    names(a),
+    c(
+      "variable",
+      "label",
+      "level",
+      ".row_role",
+      "No n",
+      "No %",
+      "Yes n",
+      "Yes %",
+      "Total n",
+      "Total %",
+      "p"
+    )
+  )
+  # The long frame: one row per level and block, variable, then level,
+  # then block, the margin flagged.
+  b <- table_categorical_svy(d, select = stype, by = sch.wide, output = "long")
+  expect_false(inherits(b, "spicy_categorical_svy_table"))
+  expect_identical(
+    names(b),
+    c(
+      "variable",
+      "label",
+      "level",
+      ".row_role",
+      "group",
+      ".group_role",
+      "total",
+      "n",
+      "pct",
+      "ci_lower",
+      "ci_upper",
+      "deff",
+      "test_type",
+      "p.value"
+    )
+  )
+  expect_identical(b$level, rep(c("E", "H", "M"), each = 3L))
+  expect_identical(b$group, rep(c("No", "Yes", "Total"), 3L))
+  expect_identical(b$total, rep(c(FALSE, FALSE, TRUE), 3L))
+  expect_identical(b$.group_role, rep(c("group", "group", "total"), 3L))
+  expect_identical(b$n[b$group == "Yes"], c(132L, 11L, 17L))
+  # The p of the variable and the statistic it comes from, on every row.
+  expect_identical(unique(b$test_type), "F")
+  expect_equal(unique(b$p.value), 0.021747462370796899, tolerance = 1e-12)
+  # Only the note travels with either frame.
+  for (x in list(a, b)) {
+    expect_identical(
+      setdiff(names(attributes(x)), c("names", "row.names", "class")),
+      "note"
+    )
+    expect_identical(attr(x, "note"), attr(tbl, "note"))
+  }
 })
 
 test_that("broom tidy() and glance() read a design categorical table", {
@@ -1300,27 +1366,39 @@ test_that("broom tidy() and glance() read a design categorical table", {
   )
   td <- broom::tidy(tbl)
   # Long reading of a table whose blocks are columns: 3 levels x 3
-  # blocks, header rows excluded.
+  # blocks, header rows excluded, in the order of the table (level,
+  # then block).
   expect_identical(nrow(td), 9L)
-  expect_identical(unique(td$group), c("No", "Yes", "Total"))
-  expect_identical(td$total, rep(c(FALSE, FALSE, TRUE), each = 3L))
+  expect_identical(td$level, rep(c("E", "H", "M"), each = 3L))
+  expect_identical(td$group, rep(c("No", "Yes", "Total"), 3L))
+  expect_identical(td$total, rep(c(FALSE, FALSE, TRUE), 3L))
+  expect_identical(td$.row_role, rep("level", 9L))
   expect_identical(td$n[[1L]], 12L)
-  expect_equal(td$estimate[[1L]], 52.173913043478258, tolerance = 1e-10)
+  # A proportion, between 0 and 1, and its interval on the same scale.
+  expect_equal(td$proportion[[1L]], 0.52173913043478258, tolerance = 1e-10)
   expect_false(any(is.na(td$conf.low)))
+  expect_true(all(
+    td$conf.low <= td$proportion & td$proportion <= td$conf.high
+  ))
+  expect_true(all(td$conf.high <= 1))
   expect_false(any(is.na(td$deff)))
 
   gl <- broom::glance(tbl)
   expect_identical(nrow(gl), 1L)
   expect_identical(gl$n_levels, 3L)
   expect_equal(gl$p.value[[1L]], 0.021747462370796899, tolerance = 1e-12)
-  expect_identical(gl$statistic_type, "F")
+  expect_identical(gl$test_type, "F")
   expect_identical(gl$nobs, 183)
+  expect_equal(gl$weighted_nobs, sum(stats::weights(d)), tolerance = 1e-12)
 
   # One-way: one block, and it is not a margin of anything.
-  td1 <- broom::tidy(table_categorical_svy(d, select = stype))
+  one_way <- table_categorical_svy(d, select = stype)
+  td1 <- broom::tidy(one_way)
   expect_identical(nrow(td1), 3L)
   expect_true(all(is.na(td1$group)))
   expect_false(any(td1$total))
+  # No test ran, so none is named.
+  expect_identical(broom::glance(one_way)$test_type, NA_character_)
 })
 
 test_that("coercion does not rename the frozen block keys", {
@@ -1345,15 +1423,34 @@ test_that("coercion does not rename the frozen block keys", {
   expect_false(any(grepl(".", stat_cols, fixed = TRUE)))
 })
 
-test_that("coercion keeps the frame and the provenance markers", {
+test_that("coercion returns the displayed table, with the note alone", {
   d <- .svycat_design("clus1")
   tbl <- table_categorical_svy(d, select = stype, by = sch.wide)
+  expect_identical(
+    class(tbl),
+    c("spicy_categorical_svy_table", "spicy_table", "data.frame")
+  )
   df <- as.data.frame(tbl)
-  expect_false(inherits(df, "spicy_categorical_svy_table"))
-  expect_identical(attr(df, "group_var"), "sch.wide")
-  expect_identical(attr(df, "design_meta")$degf, 14)
+  expect_identical(class(df), "data.frame")
+  expect_identical(
+    df,
+    table_categorical_svy(
+      d,
+      select = stype,
+      by = sch.wide,
+      output = "data.frame"
+    )
+  )
+  # The provenance markers stay on the table; the coerced frame keeps
+  # the note only.
+  expect_null(attr(df, "group_var"))
+  expect_null(attr(df, "design_meta"))
+  expect_identical(attr(df, "note"), attr(tbl, "note"))
+  expect_identical(attr(tbl, "group_var"), "sch.wide")
   skip_if_not_installed("tibble")
-  expect_s3_class(tibble::as_tibble(tbl), "tbl_df")
+  tb <- tibble::as_tibble(tbl)
+  expect_s3_class(tb, "tbl_df")
+  expect_identical(names(tb), names(df))
 })
 
 test_that("`labels`, a comma mark and a journal style all reach the table", {
@@ -1386,12 +1483,12 @@ test_that("a group displayed with the margin's label is refused", {
   # Without the margin, nothing collides.
   expect_true(
     "Total n" %in%
-      names(.svycat_long(des, select = stype, by = g, include_total = FALSE))
+      names(.svycat_df(des, select = stype, by = g, include_total = FALSE))
   )
   # The margin relabeled: the user's "Total" keeps its own columns; the
   # margin, displayed "All", takes the disambiguated key.
   withr::local_options(spicy.labels = list(header_margin_total = "All"))
-  out <- .svycat_long(des, select = stype, by = g)
+  out <- .svycat_df(des, select = stype, by = g)
   expect_true("Total n" %in% names(out))
   expect_true("Total_1 n" %in% names(out))
   s <- as_structured(table_categorical_svy(des, select = stype, by = g))
@@ -1454,31 +1551,52 @@ test_that("glance() counts the whole sample without a margin", {
 })
 
 
-# ---- "data.frame" and "long" are synonyms, and the docs say so ----------
+# ---- "data.frame" and "long": one table, two shapes ---------------------
 
-test_that("output = 'data.frame' and output = 'long' return one object", {
-  # Pinned because ?table_categorical_svy now promises it. Worth saying
-  # out loud because the data-frame sibling behaves differently:
-  # table_categorical() really does build a second, long shape, while
-  # this design carries a single WIDE compute frame -- one row per
-  # level, a pair of columns per group -- and both names reach it.
+test_that("output = 'data.frame' and output = 'long' carry the same numbers", {
+  # Two shapes since the ADR of 2026-10-20, as in table_categorical():
+  # the displayed table, a group of columns per block, and the long
+  # frame, one row per level and block. Every cell of one is a row of the
+  # other.
   des <- .svycat_design("clus1")
-  as_df <- suppressWarnings(table_categorical_svy(
-    des,
-    select = c(sch.wide, stype),
-    by = comp.imp,
-    output = "data.frame"
-  ))
-  as_long <- suppressWarnings(table_categorical_svy(
-    des,
-    select = c(sch.wide, stype),
-    by = comp.imp,
-    output = "long"
-  ))
-  expect_identical(as_df, as_long)
-  # And it is the wide frame, not a pivoted one.
+  build <- function(output) {
+    suppressWarnings(table_categorical_svy(
+      des,
+      select = c(sch.wide, stype),
+      by = comp.imp,
+      proportion_ci = TRUE,
+      deff = TRUE,
+      output = output
+    ))
+  }
+  as_df <- build("data.frame")
+  as_long <- build("long")
+  # The data frame is wide: header rows, then a group of columns per
+  # block.
   expect_true(all(c("variable", "level", ".row_role") %in% names(as_df)))
   expect_true(any(grepl(" n$", names(as_df))))
+  # The long frame is not: one row per level of each block.
+  lv <- as_df$.row_role != "factor_header"
+  blocks <- c("No", "Yes", "Total")
+  expect_identical(unique(as_long$group), blocks)
+  expect_identical(nrow(as_long), sum(lv) * length(blocks))
+  for (b in blocks) {
+    rows <- as_long$group == b
+    expect_identical(as_long$variable[rows], as_df$variable[lv])
+    expect_identical(as_long$level[rows], as_df$level[lv])
+    expect_equal(as_long$n[rows], as_df[[paste(b, "n")]][lv])
+    expect_equal(as_long$pct[rows], as_df[[paste(b, "%")]][lv])
+    expect_equal(as_long$ci_lower[rows], as_df[[paste(b, "% CI lower")]][lv])
+    expect_equal(as_long$ci_upper[rows], as_df[[paste(b, "% CI upper")]][lv])
+    expect_equal(as_long$deff[rows], as_df[[paste(b, "DEff")]][lv])
+  }
+  # The p of a variable: on its header row in one, on each of its rows
+  # in the other.
+  heads <- as_df[!lv, ]
+  expect_identical(
+    as_long$p.value,
+    heads$p[match(as_long$variable, heads$variable)]
+  )
 })
 
 # ---- p_adjust ---------------------------------------------------------------
@@ -1491,8 +1609,11 @@ test_that("p_adjust adjusts the one design-based test of each variable", {
     by = sch.wide,
     output = "long"
   )
-  raw_p <- raw$p[!is.na(raw$p)]
+  # The long frame repeats the p of a variable on each of its rows.
+  first <- !duplicated(raw$variable)
+  raw_p <- raw$p.value[first]
   expect_length(raw_p, 3L)
+  expect_false(anyNA(raw_p))
   for (method in c("holm", "BH", "bonferroni")) {
     adj <- table_categorical_svy(
       des,
@@ -1501,8 +1622,11 @@ test_that("p_adjust adjusts the one design-based test of each variable", {
       p_adjust = method,
       output = "long"
     )
-    expect_equal(adj$p[!is.na(adj$p)], stats::p.adjust(raw_p, method = method))
-    expect_identical(adj$p_unadjusted, raw$p)
+    expect_equal(
+      adj$p.value[!duplicated(adj$variable)],
+      stats::p.adjust(raw_p, method = method)
+    )
+    expect_identical(adj$p_unadjusted, raw$p.value)
   }
   tbl <- table_categorical_svy(
     des,
@@ -1541,11 +1665,25 @@ test_that("p_adjust needs `by` and the p-value column", {
 
 test_that("p_value = FALSE leaves no p column in the frame (issue #9)", {
   des <- .svycat_design()
-  ref <- .svycat_long(des, c(stype, awards), by = sch.wide)
-  out <- .svycat_long(des, c(stype, awards), by = sch.wide, p_value = FALSE)
+  ref <- .svycat_df(des, c(stype, awards), by = sch.wide)
+  out <- .svycat_df(des, c(stype, awards), by = sch.wide, p_value = FALSE)
   # Absent, not an empty column; the rest of the frame is the default's.
   expect_identical(names(out), setdiff(names(ref), "p"))
   expect_identical(as.list(out)[names(out)], as.list(ref)[names(out)])
+  # The long frame drops its test columns the same way.
+  long <- function(...) {
+    suppressWarnings(table_categorical_svy(
+      des,
+      c(stype, awards),
+      by = sch.wide,
+      ...,
+      output = "long"
+    ))
+  }
+  expect_identical(
+    setdiff(names(long()), names(long(p_value = FALSE))),
+    c("test_type", "p.value")
+  )
   tbl <- suppressWarnings(table_categorical_svy(
     des,
     c(stype, awards),
@@ -1589,7 +1727,7 @@ test_that("`by` named in `select` is refused; a helper skips it", {
     table_categorical_svy(d, select = c(stype, awards), by = awards),
     class = "spicy_invalid_input"
   )
-  out <- .svycat_long(d, select = c(sch.wide, awards), by = stype)
+  out <- .svycat_df(d, select = c(sch.wide, awards), by = stype)
   expect_setequal(unique(out$variable), c("sch.wide", "awards"))
   expect_error(
     table_categorical_svy(d, select = c(stype, nope)),

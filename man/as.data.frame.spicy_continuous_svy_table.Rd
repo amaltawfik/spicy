@@ -17,12 +17,16 @@
 ignored.}
 }
 \value{
-A plain \code{data.frame} (or a \code{tbl_df} for \code{as_tibble()}).
+A plain \code{data.frame} (or a \code{tbl_df} for \code{as_tibble()}),
+identical to the \code{output = "data.frame"} of the same call.
 }
 \description{
-These S3 methods strip the \code{"spicy_continuous_svy_table"} class and
-the rendering-only attributes, keeping the long compute frame and the
-three provenance markers (\code{group_var}, \code{design_meta}, \code{note}).
+\code{as.data.frame()} returns the table \code{\link[=table_continuous_svy]{table_continuous_svy()}} displays,
+with its numbers: exactly what \code{output = "data.frame"} returns, the
+shape of \code{\link[=as.data.frame.spicy_continuous_table]{as.data.frame.spicy_continuous_table()}} (the key columns
+\code{variable}, \code{label} and, with \code{by}, \code{group} and \code{.row_role}, then the
+printed columns under their names). The note, as printed, is kept in
+\code{attr(, "note")}. \code{as_tibble()} returns the same table as a tibble.
 }
 \seealso{
 \code{\link[=table_continuous_svy]{table_continuous_svy()}}.

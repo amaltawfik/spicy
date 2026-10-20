@@ -24,7 +24,7 @@
 
 test_that("RE variance components render as a 'Random effects' rows block", {
   fit <- .rr_lmer_slope()
-  df <- table_regression(fit, output = "data.frame")
+  df <- table_regression(fit)
   v <- trimws(df$Variable)
   expect_true(any(grepl("Random effects", v, fixed = TRUE))) # block header
   expect_true(any(grepl("Subject (Intercept)", v, fixed = TRUE))) # SD intercept
@@ -95,7 +95,7 @@ test_that("footer carries the chi-bar-squared LR test and the RE summary", {
 
 test_that("show_re = FALSE removes RE rows and the footer summary", {
   fit <- .rr_lmer_slope()
-  df <- table_regression(fit, show_re = FALSE, output = "data.frame")
+  df <- table_regression(fit, show_re = FALSE)
   expect_false(any(grepl("Random effects", df$Variable, fixed = TRUE)))
 })
 
@@ -133,7 +133,7 @@ test_that("glmmTMB renders vc rows", {
     Reaction ~ Days + (Days | Subject),
     data = lme4::sleepstudy
   )
-  df <- table_regression(fit, output = "data.frame")
+  df <- table_regression(fit)
   v <- trimws(df$Variable)
   expect_true(any(grepl("Random effects", v, fixed = TRUE)))
   expect_true(any(grepl("Subject (Intercept)", v, fixed = TRUE)))
@@ -146,7 +146,7 @@ test_that("nlme::lme renders vc rows", {
     data = nlme::Orthodont,
     random = ~ age | Subject
   )
-  df <- table_regression(fit, output = "data.frame")
+  df <- table_regression(fit)
   v <- trimws(df$Variable)
   expect_true(any(grepl("Random effects", v, fixed = TRUE)))
   expect_true(any(grepl("(Residual)", v, fixed = TRUE)))
@@ -173,7 +173,7 @@ test_that("structured body carries the vc rows (backend parity)", {
 
 test_that("keep/drop never mutilates the Random effects block", {
   fit <- .rr_lmer_slope()
-  df <- table_regression(fit, keep = "Days", output = "data.frame")
+  df <- table_regression(fit, keep = "Days")
   v <- trimws(df$Variable)
   # the whole block survives a keep that matches only one predictor
   expect_true(any(grepl("Subject (Intercept)", v, fixed = TRUE)))
@@ -184,7 +184,7 @@ test_that("keep/drop never mutilates the Random effects block", {
 
 test_that("flat layout renders display labels, not internal re:: keys", {
   fit <- .rr_lmer_slope()
-  df <- table_regression(fit, factor_layout = "flat", output = "data.frame")
+  df <- table_regression(fit, factor_layout = "flat")
   v <- df$Variable
   expect_false(any(grepl("re::", v, fixed = TRUE)))
   expect_true(any(grepl("Subject (Intercept)", v, fixed = TRUE)))
@@ -203,8 +203,7 @@ test_that("beta-only display omits the RE block instead of rendering it empty", 
   df <- suppressWarnings(table_regression(
     fit,
     standardized = "refit",
-    show_columns = c("beta", "se"),
-    output = "data.frame"
+    show_columns = c("beta", "se")
   ))
   expect_false(any(grepl("Random effects", df$Variable, fixed = TRUE)))
 })
@@ -232,7 +231,7 @@ test_that("multi-model RE block puts the Residual row last", {
     data = lme4::sleepstudy
   )
   fit_sl <- .rr_lmer_slope()
-  df <- table_regression(list(fit_int, fit_sl), output = "data.frame")
+  df <- table_regression(list(fit_int, fit_sl))
   v <- trimws(df$Variable)
   i_res <- which(grepl("(Residual)", v, fixed = TRUE))
   i_cor <- which(grepl(", Days)", v, fixed = TRUE))
@@ -241,20 +240,20 @@ test_that("multi-model RE block puts the Residual row last", {
 
 test_that("variance scale relabels the rows to sigma-squared", {
   fit <- lme4::lmer(Reaction ~ Days + (1 | Subject), data = lme4::sleepstudy)
-  df <- table_regression(fit, re_scale = "variance", output = "data.frame")
+  df <- table_regression(fit, re_scale = "variance")
   expect_true(any(grepl("σ²", df$Variable)))
 })
 
 test_that("N (groups) and ICC render as fit-stat rows (mixed defaults)", {
   fit <- lme4::lmer(Reaction ~ Days + (1 | Subject), data = lme4::sleepstudy)
-  df <- table_regression(fit, output = "data.frame")
+  df <- table_regression(fit)
   v <- trimws(df$Variable)
   expect_true(any(v == "N (Subject)"))
   expect_true(any(v == "ICC"))
   n_cell <- trimws(df[[2]][v == "N (Subject)"])
   expect_match(n_cell, "18", fixed = TRUE)
   # ICC row auto-drops when not computable (random slope)
-  df2 <- table_regression(.rr_lmer_slope(), output = "data.frame")
+  df2 <- table_regression(.rr_lmer_slope())
   expect_false(any(trimws(df2$Variable) == "ICC"))
 })
 
@@ -281,27 +280,22 @@ test_that("labels accepts coefficient-level keys on mixed fits", {
     data = lme4::cbpp,
     family = binomial
   ))
-  df <- table_regression(
-    m,
-    labels = c(period2 = "Period 2"),
-    output = "data.frame"
-  )
+  df <- table_regression(m, labels = c(period2 = "Period 2"))
   expect_true(any(grepl("Period 2", df$Variable, fixed = TRUE)))
   # A key that is no term or coefficient name -- a grouping factor, a
   # bogus key -- is ignored (decision 54): the random-effect rows keep
   # the text the package sets.
-  base <- table_regression(m, output = "data.frame")$Variable
+  base <- table_regression(m)$Variable
   ignored <- table_regression(
     m,
-    labels = c(herd = "Herd", bogus_key = "X"),
-    output = "data.frame"
+    labels = c(herd = "Herd", bogus_key = "X")
   )$Variable
   expect_identical(ignored, base)
 })
 
 test_that("n_groups: dynamic label + numeric cell when one shared factor", {
   fit <- lme4::lmer(Reaction ~ Days + (1 | Subject), data = lme4::sleepstudy)
-  df <- table_regression(fit, output = "data.frame")
+  df <- table_regression(fit)
   v <- trimws(df$Variable)
   expect_true(any(v == "N (Subject)"))
   expect_identical(trimws(df[[2]][v == "N (Subject)"]), "18")
@@ -323,7 +317,7 @@ test_that("n_groups: crossed factors render one N (<factor>) row each", {
   m <- suppressWarnings(suppressMessages(
     lme4::lmer(y ~ x + (1 | g1) + (1 | g2), data = d)
   ))
-  df <- table_regression(m, output = "data.frame")
+  df <- table_regression(m)
   v <- trimws(df$Variable)
   # One row per grouping factor (was one crammed "N (groups)" cell).
   expect_false(any(v == "N (groups)"))
@@ -336,7 +330,7 @@ test_that("n_groups: nested factor names pass verbatim, one row each", {
   fit <- suppressMessages(
     lme4::lmer(strength ~ 1 + (1 | batch / cask), data = lme4::Pastes)
   )
-  df <- table_regression(fit, output = "data.frame")
+  df <- table_regression(fit)
   v <- trimws(df$Variable)
   # Verbatim names in the per-factor labels (a naive "+s" used to
   # mangle batch -> "batchs" in the old crammed cell).

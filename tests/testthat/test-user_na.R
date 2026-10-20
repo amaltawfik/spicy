@@ -329,9 +329,12 @@ test_that("table_categorical() folds declared missing into (Missing)", {
     labels = c(Agree = 1, Neutral = 2, DK = 8, Refused = 9),
     na_values = c(8, 9)
   )
+  # The displayed table: a header row, then the level rows.
   tc <- table_categorical(d, select = y, output = "data.frame")
-  expect_equal(tc$Level, c("[1] Agree", "[2] Neutral", "(Missing)"))
-  expect_equal(tc$n, c(1, 2, 5))
+  body <- tc$.row_role != "factor_header"
+  expect_equal(tc$level[body], c("[1] Agree", "[2] Neutral", "(Missing)"))
+  expect_equal(tc$n[body], c(1, 2, 5))
+  expect_identical(tc$.row_role[body], c("level", "level", "missing"))
 
   tc_off <- table_categorical(
     d,
@@ -339,11 +342,12 @@ test_that("table_categorical() folds declared missing into (Missing)", {
     user_na = FALSE,
     output = "data.frame"
   )
+  body_off <- tc_off$.row_role != "factor_header"
   expect_equal(
-    tc_off$Level,
+    tc_off$level[body_off],
     c("[1] Agree", "[2] Neutral", "[8] DK", "[9] Refused", "(Missing)")
   )
-  expect_equal(tc_off$n, c(1, 2, 2, 2, 1))
+  expect_equal(tc_off$n[body_off], c(1, 2, 2, 2, 1))
 })
 
 test_that("table_categorical(drop_na = TRUE) discloses declared removals", {
@@ -371,7 +375,8 @@ test_that("table_categorical() grouped honors user_na in by", {
   )
   tc <- table_categorical(d, select = x, by = byv, output = "data.frame")
   expect_true("(Missing) n" %in% names(tc))
-  expect_equal(sum(tc[["(Missing) n"]]), 4)
+  # The header row carries no count.
+  expect_equal(sum(tc[["(Missing) n"]], na.rm = TRUE), 4)
 
   tc_drop <- table_categorical(
     d,
@@ -401,7 +406,7 @@ test_that("table_continuous() excludes declared missing from summaries", {
     labels = c(Refused = 999),
     na_values = 999
   )
-  tc <- table_continuous(da, select = a, output = "data.frame")
+  tc <- table_continuous(da, select = a, output = "long")
   expect_equal(tc$mean, 30)
   expect_equal(tc$n, 3L)
 
@@ -414,7 +419,7 @@ test_that("table_continuous() excludes declared missing from summaries", {
     da,
     select = a,
     user_na = FALSE,
-    output = "data.frame"
+    output = "long"
   )
   expect_equal(tc_off$mean, mean(c(20, 30, 40, 999, 999)))
   expect_equal(tc_off$n, 5L)

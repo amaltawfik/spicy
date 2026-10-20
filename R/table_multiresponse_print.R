@@ -103,39 +103,46 @@ print.spicy_multiresponse_table <- function(x, ...) {
 
 # ---- Coercion to plain data.frame / tibble --------------------------------
 
-# Internal: drop the spicy classes and the rendering-only attributes,
-# keeping the wide frame and the two attributes `output = "data.frame"`
-# carries (`note`, `global_test`). Used by every coercion / broom method.
-unclass_spicy_multiresponse_table <- function(x) {
-  keep <- list(
-    note = attr(x, "note", exact = TRUE),
-    global_test = attr(x, "global_test", exact = TRUE)
+# The displayed table as a data frame (decision 5 of the ADR of
+# 2026-10-20): `as.data.frame()` and `output = "data.frame"` both call
+# it, on the object the table prints. The typed view holds one body row
+# per row of the wide frame; the test cell ("chi2(1) = 0.52") keeps its
+# degrees of freedom beside it, as in the continuous family.
+.mr_data_frame <- function(x) {
+  st <- as_structured(x)
+  items <- attr(x, "items", exact = TRUE)
+  is_item <- x$.row_role == "summary"
+  parts <- list()
+  if (.CON_KEY_TEST %in% names(st$body)) {
+    df <- as.numeric(x[["df"]] %||% rep(NA_real_, nrow(x)))
+    df[is.na(st$body[[.CON_KEY_TEST]])] <- NA_real_
+    parts[[.CON_KEY_TEST]] <- list(df = df)
+  }
+  out <- .table_data_frame(
+    st,
+    stats::setNames(x$Variable[is_item], items),
+    key = NULL,
+    parts = parts,
+    note = attr(x, "note", exact = TRUE)
   )
-  for (nm in setdiff(names(attributes(x)), c("names", "row.names", "class"))) {
-    attr(x, nm) <- NULL
-  }
-  class(x) <- "data.frame"
-  for (nm in names(keep)) {
-    if (!is.null(keep[[nm]])) {
-      attr(x, nm) <- keep[[nm]]
-    }
-  }
-  x
+  attr(out, "global_test") <- attr(x, "global_test", exact = TRUE)
+  out
 }
 
 #' Coerce a `spicy_multiresponse_table` to a plain data frame or tibble
 #'
-#' These S3 methods strip the `"spicy_multiresponse_table"` /
-#' `"spicy_table"` classes and the rendering-only attributes from an
-#' object returned by [table_multiresponse()], so the underlying wide data
-#' can be manipulated with downstream tools under the standard
-#' `data.frame` / `tbl_df` contract. The `"note"` and `"global_test"`
-#' attributes are kept. The original `x` is unaffected, and `print(x)`
-#' continues to render the formatted table.
-#'
-#' The returned data is identical to what `output = "data.frame"` returns
-#' directly from [table_multiresponse()]: one row per item, the rows of
-#' `none_row`, then the base, told apart by `.row_role`.
+#' `as.data.frame()` returns the table [table_multiresponse()] displays,
+#' with its numbers: exactly what `output = "data.frame"` returns. One row
+#' per printed row -- the items, the rows of `none_row`, then the base --
+#' with the key columns `variable` (the item's column, or the token of a
+#' row the table adds: `"none"`, `"no_data"`, `"nobs"` for the base),
+#' `label` (the label displayed) and `.row_role` (`"summary"` for an item,
+#' `"none"`, `"missing"`, or `"fit_stat"` for the base), then the printed
+#' columns under their names (`"<group> n"`, `"<group> \%"`, ...,
+#' `"Test"` with `df` beside it under `statistic = TRUE`, `"p"`). The
+#' `"note"` and `"global_test"` attributes are kept. `as_tibble()`
+#' returns the same table as a tibble. The original `x` is unaffected,
+#' and `print(x)` continues to render the formatted table.
 #'
 #' @param x A `spicy_multiresponse_table` returned by
 #'   [table_multiresponse()].
@@ -144,7 +151,8 @@ unclass_spicy_multiresponse_table <- function(x) {
 #' @param ... Further arguments passed to [tibble::as_tibble()] (for the
 #'   tibble method) or ignored.
 #'
-#' @return A plain `data.frame` (or `tbl_df`).
+#' @return A plain `data.frame` (or `tbl_df`), identical to the
+#'   `output = "data.frame"` of the same call.
 #'
 #' @seealso [tidy.spicy_multiresponse_table()],
 #'   [glance.spicy_multiresponse_table()].
@@ -161,7 +169,7 @@ as.data.frame.spicy_multiresponse_table <- function(
   optional = FALSE,
   ...
 ) {
-  unclass_spicy_multiresponse_table(x)
+  .mr_data_frame(x)
 }
 
 #' @rdname as.data.frame.spicy_multiresponse_table
@@ -170,7 +178,7 @@ as_tibble.spicy_multiresponse_table <- function(x, ...) {
   if (!requireNamespace("tibble", quietly = TRUE)) {
     spicy_abort("Install package 'tibble'.", class = "spicy_missing_pkg") # nocov
   }
-  tibble::as_tibble(unclass_spicy_multiresponse_table(x), ...)
+  tibble::as_tibble(.mr_data_frame(x), ...)
 }
 
 # ---- broom integration ----------------------------------------------------
@@ -184,14 +192,15 @@ as_tibble.spicy_multiresponse_table <- function(x, ...) {
 #' flagged, and the items only: the rows of `none_row` and the base row
 #' are left out. Columns: `variable` (the item's column), `label` (its
 #' displayed label), `group` (the `by` level or the margin, `NA` without
-#' `by`), `total` (whether the row is the margin), `n` (the respondents who
-#' chose the item), `base` (the respondents of the group's base),
-#' `proportion` (`n / base`, the share of respondents),
+#' `by`), `.group_role` (the role of `group`: `"group"` or `"total"`, `NA`
+#' without `by`), `total` (whether the row is the margin), `n` (the
+#' respondents who chose the item), `base` (the respondents of the group's
+#' base), `proportion_cases` (`n / base`, the share of respondents),
 #' `proportion_responses` (`n` over the choices made in the group), and
 #' the item's test: `test_type` (`"chi_squared"`, `"n1_chi_squared"`,
 #' `"fisher_exact"`, `"fisher_midp"` or `"fisher_exact_mc"`), `statistic`
 #' (the chi-squared, Pearson's or the N-1, `NA` for an exact test), `df`,
-#' `p.value` (adjusted under `p_adjust`) and `p.unadjusted`.
+#' `p.value` (adjusted under `p_adjust`) and `p_unadjusted`.
 #'
 #' `glance()` returns one row for the question. Columns: `n_items`,
 #' `n_items_tested` (the items the global test kept), `n_groups` (the
@@ -254,21 +263,30 @@ tidy.spicy_multiresponse_table <- function(x, ...) {
   field <- function(nm, na = NA_real_) {
     if (is.null(long[[nm]])) rep(na, nrow(long)) else long[[nm]]
   }
+  total <- !is.na(group) & group %in% margin
   .outcome_as_tbl(data.frame(
     variable = long$variable,
     label = long$label,
     group = group,
-    total = !is.na(group) & group %in% margin,
+    # The role of `group`: "group" or "total" (the margin), `NA` without
+    # `by` (missing `by` values leave this table, so no group is missing).
+    .group_role = ifelse(
+      is.na(group),
+      NA_character_,
+      ifelse(total, "total", "group")
+    ),
+    total = total,
     n = as.integer(long$n),
     base = as.integer(long$base),
-    proportion = ratio(long$n, long$base),
+    # Each share named by its base, as in the long output.
+    proportion_cases = ratio(long$n, long$base),
     proportion_responses = ratio(long$n, responses),
     test_type = field("test_type", NA_character_),
     statistic = field("chi2"),
     # A chi-squared on r - 1 degrees of freedom: integer by construction.
     df = as.integer(field("df")),
     p.value = field("p"),
-    p.unadjusted = field("p_unadjusted"),
+    p_unadjusted = field("p_unadjusted"),
     stringsAsFactors = FALSE,
     check.names = FALSE
   ))

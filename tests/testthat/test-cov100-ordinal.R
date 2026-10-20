@@ -229,7 +229,8 @@ test_that("an aliased clm predictor renders undefined instead of erroring", {
   data(wine, package = "ordinal", envir = environment())
   fit <- ordinal::clm(rating ~ temp + bottle, data = wine)
   expect_true(any(fit$aliased$beta))
-  df <- table_regression(fit, output = "data.frame")
+  # The printed table: its columns are the displayed cells.
+  df <- table_regression(fit)
   row8 <- df[trimws(df$Variable) == "8", , drop = FALSE]
   expect_identical(nrow(row8), 1L)
   expect_identical(trimws(row8$B), "\u2013")

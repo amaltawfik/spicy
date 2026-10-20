@@ -421,7 +421,7 @@ test_that("an absorbed-FE estimatr fit carries the fixest extras shapes", {
 
 test_that("the FE block leads the default table of an estimatr FE fit", {
   fit <- .fit_lm_robust_fe()
-  df <- table_regression(fit, output = "data.frame")
+  df <- table_regression(fit)
   lab <- trimws(df[[1L]])
   i_fe <- which(lab == "Fixed effects:")
   expect_length(i_fe, 1L)
@@ -437,8 +437,7 @@ test_that("n_groups counts the absorbed levels of an estimatr fit", {
   fit <- .fit_lm_robust_fe()
   df <- table_regression(
     fit,
-    show_fit_stats = c("fixed_effects", "nobs", "n_groups"),
-    output = "data.frame"
+    show_fit_stats = c("fixed_effects", "nobs", "n_groups")
   )
   lab <- trimws(df[[1L]])
   i_ng <- which(lab == "N (cyl)")
@@ -474,7 +473,7 @@ test_that("two absorbed factors give two Yes rows in declared order", {
   )
   fr <- as_regression_frame(fit, model_id = "M1")
   expect_identical(fr$info$extras$fixef_intercept, c("cyl", "gear"))
-  df <- table_regression(fit, output = "data.frame")
+  df <- table_regression(fit)
   lab <- trimws(df[[1L]])
   i_fe <- which(lab == "Fixed effects:")
   expect_identical(lab[i_fe + 1:2], c("cyl", "gear"))
@@ -489,15 +488,12 @@ test_that("a plain lm_robust reports no FE block and lm's fit stats", {
   expect_null(fr$info$extras$fixef_sizes)
   expect_null(fr$info$n_groups)
   expect_null(fr$info$fit_stats$pseudo_r2)
-  lab <- trimws(table_regression(fit, output = "data.frame")[[1L]])
+  lab <- trimws(table_regression(fit)[[1L]])
   expect_false(any(lab == "Fixed effects:"))
   # The default fit statistics are lm's, statistic for statistic: the
   # oracle is the same model fitted by lm(), not a hand-written vector.
   oracle <- trimws(
-    table_regression(
-      stats::lm(mpg ~ wt + cyl, data = mtcars),
-      output = "data.frame"
-    )[[1L]]
+    table_regression(stats::lm(mpg ~ wt + cyl, data = mtcars))[[1L]]
   )
   expect_identical(lab, oracle)
   expect_identical(lab, c("(Intercept)", "wt", "cyl", "n", "R²", "Adj. R²"))
@@ -506,15 +502,14 @@ test_that("a plain lm_robust reports no FE block and lm's fit stats", {
 test_that("iv_robust keeps n only: the 2SLS R-squared is not classical", {
   fit <- .fit_iv_robust_basic()
   expect_false(as_regression_frame(fit)$info$supports$classical_r2)
-  lab <- trimws(table_regression(fit, output = "data.frame")[[1L]])
+  lab <- trimws(table_regression(fit)[[1L]])
   expect_identical(lab, c("(Intercept)", "wt", "n"))
 })
 
 test_that("a mixed lm + lm_robust table shows R-squared in BOTH columns", {
   skip_if_not_installed("estimatr")
   df <- table_regression(
-    list(OLS = stats::lm(mpg ~ wt, data = mtcars), Rob = .fit_lm_robust_hc3()),
-    output = "data.frame"
+    list(OLS = stats::lm(mpg ~ wt, data = mtcars), Rob = .fit_lm_robust_hc3())
   )
   lab <- trimws(df[[1L]])
   for (tk in c("R²", "Adj. R²")) {
@@ -532,7 +527,7 @@ test_that("a mixed lm + lm_robust table shows R-squared in BOTH columns", {
 test_that("in a mixed table the lm column stays blank on the FE rows", {
   fit <- .fit_lm_robust_fe()
   fl <- stats::lm(mpg ~ wt, data = mtcars)
-  df <- table_regression(list(FE = fit, OLS = fl), output = "data.frame")
+  df <- table_regression(list(FE = fit, OLS = fl))
   lab <- trimws(df[[1L]])
   expect_length(which(lab == "Fixed effects:"), 1L)
   i_cyl <- which(lab == "cyl")
@@ -569,11 +564,7 @@ test_that("within_r2 is estimatr's proj_r.squared, exactly", {
     as.numeric(fit$proj_r.squared),
     tolerance = 1e-12
   )
-  df <- table_regression(
-    fit,
-    show_fit_stats = c("nobs", "within_r2"),
-    output = "data.frame"
-  )
+  df <- table_regression(fit, show_fit_stats = c("nobs", "within_r2"))
   i <- grep("within", trimws(df[[1L]]))
   expect_length(i, 1L)
   expect_equal(
@@ -602,9 +593,7 @@ test_that("se_type = 'none': the note says so, and the cells are en dashes", {
   txt <- paste(out, collapse = "\n")
   expect_match(txt, "Linear regression (no SE computed)", fixed = TRUE)
   expect_match(txt, "Std. errors: None (se_type = \"none\").", fixed = TRUE)
-  se_col <- trimws(as.character(
-    table_regression(fit, output = "data.frame")[["SE"]]
-  ))
+  se_col <- trimws(as.character(table_regression(fit)[["SE"]]))
   expect_true(all(se_col[nzchar(se_col)] == "–"))
 })
 

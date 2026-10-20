@@ -133,10 +133,9 @@ the wording you set here.}
 
 \item{output}{One of \code{"default"}, \code{"data.frame"}, \code{"long"}, or a
 rendering engine: \code{"tinytable"}, \code{"gt"}, \code{"flextable"},
-\code{"excel"}, \code{"clipboard"}, \code{"word"}. \code{"data.frame"} and \code{"long"}
-are synonyms and return the same object: the compute frame is
-already long, one row per \verb{(variable x group)}. Same pair, same
-reason, as in \code{\link[=table_continuous]{table_continuous()}}.}
+\code{"excel"}, \code{"clipboard"}, \code{"word"}. \code{"data.frame"} is the displayed
+table with its numbers, \code{"long"} one row per \verb{(variable x group)}
+with every statistic, as in \code{\link[=table_continuous]{table_continuous()}}; see \emph{Value}.}
 
 \item{excel_path, excel_sheet, clipboard_delim, word_path}{Output
 destinations, as in \code{\link[=table_continuous]{table_continuous()}}.}
@@ -148,11 +147,39 @@ destinations, as in \code{\link[=table_continuous]{table_continuous()}}.}
 \item{style}{A journal style; see \code{\link[=spicy_style]{spicy_style()}}.}
 }
 \value{
-A \code{spicy_continuous_svy_table}: the compute frame, with the
-display frame and the typed view attached. \code{output = "data.frame"}
-/ \code{"long"} returns the compute frame unclassed -- the two tokens
-are synonyms and return identical objects. The three carry the
-whole note as printed, "Note." included, in \code{attr(x, "note")}.
+Depends on \code{output}:
+\itemize{
+\item \code{"default"}: a \code{spicy_continuous_svy_table} (a \code{data.frame}
+subclass, with the parent class \code{"spicy_table"}), printed when the
+call is bare; its columns are the table's compute frame, and the
+display frame and the typed view are attached.
+\item \code{"data.frame"}: the displayed table with its numbers, what
+\link[=as.data.frame.spicy_continuous_svy_table]{as.data.frame()} of the
+default object returns: one row per printed row, the key columns
+\code{variable}, \code{label} and, with \code{by}, \code{group} and \code{.row_role}
+(\code{"group"}, or \code{"missing"} for the group of missing \code{by} values),
+then the printed columns under their names (\code{"M"}, \code{"SD"}, \code{"SE"},
+\code{"95\\\% CI LL"}, ..., \code{"n"}, \code{"p"}), as in \code{\link[=table_continuous]{table_continuous()}}.
+\item \code{"long"}: one row per \verb{(variable x group)} (per variable
+without \code{by}) with every statistic the table computes, whatever it
+displays: \code{variable}, \code{label}, \code{group} and \code{.group_role} (with
+\code{by}, as in \code{\link[=table_continuous]{table_continuous()}}), \code{mean}, \code{sd}, \code{se}, \code{min},
+\code{max}, \code{ci_lower}, \code{ci_upper}, \code{median},
+\code{q1}, \code{q3}, \code{iqr}, \code{med_ci_lower}, \code{med_ci_upper}, \code{n} (observed),
+\code{weighted_n} (the estimated population), \code{deff}, \code{degf} (the
+degrees of freedom of the domain), and, with \code{by}, the test on the
+first row of each variable: \code{test_type} (\code{"design_t"} or
+\code{"design_f"}), \code{statistic}, \code{df}, \code{df.residual}, \code{p.value} (with
+the \emph{p}-value) and, under \code{p_adjust}, \code{p_unadjusted}.
+\item \code{"tinytable"}, \code{"gt"}, \code{"flextable"}: the rendered table.
+\item \code{"excel"} / \code{"word"}: writes the file and returns its path
+invisibly.
+\item \code{"clipboard"}: copies the table and returns the display
+\code{data.frame} invisibly.
+}
+
+The default object and the two data frames carry the whole note as
+printed, "Note." included, in \code{attr(x, "note")}.
 }
 \description{
 The design twin of \code{\link[=table_continuous]{table_continuous()}}: the same table of means,

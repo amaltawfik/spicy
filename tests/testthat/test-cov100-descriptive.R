@@ -179,7 +179,7 @@ test_that("spicy_continuous_table broom methods degrade without tibble", {
     .package = "base"
   )
   expect_identical(class(glanced), "data.frame")
-  expect_identical(glanced$n_total, 32L)
+  expect_identical(glanced$nobs, 32L)
   expect_true(is.na(glanced$statistic))
 
   # Line 201: as_tibble() aborts with the actionable install hint.

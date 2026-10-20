@@ -203,7 +203,7 @@ test_that("format_signed - explicit '+' on positive, '-' on negative", {
 test_that("table_regression - nested = TRUE injects ΔR² / F-change / p (change) rows", {
   fits <- list("S1" = lm(mpg ~ wt, mt), "S2" = lm(mpg ~ wt + cyl, mt))
   out <- table_regression(fits, nested = TRUE)
-  vars <- trimws(as.data.frame(out, stringsAsFactors = FALSE)$Variable)
+  vars <- trimws(out$Variable)
   expect_true("ΔR²" %in% vars)
   expect_true("F-change" %in% vars)
   expect_true("p (change)" %in% vars)
@@ -212,7 +212,7 @@ test_that("table_regression - nested = TRUE injects ΔR² / F-change / p (change
 test_that("table_regression - nested = TRUE first model has en-dash in change cols", {
   fits <- list(lm(mpg ~ wt, mt), lm(mpg ~ wt + cyl, mt))
   out <- table_regression(fits, nested = TRUE)
-  body <- as.data.frame(out, stringsAsFactors = FALSE, check.names = FALSE)
+  body <- structure(out, class = "data.frame")
   dr2 <- body[trimws(body$Variable) == "ΔR²", , drop = FALSE]
   m1_col <- names(body)[2L]
   m2_col <- names(body)[5L]
@@ -232,18 +232,15 @@ test_that("table_regression - nested glm injects Δχ² / p (change) rows", {
     glm(am ~ mpg + wt, mt, family = binomial)
   )
   out <- table_regression(fits, nested = TRUE)
-  vars <- trimws(as.data.frame(out, stringsAsFactors = FALSE)$Variable)
+  vars <- trimws(out$Variable)
   expect_true("Δχ²" %in% vars)
   expect_true("p (change)" %in% vars)
   # Positive control: these two are the lm change rows, so the negatives
   # below cannot quietly stop matching when either label is renamed.
   lm_vars <- trimws(
-    as.data.frame(
-      table_regression(
-        list(lm(mpg ~ wt, mt), lm(mpg ~ wt + cyl, mt)),
-        nested = TRUE
-      ),
-      stringsAsFactors = FALSE
+    table_regression(
+      list(lm(mpg ~ wt, mt), lm(mpg ~ wt + cyl, mt)),
+      nested = TRUE
     )$Variable
   )
   expect_true(all(c("ΔR²", "F-change") %in% lm_vars))
@@ -258,18 +255,13 @@ test_that("table_regression - user can override change tokens via show_fit_stats
     nested = TRUE,
     show_fit_stats = c("nobs", "r2", "aic_change", "bic_change", "p_change")
   )
-  vars <- trimws(as.data.frame(out, stringsAsFactors = FALSE)$Variable)
+  vars <- trimws(out$Variable)
   expect_true("ΔAIC" %in% vars)
   expect_true("ΔBIC" %in% vars)
   expect_true("p (change)" %in% vars)
   # Positive control: the same two fits with the DEFAULT tokens do carry
   # the rows this override is asserted to have replaced.
-  default_vars <- trimws(
-    as.data.frame(
-      table_regression(fits, nested = TRUE),
-      stringsAsFactors = FALSE
-    )$Variable
-  )
+  default_vars <- trimws(table_regression(fits, nested = TRUE)$Variable)
   expect_true(all(c("ΔR²", "F-change") %in% default_vars))
   expect_false("ΔR²" %in% vars)
   expect_false("F-change" %in% vars)
@@ -282,7 +274,7 @@ test_that("table_regression - row order in show_fit_stats controls display order
     nested = TRUE,
     show_fit_stats = c("p_change", "r2_change", "nobs")
   )
-  vars <- trimws(as.data.frame(out, stringsAsFactors = FALSE)$Variable)
+  vars <- trimws(out$Variable)
   fit_vars <- vars[(length(vars) - 2L):length(vars)]
   expect_equal(fit_vars, c("p (change)", "ΔR²", "n"))
 })
@@ -356,7 +348,7 @@ capture_norm_nested <- function(out) {
 }
 
 .change_rows <- function(out) {
-  vars <- trimws(as.data.frame(out, stringsAsFactors = FALSE)$Variable)
+  vars <- trimws(out$Variable)
   vars[grepl("change|variation|Δ", vars)]
 }
 
@@ -865,7 +857,7 @@ test_that("Wald change, a vcov list: each pair follows the current model's spec"
     nested = TRUE,
     vcov = list("classical", "classical", "HC3")
   )
-  df <- as.data.frame(out, stringsAsFactors = FALSE)
+  df <- structure(out, class = "data.frame")
   vars <- trimws(df$Variable)
   expect_true(all(c("F-change", "Wald F-change") %in% vars))
   f_cells <- unname(unlist(df[vars == "F-change", -1L]))

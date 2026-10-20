@@ -29,21 +29,27 @@ test_that("table_continuous_lm returns expected raw structure", {
       "estimate_ci_upper",
       "test_type",
       "statistic",
-      "df1",
-      "df2",
+      "df",
+      "df.residual",
       "p.value",
       "es_type",
       "es_value",
       "es_ci_lower",
       "es_ci_upper",
-      "r2",
-      "adj_r2",
-      "n",
-      "weighted_n",
+      "r.squared",
+      "adj.r.squared",
+      "nobs",
+      "weighted_nobs",
       "boot_n_valid"
     )
   )
   expect_equal(nrow(out), 6L)
+  # No rendering attribute: the note is the only one a long frame can
+  # carry, and iris has nothing to disclose.
+  expect_identical(
+    setdiff(names(attributes(out)), c("names", "row.names", "class")),
+    character(0)
+  )
 })
 
 test_that("table_continuous_lm default output returns a spicy table", {
@@ -55,7 +61,10 @@ test_that("table_continuous_lm default output returns a spicy table", {
 
   expect_s3_class(out, "spicy_continuous_lm_table")
   expect_s3_class(out, "spicy_table")
-  expect_equal(attr(out, "by_var"), "Species")
+  # The family's names for the `by` column and its label.
+  expect_equal(attr(out, "group_var"), "Species")
+  expect_equal(attr(out, "group_label"), "Species")
+  expect_null(attr(out, "by_var"))
   expect_equal(attr(out, "vcov_type"), "classical")
 })
 
@@ -90,7 +99,8 @@ test_that("table_continuous_lm numeric predictor slope matches lm", {
 
   expect_equal(out$predictor_type, "continuous")
   expect_equal(out$estimate, unname(coef(fit)[["Petal.Width"]]))
-  expect_equal(out$r2, unname(summary(fit)$r.squared))
+  expect_equal(out$r.squared, unname(summary(fit)$r.squared))
+  expect_equal(out$adj.r.squared, unname(summary(fit)$adj.r.squared))
 })
 
 test_that("table_continuous_lm binary factor stores means and auto contrast", {
@@ -167,7 +177,7 @@ test_that("table_continuous_lm weights accept column names", {
     output = "long"
   )
 
-  expect_equal(out$weighted_n[1], sum(df$w))
+  expect_equal(out$weighted_nobs[1], sum(df$w))
   expect_equal(
     out$emmean[2],
     weighted.mean(df$y[df$g == "B"], df$w[df$g == "B"])
@@ -399,7 +409,10 @@ test_that("table_continuous_lm data.frame output puts >2 categorical levels in c
   )
   expect_false("f²" %in% names(out))
   expect_true("R²" %in% names(out))
-  expect_equal(out$Variable[1], "Sepal.Length")
+  # The key columns of the family lead, with no display `Variable`.
+  expect_identical(names(out)[1:2], c("variable", "label"))
+  expect_false("Variable" %in% names(out))
+  expect_equal(out$variable[1], "Sepal.Length")
   expect_true(is.numeric(out$p))
 })
 
@@ -652,7 +665,9 @@ test_that("table_continuous_lm uses labels, exclude, regex, and character by", {
     output = "data.frame"
   )
 
-  expect_equal(out$Variable, "Wellbeing attr")
+  # `label` is the displayed label, `variable` the column it describes.
+  expect_equal(out$label, "Wellbeing attr")
+  expect_equal(out$variable, "wellbeing_score")
 })
 
 test_that("table_continuous_lm reports ignored non-numeric outcomes in verbose mode", {
@@ -676,7 +691,7 @@ test_that("table_continuous_lm reports ignored non-numeric outcomes in verbose m
     conditionMessage(msg),
     "table_continuous_lm(): Ignored non-numeric columns: sex."
   )
-  expect_equal(out$Variable, "wellbeing_score")
+  expect_equal(out$variable, "wellbeing_score")
 })
 
 test_that("table_continuous_lm helper functions cover empty-model cases", {
@@ -751,13 +766,14 @@ test_that("table_continuous_lm helper functions handle coercion and weights dete
 })
 
 test_that("table_continuous_lm internal builders cover numeric displays", {
+  # The builders read the compute frame of the printed object, under its
+  # internal names.
   out <- table_continuous_lm(
     sochealth,
     select = wellbeing_score,
     by = age,
     statistic = TRUE,
-    effect_size = "f2",
-    output = "long"
+    effect_size = "f2"
   )
 
   wide_raw <- spicy:::build_wide_raw_continuous_lm(
@@ -810,8 +826,7 @@ test_that("table_continuous_lm internal builders cover binary categorical varian
     show_n = FALSE,
     effect_size = "none",
     r2 = "none",
-    ci = FALSE,
-    output = "long"
+    ci = FALSE
   )
 
   wide_raw <- spicy:::build_wide_raw_continuous_lm(
@@ -852,11 +867,11 @@ test_that("table_continuous_lm internal builders cover binary categorical varian
 })
 
 test_that("table_continuous_lm low-level formatting helpers behave as expected", {
+  # The printed object: the helpers read its internal names.
   block <- table_continuous_lm(
     iris[iris$Species != "virginica", ],
     select = Sepal.Length,
-    by = Species,
-    output = "long"
+    by = Species
   )
 
   expect_equal(
@@ -1523,8 +1538,7 @@ test_that("effect_size_ci = TRUE adds bracket notation in wide display", {
     effect_size = "g",
     effect_size_ci = TRUE,
     digits = 2L,
-    effect_size_digits = 2L,
-    output = "long"
+    effect_size_digits = 2L
   )
   display <- spicy:::build_wide_display_df_continuous_lm(
     out,
@@ -1658,7 +1672,7 @@ test_that("degenerate models still preserve the predictor label", {
   expect_true(all(out$predictor_label == "Group label"))
 })
 
-test_that("long output uses integer types for n and df1, double for df2", {
+test_that("long output uses an integer nobs and double degrees of freedom", {
   out_num <- table_continuous_lm(
     iris,
     select = Sepal.Length,
@@ -1671,18 +1685,26 @@ test_that("long output uses integer types for n and df1, double for df2", {
     by = Species,
     output = "long"
   )
+  # The empty-row template is internal: it carries the compute frame's
+  # names (`n`, `df1`, `df2`), which the long output renames.
   out_empty <- spicy:::make_empty_lm_rows("y", "Y", "continuous")
 
-  # n and df1 are always whole numbers -> integer.
-  # df2 is double to allow fractional Satterthwaite df under cluster-
-  # robust inference (CR2). Whole-number df2 still equal their
-  # integer value (e.g., 147.0).
-  expect_type(out_num$n, "integer")
-  expect_type(out_num$df1, "integer")
-  expect_type(out_num$df2, "double")
-  expect_type(out_cat$n, "integer")
-  expect_type(out_cat$df1, "integer")
-  expect_type(out_cat$df2, "double")
+  # nobs is a count -> integer. The degrees of freedom follow the
+  # statistic: a t carries its own in `df`, fractional under the
+  # Satterthwaite df of cluster-robust inference (CR2), so `df` is double
+  # like `df.residual`. Whole-number values still equal their integer
+  # value (e.g., 147.0).
+  expect_type(out_num$nobs, "integer")
+  expect_type(out_num$df, "double")
+  expect_type(out_num$df.residual, "double")
+  expect_type(out_cat$nobs, "integer")
+  expect_type(out_cat$df, "double")
+  expect_type(out_cat$df.residual, "double")
+  # The slope's t: the residual df of the model in `df`, no `df.residual`.
+  expect_identical(out_num$test_type, "t")
+  expect_identical(c(out_num$df, out_num$df.residual), c(148, NA))
+  # The F of the factor: both.
+  expect_identical(c(out_cat$df[[1L]], out_cat$df.residual[[1L]]), c(2, 147))
   expect_type(out_empty$n, "integer")
   expect_type(out_empty$df1, "integer")
   expect_type(out_empty$df2, "double")
@@ -1702,7 +1724,7 @@ test_that("effect_size = 'none' yields NA es_type and es_value in long output", 
 
 # ---- coercion + broom integration ----
 
-test_that("as.data.frame.spicy_continuous_lm_table strips spicy classes/attrs", {
+test_that("as.data.frame.spicy_continuous_lm_table returns the displayed table", {
   out <- table_continuous_lm(
     sochealth,
     select = c(wellbeing_score, bmi),
@@ -1711,15 +1733,44 @@ test_that("as.data.frame.spicy_continuous_lm_table strips spicy classes/attrs", 
   df <- as.data.frame(out)
 
   expect_identical(class(df), "data.frame")
-  expect_setequal(
-    setdiff(names(attributes(df)), c("names", "row.names", "class")),
-    c("by_var", "note")
+  # The displayed table with its numbers, exactly `output = "data.frame"`
+  # (decision 5 of the ADR of 2026-10-20).
+  expect_identical(
+    df,
+    table_continuous_lm(
+      sochealth,
+      select = c(wellbeing_score, bmi),
+      by = sex,
+      output = "data.frame"
+    )
   )
-  expect_equal(attr(df, "by_var"), "sex")
+  # The note is the one attribute that travels: no `by_var` /
+  # `group_var` provenance on the coerced frame.
+  expect_identical(
+    setdiff(names(attributes(df)), c("names", "row.names", "class")),
+    "note"
+  )
   expect_identical(attr(df, "note"), attr(out, "note"))
-  # Same content: 28 columns + same number of rows.
-  expect_equal(ncol(df), 29L) # + boot_n_valid (2026-07-09)
-  expect_equal(nrow(df), nrow(out))
+  # One row per outcome, the key columns then the printed columns.
+  expect_identical(
+    names(df),
+    c(
+      "variable",
+      "label",
+      "M (Female)",
+      "M (Male)",
+      "Δ (Male - Female)",
+      "95% CI LL",
+      "95% CI UL",
+      "p",
+      "R²",
+      "n"
+    )
+  )
+  expect_identical(df$variable, c("wellbeing_score", "bmi"))
+  expect_equal(nrow(df), nrow(as_structured(out)$body))
+  expect_identical(rownames(df), c("1", "2"))
+  expect_type(df$n, "double")
   # Original object is unchanged.
   expect_true(inherits(out, "spicy_continuous_lm_table"))
   expect_true(!is.null(attr(out, "ci_level")))
@@ -1734,8 +1785,11 @@ test_that("as_tibble.spicy_continuous_lm_table returns a tbl_df", {
   )
   tib <- tibble::as_tibble(out)
   expect_s3_class(tib, "tbl_df")
-  expect_equal(ncol(tib), 29L) # + boot_n_valid (2026-07-09)
-  expect_equal(nrow(tib), nrow(out))
+  # The same displayed table as as.data.frame().
+  df <- as.data.frame(out)
+  expect_identical(names(tib), names(df))
+  expect_equal(nrow(tib), nrow(df))
+  expect_equal(tib$p, df$p)
   expect_true(inherits(out, "spicy_continuous_lm_table"))
 })
 
@@ -2111,14 +2165,14 @@ test_that("p_digits argument propagates through table_continuous_lm()", {
 })
 
 test_that("p_digits changes the rendered p value in wide display", {
-  long <- table_continuous_lm(
+  # The printed object: the builder reads its internal names.
+  tbl <- table_continuous_lm(
     sochealth,
     select = wellbeing_score,
-    by = sex,
-    output = "long"
+    by = sex
   )
   display_3 <- spicy:::build_wide_display_df_continuous_lm(
-    long,
+    tbl,
     digits = 2L,
     fit_digits = 2L,
     effect_size_digits = 2L,
@@ -2134,7 +2188,7 @@ test_that("p_digits changes the rendered p value in wide display", {
     ci = TRUE
   )
   display_4 <- spicy:::build_wide_display_df_continuous_lm(
-    long,
+    tbl,
     digits = 2L,
     fit_digits = 2L,
     effect_size_digits = 2L,
@@ -2267,11 +2321,11 @@ test_that("decimal_align_strings handles bracket notation like '0.18 [0.07, 0.30
 })
 
 test_that("align='decimal' is the default and pads ASCII display values", {
+  # A rendering attribute: it lives on the printed object only.
   out <- table_continuous_lm(
     sochealth,
     select = c(wellbeing_score, bmi),
-    by = sex,
-    output = "long"
+    by = sex
   )
   expect_equal(attr(out, "align"), "decimal")
 })
@@ -2280,18 +2334,18 @@ test_that("align='decimal' produces dot-aligned numeric columns", {
   # Test the pre-padding pipeline that the ASCII print method applies:
   # build the display df, then pre-pad numeric columns. All values in
   # each numeric column must end up with identical nchar (and therefore
-  # identically-positioned decimal marks).
-  long <- table_continuous_lm(
+  # identically-positioned decimal marks). The builder reads the printed
+  # object.
+  tbl <- table_continuous_lm(
     sochealth,
     select = c(wellbeing_score, bmi),
     by = sex,
     statistic = TRUE,
     effect_size = "g",
-    effect_size_ci = TRUE,
-    output = "long"
+    effect_size_ci = TRUE
   )
   display <- spicy:::build_wide_display_df_continuous_lm(
-    long,
+    tbl,
     digits = 2L,
     fit_digits = 2L,
     effect_size_digits = 2L,
@@ -2426,15 +2480,15 @@ test_that("wide raw column names match wide display when ci_level is custom", {
     ci_level = 0.99,
     output = "data.frame"
   )
-  long <- table_continuous_lm(
+  # The builder reads the printed object.
+  tbl <- table_continuous_lm(
     df,
     select = Sepal.Length,
     by = Species,
-    ci_level = 0.99,
-    output = "long"
+    ci_level = 0.99
   )
   display_99 <- spicy:::build_wide_display_df_continuous_lm(
-    long,
+    tbl,
     digits = 2L,
     fit_digits = 2L,
     effect_size_digits = 2L,
@@ -2593,7 +2647,13 @@ test_that("cluster argument resolves columns and vectors consistently", {
   expect_equal(out_nse$statistic, out_chr$statistic)
   expect_equal(out_nse$statistic, out_vec$statistic)
   expect_equal(out_nse$p.value, out_chr$p.value)
-  expect_equal(out_nse$df2, out_chr$df2)
+  # The F carries both degrees of freedom, the contrast's t its own.
+  expect_false(anyNA(out_nse$df))
+  expect_identical(is.na(out_nse$df.residual), out_nse$test_type == "t")
+  expect_equal(out_nse$df, out_chr$df)
+  expect_equal(out_nse$df, out_vec$df)
+  expect_equal(out_nse$df.residual, out_chr$df.residual)
+  expect_equal(out_nse$df.residual, out_vec$df.residual)
 })
 
 test_that("CR2 matches clubSandwich::coef_test() for binary contrast", {
@@ -2620,7 +2680,9 @@ test_that("CR2 matches clubSandwich::coef_test() for binary contrast", {
   expect_equal(contrast_row$estimate, unname(coef(fit)[2]), tolerance = 1e-8)
   expect_equal(contrast_row$estimate_se[1], ct$SE[2], tolerance = 1e-8)
   expect_equal(contrast_row$statistic[1], ct$tstat[2], tolerance = 1e-8)
-  expect_equal(contrast_row$df2[1], ct$df_Satt[2], tolerance = 1e-6)
+  # The t carries its Satterthwaite df in `df`, and no `df.residual`.
+  expect_equal(contrast_row$df[1], ct$df_Satt[2], tolerance = 1e-6)
+  expect_true(is.na(contrast_row$df.residual[1]))
   expect_equal(contrast_row$p.value[1], ct$p_Satt[2], tolerance = 1e-8)
 })
 
@@ -2654,8 +2716,8 @@ test_that("CR2 matches clubSandwich::Wald_test() for k>2 categorical", {
   )
 
   expect_equal(test_row$statistic, wt$Fstat[1], tolerance = 1e-6)
-  expect_equal(test_row$df1, as.integer(wt$df_num[1]))
-  expect_equal(test_row$df2, wt$df_denom[1], tolerance = 1e-6)
+  expect_equal(test_row$df, as.integer(wt$df_num[1]))
+  expect_equal(test_row$df.residual, wt$df_denom[1], tolerance = 1e-6)
   expect_equal(test_row$p.value, wt$p_val[1], tolerance = 1e-8)
 })
 
@@ -2713,22 +2775,20 @@ test_that("glance() preserves df.residual without integer truncation", {
     vcov = "CR2",
     cluster = cluster_id
   )
-  long <- as.data.frame(res)
-  raw_df2 <- long$df2[1]
+  # The compute frame of the printed object, under its internal name.
+  raw_df2 <- res$df2[1]
+  expect_false(is.na(raw_df2))
   g <- broom::glance(res)
   expect_type(g$df.residual, "double")
   expect_equal(g$df.residual, raw_df2)
   # Also verify a synthetic genuinely-fractional value is preserved.
   res2 <- res
-  ld <- as.data.frame(res2)
-  ld$df2 <- 45.32
-  attributes(res2) <- attributes(res)
-  res2[] <- ld
+  res2$df2 <- 45.32
   g2 <- broom::glance(res2)
   expect_equal(g2$df.residual, 45.32)
 })
 
-test_that("CR2 df2 differs from classical df.residual (cluster-aware df)", {
+test_that("CR2 df.residual differs from the classical one (cluster-aware df)", {
   skip_if_not_installed("clubSandwich")
   long_classical <- table_continuous_lm(
     sleep,
@@ -2744,8 +2804,13 @@ test_that("CR2 df2 differs from classical df.residual (cluster-aware df)", {
     vcov = "CR2",
     output = "long"
   )
-  classical_df2 <- long_classical$df2[!is.na(long_classical$df2)]
-  cr2_df2 <- long_cr2$df2[!is.na(long_cr2$df2)]
+  classical_df2 <- long_classical$df.residual[
+    !is.na(long_classical$df.residual)
+  ]
+  cr2_df2 <- long_cr2$df.residual[!is.na(long_cr2$df.residual)]
+  # Not vacuous: both frames carry a residual df.
+  expect_gt(length(classical_df2), 0L)
+  expect_identical(length(cr2_df2), length(classical_df2))
   # CR2 SW-df is generally smaller than the classical n - p df, since
   # it reflects cluster-level rather than observation-level
   # information.
@@ -2753,20 +2818,20 @@ test_that("CR2 df2 differs from classical df.residual (cluster-aware df)", {
 })
 
 test_that("get_test_header_lm formats fractional df with one decimal", {
-  long <- table_continuous_lm(
+  # The printed object: the helper reads its internal `df1` / `df2`.
+  tbl <- table_continuous_lm(
     sleep,
     select = extra,
-    by = group,
-    output = "long"
+    by = group
   )
-  long$df2 <- 45.32
-  long$df1 <- 1L
-  hdr <- spicy:::get_test_header_lm(long, show_statistic = TRUE, exact = TRUE)
+  tbl$df2 <- 45.32
+  tbl$df1 <- 1L
+  hdr <- spicy:::get_test_header_lm(tbl, show_statistic = TRUE, exact = TRUE)
   expect_equal(hdr, "t(45.3)")
 
-  long$df2 <- 45.0
+  tbl$df2 <- 45.0
   hdr_int <- spicy:::get_test_header_lm(
-    long,
+    tbl,
     show_statistic = TRUE,
     exact = TRUE
   )
@@ -2817,7 +2882,9 @@ test_that("bootstrap produces a finite vcov on a binary predictor", {
   expect_true(is.finite(contrast_row$statistic[1]))
   expect_true(is.finite(contrast_row$p.value[1]))
   expect_equal(contrast_row$test_type[1], "z")
-  expect_equal(contrast_row$df2[1], Inf)
+  # A z: `df = Inf`, as in table_regression(), and no `df.residual`.
+  expect_equal(contrast_row$df[1], Inf)
+  expect_true(is.na(contrast_row$df.residual[1]))
 })
 
 test_that("cluster bootstrap differs from obs bootstrap on paired data", {
@@ -2911,10 +2978,21 @@ test_that("bootstrap on 3-level categorical produces chi2 header", {
   )
   test_row <- out[1L, ]
   expect_equal(test_row$test_type, "chi2")
-  expect_equal(test_row$df1, 2L)
-  expect_equal(test_row$df2, Inf)
+  # A chi-squared carries its one df.
+  expect_identical(test_row$df, 2)
+  expect_true(is.na(test_row$df.residual))
 
-  hdr <- spicy:::get_test_header_lm(out, show_statistic = TRUE, exact = TRUE)
+  # The header helper reads the printed object (internal names).
+  set.seed(20260418)
+  tbl <- table_continuous_lm(
+    iris,
+    select = Sepal.Length,
+    by = Species,
+    vcov = "bootstrap",
+    boot_n = 200,
+    statistic = TRUE
+  )
+  hdr <- spicy:::get_test_header_lm(tbl, show_statistic = TRUE, exact = TRUE)
   expect_match(hdr, "^χ²\\(2\\)$")
 })
 
@@ -3109,13 +3187,13 @@ test_that("resolve_cluster_argument rejects malformed input with clear errors", 
 })
 
 test_that("get_test_header_lm covers all test_type branches", {
+  # The helper reads the printed objects (internal `df1` / `df2`).
   # numeric predictor with classical vcov -> "t(df)"
   out_num <- table_continuous_lm(
     sochealth,
     select = wellbeing_score,
     by = age,
-    statistic = TRUE,
-    output = "long"
+    statistic = TRUE
   )
   expect_match(
     spicy:::get_test_header_lm(out_num, TRUE, TRUE),
@@ -3127,8 +3205,7 @@ test_that("get_test_header_lm covers all test_type branches", {
     select = wellbeing_score,
     by = age,
     vcov = "jackknife",
-    statistic = TRUE,
-    output = "long"
+    statistic = TRUE
   )
   expect_equal(spicy:::get_test_header_lm(out_num_z, TRUE, TRUE), "z")
 
@@ -3137,8 +3214,7 @@ test_that("get_test_header_lm covers all test_type branches", {
     iris,
     select = Sepal.Length,
     by = Species,
-    statistic = TRUE,
-    output = "long"
+    statistic = TRUE
   )
   expect_match(
     spicy:::get_test_header_lm(out_kgt2, TRUE, TRUE),
@@ -3153,8 +3229,7 @@ test_that("get_test_header_lm covers all test_type branches", {
     by = Species,
     vcov = "bootstrap",
     boot_n = 100,
-    statistic = TRUE,
-    output = "long"
+    statistic = TRUE
   )
   expect_match(
     spicy:::get_test_header_lm(out_kgt2_chi2, TRUE, TRUE),
@@ -3848,8 +3923,9 @@ test_that("table_continuous_lm renders empty cells when n / weighted_n are NA", 
     class = "spicy_undefined_stat"
   )
   expect_s3_class(out, "data.frame")
-  # n column for empty row is "" rather than a number
+  # The n of the empty row: a blank cell, NA in the numeric frame.
   expect_true("n" %in% names(out))
+  expect_true(is.na(out$n))
 })
 
 test_that("table_continuous_lm with show_weighted_n = TRUE renders blank weighted_n on empty rows", {
@@ -3871,6 +3947,7 @@ test_that("table_continuous_lm with show_weighted_n = TRUE renders blank weighte
   )
   expect_s3_class(out, "data.frame")
   expect_true("Weighted n" %in% names(out))
+  expect_true(is.na(out[["Weighted n"]]))
 })
 
 # ---- coverage: export engines (skip if Suggests not installed) ----
@@ -4012,7 +4089,8 @@ test_that("table_continuous_lm: labels argument overrides default outcome label"
     labels = c(wellbeing_score = "Custom WB"),
     output = "data.frame"
   )
-  expect_true("Custom WB" %in% out$Variable)
+  expect_identical(out$label, "Custom WB")
+  expect_identical(out$variable, "wellbeing_score")
 })
 
 test_that("table_continuous_lm: numeric predictor + weights exercises weighted lm path", {
@@ -4027,7 +4105,8 @@ test_that("table_continuous_lm: numeric predictor + weights exercises weighted l
   )
   expect_s3_class(out, "data.frame")
   # B should be a finite number for the slope of age.
-  expect_true(any(grepl("[0-9]", out$B)))
+  expect_type(out$B, "double")
+  expect_true(all(is.finite(out$B)))
 })
 
 test_that("fit_categorical_predictor_lm_rows handles df_resid <= 0 (perfect fit)", {
@@ -4470,7 +4549,7 @@ test_that("labelled_spss by with value labels forms groups and honors user_na", 
   expect_identical(out$level, c("1", "2"))
   expect_equal(out$emmean, c(6, 11), tolerance = 1e-12)
   expect_equal(out$estimate[2], 5, tolerance = 1e-12)
-  expect_identical(out$n, rep(6L, 2L))
+  expect_identical(out$nobs, rep(6L, 2L))
   # user_na = FALSE keeps the declared 9s as a third group.
   out_keep <- table_continuous_lm(
     d,
@@ -4480,7 +4559,7 @@ test_that("labelled_spss by with value labels forms groups and honors user_na", 
     output = "long"
   )
   expect_identical(out_keep$level, c("1", "2", "9"))
-  expect_identical(out_keep$n, rep(8L, 3L))
+  expect_identical(out_keep$nobs, rep(8L, 3L))
 })
 
 test_that("labelled by without value labels stays a continuous regressor", {
@@ -4566,8 +4645,8 @@ test_that("NA weights are excluded from the analytic sample as documented", {
   )
   cc <- stats::complete.cases(d$y, d$grp, d$w)
   fit <- stats::lm(y ~ grp, data = d[cc, ], weights = d$w[cc])
-  expect_equal(out$n, rep(sum(cc), 2L))
-  expect_equal(out$weighted_n, rep(sum(d$w[cc]), 2L))
+  expect_equal(out$nobs, rep(sum(cc), 2L))
+  expect_equal(out$weighted_nobs, rep(sum(d$w[cc]), 2L))
   expect_equal(
     out$emmean,
     unname(c(coef(fit)[1], coef(fit)[1] + coef(fit)[2])),
@@ -4817,7 +4896,7 @@ test_that("an outcome left with one observed group degrades loudly", {
   y2_rows <- out[out$variable == "y2", ]
   expect_identical(y2_rows$level, c("a", "b"))
   expect_true(all(is.na(y2_rows$emmean)))
-  expect_true(all(is.na(y2_rows$n)))
+  expect_true(all(is.na(y2_rows$nobs)))
   expect_false(anyNA(out$level))
   expect_equal(out$emmean[out$variable == "y1"], c(2, 4.5))
   wide <- suppressWarnings(
@@ -4950,7 +5029,7 @@ test_that("tidy/glance column sets are frozen (stabilizing contract)", {
       "es_ci_lower",
       "es_ci_upper",
       "nobs",
-      "weighted_n"
+      "weighted_nobs"
     )
   )
 })
@@ -5054,17 +5133,17 @@ test_that("labels names the outcomes and the by variable (title, note)", {
   d$plain <- as.numeric(d$age)
   d$na_lab <- structure(as.numeric(d$age), label = NA_character_)
   d$empty <- structure(as.numeric(d$age), label = "")
+  # The printed object: the label of `by` is a rendering attribute.
   build <- function(...) {
     suppressMessages(table_continuous_lm(
       d,
       select = c(bmi, plain, na_lab, empty),
       by = sex,
-      output = "long",
       ...
     ))
   }
   check <- function(out, by, rows) {
-    expect_identical(attr(out, "by_label"), by)
+    expect_identical(attr(out, "group_label"), by)
     expect_identical(unique(out$label), c(rows, "plain", "na_lab", "empty"))
     expect_match(
       attr(out, "note"),
@@ -5096,12 +5175,11 @@ test_that("var_labels() renames on the attribute base, whatever the option", {
       sochealth,
       select = c(bmi, age),
       by = sex,
-      labels = var_labels(bmi = "IMC"),
-      output = "long"
+      labels = var_labels(bmi = "IMC")
     )
   }
   check <- function(out) {
-    expect_identical(attr(out, "by_label"), "Sex")
+    expect_identical(attr(out, "group_label"), "Sex")
     expect_identical(unique(out$label), c("IMC", "Age (years)"))
   }
   check(build())

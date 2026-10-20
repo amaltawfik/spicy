@@ -468,16 +468,16 @@ test_that("a perfectly fitted model reports no partial effect size", {
 
   # The public consequence: the adjusted table asks for f^2 and gets NA
   # rather than an infinite number in the cell.
-  tl <- suppressWarnings(
+  tidy <- suppressWarnings(
     table_continuous_lm(
       d,
       outcome,
       by = grp,
       covariates = cov_z,
-      effect_size = "f2"
+      effect_size = "f2",
+      output = "long"
     )
   )
-  tidy <- as.data.frame(tl)
   expect_identical(tidy$es_type[[1L]], "f2")
   expect_true(is.na(tidy$es_value[[1L]]))
 
@@ -525,7 +525,7 @@ test_that("a weighted group with nothing to average yields a bare NA SMD", {
     score = c(rep(NA_real_, 6), 1, 2, 3, 4, 5, 6),
     wgt = rep(c(1, 2, 3), 4)
   )
-  tb <- table_continuous(
+  long <- table_continuous(
     d,
     score,
     by = grp,
@@ -534,10 +534,11 @@ test_that("a weighted group with nothing to average yields a bare NA SMD", {
     drop_na = FALSE,
     p_value = FALSE,
     statistic = FALSE,
-    effect_size = "none"
+    effect_size = "none",
+    output = "long"
   )
-  tidy <- as.data.frame(tb)
-  expect_true(all(is.na(tidy$smd_value)))
+  expect_true("smd_value" %in% names(long))
+  expect_true(all(is.na(long$smd_value)))
 })
 
 

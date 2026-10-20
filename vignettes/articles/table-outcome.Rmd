@@ -316,7 +316,9 @@ inline(tbl, smoking, column = "{p}")
 ## Downstream: the raw frame and the broom views
 
 `output = "long"` returns the compute frame: one row per displayed
-row, with `.row_role` saying what each row is.
+row, with `.row_role` saying what each row is and every statistic the
+table computes. `output = "data.frame"`, and `as.data.frame()` on the
+table, give the same rows with the printed columns only.
 
 ```{r long}
 head(table_outcome(sochealth, bmi, select = sex, output = "long"), 4)
@@ -335,10 +337,8 @@ Two identity columns rather than one, and deliberately: `outcome` is
 constant down the frame, `variable` names the block. A single column
 would have to mean two different things depending on the row.
 
-The `glance()` schema is fixed. `smd_type` and `smd_value` are present
-and `NA` from the first version, so the day a standardized mean
-difference enters this table it cannot break a pipeline that indexes
-the frame. Index by name, never by position.
+The `glance()` schema is fixed: a column the table does not fill is
+present and `NA`. Index by name, never by position.
 
 ## Comparison with `gtsummary::tbl_continuous()`
 

@@ -301,9 +301,11 @@ test_that("table_categorical() discloses declared missing under drop_na", {
     attr(res, "missing_note"),
     "Declared missing values removed: v1 (2)."
   )
+  # The displayed table: a header row, then one row per level shown.
   df <- as.data.frame(res)
-  expect_identical(as.character(df$Level), c("[1] No", "[2] Yes"))
-  expect_equal(df[["Total n"]], c(3, 3))
+  body <- df$.row_role != "factor_header"
+  expect_identical(df$level[body], c("[1] No", "[2] Yes"))
+  expect_equal(df[["Total n"]][body], c(3, 3))
 })
 
 

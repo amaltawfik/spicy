@@ -13,33 +13,35 @@
 \item{x}{A \code{spicy_continuous_table} returned by \code{\link[=table_continuous]{table_continuous()}}.}
 
 \item{row.names, optional}{Standard \code{\link[base:as.data.frame]{base::as.data.frame()}} arguments.
-Currently ignored: the long format already carries integer row
-names and explicit columns.}
+Currently ignored.}
 
 \item{...}{Further arguments passed to \code{\link[tibble:as_tibble]{tibble::as_tibble()}} (for
 the tibble method) or ignored (for the \code{as.data.frame()} method).}
 }
 \value{
-A plain \code{data.frame} (or \code{tbl_df}) with one row per
-\verb{(variable x group)} (or one row per \code{variable} when \code{by} is not
-used).
+A plain \code{data.frame} (or \code{tbl_df}), identical to the
+\code{output = "data.frame"} of the same call.
 }
 \description{
-These S3 methods strip the \code{"spicy_continuous_table"} /
-\code{"spicy_table"} classes and the rendering-only attributes
-(\code{digits}, \code{decimal_mark}, \code{ci_level}, \code{align}, \code{p_digits}, ...)
-from an object returned by \code{\link[=table_continuous]{table_continuous()}} so the underlying
-long-format data can be manipulated with downstream tools (\code{dplyr},
-\code{tidyr}, etc.) under the standard \code{data.frame} / \code{tbl_df} contract.
-The attribute \code{"group_var"} is preserved as a lightweight provenance
-marker, and \code{"note"}, the note as printed; all other spicy attributes
-are dropped. The original \code{x} is unaffected, and \code{print(x)} continues
-to render the formatted ASCII table.
+\code{as.data.frame()} returns the table \code{\link[=table_continuous]{table_continuous()}} displays,
+with its numbers: exactly what \code{output = "data.frame"} returns. One
+row per printed row, the key columns \code{variable} (the column name),
+\code{label} (the label displayed for it) and, with \code{by}, \code{group} and
+\code{.row_role} (\code{"group"}, or \code{"missing"} for the group of missing \code{by}
+values), then the printed columns under their names (\code{"M"}, \code{"SD"},
+\code{"95\\\% CI LL"}, ..., \code{"n"}, \code{"p"}). A cell that prints several
+numbers keeps the first in its column and the others beside it under
+their names in the long output: \code{df} and \code{df.residual} after the test
+statistic \code{"Test"}, \code{es_ci_lower} and \code{es_ci_upper} after the effect
+size \code{"ES"} when its interval is printed, \code{q1} and \code{q3} after
+\code{"Med [Q1, Q3]"}. The note, as printed, is kept in \code{attr(, "note")}.
+\code{as_tibble()} returns the same table as a tibble.
 }
 \details{
-The returned data is identical to what \code{output = "long"} (or
-\code{output = "data.frame"}) returns directly from \code{\link[=table_continuous]{table_continuous()}};
-use whichever entry point reads better in your pipeline.
+For every statistic the table computes, whatever it displays, use
+\code{output = "long"} or \code{\link[=tidy.spicy_continuous_table]{tidy.spicy_continuous_table()}}. The original
+\code{x} is unaffected, and \code{print(x)} continues to render the formatted
+ASCII table.
 }
 \seealso{
 \code{\link[=tidy.spicy_continuous_table]{tidy.spicy_continuous_table()}},

@@ -19,28 +19,26 @@ Currently ignored.}
 the tibble method) or ignored (for the \code{as.data.frame()} method).}
 }
 \value{
-A plain \code{data.frame} (or \code{tbl_df}) with the same rows and
-columns as the wide raw output of \code{\link[=table_categorical]{table_categorical()}}.
+A plain \code{data.frame} (or \code{tbl_df}), identical to the
+\code{output = "data.frame"} of the same call.
 }
 \description{
-These S3 methods strip the \code{"spicy_categorical_table"} /
-\code{"spicy_table"} classes and the rendering-only attributes
-(\code{display_df}, \code{indent_text}, \code{align}, \code{decimal_mark},
-\code{long_data}, ...) from an object returned by \code{\link[=table_categorical]{table_categorical()}}
-so the underlying wide-format data can be manipulated with
-downstream tools (\code{dplyr}, \code{tidyr}, etc.) under the standard
-\code{data.frame} / \code{tbl_df} contract. The attribute \code{"group_var"} is
-preserved as a lightweight provenance marker, and \code{"note"}, the note
-as printed; all other spicy attributes are dropped. The original \code{x}
-is unaffected, and \code{print(x)} continues to render the formatted ASCII
-table.
+\code{as.data.frame()} returns the table \code{\link[=table_categorical]{table_categorical()}} displays,
+with its numbers: exactly what \code{output = "data.frame"} returns. One
+row per printed row -- the header row of each variable, which
+carries its \emph{p}-value and its association measure, then one row per
+level -- and the printed columns under their names (\code{"Female n"},
+\code{"Female \\\%"}, ..., \code{"p"}, the measure), plus the key columns
+\code{variable} (the column name), \code{label} (the label displayed for it),
+\code{level}, and \code{.row_role} (\code{"factor_header"}, \code{"level"}, or
+\code{"missing"} for the row of missing values the table adds). The note,
+as printed, is kept in \code{attr(, "note")}. \code{as_tibble()} returns the
+same table as a tibble.
 }
 \details{
-The returned data is the wide raw representation (one row per
-\verb{(variable x level)}, group columns side by side). For the
-tidy long format -- one row per \verb{(variable x level x group)} --
-use \code{\link[=tidy.spicy_categorical_table]{tidy.spicy_categorical_table()}} or call \code{\link[=table_categorical]{table_categorical()}}
-directly with \code{output = "long"}.
+For one row per variable, level and group, use \code{output = "long"} or
+\code{\link[=tidy.spicy_categorical_table]{tidy.spicy_categorical_table()}}. The original \code{x} is unaffected, and
+\code{print(x)} continues to render the formatted ASCII table.
 }
 \seealso{
 \code{\link[=tidy.spicy_categorical_table]{tidy.spicy_categorical_table()}},

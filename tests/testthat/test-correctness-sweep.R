@@ -40,9 +40,11 @@ test_that("m1: an aliased predictor's AME is NA (en-dash), not 0.00", {
   expect_true(is.finite(ame_wt$estimate))
 
   # rendered table: the AME cell for `dup` is an en-dash, not "0.00"
-  df <- table_regression(m, show_columns = c("b", "ame"), output = "data.frame")
+  # (the printed object's columns are the displayed cells)
+  df <- table_regression(m, show_columns = c("b", "ame"))
   ame_col <- grep("AME", names(df), value = TRUE)[1]
   cell <- trimws(df[trimws(df$Variable) == "dup", ame_col])
+  expect_length(cell, 1L)
   expect_true(cell %in% c("–", "-", ""))
   expect_false(grepl("0", cell))
 })

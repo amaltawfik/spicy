@@ -180,8 +180,9 @@
 #'     1986); requires `cluster`. `"CR2"` is the modern default
 #'     (Bell and McCaffrey 2002; Pustejovsky and Tipton 2018), with
 #'     Satterthwaite degrees of freedom for inference; the
-#'     fractional df is reported in the `df2` column and in the
-#'     `t(df)` / `F(df1, df2)` test header. `"CR1"` applies the
+#'     fractional df is reported in the long output (in `df` beside a
+#'     *t*, in `df.residual` beside an *F*) and in the `t(df)` /
+#'     `F(df1, df2)` test header. `"CR1"` applies the
 #'     G/(G-1) correction only; Stata's `, vce(cluster id)` uses the
 #'     larger G(N-1)/((G-1)(N-p)) factor with t(G-1) inference
 #'     (clubSandwich's `"CR1S"`; exposed for `lm` fits in
@@ -386,8 +387,10 @@
 #'   format would require a separate refactor.
 #' @param output Output format. One of:
 #'   - `"default"`: an ASCII table object, printed when the call is bare
-#'   - `"data.frame"`: a plain wide `data.frame`
-#'   - `"long"`: a raw long `data.frame`
+#'   - `"data.frame"`: the displayed table with its numbers, one row per
+#'     outcome
+#'   - `"long"`: one row per level of `by` and outcome, with every
+#'     estimate
 #'   - `"tinytable"` (requires `tinytable`)
 #'   - `"gt"` (requires `gt`)
 #'   - `"flextable"` (requires `flextable`)
@@ -428,32 +431,41 @@
 #'
 #' @return Depends on `output`:
 #' \itemize{
-#'   \item `"default"`: the underlying long `data.frame` with class
-#'     `"spicy_continuous_lm_table"` / `"spicy_table"`. The object is
+#'   \item `"default"`: the compute frame with class
+#'     `"spicy_continuous_lm_table"` / `"spicy_table"`, carrying the
+#'     rendering metadata as attributes (the `by` column and its label as
+#'     `group_var` and `group_label`). The object is
 #'     returned visibly, so a bare `table_continuous_lm(...)` call
 #'     auto-prints the styled ASCII table at the console while
 #'     `t <- table_continuous_lm(...)` stays silent (print `t` to
 #'     display the table).
-#'   \item `"data.frame"`: a plain wide `data.frame` with one row per
-#'     outcome and numeric columns for means (categorical `by`) or slope
-#'     (numeric `by`), optional contrast and CI, optional test statistic,
-#'     `p`, fit statistic (`\eqn{R^2}{R^2}` or adjusted `\eqn{R^2}{R^2}`), effect size, optional
-#'     `es_ci_lower` / `es_ci_upper` (when
-#'     `effect_size_ci = TRUE`), `n`, and `Weighted n`.
-#'   \item `"long"`: a raw `data.frame` with one block per outcome and 28
-#'     columns covering identification (`variable`, `label`,
+#'   \item `"data.frame"`: the displayed table with its numbers, what
+#'     [as.data.frame()][as.data.frame.spicy_continuous_lm_table] of the
+#'     default object returns: one row per outcome, the key columns
+#'     `variable` (the column name of the outcome) and `label` (the label
+#'     displayed), then the printed columns under their names -- the
+#'     means (categorical `by`) or the slope (numeric `by`), the contrast
+#'     and its interval bounds, the test statistic, `p`, the fit
+#'     statistic, the effect size (with `es_ci_lower` / `es_ci_upper`
+#'     beside it when `effect_size_ci = TRUE`), `n`, and `Weighted n`.
+#'   \item `"long"`: one block per outcome, one row per level of `by`,
+#'     with every estimate: identification (`variable`, `label`,
 #'     `predictor_type`, `predictor_label`, `level`, `reference`),
 #'     fitted means and their CI (`emmean`, `emmean_se`, `emmean_ci_lower`,
 #'     `emmean_ci_upper`), contrast or slope estimates and CI
 #'     (`estimate_type`, `estimate`, `estimate_se`, `estimate_ci_lower`,
 #'     `estimate_ci_upper`), inferential output (`test_type`, `statistic`,
-#'     `df1`, `df2`, `p.value`), effect size with its CI (`es_type`,
-#'     `es_value`, `es_ci_lower`, `es_ci_upper`), fit (`r2`, `adj_r2`),
-#'     and sample size (`n`, `weighted_n`).
+#'     `df`, `df.residual`, `p.value`: the *F* of a factor has both
+#'     degrees of freedom, the *t* of a contrast or a slope has its own in
+#'     `df` and none in `df.residual`), effect size with its CI
+#'     (`es_type`, `es_value`, `es_ci_lower`, `es_ci_upper`), fit
+#'     (`r.squared`, `adj.r.squared`), and the size of the model (`nobs`,
+#'     `weighted_nobs`, repeated on each row of an outcome).
 #'   \item `"tinytable"`: a `tinytable` object.
 #'   \item `"gt"`: a `gt_tbl` object.
 #'   \item `"flextable"`: a `flextable` object.
-#'   \item `"excel"` / `"word"`: writes to disk and returns the file path.
+#'   \item `"excel"` / `"word"`: writes to disk and returns the file path
+#'     invisibly.
 #'   \item `"clipboard"`: copies the wide table and returns it invisibly.
 #' }
 #'
@@ -603,15 +615,16 @@
 #' Hotelling-T-squared with Satterthwaite df, "HTZ") for inference.
 #' `"CR2"` (Bell and McCaffrey 2002; Pustejovsky and Tipton 2018) is the
 #' modern recommended default; it generally produces fractional
-#' Satterthwaite degrees of freedom in `df2`, which the displayed
-#' `t(df)` / `F(df1, df2)` header renders to one decimal. `"CR1"`
+#' Satterthwaite degrees of freedom (in `df` beside a *t*, in
+#' `df.residual` beside an *F*), which the displayed `t(df)` /
+#' `F(df1, df2)` header renders to one decimal. `"CR1"`
 #' applies the G/(G-1) correction only -- Stata's `, vce(cluster id)`
 #' uses the larger G(N-1)/((G-1)(N-p)) factor with t(G-1) inference
 #' (clubSandwich's `"CR1S"`; exposed for `lm` fits in
 #' [table_regression()], not here), so `"CR1"` does not
 #' reproduce Stata. Effect sizes remain invariant
 #' to `vcov` (including `CR*`); only the SE, CI, test statistic, and
-#' `df2` of the contrast change.
+#' degrees of freedom of the contrast change.
 #'
 #' Two resampling-based estimators are also available without adding
 #' any dependency: `vcov = "bootstrap"` (nonparametric resampling-cases
@@ -1533,8 +1546,11 @@ table_continuous_lm <- function(
   # See `.style_stamp()`: this table re-formats at print time, so the
   # argument-less style levers travel with it.
   result <- .style_stamp(result)
-  attr(result, "by_var") <- by_name
-  attr(result, "by_label") <- by_label
+  # The names of the family (decision 1 of the ADR of 2026-10-20): the
+  # five sibling tables carry the `by` column and its label as
+  # `group_var` / `group_label`.
+  attr(result, "group_var") <- by_name
+  attr(result, "group_label") <- by_label
   attr(result, "vcov_type") <- vcov
   # Cluster variable NAME (for the SE-estimator note); NA when the
   # cluster was supplied as a raw vector with no recoverable name.
@@ -1646,7 +1662,7 @@ table_continuous_lm <- function(
   attr(result, "note") <- table_note
 
   if (identical(output, "long")) {
-    return(result)
+    return(.continuous_lm_publish_long(result))
   }
 
   # The ordered columns of this table -- frozen key, displayed header,
@@ -1681,10 +1697,6 @@ table_continuous_lm <- function(
     ci_level = ci_level,
     spec = spec
   )
-  if (identical(output, "data.frame")) {
-    attr(wide_raw, "note") <- table_note
-    return(wide_raw)
-  }
 
   wide_df <- build_wide_display_df_continuous_lm(
     result,
@@ -1705,7 +1717,7 @@ table_continuous_lm <- function(
     spec = spec
   )
 
-  if (identical(output, "default")) {
+  if (output %in% c("default", "data.frame")) {
     # Typed view for `as_structured()`: `wide_raw` and `wide_df` are
     # the raw and displayed frames already built above, so the typed
     # body and the printed body come from one computation each.
@@ -1730,6 +1742,12 @@ table_continuous_lm <- function(
       "spicy_table",
       class(result)
     )
+    # `output = "data.frame"` is the displayed table with its numbers,
+    # `as.data.frame()` of the object the call would print (decision 5
+    # of the ADR of 2026-10-20).
+    if (identical(output, "data.frame")) {
+      return(as.data.frame(result))
+    }
     # Return VISIBLY and let standard auto-print dispatch to
     # print.spicy_continuous_lm_table(): a bare table_continuous_lm(...)
     # call still displays the table, while `t <- table_continuous_lm(...)`

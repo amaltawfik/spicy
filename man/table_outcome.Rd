@@ -131,12 +131,9 @@ at least 1.}
 
 \item{output}{One of \code{"default"}, \code{"data.frame"}, \code{"long"}, or a
 rendering engine: \code{"tinytable"}, \code{"gt"}, \code{"flextable"},
-\code{"excel"}, \code{"clipboard"}, \code{"word"}. \code{"data.frame"} and \code{"long"}
-are synonyms and return the same object: the compute frame is
-already long (one row per level, plus the block header and the
-overall row). Both names are kept so the argument reads the same
-here as in \code{\link[=table_continuous]{table_continuous()}}, where the pair is also
-synonymous.}
+\code{"excel"}, \code{"clipboard"}, \code{"word"}. \code{"data.frame"} is the displayed
+table with its numbers, \code{"long"} the compute frame with every
+statistic, as in \code{\link[=table_continuous]{table_continuous()}}; see \emph{Value}.}
 
 \item{indent_text, indent_text_excel_clipboard}{Level-row
 indentation, for the console and for the plain-text engines.}
@@ -152,12 +149,40 @@ destinations, as in \code{\link[=table_continuous]{table_continuous()}}.}
 \code{select} since spicy 0.13.0; supplying \code{by} is an error.}
 }
 \value{
-A \code{spicy_outcome_table}: the compute frame, with the display
-frame and the typed view attached. \code{output = "data.frame"} /
-\code{"long"} returns the compute frame unclassed -- the two tokens are
-synonyms and return identical objects. The three carry the whole
-note as printed, "Note." included, in \code{attr(x, "note")} (\code{NULL} when
-there is nothing to say).
+Depends on \code{output}:
+\itemize{
+\item \code{"default"}: a \code{spicy_outcome_table} (a \code{data.frame} subclass,
+with the parent class \code{"spicy_table"}), printed when the call is
+bare; its columns are the table's compute frame, and the display
+frame and the typed view are attached.
+\item \code{"data.frame"}: the displayed table with its numbers, what
+\link[=as.data.frame.spicy_outcome_table]{as.data.frame()} of the default
+object returns: one row per printed row, the key columns
+\code{variable} (the outcome on the \code{Overall} row, the grouping variable
+elsewhere), \code{label}, \code{level} and \code{.row_role} (\code{"summary"} for the
+\code{Overall} row, \code{"factor_header"}, \code{"level"}, or \code{"missing"}), then
+the printed columns under their names (\code{"M"}, \code{"SD"}, ..., \code{"n"},
+\code{"p"}), a cell that prints several numbers keeping the others
+beside it as in \code{\link[=table_continuous]{table_continuous()}}.
+\item \code{"long"}: the compute frame, one row per printed row with every
+statistic the table computes, whatever it displays: \code{variable},
+\code{label}, \code{level}, \code{.row_role}, \code{mean}, \code{sd}, \code{min}, \code{max},
+\code{ci_lower}, \code{ci_upper}, \code{median}, \code{q1}, \code{q3}, \code{iqr},
+\code{med_ci_lower}, \code{med_ci_upper}, \code{n}, \code{weighted_n}, the test of each
+block on its header row (\code{test_type}, \code{statistic}, \code{df},
+\code{df.residual}, \code{p.value}, and \code{p_unadjusted} under \code{p_adjust}) and
+its effect size (\code{es_type}, \code{es_value}, \code{es_ci_lower},
+\code{es_ci_upper}, \code{NA} when none was requested).
+\item \code{"tinytable"}, \code{"gt"}, \code{"flextable"}: the rendered table.
+\item \code{"excel"} / \code{"word"}: writes the file and returns its path
+invisibly.
+\item \code{"clipboard"}: copies the table and returns the display
+\code{data.frame} invisibly.
+}
+
+The default object and the two data frames carry the whole note as
+printed, "Note." included, in \code{attr(x, "note")} (\code{NULL} when there is
+nothing to say).
 }
 \description{
 Summarizes \emph{one} continuous outcome across the levels of \emph{several}

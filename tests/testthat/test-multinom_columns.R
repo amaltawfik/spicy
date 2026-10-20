@@ -18,7 +18,8 @@
 
 test_that("single multinom renders outcome categories as column groups", {
   fit <- .fit_multinom_soc()
-  df <- as.data.frame(table_regression(fit))
+  # The printed table: its columns are the displayed cells.
+  df <- table_regression(fit)
   # One B/SE/p column set per non-reference category, prefixed by the
   # category name.
   for (cat in c("Student", "Unemployed", "Inactive")) {
@@ -40,7 +41,7 @@ test_that("single multinom renders outcome categories as column groups", {
 
 test_that("columns-layout cells match the summary(fit) oracle", {
   fit <- .fit_multinom_soc()
-  df <- as.data.frame(table_regression(fit))
+  df <- structure(table_regression(fit), class = "data.frame")
   b <- summary(fit)$coefficients
   se <- summary(fit)$standard.errors
   z <- b / se
@@ -142,7 +143,10 @@ test_that("model_labels is refused for a single multinom", {
 test_that("per-category AME adds the reference group last, AME-only", {
   skip_if_not_installed("marginaleffects")
   fit <- .fit_multinom_soc()
-  df <- as.data.frame(table_regression(fit, show_columns = c("b", "ame")))
+  df <- structure(
+    table_regression(fit, show_columns = c("b", "ame")),
+    class = "data.frame"
+  )
   expect_true("Employed: AME" %in% names(df))
   # Reference group comes LAST and has empty coefficient cells.
   emp_cols <- grep("^Employed: ", names(df))
@@ -172,9 +176,9 @@ test_that("per-category AME adds the reference group last, AME-only", {
 test_that("multi-model and nested multinom keep the rows layout", {
   fit <- .fit_multinom_soc()
   fit0 <- .fit_multinom_soc(employment_status ~ age)
-  df_m <- as.data.frame(table_regression(list(fit0, fit)))
+  df_m <- table_regression(list(fit0, fit))
   expect_true(any(grepl("Student: ", df_m$Variable, fixed = TRUE)))
-  df_n <- as.data.frame(table_regression(list(fit0, fit), nested = TRUE))
+  df_n <- table_regression(list(fit0, fit), nested = TRUE)
   expect_true(any(grepl("Student: ", df_n$Variable, fixed = TRUE)))
 })
 
@@ -269,8 +273,7 @@ test_that("keep/drop and show_intercept govern display AND long payload", {
   # Anchored regex on the BARE term: pre-fix, the display kept the age
   # rows while tidy()/long returned 0 rows (two term namespaces).
   tr <- table_regression(fit, keep = "^age$")
-  df <- as.data.frame(tr)
-  expect_true("age" %in% df$Variable)
+  expect_true("age" %in% tr$Variable)
   long <- attr(tr, "spicy_long")
   expect_identical(sum(grepl(": age$", long$term)), 3L)
   lg <- table_regression(fit, output = "long", keep = "^age$")
@@ -324,7 +327,7 @@ test_that("matrix-response multinom renders (response_levels fallback)", {
   ))
   colnames(counts) <- c("a", "b", "c")
   fitm <- nnet::multinom(counts ~ x, trace = FALSE)
-  df <- as.data.frame(table_regression(fitm))
+  df <- structure(table_regression(fitm), class = "data.frame")
   # Pre-fix this rendered a silently EMPTY table (response_levels =
   # character(0) defeated the %||% fallback).
   expect_true(any(grepl("[0-9]", unlist(df[df$Variable == "x", -1L]))))
@@ -389,6 +392,21 @@ test_that("as_structured mirrors the columns layout: one column set per category
   b <- summary(fit)$coefficients
   expect_equal(
     s$body[["Student: B"]][s$body$Variable == "age"],
+    unname(b["Student", "age"]),
+    tolerance = 1e-10
+  )
+  # output = "data.frame" mirrors the same columns, with the same numbers
+  df <- table_regression(fit, output = "data.frame")
+  expect_identical(nrow(df), nrow(s$body))
+  for (cat in cats) {
+    for (col in c("B", "SE", "p")) {
+      nm <- paste0(cat, ": ", col)
+      expect_identical(df[[nm]], s$body[[nm]])
+    }
+  }
+  expect_false(any(grepl("^Employed: ", names(df))))
+  expect_equal(
+    df[["Student: B"]][df$variable == "age"],
     unname(b["Student", "age"]),
     tolerance = 1e-10
   )

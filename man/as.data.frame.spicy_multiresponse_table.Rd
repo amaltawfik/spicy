@@ -20,21 +20,22 @@ currently ignored.}
 tibble method) or ignored.}
 }
 \value{
-A plain \code{data.frame} (or \code{tbl_df}).
+A plain \code{data.frame} (or \code{tbl_df}), identical to the
+\code{output = "data.frame"} of the same call.
 }
 \description{
-These S3 methods strip the \code{"spicy_multiresponse_table"} /
-\code{"spicy_table"} classes and the rendering-only attributes from an
-object returned by \code{\link[=table_multiresponse]{table_multiresponse()}}, so the underlying wide data
-can be manipulated with downstream tools under the standard
-\code{data.frame} / \code{tbl_df} contract. The \code{"note"} and \code{"global_test"}
-attributes are kept. The original \code{x} is unaffected, and \code{print(x)}
-continues to render the formatted table.
-}
-\details{
-The returned data is identical to what \code{output = "data.frame"} returns
-directly from \code{\link[=table_multiresponse]{table_multiresponse()}}: one row per item, the rows of
-\code{none_row}, then the base, told apart by \code{.row_role}.
+\code{as.data.frame()} returns the table \code{\link[=table_multiresponse]{table_multiresponse()}} displays,
+with its numbers: exactly what \code{output = "data.frame"} returns. One row
+per printed row -- the items, the rows of \code{none_row}, then the base --
+with the key columns \code{variable} (the item's column, or the token of a
+row the table adds: \code{"none"}, \code{"no_data"}, \code{"nobs"} for the base),
+\code{label} (the label displayed) and \code{.row_role} (\code{"summary"} for an item,
+\code{"none"}, \code{"missing"}, or \code{"fit_stat"} for the base), then the printed
+columns under their names (\code{"<group> n"}, \code{"<group> \\\%"}, ...,
+\code{"Test"} with \code{df} beside it under \code{statistic = TRUE}, \code{"p"}). The
+\code{"note"} and \code{"global_test"} attributes are kept. \code{as_tibble()}
+returns the same table as a tibble. The original \code{x} is unaffected,
+and \code{print(x)} continues to render the formatted table.
 }
 \seealso{
 \code{\link[=tidy.spicy_multiresponse_table]{tidy.spicy_multiresponse_table()}},

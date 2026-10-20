@@ -27,14 +27,15 @@ object returned by \code{\link[=table_multiresponse]{table_multiresponse()}}.
 flagged, and the items only: the rows of \code{none_row} and the base row
 are left out. Columns: \code{variable} (the item's column), \code{label} (its
 displayed label), \code{group} (the \code{by} level or the margin, \code{NA} without
-\code{by}), \code{total} (whether the row is the margin), \code{n} (the respondents who
-chose the item), \code{base} (the respondents of the group's base),
-\code{proportion} (\code{n / base}, the share of respondents),
+\code{by}), \code{.group_role} (the role of \code{group}: \code{"group"} or \code{"total"}, \code{NA}
+without \code{by}), \code{total} (whether the row is the margin), \code{n} (the
+respondents who chose the item), \code{base} (the respondents of the group's
+base), \code{proportion_cases} (\code{n / base}, the share of respondents),
 \code{proportion_responses} (\code{n} over the choices made in the group), and
 the item's test: \code{test_type} (\code{"chi_squared"}, \code{"n1_chi_squared"},
 \code{"fisher_exact"}, \code{"fisher_midp"} or \code{"fisher_exact_mc"}), \code{statistic}
 (the chi-squared, Pearson's or the N-1, \code{NA} for an exact test), \code{df},
-\code{p.value} (adjusted under \code{p_adjust}) and \code{p.unadjusted}.
+\code{p.value} (adjusted under \code{p_adjust}) and \code{p_unadjusted}.
 
 \code{glance()} returns one row for the question. Columns: \code{n_items},
 \code{n_items_tested} (the items the global test kept), \code{n_groups} (the

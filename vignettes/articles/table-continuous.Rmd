@@ -143,8 +143,12 @@ Allowed values are `"none"` (default), `"auto"` (= legacy `TRUE`),
 explicit choices (e.g. `"eta_sq"` with two groups, or `"hedges_g"`
 with `test = "nonparametric"`) trigger an actionable error.
 
-When you need the underlying columns for further processing, use
-`output = "data.frame"`:
+When you need the numbers for further processing, use
+`output = "data.frame"` for the table as it is displayed, one row per
+printed row: the key columns `variable`, `label`, `group` and
+`.row_role`, then the printed columns. A cell that prints several
+numbers keeps the others beside it: the test statistic `Test` its
+degrees of freedom `df` and `df.residual`:
 
 ```{r raw-output}
 table_continuous(
@@ -156,6 +160,10 @@ table_continuous(
   output = "data.frame"
 )
 ```
+
+`output = "long"` gives every statistic the table computes, whatever it
+displays, one row per variable and group, in the vocabulary of `broom`
+(`statistic`, `df`, `df.residual`, `p.value`, `es_type`, `es_value`).
 
 ## Balance: the standardized mean difference
 
@@ -418,7 +426,7 @@ and `decimal_mark` are also shared with `table_categorical()`:
 - `show_n = FALSE` and `ci = FALSE` drop the corresponding columns
   (and the CI spanner / borders) structurally from every output;
   the underlying `n` and `ci_lower` / `ci_upper` are always present
-  in `output = "data.frame"` / `"long"` for downstream code.
+  in `output = "long"` for downstream code.
 
 ```{r display-opts}
 table_continuous(
@@ -434,9 +442,9 @@ table_continuous(
 ## Tidying for downstream pipelines
 
 `table_continuous()` returns an object that can be coerced to a plain
-`data.frame` / `tbl_df` (stripping the spicy formatting attributes)
-or piped into `broom::tidy()` / `broom::glance()` for any downstream
-tidyverse stats workflow:
+`data.frame` / `tbl_df` (the displayed table, as with
+`output = "data.frame"`) or piped into `broom::tidy()` /
+`broom::glance()` for any downstream tidyverse stats workflow:
 
 ```{r tidy-glance}
 out <- table_continuous(
@@ -446,16 +454,17 @@ out <- table_continuous(
 )
 
 # Long descriptive rows: one per (variable x group) with broom-style
-# columns (variable, label, group, estimate = mean, std.error,
-# conf.low / conf.high, n, min, max, sd).
+# columns (variable, label, group, .group_role, estimate = mean,
+# std.error, conf.low / conf.high, n, weighted_n, median, q1, q3, min,
+# max, sd).
 broom::tidy(out)
 
 # One row per variable with the omnibus test + effect-size summary
 # (test_type, statistic, df, df.residual, p.value, es_type, es_value,
-# es_ci_lower / es_ci_upper, n_total).
+# es_ci_lower / es_ci_upper, smd_type, smd_value, nobs).
 broom::glance(out)
 
-# Or just unbox to a plain data.frame (long-format underlying data)
+# Or the displayed table as a plain data.frame
 head(as.data.frame(out))
 ```
 
@@ -467,7 +476,8 @@ head(as.data.frame(out))
 | `output` value | Returned object |
 |:--|:--|
 | `"default"` | Styled ASCII console table |
-| `"data.frame"` / `"long"` | Plain `data.frame` with the underlying long-format rows (synonyms; pick whichever reads better in your code) |
+| `"data.frame"` | Plain `data.frame`: the displayed table, with its numbers |
+| `"long"` | Plain `data.frame`: every statistic, one row per variable and group |
 | `"tinytable"` | Formatted tinytable |
 | `"gt"` | Formatted gt table |
 | `"flextable"` | Formatted flextable |

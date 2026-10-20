@@ -13,7 +13,7 @@ b_rows <- function(fr) fr$coefs[fr$coefs$estimate_type == "B", , drop = FALSE]
 
 test_that("PPO clm is tabulated with a Non-proportional effects block", {
   fit <- ppo_fit()
-  df <- table_regression(fit, output = "data.frame")
+  df <- table_regression(fit)
   v <- trimws(df$Variable)
   expect_true(any(grepl("^Non-proportional effects", v))) # block header
   expect_true(any(grepl("contactyes @", v))) # per-cut rows
@@ -64,7 +64,7 @@ test_that("exponentiate: non-proportional cells become OR; thresholds stay log",
   np0 <- fr0$coefs[fr0$coefs$parent_var == "Non-proportional effects", ]
   expect_equal(np$estimate, exp(np0$estimate), tolerance = 1e-9) # OR
   # rendered table: thresholds stay on the log-odds scale (negative allowed)
-  df <- table_regression(fit, exponentiate = TRUE, output = "data.frame")
+  df <- table_regression(fit, exponentiate = TRUE)
   thr <- df[trimws(df$Variable) == "1 | 2", ]
   est_col <- setdiff(names(df), "Variable")[1]
   expect_lt(as.numeric(trimws(thr[[est_col]])), 0) # not exp()d
@@ -123,7 +123,7 @@ test_that("the Non-proportional effects block sorts below every predictor", {
   # Thresholds, exactly as in the single-model layout.
   data(wine, package = "ordinal", envir = environment())
   f2 <- ordinal::clm(rating ~ temp + judge, data = wine)
-  v <- trimws(table_regression(list(fit, f2), output = "data.frame")$Variable)
+  v <- trimws(table_regression(list(fit, f2))$Variable)
   np_head <- which(v == "Non-proportional effects:")
   judge_rows <- which(startsWith(v, "judge"))
   thr_head <- which(v == "Thresholds:")

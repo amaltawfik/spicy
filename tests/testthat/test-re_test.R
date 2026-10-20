@@ -146,12 +146,7 @@ test_that("the footer discloses the per-term test", {
 
 test_that("stars never land on variance-component rows", {
   fit <- .rt_lmer_slope()
-  df <- table_regression(
-    fit,
-    re_test = "lrt",
-    stars = TRUE,
-    output = "data.frame"
-  )
+  df <- table_regression(fit, re_test = "lrt", stars = TRUE)
   b_col <- names(df)[2]
   re_rows <- grepl("Subject", df$Variable, fixed = TRUE)
   expect_false(any(grepl("[*]", df[[b_col]][re_rows])))

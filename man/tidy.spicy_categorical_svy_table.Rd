@@ -24,16 +24,23 @@ object returned by \code{\link[=table_categorical_svy]{table_categorical_svy()}}
 }
 \details{
 \code{tidy()} returns one row per (variable x level x column block), which
-is the LONG reading of a table whose blocks are columns. Columns:
-\code{variable}, \code{label}, \code{level}, \code{group} (the \code{by} level, or the margin,
-\code{NA} without \code{by}), \code{total} (whether that block is the margin),
-\code{n} (observed), \code{estimate} (the estimated percentage), \code{conf.low},
-\code{conf.high}, \code{deff}. The header rows carry no level statistic and do
-not appear; their p-value is what \code{glance()} is for.
+is the LONG reading of a table whose blocks are columns, in the order
+of the table (variable, then level, then block). Columns: \code{variable},
+\code{label}, \code{level}, \code{.row_role} (the role of \code{level}: \code{"missing"} on the
+row of missing values the table adds, \code{"level"} otherwise), \code{group}
+(the \code{by} level, or the margin, \code{NA} without \code{by}), \code{.group_role} (the
+role of \code{group}: \code{"group"}, \code{"missing"} for the column of missing \code{by}
+values, \code{"total"} for the margin, \code{NA} without \code{by}), \code{total} (whether
+that block is the margin),
+\code{n} (observed), \code{proportion} (the estimated proportion, between 0 and
+1), \code{conf.low}, \code{conf.high} (its interval, on the same scale), \code{deff}.
+The header rows carry no level statistic and do not appear; their
+p-value is what \code{glance()} is for.
 
 \code{glance()} returns one row per variable: \code{variable}, \code{label},
-\code{n_levels}, \code{p.value}, \code{statistic_type} (the \code{svychisq()} statistic
-asked for), \code{degf} (the design's own), \code{nobs}, \code{weighted.nobs}.
+\code{n_levels}, \code{test_type} (the \code{svychisq()} statistic of the test,
+\code{chisq_statistic}; \code{NA} where no test ran), \code{p.value}, \code{degf} (the
+design's own), \code{nobs}, \code{weighted_nobs}.
 
 \code{n_levels} counts the levels the TABLE displays, so a \code{(Missing)}
 display level counts; the test behind \code{p.value} runs on the complete

@@ -94,7 +94,7 @@ summarizes the options:
 | Format | Description |
 |---|---|
 | `"default"` | Styled ASCII table in the console (default) |
-| `"data.frame"` | Wide data frame, one row per level |
+| `"data.frame"` | The displayed table, with its numbers |
 | `"long"` | Long data frame, one row per level x group |
 | `"gt"` | Formatted gt table |
 | `"tinytable"` | Formatted tinytable |
@@ -108,13 +108,14 @@ demonstrated in the final section, together with the file exports.
 
 ### Data frame output
 
-Use `output = "data.frame"` for a wide data frame with one row per
-level: two character identifier columns (`Variable`, `Level`),
-numeric columns carrying the counts and full-precision percentages,
-and the test (`test_type`), the chi-squared statistic, `df`, *p*-value,
-and association measure repeated on every row of a variable's block. Use
-`output = "long"` for a long format with one row per level x group,
-the `Total` margin included as a group:
+Use `output = "data.frame"` for the table as it is displayed, with its
+numbers: one row per printed row, the key columns `variable` (the column
+name), `label`, `level` and `.row_role` (`"factor_header"` for the row
+of a variable, which carries its *p*-value and association measure,
+`"level"`, or `"missing"` for the row of missing values), then the
+counts, the full-precision percentages, `p` and the measure under the
+names the table prints. `as.data.frame()` on the printed table returns
+the same frame:
 
 ```{r data-frame}
 table_categorical(
@@ -123,6 +124,20 @@ table_categorical(
   by = education,
   output = "data.frame"
 )
+```
+
+Use `output = "long"` for one row per level and group, the `Total`
+margin included and flagged by `total`, with the test of each variable
+(`test_type`, `statistic`, `df`, `p.value`) and its association measure
+(`es_type`, `es_value`) on every row of its block:
+
+```{r long}
+head(table_categorical(
+  sochealth,
+  select = smoking,
+  by = education,
+  output = "long"
+), 4)
 ```
 
 ## Custom labels
@@ -220,10 +235,10 @@ pairs. Since the two measures differ, the header collapses to
 Add confidence intervals with `assoc_ci = TRUE`. In the rendered
 formats (`gt`, `tinytable`, `flextable`, `word`) the CI is shown
 inline after the measure, e.g. `.14 [.08, .19]` (demonstrated in the
-final section). In the default console table and in the wide data
-formats (`"data.frame"`, `"excel"`, `"clipboard"`), separate
+final section). In the default console table and in the
+`"data.frame"`, `"excel"` and `"clipboard"` outputs, separate
 `CI lower` and `CI upper` columns are added; in the long format
-(`"long"`) the bounds appear as `ci_lower` / `ci_upper`:
+(`"long"`) the bounds fill `es_ci_lower` / `es_ci_upper`:
 
 ```{r ci-data}
 table_categorical(
@@ -258,7 +273,7 @@ table_categorical(
 exact test of a table larger than 2x2 is the Freeman-Halton extension.
 When its exact enumeration fails on a large sparse table, the *p*-value
 is its Monte Carlo estimate over `simulate_B` tables, and the note says
-so; set a seed to reproduce it. The data frames give the test of each
+so; set a seed to reproduce it. The long output gives the test of each
 variable in `test_type`.
 
 A 2x2 table, a two-level variable by two groups, has two more tests.
@@ -283,7 +298,8 @@ table_categorical(
 
 The test and the association measure are two separate choices:
 `p_value = FALSE` removes the test (the `p` column, and `test_type`,
-`Chi2` and `df` from the data frames), and `assoc_measure = "none"`
+`statistic`, `df` and `p.value` from the long output), and
+`assoc_measure = "none"`
 removes the measure. Together they give a purely descriptive table,
 with the same group columns and headers:
 
@@ -467,9 +483,9 @@ table_categorical(
 ## Tidying for downstream pipelines
 
 `table_categorical()` returns an object that can be coerced to a
-plain `data.frame` / `tbl_df` (stripping the spicy formatting
-attributes) or piped into `broom::tidy()` / `broom::glance()` for
-any downstream tidyverse-stats workflow:
+plain `data.frame` / `tbl_df` (the displayed table, as with
+`output = "data.frame"`) or piped into `broom::tidy()` /
+`broom::glance()` for any downstream tidyverse-stats workflow:
 
 ```{r tidy-glance}
 out <- table_categorical(
@@ -479,15 +495,16 @@ out <- table_categorical(
 )
 
 # One row per (variable x level x group) with broom-style columns
-# (variable, label, level, group, n, proportion): the column name and
-# the label displayed. The synthetic Total margin is excluded so each
-# observation is counted once.
+# (variable, label, level, .row_role, group, .group_role, total, n,
+# proportion): the column name and the label displayed. The Total
+# margin is flagged by `total`; filter it out with `!total` to count
+# each observation once.
 broom::tidy(out)
 
 # One row per variable, in the order of `select`, with its test
 # (chi-squared or Fisher) and the chosen association measure
-# (test_type, statistic, df, p.value, assoc_type, assoc_value,
-# assoc_ci_lower / assoc_ci_upper, n_total).
+# (test_type, statistic, df, p.value, es_type, es_value,
+# es_ci_lower / es_ci_upper, smd_type, smd_value, nobs).
 broom::glance(out)
 ```
 

@@ -244,6 +244,12 @@
   table_multiresponse(.mr_farmer(), A:E, by = ed, ...)
 }
 
+# The test of each item, read from the long output: one row per item
+# (the long frame repeats the test columns on each group of the item).
+.mr_items <- function(long) {
+  long[long$.row_role == "summary" & !duplicated(long$variable), ]
+}
+
 # MRCV 0.4-0, pinned (see the header).
 .mrcv_x2_items <- c(
   5.95958465074,
@@ -277,12 +283,12 @@
 test_that("the item chi-squares reproduce Agresti & Liu (1999) and MRCV", {
   # `test = "chisq"`: the published values are the Pearson statistics of
   # every item, three of which take Fisher's exact test under "auto".
-  out <- .mr_farm_tbl(test = "chisq", output = "data.frame")
-  items <- out[seq_len(5L), ]
+  items <- .mr_items(.mr_farm_tbl(test = "chisq", output = "long"))
+  expect_identical(items$variable, LETTERS[1:5])
   # A&L 1999, p. 941.
-  expect_identical(round(items$Chi2, 2), c(5.96, 7.89, 4.62, 1.42, 10.95))
-  expect_identical(round(sum(items$Chi2), 2), 30.84)
-  expect_equal(items$Chi2, .mrcv_x2_items, tolerance = 1e-3)
+  expect_identical(round(items$statistic, 2), c(5.96, 7.89, 4.62, 1.42, 10.95))
+  expect_identical(round(sum(items$statistic), 2), 30.84)
+  expect_equal(items$statistic, .mrcv_x2_items, tolerance = 1e-3)
   expect_identical(items$df, rep(4, 5L))
   # The arithmetic of chisq.test(correct = FALSE), item by item.
   farm <- .mr_farmer()
@@ -291,7 +297,11 @@ test_that("the item chi-squares reproduce Agresti & Liu (1999) and MRCV", {
       table(farm$ed, farm[[LETTERS[[j]]]]),
       correct = FALSE
     ))
-    expect_equal(items$Chi2[[j]], unname(ref$statistic), tolerance = 1e-12)
+    expect_equal(
+      items$statistic[[j]],
+      unname(ref$statistic),
+      tolerance = 1e-12
+    )
   }
 })
 
@@ -331,13 +341,20 @@ test_that("the Rao-Scott global test matches MRCV", {
 })
 
 test_that("Holm is the default adjustment, and the raw p-values stay", {
-  out <- .mr_farm_tbl(test = "chisq", output = "data.frame")
-  items <- out[seq_len(5L), ]
-  raw <- stats::pchisq(items$Chi2, 4, lower.tail = FALSE)
+  out <- .mr_farm_tbl(test = "chisq", output = "long")
+  items <- .mr_items(out)
+  raw <- stats::pchisq(items$statistic, 4, lower.tail = FALSE)
   expect_equal(items$p_unadjusted, raw)
-  expect_equal(items$p, stats::p.adjust(raw, "holm"))
+  expect_equal(items$p.value, stats::p.adjust(raw, "holm"))
   # The smallest Holm p is the Bonferroni global p.
-  expect_equal(min(items$p), .mrcv_bonferroni_items[[5L]], tolerance = 1e-3)
+  expect_equal(
+    min(items$p.value),
+    .mrcv_bonferroni_items[[5L]],
+    tolerance = 1e-3
+  )
+  # The data frame shows the adjusted p of each item, on its row.
+  df <- .mr_farm_tbl(test = "chisq", output = "data.frame")
+  expect_equal(df$p[df$.row_role == "summary"], items$p.value)
   # The family's sentence, after the item test: method and number of tests.
   expect_match(
     attr(out, "note"),
@@ -361,11 +378,12 @@ test_that("Holm is the default adjustment, and the raw p-values stay", {
 })
 
 test_that("p_adjust = \"none\" leaves the item p-values raw and says so", {
-  out <- .mr_farm_tbl(test = "chisq", p_adjust = "none", output = "data.frame")
+  out <- .mr_farm_tbl(test = "chisq", p_adjust = "none", output = "long")
   expect_false("p_unadjusted" %in% names(out))
+  items <- .mr_items(out)
   expect_equal(
-    out$p[seq_len(5L)],
-    stats::pchisq(out$Chi2[seq_len(5L)], 4, lower.tail = FALSE)
+    items$p.value,
+    stats::pchisq(items$statistic, 4, lower.tail = FALSE)
   )
   expect_match(
     attr(out, "note"),
@@ -521,8 +539,8 @@ test_that("the Rao-Scott test draws nothing from the session's RNG", {
 
 test_that("test = \"auto\" takes Fisher's exact test where an expected count is below 5", {
   farm <- .mr_farmer()
-  out <- .mr_farm_tbl(output = "data.frame")
-  items <- out[seq_len(5L), ]
+  out <- .mr_farm_tbl(output = "long")
+  items <- .mr_items(out)
   expect_identical(items$test_type, .mr_farm_types_auto)
   for (j in seq_len(5L)) {
     tab <- table(farm$ed, farm[[LETTERS[[j]]]])
@@ -536,11 +554,11 @@ test_that("test = \"auto\" takes Fisher's exact test where an expected count is 
     }
     expect_equal(items$p_unadjusted[[j]], ref, tolerance = 1e-12)
     # A Fisher item has no statistic and no degrees of freedom.
-    expect_identical(is.na(items$Chi2[[j]]), fisher)
+    expect_identical(is.na(items$statistic[[j]]), fisher)
     expect_identical(is.na(items$df[[j]]), fisher)
   }
   # Holm runs on the p-values the tests produced.
-  expect_equal(items$p, stats::p.adjust(items$p_unadjusted, "holm"))
+  expect_equal(items$p.value, stats::p.adjust(items$p_unadjusted, "holm"))
   expect_match(
     attr(out, "note"),
     paste(
@@ -549,10 +567,10 @@ test_that("test = \"auto\" takes Fisher's exact test where an expected count is 
     ),
     fixed = TRUE
   )
-  long <- .mr_farm_tbl(output = "long")
+  # The long frame names the test on each group of the item.
   expect_identical(
-    long$test_type[!duplicated(long$variable)],
-    .mr_farm_types_auto
+    out$test_type,
+    rep(.mr_farm_types_auto, each = 6L)
   )
   s <- as_structured(.mr_farm_tbl())
   expect_identical(s$col_meta$p$test_type, c(.mr_farm_types_auto, NA))
@@ -560,11 +578,14 @@ test_that("test = \"auto\" takes Fisher's exact test where an expected count is 
 
 test_that("test = \"chisq\" and \"fisher\" take one test for every item", {
   farm <- .mr_farmer()
-  chisq <- .mr_farm_tbl(test = "chisq", output = "data.frame")
-  fisher <- .mr_farm_tbl(test = "fisher", output = "data.frame")
-  expect_identical(chisq$test_type[1:5], rep("chi_squared", 5L))
-  expect_identical(fisher$test_type[1:5], rep("fisher_exact", 5L))
-  expect_true(all(is.na(fisher$Chi2)) && all(is.na(fisher$df)))
+  chisq <- .mr_items(.mr_farm_tbl(test = "chisq", output = "long"))
+  fisher_long <- .mr_farm_tbl(test = "fisher", output = "long")
+  fisher <- .mr_items(fisher_long)
+  expect_identical(chisq$test_type, rep("chi_squared", 5L))
+  expect_identical(fisher$test_type, rep("fisher_exact", 5L))
+  expect_true(
+    all(is.na(fisher_long$statistic)) && all(is.na(fisher_long$df))
+  )
   for (j in seq_len(5L)) {
     tab <- table(farm$ed, farm[[LETTERS[[j]]]])
     expect_equal(
@@ -578,9 +599,9 @@ test_that("test = \"chisq\" and \"fisher\" take one test for every item", {
       tolerance = 1e-6
     )
   }
-  expect_equal(fisher$p[1:5], stats::p.adjust(fisher$p_unadjusted[1:5], "holm"))
+  expect_equal(fisher$p.value, stats::p.adjust(fisher$p_unadjusted, "holm"))
   expect_match(
-    attr(fisher, "note"),
+    attr(fisher_long, "note"),
     "Item p-values: Fisher exact test of each item by group.",
     fixed = TRUE
   )
@@ -654,12 +675,13 @@ test_that("an item table the exact enumeration cannot handle takes the Monte Car
     c(x, y),
     by = g,
     test = "fisher",
-    output = "data.frame"
+    output = "long"
   )
-  expect_identical(out$test_type[1:2], c("fisher_exact_mc", "fisher_exact"))
+  items <- .mr_items(out)
+  expect_identical(items$test_type, c("fisher_exact_mc", "fisher_exact"))
   set.seed(7)
   expect_identical(
-    out$p_unadjusted[[1L]],
+    items$p_unadjusted[[1L]],
     stats::fisher.test(tab, simulate.p.value = TRUE, B = 2000)$p.value
   )
   expect_match(
@@ -767,31 +789,33 @@ test_that("a label with a comma turns its item list in the note to semicolons", 
 
 test_that("test = \"midp\" and \"n1\" test the items of a two-group table", {
   farm <- .mr_farm2()
-  midp <- table_multiresponse(
+  midp_long <- table_multiresponse(
     farm,
     A:E,
     by = ed2,
     test = "midp",
-    output = "data.frame"
+    output = "long"
   )
-  n1 <- table_multiresponse(
+  n1_long <- table_multiresponse(
     farm,
     A:E,
     by = ed2,
     test = "n1",
-    output = "data.frame"
+    output = "long"
   )
-  expect_identical(midp$test_type[1:5], rep("fisher_midp", 5L))
-  expect_identical(n1$test_type[1:5], rep("n1_chi_squared", 5L))
-  expect_true(all(is.na(midp$Chi2[1:5])) && all(is.na(midp$df[1:5])))
-  expect_identical(n1$df[1:5], rep(1, 5L))
+  midp <- .mr_items(midp_long)
+  n1 <- .mr_items(n1_long)
+  expect_identical(midp$test_type, rep("fisher_midp", 5L))
+  expect_identical(n1$test_type, rep("n1_chi_squared", 5L))
+  expect_true(all(is.na(midp$statistic)) && all(is.na(midp$df)))
+  expect_identical(n1$df, rep(1, 5L))
   for (j in seq_len(5L)) {
     tab <- table(farm$ed2, farm[[LETTERS[[j]]]])
     # The N-1 chi-squared: Pearson's statistic times (N - 1) / N.
     x2 <- unname(stats::chisq.test(tab, correct = FALSE)$statistic) *
       261 /
       262
-    expect_equal(n1$Chi2[[j]], x2, tolerance = 1e-12)
+    expect_equal(n1$statistic[[j]], x2, tolerance = 1e-12)
     expect_equal(
       n1$p_unadjusted[[j]],
       stats::pchisq(x2, 1, lower.tail = FALSE),
@@ -801,25 +825,25 @@ test_that("test = \"midp\" and \"n1\" test the items of a two-group table", {
   # The mid-p of an item is the one table_categorical() gives its table.
   tc <- table_categorical(farm, A:E, by = ed2, test = "midp", output = "long")
   expect_equal(
-    midp$p_unadjusted[1:5],
-    tc$p[!duplicated(tc$variable)],
+    midp$p_unadjusted,
+    tc$p.value[!duplicated(tc$variable)],
     tolerance = 1e-12
   )
-  expect_equal(midp$p[1:5], stats::p.adjust(midp$p_unadjusted[1:5], "holm"))
+  expect_equal(midp$p.value, stats::p.adjust(midp$p_unadjusted, "holm"))
   # The global test keeps the Pearson statistics: Rao-Scott unchanged.
   ref <- attr(
     table_multiresponse(farm, A:E, by = ed2, test = "chisq"),
     "global_test"
   )
-  expect_identical(attr(midp, "global_test"), ref)
-  expect_identical(attr(n1, "global_test"), ref)
+  expect_identical(attr(midp_long, "global_test"), ref)
+  expect_identical(attr(n1_long, "global_test"), ref)
   expect_match(
-    attr(midp, "note"),
+    attr(midp_long, "note"),
     "Item p-values: Fisher mid-p test of each item by group.",
     fixed = TRUE
   )
   expect_match(
-    attr(n1, "note"),
+    attr(n1_long, "note"),
     "Item p-values: N\u22121 chi-squared test of each item by group.",
     fixed = TRUE
   )
@@ -857,11 +881,12 @@ test_that("Campbell's rule sends an item with an expected count below 1 to Fishe
     c(x, y),
     by = g,
     test = "n1",
-    output = "data.frame"
+    output = "long"
   )
-  expect_identical(out$test_type[1:2], c("fisher_exact", "n1_chi_squared"))
+  items <- .mr_items(out)
+  expect_identical(items$test_type, c("fisher_exact", "n1_chi_squared"))
   expect_equal(
-    out$p_unadjusted[[1L]],
+    items$p_unadjusted[[1L]],
     stats::fisher.test(table(d$g, d$x))$p.value,
     tolerance = 1e-12
   )
@@ -873,11 +898,12 @@ test_that("Campbell's rule sends an item with an expected count below 1 to Fishe
 })
 
 test_that("midp and n1 follow auto for the items of a table with more groups", {
-  auto <- .mr_farm_tbl(output = "data.frame")
+  auto <- .mr_farm_tbl(output = "long")
+  expect_identical(.mr_items(auto)$test_type, .mr_farm_types_auto)
   for (tt in c("midp", "n1")) {
-    out <- .mr_farm_tbl(test = tt, output = "data.frame")
+    out <- .mr_farm_tbl(test = tt, output = "long")
     expect_identical(out$test_type, auto$test_type, info = tt)
-    expect_identical(out$p, auto$p, info = tt)
+    expect_identical(out$p.value, auto$p.value, info = tt)
   }
 })
 
@@ -925,7 +951,7 @@ test_that("logical and 0/1 columns are read as they are", {
   out <- table_multiresponse(d, c(a, b, c), output = "data.frame")
   # Row 2 chose no item: the row of `none_row`, before the base.
   expect_identical(out$n, c(2, 2, 1, 1, 4))
-  expect_named(out, c("Variable", ".row_role", "n", "%"))
+  expect_named(out, c("variable", "label", ".row_role", "n", "%"))
 })
 
 test_that("other columns need `counted`, which applies to every column", {
@@ -1008,7 +1034,7 @@ test_that("a labelled column takes a code or a value label, and its declared mis
   # alone, the respondent whose only answer is the 9 skipped the question
   # and leaves the base.
   long <- table_multiresponse(d, y1, by = g, counted = "Oui", output = "long")
-  expect_identical(long$base[long$.row_role == "summary"], c(2, 2, 4))
+  expect_identical(long$base[long$.row_role == "summary"], c(2L, 2L, 4L))
 })
 
 # ---- base, percentages, order ---------------------------------------------------
@@ -1023,10 +1049,10 @@ test_that("base = \"valid\" leaves out the respondent who skipped the question",
     base = "all",
     output = "long"
   )
-  expect_identical(valid$base[1:3], c(3, 3, 6))
-  expect_identical(all$base[1:3], c(3, 4, 7))
-  expect_equal(valid$pct, 100 * valid$n / valid$base)
-  expect_equal(all$pct, 100 * all$n / all$base)
+  expect_identical(valid$base[1:3], c(3L, 3L, 6L))
+  expect_identical(all$base[1:3], c(3L, 4L, 7L))
+  expect_equal(valid$pct_cases, 100 * valid$n / valid$base)
+  expect_equal(all$pct_cases, 100 * all$n / all$base)
   # Row 6 has no data for the question, row 2 chose neither item: the
   # rows of `none_row` show them, and the note counts only the one the
   # base leaves out.
@@ -1074,11 +1100,11 @@ test_that("base = \"answered\" keeps the respondents who chose an item", {
   # The counts do not move; the bases do.
   expect_identical(answered$n, valid$n)
   expect_identical(all$n, valid$n)
-  expect_identical(valid$n, c(1, 2, 3, 0, 1, 1))
-  expect_identical(valid$base[1:3], c(2, 3, 5))
-  expect_identical(answered$base[1:3], c(1, 2, 3))
-  expect_identical(all$base[1:3], c(3, 3, 6))
-  expect_equal(answered$pct, 100 * answered$n / answered$base)
+  expect_identical(valid$n, c(1L, 2L, 3L, 0L, 1L, 1L))
+  expect_identical(valid$base[1:3], c(2L, 3L, 5L))
+  expect_identical(answered$base[1:3], c(1L, 2L, 3L))
+  expect_identical(all$base[1:3], c(3L, 3L, 6L))
+  expect_equal(answered$pct_cases, 100 * answered$n / answered$base)
   expect_match(
     attr(answered, "note"),
     "Base: respondents with at least one item chosen (excluded: 1 with no data for the question and 2 with no item chosen).",
@@ -1447,7 +1473,8 @@ test_that("percentages of cases, of responses, or both", {
   expect_named(
     both,
     c(
-      "Variable",
+      "variable",
+      "label",
       ".row_role",
       "a n",
       "a % of cases",
@@ -1458,10 +1485,27 @@ test_that("percentages of cases, of responses, or both", {
       "Total n",
       "Total % of cases",
       "Total % of responses",
+      "p"
+    )
+  )
+  # The tests of the items are columns of the long frame.
+  expect_named(
+    table_multiresponse(d, sel, by = g, percent = "both", output = "long"),
+    c(
+      "variable",
+      "label",
+      ".row_role",
+      "group",
+      ".group_role",
+      "total",
+      "n",
+      "base",
+      "pct_cases",
+      "pct_responses",
       "test_type",
-      "Chi2",
+      "statistic",
       "df",
-      "p",
+      "p.value",
       "p_unadjusted"
     )
   )
@@ -1504,10 +1548,10 @@ test_that("sort = \"-\" and \"+\" order the items by total count", {
     sort = "+",
     output = "data.frame"
   )
-  expect_identical(q$Variable, c("a", "b", "c", "e", "Respondents"))
-  expect_identical(s$Variable, c("b", "c", "e", "a", "Respondents"))
+  expect_identical(q$label, c("a", "b", "c", "e", "Respondents"))
+  expect_identical(s$label, c("b", "c", "e", "a", "Respondents"))
   expect_identical(s$n, c(3, 2, 2, 1, 4))
-  expect_identical(up$Variable, c("a", "c", "e", "b", "Respondents"))
+  expect_identical(up$label, c("a", "c", "e", "b", "Respondents"))
   expect_identical(up$n, c(1, 2, 2, 3, 4))
   # With `by`, the total count decides, not the first group.
   g <- data.frame(
@@ -1523,7 +1567,7 @@ test_that("sort = \"-\" and \"+\" order the items by total count", {
     p_value = FALSE,
     output = "data.frame"
   )
-  expect_identical(by_grp$Variable, c("y", "x", "Respondents"))
+  expect_identical(by_grp$label, c("y", "x", "Respondents"))
 })
 
 test_that("items tied on their count keep the order of select", {
@@ -1541,7 +1585,7 @@ test_that("items tied on their count keep the order of select", {
       c(e, c, b, a),
       sort = sort,
       output = "data.frame"
-    )$Variable
+    )$label
   }
   expect_identical(rows_of("-"), c("b", "e", "c", "a", "Respondents"))
   expect_identical(rows_of("+"), c("a", "e", "c", "b", "Respondents"))
@@ -1550,7 +1594,7 @@ test_that("items tied on their count keep the order of select", {
 test_that("sort = \"\" keeps the order in which select delivers the columns", {
   d <- data.frame(q_a = c(1, 0, 1), q_b = c(1, 1, 1), q_c = c(0, 0, 1))
   rows_of <- function(...) {
-    table_multiresponse(d, ..., output = "data.frame")$Variable
+    table_multiresponse(d, ..., output = "data.frame")$label
   }
   # Row 2 chose neither q_c nor q_a: its row follows the items.
   q_ca <- c("q_c", "q_a", "(No item chosen)", "Respondents")
@@ -1571,7 +1615,7 @@ test_that("sort = \"name+\" and \"name-\" order the labels shown, in the C local
       c(work, health, standard),
       ...,
       output = "data.frame"
-    )$Variable
+    )$label
   }
   expect_identical(
     rows_of(sort = "name+"),
@@ -1617,7 +1661,7 @@ test_that("an item nobody chose keeps its row, at zero", {
   d <- .mr_toy()
   out <- table_multiresponse(d, c(x1, x3), by = g, output = "data.frame")
   expect_identical(
-    out$Variable,
+    out$label,
     c("x1", "x3", "(No item chosen)", "Respondents")
   )
   expect_identical(
@@ -1709,9 +1753,10 @@ test_that("rows with a missing `by` are removed, and the note says how many", {
 test_that("each base shows its rows: valid one, all two, answered none", {
   valid <- .mr_none_tbl()
   expect_identical(
-    valid$Variable,
+    valid$label,
     c("x1", "x2", "(No item chosen)", "Respondents")
   )
+  expect_identical(valid$variable, c("x1", "x2", "none", "nobs"))
   expect_identical(valid$.row_role, c("summary", "summary", "none", "fit_stat"))
   expect_identical(.mr_cells(valid, 3L, c("a n", "b n", "Total n")), c(1, 1, 2))
   # The percentage of cases is on the base of its column, as for an item.
@@ -1721,7 +1766,7 @@ test_that("each base shows its rows: valid one, all two, answered none", {
   )
   all <- .mr_none_tbl(base = "all")
   expect_identical(
-    all$Variable,
+    all$label,
     c(
       "x1",
       "x2",
@@ -1915,7 +1960,7 @@ test_that("sort never moves the rows of none_row", {
     )
   }
   expect_identical(
-    .mr_none_tbl(sort = "+")$Variable,
+    .mr_none_tbl(sort = "+")$label,
     c("x2", "x1", "(No item chosen)", "Respondents")
   )
 })
@@ -1923,7 +1968,7 @@ test_that("sort never moves the rows of none_row", {
 test_that("the rows of none_row are translated", {
   withr::local_options(spicy.language = "fr")
   expect_identical(
-    .mr_none_tbl(base = "all")$Variable[3:5],
+    .mr_none_tbl(base = "all")$label[3:5],
     c(
       "(Aucun item coché)",
       "(Sans donnée pour la question)",
@@ -1939,9 +1984,16 @@ test_that("data.frame, long and the typed view mark the rows of none_row by role
     long$.row_role,
     rep(c("summary", "summary", "none", "missing"), each = 3L)
   )
-  expect_identical(long$base[long$.row_role == "none"], c(3, 3, 6))
-  expect_equal(long$pct[long$.row_role == "missing"], 100 * c(1 / 3, 0, 1 / 6))
-  expect_true(all(is.na(long$p[long$.row_role != "summary"])))
+  expect_identical(long$base[long$.row_role == "none"], c(3L, 3L, 6L))
+  expect_equal(
+    long$pct_cases[long$.row_role == "missing"],
+    100 * c(1 / 3, 0, 1 / 6)
+  )
+  expect_identical(
+    unique(long$p.value[long$.row_role != "summary"]),
+    NA_real_
+  )
+  expect_false(anyNA(long$p.value[long$.row_role == "summary"]))
   tbl <- .mr_none_tbl(base = "all", output = "default")
   expect_identical(as.data.frame(tbl), wide)
   s <- as_structured(tbl)
@@ -2091,7 +2143,7 @@ test_that("both ways out of the refusal work", {
     labels = c(x1 = "Chose none (item)", x2 = "Respondent count")
   )
   expect_identical(
-    ok$Variable,
+    ok$label,
     c(
       "Chose none (item)",
       "Respondent count",
@@ -2157,16 +2209,16 @@ test_that("only a displayed row collides, and the French labels do", {
   # `base = "valid"` there is no row of respondents without data, under
   # `"answered"` no row at all, and `none_row = FALSE` shows neither.
   expect_identical(
-    .mr_none_tbl(labels = c(x2 = "(No data for the question)"))$Variable,
+    .mr_none_tbl(labels = c(x2 = "(No data for the question)"))$label,
     c("x1", "(No data for the question)", "(No item chosen)", "Respondents")
   )
   none <- c(x1 = "(No item chosen)")
   expect_identical(
-    .mr_none_tbl(base = "answered", labels = none)$Variable,
+    .mr_none_tbl(base = "answered", labels = none)$label,
     c("(No item chosen)", "x2", "Respondents")
   )
   expect_identical(
-    .mr_none_tbl(none_row = FALSE, labels = none)$Variable,
+    .mr_none_tbl(none_row = FALSE, labels = none)$label,
     c("(No item chosen)", "x2", "Respondents")
   )
   withr::local_options(spicy.language = "fr")
@@ -2186,7 +2238,7 @@ test_that("only a displayed row collides, and the French labels do", {
     labels = c(x1 = "(No item chosen)", x2 = "Respondents")
   )
   expect_identical(
-    en$Variable,
+    en$label,
     c(
       "(No item chosen)",
       "Respondents",
@@ -2237,17 +2289,29 @@ test_that("p_value defaults to the tests with `by` and to none without", {
 test_that("p_value = FALSE: the data frames are the default minus the test", {
   ref <- .mr_farm_tbl(output = "data.frame")
   out <- .mr_farm_tbl(p_value = FALSE, output = "data.frame")
-  expect_identical(
-    names(out),
-    setdiff(names(ref), c("test_type", "Chi2", "df", "p", "p_unadjusted"))
-  )
+  expect_identical(names(out), setdiff(names(ref), "p"))
   expect_identical(unclass(out)[names(out)], unclass(ref)[names(out)])
   expect_null(attr(out, "global_test"))
   ref_l <- .mr_farm_tbl(output = "long")
   out_l <- .mr_farm_tbl(p_value = FALSE, output = "long")
   expect_identical(
     names(out_l),
-    c("variable", "label", ".row_role", "group", "n", "base", "pct")
+    c(
+      "variable",
+      "label",
+      ".row_role",
+      "group",
+      ".group_role",
+      "total",
+      "n",
+      "base",
+      "pct_cases"
+    )
+  )
+  # The test columns go, and nothing else.
+  expect_identical(
+    setdiff(names(ref_l), names(out_l)),
+    c("test_type", "statistic", "df", "p.value", "p_unadjusted")
   )
   expect_identical(out_l$n, ref_l$n)
   expect_null(attr(out_l, "global_test"))
@@ -2381,8 +2445,12 @@ test_that("statistic = TRUE adds the item chi-squared column", {
     ignore.case = TRUE
   ))
   df <- .mr_farm_tbl(statistic = TRUE, p_value = FALSE, output = "data.frame")
-  expect_true(all(c("Chi2", "df") %in% names(df)))
-  expect_false(any(c("p", "p_unadjusted") %in% names(df)))
+  # The statistic of the cell, its degrees of freedom beside it.
+  expect_identical(utils::tail(names(df), 2L), c("Test", "df"))
+  expect_false("p" %in% names(df))
+  expect_equal(df$Test[1:5], .mrcv_x2_items, tolerance = 1e-6)
+  expect_identical(df$df[1:5], rep(4, 5L))
+  expect_true(is.na(df$Test[[6L]]) && is.na(df$df[[6L]]))
   long <- .mr_farm_tbl(statistic = TRUE, p_value = FALSE, output = "long")
   expect_identical(
     names(long),
@@ -2391,11 +2459,13 @@ test_that("statistic = TRUE adds the item chi-squared column", {
       "label",
       ".row_role",
       "group",
+      ".group_role",
+      "total",
       "n",
       "base",
-      "pct",
+      "pct_cases",
       "test_type",
-      "chi2",
+      "statistic",
       "df"
     )
   )
@@ -2549,23 +2619,25 @@ test_that("tidy() reads one row per item and group, the margin flagged", {
       "variable",
       "label",
       "group",
+      ".group_role",
       "total",
       "n",
       "base",
-      "proportion",
+      "proportion_cases",
       "proportion_responses",
       "test_type",
       "statistic",
       "df",
       "p.value",
-      "p.unadjusted"
+      "p_unadjusted"
     )
   )
   expect_identical(nrow(td), 30L)
   expect_identical(td$variable[1:6], rep("A", 6L))
   expect_identical(td$total, rep(c(rep(FALSE, 5L), TRUE), 5L))
+  expect_identical(td$.group_role, ifelse(td$total, "total", "group"))
   expect_identical(td$n[[1L]], 19L)
-  expect_equal(td$proportion[[1L]], 19 / 88)
+  expect_equal(td$proportion_cases[[1L]], 19 / 88)
   # The HS group made 173 choices in all (19 + 38 + 29 + 47 + 40).
   expect_equal(td$proportion_responses[[1L]], 19 / 173)
   expect_equal(td$statistic[[1L]], .mrcv_x2_items[[1L]], tolerance = 1e-6)

@@ -213,33 +213,55 @@ unclass_spicy_continuous_table <- function(x) {
   x
 }
 
+# The displayed table as a data frame (decision 5 of the ADR of
+# 2026-10-20): `as.data.frame()` and `output = "data.frame"` both call
+# it, on the object the table prints. One body row per compute-frame row.
+.continuous_data_frame <- function(x) {
+  st <- as_structured(x)
+  has_group <- "group" %in% names(x)
+  .table_data_frame(
+    st,
+    stats::setNames(x$label, x$variable),
+    key = if (has_group) "group",
+    row_role = has_group,
+    parts = .continuous_df_parts(
+      st,
+      x,
+      es_ci = isTRUE(attr(x, "show_effect_size_ci", exact = TRUE))
+    ),
+    note = attr(x, "note", exact = TRUE)
+  )
+}
+
 #' Coerce a `spicy_continuous_table` to a plain data frame or tibble
 #'
-#' These S3 methods strip the `"spicy_continuous_table"` /
-#' `"spicy_table"` classes and the rendering-only attributes
-#' (`digits`, `decimal_mark`, `ci_level`, `align`, `p_digits`, ...)
-#' from an object returned by [table_continuous()] so the underlying
-#' long-format data can be manipulated with downstream tools (`dplyr`,
-#' `tidyr`, etc.) under the standard `data.frame` / `tbl_df` contract.
-#' The attribute `"group_var"` is preserved as a lightweight provenance
-#' marker, and `"note"`, the note as printed; all other spicy attributes
-#' are dropped. The original `x` is unaffected, and `print(x)` continues
-#' to render the formatted ASCII table.
+#' `as.data.frame()` returns the table [table_continuous()] displays,
+#' with its numbers: exactly what `output = "data.frame"` returns. One
+#' row per printed row, the key columns `variable` (the column name),
+#' `label` (the label displayed for it) and, with `by`, `group` and
+#' `.row_role` (`"group"`, or `"missing"` for the group of missing `by`
+#' values), then the printed columns under their names (`"M"`, `"SD"`,
+#' `"95\% CI LL"`, ..., `"n"`, `"p"`). A cell that prints several
+#' numbers keeps the first in its column and the others beside it under
+#' their names in the long output: `df` and `df.residual` after the test
+#' statistic `"Test"`, `es_ci_lower` and `es_ci_upper` after the effect
+#' size `"ES"` when its interval is printed, `q1` and `q3` after
+#' `"Med [Q1, Q3]"`. The note, as printed, is kept in `attr(, "note")`.
+#' `as_tibble()` returns the same table as a tibble.
 #'
-#' The returned data is identical to what `output = "long"` (or
-#' `output = "data.frame"`) returns directly from [table_continuous()];
-#' use whichever entry point reads better in your pipeline.
+#' For every statistic the table computes, whatever it displays, use
+#' `output = "long"` or [tidy.spicy_continuous_table()]. The original
+#' `x` is unaffected, and `print(x)` continues to render the formatted
+#' ASCII table.
 #'
 #' @param x A `spicy_continuous_table` returned by [table_continuous()].
 #' @param row.names,optional Standard [base::as.data.frame()] arguments.
-#'   Currently ignored: the long format already carries integer row
-#'   names and explicit columns.
+#'   Currently ignored.
 #' @param ... Further arguments passed to [tibble::as_tibble()] (for
 #'   the tibble method) or ignored (for the `as.data.frame()` method).
 #'
-#' @return A plain `data.frame` (or `tbl_df`) with one row per
-#'   `(variable x group)` (or one row per `variable` when `by` is not
-#'   used).
+#' @return A plain `data.frame` (or `tbl_df`), identical to the
+#'   `output = "data.frame"` of the same call.
 #'
 #' @seealso [tidy.spicy_continuous_table()],
 #'   [glance.spicy_continuous_table()] for cleaner broom-style pivots
@@ -257,7 +279,7 @@ as.data.frame.spicy_continuous_table <- function(
   optional = FALSE,
   ...
 ) {
-  unclass_spicy_continuous_table(x)
+  .continuous_data_frame(x)
 }
 
 #' @rdname as.data.frame.spicy_continuous_table
@@ -266,7 +288,7 @@ as_tibble.spicy_continuous_table <- function(x, ...) {
   if (!requireNamespace("tibble", quietly = TRUE)) {
     spicy_abort("Install package 'tibble'.", class = "spicy_missing_pkg")
   }
-  tibble::as_tibble(unclass_spicy_continuous_table(x), ...)
+  tibble::as_tibble(.continuous_data_frame(x), ...)
 }
 
 # ---- broom integration ----------------------------------------------------
@@ -282,27 +304,28 @@ as_tibble.spicy_continuous_table <- function(x, ...) {
 #' `tidy()` returns one row per `(variable x group)` (or per
 #' `variable` when `by` is not used) with broom-conventional columns:
 #' `variable` (the column name), `label` (the label the rows display
-#' for it, see `labels`), `group` (when applicable), `estimate` (the
-#' empirical mean), `std.error` (`sd / sqrt(n)`), `conf.low`,
-#' `conf.high` (the mean confidence interval at `ci_level`), `n`,
-#' `min`, `max`, `sd`.
+#' for it, see `labels`), `group` (`NA` without `by`), `.group_role`
+#' (the role of `group`: `"group"`, or `"missing"` for the group of
+#' missing `by` values; `NA` without `by`), `estimate` (the empirical
+#' mean), `std.error`
+#' (`sd / sqrt(n)`), `conf.low`, `conf.high` (the mean confidence
+#' interval at `ci_level`), `n`, `weighted_n` (the sum of the weights,
+#' `NA` without `weights`), `median`, `q1`, `q3`, `min`, `max`, `sd`:
+#' the columns of [tidy.spicy_continuous_svy_table()], the design ones
+#' (`df`, `deff`) aside.
 #'
 #' `glance()` returns one row per variable with the omnibus group
 #' comparison (when `by` is used), the requested effect size and the
 #' balance diagnostic. Columns: `variable`, `label`, `test_type`,
 #' `statistic`, `df`, `df.residual`, `p.value`, `es_type`, `es_value`,
-#' `es_ci_lower`, `es_ci_upper`, `smd_type`, `smd_value`, `n_total`.
-#' Without `by`, only `variable`, `label`, and `n_total` are populated;
+#' `es_ci_lower`, `es_ci_upper`, `smd_type`, `smd_value`, `nobs`.
+#' Without `by`, only `variable`, `label`, and `nobs` are populated;
 #' the other columns are `NA`. The schema is fixed: `smd_type` /
 #' `smd_value` are present whether or not `smd = TRUE`, like every
 #' other comparison column here, and are `NA` when the table carries
-#' no standardized mean difference. They sit before `n_total`, so
-#' index this frame by NAME rather than by position.
-#'
-#' `glance.spicy_categorical_table()` does **not** carry the SMD: each
-#' family documents its own broom contract, and the categorical one
-#' publishes the association measure alone. On a mixed balance table,
-#' read the categorical SMD from `output = "long"`.
+#' no standardized mean difference, as in
+#' [glance.spicy_categorical_table()]. Index this frame by NAME rather
+#' than by position.
 #'
 #' @param x A `spicy_continuous_table` returned by [table_continuous()].
 #' @param ... Currently ignored. Present for compatibility with the
@@ -318,10 +341,23 @@ as_tibble.spicy_continuous_table <- function(x, ...) {
 #' @keywords internal
 NULL
 
+# The role of `group` in the tidy() of the continuous family: the typed
+# view's role of each row ("group", or "missing" for the group of missing
+# `by` values -- the key, never the translated label), which holds one
+# body row per row of the compute frame; `NA` without `by`.
+.continuous_group_role <- function(x, has_group, n_rows) {
+  if (!has_group) {
+    return(rep(NA_character_, n_rows))
+  }
+  attr(x, "structured", exact = TRUE)$body[[".row_role"]] %||%
+    rep("group", n_rows)
+}
+
 #' @rdname tidy.spicy_continuous_table
 #' @exportS3Method broom::tidy
 tidy.spicy_continuous_table <- function(x, ...) {
   long <- unclass_spicy_continuous_table(x)
+  n_rows <- nrow(long)
   has_group <- "group" %in% names(long)
 
   std_error <- ifelse(
@@ -329,33 +365,30 @@ tidy.spicy_continuous_table <- function(x, ...) {
     long$sd / sqrt(long$n),
     NA_real_
   )
-
-  base_cols <- list(
+  # The columns of the survey twin's tidy() (O7 / O8 of the coherence
+  # audit): `group` whether or not `by` is used, its role, and the
+  # quartiles the table computes whatever it displays.
+  result <- data.frame(
     variable = long$variable,
-    label = long$label
+    label = long$label,
+    group = if (has_group) long$group else rep(NA_character_, n_rows),
+    .group_role = .continuous_group_role(x, has_group, n_rows),
+    estimate = long$mean,
+    std.error = std_error,
+    conf.low = long$ci_lower,
+    conf.high = long$ci_upper,
+    n = as.integer(long$n),
+    weighted_n = long[["weighted_n"]] %||% rep(NA_real_, n_rows),
+    median = long$median,
+    q1 = long$q1,
+    q3 = long$q3,
+    min = long$min,
+    max = long$max,
+    sd = long$sd,
+    stringsAsFactors = FALSE,
+    check.names = FALSE
   )
-  if (has_group) {
-    base_cols$group <- long$group
-  }
-  base_cols$estimate <- long$mean
-  base_cols$std.error <- std_error
-  base_cols$conf.low <- long$ci_lower
-  base_cols$conf.high <- long$ci_upper
-  base_cols$n <- as.integer(long$n)
-  base_cols$min <- long$min
-  base_cols$max <- long$max
-  base_cols$sd <- long$sd
-
-  result <- do.call(
-    data.frame,
-    c(base_cols, list(stringsAsFactors = FALSE, check.names = FALSE))
-  )
-  rownames(result) <- NULL
-
-  if (requireNamespace("tibble", quietly = TRUE)) {
-    return(tibble::as_tibble(result))
-  }
-  result
+  .as_broom_tbl(result)
 }
 
 #' @rdname tidy.spicy_continuous_table
@@ -372,20 +405,20 @@ glance.spicy_continuous_table <- function(x, ...) {
   has_smd <- "smd_value" %in% names(long)
 
   if (has_group) {
-    # Sum n across groups for n_total; pick the test / ES from the
+    # Sum n across groups for nobs; pick the test / ES from the
     # first row of each variable block (where they were stored).
     by_var <- split(long, long$variable, drop = FALSE)
-    n_total <- vapply(
+    nobs <- vapply(
       by_var,
       function(b) as.integer(sum(b$n, na.rm = TRUE)),
       integer(1)
     )
     first_idx <- !duplicated(long$variable)
     per_outcome <- long[first_idx, , drop = FALSE]
-    per_outcome$n_total <- n_total[per_outcome$variable]
+    per_outcome$nobs <- nobs[per_outcome$variable]
   } else {
     per_outcome <- long
-    per_outcome$n_total <- as.integer(per_outcome$n)
+    per_outcome$nobs <- as.integer(per_outcome$n)
   }
 
   result <- data.frame(
@@ -415,14 +448,9 @@ glance.spicy_continuous_table <- function(x, ...) {
     # conditional pair here would break that for its own sake.
     smd_type = if (has_smd) per_outcome$smd_type else NA_character_,
     smd_value = if (has_smd) per_outcome$smd_value else NA_real_,
-    n_total = per_outcome$n_total,
+    nobs = per_outcome$nobs,
     stringsAsFactors = FALSE,
     check.names = FALSE
   )
-  rownames(result) <- NULL
-
-  if (requireNamespace("tibble", quietly = TRUE)) {
-    return(tibble::as_tibble(result))
-  }
-  result
+  .as_broom_tbl(result)
 }

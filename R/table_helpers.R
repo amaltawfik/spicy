@@ -1021,3 +1021,171 @@ make_stronger_indent <- function(x, base_indent, strong_indent, rows) {
   }
   df
 }
+
+
+# ---- The machine outputs of the family -------------------------------------
+
+# Decision 1 of the ADR of 2026-10-20 (dev/decisions/2026-10-20-family-
+# coherence.md): `output = "long"`, tidy() and glance() speak one
+# vocabulary -- broom's name wherever broom defines one, one snake_case
+# name per concept otherwise. The compute frames keep their internal
+# names, which the print methods, the typed views and `inline()` read;
+# each family renames at its boundary, column by column, through this
+# helper. `?spicy` ("broom output shape") lists the vocabulary and
+# `test-family-parity.R` holds every published frame to it.
+.rename_cols <- function(df, map) {
+  nm <- names(df)
+  hit <- nm %in% names(map)
+  nm[hit] <- unname(map[nm[hit]])
+  names(df) <- nm
+  df
+}
+
+# Insert `cols` (a named list of equal-length vectors) into `df` right
+# after the column `after` (at the end when `after` is absent), keeping
+# the attributes of `df`.
+.insert_cols_after <- function(df, cols, after) {
+  if (length(cols) == 0L) {
+    return(df)
+  }
+  kept <- attributes(df)
+  nm <- names(df)
+  pos <- match(after, nm)
+  if (is.na(pos)) {
+    pos <- length(nm)
+  }
+  for (k in names(cols)) {
+    df[[k]] <- cols[[k]]
+  }
+  df <- df[c(nm[seq_len(pos)], names(cols), nm[-seq_len(pos)])]
+  for (a in setdiff(names(kept), c("names", "row.names"))) {
+    attr(df, a) <- kept[[a]]
+  }
+  df
+}
+
+# The `output = "data.frame"` frame of every table of the family
+# (decision 5 of the same ADR): the DISPLAYED table, one row per printed
+# row, the printed columns under their frozen keys with a number wherever
+# a cell holds one, and the key columns in front -- `variable` (the
+# column of `select` the row describes, or the token of a row the table
+# generates), `label` (the label the table displays for that column, or
+# the text of a generated row), the level or the group of the row, and
+# `.row_role` where the table generates rows.
+#
+# Built from the typed view every table attaches (`as_structured()`), so
+# the data frame, the console and the rendered engines read one body, and
+# `as.data.frame(x)` is this same function on the same view -- which is
+# what makes it identical to `output = "data.frame"`.
+#
+#   st        the structured view
+#   labels    the displayed label of each variable, named by its key
+#   key       "level" or "group": the name the `.level` identity column
+#             takes in the frame; NULL when the rows carry none
+#   row_role  keep `.row_role`
+#   parts     the cells that combine several numbers: a named list, one
+#             entry per such column of the body, each a named list of
+#             numeric vectors (one value per row) inserted right after it
+#   drop      columns of the body the frame leaves out
+#   note      the note, as printed
+.table_data_frame <- function(
+  st,
+  labels,
+  key = "level",
+  row_role = TRUE,
+  parts = list(),
+  drop = character(0),
+  note = NULL
+) {
+  body <- st$body
+  role <- body[[".row_role"]]
+  variable <- body[[".variable"]]
+  label <- unname(labels[variable])
+  # A row the table generates names no column of `select` -- the base
+  # of a multiple-response table, a fit statistic, the outcome row of a
+  # multi-outcome regression: its label is the text it displays. The
+  # role decides, not a failed lookup, so an item named like a fit
+  # statistic keeps its own label.
+  generated <- role %in% c("fit_stat", "none", "outcome") | is.na(label)
+  label[generated] <- trimws(body[[.REG_KEY_VARIABLE]][generated])
+  out <- data.frame(
+    variable = variable,
+    label = label,
+    stringsAsFactors = FALSE,
+    check.names = FALSE
+  )
+  if (!is.null(key)) {
+    out[[key]] <- body[[".level"]]
+  }
+  if (isTRUE(row_role)) {
+    out[[".row_role"]] <- role
+  }
+  for (nm in setdiff(.struct_value_cols(body), drop)) {
+    out[[nm]] <- body[[nm]]
+    for (p in names(parts[[nm]])) {
+      out[[p]] <- parts[[nm]][[p]]
+    }
+  }
+  rownames(out) <- NULL
+  attr(out, "note") <- note
+  out
+}
+
+# The parts of the composite cells of the continuous family (decision 5):
+# a cell that prints several numbers keeps the first in its own column
+# and the others in the columns named after them in the long output. The
+# test statistic ("t(1184.50) = -2.38") carries its degrees of freedom,
+# the effect size its interval when the table prints one, and the
+# "Med [Q1, Q3]" cell its two quartiles.
+#
+# `frame` is the compute frame, one row per body row, read with its
+# INTERNAL names (`df1`, `df2`); `es_ci` says whether the effect-size cell
+# prints its interval.
+.continuous_df_parts <- function(st, frame, es_ci = FALSE) {
+  cols <- .struct_value_cols(st$body)
+  pick <- function(field) {
+    v <- frame[[field]]
+    if (is.null(v)) rep(NA_real_, nrow(st$body)) else as.numeric(v)
+  }
+  # A part sits on the rows that print its cell, and is NA where the cell
+  # is blank -- the continuation rows of a group block, a level row of an
+  # outcome table.
+  on_cell <- function(col, v) {
+    v[is.na(st$body[[col]])] <- NA_real_
+    v
+  }
+  parts <- list()
+  for (nm in cols) {
+    tok <- st$col_meta[[nm]]$token
+    if (identical(nm, .CON_KEY_TEST)) {
+      parts[[nm]] <- list(
+        df = on_cell(nm, pick("df1")),
+        df.residual = on_cell(nm, pick("df2"))
+      )
+    } else if (identical(nm, .CON_KEY_ES)) {
+      if (isTRUE(es_ci)) {
+        parts[[nm]] <- list(
+          es_ci_lower = on_cell(nm, pick("es_ci_lower")),
+          es_ci_upper = on_cell(nm, pick("es_ci_upper"))
+        )
+      }
+    } else if (identical(tok, "med_iqr")) {
+      parts[[nm]] <- list(
+        q1 = on_cell(nm, pick("q1")),
+        q3 = on_cell(nm, pick("q3"))
+      )
+    }
+  }
+  parts
+}
+
+# A tidy() / glance() result: a tibble without row names (tibble is in
+# Imports, so the plain-data.frame fallback only guards a dependency that
+# would move to Suggests).
+.as_broom_tbl <- function(df) {
+  rownames(df) <- NULL
+  if (requireNamespace("tibble", quietly = TRUE)) {
+    return(tibble::as_tibble(df))
+  }
+  df # nocov
+}

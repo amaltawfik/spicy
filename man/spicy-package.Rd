@@ -87,15 +87,57 @@ The \code{broom::tidy()} and \code{broom::glance()} methods of every table class
 \code{spicy_categorical_table}, \code{spicy_categorical_svy_table},
 \code{spicy_continuous_table}, \code{spicy_continuous_svy_table},
 \code{spicy_continuous_lm_table}, \code{spicy_outcome_table},
-\code{spicy_multiresponse_table}, and \code{spicy_regression_table}, follow
-the standard broom column conventions (\code{outcome}, \code{term},
-\code{estimate}, \code{std.error}, \code{conf.low}, \code{conf.high}, \code{statistic},
-\code{p.value}, \code{df}, \code{df.residual}, \code{r.squared}, \code{adj.r.squared},
-\code{nobs}, ...). In the descriptive tables, \code{variable} holds the name
-of the column a row describes and \code{label} its displayed label.
-\code{outcome} names the response of a regression model and the single
-outcome of \code{\link[=table_outcome]{table_outcome()}}. The set of columns produced by each
-method is considered \strong{stabilizing}: existing columns will not be
+\code{spicy_multiresponse_table}, and \code{spicy_regression_table}, and the
+\code{output = "long"} frame of every table function, speak one
+vocabulary: broom's name wherever broom defines one, and one
+snake_case name per concept otherwise, the same in every function.\tabular{ll}{
+   Concept \tab Column \cr
+   the variable a row describes, its displayed label \tab \code{variable}, \code{label} \cr
+   the level of a categorical variable, the group of \code{by} \tab \code{level}, \code{group} \cr
+   the role of the row's \code{level} (or item): a level, the row of missing values, ... \tab \code{.row_role} (\code{"level"}, \code{"missing"}, \code{"summary"}, ...) \cr
+   the role of \code{group}: a group, the column of missing \code{by} values, the margin \tab \code{.group_role} (\code{"group"}, \code{"missing"}, \code{"total"}) \cr
+   the \code{Total} margin of the groups \tab \code{total} (logical) \cr
+   a count, a percentage, a proportion between 0 and 1 \tab \code{n}, \code{pct}, \code{proportion}, named by their base where a table has two (\code{pct_cases}, \code{pct_responses}, \code{proportion_cases}, \code{proportion_responses}) \cr
+   the estimate of a row, its standard error and interval \tab \code{estimate}, \code{std.error}, \code{conf.low}, \code{conf.high} \cr
+   the test: its name and statistic \tab \code{test_type}, \code{statistic} \cr
+   the degrees of freedom, which follow the statistic \tab \code{df} for a \emph{t} or a chi-squared (\code{Inf} for a \emph{z}); \code{df} and \code{df.residual} for an \emph{F}, the Rao-Scott \emph{F} and the \emph{F} of a linear model included \cr
+   the p-value, and the raw one under \code{p_adjust} \tab \code{p.value}, \code{p_unadjusted} \cr
+   the effect size: its measure, value and interval \tab \code{es_type}, \code{es_value}, \code{es_ci_lower}, \code{es_ci_upper} \cr
+   the standardized mean difference \tab \code{smd_type}, \code{smd_value} \cr
+   the observations of a variable or of a model, and their weighted count \tab \code{nobs}, \code{weighted_nobs} \cr
+   the weighted count of a group (beside its \code{n}) \tab \code{weighted_n} \cr
+   the counts of the groups of \code{by}, of the categories of a variable \tab \code{n_groups}, \code{n_levels} \cr
+   the fit of a model \tab \code{r.squared}, \code{adj.r.squared} \cr
+}
+
+
+\code{variable} holds the name of the column a row describes and \code{label}
+its displayed label. \code{outcome} names the response of a regression
+model and the single outcome of \code{\link[=table_outcome]{table_outcome()}}. The proportions of
+\code{tidy()} are between 0 and 1, and the \code{Total} rows stay, flagged by
+\code{total}. Each role column describes the key column it follows,
+whatever the orientation of the printed table: \code{.row_role} the row's
+\code{level}, \code{.group_role} its \code{group}. A level or a group added for
+missing values is told apart by its role, \code{"missing"}, never by its
+label, which follows the display language. In a table that compares
+groups, the long output carries the effect-size and SMD columns
+whether or not they were requested (\code{NA} then), and \code{glance()} has a
+fixed set of columns; \code{p_value = FALSE} removes the test columns.
+Model-level statistics (\code{nobs}, \code{r.squared}, ...) are in \code{glance()},
+and in the long output only for \code{\link[=table_regression_uv]{table_regression_uv()}}, whose rows
+are separate models. The printed objects carry the \code{by} column and its
+label in the attributes \code{group_var} and \code{group_label}.
+
+\code{output = "data.frame"} and \code{as.data.frame()} return the table as it
+is displayed, one row per printed row, with numbers: the key columns
+\code{variable}, \code{label} (and the \code{level} or \code{group} of the row, and
+\code{.row_role}, the role of the printed row, where the table adds rows),
+then the printed columns under their names. The two are identical for
+every class. \code{output = "excel"} and \code{"word"} return the path of the
+file, invisibly.
+
+The set of columns produced by each method is considered
+\strong{stabilizing}: existing columns will not be
 silently renamed or have their semantics changed within \verb{0.y.z},
 and any breaking change is announced in \code{NEWS.md}. Adding optional new
 columns (e.g. covariate-adjustment metadata) is not a breaking

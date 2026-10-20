@@ -978,8 +978,10 @@ see [*Mixed-effects regression tables*](table-regression-mixed.html).
 ## Output formats
 
 The default print method draws an ASCII table to the console.
-The same content is available as a plain `data.frame`
-(`output = "data.frame"`), a long broom-style data.frame
+The same content is available as a plain `data.frame` with its
+numbers (`output = "data.frame"`: one row per printed row, the
+interval in two bounds, the key columns `variable`, `label`, `level`
+and `.row_role` in front), a long broom-style data.frame
 (`output = "long"`), or as a rich-format table for `gt`,
 `tinytable`, `flextable`, `excel`, `word`, or `clipboard`:
 

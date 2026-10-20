@@ -171,12 +171,8 @@ test_that("compute_one_pair_mixed returns the all-NA contract when anova fails",
 
 test_that("beta is appended LAST when standardized != none and no b column", {
   m <- lm(mpg ~ wt + hp, data = mtcars)
-  df <- table_regression(
-    m,
-    standardized = "refit",
-    show_columns = "p",
-    output = "data.frame"
-  )
+  # The printed table: its columns are the displayed cells.
+  df <- table_regression(m, standardized = "refit", show_columns = "p")
   # "beta" was appended AFTER the user's tokens (no "b" anchor), so the
   # beta column renders last.
   expect_identical(names(df), c("Variable", "p", "\u03B2"))

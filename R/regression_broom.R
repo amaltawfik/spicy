@@ -9,10 +9,9 @@
 #   glance() -- one row per (model_id, outcome) with model-level
 #              statistics. Numeric `df.residual` (Satterthwaite-safe).
 #
-#   as.data.frame() / as_tibble() -- wide raw output (= the same content
-#              as `output = "data.frame"`). Drops spicy classes and
-#              rendering attrs; keeps title / note as plain attributes
-#              for users who want them.
+#   as.data.frame() / as_tibble() -- the displayed table with its
+#              numbers (= `output = "data.frame"`), read off the typed
+#              view; the note is its one attribute.
 #
 # Conventions:
 #   * snake_case spicy tokens (`r2`, `adj_r2`, `p_value`, `ci_low`,
@@ -145,16 +144,27 @@ glance.spicy_regression_table <- function(x, ...) {
 
 #' Convert a `spicy_regression_table` to a plain data.frame / tibble
 #'
-#' Strips the `spicy_regression_table` / `spicy_table` classes and
-#' the internal analytic attributes (`spicy_long`, `spicy_fit_stats`),
-#' returning the wide character display as a plain `data.frame` (or
-#' `tbl_df` via `as_tibble()`). The `title`, `note`, provenance
-#' (`model_ids`, `outcome`), and rendering (`col_spec`) attributes are
-#' preserved.
+#' `as.data.frame()` returns the table [table_regression()] displays,
+#' with its numbers: exactly what `output = "data.frame"` returns. One
+#' row per printed row -- the coefficients, the header and the levels of
+#' each factor, the reference levels, the fit statistics -- with the key
+#' columns `variable` (the variable of the row: the term of a
+#' coefficient, the factor of a level, the token of a fit statistic such
+#' as `"nobs"` or `"r2"`), `label` (the label displayed for that
+#' variable, or the text of a fit-statistic row), `level` (the level of a
+#' factor row) and `.row_role` (`"coef"`, `"factor_header"`, `"level"`,
+#' `"reference"`, `"fit_stat"`, ..., the roles of [as_structured()]),
+#' then the printed columns under their names, numeric: the interval of
+#' a coefficient is split into its two bounds (`"95\% CI: LL"`,
+#' `"95\% CI: UL"`), a fit statistic sits in the first column of its
+#' model, and a cell of events over a total (`n_events`) keeps the
+#' events in its column and the total beside it (`"<column>: N"`). With
+#' several models each column name starts with the model's label. The
+#' note, as printed, is kept in `attr(, "note")`. `as_tibble()` returns
+#' the same table as a tibble.
 #'
-#' `as.data.frame()` is equivalent to passing `output = "data.frame"`
-#' to [table_regression()]: the two paths return identical objects
-#' (same cells, classes, and attributes).
+#' For one row per coefficient with the broom names, use
+#' `output = "long"` or [tidy.spicy_regression_table()].
 #'
 #' @param x A `spicy_regression_table` returned by
 #'   [table_regression()].
@@ -163,7 +173,8 @@ glance.spicy_regression_table <- function(x, ...) {
 #' @param ... Currently ignored.
 #'
 #' @return A plain `data.frame` (for `as.data.frame()`) or a
-#'   `tbl_df` (for `as_tibble()`).
+#'   `tbl_df` (for `as_tibble()`), identical to the
+#'   `output = "data.frame"` of the same call.
 #'
 #' @seealso [tidy.spicy_regression_table()],
 #'   [glance.spicy_regression_table()] for broom-canonical long
@@ -181,7 +192,7 @@ as.data.frame.spicy_regression_table <- function(
   optional = FALSE,
   ...
 ) {
-  unclass_spicy_regression_table(x)
+  .regression_data_frame(x)
 }
 
 #' @rdname as.data.frame.spicy_regression_table
@@ -189,23 +200,82 @@ as.data.frame.spicy_regression_table <- function(
 as_tibble.spicy_regression_table <- function(x, ...) {
   # tibble is a hard dependency (Imports), so no availability guard
   # is needed here -- `tibble::as_tibble()` resolves at install time.
-  tibble::as_tibble(unclass_spicy_regression_table(x), ...)
+  tibble::as_tibble(.regression_data_frame(x), ...)
 }
 
 
 # ---- Helpers -------------------------------------------------------------
 
-unclass_spicy_regression_table <- function(x) {
-  out <- as.data.frame.data.frame(x) # avoid recursion
-  attr(out, "title") <- attr(x, "title")
-  attr(out, "note") <- attr(x, "note")
-  attr(out, "spicy_long") <- NULL
-  attr(out, "spicy_fit_stats") <- NULL
-  # `col_spec` (and the other rendering attributes) are kept so the
-  # result is identical to `output = "data.frame"`, which carries them
-  # too -- the documented equivalence between the two paths.
-  class(out) <- "data.frame"
-  out
+# The displayed table as a data frame (decision 5 of the ADR of
+# 2026-10-20), read off the typed view the engines render: numbers where
+# the console prints strings, the interval already in two bounds, the
+# rendering attributes left behind (`col_spec`, `structured`, ...: the
+# data frames of the family carry the note alone).
+#
+# The label of a row's variable is the one the table displays: the
+# `labels` entry of the term (or of the factor), or the block name of a
+# subordinate block (thresholds, random effects), or the term itself.
+.regression_data_frame <- function(x) {
+  st <- as_structured(x)
+  body <- st$body
+  term_labels <- attr(x, "var_labels", exact = TRUE)
+  vars <- unique(body[[".variable"]][!is.na(body[[".variable"]])])
+  labels <- vapply(
+    vars,
+    function(v) {
+      if (!is.null(term_labels) && v %in% names(term_labels)) {
+        term_labels[[v]]
+      } else {
+        .reg_block_label(v)
+      }
+    },
+    character(1),
+    USE.NAMES = FALSE
+  )
+  names(labels) <- vars
+  .table_data_frame(
+    st,
+    labels,
+    key = "level",
+    parts = .regression_df_parts(st, attr(x, "spicy_long", exact = TRUE)),
+    note = attr(x, "note", exact = TRUE)
+  )
+}
+
+# The cells of the typed view that print two numbers: the `n_events`
+# column holds the events and displays "events/N". Its total travels
+# beside it as `"<column>: N"`, the sub-column grammar of the intervals
+# ("95% CI: LL"). Read off the long frame -- the model of the column, the
+# term (or the factor and its level) of the row -- never parsed back from
+# the displayed string.
+.regression_df_parts <- function(st, long) {
+  body <- st$body
+  parts <- list()
+  if (is.null(long) || nrow(long) == 0L) {
+    return(parts)
+  }
+  for (nm in .struct_value_cols(body)) {
+    meta <- st$col_meta[[nm]]
+    if (!identical(meta$token, "n_events")) {
+      next
+    }
+    total <- rep(NA_real_, nrow(body))
+    sub <- long[long$model_id == meta$model_id, , drop = FALSE]
+    for (i in which(!is.na(body[[nm]]))) {
+      v <- body[[".variable"]][[i]]
+      lvl <- body[[".level"]][[i]]
+      hit <- if (!is.na(lvl)) {
+        which(sub$factor_term %in% v & sub$factor_level %in% lvl)
+      } else {
+        which(sub$term %in% v)
+      }
+      if (length(hit)) {
+        total[[i]] <- as.numeric(sub$events_n[hit[[1L]]])
+      }
+    }
+    parts[[nm]] <- stats::setNames(list(total), paste0(nm, ": N"))
+  }
+  parts
 }
 
 maybe_as_tibble <- function(df) {
