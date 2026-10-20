@@ -113,15 +113,17 @@ notice – avoid calling directly from downstream code):
 The [`broom::tidy()`](https://generics.r-lib.org/reference/tidy.html)
 and
 [`broom::glance()`](https://generics.r-lib.org/reference/glance.html)
-methods on `spicy_categorical_table`, `spicy_continuous_table`,
-`spicy_continuous_lm_table`, `spicy_continuous_svy_table`,
-`spicy_categorical_svy_table`, and `spicy_regression_table` follow the
-standard broom column conventions (`outcome`, `term`, `estimate`,
-`std.error`, `conf.low`, `conf.high`, `statistic`, `p.value`, `df`,
-`df.residual`, `r.squared`, `adj.r.squared`, `nobs`, ...). In the
-descriptive tables, `variable` holds the name of the column a row
-describes and `label` its displayed label. `outcome` names the response
-of a regression model and the single outcome of
+methods of every table class, `spicy_categorical_table`,
+`spicy_categorical_svy_table`, `spicy_continuous_table`,
+`spicy_continuous_svy_table`, `spicy_continuous_lm_table`,
+`spicy_outcome_table`, `spicy_multiresponse_table`, and
+`spicy_regression_table`, follow the standard broom column conventions
+(`outcome`, `term`, `estimate`, `std.error`, `conf.low`, `conf.high`,
+`statistic`, `p.value`, `df`, `df.residual`, `r.squared`,
+`adj.r.squared`, `nobs`, ...). In the descriptive tables, `variable`
+holds the name of the column a row describes and `label` its displayed
+label. `outcome` names the response of a regression model and the single
+outcome of
 [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md).
 The set of columns produced by each method is considered
 **stabilizing**: existing columns will not be silently renamed or have

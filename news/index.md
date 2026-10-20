@@ -242,6 +242,18 @@ the descriptive tables one contract for labels, p-values, and notes.
 
 ### Bug fixes
 
+- The note of every table opens with *Note.* in italics in Typst, LaTeX,
+  markdown, and Excel output, and in gt’s LaTeX, RTF, and Word output,
+  as in HTML, Word, and PowerPoint. LaTeX output compiles when a note
+  contains `%` or `_`, centers each tinytable spanner over its columns,
+  and keeps the Greek letters and the decimal alignment the default font
+  dropped, under each of the three LaTeX engines. A note of several
+  lines no longer drops out of a Word document built from tinytable, and
+  `table_continuous_lm(output = "gt")` keeps its note in
+  [`gt::as_latex()`](https://gt.rstudio.com/reference/as_latex.html),
+  [`gt::gtsave()`](https://gt.rstudio.com/reference/gtsave.html), and
+  the other gt outputs.
+
 - [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
   [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md),
   [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md),

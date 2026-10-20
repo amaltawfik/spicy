@@ -159,10 +159,11 @@ without notice – avoid calling directly from downstream code):</p><ul><li><p>A
     <h2 id="broom-output-shape">broom output shape<a class="anchor" aria-label="anchor" href="#broom-output-shape"></a></h2>
 
 
-<p>The <code><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">broom::tidy()</a></code> and <code><a href="https://generics.r-lib.org/reference/glance.html" class="external-link">broom::glance()</a></code> methods on
-<code>spicy_categorical_table</code>, <code>spicy_continuous_table</code>,
-<code>spicy_continuous_lm_table</code>, <code>spicy_continuous_svy_table</code>,
-<code>spicy_categorical_svy_table</code>, and <code>spicy_regression_table</code> follow
+<p>The <code><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">broom::tidy()</a></code> and <code><a href="https://generics.r-lib.org/reference/glance.html" class="external-link">broom::glance()</a></code> methods of every table class,
+<code>spicy_categorical_table</code>, <code>spicy_categorical_svy_table</code>,
+<code>spicy_continuous_table</code>, <code>spicy_continuous_svy_table</code>,
+<code>spicy_continuous_lm_table</code>, <code>spicy_outcome_table</code>,
+<code>spicy_multiresponse_table</code>, and <code>spicy_regression_table</code>, follow
 the standard broom column conventions (<code>outcome</code>, <code>term</code>,
 <code>estimate</code>, <code>std.error</code>, <code>conf.low</code>, <code>conf.high</code>, <code>statistic</code>,
 <code>p.value</code>, <code>df</code>, <code>df.residual</code>, <code>r.squared</code>, <code>adj.r.squared</code>,
