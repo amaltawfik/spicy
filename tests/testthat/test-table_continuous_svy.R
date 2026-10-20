@@ -1662,3 +1662,70 @@ test_that("statistic = TRUE, p_value = FALSE keeps the statistic, not the p (iss
   expect_true(all(is.na(gl$p.value)))
   expect_false(anyNA(gl$statistic))
 })
+
+test_that("a `by` no observation holds is refused, not a base R error", {
+  d <- .svyc_design("iid")
+  d$variables$none <- factor(NA, levels = c("a", "b"))
+  err <- expect_error(
+    table_continuous_svy(d, select = api00, by = none),
+    class = "spicy_invalid_data"
+  )
+  expect_identical(rlang::call_name(conditionCall(err)), "table_continuous_svy")
+  # Kept as a group of its own, the missing values are a domain.
+  out <- table_continuous_svy(
+    d,
+    select = api00,
+    by = none,
+    drop_na = FALSE,
+    output = "long"
+  )
+  expect_identical(out$group, "(Missing)")
+})
+
+test_that("a variable with no variance gets no comparison, with a warning", {
+  # survey still returns a p-value for it (0.228 from svyttest() on the
+  # sochealth constant): the cells stay blank, as in table_continuous().
+  d <- .svyc_design("iid")
+  d$variables$const <- 5
+  expect_warning(
+    out <- table_continuous_svy(
+      d,
+      select = c(const, api00),
+      by = sch.wide,
+      output = "long"
+    ),
+    class = "spicy_undefined_stat"
+  )
+  expect_true(all(is.na(out$p.value[out$variable == "const"])))
+  expect_false(all(is.na(out$p.value[out$variable == "api00"])))
+  for (tst in c("welch", "nonparametric")) {
+    out <- suppressWarnings(table_continuous_svy(
+      d,
+      select = const,
+      by = stype,
+      test = tst,
+      output = "long"
+    ))
+    expect_true(all(is.na(out$p.value)), info = tst)
+    expect_false(grepl("Group comparison", attr(out, "note")), info = tst)
+  }
+})
+
+test_that("`by` named in `select` is refused; a helper skips it", {
+  d <- .svyc_design("iid")
+  expect_error(
+    table_continuous_svy(d, select = c(api00, api99), by = api99),
+    class = "spicy_invalid_input"
+  )
+  out <- table_continuous_svy(
+    d,
+    select = tidyselect::starts_with("api"),
+    by = api99,
+    output = "long"
+  )
+  expect_false("api99" %in% out$variable)
+  expect_error(
+    table_continuous_svy(d, select = c(api00, nope)),
+    class = "spicy_missing_column"
+  )
+})

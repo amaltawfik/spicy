@@ -667,8 +667,17 @@ export_continuous_lm_table <- function(
   word_path,
   note = NULL,
   title = NULL,
-  labels = NULL
+  labels = NULL,
+  call = rlang::caller_env()
 ) {
+  # The file is checked before any engine runs, and the errors name the
+  # table function the user called.
+  if (identical(output, "excel")) {
+    .check_output_path(excel_path, output, call = call)
+  }
+  if (identical(output, "word")) {
+    .check_output_path(word_path, output, call = call)
+  }
   ci_pct <- .lm_ci_pct(ci_level)
   ci_ll <- .lm_key_ci_ll(ci_pct)
   ci_ul <- .lm_key_ci_ul(ci_pct)
@@ -727,7 +736,11 @@ export_continuous_lm_table <- function(
 
   if (identical(output, "tinytable")) {
     if (!requireNamespace("tinytable", quietly = TRUE)) {
-      spicy_abort("Install package 'tinytable'.", class = "spicy_missing_pkg")
+      spicy_abort(
+        "Install package 'tinytable'.",
+        class = "spicy_missing_pkg",
+        call = call
+      )
     }
     old_tt_opt <- getOption("tinytable_print_output")
     options(tinytable_print_output = "html")
@@ -879,7 +892,11 @@ export_continuous_lm_table <- function(
 
   if (identical(output, "gt")) {
     if (!requireNamespace("gt", quietly = TRUE)) {
-      spicy_abort("Install package 'gt'.", class = "spicy_missing_pkg")
+      spicy_abort(
+        "Install package 'gt'.",
+        class = "spicy_missing_pkg",
+        call = call
+      )
     }
 
     display_df <- rename_ci_cols_lm(display_df, ci_ll, ci_ul)
@@ -1084,13 +1101,21 @@ export_continuous_lm_table <- function(
 
   if (output %in% c("flextable", "word")) {
     if (!requireNamespace("flextable", quietly = TRUE)) {
-      spicy_abort("Install package 'flextable'.", class = "spicy_missing_pkg")
+      spicy_abort(
+        "Install package 'flextable'.",
+        class = "spicy_missing_pkg",
+        call = call
+      )
     }
     if (
       identical(output, "word") &&
         !requireNamespace("officer", quietly = TRUE)
     ) {
-      spicy_abort("Install package 'officer'.", class = "spicy_missing_pkg")
+      spicy_abort(
+        "Install package 'officer'.",
+        class = "spicy_missing_pkg",
+        call = call
+      )
     }
 
     display_df <- rename_ci_cols_lm(display_df, ci_ll, ci_ul)
@@ -1210,12 +1235,6 @@ export_continuous_lm_table <- function(
     }
 
     if (identical(output, "word")) {
-      if (is.null(word_path) || !nzchar(word_path)) {
-        spicy_abort(
-          "`word_path` must be provided for `output = \"word\"`.",
-          class = "spicy_invalid_input"
-        )
-      }
       # The footer added above flows into the docx via the flextable
       # object, mirroring table_regression()'s word output (which
       # keeps the in-table footer for docx fidelity). The title the
@@ -1245,12 +1264,10 @@ export_continuous_lm_table <- function(
 
   if (identical(output, "excel")) {
     if (!requireNamespace("openxlsx2", quietly = TRUE)) {
-      spicy_abort("Install package 'openxlsx2'.", class = "spicy_missing_pkg")
-    }
-    if (is.null(excel_path) || !nzchar(excel_path)) {
       spicy_abort(
-        "`excel_path` must be provided for `output = \"excel\"`.",
-        class = "spicy_invalid_input"
+        "Install package 'openxlsx2'.",
+        class = "spicy_missing_pkg",
+        call = call
       )
     }
 

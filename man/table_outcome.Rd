@@ -50,7 +50,12 @@ Exactly one column.}
 \item{select}{The grouping characteristics to describe the outcome
 across, as a tidyselect expression or a character vector of column
 names. One block of rows per variable, in the order given. As
-everywhere in the family, \code{select} is what structures the rows.}
+everywhere in the family, \code{select} is what structures the rows. The
+outcome and the \code{weights} column are not part of the selection: a
+selection helper skips them, and naming one in \code{select}, or giving
+its position, is an error. A name that is not a column of \code{data} is
+an error (class \code{spicy_missing_column}), and so is an empty
+selection.}
 
 \item{labels}{How each variable is named in the table: in the rows,
 in the title, and in the notes. The outcome follows
@@ -81,15 +86,20 @@ the wording you set here.}
 \item{drop_na}{Drop rows with a missing \code{select} value from that block
 (default \code{FALSE}: they are shown as a \code{(Missing)} level and
 excluded from the comparison, and a level displayed with that label
-is an error, as in \code{\link[=table_categorical]{table_categorical()}}).}
+is an error, as in \code{\link[=table_categorical]{table_categorical()}}). Under \code{drop_na = TRUE}, a
+grouping that no observation holds is an error (class
+\code{spicy_invalid_data}).}
 
 \item{weights, rescale}{Frequency weights and whether to rescale them
 to sum to the sample size, as in \code{\link[=table_continuous]{table_continuous()}}.}
 
 \item{test}{Group comparison for every block: \code{"welch"} (default),
-\code{"student"} or \code{"nonparametric"}.}
+\code{"student"} or \code{"nonparametric"}. An outcome with no variance in a
+block has no test there, whichever is chosen: the block's test cells
+are left blank, with a warning (class \code{spicy_undefined_stat}).}
 
-\item{p_value}{Show the p-value column (default \code{TRUE}).}
+\item{p_value}{Show the p-value column: \code{TRUE}, \code{FALSE}, or \code{NULL}
+(the default), which shows it, every block being a comparison.}
 
 \item{p_adjust}{Multiple-comparison adjustment of the p-value
 column, applied to the family of every test in the table (one
@@ -107,12 +117,14 @@ p-value per block). One of \code{"none"} (default), \code{"holm"},
 keeps the historical display.}
 
 \item{effect_size, effect_size_ci}{Effect size per block and its
-confidence interval, as in \code{\link[=table_continuous]{table_continuous()}}.}
+confidence interval, as in \code{\link[=table_continuous]{table_continuous()}} (a logical
+\code{effect_size} is an error there and here).}
 
 \item{ci, ci_level}{The mean's confidence interval and its level.}
 
 \item{digits, effect_size_digits, p_digits, decimal_mark}{Number
-formatting.}
+formatting. The \verb{*_digits} arguments are whole numbers, \code{p_digits}
+at least 1.}
 
 \item{align}{Numeric-cell alignment: \code{"decimal"}, \code{"center"} or
 \code{"right"}.}

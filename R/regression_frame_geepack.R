@@ -176,7 +176,10 @@ as_regression_frame.gee <- function(fit, ...) {
 
 
 # Classed refusal for spicy's `cluster =` argument on a GEE fit.
-.gee_refuse_cluster <- function(model_index = NULL) {
+.gee_refuse_cluster <- function(
+  model_index = NULL,
+  call = rlang::caller_env()
+) {
   lead <- "`cluster` is not used for `geeglm` models."
   if (!is.null(model_index)) {
     lead <- spicy_fmt("note_model_prefix", model_index, lead)
@@ -191,7 +194,8 @@ as_regression_frame.gee <- function(fit, ...) {
       ),
       "i" = "Refit with a different `id =` to change the clustering."
     ),
-    class = "spicy_invalid_input"
+    class = "spicy_invalid_input",
+    call = call
   )
 }
 

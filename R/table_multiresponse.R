@@ -74,14 +74,19 @@
 #' @param data A data frame, one row per respondent.
 #' @param select The indicator columns of the question, one per item, in
 #'   tidyselect syntax or as a character vector of column names. Their
-#'   order is the order of the rows, unless `sort` sorts them.
+#'   order is the order of the rows, unless `sort` sorts them. The `by`
+#'   column is not part of the selection: a selection helper skips it,
+#'   and naming it, or giving its position, is an error. A name that is
+#'   not a column of `data` is an error (class `spicy_missing_column`),
+#'   and so is an empty selection.
 #' @param by Optional grouping column, unquoted or as a string. Factor
 #'   levels keep their declared order, a declared level with no respondent
 #'   included; any other column forms groups in order of first appearance
 #'   (a labelled column by its codes), as in [table_categorical()]. Rows
-#'   with a missing `by` are removed, and the note says how many. A level
-#'   displayed with the label of the `Total` margin is an error, as in
-#'   [table_categorical()].
+#'   with a missing `by` are removed, and the note says how many; a `by`
+#'   that no observation holds is an error (class `spicy_invalid_data`).
+#'   A level displayed with the label of the `Total` margin is an error,
+#'   as in [table_categorical()].
 #' @param counted The value that marks a choice. `NULL` (the default)
 #'   reads logical columns (`TRUE` is chosen) and numeric columns coded 0
 #'   and 1 (`1` is chosen) as they are; any other column needs `counted`,
@@ -587,37 +592,17 @@ table_multiresponse <- function(
   by_name <- if (has_group) {
     resolve_single_column_selection(by_quo, data, "by")
   }
-  select_names <- unique(resolve_multi_column_selection(
+  # The `by` column is outside the selection, as across the family: a
+  # selection helper skips it, and naming it in `select` is an error.
+  select_names <- .resolve_selection_without(
     rlang::enquo(select),
     data,
-    "select"
-  ))
-  not_found <- setdiff(select_names, names(data))
-  if (length(not_found)) {
-    spicy_abort(
-      sprintf(
-        "`select` names %s, not found in `data`.",
-        paste(.quote_val(not_found), collapse = ", ")
-      ),
-      class = "spicy_missing_column"
-    )
-  }
+    roles = c(by = by_name)
+  )
   if (!length(select_names)) {
-    spicy_abort(
-      c(
-        "`select` must select at least one indicator column.",
-        "i" = "Name the columns of the question, one per item."
-      ),
-      class = "spicy_invalid_input"
-    )
-  }
-  if (has_group && by_name %in% select_names) {
-    spicy_abort(
-      sprintf(
-        "`select` cannot contain the `by` column (%s).",
-        .quote_val(by_name)
-      ),
-      class = "spicy_invalid_input"
+    .abort_empty_selection(
+      "select",
+      hint = "Name the indicator columns of the question, one per item."
     )
   }
   .check_integer64_columns(
@@ -659,6 +644,14 @@ table_multiresponse <- function(
   keep <- rep(TRUE, nrow(data))
   if (has_group) {
     g0 <- .user_na_to_na(data[[by_name]])
+    # A `by` no observation holds leaves no group, whatever levels a
+    # factor declares: refused, as across the family. The rows missing
+    # `by` always leave this table, so there is no `drop_na` to point at.
+    .check_grouping_observed(
+      g0,
+      sprintf("`by` (`%s`)", by_name),
+      drop_na_hint = FALSE
+    )
     group_levels <- as.character(
       if (is.factor(g0)) levels(g0) else unique(g0[!is.na(g0)])
     )
@@ -666,11 +659,7 @@ table_multiresponse <- function(
       spicy_abort(
         c(
           sprintf("`by = %s` has no level to tabulate.", by_name),
-          "x" = if (nrow(data) == 0L) {
-            "The data has no rows."
-          } else {
-            "Every observation is missing it."
-          }
+          "x" = "The data has no rows."
         ),
         class = "spicy_invalid_data"
       )
@@ -1049,24 +1038,10 @@ table_multiresponse <- function(
   ) {
     bad("`boot_n` must be a positive whole number.")
   }
-  if (
-    !is.numeric(percent_digits) ||
-      length(percent_digits) != 1L ||
-      is.na(percent_digits) ||
-      percent_digits < 0
-  ) {
-    bad("`percent_digits` must be a single non-negative number.")
-  }
-  if (
-    !is.numeric(p_digits) ||
-      length(p_digits) != 1L ||
-      is.na(p_digits) ||
-      p_digits < 1
-  ) {
-    bad("`p_digits` must be a single integer >= 1 (typically 2-4).")
-  }
+  validate_digit_arg(percent_digits, "percent_digits", call = call)
+  validate_digit_arg(p_digits, "p_digits", min = 1L, call = call)
   if (!.is_single_char(decimal_mark)) {
-    bad("`decimal_mark` must be a single character (e.g. '.' or ',').")
+    bad('`decimal_mark` must be a single character (e.g. "." or ",").')
   }
   if (!is.null(title) && !is_string(title)) {
     bad("`title` must be NULL or a single non-empty string.")

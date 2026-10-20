@@ -364,7 +364,7 @@
 
 
 # Validate the `re_test` argument: "none" (default), "lrt", or "rlrt".
-.validate_re_test <- function(x) {
+.validate_re_test <- function(x, call = rlang::caller_env()) {
   choices <- c("none", "lrt", "rlrt")
   if (identical(x, choices)) {
     return("none")
@@ -384,7 +384,8 @@
         "sits on the boundary of the parameter space."
       )
     ),
-    class = "spicy_invalid_input"
+    class = "spicy_invalid_input",
+    call = call
   )
 }
 
@@ -393,7 +394,7 @@
 # rows. "wald" = merDeriv observed-information SE + CI (subject to the
 # spicy.re_se_max_n size cap); "profile" = lme4's profile-likelihood
 # intervals (no SE, asymmetric CI -- lme4's own supported route).
-.validate_re_ci <- function(x, models) {
+.validate_re_ci <- function(x, models, call = rlang::caller_env()) {
   choices <- c("wald", "profile")
   val <- if (identical(x, choices)) {
     "wald" # unset default vector
@@ -408,7 +409,8 @@
           paste(.quote_val(x), collapse = ", ")
         )
       ),
-      class = "spicy_invalid_input"
+      class = "spicy_invalid_input",
+      call = call
     )
   }
   if (identical(val, "profile")) {
@@ -439,7 +441,8 @@
             "apVar; the clmm Hessian) under the default `re_ci = \"wald\"`."
           )
         ),
-        class = "spicy_invalid_input"
+        class = "spicy_invalid_input",
+        call = call
       )
     }
   }

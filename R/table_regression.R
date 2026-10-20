@@ -1331,7 +1331,8 @@
 #' @param p_digits Decimal places for p-values (`p`, `ame_p`,
 #'   `p_change`). APA-strict: leading zero stripped, `<.001` (or
 #'   `<.0001` etc. depending on `p_digits`) for small values.
-#'   Default `3L`.
+#'   Default `3L`; at least `1L`, as in the descriptive tables. Every
+#'   `*_digits` argument is a whole number: a fraction is an error.
 #' @param effect_size_digits Decimals for per-coefficient effect
 #'   sizes (`partial_f2`, `partial_eta2`, `partial_omega2`).
 #'   Default `2L`.
@@ -1431,8 +1432,9 @@
 #'   tables); `"excel"` (writes to `excel_path`); `"clipboard"`
 #'   (copies to system clipboard); `"word"` (writes flextable to
 #'   `word_path`).
-#' @param excel_path File path for `output = "excel"`. Default
-#'   `NULL` (required when `output = "excel"`).
+#' @param excel_path File path for `output = "excel"`, ending in
+#'   `".xlsx"`, in a directory that exists. Default `NULL` (required when
+#'   `output = "excel"`).
 #' @param excel_sheet Sheet name when writing to Excel. `NULL` (the
 #'   default) uses `"Regression"`.
 #' @param clipboard_delim Field delimiter for
@@ -1461,7 +1463,8 @@
 #'     (Layout > Align Right). For a self-contained Word file
 #'     with borders and alignment pre-applied, use
 #'     `output = "word"` instead.
-#' @param word_path File path for `output = "word"`. Default
+#' @param word_path File path for `output = "word"`, ending in
+#'   `".docx"`, in a directory that exists. Default
 #'   `NULL` (required when `output = "word"`). The Word table inherits
 #'   the flextable styling (Calibri font, APA borders, decimal-aligned
 #'   numerics) and adds Word-specific features: an auto-numbered
@@ -1808,6 +1811,8 @@ table_regression <- function(
   # separator, ...) onto a call-scoped stack popped on exit.
   .style_pushed <- .style_begin(style, match.call(), environment())
   on.exit(.style_end(.style_pushed), add = TRUE)
+  # The call the errors of the model frames name (`.with_public_call()`).
+  public_call <- sys.call()
 
   # Capture the cluster expression BEFORE evaluation so we can
   # (a) derive a friendly name for the footer ("clusters by
@@ -2511,7 +2516,9 @@ table_regression <- function(
   validate_caption_arg(title, "title")
   validate_caption_arg(note, "note")
   validate_digit_arg(digits, "digits")
-  validate_digit_arg(p_digits, "p_digits")
+  # At least one decimal, as in the descriptive tables: a p-value with
+  # none printed ".015" in the table and "<1" in `inline()`.
+  validate_digit_arg(p_digits, "p_digits", min = 1L)
   validate_digit_arg(effect_size_digits, "effect_size_digits")
   validate_digit_arg(fit_digits, "fit_digits")
   validate_digit_arg(ic_digits, "ic_digits")
@@ -2743,23 +2750,28 @@ table_regression <- function(
   # (title, footer, alignment, nested LRT) consumes frames directly.
   frames <- vector("list", n_models)
   for (i in seq_len(n_models)) {
-    frames[[i]] <- as_regression_frame_validated(
-      models[[i]],
-      model_id = model_ids[i],
-      vcov = vcov_list[[i]],
-      cluster = cluster_list[[i]],
-      boot_n = boot_n,
-      ci_level = ci_level,
-      ci_method = ci_method,
-      standardized = standardized,
-      exponentiate = exponentiate,
-      show_columns = show_columns,
-      show_fit_stats = show_fit_stats,
-      use_ame_satterthwaite = use_ame_satt,
-      cluster_name = cluster_name_list[i],
-      re_ci = re_ci_val,
-      tau = tau,
-      at_time = at_time
+    # The frame computes the variances (`R/vcov.R`): an estimator that
+    # fails there is refused in the name of this function.
+    frames[[i]] <- .with_public_call(
+      as_regression_frame_validated(
+        models[[i]],
+        model_id = model_ids[i],
+        vcov = vcov_list[[i]],
+        cluster = cluster_list[[i]],
+        boot_n = boot_n,
+        ci_level = ci_level,
+        ci_method = ci_method,
+        standardized = standardized,
+        exponentiate = exponentiate,
+        show_columns = show_columns,
+        show_fit_stats = show_fit_stats,
+        use_ame_satterthwaite = use_ame_satt,
+        cluster_name = cluster_name_list[i],
+        re_ci = re_ci_val,
+        tau = tau,
+        at_time = at_time
+      ),
+      public_call
     )
     # Truthfulness gate: `standardized` requires a class with a real
     # standardized-coefficients path (the beta attach). Classes without

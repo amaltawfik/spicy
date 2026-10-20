@@ -19,7 +19,7 @@ table_continuous_lm(
   boot_n = 1000,
   contrast = c("auto", "none"),
   statistic = FALSE,
-  p_value = TRUE,
+  p_value = NULL,
   show_n = TRUE,
   show_weighted_n = FALSE,
   effect_size = c("none", "f2", "d", "g", "omega2"),
@@ -51,7 +51,11 @@ table_continuous_lm(
 \item{select}{Outcome columns to include. If \code{regex = FALSE}, use tidyselect
 syntax or a character vector of column names (default:
 \code{tidyselect::everything()}). If \code{regex = TRUE}, provide a regular expression
-pattern (character string).}
+pattern (character string). The \code{by} column and the \code{covariates} are
+not part of the selection: \code{everything()} and the other helpers skip
+them, and naming one in \code{select} is an error. A name that is not a
+column of \code{data} is an error (class \code{spicy_missing_column}), and so
+is a selection with no numeric column.}
 
 \item{by}{A single predictor column. Accepts an unquoted column name or a
 single character column name. The predictor can be:
@@ -93,11 +97,12 @@ linear model for. Accepts a tidyselect expression (e.g.
 \code{covariates = c(age, sex)}, \code{covariates = tidyselect::all_of(cov_vec)},
 \code{covariates = tidyselect::starts_with("control_")}) or a literal
 character vector of column names. Each covariate must be numeric,
-integer, logical, factor, or character; covariates that also appear
-in \code{select} are silently auto-excluded from the outcome list (a
-variable cannot be both outcome and adjustment), and a covariate
-that equals \code{by} raises an error (a variable cannot be both
-predictor and adjustment).
+integer, logical, factor, or character. A variable cannot be both
+outcome and adjustment: the covariates are left out of the outcome
+selection (\code{select = everything()} skips them), and naming one in
+\code{select}, or giving its position, raises an error; a covariate that
+equals \code{by} raises an error too (a variable cannot be both predictor
+and adjustment).
 
 When non-empty, each model is fitted as \code{lm(y ~ by + cov1 + cov2 + ...)}
 and the reported estimate / SE / p-value / CI on \code{by} are
@@ -177,7 +182,9 @@ environment.
 Validation: weights must be finite, non-negative, and contain at least
 one positive value (otherwise the function errors). Rows with \code{NA} in
 \code{weights} are excluded from the analytic sample for each outcome,
-alongside rows with \code{NA} in \code{y} or \code{by}. When supplied, weights are
+alongside rows with \code{NA} in \code{y} or \code{by}. A weights column is not an
+outcome: \code{select = everything()} skips it, and naming it in
+\code{select}, or giving its position, is an error. When supplied, weights are
 passed to \code{lm(..., weights = ...)}, so coefficients become weighted
 least-squares estimates and \verb{\eqn{R^2}{R^2}}, adjusted \verb{\eqn{R^2}{R^2}}, and the four effect
 sizes are computed from the corresponding weighted sums of squares
@@ -251,7 +258,8 @@ environment (factor, character, integer, etc.).
 
 Rows with \code{NA} in \code{cluster} are excluded from the analytic sample
 for each outcome (alongside rows with \code{NA} in \code{y}, \code{by}, or
-\code{weights}). At least two distinct non-missing cluster values are
+\code{weights}). A cluster column is not an outcome: \code{select = everything()} skips it, and naming it in \code{select}, or giving its
+position, is an error. At least two distinct non-missing cluster values are
 required. Multi-way clustering (a list / data.frame of multiple
 cluster vectors) is not supported; use \code{\link[sandwich:vcovCL]{sandwich::vcovCL()}} or
 \code{\link[clubSandwich:vcovCR]{clubSandwich::vcovCR()}} directly on the fitted model for that case.}
@@ -280,8 +288,10 @@ Level-specific means are still displayed.
 \item{statistic}{Logical. If \code{TRUE}, includes a test-statistic column in the
 wide and rendered outputs. Defaults to \code{FALSE}.}
 
-\item{p_value}{Logical. If \code{TRUE}, includes a \code{p} column in the wide and
-rendered outputs. Defaults to \code{TRUE}.}
+\item{p_value}{Logical or \code{NULL}. If \code{TRUE}, includes a \code{p} column in
+the wide and rendered outputs. \code{NULL} (the default) shows it whenever
+\code{by} is supplied, as in the rest of the family; \code{by} is required
+here, so \code{NULL} means \code{TRUE}. Pass \code{p_value = FALSE} to suppress it.}
 
 \item{show_n}{Logical. If \code{TRUE}, includes an unweighted \code{n} column in the
 wide and rendered outputs. Defaults to \code{TRUE}.}
@@ -291,7 +301,8 @@ includes a \verb{Weighted n} column equal to the sum of case weights in the
 analytic sample. Defaults to \code{FALSE}.}
 
 \item{effect_size}{Character. Effect-size column to include in the wide and
-rendered outputs. One of:
+rendered outputs (a logical is an error, class \code{spicy_defunct}). One
+of:
 \itemize{
 \item \code{"none"} (the default): no effect-size column.
 \item \code{"f2"}: Cohen's \verb{\eqn{f^2}{f^2} = \eqn{R^2}{R^2} / (1 - \eqn{R^2}{R^2})}. Defined for any predictor type.
@@ -390,9 +401,8 @@ intervals (default: \code{0.95}). Must be between 0 and 1 exclusive.}
 
 \item{digits}{Number of decimal places for descriptive values, regression
 coefficients, and test statistics (default: \code{2}). Must be a single
-non-negative number; non-integer values are truncated (e.g. \code{2.9}
-becomes \code{2}). Same constraint for \code{fit_digits} and
-\code{effect_size_digits}.}
+non-negative whole number: a fraction (\code{2.9}) is an error. Same
+constraint for \code{fit_digits} and \code{effect_size_digits}.}
 
 \item{fit_digits}{Number of decimal places for model-fit columns (\verb{\eqn{R^2}{R^2}} or
 adjusted \verb{\eqn{R^2}{R^2}}) in wide and rendered outputs (default: \code{2}).}
@@ -410,8 +420,7 @@ prints \code{.045} and \verb{<.001}; \code{p_digits = 4} prints \code{.0451} and
 genomics / GWAS contexts where adjusted \emph{p}-values can be very
 small, or for journals using a coarser convention. Leading zeros
 are always stripped, following APA convention. Values below \code{1}
-raise an error; non-integer values are truncated (e.g. \code{3.7}
-becomes \code{3}).}
+and fractions (\code{3.7}) raise an error.}
 
 \item{decimal_mark}{Character used as decimal separator. Either \code{"."}
 (default) or \code{","}.}
@@ -456,7 +465,8 @@ format would require a separate refactor.}
 \item \code{"word"} (requires \code{flextable} and \code{officer})
 }}
 
-\item{excel_path}{File path for \code{output = "excel"}.}
+\item{excel_path}{File path for \code{output = "excel"}, ending in
+\code{".xlsx"}, in a directory that exists.}
 
 \item{excel_sheet}{Sheet name for \code{output = "excel"}. \code{NULL} (the
 default) uses \code{"Linear models"}.}
@@ -466,10 +476,12 @@ default) uses \code{"Linear models"}.}
 line break is quoted RFC 4180-style, so the grid survives whatever
 delimiter you choose.}
 
-\item{word_path}{File path for \code{output = "word"}.}
+\item{word_path}{File path for \code{output = "word"}, ending in \code{".docx"},
+in a directory that exists.}
 
-\item{verbose}{Logical. If \code{TRUE}, prints messages about ignored
-non-numeric selected outcomes (default: \code{FALSE}).}
+\item{verbose}{Logical. If \code{TRUE}, a message (class \code{spicy_info})
+names the non-numeric columns left out of the outcomes (default:
+\code{FALSE}).}
 
 \item{user_na}{Logical. If \code{TRUE} (the default), declared missing
 values in the outcomes, in \code{by}, and in \code{covariates} are treated
@@ -527,8 +539,8 @@ below the body. The default object and the data frames of
 included, in \code{attr(x, "note")} (\code{NULL} when there is nothing to say).
 
 If no numeric outcome columns remain after applying \code{select}, \code{exclude},
-and \code{regex}, the function emits a warning and returns an empty
-\code{data.frame()} regardless of \code{output}.
+and \code{regex}, the function stops with an error (class
+\code{spicy_invalid_input}), as the other tables of the family do.
 }
 \description{
 Builds publication-ready summary tables from a series of linear
@@ -579,8 +591,9 @@ Compared with \code{\link[=table_continuous]{table_continuous()}}, this function
 companion: choose it when you want heteroskedasticity-consistent standard
 errors (\code{vcov = "HC*"}), model fit statistics, or case weights via
 \code{lm(..., weights = ...)}. Because the function exists to report a fitted
-model, its inferential output is on by default: \code{p_value = TRUE} and
-\code{r2 = "r2"} are the defaults; set \code{p_value = FALSE} or \code{r2 = "none"} to
+model, its inferential output is on by default: the \emph{p}-value is shown
+(\code{p_value = NULL}, the default, shows it with \code{by}, which is required
+here) and \code{r2 = "r2"}; set \code{p_value = FALSE} or \code{r2 = "none"} to
 suppress them.
 }
 

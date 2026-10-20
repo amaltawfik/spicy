@@ -670,8 +670,13 @@ make_stronger_indent <- function(x, base_indent, strong_indent, rows) {
 # show. Without a group there is no test; with `p_value = FALSE` the
 # adjusted column is not printed, and a footer announcing it would
 # describe numbers the reader cannot see.
-.check_desc_p_adjust <- function(p_adjust, has_group = TRUE, p_value = NULL) {
-  validate_p_adjust(p_adjust)
+.check_desc_p_adjust <- function(
+  p_adjust,
+  has_group = TRUE,
+  p_value = NULL,
+  call = rlang::caller_env()
+) {
+  validate_p_adjust(p_adjust, call = call)
   if (identical(p_adjust, "none")) {
     return(invisible(NULL))
   }
@@ -681,7 +686,8 @@ make_stronger_indent <- function(x, base_indent, strong_indent, rows) {
         "`p_adjust` needs `by`: without a grouping variable the table runs no test.",
         "i" = "Add `by`, or drop `p_adjust`."
       ),
-      class = "spicy_invalid_input"
+      class = "spicy_invalid_input",
+      call = call
     )
   }
   if (isFALSE(p_value)) {
@@ -690,10 +696,162 @@ make_stronger_indent <- function(x, base_indent, strong_indent, rows) {
         "`p_adjust` adjusts the p-value column, which `p_value = FALSE` removes.",
         "i" = "Set `p_value = TRUE`, or drop `p_adjust`."
       ),
-      class = "spicy_invalid_input"
+      class = "spicy_invalid_input",
+      call = call
     )
   }
   invisible(NULL)
+}
+
+# ---- shared argument checks of the table family ---------------------------
+
+# The file a table writes for `output = "excel"` or `output = "word"`: a
+# single non-empty string with the extension of that format, in a
+# directory that exists. Refused before any work, as `code_book()` refuses
+# its `output` path, so a wrong extension is never written anyway under a
+# warning of the writing engine.
+.check_output_path <- function(path, output, call = rlang::caller_env()) {
+  spec <- switch(
+    output,
+    excel = list(arg = "excel_path", ext = "xlsx"),
+    word = list(arg = "word_path", ext = "docx")
+  )
+  example <- sprintf("`%s = \"results/table.%s\"`", spec$arg, spec$ext)
+  if (is.null(path) || identical(path, "")) {
+    spicy_abort(
+      c(
+        sprintf("`output = \"%s\"` requires `%s`.", output, spec$arg),
+        "i" = sprintf("Pass a file path: %s.", example)
+      ),
+      class = "spicy_invalid_input",
+      call = call
+    )
+  }
+  if (
+    !is.character(path) ||
+      length(path) != 1L ||
+      is.na(path) ||
+      !nzchar(trimws(path))
+  ) {
+    spicy_abort(
+      c(
+        sprintf("`%s` must be a single file path.", spec$arg),
+        "i" = sprintf("For example %s.", example)
+      ),
+      class = "spicy_invalid_input",
+      call = call
+    )
+  }
+  if (!identical(tolower(tools::file_ext(path)), spec$ext)) {
+    spicy_abort(
+      c(
+        sprintf(
+          "`%s` must be a path ending in \".%s\".",
+          spec$arg,
+          spec$ext
+        ),
+        "x" = paste0("Got ", .quote_val(path), ".")
+      ),
+      class = "spicy_invalid_input",
+      call = call
+    )
+  }
+  if (!dir.exists(dirname(path))) {
+    spicy_abort(
+      paste0(
+        "The directory of `",
+        spec$arg,
+        "` does not exist: ",
+        .quote_val(dirname(path)),
+        "."
+      ),
+      class = "spicy_invalid_input",
+      call = call
+    )
+  }
+  if (dir.exists(path)) {
+    spicy_abort(
+      paste0(
+        "`",
+        spec$arg,
+        "` names a directory, not a file: ",
+        .quote_val(path),
+        "."
+      ),
+      class = "spicy_invalid_input",
+      call = call
+    )
+  }
+  invisible(path)
+}
+
+# `effect_size` names a measure. The logical it once also took is
+# refused with the replacement: `TRUE` and `FALSE` used to be read as
+# "auto" and "none" by two of the three tables that have the argument.
+# `measures` names what replaces `TRUE` in the calling table.
+.check_effect_size_not_logical <- function(
+  effect_size,
+  measures,
+  call = rlang::caller_env()
+) {
+  if (!is.logical(effect_size)) {
+    return(invisible(NULL))
+  }
+  spicy_abort(
+    c(
+      "A logical `effect_size` is defunct: the argument names a measure.",
+      "i" = sprintf(
+        "Replace `effect_size = TRUE` with %s, and `effect_size = FALSE` with `effect_size = \"none\"`.",
+        measures
+      )
+    ),
+    class = c("spicy_defunct", "spicy_invalid_input"),
+    call = call
+  )
+}
+
+# A grouping column no observation holds leaves no group to describe:
+# refused when the missing values are removed (`drop_na = TRUE`), as in
+# table_continuous_lm(). Under `drop_na = FALSE` they form the one
+# "(Missing)" group, and nothing is refused. `what` names the column as
+# the message gives it ("`by` (`grp`)"); `drop_na_hint` points at that
+# group in the tables that can show it.
+.check_grouping_observed <- function(
+  x,
+  what,
+  drop_na_hint = TRUE,
+  call = rlang::caller_env()
+) {
+  if (length(x) == 0L || !all(is.na(x))) {
+    return(invisible(NULL))
+  }
+  spicy_abort(
+    c(
+      sprintf("%s has no observed non-missing level.", what),
+      "i" = if (drop_na_hint) {
+        "Check the grouping column, or show its missing values as a group with `drop_na = FALSE`."
+      } else {
+        "Check the grouping column."
+      }
+    ),
+    class = "spicy_invalid_data",
+    call = call
+  )
+}
+
+# The `verbose` message of the continuous tables, one wording for the
+# three of them.
+.inform_ignored_non_numeric <- function(fn, ignored) {
+  if (length(ignored) == 0L) {
+    return(invisible(NULL))
+  }
+  spicy_inform(
+    sprintf(
+      "%s(): Ignored non-numeric columns: %s.",
+      fn,
+      paste(ignored, collapse = ", ")
+    )
+  )
 }
 
 # Adjust the p-value column `col` of a compute frame. `key` names the

@@ -31,7 +31,12 @@
 #' @param select Columns to include. If `regex = FALSE`, use tidyselect
 #'   syntax or a character vector of column names (default:
 #'   `tidyselect::everything()`). If `regex = TRUE`, provide a regular
-#'   expression pattern (character string).
+#'   expression pattern (character string). The `by` and `weights`
+#'   columns are not part of the selection: `everything()` and the other
+#'   helpers skip them, and naming one in `select`, or giving its
+#'   position, is an error. A name that is not a column of `data` is an
+#'   error (class `spicy_missing_column`), and so is a selection with no
+#'   numeric column.
 #' @param by Optional grouping column. Accepts an unquoted column name
 #'   or a single character column name. Coerced to factor for
 #'   grouping; non-numeric grouping columns (factor, character,
@@ -58,16 +63,17 @@
 #'   rather than silent. If `TRUE` (the default, preserving this
 #'   function's historical behavior; [table_categorical()] defaults to
 #'   `FALSE`), rows with `NA` in `by` are removed from the grouped
-#'   summaries, with a warning and a dedicated note line ("Rows with
-#'   missing ... removed"). If `FALSE`, rows with `NA` in `by` form a
+#'   summaries, and a note line says so ("Rows with missing ...
+#'   removed"). If `FALSE`, rows with `NA` in `by` form a
 #'   dedicated `"(Missing)"` group -- the field convention for
 #'   descriptive tables (gtsummary's "Unknown" row; see the
 #'   Epidemiologist R Handbook, Descriptive tables) -- while the
 #'   group-comparison test and effect size are still computed on the
 #'   observed groups only (show the missing, test the observed,
 #'   matching [table_categorical()]); a level of `by` displayed with the
-#'   label of that group is an error, as there. Ignored (with a warning)
-#'   when `by` is not used.
+#'   label of that group is an error, as there. Under `drop_na = TRUE`, a
+#'   `by` that no observation holds is an error (class
+#'   `spicy_invalid_data`). Ignored (with a warning) when `by` is not used.
 #' @param weights Optional case weights: an unquoted column name, a
 #'   character column name, or a numeric vector of length `nrow(data)`.
 #'   Weights must be non-negative and finite; rows with `NA` or zero
@@ -96,9 +102,12 @@
 #'     (2 groups) or Kruskal--Wallis *H* (3+ groups).
 #'
 #'   Used whenever `by` is supplied (since `p_value` defaults to `TRUE`
-#'   in that case) or when `statistic = TRUE` / `effect_size = TRUE`.
+#'   in that case) or when `statistic = TRUE` or an `effect_size` is
+#'   requested.
 #'   Ignored when `by` is not used, or when all three display toggles
-#'   are turned off.
+#'   are turned off. A variable with no variance has no test, whichever
+#'   is chosen: its test cells are left blank, with a warning (class
+#'   `spicy_undefined_stat`).
 #' @param p_value Logical or `NULL`. If `TRUE` and `by` is used, adds a
 #'   *p*-value column from the test specified by `test`. When `NULL` (the
 #'   default), the *p*-value is shown automatically whenever `by` is
@@ -152,8 +161,8 @@
 #'     Kruskal-Wallis statistic (3+ groups, nonparametric). CI via
 #'     percentile bootstrap (2 000 replicates).
 #'
-#'   For backward compatibility, `effect_size = TRUE` is silently
-#'   coerced to `"auto"` and `effect_size = FALSE` to `"none"`.
+#'   A logical value is an error (class `spicy_defunct`): use `"auto"`
+#'   for `TRUE` and `"none"` for `FALSE`.
 #'   Explicit choices are validated against the active `test` and the
 #'   number of groups; an incompatible request (e.g. `"eta_sq"` with
 #'   two groups, or `"hedges_g"` with `test = "nonparametric"`)
@@ -207,7 +216,8 @@
 #' @param ci_level Confidence level for the mean confidence interval
 #'   (default: `0.95`). Must be between 0 and 1 exclusive.
 #' @param digits Number of decimal places for descriptive values and test
-#'   statistics (default: `2`).
+#'   statistics (default: `2`). A whole number: a fraction is an error,
+#'   as for every `*_digits` argument.
 #' @param effect_size_digits Number of decimal places for effect-size values
 #'   in formatted displays (default: `2`).
 #' @param p_digits Integer >= 1. Number of decimal places used to
@@ -262,16 +272,18 @@
 #'   - `"excel"` (requires `openxlsx2`)
 #'   - `"clipboard"` (requires `clipr`)
 #'   - `"word"` (requires `flextable` and `officer`)
-#' @param excel_path File path for `output = "excel"`.
+#' @param excel_path File path for `output = "excel"`, ending in
+#'   `".xlsx"`, in a directory that exists.
 #' @param excel_sheet Sheet name for `output = "excel"`. `NULL` (the
 #'   default) uses `"Descriptives"`.
 #' @param clipboard_delim Delimiter for `output = "clipboard"`
 #'   (default: `"\t"`). A cell holding the delimiter itself, a double
 #'   quote or a line break is quoted RFC 4180-style, so the grid
 #'   survives whatever delimiter you choose.
-#' @param word_path File path for `output = "word"`.
-#' @param verbose Logical. If `TRUE`, prints messages about excluded
-#'   non-numeric columns (default: `FALSE`).
+#' @param word_path File path for `output = "word"`, ending in
+#'   `".docx"`, in a directory that exists.
+#' @param verbose Logical. If `TRUE`, a message (class `spicy_info`)
+#'   names the non-numeric columns left out (default: `FALSE`).
 #' @param user_na Logical. If `TRUE` (the default), declared missing
 #'   values never reach the numeric summaries: they are excluded like
 #'   `NA` and disclosed in the table note (`Declared missing values
@@ -827,42 +839,12 @@ table_continuous <- function(
       class = "spicy_invalid_input"
     )
   }
-  if (
-    !is.numeric(digits) ||
-      length(digits) != 1L ||
-      is.na(digits) ||
-      digits < 0
-  ) {
-    spicy_abort(
-      "`digits` must be a single non-negative number.",
-      class = "spicy_invalid_input"
-    )
-  }
-  digits <- as.integer(digits)
-  if (
-    !is.numeric(effect_size_digits) ||
-      length(effect_size_digits) != 1L ||
-      is.na(effect_size_digits) ||
-      effect_size_digits < 0
-  ) {
-    spicy_abort(
-      "`effect_size_digits` must be a single non-negative number.",
-      class = "spicy_invalid_input"
-    )
-  }
-  effect_size_digits <- as.integer(effect_size_digits)
-  if (
-    !is.numeric(p_digits) ||
-      length(p_digits) != 1L ||
-      is.na(p_digits) ||
-      p_digits < 1
-  ) {
-    spicy_abort(
-      "`p_digits` must be a single integer >= 1 (typically 2-4).",
-      class = "spicy_invalid_input"
-    )
-  }
-  p_digits <- as.integer(p_digits)
+  digits <- validate_digit_arg(digits, "digits")
+  effect_size_digits <- validate_digit_arg(
+    effect_size_digits,
+    "effect_size_digits"
+  )
+  p_digits <- validate_digit_arg(p_digits, "p_digits", min = 1L)
   if (!.is_single_char(decimal_mark)) {
     spicy_abort(
       '`decimal_mark` must be a single character (e.g. "." or ",").',
@@ -890,19 +872,8 @@ table_continuous <- function(
     }
   }
 
-  # `effect_size` accepts both logical (legacy) and character (current
-  # documented enum). Logical TRUE maps to "auto" (auto-select the
-  # measure from test type and group count, the historical behavior);
-  # logical FALSE maps to "none". Character values are validated below.
-  if (is.logical(effect_size)) {
-    if (length(effect_size) != 1L || is.na(effect_size)) {
-      spicy_abort(
-        "`effect_size` must be a single TRUE/FALSE or character value.",
-        class = "spicy_invalid_input"
-      )
-    }
-    effect_size <- if (isTRUE(effect_size)) "auto" else "none"
-  }
+  # `effect_size` names a measure; the logical it once took is defunct.
+  .check_effect_size_not_logical(effect_size, "`effect_size = \"auto\"`")
   effect_size_explicit <- !missing(effect_size)
   effect_size <- spicy_match_arg(effect_size)
 
@@ -937,15 +908,7 @@ table_continuous <- function(
   group_col_name <- NULL
 
   if (has_group) {
-    group_col_name <- tryCatch(
-      resolve_single_column_selection(group_quo, data, "by"),
-      error = function(e) {
-        spicy_abort(
-          "`by` must be a single column name in `data`.",
-          class = "spicy_invalid_input"
-        )
-      }
-    )
+    group_col_name <- resolve_single_column_selection(group_quo, data, "by")
   }
 
   .check_desc_p_adjust(p_adjust, has_group, p_value)
@@ -1031,24 +994,7 @@ table_continuous <- function(
     # NA weights are legal: those rows leave the analytic sample and
     # the exclusion is disclosed in the table note. Only genuinely
     # non-finite values (Inf, -Inf, NaN) are rejected.
-    if (any(is.infinite(weights_vec) | is.nan(weights_vec))) {
-      spicy_abort(
-        "`weights` must contain only finite values.",
-        class = "spicy_invalid_input"
-      )
-    }
-    if (any(weights_vec < 0, na.rm = TRUE)) {
-      spicy_abort(
-        "`weights` must be non-negative.",
-        class = "spicy_invalid_input"
-      )
-    }
-    if (all(is.na(weights_vec) | weights_vec == 0)) {
-      spicy_abort(
-        "`weights` must contain at least one positive value.",
-        class = "spicy_invalid_input"
-      )
-    }
+    .check_weights_values(weights_vec)
     n_na_weights <- sum(is.na(weights_vec))
     # The group tests (Welch/Student t, ANOVA, rank tests) and their
     # effect sizes have no weighted version here; the weighted
@@ -1090,12 +1036,11 @@ table_continuous <- function(
     )
   }
 
-  # --- column selection (reuse mean_n pattern) ---
-  work <- data
-  if (has_group) {
-    work <- dplyr::select(work, -tidyselect::all_of(group_col_name))
-  }
-
+  # --- column selection ---
+  # The `by` and weights columns are outside the selection: `everything()`
+  # and the other helpers skip them, and pointing at one in `select`, by
+  # name or by position, is an error.
+  roles <- c(by = group_col_name, weights = weights_name)
   if (regex) {
     if (missing(select)) {
       select <- ".*"
@@ -1106,28 +1051,28 @@ table_continuous <- function(
         class = "spicy_invalid_input"
       )
     }
-    matched <- grep(select, names(work), value = TRUE)
-    work <- work[, matched, drop = FALSE]
+    sel_names <- grep(select, setdiff(names(data), roles), value = TRUE)
   } else {
-    sel_quo <- rlang::enquo(select)
-    sel_val <- tryCatch(
-      rlang::eval_tidy(sel_quo, env = rlang::quo_get_env(sel_quo)),
-      error = function(e) NULL
+    sel_names <- .resolve_selection_without(
+      rlang::enquo(select),
+      data,
+      roles = roles
     )
-    if (is.character(sel_val)) {
-      work <- dplyr::select(work, tidyselect::all_of(sel_val))
-    } else {
-      work <- dplyr::select(work, !!sel_quo)
-    }
   }
 
-  exclude_quo <- rlang::enquo(exclude)
-  exclude_names <- resolve_multi_column_selection(exclude_quo, work, "exclude")
-  work <- dplyr::select(work, -tidyselect::any_of(exclude_names))
-
-  all_cols <- names(work)
-  work <- dplyr::select(work, tidyselect::where(is.numeric))
-  numeric_cols <- names(work)
+  exclude_names <- resolve_multi_column_selection(
+    rlang::enquo(exclude),
+    data,
+    "exclude"
+  )
+  all_cols <- setdiff(sel_names, exclude_names)
+  # dplyr, not `[`: a data.table reads a character `i` as a join.
+  numeric_cols <- all_cols[vapply(
+    all_cols,
+    function(nm) is.numeric(data[[nm]]),
+    logical(1)
+  )]
+  work <- dplyr::select(data, tidyselect::all_of(numeric_cols))
 
   # bit64::integer64 passes the is.numeric() filter above, but every
   # statistic downstream reads its raw int64 bit patterns as garbage
@@ -1137,19 +1082,15 @@ table_continuous <- function(
   .check_integer64_columns(work, numeric_cols, "table_continuous")
   .check_integer64_columns(data, group_col_name, "table_continuous")
 
-  ignored <- setdiff(all_cols, numeric_cols)
-  if (verbose && length(ignored) > 0L) {
-    rlang::inform(
-      paste0(
-        "table_continuous(): Ignored non-numeric columns: ",
-        paste(ignored, collapse = ", ")
-      )
+  if (verbose) {
+    .inform_ignored_non_numeric(
+      "table_continuous",
+      setdiff(all_cols, numeric_cols)
     )
   }
 
   if (length(numeric_cols) == 0L) {
-    spicy_warn("No numeric columns selected.", class = "spicy_no_selection")
-    return(data.frame())
+    .abort_empty_selection("select", "numeric")
   }
 
   # Declared missing values (see the "Declared missing values" section
@@ -1368,15 +1309,12 @@ table_continuous <- function(
     # (no group is formed), valid group codes with user_na = FALSE.
     groups <- resolve_user_na(data[[group_col_name]])
     n_na_groups <- sum(is.na(groups))
+    if (drop_na) {
+      .check_grouping_observed(groups, sprintf("`by` (`%s`)", group_col_name))
+    }
+    # The rows removed for a missing `by` are disclosed in the note, as
+    # in the rest of the family: the default is not worth a warning.
     if (drop_na && n_na_groups > 0L) {
-      spicy_warn(
-        sprintf(
-          "%d observation(s) with NA in `%s` were excluded.",
-          n_na_groups,
-          group_col_name
-        ),
-        class = "spicy_dropped_na"
-      )
       by_na_dropped <- n_na_groups
     }
     # NA-preserving copy for inference: the omnibus test and effect
@@ -1490,25 +1428,46 @@ table_continuous <- function(
           # multi-variable table. The row keeps NA test columns, the
           # warning says which variable failed and why, and the other
           # variables are unaffected (audit phase 2, finding 27).
-          test_used[[nm]] <- var_test
           n_test_groups <- n_valid_groups
-          test_row <- tryCatch(
-            run_group_test(xvec, gvec, n_valid_groups, var_test),
-            error = function(e) {
-              spicy_warn(
-                c(
-                  sprintf(
-                    "The group-comparison test failed for `%s` (%s); its test columns are NA.",
-                    nm,
-                    conditionMessage(e)
-                  ),
-                  "i" = "Other selected variables are unaffected. For near-constant data, `test = \"nonparametric\"` may still be defined, or set `p_value = FALSE`."
+          test_row <- if (length(unique(xvec)) < 2L) {
+            # A variable with no variance has no test: `t.test()` stops
+            # on it, and the rank tests return p = 1 or NaN, a p-value
+            # of nothing. Same refusal as `table_continuous_svy()`.
+            spicy_warn(
+              c(
+                sprintf(
+                  "The group-comparison test failed for `%s` (the variable has no variance); its test columns are NA.",
+                  nm
                 ),
-                class = "spicy_undefined_stat"
-              )
-              test_row
-            }
-          )
+                "i" = "Other selected variables are unaffected."
+              ),
+              class = "spicy_undefined_stat"
+            )
+            test_row
+          } else {
+            tryCatch(
+              run_group_test(xvec, gvec, n_valid_groups, var_test),
+              error = function(e) {
+                spicy_warn(
+                  c(
+                    sprintf(
+                      "The group-comparison test failed for `%s` (%s); its test columns are NA.",
+                      nm,
+                      conditionMessage(e)
+                    ),
+                    "i" = "Other selected variables are unaffected. For near-constant data, `test = \"nonparametric\"` may still be defined, or set `p_value = FALSE`."
+                  ),
+                  class = "spicy_undefined_stat"
+                )
+                test_row
+              }
+            )
+          }
+          # The note names the test a variable carries, and only one
+          # that ran.
+          if (!is.na(test_row$test_type)) {
+            test_used[[nm]] <- var_test
+          }
         }
       }
 
@@ -2221,7 +2180,8 @@ order_continuous_tokens <- function(tokens) {
 resolve_continuous_show_columns <- function(
   show_columns,
   variables,
-  default_tokens
+  default_tokens,
+  call = rlang::caller_env()
 ) {
   if (is.null(show_columns)) {
     per_var <- stats::setNames(
@@ -2239,7 +2199,8 @@ resolve_continuous_show_columns <- function(
           "`show_columns` must be a character vector or a NAMED list.",
           "i" = "Name each element after a summarized variable, or use `.default` for the rest."
         ),
-        class = "spicy_invalid_input"
+        class = "spicy_invalid_input",
+        call = call
       )
     }
     if (anyDuplicated(nms)) {
@@ -2248,7 +2209,8 @@ resolve_continuous_show_columns <- function(
           "`show_columns` names variable(s) more than once: %s.",
           paste(.quote_val(unique(nms[duplicated(nms)])), collapse = ", ")
         ),
-        class = "spicy_invalid_input"
+        class = "spicy_invalid_input",
+        call = call
       )
     }
     unknown <- setdiff(nms, c(variables, ".default"))
@@ -2264,14 +2226,16 @@ resolve_continuous_show_columns <- function(
             paste(.quote_val(variables), collapse = ", ")
           )
         ),
-        class = "spicy_invalid_input"
+        class = "spicy_invalid_input",
+        call = call
       )
     }
     for (nm in nms) {
       validate_token_vector(
         show_columns[[nm]],
         .continuous_column_tokens,
-        arg = sprintf("show_columns[[\"%s\"]]", nm)
+        arg = sprintf("show_columns[[\"%s\"]]", nm),
+        call = call
       )
     }
     fallback <- if (".default" %in% nms) {
@@ -2289,7 +2253,8 @@ resolve_continuous_show_columns <- function(
     validate_token_vector(
       show_columns,
       .continuous_column_tokens,
-      arg = "show_columns"
+      arg = "show_columns",
+      call = call
     )
     global <- order_continuous_tokens(show_columns)
     per_var <- stats::setNames(
@@ -2338,7 +2303,8 @@ resolve_continuous_show_columns <- function(
   if (length(union_tokens) == 0L) {
     spicy_abort(
       "`show_columns` leaves no statistic to display.",
-      class = "spicy_invalid_input"
+      class = "spicy_invalid_input",
+      call = call
     )
   }
   list(per_var = per_var, union = union_tokens)
@@ -2676,8 +2642,8 @@ run_group_test <- function(xvec, gvec, n_groups, method) {
   row
 }
 
-# Internal: resolve a user-supplied effect_size value (after the
-# logical -> character coercion at the public boundary) to the actual
+# Internal: resolve a user-supplied effect_size value (a logical is
+# refused at the public boundary) to the actual
 # measure to compute, given the test method and group count. Returns
 # `"none"` (compute nothing), `"hedges_g"`, `"eta_sq"`, `"r_rb"`, or
 # `"epsilon_sq"`. When `explicit = TRUE` and the user-requested
@@ -3496,7 +3462,8 @@ export_desc_table <- function(
   word_path,
   note = NULL,
   header_layout = NULL,
-  clipboard_label = NULL
+  clipboard_label = NULL,
+  call = rlang::caller_env()
 ) {
   # The title is the CALLER's: each family words it from its own
   # registry key, and this function must never invent one. Refusing
@@ -3507,6 +3474,14 @@ export_desc_table <- function(
       "Internal: export_desc_table() needs the caller's title.",
       class = "spicy_internal_invariant"
     )
+  }
+  # The file is checked before any engine runs, and the errors name the
+  # table function the user called.
+  if (output == "excel") {
+    .check_output_path(excel_path, output, call = call)
+  }
+  if (output == "word") {
+    .check_output_path(word_path, output, call = call)
   }
   # The header layer, parameterized. Three closures -- how a bound key
   # is shortened for the engines, what header a key prints, and which
@@ -3567,7 +3542,11 @@ export_desc_table <- function(
   # ---- tinytable ----
   if (output == "tinytable") {
     if (!requireNamespace("tinytable", quietly = TRUE)) {
-      spicy_abort("Install package 'tinytable'.", class = "spicy_missing_pkg")
+      spicy_abort(
+        "Install package 'tinytable'.",
+        class = "spicy_missing_pkg",
+        call = call
+      )
     }
 
     old_tt_opt <- getOption("tinytable_print_output")
@@ -3726,7 +3705,11 @@ export_desc_table <- function(
   # ---- gt ----
   if (output == "gt") {
     if (!requireNamespace("gt", quietly = TRUE)) {
-      spicy_abort("Install package 'gt'.", class = "spicy_missing_pkg")
+      spicy_abort(
+        "Install package 'gt'.",
+        class = "spicy_missing_pkg",
+        call = call
+      )
     }
 
     display_df <- hl_rename(display_df)
@@ -3943,10 +3926,18 @@ export_desc_table <- function(
   # ---- flextable / word ----
   if (output %in% c("flextable", "word")) {
     if (!requireNamespace("flextable", quietly = TRUE)) {
-      spicy_abort("Install package 'flextable'.", class = "spicy_missing_pkg")
+      spicy_abort(
+        "Install package 'flextable'.",
+        class = "spicy_missing_pkg",
+        call = call
+      )
     }
     if (output == "word" && !requireNamespace("officer", quietly = TRUE)) {
-      spicy_abort("Install package 'officer'.", class = "spicy_missing_pkg")
+      spicy_abort(
+        "Install package 'officer'.",
+        class = "spicy_missing_pkg",
+        call = call
+      )
     }
     display_df <- hl_rename(display_df)
     col_keys <- names(display_df)
@@ -4081,12 +4072,6 @@ export_desc_table <- function(
     ft <- .spicy_ft_attach_note(ft, note)
 
     if (output == "word") {
-      if (is.null(word_path) || !nzchar(word_path)) {
-        spicy_abort(
-          "Provide `word_path` for output = 'word'.",
-          class = "spicy_invalid_input"
-        )
-      }
       # Same title the console prints, from the same helper.
       ft <- .spicy_ft_word_caption(ft, title)
       flextable::save_as_docx(ft, path = word_path)
@@ -4102,12 +4087,10 @@ export_desc_table <- function(
   # ---- excel ----
   if (output == "excel") {
     if (!requireNamespace("openxlsx2", quietly = TRUE)) {
-      spicy_abort("Install package 'openxlsx2'.", class = "spicy_missing_pkg")
-    }
-    if (is.null(excel_path) || !nzchar(excel_path)) {
       spicy_abort(
-        "Provide `excel_path` for output = 'excel'.",
-        class = "spicy_invalid_input"
+        "Install package 'openxlsx2'.",
+        class = "spicy_missing_pkg",
+        call = call
       )
     }
 

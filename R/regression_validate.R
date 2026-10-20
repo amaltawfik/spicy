@@ -238,7 +238,7 @@
 # narrower, and each keeps refusing what it does not offer.
 .VCOV_COMPUTE_MODES <- unique(c(.VCOV_MODES, "HC4m"))
 
-validate_models_input <- function(models) {
+validate_models_input <- function(models, call = rlang::caller_env()) {
   # Step 1: handle NULL upfront (R's `inherits` and `is.list` both
   # return FALSE on NULL, so it would otherwise slip through)
   if (is.null(models)) {
@@ -247,7 +247,8 @@ validate_models_input <- function(models) {
         "`models` cannot be NULL.",
         "i" = "Pass an `lm()` or `glm()` fit, or a list of such fits."
       ),
-      class = "spicy_invalid_input"
+      class = "spicy_invalid_input",
+      call = call
     )
   }
 
@@ -267,7 +268,8 @@ validate_models_input <- function(models) {
         "`models` is an empty list.",
         "i" = "Pass at least one `lm()` or `glm()` fit."
       ),
-      class = "spicy_invalid_input"
+      class = "spicy_invalid_input",
+      call = call
     )
   }
 
@@ -307,7 +309,8 @@ validate_models_input <- function(models) {
               "rename the duplicates."
             )
           ),
-          class = "spicy_invalid_input"
+          class = "spicy_invalid_input",
+          call = call
         )
       }
     }
@@ -334,7 +337,8 @@ validate_models_input <- function(models) {
           ". `table_regression_models()` lists them with their engines."
         )
       ),
-      class = "spicy_unsupported"
+      class = "spicy_unsupported",
+      call = call
     )
   }
 
@@ -408,7 +412,11 @@ classify_unsupported_lm_class <- function(fit, position = NULL) {
 # ---- Phase B \u2013 multi-model alignment --------------------------------------
 
 # Steps 4-5: nested = TRUE requires identical nobs and identical DV
-validate_nested_alignment <- function(models, nested) {
+validate_nested_alignment <- function(
+  models,
+  nested,
+  call = rlang::caller_env()
+) {
   if (!isTRUE(nested)) {
     return(invisible(NULL))
   }
@@ -452,7 +460,8 @@ validate_nested_alignment <- function(models, nested) {
           "`geepack::anova.geeglm()` Wald tests outside the table."
         )
       ),
-      class = "spicy_invalid_input"
+      class = "spicy_invalid_input",
+      call = call
     )
   }
 
@@ -477,7 +486,8 @@ validate_nested_alignment <- function(models, nested) {
             "rq models with rq models."
           )
         ),
-        class = "spicy_invalid_input"
+        class = "spicy_invalid_input",
+        call = call
       )
     }
     taus <- vapply(models, function(m) as.numeric(m$tau %||% 0.5), numeric(1))
@@ -492,7 +502,8 @@ validate_nested_alignment <- function(models, nested) {
             "multiple taus."
           )
         ),
-        class = "spicy_invalid_input"
+        class = "spicy_invalid_input",
+        call = call
       )
     }
   }
@@ -523,7 +534,8 @@ validate_nested_alignment <- function(models, nested) {
           "  m2 <- lm(y ~ x1 + x2, data = df_common)"
         )
       ),
-      class = "spicy_invalid_input"
+      class = "spicy_invalid_input",
+      call = call
     )
   }
 
@@ -548,7 +560,8 @@ validate_nested_alignment <- function(models, nested) {
           "`nested = FALSE`."
         )
       ),
-      class = "spicy_invalid_input"
+      class = "spicy_invalid_input",
+      call = call
     )
   }
 
@@ -588,7 +601,12 @@ validate_nested_alignment <- function(models, nested) {
 # So `supports` is the truth about what a frame CAN render, never a
 # substitute for the earlier refusal, and nothing below should be
 # rewritten to consult it.
-validate_vcov_cluster_lists <- function(vcov, cluster, models) {
+validate_vcov_cluster_lists <- function(
+  vcov,
+  cluster,
+  models,
+  call = rlang::caller_env()
+) {
   n_models <- length(models)
 
   # Forgot `list()`? `table_regression(m1, m2)` binds the second model
@@ -621,7 +639,8 @@ validate_vcov_cluster_lists <- function(vcov, cluster, models) {
         ),
         hint
       ),
-      class = "spicy_invalid_input"
+      class = "spicy_invalid_input",
+      call = call
     )
   }
 
@@ -646,7 +665,8 @@ validate_vcov_cluster_lists <- function(vcov, cluster, models) {
             "list of length(models)."
           )
         ),
-        class = "spicy_invalid_input"
+        class = "spicy_invalid_input",
+        call = call
       )
     }
     if (
@@ -658,7 +678,8 @@ validate_vcov_cluster_lists <- function(vcov, cluster, models) {
     ) {
       spicy_abort(
         "Each element of `vcov` (when a list) must be a single string.",
-        class = "spicy_invalid_input"
+        class = "spicy_invalid_input",
+        call = call
       )
     }
   } else {
@@ -673,7 +694,8 @@ validate_vcov_cluster_lists <- function(vcov, cluster, models) {
             "\"nid\" / \"iid\" / \"ker\" / \"rank\")."
           )
         ),
-        class = "spicy_invalid_input"
+        class = "spicy_invalid_input",
+        call = call
       )
     }
   }
@@ -713,7 +735,8 @@ validate_vcov_cluster_lists <- function(vcov, cluster, models) {
           )
         )
       ),
-      class = "spicy_invalid_input"
+      class = "spicy_invalid_input",
+      call = call
     )
   }
 
@@ -748,7 +771,8 @@ validate_vcov_cluster_lists <- function(vcov, cluster, models) {
               "group-level or distributional terms)."
             )
           ),
-          class = "spicy_unsupported_vcov"
+          class = "spicy_unsupported_vcov",
+          call = call
         )
       }
       # GEE fits are refused on principle too: the sandwich IS the
@@ -779,7 +803,8 @@ validate_vcov_cluster_lists <- function(vcov, cluster, models) {
               "\"CR0\"-\"CR3\" with `cluster`."
             )
           ),
-          class = "spicy_unsupported_vcov"
+          class = "spicy_unsupported_vcov",
+          call = call
         )
       }
       # clm with a scale / nominal component: the restriction is
@@ -811,7 +836,8 @@ validate_vcov_cluster_lists <- function(vcov, cluster, models) {
               "`scale` / `nominal`."
             )
           ),
-          class = "spicy_unsupported_vcov"
+          class = "spicy_unsupported_vcov",
+          call = call
         )
       }
       # multinom / mlogit HC*: name the reason instead of a bare
@@ -846,7 +872,8 @@ validate_vcov_cluster_lists <- function(vcov, cluster, models) {
               "supported for this class."
             )
           ),
-          class = "spicy_unsupported_vcov"
+          class = "spicy_unsupported_vcov",
+          call = call
         )
       }
       # quantreg::rq: every refusal here is STATISTICAL, so each names
@@ -917,7 +944,8 @@ validate_vcov_cluster_lists <- function(vcov, cluster, models) {
             ),
             why_rq
           ),
-          class = "spicy_unsupported_vcov"
+          class = "spicy_unsupported_vcov",
+          call = call
         )
       }
       # Survey fits are refused on the same principle: the design-based
@@ -948,7 +976,8 @@ validate_vcov_cluster_lists <- function(vcov, cluster, models) {
               "survey::svydesign(ids = ~cluster, ...), then refit."
             )
           ),
-          class = "spicy_unsupported_vcov"
+          class = "spicy_unsupported_vcov",
+          call = call
         )
       }
       # estimatr and fixest carry the variance they were COMPUTED with:
@@ -989,7 +1018,8 @@ validate_vcov_cluster_lists <- function(vcov, cluster, models) {
               estimatr_fn
             )
           ),
-          class = "spicy_unsupported_vcov"
+          class = "spicy_unsupported_vcov",
+          call = call
         )
       }
       # glmmTMB: one estimator, CR0, through glmmTMB's own sandwich; every
@@ -1017,7 +1047,8 @@ validate_vcov_cluster_lists <- function(vcov, cluster, models) {
               "summary(fit, vcov = ~cluster_var)."
             )
           ),
-          class = "spicy_unsupported_vcov"
+          class = "spicy_unsupported_vcov",
+          call = call
         )
       }
       spicy_abort(
@@ -1032,7 +1063,8 @@ validate_vcov_cluster_lists <- function(vcov, cluster, models) {
             paste(supported, collapse = ", ")
           )
         ),
-        class = "spicy_unsupported_vcov"
+        class = "spicy_unsupported_vcov",
+        call = call
       )
     }
   }
@@ -1052,7 +1084,8 @@ validate_vcov_cluster_lists <- function(vcov, cluster, models) {
             "models) or a list of length(models)."
           )
         ),
-        class = "spicy_invalid_input"
+        class = "spicy_invalid_input",
+        call = call
       )
     }
   }
@@ -1079,7 +1112,7 @@ validate_vcov_cluster_lists <- function(vcov, cluster, models) {
     # the generic "set vcov to CR0-CR3" hint below would be wrong
     # guidance.
     if (inherits(models[[i]], "geeglm") && !is.null(c_i)) {
-      .gee_refuse_cluster(model_index = i)
+      .gee_refuse_cluster(model_index = i, call = call)
     }
 
     # quantreg::rq has no analytic cluster-robust estimator; its one
@@ -1106,7 +1139,8 @@ validate_vcov_cluster_lists <- function(vcov, cluster, models) {
               "cluster bootstrap, Hagemann 2017)."
             )
           ),
-          class = "spicy_unsupported_vcov"
+          class = "spicy_unsupported_vcov",
+          call = call
         )
       }
       if (!is.null(c_i) && is.atomic(c_i)) {
@@ -1116,7 +1150,8 @@ validate_vcov_cluster_lists <- function(vcov, cluster, models) {
           label = sprintf(
             "`cluster%s`",
             if (n_models > 1L) sprintf("[[%d]]", i) else ""
-          )
+          ),
+          call = call
         )
       }
       next
@@ -1142,7 +1177,8 @@ validate_vcov_cluster_lists <- function(vcov, cluster, models) {
             )
           }
         ),
-        class = "spicy_invalid_input"
+        class = "spicy_invalid_input",
+        call = call
       )
     }
 
@@ -1157,7 +1193,8 @@ validate_vcov_cluster_lists <- function(vcov, cluster, models) {
         label = sprintf(
           "`cluster%s`",
           if (n_models > 1L) sprintf("[[%d]]", i) else ""
-        )
+        ),
+        call = call
       )
     }
 
@@ -1241,11 +1278,16 @@ validate_vcov_cluster_lists <- function(vcov, cluster, models) {
 # pre-expanded by `expand_show_columns()` before this validator runs
 # so the only thing left to check here is membership + the
 # beta-without-method rule.
-validate_show_columns <- function(show_columns, standardized) {
+validate_show_columns <- function(
+  show_columns,
+  standardized,
+  call = rlang::caller_env()
+) {
   validate_token_vector(
     show_columns,
     .regression_tokens$show_columns_atomic,
-    arg = "show_columns"
+    arg = "show_columns",
+    call = call
   )
 
   # Step 12: beta-without-method
@@ -1259,7 +1301,8 @@ validate_show_columns <- function(show_columns, standardized) {
         ),
         "i" = "Or remove `\"beta\"` from `show_columns`."
       ),
-      class = "spicy_invalid_input"
+      class = "spicy_invalid_input",
+      call = call
     )
   }
   invisible(NULL)
@@ -1307,7 +1350,8 @@ absorbs_fixed_effects <- function(model) {
 validate_class_appropriate_tokens <- function(
   models,
   show_columns,
-  show_fit_stats
+  show_fit_stats,
+  call = rlang::caller_env()
 ) {
   # TRUE "all" over the model set, not the historical any/any proxy:
   # the proxy classified a {glm, fixest} set as "all glm" (fixest
@@ -1361,7 +1405,8 @@ validate_class_appropriate_tokens <- function(
           ),
           "i" = "Replace with `\"partial_chi2\"` or drop the token."
         ),
-        class = "spicy_invalid_input"
+        class = "spicy_invalid_input",
+        call = call
       )
     }
     bad_fit <- intersect(
@@ -1393,7 +1438,8 @@ validate_class_appropriate_tokens <- function(
             "`\"p_change\"` (likelihood-ratio chi-square)."
           )
         ),
-        class = "spicy_invalid_input"
+        class = "spicy_invalid_input",
+        call = call
       )
     }
   }
@@ -1455,7 +1501,8 @@ validate_class_appropriate_tokens <- function(
           "`nested = TRUE` selects for this hierarchy by default."
         )
       ),
-      class = "spicy_invalid_input"
+      class = "spicy_invalid_input",
+      call = call
     )
   }
 
@@ -1501,7 +1548,8 @@ validate_class_appropriate_tokens <- function(
           "selects for a quantile hierarchy by default."
         )
       ),
-      class = "spicy_invalid_input"
+      class = "spicy_invalid_input",
+      call = call
     )
   }
 
@@ -1548,7 +1596,8 @@ validate_class_appropriate_tokens <- function(
           "if the hierarchy itself is the question."
         )
       ),
-      class = "spicy_invalid_input"
+      class = "spicy_invalid_input",
+      call = call
     )
   }
 
@@ -1563,7 +1612,8 @@ validate_class_appropriate_tokens <- function(
             "`\"partial_omega2\"` \u2013 the variance-explained analogs."
           )
         ),
-        class = "spicy_invalid_input"
+        class = "spicy_invalid_input",
+        call = call
       )
     }
     bad_fit <- intersect(
@@ -1579,7 +1629,8 @@ validate_class_appropriate_tokens <- function(
           ),
           "i" = "For `lm`, use `\"r2\"`, `\"adj_r2\"`, `\"omega2\"`, or `\"f2\"`."
         ),
-        class = "spicy_invalid_input"
+        class = "spicy_invalid_input",
+        call = call
       )
     }
   }
@@ -1634,7 +1685,8 @@ validate_class_appropriate_tokens <- function(
             )
           }
         ),
-        class = "spicy_invalid_input"
+        class = "spicy_invalid_input",
+        call = call
       )
     }
   }
@@ -1662,7 +1714,8 @@ validate_class_appropriate_tokens <- function(
             "(Bayesian R\u00B2; PSIS-LOO)."
           )
         ),
-        class = "spicy_invalid_input"
+        class = "spicy_invalid_input",
+        call = call
       )
     }
     # The predictive-accuracy trio computes through the loo package
@@ -1678,7 +1731,8 @@ validate_class_appropriate_tokens <- function(
           ),
           "i" = "Install loo: `install.packages(\"loo\")`."
         ),
-        class = "spicy_missing_pkg"
+        class = "spicy_missing_pkg",
+        call = call
       )
     }
   }
@@ -1707,7 +1761,8 @@ validate_class_appropriate_tokens <- function(
           "summary."
         )
       ),
-      class = "spicy_invalid_input"
+      class = "spicy_invalid_input",
+      call = call
     )
   }
 
@@ -1727,7 +1782,8 @@ validate_class_appropriate_tokens <- function(
             "zero); frequentist fits have none."
           )
         ),
-        class = "spicy_invalid_input"
+        class = "spicy_invalid_input",
+        call = call
       )
     }
   }
@@ -1760,7 +1816,8 @@ validate_class_appropriate_tokens <- function(
             "the footer."
           )
         ),
-        class = "spicy_invalid_input"
+        class = "spicy_invalid_input",
+        call = call
       )
     }
   }
@@ -1802,7 +1859,8 @@ validate_class_appropriate_tokens <- function(
             "`loo::loo()` / `loo::loo_compare()` outside the table."
           )
         ),
-        class = "spicy_invalid_input"
+        class = "spicy_invalid_input",
+        call = call
       )
     }
   }
@@ -1826,7 +1884,8 @@ validate_class_appropriate_tokens <- function(
             "alpha its reciprocal; other families have no such parameter."
           )
         ),
-        class = "spicy_invalid_input"
+        class = "spicy_invalid_input",
+        call = call
       )
     }
   }
@@ -1850,7 +1909,8 @@ validate_class_appropriate_tokens <- function(
             "dispersion); other families have no such parameter."
           )
         ),
-        class = "spicy_invalid_input"
+        class = "spicy_invalid_input",
+        call = call
       )
     }
     variable_prec <- vapply(
@@ -1878,7 +1938,8 @@ validate_class_appropriate_tokens <- function(
             "`summary(fit)` instead."
           )
         ),
-        class = "spicy_invalid_input"
+        class = "spicy_invalid_input",
+        call = call
       )
     }
   }
@@ -1909,7 +1970,8 @@ validate_class_appropriate_tokens <- function(
             "FE-partialed R-squared; other classes have neither."
           )
         ),
-        class = "spicy_invalid_input"
+        class = "spicy_invalid_input",
+        call = call
       )
     }
   }
@@ -1937,7 +1999,8 @@ validate_class_appropriate_tokens <- function(
             "largest cluster in the estimation sample."
           )
         ),
-        class = "spicy_invalid_input"
+        class = "spicy_invalid_input",
+        call = call
       )
     }
   }
@@ -1978,7 +2041,8 @@ validate_class_appropriate_tokens <- function(
           ),
           "i" = "Use `\"qic\"` / `\"qicu\"` (Pan 2001) instead."
         ),
-        class = "spicy_invalid_input"
+        class = "spicy_invalid_input",
+        call = call
       )
     }
     bad_cols <- intersect(show_columns, .PARTIAL_ES_TOKENS)
@@ -1995,7 +2059,8 @@ validate_class_appropriate_tokens <- function(
             "an OLS variance partition; GEE has neither."
           )
         ),
-        class = "spicy_invalid_input"
+        class = "spicy_invalid_input",
+        call = call
       )
     }
   }
@@ -2038,7 +2103,8 @@ validate_class_appropriate_tokens <- function(
             "`\"r2_marginal\"` and `\"r2_conditional\"` (Nakagawa et al. 2017)."
           )
         ),
-        class = "spicy_invalid_input"
+        class = "spicy_invalid_input",
+        call = call
       )
     }
     # partial_chi2 (the Type-II Wald chi-square for mixed fits) IS defined
@@ -2057,7 +2123,8 @@ validate_class_appropriate_tokens <- function(
             "partial likelihood-ratio test use `\"partial_chi2\"`."
           )
         ),
-        class = "spicy_invalid_input"
+        class = "spicy_invalid_input",
+        call = call
       )
     }
   }
@@ -2102,7 +2169,8 @@ validate_class_appropriate_tokens <- function(
             )
           }
         ),
-        class = "spicy_invalid_input"
+        class = "spicy_invalid_input",
+        call = call
       )
     }
   }
@@ -2145,7 +2213,8 @@ validate_class_appropriate_tokens <- function(
             "for other families."
           )
         ),
-        class = "spicy_invalid_input"
+        class = "spicy_invalid_input",
+        call = call
       )
     }
   }
@@ -2170,7 +2239,8 @@ validate_class_appropriate_tokens <- function(
             "marginal effects) for mlogit's one-row-per-choice data structure."
           )
         ),
-        class = "spicy_invalid_input"
+        class = "spicy_invalid_input",
+        call = call
       )
     }
   }
@@ -2184,7 +2254,10 @@ validate_class_appropriate_tokens <- function(
 # The body below is where that contract is stated and enforced.
 # show_columns has no analogous escape hatch, because a table with
 # zero data columns is nonsensical.
-validate_show_fit_stats <- function(show_fit_stats) {
+validate_show_fit_stats <- function(
+  show_fit_stats,
+  call = rlang::caller_env()
+) {
   # Phase 7c23 (item a): the explicit "suppress fit-stats" alias is
   # `FALSE` (parity with `show_re = FALSE` / `outcome_labels = FALSE`).
   # `NULL` is the "class-aware default" sentinel. The previous
@@ -2216,13 +2289,15 @@ validate_show_fit_stats <- function(show_fit_stats) {
         ),
         "i" = "Rendered row labels are unchanged (AIC / AICc / BIC)."
       ),
-      class = "spicy_invalid_input"
+      class = "spicy_invalid_input",
+      call = call
     )
   }
   validate_token_vector(
     show_fit_stats,
     .regression_tokens$show_fit_stats,
-    arg = "show_fit_stats"
+    arg = "show_fit_stats",
+    call = call
   )
 }
 
@@ -2232,7 +2307,11 @@ validate_show_fit_stats <- function(show_fit_stats) {
 # before validation so the rest of the pipeline sees only atomic
 # tokens. Emits a migration error for legacy uppercase tokens from
 # spicy <= 0.11 (`"B"`, `"AME"`, ...) pointing at the new name.
-expand_show_columns <- function(tokens, bayesian = FALSE) {
+expand_show_columns <- function(
+  tokens,
+  bayesian = FALSE,
+  call = rlang::caller_env()
+) {
   if (is.null(tokens) || length(tokens) == 0L) {
     return(tokens)
   }
@@ -2266,7 +2345,8 @@ expand_show_columns <- function(tokens, bayesian = FALSE) {
           "\"all_f2\" / \"all_eta2\" / \"all_omega2\"."
         )
       ),
-      class = "spicy_invalid_input"
+      class = "spicy_invalid_input",
+      call = call
     )
   }
   # Group expansion.
@@ -2296,11 +2376,12 @@ expand_show_columns <- function(tokens, bayesian = FALSE) {
   tokens[!duplicated(tokens)]
 }
 
-validate_token_vector <- function(x, valid, arg) {
+validate_token_vector <- function(x, valid, arg, call = rlang::caller_env()) {
   if (!is.character(x) || length(x) == 0L) {
     spicy_abort(
       sprintf("`%s` must be a non-empty character vector.", arg),
-      class = "spicy_invalid_input"
+      class = "spicy_invalid_input",
+      call = call
     )
   }
   if (anyNA(x) || any(!nzchar(x))) {
@@ -2309,7 +2390,8 @@ validate_token_vector <- function(x, valid, arg) {
         "`%s` must not contain NA or empty strings.",
         arg
       ),
-      class = "spicy_invalid_input"
+      class = "spicy_invalid_input",
+      call = call
     )
   }
   if (anyDuplicated(x)) {
@@ -2320,7 +2402,8 @@ validate_token_vector <- function(x, valid, arg) {
         arg,
         paste(.quote_val(dups), collapse = ", ")
       ),
-      class = "spicy_invalid_input"
+      class = "spicy_invalid_input",
+      call = call
     )
   }
   bad <- setdiff(x, valid)
@@ -2337,7 +2420,8 @@ validate_token_vector <- function(x, valid, arg) {
           paste(.quote_val(valid), collapse = ", ")
         )
       ),
-      class = "spicy_invalid_input"
+      class = "spicy_invalid_input",
+      call = call
     )
   }
   invisible(NULL)
@@ -2357,13 +2441,14 @@ validate_token_vector <- function(x, valid, arg) {
 # Accepts a character vector with elements from c("est", "se", "ci");
 # duplicates and unknown tokens error early. "est" is always required
 # (the table without an estimate column is meaningless).
-.validate_re_columns <- function(x) {
+.validate_re_columns <- function(x, call = rlang::caller_env()) {
   valid <- c("est", "se", "ci")
-  validate_token_vector(x, valid, arg = "re_columns")
+  validate_token_vector(x, valid, arg = "re_columns", call = call)
   if (!"est" %in% x) {
     spicy_abort(
       "`re_columns` must include \"est\" (the random-effect estimate).",
-      class = "spicy_invalid_input"
+      class = "spicy_invalid_input",
+      call = call
     )
   }
   x
@@ -2373,7 +2458,7 @@ validate_token_vector <- function(x, valid, arg) {
 # Validate the `re_scale` argument of table_regression(): "sd" (default) or
 # "variance". Errors early with a spicy_invalid_input (not a raw base-R
 # match.arg message), and BEFORE the expensive extraction loop (finding m3).
-.validate_re_scale <- function(x) {
+.validate_re_scale <- function(x, call = rlang::caller_env()) {
   choices <- c("sd", "variance")
   if (identical(x, choices)) {
     return("sd")
@@ -2389,31 +2474,51 @@ validate_token_vector <- function(x, valid, arg) {
         paste(.quote_val(x), collapse = ", ")
       )
     ),
-    class = "spicy_invalid_input"
+    class = "spicy_invalid_input",
+    call = call
   )
 }
 
 
-# Step 15: digit args (non-negative integer scalar). Reused for
-# `digits`, `p_digits`, `effect_size_digits`, `fit_digits`, `ic_digits`.
-validate_digit_arg <- function(x, name) {
+# Step 15: digit args (whole-number scalar). The one validator of every
+# number of decimals in the table family: `digits`, `p_digits`,
+# `effect_size_digits`, `fit_digits`, `ic_digits`, `percent_digits`,
+# `v_digits`. A fraction is refused rather than truncated. `min = 1` for
+# `p_digits`: a p-value printed with no decimal reads ".015" in the table
+# and "<1" in `inline()`. Returns the value as an integer.
+validate_digit_arg <- function(
+  x,
+  name,
+  min = 0L,
+  call = rlang::caller_env()
+) {
   ok <- length(x) == 1L &&
     is.numeric(x) &&
     !is.na(x) &&
     is.finite(x) &&
-    x >= 0 &&
-    x == as.integer(x)
+    x >= min &&
+    x <= .Machine$integer.max &&
+    x == trunc(x)
   if (!ok) {
     spicy_abort(
-      sprintf("`%s` must be a single non-negative integer.", name),
-      class = "spicy_invalid_input"
+      if (min == 0L) {
+        sprintf("`%s` must be a single non-negative integer.", name)
+      } else {
+        sprintf(
+          "`%s` must be a single integer >= %d (typically 2-4).",
+          name,
+          as.integer(min)
+        )
+      },
+      class = "spicy_invalid_input",
+      call = call
     )
   }
-  invisible(NULL)
+  invisible(as.integer(x))
 }
 
 # Step 16: ci_level
-validate_ci_level <- function(ci_level) {
+validate_ci_level <- function(ci_level, call = rlang::caller_env()) {
   ok <- length(ci_level) == 1L &&
     is.numeric(ci_level) &&
     !is.na(ci_level) &&
@@ -2423,14 +2528,15 @@ validate_ci_level <- function(ci_level) {
   if (!ok) {
     spicy_abort(
       "`ci_level` must be a single number in (0, 1) exclusive.",
-      class = "spicy_invalid_input"
+      class = "spicy_invalid_input",
+      call = call
     )
   }
   invisible(NULL)
 }
 
 # Step 17: boot_n
-validate_boot_n <- function(boot_n) {
+validate_boot_n <- function(boot_n, call = rlang::caller_env()) {
   ok <- length(boot_n) == 1L &&
     is.numeric(boot_n) &&
     !is.na(boot_n) &&
@@ -2443,7 +2549,8 @@ validate_boot_n <- function(boot_n) {
         "`boot_n` must be a single positive integer ",
         "(number of bootstrap replicates)."
       ),
-      class = "spicy_invalid_input"
+      class = "spicy_invalid_input",
+      call = call
     )
   }
   invisible(NULL)
@@ -2451,12 +2558,13 @@ validate_boot_n <- function(boot_n) {
 
 # Step 18: logical scalar args. Reused for `show_intercept`,
 # `group_factor_levels`, `nested`.
-validate_logical_scalar <- function(x, name) {
+validate_logical_scalar <- function(x, name, call = rlang::caller_env()) {
   ok <- length(x) == 1L && is.logical(x) && !is.na(x)
   if (!ok) {
     spicy_abort(
       sprintf("`%s` must be a single TRUE or FALSE.", name),
-      class = "spicy_invalid_input"
+      class = "spicy_invalid_input",
+      call = call
     )
   }
   invisible(NULL)
@@ -2469,7 +2577,7 @@ validate_logical_scalar <- function(x, name) {
 # TRUE is rejected explicitly: it is grammatically suggestive of "yes
 # show it" but carries no string payload, and silently mapping it to
 # NULL would mask user typos (e.g. `title = TURE`).
-validate_caption_arg <- function(x, name) {
+validate_caption_arg <- function(x, name, call = rlang::caller_env()) {
   if (is.null(x)) {
     return(invisible(NULL))
   }
@@ -2483,7 +2591,8 @@ validate_caption_arg <- function(x, name) {
         sprintf("`%s` must be NULL, FALSE, or a single string.", name),
         "i" = "NULL = auto-build; FALSE = suppress; \"...\" = override."
       ),
-      class = "spicy_invalid_input"
+      class = "spicy_invalid_input",
+      call = call
     )
   }
   invisible(NULL)
@@ -2504,11 +2613,12 @@ validate_caption_arg <- function(x, name) {
   "fdr"
 )
 
-validate_p_adjust <- function(p_adjust) {
+validate_p_adjust <- function(p_adjust, call = rlang::caller_env()) {
   if (length(p_adjust) != 1L || !is.character(p_adjust) || is.na(p_adjust)) {
     spicy_abort(
       "`p_adjust` must be a single string.",
-      class = "spicy_invalid_input"
+      class = "spicy_invalid_input",
+      call = call
     )
   }
   if (!p_adjust %in% .spicy_p_adjust_methods) {
@@ -2520,7 +2630,8 @@ validate_p_adjust <- function(p_adjust) {
           paste(.quote_val(.spicy_p_adjust_methods), collapse = ", ")
         )
       ),
-      class = "spicy_invalid_input"
+      class = "spicy_invalid_input",
+      call = call
     )
   }
   invisible(NULL)
@@ -2530,7 +2641,7 @@ validate_p_adjust <- function(p_adjust) {
 # character vector with no NA / empty-string elements. They are
 # mutually exclusive \u2013 supplying both raises an error rather than
 # silently picking one.
-validate_keep_drop <- function(keep, drop) {
+validate_keep_drop <- function(keep, drop, call = rlang::caller_env()) {
   for (pair in list(c("keep", "keep"), c("drop", "drop"))) {
     arg_name <- pair[[1L]]
     val <- get(arg_name)
@@ -2551,7 +2662,8 @@ validate_keep_drop <- function(keep, drop) {
           ),
           arg_name
         ),
-        class = "spicy_invalid_input"
+        class = "spicy_invalid_input",
+        call = call
       )
     }
   }
@@ -2564,14 +2676,15 @@ validate_keep_drop <- function(keep, drop) {
           "`drop` to hide a few control variables."
         )
       ),
-      class = "spicy_invalid_input"
+      class = "spicy_invalid_input",
+      call = call
     )
   }
   invisible(NULL)
 }
 
 # Step 19: stars (FALSE | TRUE | named numeric vector with thresholds in (0,1])
-validate_stars <- function(stars) {
+validate_stars <- function(stars, call = rlang::caller_env()) {
   if (isFALSE(stars) || isTRUE(stars)) {
     return(invisible(NULL))
   }
@@ -2583,7 +2696,8 @@ validate_stars <- function(stars) {
           "Example: c(\"*\" = 0.05, \"**\" = 0.01, \"***\" = 0.001)."
         )
       ),
-      class = "spicy_invalid_input"
+      class = "spicy_invalid_input",
+      call = call
     )
   }
   nms <- names(stars)
@@ -2593,26 +2707,29 @@ validate_stars <- function(stars) {
         "When `stars` is a numeric vector, all elements must have ",
         "non-empty names (the symbols)."
       ),
-      class = "spicy_invalid_input"
+      class = "spicy_invalid_input",
+      call = call
     )
   }
   if (anyDuplicated(nms)) {
     spicy_abort(
       "Symbols in `stars` (vector names) must be unique.",
-      class = "spicy_invalid_input"
+      class = "spicy_invalid_input",
+      call = call
     )
   }
   if (any(is.na(stars)) || any(stars <= 0) || any(stars > 1)) {
     spicy_abort(
       "Thresholds in `stars` must all be in (0, 1].",
-      class = "spicy_invalid_input"
+      class = "spicy_invalid_input",
+      call = call
     )
   }
   invisible(NULL)
 }
 
 # Step 20: decimal_mark
-validate_decimal_mark <- function(decimal_mark) {
+validate_decimal_mark <- function(decimal_mark, call = rlang::caller_env()) {
   ok <- length(decimal_mark) == 1L &&
     is.character(decimal_mark) &&
     !is.na(decimal_mark) &&
@@ -2620,14 +2737,18 @@ validate_decimal_mark <- function(decimal_mark) {
   if (!ok) {
     spicy_abort(
       "`decimal_mark` must be a single character (e.g. \".\" or \",\").",
-      class = "spicy_invalid_input"
+      class = "spicy_invalid_input",
+      call = call
     )
   }
   invisible(NULL)
 }
 
 # Step 21: reference_label
-validate_reference_label <- function(reference_label) {
+validate_reference_label <- function(
+  reference_label,
+  call = rlang::caller_env()
+) {
   # NULL is the default: the registry label, resolved by the caller.
   if (is.null(reference_label)) {
     return(invisible(NULL))
@@ -2639,14 +2760,19 @@ validate_reference_label <- function(reference_label) {
   if (!ok) {
     spicy_abort(
       "`reference_label` must be a single non-empty string.",
-      class = "spicy_invalid_input"
+      class = "spicy_invalid_input",
+      call = call
     )
   }
   invisible(NULL)
 }
 
 # Step 22: model_labels
-validate_model_labels <- function(model_labels, models) {
+validate_model_labels <- function(
+  model_labels,
+  models,
+  call = rlang::caller_env()
+) {
   if (is.null(model_labels)) {
     return(invisible(NULL))
   }
@@ -2660,7 +2786,8 @@ validate_model_labels <- function(model_labels, models) {
         "`model_labels` must be NULL or a character vector with ",
         "non-empty values."
       ),
-      class = "spicy_invalid_input"
+      class = "spicy_invalid_input",
+      call = call
     )
   }
   if (length(model_labels) != length(models)) {
@@ -2670,7 +2797,8 @@ validate_model_labels <- function(model_labels, models) {
         length(model_labels),
         length(models)
       ),
-      class = "spicy_invalid_input"
+      class = "spicy_invalid_input",
+      call = call
     )
   }
   if (anyDuplicated(model_labels)) {
@@ -2686,7 +2814,8 @@ validate_model_labels <- function(model_labels, models) {
           "rendering can name its sub-columns unambiguously."
         )
       ),
-      class = "spicy_invalid_input"
+      class = "spicy_invalid_input",
+      call = call
     )
   }
   invisible(NULL)
@@ -2729,7 +2858,11 @@ validate_model_labels <- function(model_labels, models) {
 # it joins: two indistinguishable column groups cannot be addressed, and
 # `render_regression_table()` already gives up the response-variable
 # labels rather than print an ambiguous "mpg / mpg / hp".
-validate_resolved_model_labels <- function(resolved, models) {
+validate_resolved_model_labels <- function(
+  resolved,
+  models,
+  call = rlang::caller_env()
+) {
   if (is.null(resolved) || !anyDuplicated(resolved)) {
     return(invisible(NULL))
   }
@@ -2755,19 +2888,25 @@ validate_resolved_model_labels <- function(resolved, models) {
         "column group carries a distinct label."
       )
     ),
-    class = "spicy_invalid_input"
+    class = "spicy_invalid_input",
+    call = call
   )
 }
 
 # Step 23: outcome_labels (NULL | FALSE | character vector of length(models))
-validate_outcome_labels <- function(outcome_labels, models) {
+validate_outcome_labels <- function(
+  outcome_labels,
+  models,
+  call = rlang::caller_env()
+) {
   if (is.null(outcome_labels) || isFALSE(outcome_labels)) {
     return(invisible(NULL))
   }
   if (!is.character(outcome_labels) || any(is.na(outcome_labels))) {
     spicy_abort(
       "`outcome_labels` must be NULL, FALSE, or a character vector.",
-      class = "spicy_invalid_input"
+      class = "spicy_invalid_input",
+      call = call
     )
   }
   if (length(outcome_labels) != length(models)) {
@@ -2777,7 +2916,8 @@ validate_outcome_labels <- function(outcome_labels, models) {
         length(outcome_labels),
         length(models)
       ),
-      class = "spicy_invalid_input"
+      class = "spicy_invalid_input",
+      call = call
     )
   }
   invisible(NULL)
@@ -2789,11 +2929,12 @@ validate_outcome_labels <- function(outcome_labels, models) {
 # key that names nothing in the table is ignored there (decision 54,
 # `.reg_variable_labels()`). What is left for this step: a label is a
 # string, never NA, which the stub would print as "NA".
-validate_predictor_labels <- function(labels) {
+validate_predictor_labels <- function(labels, call = rlang::caller_env()) {
   if (is.character(labels) && anyNA(labels)) {
     spicy_abort(
       "Every `labels` entry must be a string, not NA.",
-      class = "spicy_invalid_input"
+      class = "spicy_invalid_input",
+      call = call
     )
   }
   invisible(NULL)
@@ -2985,24 +3126,14 @@ detect_ame_satterthwaite_path <- function(vcov, show_columns) {
 # output format. Fires only when the user picked the corresponding
 # output, so users with `output = "default"` pay nothing for
 # excel/word/clipboard validation.
-validate_output_resources <- function(output, excel_path, word_path) {
+validate_output_resources <- function(
+  output,
+  excel_path,
+  word_path,
+  call = rlang::caller_env()
+) {
   if (identical(output, "excel")) {
-    if (is.null(excel_path)) {
-      spicy_abort(
-        c(
-          "`output = \"excel\"` requires `excel_path` to be supplied.",
-          "i" = "Pass a file path: `excel_path = \"results/regression.xlsx\"`."
-        ),
-        class = "spicy_invalid_input"
-      )
-    }
-    parent <- dirname(excel_path)
-    if (!dir.exists(parent)) {
-      spicy_abort(
-        sprintf("Directory does not exist: `%s`.", parent),
-        class = "spicy_invalid_input"
-      )
-    }
+    .check_output_path(excel_path, output, call = call)
     if (!spicy_pkg_available("openxlsx2")) {
       # nocov start
       spicy_abort(
@@ -3010,29 +3141,15 @@ validate_output_resources <- function(output, excel_path, word_path) {
           "`output = \"excel\"` requires the 'openxlsx2' package.",
           "i" = "Install it with `install.packages(\"openxlsx2\")`."
         ),
-        class = "spicy_missing_pkg"
+        class = "spicy_missing_pkg",
+        call = call
       )
       # nocov end
     }
   }
 
   if (identical(output, "word")) {
-    if (is.null(word_path)) {
-      spicy_abort(
-        c(
-          "`output = \"word\"` requires `word_path` to be supplied.",
-          "i" = "Pass a file path: `word_path = \"results/regression.docx\"`."
-        ),
-        class = "spicy_invalid_input"
-      )
-    }
-    parent <- dirname(word_path)
-    if (!dir.exists(parent)) {
-      spicy_abort(
-        sprintf("Directory does not exist: `%s`.", parent),
-        class = "spicy_invalid_input"
-      )
-    }
+    .check_output_path(word_path, output, call = call)
     if (!spicy_pkg_available("flextable")) {
       # nocov start
       spicy_abort(
@@ -3040,7 +3157,8 @@ validate_output_resources <- function(output, excel_path, word_path) {
           "`output = \"word\"` requires the 'flextable' package.",
           "i" = "Install it with `install.packages(\"flextable\")`."
         ),
-        class = "spicy_missing_pkg"
+        class = "spicy_missing_pkg",
+        call = call
       )
       # nocov end
     }
@@ -3051,7 +3169,8 @@ validate_output_resources <- function(output, excel_path, word_path) {
           "`output = \"word\"` requires the 'officer' package.",
           "i" = "Install it with `install.packages(\"officer\")`."
         ),
-        class = "spicy_missing_pkg"
+        class = "spicy_missing_pkg",
+        call = call
       )
       # nocov end
     }
@@ -3065,14 +3184,16 @@ validate_output_resources <- function(output, excel_path, word_path) {
           "`output = \"clipboard\"` requires the 'clipr' package.",
           "i" = "Install it with `install.packages(\"clipr\")`."
         ),
-        class = "spicy_missing_pkg"
+        class = "spicy_missing_pkg",
+        call = call
       )
       # nocov end
     }
     if (!clipr::clipr_available()) {
       spicy_abort(
         "Clipboard is not available on this system.",
-        class = "spicy_unsupported"
+        class = "spicy_unsupported",
+        call = call
       )
     }
   }
@@ -3084,7 +3205,8 @@ validate_output_resources <- function(output, excel_path, word_path) {
         "`output = \"gt\"` requires the 'gt' package.",
         "i" = "Install it with `install.packages(\"gt\")`."
       ),
-      class = "spicy_missing_pkg"
+      class = "spicy_missing_pkg",
+      call = call
     )
     # nocov end
   }
@@ -3098,7 +3220,8 @@ validate_output_resources <- function(output, excel_path, word_path) {
         "`output = \"flextable\"` requires the 'flextable' package.",
         "i" = "Install it with `install.packages(\"flextable\")`."
       ),
-      class = "spicy_missing_pkg"
+      class = "spicy_missing_pkg",
+      call = call
     )
     # nocov end
   }
@@ -3112,7 +3235,8 @@ validate_output_resources <- function(output, excel_path, word_path) {
         "`output = \"tinytable\"` requires the 'tinytable' package.",
         "i" = "Install it with `install.packages(\"tinytable\")`."
       ),
-      class = "spicy_missing_pkg"
+      class = "spicy_missing_pkg",
+      call = call
     )
     # nocov end
   }
@@ -3126,7 +3250,12 @@ validate_output_resources <- function(output, excel_path, word_path) {
 # mandatory when its column family is requested -- and refused when
 # passed without a use. tau additionally accepts "minmax" (resolved
 # per fit and disclosed in the footer).
-validate_estimand_horizons <- function(show_columns, tau, at_time) {
+validate_estimand_horizons <- function(
+  show_columns,
+  tau,
+  at_time,
+  call = rlang::caller_env()
+) {
   wants_rmst <- any(
     c("rmst", "rmst_se", "rmst_ci", "rmst_p") %in%
       show_columns
@@ -3150,13 +3279,15 @@ validate_estimand_horizons <- function(show_columns, tau, at_time) {
           ),
           "i" = "The horizon defines the estimand; there is no default."
         ),
-        class = "spicy_invalid_input"
+        class = "spicy_invalid_input",
+        call = call
       )
     }
   } else if (!is.null(tau)) {
     spicy_abort(
       "`tau` was supplied but no RMST column is requested.",
-      class = "spicy_invalid_input"
+      class = "spicy_invalid_input",
+      call = call
     )
   }
   if (wants_risk) {
@@ -3170,13 +3301,15 @@ validate_estimand_horizons <- function(show_columns, tau, at_time) {
           ),
           "i" = "The landmark defines the estimand; there is no default."
         ),
-        class = "spicy_invalid_input"
+        class = "spicy_invalid_input",
+        call = call
       )
     }
   } else if (!is.null(at_time)) {
     spicy_abort(
       "`at_time` was supplied but no risk-difference column is requested.",
-      class = "spicy_invalid_input"
+      class = "spicy_invalid_input",
+      call = call
     )
   }
   invisible(NULL)

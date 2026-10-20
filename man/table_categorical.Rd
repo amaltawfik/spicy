@@ -53,7 +53,12 @@ excluding the \code{by} column -- matching the select-less defaults of
 \code{\link[=table_continuous]{table_continuous()}} and \code{\link[=table_continuous_lm]{table_continuous_lm()}}. An explicit
 \code{select} is taken verbatim (numeric columns included), so
 numeric-coded categorical variables can still be tabulated by
-naming them.}
+naming them. The \code{by} and \code{weights} columns are not part of the
+selection: \code{everything()} and the other helpers skip them, and
+naming one in \code{select}, or giving its position, is an error. A name
+that is not a column of \code{data} is an error (class
+\code{spicy_missing_column}), and so is a selection with no column to
+tabulate.}
 
 \item{by}{Optional grouping column used for columns/groups. Accepts an
 unquoted column name or a single character column name. Factor
@@ -89,14 +94,22 @@ call wins over it. Any other value, \code{NULL} included, is an error. A
 variable label documents the data file; a published table carries
 the wording you set here.}
 
-\item{levels_keep}{Optional character vector of levels to keep/order for row
-modalities. If \code{NULL}, all observed levels are kept. Entries must
+\item{levels_keep}{Levels to keep, in the order to display them. If
+\code{NULL} (the default), all observed levels are kept. Entries must
 match the level strings the table displays (for labelled columns
-these are the \code{"[code] label"} strings, not the bare label
-text). When nothing matches
-for a selected variable, that variable is dropped from the table
-with a classed warning (\code{spicy_no_selection}) listing the
-available level strings.}
+these are the \code{"[code] label"} strings, not the bare label text).
+Two forms, as in \code{\link[=table_categorical_svy]{table_categorical_svy()}}:
+\itemize{
+\item a character vector applies to every variable: each keeps the
+levels it has, and a variable with none of them is dropped from
+the table with a classed warning (\code{spicy_no_selection}) listing
+its level strings;
+\item a named list applies per variable
+(\code{levels_keep = list(smoking = "Yes")}): each name must be a
+variable of the table, each level one the variable displays (an
+error otherwise), and the variables it does not name keep all
+their levels.
+}}
 
 \item{include_total}{Logical. If \code{TRUE} (the default), includes a \code{Total} group
 when available. A level of \code{by} displayed with the label of that
@@ -116,8 +129,9 @@ label with
 If \code{TRUE}, rows with \code{NA} in the tabulated variable (and in \code{by},
 when supplied) are removed BEFORE each cross-tabulation, and the
 removal is disclosed in a table note ("Missing values removed: ...")
-rather than silent. Before 0.13.0 the default was \code{TRUE} with no
-disclosure.}
+rather than silent; a \code{by} that no observation holds is then an
+error (class \code{spicy_invalid_data}). Before 0.13.0 the default was
+\code{TRUE} with no disclosure.}
 
 \item{weights}{Optional weights. Either \code{NULL} (the default), a numeric vector
 of length \code{nrow(data)}, or a single column in \code{data} supplied as an
@@ -187,7 +201,8 @@ variable). One of \code{"none"} (default), \code{"holm"}, \code{"hochberg"},
 \code{by} and the \code{p} column. See \emph{Multiple-comparison adjustment}.}
 
 \item{percent_digits}{Number of digits for percentages in report outputs.
-Defaults to \code{1}.}
+Defaults to \code{1}. A whole number: a fraction is an error, as for
+\code{p_digits} and \code{v_digits}.}
 
 \item{p_digits}{Integer >= 1. Number of decimal places used to
 render \emph{p}-values in the \code{p} column (default: \code{3}, the APA
@@ -313,7 +328,8 @@ which have a single header row to begin with.}
 \item{blank_na_wide}{Logical. If \code{FALSE} (the default), \code{NA} values are kept
 as-is in wide raw output. If \code{TRUE}, replaces them with empty strings.}
 
-\item{excel_path}{Path for \code{output = "excel"}. Defaults to \code{NULL}.}
+\item{excel_path}{Path for \code{output = "excel"}, ending in \code{".xlsx"}, in
+a directory that exists. Defaults to \code{NULL}.}
 
 \item{excel_sheet}{Sheet name for Excel export. \code{NULL} (the
 default) uses \code{"Categorical"}.}
@@ -323,7 +339,8 @@ to \code{"\\t"}. A cell holding the delimiter itself, a double quote or
 a line break is quoted RFC 4180-style, so the grid survives
 whatever delimiter you choose.}
 
-\item{word_path}{File path for \code{output = "word"}. Defaults to
+\item{word_path}{File path for \code{output = "word"}, ending in \code{".docx"},
+in a directory that exists. Defaults to
 \code{NULL}. Before 0.13.0, supplying it with \code{output = "flextable"}
 also wrote a \code{.docx} as a side effect; it is now used exclusively
 by \code{output = "word"} (the contract shared with the rest of the

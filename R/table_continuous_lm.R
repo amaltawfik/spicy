@@ -31,7 +31,11 @@
 #' @param select Outcome columns to include. If `regex = FALSE`, use tidyselect
 #'   syntax or a character vector of column names (default:
 #'   `tidyselect::everything()`). If `regex = TRUE`, provide a regular expression
-#'   pattern (character string).
+#'   pattern (character string). The `by` column and the `covariates` are
+#'   not part of the selection: `everything()` and the other helpers skip
+#'   them, and naming one in `select` is an error. A name that is not a
+#'   column of `data` is an error (class `spicy_missing_column`), and so
+#'   is a selection with no numeric column.
 #' @param by A single predictor column. Accepts an unquoted column name or a
 #'   single character column name. The predictor can be:
 #'   - **numeric** (continuous): treated as a continuous regressor. The
@@ -69,11 +73,12 @@
 #'   `covariates = c(age, sex)`, `covariates = tidyselect::all_of(cov_vec)`,
 #'   `covariates = tidyselect::starts_with("control_")`) or a literal
 #'   character vector of column names. Each covariate must be numeric,
-#'   integer, logical, factor, or character; covariates that also appear
-#'   in `select` are silently auto-excluded from the outcome list (a
-#'   variable cannot be both outcome and adjustment), and a covariate
-#'   that equals `by` raises an error (a variable cannot be both
-#'   predictor and adjustment).
+#'   integer, logical, factor, or character. A variable cannot be both
+#'   outcome and adjustment: the covariates are left out of the outcome
+#'   selection (`select = everything()` skips them), and naming one in
+#'   `select`, or giving its position, raises an error; a covariate that
+#'   equals `by` raises an error too (a variable cannot be both predictor
+#'   and adjustment).
 #'
 #'   When non-empty, each model is fitted as `lm(y ~ by + cov1 + cov2 + ...)`
 #'   and the reported estimate / SE / p-value / CI on `by` are
@@ -145,7 +150,9 @@
 #'   Validation: weights must be finite, non-negative, and contain at least
 #'   one positive value (otherwise the function errors). Rows with `NA` in
 #'   `weights` are excluded from the analytic sample for each outcome,
-#'   alongside rows with `NA` in `y` or `by`. When supplied, weights are
+#'   alongside rows with `NA` in `y` or `by`. A weights column is not an
+#'   outcome: `select = everything()` skips it, and naming it in
+#'   `select`, or giving its position, is an error. When supplied, weights are
 #'   passed to `lm(..., weights = ...)`, so coefficients become weighted
 #'   least-squares estimates and `\eqn{R^2}{R^2}`, adjusted `\eqn{R^2}{R^2}`, and the four effect
 #'   sizes are computed from the corresponding weighted sums of squares
@@ -213,7 +220,9 @@
 #'
 #'   Rows with `NA` in `cluster` are excluded from the analytic sample
 #'   for each outcome (alongside rows with `NA` in `y`, `by`, or
-#'   `weights`). At least two distinct non-missing cluster values are
+#'   `weights`). A cluster column is not an outcome: `select =
+#'   everything()` skips it, and naming it in `select`, or giving its
+#'   position, is an error. At least two distinct non-missing cluster values are
 #'   required. Multi-way clustering (a list / data.frame of multiple
 #'   cluster vectors) is not supported; use [sandwich::vcovCL()] or
 #'   [clubSandwich::vcovCR()] directly on the fitted model for that case.
@@ -236,15 +245,18 @@
 #'     Level-specific means are still displayed.
 #' @param statistic Logical. If `TRUE`, includes a test-statistic column in the
 #'   wide and rendered outputs. Defaults to `FALSE`.
-#' @param p_value Logical. If `TRUE`, includes a `p` column in the wide and
-#'   rendered outputs. Defaults to `TRUE`.
+#' @param p_value Logical or `NULL`. If `TRUE`, includes a `p` column in
+#'   the wide and rendered outputs. `NULL` (the default) shows it whenever
+#'   `by` is supplied, as in the rest of the family; `by` is required
+#'   here, so `NULL` means `TRUE`. Pass `p_value = FALSE` to suppress it.
 #' @param show_n Logical. If `TRUE`, includes an unweighted `n` column in the
 #'   wide and rendered outputs. Defaults to `TRUE`.
 #' @param show_weighted_n Logical. If `TRUE` and `weights` is supplied,
 #'   includes a `Weighted n` column equal to the sum of case weights in the
 #'   analytic sample. Defaults to `FALSE`.
 #' @param effect_size Character. Effect-size column to include in the wide and
-#'   rendered outputs. One of:
+#'   rendered outputs (a logical is an error, class `spicy_defunct`). One
+#'   of:
 #'   - `"none"` (the default): no effect-size column.
 #'   - `"f2"`: Cohen's `\eqn{f^2}{f^2} = \eqn{R^2}{R^2} / (1 - \eqn{R^2}{R^2})`. Defined for any predictor type.
 #'     Familiar from Cohen (1988); standard input for a-priori power analysis.
@@ -329,9 +341,8 @@
 #'   intervals (default: `0.95`). Must be between 0 and 1 exclusive.
 #' @param digits Number of decimal places for descriptive values, regression
 #'   coefficients, and test statistics (default: `2`). Must be a single
-#'   non-negative number; non-integer values are truncated (e.g. `2.9`
-#'   becomes `2`). Same constraint for `fit_digits` and
-#'   `effect_size_digits`.
+#'   non-negative whole number: a fraction (`2.9`) is an error. Same
+#'   constraint for `fit_digits` and `effect_size_digits`.
 #' @param fit_digits Number of decimal places for model-fit columns (`\eqn{R^2}{R^2}` or
 #'   adjusted `\eqn{R^2}{R^2}`) in wide and rendered outputs (default: `2`).
 #' @param effect_size_digits Number of decimal places for the effect-size
@@ -346,8 +357,7 @@
 #'   genomics / GWAS contexts where adjusted *p*-values can be very
 #'   small, or for journals using a coarser convention. Leading zeros
 #'   are always stripped, following APA convention. Values below `1`
-#'   raise an error; non-integer values are truncated (e.g. `3.7`
-#'   becomes `3`).
+#'   and fractions (`3.7`) raise an error.
 #' @param decimal_mark Character used as decimal separator. Either `"."`
 #'   (default) or `","`.
 #' @param align Horizontal alignment of numeric columns in the printed
@@ -384,16 +394,19 @@
 #'   - `"excel"` (requires `openxlsx2`)
 #'   - `"clipboard"` (requires `clipr`)
 #'   - `"word"` (requires `flextable` and `officer`)
-#' @param excel_path File path for `output = "excel"`.
+#' @param excel_path File path for `output = "excel"`, ending in
+#'   `".xlsx"`, in a directory that exists.
 #' @param excel_sheet Sheet name for `output = "excel"`. `NULL` (the
 #'   default) uses `"Linear models"`.
 #' @param clipboard_delim Delimiter for `output = "clipboard"` (default:
 #'   `"\t"`). A cell holding the delimiter itself, a double quote or a
 #'   line break is quoted RFC 4180-style, so the grid survives whatever
 #'   delimiter you choose.
-#' @param word_path File path for `output = "word"`.
-#' @param verbose Logical. If `TRUE`, prints messages about ignored
-#'   non-numeric selected outcomes (default: `FALSE`).
+#' @param word_path File path for `output = "word"`, ending in `".docx"`,
+#'   in a directory that exists.
+#' @param verbose Logical. If `TRUE`, a message (class `spicy_info`)
+#'   names the non-numeric columns left out of the outcomes (default:
+#'   `FALSE`).
 #' @param user_na Logical. If `TRUE` (the default), declared missing
 #'   values in the outcomes, in `by`, and in `covariates` are treated
 #'   as missing and excluded from the fitted models (reflected in the
@@ -451,8 +464,8 @@
 #' included, in `attr(x, "note")` (`NULL` when there is nothing to say).
 #'
 #' If no numeric outcome columns remain after applying `select`, `exclude`,
-#' and `regex`, the function emits a warning and returns an empty
-#' `data.frame()` regardless of `output`.
+#' and `regex`, the function stops with an error (class
+#' `spicy_invalid_input`), as the other tables of the family do.
 #'
 #' @details
 #' # Model and outputs
@@ -478,8 +491,9 @@
 #' companion: choose it when you want heteroskedasticity-consistent standard
 #' errors (`vcov = "HC*"`), model fit statistics, or case weights via
 #' `lm(..., weights = ...)`. Because the function exists to report a fitted
-#' model, its inferential output is on by default: `p_value = TRUE` and
-#' `r2 = "r2"` are the defaults; set `p_value = FALSE` or `r2 = "none"` to
+#' model, its inferential output is on by default: the *p*-value is shown
+#' (`p_value = NULL`, the default, shows it with `by`, which is required
+#' here) and `r2 = "r2"`; set `p_value = FALSE` or `r2 = "none"` to
 #' suppress them.
 #'
 #' # Effect sizes
@@ -1065,7 +1079,7 @@ table_continuous_lm <- function(
   boot_n = 1000,
   contrast = c("auto", "none"),
   statistic = FALSE,
-  p_value = TRUE,
+  p_value = NULL,
   show_n = TRUE,
   show_weighted_n = FALSE,
   effect_size = c("none", "f2", "d", "g", "omega2"),
@@ -1102,6 +1116,8 @@ table_continuous_lm <- function(
   # A journal / locale style only moves DEFAULTS (see `?spicy_style`).
   .style_pushed <- .style_begin(style, match.call(), environment())
   on.exit(.style_end(.style_pushed), add = TRUE)
+  # The call the errors of the fits name (`.with_public_call()`).
+  public_call <- sys.call()
 
   .check_data_frame(data, "table_continuous_lm")
   if (
@@ -1116,54 +1132,13 @@ table_continuous_lm <- function(
       class = "spicy_invalid_input"
     )
   }
-  if (
-    !is.numeric(digits) ||
-      length(digits) != 1L ||
-      is.na(digits) ||
-      digits < 0
-  ) {
-    spicy_abort(
-      "`digits` must be a single non-negative number.",
-      class = "spicy_invalid_input"
-    )
-  }
-  digits <- as.integer(digits)
-  if (
-    !is.numeric(fit_digits) ||
-      length(fit_digits) != 1L ||
-      is.na(fit_digits) ||
-      fit_digits < 0
-  ) {
-    spicy_abort(
-      "`fit_digits` must be a single non-negative number.",
-      class = "spicy_invalid_input"
-    )
-  }
-  fit_digits <- as.integer(fit_digits)
-  if (
-    !is.numeric(effect_size_digits) ||
-      length(effect_size_digits) != 1L ||
-      is.na(effect_size_digits) ||
-      effect_size_digits < 0
-  ) {
-    spicy_abort(
-      "`effect_size_digits` must be a single non-negative number.",
-      class = "spicy_invalid_input"
-    )
-  }
-  effect_size_digits <- as.integer(effect_size_digits)
-  if (
-    !is.numeric(p_digits) ||
-      length(p_digits) != 1L ||
-      is.na(p_digits) ||
-      p_digits < 1
-  ) {
-    spicy_abort(
-      "`p_digits` must be a single integer >= 1 (typically 2-4).",
-      class = "spicy_invalid_input"
-    )
-  }
-  p_digits <- as.integer(p_digits)
+  digits <- validate_digit_arg(digits, "digits")
+  fit_digits <- validate_digit_arg(fit_digits, "fit_digits")
+  effect_size_digits <- validate_digit_arg(
+    effect_size_digits,
+    "effect_size_digits"
+  )
+  p_digits <- validate_digit_arg(p_digits, "p_digits", min = 1L)
   if (
     !is.numeric(boot_n) ||
       length(boot_n) != 1L ||
@@ -1183,11 +1158,24 @@ table_continuous_lm <- function(
     )
   }
   .check_labels_arg(labels)
+  # `p_value = NULL` is the family's automatic default: the p-value is
+  # shown whenever `by` is supplied, and `by` is required here.
+  if (
+    !is.null(p_value) &&
+      (!is.logical(p_value) || length(p_value) != 1L || is.na(p_value))
+  ) {
+    spicy_abort(
+      "`p_value` must be TRUE, FALSE, or NULL.",
+      class = "spicy_invalid_input"
+    )
+  }
+  if (is.null(p_value)) {
+    p_value <- TRUE
+  }
   for (.arg in c(
     "regex",
     "verbose",
     "statistic",
-    "p_value",
     "show_n",
     "show_weighted_n",
     "ci",
@@ -1211,6 +1199,12 @@ table_continuous_lm <- function(
   }
   vcov <- spicy_match_arg(vcov)
   contrast <- spicy_match_arg(contrast)
+  # `effect_size` names a measure; a logical is refused, as in the
+  # siblings that once took one.
+  .check_effect_size_not_logical(
+    effect_size,
+    "one of `\"f2\"`, `\"d\"`, `\"g\"`, `\"omega2\"`"
+  )
   effect_size <- spicy_match_arg(effect_size)
   r2 <- spicy_match_arg(r2)
   align <- spicy_match_arg(align)
@@ -1311,32 +1305,12 @@ table_continuous_lm <- function(
   weights_quo <- rlang::enquo(weights)
   weights_name <- detect_weights_column_name(weights_quo, data)
   weights_vec <- resolve_weights_argument(weights_quo, data, "weights")
-  if (!is.null(weights_vec)) {
-    # NA weights are legal: the documented contract excludes those
-    # rows from the analytic sample (alongside NA in `y` / `by`) and
-    # discloses them in the table note. Only genuinely non-finite
-    # values (Inf, -Inf, NaN) are rejected -- `!is.finite(NA)` is TRUE,
-    # so the finiteness check must not sweep NA along with them
-    # (audit phase 2, finding 14).
-    if (any(is.infinite(weights_vec) | is.nan(weights_vec))) {
-      spicy_abort(
-        "`weights` must contain only finite values.",
-        class = "spicy_invalid_input"
-      )
-    }
-    if (any(weights_vec < 0, na.rm = TRUE)) {
-      spicy_abort(
-        "`weights` must be non-negative.",
-        class = "spicy_invalid_input"
-      )
-    }
-    if (all(is.na(weights_vec) | weights_vec == 0)) {
-      spicy_abort(
-        "`weights` must contain at least one positive value.",
-        class = "spicy_invalid_input"
-      )
-    }
-  }
+  # NA weights are legal: the documented contract excludes those rows
+  # from the analytic sample (alongside NA in `y` / `by`) and discloses
+  # them in the table note. Only genuinely non-finite values (Inf, -Inf,
+  # NaN) are rejected -- `!is.finite(NA)` is TRUE, so the finiteness
+  # check must not sweep NA along with them (audit phase 2, finding 14).
+  .check_weights_values(weights_vec)
   if (isTRUE(show_weighted_n) && is.null(weights_vec)) {
     spicy_warn(
       "`show_weighted_n` is ignored when `weights` is not supplied.",
@@ -1416,18 +1390,33 @@ table_continuous_lm <- function(
   }
 
   available_names <- names(data)
+  # Resolve `covariates` (additive only in v1; tidyselect / character)
+  # before the outcomes: a variable cannot be both outcome and
+  # adjustment, so the covariates are outside the outcome selection.
+  covariates_names <- resolve_covariates_argument(
+    rlang::enquo(covariates),
+    data,
+    by_name = by_name
+  )
+
   excluded_names <- resolve_multi_column_selection(
     rlang::enquo(exclude),
     data,
     "exclude"
   )
-  excluded_names <- unique(c(
-    excluded_names,
-    by_name,
-    weights_name,
-    cluster_name
-  ))
 
+  # `by`, the covariates, and the weights and cluster columns are outside
+  # the selection: `everything()` and the other helpers skip them, and
+  # pointing at one in `select`, by name or by position, is an error.
+  roles <- c(
+    by = by_name,
+    stats::setNames(
+      covariates_names,
+      rep("covariates", length(covariates_names))
+    ),
+    weights = weights_name,
+    cluster = cluster_name
+  )
   if (isTRUE(regex)) {
     select_val <- tryCatch(
       rlang::eval_tidy(select),
@@ -1441,19 +1430,17 @@ table_continuous_lm <- function(
         class = "spicy_invalid_input"
       )
     }
-    selected_names <- grep(select_val, available_names, value = TRUE)
-  } else {
-    select_quo <- rlang::enquo(select)
-    selected_pos <- tryCatch(
-      tidyselect::eval_select(select_quo, data),
-      error = function(e) {
-        spicy_abort(
-          "`select` must select columns in `data`.",
-          class = "spicy_invalid_input"
-        )
-      }
+    selected_names <- grep(
+      select_val,
+      setdiff(available_names, roles),
+      value = TRUE
     )
-    selected_names <- names(selected_pos)
+  } else {
+    selected_names <- .resolve_selection_without(
+      rlang::enquo(select),
+      data,
+      roles = roles
+    )
   }
 
   selected_names <- setdiff(selected_names, excluded_names)
@@ -1462,28 +1449,12 @@ table_continuous_lm <- function(
     function(nm) is.numeric(data[[nm]]),
     logical(1)
   )]
-  ignored_names <- setdiff(selected_names, numeric_outcomes)
-  if (length(ignored_names) > 0L && isTRUE(verbose)) {
-    rlang::inform(
-      paste0(
-        "Ignoring non-numeric selected outcomes: ",
-        paste(ignored_names, collapse = ", ")
-      )
+  if (verbose) {
+    .inform_ignored_non_numeric(
+      "table_continuous_lm",
+      setdiff(selected_names, numeric_outcomes)
     )
   }
-
-  # Resolve `covariates` (additive only in v1; tidyselect / character).
-  # Auto-exclude covariates from `numeric_outcomes` -- a variable
-  # cannot be both outcome and adjustment. Mirrors the silent
-  # auto-exclusion of `by` from `select` above.
-  covariates_quo <- rlang::enquo(covariates)
-  covariates_names <- resolve_covariates_argument(
-    covariates_quo,
-    data,
-    select_names = numeric_outcomes,
-    by_name = by_name
-  )
-  numeric_outcomes <- setdiff(numeric_outcomes, covariates_names)
 
   # Same integer64 contract as the `by` guard above, applied to the
   # outcome and covariate columns entering the fits.
@@ -1510,11 +1481,7 @@ table_continuous_lm <- function(
   }
 
   if (length(numeric_outcomes) == 0L) {
-    spicy_warn(
-      "No numeric outcome columns selected.",
-      class = "spicy_no_selection"
-    )
-    return(data.frame())
+    .abort_empty_selection("select", "numeric")
   }
 
   covariates_df <- if (length(covariates_names) > 0L) {
@@ -1528,26 +1495,31 @@ table_continuous_lm <- function(
   outcome_labels <- resolve_variable_labels(data, numeric_outcomes, labels)
   by_label <- resolve_variable_labels(data, by_name, labels)
 
-  rows <- lapply(
-    seq_along(numeric_outcomes),
-    function(i) {
-      fit_outcome_lm_rows(
-        y = resolve_user_na(data[[numeric_outcomes[i]]]),
-        predictor = by_vector,
-        covariates = covariates_df,
-        weights = weights_vec,
-        cluster = cluster_vec,
-        outcome_name = numeric_outcomes[i],
-        outcome_label = outcome_labels[i],
-        predictor_label = by_label,
-        vcov_type = vcov,
-        contrast = contrast,
-        ci_level = ci_level,
-        effect_size = effect_size,
-        boot_n = boot_n,
-        adjustment = adjustment
-      )
-    }
+  # The fits compute the variances (`R/vcov.R`): an estimator that fails
+  # there is refused in the name of this function.
+  rows <- .with_public_call(
+    lapply(
+      seq_along(numeric_outcomes),
+      function(i) {
+        fit_outcome_lm_rows(
+          y = resolve_user_na(data[[numeric_outcomes[i]]]),
+          predictor = by_vector,
+          covariates = covariates_df,
+          weights = weights_vec,
+          cluster = cluster_vec,
+          outcome_name = numeric_outcomes[i],
+          outcome_label = outcome_labels[i],
+          predictor_label = by_label,
+          vcov_type = vcov,
+          contrast = contrast,
+          ci_level = ci_level,
+          effect_size = effect_size,
+          boot_n = boot_n,
+          adjustment = adjustment
+        )
+      }
+    ),
+    public_call
   )
   result <- do.call(rbind, rows)
   rownames(result) <- NULL

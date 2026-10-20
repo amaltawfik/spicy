@@ -2127,12 +2127,12 @@ output_excel <- function(rendered, excel_path, excel_sheet) {
     # nocov end
   }
   if (is.null(excel_path) || !nzchar(excel_path)) {
-    # Reachable guard. validate_output_resources() (Phase F) only
-    # rejects is.null(excel_path); it does NOT reject an empty string
-    # on every platform. A direct caller of output_excel() /
-    # dispatch_regression_output() that passes excel_path = "" (e.g.
-    # paste0(dir, "/", fname) with an unset fname) reaches this abort
-    # via the !nzchar() half of the guard.
+    # Reachable guard. validate_output_resources() refuses a NULL or
+    # empty path, a wrong extension and a missing directory before any
+    # table is built (`.check_output_path()`), so only a direct caller
+    # of output_excel() / dispatch_regression_output() that passes
+    # excel_path = "" (e.g. paste0(dir, "/", fname) with an unset fname)
+    # reaches this abort, via the !nzchar() half of the guard.
     spicy_abort(
       "`excel_path` must be supplied for output = \"excel\".",
       class = "spicy_invalid_input"
@@ -2830,9 +2830,9 @@ output_word <- function(rendered, word_path, word_template = NULL) {
   }
   if (is.null(word_path) || !nzchar(word_path)) {
     # Reachable guard (see the output_excel() excel_path comment).
-    # validate_output_resources() only rejects is.null(word_path), not
-    # an empty string; a direct caller passing word_path = "" reaches
-    # this abort via the !nzchar() half of the guard.
+    # validate_output_resources() refuses a NULL or empty path before any
+    # table is built; only a direct caller passing word_path = "" reaches
+    # this abort, via the !nzchar() half of the guard.
     spicy_abort(
       "`word_path` must be supplied for output = \"word\".",
       class = "spicy_invalid_input"

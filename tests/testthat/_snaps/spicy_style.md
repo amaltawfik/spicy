@@ -3,7 +3,7 @@
     Code
       spicy_style("fr")
     Condition
-      Error in `.style_from_registry()`:
+      Error in `spicy_style()`:
       ! The "fr" style is gone: French typography now comes with the language.
       i `options(spicy.language = "fr")` gives a French table -- words and numbers.
       i For the numbers alone, compose `spicy_style(decimal_mark = ",", p_style = "standard")`.

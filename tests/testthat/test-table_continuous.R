@@ -967,7 +967,7 @@ test_that("table_continuous uses dedicated digits for effect sizes", {
     iris,
     select = Sepal.Length,
     by = Species,
-    effect_size = TRUE,
+    effect_size = "auto",
     effect_size_ci = TRUE,
     digits = 1,
     effect_size_digits = 3
@@ -1178,20 +1178,23 @@ test_that("table_continuous validates logical parameters", {
   expect_error(table_continuous(df, verbose = NA), "verbose")
 })
 
-test_that("table_continuous warns when NA present in by column", {
+test_that("table_continuous discloses NA in the by column in the note only", {
+  # The default `drop_na = TRUE` removes the rows and the note says how
+  # many, as in the rest of the family: no warning on a default.
   df <- data.frame(
     x = 1:6,
     g = c("A", "A", "B", "B", NA, NA)
   )
-  expect_warning(
-    table_continuous(df, select = "x", by = "g", output = "data.frame"),
-    class = "spicy_dropped_na"
-  )
-  out <- suppressWarnings(
-    table_continuous(df, select = "x", by = "g", output = "data.frame")
+  expect_no_warning(
+    out <- table_continuous(df, select = "x", by = "g", output = "data.frame")
   )
   # Only A and B groups should be present
   expect_equal(sort(unique(out$group)), c("A", "B"))
+  expect_match(
+    attr(out, "note"),
+    "Rows with missing g removed: 2.",
+    fixed = TRUE
+  )
 })
 
 test_that("table_continuous discloses removed NAs in a table note", {
@@ -1495,16 +1498,17 @@ test_that("fmt_p uses non-breaking space in display", {
   expect_true(any(grepl("\\.001", p_col)))
 })
 
-test_that("table_continuous warns on no numeric columns", {
+test_that("table_continuous refuses a selection with no numeric column", {
+  # As the other tables do: it warned and returned an empty data frame.
   df <- data.frame(x = letters[1:5])
-  expect_warning(table_continuous(df, output = "data.frame"), "No numeric")
-})
-
-test_that("table_continuous no-numeric warning returns empty data.frame", {
-  df <- data.frame(x = letters[1:5])
-  out <- suppressWarnings(table_continuous(df, output = "data.frame"))
-  expect_s3_class(out, "data.frame")
-  expect_equal(nrow(out), 0L)
+  expect_error(
+    table_continuous(df, output = "data.frame"),
+    class = "spicy_invalid_input"
+  )
+  expect_error(
+    table_continuous(iris, select = tidyselect::starts_with("zzz")),
+    class = "spicy_invalid_input"
+  )
 })
 
 # ---- optional outputs: tinytable ----
@@ -1935,7 +1939,7 @@ test_that("table_continuous effect_size=TRUE adds es columns (welch, 2 groups)",
     df,
     select = Sepal.Length,
     by = Species,
-    effect_size = TRUE,
+    effect_size = "auto",
     output = "data.frame"
   )
   expect_true("es_type" %in% names(out))
@@ -1953,7 +1957,7 @@ test_that("table_continuous Hedges' g matches manual calculation", {
     df,
     select = Sepal.Length,
     by = Species,
-    effect_size = TRUE,
+    effect_size = "auto",
     output = "data.frame"
   )
   x1 <- df$Sepal.Length[df$Species == "setosa"]
@@ -1973,7 +1977,7 @@ test_that("table_continuous eta-squared for 3+ groups (welch)", {
     iris,
     select = Sepal.Length,
     by = Species,
-    effect_size = TRUE,
+    effect_size = "auto",
     output = "data.frame"
   )
   expect_equal(out$es_type[1], "eta_sq")
@@ -1998,7 +2002,7 @@ test_that("table_continuous nonparametric 2 groups gives rank-biserial r", {
     select = Sepal.Length,
     by = Species,
     test = "nonparametric",
-    effect_size = TRUE,
+    effect_size = "auto",
     output = "data.frame"
   )
   expect_equal(out$es_type[1], "r_rb")
@@ -2012,7 +2016,7 @@ test_that("table_continuous nonparametric 3+ groups gives epsilon-squared", {
     select = Sepal.Length,
     by = Species,
     test = "nonparametric",
-    effect_size = TRUE,
+    effect_size = "auto",
     output = "data.frame"
   )
   expect_equal(out$es_type[1], "epsilon_sq")
@@ -2025,7 +2029,7 @@ test_that("table_continuous effect_size without by warns", {
     out <- table_continuous(
       iris,
       select = Sepal.Length,
-      effect_size = TRUE,
+      effect_size = "auto",
       output = "data.frame"
     ),
     "ignored"
@@ -2052,7 +2056,7 @@ test_that("table_continuous effect_size default output carries attributes", {
     iris,
     select = Sepal.Length,
     by = Species,
-    effect_size = TRUE,
+    effect_size = "auto",
     effect_size_ci = TRUE
   )
   expect_true(attr(out, "show_effect_size"))
@@ -2064,7 +2068,7 @@ test_that("table_continuous effect_size display shows ES column", {
     iris,
     select = Sepal.Length,
     by = Species,
-    effect_size = TRUE,
+    effect_size = "auto",
   )
   display <- spicy:::build_display_df(
     out,
@@ -2082,7 +2086,7 @@ test_that("table_continuous effect_size_ci display shows brackets", {
     iris,
     select = Sepal.Length,
     by = Species,
-    effect_size = TRUE,
+    effect_size = "auto",
     effect_size_ci = TRUE,
   )
   display <- spicy:::build_display_df(
@@ -2102,7 +2106,7 @@ test_that("table_continuous print works with effect_size", {
     iris,
     select = Sepal.Length,
     by = Species,
-    effect_size = TRUE,
+    effect_size = "auto",
     effect_size_ci = TRUE
   )
   expect_output(print(out))
@@ -2113,7 +2117,7 @@ test_that("table_continuous es values only on first row of each variable block",
     iris,
     select = Sepal.Length,
     by = Species,
-    effect_size = TRUE,
+    effect_size = "auto",
     output = "data.frame"
   )
   # 3 groups x 1 var = 3 rows; es_value only on first row
@@ -2128,7 +2132,7 @@ test_that("table_continuous gt with effect_size has ES spanner", {
     iris,
     select = Sepal.Length,
     by = Species,
-    effect_size = TRUE,
+    effect_size = "auto",
     output = "gt"
   )
   spanners <- out[["_spanners"]]
@@ -2143,7 +2147,7 @@ test_that("table_continuous effect_size=TRUE alone adds es but not test columns"
     iris,
     select = Sepal.Length,
     by = Species,
-    effect_size = TRUE,
+    effect_size = "auto",
     output = "data.frame"
   )
   expect_true("es_type" %in% names(out))
@@ -2181,7 +2185,7 @@ test_that("table_continuous does not warn about test when effect_size uses it", 
       select = Sepal.Length,
       by = Species,
       test = "student",
-      effect_size = TRUE,
+      effect_size = "auto",
       p_value = FALSE,
       statistic = FALSE,
       output = "data.frame"
@@ -2202,7 +2206,7 @@ test_that("table_continuous effect_size with test='student' 2 groups gives hedge
     select = Sepal.Length,
     by = Species,
     test = "student",
-    effect_size = TRUE,
+    effect_size = "auto",
     output = "data.frame"
   )
   expect_equal(out$es_type[1], "hedges_g")
@@ -2215,7 +2219,7 @@ test_that("table_continuous effect_size with test='student' 3+ groups gives eta_
     select = Sepal.Length,
     by = Species,
     test = "student",
-    effect_size = TRUE,
+    effect_size = "auto",
     output = "data.frame"
   )
   expect_equal(out$es_type[1], "eta_sq")
@@ -2231,7 +2235,7 @@ test_that("table_continuous effect_size display uses comma decimal_mark", {
     df,
     select = Sepal.Length,
     by = Species,
-    effect_size = TRUE,
+    effect_size = "auto",
     effect_size_ci = TRUE,
     decimal_mark = ",",
   )
@@ -2257,7 +2261,7 @@ test_that("table_continuous effect_size with untestable group gives NA", {
   out <- table_continuous(
     df,
     by = g,
-    effect_size = TRUE,
+    effect_size = "auto",
     output = "data.frame"
   )
   expect_true("es_type" %in% names(out))
@@ -2275,7 +2279,7 @@ test_that("table_continuous rank-biserial r_rb has CI with small n", {
     df,
     by = g,
     test = "nonparametric",
-    effect_size = TRUE,
+    effect_size = "auto",
     output = "data.frame"
   )
   expect_equal(out$es_type[1], "r_rb")
@@ -2290,7 +2294,7 @@ test_that("table_continuous effect_size with multiple variables", {
     iris,
     select = c(Sepal.Length, Sepal.Width),
     by = Species,
-    effect_size = TRUE,
+    effect_size = "auto",
     output = "data.frame"
   )
   sl_es <- out$es_value[out$variable == "Sepal.Length" & !is.na(out$es_value)]
@@ -2308,7 +2312,7 @@ test_that("table_continuous tinytable with effect_size works", {
     iris,
     select = Sepal.Length,
     by = Species,
-    effect_size = TRUE,
+    effect_size = "auto",
     effect_size_ci = TRUE,
     output = "tinytable"
   )
@@ -2321,7 +2325,7 @@ test_that("table_continuous flextable with effect_size works", {
     iris,
     select = Sepal.Length,
     by = Species,
-    effect_size = TRUE,
+    effect_size = "auto",
     output = "flextable"
   )
   expect_s3_class(out, "flextable")
@@ -2335,7 +2339,7 @@ test_that("table_continuous excel with effect_size works", {
     iris,
     select = Sepal.Length,
     by = Species,
-    effect_size = TRUE,
+    effect_size = "auto",
     output = "excel",
     excel_path = tmp
   )
@@ -2351,7 +2355,7 @@ test_that("table_continuous word with effect_size works", {
     iris,
     select = Sepal.Length,
     by = Species,
-    effect_size = TRUE,
+    effect_size = "auto",
     effect_size_ci = TRUE,
     output = "word",
     word_path = tmp
@@ -2365,7 +2369,7 @@ test_that("table_continuous gt with effect_size_ci has ES spanner", {
     iris,
     select = Sepal.Length,
     by = Species,
-    effect_size = TRUE,
+    effect_size = "auto",
     effect_size_ci = TRUE,
     output = "gt"
   )
@@ -2427,7 +2431,7 @@ test_that("epsilon squared is clamped to 0 when H is small", {
     select = "x",
     by = "g",
     test = "nonparametric",
-    effect_size = TRUE
+    effect_size = "auto"
   )
   eps_vals <- out$es_value[!is.na(out$es_value)]
   expect_true(all(eps_vals >= 0))
@@ -2447,7 +2451,7 @@ test_that("table_continuous ES display is empty for subsequent group rows", {
     iris,
     select = Sepal.Length,
     by = Species,
-    effect_size = TRUE,
+    effect_size = "auto",
   )
   display <- spicy:::build_display_df(
     out,
@@ -2469,7 +2473,7 @@ test_that("table_continuous all columns together: p + stat + es", {
     by = Species,
     p_value = TRUE,
     statistic = TRUE,
-    effect_size = TRUE,
+    effect_size = "auto",
     effect_size_ci = TRUE,
   )
   display <- spicy:::build_display_df(
@@ -2493,7 +2497,7 @@ test_that("table_continuous print works with all columns", {
     by = Species,
     p_value = TRUE,
     statistic = TRUE,
-    effect_size = TRUE,
+    effect_size = "auto",
     effect_size_ci = TRUE
   )
   expect_output(print(out))
@@ -2536,7 +2540,7 @@ test_that("table_continuous gt with multiple variables has separator rows", {
     by = Species,
     p_value = TRUE,
     statistic = TRUE,
-    effect_size = TRUE,
+    effect_size = "auto",
     output = "gt"
   )
   expect_s3_class(out, "gt_tbl")
@@ -2578,7 +2582,7 @@ test_that("table_continuous tinytable with p + stat + es works", {
     by = Species,
     p_value = TRUE,
     statistic = TRUE,
-    effect_size = TRUE,
+    effect_size = "auto",
     output = "tinytable"
   )
   expect_true(methods::is(out, "tinytable"))
@@ -2688,7 +2692,7 @@ test_that("effect-size CI bracket separator switches with decimal_mark", {
     select = Sepal.Length,
     by = Species,
     test = "student",
-    effect_size = TRUE,
+    effect_size = "auto",
     effect_size_ci = TRUE,
     output = "data.frame"
   )
@@ -2727,13 +2731,14 @@ test_that("effect-size CI bracket separator switches with decimal_mark", {
 
 # ---- harmonization with table_continuous_lm() (Phase 1) ------------------
 
-test_that("effect_size accepts logical TRUE/FALSE as silent aliases", {
-  out_T <- table_continuous(
-    sleep,
-    select = extra,
-    by = group,
-    effect_size = TRUE,
-    output = "long"
+test_that("effect_size refuses the logical TRUE/FALSE it once took", {
+  expect_error(
+    table_continuous(sleep, select = extra, by = group, effect_size = TRUE),
+    class = "spicy_defunct"
+  )
+  expect_error(
+    table_continuous(sleep, select = extra, by = group, effect_size = FALSE),
+    class = "spicy_defunct"
   )
   out_auto <- table_continuous(
     sleep,
@@ -2742,28 +2747,7 @@ test_that("effect_size accepts logical TRUE/FALSE as silent aliases", {
     effect_size = "auto",
     output = "long"
   )
-  out_F <- table_continuous(
-    sleep,
-    select = extra,
-    by = group,
-    effect_size = FALSE,
-    output = "long"
-  )
-  out_none <- table_continuous(
-    sleep,
-    select = extra,
-    by = group,
-    effect_size = "none",
-    output = "long"
-  )
-
-  # TRUE == "auto" (Hedges' g for two-group parametric)
-  expect_equal(unique(out_T$es_type[!is.na(out_T$es_type)]), "hedges_g")
-  expect_equal(out_T$es_value, out_auto$es_value)
-
-  # FALSE == "none" (no effect-size columns populated)
-  expect_true(all(is.na(out_F$es_type)))
-  expect_true(all(is.na(out_none$es_type)))
+  expect_equal(unique(out_auto$es_type[!is.na(out_auto$es_type)]), "hedges_g")
 })
 
 test_that("effect_size character explicit choices dispatch correctly", {
@@ -2862,7 +2846,7 @@ test_that("effect_size invalid character value rejected with a classed error", {
 test_that("effect_size logical NA / non-scalar errors", {
   expect_error(
     table_continuous(sleep, select = extra, by = group, effect_size = NA),
-    "must be a single TRUE/FALSE or character"
+    class = "spicy_defunct"
   )
   expect_error(
     table_continuous(
@@ -2871,7 +2855,7 @@ test_that("effect_size logical NA / non-scalar errors", {
       by = group,
       effect_size = c(TRUE, FALSE)
     ),
-    "must be a single TRUE/FALSE or character"
+    class = "spicy_defunct"
   )
 })
 
@@ -4628,4 +4612,132 @@ test_that("p_adjust under holm is pinned, in English and in French", {
     by = am,
     p_adjust = "holm"
   )))
+})
+
+test_that("`by` named in `select` is refused; `everything()` skips it", {
+  err <- expect_error(
+    table_continuous(sochealth, select = c(bmi, age), by = age),
+    class = "spicy_invalid_input"
+  )
+  expect_false(inherits(err, "spicy_missing_column"))
+  expect_error(
+    table_continuous(sochealth, select = c("bmi", "age"), by = "age"),
+    class = "spicy_invalid_input"
+  )
+  out <- table_continuous(
+    sochealth,
+    select = tidyselect::where(is.numeric),
+    by = age,
+    output = "long"
+  )
+  expect_false("age" %in% out$variable)
+  out <- table_continuous(mtcars, by = cyl, output = "long")
+  expect_false("cyl" %in% out$variable)
+})
+
+test_that("an unknown column is named, in `select` and in `exclude`", {
+  err <- expect_error(
+    table_continuous(sochealth, select = c(bmi, nope)),
+    class = "spicy_missing_column"
+  )
+  expect_match(conditionMessage(err), "\"nope\"", fixed = TRUE)
+  expect_error(
+    table_continuous(sochealth, select = c(bmi, age), exclude = "nope"),
+    class = "spicy_missing_column"
+  )
+  # The `by` column may be excluded: it is not selected anyway.
+  out <- table_continuous(
+    sochealth,
+    select = c(bmi, age),
+    by = sex,
+    exclude = sex,
+    output = "long"
+  )
+  expect_setequal(unique(out$variable), c("bmi", "age"))
+})
+
+test_that("a fractional number of decimals is refused, not truncated", {
+  for (arg in c("digits", "effect_size_digits", "p_digits")) {
+    args <- list(sochealth, select = quote(bmi), by = quote(sex))
+    args[[arg]] <- 2.5
+    expect_error(
+      do.call(table_continuous, args),
+      class = "spicy_invalid_input",
+      info = arg
+    )
+  }
+})
+
+test_that("a variable with no variance has no test, whichever test is chosen", {
+  # The rank tests answer p = 1 (two groups) or NaN (three) on a constant,
+  # where t.test() stops: every test now leaves the cells blank, with the
+  # warning the Welch test gave.
+  d <- data.frame(
+    k = rep(5, 12),
+    y = c(1.1, 5.2, 2.3, 8.4, 3.5, 9.6, 4.7, 7.8, 6.9, 2.05, 8.15, 1.25),
+    g2 = factor(rep(c("a", "b"), each = 6)),
+    g3 = factor(rep(c("a", "b", "c"), each = 4))
+  )
+  expect_warning(
+    two <- table_continuous(
+      d,
+      select = c(k, y),
+      by = g2,
+      test = "nonparametric",
+      output = "long"
+    ),
+    "`k` (the variable has no variance)",
+    fixed = TRUE,
+    class = "spicy_undefined_stat"
+  )
+  expect_true(all(is.na(two$p.value[two$variable == "k"])))
+  expect_true(all(is.na(two$test_type[two$variable == "k"])))
+  expect_false(all(is.na(two$p.value[two$variable == "y"])))
+  expect_warning(
+    three <- table_continuous(
+      d,
+      select = k,
+      by = g3,
+      test = "nonparametric",
+      output = "long"
+    ),
+    "no variance",
+    class = "spicy_undefined_stat"
+  )
+  expect_true(all(is.na(three$p.value)))
+  # The switch to the rank test that a median column makes, too.
+  expect_warning(
+    med <- table_continuous(
+      d,
+      select = k,
+      by = g2,
+      show_columns = c("med", "n"),
+      output = "long"
+    ),
+    "no variance",
+    class = "spicy_undefined_stat"
+  )
+  expect_true(all(is.na(med$p.value)))
+})
+
+test_that("the note never names a test that failed", {
+  # The rank switch makes the note name the test of each variable; a
+  # variable whose test fails (a constant) has none to name.
+  d <- data.frame(
+    y = c(1, 5, 2, 8, 3, 9, 4, 7),
+    k = rep(5, 8),
+    g = factor(rep(c("a", "b"), each = 4))
+  )
+  out <- suppressWarnings(table_continuous(
+    d,
+    select = c(y, k),
+    by = g,
+    show_columns = list(y = c("med", "n"), .default = c("m", "sd", "n")),
+    output = "long"
+  ))
+  note <- attr(out, "note")
+  # `y` took the rank test; the Welch test of the constant `k` failed.
+  expect_match(note, "Wilcoxon", fixed = TRUE)
+  expect_false(grepl("Welch", note, fixed = TRUE))
+  expect_true(all(is.na(out$p.value[out$variable == "k"])))
 })

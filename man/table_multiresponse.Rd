@@ -40,15 +40,20 @@ table_multiresponse(
 
 \item{select}{The indicator columns of the question, one per item, in
 tidyselect syntax or as a character vector of column names. Their
-order is the order of the rows, unless \code{sort} sorts them.}
+order is the order of the rows, unless \code{sort} sorts them. The \code{by}
+column is not part of the selection: a selection helper skips it,
+and naming it, or giving its position, is an error. A name that is
+not a column of \code{data} is an error (class \code{spicy_missing_column}),
+and so is an empty selection.}
 
 \item{by}{Optional grouping column, unquoted or as a string. Factor
 levels keep their declared order, a declared level with no respondent
 included; any other column forms groups in order of first appearance
 (a labelled column by its codes), as in \code{\link[=table_categorical]{table_categorical()}}. Rows
-with a missing \code{by} are removed, and the note says how many. A level
-displayed with the label of the \code{Total} margin is an error, as in
-\code{\link[=table_categorical]{table_categorical()}}.}
+with a missing \code{by} are removed, and the note says how many; a \code{by}
+that no observation holds is an error (class \code{spicy_invalid_data}).
+A level displayed with the label of the \code{Total} margin is an error,
+as in \code{\link[=table_categorical]{table_categorical()}}.}
 
 \item{counted}{The value that marks a choice. \code{NULL} (the default)
 reads logical columns (\code{TRUE} is chosen) and numeric columns coded 0
@@ -191,7 +196,8 @@ variable label documents the data file; a published table carries
 the wording you set here.}
 
 \item{percent_digits}{Number of digits for percentages in report outputs.
-Defaults to \code{1}.}
+Defaults to \code{1}. A whole number: a fraction is an error, as for
+\code{p_digits} and \code{v_digits}.}
 
 \item{p_digits}{Integer >= 1. Number of decimal places used to
 render \emph{p}-values in the \code{p} column (default: \code{3}, the APA
@@ -230,7 +236,8 @@ typed, and \code{FALSE} removes it.}
 \item \code{"word"} (requires \code{flextable} and \code{officer})
 }}
 
-\item{excel_path}{Path for \code{output = "excel"}. Defaults to \code{NULL}.}
+\item{excel_path}{Path for \code{output = "excel"}, ending in \code{".xlsx"}, in
+a directory that exists. Defaults to \code{NULL}.}
 
 \item{excel_sheet}{Sheet name for Excel export. \code{NULL} (the default)
 uses \code{"Multiple responses"}.}

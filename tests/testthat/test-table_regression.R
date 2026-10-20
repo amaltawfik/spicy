@@ -2741,3 +2741,53 @@ test_that("both bodies print the block caption, not the block identity", {
   # English word, which is what user code matches on.
   expect_true(any(s$body$.variable == "Thresholds"))
 })
+
+test_that("p_digits must be at least 1, as in the descriptive tables", {
+  fit <- lm(bmi ~ age + sex, data = sochealth)
+  err <- expect_error(
+    table_regression(fit, p_digits = 0),
+    class = "spicy_invalid_input"
+  )
+  expect_identical(rlang::call_name(conditionCall(err)), "table_regression")
+  expect_error(
+    table_regression(fit, p_digits = 2.5),
+    class = "spicy_invalid_input"
+  )
+  expect_error(
+    table_regression(fit, digits = 2.5),
+    class = "spicy_invalid_input"
+  )
+  # At the floor, the table and the sentence agree.
+  tbl <- table_regression(fit, p_digits = 1)
+  expect_true(
+    inline(tbl, sex, "Male", "p") %in% trimws(as.data.frame(tbl)$p)
+  )
+})
+
+test_that("an output path is a single path with the extension of its format", {
+  fit <- lm(bmi ~ age, data = sochealth)
+  bad <- list(
+    list(output = "excel", excel_path = NULL),
+    list(output = "excel", excel_path = 1),
+    list(output = "excel", excel_path = c("a.xlsx", "b.xlsx")),
+    list(output = "excel", excel_path = tempfile(fileext = ".csv")),
+    list(output = "excel", excel_path = file.path(tempfile(), "x.xlsx")),
+    list(output = "word", word_path = ""),
+    list(output = "word", word_path = tempfile(fileext = ".txt")),
+    list(output = "word", word_path = file.path(tempfile(), "x.docx"))
+  )
+  for (args in bad) {
+    err <- expect_error(
+      do.call("table_regression", c(list(fit), args)),
+      class = "spicy_invalid_input",
+      info = paste(names(args), unlist(args), collapse = " ")
+    )
+    expect_identical(rlang::call_name(conditionCall(err)), "table_regression")
+  }
+  # The case of the extension does not matter.
+  skip_if_not_installed("openxlsx2")
+  path <- tempfile(fileext = ".XLSX")
+  on.exit(unlink(path), add = TRUE)
+  table_regression(fit, output = "excel", excel_path = path)
+  expect_true(file.exists(path))
+})

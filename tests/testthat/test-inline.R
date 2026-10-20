@@ -1559,3 +1559,26 @@ test_that("a level's label leads to its variable only when one variable has it",
     fixed = TRUE
   )
 })
+
+test_that("the p of a by-group continuous table is cited without `level`", {
+  # The p-value sits on the first group's row only: that row alone carries
+  # it, so it is the address, as `?inline` says ("leave `level` out").
+  x <- table_continuous(sochealth, select = bmi, by = sex)
+  expect_identical(
+    inline(x, bmi, column = "p"),
+    inline(x, bmi, "Female", column = "p")
+  )
+  # A statistic every group carries still needs its group.
+  expect_error(inline(x, bmi, column = "m"), class = "spicy_invalid_input")
+  expect_false(identical(
+    inline(x, bmi, "Male", column = "m"),
+    inline(x, bmi, "Female", column = "m")
+  ))
+  skip_if_not_installed("survey")
+  des <- survey::svydesign(ids = ~1, weights = ~weight, data = sochealth)
+  xs <- table_continuous_svy(des, select = bmi, by = sex)
+  expect_identical(
+    inline(xs, bmi, column = "p"),
+    inline(xs, bmi, "Female", column = "p")
+  )
+})

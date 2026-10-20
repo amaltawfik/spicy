@@ -9,9 +9,10 @@
 # this header deliberately carries no copy to drift.
 #
 # `call` defaults to the immediate caller of `spicy_abort()`, which
-# is typically the validator. Passing `call = rlang::caller_env(2)`
-# (or further up) is appropriate when the helper is one frame deeper
-# and the user-visible error should reference the public function.
+# is typically the validator. A helper that checks an input on behalf
+# of a table function takes `call = rlang::caller_env()` itself and
+# passes it here, so the error names the function the user called
+# (the pattern of `.check_integer64()` below).
 spicy_abort <- function(
   message,
   class = NULL,
@@ -20,9 +21,42 @@ spicy_abort <- function(
 ) {
   rlang::abort(
     message = message,
-    class = c(class, "spicy_error"),
+    class = c(.spicy_error_classes(class), "spicy_error"),
     call = call,
     ...
+  )
+}
+
+# Leaf classes that refine another leaf. An error of the first is
+# signaled with the second too, so a handler on the parent catches it:
+# `tryCatch(spicy_invalid_input = )` an unknown column, and
+# `tryCatch(spicy_invalid_data = )` a survey design handed to a plain
+# table as well as a matrix.
+.SPICY_ERROR_PARENTS <- c(
+  spicy_missing_column = "spicy_invalid_input",
+  spicy_wrong_regime = "spicy_invalid_data",
+  spicy_not_implemented = "spicy_unsupported"
+)
+
+.spicy_error_classes <- function(class) {
+  hit <- intersect(class, names(.SPICY_ERROR_PARENTS))
+  unique(c(class, unname(.SPICY_ERROR_PARENTS[hit])))
+}
+
+# Evaluate `expr` and re-signal a spicy error it raises with `call`, the
+# call of the public function. Wraps the shared machinery a table
+# function reaches deep down (the variance estimators of `R/vcov.R`, the
+# model frames), whose errors would otherwise name an internal frame. An
+# error raised and handled inside `expr` never reaches the handler.
+.with_public_call <- function(expr, call) {
+  withCallingHandlers(
+    expr,
+    error = function(e) {
+      if (inherits(e, "spicy_error") && !identical(e$call, call)) {
+        e$call <- call
+        stop(e)
+      }
+    }
   )
 }
 
@@ -129,9 +163,10 @@ spicy_abort <- function(
 #                               the computation, e.g., NA weights)
 #   |- spicy_ignored_arg       (an argument is ignored due to context,
 #                               e.g., `correct = TRUE` on a non-2x2)
-#   |- spicy_no_selection      (a selection produced an empty set;
-#                               returning an empty result rather than
-#                               erroring)
+#   |- spicy_no_selection      (a selection or a filter produced an
+#                               empty set; returning an empty result
+#                               rather than erroring. The table
+#                               functions refuse an empty selection)
 #   |- spicy_fallback          (the requested computation failed;
 #                               falling back to a simpler estimator)
 #   |- spicy_caveat            (computation succeeded but its inter-
@@ -260,7 +295,7 @@ spicy_match_arg <- function(arg, choices = NULL, arg_name = NULL) {
 # the only safe response is a loud classed error naming the
 # conversion. `what` is the user-facing label of the offending input
 # (e.g. "`weights`", "`x`", "Column `id`").
-.check_integer64 <- function(x, what) {
+.check_integer64 <- function(x, what, call = rlang::caller_env()) {
   if (inherits(x, "integer64")) {
     spicy_abort(
       c(
@@ -271,7 +306,7 @@ spicy_match_arg <- function(arg, choices = NULL, arg_name = NULL) {
         "i" = "Convert it first with `as.numeric()` (or `bit64::as.double()`)."
       ),
       class = "spicy_invalid_data",
-      call = rlang::caller_env()
+      call = call
     )
   }
   invisible(x)
@@ -291,7 +326,7 @@ spicy_match_arg <- function(arg, choices = NULL, arg_name = NULL) {
 # the plain non-data.frame message is deliberately unchanged and
 # unparameterized (`expect_error(..., "data. must be a data.frame")`
 # pins it as a literal in two test files).
-.check_data_frame <- function(data, fn) {
+.check_data_frame <- function(data, fn, call = rlang::caller_env()) {
   if (.is_survey_design(data)) {
     # A survey design reaching a plain builder is not a type error, it
     # is the wrong REGIME: the weights alone cannot reproduce the
@@ -307,11 +342,16 @@ spicy_match_arg <- function(arg, choices = NULL, arg_name = NULL) {
         "i" = .DESIGN_REGIME_HINT[[fn]],
         "i" = "Design-based standard errors, degrees of freedom and tests cannot be recovered from the weights alone."
       ),
-      class = "spicy_wrong_regime"
+      class = "spicy_wrong_regime",
+      call = call
     )
   }
   if (!is.data.frame(data)) {
-    spicy_abort("`data` must be a data.frame.", class = "spicy_invalid_data")
+    spicy_abort(
+      "`data` must be a data.frame.",
+      class = "spicy_invalid_data",
+      call = call
+    )
   }
   invisible(data)
 }
@@ -324,7 +364,8 @@ spicy_match_arg <- function(arg, choices = NULL, arg_name = NULL) {
   table_categorical = "Use `table_categorical_svy(design, ...)`: it delegates every statistic to survey (Lumley) and documents the design in the table note.",
   table_continuous_lm = "There is no design twin of this table: fit the model on the design and tabulate it with `table_regression(survey::svyglm(y ~ group, design = ))`.",
   table_outcome = "There is no design twin of this layout: use `table_continuous_svy(design, select = <outcome>, by = <variable>)` one grouping at a time.",
-  table_multiresponse = "There is no design twin of this table: its tests assume a simple random sample of respondents, and a complex design needs its own correction."
+  table_multiresponse = "There is no design twin of this table: its tests assume a simple random sample of respondents, and a complex design needs its own correction.",
+  table_regression_uv = "There is no design twin of this table: fit each model on the design with `survey::svyglm()` and tabulate them with `table_regression()`."
 )
 
 
@@ -448,7 +489,12 @@ extract_arg_column_name <- function(arg_expr) {
 # against their raw `data`; this one resolves against a fitted
 # model's model.frame. See the twin comment there for why they stay
 # separate.
-resolve_cluster <- function(cluster, fit, arg_label = "cluster") {
+resolve_cluster <- function(
+  cluster,
+  fit,
+  arg_label = "cluster",
+  call = rlang::caller_env()
+) {
   if (is.null(cluster)) {
     return(NULL)
   }
@@ -463,7 +509,8 @@ resolve_cluster <- function(cluster, fit, arg_label = "cluster") {
           ),
           "i" = "Example: `cluster = ~region`."
         ),
-        class = "spicy_invalid_input"
+        class = "spicy_invalid_input",
+        call = call
       )
     }
     src <- cluster_lookup_data(fit, vars)
@@ -488,7 +535,8 @@ resolve_cluster <- function(cluster, fit, arg_label = "cluster") {
             }
           )
         ),
-        class = "spicy_invalid_input"
+        class = "spicy_invalid_input",
+        call = call
       )
     }
     if (length(vars) == 1L) {
@@ -516,7 +564,8 @@ resolve_cluster <- function(cluster, fit, arg_label = "cluster") {
           ),
           "i" = "Or pass a formula (`cluster = ~region`) or a vector."
         ),
-        class = "spicy_invalid_input"
+        class = "spicy_invalid_input",
+        call = call
       )
     }
     return(src$df[[cluster]])
@@ -620,16 +669,16 @@ cluster_lookup_data <- function(fit, vars) {
 # Heuristically excludes a single atomic vector (which is itself a
 # vector cluster) and a single formula (formulas are lists under
 # the hood but inherit "formula").
-resolve_cluster_arg <- function(cluster, models) {
+resolve_cluster_arg <- function(cluster, models, call = rlang::caller_env()) {
   if (is.null(cluster)) {
     return(NULL)
   }
   if (inherits(cluster, "formula")) {
     # Single formula -> recycle to all models.
-    return(lapply(models, function(m) resolve_cluster(cluster, m)))
+    return(lapply(models, function(m) resolve_cluster(cluster, m, call = call)))
   }
   if (is.character(cluster) && length(cluster) == 1L) {
-    return(lapply(models, function(m) resolve_cluster(cluster, m)))
+    return(lapply(models, function(m) resolve_cluster(cluster, m, call = call)))
   }
   # A plain list (not an atomic vector) treated as per-model.
   if (
@@ -648,11 +697,16 @@ resolve_cluster_arg <- function(cluster, models) {
             "list of length(models)."
           )
         ),
-        class = "spicy_invalid_input"
+        class = "spicy_invalid_input",
+        call = call
       )
     }
-    return(Map(resolve_cluster, cluster, models))
+    return(Map(
+      function(cl, m) resolve_cluster(cl, m, call = call),
+      cluster,
+      models
+    ))
   }
   # Single atomic vector -> recycled to all models.
-  lapply(models, function(m) resolve_cluster(cluster, m))
+  lapply(models, function(m) resolve_cluster(cluster, m, call = call))
 }

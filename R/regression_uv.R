@@ -85,13 +85,18 @@
 #' `(Intercept)` row, and the multivariable model shows its intercept
 #' as in any [table_regression()] table.
 #'
-#' @param data A data frame.
+#' @param data A data frame. A survey design is refused with a pointer to
+#'   the design-based route (class `spicy_wrong_regime`).
 #' @param outcome The outcome column (unquoted name, tidyselect). For
 #'   `method = "coxph"`, a `Surv(time, status)` expression evaluated
 #'   in `data` (the `tbl_uvregression` convention).
 #' @param predictors Candidate predictor columns (tidyselect, e.g.
 #'   `c(age, sex, education)` or `where(is.numeric)`). The outcome
-#'   column(s) are dropped from the selection automatically.
+#'   column(s) are not part of the selection: `everything()` and the
+#'   other helpers skip them, and naming one in `predictors`, or giving
+#'   its position, is an error.
+#'   A name that is not a column of `data` is an error (class
+#'   `spicy_missing_column`).
 #' @param method `"lm"` (default), `"glm"`, or `"coxph"` (requires
 #'   the `survival` package; estimates render as HRs with
 #'   `exponentiate = TRUE`).
@@ -163,7 +168,8 @@
 #' @param title Table title; `NULL` (default) builds
 #'   `"Univariable and multivariable <type> regression: <outcome>"`.
 #' @param ... Passed to [table_regression()] (`exponentiate`, `vcov`,
-#'   `cluster`, `p_adjust`, `digits`, `output`, ...).
+#'   `cluster`, `p_adjust`, `digits`, `output`, ...), each by its full
+#'   name: an unknown or abbreviated name is an error.
 #'   `nested` is not
 #'   meaningful for a screen and is refused. `cluster` must be a
 #'   single vector with one value per row of `data`; it is aligned to
@@ -219,6 +225,15 @@ table_regression_uv <- function(
   title = NULL,
   ...
 ) {
+  # The frame and the call every error of the screen names, the errors
+  # of the `table_regression()` it calls included.
+  uv_env <- rlang::current_env()
+  uv_call <- sys.call()
+  # `...` goes to `table_regression()`, by name: an unknown or partial
+  # name is refused here, naming it, rather than by base R's "unused
+  # argument" (whose call deparses the whole body of `table_regression()`)
+  # or by partial matching (`effect_size =` reaching `effect_size_digits`).
+  .uv_check_dots(names(as.list(substitute(list(...)))[-1L]), ...length())
   family_supplied <- !missing(family)
   method_supplied <- !missing(method)
   # A `family` without a `method` can only mean the glm screen (family
@@ -229,9 +244,7 @@ table_regression_uv <- function(
     method <- "glm"
   }
   method <- spicy_match_arg(method)
-  if (!is.data.frame(data)) {
-    spicy_abort("`data` must be a data frame.", class = "spicy_invalid_input")
-  }
+  .check_data_frame(data, "table_regression_uv")
   .check_labels_arg(labels)
   if (
     !is.logical(multivariable) ||
@@ -379,15 +392,18 @@ table_regression_uv <- function(
     )
     outcome_vars <- outcome_name
   }
-  pred_pos <- tidyselect::eval_select(rlang::enquo(predictors), data)
-  pred_names <- setdiff(names(pred_pos), outcome_vars)
+  # The outcome is outside the selection: `everything()` and the other
+  # helpers skip it, and naming it in `predictors` is an error.
+  pred_names <- .resolve_selection_without(
+    rlang::enquo(predictors),
+    data,
+    roles = stats::setNames(outcome_vars, rep("outcome", length(outcome_vars))),
+    arg = "predictors"
+  )
   if (length(pred_names) == 0L) {
-    spicy_abort(
-      c(
-        "`predictors` selected no columns (besides the outcome).",
-        "i" = "Pass at least one predictor, e.g. `predictors = c(age, sex)`."
-      ),
-      class = "spicy_invalid_input"
+    .abort_empty_selection(
+      "predictors",
+      hint = "Pass at least one predictor, e.g. `predictors = c(age, sex)`."
     )
   }
   # The outcome as the title names it under `labels` (decision 54),
@@ -618,7 +634,8 @@ table_regression_uv <- function(
             ),
             "x" = conditionMessage(e)
           ),
-          class = "spicy_invalid_data"
+          class = "spicy_invalid_data",
+          call = uv_env
         )
       }
     )
@@ -646,7 +663,8 @@ table_regression_uv <- function(
             "The multivariable model failed to fit.",
             "x" = conditionMessage(e)
           ),
-          class = "spicy_invalid_data"
+          class = "spicy_invalid_data",
+          call = uv_env
         )
       }
     )
@@ -705,17 +723,84 @@ table_regression_uv <- function(
     }
   }
 
-  do.call(
-    table_regression,
-    c(
-      list(
-        models,
-        show_columns = show_columns,
-        labels = labels,
-        title = title
+  # `do.call()` hands `table_regression()` the function itself, so an
+  # error raised in it carries no name a header can print ("Error:"),
+  # and a base error the deparse of its whole body. Both are re-signaled
+  # with the call of the screen, the function the user called.
+  withCallingHandlers(
+    do.call(
+      table_regression,
+      c(
+        list(
+          models,
+          show_columns = show_columns,
+          labels = labels,
+          title = title
+        ),
+        dots
+      )
+    ),
+    error = function(e) {
+      cl <- conditionCall(e)
+      if (
+        inherits(e, "spicy_error") || (is.call(cl) && is.function(cl[[1L]]))
+      ) {
+        e$call <- uv_call
+        stop(e)
+      }
+    }
+  )
+}
+
+# The names `...` passes to `table_regression()`: every one an argument
+# of it, typed in full. `models` and the arguments the screen sets itself
+# are not, and an unnamed argument has nowhere to go.
+.uv_check_dots <- function(dot_names, n_dots, call = rlang::caller_env()) {
+  if (n_dots == 0L) {
+    return(invisible(NULL))
+  }
+  if (is.null(dot_names) || any(!nzchar(dot_names))) {
+    spicy_abort(
+      c(
+        "Every argument passed through `...` must be named.",
+        "i" = "They go to `table_regression()`, by name."
       ),
-      dots
+      class = "spicy_invalid_input",
+      call = call
     )
+  }
+  known <- setdiff(
+    names(formals(table_regression)),
+    c("models", names(formals(table_regression_uv)))
+  )
+  bad <- setdiff(dot_names, known)
+  if (length(bad) == 0L) {
+    return(invisible(NULL))
+  }
+  hints <- character(0)
+  for (b in bad) {
+    cand <- known[startsWith(known, b)]
+    if (length(cand) == 1L) {
+      hints <- c(
+        hints,
+        "i" = sprintf(
+          "Did you mean `%s`? Arguments are matched by their full name.",
+          cand
+        )
+      )
+    }
+  }
+  spicy_abort(
+    c(
+      sprintf(
+        "Unknown argument%s passed to `table_regression()` through `...`: %s.",
+        if (length(bad) > 1L) "s" else "",
+        paste0("`", bad, "`", collapse = ", ")
+      ),
+      hints
+    ),
+    class = "spicy_invalid_input",
+    call = call
   )
 }
 

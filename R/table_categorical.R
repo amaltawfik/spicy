@@ -280,6 +280,105 @@
   )
 }
 
+# `levels_keep` resolved to one character vector per variable (NULL for a
+# variable it does not filter), or NULL when it filters none. Shared by
+# `table_categorical()` and `table_categorical_svy()`: a vector applies to
+# every variable, a named list to the variables it names, each name a
+# variable of the table. `per_variable` records which form was given.
+.cat_levels_keep_spec <- function(
+  levels_keep,
+  select_names,
+  call = rlang::caller_env()
+) {
+  if (is.null(levels_keep)) {
+    return(NULL)
+  }
+  if (is.atomic(levels_keep)) {
+    out <- stats::setNames(
+      rep(list(as.character(levels_keep)), length(select_names)),
+      select_names
+    )
+    attr(out, "per_variable") <- FALSE
+    return(out)
+  }
+  if (!is.list(levels_keep) || is.null(names(levels_keep))) {
+    spicy_abort(
+      c(
+        "`levels_keep` must be a character vector or a NAMED list.",
+        "i" = "A character vector applies to every variable; a named list applies per variable."
+      ),
+      class = "spicy_invalid_input",
+      call = call
+    )
+  }
+  unknown <- setdiff(names(levels_keep), select_names)
+  if (length(unknown) > 0L) {
+    spicy_abort(
+      sprintf(
+        "`levels_keep` names variable(s) absent from the table: %s.",
+        paste(.quote_val(unknown), collapse = ", ")
+      ),
+      class = "spicy_invalid_input",
+      call = call
+    )
+  }
+  out <- stats::setNames(vector("list", length(select_names)), select_names)
+  for (nm in names(levels_keep)) {
+    out[[nm]] <- as.character(levels_keep[[nm]])
+  }
+  attr(out, "per_variable") <- TRUE
+  out
+}
+
+# The levels `levels_keep` names for one variable must be levels it
+# displays (`available`).
+.cat_check_kept_levels <- function(
+  keep,
+  available,
+  var,
+  call = rlang::caller_env()
+) {
+  unknown <- setdiff(keep, available)
+  if (length(unknown) > 0L) {
+    spicy_abort(
+      c(
+        sprintf(
+          "`levels_keep` names level(s) absent from `%s`: %s.",
+          var,
+          paste(.quote_val(unknown), collapse = ", ")
+        ),
+        "i" = sprintf(
+          "Observed: %s.",
+          paste(.quote_val(available), collapse = ", ")
+        )
+      ),
+      class = "spicy_invalid_input",
+      call = call
+    )
+  }
+  invisible(keep)
+}
+
+# The levels one variable displays under `levels_keep` (its entry `keep`
+# in the resolved spec), in the order `levels_keep` gives them. The
+# vector form keeps the levels the variable has, and the caller drops the
+# variable, with a warning, when it has none of them. The list form names
+# the variable, so a level it does not have (`levels`) is an error, as in
+# `table_categorical_svy()`.
+.cat_kept_levels <- function(
+  spec,
+  var,
+  levels,
+  available = levels,
+  call = rlang::caller_env()
+) {
+  keep <- spec[[var]]
+  if (isTRUE(attr(spec, "per_variable"))) {
+    .cat_check_kept_levels(keep, levels, var, call = call)
+  }
+  intersect(keep, available)
+}
+
 # Resolve the user-supplied `assoc_measure` into a named character vector
 # of length(select_names): one resolved measure per row variable. Accepts
 # four input shapes:
@@ -758,7 +857,12 @@
 #'   [table_continuous()] and [table_continuous_lm()]. An explicit
 #'   `select` is taken verbatim (numeric columns included), so
 #'   numeric-coded categorical variables can still be tabulated by
-#'   naming them.
+#'   naming them. The `by` and `weights` columns are not part of the
+#'   selection: `everything()` and the other helpers skip them, and
+#'   naming one in `select`, or giving its position, is an error. A name
+#'   that is not a column of `data` is an error (class
+#'   `spicy_missing_column`), and so is a selection with no column to
+#'   tabulate.
 #' @param by Optional grouping column used for columns/groups. Accepts an
 #'   unquoted column name or a single character column name. Factor
 #'   levels keep their declared order; any other `by` (character,
@@ -789,14 +893,20 @@
 #'   call wins over it. Any other value, `NULL` included, is an error. A
 #'   variable label documents the data file; a published table carries
 #'   the wording you set here.
-#' @param levels_keep Optional character vector of levels to keep/order for row
-#'   modalities. If `NULL`, all observed levels are kept. Entries must
+#' @param levels_keep Levels to keep, in the order to display them. If
+#'   `NULL` (the default), all observed levels are kept. Entries must
 #'   match the level strings the table displays (for labelled columns
-#'   these are the `"[code] label"` strings, not the bare label
-#'   text). When nothing matches
-#'   for a selected variable, that variable is dropped from the table
-#'   with a classed warning (`spicy_no_selection`) listing the
-#'   available level strings.
+#'   these are the `"[code] label"` strings, not the bare label text).
+#'   Two forms, as in [table_categorical_svy()]:
+#'   * a character vector applies to every variable: each keeps the
+#'     levels it has, and a variable with none of them is dropped from
+#'     the table with a classed warning (`spicy_no_selection`) listing
+#'     its level strings;
+#'   * a named list applies per variable
+#'     (`levels_keep = list(smoking = "Yes")`): each name must be a
+#'     variable of the table, each level one the variable displays (an
+#'     error otherwise), and the variables it does not name keep all
+#'     their levels.
 #' @param include_total Logical. If `TRUE` (the default), includes a `Total` group
 #'   when available. A level of `by` displayed with the label of that
 #'   margin is then an error (class `spicy_label_collision`): rename the
@@ -814,8 +924,9 @@
 #'   If `TRUE`, rows with `NA` in the tabulated variable (and in `by`,
 #'   when supplied) are removed BEFORE each cross-tabulation, and the
 #'   removal is disclosed in a table note ("Missing values removed: ...")
-#'   rather than silent. Before 0.13.0 the default was `TRUE` with no
-#'   disclosure.
+#'   rather than silent; a `by` that no observation holds is then an
+#'   error (class `spicy_invalid_data`). Before 0.13.0 the default was
+#'   `TRUE` with no disclosure.
 #' @param weights Optional weights. Either `NULL` (the default), a numeric vector
 #'   of length `nrow(data)`, or a single column in `data` supplied as an
 #'   unquoted name or a character string.
@@ -874,7 +985,8 @@
 #'   [table_regression()]; delegated to [stats::p.adjust()]. Needs
 #'   `by` and the `p` column. See *Multiple-comparison adjustment*.
 #' @param percent_digits Number of digits for percentages in report outputs.
-#'   Defaults to `1`.
+#'   Defaults to `1`. A whole number: a fraction is an error, as for
+#'   `p_digits` and `v_digits`.
 #' @param p_digits Integer >= 1. Number of decimal places used to
 #'   render *p*-values in the `p` column (default: `3`, the APA
 #'   Publication Manual standard). Both the displayed precision and
@@ -982,14 +1094,16 @@
 #'   which have a single header row to begin with.
 #' @param blank_na_wide Logical. If `FALSE` (the default), `NA` values are kept
 #'   as-is in wide raw output. If `TRUE`, replaces them with empty strings.
-#' @param excel_path Path for `output = "excel"`. Defaults to `NULL`.
+#' @param excel_path Path for `output = "excel"`, ending in `".xlsx"`, in
+#'   a directory that exists. Defaults to `NULL`.
 #' @param excel_sheet Sheet name for Excel export. `NULL` (the
 #'   default) uses `"Categorical"`.
 #' @param clipboard_delim Delimiter for clipboard text export. Defaults
 #'   to `"\t"`. A cell holding the delimiter itself, a double quote or
 #'   a line break is quoted RFC 4180-style, so the grid survives
 #'   whatever delimiter you choose.
-#' @param word_path File path for `output = "word"`. Defaults to
+#' @param word_path File path for `output = "word"`, ending in `".docx"`,
+#'   in a directory that exists. Defaults to
 #'   `NULL`. Before 0.13.0, supplying it with `output = "flextable"`
 #'   also wrote a `.docx` as a side effect; it is now used exclusively
 #'   by `output = "word"` (the contract shared with the rest of the
@@ -1594,42 +1708,26 @@ table_categorical <- function(
   }
   do_smd <- smd && has_group
 
-  select_quo <- rlang::enquo(select)
-  select_val <- tryCatch(
-    rlang::eval_tidy(select_quo, env = rlang::quo_get_env(select_quo)),
-    error = function(e) NULL
+  # The `by` and weights columns are outside the selection: `everything()`
+  # and the other helpers skip them, and pointing at one in `select`, by
+  # name or by position, is an error (a variable crossed with itself, or
+  # the weights tabulated).
+  select_names <- .resolve_selection_without(
+    rlang::enquo(select),
+    data,
+    roles = c(
+      by = by_name,
+      weights = detect_weights_column_name(rlang::enquo(weights), data)
+    )
   )
-  select_names <- if (is.character(select_val)) {
-    unique(select_val)
-  } else {
-    tryCatch(
-      names(tidyselect::eval_select(select_quo, data)),
-      error = function(e) {
-        spicy_abort(
-          "`select` must select at least one column in `data`.",
-          class = "spicy_invalid_input"
-        )
-      }
-    )
-  }
-  if (length(select_names) == 0) {
-    spicy_abort(
-      "`select` must select at least one column in `data`.",
-      class = "spicy_invalid_input"
-    )
-  }
-  if (!all(select_names %in% names(data))) {
-    spicy_abort(
-      "Some `select` columns are missing in `data`.",
-      class = "spicy_missing_column"
-    )
+  if (!select_missing && length(select_names) == 0L) {
+    .abort_empty_selection("select")
   }
   # Select-less call: restrict the `everything()` default to eligible
-  # categorical columns (factor, character, logical, labelled),
-  # excluding `by` -- the categorical mirror of the numeric
-  # auto-restriction in the continuous companions. An explicit
-  # `select` is taken verbatim so numeric-coded categorical variables
-  # can still be tabulated by naming them.
+  # categorical columns (factor, character, logical, labelled) -- the
+  # categorical mirror of the numeric auto-restriction in the continuous
+  # companions. An explicit `select` is taken verbatim so numeric-coded
+  # categorical variables can still be tabulated by naming them.
   if (select_missing) {
     is_eligible <- vapply(
       select_names,
@@ -1642,13 +1740,9 @@ table_categorical <- function(
       },
       logical(1)
     )
-    select_names <- setdiff(select_names[is_eligible], by_name)
+    select_names <- select_names[is_eligible]
     if (length(select_names) == 0L) {
-      spicy_warn(
-        "No categorical columns selected.",
-        class = "spicy_no_selection"
-      )
-      return(data.frame())
+      .abort_empty_selection("select", "categorical")
     }
   }
   # bit64::integer64 columns tabulate as raw denormal doubles
@@ -1670,6 +1764,9 @@ table_categorical <- function(
     resolve_variable_labels(data, by_name, labels)
   }
   labels <- resolve_variable_labels(data, select_names, labels)
+  # `levels_keep` as one entry per variable: a vector applies to all of
+  # them, a named list to the variables it names.
+  levels_keep <- .cat_levels_keep_spec(levels_keep, select_names)
   # The rows are keyed by column name, which no two variables share; two
   # may show the same label. The wide frames show the label in place of
   # the key; the long frames publish both, as `table_continuous()` does:
@@ -1807,39 +1904,17 @@ table_categorical <- function(
   }
   if (!.is_single_char(decimal_mark)) {
     spicy_abort(
-      "`decimal_mark` must be a single character (e.g. '.' or ',').",
+      '`decimal_mark` must be a single character (e.g. "." or ",").',
       class = "spicy_invalid_input"
     )
   }
-  for (.dname in c("percent_digits", "v_digits")) {
-    .dval <- get(.dname)
-    if (
-      !is.numeric(.dval) || length(.dval) != 1L || is.na(.dval) || .dval < 0
-    ) {
-      spicy_abort(
-        paste0("`", .dname, "` must be a single non-negative number."),
-        class = "spicy_invalid_input"
-      )
-    }
-  }
+  percent_digits <- validate_digit_arg(percent_digits, "percent_digits")
+  v_digits <- validate_digit_arg(v_digits, "v_digits")
   # `p_digits` has a stricter floor than the other digits arguments:
   # a 0-decimal p-value is meaningless, and `format_p_value()` would
   # silently fall back to 3 decimals. Same classed check as
   # table_continuous() / table_continuous_lm() / cross_tab().
-  if (
-    !is.numeric(p_digits) ||
-      length(p_digits) != 1L ||
-      is.na(p_digits) ||
-      p_digits < 1
-  ) {
-    spicy_abort(
-      "`p_digits` must be a single integer >= 1 (typically 2-4).",
-      class = "spicy_invalid_input"
-    )
-  }
-  percent_digits <- as.integer(percent_digits)
-  p_digits <- as.integer(p_digits)
-  v_digits <- as.integer(v_digits)
+  p_digits <- validate_digit_arg(p_digits, "p_digits", min = 1L)
 
   if (!has_group) {
     if (!include_total) {
@@ -1935,6 +2010,10 @@ table_categorical <- function(
 
   weights_quo <- rlang::enquo(weights)
   weights_vec <- resolve_weights_argument(weights_quo, data, "weights")
+  # Checked here, so the error names this function rather than the
+  # `cross_tab()` / `freq()` the tabulation calls: the values those two
+  # accept (NA allowed, an all-zero vector too).
+  .check_weights_values(weights_vec, require_positive = FALSE)
 
   if (isTRUE(rescale) && is.null(weights_vec)) {
     spicy_warn(
@@ -2231,7 +2310,8 @@ table_categorical <- function(
       vals <- as.character(ft$value)
       raw_levels <- vals[!is.na(vals)]
 
-      lv_use <- if (is.null(levels_keep)) {
+      keep_i <- levels_keep[[select_names[i]]]
+      lv_use <- if (is.null(keep_i)) {
         # The row of missing values goes last, and only a variable that
         # has one: elsewhere a level with its label keeps its own place.
         ml <- if (x_has_na) missing_label else character(0)
@@ -2240,9 +2320,9 @@ table_categorical <- function(
         missing_end <- intersect(raw_levels, ml)
         c(known, extra, missing_end)
       } else {
-        intersect(as.character(levels_keep), raw_levels)
+        .cat_kept_levels(levels_keep, select_names[i], raw_levels)
       }
-      if (!is.null(levels_keep) && length(lv_use) == 0L) {
+      if (!is.null(keep_i) && length(lv_use) == 0L) {
         .warn_levels_keep_no_match(select_names[i], raw_levels)
         next
       }
@@ -2286,26 +2366,15 @@ table_categorical <- function(
 
     if (nrow(long_raw) > 0) {
       long_raw$variable <- factor(long_raw$variable, levels = select_names)
-      if (!is.null(levels_keep)) {
-        long_raw$level <- factor(
-          long_raw$level,
-          levels = as.character(levels_keep)
-        )
-        long_raw <- long_raw[
-          order(long_raw$variable, long_raw$level, method = "radix"),
-          ,
-          drop = FALSE
-        ]
-      } else {
-        # Sort on the per-variable rank captured at build time -- each
-        # variable keeps its own level order, "(Missing)" stays last in
-        # every block.
-        long_raw <- long_raw[
-          order(long_raw$variable, long_raw$.lvrank, method = "radix"),
-          ,
-          drop = FALSE
-        ]
-      }
+      # Sort on the per-variable rank captured at build time -- each
+      # variable keeps its own level order (the one `levels_keep` gives
+      # it, when it names its levels), "(Missing)" stays last in every
+      # block.
+      long_raw <- long_raw[
+        order(long_raw$variable, long_raw$.lvrank, method = "radix"),
+        ,
+        drop = FALSE
+      ]
       long_raw$.lvrank <- NULL
       long_raw$variable <- as.character(long_raw$variable)
       long_raw$level <- as.character(long_raw$level)
@@ -2394,10 +2463,11 @@ table_categorical <- function(
           next
         }
 
-        lv_use <- if (is.null(levels_keep)) {
+        keep_k <- levels_keep[[select_names[[k]]]]
+        lv_use <- if (is.null(keep_k)) {
           unique(sv$level)
         } else {
-          intersect(as.character(levels_keep), unique(sv$level))
+          intersect(keep_k, unique(sv$level))
         }
 
         if (mode == "char") {
@@ -2690,7 +2760,11 @@ table_categorical <- function(
 
     build_flextable_oneway <- function(df) {
       if (!requireNamespace("flextable", quietly = TRUE)) {
-        spicy_abort("Install package 'flextable'.", class = "spicy_missing_pkg")
+        spicy_abort(
+          "Install package 'flextable'.",
+          class = "spicy_missing_pkg",
+          call = rlang::caller_env()
+        )
       }
       df <- pad_decimal_cols(df)
       # Level rows carry the console's indent inside the label cell
@@ -2787,12 +2861,7 @@ table_categorical <- function(
     }
 
     if (output == "word") {
-      if (is.null(word_path) || !nzchar(word_path)) {
-        spicy_abort(
-          "Provide `word_path` for output = 'word'.",
-          class = "spicy_invalid_input"
-        )
-      }
+      .check_output_path(word_path, output)
       ft <- build_flextable_oneway(report_wide_char)
       # Same title the console prints, from the same helper: a table
       # that names itself on screen names itself in the document too.
@@ -2821,12 +2890,7 @@ table_categorical <- function(
     )
 
     if (output == "excel") {
-      if (is.null(excel_path) || !nzchar(excel_path)) {
-        spicy_abort(
-          "Provide `excel_path` for output = 'excel'.",
-          class = "spicy_invalid_input"
-        )
-      }
+      .check_output_path(excel_path, output)
       if (!requireNamespace("openxlsx2", quietly = TRUE)) {
         spicy_abort("Install package 'openxlsx2'.", class = "spicy_missing_pkg")
       }
@@ -2966,6 +3030,12 @@ table_categorical <- function(
   }
 
   g0 <- resolve_user_na(data[[by_name]])
+  # A `by` no observation holds leaves no group once its missing values
+  # are removed, whatever levels a factor declares: refused, as across
+  # the family.
+  if (drop_na) {
+    .check_grouping_observed(g0, sprintf("`by` (`%s`)", by_name))
+  }
   # Resolve `assoc_measure` to a named character vector, one entry per
   # row variable (validates input shape, fills "auto" via the per-row
   # rule, errors on phi-on-non-2x2). The downstream loop reads from
@@ -3048,24 +3118,15 @@ table_categorical <- function(
   # column names, and flextable died on a recycling mismatch: three
   # different errors, none of them naming the cause.
   #
-  # Two shapes reach here and the message must fit BOTH: every
-  # observation missing `by` (where `drop_na = FALSE` is a real remedy,
-  # verified), and no observation at all (where it is not -- the same
-  # refusal fires either way, so offering it would be a lie).
+  # Every observation missing `by` is refused above, with `drop_na =
+  # FALSE` as the remedy; under it the "(Missing)" level is a group. The
+  # shape left is a data set with no rows, where that is no remedy: the
+  # same refusal fires either way, so offering it would be a lie.
   if (length(group_levels) == 0L) {
     spicy_abort(
       c(
         sprintf("`by = %s` has no level to tabulate.", by_name),
-        "x" = if (length(g0) == 0L) {
-          "The data has no rows."
-        } else {
-          "Every observation is missing it."
-        },
-        if (any(is.na(g0))) {
-          c(
-            "i" = "`drop_na = FALSE` tabulates the missing observations as their own category."
-          )
-        }
+        "x" = "The data has no rows."
       ),
       class = "spicy_invalid_data"
     )
@@ -3388,7 +3449,8 @@ table_categorical <- function(
 
     margin_rows_n <- attr(ct_n, "total_row_idx")
     raw_levels <- unique(vals_n[setdiff(seq_along(vals_n), margin_rows_n)])
-    lv_use <- if (is.null(levels_keep)) {
+    keep_i <- levels_keep[[select_names[i]]]
+    lv_use <- if (is.null(keep_i)) {
       # Reorder to match original factor/occurrence order, the row of
       # missing values last in the variable that has one (see the no-by
       # branch).
@@ -3398,9 +3460,14 @@ table_categorical <- function(
       missing_end <- intersect(raw_levels, ml)
       c(known, extra, missing_end)
     } else {
-      intersect(as.character(levels_keep), vals_n)
+      .cat_kept_levels(
+        levels_keep,
+        select_names[i],
+        raw_levels,
+        available = vals_n
+      )
     }
-    if (!is.null(levels_keep) && length(lv_use) == 0L) {
+    if (!is.null(keep_i) && length(lv_use) == 0L) {
       .warn_levels_keep_no_match(select_names[i], raw_levels)
       next
     }
@@ -3582,37 +3649,20 @@ table_categorical <- function(
 
   if (nrow(long_raw) > 0) {
     long_raw$variable <- factor(long_raw$variable, levels = select_names)
-    if (!is.null(levels_keep)) {
-      long_raw$level <- factor(
-        long_raw$level,
-        levels = as.character(levels_keep)
-      )
-      long_raw$group <- factor(long_raw$group, levels = group_levels)
-      long_raw <- long_raw[
-        order(
-          long_raw$variable,
-          long_raw$level,
-          long_raw$group,
-          method = "radix"
-        ),
-        ,
-        drop = FALSE
-      ]
-    } else {
-      # Per-variable rank (see the no-by branch): each block keeps its
-      # own level order, "(Missing)" stays last per variable.
-      long_raw$group <- factor(long_raw$group, levels = group_levels)
-      long_raw <- long_raw[
-        order(
-          long_raw$variable,
-          long_raw$.lvrank,
-          long_raw$group,
-          method = "radix"
-        ),
-        ,
-        drop = FALSE
-      ]
-    }
+    # Per-variable rank (see the no-by branch): each block keeps its own
+    # level order (the one `levels_keep` gives it, when it names its
+    # levels), "(Missing)" stays last per variable.
+    long_raw$group <- factor(long_raw$group, levels = group_levels)
+    long_raw <- long_raw[
+      order(
+        long_raw$variable,
+        long_raw$.lvrank,
+        long_raw$group,
+        method = "radix"
+      ),
+      ,
+      drop = FALSE
+    ]
     long_raw$.lvrank <- NULL
     long_raw$variable <- as.character(long_raw$variable)
     long_raw$level <- as.character(long_raw$level)
@@ -3708,7 +3758,10 @@ table_categorical <- function(
     return(out)
   }
   # Only the long output publishes the per-row measure key; the display
-  # and export routes below read the measure column by name.
+  # and export routes below read the measure column by name. `glance()`
+  # reads it too, from the `long_data` the default object carries, so
+  # it is kept aside for that copy.
+  assoc_type_rows <- long_raw$.assoc_type
   long_raw$.assoc_type <- NULL
   long_raw$.smd_type <- NULL
 
@@ -3885,10 +3938,11 @@ table_categorical <- function(
         next
       }
 
-      lv_use <- if (is.null(levels_keep)) {
+      keep_k <- levels_keep[[select_names[[k]]]]
+      lv_use <- if (is.null(keep_k)) {
         unique(sv$level)
       } else {
-        intersect(as.character(levels_keep), unique(sv$level))
+        intersect(keep_k, unique(sv$level))
       }
 
       # variable row
@@ -4018,8 +4072,14 @@ table_categorical <- function(
     attr(out, "indent_text") <- indent_text
     attr(out, "align") <- align
     attr(out, "decimal_mark") <- decimal_mark
-    # The long frame of `output = "long"`, for tidy() and glance().
-    attr(out, "long_data") <- with_label(long_raw)
+    # The long frame of `output = "long"`, for tidy() and glance(), with
+    # the measure key of each row (`.assoc_type`), which glance() reports
+    # per variable.
+    long_data <- with_label(long_raw)
+    if (show_assoc) {
+      long_data$.assoc_type <- assoc_type_rows
+    }
+    attr(out, "long_data") <- long_data
     attr(out, "assoc_note") <- assoc_note_text
     attr(out, "structured") <- structured
     if (include_total) {
@@ -4552,7 +4612,11 @@ table_categorical <- function(
   # ---------------- flextable / word ----------------
   build_flextable <- function(df) {
     if (!requireNamespace("flextable", quietly = TRUE)) {
-      spicy_abort("Install package 'flextable'.", class = "spicy_missing_pkg")
+      spicy_abort(
+        "Install package 'flextable'.",
+        class = "spicy_missing_pkg",
+        call = rlang::caller_env()
+      )
     }
     df <- pad_decimal_cols(df)
     # Level rows carry the console's indent inside the label cell and
@@ -4665,12 +4729,7 @@ table_categorical <- function(
   }
 
   if (output == "word") {
-    if (is.null(word_path) || !nzchar(word_path)) {
-      spicy_abort(
-        "Provide `word_path` for output = 'word'.",
-        class = "spicy_invalid_input"
-      )
-    }
+    .check_output_path(word_path, output)
     ft <- build_flextable(merge_ci_inline(report_wide_char))
     ft <- .spicy_ft_word_caption(ft, .categorical_title(by_label))
     flextable::save_as_docx(ft, path = word_path)
@@ -4721,12 +4780,7 @@ table_categorical <- function(
 
   # ---------------- excel ----------------
   if (output == "excel") {
-    if (is.null(excel_path) || !nzchar(excel_path)) {
-      spicy_abort(
-        "Provide `excel_path` for output = 'excel'.",
-        class = "spicy_invalid_input"
-      )
-    }
+    .check_output_path(excel_path, output)
     if (!requireNamespace("openxlsx2", quietly = TRUE)) {
       spicy_abort("Install package 'openxlsx2'.", class = "spicy_missing_pkg")
     }

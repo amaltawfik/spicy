@@ -635,3 +635,739 @@ test_that("every export belongs to exactly one API-stability tier in ?spicy", {
     )
   )
 })
+
+# ---- one mistake, one answer: the same bad input across the builders -----
+# The nine table functions answer each mistake with the same class
+# (`spicy_missing_column` is a `spicy_invalid_input`), and every error
+# they raise names the function the user called, never a helper.
+
+.fv_env <- function(parent) {
+  d <- as.data.frame(sochealth)
+  env <- new.env(parent = parent)
+  env$d <- d
+  env$des <- survey::svydesign(ids = ~1, weights = ~weight, data = d)
+  env$fit <- stats::lm(bmi ~ age + sex, data = d)
+  env$xlsx_bad <- tempfile(fileext = ".csv")
+  env$docx_bad <- tempfile(fileext = ".txt")
+  env$w_neg <- c(-1, rep(1, nrow(d) - 1L))
+  env$d$all_na <- factor(NA, levels = c("a", "b"))
+  env$des_na <- survey::svydesign(ids = ~1, weights = ~weight, data = env$d)
+  env
+}
+
+.fv_catch <- function(cl, env) {
+  tryCatch(
+    {
+      suppressWarnings(utils::capture.output(eval(cl, envir = env)))
+      NULL
+    },
+    error = identity
+  )
+}
+
+.fv_cases <- list(
+  unknown_select = list(
+    class = "spicy_missing_column",
+    calls = alist(
+      table_categorical = table_categorical(d, select = c(smoking, nope)),
+      table_categorical_svy = table_categorical_svy(
+        des,
+        select = c(smoking, nope)
+      ),
+      table_continuous = table_continuous(d, select = c(bmi, nope)),
+      table_continuous_svy = table_continuous_svy(des, select = c(bmi, nope)),
+      table_continuous_lm = table_continuous_lm(
+        d,
+        select = c(bmi, nope),
+        by = sex
+      ),
+      table_outcome = table_outcome(d, bmi, select = c(sex, nope)),
+      table_multiresponse = table_multiresponse(
+        d,
+        select = c(info_doctor, nope)
+      ),
+      table_regression_uv = table_regression_uv(
+        d,
+        bmi,
+        predictors = c(age, nope)
+      )
+    )
+  ),
+  unknown_by = list(
+    class = "spicy_missing_column",
+    calls = alist(
+      table_categorical = table_categorical(d, select = smoking, by = nope),
+      table_categorical_svy = table_categorical_svy(
+        des,
+        select = smoking,
+        by = "nope"
+      ),
+      table_continuous = table_continuous(d, select = bmi, by = nope),
+      table_continuous_svy = table_continuous_svy(des, select = bmi, by = nope),
+      table_continuous_lm = table_continuous_lm(d, select = bmi, by = "nope"),
+      table_outcome = table_outcome(d, nope, select = sex),
+      table_multiresponse = table_multiresponse(
+        d,
+        select = c(info_doctor, info_internet),
+        by = nope
+      ),
+      table_regression_uv = table_regression_uv(d, nope, predictors = age)
+    )
+  ),
+  by_in_select = list(
+    class = "spicy_invalid_input",
+    calls = alist(
+      table_categorical = table_categorical(
+        d,
+        select = c(smoking, sex),
+        by = sex
+      ),
+      table_categorical_svy = table_categorical_svy(
+        des,
+        select = c(smoking, sex),
+        by = sex
+      ),
+      table_continuous = table_continuous(d, select = c(bmi, age), by = age),
+      table_continuous_svy = table_continuous_svy(
+        des,
+        select = c("bmi", "age"),
+        by = age
+      ),
+      table_continuous_lm = table_continuous_lm(
+        d,
+        select = c(bmi, age),
+        by = age
+      ),
+      table_outcome = table_outcome(d, bmi, select = c(sex, bmi)),
+      table_multiresponse = table_multiresponse(
+        d,
+        select = c(info_doctor, info_internet),
+        by = info_doctor
+      ),
+      table_regression_uv = table_regression_uv(
+        d,
+        bmi,
+        predictors = c(age, bmi)
+      )
+    )
+  ),
+  empty_selection = list(
+    class = "spicy_invalid_input",
+    calls = alist(
+      table_categorical = table_categorical(
+        d,
+        select = tidyselect::starts_with("zzz")
+      ),
+      table_categorical_svy = table_categorical_svy(
+        des,
+        select = tidyselect::starts_with("zzz")
+      ),
+      table_continuous = table_continuous(
+        d,
+        select = tidyselect::starts_with("zzz")
+      ),
+      table_continuous_svy = table_continuous_svy(
+        des,
+        select = tidyselect::starts_with("zzz")
+      ),
+      table_continuous_lm = table_continuous_lm(
+        d,
+        select = tidyselect::starts_with("zzz"),
+        by = sex
+      ),
+      table_outcome = table_outcome(
+        d,
+        bmi,
+        select = tidyselect::starts_with("zzz")
+      ),
+      table_multiresponse = table_multiresponse(
+        d,
+        select = tidyselect::starts_with("zzz")
+      ),
+      table_regression_uv = table_regression_uv(
+        d,
+        bmi,
+        predictors = tidyselect::starts_with("zzz")
+      )
+    )
+  ),
+  fractional_digits = list(
+    class = "spicy_invalid_input",
+    calls = alist(
+      table_categorical = table_categorical(
+        d,
+        select = smoking,
+        percent_digits = 1.5
+      ),
+      table_categorical_svy = table_categorical_svy(
+        des,
+        select = smoking,
+        percent_digits = 1.5
+      ),
+      table_continuous = table_continuous(d, select = bmi, digits = 1.5),
+      table_continuous_svy = table_continuous_svy(
+        des,
+        select = bmi,
+        digits = 1.5
+      ),
+      table_continuous_lm = table_continuous_lm(
+        d,
+        select = bmi,
+        by = sex,
+        digits = 1.5
+      ),
+      table_outcome = table_outcome(d, bmi, select = sex, digits = 1.5),
+      table_multiresponse = table_multiresponse(
+        d,
+        select = c(info_doctor, info_internet),
+        percent_digits = 1.5
+      ),
+      table_regression = table_regression(fit, digits = 1.5),
+      table_regression_uv = table_regression_uv(
+        d,
+        bmi,
+        predictors = age,
+        digits = 1.5
+      )
+    )
+  ),
+  logical_effect_size = list(
+    class = "spicy_defunct",
+    calls = alist(
+      table_continuous = table_continuous(
+        d,
+        select = bmi,
+        by = sex,
+        effect_size = TRUE
+      ),
+      table_continuous_lm = table_continuous_lm(
+        d,
+        select = bmi,
+        by = sex,
+        effect_size = TRUE
+      ),
+      table_outcome = table_outcome(d, bmi, select = sex, effect_size = FALSE)
+    )
+  ),
+  bad_excel_path = list(
+    class = "spicy_invalid_input",
+    calls = alist(
+      table_categorical = table_categorical(
+        d,
+        select = smoking,
+        output = "excel",
+        excel_path = xlsx_bad
+      ),
+      table_categorical_svy = table_categorical_svy(
+        des,
+        select = smoking,
+        output = "excel",
+        excel_path = xlsx_bad
+      ),
+      table_continuous = table_continuous(
+        d,
+        select = bmi,
+        output = "excel",
+        excel_path = xlsx_bad
+      ),
+      table_continuous_svy = table_continuous_svy(
+        des,
+        select = bmi,
+        output = "excel",
+        excel_path = xlsx_bad
+      ),
+      table_continuous_lm = table_continuous_lm(
+        d,
+        select = bmi,
+        by = sex,
+        output = "excel",
+        excel_path = xlsx_bad
+      ),
+      table_outcome = table_outcome(
+        d,
+        bmi,
+        select = sex,
+        output = "excel",
+        excel_path = xlsx_bad
+      ),
+      table_multiresponse = table_multiresponse(
+        d,
+        select = c(info_doctor, info_internet),
+        output = "excel",
+        excel_path = xlsx_bad
+      ),
+      table_regression = table_regression(
+        fit,
+        output = "excel",
+        excel_path = xlsx_bad
+      ),
+      table_regression_uv = table_regression_uv(
+        d,
+        bmi,
+        predictors = age,
+        output = "excel",
+        excel_path = 1
+      )
+    )
+  ),
+  bad_word_path = list(
+    class = "spicy_invalid_input",
+    calls = alist(
+      table_categorical = table_categorical(
+        d,
+        select = smoking,
+        by = sex,
+        output = "word",
+        word_path = docx_bad
+      ),
+      table_categorical_svy = table_categorical_svy(
+        des,
+        select = smoking,
+        output = "word",
+        word_path = docx_bad
+      ),
+      table_continuous = table_continuous(
+        d,
+        select = bmi,
+        output = "word",
+        word_path = docx_bad
+      ),
+      table_continuous_svy = table_continuous_svy(
+        des,
+        select = bmi,
+        output = "word",
+        word_path = docx_bad
+      ),
+      table_continuous_lm = table_continuous_lm(
+        d,
+        select = bmi,
+        by = sex,
+        output = "word",
+        word_path = docx_bad
+      ),
+      table_outcome = table_outcome(
+        d,
+        bmi,
+        select = sex,
+        output = "word",
+        word_path = docx_bad
+      ),
+      table_multiresponse = table_multiresponse(
+        d,
+        select = c(info_doctor, info_internet),
+        output = "word",
+        word_path = docx_bad
+      ),
+      table_regression = table_regression(
+        fit,
+        output = "word",
+        word_path = docx_bad
+      ),
+      table_regression_uv = table_regression_uv(
+        d,
+        bmi,
+        predictors = age,
+        output = "word",
+        word_path = ""
+      )
+    )
+  )
+)
+
+# Mistakes whose class is another test's business: here only the header.
+.fv_header_calls <- alist(
+  table_categorical = table_categorical(as.matrix(d), select = smoking),
+  table_categorical = table_categorical(d, select = smoking, style = "nope"),
+  table_categorical = table_categorical(d, select = smoking, weights = nope),
+  table_categorical = table_categorical(
+    d,
+    select = smoking,
+    by = sex,
+    weights = w_neg
+  ),
+  table_categorical = table_categorical(
+    d,
+    select = smoking,
+    by = sex,
+    p_adjust = "nope"
+  ),
+  table_categorical_svy = table_categorical_svy(d, select = smoking),
+  table_continuous = table_continuous(des, select = bmi),
+  table_continuous = table_continuous(d, select = bmi, by = c(sex, smoking)),
+  table_continuous = table_continuous(
+    d,
+    select = bmi,
+    show_columns = "nope"
+  ),
+  table_continuous_svy = table_continuous_svy(
+    des_na,
+    select = bmi,
+    by = all_na
+  ),
+  table_continuous_lm = table_continuous_lm(
+    d,
+    select = bmi,
+    by = sex,
+    output = "excel"
+  ),
+  table_outcome = table_outcome(d, bmi, select = sex, show_columns = "nope"),
+  table_multiresponse = table_multiresponse(
+    d,
+    select = info_doctor,
+    by = sex,
+    test = "nope"
+  ),
+  table_regression = table_regression("x"),
+  table_regression = table_regression(fit, p_adjust = "nope"),
+  table_regression = table_regression(fit, show_columns = "nope"),
+  table_regression = table_regression(fit, ci_level = 2),
+  table_regression_uv = table_regression_uv(
+    d,
+    bmi,
+    predictors = age,
+    align = "left"
+  ),
+  table_regression_uv = table_regression_uv(
+    d,
+    bmi,
+    predictors = age,
+    nope_arg = 1
+  ),
+  table_regression_uv = table_regression_uv(des, bmi, predictors = age)
+)
+
+test_that("the table functions answer one mistake with one class", {
+  skip_if_not_installed("survey")
+  env <- .fv_env(environment())
+  for (case in names(.fv_cases)) {
+    spec <- .fv_cases[[case]]
+    for (fn in names(spec$calls)) {
+      err <- .fv_catch(spec$calls[[fn]], env)
+      expect_true(
+        inherits(err, spec$class),
+        info = sprintf(
+          "%s / %s: %s",
+          case,
+          fn,
+          paste(class(err), collapse = " ")
+        )
+      )
+      if (case %in% c("by_in_select", "empty_selection")) {
+        # A refusal of its own, not an unknown column.
+        expect_false(inherits(err, "spicy_missing_column"), info = fn)
+      }
+    }
+  }
+})
+
+test_that("every error of a table function names that function", {
+  skip_if_not_installed("survey")
+  env <- .fv_env(environment())
+  calls <- c(
+    unlist(lapply(.fv_cases, `[[`, "calls"), use.names = FALSE),
+    unname(.fv_header_calls)
+  )
+  fns <- c(
+    unlist(lapply(.fv_cases, function(s) names(s$calls)), use.names = FALSE),
+    names(.fv_header_calls)
+  )
+  for (k in seq_along(calls)) {
+    err <- .fv_catch(calls[[k]], env)
+    expect_s3_class(err, "spicy_error")
+    header <- rlang::call_name(conditionCall(err))
+    expect_identical(
+      header,
+      fns[[k]],
+      info = paste(deparse(calls[[k]]), collapse = " ")
+    )
+  }
+})
+
+test_that("an error of the variance machinery names the public function", {
+  skip_if_not_installed("sandwich")
+  skip_if_not_installed("clubSandwich")
+  # The estimators fail deep in R/vcov.R, under a tryCatch() whose handler
+  # raises the refusal: without the public call it named that handler's
+  # helper, `.abort_vcov_failed()`.
+  d <- stats::na.omit(as.data.frame(sochealth)[c("bmi", "age", "sex")])
+  d$cl <- rep(1:10, length.out = nrow(d))
+  fit <- stats::lm(bmi ~ age + sex, data = d)
+  local_mocked_bindings(
+    vcovHC = function(...) stop("the estimator failed"),
+    .package = "sandwich"
+  )
+  local_mocked_bindings(
+    vcovCR = function(...) stop("the estimator failed"),
+    .package = "clubSandwich"
+  )
+  calls <- alist(
+    table_regression = table_regression(fit, vcov = "HC3"),
+    table_regression = table_regression(fit, vcov = "CR2", cluster = d$cl),
+    table_continuous_lm = table_continuous_lm(
+      d,
+      select = bmi,
+      by = sex,
+      vcov = "HC3"
+    ),
+    table_continuous_lm = table_continuous_lm(
+      d,
+      select = bmi,
+      by = sex,
+      vcov = "CR2",
+      cluster = cl
+    ),
+    table_regression_uv = table_regression_uv(
+      d,
+      bmi,
+      predictors = c(age, sex),
+      vcov = "HC3"
+    )
+  )
+  for (k in seq_along(calls)) {
+    err <- tryCatch(eval(calls[[k]]), error = identity)
+    expect_s3_class(err, "spicy_unsupported_vcov")
+    expect_identical(
+      rlang::call_name(conditionCall(err)),
+      names(calls)[[k]],
+      info = paste(deparse(calls[[k]]), collapse = " ")
+    )
+  }
+  # A cluster of the wrong length is refused before any fit, in the same
+  # name: it named `.check_cluster_length()`.
+  err <- tryCatch(
+    table_regression(fit, vcov = "CR2", cluster = c(d$cl, 1L)),
+    error = identity
+  )
+  expect_s3_class(err, "spicy_invalid_input")
+  expect_identical(rlang::call_name(conditionCall(err)), "table_regression")
+})
+
+test_that("a leaf error class is signaled with its parent", {
+  skip_if_not_installed("survey")
+  env <- .fv_env(environment())
+  expect_s3_class(
+    .fv_catch(quote(table_continuous(des, select = bmi)), env),
+    "spicy_invalid_data"
+  )
+  expect_s3_class(
+    .fv_catch(quote(table_continuous(as.matrix(d), select = bmi)), env),
+    "spicy_invalid_data"
+  )
+  expect_s3_class(
+    .fv_catch(quote(table_continuous_svy(d, select = bmi)), env),
+    "spicy_invalid_data"
+  )
+  weighted <- .fv_catch(
+    quote(table_continuous(d, select = bmi, by = sex, weights = weight)),
+    env
+  )
+  expect_s3_class(weighted, "spicy_not_implemented")
+  expect_s3_class(weighted, "spicy_unsupported")
+  unknown <- .fv_catch(quote(table_continuous(d, select = nope)), env)
+  expect_s3_class(unknown, "spicy_missing_column")
+  expect_s3_class(unknown, "spicy_invalid_input")
+})
+
+test_that("a position in `select` counts the columns of the data, `by` included", {
+  skip_if_not_installed("survey")
+  # As in dplyr: a column's position is the one it has in the data the
+  # user passed. Three tables counted it without the `by` column.
+  d <- data.frame(
+    g = factor(rep(c("a", "b"), 10)),
+    x1 = as.numeric(1:20),
+    x2 = (1:20)^2,
+    f1 = factor(rep(c("u", "v"), each = 10)),
+    f2 = factor(rep(c("p", "q", "r", "s"), 5)),
+    w = 1
+  )
+  des <- survey::svydesign(ids = ~1, weights = ~w, data = d)
+  vars <- function(x) unique(as.character(x$variable))
+  expect_identical(
+    vars(table_continuous(d, select = 2:3, by = g, output = "long")),
+    c("x1", "x2")
+  )
+  expect_identical(
+    vars(table_continuous_svy(des, select = 2:3, by = g, output = "long")),
+    c("x1", "x2")
+  )
+  expect_identical(
+    vars(table_continuous_lm(d, select = 2:3, by = g, output = "long")),
+    c("x1", "x2")
+  )
+  expect_identical(
+    vars(table_categorical(d, select = 4:5, by = g, output = "long")),
+    c("f1", "f2")
+  )
+  expect_identical(
+    vars(table_categorical_svy(des, select = 4:5, by = g, output = "long")),
+    c("f1", "f2")
+  )
+  # A position is an explicit choice, like a name: one that points at
+  # the `by` column is refused with the same error, never skipped.
+  for (cl in alist(
+    table_continuous(d, select = 1:2, by = g),
+    table_continuous_svy(des, select = 1:2, by = g),
+    table_continuous_lm(d, select = 1:2, by = g),
+    table_categorical(d, select = c(1, 4), by = g),
+    table_categorical_svy(des, select = c(1, 4), by = g)
+  )) {
+    err <- tryCatch(eval(cl), error = identity)
+    expect_s3_class(err, "spicy_invalid_input")
+    expect_match(
+      conditionMessage(err),
+      "`select` cannot contain the `by` column (\"g\").",
+      fixed = TRUE,
+      info = deparse(cl)
+    )
+  }
+})
+
+test_that("the weights and cluster columns are outside the selection", {
+  d <- data.frame(
+    g = factor(rep(c("a", "b"), 10)),
+    y = as.numeric(1:20),
+    f = factor(rep(c("u", "v"), each = 10)),
+    w = rep(c(1, 2), 10),
+    cl = rep(1:5, each = 4)
+  )
+  vars <- function(x) unique(as.character(x$variable))
+  # A helper skips them...
+  expect_identical(
+    vars(table_continuous(d, weights = w, output = "long")),
+    c("y", "cl")
+  )
+  tab <- suppressWarnings(table_categorical(
+    d,
+    select = tidyselect::everything(),
+    weights = w,
+    output = "long"
+  ))
+  expect_false("w" %in% vars(tab))
+  fits <- suppressWarnings(table_continuous_lm(
+    d,
+    by = g,
+    weights = w,
+    cluster = cl,
+    vcov = "CR2",
+    output = "long"
+  ))
+  expect_identical(vars(fits), "y")
+  # ...and naming one, or giving its position, is an error.
+  for (cl in alist(
+    table_continuous(d, select = c(y, w), weights = w),
+    table_categorical(d, select = c(f, w), weights = w),
+    table_outcome(d, y, select = c(f, w), weights = w, p_value = FALSE),
+    table_continuous_lm(d, select = c(y, w), by = g, weights = w),
+    table_continuous_lm(d, select = c(2, 5), by = g, cluster = cl, vcov = "CR2")
+  )) {
+    err <- tryCatch(eval(cl), error = identity)
+    expect_s3_class(err, "spicy_invalid_input")
+    expect_match(
+      conditionMessage(err),
+      "`select` cannot contain the `(weights|cluster)` column",
+      info = deparse(cl)
+    )
+  }
+})
+
+test_that("a `by` no observation holds is refused under `drop_na = TRUE`", {
+  skip_if_not_installed("survey")
+  d <- data.frame(
+    y = as.numeric(1:20),
+    f = factor(rep(c("u", "v"), 10)),
+    q1 = rep(0:1, 10),
+    q2 = rep(1:0, 10),
+    w = 1
+  )
+  d$g <- factor(NA, levels = c("a", "b"))
+  des <- survey::svydesign(ids = ~1, weights = ~w, data = d)
+  for (cl in alist(
+    table_continuous(d, select = y, by = g),
+    table_continuous_svy(des, select = y, by = g),
+    table_categorical(d, select = f, by = g, drop_na = TRUE),
+    table_categorical_svy(des, select = f, by = g, drop_na = TRUE),
+    table_multiresponse(d, select = c(q1, q2), by = g)
+  )) {
+    err <- tryCatch(eval(cl), error = identity)
+    expect_s3_class(err, "spicy_invalid_data")
+    expect_match(
+      conditionMessage(err),
+      "`by` (`g`) has no observed non-missing level.",
+      fixed = TRUE,
+      info = deparse(cl)
+    )
+  }
+  # table_outcome() refuses a grouping of `select` the same way.
+  expect_error(
+    table_outcome(d, y, select = c(f, g), drop_na = TRUE),
+    "`select` (`g`) has no observed non-missing level.",
+    fixed = TRUE,
+    class = "spicy_invalid_data"
+  )
+  # Under `drop_na = FALSE` the missing values are the one "(Missing)"
+  # group, and nothing is refused.
+  expect_no_error(suppressWarnings(
+    table_continuous(d, select = y, by = g, drop_na = FALSE)
+  ))
+  expect_no_error(suppressWarnings(table_categorical(d, select = f, by = g)))
+  expect_no_error(suppressWarnings(
+    table_categorical_svy(des, select = f, by = g)
+  ))
+  expect_no_error(suppressWarnings(
+    table_continuous_svy(des, select = y, by = g, drop_na = FALSE)
+  ))
+  expect_no_error(suppressWarnings(table_outcome(d, y, select = c(f, g))))
+})
+
+test_that("?spicy lists every condition class the package signals", {
+  # Doc-consistency guard, as for the stability tiers above: the classes
+  # given to spicy_abort() / spicy_warn() / spicy_inform() in R/ must each
+  # be listed in the "Classed conditions" section of R/spicy-package.R.
+  src_dir <- test_path("..", "..", "R")
+  skip_if(!dir.exists(src_dir), "package sources not available")
+  doc <- paste(
+    readLines(file.path(src_dir, "spicy-package.R"), encoding = "UTF-8"),
+    collapse = "\n"
+  )
+  signaled <- character(0)
+  for (f in list.files(src_dir, "\\.R$", full.names = TRUE)) {
+    pd <- utils::getParseData(parse(f, keep.source = TRUE))
+    fun <- pd[
+      pd$token == "SYMBOL_FUNCTION_CALL" &
+        pd$text %in% c("spicy_abort", "spicy_warn", "spicy_inform"),
+    ]
+    for (i in seq_len(nrow(fun))) {
+      call_id <- pd$parent[pd$id == fun$parent[i]]
+      kids <- pd[pd$parent == call_id, ]
+      kids <- kids[order(kids$line1, kids$col1), ]
+      at <- which(kids$token == "SYMBOL_SUB" & kids$text == "class")
+      if (length(at) == 0L) {
+        next
+      }
+      value <- kids[at + 2L, ]
+      inside <- pd$line1 >= value$line1 &
+        pd$line2 <= value$line2 &
+        pd$token == "STR_CONST"
+      inside <- inside &
+        (pd$line1 > value$line1 | pd$col1 >= value$col1) &
+        (pd$line2 < value$line2 | pd$col2 <= value$col2)
+      signaled <- c(signaled, gsub("\"", "", pd$text[inside]))
+    }
+  }
+  signaled <- unique(signaled[startsWith(signaled, "spicy_")])
+  expect_true(length(signaled) > 20L)
+  undocumented <- signaled[
+    !vapply(
+      signaled,
+      function(cl) grepl(paste0("\\code{", cl, "}"), doc, fixed = TRUE),
+      logical(1)
+    )
+  ]
+  expect(
+    length(undocumented) == 0L,
+    sprintf(
+      "Condition class(es) missing from ?spicy: %s.",
+      paste(undocumented, collapse = ", ")
+    )
+  )
+})

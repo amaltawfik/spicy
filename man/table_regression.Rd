@@ -622,7 +622,8 @@ the classes it covers and its small-sample caution.}
 \item{p_digits}{Decimal places for p-values (\code{p}, \code{ame_p},
 \code{p_change}). APA-strict: leading zero stripped, \verb{<.001} (or
 \verb{<.0001} etc. depending on \code{p_digits}) for small values.
-Default \code{3L}.}
+Default \code{3L}; at least \code{1L}, as in the descriptive tables. Every
+\verb{*_digits} argument is a whole number: a fraction is an error.}
 
 \item{effect_size_digits}{Decimals for per-coefficient effect
 sizes (\code{partial_f2}, \code{partial_eta2}, \code{partial_omega2}).
@@ -734,8 +735,9 @@ tables); \code{"excel"} (writes to \code{excel_path}); \code{"clipboard"}
 (copies to system clipboard); \code{"word"} (writes flextable to
 \code{word_path}).}
 
-\item{excel_path}{File path for \code{output = "excel"}. Default
-\code{NULL} (required when \code{output = "excel"}).}
+\item{excel_path}{File path for \code{output = "excel"}, ending in
+\code{".xlsx"}, in a directory that exists. Default \code{NULL} (required when
+\code{output = "excel"}).}
 
 \item{excel_sheet}{Sheet name when writing to Excel. \code{NULL} (the
 default) uses \code{"Regression"}.}
@@ -769,7 +771,8 @@ with borders and alignment pre-applied, use
 \code{output = "word"} instead.
 }}
 
-\item{word_path}{File path for \code{output = "word"}. Default
+\item{word_path}{File path for \code{output = "word"}, ending in
+\code{".docx"}, in a directory that exists. Default
 \code{NULL} (required when \code{output = "word"}). The Word table inherits
 the flextable styling (Calibri font, APA borders, decimal-aligned
 numerics) and adds Word-specific features: an auto-numbered

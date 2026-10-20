@@ -314,7 +314,9 @@ as_tibble.spicy_categorical_table <- function(x, ...) {
 #' `"fisher_exact"`, `"fisher_midp"`, or `"fisher_exact_mc"`, as in the
 #' data frames of [table_categorical()]), `statistic` (the chi-squared,
 #' Pearson's or the N-1, `NA` for an exact test), `df`, `p.value`,
-#' `assoc_type`, `assoc_value`, `assoc_ci_lower`, `assoc_ci_upper`,
+#' `assoc_type` (the key of the measure the variable carries, as
+#' `effect_size_type` in the long output: `"phi"`, `"cramer_v"`, ...),
+#' `assoc_value`, `assoc_ci_lower`, `assoc_ci_upper`,
 #' `n_total`. Without `by`, only `variable`, `label` and `n_total` are
 #' populated; the other columns are `NA`. The interval bounds are `NA`
 #' unless the table was built with `assoc_ci = TRUE`.
@@ -446,7 +448,8 @@ glance.spicy_categorical_table <- function(x, ...) {
     "smd",
     "smd_type",
     ".smd",
-    ".smd_type"
+    ".smd_type",
+    ".assoc_type"
   )
   st <- attr(x, "structured", exact = TRUE)
   measure_col <- if (!is.null(st) && !is.null(st$col_meta)) {
@@ -527,8 +530,15 @@ glance.spicy_categorical_table <- function(x, ...) {
     } else {
       rep(NA_real_, length(keys))
     },
-    assoc_type = if (has_assoc) {
-      rep(measure_col, length(keys))
+    # The measure each variable carries, as the key of the long output
+    # (`"phi"`, `"cramer_v"`, ...): one table can use several, and the
+    # column header ("Effect size" then) names none of them.
+    assoc_type = if (has_assoc && ".assoc_type" %in% names(long)) {
+      vapply(
+        by_var,
+        function(b) as.character(pick_first(b, ".assoc_type")),
+        character(1)
+      )
     } else {
       rep(NA_character_, length(keys))
     },

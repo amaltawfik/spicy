@@ -1556,3 +1556,43 @@ test_that("p_value = FALSE leaves no p column in the frame (issue #9)", {
   expect_false("p" %in% names(attr(tbl, "display_df")))
   expect_true(all(is.na(broom::glance(tbl)$p.value)))
 })
+
+test_that("the note names the test only when a test ran", {
+  # A one-level `by` and a constant variable run no test: the p cell is
+  # blank, and a note naming the Rao-Scott test would describe nothing.
+  d <- .svycat_design("strat")
+  d$variables$one <- factor("a")
+  d$variables$const <- factor("x")
+  test_line <- spicy_fmt(
+    "note_group_comparison",
+    spicy:::.cat_svy_test_label("F")
+  )
+  one <- table_categorical_svy(d, select = stype, by = one, output = "long")
+  expect_false(grepl(test_line, attr(one, "note"), fixed = TRUE))
+  const <- suppressWarnings(
+    table_categorical_svy(d, select = const, by = sch.wide, output = "long")
+  )
+  expect_false(grepl(test_line, attr(const, "note"), fixed = TRUE))
+  # A test that ran is named, a variable that ran none beside it or not.
+  mixed <- suppressWarnings(table_categorical_svy(
+    d,
+    select = c(const, awards),
+    by = sch.wide,
+    output = "long"
+  ))
+  expect_true(grepl(test_line, attr(mixed, "note"), fixed = TRUE))
+})
+
+test_that("`by` named in `select` is refused; a helper skips it", {
+  d <- .svycat_design("strat")
+  expect_error(
+    table_categorical_svy(d, select = c(stype, awards), by = awards),
+    class = "spicy_invalid_input"
+  )
+  out <- .svycat_long(d, select = c(sch.wide, awards), by = stype)
+  expect_setequal(unique(out$variable), c("sch.wide", "awards"))
+  expect_error(
+    table_categorical_svy(d, select = c(stype, nope)),
+    class = "spicy_missing_column"
+  )
+})

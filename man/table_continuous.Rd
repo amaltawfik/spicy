@@ -47,7 +47,12 @@ table_continuous(
 \item{select}{Columns to include. If \code{regex = FALSE}, use tidyselect
 syntax or a character vector of column names (default:
 \code{tidyselect::everything()}). If \code{regex = TRUE}, provide a regular
-expression pattern (character string).}
+expression pattern (character string). The \code{by} and \code{weights}
+columns are not part of the selection: \code{everything()} and the other
+helpers skip them, and naming one in \code{select}, or giving its
+position, is an error. A name that is not a column of \code{data} is an
+error (class \code{spicy_missing_column}), and so is a selection with no
+numeric column.}
 
 \item{by}{Optional grouping column. Accepts an unquoted column name
 or a single character column name. Coerced to factor for
@@ -78,16 +83,17 @@ is disclosed in a table note ("Missing values removed: ...")
 rather than silent. If \code{TRUE} (the default, preserving this
 function's historical behavior; \code{\link[=table_categorical]{table_categorical()}} defaults to
 \code{FALSE}), rows with \code{NA} in \code{by} are removed from the grouped
-summaries, with a warning and a dedicated note line ("Rows with
-missing ... removed"). If \code{FALSE}, rows with \code{NA} in \code{by} form a
+summaries, and a note line says so ("Rows with missing ...
+removed"). If \code{FALSE}, rows with \code{NA} in \code{by} form a
 dedicated \code{"(Missing)"} group -- the field convention for
 descriptive tables (gtsummary's "Unknown" row; see the
 Epidemiologist R Handbook, Descriptive tables) -- while the
 group-comparison test and effect size are still computed on the
 observed groups only (show the missing, test the observed,
 matching \code{\link[=table_categorical]{table_categorical()}}); a level of \code{by} displayed with the
-label of that group is an error, as there. Ignored (with a warning)
-when \code{by} is not used.}
+label of that group is an error, as there. Under \code{drop_na = TRUE}, a
+\code{by} that no observation holds is an error (class
+\code{spicy_invalid_data}). Ignored (with a warning) when \code{by} is not used.}
 
 \item{weights}{Optional case weights: an unquoted column name, a
 character column name, or a numeric vector of length \code{nrow(data)}.
@@ -121,9 +127,12 @@ ANOVA (3+ groups). Assumes equal variances.
 }
 
 Used whenever \code{by} is supplied (since \code{p_value} defaults to \code{TRUE}
-in that case) or when \code{statistic = TRUE} / \code{effect_size = TRUE}.
+in that case) or when \code{statistic = TRUE} or an \code{effect_size} is
+requested.
 Ignored when \code{by} is not used, or when all three display toggles
-are turned off.}
+are turned off. A variable with no variance has no test, whichever
+is chosen: its test cells are left blank, with a warning (class
+\code{spicy_undefined_stat}).}
 
 \item{p_value}{Logical or \code{NULL}. If \code{TRUE} and \code{by} is used, adds a
 \emph{p}-value column from the test specified by \code{test}. When \code{NULL} (the
@@ -185,8 +194,8 @@ Kruskal-Wallis statistic (3+ groups, nonparametric). CI via
 percentile bootstrap (2 000 replicates).
 }
 
-For backward compatibility, \code{effect_size = TRUE} is silently
-coerced to \code{"auto"} and \code{effect_size = FALSE} to \code{"none"}.
+A logical value is an error (class \code{spicy_defunct}): use \code{"auto"}
+for \code{TRUE} and \code{"none"} for \code{FALSE}.
 Explicit choices are validated against the active \code{test} and the
 number of groups; an incompatible request (e.g. \code{"eta_sq"} with
 two groups, or \code{"hedges_g"} with \code{test = "nonparametric"})
@@ -248,7 +257,8 @@ the wording you set here.}
 (default: \code{0.95}). Must be between 0 and 1 exclusive.}
 
 \item{digits}{Number of decimal places for descriptive values and test
-statistics (default: \code{2}).}
+statistics (default: \code{2}). A whole number: a fraction is an error,
+as for every \verb{*_digits} argument.}
 
 \item{effect_size_digits}{Number of decimal places for effect-size values
 in formatted displays (default: \code{2}).}
@@ -313,7 +323,8 @@ better in your pipeline (\code{"long"} matches
 \item \code{"word"} (requires \code{flextable} and \code{officer})
 }}
 
-\item{excel_path}{File path for \code{output = "excel"}.}
+\item{excel_path}{File path for \code{output = "excel"}, ending in
+\code{".xlsx"}, in a directory that exists.}
 
 \item{excel_sheet}{Sheet name for \code{output = "excel"}. \code{NULL} (the
 default) uses \code{"Descriptives"}.}
@@ -323,10 +334,11 @@ default) uses \code{"Descriptives"}.}
 quote or a line break is quoted RFC 4180-style, so the grid
 survives whatever delimiter you choose.}
 
-\item{word_path}{File path for \code{output = "word"}.}
+\item{word_path}{File path for \code{output = "word"}, ending in
+\code{".docx"}, in a directory that exists.}
 
-\item{verbose}{Logical. If \code{TRUE}, prints messages about excluded
-non-numeric columns (default: \code{FALSE}).}
+\item{verbose}{Logical. If \code{TRUE}, a message (class \code{spicy_info})
+names the non-numeric columns left out (default: \code{FALSE}).}
 
 \item{user_na}{Logical. If \code{TRUE} (the default), declared missing
 values never reach the numeric summaries: they are excluded like

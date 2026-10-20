@@ -511,11 +511,12 @@ test_that("table_continuous_lm rejects deprecated wide output", {
 test_that("table_continuous_lm validates select and weights", {
   df <- data.frame(y = letters[1:3], x = 1:3, w = c(1, -1, 1))
 
-  expect_warning(
-    out <- table_continuous_lm(df, select = y, by = x, output = "long"),
-    "No numeric outcome columns selected"
+  # No numeric outcome: an error, as in the rest of the family (it warned
+  # and returned an empty data frame).
+  expect_error(
+    table_continuous_lm(df, select = y, by = x, output = "long"),
+    class = "spicy_invalid_input"
   )
-  expect_equal(ncol(out), 0L)
   expect_error(
     table_continuous_lm(
       transform(df, y = 1:3),
@@ -655,17 +656,26 @@ test_that("table_continuous_lm uses labels, exclude, regex, and character by", {
 })
 
 test_that("table_continuous_lm reports ignored non-numeric outcomes in verbose mode", {
-  expect_message(
-    out <- table_continuous_lm(
+  msg <- NULL
+  out <- withCallingHandlers(
+    table_continuous_lm(
       sochealth,
       select = c(wellbeing_score, sex),
       by = age,
       verbose = TRUE,
       output = "data.frame"
     ),
-    "Ignoring non-numeric selected outcomes: sex"
+    message = function(m) {
+      msg <<- m
+      invokeRestart("muffleMessage")
+    }
   )
-
+  # The family's one wording, classed.
+  expect_s3_class(msg, "spicy_info")
+  expect_identical(
+    conditionMessage(msg),
+    "table_continuous_lm(): Ignored non-numeric columns: sex."
+  )
   expect_equal(out$Variable, "wellbeing_score")
 })
 
@@ -5269,4 +5279,67 @@ test_that(".lm_spanner_ids refuses keys that already repeat", {
     "M (x)",
     fixed = TRUE
   )
+})
+
+test_that("`p_value = NULL`, the family default, shows the p-value", {
+  expect_null(formals(table_continuous_lm)$p_value)
+  a <- table_continuous_lm(sochealth, select = bmi, by = sex, output = "long")
+  b <- table_continuous_lm(
+    sochealth,
+    select = bmi,
+    by = sex,
+    p_value = NULL,
+    output = "long"
+  )
+  expect_identical(a, b)
+  expect_true(attr(
+    table_continuous_lm(sochealth, select = bmi, by = sex, p_value = NULL),
+    "show_p_value"
+  ))
+  expect_error(
+    table_continuous_lm(sochealth, select = bmi, by = sex, p_value = NA),
+    class = "spicy_invalid_input"
+  )
+})
+
+test_that("`by` and the covariates named in `select` are refused; helpers skip them", {
+  err <- expect_error(
+    table_continuous_lm(sochealth, select = c(bmi, age), by = age),
+    class = "spicy_invalid_input"
+  )
+  expect_false(inherits(err, "spicy_missing_column"))
+  expect_error(
+    table_continuous_lm(
+      sochealth,
+      select = c(bmi, wellbeing_score),
+      by = sex,
+      covariates = wellbeing_score
+    ),
+    class = "spicy_invalid_input"
+  )
+  out <- table_continuous_lm(
+    sochealth,
+    select = c(bmi, wellbeing_score, age),
+    by = sex,
+    covariates = income,
+    output = "long"
+  )
+  expect_setequal(unique(out$variable), c("bmi", "wellbeing_score", "age"))
+  out <- table_continuous_lm(
+    sochealth,
+    select = tidyselect::where(is.numeric),
+    by = age,
+    covariates = income,
+    output = "long"
+  )
+  expect_false(any(c("age", "income") %in% out$variable))
+})
+
+test_that("a logical `effect_size` is refused with the measures to use", {
+  err <- expect_error(
+    table_continuous_lm(sochealth, select = bmi, by = sex, effect_size = TRUE),
+    class = "spicy_defunct"
+  )
+  expect_s3_class(err, "spicy_invalid_input")
+  expect_match(conditionMessage(err), "\"f2\"", fixed = TRUE)
 })

@@ -305,6 +305,23 @@ order_continuous_svy_tokens <- function(tokens) {
   if (k < 2L || any(table(gv) < 2L)) {
     return(list(row = empty, label = NA_character_, k = k, refused = FALSE))
   }
+  # A variable with no variance has no comparison to make, but survey
+  # still returns a p-value for it (0.228 from `svyttest()` on a
+  # constant): the comparison is left blank and the warning says why, as
+  # `table_continuous()` does when `t.test()` refuses the same data.
+  if (length(unique(x[keep])) < 2L) {
+    spicy_warn(
+      c(
+        sprintf(
+          "The group-comparison test failed for `%s` (the variable has no variance); its test columns are NA.",
+          var
+        ),
+        "i" = "Other selected variables are unaffected."
+      ),
+      class = "spicy_undefined_stat"
+    )
+    return(list(row = empty, label = NA_character_, k = k, refused = FALSE))
+  }
   ddf <- .design_degf(sub)
   form <- stats::as.formula(paste0("`", var, "` ~ `", group_var, "`"))
 
@@ -496,7 +513,9 @@ order_continuous_svy_tokens <- function(tokens) {
 #' or `survey::svyranktest()` under `test = "nonparametric"`. Under a
 #' design the Welch / Student distinction does not exist -- the
 #' variance is the design's -- so `test = "student"` warns and behaves
-#' like `"welch"`.
+#' like `"welch"`. A variable with no variance has no comparison: its
+#' test cells are left blank, with a warning (class
+#' `spicy_undefined_stat`), where survey would still return a p-value.
 #'
 #' # Stability
 #'
@@ -517,8 +536,12 @@ order_continuous_svy_tokens <- function(tokens) {
 #'   `survey::as.svrepdesign()`. Two-phase, pps, database-backed and
 #'   multiframe designs are refused with a classed error.
 #' @param select Columns to summarize, as a tidyselect expression on
-#'   the design's variables.
-#' @param by A single grouping column. One domain per level.
+#'   the design's variables. As in [table_continuous()], the `by` column
+#'   is not part of the selection (naming it, or giving its position, is
+#'   an error), a name that is not a column is an error, and so is a
+#'   selection with no numeric column.
+#' @param by A single grouping column. One domain per level. A `by` that
+#'   no observation holds is an error under `drop_na = TRUE`.
 #' @param exclude Columns to drop from `select`.
 #' @param regex Treat `select` as a regular expression.
 #' @param drop_na Drop observations with a missing `by` value
@@ -681,15 +704,7 @@ table_continuous_svy <- function(
   p_digits <- cfg$p_digits
   df_user <- cfg$df
 
-  if (
-    !is.numeric(digits) || length(digits) != 1L || is.na(digits) || digits < 0
-  ) {
-    spicy_abort(
-      "`digits` must be a single non-negative number.",
-      class = "spicy_invalid_input"
-    )
-  }
-  digits <- as.integer(digits)
+  digits <- validate_digit_arg(digits, "digits")
   for (.lname in c(
     "statistic",
     "show_n",
@@ -739,14 +754,11 @@ table_continuous_svy <- function(
   has_group <- !rlang::quo_is_null(group_quo)
   group_col_name <- NULL
   if (has_group) {
-    group_col_name <- tryCatch(
-      resolve_single_column_selection(group_quo, vars, "by"),
-      error = function(e) {
-        spicy_abort(
-          "`by` must be a single column name in the design's variables.",
-          class = "spicy_invalid_input"
-        )
-      }
+    group_col_name <- resolve_single_column_selection(
+      group_quo,
+      vars,
+      "by",
+      where = "`design`"
     )
   }
 
@@ -773,10 +785,7 @@ table_continuous_svy <- function(
   do_test <- (p_value || statistic) && has_group
 
   # --- column selection ----------------------------------------------------
-  work <- vars
-  if (has_group) {
-    work <- dplyr::select(work, -tidyselect::all_of(group_col_name))
-  }
+  # The `by` column is outside the selection, as in the sibling.
   if (regex) {
     if (missing(select)) {
       select <- ".*"
@@ -787,41 +796,41 @@ table_continuous_svy <- function(
         class = "spicy_invalid_input"
       )
     }
-    work <- work[, grep(select, names(work), value = TRUE), drop = FALSE]
-  } else {
-    sel_quo <- rlang::enquo(select)
-    sel_val <- tryCatch(
-      rlang::eval_tidy(sel_quo, env = rlang::quo_get_env(sel_quo)),
-      error = function(e) NULL
+    sel_names <- grep(
+      select,
+      setdiff(names(vars), group_col_name),
+      value = TRUE
     )
-    if (is.character(sel_val)) {
-      work <- dplyr::select(work, tidyselect::all_of(sel_val))
-    } else {
-      work <- dplyr::select(work, !!sel_quo)
-    }
+  } else {
+    sel_names <- .resolve_selection_without(
+      rlang::enquo(select),
+      vars,
+      roles = c(by = group_col_name),
+      where = "`design`"
+    )
   }
   exclude_names <- resolve_multi_column_selection(
     rlang::enquo(exclude),
-    work,
-    "exclude"
+    vars,
+    "exclude",
+    where = "`design`"
   )
-  work <- dplyr::select(work, -tidyselect::any_of(exclude_names))
-  all_cols <- names(work)
-  numeric_cols <- names(dplyr::select(work, tidyselect::where(is.numeric)))
+  all_cols <- setdiff(sel_names, exclude_names)
+  numeric_cols <- all_cols[vapply(
+    all_cols,
+    function(nm) is.numeric(vars[[nm]]),
+    logical(1)
+  )]
   .check_integer64_columns(vars, numeric_cols, "table_continuous_svy")
   .check_integer64_columns(vars, group_col_name, "table_continuous_svy")
-  ignored <- setdiff(all_cols, numeric_cols)
-  if (verbose && length(ignored) > 0L) {
-    rlang::inform(paste0(
-      "table_continuous_svy(): Ignored non-numeric columns: ",
-      paste(ignored, collapse = ", ")
-    ))
+  if (verbose) {
+    .inform_ignored_non_numeric(
+      "table_continuous_svy",
+      setdiff(all_cols, numeric_cols)
+    )
   }
   if (length(numeric_cols) == 0L) {
-    spicy_abort(
-      "No numeric columns selected.",
-      class = "spicy_invalid_input"
-    )
+    .abort_empty_selection("select", "numeric")
   }
 
   # --- tokens --------------------------------------------------------------
@@ -899,6 +908,14 @@ table_continuous_svy <- function(
   domains <- list()
   missing_group_label <- NA_character_
   if (has_group) {
+    # A `by` that no observation holds leaves no group once its missing
+    # values are dropped: refused, as `table_continuous_lm()` refuses it.
+    if (drop_na) {
+      .check_grouping_observed(
+        vars[[group_col_name]],
+        sprintf("`by` (`%s`)", group_col_name)
+      )
+    }
     geom <- .svy_by_levels(vars[[group_col_name]], drop_na, group_col_name)
     group_levels <- geom$levels
     missing_group_label <- geom$missing_label
@@ -1175,13 +1192,14 @@ table_continuous_svy <- function(
   deff,
   df,
   excel_sheet,
-  excel_key
+  excel_key,
+  call = rlang::caller_env()
 ) {
   if (!.is_survey_design(design)) {
-    .abort_needs_design(fn, plain_fn)
+    .abort_needs_design(fn, plain_fn, call = call)
   }
   if (!.is_supported_design(design)) {
-    .abort_unsupported_design(design, fn)
+    .abort_unsupported_design(design, fn, call = call)
   }
   if (
     !is.numeric(ci_level) ||
@@ -1192,35 +1210,28 @@ table_continuous_svy <- function(
   ) {
     spicy_abort(
       "`ci_level` must be a single number between 0 and 1.",
-      class = "spicy_invalid_input"
+      class = "spicy_invalid_input",
+      call = call
     )
   }
-  if (
-    !is.numeric(p_digits) ||
-      length(p_digits) != 1L ||
-      is.na(p_digits) ||
-      p_digits < 1
-  ) {
-    spicy_abort(
-      "`p_digits` must be a single integer >= 1 (typically 2-4).",
-      class = "spicy_invalid_input"
-    )
-  }
+  p_digits <- validate_digit_arg(p_digits, "p_digits", min = 1L, call = call)
   if (!.is_single_char(decimal_mark)) {
     spicy_abort(
       '`decimal_mark` must be a single character (e.g. "." or ",").',
-      class = "spicy_invalid_input"
+      class = "spicy_invalid_input",
+      call = call
     )
   }
   # The family's one validator, its error naming the entry point.
-  .check_labels_arg(labels, call = rlang::caller_env())
+  .check_labels_arg(labels, call = call)
   if (!(isTRUE(deff) || isFALSE(deff) || identical(deff, "replace"))) {
     spicy_abort(
       c(
         "`deff` must be TRUE, FALSE, or \"replace\".",
         "i" = "`TRUE` compares with sampling WITHOUT replacement; `\"replace\"` compares with sampling WITH replacement, ignoring the finite population correction."
       ),
-      class = "spicy_invalid_input"
+      class = "spicy_invalid_input",
+      call = call
     )
   }
   if (
@@ -1232,7 +1243,8 @@ table_continuous_svy <- function(
         "`df` must be a single positive number, or NULL.",
         "i" = "NULL uses `survey::degf()` on each domain, which is what the design declares."
       ),
-      class = "spicy_invalid_input"
+      class = "spicy_invalid_input",
+      call = call
     )
   }
   list(
@@ -1241,7 +1253,7 @@ table_continuous_svy <- function(
     } else {
       excel_sheet
     },
-    p_digits = as.integer(p_digits),
+    p_digits = p_digits,
     df = df
   )
 }
@@ -1250,7 +1262,7 @@ table_continuous_svy <- function(
 # so inside `svyquantile()`, one variable at a time and behind a
 # `match.arg()` whose message names neither the argument nor the twin.
 # Catch the shape here so a typo answers immediately.
-.svy_check_qrule <- function(qrule) {
+.svy_check_qrule <- function(qrule, call = rlang::caller_env()) {
   if (is.function(qrule)) {
     return(invisible(NULL))
   }
@@ -1260,7 +1272,8 @@ table_continuous_svy <- function(
         "`qrule` must be a single string or a function.",
         "i" = "\"math\" (default), \"spicy\", or any rule `survey::svyquantile()` accepts."
       ),
-      class = "spicy_invalid_input"
+      class = "spicy_invalid_input",
+      call = call
     )
   }
   known <- c(
@@ -1280,7 +1293,8 @@ table_continuous_svy <- function(
         ),
         "i" = "A function is also accepted; see `vignette(\"qrule\", package = \"survey\")`."
       ),
-      class = "spicy_invalid_input"
+      class = "spicy_invalid_input",
+      call = call
     )
   }
   invisible(NULL)
@@ -1292,7 +1306,12 @@ table_continuous_svy <- function(
 # its statistic), plus the two the design regime adds: `med_ci` has no
 # design-based version at all, and a `deff` column without
 # `deff = TRUE` would be a column of dashes.
-.svy_resolve_tokens <- function(show_columns, default_tokens, deff_on) {
+.svy_resolve_tokens <- function(
+  show_columns,
+  default_tokens,
+  deff_on,
+  call = rlang::caller_env()
+) {
   if (is.null(show_columns)) {
     tokens <- default_tokens
   } else {
@@ -1302,7 +1321,8 @@ table_continuous_svy <- function(
           "`show_columns` must be a character vector here.",
           "i" = "The per-variable list form of `table_continuous()` is not available in the design twin."
         ),
-        class = "spicy_invalid_input"
+        class = "spicy_invalid_input",
+        call = call
       )
     }
     if (is.character(show_columns) && "med_ci" %in% show_columns) {
@@ -1311,7 +1331,8 @@ table_continuous_svy <- function(
     validate_token_vector(
       show_columns,
       .continuous_svy_column_tokens,
-      arg = "show_columns"
+      arg = "show_columns",
+      call = call
     )
     tokens <- order_continuous_svy_tokens(show_columns)
   }
@@ -1331,7 +1352,8 @@ table_continuous_svy <- function(
         "The \"deff\" column requires `deff = TRUE`.",
         "i" = "The design effect is an extra pass over the design, so it is opt-in."
       ),
-      class = "spicy_invalid_input"
+      class = "spicy_invalid_input",
+      call = call
     )
   }
   if (deff_on && !("deff" %in% tokens)) {
@@ -1340,7 +1362,8 @@ table_continuous_svy <- function(
   if (length(tokens) == 0L) {
     spicy_abort(
       "`show_columns` leaves no statistic to display.",
-      class = "spicy_invalid_input"
+      class = "spicy_invalid_input",
+      call = call
     )
   }
   tokens

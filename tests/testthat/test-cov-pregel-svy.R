@@ -153,16 +153,18 @@ test_that("`by` must name a single column of the design", {
   )
   expect_identical(
     conditionMessage(err),
-    "`by` must be a single column name in the design's variables."
+    "`by` must select exactly one column of `design`; it selects 2."
   )
-  # Every way the selection can fail answers with that one sentence:
-  # the tryCatch replaces tidyselect's own message, which would name
-  # a data frame the caller never saw.
+  # An unknown column is named, as in every table: the message names
+  # the design the caller passed, never a data frame they never saw.
   err2 <- expect_error(
     table_categorical_svy(des, stype, by = not_a_column),
-    class = "spicy_invalid_input"
+    class = "spicy_missing_column"
   )
-  expect_identical(conditionMessage(err2), conditionMessage(err))
+  expect_identical(
+    conditionMessage(err2),
+    "`by` names \"not_a_column\", which is not a column of `design`."
+  )
 })
 
 

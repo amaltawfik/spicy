@@ -52,7 +52,11 @@
 #' A statistic that belongs to a whole variable rather than to one of
 #' its levels sits on the variable's own row: the *p* of a
 #' `table_categorical()` block, its association measure, its SMD. Leave
-#' `level` out to cite it (`inline(tbl, smoking, column = "p")`).
+#' `level` out to cite it (`inline(tbl, smoking, column = "p")`). The
+#' same call cites the *p* of a by-group [table_continuous()] or
+#' [table_continuous_svy()], which sits on the first group's row: when
+#' one row of the variable alone carries the statistic, that row is the
+#' address.
 #'
 #' [table_continuous_lm()] lays its groups out sideways -- one row per
 #' outcome, the `by` levels as columns (`M (Female)`, `M (Male)`) --
@@ -409,6 +413,20 @@ inline <- function(
       if (!is.null(hdr)) {
         return(hdr)
       }
+      # A statistic of the whole variable that a table without a header
+      # row prints on one row of the block only (the `p` of a by-group
+      # `table_continuous()`, on its first group): that row is the
+      # address, as `?inline` promises ("leave `level` out").
+      carriers <- .inline_rows_carrying(
+        s,
+        formatted,
+        rows,
+        .inline_requested_tokens(column),
+        cols
+      )
+      if (length(carriers) == 1L) {
+        return(carriers)
+      }
       spicy_abort(
         c(
           sprintf("%s has levels: pick one with `level`.", .quote_val(var_chr)),
@@ -657,6 +675,28 @@ inline <- function(
     )
   }
   NULL
+}
+
+# The rows of `rows` whose cells are filled for every token asked for.
+.inline_rows_carrying <- function(s, formatted, rows, tokens, cols) {
+  keep <- rep(length(tokens) > 0L, length(rows))
+  for (tk in tokens) {
+    hits <- .inline_token_cols(s, cols, tk)
+    keep <- keep &
+      length(hits) > 0L &
+      vapply(
+        rows,
+        function(i) {
+          all(nzchar(trimws(vapply(
+            hits,
+            function(nm) as.character(formatted[[nm]][i]),
+            character(1)
+          ))))
+        },
+        logical(1)
+      )
+  }
+  rows[keep]
 }
 
 # The candidate columns after the `model` filter: NULL model on a

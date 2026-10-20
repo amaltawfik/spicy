@@ -44,9 +44,13 @@ table_continuous_svy(
 multiframe designs are refused with a classed error.}
 
 \item{select}{Columns to summarize, as a tidyselect expression on
-the design's variables.}
+the design's variables. As in \code{\link[=table_continuous]{table_continuous()}}, the \code{by} column
+is not part of the selection (naming it, or giving its position, is
+an error), a name that is not a column is an error, and so is a
+selection with no numeric column.}
 
-\item{by}{A single grouping column. One domain per level.}
+\item{by}{A single grouping column. One domain per level. A \code{by} that
+no observation holds is an error under \code{drop_na = TRUE}.}
 
 \item{exclude}{Columns to drop from \code{select}.}
 
@@ -234,7 +238,9 @@ pairwise ones: \code{survey::svyttest()} with two observed groups,
 or \code{survey::svyranktest()} under \code{test = "nonparametric"}. Under a
 design the Welch / Student distinction does not exist -- the
 variance is the design's -- so \code{test = "student"} warns and behaves
-like \code{"welch"}.
+like \code{"welch"}. A variable with no variance has no comparison: its
+test cells are left blank, with a warning (class
+\code{spicy_undefined_stat}), where survey would still return a p-value.
 }
 
 \section{Stability}{

@@ -302,7 +302,7 @@ test_that("a block omnibus p is not attributed to its neighbor", {
       show_columns = c("n", "m", "sd", "ci", "med", "iqr"),
       p_value = TRUE,
       statistic = TRUE,
-      effect_size = TRUE
+      effect_size = "auto"
     ),
     82
   )
@@ -314,7 +314,7 @@ test_that("a block omnibus p is not attributed to its neighbor", {
       show_columns = c("n", "m", "sd", "ci", "med", "iqr"),
       p_value = TRUE,
       statistic = TRUE,
-      effect_size = TRUE
+      effect_size = "auto"
     ),
     90
   )

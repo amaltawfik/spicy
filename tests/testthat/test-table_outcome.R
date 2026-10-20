@@ -721,21 +721,21 @@ test_that("refusals are classed and name the cause", {
   )
 
   # The membership guard: without it a typo travels as a NULL column
-  # and fails far from its cause.
+  # and fails far from its cause. The family's one class and wording.
   err <- tryCatch(table_outcome(d, bmi, select = c("sexe")), error = identity)
+  expect_s3_class(err, "spicy_missing_column")
   expect_s3_class(err, "spicy_invalid_input")
-  expect_match(conditionMessage(err), "sexe", fixed = TRUE)
-  expect_match(conditionMessage(err), "Available:", fixed = TRUE)
+  expect_match(conditionMessage(err), "\"sexe\"", fixed = TRUE)
 
   err <- tryCatch(table_outcome(d, bmi, select = NULL), error = identity)
   expect_s3_class(err, "spicy_invalid_input")
-  expect_match(conditionMessage(err), "at least one column", fixed = TRUE)
+  expect_match(conditionMessage(err), "selects no column", fixed = TRUE)
 
   err <- tryCatch(table_outcome(d, bmi, select = c(sex, bmi)), error = identity)
   expect_s3_class(err, "spicy_invalid_input")
   expect_match(
     conditionMessage(err),
-    "cannot contain the outcome",
+    "cannot contain the `outcome` column",
     fixed = TRUE
   )
 
@@ -1080,4 +1080,75 @@ test_that("p_value = FALSE leaves no p-value and no empty test column (issue #9)
   expect_true(all(is.na(gl$p.value)))
   expect_false(anyNA(gl$statistic))
   expect_true(all(is.na(gl0$statistic)))
+})
+
+test_that("the outcome named in `select` is refused; a helper skips it", {
+  d <- data.frame(
+    y = c(1, 2, 3, 4, 10, 20, 30, 40),
+    g = factor(rep(c("a", "b"), each = 4)),
+    h = factor(rep(c("u", "v"), 4))
+  )
+  err <- expect_error(
+    table_outcome(d, y, select = c(g, y)),
+    class = "spicy_invalid_input"
+  )
+  expect_false(inherits(err, "spicy_missing_column"))
+  out <- table_outcome(d, y, select = tidyselect::everything())
+  expect_identical(attr(out, "select"), c("g", "h"))
+  expect_error(
+    table_outcome(d, y, select = c(g, nope)),
+    class = "spicy_missing_column"
+  )
+  expect_error(
+    table_outcome(d, nope, select = g),
+    class = "spicy_missing_column"
+  )
+})
+
+test_that("an outcome with no variance has no test, whichever test is chosen", {
+  # wilcox.test() answers p = 1 and kruskal.test() NaN on a constant,
+  # where t.test() stops: every test leaves the block's cells blank.
+  d <- data.frame(
+    k = rep(5, 12),
+    g2 = factor(rep(c("a", "b"), each = 6)),
+    g3 = factor(rep(c("a", "b", "c"), each = 4))
+  )
+  for (grp in c("g2", "g3")) {
+    expect_warning(
+      out <- table_outcome(
+        d,
+        k,
+        select = tidyselect::all_of(grp),
+        test = "nonparametric",
+        output = "long"
+      ),
+      sprintf("`%s` (the outcome has no variance)", grp),
+      fixed = TRUE,
+      class = "spicy_undefined_stat"
+    )
+    expect_true(all(is.na(out$p.value)))
+  }
+})
+
+test_that("the note names a block's test only when it ran", {
+  # A constant outcome makes every test fail: the note must not name one.
+  d <- data.frame(y = rep(5, 8), g = factor(rep(c("a", "b"), each = 4)))
+  out <- suppressWarnings(table_outcome(d, y, select = g, output = "long"))
+  expect_true(all(is.na(out$p.value)))
+  expect_false(grepl(
+    "Group comparison",
+    attr(out, "note") %||% "",
+    fixed = TRUE
+  ))
+})
+
+test_that("`p_value = NULL`, the default, shows the p-value", {
+  d <- data.frame(
+    y = c(1, 2, 3, 4, 10, 20, 30, 40),
+    g = factor(rep(c("a", "b"), each = 4))
+  )
+  expect_identical(
+    table_outcome(d, y, select = g, p_value = NULL, output = "long"),
+    table_outcome(d, y, select = g, p_value = TRUE, output = "long")
+  )
 })

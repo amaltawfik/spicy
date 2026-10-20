@@ -492,9 +492,19 @@ test_that("the association interval of a categorical table is labeled in the lan
 })
 
 test_that("the French effect-size header is the full word", {
-  en <- table_continuous(sochealth, select = bmi, by = sex, effect_size = TRUE)
+  en <- table_continuous(
+    sochealth,
+    select = bmi,
+    by = sex,
+    effect_size = "auto"
+  )
   withr::local_options(spicy.language = "fr", width = 160)
-  fr <- table_continuous(sochealth, select = bmi, by = sex, effect_size = TRUE)
+  fr <- table_continuous(
+    sochealth,
+    select = bmi,
+    by = sex,
+    effect_size = "auto"
+  )
   expect_identical(names(as.data.frame(fr)), names(as.data.frame(en)))
   out <- capture.output(print(fr))
   header <- out[grepl("Variable", out, fixed = TRUE)]

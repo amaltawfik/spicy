@@ -68,7 +68,11 @@ the error names an address for each.
 A statistic that belongs to a whole variable rather than to one of
 its levels sits on the variable's own row: the \emph{p} of a
 \code{table_categorical()} block, its association measure, its SMD. Leave
-\code{level} out to cite it (\code{inline(tbl, smoking, column = "p")}).
+\code{level} out to cite it (\code{inline(tbl, smoking, column = "p")}). The
+same call cites the \emph{p} of a by-group \code{\link[=table_continuous]{table_continuous()}} or
+\code{\link[=table_continuous_svy]{table_continuous_svy()}}, which sits on the first group's row: when
+one row of the variable alone carries the statistic, that row is the
+address.
 
 \code{\link[=table_continuous_lm]{table_continuous_lm()}} lays its groups out sideways -- one row per
 outcome, the \code{by} levels as columns (\code{M (Female)}, \code{M (Male)}) --

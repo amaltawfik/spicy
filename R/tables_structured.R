@@ -438,10 +438,13 @@
       if (nrow(sv) == 0L) {
         next
       }
-      lv_use <- if (is.null(levels_keep)) {
+      # `levels_keep` is resolved to one entry per variable (NULL when it
+      # filters none): `.cat_levels_keep_spec()`.
+      keep_var <- levels_keep[[var_name]]
+      lv_use <- if (is.null(keep_var)) {
         unique(sv$level)
       } else {
-        intersect(as.character(levels_keep), unique(sv$level))
+        intersect(keep_var, unique(sv$level))
       }
 
       header_values <- list()

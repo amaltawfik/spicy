@@ -200,8 +200,20 @@
     return(out)
   }
   out$n_groups <- n_valid_groups
-  if (do_test) {
-    out$test_used <- var_test
+  if (do_test && length(unique(xvec)) < 2L) {
+    # An outcome with no variance has no test: `t.test()` stops on it,
+    # and the rank tests return p = 1 or NaN, a p-value of nothing.
+    spicy_warn(
+      c(
+        sprintf(
+          "The group comparison failed for `%s` (the outcome has no variance); its test columns are NA.",
+          var_name
+        ),
+        "i" = "The other blocks are unaffected."
+      ),
+      class = "spicy_undefined_stat"
+    )
+  } else if (do_test) {
     out$test <- tryCatch(
       run_group_test(xvec, gvec, n_valid_groups, var_test),
       error = function(e) {
@@ -219,6 +231,10 @@
         test_row
       }
     )
+    # The note names the test of a block only when it ran.
+    if (!is.na(out$test$test_type)) {
+      out$test_used <- var_test
+    }
   }
   if (do_es) {
     chosen <- resolve_effect_size_choice(
@@ -583,7 +599,12 @@ abort_outcome_by_renamed <- function() {
 #' @param select The grouping characteristics to describe the outcome
 #'   across, as a tidyselect expression or a character vector of column
 #'   names. One block of rows per variable, in the order given. As
-#'   everywhere in the family, `select` is what structures the rows.
+#'   everywhere in the family, `select` is what structures the rows. The
+#'   outcome and the `weights` column are not part of the selection: a
+#'   selection helper skips them, and naming one in `select`, or giving
+#'   its position, is an error. A name that is not a column of `data` is
+#'   an error (class `spicy_missing_column`), and so is an empty
+#'   selection.
 #' @param labels How each variable is named in the table: in the rows,
 #'   in the title, and in the notes. The outcome follows
 #'   the same rule as the `select` variables. Four forms:
@@ -609,12 +630,17 @@ abort_outcome_by_renamed <- function() {
 #' @param drop_na Drop rows with a missing `select` value from that block
 #'   (default `FALSE`: they are shown as a `(Missing)` level and
 #'   excluded from the comparison, and a level displayed with that label
-#'   is an error, as in [table_categorical()]).
+#'   is an error, as in [table_categorical()]). Under `drop_na = TRUE`, a
+#'   grouping that no observation holds is an error (class
+#'   `spicy_invalid_data`).
 #' @param weights,rescale Frequency weights and whether to rescale them
 #'   to sum to the sample size, as in [table_continuous()].
 #' @param test Group comparison for every block: `"welch"` (default),
-#'   `"student"` or `"nonparametric"`.
-#' @param p_value Show the p-value column (default `TRUE`).
+#'   `"student"` or `"nonparametric"`. An outcome with no variance in a
+#'   block has no test there, whichever is chosen: the block's test cells
+#'   are left blank, with a warning (class `spicy_undefined_stat`).
+#' @param p_value Show the p-value column: `TRUE`, `FALSE`, or `NULL`
+#'   (the default), which shows it, every block being a comparison.
 #' @param p_adjust Multiple-comparison adjustment of the p-value
 #'   column, applied to the family of every test in the table (one
 #'   p-value per block). One of `"none"` (default), `"holm"`,
@@ -627,10 +653,12 @@ abort_outcome_by_renamed <- function() {
 #' @param show_columns Character vector of statistic tokens; `NULL`
 #'   keeps the historical display.
 #' @param effect_size,effect_size_ci Effect size per block and its
-#'   confidence interval, as in [table_continuous()].
+#'   confidence interval, as in [table_continuous()] (a logical
+#'   `effect_size` is an error there and here).
 #' @param ci,ci_level The mean's confidence interval and its level.
 #' @param digits,effect_size_digits,p_digits,decimal_mark Number
-#'   formatting.
+#'   formatting. The `*_digits` arguments are whole numbers, `p_digits`
+#'   at least 1.
 #' @param align Numeric-cell alignment: `"decimal"`, `"center"` or
 #'   `"right"`.
 #' @param output One of `"default"`, `"data.frame"`, `"long"`, or a
@@ -775,31 +803,12 @@ table_outcome <- function(
       class = "spicy_invalid_input"
     )
   }
-  for (.dname in c("digits", "effect_size_digits")) {
-    .dval <- get(.dname)
-    if (
-      !is.numeric(.dval) || length(.dval) != 1L || is.na(.dval) || .dval < 0
-    ) {
-      spicy_abort(
-        sprintf("`%s` must be a single non-negative number.", .dname),
-        class = "spicy_invalid_input"
-      )
-    }
-  }
-  digits <- as.integer(digits)
-  effect_size_digits <- as.integer(effect_size_digits)
-  if (
-    !is.numeric(p_digits) ||
-      length(p_digits) != 1L ||
-      is.na(p_digits) ||
-      p_digits < 1
-  ) {
-    spicy_abort(
-      "`p_digits` must be a single integer >= 1 (typically 2-4).",
-      class = "spicy_invalid_input"
-    )
-  }
-  p_digits <- as.integer(p_digits)
+  digits <- validate_digit_arg(digits, "digits")
+  effect_size_digits <- validate_digit_arg(
+    effect_size_digits,
+    "effect_size_digits"
+  )
+  p_digits <- validate_digit_arg(p_digits, "p_digits", min = 1L)
   if (!.is_single_char(decimal_mark)) {
     spicy_abort(
       '`decimal_mark` must be a single character (e.g. "." or ",").',
@@ -824,15 +833,8 @@ table_outcome <- function(
       )
     }
   }
-  if (is.logical(effect_size)) {
-    if (length(effect_size) != 1L || is.na(effect_size)) {
-      spicy_abort(
-        "`effect_size` must be a single TRUE/FALSE or character value.",
-        class = "spicy_invalid_input"
-      )
-    }
-    effect_size <- if (isTRUE(effect_size)) "auto" else "none"
-  }
+  # `effect_size` names a measure; the logical it once took is defunct.
+  .check_effect_size_not_logical(effect_size, "`effect_size = \"auto\"`")
   effect_size_explicit <- !missing(effect_size)
   effect_size <- spicy_match_arg(effect_size)
   if (
@@ -858,7 +860,6 @@ table_outcome <- function(
     data,
     "outcome"
   )
-  .outcome_check_membership(outcome_names, data, "outcome")
   if (length(outcome_names) != 1L) {
     spicy_abort(
       c(
@@ -874,36 +875,21 @@ table_outcome <- function(
   outcome_name <- outcome_names[[1L]]
 
   # --- the groupings: at least one column, all of them in `data` ---------
-  select_names <- resolve_multi_column_selection(
+  # The outcome and the weights column are outside the selection: a
+  # helper skips them, and pointing at one, by name or by position, is an
+  # error (a variable described across its own levels, or the weights
+  # used as a grouping).
+  weights_quo <- rlang::enquo(weights)
+  weights_name <- detect_weights_column_name(weights_quo, data)
+  select_names <- .resolve_selection_without(
     rlang::enquo(select),
     data,
-    "select"
+    roles = c(outcome = outcome_name, weights = weights_name)
   )
   if (length(select_names) == 0L) {
-    spicy_abort(
-      c(
-        "`select` must select at least one column in `data`.",
-        "i" = "`select = where(is.factor)` selects the categorical columns."
-      ),
-      class = "spicy_invalid_input"
-    )
-  }
-  # `resolve_multi_column_selection()` returns a character vector
-  # UNCHECKED (its tidyselect validation lives in the branch a
-  # character vector never reaches). Harmless for an optional argument,
-  # not for the one that drives the whole table: a typo would travel as
-  # `data[["sexe"]] == NULL` and fail far from its cause.
-  .outcome_check_membership(select_names, data, "select")
-  if (outcome_name %in% select_names) {
-    spicy_abort(
-      c(
-        sprintf(
-          "`select` cannot contain the outcome (%s).",
-          .quote_val(outcome_name)
-        ),
-        "i" = "A variable cannot be described across its own levels."
-      ),
-      class = "spicy_invalid_input"
+    .abort_empty_selection(
+      "select",
+      hint = "`select = where(is.factor)` selects the categorical columns."
     )
   }
   .check_integer64_columns(data, c(outcome_name, select_names), "table_outcome")
@@ -930,6 +916,17 @@ table_outcome <- function(
   n_outcome_na <- sum(is.na(outcome_vec)) - n_user_na
   select_list <- lapply(select_names, function(nm) resolve_user_na(data[[nm]]))
   names(select_list) <- select_names
+  # A grouping no observation holds leaves its block without a group once
+  # the missing values are removed: refused, as a `by` is across the
+  # family.
+  if (drop_na) {
+    for (nm in select_names) {
+      .check_grouping_observed(
+        select_list[[nm]],
+        sprintf("`select` (`%s`)", nm)
+      )
+    }
+  }
 
   # A grouping with too many levels is not refused -- the family never
   # refuses a numeric `select` -- but it is announced: sixty one-row blocks
@@ -949,8 +946,6 @@ table_outcome <- function(
   }
 
   # --- weights (decision 17) ---------------------------------------------
-  weights_quo <- rlang::enquo(weights)
-  weights_name <- detect_weights_column_name(weights_quo, data)
   weights_vec <- resolve_weights_argument(weights_quo, data, "weights")
   if (missing(rescale)) {
     rescale <- getOption("spicy.rescale", FALSE)
@@ -965,24 +960,7 @@ table_outcome <- function(
     # NA weights are legal: those rows leave the analytic sample and
     # the exclusion is disclosed. Only genuinely non-finite values are
     # rejected.
-    if (any(is.infinite(weights_vec) | is.nan(weights_vec))) {
-      spicy_abort(
-        "`weights` must contain only finite values.",
-        class = "spicy_invalid_input"
-      )
-    }
-    if (any(weights_vec < 0, na.rm = TRUE)) {
-      spicy_abort(
-        "`weights` must be non-negative.",
-        class = "spicy_invalid_input"
-      )
-    }
-    if (all(is.na(weights_vec) | weights_vec == 0)) {
-      spicy_abort(
-        "`weights` must contain at least one positive value.",
-        class = "spicy_invalid_input"
-      )
-    }
+    .check_weights_values(weights_vec)
   } else if (isTRUE(rescale) && !missing(rescale)) {
     spicy_warn(
       "`rescale = TRUE` has no effect when `weights` is not supplied.",
@@ -1321,36 +1299,6 @@ table_outcome <- function(
 # other threshold, and this one exists because a table of sixty
 # one-row blocks is not a table.
 .OUTCOME_CARDINALITY_WARN <- 20L
-
-# Internal: every name a selection produced must be a column of `data`.
-#
-# `resolve_multi_column_selection()` hands a character vector back
-# unchecked -- its `tidyselect::eval_select()` validation lives in the
-# branch a character vector never reaches. Harmless for an optional
-# argument; not for the two that drive this table.
-.outcome_check_membership <- function(names_sel, data, arg) {
-  miss <- setdiff(names_sel, names(data))
-  if (length(miss) == 0L) {
-    return(invisible(NULL))
-  }
-  spicy_abort(
-    c(
-      sprintf(
-        "`%s` names %s, which %s not %s of `data`.",
-        arg,
-        paste(.quote_val(miss), collapse = ", "),
-        if (length(miss) == 1L) "is" else "are",
-        if (length(miss) == 1L) "a column" else "columns"
-      ),
-      "i" = paste0(
-        "Available: ",
-        paste(.quote_val(names(data)), collapse = ", "),
-        "."
-      )
-    ),
-    class = "spicy_invalid_input"
-  )
-}
 
 # Internal: the display frame the console and the engines render.
 #

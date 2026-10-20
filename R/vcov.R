@@ -1408,7 +1408,12 @@ compute_satt_df_per_coef <- function(fit, vc, cluster) {
 #     three clusters claimed where the data have two.
 #
 # The wording follows sandwich's, which states the two ways out.
-.check_cluster_no_na <- function(fit, cluster, label = "`cluster`") {
+.check_cluster_no_na <- function(
+  fit,
+  cluster,
+  label = "`cluster`",
+  call = rlang::caller_env()
+) {
   if (is.null(cluster) || !is.atomic(cluster) || !anyNA(cluster)) {
     return(invisible(NULL))
   }
@@ -1428,11 +1433,17 @@ compute_satt_df_per_coef <- function(fit, vc, cluster) {
         "missing ids, then pass the matching `cluster`."
       )
     ),
-    class = "spicy_invalid_input"
+    class = "spicy_invalid_input",
+    call = call
   )
 }
 
-.check_cluster_length <- function(fit, cluster, label = "`cluster`") {
+.check_cluster_length <- function(
+  fit,
+  cluster,
+  label = "`cluster`",
+  call = rlang::caller_env()
+) {
   if (is.null(cluster) || !is.atomic(cluster)) {
     return(invisible(NULL))
   }
@@ -1465,7 +1476,8 @@ compute_satt_df_per_coef <- function(fit, vc, cluster) {
       ),
       "i" = hint
     ),
-    class = "spicy_invalid_input"
+    class = "spicy_invalid_input",
+    call = call
   )
 }
 

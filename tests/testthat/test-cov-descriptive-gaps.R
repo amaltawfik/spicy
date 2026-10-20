@@ -419,7 +419,8 @@ test_that("resolve_single_column_selection returns the tidyselect match name", {
     ),
     "grp"
   )
-  # Two matches are refused with the classed error.
+  # Two matches are refused with the classed error: no column is missing,
+  # the argument holds two.
   err <- tryCatch(
     spicy:::resolve_single_column_selection(
       rlang::quo(tidyselect::starts_with("v")),
@@ -428,10 +429,11 @@ test_that("resolve_single_column_selection returns the tidyselect match name", {
     ),
     error = function(e) e
   )
-  expect_s3_class(err, "spicy_missing_column")
+  expect_s3_class(err, "spicy_invalid_input")
+  expect_false(inherits(err, "spicy_missing_column"))
   expect_match(
     conditionMessage(err),
-    "`by` must select exactly one column in `data`.",
+    "`by` must select exactly one column of `data`; it selects 2.",
     fixed = TRUE
   )
 })

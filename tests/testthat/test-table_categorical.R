@@ -494,6 +494,21 @@ test_that("table_categorical validates weights and simulate_B", {
     "`simulate_B` must be a positive integer.",
     fixed = TRUE
   )
+
+  # The weight values are checked here, as in the other tables: a NaN,
+  # once dropped like a missing weight, and a negative weight.
+  expect_error(
+    table_categorical(df, select = v1, by = grp, weights = c(NaN, 1, 1, 1)),
+    "`weights` must contain only finite values.",
+    fixed = TRUE,
+    class = "spicy_invalid_input"
+  )
+  expect_error(
+    table_categorical(df, select = v1, by = grp, weights = c(-1, 1, 1, 1)),
+    "`weights` must be non-negative.",
+    fixed = TRUE,
+    class = "spicy_invalid_input"
+  )
 })
 
 test_that("table_categorical keeps missing values as explicit levels when drop_na is FALSE", {
@@ -1085,6 +1100,79 @@ test_that("table_categorical grouped levels_keep no-match warns per variable", {
   expect_match(conditionMessage(cnd), "\"x\", \"y\"", fixed = TRUE)
 })
 
+test_that("levels_keep takes a named list, one entry per variable", {
+  # Read as one vector for every variable, the list kept "Yes" in
+  # `education` too, which has no such level, and dropped it with a
+  # warning. Per variable, as in table_categorical_svy().
+  for (by_arg in list(NULL, "sex")) {
+    expect_no_warning(
+      out <- table_categorical(
+        sochealth,
+        select = c(smoking, education),
+        by = !!by_arg,
+        levels_keep = list(smoking = "Yes"),
+        output = "long"
+      )
+    )
+    expect_identical(unique(out$level[out$variable == "smoking"]), "Yes")
+    expect_setequal(
+      unique(out$level[out$variable == "education"]),
+      levels(sochealth$education)
+    )
+  }
+  # The order of the list is the display order, variable by variable.
+  out <- table_categorical(
+    sochealth,
+    select = c(smoking, education),
+    by = sex,
+    levels_keep = list(
+      education = c("Tertiary", "Lower secondary"),
+      smoking = c("Yes", "No")
+    ),
+    output = "long"
+  )
+  expect_identical(
+    unique(out$level[out$variable == "education"]),
+    c("Tertiary", "Lower secondary")
+  )
+  expect_identical(unique(out$level[out$variable == "smoking"]), c("Yes", "No"))
+  printed <- table_categorical(
+    sochealth,
+    select = c(smoking, education),
+    by = sex,
+    levels_keep = list(education = "Tertiary")
+  )
+  expect_identical(
+    as_structured(printed)$body$.level[
+      as_structured(printed)$body$.variable == "education"
+    ],
+    c(NA, "Tertiary")
+  )
+})
+
+test_that("levels_keep refuses a list it cannot read, as the survey twin does", {
+  expect_error(
+    table_categorical(
+      sochealth,
+      select = smoking,
+      levels_keep = list(education = "Tertiary")
+    ),
+    class = "spicy_invalid_input"
+  )
+  expect_error(
+    table_categorical(
+      sochealth,
+      select = smoking,
+      levels_keep = list(smoking = "Maybe")
+    ),
+    class = "spicy_invalid_input"
+  )
+  expect_error(
+    table_categorical(sochealth, select = smoking, levels_keep = list("Yes")),
+    class = "spicy_invalid_input"
+  )
+})
+
 test_that(".warn_levels_keep_no_match truncates long level listings", {
   cnd <- testthat::capture_warning(
     .warn_levels_keep_no_match("v", as.character(1:12))
@@ -1128,19 +1216,20 @@ test_that("table_categorical validates select", {
   df <- data.frame(g = 1, v = 1)
   expect_error(
     table_categorical(df, character(0), "g"),
-    "`select` must select at least one column"
+    class = "spicy_invalid_input"
   )
-  expect_error(
+  err <- expect_error(
     table_categorical(df, "missing", "g"),
-    "Some `select` columns are missing"
+    class = "spicy_missing_column"
   )
+  expect_match(conditionMessage(err), "missing", fixed = TRUE)
 })
 
 test_that("table_categorical validates by", {
   df <- data.frame(g = 1, v = 1)
   expect_error(
     table_categorical(df, "v", "missing"),
-    "`by` must select exactly one column"
+    class = "spicy_missing_column"
   )
 })
 
@@ -2538,8 +2627,32 @@ test_that("glance() returns chi-squared test + association measure (cross-tab)",
   expect_true(all(gl$df >= 1L))
   expect_true(all(gl$p.value >= 0 & gl$p.value <= 1))
   # smoking and physical_activity are both binary, sex is binary -> 2x2
-  # auto-rule picks Phi (see NEWS for 0.11.0).
-  expect_true(all(gl$assoc_type == "Phi"))
+  # auto-rule picks Phi (see NEWS for 0.11.0). `assoc_type` is the key of
+  # the measure, as `effect_size_type` in the long output.
+  expect_true(all(gl$assoc_type == "phi"))
+})
+
+test_that("glance() gives each variable the key of its own measure", {
+  out <- table_categorical(sochealth, select = c(smoking, education), by = sex)
+  gl <- broom::glance(out)
+  long <- table_categorical(
+    sochealth,
+    select = c(smoking, education),
+    by = sex,
+    output = "long"
+  )
+  expect_identical(gl$assoc_type, c("phi", "cramer_v"))
+  expect_identical(
+    gl$assoc_type,
+    vapply(
+      gl$variable,
+      function(v) long$effect_size_type[long$variable == v][[1L]],
+      character(1),
+      USE.NAMES = FALSE
+    )
+  )
+  # The column header of a mixed table names no measure: "Effect size".
+  expect_false(any(gl$assoc_type == "Effect size"))
 })
 
 test_that("glance() returns NA test/ES, populated n_total without by", {
@@ -2611,11 +2724,15 @@ test_that("an empty display cell does not break the width decision", {
 
 test_that("glance() names the measure column from the typed view", {
   out <- table_categorical(sochealth, select = smoking, by = education)
-  expect_identical(broom::glance(out)$assoc_type, "Cramer's V")
+  expect_identical(broom::glance(out)$assoc_type, "cramer_v")
+  expect_equal(
+    broom::glance(out)$assoc_value,
+    out[["Cramer's V"]][!is.na(out[["Cramer's V"]])][[1L]]
+  )
   # Stripped of its typed view, the exclusion rule answers the same.
   bare <- out
   attr(bare, "structured") <- NULL
-  expect_identical(broom::glance(bare)$assoc_type, "Cramer's V")
+  expect_identical(broom::glance(bare)$assoc_type, "cramer_v")
   # A table with no measure has no assoc column to find on either route.
   none <- table_categorical(
     sochealth,
@@ -3178,14 +3295,10 @@ test_that("select-less call keeps labelled (haven-style) columns", {
   expect_identical(unique(out$variable), "lab")
 })
 
-test_that("select-less call with no eligible column warns spicy_no_selection", {
+test_that("select-less call with no eligible column is an error", {
   df <- data.frame(a = 1:4, b = rnorm(4))
-  expect_warning(
-    res <- table_categorical(df),
-    class = "spicy_no_selection"
-  )
-  expect_identical(suppressWarnings(table_categorical(df)), data.frame())
-  expect_identical(res, data.frame())
+  err <- expect_error(table_categorical(df), class = "spicy_invalid_input")
+  expect_match(conditionMessage(err), "categorical column", fixed = TRUE)
 })
 
 test_that("explicit select is taken verbatim, numeric columns included", {
@@ -4228,8 +4341,11 @@ test_that("an all-missing `by` is refused instead of growing phantom columns", {
   )
   expect_s3_class(err, "spicy_invalid_data")
   msg <- conditionMessage(err)
-  expect_match(msg, "`by = g` has no level to tabulate.", fixed = TRUE)
-  expect_match(msg, "Every observation is missing it.", fixed = TRUE)
+  expect_match(
+    msg,
+    "`by` (`g`) has no observed non-missing level.",
+    fixed = TRUE
+  )
   expect_match(msg, "drop_na = FALSE", fixed = TRUE)
   # Same refusal with the margin on: the margin is not a group.
   expect_error(

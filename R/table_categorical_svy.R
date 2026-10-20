@@ -378,6 +378,8 @@
 #'   is an error, as in [table_categorical()]). Shown or dropped, they
 #'   never enter the test: the p-value is computed on the complete cases
 #'   either way, which is the convention [table_categorical()] applies.
+#'   Under `drop_na = TRUE`, a `by` that no observation holds is an error
+#'   (class `spicy_invalid_data`).
 #' @param proportion_ci Add the confidence interval of each percentage.
 #' @param ci_method Interval method passed to `survey::svyciprop()`:
 #'   `"logit"` (default), `"likelihood"`, `"asin"`, `"beta"`,
@@ -540,18 +542,7 @@ table_categorical_svy <- function(
   p_digits <- cfg$p_digits
   df_user <- cfg$df
 
-  if (
-    !is.numeric(percent_digits) ||
-      length(percent_digits) != 1L ||
-      is.na(percent_digits) ||
-      percent_digits < 0
-  ) {
-    spicy_abort(
-      "`percent_digits` must be a single non-negative number.",
-      class = "spicy_invalid_input"
-    )
-  }
-  percent_digits <- as.integer(percent_digits)
+  percent_digits <- validate_digit_arg(percent_digits, "percent_digits")
   for (.lname in c(
     "include_total",
     "drop_na",
@@ -583,14 +574,11 @@ table_categorical_svy <- function(
   has_group <- !rlang::quo_is_null(group_quo)
   group_col_name <- NULL
   if (has_group) {
-    group_col_name <- tryCatch(
-      resolve_single_column_selection(group_quo, vars, "by"),
-      error = function(e) {
-        spicy_abort(
-          "`by` must be a single column name in the design's variables.",
-          class = "spicy_invalid_input"
-        )
-      }
+    group_col_name <- resolve_single_column_selection(
+      group_quo,
+      vars,
+      "by",
+      where = "`design`"
     )
   }
   .check_desc_p_adjust(p_adjust, has_group, p_value)
@@ -612,23 +600,15 @@ table_categorical_svy <- function(
   }
 
   # --- column selection ----------------------------------------------------
-  work <- vars
-  if (has_group) {
-    work <- dplyr::select(work, -tidyselect::all_of(group_col_name))
-  }
-  sel_quo <- rlang::enquo(select)
-  sel_val <- tryCatch(
-    rlang::eval_tidy(sel_quo, env = rlang::quo_get_env(sel_quo)),
-    error = function(e) NULL
+  # The `by` column is outside the selection, as in the sibling.
+  select_names <- .resolve_selection_without(
+    rlang::enquo(select),
+    vars,
+    roles = c(by = group_col_name),
+    where = "`design`"
   )
-  work <- if (is.character(sel_val)) {
-    dplyr::select(work, tidyselect::all_of(sel_val))
-  } else {
-    dplyr::select(work, !!sel_quo)
-  }
-  select_names <- names(work)
   if (length(select_names) == 0L) {
-    spicy_abort("No columns selected.", class = "spicy_invalid_input")
+    .abort_empty_selection("select")
   }
   .check_integer64_columns(vars, select_names, "table_categorical_svy")
   .check_integer64_columns(vars, group_col_name, "table_categorical_svy")
@@ -662,6 +642,14 @@ table_categorical_svy <- function(
   group_keys <- NA_character_
   missing_group_label <- NA_character_
   if (has_group) {
+    # A `by` no observation holds leaves no group once its missing values
+    # are dropped: refused, as across the family.
+    if (drop_na) {
+      .check_grouping_observed(
+        vars[[group_col_name]],
+        sprintf("`by` (`%s`)", group_col_name)
+      )
+    }
     geom <- .svy_by_levels(
       vars[[group_col_name]],
       drop_na,
@@ -720,7 +708,7 @@ table_categorical_svy <- function(
   meta <- .design_meta(design)
 
   # --- levels and the compute frame ----------------------------------------
-  keep_spec <- .cat_svy_levels_keep(levels_keep, select_names)
+  keep_spec <- .cat_levels_keep_spec(levels_keep, select_names)
 
   rows <- list()
   na_dropped <- integer(0)
@@ -729,6 +717,9 @@ table_categorical_svy <- function(
   # how far it reached (see `.design_refusal_regime()`).
   n_test_attempted <- 0L
   n_test_refused <- 0L
+  # The tests that returned a p-value: the note names the test only when
+  # one ran (a one-level `by` or a constant variable runs none).
+  n_test_ran <- 0L
   for (i in seq_along(select_names)) {
     nm <- select_names[[i]]
     lv <- .svy_by_levels(.tab_factor(vars[[nm]]), drop_na, nm)
@@ -745,23 +736,7 @@ table_categorical_svy <- function(
     levels_all <- lv$levels
     levels_i <- levels_all
     if (!is.null(keep_spec[[nm]])) {
-      unknown <- setdiff(keep_spec[[nm]], levels_i)
-      if (length(unknown) > 0L) {
-        spicy_abort(
-          c(
-            sprintf(
-              "`levels_keep` names level(s) absent from `%s`: %s.",
-              nm,
-              paste(.quote_val(unknown), collapse = ", ")
-            ),
-            "i" = sprintf(
-              "Observed: %s.",
-              paste(.quote_val(levels_i), collapse = ", ")
-            )
-          ),
-          class = "spicy_invalid_input"
-        )
-      }
+      .cat_check_kept_levels(keep_spec[[nm]], levels_i, nm)
       levels_i <- levels_i[levels_i %in% keep_spec[[nm]]]
     }
     if (length(levels_i) == 0L) {
@@ -803,6 +778,9 @@ table_categorical_svy <- function(
         n_test_refused <- n_test_refused + 1L
       }
       p_i <- tr$p
+      if (!is.na(p_i)) {
+        n_test_ran <- n_test_ran + 1L
+      }
     }
     header <- .cat_svy_row(nm, var_labels[[i]], NA_character_, "factor_header")
     header[[.CAT_KEY_P]] <- p_i
@@ -895,7 +873,7 @@ table_categorical_svy <- function(
     proportion_ci = proportion_ci,
     ci_method = ci_method,
     deff = deff,
-    p_value = p_value,
+    p_value = p_value && n_test_ran > 0L,
     chisq_statistic = chisq_statistic,
     n_negative_weights = .design_negative_weights(design),
     test_refused = test_refused
@@ -1078,40 +1056,3 @@ table_categorical_svy <- function(
 # how it sat here unremarked (register n. 269). The escape is the same
 # string at run time and the only form that says what it is.
 .cat_svy_block_id <- function(b) if (is.na(b)) "\u0001overall" else b
-
-# `levels_keep` resolved to one character vector per variable, or NULL.
-.cat_svy_levels_keep <- function(levels_keep, select_names) {
-  if (is.null(levels_keep)) {
-    return(stats::setNames(vector("list", length(select_names)), select_names))
-  }
-  if (is.character(levels_keep)) {
-    return(stats::setNames(
-      rep(list(levels_keep), length(select_names)),
-      select_names
-    ))
-  }
-  if (!is.list(levels_keep) || is.null(names(levels_keep))) {
-    spicy_abort(
-      c(
-        "`levels_keep` must be a character vector or a NAMED list.",
-        "i" = "A character vector applies to every variable; a named list applies per variable."
-      ),
-      class = "spicy_invalid_input"
-    )
-  }
-  unknown <- setdiff(names(levels_keep), select_names)
-  if (length(unknown) > 0L) {
-    spicy_abort(
-      sprintf(
-        "`levels_keep` names variable(s) absent from the table: %s.",
-        paste(.quote_val(unknown), collapse = ", ")
-      ),
-      class = "spicy_invalid_input"
-    )
-  }
-  out <- stats::setNames(vector("list", length(select_names)), select_names)
-  for (nm in names(levels_keep)) {
-    out[[nm]] <- as.character(levels_keep[[nm]])
-  }
-  out
-}

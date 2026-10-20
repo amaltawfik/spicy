@@ -50,21 +50,16 @@ test_that("the scalar validators refuse, one message each", {
   expect_s3_class(bad(d, y, select = g, rescale = NA), "spicy_invalid_input")
 })
 
-test_that("`effect_size` accepts the legacy logical form", {
+test_that("`effect_size` refuses the logical form it once took", {
   d <- .cto_d()
-  logical_on <- .cto_quiet(table_outcome(d, y, select = g, effect_size = TRUE))
-  named_on <- .cto_quiet(table_outcome(d, y, select = g, effect_size = "auto"))
-  expect_identical(
-    attr(logical_on, "display_df"),
-    attr(named_on, "display_df")
+  expect_error(
+    table_outcome(d, y, select = g, effect_size = TRUE),
+    class = "spicy_defunct"
   )
-  logical_off <- .cto_quiet(table_outcome(
-    d,
-    y,
-    select = g,
-    effect_size = FALSE
-  ))
-  expect_false("ES" %in% names(attr(logical_off, "display_df")))
+  expect_error(
+    table_outcome(d, y, select = g, effect_size = FALSE),
+    class = "spicy_defunct"
+  )
 })
 
 test_that("the ignored-argument warnings fire and say what won", {

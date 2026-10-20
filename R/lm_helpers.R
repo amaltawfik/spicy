@@ -56,7 +56,12 @@ detect_weights_column_name <- function(quo, data) {
 # descriptive-table functions. The contracts (inputs, error surface,
 # lookup scope) differ enough that merging them would couple the two
 # call families for no shared logic beyond "return a vector".
-resolve_cluster_argument <- function(quo, data, arg = "cluster") {
+resolve_cluster_argument <- function(
+  quo,
+  data,
+  arg = "cluster",
+  call = rlang::caller_env()
+) {
   if (rlang::quo_is_null(quo)) {
     return(NULL)
   }
@@ -80,7 +85,8 @@ resolve_cluster_argument <- function(quo, data, arg = "cluster") {
         ),
         arg
       ),
-      class = "spicy_invalid_input"
+      class = "spicy_invalid_input",
+      call = call
     )
   }
 
@@ -100,7 +106,8 @@ resolve_cluster_argument <- function(quo, data, arg = "cluster") {
         ),
         arg
       ),
-      class = "spicy_invalid_input"
+      class = "spicy_invalid_input",
+      call = call
     )
   }
 
@@ -118,7 +125,8 @@ resolve_cluster_argument <- function(quo, data, arg = "cluster") {
         arg,
         .quote_val(val)
       ),
-      class = "spicy_missing_column"
+      class = "spicy_missing_column",
+      call = call
     )
   }
 
@@ -131,7 +139,8 @@ resolve_cluster_argument <- function(quo, data, arg = "cluster") {
         ),
         arg
       ),
-      class = "spicy_invalid_input"
+      class = "spicy_invalid_input",
+      call = call
     )
   }
 
@@ -143,7 +152,8 @@ resolve_cluster_argument <- function(quo, data, arg = "cluster") {
         length(val),
         nrow(data)
       ),
-      class = "spicy_invalid_input"
+      class = "spicy_invalid_input",
+      call = call
     )
   }
 
@@ -171,14 +181,14 @@ resolve_cluster_argument <- function(quo, data, arg = "cluster") {
 #     cannot be both predictor and covariate (would shadow the focal
 #     term and produce a rank-deficient model)
 #
-# Overlap with the outcome columns (`select_names`) is NOT a hard
-# error here: by convention, the orchestrator silently excludes any
-# covariate that also appears in `select` (mirroring how `by` is
-# auto-excluded from `select`). This keeps the natural workflow
-# `select = everything(), covariates = c(age)` working without
-# requiring the user to write a manual `!` exclusion in `select`.
-# `select_names` is still accepted for forward compatibility but is
-# currently unused.
+# Overlap with the outcome columns (`select_names`) is NOT checked
+# here: the orchestrator resolves the covariates first and keeps them
+# outside the outcome selection, as it keeps `by` (a selection helper
+# skips them, naming one in `select` is refused). This keeps the
+# natural workflow `select = everything(), covariates = c(age)` working
+# without requiring the user to write a manual `!` exclusion in
+# `select`. `select_names` is still accepted for forward compatibility
+# but is currently unused.
 #
 # Missing-value handling is intentionally NOT done here; it
 # happens at fit time via `model.frame()` / `na.action`. The job of
@@ -188,7 +198,8 @@ resolve_covariates_argument <- function(
   data,
   select_names = character(),
   by_name = NULL,
-  arg = "covariates"
+  arg = "covariates",
+  call = rlang::caller_env()
 ) {
   if (rlang::quo_is_null(quo)) {
     return(character())
@@ -215,7 +226,8 @@ resolve_covariates_argument <- function(
         ),
         "i" = "Interactions, polynomials and other formula-based covariates are planned for a future release."
       ),
-      class = "spicy_unsupported"
+      class = "spicy_unsupported",
+      call = call
     )
   }
 
@@ -251,7 +263,8 @@ resolve_covariates_argument <- function(
       error = function(e) {
         spicy_abort(
           paste0("Could not resolve `", arg, "`: ", conditionMessage(e)),
-          class = "spicy_missing_column"
+          class = "spicy_missing_column",
+          call = call
         )
       }
     )
@@ -277,7 +290,8 @@ resolve_covariates_argument <- function(
         arg,
         paste(.quote_val(missing_cols), collapse = ", ")
       ),
-      class = "spicy_missing_column"
+      class = "spicy_missing_column",
+      call = call
     )
   }
 
@@ -299,14 +313,14 @@ resolve_covariates_argument <- function(
         arg,
         paste(.quote_val(cov_names[bad_class]), collapse = ", ")
       ),
-      class = "spicy_invalid_input"
+      class = "spicy_invalid_input",
+      call = call
     )
   }
 
-  # NB: overlap with `select_names` is intentionally NOT a hard error
-  # here -- the orchestrator silently excludes covariates from the
-  # outcome list, mirroring the existing `by` auto-exclusion. See
-  # the helper-level comment block above.
+  # NB: overlap with `select_names` is intentionally NOT checked here
+  # -- the orchestrator keeps the covariates outside the outcome
+  # selection. See the helper-level comment block above.
 
   # Overlap with predictor (by). A variable cannot be both `by`
   # and a covariate -- duplicating it produces a rank-deficient
@@ -322,7 +336,8 @@ resolve_covariates_argument <- function(
         arg,
         by_name
       ),
-      class = "spicy_invalid_input"
+      class = "spicy_invalid_input",
+      call = call
     )
   }
 
@@ -345,7 +360,8 @@ resolve_covariates_argument <- function(
         ),
         "i" = "Rename the column in `data` (e.g. via `dplyr::rename()`) before passing it as a covariate."
       ),
-      class = "spicy_invalid_input"
+      class = "spicy_invalid_input",
+      call = call
     )
   }
 

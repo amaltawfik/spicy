@@ -137,7 +137,7 @@
 # message that refused the very class the next line said was
 # supported, and left the caller nothing to act on. The pps branch
 # names the SPECIFICATION instead, which is the thing the caller wrote.
-.abort_unsupported_design <- function(design, fn) {
+.abort_unsupported_design <- function(design, fn, call = rlang::caller_env()) {
   what <- if (
     !inherits(design, "svyrep.design") &&
       inherits(design, "survey.design2") &&
@@ -153,13 +153,14 @@
       "i" = "Supported: `survey::svydesign()` designs sampled with replacement (`pps = FALSE`, the default) and `survey::as.svrepdesign()` replicate-weight designs.",
       "i" = "For any other design, call survey directly (`survey::svymean()`, `survey::svyby()`) and open an issue saying which design you need."
     ),
-    class = "spicy_unsupported"
+    class = "spicy_unsupported",
+    call = call
   )
 }
 
 # The refusal a data.frame gets at a `_svy` entry point -- the mirror of
 # the `spicy_wrong_regime` a design gets at the plain entry point.
-.abort_needs_design <- function(fn, plain_fn) {
+.abort_needs_design <- function(fn, plain_fn, call = rlang::caller_env()) {
   spicy_abort(
     c(
       sprintf("`%s()` expects a survey design object, not a data.frame.", fn),
@@ -169,7 +170,8 @@
         plain_fn
       )
     ),
-    class = "spicy_wrong_regime"
+    class = "spicy_wrong_regime",
+    call = call
   )
 }
 

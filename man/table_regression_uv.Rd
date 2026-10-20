@@ -20,7 +20,8 @@ table_regression_uv(
 )
 }
 \arguments{
-\item{data}{A data frame.}
+\item{data}{A data frame. A survey design is refused with a pointer to
+the design-based route (class \code{spicy_wrong_regime}).}
 
 \item{outcome}{The outcome column (unquoted name, tidyselect). For
 \code{method = "coxph"}, a \code{Surv(time, status)} expression evaluated
@@ -28,7 +29,11 @@ in \code{data} (the \code{tbl_uvregression} convention).}
 
 \item{predictors}{Candidate predictor columns (tidyselect, e.g.
 \code{c(age, sex, education)} or \code{where(is.numeric)}). The outcome
-column(s) are dropped from the selection automatically.}
+column(s) are not part of the selection: \code{everything()} and the
+other helpers skip them, and naming one in \code{predictors}, or giving
+its position, is an error.
+A name that is not a column of \code{data} is an error (class
+\code{spicy_missing_column}).}
 
 \item{method}{\code{"lm"} (default), \code{"glm"}, or \code{"coxph"} (requires
 the \code{survival} package; estimates render as HRs with
@@ -111,7 +116,8 @@ table carries the wording you set here.}
 \code{"Univariable and multivariable <type> regression: <outcome>"}.}
 
 \item{...}{Passed to \code{\link[=table_regression]{table_regression()}} (\code{exponentiate}, \code{vcov},
-\code{cluster}, \code{p_adjust}, \code{digits}, \code{output}, ...).
+\code{cluster}, \code{p_adjust}, \code{digits}, \code{output}, ...), each by its full
+name: an unknown or abbreviated name is an error.
 \code{nested} is not
 meaningful for a screen and is refused. \code{cluster} must be a
 single vector with one value per row of \code{data}; it is aligned to

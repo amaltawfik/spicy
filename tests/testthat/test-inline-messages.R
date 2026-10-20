@@ -76,8 +76,14 @@ test_that("a p addressed by level resolves on table_continuous", {
 test_that("no refusal on this table lists an empty set of alternatives", {
   d <- .inline_msg_data()
   tbl <- table_continuous(d, c(bmi, chol), by = sex)
+  # The `p` sits on one row of the block only: cited without `level`.
+  expect_identical(
+    inline(tbl, bmi, column = "p"),
+    inline(tbl, bmi, "Female", "p")
+  )
   msgs <- c(
-    tryCatch(inline(tbl, bmi, column = "p"), error = function(e) {
+    # A statistic every group carries needs its group.
+    tryCatch(inline(tbl, bmi, column = "m"), error = function(e) {
       conditionMessage(e)
     }),
     tryCatch(inline(tbl, bmi, "Nope", "p"), error = function(e) {

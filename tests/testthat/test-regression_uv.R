@@ -863,7 +863,7 @@ test_that("invalid inputs are refused with clear errors", {
       method = "glm",
       predictors = age
     ),
-    class = "spicy_invalid_input"
+    class = "spicy_invalid_data"
   )
   expect_error(
     table_regression_uv(
@@ -885,8 +885,8 @@ test_that("invalid inputs are refused with clear errors", {
     ),
     class = "spicy_invalid_input"
   )
-  # The outcome is dropped from the predictor selection -> nothing left.
-  expect_error(
+  # The outcome named in `predictors` is refused (it was dropped).
+  err <- expect_error(
     table_regression_uv(
       d,
       outcome = smoking,
@@ -895,6 +895,7 @@ test_that("invalid inputs are refused with clear errors", {
     ),
     class = "spicy_invalid_input"
   )
+  expect_false(inherits(err, "spicy_missing_column"))
   expect_error(
     table_regression_uv(
       d,
@@ -944,6 +945,66 @@ test_that("a failing multivariable fit is reported as such", {
   )
 })
 
+
+test_that("`...` takes the arguments of table_regression(), by full name", {
+  d <- .uv_soc()
+  err <- expect_error(
+    table_regression_uv(d, outcome = bmi, predictors = age, nope_arg = 1),
+    class = "spicy_invalid_input"
+  )
+  expect_match(conditionMessage(err), "`nope_arg`", fixed = TRUE)
+  expect_identical(rlang::call_name(conditionCall(err)), "table_regression_uv")
+  # The call is the screen's, not the deparse of table_regression().
+  expect_lt(nchar(paste(deparse(conditionCall(err)), collapse = "")), 200L)
+  # A partial name is refused with the full one, never matched to it.
+  err <- expect_error(
+    table_regression_uv(d, outcome = bmi, predictors = age, effect_size = TRUE),
+    class = "spicy_invalid_input"
+  )
+  expect_match(conditionMessage(err), "`effect_size_digits`", fixed = TRUE)
+  expect_error(
+    table_regression_uv(d, outcome = bmi, predictors = age, models = 1),
+    class = "spicy_invalid_input"
+  )
+  expect_error(
+    table_regression_uv(d, outcome = bmi, predictors = age, 3),
+    class = "spicy_invalid_input"
+  )
+  # A full name passes through.
+  expect_s3_class(
+    table_regression_uv(d, outcome = bmi, predictors = age, digits = 3L),
+    "spicy_regression_table"
+  )
+})
+
+test_that("an error raised in table_regression() names table_regression_uv()", {
+  d <- .uv_soc()
+  for (cl in list(
+    quote(table_regression_uv(d, bmi, predictors = age, align = "left")),
+    quote(table_regression_uv(d, bmi, predictors = age, p_digits = 0)),
+    quote(table_regression_uv(d, bmi, predictors = age, ci_level = 2)),
+    quote(table_regression_uv(d, bmi, predictors = c(age, nope)))
+  )) {
+    err <- tryCatch(eval(cl), error = identity)
+    expect_s3_class(err, "spicy_error")
+    expect_identical(
+      rlang::call_name(conditionCall(err)),
+      "table_regression_uv",
+      info = deparse(cl)
+    )
+  }
+})
+
+test_that("a survey design is refused with the design-based route", {
+  skip_if_not_installed("survey")
+  des <- survey::svydesign(ids = ~1, weights = ~weight, data = sochealth)
+  err <- expect_error(
+    table_regression_uv(des, outcome = bmi, predictors = age),
+    class = "spicy_wrong_regime"
+  )
+  expect_s3_class(err, "spicy_invalid_data")
+  expect_match(conditionMessage(err), "svyglm", fixed = TRUE)
+})
 
 test_that("the outcome is auto-dropped from tidyselect predictors", {
   d <- .uv_soc()[, c("smoking", "age", "sex")]

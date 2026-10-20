@@ -38,7 +38,9 @@ its test (when \code{by} is used) and the requested association measure:
 \code{"fisher_exact"}, \code{"fisher_midp"}, or \code{"fisher_exact_mc"}, as in the
 data frames of \code{\link[=table_categorical]{table_categorical()}}), \code{statistic} (the chi-squared,
 Pearson's or the N-1, \code{NA} for an exact test), \code{df}, \code{p.value},
-\code{assoc_type}, \code{assoc_value}, \code{assoc_ci_lower}, \code{assoc_ci_upper},
+\code{assoc_type} (the key of the measure the variable carries, as
+\code{effect_size_type} in the long output: \code{"phi"}, \code{"cramer_v"}, ...),
+\code{assoc_value}, \code{assoc_ci_lower}, \code{assoc_ci_upper},
 \code{n_total}. Without \code{by}, only \code{variable}, \code{label} and \code{n_total} are
 populated; the other columns are \code{NA}. The interval bounds are \code{NA}
 unless the table was built with \code{assoc_ci = TRUE}.

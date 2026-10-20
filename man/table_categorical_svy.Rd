@@ -80,7 +80,9 @@ displayed with the label of that block is an error, as in
 \code{(Missing)} level, and a level displayed with that label beside them
 is an error, as in \code{\link[=table_categorical]{table_categorical()}}). Shown or dropped, they
 never enter the test: the p-value is computed on the complete cases
-either way, which is the convention \code{\link[=table_categorical]{table_categorical()}} applies.}
+either way, which is the convention \code{\link[=table_categorical]{table_categorical()}} applies.
+Under \code{drop_na = TRUE}, a \code{by} that no observation holds is an error
+(class \code{spicy_invalid_data}).}
 
 \item{proportion_ci}{Add the confidence interval of each percentage.}
 

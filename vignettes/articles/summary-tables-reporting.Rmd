@@ -227,7 +227,7 @@ table_continuous(
     life_sat_health = "Satisfaction with health"
   ),
   p_value = TRUE,
-  effect_size = TRUE
+  effect_size = "auto"
 )
 ```
 

@@ -1000,7 +1000,7 @@ spicy_style_names <- function() {
 
 # `name` is already known to be a single non-NA string: every caller
 # routes through `.style_resolve_object()`.
-.style_from_registry <- function(name) {
+.style_from_registry <- function(name, call = rlang::caller_env()) {
   # "fr" was a theme until it stopped being one: the registry's contract
   # is that a named theme IS a journal, and French typography is a
   # locale. It travels with the language now, so this name gets its own
@@ -1015,7 +1015,8 @@ spicy_style_names <- function() {
         "i" = "`options(spicy.language = \"fr\")` gives a French table -- words and numbers.",
         "i" = "For the numbers alone, compose `spicy_style(decimal_mark = \",\", p_style = \"standard\")`."
       ),
-      class = "spicy_invalid_input"
+      class = "spicy_invalid_input",
+      call = call
     )
   }
   reg <- .spicy_style_registry()
@@ -1034,7 +1035,8 @@ spicy_style_names <- function() {
           "comes from, or compose your own with `spicy_style()`."
         )
       ),
-      class = "spicy_invalid_input"
+      class = "spicy_invalid_input",
+      call = call
     )
   }
   out <- entry$style
@@ -1148,12 +1150,12 @@ print.spicy_style <- function(x, ...) {
 
 # A theme name or a `spicy_style` -> a `spicy_style`. Anything else is
 # an error naming the available themes.
-.style_resolve_object <- function(style) {
+.style_resolve_object <- function(style, call = rlang::caller_env()) {
   if (inherits(style, "spicy_style")) {
     return(style)
   }
   if (is.character(style) && length(style) == 1L && !is.na(style)) {
-    return(.style_from_registry(style))
+    return(.style_from_registry(style, call = call))
   }
   spicy_abort(
     c(
@@ -1164,13 +1166,14 @@ print.spicy_style <- function(x, ...) {
         "."
       )
     ),
-    class = "spicy_invalid_input"
+    class = "spicy_invalid_input",
+    call = call
   )
 }
 
 # `style` argument, then `options(spicy.style)`, then nothing.
 # Returns a `spicy_style` or NULL.
-.style_resolve <- function(style) {
+.style_resolve <- function(style, call = rlang::caller_env()) {
   if (is.null(style)) {
     style <- getOption("spicy.style", NULL)
     if (is.null(style)) {
@@ -1186,11 +1189,12 @@ print.spicy_style <- function(x, ...) {
             "."
           )
         ),
-        class = "spicy_invalid_input"
+        class = "spicy_invalid_input",
+        call = call
       )
     }
   }
-  .style_resolve_object(style)
+  .style_resolve_object(style, call = call)
 }
 
 # The typography a language brings with it -- the LOWEST-priority lever
@@ -1252,7 +1256,8 @@ print.spicy_style <- function(x, ...) {
 # Returns TRUE when a context was pushed (so `on.exit()` knows whether
 # to pop).
 .style_begin <- function(spec, call, env) {
-  style <- .style_resolve(spec)
+  # An unknown style is the caller's error: `env` is its frame.
+  style <- .style_resolve(spec, call = env)
   locale <- .style_locale_defaults()
   if (is.null(style) && is.null(locale)) {
     # The fast path: no style, no language. It costs one `getOption()`

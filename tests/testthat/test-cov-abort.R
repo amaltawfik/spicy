@@ -130,3 +130,30 @@ test_that("resolve_cluster_arg resolves a per-model list of formulas", {
   expect_equal(unname(res[[1]]), mtcars$gear)
   expect_equal(unname(res[[2]]), mtcars$carb)
 })
+
+
+# ---- spicy_abort(): a refined leaf carries its parent ----------------------
+
+test_that("spicy_abort() signals a refined leaf class with its parent", {
+  pairs <- list(
+    c("spicy_missing_column", "spicy_invalid_input"),
+    c("spicy_wrong_regime", "spicy_invalid_data"),
+    c("spicy_not_implemented", "spicy_unsupported")
+  )
+  for (pair in pairs) {
+    err <- expect_error(
+      spicy:::spicy_abort("x", class = pair[[1L]]),
+      class = pair[[2L]]
+    )
+    expect_identical(class(err)[1:3], c(pair, "spicy_error"))
+  }
+  # Named twice, the parent is listed once.
+  err <- expect_error(spicy:::spicy_abort(
+    "x",
+    class = c("spicy_missing_column", "spicy_invalid_input")
+  ))
+  expect_identical(sum(class(err) == "spicy_invalid_input"), 1L)
+  # Any other leaf is left as it is.
+  err <- expect_error(spicy:::spicy_abort("x", class = "spicy_invalid_input"))
+  expect_identical(class(err)[1:2], c("spicy_invalid_input", "spicy_error"))
+})

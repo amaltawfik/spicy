@@ -118,6 +118,11 @@
 #'       \item \code{spicy_invalid_data} -- bad data shape or content
 #'         (not a data.frame, length mismatch, `bit64::integer64`
 #'         columns, degenerate grouping).
+#'       \item \code{spicy_wrong_regime} -- signaled together with
+#'         \code{spicy_invalid_data} when a table receives the wrong kind
+#'         of data for its regime: a survey design handed to a plain table,
+#'         or a data frame handed to a survey twin. The message names the
+#'         function to use instead.
 #'       \item \code{spicy_missing_pkg} -- a Suggests dependency
 #'         is required by the requested operation but not installed.
 #'       \item \code{spicy_missing_quarto} -- [code_book()] was asked
@@ -127,10 +132,18 @@
 #'         PDF of [code_book()]; the condition carries its messages in
 #'         `stderr`.
 #'       \item \code{spicy_missing_column} -- a referenced column
-#'         is not in `data`.
+#'         is not in `data`; the message names it. Signaled together
+#'         with \code{spicy_invalid_input}.
 #'       \item \code{spicy_unsupported} -- the operation is not
 #'         applicable to this input (e.g., Phi requested on a
 #'         non-2x2 table).
+#'       \item \code{spicy_not_implemented} -- signaled together with
+#'         \code{spicy_unsupported} when the request is well formed but
+#'         spicy does not compute it (e.g., weighted group tests in
+#'         [table_continuous()]); the message names an alternative.
+#'       \item \code{spicy_empty_table} -- [table_regression()] has no row
+#'         left to show for a model once the requested row blocks are
+#'         switched off.
 #'       \item \code{spicy_ame_satt_unsupported_formula} -- signaled
 #'         together with \code{spicy_unsupported} when AME
 #'         Satterthwaite degrees of freedom are unavailable for the
@@ -146,6 +159,9 @@
 #'       \item \code{spicy_invalid_frame} -- an object failed the
 #'         structural validation of the internal regression-frame
 #'         contract behind [table_regression()].
+#'       \item \code{spicy_structured_version} -- [as_structured()] received
+#'         a table built under an older version of the typed contract;
+#'         rebuild the table with the current spicy.
 #'       \item \code{spicy_resampling_failed} -- bootstrap /
 #'         jackknife resampling produced too few valid replicates to
 #'         estimate the requested statistic.
@@ -188,9 +204,14 @@
 #'       \item \code{spicy_ignored_arg} -- an argument was ignored
 #'         due to context (e.g., `correct = TRUE` on a non-2x2
 #'         table).
-#'       \item \code{spicy_no_selection} -- a column selector
-#'         produced an empty set; an empty result is returned
-#'         rather than erroring.
+#'       \item \code{spicy_no_selection} -- a selection or a filter
+#'         matched nothing, and an empty result is returned rather than
+#'         an error (the row-wise summaries, [varlist()], a `levels_keep`
+#'         of [table_categorical()] that matches no level of a variable,
+#'         which is left out). In the table functions an empty column
+#'         selection is an error (\code{spicy_invalid_input}).
+#'       \item \code{spicy_no_match} -- a `keep` or `drop` pattern of
+#'         [table_regression()] matched no coefficient term.
 #'       \item \code{spicy_fallback} -- the requested computation
 #'         failed; a simpler estimator was used instead.
 #'       \item \code{spicy_caveat} -- the computation succeeded but
