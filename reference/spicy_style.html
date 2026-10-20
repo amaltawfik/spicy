@@ -8,14 +8,16 @@
 </script><script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/IBM_Plex_Sans-0.4.10/font.css" rel="stylesheet"><link href="../deps/IBM_Plex_Mono-0.4.10/font.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet"><meta property="og:title" content="Build or select a table style — spicy_style"><meta name="description" content='A style is a small set of number-formatting rules – how many
 decimals a p-value gets, where it bottoms out, whether it keeps its
 leading zero, what the decimal mark is, how a confidence interval is
-written. spicy_style() composes one by hand; the named themes
+written – and the word that opens the note under the table.
+spicy_style() composes one by hand; the named themes
 ("jama", "nejm", "lancet", "annals", "apa", "aer" –
 spicy_style_names() returns the list) are pre-composed ones, each
 encoding rules taken verbatim from an official document of the
 institution.'><meta property="og:description" content='A style is a small set of number-formatting rules – how many
 decimals a p-value gets, where it bottoms out, whether it keeps its
 leading zero, what the decimal mark is, how a confidence interval is
-written. spicy_style() composes one by hand; the named themes
+written – and the word that opens the note under the table.
+spicy_style() composes one by hand; the named themes
 ("jama", "nejm", "lancet", "annals", "apa", "aer" –
 spicy_style_names() returns the list) are pre-composed ones, each
 encoding rules taken verbatim from an official document of the
@@ -89,7 +91,8 @@ institution.'><meta property="og:image" content="https://amaltawfik.github.io/sp
     <p>A <em>style</em> is a small set of number-formatting rules – how many
 decimals a p-value gets, where it bottoms out, whether it keeps its
 leading zero, what the decimal mark is, how a confidence interval is
-written. <code>spicy_style()</code> composes one by hand; the named themes
+written – and the word that opens the note under the table.
+<code>spicy_style()</code> composes one by hand; the named themes
 (<code>"jama"</code>, <code>"nejm"</code>, <code>"lancet"</code>, <code>"annals"</code>, <code>"apa"</code>, <code>"aer"</code> –
 <code>spicy_style_names()</code> returns the list) are pre-composed ones, each
 encoding rules taken verbatim from an official document of the
@@ -115,7 +118,8 @@ institution.</p>
 <span>  fit_digits <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  ic_digits <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  percent_digits <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  v_digits <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  v_digits <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  note_label <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">spicy_style_names</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
@@ -206,6 +210,18 @@ the matching argument.</p></dd>
 <dd><p>Decimal places for percentages and
 for the association measure of <code><a href="table_categorical.html">table_categorical()</a></code>.</p></dd>
 
+
+<dt id="arg-note-label">note_label<a class="anchor" aria-label="anchor" href="#arg-note-label"></a></dt>
+<dd><p>The word that opens the note under the table, set
+in italics in every rendered output: <code>"Note."</code> (the default, APA
+Manual 7 section 7.14), <code>"Note:"</code> (Chicago Manual of Style 18,
+paragraphs 3.77-3.81), or <code>""</code> for no lead-in word (AMA Manual of
+Style 11, section 4.1.4.10). The language spells it: under
+<code>options(spicy.language = "fr")</code>, <code>"Note:"</code> prints with the
+no-break space French puts before a colon. A <code>note</code> you type is
+printed as typed; its opening word is set in italics when it is the
+lead-in in force.</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
@@ -226,10 +242,11 @@ scope.</p>
     </div>
     <div class="section level2">
     <h2 id="what-a-theme-claims-and-what-it-does-not">What a theme claims, and what it does not<a class="anchor" aria-label="anchor" href="#what-a-theme-claims-and-what-it-does-not"></a></h2>
-    <p>A theme covers <strong>numeric formatting conformity only</strong> – not full
-editorial conformity. It does not check reporting guidelines, table
-structure, footnote symbols, units, abbreviation policy, or anything
-else a journal's instructions ask of a manuscript. Each theme below
+    <p>A theme covers <strong>numeric formatting conformity</strong>, and the word that
+opens the table note, <strong>only</strong> – not full editorial conformity. It
+does not check reporting guidelines, table structure, footnote
+symbols, units, abbreviation policy, or anything else a journal's
+instructions ask of a manuscript. Each theme below
 lists the exact rules it encodes, with the sentence it encodes them
 from; anything not listed is spicy's own default, not the journal's
 rule.</p>
@@ -314,6 +331,11 @@ reported to exact numbers to 2 digits past the decimal point,
 regardless of statistical significance. For values lower than
 .01, present the P value to 3 digits. Express any values lower
 than .001 as P&lt;.001."</p></li>
+<li><p>no lead-in word before the note under the table
+(<code>note_label = ""</code>) – the <em>AMA Manual of Style</em>, 11th edition
+(2020), section 4.1.4.10, gives table footnotes none: a footnote
+on the whole table is called by a letter "placed after the table
+title".</p></li>
 </ul><p>Not encoded: everything else in that document (percentages carrying
 their numerator and denominator, one datum per cell, footnote
 letters, SI conversion factors) is table <em>construction</em>, not number
@@ -373,6 +395,11 @@ the intervals printed throughout the journal's own model tables
 and figures (<code>0[.]78 (0[.]60-1[.]00)</code>) and is encoded as
 conformity to the journal's published examples, nothing
 stronger.</p></li>
+<li><p>no lead-in word before the note under the table
+(<code>note_label = ""</code>). <strong>Not a written rule either</strong>: the model
+tables of the two formatting guidelines open their note on "Data
+are n (%)", and none of the 38 table notes of 15 research articles
+published in 2025-2026, checked on 2026-10-20, opens with "Note".</p></li>
 </ul><p>Not encoded: the empty-cell filler, the ban on p-values in a
 randomized trial's baseline table, and the absolute-rather-than-
 relative effect rule are content decisions, not number formats.</p>
@@ -432,6 +459,10 @@ and inferential statistics (t, F, chi-square) to two decimals."</p></li>
 <li><p>confidence intervals in square brackets, bounds separated by
 a comma – the <em>Sample tables</em> page gives
 <code>95% CI [LL, UL]</code> as one of the two official layouts.</p></li>
+<li><p>the note under the table opens with "Note." in italics
+(<code>note_label = "Note."</code>) – the <em>Publication Manual</em>, 7th edition
+(2020), section 7.14: the general note is "designated by the word
+'Note' (italicized) followed by a period".</p></li>
 </ul><p>Not encoded: the one-decimal rule for means of integer scales
 (depends on what the variable measures, which spicy cannot know),
 and the thousands separator (see <em>Known gaps</em> below). Nor the star
@@ -507,7 +538,7 @@ mean inventing their rules.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  R²          <span style="color: #9E9E9E;">│</span>  0.83                              </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Adj. R²     <span style="color: #9E9E9E;">│</span>  0.81                              </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Linear regression.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Linear regression.</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Std. errors: classical (OLS).</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># An argument you type beats the theme.</span></span></span>
@@ -524,7 +555,7 @@ mean inventing their rules.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  R²          <span style="color: #9E9E9E;">│</span>  0.83                               </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Adj. R²     <span style="color: #9E9E9E;">│</span>  0.81                               </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Linear regression.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Linear regression.</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Std. errors: classical (OLS).</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># A style composed by hand.</span></span></span>
@@ -559,7 +590,7 @@ mean inventing their rules.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  R²          <span style="color: #9E9E9E;">│</span>  0·83                                  </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Adj. R²     <span style="color: #9E9E9E;">│</span>  0·81                                  </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Linear regression.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Linear regression.</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Std. errors: classical (OLS).</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Document-wide scope.</span></span></span>
@@ -577,10 +608,11 @@ mean inventing their rules.</p>
 <span class="r-in"><span><span class="fu">spicy_style</span><span class="op">(</span><span class="st">"lancet"</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> &lt;spicy_style&gt; "lancet" -- The Lancet</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Encoded rules (numeric formatting only, not editorial conformity):</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Encoded rules (formatting only, not editorial conformity):</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  - decimal mark: midline dot U+00B7 on every number</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  - p-values: 2 significant figures capped at 4 decimals, floor &lt;0·0001, leading zero kept</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  - confidence intervals: en dash between bounds (matches the journal's published examples; not a written rule)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  - table note: no lead-in word (matches the journal's model tables and its published tables; not a written rule)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Source: Information for Authors (April 2026); Randomised trials / Observational studies formatting guidelines (July 2025)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         https://www.thelancet.com/pb-assets/Lancet/authors/tl-info-for-authors-1690986041530.pdf</span>
@@ -593,6 +625,7 @@ mean inventing their rules.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   p_sigfig            2</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   decimal_mark        ·</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   ci_sep              –</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   note_label          ""</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

@@ -2,12 +2,12 @@
 
 A *style* is a small set of number-formatting rules – how many decimals
 a p-value gets, where it bottoms out, whether it keeps its leading zero,
-what the decimal mark is, how a confidence interval is written.
-`spicy_style()` composes one by hand; the named themes (`"jama"`,
-`"nejm"`, `"lancet"`, `"annals"`, `"apa"`, `"aer"` –
-`spicy_style_names()` returns the list) are pre-composed ones, each
-encoding rules taken verbatim from an official document of the
-institution.
+what the decimal mark is, how a confidence interval is written – and the
+word that opens the note under the table. `spicy_style()` composes one
+by hand; the named themes (`"jama"`, `"nejm"`, `"lancet"`, `"annals"`,
+`"apa"`, `"aer"` – `spicy_style_names()` returns the list) are
+pre-composed ones, each encoding rules taken verbatim from an official
+document of the institution.
 
 ## Usage
 
@@ -29,7 +29,8 @@ spicy_style(
   fit_digits = NULL,
   ic_digits = NULL,
   percent_digits = NULL,
-  v_digits = NULL
+  v_digits = NULL,
+  note_label = NULL
 )
 
 spicy_style_names()
@@ -114,6 +115,17 @@ spicy_style_names()
   Decimal places for percentages and for the association measure of
   [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md).
 
+- note_label:
+
+  The word that opens the note under the table, set in italics in every
+  rendered output: `"Note."` (the default, APA Manual 7 section 7.14),
+  `"Note:"` (Chicago Manual of Style 18, paragraphs 3.77-3.81), or `""`
+  for no lead-in word (AMA Manual of Style 11, section 4.1.4.10). The
+  language spells it: under `options(spicy.language = "fr")`, `"Note:"`
+  prints with the no-break space French puts before a colon. A `note`
+  you type is printed as typed; its opening word is set in italics when
+  it is the lead-in in force.
+
 ## Value
 
 `spicy_style()` returns an object of class `spicy_style`: a named list
@@ -137,13 +149,13 @@ either as a theme name or as the object returned here, and by
 
 ## What a theme claims, and what it does not
 
-A theme covers **numeric formatting conformity only** – not full
-editorial conformity. It does not check reporting guidelines, table
-structure, footnote symbols, units, abbreviation policy, or anything
-else a journal's instructions ask of a manuscript. Each theme below
-lists the exact rules it encodes, with the sentence it encodes them
-from; anything not listed is spicy's own default, not the journal's
-rule.
+A theme covers **numeric formatting conformity**, and the word that
+opens the table note, **only** – not full editorial conformity. It does
+not check reporting guidelines, table structure, footnote symbols,
+units, abbreviation policy, or anything else a journal's instructions
+ask of a manuscript. Each theme below lists the exact rules it encodes,
+with the sentence it encodes them from; anything not listed is spicy's
+own default, not the journal's rule.
 
 Themes only move **defaults**. An argument you type wins over the theme,
 always: `table_regression(fit, style = "lancet", digits = 3)` is a
@@ -229,6 +241,11 @@ Encoded:
   significance. For values lower than .01, present the P value to 3
   digits. Express any values lower than .001 as P\<.001."
 
+- no lead-in word before the note under the table (`note_label = ""`) –
+  the *AMA Manual of Style*, 11th edition (2020), section 4.1.4.10,
+  gives table footnotes none: a footnote on the whole table is called by
+  a letter "placed after the table title".
+
 Not encoded: everything else in that document (percentages carrying
 their numerator and denominator, one datum per cell, footnote letters,
 SI conversion factors) is table *construction*, not number formatting.
@@ -291,6 +308,12 @@ Encoded:
   (`0[.]78 (0[.]60-1[.]00)`) and is encoded as conformity to the
   journal's published examples, nothing stronger.
 
+- no lead-in word before the note under the table (`note_label = ""`).
+  **Not a written rule either**: the model tables of the two formatting
+  guidelines open their note on "Data are n (%)", and none of the 38
+  table notes of 15 research articles published in 2025-2026, checked on
+  2026-10-20, opens with "Note".
+
 Not encoded: the empty-cell filler, the ban on p-values in a randomized
 trial's baseline table, and the absolute-rather-than- relative effect
 rule are content decisions, not number formats.
@@ -350,6 +373,11 @@ change of those defaults will not move an APA-formatted table.
 - confidence intervals in square brackets, bounds separated by a comma –
   the *Sample tables* page gives `95% CI [LL, UL]` as one of the two
   official layouts.
+
+- the note under the table opens with "Note." in italics
+  (`note_label = "Note."`) – the *Publication Manual*, 7th edition
+  (2020), section 7.14: the general note is "designated by the word
+  'Note' (italicized) followed by a period".
 
 Not encoded: the one-decimal rule for means of integer scales (depends
 on what the variable measures, which spicy cannot know), and the
@@ -429,7 +457,7 @@ table_regression(fit, style = "jama")
 #>  R²          │  0.83                              
 #>  Adj. R²     │  0.81                              
 #> 
-#> Note. Linear regression.
+#> Linear regression.
 #> Std. errors: classical (OLS).
 
 # An argument you type beats the theme.
@@ -446,7 +474,7 @@ table_regression(fit, style = "jama", p_digits = 4)
 #>  R²          │  0.83                               
 #>  Adj. R²     │  0.81                               
 #> 
-#> Note. Linear regression.
+#> Linear regression.
 #> Std. errors: classical (OLS).
 
 # A style composed by hand.
@@ -481,7 +509,7 @@ table_regression(fit, style = spicy_style("lancet", ci_sep = " to "))
 #>  R²          │  0·83                                  
 #>  Adj. R²     │  0·81                                  
 #> 
-#> Note. Linear regression.
+#> Linear regression.
 #> Std. errors: classical (OLS).
 
 # Document-wide scope.
@@ -499,10 +527,11 @@ options(old)
 spicy_style("lancet")
 #> <spicy_style> "lancet" -- The Lancet
 #> 
-#> Encoded rules (numeric formatting only, not editorial conformity):
+#> Encoded rules (formatting only, not editorial conformity):
 #>  - decimal mark: midline dot U+00B7 on every number
 #>  - p-values: 2 significant figures capped at 4 decimals, floor <0·0001, leading zero kept
 #>  - confidence intervals: en dash between bounds (matches the journal's published examples; not a written rule)
+#>  - table note: no lead-in word (matches the journal's model tables and its published tables; not a written rule)
 #> 
 #> Source: Information for Authors (April 2026); Randomised trials / Observational studies formatting guidelines (July 2025)
 #>         https://www.thelancet.com/pb-assets/Lancet/authors/tl-info-for-authors-1690986041530.pdf
@@ -515,4 +544,5 @@ spicy_style("lancet")
 #>   p_sigfig            2
 #>   decimal_mark        ·
 #>   ci_sep              –
+#>   note_label          ""
 ```

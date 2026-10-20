@@ -804,19 +804,22 @@ table_categorical(sochealth, select = smoking, by = sex, style = "jama")
 #>    Yes       │   131       21.1     118     20.3     249     20.8             
 #>    (Missing) │    14        2.3      11      1.9      25      2.1             
 #> 
-#> Note. Group comparison: Pearson chi-squared test.
+#> Group comparison: Pearson chi-squared test.
 ```
 
-The visible change here is the *p* column: JAMA rounds *p* values to two
-decimals (`.71`), where the default reports three (`.713`).
+Two things change here. JAMA rounds *p* values to two decimals (`.71`),
+where the default reports three (`.713`), and the note opens without the
+word “Note.”, as the AMA manual sets table notes.
+`spicy_style(note_label = )` chooses that word for any style: “Note.”
+(APA), “Note:” (Chicago), or none.
 
 Two properties make styles safe to adopt. A style only moves *display*
-defaults — decimals, *p* notation, interval punctuation — never the
-statistics underneath; and an argument you set explicitly always wins
-over it, so `style = "jama"` with `p_digits = 3` keeps your three
-decimals. The style travels with the table: the same call rendered to
-Word, Excel, or HTML follows it, and `options(spicy.style = "lancet")`
-sets one for a whole document.
+defaults — decimals, *p* notation, interval punctuation, the word that
+opens the note — never the statistics underneath; and an argument you
+set explicitly always wins over it, so `style = "jama"` with
+`p_digits = 3` keeps your three decimals. The style travels with the
+table: the same call rendered to Word, Excel, or HTML follows it, and
+`options(spicy.style = "lancet")` sets one for a whole document.
 [`?spicy_style`](https://amaltawfik.github.io/spicy/reference/spicy_style.md)
 lists every style and every rule with the sentence it comes from.
 
@@ -879,7 +882,7 @@ table_continuous(sochealth, select = bmi, by = sex, style = "jama")
 #>  bmi      │ Female  ,02 
 #>           │ Male        
 #> 
-#> Note. Valeurs manquantes retirées : bmi (12).
+#> Valeurs manquantes retirées : bmi (12).
 ```
 
 Where the two do meet, the theme wins — you asked for it by name. JAMA’s
@@ -1069,7 +1072,7 @@ tab |>
 |     Yes |  84 | 32.2 | 229 | 42.5 | 237 | 59.2 | 550 | 45.8 |       |     |
 | *Note.* Group comparison: Pearson chi-squared test. |  |  |  |  |  |  |  |  |  |  |
 
-Categorical table by education {#tinytable_bc65urh7wk3t0qmobkan .table
+Categorical table by education {#tinytable_j2dlqn8b7igskqulc8gc .table
 .tinytable style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 

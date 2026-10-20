@@ -1674,7 +1674,9 @@ as "it probably doesn't make much difference" (Efron 1977).
 - `"data.frame"` / `"long"` – raw data.frame / long-format tibble.
 
 - `"gt"` / `"flextable"` / `"tinytable"` – rich-format HTML / Word / PDF
-  tables (require the corresponding Suggests package).
+  tables (require the corresponding Suggests package). In a PDF, a
+  `"flextable"` table wider than the page can be fitted with
+  [`flextable::fit_to_width()`](https://davidgohel.github.io/flextable/reference/fit_to_width.html).
 
 - `"excel"` – writes to `excel_path` via
   [`openxlsx2::write_xlsx()`](https://janmarvin.github.io/openxlsx2/reference/write_xlsx.html).
