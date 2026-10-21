@@ -221,9 +221,10 @@ displayed), \code{level} and \code{.row_role} (\code{"factor_header"}, \code{"le
 or \code{"missing"} on the row of missing values the table adds), then
 the printed columns in their order: per block of \code{by} (and the
 \code{Total} margin) \verb{<group> n}, \verb{<group> \\\%}, with \code{proportion_ci} the
-interval bounds \verb{<group> \\\% CI lower} and \verb{<group> \\\% CI upper},
-with \code{deff} \verb{<group> DEff}, and last \code{p}. Without \code{by}, the
-columns of the one block are \code{n}, \verb{\\\%}, ...
+interval bounds \verb{<group> 95\\\% CI LL} and \verb{<group> 95\\\% CI UL} (the
+level of \code{ci_level}, as printed), with \code{deff} \verb{<group> DEff}, and
+last \code{p}. Without \code{by}, the columns of the one block are \code{n}, \verb{\\\%},
+...
 \item \code{"long"}: one row per variable, level and group, in the order
 of the table, with \code{variable}, \code{label}, \code{level}, \code{.row_role} (the
 role of \code{level}: \code{"level"}, or \code{"missing"}), with \code{by} \code{group},

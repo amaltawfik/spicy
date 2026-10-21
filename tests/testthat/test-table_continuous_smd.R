@@ -79,8 +79,9 @@ test_that("the SMD cell, the typed body and the note agree", {
   expect_null(meta$p_style)
   expect_null(meta$value_range)
   # Not composite: the cell is the bare number, so `inline()` cites the
-  # very string the table prints.
-  expect_identical(inline(tbl, x, column = "smd", model = "A"), "-0.51")
+  # very string the table prints -- without `model`: the SMD belongs to
+  # the variable.
+  expect_identical(inline(tbl, x, column = "smd"), "-0.51")
 })
 
 test_that("the threshold in the gloss follows decimal_mark", {

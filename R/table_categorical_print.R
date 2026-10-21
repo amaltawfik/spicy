@@ -224,12 +224,29 @@ print.spicy_categorical_table <- function(x, ...) {
 .categorical_data_frame <- function(x) {
   long <- attr(x, "long_data", exact = TRUE)
   labels <- stats::setNames(long$label %||% long$variable, long$variable)
-  .table_data_frame(
-    as_structured(x),
+  s <- as_structured(x)
+  df <- .table_data_frame(
+    s,
     labels[!duplicated(names(labels))],
     key = "level",
     note = attr(x, "note", exact = TRUE)
   )
+  # The bounds of the association interval are printed columns, so they
+  # keep the names of their headers, in the convention of the interval
+  # columns of table_continuous() and table_continuous_lm(): "95% CI LL",
+  # "95% CI UL", the level in the name, the period whatever
+  # `decimal_mark`, English in every language. The frozen keys
+  # `.CAT_KEY_CI_LL` / `.CAT_KEY_CI_UL` stay the rendering contract of the
+  # engines and of the typed view.
+  ci_keys <- c(.CAT_KEY_CI_LL, .CAT_KEY_CI_UL)
+  if (all(ci_keys %in% names(df))) {
+    names(df)[match(ci_keys, names(df))] <- paste(
+      .continuous_ci_pct(s$format_spec$ci_level %||% 0.95),
+      .CON_KEY_CI,
+      c(.CON_KEY_CI_LL, .CON_KEY_CI_UL)
+    )
+  }
+  df
 }
 
 # `blank_na_wide = TRUE`: the empty cells of the data frame as empty

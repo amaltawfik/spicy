@@ -556,7 +556,8 @@
   effect_size_digits,
   p_digits,
   decimal_mark,
-  ci_level
+  ci_level,
+  es_ci = FALSE
 ) {
   spec <- .continuous_token_columns(ci_level, decimal_mark)
 
@@ -632,7 +633,14 @@
     col_names <- c(col_names, .CON_KEY_ES)
     col_meta[[.CON_KEY_ES]] <- list(
       token = "es",
-      display_label = spicy_str("header_effect_size_short"),
+      # The console's header, the level of the interval included when the
+      # cell prints one (`.continuous_label_map()`).
+      display_label = .continuous_labels(
+        .CON_KEY_ES,
+        ci_level,
+        decimal_mark,
+        es_ci
+      ),
       precision = as.integer(effect_size_digits)
     )
     col_source[[.CON_KEY_ES]] <- list(
@@ -692,7 +700,8 @@
   p_digits,
   decimal_mark,
   ci_level,
-  missing_group_label = NA_character_
+  missing_group_label = NA_character_,
+  es_ci = FALSE
 ) {
   has_group <- "group" %in% names(result)
   # The column half is shared with `table_outcome()`.
@@ -703,7 +712,8 @@
     effect_size_digits = effect_size_digits,
     p_digits = p_digits,
     decimal_mark = decimal_mark,
-    ci_level = ci_level
+    ci_level = ci_level,
+    es_ci = es_ci
   )
   spec <- cols$spec
   col_names <- cols$col_names
@@ -1005,7 +1015,8 @@
   effect_size_digits,
   p_digits,
   decimal_mark,
-  ci_level
+  ci_level,
+  es_ci = FALSE
 ) {
   cols <- .continuous_struct_columns(
     display_df = display_df,
@@ -1014,7 +1025,8 @@
     effect_size_digits = effect_size_digits,
     p_digits = p_digits,
     decimal_mark = decimal_mark,
-    ci_level = ci_level
+    ci_level = ci_level,
+    es_ci = es_ci
   )
   spec <- cols$spec
   col_names <- cols$col_names

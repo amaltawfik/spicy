@@ -234,12 +234,13 @@ pairs. Since the two measures differ, the header collapses to
 
 Add confidence intervals with `assoc_ci = TRUE`. In the rendered
 formats (`gt`, `tinytable`, `flextable`, `word`) the CI is shown
-inline after the measure, e.g. `.14 [.08, .19]` (demonstrated in the
-final section). In the default console table and in the `"excel"`
-and `"clipboard"` outputs, separate columns headed `95% CI LL` and
-`95% CI UL` are added, the level stated as the other tables state it
-(`"data.frame"` names them `CI lower` and `CI upper`); in the long format
-(`"long"`) the bounds fill `es_ci_lower` / `es_ci_upper`:
+inline after the measure, e.g. `.14 [.08, .19]`, under a header that
+states its level, `Cramer's V [95% CI]` (demonstrated in the final
+section). In the default console table and in the `"data.frame"`,
+`"excel"` and `"clipboard"` outputs, separate columns named
+`95% CI LL` and `95% CI UL` are added, as the other tables name
+their interval columns; in the long format (`"long"`) the bounds
+fill `es_ci_lower` / `es_ci_upper`:
 
 ```{r ci-data}
 table_categorical(

@@ -192,6 +192,12 @@ which had no typed view before: \code{.row_role} gained \code{"summary"},
 \code{"group"} and \code{"missing"}, then \code{"none"} with \code{\link[=table_multiresponse]{table_multiresponse()}}.
 The vocabulary is extended by addition -- an existing role never
 changes meaning.
+
+Version \code{4} renames one component: in the \code{format_spec} of
+\code{\link[=table_categorical]{table_categorical()}}, the number of decimals of the association
+measure and the SMD is \code{effect_size_digits}, the key of the other
+tables, where it was \code{v_digits} (the argument was renamed alike). An
+object carrying version \code{3} is refused as an older contract.
 }
 
 \examples{

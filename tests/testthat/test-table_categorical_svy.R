@@ -85,7 +85,7 @@ test_that("the percentage intervals are svyciprop's, and the point is not", {
   d <- .svycat_design("clus1")
   out <- .svycat_df(d, select = stype, proportion_ci = TRUE)
   expect_equal(
-    c(out[["% CI lower"]][[2L]], out[["% CI upper"]][[2L]]),
+    c(out[["95% CI LL"]][[2L]], out[["95% CI UL"]][[2L]]),
     100 * c(0.67120113442222151, 0.86976478763647846),
     tolerance = 1e-10
   )
@@ -103,8 +103,8 @@ test_that("the percentage intervals are svyciprop's, and the point is not", {
   )
   expect_identical(wilson[["%"]], out[["%"]])
   expect_false(isTRUE(all.equal(
-    wilson[["% CI lower"]][[2L]],
-    out[["% CI lower"]][[2L]],
+    wilson[["95% CI LL"]][[2L]],
+    out[["95% CI LL"]][[2L]],
     tolerance = 1e-8
   )))
   # `"mean"` is the Wald interval, i.e. `confint(svymean(), df = degf)`.
@@ -124,7 +124,7 @@ test_that("the percentage intervals are svyciprop's, and the point is not", {
       )
     ))
   expect_equal(
-    c(mean_ci[["% CI lower"]][[2L]], mean_ci[["% CI upper"]][[2L]]),
+    c(mean_ci[["95% CI LL"]][[2L]], mean_ci[["95% CI UL"]][[2L]]),
     ref,
     tolerance = 1e-10
   )
@@ -300,8 +300,8 @@ test_that("a replicate design gives the same percentages, its own intervals", {
   # The interval comes from the variance and therefore differs: never
   # pinned equal across regimes.
   expect_false(isTRUE(all.equal(
-    rep[["% CI lower"]][[2L]],
-    lin[["% CI lower"]][[2L]],
+    rep[["95% CI LL"]][[2L]],
+    lin[["95% CI LL"]][[2L]],
     tolerance = 1e-6
   )))
   expect_match(
@@ -413,11 +413,11 @@ test_that("every ci_method returns an interval on a variable with NA", {
       drop_na = TRUE
     )
     expect_false(
-      any(is.na(out[["% CI lower"]][-1L])),
+      any(is.na(out[["95% CI LL"]][-1L])),
       info = paste0("no lower bound for ci_method = ", m)
     )
     expect_false(
-      any(is.na(out[["% CI upper"]][-1L])),
+      any(is.na(out[["95% CI UL"]][-1L])),
       info = paste0("no upper bound for ci_method = ", m)
     )
   }
@@ -431,7 +431,7 @@ test_that("every ci_method returns an interval on a variable with NA", {
     drop_na = TRUE
   )
   expect_equal(
-    c(wil[["% CI lower"]][[2L]], wil[["% CI upper"]][[2L]]),
+    c(wil[["95% CI LL"]][[2L]], wil[["95% CI UL"]][[2L]]),
     c(68.155858166588729, 88.675138910321778),
     tolerance = 1e-10
   )
@@ -1093,7 +1093,7 @@ test_that("`df` overrides the design df, and the footer changes with it", {
       survey::svyciprop(~ I(stype == "E"), d, method = "logit", df = 100)
     ))
   expect_equal(
-    c(out[["% CI lower"]][[2L]], out[["% CI upper"]][[2L]]),
+    c(out[["95% CI LL"]][[2L]], out[["95% CI UL"]][[2L]]),
     ref,
     tolerance = 1e-10
   )
@@ -1387,7 +1387,7 @@ test_that("the typed view keys every column by its block", {
     deff = TRUE
   )
   s <- as_structured(tbl)
-  expect_identical(s$version, 3L)
+  expect_identical(s$version, 4L)
   expect_identical(
     s$body$.row_role,
     c("factor_header", "level", "level", "level")
@@ -1572,7 +1572,7 @@ test_that("coercion does not rename the frozen block keys", {
     )
   )
   expect_true(all(
-    c("No n", "No %", "Yes % CI lower", "Total n", "p") %in% names(df)
+    c("No n", "No %", "Yes 95% CI LL", "Total n", "p") %in% names(df)
   ))
   # No block key came back with a dot where it had a space. (The
   # identity column `.row_role` legitimately opens with one.)
@@ -1743,8 +1743,8 @@ test_that("output = 'data.frame' and output = 'long' carry the same numbers", {
     expect_identical(as_long$level[rows], as_df$level[lv])
     expect_equal(as_long$n[rows], as_df[[paste(b, "n")]][lv])
     expect_equal(as_long$pct[rows], as_df[[paste(b, "%")]][lv])
-    expect_equal(as_long$ci_lower[rows], as_df[[paste(b, "% CI lower")]][lv])
-    expect_equal(as_long$ci_upper[rows], as_df[[paste(b, "% CI upper")]][lv])
+    expect_equal(as_long$ci_lower[rows], as_df[[paste(b, "95% CI LL")]][lv])
+    expect_equal(as_long$ci_upper[rows], as_df[[paste(b, "95% CI UL")]][lv])
     expect_equal(as_long$deff[rows], as_df[[paste(b, "DEff")]][lv])
   }
   # The p of a variable: on its header row in one, on each of its rows

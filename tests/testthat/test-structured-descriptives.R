@@ -104,7 +104,7 @@ expect_faithful <- function(struct, display, skip_cols = character(0)) {
 
 # Every descriptive view answers the same schema questions.
 expect_v3_shape <- function(struct) {
-  expect_identical(struct$version, 3L)
+  expect_identical(struct$version, 4L)
   expect_null(struct$stars)
   expect_true(all(
     spicy:::.STRUCT_META_COLS %in% names(struct$body)
@@ -811,6 +811,16 @@ test_that("the version guard applies to descriptive views", {
   attr(older, "structured") <- s_old
   expect_error(as_structured(older), class = "spicy_structured_version")
   expect_error(as_structured(older), "table_categorical\\(\\)")
+
+  # v3, the contract of spicy 0.13.0, called the effect-size decimals of
+  # a categorical view `v_digits`: refused, with the rename.
+  v3 <- tbl
+  s_v3 <- attr(v3, "structured")
+  s_v3$version <- 3L
+  attr(v3, "structured") <- s_v3
+  err <- expect_error(as_structured(v3), class = "spicy_structured_version")
+  expect_match(conditionMessage(err), "effect_size_digits", fixed = TRUE)
+  expect_no_match(conditionMessage(err), "cell_status", fixed = TRUE)
 
   newer <- tbl
   s_new <- attr(newer, "structured")

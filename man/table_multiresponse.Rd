@@ -162,9 +162,10 @@ distribution. See \emph{Tests}.}
 \item{boot_n}{Number of bootstrap resamples for
 \code{global_test = "bootstrap"}: a positive whole number, as in
 \code{\link[=table_regression]{table_regression()}} and \code{\link[=table_continuous_lm]{table_continuous_lm()}}. Defaults to \code{1999},
-the default of the \code{MRCV} package for the same bootstrap test. Typed
-with \code{global_test = "rs2"}, or in a table without a global test, it
-is ignored with a warning (class \code{spicy_ignored_arg}).}
+the default \code{B} of \code{MI.test()} in the \code{MRCV} package for the same
+bootstrap test (reference manual of \code{MRCV} 0.4-0). Typed with
+\code{global_test = "rs2"}, or in a table without a global test, it is
+ignored with a warning (class \code{spicy_ignored_arg}).}
 
 \item{p_adjust}{Multiple-comparison adjustment of the item \code{p} column,
 applied to the family of the items tested: \code{"holm"} (the default),

@@ -184,8 +184,8 @@ test_that("as.data.frame – the printed rows, with their numbers", {
       ".row_role",
       "B",
       "SE",
-      "95% CI: LL",
-      "95% CI: UL",
+      "95% CI LL",
+      "95% CI UL",
       "p"
     )
   )
@@ -197,8 +197,8 @@ test_that("as.data.frame – the printed rows, with their numbers", {
   expect_identical(df$B, body$B)
   expect_equal(df$B[1:2], unname(coef(fit)), tolerance = 1e-12)
   ci <- unname(confint(fit))
-  expect_equal(df[["95% CI: LL"]][1:2], ci[, 1], tolerance = 1e-12)
-  expect_equal(df[["95% CI: UL"]][1:2], ci[, 2], tolerance = 1e-12)
+  expect_equal(df[["95% CI LL"]][1:2], ci[, 1], tolerance = 1e-12)
+  expect_equal(df[["95% CI UL"]][1:2], ci[, 2], tolerance = 1e-12)
   expect_equal(df$B[df$variable == "nobs"], 32)
   # A label given to a term is the `label` of its row; `variable` keeps
   # the term.

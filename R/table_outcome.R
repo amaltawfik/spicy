@@ -1273,7 +1273,8 @@ table_outcome <- function(
       excel_sheet = excel_sheet,
       clipboard_delim = clipboard_delim,
       word_path = word_path,
-      note = note
+      note = note,
+      es_ci = isTRUE(effect_size_ci)
     ))
   }
 
@@ -1290,7 +1291,8 @@ table_outcome <- function(
       effect_size_digits = effect_size_digits,
       p_digits = p_digits,
       decimal_mark = decimal_mark,
-      ci_level = ci_level
+      ci_level = ci_level,
+      es_ci = isTRUE(effect_size_ci)
     ),
     p_adjust_info
   )

@@ -624,6 +624,13 @@
   # brackets are literal too, and its separator follows `decimal_mark`
   # while the header's does not).
   header_med_iqr_composite = "%s [%s, %s]",
+  # Two holes: the header of a statistic, then the header of its interval
+  # ("95% CI"), over a cell that prints the statistic with its interval
+  # ("0.14 [0.02, 0.25]"): the header states the level, as the headers of
+  # the bounds state it where they have columns of their own ("95% CI
+  # LL"). The brackets stay in the template, as in
+  # `header_med_iqr_composite`.
+  header_estimate_ci = "%s [%s]",
   header_test = "Test",
   # The SHORT effect-size header of `table_continuous()`. Deliberately NOT
   # `header_effect_size` ("Effect size", lot A): two strings, two columns,

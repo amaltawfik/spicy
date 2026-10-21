@@ -923,13 +923,16 @@ test_that("assoc_ci adds CI columns in the data.frame output", {
     output = "data.frame",
     assoc_ci = TRUE
   )
-  expect_true("CI lower" %in% names(out))
-  expect_true("CI upper" %in% names(out))
-  expect_true(is.numeric(out[["CI lower"]]))
+  # Named as printed, in the convention of the interval columns of the
+  # other tables.
+  expect_true("95% CI LL" %in% names(out))
+  expect_true("95% CI UL" %in% names(out))
+  expect_false(any(c("CI lower", "CI upper") %in% names(out)))
+  expect_true(is.numeric(out[["95% CI LL"]]))
   # The bounds sit on the header row, beside the measure, as printed.
   hdr <- out$.row_role == "factor_header"
-  expect_true(all(!is.na(out[["CI lower"]][hdr])))
-  expect_true(all(is.na(out[["CI lower"]][!hdr])))
+  expect_true(all(!is.na(out[["95% CI LL"]][hdr])))
+  expect_true(all(is.na(out[["95% CI LL"]][!hdr])))
 })
 
 test_that("assoc_ci = FALSE omits CI columns in the data.frame output", {
@@ -943,7 +946,7 @@ test_that("assoc_ci = FALSE omits CI columns in the data.frame output", {
     output = "data.frame",
     assoc_ci = TRUE
   )
-  expect_true(all(c("CI lower", "CI upper") %in% names(with_ci)))
+  expect_true(all(c("95% CI LL", "95% CI UL") %in% names(with_ci)))
 
   out <- table_categorical(
     sochealth,
@@ -952,8 +955,8 @@ test_that("assoc_ci = FALSE omits CI columns in the data.frame output", {
     output = "data.frame",
     assoc_ci = FALSE
   )
-  expect_false("CI lower" %in% names(out))
-  expect_false("CI upper" %in% names(out))
+  expect_false("95% CI LL" %in% names(out))
+  expect_false("95% CI UL" %in% names(out))
 })
 
 test_that("the association CI label ignores decimal_mark at its integer coverage", {
@@ -1004,11 +1007,12 @@ test_that("assoc_ci shows inline CI in rendered formats", {
   )
   dat <- gt_out[["_data"]]
   expect_match(dat$assoc_col[1], "\\[")
-  # Positive control: the bound header is a real column name on the
-  # data.frame route, so this negative is about the gt route inlining
-  # the interval -- not about a header that has quietly been renamed.
+  # Positive control: the bound is a real column on the data.frame route
+  # ("95% CI LL"), so the negative is about the gt route inlining the
+  # interval -- not about a column that has quietly been renamed. The gt
+  # frame carries the engines' frozen key, "CI lower", when it carries one.
   expect_true(
-    "CI lower" %in%
+    "95% CI LL" %in%
       names(
         table_categorical(
           sochealth,
@@ -1019,7 +1023,14 @@ test_that("assoc_ci shows inline CI in rendered formats", {
         )
       )
   )
-  expect_false("CI lower" %in% names(dat))
+  expect_false(any(c("CI lower", "95% CI LL") %in% names(dat)))
+  # The header of the merged cell states the level of the interval.
+  spanners <- vapply(
+    gt_out[["_spanners"]]$spanner_label,
+    function(z) paste(as.character(z), collapse = ""),
+    character(1)
+  )
+  expect_true(any(endsWith(spanners, " [95% CI]")))
 })
 # ---- levels_keep ---------------------------------------------------------
 

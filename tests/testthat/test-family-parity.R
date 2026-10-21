@@ -2587,3 +2587,179 @@ test_that("identical checks of the family give identical messages", {
   )
   expect_length(unique(vapply(marks, head1, "")), 1L)
 })
+
+test_that("freq() orders text and logical values as the tables do", {
+  # The rule of the groups (decision 4) applied to the values of freq():
+  # text in the C locale, FALSE before TRUE, a factor keeping its levels,
+  # whatever the locale of the machine. cross_tab(), varlist() and
+  # code_book() already sorted that way.
+  d <- .fg_data()
+  q <- function(e) suppressMessages(suppressWarnings(e))
+  vals <- function(x) as.character(stats::na.omit(x$value))
+  expect_identical(
+    vals(q(freq(d, g, output = "data.frame"))),
+    c("A", "B", "a", "b", "e", "\u00e9")
+  )
+  expect_identical(
+    vals(q(freq(d, l, output = "data.frame"))),
+    c("FALSE", "TRUE")
+  )
+  expect_identical(
+    vals(q(freq(d, f, output = "data.frame"))),
+    c("z", "a", "m")
+  )
+})
+
+test_that("the interval of an estimate states its level in every header", {
+  # A bound in a column of its own is named after its interval ("95% CI
+  # LL"), in the data frame too, and a cell that prints an estimate with
+  # its interval is headed "<estimate> [95% CI]".
+  d <- as.data.frame(sochealth)
+  q <- function(e) suppressMessages(suppressWarnings(e))
+  cat_df <- q(table_categorical(
+    d,
+    select = education,
+    by = sex,
+    assoc_ci = TRUE,
+    output = "data.frame"
+  ))
+  expect_true(all(c("95% CI LL", "95% CI UL") %in% names(cat_df)))
+  expect_false(any(c("CI lower", "CI upper") %in% names(cat_df)))
+  cont_df <- q(table_continuous(
+    d,
+    select = bmi,
+    by = sex,
+    output = "data.frame"
+  ))
+  expect_true(all(c("95% CI LL", "95% CI UL") %in% names(cont_df)))
+  # The data frame keeps an estimate under the measure's name, its bounds
+  # beside it.
+  lm_df <- q(table_continuous_lm(
+    d,
+    select = bmi,
+    by = sex,
+    effect_size = "cohens_d",
+    effect_size_ci = TRUE,
+    output = "data.frame"
+  ))
+  expect_true(all(c("d", "es_ci_lower", "es_ci_upper") %in% names(lm_df)))
+  skip_if_not_installed("flextable")
+  header <- function(ft) unlist(ft$header$dataset, use.names = FALSE)
+  expect_true(
+    "Cramer's V [95% CI]" %in%
+      header(q(table_categorical(
+        d,
+        select = education,
+        by = sex,
+        assoc_ci = TRUE,
+        output = "flextable"
+      )))
+  )
+  expect_true(
+    "d [95% CI]" %in%
+      header(q(table_continuous_lm(
+        d,
+        select = bmi,
+        by = sex,
+        effect_size = "cohens_d",
+        effect_size_ci = TRUE,
+        output = "flextable"
+      )))
+  )
+  expect_true(
+    "d" %in%
+      header(q(table_continuous_lm(
+        d,
+        select = bmi,
+        by = sex,
+        effect_size = "cohens_d",
+        output = "flextable"
+      )))
+  )
+  expect_true(
+    "ES [95% CI]" %in%
+      header(q(table_continuous(
+        d,
+        select = bmi,
+        by = sex,
+        effect_size = "hedges_g",
+        effect_size_ci = TRUE,
+        output = "flextable"
+      )))
+  )
+  expect_true(
+    "ES [95% CI]" %in%
+      header(q(table_outcome(
+        d,
+        outcome = bmi,
+        select = sex,
+        effect_size = "hedges_g",
+        effect_size_ci = TRUE,
+        output = "flextable"
+      )))
+  )
+  skip_if_not_installed("survey", "4.5")
+  des <- survey::svydesign(ids = ~1, weights = ~weight, data = d)
+  svy_ft <- q(table_categorical_svy(
+    des,
+    select = smoking,
+    by = sex,
+    proportion_ci = TRUE,
+    output = "flextable"
+  ))
+  expect_true(all(c("95% CI LL", "95% CI UL") %in% header(svy_ft)))
+})
+
+test_that("a statistic of the variable is cited without `model`", {
+  # In a table whose groups are rows, the test, its p, the effect size
+  # and the SMD belong to the variable (the table prints them once, on
+  # the row of the first group): asked with `model`, whichever group it
+  # names, they are refused with the call that cites them.
+  d <- as.data.frame(sochealth)
+  q <- function(e) suppressMessages(suppressWarnings(e))
+  cn <- q(table_continuous(
+    d,
+    select = bmi,
+    by = sex,
+    statistic = TRUE,
+    effect_size = "hedges_g",
+    smd = TRUE
+  ))
+  for (tk in c("p", "statistic", "es", "smd")) {
+    expect_true(nzchar(inline(cn, bmi, column = tk)))
+    for (g in c("Female", "Male")) {
+      err <- expect_error(
+        inline(cn, bmi, column = tk, model = g),
+        class = "spicy_invalid_input"
+      )
+      msg <- conditionMessage(err)
+      expect_match(msg, "statistic of the variable", fixed = TRUE)
+      expect_match(
+        msg,
+        sprintf("inline(x, bmi, column = \"%s\")", tk),
+        fixed = TRUE
+      )
+      expect_no_match(msg, "is empty", fixed = TRUE)
+    }
+  }
+  err <- expect_error(inline(cn, bmi, "Male", "p"), class = "spicy_defunct")
+  expect_match(
+    conditionMessage(err),
+    "inline(x, bmi, column = \"p\")",
+    fixed = TRUE
+  )
+  skip_if_not_installed("survey", "4.5")
+  des <- survey::svydesign(ids = ~1, weights = ~weight, data = d)
+  cvs <- q(table_continuous_svy(des, select = bmi, by = sex))
+  for (g in c("Female", "Male")) {
+    err <- expect_error(
+      inline(cvs, bmi, column = "p", model = g),
+      class = "spicy_invalid_input"
+    )
+    expect_match(
+      conditionMessage(err),
+      "statistic of the variable",
+      fixed = TRUE
+    )
+  }
+})

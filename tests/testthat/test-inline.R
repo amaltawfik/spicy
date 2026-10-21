@@ -124,10 +124,7 @@ test_that("a cited cell carries the style levers that have no formal", {
     by = sex,
     style = "jama"
   ))
-  expect_identical(
-    inline(tj, wellbeing_score, column = "p", model = "Female"),
-    "<.001"
-  )
+  expect_identical(inline(tj, wellbeing_score, column = "p"), "<.001")
 })
 
 test_that("categorical and continuous families answer by token", {
@@ -601,11 +598,9 @@ test_that("inline() cites a continuous SMD cell, byte for byte", {
   ))
   s <- as_structured(tbl)
   formatted <- spicy:::.format_structured_to_string_body(s)
-  expect_identical(
-    inline(tbl, x, column = "smd", model = "A"),
-    formatted$SMD[[1L]]
-  )
-  expect_identical(inline(tbl, x, column = "smd", model = "A"), "-0.51")
+  # The SMD belongs to the variable: cited without `model`.
+  expect_identical(inline(tbl, x, column = "smd"), formatted$SMD[[1L]])
+  expect_identical(inline(tbl, x, column = "smd"), "-0.51")
 
   # Non-regression: `"smd"` is not in the default column preference,
   # and must not be. A bare `inline(tbl, x, model = "A")` cites the MEAN
@@ -1589,13 +1584,19 @@ test_that("a level's label leads to its variable only when one variable has it",
 })
 
 test_that("the p of a by-group continuous table is cited without `model`", {
-  # The p-value sits on the first group's row only: that row alone carries
-  # it, so it is the address.
+  # The p-value belongs to the variable, not to a group: cited without
+  # `model`, and refused with any group, the first one included (whose
+  # row prints it).
   x <- table_continuous(sochealth, select = bmi, by = sex)
-  expect_identical(
-    inline(x, bmi, column = "p"),
-    inline(x, bmi, column = "p", model = "Female")
-  )
+  expect_identical(inline(x, bmi, column = "p"), ".018")
+  for (g in c("Female", "Male")) {
+    expect_error(
+      inline(x, bmi, column = "p", model = g),
+      "inline(x, bmi, column = \"p\")",
+      class = "spicy_invalid_input",
+      fixed = TRUE
+    )
+  }
   # A statistic every group carries still needs its group.
   expect_error(inline(x, bmi, column = "m"), class = "spicy_invalid_input")
   expect_false(identical(
@@ -1605,8 +1606,9 @@ test_that("the p of a by-group continuous table is cited without `model`", {
   skip_if_not_installed("survey")
   des <- survey::svydesign(ids = ~1, weights = ~weight, data = sochealth)
   xs <- table_continuous_svy(des, select = bmi, by = sex)
-  expect_identical(
-    inline(xs, bmi, column = "p"),
-    inline(xs, bmi, column = "p", model = "Female")
+  expect_identical(inline(xs, bmi, column = "p"), ".040")
+  expect_error(
+    inline(xs, bmi, column = "p", model = "Female"),
+    class = "spicy_invalid_input"
   )
 })

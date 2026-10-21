@@ -55,11 +55,14 @@
 #' @param cum Logical. If `FALSE` (the default), cumulative percentages are omitted.
 #'   If `TRUE`, adds cumulative percentages.
 #' @param sort Sorting method for values:
-#'   * `""` - no sorting (default)
+#'   * `""` - the order of the values (default): the levels of a factor
+#'     or of a labelled variable, numbers in ascending order, text in the
+#'     C locale (capitals before lower case, the same on every machine)
+#'     and `FALSE` before `TRUE`, as in [cross_tab()] and the tables
 #'   * `"+"` - increasing frequency
 #'   * `"-"` - decreasing frequency
-#'   * `"name+"` - alphabetical A-Z
-#'   * `"name-"` - alphabetical Z-A
+#'   * `"name+"` - alphabetical A-Z, in the C locale
+#'   * `"name-"` - alphabetical Z-A, in the C locale
 #'
 #'   For labelled variables displayed with their codes
 #'   (`labelled_levels` `"prefixed"` or `"values"`), `"name+"` /
@@ -585,6 +588,12 @@ freq <- function(
     if (factor_levels == "observed") {
       x <- droplevels(x)
     }
+  } else if (is.character(x) || is.logical(x)) {
+    # Text in the C locale (capitals before lower case, the same on every
+    # machine) and FALSE before TRUE: the order of the groups and levels
+    # of the table family (`.group_levels()`) and of cross_tab().
+    # `factor()` alone sorts text in the locale of the machine.
+    x <- factor(x, levels = .group_levels(x))
   } else {
     x <- factor(x)
   }

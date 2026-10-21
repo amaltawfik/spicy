@@ -906,7 +906,7 @@ test_that("the Bayesian footer and interval header follow the language", {
   )
   expect_true("95% CrI" %in% names(tbl))
   expect_true(all(
-    c("95% CrI: LL", "95% CrI: UL") %in% names(as.data.frame(tbl))
+    c("95% CrI LL", "95% CrI UL") %in% names(as.data.frame(tbl))
   ))
 })
 

@@ -413,12 +413,16 @@ test_that("every frozen linear-model key equals its English display label", {
     keys[!vapply(spec, function(e) isTRUE(e$raw_only), logical(1))],
     names(wide)
   )
-  # Every displayed column carries a header equal to its key in English.
+  # Every displayed column carries a header equal to its key in English,
+  # but the effect size printed with its interval: its header states the
+  # level ("f2 [95% CI]") while its key, the data frame's name, stays the
+  # measure's.
   shown <- Filter(function(e) !isTRUE(e$raw_only), spec)
-  expect_identical(
-    vapply(shown, function(e) e$key, character(1)),
-    vapply(shown, function(e) e$label, character(1))
-  )
+  shown_keys <- vapply(shown, function(e) e$key, character(1))
+  shown_labels <- vapply(shown, function(e) e$label, character(1))
+  is_es <- vapply(shown, function(e) identical(e$token, "es"), logical(1))
+  expect_identical(shown_labels[!is_es], shown_keys[!is_es])
+  expect_identical(shown_labels[is_es], paste0(shown_keys[is_es], " [95% CI]"))
   # `.lm_labels()` is a total function of its input: an unknown key and
   # a NULL label map both come back unchanged, so a hand-built frame
   # still exports.

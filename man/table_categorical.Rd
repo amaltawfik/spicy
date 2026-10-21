@@ -255,14 +255,13 @@ another measure or fall back to \code{"auto"}.}
 
 \item{assoc_ci}{Passed to \code{\link[=cross_tab]{cross_tab()}}. If \code{TRUE}, includes the
 95\\% confidence interval of the association measure. In the console
-and in the \code{"excel"} and \code{"clipboard"} outputs, two extra columns
-headed \verb{95\\\% CI LL} / \verb{95\\\% CI UL} are added, the level stated as the
-other tables state it (the \code{"data.frame"} output names them
-\verb{CI lower} / \verb{CI upper}); in the long
-output (\code{"long"}) the bounds fill \code{es_ci_lower} / \code{es_ci_upper}.
-In rendered formats (\code{"gt"}, \code{"tinytable"}, \code{"flextable"},
-\code{"word"}), the CI is shown inline (e.g., \code{.14 [.08, .19]}).
-Defaults to \code{FALSE}.}
+and in the \code{"data.frame"}, \code{"excel"} and \code{"clipboard"} outputs, two
+extra columns headed \verb{95\\\% CI LL} / \verb{95\\\% CI UL} are added, the level
+stated as the other tables state it; in the long output (\code{"long"})
+the bounds fill \code{es_ci_lower} / \code{es_ci_upper}. In rendered formats
+(\code{"gt"}, \code{"tinytable"}, \code{"flextable"}, \code{"word"}), the CI is shown
+inline (e.g., \code{.14 [.08, .19]}) under a header that states its level
+(\verb{Cramer's V [95\\\% CI]}). Defaults to \code{FALSE}.}
 
 \item{smd}{Logical. If \code{TRUE}, adds an \code{SMD} column holding the
 standardized mean difference between the two groups of \code{by},
@@ -405,8 +404,8 @@ adds), then the printed columns: one pair \verb{<group> n} /
 \verb{<group> \\\%} per group level (plus \code{Total} when
 \code{include_total = TRUE}), \code{p} (absent with \code{p_value = FALSE}), the
 association measure (named after the measure, or \verb{Effect size}
-when the row variables do not share one), its bounds \verb{CI lower} /
-\verb{CI upper} with \code{assoc_ci = TRUE}, and \code{SMD} with \code{smd = TRUE}.
+when the row variables do not share one), its bounds \verb{95\\\% CI LL} /
+\verb{95\\\% CI UL} with \code{assoc_ci = TRUE}, and \code{SMD} with \code{smd = TRUE}.
 When \code{by = NULL}, the printed columns are \code{n} and \verb{\\\%}.
 \item \code{"long"}: a long \code{data.frame}, one row per variable, level and
 group, with columns \code{variable}, \code{label}, \code{level}, \code{.row_role} (the

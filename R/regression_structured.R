@@ -178,7 +178,12 @@
 #      per-row reference flag was overwriting cells of estimate blocks
 #      that have no per-level reference at all. A v2 object is refused
 #      by `as_structured()` rather than read as if it were a v3.
-.spicy_structured_version <- function() 3L
+#   4: `format_spec$v_digits` of the categorical view is renamed
+#      `effect_size_digits`, the key every other family already used
+#      (`v_digits` became `effect_size_digits` in table_categorical(),
+#      spicy 0.14.0). A renamed component is a contract change, as the
+#      removed index vectors of v3 were: a v3 object is refused.
+.spicy_structured_version <- function() 4L
 
 # The dot-prefixed identity columns of the v3 body, in emission order.
 # They are appended AFTER the value columns so every existing column

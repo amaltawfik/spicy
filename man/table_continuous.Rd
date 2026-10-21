@@ -211,7 +211,8 @@ triggers an actionable error. Ignored when \code{by} is not used.}
 
 \item{effect_size_ci}{Logical. If \code{TRUE}, appends the confidence
 interval of the effect size in brackets (e.g.,
-\code{g = 0.45 [0.22, 0.68]}). Implies a non-\code{"none"} effect size: if
+\code{g = 0.45 [0.22, 0.68]}), under a header that states its level
+(\verb{ES [95\\\% CI]}). Implies a non-\code{"none"} effect size: if
 left at the default \code{effect_size = "none"}, the function warns
 and promotes \code{effect_size} to \code{"auto"} so the requested CI can
 be shown. Defaults to \code{FALSE}.}

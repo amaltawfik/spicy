@@ -72,13 +72,18 @@
 #' missing `by` values is `model = "(Missing)"`. In a multi-model table,
 #' `model` selects the model the same way. The cells that belong to no
 #' group (a *p*, the contrast of [table_continuous_lm()] and its
-#' interval, an association measure) are cited without `model`.
+#' interval, an association measure) are cited without `model`. In
+#' [table_continuous()] and [table_continuous_svy()], the test, its *p*,
+#' the effect size and the SMD are statistics of the variable, printed
+#' once on the row of the first group: `inline(tbl, bmi, column = "p")`.
+#' Asked with `model`, whichever group it names, they are an error (class
+#' `spicy_invalid_input`) that gives that call.
 #'
 #' `level` names a category shown as a row: the level of a variable,
 #' its row of missing values. Until spicy 0.14.0 it also selected the
 #' groups of [table_continuous()], [table_continuous_svy()] and
 #' [table_continuous_lm()]: that use is an error (class `spicy_defunct`)
-#' whose message gives the `model` call.
+#' whose message gives the call to use instead.
 #'
 #' [table_multiresponse()] has one row per item, addressed by its column
 #' name, then the rows of `none_row`, addressed as `"none"` and
@@ -204,6 +209,15 @@ inline <- function(
   if (length(group_rows) > 0L && !is.null(model)) {
     rows <- .inline_pick_group_row(s, group_rows, model)
     cols <- .inline_model_cols(s, NULL)
+    .inline_check_variable_stat(
+      s,
+      formatted,
+      rows,
+      group_rows,
+      var_chr,
+      column,
+      cols
+    )
   } else {
     cols <- .inline_model_cols(s, model)
   }
@@ -658,6 +672,70 @@ inline <- function(
   hit
 }
 
+# The statistics of the group comparison -- the test, its p-value, the
+# effect size and the SMD -- belong to the variable, not to a group: a
+# table whose groups are rows prints them once, on the row of the first
+# group. Asked of a group through `model`, whichever row prints them,
+# they are refused with the call that cites them (rather than "the cell
+# is empty" on the other rows). A statistic the table leaves blank on
+# every row of the variable falls through to the refusals that say so.
+# `row` is the group row `model` picked.
+.INLINE_VARIABLE_TOKENS <- c("statistic", "p", "es", "smd")
+
+.inline_check_variable_stat <- function(
+  s,
+  formatted,
+  row,
+  group_rows,
+  var_chr,
+  column,
+  cols,
+  call = rlang::caller_env()
+) {
+  if (is.null(column)) {
+    return(invisible(NULL))
+  }
+  tokens <- intersect(.inline_requested_tokens(column), .INLINE_VARIABLE_TOKENS)
+  for (tk in tokens) {
+    hits <- .inline_token_cols(s, cols, tk)
+    if (length(hits) == 0L) {
+      next
+    }
+    filled <- function(i) {
+      any(nzchar(trimws(vapply(
+        hits,
+        function(nm) as.character(formatted[[nm]][i]),
+        character(1)
+      ))))
+    }
+    if (!any(vapply(group_rows, filled, logical(1)))) {
+      next
+    }
+    var_txt <- if (identical(make.names(var_chr), var_chr)) {
+      var_chr
+    } else {
+      .quote_val(var_chr)
+    }
+    spicy_abort(
+      c(
+        sprintf(
+          "`column = %s` is a statistic of the variable %s, not of a group of `by`: the table prints it once, on the row of the first group.",
+          .quote_val(tk),
+          .quote_val(var_chr)
+        ),
+        "i" = sprintf(
+          "Cite it without `model`: `inline(x, %s, column = %s)`.",
+          var_txt,
+          .quote_val(tk)
+        )
+      ),
+      class = "spicy_invalid_input",
+      call = call
+    )
+  }
+  invisible(NULL)
+}
+
 .inline_abort_no_group <- function(model, groups, call = rlang::caller_env()) {
   spicy_abort(
     c(
@@ -712,18 +790,39 @@ inline <- function(
   } else {
     paste0(", column = ", .quote_val(column))
   }
+  # A statistic of the variable on a table whose groups are rows (the
+  # test, its p-value, the effect size) is cited without any group.
+  var_stat <- if (length(group_rows) > 0L && !is.null(column)) {
+    carried <- Filter(
+      function(tk) {
+        length(.inline_token_cols(s, .inline_model_cols(s, NULL), tk)) > 0L
+      },
+      intersect(.inline_requested_tokens(column), .INLINE_VARIABLE_TOKENS)
+    )
+    if (length(carried)) carried[[1L]]
+  }
+  hint <- if (is.null(var_stat)) {
+    sprintf(
+      "Select it with `model`: `inline(x, %s, model = %s%s)`.",
+      var_txt,
+      .quote_val(level),
+      col_txt
+    )
+  } else {
+    sprintf(
+      "`column = %s` is a statistic of the variable, not of a group: cite it without `level`: `inline(x, %s, column = %s)`.",
+      .quote_val(var_stat),
+      var_txt,
+      .quote_val(var_stat)
+    )
+  }
   spicy_abort(
     c(
       sprintf(
         "`level` no longer selects a group of `by`: %s is a group of this table.",
         .quote_val(level)
       ),
-      "i" = sprintf(
-        "Select it with `model`: `inline(x, %s, model = %s%s)`.",
-        var_txt,
-        .quote_val(level),
-        col_txt
-      )
+      "i" = hint
     ),
     class = c("spicy_defunct", "spicy_invalid_input"),
     call = call

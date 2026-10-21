@@ -370,9 +370,9 @@ output (\code{output = "data.frame"}), the bounds appear under the same
 names, \code{es_ci_lower} / \code{es_ci_upper} (numeric). In the printed ASCII
 table and rendered outputs (\code{"tinytable"}, \code{"gt"}, \code{"flextable"},
 \code{"word"}, \code{"excel"}, \code{"clipboard"}), the effect-size column shows the
-value followed by the CI in brackets (e.g. \code{0.18 [0.07, 0.30]}). Defaults
-to \code{FALSE}. When \code{effect_size = "none"}, this argument is ignored with a
-warning.}
+value followed by the CI in brackets (e.g. \code{0.18 [0.07, 0.30]}), under
+a header that states its level (\verb{d [95\\\% CI]}). Defaults to \code{FALSE}.
+When \code{effect_size = "none"}, this argument is ignored with a warning.}
 
 \item{r2}{Character. Fit statistic to include in the wide and rendered
 outputs. One of:

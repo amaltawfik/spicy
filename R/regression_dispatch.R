@@ -3057,6 +3057,12 @@ output_word <- function(rendered, word_path, word_template = NULL) {
 #' The vocabulary is extended by addition -- an existing role never
 #' changes meaning.
 #'
+#' Version `4` renames one component: in the `format_spec` of
+#' [table_categorical()], the number of decimals of the association
+#' measure and the SMD is `effect_size_digits`, the key of the other
+#' tables, where it was `v_digits` (the argument was renamed alike). An
+#' object carrying version `3` is refused as an older contract.
+#'
 #' @seealso [table_regression()], [table_categorical()],
 #'   [table_continuous()], [table_continuous_lm()] for the
 #'   user-facing entry points.
@@ -3157,6 +3163,23 @@ as_structured <- function(x) {
     )
   }
   if (v < current) {
+    # One line per contract change the object predates.
+    changes <- c(
+      if (v < 3L) {
+        paste(
+          "v3 replaced the row-index components: `reference_rows` and",
+          "`reference_models_by_row` by `cell_status`,",
+          "`factor_header_rows` / `fit_stat_rows` / `outcome_row` by",
+          "`body$.row_role`, `level_rows` by `body$.indent`."
+        )
+      },
+      if (v < 4L) {
+        paste(
+          "v4 renamed `format_spec$v_digits` of a categorical table",
+          "`format_spec$effect_size_digits`, as in the other tables."
+        )
+      }
+    )
     spicy_abort(
       c(
         sprintf(
@@ -3164,12 +3187,7 @@ as_structured <- function(x) {
           as.integer(v),
           current
         ),
-        "i" = paste(
-          "v3 replaced the row-index components: `reference_rows` and",
-          "`reference_models_by_row` by `cell_status`,",
-          "`factor_header_rows` / `fit_stat_rows` / `outcome_row` by",
-          "`body$.row_role`, `level_rows` by `body$.indent`."
-        ),
+        stats::setNames(changes, rep("i", length(changes))),
         "i" = sprintf(
           "Rebuild the table with `%s`.",
           builders[[family[[1L]]]]

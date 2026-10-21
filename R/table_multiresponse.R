@@ -182,9 +182,10 @@
 #' @param boot_n Number of bootstrap resamples for
 #'   `global_test = "bootstrap"`: a positive whole number, as in
 #'   [table_regression()] and [table_continuous_lm()]. Defaults to `1999`,
-#'   the default of the `MRCV` package for the same bootstrap test. Typed
-#'   with `global_test = "rs2"`, or in a table without a global test, it
-#'   is ignored with a warning (class `spicy_ignored_arg`).
+#'   the default `B` of `MI.test()` in the `MRCV` package for the same
+#'   bootstrap test (reference manual of `MRCV` 0.4-0). Typed with
+#'   `global_test = "rs2"`, or in a table without a global test, it is
+#'   ignored with a warning (class `spicy_ignored_arg`).
 #' @param p_adjust Multiple-comparison adjustment of the item `p` column,
 #'   applied to the family of the items tested: `"holm"` (the default),
 #'   `"none"`, or another method of [stats::p.adjust()] (`"hochberg"`,

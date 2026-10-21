@@ -1043,7 +1043,12 @@ test_that("the console prints the registry header, not the column key", {
   # visible: dropping `display_labels` from the spicy_print_table() call
   # fails this test and only this one.
   local_mocked_bindings(
-    .continuous_labels = function(col_keys, ci_level, decimal_mark = ".") {
+    .continuous_labels = function(
+      col_keys,
+      ci_level,
+      decimal_mark = ".",
+      es_ci = FALSE
+    ) {
       paste0("<", col_keys, ">")
     }
   )

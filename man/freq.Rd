@@ -53,11 +53,14 @@ If \code{TRUE}, adds cumulative percentages.}
 
 \item{sort}{Sorting method for values:
 \itemize{
-\item \code{""} - no sorting (default)
+\item \code{""} - the order of the values (default): the levels of a factor
+or of a labelled variable, numbers in ascending order, text in the
+C locale (capitals before lower case, the same on every machine)
+and \code{FALSE} before \code{TRUE}, as in \code{\link[=cross_tab]{cross_tab()}} and the tables
 \item \code{"+"} - increasing frequency
 \item \code{"-"} - decreasing frequency
-\item \code{"name+"} - alphabetical A-Z
-\item \code{"name-"} - alphabetical Z-A
+\item \code{"name+"} - alphabetical A-Z, in the C locale
+\item \code{"name-"} - alphabetical Z-A, in the C locale
 }
 
 For labelled variables displayed with their codes

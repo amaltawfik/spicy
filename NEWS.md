@@ -91,8 +91,10 @@ p-values, and notes.
 * `output = "data.frame"` returns the table as it is displayed, with its
   numbers, in every table function: one row per printed row, the printed
   columns, and the key columns `variable` and `label`, with `level`,
-  `group`, and `.row_role` where they apply. `as.data.frame()` on a table
-  returns the same frame, with the note as its one attribute.
+  `group`, and `.row_role` where they apply. The bounds of an interval
+  are named as printed: `95% CI LL` and `95% CI UL`, `Female 95% CI LL`
+  in `table_categorical_svy()`. `as.data.frame()` on a table returns the
+  same frame, with the note as its one attribute.
   `output = "long"` gives one row per variable, level, and group. In
   `table_continuous()`, `table_continuous_svy()`, and `table_outcome()`,
   `"data.frame"` was the long frame, in `table_categorical()` a frame of
@@ -121,10 +123,11 @@ p-values, and notes.
   semicolon joined them.
 
 * `table_regression()` and `table_regression_uv()` name an interval column
-  with a point whatever `decimal_mark`: `97.5% CI: LL` and `97.5% CI: UL`
-  in `as.data.frame()` and `as_structured()`, `97.5% CI` in the printed
-  object. They were `97,5% CI` under `decimal_mark = ","`. The header
-  still follows the mark, and the names at 95% are unchanged.
+  with a point whatever `decimal_mark`: `97.5% CI LL` and `97.5% CI UL`
+  in `as.data.frame()`, `97.5% CI: LL` and `97.5% CI: UL` in
+  `as_structured()`, `97.5% CI` in the printed object. They were
+  `97,5% CI` under `decimal_mark = ","`. The header still follows the
+  mark.
 
 * `table_regression()` words its `p_adjust` note for the reader:
   "P-values adjusted for 5 tests (Holm method)." A table of several
@@ -231,12 +234,20 @@ p-values, and notes.
   `table_categorical()` and `table_categorical_svy()`, and the groupings
   of `table_outcome()`, follow the same order.
 
+* `freq()` lists the values of a character variable in the C locale,
+  capitals before lower case and the same on every machine, as
+  `cross_tab()` and the tables do. It followed the locale of the machine.
+
 * `inline()` selects a group of `by` with `model` in every table, as in
   `table_categorical()`: `inline(tbl, bmi, model = "Female")` in
   `table_continuous()` and `table_continuous_svy()`,
   `inline(tbl, bmi, column = "emmean", model = "Female")` in
   `table_continuous_lm()`. `level` naming such a group is an error (class
-  `spicy_defunct`) that gives the `model` call.
+  `spicy_defunct`) that gives the call to use. In `table_continuous()` and
+  `table_continuous_svy()`, the test, its *p*, the effect size, and the
+  SMD belong to the variable and are cited without `model`
+  (`inline(tbl, bmi, column = "p")`); with a group, they are an error
+  that gives that call.
 
 * `table_categorical()` and `spicy_style()` call `effect_size_digits` the
   argument they called `v_digits`, as the other tables do, so the
@@ -244,10 +255,17 @@ p-values, and notes.
   SMD of `table_categorical()`. `v_digits` is an error (class
   `spicy_defunct`) that names the new argument.
 
-* `table_categorical()` heads the bounds of the association interval
-  `95% CI LL` and `95% CI UL` in the console, Excel, and clipboard
-  outputs, stating its level as the other tables do. They read
-  `CI lower` and `CI upper`, and the keys `header_ci_lower` and
+* `as_structured()` reads contract version 4: in the `format_spec` of
+  `table_categorical()`, the decimals of the association measure are
+  `effect_size_digits`, as in the other tables (was `v_digits`). A view
+  built by an older spicy is refused.
+
+* `table_categorical()` names the bounds of the association interval
+  `95% CI LL` and `95% CI UL` in the console, data frame, Excel, and
+  clipboard outputs, as the other tables name their interval columns,
+  and heads the merged cell of the rendered formats
+  `Cramer's V [95% CI]`. They were `CI lower` and `CI upper`, the
+  rendered header stated no level, and the keys `header_ci_lower` and
   `header_ci_upper` of `options(spicy.labels)` are gone.
 
 * `table_continuous()` and `table_outcome()` spell their effect sizes
@@ -396,6 +414,14 @@ p-values, and notes.
   "`ci_level` must be a number strictly between 0 and 1.", "`digits`
   must be a non-negative whole number.", "`drop_na` must be TRUE or
   FALSE.".
+
+* The header of an effect size printed with its interval states the
+  level of the interval: `ES [95% CI]` in `table_continuous()` and
+  `table_outcome()`, `d [95% CI]` (or `f²`, `g`, `ω²`) in
+  `table_continuous_lm()`, in every output but the data frame, whose
+  column holds the estimate alone. The rendered formats of
+  `table_categorical_svy()` head the bounds of a proportion `95% CI LL`
+  and `95% CI UL` under each group, where they read `LL` and `UL`.
 
 * The note of every table opens with *Note.* in italics in Typst, LaTeX,
   Markdown documents, and Excel output, and in gt's LaTeX, RTF, and Word

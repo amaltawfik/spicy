@@ -1035,14 +1035,13 @@
 #'   another measure or fall back to `"auto"`.
 #' @param assoc_ci Passed to [cross_tab()]. If `TRUE`, includes the
 #'   95\% confidence interval of the association measure. In the console
-#'   and in the `"excel"` and `"clipboard"` outputs, two extra columns
-#'   headed `95\% CI LL` / `95\% CI UL` are added, the level stated as the
-#'   other tables state it (the `"data.frame"` output names them
-#'   `CI lower` / `CI upper`); in the long
-#'   output (`"long"`) the bounds fill `es_ci_lower` / `es_ci_upper`.
-#'   In rendered formats (`"gt"`, `"tinytable"`, `"flextable"`,
-#'   `"word"`), the CI is shown inline (e.g., `.14 [.08, .19]`).
-#'   Defaults to `FALSE`.
+#'   and in the `"data.frame"`, `"excel"` and `"clipboard"` outputs, two
+#'   extra columns headed `95\% CI LL` / `95\% CI UL` are added, the level
+#'   stated as the other tables state it; in the long output (`"long"`)
+#'   the bounds fill `es_ci_lower` / `es_ci_upper`. In rendered formats
+#'   (`"gt"`, `"tinytable"`, `"flextable"`, `"word"`), the CI is shown
+#'   inline (e.g., `.14 [.08, .19]`) under a header that states its level
+#'   (`Cramer's V [95\% CI]`). Defaults to `FALSE`.
 #' @param smd Logical. If `TRUE`, adds an `SMD` column holding the
 #'   standardized mean difference between the two groups of `by`,
 #'   the balance diagnostic of the Table 1 literature. Requires
@@ -1168,8 +1167,8 @@
 #'     `<group> \%` per group level (plus `Total` when
 #'     `include_total = TRUE`), `p` (absent with `p_value = FALSE`), the
 #'     association measure (named after the measure, or `Effect size`
-#'     when the row variables do not share one), its bounds `CI lower` /
-#'     `CI upper` with `assoc_ci = TRUE`, and `SMD` with `smd = TRUE`.
+#'     when the row variables do not share one), its bounds `95\% CI LL` /
+#'     `95\% CI UL` with `assoc_ci = TRUE`, and `SMD` with `smd = TRUE`.
 #'     When `by = NULL`, the printed columns are `n` and `\%`.
 #'   \item `"long"`: a long `data.frame`, one row per variable, level and
 #'     group, with columns `variable`, `label`, `level`, `.row_role` (the
@@ -4114,6 +4113,22 @@ table_categorical <- function(
     df[[.CAT_KEY_CI_UL]] <- NULL
     df
   }
+  # The header over that merged cell states the level of its interval
+  # ("Cramer's V [95% CI]"), as the console's bound headers do ("95% CI
+  # LL"): the interval label is theirs, read from the typed view. The
+  # console, the sheet and the clipboard keep the bounds in columns of
+  # their own and the measure's bare header.
+  measure_label_merged <- measure_label
+  if (show_assoc && assoc_ci) {
+    assoc_ci_label <- structured$col_meta[[.CAT_KEY_CI_LL]]$ci_label
+    if (!is.null(assoc_ci_label)) {
+      measure_label_merged <- spicy_fmt(
+        "header_estimate_ci",
+        measure_label,
+        assoc_ci_label
+      )
+    }
+  }
 
   # Headers (base: without CI; used by rendered formats). Pure DISPLAY:
   # the column keys travel separately (flextable takes
@@ -4138,7 +4153,9 @@ table_categorical <- function(
     if (p_value) ""
   )
   if (show_assoc) {
-    top_header_span <- c(top_header_span, measure_label)
+    # `top_header_span` heads the merged cell of flextable and Word;
+    # `top_header_flat` the bound columns of the sheet and the clipboard.
+    top_header_span <- c(top_header_span, measure_label_merged)
     top_header_flat <- c(top_header_flat, measure_label)
     bot_header <- c(bot_header, "")
   }
@@ -4206,7 +4223,7 @@ table_categorical <- function(
       }
     )
     if (show_assoc) {
-      gspec[[measure_label]] <- ncol(dat_tt) - as.integer(do_smd)
+      gspec[[measure_label_merged]] <- ncol(dat_tt) - as.integer(do_smd)
     }
     if (do_smd) {
       gspec[[smd_label]] <- ncol(dat_tt)
@@ -4422,7 +4439,7 @@ table_categorical <- function(
     if (show_assoc) {
       tbl <- gt::tab_spanner(
         tbl,
-        label = measure_label,
+        label = measure_label_merged,
         columns = "assoc_col",
         id = "spn_v"
       )

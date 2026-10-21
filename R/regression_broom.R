@@ -155,8 +155,8 @@ glance.spicy_regression_table <- function(x, ...) {
 #' factor row) and `.row_role` (`"coef"`, `"factor_header"`, `"level"`,
 #' `"reference"`, `"fit_stat"`, ..., the roles of [as_structured()]),
 #' then the printed columns under their names, numeric: the interval of
-#' a coefficient is split into its two bounds (`"95\% CI: LL"`,
-#' `"95\% CI: UL"`), a fit statistic sits in the first column of its
+#' a coefficient is split into its two bounds (`"95\% CI LL"`,
+#' `"95\% CI UL"`), a fit statistic sits in the first column of its
 #' model, and a cell of events over a total (`n_events`) keeps the
 #' events in its column and the total beside it (`"<column>: N"`). With
 #' several models each column name starts with the model's label. The
@@ -233,18 +233,37 @@ as_tibble.spicy_regression_table <- function(x, ...) {
     USE.NAMES = FALSE
   )
   names(labels) <- vars
-  .table_data_frame(
+  df <- .table_data_frame(
     st,
     labels,
     key = "level",
     parts = .regression_df_parts(st, attr(x, "spicy_long", exact = TRUE)),
     note = attr(x, "note", exact = TRUE)
   )
+  # The bounds of an interval are named after the interval and the bound,
+  # "95% CI LL", as in every other table of the family. The typed view
+  # keeps its own sub-column grammar ("95% CI: LL"), part of the
+  # `as_structured()` contract.
+  for (nm in intersect(names(st$col_meta), names(df))) {
+    role <- st$col_meta[[nm]]$ci_role
+    suffix <- paste0(": ", role)
+    if (
+      length(role) == 1L &&
+        role %in% c(.REG_CI_ROLE_LL, .REG_CI_ROLE_UL) &&
+        endsWith(nm, suffix)
+    ) {
+      names(df)[names(df) == nm] <- paste(
+        substr(nm, 1L, nchar(nm) - nchar(suffix)),
+        role
+      )
+    }
+  }
+  df
 }
 
 # The cells of the typed view that print two numbers: the `n_events`
 # column holds the events and displays "events/N". Its total travels
-# beside it as `"<column>: N"`, the sub-column grammar of the intervals
+# beside it as `"<column>: N"`, the sub-column grammar of the typed view
 # ("95% CI: LL"). Read off the long frame -- the model of the column, the
 # term (or the factor and its level) of the row -- never parsed back from
 # the displayed string.

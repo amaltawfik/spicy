@@ -87,7 +87,7 @@ test_that("a categorical variable with no observation is refused, not blank", {
   expect_equal(out[["%"]][[2L]], 100)
   expect_identical(out$n[[2L]], 6)
   expect_equal(
-    c(out[["% CI lower"]][[2L]], out[["% CI upper"]][[2L]]),
+    c(out[["95% CI LL"]][[2L]], out[["95% CI UL"]][[2L]]),
     c(100 * stats::qbeta(0.025, 6, 1), 100),
     tolerance = 1e-10
   )

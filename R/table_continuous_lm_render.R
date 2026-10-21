@@ -287,9 +287,17 @@
     add(format_r2_header_lm(r2_type), .lm_r2_label(r2_type), "r2")
   }
   if (include_es) {
+    # With its interval the cell reads "0.14 [0.02, 0.25]": the header
+    # states the level ("d [95% CI]"), as the headers of the contrast's
+    # bounds do. The KEY stays the measure's: in `output = "data.frame"`
+    # the column holds the estimate alone, its bounds beside it.
+    es_label <- .lm_es_label(effect_size)
+    if (isTRUE(effect_size_ci)) {
+      es_label <- spicy_fmt("header_estimate_ci", es_label, ci_hdr)
+    }
     add(
       format_effect_size_header_lm(effect_size),
-      .lm_es_label(effect_size),
+      es_label,
       "es",
       effect_size = effect_size
     )

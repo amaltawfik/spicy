@@ -178,7 +178,8 @@
 #'   triggers an actionable error. Ignored when `by` is not used.
 #' @param effect_size_ci Logical. If `TRUE`, appends the confidence
 #'   interval of the effect size in brackets (e.g.,
-#'   `g = 0.45 [0.22, 0.68]`). Implies a non-`"none"` effect size: if
+#'   `g = 0.45 [0.22, 0.68]`), under a header that states its level
+#'   (`ES [95\% CI]`). Implies a non-`"none"` effect size: if
 #'   left at the default `effect_size = "none"`, the function warns
 #'   and promotes `effect_size` to `"auto"` so the requested CI can
 #'   be shown. Defaults to `FALSE`.
@@ -1786,7 +1787,8 @@ table_continuous <- function(
         excel_sheet = excel_sheet,
         clipboard_delim = clipboard_delim,
         word_path = word_path,
-        note = table_note
+        note = table_note,
+        es_ci = isTRUE(attr(result, "show_effect_size_ci"))
       )
     )
   }
@@ -1824,7 +1826,8 @@ table_continuous <- function(
     p_digits = p_digits,
     decimal_mark = decimal_mark,
     ci_level = ci_level,
-    missing_group_label = missing_group_label
+    missing_group_label = missing_group_label,
+    es_ci = isTRUE(attr(result, "show_effect_size_ci"))
   )
   attr(result, "structured") <- .struct_attach_p_adjust(
     attr(result, "structured"),
@@ -2153,13 +2156,25 @@ order_continuous_tokens <- function(tokens) {
 # The HEADER behind each frozen column key, as one named vector: the five
 # keys outside the statistics vocabulary, then every vocabulary entry
 # under its full key AND under the short key `rename_ci_cols()` leaves.
-.continuous_label_map <- function(ci_level, decimal_mark = ".") {
+#
+# `es_ci`: the effect-size cells carry their interval ("g = -0.14 [-0.25,
+# -0.02]"), so the header states its level ("ES [95% CI]"), as the
+# headers of the mean's bounds do ("95% CI LL").
+.continuous_label_map <- function(ci_level, decimal_mark = ".", es_ci = FALSE) {
+  es_header <- spicy_str("header_effect_size_short")
+  if (isTRUE(es_ci)) {
+    es_header <- spicy_fmt(
+      "header_estimate_ci",
+      es_header,
+      .continuous_ci_label(ci_level, decimal_mark)
+    )
+  }
   map <- c(
     spicy_str("header_variable"),
     spicy_str("header_group"),
     spicy_str("header_test"),
     spicy_str("header_p"),
-    spicy_str("header_effect_size_short"),
+    es_header,
     # Without this entry `.continuous_labels()` would fall back to
     # `out[miss] <- col_keys[miss]`: the column would print "SMD"
     # correctly, no test would fail, and the header would be
@@ -2189,8 +2204,13 @@ order_continuous_tokens <- function(tokens) {
 # An unknown key returns itself: a degraded object still prints, and the
 # result is a vector of the same length as its input by construction --
 # which is why the console needs no shape guard here.
-.continuous_labels <- function(col_keys, ci_level, decimal_mark = ".") {
-  map <- .continuous_label_map(ci_level, decimal_mark)
+.continuous_labels <- function(
+  col_keys,
+  ci_level,
+  decimal_mark = ".",
+  es_ci = FALSE
+) {
+  map <- .continuous_label_map(ci_level, decimal_mark, es_ci)
   out <- unname(map[col_keys])
   # Subset assignment rather than `ifelse()`: the latter returns
   # `logical(0)` on an empty input, which would break the length
@@ -3387,12 +3407,17 @@ rename_ci_cols <- function(display_df, ci_level) {
 # Structural danger kept as-is: the pairing requires the two bounds to be
 # ADJACENT and in LL-then-UL order. Any other layout degrades silently to
 # one-column spanners.
-desc_spanner_groups <- function(col_keys, ci_level, decimal_mark = ".") {
+desc_spanner_groups <- function(
+  col_keys,
+  ci_level,
+  decimal_mark = ".",
+  es_ci = FALSE
+) {
   # One pair per interval token, LL then UL, in vocabulary order. The
   # matching below is KEY against key (`short_name`, `ci_key`), so the
   # mark moves only the labels the groups carry.
   pairs <- .continuous_token_columns(ci_level, decimal_mark)[c("ci", "med_ci")]
-  labels <- .continuous_labels(col_keys, ci_level, decimal_mark)
+  labels <- .continuous_labels(col_keys, ci_level, decimal_mark, es_ci)
   groups <- list()
   i <- 1L
   n <- length(col_keys)
@@ -3507,6 +3532,9 @@ export_desc_table <- function(
   note = NULL,
   header_layout = NULL,
   clipboard_label = NULL,
+  # The effect-size cells carry their interval: their header states its
+  # level (`.continuous_label_map()`).
+  es_ci = FALSE,
   call = rlang::caller_env()
 ) {
   # The title is the CALLER's: each family words it from its own
@@ -3542,9 +3570,9 @@ export_desc_table <- function(
   hl_rename <- header_layout$rename %||%
     function(df) rename_ci_cols(df, ci_level)
   hl_spanners <- header_layout$spanners %||%
-    function(keys) desc_spanner_groups(keys, ci_level, decimal_mark)
+    function(keys) desc_spanner_groups(keys, ci_level, decimal_mark, es_ci)
   hl_labels <- header_layout$labels %||%
-    function(keys) .continuous_labels(keys, ci_level, decimal_mark)
+    function(keys) .continuous_labels(keys, ci_level, decimal_mark, es_ci)
   hl_headers <- function(keys) {
     build_header_rows_from(keys, hl_labels, hl_spanners)
   }

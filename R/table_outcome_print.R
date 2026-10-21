@@ -54,7 +54,8 @@ print.spicy_outcome_table <- function(x, ...) {
   header_labels <- .continuous_labels(
     names(display_df),
     ci_level,
-    decimal_mark
+    decimal_mark,
+    es_ci = isTRUE(attr(x, "show_effect_size_ci"))
   )
 
   padding <- 2L

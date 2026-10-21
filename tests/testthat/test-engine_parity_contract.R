@@ -715,7 +715,7 @@ test_that("the console, the clipboard and the TSV keep the note plain", {
 
 test_that("as_structured() reports and guards the contract version", {
   tbl <- table_regression(stats::lm(mpg ~ wt, data = mtcars))
-  expect_identical(as_structured(tbl)$version, 3L)
+  expect_identical(as_structured(tbl)$version, 4L)
   # A v2 object is REFUSED, not read: v3 moved row identity into the
   # body, so a v2 view read by this code would report no reference
   # cells, no fit-stat rows and no indent -- a wrong table.

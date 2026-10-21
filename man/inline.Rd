@@ -87,13 +87,18 @@ one per group (\code{inline(tbl, bmi, model = "Female")}). The group of
 missing \code{by} values is \code{model = "(Missing)"}. In a multi-model table,
 \code{model} selects the model the same way. The cells that belong to no
 group (a \emph{p}, the contrast of \code{\link[=table_continuous_lm]{table_continuous_lm()}} and its
-interval, an association measure) are cited without \code{model}.
+interval, an association measure) are cited without \code{model}. In
+\code{\link[=table_continuous]{table_continuous()}} and \code{\link[=table_continuous_svy]{table_continuous_svy()}}, the test, its \emph{p},
+the effect size and the SMD are statistics of the variable, printed
+once on the row of the first group: \code{inline(tbl, bmi, column = "p")}.
+Asked with \code{model}, whichever group it names, they are an error (class
+\code{spicy_invalid_input}) that gives that call.
 
 \code{level} names a category shown as a row: the level of a variable,
 its row of missing values. Until spicy 0.14.0 it also selected the
 groups of \code{\link[=table_continuous]{table_continuous()}}, \code{\link[=table_continuous_svy]{table_continuous_svy()}} and
 \code{\link[=table_continuous_lm]{table_continuous_lm()}}: that use is an error (class \code{spicy_defunct})
-whose message gives the \code{model} call.
+whose message gives the call to use instead.
 
 \code{\link[=table_multiresponse]{table_multiresponse()}} has one row per item, addressed by its column
 name, then the rows of \code{none_row}, addressed as \code{"none"} and

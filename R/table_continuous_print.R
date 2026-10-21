@@ -122,7 +122,12 @@ print.spicy_continuous_table <- function(x, ...) {
   # to a vector of the same length by construction, so
   # `spicy_print_table()`'s abort on a mismatched label vector is
   # unreachable from here.
-  header_labels <- .continuous_labels(names(display_df), ci_level, decimal_mark)
+  header_labels <- .continuous_labels(
+    names(display_df),
+    ci_level,
+    decimal_mark,
+    es_ci = isTRUE(attr(x, "show_effect_size_ci"))
+  )
 
   # Auto-select padding: use 0 (compact) when the default 2-char
   # padding would overflow the console.

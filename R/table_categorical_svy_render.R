@@ -175,6 +175,13 @@
   )
   names(full_labels) <- keys
   names(base_labels) <- keys
+  # The sub-header row under a block spanner. The spanner names the group,
+  # not the interval, so a bound names its own coverage there too ("95% CI
+  # LL"), as it does in the console; "LL" alone left the level of the
+  # interval unstated in every rendered format.
+  sub_labels <- base_labels
+  is_bound <- vapply(cols, function(e) e$base %in% c("ll", "ul"), logical(1))
+  sub_labels[is_bound] <- standalone[is_bound]
   # The exporter hands its resolvers the WHOLE column set, stub column
   # included. It is not a statistic of this table, so it is not in
   # `.cat_svy_columns()`; it still needs its header and a spanner of
@@ -252,7 +259,7 @@
           key = b,
           label = .cat_group_label(b, margin_key),
           cols = i:j,
-          bounds = unname(base_labels[col_keys[i:j]])
+          bounds = unname(sub_labels[col_keys[i:j]])
         )
         i <- j + 1L
       }

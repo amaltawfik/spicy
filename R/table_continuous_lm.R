@@ -320,9 +320,9 @@
 #'   names, `es_ci_lower` / `es_ci_upper` (numeric). In the printed ASCII
 #'   table and rendered outputs (`"tinytable"`, `"gt"`, `"flextable"`,
 #'   `"word"`, `"excel"`, `"clipboard"`), the effect-size column shows the
-#'   value followed by the CI in brackets (e.g. `0.18 [0.07, 0.30]`). Defaults
-#'   to `FALSE`. When `effect_size = "none"`, this argument is ignored with a
-#'   warning.
+#'   value followed by the CI in brackets (e.g. `0.18 [0.07, 0.30]`), under
+#'   a header that states its level (`d [95\% CI]`). Defaults to `FALSE`.
+#'   When `effect_size = "none"`, this argument is ignored with a warning.
 #' @param r2 Character. Fit statistic to include in the wide and rendered
 #'   outputs. One of:
 #'   - `"r2"` (default): the model `\eqn{R^2}{R^2}` (`summary(lm)$r.squared`).

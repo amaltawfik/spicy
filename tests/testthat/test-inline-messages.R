@@ -64,23 +64,35 @@ test_that("a table that HAS a contrast is unaffected", {
 
 # The register recorded inline(tbl, bmi, "Female", "p") on a
 # table_continuous() as still answering "Available: .". It no longer does:
-# the p is addressable with the group of its own row, and the ambiguity
-# refusal that fires without a group lists the groups, not nothing.
-test_that("a p addressed by its group resolves on table_continuous", {
+# the p belongs to the variable and is cited without a group, a group
+# given for it is refused with that call, and the ambiguity refusal that
+# fires without a group lists the groups, not nothing.
+test_that("a p is cited without its group on table_continuous", {
   d <- .inline_msg_data()
   tbl <- table_continuous(d, c(bmi, chol), by = sex)
-  expect_identical(inline(tbl, bmi, column = "p", model = "Female"), ".146")
-  expect_identical(inline(tbl, chol, column = "p", model = "Female"), ".247")
+  expect_identical(inline(tbl, bmi, column = "p"), ".146")
+  expect_identical(inline(tbl, chol, column = "p"), ".247")
+  # With a group, the first one included, whose row prints it: refused,
+  # with the call that cites it.
+  for (g in c("Female", "Male")) {
+    err <- expect_error(
+      inline(tbl, bmi, column = "p", model = g),
+      class = "spicy_invalid_input"
+    )
+    expect_match(
+      conditionMessage(err),
+      "inline(x, bmi, column = \"p\")",
+      fixed = TRUE
+    )
+    expect_false(grepl("Available: .", conditionMessage(err), fixed = TRUE))
+  }
 })
 
 test_that("no refusal on this table lists an empty set of alternatives", {
   d <- .inline_msg_data()
   tbl <- table_continuous(d, c(bmi, chol), by = sex)
   # The `p` sits on one row of the block only: cited without `model`.
-  expect_identical(
-    inline(tbl, bmi, column = "p"),
-    inline(tbl, bmi, column = "p", model = "Female")
-  )
+  expect_identical(inline(tbl, bmi, column = "p"), ".146")
   msgs <- c(
     # A statistic every group carries needs its group.
     tryCatch(inline(tbl, bmi, column = "m"), error = function(e) {

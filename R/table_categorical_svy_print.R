@@ -90,9 +90,9 @@ unclass_spicy_categorical_svy_table <- function(x) {
     note = attr(x, "note", exact = TRUE)
   )
   # `check.names = FALSE`: the block keys of this frame ("Yes n",
-  # "Total % CI lower") are the FROZEN contract user code indexes into,
-  # and the default would quietly rewrite them to "Yes.n". A coercion
-  # that renames the columns it hands back is not a coercion.
+  # "Total % CI lower") are not syntactic names, and the default would
+  # quietly rewrite them to "Yes.n". A coercion that renames the columns
+  # it hands back is not a coercion.
   out <- as.data.frame(unclass(x), check.names = FALSE)
   attributes(out) <- attributes(out)[
     names(attributes(out)) %in% c("names", "row.names", "class")
@@ -109,12 +109,29 @@ unclass_spicy_categorical_svy_table <- function(x) {
 # 2026-10-20): `as.data.frame()` and `output = "data.frame"` both call
 # it, on the object the table prints.
 .cat_svy_data_frame <- function(x) {
-  .table_data_frame(
+  df <- .table_data_frame(
     as_structured(x),
     stats::setNames(x$label, x$variable),
     key = "level",
     note = attr(x, "note", exact = TRUE)
   )
+  # The bounds of a proportion are printed columns: named as the console
+  # heads them ("Female 95% CI LL"), in the convention of the interval
+  # columns of the family -- the level in the name, the period whatever
+  # `decimal_mark`, English in every language. The compute frame and the
+  # typed view keep their keys ("Female % CI lower").
+  ci_pct <- .continuous_ci_pct(attr(x, "ci_level", exact = TRUE) %||% 0.95)
+  for (b in attr(x, "blocks", exact = TRUE)) {
+    keys <- c(.cat_key_prop_ci_ll(b), .cat_key_prop_ci_ul(b))
+    hit <- match(keys, names(df))
+    if (!anyNA(hit)) {
+      names(df)[hit] <- .cat_svy_qualify(
+        b,
+        paste(ci_pct, .CON_KEY_CI, c(.CON_KEY_CI_LL, .CON_KEY_CI_UL))
+      )
+    }
+  }
+  df
 }
 
 # The compute frame read LONG: one row per variable, level and column
@@ -214,7 +231,7 @@ unclass_spicy_categorical_svy_table <- function(x) {
 #' returns. One row per printed row -- the header row of each variable,
 #' which carries its *p*-value, then one row per level -- and the printed
 #' columns under their names (`"Female n"`, `"Female \%"`, the interval
-#' bounds `"Female \% CI lower"` and `"Female \% CI upper"`, `"Female
+#' bounds `"Female 95\% CI LL"` and `"Female 95\% CI UL"`, `"Female
 #' DEff"`, ..., `"p"`), plus the key columns `variable`, `label`,
 #' `level` and `.row_role` (`"factor_header"`, `"level"`, or `"missing"`).
 #' The note, as printed, is kept in `attr(, "note")`. `as_tibble()`

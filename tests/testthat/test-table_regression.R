@@ -2577,7 +2577,7 @@ test_that("console shows bare deduped labels; data.frame keeps unique names", {
   expect_identical(sum(nms == "95% CI.2"), 1L)
   # ... and so does the data frame, each interval in its two bounds.
   dnms <- names(as.data.frame(out))
-  expect_true(all(c("95% CI.2: LL", "95% CI.2: UL", "p.2") %in% dnms))
+  expect_true(all(c("95% CI.2 LL", "95% CI.2 UL", "p.2") %in% dnms))
   expect_false(anyDuplicated(dnms) > 0L)
 })
 
