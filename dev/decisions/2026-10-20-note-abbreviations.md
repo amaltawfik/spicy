@@ -30,6 +30,16 @@ Aujourd'hui spicy ne suit aucune de ces règles. La note des régressions défin
 5. **L'en-tête anglais de la médiane** passe de « Med » à « Mdn », le symbole de la Table 6.5 de l'APA. Le français garde « Méd. ».
 6. **Une seule mécanique** pour la famille : un registre qui associe chaque concept affiché (et non sa chaîne, qui change avec la langue) à son développement en anglais et en français, et un collecteur qui ne retient que les abréviations effectivement affichées. Les exemptions se déclarent par concept.
 
+## Précisions à la mise en œuvre (2026-10-21)
+
+- **Périmètre du collecteur** : les en-têtes, les chapeaux et les libellés de lignes du tableau (statistiques d'ajustement comme AIC, BIC, ICC, RMSE, WAIC ; lignes d'effets aléatoires). L'APA nomme AIC et BIC parmi les abréviations à définir (§6.44). Hors périmètre : les symboles à l'intérieur des cellules et les mots de la prose de la note (ANOVA, OLS, GEE, REML, PSU).
+- **Jamais définies, sous aucune règle ni sous `"all"`** : n, N, p et les statistiques de test (t, z, F, χ², W, H), qu'aucun style ni aucune revue observée ne définit.
+- **APA** : la liste du §6.44 est un « e.g. » ; Mdn, z et g sont exemptés au même titre que M, SD et d. Les lettres grecques (§6.44, §7.15) et R² avec ses variantes (tableau modèle p. 219) sont exemptés.
+- **jama** : B et M sont le *b* et le x̄ de la liste §19.6, donc exemptés.
+- **Pseudo-R²** (McFadden, Nagelkerke, Tjur, R² bayésien) : défini sous lancet et `"all"` comme « pseudo coefficient of determination », chaque ligne sous son propre libellé.
+- **Les clés de colonnes gardent « Med »** (contrat de la 0.13.0) ; seul l'en-tête affiché devient « Mdn ».
+- Un `note_label` saisi sous jama précède la ligne des abréviations.
+
 ## Conséquences
 
 Ruptures visibles, chacune dans NEWS :

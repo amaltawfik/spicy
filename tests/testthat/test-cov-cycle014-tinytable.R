@@ -75,9 +75,11 @@ test_that("a cell note added to a spicy tinytable is one grid row per line in ma
 
 test_that("a spicy tinytable with no note gets no note row in markdown", {
   skip_if_not_installed("tinytable")
+  # `ci = FALSE`: with an interval the note would define CI, LL and UL.
   tt <- table_continuous(
     data.frame(x = c(1, 2, 3, 4)),
     select = x,
+    ci = FALSE,
     output = "tinytable"
   )
   expect_null(tt@notes)
