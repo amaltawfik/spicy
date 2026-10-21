@@ -306,7 +306,8 @@ invisibly.
 
 The default object and the two data frames carry the whole note as
 printed, "Note." included, in \code{attr(x, "note")} (\code{NULL} when there is
-nothing to say).
+nothing to say). The default object also keeps the title it prints in
+\code{attr(x, "title")}.
 }
 \description{
 Summarizes \emph{one} continuous outcome across the levels of \emph{several}
@@ -376,6 +377,14 @@ Wilcoxon rank-sum or the Kruskal-Wallis test on the same rule. A
 block with fewer than two observed levels, or with a level holding a
 single observation, is not tested; its statistics stay empty and the
 other blocks are unaffected.
+
+A level where the outcome has no observed value (typically a question
+not asked there) has no data, which is not a missing answer: its cells
+show an en dash, \emph{n} included, the block compares the levels with
+data, the rows of that level are not counted in the outcome's missing
+values (whichever block they fall in), and the note says so ("No data
+for X in G.", X the label of the outcome and G the level). The
+\code{Overall} row stays the whole analytic sample.
 }
 
 \section{The \code{Overall} row}{

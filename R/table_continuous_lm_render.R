@@ -546,18 +546,28 @@ build_wide_display_df_continuous_lm <- function(
     out[[ent$key]] <- ""
   }
 
+  # The levels in which each outcome has no data (`table_continuous_lm()`
+  # stores them): their mean, and the contrast that involves one, show
+  # the undefined mark rather than a blank -- the cell applies, there is
+  # no observation to fill it. Under `contrast = "none"` the contrast
+  # column is empty on every row, and stays so.
+  no_data_levels <- attr(x, "no_data_levels", exact = TRUE)
+  mark <- spicy_str("cell_undefined")
+  contrast_shown <- !identical(attr(x, "contrast", exact = TRUE), "none")
+
   for (i in seq_along(vars)) {
     block <- x[x$variable == vars[i], , drop = FALSE]
     test_row <- get_test_row_index_lm(block)
+    no_data <- block$level %in% no_data_levels[[vars[i]]]
     if (identical(by_type, "categorical")) {
       for (j in seq_len(nrow(block))) {
         # See the raw builder: `[<-` on an absent name would ADD a
         # column, so this block's levels must match `first_block`'s.
-        out[i, .lm_key_emmean(block$level[j])] <- format_number(
-          block$emmean[j],
-          digits,
-          decimal_mark
-        )
+        out[i, .lm_key_emmean(block$level[j])] <- if (no_data[j]) {
+          mark
+        } else {
+          format_number(block$emmean[j], digits, decimal_mark)
+        }
       }
       if (nrow(block) == 2L) {
         out[[delta_name]][i] <- format_number(
@@ -576,6 +586,13 @@ build_wide_display_df_continuous_lm <- function(
             digits,
             decimal_mark
           )
+        }
+        if (any(no_data) && contrast_shown) {
+          out[[delta_name]][i] <- mark
+          if (isTRUE(ci)) {
+            out[[ci_ll_name]][i] <- mark
+            out[[ci_ul_name]][i] <- mark
+          }
         }
       }
     } else {

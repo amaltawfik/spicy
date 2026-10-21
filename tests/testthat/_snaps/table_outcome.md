@@ -60,7 +60,7 @@
          South   │                                       
          West    │                                       
       
-      Note. Missing values removed: bmi (12). Group comparison: Welch one-way ANOVA (region); Welch t-test (sex). Each block compares bmi across the levels of one variable; blocks are not adjusted for one another. Overall = the whole analytic sample.
+      Note. Missing values removed: bmi (12). Group comparison: Welch t-test (sex); Welch one-way ANOVA (region). Each block compares bmi across the levels of one variable; blocks are not adjusted for one another. Overall = the whole analytic sample.
 
 ---
 
@@ -76,5 +76,5 @@
          Female   │  25.70 [23.10, 28.60]    616          
          Male     │  26.10 [23.87, 28.63]    572          
       
-      Note. Missing values removed: bmi (12). Group comparison: Wilcoxon rank-sum test. Med [Q1, Q3] = median [first quartile, third quartile]. Each block compares bmi across the levels of one variable; blocks are not adjusted for one another.
+      Note. Missing values removed: bmi (12). Group comparison: Wilcoxon rank-sum test. Each block compares bmi across the levels of one variable; blocks are not adjusted for one another. Med [Q1, Q3] = median [first quartile, third quartile].
 

@@ -172,7 +172,8 @@ test_that("table_continuous handles NAs", {
 test_that("table_continuous handles all-NA column", {
   df <- data.frame(x = rep(NA_real_, 5))
   out <- table_continuous(df, output = "long")
-  expect_equal(out$n, 0L)
+  # No observed value at all: no data, so the count is undefined too.
+  expect_identical(out$n, NA_integer_)
   expect_true(is.na(out$mean))
   expect_true(is.na(out$sd))
   expect_true(is.na(out$min))
@@ -1249,7 +1250,7 @@ test_that("the missing-values note names each variable by its row label", {
   out <- table_continuous(sochealth, select = c(age, bmi), by = sex)
   expect_identical(
     attr(out, "note"),
-    "Note. Missing values removed: bmi (12)."
+    "Note. Missing values removed: bmi (12). Group comparison: Welch t-test."
   )
   attr_lab <- table_continuous(
     sochealth,
@@ -1259,7 +1260,10 @@ test_that("the missing-values note names each variable by its row label", {
   )
   expect_identical(
     attr(attr_lab, "note"),
-    "Note. Missing values removed: Body mass index (12)."
+    paste(
+      "Note. Missing values removed: Body mass index (12).",
+      "Group comparison: Welch t-test."
+    )
   )
   relabelled <- table_continuous(
     sochealth,
@@ -1305,7 +1309,11 @@ test_that("the by title and the missing-by note follow labels", {
     expect_identical(
       attr(out, "note"),
       sprintf(
-        "Note. Missing values removed: %s (12). Rows with missing %s removed: 18.",
+        paste(
+          "Note. Missing values removed: %s (12).",
+          "Rows with missing %s removed: 18.",
+          "Group comparison: Welch one-way ANOVA."
+        ),
         row,
         by
       )
@@ -1349,7 +1357,10 @@ test_that("drop_na = TRUE discloses removed missing-by rows in the note", {
   out <- suppressWarnings(table_continuous(df, select = "x", by = "g"))
   expect_equal(
     attr(out, "note"),
-    "Note. Missing values removed: x (1). Rows with missing g removed: 2."
+    paste(
+      "Note. Missing values removed: x (1). Rows with missing g removed: 2.",
+      "Group comparison: Welch t-test."
+    )
   )
 })
 
@@ -1357,11 +1368,11 @@ test_that("the note opens with \"Note.\" once, on the attribute and in print", {
   tbl <- table_continuous(sochealth, select = c(bmi, age), by = sex)
   expect_identical(
     attr(tbl, "note"),
-    "Note. Missing values removed: bmi (12)."
+    "Note. Missing values removed: bmi (12). Group comparison: Welch t-test."
   )
   printed <- utils::capture.output(print(tbl))
   expect_identical(sum(grepl("Note.", printed, fixed = TRUE)), 1L)
-  expect_true("Note. Missing values removed: bmi (12)." %in% printed)
+  expect_true(attr(tbl, "note") %in% printed)
   # Several sentences, one prefix.
   note <- attr(
     table_continuous(
@@ -1374,7 +1385,10 @@ test_that("the note opens with \"Note.\" once, on the attribute and in print", {
   )
   expect_true(startsWith(
     note,
-    "Note. Missing values removed: bmi (12). P-values"
+    paste(
+      "Note. Missing values removed: bmi (12).",
+      "Group comparison: Welch t-test. P-values"
+    )
   ))
   expect_identical(lengths(gregexpr("Note.", note, fixed = TRUE)), 1L)
   # Nothing to say: no note, and no bare prefix.
@@ -1388,7 +1402,10 @@ test_that("the note opens with \"Note.\" once, on the attribute and in print", {
       table_continuous(sochealth, select = c(bmi, age), by = sex),
       "note"
     ),
-    "Note. Valeurs manquantes retir\u00e9es\u00a0: bmi (12)."
+    paste(
+      "Note. Valeurs manquantes retir\u00e9es\u00a0: bmi (12).",
+      "Comparaison des groupes\u00a0: test t de Welch."
+    )
   )
 })
 
@@ -1510,6 +1527,317 @@ test_that("table_continuous raw outputs carry the note attribute", {
   )
   expect_null(attr(clean, "note"))
 })
+
+# ---- no data in a group (lot N, R1) -------------------------------------------
+
+# `y` is not observed in group "c" (a question not asked there); `x` is,
+# with one ordinary missing value.
+.tc_nodata <- function() {
+  data.frame(
+    g = rep(c("a", "b", "c"), each = 4),
+    x = c(1, 2, 3, 4, 3, 4, 5, 6, 5, 6, 7, NA),
+    y = c(2, 4, 6, 8, 1, 3, 5, 7, NA, NA, NA, NA)
+  )
+}
+
+test_that("a variable with no data in a group shows the mark there, n included", {
+  d <- .tc_nodata()
+  long <- table_continuous(d, select = c(x, y), by = g, output = "long")
+  cell <- long$variable == "y" & long$group == "c"
+  # NA, not a count of zero: the group has no data for the variable.
+  expect_identical(long$n[cell], NA_integer_)
+  expect_true(is.na(long$mean[cell]))
+  # The other cells keep their counts.
+  expect_identical(long$n[long$variable == "y" & long$group != "c"], c(4L, 4L))
+  expect_identical(long$n[long$variable == "x"], c(4L, 4L, 3L))
+
+  tbl <- table_continuous(d, select = c(x, y), by = g)
+  disp <- build_display_df(
+    tbl,
+    digits = 2L,
+    decimal_mark = ".",
+    ci_level = 0.95,
+    show_p = TRUE,
+    tokens_union = attr(tbl, "show_columns"),
+    tokens_by_var = attr(tbl, "show_columns_by_var")
+  )
+  row <- which(tbl$variable == "y" & tbl$group == "c")
+  mark <- spicy_str("cell_undefined")
+  expect_identical(disp$n[[row]], mark)
+  expect_identical(disp$M[[row]], mark)
+
+  # The typed view: NA in the body, the mark as display, `undefined`.
+  st <- as_structured(tbl)
+  expect_true(is.na(st$body$n[[row]]))
+  expect_identical(st$cell_status$n[[row]], "undefined")
+  expect_identical(st$col_meta$n$display_cells[[row]], mark)
+  # And the displayed data frame carries NA.
+  expect_true(is.na(as.data.frame(tbl)$n[[row]]))
+})
+
+test_that("the rows of a no-data group leave the missing-value count", {
+  d <- .tc_nodata()
+  tbl <- table_continuous(d, select = c(x, y), by = g)
+  note <- attr(tbl, "note")
+  # x keeps its one missing value; y's four rows in "c" are not missing
+  # answers, and the note says why they are not there.
+  expect_identical(
+    note,
+    paste(
+      "Note. Missing values removed: x (1). No data for y in c.",
+      "Group comparison: Welch one-way ANOVA (x); Welch t-test (y)."
+    )
+  )
+  # A real missing value of y beside the no-data group is still counted.
+  d$y[[1L]] <- NA
+  expect_match(
+    attr(table_continuous(d, select = c(x, y), by = g), "note"),
+    "Missing values removed: x (1), y (1). No data for y in c.",
+    fixed = TRUE
+  )
+  withr::local_options(spicy.language = "fr")
+  expect_match(
+    attr(table_continuous(.tc_nodata(), select = c(x, y), by = g), "note"),
+    "Aucune donn\u00e9e pour y dans c.",
+    fixed = TRUE
+  )
+})
+
+test_that("the comparison runs on the groups with data, and on two at least", {
+  d <- .tc_nodata()
+  long <- table_continuous(
+    d,
+    select = c(x, y),
+    by = g,
+    effect_size = "auto",
+    output = "long"
+  )
+  first <- long[!duplicated(long$variable), ]
+  # Three groups for x, the two with data for y: the 2-group test.
+  expect_identical(first$test_type, c("welch_anova", "welch_t"))
+  ab <- d[d$g != "c", ]
+  expect_equal(
+    first$p.value[[2L]],
+    stats::t.test(y ~ g, data = ab)$p.value,
+    tolerance = 1e-12
+  )
+  expect_identical(first$es_type, c("eta2", "hedges_g"))
+
+  # Two groups, one without data: nothing to compare. No test, a blank
+  # p cell (not the mark), no effect size, no test named for it.
+  d2 <- data.frame(
+    g = rep(c("a", "b"), each = 4),
+    x = c(1, 2, 3, 4, 3, 5, 6, 8),
+    y = c(1, 2, 3, 4, NA, NA, NA, NA)
+  )
+  tbl2 <- table_continuous(d2, select = c(x, y), by = g, effect_size = "auto")
+  y1 <- which(tbl2$variable == "y")[[1L]]
+  expect_true(is.na(tbl2$p.value[[y1]]))
+  expect_true(is.na(tbl2$es_value[[y1]]))
+  expect_true(is.na(as.data.frame(tbl2)$p[[y1]]))
+  disp <- build_display_df(
+    tbl2,
+    digits = 2L,
+    decimal_mark = ".",
+    ci_level = 0.95,
+    show_p = TRUE,
+    tokens_union = attr(tbl2, "show_columns"),
+    tokens_by_var = attr(tbl2, "show_columns_by_var")
+  )
+  expect_identical(disp$p[[y1]], "")
+  # Blank, not undefined: the p column holds no undefined cell.
+  expect_null(as_structured(tbl2)$cell_status$p)
+  expect_identical(
+    attr(tbl2, "note"),
+    "Note. No data for y in b. Group comparison: Welch t-test."
+  )
+})
+
+test_that("the SMD of a pair with a no-data group is NA, silently", {
+  d2 <- data.frame(
+    g = rep(c("a", "b"), each = 4),
+    y = c(1, 2, 3, 4, NA, NA, NA, NA)
+  )
+  expect_no_warning(
+    out <- table_continuous(
+      d2,
+      select = y,
+      by = g,
+      smd = TRUE,
+      p_value = FALSE,
+      output = "long"
+    )
+  )
+  expect_true(is.na(out$smd_value[[1L]]))
+})
+
+test_that("an empty group and the missing-by group are not no-data groups", {
+  d <- data.frame(
+    g = factor(
+      c("a", "a", "b", "b", NA, NA),
+      levels = c("a", "b", "ghost")
+    ),
+    y = c(1, 2, 3, 4, NA, NA)
+  )
+  out <- table_continuous(
+    d,
+    select = y,
+    by = g,
+    drop_na = FALSE,
+    output = "long"
+  )
+  # The declared level nobody holds keeps its count of zero; the group
+  # of missing `by` values is never a no-data group, and its missing
+  # values are counted as before.
+  expect_identical(out$n, c(2L, 2L, 0L, 0L))
+  expect_identical(
+    attr(out, "note"),
+    "Note. Missing values removed: y (2). Group comparison: Welch t-test."
+  )
+})
+
+test_that("declared missing values of a no-data group leave their count too", {
+  skip_if_not_installed("haven")
+  d <- .tc_nodata()
+  d$y <- haven::labelled_spss(
+    c(2, 4, 6, 99, 1, 3, 5, 7, 99, 99, NA, NA),
+    labels = c(refused = 99),
+    na_values = 99
+  )
+  note <- attr(table_continuous(d, select = y, by = g), "note")
+  # One declared code in "a" stays; the two in "c" leave, with the two NA.
+  expect_identical(
+    note,
+    paste(
+      "Note. Declared missing values removed: y (1). No data for y in c.",
+      "Group comparison: Welch t-test."
+    )
+  )
+})
+
+test_that("without `by`, a variable with no observed value has no data", {
+  d <- data.frame(x = c(1, 2, NA), y = NA_real_)
+  long <- table_continuous(d, select = c(x, y), output = "long")
+  expect_identical(long$n, c(2L, NA_integer_))
+  tbl <- table_continuous(d, select = c(x, y))
+  # Still a row of the table, with the mark in every value cell.
+  expect_identical(tbl$variable, c("x", "y"))
+  expect_identical(as_structured(tbl)$cell_status$n[[2L]], "undefined")
+  expect_identical(
+    attr(tbl, "note"),
+    "Note. Missing values removed: x (1). No data for y."
+  )
+  withr::local_options(spicy.language = "fr")
+  expect_match(
+    attr(table_continuous(d, select = c(x, y)), "note"),
+    "Aucune donn\u00e9e pour y.",
+    fixed = TRUE
+  )
+})
+
+test_that("the variables with no data in the same groups share one sentence", {
+  d <- .tc_nodata()
+  d$z <- d$y
+  d$v <- d$y
+  d$v[d$g == "b"] <- NA
+  expect_match(
+    attr(table_continuous(d, select = c(y, v, z), by = g), "note"),
+    "No data for y and z in c. No data for v in b and c.",
+    fixed = TRUE
+  )
+  d0 <- data.frame(x = c(1, 2, NA), y = NA_real_, z = NA_real_)
+  expect_identical(
+    attr(table_continuous(d0, select = c(y, x, z)), "note"),
+    "Note. Missing values removed: x (1). No data for y and z."
+  )
+})
+
+test_that("the note names the test of each variable whenever p is shown", {
+  note <- function(...) {
+    attr(table_continuous(sochealth, select = c(bmi, age), ...), "note")
+  }
+  expect_identical(
+    note(by = sex),
+    "Note. Missing values removed: bmi (12). Group comparison: Welch t-test."
+  )
+  expect_identical(
+    note(by = education, test = "nonparametric"),
+    paste(
+      "Note. Missing values removed: bmi (12).",
+      "Group comparison: Kruskal-Wallis test."
+    )
+  )
+  # No p-value, no test sentence.
+  expect_identical(
+    note(by = sex, p_value = FALSE, statistic = TRUE),
+    "Note. Missing values removed: bmi (12)."
+  )
+  # No `by`, nothing compared.
+  expect_identical(note(), "Note. Missing values removed: bmi (12).")
+})
+
+test_that("the note gives its sentences in the order of the family", {
+  # `z` has no data in "b"; the last row has no group.
+  d <- data.frame(
+    g = c(rep(c("a", "b"), each = 4), NA),
+    x = c(1, 2, 3, 4, 3, 4, 5, NA, 6),
+    y = c(2, 4, 6, 8, 1, 3, 5, 7, 9),
+    z = c(1, 2, 3, 4, NA, NA, NA, NA, 5)
+  )
+  tbl <- table_continuous(
+    d,
+    select = c(x, y, z),
+    by = g,
+    show_columns = list(x = c("med_iqr", "n"), .default = c("m", "sd", "n")),
+    smd = TRUE,
+    p_adjust = "holm"
+  )
+  # (b) the missing data, (c) the tests, in the order of the rows, and
+  # their adjustment, (d) the glosses: one paragraph.
+  expect_identical(
+    attr(tbl, "note"),
+    paste(
+      "Note. Missing values removed: x (1). Rows with missing g removed: 1.",
+      "No data for z in b.",
+      "Group comparison: Wilcoxon rank-sum test (x); Welch t-test (y).",
+      "P-values adjusted for 2 tests (Holm method).",
+      "Med [Q1, Q3] = median [first quartile, third quartile].",
+      "SMD = standardized mean difference (a - b); |SMD| > 0.1 is the usual",
+      "imbalance threshold."
+    )
+  )
+  # The weights open the note.
+  w <- table_continuous(
+    sochealth,
+    select = bmi,
+    by = sex,
+    weights = weight,
+    p_value = FALSE
+  )
+  expect_true(startsWith(
+    attr(w, "note"),
+    "Note. Statistics weighted by weight."
+  ))
+})
+
+test_that("the object carries the title it prints", {
+  tbl <- table_continuous(sochealth, select = bmi, by = sex)
+  expect_identical(attr(tbl, "title"), "Descriptive statistics by sex")
+  expect_identical(
+    utils::capture.output(print(tbl))[[1L]],
+    attr(tbl, "title")
+  )
+  expect_identical(
+    attr(table_continuous(sochealth, select = bmi), "title"),
+    "Descriptive statistics"
+  )
+  withr::local_options(spicy.language = "fr")
+  expect_identical(
+    attr(table_continuous(sochealth, select = bmi, by = sex), "title"),
+    "Statistiques descriptives selon sex"
+  )
+})
+
 
 test_that("fmt_p uses non-breaking space in display", {
   set.seed(1)
@@ -3824,7 +4152,7 @@ test_that("table_continuous discloses dropped rows on the rich outputs", {
   )
   expect_identical(
     paste(unlist(x@notes), collapse = " "),
-    "Note. Rows with missing sex_na removed: 40."
+    "Note. Rows with missing sex_na removed: 40. Group comparison: Welch t-test."
   )
   expect_match(
     tinytable::save_tt(x, output = "html"),
@@ -3838,7 +4166,7 @@ test_that("table_continuous discloses dropped rows on the rich outputs", {
   expect_s3_class(g, "spicy_gt")
   expect_identical(
     attr(g, "spicy_note"),
-    "Note. Rows with missing sex_na removed: 40."
+    "Note. Rows with missing sex_na removed: 40. Group comparison: Welch t-test."
   )
 
   f <- suppressWarnings(
@@ -3857,14 +4185,21 @@ test_that("table_continuous rich outputs carry no note when nothing is lost", {
   skip_if_not_installed("gt")
   skip_if_not_installed("flextable")
   df <- data.frame(x = 1:6, g = rep(c("A", "B"), each = 3))
+  # Without p-values there is no test to name either.
+  build <- function(output) {
+    table_continuous(
+      df,
+      select = "x",
+      by = "g",
+      p_value = FALSE,
+      output = output
+    )
+  }
 
-  expect_length(
-    table_continuous(df, select = "x", by = "g", output = "tinytable")@notes,
-    0L
-  )
-  g <- table_continuous(df, select = "x", by = "g", output = "gt")
+  expect_length(build("tinytable")@notes, 0L)
+  g <- build("gt")
   expect_false(inherits(g, "spicy_gt"))
-  f <- table_continuous(df, select = "x", by = "g", output = "flextable")
+  f <- build("flextable")
   expect_identical(nrow(f$footer$dataset), 0L)
 })
 
@@ -3957,12 +4292,16 @@ test_that("show_columns = NULL reproduces the historical display exactly", {
     ),
     c("m", "sd", "min", "max")
   )
-  # No gloss is appended to a default table's note.
-  expect_null(attr(out, "note"))
-  expect_null(attr(
-    table_continuous(sleep, select = extra, by = group, output = "long"),
-    "note"
-  ))
+  # No gloss is appended to a default table's note: it names the test
+  # behind its p-values, and nothing else.
+  expect_identical(attr(out, "note"), "Note. Group comparison: Welch t-test.")
+  expect_identical(
+    attr(
+      table_continuous(sleep, select = extra, by = group, output = "long"),
+      "note"
+    ),
+    "Note. Group comparison: Welch t-test."
+  )
 })
 
 test_that("median / quartile columns equal stats::median() and quantile() type 7", {
@@ -4232,13 +4571,14 @@ test_that("an explicit test stays sovereign but raises a caveat", {
     class = "spicy_caveat"
   )
   expect_identical(out$test_type[1], "welch_t")
-  # Sovereign means uniform: the note glosses the columns but never
-  # claims a rank test the table did not run.
-  expect_false(grepl(
-    "Group comparison",
+  # Sovereign means uniform: the note names the test the table ran,
+  # and never claims a rank test it did not run.
+  expect_match(
     attr(out, "note"),
+    "Group comparison: Welch t-test.",
     fixed = TRUE
-  ))
+  )
+  expect_false(grepl("Wilcoxon", attr(out, "note"), fixed = TRUE))
 })
 
 test_that("ci without m is dropped and points at med_ci; med_ci mirrors it", {

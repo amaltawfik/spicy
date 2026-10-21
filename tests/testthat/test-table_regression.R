@@ -16,7 +16,7 @@ test_that("table_regression – default output: spicy_regression_table class + a
   expect_identical(attr(out, "title"), "Linear regression: mpg")
   expect_identical(
     attr(out, "note"),
-    "Note. Linear regression.\nStd. errors: classical (OLS)."
+    "Note. Linear regression. Std. errors: classical (OLS)."
   )
 })
 
@@ -1085,7 +1085,7 @@ test_that("cluster_name – `df$col` extracted to 'col' for the footer", {
   out <- table_regression(fit, vcov = "CR2", cluster = df$region)
   expect_identical(
     attr(out, "note"),
-    "Note. Linear regression.\nStd. errors: cluster-robust (CR2), clusters by region."
+    "Note. Linear regression. Std. errors: cluster-robust (CR2), clusters by region."
   )
   expect_no_match(attr(out, "note"), "cluster vector supplied")
 })
@@ -1103,7 +1103,7 @@ test_that("cluster_name – bare symbol extracted as variable name", {
   out <- table_regression(fit, vcov = "CR2", cluster = region_vec)
   expect_identical(
     attr(out, "note"),
-    "Note. Linear regression.\nStd. errors: cluster-robust (CR2), clusters by region_vec."
+    "Note. Linear regression. Std. errors: cluster-robust (CR2), clusters by region_vec."
   )
 })
 
@@ -1124,12 +1124,14 @@ test_that("cluster_name – list(...) with named elements per model", {
     cluster = list(df$region, df$clinic)
   )
   note <- attr(out, "note")
+  # One sentence for the estimators of the models, the note being one
+  # paragraph; the items hold a comma, so a semicolon parts them.
   expect_identical(
     note,
     paste0(
-      "Note. Linear regression models.\nStd. errors:\n",
-      "  Model 1: cluster-robust (CR2), clusters by region\n",
-      "  Model 2: cluster-robust (CR2), clusters by clinic"
+      "Note. Linear regression models. Std. errors: ",
+      "Model 1: cluster-robust (CR2), clusters by region; ",
+      "Model 2: cluster-robust (CR2), clusters by clinic."
     )
   )
 })
@@ -2733,8 +2735,11 @@ test_that("both bodies print the block caption, not the block identity", {
   })
 
   txt <- capture.output(print(table_regression(fit, show_thresholds = TRUE)))
-  expect_true(any(grepl("<Thresholds>:", txt, fixed = TRUE)))
-  expect_false(any(grepl(" Thresholds:", txt, fixed = TRUE)))
+  # The body, not the note, whose gloss names the block in the words of
+  # the registry, within its one paragraph.
+  body <- txt[!startsWith(txt, "Note.")]
+  expect_true(any(grepl("<Thresholds>:", body, fixed = TRUE)))
+  expect_false(any(grepl(" Thresholds:", body, fixed = TRUE)))
 
   s <- as_structured(table_regression(fit, show_thresholds = TRUE))
   expect_true(any(s$body$Variable == "<Thresholds>:"))

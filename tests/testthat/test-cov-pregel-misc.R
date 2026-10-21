@@ -317,14 +317,21 @@ test_that("a note-less gt gains the spicy note as a source note off HTML", {
   # The object handed to gt's own knit_print carries the note once, and
   # is a plain gt again (the spicy tag is off).
   expect_false(inherits(handed_on, "spicy_gt"))
-  expect_length(handed_on[["_source_notes"]], 1L)
-  # Newlines flattened to spaces: a source note is one run of text, in
-  # markdown with its punctuation escaped (`.spicy_gt_note_md()`).
-  src <- handed_on[["_source_notes"]][[1L]]
-  expect_s3_class(src, "from_markdown")
+  # One source note per line of the note, as the legend of the stars
+  # follows the general note: each a run of text, in markdown with its
+  # punctuation escaped (`.spicy_gt_note_md()`).
+  expect_length(handed_on[["_source_notes"]], 2L)
+  src <- handed_on[["_source_notes"]]
+  for (s in src) {
+    expect_s3_class(s, "from_markdown")
+  }
   expect_identical(
-    gsub("\\\\(.)", "\\1", as.character(src)),
-    "First line. Second line."
+    vapply(
+      src,
+      function(s) gsub("\\\\(.)", "\\1", as.character(s)),
+      character(1)
+    ),
+    c("First line.", "Second line.")
   )
 })
 

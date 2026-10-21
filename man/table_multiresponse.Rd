@@ -231,10 +231,10 @@ contract; a single string replaces it, and \code{FALSE} removes it, as in
 \code{\link[=table_regression]{table_regression()}}.}
 
 \item{note}{The table note. \code{NULL} (the default) builds it, opening
-with "Note.": the rows removed for a missing \code{by}, what the
-percentages sum to, the base with the respondents it holds or leaves
-out, and the tests. A single string replaces it and is printed as
-typed, and \code{FALSE} removes it.}
+with "Note.": what the percentages sum to, the base with the
+respondents it holds or leaves out, the rows removed for a missing
+\code{by} and the items with no data in a group, then the tests. A single
+string replaces it and is printed as typed, and \code{FALSE} removes it.}
 
 \item{output}{Output format. One of:
 \itemize{
@@ -299,7 +299,8 @@ chi-squared of the item, with \code{df} beside it) under
 label the row displays), \code{.row_role} as above, with \code{by} \code{group},
 \code{.group_role} (the role of \code{group}: \code{"group"}, or \code{"total"} for
 the margin) and \code{total} (\code{TRUE} on the rows of the margin), \code{n},
-\code{base} (the respondents of the group), the percentage named by its
+\code{base} (the respondents of the group; in the margin, those of the
+groups with data for the item), the percentage named by its
 base: \code{pct_cases} (of the respondents) or \code{pct_responses} (of the
 choices made), as \code{percent} asks, both under \code{percent = "both"},
 and, when the item tests ran (for \code{p_value} or
@@ -429,9 +430,13 @@ test. It is random: call \code{\link[=set.seed]{set.seed()}} first to reproduce 
 
 An item chosen by every respondent, or by none, has no test: its \code{p}
 cell shows a dash, it leaves the global test, and the note names it.
-Its row stays. With fewer than two groups holding respondents there is
-nothing to compare, and the table shows no test. The note names the
-global test with its statistic, degrees of freedom, and p-value.
+Its row stays. An item with no data in a group (see \emph{Base and missing
+values}) is tested on the groups with data for it, has no test with
+fewer than two (its \code{p} cell is then blank), and leaves the global
+test, which compares every group on the same items. With fewer than
+two groups holding respondents there is nothing to compare, and the
+table shows no test. The note names the global test with its
+statistic, degrees of freedom, and p-value.
 }
 
 \section{Multiple-comparison adjustment}{
@@ -472,6 +477,16 @@ label in \code{labels}, or give the row another label, for example
 Declared missing values of a labelled column (\code{na_values}, \code{na_range})
 are missing, as under the \code{user_na = TRUE} default of
 \code{\link[=table_categorical]{table_categorical()}}.
+
+An item missing for every respondent of a group (typically an item not
+asked there) has no data in that group: its cells there show a dash,
+its \code{Total} counts the other groups only, and the note says so, in one
+sentence for the items with no data in the same groups. Without \code{by},
+an item with no observed value at all
+shows a dash. A group with no data for any item was not asked the
+question: all its cells, \code{Respondents} included, show a dash, and its
+respondents leave the base, the \code{Total}, the tests and the count of
+the respondents with no data for the question.
 
 A percentage carries no more digits than its denominator, so a base of
 fewer than 100 respondents takes whole percentages (American Medical

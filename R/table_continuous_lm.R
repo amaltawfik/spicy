@@ -73,6 +73,13 @@
 #'   outcome (NAs in `y` and `weights` are also excluded; see Details), the
 #'   rule of a table that computes (see `drop_na` in
 #'   [table_continuous()]); this table has no `drop_na`.
+#'
+#'   An outcome with no observed value in a level of a categorical `by`
+#'   (typically a question not asked in that group) has no data there: it
+#'   is fit on the other levels, the cells of that level show a dash, its
+#'   rows are not counted as missing values, and the note says so. With
+#'   fewer than two levels with data, the outcome has no model and no
+#'   test.
 #' @param covariates Optional additive covariates to adjust each per-outcome
 #'   linear model for. Accepts a tidyselect expression (e.g.
 #'   `covariates = c(age, sex)`, `covariates = tidyselect::all_of(cov_vec)`,
@@ -452,7 +459,8 @@
 #'   \item `"default"`: the compute frame with class
 #'     `"spicy_continuous_lm_table"` / `"spicy_table"`, carrying the
 #'     rendering metadata as attributes (the `by` column and its label as
-#'     `group_var` and `group_label`). The object is
+#'     `group_var` and `group_label`, the title as printed as `title`).
+#'     The object is
 #'     returned visibly, so a bare `table_continuous_lm(...)` call
 #'     auto-prints the styled ASCII table at the console while
 #'     `t <- table_continuous_lm(...)` stays silent (print `t` to
@@ -707,7 +715,11 @@
 #'
 #' When `covariates` is non-empty, the printed ASCII table appends an
 #' APA-style footer naming the covariates and the chosen estimand, e.g.
-#' `Note. Adjusted for age, education (proportional).`
+#' `Note. Adjusted for age, education (proportional).` With p-values, the
+#' note also names the test behind them, read off each outcome's model:
+#' `Group comparison: t-test from the linear model.` (the F-test for a
+#' `by` with more than two levels), or `Slope test: ...` for a numeric
+#' `by`.
 #'
 #' The rendering engines carry that same footer as a table note. On the
 #' `"tinytable"` route the note is set one size down;
@@ -1515,6 +1527,30 @@ table_continuous_lm <- function(
 
   outcome_labels <- resolve_variable_labels(data, numeric_outcomes, labels)
   by_label <- resolve_variable_labels(data, by_name, labels)
+  outcome_values <- lapply(numeric_outcomes, function(nm) {
+    resolve_user_na(data[[nm]])
+  })
+
+  # The levels of a categorical `by` the table shows, the same for every
+  # outcome, and the levels among them in which an outcome has no data:
+  # no observed value at all there, typically a question not asked in
+  # that group. Such an outcome is fit on the levels with data; the
+  # cells of the others show the undefined mark, their rows are not
+  # missing values, and the note says so (`.no_data_sentences()`).
+  by_levels <- .tclm_by_levels(
+    by_vector,
+    weights_vec,
+    cluster_vec,
+    covariates_df
+  )
+  no_data_levels <- if (!is.null(by_levels)) {
+    stats::setNames(
+      lapply(outcome_values, function(y) {
+        .no_data_groups(y, coerce_lm_factor(by_vector), by_levels)
+      }),
+      numeric_outcomes
+    )
+  }
 
   # The fits compute the variances (`R/vcov.R`): an estimator that fails
   # there is refused in the name of this function.
@@ -1523,7 +1559,7 @@ table_continuous_lm <- function(
       seq_along(numeric_outcomes),
       function(i) {
         fit_outcome_lm_rows(
-          y = resolve_user_na(data[[numeric_outcomes[i]]]),
+          y = outcome_values[[i]],
           predictor = by_vector,
           covariates = covariates_df,
           weights = weights_vec,
@@ -1536,7 +1572,9 @@ table_continuous_lm <- function(
           ci_level = ci_level,
           effect_size = effect_size,
           boot_n = boot_n,
-          adjustment = adjustment
+          adjustment = adjustment,
+          by_levels = by_levels,
+          no_data = no_data_levels[[numeric_outcomes[i]]] %||% character(0)
         )
       }
     ),
@@ -1559,6 +1597,12 @@ table_continuous_lm <- function(
   # `group_var` / `group_label`.
   attr(result, "group_var") <- by_name
   attr(result, "group_label") <- by_label
+  # The title the console prints and every engine sets, as
+  # table_multiresponse() and table_regression() store theirs.
+  attr(result, "title") <- .continuous_lm_title(by_label)
+  # Read by the display frame: the cells of a level in which an outcome
+  # has no data show the undefined mark (NULL for a numeric `by`).
+  attr(result, "no_data_levels") <- no_data_levels
   attr(result, "vcov_type") <- vcov
   # Cluster variable NAME (for the SE-estimator note); NA when the
   # cluster was supplied as a raw vector with no recoverable name.
@@ -1592,11 +1636,14 @@ table_continuous_lm <- function(
   user_na_dropped <- integer(0)
   for (.nm in c(numeric_outcomes, covariates_names)) {
     .col <- data[[.nm]]
-    .n_user <- if (isTRUE(user_na)) sum(.user_na_mask(.col)) else 0L
+    # The rows of a level in which the outcome has no data are not
+    # missing answers: they leave its count.
+    .rows <- !(as.character(by_vector) %in% no_data_levels[[.nm]])
+    .n_user <- if (isTRUE(user_na)) sum(.user_na_mask(.col)[.rows]) else 0L
     if (.n_user > 0L) {
       user_na_dropped[[.nm]] <- .n_user
     }
-    .nd <- sum(is.na(resolve_user_na(.col))) - .n_user
+    .nd <- sum(is.na(resolve_user_na(.col))[.rows]) - .n_user
     if (.nd > 0L) {
       na_dropped[[.nm]] <- .nd
     }
@@ -1659,13 +1706,22 @@ table_continuous_lm <- function(
       )
     }
   }
+  # Then the levels in which an outcome has no data, one sentence per set
+  # of levels, each outcome named as its row names it.
+  if (!is.null(no_data_levels)) {
+    missing_parts <- c(
+      missing_parts,
+      .no_data_sentences(outcome_labels, unname(no_data_levels))
+    )
+  }
   # The whole note, for every route: print() shows it as it is here.
   table_note <- .tclm_note_text(
     result,
-    missing_note = if (length(missing_parts) > 0L) {
-      paste(missing_parts, collapse = " ")
-    },
-    covariates = covariate_labels
+    missing_note = missing_parts,
+    covariates = covariate_labels,
+    weighted_by = if (!is.null(weights_vec)) {
+      weights_name %||% spicy_str("note_weights_fallback")
+    }
   )
   attr(result, "note") <- table_note
 
@@ -1779,6 +1835,34 @@ table_continuous_lm <- function(
   )
 }
 
+# The levels of a categorical `by` the table shows, in their order: those
+# holding at least one row complete on the columns every outcome's model
+# shares (`by`, `weights`, `cluster`, the covariates). A level no model
+# can reach is not a group of the table, as before; a level that one
+# outcome cannot reach -- it has no data there -- keeps its place in that
+# outcome's rows. NULL for a numeric `by`.
+.tclm_by_levels <- function(
+  predictor,
+  weights = NULL,
+  cluster = NULL,
+  covariates = NULL
+) {
+  if (is.numeric(predictor)) {
+    return(NULL)
+  }
+  shared <- !is.na(predictor)
+  if (!is.null(weights)) {
+    shared <- shared & !is.na(weights)
+  }
+  if (!is.null(cluster)) {
+    shared <- shared & !is.na(cluster)
+  }
+  if (!is.null(covariates) && ncol(covariates) > 0L) {
+    shared <- shared & stats::complete.cases(covariates)
+  }
+  levels(droplevels(coerce_lm_factor(predictor)[shared]))
+}
+
 fit_outcome_lm_rows <- function(
   y,
   predictor,
@@ -1793,19 +1877,18 @@ fit_outcome_lm_rows <- function(
   ci_level,
   effect_size = "none",
   boot_n = 1000L,
-  adjustment = c("proportional", "balanced")
+  adjustment = c("proportional", "balanced"),
+  by_levels = NULL,
+  no_data = character(0)
 ) {
   adjustment <- match.arg(adjustment)
   # Level template for a categorical predictor, captured BEFORE the
-  # per-outcome complete-case filtering: when filtering leaves fewer
-  # than two observed groups for one outcome, its all-NA rows reuse
-  # these levels so the wide `M (<level>)` header matches the other
-  # outcomes (no spurious `M (NA)` column).
-  by_levels <- if (is.numeric(predictor)) {
-    NULL
-  } else {
-    levels(droplevels(coerce_lm_factor(predictor)))
-  }
+  # per-outcome complete-case filtering (`.tclm_by_levels()`): every
+  # outcome's rows span these levels, so the wide `M (<level>)` header
+  # is the same for all of them (no spurious `M (NA)` column, no level
+  # of one outcome missing from another).
+  by_levels <- by_levels %||%
+    .tclm_by_levels(predictor, weights, cluster, covariates)
   keep <- !is.na(y) & !is.na(predictor)
   if (!is.null(weights)) {
     keep <- keep & !is.na(weights)
@@ -1874,7 +1957,8 @@ fit_outcome_lm_rows <- function(
     effect_size = effect_size,
     boot_n = boot_n,
     adjustment = adjustment,
-    by_levels = by_levels
+    by_levels = by_levels,
+    no_data = no_data
   )
 }
 
@@ -2080,7 +2164,8 @@ fit_categorical_predictor_lm_rows <- function(
   effect_size = "none",
   boot_n = 1000L,
   adjustment = c("proportional", "balanced"),
-  by_levels = NULL
+  by_levels = NULL,
+  no_data = character(0)
 ) {
   adjustment <- match.arg(adjustment)
   x <- droplevels(coerce_lm_factor(x))
@@ -2097,6 +2182,9 @@ fit_categorical_predictor_lm_rows <- function(
   if (is.ordered(x)) {
     x <- factor(x, levels = levels(x), ordered = FALSE)
   }
+  # The levels of the table, which every outcome's rows span (see
+  # `.tclm_expand_levels()`); the fitted levels when called alone.
+  by_levels <- by_levels %||% levels(x)
   if (length(y) < 2L || nlevels(x) < 2L) {
     # Per-outcome degradation: table_continuous_lm() already rejects a
     # `by` with fewer than two observed levels overall, so reaching
@@ -2105,19 +2193,27 @@ fit_categorical_predictor_lm_rows <- function(
     # all but (at most) one group. Degrade loudly -- a classed warning
     # naming the outcome -- and return all-NA rows keyed to the
     # regular `by` levels so the wide header stays clean (audit phase
-    # 2, finding 32).
-    spicy_warn(
-      c(
-        sprintf(
-          "The model for `%s` could not be fit: %d observed non-missing group%s left after removing incomplete rows, and a group comparison needs at least two; its cells are NA.",
-          outcome_name,
-          nlevels(x),
-          if (nlevels(x) == 1L) " is" else "s are"
+    # 2, finding 32). Unless the cause is a level with no data
+    # (`no_data`, typically a question not asked there): when the table
+    # has two levels or more and the outcome has data in fewer than two,
+    # the note says so ("No data for X in G."), which is ordinary data,
+    # and no warning repeats it.
+    no_data_cause <- length(by_levels) >= 2L &&
+      length(setdiff(by_levels, no_data)) < 2L
+    if (!no_data_cause) {
+      spicy_warn(
+        c(
+          sprintf(
+            "The model for `%s` could not be fit: %d observed non-missing group%s left after removing incomplete rows, and a group comparison needs at least two; its cells are NA.",
+            outcome_name,
+            nlevels(x),
+            if (nlevels(x) == 1L) " is" else "s are"
+          ),
+          "i" = "Rows with missing values in the outcome, `by`, `weights`, `cluster`, or covariates are excluded per outcome."
         ),
-        "i" = "Rows with missing values in the outcome, `by`, `weights`, `cluster`, or covariates are excluded per outcome."
-      ),
-      class = "spicy_undefined_stat"
-    )
+        class = "spicy_undefined_stat"
+      )
+    }
     empty_levels <- by_levels %||% levels(x)
     if (length(empty_levels) == 0L) {
       empty_levels <- NA_character_
@@ -2263,7 +2359,11 @@ fit_categorical_predictor_lm_rows <- function(
     cluster = cluster
   )
 
-  show_reference <- identical(contrast, "auto") && nlevels(x) == 2L
+  # The contrast of a two-group table: a table of more groups shows none,
+  # even for an outcome fit on two of them.
+  show_reference <- identical(contrast, "auto") &&
+    nlevels(x) == 2L &&
+    length(by_levels) == 2L
 
   es_ci <- compute_es_ci_lm(fit, effect_size, ci_level, focal_term = focal_term)
 
@@ -2366,7 +2466,62 @@ fit_categorical_predictor_lm_rows <- function(
     }
   }
 
-  degrade_saturated_lm_rows(out, fit, outcome_name)
+  .tclm_expand_levels(
+    degrade_saturated_lm_rows(out, fit, outcome_name),
+    by_levels
+  )
+}
+
+# The rows of an outcome span the levels of the table (`by_levels`), in
+# their order, even when its model was fit on fewer: a level in which the
+# outcome has no data, or whose every row a covariate, the weights or the
+# cluster left out, gets a row with no estimate, so that the blocks of
+# all the outcomes line up with the `M (<level>)` columns. The outcome's
+# own statistics (the test, the fit, the effect size) stay on the FIRST
+# row of the block, where the wide frames, `get_test_row_index_lm()` and
+# glance() read them. A block with its levels already in place is
+# returned as it is; one being expanded has no contrast row, since the
+# table then has more than two levels.
+.tclm_expand_levels <- function(out, by_levels) {
+  if (identical(out$level, by_levels)) {
+    return(out)
+  }
+  at <- match(by_levels, out$level)
+  res <- out[rep(1L, length(by_levels)), , drop = FALSE]
+  res$level <- by_levels
+  per_level <- c(
+    "estimate_type",
+    "emmean",
+    "emmean_se",
+    "emmean_ci_lower",
+    "emmean_ci_upper",
+    "estimate",
+    "estimate_se",
+    "estimate_ci_lower",
+    "estimate_ci_upper"
+  )
+  for (nm in per_level) {
+    res[[nm]] <- out[[nm]][at]
+  }
+  first <- c(1L, rep(NA_integer_, length(by_levels) - 1L))
+  per_outcome <- c(
+    "test_type",
+    "statistic",
+    "df1",
+    "df2",
+    "p.value",
+    "es_type",
+    "es_value",
+    "es_ci_lower",
+    "es_ci_upper",
+    "r2",
+    "adj_r2"
+  )
+  for (nm in per_outcome) {
+    res[[nm]] <- out[[nm]][first]
+  }
+  rownames(res) <- NULL
+  res
 }
 
 # `levels`: the display levels of a categorical `by` (one all-NA row

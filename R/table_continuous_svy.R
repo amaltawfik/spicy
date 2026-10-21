@@ -300,11 +300,26 @@ order_continuous_svy_tokens <- function(tokens) {
     ))
   }
   sub <- .design_subset(design, keep)
-  gv <- droplevels(as.factor(sub$variables[[group_var]]))
+  # The groups to compare are those the domain weighs: `droplevels()`
+  # alone would count the rows a calibrated design retains at weight
+  # zero (`.drop_unweighted_levels()`), those of a group with no data for
+  # this variable among them.
+  g_sub <- sub$variables[[group_var]]
+  gv <- .drop_unweighted_levels(g_sub, .design_weights(sub))
   k <- nlevels(gv)
   if (k < 2L || any(table(gv) < 2L)) {
     return(list(row = empty, label = NA_character_, k = k, refused = FALSE))
   }
+  # And the comparison reads them as an UNORDERED factor, in the order
+  # the table displays them. An ordered factor enters `svyglm()` with a
+  # polynomial contrast, which `svyttest()` refuses as not binary (a
+  # two-level ordered `by` was never compared), and a numeric `by`
+  # enters it as a slope (a trend test under the name of a comparison
+  # of groups).
+  sub$variables[[group_var]] <- factor(
+    as.character(gv),
+    levels = intersect(.group_levels(g_sub), levels(gv))
+  )
   # A variable with no variance has no comparison to make, but survey
   # still returns a p-value for it (0.228 from `svyttest()` on a
   # constant): the comparison is left blank and the warning says why, as
@@ -516,6 +531,13 @@ order_continuous_svy_tokens <- function(tokens) {
 #' like `"welch"`. A variable with no variance has no comparison: its
 #' test cells are left blank, with a warning (class
 #' `spicy_undefined_stat`), where survey would still return a p-value.
+#' The note names the comparison of each variable.
+#'
+#' A variable with no observed value in a domain (a question not asked
+#' in that group) has no data in it, as in [table_continuous()]: its
+#' cells there show an en dash, *n* included, those rows are not counted
+#' in the missing values of the note, the comparison uses the domains
+#' with data, and the note says so ("No data for X in G.").
 #'
 #' # Stability
 #'
@@ -652,7 +674,8 @@ order_continuous_svy_tokens <- function(tokens) {
 #' }
 #'
 #' The default object and the two data frames carry the whole note as
-#' printed, "Note." included, in `attr(x, "note")`.
+#' printed, "Note." included, in `attr(x, "note")`. The default object
+#' also keeps the title it prints in `attr(x, "title")`.
 #'
 #' @seealso [table_continuous()] for the data-frame sibling,
 #'   [table_categorical_svy()] for categorical variables,
@@ -919,9 +942,13 @@ table_continuous_svy <- function(
   # counts what it should.
   na_dropped <- integer(0)
   user_na_dropped <- integer(0)
+  # The declared missing values of each variable, kept for the rows of
+  # its no-data groups (below), which leave this ledger.
+  declared <- list()
   for (nm in c(numeric_cols, group_col_name)) {
     col <- vars[[nm]]
-    n_user <- if (user_na) sum(.user_na_mask(col)) else 0L
+    declared[[nm]] <- if (user_na) .user_na_mask(col) else FALSE
+    n_user <- sum(declared[[nm]])
     col <- if (isTRUE(user_na)) .user_na_to_na(col) else .user_na_zap(col)
     design$variables[[nm]] <- col
     if (n_user > 0L) {
@@ -933,6 +960,11 @@ table_continuous_svy <- function(
     }
   }
   vars <- design$variables
+  # The sample before the rows with a missing `by` leave it, with its
+  # weights: the no-data groups are read on it, and the ledger above was
+  # counted on it.
+  vars_full <- vars
+  w_full <- .design_weights(design)
 
   # --- domains -------------------------------------------------------------
   var_labels <- resolve_variable_labels(vars, numeric_cols, labels)
@@ -973,6 +1005,48 @@ table_continuous_svy <- function(
   # design was built on.
   meta <- .design_meta(design)
 
+  # --- no data ---------------------------------------------------------------
+  # A variable with no observed value in a domain (every value missing
+  # there, typically a question not asked in that group) has no data in
+  # it, which is not a missing answer: its cells show the undefined
+  # mark, n included, its rows there leave the missing-value ledger, the
+  # comparison runs on the domains with data, and the note says so, as
+  # in `table_continuous()`. Read on the rows the design weighs: a row
+  # at weight zero is one `[` retained on a calibrated design, not an
+  # observation. Without `by`, a variable with no observed value at all.
+  live <- !is.na(w_full) & w_full != 0
+  nodata_groups <- stats::setNames(
+    rep(list(character(0)), length(numeric_cols)),
+    numeric_cols
+  )
+  nodata_vars <- character(0)
+  for (nm in numeric_cols) {
+    x_full <- vars_full[[nm]]
+    nd_rows <- if (has_group) {
+      g_full <- vars_full[[group_col_name]]
+      nodata_groups[[nm]] <- .no_data_groups(
+        x_full[live],
+        g_full[live],
+        group_levels[!group_levels %in% missing_group_label]
+      )
+      !is.na(g_full) & as.character(g_full) %in% nodata_groups[[nm]]
+    } else if (any(live) && all(is.na(x_full[live]))) {
+      nodata_vars <- c(nodata_vars, nm)
+      rep(TRUE, length(x_full))
+    } else {
+      FALSE
+    }
+    if (any(nd_rows)) {
+      n_declared <- sum(declared[[nm]] & nd_rows)
+      user_na_dropped <- .ledger_minus(user_na_dropped, nm, n_declared)
+      na_dropped <- .ledger_minus(
+        na_dropped,
+        nm,
+        sum(is.na(x_full) & nd_rows) - n_declared
+      )
+    }
+  }
+
   # --- compute -------------------------------------------------------------
   # Two different numbers, and the footer needs both: `degf_used` is
   # what each interval was referred to (the caller's `df` when given),
@@ -981,8 +1055,19 @@ table_continuous_svy <- function(
   degf_used <- numeric(0)
   degf_dom_used <- numeric(0)
   rows <- list()
-  test_label <- NA_character_
-  test_ddf <- NA_real_
+  # The comparison each variable carries, by name, NA where none ran: a
+  # variable with no data in a domain is compared on fewer domains, so
+  # its test can differ from its neighbors'.
+  test_labels <- stats::setNames(
+    rep(NA_character_, length(numeric_cols)),
+    numeric_cols
+  )
+  # The degrees of freedom of each variable's comparison, by name: they
+  # follow the domains it compares, which a no-data group changes.
+  test_ddf <- stats::setNames(
+    rep(NA_real_, length(numeric_cols)),
+    numeric_cols
+  )
   # Counted, not inferred: the footer's refusal clause has to say what
   # actually happened, and the refusal is decided per VARIABLE. A table
   # where one variable's missing values cover the negatively weighted
@@ -1000,8 +1085,8 @@ table_continuous_svy <- function(
       }
       test_row <- tr$row
       if (!is.na(tr$label)) {
-        test_label <- tr$label
-        test_ddf <- tr$ddf
+        test_labels[[nm]] <- tr$label
+        test_ddf[[nm]] <- tr$ddf
       }
     }
     if (has_group) {
@@ -1021,6 +1106,11 @@ table_continuous_svy <- function(
           qrule,
           degf_dom = dom_df
         )
+        # No data for the variable in this domain: its count is
+        # undefined too, not a zero.
+        if (lv %in% nodata_groups[[nm]]) {
+          desc$n <- NA_integer_
+        }
         desc <- cbind(
           data.frame(
             variable = nm,
@@ -1053,21 +1143,25 @@ table_continuous_svy <- function(
       dfj <- df_user %||% meta$degf
       degf_used <- c(degf_used, dfj)
       degf_dom_used <- c(degf_dom_used, meta$degf)
+      desc <- .svy_var_stats(
+        design,
+        nm,
+        ci_level,
+        dfj,
+        deff,
+        qrule,
+        degf_dom = meta$degf
+      )
+      if (nm %in% nodata_vars) {
+        desc$n <- NA_integer_
+      }
       rows[[length(rows) + 1L]] <- cbind(
         data.frame(
           variable = nm,
           label = var_labels[[i]],
           stringsAsFactors = FALSE
         ),
-        .svy_var_stats(
-          design,
-          nm,
-          ci_level,
-          dfj,
-          deff,
-          qrule,
-          degf_dom = meta$degf
-        ),
+        desc,
         degf = dfj
       )
     }
@@ -1103,17 +1197,18 @@ table_continuous_svy <- function(
     digits = digits,
     qrule = qrule,
     deff = deff,
-    # `do_test` IS `(p_value || statistic) && has_group` (above), so the
-    # second half of the old conjunction only asked the same question
-    # twice.
-    test_label = if (do_test) test_label else NA_character_,
+    # Filled only where a test ran, and a test runs only under `do_test`.
+    test_labels = test_labels,
+    var_labels = label_of,
     test_ddf = test_ddf,
     n_negative_weights = .design_negative_weights(design),
-    test_refused = test_refused
-  )
-  # The whole note, for every route: it opens with "Note." here, once.
-  note <- .note_with_prefix(
-    paste_note_parts(c(note, .desc_p_adjust_note(p_adjust_info)))
+    test_refused = test_refused,
+    no_data = if (has_group) {
+      .no_data_sentences(var_labels, unname(nodata_groups))
+    } else if (length(nodata_vars)) {
+      .no_data_sentences(var_labels[match(nodata_vars, numeric_cols)])
+    },
+    p_adjust_info = p_adjust_info
   )
   .warn_negative_weights_no_test(test_refused)
 
@@ -1150,6 +1245,8 @@ table_continuous_svy <- function(
     numeric_cols
   )
   attr(result, "note") <- note
+  # The title the console prints, from the helper every engine reads.
+  attr(result, "title") <- .continuous_title(by_label)
   attr(result, "design_meta") <- meta
   class(result) <- c("spicy_continuous_svy_table", "spicy_table", "data.frame")
 
@@ -1419,10 +1516,58 @@ table_continuous_svy <- function(
   )
 }
 
-# The note of a continuous design table, in reading order: what left
-# the sample, how big it is, what design produced the numbers, which
-# quantile rule and which design effect were in force, how the groups
-# were compared, and what the abbreviations mean.
+# The degrees of freedom of the comparisons, when they differ from those
+# of every displayed row: a comparison runs on the OBSERVED groups only,
+# so its domain can carry degrees of freedom none of the rows does.
+# `test_ddf` holds each variable's, named by column, NA where no test
+# ran. One number when the comparisons share it; otherwise each one beside
+# the variable it tests, since a group with no data for one variable
+# gives its comparison other domains than its neighbors'. NULL when
+# nothing is to be said.
+.svy_test_df_note <- function(test_ddf, degf_used, var_labels) {
+  ddf <- test_ddf[!is.na(test_ddf)]
+  if (length(ddf) == 0L || length(degf_used) == 0L) {
+    return(NULL)
+  }
+  differs <- vapply(
+    ddf,
+    function(v) !any(abs(degf_used - v) < 1e-9),
+    logical(1)
+  )
+  if (!any(differs)) {
+    return(NULL)
+  }
+  if (length(unique(ddf)) == 1L) {
+    return(spicy_fmt(
+      "note_design_df_test_differs",
+      as.character(as.integer(ddf[[1L]]))
+    ))
+  }
+  spicy_fmt(
+    "note_design_df_test_differs",
+    .join_and(vapply(
+      names(ddf),
+      function(nm) {
+        spicy_fmt(
+          "note_group_comparison_item",
+          as.character(as.integer(ddf[[nm]])),
+          var_labels[[nm]]
+        )
+      },
+      character(1),
+      USE.NAMES = FALSE
+    ))
+  )
+}
+
+# The note of a continuous design table, opened with "Note.", in the
+# order of the family (`.compose_note()`): what the numbers are (how big
+# the sample is, what design produced them, the negative weights, which
+# quantile rule and which design effect were in force), what left the
+# sample, how the estimates were referred and the groups compared, and
+# what the abbreviations mean. `test_labels` is the comparison of each
+# variable, named by column, NA where none ran; `var_labels` is named by
+# column too.
 .svy_continuous_note <- function(
   meta,
   degf_used,
@@ -1439,30 +1584,14 @@ table_continuous_svy <- function(
   digits,
   qrule,
   deff,
-  test_label,
-  test_ddf,
+  test_labels = character(0),
+  var_labels = character(0),
+  test_ddf = NA_real_,
   n_negative_weights = 0L,
-  test_refused = "none"
+  test_refused = "none",
+  no_data = NULL,
+  p_adjust_info = NULL
 ) {
-  parts <- c(
-    .svy_missing_note(na_dropped, "note_missing_removed"),
-    .svy_missing_note(user_na_dropped, "note_declared_missing_removed")
-  )
-  if (by_na_dropped > 0L) {
-    parts <- c(
-      parts,
-      spicy_fmt("note_rows_missing_by_removed", group_col_name, by_na_dropped)
-    )
-  }
-  parts <- c(
-    parts,
-    .design_n_note(
-      meta$n_obs,
-      meta$sum_weights,
-      digits = 0L,
-      decimal_mark = decimal_mark
-    )
-  )
   # The df span the ROWS actually carry, not the design's own: a
   # grouped table refers each interval to its domain's degrees of
   # freedom, and a footer quoting the full design's would describe a
@@ -1487,46 +1616,49 @@ table_continuous_svy <- function(
       as.integer(df_user)
     )
   }
-  parts <- c(parts, lines)
-  parts <- c(
-    parts,
-    .design_negative_weights_note(
-      n_negative_weights,
-      meta$n_obs,
-      test_refused = test_refused
+  comparison <- .group_comparison_note(test_labels, var_labels)
+  .compose_note(
+    what = c(
+      .design_n_note(
+        meta$n_obs,
+        meta$sum_weights,
+        digits = 0L,
+        decimal_mark = decimal_mark
+      ),
+      lines[[1L]],
+      .design_negative_weights_note(
+        n_negative_weights,
+        meta$n_obs,
+        test_refused = test_refused
+      ),
+      if (any(c("med", "med_iqr", "q1", "q3", "iqr") %in% tokens)) {
+        spicy_fmt("note_quantile_rule", .svy_qrule_label(qrule))
+      },
+      if (identical(deff, "replace")) spicy_str("note_deff_replace")
+    ),
+    missing = c(
+      .svy_missing_note(na_dropped, "note_missing_removed"),
+      .svy_missing_note(user_na_dropped, "note_declared_missing_removed"),
+      if (by_na_dropped > 0L) {
+        spicy_fmt("note_rows_missing_by_removed", group_col_name, by_na_dropped)
+      },
+      no_data
+    ),
+    inference = c(
+      lines[[2L]],
+      lines[[3L]],
+      comparison,
+      if (!is.null(comparison)) {
+        .svy_test_df_note(test_ddf, degf_used, var_labels)
+      },
+      .desc_p_adjust_note(p_adjust_info)
+    ),
+    definitions = c(
+      build_column_glosses(tokens, result, ci_level, decimal_mark),
+      if ("deff" %in% tokens) {
+        spicy_fmt("note_gloss_deff", spicy_str("header_deff"))
+      },
+      if ("se" %in% tokens) spicy_fmt("note_gloss_se", spicy_str("header_se"))
     )
   )
-  if (any(c("med", "med_iqr", "q1", "q3", "iqr") %in% tokens)) {
-    parts <- c(parts, spicy_fmt("note_quantile_rule", .svy_qrule_label(qrule)))
-  }
-  if (identical(deff, "replace")) {
-    parts <- c(parts, spicy_str("note_deff_replace"))
-  }
-  if (!is.na(test_label)) {
-    parts <- c(parts, spicy_fmt("note_group_comparison", test_label))
-    # The comparison runs on the OBSERVED groups only, so its domain
-    # can carry a df none of the displayed rows does. Said only when
-    # the two really differ.
-    if (
-      !is.na(test_ddf) &&
-        length(degf_used) > 0L &&
-        !any(abs(degf_used - test_ddf) < 1e-9)
-    ) {
-      parts <- c(
-        parts,
-        spicy_fmt("note_design_df_test_differs", as.integer(test_ddf))
-      )
-    }
-  }
-  parts <- c(
-    parts,
-    build_column_glosses(tokens, result, ci_level, decimal_mark)
-  )
-  if ("deff" %in% tokens) {
-    parts <- c(parts, spicy_fmt("note_gloss_deff", spicy_str("header_deff")))
-  }
-  if ("se" %in% tokens) {
-    parts <- c(parts, spicy_fmt("note_gloss_se", spicy_str("header_se")))
-  }
-  paste_note_parts(parts)
 }

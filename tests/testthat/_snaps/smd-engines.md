@@ -12,6 +12,8 @@
       ╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
        y        │ A      2.25  1.50  1.00  4.00    -0.14       4.64    4  .264 
                 │ B      5.33  3.51  2.00  9.00    -3.39      14.06    3       
+      
+      Note. Group comparison: Welch t-test.
 
 ---
 
@@ -31,5 +33,5 @@
          b      │  1   25.0   2   66.7     3      42.9                       
          c      │  1   25.0   0    0.0     1      14.3                       
       
-      Note. Phi: bin. Cramer's V: k3. Group comparison: Fisher exact test.
+      Note. Group comparison: Fisher exact test. Phi: bin. Cramer's V: k3.
 

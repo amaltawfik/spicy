@@ -159,11 +159,18 @@ test_that("the whole-block footer LR test is unaffected by re_test", {
   fit <- .rt_lmer_int()
   note_none <- attr(table_regression(fit, re_test = "none"), "note")
   note_lrt <- attr(table_regression(fit, re_test = "lrt"), "note")
+  # The block-level sentence of the note, one paragraph.
   block_line <- function(note) {
-    lines <- strsplit(note, "\n", fixed = TRUE)[[1]]
-    grep("LR test vs linear regression", lines, value = TRUE)
+    regmatches(
+      note,
+      regexpr(
+        "Random effects \\([^)]*\\): LR test vs linear regression[^\n]*?[.](?= \\p{Lu}|$|\n)",
+        note,
+        perl = TRUE
+      )
+    )
   }
-  # The block-level chi-bar-squared footer line exists in both modes
+  # The block-level chi-bar-squared footer sentence exists in both modes
   # and is byte-identical: re_test only adds per-term p-values.
   l_none <- block_line(note_none)
   l_lrt <- block_line(note_lrt)

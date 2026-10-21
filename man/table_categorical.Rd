@@ -447,6 +447,8 @@ and the default object and the data frames of \code{"data.frame"} /
 \code{"long"} keep the whole note as printed, "Note." included, in
 \code{attr(x, "note")} (\code{NULL} when there is nothing to say), so a pipeline
 that renders the numbers itself can still state what left the table.
+The default object also keeps the title the console prints, in
+\code{attr(x, "title")}.
 On the \code{"tinytable"} route the note is set one size down;
 \code{options(spicy.note_style)} governs that (see \code{\link[=table_regression]{table_regression()}}).
 
@@ -476,7 +478,7 @@ complete cases of its observed levels, a \code{"(Missing)"} level and a
 declared level nobody holds left out: one \emph{p}-value per variable,
 in the \code{p} column. A table left with a single row or column (a
 variable observed at one level, or in one group) is uninformative and
-gets no test, whatever \code{test} says: its \code{p} cell shows a dash.
+gets no test, whatever \code{test} says: its \code{p} cell is left blank.
 
 The chi-squared approximation is unreliable when expected counts are
 small. Under \code{test = "auto"}, the default, a variable takes Pearson's
@@ -553,6 +555,24 @@ For model-based comparisons (cluster-robust SE, weighted contrasts,
 fitted means) on continuous outcomes, see \code{\link[=table_continuous_lm]{table_continuous_lm()}}.
 For descriptive (empirical) comparisons on continuous outcomes, see
 \code{\link[=table_continuous]{table_continuous()}}.
+}
+
+\section{Groups with no data}{
+A variable with no observed value in a group of \code{by} that holds rows,
+typically a question not asked in that group, has no data there, which
+is not a missing answer. Its cells in that group show an en dash
+(\code{NA} in the data frames, in \link[=tidy.spicy_categorical_table]{tidy()}
+and in \code{\link[=as_structured]{as_structured()}}), and its rows there are left out of
+everything computed for that variable: the missing values the note
+counts, the \code{Total} column, the \code{"(Missing)"} row, the test, the
+association measure and the SMD. A variable left with fewer than two
+groups with data is not tested: its \code{p} cell is left blank. The note
+says "No data for X in G.", in one sentence for the variables with no
+data in the same groups ("No data for X and Y in G."). Without \code{by}, a
+variable with no observed value at all keeps its declared levels (its
+one row when it declares none) with the dash, and the note says "No
+data for X." The column of missing \code{by} values is never such a group,
+and a declared level of \code{by} that holds no row keeps its zero column.
 }
 
 \section{Multiple-comparison adjustment}{

@@ -239,6 +239,27 @@
   factor(x, levels = .group_levels(x))
 }
 
+# The cells of a group in which a variable has no data hold no number,
+# so the numeric body of the sheet leaves them empty: the mark the
+# console prints there is written over them, before the cells are styled.
+# `display` is the character body the console prints, `cols` the
+# positions of its count and percentage columns, and `first_row` the
+# sheet row of its first line.
+.cat_xl_mark_undefined <- function(wb, display, cols, first_row) {
+  mark <- spicy_str("cell_undefined")
+  for (j in cols) {
+    for (i in which(!is.na(display[[j]]) & display[[j]] == mark)) {
+      wb <- openxlsx2::wb_add_data(
+        wb,
+        x = mark,
+        start_col = j,
+        start_row = first_row + i - 1L
+      )
+    }
+  }
+  wb
+}
+
 # Append the "(Missing)" display level -- always LAST -- and recode the
 # NA observations to it, without leaving factor territory.
 .add_missing_level <- function(f, missing_label) {
@@ -558,25 +579,28 @@
 
 # Build the sentences listing which measure was used for which variable
 # when the rows of a `table_categorical()` table use more than one
-# association measure, one sentence per measure. It carries no "Note."
-# prefix: the note opens with it once, in `.categorical_note()`, whatever
-# sentence comes first.
+# association measure (the column then takes the generic header), one
+# sentence per measure. A variable with no value at all (`no_value`: no
+# data in any group) has no measure, and is not named; the others still
+# are, since the header stays generic. It carries no "Note." prefix: the
+# note opens with it once, in `.categorical_note()`, whatever sentence
+# comes first.
 #
 # Example output:
 #   "Cramer's V: smoking, education. Kendall's Tau-b: self_rated_health."
-.assoc_note_apa <- function(per_row_measures, labels) {
+.assoc_note_apa <- function(per_row_measures, labels, no_value = character(0)) {
   shown <- per_row_measures[per_row_measures != "none"]
-  if (length(shown) == 0L) {
+  if (length(unique(unname(shown))) <= 1L) {
     return(NULL)
   }
-  unique_measures <- unique(unname(shown))
-  if (length(unique_measures) <= 1L) {
+  named <- shown[!names(shown) %in% no_value]
+  if (length(named) == 0L) {
     return(NULL)
   }
   parts <- vapply(
-    unique_measures,
+    unique(unname(named)),
     function(m) {
-      vars <- names(shown)[shown == m]
+      vars <- names(named)[named == m]
       lab <- labels[match(vars, names(per_row_measures))]
       spicy_fmt(
         "note_assoc_measure_item",
@@ -1210,6 +1234,8 @@
 #' `"long"` keep the whole note as printed, "Note." included, in
 #' `attr(x, "note")` (`NULL` when there is nothing to say), so a pipeline
 #' that renders the numbers itself can still state what left the table.
+#' The default object also keeps the title the console prints, in
+#' `attr(x, "title")`.
 #' On the `"tinytable"` route the note is set one size down;
 #' `options(spicy.note_style)` governs that (see [table_regression()]).
 #'
@@ -1225,7 +1251,7 @@
 #' declared level nobody holds left out: one *p*-value per variable,
 #' in the `p` column. A table left with a single row or column (a
 #' variable observed at one level, or in one group) is uninformative and
-#' gets no test, whatever `test` says: its `p` cell shows a dash.
+#' gets no test, whatever `test` says: its `p` cell is left blank.
 #'
 #' The chi-squared approximation is unreliable when expected counts are
 #' small. Under `test = "auto"`, the default, a variable takes Pearson's
@@ -1302,6 +1328,24 @@
 #' fitted means) on continuous outcomes, see [table_continuous_lm()].
 #' For descriptive (empirical) comparisons on continuous outcomes, see
 #' [table_continuous()].
+#'
+#' # Groups with no data
+#'
+#' A variable with no observed value in a group of `by` that holds rows,
+#' typically a question not asked in that group, has no data there, which
+#' is not a missing answer. Its cells in that group show an en dash
+#' (`NA` in the data frames, in [tidy()][tidy.spicy_categorical_table]
+#' and in [as_structured()]), and its rows there are left out of
+#' everything computed for that variable: the missing values the note
+#' counts, the `Total` column, the `"(Missing)"` row, the test, the
+#' association measure and the SMD. A variable left with fewer than two
+#' groups with data is not tested: its `p` cell is left blank. The note
+#' says "No data for X in G.", in one sentence for the variables with no
+#' data in the same groups ("No data for X and Y in G."). Without `by`, a
+#' variable with no observed value at all keeps its declared levels (its
+#' one row when it declares none) with the dash, and the note says "No
+#' data for X." The column of missing `by` values is never such a group,
+#' and a declared level of `by` that holds no row keeps its zero column.
 #'
 #' # Multiple-comparison adjustment
 #'
@@ -1724,6 +1768,9 @@ table_categorical <- function(
   }
   do_smd <- smd && has_group
 
+  # The weights column, by name (NULL for a vector of weights): a role of
+  # the selection below, and the name the note's weights sentence gives.
+  weights_name <- detect_weights_column_name(rlang::enquo(weights), data)
   # The `by` and weights columns are outside the selection: `everything()`
   # and the other helpers skip them, and pointing at one in `select`, by
   # name or by position, is an error (a variable crossed with itself, or
@@ -1731,10 +1778,7 @@ table_categorical <- function(
   select_names <- .resolve_selection_without(
     rlang::enquo(select),
     data,
-    roles = c(
-      by = by_name,
-      weights = detect_weights_column_name(rlang::enquo(weights), data)
-    )
+    roles = c(by = by_name, weights = weights_name)
   )
   if (!select_missing && length(select_names) == 0L) {
     .abort_empty_selection("select")
@@ -1850,20 +1894,28 @@ table_categorical <- function(
   na_dropped <- integer(0)
   user_na_dropped <- integer(0)
   by_na_dropped <- 0L
-  # Disclosure note for drop_na = TRUE (NULL otherwise / when nothing
-  # was dropped). Read lazily at assembly time, after the tabulation
-  # loops have filled the ledger; print() appends it to the
-  # association note.
+  # The groups of `by` in which a variable has no data: rows there, and
+  # not one observed value -- typically a question not asked in that
+  # group. That is not a missing answer. The variable's cells in such a
+  # group are NA in the compute frame and show `cell_undefined` on every
+  # route, and its rows there leave everything computed for it: the
+  # missing-value counts, the margin, the `(Missing)` row, the test, the
+  # association measure and the SMD. Named by variable, the groups in
+  # table order. Without `by`, `no_data_vars` lists the variables with
+  # no observed value at all.
+  no_data_groups <- list()
+  no_data_vars <- character(0)
+  # The missing-data sentences of the note, (b) of `.compose_note()`:
+  # what drop_na = TRUE removed, then the groups with no data. NULL when
+  # there is nothing to say. Read lazily at assembly time, after the
+  # tabulation loops have filled the ledger.
   build_missing_note <- function() {
-    if (!drop_na) {
-      return(NULL)
-    }
     # Each variable is named as its rows name it (`labels` above).
     label_of <- stats::setNames(labels, select_names)
     na_dropped <- .label_counts(na_dropped, label_of)
     user_na_dropped <- .label_counts(user_na_dropped, label_of)
     parts <- character(0)
-    if (length(na_dropped)) {
+    if (drop_na && length(na_dropped)) {
       parts <- c(
         parts,
         paste0(
@@ -1875,7 +1927,7 @@ table_categorical <- function(
         )
       )
     }
-    if (length(user_na_dropped)) {
+    if (drop_na && length(user_na_dropped)) {
       parts <- c(
         parts,
         paste0(
@@ -1891,13 +1943,35 @@ table_categorical <- function(
         )
       )
     }
-    if (by_na_dropped > 0L) {
+    if (drop_na && by_na_dropped > 0L) {
       parts <- c(
         parts,
         spicy_fmt("note_rows_missing_by_removed", by_label, by_na_dropped)
       )
     }
+    # One sentence per set of groups, the variables in the order of
+    # `select`.
+    no_data <- if (has_group) {
+      shown <- intersect(select_names, names(no_data_groups))
+      if (length(shown)) {
+        .no_data_sentences(label_of_key(shown), no_data_groups[shown])
+      }
+    } else if (length(no_data_vars)) {
+      .no_data_sentences(label_of_key(no_data_vars))
+    }
+    parts <- c(parts, no_data)
     if (length(parts)) paste(parts, collapse = " ") else NULL
+  }
+  # What the numbers are, (a) of `.compose_note()`: a weighted table says
+  # so, in the words of `table_continuous()` (decision 17).
+  build_weights_note <- function() {
+    if (is.null(weights_vec)) {
+      return(NULL)
+    }
+    spicy_fmt(
+      "note_weighted_by",
+      weights_name %||% spicy_str("note_weights_fallback")
+    )
   }
   validate_logical_scalar(rescale, "rescale")
   validate_logical_scalar(correct, "correct")
@@ -2148,6 +2222,11 @@ table_categorical <- function(
     )
   }
 
+  # The mark of a cell whose statistic applies but has no value: the
+  # count and the percentage of a group in which the variable has no data
+  # (`no_data_groups`), and an SMD that cannot be estimated.
+  undefined_cell <- spicy_str("cell_undefined")
+
   # `decimal.mark` pinned on every `formatC()` of this file that can
   # write one -- the exception is `fmt_n()` below, whose `digits = 0`
   # produces no decimal mark at all. The substitution below is the ONLY
@@ -2242,7 +2321,7 @@ table_categorical <- function(
   # the level rows below it, which are structurally blank.
   fmt_smd <- function(v) {
     if (is.na(v)) {
-      return(spicy_str("cell_undefined"))
+      return(undefined_cell)
     }
     s <- formatC(
       v,
@@ -2295,6 +2374,41 @@ table_categorical <- function(
       w <- weights_vec
 
       var_level_order <- levels(x)
+
+      # No observed value at all: the variable has no data, which is not
+      # a missing answer (see `no_data_groups`). It keeps the row shape
+      # of a variable -- its declared levels, or its one row when it
+      # declares none (level NA) -- with NA counts, and its rows are not
+      # counted as missing values.
+      if (length(x) > 0L && all(is.na(x))) {
+        keep_i <- levels_keep[[select_names[i]]]
+        lv_use <- if (is.null(keep_i)) {
+          var_level_order
+        } else {
+          .cat_kept_levels(levels_keep, select_names[i], var_level_order)
+        }
+        if (!is.null(keep_i) && length(lv_use) == 0L) {
+          .warn_levels_keep_no_match(select_names[i], var_level_order)
+          next
+        }
+        no_data_vars <- c(no_data_vars, select_names[i])
+        if (length(lv_use) == 0L) {
+          lv_use <- NA_character_
+        }
+        for (k in seq_along(lv_use)) {
+          rows[[rr]] <- data.frame(
+            variable = select_names[i],
+            level = lv_use[[k]],
+            .lvrank = k,
+            n = NA_real_,
+            pct = NA_real_,
+            stringsAsFactors = FALSE,
+            check.names = FALSE
+          )
+          rr <- rr + 1L
+        }
+        next
+      }
 
       keep <- if (drop_na) !is.na(x) else rep(TRUE, length(x))
       if (drop_na && sum(!keep) > 0L) {
@@ -2413,7 +2527,10 @@ table_categorical <- function(
     if (output == "long") {
       long_raw <- with_keys(with_label(long_raw))
       # Every data frame carries the note as print() shows it.
-      attr(long_raw, "note") <- .categorical_note(build_missing_note(), NULL)
+      attr(long_raw, "note") <- .categorical_note(
+        build_weights_note(),
+        build_missing_note()
+      )
       return(long_raw)
     }
 
@@ -2471,9 +2588,14 @@ table_categorical <- function(
         if (nrow(sv) == 0) {
           next
         }
+        # A variable with no data and no level to show: its one row
+        # carries the undefined cells itself.
+        no_level <- all(is.na(sv$level))
 
         keep_k <- levels_keep[[select_names[[k]]]]
-        lv_use <- if (is.null(keep_k)) {
+        lv_use <- if (no_level) {
+          character(0)
+        } else if (is.null(keep_k)) {
           unique(sv$level)
         } else {
           intersect(keep_k, unique(sv$level))
@@ -2481,6 +2603,10 @@ table_categorical <- function(
 
         if (mode == "char") {
           r0 <- as.list(setNames(rep("", length(report_cols)), report_cols))
+          if (no_level) {
+            r0$n <- undefined_cell
+            r0[["%"]] <- undefined_cell
+          }
         } else {
           r0 <- as.list(setNames(rep(NA, length(report_cols)), report_cols))
         }
@@ -2496,8 +2622,9 @@ table_categorical <- function(
           sl <- sv[sv$level == lv, , drop = FALSE]
           if (mode == "char") {
             r1 <- as.list(setNames(rep("", length(report_cols)), report_cols))
-            r1$n <- fmt_n(sl$n[1])
-            r1[["%"]] <- fmt_num(sl$pct[1], percent_digits)
+            # A count with no number is a variable with no data.
+            r1$n <- fmt_n(sl$n[1], na = undefined_cell)
+            r1[["%"]] <- fmt_num(sl$pct[1], percent_digits, na = undefined_cell)
           } else {
             r1 <- as.list(setNames(rep(NA, length(report_cols)), report_cols))
             r1$n <- sl$n[1]
@@ -2523,8 +2650,9 @@ table_categorical <- function(
     # the same disclosure, not print() alone. `oneway_note` is that
     # disclosure as the note the engines print, assembled (and opened
     # with "Note.") by the same `.categorical_note()` as print().
+    what_note <- build_weights_note()
     missing_note <- build_missing_note()
-    oneway_note <- .categorical_note(missing_note, NULL)
+    oneway_note <- .categorical_note(what_note, missing_note)
 
     # Typed view of the SAME rows the display frames hold, built from
     # the compute frame, never parsed back from a label string. Every
@@ -2550,9 +2678,12 @@ table_categorical <- function(
       out <- wide_raw
       attr(out, "display_df") <- report_wide_char
       attr(out, "group_var") <- NULL
-      # The whole note, as print() shows it; `missing_note` stays the part
-      # print() assembles it from.
+      # The title the console prints, from the helper every engine uses.
+      attr(out, "title") <- .categorical_title(NULL)
+      # The whole note, as print() shows it; `what_note` and
+      # `missing_note` stay the parts print() assembles it from.
       attr(out, "note") <- oneway_note
+      attr(out, "what_note") <- what_note
       attr(out, "missing_note") <- missing_note
       attr(out, "indent_text") <- indent_text
       attr(out, "align") <- align
@@ -2942,6 +3073,7 @@ table_categorical <- function(
         col_names = TRUE,
         row_names = FALSE
       )
+      wb <- .cat_xl_mark_undefined(wb, report_wide_char, 2:3, header_row + 1L)
 
       nc <- ncol(body_xl)
       first_body_row <- header_row + 1L
@@ -3185,10 +3317,69 @@ table_categorical <- function(
   # Yates' correction reached it; read by the note after the loop.
   test_types <- character(0)
   yates_used <- logical(0)
+  # The variables with no value at all (no data in any group), whose
+  # association measure the note does not name (`.assoc_note_apa()`).
+  no_value_vars <- character(0)
+
+  # One row of the compute frame: one variable, level and group. `st`
+  # holds the statistics of the variable (`parse_stats()`), which every
+  # row of its block carries.
+  cat_row <- function(
+    var,
+    lv,
+    rank,
+    gr,
+    n,
+    pct,
+    test_type,
+    st,
+    smd_val,
+    smd_kind
+  ) {
+    row_df <- data.frame(
+      variable = var,
+      level = lv,
+      # Per-variable display rank (see the no-by branch): keeps each
+      # block's own level order under the global sort.
+      .lvrank = rank,
+      group = gr,
+      n = n,
+      pct = pct,
+      test_type = test_type,
+      chi2 = st$chi2 %||% NA_real_,
+      df = st$df %||% NA_real_,
+      p = st$p,
+      p_op = st$p_op,
+      ci_lower = st$ci_lower,
+      ci_upper = st$ci_upper,
+      stringsAsFactors = FALSE,
+      check.names = FALSE
+    )
+    if (show_assoc) {
+      # Defer the rename `.assoc` -> measure_col to post-loop, where we
+      # know whether all rows used the same measure (uniform column
+      # header) or a mix (collapsed to the generic name).
+      row_df$.assoc <- st$v
+      # The measure this row actually carries. A row whose variable
+      # asked for none has a value but no type.
+      row_df$.assoc_type <- if (identical(st$measure, "none")) {
+        NA_character_
+      } else {
+        st$measure
+      }
+    }
+    if (do_smd) {
+      row_df$.smd <- smd_val
+      # Which kernel produced it -- and therefore whether it is signed.
+      # `"binary"` is signed (group 1 minus group 2 on the second
+      # level); `"multinomial"` is a distance and never is.
+      row_df$.smd_type <- smd_kind
+    }
+    row_df
+  }
 
   for (i in seq_along(select_names)) {
     x_raw <- data[[select_names[i]]]
-    n_user <- if (user_na) sum(.user_na_mask(x_raw)) else 0L
     # Factor built BEFORE tabulation (see .tab_factor): declared level
     # order and haven value labels survive end-to-end, so cross_tab()
     # computes the ordinal association measures on the table in the
@@ -3200,6 +3391,28 @@ table_categorical <- function(
 
     # Original level order, BEFORE the "(Missing)" level is appended.
     var_level_order <- levels(x)
+
+    # The groups in which this variable has no data (`no_data_groups`).
+    # Their rows leave the variable here, before anything is counted, so
+    # the missing-value counts, the margin, the `(Missing)` row, the test
+    # and the association measure read the groups that have data; the
+    # cells of those groups are NA below.
+    nd_i <- .no_data_groups(x, g, real_group_levels)
+    nd_rows <- !is.na(g) & as.character(g) %in% nd_i
+    n_user <- if (user_na) sum(.user_na_mask(x_raw) & !nd_rows) else 0L
+    if (any(nd_rows)) {
+      x <- x[!nd_rows]
+      g <- g[!nd_rows]
+      if (!is.null(w)) {
+        w <- w[!nd_rows]
+      }
+    }
+    # With fewer than two groups that have data, nothing is compared.
+    data_groups <- intersect(
+      real_group_levels,
+      as.character(g[!is.na(x) & !is.na(g)])
+    )
+    few_groups <- length(nd_i) > 0L && length(data_groups) < 2L
 
     keep <- rep(TRUE, length(x))
     if (drop_na) {
@@ -3219,7 +3432,64 @@ table_categorical <- function(
     if (!is.null(w)) {
       w <- w[keep]
     }
+    this_measure <- assoc_measures_per_row[[select_names[i]]]
     if (!length(x)) {
+      if (!length(nd_i)) {
+        next
+      }
+      # No data in any group that holds rows: the variable keeps its row
+      # shape -- its declared levels, or its one row (level NA) when it
+      # declares none -- with no count in those groups and in the margin,
+      # an empty group keeping its zero, and nothing tested.
+      keep_i <- levels_keep[[select_names[i]]]
+      lv_use <- if (is.null(keep_i)) {
+        var_level_order
+      } else {
+        .cat_kept_levels(levels_keep, select_names[i], var_level_order)
+      }
+      if (!is.null(keep_i) && length(lv_use) == 0L) {
+        .warn_levels_keep_no_match(select_names[i], var_level_order)
+        next
+      }
+      if (length(lv_use) == 0L) {
+        lv_use <- NA_character_
+      }
+      no_data_groups[[select_names[i]]] <- nd_i
+      no_value_vars <- c(no_value_vars, select_names[i])
+      test_types[[select_names[i]]] <- NA_character_
+      yates_used[[select_names[i]]] <- FALSE
+      st_none <- list(
+        p = NA_real_,
+        p_op = NA_character_,
+        v = NA_real_,
+        measure = this_measure,
+        chi2 = NA_real_,
+        df = NA_real_,
+        ci_lower = NA_real_,
+        ci_upper = NA_real_
+      )
+      for (k in seq_along(lv_use)) {
+        for (gr in group_levels) {
+          void <- gr %in% nd_i || identical(gr, margin_key)
+          rows[[rr]] <- cat_row(
+            select_names[i],
+            lv_use[[k]],
+            k,
+            gr,
+            n = if (void) NA_real_ else 0,
+            pct = if (void) NA_real_ else 0,
+            test_type = NA_character_,
+            st = st_none,
+            smd_val = NA_real_,
+            smd_kind = if (length(var_level_order)) {
+              .smd_categorical_type(length(var_level_order))
+            } else {
+              NA_character_
+            }
+          )
+          rr <- rr + 1L
+        }
+      }
       next
     }
     if (!drop_na) {
@@ -3238,7 +3508,6 @@ table_categorical <- function(
       g_has_na <- FALSE
     }
 
-    this_measure <- assoc_measures_per_row[[select_names[i]]]
     # Association statistics are computed on the OBSERVED cells only:
     # the "(Missing)" display level never enters the test (the
     # gtsummary / SPSS convention -- show the missing, test the
@@ -3376,6 +3645,13 @@ table_categorical <- function(
     } else if (identical(test_kind, "chisq") && !is.na(st$p)) {
       test_type <- .CAT_TEST_CHISQ
     }
+    # Fewer than two groups with data: no test and no association
+    # measure, whatever was computed on the one group left. The `p` cell
+    # stays blank, and the note names no test for this variable.
+    if (few_groups) {
+      st[c("p", "v", "chi2", "df", "ci_lower", "ci_upper")] <- NA_real_
+      test_type <- NA_character_
+    }
 
     # --- standardized mean difference ---
     # Complete cases on the OBSERVED groups and the observed levels,
@@ -3392,7 +3668,11 @@ table_categorical <- function(
     # company on the continuous arm.
     smd_val <- NA_real_
     smd_kind <- NA_character_
-    if (do_smd) {
+    # A group with no data leaves the two-group SMD undefined, which is
+    # not the infinite distance warned about below: NA, in silence.
+    if (do_smd && any(real_group_levels %in% nd_i)) {
+      smd_kind <- .smd_categorical_type(length(var_level_order))
+    } else if (do_smd) {
       cc <- !is.na(x) & !is.na(g)
       if (x_has_na) {
         cc <- cc & x != missing_label
@@ -3492,6 +3772,9 @@ table_categorical <- function(
     yates_used[[select_names[i]]] <- chi_correct &&
       !is.na(test_type) &&
       all(dim(test_tab) == 2L)
+    if (length(nd_i)) {
+      no_data_groups[[select_names[i]]] <- nd_i
+    }
 
     for (lv in lv_use) {
       in_n <- match(lv, vals_n)
@@ -3524,46 +3807,24 @@ table_categorical <- function(
         } else {
           0
         }
-        row_df <- data.frame(
-          variable = select_names[i],
-          level = lv,
-          # Per-variable display rank (see the no-by branch): keeps
-          # each block's own level order under the global sort.
-          .lvrank = match(lv, lv_use),
-          group = gr,
+        # A group in which the variable has no data has no count: NA,
+        # which every route shows as `cell_undefined`.
+        if (gr %in% nd_i) {
+          n_val <- NA_real_
+          pct_val <- NA_real_
+        }
+        rows[[rr]] <- cat_row(
+          select_names[i],
+          lv,
+          match(lv, lv_use),
+          gr,
           n = suppressWarnings(as.numeric(n_val)),
           pct = suppressWarnings(as.numeric(pct_val)),
           test_type = test_type,
-          chi2 = st$chi2 %||% NA_real_,
-          df = st$df %||% NA_real_,
-          p = st$p,
-          p_op = st$p_op,
-          ci_lower = st$ci_lower,
-          ci_upper = st$ci_upper,
-          stringsAsFactors = FALSE,
-          check.names = FALSE
+          st = st,
+          smd_val = smd_val,
+          smd_kind = smd_kind
         )
-        if (show_assoc) {
-          # Defer the rename `.assoc` -> measure_col to post-loop, where
-          # we know whether all rows used the same measure (uniform
-          # column header) or a mix (collapsed to the generic name).
-          row_df$.assoc <- st$v
-          # The measure this row actually carries. A row whose variable
-          # asked for none has a value but no type.
-          row_df$.assoc_type <- if (identical(st$measure, "none")) {
-            NA_character_
-          } else {
-            st$measure
-          }
-        }
-        if (do_smd) {
-          row_df$.smd <- smd_val
-          # Which kernel produced it -- and therefore whether it is
-          # signed. `"binary"` is signed (group 1 minus group 2 on the
-          # second level); `"multinomial"` is a distance and never is.
-          row_df$.smd_type <- smd_kind
-        }
-        rows[[rr]] <- row_df
         rr <- rr + 1L
       }
     }
@@ -3594,15 +3855,21 @@ table_categorical <- function(
   } else {
     .assoc_label("cramer_v")
   }
-  assoc_note_text <- .assoc_note_apa(assoc_measures_per_row, labels)
-  # The SMD gloss rides in the STATISTICS note slot beside the
-  # association gloss, so all six output routes carry it from one
-  # place. The multivariate sentence appears only when at least one
-  # variable has more than two levels -- it explains an unsigned
-  # column, and there is nothing to explain when every column is
-  # signed.
+  # The definitions of the note, (d) of `.compose_note()`: which measure
+  # each variable carries, then the SMD gloss. The multivariate sentence
+  # appears only when at least one variable has more than two levels --
+  # it explains an unsigned column, and there is nothing to explain when
+  # every column is signed.
+  definitions_note <- .assoc_note_apa(
+    assoc_measures_per_row,
+    labels,
+    no_value = no_value_vars
+  )
   if (do_smd) {
-    smd_note_text <- build_smd_note(TRUE, real_group_levels, decimal_mark)
+    definitions_note <- c(
+      definitions_note,
+      build_smd_note(TRUE, real_group_levels, decimal_mark)
+    )
     if (
       any(vapply(
         select_names,
@@ -3612,15 +3879,11 @@ table_categorical <- function(
         logical(1)
       ))
     ) {
-      smd_note_text <- paste(
-        smd_note_text,
+      definitions_note <- c(
+        definitions_note,
         spicy_fmt("note_gloss_smd_multinomial", spicy_str("header_smd"))
       )
     }
-    assoc_note_text <- paste(
-      c(assoc_note_text[nzchar(assoc_note_text)], smd_note_text),
-      collapse = " "
-    )
   }
 
   if (length(rows) == 0) {
@@ -3688,9 +3951,11 @@ table_categorical <- function(
   # `p`; the sentence joins the statistics note, which every route
   # prints. The raw p-values are keyed by the variable NAME, the key of
   # the rows and of the typed view's `.variable`.
-  # The test behind each p-value (decision of 2026-10-18): one sentence
-  # naming the test of every variable, then Yates' correction where it
-  # reached one, both before the adjustment sentence that reads them.
+  # The inference of the note, (c) of `.compose_note()`: the test behind
+  # each p-value (decision of 2026-10-18), one sentence naming the test of
+  # every variable, then Yates' correction where it reached one, then the
+  # adjustment.
+  inference_note <- NULL
   if (p_value) {
     phrase <- .cat_test_phrase(
       test_types,
@@ -3698,28 +3963,21 @@ table_categorical <- function(
       simulated = simulate_p,
       B = simulate_B
     )
-    test_note <- c(
+    inference_note <- c(
       if (!is.null(phrase)) spicy_fmt("note_group_comparison", phrase$text),
       if (any(yates_used)) spicy_str("note_yates_applied")
     )
-    if (length(test_note)) {
-      assoc_note_text <- paste(
-        c(assoc_note_text[nzchar(assoc_note_text)], test_note),
-        collapse = " "
-      )
-    }
   }
   adj <- .desc_apply_p_adjust(long_raw, "p", long_raw$variable, p_adjust)
   long_raw <- adj$df
   p_adjust_info <- adj$info
-  if (!is.null(p_adjust_info)) {
-    assoc_note_text <- paste(
-      c(
-        assoc_note_text[nzchar(assoc_note_text)],
-        .desc_p_adjust_note(p_adjust_info)
-      ),
-      collapse = " "
-    )
+  inference_note <- c(inference_note, .desc_p_adjust_note(p_adjust_info))
+  # The statistics part of the note, (c) then (d): the `assoc_note`
+  # attribute print() rebuilds the note from, NULL when empty.
+  stat_sentences <- c(inference_note, definitions_note)
+  stat_sentences <- stat_sentences[nzchar(stat_sentences)]
+  assoc_note_text <- if (length(stat_sentences)) {
+    paste(stat_sentences, collapse = " ")
   }
   # `p_value = FALSE`: the test leaves the compute frame here, before any
   # route reads it. The long output, the wide frame, the display frames
@@ -3742,6 +4000,7 @@ table_categorical <- function(
     )
     # Every data frame carries the note as print() shows it.
     attr(out, "note") <- .categorical_note(
+      build_weights_note(),
       build_missing_note(),
       assoc_note_text
     )
@@ -3834,8 +4093,12 @@ table_categorical <- function(
 
   wide_raw <- make_wide_raw(long_raw)
   # Read the ledger once, here: every output route below must carry the
-  # same disclosure, not print() alone.
+  # same disclosure, not print() alone. `table_note` is the whole note
+  # every route prints, assembled by the same `.categorical_note()` as
+  # print() from the same three parts.
+  what_note <- build_weights_note()
   missing_note <- build_missing_note()
+  table_note <- .categorical_note(what_note, missing_note, assoc_note_text)
 
   # ---------------- REPORT WIDE ----------------
   report_cols <- c(
@@ -3907,6 +4170,28 @@ table_categorical <- function(
 
     out <- list()
     z <- 1L
+    # The count and percentage cells of one row, `sl` its rows of the
+    # compute frame: a count with no number is a group in which the
+    # variable has no data, shown as `cell_undefined`.
+    fill_groups <- function(r, sl) {
+      for (gr in group_levels) {
+        sx <- sl[sl$group == gr, , drop = FALSE]
+        n_val <- if (nrow(sx)) sx$n[1] else NA_real_
+        p_val <- if (nrow(sx)) sx$pct[1] else NA_real_
+        if (mode == "char") {
+          r[[.cat_key_n(gr)]] <- fmt_n(n_val, na = undefined_cell)
+          r[[.cat_key_pct(gr)]] <- fmt_num(
+            p_val,
+            percent_digits,
+            na = undefined_cell
+          )
+        } else {
+          r[[.cat_key_n(gr)]] <- n_val
+          r[[.cat_key_pct(gr)]] <- p_val
+        }
+      }
+      r
+    }
 
     for (k in seq_along(labels)) {
       lab <- labels[[k]]
@@ -3914,9 +4199,14 @@ table_categorical <- function(
       if (nrow(sv) == 0) {
         next
       }
+      # A variable with no data and no level to show: its one row
+      # carries the cells of the groups itself.
+      no_level <- all(is.na(sv$level))
 
       keep_k <- levels_keep[[select_names[[k]]]]
-      lv_use <- if (is.null(keep_k)) {
+      lv_use <- if (no_level) {
+        character(0)
+      } else if (is.null(keep_k)) {
         unique(sv$level)
       } else {
         intersect(keep_k, unique(sv$level))
@@ -3927,6 +4217,9 @@ table_categorical <- function(
         r0 <- as.list(setNames(rep("", length(report_cols)), report_cols))
       } else {
         r0 <- as.list(setNames(rep(NA, length(report_cols)), report_cols))
+      }
+      if (no_level) {
+        r0 <- fill_groups(r0, sv)
       }
       r0$Variable <- lab
       if (p_value) {
@@ -3965,20 +4258,7 @@ table_categorical <- function(
           r1 <- as.list(setNames(rep(NA, length(report_cols)), report_cols))
         }
         r1$Variable <- paste0(indent_text, lv)
-
-        for (gr in group_levels) {
-          sx <- sl[sl$group == gr, , drop = FALSE]
-          n_val <- if (nrow(sx)) sx$n[1] else NA_real_
-          p_val <- if (nrow(sx)) sx$pct[1] else NA_real_
-
-          if (mode == "char") {
-            r1[[.cat_key_n(gr)]] <- fmt_n(n_val)
-            r1[[.cat_key_pct(gr)]] <- fmt_num(p_val, percent_digits)
-          } else {
-            r1[[.cat_key_n(gr)]] <- n_val
-            r1[[.cat_key_pct(gr)]] <- p_val
-          }
-        }
+        r1 <- fill_groups(r1, sl)
 
         if (p_value) {
           r1$p <- ""
@@ -4040,9 +4320,12 @@ table_categorical <- function(
   if (output %in% c("default", "data.frame")) {
     out <- wide_raw
     attr(out, "display_df") <- report_wide_char
-    # The whole note, as print() shows it; `missing_note` and `assoc_note`
-    # stay the two parts print() assembles it from.
-    attr(out, "note") <- .categorical_note(missing_note, assoc_note_text)
+    # The title the console prints, from the helper every engine uses.
+    attr(out, "title") <- .categorical_title(by_label)
+    # The whole note, as print() shows it; `what_note`, `missing_note`
+    # and `assoc_note` stay the three parts print() assembles it from.
+    attr(out, "note") <- table_note
+    attr(out, "what_note") <- what_note
     attr(out, "missing_note") <- missing_note
     attr(out, "group_var") <- by_name
     attr(out, "group_label") <- by_label
@@ -4235,7 +4518,7 @@ table_categorical <- function(
       # The association-measure gloss belongs to the rendered table as
       # much as to the console: it names which measure each row
       # carries.
-      notes = .categorical_note(missing_note, assoc_note_text)
+      notes = table_note
     )
     tt <- tinytable::group_tt(tt, j = gspec)
     tt <- .spicy_tt_bare(tt)
@@ -4605,11 +4888,8 @@ table_categorical <- function(
     # The same title the five other engines print.
     tbl <- .spicy_gt_apa_title(tbl, .categorical_title(by_label))
 
-    # Both halves of the note, as the five other routes print them.
-    return(.spicy_gt_attach_note(
-      tbl,
-      .categorical_note(missing_note, assoc_note_text)
-    ))
+    # The note, as the five other routes print it.
+    return(.spicy_gt_attach_note(tbl, table_note))
   }
 
   # ---------------- flextable / word ----------------
@@ -4712,11 +4992,8 @@ table_categorical <- function(
     ft <- flextable::autofit(ft)
     # The association-measure gloss belongs to the rendered table as
     # much as to the console: it names which measure each row carries.
-    # Same pair, same order as the console printer.
-    ft <- .spicy_ft_attach_note(
-      ft,
-      .categorical_note(missing_note, assoc_note_text)
-    )
+    # Same note as the console printer.
+    ft <- .spicy_ft_attach_note(ft, table_note)
     class(ft) <- c("spicy_flextable", class(ft))
     ft
   }
@@ -4853,6 +5130,7 @@ table_categorical <- function(
       col_names = FALSE,
       row_names = FALSE
     )
+    wb <- .cat_xl_mark_undefined(wb, report_wide_char, grp_j, first_body_row)
 
     nc <- ncol(body_xl)
     last_row <- bot_header_row + nrow(body_xl)
@@ -4977,12 +5255,11 @@ table_categorical <- function(
       )
     }
 
-    # Disclosure notes below the table: what left it (drop_na), then
-    # the association-measure gloss -- the same text, in the same
-    # order, as the console footer.
+    # The note below the table -- the same text, in the same order, as
+    # the console footer.
     wb <- .spicy_xl_add_note(
       wb,
-      note = .categorical_note(missing_note, assoc_note_text),
+      note = table_note,
       start_row = last_row + 2L
     )
     # Widths from the DISPLAY strings (the char body), not from the
@@ -5013,7 +5290,7 @@ table_categorical <- function(
       clip_mat,
       clipboard_delim,
       title = .categorical_title(by_label),
-      note = .categorical_note(missing_note, assoc_note_text)
+      note = table_note
     )
     clipr::write_clip(txt)
     spicy_inform("Categorical table copied to clipboard.")

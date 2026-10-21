@@ -384,6 +384,10 @@
     rep(NA_integer_, length(select_list)),
     names(select_list)
   )
+  nodata_levels <- stats::setNames(
+    rep(list(character(0)), length(select_list)),
+    names(select_list)
+  )
 
   for (j in seq_along(select_list)) {
     nm <- names(select_list)[[j]]
@@ -393,6 +397,16 @@
     if (drop_na && geom$n_na > 0L) {
       select_na_dropped[[nm]] <- geom$n_na
     }
+    # The levels of the block where the outcome has no observed value
+    # (typically a question not asked there): no data, which is not a
+    # missing answer. Their cells show the undefined mark, n included,
+    # and the block's comparison runs on the levels with data. The
+    # level of missing values is never one.
+    nodata_levels[[nm]] <- .no_data_groups(
+      outcome,
+      g,
+      geom$levels[!geom$levels %in% geom$missing_label]
+    )
     inf <- .outcome_block_inference(
       outcome,
       g,
@@ -418,6 +432,10 @@
     )
     for (lv in geom$levels) {
       idx <- which(geom$values == lv)
+      desc <- desc_of(idx)
+      if (lv %in% nodata_levels[[nm]]) {
+        desc$n <- NA_integer_
+      }
       rows[[length(rows) + 1L]] <- cbind(
         identity_row(
           nm,
@@ -425,7 +443,7 @@
           lv,
           if (identical(lv, geom$missing_label)) "missing" else "level"
         ),
-        desc_of(idx),
+        desc,
         empty_block
       )
     }
@@ -439,6 +457,10 @@
   # The levels of each `select` variable the test compares (`NA` when no
   # test ran): `n_levels`, the family's name for a count of categories.
   attr(result, "n_levels") <- n_groups
+  # The levels of each block where the outcome has no data, in display
+  # order: the note names them and the missing-value count leaves out
+  # their rows.
+  attr(result, "no_data_levels") <- nodata_levels
   result
 }
 
@@ -546,6 +568,14 @@ abort_outcome_by_renamed <- function() {
 #' block with fewer than two observed levels, or with a level holding a
 #' single observation, is not tested; its statistics stay empty and the
 #' other blocks are unaffected.
+#'
+#' A level where the outcome has no observed value (typically a question
+#' not asked there) has no data, which is not a missing answer: its cells
+#' show an en dash, *n* included, the block compares the levels with
+#' data, the rows of that level are not counted in the outcome's missing
+#' values (whichever block they fall in), and the note says so ("No data
+#' for X in G.", X the label of the outcome and G the level). The
+#' `Overall` row stays the whole analytic sample.
 #'
 #' # The `Overall` row
 #'
@@ -715,7 +745,8 @@ abort_outcome_by_renamed <- function() {
 #'
 #' The default object and the two data frames carry the whole note as
 #' printed, "Note." included, in `attr(x, "note")` (`NULL` when there is
-#' nothing to say).
+#' nothing to say). The default object also keeps the title it prints in
+#' `attr(x, "title")`.
 #'
 #' @seealso [table_continuous()] for the transposed shape,
 #'   [table_categorical()] for categorical outcomes.
@@ -1148,6 +1179,29 @@ table_outcome <- function(
   test_used <- attr(result, "test_used")
   n_groups <- attr(result, "n_levels")
   missing_labels <- attr(result, "missing_labels")
+  nodata_levels <- attr(result, "no_data_levels")
+  attr(result, "no_data_levels") <- NULL
+  # A row in a level where the outcome has no data, in ANY block, is not
+  # a missing answer: it leaves the outcome's missing-value count, the
+  # declared missing values among them its declared half. (The Overall
+  # row, the whole analytic sample, never held it.)
+  nodata_rows <- logical(length(outcome_vec))
+  for (nm in names(nodata_levels)) {
+    g <- select_list[[nm]]
+    nodata_rows <- nodata_rows |
+      (!is.na(g) & as.character(g) %in% nodata_levels[[nm]])
+  }
+  if (any(nodata_rows)) {
+    n_declared <- if (user_na) {
+      sum(.user_na_mask(outcome_raw) & nodata_rows)
+    } else {
+      0L
+    }
+    n_user_na <- n_user_na - n_declared
+    n_outcome_na <- n_outcome_na - (sum(nodata_rows) - n_declared)
+  }
+  # One sentence for the outcome, its no-data levels in table order.
+  nodata_shown <- unique(unlist(nodata_levels, use.names = FALSE))
 
   # `p_adjust`: one test per block, its p-value on the block header.
   # Adjusted on the compute frame, before any route formats it.
@@ -1190,7 +1244,10 @@ table_outcome <- function(
       (p_value || statistic || do_es) &&
       any(!is.na(test_used)),
     overall = overall,
-    p_adjust_info = p_adjust_info
+    p_adjust_info = p_adjust_info,
+    no_data = if (length(nodata_shown)) {
+      .no_data_sentences(outcome_label, list(nodata_shown))
+    }
   )
 
   # The two machine shapes of the family (decision 5 of the ADR of
@@ -1230,6 +1287,8 @@ table_outcome <- function(
   attr(result, "indent_text") <- indent_text
   attr(result, "indent_text_excel_clipboard") <- indent_text_excel_clipboard
   attr(result, "note") <- note
+  # The title the console prints, from the helper every engine reads.
+  attr(result, "title") <- .outcome_title(outcome_label)
   attr(result, "missing_labels") <- missing_labels
   class(result) <- c("spicy_outcome_table", "spicy_table", "data.frame")
 
@@ -1404,10 +1463,11 @@ table_outcome <- function(
 
 # Internal: the note under an outcome table, opened with "Note.".
 #
-# In reading order: what left the table, then how it was weighted, then
-# how the blocks were compared and how their p-values were adjusted, then
-# what the columns mean, then the two sentences this shape owes its
-# reader.
+# In the order of the family (`.compose_note()`): how the statistics were
+# weighted; what left the table, then the levels where the outcome has no
+# data (`no_data`); how the blocks were compared, how their p-values were
+# adjusted, and that no block is adjusted for another; then what the
+# columns and the Overall row mean.
 .outcome_note <- function(
   outcome_name,
   outcome_label,
@@ -1426,7 +1486,8 @@ table_outcome <- function(
   var_labels,
   show_comparison,
   overall,
-  p_adjust_info = NULL
+  p_adjust_info = NULL,
+  no_data = NULL
 ) {
   parts <- character(0)
   if (n_outcome_na > 0L) {
@@ -1474,70 +1535,42 @@ table_outcome <- function(
       )
     )
   }
-  if (weighted) {
-    parts <- c(
-      parts,
+  .compose_note(
+    what = if (weighted) {
       spicy_fmt(
         "note_weighted_by",
         weights_name %||% spicy_str("note_weights_fallback")
       )
+    },
+    missing = c(parts, no_data),
+    inference = c(
+      if (show_comparison) .outcome_test_note(test_used, n_groups, var_labels),
+      .desc_p_adjust_note(p_adjust_info),
+      .outcome_structure_notes(outcome_label, show_comparison, FALSE)
+    ),
+    definitions = c(
+      build_column_glosses(tokens, result, ci_level, decimal_mark),
+      .outcome_structure_notes(outcome_label, FALSE, overall)
     )
-  }
-  if (show_comparison) {
-    parts <- c(parts, .outcome_test_note(test_used, n_groups, var_labels))
-  }
-  parts <- c(parts, .desc_p_adjust_note(p_adjust_info))
-  parts <- c(
-    parts,
-    build_column_glosses(tokens, result, ci_level, decimal_mark)
   )
-  parts <- c(
-    parts,
-    .outcome_structure_notes(outcome_label, show_comparison, overall)
-  )
-  # The note every route prints, so it opens with "Note." here, once.
-  .note_with_prefix(paste_note_parts(parts))
 }
 
 # Internal: the group-comparison disclosure of an outcome table.
 #
-# NOT `build_test_note()`. That one takes a SCALAR group count -- the
-# sibling's blocks are variables compared across one grouping, so they
-# all have the same number of groups -- and it only speaks when a
-# variable was switched onto the rank family. Here every block has its
-# own level count, so `test = "welch"` can be the Welch t-test in one
-# block and the Welch one-way ANOVA in the next; the reader is owed
-# that, always, not only after a switch. Each block is named as its header
-# row names it: `var_labels` is named by column, like `test_used`.
+# Every block has its own level count, so `test = "welch"` can be the
+# Welch t-test in one block and the Welch one-way ANOVA in the next; the
+# reader is owed that, always, not only after a switch. The sentence is
+# the one `table_continuous()` writes (`.group_comparison_note()`). Each
+# block is named as its header row names it: `var_labels` is named by
+# column, like `test_used`.
 .outcome_test_note <- function(test_used, n_groups, var_labels) {
   ran <- names(test_used)[!is.na(test_used)]
-  if (length(ran) == 0L) {
-    return(NULL)
-  }
-  labels <- vapply(
-    ran,
-    function(nm) continuous_test_label(test_used[[nm]], n_groups[[nm]]),
-    character(1)
-  )
-  if (length(unique(labels)) == 1L) {
-    return(spicy_fmt("note_group_comparison", labels[[1L]]))
-  }
-  by_label <- split(ran, labels)
-  spicy_fmt(
-    "note_group_comparison",
-    paste(
-      vapply(
-        names(by_label),
-        function(lb) {
-          spicy_fmt(
-            "note_group_comparison_item",
-            lb,
-            .join_note_vars(unname(var_labels[by_label[[lb]]]))
-          )
-        },
-        character(1)
-      ),
-      collapse = spicy_str("note_group_comparison_sep")
-    )
+  .group_comparison_note(
+    vapply(
+      ran,
+      function(nm) continuous_test_label(test_used[[nm]], n_groups[[nm]]),
+      character(1)
+    ),
+    var_labels
   )
 }

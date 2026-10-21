@@ -604,6 +604,125 @@ test_that("the note opens with \"Note.\" once, on the attribute and in print", {
   ))
 })
 
+# ---- no data in a level (lot N, R1) -------------------------------------------
+
+# The outcome is not observed in the level "high" of `edu` (a question
+# not asked there); `sex` crosses it, so each of its levels has data.
+.to_nodata <- function() {
+  data.frame(
+    y = c(2, 4, 6, 8, 1, 3, 5, 7, NA, NA, NA, NA),
+    edu = factor(
+      rep(c("low", "mid", "high"), each = 4),
+      levels = c("low", "mid", "high")
+    ),
+    sex = rep(c("F", "M"), 6)
+  )
+}
+
+test_that("a level without data shows the mark, n included", {
+  long <- table_outcome(.to_nodata(), y, select = c(edu, sex), output = "long")
+  high <- long$variable == "edu" & long$level %in% "high"
+  expect_identical(long$n[high], NA_integer_)
+  expect_true(is.na(long$mean[high]))
+  # The Overall row stays the whole analytic sample.
+  expect_identical(long$n[long$.row_role == "summary"], 8L)
+  expect_identical(
+    long$n[long$variable == "sex" & !is.na(long$level)],
+    c(4L, 4L)
+  )
+
+  tbl <- table_outcome(.to_nodata(), y, select = c(edu, sex))
+  row <- which(tbl$variable == "edu" & tbl$level %in% "high")
+  st <- as_structured(tbl)
+  expect_true(is.na(st$body$n[[row]]))
+  expect_identical(st$cell_status$n[[row]], "undefined")
+  expect_identical(
+    attr(tbl, "display_df")$n[[row]],
+    spicy_str("cell_undefined")
+  )
+})
+
+test_that("the block compares the levels with data, and the note says why", {
+  d <- .to_nodata()
+  long <- table_outcome(d, y, select = c(edu, sex), output = "long")
+  headers <- long[long$.row_role == "factor_header", ]
+  # Two levels with data in `edu`: the two-group test.
+  expect_identical(headers$test_type, c("welch_t", "welch_t"))
+  expect_equal(
+    headers$p.value[[1L]],
+    stats::t.test(y ~ edu, data = droplevels(d[d$edu != "high", ]))$p.value,
+    tolerance = 1e-12
+  )
+  # The four rows of "high" are not missing answers: no missing-value
+  # sentence, in any block, and the no-data sentence instead.
+  tbl <- table_outcome(d, y, select = c(edu, sex))
+  expect_identical(
+    attr(tbl, "note"),
+    paste(
+      "Note. No data for y in high.",
+      "Group comparison: Welch t-test.",
+      "Each block compares y across the levels of one variable;",
+      "blocks are not adjusted for one another.",
+      "Overall = the whole analytic sample."
+    )
+  )
+  # A real missing value elsewhere is still counted.
+  d$y[[1L]] <- NA
+  expect_match(
+    attr(table_outcome(d, y, select = c(edu, sex)), "note"),
+    "Note. Missing values removed: y (1). No data for y in high.",
+    fixed = TRUE
+  )
+  withr::local_options(spicy.language = "fr")
+  expect_match(
+    attr(table_outcome(.to_nodata(), y, select = c(edu, sex)), "note"),
+    "Aucune donn\u00e9e pour y dans high.",
+    fixed = TRUE
+  )
+})
+
+test_that("a block with one level of data has no test, and names none", {
+  d <- data.frame(
+    y = c(1, 2, 3, 4, NA, NA, NA, NA),
+    g = rep(c("a", "b"), each = 4),
+    h = rep(c("u", "v"), 4)
+  )
+  long <- table_outcome(d, y, select = c(g, h), output = "long")
+  headers <- long[long$.row_role == "factor_header", ]
+  expect_true(is.na(headers$p.value[[1L]]))
+  expect_false(is.na(headers$p.value[[2L]]))
+  expect_identical(
+    attr(table_outcome(d, y, select = c(g, h)), "note"),
+    paste(
+      "Note. No data for y in b.",
+      "Group comparison: Welch t-test.",
+      "Each block compares y across the levels of one variable;",
+      "blocks are not adjusted for one another.",
+      "Overall = the whole analytic sample."
+    )
+  )
+})
+
+test_that("the weights open the note", {
+  d <- .to_nodata()
+  d$w <- rep(c(1, 2), 6)
+  note <- attr(
+    table_outcome(d, y, select = edu, weights = w, p_value = FALSE),
+    "note"
+  )
+  expect_true(startsWith(
+    note,
+    "Note. Statistics weighted by w. No data for y in high."
+  ))
+})
+
+test_that("the object carries the title it prints", {
+  tbl <- table_outcome(sochealth, bmi, select = sex)
+  expect_identical(attr(tbl, "title"), "Descriptive statistics of bmi")
+  expect_identical(utils::capture.output(print(tbl))[[1L]], attr(tbl, "title"))
+})
+
+
 test_that("labels names the outcome and the blocks: title, rows, notes", {
   d <- .to_sh()
   d$plain <- as.character(d$sex)
@@ -1056,7 +1175,7 @@ test_that("p_adjust: the adjustment follows the tests, before the blocks", {
   expect_match(
     note,
     paste0(
-      "Welch t-test (am, vs). ",
+      "Welch t-test (am, vs); Welch one-way ANOVA (cyl). ",
       'P-values adjusted for 3 tests (Benjamini-Hochberg method). ',
       "Each block compares mpg"
     ),

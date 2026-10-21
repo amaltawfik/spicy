@@ -223,12 +223,27 @@ test_that("panel values are on SD scale, not variance scale", {
 
 # ---- 7. Header carries the estimator label (REML / ML) ----------------
 
+# The random-effects sentence of a printed note, from "Random effects (" to
+# the period that ends it.
+.re_lrt_sentence <- function(out) {
+  note <- paste(out[nzchar(out)], collapse = "\n")
+  regmatches(
+    note,
+    regexpr(
+      "Random effects \\([^)]*\\):[^\n]*?[.](?= \\p{Lu}|$|\n)",
+      note,
+      perl = TRUE
+    )
+  )
+}
+
 test_that("panel header annotates lmer (REML default) with '(REML)'", {
   skip_if_not_installed("merDeriv")
   fit <- .fit_lmer_int_panel()
   out <- capture.output(print(table_regression(fit)))
-  # Pin the whole LRT footer line, not just its "(REML):" prefix.
-  lrt_line <- grep("^Random effects \\(", out, value = TRUE)
+  # Pin the whole LRT footer sentence, not just its "(REML):" prefix: a
+  # sentence of the printed note, which is one paragraph.
+  lrt_line <- .re_lrt_sentence(out)
   chibar2 <- intToUtf8(c(0x03c7, 0x0304, 0x00b2))
   expect_identical(
     lrt_line,
@@ -248,8 +263,8 @@ test_that("panel header annotates lmer (REML=FALSE) with '(ML)'", {
     REML = FALSE
   )
   out <- capture.output(print(table_regression(fit)))
-  # Pin the whole LRT footer line, not just its "(ML):" prefix.
-  lrt_line <- grep("^Random effects \\(", out, value = TRUE)
+  # Pin the whole LRT footer sentence, not just its "(ML):" prefix.
+  lrt_line <- .re_lrt_sentence(out)
   chibar2 <- intToUtf8(c(0x03c7, 0x0304, 0x00b2))
   expect_identical(
     lrt_line,

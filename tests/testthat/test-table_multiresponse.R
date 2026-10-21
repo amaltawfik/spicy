@@ -1171,13 +1171,14 @@ test_that("none_row = FALSE: the base sentence puts each count in the base or ou
       "Base: all respondents, including 1 with no data for the question and 3 with no item chosen."
     )
   )
-  # With `by`: after the rows a missing group removed (row 7), one count of
-  # each for all groups together, before the tests.
+  # With `by`: one count of each for all groups together, then the rows a
+  # missing group removed (row 7), then the tests (issue #11: the order of
+  # the family, whatever the table).
   with_by <- .mr_none_note(by = g)
   opening <- paste(
-    "Note. Rows with missing g removed: 1.",
-    "Multiple answers possible: percentages can sum to more than 100%.",
+    "Note. Multiple answers possible: percentages can sum to more than 100%.",
     "Base: respondents with data for the question, including 2 with no item chosen (excluded: 1 with no data for the question).",
+    "Rows with missing g removed: 1.",
     "Item p-values:"
   )
   expect_identical(substr(with_by, 1L, nchar(opening)), opening)
@@ -2269,6 +2270,172 @@ test_that("an engine renders the relabeled rows", {
       "Base"
     )
   )
+})
+
+# ---- no data in a group (lot N, R1) -------------------------------------------------
+
+# Three groups of six respondents; x2 was not asked in group c.
+.mr_nodata <- function() {
+  data.frame(
+    g = factor(rep(c("a", "b", "c"), each = 6L)),
+    x1 = c(1, 0, 1, 1, 0, 1, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 1, 1),
+    x2 = c(1, 1, 0, 0, 1, 0, 1, 0, 0, 1, 1, 1, rep(NA, 6L)),
+    x3 = c(0, 0, 1, 0, 0, 1, 1, 1, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0)
+  )
+}
+
+test_that("an item with no data in a group leaves it out of its margin and test", {
+  d <- .mr_nodata()
+  out <- table_multiresponse(
+    d,
+    c(x1, x2, x3),
+    by = g,
+    test = "chisq",
+    output = "data.frame"
+  )
+  x2 <- out[out$variable == "x2", ]
+  expect_true(is.na(x2[["c n"]]))
+  expect_true(is.na(x2[["c %"]]))
+  # The margin counts the groups with data: 7 of the 12 respondents of a
+  # and b.
+  expect_identical(x2[["Total n"]], 7)
+  expect_equal(x2[["Total %"]], 100 * 7 / 12)
+  # The item test compares a and b only.
+  ref <- suppressWarnings(
+    stats::chisq.test(rbind(c(3, 3), c(4, 2)), correct = FALSE)
+  )
+  long <- table_multiresponse(
+    d,
+    c(x1, x2, x3),
+    by = g,
+    test = "chisq",
+    output = "long"
+  )
+  l2 <- long[long$variable == "x2", ]
+  expect_equal(l2$statistic[[1L]], unname(ref$statistic))
+  expect_equal(l2$df[[1L]], 1)
+  expect_equal(l2$p_unadjusted[[1L]], ref$p.value)
+  # The cell of c is NA in the machine outputs, its count and base too.
+  expect_true(is.na(l2$n[l2$group == "c"]))
+  expect_true(is.na(l2$base[l2$group == "c"]))
+  expect_identical(l2$base[l2$group == "Total"], 12L)
+  # The global test compares every group on the same items: x2 leaves it.
+  tbl <- table_multiresponse(d, c(x1, x2, x3), by = g, test = "chisq")
+  expect_identical(attr(tbl, "global_test")$n_items, 2L)
+  # The console and the typed view show the mark.
+  st <- as_structured(tbl)
+  expect_identical(st$cell_status[["c n"]][[2L]], "undefined")
+  expect_identical(st$cell_status[["c %"]][[2L]], "undefined")
+  printed <- utils::capture.output(print(tbl))
+  expect_match(
+    printed[startsWith(trimws(printed), "x2")],
+    spicy:::spicy_str("cell_undefined"),
+    fixed = TRUE
+  )
+  # broom: the item's share in the margin is on its own base, the other
+  # items of group c keep the choices made there as denominator.
+  td <- broom::tidy(tbl)
+  expect_equal(
+    td$proportion_cases[td$variable == "x2" & td$group == "Total"],
+    7 / 12
+  )
+  expect_equal(
+    td$proportion_responses[td$variable == "x1" & td$group == "c"],
+    5 / 7
+  )
+  expect_identical(broom::glance(tbl)$nobs, 18L)
+})
+
+test_that("the note names the items with no data in a group, after the base", {
+  d <- .mr_nodata()
+  d$g[1L] <- NA
+  note <- function(dd = d) {
+    attr(table_multiresponse(dd, c(x1, x2, x3), by = g, test = "chisq"), "note")
+  }
+  expect_match(
+    note(),
+    paste(
+      "Base: respondents with data for the question.",
+      "Rows with missing g removed: 1.",
+      "No data for x2 in c.",
+      "Item p-values:"
+    ),
+    fixed = TRUE
+  )
+  # Two items with no data in the same group share one sentence.
+  d2 <- d
+  d2$x3[d2$g %in% "c"] <- NA
+  expect_match(
+    note(d2),
+    "removed: 1. No data for x2 and x3 in c. Item p-values:",
+    fixed = TRUE
+  )
+  withr::local_options(spicy.language = "fr")
+  expect_match(note(), "Aucune donn", fixed = TRUE)
+  expect_match(note(), "pour x2 dans c.", fixed = TRUE)
+  expect_match(note(d2), "pour x2 et x3 dans c.", fixed = TRUE)
+})
+
+test_that("an item with data in one group has no test, and is not untested", {
+  d <- .mr_nodata()[1:12, ]
+  d$g <- droplevels(d$g)
+  d$x2[d$g == "b"] <- NA
+  tbl <- table_multiresponse(
+    d,
+    c(x1, x2, x3),
+    by = g,
+    test = "chisq",
+    statistic = TRUE
+  )
+  disp <- attr(tbl, "display_df")
+  row <- disp$Variable == "x2"
+  # A blank p, not the mark of an item without variation.
+  expect_identical(disp[row, "p"], "")
+  expect_identical(disp[row, spicy:::.CON_KEY_TEST], "")
+  expect_true(is.na(tbl$p[tbl$Variable == "x2"]))
+  note <- attr(tbl, "note")
+  expect_false(grepl("Not tested", note, fixed = TRUE))
+  expect_match(note, "No data for x2 in b.", fixed = TRUE)
+  expect_match(note, "P-values adjusted for 2 tests", fixed = TRUE)
+  expect_identical(attr(tbl, "global_test")$n_items, 2L)
+})
+
+test_that("a group with no data for any item leaves the base, margin and tests", {
+  d <- .mr_nodata()
+  d$x1[d$g == "c"] <- NA
+  d$x3[d$g == "c"] <- NA
+  for (b in c("valid", "all")) {
+    tbl <- table_multiresponse(
+      d,
+      c(x1, x2, x3),
+      by = g,
+      base = b,
+      test = "chisq"
+    )
+    df <- as.data.frame(tbl)
+    # Every cell of c is the mark, its Respondents row included.
+    expect_true(all(is.na(df[["c n"]])), info = b)
+    expect_identical(df[["Total n"]][df$.row_role == "fit_stat"], 12, info = b)
+    # Its rows are not respondents with no data for the question.
+    expect_false(any(df$.row_role == "missing"), info = b)
+    expect_false(
+      grepl("no data for the question", attr(tbl, "note"), fixed = TRUE),
+      info = b
+    )
+    expect_identical(attr(tbl, "global_test")$n_groups, 2L, info = b)
+    expect_identical(attr(tbl, "global_test")$n_items, 3L, info = b)
+  }
+})
+
+test_that("without `by`, an item with no observed value at all shows the mark", {
+  d <- .mr_nodata()
+  d$x2 <- NA
+  tbl <- table_multiresponse(d, c(x1, x2, x3))
+  df <- as.data.frame(tbl)
+  expect_true(is.na(df$n[df$variable == "x2"]))
+  expect_true(is.na(df[["%"]][df$variable == "x2"]))
+  expect_match(attr(tbl, "note"), "No data for x2.", fixed = TRUE)
+  expect_identical(broom::glance(tbl)$nobs, 18L)
 })
 
 # ---- the test switch ---------------------------------------------------------------

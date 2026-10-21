@@ -57,6 +57,8 @@
       ╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
        age      │ F       48,25  12,58  31,00  61,00     28,23         68,27      4  0,153 
                 │ M       35,50   8,74  24,00  45,00     21,60         49,40      4        
+      
+      Note. Comparaison des groupes : test t de Welch.
     Code
       print(table_continuous_lm(d, select = bmi, by = sex))
     Output
@@ -65,6 +67,8 @@
        Variable   │  M (F)    M (M)    Δ (M - F)    IC à 95 % LI    IC à 95 % LS      p       R²     n  
       ────────────┼─────────────────────────────────────────────────────────────────────────────────────
        bmi        │  26,87    23,17      -3,70         -9,09            1,69        0,144    0,32    8  
+      
+      Note. Comparaison des groupes : test t issu du modèle linéaire.
     Code
       print(table_outcome(d, outcome = bmi, select = c(sex, smoke)))
     Output
@@ -101,8 +105,7 @@
        R²          │  0,99                               
        R² ajusté   │  0,98                               
       
-      Note. Régression linéaire.
-      Erreurs standards : classiques (MCO).
+      Note. Régression linéaire. Erreurs standards : classiques (MCO).
 
 # a single overridden label is pinned
 

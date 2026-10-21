@@ -21,7 +21,7 @@
          0        │  12     63.2     6     46.2      18        56.2                            
          1        │   7     36.8     7     53.8      14        43.8                            
       
-      Note. Cramer's V: cyl, gear. Phi: vs. Group comparison: Pearson chi-squared test (vs); Fisher exact test (cyl, gear). P-values adjusted for 3 tests (Holm method).
+      Note. Group comparison: Pearson chi-squared test (vs); Fisher exact test (cyl, gear). P-values adjusted for 3 tests (Holm method). Cramer's V: cyl, gear. Phi: vs.
 
 ---
 
@@ -46,7 +46,7 @@
          0        │  12     63,2     6     46,2      18        56,2                                
          1        │   7     36,8     7     53,8      14        43,8                                
       
-      Note. V de Cramér : cyl, gear. Phi : vs. Comparaison des groupes : test du khi-deux de Pearson (vs) ; test exact de Fisher (cyl, gear). Valeurs p ajustées pour 3 tests (méthode de Holm).
+      Note. Comparaison des groupes : test du khi-deux de Pearson (vs) ; test exact de Fisher (cyl, gear). Valeurs p ajustées pour 3 tests (méthode de Holm). V de Cramér : cyl, gear. Phi : vs.
 
 # p_value = FALSE with assoc_measure = "none": a purely descriptive table
 

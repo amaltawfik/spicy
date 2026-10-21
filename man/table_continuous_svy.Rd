@@ -298,7 +298,8 @@ invisibly.
 }
 
 The default object and the two data frames carry the whole note as
-printed, "Note." included, in \code{attr(x, "note")}.
+printed, "Note." included, in \code{attr(x, "note")}. The default object
+also keeps the title it prints in \code{attr(x, "title")}.
 }
 \description{
 The design twin of \code{\link[=table_continuous]{table_continuous()}}: the same table of means,
@@ -387,6 +388,13 @@ variance is the design's -- so \code{test = "student"} warns and behaves
 like \code{"welch"}. A variable with no variance has no comparison: its
 test cells are left blank, with a warning (class
 \code{spicy_undefined_stat}), where survey would still return a p-value.
+The note names the comparison of each variable.
+
+A variable with no observed value in a domain (a question not asked
+in that group) has no data in it, as in \code{\link[=table_continuous]{table_continuous()}}: its
+cells there show an en dash, \emph{n} included, those rows are not counted
+in the missing values of the note, the comparison uses the domains
+with data, and the note says so ("No data for X in G.").
 }
 
 \section{Stability}{

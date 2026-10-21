@@ -147,7 +147,12 @@ unclass_spicy_categorical_svy_table <- function(x) {
   missing_group <- attr(x, "missing_group_label", exact = TRUE) %||%
     NA_character_
   is_header <- wide$.row_role == "factor_header"
-  body <- wide[!is_header, , drop = FALSE]
+  # A variable with no data and no level to show is its header row
+  # alone: it reads as one row of level NA, its cells NA, as in
+  # `table_categorical()`.
+  lone <- .cat_svy_lone_rows(wide)
+  body <- wide[!is_header | lone, , drop = FALSE]
+  body$.row_role[lone[!is_header | lone]] <- "level"
   head_row <- match(body$variable, wide$variable[is_header])
   nb <- nrow(body)
   get <- function(key) {
@@ -379,11 +384,16 @@ glance.spicy_categorical_svy_table <- function(x, ...) {
     ),
     p.value = p,
     degf = rep(meta$degf %||% NA_real_, length(vars)),
+    # A block in which the variable has no data counts nothing: its NA
+    # count is skipped, not propagated.
     nobs = vapply(
       vars,
       function(v) {
         rows <- !headers & wide$variable == v
-        sum(unlist(wide[rows, n_keys, drop = FALSE], use.names = FALSE))
+        sum(
+          unlist(wide[rows, n_keys, drop = FALSE], use.names = FALSE),
+          na.rm = TRUE
+        )
       },
       numeric(1),
       USE.NAMES = FALSE

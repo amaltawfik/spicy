@@ -31,7 +31,9 @@ pipeline.
 outcomes:
 \itemize{
 \item One row per fitted level mean (\code{estimate_type = "emmean"})
-for categorical predictors, with the level name in \code{term}.
+for categorical predictors, with the level name in \code{term}, \code{NA}
+where no mean is estimated (a level in which the outcome has no
+data, an outcome whose model could not be fit).
 \item One row per \strong{contrast} (\code{estimate_type = "difference"})
 when a binary contrast is shown, with \code{term = "<level2> - <level1>"}.
 \item One row per \strong{slope} (\code{estimate_type = "slope"}) for

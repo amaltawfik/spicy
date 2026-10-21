@@ -20,7 +20,5 @@
        R² (Nagelkerke) │    0.01                                                      
        AIC             │ 2540.1                                                       
       
-      Note. Multinomial logistic regression.
-      Std. errors: Wald asymptotic (z).
-      Reference outcome: Employed.
+      Note. Multinomial logistic regression. Reference outcome: Employed. Std. errors: Wald asymptotic (z).
 

@@ -8,6 +8,26 @@ p-values, and notes.
 
 ## Breaking changes
 
+* The note under every table is one paragraph, its sentences in one
+  order: what the numbers are (weights, design, model), the missing
+  data, the tests and the inference, then the definitions. The legend
+  of the stars follows on its own line. `table_regression()`,
+  `table_regression_uv()`, and `table_continuous_lm()` gave one sentence
+  per line, `table_categorical()` broke the line after the missing
+  values, and the order changed from table to table (#11).
+  `table_continuous()` and `table_continuous_lm()` now name the test
+  behind their p-values, and `table_categorical()` and
+  `table_continuous_lm()` say when the statistics are weighted.
+
+* A variable with no observed value in a group of `by`, typically a
+  question not asked there, has no data in that group, which is not a
+  missing answer: its cells there show a dash, its rows leave the count
+  of missing values, the `Total` column and the test, and the note says
+  "No data for X and Y in G." (#11). This holds in `table_categorical()`,
+  `table_continuous()`, `table_continuous_lm()`, `table_outcome()`,
+  `table_multiresponse()`, and the survey twins, and without `by` for a
+  variable with no observed value at all ("No data for X.").
+
 * `table_categorical()`, `table_continuous()`, `table_continuous_lm()`,
   `table_outcome()`, `table_categorical_svy()`, and
   `table_continuous_svy()` show column names by default. The `label`
@@ -280,6 +300,9 @@ p-values, and notes.
   required 50 replicates; a bootstrap variance needs 10, in both tables.
 
 ## New features
+
+* Every table function keeps the title it prints in `attr(x, "title")`,
+  as `table_regression()` and `table_multiresponse()` already did.
 
 * The long output and `tidy()` of the tables mark the rows they add by a
   key rather than by their label, which follows the display language:
@@ -665,6 +688,26 @@ p-values, and notes.
   `table_continuous()`, and `table_continuous_lm()` leave an empty cell
   empty. It held an empty text, which Excel counted and refused in a
   formula.
+
+* `table_categorical_svy()` counts a declared missing value once, in
+  "Declared missing values removed", where `drop_na = TRUE` also counted
+  it in "Missing values removed", and no longer says it removed the
+  values its `(Missing)` row shows. Its note spells "chi-squared", as
+  the other notes do.
+
+* `table_continuous_lm()` no longer stops with "attempt to select less
+  than one element" when an outcome has no complete observation in a
+  level of `by`.
+
+* `table_continuous_svy()` compares a numeric `by` as groups, as it
+  compares a factor, where it tested a slope under the name of a group
+  comparison, and compares a `by` that is an ordered factor of two
+  levels, whose p-value was left blank. Its note gives the degrees of
+  freedom of each variable's comparison when they differ; it gave those
+  of the last variable for all of them.
+
+* The French title of `table_regression_uv()` says "univariable", as the
+  English one does.
 
 # spicy 0.13.0
 

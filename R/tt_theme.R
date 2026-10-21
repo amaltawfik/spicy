@@ -306,6 +306,21 @@
 # `.note_markup()`.
 .spicy_html_em <- function(p) paste0("<em>", p, "</em>")
 
+# A note as the HTML of the display paths of gt and flextable, which
+# lift it out of the table into a `<div>`: each line of the note
+# (`.note_lines()`) escaped, the lead-in of the first in `<em>` (APA
+# Manual 7 Section 7.14), the lines joined by a line break -- the legend
+# of the stars on a line of its own after the general note.
+.spicy_note_html <- function(lines, lead = .note_lead()) {
+  paste(
+    c(
+      .note_markup(lines[[1L]], .spicy_html_escape, .spicy_html_em, lead),
+      vapply(lines[-1L], .spicy_html_escape, character(1), USE.NAMES = FALSE)
+    ),
+    collapse = "<br>"
+  )
+}
+
 # A note carries one disclosure per line, and HTML and LaTeX collapse
 # the newlines that separate them into spaces -- the per-model standard-
 # error attributions ran together into one sentence. Convert the line
@@ -388,12 +403,14 @@
   notes
 }
 
-# Markdown: tinytable wraps the note into the last row of its grid table
+# Markdown: tinytable wraps the note into the last rows of its grid table
 # (the console print of a tinytable, and the table of a Quarto or R
 # Markdown Word document, which pandoc reads as markdown). A grid cell
 # holds no line break: the newline of a note of several lines was written
 # into the grid as it was, broke the row that closes it, and pandoc left
-# the note out of the Word document. So the note is one paragraph there,
+# the note out of the Word document. So each line of the note
+# (`.note_lines()`) is a note of its own, which tinytable sets in a row of
+# its own: the general note, one paragraph, then the legend of the stars,
 # as in Word and gt. In a document, the lead-in `lead` is set in `*...*`
 # on the note TEXT, before tinytable lays it out, so the grid stays
 # aligned; printed in a terminal, the grid is plain text and the note
@@ -405,14 +422,34 @@
   structure(
     function(tbl) {
       knit <- isTRUE(getOption("knitr.in.progress"))
-      tbl@notes <- .spicy_map_notes(tbl@notes, function(n) {
-        n <- gsub("[ \t]*\n[ \t]*", " ", n)
-        if (knit) .note_markdown(n, lead = lead) else n
-      })
+      tbl@notes <- .spicy_map_notes(
+        .spicy_split_note_lines(tbl@notes),
+        function(n) if (knit) .note_markdown(n, lead = lead) else n
+      )
       tbl
     },
     output = "markdown"
   )
+}
+
+# The notes of a tinytable with each line of a note made a note of its
+# own (`.note_lines()`), for the markdown grid, whose cells hold no line
+# break. A string or an unnamed list of strings -- the shapes the
+# package's builders give `tt(notes = )` -- becomes a list with one string
+# per line; any other shape is left as it is.
+.spicy_split_note_lines <- function(notes) {
+  if (is.character(notes) && is.null(names(notes))) {
+    lines <- unlist(lapply(notes, .note_lines), use.names = FALSE)
+    return(if (length(lines) == length(notes)) notes else as.list(lines))
+  }
+  if (
+    is.list(notes) &&
+      is.null(names(notes)) &&
+      all(vapply(notes, is.character, logical(1)))
+  ) {
+    return(as.list(unlist(lapply(notes, .note_lines), use.names = FALSE)))
+  }
+  notes
 }
 
 # The note strings a tinytable was built with, as a plain character

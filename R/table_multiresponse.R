@@ -208,10 +208,10 @@
 #'   contract; a single string replaces it, and `FALSE` removes it, as in
 #'   [table_regression()].
 #' @param note The table note. `NULL` (the default) builds it, opening
-#'   with "Note.": the rows removed for a missing `by`, what the
-#'   percentages sum to, the base with the respondents it holds or leaves
-#'   out, and the tests. A single string replaces it and is printed as
-#'   typed, and `FALSE` removes it.
+#'   with "Note.": what the percentages sum to, the base with the
+#'   respondents it holds or leaves out, the rows removed for a missing
+#'   `by` and the items with no data in a group, then the tests. A single
+#'   string replaces it and is printed as typed, and `FALSE` removes it.
 #' @param excel_sheet Sheet name for Excel export. `NULL` (the default)
 #'   uses `"Multiple responses"`.
 #' @param word_path File path for `output = "word"`. Defaults to `NULL`.
@@ -242,7 +242,8 @@
 #'     label the row displays), `.row_role` as above, with `by` `group`,
 #'     `.group_role` (the role of `group`: `"group"`, or `"total"` for
 #'     the margin) and `total` (`TRUE` on the rows of the margin), `n`,
-#'     `base` (the respondents of the group), the percentage named by its
+#'     `base` (the respondents of the group; in the margin, those of the
+#'     groups with data for the item), the percentage named by its
 #'     base: `pct_cases` (of the respondents) or `pct_responses` (of the
 #'     choices made), as `percent` asks, both under `percent = "both"`,
 #'     and, when the item tests ran (for `p_value` or
@@ -354,9 +355,13 @@
 #'
 #' An item chosen by every respondent, or by none, has no test: its `p`
 #' cell shows a dash, it leaves the global test, and the note names it.
-#' Its row stays. With fewer than two groups holding respondents there is
-#' nothing to compare, and the table shows no test. The note names the
-#' global test with its statistic, degrees of freedom, and p-value.
+#' Its row stays. An item with no data in a group (see *Base and missing
+#' values*) is tested on the groups with data for it, has no test with
+#' fewer than two (its `p` cell is then blank), and leaves the global
+#' test, which compares every group on the same items. With fewer than
+#' two groups holding respondents there is nothing to compare, and the
+#' table shows no test. The note names the global test with its
+#' statistic, degrees of freedom, and p-value.
 #'
 #' # Multiple-comparison adjustment
 #'
@@ -397,6 +402,16 @@
 #' Declared missing values of a labelled column (`na_values`, `na_range`)
 #' are missing, as under the `user_na = TRUE` default of
 #' [table_categorical()].
+#'
+#' An item missing for every respondent of a group (typically an item not
+#' asked there) has no data in that group: its cells there show a dash,
+#' its `Total` counts the other groups only, and the note says so, in one
+#' sentence for the items with no data in the same groups. Without `by`,
+#' an item with no observed value at all
+#' shows a dash. A group with no data for any item was not asked the
+#' question: all its cells, `Respondents` included, show a dash, and its
+#' respondents leave the base, the `Total`, the tests and the count of
+#' the respondents with no data for the question.
 #'
 #' A percentage carries no more digits than its denominator, so a base of
 #' fewer than 100 respondents takes whole percentages (American Medical
@@ -687,8 +702,28 @@ table_multiresponse <- function(
     n_by_na <- sum(!keep)
     margin_key <- .cat_margin_key(group_levels, by_name)
   }
+  # No data: an item with no observed value in a group that holds rows,
+  # typically an item not asked there (`.mr_no_data()`, one row per group,
+  # or one row for the whole table without `by`). Its cells in that group
+  # show the undefined mark, its margin and its test leave the group out,
+  # and it leaves the global test. A group with no data for any item was
+  # not asked the question: its rows leave the base -- and with it the
+  # margin, the tests and the count of the respondents with no data for
+  # the question -- and all its cells show the mark.
+  no_data <- .mr_no_data(
+    chosen,
+    if (has_group) g0,
+    if (has_group) group_levels
+  )
+  asked <- !apply(no_data, 1L, all)
+  not_asked <- if (has_group) {
+    keep & as.character(g0) %in% group_levels[!asked]
+  } else {
+    rep(!asked[[1L]], nrow(data))
+  }
   # The base: who the percentages of cases, and the tests, are computed on.
   in_base <- keep &
+    !not_asked &
     switch(
       base,
       valid = rowSums(!is.na(chosen)) > 0L,
@@ -709,7 +744,7 @@ table_multiresponse <- function(
   # base holds are rows of the table instead (decision of 2026-10-19).
   answered_any <- rowSums(!is.na(chosen)) > 0L
   chose_none <- answered_any & rowSums(chosen, na.rm = TRUE) == 0
-  n_nodata <- sum(keep & !answered_any)
+  n_nodata <- sum(keep & !not_asked & !answered_any)
   n_none <- sum(keep & chose_none)
   # The same two kinds of respondents within the base, for the rows of
   # `none_row`: "answered" holds neither, "valid" the first only.
@@ -731,8 +766,28 @@ table_multiresponse <- function(
   }
   dimnames(counts) <- NULL
   dimnames(extra_counts) <- NULL
-  responses <- rowSums(counts)
-  pct_cases <- 100 * counts / bases
+  # The base of each item's percentage of cases, block by block: the
+  # respondents of the group, and in the margin those of the groups with
+  # data for the item. A cell with no data, and every cell of a group not
+  # asked the question, is NA: the undefined mark. The count of such a
+  # cell was 0 (a missing indicator counts as not chosen in the base), so
+  # the margin's counts and the responses stay as they were.
+  item_bases <- matrix(bases, nrow = length(bases), ncol = ncol(counts))
+  undefined <- no_data
+  if (has_group) {
+    in_groups <- seq_along(group_levels)
+    item_bases[length(bases), ] <- colSums(
+      item_bases[in_groups, , drop = FALSE] * !no_data
+    )
+    undefined <- rbind(no_data, FALSE)
+  }
+  counts[undefined] <- NA_real_
+  item_bases[undefined] <- NA_real_
+  unasked_block <- if (has_group) c(!asked, FALSE) else !asked
+  bases[unasked_block] <- NA_real_
+  extra_counts[unasked_block, ] <- NA_real_
+  responses <- rowSums(counts, na.rm = TRUE)
+  pct_cases <- 100 * counts / item_bases
   pct_cases[!is.finite(pct_cases)] <- NA_real_
   pct_responses <- 100 * counts / responses
   pct_responses[!is.finite(pct_responses)] <- NA_real_
@@ -808,7 +863,8 @@ table_multiresponse <- function(
         item_test = if (p_value) test else "chisq",
         global_test = global_test,
         boot_n = boot_n,
-        global = p_value
+        global = p_value,
+        no_data = no_data[used, , drop = FALSE]
       )
     }
   }
@@ -897,7 +953,10 @@ table_multiresponse <- function(
     blocks,
     has_group,
     cbind(counts[, ord, drop = FALSE], extra_counts),
-    bases,
+    cbind(
+      item_bases[, ord, drop = FALSE],
+      matrix(rep(bases, n_extra), nrow = length(bases), ncol = n_extra)
+    ),
     cbind(pct_cases[, ord, drop = FALSE], extra_pct),
     cbind(pct_responses[, ord, drop = FALSE], extra_counts * NA_real_),
     percent,
@@ -907,10 +966,22 @@ table_multiresponse <- function(
   )
 
   global_df <- .mr_global_df(test_res, boot_n)
+  # The items without variation are named in the note; an item with fewer
+  # than two groups with data has no test either, and is not.
   untested <- if (is.null(test_res)) {
     character(0)
   } else {
-    item_labels[ord][!test_res$tested[ord]]
+    item_labels[ord][test_res$testable[ord] & !test_res$tested[ord]]
+  }
+  # The items with no data in a group, in the order of the rows: one
+  # sentence per set of groups, in the order of `by`.
+  no_data_note <- if (has_group) {
+    .no_data_sentences(
+      item_labels[ord],
+      lapply(ord, function(j) group_levels[no_data[, j]])
+    )
+  } else {
+    .no_data_sentences(item_labels[ord][no_data[1L, ord]])
   }
   title_txt <- if (isFALSE(title)) NULL else title %||% .mr_title(by_label)
   note_txt <- if (isFALSE(note)) {
@@ -931,7 +1002,8 @@ table_multiresponse <- function(
         untested = untested,
         p_adjust_info = p_adjust_info,
         decimal_mark = decimal_mark,
-        p_digits = p_digits
+        p_digits = p_digits,
+        no_data_note = no_data_note
       )
   }
 
@@ -970,7 +1042,17 @@ table_multiresponse <- function(
     cols,
     percent_digits,
     p_digits,
-    decimal_mark
+    decimal_mark,
+    # An item with fewer than two groups with data has no test: its test
+    # cells are blank, not the mark of an item without variation.
+    no_test = c(
+      if (is.null(test_res)) {
+        rep(FALSE, length(ord))
+      } else {
+        !test_res$testable[ord]
+      },
+      rep(FALSE, n_extra + 1L)
+    )
   )
   base_row <- nrow(display_df)
 
@@ -1289,6 +1371,25 @@ table_multiresponse <- function(
   FALSE
 }
 
+# Where the items have no data: a logical matrix, one row per group of
+# `groups` (the levels of `by`, read in `g`), one column per item, TRUE
+# where the group holds rows and the item is missing in every one of them
+# (`.no_data_groups()`). Without `by` (`g = NULL`), one row: TRUE for an
+# item with no observed value at all.
+.mr_no_data <- function(chosen, g = NULL, groups = NULL) {
+  if (is.null(g)) {
+    return(matrix(
+      nrow(chosen) > 0L & colSums(!is.na(chosen)) == 0L,
+      nrow = 1L
+    ))
+  }
+  out <- matrix(FALSE, nrow = length(groups), ncol = ncol(chosen))
+  for (j in seq_len(ncol(chosen))) {
+    out[, j] <- groups %in% .no_data_groups(chosen[, j], g, groups)
+  }
+  out
+}
+
 
 # ---- the statistics ----------------------------------------------------------------
 
@@ -1323,6 +1424,13 @@ table_multiresponse <- function(
 # tested by an exact test has no statistic; one tested by the N-1
 # chi-squared carries that statistic. The global test sums the Pearson
 # statistics `x2` whatever `item_test` says.
+#
+# `no_data` (groups x items, TRUE where the item has no data in the
+# group) restricts an item to the groups with data for it: its table, its
+# test and its degrees of freedom are theirs. With fewer than two such
+# groups the item has no test (`testable` FALSE), which is not the
+# absence of variation (`tested` FALSE on a testable item). Such an item
+# leaves the global test, which compares every group on the same items.
 .mr_test <- function(
   z,
   g,
@@ -1330,19 +1438,44 @@ table_multiresponse <- function(
   item_test,
   global_test,
   boot_n,
-  global = TRUE
+  global = TRUE,
+  no_data = NULL
 ) {
   r <- length(n_i)
   x2 <- .mr_item_chisq(z, g, n_i)
-  tested <- !is.na(x2)
+  partial <- if (is.null(no_data)) {
+    rep(FALSE, ncol(z))
+  } else {
+    colSums(no_data) > 0L
+  }
+  groups_of <- function(j) {
+    if (partial[[j]]) which(!no_data[, j]) else seq_len(r)
+  }
+  r_j <- rep(r, ncol(z))
+  for (j in which(partial)) {
+    with_data <- groups_of(j)
+    r_j[[j]] <- length(with_data)
+    x2[[j]] <- NA_real_
+    if (r_j[[j]] >= 2L) {
+      rows <- g %in% with_data
+      x2[[j]] <- .mr_item_chisq(
+        z[rows, j, drop = FALSE],
+        match(g[rows], with_data),
+        n_i[with_data]
+      )
+    }
+  }
+  testable <- r_j >= 2L
+  tested <- testable & !is.na(x2)
   chi2 <- x2
-  df <- ifelse(tested, r - 1, NA_real_)
-  p <- stats::pchisq(x2, df = r - 1, lower.tail = FALSE)
+  df <- ifelse(tested, r_j - 1, NA_real_)
+  p <- stats::pchisq(x2, df = r_j - 1, lower.tail = FALSE)
   test_type <- ifelse(tested, .CAT_TEST_CHISQ, NA_character_)
   if (!identical(item_test, "chisq")) {
     chosen <- rowsum(z, g, reorder = TRUE)
     for (j in which(tested)) {
-      tab <- cbind(chosen[, j], n_i - chosen[, j])
+      grp <- groups_of(j)
+      tab <- cbind(chosen[grp, j], n_i[grp] - chosen[grp, j])
       kind <- .cat_resolve_test(tab, item_test)
       if (identical(kind, "chisq")) {
         next
@@ -1356,16 +1489,17 @@ table_multiresponse <- function(
   }
   run_global <- global
   global <- NULL
-  if (run_global && any(tested)) {
-    zt <- z[, tested, drop = FALSE]
-    x2_sum <- sum(x2[tested])
+  in_global <- tested & !partial
+  if (run_global && any(in_global)) {
+    zt <- z[, in_global, drop = FALSE]
+    x2_sum <- sum(x2[in_global])
     global <- if (identical(global_test, "rs2")) {
       .mr_rs2(zt, g, n_i, x2_sum)
     } else {
       .mr_boot(zt, n_i, x2_sum, boot_n)
     }
     if (!is.null(global)) {
-      global$n_items <- sum(tested)
+      global$n_items <- sum(in_global)
       global$n_groups <- r
     }
   }
@@ -1375,6 +1509,7 @@ table_multiresponse <- function(
     p = p,
     test_type = test_type,
     tested = tested,
+    testable = testable,
     global = global
   )
 }
@@ -1605,6 +1740,9 @@ table_multiresponse <- function(
 # `none_row`) and block. `variables` names the row (the item's column, or
 # the token of a row of `none_row`), `labels` gives the label it displays
 # and `roles` its `.row_role`, the pair the other summary tables publish.
+# `bases` is a matrix like `counts`, blocks by rows: the base of each
+# cell's percentage of cases, which in the margin can differ from item to
+# item (an item with no data in a group leaves that group out of it).
 .mr_long <- function(
   variables,
   labels,
@@ -1633,7 +1771,7 @@ table_multiresponse <- function(
   # Counts of respondents, whole by construction (the table takes no
   # weights): integer, as tidy() reports them, with or without `by`.
   out$n <- as.integer(round(as.vector(counts)))
-  out$base <- as.integer(round(rep(bases, times = ni)))
+  out$base <- as.integer(round(as.vector(bases)))
   if (identical(percent, "both")) {
     out$pct_cases <- as.vector(pct_cases)
     out$pct_responses <- as.vector(pct_responses)
@@ -1654,11 +1792,20 @@ table_multiresponse <- function(
 }
 
 # The display frame the console and the engines render. A cell that
-# applies but has no value -- a percentage of an empty group, the test of
-# an item without variation, the percentage of responses and the test of
-# a row of `none_row` -- is the undefined dash; the base row carries
-# counts only, and its other cells are blank.
-.mr_display_df <- function(wide, cols, percent_digits, p_digits, decimal_mark) {
+# applies but has no value -- a percentage of an empty group, the cells of
+# an item in a group with no data for it, the test of an item without
+# variation, the percentage of responses and the test of a row of
+# `none_row` -- is the undefined dash; the base row carries counts only,
+# and its other cells are blank, as are the test cells of the rows in
+# `no_test` (an item with fewer than two groups with data has no test).
+.mr_display_df <- function(
+  wide,
+  cols,
+  percent_digits,
+  p_digits,
+  decimal_mark,
+  no_test = rep(FALSE, nrow(wide))
+) {
   is_base <- wide$.row_role == "fit_stat"
   dash <- spicy_str("cell_undefined")
   num <- function(x, d) {
@@ -1695,6 +1842,9 @@ table_multiresponse <- function(
     cell[is.na(v)] <- dash
     if (!identical(e$token, "n")) {
       cell[is_base] <- ""
+    }
+    if (e$token %in% c("statistic", "p")) {
+      cell[no_test] <- ""
     }
     df[[e$key]] <- cell
   }
@@ -1869,17 +2019,21 @@ table_multiresponse <- function(
 
 # ---- title and note ------------------------------------------------------------
 
-# The note, in reading order: the rows removed for a missing `by`, what
-# the percentages sum to, the base with the two counts it includes or
-# leaves out (`.mr_base_sentence()`; under `none_row`, the counts it
-# includes are rows of the table and leave the note), then the tests --
-# the item p-values, named by their test (`item_types`, named by the
-# labels the rows print), followed, under an adjustment, by the family's
-# sentence naming the method and the number of tests (with `p_value`),
-# the items without a test (whenever the item tests show, p-values or
-# statistic), and the global test (with `p_value`; `test_res$global` is
-# NULL otherwise). It opens with "Note.", as every automatic note of the
-# family does; a `note` the user typed never comes here.
+# The note, one paragraph in the order of the family (`.compose_note()`):
+#   (a) what the percentages sum to, and the base with the two counts it
+#       includes or leaves out (`.mr_base_sentence()`; under `none_row`,
+#       the counts it includes are rows of the table and leave the note);
+#   (b) the missing data: the rows removed for a missing `by`, then the
+#       items with no data in a group (`no_data_note`, one sentence per
+#       set of groups);
+#   (c) the tests: the item p-values, named by their test (`item_types`,
+#       named by the labels the rows print), followed, under an
+#       adjustment, by the family's sentence naming the method and the
+#       number of tests (with `p_value`), the items without variation
+#       (whenever the item tests show, p-values or statistic), and the
+#       global test (with `p_value`; `test_res$global` is NULL otherwise).
+# It opens with "Note.", as every automatic note of the family does; a
+# `note` the user typed never comes here.
 .mr_note <- function(
   by_label,
   n_by_na,
@@ -1894,17 +2048,10 @@ table_multiresponse <- function(
   untested,
   p_adjust_info,
   decimal_mark,
-  p_digits
+  p_digits,
+  no_data_note = NULL
 ) {
-  parts <- character(0)
-  if (n_by_na > 0L) {
-    parts <- c(
-      parts,
-      spicy_fmt("note_rows_missing_by_removed", by_label, n_by_na)
-    )
-  }
-  parts <- c(
-    parts,
+  what <- c(
     spicy_str(switch(
       percent,
       cases = "note_multiresponse_pct_cases",
@@ -1913,6 +2060,13 @@ table_multiresponse <- function(
     )),
     .mr_base_sentence(base, n_nodata, n_none, none_row)
   )
+  missing <- c(
+    if (n_by_na > 0L) {
+      spicy_fmt("note_rows_missing_by_removed", by_label, n_by_na)
+    },
+    no_data_note
+  )
+  inference <- character(0)
   if (!is.null(test_res)) {
     if (p_value) {
       phrase <- .cat_test_phrase(
@@ -1920,8 +2074,8 @@ table_multiresponse <- function(
         names(item_types),
         B = .MR_FISHER_MC_B
       )
-      parts <- c(
-        parts,
+      inference <- c(
+        inference,
         if (!is.null(phrase)) {
           spicy_fmt(
             if (phrase$single) {
@@ -1936,8 +2090,8 @@ table_multiresponse <- function(
       )
     }
     if (length(untested)) {
-      parts <- c(
-        parts,
+      inference <- c(
+        inference,
         spicy_fmt(
           "note_multiresponse_not_tested",
           .join_note_vars(untested)
@@ -1945,13 +2099,13 @@ table_multiresponse <- function(
       )
     }
     if (!is.null(test_res$global)) {
-      parts <- c(
-        parts,
+      inference <- c(
+        inference,
         .mr_global_line(test_res$global, decimal_mark, p_digits)
       )
     }
   }
-  .note_with_prefix(paste_note_parts(parts))
+  .compose_note(what = what, missing = missing, inference = inference)
 }
 
 # The base sentence: who the base is, then the two counts of

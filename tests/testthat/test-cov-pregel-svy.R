@@ -31,10 +31,9 @@
 test_that("a domain that observed no value at all comes back empty", {
   # `v2` is a subgroup-specific question: every unit of group B was
   # routed past it, so B's domain holds no observed value carrying a
-  # non-zero weight. `.cat_svy_level_stats()` hands back its
-  # initialized NA there instead of asking survey for the mean of
-  # nothing -- the table keeps its shape and the other blocks keep
-  # their numbers.
+  # non-zero weight. The variable has no data there, which is not a
+  # missing answer: B is not estimated at all, the table keeps its shape
+  # and the other blocks keep their numbers.
   skip_if_not_installed("survey")
   d <- data.frame(
     id = 1:200,
@@ -55,13 +54,27 @@ test_that("a domain that observed no value at all comes back empty", {
   lv <- tbl$.row_role == "level"
   expect_identical(tbl$level[lv], c("x", "y", "z"))
 
-  # B: an honest zero observations, and every estimate above it
-  # undefined -- not a zero percentage, which would read as a measured
-  # absence.
-  expect_identical(tbl[["B n"]][lv], c(0L, 0L, 0L))
+  # B: no data, so no count and no estimate -- not a zero count, which
+  # would read as a measured absence.
+  expect_true(all(is.na(tbl[["B n"]][lv])))
   expect_true(all(is.na(tbl[["B %"]][lv])))
   expect_true(all(is.na(tbl[["B % CI lower"]][lv])))
   expect_true(all(is.na(tbl[["B % CI upper"]][lv])))
+  expect_match(attr(tbl, "note"), "No data for v2 in B.", fixed = TRUE)
+  # `.cat_svy_level_stats()` itself hands back its initialized NA on such
+  # a domain instead of asking survey for the mean of nothing.
+  st <- spicy:::.cat_svy_level_stats(
+    des[d$g == "B", ],
+    "v2",
+    c("x", "y", "z"),
+    0.95,
+    99,
+    FALSE,
+    "logit",
+    TRUE
+  )
+  expect_identical(st$n, c(0L, 0L, 0L))
+  expect_true(all(is.na(st$pct)))
 
   # A and the margin are untouched: 34 / 33 / 33 of the 100 values the
   # question was asked of, each inside its own interval.
@@ -410,9 +423,9 @@ test_that("an empty declared `(Missing)` level is dropped, not refused", {
 # ---- survey_helpers.R 267: no level to weigh ----
 
 test_that(".drop_unweighted_levels() reads the weights, not the rows", {
-  # An all-missing variable is refused upstream ("has no level to
-  # display"), so the three clauses of this helper's contract are
-  # pinned on the helper itself.
+  # An all-missing variable has no data and is not tested upstream, so
+  # the three clauses of this helper's contract are pinned on the helper
+  # itself.
 
   # a. Nothing observed: `droplevels()` already leaves a factor with
   #    no level at all, and it is returned as it stands rather than

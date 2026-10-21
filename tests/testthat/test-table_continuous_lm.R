@@ -45,10 +45,14 @@ test_that("table_continuous_lm returns expected raw structure", {
   )
   expect_equal(nrow(out), 6L)
   # No rendering attribute: the note is the only one a long frame can
-  # carry, and iris has nothing to disclose.
+  # carry, and with nothing missing in iris it names the test alone.
   expect_identical(
     setdiff(names(attributes(out)), c("names", "row.names", "class")),
-    character(0)
+    "note"
+  )
+  expect_identical(
+    attr(out, "note"),
+    "Note. Group comparison: F-test from the linear model."
   )
 })
 
@@ -1658,15 +1662,13 @@ test_that("degenerate models still preserve the predictor label", {
   )
   attr(df$g, "label") <- "Group label"
 
-  expect_warning(
-    out <- table_continuous_lm(
-      df,
-      select = c(y_ok, y_bad),
-      by = g,
-      labels = TRUE,
-      output = "long"
-    ),
-    class = "spicy_undefined_stat"
+  # y_bad has no data in A: no model, and the note says why.
+  out <- table_continuous_lm(
+    df,
+    select = c(y_ok, y_bad),
+    by = g,
+    labels = TRUE,
+    output = "long"
   )
 
   expect_true(all(out$predictor_label == "Group label"))
@@ -3921,12 +3923,13 @@ test_that("compute_omega2_ci_lm and compute_f2_ci_lm return NA when F-stat is mi
 # ---- coverage: build_wide_display_df NA branches ----
 
 test_that("table_continuous_lm renders empty cells when n / weighted_n are NA", {
-  # Trigger empty-row path: an outcome with < 2 valid observations.
+  # Trigger empty-row path: an outcome with < 2 valid observations (and
+  # no data in b, which the note says: no warning).
   df <- data.frame(
     y_short = c(1, NA, NA, NA, NA, NA),
     g = factor(rep(c("a", "b"), 3))
   )
-  expect_warning(
+  expect_no_warning(
     out <- table_continuous_lm(
       df,
       select = y_short,
@@ -3948,7 +3951,7 @@ test_that("table_continuous_lm with show_weighted_n = TRUE renders blank weighte
     g = factor(rep(c("a", "b"), 3)),
     w = c(1, 1, 1, 1, 1, 1)
   )
-  expect_warning(
+  expect_no_warning(
     out <- table_continuous_lm(
       df,
       select = y_short,
@@ -4699,20 +4702,28 @@ test_that("rows dropped for missing by / weights are disclosed in the note", {
     w = c(1, 2, 1, 1, NA, 2, 1, 3)
   )
   out <- table_continuous_lm(d, select = y, by = grp, weights = w)
+  # The weights first, then the rows removed, then the test: one paragraph.
   expect_equal(
     attr(out, "note"),
-    "Note. Rows with missing grp removed: 1. Rows with missing w removed: 1."
+    paste(
+      "Note. Statistics weighted by w.",
+      "Rows with missing grp removed: 1. Rows with missing w removed: 1.",
+      "Group comparison: t-test from the linear model."
+    )
   )
   printed <- paste(utils::capture.output(print(out)), collapse = "\n")
   expect_match(printed, "Rows with missing grp removed: 1.", fixed = TRUE)
   expect_match(printed, "Rows with missing w removed: 1.", fixed = TRUE)
-  # No missing by / weights -> no ledger line.
+  # No missing by / weights -> no ledger line: the note names the test.
   clean <- table_continuous_lm(
     data.frame(y = rnorm(10), g = factor(rep(c("a", "b"), 5))),
     select = y,
     by = g
   )
-  expect_null(attr(clean, "note"))
+  expect_identical(
+    attr(clean, "note"),
+    "Note. Group comparison: t-test from the linear model."
+  )
 })
 
 test_that("proportional emmeans use the case weights (Stata margins)", {
@@ -4903,20 +4914,25 @@ test_that("global options(contrasts=) does not alter categorical-by results", {
   )
 })
 
-test_that("an outcome left with one observed group degrades loudly", {
+test_that("an outcome left with one observed group keeps the levels of the table", {
   # Audit phase 2 delta, R4: per-outcome complete-case filtering that
   # leaves a single observed group used to emit a silent all-NA row
   # whose `level = NA` grew a spurious `M (NA)` column in the wide
-  # header of ALL outcomes.
+  # header of ALL outcomes. Here y2 has no data in b: the note says so,
+  # and no warning repeats it (the other causes warn, see below).
   d <- data.frame(
     y1 = 1:5,
     y2 = c(1, 2, 3, NA, NA),
     g = factor(c("a", "a", "a", "b", "b"))
   )
-  expect_warning(
+  expect_no_warning(
     out <- table_continuous_lm(d, select = c(y1, y2), by = g, output = "long"),
-    regexp = "y2",
     class = "spicy_undefined_stat"
+  )
+  expect_match(
+    attr(table_continuous_lm(d, select = c(y1, y2), by = g), "note"),
+    "No data for y2 in b.",
+    fixed = TRUE
   )
   y2_rows <- out[out$variable == "y2", ]
   expect_identical(y2_rows$level, c("a", "b"))
@@ -4929,6 +4945,36 @@ test_that("an outcome left with one observed group degrades loudly", {
   )
   expect_true(all(c("M (a)", "M (b)") %in% names(wide)))
   expect_false("M (NA)" %in% names(wide))
+})
+
+test_that("an outcome a missing weight leaves with one group degrades loudly", {
+  # y2 has data in b, on row 4 only, whose weight is missing: the model
+  # cannot reach b, and the cause is not a group with no data, so a
+  # classed warning names the outcome. The table keeps both levels (b
+  # has rows complete for y1).
+  d <- data.frame(
+    y1 = 1:6,
+    y2 = c(1, 2, 3, 4, NA, NA),
+    w = c(1, 1, 1, NA, 1, 1),
+    g = factor(c("a", "a", "a", "b", "b", "b"))
+  )
+  expect_warning(
+    x <- table_continuous_lm(d, select = c(y1, y2), by = g, weights = w),
+    regexp = "y2",
+    class = "spicy_undefined_stat"
+  )
+  long <- suppressWarnings(table_continuous_lm(
+    d,
+    select = c(y1, y2),
+    by = g,
+    weights = w,
+    output = "long"
+  ))
+  expect_identical(long$level[long$variable == "y2"], c("a", "b"))
+  expect_true(all(is.na(long$emmean[long$variable == "y2"])))
+  expect_equal(long$emmean[long$variable == "y1"], c(2, 5.5))
+  # Not a no-data group: the note says nothing of the kind.
+  expect_false(grepl("No data", attr(x, "note"), fixed = TRUE))
 })
 
 test_that("a degenerate numeric by degrades loudly per outcome", {
@@ -5445,4 +5491,346 @@ test_that("a logical `effect_size` is refused with the measures to use", {
   )
   expect_s3_class(err, "spicy_invalid_input")
   expect_match(conditionMessage(err), "\"f2\"", fixed = TRUE)
+})
+
+# ---- no data in a level of `by` (lot N, R1) ----------------------------------
+
+# wellbeing_score not asked in Tertiary, and missing for three other rows.
+.tclm_nodata <- function() {
+  d <- as.data.frame(sochealth)
+  d$wellbeing_score[d$education == "Tertiary"] <- NA
+  d$wellbeing_score[which(d$education != "Tertiary")[1:3]] <- NA
+  d
+}
+
+test_that("an outcome with no data in a level is fit on the other levels", {
+  d <- .tclm_nodata()
+  # Before lot N this call failed in the wide frame ("attempt to select
+  # less than one element"): the outcome's rows lacked the level.
+  x <- table_continuous_lm(d, select = c(bmi, wellbeing_score), by = education)
+  mark <- spicy:::spicy_str("cell_undefined")
+  df <- as.data.frame(x)
+  well <- df$variable == "wellbeing_score"
+  expect_true(is.na(df[well, "M (Tertiary)"]))
+  expect_false(is.na(df[!well, "M (Tertiary)"]))
+  # The test compares the two levels with data: the lm on that subset.
+  sub <- d[d$education != "Tertiary", ]
+  sub$education <- droplevels(sub$education)
+  ref <- stats::anova(stats::lm(wellbeing_score ~ education, data = sub))
+  expect_equal(df$p[well], ref[["Pr(>F)"]][[1L]], tolerance = 1e-10)
+  expect_equal(df$n[well], sum(!is.na(sub$wellbeing_score)))
+  # The long output keeps the level, with no estimate, and the outcome's
+  # test on its first row.
+  long <- table_continuous_lm(
+    d,
+    select = c(bmi, wellbeing_score),
+    by = education,
+    output = "long"
+  )
+  w <- long[long$variable == "wellbeing_score", ]
+  expect_identical(
+    w$level,
+    c("Lower secondary", "Upper secondary", "Tertiary")
+  )
+  expect_true(is.na(w$emmean[[3L]]))
+  expect_identical(w$test_type[[1L]], "F")
+  expect_equal(w$df[[1L]], 1)
+  # The console and the typed view show the undefined mark in that cell.
+  st <- as_structured(x)
+  expect_identical(st$cell_status[["M (Tertiary)"]], c("", "undefined"))
+  expect_identical(st$col_meta[["M (Tertiary)"]]$display_cells[[2L]], mark)
+  withr::local_options(width = 200)
+  printed <- capture.output(print(x))
+  well_line <- printed[startsWith(trimws(printed), "wellbeing_score")]
+  expect_match(well_line, mark, fixed = TRUE)
+  # The rows of that level are not missing values; the note says why the
+  # cell is empty, then names the test.
+  expect_identical(
+    attr(x, "note"),
+    paste(
+      "Note. Missing values removed: bmi (12), wellbeing_score (3).",
+      "No data for wellbeing_score in Tertiary.",
+      "Group comparison: F-test from the linear model."
+    )
+  )
+  withr::local_options(spicy.language = "fr")
+  fr <- attr(
+    table_continuous_lm(d, select = c(bmi, wellbeing_score), by = education),
+    "note"
+  )
+  expect_match(fr, "Aucune donn", fixed = TRUE)
+  expect_match(fr, "pour wellbeing_score dans Tertiary.", fixed = TRUE)
+})
+
+test_that("an outcome with data in one level only has no model and no test", {
+  d <- as.data.frame(sochealth)
+  d$wellbeing_score[d$sex == "Male"] <- NA
+  # A question not asked in a group is ordinary data: the note says why
+  # the outcome has no model, and no warning repeats it.
+  expect_no_warning(
+    x <- table_continuous_lm(d, select = c(bmi, wellbeing_score), by = sex),
+    class = "spicy_undefined_stat"
+  )
+  df <- as.data.frame(x)
+  well <- df$variable == "wellbeing_score"
+  expect_true(all(is.na(unlist(df[well, -(1:2)]))))
+  # The level without data and the contrast that involves it show the
+  # mark; the p-value of a test that did not run is blank.
+  st <- as_structured(x)
+  for (nm in c(
+    "M (Male)",
+    "\u0394 (Male - Female)",
+    "95% CI LL",
+    "95% CI UL"
+  )) {
+    expect_identical(st$cell_status[[nm]], c("", "undefined"), info = nm)
+  }
+  expect_false("undefined" %in% st$cell_status[["p"]])
+  expect_false("undefined" %in% st$cell_status[["M (Female)"]])
+  expect_true(is.na(st$body$p[[2L]]))
+  # Only the test that ran is named.
+  expect_identical(
+    attr(x, "note"),
+    paste(
+      "Note. Missing values removed: bmi (12).",
+      "No data for wellbeing_score in Male.",
+      "Group comparison: t-test from the linear model."
+    )
+  )
+  glanced <- broom::glance(x)
+  expect_true(is.na(glanced$p.value[glanced$variable == "wellbeing_score"]))
+})
+
+test_that("tidy() keeps a level with no data as a row with NA", {
+  skip_if_not_installed("broom")
+  d <- .tclm_nodata()
+  x <- table_continuous_lm(d, select = c(bmi, wellbeing_score), by = education)
+  well <- broom::tidy(x)
+  well <- well[well$variable == "wellbeing_score", ]
+  # One row per level, as the long output and the typed view have them.
+  expect_identical(
+    well$term,
+    c("Lower secondary", "Upper secondary", "Tertiary")
+  )
+  expect_identical(well$estimate_type, rep("emmean", 3L))
+  expect_false(anyNA(well$estimate[1:2]))
+  expect_true(is.na(well$estimate[[3L]]))
+  expect_true(is.na(well$std.error[[3L]]))
+  expect_true(is.na(well$conf.low[[3L]]))
+  # An outcome with data in one level only has no model: both levels
+  # stay, with NA, and no contrast row.
+  d2 <- as.data.frame(sochealth)
+  d2$wellbeing_score[d2$sex == "Male"] <- NA
+  td2 <- broom::tidy(
+    table_continuous_lm(d2, select = c(bmi, wellbeing_score), by = sex)
+  )
+  w2 <- td2[td2$variable == "wellbeing_score", ]
+  expect_identical(w2$term, c("Female", "Male"))
+  expect_true(all(is.na(w2$estimate)))
+  expect_identical(
+    td2$estimate_type[td2$variable == "bmi"],
+    c("emmean", "emmean", "difference")
+  )
+  # A numeric `by` has no level rows: its slope only.
+  td3 <- broom::tidy(table_continuous_lm(d2, select = bmi, by = age))
+  expect_identical(td3$estimate_type, "slope")
+})
+
+test_that("the outcomes with no data in the same levels share one sentence", {
+  d <- .tclm_nodata()
+  d$wb2 <- d$wellbeing_score
+  note <- attr(
+    table_continuous_lm(
+      d,
+      select = c(wellbeing_score, bmi, wb2),
+      by = education
+    ),
+    "note"
+  )
+  expect_match(
+    note,
+    "No data for wellbeing_score and wb2 in Tertiary.",
+    fixed = TRUE
+  )
+  expect_identical(lengths(gregexpr("No data for", note, fixed = TRUE)), 1L)
+})
+
+test_that("a first level without data hands the reference to the next one", {
+  d <- as.data.frame(sochealth)
+  d$wellbeing_score[d$education == "Lower secondary"] <- NA
+  long <- table_continuous_lm(
+    d,
+    select = wellbeing_score,
+    by = education,
+    output = "long"
+  )
+  expect_identical(
+    long$level,
+    c("Lower secondary", "Upper secondary", "Tertiary")
+  )
+  expect_identical(unique(long$reference), "Upper secondary")
+  expect_true(is.na(long$emmean[[1L]]))
+  # The outcome's statistics stay on the first row of its block.
+  expect_identical(long$test_type[[1L]], "F")
+  expect_false(is.na(long$r.squared[[1L]]))
+  expect_equal(
+    broom::glance(table_continuous_lm(
+      d,
+      select = wellbeing_score,
+      by = education
+    ))$p.value,
+    long$p.value[[1L]]
+  )
+})
+
+test_that("a level a covariate empties for one outcome keeps the blocks aligned", {
+  # wellbeing_score is observed in Tertiary only where age is missing: its
+  # model cannot reach the level, which still has data, so the cell is
+  # blank (no mark, no no-data sentence) and the columns stay aligned.
+  d <- as.data.frame(sochealth)
+  tert <- which(d$education == "Tertiary")
+  d$age[tert[1:5]] <- NA
+  d$wellbeing_score[tert[-(1:5)]] <- NA
+  x <- table_continuous_lm(
+    d,
+    select = c(bmi, wellbeing_score),
+    by = education,
+    covariates = age
+  )
+  df <- as.data.frame(x)
+  expect_true(is.na(df[df$variable == "wellbeing_score", "M (Tertiary)"]))
+  expect_null(as_structured(x)$cell_status[["M (Tertiary)"]])
+  expect_false(grepl("No data", attr(x, "note"), fixed = TRUE))
+})
+
+# ---- the note: one paragraph, the test named, the weights (lot N) ---------
+
+test_that("the note names the test behind the p-values", {
+  d <- as.data.frame(sochealth)
+  note_of <- function(...) {
+    attr(table_continuous_lm(d, select = c(bmi, wellbeing_score), ...), "note")
+  }
+  expect_identical(
+    note_of(by = sex),
+    paste(
+      "Note. Missing values removed: bmi (12).",
+      "Group comparison: t-test from the linear model."
+    )
+  )
+  expect_identical(
+    note_of(by = education),
+    paste(
+      "Note. Missing values removed: bmi (12).",
+      "Group comparison: F-test from the linear model."
+    )
+  )
+  expect_identical(
+    note_of(by = age),
+    paste(
+      "Note. Missing values removed: bmi (12).",
+      "Slope test: t-test from the linear model."
+    )
+  )
+  # The asymptotic test of a resampling variance, before the estimator.
+  small <- d[1:120, ]
+  expect_match(
+    attr(
+      table_continuous_lm(
+        small,
+        select = wellbeing_score,
+        by = education,
+        vcov = "jackknife"
+      ),
+      "note"
+    ),
+    paste(
+      "Group comparison: Wald chi-squared test from the linear model.",
+      "Std. errors: jackknife."
+    ),
+    fixed = TRUE
+  )
+  # No p-value, no test named.
+  expect_identical(
+    note_of(by = sex, p_value = FALSE),
+    "Note. Missing values removed: bmi (12)."
+  )
+  withr::local_options(spicy.language = "fr")
+  expect_match(
+    note_of(by = education),
+    "test F issu du mod",
+    fixed = TRUE
+  )
+})
+
+test_that("outcomes tested differently are each named with their test", {
+  x <- data.frame(
+    variable = c("a", "a", "b", "b"),
+    label = c("Alpha", "Alpha", "Beta", "Beta"),
+    predictor_type = "categorical",
+    level = c("l1", "l2", "l1", "l2"),
+    estimate = c(NA, 1, NA, NA),
+    test_type = c("F", "t", "F", NA)
+  )
+  expect_identical(
+    spicy:::.tclm_test_note(x),
+    paste(
+      "Group comparison: t-test from the linear model (Alpha);",
+      "F-test from the linear model (Beta)."
+    )
+  )
+  x$test_type <- NA_character_
+  expect_null(spicy:::.tclm_test_note(x))
+})
+
+test_that("the weights are named, and the note is one paragraph", {
+  d <- as.data.frame(sochealth)
+  x <- table_continuous_lm(
+    d,
+    select = c(bmi, wellbeing_score),
+    by = sex,
+    covariates = age,
+    weights = weight,
+    vcov = "HC3"
+  )
+  note <- attr(x, "note")
+  expect_false(grepl("\n", note, fixed = TRUE))
+  expect_identical(
+    note,
+    paste(
+      "Note. Statistics weighted by weight.",
+      "Adjusted for age (proportional).",
+      "Missing values removed: bmi (12).",
+      "Group comparison: t-test from the linear model.",
+      "Std. errors: heteroskedasticity-robust (HC3)."
+    )
+  )
+  # Printed as built, on one line.
+  printed <- capture.output(print(x))
+  expect_true(note %in% printed)
+  # Weights given as a vector have no name to give.
+  w <- d$weight
+  expect_match(
+    attr(
+      suppressWarnings(
+        table_continuous_lm(d, select = bmi, by = sex, weights = w)
+      ),
+      "note"
+    ),
+    "Note. Statistics weighted by",
+    fixed = TRUE
+  )
+})
+
+test_that("the default object stores the title it prints", {
+  x <- table_continuous_lm(sochealth, select = bmi, by = sex, labels = TRUE)
+  expect_identical(attr(x, "title"), "Continuous outcomes by Sex")
+  expect_identical(capture.output(print(x))[[1L]], attr(x, "title"))
+  # Stored when built, like the note: a later language does not move it.
+  withr::local_options(spicy.language = "fr")
+  fr <- table_continuous_lm(sochealth, select = bmi, by = sex)
+  expect_identical(
+    attr(fr, "title"),
+    spicy:::spicy_fmt("title_continuous_lm_by", "sex")
+  )
+  expect_identical(capture.output(print(fr))[[1L]], attr(fr, "title"))
 })

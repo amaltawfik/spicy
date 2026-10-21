@@ -2763,3 +2763,987 @@ test_that("a statistic of the variable is cited without `model`", {
     )
   }
 })
+
+# ---- The note: one plan for its sentences ----------------------------------
+#
+# The note under every table of the family follows one plan (APA
+# Publication Manual, 7th ed., section 7.14): the general note, one
+# paragraph whose sentences come in four kinds -- (a) what the numbers
+# are, (b) the missing data, (c) the comparisons and the inference, (d)
+# the definitions -- then the stars legend on a line of its own. The
+# markers below are read from the registry, so one test speaks for both
+# languages.
+.fn_data <- function() {
+  set.seed(7)
+  n <- 180
+  d <- data.frame(
+    g = factor(rep(c("a", "b", "c"), each = 60)),
+    g2 = factor(rep(c("p", "q"), times = 90)),
+    xc = factor(sample(c("no", "yes"), n, TRUE)),
+    xn = round(stats::rnorm(n, 10, 2), 1),
+    age = round(stats::runif(n, 20, 70)),
+    m1 = sample(c(TRUE, FALSE), n, TRUE),
+    m2 = sample(c(TRUE, FALSE), n, TRUE),
+    m3 = sample(c(TRUE, FALSE), n, TRUE),
+    w = round(stats::runif(n, 0.5, 2), 3)
+  )
+  d$y01 <- as.integer(d$xn + stats::rnorm(n) > 10)
+  # A few ordinary missing values, the grouping included.
+  d$xc[c(1, 2, 61)] <- NA
+  d$xn[c(3, 62)] <- NA
+  d$g_na <- d$g
+  d$g_na[c(4, 64)] <- NA
+  d
+}
+
+# The position of each marker in `note`, in the order given: all found,
+# and strictly increasing.
+.fn_in_order <- function(note, markers, info) {
+  pos <- vapply(
+    markers,
+    function(m) as.numeric(regexpr(m, note, fixed = TRUE)),
+    numeric(1)
+  )
+  testthat::expect_true(all(pos > 0), info = paste(info, "(all found)"))
+  testthat::expect_true(all(diff(pos) > 0), info = paste(info, "(in order)"))
+}
+
+# The fixed part of a registry template, before its first hole.
+.fn_lead <- function(key) sub("%.*$", "", spicy_str(key))
+
+test_that("the sentences of every note come in the four kinds, in order", {
+  skip_if_not_installed("survey")
+  d <- .fn_data()
+  des <- survey::svydesign(ids = ~1, weights = ~w, data = d)
+  q <- function(e) suppressMessages(suppressWarnings(e))
+  for (lang in c("en", "fr")) {
+    withr::local_options(spicy.language = lang)
+    weighted <- spicy_fmt("note_weighted_by", "w")
+    removed <- spicy_str("note_missing_removed")
+    compared <- .fn_lead("note_group_comparison")
+    std_err <- .fn_lead("note_std_errors_single")
+    cases <- list(
+      table_categorical = list(
+        q(table_categorical(
+          d,
+          select = xc,
+          by = g2,
+          weights = w,
+          test = "chisq",
+          drop_na = TRUE,
+          smd = TRUE
+        )),
+        c(weighted, removed, compared, paste0(spicy_str("header_smd"), " ="))
+      ),
+      table_categorical_svy = list(
+        q(table_categorical_svy(des, select = xc, by = g2, drop_na = TRUE)),
+        c(
+          .fn_lead("note_design_n"),
+          removed,
+          std_err,
+          compared,
+          paste0(spicy_str("header_percent_symbol"), " =")
+        )
+      ),
+      table_continuous_weighted = list(
+        q(table_continuous(
+          d,
+          select = xn,
+          by = g2,
+          weights = w,
+          p_value = FALSE,
+          show_columns = c("m", "iqr")
+        )),
+        c(weighted, removed, paste0(spicy_str("header_iqr"), " ="))
+      ),
+      table_continuous = list(
+        q(table_continuous(
+          d,
+          select = c(xn, age),
+          by = g2,
+          smd = TRUE,
+          p_adjust = "holm"
+        )),
+        c(
+          removed,
+          compared,
+          .fn_lead("note_p_adjusted"),
+          paste0(spicy_str("header_smd"), " =")
+        )
+      ),
+      table_continuous_svy = list(
+        q(table_continuous_svy(
+          des,
+          select = xn,
+          by = g2,
+          show_columns = c("m", "se")
+        )),
+        c(
+          .fn_lead("note_design_n"),
+          removed,
+          std_err,
+          compared,
+          paste0(spicy_str("header_se"), " =")
+        )
+      ),
+      table_continuous_lm = list(
+        q(table_continuous_lm(
+          d,
+          select = xn,
+          by = g2,
+          weights = w,
+          covariates = age,
+          vcov = "HC3"
+        )),
+        c(weighted, .fn_lead("note_adjusted_for"), removed, compared, std_err)
+      ),
+      table_outcome_weighted = list(
+        q(table_outcome(
+          d,
+          outcome = xn,
+          select = g2,
+          weights = w,
+          p_value = FALSE
+        )),
+        c(weighted, removed, spicy_str("note_outcome_overall"))
+      ),
+      table_outcome = list(
+        q(table_outcome(d, outcome = xn, select = c(g2, g), p_adjust = "holm")),
+        c(
+          removed,
+          compared,
+          .fn_lead("note_p_adjusted"),
+          spicy_str("note_outcome_overall")
+        )
+      ),
+      table_multiresponse = list(
+        q(table_multiresponse(d, select = c(m1, m2), by = g_na)),
+        c(
+          spicy_str("note_multiresponse_pct_cases"),
+          .fn_lead("note_multiresponse_base"),
+          .fn_lead("note_rows_missing_by_removed"),
+          .fn_lead("note_multiresponse_items_p")
+        )
+      ),
+      table_regression = list(
+        q(table_regression(
+          stats::glm(y01 ~ age + g2, data = d, family = stats::binomial()),
+          exponentiate = TRUE,
+          p_adjust = "holm"
+        )),
+        c(
+          .fn_lead("note_exp_with_se_single"),
+          std_err,
+          .fn_lead("note_p_adjusted"),
+          paste0(spicy_str("header_exp_or"), " =")
+        )
+      ),
+      table_regression_uv = list(
+        q(table_regression_uv(
+          d,
+          outcome = y01,
+          predictors = c(age, xc),
+          method = "glm",
+          exponentiate = TRUE
+        )),
+        c(
+          .fn_lead("note_exp_with_se_single"),
+          .fn_lead("note_uv_varying_n"),
+          std_err,
+          paste0(spicy_str("header_exp_or"), " =")
+        )
+      )
+    )
+    for (fn in names(cases)) {
+      .fn_in_order(
+        attr(cases[[fn]][[1L]], "note"),
+        cases[[fn]][[2L]],
+        paste(lang, fn)
+      )
+    }
+  }
+})
+
+test_that("the general note is one paragraph, the stars legend a line of its own", {
+  skip_if_not_installed("survey")
+  d <- .fn_data()
+  des <- survey::svydesign(ids = ~1, weights = ~w, data = d)
+  q <- function(e) suppressMessages(suppressWarnings(e))
+  for (lang in c("en", "fr")) {
+    withr::local_options(spicy.language = lang)
+    stars <- build_stars_footer_block(TRUE, if (lang == "fr") "," else ".")
+    # Every table with sentences of several kinds, the line breaks that
+    # used to split them included (`drop_na = TRUE` in
+    # table_categorical(), a non-classical `vcov` in table_continuous_lm()
+    # and table_regression()).
+    tables <- list(
+      table_categorical = q(table_categorical(
+        d,
+        select = c(xc, g),
+        by = g2,
+        drop_na = TRUE,
+        p_adjust = "holm"
+      )),
+      table_categorical_svy = q(table_categorical_svy(
+        des,
+        select = xc,
+        by = g2,
+        drop_na = TRUE
+      )),
+      table_continuous = q(table_continuous(d, select = xn, by = g2)),
+      table_continuous_svy = q(table_continuous_svy(des, select = xn, by = g2)),
+      table_continuous_lm = q(table_continuous_lm(
+        d,
+        select = xn,
+        by = g2,
+        vcov = "HC3"
+      )),
+      table_outcome = q(table_outcome(d, outcome = xn, select = g2)),
+      table_multiresponse = q(table_multiresponse(
+        d,
+        select = c(m1, m2),
+        by = g_na
+      )),
+      table_regression = q(table_regression(
+        list(
+          stats::lm(xn ~ age, data = d),
+          stats::lm(xn ~ age + g2, data = d)
+        ),
+        vcov = list("classical", "HC3"),
+        p_adjust = "holm",
+        stars = TRUE
+      )),
+      table_regression_uv = q(table_regression_uv(
+        d,
+        outcome = xn,
+        predictors = c(age, xc),
+        stars = TRUE
+      ))
+    )
+    for (fn in names(tables)) {
+      x <- tables[[fn]]
+      lines <- strsplit(attr(x, "note"), "\n", fixed = TRUE)[[1L]]
+      with_stars <- fn %in% c("table_regression", "table_regression_uv")
+      expect_length(lines, if (with_stars) 2L else 1L)
+      if (with_stars) {
+        expect_identical(lines[[2L]], stars, info = paste(lang, fn))
+      }
+      # The console prints the paragraph, then the legend, each whole.
+      out <- utils::capture.output(print(x))
+      expect_true(all(lines %in% out), info = paste(lang, fn))
+    }
+  }
+})
+
+test_that("every table that shows a p-value names its test", {
+  skip_if_not_installed("survey")
+  d <- .fn_data()
+  des <- survey::svydesign(ids = ~1, weights = ~w, data = d)
+  q <- function(e) suppressMessages(suppressWarnings(e))
+  for (lang in c("en", "fr")) {
+    withr::local_options(spicy.language = lang)
+    compared <- .fn_lead("note_group_comparison")
+    named <- list(
+      table_categorical = list(
+        q(table_categorical(d, select = xc, by = g)),
+        spicy_fmt("note_group_comparison", spicy_str("test_pearson_chisq"))
+      ),
+      table_categorical_svy = list(
+        q(table_categorical_svy(des, select = xc, by = g)),
+        compared
+      ),
+      # Named whatever the display, not only after a rank switch.
+      table_continuous = list(
+        q(table_continuous(d, select = xn, by = g)),
+        spicy_fmt("note_group_comparison", spicy_str("test_welch_oneway_anova"))
+      ),
+      table_continuous_svy = list(
+        q(table_continuous_svy(des, select = xn, by = g)),
+        compared
+      ),
+      table_continuous_lm = list(
+        q(table_continuous_lm(d, select = xn, by = g)),
+        spicy_fmt("note_group_comparison", spicy_str("test_lm_f"))
+      ),
+      table_continuous_lm_slope = list(
+        q(table_continuous_lm(d, select = xn, by = age)),
+        spicy_fmt("note_slope_test", spicy_str("test_lm_t"))
+      ),
+      table_outcome = list(
+        q(table_outcome(d, outcome = xn, select = g)),
+        spicy_fmt("note_group_comparison", spicy_str("test_welch_oneway_anova"))
+      ),
+      table_multiresponse = list(
+        q(table_multiresponse(d, select = c(m1, m2), by = g)),
+        .fn_lead("note_multiresponse_items_p")
+      )
+    )
+    for (fn in names(named)) {
+      expect_true(
+        grepl(named[[fn]][[2L]], attr(named[[fn]][[1L]], "note"), fixed = TRUE),
+        info = paste(lang, fn)
+      )
+    }
+    # Without p-values, no test is named.
+    expect_null(attr(
+      q(table_continuous(d, select = age, by = g, p_value = FALSE)),
+      "note"
+    ))
+    expect_null(attr(
+      q(table_continuous_lm(d, select = age, by = g, p_value = FALSE)),
+      "note"
+    ))
+  }
+})
+
+test_that("every table that accepts weights says it is weighted", {
+  d <- .fn_data()
+  q <- function(e) suppressMessages(suppressWarnings(e))
+  for (lang in c("en", "fr")) {
+    withr::local_options(spicy.language = lang)
+    opening <- paste0(.note_prefix_text(), spicy_fmt("note_weighted_by", "w"))
+    weighted <- list(
+      table_categorical = q(table_categorical(
+        d,
+        select = xc,
+        by = g,
+        weights = w
+      )),
+      table_categorical_noby = q(table_categorical(
+        d,
+        select = xc,
+        weights = w
+      )),
+      table_continuous = q(table_continuous(
+        d,
+        select = age,
+        by = g,
+        weights = w,
+        p_value = FALSE
+      )),
+      table_continuous_lm = q(table_continuous_lm(
+        d,
+        select = age,
+        by = g,
+        weights = w
+      )),
+      table_outcome = q(table_outcome(
+        d,
+        outcome = age,
+        select = g,
+        weights = w,
+        p_value = FALSE
+      ))
+    )
+    for (fn in names(weighted)) {
+      expect_true(
+        startsWith(attr(weighted[[fn]], "note"), opening),
+        info = paste(lang, fn)
+      )
+    }
+  }
+})
+
+# ---- A group with no data is not a missing answer -------------------------
+#
+# `xc`, `xn` and the item `m3` have no observed value in group "c" of `g`
+# (a question not asked there); `g2` keeps one group with data for them.
+.fn_nodata_data <- function() {
+  d <- .fn_data()
+  d$xc[d$g == "c"] <- NA
+  d$xn[d$g == "c"] <- NA
+  d$m3[d$g == "c"] <- NA
+  d$xc2 <- d$xc
+  d$xn2 <- d$xn
+  d$xc2[d$g2 == "q"] <- NA
+  d$xn2[d$g2 == "q"] <- NA
+  d
+}
+
+test_that("a group with no data shows the mark, counts no missing value, and leaves the test", {
+  skip_if_not_installed("survey")
+  d <- .fn_nodata_data()
+  d_ab <- droplevels(d[d$g != "c", ])
+  des <- survey::svydesign(ids = ~1, weights = ~w, data = d)
+  # The design restricted to the groups with data: a domain of the same
+  # design, as the comparison of the full table reads it.
+  des_ab <- subset(des, g != "c")
+  q <- function(e) suppressMessages(suppressWarnings(e))
+  undefined <- spicy_str("cell_undefined")
+  # One entry per grouping builder: the table on the data, the same table
+  # on the data without group "c", the value of the variable's cells in
+  # group "c" (machine output), its p-value, and the missing-value count
+  # the note gives it (NULL where the table has no such sentence).
+  p_of <- function(x, col = "p.value") {
+    v <- x[[col]]
+    v[!is.na(v)][[1L]]
+  }
+  cases <- list(
+    table_categorical = list(
+      build = function(dd) {
+        q(table_categorical(
+          dd,
+          select = xc,
+          by = g,
+          drop_na = TRUE,
+          output = "long"
+        ))
+      },
+      cell = function(l) l$n[l$group == "c"],
+      p = function(l) p_of(l),
+      missing = list(label = "xc", n = 3L)
+    ),
+    table_categorical_svy = list(
+      build = function(dd) {
+        des_dd <- if (nlevels(dd$g) == 3L) des else des_ab
+        q(table_categorical_svy(
+          des_dd,
+          select = xc,
+          by = g,
+          drop_na = TRUE,
+          output = "long"
+        ))
+      },
+      cell = function(l) l$n[l$group == "c"],
+      p = function(l) p_of(l),
+      missing = list(label = "xc", n = 3L)
+    ),
+    table_continuous = list(
+      build = function(dd) {
+        q(table_continuous(dd, select = xn, by = g, output = "long"))
+      },
+      cell = function(l) l$n[l$group == "c"],
+      p = function(l) p_of(l),
+      missing = list(label = "xn", n = 2L)
+    ),
+    table_continuous_svy = list(
+      build = function(dd) {
+        des_dd <- if (nlevels(dd$g) == 3L) des else des_ab
+        q(table_continuous_svy(des_dd, select = xn, by = g, output = "long"))
+      },
+      cell = function(l) l$n[l$group == "c"],
+      p = function(l) p_of(l),
+      missing = list(label = "xn", n = 2L)
+    ),
+    table_continuous_lm = list(
+      build = function(dd) {
+        q(table_continuous_lm(dd, select = xn, by = g, output = "long"))
+      },
+      cell = function(l) l$emmean[l$level == "c"],
+      p = function(l) p_of(l),
+      missing = list(label = "xn", n = 2L)
+    ),
+    table_outcome = list(
+      build = function(dd) {
+        q(table_outcome(dd, outcome = xn, select = g, output = "long"))
+      },
+      cell = function(l) l$n[!is.na(l$level) & l$level == "c"],
+      p = function(l) p_of(l),
+      missing = list(label = "xn", n = 2L)
+    ),
+    table_multiresponse = list(
+      build = function(dd) {
+        q(table_multiresponse(dd, select = m3, by = g, output = "long"))
+      },
+      cell = function(l) l$n[l$variable == "m3" & l$group == "c"],
+      p = function(l) p_of(l),
+      missing = NULL
+    )
+  )
+  for (fn in names(cases)) {
+    cs <- cases[[fn]]
+    full <- cs$build(d)
+    # The cells of the group show the mark: NA in the machine output.
+    expect_true(length(cs$cell(full)) > 0L, info = fn)
+    expect_true(all(is.na(cs$cell(full))), info = fn)
+    # The comparison of the variable is the one of the groups with data.
+    expect_equal(cs$p(full), cs$p(cs$build(d_ab)), tolerance = 1e-10, info = fn)
+    for (lang in c("en", "fr")) {
+      withr::local_options(spicy.language = lang)
+      note <- attr(cs$build(d), "note")
+      label <- if (fn == "table_multiresponse") "m3" else cs$missing$label
+      expect_true(
+        grepl(.no_data_sentences(label, list("c")), note, fixed = TRUE),
+        info = paste(lang, fn)
+      )
+      if (!is.null(cs$missing)) {
+        expect_true(
+          grepl(
+            paste0(
+              spicy_str("note_missing_removed"),
+              spicy_fmt("note_missing_item", cs$missing$label, cs$missing$n),
+              "."
+            ),
+            note,
+            fixed = TRUE
+          ),
+          info = paste(lang, fn)
+        )
+      }
+    }
+  }
+  # The console shows the mark in the variable's cells of that group.
+  out <- utils::capture.output(print(q(table_categorical(
+    d,
+    select = xc,
+    by = g
+  ))))
+  expect_true(any(grepl(undefined, out, fixed = TRUE)))
+})
+
+test_that("a variable with data in fewer than two groups is not compared", {
+  skip_if_not_installed("survey")
+  d <- .fn_nodata_data()
+  des <- survey::svydesign(ids = ~1, weights = ~w, data = d)
+  q <- function(e) suppressMessages(suppressWarnings(e))
+  tables <- list(
+    table_categorical = function() {
+      q(table_categorical(d, select = xc2, by = g2))
+    },
+    table_categorical_svy = function() {
+      q(table_categorical_svy(des, select = xc2, by = g2))
+    },
+    table_continuous = function() q(table_continuous(d, select = xn2, by = g2)),
+    table_continuous_svy = function() {
+      q(table_continuous_svy(des, select = xn2, by = g2))
+    },
+    table_continuous_lm = function() {
+      q(table_continuous_lm(d, select = xn2, by = g2))
+    },
+    table_outcome = function() q(table_outcome(d, outcome = xn2, select = g2))
+  )
+  for (lang in c("en", "fr")) {
+    withr::local_options(spicy.language = lang)
+    for (fn in names(tables)) {
+      x <- tables[[fn]]()
+      note <- attr(x, "note")
+      label <- if (fn %in% c("table_categorical", "table_categorical_svy")) {
+        "xc2"
+      } else {
+        "xn2"
+      }
+      expect_true(
+        grepl(.no_data_sentences(label, list("q")), note, fixed = TRUE),
+        info = paste(lang, fn)
+      )
+      # No test ran, so none is named.
+      expect_false(
+        grepl(.fn_lead("note_group_comparison"), note, fixed = TRUE),
+        info = paste(lang, fn)
+      )
+      p <- as.data.frame(x)[["p"]]
+      expect_true(is.null(p) || all(is.na(p)), info = paste(lang, fn))
+    }
+  }
+  # An item of a multiple-response table: blank p, no test named for it.
+  d$m3[d$g2 == "q"] <- NA
+  mr <- q(table_multiresponse(d, select = c(m1, m3), by = g2, output = "long"))
+  expect_true(all(is.na(mr$p.value[mr$variable == "m3"])))
+  expect_false(all(is.na(mr$p.value[mr$variable == "m1"])))
+})
+
+test_that("without `by`, a variable with no observed value has no data", {
+  skip_if_not_installed("survey")
+  d <- .fn_data()
+  d$xc <- factor(NA, levels = c("no", "yes"))
+  d$xn <- NA_real_
+  d$m3 <- NA
+  des <- survey::svydesign(ids = ~1, weights = ~w, data = d)
+  q <- function(e) suppressMessages(suppressWarnings(e))
+  for (lang in c("en", "fr")) {
+    withr::local_options(spicy.language = lang)
+    notes <- list(
+      table_categorical = list(
+        q(table_categorical(d, select = c(xc, g2), drop_na = TRUE)),
+        "xc"
+      ),
+      table_categorical_svy = list(
+        q(table_categorical_svy(des, select = c(xc, g2), drop_na = TRUE)),
+        "xc"
+      ),
+      table_continuous = list(
+        q(table_continuous(d, select = c(xn, age))),
+        "xn"
+      ),
+      table_continuous_svy = list(
+        q(table_continuous_svy(des, select = c(xn, age))),
+        "xn"
+      ),
+      table_multiresponse = list(
+        q(table_multiresponse(d, select = c(m1, m3))),
+        "m3"
+      )
+    )
+    for (fn in names(notes)) {
+      x <- notes[[fn]][[1L]]
+      note <- attr(x, "note")
+      expect_true(
+        grepl(spicy_fmt("note_no_data", notes[[fn]][[2L]]), note, fixed = TRUE),
+        info = paste(lang, fn)
+      )
+      # Not a missing value: the variable is not in the count.
+      expect_false(
+        grepl(
+          spicy_fmt("note_missing_item", notes[[fn]][[2L]], nrow(d)),
+          note,
+          fixed = TRUE
+        ),
+        info = paste(lang, fn)
+      )
+      # The variable stays in the table, its cells marked.
+      out <- utils::capture.output(print(x))
+      expect_true(
+        any(grepl(spicy_str("cell_undefined"), out, fixed = TRUE)),
+        info = paste(lang, fn)
+      )
+    }
+  }
+})
+
+test_that("the variables with no data in the same groups share one sentence", {
+  skip_if_not_installed("survey")
+  # With `by = g`: xc, xc2, xc4 (and xn, xn2; m2, m3) have no data in "c",
+  # xc3 (and xn3) none in "b" and "c". One sentence per set of groups, in
+  # the order the rows first meet it, each list joined in the language.
+  d <- .fn_nodata_data()
+  d$xc4 <- d$xc
+  d$xc3 <- d$xc
+  d$xc3[d$g == "b"] <- NA
+  d$xn3 <- d$xn
+  d$xn3[d$g == "b"] <- NA
+  d$m2[d$g == "c"] <- NA
+  des <- survey::svydesign(ids = ~1, weights = ~w, data = d)
+  # Without `by`: two variables of each kind with no value at all.
+  d0 <- .fn_data()
+  d0$xc <- factor(NA, levels = c("no", "yes"))
+  d0$xe <- factor(NA, levels = c("no", "yes"))
+  d0$xn <- NA_real_
+  d0$xne <- NA_real_
+  d0$m2 <- NA
+  d0$m3 <- NA
+  des0 <- survey::svydesign(ids = ~1, weights = ~w, data = d0)
+  q <- function(e) suppressMessages(suppressWarnings(e))
+  tables <- list(
+    table_categorical = function() {
+      q(table_categorical(d, select = c(xc, xc2, xc3, xc4), by = g))
+    },
+    table_categorical_svy = function() {
+      q(table_categorical_svy(des, select = c(xc, xc2, xc3, xc4), by = g))
+    },
+    table_continuous = function() {
+      q(table_continuous(d, select = c(xn, xn3, xn2), by = g))
+    },
+    table_continuous_svy = function() {
+      q(table_continuous_svy(des, select = c(xn, xn3, xn2), by = g))
+    },
+    table_continuous_lm = function() {
+      q(table_continuous_lm(d, select = c(xn, xn3, xn2), by = g))
+    },
+    table_multiresponse = function() {
+      q(table_multiresponse(d, select = c(m1, m2, m3), by = g))
+    },
+    no_by_categorical = function() {
+      q(table_categorical(d0, select = c(xc, g2, xe), drop_na = TRUE))
+    },
+    no_by_categorical_svy = function() {
+      q(table_categorical_svy(des0, select = c(xc, g2, xe), drop_na = TRUE))
+    },
+    no_by_continuous = function() {
+      q(table_continuous(d0, select = c(xn, age, xne)))
+    },
+    no_by_continuous_svy = function() {
+      q(table_continuous_svy(des0, select = c(xn, age, xne)))
+    },
+    no_by_multiresponse = function() {
+      q(table_multiresponse(d0, select = c(m1, m2, m3)))
+    }
+  )
+  # The lists as each language joins them: the serial comma in English,
+  # none before "et" in French.
+  lists <- list(
+    en = list(
+      cat = "xc, xc2, and xc4",
+      num = "xn and xn2",
+      mr = "m2 and m3",
+      cat0 = "xc and xe",
+      num0 = "xn and xne",
+      groups = "b and c"
+    ),
+    fr = list(
+      cat = "xc, xc2 et xc4",
+      num = "xn et xn2",
+      mr = "m2 et m3",
+      cat0 = "xc et xe",
+      num0 = "xn et xne",
+      groups = "b et c"
+    )
+  )
+  for (lang in c("en", "fr")) {
+    withr::local_options(spicy.language = lang)
+    l <- lists[[lang]]
+    at <- function(vars, groups) spicy_fmt("note_no_data_in", vars, groups)
+    cat_by <- paste(at(l$cat, "c"), at("xc3", l$groups))
+    num_by <- paste(at(l$num, "c"), at("xn3", l$groups))
+    expected <- list(
+      table_categorical = cat_by,
+      table_categorical_svy = cat_by,
+      table_continuous = num_by,
+      table_continuous_svy = num_by,
+      table_continuous_lm = num_by,
+      table_multiresponse = at(l$mr, "c"),
+      no_by_categorical = spicy_fmt("note_no_data", l$cat0),
+      no_by_categorical_svy = spicy_fmt("note_no_data", l$cat0),
+      no_by_continuous = spicy_fmt("note_no_data", l$num0),
+      no_by_continuous_svy = spicy_fmt("note_no_data", l$num0),
+      no_by_multiresponse = spicy_fmt("note_no_data", l$mr)
+    )
+    for (fn in names(tables)) {
+      note <- attr(tables[[fn]](), "note")
+      expect_true(
+        grepl(expected[[fn]], note, fixed = TRUE),
+        info = paste(lang, fn, note)
+      )
+      # No other no-data sentence: each variable is named once.
+      n_sentences <- lengths(regmatches(
+        note,
+        gregexpr(.fn_lead("note_no_data"), note, fixed = TRUE)
+      ))
+      expect_identical(
+        n_sentences,
+        if (fn %in% names(tables)[1:5]) 2L else 1L,
+        info = paste(lang, fn)
+      )
+    }
+  }
+})
+
+test_that("a list whose items hold a comma takes semicolons, in every language", {
+  # sochealth labels three variables with a comma of their own. A list of
+  # three or more such labels separates them with semicolons, as the
+  # family's other lists of labels do (`.join_note_vars()`); two take the
+  # conjunction alone. The p-adjust sentence joins numbers, which hold no
+  # comma, and keeps its commas.
+  d <- as.data.frame(sochealth)
+  tert <- d$education == "Tertiary"
+  for (v in c(
+    "info_internet",
+    "info_family",
+    "info_media",
+    "political_position",
+    "bmi",
+    "wellbeing_score"
+  )) {
+    d[[v]][tert] <- NA
+  }
+  q <- function(e) suppressMessages(suppressWarnings(e))
+  tables <- list(
+    mr3 = function() {
+      q(table_multiresponse(
+        d,
+        select = c(info_internet, info_family, info_doctor, info_media),
+        by = education,
+        labels = TRUE
+      ))
+    },
+    mr2 = function() {
+      q(table_multiresponse(
+        d,
+        select = c(info_internet, info_doctor, info_media),
+        by = education,
+        labels = TRUE
+      ))
+    },
+    num3 = function() {
+      q(table_continuous(
+        d,
+        select = c(political_position, bmi, wellbeing_score),
+        by = education,
+        labels = TRUE
+      ))
+    }
+  )
+  # French puts a no-break space before the semicolon, and no semicolon
+  # before "et".
+  nbsp <- intToUtf8(160L)
+  lists <- list(
+    en = list(
+      mr3 = paste0(
+        "Internet, websites or apps; Family or friends; and Television, ",
+        "radio or newspapers"
+      ),
+      mr2 = "Internet, websites or apps and Television, radio or newspapers",
+      num3 = paste0(
+        "Political position (0 = left, 10 = right); Body mass index; and ",
+        "WHO-5 wellbeing index (0-100)"
+      ),
+      p2 = "2 and 1",
+      p3 = "2, 1, and 3"
+    ),
+    fr = list(
+      mr3 = paste0(
+        "Internet, websites or apps",
+        nbsp,
+        "; Family or friends et Television, radio or newspapers"
+      ),
+      mr2 = "Internet, websites or apps et Television, radio or newspapers",
+      num3 = paste0(
+        "Political position (0 = left, 10 = right)",
+        nbsp,
+        "; Body mass index et WHO-5 wellbeing index (0-100)"
+      ),
+      p2 = "2 et 1",
+      p3 = "2, 1 et 3"
+    )
+  )
+  for (lang in c("en", "fr")) {
+    withr::local_options(spicy.language = lang)
+    l <- lists[[lang]]
+    for (fn in names(tables)) {
+      note <- attr(tables[[fn]](), "note")
+      expect_true(
+        grepl(
+          spicy_fmt("note_no_data_in", l[[fn]], "Tertiary"),
+          note,
+          fixed = TRUE
+        ),
+        info = paste(lang, fn, note)
+      )
+    }
+    holm <- spicy_str("note_p_adjust_method_holm")
+    for (m in list(p2 = c(2L, 1L), p3 = c(2L, 1L, 3L))) {
+      key <- paste0("p", length(m))
+      expect_identical(
+        .p_adjust_sentence("holm", m),
+        spicy_fmt("note_p_adjusted_per_model_unequal", holm, l[[key]]),
+        info = paste(lang, key)
+      )
+    }
+  }
+})
+
+test_that("every English note spells chi-squared", {
+  skip_if_not_installed("survey")
+  d <- .fn_data()
+  des <- survey::svydesign(ids = ~1, weights = ~w, data = d)
+  q <- function(e) suppressMessages(suppressWarnings(e))
+  notes <- c(
+    attr(q(table_categorical_svy(des, select = xc, by = g)), "note"),
+    attr(
+      q(table_categorical_svy(
+        des,
+        select = xc,
+        by = g,
+        chisq_statistic = "Chisq"
+      )),
+      "note"
+    ),
+    attr(
+      q(table_categorical_svy(
+        des,
+        select = xc,
+        by = g,
+        chisq_statistic = "saddlepoint"
+      )),
+      "note"
+    ),
+    attr(q(table_categorical(d, select = xc, by = g)), "note"),
+    attr(q(table_multiresponse(d, select = c(m1, m2), by = g)), "note")
+  )
+  expect_false(any(grepl("chi-square(?!d)", notes, perl = TRUE)))
+  expect_true(all(grepl("chi-squared", notes, fixed = TRUE)))
+})
+
+test_that("every table of the family keeps the title it prints as `title`", {
+  skip_if_not_installed("survey")
+  d <- .fn_data()
+  des <- survey::svydesign(ids = ~1, weights = ~w, data = d)
+  q <- function(e) suppressMessages(suppressWarnings(e))
+  for (lang in c("en", "fr")) {
+    withr::local_options(spicy.language = lang)
+    tables <- list(
+      table_categorical = q(table_categorical(d, select = xc, by = g)),
+      table_categorical_noby = q(table_categorical(d, select = xc)),
+      table_categorical_svy = q(table_categorical_svy(
+        des,
+        select = xc,
+        by = g
+      )),
+      table_continuous = q(table_continuous(d, select = xn, by = g)),
+      table_continuous_noby = q(table_continuous(d, select = xn)),
+      table_continuous_svy = q(table_continuous_svy(des, select = xn, by = g)),
+      table_continuous_lm = q(table_continuous_lm(d, select = xn, by = g)),
+      table_outcome = q(table_outcome(d, outcome = xn, select = g)),
+      table_multiresponse = q(table_multiresponse(
+        d,
+        select = c(m1, m2),
+        by = g
+      )),
+      table_regression = q(table_regression(stats::lm(xn ~ age, data = d))),
+      table_regression_uv = q(table_regression_uv(
+        d,
+        outcome = xn,
+        predictors = c(age, g)
+      ))
+    )
+    for (fn in names(tables)) {
+      x <- tables[[fn]]
+      title <- attr(x, "title")
+      expect_true(
+        is.character(title) && length(title) == 1L,
+        info = paste(lang, fn)
+      )
+      out <- utils::capture.output(print(x))
+      expect_identical(
+        out[nzchar(trimws(out))][[1L]],
+        title,
+        info = paste(lang, fn)
+      )
+    }
+  }
+})
+
+test_that("every engine sets the stars legend on a line of its own", {
+  skip_if_not_installed("gt")
+  skip_if_not_installed("flextable")
+  skip_if_not_installed("tinytable")
+  fit <- stats::lm(mpg ~ wt + hp, data = mtcars)
+  build <- function(o, ...) {
+    table_regression(fit, stars = TRUE, output = o, ...)
+  }
+  lines <- strsplit(attr(build("default"), "note"), "\n", fixed = TRUE)[[1L]]
+  expect_length(lines, 2L)
+  # gt: one source note per line, the legend a row of its own.
+  g <- build("gt")
+  expect_length(g[["_source_notes"]], 2L)
+  # The HTML display path lifts the note out of the table: one line break,
+  # before the legend, and the two source-note rows gone from the table.
+  html <- .spicy_gt_html_postprocess(
+    as.character(gt::as_raw_html(g, inline_css = FALSE)),
+    attr(g, "spicy_note")
+  )
+  div <- regmatches(
+    html,
+    regexpr("<div class=\"spicy-gt-note\".*?</div>", html, perl = TRUE)
+  )
+  expect_identical(lengths(gregexpr("<br>", div, fixed = TRUE)), 1L)
+  expect_match(div, "<br>*** p &lt; .001", fixed = TRUE)
+  expect_no_match(html, "<tr class=\"gt_sourcenotes\">", fixed = TRUE)
+  # flextable, and the Word file it feeds: one footer line per line.
+  ft <- build("flextable")
+  expect_identical(nrow(ft$footer$dataset), 2L)
+  # The markdown grid of tinytable (a Quarto or R Markdown Word document):
+  # the legend opens a row of its own.
+  md <- strsplit(
+    tinytable::save_tt(build("tinytable"), output = "markdown"),
+    "\n",
+    fixed = TRUE
+  )[[1L]]
+  at <- grep("***", md, fixed = TRUE)[[1L]]
+  expect_true(startsWith(md[[at - 1L]], "+"))
+  # A note of one line stays one row everywhere.
+  plain <- function(o) {
+    table_categorical(mtcars, select = cyl, by = am, output = o)
+  }
+  expect_length(plain("gt")[["_source_notes"]], 1L)
+  expect_identical(nrow(plain("flextable")$footer$dataset), 1L)
+})

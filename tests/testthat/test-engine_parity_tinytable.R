@@ -279,26 +279,26 @@ test_that("the one-way table labels its first column like the console", {
 
 # ---- notes: one disclosure per line, one size down ------------------------
 
+# A note of two lines: the general note, one paragraph, then the legend
+# of the stars on a line of its own.
 .pt_multiline_note <- function(o) {
   d <- .pt_data()
   m1 <- stats::lm(wellbeing_score ~ age, data = d)
   m2 <- stats::glm(dentist_12m ~ age, data = d, family = stats::binomial())
-  table_regression(list(OLS = m1, Logistic = m2), output = o)
+  table_regression(list(OLS = m1, Logistic = m2), stars = TRUE, output = o)
 }
 
 test_that("a multi-line note keeps its lines in HTML and Typst", {
   skip_if_not_installed("tinytable")
   note <- attr(.pt_multiline_note("default"), "note")
-  expect_match(note, "\n", fixed = TRUE) # oracle: the console breaks lines
+  # Oracle: the console breaks the line before the legend, and only there.
+  expect_length(strsplit(note, "\n", fixed = TRUE)[[1L]], 2L)
   tt <- .pt_multiline_note("tinytable")
   html <- .pt_html(tt)
-  expect_match(html, "Std. errors:<br>", fixed = TRUE)
-  # The console indents the per-model attributions; the indent survives
-  # as no-break spaces. Named models: the line cites the spanner label.
-  expect_match(html, "<br>&nbsp;&nbsp;OLS:", fixed = TRUE)
+  expect_match(html, "information).<br>*** p &lt; .001", fixed = TRUE)
   # Typst collapses a bare newline exactly as HTML does: the line
-  # ends with a forced break, the indent becomes no-break spaces.
-  expect_match(.pt_typst(tt), "Std. errors: \\\n~~OLS:", fixed = TRUE)
+  # ends with a forced break.
+  expect_match(.pt_typst(tt), "information). \\\n\\*\\*\\* p", fixed = TRUE)
 })
 
 test_that("notes are subordinated by size, in black, by default", {
@@ -698,7 +698,7 @@ test_that("a LaTeX table wider than the text block is scaled down to it", {
 test_that("the LaTeX note keeps one disclosure per line, as HTML and Typst", {
   skip_if_not_installed("tinytable")
   tex <- .pt_latex(.pt_multiline_note("tinytable"))
-  expect_match(tex, "\\\\\nStd. errors:\\\\\n~~OLS:", fixed = TRUE)
+  expect_match(tex, "information).\\\\\n*** p < .001", fixed = TRUE)
 })
 
 test_that("LaTeX output sets the characters spicy writes in every engine", {

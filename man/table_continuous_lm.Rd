@@ -94,7 +94,14 @@ regressor. Declared missing values follow \code{user_na} as usual.
 Rows with \code{NA} in \code{by} are excluded from the analytic sample for each
 outcome (NAs in \code{y} and \code{weights} are also excluded; see Details), the
 rule of a table that computes (see \code{drop_na} in
-\code{\link[=table_continuous]{table_continuous()}}); this table has no \code{drop_na}.}
+\code{\link[=table_continuous]{table_continuous()}}); this table has no \code{drop_na}.
+
+An outcome with no observed value in a level of a categorical \code{by}
+(typically a question not asked in that group) has no data there: it
+is fit on the other levels, the cells of that level show a dash, its
+rows are not counted as missing values, and the note says so. With
+fewer than two levels with data, the outcome has no model and no
+test.}
 
 \item{covariates}{Optional additive covariates to adjust each per-outcome
 linear model for. Accepts a tidyselect expression (e.g.
@@ -526,7 +533,8 @@ Depends on \code{output}:
 \item \code{"default"}: the compute frame with class
 \code{"spicy_continuous_lm_table"} / \code{"spicy_table"}, carrying the
 rendering metadata as attributes (the \code{by} column and its label as
-\code{group_var} and \code{group_label}). The object is
+\code{group_var} and \code{group_label}, the title as printed as \code{title}).
+The object is
 returned visibly, so a bare \code{table_continuous_lm(...)} call
 auto-prints the styled ASCII table at the console while
 \code{t <- table_continuous_lm(...)} stays silent (print \code{t} to
@@ -806,7 +814,11 @@ when the degrees of freedom are constant across outcomes).
 
 When \code{covariates} is non-empty, the printed ASCII table appends an
 APA-style footer naming the covariates and the chosen estimand, e.g.
-\verb{Note. Adjusted for age, education (proportional).}
+\verb{Note. Adjusted for age, education (proportional).} With p-values, the
+note also names the test behind them, read off each outcome's model:
+\verb{Group comparison: t-test from the linear model.} (the F-test for a
+\code{by} with more than two levels), or \verb{Slope test: ...} for a numeric
+\code{by}.
 
 The rendering engines carry that same footer as a table note. On the
 \code{"tinytable"} route the note is set one size down;

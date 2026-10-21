@@ -356,9 +356,11 @@ test_that("`smd = FALSE` changes nothing, and `smd = TRUE` only appends", {
     ))$col_meta
   )
   expect_identical(keys_on, c(keys_off, .CON_KEY_SMD))
-  # One column added, one note line added, nothing else: the body rows
-  # differ only by the cells of that column.
-  expect_length(setdiff(off, on), 4L) # header, rule, two data rows
+  # One column added, one gloss added to the note, nothing else: the body
+  # rows differ only by the cells of that column, and the note, one
+  # paragraph, only by the gloss at its end.
+  expect_length(setdiff(off, on), 5L) # header, rule, two data rows, note
+  expect_true(any(startsWith(on, off[startsWith(off, "Note.")])))
   expect_true(any(grepl(
     "SMD = standardized mean difference",
     on,

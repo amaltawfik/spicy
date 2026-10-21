@@ -332,7 +332,9 @@ test_that("a `by` level displayed beside the missing column is refused", {
   expect_identical(lgb$n[lgb$level == "A" & lgb$group == "(Missing)"], 0)
 })
 
-test_that("table_categorical handles one-way empty results after dropping missing", {
+test_that("a one-way variable with no observed value keeps its one row", {
+  # No level to show: one row for the variable, its cells undefined, in
+  # place of the silent drop of 0.13.0.
   df <- data.frame(v1 = c(NA, NA))
 
   out_long <- table_categorical(
@@ -348,12 +350,14 @@ test_that("table_categorical handles one-way empty results after dropping missin
     output = "data.frame"
   )
 
-  expect_equal(nrow(out_long), 0L)
-  expect_equal(nrow(out_wide), 0L)
+  expect_equal(nrow(out_long), 1L)
+  expect_true(is.na(out_long$level) && is.na(out_long$n))
+  expect_equal(nrow(out_wide), 1L)
   expect_named(out_wide, c("variable", "label", "level", ".row_role", "n", "%"))
+  expect_identical(attr(out_wide, "note"), "Note. No data for v1.")
 })
 
-test_that("table_categorical handles grouped empty results after dropping missing", {
+test_that("a grouped variable with no observed value keeps its one row", {
   df <- data.frame(
     grp = c("A", "B"),
     v1 = c(NA, NA)
@@ -373,19 +377,13 @@ test_that("table_categorical handles grouped empty results after dropping missin
     drop_na = TRUE,
     output = "data.frame"
   )
-  out_default <- table_categorical(
-    data = df,
-    select = v1,
-    by = grp,
-    drop_na = TRUE,
-    output = "data.frame"
-  )
 
-  expect_equal(nrow(out_long), 0L)
-  expect_equal(nrow(out_wide), 0L)
-  expect_equal(nrow(out_default), 0L)
+  # One row per group and the margin, every count undefined.
+  expect_equal(nrow(out_long), 3L)
+  expect_true(all(is.na(out_long$n)))
+  expect_equal(nrow(out_wide), 1L)
   expect_true("variable" %in% names(out_wide))
-  expect_true("variable" %in% names(out_default))
+  expect_identical(attr(out_wide, "note"), "Note. No data for v1 in A and B.")
 })
 
 test_that("table_categorical warns about ignored grouped options without by", {
@@ -756,10 +754,11 @@ test_that("table_categorical accepts a named per-variable `assoc_measure`", {
     output = "default"
   )
   # The note lists display labels: the column names by default. The
-  # attribute is the statistics part of the note, without its "Note.".
+  # attribute is the statistics part of the note, without its "Note.":
+  # the test, then the measure of each variable.
   expect_match(
     attr(out_default, "assoc_note"),
-    "^Phi: smoking\\. Cramer's V: education\\."
+    "test\\. Phi: smoking\\. Cramer's V: education\\.$"
   )
 
   # Force uniform Cramer's V via single-string -> no measure note; the
@@ -1762,17 +1761,20 @@ test_that("table_categorical one-way with blank_na_wide", {
   expect_s3_class(out, "data.frame")
 })
 
-test_that("table_categorical one-way empty after dropping NA produces 0-row data.frame", {
-  df <- data.frame(x = factor(c(NA, NA, NA)))
+test_that("a one-way factor with no observed value shows its declared levels", {
+  df <- data.frame(x = factor(c(NA, NA, NA), levels = c("a", "b")))
   out_wide <- table_categorical(
     df,
     select = x,
     drop_na = TRUE,
     output = "data.frame"
   )
-  expect_equal(nrow(out_wide), 0L)
+  # The header row and the two declared levels, the counts NA.
+  expect_identical(out_wide$level, c(NA, "a", "b"))
+  expect_true(all(is.na(out_wide$n)))
   out_long <- table_categorical(df, select = x, drop_na = TRUE, output = "long")
-  expect_equal(nrow(out_long), 0L)
+  expect_identical(out_long$level, c("a", "b"))
+  expect_true(all(is.na(out_long$n) & is.na(out_long$pct)))
 })
 
 test_that("table_categorical grouped default output returns a styled object", {
@@ -1824,7 +1826,7 @@ test_that("table_categorical grouped with assoc_measure = none", {
   expect_true(all(is.na(out$es_value) & is.na(out$es_type)))
 })
 
-test_that("table_categorical grouped empty after dropping NA", {
+test_that("a grouped variable with no observed value and no level is one row", {
   df <- data.frame(
     grp = factor(c("A", "B")),
     v = factor(c(NA, NA))
@@ -1836,7 +1838,8 @@ test_that("table_categorical grouped empty after dropping NA", {
     drop_na = TRUE,
     output = "data.frame"
   )
-  expect_equal(nrow(out_wide), 0L)
+  expect_equal(nrow(out_wide), 1L)
+  expect_true(all(is.na(out_wide[c("A n", "A %", "B n", "Total n")])))
   out_long <- table_categorical(
     df,
     select = v,
@@ -1844,7 +1847,8 @@ test_that("table_categorical grouped empty after dropping NA", {
     drop_na = TRUE,
     output = "long"
   )
-  expect_equal(nrow(out_long), 0L)
+  expect_identical(out_long$group, c("A", "B", "Total"))
+  expect_true(all(is.na(out_long$n)))
 })
 
 test_that("table_categorical one-way weighted with rescale", {
@@ -2020,14 +2024,18 @@ test_that("table_categorical grouped excel with assoc_measure = none", {
   expect_true(file.exists(path))
 })
 
-test_that("table_categorical one-way all-NA renders empty default table", {
+test_that("table_categorical one-way all-NA keeps the variable, undefined", {
   df <- data.frame(x = factor(c(NA, NA, NA)))
   out <- table_categorical(df, select = x, drop_na = TRUE, output = "default")
   expect_s3_class(out, "spicy_categorical_table")
-  expect_equal(nrow(out), 0L)
+  expect_equal(nrow(out), 1L)
+  expect_identical(
+    attr(out, "display_df")$n,
+    spicy:::spicy_str("cell_undefined")
+  )
 })
 
-test_that("table_categorical grouped all-NA renders empty default table", {
+test_that("table_categorical grouped all-NA keeps the variable, undefined", {
   df <- data.frame(
     grp = factor(c("A", "B", "A")),
     v = factor(c(NA, NA, NA))
@@ -2040,6 +2048,7 @@ test_that("table_categorical grouped all-NA renders empty default table", {
     output = "default"
   )
   expect_s3_class(out, "spicy_categorical_table")
+  expect_equal(nrow(attr(out, "display_df")), 1L)
 })
 
 test_that("table_categorical one-way levels_keep with no match returns empty", {
@@ -2517,16 +2526,17 @@ test_that("clipboard payload carries the console title and notes", {
   lines <- strsplit(captured$text, "\n", fixed = TRUE)[[1L]]
   cells <- strsplit(lines, "\t", fixed = TRUE)
 
-  # Title on the first row, disclosure notes on the last rows: what
-  # left the table, then which measure each row's effect size is.
+  # Title on the first row, the note on the last one, one paragraph:
+  # what left the table, the test, then which measure each row's effect
+  # size is.
   expect_identical(cells[[1L]][1L], "Categorical table by sex")
   expect_match(
-    lines[length(lines) - 1L],
-    "^Note\\. Missing values removed: smoking \\(65\\)\\."
-  )
-  expect_match(
     lines[length(lines)],
-    "^Phi: smoking\\. Cramer's V: education\\."
+    paste0(
+      "^Note\\. Missing values removed: smoking \\(65\\)\\. ",
+      "Group comparison: Pearson chi-squared test\\. ",
+      "Phi: smoking\\. Cramer's V: education\\."
+    )
   )
   # Title / note rows are padded to the full grid, so every line of
   # the payload holds the same number of fields (trailing empty
@@ -3557,19 +3567,19 @@ test_that("the note opens with \"Note.\" once, drop_na disclosure first or not",
     )
   }
   # drop_na = TRUE: the missing-values sentence comes first, and the
-  # prefix opens the note there, never between its two parts (issue #11).
+  # prefix opens the note there, never between its parts (issue #11). The
+  # note is one paragraph: the missing data, the test, then the measures.
   tbl <- by_sex(drop_na = TRUE)
   printed <- utils::capture.output(print(tbl))
   expect_identical(sum(grepl("Note.", printed, fixed = TRUE)), 1L)
-  expect_identical(
-    printed[grepl("Note.", printed, fixed = TRUE)],
-    "Note. Missing values removed: smoking (25)."
+  whole <- paste(
+    "Note. Missing values removed: smoking (25).",
+    "Group comparison: Pearson chi-squared test.",
+    "Phi: smoking. Cramer's V: education."
   )
-  expect_true(
-    "Phi: smoking. Cramer's V: education. Group comparison: Pearson chi-squared test." %in%
-      printed
-  )
-  # The two attributes are the parts, without the prefix; the assembled
+  expect_identical(printed[grepl("Note.", printed, fixed = TRUE)], whole)
+  expect_identical(attr(tbl, "note"), whole)
+  # The attributes are the parts, without the prefix; the assembled
   # note is what every engine carries.
   expect_identical(
     attr(tbl, "missing_note"),
@@ -3579,15 +3589,12 @@ test_that("the note opens with \"Note.\" once, drop_na disclosure first or not",
   skip_if_not_installed("gt")
   expect_identical(
     attr(by_sex(drop_na = TRUE, output = "gt"), "spicy_note"),
-    paste0(
-      "Note. Missing values removed: smoking (25).\n",
-      "Phi: smoking. Cramer's V: education. Group comparison: Pearson chi-squared test."
-    )
+    whole
   )
   # Without drop_na, the statistics part opens the note.
   printed <- utils::capture.output(print(by_sex()))
   expect_true(
-    "Note. Phi: smoking. Cramer's V: education. Group comparison: Pearson chi-squared test." %in%
+    "Note. Group comparison: Pearson chi-squared test. Phi: smoking. Cramer's V: education." %in%
       printed
   )
   # One-way, drop_na alone; nothing to say, no note.
@@ -3607,9 +3614,283 @@ test_that("the note opens with \"Note.\" once, drop_na disclosure first or not",
   withr::local_options(spicy.language = "fr")
   printed <- utils::capture.output(print(by_sex(drop_na = TRUE)))
   expect_identical(sum(grepl("Note.", printed, fixed = TRUE)), 1L)
-  expect_true(
-    "Note. Valeurs manquantes retir\u00e9es\u00a0: smoking (25)." %in% printed
+  expect_true(any(startsWith(
+    printed,
+    "Note. Valeurs manquantes retir\u00e9es\u00a0: smoking (25). "
+  )))
+})
+
+# ---- no data in a group: not a missing answer -------------------------------
+
+# `physical_activity` is not asked in the Tertiary group: every value is
+# missing there. `extra_na` adds missing answers in the other groups.
+.nd_data <- function(extra_na = 0L) {
+  d <- as.data.frame(sochealth)
+  d$physical_activity[d$education == "Tertiary"] <- NA
+  if (extra_na > 0L) {
+    asked <- which(d$education != "Tertiary")
+    d$physical_activity[asked[seq_len(extra_na)]] <- NA
+  }
+  d
+}
+
+test_that("a group with no data shows the undefined mark, NA in the machine outputs", {
+  d <- .nd_data()
+  mark <- spicy:::spicy_str("cell_undefined")
+  tbl <- table_categorical(d, c(smoking, physical_activity), by = education)
+  disp <- attr(tbl, "display_df")
+  rows <- disp$Variable %in% c("  No", "  Yes") & seq_len(nrow(disp)) > 4L
+  expect_identical(unique(disp[["Tertiary n"]][rows]), mark)
+  expect_identical(unique(disp[["Tertiary %"]][rows]), mark)
+  # Not a missing answer: no `(Missing)` row, the margin over the groups
+  # that have data.
+  long <- table_categorical(
+    d,
+    physical_activity,
+    by = education,
+    output = "long"
   )
+  expect_false("(Missing)" %in% long$level)
+  tert <- long$group == "Tertiary"
+  expect_true(all(is.na(long$n[tert]) & is.na(long$pct[tert])))
+  asked <- d[d$education != "Tertiary", ]
+  expect_equal(
+    long$n[long$group == "Total"],
+    as.numeric(table(asked$physical_activity))
+  )
+  expect_equal(sum(long$pct[long$group == "Total"]), 100)
+  tidy_t <- broom::tidy(tbl)
+  expect_true(all(is.na(tidy_t$n[
+    tidy_t$variable == "physical_activity" & tidy_t$group == "Tertiary"
+  ])))
+  expect_identical(
+    broom::glance(tbl)$nobs[[2L]],
+    sum(!is.na(asked$physical_activity))
+  )
+  # The typed view: NA in the body, undefined, with the mark.
+  s <- as_structured(tbl)
+  hit <- s$body$.variable == "physical_activity" & s$body$.row_role == "level"
+  expect_true(all(is.na(s$body[["Tertiary n"]][hit])))
+  expect_true(all(s$cell_status[["Tertiary n"]][hit] == "undefined"))
+  expect_true(all(s$col_meta[["Tertiary %"]]$display_cells[hit] == mark))
+  expect_true(all(is.na(as.data.frame(tbl)[["Tertiary n"]][hit])))
+})
+
+test_that("a group with no data leaves the comparison of the other groups", {
+  d <- .nd_data()
+  gl <- broom::glance(table_categorical(d, physical_activity, by = education))
+  asked <- d[d$education != "Tertiary", ]
+  ref <- suppressWarnings(stats::chisq.test(
+    table(asked$physical_activity, droplevels(asked$education)),
+    correct = FALSE
+  ))
+  expect_equal(gl$statistic, unname(ref$statistic), tolerance = 1e-10)
+  expect_equal(gl$p.value, ref$p.value, tolerance = 1e-10)
+  expect_identical(gl$df, 1L)
+})
+
+test_that("the missing answers of a variable leave out its groups with no data", {
+  d <- .nd_data(extra_na = 7L)
+  out <- table_categorical(
+    d,
+    c(smoking, physical_activity),
+    by = education,
+    drop_na = TRUE
+  )
+  expect_identical(
+    attr(out, "missing_note"),
+    paste(
+      "Missing values removed: smoking (25), physical_activity (7).",
+      "No data for physical_activity in Tertiary."
+    )
+  )
+  # Under drop_na = FALSE, the `(Missing)` row counts the missing answers,
+  # and the group with no data shows the mark there too.
+  long <- table_categorical(
+    d,
+    physical_activity,
+    by = education,
+    output = "long"
+  )
+  miss <- long[long$level == "(Missing)", ]
+  expect_true(is.na(miss$n[miss$group == "Tertiary"]))
+  expect_identical(miss$n[miss$group == "Total"], 7)
+})
+
+test_that("with fewer than two groups with data, the variable is not compared", {
+  d <- as.data.frame(sochealth)
+  d$physical_activity[d$sex == "Male"] <- NA
+  expect_no_warning(
+    tbl <- table_categorical(
+      d,
+      c(smoking, physical_activity),
+      by = sex,
+      smd = TRUE
+    )
+  )
+  gl <- broom::glance(tbl)
+  expect_true(is.na(gl$p.value[[2L]]) && is.na(gl$test_type[[2L]]))
+  expect_true(is.na(gl$es_value[[2L]]) && is.na(gl$smd_value[[2L]]))
+  # The p cell is blank, not undefined; the SMD cell shows the mark, the
+  # undefined cell of the typed view.
+  disp <- attr(tbl, "display_df")
+  pa <- disp$Variable == "physical_activity"
+  expect_identical(disp$p[pa], "")
+  expect_identical(disp$SMD[pa], spicy:::spicy_str("cell_undefined"))
+  s <- as_structured(tbl)
+  expect_identical(s$cell_status$SMD[pa], "undefined")
+  expect_identical(s$cell_status$SMD[disp$Variable == "smoking"], "")
+  # The note names no test for it: alone, the table names none.
+  alone <- table_categorical(d, physical_activity, by = sex)
+  expect_identical(
+    attr(alone, "note"),
+    "Note. No data for physical_activity in Male."
+  )
+})
+
+test_that("the no-data sentence follows the language, the label and the order", {
+  d <- .nd_data()
+  d$alcohol <- d$smoking
+  d$alcohol[d$education == "Lower secondary"] <- NA
+  d$tobacco <- d$alcohol
+  out <- table_categorical(
+    d,
+    c(alcohol, physical_activity, tobacco),
+    by = education,
+    labels = c(physical_activity = "Physical activity")
+  )
+  # One sentence per set of groups, in the order the rows first meet it:
+  # the variables with no data in the same groups share it.
+  expect_identical(
+    attr(out, "missing_note"),
+    paste(
+      "No data for alcohol and tobacco in Lower secondary.",
+      "No data for Physical activity in Tertiary."
+    )
+  )
+  withr::local_options(spicy.language = "fr")
+  fr <- attr(table_categorical(d, physical_activity, by = education), "note")
+  expect_true(startsWith(fr, "Note. Aucune donn"))
+  expect_match(
+    fr,
+    "pour physical_activity dans Tertiary. Comparaison",
+    fixed = TRUE
+  )
+})
+
+test_that("without by, a variable with no observed value keeps its levels", {
+  d <- as.data.frame(sochealth)
+  d$physical_activity <- factor(NA, levels = c("No", "Yes"))
+  mark <- spicy:::spicy_str("cell_undefined")
+  for (dn in c(FALSE, TRUE)) {
+    tbl <- table_categorical(d, c(smoking, physical_activity), drop_na = dn)
+    disp <- attr(tbl, "display_df")
+    pa <- which(disp$Variable == "physical_activity")
+    expect_identical(disp$Variable[pa + 1:2], c("  No", "  Yes"))
+    expect_identical(disp$n[pa + 1:2], c(mark, mark))
+    # Not counted as missing, and no `(Missing)` row.
+    expect_false(any(grepl(
+      "physical_activity (",
+      attr(tbl, "note"),
+      fixed = TRUE
+    )))
+    expect_identical(nrow(disp), pa + 2L)
+    expect_match(
+      attr(tbl, "note"),
+      "No data for physical_activity.",
+      fixed = TRUE
+    )
+  }
+})
+
+test_that("the note names no association measure for a variable with no value", {
+  d <- as.data.frame(sochealth)
+  d$empty <- factor(NA, levels = c("a", "b", "c"))
+  # smoking takes phi, education and empty Cramer's V, so the column takes
+  # the generic header and the note says which measure each variable
+  # carries: empty, with no value at all, carries none.
+  tbl <- table_categorical(d, c(smoking, education, empty), by = sex)
+  expect_identical(
+    attr(tbl, "note"),
+    paste(
+      "Note. No data for empty in Female and Male.",
+      "Group comparison: Pearson chi-squared test.",
+      "Phi: smoking. Cramer's V: education."
+    )
+  )
+  # The header stays generic, so the one measure left is still named.
+  tbl2 <- table_categorical(d, c(smoking, empty), by = sex)
+  expect_match(
+    attr(tbl2, "note"),
+    "Pearson chi-squared test. Phi: smoking.",
+    fixed = TRUE
+  )
+  expect_false(grepl("Cramer", attr(tbl2, "note"), fixed = TRUE))
+  expect_identical(
+    spicy:::.assoc_note_apa(
+      c(a = "phi", b = "cramer_v", c = "cramer_v"),
+      c("A", "B", "C"),
+      no_value = "c"
+    ),
+    "Phi: A. Cramer's V: B."
+  )
+})
+
+test_that("the default object carries the title the console prints", {
+  by_tbl <- table_categorical(sochealth, smoking, by = sex, labels = TRUE)
+  expect_identical(attr(by_tbl, "title"), "Categorical table by Sex")
+  expect_identical(
+    attr(by_tbl, "title"),
+    utils::capture.output(print(by_tbl))[[1L]]
+  )
+  expect_identical(
+    attr(table_categorical(sochealth, smoking), "title"),
+    "Categorical table"
+  )
+})
+
+test_that("a weighted table says so first, by and without by", {
+  w <- table_categorical(sochealth, smoking, by = sex, weights = weight)
+  expect_true(startsWith(
+    attr(w, "note"),
+    "Note. Statistics weighted by weight. Group comparison:"
+  ))
+  expect_identical(attr(w, "what_note"), "Statistics weighted by weight.")
+  # print() rebuilds the same note from its parts.
+  printed <- utils::capture.output(print(w))
+  expect_true(attr(w, "note") %in% printed)
+  one <- table_categorical(sochealth, smoking, weights = sochealth$weight)
+  expect_identical(attr(one, "note"), "Note. Statistics weighted by weights.")
+  expect_null(attr(
+    table_categorical(sochealth, smoking, by = sex),
+    "what_note"
+  ))
+})
+
+test_that("the Excel sheet writes the mark in the cells of a group with no data", {
+  skip_if_not_installed("openxlsx2")
+  tmp <- tempfile(fileext = ".xlsx")
+  on.exit(unlink(tmp), add = TRUE)
+  table_categorical(
+    .nd_data(),
+    physical_activity,
+    by = education,
+    output = "excel",
+    excel_path = tmp
+  )
+  m <- as.matrix(openxlsx2::read_xlsx(
+    tmp,
+    col_names = FALSE,
+    skip_empty_rows = FALSE
+  ))
+  mark <- spicy:::spicy_str("cell_undefined")
+  tert <- which(m[3L, ] == "Tertiary")
+  # The level rows, their label indented.
+  body <- which(endsWith(m[, 1L], "No") | endsWith(m[, 1L], "Yes"))
+  expect_length(body, 2L)
+  expect_true(all(m[body, c(tert, tert + 1L)] == mark))
+  # The other groups keep their counts (Upper secondary n here).
+  expect_equal(as.numeric(m[body, tert - 2L]), c(310, 229))
 })
 
 # ---- audit Phase 2: level order, labels, margins, full precision ----------
@@ -4769,12 +5050,13 @@ test_that("p_value = FALSE: the console table, its typed view and glance()", {
   expect_identical(s$body$.row_role, s_ref$body$.row_role)
 
   # The measure note is the measure's: it stays. The sentence naming the
-  # test leaves with the test.
+  # test leaves with the test (it comes first, an inference before the
+  # definitions).
   measure_note <- "Phi: smoking. Cramer's V: education."
   expect_identical(attr(tbl, "assoc_note"), measure_note)
   expect_identical(
     attr(ref, "assoc_note"),
-    paste(measure_note, "Group comparison: Pearson chi-squared test.")
+    paste("Group comparison: Pearson chi-squared test.", measure_note)
   )
   printed <- utils::capture.output(print(tbl))
   header <- printed[grepl("Variable", printed, fixed = TRUE)][[1L]]

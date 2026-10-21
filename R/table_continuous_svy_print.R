@@ -207,9 +207,11 @@ glance.spicy_continuous_svy_table <- function(x, ...) {
     df.residual = pick("df2"),
     p.value = pick("p.value"),
     degf = rep(meta$degf %||% NA_real_, length(vars)),
+    # A group in which the variable has no data counts nothing (its `n`
+    # is NA, not 0).
     nobs = vapply(
       vars,
-      function(v) sum(long$n[long$variable == v]),
+      function(v) sum(long$n[long$variable == v], na.rm = TRUE),
       numeric(1),
       USE.NAMES = FALSE
     ),

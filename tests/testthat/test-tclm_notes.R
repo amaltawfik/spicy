@@ -19,13 +19,27 @@ test_that(".tclm_note_text composes lines from stored attributes", {
     "Note. Std. errors: heteroskedasticity-robust (HC1)."
   )
 
-  # Covariates + non-classical vcov: two lines, "Note. " on the first.
+  # Covariates + non-classical vcov: one paragraph, what the numbers are
+  # before the inference.
   attr(x, "covariates") <- c("age", "sex")
   attr(x, "adjustment") <- "balanced"
   expect_identical(
     spicy:::.tclm_note_text(x),
-    paste0(
-      "Note. Adjusted for age, sex (balanced).\n",
+    paste(
+      "Note. Adjusted for age, sex (balanced).",
+      "Std. errors: heteroskedasticity-robust (HC1)."
+    )
+  )
+  # The weights open it; the missing data sit between the two kinds.
+  expect_identical(
+    spicy:::.tclm_note_text(
+      x,
+      missing_note = "Rows with missing w removed: 2.",
+      weighted_by = "w"
+    ),
+    paste(
+      "Note. Statistics weighted by w. Adjusted for age, sex (balanced).",
+      "Rows with missing w removed: 2.",
       "Std. errors: heteroskedasticity-robust (HC1)."
     )
   )
@@ -96,7 +110,7 @@ test_that("console note discloses adjustment and robust SEs together", {
   )
 })
 
-test_that("console note is absent for classical unadjusted tables", {
+test_that("a classical unadjusted table names its test, and only that", {
   txt <- paste(
     capture.output(
       table_continuous_lm(
@@ -108,7 +122,20 @@ test_that("console note is absent for classical unadjusted tables", {
     collapse = "\n"
   )
   expect_false(grepl("Std. errors:", txt, fixed = TRUE))
-  expect_false(grepl("Note.", txt, fixed = TRUE))
+  expect_match(
+    txt,
+    "Note. Group comparison: t-test from the linear model.",
+    fixed = TRUE
+  )
+  # Without p-values there is nothing to disclose: no note at all.
+  quiet <- table_continuous_lm(
+    sochealth,
+    select = wellbeing_score,
+    by = physical_activity,
+    p_value = FALSE
+  )
+  expect_null(attr(quiet, "note"))
+  expect_false(any(grepl("Note.", capture.output(print(quiet)), fixed = TRUE)))
 })
 
 test_that("bootstrap SEs are disclosed in the console note", {
@@ -129,10 +156,14 @@ test_that("bootstrap SEs are disclosed in the console note", {
     collapse = "\n"
   )
   # The disclosure now carries the valid replicate count
-  # ("(200 replicates)" when every replicate converged; seed-fixed).
+  # ("(200 replicates)" when every replicate converged; seed-fixed), after
+  # the asymptotic test the bootstrap variance gives.
   expect_match(
     txt,
-    "Note. Std. errors: nonparametric bootstrap (",
+    paste(
+      "Note. Group comparison: z-test from the linear model.",
+      "Std. errors: nonparametric bootstrap ("
+    ),
     fixed = TRUE
   )
   expect_match(txt, "replicates).", fixed = TRUE)
@@ -238,10 +269,12 @@ test_that("gt output stashes the note and injects it in rendered HTML", {
 
 test_that("gt output without a note keeps the plain gt class", {
   skip_if_not_installed("gt")
+  # No p-value, nothing missing, classical SEs: nothing to disclose.
   g <- table_continuous_lm(
     sochealth,
     select = wellbeing_score,
     by = physical_activity,
+    p_value = FALSE,
     output = "gt"
   )
   expect_false(inherits(g, "spicy_gt"))
@@ -295,6 +328,7 @@ test_that("flextable output without a note is wrapped, note attr absent", {
     sochealth,
     select = wellbeing_score,
     by = physical_activity,
+    p_value = FALSE,
     output = "flextable"
   )
   # Since the pandoc xmlns workaround the wrapper class is
@@ -336,6 +370,7 @@ test_that("tinytable output without a note renders no note div", {
     sochealth,
     select = wellbeing_score,
     by = physical_activity,
+    p_value = FALSE,
     output = "tinytable"
   )
   html <- tinytable::save_tt(tt, output = "html")
@@ -445,7 +480,11 @@ test_that("classical fits carry an all-NA boot_n_valid and no SE note", {
   )
   expect_true("boot_n_valid" %in% names(out))
   expect_true(all(is.na(out$boot_n_valid)))
-  expect_null(attr(out, "note"))
+  # The note names the test, and no standard-error estimator.
+  expect_identical(
+    attr(out, "note"),
+    "Note. Group comparison: t-test from the linear model."
+  )
 })
 
 test_that(".tclm_vcov_label ranges heterogeneous replicate counts", {

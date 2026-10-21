@@ -23,7 +23,5 @@
        n                      │ 1182                                 
        AIC                    │ 2446.3                               
       
-      Note. Discrete-choice multinomial logit (mlogit).
-      Std. errors: Wald asymptotic (z).
-      Reference alternative: beach.
+      Note. Discrete-choice multinomial logit (mlogit). Reference alternative: beach. Std. errors: Wald asymptotic (z).
 

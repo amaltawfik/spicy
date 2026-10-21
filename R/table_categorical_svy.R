@@ -365,6 +365,23 @@
 #' documented as failing in the far tail (`?pchisqsum`), the second
 #' because it has no reporting convention here.
 #'
+#' # Groups with no data
+#'
+#' As in [table_categorical()], a variable with no observed value in a
+#' group of `by` that holds sampled rows, typically a question not asked
+#' in that group, has no data there, which is not a missing answer. Its
+#' cells in that group show an en dash (`NA` in the data frames, in
+#' [tidy()][tidy.spicy_categorical_svy_table] and in [as_structured()]),
+#' and its rows there are left out of everything computed for that
+#' variable: the missing values the note counts, the `Total` block, the
+#' `(Missing)` row and the test. A variable left with fewer than two
+#' groups with data is not tested: its `p` cell is left blank. The note
+#' says "No data for X in G.", in one sentence for the variables with no
+#' data in the same groups ("No data for X and Y in G."). Without `by`, a
+#' variable with no observed value at all keeps its declared levels (its
+#' one row when it declares none) with the dash, and the note says "No
+#' data for X."
+#'
 #' # Stability
 #'
 #' This function is **stabilizing** in the sense `?spicy` defines: the
@@ -525,7 +542,8 @@
 #' }
 #'
 #' The default object and the two data frames carry the whole note as
-#' printed, "Note." included, in `attr(x, "note")`.
+#' printed, "Note." included, in `attr(x, "note")`. The default object
+#' also keeps the title the console prints, in `attr(x, "title")`.
 #' [tidy()][tidy.spicy_categorical_svy_table] reports the proportions
 #' between 0 and 1.
 #'
@@ -718,18 +736,24 @@ table_categorical_svy <- function(
 
   # --- declared missing values ---------------------------------------------
   # Values, never rows: the design's clusters, strata and probabilities
-  # are untouched (see `table_continuous_svy()`).
+  # are untouched (see `table_continuous_svy()`). The declared missing
+  # values of each variable are kept row by row, to be counted where the
+  # missing values are, outside the groups in which it has no data.
   user_na_dropped <- integer(0)
+  user_na_masks <- list()
   for (nm in c(select_names, group_col_name)) {
     col <- vars[[nm]]
-    n_user <- if (user_na) sum(.user_na_mask(col)) else 0L
+    if (nm %in% select_names) {
+      user_na_masks[[nm]] <- if (user_na) {
+        .user_na_mask(col)
+      } else {
+        rep(FALSE, length(col))
+      }
+    }
     design$variables[[nm]] <- if (isTRUE(user_na)) {
       .user_na_to_na(col)
     } else {
       .user_na_zap(col)
-    }
-    if (n_user > 0L && nm %in% select_names) {
-      user_na_dropped[[nm]] <- n_user
     }
   }
   vars <- design$variables
@@ -761,8 +785,15 @@ table_categorical_svy <- function(
     )
     if (drop_na && geom$n_na > 0L) {
       by_na_dropped <- geom$n_na
-      design <- .design_subset(design, !is.na(vars[[group_col_name]]))
+      kept_rows <- !is.na(vars[[group_col_name]])
+      design <- .design_subset(design, kept_rows)
       vars <- design$variables
+      # `[` drops the rows of an ordinary design and keeps those of a
+      # calibrated one at weight zero (`.design_subset()`): the masks of
+      # the declared missing values follow the rows.
+      if (nrow(vars) == sum(kept_rows)) {
+        user_na_masks <- lapply(user_na_masks, function(m) m[kept_rows])
+      }
       geom <- .svy_by_levels(
         vars[[group_col_name]],
         drop_na,
@@ -825,11 +856,42 @@ table_categorical_svy <- function(
   n_test_ran <- 0L
   # Whether a displayed percentage of 0 or 100 got the exact interval.
   ci_bound <- FALSE
+  # The groups of `by` in which a variable has no data: rows there, and
+  # not one observed value -- typically a question not asked in that
+  # group. That is not a missing answer, as in `table_categorical()`. The
+  # variable's cells in such a group are NA and show `cell_undefined`,
+  # and its rows there leave everything computed for it: the
+  # missing-value counts, the margin, the `(Missing)` row and the test.
+  # Read on the rows the design weighs. Without `by`, `no_data_vars`
+  # lists the variables with no observed value at all.
+  real_groups <- setdiff(group_keys, missing_group_label)
+  w_design <- .design_weights(design)
+  in_sample <- !is.na(w_design) & w_design != 0
+  no_data_groups <- list()
+  no_data_vars <- character(0)
   for (i in seq_along(select_names)) {
     nm <- select_names[[i]]
-    lv <- .svy_by_levels(.tab_factor(vars[[nm]]), drop_na, nm)
-    if (lv$n_na > 0L && drop_na) {
-      na_dropped[[nm]] <- lv$n_na
+    x_f <- .tab_factor(vars[[nm]])
+    nd_i <- character(0)
+    nd_rows <- rep(FALSE, length(x_f))
+    if (has_group) {
+      g_chr <- as.character(vars[[group_col_name]])
+      nd_i <- .no_data_groups(x_f[in_sample], g_chr[in_sample], real_groups)
+      nd_rows <- !is.na(g_chr) & g_chr %in% nd_i
+    } else if (any(in_sample) && !any(in_sample & !is.na(x_f))) {
+      nd_rows[] <- TRUE
+    }
+    var_no_data <- if (has_group) length(nd_i) > 0L else any(nd_rows)
+    # Nothing left once those rows are out: every block is undefined.
+    void_i <- !any(in_sample & !nd_rows)
+    lv <- .svy_by_levels(x_f[!nd_rows], drop_na, nm)
+    # A missing value is either system or declared, counted once each.
+    n_user <- sum(user_na_masks[[nm]] & !nd_rows)
+    if (drop_na && lv$n_na - n_user > 0L) {
+      na_dropped[[nm]] <- lv$n_na - n_user
+    }
+    if (drop_na && n_user > 0L) {
+      user_na_dropped[[nm]] <- n_user
     }
     # Two level sets, and the difference is the whole meaning of
     # `levels_keep`: the statistics are computed on ALL the observed
@@ -839,32 +901,60 @@ table_categorical_svy <- function(
     # comparing the two tables would find different numbers for the
     # same level.
     levels_all <- lv$levels
+    # No level observed where the variable has data: it keeps its
+    # declared levels, undefined, or its header row alone when it
+    # declares none.
+    lone <- var_no_data && length(levels_all) == 0L && nlevels(x_f) == 0L
+    if (var_no_data && length(levels_all) == 0L) {
+      levels_all <- levels(x_f)
+    }
     levels_i <- levels_all
     if (!is.null(keep_spec[[nm]])) {
       .cat_check_kept_levels(keep_spec[[nm]], levels_i, nm)
       levels_i <- levels_i[levels_i %in% keep_spec[[nm]]]
     }
-    if (length(levels_i) == 0L) {
+    if (length(levels_i) == 0L && !lone) {
       spicy_abort(
         sprintf("`%s` has no level to display.", nm),
         class = "spicy_invalid_input"
       )
     }
+    if (length(nd_i)) {
+      no_data_groups[[nm]] <- nd_i
+    } else if (var_no_data) {
+      no_data_vars <- c(no_data_vars, nm)
+    }
     # A design cannot be sliced by a vector of row indices without
     # losing its variance, so the missing category is made a real level
     # of the variable instead -- inside `design$variables`, which leaves
-    # the clusters, the strata and the probabilities alone.
-    design$variables[[nm]] <- factor(lv$values, levels = levels_all)
+    # the clusters, the strata and the probabilities alone. The rows of
+    # a group with no data stay NA, outside every level.
+    values <- rep(NA_character_, length(x_f))
+    values[!nd_rows] <- lv$values
+    design$variables[[nm]] <- factor(values, levels = levels_all)
     for (b in blocks) {
+      if (b %in% nd_i) {
+        next
+      }
       dom <- domains[[.cat_svy_block_id(b)]]
-      dom$variables[[nm]] <- factor(
-        .svy_by_levels(.tab_factor(dom$variables[[nm]]), drop_na, nm)$values,
-        levels = levels_all
-      )
+      # The margin, and the one block of a one-way table, are the whole
+      # design: its rows are those of `values`.
+      dom$variables[[nm]] <- if (is.na(b) || identical(b, margin_key)) {
+        factor(values, levels = levels_all)
+      } else {
+        factor(
+          .svy_by_levels(.tab_factor(dom$variables[[nm]]), drop_na, nm)$values,
+          levels = levels_all
+        )
+      }
       domains[[.cat_svy_block_id(b)]] <- dom
     }
+    # Fewer than two groups with data: nothing to compare, no test run.
+    data_groups <- if (has_group) {
+      intersect(real_groups, g_chr[in_sample & !nd_rows & !is.na(x_f)])
+    }
     p_i <- NA_real_
-    if (p_value) {
+    if (p_value && (!var_no_data || length(data_groups) >= 2L)) {
       # `vars` is the snapshot taken BEFORE the missing category was
       # promoted to a level, so this mask is the genuine complete-case
       # one: the `(Missing)` row is displayed and not tested, exactly as
@@ -898,19 +988,44 @@ table_categorical_svy <- function(
       )
     })
     for (b in blocks) {
-      dom <- domains[[.cat_svy_block_id(b)]]
-      dom_df <- .design_degf(dom)
-      st <- .cat_svy_level_stats(
-        dom,
-        nm,
-        levels_i,
-        ci_level,
-        df_user %||% dom_df,
-        deff,
-        ci_method,
-        proportion_ci,
-        degf_dom = dom_df
-      )
+      if (void_i || b %in% nd_i) {
+        # No data in this block: no count, no estimate.
+        k <- length(levels_i)
+        st <- list(
+          n = rep(NA_integer_, k),
+          pct = rep(NA_real_, k),
+          ll = rep(NA_real_, k),
+          ul = rep(NA_real_, k),
+          deff = rep(NA_real_, k),
+          exact = rep(FALSE, k)
+        )
+        if (lone) {
+          # The variable's one row carries the block's cells.
+          header[[.cat_svy_key_n(b)]] <- NA_integer_
+          header[[.cat_svy_key_pct(b)]] <- NA_real_
+          if (proportion_ci) {
+            header[[.cat_key_prop_ci_ll(b)]] <- NA_real_
+            header[[.cat_key_prop_ci_ul(b)]] <- NA_real_
+          }
+          if (!isFALSE(deff)) {
+            header[[.cat_key_deff(b)]] <- NA_real_
+          }
+        }
+      } else {
+        dom <- domains[[.cat_svy_block_id(b)]]
+        dom_df <- .design_degf(dom)
+        st <- .cat_svy_level_stats(
+          dom,
+          nm,
+          levels_i,
+          ci_level,
+          df_user %||% dom_df,
+          deff,
+          ci_method,
+          proportion_ci,
+          degf_dom = dom_df
+        )
+      }
       ci_bound <- ci_bound || any(st$exact)
       for (j in seq_along(levels_i)) {
         body[[j]][[.cat_svy_key_n(b)]] <- st$n[[j]]
@@ -967,6 +1082,17 @@ table_categorical_svy <- function(
   test_refused <- .design_refusal_regime(n_test_refused, n_test_attempted)
   # The note names each variable as its rows name it.
   label_of <- stats::setNames(var_labels, select_names)
+  # The variables with no data, in the order of `select`: one sentence per
+  # set of groups.
+  no_data_note <- if (has_group) {
+    shown <- intersect(select_names, names(no_data_groups))
+    if (length(shown)) {
+      .no_data_sentences(label_of[shown], no_data_groups[shown])
+    }
+  } else if (length(no_data_vars)) {
+    .no_data_sentences(label_of[no_data_vars])
+  }
+  # The whole note, for every route: it opens with "Note." there, once.
   note <- .cat_svy_note(
     meta = meta,
     degf_dom_used = degf_dom_used,
@@ -983,11 +1109,9 @@ table_categorical_svy <- function(
     p_value = p_value && n_test_ran > 0L,
     chisq_statistic = chisq_statistic,
     n_negative_weights = .design_negative_weights(design),
-    test_refused = test_refused
-  )
-  # The whole note, for every route: it opens with "Note." here, once.
-  note <- .note_with_prefix(
-    paste_note_parts(c(note, .desc_p_adjust_note(p_adjust_info)))
+    test_refused = test_refused,
+    no_data = no_data_note,
+    p_adjust_info = p_adjust_info
   )
   .warn_negative_weights_no_test(test_refused)
 
@@ -1007,6 +1131,8 @@ table_categorical_svy <- function(
   attr(result, "deff") <- deff
   attr(result, "indent_text") <- indent_text
   attr(result, "indent_text_excel_clipboard") <- indent_text_excel_clipboard
+  # The title the console prints, from the helper every engine uses.
+  attr(result, "title") <- .categorical_svy_title(by_label)
   attr(result, "note") <- note
   attr(result, "design_meta") <- meta
   attr(result, "chisq_statistic") <- chisq_statistic

@@ -390,7 +390,8 @@
 #' `"data.frame"` / `"long"` keep the whole note as printed, "Note."
 #' included, in `attr(x, "note")` (`NULL` when there is nothing to say),
 #' so a pipeline that renders the numbers itself can still state what
-#' left the table. On the `"tinytable"` route the
+#' left the table. The default object also keeps the title it prints in
+#' `attr(x, "title")`. On the `"tinytable"` route the
 #' note is set one size down; `options(spicy.note_style)` governs that
 #' (see [table_regression()]).
 #'
@@ -510,7 +511,25 @@
 #' least two groups remain after dropping `NA`s, with every group
 #' contributing at least two observations. Choice of test family is
 #' driven by `test` (see the `@param` entry for the full dispatch
-#' and the underlying `stats::` functions called).
+#' and the underlying `stats::` functions called). Whenever the table
+#' shows *p*-values, its note names the test of each variable ("Group
+#' comparison: Welch t-test."), each variable beside its own test when
+#' they differ.
+#'
+#' # No data in a group
+#'
+#' A variable with no observed value in a group of `by` (every value
+#' missing there, typically a question not asked in that group) has no
+#' data in it, which is not a missing answer. Its cells in that group
+#' show an en dash, *n* included (`NA` in `output = "long"` and the
+#' typed view), its rows there are not counted in the missing values of
+#' the note, the comparison and the effect size use the groups with data
+#' (with fewer than two, there is no test and its cell is left blank),
+#' and the note says so ("No data for X and Y in G.", X and Y the labels
+#' of the variables with no data in group G). Without `by`, a variable
+#' with no observed value at all is shown the same way ("No data for
+#' X."). A declared level of `by` that no row holds keeps its count of
+#' zero, and the group of missing `by` values is never such a group.
 #'
 #' For model-based contrasts (heteroskedasticity-consistent SE,
 #' cluster-robust SE, weighted contrasts, fitted means, covariate
@@ -1174,6 +1193,16 @@ table_continuous <- function(
         )
       )
     }
+    # Last, the variables with no data in a group (or, without `by`, no
+    # observed value at all), each named as its rows name it.
+    parts <- c(
+      parts,
+      if (has_group) {
+        .no_data_sentences(var_labels, unname(nodata_groups))
+      } else if (length(nodata_vars)) {
+        .no_data_sentences(var_labels[match(nodata_vars, numeric_cols)])
+      }
+    )
     if (length(parts)) paste(parts, collapse = " ") else NULL
   }
 
@@ -1288,7 +1317,19 @@ table_continuous <- function(
     rep(NA_character_, length(numeric_cols)),
     numeric_cols
   )
-  n_test_groups <- NA_integer_
+  # The number of groups each variable's test compared: a variable with
+  # no data in a group is tested on fewer groups than its neighbors.
+  n_test_groups <- stats::setNames(
+    rep(NA_integer_, length(numeric_cols)),
+    numeric_cols
+  )
+  # The groups in which each variable has no data (with `by`), and the
+  # variables with no observed value at all (without it). See below.
+  nodata_groups <- stats::setNames(
+    rep(list(character(0)), length(numeric_cols)),
+    numeric_cols
+  )
+  nodata_vars <- character(0)
   # Display label of the missing-`by` group when one is shown (NA
   # otherwise). Recorded here so the typed view can flag that row by
   # its KEY: the label itself is a display string, and a translated one
@@ -1344,6 +1385,21 @@ table_continuous <- function(
           "i" = "Compare two groups at a time: filter `by` to a pair of levels, and `droplevels()` if a declared level is now empty."
         ),
         class = "spicy_not_implemented"
+      )
+    }
+    # A variable with no observed value in a group (every value missing
+    # there, typically a question not asked in that group) has no data
+    # in it, which is not a missing answer: its cells in that group show
+    # the undefined mark, n included, its rows there leave the
+    # missing-value count, the comparison runs on the groups with data,
+    # and the note says so. Read on the REAL groups (the "(Missing)"
+    # group of `drop_na = FALSE` never is one) and on the variable after
+    # `user_na`.
+    for (nm in numeric_cols) {
+      nodata_groups[[nm]] <- .no_data_groups(
+        work[[nm]],
+        groups_obs,
+        real_group_levels
       )
     }
     if (!drop_na && n_na_groups > 0L) {
@@ -1418,7 +1474,7 @@ table_continuous <- function(
           # multi-variable table. The row keeps NA test columns, the
           # warning says which variable failed and why, and the other
           # variables are unaffected (audit phase 2, finding 27).
-          n_test_groups <- n_valid_groups
+          n_test_groups[[nm]] <- n_valid_groups
           test_row <- if (length(unique(xvec)) < 2L) {
             # A variable with no variance has no test: `t.test()` stops
             # on it, and the rank tests return p = 1 or NaN, a p-value
@@ -1600,6 +1656,11 @@ table_continuous <- function(
           ci_level,
           w = w_var[idx]
         )
+        # No data for the variable in this group: its count is undefined
+        # too, not a zero.
+        if (g %in% nodata_groups[[nm]]) {
+          desc$n <- NA_integer_
+        }
         desc <- cbind(
           data.frame(
             variable = nm,
@@ -1642,6 +1703,13 @@ table_continuous <- function(
     }
     result <- do.call(rbind, rows)
   } else {
+    # Without `by`, a variable with no observed value at all has no data:
+    # the same mark in its cells, n included, and its own sentence.
+    nodata_vars <- numeric_cols[vapply(
+      numeric_cols,
+      function(nm) length(work[[nm]]) > 0L && all(is.na(work[[nm]])),
+      logical(1)
+    )]
     rows <- lapply(seq_along(numeric_cols), function(i) {
       x_i <- work[[numeric_cols[i]]]
       desc <- .continuous_compute_one(
@@ -1649,6 +1717,9 @@ table_continuous <- function(
         ci_level,
         w = .prep_variable_weights(x_i, weights_vec, rescale)
       )
+      if (numeric_cols[i] %in% nodata_vars) {
+        desc$n <- NA_integer_
+      }
       cbind(
         data.frame(
           variable = numeric_cols[i],
@@ -1662,6 +1733,25 @@ table_continuous <- function(
   }
 
   rownames(result) <- NULL
+
+  # The rows of a no-data cell are not missing answers: they leave the
+  # missing-value ledger, the declared missing values among them its
+  # declared half.
+  for (nm in numeric_cols) {
+    nd_rows <- if (has_group) {
+      !is.na(groups_obs) &
+        as.character(groups_obs) %in% nodata_groups[[nm]]
+    } else {
+      rep(nm %in% nodata_vars, nrow(work))
+    }
+    if (!any(nd_rows)) {
+      next
+    }
+    declared <- if (user_na) .user_na_mask(data[[nm]]) else FALSE
+    n_declared <- sum(declared & nd_rows)
+    user_na_dropped <- .ledger_minus(user_na_dropped, nm, n_declared)
+    na_dropped <- .ledger_minus(na_dropped, nm, sum(nd_rows) - n_declared)
+  }
 
   # `p_adjust`: one test per variable, its p-value on the variable's
   # first group row. Adjusted on the compute frame, before any route
@@ -1713,24 +1803,30 @@ table_continuous <- function(
   # numbers, `as.data.frame()` of the object built at the end (decision
   # 5 of the ADR of 2026-10-20).
   # Read the ledger once, here: every output route below must carry the
-  # same disclosure, not print() alone. The statistical glosses (which
-  # test each variable carries, what the new abbreviations mean) are
-  # appended to the same note: they exist only when `show_columns`
-  # changes the display, so the default table's note is untouched.
-  # The whole note is assembled here, so it opens with "Note." here.
-  table_note <- .note_with_prefix(paste_note_parts(c(
-    build_weights_note(),
-    build_missing_note(),
-    build_test_note(
-      test_used,
-      auto_rank,
-      n_test_groups,
-      stats::setNames(var_labels, numeric_cols)
+  # same disclosure, not print() alone. The whole note is assembled
+  # here, in the order of the family (`.compose_note()`): what the
+  # numbers are (the weights), the missing data, the comparison (the
+  # test of each variable, whenever the table shows p-values, and the
+  # adjustment), then the glosses of the columns. It opens with "Note."
+  # here.
+  table_note <- .compose_note(
+    what = build_weights_note(),
+    missing = build_missing_note(),
+    inference = c(
+      build_test_note(
+        test_used,
+        auto_rank,
+        n_test_groups,
+        stats::setNames(var_labels, numeric_cols),
+        show_p = p_value && has_group
+      ),
+      .desc_p_adjust_note(p_adjust_info)
     ),
-    build_column_glosses(tokens_union, result, ci_level, decimal_mark),
-    build_smd_note(do_smd, real_group_levels, decimal_mark),
-    .desc_p_adjust_note(p_adjust_info)
-  )))
+    definitions = c(
+      build_column_glosses(tokens_union, result, ci_level, decimal_mark),
+      build_smd_note(do_smd, real_group_levels, decimal_mark)
+    )
+  )
 
   if (identical(output, "long")) {
     # The raw frame keeps the note as an attribute: a pipeline that
@@ -1832,6 +1928,11 @@ table_continuous <- function(
   attr(result, "structured") <- .struct_attach_p_adjust(
     attr(result, "structured"),
     p_adjust_info
+  )
+  # The title the console prints, from the helper every engine reads,
+  # for a pipeline that renders the table itself.
+  attr(result, "title") <- .continuous_title(
+    attr(result, "group_label", exact = TRUE)
   )
   class(result) <- c("spicy_continuous_table", "spicy_table", class(result))
   # `output = "data.frame"` is the displayed table with its numbers,
@@ -2550,36 +2651,64 @@ continuous_test_label <- function(method, n_groups) {
   )
 }
 
-# Disclose the test per variable, but ONLY when the display forced at
-# least one variable onto the rank family: with a uniform, unswitched
-# default the table keeps its historical note. Each variable is named as
-# its rows name it: `var_labels` is named by column, like `test_used`.
-build_test_note <- function(test_used, auto_rank, n_groups, var_labels) {
-  if (!any(auto_rank) || all(is.na(test_used))) {
+# Name the test of each variable whenever the table shows p-values, and
+# whenever the display forced a variable onto the rank family (the note
+# then says which variables carry which test, p-values shown or not).
+# `test_used` (the method each variable's test ran with, NA where none
+# ran) and `n_groups` (the groups that test compared: a variable with no
+# data in a group is tested on fewer) are named by column; so is
+# `var_labels`, the label each variable's rows display.
+build_test_note <- function(
+  test_used,
+  auto_rank,
+  n_groups,
+  var_labels,
+  show_p = FALSE
+) {
+  if (!isTRUE(show_p) && !any(auto_rank)) {
     return(NULL)
   }
   ran <- names(test_used)[!is.na(test_used)]
-  methods <- unname(test_used[ran])
-  labels <- vapply(
-    methods,
-    continuous_test_label,
-    character(1),
-    n_groups = n_groups
+  .group_comparison_note(
+    vapply(
+      ran,
+      function(nm) continuous_test_label(test_used[[nm]], n_groups[[nm]]),
+      character(1)
+    ),
+    var_labels
   )
-  if (length(unique(labels)) == 1L) {
-    return(spicy_fmt("note_group_comparison", labels[[1L]]))
+}
+
+# The group-comparison sentence of a table that names the test of each
+# variable (or block): "Group comparison: Welch t-test." when every test
+# that ran is the same, "Group comparison: Welch one-way ANOVA (bmi);
+# Welch t-test (wellbeing)." when they differ, each test with the
+# variables it covers. `tests` holds the reader-facing name of each
+# test, named by column, NA where no test ran (that variable is not
+# named); `var_labels` is named by column. The tests come in the order of
+# the table -- the order of their first variable -- whatever the
+# language or the locale, so the note reads in the order of the rows.
+# NULL when no test ran.
+.group_comparison_note <- function(tests, var_labels) {
+  tests <- tests[!is.na(tests)]
+  if (length(tests) == 0L) {
+    return(NULL)
   }
-  by_label <- split(ran, labels)
+  names_of <- unname(tests)
+  if (length(unique(names_of)) == 1L) {
+    return(spicy_fmt("note_group_comparison", names_of[[1L]]))
+  }
+  by_test <- split(names(tests), factor(names_of, levels = unique(names_of)))
   spicy_fmt(
     "note_group_comparison",
     paste(
       vapply(
-        names(by_label),
+        names(by_test),
         function(lb) {
           spicy_fmt(
             "note_group_comparison_item",
             lb,
-            .join_note_vars(unname(var_labels[by_label[[lb]]]))
+            .join_note_vars(unname(var_labels[by_test[[lb]]]))
           )
         },
         character(1)
@@ -2587,6 +2716,23 @@ build_test_note <- function(test_used, auto_rank, n_groups, var_labels) {
       collapse = spicy_str("note_group_comparison_sep")
     )
   )
+}
+
+# Take `n` rows off the entry `nm` of a missing-value ledger (counts named
+# by column), and the entry off the ledger when none is left. The rows of
+# a group in which a variable has no data leave it this way: they are not
+# missing answers.
+.ledger_minus <- function(ledger, nm, n) {
+  if (n <= 0L || !nm %in% names(ledger)) {
+    return(ledger)
+  }
+  left <- ledger[[nm]] - n
+  if (left > 0L) {
+    ledger[[nm]] <- left
+  } else {
+    ledger <- ledger[names(ledger) != nm]
+  }
+  ledger
 }
 
 # Gloss the abbreviations the displayed columns introduce, and only
@@ -3194,8 +3340,11 @@ epsilon_sq_boot_ci <- function(xvec, gvec, n_groups, ci_level, n_boot = 2000L) {
       out[[entries[[1L]]$name]] <- blanked(compact, tok)
     } else if (tok == "n") {
       # A count carries no decimals: the only statistic that skips
-      # `fmt()`.
-      out[[entries[[1L]]$name]] <- blanked(as.character(result$n), tok)
+      # `fmt()`. An NA count is a group in which the variable has no
+      # data: undefined, like the other cells of that group.
+      n_cells <- as.character(result$n)
+      n_cells[is.na(result$n)] <- spicy_str("cell_undefined")
+      out[[entries[[1L]]$name]] <- blanked(n_cells, tok)
     } else {
       for (e in entries) {
         out[[e$name]] <- blanked(fmt(result[[e$field]]), tok)

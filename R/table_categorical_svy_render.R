@@ -81,18 +81,28 @@
   )
 }
 
+# The header row of a variable that has no level row: a variable with no
+# data and no level to show, whose one row carries the cells of the
+# blocks itself.
+.cat_svy_lone_rows <- function(x) {
+  is_header <- x$.row_role == "factor_header"
+  is_header & !x$variable %in% x$variable[!is_header]
+}
+
 # The display frame: one stub column, then the statistic columns.
 #
 # The block's own statistic (the p) belongs to the HEADER row, the
 # level statistics to the level rows, and the other place is a
 # structural blank -- an absence, never the undefined dash, which means
-# "applies here but has no value".
+# "applies here but has no value". A count with no number is a block in
+# which the variable has no data: undefined, like its percentage.
 .cat_svy_display_df <- function(x) {
   percent_digits <- attr(x, "percent_digits") %||% 1L
   p_digits <- attr(x, "p_digits") %||% 3L
   decimal_mark <- attr(x, "decimal_mark") %||% "."
   indent_text <- attr(x, "indent_text") %||% "  "
   is_header <- x$.row_role == "factor_header"
+  lone <- .cat_svy_lone_rows(x)
 
   df <- stats::setNames(
     data.frame(
@@ -113,7 +123,7 @@
     v <- x[[e$key]]
     cell <- switch(
       e$base,
-      n = as.character(v),
+      n = ifelse(is.na(v), spicy_str("cell_undefined"), as.character(v)),
       p = vapply(
         v,
         function(p) format_p_value(p, decimal_mark, digits = p_digits),
@@ -124,7 +134,7 @@
     )
     cell[is.na(v)] <- if (identical(e$base, "p")) "" else cell[is.na(v)]
     # Blank the rows the statistic does not belong to.
-    cell[if (identical(e$base, "p")) !is_header else is_header] <- ""
+    cell[if (identical(e$base, "p")) !is_header else is_header & !lone] <- ""
     df[[e$key]] <- cell
   }
   df
@@ -388,6 +398,7 @@
     spanners[[b]] <- .desc_col_index(col_names, keys_b)
   }
 
+  lone <- .cat_svy_lone_rows(x)
   rows <- list()
   for (i in seq_len(nrow(x))) {
     role <- x$.row_role[[i]]
@@ -398,8 +409,10 @@
     for (nm in col_names) {
       is_p <- identical(base_of[[nm]], "p")
       # The block statistic belongs to the header row, the level
-      # statistics to the level rows. The other place is an ABSENCE.
-      if (identical(is_p, !is_header)) {
+      # statistics to the level rows. The other place is an ABSENCE --
+      # except on the one row of a variable with no level to show, which
+      # carries the cells of the blocks.
+      if (identical(is_p, !is_header) && !(is_header && lone[[i]])) {
         next
       }
       v <- x[[nm]][[i]]
@@ -444,9 +457,15 @@
 
 # ---- the footer ------------------------------------------------------------
 
-# The note of a design categorical table: what left the sample, how big
-# it is, what design produced the numbers, how the percentages were
-# bounded, and how the association was tested.
+# The note of a design categorical table, in the four kinds of
+# `.compose_note()`: (a) what the numbers are -- how big the sample is,
+# what design produced them, its negative weights, the design effect's
+# reference; (b) the missing data -- what left the sample, the groups
+# with no data (`no_data`, its sentences); (c) the inference -- where the
+# standard errors come from, the degrees of freedom of the intervals and
+# tests, how the percentages were bounded, the test, the adjustment
+# (`p_adjust_info`); (d) the glosses of the columns. The whole note,
+# opened by the lead-in, or NULL.
 .cat_svy_note <- function(
   meta,
   degf_dom_used,
@@ -463,32 +482,16 @@
   chisq_statistic,
   n_negative_weights = 0L,
   test_refused = "none",
-  ci_bound = FALSE
+  ci_bound = FALSE,
+  no_data = NULL,
+  p_adjust_info = NULL
 ) {
-  parts <- c(
-    .svy_missing_note(na_dropped, "note_missing_removed"),
-    .svy_missing_note(user_na_dropped, "note_declared_missing_removed")
-  )
-  if (by_na_dropped > 0L) {
-    parts <- c(
-      parts,
-      spicy_fmt("note_rows_missing_by_removed", group_col_name, by_na_dropped)
-    )
-  }
-  parts <- c(
-    parts,
-    .design_n_note(
-      meta$n_obs,
-      meta$sum_weights,
-      digits = 0L,
-      decimal_mark = decimal_mark
-    )
-  )
   # The df span the DOMAINS carry, never the caller's `df`: the design
   # line states a fact about the design, and the caller cannot change
   # it. What `df` moves is the reference distribution of the intervals,
   # and the third sentence names the number it moved to -- the same
-  # division of labor as `table_continuous_svy()`.
+  # division of labor as `table_continuous_svy()`. The first sentence
+  # says what the design is, the two others what the inference uses.
   lines <- .design_note_lines(
     meta,
     degf_range = if (length(degf_dom_used) > 0L) {
@@ -506,47 +509,64 @@
       as.integer(df_user)
     )
   }
-  parts <- c(parts, lines)
-  # The same three regimes as the continuous twin, from the same
-  # helper: `svychisq()` is refused under negative weights too
-  # (decision 36 / ARB-2, applied twin-symmetrically), and the clause
-  # says whether it reached every variable or only some of them.
-  parts <- c(
-    parts,
+  what <- c(
+    .design_n_note(
+      meta$n_obs,
+      meta$sum_weights,
+      digits = 0L,
+      decimal_mark = decimal_mark
+    ),
+    lines[[1L]],
+    # The same three regimes as the continuous twin, from the same
+    # helper: `svychisq()` is refused under negative weights too
+    # (decision 36 / ARB-2, applied twin-symmetrically), and the clause
+    # says whether it reached every variable or only some of them.
     .design_negative_weights_note(
       n_negative_weights,
       meta$n_obs,
       test_refused = test_refused
-    )
+    ),
+    if (identical(deff, "replace")) spicy_str("note_deff_replace")
   )
+  missing <- c(
+    .svy_missing_note(na_dropped, "note_missing_removed"),
+    .svy_missing_note(user_na_dropped, "note_declared_missing_removed"),
+    if (by_na_dropped > 0L) {
+      spicy_fmt("note_rows_missing_by_removed", group_col_name, by_na_dropped)
+    },
+    no_data
+  )
+  inference <- lines[-1L]
   if (isTRUE(proportion_ci)) {
-    parts <- c(parts, spicy_fmt("note_ci_prop_method", ci_method))
+    inference <- c(inference, spicy_fmt("note_ci_prop_method", ci_method))
     # Only when a percentage of 0 or 100 got the exact interval.
     if (isTRUE(ci_bound)) {
-      parts <- c(parts, spicy_str("note_ci_prop_bound"))
+      inference <- c(inference, spicy_str("note_ci_prop_bound"))
     }
   }
-  if (identical(deff, "replace")) {
-    parts <- c(parts, spicy_str("note_deff_replace"))
-  }
   # The method line names the test that RAN. When every comparison was
-  # refused there is none, and the sentence above has already said so;
-  # in a mixed table it is true of the ones that were served, and the
-  # scoped refusal names the rest. Same division as the continuous
-  # twin, where the line is driven by `test_label`.
+  # refused there is none, and the negative-weights sentence has already
+  # said so; in a mixed table it is true of the ones that were served,
+  # and the scoped refusal names the rest. Same division as the
+  # continuous twin, where the line is driven by `test_label`.
   if (isTRUE(p_value) && !identical(test_refused, "all")) {
-    parts <- c(
-      parts,
+    inference <- c(
+      inference,
       spicy_fmt("note_group_comparison", .cat_svy_test_label(chisq_statistic))
     )
   }
-  parts <- c(
-    parts,
+  inference <- c(inference, .desc_p_adjust_note(p_adjust_info))
+  definitions <- c(
     spicy_fmt("note_gloss_pct_svy", spicy_str("header_percent_symbol")),
-    spicy_fmt("note_gloss_n_svy", spicy_str("header_n_lower"))
+    spicy_fmt("note_gloss_n_svy", spicy_str("header_n_lower")),
+    if (!isFALSE(deff)) {
+      spicy_fmt("note_gloss_deff", spicy_str("header_deff"))
+    }
   )
-  if (!isFALSE(deff)) {
-    parts <- c(parts, spicy_fmt("note_gloss_deff", spicy_str("header_deff")))
-  }
-  paste_note_parts(parts)
+  .compose_note(
+    what = what,
+    missing = missing,
+    inference = inference,
+    definitions = definitions
+  )
 }

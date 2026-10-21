@@ -188,83 +188,118 @@ build_regression_footer_from_frames <- function(
   # once per equation. Every model-facing theme keeps reading
   # `frames` (one entry per MODEL), so counts and dedupes stay
   # single-model ("Multinomial logistic regression.", not "models.").
-  themes <- list(
-    build_regression_type_footer_block_from_frames(frames),
-    # Before the variance label, so a design table reads "what the design
-    # is" then "where the standard errors come from" -- the order the
-    # descriptive twins use.
-    build_design_footer_block_from_frames(frames),
-    build_vcov_footer_block_from_frames(frames),
-    build_ci_method_footer_block_from_frames(
-      frames,
-      show_columns,
-      decimal_mark = decimal_mark
-    ),
-    build_mixed_inference_footer_block_from_frames(frames),
-    build_nested_ml_refit_footer_block_from_frames(
-      frames,
-      nested,
-      show_fit_stats
-    ),
-    build_gee_footer_block_from_frames(frames, decimal_mark = decimal_mark),
-    build_random_effects_footer_block_from_frames(
-      frames,
-      show_re = show_re,
-      re_scale = re_scale,
-      re_columns = re_columns,
-      re_test = re_test,
-      decimal_mark = decimal_mark
-    ),
-    build_survival_footer_block_from_frames(
-      frames,
-      decimal_mark = decimal_mark
-    ),
-    build_survival_estimand_footer_block_from_frames(frames),
-    build_ordinal_thresholds_footer_block_from_frames(
-      frames,
-      decimal_mark = decimal_mark
-    ),
-    build_scale_effects_footer_block_from_frames(frames),
-    build_component_blocks_footer_block_from_frames(frames),
-    build_abbreviations_footer_block_from_frames(
-      show_columns,
-      frames,
-      standardized
-    ),
-    build_ame_satterthwaite_footer_block_from_frames(frames, show_columns),
-    build_exponentiate_footer_block_from_frames(frames, show_columns),
-    build_standardized_caveat_footer_block_from_frames(frames, standardized),
-    build_p_adjust_footer_block_from_frames(frames, p_adjust),
-    build_stars_footer_block(stars, decimal_mark),
-    build_singular_footer_block_from_frames(frames),
-    build_re_se_skipped_footer_block_from_frames(frames),
-    build_re_profile_footer_block_from_frames(frames),
-    build_icc_omitted_footer_block_from_frames(frames, show_fit_stats),
-    build_polynomial_contrasts_footer_block_from_frames(
-      frames_display,
-      displayed_parent_vars = displayed_parent_vars
-    ),
-    build_reference_outcome_footer_block_from_frames(frames),
-    build_reference_alternative_footer_block_from_frames(frames),
-    build_uv_disclosure_footer_block_from_frames(frames),
-    build_loo_footer_block_from_frames(frames, decimal_mark = decimal_mark),
-    build_convergence_footer_block_from_frames(
-      frames,
-      decimal_mark = decimal_mark
-    ),
-    build_reference_categories_footer_block_from_frames(
-      frames_display,
-      reference_style
-    ),
-    build_nested_footer_block(nested)
+  #
+  # The cut-points are listed in the note (values of the model) unless
+  # the table shows them as rows, which the note then glosses.
+  thresholds <- build_ordinal_thresholds_footer_block_from_frames(
+    frames,
+    decimal_mark = decimal_mark
   )
-  themes <- Filter(function(x) !is.null(x) && nzchar(x), themes)
-  if (length(themes) == 0L) {
-    return(NULL)
-  }
-  # The lead-in of the style in force: "Note. " unless `note_label` asks
-  # for another (`.note_lead_keys()`, R/i18n.R).
-  paste0(.note_prefix_text(), paste(themes, collapse = "\n"))
+  thresholds_as_rows <- any(vapply(
+    frames,
+    function(f) isTRUE(any(f$coefs$is_threshold)),
+    logical(1)
+  ))
+  # The note of every table of the family (`.compose_note()`): the
+  # general note, one paragraph whose themes come in four kinds -- each
+  # kind keeping the order its themes had -- then the stars legend, the
+  # probability note, on its own line.
+  .compose_note(
+    # (a) What the numbers are: the model, its design, its working
+    # correlation, its distribution, the scale of its coefficients, the
+    # state of the fit, a statistic it does not report, and what its
+    # coefficients are read against.
+    what = .footer_paragraph(
+      build_regression_type_footer_block_from_frames(frames),
+      # Before the variance label (c), so a design table reads "what the
+      # design is" then "where the standard errors come from" -- the
+      # order the descriptive twins use.
+      build_design_footer_block_from_frames(frames),
+      build_gee_footer_block_from_frames(frames, decimal_mark = decimal_mark),
+      build_survival_footer_block_from_frames(
+        frames,
+        decimal_mark = decimal_mark
+      ),
+      if (!thresholds_as_rows) thresholds,
+      build_exponentiate_footer_block_from_frames(frames, show_columns),
+      build_singular_footer_block_from_frames(frames),
+      build_icc_omitted_footer_block_from_frames(frames, show_fit_stats),
+      build_reference_outcome_footer_block_from_frames(frames),
+      build_reference_alternative_footer_block_from_frames(frames),
+      build_convergence_footer_block_from_frames(
+        frames,
+        decimal_mark = decimal_mark
+      ),
+      build_reference_categories_footer_block_from_frames(
+        frames_display,
+        reference_style
+      )
+    ),
+    # (b) The missing data: the cases the univariable models are fit on.
+    missing = .footer_paragraph(
+      build_uv_disclosure_footer_block_from_frames(frames)
+    ),
+    # (c) The inference: the standard errors, the intervals, the tests,
+    # the adjustment, the predictive accuracy.
+    inference = .footer_paragraph(
+      build_vcov_footer_block_from_frames(frames),
+      build_ci_method_footer_block_from_frames(
+        frames,
+        show_columns,
+        decimal_mark = decimal_mark
+      ),
+      build_mixed_inference_footer_block_from_frames(frames),
+      build_nested_ml_refit_footer_block_from_frames(
+        frames,
+        nested,
+        show_fit_stats
+      ),
+      build_random_effects_footer_block_from_frames(
+        frames,
+        show_re = show_re,
+        re_scale = re_scale,
+        re_columns = re_columns,
+        re_test = re_test,
+        decimal_mark = decimal_mark
+      ),
+      build_ame_satterthwaite_footer_block_from_frames(frames, show_columns),
+      build_p_adjust_footer_block_from_frames(frames, p_adjust),
+      build_re_se_skipped_footer_block_from_frames(frames),
+      build_re_profile_footer_block_from_frames(frames),
+      build_loo_footer_block_from_frames(frames, decimal_mark = decimal_mark),
+      build_nested_footer_block(nested)
+    ),
+    # (d) The definitions: the glosses of the estimand columns and of the
+    # subordinate blocks, the abbreviations, the scope of a standardized
+    # coefficient, the labels of polynomial trends.
+    definitions = .footer_paragraph(
+      build_survival_estimand_footer_block_from_frames(frames),
+      if (thresholds_as_rows) thresholds,
+      build_scale_effects_footer_block_from_frames(frames),
+      build_component_blocks_footer_block_from_frames(frames),
+      build_abbreviations_footer_block_from_frames(
+        show_columns,
+        frames,
+        standardized
+      ),
+      build_standardized_caveat_footer_block_from_frames(frames, standardized),
+      build_polynomial_contrasts_footer_block_from_frames(
+        frames_display,
+        displayed_parent_vars = displayed_parent_vars
+      )
+    ),
+    probability = build_stars_footer_block(stars, decimal_mark)
+  )
+}
+
+# The sentences of footer themes, ready for the paragraph of the general
+# note: the empty themes dropped, and a theme that gives one sentence per
+# model ("Model 1: ...." on a line of its own) run into the paragraph,
+# its sentences joined by a space.
+.footer_paragraph <- function(...) {
+  themes <- unlist(list(...), use.names = FALSE)
+  themes <- themes[!is.na(themes) & nzchar(themes)]
+  gsub("\n[ ]*", " ", themes)
 }
 
 capitalize_first <- function(s) {
@@ -281,15 +316,11 @@ capitalize_first <- function(s) {
   frames[[idx]]$info$model_label %||% spicy_fmt("label_model_name", idx)
 }
 
-# One per-model footer line: "<label>: <text>". The default label IS
+# One per-model footer sentence: "<label>: <text>". The default label IS
 # "Model <idx>", so tables without custom labels render byte-identical
 # to the historical "Model %d: %s" template.
-.model_line <- function(frames, idx, text, indented = FALSE) {
-  spicy_fmt(
-    if (indented) "note_model_line_indented" else "note_model_line",
-    .model_ref(frames, idx),
-    text
-  )
+.model_line <- function(frames, idx, text) {
+  spicy_fmt("note_model_line", .model_ref(frames, idx), text)
 }
 
 
@@ -490,14 +521,17 @@ build_vcov_footer_block_from_frames <- function(frames) {
   if (all(labels == labels[1])) {
     return(spicy_fmt("note_std_errors_single", labels[1]))
   }
+  # Models with different estimators: one sentence still, the estimator
+  # of each model in the order of the columns ("Std. errors: Model 1:
+  # classical (OLS), Model 2: heteroskedasticity-robust (HC3)."), so the
+  # general note stays one paragraph. The items take a semicolon when
+  # one of them holds a comma (`.join_note_vars()`).
   per <- vapply(
     seq_along(labels),
-    function(i) {
-      .model_line(frames, i, labels[i], indented = TRUE)
-    },
+    function(i) .model_line(frames, i, labels[i]),
     character(1)
   )
-  spicy_fmt("note_std_errors_multi", paste(per, collapse = "\n"))
+  spicy_fmt("note_std_errors_single", .join_note_vars(per))
 }
 
 

@@ -195,7 +195,8 @@ as_tibble.spicy_multiresponse_table <- function(x, ...) {
 #' `by`), `.group_role` (the role of `group`: `"group"` or `"total"`, `NA`
 #' without `by`), `total` (whether the row is the margin), `n` (the
 #' respondents who chose the item), `base` (the respondents of the group's
-#' base), `proportion_cases` (`n / base`, the share of respondents),
+#' base; in the margin, those of the groups with data for the item),
+#' `proportion_cases` (`n / base`, the share of respondents),
 #' `proportion_responses` (`n` over the choices made in the group), and
 #' the item's test: `test_type` (`"chi_squared"`, `"n1_chi_squared"`,
 #' `"fisher_exact"`, `"fisher_midp"` or `"fisher_exact_mc"`), `statistic`
@@ -253,11 +254,12 @@ tidy.spicy_multiresponse_table <- function(x, ...) {
   margin <- attr(x, "margin_key", exact = TRUE)
   group <- long$group %||% rep(NA_character_, nrow(long))
   # The choices made in each group: the denominator of the percentage of
-  # responses, whichever percentage the table displays.
+  # responses, whichever percentage the table displays. An item with no
+  # data in the group has no count there (NA), and adds no choice.
   responses <- stats::ave(
     long$n,
     if (is.null(long$group)) rep(1L, nrow(long)) else long$group,
-    FUN = sum
+    FUN = function(v) sum(v, na.rm = TRUE)
   )
   ratio <- function(a, b) ifelse(b > 0, a / b, NA_real_)
   field <- function(nm, na = NA_real_) {
@@ -298,10 +300,18 @@ glance.spicy_multiresponse_table <- function(x, ...) {
   dat <- .mr_broom_data(x, "glance")
   long <- dat$long
   g <- attr(x, "global_test", exact = TRUE)
-  margin <- attr(x, "margin_key", exact = TRUE)
   has_group <- !is.null(long$group)
-  p_meta <- attr(x, "structured", exact = TRUE)$col_meta$p
+  s <- attr(x, "structured", exact = TRUE)
+  p_meta <- s$col_meta$p
   global <- function(nm, na) if (is.null(g)) na else g[[nm]]
+  # The respondents of the base: the count of the base row in the margin
+  # (the only count column without `by`). Not an item's base, which leaves
+  # out the groups with no data for that item.
+  n_col <- names(s$col_meta)[vapply(
+    s$col_meta,
+    function(m) identical(m$token, "n") && (!has_group || isTRUE(m$total)),
+    logical(1)
+  )]
   .outcome_as_tbl(data.frame(
     n_items = length(dat$items),
     n_items_tested = global("n_items", NA_integer_),
@@ -311,11 +321,7 @@ glance.spicy_multiresponse_table <- function(x, ...) {
       NA_integer_
     },
     nobs = as.integer(
-      if (has_group) {
-        long$base[long$group %in% margin][[1L]]
-      } else {
-        long$base[[1L]]
-      }
+      s$body[[n_col[[1L]]]][s$body$.row_role == "fit_stat"][[1L]]
     ),
     test_type = global("test", NA_character_),
     statistic = global("statistic", NA_real_),

@@ -844,6 +844,33 @@ test_that("a declared but unobserved `by` level does not reach the test", {
   expect_false(is.na(out$p.value[[1L]]))
 })
 
+test_that("the comparison reads its groups, whatever the type of `by`", {
+  # An ordered factor entered `svyttest()` with a polynomial contrast,
+  # which its 0/1 check refuses: a two-level ordered `by` was never
+  # compared. A numeric `by` entered `svyglm()` as a SLOPE, a trend test
+  # under the name of a group comparison.
+  skip_if_not_installed("survey")
+  data(api, package = "survey", envir = environment())
+  dat <- apiclus1
+  dat$o2 <- factor(dat$sch.wide, ordered = TRUE)
+  dat$g3 <- as.numeric(factor(dat$stype))
+  dat$f3 <- factor(dat$g3)
+  des <- survey::svydesign(id = ~dnum, weights = ~pw, data = dat, fpc = ~fpc)
+  ordered <- .svyc_long(des, select = api00, by = o2, statistic = TRUE)
+  unordered <- .svyc_long(des, select = api00, by = sch.wide, statistic = TRUE)
+  expect_equal(
+    ordered$p.value[[1L]],
+    unordered$p.value[[1L]],
+    tolerance = 1e-12
+  )
+  expect_equal(ordered$statistic[[1L]], 2.108989847792919203, tolerance = 1e-12)
+  numeric <- .svyc_long(des, select = api00, by = g3, statistic = TRUE)
+  factor3 <- .svyc_long(des, select = api00, by = f3, statistic = TRUE)
+  expect_identical(c(numeric$df[[1L]], numeric$df.residual[[1L]]), c(2, 12))
+  expect_equal(numeric$p.value[[1L]], factor3$p.value[[1L]], tolerance = 1e-12)
+})
+
+
 test_that("a group too thin to compare leaves the test columns empty", {
   skip_if_not_installed("survey")
   data(api, package = "survey", envir = environment())
@@ -1194,6 +1221,156 @@ test_that("ordinary missing values are counted in the note", {
   expect_identical(tbl$n, 3L)
 })
 
+# ---- no data in a group (lot N, R1) -------------------------------------------
+
+# `y` is not observed in group "c"; `x` is, with one ordinary missing
+# value. An ORDERED `by`, like `education` in `sochealth`.
+.svyc_nodata <- function(ordered = TRUE) {
+  d <- data.frame(
+    g = factor(
+      rep(c("a", "b", "c"), each = 4),
+      levels = c("a", "b", "c"),
+      ordered = ordered
+    ),
+    x = c(1, 2, 3, 4, 3, 4, 5, 6, 5, 6, 7, NA),
+    y = c(2, 4, 6, 8, 1, 3, 5, 7, NA, NA, NA, NA),
+    w = rep(c(1, 2), 6)
+  )
+  survey::svydesign(id = ~1, weights = ~w, data = d)
+}
+
+test_that("a variable with no data in a domain shows the mark there", {
+  skip_if_not_installed("survey")
+  des <- .svyc_nodata()
+  long <- .svyc_long(des, select = c(x, y), by = g)
+  cell <- long$variable == "y" & long$group == "c"
+  expect_identical(long$n[cell], NA_integer_)
+  expect_true(is.na(long$mean[cell]))
+  expect_identical(long$n[long$variable == "x"], c(4L, 4L, 3L))
+  tbl <- table_continuous_svy(des, select = c(x, y), by = g)
+  row <- which(tbl$variable == "y" & tbl$group == "c")
+  st <- as_structured(tbl)
+  expect_true(is.na(st$body$n[[row]]))
+  expect_identical(st$cell_status$n[[row]], "undefined")
+  expect_identical(
+    st$col_meta$n$display_cells[[row]],
+    spicy_str("cell_undefined")
+  )
+  # glance() sums the counts that exist.
+  skip_if_not_installed("broom")
+  expect_identical(broom::glance(tbl)$nobs, c(11, 8))
+})
+
+test_that("the comparison of a no-data variable runs on the domains with data", {
+  skip_if_not_installed("survey")
+  des <- .svyc_nodata()
+  long <- .svyc_long(des, select = c(x, y), by = g)
+  first <- long[!duplicated(long$variable), ]
+  expect_identical(first$test_type, c("design_f", "design_t"))
+  # survey's own two-group test on the domains with data.
+  sub <- subset(des, !is.na(y))
+  sub$variables$g <- factor(as.character(sub$variables$g))
+  ref <- survey::svyttest(y ~ g, sub)
+  expect_equal(first$p.value[[2L]], ref$p.value[[1L]], tolerance = 1e-12)
+  note <- attr(table_continuous_svy(des, select = c(x, y), by = g), "note")
+  expect_match(
+    note,
+    "Missing values removed: x (1). No data for y in c.",
+    fixed = TRUE
+  )
+  expect_match(
+    note,
+    "Group comparison: design-based Wald test (x); design-based t-test (y).",
+    fixed = TRUE
+  )
+  # Two domains, one without data: no comparison, and none named.
+  two <- subset(des, g != "c")
+  two$variables$y[two$variables$g == "b"] <- NA
+  out <- .svyc_long(two, select = y, by = g)
+  expect_true(all(is.na(out$p.value)))
+  expect_false(grepl(
+    "Group comparison",
+    attr(table_continuous_svy(two, select = y, by = g), "note"),
+    fixed = TRUE
+  ))
+})
+
+
+test_that("without `by`, a variable with no observed value has no data", {
+  skip_if_not_installed("survey")
+  d <- data.frame(x = c(1, 2, NA, 4), y = NA_real_, w = rep(1, 4))
+  des <- survey::svydesign(id = ~1, weights = ~w, data = d)
+  long <- .svyc_long(des, select = c(x, y))
+  expect_identical(long$n, c(3L, NA_integer_))
+  note <- attr(table_continuous_svy(des, select = c(x, y)), "note")
+  expect_match(
+    note,
+    "Missing values removed: x (1). No data for y.",
+    fixed = TRUE
+  )
+  # Two such variables share the sentence.
+  d$z <- NA_real_
+  des2 <- survey::svydesign(id = ~1, weights = ~w, data = d)
+  expect_match(
+    attr(table_continuous_svy(des2, select = c(y, x, z)), "note"),
+    "Missing values removed: x (1). No data for y and z.",
+    fixed = TRUE
+  )
+  withr::local_options(spicy.language = "fr")
+  expect_match(
+    attr(table_continuous_svy(des, select = c(x, y)), "note"),
+    "Aucune donn\u00e9e pour y.",
+    fixed = TRUE
+  )
+})
+
+test_that("the note gives the design, then the missing data, then the inference", {
+  skip_if_not_installed("survey")
+  des <- .svyc_nodata(ordered = FALSE)
+  note <- attr(
+    table_continuous_svy(
+      des,
+      select = c(x, y),
+      by = g,
+      show_columns = c("m", "se", "med", "n"),
+      p_adjust = "holm"
+    ),
+    "note"
+  )
+  sentences <- c(
+    "N = 12",
+    "Design: ",
+    "Quantiles: ",
+    "Missing values removed: x (1).",
+    "No data for y in c.",
+    "Std. errors: ",
+    "Confidence intervals and tests use",
+    "Group comparison: ",
+    "P-values adjusted for 2 tests (Holm method).",
+    "SE = "
+  )
+  at <- vapply(
+    sentences,
+    function(s) regexpr(s, note, fixed = TRUE)[[1L]],
+    integer(1)
+  )
+  expect_true(all(at > 0L))
+  expect_false(is.unsorted(at))
+})
+
+test_that("the object carries the title it prints", {
+  skip_if_not_installed("survey")
+  des <- .svyc_design("clus1")
+  tbl <- table_continuous_svy(des, select = api00, by = stype)
+  expect_identical(attr(tbl, "title"), "Descriptive statistics by stype")
+  expect_identical(utils::capture.output(print(tbl))[[1L]], attr(tbl, "title"))
+  expect_identical(
+    attr(table_continuous_svy(des, select = api00), "title"),
+    "Descriptive statistics"
+  )
+})
+
+
 test_that("the note opens with \"Note.\" once, on the attribute and in print", {
   skip_if_not_installed("survey")
   d <- data.frame(y = c(1, 2, NA, 4), w = rep(1, 4))
@@ -1202,7 +1379,8 @@ test_that("the note opens with \"Note.\" once, on the attribute and in print", {
     select = y
   )
   note <- attr(tbl, "note")
-  expect_true(startsWith(note, "Note. Missing values removed: y (1). N = 4"))
+  expect_true(startsWith(note, "Note. N = 4 (weighted 4). Design: "))
+  expect_match(note, " Missing values removed: y (1). ", fixed = TRUE)
   expect_identical(lengths(gregexpr("Note.", note, fixed = TRUE)), 1L)
   printed <- utils::capture.output(print(tbl))
   expect_identical(sum(grepl("Note.", printed, fixed = TRUE)), 1L)
@@ -1219,16 +1397,19 @@ test_that("the note opens with \"Note.\" once, on the attribute and in print", {
     note
   )
   withr::local_options(spicy.language = "fr")
-  expect_true(startsWith(
-    attr(
-      table_continuous_svy(
-        survey::svydesign(id = ~1, weights = ~w, data = d),
-        select = y
-      ),
-      "note"
+  note_fr <- attr(
+    table_continuous_svy(
+      survey::svydesign(id = ~1, weights = ~w, data = d),
+      select = y
     ),
-    "Note. Valeurs manquantes retir\u00e9es\u00a0: y (1). N = 4"
-  ))
+    "note"
+  )
+  expect_true(startsWith(note_fr, "Note. N = 4 "))
+  expect_match(
+    note_fr,
+    " Valeurs manquantes retir\u00e9es\u00a0: y (1). ",
+    fixed = TRUE
+  )
 })
 
 test_that("the missing-values note names each variable by its row label", {

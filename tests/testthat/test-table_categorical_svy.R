@@ -739,7 +739,14 @@ test_that("declared missing codes leave the table and the note", {
     "Declared missing values removed: g (1).",
     fixed = TRUE
   )
+  # Counted once, as declared: the system missing values are the others,
+  # as in `table_categorical()`.
+  expect_false(grepl("Missing values removed", attr(tbl, "note"), fixed = TRUE))
   expect_identical(sum(tbl$n, na.rm = TRUE), 5L)
+  # Shown in the `(Missing)` row, a declared code is not removed.
+  shown <- table_categorical_svy(des, select = g)
+  expect_false(grepl("removed", attr(shown, "note"), fixed = TRUE))
+  expect_identical(shown$n[shown$level %in% "(Missing)"], 1L)
   # `user_na = FALSE` keeps the code as an ordinary category.
   kept <- table_categorical_svy(des, select = g, user_na = FALSE)
   expect_identical(sum(kept$n, na.rm = TRUE), 6L)
@@ -1944,5 +1951,227 @@ test_that("the design's weights, clusters and fpc are outside the selection", {
     "the design's cluster column (\"psu\")",
     fixed = TRUE,
     class = "spicy_invalid_input"
+  )
+})
+
+# ---- no data in a group: not a missing answer -------------------------------
+
+# `physical_activity` is not asked in the Tertiary group (`by_sex`: of the
+# men): every value is missing there.
+.svycat_nd <- function(by_sex = FALSE, extra_na = 0L) {
+  skip_if_not_installed("survey")
+  d <- as.data.frame(sochealth)
+  out <- if (by_sex) d$sex == "Male" else d$education == "Tertiary"
+  d$physical_activity[out] <- NA
+  if (extra_na > 0L) {
+    d$physical_activity[which(!out)[seq_len(extra_na)]] <- NA
+  }
+  survey::svydesign(ids = ~1, weights = ~weight, data = d)
+}
+
+test_that("a group with no data shows the undefined mark, NA in the machine outputs", {
+  des <- .svycat_nd()
+  mark <- spicy:::spicy_str("cell_undefined")
+  tbl <- table_categorical_svy(des, select = physical_activity, by = education)
+  lv <- tbl$.row_role == "level"
+  # Not a missing answer: no `(Missing)` row.
+  expect_identical(tbl$level[lv], c("No", "Yes"))
+  expect_true(all(is.na(tbl[["Tertiary n"]][lv])))
+  disp <- attr(tbl, "display_df")
+  expect_identical(unique(disp[["Tertiary n"]][lv]), mark)
+  expect_identical(unique(disp[["Tertiary %"]][lv]), mark)
+  # The margin is the groups that have data.
+  asked <- subset(des, education != "Tertiary")
+  ref <- survey::svymean(~physical_activity, asked, na.rm = TRUE)
+  expect_equal(
+    tbl[["Total %"]][lv],
+    100 * unname(stats::coef(ref)),
+    tolerance = 1e-10
+  )
+  expect_identical(
+    tbl[["Total n"]][lv],
+    as.integer(table(asked$variables$physical_activity))
+  )
+  long <- table_categorical_svy(
+    des,
+    select = physical_activity,
+    by = education,
+    output = "long"
+  )
+  tert <- long$group == "Tertiary"
+  expect_true(all(is.na(long$n[tert]) & is.na(long$pct[tert])))
+  td <- broom::tidy(tbl)
+  expect_true(all(is.na(td$proportion[td$group == "Tertiary"])))
+  # The typed view: NA in the body, undefined, with the mark.
+  s <- as_structured(tbl)
+  hit <- s$body$.row_role == "level"
+  expect_true(all(s$cell_status[["Tertiary n"]][hit] == "undefined"))
+  expect_true(all(s$col_meta[["Tertiary %"]]$display_cells[hit] == mark))
+  expect_true(all(is.na(as.data.frame(tbl)[["Tertiary n"]][hit])))
+})
+
+test_that("a group with no data leaves the test of the other groups", {
+  des <- .svycat_nd()
+  tbl <- table_categorical_svy(des, select = physical_activity, by = education)
+  cc <- subset(des, !is.na(physical_activity) & education != "Tertiary")
+  cc$variables$education <- droplevels(cc$variables$education)
+  ref <- survey::svychisq(~ physical_activity + education, cc)
+  expect_equal(
+    tbl$p[tbl$.row_role == "factor_header"],
+    unname(ref$p.value),
+    tolerance = 1e-10
+  )
+})
+
+test_that("the missing values of a variable leave out its groups with no data", {
+  des <- .svycat_nd(extra_na = 7L)
+  tbl <- table_categorical_svy(
+    des,
+    select = c(smoking, physical_activity),
+    by = education,
+    drop_na = TRUE
+  )
+  expect_match(
+    attr(tbl, "note"),
+    paste(
+      "Missing values removed: smoking (25), physical_activity (7).",
+      "No data for physical_activity in Tertiary."
+    ),
+    fixed = TRUE
+  )
+  long <- table_categorical_svy(
+    des,
+    select = physical_activity,
+    by = education,
+    output = "long"
+  )
+  miss <- long[long$level == "(Missing)", ]
+  expect_true(is.na(miss$n[miss$group == "Tertiary"]))
+  expect_identical(miss$n[miss$group == "Total"], 7L)
+})
+
+test_that("with fewer than two groups with data, the variable is not tested", {
+  des <- .svycat_nd(by_sex = TRUE)
+  tbl <- table_categorical_svy(
+    des,
+    select = c(smoking, physical_activity),
+    by = sex
+  )
+  heads <- tbl$.row_role == "factor_header"
+  expect_false(is.na(tbl$p[heads][[1L]]))
+  expect_true(is.na(tbl$p[heads][[2L]]))
+  # Blank, not undefined.
+  expect_identical(attr(tbl, "display_df")$p[heads][[2L]], "")
+  alone <- table_categorical_svy(des, select = physical_activity, by = sex)
+  expect_false(grepl("Group comparison", attr(alone, "note"), fixed = TRUE))
+  expect_match(
+    attr(alone, "note"),
+    "No data for physical_activity in Male.",
+    fixed = TRUE
+  )
+  expect_true(is.na(broom::glance(alone)$test_type))
+})
+
+test_that("without by, a variable with no observed value keeps its levels", {
+  skip_if_not_installed("survey")
+  d <- as.data.frame(sochealth)
+  d$physical_activity <- factor(NA, levels = c("No", "Yes"))
+  d$chr <- NA_character_
+  des <- survey::svydesign(ids = ~1, weights = ~weight, data = d)
+  mark <- spicy:::spicy_str("cell_undefined")
+  tbl <- table_categorical_svy(
+    des,
+    select = c(smoking, physical_activity, chr),
+    drop_na = TRUE
+  )
+  disp <- attr(tbl, "display_df")
+  pa <- which(disp$Variable == "physical_activity")
+  expect_identical(disp$Variable[pa + 1:2], c("  No", "  Yes"))
+  expect_identical(disp$n[pa + 1:2], c(mark, mark))
+  # No level to show: one row, which carries the cells.
+  ch <- which(disp$Variable == "chr")
+  expect_identical(c(disp$n[ch], disp[["%"]][ch]), c(mark, mark))
+  expect_identical(nrow(disp), ch)
+  s <- as_structured(tbl)
+  expect_identical(s$cell_status[["n"]][[ch]], "undefined")
+  note <- attr(tbl, "note")
+  # One sentence names the variables with no value at all.
+  expect_match(note, "No data for physical_activity and chr.", fixed = TRUE)
+  expect_false(grepl("physical_activity (", note, fixed = TRUE))
+  long <- table_categorical_svy(
+    des,
+    select = c(physical_activity, chr),
+    output = "long"
+  )
+  expect_identical(long$level, c("No", "Yes", NA))
+  expect_true(all(is.na(long$n)))
+  # The rows observed: smoking less its 25 missing values, none for the
+  # two others.
+  expect_identical(broom::glance(tbl)$nobs, c(1175, 0, 0))
+})
+
+test_that("the note gives its sentences in the four kinds, whatever the language", {
+  neg <- .svycat_neg_design()
+  neg$variables$awardsb <- neg$variables$awards
+  neg$variables$awardsb[.design_weights(neg) < 0] <- NA
+  build <- function() {
+    attr(
+      suppressWarnings(table_categorical_svy(
+        neg,
+        select = c(awards, awardsb),
+        by = stype,
+        drop_na = TRUE,
+        proportion_ci = TRUE,
+        deff = "replace",
+        df = 10,
+        p_adjust = "holm"
+      )),
+      "note"
+    )
+  }
+  note <- build()
+  at <- function(s) regexpr(s, note, fixed = TRUE)[[1L]]
+  pos <- vapply(
+    c(
+      "N = ",
+      "Design: ",
+      "a negative weight",
+      "Design effects are computed",
+      "Missing values removed",
+      "Std. errors",
+      "Confidence intervals use 10",
+      "Percentage CIs",
+      "Group comparison",
+      "P-values adjusted",
+      "% = ",
+      "n = observed",
+      "DEff = "
+    ),
+    at,
+    integer(1)
+  )
+  expect_true(all(pos > 0L))
+  expect_false(is.unsorted(pos))
+  # One paragraph.
+  expect_false(grepl("\n", note, fixed = TRUE))
+  withr::local_options(spicy.language = "fr")
+  note <- build()
+  pos <- vapply(
+    c("N = ", "Plan de sondage", "Valeurs manquantes", "Erreurs standards"),
+    at,
+    integer(1)
+  )
+  expect_true(all(pos > 0L))
+  expect_false(is.unsorted(pos))
+})
+
+test_that("the default object carries the title the console prints", {
+  d <- .svycat_design()
+  tbl <- table_categorical_svy(d, select = stype, by = awards)
+  expect_identical(attr(tbl, "title"), "Categorical table by awards")
+  expect_identical(attr(tbl, "title"), utils::capture.output(print(tbl))[[1L]])
+  expect_identical(
+    attr(table_categorical_svy(d, select = stype), "title"),
+    "Categorical table"
   )
 })

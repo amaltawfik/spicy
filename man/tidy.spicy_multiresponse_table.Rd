@@ -30,7 +30,8 @@ displayed label), \code{group} (the \code{by} level or the margin, \code{NA} wit
 \code{by}), \code{.group_role} (the role of \code{group}: \code{"group"} or \code{"total"}, \code{NA}
 without \code{by}), \code{total} (whether the row is the margin), \code{n} (the
 respondents who chose the item), \code{base} (the respondents of the group's
-base), \code{proportion_cases} (\code{n / base}, the share of respondents),
+base; in the margin, those of the groups with data for the item),
+\code{proportion_cases} (\code{n / base}, the share of respondents),
 \code{proportion_responses} (\code{n} over the choices made in the group), and
 the item's test: \code{test_type} (\code{"chi_squared"}, \code{"n1_chi_squared"},
 \code{"fisher_exact"}, \code{"fisher_midp"} or \code{"fisher_exact_mc"}), \code{statistic}

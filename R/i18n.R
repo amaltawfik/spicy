@@ -44,6 +44,17 @@
   note_weights_fallback = "weights",
   # Decision 17: the weighted table names its weights up front.
   note_weighted_by = "Statistics weighted by %s.",
+  # A variable with no observed value in a group (every value missing
+  # there, typically a question not asked in that group) has no data in
+  # it, which is not a missing answer: its cells in that group show
+  # `cell_undefined`, its observations there are not counted in
+  # `note_missing_removed`, and the note gives one sentence per set of
+  # groups. Two holes in `_in`: the labels the rows display of the
+  # variables with no data in the same groups, then those groups, each
+  # list joined by `.join_and()`. Without `by`, the variables with no
+  # observed value at all take `note_no_data`, one sentence for all.
+  note_no_data = "No data for %s.",
+  note_no_data_in = "No data for %s in %s.",
   # Default Excel sheet names, resolved when `excel_sheet = NULL`
   # (decision 16: the \usage line stays clean, and the name can follow
   # the table language at stage 2).
@@ -700,6 +711,19 @@
   # The joiner of those items.
   note_group_comparison_sep = "; ",
 
+  # -- table_continuous_lm(): the test of each outcome ----------------------
+  # The test behind the p-value of an outcome, read off the fitted linear
+  # model: the t (or z) of the difference or of the slope, the global F
+  # (or Wald chi-squared) of a `by` with more than two groups. Named in
+  # `note_group_comparison` for a categorical `by`, in `note_slope_test`
+  # for a numeric one; a non-classical `vcov` adds the regression
+  # family's `note_std_errors_single`.
+  test_lm_t = "t-test from the linear model",
+  test_lm_z = "z-test from the linear model",
+  test_lm_f = "F-test from the linear model",
+  test_lm_chi2 = "Wald chi-squared test from the linear model",
+  note_slope_test = "Slope test: %s.",
+
   # -- table_categorical() / table_multiresponse(): the tests of a table ---
   # The test behind each p-value, named in `note_group_comparison` (or in
   # `note_multiresponse_items_p`) with the variables it covers. The Monte
@@ -734,12 +758,18 @@
   note_p_adjusted_per_model = "P-values adjusted within each model for %s tests (%s method).",
   note_p_adjusted_per_model_one = "P-values adjusted within each model for 1 test (%s method).",
   note_p_adjusted_per_model_unequal = "P-values adjusted within each model (%s method), for %s tests respectively.",
-  # The conjunction of a list of numbers, "2 and 1", "2, 1, and 3": the
-  # joiner of two items, then the one before the last of three or more
+  # The conjunction of a list (`.join_and()`), "2 and 1", "2, 1, and 3":
+  # the joiner of two items, then the one before the last of three or more
   # (the others take `note_list_sep_comma`). US English writes the serial
-  # comma; French has none before "et".
+  # comma; French has none before "et". When an item holds a comma of its
+  # own, a list of three or more takes `note_list_sep_semicolon` between
+  # its items and `_last_semicolon` before the last (Chicago Manual of
+  # Style 6.60), as `.join_note_vars()` does: "Internet, websites or apps;
+  # Family or friends; and Television, radio or newspapers". French keeps
+  # "et" there, with no semicolon before it.
   note_list_and_pair = " and ",
   note_list_and_last = ", and ",
+  note_list_and_last_semicolon = "; and ",
   # The methods of `stats::p.adjust()` by the names a reader knows. "BH"
   # and its alias "fdr" are one method.
   note_p_adjust_method_holm = "Holm",
@@ -934,8 +964,12 @@
   note_design_df_supplied = "Confidence intervals use %d degrees of freedom (supplied in `df`); the tests use the design's own.",
   # The group comparison runs on the observed groups only, so its
   # domain can carry degrees of freedom none of the displayed rows
-  # does. Said only when the two really differ.
-  note_design_df_test_differs = "The group comparison uses %d degrees of freedom (observed groups only).",
+  # does. Said only when the two really differ. One hole: the number, or,
+  # when the variables are compared on different domains (a group with
+  # no data for one of them), each variable's number beside its label,
+  # "1185 (bmi) and 798 (score)" (`note_group_comparison_item`,
+  # `.join_and()`).
+  note_design_df_test_differs = "The group comparison uses %s degrees of freedom (observed groups only).",
   # One hole: the rule in force, an identifier from survey ("math",
   # "hf7", ...) or "spicy" -- never translated.
   note_quantile_rule = "Quantiles: qrule = \"%s\" (survey).",
@@ -971,11 +1005,11 @@
   # reports. Named apart rather than templated on a token: they are
   # five different tests, and a sentence naming one must be
   # translatable without carrying the other four.
-  test_design_rao_scott = "design-based Pearson chi-square (Rao-Scott second-order correction)",
-  test_design_rao_scott_chisq = "design-based Pearson chi-square (Rao-Scott correction, chi-square reference)",
+  test_design_rao_scott = "design-based Pearson chi-squared (Rao-Scott second-order correction)",
+  test_design_rao_scott_chisq = "design-based Pearson chi-squared (Rao-Scott correction, chi-squared reference)",
   test_design_wald_chisq = "design-based Wald test of the cell proportions",
   test_design_adj_wald = "design-based adjusted Wald test of the cell proportions",
-  test_design_saddlepoint = "design-based saddlepoint chi-square",
+  test_design_saddlepoint = "design-based saddlepoint chi-squared",
   # One hole: the method name, a survey identifier ("logit",
   # "wilson", ...), never translated.
   note_ci_prop_method = "Percentage CIs: %s (survey::svyciprop).",
@@ -993,7 +1027,6 @@
   note_adjustment_proportional = "proportional",
   note_adjustment_balanced = "balanced",
   note_std_errors_single = "Std. errors: %s.",
-  note_std_errors_multi = "Std. errors:\n%s",
   # Index-based model reference: frame-layer messages raised before the
   # display labels exist (e.g. the geeglm cluster refusal).
   note_model_prefix = "Model %d: %s",
@@ -1006,9 +1039,6 @@
   # (.model_line() in regression_titlefooter.R): "Baseline: ..." when
   # the user labeled the models, "Model 1: ..." otherwise.
   note_model_line = "%s: %s",
-  # Two leading spaces are significant: the indented per-model line of the
-  # Std. errors block.
-  note_model_line_indented = "  %s: %s",
   note_vcov_classical_glm = "classical (Fisher information)",
   note_vcov_classical_lm = "classical (OLS)",
   # The model-based default of the classes whose label names no

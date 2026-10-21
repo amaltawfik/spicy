@@ -450,15 +450,17 @@ test_that("the by-table carries its title, missing note and assoc gloss", {
   expect_equal(.xl_at(m, 3L, "A"), "Variable")
   expect_equal(.xl_at(m, 4L, "B"), "n")
   col_a <- m[, "A"]
-  # The note opens with "Note." on its first line, the missing values.
-  missing_line <- paste("Note.", attr(obj, "missing_note"))
-  expect_true(missing_line %in% col_a)
-  expect_true(attr(obj, "assoc_note") %in% col_a)
-  # Note lines sit below the body, in the reading order the console
-  # prints them.
-  i_missing <- which(col_a == missing_line)
-  i_assoc <- which(col_a == attr(obj, "assoc_note"))
-  expect_lt(i_missing, i_assoc)
+  # The note is one paragraph on one row below the body, as printed: it
+  # opens with "Note.", the missing values, then the test and the
+  # measures.
+  note_line <- paste(
+    "Note.",
+    attr(obj, "missing_note"),
+    attr(obj, "assoc_note")
+  )
+  expect_identical(note_line, attr(obj, "note"))
+  expect_true(note_line %in% col_a)
+  expect_gt(which(col_a == note_line), which(col_a == "Variable"))
 })
 
 test_that("table_continuous writes its console title and missing note", {

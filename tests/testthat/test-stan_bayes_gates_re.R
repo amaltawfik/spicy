@@ -872,24 +872,34 @@ test_that("the Bayesian footer and interval header follow the language", {
       invokeRestart("muffleWarning")
     }
   )
-  notes <- strsplit(attr(tbl, "note"), "\n", fixed = TRUE)[[1L]]
-  expect_true(
+  # The general note is one paragraph: its sentences are found in it.
+  note <- attr(tbl, "note")
+  expect_match(
+    note,
     paste0(
       "Erreurs standards\u00A0: MAD SD a posteriori (\u00E9cart absolu ",
       "m\u00E9dian mis \u00E0 l'\u00E9chelle)."
-    ) %in%
-      notes
+    ),
+    fixed = TRUE
   )
-  expect_true(any(startsWith(
-    notes,
-    "Performance pr\u00E9dictive par PSIS-LOO / WAIC\u00A0; ES(ELPD) = "
-  )))
+  expect_match(
+    note,
+    "Performance pr\u00E9dictive par PSIS-LOO / WAIC\u00A0; ES(ELPD) = ",
+    fixed = TRUE
+  )
   # 1 chain x 400 iterations: the ESS guard fires, as in the English
-  # guard test above.
-  conv <- notes[startsWith(
-    notes,
-    "Diagnostics de l'\u00E9chantillonneur\u00A0: "
-  )]
+  # guard test above: its two sentences, up to the reference.
+  conv <- regmatches(
+    note,
+    gregexpr(
+      paste0(
+        "Diagnostics de l'\u00E9chantillonneur\u00A0: .*?",
+        "\\(Vehtari et al\\. 2021\\)\\."
+      ),
+      note,
+      perl = TRUE
+    )
+  )[[1L]]
   expect_length(conv, 1L)
   expect_match(conv, "ESS min. = [0-9]+ \\(cible > 400\\)")
   expect_match(conv, "(Vehtari et al. 2021).", fixed = TRUE)

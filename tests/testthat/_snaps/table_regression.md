@@ -18,8 +18,7 @@
        R²          │  0.84
        Adj. R²     │  0.82
       
-      Note. Linear regression.
-      Std. errors: classical (OLS).
+      Note. Linear regression. Std. errors: classical (OLS).
 
 # snapshot – multi-model with nested = TRUE comparison footer
 
@@ -46,8 +45,7 @@
        F-change    │   –                 +7.29
        p (change)  │   –                   .003
       
-      Note. Linear regression models.
-      Std. errors: classical (OLS).
+      Note. Linear regression models. Std. errors: classical (OLS).
 
 # snapshot – standardized + stars + reference annotation
 
@@ -68,8 +66,6 @@
        R²            │  0.84
        Adj. R²       │  0.82
       
-      Note. Linear regression.
-      Std. errors: classical (OLS).
-      β = standardized coefficient ("refit": outcome and numeric predictors z-scored, factor dummies on 0/1).
+      Note. Linear regression. Std. errors: classical (OLS). β = standardized coefficient ("refit": outcome and numeric predictors z-scored, factor dummies on 0/1).
       *** p < .001, ** p < .01, * p < .05.
 

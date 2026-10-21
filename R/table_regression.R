@@ -1098,7 +1098,7 @@
 #'       `factor_layout = "flat"` the marker `[vs Lower]` is
 #'       attached to the **first non-reference dummy** of each
 #'       factor (subsequent dummies inherit the same reference).
-#'     \item `"footer"`: the row is dropped and a single line
+#'     \item `"footer"`: the row is dropped and a sentence
 #'       `Reference categories: education = Lower; sex = Female.`
 #'       is added to the footer note. SAS `PROC LOGISTIC` / SPSS
 #'       "Categorical Variables Codings" convention. Best for
@@ -1428,8 +1428,13 @@
 #'   \itemize{
 #'     \item `NULL` (default): the package builds the standard caption
 #'       ("Linear regression on `<DV>`" / "Hierarchical linear
-#'       regression on `<DV>`" / ...) and a methodological note
-#'       (VCV type, p-adjust method, reference categories, ...).
+#'       regression on `<DV>`" / ...) and a methodological note, one
+#'       paragraph in the order of every table of the package: what
+#'       the model is (its family, design, scale of the coefficients,
+#'       reference categories, ...), the cases a univariable screen fits
+#'       on, the inference (VCV type, p-adjust method, ...), then the
+#'       definitions (abbreviations, block glosses). Under `stars`, the
+#'       legend of the stars follows on a line of its own.
 #'     \item `FALSE`: the corresponding banner row is omitted from
 #'       every output engine. Use when the surrounding manuscript
 #'       provides its own caption / note.

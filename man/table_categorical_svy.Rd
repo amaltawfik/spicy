@@ -245,7 +245,8 @@ invisibly.
 }
 
 The default object and the two data frames carry the whole note as
-printed, "Note." included, in \code{attr(x, "note")}.
+printed, "Note." included, in \code{attr(x, "note")}. The default object
+also keeps the title the console prints, in \code{attr(x, "title")}.
 \link[=tidy.spicy_categorical_svy_table]{tidy()} reports the proportions
 between 0 and 1.
 }
@@ -309,6 +310,23 @@ statistic there is not the one the p-value came from. \code{"Wald"},
 \code{"wls-score"} are refused, the first because its integration is
 documented as failing in the far tail (\code{?pchisqsum}), the second
 because it has no reporting convention here.
+}
+
+\section{Groups with no data}{
+As in \code{\link[=table_categorical]{table_categorical()}}, a variable with no observed value in a
+group of \code{by} that holds sampled rows, typically a question not asked
+in that group, has no data there, which is not a missing answer. Its
+cells in that group show an en dash (\code{NA} in the data frames, in
+\link[=tidy.spicy_categorical_svy_table]{tidy()} and in \code{\link[=as_structured]{as_structured()}}),
+and its rows there are left out of everything computed for that
+variable: the missing values the note counts, the \code{Total} block, the
+\code{(Missing)} row and the test. A variable left with fewer than two
+groups with data is not tested: its \code{p} cell is left blank. The note
+says "No data for X in G.", in one sentence for the variables with no
+data in the same groups ("No data for X and Y in G."). Without \code{by}, a
+variable with no observed value at all keeps its declared levels (its
+one row when it declares none) with the dash, and the note says "No
+data for X."
 }
 
 \section{Stability}{

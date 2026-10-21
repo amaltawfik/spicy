@@ -27,7 +27,8 @@ test_that("a variable with no observation leaves every cell undefined", {
     select = c(y, z),
     output = "long"
   ))
-  expect_identical(out$n, c(0L, 6L))
+  # No observed value at all: no data, so its count is undefined too.
+  expect_identical(out$n, c(NA_integer_, 6L))
   expect_true(is.na(out$mean[[1L]]))
   expect_true(is.na(out$weighted_n[[1L]]))
   expect_false(is.na(out$mean[[2L]]))
@@ -56,34 +57,49 @@ test_that("a single observation has a mean and no standard deviation", {
   expect_true(is.na(out$sd))
 })
 
-test_that("a categorical variable with no observation is refused, not blank", {
+test_that("a categorical variable with no observation has no data, not a row of 100%", {
   skip_if_not_installed("survey")
   d <- data.frame(
     g = factor(rep(NA_character_, 6), levels = c("a", "b")),
     w = rep(1, 6)
   )
   des <- survey::svydesign(id = ~1, weights = ~w, data = d)
-  # Every value missing and `drop_na = TRUE`: there is no row to draw.
-  # A refusal naming the variable, rather than a block of dashes that
-  # would read as "estimated, and undefined".
-  err <- expect_error(
-    table_categorical_svy(des, select = g, drop_na = TRUE),
+  # Every value missing: the variable has no data, which is not a missing
+  # answer, whatever `drop_na`. It keeps its declared levels, every cell
+  # undefined, and the note says so; nothing is counted as removed.
+  for (dn in c(TRUE, FALSE)) {
+    out <- table_categorical_svy(
+      des,
+      select = g,
+      drop_na = dn,
+      output = "data.frame"
+    )
+    expect_identical(out$level, c(NA, "a", "b"))
+    expect_true(all(is.na(out$n[-1L]) & is.na(out[["%"]][-1L])))
+    expect_match(attr(out, "note"), "No data for g.", fixed = TRUE)
+    expect_false(grepl("removed", attr(out, "note"), fixed = TRUE))
+  }
+  # A selection of no level is refused, naming the variable, rather than
+  # a variable with no row under its header.
+  expect_error(
+    table_categorical_svy(des, select = g, levels_keep = character(0)),
     class = "spicy_invalid_input"
   )
-  expect_match(conditionMessage(err), "no level to display", fixed = TRUE)
-  # With `drop_na = FALSE` the (Missing) level IS the table, and it is
-  # 100% by ARITHMETIC: survey cannot say so (`svymean(~f)` aborts on a
-  # one-level factor). The design effect of a degenerate proportion is
-  # not estimable and stays undefined; its interval is the exact binomial
-  # one of 6 events out of 6, as for any percentage of 100.
+  # A variable observed at one level is 100% by ARITHMETIC: survey cannot
+  # say so (`svymean(~f)` aborts on a one-level factor). The design effect
+  # of a degenerate proportion is not estimable and stays undefined; its
+  # interval is the exact binomial one of 6 events out of 6, as for any
+  # percentage of 100.
+  d$h <- factor(rep("a", 6), levels = c("a", "b"))
+  des <- survey::svydesign(id = ~1, weights = ~w, data = d)
   out <- table_categorical_svy(
     des,
-    select = g,
+    select = h,
     proportion_ci = TRUE,
     deff = TRUE,
     output = "data.frame"
   )
-  expect_identical(out$level, c(NA, "(Missing)"))
+  expect_identical(out$level, c(NA, "a"))
   expect_equal(out[["%"]][[2L]], 100)
   expect_identical(out$n[[2L]], 6)
   expect_equal(

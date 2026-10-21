@@ -362,9 +362,9 @@ list.
 |---|---|
 | **No `title` or `note` argument** | both auto-generated from context, consistent with `freq()`, `cross_tab()`, `table_continuous_lm()` etc. User overrides via `attr(result, "title")` / `attr(result, "note")` post-processing if needed. |
 | **Title logic** | `Regression: <DV>` (single model); `Hierarchical regression: <DV>` (`nested = TRUE`); `Regression comparison: <DV>` (multi-model, identical DVs); `Regression comparison` (multi-model, different DVs). `<DV>` is **always the variable name from `formula(fit)[[2]]`**, NEVER the `attr("label")`. |
-| **Footer themes** | each on its own logical line: `vcov`-info, `standardized` caveat, `nested` declaration, `stars` mapping. Concatenated with `\n`, indented after the leading `Note. `. |
-| **Footer when `vcov` is uniform** | single-line, e.g. `"Std. errors: cluster-robust (CR2), clusters by clinic_id."` |
-| **Footer when `vcov` differs per model** | multi-line indented enumeration: each `Model k: <vcov>` on its own line under a `Std. errors:` header. Convention aligned with gtsummary / modelsummary / fixest modern footer style. |
+| **Footer themes** | superseded 2026-10-21 (lot N, the note of the family): the themes form ONE paragraph, opened by `Note. `, in the four kinds of `.compose_note()` (what the numbers are, missing data, inference, definitions); the `stars` mapping is the probability note, on its own line, last. Originally each theme sat on its own line, concatenated with `\n`. |
+| **Footer when `vcov` is uniform** | single sentence, e.g. `"Std. errors: cluster-robust (CR2), clusters by clinic_id."` |
+| **Footer when `vcov` differs per model** | superseded 2026-10-21: one sentence, `"Std. errors: Model 1: classical (OLS), Model 2: heteroskedasticity-robust (HC3)."` (semicolons when an item holds a comma). Originally a multi-line indented enumeration under a `Std. errors:` header, a style choice (gtsummary / modelsummary / fixest), not a rendering need. |
 | **Detection cluster name vs vector** | reuses `detect_weights_column_name()` from `R/lm_helpers.R`. Name detected → `"clusters by <name>"`; atomic vector → `"cluster vector supplied"`. |
 
 ### Q14 — AME for factor predictors and AME-Satterthwaite under CR*

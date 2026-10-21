@@ -21,8 +21,7 @@
        Wald F-change │    –                  +5.39
        p (change)    │    –                    .005
       
-      Note. Linear regression models.
-      Std. errors: heteroskedasticity-robust (HC3).
+      Note. Linear regression models. Std. errors: heteroskedasticity-robust (HC3).
 
 ---
 
@@ -47,8 +46,7 @@
        Wald χ² (change) │    –                 +5.31
        p (change)       │    –                   .070
       
-      Note. Logistic regression models.
-      Std. errors: heteroskedasticity-robust (HC0).
+      Note. Logistic regression models. Std. errors: heteroskedasticity-robust (HC0).
 
 ---
 
@@ -73,8 +71,7 @@
        F de Wald (variation) │    –                   +5,39
        p (variation)         │    –                    0,005
       
-      Note. Modèles de régression linéaire.
-      Erreurs standards : robustes à l'hétéroscédasticité (HC3).
+      Note. Modèles de régression linéaire. Erreurs standards : robustes à l'hétéroscédasticité (HC3).
 
 ---
 
@@ -99,6 +96,5 @@
        χ² de Wald (variation) │    –                  +5,31
        p (variation)          │    –                   0,070
       
-      Note. Modèles de régression logistique.
-      Erreurs standards : robustes à l'hétéroscédasticité (HC0).
+      Note. Modèles de régression logistique. Erreurs standards : robustes à l'hétéroscédasticité (HC0).
 

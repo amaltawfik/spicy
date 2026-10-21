@@ -24,10 +24,10 @@ print.spicy_categorical_table <- function(x, ...) {
   indent_text <- attr(x, "indent_text") %||% "  "
   align <- attr(x, "align") %||% "decimal"
   decimal_mark <- attr(x, "decimal_mark") %||% "."
-  # drop_na = TRUE disclosure ("Missing values removed: ...") prepends
-  # the association note -- the reader sees what left the table before
-  # reading the statistics computed on what remains.
+  # The note, from the parts the table stored: what the numbers are, the
+  # missing data, then the statistics -- the note of `attr(x, "note")`.
   assoc_note <- .categorical_note(
+    attr(x, "what_note"),
     attr(x, "missing_note"),
     attr(x, "assoc_note")
   )
@@ -194,24 +194,29 @@ print.spicy_categorical_table <- function(x, ...) {
   .struct_indent_rows(structured)
 }
 
-# Internal: the note of a categorical summary table -- the drop_na
-# disclosure prepended to the association-measure gloss, so the reader
-# sees what left the table before reading the statistics computed on
-# what remains. Either part may be absent; `NULL` when both are.
+# Internal: the note of a categorical summary table, one paragraph in
+# the order of `.compose_note()`: `what_note`, what the numbers are (the
+# weights); `missing_note`, the missing data (what drop_na = TRUE removed,
+# the groups with no data); `assoc_note`, the statistics -- the test of
+# each variable, Yates' correction and the adjustment, then the measure
+# each variable carries and the SMD gloss. Any part may be absent; `NULL`
+# when all are.
 #
 # The one place the note is assembled, for every route (console, the
 # rich engines, Excel, the clipboard), so the one place it opens with
-# "Note.": the prefix belongs to the note, never to one of its parts,
-# which is what left it in the middle when the drop_na disclosure came
-# first. The `missing_note` and `assoc_note` attributes stay the two
-# parts, unprefixed.
-.categorical_note <- function(missing_note, assoc_note) {
-  parts <- c(missing_note, assoc_note) # c() drops the absent ones
-  parts <- parts[nzchar(parts)]
-  if (length(parts) == 0L) {
-    return(NULL)
-  }
-  .note_with_prefix(paste(parts, collapse = "\n"))
+# "Note.": the prefix belongs to the note, never to one of its parts.
+# The `what_note`, `missing_note` and `assoc_note` attributes stay the
+# three parts, unprefixed.
+.categorical_note <- function(
+  what_note = NULL,
+  missing_note = NULL,
+  assoc_note = NULL
+) {
+  .compose_note(
+    what = what_note,
+    missing = missing_note,
+    inference = assoc_note
+  )
 }
 
 # ---- Coercion to plain data.frame / tibble --------------------------------

@@ -442,7 +442,8 @@ it below the body, and the default object and the data frames of
 \code{"data.frame"} / \code{"long"} keep the whole note as printed, "Note."
 included, in \code{attr(x, "note")} (\code{NULL} when there is nothing to say),
 so a pipeline that renders the numbers itself can still state what
-left the table. On the \code{"tinytable"} route the
+left the table. The default object also keeps the title it prints in
+\code{attr(x, "title")}. On the \code{"tinytable"} route the
 note is set one size down; \code{options(spicy.note_style)} governs that
 (see \code{\link[=table_regression]{table_regression()}}).
 
@@ -588,7 +589,25 @@ The omnibus test is computed only when \code{by} is supplied and at
 least two groups remain after dropping \code{NA}s, with every group
 contributing at least two observations. Choice of test family is
 driven by \code{test} (see the \verb{@param} entry for the full dispatch
-and the underlying \verb{stats::} functions called).
+and the underlying \verb{stats::} functions called). Whenever the table
+shows \emph{p}-values, its note names the test of each variable ("Group
+comparison: Welch t-test."), each variable beside its own test when
+they differ.
+}
+
+\section{No data in a group}{
+A variable with no observed value in a group of \code{by} (every value
+missing there, typically a question not asked in that group) has no
+data in it, which is not a missing answer. Its cells in that group
+show an en dash, \emph{n} included (\code{NA} in \code{output = "long"} and the
+typed view), its rows there are not counted in the missing values of
+the note, the comparison and the effect size use the groups with data
+(with fewer than two, there is no test and its cell is left blank),
+and the note says so ("No data for X and Y in G.", X and Y the labels
+of the variables with no data in group G). Without \code{by}, a variable
+with no observed value at all is shown the same way ("No data for
+X."). A declared level of \code{by} that no row holds keeps its count of
+zero, and the group of missing \code{by} values is never such a group.
 
 For model-based contrasts (heteroskedasticity-consistent SE,
 cluster-robust SE, weighted contrasts, fitted means, covariate

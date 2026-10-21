@@ -136,7 +136,8 @@ print.spicy_continuous_lm_table <- function(x, ...) {
 
   spicy_print_table(
     display_df,
-    title = .continuous_lm_title(by_label),
+    # The title stored when the table was built, as the note is.
+    title = attr(x, "title") %||% .continuous_lm_title(by_label),
     # APA-style footer (covariate adjustment, non-classical SE estimator,
     # missing data), built once by `.tclm_note_text()` in
     # table_continuous_lm(), so the console and every rich exporter carry
@@ -169,30 +170,33 @@ print.spicy_continuous_lm_table <- function(x, ...) {
 
 # Internal: build the table note from the attributes of the compute
 # frame, once, in `table_continuous_lm()`: the console print method and
-# every rich exporter read the result, the `note` attribute.
-# `missing_note` is the missing-data disclosure, and `covariates` the
-# covariates as the note names them (their labels).
+# every rich exporter read the result, the `note` attribute. One
+# paragraph (`.compose_note()`), its sentences in the order of the
+# family:
 #
-#   * Line 1 (covariate-adjusted models only): names the covariate(s)
-#     and the adjustment estimand explicitly because the
-#     interpretation of the displayed `emmean` column changes with
-#     the method: "proportional" = G-computation over the observed
-#     covariate distribution; "balanced" = synthetic-grid
-#     equal-weight marginal means. Without the method tag the user
-#     cannot tell which estimand they are reading.
-#   * Line 2 (non-classical `vcov` only): discloses the SE estimator.
-#     Robust / resampling standard errors are never silently
-#     labeled -- same doctrine as table_regression()'s footers.
+#   (a) what the numbers are: the weights (`weighted_by`, the name the
+#       sentence gives them), then the covariates (`covariates`, as the
+#       note names them: their labels) and the adjustment estimand,
+#       named because the displayed `emmean` changes with it:
+#       "proportional" = G-computation over the observed covariate
+#       distribution; "balanced" = synthetic-grid equal-weight marginal
+#       means;
+#   (b) the missing data, `missing_note`: the sentences assembled by
+#       table_continuous_lm() -- values and rows removed, the levels
+#       with no data;
+#   (c) the inference: the test behind the p-values when the table
+#       shows them (`.tclm_test_note()`), then the SE estimator of a
+#       non-classical `vcov` -- robust and resampling standard errors
+#       are never silently labeled, the doctrine of table_regression()'s
+#       footers.
 #
-# Returns NULL when there is nothing to disclose; otherwise a single
-# string with the lead-in in force ("Note. " by default, see
-# `.note_lead_keys()`) prefixed to the FIRST line and lines joined by
-# "\n" (the console renderer prints multi-line notes as-is; the rich
-# engines collapse the newlines themselves).
+# NULL when there is nothing to disclose; otherwise one string opened by
+# the lead-in in force ("Note. " by default, see `.note_lead_keys()`).
 .tclm_note_text <- function(
   x,
   missing_note = NULL,
-  covariates = attr(x, "covariates") %||% character()
+  covariates = attr(x, "covariates") %||% character(),
+  weighted_by = NULL
 ) {
   adjustment <- attr(x, "adjustment") %||% NA_character_
   vcov_type <- attr(x, "vcov_type") %||% "classical"
@@ -207,7 +211,10 @@ print.spicy_continuous_lm_table <- function(x, ...) {
     NULL
   }
 
-  lines <- character()
+  what <- character()
+  if (!is.null(weighted_by)) {
+    what <- spicy_fmt("note_weighted_by", weighted_by)
+  }
   if (length(covariates) > 0L && !is.na(adjustment)) {
     # The `adjustment` TOKEN stays an API identifier; only its display form
     # comes from the registry.
@@ -217,8 +224,8 @@ print.spicy_continuous_lm_table <- function(x, ...) {
       balanced = spicy_str("note_adjustment_balanced"),
       adjustment
     )
-    lines <- c(
-      lines,
+    what <- c(
+      what,
       spicy_fmt(
         "note_adjusted_for",
         .join_note_vars(covariates),
@@ -226,26 +233,75 @@ print.spicy_continuous_lm_table <- function(x, ...) {
       )
     )
   }
+  inference <- if (isTRUE(attr(x, "show_p_value"))) .tclm_test_note(x)
   if (!identical(vcov_type, "classical")) {
-    lines <- c(
-      lines,
+    inference <- c(
+      inference,
       spicy_fmt(
         "note_std_errors_single",
         .tclm_vcov_label(vcov_type, cluster_name, boot_valid)
       )
     )
   }
-  # Missing-data disclosure (rows dropped for a missing `by` value or
-  # a missing weight), assembled by table_continuous_lm() -- the same
-  # ledger convention as table_continuous() / table_categorical().
-  if (!is.null(missing_note)) {
-    lines <- c(lines, missing_note)
-  }
-  if (length(lines) == 0L) {
+  .compose_note(what = what, missing = missing_note, inference = inference)
+}
+
+# Internal: the test behind the p-value of each outcome, read off its
+# linear model -- the `test_type` of the row the table reads the p-value
+# from (`get_test_row_index_lm()`): the t (or z) of the difference of a
+# two-group `by` or of the slope of a numeric one, the global F (or Wald
+# chi-squared) of a `by` with more groups. A categorical `by` names it in
+# `note_group_comparison`, a numeric one in `note_slope_test`. One test
+# for every outcome is named once; otherwise each test is followed by the
+# outcomes it covers, as the rows name them, in the order of the test
+# vocabulary. An outcome whose model did not run carries no test and is
+# not named; NULL when none ran.
+.tclm_test_note <- function(x) {
+  vars <- unique(x$variable)
+  types <- vapply(
+    vars,
+    function(v) {
+      block <- x[x$variable == v, , drop = FALSE]
+      block$test_type[get_test_row_index_lm(block)]
+    },
+    character(1),
+    USE.NAMES = FALSE
+  )
+  keys <- c(
+    t = "test_lm_t",
+    z = "test_lm_z",
+    F = "test_lm_f",
+    chi2 = "test_lm_chi2"
+  )
+  ran <- !is.na(types) & types %in% names(keys)
+  if (!any(ran)) {
     return(NULL)
   }
-  lines[1L] <- paste0(.note_prefix_text(), lines[1L])
-  paste(lines, collapse = "\n")
+  template <- if (identical(x$predictor_type[[1L]], "continuous")) {
+    "note_slope_test"
+  } else {
+    "note_group_comparison"
+  }
+  used <- intersect(names(keys), types[ran])
+  if (length(used) == 1L) {
+    return(spicy_fmt(template, spicy_str(keys[[used]])))
+  }
+  labels <- x$label[match(vars, x$variable)]
+  items <- vapply(
+    used,
+    function(k) {
+      spicy_fmt(
+        "note_group_comparison_item",
+        spicy_str(keys[[k]]),
+        .join_note_vars(labels[ran & types == k])
+      )
+    },
+    character(1)
+  )
+  spicy_fmt(
+    template,
+    paste(items, collapse = spicy_str("note_group_comparison_sep"))
+  )
 }
 
 # Internal: human-readable label for a non-classical SE estimator.
@@ -455,7 +511,9 @@ as_tibble.spicy_continuous_lm_table <- function(x, ...) {
 #' outcomes:
 #' \itemize{
 #'   \item One row per fitted level mean (`estimate_type = "emmean"`)
-#'     for categorical predictors, with the level name in `term`.
+#'     for categorical predictors, with the level name in `term`, `NA`
+#'     where no mean is estimated (a level in which the outcome has no
+#'     data, an outcome whose model could not be fit).
 #'   \item One row per **contrast** (`estimate_type = "difference"`)
 #'     when a binary contrast is shown, with `term =
 #'     "<level2> - <level1>"`.
@@ -498,7 +556,11 @@ NULL
 tidy.spicy_continuous_lm_table <- function(x, ...) {
   long <- unclass_spicy_continuous_lm_table(x)
 
-  emmean_idx <- !is.na(long$emmean)
+  # One row per level of a categorical `by`, as the long output has them:
+  # NA where no mean is estimated, a level in which the outcome has no
+  # data or an outcome whose model could not be fit. A numeric `by` has
+  # no level rows.
+  emmean_idx <- !is.na(long$level)
   emmean_df <- data.frame(
     variable = long$variable[emmean_idx],
     label = long$label[emmean_idx],

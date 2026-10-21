@@ -890,6 +890,28 @@ test_that("the p_adjust sentence names every method and counts in the language",
   )
 })
 
+# The sentence of a note that opens with `start`. The general note is one
+# paragraph: a sentence starts at the head of the note, after a line break
+# or after the period of the sentence before, and ends at the first period
+# followed by the end of the note, a line break, or a space and the next
+# sentence (a capital, or the lower-case "p-values").
+.note_sentence <- function(note, start) {
+  pat <- paste0(
+    "(?:^|(?<=\\. )|(?<=\\n))\\Q",
+    start,
+    "\\E.*?[.](?=$|\\n| (?:\\p{Lu}|p-values))"
+  )
+  regmatches(note, regexpr(pat, note, perl = TRUE))
+}
+
+# The standard-error sentence of a note, in English or in French.
+.se_sentence <- function(note) {
+  c(
+    .note_sentence(note, "Std. errors"),
+    .note_sentence(note, "Erreurs standards")
+  )
+}
+
 test_that("the robust-SE and mixed p-value lines follow the language", {
   # The non-lm/glm classes build their robust label in the frame and the
   # mixed engines add a p-value line; both read the registry, through the
@@ -917,10 +939,7 @@ test_that("the robust-SE and mixed p-value lines follow the language", {
       lm = attr(table_regression(fit_lm, vcov = "CR0", cluster = ~site), "note")
     )
   }
-  se_line <- function(note) {
-    lines <- strsplit(note, "\n", fixed = TRUE)[[1L]]
-    lines[grepl("^(Std. errors|Erreurs standards)", lines)]
-  }
+  se_line <- .se_sentence
   en <- notes()
   expect_identical(
     se_line(en$tmb),
@@ -1120,11 +1139,7 @@ test_that("the model-based Wald line of lmer, lme and gls follows the language",
   se_lines <- function() {
     vapply(
       fits,
-      function(fit) {
-        note <- attr(table_regression(fit), "note")
-        lines <- strsplit(note, "\n", fixed = TRUE)[[1L]]
-        lines[grepl("^(Std. errors|Erreurs standards)", lines)]
-      },
+      function(fit) .se_sentence(attr(table_regression(fit), "note")),
       character(1)
     )
   }
@@ -1171,13 +1186,13 @@ test_that("the outcome comparison note joins its tests in the language", {
   }
   expect_match(
     note(),
-    "Welch one-way ANOVA (cyl); Welch t-test (am, vs).",
+    "Welch t-test (am, vs); Welch one-way ANOVA (cyl).",
     fixed = TRUE
   )
   withr::local_options(spicy.language = "fr")
   expect_match(
     note(),
-    "ANOVA de Welch \u00E0 un facteur (cyl)\u00A0; test t de Welch (am, vs).",
+    "test t de Welch (am, vs)\u00A0; ANOVA de Welch \u00E0 un facteur (cyl).",
     fixed = TRUE
   )
 })
@@ -1205,7 +1220,7 @@ test_that("the group-comparison note of table_continuous() joins in the language
   }
   expect_match(
     note(),
-    "Group comparison: Welch t-test (age); Wilcoxon rank-sum test (skewed).",
+    "Group comparison: Wilcoxon rank-sum test (skewed); Welch t-test (age).",
     fixed = TRUE
   )
   withr::local_options(spicy.language = "fr")
@@ -1410,11 +1425,9 @@ test_that("the standardized-coefficient legend follows the language", {
   }
 })
 
-# One footer line, picked by its opening words.
-.note_line <- function(x, start) {
-  lines <- strsplit(attr(x, "note"), "\n", fixed = TRUE)[[1L]]
-  lines[startsWith(lines, start)]
-}
+# The sentence of the note of table `x` that opens with `start`
+# (`.note_sentence()`).
+.note_line <- function(x, start) .note_sentence(attr(x, "note"), start)
 
 test_that("the abbreviation and association-measure notes join in the language", {
   abbrev <- function() {
@@ -1962,7 +1975,7 @@ test_that("the univariable table title and sample note follow the language", {
   )
   expect_identical(
     attr(cc, "title"),
-    "R\u00E9gression logistique univari\u00E9e et multivariable\u00A0: smoking"
+    "R\u00E9gression logistique univariable et multivariable\u00A0: smoking"
   )
   n_cc <- sum(stats::complete.cases(
     as.data.frame(sochealth)[c("smoking", "age", "bmi")]
@@ -1983,8 +1996,8 @@ test_that("the univariable table title and sample note follow the language", {
   expect_match(
     attr(own, "note"),
     paste0(
-      "Chaque mod\u00E8le univari\u00E9 est estim\u00E9 sur ses propres cas ",
-      "complets\u00A0; N varie selon le pr\u00E9dicteur \\([0-9]+-[0-9]+\\)[.]"
+      "Chaque mod\u00E8le univariable est estim\u00E9 sur ses propres cas ",
+      "complets. N varie selon le pr\u00E9dicteur \\([0-9]+-[0-9]+\\)[.]"
     )
   )
   screen <- table_regression_uv(
@@ -1996,7 +2009,7 @@ test_that("the univariable table title and sample note follow the language", {
   )
   expect_identical(
     attr(screen, "title"),
-    "R\u00E9gression logistique univari\u00E9e (pr\u00E9s\u00E9lection)\u00A0: smoking"
+    "R\u00E9gression logistique univariable (pr\u00E9s\u00E9lection)\u00A0: smoking"
   )
   # A family the title bridge does not carry keeps the whole English title.
   gamma <- table_regression_uv(

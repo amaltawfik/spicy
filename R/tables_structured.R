@@ -436,6 +436,30 @@
   }
 
   # ---- rows, in the display order of `make_report_wide()` ---------------
+  # The count and percentage cells of one row, `sl` its rows of the
+  # compute frame. A count with no number is a group in which the
+  # variable has no data (`table_categorical()`): NA in the body, an
+  # undefined cell, shown as `cell_undefined`.
+  undefined <- spicy_str("cell_undefined")
+  count_cells <- function(sl) {
+    values <- list()
+    if (has_group) {
+      for (g in group_levels) {
+        sx <- sl[sl$group == g, , drop = FALSE]
+        values[[.cat_key_n(g)]] <- if (nrow(sx)) sx$n[1L] else NA_real_
+        values[[.cat_key_pct(g)]] <- if (nrow(sx)) sx$pct[1L] else NA_real_
+      }
+    } else {
+      values[["n"]] <- sl$n[1L]
+      values[["%"]] <- sl$pct[1L]
+    }
+    void <- names(values)[vapply(values, is.na, logical(1))]
+    list(
+      values = values,
+      status = stats::setNames(rep("undefined", length(void)), void),
+      display = stats::setNames(rep(undefined, length(void)), void)
+    )
+  }
   rows <- list()
   if (nrow(long_raw) > 0L) {
     for (li in seq_along(labels)) {
@@ -445,16 +469,29 @@
       if (nrow(sv) == 0L) {
         next
       }
+      # A variable with no data and no level to show is one row, which
+      # carries the cells of the groups itself.
+      no_level <- all(is.na(sv$level))
       # `levels_keep` is resolved to one entry per variable (NULL when it
       # filters none): `.cat_levels_keep_spec()`.
       keep_var <- levels_keep[[var_name]]
-      lv_use <- if (is.null(keep_var)) {
+      lv_use <- if (no_level) {
+        character(0)
+      } else if (is.null(keep_var)) {
         unique(sv$level)
       } else {
         intersect(keep_var, unique(sv$level))
       }
 
       header_values <- list()
+      header_status <- character(0)
+      header_display <- character(0)
+      if (no_level) {
+        cells <- count_cells(sv)
+        header_values <- cells$values
+        header_status <- cells$status
+        header_display <- cells$display
+      }
       if (has_group) {
         if (show_p) {
           header_values[[.CAT_KEY_P]] <- sv$p[1L]
@@ -468,6 +505,13 @@
         }
         if (show_smd) {
           header_values[[.CAT_KEY_SMD]] <- sv$.smd[1L]
+          # The console prints `cell_undefined` for an SMD that cannot be
+          # estimated (a group with no data, two profiles with no category
+          # in common): the undefined cell of the contract.
+          if (is.na(sv$.smd[1L])) {
+            header_status[[.CAT_KEY_SMD]] <- "undefined"
+            header_display[[.CAT_KEY_SMD]] <- undefined
+          }
         }
       }
       rows[[length(rows) + 1L]] <- list(
@@ -476,25 +520,20 @@
         variable = var_name,
         level = NA_character_,
         role = "factor_header",
-        indent = 0L
+        indent = 0L,
+        display = header_display,
+        status = header_status
       )
 
       for (lv in lv_use) {
-        sl <- sv[sv$level == lv, , drop = FALSE]
-        values <- list()
-        if (has_group) {
-          for (g in group_levels) {
-            sx <- sl[sl$group == g, , drop = FALSE]
-            values[[.cat_key_n(g)]] <- if (nrow(sx)) sx$n[1L] else NA_real_
-            values[[.cat_key_pct(g)]] <- if (nrow(sx)) sx$pct[1L] else NA_real_
-          }
-        } else {
-          values[["n"]] <- sl$n[1L]
-          values[["%"]] <- sl$pct[1L]
-        }
+        cells <- count_cells(sv[
+          !is.na(sv$level) & sv$level == lv,
+          ,
+          drop = FALSE
+        ])
         rows[[length(rows) + 1L]] <- list(
           label = paste0(indent_text, lv),
-          values = values,
+          values = cells$values,
           variable = var_name,
           level = lv,
           role = if (
@@ -504,7 +543,9 @@
           } else {
             "level"
           },
-          indent = 1L
+          indent = 1L,
+          display = cells$display,
+          status = cells$status
         )
       }
     }
@@ -944,16 +985,25 @@
   for (i in seq_along(vars)) {
     values <- list()
     display <- character(0)
+    status <- character(0)
     for (nm in col_names) {
       val <- wide_raw[[nm]][i]
       if (!is.null(val) && length(val) == 1L) {
         values[[nm]] <- as.numeric(val)
       }
+      shown_str <- as.character(wide_display[[nm]][i])
       if (nm %in% composite) {
-        shown_str <- as.character(wide_display[[nm]][i])
         if (nzchar(shown_str)) {
           display[[nm]] <- shown_str
         }
+      }
+      # The mean of a level in which the outcome has no data, and the
+      # contrast that involves it: the console's undefined mark, the
+      # `undefined` cell of the contract (recognized through the
+      # registry, as in `.build_continuous_structured()`).
+      if (identical(shown_str, spicy_str("cell_undefined"))) {
+        status[[nm]] <- "undefined"
+        display[[nm]] <- shown_str
       }
     }
     rows[[length(rows) + 1L]] <- list(
@@ -963,7 +1013,8 @@
       level = NA_character_,
       role = "summary",
       indent = 0L,
-      display = display
+      display = display,
+      status = status
     )
   }
 

@@ -1111,7 +1111,7 @@ output_gt <- function(rendered) {
   #    `print.spicy_gt()` / `knit_print.spicy_gt()` move it to a
   #    `<div>` sibling outside the table.
   if (!is.null(note) && nzchar(note)) {
-    tbl <- gt::tab_source_note(tbl, source_note = .spicy_gt_note_md(note))
+    tbl <- .spicy_gt_add_source_notes(tbl, note)
     attr(tbl, "spicy_note") <- note
     # The lead-in the note was built with, for the display methods, which
     # run after this call (`.note_lead_keys()`, R/i18n.R).
@@ -1121,13 +1121,13 @@ output_gt <- function(rendered) {
   tbl
 }
 
-# Remove the `<tfoot>` row that carries OUR source note (matched on
-# its text, so a source note the user added with their own
-# `gt::tab_source_note()` call survives), leaving an emptied `<tfoot>`
-# behind only if it had nothing else in it. Used by the HTML display
-# path, which renders the same note as a styled `<div>` outside the
-# table.
-.spicy_gt_drop_source_note <- function(html_str, note_one_line) {
+# Remove the `<tfoot>` rows that carry OUR source notes, one per line of
+# the note (`note_lines`; matched on their text, so a source note the
+# user added with their own `gt::tab_source_note()` call survives),
+# leaving an emptied `<tfoot>` behind only if it had nothing else in it.
+# Used by the HTML display path, which renders the same note as a styled
+# `<div>` outside the table.
+.spicy_gt_drop_source_note <- function(html_str, note_lines) {
   # (?s): the row spans several lines in gt's rendered HTML.
   pat <- "(?s)<tr class=\"gt_sourcenotes\">.*?</tr>"
   m <- gregexpr(pat, html_str, perl = TRUE)
@@ -1146,10 +1146,10 @@ output_gt <- function(rendered) {
     gsub("&amp;", "&", s, fixed = TRUE)
   }
   squish <- function(s) gsub("\\s+", " ", trimws(s))
-  target <- squish(note_one_line)
+  targets <- squish(note_lines)
   for (b in blocks) {
     txt <- squish(unescape(gsub("<[^>]*>", "", b)))
-    if (identical(txt, target)) {
+    if (txt %in% targets) {
       html_str <- sub(b, "", html_str, fixed = TRUE)
     }
   }
@@ -1165,20 +1165,14 @@ output_gt <- function(rendered) {
   if (is.null(note) || !nzchar(note)) {
     return(html_str)
   }
-  note_one_line <- gsub("\n", " ", note, fixed = TRUE)
-  # The same note also sits on the gt object as a native source note
+  note_lines <- .note_lines(note)
+  # The same note also sits on the gt object as native source notes
   # (so `gtsave()` / `as_raw_html()` / a non-interactive `print()` keep
   # it); this display path moves it OUT of the table, so drop the
-  # `<tfoot>` row carrying it. Source notes the user added themselves
-  # are left alone -- only the row whose text is ours is removed.
-  html_str <- .spicy_gt_drop_source_note(html_str, note_one_line)
-  # Escaped, with the lead-in in <em> (APA Manual 7 Section 7.14).
-  note_html <- .note_markup(
-    note_one_line,
-    .spicy_html_escape,
-    .spicy_html_em,
-    lead
-  )
+  # `<tfoot>` rows carrying it. Source notes the user added themselves
+  # are left alone -- only the rows whose text is ours are removed.
+  html_str <- .spicy_gt_drop_source_note(html_str, note_lines)
+  note_html <- .spicy_note_html(note_lines, lead)
   note_div <- paste0(
     "<div class=\"spicy-gt-note\" style=\"",
     "width: min-content; min-width: 100%; box-sizing: border-box; ",
@@ -1423,7 +1417,7 @@ knit_print.spicy_gt <- function(x, ...) {
   if (!is.null(pandoc_to) && !isTRUE(knitr::is_html_output())) {
     has_source_note <- length(x[["_source_notes"]]) > 0L
     if (!is.null(note) && nzchar(note) && !has_source_note) {
-      x <- gt::tab_source_note(x, source_note = .spicy_gt_note_md(note, lead))
+      x <- .spicy_gt_add_source_notes(x, note, lead)
     }
     latex <- isTRUE(knitr::is_latex_output())
     if (latex) {
@@ -1850,20 +1844,19 @@ output_flextable <- function(rendered) {
     props = officer::fp_text(font.family = "Calibri", font.size = 11)
   )
   if (!is.null(note) && nzchar(note)) {
-    # APA Manual 7 Section 7.14: general notes form a SINGLE paragraph
-    # ("*Note.* ...") that wraps naturally within the table width.
-    # Collapse embedded newlines (source-side line breaks meant for
-    # ASCII rendering) into spaces, then emit one footer line whose
-    # leading "Note." chunk is italicized and the remainder is in
-    # regular type.
-    note_one_line <- gsub("\n", " ", note, fixed = TRUE)
+    # APA Manual 7 Section 7.14: the general note is a SINGLE paragraph
+    # ("*Note.* ...") that wraps naturally within the table width, its
+    # leading "Note." chunk italicized and the remainder in regular
+    # type; the legend of the stars, the next line of the note
+    # (`.note_lines()`), is a footer line of its own.
+    note_lines <- .note_lines(note)
     fp_normal <- officer::fp_text(font.family = "Calibri", font.size = 10)
     fp_italic <- officer::fp_text(
       font.family = "Calibri",
       font.size = 10,
       italic = TRUE
     )
-    note_split <- .note_prefix_split(note_one_line)
+    note_split <- .note_prefix_split(note_lines[[1L]])
     if (!is.null(note_split)) {
       para <- flextable::as_paragraph(
         flextable::as_chunk(note_split$marker, props = fp_italic),
@@ -1871,10 +1864,19 @@ output_flextable <- function(rendered) {
       )
     } else {
       para <- flextable::as_paragraph(
-        flextable::as_chunk(note_one_line, props = fp_normal)
+        flextable::as_chunk(note_lines[[1L]], props = fp_normal)
       )
     }
     ft <- flextable::add_footer_lines(ft, top = FALSE, values = para)
+    for (line in note_lines[-1L]) {
+      ft <- flextable::add_footer_lines(
+        ft,
+        top = FALSE,
+        values = flextable::as_paragraph(
+          flextable::as_chunk(line, props = fp_normal)
+        )
+      )
+    }
   }
   # Force a single font across ALL parts (header, body, footer, caption)
   # AFTER all rows / lines have been added; flextable::font(part = "all")
@@ -1913,14 +1915,9 @@ output_flextable <- function(rendered) {
   if (is.null(note) || !nzchar(note)) {
     return(html_str)
   }
-  note_one_line <- gsub("\n", " ", note, fixed = TRUE)
-  # Escaped, with the lead-in in <em> (APA Manual 7 Section 7.14).
-  note_html <- .note_markup(
-    note_one_line,
-    .spicy_html_escape,
-    .spicy_html_em,
-    lead
-  )
+  # Escaped, with the lead-in in <em> (APA Manual 7 Section 7.14), and the
+  # legend of the stars on a line of its own.
+  note_html <- .spicy_note_html(.note_lines(note), lead)
   note_div <- paste0(
     "<div class=\"spicy-ft-note\" style=\"",
     "width: min-content; min-width: 100%; box-sizing: border-box; ",

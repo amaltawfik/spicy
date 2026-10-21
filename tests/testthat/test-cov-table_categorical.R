@@ -256,11 +256,11 @@ test_that("cross-tab flextable output warns and does not write with word_path", 
   expect_false(file.exists(tmp))
 })
 
-# ---- make_report_wide*: skip a label with no rows -------------------------
+# ---- make_report_wide*: a variable with no data, a label with no rows ------
 
-test_that("one-way default output skips an all-NA variable label", {
-  # The all-NA variable produces no long rows, so its label is skipped in
-  # make_report_wide_oneway() (the `next` at the empty-subset guard).
+test_that("one-way default output keeps an all-NA variable, undefined", {
+  # No observed value: the variable keeps its declared levels, their
+  # cells undefined, rather than leaving the table.
   df <- data.frame(
     good = factor(c("a", "b", "a", "b")),
     allna = factor(rep(NA_character_, 4), levels = c("x", "y"))
@@ -272,12 +272,16 @@ test_that("one-way default output skips an all-NA variable label", {
     output = "default"
   )
   expect_s3_class(out, "spicy_categorical_table")
-  vars <- trimws(attr(out, "display_df")$Variable)
-  expect_true("good" %in% vars)
-  expect_false("allna" %in% vars)
+  disp <- attr(out, "display_df")
+  vars <- trimws(disp$Variable)
+  expect_true(all(c("good", "allna", "x", "y") %in% vars))
+  expect_identical(
+    disp$n[vars %in% c("x", "y")],
+    rep(spicy:::spicy_str("cell_undefined"), 2L)
+  )
 })
 
-test_that("grouped default output skips an all-NA variable label", {
+test_that("grouped default output keeps an all-NA variable, undefined", {
   df <- data.frame(
     grp = factor(c("A", "A", "B", "B")),
     good = factor(c("a", "b", "a", "b")),
@@ -291,9 +295,47 @@ test_that("grouped default output skips an all-NA variable label", {
     output = "default"
   )
   expect_s3_class(out, "spicy_categorical_table")
-  vars <- trimws(attr(out, "display_df")$Variable)
-  expect_true("good" %in% vars)
-  expect_false("allna" %in% vars)
+  disp <- attr(out, "display_df")
+  vars <- trimws(disp$Variable)
+  expect_true(all(c("good", "allna", "x", "y") %in% vars))
+  expect_true(all(
+    unlist(disp[vars %in% c("x", "y"), c("A n", "B %", "Total n")]) ==
+      spicy:::spicy_str("cell_undefined")
+  ))
+})
+
+test_that("default outputs skip the label of a variable levels_keep drops", {
+  # The dropped variable produces no long rows, so its label is skipped
+  # in make_report_wide*() (the `next` at the empty-subset guard).
+  df <- data.frame(
+    grp = factor(c("A", "A", "B", "B")),
+    good = factor(c("a", "b", "a", "b")),
+    other = factor(c("x", "y", "x", "y"))
+  )
+  expect_warning(
+    one_way <- table_categorical(
+      df,
+      select = c(good, other),
+      levels_keep = "a",
+      output = "default"
+    ),
+    class = "spicy_no_selection"
+  )
+  expect_warning(
+    grouped <- table_categorical(
+      df,
+      select = c(good, other),
+      by = grp,
+      levels_keep = "a",
+      output = "default"
+    ),
+    class = "spicy_no_selection"
+  )
+  for (out in list(one_way, grouped)) {
+    vars <- trimws(attr(out, "display_df")$Variable)
+    expect_true("good" %in% vars)
+    expect_false("other" %in% vars)
+  }
 })
 
 test_that("one-way default output with levels_keep reorders modalities", {

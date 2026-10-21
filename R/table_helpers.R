@@ -1100,17 +1100,150 @@ make_stronger_indent <- function(x, base_indent, strong_indent, rows) {
   )
 }
 
-# A list of two or more items joined with the conjunction of the language:
-# "2 and 1", "2, 1, and 3" in English, "2 et 1", "2, 1 et 3" in French.
+# A list of items joined with the conjunction of the language: "2 and 1",
+# "2, 1, and 3" in English, "2 et 1", "2, 1 et 3" in French. A single
+# item is returned as it is. When an item holds a comma of its own
+# ("Internet, websites or apps"), a list of three or more separates its
+# items with semicolons, as `.join_note_vars()` does, so that the reader
+# still sees where each one ends: "a, b; c; and d" in English, "a, b ; c
+# et d" in French. Two items need no separator besides the conjunction.
 .join_and <- function(items) {
   n <- length(items)
+  if (n < 2L) {
+    return(as.character(items))
+  }
   if (n == 2L) {
     return(paste(items, collapse = spicy_str("note_list_and_pair")))
   }
+  semicolon <- any(grepl(",", items, fixed = TRUE))
   paste0(
-    paste(items[-n], collapse = spicy_str("note_list_sep_comma")),
-    spicy_str("note_list_and_last"),
+    paste(
+      items[-n],
+      collapse = spicy_str(
+        if (semicolon) "note_list_sep_semicolon" else "note_list_sep_comma"
+      )
+    ),
+    spicy_str(
+      if (semicolon) "note_list_and_last_semicolon" else "note_list_and_last"
+    ),
     items[[n]]
+  )
+}
+
+# ---- The note under a table --------------------------------------------------
+#
+# Every table of the family closes on one note, laid out as the APA
+# Publication Manual (7th ed., section 7.14) lays out a table note: the
+# GENERAL note, one paragraph opened by the lead-in ("Note."), its
+# sentences joined by a space, then the PROBABILITY note (the legend of
+# the significance stars) on a line of its own, last. The general note
+# gives its sentences in four kinds, always in this order, whatever the
+# language and whatever the options:
+#
+#   (a) `what`: what the numbers are -- the weights, the survey design,
+#       the model, the base of the percentages;
+#   (b) `missing`: the missing data -- the values and the rows removed,
+#       the groups with no data;
+#   (c) `inference`: the comparisons and the inference -- the test of
+#       each variable, the p-value adjustment, the standard errors, the
+#       degrees of freedom;
+#   (d) `definitions`: the glosses of the columns, the effect sizes, the
+#       abbreviations.
+#
+# Each builder hands every kind its sentences in their own order (NULL
+# and empty strings drop), so the order of a note is written here once
+# and no option can move one kind before another. NULL when there is
+# nothing to say, so a table with nothing to disclose prints no bare
+# "Note.". The lead-in is the one of the style in force
+# (`.note_with_prefix()`).
+.compose_note <- function(
+  what = NULL,
+  missing = NULL,
+  inference = NULL,
+  definitions = NULL,
+  probability = NULL
+) {
+  keep <- function(x) {
+    x <- unlist(x, use.names = FALSE)
+    x[!is.na(x) & nzchar(x)]
+  }
+  general <- keep(list(what, missing, inference, definitions))
+  lines <- c(
+    if (length(general)) paste(general, collapse = " "),
+    keep(probability)
+  )
+  if (!length(lines)) {
+    return(NULL)
+  }
+  .note_with_prefix(paste(lines, collapse = "\n"))
+}
+
+# The lines of a note, each a paragraph of its own in every rendering
+# engine (a footer line, a source note, a line break): the general note
+# opened by the lead-in, then the probability note -- or the lines of a
+# note the user typed. The engines never run them into one paragraph, as
+# they did while a note put one sentence per line; the spaces around a
+# line break go.
+.note_lines <- function(note) {
+  lines <- strsplit(note, "[ \t]*\n[ \t]*")[[1L]]
+  lines[nzchar(lines)]
+}
+
+# The groups in which a variable has no data: among `groups`, the real
+# groups of `by` (never its column of missing values), those that hold
+# at least one row and no observed value of `x`. Such a group is not a
+# missing answer (typically, the question was not asked there): the
+# table shows `cell_undefined` in its cells, leaves its rows out of the
+# missing-value count, of the margin and of the comparison, and says so
+# in the note (`.no_data_sentences()`). `x` is the variable with its
+# missing values as NA (declared missing values included under
+# `user_na = TRUE`), `g` the grouping column, compared as text.
+.no_data_groups <- function(x, g, groups) {
+  g <- as.character(g)
+  observed <- !is.na(x)
+  groups <- as.character(groups)
+  hit <- vapply(
+    groups,
+    function(lv) {
+      rows <- !is.na(g) & g == lv
+      any(rows) && !any(observed[rows])
+    },
+    logical(1)
+  )
+  groups[hit]
+}
+
+# The no-data sentences of a note, the variables in the order of `labels`
+# (the labels the rows display). For a table with `by`, `groups[[i]]`
+# holds the groups in which variable i has no observed value (a variable
+# with none is not mentioned), and the note gives one sentence per set of
+# groups, in the order the variables first meet it: "No data for X in
+# G.", the variables with no data in the same groups joined by
+# `.join_and()` ("No data for X, Y, and Z in G."), as are the groups of a
+# variable with no data in several ("in G1 and G2"). For a table without
+# `by` (`groups = NULL`), the variables in `labels` have no observed
+# value at all, and one sentence names them: "No data for X and Y."
+.no_data_sentences <- function(labels, groups = NULL) {
+  if (is.null(groups)) {
+    if (!length(labels)) {
+      return(character(0))
+    }
+    return(spicy_fmt("note_no_data", .join_and(labels)))
+  }
+  hit <- lengths(groups) > 0L
+  labels <- labels[hit]
+  groups <- lapply(groups[hit], as.character)
+  set <- match(groups, unique(groups))
+  vapply(
+    unique(set),
+    function(k) {
+      spicy_fmt(
+        "note_no_data_in",
+        .join_and(labels[set == k]),
+        .join_and(groups[[match(k, set)]])
+      )
+    },
+    character(1)
   )
 }
 

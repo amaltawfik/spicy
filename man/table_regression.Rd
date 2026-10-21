@@ -369,7 +369,7 @@ factor header reads \verb{education: [ref: Lower]}; under
 \code{factor_layout = "flat"} the marker \verb{[vs Lower]} is
 attached to the \strong{first non-reference dummy} of each
 factor (subsequent dummies inherit the same reference).
-\item \code{"footer"}: the row is dropped and a single line
+\item \code{"footer"}: the row is dropped and a sentence
 \verb{Reference categories: education = Lower; sex = Female.}
 is added to the footer note. SAS \verb{PROC LOGISTIC} / SPSS
 "Categorical Variables Codings" convention. Best for
@@ -721,8 +721,13 @@ methodological footer. Three modes per argument:
 \itemize{
 \item \code{NULL} (default): the package builds the standard caption
 ("Linear regression on \verb{<DV>}" / "Hierarchical linear
-regression on \verb{<DV>}" / ...) and a methodological note
-(VCV type, p-adjust method, reference categories, ...).
+regression on \verb{<DV>}" / ...) and a methodological note, one
+paragraph in the order of every table of the package: what
+the model is (its family, design, scale of the coefficients,
+reference categories, ...), the cases a univariable screen fits
+on, the inference (VCV type, p-adjust method, ...), then the
+definitions (abbreviations, block glosses). Under \code{stars}, the
+legend of the stars follows on a line of its own.
 \item \code{FALSE}: the corresponding banner row is omitted from
 every output engine. Use when the surrounding manuscript
 provides its own caption / note.

@@ -625,7 +625,9 @@ test_that("a note with no lead-in word has no emphasis in any engine", {
     for (nm in names(builders)) {
       note <- attr(builders[[nm]]("default"), "note")
       expect_false(startsWith(note, "Note"), info = paste(lang, nm))
-      body <- sub("\n.*$", "", note)
+      # The first sentence of the general note, one paragraph: a markdown
+      # grid wraps a longer text across its lines.
+      body <- sub("[.] .*$", ".", sub("\n.*$", "", note))
       out <- .ep_note_renders(builders[[nm]])
       for (eng in names(empty)) {
         info <- paste(lang, nm, eng)
