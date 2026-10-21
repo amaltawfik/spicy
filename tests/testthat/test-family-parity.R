@@ -3746,6 +3746,8 @@ test_that("every engine sets the stars legend on a line of its own", {
   }
   expect_length(plain("gt")[["_source_notes"]], 1L)
   expect_identical(nrow(plain("flextable")$footer$dataset), 1L)
+})
+
 test_that("every table function refuses data with no rows, first", {
   # Data with no rows leaves nothing to tabulate, with or without `by` and
   # whatever `drop_na`: one error, raised by the data gate of each
