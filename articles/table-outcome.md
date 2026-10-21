@@ -700,7 +700,7 @@ table_outcome(
 | *Note.* Group comparison: Wilcoxon rank-sum test. Each block compares wellbeing_score across the levels of one variable; blocks are not adjusted for one another. Overall = the whole analytic sample. Q1 = first quartile; Q3 = third quartile. |  |  |  |
 
 Descriptive statistics of wellbeing_score
-{#tinytable_21jeqmwbe5q1yulhln4u .table .tinytable
+{#tinytable_0gcadqkbyqrmfvdau52g .table .tinytable
 style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 
