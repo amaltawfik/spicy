@@ -23,6 +23,7 @@ spicy_style(
   ic_digits = NULL,
   percent_digits = NULL,
   note_label = NULL,
+  abbreviations = NULL,
   v_digits
 )
 
@@ -95,6 +96,22 @@ no-break space French puts before a colon. A \code{note} you type is
 printed as typed; its opening word is set in italics when it is the
 lead-in in force.}
 
+\item{abbreviations}{Which abbreviations the note under the table
+defines: those of its headers, its spanners and the labels of its
+stub (the fit statistics and the random effects of a regression),
+not the symbols inside its cells. \code{NULL} (the default) follows the
+rule of the theme in force, the APA rule when there is none (see
+\emph{Themes}). \code{"all"} defines every abbreviation and symbol the table
+shows, abbreviated words such as Min and Max included, except \emph{n},
+\emph{N}, \emph{p} and the test statistics (\emph{t}, \emph{z}, \emph{F},
+\eqn{\chi^2}{chi-squared}), which no style and no journal defines:
+the setting for readers outside the field. \code{"none"} defines none, but
+keeps the definitions that say how a number was computed (partial
+eta-squared, the IQR as the width Q3 - Q1, the method of a
+standardized \eqn{\beta}{beta}, the design effect). Either way the
+definitions take the form and the place of the theme in force. A
+\code{note} you type is printed as typed.}
+
 \item{v_digits}{Defunct. Renamed \code{effect_size_digits} in spicy 0.14.0;
 supplying \code{v_digits} is an error (class \code{spicy_defunct}).}
 }
@@ -110,7 +127,8 @@ available theme names.
 A \emph{style} is a small set of number-formatting rules -- how many
 decimals a p-value gets, where it bottoms out, whether it keeps its
 leading zero, what the decimal mark is, how a confidence interval is
-written -- and the word that opens the note under the table.
+written -- with the word that opens the note under the table and the
+abbreviations that note defines.
 \code{spicy_style()} composes one by hand; the named themes
 (\code{"jama"}, \code{"nejm"}, \code{"lancet"}, \code{"annals"}, \code{"apa"}, \code{"aer"} --
 \code{spicy_style_names()} returns the list) are pre-composed ones, each
@@ -127,11 +145,11 @@ name or as the object returned here, and by
 \code{options(spicy.style = )} for document-wide scope.
 }
 \section{What a theme claims, and what it does not}{
-A theme covers \strong{numeric formatting conformity}, and the word that
-opens the table note, \strong{only} -- not full editorial conformity. It
-does not check reporting guidelines, table structure, footnote
-symbols, units, abbreviation policy, or anything else a journal's
-instructions ask of a manuscript. Each theme below
+A theme covers \strong{numeric formatting conformity}, the word that opens
+the table note and the abbreviations that note defines, \strong{only} --
+not full editorial conformity. It does not check reporting
+guidelines, table structure, footnote symbols, units, or anything else
+a journal's instructions ask of a manuscript. Each theme below
 lists the exact rules it encodes, with the sentence it encodes them
 from; anything not listed is spicy's own default, not the journal's
 rule.
@@ -225,6 +243,18 @@ than .001 as P<.001."
 (2020), section 4.1.4.10, gives table footnotes none: a footnote
 on the whole table is called by a letter "placed after the table
 title".
+\item the abbreviations of the note on its first line,
+\verb{Abbreviations: HR, hazard ratio; OR, odds ratio.}, in alphabetical
+order, \verb{Abbreviation:} for one -- section 4.1.4.10 again: that
+footnote comes first, "set off with an introductory word or phrase
+instead of a letter", and "abbreviations are expanded in
+alphabetical order". SD, SE and CI are not expanded (section
+13.11, "no need to expand"), nor are the symbols of section 19.6
+that do not carry "expand at first mention" (\emph{n}, \emph{N}, \emph{P}, \emph{d},
+\eqn{R^2}{R^2}, \eqn{\Delta}{Delta}, \eqn{\sigma}{sigma},
+\eqn{\rho}{rho}), \emph{B} and \emph{M} among them, which that section
+writes \emph{b} and \eqn{\bar{x}}{x-bar}: it lists them as usable
+"without expansion except where noted".
 }
 
 Not encoded: everything else in that document (percentages carrying
@@ -262,7 +292,9 @@ style layer cannot see; its inference policy (no p-values without a
 prespecified multiplicity plan, estimates + 95\% CI instead, no
 p-values in the Table 1 of a randomized trial) is about what to
 report, not how to format it -- request those layouts through
-\code{show_columns} and \code{p_value = FALSE} where you need them.
+\code{show_columns} and \code{p_value = FALSE} where you need them. No rule on
+the abbreviations of a table note was found, so the note defines them
+as spicy's default does.
 }
 
 \subsection{\code{"lancet"} -- The Lancet}{
@@ -296,6 +328,15 @@ stronger.
 tables of the two formatting guidelines open their note on "Data
 are n (\%)", and none of the 38 table notes of 15 research articles
 published in 2025-2026, checked on 2026-10-20, opens with "Note".
+\item the abbreviations spelled out at the end of the note, one
+\verb{HR=hazard ratio.} sentence each, in alphabetical order, with \emph{n},
+\emph{N}, \emph{p}, SD, SE, IQR and CI left undefined. The artwork
+guidelines ask authors to "list and spell out all abbreviations in
+the table"; \strong{the form and the exemptions are not a written
+rule}: they are those of the model tables of the two formatting
+guidelines ("Data are n (\%), median (IQR), mean (SD) ...
+BMI=body-mass index.") and of 35 tables of 13 research articles
+published in 2025-2026, checked on 2026-10-20.
 }
 
 Not encoded: the empty-cell filler, the ban on p-values in a
@@ -333,7 +374,9 @@ place ... when sample size is \eqn{\ge}{>=} 200", no decimals below
 200) is conditional on a per-group sample size that the style layer
 does not see; set \code{percent_digits} yourself. The \code{mean (SD)}
 notation the journal asks for, and its refusal of \verb{\eqn{\pm}{+/-}},
-are already how spicy renders dispersion.
+are already how spicy renders dispersion. No rule on the
+abbreviations of a table note was found, so the note defines them as
+spicy's default does.
 }
 
 \subsection{\code{"apa"} -- APA Style, 7th edition}{
@@ -366,6 +409,20 @@ a comma -- the \emph{Sample tables} page gives
 (\code{note_label = "Note."}) -- the \emph{Publication Manual}, 7th edition
 (2020), section 7.14: the general note is "designated by the word
 'Note' (italicized) followed by a period".
+\item the abbreviations defined at the end of the general note,
+\verb{CI = confidence interval; LL = lower limit}, in the order they
+appear in the table -- sections 7.14 and 7.15 ("define the
+abbreviations in the order that they appear in the table"); AIC and
+BIC are among those section 6.44 names. The symbols that represent
+statistics are left undefined ("Do not define symbols or
+abbreviations that represent statistics (e.g., M, SD, F, t, df, p,
+N, n, OR, r)", section 6.44; section 7.15 adds \emph{SE}), and spicy
+counts \emph{Mdn} (the median of Table 6.5) and Hedges' \emph{g} among them.
+So are the symbols composed of Greek letters (the same two
+sections) and those its sample tables leave undefined (\emph{B},
+\eqn{\beta}{beta}, \eqn{R^2}{R^2}, \eqn{\Delta R^2}{Delta R2},
+Cohen's \emph{d}). This is also spicy's default rule, the one \code{"nejm"},
+\code{"annals"} and \code{"aer"} apply.
 }
 
 Not encoded: the one-decimal rule for means of integer scales
@@ -402,7 +459,9 @@ spicy already defaults to \code{stars = FALSE}. Ask for
 Not encoded: the guide fixes no number of decimals, no p-value
 floor, no interval format and no decimal mark, so spicy's defaults
 apply. Horizontal-rules-only, no shading, a nine-column maximum and
-"Panel A / Panel B" blocks are layout, not number formatting.
+"Panel A / Panel B" blocks are layout, not number formatting. No rule
+on the abbreviations of a table note was found, so the note defines
+them as spicy's default does.
 }
 }
 
@@ -451,6 +510,10 @@ table_regression(fit, style = spicy_style("lancet", ci_sep = " to "))
 old <- options(spicy.style = "apa")
 table_continuous(mtcars, c(mpg, wt))
 options(old)
+
+# Every abbreviation defined, for readers outside the field.
+table_continuous(mtcars, c(mpg, wt),
+                 style = spicy_style(abbreviations = "all"))
 
 # What a theme encodes, and where it comes from.
 spicy_style("lancet")

@@ -179,7 +179,12 @@ test_that("table_regression(glmer, exponentiate = TRUE) renames B column to OR",
   ))
   combined <- paste(out, collapse = "\n")
   expect_match(combined, "OR", fixed = TRUE)
-  expect_match(combined, "OR = odds ratio", fixed = TRUE)
+  # The header is OR; the default (APA) note leaves OR undefined and
+  # defines the interval, then the fit statistics of the stub.
+  header <- out[grepl("Variable", out, fixed = TRUE)][[1L]]
+  expect_match(header, " OR ", fixed = TRUE)
+  expect_false(grepl("OR = odds ratio", combined, fixed = TRUE))
+  expect_match(combined, "CI = confidence interval; ", fixed = TRUE)
   expect_match(
     combined,
     "Coefficients exponentiated and displayed as OR",

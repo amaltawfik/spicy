@@ -997,7 +997,11 @@ test_that("a wide-character label does not split the console into panels", {
     txt <- render(w)
     # Exactly one header rule: one panel, not two.
     expect_length(which(grepl("┼", txt, fixed = TRUE)), 1L)
-    expect_lte(max(crayon::col_nchar(txt, type = "width")), w)
+    # The note prints unwrapped: the width measured is the table's, the
+    # lines above the note.
+    note_at <- which(startsWith(txt, "Note."))
+    tbl <- if (length(note_at)) txt[seq_len(note_at[[1L]] - 1L)] else txt
+    expect_lte(max(crayon::col_nchar(tbl, type = "width")), w)
   }
 })
 
@@ -4784,19 +4788,22 @@ test_that("rows dropped for missing by / weights are disclosed in the note", {
     w = c(1, 2, 1, 1, NA, 2, 1, 3)
   )
   out <- table_continuous_lm(d, select = y, by = grp, weights = w)
-  # The weights first, then the rows removed, then the test: one paragraph.
+  # The weights first, then the rows removed, then the test, then the
+  # abbreviations of the headers: one paragraph.
   expect_equal(
     attr(out, "note"),
     paste(
       "Note. Statistics weighted by w.",
       "Rows with missing grp removed: 1. Rows with missing w removed: 1.",
-      "Group comparison: t-test from the linear model."
+      "Group comparison: t-test from the linear model.",
+      "CI = confidence interval; LL = lower limit; UL = upper limit."
     )
   )
   printed <- paste(utils::capture.output(print(out)), collapse = "\n")
   expect_match(printed, "Rows with missing grp removed: 1.", fixed = TRUE)
   expect_match(printed, "Rows with missing w removed: 1.", fixed = TRUE)
-  # No missing by / weights -> no ledger line: the note names the test.
+  # No missing by / weights -> no ledger line: the note names the test
+  # and defines the headers.
   clean <- table_continuous_lm(
     data.frame(y = rnorm(10), g = factor(rep(c("a", "b"), 5))),
     select = y,
@@ -4804,7 +4811,10 @@ test_that("rows dropped for missing by / weights are disclosed in the note", {
   )
   expect_identical(
     attr(clean, "note"),
-    "Note. Group comparison: t-test from the linear model."
+    paste(
+      "Note. Group comparison: t-test from the linear model.",
+      "CI = confidence interval; LL = lower limit; UL = upper limit."
+    )
   )
 })
 
@@ -5946,7 +5956,8 @@ test_that("an outcome with data in one level only has no model and no test", {
     paste(
       "Note. Missing values removed: bmi (12).",
       "No data for wellbeing_score in Male.",
-      "Group comparison: t-test from the linear model."
+      "Group comparison: t-test from the linear model.",
+      "CI = confidence interval; LL = lower limit; UL = upper limit."
     )
   )
   glanced <- broom::glance(x)
@@ -6066,11 +6077,14 @@ test_that("the note names the test behind the p-values", {
   note_of <- function(...) {
     attr(table_continuous_lm(d, select = c(bmi, wellbeing_score), ...), "note")
   }
+  # A contrast or a slope shows its interval, which the note defines last.
+  ci_defs <- "CI = confidence interval; LL = lower limit; UL = upper limit."
   expect_identical(
     note_of(by = sex),
     paste(
       "Note. Missing values removed: bmi (12).",
-      "Group comparison: t-test from the linear model."
+      "Group comparison: t-test from the linear model.",
+      ci_defs
     )
   )
   expect_identical(
@@ -6084,7 +6098,8 @@ test_that("the note names the test behind the p-values", {
     note_of(by = age),
     paste(
       "Note. Missing values removed: bmi (12).",
-      "Slope test: t-test from the linear model."
+      "Slope test: t-test from the linear model.",
+      ci_defs
     )
   )
   # The asymptotic test of a resampling variance, before the estimator.
@@ -6108,7 +6123,7 @@ test_that("the note names the test behind the p-values", {
   # No p-value, no test named.
   expect_identical(
     note_of(by = sex, p_value = FALSE),
-    "Note. Missing values removed: bmi (12)."
+    paste("Note. Missing values removed: bmi (12).", ci_defs)
   )
   withr::local_options(spicy.language = "fr")
   expect_match(
@@ -6157,7 +6172,8 @@ test_that("the weights are named, and the note is one paragraph", {
       "Adjusted for age (proportional).",
       "Missing values removed: bmi (12).",
       "Group comparison: t-test from the linear model.",
-      "Std. errors: heteroskedasticity-robust (HC3)."
+      "Std. errors: heteroskedasticity-robust (HC3).",
+      "CI = confidence interval; LL = lower limit; UL = upper limit."
     )
   )
   # Printed as built, on one line.

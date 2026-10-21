@@ -467,6 +467,8 @@ test_that("jama and lancet open the note without a lead-in word", {
     note <- attr(quietly(table_regression(fit, style = th)), "note")
     if (th %in% c("jama", "lancet")) {
       expect_identical(spicy_style(th)$note_label, "", info = th)
+      # A linear model shows nothing jama defines (B, SE, CI, R2), so its
+      # note opens on the general note, with no lead-in.
       expect_true(startsWith(note, "Linear regression."), info = th)
       rules <- attr(spicy_style(th), "provenance")$rules
       expect_true(any(grepl("lead-in", rules, fixed = TRUE)), info = th)
@@ -529,6 +531,62 @@ test_that("the lead-in follows the style argument, then the option", {
 test_that("print() shows the lead-in lever, an empty one too", {
   expect_match(console(spicy_style(note_label = "Note:")), "note_label +Note:")
   expect_match(console(spicy_style("jama")), "note_label +\"\"")
+})
+
+test_that("the abbreviations lever is validated, printed, and carried", {
+  expect_identical(spicy_style(abbreviations = "all")$abbreviations, "all")
+  expect_identical(spicy_style(abbreviations = "none")$abbreviations, "none")
+  expect_null(spicy_style()$abbreviations)
+  for (bad in list("some", NA_character_, c("all", "none"), TRUE)) {
+    expect_error(
+      spicy_style(abbreviations = bad),
+      class = "spicy_invalid_input"
+    )
+  }
+  expect_match(
+    console(spicy_style(abbreviations = "all")),
+    "abbreviations +all"
+  )
+  # A theme with a rule of its own names it in its provenance and in the
+  # rules it prints; the others apply the default, the APA rule.
+  for (th in spicy_style_names()) {
+    rule <- attr(spicy_style(th), "provenance")$abbrev_rule
+    expect_identical(rule, if (th %in% c("jama", "lancet")) th, info = th)
+  }
+  expect_match(console(spicy_style("jama")), "\"Abbreviations:\"", fixed = TRUE)
+  # A modified theme keeps its rule: the odds ratio and the AIC of a
+  # logistic model open the jama note, alphabetical.
+  logit <- stats::glm(am ~ wt, data = fixed_data(), family = stats::binomial())
+  expect_true(startsWith(
+    attr(
+      quietly(table_regression(
+        logit,
+        exponentiate = TRUE,
+        style = spicy_style("jama", p_digits = 3)
+      )),
+      "note"
+    ),
+    "Abbreviations: AIC, Akaike information criterion; OR, odds ratio.\n"
+  ))
+  # The option carries the lever.
+  fit <- fixed_fit()
+  note <- function(...) attr(quietly(table_regression(fit, ...)), "note")
+  expect_match(note(), "CI = confidence interval.", fixed = TRUE)
+  withr::local_options(spicy.style = spicy_style(abbreviations = "none"))
+  expect_no_match(note(), "CI = ", fixed = TRUE)
+  withr::local_options(spicy.style = spicy_style(abbreviations = "all"))
+  expect_match(
+    note(),
+    paste0(
+      "B = unstandardized regression coefficient; SE = standard error; ",
+      "CI = confidence interval; ",
+      spicy_str("symbol_r2"),
+      " = coefficient of determination; ",
+      spicy_str("fitstat_adj_r2"),
+      " = adjusted coefficient of determination."
+    ),
+    fixed = TRUE
+  )
 })
 
 

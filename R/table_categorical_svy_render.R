@@ -556,17 +556,24 @@
     )
   }
   inference <- c(inference, .desc_p_adjust_note(p_adjust_info))
+  # What the percentage and the count of a design table are: an estimate,
+  # and an observed count. The two symbols are never abbreviations to
+  # define; the sentences say what the numbers are, under every rule.
   definitions <- c(
     spicy_fmt("note_gloss_pct_svy", spicy_str("header_percent_symbol")),
-    spicy_fmt("note_gloss_n_svy", spicy_str("header_n_lower")),
-    if (!isFALSE(deff)) {
-      spicy_fmt("note_gloss_deff", spicy_str("header_deff"))
-    }
+    spicy_fmt("note_gloss_n_svy", spicy_str("header_n_lower"))
   )
+  # The headers of a group, left to right: n, %, the interval of the
+  # percentage, the design effect.
+  abbreviations <- .note_abbreviations(c(
+    if (isTRUE(proportion_ci)) as.list(.abbrev_ci_bounds()),
+    if (!isFALSE(deff)) list("deff")
+  ))
   .compose_note(
     what = what,
     missing = missing,
     inference = inference,
-    definitions = definitions
+    definitions = definitions,
+    abbreviations = abbreviations
   )
 }

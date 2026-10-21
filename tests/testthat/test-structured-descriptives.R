@@ -540,7 +540,8 @@ test_that("show_columns tokens drive the typed columns", {
     s$body[["Med"]]
   )
   expect_false(anyNA(s$col_meta[["Med [Q1, Q3]"]]$display_cells))
-  expect_identical(s$ci_pairs[[1L]]$label, "Med 95% CI")
+  # The keys keep "Med"; the label a reader sees is the APA "Mdn".
+  expect_identical(s$ci_pairs[[1L]]$label, "Mdn 95% CI")
 
   expect_faithful(s, con_display(tbl))
 })

@@ -174,6 +174,14 @@ test_that("the TR header is glossed in the abbreviations footer", {
   )
   # TR used to reach a published table with no expansion: every other
   # exponentiated header (OR, HR, IRR, ...) had its "X = ..." gloss in
-  # exp_defs, TR alone was missing from the map.
-  expect_match(txt, "TR = time ratio.", fixed = TRUE)
+  # exp_defs, TR alone was missing from the map. The definitions follow
+  # the columns, TR then the interval, then the AIC row of the stub.
+  expect_match(
+    txt,
+    paste(
+      "TR = time ratio; CI = confidence interval;",
+      "AIC = Akaike information criterion."
+    ),
+    fixed = TRUE
+  )
 })

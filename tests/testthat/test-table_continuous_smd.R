@@ -57,11 +57,14 @@ test_that("the SMD cell, the typed body and the note agree", {
   txt <- paste(capture.output(print(tbl)), collapse = "\n")
   expect_match(txt, "SMD", fixed = TRUE)
   expect_match(txt, "-0.51", fixed = TRUE)
+  # The direction the sign reads, then the definition among the
+  # abbreviations that close the note.
   expect_match(
     txt,
-    "SMD = standardized mean difference (A - B); |SMD| > 0.1 is the usual imbalance threshold.",
+    "SMD direction: A - B. The usual imbalance threshold is |SMD| > 0.1.",
     fixed = TRUE
   )
+  expect_match(txt, "SMD = standardized mean difference.", fixed = TRUE)
   st <- as_structured(tbl)
   expect_true(.CON_KEY_SMD %in% names(st$body))
   expect_equal(
@@ -100,8 +103,12 @@ test_that("the threshold in the gloss follows decimal_mark", {
     ))),
     collapse = "\n"
   )
-  expect_match(fr, "|SMD| > 0,1 is the usual", fixed = TRUE)
-  expect_false(grepl("> 0.1 is", fr, fixed = TRUE))
+  expect_match(
+    fr,
+    "The usual imbalance threshold is |SMD| > 0,1.",
+    fixed = TRUE
+  )
+  expect_false(grepl("|SMD| > 0.1", fr, fixed = TRUE))
   lancet <- paste(
     capture.output(print(table_continuous(
       d,
@@ -116,7 +123,7 @@ test_that("the threshold in the gloss follows decimal_mark", {
   # U+00B7 written as an escape so this file stays pure ASCII.
   expect_match(
     lancet,
-    paste0("|SMD| > 0", "\u00b7", "1 is the usual"),
+    paste0("The usual imbalance threshold is |SMD| > 0", "\u00b7", "1."),
     fixed = TRUE
   )
 })
@@ -356,11 +363,28 @@ test_that("`smd = FALSE` changes nothing, and `smd = TRUE` only appends", {
     ))$col_meta
   )
   expect_identical(keys_on, c(keys_off, .CON_KEY_SMD))
-  # One column added, one gloss added to the note, nothing else: the body
+  # One column added, its gloss added to the note, nothing else: the body
   # rows differ only by the cells of that column, and the note, one
-  # paragraph, only by the gloss at its end.
+  # paragraph, only by the direction sentence before the definitions and
+  # the definition of the SMD at the end of them.
   expect_length(setdiff(off, on), 5L) # header, rule, two data rows, note
-  expect_true(any(startsWith(on, off[startsWith(off, "Note.")])))
+  note_off <- off[startsWith(off, "Note.")]
+  note_on <- on[startsWith(on, "Note.")]
+  expect_length(note_on, 1L)
+  expect_identical(
+    sub(
+      "; SMD = standardized mean difference.",
+      ".",
+      sub(
+        " SMD direction: A - B. The usual imbalance threshold is |SMD| > 0.1.",
+        "",
+        note_on,
+        fixed = TRUE
+      ),
+      fixed = TRUE
+    ),
+    note_off
+  )
   expect_true(any(grepl(
     "SMD = standardized mean difference",
     on,

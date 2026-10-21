@@ -217,7 +217,9 @@ test_that("the chi^2 legend names the test each class runs", {
       table_regression(fits, show_columns = c("b", "partial_chi2")),
       "note"
     )
-    regmatches(note, gregexpr("\u03C7\u00B2 = [^;.]+", note))[[1L]]
+    # The definition ends at the separator, the French one opened by a
+    # no-break space.
+    regmatches(note, gregexpr("\u03C7\u00B2 = [^;.\u00A0]+", note))[[1L]]
   }
   wald <- "\u03C7\u00B2 = partial Wald chi-squared"
   lrt <- "\u03C7\u00B2 = partial likelihood-ratio chi-squared"

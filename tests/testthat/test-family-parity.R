@@ -553,11 +553,12 @@ test_that("every table of the family carries its printed note as `note`", {
       info = paste(fn, "as.data.frame()")
     )
   }
-  # Nothing to say: no note, printed or attached.
+  # Nothing to say: no note, printed or attached. Without its interval a
+  # table of means shows no abbreviation to define either.
   plain <- table_categorical(mtcars, select = cyl)
   expect_null(.fp_note_block(plain))
   expect_null(attr(plain, "note"))
-  expect_null(attr(table_continuous(mtcars, select = mpg), "note"))
+  expect_null(attr(table_continuous(mtcars, select = mpg, ci = FALSE), "note"))
   # A note the user typed is the note, verbatim; `note = FALSE` removes it.
   d <- .fp_note_data()
   typed <- table_multiresponse(d, c(mq1, mq3), note = "Source: survey.")
@@ -2935,7 +2936,7 @@ test_that("the sentences of every note come in the four kinds, in order", {
           .fn_lead("note_exp_with_se_single"),
           std_err,
           .fn_lead("note_p_adjusted"),
-          paste0(spicy_str("header_exp_or"), " =")
+          paste0(spicy_str("header_ci_label_confidence"), " =")
         )
       ),
       table_regression_uv = list(
@@ -2950,7 +2951,7 @@ test_that("the sentences of every note come in the four kinds, in order", {
           .fn_lead("note_exp_with_se_single"),
           .fn_lead("note_uv_varying_n"),
           std_err,
-          paste0(spicy_str("header_exp_or"), " =")
+          paste0(spicy_str("header_ci_label_confidence"), " =")
         )
       )
     )
@@ -3084,9 +3085,10 @@ test_that("every table that shows a p-value names its test", {
         info = paste(lang, fn)
       )
     }
-    # Without p-values, no test is named.
+    # Without p-values, no test is named (and, without its interval, the
+    # table shows no abbreviation to define).
     expect_null(attr(
-      q(table_continuous(d, select = age, by = g, p_value = FALSE)),
+      q(table_continuous(d, select = age, by = g, p_value = FALSE, ci = FALSE)),
       "note"
     ))
     expect_null(attr(
@@ -3812,5 +3814,499 @@ test_that("every table function refuses data with no rows, first", {
   expect_identical(
     sub("\n.*", "", msg_design),
     sub("\n.*", "", msg_data)
+  )
+})
+
+# ---- The abbreviations of the note (ADR of 2026-10-20) ---------------------
+#
+# Every table of the family defines the abbreviations its headers, its
+# spanners and its stub show (the fit-statistic and random-effect rows of
+# a regression), never the symbols of its cells, under the rule of the
+# style in force (dev/decisions/2026-10-20-note-
+# abbreviations.md). The exemptions below are the specification, written
+# here a second time and on purpose: the registry of R/table_helpers.R must
+# agree with them, theme by theme.
+#
+#   apa     the symbols that represent statistics (Publication Manual,
+#           section 6.44, an "e.g." list, which Mdn and Hedges' g join;
+#           section 7.15 adds SE), the Greek letters, and the symbols its
+#           sample tables leave undefined (B, beta, R2, d);
+#   jama    SD, SE and CI (AMA Manual of Style 11, section 13.11) and the
+#           symbols of section 19.6 that need no expansion, B and M
+#           included (section 19.6 writes them b and x-bar);
+#   lancet  SD, SE, IQR and CI (model tables and published tables).
+#
+# n, N, p and the test statistics (t, z, F, chi-squared) have no simple
+# definition at all: no rule defines them, "all" included.
+.fa_exempt <- list(
+  apa = c(
+    "mean",
+    "median",
+    "sd",
+    "se",
+    "or",
+    "b",
+    "beta",
+    "r2",
+    "pseudo_r2",
+    "adj_r2",
+    "d",
+    "g",
+    "delta",
+    "change",
+    "eta2",
+    "omega2",
+    "sigma",
+    "sigma2",
+    "sigma_hat",
+    "rho"
+  ),
+  jama = c(
+    "mean",
+    "b",
+    "sd",
+    "se",
+    "ci",
+    "delta",
+    "change",
+    "r2",
+    "pseudo_r2",
+    "adj_r2",
+    "d",
+    "sigma",
+    "sigma2",
+    "sigma_hat",
+    "rho"
+  ),
+  lancet = c("sd", "se", "iqr", "ci")
+)
+# Abbreviated words, defined under "all" only; and the concepts whose
+# definition always says more than the symbol.
+.fa_words <- c("min", "max")
+.fa_says_more <- c("deff", "pd", "mcse")
+
+# The block a note must carry, computed from the specification above: the
+# symbols and the terms are the registry's words, in the language in force.
+.fa_expected <- function(items, rule, lever = NULL) {
+  reg <- .abbrev_registry()
+  ids <- sym <- term <- character(0)
+  for (it in items) {
+    if (is.character(it)) {
+      it <- list(id = it)
+    }
+    says_more <- !is.null(it$term) || it$id %in% .fa_says_more
+    if (!says_more) {
+      if (identical(lever, "none")) {
+        next
+      }
+      if (
+        is.null(lever) &&
+          (it$id %in% .fa_exempt[[rule]] || it$id %in% .fa_words)
+      ) {
+        next
+      }
+    }
+    s <- it$symbol %||% spicy_str(reg[[it$id]]$symbol)
+    t <- it$term %||% spicy_str(reg[[it$id]]$term)
+    if (identical(tolower(s), tolower(t)) || any(ids == it$id & sym == s)) {
+      next
+    }
+    ids <- c(ids, it$id)
+    sym <- c(sym, s)
+    term <- c(term, t)
+  }
+  if (!length(sym)) {
+    return(NULL)
+  }
+  if (rule != "apa") {
+    o <- order(tolower(sym), method = "radix")
+    sym <- sym[o]
+    term <- term[o]
+  }
+  sep <- spicy_str("note_abbrev_sep")
+  switch(
+    rule,
+    apa = paste0(paste(paste(sym, "=", term), collapse = sep), "."),
+    jama = spicy_fmt(
+      if (length(sym) == 1L) {
+        "note_abbrev_lead_one"
+      } else {
+        "note_abbrev_lead_many"
+      },
+      paste(paste0(sym, ", ", term), collapse = sep)
+    ),
+    lancet = paste(paste0(sym, "=", term, "."), collapse = " ")
+  )
+}
+
+# One table of each function, with the concepts its headers show, in the
+# order of its columns.
+.fa_cases <- function(d, des) {
+  q <- function(e) suppressMessages(suppressWarnings(e))
+  iqr <- .abbr(
+    "iqr",
+    term = spicy_fmt(
+      "abbrev_iqr_width",
+      spicy_str("header_q3"),
+      spicy_str("header_q1")
+    )
+  )
+  list(
+    table_categorical = list(
+      q(table_categorical(
+        d,
+        select = c(xc, g),
+        by = g2,
+        assoc_ci = TRUE,
+        smd = TRUE
+      )),
+      list("ci", "ll", "ul", "smd")
+    ),
+    table_categorical_svy = list(
+      q(table_categorical_svy(
+        des,
+        select = xc,
+        by = g2,
+        proportion_ci = TRUE,
+        deff = TRUE
+      )),
+      list("ci", "ll", "ul", "deff")
+    ),
+    table_continuous = list(
+      q(table_continuous(
+        d,
+        select = c(xn, age),
+        by = g2,
+        show_columns = c(
+          "m",
+          "sd",
+          "med",
+          "iqr",
+          "med_iqr",
+          "min",
+          "max",
+          "ci",
+          "n"
+        ),
+        effect_size = "hedges_g",
+        smd = TRUE
+      )),
+      list(
+        "mean",
+        "sd",
+        "median",
+        iqr,
+        "median",
+        "q1",
+        "q3",
+        "min",
+        "max",
+        "ci",
+        "ll",
+        "ul",
+        "es",
+        "smd"
+      )
+    ),
+    table_continuous_svy = list(
+      q(table_continuous_svy(
+        des,
+        select = xn,
+        by = g2,
+        show_columns = c("m", "se", "ci", "n", "deff"),
+        deff = TRUE
+      )),
+      list(
+        "mean",
+        .abbr("se", term = spicy_str("abbrev_se_design")),
+        "ci",
+        "ll",
+        "ul",
+        "deff"
+      )
+    ),
+    table_continuous_lm = list(
+      q(table_continuous_lm(
+        d,
+        select = xn,
+        by = g2,
+        statistic = TRUE,
+        effect_size = "cohens_d",
+        r2 = "adj_r2"
+      )),
+      # The t of the statistic column is a test statistic: never defined.
+      list("mean", "delta", "ci", "ll", "ul", "adj_r2", "d")
+    ),
+    table_outcome = list(
+      q(table_outcome(
+        d,
+        outcome = xn,
+        select = g2,
+        show_columns = c("m", "iqr", "med_iqr", "n"),
+        effect_size = "auto"
+      )),
+      list("mean", iqr, "median", "q1", "q3", "es")
+    ),
+    table_multiresponse = list(
+      q(table_multiresponse(d, select = c(m1, m2), by = g2)),
+      list()
+    ),
+    table_regression = list(
+      q(table_regression(
+        stats::glm(y01 ~ age + g2, data = d, family = stats::binomial()),
+        exponentiate = TRUE,
+        show_columns = c("b", "se", "ci", "t", "p", "partial_chi2")
+      )),
+      # The headers (the z column is a test statistic), then the stub:
+      # n, the two pseudo-R2, each under the label of its row, and the AIC.
+      list(
+        "or",
+        "se",
+        "ci",
+        .abbr("chi2", term = spicy_str("abbrev_chi2_lrt")),
+        .abbr("pseudo_r2", symbol = fit_stat_label("pseudo_r2_mcfadden")),
+        .abbr("pseudo_r2", symbol = fit_stat_label("pseudo_r2_nagelkerke")),
+        "aic"
+      )
+    ),
+    table_regression_mixed = list(
+      q(table_regression(lme4::lmer(xn ~ age + (1 | g), data = d))),
+      # The random-effects rows (sigma), then n, N (g), the ICC, the two
+      # R2 and the information criteria.
+      list("b", "se", "ci", "sigma", "icc", "r2", "aic", "bic")
+    ),
+    table_regression_uv = list(
+      q(table_regression_uv(
+        d,
+        outcome = y01,
+        predictors = c(age, xc),
+        method = "glm",
+        exponentiate = TRUE
+      )),
+      list(
+        "or",
+        "ci",
+        .abbr("pseudo_r2", symbol = fit_stat_label("pseudo_r2_mcfadden")),
+        .abbr("pseudo_r2", symbol = fit_stat_label("pseudo_r2_nagelkerke")),
+        "aic"
+      )
+    )
+  )
+}
+
+# The rules and the values of the lever, as a user sets them.
+.fa_settings <- list(
+  default = list(style = NULL, rule = "apa", lever = NULL),
+  apa = list(style = "apa", rule = "apa", lever = NULL),
+  nejm = list(style = "nejm", rule = "apa", lever = NULL),
+  jama = list(style = "jama", rule = "jama", lever = NULL),
+  lancet = list(style = "lancet", rule = "lancet", lever = NULL),
+  all = list(
+    style = spicy_style(abbreviations = "all"),
+    rule = "apa",
+    lever = "all"
+  ),
+  none = list(
+    style = spicy_style(abbreviations = "none"),
+    rule = "apa",
+    lever = "none"
+  ),
+  jama_none = list(
+    style = spicy_style("jama", abbreviations = "none"),
+    rule = "jama",
+    lever = "none"
+  ),
+  lancet_all = list(
+    style = spicy_style("lancet", abbreviations = "all"),
+    rule = "lancet",
+    lever = "all"
+  )
+)
+
+test_that("every note defines the abbreviations of its headers, as its rule asks", {
+  skip_if_not_installed("survey")
+  skip_if_not_installed("lme4")
+  d <- .fn_data()
+  des <- survey::svydesign(ids = ~1, weights = ~w, data = d)
+  for (lang in c("en", "fr")) {
+    withr::local_options(spicy.language = lang)
+    for (sn in names(.fa_settings)) {
+      s <- .fa_settings[[sn]]
+      withr::local_options(spicy.style = s$style)
+      cases <- .fa_cases(d, des)
+      for (fn in names(cases)) {
+        info <- paste(lang, sn, fn)
+        note <- attr(cases[[fn]][[1L]], "note")
+        lines <- strsplit(note, "\n", fixed = TRUE)[[1L]]
+        expected <- .fa_expected(cases[[fn]][[2L]], s$rule, s$lever)
+        leads <- c(
+          sub("%s.", "", spicy_str("note_abbrev_lead_one"), fixed = TRUE),
+          sub("%s.", "", spicy_str("note_abbrev_lead_many"), fixed = TRUE)
+        )
+        if (is.null(expected)) {
+          # Nothing to define, and no empty block.
+          expect_false(any(startsWith(lines, leads[[1L]])), info = info)
+          expect_false(any(startsWith(lines, leads[[2L]])), info = info)
+          next
+        }
+        if (identical(s$rule, "jama")) {
+          # The first line of the note, the rest after it.
+          expect_identical(lines[[1L]], expected, info = info)
+          expect_gt(length(lines), 1L)
+        } else {
+          # The end of the general note, before the stars legend.
+          expect_true(endsWith(lines[[1L]], expected), info = info)
+        }
+        # Each definition once, nowhere else in the note.
+        pairs <- if (identical(s$rule, "apa")) {
+          strsplit(
+            sub("[.]$", "", expected),
+            spicy_str("note_abbrev_sep"),
+            fixed = TRUE
+          )[[1L]]
+        } else if (identical(s$rule, "jama")) {
+          body <- sub("^[^:]*:[^ ]* ", "", sub("[.]$", "", expected))
+          strsplit(body, spicy_str("note_abbrev_sep"), fixed = TRUE)[[1L]]
+        } else {
+          regmatches(expected, gregexpr("[^ ][^=]*=[^.]*[.]", expected))[[1L]]
+        }
+        for (p in pairs) {
+          expect_identical(
+            lengths(regmatches(note, gregexpr(p, note, fixed = TRUE))),
+            1L,
+            info = paste(info, p)
+          )
+        }
+      }
+    }
+  }
+})
+
+test_that("n, N, p and the test statistics are never defined, and what says more always is", {
+  skip_if_not_installed("survey")
+  d <- .fn_data()
+  for (lang in c("en", "fr")) {
+    withr::local_options(spicy.language = lang)
+    sep <- spicy_str("note_abbrev_sep")
+    pair <- function(sym) paste0(sym, " = ")
+    # "all" defines every abbreviation shown, Min and Max included, but no
+    # count and no p-value, though every table below shows them.
+    withr::local_options(spicy.style = spicy_style(abbreviations = "all"))
+    tc <- suppressWarnings(table_continuous(d, select = xn, by = g2))
+    note <- attr(tc, "note")
+    expect_match(note, pair(spicy_str("header_min")), fixed = TRUE)
+    for (sym in c(spicy_str("header_n_lower"), spicy_str("header_p"))) {
+      expect_no_match(note, paste0(sep, pair(sym)), fixed = TRUE)
+      expect_no_match(note, paste0(". ", pair(sym)), fixed = TRUE)
+    }
+    uv <- suppressMessages(suppressWarnings(table_regression_uv(
+      d,
+      outcome = y01,
+      predictors = c(age, xc),
+      method = "glm"
+    )))
+    expect_no_match(
+      attr(uv, "note"),
+      pair(spicy_str("header_n_upper")),
+      fixed = TRUE
+    )
+    # Nor a test statistic: the t and z columns of a regression, the F of
+    # a linear-model table. Its fit statistics are defined.
+    reg <- suppressMessages(table_regression(
+      stats::glm(y01 ~ age + g2, data = d, family = stats::binomial()),
+      show_columns = c("b", "se", "ci", "t", "p")
+    ))
+    lm3 <- suppressWarnings(table_continuous_lm(
+      d,
+      select = xn,
+      by = g,
+      statistic = TRUE
+    ))
+    for (x in list(reg, lm3)) {
+      for (sym in c("symbol_t", "symbol_z", "symbol_f", "symbol_chi_sq")) {
+        expect_no_match(attr(x, "note"), pair(spicy_str(sym)), fixed = TRUE)
+      }
+    }
+    expect_match(
+      attr(reg, "note"),
+      paste(spicy_str("fitstat_aic"), "=", spicy_str("abbrev_aic")),
+      fixed = TRUE
+    )
+    # "none" keeps the IQR as the width Q3 - Q1, and the partial
+    # eta-squared of a regression: they say how the number was computed.
+    withr::local_options(spicy.style = spicy_style(abbreviations = "none"))
+    tc <- suppressWarnings(table_continuous(
+      d,
+      select = xn,
+      by = g2,
+      show_columns = c("m", "iqr")
+    ))
+    expect_match(
+      attr(tc, "note"),
+      paste(
+        spicy_str("header_iqr"),
+        "=",
+        spicy_fmt(
+          "abbrev_iqr_width",
+          spicy_str("header_q3"),
+          spicy_str("header_q1")
+        )
+      ),
+      fixed = TRUE
+    )
+    expect_no_match(
+      attr(tc, "note"),
+      pair(spicy_str("header_mean")),
+      fixed = TRUE
+    )
+    reg <- suppressMessages(table_regression(
+      stats::lm(xn ~ age + g2, data = d),
+      show_columns = c("b", "ci", "p", "partial_eta2")
+    ))
+    expect_match(
+      attr(reg, "note"),
+      paste(
+        spicy_str("symbol_eta_sq_partial"),
+        "=",
+        spicy_str("abbrev_eta2_partial")
+      ),
+      fixed = TRUE
+    )
+    expect_no_match(
+      attr(reg, "note"),
+      pair(spicy_str("header_ci_label_confidence")),
+      fixed = TRUE
+    )
+  }
+})
+
+test_that("a pseudo-R2 row is defined as a pseudo coefficient of determination", {
+  logit <- stats::glm(am ~ wt, data = mtcars, family = stats::binomial())
+  ols <- stats::lm(mpg ~ wt, data = mtcars)
+  note <- function(x, ...) {
+    attr(suppressMessages(table_regression(x, style = "lancet", ...)), "note")
+  }
+  # Under the label of its row, which names its author, alphabetical.
+  expect_true(endsWith(
+    note(logit),
+    paste(
+      "AIC=Akaike information criterion.",
+      "B=unstandardized regression coefficient.",
+      "R\u00B2 (McFadden)=pseudo coefficient of determination.",
+      "R\u00B2 (Nagelkerke)=pseudo coefficient of determination."
+    )
+  ))
+  # The R2 of a linear model keeps its definition beside them.
+  both <- note(list(ols, logit))
+  expect_match(
+    both,
+    "R\u00B2=coefficient of determination. R\u00B2 (McFadden)=pseudo",
+    fixed = TRUE
+  )
+  withr::local_options(spicy.language = "fr")
+  expect_match(
+    note(logit),
+    "R\u00B2 (Nagelkerke)=pseudo-coefficient de d\u00E9termination.",
+    fixed = TRUE
   )
 })

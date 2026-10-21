@@ -362,7 +362,7 @@ decision:
   7, R's default), while gtsummary computes type 2, the
   averaged-order-statistic definition of SAS and SPSS. The medians
   always agree; the quartiles need not;
-- **the composite cell** reads `Med [Q1, Q3]` with frozen brackets,
+- **the composite cell** reads `Mdn [Q1, Q3]` with frozen brackets,
   and its separator becomes a semicolon under a comma decimal mark,
   where a comma would otherwise serve two roles at once.
 

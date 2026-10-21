@@ -2097,7 +2097,16 @@ table_multiresponse <- function(
       )
     }
   }
-  .compose_note(what = what, missing = missing, inference = inference)
+  # The headers of a multiple-response table -- n, %, the words of its
+  # percentages, Test and p -- hold no abbreviation any rule defines: n, %
+  # and p never are. Through the collector all the same, so that a column
+  # added tomorrow is defined as the family defines it.
+  .compose_note(
+    what = what,
+    missing = missing,
+    inference = inference,
+    abbreviations = .note_abbreviations(list())
+  )
 }
 
 # The base sentence: who the base is, then the two counts of

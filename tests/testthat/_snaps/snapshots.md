@@ -236,7 +236,7 @@
        age      │ F      25.60  4.83  20.00  31.00    19.61      31.59    5  .001 
                 │ M      41.60  5.41  35.00  50.00    34.88      48.32    5       
       
-      Note. Group comparison: Welch t-test.
+      Note. Group comparison: Welch t-test. CI = confidence interval; LL = lower limit; UL = upper limit.
 
 # print.spicy_categorical_table: by + auto assoc_measure (APA Note)
 
@@ -269,7 +269,7 @@
       ──────────┼───────────────────────────────────────────────────────────────
        score    │ 70.66  75.26    4.60       -0.85      10.06    .092  0.19  16 
       
-      Note. Group comparison: t-test from the linear model.
+      Note. Group comparison: t-test from the linear model. CI = confidence interval; LL = lower limit; UL = upper limit.
 
 # print.spicy_continuous_lm_table: covariate-adjusted footer (proportional)
 
@@ -283,7 +283,7 @@
       ──────────┼───────────────────────────────────────────────────────────────
        score    │ 70.38  75.59    5.22       -7.00      17.44    .373  0.20  16 
       
-      Note. Adjusted for age (proportional). Group comparison: t-test from the linear model.
+      Note. Adjusted for age (proportional). Group comparison: t-test from the linear model. CI = confidence interval; LL = lower limit; UL = upper limit.
 
 # print.spicy_continuous_lm_table: covariate-adjusted footer (balanced)
 
@@ -297,7 +297,7 @@
       ──────────┼───────────────────────────────────────────────────────────────
        score    │ 66.70  76.99    10.29      -2.79      23.37    .112  0.33  16 
       
-      Note. Adjusted for age, race (balanced). Group comparison: t-test from the linear model.
+      Note. Adjusted for age, race (balanced). Group comparison: t-test from the linear model. CI = confidence interval; LL = lower limit; UL = upper limit.
 
 # print.spicy_assoc_table: omnibus 2x3 table
 

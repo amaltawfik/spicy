@@ -447,10 +447,10 @@
 #'   [spicy_style()] object, or `NULL` (the default). A style only
 #'   changes DEFAULTS -- any argument you pass explicitly wins over it.
 #'   Set `options(spicy.style = )` for document-wide scope. A theme
-#'   covers numeric formatting conformity only, not full editorial
-#'   conformity; `?spicy_style` lists the exact rules each one encodes
-#'   and the official document they come from. An unknown name is an
-#'   error.
+#'   covers numeric formatting, the word that opens the note and the
+#'   abbreviations the note defines, not full editorial conformity;
+#'   `?spicy_style` lists the exact rules each one encodes and the
+#'   official document they come from. An unknown name is an error.
 #'
 #' @inheritSection freq Declared missing values
 #'
@@ -1733,23 +1733,9 @@ table_continuous_lm <- function(
       .no_data_sentences(outcome_labels, unname(no_data_levels))
     )
   }
-  # The whole note, for every route: print() shows it as it is here.
-  table_note <- .tclm_note_text(
-    result,
-    missing_note = missing_parts,
-    covariates = covariate_labels,
-    weighted_by = if (!is.null(weights_vec)) {
-      weights_name %||% spicy_str("note_weights_fallback")
-    }
-  )
-  attr(result, "note") <- table_note
-
-  if (identical(output, "long")) {
-    return(.continuous_lm_publish_long(result))
-  }
-
   # The ordered columns of this table -- frozen key, displayed header,
-  # semantic token -- resolved ONCE and handed to every consumer below.
+  # semantic token -- resolved ONCE and handed to every consumer below,
+  # the note first, which defines the abbreviations of the headers.
   # `col_meta$display_label` cannot be the carrier: the typed view is
   # built only for `output = "default"`, and the exporters receive the
   # display frame alone.
@@ -1766,6 +1752,22 @@ table_continuous_lm <- function(
     ci = ci,
     decimal_mark = decimal_mark
   )
+
+  # The whole note, for every route: print() shows it as it is here.
+  table_note <- .tclm_note_text(
+    result,
+    missing_note = missing_parts,
+    covariates = covariate_labels,
+    weighted_by = if (!is.null(weights_vec)) {
+      weights_name %||% spicy_str("note_weights_fallback")
+    },
+    spec = spec
+  )
+  attr(result, "note") <- table_note
+
+  if (identical(output, "long")) {
+    return(.continuous_lm_publish_long(result))
+  }
 
   wide_raw <- build_wide_raw_continuous_lm(
     result,

@@ -295,10 +295,10 @@ test_that("a multi-line note keeps its lines in HTML and Typst", {
   expect_length(strsplit(note, "\n", fixed = TRUE)[[1L]], 2L)
   tt <- .pt_multiline_note("tinytable")
   html <- .pt_html(tt)
-  expect_match(html, "information).<br>*** p &lt; .001", fixed = TRUE)
+  expect_match(html, "criterion.<br>*** p &lt; .001", fixed = TRUE)
   # Typst collapses a bare newline exactly as HTML does: the line
   # ends with a forced break.
-  expect_match(.pt_typst(tt), "information). \\\n\\*\\*\\* p", fixed = TRUE)
+  expect_match(.pt_typst(tt), "criterion. \\\n\\*\\*\\* p", fixed = TRUE)
 })
 
 test_that("notes are subordinated by size, in black, by default", {
@@ -698,7 +698,7 @@ test_that("a LaTeX table wider than the text block is scaled down to it", {
 test_that("the LaTeX note keeps one disclosure per line, as HTML and Typst", {
   skip_if_not_installed("tinytable")
   tex <- .pt_latex(.pt_multiline_note("tinytable"))
-  expect_match(tex, "information).\\\\\n*** p < .001", fixed = TRUE)
+  expect_match(tex, "criterion.\\\\\n*** p < .001", fixed = TRUE)
 })
 
 test_that("LaTeX output sets the characters spicy writes in every engine", {
@@ -740,6 +740,26 @@ test_that("LaTeX output sets the characters spicy writes in every engine", {
     map(cp(c(0x00E9, 0x2013, 0x00A0))),
     cp(c(0x00E9, 0x2013, 0x00A0))
   )
+  # Cohen's f2 is set as math like the squared Greek letters, wherever it
+  # stands on its own; the R2 of a fit statistic and a squared letter
+  # ending a word are left to the engine.
+  f2 <- paste0("f", cp(0x00B2))
+  expect_identical(map(f2), "\\ensuremath{f^{2}}")
+  expect_identical(
+    map(paste0("Cohen's partial ", f2, " [95% CI]")),
+    "Cohen's partial \\ensuremath{f^{2}} [95% CI]"
+  )
+  expect_identical(map(paste0("R", cp(0x00B2))), paste0("R", cp(0x00B2)))
+  expect_identical(map(paste0("coef", cp(0x00B2))), paste0("coef", cp(0x00B2)))
+  # A table that shows the f2 column writes no raw superscript two.
+  fit <- stats::lm(wellbeing_score ~ age + sex, data = d)
+  tex <- .pt_latex(table_regression(
+    fit,
+    show_columns = c("b", "p", "partial_f2"),
+    output = "tinytable"
+  ))
+  expect_match(tex, "\\ensuremath{f^{2}}", fixed = TRUE)
+  expect_no_match(tex, f2, fixed = TRUE)
 })
 
 test_that("LaTeX merges a spanner across its columns, as HTML and Typst do", {

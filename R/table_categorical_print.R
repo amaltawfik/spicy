@@ -25,11 +25,13 @@ print.spicy_categorical_table <- function(x, ...) {
   align <- attr(x, "align") %||% "decimal"
   decimal_mark <- attr(x, "decimal_mark") %||% "."
   # The note, from the parts the table stored: what the numbers are, the
-  # missing data, then the statistics -- the note of `attr(x, "note")`.
+  # missing data, the statistics, then the abbreviations -- the note of
+  # `attr(x, "note")`.
   assoc_note <- .categorical_note(
     attr(x, "what_note"),
     attr(x, "missing_note"),
-    attr(x, "assoc_note")
+    attr(x, "assoc_note"),
+    attr(x, "abbrev_note")
   )
 
   if (is.null(display_df)) {
@@ -199,23 +201,26 @@ print.spicy_categorical_table <- function(x, ...) {
 # weights); `missing_note`, the missing data (what drop_na = TRUE removed,
 # the groups with no data); `assoc_note`, the statistics -- the test of
 # each variable, Yates' correction and the adjustment, then the measure
-# each variable carries and the SMD gloss. Any part may be absent; `NULL`
-# when all are.
+# each variable carries and the direction of the SMD; `abbrev_note`, the
+# abbreviations of the headers (`.note_abbreviations()`), placed by the
+# rule of the style in force. Any part may be absent; `NULL` when all are.
 #
 # The one place the note is assembled, for every route (console, the
 # rich engines, Excel, the clipboard), so the one place it opens with
 # "Note.": the prefix belongs to the note, never to one of its parts.
-# The `what_note`, `missing_note` and `assoc_note` attributes stay the
-# three parts, unprefixed.
+# The `what_note`, `missing_note`, `assoc_note` and `abbrev_note`
+# attributes stay the four parts, unprefixed.
 .categorical_note <- function(
   what_note = NULL,
   missing_note = NULL,
-  assoc_note = NULL
+  assoc_note = NULL,
+  abbrev_note = NULL
 ) {
   .compose_note(
     what = what_note,
     missing = missing_note,
-    inference = assoc_note
+    inference = assoc_note,
+    abbreviations = abbrev_note
   )
 }
 

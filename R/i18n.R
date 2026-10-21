@@ -202,6 +202,12 @@
   # Composed character (base + combining diacritic): never retype it, copy
   # it. Sensitive to Unicode normalization and to ASCII width computation.
   symbol_sigma_hat = "\u03C3\u0302",
+  # The rows of the random-effects block of a regression table: the
+  # standard deviation of a random effect (or of the residual), its
+  # variance on `re_scale = "variance"`, and a correlation.
+  symbol_sigma = "\u03C3",
+  symbol_sigma_sq = "\u03C3\u00B2",
+  symbol_rho = "\u03C1",
 
   # -- table_regression(): column headers -----------------------------------
   header_n_upper = "N",
@@ -387,6 +393,9 @@
   note_re_null_binomial = "binomial regression",
   note_re_null_cloglog = "complementary log-log regression",
   note_re_null_log_binomial = "log-binomial regression",
+  # A gaussian family with a link other than identity (the identity link
+  # takes `note_re_null_linear`).
+  note_re_null_gaussian = "gaussian regression",
   note_re_null_inverse_gaussian = "inverse-gaussian regression",
   # One hole: the theta of the family, as lme4 prints it.
   note_re_null_negative_binomial = "negative binomial(%s) regression",
@@ -519,25 +528,110 @@
   # Appended to the sentence above, hence the leading space.
   note_estimand_skipped_terms = " Transformed terms (%s) have no absolute-effect row: the contrast is defined per raw variable; rescale the variable in the data instead of the formula.",
 
-  # -- table_regression(): abbreviation glosses -----------------------------
-  note_abbrev_or = "OR = odds ratio",
-  note_abbrev_irr = "IRR = incidence rate ratio",
-  note_abbrev_hr = "HR = hazard ratio",
-  note_abbrev_rr = "RR = risk ratio",
-  note_abbrev_mr = "MR = mean ratio",
-  note_abbrev_tr = "TR = time ratio",
-  note_abbrev_expb = "exp(B) = exponentiated coefficient",
-  note_abbrev_f2 = "f\u00B2 = Cohen's partial f\u00B2",
-  note_abbrev_eta2 = "\u03B7\u00B2 = partial eta-squared",
-  note_abbrev_omega2 = "\u03C9\u00B2 = bias-corrected partial omega-squared",
-  note_abbrev_chi2 = "\u03C7\u00B2 = partial likelihood-ratio chi-squared",
-  # The same column on a mixed model, whose joint test is a Wald test.
-  note_abbrev_chi2_wald = "\u03C7\u00B2 = partial Wald chi-squared",
-  # The standardized-coefficient legend, bare or naming its method in one
-  # hole: one of the `note_beta_*` glosses, each led by its `standardized`
-  # token (an identifier).
-  note_abbrev_beta = "\u03B2 = standardized coefficient",
-  note_abbrev_beta_method = "\u03B2 = standardized coefficient (%s)",
+  # -- the abbreviations of a table note ------------------------------------
+  # The ADR of 2026-10-20 (dev/decisions/2026-10-20-note-abbreviations.md).
+  # One expansion per CONCEPT of `.abbrev_registry()` (R/table_helpers.R),
+  # never per displayed string: the symbol a definition names is the very
+  # key the header displays, so a translated header can never leave the
+  # note defining the English one. Lowercase but for a proper name (AMA
+  # Manual of Style, 11th ed., section 13.0). Where APA's Table 6.5 words a
+  # symbol, the expansion follows it.
+  abbrev_mean = "mean",
+  abbrev_sd = "standard deviation",
+  abbrev_se = "standard error",
+  abbrev_median = "median",
+  abbrev_iqr = "interquartile range",
+  abbrev_q1 = "first quartile",
+  abbrev_q3 = "third quartile",
+  abbrev_min = "minimum",
+  abbrev_max = "maximum",
+  abbrev_ci = "confidence interval",
+  abbrev_cri = "credible interval",
+  abbrev_hdi = "highest-density interval",
+  abbrev_ll = "lower limit",
+  abbrev_ul = "upper limit",
+  abbrev_b = "unstandardized regression coefficient",
+  abbrev_beta = "standardized coefficient",
+  abbrev_or = "odds ratio",
+  abbrev_irr = "incidence rate ratio",
+  abbrev_hr = "hazard ratio",
+  abbrev_rr = "risk ratio",
+  abbrev_mr = "mean ratio",
+  abbrev_tr = "time ratio",
+  abbrev_exp_b = "exponentiated coefficient",
+  abbrev_delta = "difference",
+  # The Delta prefix of a nested-comparison row ("DeltaAIC"): a change,
+  # not the difference between two groups of `abbrev_delta`.
+  abbrev_change = "change",
+  abbrev_r2 = "coefficient of determination",
+  # A pseudo-R2 (McFadden, Nagelkerke, Tjur, Bayes) is no coefficient of
+  # determination; its row label keeps the author's name.
+  abbrev_pseudo_r2 = "pseudo coefficient of determination",
+  abbrev_adj_r2 = "adjusted coefficient of determination",
+  abbrev_d = "Cohen's d",
+  abbrev_g = "Hedges' g",
+  abbrev_f2 = "Cohen's f\u00B2",
+  abbrev_eta2 = "eta-squared",
+  abbrev_omega2 = "omega-squared",
+  abbrev_es = "effect size",
+  abbrev_smd = "standardized mean difference",
+  abbrev_ame = "average marginal effect",
+  abbrev_rhat = "potential scale reduction factor",
+  abbrev_ess = "effective sample size",
+  # The fit-statistic rows of a regression table, and its random-effect
+  # rows (the standard deviation, the variance and the correlation of a
+  # random effect, the residual standard deviation).
+  abbrev_aic = "Akaike information criterion",
+  abbrev_aicc = "Akaike information criterion corrected for small samples",
+  abbrev_bic = "Bayesian information criterion",
+  abbrev_icc = "intraclass correlation coefficient",
+  abbrev_rmse = "root-mean-square error",
+  abbrev_qic = "quasi-likelihood under the independence model criterion",
+  abbrev_qicu = "quasi-likelihood under the independence model criterion, penalized by the number of parameters",
+  abbrev_elpd = "expected log pointwise predictive density",
+  abbrev_loo = "leave-one-out cross-validation",
+  abbrev_looic = "leave-one-out information criterion",
+  abbrev_waic = "widely applicable information criterion",
+  abbrev_sigma = "standard deviation",
+  abbrev_sigma2 = "variance",
+  abbrev_rho = "correlation",
+  abbrev_sigma_hat = "residual standard deviation",
+  # The headers "ESS (bulk)" and "ESS (tail)" share one symbol, and the
+  # row "ELPD (LOO)" shows two abbreviations.
+  note_abbrev_symbol_ess = "ESS",
+  note_abbrev_symbol_elpd = "ELPD",
+  note_abbrev_symbol_loo = "LOO",
+  # The definitions that say more than the expansion (decision 3 of the
+  # ADR): they tell how the number was computed, so they stay under every
+  # value of `spicy_style(abbreviations = )`, "none" included. Two holes in
+  # `_iqr_width`: the headers of Q3 and Q1, in the order the subtraction
+  # reads. One hole in `_beta_method`: one of the `note_beta_*` glosses,
+  # each led by its `standardized` token (an identifier). The chi-squared
+  # of a mixed model is a Wald test, that of a glm a likelihood-ratio test.
+  abbrev_iqr_width = "interquartile range (%s - %s)",
+  abbrev_beta_method = "standardized coefficient (%s)",
+  abbrev_f2_partial = "Cohen's partial f\u00B2",
+  abbrev_eta2_partial = "partial eta-squared",
+  abbrev_omega2_partial = "bias-corrected partial omega-squared",
+  abbrev_chi2_lrt = "partial likelihood-ratio chi-squared",
+  abbrev_chi2_wald = "partial Wald chi-squared",
+  abbrev_ame_category = "average marginal effect on a response-category probability",
+  abbrev_pd = "probability of direction (share of the posterior on the dominant side of zero; Makowski et al. 2019)",
+  abbrev_mcse = "Monte Carlo standard error of the posterior median (Vehtari et al. 2021)",
+  abbrev_deff = "design effect (design-based variance / simple-random-sample variance at the same n)",
+  abbrev_se_design = "design-based standard error of the mean",
+  # The form of a definition under each rule (decision 2). APA: "X = term"
+  # pairs joined by `note_abbrev_sep`, closed by a period (Publication
+  # Manual 7, section 7.14). JAMA: "X, term" pairs on a line of their own,
+  # opened by the lead-in, "Abbreviation:" for one (AMA Manual of Style 11,
+  # section 4.1.4.10). The Lancet: one "X=term." sentence each, as its
+  # published tables write them. Two holes each: the symbol, the term.
+  note_abbrev_pair = "%s = %s",
+  note_abbrev_pair_jama = "%s, %s",
+  note_abbrev_pair_lancet = "%s=%s.",
+  # One hole: the pairs, joined.
+  note_abbrev_lead_one = "Abbreviation: %s.",
+  note_abbrev_lead_many = "Abbreviations: %s.",
   note_beta_refit = "\"refit\": outcome and numeric predictors z-scored, factor dummies on 0/1",
   note_beta_posthoc = "\"posthoc\": B \u00D7 SD(X)/SD(Y) for numeric predictors, B/SD(Y) for factor dummies",
   note_beta_basic = "\"basic\": every design column scaled by its SD, dummies included (SPSS / Stata Beta)",
@@ -550,12 +644,7 @@
   note_standardized_caveat_algebraic = "interaction / transformed terms are scaled by the SD of the product (or transformed) design column; differs from \"refit\" when components are correlated.",
   note_standardized_caveat_refit = "after refit on z-scored data, an interaction's \u03B2 is the coefficient of the product of the z-scored components.",
   note_standardized_caveat_fallback = "\"refit\" failed; algebraic (posthoc) scaling applied. %s",
-  note_abbrev_pd = "pd = probability of direction (share of the posterior on the dominant side of zero; Makowski et al. 2019)",
-  note_abbrev_mcse = "MCSE = Monte Carlo standard error of the posterior median (Vehtari et al. 2021)",
-  note_abbrev_ame = "AME = average marginal effect",
-  note_abbrev_ame_percat = "AME = average marginal effect on a response-category probability",
-  # The joiner of the abbreviation glosses (`note_abbrev_*`), which the
-  # footer prints on one line.
+  # The joiner of the definitions of a note, APA and JAMA alike.
   note_abbrev_sep = "; ",
   # The AME inference line under a cluster-robust vcov. One hole: empty,
   # or one of the two qualifiers (leading space included).
@@ -587,6 +676,12 @@
   note_exp_with_se_multi = "%s exponentiated and displayed as %s (per family); SE on the displayed ratio scale (%s); %s.%s",
   note_exp_no_se_single = "%s exponentiated and displayed as %s; %s.%s",
   note_exp_no_se_multi = "%s exponentiated and displayed as %s (per family); %s.%s",
+  # The same four sentences when the table shows no CI column: no CI
+  # gloss, one hole fewer.
+  note_exp_with_se_single_no_ci = "%s exponentiated and displayed as %s; SE on the %s scale (%s).%s",
+  note_exp_with_se_multi_no_ci = "%s exponentiated and displayed as %s (per family); SE on the displayed ratio scale (%s).%s",
+  note_exp_no_se_single_no_ci = "%s exponentiated and displayed as %s.%s",
+  note_exp_no_se_multi_no_ci = "%s exponentiated and displayed as %s (per family).%s",
 
   # -- table footnotes: the APA prefix --------------------------------------
   # `note_prefix` is what a note BUILDER prepends. `note_prefix_emphasis` is
@@ -621,7 +716,10 @@
   header_group = "Group",
   header_mean = "M",
   header_sd = "SD",
-  header_median = "Med",
+  # "Mdn", the symbol of the APA Publication Manual (7th ed., Table 6.5),
+  # since 0.14.0 (ADR of 2026-10-20, decision 5). The frozen column key of
+  # the median stays "Med" (`.continuous_token_columns()`).
+  header_median = "Mdn",
   header_iqr = "IQR",
   header_q1 = "Q1",
   header_q3 = "Q3",
@@ -629,7 +727,7 @@
   header_max = "Max",
   # Composite: the median and its two quartiles in one cell. Composed from
   # `header_median` / `header_q1` / `header_q3`, never a monolithic
-  # "Med [Q1, Q3]", so one translation of "Med" serves the whole family.
+  # "Mdn [Q1, Q3]", so one translation of "Mdn" serves the whole family.
   # The brackets stay in the template: they punctuate a header, they are
   # not the interval brackets a journal style may redefine (the cell's own
   # brackets are literal too, and its separator follows `decimal_mark`
@@ -813,23 +911,26 @@
   # A gloss names the header it glosses: the header travels as an
   # ARGUMENT, resolved from the very key the column header uses, so a
   # translated header can never leave the note quoting the English one.
-  # `note_gloss_iqr` takes IQR, then Q3 and Q1 in the order the
-  # subtraction reads.
-  note_gloss_iqr = "%s = interquartile range (%s - %s).",
-  note_gloss_med_iqr = "%s = median [first quartile, third quartile].",
+  # The two sentences below are method sentences, not abbreviations
+  # (decision 3 of the ADR of 2026-10-20): the abbreviations of their
+  # headers are defined with the others (`abbrev_*`), and these stay under
+  # every value of `spicy_style(abbreviations = )`.
   # Two holes: the median-interval header, then the coverage percentage.
   note_gloss_med_ci = "%1$s = exact order-statistic confidence interval for the median (coverage at least %2$s).",
   note_gloss_med_ci_undefined = "\"%s\" where the sample is too small for this level.",
-  # The SMD gloss is the first one named after something other than a
-  # `show_columns` token -- the direct corollary of the API decision
-  # that `smd` is an ARGUMENT and not a token. Four holes: the glossed
-  # header, the two group labels in the order the subtraction reads,
-  # then the THRESHOLD. That last one is a displayed number, so it
-  # follows `decimal_mark` (decision 29-C) and is built by
-  # `format_number()` at the call site -- never written "0.1" here,
-  # because `spicy_fmt()` substitutes no decimal mark. The "-" between
-  # the group labels is punctuation, like `header_lm_delta`'s.
-  note_gloss_smd = "%1$s = standardized mean difference (%2$s - %3$s); |%1$s| > %4$s is the usual imbalance threshold.",
+  # A coverage quoted in a sentence ("at least 95%"). One hole: the
+  # percentage, written under the table's decimal mark. French sets a
+  # no-break space before the percent sign, as its interval headers do.
+  note_coverage_pct = "%s%%",
+  # The direction of the standardized mean difference, and the threshold
+  # it is read against. Four holes: the header of the SMD, the two group
+  # labels in the order the subtraction reads, then the THRESHOLD. That
+  # last one is a displayed number, so it follows `decimal_mark` (decision
+  # 29-C) and is built by `format_number()` at the call site -- never
+  # written "0.1" here, because `spicy_fmt()` substitutes no decimal mark.
+  # The "-" between the group labels is punctuation, like
+  # `header_lm_delta`'s.
+  note_smd_direction = "%1$s direction: %2$s - %3$s. The usual imbalance threshold is |%1$s| > %4$s.",
   # Why one column of the table has no sign while its neighbors do.
   # Only shown when a variable has more than two categories.
   note_gloss_smd_multinomial = "For a variable with more than two categories the %s is the multivariate (Mahalanobis) distance between the two profiles of proportions, and is therefore unsigned.",
@@ -991,11 +1092,6 @@
   # this names the ones that did not.
   note_negative_weights_no_test_some = "For variables whose complete cases include negatively weighted rows, the group comparison is not reported: a design-based test is not defined when the weights change sign.",
   note_deff_replace = "Design effects are computed against sampling WITH replacement (the finite population correction is ignored).",
-  # Abbreviation glosses of the two design-only columns, each naming
-  # the header it glosses through a hole so a translated header can
-  # never leave the note quoting the English one.
-  note_gloss_deff = "%s = design effect (design-based variance / simple-random-sample variance at the same n).",
-  note_gloss_se = "%s = design-based standard error of the mean.",
   # The design-based comparisons, named for `note_group_comparison`.
   test_design_t = "design-based t-test",
   test_design_wald = "design-based Wald test",
@@ -1016,7 +1112,10 @@
   # Said after the sentence above, only when such a cell is shown.
   note_ci_prop_bound = "Percentages of 0 or 100: exact binomial interval on the unweighted count.",
   # The two glosses a design categorical table owes its reader: the
-  # percentage is an ESTIMATE and the count is not.
+  # percentage is an ESTIMATE and the count is not. They say what the
+  # numbers are, so they stay under every value of
+  # `spicy_style(abbreviations = )`; the two symbols themselves are never
+  # defined (APA Publication Manual 7, section 7.15).
   note_gloss_pct_svy = "%s = estimated percentage within the column (survey::svymean).",
   note_gloss_n_svy = "%s = observed (unweighted) count.",
 

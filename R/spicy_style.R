@@ -46,7 +46,9 @@
 
 # The levers with no formal anywhere; they travel in the call-scoped
 # format context and are read by the formatters -- and, for
-# `note_label`, by the note builders (`.note_lead_keys()`, R/i18n.R).
+# `note_label` and `abbreviations`, by the note builders
+# (`.note_lead_keys()`, R/i18n.R; `.note_abbreviations()`,
+# R/table_helpers.R).
 .STYLE_FMT_FIELDS <- c(
   "p_style",
   "p_floor",
@@ -54,7 +56,8 @@
   "p_sigfig",
   "ci_sep",
   "ci_brackets",
-  "note_label"
+  "note_label",
+  "abbreviations"
 )
 
 .STYLE_FIELDS <- c(.STYLE_ARG_FIELDS, .STYLE_FMT_FIELDS)
@@ -67,7 +70,8 @@
 #' A *style* is a small set of number-formatting rules -- how many
 #' decimals a p-value gets, where it bottoms out, whether it keeps its
 #' leading zero, what the decimal mark is, how a confidence interval is
-#' written -- and the word that opens the note under the table.
+#' written -- with the word that opens the note under the table and the
+#' abbreviations that note defines.
 #' `spicy_style()` composes one by hand; the named themes
 #' (`"jama"`, `"nejm"`, `"lancet"`, `"annals"`, `"apa"`, `"aer"` --
 #' `spicy_style_names()` returns the list) are pre-composed ones, each
@@ -84,11 +88,11 @@
 #'
 #' # What a theme claims, and what it does not
 #'
-#' A theme covers **numeric formatting conformity**, and the word that
-#' opens the table note, **only** -- not full editorial conformity. It
-#' does not check reporting guidelines, table structure, footnote
-#' symbols, units, abbreviation policy, or anything else a journal's
-#' instructions ask of a manuscript. Each theme below
+#' A theme covers **numeric formatting conformity**, the word that opens
+#' the table note and the abbreviations that note defines, **only** --
+#' not full editorial conformity. It does not check reporting
+#' guidelines, table structure, footnote symbols, units, or anything else
+#' a journal's instructions ask of a manuscript. Each theme below
 #' lists the exact rules it encodes, with the sentence it encodes them
 #' from; anything not listed is spicy's own default, not the journal's
 #' rule.
@@ -182,6 +186,18 @@
 #'     (2020), section 4.1.4.10, gives table footnotes none: a footnote
 #'     on the whole table is called by a letter "placed after the table
 #'     title".
+#'   \item the abbreviations of the note on its first line,
+#'     `Abbreviations: HR, hazard ratio; OR, odds ratio.`, in alphabetical
+#'     order, `Abbreviation:` for one -- section 4.1.4.10 again: that
+#'     footnote comes first, "set off with an introductory word or phrase
+#'     instead of a letter", and "abbreviations are expanded in
+#'     alphabetical order". SD, SE and CI are not expanded (section
+#'     13.11, "no need to expand"), nor are the symbols of section 19.6
+#'     that do not carry "expand at first mention" (*n*, *N*, *P*, *d*,
+#'     \eqn{R^2}{R^2}, \eqn{\Delta}{Delta}, \eqn{\sigma}{sigma},
+#'     \eqn{\rho}{rho}), *B* and *M* among them, which that section
+#'     writes *b* and \eqn{\bar{x}}{x-bar}: it lists them as usable
+#'     "without expansion except where noted".
 #' }
 #'
 #' Not encoded: everything else in that document (percentages carrying
@@ -218,7 +234,9 @@
 #' prespecified multiplicity plan, estimates + 95% CI instead, no
 #' p-values in the Table 1 of a randomized trial) is about what to
 #' report, not how to format it -- request those layouts through
-#' `show_columns` and `p_value = FALSE` where you need them.
+#' `show_columns` and `p_value = FALSE` where you need them. No rule on
+#' the abbreviations of a table note was found, so the note defines them
+#' as spicy's default does.
 #'
 #' ## `"lancet"` -- The Lancet
 #'
@@ -251,6 +269,15 @@
 #'     tables of the two formatting guidelines open their note on "Data
 #'     are n (%)", and none of the 38 table notes of 15 research articles
 #'     published in 2025-2026, checked on 2026-10-20, opens with "Note".
+#'   \item the abbreviations spelled out at the end of the note, one
+#'     `HR=hazard ratio.` sentence each, in alphabetical order, with *n*,
+#'     *N*, *p*, SD, SE, IQR and CI left undefined. The artwork
+#'     guidelines ask authors to "list and spell out all abbreviations in
+#'     the table"; **the form and the exemptions are not a written
+#'     rule**: they are those of the model tables of the two formatting
+#'     guidelines ("Data are n (%), median (IQR), mean (SD) ...
+#'     BMI=body-mass index.") and of 35 tables of 13 research articles
+#'     published in 2025-2026, checked on 2026-10-20.
 #' }
 #'
 #' Not encoded: the empty-cell filler, the ban on p-values in a
@@ -287,7 +314,9 @@
 #' 200) is conditional on a per-group sample size that the style layer
 #' does not see; set `percent_digits` yourself. The `mean (SD)`
 #' notation the journal asks for, and its refusal of `\eqn{\pm}{+/-}`,
-#' are already how spicy renders dispersion.
+#' are already how spicy renders dispersion. No rule on the
+#' abbreviations of a table note was found, so the note defines them as
+#' spicy's default does.
 #'
 #' ## `"apa"` -- APA Style, 7th edition
 #'
@@ -319,6 +348,20 @@
 #'     (`note_label = "Note."`) -- the *Publication Manual*, 7th edition
 #'     (2020), section 7.14: the general note is "designated by the word
 #'     'Note' (italicized) followed by a period".
+#'   \item the abbreviations defined at the end of the general note,
+#'     `CI = confidence interval; LL = lower limit`, in the order they
+#'     appear in the table -- sections 7.14 and 7.15 ("define the
+#'     abbreviations in the order that they appear in the table"); AIC and
+#'     BIC are among those section 6.44 names. The symbols that represent
+#'     statistics are left undefined ("Do not define symbols or
+#'     abbreviations that represent statistics (e.g., M, SD, F, t, df, p,
+#'     N, n, OR, r)", section 6.44; section 7.15 adds *SE*), and spicy
+#'     counts *Mdn* (the median of Table 6.5) and Hedges' *g* among them.
+#'     So are the symbols composed of Greek letters (the same two
+#'     sections) and those its sample tables leave undefined (*B*,
+#'     \eqn{\beta}{beta}, \eqn{R^2}{R^2}, \eqn{\Delta R^2}{Delta R2},
+#'     Cohen's *d*). This is also spicy's default rule, the one `"nejm"`,
+#'     `"annals"` and `"aer"` apply.
 #' }
 #'
 #' Not encoded: the one-decimal rule for means of integer scales
@@ -354,7 +397,9 @@
 #' Not encoded: the guide fixes no number of decimals, no p-value
 #' floor, no interval format and no decimal mark, so spicy's defaults
 #' apply. Horizontal-rules-only, no shading, a nine-column maximum and
-#' "Panel A / Panel B" blocks are layout, not number formatting.
+#' "Panel A / Panel B" blocks are layout, not number formatting. No rule
+#' on the abbreviations of a table note was found, so the note defines
+#' them as spicy's default does.
 #'
 #' # Known gaps
 #'
@@ -434,6 +479,21 @@
 #'   no-break space French puts before a colon. A `note` you type is
 #'   printed as typed; its opening word is set in italics when it is the
 #'   lead-in in force.
+#' @param abbreviations Which abbreviations the note under the table
+#'   defines: those of its headers, its spanners and the labels of its
+#'   stub (the fit statistics and the random effects of a regression),
+#'   not the symbols inside its cells. `NULL` (the default) follows the
+#'   rule of the theme in force, the APA rule when there is none (see
+#'   *Themes*). `"all"` defines every abbreviation and symbol the table
+#'   shows, abbreviated words such as Min and Max included, except *n*,
+#'   *N*, *p* and the test statistics (*t*, *z*, *F*,
+#'   \eqn{\chi^2}{chi-squared}), which no style and no journal defines:
+#'   the setting for readers outside the field. `"none"` defines none, but
+#'   keeps the definitions that say how a number was computed (partial
+#'   eta-squared, the IQR as the width Q3 - Q1, the method of a
+#'   standardized \eqn{\beta}{beta}, the design effect). Either way the
+#'   definitions take the form and the place of the theme in force. A
+#'   `note` you type is printed as typed.
 #' @param v_digits Defunct. Renamed `effect_size_digits` in spicy 0.14.0;
 #'   supplying `v_digits` is an error (class `spicy_defunct`).
 #'
@@ -465,6 +525,10 @@
 #' table_continuous(mtcars, c(mpg, wt))
 #' options(old)
 #'
+#' # Every abbreviation defined, for readers outside the field.
+#' table_continuous(mtcars, c(mpg, wt),
+#'                  style = spicy_style(abbreviations = "all"))
+#'
 #' # What a theme encodes, and where it comes from.
 #' spicy_style("lancet")
 #' @export
@@ -486,6 +550,7 @@ spicy_style <- function(
   ic_digits = NULL,
   percent_digits = NULL,
   note_label = NULL,
+  abbreviations = NULL,
   v_digits
 ) {
   # Renamed in 0.14.0; refused with the new name before anything else.
@@ -540,6 +605,11 @@ spicy_style <- function(
     "note_label",
     c("Note.", "Note:", "")
   )
+  abbreviations <- .style_check_enum(
+    abbreviations,
+    "abbreviations",
+    c("all", "none")
+  )
 
   if (!is.null(p_bands) && !is.null(p_sigfig)) {
     spicy_abort(
@@ -569,7 +639,8 @@ spicy_style <- function(
     fit_digits = fit_digits,
     ic_digits = ic_digits,
     percent_digits = percent_digits,
-    note_label = note_label
+    note_label = note_label,
+    abbreviations = abbreviations
   )
   out <- out[!vapply(out, is.null, logical(1))]
 
@@ -802,8 +873,23 @@ spicy_style <- function(
           "table note: no lead-in word (AMA Manual of Style, 11th edition, ",
           "section 4.1.4.10)"
         ),
+        paste0(
+          "table note: an \"Abbreviations:\" line first, alphabetical; SD, ",
+          "SE, CI and the symbols of section 19.6 not expanded (AMA Manual ",
+          "of Style, 11th edition, sections 4.1.4.10, 13.11 and 19.6)"
+        ),
         "everything else in the source is table construction, not number format"
       ),
+      # The abbreviations of the note (R/table_helpers.R,
+      # `.note_abbreviations()`): the AMA Manual of Style, 11th edition,
+      # section 4.1.4.10, p. 125-127 ("the abbreviations ... footnotes
+      # appear first and are set off with an introductory word or phrase
+      # instead of a letter. In such footnotes, abbreviations are expanded
+      # in alphabetical order"; model line "Abbreviations: OR, odds ratio;
+      # RR, relative risk."), section 13.11 (SD, SE, SEM and CI "no need to
+      # expand") and section 19.6 (dev/journal_styles_sources.md, section
+      # 5 ter).
+      abbrev_rule = "jama",
       # "All P values should be reported to exact numbers to 2 digits
       # past the decimal point ... For values lower than .01, present
       # the P value to 3 digits. Express any values lower than .001 as
@@ -883,8 +969,23 @@ spicy_style <- function(
         paste0(
           "table note: no lead-in word (matches the journal's model tables ",
           "and its published tables; not a written rule)"
+        ),
+        paste0(
+          "table note: abbreviations spelled out at its end, one ",
+          "\"HR=hazard ratio.\" sentence each, alphabetical; n, N, p, SD, SE, ",
+          "IQR and CI not (matches the journal's model tables and its ",
+          "published tables; not a written rule)"
         )
       ),
+      # The abbreviations of the note: "please list and spell out all
+      # abbreviations in the table" (Artwork formatting guidelines, p. 1) is
+      # the only written rule. The model tables (formatting guidelines of
+      # 2025, p. 3: "Data are n (%), median (IQR), mean (SD), or n/N (%).
+      # ECOG=Eastern Cooperative Oncology Group. BMI=body-mass index.") and
+      # 35 tables of 13 research articles of 2025-2026, checked on
+      # 2026-10-20, give the form and leave n, N, p, SD, SE, IQR and CI
+      # undefined (dev/journal_styles_sources.md, section 5 ter).
+      abbrev_rule = "lancet",
       # "Type decimal points midline (ie, 23[U+00B7]4, not 23.4)."
       # "Supply p values to two significant figures (capped at four
       #  decimal places), or p<0[U+00B7]0001."
@@ -948,6 +1049,13 @@ spicy_style <- function(
         paste0(
           "table note: opens with \"Note.\" in italics (Publication Manual, ",
           "7th edition, section 7.14)"
+        ),
+        paste0(
+          "table note: abbreviations defined at the end, \"CI = confidence ",
+          "interval\", in their order of appearance; the symbols that ",
+          "represent statistics, Greek letters and the symbols its sample ",
+          "tables leave undefined are not (Publication Manual, 7th edition, ",
+          "sections 6.44, 7.14 and 7.15)"
         ),
         "a pinning theme: spicy's defaults already follow the guide"
       ),
@@ -1050,7 +1158,7 @@ spicy_style_names <- function() {
     )
   }
   out <- entry$style
-  attr(out, "provenance") <- list(
+  prov <- list(
     name = name,
     journal = entry$journal,
     document = entry$document,
@@ -1058,6 +1166,10 @@ spicy_style_names <- function() {
     date = entry$date,
     rules = entry$rules
   )
+  # The abbreviation rule of the theme, for the themes that have one of
+  # their own; the others apply spicy's default, the APA rule.
+  prov$abbrev_rule <- entry$abbrev_rule
+  attr(out, "provenance") <- prov
   out
 }
 
@@ -1297,6 +1409,13 @@ print.spicy_style <- function(x, ...) {
   }
 
   fmt <- eff[intersect(names(eff), .STYLE_FMT_FIELDS)]
+  # The abbreviation rule of a named theme ("jama", "lancet") is no lever
+  # of its own: its provenance names it, a modified theme included, and
+  # it rides with the levers to the note builders, as `note_label` does.
+  abbrev_rule <- attr(style, "provenance", exact = TRUE)$abbrev_rule
+  if (!is.null(abbrev_rule)) {
+    fmt$abbrev_rule <- abbrev_rule
+  }
   if (is.null(style)) {
     # A locale-only push must not mask a frame already in force: before
     # the locale existed, a call with no style pushed nothing and the

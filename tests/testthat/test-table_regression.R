@@ -16,7 +16,10 @@ test_that("table_regression – default output: spicy_regression_table class + a
   expect_identical(attr(out, "title"), "Linear regression: mpg")
   expect_identical(
     attr(out, "note"),
-    "Note. Linear regression. Std. errors: classical (OLS)."
+    paste(
+      "Note. Linear regression. Std. errors: classical (OLS).",
+      "CI = confidence interval."
+    )
   )
 })
 
@@ -1085,7 +1088,10 @@ test_that("cluster_name – `df$col` extracted to 'col' for the footer", {
   out <- table_regression(fit, vcov = "CR2", cluster = df$region)
   expect_identical(
     attr(out, "note"),
-    "Note. Linear regression. Std. errors: cluster-robust (CR2), clusters by region."
+    paste(
+      "Note. Linear regression. Std. errors: cluster-robust (CR2), clusters by region.",
+      "CI = confidence interval."
+    )
   )
   expect_no_match(attr(out, "note"), "cluster vector supplied")
 })
@@ -1103,7 +1109,10 @@ test_that("cluster_name – bare symbol extracted as variable name", {
   out <- table_regression(fit, vcov = "CR2", cluster = region_vec)
   expect_identical(
     attr(out, "note"),
-    "Note. Linear regression. Std. errors: cluster-robust (CR2), clusters by region_vec."
+    paste(
+      "Note. Linear regression. Std. errors: cluster-robust (CR2), clusters by region_vec.",
+      "CI = confidence interval."
+    )
   )
 })
 
@@ -2586,8 +2595,9 @@ test_that("console shows bare deduped labels; data.frame keeps unique names", {
 test_that("print honors the padding attr unless overridden at print time", {
   # rd-methods:print-honors-padding-attr
   fit <- lm(mpg ~ wt, data = mt)
-  t0 <- table_regression(fit, padding = 0L)
-  t4 <- table_regression(fit, padding = 4L)
+  # No note: it prints unwrapped, and its line would be the widest.
+  t0 <- table_regression(fit, padding = 0L, note = FALSE)
+  t4 <- table_regression(fit, padding = 4L, note = FALSE)
   expect_lt(
     max(nchar(capture.output(print(t0)))),
     max(nchar(capture.output(print(t4))))

@@ -18,7 +18,7 @@
          Yes       │ 25.93  3.58  16.80  35.30    25.48      26.38     248       
          (Missing) │ 24.74  3.63  17.60  32.50    23.24      26.23      25       
       
-      Note. Missing values removed: bmi (12). Group comparison: Welch t-test. Each block compares bmi across the levels of one variable; blocks are not adjusted for one another. Overall = the whole analytic sample.
+      Note. Missing values removed: bmi (12). Group comparison: Welch t-test. Each block compares bmi across the levels of one variable; blocks are not adjusted for one another. Overall = the whole analytic sample. CI = confidence interval; LL = lower limit; UL = upper limit.
 
 ---
 
@@ -60,7 +60,7 @@
          South   │                                       
          West    │                                       
       
-      Note. Missing values removed: bmi (12). Group comparison: Welch t-test (sex); Welch one-way ANOVA (region). Each block compares bmi across the levels of one variable; blocks are not adjusted for one another. Overall = the whole analytic sample.
+      Note. Missing values removed: bmi (12). Group comparison: Welch t-test (sex); Welch one-way ANOVA (region). Each block compares bmi across the levels of one variable; blocks are not adjusted for one another. Overall = the whole analytic sample. CI = confidence interval; LL = lower limit; UL = upper limit; ES = effect size.
 
 ---
 
@@ -70,11 +70,11 @@
     Output
       Descriptive statistics of bmi
       
-       Variable   │      Med [Q1, Q3]         n      p    
+       Variable   │      Mdn [Q1, Q3]         n      p    
       ────────────┼───────────────────────────────────────
        sex        │                                 .038  
          Female   │  25.70 [23.10, 28.60]    616          
          Male     │  26.10 [23.87, 28.63]    572          
       
-      Note. Missing values removed: bmi (12). Group comparison: Wilcoxon rank-sum test. Each block compares bmi across the levels of one variable; blocks are not adjusted for one another. Med [Q1, Q3] = median [first quartile, third quartile].
+      Note. Missing values removed: bmi (12). Group comparison: Wilcoxon rank-sum test. Each block compares bmi across the levels of one variable; blocks are not adjusted for one another. Q1 = first quartile; Q3 = third quartile.
 

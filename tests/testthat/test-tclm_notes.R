@@ -127,12 +127,14 @@ test_that("a classical unadjusted table names its test, and only that", {
     "Note. Group comparison: t-test from the linear model.",
     fixed = TRUE
   )
-  # Without p-values there is nothing to disclose: no note at all.
+  # Without p-values there is nothing to disclose, and without the
+  # interval columns no header to define: no note at all.
   quiet <- table_continuous_lm(
     sochealth,
     select = wellbeing_score,
     by = physical_activity,
-    p_value = FALSE
+    p_value = FALSE,
+    ci = FALSE
   )
   expect_null(attr(quiet, "note"))
   expect_false(any(grepl("Note.", capture.output(print(quiet)), fixed = TRUE)))
@@ -269,12 +271,14 @@ test_that("gt output stashes the note and injects it in rendered HTML", {
 
 test_that("gt output without a note keeps the plain gt class", {
   skip_if_not_installed("gt")
-  # No p-value, nothing missing, classical SEs: nothing to disclose.
+  # No p-value, nothing missing, classical SEs: nothing to disclose; no
+  # interval columns: nothing to define.
   g <- table_continuous_lm(
     sochealth,
     select = wellbeing_score,
     by = physical_activity,
     p_value = FALSE,
+    ci = FALSE,
     output = "gt"
   )
   expect_false(inherits(g, "spicy_gt"))
@@ -324,11 +328,13 @@ test_that("flextable output adds the note footer and HTML note div", {
 
 test_that("flextable output without a note is wrapped, note attr absent", {
   skip_if_not_installed("flextable")
+  # No p-value and no interval columns: nothing to disclose or define.
   ft <- table_continuous_lm(
     sochealth,
     select = wellbeing_score,
     by = physical_activity,
     p_value = FALSE,
+    ci = FALSE,
     output = "flextable"
   )
   # Since the pandoc xmlns workaround the wrapper class is
@@ -366,11 +372,13 @@ test_that("tinytable HTML output injects the note div outside the table", {
 
 test_that("tinytable output without a note renders no note div", {
   skip_if_not_installed("tinytable")
+  # No p-value and no interval columns: nothing to disclose or define.
   tt <- table_continuous_lm(
     sochealth,
     select = wellbeing_score,
     by = physical_activity,
     p_value = FALSE,
+    ci = FALSE,
     output = "tinytable"
   )
   html <- tinytable::save_tt(tt, output = "html")
@@ -480,10 +488,14 @@ test_that("classical fits carry an all-NA boot_n_valid and no SE note", {
   )
   expect_true("boot_n_valid" %in% names(out))
   expect_true(all(is.na(out$boot_n_valid)))
-  # The note names the test, and no standard-error estimator.
+  # The note names the test, and no standard-error estimator, then
+  # defines the interval headers.
   expect_identical(
     attr(out, "note"),
-    "Note. Group comparison: t-test from the linear model."
+    paste(
+      "Note. Group comparison: t-test from the linear model.",
+      "CI = confidence interval; LL = lower limit; UL = upper limit."
+    )
   )
 })
 

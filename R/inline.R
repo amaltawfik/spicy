@@ -117,7 +117,7 @@
 #' ```
 #'
 #' `{ci_label}` inserts the interval label of the interval the pattern
-#' cites (`95% CI`, or `Med 95% CI` in a pattern quoting `{med_ci}`) --
+#' cites (`95% CI`, or `Mdn 95% CI` in a pattern quoting `{med_ci}`) --
 #' the first one when it cites several, the table's first when it cites
 #' none. Note that `{p}` carries the floor operator when the table does
 #' (`<.001`), so write `p {p}` rather than `p = {p}` in patterns that
@@ -1394,7 +1394,7 @@ inline <- function(
 # the CI bounds.
 #
 # A table can carry two intervals with DIFFERENT labels: `show_columns =
-# c("m", "ci", "med", "med_ci")` heads them "95% CI" and "Med 95% CI",
+# c("m", "ci", "med", "med_ci")` heads them "95% CI" and "Mdn 95% CI",
 # and the console says so. The label therefore belongs to the interval
 # the pattern quotes, not to whichever bound comes first in the column
 # order -- the same token-blindness the interval lookup itself carried

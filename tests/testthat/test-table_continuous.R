@@ -204,10 +204,15 @@ test_that("the undefined glyph sets the width of the column it lands in", {
   # else in the suite renders a `by` table with an undefined cell, so
   # without this the next change to the aligner moves it again unseen.
   d <- data.frame(x = c(1, 2, 3, 42), g = factor(c("A", "A", "A", "B")))
+  # The width of the TABLE: the note prints unwrapped, at its own width,
+  # so the lines from the first "Note." on are not measured.
   line_width <- function(w) {
     withr::with_options(
       list(width = w),
-      max(nchar(capture.output(print(table_continuous(d, by = g)))))
+      {
+        out <- capture.output(print(table_continuous(d, by = g)))
+        max(nchar(out[cumsum(startsWith(out, "Note.")) == 0L]))
+      }
     )
   }
   expect_identical(
@@ -1240,12 +1245,16 @@ test_that("table_continuous discloses removed NAs in a table note", {
   out <- table_continuous(df, select = c("x", "y"))
   expect_equal(
     attr(out, "note"),
-    "Note. Missing values removed: x (1), y (2)."
+    paste(
+      "Note. Missing values removed: x (1), y (2).",
+      "CI = confidence interval; LL = lower limit; UL = upper limit."
+    )
   )
   printed <- paste(capture.output(print(out)), collapse = "\n")
   expect_match(printed, "Missing values removed: x (1), y (2).", fixed = TRUE)
-  # No NAs -> no note.
-  clean <- table_continuous(data.frame(x = 1:5), select = "x")
+  # No NAs -> no note (and without the interval columns, no abbreviation
+  # to define either).
+  clean <- table_continuous(data.frame(x = 1:5), select = "x", ci = FALSE)
   expect_null(attr(clean, "note"))
 })
 
@@ -1253,7 +1262,10 @@ test_that("the missing-values note names each variable by its row label", {
   out <- table_continuous(sochealth, select = c(age, bmi), by = sex)
   expect_identical(
     attr(out, "note"),
-    "Note. Missing values removed: bmi (12). Group comparison: Welch t-test."
+    paste(
+      "Note. Missing values removed: bmi (12). Group comparison: Welch t-test.",
+      "CI = confidence interval; LL = lower limit; UL = upper limit."
+    )
   )
   attr_lab <- table_continuous(
     sochealth,
@@ -1265,7 +1277,8 @@ test_that("the missing-values note names each variable by its row label", {
     attr(attr_lab, "note"),
     paste(
       "Note. Missing values removed: Body mass index (12).",
-      "Group comparison: Welch t-test."
+      "Group comparison: Welch t-test.",
+      "CI = confidence interval; LL = lower limit; UL = upper limit."
     )
   )
   relabelled <- table_continuous(
@@ -1275,7 +1288,10 @@ test_that("the missing-values note names each variable by its row label", {
   )
   expect_identical(
     attr(relabelled, "note"),
-    "Note. Missing values removed: BMI (kg/m2) (12)."
+    paste(
+      "Note. Missing values removed: BMI (kg/m2) (12).",
+      "CI = confidence interval; LL = lower limit; UL = upper limit."
+    )
   )
 })
 
@@ -1293,12 +1309,19 @@ test_that("a label with a comma turns the missing-values list to semicolons", {
   }
   expect_identical(
     note(),
-    "Note. Missing values removed: x (1); Income, monthly (2)."
+    paste(
+      "Note. Missing values removed: x (1); Income, monthly (2).",
+      "CI = confidence interval; LL = lower limit; UL = upper limit."
+    )
   )
   withr::local_options(spicy.language = "fr")
   expect_identical(
     note(),
-    "Note. Valeurs manquantes retir\u00e9es\u00a0: x (1)\u00a0; Income, monthly (2)."
+    paste(
+      "Note. Valeurs manquantes retir\u00e9es\u00a0: x (1)\u00a0; Income, monthly (2).",
+      "IC = intervalle de confiance\u00a0; LI = limite inf\u00e9rieure\u00a0;",
+      "LS = limite sup\u00e9rieure."
+    )
   )
 })
 
@@ -1315,7 +1338,8 @@ test_that("the by title and the missing-by note follow labels", {
         paste(
           "Note. Missing values removed: %s (12).",
           "Rows with missing %s removed: 18.",
-          "Group comparison: Welch one-way ANOVA."
+          "Group comparison: Welch one-way ANOVA.",
+          "CI = confidence interval; LL = lower limit; UL = upper limit."
         ),
         row,
         by
@@ -1362,7 +1386,8 @@ test_that("drop_na = TRUE discloses removed missing-by rows in the note", {
     attr(out, "note"),
     paste(
       "Note. Missing values removed: x (1). Rows with missing g removed: 2.",
-      "Group comparison: Welch t-test."
+      "Group comparison: Welch t-test.",
+      "CI = confidence interval; LL = lower limit; UL = upper limit."
     )
   )
 })
@@ -1371,7 +1396,10 @@ test_that("the note opens with \"Note.\" once, on the attribute and in print", {
   tbl <- table_continuous(sochealth, select = c(bmi, age), by = sex)
   expect_identical(
     attr(tbl, "note"),
-    "Note. Missing values removed: bmi (12). Group comparison: Welch t-test."
+    paste(
+      "Note. Missing values removed: bmi (12). Group comparison: Welch t-test.",
+      "CI = confidence interval; LL = lower limit; UL = upper limit."
+    )
   )
   printed <- utils::capture.output(print(tbl))
   expect_identical(sum(grepl("Note.", printed, fixed = TRUE)), 1L)
@@ -1394,9 +1422,10 @@ test_that("the note opens with \"Note.\" once, on the attribute and in print", {
     )
   ))
   expect_identical(lengths(gregexpr("Note.", note, fixed = TRUE)), 1L)
-  # Nothing to say: no note, and no bare prefix.
+  # Nothing to say (nothing removed, and no interval column whose
+  # abbreviations need defining): no note, and no bare prefix.
   expect_null(attr(
-    table_continuous(data.frame(x = 1:5), select = "x"),
+    table_continuous(data.frame(x = 1:5), select = "x", ci = FALSE),
     "note"
   ))
   withr::local_options(spicy.language = "fr")
@@ -1407,7 +1436,9 @@ test_that("the note opens with \"Note.\" once, on the attribute and in print", {
     ),
     paste(
       "Note. Valeurs manquantes retir\u00e9es\u00a0: bmi (12).",
-      "Comparaison des groupes\u00a0: test t de Welch."
+      "Comparaison des groupes\u00a0: test t de Welch.",
+      "IC = intervalle de confiance\u00a0; LI = limite inf\u00e9rieure\u00a0;",
+      "LS = limite sup\u00e9rieure."
     )
   )
 })
@@ -1515,17 +1546,25 @@ test_that("table_continuous raw outputs carry the note attribute", {
   out <- table_continuous(df, select = "x", output = "data.frame")
   expect_identical(
     attr(out, "note"),
-    "Note. Missing values removed: x (1)."
+    paste(
+      "Note. Missing values removed: x (1).",
+      "CI = confidence interval; LL = lower limit; UL = upper limit."
+    )
   )
   long <- table_continuous(df, select = "x", output = "long")
   expect_identical(
     attr(long, "note"),
-    "Note. Missing values removed: x (1)."
+    paste(
+      "Note. Missing values removed: x (1).",
+      "CI = confidence interval; LL = lower limit; UL = upper limit."
+    )
   )
-  # Nothing removed -> nothing to disclose.
+  # Nothing removed -> nothing to disclose (and, without the interval
+  # columns, no abbreviation to define).
   clean <- table_continuous(
     data.frame(x = 1:5),
     select = "x",
+    ci = FALSE,
     output = "data.frame"
   )
   expect_null(attr(clean, "note"))
@@ -1588,7 +1627,8 @@ test_that("the rows of a no-data group leave the missing-value count", {
     note,
     paste(
       "Note. Missing values removed: x (1). No data for y in c.",
-      "Group comparison: Welch one-way ANOVA (x); Welch t-test (y)."
+      "Group comparison: Welch one-way ANOVA (x); Welch t-test (y).",
+      "CI = confidence interval; LL = lower limit; UL = upper limit."
     )
   )
   # A real missing value of y beside the no-data group is still counted.
@@ -1652,7 +1692,11 @@ test_that("the comparison runs on the groups with data, and on two at least", {
   expect_identical(as_structured(tbl2)$cell_status$p[[y1]], "undefined")
   expect_identical(
     attr(tbl2, "note"),
-    "Note. No data for y in b. Group comparison: Welch t-test."
+    paste(
+      "Note. No data for y in b. Group comparison: Welch t-test.",
+      "CI = confidence interval; LL = lower limit; UL = upper limit;",
+      "ES = effect size."
+    )
   )
 })
 
@@ -1695,7 +1739,10 @@ test_that("an empty group and the missing-by group are not no-data groups", {
   expect_identical(out$n, c(2L, 2L, 0L, 0L))
   expect_identical(
     attr(out, "note"),
-    "Note. Missing values removed: y (2). Group comparison: Welch t-test."
+    paste(
+      "Note. Missing values removed: y (2). Group comparison: Welch t-test.",
+      "CI = confidence interval; LL = lower limit; UL = upper limit."
+    )
   )
 })
 
@@ -1713,7 +1760,8 @@ test_that("declared missing values of a no-data group leave their count too", {
     note,
     paste(
       "Note. Declared missing values removed: y (1). No data for y in c.",
-      "Group comparison: Welch t-test."
+      "Group comparison: Welch t-test.",
+      "CI = confidence interval; LL = lower limit; UL = upper limit."
     )
   )
 })
@@ -1728,7 +1776,10 @@ test_that("without `by`, a variable with no observed value has no data", {
   expect_identical(as_structured(tbl)$cell_status$n[[2L]], "undefined")
   expect_identical(
     attr(tbl, "note"),
-    "Note. Missing values removed: x (1). No data for y."
+    paste(
+      "Note. Missing values removed: x (1). No data for y.",
+      "CI = confidence interval; LL = lower limit; UL = upper limit."
+    )
   )
   withr::local_options(spicy.language = "fr")
   expect_match(
@@ -1751,7 +1802,10 @@ test_that("the variables with no data in the same groups share one sentence", {
   d0 <- data.frame(x = c(1, 2, NA), y = NA_real_, z = NA_real_)
   expect_identical(
     attr(table_continuous(d0, select = c(y, x, z)), "note"),
-    "Note. Missing values removed: x (1). No data for y and z."
+    paste(
+      "Note. Missing values removed: x (1). No data for y and z.",
+      "CI = confidence interval; LL = lower limit; UL = upper limit."
+    )
   )
 })
 
@@ -1759,24 +1813,32 @@ test_that("the note names the test of each variable whenever p is shown", {
   note <- function(...) {
     attr(table_continuous(sochealth, select = c(bmi, age), ...), "note")
   }
+  ci_defs <- "CI = confidence interval; LL = lower limit; UL = upper limit."
   expect_identical(
     note(by = sex),
-    "Note. Missing values removed: bmi (12). Group comparison: Welch t-test."
+    paste(
+      "Note. Missing values removed: bmi (12). Group comparison: Welch t-test.",
+      ci_defs
+    )
   )
   expect_identical(
     note(by = education, test = "nonparametric"),
     paste(
       "Note. Missing values removed: bmi (12).",
-      "Group comparison: Kruskal-Wallis test."
+      "Group comparison: Kruskal-Wallis test.",
+      ci_defs
     )
   )
   # No p-value, no test sentence.
   expect_identical(
     note(by = sex, p_value = FALSE, statistic = TRUE),
-    "Note. Missing values removed: bmi (12)."
+    paste("Note. Missing values removed: bmi (12).", ci_defs)
   )
   # No `by`, nothing compared.
-  expect_identical(note(), "Note. Missing values removed: bmi (12).")
+  expect_identical(
+    note(),
+    paste("Note. Missing values removed: bmi (12).", ci_defs)
+  )
 })
 
 test_that("the note gives its sentences in the order of the family", {
@@ -1796,7 +1858,9 @@ test_that("the note gives its sentences in the order of the family", {
     p_adjust = "holm"
   )
   # (b) the missing data, (c) the tests, in the order of the rows, and
-  # their adjustment, (d) the glosses: one paragraph.
+  # their adjustment, (d) the method sentences, then the definitions of
+  # the abbreviations the headers show, in the order of the columns (Mdn,
+  # a symbol of a statistic, stays undefined): one paragraph.
   expect_identical(
     attr(tbl, "note"),
     paste(
@@ -1804,9 +1868,9 @@ test_that("the note gives its sentences in the order of the family", {
       "No data for z in b.",
       "Group comparison: Wilcoxon rank-sum test (x); Welch t-test (y).",
       "P-values adjusted for 2 tests (Holm method).",
-      "Med [Q1, Q3] = median [first quartile, third quartile].",
-      "SMD = standardized mean difference (a - b); |SMD| > 0.1 is the usual",
-      "imbalance threshold."
+      "SMD direction: a - b. The usual imbalance threshold is |SMD| > 0.1.",
+      "Q1 = first quartile; Q3 = third quartile;",
+      "SMD = standardized mean difference."
     )
   )
   # The weights open the note.
@@ -4155,13 +4219,15 @@ test_that("table_continuous discloses dropped rows on the rich outputs", {
   d$sex_na <- d$sex
   d$sex_na[1:40] <- NA
 
+  note <- paste(
+    "Note. Rows with missing sex_na removed: 40.",
+    "Group comparison: Welch t-test.",
+    "CI = confidence interval; LL = lower limit; UL = upper limit."
+  )
   x <- suppressWarnings(
     table_continuous(d, select = age, by = sex_na, output = "tinytable")
   )
-  expect_identical(
-    paste(unlist(x@notes), collapse = " "),
-    "Note. Rows with missing sex_na removed: 40. Group comparison: Welch t-test."
-  )
+  expect_identical(paste(unlist(x@notes), collapse = " "), note)
   expect_match(
     tinytable::save_tt(x, output = "html"),
     "Rows with missing sex_na removed: 40.",
@@ -4172,10 +4238,7 @@ test_that("table_continuous discloses dropped rows on the rich outputs", {
     table_continuous(d, select = age, by = sex_na, output = "gt")
   )
   expect_s3_class(g, "spicy_gt")
-  expect_identical(
-    attr(g, "spicy_note"),
-    "Note. Rows with missing sex_na removed: 40. Group comparison: Welch t-test."
-  )
+  expect_identical(attr(g, "spicy_note"), note)
 
   f <- suppressWarnings(
     table_continuous(d, select = age, by = sex_na, output = "flextable")
@@ -4193,13 +4256,15 @@ test_that("table_continuous rich outputs carry no note when nothing is lost", {
   skip_if_not_installed("gt")
   skip_if_not_installed("flextable")
   df <- data.frame(x = 1:6, g = rep(c("A", "B"), each = 3))
-  # Without p-values there is no test to name either.
+  # Without p-values there is no test to name either, and without the
+  # interval columns no abbreviation to define.
   build <- function(output) {
     table_continuous(
       df,
       select = "x",
       by = "g",
       p_value = FALSE,
+      ci = FALSE,
       output = output
     )
   }
@@ -4274,12 +4339,13 @@ test_that("the token order and the column vocabulary declare the same set", {
 
 test_that("show_columns = NULL reproduces the historical display exactly", {
   # The default must not move: the printed table shows M / SD / Min /
-  # Max and none of the new statistics, and its note stays empty.
+  # Max and none of the new statistics, and its note only defines the
+  # abbreviations of its interval columns.
   base_no_by <- capture.output(
     table_continuous(sleep, select = extra)
   )
   expect_true(any(grepl(" M ", base_no_by, fixed = TRUE)))
-  expect_false(any(grepl("Med", base_no_by, fixed = TRUE)))
+  expect_false(any(grepl("Mdn", base_no_by, fixed = TRUE)))
   expect_false(any(grepl("IQR", base_no_by, fixed = TRUE)))
 
   # The token set is a rendering attribute of the printed object.
@@ -4300,15 +4366,20 @@ test_that("show_columns = NULL reproduces the historical display exactly", {
     ),
     c("m", "sd", "min", "max")
   )
-  # No gloss is appended to a default table's note: it names the test
-  # behind its p-values, and nothing else.
-  expect_identical(attr(out, "note"), "Note. Group comparison: Welch t-test.")
+  # No gloss of a statistic is appended to a default table's note: it
+  # names the test behind its p-values and defines the abbreviations of
+  # the interval columns, and nothing else.
+  note <- paste(
+    "Note. Group comparison: Welch t-test.",
+    "CI = confidence interval; LL = lower limit; UL = upper limit."
+  )
+  expect_identical(attr(out, "note"), note)
   expect_identical(
     attr(
       table_continuous(sleep, select = extra, by = group, output = "long"),
       "note"
     ),
-    "Note. Group comparison: Welch t-test."
+    note
   )
 })
 
@@ -4332,7 +4403,7 @@ test_that("median / quartile columns equal stats::median() and quantile() type 7
   printed <- capture.output(
     table_continuous(d, select = x, show_columns = c("med_iqr", "iqr"))
   )
-  expect_true(any(grepl("Med [Q1, Q3]", printed, fixed = TRUE)))
+  expect_true(any(grepl("Mdn [Q1, Q3]", printed, fixed = TRUE)))
   expect_true(any(grepl(
     sprintf("%.2f [%.2f, %.2f]", stats::median(d$x), q[1], q[2]),
     printed,
@@ -4751,7 +4822,7 @@ test_that("show_columns reaches every output engine with the same columns", {
   )
   # Both CI pairs keep their own spanner; the headers do not collide.
   hdr <- unlist(ft$header$dataset, use.names = FALSE)
-  expect_true(any(grepl("Med 95% CI", hdr, fixed = TRUE)))
+  expect_true(any(grepl("Mdn 95% CI", hdr, fixed = TRUE)))
   expect_true(any(hdr == "95% CI"))
 })
 
@@ -4772,7 +4843,13 @@ test_that("the note glosses only the columns actually displayed", {
     ),
     "note"
   )
-  expect_match(n_full, "Med [Q1, Q3] = median", fixed = TRUE)
+  # Mdn is a symbol of a statistic, which the APA rule leaves undefined.
+  expect_match(
+    n_full,
+    "Q1 = first quartile; Q3 = third quartile;",
+    fixed = TRUE
+  )
+  expect_false(grepl("Mdn = median", n_full, fixed = TRUE))
   expect_match(n_full, "coverage at least 95%", fixed = TRUE)
   expect_false(grepl("IQR = interquartile", n_full, fixed = TRUE))
 
@@ -4821,7 +4898,7 @@ test_that("a fractional ci_level keeps its own percentage everywhere", {
     show_columns = c("m", "ci", "med", "med_ci")
   )))
   labs <- unique(unlist(lapply(s$col_meta, function(m) m$ci_label)))
-  expect_setequal(labs, c("97.5% CI", "Med 97.5% CI"))
+  expect_setequal(labs, c("97.5% CI", "Mdn 97.5% CI"))
   expect_false(any(grepl("98%", names(s$col_meta), fixed = TRUE)))
   expect_true(any(grepl("97.5%", names(s$col_meta), fixed = TRUE)))
   # The gloss reads the same producer.
@@ -4881,12 +4958,12 @@ test_that("the coverage percentage follows decimal_mark (decision 27)", {
   # The label layer the engines and inline() read carries it too ...
   s <- as_structured(tc)
   labs <- unique(unlist(lapply(s$col_meta, function(m) m$ci_label)))
-  expect_setequal(labs, c("97,5% CI", "Med 97,5% CI"))
+  expect_setequal(labs, c("97,5% CI", "Mdn 97,5% CI"))
   disp <- unlist(lapply(s$col_meta, function(m) m$display_label))
   expect_true("97,5% CI LL" %in% disp)
   expect_setequal(
     vapply(s$ci_pairs, function(p) p$label, character(1)),
-    c("97,5% CI", "Med 97,5% CI")
+    c("97,5% CI", "Mdn 97,5% CI")
   )
   # ... while the frozen keys keep the period, whatever the mark.
   expect_true("97.5% CI LL" %in% names(s$col_meta))

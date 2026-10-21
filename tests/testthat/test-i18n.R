@@ -226,9 +226,16 @@ test_that("every frozen continuous key equals its English display label", {
   for (cp in couples) {
     expect_identical(cp[[1L]], spicy_str(cp[[2L]]), info = cp[[2L]])
   }
-  # The median prefix is a composition rule, not a constant: `paste0()`
-  # on the key side, the registry word plus a space on the label side.
-  expect_identical(.CON_KEY_MED_PREFIX, paste0(spicy_str("header_median"), " "))
+  # One deliberate exception, the median. Its English header is "Mdn"
+  # since 0.14.0, the symbol of the APA Publication Manual (ADR of
+  # 2026-10-20, decision 5), while its keys keep the "Med" under which
+  # 0.13.0 published them: the names of as.data.frame(), of
+  # `output = "data.frame"` and of as_structured(). Both halves are
+  # pinned, so neither moves unseen, and every other key still equals its
+  # header.
+  expect_identical(.CON_KEY_MED_PREFIX, "Med ")
+  expect_identical(spicy_str("header_median"), "Mdn")
+  as_header <- function(key) sub("^Med", spicy_str("header_median"), key)
 
   # The vocabulary itself: fifteen columns, each of which must carry a
   # label equal to its key, and each interval bound a spanner header
@@ -238,14 +245,19 @@ test_that("every frozen continuous key equals its English display label", {
     recursive = FALSE,
     use.names = FALSE
   )
+  keys <- vapply(entries, function(e) e$name, character(1))
   expect_identical(
-    vapply(entries, function(e) e$name, character(1)),
+    sum(startsWith(keys, .CON_KEY_MED_PREFIX) | keys == "Med"),
+    4L
+  )
+  expect_identical(
+    as_header(keys),
     vapply(entries, function(e) e$label, character(1))
   )
   bounds <- Filter(function(e) !is.null(e$ci_role), entries)
   expect_length(bounds, 4L)
   expect_identical(
-    vapply(bounds, function(e) e$ci_key, character(1)),
+    as_header(vapply(bounds, function(e) e$ci_key, character(1))),
     vapply(bounds, function(e) e$ci_label, character(1))
   )
   expect_identical(

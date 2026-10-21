@@ -268,10 +268,10 @@ of \code{\link[=freq]{freq()}}.}
 \code{\link[=spicy_style]{spicy_style()}} object, or \code{NULL} (the default). A style only
 changes DEFAULTS -- any argument you pass explicitly wins over it.
 Set \code{options(spicy.style = )} for document-wide scope. A theme
-covers numeric formatting conformity only, not full editorial
-conformity; \code{?spicy_style} lists the exact rules each one encodes
-and the official document they come from. An unknown name is an
-error.}
+covers numeric formatting, the word that opens the note and the
+abbreviations the note defines, not full editorial conformity;
+\code{?spicy_style} lists the exact rules each one encodes and the
+official document they come from. An unknown name is an error.}
 
 \item{by}{Defunct. The grouping characteristics are selected with
 \code{select} since spicy 0.13.0; supplying \code{by} is an error.}

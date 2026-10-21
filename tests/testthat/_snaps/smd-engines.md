@@ -13,7 +13,7 @@
        y        │ A      2.25  1.50  1.00  4.00    -0.14       4.64    4  .264 
                 │ B      5.33  3.51  2.00  9.00    -3.39      14.06    3       
       
-      Note. Group comparison: Welch t-test.
+      Note. Group comparison: Welch t-test. CI = confidence interval; LL = lower limit; UL = upper limit.
 
 ---
 

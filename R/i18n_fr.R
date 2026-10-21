@@ -52,7 +52,7 @@
 # HOLES. `spicy_fmt()` is untouched, so a template keeps the English hole
 # ORDER unless the grammar forces otherwise -- in which case it uses the
 # positional form (`%1$s`), as `header_ci_spanner`, `note_gloss_med_ci` and
-# `note_gloss_smd` do.
+# `note_smd_direction` do.
 #
 # This file is authored, not generated at build time. The fourteen
 # terminology calls are settled (decision 38), and the set as a whole was
@@ -215,6 +215,7 @@
   note_re_null_binomial = "r\u00E9gression binomiale",
   note_re_null_cloglog = "r\u00E9gression log-log compl\u00E9mentaire",
   note_re_null_log_binomial = "r\u00E9gression log-binomiale",
+  note_re_null_gaussian = "r\u00E9gression gaussienne",
   note_re_null_inverse_gaussian = "r\u00E9gression gaussienne inverse",
   note_re_null_negative_binomial = "r\u00E9gression binomiale n\u00E9gative (%s)",
   # Comme le pont des titres : "Regression a logit cumulatif".
@@ -256,20 +257,73 @@
   note_estimand_method_stratified = "\u00A0; ajust\u00E9e par g-computation \u00E0 partir du mod\u00E8le estim\u00E9 (risques de base par strate), erreurs standards par bootstrap non param\u00E9trique (%s r\u00E9plications).",
   note_estimand_skipped_terms = " Les termes transform\u00E9s (%s) n'ont pas de ligne d'effet absolu\u00A0: le contraste est d\u00E9fini par variable brute\u00A0; remettez la variable \u00E0 l'\u00E9chelle dans les donn\u00E9es plut\u00F4t que dans la formule.",
 
-  # -- table_regression(): abbreviation glosses -----------------------------
-  note_abbrev_or = "OR = rapport de cotes",
-  note_abbrev_irr = "IRR = rapport de taux d'incidence",
-  note_abbrev_rr = "RR = risque relatif",
-  note_abbrev_mr = "MR = rapport de moyennes",
-  note_abbrev_tr = "TR = rapport de temps",
-  note_abbrev_expb = "exp(B) = coefficient exponenti\u00E9",
-  note_abbrev_f2 = "f\u00B2 = f\u00B2 partiel de Cohen",
-  note_abbrev_eta2 = "\u03B7\u00B2 = \u00EAta-carr\u00E9 partiel",
-  note_abbrev_omega2 = "\u03C9\u00B2 = om\u00E9ga-carr\u00E9 partiel corrig\u00E9 du biais",
-  note_abbrev_chi2 = "\u03C7\u00B2 = khi-deux partiel du rapport de vraisemblance",
-  note_abbrev_chi2_wald = "\u03C7\u00B2 = khi-deux partiel de Wald",
-  note_abbrev_beta = "\u03B2 = coefficient standardis\u00E9",
-  note_abbrev_beta_method = "\u03B2 = coefficient standardis\u00E9 (%s)",
+  # -- the abbreviations of a table note ------------------------------------
+  # "hazard ratio" is absent: a term of art the field reads in English
+  # (decision 38), as "minimum" and "maximum" are absent because the
+  # French word is the English one.
+  abbrev_mean = "moyenne",
+  abbrev_sd = "\u00E9cart-type",
+  abbrev_se = "erreur standard",
+  abbrev_median = "m\u00E9diane",
+  abbrev_iqr = "\u00E9cart interquartile",
+  abbrev_q1 = "premier quartile",
+  abbrev_q3 = "troisi\u00E8me quartile",
+  abbrev_ci = "intervalle de confiance",
+  abbrev_cri = "intervalle de cr\u00E9dibilit\u00E9",
+  abbrev_hdi = "intervalle de plus haute densit\u00E9",
+  abbrev_ll = "limite inf\u00E9rieure",
+  abbrev_ul = "limite sup\u00E9rieure",
+  abbrev_b = "coefficient de r\u00E9gression non standardis\u00E9",
+  abbrev_beta = "coefficient standardis\u00E9",
+  abbrev_or = "rapport de cotes",
+  abbrev_irr = "rapport de taux d'incidence",
+  abbrev_rr = "risque relatif",
+  abbrev_mr = "rapport de moyennes",
+  abbrev_tr = "rapport de temps",
+  abbrev_exp_b = "coefficient exponenti\u00E9",
+  abbrev_delta = "diff\u00E9rence",
+  abbrev_change = "variation",
+  abbrev_aic = "crit\u00E8re d'information d'Akaike",
+  abbrev_aicc = "crit\u00E8re d'information d'Akaike corrig\u00E9 pour les petits \u00E9chantillons",
+  abbrev_bic = "crit\u00E8re d'information bay\u00E9sien",
+  abbrev_icc = "coefficient de corr\u00E9lation intraclasse",
+  abbrev_rmse = "racine de l'erreur quadratique moyenne",
+  abbrev_qic = "crit\u00E8re de quasi-vraisemblance sous le mod\u00E8le d'ind\u00E9pendance",
+  abbrev_qicu = "crit\u00E8re de quasi-vraisemblance sous le mod\u00E8le d'ind\u00E9pendance, p\u00E9nalis\u00E9 par le nombre de param\u00E8tres",
+  abbrev_elpd = "densit\u00E9 pr\u00E9dictive ponctuelle logarithmique esp\u00E9r\u00E9e",
+  abbrev_loo = "validation crois\u00E9e par exclusion d'une observation",
+  abbrev_looic = "crit\u00E8re d'information de la validation crois\u00E9e par exclusion d'une observation",
+  abbrev_waic = "crit\u00E8re d'information largement applicable",
+  abbrev_sigma = "\u00E9cart-type",
+  abbrev_rho = "corr\u00E9lation",
+  abbrev_sigma_hat = "\u00E9cart-type r\u00E9siduel",
+  abbrev_r2 = "coefficient de d\u00E9termination",
+  abbrev_pseudo_r2 = "pseudo-coefficient de d\u00E9termination",
+  abbrev_adj_r2 = "coefficient de d\u00E9termination ajust\u00E9",
+  abbrev_d = "d de Cohen",
+  abbrev_g = "g de Hedges",
+  abbrev_f2 = "f\u00B2 de Cohen",
+  abbrev_eta2 = "\u00EAta-carr\u00E9",
+  abbrev_omega2 = "om\u00E9ga-carr\u00E9",
+  abbrev_es = "taille d'effet",
+  abbrev_smd = "diff\u00E9rence de moyennes standardis\u00E9e",
+  abbrev_ame = "effet marginal moyen",
+  abbrev_rhat = "facteur de r\u00E9duction potentielle d'\u00E9chelle",
+  abbrev_ess = "taille d'\u00E9chantillon effective",
+  abbrev_iqr_width = "\u00E9cart interquartile (%s - %s)",
+  abbrev_beta_method = "coefficient standardis\u00E9 (%s)",
+  abbrev_f2_partial = "f\u00B2 partiel de Cohen",
+  abbrev_eta2_partial = "\u00EAta-carr\u00E9 partiel",
+  abbrev_omega2_partial = "om\u00E9ga-carr\u00E9 partiel corrig\u00E9 du biais",
+  abbrev_chi2_lrt = "khi-deux partiel du rapport de vraisemblance",
+  abbrev_chi2_wald = "khi-deux partiel de Wald",
+  abbrev_ame_category = "effet marginal moyen sur la probabilit\u00E9 d'une cat\u00E9gorie de r\u00E9ponse",
+  abbrev_pd = "probabilit\u00E9 de direction (part de la distribution a posteriori du c\u00F4t\u00E9 dominant de z\u00E9ro\u00A0; Makowski et al. 2019)",
+  abbrev_mcse = "erreur standard de Monte-Carlo de la m\u00E9diane a posteriori (Vehtari et al. 2021)",
+  abbrev_deff = "effet de plan (variance fond\u00E9e sur le plan / variance d'un \u00E9chantillon al\u00E9atoire simple de m\u00EAme n)",
+  abbrev_se_design = "erreur standard de la moyenne, fond\u00E9e sur le plan de sondage",
+  note_abbrev_lead_one = "Abr\u00E9viation\u00A0: %s.",
+  note_abbrev_lead_many = "Abr\u00E9viations\u00A0: %s.",
   note_beta_refit = "\"refit\"\u00A0: variable d\u00E9pendante et pr\u00E9dicteurs num\u00E9riques centr\u00E9s-r\u00E9duits, indicatrices des facteurs en 0/1",
   note_beta_posthoc = "\"posthoc\"\u00A0: B \u00D7 ET(X)/ET(Y) pour les pr\u00E9dicteurs num\u00E9riques, B/ET(Y) pour les indicatrices des facteurs",
   note_beta_basic = "\"basic\"\u00A0: chaque colonne de la matrice du mod\u00E8le r\u00E9duite par son \u00E9cart-type, indicatrices comprises (Beta de SPSS / Stata)",
@@ -279,10 +333,6 @@
   note_standardized_caveat_algebraic = "les termes d'interaction ou transform\u00E9s sont r\u00E9duits par l'\u00E9cart-type de la colonne produit (ou transform\u00E9e) de la matrice du mod\u00E8le\u00A0; diff\u00E8re de \"refit\" lorsque les composantes sont corr\u00E9l\u00E9es.",
   note_standardized_caveat_refit = "apr\u00E8s r\u00E9estimation sur les donn\u00E9es centr\u00E9es-r\u00E9duites, le \u03B2 d'une interaction est le coefficient du produit des composantes centr\u00E9es-r\u00E9duites.",
   note_standardized_caveat_fallback = "\"refit\" a \u00E9chou\u00E9\u00A0; mise \u00E0 l'\u00E9chelle alg\u00E9brique (posthoc) appliqu\u00E9e\u00A0: %s",
-  note_abbrev_pd = "pd = probabilit\u00E9 de direction (part de la distribution a posteriori du c\u00F4t\u00E9 dominant de z\u00E9ro\u00A0; Makowski et al. 2019)",
-  note_abbrev_mcse = "MCSE = erreur standard de Monte-Carlo de la m\u00E9diane a posteriori (Vehtari et al. 2021)",
-  note_abbrev_ame = "AME = effet marginal moyen",
-  note_abbrev_ame_percat = "AME = effet marginal moyen sur la probabilit\u00E9 d'une cat\u00E9gorie de r\u00E9ponse",
   note_abbrev_sep = "\u00A0; ",
   note_ame_satterthwaite = "Inf\u00E9rence sur les AME\u00A0: test t avec degr\u00E9s de libert\u00E9 de Satterthwaite%s.",
   note_ame_satterthwaite_qual_both = " (formule exacte pour lm\u00A0; approximation par le coefficient dominant pour glm)",
@@ -300,6 +350,10 @@
   note_exp_with_se_multi = "%s exponenti\u00E9s et affich\u00E9s en %s (selon la famille)\u00A0; erreur standard sur l'\u00E9chelle du rapport affich\u00E9 (%s)\u00A0; %s.%s",
   note_exp_no_se_single = "%s exponenti\u00E9s et affich\u00E9s en %s\u00A0; %s.%s",
   note_exp_no_se_multi = "%s exponenti\u00E9s et affich\u00E9s en %s (selon la famille)\u00A0; %s.%s",
+  note_exp_with_se_single_no_ci = "%s exponenti\u00E9s et affich\u00E9s en %s\u00A0; erreur standard sur l'\u00E9chelle des %s (%s).%s",
+  note_exp_with_se_multi_no_ci = "%s exponenti\u00E9s et affich\u00E9s en %s (selon la famille)\u00A0; erreur standard sur l'\u00E9chelle du rapport affich\u00E9 (%s).%s",
+  note_exp_no_se_single_no_ci = "%s exponenti\u00E9s et affich\u00E9s en %s.%s",
+  note_exp_no_se_multi_no_ci = "%s exponenti\u00E9s et affich\u00E9s en %s (selon la famille).%s",
   # The Chicago lead-in of `spicy_style(note_label = "Note:")`, with the
   # no-break space French typography puts before a colon. "Note." needs
   # no entry: it is spelled the same in both languages.
@@ -352,11 +406,10 @@
   note_outcome_blocks = "Chaque bloc compare %s entre les modalit\u00E9s d'une variable\u00A0; les blocs ne sont pas ajust\u00E9s les uns sur les autres.",
   note_outcome_overall = "Ensemble = l'\u00E9chantillon d'analyse complet.",
   note_outcome_overall_relabeled = "%s = l'\u00E9chantillon d'analyse complet.",
-  note_gloss_iqr = "%s = \u00E9cart interquartile (%s - %s).",
-  note_gloss_med_iqr = "%s = m\u00E9diane [premier quartile, troisi\u00E8me quartile].",
   note_gloss_med_ci = "%1$s = intervalle de confiance exact de la m\u00E9diane fond\u00E9 sur les statistiques d'ordre (couverture d'au moins %2$s).",
   note_gloss_med_ci_undefined = "\u00AB\u00A0%s\u00A0\u00BB lorsque l'\u00E9chantillon est trop petit pour cette modalit\u00E9.",
-  note_gloss_smd = "%1$s = diff\u00E9rence de moyennes standardis\u00E9e (%2$s - %3$s)\u00A0; |%1$s| > %4$s est le seuil de d\u00E9s\u00E9quilibre usuel.",
+  note_coverage_pct = "%s\u00A0%%",
+  note_smd_direction = "Sens de la %1$s\u00A0: %2$s - %3$s. Le seuil de d\u00E9s\u00E9quilibre usuel est |%1$s| > %4$s.",
   note_gloss_smd_multinomial = "Pour une variable \u00E0 plus de deux modalit\u00E9s, la %s est la distance multivari\u00E9e (de Mahalanobis) entre les deux profils de proportions, et n'est donc pas sign\u00E9e.",
 
   # -- table_multiresponse(): title, headers, base row and notes ------------
@@ -415,8 +468,6 @@
   note_negative_weights_no_test = "La comparaison des groupes n'est pas rapport\u00E9e\u00A0: un test fond\u00E9 sur le plan de sondage n'est pas d\u00E9fini lorsque les poids changent de signe.",
   note_negative_weights_no_test_some = "Pour les variables dont les cas complets comprennent des lignes \u00E0 poids n\u00E9gatif, la comparaison des groupes n'est pas rapport\u00E9e\u00A0: un test fond\u00E9 sur le plan de sondage n'est pas d\u00E9fini lorsque les poids changent de signe.",
   note_deff_replace = "Les effets de plan sont calcul\u00E9s par rapport \u00E0 un tirage AVEC remise (la correction pour population finie est ignor\u00E9e).",
-  note_gloss_deff = "%s = effet de plan (variance fond\u00E9e sur le plan / variance d'un \u00E9chantillon al\u00E9atoire simple de m\u00EAme n).",
-  note_gloss_se = "%s = erreur standard de la moyenne, fond\u00E9e sur le plan de sondage.",
   test_design_t = "test t fond\u00E9 sur le plan de sondage",
   test_design_wald = "test de Wald fond\u00E9 sur le plan de sondage",
   test_design_wilcoxon = "test de Wilcoxon-Mann-Whitney fond\u00E9 sur le plan de sondage",
@@ -631,8 +682,8 @@
 # par le frame, ce vecteur et .spicy_title_prefix_table() disparaissent
 # en bloc. Regle d'application (au site d'appel) : coherent-ou-rien --
 # un prefixe absent d'ici garde son titre anglais ENTIER ; les suffixes
-# moteur " (glmmTMB)" / " (nlme)" sont detaches puis reattaches tels
-# quels (noms propres). Familles couvertes : les chemins par defaut
+# moteur " (glmmTMB)" / " (nlme)" / " (stanreg)" / " (brmsfit)" sont
+# detaches puis reattaches tels quels (noms propres). Familles couvertes : les chemins par defaut
 # qu'un utilisateur francophone rencontre (decision 42, minimum vital).
 .FR_TITLE_PREFIXES <- c(
   "Regression" = "R\u00E9gression",
@@ -653,5 +704,16 @@
   "Survey-weighted linear regression" = "R\u00E9gression lin\u00E9aire pond\u00E9r\u00E9e par le plan de sondage",
   "Survey-weighted logistic regression" = "R\u00E9gression logistique pond\u00E9r\u00E9e par le plan de sondage",
   "Survey-weighted Cox proportional hazards regression" = "R\u00E9gression de Cox \u00E0 risques proportionnels pond\u00E9r\u00E9e par le plan de sondage",
-  "Multinomial logistic regression" = "R\u00E9gression logistique multinomiale"
+  "Multinomial logistic regression" = "R\u00E9gression logistique multinomiale",
+  # Les modeles bayesiens de regression_frame_stan.R : le suffixe
+  # " (stanreg)" / " (brmsfit)" est detache puis rattache.
+  "Bayesian linear regression" = "R\u00E9gression lin\u00E9aire bay\u00E9sienne",
+  "Bayesian logistic regression" = "R\u00E9gression logistique bay\u00E9sienne",
+  "Bayesian probit regression" = "R\u00E9gression probit bay\u00E9sienne",
+  "Bayesian complementary log-log regression" = "R\u00E9gression log-log compl\u00E9mentaire bay\u00E9sienne",
+  "Bayesian log-binomial regression" = "R\u00E9gression log-binomiale bay\u00E9sienne",
+  "Bayesian binomial regression" = "R\u00E9gression binomiale bay\u00E9sienne",
+  "Bayesian Poisson regression" = "R\u00E9gression de Poisson bay\u00E9sienne",
+  "Bayesian Gamma regression" = "R\u00E9gression gamma bay\u00E9sienne",
+  "Bayesian inverse-Gaussian regression" = "R\u00E9gression gaussienne inverse bay\u00E9sienne"
 )

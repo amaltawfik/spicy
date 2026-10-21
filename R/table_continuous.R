@@ -311,10 +311,10 @@
 #'   [spicy_style()] object, or `NULL` (the default). A style only
 #'   changes DEFAULTS -- any argument you pass explicitly wins over it.
 #'   Set `options(spicy.style = )` for document-wide scope. A theme
-#'   covers numeric formatting conformity only, not full editorial
-#'   conformity; `?spicy_style` lists the exact rules each one encodes
-#'   and the official document they come from. An unknown name is an
-#'   error.
+#'   covers numeric formatting, the word that opens the note and the
+#'   abbreviations the note defines, not full editorial conformity;
+#'   `?spicy_style` lists the exact rules each one encodes and the
+#'   official document they come from. An unknown name is an error.
 #'
 #' @inheritSection freq Declared missing values
 #' @inheritSection table_categorical Multiple-comparison adjustment
@@ -414,15 +414,22 @@
 #' |---|---|---|
 #' | `"m"` | `M` | mean |
 #' | `"sd"` | `SD` | standard deviation |
-#' | `"med"` | `Med` | median ([stats::median()]) |
+#' | `"med"` | `Mdn` | median ([stats::median()]) |
 #' | `"iqr"` | `IQR` | interquartile *width*, `Q3 - Q1` |
-#' | `"med_iqr"` | `Med [Q1, Q3]` | median and the interquartile *interval*, in one compact column |
+#' | `"med_iqr"` | `Mdn [Q1, Q3]` | median and the interquartile *interval*, in one compact column |
 #' | `"q1"` / `"q3"` | `Q1` / `Q3` | first / third quartile |
 #' | `"min"` / `"max"` | `Min` / `Max` | extremes |
 #' | `"ci"` | `<level>% CI LL` / `UL` | *t* confidence interval of the mean |
-#' | `"med_ci"` | `Med <level>% CI LL` / `UL` | exact confidence interval of the median |
+#' | `"med_ci"` | `Mdn <level>% CI LL` / `UL` | exact confidence interval of the median |
 #' | `"n"` | `n` | valid observations |
 #' | `"weighted_n"` | `Weighted n` | sum of weights (requires `weights`) |
+#'
+#' The column is the header the table prints. In `output =
+#' "data.frame"`, [as.data.frame()][as.data.frame.spicy_continuous_table]
+#' and [as_structured()], the median columns keep the names of 0.13.0,
+#' `Med`, `Med [Q1, Q3]` and `Med <level>% CI LL` / `UL`. The note under
+#' the table defines the abbreviations these headers show, as the style
+#' in force asks (see `abbreviations` in [spicy_style()]).
 #'
 #' Quartiles use [stats::quantile()]'s default type 7. `"iqr"` is the
 #' width (one number, the rank mirror of `SD`); `"med_iqr"` shows the
@@ -1830,8 +1837,8 @@ table_continuous <- function(
   # here, in the order of the family (`.compose_note()`): what the
   # numbers are (the weights), the missing data, the comparison (the
   # test of each variable, whenever the table shows p-values, and the
-  # adjustment), then the glosses of the columns. It opens with "Note."
-  # here.
+  # adjustment), the method sentences of the columns, then the
+  # abbreviations of the headers. It opens with "Note." here.
   table_note <- .compose_note(
     what = build_weights_note(),
     missing = build_missing_note(),
@@ -1848,7 +1855,15 @@ table_continuous <- function(
     definitions = c(
       build_column_glosses(tokens_union, result, ci_level, decimal_mark),
       build_smd_note(do_smd, real_group_levels, decimal_mark)
-    )
+    ),
+    abbreviations = .note_abbreviations(c(
+      .continuous_abbrev_items(tokens_union, ci_level, decimal_mark),
+      .continuous_abbrev_compare(
+        es = attr(result, "show_effect_size"),
+        es_ci = attr(result, "show_effect_size_ci"),
+        smd = do_smd
+      )
+    ))
   )
 
   if (identical(output, "long")) {
@@ -2153,7 +2168,7 @@ order_continuous_tokens <- function(tokens) {
   med_ci_key <- paste0(.CON_KEY_MED_PREFIX, ci_key)
   ci_hdr <- .continuous_ci_label(ci_level, decimal_mark)
   med_hdr <- spicy_str("header_median")
-  # "Med 95% CI": the same statistic-then-interval template the
+  # "Mdn 95% CI": the same statistic-then-interval template the
   # regression family uses for "f2 95% CI".
   med_ci_hdr <- spicy_fmt("header_with_ci_suffix", med_hdr, ci_hdr)
   role_labels <- c(
@@ -2758,37 +2773,83 @@ build_test_note <- function(
   ledger
 }
 
-# Gloss the abbreviations the displayed columns introduce, and only
-# those: "IQR" is used in the literature for both the interval and its
-# width, and an order-statistic CI is not a t interval.
-build_column_glosses <- function(tokens, result, ci_level, decimal_mark = ".") {
-  # Each gloss names its own column: the header travels as an argument,
-  # resolved from the vocabulary, never re-typed in the note's value.
+# The concepts the statistic columns of a continuous table show, in the
+# order of the columns (`tokens` is in display order), for
+# `.note_abbreviations()`: ids of `.abbrev_registry()`, or `.abbr()`
+# items for the definitions that say more. One vocabulary, so one list,
+# for table_continuous(), table_outcome() and the survey twin.
+#
+# "IQR" is used in the literature for both the interval and its width, so
+# its definition says which one the column holds, and names Q3 and Q1 by
+# their headers. `svy`: the standard error of a design table is
+# design-based, which its definition says too.
+.continuous_abbrev_items <- function(
+  tokens,
+  ci_level = 0.95,
+  decimal_mark = ".",
+  svy = FALSE
+) {
   spec <- .continuous_token_columns(ci_level, decimal_mark)
   label_of <- function(tok) spec[[tok]][[1L]]$label
-  parts <- character(0)
-  if ("iqr" %in% tokens) {
-    parts <- c(
-      parts,
-      spicy_fmt(
-        "note_gloss_iqr",
-        label_of("iqr"),
-        label_of("q3"),
-        label_of("q1")
+  items <- list()
+  for (tok in tokens) {
+    items <- c(
+      items,
+      switch(
+        tok,
+        m = list("mean"),
+        sd = list("sd"),
+        se = list(
+          if (svy) .abbr("se", term = spicy_str("abbrev_se_design")) else "se"
+        ),
+        med = list("median"),
+        iqr = list(.abbr(
+          "iqr",
+          term = spicy_fmt("abbrev_iqr_width", label_of("q3"), label_of("q1"))
+        )),
+        med_iqr = list("median", "q1", "q3"),
+        q1 = list("q1"),
+        q3 = list("q3"),
+        min = list("min"),
+        max = list("max"),
+        ci = as.list(.abbrev_ci_bounds()),
+        med_ci = c(list("median"), as.list(.abbrev_ci_bounds())),
+        deff = list("deff"),
+        # n and weighted_n: n is never defined.
+        NULL
       )
     )
   }
-  if ("med_iqr" %in% tokens) {
-    parts <- c(parts, spicy_fmt("note_gloss_med_iqr", label_of("med_iqr")))
-  }
+  items
+}
+
+# The concepts of the comparison columns that follow the statistics: the
+# effect size ("ES", "ES [95% CI]") and the SMD.
+.continuous_abbrev_compare <- function(es = FALSE, es_ci = FALSE, smd = FALSE) {
+  c(
+    if (isTRUE(es)) list("es"),
+    if (isTRUE(es) && isTRUE(es_ci)) list("ci"),
+    if (isTRUE(smd)) list("smd")
+  )
+}
+
+# The method sentence of the columns: an order-statistic CI of the median
+# is not a t interval. The abbreviations of the headers are defined with
+# the others (`.continuous_abbrev_items()`).
+build_column_glosses <- function(tokens, result, ci_level, decimal_mark = ".") {
+  # The sentence names its own column: the header travels as an argument,
+  # resolved from the vocabulary, never re-typed in the note's value.
+  spec <- .continuous_token_columns(ci_level, decimal_mark)
+  parts <- character(0)
   if ("med_ci" %in% tokens) {
     # The coverage quoted in the note is display text like the header
     # above it: same producer, same `decimal_mark` (decision 27). The
-    # "%" travels outside the producer, as in `.continuous_ci_pct()`.
+    # "%" travels outside the producer, as in `.continuous_ci_pct()`, and
+    # takes the space its language puts before it.
     gloss <- spicy_fmt(
       "note_gloss_med_ci",
       spec[["med_ci"]][[1L]]$ci_label,
-      paste0(.ci_pct_display(ci_level, decimal_mark), "%")
+      spicy_fmt("note_coverage_pct", .ci_pct_display(ci_level, decimal_mark))
     )
     if (any(is.na(result$med_ci_lower))) {
       gloss <- paste(
@@ -2804,12 +2865,16 @@ build_column_glosses <- function(tokens, result, ci_level, decimal_mark = ".") {
   paste(parts, collapse = " ")
 }
 
-# Gloss the SMD column. Not part of `build_column_glosses()` above: that
-# one walks the `show_columns` vocabulary, and `smd` is deliberately an
-# ARGUMENT rather than a token (a token would file a two-group
-# comparison among the per-group descriptives).
+# The method sentence of the SMD column: the direction of the difference
+# and the threshold it is read against. A method sentence, not an
+# abbreviation (decision 3 of the ADR of 2026-10-20): it stays under every
+# value of `spicy_style(abbreviations = )`, and the SMD itself is defined
+# with the other abbreviations. Not part of `build_column_glosses()`
+# above: that one walks the `show_columns` vocabulary, and `smd` is
+# deliberately an ARGUMENT rather than a token (a token would file a
+# two-group comparison among the per-group descriptives).
 #
-# Four holes: the header it glosses, the two group labels in the order
+# Four holes: the header of the column, the two group labels in the order
 # the subtraction reads, and the imbalance threshold. The threshold is a
 # displayed NUMBER, so it follows `decimal_mark` (decision 29-C) through
 # `format_number()` -- `spicy_fmt()` substitutes no decimal mark, so a
@@ -2820,7 +2885,7 @@ build_smd_note <- function(show_smd, group_levels, decimal_mark = ".") {
     return(NULL)
   }
   spicy_fmt(
-    "note_gloss_smd",
+    "note_smd_direction",
     spicy_str("header_smd"),
     group_levels[[1L]],
     group_levels[[2L]],

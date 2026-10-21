@@ -46,7 +46,7 @@
        Wald χ² (change) │    –                 +5.31
        p (change)       │    –                   .070
       
-      Note. Logistic regression models. Std. errors: heteroskedasticity-robust (HC0).
+      Note. Logistic regression models. Std. errors: heteroskedasticity-robust (HC0). AIC = Akaike information criterion.
 
 ---
 
@@ -96,5 +96,5 @@
        χ² de Wald (variation) │    –                  +5,31
        p (variation)          │    –                   0,070
       
-      Note. Modèles de régression logistique. Erreurs standards : robustes à l'hétéroscédasticité (HC0).
+      Note. Modèles de régression logistique. Erreurs standards : robustes à l'hétéroscédasticité (HC0). AIC = critère d'information d'Akaike.
 

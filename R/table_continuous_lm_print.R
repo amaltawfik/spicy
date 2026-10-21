@@ -188,7 +188,10 @@ print.spicy_continuous_lm_table <- function(x, ...) {
 #       shows them (`.tclm_test_note()`), then the SE estimator of a
 #       non-classical `vcov` -- robust and resampling standard errors
 #       are never silently labeled, the doctrine of table_regression()'s
-#       footers.
+#       footers;
+#   (d) the abbreviations of the headers, read off `spec`, the column
+#       spec of the table (`.lm_column_spec()`), where the rule of the
+#       style in force puts them.
 #
 # NULL when there is nothing to disclose; otherwise one string opened by
 # the lead-in in force ("Note. " by default, see `.note_lead_keys()`).
@@ -196,7 +199,8 @@ print.spicy_continuous_lm_table <- function(x, ...) {
   x,
   missing_note = NULL,
   covariates = attr(x, "covariates") %||% character(),
-  weighted_by = NULL
+  weighted_by = NULL,
+  spec = NULL
 ) {
   adjustment <- attr(x, "adjustment") %||% NA_character_
   vcov_type <- attr(x, "vcov_type") %||% "classical"
@@ -243,7 +247,79 @@ print.spicy_continuous_lm_table <- function(x, ...) {
       )
     )
   }
-  .compose_note(what = what, missing = missing_note, inference = inference)
+  .compose_note(
+    what = what,
+    missing = missing_note,
+    inference = inference,
+    abbreviations = .note_abbreviations(
+      .lm_abbrev_items(spec, partial = length(covariates) > 0L)
+    )
+  )
+}
+
+# The concepts the headers of a linear-model table show, in the order of
+# its columns (`spec`, from `.lm_column_spec()`), for
+# `.note_abbreviations()`. Under covariate adjustment the f2 and the
+# omega-squared of `by` are partial (see `effect_size`), which their
+# definitions say, as the partial effect sizes of table_regression() do.
+.lm_abbrev_items <- function(spec, partial = FALSE) {
+  es_ci <- any(vapply(
+    spec,
+    function(s) identical(s$token, "es_ci"),
+    logical(1)
+  ))
+  items <- list()
+  for (col in spec) {
+    items <- c(
+      items,
+      switch(
+        col$token,
+        emmean = list("mean"),
+        delta = list("delta"),
+        b = list("b"),
+        ci = list(
+          "ci",
+          if (identical(col$ci_role, .LM_KEY_CI_LL)) "ll" else "ul"
+        ),
+        r2 = list(
+          if (identical(col$key, format_r2_header_lm("adj_r2"))) {
+            "adj_r2"
+          } else {
+            "r2"
+          }
+        ),
+        es = c(
+          list(.lm_abbrev_effect_size(col$effect_size, partial)),
+          if (es_ci) list("ci")
+        ),
+        # variable, the test statistic (t, z, F, chi-squared), p, n,
+        # weighted_n and the raw-only interval of the effect size: nothing
+        # to define.
+        NULL
+      )
+    )
+  }
+  items[!vapply(items, is.null, logical(1))]
+}
+
+# The concept of the effect-size header.
+.lm_abbrev_effect_size <- function(effect_size, partial = FALSE) {
+  switch(
+    effect_size,
+    f2 = if (partial) {
+      .abbr("f2", term = spicy_str("abbrev_f2_partial"))
+    } else {
+      "f2"
+    },
+    omega2 = if (partial) {
+      .abbr("omega2", term = spicy_str("abbrev_omega2_partial"))
+    } else {
+      "omega2"
+    },
+    cohens_d = "d",
+    hedges_g = "g",
+    NULL
+  )
 }
 
 # Internal: the test behind the p-value of each outcome, read off its

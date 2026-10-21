@@ -424,7 +424,7 @@ table_continuous(
 #>  bmi             │ 25.93  3.72  16.00  38.90    25.72      26.14    1188 
 #>  life_sat_health │  3.55  1.25   1.00   5.00     3.48       3.62    1192 
 #> 
-#> Note. Missing values removed: bmi (12), life_sat_health (8).
+#> Note. Missing values removed: bmi (12), life_sat_health (8). CI = confidence interval; LL = lower limit; UL = upper limit.
 ```
 
 ``` r
@@ -455,7 +455,7 @@ table_continuous(
 #>                  │ Upper secondary     3.63    534        
 #>                  │ Tertiary            4.21    399        
 #> 
-#> Note. Missing values removed: bmi (12), life_sat_health (8). Group comparison: Welch one-way ANOVA.
+#> Note. Missing values removed: bmi (12), life_sat_health (8). Group comparison: Welch one-way ANOVA. CI = confidence interval; LL = lower limit; UL = upper limit.
 ```
 
 ``` r
@@ -494,7 +494,7 @@ table_regression(fit)
 #>  R²              │    0.02                              
 #>  Adj. R²         │    0.02                              
 #> 
-#> Note. Linear regression. Std. errors: classical (OLS).
+#> Note. Linear regression. Std. errors: classical (OLS). CI = confidence interval.
 ```
 
 Regression tables cover 39 model classes with the conventions of each
@@ -527,7 +527,7 @@ table_regression(fit_mixed)
 #>  AIC                             │ 1755.6                                 
 #>  BIC                             │ 1774.8                                 
 #> 
-#> Note. Linear mixed-effects regression. Std. errors: Wald (model-based). p-values: Wald-z, large-sample approximation. Load `lmerTest` for Satterthwaite t-tests. Random effects (REML): LR test vs linear regression, χ̄²(3) = 150.04, p < .001.
+#> Note. Linear mixed-effects regression. Std. errors: Wald (model-based). p-values: Wald-z, large-sample approximation. Load `lmerTest` for Satterthwaite t-tests. Random effects (REML): LR test vs linear regression, χ̄²(3) = 150.04, p < .001. CI = confidence interval; AIC = Akaike information criterion; BIC = Bayesian information criterion.
 ```
 
 See [Categorical summary
@@ -568,7 +568,7 @@ table_outcome(
 #>    Yes       │ 25.93  3.58  16.80  35.30    25.48      26.38     248       
 #>    (Missing) │ 24.74  3.63  17.60  32.50    23.24      26.23      25       
 #> 
-#> Note. Missing values removed: bmi (12). Group comparison: Welch t-test. Each block compares bmi across the levels of one variable; blocks are not adjusted for one another. Overall = the whole analytic sample.
+#> Note. Missing values removed: bmi (12). Group comparison: Welch t-test. Each block compares bmi across the levels of one variable; blocks are not adjusted for one another. Overall = the whole analytic sample. CI = confidence interval; LL = lower limit; UL = upper limit.
 ```
 
 A “check all that apply” question gets a table of its own, one row per

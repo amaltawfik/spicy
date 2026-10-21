@@ -18,7 +18,7 @@
        R²          │  0.84
        Adj. R²     │  0.82
       
-      Note. Linear regression. Std. errors: classical (OLS).
+      Note. Linear regression. Std. errors: classical (OLS). CI = confidence interval.
 
 # snapshot – multi-model with nested = TRUE comparison footer
 
@@ -66,6 +66,6 @@
        R²            │  0.84
        Adj. R²       │  0.82
       
-      Note. Linear regression. Std. errors: classical (OLS). β = standardized coefficient ("refit": outcome and numeric predictors z-scored, factor dummies on 0/1).
+      Note. Linear regression. Std. errors: classical (OLS). β = standardized coefficient ("refit": outcome and numeric predictors z-scored, factor dummies on 0/1); CI = confidence interval.
       *** p < .001, ** p < .01, * p < .05.
 

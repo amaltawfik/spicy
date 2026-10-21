@@ -19,6 +19,21 @@ p-values, and notes.
   behind their p-values, and `table_categorical()` and
   `table_continuous_lm()` say when the statistics are weighted.
 
+* The note under every table defines the abbreviations its headers
+  show, at its end and in the order of the columns, as the APA manual
+  does, and leaves undefined the statistics the manual leaves undefined
+  (M, Mdn, SD, SE, B, OR, R², the Greek letters, *n*, *p*). No note
+  defines a test statistic (*t*, *z*, *F*, chi-squared). The default
+  note of `table_regression()` and `table_regression_uv()` no longer
+  defines OR and now defines CI ("CI = confidence interval"), and that
+  of a table of means adds its interval and bounds ("CI = confidence
+  interval; LL = lower limit; UL = upper limit"). The fit-statistic rows
+  of a regression table are defined too ("AIC = Akaike information
+  criterion", BIC, ICC, RMSE, WAIC, ...). The definitions of the IQR,
+  the SMD, the design effect and the effect sizes of
+  `table_regression()` join that list, and the direction of the SMD and
+  its threshold get a sentence of their own.
+
 * A variable with no observed value in a group of `by`, typically a
   question not asked there, has no data in that group, which is not a
   missing answer: its cells there show a dash, its rows leave the count
@@ -160,6 +175,20 @@ p-values, and notes.
 * The `jama` and `lancet` themes of `spicy_style()` open the note under
   the table without a lead-in word, as the AMA manual and The Lancet do.
   It opened with "Note.".
+
+* The `jama` theme of `spicy_style()` opens the note with a line of its
+  abbreviations, in alphabetical order ("Abbreviations: HR, hazard
+  ratio; OR, odds ratio."), as the AMA manual does, and does not expand
+  SD, SE, CI and the statistical symbols the manual lists. The
+  `lancet` theme spells the abbreviations out at the end of the note,
+  one "HR=hazard ratio." sentence each, and leaves SD, SE, IQR and CI
+  undefined, as the journal's tables do.
+
+* `table_continuous()`, `table_continuous_svy()`, and `table_outcome()`
+  head the median "Mdn", the APA symbol, where they printed "Med". The
+  French header stays "Méd.". The columns keep their names (`Med`,
+  `Med [Q1, Q3]`, `Med 95% CI LL`) in `output = "data.frame"`,
+  `as.data.frame()`, and `as_structured()`.
 
 * The table functions refuse a `by` column named in `select`, all with
   the same error. `table_categorical()` crossed it with itself,
@@ -368,6 +397,15 @@ p-values, and notes.
   a table: "Note." (APA, the default), "Note:" (Chicago), or `""` for
   none. It is set in italics in every rendered output.
 
+* `spicy_style()` gains `abbreviations`, which abbreviations the note
+  under a table defines. Unset, the note follows the rule of the theme
+  (APA by default). `"all"` defines every abbreviation and symbol the
+  table shows except *n*, *N*, *p* and the test statistics, for readers
+  outside the field.
+  `"none"` keeps only the definitions that say how a number was
+  computed, such as partial eta-squared. `options(spicy.style)` carries
+  it with the other levers.
+
 * `table_categorical()`, `table_continuous()`, `table_outcome()`, and
   their survey twins gain `p_adjust`, the multiple-comparison adjustment
   of `table_regression()`, applied to all the tests of the table
@@ -464,7 +502,8 @@ p-values, and notes.
   output, as in HTML, Word, and PowerPoint. LaTeX output compiles when a
   note contains `%` or `_`, centers each tinytable spanner over its
   columns, and keeps the Greek letters and the decimal alignment the
-  default font dropped, under each of the three LaTeX engines. A note of
+  default font dropped, under each of the three LaTeX engines, Cohen's
+  f² set in math like the squared Greek letters. A note of
   several lines no longer drops out of a Word document built from
   tinytable, and `table_continuous_lm(output = "gt")` keeps its note in
   `gt::as_latex()`, `gt::gtsave()`, and the other gt outputs.
@@ -676,12 +715,16 @@ p-values, and notes.
   p-value line, the `p_adjust` note, the likelihood-ratio test of the
   random effects of mixed models, the REML refit note of
   `nested = TRUE`, the exponentiation, component, threshold, and
-  scale-effect notes, and the notes of Bayesian models (sampler
-  diagnostics, predictive accuracy). Nested
+  scale-effect notes, and the title and notes of Bayesian models (the
+  model, sampler diagnostics, predictive accuracy). Nested
   models are `modèles emboîtés` in the title, RR is glossed
   `risque relatif`, and `table_continuous_lm()` and `table_outcome()`
   write `ajusté sur`. The French wording was reviewed and corrected
   throughout (#7).
+
+* `table_regression()` speaks of the confidence interval in its
+  exponentiation note only when the table shows one. The compact layout
+  of several models (B, SE, p) said "CI bounds exponentiated".
 
 * `table_regression()` handles `glmer()` fits with a Gamma or
   inverse-Gaussian family, which failed, and no longer fails on them or on
@@ -696,7 +739,8 @@ p-values, and notes.
   a gaussian family and a link other than identity against the `glm()`
   of that family and link. It used a linear regression, which that fit
   does not nest. The footer of such a `glmer()` or `glmmTMB()` fit names
-  the null "gaussian regression", not "linear regression".
+  the null "gaussian regression" ("régression gaussienne" in French),
+  not "linear regression".
 
 * `table_regression()` calls the `partial_chi2` of `lmer`, `glmer`,
   `glmmTMB`, and `lme` fits a partial Wald chi-squared in its footer. It

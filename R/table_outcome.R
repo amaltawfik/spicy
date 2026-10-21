@@ -1266,7 +1266,9 @@ table_outcome <- function(
     p_adjust_info = p_adjust_info,
     no_data = if (length(nodata_shown)) {
       .no_data_sentences(outcome_label, list(nodata_shown))
-    }
+    },
+    show_es = has_es_request,
+    es_ci = effect_size_ci
   )
 
   # The two machine shapes of the family (decision 5 of the ADR of
@@ -1494,8 +1496,9 @@ table_outcome <- function(
 # In the order of the family (`.compose_note()`): how the statistics were
 # weighted; what left the table, then the levels where the outcome has no
 # data (`no_data`); how the blocks were compared, how their p-values were
-# adjusted, and that no block is adjusted for another; then what the
-# columns and the Overall row mean.
+# adjusted, and that no block is adjusted for another; what the columns
+# and the Overall row mean; then the abbreviations of the headers, the
+# effect size (`show_es`, `es_ci`) included.
 .outcome_note <- function(
   outcome_name,
   outcome_label,
@@ -1515,7 +1518,9 @@ table_outcome <- function(
   show_comparison,
   overall,
   p_adjust_info = NULL,
-  no_data = NULL
+  no_data = NULL,
+  show_es = FALSE,
+  es_ci = FALSE
 ) {
   parts <- character(0)
   if (n_outcome_na > 0L) {
@@ -1579,7 +1584,11 @@ table_outcome <- function(
     definitions = c(
       build_column_glosses(tokens, result, ci_level, decimal_mark),
       .outcome_structure_notes(outcome_label, FALSE, overall)
-    )
+    ),
+    abbreviations = .note_abbreviations(c(
+      .continuous_abbrev_items(tokens, ci_level, decimal_mark),
+      .continuous_abbrev_compare(es = show_es, es_ci = es_ci)
+    ))
   )
 }
 

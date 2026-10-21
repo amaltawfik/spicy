@@ -1130,6 +1130,271 @@ make_stronger_indent <- function(x, base_indent, strong_indent, rows) {
   )
 }
 
+# ---- The abbreviations of a note ---------------------------------------------
+#
+# The ADR of 2026-10-20 (dev/decisions/2026-10-20-note-abbreviations.md,
+# its sources in dev/journal_styles_sources.md, section 5 ter). A note
+# defines the abbreviations and symbols its table displays -- in its
+# headers, its spanners and the labels of its stub (the fit-statistic and
+# random-effect rows of a regression) -- under the rule of the style in
+# force: the APA Publication Manual (7th ed.) for the default and the
+# "apa" theme -- "nejm", "annals" and "aer" state no rule and inherit it
+# -- the AMA Manual of Style (11th ed.) for "jama", the practice of The
+# Lancet for "lancet". The symbols inside the cells and the words of the
+# note's own sentences (ANOVA, OLS, GEE, REML) are not collected: the first
+# are values, the second prose. `spicy_style(abbreviations = )` moves the
+# rule: "all" defines every abbreviation shown, "none" keeps only the
+# definitions that say more than the expansion.
+#
+# The registry is keyed by CONCEPT, never by the string a header shows,
+# which changes with the language. Each entry names the registry key of
+# the symbol as the table displays it, the key of its expansion, and the
+# rules that leave it undefined. Every exemption is a sentence of a source:
+#
+#   apa     the symbols that represent statistics (section 6.44, whose list
+#           -- M, SD, F, t, df, p, N, n, OR, r -- is an "e.g.": Mdn, which
+#           Table 6.5 lists as the median, and Hedges' g are read as two
+#           more of them; section 7.15 adds SE), the symbols composed of
+#           Greek letters (sections 6.44 and 7.15), and the symbols the
+#           sample tables leave undefined (B, beta, R2 and Delta-R2 in the
+#           regression table, p. 219; Cohen's d in the t-test table,
+#           p. 214). AIC and BIC are named among the abbreviations to
+#           define (section 6.44);
+#   jama    SD, SE, SEM and CI ("no need to expand", section 13.11), and
+#           the entries of section 19.6 that do not carry "expand at first
+#           mention" (d, Delta, n, N, P, R2, sigma, rho, ...), B and M among
+#           them: 19.6 writes the sample regression coefficient b and the
+#           mean x-bar;
+#   lancet  n, N, p, SD, SE, IQR and CI, which the model tables of the
+#           2025 formatting guidelines and 35 published tables leave
+#           undefined.
+#
+# n, N and p have no entry, and neither have the test statistics (t, z, F,
+# W, H): no style and no journal observed defines them, so no rule does,
+# "all" included. The chi-squared has an entry only for the definitions of
+# table_regression() that say which test it is (decision 3). Neither has
+# the percent sign, which APA 7.15 lets every table use undefined. Three
+# fit-statistic rows define themselves in their label and are not
+# collected: "theta (dispersion)", "alpha (= 1/theta)", "phi (precision)".
+#
+# Per entry:
+#   symbol     the key of the displayed symbol (a header key);
+#   term       the key of the expansion; NULL for a test statistic, which
+#              only a definition that says more ever defines;
+#   exempt     the rules that leave the concept undefined;
+#   word       an abbreviated word (Min, Max), defined under "all" only
+#              (decision 4: JAMA Network Open expands "No." in none of its
+#              tables);
+#   says_more  the expansion says how the number was computed (decision
+#              3), so the definition is kept under every rule.
+.abbrev_registry <- function() {
+  e <- function(symbol, term, exempt = character(0), word = FALSE) {
+    list(
+      symbol = symbol,
+      term = term,
+      exempt = exempt,
+      word = word,
+      says_more = FALSE
+    )
+  }
+  says_more <- function(symbol, term) {
+    out <- e(symbol, term)
+    out$says_more <- TRUE
+    out
+  }
+  list(
+    mean = e("header_mean", "abbrev_mean", c("apa", "jama")),
+    sd = e("header_sd", "abbrev_sd", c("apa", "jama", "lancet")),
+    se = e("header_se", "abbrev_se", c("apa", "jama", "lancet")),
+    median = e("header_median", "abbrev_median", "apa"),
+    iqr = e("header_iqr", "abbrev_iqr", "lancet"),
+    q1 = e("header_q1", "abbrev_q1"),
+    q3 = e("header_q3", "abbrev_q3"),
+    min = e("header_min", "abbrev_min", word = TRUE),
+    max = e("header_max", "abbrev_max", word = TRUE),
+    ci = e("header_ci_label_confidence", "abbrev_ci", c("jama", "lancet")),
+    cri = e("header_ci_label_credible", "abbrev_cri"),
+    hdi = e("header_ci_label_hdi", "abbrev_hdi"),
+    ll = e("header_ci_ll", "abbrev_ll"),
+    ul = e("header_ci_ul", "abbrev_ul"),
+    b = e("header_b", "abbrev_b", c("apa", "jama")),
+    beta = e("symbol_beta", "abbrev_beta", "apa"),
+    or = e("header_exp_or", "abbrev_or", "apa"),
+    irr = e("header_exp_irr", "abbrev_irr"),
+    hr = e("header_exp_hr", "abbrev_hr"),
+    rr = e("header_exp_rr", "abbrev_rr"),
+    mr = e("header_exp_mr", "abbrev_mr"),
+    tr = e("header_exp_tr", "abbrev_tr"),
+    exp_b = e("header_exp_generic", "abbrev_exp_b"),
+    chi2 = e("symbol_chi_sq", NULL),
+    delta = e("symbol_delta", "abbrev_delta", c("apa", "jama")),
+    change = e("symbol_delta", "abbrev_change", c("apa", "jama")),
+    r2 = e("symbol_r2", "abbrev_r2", c("apa", "jama")),
+    # Its symbol is the row label, the author's name included.
+    pseudo_r2 = e("symbol_r2", "abbrev_pseudo_r2", c("apa", "jama")),
+    adj_r2 = e("header_lm_adj_r2", "abbrev_adj_r2", c("apa", "jama")),
+    d = e("symbol_cohens_d", "abbrev_d", c("apa", "jama")),
+    g = e("symbol_hedges_g", "abbrev_g", "apa"),
+    f2 = e("symbol_f2_partial", "abbrev_f2"),
+    eta2 = e("symbol_eta_sq_partial", "abbrev_eta2", "apa"),
+    omega2 = e("symbol_omega_sq_partial", "abbrev_omega2", "apa"),
+    es = e("header_effect_size_short", "abbrev_es"),
+    smd = e("header_smd", "abbrev_smd"),
+    ame = e("header_ame", "abbrev_ame"),
+    rhat = e("header_rhat", "abbrev_rhat"),
+    ess = e("note_abbrev_symbol_ess", "abbrev_ess"),
+    # The stub of a regression table: its fit statistics, then the rows
+    # of its random-effects block.
+    aic = e("fitstat_aic", "abbrev_aic"),
+    aicc = e("fitstat_aicc", "abbrev_aicc"),
+    bic = e("fitstat_bic", "abbrev_bic"),
+    icc = e("fitstat_icc", "abbrev_icc"),
+    rmse = e("fitstat_rmse", "abbrev_rmse"),
+    qic = e("fitstat_qic", "abbrev_qic"),
+    qicu = e("fitstat_qicu", "abbrev_qicu"),
+    elpd = e("note_abbrev_symbol_elpd", "abbrev_elpd"),
+    loo = e("note_abbrev_symbol_loo", "abbrev_loo"),
+    looic = e("fitstat_looic", "abbrev_looic"),
+    waic = e("fitstat_waic", "abbrev_waic"),
+    sigma_hat = e("symbol_sigma_hat", "abbrev_sigma_hat", c("apa", "jama")),
+    sigma = e("symbol_sigma", "abbrev_sigma", c("apa", "jama")),
+    sigma2 = e("symbol_sigma_sq", "abbrev_sigma2", c("apa", "jama")),
+    rho = e("symbol_rho", "abbrev_rho", c("apa", "jama")),
+    deff = says_more("header_deff", "abbrev_deff"),
+    pd = says_more("header_pd", "abbrev_pd"),
+    mcse = says_more("header_mcse", "abbrev_mcse")
+  )
+}
+
+# One item of `.note_abbreviations()` the caller words itself: `term`, a
+# definition that says more than the expansion (decision 3: partial
+# eta-squared, the width Q3 - Q1 of the IQR, the method of a standardized
+# beta), kept under every rule; `symbol`, the symbol the header shows when
+# it is not the registry's key (the adjusted R2 row label of a
+# regression).
+.abbr <- function(id, term = NULL, symbol = NULL) {
+  list(id = id, term = term, symbol = symbol)
+}
+
+# The abbreviation rule of the style in force: "jama", "lancet", or "apa"
+# for every other style and for none. `.style_begin()` records the rule of
+# a named theme in the call-scoped context, and the descriptive families
+# keep it in their `style_fmt` attribute with the rest.
+.abbrev_rule <- function() {
+  .style_fmt()$abbrev_rule %||% "apa"
+}
+
+# The definitions of the abbreviations a table displays, as its note
+# writes them under the style in force, or NULL when there is none to
+# give.
+#
+#   items  the concepts the headers, the spanners and the stub of the table
+#          show, in the order a reader meets them, from the top left, left
+#          to right and top to bottom (APA Publication Manual 7, section
+#          7.15): ids of `.abbrev_registry()`, or `.abbr()` items. A
+#          concept met twice under one symbol is defined once.
+#
+# What is defined (decision 2): under the rule of the theme, every concept
+# it does not exempt and no abbreviated word; under "all", every concept;
+# under "none", none -- and under every rule the definitions that say
+# more. A symbol written out in the language of the table (the French
+# "Taille d'effet") needs no definition and gets none.
+#
+# How (decision 2): APA in the order of appearance, "X = term" pairs
+# joined by `note_abbrev_sep` and closed by a period, at the end of the
+# general note (section 7.14); JAMA one line, first, "Abbreviations: X,
+# term; Y, term.", alphabetical (AMA Manual of Style 11, section 4.1.4.10);
+# The Lancet one "X=term." sentence each, alphabetical, at the end of the
+# general note. Alphabetical is the order of the symbols in lower case,
+# compared byte by byte, so it is the same on every machine.
+# `.compose_note()` puts the block in its place.
+.note_abbreviations <- function(items) {
+  rule <- .abbrev_rule()
+  lever <- .style_fmt()$abbreviations
+  reg <- .abbrev_registry()
+  id <- character(0)
+  sym <- character(0)
+  term <- character(0)
+  said <- logical(0)
+  for (it in items) {
+    if (is.character(it)) {
+      it <- .abbr(it)
+    }
+    entry <- reg[[it$id]]
+    if (is.null(entry)) {
+      stop("Unknown abbreviation concept: ", it$id, call. = FALSE) # nocov
+    }
+    says_more <- !is.null(it$term) || isTRUE(entry$says_more)
+    # A test statistic has no simple definition under any rule.
+    if (!says_more && is.null(entry$term)) {
+      next
+    }
+    keep <- says_more ||
+      identical(lever, "all") ||
+      (is.null(lever) && !entry$word && !rule %in% entry$exempt)
+    if (!keep) {
+      next
+    }
+    s <- it$symbol %||% spicy_str(entry$symbol)
+    t <- it$term %||% spicy_str(entry$term)
+    # Defined once per symbol: "R2 (McFadden)" and "R2 (Nagelkerke)" are
+    # two rows of one concept.
+    if (
+      identical(tolower(s), tolower(t)) ||
+        any(id == it$id & term == t & sym == s)
+    ) {
+      next
+    }
+    id <- c(id, it$id)
+    sym <- c(sym, s)
+    term <- c(term, t)
+    said <- c(said, says_more)
+  }
+  # A definition that says more replaces the bare one of its concept.
+  bare <- !said & id %in% id[said]
+  sym <- sym[!bare]
+  term <- term[!bare]
+  if (!length(sym)) {
+    return(NULL)
+  }
+  if (!identical(rule, "apa")) {
+    o <- order(tolower(sym), method = "radix")
+    sym <- sym[o]
+    term <- term[o]
+  }
+  switch(
+    rule,
+    jama = spicy_fmt(
+      if (length(sym) == 1L) {
+        "note_abbrev_lead_one"
+      } else {
+        "note_abbrev_lead_many"
+      },
+      paste(
+        spicy_fmt("note_abbrev_pair_jama", sym, term),
+        collapse = spicy_str("note_abbrev_sep")
+      )
+    ),
+    lancet = paste(
+      spicy_fmt("note_abbrev_pair_lancet", sym, term),
+      collapse = " "
+    ),
+    paste0(
+      paste(
+        spicy_fmt("note_abbrev_pair", sym, term),
+        collapse = spicy_str("note_abbrev_sep")
+      ),
+      "."
+    )
+  )
+}
+
+# The concepts of the interval headers of the descriptive families: the
+# interval ("95% CI") and the bound each column shows ("LL", "UL"), in
+# the order they read.
+.abbrev_ci_bounds <- function() c("ci", "ll", "ul")
+
+
 # ---- The note under a table --------------------------------------------------
 #
 # Every table of the family closes on one note, laid out as the APA
@@ -1147,8 +1412,13 @@ make_stronger_indent <- function(x, base_indent, strong_indent, rows) {
 #   (c) `inference`: the comparisons and the inference -- the test of
 #       each variable, the p-value adjustment, the standard errors, the
 #       degrees of freedom;
-#   (d) `definitions`: the glosses of the columns, the effect sizes, the
-#       abbreviations.
+#   (d) `definitions`: the glosses of the columns and of the blocks, the
+#       method sentences.
+#
+# `abbreviations`, the block `.note_abbreviations()` writes, closes the
+# general note (APA section 7.14: the explanations of abbreviations come at
+# the end of the general note), or opens the note on a line of its own
+# under the rule of "jama" (AMA Manual of Style 11, section 4.1.4.10).
 #
 # Each builder hands every kind its sentences in their own order (NULL
 # and empty strings drop), so the order of a note is written here once
@@ -1161,14 +1431,23 @@ make_stronger_indent <- function(x, base_indent, strong_indent, rows) {
   missing = NULL,
   inference = NULL,
   definitions = NULL,
+  abbreviations = NULL,
   probability = NULL
 ) {
   keep <- function(x) {
     x <- unlist(x, use.names = FALSE)
     x[!is.na(x) & nzchar(x)]
   }
-  general <- keep(list(what, missing, inference, definitions))
+  first_line <- identical(.abbrev_rule(), "jama")
+  general <- keep(list(
+    what,
+    missing,
+    inference,
+    definitions,
+    if (!first_line) abbreviations
+  ))
   lines <- c(
+    if (first_line) keep(abbreviations),
     if (length(general)) paste(general, collapse = " "),
     keep(probability)
   )

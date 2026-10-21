@@ -275,8 +275,9 @@ test_that("a mixed svyglm + glm table prints two comparable AIC values", {
     ))))),
     collapse = "\n"
   )
+  # The row of the table, not the note that defines AIC.
   aic_line <- grep(
-    "AIC",
+    "^ *AIC ",
     strsplit(
       out,
       "

@@ -663,7 +663,8 @@ test_that("the block compares the levels with data, and the note says why", {
       "Group comparison: Welch t-test.",
       "Each block compares y across the levels of one variable;",
       "blocks are not adjusted for one another.",
-      "Overall = the whole analytic sample."
+      "Overall = the whole analytic sample.",
+      "CI = confidence interval; LL = lower limit; UL = upper limit."
     )
   )
   # A real missing value elsewhere is still counted.
@@ -715,7 +716,8 @@ test_that("a block with one level of data has no test, and names none", {
       "Group comparison: Welch t-test.",
       "Each block compares y across the levels of one variable;",
       "blocks are not adjusted for one another.",
-      "Overall = the whole analytic sample."
+      "Overall = the whole analytic sample.",
+      "CI = confidence interval; LL = lower limit; UL = upper limit."
     )
   )
 })

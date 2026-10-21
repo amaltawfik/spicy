@@ -134,7 +134,7 @@ fragment:
 }\if{html}{\out{</div>}}
 
 \code{{ci_label}} inserts the interval label of the interval the pattern
-cites (\verb{95\% CI}, or \verb{Med 95\% CI} in a pattern quoting \code{{med_ci}}) --
+cites (\verb{95\% CI}, or \verb{Mdn 95\% CI} in a pattern quoting \code{{med_ci}}) --
 the first one when it cites several, the table's first when it cites
 none. Note that \code{{p}} carries the floor operator when the table does
 (\verb{<.001}), so write \verb{p \{p\}} rather than \code{p = {p}} in patterns that

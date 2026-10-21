@@ -23,5 +23,5 @@
        n                      │ 1182                                 
        AIC                    │ 2446.3                               
       
-      Note. Discrete-choice multinomial logit (mlogit). Reference alternative: beach. Std. errors: Wald asymptotic (z).
+      Note. Discrete-choice multinomial logit (mlogit). Reference alternative: beach. Std. errors: Wald asymptotic (z). CI = confidence interval; AIC = Akaike information criterion.
 

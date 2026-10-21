@@ -103,11 +103,12 @@ test_that("posterior CI disclosure honors a non-default ci_level", {
 
 # ---- Abbreviations: beta without a gloss ---------------------------------
 # The five documented `standardized` methods each carry a gloss; the
-# gloss-less arm is the defensive fall-through for any other token.
+# gloss-less arm is the defensive fall-through for any other token. The
+# note defines beta where its column is shown: the "beta" token.
 
 test_that("beta abbreviation degrades to the bare definition without a gloss", {
   out <- spicy:::build_abbreviations_footer_block_from_frames(
-    character(0),
+    "beta",
     list(),
     standardized = "custom"
   )
@@ -126,13 +127,13 @@ test_that("beta abbreviation degrades to the bare definition without a gloss", {
 test_that("abbreviations footer defines pd and MCSE for posterior columns", {
   expect_identical(
     spicy:::build_abbreviations_footer_block_from_frames(c("pd"), list()),
-    paste0(spicy_str("note_abbrev_pd"), ".")
+    paste0("pd = ", spicy_str("abbrev_pd"), ".")
   )
   expect_identical(
     spicy:::build_abbreviations_footer_block_from_frames(c("mcse"), list()),
-    paste0(spicy_str("note_abbrev_mcse"), ".")
+    paste0("MCSE = ", spicy_str("abbrev_mcse"), ".")
   )
-  # Both at once: one semicolon-joined legend, pd first (registry order).
+  # Both at once: one semicolon-joined legend, in the order of the columns.
   both <- spicy:::build_abbreviations_footer_block_from_frames(
     c("pd", "mcse"),
     list()
@@ -143,6 +144,21 @@ test_that("abbreviations footer defines pd and MCSE for posterior columns", {
       "pd = probability of direction (share of the posterior on the ",
       "dominant side of zero; Makowski et al. 2019); MCSE = Monte Carlo ",
       "standard error of the posterior median (Vehtari et al. 2021)."
+    )
+  )
+  # The columns the other way round: MCSE first.
+  expect_identical(
+    spicy:::build_abbreviations_footer_block_from_frames(
+      c("mcse", "pd"),
+      list()
+    ),
+    paste0(
+      "MCSE = ",
+      spicy_str("abbrev_mcse"),
+      "; ",
+      "pd = ",
+      spicy_str("abbrev_pd"),
+      "."
     )
   )
 })

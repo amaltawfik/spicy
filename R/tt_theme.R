@@ -681,9 +681,10 @@
 # them, and Delta and the minus sign too, outright. Math mode has the
 # Greek letters in every engine, a phantom zero is exactly the width the
 # figure space stands for, and a squared letter is set as a superscript
-# of its own. Every other character spicy writes (accents, the en dash,
-# the no-break space, the middle dot, the multiplication sign, the
-# superscript two) is set by all three engines as it is.
+# of its own -- Cohen's f2 too, so that it reads like the eta2 and the
+# omega2 beside it. Every other character spicy writes (accents, the en
+# dash, the no-break space, the middle dot, the multiplication sign, the
+# superscript two of R2) is set by all three engines as it is.
 .spicy_latex_unicode <- function(s) {
   greek <- c(
     alpha = 0x03B1,
@@ -717,6 +718,13 @@
     )
     s <- gsub(k, paste0("\\ensuremath{", math[[k]], "}"), s, fixed = TRUE)
   }
+  # The f of Cohen's f2, as a symbol of its own: not the end of a word.
+  s <- gsub(
+    paste0("(?<![[:alpha:]])f", squared),
+    "\\\\ensuremath{f^{2}}",
+    s,
+    perl = TRUE
+  )
   text <- c("\\hphantom{0}", "\\,", "\\ensuremath{-}")
   names(text) <- intToUtf8(c(0x2007, 0x202F, 0x2212), multiple = TRUE)
   for (k in names(text)) {

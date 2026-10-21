@@ -427,7 +427,14 @@ test_that("exponentiate: footer mentions the family-specific label", {
     ),
     fixed = TRUE
   )
-  expect_match(attr(out, "note"), "OR = odds ratio.", fixed = TRUE)
+  # The header is OR; the default (APA) note leaves OR undefined and
+  # defines the interval, then the AIC row of the stub.
+  expect_true("OR" %in% names(out))
+  expect_false(grepl("OR = odds ratio", attr(out, "note"), fixed = TRUE))
+  expect_true(endsWith(
+    attr(out, "note"),
+    "CI = confidence interval; AIC = Akaike information criterion."
+  ))
 })
 
 test_that("exponentiate: SE-scale clause gated on a visible SE column", {
@@ -446,15 +453,17 @@ test_that("exponentiate: mixed exp/non-exp table scopes the footer per model", {
   f_lm <- lm(mpg ~ wt, data = mt)
   f_gl <- glm(am ~ mpg, data = mt, family = binomial)
   out <- table_regression(list(f_lm, f_gl), exponentiate = TRUE)
+  # Two models take the compact layout (B, SE, p): no interval is shown,
+  # and the note says nothing of its bounds.
   expect_match(
     attr(out, "note"),
     paste0(
       "Model 2: coefficients exponentiated and displayed as OR; ",
-      "SE on the OR scale (delta method); ",
-      "CI bounds exponentiated (asymmetric)."
+      "SE on the OR scale (delta method)."
     ),
     fixed = TRUE
   )
+  expect_false(grepl("CI bounds", attr(out, "note"), fixed = TRUE))
 })
 
 test_that("exponentiate: multi-model with mixed families ⇒ per-family qualifier", {
@@ -462,18 +471,22 @@ test_that("exponentiate: multi-model with mixed families ⇒ per-family qualifie
   m_pois <- glm(I(round(mpg)) ~ wt, data = mt, family = poisson)
   out <- table_regression(list(m_logit, m_pois), exponentiate = TRUE)
   note <- attr(out, "note")
-  expect_match(
+  # The default (APA) note defines IRR and leaves OR undefined: the block
+  # that closes the note is IRR, then the AIC row of the stub.
+  expect_true(endsWith(
     note,
-    "OR = odds ratio; IRR = incidence rate ratio.",
-    fixed = TRUE
-  )
+    paste(
+      "(Fisher information). IRR = incidence rate ratio;",
+      "AIC = Akaike information criterion."
+    )
+  ))
+  expect_false(grepl("OR = odds ratio", note, fixed = TRUE))
   expect_match(
     note,
     paste0(
       "Coefficients exponentiated and displayed as ",
       "OR / IRR (per family); ",
-      "SE on the displayed ratio scale (delta method); ",
-      "CI bounds exponentiated (asymmetric)."
+      "SE on the displayed ratio scale (delta method)."
     ),
     fixed = TRUE
   )
@@ -1289,8 +1302,7 @@ test_that("E2E: poisson IRR + nested LRT hierarchy", {
     note,
     paste0(
       "Coefficients exponentiated and displayed as IRR; ",
-      "SE on the IRR scale (delta method); ",
-      "CI bounds exponentiated (asymmetric)."
+      "SE on the IRR scale (delta method)."
     ),
     fixed = TRUE
   )
@@ -1959,8 +1971,7 @@ test_that("AUDIT: mixed-family glms -> per-model exp header (OR / IRR)", {
     paste0(
       "Coefficients exponentiated and displayed as ",
       "OR / IRR (per family); ",
-      "SE on the displayed ratio scale (delta method); ",
-      "CI bounds exponentiated (asymmetric)."
+      "SE on the displayed ratio scale (delta method)."
     ),
     fixed = TRUE
   )
@@ -2567,9 +2578,14 @@ test_that("AME cell renders en-dash when estimate is NA (estimate-only token)", 
 
 test_that("table_regression: padding arg controls column spacing", {
   fit <- lm(mpg ~ wt + cyl, data = mtcars)
-  # padding = 0L produces narrower output than padding = 4L
-  compact <- capture.output(print(table_regression(fit, padding = 0L)))
-  spacious <- capture.output(print(table_regression(fit, padding = 4L)))
+  # padding = 0L produces narrower output than padding = 4L. No note: it
+  # prints unwrapped, and its line would be the widest.
+  compact <- capture.output(print(
+    table_regression(fit, padding = 0L, note = FALSE)
+  ))
+  spacious <- capture.output(print(
+    table_regression(fit, padding = 4L, note = FALSE)
+  ))
   # Body line width (e.g., the second body row "Variable...") is wider
   # under padding = 4L
   cw <- max(nchar(compact))

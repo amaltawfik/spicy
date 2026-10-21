@@ -1204,6 +1204,10 @@ validate_regression_frame <- function(frame) {
     ))
   } else if (identical(fam_name, "poisson")) {
     .re_null_model("note_re_null_poisson")
+  } else if (identical(fam_name, "gaussian")) {
+    # A gaussian family with a link other than identity: `is_linear` took
+    # the identity link above.
+    .re_null_model("note_re_null_gaussian")
   } else if (identical(fam_name, "inverse.gaussian")) {
     .re_null_model("note_re_null_inverse_gaussian")
   } else if (startsWith(fam_name, "Negative Binomial(")) {
@@ -1342,6 +1346,8 @@ validate_regression_frame <- function(frame) {
     .re_null_model("note_re_null_poisson")
   } else if (identical(fam$family, "binomial")) {
     .re_null_model("note_re_null_binomial")
+  } else if (identical(fam$family, "gaussian")) {
+    .re_null_model("note_re_null_gaussian")
   } else {
     .re_null_model("note_re_null_family", fam$family)
   }

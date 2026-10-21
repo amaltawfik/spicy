@@ -1161,10 +1161,10 @@
 #'   [spicy_style()] object, or `NULL` (the default). A style only
 #'   changes DEFAULTS -- any argument you pass explicitly wins over it.
 #'   Set `options(spicy.style = )` for document-wide scope. A theme
-#'   covers numeric formatting conformity only, not full editorial
-#'   conformity; `?spicy_style` lists the exact rules each one encodes
-#'   and the official document they come from. An unknown name is an
-#'   error.
+#'   covers numeric formatting, the word that opens the note and the
+#'   abbreviations the note defines, not full editorial conformity;
+#'   `?spicy_style` lists the exact rules each one encodes and the
+#'   official document they come from. An unknown name is an error.
 #' @param v_digits Defunct. Renamed `effect_size_digits` in spicy 0.14.0,
 #'   as in the other table functions; supplying `v_digits` is an error
 #'   (class `spicy_defunct`).
@@ -3845,11 +3845,18 @@ table_categorical <- function(
   } else {
     .assoc_label("cramer_v")
   }
+  # The abbreviations of the headers, where the rule in force puts them:
+  # the interval of the measure ("95% CI LL", "95% CI UL"), then the SMD.
+  # The measures themselves are named in full ("Cramer's V", "Phi").
+  abbrev_note <- .note_abbreviations(c(
+    if (show_assoc && assoc_ci) as.list(.abbrev_ci_bounds()),
+    if (do_smd) list("smd")
+  ))
   # The definitions of the note, (d) of `.compose_note()`: which measure
-  # each variable carries, then the SMD gloss. The multivariate sentence
-  # appears only when at least one variable has more than two levels --
-  # it explains an unsigned column, and there is nothing to explain when
-  # every column is signed.
+  # each variable carries, then the direction of the SMD. The multivariate
+  # sentence appears only when at least one variable has more than two
+  # levels -- it explains an unsigned column, and there is nothing to
+  # explain when every column is signed.
   definitions_note <- .assoc_note_apa(
     assoc_measures_per_row,
     labels,
@@ -3992,7 +3999,8 @@ table_categorical <- function(
     attr(out, "note") <- .categorical_note(
       build_weights_note(),
       build_missing_note(),
-      assoc_note_text
+      assoc_note_text,
+      abbrev_note
     )
     return(out)
   }
@@ -4085,10 +4093,15 @@ table_categorical <- function(
   # Read the ledger once, here: every output route below must carry the
   # same disclosure, not print() alone. `table_note` is the whole note
   # every route prints, assembled by the same `.categorical_note()` as
-  # print() from the same three parts.
+  # print() from the same four parts.
   what_note <- build_weights_note()
   missing_note <- build_missing_note()
-  table_note <- .categorical_note(what_note, missing_note, assoc_note_text)
+  table_note <- .categorical_note(
+    what_note,
+    missing_note,
+    assoc_note_text,
+    abbrev_note
+  )
 
   # ---------------- REPORT WIDE ----------------
   report_cols <- c(
@@ -4312,8 +4325,9 @@ table_categorical <- function(
     attr(out, "display_df") <- report_wide_char
     # The title the console prints, from the helper every engine uses.
     attr(out, "title") <- .categorical_title(by_label)
-    # The whole note, as print() shows it; `what_note`, `missing_note`
-    # and `assoc_note` stay the three parts print() assembles it from.
+    # The whole note, as print() shows it; `what_note`, `missing_note`,
+    # `assoc_note` and `abbrev_note` stay the four parts print()
+    # assembles it from.
     attr(out, "note") <- table_note
     attr(out, "what_note") <- what_note
     attr(out, "missing_note") <- missing_note
@@ -4334,6 +4348,7 @@ table_categorical <- function(
     }
     attr(out, "long_data") <- long_data
     attr(out, "assoc_note") <- assoc_note_text
+    attr(out, "abbrev_note") <- abbrev_note
     attr(out, "structured") <- structured
     if (include_total) {
       # The internal key of the margin group in `long_data` ("Total", or

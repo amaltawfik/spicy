@@ -30,7 +30,7 @@
     return(NULL)
   }
   suffix <- ""
-  for (s in c(" (glmmTMB)", " (nlme)")) {
+  for (s in c(" (glmmTMB)", " (nlme)", " (stanreg)", " (brmsfit)")) {
     if (endsWith(prefix, s)) {
       suffix <- s
       prefix <- substr(prefix, 1L, nchar(prefix) - nchar(s))
@@ -270,23 +270,27 @@ build_regression_footer_from_frames <- function(
       build_nested_footer_block(nested)
     ),
     # (d) The definitions: the glosses of the estimand columns and of the
-    # subordinate blocks, the abbreviations, the scope of a standardized
-    # coefficient, the labels of polynomial trends.
+    # subordinate blocks, the scope of a standardized coefficient, the
+    # labels of polynomial trends.
     definitions = .footer_paragraph(
       build_survival_estimand_footer_block_from_frames(frames),
       if (thresholds_as_rows) thresholds,
       build_scale_effects_footer_block_from_frames(frames),
       build_component_blocks_footer_block_from_frames(frames),
-      build_abbreviations_footer_block_from_frames(
-        show_columns,
-        frames,
-        standardized
-      ),
       build_standardized_caveat_footer_block_from_frames(frames, standardized),
       build_polynomial_contrasts_footer_block_from_frames(
         frames_display,
         displayed_parent_vars = displayed_parent_vars
       )
+    ),
+    # The abbreviations of the headers and of the stub, where the rule in
+    # force puts them.
+    abbreviations = build_abbreviations_footer_block_from_frames(
+      show_columns,
+      frames,
+      standardized,
+      show_fit_stats = show_fit_stats,
+      re_scale = re_scale
     ),
     probability = build_stars_footer_block(stars, decimal_mark)
   )
@@ -699,151 +703,319 @@ build_ci_method_footer_block_from_frames <- function(
 }
 
 
-# Frame-aware sibling of build_abbreviations_footer_block().
-# Reads frame$info$extras$exp_applied (was extract$exp_applied) and
-# frame$info$extras$exp_header (was extract$exp_header). show_columns
-# and standardized stay scalar args (not per-fit), unchanged from the
-# legacy signature.
+# The abbreviations a regression table displays, defined under the rule of
+# the style in force (`.note_abbreviations()`, R/table_helpers.R), in the
+# order a reader meets them: the headers of the columns -- the tokens of
+# `show_columns`, model after model, as `build_column_spec()` lays them
+# out -- then the rows of the random-effects block, then the fit-statistic
+# rows (`show_fit_stats`, those the table prints). The test statistics are
+# never defined.
 build_abbreviations_footer_block_from_frames <- function(
   show_columns,
   frames = list(),
-  standardized = "none"
+  standardized = "none",
+  show_fit_stats = character(0),
+  re_scale = "sd"
 ) {
-  defs <- character(0)
-
-  if (any(c("ame", "ame_se", "ame_ci", "ame_p") %in% show_columns)) {
-    # The footnote is a terse abbreviation key, not a tutorial: per-category
-    # AME (ordinal / multinomial) only names the probability scale that sets
-    # it apart from the single-outcome case. The interpretation guidance --
-    # the sum-to-zero property and the percentage-points (not percent)
-    # reading -- lives in the "Ordinal regression tables" article.
-    has_percat <- is.list(frames) &&
-      any(vapply(
-        frames,
-        function(f) {
-          ol <- f$coefs$outcome_level
-          !is.null(ol) && any(!is.na(ol) & f$coefs$estimate_type == "ame")
-        },
-        logical(1)
-      ))
-    if (isTRUE(has_percat)) {
-      defs <- c(defs, spicy_str("note_abbrev_ame_percat"))
+  if (!is.list(frames)) {
+    frames <- list() # nocov -- every caller passes the list of frames
+  }
+  # "95% CI", "95% CrI" or "95% HDI": the interval the header names.
+  ci_id <- switch(
+    .reg_ci_label_key(frames),
+    header_ci_label_credible = "cri",
+    header_ci_label_hdi = "hdi",
+    "ci"
+  )
+  # A per-category AME (ordinal, multinomial) is an effect on the
+  # probability of one response category: its definition names that scale
+  # and nothing more. The interpretation guidance -- the sum-to-zero
+  # property, the percentage-points reading -- lives in the "Ordinal
+  # regression tables" article.
+  per_category <- any(vapply(
+    frames,
+    function(f) {
+      ol <- f$coefs$outcome_level
+      !is.null(ol) && any(!is.na(ol) & f$coefs$estimate_type == "ame")
+    },
+    logical(1)
+  ))
+  ame <- if (per_category) {
+    .abbr("ame", term = spicy_str("abbrev_ame_category"))
+  } else {
+    "ame"
+  }
+  # The method of a standardized beta, and its dummy convention: five
+  # methods give visibly different betas (a dummy's refit beta is 0.247
+  # where its basic beta is 0.123 on the same fit). A definition that says
+  # how the number was computed, kept under every rule.
+  beta_gloss <- switch(
+    standardized,
+    refit = spicy_str("note_beta_refit"),
+    posthoc = spicy_str("note_beta_posthoc"),
+    basic = spicy_str("note_beta_basic"),
+    smart = spicy_str("note_beta_smart"),
+    pseudo = spicy_str("note_beta_pseudo"),
+    NULL
+  )
+  # A method with no gloss of its own keeps the bare definition.
+  beta <- .abbr(
+    "beta",
+    term = if (is.null(beta_gloss)) {
+      spicy_str("abbrev_beta")
     } else {
-      defs <- c(defs, spicy_str("note_abbrev_ame"))
+      spicy_fmt("abbrev_beta_method", beta_gloss)
     }
-  }
-
-  if (!identical(standardized, "none")) {
-    # Self-documentation: five methods produce visibly different betas
-    # (a dummy's refit beta is 0.247 where its basic beta is 0.123 on
-    # the same fit), so the note names the method and its dummy
-    # convention -- the axis on which the methods differ. Same status
-    # as naming the variance estimator: no opt-out.
-    gloss <- switch(
-      standardized,
-      refit = spicy_str("note_beta_refit"),
-      posthoc = spicy_str("note_beta_posthoc"),
-      basic = spicy_str("note_beta_basic"),
-      smart = spicy_str("note_beta_smart"),
-      pseudo = spicy_str("note_beta_pseudo"),
-      NULL
-    )
-    defs <- c(
-      defs,
-      if (is.null(gloss)) {
-        spicy_str("note_abbrev_beta")
-      } else {
-        spicy_fmt("note_abbrev_beta_method", gloss)
+  )
+  # The test each model ran for its partial chi-squared: a likelihood-ratio
+  # test for glm, a Wald test for the mixed models (regression_partial.R).
+  chi2_kind <- vapply(
+    frames,
+    function(f) {
+      if (!any(f$coefs$estimate_type %in% "partial_chi2")) {
+        return(NA_character_)
       }
-    )
-  }
+      if (.is_mixed_frame(f)) "wald" else "lrt"
+    },
+    character(1)
+  )
+  chi2 <- c(
+    if (any(chi2_kind %in% "lrt") || !any(chi2_kind %in% "wald")) {
+      list(.abbr("chi2", term = spicy_str("abbrev_chi2_lrt")))
+    },
+    if (any(chi2_kind %in% "wald")) {
+      list(.abbr("chi2", term = spicy_str("abbrev_chi2_wald")))
+    }
+  )
+  f2 <- .abbr("f2", term = spicy_str("abbrev_f2_partial"))
+  eta2 <- .abbr("eta2", term = spicy_str("abbrev_eta2_partial"))
+  omega2 <- .abbr("omega2", term = spicy_str("abbrev_omega2_partial"))
 
-  if (is.list(frames) && length(frames) > 0L) {
-    applied <- vapply(
-      frames,
-      function(f) isTRUE(f$info$extras$exp_applied),
-      logical(1)
-    )
-    if (any(applied)) {
-      hdrs <- unique(vapply(
-        frames[applied],
-        function(f) f$info$extras$exp_header,
-        character(1)
-      ))
-      # Keyed by the DISPLAYED header, so both sides read the same registry
-      # entry: a header and its gloss can never drift apart.
-      exp_defs <- stats::setNames(
-        c(
-          spicy_str("note_abbrev_or"),
-          spicy_str("note_abbrev_irr"),
-          spicy_str("note_abbrev_hr"),
-          spicy_str("note_abbrev_rr"),
-          spicy_str("note_abbrev_mr"),
-          spicy_str("note_abbrev_tr"),
-          spicy_str("note_abbrev_expb")
-        ),
-        c(
-          spicy_str("header_exp_or"),
-          spicy_str("header_exp_irr"),
-          spicy_str("header_exp_hr"),
-          spicy_str("header_exp_rr"),
-          spicy_str("header_exp_mr"),
-          spicy_str("header_exp_tr"),
-          spicy_str("header_exp_generic")
+  items <- list()
+  for (f in if (length(frames)) frames else list(NULL)) {
+    for (tk in show_columns) {
+      items <- c(
+        items,
+        switch(
+          tk,
+          b = list(.reg_abbrev_b(f)),
+          beta = list(beta),
+          se = ,
+          rmst_se = ,
+          risk_diff_se = ,
+          ame_se = list("se"),
+          ci = ,
+          rmst_ci = ,
+          risk_diff_ci = ,
+          ame_ci = list(ci_id),
+          pd = list("pd"),
+          rhat = list("rhat"),
+          ess_bulk = ,
+          ess_tail = list("ess"),
+          mcse = list("mcse"),
+          ame = list(ame),
+          # A per-fit R2 is a column of the univariable screen only; the
+          # R2 of any other model is a fit-statistic row.
+          r2 = if (.reg_frame_has(f, "r2")) list("r2"),
+          adj_r2 = if (.reg_frame_has(f, "adj_r2")) {
+            list(.abbr("adj_r2", symbol = spicy_str("fitstat_adj_r2")))
+          },
+          partial_f2 = list(f2),
+          partial_f2_ci = list(f2, ci_id),
+          partial_eta2 = list(eta2),
+          partial_eta2_ci = list(eta2, ci_id),
+          partial_omega2 = list(omega2),
+          partial_omega2_ci = list(omega2, ci_id),
+          partial_chi2 = chi2,
+          # n, n_events, p, the t or z statistic and the survival
+          # estimands: N, n, p and the test statistics are never defined,
+          # and the estimand sentence defines dRMST and dRisk with their
+          # horizon.
+          NULL
         )
       )
-      for (h in hdrs) {
-        if (h %in% names(exp_defs)) defs <- c(defs, exp_defs[[h]])
-      }
     }
   }
-
-  if (any(c("partial_f2", "partial_f2_ci") %in% show_columns)) {
-    defs <- c(defs, spicy_str("note_abbrev_f2"))
-  }
-  if (any(c("partial_eta2", "partial_eta2_ci") %in% show_columns)) {
-    defs <- c(defs, spicy_str("note_abbrev_eta2"))
-  }
-  if (any(c("partial_omega2", "partial_omega2_ci") %in% show_columns)) {
-    defs <- c(defs, spicy_str("note_abbrev_omega2"))
-  }
-  if ("partial_chi2" %in% show_columns) {
-    # The test each model ran: a likelihood-ratio test for glm, a Wald
-    # test for the mixed models (regression_partial.R).
-    kind <- vapply(
-      if (is.list(frames)) frames else list(),
-      function(f) {
-        if (!any(f$coefs$estimate_type %in% "partial_chi2")) {
-          return(NA_character_)
-        }
-        if (.is_mixed_frame(f)) "wald" else "lrt"
-      },
-      character(1)
+  items <- c(
+    items,
+    .reg_abbrev_random_effects(frames, re_scale),
+    unlist(
+      lapply(
+        .reg_shown_fit_stats(frames, show_fit_stats),
+        .reg_abbrev_fit_stat
+      ),
+      recursive = FALSE
     )
-    if (any(kind %in% "lrt") || !any(kind %in% "wald")) {
-      defs <- c(defs, spicy_str("note_abbrev_chi2"))
-    }
-    if (any(kind %in% "wald")) {
-      defs <- c(defs, spicy_str("note_abbrev_chi2_wald"))
-    }
-  }
-  if ("pd" %in% show_columns) {
-    # The definition travels WITH the table (BARG: a rendered artifact
-    # must be self-describing); the p-value-correspondence caveat is
-    # reader pedagogy and stays in the vignette.
-    defs <- c(defs, spicy_str("note_abbrev_pd"))
-  }
-  if ("mcse" %in% show_columns) {
-    # The reading rule (a displayed digit is Monte-Carlo stable when
-    # 2 x MCSE stays below it) is vignette pedagogy; the footer keys
-    # the abbreviation.
-    defs <- c(defs, spicy_str("note_abbrev_mcse"))
-  }
+  )
+  .note_abbreviations(items)
+}
 
-  if (length(defs) == 0L) {
-    return(NULL)
+# The concepts of the random-effects block: the standard deviation of a
+# random effect (its variance under `re_scale = "variance"`), the
+# residual's included, and a correlation. The block is printed for the
+# frames whose coefficients carry its rows.
+.reg_abbrev_random_effects <- function(frames, re_scale = "sd") {
+  has_sd <- FALSE
+  has_cor <- FALSE
+  for (f in frames) {
+    if (!any(f$coefs$estimate_type %in% "vc")) {
+      next
+    }
+    vc <- f$info$random_effects$variance_components
+    is_cor <- if (!is.null(vc$is_correlation)) {
+      vc$is_correlation %in% TRUE
+    } else {
+      rep(FALSE, NROW(vc))
+    }
+    has_sd <- has_sd || any(!is_cor)
+    has_cor <- has_cor || any(is_cor)
   }
-  paste0(paste(defs, collapse = spicy_str("note_abbrev_sep")), ".")
+  c(
+    if (has_sd) {
+      list(if (identical(re_scale, "variance")) "sigma2" else "sigma")
+    },
+    if (has_cor) list("rho")
+  )
+}
+
+# The fit-statistic rows the table prints: the tokens of `show_fit_stats`
+# a model of the table has a value for, read as `align_frames()` reads
+# them (`build_fit_stats_rows()` drops a row no model fills).
+.reg_shown_fit_stats <- function(frames, show_fit_stats) {
+  if (!length(show_fit_stats) || !length(frames)) {
+    return(character(0))
+  }
+  rows <- lapply(frames, function(f) {
+    .compact_fit_stats_for_legacy(
+      f$info$fit_stats,
+      "model",
+      f$info$dv %||% NA_character_,
+      icc = f$info$random_effects$icc %||% NA_real_,
+      n_groups = f$info$n_groups
+    )
+  })
+  shown <- vapply(
+    show_fit_stats,
+    function(tk) {
+      any(vapply(
+        rows,
+        function(r) !is.null(r[[tk]]) && any(!is.na(r[[tk]])),
+        logical(1)
+      ))
+    },
+    logical(1)
+  )
+  show_fit_stats[shown]
+}
+
+# The concepts of one fit-statistic row, as `fit_stat_label()` heads it.
+# A change row ("Delta AIC") shows the change and the statistic it
+# changes. Not collected: n and N (n_groups, n_events, weighted_nobs),
+# the test statistics (F-change, Wald F-change, Wald chi-squared, the
+# Delta chi-squared of a likelihood-ratio change) and the p-value of a
+# change; "theta (dispersion)", "alpha (= 1/theta)" and "phi
+# (precision)", which define themselves; and the words (Scale, Max
+# cluster size, Deviance, Effective parameters, the fixed-effects block).
+.reg_abbrev_fit_stat <- function(tk) {
+  change <- .abbr(
+    "change",
+    symbol = sub("%s", "", spicy_str("fitstat_change_prefix"), fixed = TRUE)
+  )
+  adj_r2 <- .abbr("adj_r2", symbol = spicy_str("fitstat_adj_r2"))
+  f2 <- .abbr("f2", symbol = spicy_str("symbol_f2_global"))
+  switch(
+    tk,
+    r2 = ,
+    within_r2 = ,
+    r2_marginal = ,
+    r2_conditional = list("r2"),
+    # A pseudo-R2 is no coefficient of determination, and the Bayesian R2
+    # is "an alternative definition" of it (Gelman et al. 2019): defined
+    # under the label of its row, which names its author.
+    pseudo_r2_mcfadden = ,
+    pseudo_r2_nagelkerke = ,
+    pseudo_r2_tjur = ,
+    r2_bayes = list(.abbr("pseudo_r2", symbol = fit_stat_label(tk))),
+    adj_r2 = list(adj_r2),
+    omega2 = list(.abbr(
+      "omega2",
+      symbol = spicy_str("symbol_omega_sq_global")
+    )),
+    f2 = list(f2),
+    sigma = list("sigma_hat"),
+    rmse = list("rmse"),
+    icc = list("icc"),
+    aic = list("aic"),
+    aicc = list("aicc"),
+    bic = list("bic"),
+    qic = list("qic"),
+    qicu = list("qicu"),
+    elpd_loo = list("elpd", "loo"),
+    looic = list("looic"),
+    waic = list("waic"),
+    r2_change = list(change, "r2"),
+    adj_r2_change = list(change, adj_r2),
+    f2_change = list(change, f2),
+    aic_change = list(change, "aic"),
+    aicc_change = list(change, "aicc"),
+    bic_change = list(change, "bic"),
+    lrt_change = ,
+    deviance_change = list(change),
+    NULL
+  )
+}
+
+# The concept of the coefficient header of one model: B, or the ratio
+# its exponentiated coefficients display (OR, HR, ...). The frame carries
+# that header as text, resolved from the registry when the frame was
+# built, so it is matched against the same registry entries; a header no
+# entry gives is not defined.
+.reg_abbrev_b <- function(f) {
+  if (is.null(f) || !isTRUE(f$info$extras$exp_applied)) {
+    return("b")
+  }
+  keys <- c(
+    or = "header_exp_or",
+    irr = "header_exp_irr",
+    hr = "header_exp_hr",
+    rr = "header_exp_rr",
+    mr = "header_exp_mr",
+    tr = "header_exp_tr",
+    exp_b = "header_exp_generic"
+  )
+  hit <- vapply(
+    keys,
+    function(k) identical(f$info$extras$exp_header, spicy_str(k)),
+    logical(1)
+  )
+  if (any(hit)) names(keys)[hit][[1L]]
+}
+
+# Does the frame hold a value in the per-row column `col`?
+.reg_frame_has <- function(f, col) {
+  !is.null(f$coefs[[col]]) && any(!is.na(f$coefs[[col]]))
+}
+
+# The registry key of the interval header of a regression table: "CrI"
+# (equal-tailed) or "HDI" when EVERY frame is a posterior interval (the
+# design promise in regression_frame_stan.R; the hdi gate guarantees
+# posterior_hdi is all-Bayesian), "CI" otherwise -- a mixed frequentist +
+# Bayesian table keeps the shared label, with a per-model disclosure from
+# the CI-method block of the footer. Read by the renderer and by the
+# abbreviations of the note, so the header and its definition agree.
+.reg_ci_label_key <- function(frames) {
+  methods <- vapply(
+    frames,
+    function(f) f$info$ci_method %||% "",
+    character(1)
+  )
+  if (length(methods) > 0L && all(methods == "posterior_quantile")) {
+    "header_ci_label_credible"
+  } else if (length(methods) > 0L && all(methods == "posterior_hdi")) {
+    "header_ci_label_hdi"
+  } else {
+    "header_ci_label_confidence"
+  }
 }
 
 
@@ -1882,8 +2054,13 @@ build_component_blocks_footer_block_from_frames <- function(frames) {
   )
   # On the variance scale the sigma glyph would mislabel the value: promote
   # the SD labels to sigma-squared (correlations are unitless, untouched).
+  # The two glyphs are the registry's, as the note that defines them.
   if (identical(re_scale, "variance")) {
-    label[!is_corr] <- sub("^\u03C3 ", "\u03C3\u00B2 ", label[!is_corr])
+    label[!is_corr] <- sub(
+      paste0("^", .escape_regex(spicy_str("symbol_sigma")), " "),
+      paste0(spicy_str("symbol_sigma_sq"), " "),
+      label[!is_corr]
+    )
   }
   # Stable per-(group, term) key so RE rows align across models by structure.
   key <- paste0("re::", vc$group, "::", vc$term, ifelse(is_corr, "::cor", ""))
@@ -1962,18 +2139,21 @@ format_p_value_for_panel <- function(p, decimal_mark = ".") {
 }
 
 
-# Label for a single row of the random-effects panel.
+# Label for a single row of the random-effects panel. The glyphs are the
+# registry's (`symbol_sigma`, `symbol_rho`), the very keys the note's
+# definitions of these rows read.
 .re_panel_label <- function(group, term, is_correlation, is_residual) {
+  sigma <- spicy_str("symbol_sigma")
   if (isTRUE(is_residual)) {
-    return("\u03C3 (Residual)")
+    return(paste(sigma, "(Residual)"))
   }
   if (isTRUE(is_correlation)) {
-    return(sprintf("\u03C1 %s (%s)", group, term))
+    return(sprintf("%s %s (%s)", spicy_str("symbol_rho"), group, term))
   }
   if (is.na(term) || !nzchar(term) || term == "(Intercept)") {
-    return(sprintf("\u03C3 %s (Intercept)", group))
+    return(sprintf("%s %s (Intercept)", sigma, group))
   }
-  sprintf("\u03C3 %s %s", group, term)
+  sprintf("%s %s %s", sigma, group, term)
 }
 
 
@@ -2424,8 +2604,10 @@ build_exponentiate_footer_block_from_frames <- function(
   ))
   # A displayed SE column also makes the gloss say the interval is
   # asymmetric. The qualifier lives inside the key, so a language can
-  # place it and agree it with its noun.
+  # place it and agree it with its noun. Without a CI column the sentence
+  # says nothing of an interval (the `_no_ci` keys).
   se_shown <- "se" %in% show_columns
+  ci_shown <- "ci" %in% show_columns
   ci_gloss <- if (any_hdi) {
     spicy_str(
       if (se_shown) "note_exp_ci_gloss_hdi_asym" else "note_exp_ci_gloss_hdi"
@@ -2454,44 +2636,28 @@ build_exponentiate_footer_block_from_frames <- function(
     ""
   }
 
-  if (se_shown) {
-    if (length(hdrs) == 1L) {
-      return(spicy_fmt(
-        "note_exp_with_se_single",
-        scope,
-        hdrs[1L],
-        hdrs[1L],
-        se_gloss,
-        ci_gloss,
-        negation_note
-      ))
-    }
-    return(spicy_fmt(
-      "note_exp_with_se_multi",
-      scope,
-      paste(hdrs, collapse = " / "),
-      se_gloss,
-      ci_gloss,
-      negation_note
-    ))
+  single <- length(hdrs) == 1L
+  shown <- if (single) hdrs[1L] else paste(hdrs, collapse = " / ")
+  key <- if (se_shown && single) {
+    if (ci_shown) "note_exp_with_se_single" else "note_exp_with_se_single_no_ci"
+  } else if (se_shown) {
+    if (ci_shown) "note_exp_with_se_multi" else "note_exp_with_se_multi_no_ci"
+  } else if (single) {
+    if (ci_shown) "note_exp_no_se_single" else "note_exp_no_se_single_no_ci"
+  } else {
+    if (ci_shown) "note_exp_no_se_multi" else "note_exp_no_se_multi_no_ci"
   }
-
-  if (length(hdrs) == 1L) {
-    return(spicy_fmt(
-      "note_exp_no_se_single",
-      scope,
-      hdrs[1L],
-      ci_gloss,
-      negation_note
-    ))
-  }
-  spicy_fmt(
-    "note_exp_no_se_multi",
-    scope,
-    paste(hdrs, collapse = " / "),
-    ci_gloss,
-    negation_note
+  # The holes of the four sentences: the scope, the header (twice in the
+  # single-family SE sentence), the SE gloss when an SE column is shown,
+  # the CI gloss when a CI column is, the cloglog sentence.
+  args <- c(
+    list(scope, shown),
+    if (se_shown && single) list(hdrs[1L]),
+    if (se_shown) list(se_gloss),
+    if (ci_shown) list(ci_gloss),
+    list(negation_note)
   )
+  do.call(spicy_fmt, c(list(key), args))
 }
 
 

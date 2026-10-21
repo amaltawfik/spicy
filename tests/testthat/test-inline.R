@@ -446,7 +446,7 @@ test_that("{ci_label} names the interval the pattern quotes", {
   # Residue of the lot D fix, one layer up: the bound lookup learned to
   # select by token, but the LABEL still returned the first `ci_label`
   # in column order. A table showing both intervals heads them "95% CI"
-  # and "Med 95% CI" -- so a sentence quoting the median interval was
+  # and "Mdn 95% CI" -- so a sentence quoting the median interval was
   # given the mean's label, contradicting the table three lines above it.
   d <- spicy::sochealth
   two <- suppressWarnings(table_continuous(
@@ -457,7 +457,7 @@ test_that("{ci_label} names the interval the pattern quotes", {
   s <- as_structured(two)
   labels <- unique(unlist(lapply(s$col_meta, function(m) m$ci_label)))
   # The premise: this table really does carry two different labels.
-  expect_setequal(labels, c("95% CI", "Med 95% CI"))
+  expect_setequal(labels, c("95% CI", "Mdn 95% CI"))
 
   expect_match(
     inline(two, bmi, column = "{m} ({ci_label} {ci})"),
@@ -465,13 +465,13 @@ test_that("{ci_label} names the interval the pattern quotes", {
   )
   expect_match(
     inline(two, bmi, column = "{med} ({ci_label} {med_ci})"),
-    "^[0-9.]+ \\(Med 95% CI \\["
+    "^[0-9.]+ \\(Mdn 95% CI \\["
   )
   # Two intervals in one sentence: the first one cited takes the label,
   # which is the one a reader pairs it with.
   expect_match(
     inline(two, bmi, column = "{med} ({ci_label} {med_ci}), M {m} {ci}"),
-    "^[0-9.]+ \\(Med 95% CI \\["
+    "^[0-9.]+ \\(Mdn 95% CI \\["
   )
   # A pattern citing no interval keeps the plain scan.
   expect_identical(inline(two, bmi, column = "{ci_label}"), "95% CI")

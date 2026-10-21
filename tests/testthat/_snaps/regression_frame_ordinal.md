@@ -28,7 +28,7 @@
        AIC                   │ 177.1
        BIC                   │ 193.1
       
-      Note. Cumulative logit mixed-effects regression (proportional odds). Std. errors: Wald asymptotic (z). Random effects (ML): LR test vs cumulative logit regression, χ̄²(1) = 9.85, p < .001. Thresholds: latent-scale category cut-points.
+      Note. Cumulative logit mixed-effects regression (proportional odds). Std. errors: Wald asymptotic (z). Random effects (ML): LR test vs cumulative logit regression, χ̄²(1) = 9.85, p < .001. Thresholds: latent-scale category cut-points. CI = confidence interval; AIC = Akaike information criterion; BIC = Bayesian information criterion.
 
 ---
 
@@ -60,5 +60,5 @@
        AIC                   │ 177.1
        BIC                   │ 193.1
       
-      Note. Cumulative logit mixed-effects regression (proportional odds). Coefficients exponentiated and displayed as OR; SE on the OR scale (delta method); CI bounds exponentiated (asymmetric). Std. errors: Wald asymptotic (z). Random effects (ML): LR test vs cumulative logit regression, χ̄²(1) = 9.85, p < .001. Thresholds: latent-scale category cut-points (log-odds scale, not exponentiated). OR = odds ratio.
+      Note. Cumulative logit mixed-effects regression (proportional odds). Coefficients exponentiated and displayed as OR; SE on the OR scale (delta method); CI bounds exponentiated (asymmetric). Std. errors: Wald asymptotic (z). Random effects (ML): LR test vs cumulative logit regression, χ̄²(1) = 9.85, p < .001. Thresholds: latent-scale category cut-points (log-odds scale, not exponentiated). CI = confidence interval; AIC = Akaike information criterion; BIC = Bayesian information criterion.
 

@@ -543,7 +543,16 @@ test_that("gee::gee fits are refused with a geeglm pointer", {
 test_that("geeglm binomial: exponentiate yields OR with the GEE footer", {
   fit <- .fit_gee_binomial()
   out <- table_regression(fit, exponentiate = TRUE)
-  expect_match(attr(out, "note"), "OR = odds ratio", fixed = TRUE)
+  # The header is OR; the default (APA) note leaves OR undefined and
+  # defines the interval.
+  expect_true("OR" %in% names(out))
+  expect_match(
+    attr(out, "note"),
+    "Coefficients exponentiated and displayed as OR",
+    fixed = TRUE
+  )
+  expect_false(grepl("OR = odds ratio", attr(out, "note"), fixed = TRUE))
+  expect_match(attr(out, "note"), "CI = confidence interval.", fixed = TRUE)
   expect_match(
     attr(out, "title"),
     "^Population-averaged logistic regression \\(GEE\\)"

@@ -150,14 +150,14 @@ test_that("all-Bayesian defaults drop p and label the interval CrI", {
   expect_match(out, "95% CrI", fixed = TRUE)
   # No p column in the header (the footer's "p" in "Posterior" aside).
   header <- capture.output(print(table_regression(fit)))[3]
-  expect_false(grepl("\bp\b", header))
+  expect_false(grepl("\\bp\\b", header))
   # Explicit atomic p refused; the all_b preset expands without it.
   expect_error(
     table_regression(fit, show_columns = c("b", "ci", "p")),
     class = "spicy_invalid_input"
   )
   h2 <- capture.output(print(table_regression(fit, show_columns = "all_b")))[3]
-  expect_false(grepl("\bp\b", h2))
+  expect_false(grepl("\\bp\\b", h2))
   # Mixed-class tables keep the shared CI label and the p column.
   gf <- glm(am ~ wt, data = mtcars, family = binomial)
   outm <- paste(
@@ -917,6 +917,16 @@ test_that("the Bayesian footer and interval header follow the language", {
   expect_true("95% CrI" %in% names(tbl))
   expect_true(all(
     c("95% CrI LL", "95% CrI UL") %in% names(as.data.frame(tbl))
+  ))
+  # The model is named in French, its engine as it is written: in the
+  # title and in the first sentence of the note.
+  expect_identical(
+    attr(tbl, "title"),
+    "R\u00e9gression logistique bay\u00e9sienne (stanreg)\u00a0: am"
+  )
+  expect_true(startsWith(
+    note,
+    "Note. R\u00e9gression logistique bay\u00e9sienne (stanreg)."
   ))
 })
 

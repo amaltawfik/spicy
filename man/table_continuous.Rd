@@ -365,10 +365,10 @@ See the "Declared missing values" section of \code{\link[=freq]{freq()}}.}
 \code{\link[=spicy_style]{spicy_style()}} object, or \code{NULL} (the default). A style only
 changes DEFAULTS -- any argument you pass explicitly wins over it.
 Set \code{options(spicy.style = )} for document-wide scope. A theme
-covers numeric formatting conformity only, not full editorial
-conformity; \code{?spicy_style} lists the exact rules each one encodes
-and the official document they come from. An unknown name is an
-error.}
+covers numeric formatting, the word that opens the note and the
+abbreviations the note defines, not full editorial conformity;
+\code{?spicy_style} lists the exact rules each one encodes and the
+official document they come from. An unknown name is an error.}
 }
 \value{
 Depends on \code{output}:
@@ -490,17 +490,23 @@ tokens, and the column each one produces:\tabular{lll}{
    Token \tab Column \tab Statistic \cr
    \code{"m"} \tab \code{M} \tab mean \cr
    \code{"sd"} \tab \code{SD} \tab standard deviation \cr
-   \code{"med"} \tab \code{Med} \tab median (\code{\link[stats:median]{stats::median()}}) \cr
+   \code{"med"} \tab \code{Mdn} \tab median (\code{\link[stats:median]{stats::median()}}) \cr
    \code{"iqr"} \tab \code{IQR} \tab interquartile \emph{width}, \code{Q3 - Q1} \cr
-   \code{"med_iqr"} \tab \code{Med [Q1, Q3]} \tab median and the interquartile \emph{interval}, in one compact column \cr
+   \code{"med_iqr"} \tab \code{Mdn [Q1, Q3]} \tab median and the interquartile \emph{interval}, in one compact column \cr
    \code{"q1"} / \code{"q3"} \tab \code{Q1} / \code{Q3} \tab first / third quartile \cr
    \code{"min"} / \code{"max"} \tab \code{Min} / \code{Max} \tab extremes \cr
    \code{"ci"} \tab \verb{<level>\% CI LL} / \code{UL} \tab \emph{t} confidence interval of the mean \cr
-   \code{"med_ci"} \tab \verb{Med <level>\% CI LL} / \code{UL} \tab exact confidence interval of the median \cr
+   \code{"med_ci"} \tab \verb{Mdn <level>\% CI LL} / \code{UL} \tab exact confidence interval of the median \cr
    \code{"n"} \tab \code{n} \tab valid observations \cr
    \code{"weighted_n"} \tab \verb{Weighted n} \tab sum of weights (requires \code{weights}) \cr
 }
 
+
+The column is the header the table prints. In \code{output = "data.frame"}, \link[=as.data.frame.spicy_continuous_table]{as.data.frame()}
+and \code{\link[=as_structured]{as_structured()}}, the median columns keep the names of 0.13.0,
+\code{Med}, \code{Med [Q1, Q3]} and \verb{Med <level>\% CI LL} / \code{UL}. The note under
+the table defines the abbreviations these headers show, as the style
+in force asks (see \code{abbreviations} in \code{\link[=spicy_style]{spicy_style()}}).
 
 Quartiles use \code{\link[stats:quantile]{stats::quantile()}}'s default type 7. \code{"iqr"} is the
 width (one number, the rank mirror of \code{SD}); \code{"med_iqr"} shows the

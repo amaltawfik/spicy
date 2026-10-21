@@ -1435,9 +1435,14 @@
 #'       paragraph in the order of every table of the package: what
 #'       the model is (its family, design, scale of the coefficients,
 #'       reference categories, ...), the cases a univariable screen fits
-#'       on, the inference (VCV type, p-adjust method, ...), then the
-#'       definitions (abbreviations, block glosses). Under `stars`, the
-#'       legend of the stars follows on a line of its own.
+#'       on, the inference (VCV type, p-adjust method, ...), the glosses
+#'       of the blocks, then the abbreviations the column headers and the
+#'       rows of the fit statistics and of the random effects show
+#'       ("AIC = Akaike information criterion"), defined as the style in
+#'       force asks (`spicy_style(abbreviations = )`; under `"jama"` they
+#'       open the note on a line of their own).
+#'       Under `stars`, the legend of the stars follows on a line of its
+#'       own.
 #'     \item `FALSE`: the corresponding banner row is omitted from
 #'       every output engine. Use when the surrounding manuscript
 #'       provides its own caption / note.
@@ -1530,10 +1535,10 @@
 #'   [spicy_style()] object, or `NULL` (the default). A style only
 #'   changes DEFAULTS -- any argument you pass explicitly wins over it.
 #'   Set `options(spicy.style = )` for document-wide scope. A theme
-#'   covers numeric formatting conformity only, not full editorial
-#'   conformity; `?spicy_style` lists the exact rules each one encodes
-#'   and the official document they come from. An unknown name is an
-#'   error.
+#'   covers numeric formatting, the word that opens the note and the
+#'   abbreviations the note defines, not full editorial conformity;
+#'   `?spicy_style` lists the exact rules each one encodes and the
+#'   official document they come from. An unknown name is an error.
 #'
 #' @return A `spicy_regression_table` object (a `data.frame`
 #'   subclass with classes `c("spicy_regression_table",
@@ -3654,33 +3659,9 @@ table_regression <- function(
   } else {
     named_model_labels # NULL: render_regression_table generates "Model 1", ...
   }
-  # "95% CrI" (equal-tailed) or "95% HDI" header when EVERY frame is a
-  # posterior interval (the design promise in regression_frame_stan.R;
-  # the hdi gate guarantees posterior_hdi is all-Bayesian): mixed
-  # frequentist + Bayesian tables keep the shared "CI" label, with a
-  # per-model footer disclosure from the CI-method block. The KEY travels:
-  # the renderer words the header in the language and the column name in
-  # English.
-  frame_ci_methods <- vapply(
-    frames,
-    function(f) {
-      f$info$ci_method %||% ""
-    },
-    character(1)
-  )
-  ci_label_key <- if (
-    length(frames) > 0L &&
-      all(frame_ci_methods == "posterior_quantile")
-  ) {
-    "header_ci_label_credible"
-  } else if (
-    length(frames) > 0L &&
-      all(frame_ci_methods == "posterior_hdi")
-  ) {
-    "header_ci_label_hdi"
-  } else {
-    "header_ci_label_confidence"
-  }
+  # The KEY of the interval header travels: the renderer words the header
+  # in the language and the column name in English.
+  ci_label_key <- .reg_ci_label_key(frames)
   rendered <- render_regression_table(
     aligned,
     show_columns = show_columns,

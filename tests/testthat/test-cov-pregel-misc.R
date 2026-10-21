@@ -392,9 +392,9 @@ test_that("the hole checker types float holes and counts positional ones", {
   expect_false(compatible("%.1f scored %s", "%s scored %.1f"))
 
   # A positional reference is checked at its own arity, not at the
-  # number of holes it spells: `note_gloss_smd` writes five holes for
+  # number of holes it spells: `note_smd_direction` writes five holes for
   # four arguments (`%1$s` twice).
-  ref <- spicy:::.spicy_strings[["note_gloss_smd"]]
+  ref <- spicy:::.spicy_strings[["note_smd_direction"]]
   expect_match(ref, "%1$s", fixed = TRUE)
   expect_true(compatible("%1$s: %2$s vs %3$s, threshold %4$s (|%1$s|)", ref))
   expect_false(compatible("%1$s only", ref))
@@ -409,7 +409,7 @@ test_that("the hole checker types float holes and counts positional ones", {
 
   # The public consequence: an override that drops the holes is refused
   # at the `options()` line rather than inside the next table call.
-  withr::local_options(spicy.labels = c(note_gloss_smd = "SMD only"))
+  withr::local_options(spicy.labels = c(note_smd_direction = "SMD only"))
   err <- expect_error(spicy_labels(), class = "spicy_invalid_input")
   expect_match(
     conditionMessage(err),

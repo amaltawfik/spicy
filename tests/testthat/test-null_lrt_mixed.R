@@ -462,6 +462,12 @@ test_that("table_regression(glmer gaussian(log)) names the null in its footer", 
   note <- attr(table_regression(fit), "note")
   expect_match(note, "LR test vs gaussian regression, ", fixed = TRUE)
   expect_no_match(note, "linear regression", fixed = TRUE)
+  # In French the family takes its French name, as the inverse-gaussian
+  # family does, rather than the engine's English one.
+  withr::local_options(spicy.language = "fr")
+  note_fr <- attr(table_regression(fit), "note")
+  expect_match(note_fr, "contre la r\u00e9gression gaussienne, ", fixed = TRUE)
+  expect_no_match(note_fr, "gaussian", fixed = TRUE)
 })
 
 test_that("glmmTMB gaussian(log): the engine-native null is named as in lme4", {
@@ -485,4 +491,9 @@ test_that("glmmTMB gaussian(log): the engine-native null is named as in lme4", {
     tolerance = 1e-6
   )
   expect_identical(out$family_label, "gaussian regression")
+  withr::local_options(spicy.language = "fr")
+  expect_identical(
+    do.call(spicy_fmt, c(list(out$family_key), out$family_args)),
+    "r\u00e9gression gaussienne"
+  )
 })

@@ -1676,12 +1676,11 @@ table_continuous_svy <- function(
       },
       .desc_p_adjust_note(p_adjust_info)
     ),
-    definitions = c(
-      build_column_glosses(tokens, result, ci_level, decimal_mark),
-      if ("deff" %in% tokens) {
-        spicy_fmt("note_gloss_deff", spicy_str("header_deff"))
-      },
-      if ("se" %in% tokens) spicy_fmt("note_gloss_se", spicy_str("header_se"))
+    definitions = build_column_glosses(tokens, result, ci_level, decimal_mark),
+    # The design-based standard error and the design effect say how they
+    # were computed, so their definitions stay under every rule.
+    abbreviations = .note_abbreviations(
+      .continuous_abbrev_items(tokens, ci_level, decimal_mark, svy = TRUE)
     )
   )
 }

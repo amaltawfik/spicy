@@ -58,7 +58,7 @@
        age      │ F       48,25  12,58  31,00  61,00     28,23         68,27      4  0,153 
                 │ M       35,50   8,74  24,00  45,00     21,60         49,40      4        
       
-      Note. Comparaison des groupes : test t de Welch.
+      Note. Comparaison des groupes : test t de Welch. IC = intervalle de confiance ; LI = limite inférieure ; LS = limite supérieure.
     Code
       print(table_continuous_lm(d, select = bmi, by = sex))
     Output
@@ -68,7 +68,7 @@
       ────────────┼─────────────────────────────────────────────────────────────────────────────────────
        bmi        │  26,87    23,17      -3,70         -9,09            1,69        0,144    0,32    8  
       
-      Note. Comparaison des groupes : test t issu du modèle linéaire.
+      Note. Comparaison des groupes : test t issu du modèle linéaire. IC = intervalle de confiance ; LI = limite inférieure ; LS = limite supérieure.
     Code
       print(table_outcome(d, outcome = bmi, select = c(sex, smoke)))
     Output
@@ -87,7 +87,7 @@
          Yes          │  24,30    2,25    22,10    26,60       18,71           29,89        3           
          (Manquant)   │  23,30     –      23,30    23,30         –               –          1           
       
-      Note. Comparaison des groupes : test t de Welch. Chaque bloc compare bmi entre les modalités d'une variable ; les blocs ne sont pas ajustés les uns sur les autres. Ensemble = l'échantillon d'analyse complet.
+      Note. Comparaison des groupes : test t de Welch. Chaque bloc compare bmi entre les modalités d'une variable ; les blocs ne sont pas ajustés les uns sur les autres. Ensemble = l'échantillon d'analyse complet. IC = intervalle de confiance ; LI = limite inférieure ; LS = limite supérieure.
     Code
       print(table_regression(stats::lm(bmi ~ age + sex, data = d)))
     Output
@@ -105,7 +105,7 @@
        R²          │  0,99                               
        R² ajusté   │  0,98                               
       
-      Note. Régression linéaire. Erreurs standards : classiques (MCO).
+      Note. Régression linéaire. Erreurs standards : classiques (MCO). IC = intervalle de confiance.
 
 # a single overridden label is pinned
 
