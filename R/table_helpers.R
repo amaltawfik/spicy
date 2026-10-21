@@ -817,7 +817,9 @@ make_stronger_indent <- function(x, base_indent, strong_indent, rows) {
 # any other column is sorted, text in the C locale (`method = "radix"`:
 # capitals before lower case, accented letters after `z`, the same on every
 # machine), `FALSE` before `TRUE`, numbers and the codes of a labelled
-# vector ascending. This is the order of `freq()` and `cross_tab()`, and it
+# vector without value labels ascending (one with value labels is named
+# and ordered by `.group_display()`, as its rows by `.tab_factor()`).
+# This is the order of `freq()` and `cross_tab()`, and it
 # depends neither on the order of the rows nor on the locale. Missing
 # values form no level here: the caller appends the missing group last
 # when it shows one. Returns the levels as a character vector.
@@ -839,14 +841,14 @@ make_stronger_indent <- function(x, base_indent, strong_indent, rows) {
 
 # The groups of a grouping column as the table shows them: a haven
 # labelled column with value labels -- an SPSS or Stata import -- names
-# its groups as the rows of a labelled variable name its levels
-# (`.tab_factor()`), "[code] label". The groups and their order are those
-# of the codes, as when the headers showed the codes: ascending (also
-# when the labels are declared in another order), and a value label no
-# observation holds adds no group. Any other column is returned as it
-# is, and so is a labelled one without value labels. The caller has
-# applied `user_na` first (`resolve_user_na()`), so a declared missing
-# code is NA here, or an ordinary value under `user_na = FALSE`.
+# and orders its groups as the rows of a labelled variable name and order
+# its levels (`.tab_factor()`, one rule for both): "[code] label", in the
+# order of the `labels` attribute when every observed value carries a
+# label, by ascending code otherwise. A value label no observation holds
+# adds no group. Any other column is returned as it is, and so is a
+# labelled one without value labels. The caller has applied `user_na`
+# first (`resolve_user_na()`), so a declared missing code is NA here, or
+# an ordinary value under `user_na = FALSE`.
 .group_display <- function(x) {
   if (
     !labelled::is.labelled(x) ||
@@ -854,12 +856,7 @@ make_stronger_indent <- function(x, base_indent, strong_indent, rows) {
   ) {
     return(x)
   }
-  out <- droplevels(labelled::to_factor(
-    x,
-    levels = "prefixed",
-    sort_levels = "values",
-    nolabel_to_na = FALSE
-  ))
+  out <- droplevels(.tab_factor(x))
   # The variable label names the grouping variable in the title.
   attr(out, "label") <- attr(x, "label", exact = TRUE)
   out

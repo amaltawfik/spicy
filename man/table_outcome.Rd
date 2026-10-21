@@ -53,7 +53,8 @@ names. One block of rows per variable, in the order given, and in
 each block one row per level: the levels of a factor in their order,
 any other variable sorted, as the groups of \code{by} are in
 \code{\link[=table_continuous]{table_continuous()}} (text in the C locale, \code{FALSE} before \code{TRUE},
-numbers and codes ascending), whatever the order of the rows. As
+numbers ascending, a labelled column by its value labels), whatever
+the order of the rows. As
 everywhere in the family, \code{select} is what structures the rows. The
 outcome and the \code{weights} column are not part of the selection: a
 selection helper skips them, and naming one in \code{select}, or giving
@@ -423,9 +424,10 @@ reason -- an arbitrary threshold, but a sixty-row block where a
 reader expects a handful of categories is not a table.
 
 A \code{haven_labelled} column used as \code{select} names its levels by their
-value labels (\code{"[1] Women"}), in the order of its codes, as a labelled
-\code{by} names its groups in \code{\link[=table_continuous]{table_continuous()}} and as the rows of a
-labelled variable of \code{\link[=table_categorical]{table_categorical()}} read.
+value labels (\code{"[1] Women"}), in the order of its \code{labels} attribute
+when every observed value carries a label and by ascending code
+otherwise, as a labelled \code{by} names its groups in \code{\link[=table_continuous]{table_continuous()}}
+and as the rows of a labelled variable of \code{\link[=table_categorical]{table_categorical()}} read.
 }
 
 \section{The table note}{

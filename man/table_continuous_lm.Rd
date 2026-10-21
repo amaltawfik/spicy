@@ -85,9 +85,10 @@ so a binary contrast displays as \code{Delta (TRUE - FALSE)}.
 \item \strong{haven labelled with value labels} (an SPSS / Stata import):
 treated as categorical, one level per observed code named by its
 value label (\code{"[1] Women"}, as the rows of a labelled variable of
-\code{\link[=table_categorical]{table_categorical()}} are), in ascending code order (the reference
-level is the lowest code; the model needs a fixed level order),
-the order in which \code{\link[=table_continuous]{table_continuous()}} and
+\code{\link[=table_categorical]{table_categorical()}} are), in the order of its \code{labels} attribute
+when every observed value carries a label and by ascending code
+otherwise (the first level is the reference; the model needs a
+fixed level order), the order in which \code{\link[=table_continuous]{table_continuous()}} and
 \code{\link[=table_categorical]{table_categorical()}} display the same groups. A
 labelled vector without value labels is treated as a continuous
 regressor. Declared missing values follow \code{user_na} as usual.

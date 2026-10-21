@@ -82,8 +82,9 @@
 #' @param by Optional grouping column, unquoted or as a string. Factor
 #'   levels keep their declared order, a declared level with no respondent
 #'   included; any other column is sorted, as in [table_categorical()]:
-#'   text in the C locale, `FALSE` before `TRUE`, numbers and the codes of
-#'   a labelled column ascending, whatever the order of the rows. The
+#'   text in the C locale, `FALSE` before `TRUE`, numbers ascending,
+#'   whatever the order of the rows, and a labelled column is named and
+#'   ordered by its value labels as there. The
 #'   missing answers to the question are counted (see `base` and
 #'   `none_row`), as a table that counts does (see `drop_na` in
 #'   [table_categorical()]), but a missing `by` has no group to be counted

@@ -115,29 +115,43 @@ test_that("table_categorical accepts weights as an unquoted column name", {
   expect_equal(out_bare$pct, out_char$pct)
 })
 
-test_that("NA weights are said once, whatever the number of variables", {
+test_that("the rows a missing weight removes are said in the note, not warned", {
   d <- sochealth
   d$weight[3L] <- NA
-  count_warnings <- function(...) {
-    n <- 0L
-    withCallingHandlers(
-      table_categorical(d, weights = weight, ...),
-      spicy_dropped_na = function(w) {
-        n <<- n + 1L
-        invokeRestart("muffleWarning")
-      }
-    )
-    n
-  }
-  # It was raised by every internal cross_tab() or freq() call: three
-  # times for one variable under `by`, five for two.
-  expect_identical(count_warnings(select = smoking, by = sex), 1L)
-  expect_identical(count_warnings(select = c(smoking, education), by = sex), 1L)
-  expect_identical(count_warnings(select = c(smoking, education)), 1L)
-  expect_warning(
-    table_categorical(d, select = smoking, weights = weight),
-    class = "spicy_dropped_na"
+  # A warning came from every internal cross_tab() or freq() call: three
+  # for one variable under `by`, five for two. The note says it once, as
+  # in the other tables that take `weights`.
+  sentence <- "Rows with missing weight removed: 1."
+  one_way <- expect_no_warning(
+    table_categorical(d, select = c(smoking, education), weights = weight)
   )
+  expect_match(attr(one_way, "note"), sentence, fixed = TRUE)
+  grouped <- expect_no_warning(
+    table_categorical(
+      d,
+      select = c(smoking, education),
+      by = sex,
+      weights = weight
+    )
+  )
+  expect_match(attr(grouped, "note"), sentence, fixed = TRUE)
+  # Whatever `drop_na`: the rows leave the table either way.
+  kept <- table_categorical(
+    d,
+    select = smoking,
+    by = sex,
+    weights = weight,
+    drop_na = TRUE
+  )
+  expect_match(attr(kept, "note"), sentence, fixed = TRUE)
+  # Counted out of the table: the weighted total is that of the rows left.
+  long <- table_categorical(
+    d,
+    select = smoking,
+    weights = weight,
+    output = "long"
+  )
+  expect_equal(sum(long$n), sum(d$weight, na.rm = TRUE), tolerance = 1e-8)
 })
 
 test_that("table_categorical accepts tidyselect-style select and unquoted by", {

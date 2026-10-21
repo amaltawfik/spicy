@@ -64,9 +64,10 @@
 #'   - **haven labelled with value labels** (an SPSS / Stata import):
 #'     treated as categorical, one level per observed code named by its
 #'     value label (`"[1] Women"`, as the rows of a labelled variable of
-#'     [table_categorical()] are), in ascending code order (the reference
-#'     level is the lowest code; the model needs a fixed level order),
-#'     the order in which [table_continuous()] and
+#'     [table_categorical()] are), in the order of its `labels` attribute
+#'     when every observed value carries a label and by ascending code
+#'     otherwise (the first level is the reference; the model needs a
+#'     fixed level order), the order in which [table_continuous()] and
 #'     [table_categorical()] display the same groups. A
 #'     labelled vector without value labels is treated as a continuous
 #'     regressor. Declared missing values follow `user_na` as usual.
@@ -1280,10 +1281,9 @@ table_continuous_lm <- function(
   # (table_continuous(), table_categorical()) already group by such
   # columns. Convert it to a factor so it takes the categorical path
   # instead of silently fitting a slope on the codes: its groups are
-  # named by their value labels ("[code] label"), as in the sibling
-  # tables, in ascending CODE order (the model needs a fixed order and
-  # the lowest code is the natural reference; `.group_display()`). A
-  # labelled vector without value labels stays continuous.
+  # named and ordered as in the sibling tables (`.group_display()`), the
+  # first one the reference. A labelled vector without value labels stays
+  # continuous.
   # `resolve_user_na()` has already applied the `user_na` contract, so
   # declared-missing codes are NA (default) or ordinary values
   # (user_na = FALSE) here.

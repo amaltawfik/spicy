@@ -236,20 +236,11 @@
   )]
 }
 
-# The NA weights of a table, said once, in the words `cross_tab()` and
-# `freq()` use; and the muffler of the copy each of their internal calls
-# would raise. Their only `spicy_dropped_na` warning is that one.
-.warn_weights_na <- function(n_na) {
-  spicy_warn(
-    sprintf(
-      "%d NA value%s in `weights`; those observations are excluded from the table and from rescaling.",
-      n_na,
-      if (n_na > 1L) "s" else ""
-    ),
-    class = "spicy_dropped_na"
-  )
-}
-
+# The rows a missing weight removes are said in the note, as in every
+# table that takes `weights` (`build_missing_note()`), and not by a
+# warning: this muffles the one each internal `cross_tab()` / `freq()`
+# call would raise (three per variable under `by`). Their only
+# `spicy_dropped_na` warning is that one.
 .quiet_weights_na <- function(expr) {
   withCallingHandlers(
     expr,
@@ -266,7 +257,10 @@
 # Somers' d) and stripping haven value labels down to raw codes.
 # * factors (ordered or not) pass through verbatim;
 # * labelled vectors use the same conversion as freq():
-#   "[code] label" levels in code order;
+#   "[code] label" levels, in the order of the `labels` attribute when
+#   every observed value carries a label, by ascending code otherwise
+#   (`labelled::to_factor()`'s own rule; the groups of a labelled `by`
+#   follow it too, `.group_display()`);
 # * anything else becomes a factor in the family's order of the groups
 #   (`.group_levels()`): sorted in the C locale, as `freq()` and
 #   `cross_tab()` order it.
@@ -937,21 +931,21 @@
 #'   naming one in `select`, or giving its position, is an error. A name
 #'   that is not a column of `data` is an error (class
 #'   `spicy_missing_column`), and so is a selection with no column to
-#'   tabulate. The levels of a variable are its rows in the order `by`
-#'   gives its groups (see `by`); a labelled variable keeps the order of
-#'   its codes.
+#'   tabulate. The levels of a variable are its rows, in the order `by`
+#'   gives its groups (see `by`), a labelled variable's included.
 #' @param by Optional grouping column used for columns/groups. Accepts an
 #'   unquoted column name or a single character column name. Factor
 #'   levels keep their declared order, which is the way to choose another
 #'   order; any other `by` is sorted, as in [freq()] and [cross_tab()]:
 #'   text in the C locale (capitals before lower case, the same on every
-#'   machine), `FALSE` before `TRUE`, numbers and the codes of a haven
-#'   labelled column ascending, whatever the order of the rows. The
-#'   column of missing values comes last. A haven labelled `by` names its
-#'   groups by their value labels, as the rows of a labelled variable
-#'   name its levels (`"[1] Women"`), in the order of its codes; a value
-#'   label no observation holds adds no group, and declared missing
-#'   values follow `user_na` as usual. The rule of the whole family.
+#'   machine), `FALSE` before `TRUE`, numbers ascending, whatever the
+#'   order of the rows. The column of missing values comes last. A haven
+#'   labelled `by` names its groups by their value labels, as the rows of
+#'   a labelled variable name its levels (`"[1] Women"`), in the order of
+#'   its `labels` attribute when every observed value carries a label and
+#'   by ascending code otherwise; a value label no observation holds adds
+#'   no group, and declared missing values follow `user_na` as usual. The
+#'   rule of the whole family.
 #' @param labels How each variable is named in the table: in the rows,
 #'   in the title, and in the notes. Four forms:
 #'   * `labels = FALSE` shows the column name.
@@ -1011,7 +1005,8 @@
 #'   error (class `spicy_invalid_data`).
 #' @param weights Optional weights. Either `NULL` (the default), a numeric vector
 #'   of length `nrow(data)`, or a single column in `data` supplied as an
-#'   unquoted name or a character string.
+#'   unquoted name or a character string. Rows with an `NA` weight leave
+#'   the table, and the note says how many.
 #' @param rescale Logical. If `FALSE`, weights are used as-is.
 #'   If `TRUE`, rescales weights so total weighted N matches raw N.
 #'   Passed to `spicy::cross_tab()`. The default reads
@@ -1994,6 +1989,20 @@ table_categorical <- function(
         spicy_fmt("note_rows_missing_by_removed", by_label, by_na_dropped)
       )
     }
+    # The rows a missing weight removed, whatever `drop_na`: the
+    # tabulation leaves them out. Said here, as every table that takes
+    # `weights` says it, and not by a warning.
+    n_na_weights <- if (is.null(weights_vec)) 0L else sum(is.na(weights_vec))
+    if (n_na_weights > 0L) {
+      parts <- c(
+        parts,
+        spicy_fmt(
+          "note_rows_missing_weights",
+          weights_name %||% spicy_str("note_weights_fallback"),
+          n_na_weights
+        )
+      )
+    }
     # One sentence per set of groups, the variables in the order of
     # `select`.
     no_data <- if (has_group) {
@@ -2149,12 +2158,6 @@ table_categorical <- function(
   # `cross_tab()` / `freq()` the tabulation calls: the values those two
   # accept (NA allowed, an all-zero vector too).
   .check_weights_values(weights_vec, require_positive = FALSE)
-  # NA weights are said once, here: each internal `cross_tab()` /
-  # `freq()` call would say it again (three times per variable under
-  # `by`), and `.quiet_weights_na()` muffles those copies.
-  if (!is.null(weights_vec) && anyNA(weights_vec)) {
-    .warn_weights_na(sum(is.na(weights_vec)))
-  }
 
   # Without weights there is nothing to rescale: a `rescale = TRUE` typed
   # in the call warns, one read from `options(spicy.rescale)` does not.

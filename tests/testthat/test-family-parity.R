@@ -4322,14 +4322,15 @@ test_that("a labelled grouping names its groups by their value labels, in every 
     w = 1
   )
   # Labels declared in another order than the codes, one of them held by
-  # nobody: the groups stay the observed codes in code order, named as
-  # the rows of a labelled variable are. They were headed by the codes,
-  # "1" and "2", `labels = TRUE` or not.
+  # nobody: the groups are the observed codes, named and ordered as the
+  # rows of a labelled variable are -- every observed value carries a
+  # label, so in the order of the `labels` attribute. They were headed by
+  # the codes, "1" and "2", `labels = TRUE` or not.
   d$g <- haven::labelled(
     c(1, 2, 1, 2, 1, 2, 2, 1),
     labels = c(Men = 2, Women = 1, Other = 3)
   )
-  groups <- c("[1] Women", "[2] Men")
+  groups <- c("[2] Men", "[1] Women")
   long <- function(fn, ...) fn(..., output = "long")
   grp <- function(x) unique(x$group[x$.group_role %in% "group"])
   expect_identical(grp(long(table_categorical, d, select = f, by = g)), groups)
@@ -4369,11 +4370,75 @@ test_that("a labelled grouping names its groups by their value labels, in every 
       info = lab
     )
   }
+  # The first group is the reference of the model.
   expect_true(
-    "M ([1] Women)" %in%
+    "\u0394 ([1] Women - [2] Men)" %in%
       names(table_continuous_lm(d, select = y, by = g, output = "data.frame"))
   )
-  # The rows of the same column, as a variable, read the same.
+  # The rows of the same column, as a variable, read the same, in the
+  # same order.
   rows <- table_categorical(d, select = g, output = "long")$level
-  expect_true(all(groups %in% rows))
+  expect_identical(rows[rows %in% groups], groups)
+  # An observed value with no label: ascending codes, for the groups and
+  # for the rows.
+  d$g2 <- haven::labelled(
+    c(1, 2, 1, 4, 1, 2, 4, 1),
+    labels = c(Men = 2, Women = 1)
+  )
+  coded <- c("[1] Women", "[2] Men", "[4] 4")
+  expect_identical(grp(long(table_categorical, d, select = f, by = g2)), coded)
+  expect_identical(
+    unique(table_categorical(d, select = g2, output = "long")$level),
+    coded
+  )
+})
+
+test_that("every table that takes weights says the rows a missing weight removed", {
+  # One disclosure, in the note, and no warning: the rule of the rows a
+  # missing `by` removes. table_categorical() warned instead, once per
+  # internal tabulation.
+  d <- sochealth
+  d$weight[3L] <- NA
+  notes <- list(
+    categorical = table_categorical(
+      d,
+      select = smoking,
+      by = sex,
+      weights = weight
+    ),
+    continuous = table_continuous(
+      d,
+      select = bmi,
+      by = sex,
+      weights = weight,
+      p_value = FALSE
+    ),
+    continuous_lm = table_continuous_lm(
+      d,
+      select = bmi,
+      by = sex,
+      weights = weight
+    ),
+    outcome = table_outcome(
+      d,
+      outcome = bmi,
+      select = sex,
+      weights = weight,
+      p_value = FALSE
+    )
+  )
+  for (fn in names(notes)) {
+    expect_match(
+      attr(notes[[fn]], "note"),
+      "Rows with missing weight removed: 1.",
+      fixed = TRUE,
+      info = fn
+    )
+  }
+  expect_no_warning(
+    table_categorical(d, select = smoking, by = sex, weights = weight)
+  )
+  expect_no_warning(
+    table_continuous_lm(d, select = bmi, by = sex, weights = weight)
+  )
 })

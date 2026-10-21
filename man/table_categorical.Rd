@@ -59,22 +59,22 @@ selection: \code{everything()} and the other helpers skip them, and
 naming one in \code{select}, or giving its position, is an error. A name
 that is not a column of \code{data} is an error (class
 \code{spicy_missing_column}), and so is a selection with no column to
-tabulate. The levels of a variable are its rows in the order \code{by}
-gives its groups (see \code{by}); a labelled variable keeps the order of
-its codes.}
+tabulate. The levels of a variable are its rows, in the order \code{by}
+gives its groups (see \code{by}), a labelled variable's included.}
 
 \item{by}{Optional grouping column used for columns/groups. Accepts an
 unquoted column name or a single character column name. Factor
 levels keep their declared order, which is the way to choose another
 order; any other \code{by} is sorted, as in \code{\link[=freq]{freq()}} and \code{\link[=cross_tab]{cross_tab()}}:
 text in the C locale (capitals before lower case, the same on every
-machine), \code{FALSE} before \code{TRUE}, numbers and the codes of a haven
-labelled column ascending, whatever the order of the rows. The
-column of missing values comes last. A haven labelled \code{by} names its
-groups by their value labels, as the rows of a labelled variable
-name its levels (\code{"[1] Women"}), in the order of its codes; a value
-label no observation holds adds no group, and declared missing
-values follow \code{user_na} as usual. The rule of the whole family.}
+machine), \code{FALSE} before \code{TRUE}, numbers ascending, whatever the
+order of the rows. The column of missing values comes last. A haven
+labelled \code{by} names its groups by their value labels, as the rows of
+a labelled variable name its levels (\code{"[1] Women"}), in the order of
+its \code{labels} attribute when every observed value carries a label and
+by ascending code otherwise; a value label no observation holds adds
+no group, and declared missing values follow \code{user_na} as usual. The
+rule of the whole family.}
 
 \item{labels}{How each variable is named in the table: in the rows,
 in the title, and in the notes. Four forms:
@@ -143,7 +143,8 @@ error (class \code{spicy_invalid_data}).}
 
 \item{weights}{Optional weights. Either \code{NULL} (the default), a numeric vector
 of length \code{nrow(data)}, or a single column in \code{data} supplied as an
-unquoted name or a character string.}
+unquoted name or a character string. Rows with an \code{NA} weight leave
+the table, and the note says how many.}
 
 \item{rescale}{Logical. If \code{FALSE}, weights are used as-is.
 If \code{TRUE}, rescales weights so total weighted N matches raw N.

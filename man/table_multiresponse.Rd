@@ -49,8 +49,9 @@ and so is an empty selection.}
 \item{by}{Optional grouping column, unquoted or as a string. Factor
 levels keep their declared order, a declared level with no respondent
 included; any other column is sorted, as in \code{\link[=table_categorical]{table_categorical()}}:
-text in the C locale, \code{FALSE} before \code{TRUE}, numbers and the codes of
-a labelled column ascending, whatever the order of the rows. The
+text in the C locale, \code{FALSE} before \code{TRUE}, numbers ascending,
+whatever the order of the rows, and a labelled column is named and
+ordered by its value labels as there. The
 missing answers to the question are counted (see \code{base} and
 \code{none_row}), as a table that counts does (see \code{drop_na} in
 \code{\link[=table_categorical]{table_categorical()}}), but a missing \code{by} has no group to be counted

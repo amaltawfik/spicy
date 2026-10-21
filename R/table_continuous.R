@@ -45,12 +45,13 @@
 #'   order, which is the way to choose another order; any other `by` is
 #'   sorted, as in [table_categorical()]: text in the C locale (capitals
 #'   before lower case, the same on every machine), `FALSE` before
-#'   `TRUE`, numbers and the codes of a haven labelled column ascending,
-#'   whatever the order of the rows. The group of missing values comes
-#'   last. A haven labelled `by` names its groups by their value labels,
-#'   as the rows of a labelled variable of [table_categorical()] name
-#'   its levels (`"[1] Women"`), in the order of its codes; declared
-#'   missing values follow `user_na` as usual.
+#'   `TRUE`, numbers ascending, whatever the order of the rows. The group
+#'   of missing values comes last. A haven labelled `by` names its groups
+#'   by their value labels, as the rows of a labelled variable of
+#'   [table_categorical()] name its levels (`"[1] Women"`), in the order
+#'   of its `labels` attribute when every observed value carries a label
+#'   and by ascending code otherwise; declared missing values follow
+#'   `user_na` as usual.
 #' @param exclude Columns to exclude. Supports tidyselect syntax and
 #'   character vectors of column names.
 #' @param regex Logical. If `FALSE` (the default), uses tidyselect

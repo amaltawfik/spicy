@@ -61,12 +61,13 @@ logical) are supported as-is. Factor levels keep their declared
 order, which is the way to choose another order; any other \code{by} is
 sorted, as in \code{\link[=table_categorical]{table_categorical()}}: text in the C locale (capitals
 before lower case, the same on every machine), \code{FALSE} before
-\code{TRUE}, numbers and the codes of a haven labelled column ascending,
-whatever the order of the rows. The group of missing values comes
-last. A haven labelled \code{by} names its groups by their value labels,
-as the rows of a labelled variable of \code{\link[=table_categorical]{table_categorical()}} name
-its levels (\code{"[1] Women"}), in the order of its codes; declared
-missing values follow \code{user_na} as usual.}
+\code{TRUE}, numbers ascending, whatever the order of the rows. The group
+of missing values comes last. A haven labelled \code{by} names its groups
+by their value labels, as the rows of a labelled variable of
+\code{\link[=table_categorical]{table_categorical()}} name its levels (\code{"[1] Women"}), in the order
+of its \code{labels} attribute when every observed value carries a label
+and by ascending code otherwise; declared missing values follow
+\code{user_na} as usual.}
 
 \item{exclude}{Columns to exclude. Supports tidyselect syntax and
 character vectors of column names.}

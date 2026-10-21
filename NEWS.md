@@ -203,8 +203,12 @@ p-values, and notes.
   capitals before lower case and the same on every machine, as
   `cross_tab()` does.
 
-* They sort a logical `by` with `FALSE` first and a numeric or labeled
-  `by` in ascending order; a factor keeps the order of its levels.
+* They sort a logical `by` with `FALSE` first and a numeric `by` in
+  ascending order; a factor keeps the order of its levels.
+
+* A labeled `by` follows the order of its value labels when every
+  observed value has one and of its codes otherwise, the order of the
+  rows of a labeled variable.
 
 * `table_categorical()`, `table_continuous()`, and the survey twins
   followed the order of first appearance, and `table_continuous_lm()`
@@ -309,6 +313,10 @@ p-values, and notes.
 * `table_regression()` and `table_regression_uv()` keep their default
   output, but `labels = NULL` (their 0.13.0 default) is an error too,
   and a name that matches no term is ignored, not refused.
+
+* A labeled `by` heads its groups with their value labels, as the rows
+  of a labeled variable read (`[1] Women n`, not `1 n`), in every table;
+  so do the levels of a labeled `select` in `table_outcome()`.
 
 * `table_categorical(test = "auto")`, the default, chooses Pearson's
   chi-squared test when every expected count is at least 5, Fisher's
@@ -796,6 +804,14 @@ p-values, and notes.
   variable (`list(smoking = "Yes")`), as `table_categorical_svy()` does,
   where it read one vector for all and dropped the unmatched variables.
 
+* `table_categorical()` and `table_categorical_svy()` show a dash, not a
+  blank, in the test and association cells of a variable they cannot
+  compare, and the note names no association measure for it.
+
+* `table_categorical()` says in its note how many rows a missing weight
+  removed, as the other tables do, where it warned once per internal
+  tabulation, three times for one variable with `by`.
+
 * `table_categorical()`, `table_continuous()`, `table_continuous_lm()`,
   `table_outcome()`, and the survey twins name each variable of their
   notes as the rows and the title do, where they used the column name
@@ -840,6 +856,10 @@ p-values, and notes.
   `(Missing)` row shows, and its note spells "chi-squared", as the other
   notes do.
 
+* `table_categorical_svy()` without `select` tabulates the categorical
+  columns of the design, as `table_categorical()` does. It tabulated the
+  numeric ones too, one row per distinct value.
+
 * With `p_value = FALSE`, `table_continuous()`, `table_outcome()`, and
   the survey twins keep no p-value in `output = "long"`, where they kept
   one when `statistic = TRUE` or an effect size ran the test.
@@ -857,7 +877,7 @@ p-values, and notes.
 
 * `table_continuous()` and its siblings draw no inference on a constant
   variable, nor a parametric one on groups each constant on its own
-  value.
+  value (nor a rank test, in `table_continuous_svy()`).
 
 * In `table_continuous()` and its siblings, such an undefined test, its
   *p*, and its effect size show a dash, with a `spicy_undefined_stat`
@@ -906,13 +926,17 @@ p-values, and notes.
 * `table_continuous_lm()` accepts `p_value = NULL`, now its default as in
   the rest of the family: the p-value is shown, `by` being required.
 
+* With `p_value = FALSE`, `table_continuous_lm()` leaves the p-value
+  `NA` in `output = "long"`, `tidy()`, and `glance()`, and the rest of
+  the test too unless `statistic = TRUE`. It kept them filled.
+
 * `table_continuous_lm(contrast = "none")` leaves out the contrast
   column and its interval in every displayed output, as documented,
   where it printed them empty; the long output keeps them, `NA`.
 
 * `table_continuous_lm()` no longer stops with "attempt to select less
   than one element" when an outcome has no complete observation in a
-  level of `by`.
+  level of `by`: the levels with data keep their means, and the n stays.
 
 * `table_continuous_svy()` warns that `drop_na = FALSE` without `by` has
   no effect, as `table_continuous()` does.
@@ -942,6 +966,10 @@ p-values, and notes.
   shows it, relabeled with `options(spicy.labels)`, where it kept
   "Overall".
 
+* `table_outcome()` says each block compares the outcome "without
+  controlling for the other variables": "blocks are not adjusted for one
+  another" contradicted `p_adjust`, which adjusts them all together.
+
 * `table_regression()` labels the standard errors of `mgcv` fits
   "Bayesian (mgcv posterior covariance)". The label said "REML-implied"
   whatever the smoothing method, including the GCV default of `gam()`.
@@ -964,6 +992,10 @@ p-values, and notes.
 * In French, `table_regression()` writes the robust standard-error line
   of every model class, not only `lm` and `glm`, and the model-based one
   of `lmer`, `lme`, and `gls` (#7).
+
+* `table_regression()` words the standard errors of a `MASS::glm.nb()`
+  fit as those of a glm, in every language, where it wrote "Model-based
+  (asymptotic)" or "HC0 heteroskedasticity-consistent" in English.
 
 * In French, `table_regression()` also writes the p-value line, the
   `p_adjust` note, the exponentiation note and its "not exponentiated"
@@ -996,6 +1028,10 @@ p-values, and notes.
 * `table_regression()` calls the null of the random-effects test of a
   non-identity gaussian `glmmTMB()` fit "gaussian regression"
   ("régression gaussienne"), not "linear regression".
+
+* `table_regression()` gives the theta of a `glmer.nb()` null model two
+  decimals and the decimal mark of the table in its random-effects test,
+  "negative binomial(1.46) regression"; it printed "1.4579".
 
 * `table_regression()` calls the `partial_chi2` of `lmer`, `glmer`,
   `glmmTMB`, and `lme` fits a partial Wald chi-squared in its footer. It

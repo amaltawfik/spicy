@@ -102,8 +102,8 @@
 # else -- character, logical, numeric -- is sorted in the C locale, the
 # family's order of the groups (`.group_levels()`), shared with
 # `table_categorical()` and `cross_tab()`. A labelled column arrives as
-# the factor of its value labels, in the order of its codes
-# (`.group_display()`).
+# the factor of its value labels, ordered by the rule of the rows of a
+# labelled variable (`.group_display()`).
 #
 # With `drop_na = FALSE` the missing values become a display level of
 # their own. Every declared level is displayed, so one with the label of
@@ -631,9 +631,10 @@ abort_outcome_by_renamed <- function() {
 #' reader expects a handful of categories is not a table.
 #'
 #' A `haven_labelled` column used as `select` names its levels by their
-#' value labels (`"[1] Women"`), in the order of its codes, as a labelled
-#' `by` names its groups in [table_continuous()] and as the rows of a
-#' labelled variable of [table_categorical()] read.
+#' value labels (`"[1] Women"`), in the order of its `labels` attribute
+#' when every observed value carries a label and by ascending code
+#' otherwise, as a labelled `by` names its groups in [table_continuous()]
+#' and as the rows of a labelled variable of [table_categorical()] read.
 #'
 #' # The table note
 #'
@@ -653,7 +654,8 @@ abort_outcome_by_renamed <- function() {
 #'   each block one row per level: the levels of a factor in their order,
 #'   any other variable sorted, as the groups of `by` are in
 #'   [table_continuous()] (text in the C locale, `FALSE` before `TRUE`,
-#'   numbers and codes ascending), whatever the order of the rows. As
+#'   numbers ascending, a labelled column by its value labels), whatever
+#'   the order of the rows. As
 #'   everywhere in the family, `select` is what structures the rows. The
 #'   outcome and the `weights` column are not part of the selection: a
 #'   selection helper skips them, and naming one in `select`, or giving
