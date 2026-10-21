@@ -746,6 +746,9 @@ test_that("declared missing codes leave the table and the note", {
 })
 
 test_that("the note opens with \"Note.\" once, on the attribute and in print", {
+  # The function checks for survey before it forces `design`, so the
+  # fixture's own skip would come too late here.
+  skip_if_not_installed("survey")
   tbl <- table_categorical_svy(.svycat_design(), select = stype, by = awards)
   note <- attr(tbl, "note")
   expect_true(startsWith(note, "Note. N = 183"))
