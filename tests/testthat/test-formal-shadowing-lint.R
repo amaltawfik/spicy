@@ -22,6 +22,9 @@ test_that("no function reassigns a display-family formal it received", {
   # re-audited 2026-08 (labels train review). Grow this list only for
   # the same shape: `x <- resolve(x)` at the top of the function.
   whitelist <- c(
+    # `untitled` (title = FALSE or "") resolves the title to NULL at the
+    # top, before the six engines read it.
+    "export_desc_table:title",
     "inline:column",
     "pivot_aligned_wide:model_labels",
     "render_regression_table:model_labels",
