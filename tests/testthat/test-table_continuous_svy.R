@@ -1956,7 +1956,7 @@ test_that("a `by` no observation holds is refused, not a base R error", {
 
 test_that("a variable with no variance gets no comparison, with a warning", {
   # survey still returns a p-value for it (0.228 from svyttest() on the
-  # sochealth constant): the cells stay blank, as in table_continuous().
+  # sochealth constant): the cells are undefined, as in table_continuous().
   d <- .svyc_design("iid")
   d$variables$const <- 5
   expect_warning(
@@ -1981,6 +1981,108 @@ test_that("a variable with no variance gets no comparison, with a warning", {
     expect_true(all(is.na(out$p.value)), info = tst)
     expect_false(grepl("Group comparison", attr(out, "note")), info = tst)
   }
+})
+
+test_that("the comparison cells of a variable with no variance are undefined", {
+  d <- .svyc_design("iid")
+  d$variables$const <- 5
+  tc <- suppressWarnings(table_continuous_svy(
+    d,
+    select = c(const, api00),
+    by = sch.wide,
+    statistic = TRUE
+  ))
+  s <- as_structured(tc)
+  shown <- spicy:::.format_structured_to_string_body(s)
+  tok <- vapply(s$col_meta, `[[`, character(1), "token")
+  rows <- which(s$body$.variable == "const")
+  for (token in c("statistic", "p")) {
+    nm <- names(tok)[tok == token]
+    # On the row that carries the comparison, the undefined mark, with the
+    # status of an undefined cell, where it was blank.
+    expect_identical(shown[[nm]][rows], c(spicy_str("cell_undefined"), ""))
+    expect_identical(s$cell_status[[nm]][rows], c("undefined", ""))
+    expect_error(
+      inline(tc, const, column = token),
+      "undefined in the table (not estimable)",
+      fixed = TRUE,
+      class = "spicy_invalid_input"
+    )
+  }
+  # The variable that varies keeps its comparison.
+  expect_true(nzchar(inline(tc, api00, column = "p")))
+  skip_if_not_installed("broom")
+  gl <- broom::glance(tc)
+  expect_true(is.na(gl$p.value[gl$variable == "const"]))
+  expect_true(is.na(gl$statistic[gl$variable == "const"]))
+})
+
+test_that("every comparison that cannot run is undefined, its warnings unchanged", {
+  skip_if_not_installed("survey")
+  mark <- spicy_str("cell_undefined")
+  g <- rep(c("a", "b"), each = 4)
+  design <- function(v, w) {
+    survey::svydesign(
+      ids = ~1,
+      weights = ~w,
+      data = data.frame(v = v, g = g, w = w)
+    )
+  }
+  causes <- list(
+    # One observation in b, too few for a comparison: no warning.
+    few = list(
+      design = design(c(1, 2, 3, 4, 5, NA, NA, NA), rep(1, 8)),
+      warned = character(0)
+    ),
+    # Weights that change sign: the comparison is refused, with its own
+    # warning.
+    refused = list(
+      design = design(1:8 + 0.5, c(1, 1, -1, 1, 1, 1, 1, 1)),
+      warned = "spicy_negative_weights_no_test"
+    )
+  )
+  # Each domain constant on its own value: a residual variance of zero,
+  # where the design-based t was rounding noise (2.4e15). One warning.
+  causes$zero_resid <- list(
+    design = design(c(4, 4, 4, 4, 6, 6, 6, 6), c(1, 2, 1, 2, 1, 2, 1, 2)),
+    warned = "spicy_undefined_stat"
+  )
+  for (cause in names(causes)) {
+    warned <- character(0)
+    tc <- withCallingHandlers(
+      table_continuous_svy(
+        causes[[cause]]$design,
+        select = v,
+        by = g,
+        statistic = TRUE
+      ),
+      warning = function(w) {
+        warned <<- c(warned, class(w)[[1L]])
+        invokeRestart("muffleWarning")
+      }
+    )
+    expect_identical(warned, causes[[cause]]$warned, info = cause)
+    s <- as_structured(tc)
+    shown <- spicy:::.format_structured_to_string_body(s)
+    tok <- vapply(s$col_meta, `[[`, character(1), "token")
+    for (token in c("statistic", "p")) {
+      nm <- names(tok)[tok == token]
+      expect_identical(shown[[nm]], c(mark, ""), info = cause)
+      expect_identical(s$cell_status[[nm]], c("undefined", ""), info = cause)
+      expect_error(
+        inline(tc, v, column = token),
+        "undefined in the table (not estimable)",
+        fixed = TRUE,
+        class = "spicy_invalid_input"
+      )
+    }
+  }
+  expect_warning(
+    table_continuous_svy(causes$zero_resid$design, select = v, by = g),
+    "`v` (the residual variance is zero)",
+    fixed = TRUE,
+    class = "spicy_undefined_stat"
+  )
 })
 
 test_that("`by` named in `select` is refused; a helper skips it", {

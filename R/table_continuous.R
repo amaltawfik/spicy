@@ -111,9 +111,13 @@
 #'   in that case) or when `statistic = TRUE` or an `effect_size` is
 #'   requested.
 #'   Ignored when `by` is not used, or when all three display toggles
-#'   are turned off. A variable with no variance has no test, whichever
-#'   is chosen: its test cells are left blank, with a warning (class
-#'   `spicy_undefined_stat`).
+#'   are turned off. A variable with no variance, or whose groups are
+#'   each constant on their own value (a residual variance of zero), has
+#'   no test, whichever is chosen, with a warning (class
+#'   `spicy_undefined_stat`). Its test cells (test, p-value, effect size)
+#'   show the undefined mark, as do those of any comparison that cannot
+#'   run (too few observations in a group, a test that fails, a
+#'   non-finite effect size).
 #' @param p_value Logical or `NULL`. If `TRUE` and `by` is used, adds a
 #'   *p*-value column from the test specified by `test`. When `NULL` (the
 #'   default), the *p*-value is shown automatically whenever `by` is
@@ -1447,6 +1451,7 @@ table_continuous <- function(
         p.value = NA_real_,
         stringsAsFactors = FALSE
       )
+      zero_resid <- FALSE
       if (do_test) {
         xvec <- work[[nm]]
         gvec <- groups_obs
@@ -1492,6 +1497,22 @@ table_continuous <- function(
               class = "spicy_undefined_stat"
             )
             test_row
+          } else if (.within_groups_constant(xvec, gvec)) {
+            # Each group constant on its own value: the residual variance
+            # is zero and the comparison has nothing to infer, its effect
+            # size included -- one warning for the variable.
+            zero_resid <- TRUE
+            spicy_warn(
+              c(
+                sprintf(
+                  "The group-comparison test failed for `%s` (the residual variance is zero); its test columns are NA.",
+                  nm
+                ),
+                "i" = "Other selected variables are unaffected."
+              ),
+              class = "spicy_undefined_stat"
+            )
+            test_row
           } else {
             tryCatch(
               run_group_test(xvec, gvec, n_valid_groups, var_test),
@@ -1528,7 +1549,7 @@ table_continuous <- function(
         stringsAsFactors = FALSE
       )
       if (do_es) {
-        if (testable) {
+        if (testable && !zero_resid) {
           # The effect size follows the test the variable actually
           # carries: a rank-switched variable gets the rank homolog
           # (rank-biserial r / epsilon-squared).
@@ -2808,6 +2829,19 @@ build_smd_note <- function(show_smd, group_levels, decimal_mark = ".") {
 }
 
 
+# --- internal: a residual variance of zero ---
+# TRUE when each group of `g` holds a single value of `x`: the groups then
+# differ by their constants alone, the residual variance of the comparison
+# is zero, and no test, interval or effect size of it is defined (t.test()
+# stops, an F or a design-based t is rounding noise, base R warns of an
+# "essentially perfect fit"). Read from the data before any test, never
+# from the size of a statistic. The caller sets apart a variable with no
+# variance at all first. Shared by `table_continuous()`,
+# `table_continuous_svy()`, `table_outcome()` and `table_continuous_lm()`.
+.within_groups_constant <- function(x, g) {
+  all(vapply(split(x, g), function(v) length(unique(v)) < 2L, logical(1)))
+}
+
 # --- internal: run group-comparison test ---
 run_group_test <- function(xvec, gvec, n_groups, method) {
   row <- data.frame(
@@ -3502,6 +3536,21 @@ build_display_df <- function(
         },
         character(1)
       )
+    }
+    # A comparison that cannot run (a variable with no variance, too few
+    # observations in a group, a test that errors or is refused, a
+    # non-finite effect size) leaves its cells empty on the row that
+    # carries them, the first of the variable: they show the undefined
+    # mark, as an undefined statistic does everywhere in the family. A
+    # blank is then only a cell that does not apply, on the other rows.
+    # The SMD needs no such step: `fmt()` marks an undefined one, and two
+    # equal constants are balanced, an SMD of 0.
+    carrier <- !duplicated(result$variable)
+    for (nm in intersect(
+      c(.CON_KEY_TEST, .CON_KEY_P, .CON_KEY_ES),
+      names(df)
+    )) {
+      df[[nm]][carrier & !nzchar(df[[nm]])] <- spicy_str("cell_undefined")
     }
     # LAST, and that is a constraint rather than a preference. The
     # console re-labels an orphaned "companion" column on a

@@ -592,13 +592,32 @@ p-values, and notes.
   a percentage of 0 or 100: such a cell gets the exact binomial interval
   on its unweighted count, whatever `ci_method`, and the note says so.
 
-* `table_continuous_svy()` leaves the comparison of a variable with no
-  variance blank, with a `spicy_undefined_stat` warning, as
-  `table_continuous()` does. It printed the p-value survey returns there.
+* `table_continuous()`, `table_continuous_svy()`, `table_outcome()`, and
+  `table_continuous_lm()` show a dash in a comparison cell that cannot be
+  computed (a variable with no variance, too few observations in a group,
+  a test that fails or is refused, a non-finite effect size, a saturated
+  or unfitted model), where they left it blank, and `inline()` refuses
+  it as undefined. A blank cell now only means a cell that does not
+  apply. They draw no inference either when the residual variance is
+  zero, each group constant on its own value: the test, p-value,
+  interval, and effect size show a dash, the means and the contrast
+  stay, and one `spicy_undefined_stat` warning says why. They printed
+  rounding noise there (t = 3.32e+15 for two groups at 4 and 6), and
+  `table_continuous_lm()` let base R's "essentially perfect fit" warning
+  through.
 
-* `table_continuous()` and `table_outcome()` leave the rank test of a
-  variable with no variance blank, with a `spicy_undefined_stat` warning,
-  as they leave the Welch test. They printed p = 1.000 for two groups.
+* `table_continuous_svy()` runs no comparison on a variable with no
+  variance, with a `spicy_undefined_stat` warning, as `table_continuous()`
+  does. It printed the p-value survey returns there.
+
+* `table_continuous()` and `table_outcome()` run no rank test on a
+  variable with no variance, with a `spicy_undefined_stat` warning, as
+  for the Welch test. They printed p = 1.000 for two groups.
+
+* `table_continuous_lm()` fits no model to an outcome with no variance:
+  its means are kept and its test, interval, effect size, and R² are
+  undefined, with a `spicy_undefined_stat` warning. It printed rounding
+  noise there, such as p = .331 for an outcome equal to 5.
 
 * `table_categorical_svy()` and `table_continuous_svy()` with
   `labels = TRUE` keep the label of the `by` variable in the title, and

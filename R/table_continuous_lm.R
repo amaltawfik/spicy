@@ -539,6 +539,20 @@
 #' here) and `r2 = "r2"`; set `p_value = FALSE` or `r2 = "none"` to
 #' suppress them.
 #'
+#' An outcome with no variance in its fitted sample (every observation the
+#' same value) leaves nothing to infer, as in [table_continuous()]: its
+#' test, its interval, its effect size and its \eqn{R^2}{R^2} are undefined
+#' cells (`NA` in the long output and in `glance()`), its means and its
+#' contrast or slope (0) are shown, and a warning (class
+#' `spicy_undefined_stat`) names it. So does an outcome constant within
+#' each group of a categorical `by` (a residual variance of zero): its
+#' means, its contrast and its \eqn{R^2}{R^2} of 1 are shown, and its test,
+#' interval and effect size are undefined. Every cell of an outcome
+#' applies to it, so a cell with no value shows the undefined mark, never
+#' a blank: a saturated fit (one observation per group) has no interval,
+#' test or effect size, and a model that could not be fit has no cell at
+#' all.
+#'
 #' # Effect sizes
 #'
 #' Effect size is selected explicitly via `effect_size` (defaults to
@@ -2024,6 +2038,91 @@ degrade_saturated_lm_rows <- function(out, fit, outcome_name) {
   out
 }
 
+# Internal: an outcome the model has nothing to infer about. Two causes,
+# both read from the data before any test:
+#   * no variance in the fitted sample (every observation the same value):
+#     the test, the intervals, the effect size and R^2 are 0/0, yet lm()
+#     returned numbers for them, made of rounding noise (for y = 5 a t of
+#     1, a p of .331 and an R^2 of 0.49, other values for y = 3.7, NaN for
+#     y = 0.1);
+#   * a residual variance of zero, each group of a categorical `by`
+#     constant on its own value (`.within_groups_constant()`): the t of
+#     the contrast was 3.32e+15. R^2 is 1 there, and stays.
+# Both came with base R's "essentially perfect fit" warning. The rule of
+# `table_continuous()` applies instead: the means (the constant of each
+# group) and the contrast (their difference) or the slope (0) are kept,
+# every inferential column is NA, the test is none (so the note names
+# none for it), and one classed warning names the outcome. The display
+# shows the undefined mark in those cells, as in every cell with no value.
+# `x` is the fitted `by`, a factor for a categorical one.
+no_inference_lm_rows <- function(
+  y,
+  x,
+  weights,
+  outcome_name,
+  outcome_label,
+  predictor_label,
+  effect_size = "none",
+  contrast_shown = FALSE,
+  by_levels = NULL
+) {
+  constant <- length(unique(y)) < 2L
+  spicy_warn(
+    c(
+      if (constant) {
+        sprintf(
+          "The outcome `%s` has no variance, so it has no test, interval, effect size, or R-squared; those cells are undefined.",
+          outcome_name
+        )
+      } else {
+        sprintf(
+          "The model for `%s` has no inference (the residual variance is zero: each group of `by` is constant), so it has no test, interval, or effect size; those cells are undefined.",
+          outcome_name
+        )
+      },
+      "i" = "Other outcomes are unaffected."
+    ),
+    class = "spicy_undefined_stat"
+  )
+  categorical <- is.factor(x)
+  out <- make_empty_lm_rows(
+    outcome_name,
+    outcome_label,
+    if (categorical) "categorical" else "continuous",
+    predictor_label = predictor_label,
+    levels = if (categorical) levels(x) else NA_character_
+  )
+  if (categorical) {
+    means <- vapply(
+      levels(x),
+      function(lv) y[x == lv][[1L]],
+      numeric(1),
+      USE.NAMES = FALSE
+    )
+    out$emmean <- means
+    if (contrast_shown) {
+      out$estimate_type[2L] <- "difference"
+      out$estimate[2L] <- means[[2L]] - means[[1L]]
+    }
+  } else {
+    out$estimate_type <- "slope"
+    out$estimate <- 0
+  }
+  if (!constant) {
+    # The groups explain all of the variance: R^2 is 1, with residual
+    # degrees of freedom to spare (the caller's condition).
+    out$r2[[1L]] <- 1
+    out$adj_r2[[1L]] <- 1
+  }
+  out$es_type[1L] <- pick_es_type_lm(effect_size)
+  out$n <- length(y)
+  out$weighted_n <- if (is.null(weights)) NA_real_ else sum(weights)
+  if (categorical) {
+    out <- .tclm_expand_levels(out, by_levels %||% levels(x))
+  }
+  out
+}
+
 fit_numeric_predictor_lm_rows <- function(
   y,
   x,
@@ -2063,6 +2162,17 @@ fit_numeric_predictor_lm_rows <- function(
       outcome_label,
       "continuous",
       predictor_label = predictor_label
+    ))
+  }
+  if (all(y == y[[1L]])) {
+    return(no_inference_lm_rows(
+      y,
+      x,
+      weights,
+      outcome_name,
+      outcome_label,
+      predictor_label,
+      effect_size = effect_size
     ))
   }
 
@@ -2232,6 +2342,26 @@ fit_categorical_predictor_lm_rows <- function(
     ))
   }
 
+  # The contrast of a two-group table: a table of more groups shows none,
+  # even for an outcome fit on two of them.
+  show_reference <- identical(contrast, "auto") &&
+    nlevels(x) == 2L &&
+    length(by_levels) == 2L
+
+  if (all(y == y[[1L]])) {
+    return(no_inference_lm_rows(
+      y,
+      x,
+      weights,
+      outcome_name,
+      outcome_label,
+      predictor_label,
+      effect_size = effect_size,
+      contrast_shown = show_reference,
+      by_levels = by_levels
+    ))
+  }
+
   has_covs <- !is.null(covariates) && ncol(covariates) > 0L
   model_df <- if (has_covs) {
     cbind(data.frame(y = y, x = x), covariates)
@@ -2270,6 +2400,25 @@ fit_categorical_predictor_lm_rows <- function(
       weights = weights,
       contrasts = list(x = "contr.treatment")
     )
+  }
+
+  # Each group constant on its own value, with residual degrees of freedom
+  # to spare: the residual variance is zero and the model has nothing to
+  # infer. Decided on the data and before any test, ahead of the
+  # computations that would warn of an "essentially perfect fit"; lm()
+  # itself does not. A saturated fit, with none to spare, keeps its rule.
+  if (stats::df.residual(fit) > 0 && .within_groups_constant(y, x)) {
+    return(no_inference_lm_rows(
+      y,
+      x,
+      weights,
+      outcome_name,
+      outcome_label,
+      predictor_label,
+      effect_size = effect_size,
+      contrast_shown = show_reference,
+      by_levels = by_levels
+    ))
   }
 
   vc <- compute_model_vcov(
@@ -2363,12 +2512,6 @@ fit_categorical_predictor_lm_rows <- function(
     vcov_type = vcov_type,
     cluster = cluster
   )
-
-  # The contrast of a two-group table: a table of more groups shows none,
-  # even for an outcome fit on two of them.
-  show_reference <- identical(contrast, "auto") &&
-    nlevels(x) == 2L &&
-    length(by_levels) == 2L
 
   es_ci <- compute_es_ci_lm(fit, effect_size, ci_level, focal_term = focal_term)
 

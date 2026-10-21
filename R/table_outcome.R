@@ -212,6 +212,21 @@
       ),
       class = "spicy_undefined_stat"
     )
+  } else if (do_test && .within_groups_constant(xvec, gvec)) {
+    # Each level constant on its own value: the residual variance is zero
+    # and the block has nothing to infer, its effect size included -- one
+    # warning for the block.
+    spicy_warn(
+      c(
+        sprintf(
+          "The group-comparison test failed for `%s` (the residual variance is zero); its test columns are NA.",
+          var_name
+        ),
+        "i" = "The other blocks are unaffected."
+      ),
+      class = "spicy_undefined_stat"
+    )
+    return(out)
   } else if (do_test) {
     out$test <- tryCatch(
       run_group_test(xvec, gvec, n_valid_groups, var_test),
@@ -672,8 +687,12 @@ abort_outcome_by_renamed <- function() {
 #'   `spicy_invalid_data`).
 #' @param test Group comparison for every block: `"welch"` (default),
 #'   `"student"` or `"nonparametric"`. An outcome with no variance in a
-#'   block has no test there, whichever is chosen: the block's test cells
-#'   are left blank, with a warning (class `spicy_undefined_stat`).
+#'   block, or constant within each of its levels (a residual variance of
+#'   zero), has no test there, whichever is chosen, with a warning (class
+#'   `spicy_undefined_stat`). The block's test cells (test, p-value,
+#'   effect size) show the undefined mark, as do those of any block whose
+#'   comparison cannot run (too few observations in a level, a test that
+#'   fails, a non-finite effect size).
 #' @param p_value Show the p-value column: `TRUE`, `FALSE`, or `NULL`
 #'   (the default), which shows it, every block being a comparison.
 #' @param p_adjust Multiple-comparison adjustment of the p-value
@@ -1457,6 +1476,15 @@ table_outcome <- function(
       },
       character(1)
     )
+  }
+  # A comparison that cannot run (an outcome with no variance in the
+  # block, too few observations in a group, a test that errors, a
+  # non-finite effect size) leaves the cells of the block's header row
+  # empty: they show the undefined mark, as an undefined statistic does
+  # everywhere in the family. A blank is then only a cell that does not
+  # apply, on the level rows and the Overall row.
+  for (nm in intersect(c(.CON_KEY_TEST, .CON_KEY_P, .CON_KEY_ES), names(df))) {
+    df[[nm]][is_header & !nzchar(df[[nm]])] <- spicy_str("cell_undefined")
   }
   df
 }

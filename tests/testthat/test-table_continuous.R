@@ -216,10 +216,13 @@ test_that("the undefined glyph sets the width of the column it lands in", {
   )
 
   # And the mechanism, independent of the absolute layout: with a
-  # two-character placeholder the same table is exactly one character
-  # wider at every console width. This is what says the glyph is
-  # load-bearing for the width, rather than pinning three numbers that
-  # an unrelated layout change may legitimately move.
+  # two-character placeholder the same table is one character wider for
+  # each column whose width the placeholder sets on the widest panel: the
+  # SD, and the p of x, whose comparison cannot run (B has one
+  # observation). At 60 characters the console prints p on a second,
+  # narrower panel. This is what says the glyph is load-bearing for the
+  # width, rather than pinning three numbers that an unrelated layout
+  # change may legitimately move.
   orig <- spicy_str
   local_mocked_bindings(
     spicy_str = function(key, ...) {
@@ -228,7 +231,7 @@ test_that("the undefined glyph sets the width of the column it lands in", {
   )
   expect_identical(
     vapply(c(200L, 80L, 60L), line_width, integer(1)),
-    c(94L, 74L, 57L)
+    c(95L, 75L, 57L)
   )
 })
 
@@ -1623,8 +1626,9 @@ test_that("the comparison runs on the groups with data, and on two at least", {
   )
   expect_identical(first$es_type, c("eta2", "hedges_g"))
 
-  # Two groups, one without data: nothing to compare. No test, a blank
-  # p cell (not the mark), no effect size, no test named for it.
+  # Two groups, one without data: nothing to compare. No test, so the p
+  # cell is undefined (a comparison that cannot run), no effect size, no
+  # test named for it.
   d2 <- data.frame(
     g = rep(c("a", "b"), each = 4),
     x = c(1, 2, 3, 4, 3, 5, 6, 8),
@@ -1644,9 +1648,8 @@ test_that("the comparison runs on the groups with data, and on two at least", {
     tokens_union = attr(tbl2, "show_columns"),
     tokens_by_var = attr(tbl2, "show_columns_by_var")
   )
-  expect_identical(disp$p[[y1]], "")
-  # Blank, not undefined: the p column holds no undefined cell.
-  expect_null(as_structured(tbl2)$cell_status$p)
+  expect_identical(disp$p[[y1]], spicy_str("cell_undefined"))
+  expect_identical(as_structured(tbl2)$cell_status$p[[y1]], "undefined")
   expect_identical(
     attr(tbl2, "note"),
     "Note. No data for y in b. Group comparison: Welch t-test."
@@ -3987,16 +3990,21 @@ test_that("a degenerate variable degrades per-variable, others survive", {
   # The healthy variable keeps its test.
   tt <- stats::t.test(ok ~ g, data = d)
   expect_equal(ok_rows$p.value[1], tt$p.value, tolerance = 1e-12)
-  # The nonparametric route still works on the same data.
-  wp <- suppressWarnings(stats::wilcox.test(cst ~ g, data = d))$p.value
-  np <- table_continuous(
-    d,
-    select = cst,
-    by = g,
-    test = "nonparametric",
-    output = "long"
+  # Each group is constant on its own value, a residual variance of zero:
+  # the rank test is refused as well, whichever test is chosen.
+  expect_warning(
+    np <- table_continuous(
+      d,
+      select = cst,
+      by = g,
+      test = "nonparametric",
+      output = "long"
+    ),
+    "`cst` (the residual variance is zero)",
+    fixed = TRUE,
+    class = "spicy_undefined_stat"
   )
-  expect_equal(np$p.value[1], wp, tolerance = 1e-12)
+  expect_true(all(is.na(np$p.value)))
 })
 
 test_that("an undefined effect size degrades to NA with a classed warning", {
@@ -5127,8 +5135,8 @@ test_that("a fractional number of decimals is refused, not truncated", {
 
 test_that("a variable with no variance has no test, whichever test is chosen", {
   # The rank tests answer p = 1 (two groups) or NaN (three) on a constant,
-  # where t.test() stops: every test now leaves the cells blank, with the
-  # warning the Welch test gave.
+  # where t.test() stops: every test now leaves the cells undefined, with
+  # the warning the Welch test gave.
   d <- data.frame(
     k = rep(5, 12),
     y = c(1.1, 5.2, 2.3, 8.4, 3.5, 9.6, 4.7, 7.8, 6.9, 2.05, 8.15, 1.25),
@@ -5175,6 +5183,164 @@ test_that("a variable with no variance has no test, whichever test is chosen", {
     class = "spicy_undefined_stat"
   )
   expect_true(all(is.na(med$p.value)))
+})
+
+test_that("the comparison cells of a variable with no variance are undefined", {
+  d <- data.frame(
+    k = rep(5, 12),
+    y = c(1.1, 5.2, 2.3, 8.4, 3.5, 9.6, 4.7, 7.8, 6.9, 2.05, 8.15, 1.25),
+    g2 = factor(rep(c("a", "b"), each = 6))
+  )
+  tc <- suppressWarnings(table_continuous(
+    d,
+    select = c(k, y),
+    by = g2,
+    statistic = TRUE,
+    effect_size = "hedges_g",
+    effect_size_ci = TRUE,
+    smd = TRUE
+  ))
+  s <- as_structured(tc)
+  shown <- spicy:::.format_structured_to_string_body(s)
+  tok <- vapply(s$col_meta, `[[`, character(1), "token")
+  rows <- which(s$body$.variable == "k")
+  for (token in c("statistic", "p", "es")) {
+    nm <- names(tok)[tok == token]
+    # The test, its p and the effect size show the undefined mark on the
+    # row that carries them, with the status of an undefined cell, where
+    # they were blank ...
+    expect_identical(shown[[nm]][rows], c(spicy_str("cell_undefined"), ""))
+    expect_identical(s$cell_status[[nm]][rows], c("undefined", ""))
+    # ... and are refused as such.
+    expect_error(
+      inline(tc, k, column = token),
+      "undefined in the table (not estimable)",
+      fixed = TRUE,
+      class = "spicy_invalid_input"
+    )
+  }
+  # The SMD of two equal constants is defined: 0, they are balanced.
+  expect_identical(inline(tc, k, column = "smd"), "0.00")
+  # The variable that varies keeps its test.
+  expect_identical(inline(tc, y, column = "p"), ".947")
+  skip_if_not_installed("broom")
+  gl <- broom::glance(tc)
+  for (col in c("statistic", "p.value", "es_value")) {
+    expect_true(is.na(gl[[col]][gl$variable == "k"]))
+  }
+})
+
+test_that("every comparison that cannot run is undefined, its warnings unchanged", {
+  mark <- spicy_str("cell_undefined")
+  d <- data.frame(
+    v = c(1, 2, 3, 4, 5, 6, 7, 8),
+    g = rep(c("a", "b"), each = 4)
+  )
+  build <- function(data) {
+    warned <- character(0)
+    tc <- withCallingHandlers(
+      table_continuous(
+        data,
+        select = v,
+        by = g,
+        statistic = TRUE,
+        effect_size = "hedges_g"
+      ),
+      warning = function(w) {
+        warned <<- c(warned, class(w)[[1L]])
+        invokeRestart("muffleWarning")
+      }
+    )
+    list(tc = tc, warned = warned)
+  }
+  check <- function(tc, tokens, cause) {
+    s <- as_structured(tc)
+    shown <- spicy:::.format_structured_to_string_body(s)
+    tok <- vapply(s$col_meta, `[[`, character(1), "token")
+    for (token in tokens) {
+      nm <- names(tok)[tok == token]
+      # The mark on the row that carries the comparison, a blank below.
+      expect_identical(shown[[nm]], c(mark, ""), info = cause)
+      expect_identical(s$cell_status[[nm]], c("undefined", ""), info = cause)
+      expect_error(
+        inline(tc, v, column = token),
+        "undefined in the table (not estimable)",
+        fixed = TRUE,
+        class = "spicy_invalid_input"
+      )
+    }
+  }
+  # One observation in b, too few for a test: no warning, as before.
+  few <- d
+  few$v[6:8] <- NA
+  r <- build(few)
+  expect_identical(r$warned, character(0))
+  check(r$tc, c("statistic", "p", "es"), "few")
+  # A test that errors: its one warning, its test and p undefined.
+  local_mocked_bindings(run_group_test = function(...) stop("no test"))
+  r <- build(d)
+  expect_identical(r$warned, "spicy_undefined_stat")
+  check(r$tc, c("statistic", "p"), "fails")
+})
+
+test_that("a residual variance of zero draws no inference, with one warning", {
+  # Each group constant on its own value: t.test() stopped, Hedges' g was
+  # infinite, and the rank and ANOVA tests answered on data that leave
+  # nothing to infer. Decided on the data, for every test.
+  mark <- spicy_str("cell_undefined")
+  two <- data.frame(
+    v = c(4, 4, 4, 4, 6, 6, 6, 6),
+    g = rep(c("a", "b"), each = 4)
+  )
+  three <- data.frame(
+    v = c(4, 4, 4, 6, 6, 6, 9, 9, 9),
+    g = rep(c("a", "b", "c"), each = 3)
+  )
+  cases <- list(
+    welch = list(d = two, test = "welch"),
+    student = list(d = two, test = "student"),
+    rank = list(d = two, test = "nonparametric"),
+    anova = list(d = three, test = "welch")
+  )
+  for (case in names(cases)) {
+    warned <- list()
+    tc <- withCallingHandlers(
+      table_continuous(
+        cases[[case]]$d,
+        select = v,
+        by = g,
+        test = cases[[case]]$test,
+        statistic = TRUE,
+        effect_size = "auto"
+      ),
+      warning = function(w) {
+        warned[[length(warned) + 1L]] <<- w
+        invokeRestart("muffleWarning")
+      }
+    )
+    # One warning for the variable, and base R's never reaches the user.
+    expect_length(warned, 1L)
+    expect_s3_class(warned[[1L]], "spicy_undefined_stat")
+    expect_match(
+      conditionMessage(warned[[1L]]),
+      "`v` (the residual variance is zero)",
+      fixed = TRUE
+    )
+    s <- as_structured(tc)
+    shown <- spicy:::.format_structured_to_string_body(s)
+    tok <- vapply(s$col_meta, `[[`, character(1), "token")
+    for (token in c("statistic", "p", "es")) {
+      nm <- names(tok)[tok == token]
+      expect_identical(shown[[nm]][[1L]], mark, info = case)
+      expect_identical(s$cell_status[[nm]][[1L]], "undefined", info = case)
+    }
+    # The means stay.
+    expect_identical(
+      shown[[names(tok)[tok == "m"]]],
+      formatC(unique(cases[[case]]$d$v), format = "f", digits = 2L),
+      info = case
+    )
+  }
 })
 
 test_that("the note never names a test that failed", {

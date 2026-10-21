@@ -337,6 +337,21 @@ order_continuous_svy_tokens <- function(tokens) {
     )
     return(list(row = empty, label = NA_character_, k = k, refused = FALSE))
   }
+  # Each domain constant on its own value: the residual variance is zero,
+  # and the design-based t is rounding noise (2.4e15 for two groups).
+  if (.within_groups_constant(sub$variables[[var]], gv)) {
+    spicy_warn(
+      c(
+        sprintf(
+          "The group-comparison test failed for `%s` (the residual variance is zero); its test columns are NA.",
+          var
+        ),
+        "i" = "Other selected variables are unaffected."
+      ),
+      class = "spicy_undefined_stat"
+    )
+    return(list(row = empty, label = NA_character_, k = k, refused = FALSE))
+  }
   ddf <- .design_degf(sub)
   form <- stats::as.formula(paste0("`", var, "` ~ `", group_var, "`"))
 
@@ -528,9 +543,12 @@ order_continuous_svy_tokens <- function(tokens) {
 #' or `survey::svyranktest()` under `test = "nonparametric"`. Under a
 #' design the Welch / Student distinction does not exist -- the
 #' variance is the design's -- so `test = "student"` warns and behaves
-#' like `"welch"`. A variable with no variance has no comparison: its
-#' test cells are left blank, with a warning (class
-#' `spicy_undefined_stat`), where survey would still return a p-value.
+#' like `"welch"`. A variable with no variance, or whose domains are each
+#' constant on their own value (a residual variance of zero), has no
+#' comparison, with a warning (class `spicy_undefined_stat`), where survey
+#' would still return a p-value. Its test cells show the undefined mark,
+#' as do those of any comparison that cannot run (too few observations in
+#' a domain, a test refused under weights that change sign).
 #' The note names the comparison of each variable.
 #'
 #' A variable with no observed value in a domain (a question not asked

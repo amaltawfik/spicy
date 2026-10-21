@@ -681,6 +681,23 @@ test_that("the block compares the levels with data, and the note says why", {
   )
 })
 
+test_that("the rows of a level with no data leave the count under user_na = FALSE", {
+  # No value is a declared missing one there, and the four rows of "high"
+  # leave the count of missing values all the same: one real missing
+  # value is counted, as under the default.
+  d <- .to_nodata()
+  d$y[[1L]] <- NA
+  note <- attr(
+    table_outcome(d, y, select = c(edu, sex), user_na = FALSE),
+    "note"
+  )
+  expect_match(note, spicy_fmt("note_missing_item", "y", 1L), fixed = TRUE)
+  expect_identical(
+    note,
+    attr(table_outcome(d, y, select = c(edu, sex)), "note")
+  )
+})
+
 test_that("a block with one level of data has no test, and names none", {
   d <- data.frame(
     y = c(1, 2, 3, 4, NA, NA, NA, NA),
@@ -1023,8 +1040,12 @@ test_that("the block note is owed only when a block compared", {
     stringsAsFactors = FALSE
   )
   thin <- .to_quiet(table_outcome(d, score, select = arm))
-  # Nothing was compared: the p column is empty top to bottom.
-  expect_true(all(!nzchar(attr(thin, "display_df")$p)))
+  # Nothing was compared: the p of the block is undefined, the other rows
+  # of the column are blank.
+  p <- attr(thin, "display_df")$p
+  header <- thin$.row_role == "factor_header"
+  expect_identical(p[header], spicy_str("cell_undefined"))
+  expect_true(all(!nzchar(p[!header])))
   expect_false(grepl("Each block compares", attr(thin, "note"), fixed = TRUE))
   expect_false(grepl("Group comparison", attr(thin, "note"), fixed = TRUE))
   # The marginal-row gloss is a different sentence and stays.
@@ -1261,7 +1282,7 @@ test_that("the outcome named in `select` is refused; a helper skips it", {
 
 test_that("an outcome with no variance has no test, whichever test is chosen", {
   # wilcox.test() answers p = 1 and kruskal.test() NaN on a constant,
-  # where t.test() stops: every test leaves the block's cells blank.
+  # where t.test() stops: every test leaves the block's cells undefined.
   d <- data.frame(
     k = rep(5, 12),
     g2 = factor(rep(c("a", "b"), each = 6)),
@@ -1294,6 +1315,132 @@ test_that("the note names a block's test only when it ran", {
     attr(out, "note") %||% "",
     fixed = TRUE
   ))
+})
+
+test_that("the comparison cells of a block with no variance are undefined", {
+  d <- data.frame(
+    k = rep(5, 12),
+    g2 = factor(rep(c("a", "b"), each = 6)),
+    g3 = factor(rep(c("a", "b", "c"), each = 4))
+  )
+  tb <- suppressWarnings(table_outcome(
+    d,
+    k,
+    select = c(g2, g3),
+    statistic = TRUE,
+    effect_size = "auto",
+    effect_size_ci = TRUE
+  ))
+  s <- as_structured(tb)
+  shown <- spicy:::.format_structured_to_string_body(s)
+  tok <- vapply(s$col_meta, `[[`, character(1), "token")
+  header <- s$body$.row_role == "factor_header"
+  for (token in c("statistic", "p", "es")) {
+    nm <- names(tok)[tok == token]
+    # On the header row of each block, which carries the comparison, the
+    # undefined mark, with the status of an undefined cell, where it was
+    # blank; the other rows stay blank.
+    expect_identical(unique(shown[[nm]][header]), spicy_str("cell_undefined"))
+    expect_identical(unique(s$cell_status[[nm]][header]), "undefined")
+    expect_true(all(!nzchar(shown[[nm]][!header])))
+    for (block in c("g2", "g3")) {
+      expect_error(
+        inline(tb, !!block, column = token),
+        "undefined in the table (not estimable)",
+        fixed = TRUE,
+        class = "spicy_invalid_input"
+      )
+    }
+  }
+  skip_if_not_installed("broom")
+  gl <- broom::glance(tb)
+  expect_true(all(is.na(gl$p.value)))
+  expect_true(all(is.na(gl$statistic)))
+  expect_true(all(is.na(gl$es_value)))
+})
+
+test_that("every comparison that cannot run is undefined, its warnings unchanged", {
+  mark <- spicy_str("cell_undefined")
+  d <- data.frame(
+    v = c(1, 2, 3, 4, 5, 6, 7, 8),
+    g = rep(c("a", "b"), each = 4)
+  )
+  build <- function(data, ...) {
+    warned <- character(0)
+    tb <- withCallingHandlers(
+      table_outcome(data, v, select = g, statistic = TRUE, ...),
+      warning = function(w) {
+        warned <<- c(warned, class(w)[[1L]])
+        invokeRestart("muffleWarning")
+      }
+    )
+    list(tb = tb, warned = warned)
+  }
+  check <- function(tb, tokens, cause) {
+    s <- as_structured(tb)
+    shown <- spicy:::.format_structured_to_string_body(s)
+    tok <- vapply(s$col_meta, `[[`, character(1), "token")
+    header <- s$body$.row_role == "factor_header"
+    for (token in tokens) {
+      nm <- names(tok)[tok == token]
+      # The mark on the block's header row, a blank on the other rows.
+      expect_identical(shown[[nm]][header], mark, info = cause)
+      expect_identical(s$cell_status[[nm]][header], "undefined", info = cause)
+      expect_true(all(!nzchar(shown[[nm]][!header])), info = cause)
+      expect_error(
+        inline(tb, g, column = token),
+        "undefined in the table (not estimable)",
+        fixed = TRUE,
+        class = "spicy_invalid_input"
+      )
+    }
+  }
+  # One observation in b, too few for a test: no warning, as before.
+  few <- d
+  few$v[6:8] <- NA
+  r <- build(few, effect_size = "hedges_g")
+  expect_identical(r$warned, character(0))
+  check(r$tb, c("statistic", "p", "es"), "few")
+  # A test that errors: its one warning, its test and p undefined.
+  local_mocked_bindings(run_group_test = function(...) stop("no test"))
+  r <- build(d)
+  expect_identical(r$warned, "spicy_undefined_stat")
+  check(r$tb, c("statistic", "p"), "fails")
+})
+
+test_that("a block with a residual variance of zero draws no inference", {
+  # Each level constant on its own value: t.test() stopped and Hedges' g
+  # was infinite. Decided on the data; one warning for the block.
+  d <- data.frame(v = c(4, 4, 4, 4, 6, 6, 6, 6), g = rep(c("a", "b"), each = 4))
+  warned <- list()
+  tb <- withCallingHandlers(
+    table_outcome(d, v, select = g, statistic = TRUE, effect_size = "hedges_g"),
+    warning = function(w) {
+      warned[[length(warned) + 1L]] <<- w
+      invokeRestart("muffleWarning")
+    }
+  )
+  expect_length(warned, 1L)
+  expect_s3_class(warned[[1L]], "spicy_undefined_stat")
+  expect_match(
+    conditionMessage(warned[[1L]]),
+    "`g` (the residual variance is zero)",
+    fixed = TRUE
+  )
+  s <- as_structured(tb)
+  shown <- spicy:::.format_structured_to_string_body(s)
+  tok <- vapply(s$col_meta, `[[`, character(1), "token")
+  header <- s$body$.row_role == "factor_header"
+  for (token in c("statistic", "p", "es")) {
+    nm <- names(tok)[tok == token]
+    expect_identical(shown[[nm]][header], spicy_str("cell_undefined"))
+    expect_identical(s$cell_status[[nm]][header], "undefined")
+  }
+  # The means of the levels stay.
+  expect_identical(
+    shown[[names(tok)[tok == "m"]]][s$body$.row_role == "level"],
+    c("4.00", "6.00")
+  )
 })
 
 test_that("`p_value = NULL`, the default, shows the p-value", {

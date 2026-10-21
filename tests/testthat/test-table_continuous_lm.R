@@ -5104,6 +5104,282 @@ test_that("a saturated fit reports NA inference with a classed warning", {
   expect_false(any(vapply(out, function(col) any(is.nan(col)), logical(1))))
 })
 
+test_that("an outcome with no variance has no test, interval, effect size or R2", {
+  # lm() fits a constant exactly, and the inference it returned was
+  # rounding noise: for y = 5 a p of .331 and an R2 of 0.49, other numbers
+  # for y = 3.7, NaN for y = 0.1, with base R's "essentially perfect fit"
+  # warning. Every constant now gets the same table.
+  grp <- factor(rep(c("auto", "manual"), each = 10))
+  mark <- spicy_str("cell_undefined")
+  shape <- function(k) {
+    d <- data.frame(y = rep(k, 20), grp = grp)
+    warned <- list()
+    tl <- withCallingHandlers(
+      table_continuous_lm(d, y, by = grp, effect_size = "hedges_g"),
+      warning = function(w) {
+        warned[[length(warned) + 1L]] <<- w
+        invokeRestart("muffleWarning")
+      }
+    )
+    # One warning, which names the outcome and the reason: base R's never
+    # reaches the user.
+    expect_length(warned, 1L)
+    expect_s3_class(warned[[1L]], "spicy_undefined_stat")
+    expect_match(
+      conditionMessage(warned[[1L]]),
+      "`y` has no variance",
+      fixed = TRUE
+    )
+    s <- as_structured(tl)
+    shown <- spicy:::.format_structured_to_string_body(s)
+    tok <- vapply(s$col_meta, `[[`, character(1), "token")
+    cell <- function(token) unname(unlist(shown[1L, names(tok)[tok == token]]))
+    # The means are printed, and the contrast of two equal means, 0.
+    expect_identical(
+      cell("emmean"),
+      rep(formatC(k, format = "f", digits = 2L), 2L)
+    )
+    expect_identical(cell("delta"), "0.00")
+    expect_identical(cell("n"), "20")
+    # The interval, the p, R2 and the effect size are undefined cells.
+    expect_setequal(
+      names(s$cell_status),
+      names(tok)[tok %in% c("ci", "p", "r2", "es")]
+    )
+    for (token in c("ci", "p", "r2", "es")) {
+      expect_identical(unique(cell(token)), mark)
+      expect_error(
+        inline(tl, y, column = token),
+        "cell of this row is undefined in the table (not estimable).",
+        fixed = TRUE,
+        class = "spicy_invalid_input"
+      )
+    }
+    expect_identical(inline(tl, y), "0.00")
+    # No test ran, so the note names none.
+    expect_false(grepl(
+      spicy_str("test_lm_t"),
+      paste(attr(tl, "note"), collapse = ""),
+      fixed = TRUE
+    ))
+    long <- suppressWarnings(
+      table_continuous_lm(
+        d,
+        y,
+        by = grp,
+        effect_size = "hedges_g",
+        output = "long"
+      )
+    )
+    expect_identical(long$emmean, c(k, k))
+    expect_identical(long$estimate[[2L]], 0)
+    for (col in c(
+      "statistic",
+      "p.value",
+      "r.squared",
+      "adj.r.squared",
+      "es_value"
+    )) {
+      expect_true(all(is.na(long[[col]])))
+    }
+    expect_true(all(is.na(long$estimate_ci_lower)))
+    list(status = s$cell_status, cells = shown[, names(tok)[tok != "emmean"]])
+  }
+  five <- shape(5)
+  expect_identical(shape(3.7), five)
+  expect_identical(shape(0.1), five)
+
+  # glance() gives NA there too.
+  skip_if_not_installed("broom")
+  for (k in c(5, 3.7, 0.1)) {
+    gl <- broom::glance(suppressWarnings(table_continuous_lm(
+      data.frame(y = rep(k, 20), grp = grp),
+      y,
+      by = grp,
+      effect_size = "hedges_g"
+    )))
+    for (col in c(
+      "statistic",
+      "p.value",
+      "r.squared",
+      "adj.r.squared",
+      "es_value"
+    )) {
+      expect_true(is.na(gl[[col]]))
+    }
+    expect_equal(gl$nobs, 20)
+  }
+})
+
+test_that("a slope on an outcome with no variance is 0, with no inference", {
+  d <- data.frame(
+    y = rep(3.7, 20),
+    z = 1:20,
+    w = c(1:19, 30),
+    wt = rep(c(0.5, 1.5), 10)
+  )
+  expect_warning(
+    tl <- table_continuous_lm(d, select = c(y, w), by = z, weights = wt),
+    "`y` has no variance",
+    fixed = TRUE,
+    class = "spicy_undefined_stat"
+  )
+  long <- suppressWarnings(table_continuous_lm(
+    d,
+    select = c(y, w),
+    by = z,
+    weights = wt,
+    output = "long"
+  ))
+  expect_identical(long$estimate[long$variable == "y"], 0)
+  expect_true(is.na(long$p.value[long$variable == "y"]))
+  expect_true(is.na(long$test_type[long$variable == "y"]))
+  # Its sample is still reported, the weighted one too.
+  expect_equal(long$weighted_nobs[long$variable == "y"], sum(d$wt))
+  # The other outcome is unaffected, and the note names its test.
+  expect_false(is.na(long$p.value[long$variable == "w"]))
+  expect_match(attr(tl, "note"), spicy_str("test_lm_t"), fixed = TRUE)
+  expect_identical(inline(tl, y), "0.00")
+  expect_error(
+    inline(tl, y, column = "p"),
+    "undefined in the table",
+    fixed = TRUE,
+    class = "spicy_invalid_input"
+  )
+})
+
+test_that("a saturated or unfitted model leaves no cell blank", {
+  mark <- spicy_str("cell_undefined")
+  first_row <- function(tl) {
+    s <- as_structured(tl)
+    tok <- vapply(s$col_meta, `[[`, character(1), "token")
+    shown <- spicy:::.format_structured_to_string_body(s)
+    list(
+      tok = unname(tok),
+      shown = unname(unlist(shown[1L, names(tok)])),
+      status = unname(vapply(
+        names(tok),
+        function(nm) spicy:::.struct_cell_status(s, nm)[[1L]],
+        character(1)
+      ))
+    )
+  }
+  # One observation per group: the means and the contrast are exact; the
+  # interval, the test, the effect size and the adjusted R2 are undefined.
+  # One warning, as before.
+  expect_warning(
+    sat <- table_continuous_lm(
+      data.frame(y = c(1, 3), g = factor(c("a", "b"))),
+      y,
+      by = g,
+      effect_size = "hedges_g",
+      r2 = "adj_r2"
+    ),
+    "zero residual degrees of freedom",
+    class = "spicy_undefined_stat"
+  )
+  row <- first_row(sat)
+  undefined <- row$tok %in% c("ci", "p", "r2", "es")
+  expect_identical(row$shown[undefined], rep(mark, sum(undefined)))
+  expect_identical(row$status[undefined], rep("undefined", sum(undefined)))
+  expect_identical(row$status[!undefined], rep("", sum(!undefined)))
+  expect_identical(inline(sat, y), "2.00")
+  expect_error(
+    inline(sat, y, column = "ci"),
+    "undefined in the table (not estimable)",
+    fixed = TRUE,
+    class = "spicy_invalid_input"
+  )
+  # No model at all (the covariate leaves one group): every cell of the
+  # outcome is undefined, its mean and its n included.
+  expect_warning(
+    nofit <- table_continuous_lm(
+      data.frame(
+        y = 1:8,
+        g = factor(rep(c("a", "b"), each = 4)),
+        cv = c(1, 2, 3, 4, NA, NA, NA, NA)
+      ),
+      y,
+      by = g,
+      covariates = cv
+    ),
+    "could not be fit",
+    class = "spicy_undefined_stat"
+  )
+  row <- first_row(nofit)
+  expect_identical(row$shown, rep(mark, length(row$tok)))
+  expect_identical(row$status, rep("undefined", length(row$tok)))
+})
+
+test_that("a residual variance of zero draws no inference, with one warning", {
+  # Each group constant on its own value: lm() fits it exactly, the t of
+  # the contrast was 3.32e+15 and base R warned of an "essentially perfect
+  # fit". Decided on the data, with or without weights and covariates.
+  mark <- spicy_str("cell_undefined")
+  d <- data.frame(
+    v = c(4, 4, 4, 4, 6, 6, 6, 6),
+    g = factor(rep(c("a", "b"), each = 4)),
+    w = c(1, 2, 1, 2, 1, 2, 1, 2),
+    age = c(30, 41, 25, 52, 33, 47, 29, 60)
+  )
+  fits <- list(
+    plain = function() {
+      table_continuous_lm(d, v, by = g, effect_size = "hedges_g")
+    },
+    adjusted = function() {
+      table_continuous_lm(d, v, by = g, weights = w, covariates = age)
+    }
+  )
+  for (fit in names(fits)) {
+    warned <- list()
+    tl <- withCallingHandlers(
+      fits[[fit]](),
+      warning = function(w) {
+        warned[[length(warned) + 1L]] <<- w
+        invokeRestart("muffleWarning")
+      }
+    )
+    expect_length(warned, 1L)
+    expect_s3_class(warned[[1L]], "spicy_undefined_stat")
+    expect_match(
+      conditionMessage(warned[[1L]]),
+      "(the residual variance is zero",
+      fixed = TRUE
+    )
+    s <- as_structured(tl)
+    shown <- spicy:::.format_structured_to_string_body(s)
+    tok <- vapply(s$col_meta, `[[`, character(1), "token")
+    cell <- function(token) unname(unlist(shown[1L, names(tok)[tok == token]]))
+    # The means, the contrast and R2 = 1 stay; the interval, the p and the
+    # effect size are undefined.
+    expect_identical(cell("emmean"), c("4.00", "6.00"), info = fit)
+    expect_identical(cell("delta"), "2.00", info = fit)
+    expect_identical(cell("r2"), "1.00", info = fit)
+    for (token in intersect(c("ci", "p", "es"), tok)) {
+      expect_identical(unique(cell(token)), mark, info = fit)
+    }
+    expect_error(
+      inline(tl, v, column = "p"),
+      "undefined in the table (not estimable)",
+      fixed = TRUE,
+      class = "spicy_invalid_input"
+    )
+  }
+  # Three groups: no contrast, and the adjusted R2 is 1 too.
+  three <- data.frame(
+    v = c(4, 4, 4, 6, 6, 6, 9, 9, 9),
+    g = factor(rep(c("a", "b", "c"), each = 3))
+  )
+  expect_warning(
+    tl <- table_continuous_lm(three, v, by = g, r2 = "adj_r2"),
+    "(the residual variance is zero",
+    fixed = TRUE,
+    class = "spicy_undefined_stat"
+  )
+  expect_identical(inline(tl, v, column = "r2"), "1.00")
+  expect_identical(inline(tl, v, column = "emmean", model = "c"), "9.00")
+})
+
 test_that("table_continuous_lm() rejects bit64::integer64 columns", {
   i64 <- structure(
     rep(c(4.94e-324, 9.88e-324), 10),
@@ -5656,19 +5932,13 @@ test_that("an outcome with data in one level only has no model and no test", {
   df <- as.data.frame(x)
   well <- df$variable == "wellbeing_score"
   expect_true(all(is.na(unlist(df[well, -(1:2)]))))
-  # The level without data and the contrast that involves it show the
-  # mark; the p-value of a test that did not run is blank.
+  # No model is fit, so every cell of the outcome is undefined: the level
+  # without data, the contrast that involves it, the mean of the other
+  # level and the test that did not run.
   st <- as_structured(x)
-  for (nm in c(
-    "M (Male)",
-    "\u0394 (Male - Female)",
-    "95% CI LL",
-    "95% CI UL"
-  )) {
+  for (nm in names(st$col_meta)) {
     expect_identical(st$cell_status[[nm]], c("", "undefined"), info = nm)
   }
-  expect_false("undefined" %in% st$cell_status[["p"]])
-  expect_false("undefined" %in% st$cell_status[["M (Female)"]])
   expect_true(is.na(st$body$p[[2L]]))
   # Only the test that ran is named.
   expect_identical(
@@ -5768,7 +6038,8 @@ test_that("a first level without data hands the reference to the next one", {
 test_that("a level a covariate empties for one outcome keeps the blocks aligned", {
   # wellbeing_score is observed in Tertiary only where age is missing: its
   # model cannot reach the level, which still has data, so the cell is
-  # blank (no mark, no no-data sentence) and the columns stay aligned.
+  # undefined (the mark, with no no-data sentence) and the columns stay
+  # aligned.
   d <- as.data.frame(sochealth)
   tert <- which(d$education == "Tertiary")
   d$age[tert[1:5]] <- NA
@@ -5781,7 +6052,10 @@ test_that("a level a covariate empties for one outcome keeps the blocks aligned"
   )
   df <- as.data.frame(x)
   expect_true(is.na(df[df$variable == "wellbeing_score", "M (Tertiary)"]))
-  expect_null(as_structured(x)$cell_status[["M (Tertiary)"]])
+  expect_identical(
+    as_structured(x)$cell_status[["M (Tertiary)"]],
+    c("", "undefined")
+  )
   expect_false(grepl("No data", attr(x, "note"), fixed = TRUE))
 })
 

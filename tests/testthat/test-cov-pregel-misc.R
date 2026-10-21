@@ -265,24 +265,17 @@ test_that("the empty-cell refusal works without any table context", {
   # One sentence: no bullet was appended.
   expect_false(grepl("\n", conditionMessage(err), fixed = TRUE))
   expect_identical(
-    spicy:::.inline_empty_cell_hints(NULL, "delta", NULL, NULL, NULL),
+    spicy:::.inline_empty_cell_hints(NULL, "delta", NULL, NULL),
     character(0)
   )
 
-  # With a real table the SAME refusal earns its hints -- which is what
-  # makes the bare form a fallback rather than the norm. One observation
-  # per group leaves the model no residual degree of freedom: the means
-  # and the contrast are printed, the p is blank on every row of the
-  # table, and the means of the groups are the cells left to cite.
-  d <- data.frame(y = c(1, 3), grp = factor(c("auto", "manual")))
-  expect_warning(
-    tl <- table_continuous_lm(d, y, by = grp),
-    class = "spicy_undefined_stat"
-  )
-  err2 <- expect_error(
-    inline(tl, y, column = "p"),
-    class = "spicy_invalid_input"
-  )
+  # With a real table the SAME refusal earns its hint -- which is what
+  # makes the bare form a fallback rather than the norm. A variable with
+  # one observed category has no test in `table_categorical()`: the p
+  # column is empty on every row of the table, its level rows included.
+  d <- data.frame(x = rep("a", 10), g = rep(c("u", "v"), 5))
+  tc <- table_categorical(d, select = x, by = g)
+  err2 <- expect_error(inline(tc, x, "a", "p"), class = "spicy_invalid_input")
   msg <- conditionMessage(err2)
   expect_match(
     msg,
@@ -290,39 +283,40 @@ test_that("the empty-cell refusal works without any table context", {
     fixed = TRUE
   )
   expect_match(msg, "The \"p\" column is empty on EVERY row", fixed = TRUE)
-  expect_match(
-    msg,
-    "Per-group columns ARE addressable: `model = \"auto\", column = \"emmean\"`.",
-    fixed = TRUE
-  )
-  expect_match(msg, "Available groups: \"auto\", \"manual\".", fixed = TRUE)
-  # The remedy the message names works.
-  expect_identical(inline(tl, y, column = "emmean", model = "auto"), "1.00")
 
-  # An outcome observed in one group only is a level with no data: the
-  # contrast that involves it applies and has no observation to fill it,
-  # so the cell is undefined, not empty. No model is fit, so the means of
-  # the groups are no remedy for its blank p either: none is named.
+  # In the continuous family no cell is empty for want of a value: a
+  # comparison that cannot run shows the undefined mark and is refused as
+  # undefined. One observation per group leaves the model no residual
+  # degree of freedom ...
+  d <- data.frame(y = c(1, 3), grp = factor(c("auto", "manual")))
+  expect_warning(
+    tl <- table_continuous_lm(d, y, by = grp),
+    class = "spicy_undefined_stat"
+  )
+  expect_error(
+    inline(tl, y, column = "p"),
+    "The \"p\" cell of this row is undefined in the table (not estimable).",
+    fixed = TRUE,
+    class = "spicy_invalid_input"
+  )
+  # ... and an outcome observed in one group only has no data in the
+  # other: no model is fit, the contrast and the p are undefined.
   d <- data.frame(
     y = c(rep(NA, 10), as.numeric(1:10)),
     grp = factor(rep(c("auto", "manual"), each = 10))
   )
   tl <- table_continuous_lm(d, y, by = grp)
-  err3 <- expect_error(inline(tl, y), class = "spicy_invalid_input")
-  expect_identical(
-    conditionMessage(err3),
-    "The \"delta\" cell of this row is undefined in the table (not estimable)."
-  )
-  err4 <- expect_error(
-    inline(tl, y, column = "p"),
-    class = "spicy_invalid_input"
-  )
-  expect_match(
-    conditionMessage(err4),
-    "The \"p\" column is empty on EVERY row",
-    fixed = TRUE
-  )
-  expect_no_match(conditionMessage(err4), "ARE addressable", fixed = TRUE)
+  for (tk in c("delta", "p")) {
+    expect_error(
+      inline(tl, y, column = tk),
+      sprintf(
+        "The \"%s\" cell of this row is undefined in the table (not estimable).",
+        tk
+      ),
+      fixed = TRUE,
+      class = "spicy_invalid_input"
+    )
+  }
 
   # A non-empty cell is not refused at all.
   expect_null(spicy:::.inline_refuse_empty("1.23", "delta"))

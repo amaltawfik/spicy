@@ -51,7 +51,7 @@ test_that("build_wide_display_df_continuous_lm renders integer n and weighted n"
   expect_equal(disp[["Weighted n"]][1], "8.00")
 })
 
-test_that("build_wide_display_df_continuous_lm blanks NA n and NA weighted n", {
+test_that("build_wide_display_df_continuous_lm marks NA n and NA weighted n undefined", {
   # Hand-build a one-variable block whose n / weighted_n are NA so the
   # is.na() arms of the n and Weighted-n formatters fire. The printed
   # object carries the internal names the builder reads.
@@ -78,8 +78,9 @@ test_that("build_wide_display_df_continuous_lm blanks NA n and NA weighted n", {
     ci = TRUE
   )
 
-  expect_equal(disp$n[1], "")
-  expect_equal(disp[["Weighted n"]][1], "")
+  # A count with no value is undefined, as every cell of the row.
+  expect_equal(disp$n[1], spicy_str("cell_undefined"))
+  expect_equal(disp[["Weighted n"]][1], spicy_str("cell_undefined"))
 })
 
 # ---- tinytable exporter: default-alignment fallback arm ---------------------

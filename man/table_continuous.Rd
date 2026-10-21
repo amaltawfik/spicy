@@ -135,9 +135,13 @@ Used whenever \code{by} is supplied (since \code{p_value} defaults to \code{TRUE
 in that case) or when \code{statistic = TRUE} or an \code{effect_size} is
 requested.
 Ignored when \code{by} is not used, or when all three display toggles
-are turned off. A variable with no variance has no test, whichever
-is chosen: its test cells are left blank, with a warning (class
-\code{spicy_undefined_stat}).}
+are turned off. A variable with no variance, or whose groups are
+each constant on their own value (a residual variance of zero), has
+no test, whichever is chosen, with a warning (class
+\code{spicy_undefined_stat}). Its test cells (test, p-value, effect size)
+show the undefined mark, as do those of any comparison that cannot
+run (too few observations in a group, a test that fails, a
+non-finite effect size).}
 
 \item{p_value}{Logical or \code{NULL}. If \code{TRUE} and \code{by} is used, adds a
 \emph{p}-value column from the test specified by \code{test}. When \code{NULL} (the

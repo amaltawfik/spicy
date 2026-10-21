@@ -385,9 +385,12 @@ pairwise ones: \code{survey::svyttest()} with two observed groups,
 or \code{survey::svyranktest()} under \code{test = "nonparametric"}. Under a
 design the Welch / Student distinction does not exist -- the
 variance is the design's -- so \code{test = "student"} warns and behaves
-like \code{"welch"}. A variable with no variance has no comparison: its
-test cells are left blank, with a warning (class
-\code{spicy_undefined_stat}), where survey would still return a p-value.
+like \code{"welch"}. A variable with no variance, or whose domains are each
+constant on their own value (a residual variance of zero), has no
+comparison, with a warning (class \code{spicy_undefined_stat}), where survey
+would still return a p-value. Its test cells show the undefined mark,
+as do those of any comparison that cannot run (too few observations in
+a domain, a test refused under weights that change sign).
 The note names the comparison of each variable.
 
 A variable with no observed value in a domain (a question not asked

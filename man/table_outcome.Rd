@@ -123,8 +123,12 @@ weights as given (frequency reading). The default reads
 
 \item{test}{Group comparison for every block: \code{"welch"} (default),
 \code{"student"} or \code{"nonparametric"}. An outcome with no variance in a
-block has no test there, whichever is chosen: the block's test cells
-are left blank, with a warning (class \code{spicy_undefined_stat}).}
+block, or constant within each of its levels (a residual variance of
+zero), has no test there, whichever is chosen, with a warning (class
+\code{spicy_undefined_stat}). The block's test cells (test, p-value,
+effect size) show the undefined mark, as do those of any block whose
+comparison cannot run (too few observations in a level, a test that
+fails, a non-finite effect size).}
 
 \item{p_value}{Show the p-value column: \code{TRUE}, \code{FALSE}, or \code{NULL}
 (the default), which shows it, every block being a comparison.}

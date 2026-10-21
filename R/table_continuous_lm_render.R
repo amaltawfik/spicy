@@ -682,6 +682,12 @@ build_wide_display_df_continuous_lm <- function(
     }
   }
 
+  # Every cell of an outcome's row applies to it, so a cell with no value
+  # is undefined, never a blank: a model that could not be fit, a
+  # saturated fit, an outcome with no variance, a non-finite effect size.
+  for (nm in setdiff(names(out), .LM_KEY_VARIABLE)) {
+    out[[nm]][!nzchar(out[[nm]])] <- mark
+  }
   out
 }
 

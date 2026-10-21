@@ -164,10 +164,10 @@ test_that("the broom helpers fall back without tibble", {
 
 # ---- the arms that only a degenerate block reaches ------------------------
 
-test_that("a block whose test errors degrades with a classed warning", {
-  # `t.test()` refuses constant data ("data are essentially constant").
-  # The block must lose its statistics and say so, not take the table
-  # down with it.
+test_that("a block whose outcome has no variance degrades with a classed warning", {
+  # A constant outcome has no comparison to make (`t.test()` stops on
+  # it). The block must lose its statistics, shown as undefined on its
+  # header row, and say so, not take the table down with it.
   d <- data.frame(
     y = rep(5, 8L),
     g = c("a", "a", "a", "a", "b", "b", "b", "b"),
@@ -178,15 +178,18 @@ test_that("a block whose test errors degrades with a classed warning", {
     class = "spicy_undefined_stat"
   )
   shown <- attr(tbl, "display_df")
-  expect_true(all(!nzchar(shown$p)))
+  header <- tbl$.row_role == "factor_header"
+  expect_identical(unique(shown$p[header]), spicy_str("cell_undefined"))
+  expect_true(all(!nzchar(shown$p[!header])))
   # The descriptives are untouched: only the comparison failed.
   expect_true(all(nzchar(shown$M[tbl$.row_role != "factor_header"])))
 })
 
 test_that("a non-finite effect size becomes NA cells, announced", {
   # Zero pooled SD with equal means gives 0/0; the guard must catch
-  # the NaN as well as the infinities, and blank the cells rather than
-  # print them.
+  # the NaN as well as the infinities, and print no number: NA in the
+  # data, the undefined mark on the block's row, the outcome having no
+  # variance there.
   d <- data.frame(
     y = rep(5, 8L),
     g = c("a", "a", "a", "a", "b", "b", "b", "b"),
@@ -203,7 +206,10 @@ test_that("a non-finite effect size becomes NA cells, announced", {
   expect_true(any(grepl("effect size is undefined", ws, fixed = TRUE)))
   expect_true(all(is.na(tbl$es_value)))
   expect_true(all(is.na(tbl$es_ci_lower)))
-  expect_true(all(!nzchar(attr(tbl, "display_df")$ES)))
+  es <- attr(tbl, "display_df")$ES
+  header <- tbl$.row_role == "factor_header"
+  expect_identical(unique(es[header]), spicy_str("cell_undefined"))
+  expect_true(all(!nzchar(es[!header])))
 })
 
 test_that("a table with no block comparison has no test note", {

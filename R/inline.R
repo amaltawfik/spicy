@@ -217,15 +217,7 @@ inline <- function(
   if (length(group_rows) > 0L && !is.null(model)) {
     rows <- .inline_pick_group_row(s, group_rows, model)
     cols <- .inline_model_cols(s, NULL)
-    .inline_check_variable_stat(
-      s,
-      formatted,
-      rows,
-      group_rows,
-      var_chr,
-      column,
-      cols
-    )
+    .inline_check_variable_stat(s, var_chr, column, cols)
   } else {
     cols <- .inline_model_cols(s, model)
   }
@@ -701,16 +693,12 @@ inline <- function(
 # table whose groups are rows prints them once, on the row of the first
 # group. Asked of a group through `model`, whichever row prints them,
 # they are refused with the call that cites them (rather than "the cell
-# is empty" on the other rows). A statistic the table leaves blank on
-# every row of the variable falls through to the refusals that say so.
-# `row` is the group row `model` picked.
+# is empty" on the other rows). That row always holds them: a value, or
+# the undefined mark of a comparison that could not run.
 .INLINE_VARIABLE_TOKENS <- c("statistic", "p", "es", "smd")
 
 .inline_check_variable_stat <- function(
   s,
-  formatted,
-  row,
-  group_rows,
   var_chr,
   column,
   cols,
@@ -723,16 +711,6 @@ inline <- function(
   for (tk in tokens) {
     hits <- .inline_token_cols(s, cols, tk)
     if (length(hits) == 0L) {
-      next
-    }
-    filled <- function(i) {
-      any(nzchar(trimws(vapply(
-        hits,
-        function(nm) as.character(formatted[[nm]][i]),
-        character(1)
-      ))))
-    }
-    if (!any(vapply(group_rows, filled, logical(1)))) {
       next
     }
     var_txt <- if (identical(make.names(var_chr), var_chr)) {
@@ -1161,20 +1139,16 @@ inline <- function(
 # brackets around nothing and returned "[, ]". One producer, so the two
 # paths cannot word the same refusal differently.
 #
-# The refusal used to stop at the period, a dead end: the reader was told
-# the cell is empty and nothing else -- not that the column is empty
-# throughout, and not that the group means beside it are addressable.
-# (`table_continuous_lm(contrast = "none")` printed an empty contrast
-# column, the case that exposed it; the column is now left out.) The
-# context arguments (the table and the row) are optional so a caller
-# without a structured table still gets the bare refusal.
+# The refusal used to stop at the period, a dead end: the reader was not
+# told that the column is empty throughout. The context arguments are
+# optional so a caller without a structured table still gets the bare
+# refusal.
 .inline_refuse_empty <- function(
   txt,
   token,
   s = NULL,
   formatted = NULL,
   cols = NULL,
-  row = NULL,
   call = rlang::caller_env()
 ) {
   if (nzchar(txt)) {
@@ -1186,83 +1160,47 @@ inline <- function(
         "The %s cell of this row is empty in the table.",
         .quote_val(token)
       ),
-      .inline_empty_cell_hints(s, token, formatted, cols, row)
+      .inline_empty_cell_hints(s, token, formatted, cols)
     ),
     class = "spicy_invalid_input",
     call = call
   )
 }
 
-# The two hints the empty-cell refusal can earn from the table itself.
-#
-# (1) The column is empty on EVERY row, not just this one -- the table
-#     carries no value for the token at all. Stated as a property of the
-#     table, never by naming the argument that produced it: `inline()`
-#     reads the structured view and has no sight of the call.
-# (2) Some other token spreads over columns that carry a group. Those
-#     ARE addressable, and `model` is the argument that reaches them --
-#     the remedy the reader needs and could not guess. Only the groups
-#     whose own cell on this `row` carries a value are named: a level
-#     with no data shows the undefined mark there, and a model that could
-#     not be fit leaves the means blank, so naming them would send the
-#     reader to one more refusal.
-.inline_empty_cell_hints <- function(s, token, formatted, cols, row) {
-  if (is.null(s) || is.null(formatted) || is.null(cols) || is.null(row)) {
+# The hint the empty-cell refusal can earn from the table itself: the
+# column is empty on EVERY row, not just this one -- the table carries no
+# value for the token at all (a `table_categorical()` whose test did not
+# run). Stated as a property of the table, never by naming the argument
+# that produced it: `inline()` reads the structured view and has no sight
+# of the call. A second hint named the group means of
+# `table_continuous_lm()` as addressable; no cell of that table is blank
+# any more, an undefined one shows the mark, so it went.
+.inline_empty_cell_hints <- function(s, token, formatted, cols) {
+  if (is.null(s) || is.null(formatted) || is.null(cols)) {
     return(character(0))
   }
   hits <- Filter(
     function(nm) identical(s$col_meta[[nm]]$token %||% "", token),
     cols
   )
-  hints <- character(0)
   all_blank <- length(hits) > 0L &&
     all(vapply(
       hits,
       function(nm) !any(nzchar(trimws(formatted[[nm]]))),
       logical(1)
     ))
-  if (all_blank) {
-    hints <- c(
-      hints,
-      "i" = sprintf(
-        paste0(
-          "The %s column is empty on EVERY row: this table carries no ",
-          "value for that token."
-        ),
-        .quote_val(token)
-      )
-    )
+  if (!all_blank) {
+    return(character(0))
   }
-  levels_by_token <- list()
-  for (nm in setdiff(cols, hits)) {
-    lv <- s$col_meta[[nm]]$level %||% NA_character_
-    tk <- s$col_meta[[nm]]$token %||% ""
-    filled <- nzchar(trimws(formatted[[nm]][row])) &&
-      !nzchar(.struct_cell_status(s, nm)[row])
-    if (!is.na(lv) && nzchar(tk) && filled) {
-      levels_by_token[[tk]] <- unique(c(levels_by_token[[tk]], lv))
-    }
-  }
-  if (length(levels_by_token) > 0L) {
-    tk <- names(levels_by_token)[1L]
-    hints <- c(
-      hints,
-      "i" = sprintf(
-        "Per-group columns ARE addressable: `model = %s, column = %s`.",
-        .quote_val(levels_by_token[[tk]][1L]),
-        .quote_val(tk)
-      )
+  c(
+    "i" = sprintf(
+      paste0(
+        "The %s column is empty on EVERY row: this table carries no ",
+        "value for that token."
+      ),
+      .quote_val(token)
     )
-    hints <- c(
-      hints,
-      "i" = paste0(
-        "Available groups: ",
-        paste(.quote_val(levels_by_token[[tk]]), collapse = ", "),
-        "."
-      )
-    )
-  }
-  hints
+  )
 }
 
 # The refusal of a token the table does not carry. One producer, for the
@@ -1331,8 +1269,8 @@ inline <- function(
     # above lets it through: an association interval on a LEVEL row of
     # `table_categorical()` (the measure sits on the variable row) used
     # to compose as "[, ]".
-    .inline_refuse_empty(lo, token, s, formatted, cols, row, call = call)
-    .inline_refuse_empty(hi, token, s, formatted, cols, row, call = call)
+    .inline_refuse_empty(lo, token, s, formatted, cols, call = call)
+    .inline_refuse_empty(hi, token, s, formatted, cols, call = call)
     br <- .style_ci_brackets()
     sep <- .style_ci_sep(
       ci_bracket_separator(s$format_spec$decimal_mark)
@@ -1368,7 +1306,7 @@ inline <- function(
   }
   .inline_refuse_status(.struct_cell_status(s, hits)[row], token, call = call)
   out <- trimws(formatted[[hits]][row])
-  .inline_refuse_empty(out, token, s, formatted, cols, row, call = call)
+  .inline_refuse_empty(out, token, s, formatted, cols, call = call)
   out
 }
 

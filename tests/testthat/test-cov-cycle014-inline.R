@@ -76,37 +76,44 @@ test_that("`model = \"(Missing)\"` finds the translated missing group by its rol
   )
 })
 
-test_that("a statistic the table leaves blank on every group row is an empty cell", {
+test_that("a comparison that could not run is refused as undefined", {
   d <- data.frame(
     y1 = c(1, 2, 3, 4, 5, 6, 7, 8),
-    y2 = rep(5, 8),
+    y2 = c(1, 2, 3, 4, 5, NA, NA, NA),
+    k = rep(5, 8),
     g = rep(c("a", "b"), each = 4)
   )
   expect_warning(
-    cn <- table_continuous(d, select = c(y1, y2), by = g),
+    cn <- table_continuous(d, select = c(y1, y2, k), by = g),
     class = "spicy_undefined_stat"
   )
-  # y2 has no test: its p is blank on both of its group rows, so `model`
-  # meets the refusal of an empty cell ...
-  err <- expect_error(
-    inline(cn, y2, column = "p", model = "a"),
-    class = "spicy_invalid_input"
-  )
-  expect_match(
-    conditionMessage(err),
-    "The \"p\" cell of this row is empty in the table.",
-    fixed = TRUE
-  )
-  # ... while the p of y1, printed once, is a statistic of the variable.
-  err <- expect_error(
-    inline(cn, y1, column = "p", model = "a"),
-    class = "spicy_invalid_input"
-  )
-  expect_match(
-    conditionMessage(err),
-    "is a statistic of the variable \"y1\", not of a group of `by`",
-    fixed = TRUE
-  )
+  # y2 has one observation in b, too few for a test, and k has no
+  # variance: the p of each is printed once, on the row of the first
+  # group, as undefined, and refused as such ...
+  for (v in c("y2", "k")) {
+    err <- expect_error(
+      inline(cn, !!v, column = "p"),
+      class = "spicy_invalid_input"
+    )
+    expect_match(
+      conditionMessage(err),
+      "The \"p\" cell of this row is undefined in the table (not estimable).",
+      fixed = TRUE
+    )
+  }
+  # ... and asked of a group, it is a statistic of the variable, like the
+  # p of y1, whose test ran.
+  for (v in c("y1", "y2")) {
+    err <- expect_error(
+      inline(cn, !!v, column = "p", model = "a"),
+      class = "spicy_invalid_input"
+    )
+    expect_match(
+      conditionMessage(err),
+      sprintf("is a statistic of the variable \"%s\", not of a group", v),
+      fixed = TRUE
+    )
+  }
 })
 
 test_that("the refusals quote a variable whose name is not syntactic", {
