@@ -87,7 +87,7 @@
          Yes          │  24,30    2,25    22,10    26,60       18,71           29,89        3           
          (Manquant)   │  23,30     –      23,30    23,30         –               –          1           
       
-      Note. Comparaison des groupes : test t de Welch. Chaque bloc compare bmi entre les modalités d'une variable ; les blocs ne sont pas ajustés les uns sur les autres. Ensemble = l'échantillon d'analyse complet. IC = intervalle de confiance ; LI = limite inférieure ; LS = limite supérieure.
+      Note. Comparaison des groupes : test t de Welch. Chaque bloc compare bmi entre les modalités d'une variable, sans tenir compte des autres variables. Ensemble = l'échantillon d'analyse complet. IC = intervalle de confiance ; LI = limite inférieure ; LS = limite supérieure.
     Code
       print(table_regression(stats::lm(bmi ~ age + sex, data = d)))
     Output

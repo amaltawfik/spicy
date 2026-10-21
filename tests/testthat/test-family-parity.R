@@ -4310,3 +4310,70 @@ test_that("a pseudo-R2 row is defined as a pseudo coefficient of determination",
     fixed = TRUE
   )
 })
+
+test_that("a labelled grouping names its groups by their value labels, in every table", {
+  skip_if_not_installed("haven")
+  skip_if_not_installed("survey")
+  d <- data.frame(
+    y = c(1.2, 2.3, 3.1, 4.8, 5.5, 6.1, 2.2, 3.3),
+    f = factor(c("a", "b", "a", "b", "a", "b", "a", "b")),
+    m1 = c(TRUE, FALSE, TRUE, TRUE, FALSE, FALSE, TRUE, FALSE),
+    m2 = c(FALSE, TRUE, TRUE, FALSE, TRUE, FALSE, TRUE, TRUE),
+    w = 1
+  )
+  # Labels declared in another order than the codes, one of them held by
+  # nobody: the groups stay the observed codes in code order, named as
+  # the rows of a labelled variable are. They were headed by the codes,
+  # "1" and "2", `labels = TRUE` or not.
+  d$g <- haven::labelled(
+    c(1, 2, 1, 2, 1, 2, 2, 1),
+    labels = c(Men = 2, Women = 1, Other = 3)
+  )
+  groups <- c("[1] Women", "[2] Men")
+  long <- function(fn, ...) fn(..., output = "long")
+  grp <- function(x) unique(x$group[x$.group_role %in% "group"])
+  expect_identical(grp(long(table_categorical, d, select = f, by = g)), groups)
+  expect_identical(grp(long(table_continuous, d, select = y, by = g)), groups)
+  expect_identical(
+    grp(long(table_multiresponse, d, select = c(m1, m2), by = g)),
+    groups
+  )
+  expect_identical(
+    long(table_continuous_lm, d, select = y, by = g)$level,
+    groups
+  )
+  out <- long(table_outcome, d, outcome = y, select = g)
+  expect_identical(out$level[out$.row_role == "level"], groups)
+  des <- survey::svydesign(ids = ~1, weights = ~w, data = d)
+  expect_identical(
+    grp(long(table_categorical_svy, des, select = f, by = g)),
+    groups
+  )
+  expect_identical(
+    grp(long(table_continuous_svy, des, select = y, by = g)),
+    groups
+  )
+  # The headers the reader sees, under any `labels`.
+  for (lab in c(FALSE, TRUE)) {
+    expect_true(
+      all(
+        c("[1] Women n", "[2] Men n") %in%
+          names(table_categorical(
+            d,
+            select = f,
+            by = g,
+            labels = lab,
+            output = "data.frame"
+          ))
+      ),
+      info = lab
+    )
+  }
+  expect_true(
+    "M ([1] Women)" %in%
+      names(table_continuous_lm(d, select = y, by = g, output = "data.frame"))
+  )
+  # The rows of the same column, as a variable, read the same.
+  rows <- table_categorical(d, select = g, output = "long")$level
+  expect_true(all(groups %in% rows))
+})

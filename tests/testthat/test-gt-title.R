@@ -182,8 +182,8 @@ test_that("the saved gt file carries the note, not only the title", {
   # `knit_print.spicy_gt()`. Every other route -- `gtsave()`,
   # `as_raw_html()`, a non-interactive `print()` -- shipped a titled
   # table stripped of the disclosure the console prints: which missing
-  # values were removed, which test each block ran, that the blocks are
-  # not adjusted for one another.
+  # values were removed, which test each block ran, that no block
+  # controls for the other variables.
   skip_if_no_gt()
   d <- spicy::sochealth
   builders <- list(

@@ -63,10 +63,9 @@ sorted, as in \code{\link[=table_categorical]{table_categorical()}}: text in the
 before lower case, the same on every machine), \code{FALSE} before
 \code{TRUE}, numbers and the codes of a haven labelled column ascending,
 whatever the order of the rows. The group of missing values comes
-last. For a haven labelled \code{by},
-the group headers are the raw codes (value labels are not used
-for grouping headers -- the family convention shared with
-\code{\link[=table_categorical]{table_categorical()}} and \code{\link[=table_continuous_lm]{table_continuous_lm()}}); declared
+last. A haven labelled \code{by} names its groups by their value labels,
+as the rows of a labelled variable of \code{\link[=table_categorical]{table_categorical()}} name
+its levels (\code{"[1] Women"}), in the order of its codes; declared
 missing values follow \code{user_na} as usual.}
 
 \item{exclude}{Columns to exclude. Supports tidyselect syntax and
@@ -135,10 +134,12 @@ Used whenever \code{by} is supplied (since \code{p_value} defaults to \code{TRUE
 in that case) or when \code{statistic = TRUE} or an \code{effect_size} is
 requested.
 Ignored when \code{by} is not used, or when all three display toggles
-are turned off. A variable with no variance, or whose groups are
-each constant on their own value (a residual variance of zero), has
-no test, whichever is chosen, with a warning (class
-\code{spicy_undefined_stat}). Its test cells (test, p-value, effect size)
+are turned off. A variable with no variance has no test, whichever
+is chosen, with a warning (class \code{spicy_undefined_stat}); so has a
+variable whose groups are each constant on their own value (a
+residual variance of zero) under \code{"welch"} and \code{"student"}, while the
+rank tests, which read the order of the values, run. Its test cells
+(test, p-value, effect size)
 show the undefined mark, as do those of any comparison that cannot
 run (too few observations in a group, a test that fails, a
 non-finite effect size).}
@@ -503,8 +504,10 @@ tokens, and the column each one produces:\tabular{lll}{
 
 
 The column is the header the table prints. In \code{output = "data.frame"}, \link[=as.data.frame.spicy_continuous_table]{as.data.frame()}
-and \code{\link[=as_structured]{as_structured()}}, the median columns keep the names of 0.13.0,
-\code{Med}, \code{Med [Q1, Q3]} and \verb{Med <level>\% CI LL} / \code{UL}. The note under
+and \code{\link[=as_structured]{as_structured()}}, the columns are named by their keys, the same
+in every display language: the printed header in English, except for
+the median, whose keys are \code{Med}, \code{Med [Q1, Q3]} and
+\verb{Med <level>\% CI LL} / \code{UL} under the printed \code{Mdn}. The note under
 the table defines the abbreviations these headers show, as the style
 in force asks (see \code{abbreviations} in \code{\link[=spicy_style]{spicy_style()}}).
 

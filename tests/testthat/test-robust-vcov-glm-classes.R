@@ -40,6 +40,36 @@ test_that("gam CR* matches sandwich::vcovCL of the same glm (Wald z)", {
   expect_identical(fr$info$vcov_label, "cluster-robust (CL), clusters by g")
 })
 
+test_that("gam's one cluster sandwich carries the small-sample factor of CR1", {
+  skip_if_not_installed("mgcv")
+  skip_if_not_installed("sandwich")
+  skip_if_not_installed("clubSandwich")
+  set.seed(1)
+  d <- data.frame(
+    y = rnorm(200),
+    x1 = rnorm(200),
+    g = factor(sample(12, 200, TRUE))
+  )
+  se <- function(fit, v) {
+    b <- b_rows(as_regression_frame(fit, vcov = v, cluster = d$g))
+    stats::setNames(b$std_error, b$term)
+  }
+  m_gam <- mgcv::gam(y ~ x1, data = d)
+  m_lm <- stats::lm(y ~ x1, data = d)
+  # Every CR* token maps to the one estimator, named CL in the note.
+  expect_identical(se(m_gam, "CR0"), se(m_gam, "CR1"))
+  # It is the CR1 of the same linear fit, G / (G - 1) included
+  # (sandwich::vcovCL(), type HC0 with its cluster adjustment), not the
+  # CR0, which leaves the factor out.
+  expect_equal(se(m_gam, "CR1"), se(m_lm, "CR1"), tolerance = 1e-8)
+  n_g <- nlevels(d$g)
+  expect_equal(
+    se(m_gam, "CR1"),
+    se(m_lm, "CR0") * sqrt(n_g / (n_g - 1)),
+    tolerance = 1e-8
+  )
+})
+
 test_that("gam HC* and bootstrap are refused", {
   skip_if_not_installed("mgcv")
   set.seed(1)

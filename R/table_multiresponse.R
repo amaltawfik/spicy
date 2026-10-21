@@ -677,7 +677,10 @@ table_multiresponse <- function(
   margin_key <- NULL
   keep <- rep(TRUE, nrow(data))
   if (has_group) {
-    g0 <- .user_na_to_na(data[[by_name]])
+    # A labelled `by` names its groups by their value labels, as the rows
+    # of a labelled variable of `table_categorical()` name its levels
+    # (`.group_display()`).
+    g0 <- .group_display(.user_na_to_na(data[[by_name]]))
     # A `by` no observation holds leaves no group, whatever levels a
     # factor declares: refused, as across the family (data with no rows
     # never reaches this point). The rows missing `by` always leave this

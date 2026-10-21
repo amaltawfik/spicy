@@ -520,6 +520,36 @@ test_that("table_continuous_lm data.frame output honors optional columns", {
   expect_true("R²" %in% names(out))
 })
 
+test_that("p_value = FALSE leaves no p-value in the machine outputs", {
+  test_cols <- c("test_type", "statistic", "df", "df.residual", "p.value")
+  build <- function(...) {
+    table_continuous_lm(sochealth, select = bmi, by = sex, ...)
+  }
+  on <- build(output = "long")
+  off <- build(p_value = FALSE, output = "long")
+  # The same shape, the test NA; the means and the contrast stay.
+  expect_identical(names(off), names(on))
+  for (nm in test_cols) {
+    expect_true(all(is.na(off[[nm]])), info = nm)
+  }
+  expect_false(anyNA(on$p.value))
+  expect_identical(off$emmean, on$emmean)
+  expect_identical(off$estimate, on$estimate)
+  # A statistic the table shows keeps its test; only the p-value goes.
+  shown <- build(p_value = FALSE, statistic = TRUE, output = "long")
+  expect_true(all(is.na(shown$p.value)))
+  expect_identical(shown$statistic, on$statistic)
+  expect_identical(shown$test_type, on$test_type)
+  # tidy() and glance() follow.
+  gl <- broom::glance(build(p_value = FALSE))
+  expect_identical(names(gl), names(broom::glance(build())))
+  for (nm in test_cols) {
+    expect_true(is.na(gl[[nm]]), info = nm)
+  }
+  td <- broom::tidy(build(p_value = FALSE))
+  expect_true(all(is.na(td$p.value)) && all(is.na(td$statistic)))
+})
+
 test_that("table_continuous_lm data.frame can hide CI columns", {
   out <- table_continuous_lm(
     sochealth,
@@ -4009,16 +4039,18 @@ test_that("compute_omega2_ci_lm and compute_f2_ci_lm return NA when F-stat is mi
 # ---- coverage: build_wide_display_df NA branches ----
 
 test_that("table_continuous_lm renders empty cells when n / weighted_n are NA", {
-  # Trigger empty-row path: an outcome with < 2 valid observations (and
-  # no data in b, which the note says: no warning).
+  # Trigger empty-row path: an outcome with no observed value at all, no
+  # data in a nor in b, which the note says: no warning. (An outcome with
+  # data in one level keeps the mean and the n of that level.)
   df <- data.frame(
-    y_short = c(1, NA, NA, NA, NA, NA),
+    y_ok = c(1, 2, 3, 4, 5, 6),
+    y_short = rep(NA_real_, 6),
     g = factor(rep(c("a", "b"), 3))
   )
   expect_no_warning(
     out <- table_continuous_lm(
       df,
-      select = y_short,
+      select = c(y_ok, y_short),
       by = g,
       output = "data.frame",
       show_weighted_n = FALSE
@@ -4028,19 +4060,20 @@ test_that("table_continuous_lm renders empty cells when n / weighted_n are NA", 
   expect_s3_class(out, "data.frame")
   # The n of the empty row: a blank cell, NA in the numeric frame.
   expect_true("n" %in% names(out))
-  expect_true(is.na(out$n))
+  expect_identical(is.na(out$n), c(FALSE, TRUE))
 })
 
 test_that("table_continuous_lm with show_weighted_n = TRUE renders blank weighted_n on empty rows", {
   df <- data.frame(
-    y_short = c(1, NA, NA, NA, NA, NA),
+    y_ok = c(1, 2, 3, 4, 5, 6),
+    y_short = rep(NA_real_, 6),
     g = factor(rep(c("a", "b"), 3)),
     w = c(1, 1, 1, 1, 1, 1)
   )
   expect_no_warning(
     out <- table_continuous_lm(
       df,
-      select = y_short,
+      select = c(y_ok, y_short),
       by = g,
       weights = w,
       output = "data.frame",
@@ -4050,7 +4083,7 @@ test_that("table_continuous_lm with show_weighted_n = TRUE renders blank weighte
   )
   expect_s3_class(out, "data.frame")
   expect_true("Weighted n" %in% names(out))
-  expect_true(is.na(out[["Weighted n"]]))
+  expect_identical(is.na(out[["Weighted n"]]), c(FALSE, TRUE))
 })
 
 # ---- coverage: export engines (skip if Suggests not installed) ----
@@ -4640,7 +4673,8 @@ test_that("labelled by with value labels dispatches to the categorical path", {
   )
   out <- table_continuous_lm(d, select = y, by = gl3, output = "long")
   expect_identical(out$predictor_type, rep("categorical", 3L))
-  expect_identical(out$level, c("1", "2", "3"))
+  # Named by the value labels, in the order of the codes.
+  expect_identical(out$level, c("[1] Low", "[2] Mid", "[3] High"))
   expect_equal(out$emmean, c(11.5, 21.5, 13.5), tolerance = 1e-12)
   fit <- stats::lm(d$y ~ factor(rep(c(1, 2, 3), each = 4)))
   expect_equal(
@@ -4660,7 +4694,7 @@ test_that("labelled_spss by with value labels forms groups and honors user_na", 
   )
   out <- table_continuous_lm(d, select = y, by = grp, output = "long")
   expect_identical(out$predictor_type, rep("categorical", 2L))
-  expect_identical(out$level, c("1", "2"))
+  expect_identical(out$level, c("[1] Low", "[2] High"))
   expect_equal(out$emmean, c(6, 11), tolerance = 1e-12)
   expect_equal(out$estimate[2], 5, tolerance = 1e-12)
   expect_identical(out$nobs, rep(6L, 2L))
@@ -4672,7 +4706,7 @@ test_that("labelled_spss by with value labels forms groups and honors user_na", 
     user_na = FALSE,
     output = "long"
   )
-  expect_identical(out_keep$level, c("1", "2", "9"))
+  expect_identical(out_keep$level, c("[1] Low", "[2] High", "[9] Refused"))
   expect_identical(out_keep$nobs, rep(8L, 3L))
 })
 
@@ -5028,8 +5062,9 @@ test_that("an outcome left with one observed group keeps the levels of the table
   )
   y2_rows <- out[out$variable == "y2", ]
   expect_identical(y2_rows$level, c("a", "b"))
-  expect_true(all(is.na(y2_rows$emmean)))
-  expect_true(all(is.na(y2_rows$nobs)))
+  # The level with data keeps its mean and the outcome its n.
+  expect_equal(y2_rows$emmean, c(2, NA))
+  expect_identical(y2_rows$nobs, c(3L, 3L))
   expect_false(anyNA(out$level))
   expect_equal(out$emmean[out$variable == "y1"], c(2, 4.5))
   wide <- suppressWarnings(
@@ -5930,26 +5965,69 @@ test_that("an outcome with no data in a level is fit on the other levels", {
   expect_match(fr, "pour wellbeing_score dans Tertiary.", fixed = TRUE)
 })
 
-test_that("an outcome with data in one level only has no model and no test", {
+test_that("an outcome with data in one level only keeps the mean of that level", {
   d <- as.data.frame(sochealth)
   d$wellbeing_score[d$sex == "Male"] <- NA
   # A question not asked in a group is ordinary data: the note says why
-  # the outcome has no model, and no warning repeats it.
+  # nothing is compared, and no warning repeats it.
   expect_no_warning(
     x <- table_continuous_lm(d, select = c(bmi, wellbeing_score), by = sex),
     class = "spicy_undefined_stat"
   )
+  fem <- d$wellbeing_score[d$sex == "Female"]
+  fem <- fem[!is.na(fem)]
   df <- as.data.frame(x)
   well <- df$variable == "wellbeing_score"
-  expect_true(all(is.na(unlist(df[well, -(1:2)]))))
-  # No model is fit, so every cell of the outcome is undefined: the level
-  # without data, the contrast that involves it, the mean of the other
-  # level and the test that did not run.
+  # The level with data keeps its mean and the outcome its n. Before, the
+  # whole row was undefined, the mean of Female included.
+  expect_equal(df[well, "M (Female)"], mean(fem), tolerance = 1e-12)
+  expect_equal(df$n[well], length(fem))
+  # Undefined: the level without data, the contrast that involves it, the
+  # test that did not run and the fit of a comparison.
   st <- as_structured(x)
+  defined <- c("M (Female)", "n")
   for (nm in names(st$col_meta)) {
-    expect_identical(st$cell_status[[nm]], c("", "undefined"), info = nm)
+    # A column with no status at all carries none.
+    status <- st$cell_status[[nm]] %||% c("", "")
+    expect_identical(
+      status,
+      c("", if (nm %in% defined) "" else "undefined"),
+      info = nm
+    )
   }
   expect_true(is.na(st$body$p[[2L]]))
+  # The mean is the model's: an intercept-only lm on the level, its
+  # standard error and interval with it.
+  long <- table_continuous_lm(
+    d,
+    select = wellbeing_score,
+    by = sex,
+    output = "long"
+  )
+  ref <- summary(stats::lm(fem ~ 1))$coefficients
+  expect_equal(long$emmean[[1L]], ref[1L, "Estimate"], tolerance = 1e-12)
+  expect_equal(long$emmean_se[[1L]], ref[1L, "Std. Error"], tolerance = 1e-12)
+  expect_true(is.na(long$emmean[[2L]]))
+  expect_true(all(is.na(long$estimate)) && all(is.na(long$p.value)))
+  expect_identical(long$nobs, rep(length(fem), 2L))
+  # Under covariates the mean is adjusted as that of any level: the
+  # prediction averaged over the covariates of the level (proportional).
+  adj <- table_continuous_lm(
+    d,
+    select = wellbeing_score,
+    by = sex,
+    covariates = age,
+    output = "long"
+  )
+  sub <- d[d$sex == "Female" & !is.na(d$wellbeing_score) & !is.na(d$age), ]
+  fit <- stats::lm(wellbeing_score ~ age, data = sub)
+  pr <- stats::predict(
+    fit,
+    newdata = data.frame(age = mean(sub$age)),
+    se.fit = TRUE
+  )
+  expect_equal(adj$emmean[[1L]], unname(pr$fit), tolerance = 1e-10)
+  expect_equal(adj$emmean_se[[1L]], unname(pr$se.fit), tolerance = 1e-10)
   # Only the test that ran is named.
   expect_identical(
     attr(x, "note"),
@@ -5980,8 +6058,8 @@ test_that("tidy() keeps a level with no data as a row with NA", {
   expect_true(is.na(well$estimate[[3L]]))
   expect_true(is.na(well$std.error[[3L]]))
   expect_true(is.na(well$conf.low[[3L]]))
-  # An outcome with data in one level only has no model: both levels
-  # stay, with NA, and no contrast row.
+  # An outcome with data in one level only: both levels stay, the one
+  # with no data NA, and no contrast row.
   d2 <- as.data.frame(sochealth)
   d2$wellbeing_score[d2$sex == "Male"] <- NA
   td2 <- broom::tidy(
@@ -5989,7 +6067,7 @@ test_that("tidy() keeps a level with no data as a row with NA", {
   )
   w2 <- td2[td2$variable == "wellbeing_score", ]
   expect_identical(w2$term, c("Female", "Male"))
-  expect_true(all(is.na(w2$estimate)))
+  expect_identical(is.na(w2$estimate), c(FALSE, TRUE))
   expect_identical(
     td2$estimate_type[td2$variable == "bmi"],
     c("emmean", "emmean", "difference")

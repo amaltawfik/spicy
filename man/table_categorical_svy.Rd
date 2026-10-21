@@ -41,7 +41,11 @@ table_categorical_svy(
 \code{survey::as.svrepdesign()}.}
 
 \item{select}{Columns to tabulate, as a tidyselect expression on the
-design's variables. The design's own columns are not variables to
+design's variables. When omitted, every categorical column of the
+design (factor, character, logical, and labelled columns), as in
+\code{\link[=table_categorical]{table_categorical()}}; an explicit \code{select} is taken verbatim, so a
+numeric-coded variable can still be tabulated by naming it. The
+design's own columns are not variables to
 describe: its sampling weights, replicate weights, cluster
 identifiers (every stage, unless each cluster of a one-stage design
 is a single observation) and finite population corrections.
@@ -322,7 +326,8 @@ cells in that group show an en dash (\code{NA} in the data frames, in
 and its rows there are left out of everything computed for that
 variable: the missing values the note counts, the \code{Total} block, the
 \code{(Missing)} row and the test. A variable left with fewer than two
-groups with data is not tested: its \code{p} cell is left blank. The note
+groups with data, or observed at one level, is not tested: its \code{p}
+cell shows the dash, the undefined cell. The note
 says "No data for X in G.", in one sentence for the variables with no
 data in the same groups ("No data for X and Y in G."). Without \code{by}, a
 variable with no observed value at all keeps its declared levels (its

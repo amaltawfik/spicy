@@ -2690,6 +2690,26 @@ validate_keep_drop <- function(keep, drop, call = rlang::caller_env()) {
         call = call
       )
     }
+    # The patterns are Perl regular expressions (`apply_keep_drop_filter()`
+    # reads them with `grepl(perl = TRUE)`): one that does not compile is
+    # refused here, in the name of the function called, rather than as
+    # grepl()'s error deep in the filter.
+    bad <- val[!vapply(val, .is_valid_perl_regex, logical(1))]
+    if (length(bad) > 0L) {
+      spicy_abort(
+        c(
+          sprintf(
+            "`%s` must hold regular expressions; %s %s not one.",
+            arg_name,
+            paste(.quote_val(bad), collapse = ", "),
+            if (length(bad) == 1L) "is" else "are"
+          ),
+          "i" = "Escape a literal character with a double backslash: `\"\\\\(\"` for a parenthesis."
+        ),
+        class = "spicy_invalid_input",
+        call = call
+      )
+    }
   }
   if (!is.null(keep) && !is.null(drop)) {
     spicy_abort(
@@ -2705,6 +2725,19 @@ validate_keep_drop <- function(keep, drop, call = rlang::caller_env()) {
     )
   }
   invisible(NULL)
+}
+
+# TRUE when `pattern` compiles as a Perl regular expression. grepl()
+# warns before it errors on one that does not, so both are caught.
+.is_valid_perl_regex <- function(pattern) {
+  tryCatch(
+    {
+      grepl(pattern, "", perl = TRUE)
+      TRUE
+    },
+    warning = function(w) FALSE,
+    error = function(e) FALSE
+  )
 }
 
 # Step 19: stars (FALSE | TRUE | named numeric vector with thresholds in (0,1])

@@ -70,11 +70,11 @@ order; any other \code{by} is sorted, as in \code{\link[=freq]{freq()}} and \cod
 text in the C locale (capitals before lower case, the same on every
 machine), \code{FALSE} before \code{TRUE}, numbers and the codes of a haven
 labelled column ascending, whatever the order of the rows. The
-column of missing values comes last. For a haven labelled \code{by}, the
-group headers are the raw codes (value labels are not used for group
-headers -- the family convention shared with \code{\link[=table_continuous]{table_continuous()}}
-and \code{\link[=table_continuous_lm]{table_continuous_lm()}}); declared missing values follow
-\code{user_na} as usual.}
+column of missing values comes last. A haven labelled \code{by} names its
+groups by their value labels, as the rows of a labelled variable
+name its levels (\code{"[1] Women"}), in the order of its codes; a value
+label no observation holds adds no group, and declared missing
+values follow \code{user_na} as usual. The rule of the whole family.}
 
 \item{labels}{How each variable is named in the table: in the rows,
 in the title, and in the notes. Four forms:
@@ -481,7 +481,10 @@ complete cases of its observed levels, a \code{"(Missing)"} level and a
 declared level nobody holds left out: one \emph{p}-value per variable,
 in the \code{p} column. A table left with a single row or column (a
 variable observed at one level, or in one group) is uninformative and
-gets no test, whatever \code{test} says: its \code{p} cell is left blank.
+gets no test and no association measure, whatever \code{test} and
+\code{assoc_measure} say: its \code{p} and measure cells show an en dash, the
+undefined cell, and the note names no measure for it. A blank cell
+only means a statistic that was not requested or does not apply.
 
 The chi-squared approximation is unreliable when expected counts are
 small. Under \code{test = "auto"}, the default, a variable takes Pearson's
@@ -569,7 +572,8 @@ and in \code{\link[=as_structured]{as_structured()}}), and its rows there are le
 everything computed for that variable: the missing values the note
 counts, the \code{Total} column, the \code{"(Missing)"} row, the test, the
 association measure and the SMD. A variable left with fewer than two
-groups with data is not tested: its \code{p} cell is left blank. The note
+groups with data is not compared: its \code{p} and measure cells show the
+dash, and the note names no test and no measure for it. The note
 says "No data for X in G.", in one sentence for the variables with no
 data in the same groups ("No data for X and Y in G."). Without \code{by}, a
 variable with no observed value at all keeps its declared levels (its

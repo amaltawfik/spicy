@@ -54,14 +54,14 @@ test_that(".scalar_or_na maps non-numeric, non-logical input to NA_real_", {
 
 test_that(".vcov_label_from_kind falls back to the kind name when unknown", {
   expect_identical(spicy:::.vcov_label_from_kind("XYZ"), "XYZ")
-  # Known kinds keep their curated labels.
+  # Known kinds take the registry labels of the lm / glm footer.
   expect_identical(
     spicy:::.vcov_label_from_kind("HC3"),
-    "HC3 heteroskedasticity-consistent"
+    "heteroskedasticity-robust (HC3)"
   )
   expect_identical(
     spicy:::.vcov_label_from_kind("model", is_glm = TRUE),
-    "Model-based (asymptotic)"
+    "classical (Fisher information)"
   )
 })
 

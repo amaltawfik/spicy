@@ -84,6 +84,9 @@
 #' `output = "long"` frame of every table function, speak one
 #' vocabulary: broom's name wherever broom defines one, and one
 #' snake_case name per concept otherwise, the same in every function.
+#' One exception, the estimates: `tidy()` gives them broom's names, and
+#' the long output of a descriptive table names each statistic it holds
+#' (see the table below).
 #'
 #' | Concept | Column |
 #' |---|---|
@@ -93,7 +96,7 @@
 #' | the role of `group`: a group, the column of missing `by` values, the margin | `.group_role` (`"group"`, `"missing"`, `"total"`) |
 #' | the `Total` margin of the groups | `total` (logical) |
 #' | a count, a percentage, a proportion between 0 and 1 | `n`, `pct`, `proportion`, named by their base where a table has two (`pct_cases`, `pct_responses`, `proportion_cases`, `proportion_responses`) |
-#' | the estimate of a row, its standard error and interval | `estimate`, `std.error`, `conf.low`, `conf.high` |
+#' | the estimate of a row, its standard error and interval | in `tidy()`, and in the long output of [table_regression()]: `estimate`, `std.error`, `conf.low`, `conf.high`; in the long output of the descriptive tables, the name of the statistic: `mean`, `se`, `ci_lower`, `ci_upper` (`median`, `med_ci_lower`, ...; `emmean`, `emmean_se`, `estimate_ci_lower`, ... in [table_continuous_lm()]) |
 #' | the test: its name and statistic | `test_type`, `statistic` |
 #' | the degrees of freedom, which follow the statistic | `df` for a *t* or a chi-squared (`Inf` for a *z*); `df` and `df.residual` for an *F*, the Rao-Scott *F* and the *F* of a linear model included |
 #' | the p-value, and the raw one under `p_adjust` | `p.value`, `p_unadjusted` |
@@ -125,10 +128,15 @@
 #' whatever the orientation of the printed table: `.row_role` the row's
 #' `level`, `.group_role` its `group`. A level or a group added for
 #' missing values is told apart by its role, `"missing"`, never by its
-#' label, which follows the display language. In a table that compares
-#' groups, the long output carries the effect-size and SMD columns
-#' whether or not they were requested (`NA` then), and `glance()` has a
-#' fixed set of columns; `p_value = FALSE` removes the test columns.
+#' label, which follows the display language. With `by`, the long
+#' output of [table_categorical()] and [table_continuous()] carries the
+#' effect-size and SMD columns whether or not they were requested (`NA`
+#' then), and that of [table_continuous_lm()] and [table_outcome()] the
+#' effect-size columns; the survey tables and [table_multiresponse()]
+#' compute neither. `glance()` has a fixed set of columns.
+#' `p_value = FALSE` removes the test columns, except in
+#' [table_continuous_lm()], whose long output is that of its models: they
+#' stay there, `NA`.
 #' Model-level statistics (`nobs`, `r.squared`, ...) are in `glance()`.
 #' The long output carries them as well where its rows are models of
 #' their own: in [table_continuous_lm()], one model per outcome (the fit

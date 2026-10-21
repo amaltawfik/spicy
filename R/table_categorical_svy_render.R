@@ -132,7 +132,10 @@
       deff = fmt(v, 2L),
       fmt(v, percent_digits)
     )
-    cell[is.na(v)] <- if (identical(e$base, "p")) "" else cell[is.na(v)]
+    # A p with no value -- a comparison that cannot run (a domain with no
+    # data, a constant variable) or a test refused -- is undefined on the
+    # header row that carries it, as every statistic of the table is.
+    cell[is.na(v)] <- spicy_str("cell_undefined")
     # Blank the rows the statistic does not belong to.
     cell[if (identical(e$base, "p")) !is_header else is_header & !lone] <- ""
     df[[e$key]] <- cell

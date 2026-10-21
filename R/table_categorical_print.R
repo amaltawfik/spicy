@@ -14,25 +14,14 @@
 #' @keywords internal
 #' @export
 print.spicy_categorical_table <- function(x, ...) {
-  # The note is rebuilt below, so the style the table was built with is
-  # put back in force for it (`.style_stamp()`): its `note_label` decides
-  # the lead-in. With no style it is a no-op.
-  .style_pushed <- .style_restore(x)
-  on.exit(.style_end(.style_pushed), add = TRUE)
   display_df <- attr(x, "display_df")
   group_var <- attr(x, "group_var")
   indent_text <- attr(x, "indent_text") %||% "  "
   align <- attr(x, "align") %||% "decimal"
   decimal_mark <- attr(x, "decimal_mark") %||% "."
-  # The note, from the parts the table stored: what the numbers are, the
-  # missing data, the statistics, then the abbreviations -- the note of
-  # `attr(x, "note")`.
-  assoc_note <- .categorical_note(
-    attr(x, "what_note"),
-    attr(x, "missing_note"),
-    attr(x, "assoc_note"),
-    attr(x, "abbrev_note")
-  )
+  # The note table_categorical() assembled, "Note." included; NULL when
+  # there is nothing to say.
+  assoc_note <- attr(x, "note", exact = TRUE)
 
   if (is.null(display_df)) {
     # The object's own columns, as a plain frame: its class would send
@@ -208,8 +197,9 @@ print.spicy_categorical_table <- function(x, ...) {
 # The one place the note is assembled, for every route (console, the
 # rich engines, Excel, the clipboard), so the one place it opens with
 # "Note.": the prefix belongs to the note, never to one of its parts.
-# The `what_note`, `missing_note`, `assoc_note` and `abbrev_note`
-# attributes stay the four parts, unprefixed.
+# The object keeps the whole note in `note`; the `what_note`,
+# `assoc_note` and `abbrev_note` attributes stay three of its parts,
+# unprefixed.
 .categorical_note <- function(
   what_note = NULL,
   missing_note = NULL,

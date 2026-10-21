@@ -146,8 +146,10 @@ test_that("single-level select variable yields NA stats (note fallback)", {
   expect_identical(unique(out$es_type), "cramer_v")
 })
 
-test_that("single-level select variable renders blank p / assoc cells (default)", {
-  # Exercises fmt_p(NA) -> "" and fmt_v(NA) -> "" in the report-wide path.
+test_that("single-level select variable renders undefined p / assoc cells (default)", {
+  # Nothing to compare: the variable row shows the undefined mark in the
+  # p and measure cells (fmt_stat() in the report-wide path), the level
+  # row stays blank. Both were blank.
   df <- data.frame(
     grp = factor(c("A", "A", "B", "B", "A", "B")),
     v1 = factor(rep("only", 6))
@@ -161,8 +163,12 @@ test_that("single-level select variable renders blank p / assoc cells (default)"
   )
   expect_s3_class(out, "spicy_categorical_table")
   disp <- attr(out, "display_df")
-  expect_true(all(disp$p == ""))
-  expect_true(all(disp[["Cramer's V"]] == ""))
+  mark <- spicy:::spicy_str("cell_undefined")
+  head <- disp$Variable == "V1"
+  expect_identical(disp$p[head], mark)
+  expect_identical(disp[["Cramer's V"]][head], mark)
+  expect_true(all(disp$p[!head] == ""))
+  expect_true(all(disp[["Cramer's V"]][!head] == ""))
 })
 
 # ---- one-way gt alignment branches ----------------------------------------

@@ -869,9 +869,9 @@ test_that("a mixed pattern does not resolve to the block header", {
 
 test_that("an empty block statistic refuses with its own reason", {
   # A single-level variable gives the chi-squared nothing to compare:
-  # its `p` is blank on the header AND on the level. Pointing at the
-  # levels would name a remedy that cannot help, so the refusal says
-  # what actually happened.
+  # its `p` shows the undefined mark on the header and nothing on the
+  # level, and is refused as undefined, as in the continuous family. It
+  # was blank, and refused as a comparison that did not run.
   dc <- data.frame(
     g = factor(c("A", "A", "A", "A", "B", "B", "B")),
     one = factor(rep("yes", 7L))
@@ -879,8 +879,20 @@ test_that("an empty block statistic refuses with its own reason", {
   ct <- .il_quiet(table_categorical(dc, select = one, by = g))
   err <- tryCatch(inline(ct, one, column = "p"), error = identity)
   expect_s3_class(err, "spicy_invalid_input")
+  expect_match(conditionMessage(err), "undefined in the table", fixed = TRUE)
+  # A blank header cell is a statistic the table does not give for the
+  # variable: here a measure it asked none of. Pointing at the levels
+  # would name a remedy that cannot help, so the refusal says so.
+  tm <- table_categorical(
+    sochealth,
+    c(smoking, education),
+    by = sex,
+    assoc_measure = c(education = "none")
+  )
+  err <- tryCatch(inline(tm, education, column = "assoc"), error = identity)
+  expect_s3_class(err, "spicy_invalid_input")
   expect_match(conditionMessage(err), "empty for")
-  expect_match(conditionMessage(err), "group comparison did not run")
+  expect_match(conditionMessage(err), "not requested", fixed = TRUE)
 })
 
 test_that("the header rule needs the statistic blank on every level", {

@@ -323,3 +323,36 @@ test_that("glm.nb supports bootstrap and jackknife resampling", {
   expect_true(all(is.finite(sj$body$SE[match(nm, sj$body$Variable)])))
   expect_match(attr(o_jack, "note"), "jackknife", ignore.case = TRUE)
 })
+
+test_that("the standard-error line of glm.nb reads as that of a glm, in each language", {
+  skip_if_not_installed("MASS")
+  skip_if_not_installed("clubSandwich")
+  set.seed(2612)
+  n <- 80
+  d <- data.frame(x = rnorm(n), g = factor(sample(letters[1:8], n, TRUE)))
+  d$y <- MASS::rnegbin(n, mu = exp(0.6 + 0.3 * d$x), theta = 2)
+  nb <- MASS::glm.nb(y ~ x, data = d)
+  pois <- stats::glm(y ~ x, data = d, family = poisson)
+  se_line <- function(fit, ...) {
+    note <- attr(table_regression(fit, ...), "note")
+    regmatches(note, regexpr("(Std\\. errors|Erreurs standards)[^.]*\\.", note))
+  }
+  for (lang in c("en", "fr")) {
+    withr::local_options(spicy.language = lang)
+    for (v in c("classical", "HC0", "CR1")) {
+      cl <- if (startsWith(v, "CR")) d$g
+      expect_identical(
+        se_line(nb, vcov = v, cluster = cl),
+        se_line(pois, vcov = v, cluster = cl),
+        info = paste(lang, v)
+      )
+    }
+  }
+  # It was hard-coded in English: "HC0 heteroskedasticity-consistent".
+  withr::local_options(spicy.language = "fr")
+  expect_match(
+    se_line(nb, vcov = "HC0"),
+    "robustes \u00E0 l'h\u00E9t\u00E9rosc\u00E9dasticit\u00E9 (HC0)",
+    fixed = TRUE
+  )
+})

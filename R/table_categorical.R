@@ -216,6 +216,47 @@
   )
 }
 
+# The columns a select-less call tabulates, among `select_names` (the
+# `everything()` default, its role and design columns left out): the
+# categorical ones, factor, character, logical and labelled. A number, a
+# date or a list column is left to an explicit `select`. Shared by
+# `table_categorical()` and `table_categorical_svy()`, so the two take the
+# same columns of the same data.
+.cat_default_select <- function(select_names, data) {
+  select_names[vapply(
+    select_names,
+    function(nm) {
+      col <- data[[nm]]
+      is.factor(col) ||
+        is.character(col) ||
+        is.logical(col) ||
+        labelled::is.labelled(col)
+    },
+    logical(1)
+  )]
+}
+
+# The NA weights of a table, said once, in the words `cross_tab()` and
+# `freq()` use; and the muffler of the copy each of their internal calls
+# would raise. Their only `spicy_dropped_na` warning is that one.
+.warn_weights_na <- function(n_na) {
+  spicy_warn(
+    sprintf(
+      "%d NA value%s in `weights`; those observations are excluded from the table and from rescaling.",
+      n_na,
+      if (n_na > 1L) "s" else ""
+    ),
+    class = "spicy_dropped_na"
+  )
+}
+
+.quiet_weights_na <- function(expr) {
+  withCallingHandlers(
+    expr,
+    spicy_dropped_na = function(w) invokeRestart("muffleWarning")
+  )
+}
+
 # Coerce a column selected for tabulation to the factor that flows
 # through freq() / cross_tab() untouched. The factor is built BEFORE
 # tabulation so the declared level order survives end-to-end: the
@@ -430,7 +471,8 @@
   select_names,
   data,
   by_name,
-  user_na = TRUE
+  user_na = TRUE,
+  call = rlang::caller_env()
 ) {
   valid <- c(
     "auto",
@@ -454,7 +496,8 @@
   if (!is.character(assoc_measure)) {
     spicy_abort(
       "`assoc_measure` must be a character string or named/unnamed character vector.",
-      class = "spicy_invalid_input"
+      class = "spicy_invalid_input",
+      call = call
     )
   }
 
@@ -469,7 +512,8 @@
           assoc_measure,
           paste(.quote_val(valid), collapse = ", ")
         ),
-        class = "spicy_invalid_input"
+        class = "spicy_invalid_input",
+        call = call
       )
     }
     per_row[] <- assoc_measure
@@ -484,7 +528,8 @@
           "`assoc_measure` keys not found in `select`: %s.",
           paste(.quote_val(bad_names), collapse = ", ")
         ),
-        class = "spicy_invalid_input"
+        class = "spicy_invalid_input",
+        call = call
       )
     }
     bad_vals <- setdiff(unique(assoc_measure), valid)
@@ -494,7 +539,8 @@
           "`assoc_measure` value(s) not recognized: %s.",
           paste(.quote_val(bad_vals), collapse = ", ")
         ),
-        class = "spicy_invalid_input"
+        class = "spicy_invalid_input",
+        call = call
       )
     }
     per_row[] <- "auto" # default fallback for unnamed variables
@@ -510,7 +556,8 @@
           n,
           if (n > 1L) "s" else ""
         ),
-        class = "spicy_invalid_input"
+        class = "spicy_invalid_input",
+        call = call
       )
     }
     bad_vals <- setdiff(unique(assoc_measure), valid)
@@ -520,7 +567,8 @@
           "`assoc_measure` value(s) not recognized: %s.",
           paste(.quote_val(bad_vals), collapse = ", ")
         ),
-        class = "spicy_invalid_input"
+        class = "spicy_invalid_input",
+        call = call
       )
     }
     per_row[] <- as.character(assoc_measure)
@@ -569,7 +617,8 @@
           var_n_levels,
           by_n_levels
         ),
-        class = "spicy_unsupported"
+        class = "spicy_unsupported",
+        call = call
       )
     }
   }
@@ -898,11 +947,11 @@
 #'   text in the C locale (capitals before lower case, the same on every
 #'   machine), `FALSE` before `TRUE`, numbers and the codes of a haven
 #'   labelled column ascending, whatever the order of the rows. The
-#'   column of missing values comes last. For a haven labelled `by`, the
-#'   group headers are the raw codes (value labels are not used for group
-#'   headers -- the family convention shared with [table_continuous()]
-#'   and [table_continuous_lm()]); declared missing values follow
-#'   `user_na` as usual.
+#'   column of missing values comes last. A haven labelled `by` names its
+#'   groups by their value labels, as the rows of a labelled variable
+#'   name its levels (`"[1] Women"`), in the order of its codes; a value
+#'   label no observation holds adds no group, and declared missing
+#'   values follow `user_na` as usual. The rule of the whole family.
 #' @param labels How each variable is named in the table: in the rows,
 #'   in the title, and in the notes. Four forms:
 #'   * `labels = FALSE` shows the column name.
@@ -1254,7 +1303,10 @@
 #' declared level nobody holds left out: one *p*-value per variable,
 #' in the `p` column. A table left with a single row or column (a
 #' variable observed at one level, or in one group) is uninformative and
-#' gets no test, whatever `test` says: its `p` cell is left blank.
+#' gets no test and no association measure, whatever `test` and
+#' `assoc_measure` say: its `p` and measure cells show an en dash, the
+#' undefined cell, and the note names no measure for it. A blank cell
+#' only means a statistic that was not requested or does not apply.
 #'
 #' The chi-squared approximation is unreliable when expected counts are
 #' small. Under `test = "auto"`, the default, a variable takes Pearson's
@@ -1342,7 +1394,8 @@
 #' everything computed for that variable: the missing values the note
 #' counts, the `Total` column, the `"(Missing)"` row, the test, the
 #' association measure and the SMD. A variable left with fewer than two
-#' groups with data is not tested: its `p` cell is left blank. The note
+#' groups with data is not compared: its `p` and measure cells show the
+#' dash, and the note names no test and no measure for it. The note
 #' says "No data for X in G.", in one sentence for the variables with no
 #' data in the same groups ("No data for X and Y in G."). Without `by`, a
 #' variable with no observed value at all keeps its declared levels (its
@@ -1792,18 +1845,7 @@ table_categorical <- function(
   # companions. An explicit `select` is taken verbatim so numeric-coded
   # categorical variables can still be tabulated by naming them.
   if (select_missing) {
-    is_eligible <- vapply(
-      select_names,
-      function(nm) {
-        col <- data[[nm]]
-        is.factor(col) ||
-          is.character(col) ||
-          is.logical(col) ||
-          labelled::is.labelled(col)
-      },
-      logical(1)
-    )
-    select_names <- select_names[is_eligible]
+    select_names <- .cat_default_select(select_names, data)
     if (length(select_names) == 0L) {
       .abort_empty_selection("select", "categorical")
     }
@@ -2107,6 +2149,12 @@ table_categorical <- function(
   # `cross_tab()` / `freq()` the tabulation calls: the values those two
   # accept (NA allowed, an all-zero vector too).
   .check_weights_values(weights_vec, require_positive = FALSE)
+  # NA weights are said once, here: each internal `cross_tab()` /
+  # `freq()` call would say it again (three times per variable under
+  # `by`), and `.quiet_weights_na()` muffles those copies.
+  if (!is.null(weights_vec) && anyNA(weights_vec)) {
+    .warn_weights_na(sum(is.na(weights_vec)))
+  }
 
   # Without weights there is nothing to rescale: a `rescale = TRUE` typed
   # in the call warns, one read from `options(spicy.rescale)` does not.
@@ -2275,10 +2323,9 @@ table_categorical <- function(
   # underlying note literally said "p < threshold", so we honor the
   # request and render the small-p form regardless of the numeric
   # placeholder.
+  # A missing p never reaches it: `fmt_stat()` in the report-wide frame
+  # shows the undefined mark instead.
   fmt_p <- function(p, op = NA_character_) {
-    if (is.na(p)) {
-      return("")
-    }
     if (!is.na(op) && identical(op, "<")) {
       # nocov start: `op = "<"` only arrives from parse_stats()'s note-text
       # fallback, which fires solely when cross_tab() omits the numeric
@@ -2445,13 +2492,13 @@ table_categorical <- function(
           output = "data.frame"
         )
       } else {
-        spicy::freq(
+        .quiet_weights_na(spicy::freq(
           x,
           weights = w,
           rescale = rescale,
           valid = FALSE,
           output = "data.frame"
-        )
+        ))
       }
       vals <- as.character(ft$value)
       raw_levels <- vals[!is.na(vals)]
@@ -2651,8 +2698,8 @@ table_categorical <- function(
 
     # Read the ledger once, here: every output route below must carry
     # the same disclosure, not print() alone. `oneway_note` is that
-    # disclosure as the note the engines print, assembled (and opened
-    # with "Note.") by the same `.categorical_note()` as print().
+    # disclosure as the note every route prints, print() included,
+    # assembled (and opened with "Note.") by `.categorical_note()`.
     what_note <- build_weights_note()
     missing_note <- build_missing_note()
     oneway_note <- .categorical_note(what_note, missing_note)
@@ -2683,11 +2730,10 @@ table_categorical <- function(
       attr(out, "group_var") <- NULL
       # The title the console prints, from the helper every engine uses.
       attr(out, "title") <- .categorical_title(NULL)
-      # The whole note, as print() shows it; `what_note` and
-      # `missing_note` stay the parts print() assembles it from.
+      # The whole note, as print() shows it, and the part that says what
+      # the numbers are.
       attr(out, "note") <- oneway_note
       attr(out, "what_note") <- what_note
-      attr(out, "missing_note") <- missing_note
       attr(out, "indent_text") <- indent_text
       attr(out, "align") <- align
       attr(out, "decimal_mark") <- decimal_mark
@@ -3179,7 +3225,9 @@ table_categorical <- function(
     }
   }
 
-  g0 <- resolve_user_na(data[[by_name]])
+  # A labelled `by` names its groups by their value labels, as the rows
+  # of a labelled variable name its levels (`.group_display()`).
+  g0 <- .group_display(resolve_user_na(data[[by_name]]))
   # A `by` no observation holds leaves no group once its missing values
   # are removed, whatever levels a factor declares: refused, as across
   # the family.
@@ -3234,7 +3282,7 @@ table_categorical <- function(
   # as.character() round-trip alphabetized ordered `by` factors and
   # corrupted the ordinal association measures). Naming keeps the
   # family convention for `by`: factor levels and character values
-  # verbatim, raw codes for labelled vectors.
+  # verbatim, the value labels of a labelled vector ("[code] label").
   g_fac <- if (is.factor(g0)) {
     g0
   } else {
@@ -3292,10 +3340,10 @@ table_categorical <- function(
   # level "Total" (the margin then relabeled here), with a warning that
   # names a column this table never shows: muffled as noise.
   quiet_margin <- function(expr) {
-    withCallingHandlers(
+    .quiet_weights_na(withCallingHandlers(
       expr,
       spicy_renamed_column = function(w) invokeRestart("muffleWarning")
-    )
+    ))
   }
 
   # ---------------- LONG RAW ----------------
@@ -3308,8 +3356,10 @@ table_categorical <- function(
   test_types <- character(0)
   yates_used <- logical(0)
   # The variables with no value at all (no data in any group), whose
-  # association measure the note does not name (`.assoc_note_apa()`).
+  # association measure the note does not name (`.assoc_note_apa()`), and
+  # those with values but nothing to compare (see the loop).
   no_value_vars <- character(0)
+  untested_vars <- character(0)
 
   # One row of the compute frame: one variable, level and group. `st`
   # holds the statistics of the variable (`parse_stats()`), which every
@@ -3539,14 +3589,20 @@ table_categorical <- function(
       cc <- cc & g != missing_label
     }
     test_kind <- NA_character_
-    test_tab <- NULL
+    test_tab <- .cat_test_table(
+      x[cc],
+      g[cc],
+      if (is.null(w)) NULL else w[cc],
+      rescale
+    )
+    # Fewer than two observed levels (a constant variable) or two groups
+    # with data: nothing is compared, the test nor the measure, whatever
+    # the call asked. Their cells are undefined, and the note names no
+    # measure for the variable.
+    if (few_groups || !all(dim(test_tab) > 1L)) {
+      untested_vars <- c(untested_vars, select_names[i])
+    }
     if (p_value) {
-      test_tab <- .cat_test_table(
-        x[cc],
-        g[cc],
-        if (is.null(w)) NULL else w[cc],
-        rescale
-      )
       if (all(dim(test_tab) > 1L)) {
         test_kind <- .cat_resolve_test(test_tab, test)
       }
@@ -3635,10 +3691,11 @@ table_categorical <- function(
     } else if (identical(test_kind, "chisq") && !is.na(st$p)) {
       test_type <- .CAT_TEST_CHISQ
     }
-    # Fewer than two groups with data: no test and no association
-    # measure, whatever was computed on the one group left. The `p` cell
-    # stays blank, and the note names no test for this variable.
-    if (few_groups) {
+    # Fewer than two groups with data, or a constant variable: no test and
+    # no association measure, whatever was computed on the one group or
+    # level left. Their cells show the undefined mark, and the note names
+    # no test and no measure for this variable.
+    if (few_groups || !all(dim(test_tab) > 1L)) {
       st[c("p", "v", "chi2", "df", "ci_lower", "ci_upper")] <- NA_real_
       test_type <- NA_character_
     }
@@ -3860,7 +3917,7 @@ table_categorical <- function(
   definitions_note <- .assoc_note_apa(
     assoc_measures_per_row,
     labels,
-    no_value = no_value_vars
+    no_value = c(no_value_vars, untested_vars)
   )
   if (do_smd) {
     definitions_note <- c(
@@ -3970,7 +4027,7 @@ table_categorical <- function(
   p_adjust_info <- adj$info
   inference_note <- c(inference_note, .desc_p_adjust_note(p_adjust_info))
   # The statistics part of the note, (c) then (d): the `assoc_note`
-  # attribute print() rebuilds the note from, NULL when empty.
+  # attribute, NULL when empty.
   stat_sentences <- c(inference_note, definitions_note)
   stat_sentences <- stat_sentences[nzchar(stat_sentences)]
   assoc_note_text <- if (length(stat_sentences)) {
@@ -4092,8 +4149,8 @@ table_categorical <- function(
   wide_raw <- make_wide_raw(long_raw)
   # Read the ledger once, here: every output route below must carry the
   # same disclosure, not print() alone. `table_note` is the whole note
-  # every route prints, assembled by the same `.categorical_note()` as
-  # print() from the same four parts.
+  # every route prints, print() included, assembled from its four parts
+  # by `.categorical_note()`.
   what_note <- build_weights_note()
   missing_note <- build_missing_note()
   table_note <- .categorical_note(
@@ -4225,11 +4282,27 @@ table_categorical <- function(
         r0 <- fill_groups(r0, sv)
       }
       r0$Variable <- lab
+      # A comparison that cannot run (no data in a group, a constant
+      # variable) or a statistic with no value shows the undefined mark
+      # on the variable row, as the SMD beside it: the cell applies. A
+      # blank is a cell that does not: a measure this variable asked
+      # none of, the level rows below.
+      measure_asked <- !identical(
+        assoc_measures_per_row[[select_names[[k]]]],
+        "none"
+      )
+      fmt_stat <- function(v, fmt, asked = TRUE) {
+        if (asked && is.na(v)) undefined_cell else fmt(v)
+      }
       if (p_value) {
-        r0$p <- fmt_p(sv$p[1], sv$p_op[1])
+        r0$p <- fmt_stat(sv$p[1], function(p) fmt_p(p, sv$p_op[1]))
       }
       if (show_assoc) {
-        r0[[measure_col]] <- fmt_v(sv[[measure_col]][1])
+        r0[[measure_col]] <- fmt_stat(
+          sv[[measure_col]][1],
+          fmt_v,
+          measure_asked
+        )
       }
       if (do_smd) {
         # The variable row carries it, like `p` and the association
@@ -4238,8 +4311,8 @@ table_categorical <- function(
       }
       if (show_assoc && assoc_ci) {
         if (mode == "char") {
-          r0[[.CAT_KEY_CI_LL]] <- fmt_v(sv$ci_lower[1])
-          r0[[.CAT_KEY_CI_UL]] <- fmt_v(sv$ci_upper[1])
+          r0[[.CAT_KEY_CI_LL]] <- fmt_stat(sv$ci_lower[1], fmt_v, measure_asked)
+          r0[[.CAT_KEY_CI_UL]] <- fmt_stat(sv$ci_upper[1], fmt_v, measure_asked)
         } else {
           r0[[.CAT_KEY_CI_LL]] <- sv$ci_lower[1]
           r0[[.CAT_KEY_CI_UL]] <- sv$ci_upper[1]
@@ -4313,7 +4386,8 @@ table_categorical <- function(
     show_p = p_value,
     show_assoc = show_assoc,
     assoc_ci = assoc_ci,
-    show_smd = do_smd
+    show_smd = do_smd,
+    assoc_none = names(assoc_measures_per_row)[assoc_measures_per_row == "none"]
   )
   structured <- .struct_attach_p_adjust(structured, p_adjust_info)
   if (p_value) {
@@ -4325,12 +4399,10 @@ table_categorical <- function(
     attr(out, "display_df") <- report_wide_char
     # The title the console prints, from the helper every engine uses.
     attr(out, "title") <- .categorical_title(by_label)
-    # The whole note, as print() shows it; `what_note`, `missing_note`,
-    # `assoc_note` and `abbrev_note` stay the four parts print()
-    # assembles it from.
+    # The whole note, as print() shows it; `what_note`, `assoc_note` and
+    # `abbrev_note` stay three of its parts, unprefixed.
     attr(out, "note") <- table_note
     attr(out, "what_note") <- what_note
-    attr(out, "missing_note") <- missing_note
     attr(out, "group_var") <- by_name
     attr(out, "group_label") <- by_label
     attr(out, "indent_text") <- indent_text
@@ -4380,7 +4452,12 @@ table_categorical <- function(
     if (!show_assoc || !assoc_ci || !(.CAT_KEY_CI_LL %in% names(df))) {
       return(df)
     }
-    has_val <- nzchar(df[[measure_col]]) & nzchar(df[[.CAT_KEY_CI_LL]])
+    # A measure or a bound that is undefined keeps its mark alone: no
+    # interval is pasted beside it.
+    has_val <- nzchar(df[[measure_col]]) &
+      df[[measure_col]] != undefined_cell &
+      nzchar(df[[.CAT_KEY_CI_LL]]) &
+      df[[.CAT_KEY_CI_LL]] != undefined_cell
     # Same disambiguation rule as every other family: under a comma
     # decimal mark the bound separator becomes "; " (this site used to
     # hardcode ", ", printing `0,45 [0,31, 0,59]` -- the ambiguity

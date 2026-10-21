@@ -239,7 +239,11 @@ test_that("the clipboard payload carries the title, the grid and the note", {
   expect_true(paste0(strrep("_", 6), "Female") %in% cells)
   # Nothing was truncated on the way through the indent surgery.
   expect_false(any(cells %in% c("erall", "x", "ent smoker")))
-  expect_true(any(grepl("not adjusted for one another", lines, fixed = TRUE)))
+  expect_true(any(grepl(
+    "without controlling for the other variables",
+    lines,
+    fixed = TRUE
+  )))
 })
 
 test_that("every engine agrees with the console on the numbers", {

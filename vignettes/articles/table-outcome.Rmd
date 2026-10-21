@@ -225,9 +225,10 @@ refuses no numeric grouping.
 
 Labelled data deserves a word here, because importing from SPSS or
 Stata is a central use of this package. A `haven_labelled` column used
-as `select` shows its numeric CODES, not its value labels — the same as in
-`table_continuous(by = )`. Convert it first (`haven::as_factor()`) to
-get the labels in the stub.
+as `select` names its levels by their value labels (`[1] Women`), in
+the order of its codes, as a labelled `by` names its groups in
+`table_continuous()` and as the rows of a labelled variable read in
+`table_categorical()`.
 
 The order of the blocks is the order you write, and the order of the
 levels inside a block is the variable's own: a factor keeps its

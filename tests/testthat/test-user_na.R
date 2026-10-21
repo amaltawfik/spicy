@@ -386,7 +386,8 @@ test_that("table_categorical() grouped honors user_na in by", {
     output = "data.frame"
   )
   expect_false("(Missing) n" %in% names(tc_drop))
-  expect_false("9 n" %in% names(tc_drop))
+  # The groups are named by their value labels.
+  expect_false("[9] Ref n" %in% names(tc_drop))
 
   tc_off <- table_categorical(
     d,
@@ -395,7 +396,7 @@ test_that("table_categorical() grouped honors user_na in by", {
     user_na = FALSE,
     output = "data.frame"
   )
-  expect_true("9 n" %in% names(tc_off))
+  expect_true("[9] Ref n" %in% names(tc_off))
 })
 
 test_that("table_continuous() excludes declared missing from summaries", {
@@ -436,7 +437,8 @@ test_that("table_continuous() declared-missing by values form no group", {
   tc <- suppressWarnings(
     table_continuous(da, select = a, by = byv, output = "data.frame")
   )
-  expect_equal(unique(tc$group), c("1", "2"))
+  # The observed codes, named by their value labels.
+  expect_equal(unique(tc$group), c("[1] M", "[2] F"))
 
   tc_keep <- table_continuous(
     da,

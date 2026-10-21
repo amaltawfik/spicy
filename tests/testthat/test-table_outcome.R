@@ -26,7 +26,11 @@ test_that("the structure notes say what the table does not adjust", {
   notes <- spicy:::.outcome_structure_notes("Body mass index", TRUE, TRUE)
   expect_length(notes, 2L)
   expect_match(notes[[1L]], "Body mass index", fixed = TRUE)
-  expect_match(notes[[1L]], "not adjusted for one another", fixed = TRUE)
+  expect_match(
+    notes[[1L]],
+    "without controlling for the other variables",
+    fixed = TRUE
+  )
   expect_match(notes[[2L]], "whole analytic sample", fixed = TRUE)
 
   # Owed only when there is something to disclose.
@@ -430,7 +434,11 @@ test_that("the note discloses the comparison, the missing and the shape", {
   expect_match(note, "Welch one-way ANOVA (region)", fixed = TRUE)
   expect_match(note, "Welch t-test (sex)", fixed = TRUE)
   # The honest sentence about what the table does NOT do.
-  expect_match(note, "not adjusted for one another", fixed = TRUE)
+  expect_match(
+    note,
+    "without controlling for the other variables",
+    fixed = TRUE
+  )
   expect_match(note, "Overall = the whole analytic sample", fixed = TRUE)
 })
 
@@ -661,8 +669,8 @@ test_that("the block compares the levels with data, and the note says why", {
     paste(
       "Note. No data for y in high.",
       "Group comparison: Welch t-test.",
-      "Each block compares y across the levels of one variable;",
-      "blocks are not adjusted for one another.",
+      "Each block compares y across the levels of one variable,",
+      "without controlling for the other variables.",
       "Overall = the whole analytic sample.",
       "CI = confidence interval; LL = lower limit; UL = upper limit."
     )
@@ -714,8 +722,8 @@ test_that("a block with one level of data has no test, and names none", {
     paste(
       "Note. No data for y in b.",
       "Group comparison: Welch t-test.",
-      "Each block compares y across the levels of one variable;",
-      "blocks are not adjusted for one another.",
+      "Each block compares y across the levels of one variable,",
+      "without controlling for the other variables.",
       "Overall = the whole analytic sample.",
       "CI = confidence interval; LL = lower limit; UL = upper limit."
     )
@@ -1204,6 +1212,26 @@ test_that("p_adjust: the adjustment follows the tests, before the blocks", {
     ),
     fixed = TRUE
   )
+  # The adjustment runs across the blocks, so the sentence on the blocks
+  # says nothing of an adjustment: it said "blocks are not adjusted for
+  # one another" beside the sentence that adjusted them together.
+  blocks <- sub("^.*(Each block[^.]*\\.).*$", "\\1", note)
+  expect_identical(
+    blocks,
+    "Each block compares mpg across the levels of one variable, without controlling for the other variables."
+  )
+  expect_false(grepl("adjusted for one another", note, fixed = TRUE))
+  withr::local_options(spicy.language = "fr")
+  fr <- attr(
+    table_outcome(mtcars, mpg, select = c(am, vs, cyl), p_adjust = "BH"),
+    "note"
+  )
+  expect_match(
+    fr,
+    "Chaque bloc compare mpg entre les modalit\u00E9s d'une variable, sans tenir compte des autres variables.",
+    fixed = TRUE
+  )
+  expect_false(grepl("ajust\u00E9s les uns", fr, fixed = TRUE))
 })
 
 test_that("p_adjust needs the p-value column", {
@@ -1442,6 +1470,40 @@ test_that("a block with a residual variance of zero draws no inference", {
   expect_identical(
     shown[[names(tok)[tok == "m"]]][s$body$.row_role == "level"],
     c("4.00", "6.00")
+  )
+})
+
+test_that("a block constant within its levels keeps its rank test", {
+  # A rank test reads the order of the values, not their variance: valid
+  # there, as in 0.13.0. The zero-variance refusal took it too.
+  two <- data.frame(
+    v = c(rep(4, 5), rep(6, 5)),
+    g = factor(rep(c("a", "b"), each = 5))
+  )
+  three <- data.frame(
+    v = c(rep(4, 5), rep(6, 5), rep(9, 5)),
+    g = factor(rep(c("a", "b", "c"), each = 5))
+  )
+  rank_p <- function(d) {
+    out <- expect_no_warning(
+      table_outcome(d, v, select = g, test = "nonparametric", output = "long")
+    )
+    out$p.value[out$.row_role == "factor_header"]
+  }
+  expect_equal(
+    rank_p(two),
+    stats::wilcox.test(v ~ g, data = two)$p.value,
+    tolerance = 1e-12
+  )
+  expect_equal(
+    rank_p(three),
+    stats::kruskal.test(v ~ g, data = three)$p.value,
+    tolerance = 1e-12
+  )
+  # The comparison of means is still refused.
+  expect_warning(
+    table_outcome(two, v, select = g, output = "long"),
+    class = "spicy_undefined_stat"
   )
 })
 

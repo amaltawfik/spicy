@@ -297,9 +297,10 @@ test_that("table_categorical() discloses declared missing under drop_na", {
       res <- table_categorical(d, select = v1, by = g, drop_na = TRUE)
     )
   )
-  expect_identical(
-    attr(res, "missing_note"),
-    "Declared missing values removed: v1 (2)."
+  expect_match(
+    attr(res, "note"),
+    "Note. Declared missing values removed: v1 (2).",
+    fixed = TRUE
   )
   # The displayed table: a header row, then one row per level shown.
   df <- as.data.frame(res)

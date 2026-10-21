@@ -338,7 +338,11 @@ order_continuous_svy_tokens <- function(tokens) {
     return(list(row = empty, label = NA_character_, k = k, refused = FALSE))
   }
   # Each domain constant on its own value: the residual variance is zero,
-  # and the design-based t is rounding noise (2.4e15 for two groups).
+  # and the design-based t is rounding noise (2.4e15 for two groups). The
+  # design-based rank test is refused as well, unlike the rank tests of
+  # `table_continuous()`: `svyranktest()` is a design-based t (or F) on
+  # the ranks, which are constant within the domains too (t = 8.2e15 on
+  # two domains of five at 4 and 6).
   if (.within_groups_constant(sub$variables[[var]], gv)) {
     spicy_warn(
       c(
@@ -546,7 +550,10 @@ order_continuous_svy_tokens <- function(tokens) {
 #' like `"welch"`. A variable with no variance, or whose domains are each
 #' constant on their own value (a residual variance of zero), has no
 #' comparison, with a warning (class `spicy_undefined_stat`), where survey
-#' would still return a p-value. Its test cells show the undefined mark,
+#' would still return a p-value. Under `test = "nonparametric"` too, unlike
+#' [table_continuous()]: `survey::svyranktest()` is a design-based test of
+#' the ranks, which are then constant within the domains as well. Its
+#' test cells show the undefined mark,
 #' as do those of any comparison that cannot run (too few observations in
 #' a domain, a test refused under weights that change sign).
 #' The note names the comparison of each variable.
@@ -968,6 +975,11 @@ table_continuous_svy <- function(
     declared[[nm]] <- if (user_na) .user_na_mask(col) else FALSE
     n_user <- sum(declared[[nm]])
     col <- if (isTRUE(user_na)) .user_na_to_na(col) else .user_na_zap(col)
+    # A labelled `by` names its domains by their value labels, as the
+    # rows of a labelled variable name its levels (`.group_display()`).
+    if (identical(nm, group_col_name)) {
+      col <- .group_display(col)
+    }
     design$variables[[nm]] <- col
     if (n_user > 0L) {
       user_na_dropped[[nm]] <- n_user

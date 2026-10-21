@@ -115,6 +115,31 @@ test_that("table_categorical accepts weights as an unquoted column name", {
   expect_equal(out_bare$pct, out_char$pct)
 })
 
+test_that("NA weights are said once, whatever the number of variables", {
+  d <- sochealth
+  d$weight[3L] <- NA
+  count_warnings <- function(...) {
+    n <- 0L
+    withCallingHandlers(
+      table_categorical(d, weights = weight, ...),
+      spicy_dropped_na = function(w) {
+        n <<- n + 1L
+        invokeRestart("muffleWarning")
+      }
+    )
+    n
+  }
+  # It was raised by every internal cross_tab() or freq() call: three
+  # times for one variable under `by`, five for two.
+  expect_identical(count_warnings(select = smoking, by = sex), 1L)
+  expect_identical(count_warnings(select = c(smoking, education), by = sex), 1L)
+  expect_identical(count_warnings(select = c(smoking, education)), 1L)
+  expect_warning(
+    table_categorical(d, select = smoking, weights = weight),
+    class = "spicy_dropped_na"
+  )
+})
+
 test_that("table_categorical accepts tidyselect-style select and unquoted by", {
   df <- data.frame(
     grp = c("A", "A", "B", "B"),
@@ -844,6 +869,32 @@ test_that("table_categorical rejects unknown `assoc_measure` values and bad keys
       assoc_measure = c(no_such_var = "phi")
     ),
     "keys not found in `select`"
+  )
+})
+
+test_that("the assoc_measure errors name table_categorical()", {
+  called <- function(class, ...) {
+    err <- expect_error(
+      table_categorical(sochealth, by = sex, ...),
+      class = class
+    )
+    rlang::call_name(conditionCall(err))
+  }
+  expect_identical(
+    called("spicy_invalid_input", select = smoking, assoc_measure = "zzz"),
+    "table_categorical"
+  )
+  expect_identical(
+    called(
+      "spicy_invalid_input",
+      select = smoking,
+      assoc_measure = list(smoking = "zzz")
+    ),
+    "table_categorical"
+  )
+  expect_identical(
+    called("spicy_unsupported", select = education, assoc_measure = "phi"),
+    "table_categorical"
   )
 })
 
@@ -3201,13 +3252,14 @@ test_that("the by title and the missing-values notes follow labels", {
   }
   check <- function(out, by, row) {
     expect_identical(attr(out, "group_label"), by)
-    expect_identical(
-      attr(out, "missing_note"),
+    expect_match(
+      attr(out, "note"),
       sprintf(
-        "Missing values removed: %s (25). Rows with missing %s removed: 40.",
+        "Note. Missing values removed: %s (25). Rows with missing %s removed: 40.",
         row,
         by
-      )
+      ),
+      fixed = TRUE
     )
   }
   check(build(), "sex_na", "smoking")
@@ -3440,22 +3492,25 @@ test_that("default drop_na = FALSE shows the (Missing) level", {
   df <- as.data.frame(attr(out, "display_df"))
   expect_true(any(grepl("(Missing)", df$Variable, fixed = TRUE)))
   # No disclosure note under the default: nothing was removed.
-  expect_null(attr(out, "missing_note"))
+  expect_null(attr(out, "note"))
 })
 
-test_that("drop_na = TRUE discloses removals in the missing_note", {
+test_that("drop_na = TRUE discloses removals in the note", {
   out <- table_categorical(
     sochealth,
     select = c(income_group, smoking),
     labels = TRUE,
     drop_na = TRUE
   )
-  note <- attr(out, "missing_note")
+  note <- attr(out, "note")
   # Each variable is named by its row label (here its `label` attribute).
   expect_identical(
     note,
-    "Missing values removed: Household income group (18), Current smoker (25)."
+    "Note. Missing values removed: Household income group (18), Current smoker (25)."
   )
+  # The whole note is `note`: the part it was assembled from is no
+  # attribute of its own any more.
+  expect_null(attr(out, "missing_note"))
   printed <- paste(
     capture.output(print(out)),
     collapse = "
@@ -3473,8 +3528,8 @@ test_that("drop_na = TRUE discloses removals in the missing_note", {
     drop_na = TRUE
   )
   expect_identical(
-    attr(relabelled, "missing_note"),
-    "Missing values removed: Smoker (25)."
+    attr(relabelled, "note"),
+    "Note. Missing values removed: Smoker (25)."
   )
 })
 
@@ -3497,10 +3552,12 @@ test_that("drop_na = TRUE with by-NAs discloses both removals", {
   d$sex_na <- d$sex
   d$sex_na[1:40] <- NA
   out <- table_categorical(d, select = smoking, by = sex_na, drop_na = TRUE)
-  expect_identical(
-    attr(out, "missing_note"),
-    "Missing values removed: smoking (25). Rows with missing sex_na removed: 40."
+  expect_match(
+    attr(out, "note"),
+    "Note. Missing values removed: smoking (25). Rows with missing sex_na removed: 40.",
+    fixed = TRUE
   )
+  expect_null(attr(out, "missing_note"))
 })
 
 test_that("association stats ignore the (Missing) display level", {
@@ -3534,7 +3591,7 @@ test_that("drop_na = TRUE disclosure note names the dropped counts", {
     grp = factor(c("A", "B", "A", NA, "B"))
   )
   out <- table_categorical(df, select = v1, drop_na = TRUE, output = "default")
-  expect_identical(attr(out, "missing_note"), "Missing values removed: v1 (2).")
+  expect_identical(attr(out, "note"), "Note. Missing values removed: v1 (2).")
   printed <- paste(capture.output(print(out)), collapse = "\n")
   expect_match(printed, "Missing values removed: v1 (2).", fixed = TRUE)
 
@@ -3545,7 +3602,7 @@ test_that("drop_na = TRUE disclosure note names the dropped counts", {
     drop_na = TRUE,
     output = "default"
   )
-  note <- attr(out_by, "missing_note")
+  note <- attr(out_by, "note")
   expect_match(note, "Missing values removed: v1 (2).", fixed = TRUE)
   expect_match(note, "Rows with missing grp removed: 1.", fixed = TRUE)
 
@@ -3557,7 +3614,7 @@ test_that("drop_na = TRUE disclosure note names the dropped counts", {
     drop_na = TRUE,
     output = "default"
   )
-  expect_null(attr(out_full, "missing_note"))
+  expect_null(attr(out_full, "note"))
 })
 
 test_that("the note opens with \"Note.\" once, drop_na disclosure first or not", {
@@ -3582,12 +3639,8 @@ test_that("the note opens with \"Note.\" once, drop_na disclosure first or not",
   )
   expect_identical(printed[grepl("Note.", printed, fixed = TRUE)], whole)
   expect_identical(attr(tbl, "note"), whole)
-  # The attributes are the parts, without the prefix; the assembled
-  # note is what every engine carries.
-  expect_identical(
-    attr(tbl, "missing_note"),
-    "Missing values removed: smoking (25)."
-  )
+  # The part attributes go without the prefix; the assembled note is what
+  # every engine carries.
   expect_false(grepl("Note.", attr(tbl, "assoc_note"), fixed = TRUE))
   skip_if_not_installed("gt")
   expect_identical(
@@ -3700,12 +3753,13 @@ test_that("the missing answers of a variable leave out its groups with no data",
     by = education,
     drop_na = TRUE
   )
-  expect_identical(
-    attr(out, "missing_note"),
+  expect_match(
+    attr(out, "note"),
     paste(
-      "Missing values removed: smoking (25), physical_activity (7).",
+      "Note. Missing values removed: smoking (25), physical_activity (7).",
       "No data for physical_activity in Tertiary."
-    )
+    ),
+    fixed = TRUE
   )
   # Under drop_na = FALSE, the `(Missing)` row counts the missing answers,
   # and the group with no data shows the mark there too.
@@ -3734,20 +3788,101 @@ test_that("with fewer than two groups with data, the variable is not compared", 
   gl <- broom::glance(tbl)
   expect_true(is.na(gl$p.value[[2L]]) && is.na(gl$test_type[[2L]]))
   expect_true(is.na(gl$es_value[[2L]]) && is.na(gl$smd_value[[2L]]))
-  # The p cell is blank, not undefined; the SMD cell shows the mark, the
-  # undefined cell of the typed view.
+  # The p, the measure and the SMD cells show the mark, the undefined
+  # cell of the typed view: the comparison applies and cannot run. They
+  # were blank, the cell of a statistic not requested.
+  mark <- spicy:::spicy_str("cell_undefined")
   disp <- attr(tbl, "display_df")
   pa <- disp$Variable == "physical_activity"
-  expect_identical(disp$p[pa], "")
-  expect_identical(disp$SMD[pa], spicy:::spicy_str("cell_undefined"))
+  expect_identical(disp$p[pa], mark)
+  expect_identical(disp$Phi[pa], mark)
+  expect_identical(disp$SMD[pa], mark)
   s <- as_structured(tbl)
-  expect_identical(s$cell_status$SMD[pa], "undefined")
-  expect_identical(s$cell_status$SMD[disp$Variable == "smoking"], "")
+  for (nm in c("p", "Phi", "SMD")) {
+    expect_identical(s$cell_status[[nm]][pa], "undefined", info = nm)
+    expect_identical(
+      s$cell_status[[nm]][disp$Variable == "smoking"],
+      "",
+      info = nm
+    )
+  }
+  expect_error(
+    inline(tbl, physical_activity, column = "p"),
+    class = "spicy_invalid_input"
+  )
   # The note names no test for it: alone, the table names none.
   alone <- table_categorical(d, physical_activity, by = sex)
   expect_identical(
     attr(alone, "note"),
     "Note. No data for physical_activity in Male."
+  )
+})
+
+test_that("a variable with nothing to compare has undefined cells and no measure in the note", {
+  d <- as.data.frame(sochealth)
+  d$smoking[d$sex == "Male"] <- NA
+  d$constf <- factor("a", levels = c("a", "b"))
+  tbl <- table_categorical(
+    d,
+    c(smoking, constf, education),
+    by = sex,
+    assoc_ci = TRUE
+  )
+  mark <- spicy:::spicy_str("cell_undefined")
+  disp <- attr(tbl, "display_df")
+  s <- as_structured(tbl)
+  untested <- disp$Variable %in% c("smoking", "constf")
+  stat_cols <- c(
+    "p",
+    "Effect size",
+    spicy:::.CAT_KEY_CI_LL,
+    spicy:::.CAT_KEY_CI_UL
+  )
+  for (nm in stat_cols) {
+    expect_identical(disp[[nm]][untested], rep(mark, 2L), info = nm)
+    expect_identical(
+      s$cell_status[[nm]][untested],
+      rep("undefined", 2L),
+      info = nm
+    )
+  }
+  # The tested variable keeps its numbers; the note names the measure of
+  # that variable only (it named "Phi: smoking." and "Cramer's V: constf").
+  expect_false(any(disp$p[disp$Variable == "education"] == mark))
+  expect_match(attr(tbl, "note"), "Cramer's V: education.", fixed = TRUE)
+  expect_false(grepl("Phi", attr(tbl, "note"), fixed = TRUE))
+  expect_false(grepl("constf", attr(tbl, "note"), fixed = TRUE))
+  # The rendered engines keep the mark alone, with no interval beside it.
+  skip_if_not_installed("gt")
+  body <- as.data.frame(
+    table_categorical(
+      d,
+      c(smoking, education),
+      by = sex,
+      assoc_ci = TRUE,
+      output = "gt"
+    )[["_data"]]
+  )
+  expect_false(any(grepl(paste0(mark, " ["), unlist(body), fixed = TRUE)))
+})
+
+test_that("a measure the variable asked none of stays blank", {
+  d <- as.data.frame(sochealth)
+  d$smoking[d$sex == "Male"] <- NA
+  tbl <- table_categorical(
+    d,
+    c(smoking, education, region),
+    by = sex,
+    assoc_measure = c(education = "none")
+  )
+  disp <- attr(tbl, "display_df")
+  s <- as_structured(tbl)
+  edu <- disp$Variable == "education"
+  expect_identical(disp[["Effect size"]][edu], "")
+  expect_identical(s$cell_status[["Effect size"]][edu], "")
+  expect_identical(
+    s$cell_status[["Effect size"]][disp$Variable == "smoking"],
+    "undefined"
   )
 })
 
@@ -3764,12 +3899,13 @@ test_that("the no-data sentence follows the language, the label and the order", 
   )
   # One sentence per set of groups, in the order the rows first meet it:
   # the variables with no data in the same groups share it.
-  expect_identical(
-    attr(out, "missing_note"),
+  expect_match(
+    attr(out, "note"),
     paste(
-      "No data for alcohol and tobacco in Lower secondary.",
+      "Note. No data for alcohol and tobacco in Lower secondary.",
       "No data for Physical activity in Tertiary."
-    )
+    ),
+    fixed = TRUE
   )
   withr::local_options(spicy.language = "fr")
   fr <- attr(table_categorical(d, physical_activity, by = education), "note")
@@ -5857,9 +5993,10 @@ test_that("a label with a comma turns its list in a note to semicolons", {
       "physical_activity); Fisher exact test (smoking)."
     )
   )
-  expect_identical(
-    attr(out, "missing_note"),
-    "Missing values removed: smoking (1); Dentist, past 12 months (2)."
+  expect_match(
+    attr(out, "note"),
+    "Note. Missing values removed: smoking (1); Dentist, past 12 months (2).",
+    fixed = TRUE
   )
   expect_match(
     assoc(),
@@ -5876,12 +6013,13 @@ test_that("a label with a comma turns its list in a note to semicolons", {
       "(smoking)."
     )
   )
-  expect_identical(
-    attr(out, "missing_note"),
+  expect_match(
+    attr(out, "note"),
     paste0(
-      "Valeurs manquantes retir\u00e9es\u00a0: smoking (1)\u00a0; Dentist, ",
+      "Note. Valeurs manquantes retir\u00e9es\u00a0: smoking (1)\u00a0; Dentist, ",
       "past 12 months (2)."
-    )
+    ),
+    fixed = TRUE
   )
   expect_match(
     assoc(),
@@ -5902,9 +6040,10 @@ test_that("labels without a comma keep the comma join in the notes", {
       "months, physical_activity); Fisher exact test (smoking)."
     )
   )
-  expect_identical(
-    attr(out, "missing_note"),
-    "Missing values removed: smoking (1), Dentist in the past 12 months (2)."
+  expect_match(
+    attr(out, "note"),
+    "Note. Missing values removed: smoking (1), Dentist in the past 12 months (2).",
+    fixed = TRUE
   )
   withr::local_options(spicy.language = "fr")
   out <- .comma_label_tbl("Dentist in the past 12 months")
@@ -5916,12 +6055,13 @@ test_that("labels without a comma keep the comma join in the notes", {
       "(smoking)."
     )
   )
-  expect_identical(
-    attr(out, "missing_note"),
+  expect_match(
+    attr(out, "note"),
     paste0(
-      "Valeurs manquantes retir\u00e9es\u00a0: smoking (1), Dentist in the ",
+      "Note. Valeurs manquantes retir\u00e9es\u00a0: smoking (1), Dentist in the ",
       "past 12 months (2)."
-    )
+    ),
+    fixed = TRUE
   )
 })
 

@@ -339,7 +339,8 @@ as_regression_frame.glm <- function(fit, ...) {
     random_effects = empty_random_effects(),
     fit_stats = fit_stats,
     vcov_kind = vcov_kind,
-    vcov_label = vcov_label %||% .vcov_label_from_kind(vcov_kind, is_glm),
+    vcov_label = vcov_label %||%
+      .vcov_label_from_kind(vcov_kind, is_glm, extras),
     ci_level = as.numeric(ci_level),
     ci_method = ci_method,
     supports = supports,
@@ -504,28 +505,21 @@ as_regression_frame.glm <- function(fit, ...) {
 }
 
 
-# Maps the internal vcov_kind string to a human-readable footer label.
-# Falls back to the kind name when unknown. The lookup is keyed on the
-# CANON, so the model-based default needs one row rather than one per
-# spelling.
-.vcov_label_from_kind <- function(vcov_kind, is_glm = FALSE) {
-  labels <- c(
-    model = if (is_glm) "Model-based (asymptotic)" else "OLS",
-    HC0 = "HC0 heteroskedasticity-consistent",
-    HC1 = "HC1 heteroskedasticity-consistent",
-    HC2 = "HC2 heteroskedasticity-consistent",
-    HC3 = "HC3 heteroskedasticity-consistent",
-    HC4 = "HC4 heteroskedasticity-consistent",
-    HC5 = "HC5 heteroskedasticity-consistent",
-    CR0 = "CR0 cluster-robust",
-    CR1 = "CR1 cluster-robust",
-    CR2 = "CR2 cluster-robust",
-    CR3 = "CR3 cluster-robust",
-    bootstrap = "Bootstrap",
-    jackknife = "Jackknife"
-  )
-  out <- labels[.canon_vcov_kind(vcov_kind)]
-  if (is.na(out)) vcov_kind else unname(out)
+# The footer label of the variance estimator of an lm / glm fit, in the
+# language in force: the derivation of `format_vcov_label_from_frame()`
+# for those two classes, through the same registry keys, so that a class
+# the lm / glm frame serves under its own name (`MASS::glm.nb()`, whose
+# footer reads this label) reads as a glm does, in every language.
+# `extras` carries the cluster name and the valid bootstrap replicates
+# the label names. An unknown kind falls back to its own name.
+.vcov_label_from_kind <- function(vcov_kind, is_glm = FALSE, extras = list()) {
+  format_vcov_label_from_frame(list(
+    info = list(
+      class = if (is_glm) "glm" else "lm",
+      vcov_kind = vcov_kind,
+      extras = extras
+    )
+  ))
 }
 
 

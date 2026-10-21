@@ -939,11 +939,6 @@ marked_keys <- rows$key[rows$status %in% MARKED]
     text = "14 characters over a column the English heads with 2, and now the same string as `header_effect_size`. Deliberate per its comment in R/i18n_fr.R (no established French abbreviation); listed for the width only."
   ),
   list(
-    kind = "sibling",
-    keys = c(header_ci_lower = "bc59de84", header_ci_upper = "804c494e"),
-    text = "Two spellings of the same bounds: \"IC inférieur\" / \"IC supérieur\" here, \"LI\" / \"LS\" under a spanner (`header_ci_ll`, `header_ci_ul`). \"IC inférieur\" also reads as a lower interval rather than the lower bound of one. Candidate: \"Limite inf. IC\" / \"Limite sup. IC\"."
-  ),
-  list(
     kind = "typography, sibling",
     keys = c(header_median = "bddee140"),
     text = "A French abbreviation by truncation takes a period, as `header_freq` (\"Eff.\") and `fitstat_max_cluster_size` (\"max.\") do; \"Méd\" has none, nor do the English fallbacks \"Min\" / \"Max\". Candidate: \"Méd.\" (and French entries \"Min.\" / \"Max.\" if the rule is applied)."
@@ -1066,11 +1061,6 @@ marked_keys <- rows$key[rows$status %in% MARKED]
     text = "\"%s censurée\" makes a distribution identifier (\"poisson\", \"negbin\") a feminine noun with nothing before it. Candidate: \"loi %s censurée à droite\"."
   ),
   list(
-    kind = "ambiguity",
-    keys = c(note_gloss_se = "4196b919"),
-    text = "\"fondée\" can attach to \"moyenne\". Candidate: \"erreur standard de la moyenne, fondée sur le plan de sondage\"."
-  ),
-  list(
     kind = "awkward",
     keys = c(
       test_design_wald_chisq = "8db2bd23",
@@ -1095,12 +1085,7 @@ marked_keys <- rows$key[rows$status %in% MARKED]
   ),
   list(
     kind = "terminology",
-    keys = c(note_abbrev_rr = "12d9e9ea"),
-    text = "French epidemiology names RR \"risque relatif\"; \"rapport de risques\" is literal."
-  ),
-  list(
-    kind = "terminology",
-    keys = c(note_abbrev_or = "9a4ae0ac"),
+    keys = c(abbrev_or = "26130bf2"),
     text = "\"rapport de cotes\" is the term recommended in Québec; medical writing from France mostly keeps \"odds ratio\", the ground on which decision 38 kept \"hazard ratio\"."
   ),
   list(
@@ -1429,7 +1414,7 @@ out <- c(
   "",
   "* `row_overall` / `note_outcome_overall`: the note quotes the row.",
   "* `header_effect_size` / `header_effect_size_short`: one French string for both, by choice.",
-  "* The standard-error vocabulary: `header_se` (\"ES\"), `note_gloss_se`, `note_std_errors_single`, `note_std_errors_multi`, `note_abbrev_mcse`, `note_estimand_method`, `note_estimand_method_stratified` all say \"erreur(s) standard(s)\".",
+  "* The standard-error vocabulary: `header_se` (\"ES\"), `abbrev_se`, `abbrev_se_design`, `abbrev_mcse`, `note_std_errors_single`, `note_estimand_method`, `note_estimand_method_stratified` all say \"erreur(s) standard(s)\".",
   "* `note_ci_posterior_mixed` / `label_model_name`: the note names the spanner.",
   ""
 )

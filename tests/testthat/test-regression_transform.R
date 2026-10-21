@@ -280,6 +280,21 @@ test_that("table_regression – keep / drop validation: empty / NA / non-charact
   expect_error(table_regression(fit, keep = 1L), class = "spicy_invalid_input")
 })
 
+test_that("table_regression – a keep / drop pattern that is no regular expression", {
+  fit <- lm(mpg ~ wt, data = mt)
+  err <- expect_error(
+    table_regression(fit, keep = "("),
+    class = "spicy_invalid_input"
+  )
+  expect_identical(rlang::call_name(conditionCall(err)), "table_regression")
+  expect_error(
+    table_regression(fit, drop = c("^wt$", "[")),
+    class = "spicy_invalid_input"
+  )
+  # An escaped parenthesis is a pattern.
+  expect_no_error(table_regression(fit, keep = "^wt\\(?"))
+})
+
 
 # ============================================================================
 # Phase 3 matrix – rd-core:p-adjust-methods-default

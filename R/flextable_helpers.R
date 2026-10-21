@@ -55,8 +55,8 @@
 #    `gt::as_raw_html()`, `as_latex()`, `as_word()`, a non-interactive
 #    `print()`. Without it those deliverables shipped a TITLED table
 #    stripped of the disclosure the console prints -- which missing
-#    values were removed, which test each block ran, that the blocks
-#    are not adjusted for one another. The twin of the title hole, on
+#    values were removed, which test each block ran, that no block
+#    controls for the other variables. The twin of the title hole, on
 #    the same engine.
 # 2. The `spicy_gt` tag routes it through `print.spicy_gt()` /
 #    `knit_print.spicy_gt()`, which inject it as a `<div>` OUTSIDE the

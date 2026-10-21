@@ -83,9 +83,11 @@ level ordering (e.g. via \code{\link[forcats:fct_relevel]{forcats::fct_relevel()
 that order, since \code{FALSE < TRUE}). The reference level is \code{"FALSE"},
 so a binary contrast displays as \code{Delta (TRUE - FALSE)}.
 \item \strong{haven labelled with value labels} (an SPSS / Stata import):
-treated as categorical over the raw codes, in ascending code
-order (the reference level is the lowest code; the model needs
-a fixed level order), the order in which \code{\link[=table_continuous]{table_continuous()}} and
+treated as categorical, one level per observed code named by its
+value label (\code{"[1] Women"}, as the rows of a labelled variable of
+\code{\link[=table_categorical]{table_categorical()}} are), in ascending code order (the reference
+level is the lowest code; the model needs a fixed level order),
+the order in which \code{\link[=table_continuous]{table_continuous()}} and
 \code{\link[=table_categorical]{table_categorical()}} display the same groups. A
 labelled vector without value labels is treated as a continuous
 regressor. Declared missing values follow \code{user_na} as usual.
@@ -309,7 +311,10 @@ wide and rendered outputs. Defaults to \code{FALSE}.}
 \item{p_value}{Logical or \code{NULL}. If \code{TRUE}, includes a \code{p} column in
 the wide and rendered outputs. \code{NULL} (the default) shows it whenever
 \code{by} is supplied, as in the rest of the family; \code{by} is required
-here, so \code{NULL} means \code{TRUE}. Pass \code{p_value = FALSE} to suppress it.}
+here, so \code{NULL} means \code{TRUE}. Pass \code{p_value = FALSE} to suppress it:
+\code{output = "long"}, \code{tidy()} and \code{glance()} then keep their columns
+with \code{p.value} \code{NA}, and \code{test_type}, \code{statistic}, \code{df} and
+\code{df.residual} too unless \code{statistic = TRUE}.}
 
 \item{show_n}{Logical. If \code{TRUE}, includes an unweighted \code{n} column in the
 wide and rendered outputs. Defaults to \code{TRUE}.}

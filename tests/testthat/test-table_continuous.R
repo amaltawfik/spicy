@@ -4055,20 +4055,19 @@ test_that("a degenerate variable degrades per-variable, others survive", {
   tt <- stats::t.test(ok ~ g, data = d)
   expect_equal(ok_rows$p.value[1], tt$p.value, tolerance = 1e-12)
   # Each group is constant on its own value, a residual variance of zero:
-  # the rank test is refused as well, whichever test is chosen.
-  expect_warning(
-    np <- table_continuous(
-      d,
-      select = cst,
-      by = g,
-      test = "nonparametric",
-      output = "long"
-    ),
-    "`cst` (the residual variance is zero)",
-    fixed = TRUE,
-    class = "spicy_undefined_stat"
+  # the comparison of means is refused, the rank test runs.
+  np <- table_continuous(
+    d,
+    select = cst,
+    by = g,
+    test = "nonparametric",
+    output = "long"
   )
-  expect_true(all(is.na(np$p.value)))
+  expect_equal(
+    np$p.value[[1L]],
+    stats::wilcox.test(cst ~ g, data = d)$p.value,
+    tolerance = 1e-12
+  )
 })
 
 test_that("an undefined effect size degrades to NA with a classed warning", {
@@ -5362,8 +5361,8 @@ test_that("every comparison that cannot run is undefined, its warnings unchanged
 
 test_that("a residual variance of zero draws no inference, with one warning", {
   # Each group constant on its own value: t.test() stopped, Hedges' g was
-  # infinite, and the rank and ANOVA tests answered on data that leave
-  # nothing to infer. Decided on the data, for every test.
+  # infinite, and the ANOVA answered on data that leave nothing to infer.
+  # Decided on the data, for every comparison of means.
   mark <- spicy_str("cell_undefined")
   two <- data.frame(
     v = c(4, 4, 4, 4, 6, 6, 6, 6),
@@ -5376,8 +5375,8 @@ test_that("a residual variance of zero draws no inference, with one warning", {
   cases <- list(
     welch = list(d = two, test = "welch"),
     student = list(d = two, test = "student"),
-    rank = list(d = two, test = "nonparametric"),
-    anova = list(d = three, test = "welch")
+    anova = list(d = three, test = "welch"),
+    anova_student = list(d = three, test = "student")
   )
   for (case in names(cases)) {
     warned <- list()
@@ -5418,6 +5417,49 @@ test_that("a residual variance of zero draws no inference, with one warning", {
       info = case
     )
   }
+})
+
+test_that("the rank tests run on groups each constant on their own value", {
+  # A rank test reads the order of the values, not their variance: valid
+  # there, as in 0.13.0. The zero-variance refusal took it too.
+  two <- data.frame(
+    v = c(rep(4, 5), rep(6, 5)),
+    g = factor(rep(c("a", "b"), each = 5))
+  )
+  three <- data.frame(
+    v = c(rep(4, 5), rep(6, 5), rep(9, 5)),
+    g = factor(rep(c("a", "b", "c"), each = 5))
+  )
+  rank_p <- function(d, ...) {
+    out <- expect_no_warning(
+      table_continuous(d, select = v, by = g, output = "long", ...)
+    )
+    out$p.value[[1L]]
+  }
+  wil <- stats::wilcox.test(v ~ g, data = two)$p.value
+  expect_equal(rank_p(two, test = "nonparametric"), wil, tolerance = 1e-12)
+  expect_identical(round(wil, 3), 0.008)
+  expect_equal(
+    rank_p(three, test = "nonparametric"),
+    stats::kruskal.test(v ~ g, data = three)$p.value,
+    tolerance = 1e-12
+  )
+  # So does the rank test a median display chooses.
+  expect_equal(
+    rank_p(two, show_columns = c("med", "q1", "q3", "n")),
+    wil,
+    tolerance = 1e-12
+  )
+  # The rank-biserial correlation is defined there: complete separation.
+  es <- table_continuous(
+    two,
+    select = v,
+    by = g,
+    test = "nonparametric",
+    effect_size = "auto",
+    output = "long"
+  )
+  expect_equal(abs(es$es_value[[1L]]), 1, tolerance = 1e-12)
 })
 
 test_that("the note never names a test that failed", {

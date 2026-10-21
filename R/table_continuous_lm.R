@@ -62,9 +62,11 @@
 #'     that order, since `FALSE < TRUE`). The reference level is `"FALSE"`,
 #'     so a binary contrast displays as `Delta (TRUE - FALSE)`.
 #'   - **haven labelled with value labels** (an SPSS / Stata import):
-#'     treated as categorical over the raw codes, in ascending code
-#'     order (the reference level is the lowest code; the model needs
-#'     a fixed level order), the order in which [table_continuous()] and
+#'     treated as categorical, one level per observed code named by its
+#'     value label (`"[1] Women"`, as the rows of a labelled variable of
+#'     [table_categorical()] are), in ascending code order (the reference
+#'     level is the lowest code; the model needs a fixed level order),
+#'     the order in which [table_continuous()] and
 #'     [table_categorical()] display the same groups. A
 #'     labelled vector without value labels is treated as a continuous
 #'     regressor. Declared missing values follow `user_na` as usual.
@@ -267,7 +269,10 @@
 #' @param p_value Logical or `NULL`. If `TRUE`, includes a `p` column in
 #'   the wide and rendered outputs. `NULL` (the default) shows it whenever
 #'   `by` is supplied, as in the rest of the family; `by` is required
-#'   here, so `NULL` means `TRUE`. Pass `p_value = FALSE` to suppress it.
+#'   here, so `NULL` means `TRUE`. Pass `p_value = FALSE` to suppress it:
+#'   `output = "long"`, `tidy()` and `glance()` then keep their columns
+#'   with `p.value` `NA`, and `test_type`, `statistic`, `df` and
+#'   `df.residual` too unless `statistic = TRUE`.
 #' @param show_n Logical. If `TRUE`, includes an unweighted `n` column in the
 #'   wide and rendered outputs. Defaults to `TRUE`.
 #' @param show_weighted_n Logical. If `TRUE` and `weights` is supplied,
@@ -1273,23 +1278,16 @@ table_continuous_lm <- function(
   # A haven labelled vector with value labels is the categorical
   # signal of an SPSS / Stata import, and the sibling tables
   # (table_continuous(), table_categorical()) already group by such
-  # columns. Convert it to a factor over the raw codes so it takes
-  # the categorical path instead of silently fitting a slope on the
-  # codes. Levels are in ascending CODE order (factor() default; the
-  # model needs a fixed order and the lowest code is the natural
-  # reference), the order in which the sibling tables display the same
-  # groups (`.group_levels()`). A labelled vector without value labels stays
-  # continuous. `resolve_user_na()` has already applied the `user_na`
-  # contract, so declared-missing codes are NA (default) or ordinary
-  # values (user_na = FALSE) here.
-  if (
-    inherits(by_vector, "haven_labelled") &&
-      length(attr(by_vector, "labels", exact = TRUE)) > 0L
-  ) {
-    by_codes <- unclass(by_vector)
-    attributes(by_codes) <- NULL
-    by_vector <- factor(by_codes)
-  }
+  # columns. Convert it to a factor so it takes the categorical path
+  # instead of silently fitting a slope on the codes: its groups are
+  # named by their value labels ("[code] label"), as in the sibling
+  # tables, in ascending CODE order (the model needs a fixed order and
+  # the lowest code is the natural reference; `.group_display()`). A
+  # labelled vector without value labels stays continuous.
+  # `resolve_user_na()` has already applied the `user_na` contract, so
+  # declared-missing codes are NA (default) or ordinary values
+  # (user_na = FALSE) here.
+  by_vector <- .group_display(by_vector)
   if (!is_supported_lm_predictor(by_vector)) {
     spicy_abort(
       "`by` must be numeric, logical, character, or factor.",
@@ -2317,6 +2315,27 @@ fit_categorical_predictor_lm_rows <- function(
     # and no warning repeats it.
     no_data_cause <- length(by_levels) >= 2L &&
       length(setdiff(by_levels, no_data)) < 2L
+    # The one level with data keeps its mean, its n and the outcome's n:
+    # only the cells of the levels with no data and the comparison are
+    # undefined.
+    if (no_data_cause && nlevels(x) == 1L) {
+      return(.tclm_one_level_rows(
+        y,
+        x,
+        covariates = covariates,
+        weights = weights,
+        cluster = cluster,
+        outcome_name = outcome_name,
+        outcome_label = outcome_label,
+        predictor_label = predictor_label,
+        vcov_type = vcov_type,
+        ci_level = ci_level,
+        effect_size = effect_size,
+        boot_n = boot_n,
+        adjustment = adjustment,
+        by_levels = by_levels
+      ))
+    }
     if (!no_data_cause) {
       spicy_warn(
         c(
@@ -2620,6 +2639,86 @@ fit_categorical_predictor_lm_rows <- function(
     degrade_saturated_lm_rows(out, fit, outcome_name),
     by_levels
   )
+}
+
+# An outcome with data in one level of a categorical `by` only, the other
+# levels holding no observed value (`no_data`, a question not asked
+# there). Nothing is compared, yet the mean of that level is estimated as
+# its cell asks: by the model of the one level (`y ~ 1`, or `y ~
+# covariates`), under the variance estimator and the covariate adjustment
+# the call asked for, as the fit of two levels or more gives every level
+# its mean (`build_emmean_avg_row()`). The contrast, the test, the effect
+# size and R^2 stay NA, shown undefined; `n` is the outcome's, the rows of
+# that level. With one observation the mean has no standard error.
+.tclm_one_level_rows <- function(
+  y,
+  x,
+  covariates,
+  weights,
+  cluster,
+  outcome_name,
+  outcome_label,
+  predictor_label,
+  vcov_type,
+  ci_level,
+  effect_size,
+  boot_n,
+  adjustment,
+  by_levels
+) {
+  lev <- levels(x)
+  has_covs <- !is.null(covariates) && ncol(covariates) > 0L
+  model_df <- if (has_covs) {
+    cbind(data.frame(y = y), covariates)
+  } else {
+    data.frame(y = y)
+  }
+  rhs <- if (has_covs) backtick_nonsyntactic(names(covariates)) else "1"
+  formula <- stats::reformulate(rhs, response = "y")
+  fit <- if (is.null(weights)) {
+    stats::lm(formula, data = model_df)
+  } else {
+    stats::lm(formula, data = model_df, weights = weights)
+  }
+  avg_row <- build_emmean_avg_row(
+    fit,
+    x_focal_level = lev,
+    x_levels = lev,
+    covariates_observed = covariates,
+    method = adjustment
+  )
+  out <- make_empty_lm_rows(
+    outcome_name,
+    outcome_label,
+    "categorical",
+    predictor_label = predictor_label,
+    levels = lev
+  )
+  out$emmean <- sum(avg_row * stats::coef(fit))
+  df_resid <- stats::df.residual(fit)
+  if (is.finite(df_resid) && df_resid > 0) {
+    vc <- compute_model_vcov(
+      fit,
+      vcov_type,
+      cluster = cluster,
+      weights = weights,
+      boot_n = boot_n
+    )
+    se <- sqrt(sum((avg_row %*% vc) * avg_row))
+    crit <- stats::qt(1 - (1 - ci_level) / 2, df = df_resid)
+    out$emmean_se <- se
+    out$emmean_ci_lower <- out$emmean - crit * se
+    out$emmean_ci_upper <- out$emmean + crit * se
+    out$boot_n_valid <- as.integer(attr(vc, "boot_n_valid") %||% NA_integer_)
+  }
+  out$es_type <- pick_es_type_lm(effect_size)
+  out$n <- length(y)
+  out$weighted_n <- if (is.null(weights)) NA_real_ else sum(weights)
+  out <- .tclm_expand_levels(out, by_levels)
+  # The reference of the table, as the rows of an outcome with no fit
+  # name it: no contrast is estimated.
+  out$reference <- by_levels[[1L]]
+  out
 }
 
 # The rows of an outcome span the levels of the table (`by_levels`), in

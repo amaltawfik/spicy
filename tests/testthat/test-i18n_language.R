@@ -1094,19 +1094,29 @@ test_that("every glmer family names its null model in the language", {
       character(1)
     )
   }
+  # The theta of the negative binomial is a number of the note: two
+  # decimals and the table's decimal mark, as the statistic beside it. It
+  # was lme4's string, four decimals and a point under a comma mark.
+  theta <- lme4::getME(fits[[5L]], "glmer.nb.theta")
   en <- c(
     "complementary log-log regression",
     "log-binomial regression",
     "binomial regression",
     "inverse-gaussian regression",
-    "negative binomial\\([0-9.]+\\) regression"
+    sprintf(
+      "negative binomial\\(%s\\) regression",
+      sub(".", "\\.", formatC(theta, digits = 2, format = "f"), fixed = TRUE)
+    )
   )
   fr <- c(
     "log-log compl\u00E9mentaire",
     "log-binomiale",
     "binomiale",
     "gaussienne inverse",
-    "binomiale n\u00E9gative \\([0-9.]+\\)"
+    sprintf(
+      "binomiale n\u00E9gative \\(%s\\)",
+      formatC(theta, digits = 2, format = "f", decimal.mark = ",")
+    )
   )
   got_en <- lines(".")
   for (i in seq_along(en)) {

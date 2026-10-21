@@ -403,7 +403,7 @@
 
   # -- table_outcome(): the marginal row and the two disclosures ------------
   row_overall = "Ensemble",
-  note_outcome_blocks = "Chaque bloc compare %s entre les modalit\u00E9s d'une variable\u00A0; les blocs ne sont pas ajust\u00E9s les uns sur les autres.",
+  note_outcome_blocks = "Chaque bloc compare %s entre les modalit\u00E9s d'une variable, sans tenir compte des autres variables.",
   note_outcome_overall = "Ensemble = l'\u00E9chantillon d'analyse complet.",
   note_outcome_overall_relabeled = "%s = l'\u00E9chantillon d'analyse complet.",
   note_gloss_med_ci = "%1$s = intervalle de confiance exact de la m\u00E9diane fond\u00E9 sur les statistiques d'ordre (couverture d'au moins %2$s).",

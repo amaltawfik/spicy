@@ -17,19 +17,15 @@
 # Title-prefix bridge rows are marked by their bridge: key.
 key	mark	date	fr_at_mark	note
 title_regression_hierarchical	corrected	2026-10-17	%s — modèles emboîtés<NBSP>: %s	
-note_abbrev_rr	corrected	2026-10-17	RR = risque relatif	
 note_adjusted_for	corrected	2026-10-17	Ajusté sur %s (%s).	
 note_outcome_blocks	corrected	2026-10-17	Chaque bloc compare %s entre les modalités d'une variable<NBSP>; les blocs ne sont pas ajustés les uns sur les autres.	
 note_nested_ml_refit	corrected	2026-10-17	Les statistiques de variation sont calculées à partir de modèles réestimés par maximum de vraisemblance et ne correspondent pas nécessairement aux écarts entre les critères REML affichés.	
-note_abbrev_or	reviewed	2026-10-17	OR = rapport de cotes	
 title_continuous_lm_by	corrected	2026-10-17	Variables dépendantes continues selon %s	
 title_percent_row	corrected	2026-10-17	 (% en ligne)	
 title_percent_column	corrected	2026-10-17	 (% en colonne)	
 title_regression_comparison_dv	corrected	2026-10-17	%s — comparaison de modèles<NBSP>: %s	
 title_regression_comparison	corrected	2026-10-17	%s — comparaison de modèles	
 bridge:cumulative_logit_regression_proportional_odds	corrected	2026-10-17	Régression à logit cumulatif (cotes proportionnelles)	
-header_ci_lower	corrected	2026-10-17	IC inf.	
-header_ci_upper	corrected	2026-10-17	IC sup.	
 header_median	corrected	2026-10-17	Méd.	
 header_declared_codes	corrected	2026-10-17	Codes déclarés manquants	
 header_is_declared_missing	corrected	2026-10-17	Déclaré manquant	
@@ -54,7 +50,6 @@ note_outcome_overall	corrected	2026-10-17	Ensemble = l'échantillon d'analyse co
 note_gloss_med_ci_undefined	corrected	2026-10-17	«<NBSP>%s<NBSP>» lorsque l'échantillon est trop petit pour cette modalité.	
 note_gloss_smd_multinomial	corrected	2026-10-17	Pour une variable à plus de deux modalités, la %s est la distance multivariée (de Mahalanobis) entre les deux profils de proportions, et n'est donc pas signée.	
 note_design_n	corrected	2026-10-17	N = %s (N pondéré = %s).	
-note_gloss_se	corrected	2026-10-17	%s = erreur standard de la moyenne, fondée sur le plan de sondage.	
 test_design_wald_chisq	corrected	2026-10-17	test de Wald des proportions des cellules, fondé sur le plan de sondage	
 test_design_adj_wald	corrected	2026-10-17	test de Wald ajusté des proportions des cellules, fondé sur le plan de sondage	
 test_design_saddlepoint	corrected	2026-10-17	khi-deux (approximation du point de selle) fondé sur le plan de sondage	
@@ -268,17 +263,6 @@ note_type_models_sep	reviewed	2026-10-17	<NBSP>;
 note_estimand_rmst	reviewed	2026-10-17	dRMST = différence de temps de survie moyen restreint sur [0, %s]	
 note_estimand_risk_diff	reviewed	2026-10-17	dRisk = différence d'incidence cumulée à %s	
 note_estimand_skipped_terms	reviewed	2026-10-17	 Les termes transformés (%s) n'ont pas de ligne d'effet absolu<NBSP>: le contraste est défini par variable brute<NBSP>; remettez la variable à l'échelle dans les données plutôt que dans la formule.	
-note_abbrev_irr	reviewed	2026-10-17	IRR = rapport de taux d'incidence	
-note_abbrev_mr	reviewed	2026-10-17	MR = rapport de moyennes	
-note_abbrev_tr	reviewed	2026-10-17	TR = rapport de temps	
-note_abbrev_expb	reviewed	2026-10-17	exp(B) = coefficient exponentié	
-note_abbrev_f2	reviewed	2026-10-17	f² = f² partiel de Cohen	
-note_abbrev_eta2	reviewed	2026-10-17	η² = êta-carré partiel	
-note_abbrev_omega2	reviewed	2026-10-17	ω² = oméga-carré partiel corrigé du biais	
-note_abbrev_chi2	reviewed	2026-10-17	χ² = khi-deux partiel du rapport de vraisemblance	
-note_abbrev_chi2_wald	reviewed	2026-10-17	χ² = khi-deux partiel de Wald	
-note_abbrev_beta	reviewed	2026-10-17	β = coefficient standardisé	
-note_abbrev_beta_method	reviewed	2026-10-17	β = coefficient standardisé (%s)	
 note_beta_refit	reviewed	2026-10-17	"refit"<NBSP>: variable dépendante et prédicteurs numériques centrés-réduits, indicatrices des facteurs en 0/1	
 note_beta_posthoc	reviewed	2026-10-17	"posthoc"<NBSP>: B × ET(X)/ET(Y) pour les prédicteurs numériques, B/ET(Y) pour les indicatrices des facteurs	
 note_beta_basic	reviewed	2026-10-17	"basic"<NBSP>: chaque colonne de la matrice du modèle réduite par son écart-type, indicatrices comprises (Beta de SPSS / Stata)	
@@ -288,10 +272,6 @@ note_standardized_caveat	reviewed	2026-10-17	β standardisé<NBSP>: %s
 note_standardized_caveat_algebraic	reviewed	2026-10-17	les termes d'interaction ou transformés sont réduits par l'écart-type de la colonne produit (ou transformée) de la matrice du modèle<NBSP>; diffère de "refit" lorsque les composantes sont corrélées.	
 note_standardized_caveat_refit	reviewed	2026-10-17	après réestimation sur les données centrées-réduites, le β d'une interaction est le coefficient du produit des composantes centrées-réduites.	
 note_standardized_caveat_fallback	reviewed	2026-10-17	"refit" a échoué<NBSP>; mise à l'échelle algébrique (posthoc) appliquée<NBSP>: %s	
-note_abbrev_pd	reviewed	2026-10-17	pd = probabilité de direction (part de la distribution a posteriori du côté dominant de zéro<NBSP>; Makowski et al. 2019)	
-note_abbrev_mcse	reviewed	2026-10-17	MCSE = erreur standard de Monte-Carlo de la médiane a posteriori (Vehtari et al. 2021)	
-note_abbrev_ame	reviewed	2026-10-17	AME = effet marginal moyen	
-note_abbrev_ame_percat	reviewed	2026-10-17	AME = effet marginal moyen sur la probabilité d'une catégorie de réponse	
 note_abbrev_sep	reviewed	2026-10-17	<NBSP>; 	
 note_ame_satterthwaite	reviewed	2026-10-17	Inférence sur les AME<NBSP>: test t avec degrés de liberté de Satterthwaite%s.	
 note_ame_satterthwaite_qual_glm	reviewed	2026-10-17	 (approximation par le coefficient dominant)	
@@ -316,10 +296,7 @@ test_oneway_anova	reviewed	2026-10-17	ANOVA à un facteur
 test_welch_t	reviewed	2026-10-17	test t de Welch	
 note_group_comparison	reviewed	2026-10-17	Comparaison des groupes<NBSP>: %s.	
 note_group_comparison_sep	reviewed	2026-10-17	<NBSP>; 	
-note_gloss_iqr	reviewed	2026-10-17	%s = écart interquartile (%s - %s).	
-note_gloss_med_iqr	reviewed	2026-10-17	%s = médiane [premier quartile, troisième quartile].	
 note_gloss_med_ci	reviewed	2026-10-17	%1$s = intervalle de confiance exact de la médiane fondé sur les statistiques d'ordre (couverture d'au moins %2$s).	
-note_gloss_smd	reviewed	2026-10-17	%1$s = différence de moyennes standardisée (%2$s - %3$s)<NBSP>; |%1$s| > %4$s est le seuil de déséquilibre usuel.	
 note_design_line	reviewed	2026-10-17	Plan de sondage<NBSP>: %s<NBSP>; %s.	
 note_design_stratified	reviewed	2026-10-17	stratifié (%s)	
 note_design_cluster	reviewed	2026-10-17	par grappes (%s)	
@@ -339,7 +316,6 @@ note_negative_weights	reviewed	2026-10-17	Le calage a donné un poids négatif �
 note_negative_weights_no_test	reviewed	2026-10-17	La comparaison des groupes n'est pas rapportée<NBSP>: un test fondé sur le plan de sondage n'est pas défini lorsque les poids changent de signe.	
 note_negative_weights_no_test_some	reviewed	2026-10-17	Pour les variables dont les cas complets comprennent des lignes à poids négatif, la comparaison des groupes n'est pas rapportée<NBSP>: un test fondé sur le plan de sondage n'est pas défini lorsque les poids changent de signe.	
 note_deff_replace	reviewed	2026-10-17	Les effets de plan sont calculés par rapport à un tirage AVEC remise (la correction pour population finie est ignorée).	
-note_gloss_deff	reviewed	2026-10-17	%s = effet de plan (variance fondée sur le plan / variance d'un échantillon aléatoire simple de même n).	
 test_design_t	reviewed	2026-10-17	test t fondé sur le plan de sondage	
 test_design_wald	reviewed	2026-10-17	test de Wald fondé sur le plan de sondage	
 test_design_wilcoxon	reviewed	2026-10-17	test de Wilcoxon-Mann-Whitney fondé sur le plan de sondage	
@@ -352,9 +328,7 @@ note_gloss_n_svy	reviewed	2026-10-17	%s = effectif observé (non pondéré).
 note_adjustment_proportional	reviewed	2026-10-17	proportionnel	
 note_adjustment_balanced	reviewed	2026-10-17	équilibré	
 note_std_errors_single	reviewed	2026-10-17	Erreurs standards<NBSP>: %s.	
-note_std_errors_multi	reviewed	2026-10-17	Erreurs standards<NBSP>:\n%s	
 note_model_line	reviewed	2026-10-17	%s<NBSP>: %s	
-note_model_line_indented	reviewed	2026-10-17	  %s<NBSP>: %s	
 note_vcov_classical_glm	reviewed	2026-10-17	classiques (information de Fisher)	
 note_vcov_classical_lm	reviewed	2026-10-17	classiques (MCO)	
 note_vcov_hc	reviewed	2026-10-17	robustes à l'hétéroscédasticité (%s)	

@@ -2202,7 +2202,12 @@ format_p_value_for_panel <- function(p, decimal_mark = ".") {
     null_model <- if (is.null(lrt$family_key)) {
       lrt$family_label %||% "no-random model"
     } else {
-      do.call(spicy_fmt, c(list(lrt$family_key), lrt$family_args))
+      # A number among the holes (the theta of a negative binomial) is
+      # formatted as the statistic beside it.
+      args <- lapply(lrt$family_args, function(a) {
+        if (is.numeric(a)) .footer_num(a, 2L, decimal_mark) else a
+      })
+      do.call(spicy_fmt, c(list(lrt$family_key), args))
     }
     lrt_part <- spicy_fmt(
       "note_re_lrt",

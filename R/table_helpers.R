@@ -837,6 +837,34 @@ make_stronger_indent <- function(x, base_indent, strong_indent, rows) {
   as.character(sort(vals, method = "radix"))
 }
 
+# The groups of a grouping column as the table shows them: a haven
+# labelled column with value labels -- an SPSS or Stata import -- names
+# its groups as the rows of a labelled variable name its levels
+# (`.tab_factor()`), "[code] label". The groups and their order are those
+# of the codes, as when the headers showed the codes: ascending (also
+# when the labels are declared in another order), and a value label no
+# observation holds adds no group. Any other column is returned as it
+# is, and so is a labelled one without value labels. The caller has
+# applied `user_na` first (`resolve_user_na()`), so a declared missing
+# code is NA here, or an ordinary value under `user_na = FALSE`.
+.group_display <- function(x) {
+  if (
+    !labelled::is.labelled(x) ||
+      length(attr(x, "labels", exact = TRUE)) == 0L
+  ) {
+    return(x)
+  }
+  out <- droplevels(labelled::to_factor(
+    x,
+    levels = "prefixed",
+    sort_levels = "values",
+    nolabel_to_na = FALSE
+  ))
+  # The variable label names the grouping variable in the title.
+  attr(out, "label") <- attr(x, "label", exact = TRUE)
+  out
+}
+
 # The one rule for an argument with no effect (V12 of the coherence audit
 # of 2026-10-20): an argument the caller TYPED whose request the table
 # cannot honor warns, class `spicy_ignored_arg`, one warning per argument,

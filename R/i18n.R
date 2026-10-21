@@ -397,7 +397,8 @@
   # takes `note_re_null_linear`).
   note_re_null_gaussian = "gaussian regression",
   note_re_null_inverse_gaussian = "inverse-gaussian regression",
-  # One hole: the theta of the family, as lme4 prints it.
+  # One hole: the theta of the family, formatted as the statistic of the
+  # line (two decimals, the decimal mark of the table).
   note_re_null_negative_binomial = "negative binomial(%s) regression",
   note_re_null_cumulative = "cumulative %s regression",
   note_re_null_family = "%s regression",
@@ -888,11 +889,12 @@
   # (`.abort_label_collision()`).
   row_overall = "Overall",
   # The honest sentence a stack of blocks needs: each block is its own
-  # one-way comparison, and the table adjusts none of them for any
-  # other.
+  # one-way comparison, which controls for none of the other variables.
+  # Worded without "adjusted": under `p_adjust` the p-values ARE adjusted,
+  # across the blocks, and the note says so in the same paragraph.
   note_outcome_blocks = paste0(
-    "Each block compares %s across the levels of one variable; ",
-    "blocks are not adjusted for one another."
+    "Each block compares %s across the levels of one variable, ",
+    "without controlling for the other variables."
   ),
   note_outcome_overall = "Overall = the whole analytic sample.",
   # The same sentence when `options(spicy.labels)` relabels the row and

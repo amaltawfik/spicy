@@ -289,7 +289,8 @@
   show_assoc = FALSE,
   assoc_ci = FALSE,
   assoc_ci_level = 0.95,
-  show_smd = FALSE
+  show_smd = FALSE,
+  assoc_none = character(0)
 ) {
   has_group <- !is.null(group_levels)
 
@@ -494,8 +495,17 @@
         header_display <- cells$display
       }
       if (has_group) {
+        # A statistic of the variable with no value -- a comparison that
+        # cannot run (a group with no data, a constant variable), a test
+        # or a measure that returns none -- is an undefined cell, as the
+        # console marks it. A variable that asked for no measure
+        # (`assoc_none`) leaves that cell blank: it does not apply.
+        void_stats <- character(0)
         if (show_p) {
           header_values[[.CAT_KEY_P]] <- sv$p[1L]
+          if (is.na(sv$p[1L])) {
+            void_stats <- .CAT_KEY_P
+          }
         }
         if (show_assoc) {
           header_values[[measure_col]] <- sv[[measure_col]][1L]
@@ -503,7 +513,19 @@
             header_values[[.CAT_KEY_CI_LL]] <- sv$ci_lower[1L]
             header_values[[.CAT_KEY_CI_UL]] <- sv$ci_upper[1L]
           }
+          if (!var_name %in% assoc_none) {
+            stat_cols <- c(
+              measure_col,
+              if (assoc_ci) c(.CAT_KEY_CI_LL, .CAT_KEY_CI_UL)
+            )
+            void_stats <- c(
+              void_stats,
+              stat_cols[vapply(header_values[stat_cols], is.na, logical(1))]
+            )
+          }
         }
+        header_status[void_stats] <- "undefined"
+        header_display[void_stats] <- undefined
         if (show_smd) {
           header_values[[.CAT_KEY_SMD]] <- sv$.smd[1L]
           # The console prints `cell_undefined` for an SMD that cannot be

@@ -388,7 +388,10 @@ variance is the design's -- so \code{test = "student"} warns and behaves
 like \code{"welch"}. A variable with no variance, or whose domains are each
 constant on their own value (a residual variance of zero), has no
 comparison, with a warning (class \code{spicy_undefined_stat}), where survey
-would still return a p-value. Its test cells show the undefined mark,
+would still return a p-value. Under \code{test = "nonparametric"} too, unlike
+\code{\link[=table_continuous]{table_continuous()}}: \code{survey::svyranktest()} is a design-based test of
+the ranks, which are then constant within the domains as well. Its
+test cells show the undefined mark,
 as do those of any comparison that cannot run (too few observations in
 a domain, a test refused under weights that change sign).
 The note names the comparison of each variable.

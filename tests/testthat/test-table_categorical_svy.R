@@ -1954,6 +1954,29 @@ test_that("the design's weights, clusters and fpc are outside the selection", {
   )
 })
 
+test_that("a select-less call takes the columns table_categorical() takes", {
+  skip_if_not_installed("survey")
+  des <- survey::svydesign(ids = ~1, weights = ~weight, data = sochealth)
+  svy_vars <- unique(suppressWarnings(table_categorical_svy(des))$variable)
+  plain_vars <- unique(as.data.frame(table_categorical(sochealth))$variable)
+  # The categorical columns, in the order of the data. It tabulated the
+  # numbers too (age, income, bmi, ...), one level per distinct value,
+  # and the date of the interview.
+  expect_identical(svy_vars, plain_vars)
+  expect_false(any(c("age", "bmi", "response_date") %in% svy_vars))
+  # Named, a numeric column is tabulated; alone, it is no default.
+  num <- data.frame(n_kids = c(0, 1, 2, 1), w = 1)
+  des_num <- survey::svydesign(ids = ~1, weights = ~w, data = num)
+  expect_error(
+    table_categorical_svy(des_num),
+    class = "spicy_invalid_input"
+  )
+  expect_identical(
+    unique(.svycat_df(des_num, select = n_kids)$variable),
+    "n_kids"
+  )
+})
+
 # ---- no data in a group: not a missing answer -------------------------------
 
 # `physical_activity` is not asked in the Tertiary group (`by_sex`: of the
@@ -2060,8 +2083,21 @@ test_that("with fewer than two groups with data, the variable is not tested", {
   heads <- tbl$.row_role == "factor_header"
   expect_false(is.na(tbl$p[heads][[1L]]))
   expect_true(is.na(tbl$p[heads][[2L]]))
-  # Blank, not undefined.
-  expect_identical(attr(tbl, "display_df")$p[heads][[2L]], "")
+  # Undefined, not blank: the test applies and cannot run. A blank is a
+  # cell that does not apply (the level rows).
+  mark <- spicy:::spicy_str("cell_undefined")
+  expect_identical(attr(tbl, "display_df")$p[heads][[2L]], mark)
+  s <- as_structured(tbl)
+  expect_identical(s$cell_status$p[heads], c("", "undefined"))
+  expect_true(all(s$cell_status$p[!heads] == ""))
+  # So is a variable observed at one level, which nothing compares.
+  des$variables$constf <- factor("a", levels = c("a", "b"))
+  const <- suppressWarnings(
+    table_categorical_svy(des, select = c(smoking, constf), by = sex)
+  )
+  hp <- attr(const, "display_df")$p[const$.row_role == "factor_header"]
+  expect_false(hp[[1L]] %in% c("", mark))
+  expect_identical(hp[[2L]], mark)
   alone <- table_categorical_svy(des, select = physical_activity, by = sex)
   expect_false(grepl("Group comparison", attr(alone, "note"), fixed = TRUE))
   expect_match(

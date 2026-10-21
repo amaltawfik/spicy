@@ -2083,6 +2083,20 @@ test_that("every comparison that cannot run is undefined, its warnings unchanged
     fixed = TRUE,
     class = "spicy_undefined_stat"
   )
+  # The design-based rank test as well, unlike the rank tests of
+  # table_continuous(): svyranktest() is a design-based t on the ranks,
+  # constant within the domains too (its t was 8.2e15 on such data).
+  expect_warning(
+    np <- table_continuous_svy(
+      causes$zero_resid$design,
+      select = v,
+      by = g,
+      test = "nonparametric",
+      output = "long"
+    ),
+    class = "spicy_undefined_stat"
+  )
+  expect_true(all(is.na(np$p.value)))
 })
 
 test_that("`by` named in `select` is refused; a helper skips it", {

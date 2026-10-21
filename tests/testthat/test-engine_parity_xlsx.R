@@ -420,9 +420,8 @@ test_that("table_categorical writes its console title and disclosure note", {
   expect_equal(.xl_at(m, 1L, "A"), "Categorical table")
   # The table itself starts two rows below the title.
   expect_equal(.xl_at(m, 3L, "A"), "Variable")
-  # The sheet carries the note as printed: the attribute is its part,
-  # without the "Note." that opens it.
-  expect_true(paste("Note.", attr(obj, "missing_note")) %in% m[, "A"])
+  # The sheet carries the note as printed, "Note." included.
+  expect_true(attr(obj, "note") %in% m[, "A"])
 })
 
 test_that("the by-table carries its title, missing note and assoc gloss", {
@@ -453,12 +452,9 @@ test_that("the by-table carries its title, missing note and assoc gloss", {
   # The note is one paragraph on one row below the body, as printed: it
   # opens with "Note.", the missing values, then the test and the
   # measures.
-  note_line <- paste(
-    "Note.",
-    attr(obj, "missing_note"),
-    attr(obj, "assoc_note")
-  )
-  expect_identical(note_line, attr(obj, "note"))
+  note_line <- attr(obj, "note")
+  expect_true(startsWith(note_line, "Note. Missing values removed: "))
+  expect_true(endsWith(note_line, attr(obj, "assoc_note")))
   expect_true(note_line %in% col_a)
   expect_gt(which(col_a == note_line), which(col_a == "Variable"))
 })

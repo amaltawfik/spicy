@@ -1024,12 +1024,19 @@ validate_regression_frame <- function(frame) {
 # The null model of the LR test: the registry key the footer resolves in
 # the table language, its holes, and its English text (`family_label`,
 # which the frame keeps, like its title prefix). The `.null_lrt_*()`
-# helpers pick the key from the family and link tokens of the fit.
+# helpers pick the key from the family and link tokens of the fit. A
+# numeric hole (the theta of a negative binomial) stays a number in
+# `family_args`: the footer formats it as the other numbers of the note,
+# with the table's decimal mark.
 .re_null_model <- function(key, ...) {
+  args <- list(...)
+  shown <- lapply(args, function(a) {
+    if (is.numeric(a)) .footer_num(a, 2L) else a
+  })
   list(
-    family_label = sprintf(.spicy_strings[[key]], ...),
+    family_label = do.call(sprintf, c(list(.spicy_strings[[key]]), shown)),
     family_key = key,
-    family_args = list(...)
+    family_args = args
   )
 }
 
@@ -1211,11 +1218,16 @@ validate_regression_frame <- function(frame) {
   } else if (identical(fam_name, "inverse.gaussian")) {
     .re_null_model("note_re_null_inverse_gaussian")
   } else if (startsWith(fam_name, "Negative Binomial(")) {
-    # glmer.nb: lme4 names the family with its theta.
-    .re_null_model(
-      "note_re_null_negative_binomial",
-      sub("^Negative Binomial\\((.*)\\)$", "\\1", fam_name)
+    # glmer.nb: lme4 names the family with its theta, rounded to four
+    # decimals; the null is refit at the theta itself.
+    theta <- tryCatch(
+      as.numeric(lme4::getME(fit, "glmer.nb.theta")),
+      error = function(e) NA_real_
     )
+    if (!is.finite(theta)) {
+      theta <- as.numeric(sub("^Negative Binomial\\((.*)\\)$", "\\1", fam_name))
+    }
+    .re_null_model("note_re_null_negative_binomial", theta)
   } else {
     .re_null_model(
       "note_re_null_family",

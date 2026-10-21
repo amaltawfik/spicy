@@ -123,9 +123,11 @@ weights as given (frequency reading). The default reads
 
 \item{test}{Group comparison for every block: \code{"welch"} (default),
 \code{"student"} or \code{"nonparametric"}. An outcome with no variance in a
-block, or constant within each of its levels (a residual variance of
-zero), has no test there, whichever is chosen, with a warning (class
-\code{spicy_undefined_stat}). The block's test cells (test, p-value,
+block has no test there, whichever is chosen, with a warning (class
+\code{spicy_undefined_stat}); so has an outcome constant within each level
+of a block (a residual variance of zero) under \code{"welch"} and
+\code{"student"}, while the rank tests, which read the order of the
+values, run. The block's test cells (test, p-value,
 effect size) show the undefined mark, as do those of any block whose
 comparison cannot run (too few observations in a level, a test that
 fails, a non-finite effect size).}
@@ -420,9 +422,10 @@ variable producing more than 20 levels raises a warning for that
 reason -- an arbitrary threshold, but a sixty-row block where a
 reader expects a handful of categories is not a table.
 
-A \code{haven_labelled} column used as \code{select} shows its numeric CODES, not
-its value labels, as it does in \code{\link[=table_continuous]{table_continuous()}}. Convert it
-first (\code{haven::as_factor()}) to get the labels in the stub.
+A \code{haven_labelled} column used as \code{select} names its levels by their
+value labels (\code{"[1] Women"}), in the order of its codes, as a labelled
+\code{by} names its groups in \code{\link[=table_continuous]{table_continuous()}} and as the rows of a
+labelled variable of \code{\link[=table_categorical]{table_categorical()}} read.
 }
 
 \section{The table note}{

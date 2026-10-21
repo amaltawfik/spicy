@@ -905,8 +905,10 @@ inline <- function(
   if (all(on_header) && all(off_levels)) {
     return(hdr)
   }
-  # The statistic belongs to the header and is empty there: the block
-  # comparison did not run. Say that, rather than pointing at levels
+  # The statistic belongs to the header and is empty there: the table
+  # does not give it for this variable (a measure it asked none of). A
+  # comparison that could not run shows the undefined mark instead, and
+  # is refused as undefined. Say that, rather than pointing at levels
   # that carry the statistic even less.
   if (!any(on_header) && all(off_levels)) {
     spicy_abort(
@@ -918,8 +920,8 @@ inline <- function(
         ),
         "i" = paste0(
           "That statistic belongs to the variable's block and the ",
-          "group comparison did not run for it, so there is no ",
-          "value to cite."
+          "table does not give it for this variable (not requested, ",
+          "or not applicable), so there is no value to cite."
         )
       ),
       class = "spicy_invalid_input",

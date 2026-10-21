@@ -91,7 +91,10 @@ The \code{broom::tidy()} and \code{broom::glance()} methods of every table class
 \code{spicy_multiresponse_table}, and \code{spicy_regression_table}, and the
 \code{output = "long"} frame of every table function, speak one
 vocabulary: broom's name wherever broom defines one, and one
-snake_case name per concept otherwise, the same in every function.\tabular{ll}{
+snake_case name per concept otherwise, the same in every function.
+One exception, the estimates: \code{tidy()} gives them broom's names, and
+the long output of a descriptive table names each statistic it holds
+(see the table below).\tabular{ll}{
    Concept \tab Column \cr
    the variable a row describes, its displayed label \tab \code{variable}, \code{label} \cr
    the level of a categorical variable, the group of \code{by} (in the tables that take a \code{by}) \tab \code{level}, \code{group} \cr
@@ -99,7 +102,7 @@ snake_case name per concept otherwise, the same in every function.\tabular{ll}{
    the role of \code{group}: a group, the column of missing \code{by} values, the margin \tab \code{.group_role} (\code{"group"}, \code{"missing"}, \code{"total"}) \cr
    the \code{Total} margin of the groups \tab \code{total} (logical) \cr
    a count, a percentage, a proportion between 0 and 1 \tab \code{n}, \code{pct}, \code{proportion}, named by their base where a table has two (\code{pct_cases}, \code{pct_responses}, \code{proportion_cases}, \code{proportion_responses}) \cr
-   the estimate of a row, its standard error and interval \tab \code{estimate}, \code{std.error}, \code{conf.low}, \code{conf.high} \cr
+   the estimate of a row, its standard error and interval \tab in \code{tidy()}, and in the long output of \code{\link[=table_regression]{table_regression()}}: \code{estimate}, \code{std.error}, \code{conf.low}, \code{conf.high}; in the long output of the descriptive tables, the name of the statistic: \code{mean}, \code{se}, \code{ci_lower}, \code{ci_upper} (\code{median}, \code{med_ci_lower}, ...; \code{emmean}, \code{emmean_se}, \code{estimate_ci_lower}, ... in \code{\link[=table_continuous_lm]{table_continuous_lm()}}) \cr
    the test: its name and statistic \tab \code{test_type}, \code{statistic} \cr
    the degrees of freedom, which follow the statistic \tab \code{df} for a \emph{t} or a chi-squared (\code{Inf} for a \emph{z}); \code{df} and \code{df.residual} for an \emph{F}, the Rao-Scott \emph{F} and the \emph{F} of a linear model included \cr
    the p-value, and the raw one under \code{p_adjust} \tab \code{p.value}, \code{p_unadjusted} \cr
@@ -133,10 +136,15 @@ The proportions of
 whatever the orientation of the printed table: \code{.row_role} the row's
 \code{level}, \code{.group_role} its \code{group}. A level or a group added for
 missing values is told apart by its role, \code{"missing"}, never by its
-label, which follows the display language. In a table that compares
-groups, the long output carries the effect-size and SMD columns
-whether or not they were requested (\code{NA} then), and \code{glance()} has a
-fixed set of columns; \code{p_value = FALSE} removes the test columns.
+label, which follows the display language. With \code{by}, the long
+output of \code{\link[=table_categorical]{table_categorical()}} and \code{\link[=table_continuous]{table_continuous()}} carries the
+effect-size and SMD columns whether or not they were requested (\code{NA}
+then), and that of \code{\link[=table_continuous_lm]{table_continuous_lm()}} and \code{\link[=table_outcome]{table_outcome()}} the
+effect-size columns; the survey tables and \code{\link[=table_multiresponse]{table_multiresponse()}}
+compute neither. \code{glance()} has a fixed set of columns.
+\code{p_value = FALSE} removes the test columns, except in
+\code{\link[=table_continuous_lm]{table_continuous_lm()}}, whose long output is that of its models: they
+stay there, \code{NA}.
 Model-level statistics (\code{nobs}, \code{r.squared}, ...) are in \code{glance()}.
 The long output carries them as well where its rows are models of
 their own: in \code{\link[=table_continuous_lm]{table_continuous_lm()}}, one model per outcome (the fit

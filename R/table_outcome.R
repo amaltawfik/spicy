@@ -99,9 +99,11 @@
 #
 # Factors keep their DECLARED order (empty levels included: a declared
 # level that nobody chose is information about the instrument). Anything
-# else -- character, logical, numeric, haven-labelled -- is sorted in the
-# C locale, the family's order of the groups (`.group_levels()`), shared
-# with `table_categorical()` and `cross_tab()`.
+# else -- character, logical, numeric -- is sorted in the C locale, the
+# family's order of the groups (`.group_levels()`), shared with
+# `table_categorical()` and `cross_tab()`. A labelled column arrives as
+# the factor of its value labels, in the order of its codes
+# (`.group_display()`).
 #
 # With `drop_na = FALSE` the missing values become a display level of
 # their own. Every declared level is displayed, so one with the label of
@@ -212,10 +214,16 @@
       ),
       class = "spicy_undefined_stat"
     )
-  } else if (do_test && .within_groups_constant(xvec, gvec)) {
+  } else if (
+    do_test &&
+      !identical(var_test, "nonparametric") &&
+      .within_groups_constant(xvec, gvec)
+  ) {
     # Each level constant on its own value: the residual variance is zero
-    # and the block has nothing to infer, its effect size included -- one
-    # warning for the block.
+    # and a comparison of means has nothing to infer, its effect size
+    # included -- one warning for the block. A rank test reads the order
+    # of the values, not their variance, and runs (see
+    # `table_continuous()`).
     spicy_warn(
       c(
         sprintf(
@@ -622,9 +630,10 @@ abort_outcome_by_renamed <- function() {
 #' reason -- an arbitrary threshold, but a sixty-row block where a
 #' reader expects a handful of categories is not a table.
 #'
-#' A `haven_labelled` column used as `select` shows its numeric CODES, not
-#' its value labels, as it does in [table_continuous()]. Convert it
-#' first (`haven::as_factor()`) to get the labels in the stub.
+#' A `haven_labelled` column used as `select` names its levels by their
+#' value labels (`"[1] Women"`), in the order of its codes, as a labelled
+#' `by` names its groups in [table_continuous()] and as the rows of a
+#' labelled variable of [table_categorical()] read.
 #'
 #' # The table note
 #'
@@ -687,9 +696,11 @@ abort_outcome_by_renamed <- function() {
 #'   `spicy_invalid_data`).
 #' @param test Group comparison for every block: `"welch"` (default),
 #'   `"student"` or `"nonparametric"`. An outcome with no variance in a
-#'   block, or constant within each of its levels (a residual variance of
-#'   zero), has no test there, whichever is chosen, with a warning (class
-#'   `spicy_undefined_stat`). The block's test cells (test, p-value,
+#'   block has no test there, whichever is chosen, with a warning (class
+#'   `spicy_undefined_stat`); so has an outcome constant within each level
+#'   of a block (a residual variance of zero) under `"welch"` and
+#'   `"student"`, while the rank tests, which read the order of the
+#'   values, run. The block's test cells (test, p-value,
 #'   effect size) show the undefined mark, as do those of any block whose
 #'   comparison cannot run (too few observations in a level, a test that
 #'   fails, a non-finite effect size).
@@ -979,7 +990,12 @@ table_outcome <- function(
   n_user_na <- if (user_na) sum(.user_na_mask(outcome_raw)) else 0L
   outcome_vec <- resolve_user_na(outcome_raw)
   n_outcome_na <- sum(is.na(outcome_vec)) - n_user_na
-  select_list <- lapply(select_names, function(nm) resolve_user_na(data[[nm]]))
+  # A labelled grouping names its levels by their value labels, as the
+  # rows of a labelled variable of `table_categorical()` do
+  # (`.group_display()`).
+  select_list <- lapply(select_names, function(nm) {
+    .group_display(resolve_user_na(data[[nm]]))
+  })
   names(select_list) <- select_names
   # A grouping no observation holds leaves its block without a group once
   # the missing values are removed: refused, as a `by` is across the

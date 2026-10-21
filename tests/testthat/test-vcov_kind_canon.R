@@ -188,19 +188,18 @@ test_that("the rendered variance label is unchanged by the canon", {
 })
 
 test_that(".vcov_label_from_kind keys on the canon", {
-  expect_identical(.vcov_label_from_kind("classical"), "OLS")
-  expect_identical(.vcov_label_from_kind("model"), "OLS")
+  classical_lm <- spicy_str("note_vcov_classical_lm")
+  classical_glm <- spicy_str("note_vcov_classical_glm")
+  expect_identical(.vcov_label_from_kind("classical"), classical_lm)
+  expect_identical(.vcov_label_from_kind("model"), classical_lm)
   expect_identical(
     .vcov_label_from_kind("classical", is_glm = TRUE),
-    "Model-based (asymptotic)"
+    classical_glm
   )
-  expect_identical(
-    .vcov_label_from_kind("model", is_glm = TRUE),
-    "Model-based (asymptotic)"
-  )
+  expect_identical(.vcov_label_from_kind("model", is_glm = TRUE), classical_glm)
   expect_identical(
     .vcov_label_from_kind("HC3"),
-    "HC3 heteroskedasticity-consistent"
+    spicy_fmt("note_vcov_hc", "HC3")
   )
   # An unknown kind still falls back to its own name.
   expect_identical(.vcov_label_from_kind("weirdtype"), "weirdtype")
