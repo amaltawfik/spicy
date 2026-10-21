@@ -673,6 +673,12 @@ p-values, and notes.
   mixed-effects regression", as for the other negative-binomial models,
   and translates the title in French. It carried the theta of the fit.
 
+* `table_regression()` tests the random effects of a `glmer()` fit with
+  a gaussian family and a link other than identity against the `glm()`
+  of that family and link. It used a linear regression, which that fit
+  does not nest. The footer of such a `glmer()` or `glmmTMB()` fit names
+  the null "gaussian regression", not "linear regression".
+
 * `table_regression()` calls the `partial_chi2` of `lmer`, `glmer`,
   `glmmTMB`, and `lme` fits a partial Wald chi-squared in its footer. It
   called it a likelihood-ratio chi-squared, the test of `glm`.

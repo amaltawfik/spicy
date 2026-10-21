@@ -1117,7 +1117,13 @@ validate_regression_frame <- function(frame) {
     return(NULL)
   }
   fam <- tryCatch(stats::family(fit), error = function(e) NULL)
-  is_gaussian <- !is.null(fam) && identical(fam$family, "gaussian")
+  # The null keeps the family AND the link: lm() is the null of a gaussian
+  # identity fit only. A gaussian GLMM with another link (log, inverse)
+  # is tested against the glm() of that family and link, like every other
+  # glmer family.
+  is_linear <- !is.null(fam) &&
+    identical(fam$family, "gaussian") &&
+    identical(fam$link, "identity")
 
   no_re_formula <- suppressWarnings(
     .re_nobars(stats::formula(fit, fixed.only = TRUE))
@@ -1155,7 +1161,7 @@ validate_regression_frame <- function(frame) {
   # weighted sleepstudy). NULL for unweighted fits (lm/glm accept it).
   w <- stats::model.weights(data)
   fit_null <- tryCatch(
-    if (is_gaussian) {
+    if (is_linear) {
       stats::lm(null_f, data = data, weights = w)
     } else {
       stats::glm(null_f, data = data, family = fam, weights = w)
@@ -1182,7 +1188,7 @@ validate_regression_frame <- function(frame) {
   }
 
   fam_name <- fam$family %||% ""
-  null_model <- if (is_gaussian) {
+  null_model <- if (is_linear) {
     .re_null_model("note_re_null_linear")
   } else if (
     identical(fam_name, "binomial") && !identical(fam$link, "probit")
@@ -1236,7 +1242,10 @@ validate_regression_frame <- function(frame) {
     return(NULL)
   }
   fam <- tryCatch(stats::family(fit), error = function(e) NULL)
-  is_gaussian <- !is.null(fam) && identical(fam$family, "gaussian")
+  # Names the null only: the refit below keeps the family and its link.
+  is_linear <- !is.null(fam) &&
+    identical(fam$family, "gaussian") &&
+    identical(fam$link, "identity")
 
   no_re_formula <- suppressWarnings(
     .re_nobars(stats::formula(fit, fixed.only = TRUE, component = "cond"))
@@ -1323,7 +1332,7 @@ validate_regression_frame <- function(frame) {
     return(NULL) # nocov -- a fitted random structure has >= 1 free parameter
   }
 
-  null_model <- if (is_gaussian) {
+  null_model <- if (is_linear) {
     .re_null_model("note_re_null_linear")
   } else if (identical(fam$family, "ordinal")) {
     # The null of an ordinal glmmTMB is a cumulative-link model; named

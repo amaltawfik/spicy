@@ -418,3 +418,71 @@ test_that("the LR statistic clamps at 0 and the boundary p is 1", {
   expect_identical(nl$chi2, 0)
   expect_identical(nl$p_chibar2, 1)
 })
+
+
+# ---- 9. A gaussian GLMM with a link other than identity ---------------
+
+# Age in decades from 50: on its raw scale lme4 warns that the same model
+# is nearly unidentifiable.
+.fit_glmer_gaussian_log <- function(rows = NULL) {
+  skip_if_not_installed("lme4")
+  d <- as.data.frame(sochealth)
+  if (!is.null(rows)) {
+    d <- d[rows, ]
+  }
+  d$age_c <- (d$age - 50) / 10
+  lme4::glmer(
+    bmi ~ age_c + (1 | education),
+    data = d,
+    family = gaussian(link = "log")
+  )
+}
+
+test_that("glmer gaussian(log): the null keeps the family and the link", {
+  fit <- .fit_glmer_gaussian_log()
+  mf <- stats::model.frame(fit)
+  ll <- as.numeric(stats::logLik(fit))
+  g0 <- stats::glm(bmi ~ age_c, data = mf, family = gaussian(link = "log"))
+  out <- spicy:::.null_lrt_merMod(fit)
+  expect_equal(
+    out$chi2,
+    2 * (ll - as.numeric(stats::logLik(g0))),
+    tolerance = 1e-6
+  )
+  expect_equal(out$chi2, 150.601796603, tolerance = 1e-6)
+  # The identity-link lm() null, which this fit does not nest, gave 150.46.
+  lm0 <- stats::lm(bmi ~ age_c, data = mf)
+  expect_gt(abs(out$chi2 - 2 * (ll - as.numeric(stats::logLik(lm0)))), 0.1)
+  expect_identical(out$family_label, "gaussian regression")
+})
+
+test_that("table_regression(glmer gaussian(log)) names the null in its footer", {
+  # Below 1,000 rows, so the variance components keep their SEs.
+  fit <- .fit_glmer_gaussian_log(rows = 1:600)
+  note <- attr(table_regression(fit), "note")
+  expect_match(note, "LR test vs gaussian regression, ", fixed = TRUE)
+  expect_no_match(note, "linear regression", fixed = TRUE)
+})
+
+test_that("glmmTMB gaussian(log): the engine-native null is named as in lme4", {
+  skip_if_not_installed("glmmTMB")
+  d <- as.data.frame(sochealth)
+  d$age_c <- (d$age - 50) / 10
+  fit <- glmmTMB::glmmTMB(
+    bmi ~ age_c + (1 | education),
+    data = d,
+    family = gaussian(link = "log")
+  )
+  n0 <- glmmTMB::glmmTMB(
+    bmi ~ age_c,
+    data = stats::model.frame(fit),
+    family = gaussian(link = "log")
+  )
+  out <- spicy:::.null_lrt_glmmTMB(fit)
+  expect_equal(
+    out$chi2,
+    2 * (as.numeric(stats::logLik(fit)) - as.numeric(stats::logLik(n0))),
+    tolerance = 1e-6
+  )
+  expect_identical(out$family_label, "gaussian regression")
+})

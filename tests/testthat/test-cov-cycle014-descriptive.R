@@ -139,9 +139,31 @@ test_that("table_outcome() turns a group test that errors into NA, with a warnin
   )
   expect_match(
     conditionMessage(w),
-    "The group comparison failed for `g` (",
+    "The group-comparison test failed for `g` (",
     fixed = TRUE
   )
   expect_match(conditionMessage(w), "); its test columns are NA.", fixed = TRUE)
   expect_true(all(is.na(as.data.frame(tbl)$p)))
+})
+
+test_that("table_continuous() and table_outcome() word a failed group test alike", {
+  d <- data.frame(y = rep(5, 6), g = c("a", "a", "a", "b", "b", "b"))
+  wc <- expect_warning(
+    table_continuous(d, select = y, by = g),
+    class = "spicy_undefined_stat"
+  )
+  wo <- expect_warning(
+    table_outcome(d, y, select = g),
+    class = "spicy_undefined_stat"
+  )
+  expect_match(
+    conditionMessage(wc),
+    "The group-comparison test failed for `y` (the variable has no variance); its test columns are NA.",
+    fixed = TRUE
+  )
+  expect_match(
+    conditionMessage(wo),
+    "The group-comparison test failed for `g` (the outcome has no variance); its test columns are NA.",
+    fixed = TRUE
+  )
 })

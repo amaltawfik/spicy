@@ -205,7 +205,7 @@
     spicy_warn(
       c(
         sprintf(
-          "The group comparison failed for `%s` (the outcome has no variance); its test columns are NA.",
+          "The group-comparison test failed for `%s` (the outcome has no variance); its test columns are NA.",
           var_name
         ),
         "i" = "The other blocks are unaffected."
@@ -219,7 +219,7 @@
         spicy_warn(
           c(
             sprintf(
-              "The group comparison failed for `%s` (%s); its test columns are NA.",
+              "The group-comparison test failed for `%s` (%s); its test columns are NA.",
               var_name,
               conditionMessage(e)
             ),

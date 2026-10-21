@@ -368,7 +368,7 @@ type2_wald_hypothesis_matrix <- function(p, rel_cols, focal_cols, V) {
     if (inherits(fit, "glmmTMB")) {
       stats::formula(fit, fixed.only = TRUE, component = "cond")
     } else if (inherits(fit, c("lmerMod", "glmerMod"))) {
-      stats::formula(lme4::nobars(stats::formula(fit)))
+      stats::formula(.re_nobars(stats::formula(fit)))
     } else {
       stats::formula(fit)
     },
