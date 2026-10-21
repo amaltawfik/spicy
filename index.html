@@ -457,7 +457,7 @@
 <span><span class="co">#&gt;  bmi             │ 25.93  3.72  16.00  38.90    25.72      26.14    1188 </span></span>
 <span><span class="co">#&gt;  life_sat_health │  3.55  1.25   1.00   5.00     3.48       3.62    1192 </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Note. Missing values removed: bmi (12), life_sat_health (8).</span></span></code></pre></div>
+<span><span class="co">#&gt; Note. Missing values removed: bmi (12), life_sat_health (8). CI = confidence interval; LL = lower limit; UL = upper limit.</span></span></code></pre></div>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="reference/table_continuous.html">table_continuous</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span>,</span>
@@ -486,7 +486,7 @@
 <span><span class="co">#&gt;                  │ Upper secondary     3.63    534        </span></span>
 <span><span class="co">#&gt;                  │ Tertiary            4.21    399        </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Note. Missing values removed: bmi (12), life_sat_health (8). Group comparison: Welch one-way ANOVA.</span></span></code></pre></div>
+<span><span class="co">#&gt; Note. Missing values removed: bmi (12), life_sat_health (8). Group comparison: Welch one-way ANOVA. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span></code></pre></div>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="reference/table_continuous_lm.html">table_continuous_lm</a></span><span class="op">(</span></span>
 <span>  <span class="va">sochealth</span>,</span>
@@ -521,7 +521,7 @@
 <span><span class="co">#&gt;  R²              │    0.02                              </span></span>
 <span><span class="co">#&gt;  Adj. R²         │    0.02                              </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Note. Linear regression. Std. errors: classical (OLS).</span></span></code></pre></div>
+<span><span class="co">#&gt; Note. Linear regression. Std. errors: classical (OLS). CI = confidence interval.</span></span></code></pre></div>
 <p>Regression tables cover 39 model classes with the conventions of each family. A mixed-effects fit, for example, reports its random effects as rows (SD, correlation, residual – each with SE and CI), the ICC and group sizes as fit statistics, and the likelihood-ratio test of the random part with the boundary-correct chi-bar-squared p-value:</p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/lme4/lme4/" class="external-link">lme4</a></span><span class="op">)</span></span>
@@ -547,7 +547,7 @@
 <span><span class="co">#&gt;  AIC                             │ 1755.6                                 </span></span>
 <span><span class="co">#&gt;  BIC                             │ 1774.8                                 </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Note. Linear mixed-effects regression. Std. errors: Wald (model-based). p-values: Wald-z, large-sample approximation. Load `lmerTest` for Satterthwaite t-tests. Random effects (REML): LR test vs linear regression, χ̄²(3) = 150.04, p &lt; .001.</span></span></code></pre></div>
+<span><span class="co">#&gt; Note. Linear mixed-effects regression. Std. errors: Wald (model-based). p-values: Wald-z, large-sample approximation. Load `lmerTest` for Satterthwaite t-tests. Random effects (REML): LR test vs linear regression, χ̄²(3) = 150.04, p &lt; .001. CI = confidence interval; AIC = Akaike information criterion; BIC = Bayesian information criterion.</span></span></code></pre></div>
 <p>See <a href="https://amaltawfik.github.io/spicy/articles/table-categorical.html">Categorical summary tables</a> for categorical summaries, <a href="https://amaltawfik.github.io/spicy/articles/table-continuous.html">Continuous summary tables</a> for continuous summaries and group comparisons, <a href="https://amaltawfik.github.io/spicy/articles/table-continuous-lm.html">Model-based continuous summary tables</a> for weighted or robust linear-model reporting, <a href="https://amaltawfik.github.io/spicy/articles/table-regression.html">Publication-ready regression tables</a> for <code><a href="reference/table_regression.html">table_regression()</a></code> across model families, and <a href="https://amaltawfik.github.io/spicy/articles/summary-tables-reporting.html">Summary tables for reporting</a> for an overview of summary tables.</p>
 <p>The same numbers can be laid out outcome-first: one outcome, several groupings, one block per grouping.</p>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
@@ -571,7 +571,7 @@
 <span><span class="co">#&gt;    Yes       │ 25.93  3.58  16.80  35.30    25.48      26.38     248       </span></span>
 <span><span class="co">#&gt;    (Missing) │ 24.74  3.63  17.60  32.50    23.24      26.23      25       </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Note. Missing values removed: bmi (12). Group comparison: Welch t-test. Each block compares bmi across the levels of one variable; blocks are not adjusted for one another. Overall = the whole analytic sample.</span></span></code></pre></div>
+<span><span class="co">#&gt; Note. Missing values removed: bmi (12). Group comparison: Welch t-test. Each block compares bmi across the levels of one variable; blocks are not adjusted for one another. Overall = the whole analytic sample. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span></code></pre></div>
 <p>A “check all that apply” question gets a table of its own, one row per item. In <code>sochealth</code>, five logical items record the sources of health information a respondent used in the past 12 months. The article <a href="https://amaltawfik.github.io/spicy/articles/table-multiresponse.html">Multiple-response questions</a> explains the bases, the percentages and the tests.</p>
 <div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="reference/table_multiresponse.html">table_multiresponse</a></span><span class="op">(</span></span>

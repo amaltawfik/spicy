@@ -205,7 +205,7 @@ table_continuous(
 #>                           │ Upper secondary     3.43       3.63    534        
 #>                           │ Tertiary            4.01       4.21    399        
 #> 
-#> Note. Missing values removed: Body mass index (12), Satisfaction with health (8). Group comparison: Welch one-way ANOVA.
+#> Note. Missing values removed: Body mass index (12), Satisfaction with health (8). Group comparison: Welch one-way ANOVA. CI = confidence interval; LL = lower limit; UL = upper limit.
 ```
 
 ``` r
@@ -295,7 +295,7 @@ table_regression(
 #>  R²                         │    0.03                              
 #>  Adj. R²                    │    0.02                              
 #> 
-#> Note. Linear regression. Std. errors: classical (OLS).
+#> Note. Linear regression. Std. errors: classical (OLS). CI = confidence interval.
 ```
 
 This split is intentional. The descriptive functions report the *data* —
@@ -452,7 +452,7 @@ table_continuous(
 #>                           │ Upper secondary            
 #>                           │ Tertiary                   
 #> 
-#> Note. Missing values removed: Body mass index (12), Satisfaction with health (8). Group comparison: Welch one-way ANOVA.
+#> Note. Missing values removed: Body mass index (12), Satisfaction with health (8). Group comparison: Welch one-way ANOVA. CI = confidence interval; LL = lower limit; UL = upper limit; ES = effect size.
 ```
 
 This keeps the reporting structure consistent while still using the
@@ -483,7 +483,7 @@ table_continuous_lm(
 #>  wellbeing_score │   5.65     4.32  <.001  0.02  1200 
 #>  life_sat_health │   0.22     1.11   .267  0.00  1192 
 #> 
-#> Note. Missing values removed: bmi (12), life_sat_health (8). Group comparison: t-test from the linear model. Std. errors: heteroskedasticity-robust (HC3).
+#> Note. Missing values removed: bmi (12), life_sat_health (8). Group comparison: t-test from the linear model. Std. errors: heteroskedasticity-robust (HC3). CI = confidence interval; LL = lower limit; UL = upper limit.
 ```
 
 This is the better summary-table path when the article is already
@@ -531,7 +531,7 @@ table_continuous(
 #>  wellbeing_score │ Female  620  -0.25 
 #>                  │ Male    580        
 #> 
-#> Note. Missing values removed: bmi (12). SMD = standardized mean difference (Female - Male); |SMD| > 0.1 is the usual imbalance threshold.
+#> Note. Missing values removed: bmi (12). SMD direction: Female - Male. The usual imbalance threshold is |SMD| > 0.1. CI = confidence interval; LL = lower limit; UL = upper limit; SMD = standardized mean difference.
 ```
 
 ``` r
@@ -567,7 +567,7 @@ table_categorical(
 #>    No              │      
 #>    Yes             │      
 #> 
-#> Note. SMD = standardized mean difference (Female - Male); |SMD| > 0.1 is the usual imbalance threshold.
+#> Note. SMD direction: Female - Male. The usual imbalance threshold is |SMD| > 0.1. SMD = standardized mean difference.
 ```
 
 Exactly two groups, no confidence interval and no *p*-value on the
@@ -615,7 +615,7 @@ table_regression(
 #>  R²                 │    0.03                               
 #>  Adj. R²            │    0.02                               
 #> 
-#> Note. Linear regression. Std. errors: heteroskedasticity-robust (HC3). β = standardized coefficient ("refit": outcome and numeric predictors z-scored, factor dummies on 0/1).
+#> Note. Linear regression. Std. errors: heteroskedasticity-robust (HC3). β = standardized coefficient ("refit": outcome and numeric predictors z-scored, factor dummies on 0/1); CI = confidence interval.
 ```
 
 The default footer documents the variance estimator, flags standardized
@@ -680,7 +680,7 @@ table_regression(
 #>    No (ref.)        │  –    
 #>    Yes              │  .003 
 #> 
-#> Note. Linear regression models. Std. errors: classical (OLS).
+#> Note. Linear regression models. Std. errors: classical (OLS). CI = confidence interval.
 ```
 
 For binary or count outcomes, swap
@@ -718,7 +718,7 @@ table_regression(
 #>  R² (Nagelkerke)    │    0.00                                                   
 #>  AIC                │ 1220.5                                                    
 #> 
-#> Note. Logistic regression. Coefficients exponentiated and displayed as OR; CI bounds exponentiated. Std. errors: classical (Fisher information). AME = average marginal effect; OR = odds ratio.
+#> Note. Logistic regression. Coefficients exponentiated and displayed as OR; CI bounds exponentiated. Std. errors: classical (Fisher information). CI = confidence interval; AME = average marginal effect; AIC = Akaike information criterion.
 ```
 
 Average marginal effects (`ame`) are useful next to the odds ratio
@@ -833,7 +833,7 @@ table_continuous(sochealth, select = bmi, by = sex)
 #>  bmi      │ Female  0,018 
 #>           │ Male          
 #> 
-#> Note. Valeurs manquantes retirées : bmi (12). Comparaison des groupes : test t de Welch.
+#> Note. Valeurs manquantes retirées : bmi (12). Comparaison des groupes : test t de Welch. IC = intervalle de confiance ; LI = limite inférieure ; LS = limite supérieure.
 ```
 
 One gesture, one coherent table. A language brings its typography with
@@ -870,6 +870,7 @@ table_continuous(sochealth, select = bmi, by = sex, style = "jama")
 #>  bmi      │ Female  ,02 
 #>           │ Male        
 #> 
+#> Abréviations : LI, limite inférieure ; LS, limite supérieure.
 #> Valeurs manquantes retirées : bmi (12). Comparaison des groupes : test t de Welch.
 ```
 
@@ -900,7 +901,7 @@ table_continuous(sochealth, select = bmi, by = sex, decimal_mark = ".")
 #>  bmi      │ Female  0.018 
 #>           │ Male          
 #> 
-#> Note. Valeurs manquantes retirées : bmi (12). Comparaison des groupes : test t de Welch.
+#> Note. Valeurs manquantes retirées : bmi (12). Comparaison des groupes : test t de Welch. IC = intervalle de confiance ; LI = limite inférieure ; LS = limite supérieure.
 ```
 
 When one word has to change and a language does not — a questionnaire
@@ -1060,7 +1061,7 @@ tab |>
 |     Yes |  84 | 32.2 | 229 | 42.5 | 237 | 59.2 | 550 | 45.8 |       |     |
 | *Note.* Group comparison: Pearson chi-squared test. |  |  |  |  |  |  |  |  |  |  |
 
-Categorical table by education {#tinytable_2m3k8d4rztc6fwgzu3gn .table
+Categorical table by education {#tinytable_3djfom34h9uige5c3g6k .table
 .tinytable style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 

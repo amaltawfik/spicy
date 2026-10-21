@@ -231,8 +231,12 @@ weights as given (frequency reading). The default reads
 <dt id="arg-test">test<a class="anchor" aria-label="anchor" href="#arg-test"></a></dt>
 <dd><p>Group comparison for every block: <code>"welch"</code> (default),
 <code>"student"</code> or <code>"nonparametric"</code>. An outcome with no variance in a
-block has no test there, whichever is chosen: the block's test cells
-are left blank, with a warning (class <code>spicy_undefined_stat</code>).</p></dd>
+block, or constant within each of its levels (a residual variance of
+zero), has no test there, whichever is chosen, with a warning (class
+<code>spicy_undefined_stat</code>). The block's test cells (test, p-value,
+effect size) show the undefined mark, as do those of any block whose
+comparison cannot run (too few observations in a level, a test that
+fails, a non-finite effect size).</p></dd>
 
 
 <dt id="arg-p-value">p_value<a class="anchor" aria-label="anchor" href="#arg-p-value"></a></dt>
@@ -412,10 +416,10 @@ of <code><a href="freq.html">freq()</a></code>.</p></dd>
 <code><a href="spicy_style.html">spicy_style()</a></code> object, or <code>NULL</code> (the default). A style only
 changes DEFAULTS – any argument you pass explicitly wins over it.
 Set <code>options(spicy.style = )</code> for document-wide scope. A theme
-covers numeric formatting conformity only, not full editorial
-conformity; <code><a href="spicy_style.html">?spicy_style</a></code> lists the exact rules each one encodes
-and the official document they come from. An unknown name is an
-error.</p></dd>
+covers numeric formatting, the word that opens the note and the
+abbreviations the note defines, not full editorial conformity;
+<code><a href="spicy_style.html">?spicy_style</a></code> lists the exact rules each one encodes and the
+official document they come from. An unknown name is an error.</p></dd>
 
 
 <dt id="arg-by">by<a class="anchor" aria-label="anchor" href="#arg-by"></a></dt>
@@ -607,7 +611,7 @@ error.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    Yes       <span style="color: #9E9E9E;">│</span> 25.93  3.58  16.80  35.30    25.48      26.38     248       </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    (Missing) <span style="color: #9E9E9E;">│</span> 24.74  3.63  17.60  32.50    23.24      26.23      25       </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12). Group comparison: Welch t-test. Each block compares bmi across the levels of one variable; blocks are not adjusted for one another. Overall = the whole analytic sample.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12). Group comparison: Welch t-test. Each block compares bmi across the levels of one variable; blocks are not adjusted for one another. Overall = the whole analytic sample. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span>
 <span class="r-in"><span><span class="fu">table_outcome</span><span class="op">(</span><span class="va">sochealth</span>, <span class="va">wellbeing_score</span>, select <span class="op">=</span> <span class="fu"><a href="https://tidyselect.r-lib.org/reference/where.html" class="external-link">where</a></span><span class="op">(</span><span class="va">is.factor</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Descriptive statistics of wellbeing_score</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
@@ -769,7 +773,7 @@ error.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    High              <span style="color: #9E9E9E;">│</span>       </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    Very high         <span style="color: #9E9E9E;">│</span>       </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Group comparison: Welch t-test (sex, smoking, physical_activity, dentist_12m); Welch one-way ANOVA (age_group, education, social_class, region, employment_status, income_group, self_rated_health, bmi_category, institutional_trust). Each block compares wellbeing_score across the levels of one variable; blocks are not adjusted for one another. Overall = the whole analytic sample.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Group comparison: Welch t-test (sex, smoking, physical_activity, dentist_12m); Welch one-way ANOVA (age_group, education, social_class, region, employment_status, income_group, self_rated_health, bmi_category, institutional_trust). Each block compares wellbeing_score across the levels of one variable; blocks are not adjusted for one another. Overall = the whole analytic sample. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

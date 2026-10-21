@@ -186,9 +186,13 @@ table_continuous(
   Used whenever `by` is supplied (since `p_value` defaults to `TRUE` in
   that case) or when `statistic = TRUE` or an `effect_size` is
   requested. Ignored when `by` is not used, or when all three display
-  toggles are turned off. A variable with no variance has no test,
-  whichever is chosen: its test cells are left blank, with a warning
-  (class `spicy_undefined_stat`).
+  toggles are turned off. A variable with no variance, or whose groups
+  are each constant on their own value (a residual variance of zero),
+  has no test, whichever is chosen, with a warning (class
+  `spicy_undefined_stat`). Its test cells (test, p-value, effect size)
+  show the undefined mark, as do those of any comparison that cannot run
+  (too few observations in a group, a test that fails, a non-finite
+  effect size).
 
 - p_value:
 
@@ -476,7 +480,8 @@ table_continuous(
   object, or `NULL` (the default). A style only changes DEFAULTS – any
   argument you pass explicitly wins over it. Set
   `options(spicy.style = )` for document-wide scope. A theme covers
-  numeric formatting conformity only, not full editorial conformity;
+  numeric formatting, the word that opens the note and the abbreviations
+  the note defines, not full editorial conformity;
   [`?spicy_style`](https://amaltawfik.github.io/spicy/reference/spicy_style.md)
   lists the exact rules each one encodes and the official document they
   come from. An unknown name is an error.
@@ -590,15 +595,25 @@ and the column each one produces:
 | Token | Column | Statistic |
 | `"m"` | `M` | mean |
 | `"sd"` | `SD` | standard deviation |
-| `"med"` | `Med` | median ([`stats::median()`](https://rdrr.io/r/stats/median.html)) |
+| `"med"` | `Mdn` | median ([`stats::median()`](https://rdrr.io/r/stats/median.html)) |
 | `"iqr"` | `IQR` | interquartile *width*, `Q3 - Q1` |
-| `"med_iqr"` | `Med [Q1, Q3]` | median and the interquartile *interval*, in one compact column |
+| `"med_iqr"` | `Mdn [Q1, Q3]` | median and the interquartile *interval*, in one compact column |
 | `"q1"` / `"q3"` | `Q1` / `Q3` | first / third quartile |
 | `"min"` / `"max"` | `Min` / `Max` | extremes |
 | `"ci"` | `<level>% CI LL` / `UL` | *t* confidence interval of the mean |
-| `"med_ci"` | `Med <level>% CI LL` / `UL` | exact confidence interval of the median |
+| `"med_ci"` | `Mdn <level>% CI LL` / `UL` | exact confidence interval of the median |
 | `"n"` | `n` | valid observations |
 | `"weighted_n"` | `Weighted n` | sum of weights (requires `weights`) |
+
+The column is the header the table prints. In `output = "data.frame"`,
+[as.data.frame()](https://amaltawfik.github.io/spicy/reference/as.data.frame.spicy_continuous_table.md)
+and
+[`as_structured()`](https://amaltawfik.github.io/spicy/reference/as_structured.md),
+the median columns keep the names of 0.13.0, `Med`, `Med [Q1, Q3]` and
+`Med <level>% CI LL` / `UL`. The note under the table defines the
+abbreviations these headers show, as the style in force asks (see
+`abbreviations` in
+[`spicy_style()`](https://amaltawfik.github.io/spicy/reference/spicy_style.md)).
 
 Quartiles use
 [`stats::quantile()`](https://rdrr.io/r/stats/quantile.html)'s default
@@ -931,7 +946,7 @@ table_continuous(
 #>  bmi             │ 25.93   3.72  16.00   38.90    25.72      26.14    1188 
 #>  wellbeing_score │ 69.04  15.62  18.70  100.00    68.16      69.93    1200 
 #> 
-#> Note. Missing values removed: bmi (12).
+#> Note. Missing values removed: bmi (12). CI = confidence interval; LL = lower limit; UL = upper limit.
 
 # Grouped by education (Welch p-value added by default).
 table_continuous(
@@ -961,7 +976,7 @@ table_continuous(
 #>                  │ Upper secondary    70.12    539        
 #>                  │ Tertiary           78.15    400        
 #> 
-#> Note. Missing values removed: bmi (12). Group comparison: Welch one-way ANOVA.
+#> Note. Missing values removed: bmi (12). Group comparison: Welch one-way ANOVA. CI = confidence interval; LL = lower limit; UL = upper limit.
 
 # Test statistic alongside the p-value.
 table_continuous(
@@ -1002,7 +1017,7 @@ table_continuous(
 #>                  │ Upper secondary        
 #>                  │ Tertiary               
 #> 
-#> Note. Missing values removed: bmi (12). Group comparison: Welch one-way ANOVA.
+#> Note. Missing values removed: bmi (12). Group comparison: Welch one-way ANOVA. CI = confidence interval; LL = lower limit; UL = upper limit.
 
 # --- Choosing the statistics --------------------------------------------
 
@@ -1014,12 +1029,12 @@ table_continuous(
 )
 #> Descriptive statistics
 #> 
-#>  Variable          │      Med [Q1, Q3]         n    
+#>  Variable          │      Mdn [Q1, Q3]         n    
 #> ───────────────────┼────────────────────────────────
 #>  bmi               │  25.90 [23.40, 28.60]    1188  
 #>  wellbeing_score   │  70.25 [58.90, 79.23]    1200  
 #> 
-#> Note. Missing values removed: bmi (12). Med [Q1, Q3] = median [first quartile, third quartile].
+#> Note. Missing values removed: bmi (12). Q1 = first quartile; Q3 = third quartile.
 
 # Median with its exact (order-statistic) confidence interval.
 table_continuous(
@@ -1029,11 +1044,11 @@ table_continuous(
 )
 #> Descriptive statistics
 #> 
-#>  Variable   │   Med     IQR     Med 95% CI LL    Med 95% CI UL     n    
+#>  Variable   │   Mdn     IQR     Mdn 95% CI LL    Mdn 95% CI UL     n    
 #> ────────────┼───────────────────────────────────────────────────────────
 #>  bmi        │  25.90    5.20        25.70            26.20        1188  
 #> 
-#> Note. Missing values removed: bmi (12). IQR = interquartile range (Q3 - Q1). Med 95% CI = exact order-statistic confidence interval for the median (coverage at least 95%).
+#> Note. Missing values removed: bmi (12). Mdn 95% CI = exact order-statistic confidence interval for the median (coverage at least 95%). IQR = interquartile range (Q3 - Q1); CI = confidence interval; LL = lower limit; UL = upper limit.
 
 # One selection per variable. A skewed variable that a scoring
 # protocol requires in median and IQR (the IPAQ case) sits next to
@@ -1050,7 +1065,7 @@ table_continuous(
 )
 #> Descriptive statistics by sex
 #> 
-#>  Variable        │ Group     M     SD      Med [Q1, Q3]      n     p   
+#>  Variable        │ Group     M     SD      Mdn [Q1, Q3]      n     p   
 #> ─────────────────┼─────────────────────────────────────────────────────
 #>  bmi             │ Female  25.69   3.78                     616   .018 
 #>                  │ Male    26.20   3.64                     572        
@@ -1061,7 +1076,7 @@ table_continuous(
 #>  wellbeing_score │ Female  67.16  14.80                     620  <.001 
 #>                  │ Male    71.05  16.23                     580        
 #> 
-#> Note. Missing values removed: bmi (12), life_sat_health (8). Group comparison: Welch t-test (bmi, wellbeing_score); Wilcoxon rank-sum test (life_sat_health). Med [Q1, Q3] = median [first quartile, third quartile].
+#> Note. Missing values removed: bmi (12), life_sat_health (8). Group comparison: Welch t-test (bmi, wellbeing_score); Wilcoxon rank-sum test (life_sat_health). Q1 = first quartile; Q3 = third quartile.
 
 # --- Effect sizes -------------------------------------------------------
 
@@ -1086,7 +1101,7 @@ table_continuous(
 #>  wellbeing_score │ Female  620  <.001  g = -0.25 [-0.36, -0.14] 
 #>                  │ Male    580                                  
 #> 
-#> Note. Group comparison: Welch t-test.
+#> Note. Group comparison: Welch t-test. CI = confidence interval; LL = lower limit; UL = upper limit; ES = effect size.
 
 # Explicit effect-size measure.
 table_continuous(
@@ -1117,7 +1132,7 @@ table_continuous(
 #>                  │ Upper secondary                            
 #>                  │ Tertiary                                   
 #> 
-#> Note. Group comparison: Welch one-way ANOVA.
+#> Note. Group comparison: Welch one-way ANOVA. CI = confidence interval; LL = lower limit; UL = upper limit; ES = effect size.
 
 # --- Selection helpers --------------------------------------------------
 
@@ -1136,7 +1151,7 @@ table_continuous(
 #>  life_sat_relationships │ 3.72  1.10  1.00  5.00    3.66       3.79     1192 
 #>  life_sat_standard      │ 3.40  1.16  1.00  5.00    3.33       3.46     1192 
 #> 
-#> Note. Missing values removed: life_sat_health (8), life_sat_work (8), life_sat_relationships (8), life_sat_standard (8).
+#> Note. Missing values removed: life_sat_health (8), life_sat_work (8), life_sat_relationships (8), life_sat_standard (8). CI = confidence interval; LL = lower limit; UL = upper limit.
 
 # Pretty labels keyed by column name.
 table_continuous(
@@ -1159,7 +1174,7 @@ table_continuous(
 #>  Body mass index          │ 1188 
 #>  Satisfaction with health │ 1192 
 #> 
-#> Note. Missing values removed: Body mass index (12), Satisfaction with health (8).
+#> Note. Missing values removed: Body mass index (12), Satisfaction with health (8). CI = confidence interval; LL = lower limit; UL = upper limit.
 
 # --- Output formats -----------------------------------------------------
 

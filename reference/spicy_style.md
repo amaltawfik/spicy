@@ -2,12 +2,13 @@
 
 A *style* is a small set of number-formatting rules – how many decimals
 a p-value gets, where it bottoms out, whether it keeps its leading zero,
-what the decimal mark is, how a confidence interval is written – and the
-word that opens the note under the table. `spicy_style()` composes one
-by hand; the named themes (`"jama"`, `"nejm"`, `"lancet"`, `"annals"`,
-`"apa"`, `"aer"` – `spicy_style_names()` returns the list) are
-pre-composed ones, each encoding rules taken verbatim from an official
-document of the institution.
+what the decimal mark is, how a confidence interval is written – with
+the word that opens the note under the table and the abbreviations that
+note defines. `spicy_style()` composes one by hand; the named themes
+(`"jama"`, `"nejm"`, `"lancet"`, `"annals"`, `"apa"`, `"aer"` –
+`spicy_style_names()` returns the list) are pre-composed ones, each
+encoding rules taken verbatim from an official document of the
+institution.
 
 ## Usage
 
@@ -30,6 +31,7 @@ spicy_style(
   ic_digits = NULL,
   percent_digits = NULL,
   note_label = NULL,
+  abbreviations = NULL,
   v_digits
 )
 
@@ -128,6 +130,23 @@ spicy_style_names()
   you type is printed as typed; its opening word is set in italics when
   it is the lead-in in force.
 
+- abbreviations:
+
+  Which abbreviations the note under the table defines: those of its
+  headers, its spanners and the labels of its stub (the fit statistics
+  and the random effects of a regression), not the symbols inside its
+  cells. `NULL` (the default) follows the rule of the theme in force,
+  the APA rule when there is none (see *Themes*). `"all"` defines every
+  abbreviation and symbol the table shows, abbreviated words such as Min
+  and Max included, except *n*, *N*, *p* and the test statistics (*t*,
+  *z*, *F*, \\\chi^2\\), which no style and no journal defines: the
+  setting for readers outside the field. `"none"` defines none, but
+  keeps the definitions that say how a number was computed (partial
+  eta-squared, the IQR as the width Q3 - Q1, the method of a
+  standardized \\\beta\\, the design effect). Either way the definitions
+  take the form and the place of the theme in force. A `note` you type
+  is printed as typed.
+
 - v_digits:
 
   Defunct. Renamed `effect_size_digits` in spicy 0.14.0; supplying
@@ -161,13 +180,13 @@ either as a theme name or as the object returned here, and by
 
 ## What a theme claims, and what it does not
 
-A theme covers **numeric formatting conformity**, and the word that
-opens the table note, **only** – not full editorial conformity. It does
-not check reporting guidelines, table structure, footnote symbols,
-units, abbreviation policy, or anything else a journal's instructions
-ask of a manuscript. Each theme below lists the exact rules it encodes,
-with the sentence it encodes them from; anything not listed is spicy's
-own default, not the journal's rule.
+A theme covers **numeric formatting conformity**, the word that opens
+the table note and the abbreviations that note defines, **only** – not
+full editorial conformity. It does not check reporting guidelines, table
+structure, footnote symbols, units, or anything else a journal's
+instructions ask of a manuscript. Each theme below lists the exact rules
+it encodes, with the sentence it encodes them from; anything not listed
+is spicy's own default, not the journal's rule.
 
 Themes only move **defaults**. An argument you type wins over the theme,
 always: `table_regression(fit, style = "lancet", digits = 3)` is a
@@ -258,6 +277,18 @@ Encoded:
   gives table footnotes none: a footnote on the whole table is called by
   a letter "placed after the table title".
 
+- the abbreviations of the note on its first line,
+  `Abbreviations: HR, hazard ratio; OR, odds ratio.`, in alphabetical
+  order, `Abbreviation:` for one – section 4.1.4.10 again: that footnote
+  comes first, "set off with an introductory word or phrase instead of a
+  letter", and "abbreviations are expanded in alphabetical order". SD,
+  SE and CI are not expanded (section 13.11, "no need to expand"), nor
+  are the symbols of section 19.6 that do not carry "expand at first
+  mention" (*n*, *N*, *P*, *d*, \\R^2\\, \\\Delta\\, \\\sigma\\,
+  \\\rho\\), *B* and *M* among them, which that section writes *b* and
+  \\\bar{x}\\: it lists them as usable "without expansion except where
+  noted".
+
 Not encoded: everything else in that document (percentages carrying
 their numerator and denominator, one datum per cell, footnote letters,
 SI conversion factors) is table *construction*, not number formatting.
@@ -291,7 +322,8 @@ style layer cannot see; its inference policy (no p-values without a
 prespecified multiplicity plan, estimates + 95% CI instead, no p-values
 in the Table 1 of a randomized trial) is about what to report, not how
 to format it – request those layouts through `show_columns` and
-`p_value = FALSE` where you need them.
+`p_value = FALSE` where you need them. No rule on the abbreviations of a
+table note was found, so the note defines them as spicy's default does.
 
 ### `"lancet"` – The Lancet
 
@@ -326,6 +358,15 @@ Encoded:
   table notes of 15 research articles published in 2025-2026, checked on
   2026-10-20, opens with "Note".
 
+- the abbreviations spelled out at the end of the note, one
+  `HR=hazard ratio.` sentence each, in alphabetical order, with *n*,
+  *N*, *p*, SD, SE, IQR and CI left undefined. The artwork guidelines
+  ask authors to "list and spell out all abbreviations in the table";
+  **the form and the exemptions are not a written rule**: they are those
+  of the model tables of the two formatting guidelines ("Data are n (%),
+  median (IQR), mean (SD) ... BMI=body-mass index.") and of 35 tables of
+  13 research articles published in 2025-2026, checked on 2026-10-20.
+
 Not encoded: the empty-cell filler, the ban on p-values in a randomized
 trial's baseline table, and the absolute-rather-than- relative effect
 rule are content decisions, not number formats.
@@ -357,7 +398,8 @@ place ... when sample size is \\\ge\\ 200", no decimals below 200) is
 conditional on a per-group sample size that the style layer does not
 see; set `percent_digits` yourself. The `mean (SD)` notation the journal
 asks for, and its refusal of `\eqn{\pm}{+/-}`, are already how spicy
-renders dispersion.
+renders dispersion. No rule on the abbreviations of a table note was
+found, so the note defines them as spicy's default does.
 
 ### `"apa"` – APA Style, 7th edition
 
@@ -390,6 +432,20 @@ change of those defaults will not move an APA-formatted table.
   (`note_label = "Note."`) – the *Publication Manual*, 7th edition
   (2020), section 7.14: the general note is "designated by the word
   'Note' (italicized) followed by a period".
+
+- the abbreviations defined at the end of the general note,
+  `CI = confidence interval; LL = lower limit`, in the order they appear
+  in the table – sections 7.14 and 7.15 ("define the abbreviations in
+  the order that they appear in the table"); AIC and BIC are among those
+  section 6.44 names. The symbols that represent statistics are left
+  undefined ("Do not define symbols or abbreviations that represent
+  statistics (e.g., M, SD, F, t, df, p, N, n, OR, r)", section 6.44;
+  section 7.15 adds *SE*), and spicy counts *Mdn* (the median of Table
+  6.5) and Hedges' *g* among them. So are the symbols composed of Greek
+  letters (the same two sections) and those its sample tables leave
+  undefined (*B*, \\\beta\\, \\R^2\\, \\\Delta R^2\\, Cohen's *d*). This
+  is also spicy's default rule, the one `"nejm"`, `"annals"` and `"aer"`
+  apply.
 
 Not encoded: the one-decimal rule for means of integer scales (depends
 on what the variable measures, which spicy cannot know), and the
@@ -424,7 +480,9 @@ Encoded:
 Not encoded: the guide fixes no number of decimals, no p-value floor, no
 interval format and no decimal mark, so spicy's defaults apply.
 Horizontal-rules-only, no shading, a nine-column maximum and "Panel A /
-Panel B" blocks are layout, not number formatting.
+Panel B" blocks are layout, not number formatting. No rule on the
+abbreviations of a table note was found, so the note defines them as
+spicy's default does.
 
 ## Known gaps
 
@@ -502,7 +560,7 @@ table_regression(fit, style = spicy_style(decimal_mark = ",",
 #>  R²          │  0,83                               
 #>  Adj. R²     │  0,81                               
 #> 
-#> Note. Linear regression. Std. errors: classical (OLS).
+#> Note. Linear regression. Std. errors: classical (OLS). CI = confidence interval.
 
 # A theme with one rule changed.
 table_regression(fit, style = spicy_style("lancet", ci_sep = " to "))
@@ -518,7 +576,7 @@ table_regression(fit, style = spicy_style("lancet", ci_sep = " to "))
 #>  R²          │  0·83                                  
 #>  Adj. R²     │  0·81                                  
 #> 
-#> Linear regression. Std. errors: classical (OLS).
+#> Linear regression. Std. errors: classical (OLS). Adj. R²=adjusted coefficient of determination. B=unstandardized regression coefficient. R²=coefficient of determination.
 
 # Document-wide scope.
 old <- options(spicy.style = "apa")
@@ -529,7 +587,21 @@ table_continuous(mtcars, c(mpg, wt))
 #> ────────────┼───────────────────────────────────────────────────────────────────
 #>  mpg        │  20.09    6.03    10.40    33.90      17.92        22.26      32  
 #>  wt         │   3.22    0.98     1.51     5.42       2.86         3.57      32  
+#> 
+#> Note. CI = confidence interval; LL = lower limit; UL = upper limit.
 options(old)
+
+# Every abbreviation defined, for readers outside the field.
+table_continuous(mtcars, c(mpg, wt),
+                 style = spicy_style(abbreviations = "all"))
+#> Descriptive statistics
+#> 
+#>  Variable   │    M       SD      Min      Max     95% CI LL    95% CI UL    n   
+#> ────────────┼───────────────────────────────────────────────────────────────────
+#>  mpg        │  20.09    6.03    10.40    33.90      17.92        22.26      32  
+#>  wt         │   3.22    0.98     1.51     5.42       2.86         3.57      32  
+#> 
+#> Note. M = mean; SD = standard deviation; Min = minimum; Max = maximum; CI = confidence interval; LL = lower limit; UL = upper limit.
 
 # What a theme encodes, and where it comes from.
 spicy_style("lancet")
@@ -540,6 +612,7 @@ spicy_style("lancet")
 #>  - p-values: 2 significant figures capped at 4 decimals, floor <0·0001, leading zero kept
 #>  - confidence intervals: en dash between bounds (matches the journal's published examples; not a written rule)
 #>  - table note: no lead-in word (matches the journal's model tables and its published tables; not a written rule)
+#>  - table note: abbreviations spelled out at its end, one "HR=hazard ratio." sentence each, alphabetical; n, N, p, SD, SE, IQR and CI not (matches the journal's model tables and its published tables; not a written rule)
 #> 
 #> Source: Information for Authors (April 2026); Randomised trials / Observational studies formatting guidelines (July 2025)
 #>         https://www.thelancet.com/pb-assets/Lancet/authors/tl-info-for-authors-1690986041530.pdf

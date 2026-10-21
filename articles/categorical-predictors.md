@@ -55,7 +55,7 @@ table_regression(fit)
 #>  R²                 │    0.01                              
 #>  Adj. R²            │    0.01                              
 #> 
-#> Note. Linear regression. Std. errors: classical (OLS).
+#> Note. Linear regression. Std. errors: classical (OLS). CI = confidence interval.
 ```
 
 Each coefficient is a comparison **with the reference level, holding the
@@ -100,7 +100,7 @@ table_regression(fit_u, keep = "employment_status")
 #>  R²                  │    0.01                              
 #>  Adj. R²             │    0.01                              
 #> 
-#> Note. Linear regression. Std. errors: classical (OLS).
+#> Note. Linear regression. Std. errors: classical (OLS). CI = confidence interval.
 ```
 
 Every group now sits 3.6 to 4.7 points *above* the unemployed — the same
@@ -339,7 +339,7 @@ table_regression(list(g_lin, g_fac), nested = TRUE,
 #>  Δχ²                      │     –             +0.03         
 #>  p (change)               │     –               .852        
 #> 
-#> Note. Logistic regression models. Std. errors: classical (Fisher information).
+#> Note. Logistic regression models. Std. errors: classical (Fisher information). AIC = Akaike information criterion.
 ```
 
 Freeing education from the linear trend buys a chi-square of 0.03 on 1
@@ -456,7 +456,7 @@ table_regression(
 #>  R²          │    0.35                              
 #>  Adj. R²     │    0.34                              
 #> 
-#> Note. Linear regression. Std. errors: classical (OLS).
+#> Note. Linear regression. Std. errors: classical (OLS). CI = confidence interval.
 ```
 
 Each row is one step of the scale: Fair sits 14.97 points above Poor,
@@ -502,7 +502,7 @@ table_regression(list(b_cont, b_cat), show_columns = c("b", "p"),
 #>  R²                     │    0.02            0.01        
 #>  AIC                    │ 9884.2          9898.1         
 #> 
-#> Note. Linear regression models. Std. errors: classical (OLS).
+#> Note. Linear regression models. Std. errors: classical (OLS). AIC = Akaike information criterion.
 ```
 
 The continuous fit explains twice the variance with half the parameters
@@ -539,7 +539,7 @@ table_regression(
 #>  AIC         │ 9884.2                9885.9                
 #>  ΔAIC        │     –                   +1.7                
 #> 
-#> Note. Linear regression models. Std. errors: classical (OLS).
+#> Note. Linear regression models. Std. errors: classical (OLS). AIC = Akaike information criterion.
 ```
 
 Read the `ΔAIC` row with the standard interpretive scale (Burnham and
@@ -603,7 +603,7 @@ table_regression(
 #>  R²                                 │    0.01                              
 #>  Adj. R²                            │    0.01                              
 #> 
-#> Note. Linear regression. Std. errors: classical (OLS).
+#> Note. Linear regression. Std. errors: classical (OLS). CI = confidence interval.
 ```
 
 ## See also

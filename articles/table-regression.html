@@ -194,7 +194,7 @@ footer (<code>n</code>, <code>R²</code>, <code>Adj. R²</code>):</p>
 <span><span class="co">#&gt;  R²              <span style="color: #9E9E9E;">│</span>    0.02                              </span></span>
 <span><span class="co">#&gt;  Adj. R²         <span style="color: #9E9E9E;">│</span>    0.02                              </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear regression. Std. errors: classical (OLS).</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear regression. Std. errors: classical (OLS). CI = confidence interval.</span></span></span></code></pre></div>
 <p>Reading the table:</p>
 <ul>
 <li>Each predictor occupies one row; factor predictors are grouped under
@@ -240,7 +240,7 @@ above 0.01, floor <code>&lt;0.001</code>:</p>
 <span><span class="co">#&gt;  R²              <span style="color: #9E9E9E;">│</span>    0.02                               </span></span>
 <span><span class="co">#&gt;  Adj. R²         <span style="color: #9E9E9E;">│</span>    0.02                               </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear regression. Std. errors: classical (OLS).</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear regression. Std. errors: classical (OLS). CI = confidence interval.</span></span></span></code></pre></div>
 <p>The complete tour of the named styles — what each journal specifies,
 with the guideline sentence behind every rule — is in the <em>House
 styles</em> section of <a href="summary-tables-reporting.html"><em>Summary tables for
@@ -321,7 +321,7 @@ token is auto-injected into <code>show_columns</code> immediately after
 <span><span class="co">#&gt;  R²              <span style="color: #9E9E9E;">│</span>    0.02                                     </span></span>
 <span><span class="co">#&gt;  Adj. R²         <span style="color: #9E9E9E;">│</span>    0.02                                     </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear regression. Std. errors: classical (OLS). β = standardized coefficient ("refit": outcome and numeric predictors z-scored, factor dummies on 0/1).</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear regression. Std. errors: classical (OLS). β = standardized coefficient ("refit": outcome and numeric predictors z-scored, factor dummies on 0/1); CI = confidence interval.</span></span></span></code></pre></div>
 <p>On the standardized scale the predictors become directly comparable:
 being male predicts a 0.25-SD higher wellbeing score, the largest
 standardized effect in the model, while a one-SD increase in age
@@ -404,7 +404,7 @@ reuse this copy throughout the article:</p>
 <span><span class="co">#&gt;    Upper secondary        <span style="color: #9E9E9E;">│</span> [0.17, 0.25] </span></span>
 <span><span class="co">#&gt;    Tertiary               <span style="color: #9E9E9E;">│</span> [0.17, 0.25] </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear regression. Std. errors: classical (OLS). η² = partial eta-squared; ω² = bias-corrected partial omega-squared.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear regression. Std. errors: classical (OLS). η² = partial eta-squared; CI = confidence interval; ω² = bias-corrected partial omega-squared.</span></span></span></code></pre></div>
 <p>Methodology notes:</p>
 <ul>
 <li>The partial F-test is a Type-II test (marginality-respecting,
@@ -491,7 +491,7 @@ shortcut <code>"all_ame"</code> expands to the full set.</p>
 <span><span class="co">#&gt;  R²              <span style="color: #9E9E9E;">│</span>    0.02                                           </span></span>
 <span><span class="co">#&gt;  Adj. R²         <span style="color: #9E9E9E;">│</span>    0.02                                           </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear regression. Std. errors: classical (OLS). AME = average marginal effect.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear regression. Std. errors: classical (OLS). AME = average marginal effect; CI = confidence interval.</span></span></span></code></pre></div>
 <p>Reading conventions:</p>
 <ul>
 <li>
@@ -612,7 +612,7 @@ introduced in <em>Per-coefficient effect sizes</em>:</p>
 <span><span class="co">#&gt;    Upper secondary        <span style="color: #9E9E9E;">│</span> [0.44, 0.87]    .005 </span></span>
 <span><span class="co">#&gt;    Tertiary               <span style="color: #9E9E9E;">│</span> [0.27, 0.59]   &lt;.001 </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Logistic regression models. Coefficients exponentiated and displayed as OR; CI bounds exponentiated. Std. errors: classical (Fisher information). OR = odds ratio.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Logistic regression models. Coefficients exponentiated and displayed as OR; CI bounds exponentiated. Std. errors: classical (Fisher information). CI = confidence interval; AIC = Akaike information criterion.</span></span></span></code></pre></div>
 <p>Reading it: each <em>Univariable</em> row is its own simple logistic
 regression — the <code>N</code> column is per predictor, because
 listwise deletion can differ across candidates — while the
@@ -813,7 +813,7 @@ default (Long and Ervin 2000):</p>
 <span><span class="co">#&gt;  R²              <span style="color: #9E9E9E;">│</span>    0.02                              </span></span>
 <span><span class="co">#&gt;  Adj. R²         <span style="color: #9E9E9E;">│</span>    0.02                              </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear regression. Std. errors: heteroskedasticity-robust (HC3).</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear regression. Std. errors: heteroskedasticity-robust (HC3). CI = confidence interval.</span></span></span></code></pre></div>
 <p>The footer reads “<em>Std. errors: heteroskedasticity-robust
 (HC3)</em>”; the column header for the confidence interval automatically
 tracks <code>ci_level</code>.</p>
@@ -873,7 +873,7 @@ dynamic column choice).</p>
 <span><span class="co">#&gt;  R²              <span style="color: #9E9E9E;">│</span>    0.02                                            </span></span>
 <span><span class="co">#&gt;  Adj. R²         <span style="color: #9E9E9E;">│</span>    0.02                                            </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear regression. Std. errors: cluster-robust (CR2), clusters by region. AME inference: t-test with Satterthwaite df. AME = average marginal effect.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear regression. Std. errors: cluster-robust (CR2), clusters by region. AME inference: t-test with Satterthwaite df. CI = confidence interval; AME = average marginal effect.</span></span></span></code></pre></div>
 <p><code>CR2</code> (the Bell-McCaffrey adjustment) is the recommended
 default under few clusters (Pustejovsky and Tipton 2018; Imbens and
 Kolesár 2016). Coefficient inference uses
@@ -922,7 +922,7 @@ same as in <code><a href="https://rdrr.io/r/stats/p.adjust.html" class="external
 <span><span class="co">#&gt;  R²                       <span style="color: #9E9E9E;">│</span>    0.22                              </span></span>
 <span><span class="co">#&gt;  Adj. R²                  <span style="color: #9E9E9E;">│</span>    0.22                              </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear regression. Std. errors: classical (OLS). P-values adjusted for 5 tests (Bonferroni method).</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear regression. Std. errors: classical (OLS). P-values adjusted for 5 tests (Bonferroni method). CI = confidence interval.</span></span></span></code></pre></div>
 <p>The footer documents the chosen method and the family size; the SE
 column is unchanged. <code>p_adjust</code> is orthogonal to
 <code>vcov</code>: combining a robust SE with a family-wise correction
@@ -987,7 +987,7 @@ whether it shows.</p>
 <span><span class="co">#&gt;  R²          <span style="color: #9E9E9E;">│</span>    0.23                              </span></span>
 <span><span class="co">#&gt;  Adj. R²     <span style="color: #9E9E9E;">│</span>    0.22                              </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear regression. Std. errors: classical (OLS).</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear regression. Std. errors: classical (OLS). CI = confidence interval.</span></span></span></code></pre></div>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span>, drop <span class="op">=</span> <span class="st">"^education"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Linear regression: wellbeing_score</span></span></span>
@@ -1008,7 +1008,7 @@ whether it shows.</p>
 <span><span class="co">#&gt;  R²              <span style="color: #9E9E9E;">│</span>    0.23                              </span></span>
 <span><span class="co">#&gt;  Adj. R²         <span style="color: #9E9E9E;">│</span>    0.22                              </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear regression. Std. errors: classical (OLS).</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear regression. Std. errors: classical (OLS). CI = confidence interval.</span></span></span></code></pre></div>
 <p>Together with <code>p_adjust</code>, this is the article-ready
 workflow: adjust on the full model, display only the rows the reader
 cares about —
@@ -1043,7 +1043,7 @@ named numeric vector for custom thresholds:</p>
 <span><span class="co">#&gt;  R²              <span style="color: #9E9E9E;">│</span>    0.02                                 </span></span>
 <span><span class="co">#&gt;  Adj. R²         <span style="color: #9E9E9E;">│</span>    0.02                                 </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear regression. Std. errors: classical (OLS).</span></span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear regression. Std. errors: classical (OLS). CI = confidence interval.</span></span></span>
 <span><span class="co"><span style="color: #9E9E9E;">#&gt; *** p &lt; .001, ** p &lt; .01, * p &lt; .05.</span></span></span></code></pre></div>
 <p>Stars suffix the <code>B</code> column (or <code>β</code> when
 standardization is requested); the threshold mapping is auto-documented
@@ -1097,7 +1097,7 @@ European decimal notation and automatically changes the CI separator to
 <span><span class="co">#&gt;  R²                                <span style="color: #9E9E9E;">│</span>    0,22                               </span></span>
 <span><span class="co">#&gt;  Adj. R²                           <span style="color: #9E9E9E;">│</span>    0,22                               </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear regression. Std. errors: classical (OLS).</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear regression. Std. errors: classical (OLS). CI = confidence interval.</span></span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="generalized-linear-models-glm">Generalized linear models (glm)<a class="anchor" aria-label="anchor" href="#generalized-linear-models-glm"></a>
@@ -1150,7 +1150,7 @@ enough to exercise every glm-specific feature below.</p>
 <span><span class="co">#&gt;  R² (Nagelkerke)          <span style="color: #9E9E9E;">│</span>    0.03                              </span></span>
 <span><span class="co">#&gt;  AIC                      <span style="color: #9E9E9E;">│</span> 1200.9                               </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Logistic regression. Std. errors: classical (Fisher information).</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Logistic regression. Std. errors: classical (Fisher information). CI = confidence interval; AIC = Akaike information criterion.</span></span></span></code></pre></div>
 <p>Read the fit block with care. McFadden and Nagelkerke R² are
 likelihood-based analogs of R², not proportions of explained variance —
 their values are not comparable to an OLS R², and different measures
@@ -1208,7 +1208,7 @@ kept; Long &amp; Freese 2014 §3.2.2.):</p>
 <span><span class="co">#&gt;  R² (Nagelkerke)          <span style="color: #9E9E9E;">│</span>    0.03                            </span></span>
 <span><span class="co">#&gt;  AIC                      <span style="color: #9E9E9E;">│</span> 1200.9                             </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Logistic regression. Coefficients exponentiated and displayed as OR; SE on the OR scale (delta method); CI bounds exponentiated (asymmetric). Std. errors: classical (Fisher information). OR = odds ratio.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Logistic regression. Coefficients exponentiated and displayed as OR; SE on the OR scale (delta method); CI bounds exponentiated (asymmetric). Std. errors: classical (Fisher information). CI = confidence interval; AIC = Akaike information criterion.</span></span></span></code></pre></div>
 <p>Read exponentiated rows with the factor-change template (Long and
 Freese 2014 §6.1.1): for <code>Tertiary</code>, OR = 0.40, 95% CI [0.27,
 0.59] — holding sex and age constant, the odds of smoking for a
@@ -1250,7 +1250,7 @@ full-sample count on numeric predictors and the intercept row:</p>
 <span><span class="co">#&gt;  R² (Nagelkerke)          <span style="color: #9E9E9E;">│</span>          0.03                               </span></span>
 <span><span class="co">#&gt;  AIC                      <span style="color: #9E9E9E;">│</span>       1200.9                                </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Logistic regression. Std. errors: classical (Fisher information).</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Logistic regression. Std. errors: classical (Fisher information). CI = confidence interval; AIC = Akaike information criterion.</span></span></span></code></pre></div>
 <p>The token is off by default and <em>deliberately narrow</em>: it is
 defined for binomial models with an ungrouped 0/1 response and for
 right-censored Cox models (events per factor level; Cox tables also
@@ -1289,7 +1289,7 @@ df) and numeric terms (1 df) read at a glance:</p>
 <span><span class="co">#&gt;  R² (Nagelkerke)          <span style="color: #9E9E9E;">│</span>    0.03                   </span></span>
 <span><span class="co">#&gt;  AIC                      <span style="color: #9E9E9E;">│</span> 1198.9                    </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Logistic regression. Std. errors: classical (Fisher information). χ² = partial likelihood-ratio chi-squared.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Logistic regression. Std. errors: classical (Fisher information). χ² = partial likelihood-ratio chi-squared; AIC = Akaike information criterion.</span></span></span></code></pre></div>
 <p>The <code>p</code> column and the <code>χ²</code> column answer
 different questions. Each per-level p-value compares one education level
 with the reference, so it changes when the reference level changes; the
@@ -1353,7 +1353,7 @@ binomial families; non-binomial returns NA with a
 <span><span class="co">#&gt;  R² (Nagelkerke)          <span style="color: #9E9E9E;">│</span>    0.03                                     </span></span>
 <span><span class="co">#&gt;  AIC                      <span style="color: #9E9E9E;">│</span> 1200.9                                      </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Logistic regression. Std. errors: classical (Fisher information). β = standardized coefficient ("pseudo": latent-scale SD(X)/SD(Y*) for numeric predictors, 1/SD(Y*) for factor dummies).</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Logistic regression. Std. errors: classical (Fisher information). β = standardized coefficient ("pseudo": latent-scale SD(X)/SD(Y*) for numeric predictors, 1/SD(Y*) for factor dummies); CI = confidence interval; AIC = Akaike information criterion.</span></span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="average-marginal-effects-probability-units-not-log-odds">Average marginal effects: probability units, not log-odds<a class="anchor" aria-label="anchor" href="#average-marginal-effects-probability-units-not-log-odds"></a>
@@ -1392,7 +1392,7 @@ communicating logistic effects (Mood 2010; Long and Freese 2014
 <span><span class="co">#&gt;  R² (Nagelkerke)          <span style="color: #9E9E9E;">│</span>    0.03                                      </span></span>
 <span><span class="co">#&gt;  AIC                      <span style="color: #9E9E9E;">│</span> 1200.9                                       </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Logistic regression. Std. errors: classical (Fisher information). AME = average marginal effect.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Logistic regression. Std. errors: classical (Fisher information). AME = average marginal effect; CI = confidence interval; AIC = Akaike information criterion.</span></span></span></code></pre></div>
 <p>Point estimate and inference are delegated to
 <code><a href="https://rdrr.io/pkg/marginaleffects/man/slopes.html" class="external-link">marginaleffects::avg_slopes()</a></code>. Under cluster-robust
 variance, the Satterthwaite-df handling described in the <em>Robust
@@ -1432,7 +1432,7 @@ Wald; <code>"profile"</code> only refines the CI bounds:</p>
 <span><span class="co">#&gt;  R² (Nagelkerke)          <span style="color: #9E9E9E;">│</span>    0.03                              </span></span>
 <span><span class="co">#&gt;  AIC                      <span style="color: #9E9E9E;">│</span> 1200.9                               </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Logistic regression. Std. errors: classical (Fisher information). 95% CIs: profile likelihood.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Logistic regression. Std. errors: classical (Fisher information). 95% CIs: profile likelihood. CI = confidence interval; AIC = Akaike information criterion.</span></span></span></code></pre></div>
 <p>One consequence worth naming when combining with
 <code>exponentiate = TRUE</code>: the CI bounds are the exponentiated
 profile bounds (asymmetric), while the <code>SE</code> column is the
@@ -1505,7 +1505,7 @@ error that points to the pseudo-R² family and to <code>lrt_change</code>
 <span><span class="co">#&gt;  Δχ²                      <span style="color: #9E9E9E;">│</span>  +21.64               </span></span>
 <span><span class="co">#&gt;  p (change)               <span style="color: #9E9E9E;">│</span>    &lt;.001              </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Logistic regression models. Std. errors: classical (Fisher information).</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Logistic regression models. Std. errors: classical (Fisher information). AIC = Akaike information criterion.</span></span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="gaussian-glm-caveat">Gaussian glm caveat<a class="anchor" aria-label="anchor" href="#gaussian-glm-caveat"></a>
@@ -1561,7 +1561,7 @@ align per model in a comparison table:</p>
 <span><span class="co">#&gt;  AIC                             <span style="color: #9E9E9E;">│</span> 1755.6                                 </span></span>
 <span><span class="co">#&gt;  BIC                             <span style="color: #9E9E9E;">│</span> 1774.8                                 </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear mixed-effects regression. Std. errors: Wald (model-based). p-values: Wald-z, large-sample approximation. Load `lmerTest` for Satterthwaite t-tests. Random effects (REML): LR test vs linear regression, χ̄²(3) = 150.04, p &lt; .001.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear mixed-effects regression. Std. errors: Wald (model-based). p-values: Wald-z, large-sample approximation. Load `lmerTest` for Satterthwaite t-tests. Random effects (REML): LR test vs linear regression, χ̄²(3) = 150.04, p &lt; .001. CI = confidence interval; AIC = Akaike information criterion; BIC = Bayesian information criterion.</span></span></span></code></pre></div>
 <p>No <code>ICC</code> row appears here: a random-slope fit has no
 single intra-class correlation, so the row is dropped automatically (the
 intercept-only case shows it).</p>
@@ -1649,7 +1649,7 @@ as a rich-format table for <code>gt</code>, <code>tinytable</code>,
 <span><span class="co">#&gt;  $ 95% CI LL: num  61.9504 -0.0137 NA NA 2.0796 ...</span></span>
 <span><span class="co">#&gt;  $ 95% CI UL: num  68.451 0.107 NA NA 5.632 ...</span></span>
 <span><span class="co">#&gt;  $ p        : num  1.59e-216 1.30e-01 NA NA 2.22e-05 ...</span></span>
-<span><span class="co">#&gt;  - attr(*, "note")= chr "Note. Linear regression. Std. errors: classical (OLS)."</span></span></code></pre></div>
+<span><span class="co">#&gt;  - attr(*, "note")= chr "Note. Linear regression. Std. errors: classical (OLS). CI = confidence interval."</span></span></code></pre></div>
 <div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">wellbeing_score</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">smoking</span>, data <span class="op">=</span> <span class="va">sochealth</span><span class="op">)</span>,</span>
@@ -2088,7 +2088,8 @@ Adj. R²
 </tbody>
 </table>
 <div class="spicy-gt-note" style="width: min-content; min-width: 100%; box-sizing: border-box; padding: 0.5rem 0.5rem 0.2rem 0.5rem; font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji'; font-size: 0.9em; line-height: 1.25; color: #333333; text-align: left;">
-<em>Note.</em> Linear regression. Std. errors: classical (OLS).
+<em>Note.</em> Linear regression. Std. errors: classical (OLS). CI =
+confidence interval.
 </div>
 </div>
 </div>

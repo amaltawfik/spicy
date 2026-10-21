@@ -94,7 +94,7 @@ table_regression(fit)
 #>  R²              │    0.02                              
 #>  Adj. R²         │    0.02                              
 #> 
-#> Note. Linear regression. Std. errors: classical (OLS).
+#> Note. Linear regression. Std. errors: classical (OLS). CI = confidence interval.
 ```
 
 Reading the table:
@@ -142,7 +142,7 @@ table_regression(fit, style = "nejm")
 #>  R²              │    0.02                               
 #>  Adj. R²         │    0.02                               
 #> 
-#> Note. Linear regression. Std. errors: classical (OLS).
+#> Note. Linear regression. Std. errors: classical (OLS). CI = confidence interval.
 ```
 
 The complete tour of the named styles — what each journal specifies,
@@ -214,7 +214,7 @@ table_regression(fit, standardized = "refit")
 #>  R²              │    0.02                                     
 #>  Adj. R²         │    0.02                                     
 #> 
-#> Note. Linear regression. Std. errors: classical (OLS). β = standardized coefficient ("refit": outcome and numeric predictors z-scored, factor dummies on 0/1).
+#> Note. Linear regression. Std. errors: classical (OLS). β = standardized coefficient ("refit": outcome and numeric predictors z-scored, factor dummies on 0/1); CI = confidence interval.
 ```
 
 On the standardized scale the predictors become directly comparable:
@@ -300,7 +300,7 @@ table_regression(
 #>    Upper secondary        │ [0.17, 0.25] 
 #>    Tertiary               │ [0.17, 0.25] 
 #> 
-#> Note. Linear regression. Std. errors: classical (OLS). η² = partial eta-squared; ω² = bias-corrected partial omega-squared.
+#> Note. Linear regression. Std. errors: classical (OLS). η² = partial eta-squared; CI = confidence interval; ω² = bias-corrected partial omega-squared.
 ```
 
 Methodology notes:
@@ -384,7 +384,7 @@ table_regression(
 #>  R²              │    0.02                                           
 #>  Adj. R²         │    0.02                                           
 #> 
-#> Note. Linear regression. Std. errors: classical (OLS). AME = average marginal effect.
+#> Note. Linear regression. Std. errors: classical (OLS). AME = average marginal effect; CI = confidence interval.
 ```
 
 Reading conventions:
@@ -508,7 +508,7 @@ table_regression_uv(sh, outcome = smoking,
 #>    Upper secondary        │ [0.44, 0.87]    .005 
 #>    Tertiary               │ [0.27, 0.59]   <.001 
 #> 
-#> Note. Logistic regression models. Coefficients exponentiated and displayed as OR; CI bounds exponentiated. Std. errors: classical (Fisher information). OR = odds ratio.
+#> Note. Logistic regression models. Coefficients exponentiated and displayed as OR; CI bounds exponentiated. Std. errors: classical (Fisher information). CI = confidence interval; AIC = Akaike information criterion.
 ```
 
 Reading it: each *Univariable* row is its own simple logistic regression
@@ -713,7 +713,7 @@ table_regression(fit, vcov = "HC3")
 #>  R²              │    0.02                              
 #>  Adj. R²         │    0.02                              
 #> 
-#> Note. Linear regression. Std. errors: heteroskedasticity-robust (HC3).
+#> Note. Linear regression. Std. errors: heteroskedasticity-robust (HC3). CI = confidence interval.
 ```
 
 The footer reads “*Std. errors: heteroskedasticity-robust (HC3)*”; the
@@ -770,7 +770,7 @@ table_regression(
 #>  R²              │    0.02                                            
 #>  Adj. R²         │    0.02                                            
 #> 
-#> Note. Linear regression. Std. errors: cluster-robust (CR2), clusters by region. AME inference: t-test with Satterthwaite df. AME = average marginal effect.
+#> Note. Linear regression. Std. errors: cluster-robust (CR2), clusters by region. AME inference: t-test with Satterthwaite df. CI = confidence interval; AME = average marginal effect.
 ```
 
 `CR2` (the Bell-McCaffrey adjustment) is the recommended default under
@@ -822,7 +822,7 @@ table_regression(fit, p_adjust = "bonferroni")
 #>  R²                       │    0.22                              
 #>  Adj. R²                  │    0.22                              
 #> 
-#> Note. Linear regression. Std. errors: classical (OLS). P-values adjusted for 5 tests (Bonferroni method).
+#> Note. Linear regression. Std. errors: classical (OLS). P-values adjusted for 5 tests (Bonferroni method). CI = confidence interval.
 ```
 
 The footer documents the chosen method and the family size; the SE
@@ -885,7 +885,7 @@ table_regression(fit, keep = c("^smoking", "^bmi$"))
 #>  R²          │    0.23                              
 #>  Adj. R²     │    0.22                              
 #> 
-#> Note. Linear regression. Std. errors: classical (OLS).
+#> Note. Linear regression. Std. errors: classical (OLS). CI = confidence interval.
 ```
 
 ``` r
@@ -909,7 +909,7 @@ table_regression(fit, drop = "^education")
 #>  R²              │    0.23                              
 #>  Adj. R²         │    0.22                              
 #> 
-#> Note. Linear regression. Std. errors: classical (OLS).
+#> Note. Linear regression. Std. errors: classical (OLS). CI = confidence interval.
 ```
 
 Together with `p_adjust`, this is the article-ready workflow: adjust on
@@ -946,7 +946,7 @@ table_regression(fit, stars = TRUE)
 #>  R²              │    0.02                                 
 #>  Adj. R²         │    0.02                                 
 #> 
-#> Note. Linear regression. Std. errors: classical (OLS).
+#> Note. Linear regression. Std. errors: classical (OLS). CI = confidence interval.
 #> *** p < .001, ** p < .01, * p < .05.
 ```
 
@@ -1000,7 +1000,7 @@ table_regression(
 #>  R²                                │    0,22                               
 #>  Adj. R²                           │    0,22                               
 #> 
-#> Note. Linear regression. Std. errors: classical (OLS).
+#> Note. Linear regression. Std. errors: classical (OLS). CI = confidence interval.
 ```
 
 ## Generalized linear models (glm)
@@ -1055,7 +1055,7 @@ table_regression(fit)
 #>  R² (Nagelkerke)          │    0.03                              
 #>  AIC                      │ 1200.9                               
 #> 
-#> Note. Logistic regression. Std. errors: classical (Fisher information).
+#> Note. Logistic regression. Std. errors: classical (Fisher information). CI = confidence interval; AIC = Akaike information criterion.
 ```
 
 Read the fit block with care. McFadden and Nagelkerke R² are
@@ -1113,7 +1113,7 @@ table_regression(fit, exponentiate = TRUE)
 #>  R² (Nagelkerke)          │    0.03                            
 #>  AIC                      │ 1200.9                             
 #> 
-#> Note. Logistic regression. Coefficients exponentiated and displayed as OR; SE on the OR scale (delta method); CI bounds exponentiated (asymmetric). Std. errors: classical (Fisher information). OR = odds ratio.
+#> Note. Logistic regression. Coefficients exponentiated and displayed as OR; SE on the OR scale (delta method); CI bounds exponentiated (asymmetric). Std. errors: classical (Fisher information). CI = confidence interval; AIC = Akaike information criterion.
 ```
 
 Read exponentiated rows with the factor-change template (Long and Freese
@@ -1158,7 +1158,7 @@ table_regression(fit, show_columns = c("n_events", "b", "ci", "p"))
 #>  R² (Nagelkerke)          │          0.03                               
 #>  AIC                      │       1200.9                                
 #> 
-#> Note. Logistic regression. Std. errors: classical (Fisher information).
+#> Note. Logistic regression. Std. errors: classical (Fisher information). CI = confidence interval; AIC = Akaike information criterion.
 ```
 
 The token is off by default and *deliberately narrow*: it is defined for
@@ -1200,7 +1200,7 @@ table_regression(fit2, show_columns = c("b", "partial_chi2", "p"))
 #>  R² (Nagelkerke)          │    0.03                   
 #>  AIC                      │ 1198.9                    
 #> 
-#> Note. Logistic regression. Std. errors: classical (Fisher information). χ² = partial likelihood-ratio chi-squared.
+#> Note. Logistic regression. Std. errors: classical (Fisher information). χ² = partial likelihood-ratio chi-squared; AIC = Akaike information criterion.
 ```
 
 The `p` column and the `χ²` column answer different questions. Each
@@ -1264,7 +1264,7 @@ table_regression(fit, standardized = "pseudo")
 #>  R² (Nagelkerke)          │    0.03                                     
 #>  AIC                      │ 1200.9                                      
 #> 
-#> Note. Logistic regression. Std. errors: classical (Fisher information). β = standardized coefficient ("pseudo": latent-scale SD(X)/SD(Y*) for numeric predictors, 1/SD(Y*) for factor dummies).
+#> Note. Logistic regression. Std. errors: classical (Fisher information). β = standardized coefficient ("pseudo": latent-scale SD(X)/SD(Y*) for numeric predictors, 1/SD(Y*) for factor dummies); CI = confidence interval; AIC = Akaike information criterion.
 ```
 
 ### Average marginal effects: probability units, not log-odds
@@ -1303,7 +1303,7 @@ table_regression(fit, show_columns = c("b", "p", "ame", "ame_ci", "ame_p"))
 #>  R² (Nagelkerke)          │    0.03                                      
 #>  AIC                      │ 1200.9                                       
 #> 
-#> Note. Logistic regression. Std. errors: classical (Fisher information). AME = average marginal effect.
+#> Note. Logistic regression. Std. errors: classical (Fisher information). AME = average marginal effect; CI = confidence interval; AIC = Akaike information criterion.
 ```
 
 Point estimate and inference are delegated to
@@ -1346,7 +1346,7 @@ table_regression(fit, ci_method = "profile")
 #>  R² (Nagelkerke)          │    0.03                              
 #>  AIC                      │ 1200.9                               
 #> 
-#> Note. Logistic regression. Std. errors: classical (Fisher information). 95% CIs: profile likelihood.
+#> Note. Logistic regression. Std. errors: classical (Fisher information). 95% CIs: profile likelihood. CI = confidence interval; AIC = Akaike information criterion.
 ```
 
 One consequence worth naming when combining with `exponentiate = TRUE`:
@@ -1419,7 +1419,7 @@ table_regression(list(m1, m2, m3), nested = TRUE)
 #>  Δχ²                      │  +21.64               
 #>  p (change)               │    <.001              
 #> 
-#> Note. Logistic regression models. Std. errors: classical (Fisher information).
+#> Note. Logistic regression models. Std. errors: classical (Fisher information). AIC = Akaike information criterion.
 ```
 
 ### Gaussian glm caveat
@@ -1478,7 +1478,7 @@ table_regression(fit)
 #>  AIC                             │ 1755.6                                 
 #>  BIC                             │ 1774.8                                 
 #> 
-#> Note. Linear mixed-effects regression. Std. errors: Wald (model-based). p-values: Wald-z, large-sample approximation. Load `lmerTest` for Satterthwaite t-tests. Random effects (REML): LR test vs linear regression, χ̄²(3) = 150.04, p < .001.
+#> Note. Linear mixed-effects regression. Std. errors: Wald (model-based). p-values: Wald-z, large-sample approximation. Load `lmerTest` for Satterthwaite t-tests. Random effects (REML): LR test vs linear regression, χ̄²(3) = 150.04, p < .001. CI = confidence interval; AIC = Akaike information criterion; BIC = Bayesian information criterion.
 ```
 
 No `ICC` row appears here: a random-slope fit has no single intra-class
@@ -1565,7 +1565,7 @@ str(out)
 #>  $ 95% CI LL: num  61.9504 -0.0137 NA NA 2.0796 ...
 #>  $ 95% CI UL: num  68.451 0.107 NA NA 5.632 ...
 #>  $ p        : num  1.59e-216 1.30e-01 NA NA 2.22e-05 ...
-#>  - attr(*, "note")= chr "Note. Linear regression. Std. errors: classical (OLS)."
+#>  - attr(*, "note")= chr "Note. Linear regression. Std. errors: classical (OLS). CI = confidence interval."
 ```
 
 ``` r
@@ -1599,7 +1599,8 @@ pkgdown_dark_gt(
 
 [TABLE]
 
-*Note.* Linear regression. Std. errors: classical (OLS).
+*Note.* Linear regression. Std. errors: classical (OLS). CI = confidence
+interval.
 
 ## broom integration
 

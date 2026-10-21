@@ -365,7 +365,8 @@ table_multiresponse(
   object, or `NULL` (the default). A style only changes DEFAULTS – any
   argument you pass explicitly wins over it. Set
   `options(spicy.style = )` for document-wide scope. A theme covers
-  numeric formatting conformity only, not full editorial conformity;
+  numeric formatting, the word that opens the note and the abbreviations
+  the note defines, not full editorial conformity;
   [`?spicy_style`](https://amaltawfik.github.io/spicy/reference/spicy_style.md)
   lists the exact rules each one encodes and the official document they
   come from. An unknown name is an error.

@@ -48,7 +48,7 @@ table_continuous_lm(
 #>  bmi             │   0.93      .018  0.00  1188 
 #>  life_sat_health │   0.22      .267  0.00  1192 
 #> 
-#> Note. Missing values removed: bmi (12), life_sat_health (8). Group comparison: t-test from the linear model.
+#> Note. Missing values removed: bmi (12), life_sat_health (8). Group comparison: t-test from the linear model. CI = confidence interval; LL = lower limit; UL = upper limit.
 ```
 
 For categorical predictors, the table reports estimated means by level.
@@ -81,7 +81,7 @@ table_continuous_lm(
 #>  wellbeing_score │   5.65     4.32  <.001  0.02  1200 
 #>  bmi             │   0.93     2.38   .018  0.00  1188 
 #> 
-#> Note. Missing values removed: bmi (12). Group comparison: t-test from the linear model. Std. errors: heteroskedasticity-robust (HC3).
+#> Note. Missing values removed: bmi (12). Group comparison: t-test from the linear model. Std. errors: heteroskedasticity-robust (HC3). CI = confidence interval; LL = lower limit; UL = upper limit.
 ```
 
 The `HC*` family is computed via
@@ -118,7 +118,7 @@ table_continuous_lm(
 #> ──────────┼─────────────────────────────────────────────────────────────────────
 #>  extra    │ 0.75   2.33     1.58       0.70       2.46     4.06  .003  0.16  20 
 #> 
-#> Note. Group comparison: t-test from the linear model. Std. errors: cluster-robust (CR2), clusters by ID.
+#> Note. Group comparison: t-test from the linear model. Std. errors: cluster-robust (CR2), clusters by ID. CI = confidence interval; LL = lower limit; UL = upper limit.
 ```
 
 `"CR2"` is the recommended default (Bell & McCaffrey 2002; Pustejovsky &
@@ -160,7 +160,7 @@ table_continuous_lm(
 #> ─────────────────┼────────────────────────────────────
 #>  wellbeing_score │   5.66     4.30  <.001  0.02  1200 
 #> 
-#> Note. Group comparison: z-test from the linear model. Std. errors: nonparametric bootstrap (1000 replicates).
+#> Note. Group comparison: z-test from the linear model. Std. errors: nonparametric bootstrap (1000 replicates). CI = confidence interval; LL = lower limit; UL = upper limit.
 ```
 
 When `cluster` is supplied, bootstrap switches to a cluster bootstrap
@@ -223,7 +223,7 @@ table_continuous_lm(
 #>  wellbeing_score   │  0.04      -0.02        0.10        .176    0.00    1200  
 #>  bmi               │  0.04       0.02        0.05       <.001    0.02    1188  
 #> 
-#> Note. Missing values removed: bmi (12). Slope test: t-test from the linear model. Std. errors: heteroskedasticity-robust (HC3).
+#> Note. Missing values removed: bmi (12). Slope test: t-test from the linear model. Std. errors: heteroskedasticity-robust (HC3). CI = confidence interval; LL = lower limit; UL = upper limit.
 ```
 
 When you need the underlying returned data for further processing, use
@@ -263,7 +263,7 @@ table_continuous_lm(
 #>  wellbeing_score │   5.23     <.001  0.22  1200 
 #>  bmi             │   0.97      .004  0.16  1188 
 #> 
-#> Note. Adjusted for age, education (proportional). Missing values removed: bmi (12). Group comparison: t-test from the linear model. Std. errors: heteroskedasticity-robust (HC3).
+#> Note. Adjusted for age, education (proportional). Missing values removed: bmi (12). Group comparison: t-test from the linear model. Std. errors: heteroskedasticity-robust (HC3). CI = confidence interval; LL = lower limit; UL = upper limit.
 ```
 
 `covariates` accepts the full tidyselect vocabulary (`c(age, sex)`,
@@ -337,7 +337,7 @@ table_continuous_lm(
 #>  wellbeing_score │   5.23     <.001  0.22  1200 
 #>  bmi             │   0.97      .004  0.16  1188 
 #> 
-#> Note. Adjusted for age, education (balanced). Missing values removed: bmi (12). Group comparison: t-test from the linear model. Std. errors: heteroskedasticity-robust (HC3).
+#> Note. Adjusted for age, education (balanced). Missing values removed: bmi (12). Group comparison: t-test from the linear model. Std. errors: heteroskedasticity-robust (HC3). CI = confidence interval; LL = lower limit; UL = upper limit.
 ```
 
 ### Effect sizes under adjustment
@@ -407,7 +407,7 @@ table_continuous_lm(
 #>  wellbeing_score │ 0.00  -0.11  1175 
 #>  bmi             │ 0.00  -0.01  1163 
 #> 
-#> Note. Missing values removed: bmi (12). Rows with missing smoking removed: 25. Group comparison: t-test from the linear model.
+#> Note. Missing values removed: bmi (12). Rows with missing smoking removed: 25. Group comparison: t-test from the linear model. CI = confidence interval; LL = lower limit; UL = upper limit.
 ```
 
 Hedges’ *g* applies the small-sample correction
@@ -434,7 +434,7 @@ table_continuous_lm(
 #>  wellbeing_score │ 0.00  -0.11  1175 
 #>  bmi             │ 0.00  -0.01  1163 
 #> 
-#> Note. Missing values removed: bmi (12). Rows with missing smoking removed: 25. Group comparison: t-test from the linear model.
+#> Note. Missing values removed: bmi (12). Rows with missing smoking removed: 25. Group comparison: t-test from the linear model. CI = confidence interval; LL = lower limit; UL = upper limit.
 ```
 
 For categorical predictors with three or more levels (or numeric
@@ -484,7 +484,7 @@ table_continuous_lm(
 #>  wellbeing_score │ 0.04    -0.02      0.10      .177  0.00  0.00  1200 
 #>  bmi             │ 0.04     0.02      0.05     <.001  0.02  0.02  1188 
 #> 
-#> Note. Missing values removed: bmi (12). Slope test: t-test from the linear model.
+#> Note. Missing values removed: bmi (12). Slope test: t-test from the linear model. CI = confidence interval; LL = lower limit; UL = upper limit; f² = Cohen's f².
 ```
 
 ## Confidence intervals for effect sizes
@@ -528,7 +528,7 @@ table_continuous_lm(
 #>  wellbeing_score │ 0.00  -0.11 [-0.25, 0.03]  1175 
 #>  bmi             │ 0.00  -0.01 [-0.15, 0.13]  1163 
 #> 
-#> Note. Missing values removed: bmi (12). Rows with missing smoking removed: 25. Group comparison: t-test from the linear model.
+#> Note. Missing values removed: bmi (12). Rows with missing smoking removed: 25. Group comparison: t-test from the linear model. CI = confidence interval; LL = lower limit; UL = upper limit.
 ```
 
 The CI level follows `ci_level` (default `0.95`). For programmatic
@@ -606,7 +606,7 @@ table_continuous_lm(
 #>  WHO-5 wellbeing (0-100) │   5,64     <0,001  0,02  0,25 [0,14; 0,36]  1200 
 #>  Body-mass index (kg/m²) │   0,93      0,018  0,00  0,14 [0,02; 0,25]  1188 
 #> 
-#> Note. Missing values removed: Body-mass index (kg/m²) (12). Group comparison: t-test from the linear model.
+#> Note. Missing values removed: Body-mass index (kg/m²) (12). Group comparison: t-test from the linear model. CI = confidence interval; LL = lower limit; UL = upper limit.
 ```
 
 ## Publication-ready output
@@ -633,7 +633,8 @@ pkgdown_dark_gt(
 
 *Note.* Missing values removed: bmi (12), life_sat_health (8). Group
 comparison: t-test from the linear model. Std. errors:
-heteroskedasticity-robust (HC3).
+heteroskedasticity-robust (HC3). CI = confidence interval; LL = lower
+limit; UL = upper limit.
 
 ## Tidying for downstream pipelines
 

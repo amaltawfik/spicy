@@ -623,7 +623,7 @@ table_categorical(
 #>    Very good       │                   
 #>    (Missing)       │                   
 #> 
-#> Note. Group comparison: Pearson chi-squared test. Phi: smoking. Cramer's V: self_rated_health. SMD = standardized mean difference (Female - Male); |SMD| > 0.1 is the usual imbalance threshold. For a variable with more than two categories the SMD is the multivariate (Mahalanobis) distance between the two profiles of proportions, and is therefore unsigned.
+#> Note. Group comparison: Pearson chi-squared test. Phi: smoking. Cramer's V: self_rated_health. SMD direction: Female - Male. The usual imbalance threshold is |SMD| > 0.1. For a variable with more than two categories the SMD is the multivariate (Mahalanobis) distance between the two profiles of proportions, and is therefore unsigned. SMD = standardized mean difference.
 ```
 
 Two categories give the Bernoulli form, **signed**, group 1 minus group
@@ -1037,7 +1037,7 @@ table_categorical(
 |     Yes | 286 | 46.1 | 264 | 45.5 | 550 | 45.8 |      |     |
 | *Note.* Group comparison: Pearson chi-squared test. |  |  |  |  |  |  |  |  |
 
-Categorical table by sex {#tinytable_hz3qm54ogm7f0jomntb8 .table
+Categorical table by sex {#tinytable_a28viz0nom3dlcoap5ti .table
 .tinytable style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 
@@ -1059,7 +1059,8 @@ pkgdown_dark_gt(
 
 [TABLE]
 
-*Note.* Group comparison: Pearson chi-squared test.
+*Note.* Group comparison: Pearson chi-squared test. CI = confidence
+interval; LL = lower limit; UL = upper limit.
 
 For Excel export, provide a file path:
 

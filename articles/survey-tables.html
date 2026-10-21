@@ -147,7 +147,7 @@ throughout:</p>
 <span><span class="co">#&gt;  api00    <span style="color: #9E9E9E;">│</span> 644.17  105.75  411.00  905.00   593.68     694.66    183 </span></span>
 <span><span class="co">#&gt;  api99    <span style="color: #9E9E9E;">│</span> 606.98  112.85  365.00  890.00   555.02     658.94    183 </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; 14 degrees of freedom. Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; 14 degrees of freedom. Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span></span></code></pre></div>
 <p>Three sentences under the table, and each is there because the number
 above it cannot be read without them. The design is a one-stage cluster
 sample of 15 school districts with a finite population correction; the
@@ -187,7 +187,7 @@ effect), and minus <code>"med_ci"</code>:</p>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Descriptive statistics</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable <span style="color: #9E9E9E;">│</span>   M      SE         Med [Q1, Q3]        95% CI LL  95% CI UL   n  </span></span>
+<span><span class="co">#&gt;  Variable <span style="color: #9E9E9E;">│</span>   M      SE         Mdn [Q1, Q3]        95% CI LL  95% CI UL   n  </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">──────────┼───────────────────────────────────────────────────────────────────</span></span></span>
 <span><span class="co">#&gt;  api00    <span style="color: #9E9E9E;">│</span> 644.17  23.54  652.00 [552.00, 719.00]   593.68     694.66    183 </span></span>
 <span><span class="co">#&gt; </span></span>
@@ -195,7 +195,7 @@ effect), and minus <code>"med_ci"</code>:</p>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">──────────┼──────────────────</span></span></span>
 <span><span class="co">#&gt;  api00    <span style="color: #9E9E9E;">│</span>  6194.00    9.35 </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; 14 degrees of freedom. Quantiles: qrule = "math" (survey). Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. Med [Q1, Q3] = median [first quartile, third quartile]. DEff = design effect (design-based variance / simple-random-sample variance at the same n). SE = design-based standard error of the mean.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; 14 degrees of freedom. Quantiles: qrule = "math" (survey). Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. SE = design-based standard error of the mean; Q1 = first quartile; Q3 = third quartile; CI = confidence interval; LL = lower limit; UL = upper limit; DEff = design effect (design-based variance / simple-random-sample variance at the same n).</span></span></span></code></pre></div>
 <p>The design effect of 9.35 is the point of the whole exercise: the
 variance of this cluster sample is nine times what a simple random
 sample of 183 schools would have given. A table that ignored the design
@@ -232,7 +232,7 @@ footer gives the span:</p>
 <span><span class="co">#&gt;           <span style="color: #9E9E9E;">│</span> H                            </span></span>
 <span><span class="co">#&gt;           <span style="color: #9E9E9E;">│</span> M                            </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; degrees of freedom vary by group (7 to 14). Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. Group comparison: design-based Wald test. The group comparison uses 12 degrees of freedom (observed groups only).</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; degrees of freedom vary by group (7 to 14). Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. Group comparison: design-based Wald test. The group comparison uses 12 degrees of freedom (observed groups only). CI = confidence interval; LL = lower limit; UL = upper limit.</span></span></span></code></pre></div>
 <p>The comparison is one design-based test on the whole design, not a
 set of pairwise ones: <code><a href="https://rdrr.io/pkg/survey/man/svyttest.html" class="external-link">svyttest()</a></code> with two observed groups,
 the Wald <em>F</em> of <code><a href="https://rdrr.io/pkg/survey/man/regTermTest.html" class="external-link">regTermTest()</a></code> with three or more,
@@ -292,7 +292,7 @@ population (6194) beside the sample size (183).</p>
 <span><span class="co">#&gt;    H        <span style="color: #9E9E9E;">│</span>   14     7.7       3.5         15.8       1.91  </span></span>
 <span><span class="co">#&gt;    M        <span style="color: #9E9E9E;">│</span>   25    13.7       8.4         21.3       1.40  </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; 14 degrees of freedom. Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. Percentage CIs: logit (survey::svyciprop). % = estimated percentage within the column (survey::svymean). n = observed (unweighted) count. DEff = design effect (design-based variance / simple-random-sample variance at the same n).</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; 14 degrees of freedom. Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. Percentage CIs: logit (survey::svyciprop). % = estimated percentage within the column (survey::svymean). n = observed (unweighted) count. CI = confidence interval; LL = lower limit; UL = upper limit; DEff = design effect (design-based variance / simple-random-sample variance at the same n).</span></span></span></code></pre></div>
 <p>The percentage always comes from <code><a href="https://rdrr.io/pkg/survey/man/surveysummary.html" class="external-link">svymean()</a></code> and the
 interval from <code><a href="https://rdrr.io/pkg/survey/man/svyciprop.html" class="external-link">svyciprop()</a></code>. That is deliberate:
 <code><a href="https://rdrr.io/pkg/survey/man/svyciprop.html" class="external-link">svyciprop()</a></code> estimates on the transformed scale its method
@@ -342,7 +342,7 @@ standard errors are not, and should not be:</p>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">──────────┼───────────────────────────────────────────────────────────</span></span></span>
 <span><span class="co">#&gt;  api00    <span style="color: #9E9E9E;">│</span> 644.17  105.75  411.00  905.00   587.70     700.64    183 </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. N = 183 (weighted 6194). Design: replicate weights (JK1), 15 replicates; 14 degrees of freedom. Std. errors: Design-based (replicate weights, JK1). Confidence intervals and tests use the design degrees of freedom.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. N = 183 (weighted 6194). Design: replicate weights (JK1), 15 replicates; 14 degrees of freedom. Std. errors: Design-based (replicate weights, JK1). Confidence intervals and tests use the design degrees of freedom. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="weights-or-a-design">Weights, or a design?<a class="anchor" aria-label="anchor" href="#weights-or-a-design"></a>
@@ -433,7 +433,7 @@ replicate-weights design alike: <code><a href="https://rdrr.io/pkg/survey/man/sv
 <span><span class="co">#&gt;  Weighted n  <span style="color: #9E9E9E;">│</span> 6194                                      </span></span>
 <span><span class="co">#&gt;  AIC         <span style="color: #9E9E9E;">│</span> 2197.8                                    </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Survey-weighted linear regression. Design: stratified (stype), with finite population correction; 193 residual degrees of freedom. Std. errors: Design-based (Taylor linearization).</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Survey-weighted linear regression. Design: stratified (stype), with finite population correction; 193 residual degrees of freedom. Std. errors: Design-based (Taylor linearization). CI = confidence interval; AIC = Akaike information criterion.</span></span></span></code></pre></div>
 <p>Three things in that footer are worth naming.</p>
 <p>The design line says what the design is and how many degrees of
 freedom the table’s own tests use. That number is the <em>model’s</em>
@@ -466,7 +466,7 @@ so:</p>
 <span><span class="co">#&gt;  Weighted n  <span style="color: #9E9E9E;">│</span> 6194                             </span></span>
 <span><span class="co">#&gt;  AIC         <span style="color: #9E9E9E;">│</span> 2150.5                           </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Survey-weighted linear regression. Design: replicate weights (JK1), 15 replicates; 13 residual degrees of freedom. Std. errors: Design-based (replicate weights, JK1).</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Survey-weighted linear regression. Design: replicate weights (JK1), 15 replicates; 13 residual degrees of freedom. Std. errors: Design-based (replicate weights, JK1). CI = confidence interval; AIC = Akaike information criterion.</span></span></span></code></pre></div>
 <p>And the counts are both there: the observed <code>n</code> and the
 <code>Weighted n</code> the estimates describe, the same pair the
 descriptive tables print in their note.</p>
@@ -499,7 +499,7 @@ block, and its average marginal effects one column per response category
 <span><span class="co">#&gt;  n                         <span style="color: #9E9E9E;">│</span>  200                                 </span></span>
 <span><span class="co">#&gt;  Weighted n                <span style="color: #9E9E9E;">│</span> 6194                                 </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Survey-weighted cumulative logit regression (proportional odds). Design: stratified (stype), with finite population correction; 194 residual degrees of freedom. Std. errors: Design-based (Taylor linearization). Thresholds: latent-scale category cut-points.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Survey-weighted cumulative logit regression (proportional odds). Design: stratified (stype), with finite population correction; 194 residual degrees of freedom. Std. errors: Design-based (Taylor linearization). Thresholds: latent-scale category cut-points. CI = confidence interval.</span></span></span></code></pre></div>
 <p>A <code><a href="https://rdrr.io/pkg/survey/man/svycoxph.html" class="external-link">svycoxph()</a></code> fit reports hazard ratios, the events, and
 the concordance:</p>
 <div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
@@ -527,7 +527,7 @@ the concordance:</p>
 <span><span class="co">#&gt;  Weighted n <span style="color: #9E9E9E;">│</span> 235                         </span></span>
 <span><span class="co">#&gt;  N events   <span style="color: #9E9E9E;">│</span> 144                         </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Survey-weighted Cox proportional hazards regression. Design: stratified (edema); 307 residual degrees of freedom. Concordance C = 0.81 (SE = 0.02). Coefficients exponentiated and displayed as HR; CI bounds exponentiated. Std. errors: Design-based (Taylor linearization). HR = hazard ratio.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Survey-weighted Cox proportional hazards regression. Design: stratified (edema); 307 residual degrees of freedom. Concordance C = 0.81 (SE = 0.02). Coefficients exponentiated and displayed as HR; CI bounds exponentiated. Std. errors: Design-based (Taylor linearization). HR = hazard ratio; CI = confidence interval.</span></span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="what-a-design-fit-refuses">What a design fit refuses<a class="anchor" aria-label="anchor" href="#what-a-design-fit-refuses"></a>
@@ -1084,7 +1084,8 @@ finite population correction; degrees of freedom vary by group (49 to
 99). Std. errors: Design-based (Taylor linearization). Confidence
 intervals and tests use the design degrees of freedom. Group comparison:
 design-based Wald test. The group comparison uses 195 degrees of freedom
-(observed groups only).
+(observed groups only). CI = confidence interval; LL = lower limit; UL =
+upper limit.
 </div>
 </div>
 </div>

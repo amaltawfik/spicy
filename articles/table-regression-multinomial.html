@@ -223,7 +223,7 @@ log; unlike <code>polr()</code>, <code><a href="https://rdrr.io/pkg/nnet/man/mul
 <span><span class="co">#&gt;  R² (Nagelkerke)          <span style="color: #9E9E9E;">│</span>    0.04                                                      </span></span>
 <span><span class="co">#&gt;  AIC                      <span style="color: #9E9E9E;">│</span> 2515.8                                                       </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Multinomial logistic regression. Reference outcome: Employed. Std. errors: Wald asymptotic (z).</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Multinomial logistic regression. Reference outcome: Employed. Std. errors: Wald asymptotic (z). AIC = Akaike information criterion.</span></span></span></code></pre></div>
 <p>This is the layout multinomial results are published in: predictors
 as rows, <strong>one column group per non-reference outcome
 category</strong>, so a predictor’s effects on the <span class="math inline">\(J-1\)</span> comparisons sit side by side on its
@@ -318,7 +318,7 @@ the ratio scale:</p>
 <span><span class="co">#&gt;  R² (Nagelkerke)          <span style="color: #9E9E9E;">│</span>    0.04                                                                            </span></span>
 <span><span class="co">#&gt;  AIC                      <span style="color: #9E9E9E;">│</span> 2515.8                                                                             </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Multinomial logistic regression. Coefficients exponentiated and displayed as OR; CI bounds exponentiated. Reference outcome: Employed. Std. errors: Wald asymptotic (z). OR = odds ratio.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Multinomial logistic regression. Coefficients exponentiated and displayed as OR; CI bounds exponentiated. Reference outcome: Employed. Std. errors: Wald asymptotic (z). CI = confidence interval; AIC = Akaike information criterion.</span></span></span></code></pre></div>
 <p>Each predictor cell is an <strong>odds ratio against the reference
 outcome</strong> (the exponentiated intercepts are baseline
 <em>odds</em> — each category’s odds versus <code>Employed</code> at the
@@ -373,7 +373,7 @@ comparisons displayed change.</p>
 <span><span class="co">#&gt;  R² (Nagelkerke)          <span style="color: #9E9E9E;">│</span>    0.04                                  </span></span>
 <span><span class="co">#&gt;  AIC                      <span style="color: #9E9E9E;">│</span> 2515.8                                   </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Multinomial logistic regression. Coefficients exponentiated and displayed as OR; CI bounds exponentiated. Reference outcome: Unemployed. Std. errors: Wald asymptotic (z). OR = odds ratio.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Multinomial logistic regression. Coefficients exponentiated and displayed as OR. Reference outcome: Unemployed. Std. errors: Wald asymptotic (z). AIC = Akaike information criterion.</span></span></span></code></pre></div>
 <p>Against <code>Employed</code>, education looked irrelevant for the
 <code>Student</code> contrast; against <code>Unemployed</code>, the
 whole <code>Tertiary</code> row is strong (OR 3.94, p &lt; .001 in the
@@ -501,7 +501,7 @@ next to that category’s coefficients:</p>
 <span><span class="co">#&gt;  R² (Nagelkerke)          <span style="color: #9E9E9E;">│</span>    0.04                                              </span></span>
 <span><span class="co">#&gt;  AIC                      <span style="color: #9E9E9E;">│</span> 2515.8                                               </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Multinomial logistic regression. Reference outcome: Employed. Std. errors: Wald asymptotic (z). AME = average marginal effect on a response-category probability.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Multinomial logistic regression. Reference outcome: Employed. Std. errors: Wald asymptotic (z). AME = average marginal effect on a response-category probability; AIC = Akaike information criterion.</span></span></span></code></pre></div>
 <p>Three things to read off, using the <code>Tertiary</code> row:</p>
 <ul>
 <li>The <strong>reference category is back</strong> — as a last,
@@ -618,7 +618,7 @@ freedom multiply by the number of non-reference outcomes:</p>
 <span><span class="co">#&gt;  Δχ²                                  <span style="color: #9E9E9E;">│</span>     –             +4.52         </span></span>
 <span><span class="co">#&gt;  p (change)                           <span style="color: #9E9E9E;">│</span>     –               .211        </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Multinomial logistic regression models. Reference outcome: Employed. Std. errors: Wald asymptotic (z).</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Multinomial logistic regression models. Reference outcome: Employed. Std. errors: Wald asymptotic (z). AIC = Akaike information criterion.</span></span></span></code></pre></div>
 <p>Freeing education from the linear trend buys a chi-squared of 4.52 on
 3 degrees of freedom (one per equation), p = .211 — no evidence the
 dummies improve on the scores, and AIC agrees (2514.3 vs 2515.8). On
@@ -689,7 +689,7 @@ dollars) describes the angler:</p>
 <span><span class="co">#&gt;  n                      <span style="color: #9E9E9E;">│</span> 1182                         </span></span>
 <span><span class="co">#&gt;  AIC                    <span style="color: #9E9E9E;">│</span> 2446.3                       </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Discrete-choice multinomial logit (mlogit). Coefficients exponentiated and displayed as OR; CI bounds exponentiated. Reference alternative: beach. Std. errors: Wald asymptotic (z). OR = odds ratio.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Discrete-choice multinomial logit (mlogit). Coefficients exponentiated and displayed as OR; CI bounds exponentiated. Reference alternative: beach. Std. errors: Wald asymptotic (z). CI = confidence interval; AIC = Akaike information criterion.</span></span></span></code></pre></div>
 <p>The table comes in <strong>two segments</strong>, the presentation
 Stata’s <code>asclogit</code> prints. The
 <code>Alternative-invariant</code> section holds the model’s
@@ -766,7 +766,7 @@ table falls back to the one-row-per-comparison layout
 <span><span class="co">#&gt;  R² (Nagelkerke)                      <span style="color: #9E9E9E;">│</span>    0.03            0.04        </span></span>
 <span><span class="co">#&gt;  AIC                                  <span style="color: #9E9E9E;">│</span> 2509.4          2515.8         </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Multinomial logistic regression models. Coefficients exponentiated and displayed as OR; CI bounds exponentiated. Reference outcome: Employed. Std. errors: Wald asymptotic (z). OR = odds ratio.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Multinomial logistic regression models. Coefficients exponentiated and displayed as OR. Reference outcome: Employed. Std. errors: Wald asymptotic (z). AIC = Akaike information criterion.</span></span></span></code></pre></div>
 <p>Adjustment barely moves anything here: five of the six education odds
 ratios agree to two decimals across the columns, and the sixth shifts by
 a single rounding step (<code>Student: Tertiary</code>, 1.14 to 1.15) —
@@ -1389,7 +1389,8 @@ AIC
 <div class="spicy-gt-note" style="width: min-content; min-width: 100%; box-sizing: border-box; padding: 0.5rem 0.5rem 0.2rem 0.5rem; font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji'; font-size: 0.9em; line-height: 1.25; color: #333333; text-align: left;">
 <em>Note.</em> Multinomial logistic regression. Reference outcome:
 Employed. Std. errors: Wald asymptotic (z). AME = average marginal
-effect on a response-category probability.
+effect on a response-category probability; AIC = Akaike information
+criterion.
 </div>
 </div>
 </div>

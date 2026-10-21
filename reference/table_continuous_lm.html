@@ -689,10 +689,10 @@ ordinary values. See the "Declared missing values" section of
 <code><a href="spicy_style.html">spicy_style()</a></code> object, or <code>NULL</code> (the default). A style only
 changes DEFAULTS – any argument you pass explicitly wins over it.
 Set <code>options(spicy.style = )</code> for document-wide scope. A theme
-covers numeric formatting conformity only, not full editorial
-conformity; <code><a href="spicy_style.html">?spicy_style</a></code> lists the exact rules each one encodes
-and the official document they come from. An unknown name is an
-error.</p></dd>
+covers numeric formatting, the word that opens the note and the
+abbreviations the note defines, not full editorial conformity;
+<code><a href="spicy_style.html">?spicy_style</a></code> lists the exact rules each one encodes and the
+official document they come from. An unknown name is an error.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -774,6 +774,19 @@ model, its inferential output is on by default: the <em>p</em>-value is shown
 (<code>p_value = NULL</code>, the default, shows it with <code>by</code>, which is required
 here) and <code>r2 = "r2"</code>; set <code>p_value = FALSE</code> or <code>r2 = "none"</code> to
 suppress them.</p>
+<p>An outcome with no variance in its fitted sample (every observation the
+same value) leaves nothing to infer, as in <code><a href="table_continuous.html">table_continuous()</a></code>: its
+test, its interval, its effect size and its \(R^2\) are undefined
+cells (<code>NA</code> in the long output and in <code>glance()</code>), its means and its
+contrast or slope (0) are shown, and a warning (class
+<code>spicy_undefined_stat</code>) names it. So does an outcome constant within
+each group of a categorical <code>by</code> (a residual variance of zero): its
+means, its contrast and its \(R^2\) of 1 are shown, and its test,
+interval and effect size are undefined. Every cell of an outcome
+applies to it, so a cell with no value shows the undefined mark, never
+a blank: a saturated fit (one observation per group) has no interval,
+test or effect size, and a model that could not be fit has no cell at
+all.</p>
     </div>
     <div class="section level2">
     <h2 id="effect-sizes">Effect sizes<a class="anchor" aria-label="anchor" href="#effect-sizes"></a></h2>
@@ -1129,7 +1142,7 @@ design-based inference on complex-survey samples.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  wellbeing_score <span style="color: #9E9E9E;">│</span>   5.64     &lt;.001  0.02  1200 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  bmi             <span style="color: #9E9E9E;">│</span>   0.93      .018  0.00  1188 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12). Group comparison: t-test from the linear model.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12). Group comparison: t-test from the linear model. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># --- Effect sizes -------------------------------------------------------</span></span></span>
 <span class="r-in"><span></span></span>
@@ -1152,7 +1165,7 @@ design-based inference on complex-survey samples.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  wellbeing_score <span style="color: #9E9E9E;">│</span>   5.64     &lt;.001  0.02  0.25  1200 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  bmi             <span style="color: #9E9E9E;">│</span>   0.93      .018  0.00  0.14  1188 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12). Group comparison: t-test from the linear model.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12). Group comparison: t-test from the linear model. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Hedges' g with weighted analysis and weighted n column.</span></span></span>
 <span class="r-in"><span><span class="fu">table_continuous_lm</span><span class="op">(</span></span></span>
@@ -1176,7 +1189,7 @@ design-based inference on complex-survey samples.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  wellbeing_score <span style="color: #9E9E9E;">│</span>   5.62     4.33  &lt;.001  0.02  0.25  1200   1196.47   </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  bmi             <span style="color: #9E9E9E;">│</span>   0.89     2.18   .030  0.00  0.13  1188   1183.32   </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Statistics weighted by weight. Missing values removed: bmi (12). Group comparison: t-test from the linear model.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Statistics weighted by weight. Missing values removed: bmi (12). Group comparison: t-test from the linear model. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Hedges' g with noncentral t confidence interval (bracket notation).</span></span></span>
 <span class="r-in"><span><span class="fu">table_continuous_lm</span><span class="op">(</span></span></span>
@@ -1198,7 +1211,7 @@ design-based inference on complex-survey samples.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  wellbeing_score <span style="color: #9E9E9E;">│</span>   5.64     &lt;.001  0.02  0.25 [0.14, 0.36]  1200 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  bmi             <span style="color: #9E9E9E;">│</span>   0.93      .018  0.00  0.14 [0.02, 0.25]  1188 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12). Group comparison: t-test from the linear model.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12). Group comparison: t-test from the linear model. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Cohen's \eqn{f^2}{f^2} alongside \eqn{R^2}{R^2} (familiar power-analysis effect size).</span></span></span>
 <span class="r-in"><span><span class="fu">table_continuous_lm</span><span class="op">(</span></span></span>
@@ -1219,7 +1232,7 @@ design-based inference on complex-survey samples.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  wellbeing_score <span style="color: #9E9E9E;">│</span>   5.64     &lt;.001  0.02  0.02  1200 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  bmi             <span style="color: #9E9E9E;">│</span>   0.93      .018  0.00  0.00  1188 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12). Group comparison: t-test from the linear model.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12). Group comparison: t-test from the linear model. CI = confidence interval; LL = lower limit; UL = upper limit; f² = Cohen's f².</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Hays' omega-squared for a 3-level predictor ("cohens_d" and</span></span></span>
 <span class="r-in"><span><span class="co"># "hedges_g" need two groups).</span></span></span>
@@ -1283,7 +1296,7 @@ design-based inference on complex-survey samples.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">──────────┼───────────────────────────────────────────────────────────────</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  extra    <span style="color: #9E9E9E;">│</span> 0.75   2.33     1.58       0.70       2.46     .003  0.16  20 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Group comparison: t-test from the linear model. Std. errors: cluster-robust (CR2), clusters by ID.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Group comparison: t-test from the linear model. Std. errors: cluster-robust (CR2), clusters by ID. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># --- Covariate adjustment ----------------------------------------------</span></span></span>
 <span class="r-in"><span></span></span>
@@ -1309,7 +1322,7 @@ design-based inference on complex-survey samples.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  wellbeing_score <span style="color: #9E9E9E;">│</span>   5.23     &lt;.001  0.22  1200 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  bmi             <span style="color: #9E9E9E;">│</span>   0.97      .004  0.16  1188 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Adjusted for age, education (proportional). Missing values removed: bmi (12). Group comparison: t-test from the linear model. Std. errors: heteroskedasticity-robust (HC3).</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Adjusted for age, education (proportional). Missing values removed: bmi (12). Group comparison: t-test from the linear model. Std. errors: heteroskedasticity-robust (HC3). CI = confidence interval; LL = lower limit; UL = upper limit.</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Same model with the emmeans / SPSS UNIANOVA convention (equal-weight</span></span></span>
 <span class="r-in"><span><span class="co"># marginal means on a synthetic covariate grid).</span></span></span>
@@ -1333,7 +1346,7 @@ design-based inference on complex-survey samples.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  wellbeing_score <span style="color: #9E9E9E;">│</span>   5.23     &lt;.001  0.22  1200 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  bmi             <span style="color: #9E9E9E;">│</span>   0.97      .004  0.16  1188 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Adjusted for age, education (balanced). Missing values removed: bmi (12). Group comparison: t-test from the linear model. Std. errors: heteroskedasticity-robust (HC3).</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Adjusted for age, education (balanced). Missing values removed: bmi (12). Group comparison: t-test from the linear model. Std. errors: heteroskedasticity-robust (HC3). CI = confidence interval; LL = lower limit; UL = upper limit.</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Effect sizes adjust automatically: f2 / omega2 become partial</span></span></span>
 <span class="r-in"><span><span class="co"># effect sizes via the partial F restricted to the focal `by`.</span></span></span>
@@ -1358,7 +1371,7 @@ design-based inference on complex-survey samples.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  wellbeing_score <span style="color: #9E9E9E;">│</span>   5.22     &lt;.001  0.22  0.02 [0.01, 0.04]  1200 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  bmi             <span style="color: #9E9E9E;">│</span>   0.97      .004  0.16  0.01 [0.00, 0.02]  1188 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Adjusted for age, education (proportional). Missing values removed: bmi (12). Group comparison: t-test from the linear model.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Adjusted for age, education (proportional). Missing values removed: bmi (12). Group comparison: t-test from the linear model. CI = confidence interval; LL = lower limit; UL = upper limit; f² = Cohen's partial f².</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># --- Article-style polish -----------------------------------------------</span></span></span>
 <span class="r-in"><span></span></span>
@@ -1385,7 +1398,7 @@ design-based inference on complex-survey samples.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  WHO-5 wellbeing (0-100)  <span style="color: #9E9E9E;">│</span>   5.64     &lt;.001   0.01    1200 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Body-mass index (kg/m^2) <span style="color: #9E9E9E;">│</span>   0.93      .018   0.00    1188 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Missing values removed: Body-mass index (kg/m^2) (12). Group comparison: t-test from the linear model.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Missing values removed: Body-mass index (kg/m^2) (12). Group comparison: t-test from the linear model. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># European decimal comma.</span></span></span>
 <span class="r-in"><span><span class="fu">table_continuous_lm</span><span class="op">(</span></span></span>
@@ -1406,7 +1419,7 @@ design-based inference on complex-survey samples.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  wellbeing_score <span style="color: #9E9E9E;">│</span>   5,64     &lt;0,001  0,02  1200 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  bmi             <span style="color: #9E9E9E;">│</span>   0,93      0,018  0,00  1188 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12). Group comparison: t-test from the linear model.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12). Group comparison: t-test from the linear model. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Regex selection of all columns starting with "life_sat".</span></span></span>
 <span class="r-in"><span><span class="fu">table_continuous_lm</span><span class="op">(</span></span></span>
@@ -1431,7 +1444,7 @@ design-based inference on complex-survey samples.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  life_sat_relationships <span style="color: #9E9E9E;">│</span>   0.16     .570  0.00  1192 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  life_sat_standard      <span style="color: #9E9E9E;">│</span>   0.18     .453  0.00  1192 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Missing values removed: life_sat_health (8), life_sat_work (8), life_sat_relationships (8), life_sat_standard (8). Group comparison: t-test from the linear model.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Missing values removed: life_sat_health (8), life_sat_work (8), life_sat_relationships (8), life_sat_standard (8). Group comparison: t-test from the linear model. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># --- Output formats -----------------------------------------------------</span></span></span>
 <span class="r-in"><span></span></span>

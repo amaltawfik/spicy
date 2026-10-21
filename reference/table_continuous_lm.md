@@ -678,7 +678,8 @@ table_continuous_lm(
   object, or `NULL` (the default). A style only changes DEFAULTS – any
   argument you pass explicitly wins over it. Set
   `options(spicy.style = )` for document-wide scope. A theme covers
-  numeric formatting conformity only, not full editorial conformity;
+  numeric formatting, the word that opens the note and the abbreviations
+  the note defines, not full editorial conformity;
   [`?spicy_style`](https://amaltawfik.github.io/spicy/reference/spicy_style.md)
   lists the exact rules each one encodes and the official document they
   come from. An unknown name is an error.
@@ -770,6 +771,20 @@ the function exists to report a fitted model, its inferential output is
 on by default: the *p*-value is shown (`p_value = NULL`, the default,
 shows it with `by`, which is required here) and `r2 = "r2"`; set
 `p_value = FALSE` or `r2 = "none"` to suppress them.
+
+An outcome with no variance in its fitted sample (every observation the
+same value) leaves nothing to infer, as in
+[`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md):
+its test, its interval, its effect size and its \\R^2\\ are undefined
+cells (`NA` in the long output and in `glance()`), its means and its
+contrast or slope (0) are shown, and a warning (class
+`spicy_undefined_stat`) names it. So does an outcome constant within
+each group of a categorical `by` (a residual variance of zero): its
+means, its contrast and its \\R^2\\ of 1 are shown, and its test,
+interval and effect size are undefined. Every cell of an outcome applies
+to it, so a cell with no value shows the undefined mark, never a blank:
+a saturated fit (one observation per group) has no interval, test or
+effect size, and a model that could not be fit has no cell at all.
 
 ## Effect sizes
 
@@ -1180,7 +1195,7 @@ table_continuous_lm(
 #>  wellbeing_score │   5.64     <.001  0.02  1200 
 #>  bmi             │   0.93      .018  0.00  1188 
 #> 
-#> Note. Missing values removed: bmi (12). Group comparison: t-test from the linear model.
+#> Note. Missing values removed: bmi (12). Group comparison: t-test from the linear model. CI = confidence interval; LL = lower limit; UL = upper limit.
 
 # --- Effect sizes -------------------------------------------------------
 
@@ -1203,7 +1218,7 @@ table_continuous_lm(
 #>  wellbeing_score │   5.64     <.001  0.02  0.25  1200 
 #>  bmi             │   0.93      .018  0.00  0.14  1188 
 #> 
-#> Note. Missing values removed: bmi (12). Group comparison: t-test from the linear model.
+#> Note. Missing values removed: bmi (12). Group comparison: t-test from the linear model. CI = confidence interval; LL = lower limit; UL = upper limit.
 
 # Hedges' g with weighted analysis and weighted n column.
 table_continuous_lm(
@@ -1227,7 +1242,7 @@ table_continuous_lm(
 #>  wellbeing_score │   5.62     4.33  <.001  0.02  0.25  1200   1196.47   
 #>  bmi             │   0.89     2.18   .030  0.00  0.13  1188   1183.32   
 #> 
-#> Note. Statistics weighted by weight. Missing values removed: bmi (12). Group comparison: t-test from the linear model.
+#> Note. Statistics weighted by weight. Missing values removed: bmi (12). Group comparison: t-test from the linear model. CI = confidence interval; LL = lower limit; UL = upper limit.
 
 # Hedges' g with noncentral t confidence interval (bracket notation).
 table_continuous_lm(
@@ -1249,7 +1264,7 @@ table_continuous_lm(
 #>  wellbeing_score │   5.64     <.001  0.02  0.25 [0.14, 0.36]  1200 
 #>  bmi             │   0.93      .018  0.00  0.14 [0.02, 0.25]  1188 
 #> 
-#> Note. Missing values removed: bmi (12). Group comparison: t-test from the linear model.
+#> Note. Missing values removed: bmi (12). Group comparison: t-test from the linear model. CI = confidence interval; LL = lower limit; UL = upper limit.
 
 # Cohen's \eqn{f^2}{f^2} alongside \eqn{R^2}{R^2} (familiar power-analysis effect size).
 table_continuous_lm(
@@ -1270,7 +1285,7 @@ table_continuous_lm(
 #>  wellbeing_score │   5.64     <.001  0.02  0.02  1200 
 #>  bmi             │   0.93      .018  0.00  0.00  1188 
 #> 
-#> Note. Missing values removed: bmi (12). Group comparison: t-test from the linear model.
+#> Note. Missing values removed: bmi (12). Group comparison: t-test from the linear model. CI = confidence interval; LL = lower limit; UL = upper limit; f² = Cohen's f².
 
 # Hays' omega-squared for a 3-level predictor ("cohens_d" and
 # "hedges_g" need two groups).
@@ -1334,7 +1349,7 @@ if (requireNamespace("clubSandwich", quietly = TRUE)) {
 #> ──────────┼───────────────────────────────────────────────────────────────
 #>  extra    │ 0.75   2.33     1.58       0.70       2.46     .003  0.16  20 
 #> 
-#> Note. Group comparison: t-test from the linear model. Std. errors: cluster-robust (CR2), clusters by ID.
+#> Note. Group comparison: t-test from the linear model. Std. errors: cluster-robust (CR2), clusters by ID. CI = confidence interval; LL = lower limit; UL = upper limit.
 
 # --- Covariate adjustment ----------------------------------------------
 
@@ -1360,7 +1375,7 @@ table_continuous_lm(
 #>  wellbeing_score │   5.23     <.001  0.22  1200 
 #>  bmi             │   0.97      .004  0.16  1188 
 #> 
-#> Note. Adjusted for age, education (proportional). Missing values removed: bmi (12). Group comparison: t-test from the linear model. Std. errors: heteroskedasticity-robust (HC3).
+#> Note. Adjusted for age, education (proportional). Missing values removed: bmi (12). Group comparison: t-test from the linear model. Std. errors: heteroskedasticity-robust (HC3). CI = confidence interval; LL = lower limit; UL = upper limit.
 
 # Same model with the emmeans / SPSS UNIANOVA convention (equal-weight
 # marginal means on a synthetic covariate grid).
@@ -1384,7 +1399,7 @@ table_continuous_lm(
 #>  wellbeing_score │   5.23     <.001  0.22  1200 
 #>  bmi             │   0.97      .004  0.16  1188 
 #> 
-#> Note. Adjusted for age, education (balanced). Missing values removed: bmi (12). Group comparison: t-test from the linear model. Std. errors: heteroskedasticity-robust (HC3).
+#> Note. Adjusted for age, education (balanced). Missing values removed: bmi (12). Group comparison: t-test from the linear model. Std. errors: heteroskedasticity-robust (HC3). CI = confidence interval; LL = lower limit; UL = upper limit.
 
 # Effect sizes adjust automatically: f2 / omega2 become partial
 # effect sizes via the partial F restricted to the focal `by`.
@@ -1409,7 +1424,7 @@ table_continuous_lm(
 #>  wellbeing_score │   5.22     <.001  0.22  0.02 [0.01, 0.04]  1200 
 #>  bmi             │   0.97      .004  0.16  0.01 [0.00, 0.02]  1188 
 #> 
-#> Note. Adjusted for age, education (proportional). Missing values removed: bmi (12). Group comparison: t-test from the linear model.
+#> Note. Adjusted for age, education (proportional). Missing values removed: bmi (12). Group comparison: t-test from the linear model. CI = confidence interval; LL = lower limit; UL = upper limit; f² = Cohen's partial f².
 
 # --- Article-style polish -----------------------------------------------
 
@@ -1436,7 +1451,7 @@ table_continuous_lm(
 #>  WHO-5 wellbeing (0-100)  │   5.64     <.001   0.01    1200 
 #>  Body-mass index (kg/m^2) │   0.93      .018   0.00    1188 
 #> 
-#> Note. Missing values removed: Body-mass index (kg/m^2) (12). Group comparison: t-test from the linear model.
+#> Note. Missing values removed: Body-mass index (kg/m^2) (12). Group comparison: t-test from the linear model. CI = confidence interval; LL = lower limit; UL = upper limit.
 
 # European decimal comma.
 table_continuous_lm(
@@ -1457,7 +1472,7 @@ table_continuous_lm(
 #>  wellbeing_score │   5,64     <0,001  0,02  1200 
 #>  bmi             │   0,93      0,018  0,00  1188 
 #> 
-#> Note. Missing values removed: bmi (12). Group comparison: t-test from the linear model.
+#> Note. Missing values removed: bmi (12). Group comparison: t-test from the linear model. CI = confidence interval; LL = lower limit; UL = upper limit.
 
 # Regex selection of all columns starting with "life_sat".
 table_continuous_lm(
@@ -1482,7 +1497,7 @@ table_continuous_lm(
 #>  life_sat_relationships │   0.16     .570  0.00  1192 
 #>  life_sat_standard      │   0.18     .453  0.00  1192 
 #> 
-#> Note. Missing values removed: life_sat_health (8), life_sat_work (8), life_sat_relationships (8), life_sat_standard (8). Group comparison: t-test from the linear model.
+#> Note. Missing values removed: life_sat_health (8), life_sat_work (8), life_sat_relationships (8), life_sat_standard (8). Group comparison: t-test from the linear model. CI = confidence interval; LL = lower limit; UL = upper limit.
 
 # --- Output formats -----------------------------------------------------
 

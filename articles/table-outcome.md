@@ -53,7 +53,7 @@ table_outcome(sochealth, outcome = bmi, select = c(sex, smoking))
 #>    Yes       │ 25.93  3.58  16.80  35.30    25.48      26.38     248       
 #>    (Missing) │ 24.74  3.63  17.60  32.50    23.24      26.23      25       
 #> 
-#> Note. Missing values removed: bmi (12). Group comparison: Welch t-test. Each block compares bmi across the levels of one variable; blocks are not adjusted for one another. Overall = the whole analytic sample.
+#> Note. Missing values removed: bmi (12). Group comparison: Welch t-test. Each block compares bmi across the levels of one variable; blocks are not adjusted for one another. Overall = the whole analytic sample. CI = confidence interval; LL = lower limit; UL = upper limit.
 ```
 
 Four things to notice, because each is a decision:
@@ -115,7 +115,7 @@ table_outcome(sochealth, bmi, select = smoking, drop_na = TRUE)
 #>    No     │ 25.96  3.76  16.00  38.90    25.72      26.21     915       
 #>    Yes    │ 25.93  3.58  16.80  35.30    25.48      26.38     248       
 #> 
-#> Note. Missing values removed: bmi (12). Rows with missing smoking removed: 25. Group comparison: Welch t-test. Each block compares bmi across the levels of one variable; blocks are not adjusted for one another. Overall = the whole analytic sample.
+#> Note. Missing values removed: bmi (12). Rows with missing smoking removed: 25. Group comparison: Welch t-test. Each block compares bmi across the levels of one variable; blocks are not adjusted for one another. Overall = the whole analytic sample. CI = confidence interval; LL = lower limit; UL = upper limit.
 ```
 
 ### Why “Overall” and not “Total”
@@ -151,7 +151,7 @@ table_outcome(
 )
 #> Descriptive statistics of bmi
 #> 
-#>  Variable            │      Med [Q1, Q3]         n        p    
+#>  Variable            │      Mdn [Q1, Q3]         n        p    
 #> ─────────────────────┼─────────────────────────────────────────
 #>  Overall             │  25.90 [23.40, 28.60]    1188           
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
@@ -164,7 +164,7 @@ table_outcome(
 #>    Upper secondary   │  26.10 [23.50, 28.50]     534           
 #>    Tertiary          │  24.50 [22.00, 26.78]     394           
 #> 
-#> Note. Missing values removed: bmi (12). Group comparison: Wilcoxon rank-sum test (sex); Kruskal-Wallis test (education). Each block compares bmi across the levels of one variable; blocks are not adjusted for one another. Med [Q1, Q3] = median [first quartile, third quartile]. Overall = the whole analytic sample.
+#> Note. Missing values removed: bmi (12). Group comparison: Wilcoxon rank-sum test (sex); Kruskal-Wallis test (education). Each block compares bmi across the levels of one variable; blocks are not adjusted for one another. Overall = the whole analytic sample. Q1 = first quartile; Q3 = third quartile.
 ```
 
 Only the character-vector form is accepted. The per-variable named list
@@ -229,7 +229,7 @@ table_outcome(
 #>    South   │                                       
 #>    West    │                                       
 #> 
-#> Note. Missing values removed: bmi (12). Group comparison: Welch t-test (sex); Welch one-way ANOVA (region). Each block compares bmi across the levels of one variable; blocks are not adjusted for one another. Overall = the whole analytic sample.
+#> Note. Missing values removed: bmi (12). Group comparison: Welch t-test (sex); Welch one-way ANOVA (region). Each block compares bmi across the levels of one variable; blocks are not adjusted for one another. Overall = the whole analytic sample. CI = confidence interval; LL = lower limit; UL = upper limit; ES = effect size.
 ```
 
 Read that table as a set of bivariate descriptions. It is not a model,
@@ -269,22 +269,22 @@ thin <- data.frame(
 table_outcome(thin, score, select = c(arm, site, wave))
 #> Descriptive statistics of score
 #> 
-#>  Variable        │   M     SD    Min    Max   95% CI LL  95% CI UL  n   p   
-#> ─────────────────┼──────────────────────────────────────────────────────────
-#>  Overall         │  8.50  3.59   4.00  14.00    5.50       11.50    8       
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  arm             │                                                     .004 
-#>    A             │  5.50  1.29   4.00   7.00    3.45        7.55    4       
-#>    B             │ 11.50  2.08   9.00  14.00    8.19       14.81    4       
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  site            │                                                          
-#>    only one site │  8.50  3.59   4.00  14.00    5.50       11.50    8       
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  wave            │                                                          
-#>    first         │  7.71  3.04   4.00  12.00    4.90       10.53    7       
-#>    last          │ 14.00   –    14.00  14.00     –           –      1       
+#>  Variable        │   M     SD    Min    Max   95% CI LL  95% CI UL  n    p   
+#> ─────────────────┼───────────────────────────────────────────────────────────
+#>  Overall         │  8.50  3.59   4.00  14.00    5.50       11.50    8        
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  arm             │                                                      .004 
+#>    A             │  5.50  1.29   4.00   7.00    3.45        7.55    4        
+#>    B             │ 11.50  2.08   9.00  14.00    8.19       14.81    4        
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  site            │                                                      –    
+#>    only one site │  8.50  3.59   4.00  14.00    5.50       11.50    8        
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  wave            │                                                      –    
+#>    first         │  7.71  3.04   4.00  12.00    4.90       10.53    7        
+#>    last          │ 14.00   –    14.00  14.00     –           –      1        
 #> 
-#> Note. Group comparison: Welch t-test. Each block compares score across the levels of one variable; blocks are not adjusted for one another. Overall = the whole analytic sample.
+#> Note. Group comparison: Welch t-test. Each block compares score across the levels of one variable; blocks are not adjusted for one another. Overall = the whole analytic sample. CI = confidence interval; LL = lower limit; UL = upper limit.
 ```
 
 ## Choosing the `select` columns
@@ -596,7 +596,7 @@ decision:
   same vector (type 7, R’s default), while gtsummary computes type 2,
   the averaged-order-statistic definition of SAS and SPSS. The medians
   always agree; the quartiles need not;
-- **the composite cell** reads `Med [Q1, Q3]` with frozen brackets, and
+- **the composite cell** reads `Mdn [Q1, Q3]` with frozen brackets, and
   its separator becomes a semicolon under a comma decimal mark, where a
   comma would otherwise serve two roles at once.
 
@@ -673,7 +673,8 @@ pkgdown_dark_gt(
 *Note.* Missing values removed: bmi (12). Group comparison: Welch t-test
 (sex); Welch one-way ANOVA (education). Each block compares bmi across
 the levels of one variable; blocks are not adjusted for one another.
-Overall = the whole analytic sample.
+Overall = the whole analytic sample. CI = confidence interval; LL =
+lower limit; UL = upper limit; ES = effect size.
 
 ``` r
 
@@ -686,7 +687,7 @@ table_outcome(
 )
 ```
 
-| Variable | Med \[Q1, Q3\] | n | p |
+| Variable | Mdn \[Q1, Q3\] | n | p |
 |----|----|----|----|
 | Overall | 70.25 \[58.90, 79.23\] | 1200 |       |
 | sex |                      |      | \<.001 |
@@ -696,10 +697,10 @@ table_outcome(
 |     No | 70.95 \[59.23, 79.60\] |  926 |       |
 |     Yes | 68.50 \[58.30, 77.30\] |  249 |       |
 |     (Missing) | 69.70 \[62.80, 77.10\] |   25 |       |
-| *Note.* Group comparison: Wilcoxon rank-sum test. Each block compares wellbeing_score across the levels of one variable; blocks are not adjusted for one another. Med \[Q1, Q3\] = median \[first quartile, third quartile\]. Overall = the whole analytic sample. |  |  |  |
+| *Note.* Group comparison: Wilcoxon rank-sum test. Each block compares wellbeing_score across the levels of one variable; blocks are not adjusted for one another. Overall = the whole analytic sample. Q1 = first quartile; Q3 = third quartile. |  |  |  |
 
 Descriptive statistics of wellbeing_score
-{#tinytable_g5ddf5jf43dm49goedvi .table .tinytable
+{#tinytable_21jeqmwbe5q1yulhln4u .table .tinytable
 style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 

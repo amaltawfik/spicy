@@ -122,7 +122,7 @@ table_regression(fit)
 #>  R² (Nagelkerke)          │    0.04                                                      
 #>  AIC                      │ 2515.8                                                       
 #> 
-#> Note. Multinomial logistic regression. Reference outcome: Employed. Std. errors: Wald asymptotic (z).
+#> Note. Multinomial logistic regression. Reference outcome: Employed. Std. errors: Wald asymptotic (z). AIC = Akaike information criterion.
 ```
 
 This is the layout multinomial results are published in: predictors as
@@ -222,7 +222,7 @@ table_regression(fit, exponentiate = TRUE, show_columns = c("b", "ci", "p"))
 #>  R² (Nagelkerke)          │    0.04                                                                            
 #>  AIC                      │ 2515.8                                                                             
 #> 
-#> Note. Multinomial logistic regression. Coefficients exponentiated and displayed as OR; CI bounds exponentiated. Reference outcome: Employed. Std. errors: Wald asymptotic (z). OR = odds ratio.
+#> Note. Multinomial logistic regression. Coefficients exponentiated and displayed as OR; CI bounds exponentiated. Reference outcome: Employed. Std. errors: Wald asymptotic (z). CI = confidence interval; AIC = Akaike information criterion.
 ```
 
 Each predictor cell is an **odds ratio against the reference outcome**
@@ -280,7 +280,7 @@ table_regression(fit_unemp, exponentiate = TRUE, show_columns = c("b", "p"))
 #>  R² (Nagelkerke)          │    0.04                                  
 #>  AIC                      │ 2515.8                                   
 #> 
-#> Note. Multinomial logistic regression. Coefficients exponentiated and displayed as OR; CI bounds exponentiated. Reference outcome: Unemployed. Std. errors: Wald asymptotic (z). OR = odds ratio.
+#> Note. Multinomial logistic regression. Coefficients exponentiated and displayed as OR. Reference outcome: Unemployed. Std. errors: Wald asymptotic (z). AIC = Akaike information criterion.
 ```
 
 Against `Employed`, education looked irrelevant for the `Student`
@@ -419,7 +419,7 @@ table_regression(fit, show_columns = c("b", "ame"))
 #>  R² (Nagelkerke)          │    0.04                                              
 #>  AIC                      │ 2515.8                                               
 #> 
-#> Note. Multinomial logistic regression. Reference outcome: Employed. Std. errors: Wald asymptotic (z). AME = average marginal effect on a response-category probability.
+#> Note. Multinomial logistic regression. Reference outcome: Employed. Std. errors: Wald asymptotic (z). AME = average marginal effect on a response-category probability; AIC = Akaike information criterion.
 ```
 
 Three things to read off, using the `Tertiary` row:
@@ -540,7 +540,7 @@ table_regression(list(fit_lin, fit), nested = TRUE,
 #>  Δχ²                                  │     –             +4.52         
 #>  p (change)                           │     –               .211        
 #> 
-#> Note. Multinomial logistic regression models. Reference outcome: Employed. Std. errors: Wald asymptotic (z).
+#> Note. Multinomial logistic regression models. Reference outcome: Employed. Std. errors: Wald asymptotic (z). AIC = Akaike information criterion.
 ```
 
 Freeing education from the linear trend buys a chi-squared of 4.52 on 3
@@ -612,7 +612,7 @@ table_regression(fit_choice, exponentiate = TRUE,
 #>  n                      │ 1182                         
 #>  AIC                    │ 2446.3                       
 #> 
-#> Note. Discrete-choice multinomial logit (mlogit). Coefficients exponentiated and displayed as OR; CI bounds exponentiated. Reference alternative: beach. Std. errors: Wald asymptotic (z). OR = odds ratio.
+#> Note. Discrete-choice multinomial logit (mlogit). Coefficients exponentiated and displayed as OR; CI bounds exponentiated. Reference alternative: beach. Std. errors: Wald asymptotic (z). CI = confidence interval; AIC = Akaike information criterion.
 ```
 
 The table comes in **two segments**, the presentation Stata’s `asclogit`
@@ -689,7 +689,7 @@ table_regression(list(Unadjusted = fit_min, Adjusted = fit),
 #>  R² (Nagelkerke)                      │    0.03            0.04        
 #>  AIC                                  │ 2509.4          2515.8         
 #> 
-#> Note. Multinomial logistic regression models. Coefficients exponentiated and displayed as OR; CI bounds exponentiated. Reference outcome: Employed. Std. errors: Wald asymptotic (z). OR = odds ratio.
+#> Note. Multinomial logistic regression models. Coefficients exponentiated and displayed as OR. Reference outcome: Employed. Std. errors: Wald asymptotic (z). AIC = Akaike information criterion.
 ```
 
 Adjustment barely moves anything here: five of the six education odds
@@ -735,7 +735,7 @@ pkgdown_dark_gt(table_regression(fit, show_columns = c("b", "ame"), output = "gt
 
 *Note.* Multinomial logistic regression. Reference outcome: Employed.
 Std. errors: Wald asymptotic (z). AME = average marginal effect on a
-response-category probability.
+response-category probability; AIC = Akaike information criterion.
 
 [`broom::tidy()`](https://broom.tidymodels.org) always returns the long
 frame, one row per `(term, estimate_type)`, whatever the display layout

@@ -158,9 +158,13 @@ table_outcome(
 - test:
 
   Group comparison for every block: `"welch"` (default), `"student"` or
-  `"nonparametric"`. An outcome with no variance in a block has no test
-  there, whichever is chosen: the block's test cells are left blank,
-  with a warning (class `spicy_undefined_stat`).
+  `"nonparametric"`. An outcome with no variance in a block, or constant
+  within each of its levels (a residual variance of zero), has no test
+  there, whichever is chosen, with a warning (class
+  `spicy_undefined_stat`). The block's test cells (test, p-value, effect
+  size) show the undefined mark, as do those of any block whose
+  comparison cannot run (too few observations in a level, a test that
+  fails, a non-finite effect size).
 
 - p_value:
 
@@ -348,7 +352,8 @@ table_outcome(
   object, or `NULL` (the default). A style only changes DEFAULTS – any
   argument you pass explicitly wins over it. Set
   `options(spicy.style = )` for document-wide scope. A theme covers
-  numeric formatting conformity only, not full editorial conformity;
+  numeric formatting, the word that opens the note and the abbreviations
+  the note defines, not full editorial conformity;
   [`?spicy_style`](https://amaltawfik.github.io/spicy/reference/spicy_style.md)
   lists the exact rules each one encodes and the official document they
   come from. An unknown name is an error.
@@ -572,7 +577,7 @@ table_outcome(sochealth, bmi, select = c(sex, smoking))
 #>    Yes       │ 25.93  3.58  16.80  35.30    25.48      26.38     248       
 #>    (Missing) │ 24.74  3.63  17.60  32.50    23.24      26.23      25       
 #> 
-#> Note. Missing values removed: bmi (12). Group comparison: Welch t-test. Each block compares bmi across the levels of one variable; blocks are not adjusted for one another. Overall = the whole analytic sample.
+#> Note. Missing values removed: bmi (12). Group comparison: Welch t-test. Each block compares bmi across the levels of one variable; blocks are not adjusted for one another. Overall = the whole analytic sample. CI = confidence interval; LL = lower limit; UL = upper limit.
 table_outcome(sochealth, wellbeing_score, select = where(is.factor))
 #> Descriptive statistics of wellbeing_score
 #> 
@@ -734,5 +739,5 @@ table_outcome(sochealth, wellbeing_score, select = where(is.factor))
 #>    High              │       
 #>    Very high         │       
 #> 
-#> Note. Group comparison: Welch t-test (sex, smoking, physical_activity, dentist_12m); Welch one-way ANOVA (age_group, education, social_class, region, employment_status, income_group, self_rated_health, bmi_category, institutional_trust). Each block compares wellbeing_score across the levels of one variable; blocks are not adjusted for one another. Overall = the whole analytic sample.
+#> Note. Group comparison: Welch t-test (sex, smoking, physical_activity, dentist_12m); Welch one-way ANOVA (age_group, education, social_class, region, employment_status, income_group, self_rated_health, bmi_category, institutional_trust). Each block compares wellbeing_score across the levels of one variable; blocks are not adjusted for one another. Overall = the whole analytic sample. CI = confidence interval; LL = lower limit; UL = upper limit.
 ```

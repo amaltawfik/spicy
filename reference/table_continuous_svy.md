@@ -366,7 +366,8 @@ table_continuous_svy(
   object, or `NULL` (the default). A style only changes DEFAULTS – any
   argument you pass explicitly wins over it. Set
   `options(spicy.style = )` for document-wide scope. A theme covers
-  numeric formatting conformity only, not full editorial conformity;
+  numeric formatting, the word that opens the note and the abbreviations
+  the note defines, not full editorial conformity;
   [`?spicy_style`](https://amaltawfik.github.io/spicy/reference/spicy_style.md)
   lists the exact rules each one encodes and the official document they
   come from. An unknown name is an error.
@@ -497,9 +498,13 @@ three or more, or
 under `test = "nonparametric"`. Under a design the Welch / Student
 distinction does not exist – the variance is the design's – so
 `test = "student"` warns and behaves like `"welch"`. A variable with no
-variance has no comparison: its test cells are left blank, with a
-warning (class `spicy_undefined_stat`), where survey would still return
-a p-value. The note names the comparison of each variable.
+variance, or whose domains are each constant on their own value (a
+residual variance of zero), has no comparison, with a warning (class
+`spicy_undefined_stat`), where survey would still return a p-value. Its
+test cells show the undefined mark, as do those of any comparison that
+cannot run (too few observations in a domain, a test refused under
+weights that change sign). The note names the comparison of each
+variable.
 
 A variable with no observed value in a domain (a question not asked in
 that group) has no data in it, as in
@@ -578,7 +583,7 @@ table_continuous_svy(dclus1, select = c(api00, api99))
 #>  api00    │ 644.17  105.75  411.00  905.00   593.68     694.66    183 
 #>  api99    │ 606.98  112.85  365.00  890.00   555.02     658.94    183 
 #> 
-#> Note. N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; 14 degrees of freedom. Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom.
+#> Note. N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; 14 degrees of freedom. Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. CI = confidence interval; LL = lower limit; UL = upper limit.
 table_continuous_svy(dclus1, select = api00, by = stype)
 #> Descriptive statistics by stype
 #> 
@@ -594,7 +599,7 @@ table_continuous_svy(dclus1, select = api00, by = stype)
 #>           │ H           
 #>           │ M           
 #> 
-#> Note. N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; degrees of freedom vary by group (7 to 14). Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. Group comparison: design-based Wald test. The group comparison uses 12 degrees of freedom (observed groups only).
+#> Note. N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; degrees of freedom vary by group (7 to 14). Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. Group comparison: design-based Wald test. The group comparison uses 12 degrees of freedom (observed groups only). CI = confidence interval; LL = lower limit; UL = upper limit.
 table_continuous_svy(
   dclus1,
   select = api00,
@@ -607,5 +612,5 @@ table_continuous_svy(
 #> ────────────┼────────────────────────────────────────────────────────────
 #>  api00      │  644.17    23.54     593.68       694.66      183    9.35  
 #> 
-#> Note. N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; 14 degrees of freedom. Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. DEff = design effect (design-based variance / simple-random-sample variance at the same n). SE = design-based standard error of the mean.
+#> Note. N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; 14 degrees of freedom. Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. SE = design-based standard error of the mean; CI = confidence interval; LL = lower limit; UL = upper limit; DEff = design effect (design-based variance / simple-random-sample variance at the same n).
 ```

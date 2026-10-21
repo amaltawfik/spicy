@@ -34,6 +34,25 @@ the descriptive tables one contract for labels, p-values, and notes.
   [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
   say when the statistics are weighted.
 
+- The note under every table defines the abbreviations its headers show,
+  at its end and in the order of the columns, as the APA manual does,
+  and leaves undefined the statistics the manual leaves undefined (M,
+  Mdn, SD, SE, B, OR, R², the Greek letters, *n*, *p*). No note defines
+  a test statistic (*t*, *z*, *F*, chi-squared). The default note of
+  [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  and
+  [`table_regression_uv()`](https://amaltawfik.github.io/spicy/reference/table_regression_uv.md)
+  no longer defines OR and now defines CI (“CI = confidence interval”),
+  and that of a table of means adds its interval and bounds (“CI =
+  confidence interval; LL = lower limit; UL = upper limit”). The
+  fit-statistic rows of a regression table are defined too (“AIC =
+  Akaike information criterion”, BIC, ICC, RMSE, WAIC, …). The
+  definitions of the IQR, the SMD, the design effect and the effect
+  sizes of
+  [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  join that list, and the direction of the SMD and its threshold get a
+  sentence of their own.
+
 - A variable with no observed value in a group of `by`, typically a
   question not asked there, has no data in that group, which is not a
   missing answer: its cells there show a dash, its rows leave the count
@@ -246,6 +265,25 @@ the descriptive tables one contract for labels, p-values, and notes.
   [`spicy_style()`](https://amaltawfik.github.io/spicy/reference/spicy_style.md)
   open the note under the table without a lead-in word, as the AMA
   manual and The Lancet do. It opened with “Note.”.
+
+- The `jama` theme of
+  [`spicy_style()`](https://amaltawfik.github.io/spicy/reference/spicy_style.md)
+  opens the note with a line of its abbreviations, in alphabetical order
+  (“Abbreviations: HR, hazard ratio; OR, odds ratio.”), as the AMA
+  manual does, and does not expand SD, SE, CI and the statistical
+  symbols the manual lists. The `lancet` theme spells the abbreviations
+  out at the end of the note, one “HR=hazard ratio.” sentence each, and
+  leaves SD, SE, IQR and CI undefined, as the journal’s tables do.
+
+- [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
+  [`table_continuous_svy()`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md),
+  and
+  [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md)
+  head the median “Mdn”, the APA symbol, where they printed “Med”. The
+  French header stays “Méd.”. The columns keep their names (`Med`,
+  `Med [Q1, Q3]`, `Med 95% CI LL`) in `output = "data.frame"`,
+  [`as.data.frame()`](https://rdrr.io/r/base/as.data.frame.html), and
+  [`as_structured()`](https://amaltawfik.github.io/spicy/reference/as_structured.md).
 
 - The table functions refuse a `by` column named in `select`, all with
   the same error.
@@ -569,6 +607,15 @@ the descriptive tables one contract for labels, p-values, and notes.
   “Note.” (APA, the default), “Note:” (Chicago), or `""` for none. It is
   set in italics in every rendered output.
 
+- [`spicy_style()`](https://amaltawfik.github.io/spicy/reference/spicy_style.md)
+  gains `abbreviations`, which abbreviations the note under a table
+  defines. Unset, the note follows the rule of the theme (APA by
+  default). `"all"` defines every abbreviation and symbol the table
+  shows except *n*, *N*, *p* and the test statistics, for readers
+  outside the field. `"none"` keeps only the definitions that say how a
+  number was computed, such as partial eta-squared.
+  `options(spicy.style)` carries it with the other levers.
+
 - [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
   [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
   [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md),
@@ -696,9 +743,10 @@ the descriptive tables one contract for labels, p-values, and notes.
   output, as in HTML, Word, and PowerPoint. LaTeX output compiles when a
   note contains `%` or `_`, centers each tinytable spanner over its
   columns, and keeps the Greek letters and the decimal alignment the
-  default font dropped, under each of the three LaTeX engines. A note of
-  several lines no longer drops out of a Word document built from
-  tinytable, and `table_continuous_lm(output = "gt")` keeps its note in
+  default font dropped, under each of the three LaTeX engines, Cohen’s
+  f² set in math like the squared Greek letters. A note of several lines
+  no longer drops out of a Word document built from tinytable, and
+  `table_continuous_lm(output = "gt")` keeps its note in
   [`gt::as_latex()`](https://gt.rstudio.com/reference/as_latex.html),
   [`gt::gtsave()`](https://gt.rstudio.com/reference/gtsave.html), and
   the other gt outputs.
@@ -878,8 +926,27 @@ the descriptive tables one contract for labels, p-values, and notes.
   100: such a cell gets the exact binomial interval on its unweighted
   count, whatever `ci_method`, and the note says so.
 
+- [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
+  [`table_continuous_svy()`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md),
+  [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md),
+  and
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
+  show a dash in a comparison cell that cannot be computed (a variable
+  with no variance, too few observations in a group, a test that fails
+  or is refused, a non-finite effect size, a saturated or unfitted
+  model), where they left it blank, and
+  [`inline()`](https://amaltawfik.github.io/spicy/reference/inline.md)
+  refuses it as undefined. A blank cell now only means a cell that does
+  not apply. They draw no inference either when the residual variance is
+  zero, each group constant on its own value: the test, p-value,
+  interval, and effect size show a dash, the means and the contrast
+  stay, and one `spicy_undefined_stat` warning says why. They printed
+  rounding noise there (t = 3.32e+15 for two groups at 4 and 6), and
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
+  let base R’s “essentially perfect fit” warning through.
+
 - [`table_continuous_svy()`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md)
-  leaves the comparison of a variable with no variance blank, with a
+  runs no comparison on a variable with no variance, with a
   `spicy_undefined_stat` warning, as
   [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
   does. It printed the p-value survey returns there.
@@ -887,9 +954,15 @@ the descriptive tables one contract for labels, p-values, and notes.
 - [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
   and
   [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md)
-  leave the rank test of a variable with no variance blank, with a
-  `spicy_undefined_stat` warning, as they leave the Welch test. They
-  printed p = 1.000 for two groups.
+  run no rank test on a variable with no variance, with a
+  `spicy_undefined_stat` warning, as for the Welch test. They printed p
+  = 1.000 for two groups.
+
+- [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
+  fits no model to an outcome with no variance: its means are kept and
+  its test, interval, effect size, and R² are undefined, with a
+  `spicy_undefined_stat` warning. It printed rounding noise there, such
+  as p = .331 for an outcome equal to 5.
 
 - [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md)
   and
@@ -965,14 +1038,20 @@ the descriptive tables one contract for labels, p-values, and notes.
   standardized-coefficient legend, the p-value line, the `p_adjust`
   note, the likelihood-ratio test of the random effects of mixed models,
   the REML refit note of `nested = TRUE`, the exponentiation, component,
-  threshold, and scale-effect notes, and the notes of Bayesian models
-  (sampler diagnostics, predictive accuracy). Nested models are
-  `modèles emboîtés` in the title, RR is glossed `risque relatif`, and
+  threshold, and scale-effect notes, and the title and notes of Bayesian
+  models (the model, sampler diagnostics, predictive accuracy). Nested
+  models are `modèles emboîtés` in the title, RR is glossed
+  `risque relatif`, and
   [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
   and
   [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md)
   write `ajusté sur`. The French wording was reviewed and corrected
   throughout ([\#7](https://github.com/amaltawfik/spicy/issues/7)).
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  speaks of the confidence interval in its exponentiation note only when
+  the table shows one. The compact layout of several models (B, SE, p)
+  said “CI bounds exponentiated”.
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   handles [`glmer()`](https://rdrr.io/pkg/lme4/man/glmer.html) fits with
@@ -995,8 +1074,8 @@ the descriptive tables one contract for labels, p-values, and notes.
   [`glm()`](https://rdrr.io/r/stats/glm.html) of that family and link.
   It used a linear regression, which that fit does not nest. The footer
   of such a [`glmer()`](https://rdrr.io/pkg/lme4/man/glmer.html) or
-  `glmmTMB()` fit names the null “gaussian regression”, not “linear
-  regression”.
+  `glmmTMB()` fit names the null “gaussian regression” (“régression
+  gaussienne” in French), not “linear regression”.
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   calls the `partial_chi2` of `lmer`, `glmer`, `glmmTMB`, and `lme` fits

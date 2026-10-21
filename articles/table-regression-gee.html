@@ -241,7 +241,7 @@ correlation:</p>
 <span><span class="co">#&gt;  N (Pig)          <span style="color: #9E9E9E;">│</span>  72                                 </span></span>
 <span><span class="co">#&gt;  Max cluster size <span style="color: #9E9E9E;">│</span>  12                                 </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Population-averaged linear regression (GEE). GEE working correlation: exchangeable (alpha = 0.77). Std. errors: Robust sandwich (GEE), clusters by Pig.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Population-averaged linear regression (GEE). GEE working correlation: exchangeable (alpha = 0.77). Std. errors: Robust sandwich (GEE), clusters by Pig. CI = confidence interval.</span></span></span></code></pre></div>
 <p>Three things to read off this table:</p>
 <ul>
 <li>
@@ -316,7 +316,7 @@ available as opt-in fit statistics:</p>
 <span><span class="co">#&gt;    Cu035        <span style="color: #9E9E9E;">│</span>  .744 </span></span>
 <span><span class="co">#&gt;    Cu175        <span style="color: #9E9E9E;">│</span>  .500 </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Population-averaged linear regression (GEE) models. Independence: GEE working correlation: independence. Exchangeable: GEE working correlation: exchangeable (alpha = 0.77). AR(1): GEE working correlation: ar1 (alpha = 0.94). Std. errors: Robust sandwich (GEE), clusters by Pig.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Population-averaged linear regression (GEE) models. Independence: GEE working correlation: independence. Exchangeable: GEE working correlation: exchangeable (alpha = 0.77). AR(1): GEE working correlation: ar1 (alpha = 0.94). Std. errors: Robust sandwich (GEE), clusters by Pig. QIC = quasi-likelihood under the independence model criterion; QICu = quasi-likelihood under the independence model criterion, penalized by the number of parameters.</span></span></span></code></pre></div>
 <p>The division of labor between the two criteria is Pan’s (2001): pick
 the working correlation by the smallest <strong>QIC</strong>; use
 <strong>QICu</strong> only for comparing <em>mean models</em> (covariate
@@ -366,7 +366,7 @@ fragments – a classic and silent GEE pitfall:</p>
 <span><span class="co">#&gt;  N (id)           <span style="color: #9E9E9E;">│</span> 118                                </span></span>
 <span><span class="co">#&gt;  Max cluster size <span style="color: #9E9E9E;">│</span>   2                                </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Population-averaged linear regression (GEE). GEE working correlation: independence. Std. errors: Robust sandwich (GEE), clusters by id.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Population-averaged linear regression (GEE). GEE working correlation: independence. Std. errors: Robust sandwich (GEE), clusters by id. CI = confidence interval.</span></span></span></code></pre></div>
 <p>The table reports well over a hundred clusters for what the analyst
 knows to be 30 subjects – because that is what the model actually used.
 <code><a href="../reference/table_regression.html">table_regression()</a></code> deliberately reads the cluster structure
@@ -395,7 +395,7 @@ observations are MCAR.</p>
 <span><span class="co">#&gt;  N (id)           <span style="color: #9E9E9E;">│</span>  30                                </span></span>
 <span><span class="co">#&gt;  Max cluster size <span style="color: #9E9E9E;">│</span>   4                                </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Population-averaged linear regression (GEE). GEE working correlation: independence. Std. errors: Robust sandwich (GEE), clusters by id.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Population-averaged linear regression (GEE). GEE working correlation: independence. Std. errors: Robust sandwich (GEE), clusters by id. CI = confidence interval.</span></span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="few-clusters-the-jackknife-variants">Few clusters: the jackknife variants<a class="anchor" aria-label="anchor" href="#few-clusters-the-jackknife-variants"></a>
@@ -436,7 +436,7 @@ the fit, and the table reads and names whatever the fit computed:</p>
 <span><span class="co">#&gt;  N (Pig)          <span style="color: #9E9E9E;">│</span>  72                                 </span></span>
 <span><span class="co">#&gt;  Max cluster size <span style="color: #9E9E9E;">│</span>  12                                 </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Population-averaged linear regression (GEE). GEE working correlation: exchangeable (alpha = 0.77). Std. errors: One-step jackknife (GEE), clusters by Pig.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Population-averaged linear regression (GEE). GEE working correlation: exchangeable (alpha = 0.77). Std. errors: One-step jackknife (GEE), clusters by Pig. CI = confidence interval.</span></span></span></code></pre></div>
 <p>The footer now reads <em>One-step jackknife (GEE), clusters by
 Pig</em> – the displayed uncertainty is always the fit’s own, never a
 spicy recomputation.</p>
@@ -484,7 +484,7 @@ group – computed on the estimation sample:</p>
 <span><span class="co">#&gt;  N (subject)      <span style="color: #9E9E9E;">│</span>      111                             </span></span>
 <span><span class="co">#&gt;  Max cluster size <span style="color: #9E9E9E;">│</span>        4                             </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Population-averaged logistic regression (GEE). GEE working correlation: exchangeable (alpha = 0.35). Coefficients exponentiated and displayed as OR; CI bounds exponentiated. Std. errors: Robust sandwich (GEE), clusters by subject. OR = odds ratio.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Population-averaged logistic regression (GEE). GEE working correlation: exchangeable (alpha = 0.35). Coefficients exponentiated and displayed as OR; CI bounds exponentiated. Std. errors: Robust sandwich (GEE), clusters by subject. CI = confidence interval.</span></span></span></code></pre></div>
 <p>This odds ratio is marginal: it compares the odds of a positive
 outcome between the treated and untreated <em>populations</em>. The
 subject-specific odds ratio from the matching mixed model is larger –
@@ -513,7 +513,7 @@ sandwich covariance automatically:</p>
 <span><span class="co">#&gt;  N (subject)      <span style="color: #9E9E9E;">│</span> 111                                 </span></span>
 <span><span class="co">#&gt;  Max cluster size <span style="color: #9E9E9E;">│</span>   4                                 </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Population-averaged logistic regression (GEE). GEE working correlation: exchangeable (alpha = 0.35). Std. errors: Robust sandwich (GEE), clusters by subject. AME = average marginal effect.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Population-averaged logistic regression (GEE). GEE working correlation: exchangeable (alpha = 0.35). Std. errors: Robust sandwich (GEE), clusters by subject. AME = average marginal effect; CI = confidence interval.</span></span></span></code></pre></div>
 <p>The AME column reads on the probability scale: 0.24 for the treatment
 row means a 24-percentage-point higher population-averaged probability
 of a positive outcome in the treated population than under placebo.</p>
@@ -935,7 +935,7 @@ outcome</span>
 <em>Note.</em> Population-averaged logistic regression (GEE). GEE
 working correlation: exchangeable (alpha = 0.35). Coefficients
 exponentiated and displayed as OR; CI bounds exponentiated. Std. errors:
-Robust sandwich (GEE), clusters by subject. OR = odds ratio.
+Robust sandwich (GEE), clusters by subject. CI = confidence interval.
 </div>
 </div>
 </div>

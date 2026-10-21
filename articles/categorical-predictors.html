@@ -160,7 +160,7 @@ parent variable and renders the reference level explicitly, with
 <span><span class="co">#&gt;  R²                 <span style="color: #9E9E9E;">│</span>    0.01                              </span></span>
 <span><span class="co">#&gt;  Adj. R²            <span style="color: #9E9E9E;">│</span>    0.01                              </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear regression. Std. errors: classical (OLS).</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear regression. Std. errors: classical (OLS). CI = confidence interval.</span></span></span></code></pre></div>
 <p>Each coefficient is a comparison <strong>with the reference level,
 holding the other predictors constant</strong> — not an overall effect
 of the variable. Reading the rows against that reference: unemployed
@@ -204,7 +204,7 @@ only the comparisons displayed change (Gelman, Hill &amp; Vehtari 2020,
 <span><span class="co">#&gt;  R²                  <span style="color: #9E9E9E;">│</span>    0.01                              </span></span>
 <span><span class="co">#&gt;  Adj. R²             <span style="color: #9E9E9E;">│</span>    0.01                              </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear regression. Std. errors: classical (OLS).</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear regression. Std. errors: classical (OLS). CI = confidence interval.</span></span></span></code></pre></div>
 <p>Every group now sits 3.6 to 4.7 points <em>above</em> the unemployed
 — the same fit read from the other end. Two practical rules:</p>
 <ul>
@@ -428,7 +428,7 @@ predicting smoking:</p>
 <span><span class="co">#&gt;  Δχ²                      <span style="color: #9E9E9E;">│</span>     –             +0.03         </span></span>
 <span><span class="co">#&gt;  p (change)               <span style="color: #9E9E9E;">│</span>     –               .852        </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Logistic regression models. Std. errors: classical (Fisher information).</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Logistic regression models. Std. errors: classical (Fisher information). AIC = Akaike information criterion.</span></span></span></code></pre></div>
 <p>Freeing education from the linear trend buys a chi-square of 0.03 on
 1 df, p = .852 — no evidence the dummies improve on the scores — and AIC
 agrees (1198.9 vs 1200.9). The scores model is simpler to report (one
@@ -542,7 +542,7 @@ fits.</p>
 <span><span class="co">#&gt;  R²          <span style="color: #9E9E9E;">│</span>    0.35                              </span></span>
 <span><span class="co">#&gt;  Adj. R²     <span style="color: #9E9E9E;">│</span>    0.34                              </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear regression. Std. errors: classical (OLS).</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear regression. Std. errors: classical (OLS). CI = confidence interval.</span></span></span></code></pre></div>
 <p>Each row is one step of the scale: Fair sits 14.97 points above Poor,
 Good 13.04 above Fair, Very good 7.12 above Good — the flattening
 gradient read directly, with a standard error per step. This is the
@@ -586,7 +586,7 @@ cost can be shown directly:</p>
 <span><span class="co">#&gt;  R²                     <span style="color: #9E9E9E;">│</span>    0.02            0.01        </span></span>
 <span><span class="co">#&gt;  AIC                    <span style="color: #9E9E9E;">│</span> 9884.2          9898.1         </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear regression models. Std. errors: classical (OLS).</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear regression models. Std. errors: classical (OLS). AIC = Akaike information criterion.</span></span></span></code></pre></div>
 <p>The continuous fit explains twice the variance with half the
 parameters (R² = .020 with 1 df against .010 with 2 df; AIC 9884.2 vs
 9898.1). That is Harrell’s argument in one table: categorization
@@ -619,7 +619,7 @@ continuous fit — a polynomial or a spline — not bins:</p>
 <span><span class="co">#&gt;  AIC         <span style="color: #9E9E9E;">│</span> 9884.2                9885.9                </span></span>
 <span><span class="co">#&gt;  ΔAIC        <span style="color: #9E9E9E;">│</span>     –                   +1.7                </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear regression models. Std. errors: classical (OLS).</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear regression models. Std. errors: classical (OLS). AIC = Akaike information criterion.</span></span></span></code></pre></div>
 <p>Read the <code>ΔAIC</code> row with the standard interpretive scale
 (Burnham and Anderson 2004): a difference of about 2 or less means the
 data cannot tell the models apart — and ties go to the simpler model —
@@ -682,7 +682,7 @@ coefficients</em>):</p>
 <span><span class="co">#&gt;  R²                                 <span style="color: #9E9E9E;">│</span>    0.01                              </span></span>
 <span><span class="co">#&gt;  Adj. R²                            <span style="color: #9E9E9E;">│</span>    0.01                              </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear regression. Std. errors: classical (OLS).</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear regression. Std. errors: classical (OLS). CI = confidence interval.</span></span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a>

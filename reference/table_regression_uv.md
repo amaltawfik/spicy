@@ -287,7 +287,7 @@ table_regression_uv(
 #>    .L            │  <.001 
 #>    .Q            │   .852 
 #> 
-#> Note. Logistic regression models. Coefficients exponentiated and displayed as OR; CI bounds exponentiated. Std. errors: classical (Fisher information). OR = odds ratio. Ordered factor `education`: polynomial trends (.L = linear, .Q = quadratic).
+#> Note. Logistic regression models. Coefficients exponentiated and displayed as OR; CI bounds exponentiated. Std. errors: classical (Fisher information). Ordered factor `education`: polynomial trends (.L = linear, .Q = quadratic). CI = confidence interval; AIC = Akaike information criterion.
 
 # Linear screen with the share of variance each predictor
 # explains on its own (the multivariable model reports its own
@@ -324,6 +324,6 @@ table_regression_uv(
 #>    Male          │ [ 2.52,  6.02]  <.001 
 #>  bmi             │ [-0.91, -0.44]  <.001 
 #> 
-#> Note. Linear regression models. Each univariable model is fit on its own complete cases; N varies by predictor (1188-1200). Std. errors: classical (OLS).
+#> Note. Linear regression models. Each univariable model is fit on its own complete cases; N varies by predictor (1188-1200). Std. errors: classical (OLS). CI = confidence interval.
 # }
 ```

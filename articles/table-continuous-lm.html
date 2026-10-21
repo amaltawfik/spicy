@@ -158,7 +158,7 @@ every rule.</p>
 <span><span class="co">#&gt;  bmi             <span style="color: #9E9E9E;">│</span>   0.93      .018  0.00  1188 </span></span>
 <span><span class="co">#&gt;  life_sat_health <span style="color: #9E9E9E;">│</span>   0.22      .267  0.00  1192 </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12), life_sat_health (8). Group comparison: t-test from the linear model.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12), life_sat_health (8). Group comparison: t-test from the linear model. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span></span></code></pre></div>
 <p>For categorical predictors, the table reports estimated means by
 level. When the predictor is dichotomous, it can also show a single mean
 difference and confidence interval.</p>
@@ -188,7 +188,7 @@ heteroskedasticity-consistent standard errors and tests:</p>
 <span><span class="co">#&gt;  wellbeing_score <span style="color: #9E9E9E;">│</span>   5.65     4.32  &lt;.001  0.02  1200 </span></span>
 <span><span class="co">#&gt;  bmi             <span style="color: #9E9E9E;">│</span>   0.93     2.38   .018  0.00  1188 </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12). Group comparison: t-test from the linear model. Std. errors: heteroskedasticity-robust (HC3).</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12). Group comparison: t-test from the linear model. Std. errors: heteroskedasticity-robust (HC3). CI = confidence interval; LL = lower limit; UL = upper limit.</span></span></span></code></pre></div>
 <p>The <code>HC*</code> family is computed via
 <code><a href="https://zeileis.codeberg.page/sandwich/reference/vcovHC.html" class="external-link">sandwich::vcovHC()</a></code> and includes <code>"HC0"</code>,
 <code>"HC1"</code>, <code>"HC2"</code>, <code>"HC3"</code> (the
@@ -223,7 +223,7 @@ dispatched to <code>clubSandwich</code>:</p>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">──────────┼─────────────────────────────────────────────────────────────────────</span></span></span>
 <span><span class="co">#&gt;  extra    <span style="color: #9E9E9E;">│</span> 0.75   2.33     1.58       0.70       2.46     4.06  .003  0.16  20 </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Group comparison: t-test from the linear model. Std. errors: cluster-robust (CR2), clusters by ID.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Group comparison: t-test from the linear model. Std. errors: cluster-robust (CR2), clusters by ID. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span></span></code></pre></div>
 <p><code>"CR2"</code> is the recommended default (Bell &amp; McCaffrey
 2002; Pustejovsky &amp; Tipton 2018). It generally produces fractional
 Satterthwaite degrees of freedom, rendered in the displayed test header
@@ -264,7 +264,7 @@ estimators in pure base R (no dependency added):</p>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────┼────────────────────────────────────</span></span></span>
 <span><span class="co">#&gt;  wellbeing_score <span style="color: #9E9E9E;">│</span>   5.66     4.30  &lt;.001  0.02  1200 </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Group comparison: z-test from the linear model. Std. errors: nonparametric bootstrap (1000 replicates).</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Group comparison: z-test from the linear model. Std. errors: nonparametric bootstrap (1000 replicates). CI = confidence interval; LL = lower limit; UL = upper limit.</span></span></span></code></pre></div>
 <p>When <code>cluster</code> is supplied, bootstrap switches to a
 cluster bootstrap (Cameron, Gelbach &amp; Miller 2008) and jackknife to
 leave-one-cluster-out (Quenouille 1956; Tukey 1958). Both estimators use
@@ -322,7 +322,7 @@ reports the slope rather than group means:</p>
 <span><span class="co">#&gt;  wellbeing_score   <span style="color: #9E9E9E;">│</span>  0.04      -0.02        0.10        .176    0.00    1200  </span></span>
 <span><span class="co">#&gt;  bmi               <span style="color: #9E9E9E;">│</span>  0.04       0.02        0.05       &lt;.001    0.02    1188  </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12). Slope test: t-test from the linear model. Std. errors: heteroskedasticity-robust (HC3).</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12). Slope test: t-test from the linear model. Std. errors: heteroskedasticity-robust (HC3). CI = confidence interval; LL = lower limit; UL = upper limit.</span></span></span></code></pre></div>
 <p>When you need the underlying returned data for further processing,
 use <code>output = "data.frame"</code> for the displayed table with its
 numbers, one row per outcome, or <code>output = "long"</code> for the
@@ -361,7 +361,7 @@ which estimand they are reading.</p>
 <span><span class="co">#&gt;  wellbeing_score <span style="color: #9E9E9E;">│</span>   5.23     &lt;.001  0.22  1200 </span></span>
 <span><span class="co">#&gt;  bmi             <span style="color: #9E9E9E;">│</span>   0.97      .004  0.16  1188 </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Adjusted for age, education (proportional). Missing values removed: bmi (12). Group comparison: t-test from the linear model. Std. errors: heteroskedasticity-robust (HC3).</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Adjusted for age, education (proportional). Missing values removed: bmi (12). Group comparison: t-test from the linear model. Std. errors: heteroskedasticity-robust (HC3). CI = confidence interval; LL = lower limit; UL = upper limit.</span></span></span></code></pre></div>
 <p><code>covariates</code> accepts the full tidyselect vocabulary
 (<code>c(age, sex)</code>,
 <code>tidyselect::starts_with("life_sat_")</code>,
@@ -436,7 +436,7 @@ equally.</p>
 <span><span class="co">#&gt;  wellbeing_score <span style="color: #9E9E9E;">│</span>   5.23     &lt;.001  0.22  1200 </span></span>
 <span><span class="co">#&gt;  bmi             <span style="color: #9E9E9E;">│</span>   0.97      .004  0.16  1188 </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Adjusted for age, education (balanced). Missing values removed: bmi (12). Group comparison: t-test from the linear model. Std. errors: heteroskedasticity-robust (HC3).</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Adjusted for age, education (balanced). Missing values removed: bmi (12). Group comparison: t-test from the linear model. Std. errors: heteroskedasticity-robust (HC3). CI = confidence interval; LL = lower limit; UL = upper limit.</span></span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="effect-sizes-under-adjustment">Effect sizes under adjustment<a class="anchor" aria-label="anchor" href="#effect-sizes-under-adjustment"></a>
@@ -510,7 +510,7 @@ require <code>by</code> to have exactly two non-empty levels:</p>
 <span><span class="co">#&gt;  wellbeing_score <span style="color: #9E9E9E;">│</span> 0.00  -0.11  1175 </span></span>
 <span><span class="co">#&gt;  bmi             <span style="color: #9E9E9E;">│</span> 0.00  -0.01  1163 </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12). Rows with missing smoking removed: 25. Group comparison: t-test from the linear model.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12). Rows with missing smoking removed: 25. Group comparison: t-test from the linear model. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span></span></code></pre></div>
 <p>Hedges’ <em>g</em> applies the small-sample correction
 <code>J = 1 - 3/(4·df_resid - 1)</code>. It is generally preferred over
 raw <em>d</em> in published reports (Goulet-Pelletier and Cousineau
@@ -534,7 +534,7 @@ raw <em>d</em> in published reports (Goulet-Pelletier and Cousineau
 <span><span class="co">#&gt;  wellbeing_score <span style="color: #9E9E9E;">│</span> 0.00  -0.11  1175 </span></span>
 <span><span class="co">#&gt;  bmi             <span style="color: #9E9E9E;">│</span> 0.00  -0.01  1163 </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12). Rows with missing smoking removed: 25. Group comparison: t-test from the linear model.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12). Rows with missing smoking removed: 25. Group comparison: t-test from the linear model. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span></span></code></pre></div>
 <p>For categorical predictors with three or more levels (or numeric
 predictors), use Hays’ <code>omega²</code> for a less biased estimate of
 the population variance explained (Hays 1963; Olejnik and Algina 2003;
@@ -576,7 +576,7 @@ defined for any predictor type:</p>
 <span><span class="co">#&gt;  wellbeing_score <span style="color: #9E9E9E;">│</span> 0.04    -0.02      0.10      .177  0.00  0.00  1200 </span></span>
 <span><span class="co">#&gt;  bmi             <span style="color: #9E9E9E;">│</span> 0.04     0.02      0.05     &lt;.001  0.02  0.02  1188 </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12). Slope test: t-test from the linear model.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12). Slope test: t-test from the linear model. CI = confidence interval; LL = lower limit; UL = upper limit; f² = Cohen's f².</span></span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="confidence-intervals-for-effect-sizes">Confidence intervals for effect sizes<a class="anchor" aria-label="anchor" href="#confidence-intervals-for-effect-sizes"></a>
@@ -622,7 +622,7 @@ with the bracketed CI (article-ready):</p>
 <span><span class="co">#&gt;  wellbeing_score <span style="color: #9E9E9E;">│</span> 0.00  -0.11 [-0.25, 0.03]  1175 </span></span>
 <span><span class="co">#&gt;  bmi             <span style="color: #9E9E9E;">│</span> 0.00  -0.01 [-0.15, 0.13]  1163 </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12). Rows with missing smoking removed: 25. Group comparison: t-test from the linear model.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12). Rows with missing smoking removed: 25. Group comparison: t-test from the linear model. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span></span></code></pre></div>
 <p>The CI level follows <code>ci_level</code> (default
 <code>0.95</code>). For programmatic access,
 <code>output = "data.frame"</code> keeps the bounds beside the effect
@@ -693,7 +693,7 @@ European reporting):</p>
 <span><span class="co">#&gt;  WHO-5 wellbeing (0-100) <span style="color: #9E9E9E;">│</span>   5,64     &lt;0,001  0,02  0,25 [0,14; 0,36]  1200 </span></span>
 <span><span class="co">#&gt;  Body-mass index (kg/m²) <span style="color: #9E9E9E;">│</span>   0,93      0,018  0,00  0,14 [0,02; 0,25]  1188 </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Missing values removed: Body-mass index (kg/m²) (12). Group comparison: t-test from the linear model.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Missing values removed: Body-mass index (kg/m²) (12). Group comparison: t-test from the linear model. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="publication-ready-output">Publication-ready output<a class="anchor" aria-label="anchor" href="#publication-ready-output"></a>
@@ -1075,7 +1075,8 @@ life_sat_health
 <div class="spicy-gt-note" style="width: min-content; min-width: 100%; box-sizing: border-box; padding: 0.5rem 0.5rem 0.2rem 0.5rem; font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji'; font-size: 0.9em; line-height: 1.25; color: #333333; text-align: left;">
 <em>Note.</em> Missing values removed: bmi (12), life_sat_health (8).
 Group comparison: t-test from the linear model. Std. errors:
-heteroskedasticity-robust (HC3).
+heteroskedasticity-robust (HC3). CI = confidence interval; LL = lower
+limit; UL = upper limit.
 </div>
 </div>
 </div>

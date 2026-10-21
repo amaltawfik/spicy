@@ -123,7 +123,7 @@ table_regression(fit)
 #>  R² (Nagelkerke)    │    0.00                              
 #>  AIC                │ 2761.2                               
 #> 
-#> Note. Cumulative logit regression (proportional odds). Std. errors: Wald asymptotic (z). Thresholds: latent-scale category cut-points.
+#> Note. Cumulative logit regression (proportional odds). Std. errors: Wald asymptotic (z). Thresholds: latent-scale category cut-points. CI = confidence interval; AIC = Akaike information criterion.
 ```
 
 Reading the table:
@@ -201,7 +201,7 @@ table_regression(fit, exponentiate = TRUE)
 #>  R² (Nagelkerke)    │    0.00                              
 #>  AIC                │ 2761.2                               
 #> 
-#> Note. Cumulative logit regression (proportional odds). Coefficients exponentiated and displayed as OR; SE on the OR scale (delta method); CI bounds exponentiated (asymmetric). Std. errors: Wald asymptotic (z). Thresholds: latent-scale category cut-points (log-odds scale, not exponentiated). OR = odds ratio.
+#> Note. Cumulative logit regression (proportional odds). Coefficients exponentiated and displayed as OR; SE on the OR scale (delta method); CI bounds exponentiated (asymmetric). Std. errors: Wald asymptotic (z). Thresholds: latent-scale category cut-points (log-odds scale, not exponentiated). CI = confidence interval; AIC = Akaike information criterion.
 ```
 
 The OR here is a *cumulative* odds ratio: it multiplies the odds of
@@ -263,7 +263,7 @@ table_regression(fit, show_columns = c("b", "ame"))
 #>  R² (Nagelkerke)    │    0.00                                              
 #>  AIC                │ 2761.2                                               
 #> 
-#> Note. Cumulative logit regression (proportional odds). Std. errors: Wald asymptotic (z). Thresholds: latent-scale category cut-points. AME = average marginal effect on a response-category probability.
+#> Note. Cumulative logit regression (proportional odds). Std. errors: Wald asymptotic (z). Thresholds: latent-scale category cut-points. AME = average marginal effect on a response-category probability; AIC = Akaike information criterion.
 ```
 
 How to read it, with the `smoking = Yes` row:
@@ -342,7 +342,7 @@ table_regression(fit, show_columns = "ame")
 #>  R² (Nagelkerke)    │     0.00                                    
 #>  AIC                │  2761.2                                     
 #> 
-#> Note. Cumulative logit regression (proportional odds). Thresholds: Poor|Fair = -2.98, Fair|Good = -1.02, Good|Very good = 1.04. Std. errors: Wald asymptotic (z). AME = average marginal effect on a response-category probability.
+#> Note. Cumulative logit regression (proportional odds). Thresholds: Poor|Fair = -2.98, Fair|Good = -1.02, Good|Very good = 1.04. Std. errors: Wald asymptotic (z). AME = average marginal effect on a response-category probability; AIC = Akaike information criterion.
 ```
 
 Marginal effects are the response-scale (probability) output of
@@ -398,7 +398,7 @@ table_regression(
 #>  R² (Nagelkerke)    │    0.00                                              
 #>  AIC                │ 2761.2                                               
 #> 
-#> Note. Cumulative logit regression (proportional odds). Std. errors: cluster-robust (CL), clusters by region. Thresholds: latent-scale category cut-points. AME = average marginal effect on a response-category probability.
+#> Note. Cumulative logit regression (proportional odds). Std. errors: cluster-robust (CL), clusters by region. Thresholds: latent-scale category cut-points. AME = average marginal effect on a response-category probability; AIC = Akaike information criterion.
 ```
 
 The footer switches to name the estimator and the clustering variable.
@@ -465,7 +465,7 @@ table_regression(fit, ci_method = "profile", show_columns = c("b", "ci", "p"))
 #>  R² (Nagelkerke)    │    0.00                        
 #>  AIC                │ 2761.2                         
 #> 
-#> Note. Cumulative logit regression (proportional odds). Std. errors: Wald asymptotic (z). 95% CIs: profile likelihood. Thresholds: latent-scale category cut-points.
+#> Note. Cumulative logit regression (proportional odds). Std. errors: Wald asymptotic (z). 95% CIs: profile likelihood. Thresholds: latent-scale category cut-points. CI = confidence interval; AIC = Akaike information criterion.
 ```
 
 ## The `ordinal::clm()` engine
@@ -507,7 +507,7 @@ table_regression(clm_fit, show_columns = c("b", "ame"))
 #>  R² (Nagelkerke)    │    0.00                                              
 #>  AIC                │ 2761.2                                               
 #> 
-#> Note. Cumulative logit regression (proportional odds). Std. errors: Wald asymptotic (z). Thresholds: latent-scale category cut-points. AME = average marginal effect on a response-category probability.
+#> Note. Cumulative logit regression (proportional odds). Std. errors: Wald asymptotic (z). Thresholds: latent-scale category cut-points. AME = average marginal effect on a response-category probability; AIC = Akaike information criterion.
 ```
 
 ### Testing proportional odds
@@ -605,7 +605,7 @@ table_regression(clm_npo)
 #>  R² (Nagelkerke)                 │    0.01                              
 #>  AIC                             │ 2756.1                               
 #> 
-#> Note. Cumulative logit regression (partial proportional odds). Std. errors: Wald asymptotic (z). Thresholds: latent-scale category cut-points.
+#> Note. Cumulative logit regression (partial proportional odds). Std. errors: Wald asymptotic (z). Thresholds: latent-scale category cut-points. CI = confidence interval; AIC = Akaike information criterion.
 ```
 
 The freed structure is read *within* the block: the smoking effect is
@@ -700,7 +700,7 @@ table_regression(clm_scale)
 #>  R² (Nagelkerke)    │    0.01                              
 #>  AIC                │ 2757.8                               
 #> 
-#> Note. Cumulative logit regression (proportional odds). Std. errors: Wald asymptotic (z). Thresholds: latent-scale category cut-points. Scale effects: covariate effects on the log standard deviation of the latent response.
+#> Note. Cumulative logit regression (proportional odds). Std. errors: Wald asymptotic (z). Thresholds: latent-scale category cut-points. Scale effects: covariate effects on the log standard deviation of the latent response. CI = confidence interval; AIC = Akaike information criterion.
 ```
 
 Cluster-robust SEs are not available for scale fits: `sandwich`’s
@@ -799,7 +799,7 @@ table_regression(
 #>    Fair | Good      │                                     
 #>    Good | Very good │                                     
 #> 
-#> Note. Cumulative logit regression (proportional odds) models. Std. errors: Wald asymptotic (z). Thresholds: latent-scale category cut-points. AME = average marginal effect on a response-category probability.
+#> Note. Cumulative logit regression (proportional odds) models. Std. errors: Wald asymptotic (z). Thresholds: latent-scale category cut-points. AIC = Akaike information criterion.
 ```
 
 ## Output formats
@@ -838,7 +838,8 @@ pkgdown_dark_gt(table_regression(fit, show_columns = c("b", "ame"), output = "gt
 
 *Note.* Cumulative logit regression (proportional odds). Std. errors:
 Wald asymptotic (z). Thresholds: latent-scale category cut-points. AME =
-average marginal effect on a response-category probability.
+average marginal effect on a response-category probability; AIC = Akaike
+information criterion.
 
 [`broom::tidy()`](https://broom.tidymodels.org) returns the long frame,
 one row per `(term, estimate_type, outcome_level)`; each per-category
@@ -853,8 +854,8 @@ broom::tidy(table_regression(fit, show_columns = c("b", "ame")))
 #>    <chr>    <chr>           <chr>         <chr> <chr>            <dbl>     <dbl>
 #>  1 M1       self_rated_hea… Poor          age   ame            3.91e-5 0.000183 
 #>  2 M1       self_rated_hea… Fair          age   ame            1.20e-4 0.000565 
-#>  3 M1       self_rated_hea… Good          age   ame           -1.20e-5 0.0000570
-#>  4 M1       self_rated_hea… Very good     age   ame           -1.47e-4 0.000692 
+#>  3 M1       self_rated_hea… Good          age   ame           -1.20e-5 0.0000571
+#>  4 M1       self_rated_hea… Very good     age   ame           -1.47e-4 0.000691 
 #>  5 M1       self_rated_hea… NA            age   B             -7.94e-4 0.00372  
 #>  6 M1       self_rated_hea… Poor          sexM… ame           -8.52e-4 0.00539  
 #>  7 M1       self_rated_hea… Fair          sexM… ame           -2.62e-3 0.0166   

@@ -138,7 +138,7 @@ table_regression(fit)
 #>  N (Pig)          │  72                                 
 #>  Max cluster size │  12                                 
 #> 
-#> Note. Population-averaged linear regression (GEE). GEE working correlation: exchangeable (alpha = 0.77). Std. errors: Robust sandwich (GEE), clusters by Pig.
+#> Note. Population-averaged linear regression (GEE). GEE working correlation: exchangeable (alpha = 0.77). Std. errors: Robust sandwich (GEE), clusters by Pig. CI = confidence interval.
 ```
 
 Three things to read off this table:
@@ -210,7 +210,7 @@ table_regression(
 #>    Cu035        │  .744 
 #>    Cu175        │  .500 
 #> 
-#> Note. Population-averaged linear regression (GEE) models. Independence: GEE working correlation: independence. Exchangeable: GEE working correlation: exchangeable (alpha = 0.77). AR(1): GEE working correlation: ar1 (alpha = 0.94). Std. errors: Robust sandwich (GEE), clusters by Pig.
+#> Note. Population-averaged linear regression (GEE) models. Independence: GEE working correlation: independence. Exchangeable: GEE working correlation: exchangeable (alpha = 0.77). AR(1): GEE working correlation: ar1 (alpha = 0.94). Std. errors: Robust sandwich (GEE), clusters by Pig. QIC = quasi-likelihood under the independence model criterion; QICu = quasi-likelihood under the independence model criterion, penalized by the number of parameters.
 ```
 
 The division of labor between the two criteria is Pan’s (2001): pick the
@@ -262,7 +262,7 @@ table_regression(fit_shuffled, show_fit_stats = c("nobs", "n_groups", "max_clust
 #>  N (id)           │ 118                                
 #>  Max cluster size │   2                                
 #> 
-#> Note. Population-averaged linear regression (GEE). GEE working correlation: independence. Std. errors: Robust sandwich (GEE), clusters by id.
+#> Note. Population-averaged linear regression (GEE). GEE working correlation: independence. Std. errors: Robust sandwich (GEE), clusters by id. CI = confidence interval.
 ```
 
 The table reports well over a hundred clusters for what the analyst
@@ -295,7 +295,7 @@ table_regression(fit_sorted, show_fit_stats = c("nobs", "n_groups", "max_cluster
 #>  N (id)           │  30                                
 #>  Max cluster size │   4                                
 #> 
-#> Note. Population-averaged linear regression (GEE). GEE working correlation: independence. Std. errors: Robust sandwich (GEE), clusters by id.
+#> Note. Population-averaged linear regression (GEE). GEE working correlation: independence. Std. errors: Robust sandwich (GEE), clusters by id. CI = confidence interval.
 ```
 
 ## Few clusters: the jackknife variants
@@ -337,7 +337,7 @@ table_regression(fit_j1s)
 #>  N (Pig)          │  72                                 
 #>  Max cluster size │  12                                 
 #> 
-#> Note. Population-averaged linear regression (GEE). GEE working correlation: exchangeable (alpha = 0.77). Std. errors: One-step jackknife (GEE), clusters by Pig.
+#> Note. Population-averaged linear regression (GEE). GEE working correlation: exchangeable (alpha = 0.77). Std. errors: One-step jackknife (GEE), clusters by Pig. CI = confidence interval.
 ```
 
 The footer now reads *One-step jackknife (GEE), clusters by Pig* – the
@@ -387,7 +387,7 @@ table_regression(
 #>  N (subject)      │      111                             
 #>  Max cluster size │        4                             
 #> 
-#> Note. Population-averaged logistic regression (GEE). GEE working correlation: exchangeable (alpha = 0.35). Coefficients exponentiated and displayed as OR; CI bounds exponentiated. Std. errors: Robust sandwich (GEE), clusters by subject. OR = odds ratio.
+#> Note. Population-averaged logistic regression (GEE). GEE working correlation: exchangeable (alpha = 0.35). Coefficients exponentiated and displayed as OR; CI bounds exponentiated. Std. errors: Robust sandwich (GEE), clusters by subject. CI = confidence interval.
 ```
 
 This odds ratio is marginal: it compares the odds of a positive outcome
@@ -422,7 +422,7 @@ table_regression(
 #>  N (subject)      │ 111                                 
 #>  Max cluster size │   4                                 
 #> 
-#> Note. Population-averaged logistic regression (GEE). GEE working correlation: exchangeable (alpha = 0.35). Std. errors: Robust sandwich (GEE), clusters by subject. AME = average marginal effect.
+#> Note. Population-averaged logistic regression (GEE). GEE working correlation: exchangeable (alpha = 0.35). Std. errors: Robust sandwich (GEE), clusters by subject. AME = average marginal effect; CI = confidence interval.
 ```
 
 The AME column reads on the probability scale: 0.24 for the treatment
@@ -498,7 +498,7 @@ Population-averaged logistic regression (GEE): outcome {.table
 *Note.* Population-averaged logistic regression (GEE). GEE working
 correlation: exchangeable (alpha = 0.35). Coefficients exponentiated and
 displayed as OR; CI bounds exponentiated. Std. errors: Robust sandwich
-(GEE), clusters by subject. OR = odds ratio.
+(GEE), clusters by subject. CI = confidence interval.
 
 ## References
 

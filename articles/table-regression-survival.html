@@ -199,7 +199,7 @@ the model-fit block reports what a survival reader expects instead: the
 <span><span class="co">#&gt;  N events      <span style="color: #9E9E9E;">│</span>  163                               </span></span>
 <span><span class="co">#&gt;  AIC           <span style="color: #9E9E9E;">│</span> 1454.2                             </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Cox proportional hazards regression. Concordance C = 0.64 (SE = 0.03). Coefficients exponentiated and displayed as HR; SE on the HR scale (delta method); CI bounds exponentiated (asymmetric). Std. errors: Wald asymptotic (z). HR = hazard ratio.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Cox proportional hazards regression. Concordance C = 0.64 (SE = 0.03). Coefficients exponentiated and displayed as HR; SE on the HR scale (delta method); CI bounds exponentiated (asymmetric). Std. errors: Wald asymptotic (z). HR = hazard ratio; CI = confidence interval; AIC = Akaike information criterion.</span></span></span></code></pre></div>
 <p>Reading the table:</p>
 <ul>
 <li>
@@ -332,7 +332,7 @@ table.</p>
 <span><span class="co">#&gt;    Female      <span style="color: #9E9E9E;">│</span>       [-0.30, -0.08] </span></span>
 <span><span class="co">#&gt;  ph.ecog       <span style="color: #9E9E9E;">│</span>       [ 0.08,  0.22] </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Cox proportional hazards regression. Concordance C = 0.64 (SE = 0.03). Coefficients exponentiated and displayed as HR; CI bounds exponentiated. Std. errors: Wald asymptotic (z). dRMST = difference in restricted mean survival time over [0, 365]; dRisk = difference in cumulative incidence at 365; adjusted by g-computation from the fitted model, SEs by nonparametric bootstrap (200 replicates). HR = hazard ratio.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Cox proportional hazards regression. Concordance C = 0.64 (SE = 0.03). Coefficients exponentiated and displayed as HR. Std. errors: Wald asymptotic (z). dRMST = difference in restricted mean survival time over [0, 365]; dRisk = difference in cumulative incidence at 365; adjusted by g-computation from the fitted model, SEs by nonparametric bootstrap (200 replicates). HR = hazard ratio; CI = confidence interval; AIC = Akaike information criterion.</span></span></span></code></pre></div>
 <p>One display note before reading: five columns are one more than the
 default console width holds, so the last interval folds into a
 continuation panel printed below the fit block, its header naming its
@@ -425,7 +425,7 @@ variance — the grouped score (dfbeta) sandwich that
 <span><span class="co">#&gt;  N events      <span style="color: #9E9E9E;">│</span>  163                               </span></span>
 <span><span class="co">#&gt;  AIC           <span style="color: #9E9E9E;">│</span> 1454.2                             </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Cox proportional hazards regression. Concordance C = 0.64 (SE = 0.03). Coefficients exponentiated and displayed as HR; SE on the HR scale (delta method); CI bounds exponentiated (asymmetric). Std. errors: cluster-robust (Lin-Wei), clusters by inst. HR = hazard ratio.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Cox proportional hazards regression. Concordance C = 0.64 (SE = 0.03). Coefficients exponentiated and displayed as HR; SE on the HR scale (delta method); CI bounds exponentiated (asymmetric). Std. errors: cluster-robust (Lin-Wei), clusters by inst. HR = hazard ratio; CI = confidence interval; AIC = Akaike information criterion.</span></span></span></code></pre></div>
 <p>Two lessons here. First, the mechanics: the cluster variable must
 provide <strong>one value per row of the model data</strong> — declaring
 the analytic sample up front (as we did) keeps the cluster aligned when
@@ -470,7 +470,7 @@ decides between them.</p>
 <span><span class="co">#&gt;  Δχ²           <span style="color: #9E9E9E;">│</span>     –            +16.78         </span></span>
 <span><span class="co">#&gt;  p (change)    <span style="color: #9E9E9E;">│</span>     –              &lt;.001        </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Cox proportional hazards regression models. Model 1: Concordance C = 0.60 (SE = 0.03). Model 2: Concordance C = 0.64 (SE = 0.03). Coefficients exponentiated and displayed as HR; CI bounds exponentiated. Std. errors: Wald asymptotic (z). HR = hazard ratio.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Cox proportional hazards regression models. Model 1: Concordance C = 0.60 (SE = 0.03). Model 2: Concordance C = 0.64 (SE = 0.03). Coefficients exponentiated and displayed as HR. Std. errors: Wald asymptotic (z). HR = hazard ratio; AIC = Akaike information criterion.</span></span></span></code></pre></div>
 <p>Adding <code>ph.ecog</code> buys a chi-squared change of 16.78 on one
 degree of freedom (p &lt; .001), an AIC drop of 14.8, and a rise in
 concordance from 0.60 to 0.64 — three readings of the same improvement,
@@ -518,7 +518,7 @@ estimation sample:</p>
 <span><span class="co">#&gt;    Female      <span style="color: #9E9E9E;">│</span> [0.41, 0.80]   &lt;.001 </span></span>
 <span><span class="co">#&gt;  ph.ecog       <span style="color: #9E9E9E;">│</span> [1.28, 2.00]   &lt;.001 </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Cox proportional hazards regression models. Concordance C = 0.64 (SE = 0.03). Coefficients exponentiated and displayed as HR; CI bounds exponentiated. Std. errors: Wald asymptotic (z). HR = hazard ratio.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Cox proportional hazards regression models. Concordance C = 0.64 (SE = 0.03). Coefficients exponentiated and displayed as HR; CI bounds exponentiated. Std. errors: Wald asymptotic (z). HR = hazard ratio; CI = confidence interval; AIC = Akaike information criterion.</span></span></span></code></pre></div>
 <p>The <code>Events/N</code> column carries the information a survival
 reader checks first — 53 of the 90 women died against 110 of the 136 men
 — and the paired columns support the screen’s real question:
@@ -575,7 +575,7 @@ ratios</strong> (TR):</p>
 <span><span class="co">#&gt;  n             <span style="color: #9E9E9E;">│</span>  226                                      </span></span>
 <span><span class="co">#&gt;  AIC           <span style="color: #9E9E9E;">│</span> 2261.7                                    </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Weibull AFT regression. Distribution: Weibull; scale = 0.73. Coefficients exponentiated and displayed as TR; SE on the TR scale (delta method); CI bounds exponentiated (asymmetric). Std. errors: Wald asymptotic (z). TR = time ratio.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Weibull AFT regression. Distribution: Weibull; scale = 0.73. Coefficients exponentiated and displayed as TR; SE on the TR scale (delta method); CI bounds exponentiated (asymmetric). Std. errors: Wald asymptotic (z). TR = time ratio; CI = confidence interval; AIC = Akaike information criterion.</span></span></span></code></pre></div>
 <p>The intercept is back — a parametric model must anchor the time
 scale, and exp(intercept) ≈ 801 days is that anchor (the extrapolated
 characteristic time at the reference levels and age 0), not a ratio
@@ -633,7 +633,7 @@ robust request fails with exactly that instruction:</p>
 <span><span class="co">#&gt;  N events      <span style="color: #9E9E9E;">│</span>  163                               </span></span>
 <span><span class="co">#&gt;  AIC           <span style="color: #9E9E9E;">│</span> 1469.0                             </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Cox proportional hazards regression (rms). Coefficients exponentiated and displayed as HR; SE on the HR scale (delta method); CI bounds exponentiated (asymmetric). Std. errors: cluster-robust (Lin-Wei), clusters by inst. HR = hazard ratio.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Cox proportional hazards regression (rms). Coefficients exponentiated and displayed as HR; SE on the HR scale (delta method); CI bounds exponentiated (asymmetric). Std. errors: cluster-robust (Lin-Wei), clusters by inst. HR = hazard ratio; CI = confidence interval; AIC = Akaike information criterion.</span></span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="fully-parametric-flexsurv">Fully parametric: <code>flexsurv</code><a class="anchor" aria-label="anchor" href="#fully-parametric-flexsurv"></a>
@@ -661,7 +661,7 @@ parameters:</p>
 <span><span class="co">#&gt;  n             <span style="color: #9E9E9E;">│</span>  226                               </span></span>
 <span><span class="co">#&gt;  AIC           <span style="color: #9E9E9E;">│</span> 2276.5                             </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Weibull parametric survival regression. Distribution: Weibull; shape = 1.33, scale = 792.70. Coefficients exponentiated and displayed as exp(B); SE on the exp(B) scale (delta method); CI bounds exponentiated (asymmetric). Std. errors: Wald asymptotic (z). exp(B) = exponentiated coefficient.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Weibull parametric survival regression. Distribution: Weibull; shape = 1.33, scale = 792.70. Coefficients exponentiated and displayed as exp(B); SE on the exp(B) scale (delta method); CI bounds exponentiated (asymmetric). Std. errors: Wald asymptotic (z). exp(B) = exponentiated coefficient; CI = confidence interval; AIC = Akaike information criterion.</span></span></span></code></pre></div>
 <p>Two guardrails apply. A spline model on the <code>"normal"</code>
 scale places its coefficients on a probit-like scale whose exponential
 has no meaning, so <code>exponentiate = TRUE</code> is refused there;
@@ -1062,7 +1062,8 @@ AIC
 <em>Note.</em> Cox proportional hazards regression. Concordance C = 0.64
 (SE = 0.03). Coefficients exponentiated and displayed as HR; SE on the
 HR scale (delta method); CI bounds exponentiated (asymmetric). Std.
-errors: Wald asymptotic (z). HR = hazard ratio.
+errors: Wald asymptotic (z). HR = hazard ratio; CI = confidence
+interval; AIC = Akaike information criterion.
 </div>
 </div>
 </div>

@@ -291,9 +291,13 @@ ANOVA (3+ groups). Assumes equal variances.</p></li>
 in that case) or when <code>statistic = TRUE</code> or an <code>effect_size</code> is
 requested.
 Ignored when <code>by</code> is not used, or when all three display toggles
-are turned off. A variable with no variance has no test, whichever
-is chosen: its test cells are left blank, with a warning (class
-<code>spicy_undefined_stat</code>).</p></dd>
+are turned off. A variable with no variance, or whose groups are
+each constant on their own value (a residual variance of zero), has
+no test, whichever is chosen, with a warning (class
+<code>spicy_undefined_stat</code>). Its test cells (test, p-value, effect size)
+show the undefined mark, as do those of any comparison that cannot
+run (too few observations in a group, a test that fails, a
+non-finite effect size).</p></dd>
 
 
 <dt id="arg-p-value">p_value<a class="anchor" aria-label="anchor" href="#arg-p-value"></a></dt>
@@ -551,10 +555,10 @@ See the "Declared missing values" section of <code><a href="freq.html">freq()</a
 <code><a href="spicy_style.html">spicy_style()</a></code> object, or <code>NULL</code> (the default). A style only
 changes DEFAULTS – any argument you pass explicitly wins over it.
 Set <code>options(spicy.style = )</code> for document-wide scope. A theme
-covers numeric formatting conformity only, not full editorial
-conformity; <code><a href="spicy_style.html">?spicy_style</a></code> lists the exact rules each one encodes
-and the official document they come from. An unknown name is an
-error.</p></dd>
+covers numeric formatting, the word that opens the note and the
+abbreviations the note defines, not full editorial conformity;
+<code><a href="spicy_style.html">?spicy_style</a></code> lists the exact rules each one encodes and the
+official document they come from. An unknown name is an error.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -639,7 +643,12 @@ first row; the table itself starts on row 3.</p>
     <div class="section level2">
     <h2 id="choosing-the-statistics">Choosing the statistics<a class="anchor" aria-label="anchor" href="#choosing-the-statistics"></a></h2>
     <p><code>show_columns</code> selects which statistics the table displays. The
-tokens, and the column each one produces:</p><table class="table table"><tr><td>Token</td><td>Column</td><td>Statistic</td></tr><tr><td><code>"m"</code></td><td><code>M</code></td><td>mean</td></tr><tr><td><code>"sd"</code></td><td><code>SD</code></td><td>standard deviation</td></tr><tr><td><code>"med"</code></td><td><code>Med</code></td><td>median (<code><a href="https://rdrr.io/r/stats/median.html" class="external-link">stats::median()</a></code>)</td></tr><tr><td><code>"iqr"</code></td><td><code>IQR</code></td><td>interquartile <em>width</em>, <code>Q3 - Q1</code></td></tr><tr><td><code>"med_iqr"</code></td><td><code>Med [Q1, Q3]</code></td><td>median and the interquartile <em>interval</em>, in one compact column</td></tr><tr><td><code>"q1"</code> / <code>"q3"</code></td><td><code>Q1</code> / <code>Q3</code></td><td>first / third quartile</td></tr><tr><td><code>"min"</code> / <code>"max"</code></td><td><code>Min</code> / <code>Max</code></td><td>extremes</td></tr><tr><td><code>"ci"</code></td><td><code>&lt;level&gt;% CI LL</code> / <code>UL</code></td><td><em>t</em> confidence interval of the mean</td></tr><tr><td><code>"med_ci"</code></td><td><code>Med &lt;level&gt;% CI LL</code> / <code>UL</code></td><td>exact confidence interval of the median</td></tr><tr><td><code>"n"</code></td><td><code>n</code></td><td>valid observations</td></tr><tr><td><code>"weighted_n"</code></td><td><code>Weighted n</code></td><td>sum of weights (requires <code>weights</code>)</td></tr></table><p>Quartiles use <code><a href="https://rdrr.io/r/stats/quantile.html" class="external-link">stats::quantile()</a></code>'s default type 7. <code>"iqr"</code> is the
+tokens, and the column each one produces:</p><table class="table table"><tr><td>Token</td><td>Column</td><td>Statistic</td></tr><tr><td><code>"m"</code></td><td><code>M</code></td><td>mean</td></tr><tr><td><code>"sd"</code></td><td><code>SD</code></td><td>standard deviation</td></tr><tr><td><code>"med"</code></td><td><code>Mdn</code></td><td>median (<code><a href="https://rdrr.io/r/stats/median.html" class="external-link">stats::median()</a></code>)</td></tr><tr><td><code>"iqr"</code></td><td><code>IQR</code></td><td>interquartile <em>width</em>, <code>Q3 - Q1</code></td></tr><tr><td><code>"med_iqr"</code></td><td><code>Mdn [Q1, Q3]</code></td><td>median and the interquartile <em>interval</em>, in one compact column</td></tr><tr><td><code>"q1"</code> / <code>"q3"</code></td><td><code>Q1</code> / <code>Q3</code></td><td>first / third quartile</td></tr><tr><td><code>"min"</code> / <code>"max"</code></td><td><code>Min</code> / <code>Max</code></td><td>extremes</td></tr><tr><td><code>"ci"</code></td><td><code>&lt;level&gt;% CI LL</code> / <code>UL</code></td><td><em>t</em> confidence interval of the mean</td></tr><tr><td><code>"med_ci"</code></td><td><code>Mdn &lt;level&gt;% CI LL</code> / <code>UL</code></td><td>exact confidence interval of the median</td></tr><tr><td><code>"n"</code></td><td><code>n</code></td><td>valid observations</td></tr><tr><td><code>"weighted_n"</code></td><td><code>Weighted n</code></td><td>sum of weights (requires <code>weights</code>)</td></tr></table><p>The column is the header the table prints. In <code>output = "data.frame"</code>, <a href="as.data.frame.spicy_continuous_table.html">as.data.frame()</a>
+and <code><a href="as_structured.html">as_structured()</a></code>, the median columns keep the names of 0.13.0,
+<code>Med</code>, <code>Med [Q1, Q3]</code> and <code>Med &lt;level&gt;% CI LL</code> / <code>UL</code>. The note under
+the table defines the abbreviations these headers show, as the style
+in force asks (see <code>abbreviations</code> in <code><a href="spicy_style.html">spicy_style()</a></code>).</p>
+<p>Quartiles use <code><a href="https://rdrr.io/r/stats/quantile.html" class="external-link">stats::quantile()</a></code>'s default type 7. <code>"iqr"</code> is the
 width (one number, the rank mirror of <code>SD</code>); <code>"med_iqr"</code> shows the
 interval with its bounds. Columns appear in the canonical order of
 the table above, whatever order they were written in.</p>
@@ -923,7 +932,7 @@ contrasts, fitted means);
 <span class="r-out co"><span class="r-pr">#&gt;</span>  bmi             <span style="color: #9E9E9E;">│</span> 25.93   3.72  16.00   38.90    25.72      26.14    1188 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  wellbeing_score <span style="color: #9E9E9E;">│</span> 69.04  15.62  18.70  100.00    68.16      69.93    1200 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12).</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12). CI = confidence interval; LL = lower limit; UL = upper limit.</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Grouped by education (Welch p-value added by default).</span></span></span>
 <span class="r-in"><span><span class="fu">table_continuous</span><span class="op">(</span></span></span>
@@ -953,7 +962,7 @@ contrasts, fitted means);
 <span class="r-out co"><span class="r-pr">#&gt;</span>                  <span style="color: #9E9E9E;">│</span> Upper secondary    70.12    539        </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                  <span style="color: #9E9E9E;">│</span> Tertiary           78.15    400        </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12). Group comparison: Welch one-way ANOVA.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12). Group comparison: Welch one-way ANOVA. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Test statistic alongside the p-value.</span></span></span>
 <span class="r-in"><span><span class="fu">table_continuous</span><span class="op">(</span></span></span>
@@ -994,7 +1003,7 @@ contrasts, fitted means);
 <span class="r-out co"><span class="r-pr">#&gt;</span>                  <span style="color: #9E9E9E;">│</span> Upper secondary        </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                  <span style="color: #9E9E9E;">│</span> Tertiary               </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12). Group comparison: Welch one-way ANOVA.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12). Group comparison: Welch one-way ANOVA. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># --- Choosing the statistics --------------------------------------------</span></span></span>
 <span class="r-in"><span></span></span>
@@ -1006,12 +1015,12 @@ contrasts, fitted means);
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Descriptive statistics</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable          <span style="color: #9E9E9E;">│</span>      Med [Q1, Q3]         n    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable          <span style="color: #9E9E9E;">│</span>      Mdn [Q1, Q3]         n    </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">───────────────────┼────────────────────────────────</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  bmi               <span style="color: #9E9E9E;">│</span>  25.90 [23.40, 28.60]    1188  </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  wellbeing_score   <span style="color: #9E9E9E;">│</span>  70.25 [58.90, 79.23]    1200  </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12). Med [Q1, Q3] = median [first quartile, third quartile].</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12). Q1 = first quartile; Q3 = third quartile.</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Median with its exact (order-statistic) confidence interval.</span></span></span>
 <span class="r-in"><span><span class="fu">table_continuous</span><span class="op">(</span></span></span>
@@ -1021,11 +1030,11 @@ contrasts, fitted means);
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Descriptive statistics</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable   <span style="color: #9E9E9E;">│</span>   Med     IQR     Med 95% CI LL    Med 95% CI UL     n    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable   <span style="color: #9E9E9E;">│</span>   Mdn     IQR     Mdn 95% CI LL    Mdn 95% CI UL     n    </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">────────────┼───────────────────────────────────────────────────────────</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  bmi        <span style="color: #9E9E9E;">│</span>  25.90    5.20        25.70            26.20        1188  </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12). IQR = interquartile range (Q3 - Q1). Med 95% CI = exact order-statistic confidence interval for the median (coverage at least 95%).</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12). Mdn 95% CI = exact order-statistic confidence interval for the median (coverage at least 95%). IQR = interquartile range (Q3 - Q1); CI = confidence interval; LL = lower limit; UL = upper limit.</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># One selection per variable. A skewed variable that a scoring</span></span></span>
 <span class="r-in"><span><span class="co"># protocol requires in median and IQR (the IPAQ case) sits next to</span></span></span>
@@ -1042,7 +1051,7 @@ contrasts, fitted means);
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Descriptive statistics by sex</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span> Group     M     SD      Med [Q1, Q3]      n     p   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span> Group     M     SD      Mdn [Q1, Q3]      n     p   </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">─────────────────┼─────────────────────────────────────────────────────</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  bmi             <span style="color: #9E9E9E;">│</span> Female  25.69   3.78                     616   .018 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                  <span style="color: #9E9E9E;">│</span> Male    26.20   3.64                     572        </span>
@@ -1053,7 +1062,7 @@ contrasts, fitted means);
 <span class="r-out co"><span class="r-pr">#&gt;</span>  wellbeing_score <span style="color: #9E9E9E;">│</span> Female  67.16  14.80                     620  &lt;.001 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                  <span style="color: #9E9E9E;">│</span> Male    71.05  16.23                     580        </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12), life_sat_health (8). Group comparison: Welch t-test (bmi, wellbeing_score); Wilcoxon rank-sum test (life_sat_health). Med [Q1, Q3] = median [first quartile, third quartile].</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12), life_sat_health (8). Group comparison: Welch t-test (bmi, wellbeing_score); Wilcoxon rank-sum test (life_sat_health). Q1 = first quartile; Q3 = third quartile.</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># --- Effect sizes -------------------------------------------------------</span></span></span>
 <span class="r-in"><span></span></span>
@@ -1078,7 +1087,7 @@ contrasts, fitted means);
 <span class="r-out co"><span class="r-pr">#&gt;</span>  wellbeing_score <span style="color: #9E9E9E;">│</span> Female  620  &lt;.001  g = -0.25 [-0.36, -0.14] </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                  <span style="color: #9E9E9E;">│</span> Male    580                                  </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Group comparison: Welch t-test.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Group comparison: Welch t-test. CI = confidence interval; LL = lower limit; UL = upper limit; ES = effect size.</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Explicit effect-size measure.</span></span></span>
 <span class="r-in"><span><span class="fu">table_continuous</span><span class="op">(</span></span></span>
@@ -1109,7 +1118,7 @@ contrasts, fitted means);
 <span class="r-out co"><span class="r-pr">#&gt;</span>                  <span style="color: #9E9E9E;">│</span> Upper secondary                            </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                  <span style="color: #9E9E9E;">│</span> Tertiary                                   </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Group comparison: Welch one-way ANOVA.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Group comparison: Welch one-way ANOVA. CI = confidence interval; LL = lower limit; UL = upper limit; ES = effect size.</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># --- Selection helpers --------------------------------------------------</span></span></span>
 <span class="r-in"><span></span></span>
@@ -1128,7 +1137,7 @@ contrasts, fitted means);
 <span class="r-out co"><span class="r-pr">#&gt;</span>  life_sat_relationships <span style="color: #9E9E9E;">│</span> 3.72  1.10  1.00  5.00    3.66       3.79     1192 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  life_sat_standard      <span style="color: #9E9E9E;">│</span> 3.40  1.16  1.00  5.00    3.33       3.46     1192 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Missing values removed: life_sat_health (8), life_sat_work (8), life_sat_relationships (8), life_sat_standard (8).</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Missing values removed: life_sat_health (8), life_sat_work (8), life_sat_relationships (8), life_sat_standard (8). CI = confidence interval; LL = lower limit; UL = upper limit.</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Pretty labels keyed by column name.</span></span></span>
 <span class="r-in"><span><span class="fu">table_continuous</span><span class="op">(</span></span></span>
@@ -1151,7 +1160,7 @@ contrasts, fitted means);
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Body mass index          <span style="color: #9E9E9E;">│</span> 1188 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Satisfaction with health <span style="color: #9E9E9E;">│</span> 1192 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Missing values removed: Body mass index (12), Satisfaction with health (8).</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Missing values removed: Body mass index (12), Satisfaction with health (8). CI = confidence interval; LL = lower limit; UL = upper limit.</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># --- Output formats -----------------------------------------------------</span></span></span>
 <span class="r-in"><span></span></span>

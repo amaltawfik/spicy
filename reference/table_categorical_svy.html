@@ -352,10 +352,10 @@ disclosure line (<code>Declared missing values removed: ...</code>). If
 <code><a href="spicy_style.html">spicy_style()</a></code> object, or <code>NULL</code> (the default). A style only
 changes DEFAULTS – any argument you pass explicitly wins over it.
 Set <code>options(spicy.style = )</code> for document-wide scope. A theme
-covers numeric formatting conformity only, not full editorial
-conformity; <code><a href="spicy_style.html">?spicy_style</a></code> lists the exact rules each one encodes
-and the official document they come from. An unknown name is an
-error.</p></dd>
+covers numeric formatting, the word that opens the note and the
+abbreviations the note defines, not full editorial conformity;
+<code><a href="spicy_style.html">?spicy_style</a></code> lists the exact rules each one encodes and the
+official document they come from. An unknown name is an error.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -571,7 +571,7 @@ Vital and Health Statistics, Series 2, No. 175.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    H        <span style="color: #9E9E9E;">│</span>   14     7.7       3.5         15.8       1.91  </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    M        <span style="color: #9E9E9E;">│</span>   25    13.7       8.4         21.3       1.40  </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; 14 degrees of freedom. Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. Percentage CIs: logit (survey::svyciprop). % = estimated percentage within the column (survey::svymean). n = observed (unweighted) count. DEff = design effect (design-based variance / simple-random-sample variance at the same n).</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; 14 degrees of freedom. Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. Percentage CIs: logit (survey::svyciprop). % = estimated percentage within the column (survey::svymean). n = observed (unweighted) count. CI = confidence interval; LL = lower limit; UL = upper limit; DEff = design effect (design-based variance / simple-random-sample variance at the same n).</span></span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

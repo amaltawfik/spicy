@@ -48,7 +48,7 @@ table_continuous_svy(dclus1, select = c(api00, api99))
 #>  api00    │ 644.17  105.75  411.00  905.00   593.68     694.66    183 
 #>  api99    │ 606.98  112.85  365.00  890.00   555.02     658.94    183 
 #> 
-#> Note. N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; 14 degrees of freedom. Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom.
+#> Note. N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; 14 degrees of freedom. Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. CI = confidence interval; LL = lower limit; UL = upper limit.
 ```
 
 Three sentences under the table, and each is there because the number
@@ -101,7 +101,7 @@ table_continuous_svy(
 )
 #> Descriptive statistics
 #> 
-#>  Variable │   M      SE         Med [Q1, Q3]        95% CI LL  95% CI UL   n  
+#>  Variable │   M      SE         Mdn [Q1, Q3]        95% CI LL  95% CI UL   n  
 #> ──────────┼───────────────────────────────────────────────────────────────────
 #>  api00    │ 644.17  23.54  652.00 [552.00, 719.00]   593.68     694.66    183 
 #> 
@@ -109,7 +109,7 @@ table_continuous_svy(
 #> ──────────┼──────────────────
 #>  api00    │  6194.00    9.35 
 #> 
-#> Note. N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; 14 degrees of freedom. Quantiles: qrule = "math" (survey). Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. Med [Q1, Q3] = median [first quartile, third quartile]. DEff = design effect (design-based variance / simple-random-sample variance at the same n). SE = design-based standard error of the mean.
+#> Note. N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; 14 degrees of freedom. Quantiles: qrule = "math" (survey). Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. SE = design-based standard error of the mean; Q1 = first quartile; Q3 = third quartile; CI = confidence interval; LL = lower limit; UL = upper limit; DEff = design effect (design-based variance / simple-random-sample variance at the same n).
 ```
 
 The design effect of 9.35 is the point of the whole exercise: the
@@ -150,7 +150,7 @@ table_continuous_svy(dclus1, select = api00, by = stype, statistic = TRUE)
 #>           │ H                            
 #>           │ M                            
 #> 
-#> Note. N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; degrees of freedom vary by group (7 to 14). Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. Group comparison: design-based Wald test. The group comparison uses 12 degrees of freedom (observed groups only).
+#> Note. N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; degrees of freedom vary by group (7 to 14). Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. Group comparison: design-based Wald test. The group comparison uses 12 degrees of freedom (observed groups only). CI = confidence interval; LL = lower limit; UL = upper limit.
 ```
 
 The comparison is one design-based test on the whole design, not a set
@@ -217,7 +217,7 @@ table_categorical_svy(
 #>    H        │   14     7.7       3.5         15.8       1.91  
 #>    M        │   25    13.7       8.4         21.3       1.40  
 #> 
-#> Note. N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; 14 degrees of freedom. Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. Percentage CIs: logit (survey::svyciprop). % = estimated percentage within the column (survey::svymean). n = observed (unweighted) count. DEff = design effect (design-based variance / simple-random-sample variance at the same n).
+#> Note. N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; 14 degrees of freedom. Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. Percentage CIs: logit (survey::svyciprop). % = estimated percentage within the column (survey::svymean). n = observed (unweighted) count. CI = confidence interval; LL = lower limit; UL = upper limit; DEff = design effect (design-based variance / simple-random-sample variance at the same n).
 ```
 
 The percentage always comes from
@@ -277,7 +277,7 @@ table_continuous_svy(rclus1, select = api00)
 #> ──────────┼───────────────────────────────────────────────────────────
 #>  api00    │ 644.17  105.75  411.00  905.00   587.70     700.64    183 
 #> 
-#> Note. N = 183 (weighted 6194). Design: replicate weights (JK1), 15 replicates; 14 degrees of freedom. Std. errors: Design-based (replicate weights, JK1). Confidence intervals and tests use the design degrees of freedom.
+#> Note. N = 183 (weighted 6194). Design: replicate weights (JK1), 15 replicates; 14 degrees of freedom. Std. errors: Design-based (replicate weights, JK1). Confidence intervals and tests use the design degrees of freedom. CI = confidence interval; LL = lower limit; UL = upper limit.
 ```
 
 ## Weights, or a design?
@@ -392,7 +392,7 @@ table_regression(gl)
 #>  Weighted n  │ 6194                                      
 #>  AIC         │ 2197.8                                    
 #> 
-#> Note. Survey-weighted linear regression. Design: stratified (stype), with finite population correction; 193 residual degrees of freedom. Std. errors: Design-based (Taylor linearization).
+#> Note. Survey-weighted linear regression. Design: stratified (stype), with finite population correction; 193 residual degrees of freedom. Std. errors: Design-based (Taylor linearization). CI = confidence interval; AIC = Akaike information criterion.
 ```
 
 Three things in that footer are worth naming.
@@ -434,7 +434,7 @@ table_regression(
 #>  Weighted n  │ 6194                             
 #>  AIC         │ 2150.5                           
 #> 
-#> Note. Survey-weighted linear regression. Design: replicate weights (JK1), 15 replicates; 13 residual degrees of freedom. Std. errors: Design-based (replicate weights, JK1).
+#> Note. Survey-weighted linear regression. Design: replicate weights (JK1), 15 replicates; 13 residual degrees of freedom. Std. errors: Design-based (replicate weights, JK1). CI = confidence interval; AIC = Akaike information criterion.
 ```
 
 And the counts are both there: the observed `n` and the `Weighted n` the
@@ -472,7 +472,7 @@ table_regression(svyolr(grade ~ ell + stype, design = dg))
 #>  n                         │  200                                 
 #>  Weighted n                │ 6194                                 
 #> 
-#> Note. Survey-weighted cumulative logit regression (proportional odds). Design: stratified (stype), with finite population correction; 194 residual degrees of freedom. Std. errors: Design-based (Taylor linearization). Thresholds: latent-scale category cut-points.
+#> Note. Survey-weighted cumulative logit regression (proportional odds). Design: stratified (stype), with finite population correction; 194 residual degrees of freedom. Std. errors: Design-based (Taylor linearization). Thresholds: latent-scale category cut-points. CI = confidence interval.
 ```
 
 A [`svycoxph()`](https://rdrr.io/pkg/survey/man/svycoxph.html) fit
@@ -504,7 +504,7 @@ table_regression(cx, exponentiate = TRUE, show_columns = c("b", "ci", "p"))
 #>  Weighted n │ 235                         
 #>  N events   │ 144                         
 #> 
-#> Note. Survey-weighted Cox proportional hazards regression. Design: stratified (edema); 307 residual degrees of freedom. Concordance C = 0.81 (SE = 0.02). Coefficients exponentiated and displayed as HR; CI bounds exponentiated. Std. errors: Design-based (Taylor linearization). HR = hazard ratio.
+#> Note. Survey-weighted Cox proportional hazards regression. Design: stratified (edema); 307 residual degrees of freedom. Concordance C = 0.81 (SE = 0.02). Coefficients exponentiated and displayed as HR; CI bounds exponentiated. Std. errors: Design-based (Taylor linearization). HR = hazard ratio; CI = confidence interval.
 ```
 
 ### What a design fit refuses
@@ -640,7 +640,8 @@ population correction; degrees of freedom vary by group (49 to 99). Std.
 errors: Design-based (Taylor linearization). Confidence intervals and
 tests use the design degrees of freedom. Group comparison: design-based
 Wald test. The group comparison uses 195 degrees of freedom (observed
-groups only).
+groups only). CI = confidence interval; LL = lower limit; UL = upper
+limit.
 
 ## What is not here yet
 

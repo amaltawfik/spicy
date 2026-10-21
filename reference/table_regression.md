@@ -816,8 +816,12 @@ table_regression(
     table of the package: what the model is (its family, design, scale
     of the coefficients, reference categories, ...), the cases a
     univariable screen fits on, the inference (VCV type, p-adjust
-    method, ...), then the definitions (abbreviations, block glosses).
-    Under `stars`, the legend of the stars follows on a line of its own.
+    method, ...), the glosses of the blocks, then the abbreviations the
+    column headers and the rows of the fit statistics and of the random
+    effects show ("AIC = Akaike information criterion"), defined as the
+    style in force asks (`spicy_style(abbreviations = )`; under `"jama"`
+    they open the note on a line of their own). Under `stars`, the
+    legend of the stars follows on a line of its own.
 
   - `FALSE`: the corresponding banner row is omitted from every output
     engine. Use when the surrounding manuscript provides its own caption
@@ -925,7 +929,8 @@ table_regression(
   object, or `NULL` (the default). A style only changes DEFAULTS – any
   argument you pass explicitly wins over it. Set
   `options(spicy.style = )` for document-wide scope. A theme covers
-  numeric formatting conformity only, not full editorial conformity;
+  numeric formatting, the word that opens the note and the abbreviations
+  the note defines, not full editorial conformity;
   [`?spicy_style`](https://amaltawfik.github.io/spicy/reference/spicy_style.md)
   lists the exact rules each one encodes and the official document they
   come from. An unknown name is an error.
@@ -1909,7 +1914,7 @@ table_regression(fit)
 #>  R²              │    0.02                              
 #>  Adj. R²         │    0.02                              
 #> 
-#> Note. Linear regression. Std. errors: classical (OLS).
+#> Note. Linear regression. Std. errors: classical (OLS). CI = confidence interval.
 
 # \donttest{
 # Standardized coefficients (beta) injected next to B. "refit"
@@ -1933,7 +1938,7 @@ table_regression(fit, standardized = "refit")
 #>  R²              │    0.02                                     
 #>  Adj. R²         │    0.02                                     
 #> 
-#> Note. Linear regression. Std. errors: classical (OLS). β = standardized coefficient ("refit": outcome and numeric predictors z-scored, factor dummies on 0/1).
+#> Note. Linear regression. Std. errors: classical (OLS). β = standardized coefficient ("refit": outcome and numeric predictors z-scored, factor dummies on 0/1); CI = confidence interval.
 # }
 
 # \donttest{
@@ -1963,7 +1968,7 @@ if (requireNamespace("marginaleffects", quietly = TRUE)) {
 #>  R²              │    0.02                                     
 #>  Adj. R²         │    0.02                                     
 #> 
-#> Note. Linear regression. Std. errors: classical (OLS). AME = average marginal effect.
+#> Note. Linear regression. Std. errors: classical (OLS). AME = average marginal effect; CI = confidence interval.
 # }
 
 # \donttest{
@@ -2000,7 +2005,7 @@ if (requireNamespace("marginaleffects", quietly = TRUE)) {
 #>    No (ref.)     │       –           –    
 #>    Yes           │ [-3.89, 0.45]     .121 
 #> 
-#> Note. Linear regression. Std. errors: classical (OLS). AME = average marginal effect.
+#> Note. Linear regression. Std. errors: classical (OLS). CI = confidence interval; AME = average marginal effect.
 # }
 
 # ---- Cluster-robust variance -------------------------------------
@@ -2029,7 +2034,7 @@ if (requireNamespace("clubSandwich", quietly = TRUE)) {
 #>  R²              │    0.02                              
 #>  Adj. R²         │    0.02                              
 #> 
-#> Note. Linear regression. Std. errors: cluster-robust (CR2), clusters by region.
+#> Note. Linear regression. Std. errors: cluster-robust (CR2), clusters by region. CI = confidence interval.
 if (requireNamespace("clubSandwich", quietly = TRUE)) {
   table_regression(fit, vcov = "CR2", cluster = "region")
 }
@@ -2050,7 +2055,7 @@ if (requireNamespace("clubSandwich", quietly = TRUE)) {
 #>  R²              │    0.02                              
 #>  Adj. R²         │    0.02                              
 #> 
-#> Note. Linear regression. Std. errors: cluster-robust (CR2), clusters by region.
+#> Note. Linear regression. Std. errors: cluster-robust (CR2), clusters by region. CI = confidence interval.
 if (requireNamespace("clubSandwich", quietly = TRUE)) {
   table_regression(fit, vcov = "CR2", cluster = ~region:age_group)
 }
@@ -2071,7 +2076,7 @@ if (requireNamespace("clubSandwich", quietly = TRUE)) {
 #>  R²              │    0.02                              
 #>  Adj. R²         │    0.02                              
 #> 
-#> Note. Linear regression. Std. errors: cluster-robust (CR2), clusters by region:age_group.
+#> Note. Linear regression. Std. errors: cluster-robust (CR2), clusters by region:age_group. CI = confidence interval.
 # }
 
 # \donttest{
@@ -2228,7 +2233,7 @@ if (requireNamespace("lme4", quietly = TRUE)) {
 #>  AIC              │ 1755.6                                 
 #>  BIC              │ 1774.8                                 
 #> 
-#> Note. Linear mixed-effects regression. Std. errors: Wald (model-based). p-values: Wald-z, large-sample approximation. Load `lmerTest` for Satterthwaite t-tests.
+#> Note. Linear mixed-effects regression. Std. errors: Wald (model-based). p-values: Wald-z, large-sample approximation. Load `lmerTest` for Satterthwaite t-tests. CI = confidence interval; AIC = Akaike information criterion; BIC = Bayesian information criterion.
 
 # Hierarchical mixed-effects comparison (nested LRT).
 if (requireNamespace("lme4", quietly = TRUE)) {
@@ -2292,7 +2297,7 @@ if (requireNamespace("lme4", quietly = TRUE)) {
 #>  Δχ²                             │  +42.14               
 #>  p (change)                      │    <.001              
 #> 
-#> Note. Linear mixed-effects regression models. Std. errors: Wald (model-based). p-values: Wald-z, large-sample approximation. Load `lmerTest` for Satterthwaite t-tests. Model 1: Random effects (ML): LR test vs linear regression, χ̄²(1) = 50.51, p < .001. Model 2: Random effects (ML): LR test vs linear regression, χ̄²(1) = 106.21, p < .001. Model 3: Random effects (ML): LR test vs linear regression, χ̄²(3) = 148.35, p < .001.
+#> Note. Linear mixed-effects regression models. Std. errors: Wald (model-based). p-values: Wald-z, large-sample approximation. Load `lmerTest` for Satterthwaite t-tests. Model 1: Random effects (ML): LR test vs linear regression, χ̄²(1) = 50.51, p < .001. Model 2: Random effects (ML): LR test vs linear regression, χ̄²(1) = 106.21, p < .001. Model 3: Random effects (ML): LR test vs linear regression, χ̄²(3) = 148.35, p < .001. ICC = intraclass correlation coefficient; AIC = Akaike information criterion; BIC = Bayesian information criterion.
 # }
 
 if (FALSE) { # \dontrun{
