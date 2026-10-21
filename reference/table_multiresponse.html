@@ -175,9 +175,14 @@ and so is an empty selection.</p></dd>
 <dt id="arg-by">by<a class="anchor" aria-label="anchor" href="#arg-by"></a></dt>
 <dd><p>Optional grouping column, unquoted or as a string. Factor
 levels keep their declared order, a declared level with no respondent
-included; any other column forms groups in order of first appearance
-(a labelled column by its codes), as in <code><a href="table_categorical.html">table_categorical()</a></code>. Rows
-with a missing <code>by</code> are removed, and the note says how many; a <code>by</code>
+included; any other column is sorted, as in <code><a href="table_categorical.html">table_categorical()</a></code>:
+text in the C locale, <code>FALSE</code> before <code>TRUE</code>, numbers and the codes of
+a labelled column ascending, whatever the order of the rows. The
+missing answers to the question are counted (see <code>base</code> and
+<code>none_row</code>), as a table that counts does (see <code>drop_na</code> in
+<code><a href="table_categorical.html">table_categorical()</a></code>), but a missing <code>by</code> has no group to be counted
+in: rows with a missing <code>by</code> are removed, and the note says how
+many, so this table has no <code>drop_na</code>; a <code>by</code>
 that no observation holds is an error (class <code>spicy_invalid_data</code>).
 A level displayed with the label of the <code>Total</code> margin is an error,
 as in <code><a href="table_categorical.html">table_categorical()</a></code>.</p></dd>
@@ -292,7 +297,11 @@ distribution. See <em>Tests</em>.</p></dd>
 
 <dt id="arg-boot-n">boot_n<a class="anchor" aria-label="anchor" href="#arg-boot-n"></a></dt>
 <dd><p>Number of bootstrap resamples for
-<code>global_test = "bootstrap"</code>. Defaults to <code>1999</code>.</p></dd>
+<code>global_test = "bootstrap"</code>: a positive whole number, as in
+<code><a href="table_regression.html">table_regression()</a></code> and <code><a href="table_continuous_lm.html">table_continuous_lm()</a></code>. Defaults to <code>1999</code>,
+the default of the <code>MRCV</code> package for the same bootstrap test. Typed
+with <code>global_test = "rs2"</code>, or in a table without a global test, it
+is ignored with a warning (class <code>spicy_ignored_arg</code>).</p></dd>
 
 
 <dt id="arg-p-adjust">p_adjust<a class="anchor" aria-label="anchor" href="#arg-p-adjust"></a></dt>
@@ -338,7 +347,7 @@ the wording you set here.</p></dd>
 <dt id="arg-percent-digits">percent_digits<a class="anchor" aria-label="anchor" href="#arg-percent-digits"></a></dt>
 <dd><p>Number of digits for percentages in report outputs.
 Defaults to <code>1</code>. A whole number: a fraction is an error, as for
-<code>p_digits</code> and <code>v_digits</code>.</p></dd>
+every <code>*_digits</code> argument.</p></dd>
 
 
 <dt id="arg-p-digits">p_digits<a class="anchor" aria-label="anchor" href="#arg-p-digits"></a></dt>
@@ -352,7 +361,9 @@ convention.</p></dd>
 
 
 <dt id="arg-decimal-mark">decimal_mark<a class="anchor" aria-label="anchor" href="#arg-decimal-mark"></a></dt>
-<dd><p>Decimal separator (<code>"."</code> or <code>","</code>). Defaults to <code>"."</code>.</p></dd>
+<dd><p>The decimal mark, a single character: <code>"."</code> (the
+default) or <code>","</code> in most styles; the Lancet style of
+<code><a href="spicy_style.html">spicy_style()</a></code> uses the middle dot.</p></dd>
 
 
 <dt id="arg-align">align<a class="anchor" aria-label="anchor" href="#arg-align"></a></dt>
@@ -364,7 +375,8 @@ or <code>"right"</code>, as in <code><a href="table_categorical.html">table_cate
 <dt id="arg-title">title<a class="anchor" aria-label="anchor" href="#arg-title"></a></dt>
 <dd><p>The table title. <code>NULL</code> (the default) gives "Multiple
 responses", followed by "by" and the <code>by</code> variable under the <code>labels</code>
-contract; a single string replaces it.</p></dd>
+contract; a single string replaces it, and <code>FALSE</code> removes it, as in
+<code><a href="table_regression.html">table_regression()</a></code>.</p></dd>
 
 
 <dt id="arg-note">note<a class="anchor" aria-label="anchor" href="#arg-note"></a></dt>

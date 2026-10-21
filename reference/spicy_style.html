@@ -118,8 +118,8 @@ institution.</p>
 <span>  fit_digits <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  ic_digits <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  percent_digits <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  v_digits <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  note_label <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  note_label <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  <span class="va">v_digits</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">spicy_style_names</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
@@ -203,12 +203,12 @@ named numeric vector of symbol-to-threshold pairs such as
 <dd><p>Decimal places
 for estimates, effect sizes, fit statistics and information
 criteria. Each is applied only by the table functions that have
-the matching argument.</p></dd>
+the matching argument: <code>effect_size_digits</code> reaches the association
+measure and the SMD of <code><a href="table_categorical.html">table_categorical()</a></code> too.</p></dd>
 
 
-<dt id="arg-percent-digits-v-digits">percent_digits, v_digits<a class="anchor" aria-label="anchor" href="#arg-percent-digits-v-digits"></a></dt>
-<dd><p>Decimal places for percentages and
-for the association measure of <code><a href="table_categorical.html">table_categorical()</a></code>.</p></dd>
+<dt id="arg-percent-digits">percent_digits<a class="anchor" aria-label="anchor" href="#arg-percent-digits"></a></dt>
+<dd><p>Decimal places for percentages.</p></dd>
 
 
 <dt id="arg-note-label">note_label<a class="anchor" aria-label="anchor" href="#arg-note-label"></a></dt>
@@ -222,6 +222,11 @@ no-break space French puts before a colon. A <code>note</code> you type is
 printed as typed; its opening word is set in italics when it is the
 lead-in in force.</p></dd>
 
+
+<dt id="arg-v-digits">v_digits<a class="anchor" aria-label="anchor" href="#arg-v-digits"></a></dt>
+<dd><p>Defunct. Renamed <code>effect_size_digits</code> in spicy 0.14.0;
+supplying <code>v_digits</code> is an error (class <code>spicy_defunct</code>).</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
@@ -234,11 +239,13 @@ available theme names.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>A style is accepted by the <code>style</code> argument of <code><a href="table_regression.html">table_regression()</a></code>,
-<code><a href="table_categorical.html">table_categorical()</a></code>, <code><a href="table_continuous.html">table_continuous()</a></code> and
-<code><a href="table_continuous_lm.html">table_continuous_lm()</a></code>, either as a theme name or as the object
-returned here, and by <code>options(spicy.style = )</code> for document-wide
-scope.</p>
+    <p>A style is accepted by the <code>style</code> argument of the nine table
+functions (<code><a href="table_categorical.html">table_categorical()</a></code>, <code><a href="table_categorical_svy.html">table_categorical_svy()</a></code>,
+<code><a href="table_continuous.html">table_continuous()</a></code>, <code><a href="table_continuous_svy.html">table_continuous_svy()</a></code>,
+<code><a href="table_continuous_lm.html">table_continuous_lm()</a></code>, <code><a href="table_outcome.html">table_outcome()</a></code>, <code><a href="table_multiresponse.html">table_multiresponse()</a></code>,
+<code><a href="table_regression.html">table_regression()</a></code> and <code><a href="table_regression_uv.html">table_regression_uv()</a></code>), either as a theme
+name or as the object returned here, and by
+<code>options(spicy.style = )</code> for document-wide scope.</p>
     </div>
     <div class="section level2">
     <h2 id="what-a-theme-claims-and-what-it-does-not">What a theme claims, and what it does not<a class="anchor" aria-label="anchor" href="#what-a-theme-claims-and-what-it-does-not"></a></h2>

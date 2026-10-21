@@ -482,14 +482,13 @@ forms are an explicit enumeration or <code>where(is.factor)</code>:</p>
 <p>Negation (<code>select = -c(x, y)</code>) is <strong>not</strong>
 recommended, and the reason is worth a paragraph. It sweeps in every
 remaining column, and a numeric one becomes a block with one
-<em>level</em> per distinct value, in order of first appearance — a
-single block sixty rows long, where a reader expects a handful of
-categories. The comparison still runs, so the block is not empty; it is
-unreadable, which is worse, because it looks like an answer. A variable
-producing more than twenty levels raises a warning for that reason. The
-threshold is arbitrary and the help page says so; the warning is a
-nudge, never a refusal, because the family refuses no numeric
-grouping.</p>
+<em>level</em> per distinct value, in ascending order — a single block
+sixty rows long, where a reader expects a handful of categories. The
+comparison still runs, so the block is not empty; it is unreadable,
+which is worse, because it looks like an answer. A variable producing
+more than twenty levels raises a warning for that reason. The threshold
+is arbitrary and the help page says so; the warning is a nudge, never a
+refusal, because the family refuses no numeric grouping.</p>
 <p>Labelled data deserves a word here, because importing from SPSS or
 Stata is a central use of this package. A <code>haven_labelled</code>
 column used as <code>select</code> shows its numeric CODES, not its
@@ -499,8 +498,10 @@ the stub.</p>
 <p>The order of the blocks is the order you write, and the order of the
 levels inside a block is the variable’s own: a factor keeps its declared
 level order (empty levels included — a level nobody chose is information
-about the instrument), anything else takes the order of first
-appearance.</p>
+about the instrument), anything else is sorted, text in the C locale
+(capitals before lower case, the same on every machine),
+<code>FALSE</code> before <code>TRUE</code>, numbers and codes
+ascending, whatever the order of the rows.</p>
 </div>
 <div class="section level2">
 <h2 id="weights">Weights<a class="anchor" aria-label="anchor" href="#weights"></a>
@@ -1279,46 +1280,46 @@ another. Overall = the whole analytic sample.
 
     <script src="https://cdn.jsdelivr.net/gh/vincentarelbundock/tinytable@main/inst/tinytable.js"></script><script>
       // Create table-specific functions using external factory
-      const tableFns_rcvbxazcrr5ydbqw1amc = TinyTable.createTableFunctions("tinytable_rcvbxazcrr5ydbqw1amc");
+      const tableFns_y6nsh9dqqvc73lu0an6j = TinyTable.createTableFunctions("tinytable_y6nsh9dqqvc73lu0an6j");
       // tinytable span after
       window.addEventListener('load', function () {
           var cellsToStyle = [
             // tinytable style arrays after
-          { positions: [ { i: '8', j: 2 }, { i: '8', j: 3 }, { i: '8', j: 4 } ], css_id: 'tinytable_css_k1kay68c4lso5wvi63hm',}, 
-          { positions: [ { i: '2', j: 2 }, { i: '3', j: 2 }, { i: '5', j: 2 }, { i: '6', j: 2 }, { i: '7', j: 2 }, { i: '2', j: 3 }, { i: '3', j: 3 }, { i: '5', j: 3 }, { i: '6', j: 3 }, { i: '7', j: 3 }, { i: '2', j: 4 }, { i: '3', j: 4 }, { i: '5', j: 4 }, { i: '6', j: 4 }, { i: '7', j: 4 } ], css_id: 'tinytable_css_wm1drjp5vpb7zin1bncf',}, 
-          { positions: [ { i: '1', j: 2 }, { i: '4', j: 2 }, { i: '1', j: 3 }, { i: '4', j: 3 }, { i: '1', j: 4 }, { i: '4', j: 4 } ], css_id: 'tinytable_css_3xdvvkgubq4zcymtorxq',}, 
-          { positions: [ { i: '0', j: 2 }, { i: '0', j: 3 }, { i: '0', j: 4 } ], css_id: 'tinytable_css_jurzn3bbf8o1xqx4mfnj',}, 
-          { positions: [ { i: '8', j: 1 } ], css_id: 'tinytable_css_09myn6acdhk92albq5g5',}, 
-          { positions: [ { i: '4', j: 1 } ], css_id: 'tinytable_css_o1qfuz7haik7vgx5g412',}, 
-          { positions: [ { i: '3', j: 1 }, { i: '6', j: 1 }, { i: '7', j: 1 } ], css_id: 'tinytable_css_dgd31frsnostlvvek353',}, 
-          { positions: [ { i: '2', j: 1 }, { i: '5', j: 1 } ], css_id: 'tinytable_css_t4csg01tyy4ez67mkkk2',}, 
-          { positions: [ { i: '1', j: 1 } ], css_id: 'tinytable_css_sot270pzcowzk3jn7757',}, 
-          { positions: [ { i: '0', j: 1 } ], css_id: 'tinytable_css_2069kg6liroml1ubijw2',}, 
+          { positions: [ { i: '8', j: 2 }, { i: '8', j: 3 }, { i: '8', j: 4 } ], css_id: 'tinytable_css_hytp36t1uf5rdc9a7ij1',}, 
+          { positions: [ { i: '2', j: 2 }, { i: '3', j: 2 }, { i: '5', j: 2 }, { i: '6', j: 2 }, { i: '7', j: 2 }, { i: '2', j: 3 }, { i: '3', j: 3 }, { i: '5', j: 3 }, { i: '6', j: 3 }, { i: '7', j: 3 }, { i: '2', j: 4 }, { i: '3', j: 4 }, { i: '5', j: 4 }, { i: '6', j: 4 }, { i: '7', j: 4 } ], css_id: 'tinytable_css_qrgv4r47yyppd1unjj9z',}, 
+          { positions: [ { i: '1', j: 2 }, { i: '4', j: 2 }, { i: '1', j: 3 }, { i: '4', j: 3 }, { i: '1', j: 4 }, { i: '4', j: 4 } ], css_id: 'tinytable_css_xep3pc6ciiqexd0ivioc',}, 
+          { positions: [ { i: '0', j: 2 }, { i: '0', j: 3 }, { i: '0', j: 4 } ], css_id: 'tinytable_css_kew5a1jofu5wmdxooq9s',}, 
+          { positions: [ { i: '8', j: 1 } ], css_id: 'tinytable_css_tabox6zw8ezht14x3369',}, 
+          { positions: [ { i: '4', j: 1 } ], css_id: 'tinytable_css_gm8rdv4frdkyt1haok55',}, 
+          { positions: [ { i: '3', j: 1 }, { i: '6', j: 1 }, { i: '7', j: 1 } ], css_id: 'tinytable_css_eypgapw8zitnvzg1x7ay',}, 
+          { positions: [ { i: '2', j: 1 }, { i: '5', j: 1 } ], css_id: 'tinytable_css_va7zl0fw8zxnhzx66nlh',}, 
+          { positions: [ { i: '1', j: 1 } ], css_id: 'tinytable_css_ad6sovo5kb1mh7fzcubm',}, 
+          { positions: [ { i: '0', j: 1 } ], css_id: 'tinytable_css_na2rfgdfb606m5w40ecj',}, 
           ];
 
           // Loop over the arrays to style the cells
           cellsToStyle.forEach(function (group) {
               group.positions.forEach(function (cell) {
-                  tableFns_rcvbxazcrr5ydbqw1amc.styleCell(cell.i, cell.j, group.css_id);
+                  tableFns_y6nsh9dqqvc73lu0an6j.styleCell(cell.i, cell.j, group.css_id);
               });
           });
       });
     </script><link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/vincentarelbundock/tinytable@main/inst/tinytable.css">
 <style>
     /* tinytable css entries after */
-    #tinytable_rcvbxazcrr5ydbqw1amc td.tinytable_css_k1kay68c4lso5wvi63hm, #tinytable_rcvbxazcrr5ydbqw1amc th.tinytable_css_k1kay68c4lso5wvi63hm {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
-    #tinytable_rcvbxazcrr5ydbqw1amc td.tinytable_css_wm1drjp5vpb7zin1bncf, #tinytable_rcvbxazcrr5ydbqw1amc th.tinytable_css_wm1drjp5vpb7zin1bncf { text-align: center }
-    #tinytable_rcvbxazcrr5ydbqw1amc td.tinytable_css_3xdvvkgubq4zcymtorxq, #tinytable_rcvbxazcrr5ydbqw1amc th.tinytable_css_3xdvvkgubq4zcymtorxq {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
-    #tinytable_rcvbxazcrr5ydbqw1amc td.tinytable_css_jurzn3bbf8o1xqx4mfnj, #tinytable_rcvbxazcrr5ydbqw1amc th.tinytable_css_jurzn3bbf8o1xqx4mfnj {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
-    #tinytable_rcvbxazcrr5ydbqw1amc td.tinytable_css_09myn6acdhk92albq5g5, #tinytable_rcvbxazcrr5ydbqw1amc th.tinytable_css_09myn6acdhk92albq5g5 {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left; padding-left: 1em; padding-left: 0.8em; }
-    #tinytable_rcvbxazcrr5ydbqw1amc td.tinytable_css_o1qfuz7haik7vgx5g412, #tinytable_rcvbxazcrr5ydbqw1amc th.tinytable_css_o1qfuz7haik7vgx5g412 {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left; padding-left: 1em; padding-left: 0.8em; }
-    #tinytable_rcvbxazcrr5ydbqw1amc td.tinytable_css_dgd31frsnostlvvek353, #tinytable_rcvbxazcrr5ydbqw1amc th.tinytable_css_dgd31frsnostlvvek353 { text-align: left; padding-left: 1em; padding-left: 0.8em; }
-    #tinytable_rcvbxazcrr5ydbqw1amc td.tinytable_css_t4csg01tyy4ez67mkkk2, #tinytable_rcvbxazcrr5ydbqw1amc th.tinytable_css_t4csg01tyy4ez67mkkk2 { text-align: left }
-    #tinytable_rcvbxazcrr5ydbqw1amc td.tinytable_css_sot270pzcowzk3jn7757, #tinytable_rcvbxazcrr5ydbqw1amc th.tinytable_css_sot270pzcowzk3jn7757 {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
-    #tinytable_rcvbxazcrr5ydbqw1amc td.tinytable_css_2069kg6liroml1ubijw2, #tinytable_rcvbxazcrr5ydbqw1amc th.tinytable_css_2069kg6liroml1ubijw2 {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
+    #tinytable_y6nsh9dqqvc73lu0an6j td.tinytable_css_hytp36t1uf5rdc9a7ij1, #tinytable_y6nsh9dqqvc73lu0an6j th.tinytable_css_hytp36t1uf5rdc9a7ij1 {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
+    #tinytable_y6nsh9dqqvc73lu0an6j td.tinytable_css_qrgv4r47yyppd1unjj9z, #tinytable_y6nsh9dqqvc73lu0an6j th.tinytable_css_qrgv4r47yyppd1unjj9z { text-align: center }
+    #tinytable_y6nsh9dqqvc73lu0an6j td.tinytable_css_xep3pc6ciiqexd0ivioc, #tinytable_y6nsh9dqqvc73lu0an6j th.tinytable_css_xep3pc6ciiqexd0ivioc {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
+    #tinytable_y6nsh9dqqvc73lu0an6j td.tinytable_css_kew5a1jofu5wmdxooq9s, #tinytable_y6nsh9dqqvc73lu0an6j th.tinytable_css_kew5a1jofu5wmdxooq9s {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: center }
+    #tinytable_y6nsh9dqqvc73lu0an6j td.tinytable_css_tabox6zw8ezht14x3369, #tinytable_y6nsh9dqqvc73lu0an6j th.tinytable_css_tabox6zw8ezht14x3369 {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left; padding-left: 1em; padding-left: 0.8em; }
+    #tinytable_y6nsh9dqqvc73lu0an6j td.tinytable_css_gm8rdv4frdkyt1haok55, #tinytable_y6nsh9dqqvc73lu0an6j th.tinytable_css_gm8rdv4frdkyt1haok55 {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left; padding-left: 1em; padding-left: 0.8em; }
+    #tinytable_y6nsh9dqqvc73lu0an6j td.tinytable_css_eypgapw8zitnvzg1x7ay, #tinytable_y6nsh9dqqvc73lu0an6j th.tinytable_css_eypgapw8zitnvzg1x7ay { text-align: left; padding-left: 1em; padding-left: 0.8em; }
+    #tinytable_y6nsh9dqqvc73lu0an6j td.tinytable_css_va7zl0fw8zxnhzx66nlh, #tinytable_y6nsh9dqqvc73lu0an6j th.tinytable_css_va7zl0fw8zxnhzx66nlh { text-align: left }
+    #tinytable_y6nsh9dqqvc73lu0an6j td.tinytable_css_ad6sovo5kb1mh7fzcubm, #tinytable_y6nsh9dqqvc73lu0an6j th.tinytable_css_ad6sovo5kb1mh7fzcubm {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 0; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.03em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.1em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
+    #tinytable_y6nsh9dqqvc73lu0an6j td.tinytable_css_na2rfgdfb606m5w40ecj, #tinytable_y6nsh9dqqvc73lu0an6j th.tinytable_css_na2rfgdfb606m5w40ecj {  position: relative; --border-bottom: 1; --border-left: 0; --border-right: 0; --border-top: 1; --line-color-bottom: var(--tt-line-color); --line-color-left: var(--tt-line-color); --line-color-right: var(--tt-line-color); --line-color-top: var(--tt-line-color); --line-width-bottom: 0.06em; --line-width-left: 0.1em; --line-width-right: 0.1em; --line-width-top: 0.06em; --line-type-bottom: solid; --line-type-left: solid; --line-type-right: solid; --line-type-top: solid; --trim-bottom-left: 0%; --trim-bottom-right: 0%; --trim-left-bottom: 0%; --trim-left-top: 0%; --trim-right-bottom: 0%; --trim-right-top: 0%; --trim-top-left: 0%; --trim-top-right: 0%; ; text-align: left }
     </style>
 <div class="container">
-      <table class="table tinytable" id="tinytable_rcvbxazcrr5ydbqw1amc" style="width: auto; margin-left: auto; margin-right: auto;" data-quarto-disable-processing="true">
+      <table class="table tinytable" id="tinytable_y6nsh9dqqvc73lu0an6j" style="width: auto; margin-left: auto; margin-right: auto;" data-quarto-disable-processing="true">
 <caption>Descriptive statistics of wellbeing_score</caption>
         <thead><tr>
 <th scope="col" data-row="0" data-col="1">Variable</th>

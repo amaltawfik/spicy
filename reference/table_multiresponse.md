@@ -73,11 +73,16 @@ table_multiresponse(
 
   Optional grouping column, unquoted or as a string. Factor levels keep
   their declared order, a declared level with no respondent included;
-  any other column forms groups in order of first appearance (a labelled
-  column by its codes), as in
-  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md).
-  Rows with a missing `by` are removed, and the note says how many; a
-  `by` that no observation holds is an error (class
+  any other column is sorted, as in
+  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md):
+  text in the C locale, `FALSE` before `TRUE`, numbers and the codes of
+  a labelled column ascending, whatever the order of the rows. The
+  missing answers to the question are counted (see `base` and
+  `none_row`), as a table that counts does (see `drop_na` in
+  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)),
+  but a missing `by` has no group to be counted in: rows with a missing
+  `by` are removed, and the note says how many, so this table has no
+  `drop_na`; a `by` that no observation holds is an error (class
   `spicy_invalid_data`). A level displayed with the label of the `Total`
   margin is an error, as in
   [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md).
@@ -206,8 +211,15 @@ table_multiresponse(
 
 - boot_n:
 
-  Number of bootstrap resamples for `global_test = "bootstrap"`.
-  Defaults to `1999`.
+  Number of bootstrap resamples for `global_test = "bootstrap"`: a
+  positive whole number, as in
+  [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  and
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md).
+  Defaults to `1999`, the default of the `MRCV` package for the same
+  bootstrap test. Typed with `global_test = "rs2"`, or in a table
+  without a global test, it is ignored with a warning (class
+  `spicy_ignored_arg`).
 
 - p_adjust:
 
@@ -262,8 +274,8 @@ table_multiresponse(
 - percent_digits:
 
   Number of digits for percentages in report outputs. Defaults to `1`. A
-  whole number: a fraction is an error, as for `p_digits` and
-  `v_digits`.
+  whole number: a fraction is an error, as for every `*_digits`
+  argument.
 
 - p_digits:
 
@@ -276,7 +288,10 @@ table_multiresponse(
 
 - decimal_mark:
 
-  Decimal separator (`"."` or `","`). Defaults to `"."`.
+  The decimal mark, a single character: `"."` (the default) or `","` in
+  most styles; the Lancet style of
+  [`spicy_style()`](https://amaltawfik.github.io/spicy/reference/spicy_style.md)
+  uses the middle dot.
 
 - align:
 
@@ -289,7 +304,8 @@ table_multiresponse(
 
   The table title. `NULL` (the default) gives "Multiple responses",
   followed by "by" and the `by` variable under the `labels` contract; a
-  single string replaces it.
+  single string replaces it, and `FALSE` removes it, as in
+  [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md).
 
 - note:
 

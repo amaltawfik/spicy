@@ -154,27 +154,50 @@ multiframe designs are refused with a classed error.</p></dd>
 the design's variables. As in <code><a href="table_continuous.html">table_continuous()</a></code>, the <code>by</code> column
 is not part of the selection (naming it, or giving its position, is
 an error), a name that is not a column is an error, and so is a
-selection with no numeric column.</p></dd>
+selection with no numeric column. The design's own columns are not
+part of it either, since they are not variables to describe: its
+sampling weights, replicate weights, cluster identifiers (every
+stage, unless each cluster of a one-stage design is a single
+observation) and finite population corrections. <code><a href="https://tidyselect.r-lib.org/reference/everything.html" class="external-link">everything()</a></code>, the
+other selection helpers and <code>regex</code> skip them, and naming one, or
+giving its position, is an error; <code><a href="table_continuous.html">table_continuous()</a></code> describes it
+from the data. Strata stay variables, since a stratification
+variable such as a region is often one of interest. These columns
+are read from the design object. A design made by
+<code><a href="https://rdrr.io/pkg/survey/man/as.svrepdesign.html" class="external-link">survey::as.svrepdesign()</a></code> records none of them, and one made by
+<code><a href="https://rdrr.io/pkg/survey/man/svrepdesign.html" class="external-link">survey::svrepdesign()</a></code> names its sampling weights only in its call,
+as a formula, until <code><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset()</a></code>, <code><a href="https://rdrr.io/r/stats/update.html" class="external-link">update()</a></code>, <code>postStratify()</code>,
+<code>calibrate()</code>, <code>rake()</code> or <code>trimWeights()</code> replaces the call: leave
+such a column out with a negation (<code>select = !w</code>).</p></dd>
 
 
 <dt id="arg-by">by<a class="anchor" aria-label="anchor" href="#arg-by"></a></dt>
-<dd><p>A single grouping column. One domain per level. A <code>by</code> that
-no observation holds is an error under <code>drop_na = TRUE</code>.</p></dd>
+<dd><p>A single grouping column. One domain per level, in the order
+of <code><a href="table_continuous.html">table_continuous()</a></code>: a factor's levels, any other column sorted
+(text in the C locale, <code>FALSE</code> before <code>TRUE</code>, numbers ascending). A
+<code>by</code> that no observation holds is an error under <code>drop_na = TRUE</code>.</p></dd>
 
 
 <dt id="arg-exclude">exclude<a class="anchor" aria-label="anchor" href="#arg-exclude"></a></dt>
-<dd><p>Columns to drop from <code>select</code>.</p></dd>
+<dd><p>Columns to exclude. Supports tidyselect syntax and
+character vectors of column names.</p></dd>
 
 
 <dt id="arg-regex">regex<a class="anchor" aria-label="anchor" href="#arg-regex"></a></dt>
-<dd><p>Treat <code>select</code> as a regular expression.</p></dd>
+<dd><p>Logical. If <code>FALSE</code> (the default), uses tidyselect
+helpers. If <code>TRUE</code>, the <code>select</code> argument is treated as a regular
+expression.</p></dd>
 
 
 <dt id="arg-drop-na">drop_na<a class="anchor" aria-label="anchor" href="#arg-drop-na"></a></dt>
-<dd><p>Drop observations with a missing <code>by</code> value
-(default <code>TRUE</code>). With <code>FALSE</code> they form a <code>(Missing)</code> domain of
+<dd><p>Drop observations with a missing <code>by</code> value. A table
+that computes removes the missing values by default and counts them
+in the note, the rule of <code><a href="table_continuous.html">table_continuous()</a></code>: <code>TRUE</code> (the default)
+removes them, and the missing values of each summarized variable are
+always removed. With <code>FALSE</code> they form a <code>(Missing)</code> domain of
 their own – an ordinary subpopulation, with its own degrees of
-freedom – which is excluded from the group comparison.</p></dd>
+freedom – which is excluded from the group comparison. Ignored
+(with a warning) when <code>by</code> is not used.</p></dd>
 
 
 <dt id="arg-deff">deff<a class="anchor" aria-label="anchor" href="#arg-deff"></a></dt>
@@ -208,8 +231,11 @@ comparisons were withheld, and the call warns
 
 
 <dt id="arg-p-value">p_value<a class="anchor" aria-label="anchor" href="#arg-p-value"></a></dt>
-<dd><p>Show the p-value column (defaults to <code>TRUE</code> with
-<code>by</code>).</p></dd>
+<dd><p>Logical or <code>NULL</code>. If <code>TRUE</code> and <code>by</code> is used, adds a
+<em>p</em>-value column from the test specified by <code>test</code>. When <code>NULL</code> (the
+default), the <em>p</em>-value is shown automatically whenever <code>by</code> is
+supplied, and hidden otherwise. Pass <code>p_value = FALSE</code> to suppress
+the column explicitly. Ignored when <code>by</code> is not used.</p></dd>
 
 
 <dt id="arg-p-adjust">p_adjust<a class="anchor" aria-label="anchor" href="#arg-p-adjust"></a></dt>
@@ -223,11 +249,23 @@ and the p-value column. See <em>Multiple-comparison adjustment</em>.</p></dd>
 
 
 <dt id="arg-statistic">statistic<a class="anchor" aria-label="anchor" href="#arg-statistic"></a></dt>
-<dd><p>Show the test-statistic column.</p></dd>
+<dd><p>Logical. If <code>TRUE</code> and <code>by</code> is used, the test
+statistic is shown in an additional column (e.g.,
+<code>t(df) = ...</code>, <code>F(df1, df2) = ...</code>, <code>W = ...</code>, or <code>H(df) = ...</code>).
+Both <code>p_value</code> and <code>statistic</code> are independent; either or both
+can be enabled. Defaults to <code>FALSE</code>. Ignored when <code>by</code> is not
+used.</p></dd>
 
 
 <dt id="arg-show-n">show_n<a class="anchor" aria-label="anchor" href="#arg-show-n"></a></dt>
-<dd><p>Show the count column.</p></dd>
+<dd><p>Logical. If <code>TRUE</code>, includes an unweighted <code>n</code>
+column in the printed ASCII table and in every rendered output
+(<code>tinytable</code>, <code>gt</code>, <code>flextable</code>, <code>word</code>, <code>excel</code>, <code>clipboard</code>).
+Set to <code>FALSE</code> to drop the <code>n</code> column structurally from those
+outputs (no empty placeholder, no spanner). The <code>n</code> column is
+always present in <code>output = "long"</code> for downstream programmatic
+access. Defaults to <code>TRUE</code>.
+Ignored (with a warning) when <code>show_columns</code> is supplied.</p></dd>
 
 
 <dt id="arg-show-columns">show_columns<a class="anchor" aria-label="anchor" href="#arg-show-columns"></a></dt>
@@ -235,8 +273,18 @@ and the p-value column. See <em>Multiple-comparison adjustment</em>.</p></dd>
 keeps the default display.</p></dd>
 
 
-<dt id="arg-ci-ci-level">ci, ci_level<a class="anchor" aria-label="anchor" href="#arg-ci-ci-level"></a></dt>
-<dd><p>The mean's confidence interval and its level.</p></dd>
+<dt id="arg-ci">ci<a class="anchor" aria-label="anchor" href="#arg-ci"></a></dt>
+<dd><p>Logical. If <code>TRUE</code>, includes the mean confidence
+interval columns (<code>&lt;level&gt;% CI LL</code> / <code>&lt;level&gt;% CI UL</code>) and their
+spanner in the printed ASCII table and in every rendered output
+(<code>tinytable</code>, <code>gt</code>, <code>flextable</code>, <code>word</code>, <code>excel</code>, <code>clipboard</code>).
+Set to <code>FALSE</code> to drop both columns and the CI spanner
+structurally from those outputs (no empty placeholders, no
+border lines under an empty header). The CI bounds are always
+present as <code>ci_lower</code> / <code>ci_upper</code> in <code>output = "long"</code> for
+downstream programmatic access. Defaults to <code>TRUE</code>. The CI level is
+taken from <code>ci_level</code>.
+Ignored (with a warning) when <code>show_columns</code> is supplied.</p></dd>
 
 
 <dt id="arg-labels">labels<a class="anchor" aria-label="anchor" href="#arg-labels"></a></dt>
@@ -260,13 +308,62 @@ variable label documents the data file; a published table carries
 the wording you set here.</p></dd>
 
 
-<dt id="arg-digits-p-digits-decimal-mark">digits, p_digits, decimal_mark<a class="anchor" aria-label="anchor" href="#arg-digits-p-digits-decimal-mark"></a></dt>
-<dd><p>Number formatting.</p></dd>
+<dt id="arg-ci-level">ci_level<a class="anchor" aria-label="anchor" href="#arg-ci-level"></a></dt>
+<dd><p>Confidence level for the mean confidence interval
+(default: <code>0.95</code>): a number strictly between 0 and 1.</p></dd>
+
+
+<dt id="arg-digits">digits<a class="anchor" aria-label="anchor" href="#arg-digits"></a></dt>
+<dd><p>Number of decimal places for descriptive values and test
+statistics (default: <code>2</code>). A whole number: a fraction is an error,
+as for every <code>*_digits</code> argument.</p></dd>
+
+
+<dt id="arg-p-digits">p_digits<a class="anchor" aria-label="anchor" href="#arg-p-digits"></a></dt>
+<dd><p>Integer &gt;= 1. Number of decimal places used to
+render <em>p</em>-values in the <code>p</code> column (default: <code>3</code>, the APA
+Publication Manual standard). Both the displayed precision and
+the small-<em>p</em> threshold derive from this argument: <code>p_digits = 3</code>
+prints <code>.045</code> and <code>&lt;.001</code>; <code>p_digits = 4</code> prints <code>.0451</code> and
+<code>&lt;.0001</code>; <code>p_digits = 2</code> prints <code>.05</code> and <code>&lt;.01</code>. Useful for
+genomics / GWAS contexts with very small <em>p</em>-values, or for
+journals using a coarser convention. Leading zeros are always
+stripped, following APA convention.</p></dd>
+
+
+<dt id="arg-decimal-mark">decimal_mark<a class="anchor" aria-label="anchor" href="#arg-decimal-mark"></a></dt>
+<dd><p>The decimal mark, a single character: <code>"."</code> (the
+default) or <code>","</code> in most styles; the Lancet style of
+<code><a href="spicy_style.html">spicy_style()</a></code> uses the middle dot.</p></dd>
 
 
 <dt id="arg-align">align<a class="anchor" aria-label="anchor" href="#arg-align"></a></dt>
-<dd><p>Numeric-cell alignment: <code>"decimal"</code>, <code>"center"</code> or
-<code>"right"</code>.</p></dd>
+<dd><p>Horizontal alignment of numeric columns in the printed
+ASCII table and in the <code>tinytable</code>, <code>gt</code>, <code>flextable</code>, <code>word</code>,
+<code>excel</code>, and <code>clipboard</code> outputs. The first column (<code>Variable</code>) and
+<code>Group</code> (when present) are always left-aligned. One of:</p><ul><li><p><code>"decimal"</code> (default): align numeric columns on the decimal
+mark, the standard scientific-publication convention used by
+SPSS, SAS, and LaTeX <code>siunitx</code>. Numeric cells are pre-padded
+with figure-spaces (U+2007, digit-width) so every string in a
+column has the same width with the decimal mark at the same
+internal position; centering those uniform-width strings then
+stacks the decimal points vertically. The same pad-then-center
+strategy is applied on every rendering engine (<code>gt</code>,
+<code>tinytable</code>, <code>flextable</code>, <code>word</code>, ASCII print) for a
+homogeneous rendering, matching <code><a href="table_regression.html">table_regression()</a></code> and
+<code><a href="table_continuous_lm.html">table_continuous_lm()</a></code>. The <code>clipboard</code> output is delimited
+text meant to be parsed rather than read at a fixed width, so
+its cells travel unpadded (a padded number pastes as text
+next to an unpadded number).</p></li>
+<li><p><code>"center"</code>: center-align all numeric columns.</p></li>
+<li><p><code>"right"</code>: right-align all numeric columns.</p></li>
+</ul><p><code>"center"</code> and <code>"right"</code> reach the <code>excel</code> output too. <code>"decimal"</code>
+does not: Excel cells are written unpadded, because cell-string
+padding does not align decimals under a proportional font, so the
+workbook keeps the engine's own convention instead – counts and
+the <em>p</em>-value right-aligned, the other numeric columns centered.
+Same default and same three values as <code><a href="table_continuous_lm.html">table_continuous_lm()</a></code>,
+whose <code>excel</code> output still uses that convention at every <code>align</code>.</p></dd>
 
 
 <dt id="arg-output">output<a class="anchor" aria-label="anchor" href="#arg-output"></a></dt>
@@ -277,21 +374,51 @@ table with its numbers, <code>"long"</code> one row per <code>(variable x group)
 with every statistic, as in <code><a href="table_continuous.html">table_continuous()</a></code>; see <em>Value</em>.</p></dd>
 
 
-<dt id="arg-excel-path-excel-sheet-clipboard-delim-word-path">excel_path, excel_sheet, clipboard_delim, word_path<a class="anchor" aria-label="anchor" href="#arg-excel-path-excel-sheet-clipboard-delim-word-path"></a></dt>
-<dd><p>Output
-destinations, as in <code><a href="table_continuous.html">table_continuous()</a></code>.</p></dd>
+<dt id="arg-excel-path">excel_path<a class="anchor" aria-label="anchor" href="#arg-excel-path"></a></dt>
+<dd><p>File path for <code>output = "excel"</code>, ending in
+<code>".xlsx"</code>, in a directory that exists.</p></dd>
+
+
+<dt id="arg-excel-sheet">excel_sheet<a class="anchor" aria-label="anchor" href="#arg-excel-sheet"></a></dt>
+<dd><p>Sheet name for <code>output = "excel"</code>. <code>NULL</code> (the
+default) uses <code>"Descriptives"</code>.</p></dd>
+
+
+<dt id="arg-clipboard-delim">clipboard_delim<a class="anchor" aria-label="anchor" href="#arg-clipboard-delim"></a></dt>
+<dd><p>Delimiter for <code>output = "clipboard"</code>
+(default: <code>"\t"</code>). A cell holding the delimiter itself, a double
+quote or a line break is quoted RFC 4180-style, so the grid
+survives whatever delimiter you choose.</p></dd>
+
+
+<dt id="arg-word-path">word_path<a class="anchor" aria-label="anchor" href="#arg-word-path"></a></dt>
+<dd><p>File path for <code>output = "word"</code>, ending in
+<code>".docx"</code>, in a directory that exists.</p></dd>
 
 
 <dt id="arg-verbose">verbose<a class="anchor" aria-label="anchor" href="#arg-verbose"></a></dt>
-<dd><p>Report the columns skipped as non-numeric.</p></dd>
+<dd><p>Logical. If <code>TRUE</code>, a message (class <code>spicy_info</code>)
+names the non-numeric columns left out (default: <code>FALSE</code>).</p></dd>
 
 
 <dt id="arg-user-na">user_na<a class="anchor" aria-label="anchor" href="#arg-user-na"></a></dt>
-<dd><p>Honor declared missing values (see <code><a href="freq.html">?freq</a></code>).</p></dd>
+<dd><p>Logical. If <code>TRUE</code> (the default), declared missing
+values never reach the numeric summaries: they are excluded like
+<code>NA</code> and disclosed in the table note (<code>Declared missing values removed: ...</code>); declared-missing <code>by</code> values form no group. If
+<code>FALSE</code>, the declared codes are summarized as ordinary numbers.
+See the "Declared missing values" section of <code><a href="freq.html">freq()</a></code>.</p></dd>
 
 
 <dt id="arg-style">style<a class="anchor" aria-label="anchor" href="#arg-style"></a></dt>
-<dd><p>A journal style; see <code><a href="spicy_style.html">spicy_style()</a></code>.</p></dd>
+<dd><p>A journal style: a theme name (<code>"jama"</code>, <code>"nejm"</code>,
+<code>"lancet"</code>, <code>"annals"</code>, <code>"apa"</code>, <code>"aer"</code>), a
+<code><a href="spicy_style.html">spicy_style()</a></code> object, or <code>NULL</code> (the default). A style only
+changes DEFAULTS – any argument you pass explicitly wins over it.
+Set <code>options(spicy.style = )</code> for document-wide scope. A theme
+covers numeric formatting conformity only, not full editorial
+conformity; <code><a href="spicy_style.html">?spicy_style</a></code> lists the exact rules each one encodes
+and the official document they come from. An unknown name is an
+error.</p></dd>
 
 </dl></div>
     <div class="section level2">

@@ -38,10 +38,9 @@ inline(x, variable, level = NULL, column = NULL, model = NULL)
 
 - level:
 
-  For a factor variable, the level, as a string. `"(Missing)"` addresses
-  the missing-value category by role. On
-  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md),
-  whose groups are columns rather than rows, it names the group.
+  For a factor variable, the level, as a string: a category shown as a
+  row. `"(Missing)"` addresses the missing-value category by role. A
+  group of `by` is selected with `model`.
 
 - column:
 
@@ -64,8 +63,8 @@ inline(x, variable, level = NULL, column = NULL, model = NULL)
 
 - model:
 
-  In a multi-model table, the model: its label (as displayed in the
-  column spanners) or its position.
+  A group of `by`, or in a multi-model table the model: its label (as
+  displayed) or its position. See *Groups and models*.
 
 ## Value
 
@@ -100,24 +99,49 @@ or
 which sits on the first group's row: when one row of the variable alone
 carries the statistic, that row is the address.
 
+## Groups and models
+
+`model` selects a group of `by` in every table, by its label or its
+position, wherever the table sets the groups out: the column spanners of
+[`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
+[`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md)
+and
+[`table_multiresponse()`](https://amaltawfik.github.io/spicy/reference/table_multiresponse.md),
+the margin included
+(`inline(tbl, smoking, "Yes", "pct", model = "Female")`), the per-group
+columns of
+[`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md),
+headed `M (Female)`, `M (Male)`
+(`inline(tbl, bmi, column = "emmean", model = "Female")`), and the rows
+of
+[`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
+and
+[`table_continuous_svy()`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md),
+one per group (`inline(tbl, bmi, model = "Female")`). The group of
+missing `by` values is `model = "(Missing)"`. In a multi-model table,
+`model` selects the model the same way. The cells that belong to no
+group (a *p*, the contrast of
 [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
-lays its groups out sideways – one row per outcome, the `by` levels as
-columns (`M (Female)`, `M (Male)`) – so there `level` names the group
-whose column you want: `inline(tbl, bmi, "Female", "emmean")`. The
-columns that belong to no group (the contrast, its interval, `p`, `n`)
-are cited without one, as before.
+and its interval, an association measure) are cited without `model`.
+
+`level` names a category shown as a row: the level of a variable, its
+row of missing values. Until spicy 0.14.0 it also selected the groups of
+[`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
+[`table_continuous_svy()`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md)
+and
+[`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md):
+that use is an error (class `spicy_defunct`) whose message gives the
+`model` call.
 
 [`table_multiresponse()`](https://amaltawfik.github.io/spicy/reference/table_multiresponse.md)
 has one row per item, addressed by its column name, then the rows of
 `none_row`, addressed as `"none"` and `"no_data"`, and the base row, the
-number of respondents, addressed as the fit statistic `"nobs"`. Its
-groups are spanners, as in
-[`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
-so `model` selects one, the margin included:
-`inline(tbl, smoking, column = "pct", model = "Female")`,
+number of respondents, addressed as the fit statistic `"nobs"`:
 `inline(tbl, "nobs", model = "Total")`. The item `p` and `statistic`
 belong to no group and are cited without `model`
 (`inline(tbl, smoking, column = "p")`).
+
+## Columns
 
 The column is a **token** of the typed contract (`"b"`, `"se"`, `"p"`,
 `"ci"`, `"or"`, `"ame"`, `"n"`, `"pct"`, `"m"`, ... – see
@@ -125,9 +149,7 @@ The column is a **token** of the typed contract (`"b"`, `"se"`, `"p"`,
 `col_meta`), never a display header. `"ci"` composes the interval with
 the style's brackets and separator, and so does every other interval
 token the table carries (`"med_ci"`, `"ame_ci"`, `"assoc_ci"`): each
-addresses its own bounds. In a multi-model table, `model` selects the
-model by its spanner label or position; in a `by` table, the spanners
-are the groups, so `model` selects the group the same way.
+addresses its own bounds.
 
 ## Patterns
 
@@ -147,11 +169,11 @@ hit the floor.
 
 Every misaddressing is a classed error that lists the available choices:
 unknown variables list the variables, missing levels list the levels,
-unknown tokens list the table's tokens, ambiguous models list the
-spanner labels. A `level` that names a group of a `by` table points to
-`model`. A cell the table itself displays as undefined (an aliased
-coefficient's en-dash) refuses with the reason rather than pasting a
-dash into a sentence.
+unknown tokens list the table's tokens, ambiguous models and groups list
+them. A `level` that names a group of a `by` table points to `model`. A
+cell the table itself displays as undefined (an aliased coefficient's
+en-dash) refuses with the reason rather than pasting a dash into a
+sentence.
 
 ## See also
 
@@ -169,4 +191,15 @@ inline(tbl, sex, "Male", "{b} ({ci_label} {ci}; p {p})")
 #> [1] "3.90 (95% CI [2.14, 5.65]; p <.001)"
 inline(tbl, "n")
 #> [1] "1200"
+
+# A group of `by` is a `model`, whether the table sets it out as
+# columns or as rows.
+ct <- table_categorical(sochealth, select = smoking, by = sex)
+inline(ct, smoking, "Yes", "pct", model = "Female")
+#> [1] "21.1"
+cn <- table_continuous(sochealth, select = bmi, by = sex)
+inline(cn, bmi, model = "Female")
+#> [1] "25.69"
+inline(cn, bmi, column = "p")
+#> [1] ".018"
 ```

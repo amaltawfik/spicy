@@ -228,6 +228,20 @@ the descriptive tables one contract for labels, p-values, and notes.
   [`everything()`](https://tidyselect.r-lib.org/reference/everything.html)
   and the other selection helpers skip all these columns.
 
+- [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md)
+  and
+  [`table_continuous_svy()`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md)
+  leave the design’s own columns out of `select`: its sampling weights,
+  replicate weights, cluster identifiers, and finite population
+  corrections.
+  [`everything()`](https://tidyselect.r-lib.org/reference/everything.html)
+  and the other selection helpers skip them, and naming one is an error
+  that points to
+  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
+  or
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md).
+  They described these columns as variables. Strata stay variables.
+
 - In
   [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
   [`table_continuous_svy()`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md),
@@ -322,6 +336,76 @@ the descriptive tables one contract for labels, p-values, and notes.
   (class `spicy_wrong_regime`), and any other object that is not a data
   frame with class `spicy_invalid_data`, as the other tables do. Both
   were `spicy_invalid_input` errors.
+
+- The tables sort the groups of a character or logical `by` in the C
+  locale, capitals before lower case and the same on every machine,
+  `FALSE` before `TRUE`, and a numeric or labelled `by` in ascending
+  order, as
+  [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md)
+  does; a factor keeps the order of its levels.
+  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
+  [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md),
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
+  and
+  [`table_continuous_svy()`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md)
+  followed the order of first appearance in the data, and
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
+  sorted text in the locale of the machine, which chose its reference
+  group. The levels of a variable of
+  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
+  and
+  [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md),
+  and the groupings of
+  [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md),
+  follow the same order.
+
+- [`inline()`](https://amaltawfik.github.io/spicy/reference/inline.md)
+  selects a group of `by` with `model` in every table, as in
+  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md):
+  `inline(tbl, bmi, model = "Female")` in
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
+  and
+  [`table_continuous_svy()`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md),
+  `inline(tbl, bmi, column = "emmean", model = "Female")` in
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md).
+  `level` naming such a group is an error (class `spicy_defunct`) that
+  gives the `model` call.
+
+- [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
+  and
+  [`spicy_style()`](https://amaltawfik.github.io/spicy/reference/spicy_style.md)
+  call `effect_size_digits` the argument they called `v_digits`, as the
+  other tables do, so the `effect_size_digits` of a style reaches the
+  association measure and the SMD of
+  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md).
+  `v_digits` is an error (class `spicy_defunct`) that names the new
+  argument.
+
+- [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
+  heads the bounds of the association interval `95% CI LL` and
+  `95% CI UL` in the console, Excel, and clipboard outputs, stating its
+  level as the other tables do. They read `CI lower` and `CI upper`, and
+  the keys `header_ci_lower` and `header_ci_upper` of
+  `options(spicy.labels)` are gone.
+
+- [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
+  and
+  [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md)
+  spell their effect sizes `"eta2"` and `"epsilon2"`, and
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
+  `"cohens_d"` and `"hedges_g"`, in `effect_size` and in `es_type`: a
+  squared measure ends in 2, as in
+  [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md),
+  and an estimator named after its author carries the name. `"eta_sq"`,
+  `"epsilon_sq"`, `"d"`, and `"g"` are an error (class `spicy_defunct`)
+  that gives the new value.
+
+- [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
+  checks `boot_n` as
+  [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  does: a positive whole number. It truncated a fraction (`500.9`
+  gave 500) and required 50 replicates; a bootstrap variance needs 10,
+  in both tables.
 
 ### New features
 
@@ -420,24 +504,27 @@ the descriptive tables one contract for labels, p-values, and notes.
   vector for every variable, and the variables it did not match were
   dropped.
 
-- [`table_multiresponse()`](https://amaltawfik.github.io/spicy/reference/table_multiresponse.md)
-  tabulates a “check all that apply” question: one row per item with the
-  count and the percentage of respondents who chose it (`percent` also
-  gives percentages of responses, or both), and a row with the number of
-  respondents in the base (`base`). Respondents of the base who chose no
-  item get a row of their own (`none_row`), and the note says what the
-  percentages sum to and who is in the base. With `by`, each item gets a
-  test (`test`: chi-squared, or Fisher’s exact test where an expected
-  count is below 5, or the mid-p and N-1 tests for 2x2 tables), adjusted
-  by Holm by default (`p_adjust`), and the question gets a global test
-  that allows for several answers per respondent, Rao-Scott corrected or
-  by bootstrap (`global_test`). `p_value = FALSE` removes the tests, and
+- [`table_multiresponse()`](https://amaltawfik.github.io/spicy/reference/table_multiresponse.md),
+  experimental in this release, tabulates a “check all that apply”
+  question: one row per item with the count and the percentage of
+  respondents who chose it (`percent` also gives percentages of
+  responses, or both), and a row with the number of respondents in the
+  base (`base`). Respondents of the base who chose no item get a row of
+  their own (`none_row`), and the note says what the percentages sum to
+  and who is in the base. With `by`, each item gets a test (`test`:
+  chi-squared, or Fisher’s exact test where an expected count is below
+  5, or the mid-p and N-1 tests for 2x2 tables), adjusted by Holm by
+  default (`p_adjust`), and the question gets a global test that allows
+  for several answers per respondent, Rao-Scott corrected or by
+  bootstrap (`global_test`). `p_value = FALSE` removes the tests, and
   `statistic = TRUE` shows each item’s chi-squared. `glance()` reports
   the Rao-Scott design-effect summary (`rs_cv`), and
   [`inline()`](https://amaltawfik.github.io/spicy/reference/inline.md)
   cites the cells, a group selected with `model` and the base row as
-  `"nobs"`. The article *Multiple-response questions* on the site walks
-  through it ([\#10](https://github.com/amaltawfik/spicy/issues/10),
+  `"nobs"`. `title = FALSE` removes the title, as in
+  [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md).
+  The article *Multiple-response questions* on the site walks through it
+  ([\#10](https://github.com/amaltawfik/spicy/issues/10),
   [\#11](https://github.com/amaltawfik/spicy/issues/11)).
 
 - [`inline()`](https://amaltawfik.github.io/spicy/reference/inline.md)
@@ -480,6 +567,27 @@ the descriptive tables one contract for labels, p-values, and notes.
   other `vcov` types are refused.
 
 ### Bug fixes
+
+- The table functions warn (class `spicy_ignored_arg`) when an argument
+  typed in the call has no effect, and name only the arguments typed:
+  `excel_path` or `excel_sheet` without `output = "excel"`, `word_path`
+  without `"word"`, `clipboard_delim` without `"clipboard"`, a `boot_n`
+  that no bootstrap uses, `adjustment` without covariates and `contrast`
+  with a numeric `by` in
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md),
+  and `drop_na = FALSE` without `by` in
+  [`table_continuous_svy()`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md)
+  as in
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md).
+  Without `by`, the continuous tables named `statistic` when only
+  `p_value` was typed, and
+  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
+  warned about a `rescale` set by `options(spicy.rescale)`.
+
+- The table functions word a check of the same argument the same way:
+  “`ci_level` must be a number strictly between 0 and 1.”, “`digits`
+  must be a non-negative whole number.”, “`drop_na` must be TRUE or
+  FALSE.”.
 
 - The note of every table opens with *Note.* in italics in Typst, LaTeX,
   Markdown documents, and Excel output, and in gt’s LaTeX, RTF, and Word
@@ -524,6 +632,16 @@ the descriptive tables one contract for labels, p-values, and notes.
   `spicy_unsupported` one, and
   [`?spicy`](https://amaltawfik.github.io/spicy/reference/spicy-package.md)
   lists every class.
+
+- A column name given to a table function, or to the `select` of
+  [`mean_n()`](https://amaltawfik.github.io/spicy/reference/mean_n.md),
+  [`sum_n()`](https://amaltawfik.github.io/spicy/reference/sum_n.md),
+  and
+  [`count_n()`](https://amaltawfik.github.io/spicy/reference/count_n.md),
+  always means that column, even when an object of the same name exists
+  in the calling environment. The object took the column’s place: with
+  `w <- "z"`, `weights = w` weighted by `w` while the note named `z`,
+  and `covariates = age` adjusted for the column the object `age` named.
 
 - [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
   [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md),
@@ -643,6 +761,11 @@ the descriptive tables one contract for labels, p-values, and notes.
   `by` or a constant variable prevents.
   [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md)
   no longer names a test that failed.
+
+- [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md)
+  no longer prints a zero-width interval around a percentage of 0 or
+  100: such a cell gets the exact binomial interval on its unweighted
+  count, whatever `ci_method`, and the note says so.
 
 - [`table_continuous_svy()`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md)
   leaves the comparison of a variable with no variance blank, with a

@@ -366,18 +366,18 @@ sc <- as_structured(ct)
 sc$body[, c("Variable", ".variable", ".level", ".row_role")]
 #>   Variable .variable .level     .row_role
 #> 1      cyl       cyl   <NA> factor_header
-#> 2        6       cyl      6         level
-#> 3        4       cyl      4         level
+#> 2        4       cyl      4         level
+#> 3        6       cyl      6         level
 #> 4        8       cyl      8         level
 #> 5     gear      gear   <NA> factor_header
-#> 6        4      gear      4         level
-#> 7        3      gear      3         level
+#> 6        3      gear      3         level
+#> 7        4      gear      4         level
 #> 8        5      gear      5         level
 sc$spanners                          # one per `by` group
-#> $`1`
+#> $`0`
 #> [1] 2 3
 #> 
-#> $`0`
+#> $`1`
 #> [1] 4 5
 #> 
 #> $Total

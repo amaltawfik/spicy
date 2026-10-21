@@ -38,14 +38,14 @@ table_continuous(
   regex = FALSE,
   drop_na = TRUE,
   weights = NULL,
-  rescale = FALSE,
+  rescale = getOption("spicy.rescale", FALSE),
   test = c("welch", "student", "nonparametric"),
   p_value = NULL,
   p_adjust = "none",
   statistic = FALSE,
   show_n = TRUE,
   show_columns = NULL,
-  effect_size = c("none", "auto", "hedges_g", "eta_sq", "r_rb", "epsilon_sq"),
+  effect_size = c("none", "auto", "hedges_g", "eta2", "r_rb", "epsilon2"),
   effect_size_ci = FALSE,
   smd = FALSE,
   ci = TRUE,
@@ -92,13 +92,15 @@ table_continuous(
   Optional grouping column. Accepts an unquoted column name or a single
   character column name. Coerced to factor for grouping; non-numeric
   grouping columns (factor, character, logical) are supported as-is.
-  Factor levels keep their declared order; any other `by` (character,
-  numeric, haven labelled) forms groups in order of first appearance in
-  the data – the same convention as
-  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md).
-  For a haven labelled `by`, the group headers are the raw codes (value
-  labels are not used for grouping headers – the family convention
-  shared with
+  Factor levels keep their declared order, which is the way to choose
+  another order; any other `by` is sorted, as in
+  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md):
+  text in the C locale (capitals before lower case, the same on every
+  machine), `FALSE` before `TRUE`, numbers and the codes of a haven
+  labelled column ascending, whatever the order of the rows. The group
+  of missing values comes last. For a haven labelled `by`, the group
+  headers are the raw codes (value labels are not used for grouping
+  headers – the family convention shared with
   [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
   and
   [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md));
@@ -116,25 +118,25 @@ table_continuous(
 
 - drop_na:
 
-  Logical. Controls how missing values in the `by` column are handled –
-  the same argument as
-  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
-  with one structural difference: a continuous summary has no
-  `"(Missing)"` row for the summarized variable itself (a mean cannot
-  include `NA`), so `NA`s in each summarized variable are always
-  excluded from that variable's statistics and the exclusion is
-  disclosed in a table note ("Missing values removed: ...") rather than
-  silent. If `TRUE` (the default, preserving this function's historical
-  behavior;
-  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
-  defaults to `FALSE`), rows with `NA` in `by` are removed from the
-  grouped summaries, and a note line says so ("Rows with missing ...
-  removed"). If `FALSE`, rows with `NA` in `by` form a dedicated
-  `"(Missing)"` group – the field convention for descriptive tables
-  (gtsummary's "Unknown" row; see the Epidemiologist R Handbook,
-  Descriptive tables) – while the group-comparison test and effect size
-  are still computed on the observed groups only (show the missing, test
-  the observed, matching
+  Logical. Controls how missing values in the `by` column are handled,
+  under the rule of the family: a table that counts shows the missing
+  values by default (a frequency table reports how many answers are
+  missing, as a `"(Missing)"` row and, under `by`, a `"(Missing)"`
+  column:
+  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md));
+  a table that computes removes them by default and counts them in the
+  note. This table computes: a mean is computed on the observed values,
+  so the `NA`s of each summarized variable are always excluded from that
+  variable's statistics, and the exclusion is disclosed in a table note
+  ("Missing values removed: ...") rather than silent. If `TRUE` (the
+  default), rows with `NA` in `by` are removed from the grouped
+  summaries, and a note line says so ("Rows with missing ... removed").
+  If `FALSE`, rows with `NA` in `by` form a dedicated `"(Missing)"`
+  group – the field convention for descriptive tables (gtsummary's
+  "Unknown" row; see the Epidemiologist R Handbook, Descriptive tables)
+  – while the group-comparison test and effect size are still computed
+  on the observed groups only (show the missing, test the observed,
+  matching
   [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md));
   a level of `by` displayed with the label of that group is an error, as
   there. Under `drop_na = TRUE`, a `by` that no observation holds is an
@@ -159,13 +161,13 @@ table_continuous(
   Logical. If `TRUE`, weights are first normalized so that they sum to
   the number of observations used for each variable – the same `rescale`
   grammar as
-  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
-  read from `options(spicy.rescale)` when not supplied. This is the
-  sampling-weights reading: results become invariant to the scale of the
-  weights, and the weighted SD then equals Stata's `[aweight]` /
+  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md).
+  This is the sampling-weights reading: results become invariant to the
+  scale of the weights, and the weighted SD then equals Stata's
+  `[aweight]` /
   [`survey::svyvar()`](https://rdrr.io/pkg/survey/man/surveysummary.html)
-  value exactly. The default `FALSE` uses the weights as given
-  (frequency reading).
+  value exactly. `FALSE` uses the weights as given (frequency reading).
+  The default reads `options(spicy.rescale)`, `FALSE` when it is unset.
 
 - test:
 
@@ -249,23 +251,28 @@ table_continuous(
     difference, 2 groups, parametric). CI via the Hedges & Olkin normal
     approximation.
 
-  - `"eta_sq"`: Eta-squared (\\\eta^2\\, parametric ANOVA-style
+  - `"eta2"`: Eta-squared (\\\eta^2\\, parametric ANOVA-style
     `SS_between / SS_total`). CI via inversion of the noncentral *F*
     distribution.
 
   - `"r_rb"`: Rank-biserial *r* from the Wilcoxon / Mann-Whitney
     statistic (2 groups, nonparametric). CI via Fisher *z*-transform.
 
-  - `"epsilon_sq"`: Epsilon-squared (\\\varepsilon^2\\) from the
+  - `"epsilon2"`: Epsilon-squared (\\\varepsilon^2\\) from the
     Kruskal-Wallis statistic (3+ groups, nonparametric). CI via
     percentile bootstrap (2 000 replicates).
 
-  A logical value is an error (class `spicy_defunct`): use `"auto"` for
-  `TRUE` and `"none"` for `FALSE`. Explicit choices are validated
-  against the active `test` and the number of groups; an incompatible
-  request (e.g. `"eta_sq"` with two groups, or `"hedges_g"` with
-  `test = "nonparametric"`) triggers an actionable error. Ignored when
-  `by` is not used.
+  A squared measure ends in `2`, as in
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
+  and
+  [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
+  `"eta_sq"` and `"epsilon_sq"`, the spellings before 0.14.0, are an
+  error (class `spicy_defunct`) that gives the new one. A logical value
+  is an error of the same class: use `"auto"` for `TRUE` and `"none"`
+  for `FALSE`. Explicit choices are validated against the active `test`
+  and the number of groups; an incompatible request (e.g. `"eta2"` with
+  two groups, or `"hedges_g"` with `test = "nonparametric"`) triggers an
+  actionable error. Ignored when `by` is not used.
 
 - effect_size_ci:
 
@@ -331,8 +338,8 @@ table_continuous(
 
 - ci_level:
 
-  Confidence level for the mean confidence interval (default: `0.95`).
-  Must be between 0 and 1 exclusive.
+  Confidence level for the mean confidence interval (default: `0.95`): a
+  number strictly between 0 and 1.
 
 - digits:
 
@@ -358,7 +365,10 @@ table_continuous(
 
 - decimal_mark:
 
-  Character used as decimal separator. Either `"."` (default) or `","`.
+  The decimal mark, a single character: `"."` (the default) or `","` in
+  most styles; the Lancet style of
+  [`spicy_style()`](https://amaltawfik.github.io/spicy/reference/spicy_style.md)
+  uses the middle dot.
 
 - align:
 
@@ -521,9 +531,9 @@ Depends on `output`:
   - `p.value` – with the *p*-value only, and `p_unadjusted` under
     `p_adjust`.
 
-  - `es_type` – effect-size identifier (`"hedges_g"`, `"eta_sq"`,
-    `"r_rb"`, or `"epsilon_sq"`), `es_value`, `es_ci_lower`,
-    `es_ci_upper` – the effect size and its interval.
+  - `es_type` – effect-size identifier (`"hedges_g"`, `"eta2"`,
+    `"r_rb"`, or `"epsilon2"`), `es_value`, `es_ci_lower`, `es_ci_upper`
+    – the effect size and its interval.
 
   - `smd_type`, `smd_value` – the standardized mean difference;
     `smd_type` names the kernel the value came from: `"continuous"`
@@ -1056,7 +1066,7 @@ table_continuous(
   sochealth,
   select = wellbeing_score,
   by = education,
-  effect_size = "eta_sq",
+  effect_size = "eta2",
   effect_size_ci = TRUE,
   effect_size_digits = 3
 )

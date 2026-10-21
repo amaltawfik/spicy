@@ -356,10 +356,10 @@ Adding covariates changes which effect sizes remain meaningful:
   [`stats::drop1()`](https://rdrr.io/r/stats/add1.html) in this additive
   setting) — the correct generalization of the bivariate effect size to
   a covariate-adjusted model.
-- `effect_size = "d"` and `"g"` raise `spicy_unsupported`: Cohen’s *d*
-  and Hedges’ *g* have no defined extension under adjustment (the pooled
-  SD has no canonical analog). The error message points to `f2` /
-  `omega2` as the partial-F generalizations.
+- `effect_size = "cohens_d"` and `"hedges_g"` raise `spicy_unsupported`:
+  Cohen’s *d* and Hedges’ *g* have no defined extension under adjustment
+  (the pooled SD has no canonical analog). The error message points to
+  `f2` / `omega2` as the partial-F generalizations.
 
 Both effect-size variants and their noncentral CIs (when
 `effect_size_ci = TRUE`) are computed from the same fitted model as the
@@ -399,7 +399,7 @@ table_continuous_lm(
   sochealth,
   select = c(wellbeing_score, bmi),
   by = smoking,
-  effect_size = "d"
+  effect_size = "cohens_d"
 )
 #> Continuous outcomes by smoking
 #> 
@@ -426,7 +426,7 @@ table_continuous_lm(
   sochealth,
   select = c(wellbeing_score, bmi),
   by = smoking,
-  effect_size = "g"
+  effect_size = "hedges_g"
 )
 #> Continuous outcomes by smoking
 #> 
@@ -503,10 +503,10 @@ software (Stata `esize` / `estat esize`, SAS `PROC TTEST` and
 `MOTE`, `TOSTER`; `effsize` offers it as an option via
 `noncentral = TRUE`, its default being the central-*t* approximation):
 
-- Noncentral *t* inversion for `"d"` and `"g"` (Steiger and Fouladi
-  1997; Goulet-Pelletier and Cousineau 2018; Fitts 2021), which has
-  nominal coverage across sample sizes — unlike the older Hedges-Olkin
-  normal approximation that is biased for small samples.
+- Noncentral *t* inversion for `"cohens_d"` and `"hedges_g"` (Steiger
+  and Fouladi 1997; Goulet-Pelletier and Cousineau 2018; Fitts 2021),
+  which has nominal coverage across sample sizes — unlike the older
+  Hedges-Olkin normal approximation that is biased for small samples.
 - Noncentral *F* inversion for `"omega2"` and `"f2"` (Steiger 2004;
   Smithson 2003).
 
@@ -519,7 +519,7 @@ table_continuous_lm(
   sochealth,
   select = c(wellbeing_score, bmi),
   by = smoking,
-  effect_size = "g",
+  effect_size = "hedges_g",
   effect_size_ci = TRUE
 )
 #> Continuous outcomes by smoking
@@ -547,7 +547,7 @@ table_continuous_lm(
   sochealth,
   select = wellbeing_score,
   by = smoking,
-  effect_size = "g",
+  effect_size = "hedges_g",
   effect_size_ci = TRUE,
   output = "data.frame"
 )
@@ -563,14 +563,14 @@ out <- table_continuous_lm(
   sochealth,
   select = wellbeing_score,
   by = smoking,
-  effect_size = "g",
+  effect_size = "hedges_g",
   effect_size_ci = TRUE,
   output = "long"
 )
 out[, c("variable", "es_type", "es_value", "es_ci_lower", "es_ci_upper")]
-#>          variable es_type   es_value es_ci_lower es_ci_upper
-#> 1 wellbeing_score       g -0.1098571  -0.2497291  0.03006164
-#> 2 wellbeing_score    <NA>         NA          NA          NA
+#>          variable  es_type   es_value es_ci_lower es_ci_upper
+#> 1 wellbeing_score hedges_g -0.1098571  -0.2497291  0.03006164
+#> 2 wellbeing_score     <NA>         NA          NA          NA
 ```
 
 When `weights` is supplied, all four effect sizes (and their CIs) are
@@ -596,7 +596,7 @@ table_continuous_lm(
     wellbeing_score = "WHO-5 wellbeing (0-100)",
     bmi = "Body-mass index (kg/m²)"
   ),
-  effect_size = "g",
+  effect_size = "hedges_g",
   effect_size_ci = TRUE,
   decimal_mark = ","
 )
@@ -655,7 +655,7 @@ out <- table_continuous_lm(
   sochealth,
   select = c(wellbeing_score, bmi),
   by = sex,
-  effect_size = "g",
+  effect_size = "hedges_g",
   effect_size_ci = TRUE
 )
 

@@ -14,10 +14,10 @@ produces the slope and its confidence interval.
 Inference adapts via `vcov`: classical OLS, `"HC0"`-`"HC5"`
 (heteroscedasticity-consistent), `"CR0"`-`"CR3"` (cluster-robust,
 requires `cluster`), or `"bootstrap"` / `"jackknife"` resampling. Effect
-sizes (Cohen's `"d"`, Hedges' `"g"`, Hays' `"omega2"`, Cohen's `"f2"`)
-are reported with optional noncentral *t* / *F* confidence intervals via
-`effect_size_ci`, and adapt under covariate adjustment (see
-`effect_size`).
+sizes (Cohen's *d* `"cohens_d"`, Hedges' *g* `"hedges_g"`, Hays'
+`"omega2"`, Cohen's `"f2"`) are reported with optional noncentral *t* /
+*F* confidence intervals via `effect_size_ci`, and adapt under covariate
+adjustment (see `effect_size`).
 
 Multiple output formats are available via `output`: a printed ASCII
 table (`"default"`), a plain wide `data.frame` (`"data.frame"`), a raw
@@ -45,7 +45,7 @@ table_continuous_lm(
   p_value = NULL,
   show_n = TRUE,
   show_weighted_n = FALSE,
-  effect_size = c("none", "f2", "d", "g", "omega2"),
+  effect_size = c("none", "f2", "cohens_d", "hedges_g", "omega2"),
   effect_size_ci = FALSE,
   r2 = c("r2", "adj_r2", "none"),
   ci = TRUE,
@@ -107,8 +107,13 @@ table_continuous_lm(
     level; per-level means, the displayed difference, and its CI are
     identical to those of an unordered factor with the same levels.
 
-  - **character**: coerced to factor with `factor(by)`, which orders the
-    levels alphabetically. To control the reference level, supply `by`
+  - **character**: coerced to factor with its values sorted in the C
+    locale (capitals before lower case, the same on every machine), the
+    order of the groups in the whole family
+    ([`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
+    [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
+    ...): the first value in that order is the reference level, whatever
+    the order of the rows. To control the reference level, supply `by`
     as an explicit factor with the desired level ordering (e.g. via
     [`forcats::fct_relevel()`](https://forcats.tidyverse.org/reference/fct_relevel.html)
     or `factor(..., levels = ...)`).
@@ -120,18 +125,19 @@ table_continuous_lm(
   - **haven labelled with value labels** (an SPSS / Stata import):
     treated as categorical over the raw codes, in ascending code order
     (the reference level is the lowest code; the model needs a fixed
-    level order).
+    level order), the order in which
     [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
     and
     [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
-    form the same groups from such a column but display them in order of
-    first appearance in the data, so the group ORDER can differ between
-    the sibling tables. A labelled vector without value labels is
+    display the same groups. A labelled vector without value labels is
     treated as a continuous regressor. Declared missing values follow
     `user_na` as usual.
 
   Rows with `NA` in `by` are excluded from the analytic sample for each
-  outcome (NAs in `y` and `weights` are also excluded; see Details).
+  outcome (NAs in `y` and `weights` are also excluded; see Details), the
+  rule of a table that computes (see `drop_na` in
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md));
+  this table has no `drop_na`.
 
 - covariates:
 
@@ -172,7 +178,8 @@ table_continuous_lm(
 
   How the covariate-adjusted estimated marginal means (the `emmean` /
   `emmean_se` / `emmean_ci_*` columns) are computed when `covariates` is
-  non-empty. One of:
+  non-empty (typed without covariates, it is ignored with a warning,
+  class `spicy_ignored_arg`). One of:
 
   - `"proportional"` (the default; matches Stata `margins` and
     [`marginaleffects::avg_predictions()`](https://rdrr.io/pkg/marginaleffects/man/predictions.html)):
@@ -308,10 +315,10 @@ table_continuous_lm(
   The `HC*` variants are computed via
   [`sandwich::vcovHC()`](https://zeileis.codeberg.page/sandwich/reference/vcovHC.html).
   Coefficients (means, contrasts, slopes), `\eqn{R^2}{R^2}`, and the
-  standardized effect sizes (`f2`, `d`, `g`, `omega2`) are point
-  estimates from the OLS/WLS fit and are not affected by `vcov`; only
-  their standard errors, CIs, and the test statistic of the contrast
-  change.
+  standardized effect sizes (`f2`, `cohens_d`, `hedges_g`, `omega2`) are
+  point estimates from the OLS/WLS fit and are not affected by `vcov`;
+  only their standard errors, CIs, and the test statistic of the
+  contrast change.
 
 - cluster:
 
@@ -348,17 +355,24 @@ table_continuous_lm(
 
 - boot_n:
 
-  Integer. Number of bootstrap replicates used when
-  `vcov = "bootstrap"`. Defaults to `1000`. Ignored otherwise. Must be
-  at least `50` (values below that floor raise an error: fewer
-  replicates make the variance estimate too noisy to use); non-integer
-  values are truncated (e.g. `500.9` becomes `500`). Larger values
-  reduce Monte-Carlo error in the bootstrap variance; typical values for
-  inference are `500`-`2000`.
+  Number of bootstrap replicates used when `vcov = "bootstrap"`: a
+  positive whole number, as in
+  [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  and
+  [`table_multiresponse()`](https://amaltawfik.github.io/spicy/reference/table_multiresponse.md)
+  (a fraction is an error). Defaults to `1000`, the default of
+  [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md),
+  which computes the same bootstrap variance. That variance needs at
+  least 10 valid replicates: a smaller `boot_n` is an error. Larger
+  values reduce Monte-Carlo error in the bootstrap variance; typical
+  values for inference are `500`-`2000`. Typed with another `vcov`, it
+  is ignored with a warning (class `spicy_ignored_arg`).
 
 - contrast:
 
-  Contrast display for categorical predictors. One of:
+  Contrast display for categorical predictors (typed with a numeric
+  `by`, it is ignored with a warning, class `spicy_ignored_arg`). One
+  of:
 
   - `"auto"` (default): show a single reference contrast
     `Delta (level2 - level1)` only when `by` has exactly two non-empty
@@ -398,7 +412,11 @@ table_continuous_lm(
 - effect_size:
 
   Character. Effect-size column to include in the wide and rendered
-  outputs (a logical is an error, class `spicy_defunct`). One of:
+  outputs (a logical is an error, class `spicy_defunct`). An estimator
+  named after its author carries the name, as `"hedges_g"` does in
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md):
+  `"d"` and `"g"`, the spellings before 0.14.0, are an error of the same
+  class that gives the new one. One of:
 
   - `"none"` (the default): no effect-size column.
 
@@ -409,26 +427,27 @@ table_continuous_lm(
     `\eqn{f^2}{f^2}` is a monotone transform of `\eqn{R^2}{R^2}` and
     adds no information beyond it.
 
-  - `"d"`: Cohen's `d = beta_hat / sigma_hat`, where `beta_hat` is the
-    model coefficient (the displayed difference) and `sigma_hat` is the
-    residual standard deviation from the fitted model. Defined only when
-    `by` has exactly two non-empty levels; otherwise the function
-    errors. The sign matches the displayed `Delta (level2 - level1)`.
+  - `"cohens_d"`: Cohen's `d = beta_hat / sigma_hat`, where `beta_hat`
+    is the model coefficient (the displayed difference) and `sigma_hat`
+    is the residual standard deviation from the fitted model. Defined
+    only when `by` has exactly two non-empty levels; otherwise the
+    function errors. The sign matches the displayed
+    `Delta (level2 - level1)`.
 
-  - `"g"`: Hedges' `g = J * d` with the small-sample correction
-    `J = 1 - 3 / (4 * df_resid - 1)`. Same domain as `"d"`.
+  - `"hedges_g"`: Hedges' `g = J * d` with the small-sample correction
+    `J = 1 - 3 / (4 * df_resid - 1)`. Same domain as `"cohens_d"`.
 
   - `"omega2"`: Hays' `omega-squared`, a bias-corrected estimator of the
     population variance explained, less optimistic than `\eqn{R^2}{R^2}`
     for small samples. Defined for any predictor type and truncated at
     0.
 
-  When `weights` is supplied, `"d"`, `"g"`, and `"omega2"` are derived
-  from the weighted least-squares fit (using weighted sums of squares
-  and the model's weighted residual standard deviation), keeping them
-  consistent with the weighted contrast and its CI shown in the table.
-  All effect sizes are point estimates derived from the OLS/WLS fit and
-  are **not** affected by `vcov`.
+  When `weights` is supplied, `"cohens_d"`, `"hedges_g"`, and `"omega2"`
+  are derived from the weighted least-squares fit (using weighted sums
+  of squares and the model's weighted residual standard deviation),
+  keeping them consistent with the weighted contrast and its CI shown in
+  the table. All effect sizes are point estimates derived from the
+  OLS/WLS fit and are **not** affected by `vcov`.
 
   **Under covariate adjustment** (`covariates` non-empty):
 
@@ -441,26 +460,26 @@ table_continuous_lm(
     partial correlation of `by` with the outcome, divided by
     `(1 - r^2_partial)`.
 
-  - `"d"` and `"g"` raise a `spicy_unsupported` error: Cohen's *d* and
-    Hedges' *g* have no canonical extension to adjusted models (the
-    pooled SD is undefined under adjustment). Use `"f2"` or `"omega2"`
-    instead – both generalize via partial *F*.
+  - `"cohens_d"` and `"hedges_g"` raise a `spicy_unsupported` error:
+    Cohen's *d* and Hedges' *g* have no canonical extension to adjusted
+    models (the pooled SD is undefined under adjustment). Use `"f2"` or
+    `"omega2"` instead – both generalize via partial *F*.
 
 - effect_size_ci:
 
   Logical. If `TRUE` and `effect_size != "none"`, adds a confidence
   interval for the effect size derived from inversion of the appropriate
-  noncentral distribution (noncentral t for `"d"` / `"g"`; noncentral F
-  for `"omega2"` / `"f2"`). The CI level is taken from `ci_level`. In
-  the long output (`output = "long"`), the bounds are always present in
-  `es_ci_lower` / `es_ci_upper` (numeric). In the wide raw output
-  (`output = "data.frame"`), the bounds appear under the same names,
-  `es_ci_lower` / `es_ci_upper` (numeric). In the printed ASCII table
-  and rendered outputs (`"tinytable"`, `"gt"`, `"flextable"`, `"word"`,
-  `"excel"`, `"clipboard"`), the effect-size column shows the value
-  followed by the CI in brackets (e.g. `0.18 [0.07, 0.30]`). Defaults to
-  `FALSE`. When `effect_size = "none"`, this argument is ignored with a
-  warning.
+  noncentral distribution (noncentral t for `"cohens_d"` / `"hedges_g"`;
+  noncentral F for `"omega2"` / `"f2"`). The CI level is taken from
+  `ci_level`. In the long output (`output = "long"`), the bounds are
+  always present in `es_ci_lower` / `es_ci_upper` (numeric). In the wide
+  raw output (`output = "data.frame"`), the bounds appear under the same
+  names, `es_ci_lower` / `es_ci_upper` (numeric). In the printed ASCII
+  table and rendered outputs (`"tinytable"`, `"gt"`, `"flextable"`,
+  `"word"`, `"excel"`, `"clipboard"`), the effect-size column shows the
+  value followed by the CI in brackets (e.g. `0.18 [0.07, 0.30]`).
+  Defaults to `FALSE`. When `effect_size = "none"`, this argument is
+  ignored with a warning.
 
 - r2:
 
@@ -518,7 +537,7 @@ table_continuous_lm(
 - ci_level:
 
   Confidence level for coefficient and model-based mean intervals
-  (default: `0.95`). Must be between 0 and 1 exclusive.
+  (default: `0.95`): a number strictly between 0 and 1.
 
 - digits:
 
@@ -552,7 +571,10 @@ table_continuous_lm(
 
 - decimal_mark:
 
-  Character used as decimal separator. Either `"."` (default) or `","`.
+  The decimal mark, a single character: `"."` (the default) or `","` in
+  most styles; the Lancet style of
+  [`spicy_style()`](https://amaltawfik.github.io/spicy/reference/spicy_style.md)
+  uses the middle dot.
 
 - align:
 
@@ -752,14 +774,15 @@ stays internally consistent with the rest of the table.
   no information beyond it; its primary use is in *a priori* power
   analysis (e.g. G\*Power).
 
-- `"d"`, `"g"`: standardized mean difference (Cohen's *d* or Hedges'
-  *g*), defined only when `by` has exactly two non-empty levels.
-  `d = beta_hat / sigma_hat` with `sigma_hat = summary(fit)$sigma` (the
-  pooled within-group SD for the unweighted two-group case); `g = J * d`
-  with `J = 1 - 3 / (4 * df_resid - 1)` (Hedges and Olkin 1985). The
-  sign matches the displayed `Delta (level2 - level1)`. For published
-  reports of two-group comparisons, *g* is the convention recommended by
-  Hedges and Olkin (1985).
+- `"cohens_d"`, `"hedges_g"`: standardized mean difference (Cohen's *d*
+  or Hedges' *g*), defined only when `by` has exactly two non-empty
+  levels. `d = beta_hat / sigma_hat` with
+  `sigma_hat = summary(fit)$sigma` (the pooled within-group SD for the
+  unweighted two-group case); `g = J * d` with
+  `J = 1 - 3 / (4 * df_resid - 1)` (Hedges and Olkin 1985). The sign
+  matches the displayed `Delta (level2 - level1)`. For published reports
+  of two-group comparisons, *g* is the convention recommended by Hedges
+  and Olkin (1985).
 
 - `"omega2"`: Hays' \\\omega^2\\, computed from weighted sums of squares
   as `(SS_effect - df_effect * MSE) / (SS_total + MSE)` and truncated at
@@ -778,10 +801,10 @@ itself.
 `by`, derived from the partial *F* restricted to the focal term (the
 Type-II test of `by` after all covariates, equal to
 [`stats::drop1()`](https://rdrr.io/r/stats/add1.html) in this additive
-setting). `"d"` and `"g"` raise a `spicy_unsupported` error: the pooled
-standard deviation has no canonical extension under adjustment, so
-Cohen's *d* and Hedges' *g* are undefined for adjusted models. See
-`effect_size` for the full dispatch.
+setting). `"cohens_d"` and `"hedges_g"` raise a `spicy_unsupported`
+error: the pooled standard deviation has no canonical extension under
+adjustment, so Cohen's *d* and Hedges' *g* are undefined for adjusted
+models. See `effect_size` for the full dispatch.
 
 Confidence intervals for the effect size are available via
 `effect_size_ci = TRUE` and use the modern noncentral-distribution
@@ -790,11 +813,11 @@ software (Stata `esize` / `estat esize`, SAS `PROC TTEST` and
 `PROC GLM EFFECTSIZE` 14.2+) and in mainstream R packages (`effectsize`,
 `MOTE`, `TOSTER`, `effsize`):
 
-- `"d"`, `"g"`: noncentral *t* inversion (Steiger and Fouladi 1997;
-  Goulet-Pelletier and Cousineau 2018). Empirical coverage is nominal
-  across sample sizes (Fitts 2021), unlike the older Hedges-Olkin normal
-  approximation which is biased for small samples. For Hedges' *g* the
-  bounds inherit the *J* small-sample correction.
+- `"cohens_d"`, `"hedges_g"`: noncentral *t* inversion (Steiger and
+  Fouladi 1997; Goulet-Pelletier and Cousineau 2018). Empirical coverage
+  is nominal across sample sizes (Fitts 2021), unlike the older
+  Hedges-Olkin normal approximation which is biased for small samples.
+  For Hedges' *g* the bounds inherit the *J* small-sample correction.
 
 - `"omega2"`, `"f2"`: noncentral *F* inversion (Steiger 2004). Without
   covariates (model-level effect sizes), bounds are converted from the
@@ -1152,7 +1175,7 @@ table_continuous_lm(
   sochealth,
   select = c(wellbeing_score, bmi),
   by = sex,
-  effect_size = "d"
+  effect_size = "cohens_d"
 )
 #> Continuous outcomes by sex
 #> 
@@ -1175,7 +1198,7 @@ table_continuous_lm(
   by = sex,
   weights = weight,
   statistic = TRUE,
-  effect_size = "g",
+  effect_size = "hedges_g",
   show_weighted_n = TRUE
 )
 #> Continuous outcomes by sex
@@ -1197,7 +1220,7 @@ table_continuous_lm(
   sochealth,
   select = c(wellbeing_score, bmi),
   by = sex,
-  effect_size = "g",
+  effect_size = "hedges_g",
   effect_size_ci = TRUE
 )
 #> Continuous outcomes by sex
@@ -1235,7 +1258,8 @@ table_continuous_lm(
 #> 
 #> Note. Missing values removed: bmi (12).
 
-# Hays' omega-squared for a 3-level predictor (d / g would error here).
+# Hays' omega-squared for a 3-level predictor ("cohens_d" and
+# "hedges_g" need two groups).
 table_continuous_lm(
   sochealth,
   select = c(wellbeing_score, bmi),

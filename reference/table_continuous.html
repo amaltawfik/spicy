@@ -151,14 +151,14 @@ adjustment.</p>
 <span>  regex <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  drop_na <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  weights <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  rescale <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  rescale <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">getOption</a></span><span class="op">(</span><span class="st">"spicy.rescale"</span>, <span class="cn">FALSE</span><span class="op">)</span>,</span>
 <span>  test <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"welch"</span>, <span class="st">"student"</span>, <span class="st">"nonparametric"</span><span class="op">)</span>,</span>
 <span>  p_value <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  p_adjust <span class="op">=</span> <span class="st">"none"</span>,</span>
 <span>  statistic <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  show_n <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  show_columns <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  effect_size <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"none"</span>, <span class="st">"auto"</span>, <span class="st">"hedges_g"</span>, <span class="st">"eta_sq"</span>, <span class="st">"r_rb"</span>, <span class="st">"epsilon_sq"</span><span class="op">)</span>,</span>
+<span>  effect_size <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"none"</span>, <span class="st">"auto"</span>, <span class="st">"hedges_g"</span>, <span class="st">"eta2"</span>, <span class="st">"r_rb"</span>, <span class="st">"epsilon2"</span><span class="op">)</span>,</span>
 <span>  effect_size_ci <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  smd <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  ci <span class="op">=</span> <span class="cn">TRUE</span>,</span>
@@ -206,9 +206,12 @@ numeric column.</p></dd>
 or a single character column name. Coerced to factor for
 grouping; non-numeric grouping columns (factor, character,
 logical) are supported as-is. Factor levels keep their declared
-order; any other <code>by</code> (character, numeric, haven labelled) forms
-groups in order of first appearance in the data – the same
-convention as <code><a href="table_categorical.html">table_categorical()</a></code>. For a haven labelled <code>by</code>,
+order, which is the way to choose another order; any other <code>by</code> is
+sorted, as in <code><a href="table_categorical.html">table_categorical()</a></code>: text in the C locale (capitals
+before lower case, the same on every machine), <code>FALSE</code> before
+<code>TRUE</code>, numbers and the codes of a haven labelled column ascending,
+whatever the order of the rows. The group of missing values comes
+last. For a haven labelled <code>by</code>,
 the group headers are the raw codes (value labels are not used
 for grouping headers – the family convention shared with
 <code><a href="table_categorical.html">table_categorical()</a></code> and <code><a href="table_continuous_lm.html">table_continuous_lm()</a></code>); declared
@@ -228,15 +231,16 @@ expression.</p></dd>
 
 <dt id="arg-drop-na">drop_na<a class="anchor" aria-label="anchor" href="#arg-drop-na"></a></dt>
 <dd><p>Logical. Controls how missing values in the <code>by</code>
-column are handled – the same argument as <code><a href="table_categorical.html">table_categorical()</a></code>,
-with one structural difference: a continuous summary has no
-<code>"(Missing)"</code> row for the summarized variable itself (a mean
-cannot include <code>NA</code>), so <code>NA</code>s in each summarized variable are
-always excluded from that variable's statistics and the exclusion
-is disclosed in a table note ("Missing values removed: ...")
-rather than silent. If <code>TRUE</code> (the default, preserving this
-function's historical behavior; <code><a href="table_categorical.html">table_categorical()</a></code> defaults to
-<code>FALSE</code>), rows with <code>NA</code> in <code>by</code> are removed from the grouped
+column are handled, under the rule of the family: a table that
+counts shows the missing values by default (a frequency table
+reports how many answers are missing, as a <code>"(Missing)"</code> row and,
+under <code>by</code>, a <code>"(Missing)"</code> column: <code><a href="table_categorical.html">table_categorical()</a></code>); a table
+that computes removes them by default and counts them in the note.
+This table computes: a mean is computed on the observed values, so
+the <code>NA</code>s of each summarized variable are always excluded from that
+variable's statistics, and the exclusion is disclosed in a table
+note ("Missing values removed: ...") rather than silent. If <code>TRUE</code>
+(the default), rows with <code>NA</code> in <code>by</code> are removed from the grouped
 summaries, and a note line says so ("Rows with missing ...
 removed"). If <code>FALSE</code>, rows with <code>NA</code> in <code>by</code> form a
 dedicated <code>"(Missing)"</code> group – the field convention for
@@ -266,12 +270,13 @@ weighted comparisons.</p></dd>
 <dt id="arg-rescale">rescale<a class="anchor" aria-label="anchor" href="#arg-rescale"></a></dt>
 <dd><p>Logical. If <code>TRUE</code>, weights are first normalized so
 that they sum to the number of observations used for each
-variable – the same <code>rescale</code> grammar as <code><a href="table_categorical.html">table_categorical()</a></code>,
-read from <code>options(spicy.rescale)</code> when not supplied. This is the
+variable – the same <code>rescale</code> grammar as <code><a href="table_categorical.html">table_categorical()</a></code>.
+This is the
 sampling-weights reading: results become invariant to the scale
 of the weights, and the weighted SD then equals Stata's
-<code>[aweight]</code> / <code><a href="https://rdrr.io/pkg/survey/man/surveysummary.html" class="external-link">survey::svyvar()</a></code> value exactly. The default
-<code>FALSE</code> uses the weights as given (frequency reading).</p></dd>
+<code>[aweight]</code> / <code><a href="https://rdrr.io/pkg/survey/man/surveysummary.html" class="external-link">survey::svyvar()</a></code> value exactly. <code>FALSE</code> uses the
+weights as given (frequency reading). The default reads
+<code>options(spicy.rescale)</code>, <code>FALSE</code> when it is unset.</p></dd>
 
 
 <dt id="arg-test">test<a class="anchor" aria-label="anchor" href="#arg-test"></a></dt>
@@ -349,19 +354,22 @@ groups).</p></li>
 <li><p><code>"hedges_g"</code>: Hedges' <em>g</em> (bias-corrected standardized mean
 difference, 2 groups, parametric). CI via the Hedges &amp; Olkin
 normal approximation.</p></li>
-<li><p><code>"eta_sq"</code>: Eta-squared (\(\eta^2\), parametric ANOVA-style
+<li><p><code>"eta2"</code>: Eta-squared (\(\eta^2\), parametric ANOVA-style
 <code>SS_between / SS_total</code>). CI via inversion of the noncentral
 <em>F</em> distribution.</p></li>
 <li><p><code>"r_rb"</code>: Rank-biserial <em>r</em> from the Wilcoxon / Mann-Whitney
 statistic (2 groups, nonparametric). CI via Fisher
 <em>z</em>-transform.</p></li>
-<li><p><code>"epsilon_sq"</code>: Epsilon-squared (\(\varepsilon^2\)) from the
+<li><p><code>"epsilon2"</code>: Epsilon-squared (\(\varepsilon^2\)) from the
 Kruskal-Wallis statistic (3+ groups, nonparametric). CI via
 percentile bootstrap (2 000 replicates).</p></li>
-</ul><p>A logical value is an error (class <code>spicy_defunct</code>): use <code>"auto"</code>
+</ul><p>A squared measure ends in <code>2</code>, as in <code><a href="table_continuous_lm.html">table_continuous_lm()</a></code> and
+<code><a href="table_regression.html">table_regression()</a></code>: <code>"eta_sq"</code> and <code>"epsilon_sq"</code>, the spellings
+before 0.14.0, are an error (class <code>spicy_defunct</code>) that gives the new
+one. A logical value is an error of the same class: use <code>"auto"</code>
 for <code>TRUE</code> and <code>"none"</code> for <code>FALSE</code>.
 Explicit choices are validated against the active <code>test</code> and the
-number of groups; an incompatible request (e.g. <code>"eta_sq"</code> with
+number of groups; an incompatible request (e.g. <code>"eta2"</code> with
 two groups, or <code>"hedges_g"</code> with <code>test = "nonparametric"</code>)
 triggers an actionable error. Ignored when <code>by</code> is not used.</p></dd>
 
@@ -424,7 +432,7 @@ the wording you set here.</p></dd>
 
 <dt id="arg-ci-level">ci_level<a class="anchor" aria-label="anchor" href="#arg-ci-level"></a></dt>
 <dd><p>Confidence level for the mean confidence interval
-(default: <code>0.95</code>). Must be between 0 and 1 exclusive.</p></dd>
+(default: <code>0.95</code>): a number strictly between 0 and 1.</p></dd>
 
 
 <dt id="arg-digits">digits<a class="anchor" aria-label="anchor" href="#arg-digits"></a></dt>
@@ -451,8 +459,9 @@ stripped, following APA convention.</p></dd>
 
 
 <dt id="arg-decimal-mark">decimal_mark<a class="anchor" aria-label="anchor" href="#arg-decimal-mark"></a></dt>
-<dd><p>Character used as decimal separator.
-Either <code>"."</code> (default) or <code>","</code>.</p></dd>
+<dd><p>The decimal mark, a single character: <code>"."</code> (the
+default) or <code>","</code> in most styles; the Lancet style of
+<code><a href="spicy_style.html">spicy_style()</a></code> uses the middle dot.</p></dd>
 
 
 <dt id="arg-align">align<a class="anchor" aria-label="anchor" href="#arg-align"></a></dt>
@@ -591,7 +600,7 @@ an effect size).</p></li>
 <li><p><code>p.value</code> – with the <em>p</em>-value only, and <code>p_unadjusted</code>
 under <code>p_adjust</code>.</p></li>
 <li><p><code>es_type</code> – effect-size identifier (<code>"hedges_g"</code>,
-<code>"eta_sq"</code>, <code>"r_rb"</code>, or <code>"epsilon_sq"</code>), <code>es_value</code>,
+<code>"eta2"</code>, <code>"r_rb"</code>, or <code>"epsilon2"</code>), <code>es_value</code>,
 <code>es_ci_lower</code>, <code>es_ci_upper</code> – the effect size and its
 interval.</p></li>
 <li><p><code>smd_type</code>, <code>smd_value</code> – the standardized mean
@@ -1052,7 +1061,7 @@ contrasts, fitted means);
 <span class="r-in"><span>  <span class="va">sochealth</span>,</span></span>
 <span class="r-in"><span>  select <span class="op">=</span> <span class="va">wellbeing_score</span>,</span></span>
 <span class="r-in"><span>  by <span class="op">=</span> <span class="va">education</span>,</span></span>
-<span class="r-in"><span>  effect_size <span class="op">=</span> <span class="st">"eta_sq"</span>,</span></span>
+<span class="r-in"><span>  effect_size <span class="op">=</span> <span class="st">"eta2"</span>,</span></span>
 <span class="r-in"><span>  effect_size_ci <span class="op">=</span> <span class="cn">TRUE</span>,</span></span>
 <span class="r-in"><span>  effect_size_digits <span class="op">=</span> <span class="fl">3</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>

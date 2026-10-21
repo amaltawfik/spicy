@@ -300,8 +300,8 @@ table_continuous(
 ```
 
 Allowed values are `"none"` (default), `"auto"` (= legacy `TRUE`),
-`"hedges_g"`, `"eta_sq"`, `"r_rb"`, and `"epsilon_sq"`. Incompatible
-explicit choices (e.g. `"eta_sq"` with two groups, or `"hedges_g"` with
+`"hedges_g"`, `"eta2"`, `"r_rb"`, and `"epsilon2"`. Incompatible
+explicit choices (e.g. `"eta2"` with two groups, or `"hedges_g"` with
 `test = "nonparametric"`) trigger an actionable error.
 
 When you need the numbers for further processing, use
@@ -1001,7 +1001,7 @@ table_continuous(
 |  | Tertiary |  4.11 |  1.04 |  1.00 |   5.00 |  4.01 |  4.21 | 399 |       |
 | *Note.* Missing values removed: bmi (12), life_sat_health (8). |  |  |  |  |  |  |  |  |  |
 
-Descriptive statistics by education {#tinytable_2d70ntq0kz9ou9ntcnew
+Descriptive statistics by education {#tinytable_cuer0vyighoohxwgct9k
 .table .tinytable
 style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}

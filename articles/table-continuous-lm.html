@@ -457,8 +457,8 @@ test of <code>by</code> after all covariates, equal to
 generalization of the bivariate effect size to a covariate-adjusted
 model.</li>
 <li>
-<code>effect_size = "d"</code> and <code>"g"</code> raise
-<code>spicy_unsupported</code>: Cohen’s <em>d</em> and Hedges’
+<code>effect_size = "cohens_d"</code> and <code>"hedges_g"</code>
+raise <code>spicy_unsupported</code>: Cohen’s <em>d</em> and Hedges’
 <em>g</em> have no defined extension under adjustment (the pooled SD has
 no canonical analog). The error message points to <code>f2</code> /
 <code>omega2</code> as the partial-F generalizations.</li>
@@ -501,7 +501,7 @@ require <code>by</code> to have exactly two non-empty levels:</p>
 <span>  <span class="va">sochealth</span>,</span>
 <span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">wellbeing_score</span>, <span class="va">bmi</span><span class="op">)</span>,</span>
 <span>  by <span class="op">=</span> <span class="va">smoking</span>,</span>
-<span>  effect_size <span class="op">=</span> <span class="st">"d"</span></span>
+<span>  effect_size <span class="op">=</span> <span class="st">"cohens_d"</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Continuous outcomes by smoking</span></span></span>
 <span><span class="co">#&gt; </span></span>
@@ -525,7 +525,7 @@ raw <em>d</em> in published reports (Goulet-Pelletier and Cousineau
 <span>  <span class="va">sochealth</span>,</span>
 <span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">wellbeing_score</span>, <span class="va">bmi</span><span class="op">)</span>,</span>
 <span>  by <span class="op">=</span> <span class="va">smoking</span>,</span>
-<span>  effect_size <span class="op">=</span> <span class="st">"g"</span></span>
+<span>  effect_size <span class="op">=</span> <span class="st">"hedges_g"</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Continuous outcomes by smoking</span></span></span>
 <span><span class="co">#&gt; </span></span>
@@ -597,8 +597,8 @@ commercial statistical software (Stata <code>esize</code> /
 <code>noncentral = TRUE</code>, its default being the central-<em>t</em>
 approximation):</p>
 <ul>
-<li>Noncentral <em>t</em> inversion for <code>"d"</code> and
-<code>"g"</code> (Steiger and Fouladi 1997; Goulet-Pelletier and
+<li>Noncentral <em>t</em> inversion for <code>"cohens_d"</code> and
+<code>"hedges_g"</code> (Steiger and Fouladi 1997; Goulet-Pelletier and
 Cousineau 2018; Fitts 2021), which has nominal coverage across sample
 sizes — unlike the older Hedges-Olkin normal approximation that is
 biased for small samples.</li>
@@ -612,7 +612,7 @@ with the bracketed CI (article-ready):</p>
 <span>  <span class="va">sochealth</span>,</span>
 <span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">wellbeing_score</span>, <span class="va">bmi</span><span class="op">)</span>,</span>
 <span>  by <span class="op">=</span> <span class="va">smoking</span>,</span>
-<span>  effect_size <span class="op">=</span> <span class="st">"g"</span>,</span>
+<span>  effect_size <span class="op">=</span> <span class="st">"hedges_g"</span>,</span>
 <span>  effect_size_ci <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Continuous outcomes by smoking</span></span></span>
@@ -638,7 +638,7 @@ them:</p>
 <span>  <span class="va">sochealth</span>,</span>
 <span>  select <span class="op">=</span> <span class="va">wellbeing_score</span>,</span>
 <span>  by <span class="op">=</span> <span class="va">smoking</span>,</span>
-<span>  effect_size <span class="op">=</span> <span class="st">"g"</span>,</span>
+<span>  effect_size <span class="op">=</span> <span class="st">"hedges_g"</span>,</span>
 <span>  effect_size_ci <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  output <span class="op">=</span> <span class="st">"data.frame"</span></span>
 <span><span class="op">)</span></span>
@@ -651,14 +651,14 @@ them:</p>
 <span>  <span class="va">sochealth</span>,</span>
 <span>  select <span class="op">=</span> <span class="va">wellbeing_score</span>,</span>
 <span>  by <span class="op">=</span> <span class="va">smoking</span>,</span>
-<span>  effect_size <span class="op">=</span> <span class="st">"g"</span>,</span>
+<span>  effect_size <span class="op">=</span> <span class="st">"hedges_g"</span>,</span>
 <span>  effect_size_ci <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  output <span class="op">=</span> <span class="st">"long"</span></span>
 <span><span class="op">)</span></span>
 <span><span class="va">out</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"variable"</span>, <span class="st">"es_type"</span>, <span class="st">"es_value"</span>, <span class="st">"es_ci_lower"</span>, <span class="st">"es_ci_upper"</span><span class="op">)</span><span class="op">]</span></span>
-<span><span class="co">#&gt;          variable es_type   es_value es_ci_lower es_ci_upper</span></span>
-<span><span class="co">#&gt; 1 wellbeing_score       g -0.1098571  -0.2497291  0.03006164</span></span>
-<span><span class="co">#&gt; 2 wellbeing_score    &lt;NA&gt;         NA          NA          NA</span></span></code></pre></div>
+<span><span class="co">#&gt;          variable  es_type   es_value es_ci_lower es_ci_upper</span></span>
+<span><span class="co">#&gt; 1 wellbeing_score hedges_g -0.1098571  -0.2497291  0.03006164</span></span>
+<span><span class="co">#&gt; 2 wellbeing_score     &lt;NA&gt;         NA          NA          NA</span></span></code></pre></div>
 <p>When <code>weights</code> is supplied, all four effect sizes (and
 their CIs) are computed from the weighted least-squares fit, keeping
 them consistent with the weighted contrast and its CI (DuMouchel and
@@ -682,7 +682,7 @@ European reporting):</p>
 <span>    wellbeing_score <span class="op">=</span> <span class="st">"WHO-5 wellbeing (0-100)"</span>,</span>
 <span>    bmi <span class="op">=</span> <span class="st">"Body-mass index (kg/m²)"</span></span>
 <span>  <span class="op">)</span>,</span>
-<span>  effect_size <span class="op">=</span> <span class="st">"g"</span>,</span>
+<span>  effect_size <span class="op">=</span> <span class="st">"hedges_g"</span>,</span>
 <span>  effect_size_ci <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  decimal_mark <span class="op">=</span> <span class="st">","</span></span>
 <span><span class="op">)</span></span>
@@ -1098,7 +1098,7 @@ downstream tidyverse-stats workflow:</p>
 <span>  <span class="va">sochealth</span>,</span>
 <span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">wellbeing_score</span>, <span class="va">bmi</span><span class="op">)</span>,</span>
 <span>  by <span class="op">=</span> <span class="va">sex</span>,</span>
-<span>  effect_size <span class="op">=</span> <span class="st">"g"</span>,</span>
+<span>  effect_size <span class="op">=</span> <span class="st">"hedges_g"</span>,</span>
 <span>  effect_size_ci <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span>
 <span></span>

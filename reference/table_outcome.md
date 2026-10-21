@@ -21,14 +21,14 @@ table_outcome(
   overall = TRUE,
   drop_na = FALSE,
   weights = NULL,
-  rescale = FALSE,
+  rescale = getOption("spicy.rescale", FALSE),
   test = c("welch", "student", "nonparametric"),
   p_value = NULL,
   p_adjust = "none",
   statistic = FALSE,
   show_n = TRUE,
   show_columns = NULL,
-  effect_size = c("none", "auto", "hedges_g", "eta_sq", "r_rb", "epsilon_sq"),
+  effect_size = c("none", "auto", "hedges_g", "eta2", "r_rb", "epsilon2"),
   effect_size_ci = FALSE,
   ci = TRUE,
   ci_level = 0.95,
@@ -65,11 +65,16 @@ table_outcome(
 
   The grouping characteristics to describe the outcome across, as a
   tidyselect expression or a character vector of column names. One block
-  of rows per variable, in the order given. As everywhere in the family,
-  `select` is what structures the rows. The outcome and the `weights`
-  column are not part of the selection: a selection helper skips them,
-  and naming one in `select`, or giving its position, is an error. A
-  name that is not a column of `data` is an error (class
+  of rows per variable, in the order given, and in each block one row
+  per level: the levels of a factor in their order, any other variable
+  sorted, as the groups of `by` are in
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
+  (text in the C locale, `FALSE` before `TRUE`, numbers and codes
+  ascending), whatever the order of the rows. As everywhere in the
+  family, `select` is what structures the rows. The outcome and the
+  `weights` column are not part of the selection: a selection helper
+  skips them, and naming one in `select`, or giving its position, is an
+  error. A name that is not a column of `data` is an error (class
   `spicy_missing_column`), and so is an empty selection.
 
 - labels:
@@ -109,18 +114,46 @@ table_outcome(
 
 - drop_na:
 
-  Drop rows with a missing `select` value from that block (default
-  `FALSE`: they are shown as a `(Missing)` level and excluded from the
-  comparison, and a level displayed with that label is an error, as in
-  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)).
-  Under `drop_na = TRUE`, a grouping that no observation holds is an
-  error (class `spicy_invalid_data`).
-
-- weights, rescale:
-
-  Frequency weights and whether to rescale them to sum to the sample
-  size, as in
+  Drop rows with a missing `select` value from that block. The rule of
+  the family: the categories a table counts keep their missing values as
+  a row by default, as in
+  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md);
+  the values it computes on lose them, counted in the note, as in
   [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md).
+  The blocks of this table are categories, so `FALSE` (the default)
+  shows the missing values of a `select` variable as a `(Missing)`
+  level, excluded from the comparison, and a level displayed with that
+  label is an error, as in
+  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md);
+  the missing values of the outcome are always removed and counted in
+  the note. Under `drop_na = TRUE`, a grouping that no observation holds
+  is an error (class `spicy_invalid_data`).
+
+- weights:
+
+  Optional case weights: an unquoted column name, a character column
+  name, or a numeric vector of length `nrow(data)`. Weights must be
+  non-negative and finite; rows with `NA` or zero weight leave every
+  statistic (including `Min` / `Max`) and `NA` weights are disclosed in
+  the table note. The weighted formulas follow the frequency-expansion
+  convention – see the **Weights** section. The weighted table names its
+  weights in the note ("Statistics weighted by ..."). Group tests and
+  effect sizes are not computed under weights: use
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
+  for weighted comparisons.
+
+- rescale:
+
+  Logical. If `TRUE`, weights are first normalized so that they sum to
+  the number of observations used for each variable – the same `rescale`
+  grammar as
+  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md).
+  This is the sampling-weights reading: results become invariant to the
+  scale of the weights, and the weighted SD then equals Stata's
+  `[aweight]` /
+  [`survey::svyvar()`](https://rdrr.io/pkg/survey/man/surveysummary.html)
+  value exactly. `FALSE` uses the weights as given (frequency reading).
+  The default reads `options(spicy.rescale)`, `FALSE` when it is unset.
 
 - test:
 
@@ -147,16 +180,26 @@ table_outcome(
 
 - statistic:
 
-  Show the test statistic column.
+  Logical. If `TRUE`, the test statistic of each block is shown in an
+  additional column, with or without the *p*-value: `p_value` and
+  `statistic` are independent. Defaults to `FALSE`.
 
 - show_n:
 
-  Show the count column.
+  Logical. If `TRUE`, includes an unweighted `n` column in the printed
+  ASCII table and in every rendered output (`tinytable`, `gt`,
+  `flextable`, `word`, `excel`, `clipboard`). Set to `FALSE` to drop the
+  `n` column structurally from those outputs (no empty placeholder, no
+  spanner). The `n` column is always present in `output = "long"` for
+  downstream programmatic access. Defaults to `TRUE`. Ignored (with a
+  warning) when `show_columns` is supplied.
 
 - show_columns:
 
-  Character vector of statistic tokens; `NULL` keeps the historical
-  display.
+  Statistics to display, as a character vector of the tokens of
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
+  (see *Choosing the statistics*). `NULL` (the default) shows the mean,
+  SD, min, max, the mean CI (see `ci`) and `n` (see `show_n`).
 
 - effect_size, effect_size_ci:
 
@@ -164,18 +207,88 @@ table_outcome(
   [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
   (a logical `effect_size` is an error there and here).
 
-- ci, ci_level:
+- ci:
 
-  The mean's confidence interval and its level.
+  Logical. If `TRUE`, includes the mean confidence interval columns
+  (`<level>% CI LL` / `<level>% CI UL`) and their spanner in the printed
+  ASCII table and in every rendered output (`tinytable`, `gt`,
+  `flextable`, `word`, `excel`, `clipboard`). Set to `FALSE` to drop
+  both columns and the CI spanner structurally from those outputs (no
+  empty placeholders, no border lines under an empty header). The CI
+  bounds are always present as `ci_lower` / `ci_upper` in
+  `output = "long"` for downstream programmatic access. Defaults to
+  `TRUE`. The CI level is taken from `ci_level`. Ignored (with a
+  warning) when `show_columns` is supplied.
 
-- digits, effect_size_digits, p_digits, decimal_mark:
+- ci_level:
 
-  Number formatting. The `*_digits` arguments are whole numbers,
-  `p_digits` at least 1.
+  Confidence level for the mean confidence interval (default: `0.95`): a
+  number strictly between 0 and 1.
+
+- digits:
+
+  Number of decimal places for descriptive values and test statistics
+  (default: `2`). A whole number: a fraction is an error, as for every
+  `*_digits` argument.
+
+- effect_size_digits:
+
+  Number of decimal places for effect-size values in formatted displays
+  (default: `2`).
+
+- p_digits:
+
+  Integer \>= 1. Number of decimal places used to render *p*-values in
+  the `p` column (default: `3`, the APA Publication Manual standard).
+  Both the displayed precision and the small-*p* threshold derive from
+  this argument: `p_digits = 3` prints `.045` and `<.001`;
+  `p_digits = 4` prints `.0451` and `<.0001`; `p_digits = 2` prints
+  `.05` and `<.01`. Useful for genomics / GWAS contexts with very small
+  *p*-values, or for journals using a coarser convention. Leading zeros
+  are always stripped, following APA convention.
+
+- decimal_mark:
+
+  The decimal mark, a single character: `"."` (the default) or `","` in
+  most styles; the Lancet style of
+  [`spicy_style()`](https://amaltawfik.github.io/spicy/reference/spicy_style.md)
+  uses the middle dot.
 
 - align:
 
-  Numeric-cell alignment: `"decimal"`, `"center"` or `"right"`.
+  Horizontal alignment of numeric columns in the printed ASCII table and
+  in the `tinytable`, `gt`, `flextable`, `word`, `excel`, and
+  `clipboard` outputs. The first column (`Variable`) and `Group` (when
+  present) are always left-aligned. One of:
+
+  - `"decimal"` (default): align numeric columns on the decimal mark,
+    the standard scientific-publication convention used by SPSS, SAS,
+    and LaTeX `siunitx`. Numeric cells are pre-padded with figure-spaces
+    (U+2007, digit-width) so every string in a column has the same width
+    with the decimal mark at the same internal position; centering those
+    uniform-width strings then stacks the decimal points vertically. The
+    same pad-then-center strategy is applied on every rendering engine
+    (`gt`, `tinytable`, `flextable`, `word`, ASCII print) for a
+    homogeneous rendering, matching
+    [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+    and
+    [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md).
+    The `clipboard` output is delimited text meant to be parsed rather
+    than read at a fixed width, so its cells travel unpadded (a padded
+    number pastes as text next to an unpadded number).
+
+  - `"center"`: center-align all numeric columns.
+
+  - `"right"`: right-align all numeric columns.
+
+  `"center"` and `"right"` reach the `excel` output too. `"decimal"`
+  does not: Excel cells are written unpadded, because cell-string
+  padding does not align decimals under a proportional font, so the
+  workbook keeps the engine's own convention instead – counts and the
+  *p*-value right-aligned, the other numeric columns centered. Same
+  default and same three values as
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md),
+  whose `excel` output still uses that convention at every `align`.
 
 - output:
 
@@ -186,24 +299,59 @@ table_outcome(
   [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md);
   see *Value*.
 
-- indent_text, indent_text_excel_clipboard:
+- indent_text:
 
-  Level-row indentation, for the console and for the plain-text engines.
+  Prefix used for modality labels in report table building. Defaults to
+  `" "` (two spaces).
 
-- excel_path, excel_sheet, clipboard_delim, word_path:
+- indent_text_excel_clipboard:
 
-  Output destinations, as in
-  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md).
+  Stronger indentation used in Excel and clipboard exports. Defaults to
+  six non-breaking spaces.
+
+- excel_path:
+
+  File path for `output = "excel"`, ending in `".xlsx"`, in a directory
+  that exists.
+
+- excel_sheet:
+
+  Sheet name for `output = "excel"`. `NULL` (the default) uses
+  `"Outcome"`.
+
+- clipboard_delim:
+
+  Delimiter for `output = "clipboard"` (default: `"\t"`). A cell holding
+  the delimiter itself, a double quote or a line break is quoted RFC
+  4180-style, so the grid survives whatever delimiter you choose.
+
+- word_path:
+
+  File path for `output = "word"`, ending in `".docx"`, in a directory
+  that exists.
 
 - user_na:
 
-  Honor declared missing values (see
-  [`?freq`](https://amaltawfik.github.io/spicy/reference/freq.md)).
+  Logical. If `TRUE` (the default), declared missing values are treated
+  as missing: those of the outcome leave its statistics and are
+  disclosed in the table note (`Declared missing values removed: ...`),
+  those of a `select` variable join its `(Missing)` level under
+  `drop_na = FALSE`. If `FALSE`, the declared codes are ordinary values.
+  See the "Declared missing values" section of
+  [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md).
 
 - style:
 
-  A journal style; see
-  [`spicy_style()`](https://amaltawfik.github.io/spicy/reference/spicy_style.md).
+  A journal style: a theme name (`"jama"`, `"nejm"`, `"lancet"`,
+  `"annals"`, `"apa"`, `"aer"`), a
+  [`spicy_style()`](https://amaltawfik.github.io/spicy/reference/spicy_style.md)
+  object, or `NULL` (the default). A style only changes DEFAULTS – any
+  argument you pass explicitly wins over it. Set
+  `options(spicy.style = )` for document-wide scope. A theme covers
+  numeric formatting conformity only, not full editorial conformity;
+  [`?spicy_style`](https://amaltawfik.github.io/spicy/reference/spicy_style.md)
+  lists the exact rules each one encodes and the official document they
+  come from. An unknown name is an error.
 
 - by:
 
@@ -339,10 +487,10 @@ row another label with
 The canonical form is `select = where(is.factor)`, or an explicit
 enumeration. Negation (`select = -c(x, y)`) is not recommended: it
 sweeps in every remaining column, and a numeric one becomes a block with
-one LEVEL per distinct value, in order of first appearance. A variable
-producing more than 20 levels raises a warning for that reason – an
-arbitrary threshold, but a sixty-row block where a reader expects a
-handful of categories is not a table.
+one LEVEL per distinct value, in ascending order. A variable producing
+more than 20 levels raises a warning for that reason – an arbitrary
+threshold, but a sixty-row block where a reader expects a handful of
+categories is not a table.
 
 A `haven_labelled` column used as `select` shows its numeric CODES, not
 its value labels, as it does in

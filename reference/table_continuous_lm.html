@@ -19,8 +19,9 @@ interval.
 Inference adapts via vcov: classical OLS, &quot;HC0&quot;-&quot;HC5&quot;
 (heteroscedasticity-consistent), &quot;CR0&quot;-&quot;CR3&quot; (cluster-robust,
 requires cluster), or &quot;bootstrap&quot; / &quot;jackknife&quot; resampling.
-Effect sizes (Cohen's &quot;d&quot;, Hedges' &quot;g&quot;, Hays' &quot;omega2&quot;,
-Cohen's &quot;f2&quot;) are reported with optional noncentral t / F
+Effect sizes (Cohen's d &quot;cohens_d&quot;, Hedges' g &quot;hedges_g&quot;,
+Hays' &quot;omega2&quot;, Cohen's &quot;f2&quot;) are reported with optional
+noncentral t / F
 confidence intervals via effect_size_ci, and adapt under
 covariate adjustment (see effect_size).
 Multiple output formats are available via output: a printed ASCII table
@@ -40,8 +41,9 @@ interval.
 Inference adapts via vcov: classical OLS, &quot;HC0&quot;-&quot;HC5&quot;
 (heteroscedasticity-consistent), &quot;CR0&quot;-&quot;CR3&quot; (cluster-robust,
 requires cluster), or &quot;bootstrap&quot; / &quot;jackknife&quot; resampling.
-Effect sizes (Cohen's &quot;d&quot;, Hedges' &quot;g&quot;, Hays' &quot;omega2&quot;,
-Cohen's &quot;f2&quot;) are reported with optional noncentral t / F
+Effect sizes (Cohen's d &quot;cohens_d&quot;, Hedges' g &quot;hedges_g&quot;,
+Hays' &quot;omega2&quot;, Cohen's &quot;f2&quot;) are reported with optional
+noncentral t / F
 confidence intervals via effect_size_ci, and adapt under
 covariate adjustment (see effect_size).
 Multiple output formats are available via output: a printed ASCII table
@@ -128,8 +130,9 @@ interval.</p>
 <p>Inference adapts via <code>vcov</code>: classical OLS, <code>"HC0"</code>-<code>"HC5"</code>
 (heteroscedasticity-consistent), <code>"CR0"</code>-<code>"CR3"</code> (cluster-robust,
 requires <code>cluster</code>), or <code>"bootstrap"</code> / <code>"jackknife"</code> resampling.
-Effect sizes (Cohen's <code>"d"</code>, Hedges' <code>"g"</code>, Hays' <code>"omega2"</code>,
-Cohen's <code>"f2"</code>) are reported with optional noncentral <em>t</em> / <em>F</em>
+Effect sizes (Cohen's <em>d</em> <code>"cohens_d"</code>, Hedges' <em>g</em> <code>"hedges_g"</code>,
+Hays' <code>"omega2"</code>, Cohen's <code>"f2"</code>) are reported with optional
+noncentral <em>t</em> / <em>F</em>
 confidence intervals via <code>effect_size_ci</code>, and adapt under
 covariate adjustment (see <code>effect_size</code>).</p>
 <p>Multiple output formats are available via <code>output</code>: a printed ASCII table
@@ -158,7 +161,7 @@ covariate adjustment (see <code>effect_size</code>).</p>
 <span>  p_value <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  show_n <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  show_weighted_n <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  effect_size <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"none"</span>, <span class="st">"f2"</span>, <span class="st">"d"</span>, <span class="st">"g"</span>, <span class="st">"omega2"</span><span class="op">)</span>,</span>
+<span>  effect_size <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"none"</span>, <span class="st">"f2"</span>, <span class="st">"cohens_d"</span>, <span class="st">"hedges_g"</span>, <span class="st">"omega2"</span><span class="op">)</span>,</span>
 <span>  effect_size_ci <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  r2 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"r2"</span>, <span class="st">"adj_r2"</span>, <span class="st">"none"</span><span class="op">)</span>,</span>
 <span>  ci <span class="op">=</span> <span class="cn">TRUE</span>,</span>
@@ -214,24 +217,28 @@ polynomial contrasts (<code>contr.poly</code>) <code><a href="https://rdrr.io/r/
 The ordering only determines the display order and the reference
 level; per-level means, the displayed difference, and its CI are
 identical to those of an unordered factor with the same levels.</p></li>
-<li><p><strong>character</strong>: coerced to factor with <code>factor(by)</code>, which orders the
-levels alphabetically. To control the reference level, supply <code>by</code>
-as an explicit factor with the desired level ordering (e.g. via
-<code><a href="https://forcats.tidyverse.org/reference/fct_relevel.html" class="external-link">forcats::fct_relevel()</a></code> or <code>factor(..., levels = ...)</code>).</p></li>
+<li><p><strong>character</strong>: coerced to factor with its values sorted in the C
+locale (capitals before lower case, the same on every machine), the
+order of the groups in the whole family (<code><a href="table_categorical.html">table_categorical()</a></code>,
+<code><a href="table_continuous.html">table_continuous()</a></code>, ...): the first value in that order is the
+reference level, whatever the order of the rows. To control the
+reference level, supply <code>by</code> as an explicit factor with the desired
+level ordering (e.g. via <code><a href="https://forcats.tidyverse.org/reference/fct_relevel.html" class="external-link">forcats::fct_relevel()</a></code> or
+<code>factor(..., levels = ...)</code>).</p></li>
 <li><p><strong>logical</strong>: coerced to factor with levels <code>"FALSE"</code>, <code>"TRUE"</code> (in
 that order, since <code>FALSE &lt; TRUE</code>). The reference level is <code>"FALSE"</code>,
 so a binary contrast displays as <code>Delta (TRUE - FALSE)</code>.</p></li>
 <li><p><strong>haven labelled with value labels</strong> (an SPSS / Stata import):
 treated as categorical over the raw codes, in ascending code
 order (the reference level is the lowest code; the model needs
-a fixed level order). <code><a href="table_continuous.html">table_continuous()</a></code> and
-<code><a href="table_categorical.html">table_categorical()</a></code> form the same groups from such a column
-but display them in order of first appearance in the data, so
-the group ORDER can differ between the sibling tables. A
+a fixed level order), the order in which <code><a href="table_continuous.html">table_continuous()</a></code> and
+<code><a href="table_categorical.html">table_categorical()</a></code> display the same groups. A
 labelled vector without value labels is treated as a continuous
 regressor. Declared missing values follow <code>user_na</code> as usual.</p></li>
 </ul><p>Rows with <code>NA</code> in <code>by</code> are excluded from the analytic sample for each
-outcome (NAs in <code>y</code> and <code>weights</code> are also excluded; see Details).</p></dd>
+outcome (NAs in <code>y</code> and <code>weights</code> are also excluded; see Details), the
+rule of a table that computes (see <code>drop_na</code> in
+<code><a href="table_continuous.html">table_continuous()</a></code>); this table has no <code>drop_na</code>.</p></dd>
 
 
 <dt id="arg-covariates">covariates<a class="anchor" aria-label="anchor" href="#arg-covariates"></a></dt>
@@ -269,7 +276,8 @@ existing <code>by</code> / <code>weights</code> NA handling).</p></dd>
 <dt id="arg-adjustment">adjustment<a class="anchor" aria-label="anchor" href="#arg-adjustment"></a></dt>
 <dd><p>How the covariate-adjusted estimated marginal
 means (the <code>emmean</code> / <code>emmean_se</code> / <code>emmean_ci_*</code> columns) are
-computed when <code>covariates</code> is non-empty. One of:</p><ul><li><p><code>"proportional"</code> (the default; matches Stata <code>margins</code> and
+computed when <code>covariates</code> is non-empty (typed without covariates,
+it is ignored with a warning, class <code>spicy_ignored_arg</code>). One of:</p><ul><li><p><code>"proportional"</code> (the default; matches Stata <code>margins</code> and
 <code><a href="https://rdrr.io/pkg/marginaleffects/man/predictions.html" class="external-link">marginaleffects::avg_predictions()</a></code>): G-computation on the
 observed sample. For each focal level of <code>by</code>, the model
 predicts at every observation with <code>by</code> set to that level
@@ -376,7 +384,8 @@ when <code>cluster</code> is supplied (Quenouille 1956; MacKinnon and White
 1985). Inference is asymptotic (<code>z</code> / <code>chi^2(q)</code>).</p></li>
 </ul><p>The <code>HC*</code> variants are computed via <code><a href="https://zeileis.codeberg.page/sandwich/reference/vcovHC.html" class="external-link">sandwich::vcovHC()</a></code>.
 Coefficients (means, contrasts, slopes), <code>\eqn{R^2}{R^2}</code>, and the standardized
-effect sizes (<code>f2</code>, <code>d</code>, <code>g</code>, <code>omega2</code>) are point estimates from the
+effect sizes (<code>f2</code>, <code>cohens_d</code>, <code>hedges_g</code>, <code>omega2</code>) are point
+estimates from the
 OLS/WLS fit and are not affected by <code>vcov</code>; only their standard errors,
 CIs, and the test statistic of the contrast change.</p></dd>
 
@@ -403,17 +412,21 @@ cluster vectors) is not supported; use <code><a href="https://zeileis.codeberg.p
 
 
 <dt id="arg-boot-n">boot_n<a class="anchor" aria-label="anchor" href="#arg-boot-n"></a></dt>
-<dd><p>Integer. Number of bootstrap replicates used when
-<code>vcov = "bootstrap"</code>. Defaults to <code>1000</code>. Ignored otherwise.
-Must be at least <code>50</code> (values below that floor raise an error:
-fewer replicates make the variance estimate too noisy to use);
-non-integer values are truncated (e.g. <code>500.9</code> becomes <code>500</code>).
+<dd><p>Number of bootstrap replicates used when
+<code>vcov = "bootstrap"</code>: a positive whole number, as in
+<code><a href="table_regression.html">table_regression()</a></code> and <code><a href="table_multiresponse.html">table_multiresponse()</a></code> (a fraction is an
+error). Defaults to <code>1000</code>, the default of <code><a href="table_regression.html">table_regression()</a></code>,
+which computes the same bootstrap variance. That variance needs at
+least 10 valid replicates: a smaller <code>boot_n</code> is an error.
 Larger values reduce Monte-Carlo error in the bootstrap variance;
-typical values for inference are <code>500</code>-<code>2000</code>.</p></dd>
+typical values for inference are <code>500</code>-<code>2000</code>. Typed with another
+<code>vcov</code>, it is ignored with a warning (class <code>spicy_ignored_arg</code>).</p></dd>
 
 
 <dt id="arg-contrast">contrast<a class="anchor" aria-label="anchor" href="#arg-contrast"></a></dt>
-<dd><p>Contrast display for categorical predictors. One of:</p><ul><li><p><code>"auto"</code> (default): show a single reference contrast
+<dd><p>Contrast display for categorical predictors (typed with
+a numeric <code>by</code>, it is ignored with a warning, class
+<code>spicy_ignored_arg</code>). One of:</p><ul><li><p><code>"auto"</code> (default): show a single reference contrast
 <code>Delta (level2 - level1)</code> only when <code>by</code> has exactly two non-empty
 levels. The reference level is the <strong>first level of the factor</strong>
 (R's default treatment-contrast convention,
@@ -450,23 +463,27 @@ analytic sample. Defaults to <code>FALSE</code>.</p></dd>
 
 <dt id="arg-effect-size">effect_size<a class="anchor" aria-label="anchor" href="#arg-effect-size"></a></dt>
 <dd><p>Character. Effect-size column to include in the wide and
-rendered outputs (a logical is an error, class <code>spicy_defunct</code>). One
+rendered outputs (a logical is an error, class <code>spicy_defunct</code>). An
+estimator named after its author carries the name, as <code>"hedges_g"</code>
+does in <code><a href="table_continuous.html">table_continuous()</a></code>: <code>"d"</code> and <code>"g"</code>, the spellings before
+0.14.0, are an error of the same class that gives the new one. One
 of:</p><ul><li><p><code>"none"</code> (the default): no effect-size column.</p></li>
 <li><p><code>"f2"</code>: Cohen's <code>\eqn{f^2}{f^2} = \eqn{R^2}{R^2} / (1 - \eqn{R^2}{R^2})</code>. Defined for any predictor type.
 Familiar from Cohen (1988); standard input for a-priori power analysis.
 Note that for a single-predictor model, <code>\eqn{f^2}{f^2}</code> is a monotone transform of
 <code>\eqn{R^2}{R^2}</code> and adds no information beyond it.</p></li>
-<li><p><code>"d"</code>: Cohen's <code>d = beta_hat / sigma_hat</code>, where <code>beta_hat</code> is the
-model coefficient (the displayed difference) and <code>sigma_hat</code> is the
+<li><p><code>"cohens_d"</code>: Cohen's <code>d = beta_hat / sigma_hat</code>, where <code>beta_hat</code> is
+the model coefficient (the displayed difference) and <code>sigma_hat</code> is the
 residual standard deviation from the fitted model. Defined only when
 <code>by</code> has exactly two non-empty levels; otherwise the function errors.
 The sign matches the displayed <code>Delta (level2 - level1)</code>.</p></li>
-<li><p><code>"g"</code>: Hedges' <code>g = J * d</code> with the small-sample correction
-<code>J = 1 - 3 / (4 * df_resid - 1)</code>. Same domain as <code>"d"</code>.</p></li>
+<li><p><code>"hedges_g"</code>: Hedges' <code>g = J * d</code> with the small-sample correction
+<code>J = 1 - 3 / (4 * df_resid - 1)</code>. Same domain as <code>"cohens_d"</code>.</p></li>
 <li><p><code>"omega2"</code>: Hays' <code>omega-squared</code>, a bias-corrected estimator of the
 population variance explained, less optimistic than <code>\eqn{R^2}{R^2}</code> for small
 samples. Defined for any predictor type and truncated at 0.</p></li>
-</ul><p>When <code>weights</code> is supplied, <code>"d"</code>, <code>"g"</code>, and <code>"omega2"</code> are derived from
+</ul><p>When <code>weights</code> is supplied, <code>"cohens_d"</code>, <code>"hedges_g"</code>, and <code>"omega2"</code>
+are derived from
 the weighted least-squares fit (using weighted sums of squares and the
 model's weighted residual standard deviation), keeping them consistent
 with the weighted contrast and its CI shown in the table. All effect
@@ -479,8 +496,9 @@ additive setting) –
 the correctly-defined effect size when the model is adjusted.
 For numeric <code>by</code>, partial <em>\(f^2\)</em> equals the squared partial
 correlation of <code>by</code> with the outcome, divided by <code>(1 - r^2_partial)</code>.</p></li>
-<li><p><code>"d"</code> and <code>"g"</code> raise a <code>spicy_unsupported</code> error: Cohen's <em>d</em>
-and Hedges' <em>g</em> have no canonical extension to adjusted models
+<li><p><code>"cohens_d"</code> and <code>"hedges_g"</code> raise a <code>spicy_unsupported</code> error:
+Cohen's <em>d</em> and Hedges' <em>g</em> have no canonical extension to adjusted
+models
 (the pooled SD is undefined under adjustment). Use <code>"f2"</code> or
 <code>"omega2"</code> instead – both generalize via partial <em>F</em>.</p></li>
 </ul></dd>
@@ -489,8 +507,9 @@ and Hedges' <em>g</em> have no canonical extension to adjusted models
 <dt id="arg-effect-size-ci">effect_size_ci<a class="anchor" aria-label="anchor" href="#arg-effect-size-ci"></a></dt>
 <dd><p>Logical. If <code>TRUE</code> and <code>effect_size != "none"</code>, adds
 a confidence interval for the effect size derived from inversion of the
-appropriate noncentral distribution (noncentral t for <code>"d"</code> / <code>"g"</code>;
-noncentral F for <code>"omega2"</code> / <code>"f2"</code>). The CI level is taken from
+appropriate noncentral distribution (noncentral t for <code>"cohens_d"</code> /
+<code>"hedges_g"</code>; noncentral F for <code>"omega2"</code> / <code>"f2"</code>). The CI level is
+taken from
 <code>ci_level</code>. In the long output (<code>output = "long"</code>), the bounds are always
 present in <code>es_ci_lower</code> / <code>es_ci_upper</code> (numeric). In the wide raw
 output (<code>output = "data.frame"</code>), the bounds appear under the same
@@ -541,7 +560,7 @@ the wording you set here.</p></dd>
 
 <dt id="arg-ci-level">ci_level<a class="anchor" aria-label="anchor" href="#arg-ci-level"></a></dt>
 <dd><p>Confidence level for coefficient and model-based mean
-intervals (default: <code>0.95</code>). Must be between 0 and 1 exclusive.</p></dd>
+intervals (default: <code>0.95</code>): a number strictly between 0 and 1.</p></dd>
 
 
 <dt id="arg-digits">digits<a class="anchor" aria-label="anchor" href="#arg-digits"></a></dt>
@@ -576,8 +595,9 @@ and fractions (<code>3.7</code>) raise an error.</p></dd>
 
 
 <dt id="arg-decimal-mark">decimal_mark<a class="anchor" aria-label="anchor" href="#arg-decimal-mark"></a></dt>
-<dd><p>Character used as decimal separator. Either <code>"."</code>
-(default) or <code>","</code>.</p></dd>
+<dd><p>The decimal mark, a single character: <code>"."</code> (the
+default) or <code>","</code> in most styles; the Lancet style of
+<code><a href="spicy_style.html">spicy_style()</a></code> uses the middle dot.</p></dd>
 
 
 <dt id="arg-align">align<a class="anchor" aria-label="anchor" href="#arg-align"></a></dt>
@@ -753,8 +773,9 @@ internally consistent with the rest of the table.</p>
 for any predictor type. For a single-predictor model, <code>\eqn{f^2}{f^2}</code> is a
 monotone transform of <code>\eqn{R^2}{R^2}</code> and adds no information beyond it; its
 primary use is in <em>a priori</em> power analysis (e.g. G*Power).</p></li>
-<li><p><code>"d"</code>, <code>"g"</code>: standardized mean difference (Cohen's <em>d</em> or Hedges'
-<em>g</em>), defined only when <code>by</code> has exactly two non-empty levels.
+<li><p><code>"cohens_d"</code>, <code>"hedges_g"</code>: standardized mean difference
+(Cohen's <em>d</em> or Hedges' <em>g</em>), defined only when <code>by</code> has exactly two
+non-empty levels.
 <code>d = beta_hat / sigma_hat</code> with <code>sigma_hat = summary(fit)$sigma</code> (the
 pooled within-group SD for the unweighted two-group case);
 <code>g = J * d</code> with <code>J = 1 - 3 / (4 * df_resid - 1)</code> (Hedges and Olkin
@@ -775,7 +796,8 @@ itself.</p>
 <code>"omega2"</code> become the partial <em>\(f^2\)</em> / partial <em>\(\omega^2\)</em> of <code>by</code>, derived
 from the partial <em>F</em> restricted to the focal term (the Type-II
 test of <code>by</code> after all covariates, equal to <code><a href="https://rdrr.io/r/stats/add1.html" class="external-link">stats::drop1()</a></code> in
-this additive setting). <code>"d"</code> and <code>"g"</code> raise a <code>spicy_unsupported</code> error: the pooled
+this additive setting). <code>"cohens_d"</code> and <code>"hedges_g"</code> raise a
+<code>spicy_unsupported</code> error: the pooled
 standard deviation has no canonical extension under adjustment, so
 Cohen's <em>d</em> and Hedges' <em>g</em> are undefined for adjusted models. See
 <code>effect_size</code> for the full dispatch.</p>
@@ -784,7 +806,8 @@ Cohen's <em>d</em> and Hedges' <em>g</em> are undefined for adjusted models. See
 inversion approach, the consensus standard in commercial statistical
 software (Stata <code>esize</code> / <code>estat esize</code>, SAS <code>PROC TTEST</code> and
 <code>PROC GLM EFFECTSIZE</code> 14.2+) and in mainstream R packages
-(<code>effectsize</code>, <code>MOTE</code>, <code>TOSTER</code>, <code>effsize</code>):</p><ul><li><p><code>"d"</code>, <code>"g"</code>: noncentral <em>t</em> inversion (Steiger and Fouladi 1997;
+(<code>effectsize</code>, <code>MOTE</code>, <code>TOSTER</code>, <code>effsize</code>):</p><ul><li><p><code>"cohens_d"</code>, <code>"hedges_g"</code>: noncentral <em>t</em> inversion (Steiger
+and Fouladi 1997;
 Goulet-Pelletier and Cousineau 2018). Empirical coverage is nominal
 across sample sizes (Fitts 2021), unlike the
 older Hedges-Olkin normal approximation which is biased for small
@@ -1099,7 +1122,7 @@ design-based inference on complex-survey samples.</p>
 <span class="r-in"><span>  <span class="va">sochealth</span>,</span></span>
 <span class="r-in"><span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">wellbeing_score</span>, <span class="va">bmi</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  by <span class="op">=</span> <span class="va">sex</span>,</span></span>
-<span class="r-in"><span>  effect_size <span class="op">=</span> <span class="st">"d"</span></span></span>
+<span class="r-in"><span>  effect_size <span class="op">=</span> <span class="st">"cohens_d"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Continuous outcomes by sex</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
@@ -1122,7 +1145,7 @@ design-based inference on complex-survey samples.</p>
 <span class="r-in"><span>  by <span class="op">=</span> <span class="va">sex</span>,</span></span>
 <span class="r-in"><span>  weights <span class="op">=</span> <span class="va">weight</span>,</span></span>
 <span class="r-in"><span>  statistic <span class="op">=</span> <span class="cn">TRUE</span>,</span></span>
-<span class="r-in"><span>  effect_size <span class="op">=</span> <span class="st">"g"</span>,</span></span>
+<span class="r-in"><span>  effect_size <span class="op">=</span> <span class="st">"hedges_g"</span>,</span></span>
 <span class="r-in"><span>  show_weighted_n <span class="op">=</span> <span class="cn">TRUE</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Continuous outcomes by sex</span></span>
@@ -1144,7 +1167,7 @@ design-based inference on complex-survey samples.</p>
 <span class="r-in"><span>  <span class="va">sochealth</span>,</span></span>
 <span class="r-in"><span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">wellbeing_score</span>, <span class="va">bmi</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  by <span class="op">=</span> <span class="va">sex</span>,</span></span>
-<span class="r-in"><span>  effect_size <span class="op">=</span> <span class="st">"g"</span>,</span></span>
+<span class="r-in"><span>  effect_size <span class="op">=</span> <span class="st">"hedges_g"</span>,</span></span>
 <span class="r-in"><span>  effect_size_ci <span class="op">=</span> <span class="cn">TRUE</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Continuous outcomes by sex</span></span>
@@ -1182,7 +1205,8 @@ design-based inference on complex-survey samples.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Missing values removed: bmi (12).</span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Hays' omega-squared for a 3-level predictor (d / g would error here).</span></span></span>
+<span class="r-in"><span><span class="co"># Hays' omega-squared for a 3-level predictor ("cohens_d" and</span></span></span>
+<span class="r-in"><span><span class="co"># "hedges_g" need two groups).</span></span></span>
 <span class="r-in"><span><span class="fu">table_continuous_lm</span><span class="op">(</span></span></span>
 <span class="r-in"><span>  <span class="va">sochealth</span>,</span></span>
 <span class="r-in"><span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">wellbeing_score</span>, <span class="va">bmi</span><span class="op">)</span>,</span></span>

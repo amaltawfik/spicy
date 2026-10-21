@@ -56,7 +56,7 @@ table_regression(
   labels = getOption("spicy.var_labels", FALSE),
   title = NULL,
   note = NULL,
-  output = c("default", "data.frame", "long", "gt", "flextable", "tinytable", "excel",
+  output = c("default", "data.frame", "long", "tinytable", "gt", "flextable", "excel",
     "clipboard", "word"),
   excel_path = NULL,
   excel_sheet = NULL,
@@ -183,8 +183,18 @@ table_regression(
 
 - boot_n:
 
-  Number of bootstrap replicates when `vcov = "bootstrap"`. Single
-  positive integer. Default `1000L`.
+  Number of bootstrap replicates when `vcov = "bootstrap"`, and of the
+  bootstrap of the RMST and risk-difference columns: a positive whole
+  number, as in
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
+  and
+  [`table_multiresponse()`](https://amaltawfik.github.io/spicy/reference/table_multiresponse.md).
+  Default `1000L`, the default of
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md),
+  which computes the same bootstrap variance. That variance, of a `lm`
+  or `glm` fit, needs at least 10 valid replicates: a smaller `boot_n`
+  is an error. Typed in a table that runs no bootstrap, it is ignored
+  with a warning (class `spicy_ignored_arg`).
 
 - tau:
 
@@ -711,8 +721,10 @@ table_regression(
 
 - decimal_mark:
 
-  Decimal mark used in numeric display. `"."` (default) or `","`
-  (European convention). When `","` is used, the CI bracket separator
+  The decimal mark, a single character: `"."` (the default) or `","` in
+  most styles; the Lancet style of
+  [`spicy_style()`](https://amaltawfik.github.io/spicy/reference/spicy_style.md)
+  uses the middle dot. When `","` is used, the CI bracket separator
   switches to `"; "` automatically to avoid `"0,18 [0,07, 0,30]"`
   ambiguity. With `output = "excel"` a numeric cell is displayed by
   Excel with the *viewer's* locale separator, which a file cannot set,
@@ -817,8 +829,8 @@ table_regression(
 
   Output type. `"default"` (a printable `spicy_regression_table`);
   `"data.frame"` (the displayed table with its numbers); `"long"` (one
-  row per coefficient, broom's names); `"gt"` / `"flextable"` /
-  `"tinytable"` (rich-format tables); `"excel"` (writes to
+  row per coefficient, broom's names); `"tinytable"` / `"gt"` /
+  `"flextable"` (rich-format tables); `"excel"` (writes to
   `excel_path`); `"clipboard"` (copies to system clipboard); `"word"`
   (writes flextable to `word_path`).
 
@@ -1691,7 +1703,7 @@ as "it probably doesn't make much difference" (Efron 1977).
 - `"long"` – the long-format tibble, one row per
   `(model_id, term, estimate_type)`, with broom's column names.
 
-- `"gt"` / `"flextable"` / `"tinytable"` – rich-format HTML / Word / PDF
+- `"tinytable"` / `"gt"` / `"flextable"` – rich-format HTML / Word / PDF
   tables (require the corresponding Suggests package). In a PDF, a
   `"flextable"` table wider than the page can be fitted with
   [`flextable::fit_to_width()`](https://davidgohel.github.io/flextable/reference/fit_to_width.html).
@@ -1718,10 +1730,16 @@ is kept numeric so cluster-robust Satterthwaite df is preserved.
 ## Global options
 
 - **`options(spicy.style = )`** – the journal style applied by default
-  to all four table families (`table_regression()`,
-  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
+  to all nine table functions
+  ([`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
+  [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md),
   [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
-  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)).
+  [`table_continuous_svy()`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md),
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md),
+  [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md),
+  [`table_multiresponse()`](https://amaltawfik.github.io/spicy/reference/table_multiresponse.md),
+  `table_regression()` and
+  [`table_regression_uv()`](https://amaltawfik.github.io/spicy/reference/table_regression_uv.md)).
   Takes a theme name (`"jama"`, `"nejm"`, `"lancet"`, `"annals"`,
   `"apa"`, `"aer"`) or a
   [`spicy_style()`](https://amaltawfik.github.io/spicy/reference/spicy_style.md)
@@ -1734,7 +1752,7 @@ is kept numeric so cluster-robust Satterthwaite df is preserved.
   come from.
 
 - **`options(spicy.note_style = )`** – how the table note is rendered by
-  the `"tinytable"` engine (all four table families). A note is
+  the `"tinytable"` engine (all nine table functions). A note is
   subordinate to the table it documents, so it is set one size down, in
   black: `0.9em` (`\small` in LaTeX), matching the `"gt"` engine and the
   10pt-on-11pt of the Word engine. Two opt-ins:

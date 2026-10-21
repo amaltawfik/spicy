@@ -134,8 +134,7 @@ documented CIs): <code><a href="cramer_v.html">cramer_v()</a></code>, <code><a h
 before 1.0 with a <code>NEWS.md</code> entry, but no silent behavioral
 changes):</p><ul><li><p>Summary table builders: <code><a href="table_categorical.html">table_categorical()</a></code>,
 <code><a href="table_continuous.html">table_continuous()</a></code>, <code><a href="table_continuous_lm.html">table_continuous_lm()</a></code>,
-<code><a href="table_outcome.html">table_outcome()</a></code>, <code><a href="table_multiresponse.html">table_multiresponse()</a></code>, and
-<code><a href="var_labels.html">var_labels()</a></code> for their <code>labels</code></p></li>
+<code><a href="table_outcome.html">table_outcome()</a></code>, and <code><a href="var_labels.html">var_labels()</a></code> for their <code>labels</code></p></li>
 <li><p>Survey-design summary tables:
 <code><a href="table_continuous_svy.html">table_continuous_svy()</a></code>, <code><a href="table_categorical_svy.html">table_categorical_svy()</a></code></p></li>
 <li><p>Regression tables: <code><a href="table_regression.html">table_regression()</a></code>,
@@ -151,6 +150,8 @@ OWN clock rather than the parent family's):</p><ul><li><p>Display language and l
 since 0.13.0</p></li>
 <li><p>Codebooks: <code><a href="code_book.html">code_book()</a></code> (the <code>spicy_codebook</code> object, its
 Excel workbook, and its PDF), in the development version</p></li>
+<li><p>Multiple-response questions: <code><a href="table_multiresponse.html">table_multiresponse()</a></code>, in the
+development version</p></li>
 </ul><p><strong>Internal API</strong> (not part of the public surface; can change
 without notice – avoid calling directly from downstream code):</p><ul><li><p>ASCII rendering primitive: <code><a href="spicy_print_table.html">spicy_print_table()</a></code>
 (<code><a href="build_ascii_table.html">build_ascii_table()</a></code> is no longer exported)</p></li>
@@ -190,7 +191,8 @@ then the printed columns under their names. The two are identical for
 every class. <code>output = "excel"</code> and <code>"word"</code> return the path of the
 file, invisibly.</p>
 <p>The set of columns produced by each method is considered
-<strong>stabilizing</strong>: existing columns will not be
+<strong>stabilizing</strong> (<strong>experimental</strong> for <code><a href="table_multiresponse.html">table_multiresponse()</a></code>, as the
+function itself): existing columns will not be
 silently renamed or have their semantics changed within <code>0.y.z</code>,
 and any breaking change is announced in <code>NEWS.md</code>. Adding optional new
 columns (e.g. covariate-adjustment metadata) is not a breaking
@@ -268,10 +270,11 @@ rebuild the table with the current spicy.</p></li>
 <li><p><code>spicy_resampling_failed</code> – bootstrap /
 jackknife resampling produced too few valid replicates to
 estimate the requested statistic.</p></li>
-<li><p><code>spicy_defunct</code> – an argument removed in a
-pre-1.0 hard break; the message names the replacement.
-Signaled together with <code>spicy_invalid_input</code> so
-generic input handlers still catch it.</p></li>
+<li><p><code>spicy_defunct</code> – an argument, or a value of an
+argument, removed or renamed in a pre-1.0 hard break (e.g.,
+<code>v_digits</code>, <code>effect_size = "eta_sq"</code>); the message names the
+replacement. Signaled together with <code>spicy_invalid_input</code>
+so generic input handlers still catch it.</p></li>
 <li><p><code>spicy_bad_authors</code> – the <code>authors</code> argument of
 <code><a href="code_book.html">code_book()</a></code> has none of its accepted shapes. Signaled
 together with <code>spicy_invalid_input</code>.</p></li>
@@ -303,9 +306,10 @@ reported and the table note says so.</p></li>
 <li><p><code>spicy_dropped_na</code> – <code>NA</code> observations were
 silently excluded from the computation (e.g., <code>NA</code>
 weights).</p></li>
-<li><p><code>spicy_ignored_arg</code> – an argument was ignored
-due to context (e.g., <code>correct = TRUE</code> on a non-2x2
-table).</p></li>
+<li><p><code>spicy_ignored_arg</code> – an argument the call typed
+has no effect in its context (e.g., <code>correct = TRUE</code> on a
+non-2x2 table, <code>excel_path</code> without <code>output = "excel"</code>); the
+warning names that argument and no other.</p></li>
 <li><p><code>spicy_no_selection</code> – a selection or a filter
 matched nothing, and an empty result is returned rather than
 an error (the row-wise summaries, <code><a href="varlist.html">varlist()</a></code>, a <code>levels_keep</code>

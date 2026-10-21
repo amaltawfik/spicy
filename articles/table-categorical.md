@@ -421,10 +421,11 @@ the per-row choice.
 Add confidence intervals with `assoc_ci = TRUE`. In the rendered formats
 (`gt`, `tinytable`, `flextable`, `word`) the CI is shown inline after
 the measure, e.g. `.14 [.08, .19]` (demonstrated in the final section).
-In the default console table and in the `"data.frame"`, `"excel"` and
-`"clipboard"` outputs, separate `CI lower` and `CI upper` columns are
-added; in the long format (`"long"`) the bounds fill `es_ci_lower` /
-`es_ci_upper`:
+In the default console table and in the `"excel"` and `"clipboard"`
+outputs, separate columns headed `95% CI LL` and `95% CI UL` are added,
+the level stated as the other tables state it (`"data.frame"` names them
+`CI lower` and `CI upper`); in the long format (`"long"`) the bounds
+fill `es_ci_lower` / `es_ci_upper`:
 
 ``` r
 
@@ -827,7 +828,7 @@ table_categorical(
   by = education,
   percent_digits = 2,
   p_digits = 4,
-  v_digits = 3
+  effect_size_digits = 3
 )
 #> Categorical table by education
 #> 
@@ -1036,7 +1037,7 @@ table_categorical(
 |     Yes | 286 | 46.1 | 264 | 45.5 | 550 | 45.8 |      |     |
 | *Note.* Group comparison: Pearson chi-squared test. |  |  |  |  |  |  |  |  |
 
-Categorical table by sex {#tinytable_zjsv1h8a1q8zt38xyilr .table
+Categorical table by sex {#tinytable_s041srf4ldm3u59kmebt .table
 .tinytable style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 

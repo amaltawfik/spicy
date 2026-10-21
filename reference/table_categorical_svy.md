@@ -65,11 +65,33 @@ table_categorical_svy(
 - select:
 
   Columns to tabulate, as a tidyselect expression on the design's
-  variables.
+  variables. The design's own columns are not variables to describe: its
+  sampling weights, replicate weights, cluster identifiers (every stage,
+  unless each cluster of a one-stage design is a single observation) and
+  finite population corrections.
+  [`everything()`](https://tidyselect.r-lib.org/reference/everything.html)
+  and the other selection helpers skip them, and naming one, or giving
+  its position, is an error;
+  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
+  describes it from the data. Strata stay variables, since a
+  stratification variable such as a region is often one of interest.
+  These columns are read from the design object. A design made by
+  [`survey::as.svrepdesign()`](https://rdrr.io/pkg/survey/man/as.svrepdesign.html)
+  records none of them, and one made by
+  [`survey::svrepdesign()`](https://rdrr.io/pkg/survey/man/svrepdesign.html)
+  names its sampling weights only in its call, as a formula, until
+  [`subset()`](https://rdrr.io/r/base/subset.html),
+  [`update()`](https://rdrr.io/r/stats/update.html), `postStratify()`,
+  `calibrate()`, `rake()` or `trimWeights()` replaces the call: leave
+  such a column out with a negation (`select = !w`).
 
 - by:
 
-  A single grouping column: one column block per level.
+  A single grouping column: one column block per level, in the order of
+  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
+  (a factor's levels, any other column sorted: text in the C locale,
+  `FALSE` before `TRUE`, numbers ascending), the order the levels of
+  each variable follow too.
 
 - labels:
 
@@ -115,12 +137,13 @@ table_categorical_svy(
 
 - drop_na:
 
-  Drop missing values (default `FALSE`: they show as a `(Missing)`
-  level, and a level displayed with that label beside them is an error,
-  as in
-  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)).
-  Shown or dropped, they never enter the test: the p-value is computed
-  on the complete cases either way, which is the convention
+  Drop missing values. A table that counts shows them by default, the
+  rule of
+  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md):
+  `FALSE` (the default) shows them as a `(Missing)` level, and a level
+  displayed with that label beside them is an error, as there. Shown or
+  dropped, they never enter the test: the p-value is computed on the
+  complete cases either way, which is the convention
   [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
   applies. Under `drop_na = TRUE`, a `by` that no observation holds is
   an error (class `spicy_invalid_data`).
@@ -138,7 +161,8 @@ table_categorical_svy(
 
 - ci_level:
 
-  Coverage of the interval.
+  Confidence level of the intervals of `proportion_ci` (default `0.95`):
+  a number strictly between 0 and 1.
 
 - chisq_statistic:
 
@@ -184,13 +208,34 @@ table_categorical_svy(
   [`stats::p.adjust()`](https://rdrr.io/r/stats/p.adjust.html). Needs
   `by` and the p-value column. See *Multiple-comparison adjustment*.
 
-- percent_digits, p_digits, decimal_mark:
+- percent_digits:
 
-  Number formatting.
+  Number of digits for percentages in report outputs. Defaults to `1`. A
+  whole number: a fraction is an error, as for every `*_digits`
+  argument.
+
+- p_digits:
+
+  Integer \>= 1. Number of decimal places used to render *p*-values in
+  the `p` column (default: `3`, the APA Publication Manual standard).
+  Both the displayed precision and the small-*p* threshold derive from
+  this argument: `p_digits = 3` prints `.045` and `<.001`;
+  `p_digits = 4` prints `.0451` and `<.0001`. Leading zeros are always
+  stripped, following APA convention.
+
+- decimal_mark:
+
+  The decimal mark, a single character: `"."` (the default) or `","` in
+  most styles; the Lancet style of
+  [`spicy_style()`](https://amaltawfik.github.io/spicy/reference/spicy_style.md)
+  uses the middle dot.
 
 - align:
 
-  Numeric-cell alignment: `"decimal"`, `"center"` or `"right"`.
+  Horizontal alignment of the numeric columns: `"decimal"` (the
+  default), `"center"` or `"right"`, as in
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
+  whose rendering engines this table shares, its Excel output included.
 
 - output:
 
@@ -201,24 +246,59 @@ table_categorical_svy(
   [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md);
   see *Value*.
 
-- indent_text, indent_text_excel_clipboard:
+- indent_text:
 
-  Level-row indentation, for the console and for the plain-text engines.
+  Prefix used for modality labels in report table building. Defaults to
+  `" "` (two spaces).
 
-- excel_path, excel_sheet, clipboard_delim, word_path:
+- indent_text_excel_clipboard:
 
-  Output destinations, as in
-  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md).
+  Stronger indentation used in Excel and clipboard exports. Defaults to
+  six non-breaking spaces.
+
+- excel_path:
+
+  Path for `output = "excel"`, ending in `".xlsx"`, in a directory that
+  exists. Defaults to `NULL`.
+
+- excel_sheet:
+
+  Sheet name for Excel export. `NULL` (the default) uses
+  `"Categorical"`.
+
+- clipboard_delim:
+
+  Delimiter for clipboard text export. Defaults to `"\t"`. A cell
+  holding the delimiter itself, a double quote or a line break is quoted
+  RFC 4180-style, so the grid survives whatever delimiter you choose.
+
+- word_path:
+
+  File path for `output = "word"`, ending in `".docx"`, in a directory
+  that exists. Defaults to `NULL`.
 
 - user_na:
 
-  Honor declared missing values (see
-  [`?freq`](https://amaltawfik.github.io/spicy/reference/freq.md)).
+  Logical. If `TRUE` (the default), declared missing values in the row
+  variables and in `by` are treated as missing: they join the
+  `"(Missing)"` level under `drop_na = FALSE`, and under
+  `drop_na = TRUE` they are removed with a dedicated disclosure line
+  (`Declared missing values removed: ...`). If `FALSE`, the declared
+  codes stay valid categories. See the "Declared missing values" section
+  of [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md).
 
 - style:
 
-  A journal style; see
-  [`spicy_style()`](https://amaltawfik.github.io/spicy/reference/spicy_style.md).
+  A journal style: a theme name (`"jama"`, `"nejm"`, `"lancet"`,
+  `"annals"`, `"apa"`, `"aer"`), a
+  [`spicy_style()`](https://amaltawfik.github.io/spicy/reference/spicy_style.md)
+  object, or `NULL` (the default). A style only changes DEFAULTS – any
+  argument you pass explicitly wins over it. Set
+  `options(spicy.style = )` for document-wide scope. A theme covers
+  numeric formatting conformity only, not full editorial conformity;
+  [`?spicy_style`](https://amaltawfik.github.io/spicy/reference/spicy_style.md)
+  lists the exact rules each one encodes and the official document they
+  come from. An unknown name is an error.
 
 ## Value
 
@@ -282,6 +362,15 @@ offers; the default `"logit"` is bounded inside 0 to 100, which the Wald
 interval (`"mean"`) is not. The percentage itself always comes from
 [`survey::svymean()`](https://rdrr.io/pkg/survey/man/surveysummary.html),
 so it does not move when `ci_method` does.
+
+A percentage of 0 or 100 has no design-based interval: its estimated
+variance is zero. Whatever `ci_method`, such a cell gets the exact
+binomial (Clopper-Pearson) interval on the unweighted count of its
+column, with no degrees-of-freedom factor. This is the rule of Korn and
+Graubard (1998, p. 194) for an estimate of 0, which the NCHS data
+presentation standards for proportions apply to its complement as well
+(Parker et al. 2017, pp. 2-3). The note says so when such a cell is
+shown.
 
 ## The test
 
@@ -359,6 +448,16 @@ the family size in `p_adjust_m`) in
 [`as_structured()`](https://amaltawfik.github.io/spicy/reference/as_structured.md).
 Without `by`, or with `p_value = FALSE`, the table shows no p-value to
 adjust, and a `p_adjust` other than `"none"` is an error.
+
+## References
+
+Korn, E. L., & Graubard, B. I. (1998). Confidence intervals for
+proportions with small expected number of positive counts estimated from
+survey data. *Survey Methodology*, 24(2), 193-201.
+
+Parker, J. D., Talih, M., Malec, D. J., et al. (2017). *National Center
+for Health Statistics data presentation standards for proportions*.
+Vital and Health Statistics, Series 2, No. 175.
 
 ## See also
 

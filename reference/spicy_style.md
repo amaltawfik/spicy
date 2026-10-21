@@ -29,8 +29,8 @@ spicy_style(
   fit_digits = NULL,
   ic_digits = NULL,
   percent_digits = NULL,
-  v_digits = NULL,
-  note_label = NULL
+  note_label = NULL,
+  v_digits
 )
 
 spicy_style_names()
@@ -108,12 +108,14 @@ spicy_style_names()
 
   Decimal places for estimates, effect sizes, fit statistics and
   information criteria. Each is applied only by the table functions that
-  have the matching argument.
+  have the matching argument: `effect_size_digits` reaches the
+  association measure and the SMD of
+  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
+  too.
 
-- percent_digits, v_digits:
+- percent_digits:
 
-  Decimal places for percentages and for the association measure of
-  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md).
+  Decimal places for percentages.
 
 - note_label:
 
@@ -125,6 +127,11 @@ spicy_style_names()
   prints with the no-break space French puts before a colon. A `note`
   you type is printed as typed; its opening word is set in italics when
   it is the lead-in in force.
+
+- v_digits:
+
+  Defunct. Renamed `effect_size_digits` in spicy 0.14.0; supplying
+  `v_digits` is an error (class `spicy_defunct`).
 
 ## Value
 
@@ -138,12 +145,17 @@ names.
 
 ## Details
 
-A style is accepted by the `style` argument of
-[`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md),
-[`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
-[`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
-and
+A style is accepted by the `style` argument of the nine table functions
+([`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
+[`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md),
+[`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
+[`table_continuous_svy()`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md),
 [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md),
+[`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md),
+[`table_multiresponse()`](https://amaltawfik.github.io/spicy/reference/table_multiresponse.md),
+[`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+and
+[`table_regression_uv()`](https://amaltawfik.github.io/spicy/reference/table_regression_uv.md)),
 either as a theme name or as the object returned here, and by
 `options(spicy.style = )` for document-wide scope.
 

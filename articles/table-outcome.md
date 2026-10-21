@@ -386,13 +386,13 @@ table_outcome(
 
 Negation (`select = -c(x, y)`) is **not** recommended, and the reason is
 worth a paragraph. It sweeps in every remaining column, and a numeric
-one becomes a block with one *level* per distinct value, in order of
-first appearance — a single block sixty rows long, where a reader
-expects a handful of categories. The comparison still runs, so the block
-is not empty; it is unreadable, which is worse, because it looks like an
-answer. A variable producing more than twenty levels raises a warning
-for that reason. The threshold is arbitrary and the help page says so;
-the warning is a nudge, never a refusal, because the family refuses no
+one becomes a block with one *level* per distinct value, in ascending
+order — a single block sixty rows long, where a reader expects a handful
+of categories. The comparison still runs, so the block is not empty; it
+is unreadable, which is worse, because it looks like an answer. A
+variable producing more than twenty levels raises a warning for that
+reason. The threshold is arbitrary and the help page says so; the
+warning is a nudge, never a refusal, because the family refuses no
 numeric grouping.
 
 Labelled data deserves a word here, because importing from SPSS or Stata
@@ -405,8 +405,9 @@ to get the labels in the stub.
 The order of the blocks is the order you write, and the order of the
 levels inside a block is the variable’s own: a factor keeps its declared
 level order (empty levels included — a level nobody chose is information
-about the instrument), anything else takes the order of first
-appearance.
+about the instrument), anything else is sorted, text in the C locale
+(capitals before lower case, the same on every machine), `FALSE` before
+`TRUE`, numbers and codes ascending, whatever the order of the rows.
 
 ## Weights
 
@@ -697,7 +698,7 @@ table_outcome(
 | *Note.* Group comparison: Wilcoxon rank-sum test. Med \[Q1, Q3\] = median \[first quartile, third quartile\]. Each block compares wellbeing_score across the levels of one variable; blocks are not adjusted for one another. Overall = the whole analytic sample. |  |  |  |
 
 Descriptive statistics of wellbeing_score
-{#tinytable_rcvbxazcrr5ydbqw1amc .table .tinytable
+{#tinytable_y6nsh9dqqvc73lu0an6j .table .tinytable
 style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 

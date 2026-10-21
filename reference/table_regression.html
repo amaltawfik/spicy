@@ -148,7 +148,7 @@ Gamma / inverse.gaussian / quasi families with any link.</p>
 <span>  labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">getOption</a></span><span class="op">(</span><span class="st">"spicy.var_labels"</span>, <span class="cn">FALSE</span><span class="op">)</span>,</span>
 <span>  title <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  note <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  output <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"default"</span>, <span class="st">"data.frame"</span>, <span class="st">"long"</span>, <span class="st">"gt"</span>, <span class="st">"flextable"</span>, <span class="st">"tinytable"</span>, <span class="st">"excel"</span>,</span>
+<span>  output <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"default"</span>, <span class="st">"data.frame"</span>, <span class="st">"long"</span>, <span class="st">"tinytable"</span>, <span class="st">"gt"</span>, <span class="st">"flextable"</span>, <span class="st">"excel"</span>,</span>
 <span>    <span class="st">"clipboard"</span>, <span class="st">"word"</span><span class="op">)</span>,</span>
 <span>  excel_path <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  excel_sheet <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -272,8 +272,14 @@ Requesting <code>"hdi"</code> for a frequentist fit, or <code>"profile"</code> /
 
 <dt id="arg-boot-n">boot_n<a class="anchor" aria-label="anchor" href="#arg-boot-n"></a></dt>
 <dd><p>Number of bootstrap replicates when
-<code>vcov = "bootstrap"</code>. Single positive integer. Default
-<code>1000L</code>.</p></dd>
+<code>vcov = "bootstrap"</code>, and of the bootstrap of the RMST and
+risk-difference columns: a positive whole number, as in
+<code><a href="table_continuous_lm.html">table_continuous_lm()</a></code> and <code><a href="table_multiresponse.html">table_multiresponse()</a></code>. Default
+<code>1000L</code>, the default of <code><a href="table_continuous_lm.html">table_continuous_lm()</a></code>, which computes the
+same bootstrap variance. That variance, of a <code>lm</code> or <code>glm</code> fit, needs
+at least 10 valid replicates: a smaller <code>boot_n</code> is an error.
+Typed in a table that runs no bootstrap, it is ignored with a
+warning (class <code>spicy_ignored_arg</code>).</p></dd>
 
 
 <dt id="arg-tau">tau<a class="anchor" aria-label="anchor" href="#arg-tau"></a></dt>
@@ -785,8 +791,9 @@ effect-size fit stats (<code>r2</code>, <code>adj_r2</code>, <code>r2_change</co
 
 
 <dt id="arg-decimal-mark">decimal_mark<a class="anchor" aria-label="anchor" href="#arg-decimal-mark"></a></dt>
-<dd><p>Decimal mark used in numeric display.
-<code>"."</code> (default) or <code>","</code> (European convention). When
+<dd><p>The decimal mark, a single character: <code>"."</code> (the
+default) or <code>","</code> in most styles; the Lancet style of
+<code><a href="spicy_style.html">spicy_style()</a></code> uses the middle dot. When
 <code>","</code> is used, the CI bracket separator switches to <code>"; "</code>
 automatically to avoid <code>"0,18 [0,07, 0,30]"</code> ambiguity.
 With <code>output = "excel"</code> a numeric cell is displayed by Excel
@@ -881,7 +888,7 @@ structure, not to the banner.</p></dd>
 <dd><p>Output type. <code>"default"</code> (a printable
 <code>spicy_regression_table</code>); <code>"data.frame"</code> (the displayed table
 with its numbers); <code>"long"</code> (one row per coefficient, broom's
-names); <code>"gt"</code> / <code>"flextable"</code> / <code>"tinytable"</code> (rich-format
+names); <code>"tinytable"</code> / <code>"gt"</code> / <code>"flextable"</code> (rich-format
 tables); <code>"excel"</code> (writes to <code>excel_path</code>); <code>"clipboard"</code>
 (copies to system clipboard); <code>"word"</code> (writes flextable to
 <code>word_path</code>).</p></dd>
@@ -1692,7 +1699,7 @@ default object: one row per printed row, the key columns
 columns, numeric, each interval split into its two bounds.</p></li>
 <li><p><code>"long"</code> – the long-format tibble, one row per
 <code>(model_id, term, estimate_type)</code>, with broom's column names.</p></li>
-<li><p><code>"gt"</code> / <code>"flextable"</code> / <code>"tinytable"</code> – rich-format
+<li><p><code>"tinytable"</code> / <code>"gt"</code> / <code>"flextable"</code> – rich-format
 HTML / Word / PDF tables (require the corresponding
 Suggests package). In a PDF, a <code>"flextable"</code> table wider than
 the page can be fitted with <code><a href="https://davidgohel.github.io/flextable/reference/fit_to_width.html" class="external-link">flextable::fit_to_width()</a></code>.</p></li>
@@ -1713,9 +1720,11 @@ numeric so cluster-robust Satterthwaite df is preserved.</p>
     <h2 id="global-options">Global options<a class="anchor" aria-label="anchor" href="#global-options"></a></h2>
 
 <ul><li><p><strong><code>options(spicy.style = )</code></strong> – the journal style applied by
-default to all four table families
-(<code>table_regression()</code>, <code><a href="table_categorical.html">table_categorical()</a></code>,
-<code><a href="table_continuous.html">table_continuous()</a></code>, <code><a href="table_continuous_lm.html">table_continuous_lm()</a></code>). Takes a theme
+default to all nine table functions (<code><a href="table_categorical.html">table_categorical()</a></code>,
+<code><a href="table_categorical_svy.html">table_categorical_svy()</a></code>, <code><a href="table_continuous.html">table_continuous()</a></code>,
+<code><a href="table_continuous_svy.html">table_continuous_svy()</a></code>, <code><a href="table_continuous_lm.html">table_continuous_lm()</a></code>,
+<code><a href="table_outcome.html">table_outcome()</a></code>, <code><a href="table_multiresponse.html">table_multiresponse()</a></code>, <code>table_regression()</code>
+and <code><a href="table_regression_uv.html">table_regression_uv()</a></code>). Takes a theme
 name (<code>"jama"</code>, <code>"nejm"</code>, <code>"lancet"</code>, <code>"annals"</code>, <code>"apa"</code>,
 <code>"aer"</code>) or a <code><a href="spicy_style.html">spicy_style()</a></code> object. The style of a report is a
 property of the document, so it is set once in the setup chunk;
@@ -1725,7 +1734,7 @@ restores spicy's own defaults. See <code><a href="spicy_style.html">spicy_style(
 rules each theme encodes and the official document they come
 from.</p></li>
 <li><p><strong><code>options(spicy.note_style = )</code></strong> – how the table note is
-rendered by the <code>"tinytable"</code> engine (all four table families).
+rendered by the <code>"tinytable"</code> engine (all nine table functions).
 A note is subordinate to the table it documents, so it is set
 one size down, in black: <code>0.9em</code> (<code>\small</code> in LaTeX), matching
 the <code>"gt"</code> engine and the 10pt-on-11pt of the Word engine. Two

@@ -113,10 +113,9 @@ fit-statistic token (<code>"nobs"</code>, <code>"r2"</code>, ...) or label (<cod
 
 
 <dt id="arg-level">level<a class="anchor" aria-label="anchor" href="#arg-level"></a></dt>
-<dd><p>For a factor variable, the level, as a string.
-<code>"(Missing)"</code> addresses the missing-value category by role. On
-<code><a href="table_continuous_lm.html">table_continuous_lm()</a></code>, whose groups are columns rather than
-rows, it names the group.</p></dd>
+<dd><p>For a factor variable, the level, as a string: a
+category shown as a row. <code>"(Missing)"</code> addresses the missing-value
+category by role. A group of <code>by</code> is selected with <code>model</code>.</p></dd>
 
 
 <dt id="arg-column">column<a class="anchor" aria-label="anchor" href="#arg-column"></a></dt>
@@ -134,8 +133,8 @@ none of them refuses and lists its tokens.</p></dd>
 
 
 <dt id="arg-model">model<a class="anchor" aria-label="anchor" href="#arg-model"></a></dt>
-<dd><p>In a multi-model table, the model: its label (as
-displayed in the column spanners) or its position.</p></dd>
+<dd><p>A group of <code>by</code>, or in a multi-model table the model:
+its label (as displayed) or its position. See <em>Groups and models</em>.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -166,30 +165,42 @@ same call cites the <em>p</em> of a by-group <code><a href="table_continuous.htm
 <code><a href="table_continuous_svy.html">table_continuous_svy()</a></code>, which sits on the first group's row: when
 one row of the variable alone carries the statistic, that row is the
 address.</p>
-<p><code><a href="table_continuous_lm.html">table_continuous_lm()</a></code> lays its groups out sideways – one row per
-outcome, the <code>by</code> levels as columns (<code>M (Female)</code>, <code>M (Male)</code>) –
-so there <code>level</code> names the group whose column you want:
-<code>inline(tbl, bmi, "Female", "emmean")</code>. The columns that belong to
-no group (the contrast, its interval, <code>p</code>, <code>n</code>) are cited without
-one, as before.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="groups-and-models">Groups and models<a class="anchor" aria-label="anchor" href="#groups-and-models"></a></h2>
+    <p><code>model</code> selects a group of <code>by</code> in every table, by its label or its
+position, wherever the table sets the groups out: the column
+spanners of <code><a href="table_categorical.html">table_categorical()</a></code>, <code><a href="table_categorical_svy.html">table_categorical_svy()</a></code> and
+<code><a href="table_multiresponse.html">table_multiresponse()</a></code>, the margin included
+(<code>inline(tbl, smoking, "Yes", "pct", model = "Female")</code>), the
+per-group columns of <code><a href="table_continuous_lm.html">table_continuous_lm()</a></code>, headed <code>M (Female)</code>,
+<code>M (Male)</code> (<code>inline(tbl, bmi, column = "emmean", model = "Female")</code>),
+and the rows of <code><a href="table_continuous.html">table_continuous()</a></code> and <code><a href="table_continuous_svy.html">table_continuous_svy()</a></code>,
+one per group (<code>inline(tbl, bmi, model = "Female")</code>). The group of
+missing <code>by</code> values is <code>model = "(Missing)"</code>. In a multi-model table,
+<code>model</code> selects the model the same way. The cells that belong to no
+group (a <em>p</em>, the contrast of <code><a href="table_continuous_lm.html">table_continuous_lm()</a></code> and its
+interval, an association measure) are cited without <code>model</code>.</p>
+<p><code>level</code> names a category shown as a row: the level of a variable,
+its row of missing values. Until spicy 0.14.0 it also selected the
+groups of <code><a href="table_continuous.html">table_continuous()</a></code>, <code><a href="table_continuous_svy.html">table_continuous_svy()</a></code> and
+<code><a href="table_continuous_lm.html">table_continuous_lm()</a></code>: that use is an error (class <code>spicy_defunct</code>)
+whose message gives the <code>model</code> call.</p>
 <p><code><a href="table_multiresponse.html">table_multiresponse()</a></code> has one row per item, addressed by its column
 name, then the rows of <code>none_row</code>, addressed as <code>"none"</code> and
 <code>"no_data"</code>, and the base row, the number of respondents, addressed as
-the fit statistic <code>"nobs"</code>. Its groups are spanners, as in
-<code><a href="table_categorical.html">table_categorical()</a></code>, so <code>model</code> selects one, the margin included:
-<code>inline(tbl, smoking, column = "pct", model = "Female")</code>,
-<code>inline(tbl, "nobs", model = "Total")</code>. The item <code>p</code> and <code>statistic</code>
-belong to no group and are cited without <code>model</code>
-(<code>inline(tbl, smoking, column = "p")</code>).</p>
-<p>The column is a <strong>token</strong> of the typed contract (<code>"b"</code>, <code>"se"</code>,
+the fit statistic <code>"nobs"</code>: <code>inline(tbl, "nobs", model = "Total")</code>.
+The item <code>p</code> and <code>statistic</code> belong to no group and are cited without
+<code>model</code> (<code>inline(tbl, smoking, column = "p")</code>).</p>
+    </div>
+    <div class="section level2">
+    <h2 id="columns">Columns<a class="anchor" aria-label="anchor" href="#columns"></a></h2>
+    <p>The column is a <strong>token</strong> of the typed contract (<code>"b"</code>, <code>"se"</code>,
 <code>"p"</code>, <code>"ci"</code>, <code>"or"</code>, <code>"ame"</code>, <code>"n"</code>, <code>"pct"</code>, <code>"m"</code>, ... – see
 <code><a href="as_structured.html">as_structured()</a></code>'s <code>col_meta</code>), never a display header. <code>"ci"</code>
 composes the interval with the style's brackets and separator, and
 so does every other interval token the table carries (<code>"med_ci"</code>,
-<code>"ame_ci"</code>, <code>"assoc_ci"</code>): each addresses its own bounds. In
-a multi-model table, <code>model</code> selects the model by its spanner
-label or position; in a <code>by</code> table, the spanners are the groups,
-so <code>model</code> selects the group the same way.</p>
+<code>"ame_ci"</code>, <code>"assoc_ci"</code>): each addresses its own bounds.</p>
     </div>
     <div class="section level2">
     <h2 id="patterns">Patterns<a class="anchor" aria-label="anchor" href="#patterns"></a></h2>
@@ -209,7 +220,7 @@ may hit the floor.</p>
     <p>Every misaddressing is a classed error that lists the available
 choices: unknown variables list the variables, missing levels list
 the levels, unknown tokens list the table's tokens, ambiguous
-models list the spanner labels. A <code>level</code> that names a group of a
+models and groups list them. A <code>level</code> that names a group of a
 <code>by</code> table points to <code>model</code>. A cell the table itself displays
 as undefined (an aliased coefficient's en-dash) refuses with the
 reason rather than pasting a dash into a sentence.</p>
@@ -230,6 +241,17 @@ addressing.</p></div>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "3.90 (95% CI [2.14, 5.65]; p &lt;.001)"</span>
 <span class="r-in"><span><span class="fu">inline</span><span class="op">(</span><span class="va">tbl</span>, <span class="st">"n"</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "1200"</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># A group of `by` is a `model`, whether the table sets it out as</span></span></span>
+<span class="r-in"><span><span class="co"># columns or as rows.</span></span></span>
+<span class="r-in"><span><span class="va">ct</span> <span class="op">&lt;-</span> <span class="fu"><a href="table_categorical.html">table_categorical</a></span><span class="op">(</span><span class="va">sochealth</span>, select <span class="op">=</span> <span class="va">smoking</span>, by <span class="op">=</span> <span class="va">sex</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">inline</span><span class="op">(</span><span class="va">ct</span>, <span class="va">smoking</span>, <span class="st">"Yes"</span>, <span class="st">"pct"</span>, model <span class="op">=</span> <span class="st">"Female"</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "21.1"</span>
+<span class="r-in"><span><span class="va">cn</span> <span class="op">&lt;-</span> <span class="fu"><a href="table_continuous.html">table_continuous</a></span><span class="op">(</span><span class="va">sochealth</span>, select <span class="op">=</span> <span class="va">bmi</span>, by <span class="op">=</span> <span class="va">sex</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">inline</span><span class="op">(</span><span class="va">cn</span>, <span class="va">bmi</span>, model <span class="op">=</span> <span class="st">"Female"</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "25.69"</span>
+<span class="r-in"><span><span class="fu">inline</span><span class="op">(</span><span class="va">cn</span>, <span class="va">bmi</span>, column <span class="op">=</span> <span class="st">"p"</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] ".018"</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

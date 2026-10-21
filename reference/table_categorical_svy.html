@@ -145,11 +145,27 @@ of freedom.</p>
 
 <dt id="arg-select">select<a class="anchor" aria-label="anchor" href="#arg-select"></a></dt>
 <dd><p>Columns to tabulate, as a tidyselect expression on the
-design's variables.</p></dd>
+design's variables. The design's own columns are not variables to
+describe: its sampling weights, replicate weights, cluster
+identifiers (every stage, unless each cluster of a one-stage design
+is a single observation) and finite population corrections.
+<code><a href="https://tidyselect.r-lib.org/reference/everything.html" class="external-link">everything()</a></code> and the other selection helpers skip them, and naming
+one, or giving its position, is an error; <code><a href="table_categorical.html">table_categorical()</a></code>
+describes it from the data. Strata stay variables, since a
+stratification variable such as a region is often one of interest.
+These columns are read from the design object. A design made by
+<code><a href="https://rdrr.io/pkg/survey/man/as.svrepdesign.html" class="external-link">survey::as.svrepdesign()</a></code> records none of them, and one made by
+<code><a href="https://rdrr.io/pkg/survey/man/svrepdesign.html" class="external-link">survey::svrepdesign()</a></code> names its sampling weights only in its call,
+as a formula, until <code><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset()</a></code>, <code><a href="https://rdrr.io/r/stats/update.html" class="external-link">update()</a></code>, <code>postStratify()</code>,
+<code>calibrate()</code>, <code>rake()</code> or <code>trimWeights()</code> replaces the call: leave
+such a column out with a negation (<code>select = !w</code>).</p></dd>
 
 
 <dt id="arg-by">by<a class="anchor" aria-label="anchor" href="#arg-by"></a></dt>
-<dd><p>A single grouping column: one column block per level.</p></dd>
+<dd><p>A single grouping column: one column block per level, in the
+order of <code><a href="table_categorical.html">table_categorical()</a></code> (a factor's levels, any other column
+sorted: text in the C locale, <code>FALSE</code> before <code>TRUE</code>, numbers
+ascending), the order the levels of each variable follow too.</p></dd>
 
 
 <dt id="arg-labels">labels<a class="anchor" aria-label="anchor" href="#arg-labels"></a></dt>
@@ -186,9 +202,10 @@ displayed with the label of that block is an error, as in
 
 
 <dt id="arg-drop-na">drop_na<a class="anchor" aria-label="anchor" href="#arg-drop-na"></a></dt>
-<dd><p>Drop missing values (default <code>FALSE</code>: they show as a
-<code>(Missing)</code> level, and a level displayed with that label beside them
-is an error, as in <code><a href="table_categorical.html">table_categorical()</a></code>). Shown or dropped, they
+<dd><p>Drop missing values. A table that counts shows them by
+default, the rule of <code><a href="table_categorical.html">table_categorical()</a></code>: <code>FALSE</code> (the default)
+shows them as a <code>(Missing)</code> level, and a level displayed with that
+label beside them is an error, as there. Shown or dropped, they
 never enter the test: the p-value is computed on the complete cases
 either way, which is the convention <code><a href="table_categorical.html">table_categorical()</a></code> applies.
 Under <code>drop_na = TRUE</code>, a <code>by</code> that no observation holds is an error
@@ -206,7 +223,8 @@ Under <code>drop_na = TRUE</code>, a <code>by</code> that no observation holds i
 
 
 <dt id="arg-ci-level">ci_level<a class="anchor" aria-label="anchor" href="#arg-ci-level"></a></dt>
-<dd><p>Coverage of the interval.</p></dd>
+<dd><p>Confidence level of the intervals of <code>proportion_ci</code>
+(default <code>0.95</code>): a number strictly between 0 and 1.</p></dd>
 
 
 <dt id="arg-chisq-statistic">chisq_statistic<a class="anchor" aria-label="anchor" href="#arg-chisq-statistic"></a></dt>
@@ -250,13 +268,32 @@ of <code>"none"</code> (default), <code>"holm"</code>, <code>"hochberg"</code>, 
 and the p-value column. See <em>Multiple-comparison adjustment</em>.</p></dd>
 
 
-<dt id="arg-percent-digits-p-digits-decimal-mark">percent_digits, p_digits, decimal_mark<a class="anchor" aria-label="anchor" href="#arg-percent-digits-p-digits-decimal-mark"></a></dt>
-<dd><p>Number formatting.</p></dd>
+<dt id="arg-percent-digits">percent_digits<a class="anchor" aria-label="anchor" href="#arg-percent-digits"></a></dt>
+<dd><p>Number of digits for percentages in report outputs.
+Defaults to <code>1</code>. A whole number: a fraction is an error, as for
+every <code>*_digits</code> argument.</p></dd>
+
+
+<dt id="arg-p-digits">p_digits<a class="anchor" aria-label="anchor" href="#arg-p-digits"></a></dt>
+<dd><p>Integer &gt;= 1. Number of decimal places used to
+render <em>p</em>-values in the <code>p</code> column (default: <code>3</code>, the APA
+Publication Manual standard). Both the displayed precision and
+the small-<em>p</em> threshold derive from this argument: <code>p_digits = 3</code>
+prints <code>.045</code> and <code>&lt;.001</code>; <code>p_digits = 4</code> prints <code>.0451</code> and
+<code>&lt;.0001</code>. Leading zeros are always stripped, following APA
+convention.</p></dd>
+
+
+<dt id="arg-decimal-mark">decimal_mark<a class="anchor" aria-label="anchor" href="#arg-decimal-mark"></a></dt>
+<dd><p>The decimal mark, a single character: <code>"."</code> (the
+default) or <code>","</code> in most styles; the Lancet style of
+<code><a href="spicy_style.html">spicy_style()</a></code> uses the middle dot.</p></dd>
 
 
 <dt id="arg-align">align<a class="anchor" aria-label="anchor" href="#arg-align"></a></dt>
-<dd><p>Numeric-cell alignment: <code>"decimal"</code>, <code>"center"</code> or
-<code>"right"</code>.</p></dd>
+<dd><p>Horizontal alignment of the numeric columns: <code>"decimal"</code>
+(the default), <code>"center"</code> or <code>"right"</code>, as in <code><a href="table_continuous.html">table_continuous()</a></code>,
+whose rendering engines this table shares, its Excel output included.</p></dd>
 
 
 <dt id="arg-output">output<a class="anchor" aria-label="anchor" href="#arg-output"></a></dt>
@@ -267,22 +304,58 @@ table with its numbers, <code>"long"</code> one row per variable, level and
 group, as in <code><a href="table_categorical.html">table_categorical()</a></code>; see <em>Value</em>.</p></dd>
 
 
-<dt id="arg-indent-text-indent-text-excel-clipboard">indent_text, indent_text_excel_clipboard<a class="anchor" aria-label="anchor" href="#arg-indent-text-indent-text-excel-clipboard"></a></dt>
-<dd><p>Level-row
-indentation, for the console and for the plain-text engines.</p></dd>
+<dt id="arg-indent-text">indent_text<a class="anchor" aria-label="anchor" href="#arg-indent-text"></a></dt>
+<dd><p>Prefix used for modality labels in report table building.
+Defaults to <code>"  "</code> (two spaces).</p></dd>
 
 
-<dt id="arg-excel-path-excel-sheet-clipboard-delim-word-path">excel_path, excel_sheet, clipboard_delim, word_path<a class="anchor" aria-label="anchor" href="#arg-excel-path-excel-sheet-clipboard-delim-word-path"></a></dt>
-<dd><p>Output
-destinations, as in <code><a href="table_categorical.html">table_categorical()</a></code>.</p></dd>
+<dt id="arg-indent-text-excel-clipboard">indent_text_excel_clipboard<a class="anchor" aria-label="anchor" href="#arg-indent-text-excel-clipboard"></a></dt>
+<dd><p>Stronger indentation used in Excel and
+clipboard exports. Defaults to six non-breaking spaces.</p></dd>
+
+
+<dt id="arg-excel-path">excel_path<a class="anchor" aria-label="anchor" href="#arg-excel-path"></a></dt>
+<dd><p>Path for <code>output = "excel"</code>, ending in <code>".xlsx"</code>, in
+a directory that exists. Defaults to <code>NULL</code>.</p></dd>
+
+
+<dt id="arg-excel-sheet">excel_sheet<a class="anchor" aria-label="anchor" href="#arg-excel-sheet"></a></dt>
+<dd><p>Sheet name for Excel export. <code>NULL</code> (the
+default) uses <code>"Categorical"</code>.</p></dd>
+
+
+<dt id="arg-clipboard-delim">clipboard_delim<a class="anchor" aria-label="anchor" href="#arg-clipboard-delim"></a></dt>
+<dd><p>Delimiter for clipboard text export. Defaults
+to <code>"\t"</code>. A cell holding the delimiter itself, a double quote or
+a line break is quoted RFC 4180-style, so the grid survives
+whatever delimiter you choose.</p></dd>
+
+
+<dt id="arg-word-path">word_path<a class="anchor" aria-label="anchor" href="#arg-word-path"></a></dt>
+<dd><p>File path for <code>output = "word"</code>, ending in <code>".docx"</code>,
+in a directory that exists. Defaults to <code>NULL</code>.</p></dd>
 
 
 <dt id="arg-user-na">user_na<a class="anchor" aria-label="anchor" href="#arg-user-na"></a></dt>
-<dd><p>Honor declared missing values (see <code><a href="freq.html">?freq</a></code>).</p></dd>
+<dd><p>Logical. If <code>TRUE</code> (the default), declared missing
+values in the row variables and in <code>by</code> are treated as missing:
+they join the <code>"(Missing)"</code> level under <code>drop_na = FALSE</code>, and
+under <code>drop_na = TRUE</code> they are removed with a dedicated
+disclosure line (<code>Declared missing values removed: ...</code>). If
+<code>FALSE</code>, the declared codes stay valid categories. See the
+"Declared missing values" section of <code><a href="freq.html">freq()</a></code>.</p></dd>
 
 
 <dt id="arg-style">style<a class="anchor" aria-label="anchor" href="#arg-style"></a></dt>
-<dd><p>A journal style; see <code><a href="spicy_style.html">spicy_style()</a></code>.</p></dd>
+<dd><p>A journal style: a theme name (<code>"jama"</code>, <code>"nejm"</code>,
+<code>"lancet"</code>, <code>"annals"</code>, <code>"apa"</code>, <code>"aer"</code>), a
+<code><a href="spicy_style.html">spicy_style()</a></code> object, or <code>NULL</code> (the default). A style only
+changes DEFAULTS – any argument you pass explicitly wins over it.
+Set <code>options(spicy.style = )</code> for document-wide scope. A theme
+covers numeric formatting conformity only, not full editorial
+conformity; <code><a href="spicy_style.html">?spicy_style</a></code> lists the exact rules each one encodes
+and the official document they come from. An unknown name is an
+error.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -339,6 +412,14 @@ they are looking at.</p>
 the default <code>"logit"</code> is bounded inside 0 to 100, which the Wald
 interval (<code>"mean"</code>) is not. The percentage itself always comes from
 <code><a href="https://rdrr.io/pkg/survey/man/surveysummary.html" class="external-link">survey::svymean()</a></code>, so it does not move when <code>ci_method</code> does.</p>
+<p>A percentage of 0 or 100 has no design-based interval: its estimated
+variance is zero. Whatever <code>ci_method</code>, such a cell gets the exact
+binomial (Clopper-Pearson) interval on the unweighted count of its
+column, with no degrees-of-freedom factor. This is the rule of Korn
+and Graubard (1998, p. 194) for an estimate of 0, which the NCHS data
+presentation standards for proportions apply to its complement as well
+(Parker et al. 2017, pp. 2-3). The note says so when such a cell is
+shown.</p>
     </div>
     <div class="section level2">
     <h2 id="the-test">The test<a class="anchor" aria-label="anchor" href="#the-test"></a></h2>
@@ -407,6 +488,15 @@ in <code>p_adjust</code> and the family size in <code>p_adjust_m</code>) in
 <code><a href="as_structured.html">as_structured()</a></code>. Without <code>by</code>, or with <code>p_value = FALSE</code>, the table
 shows no p-value to adjust, and a <code>p_adjust</code> other than <code>"none"</code> is an
 error.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>
+    <p>Korn, E. L., &amp; Graubard, B. I. (1998). Confidence intervals for
+proportions with small expected number of positive counts estimated
+from survey data. <em>Survey Methodology</em>, 24(2), 193-201.</p>
+<p>Parker, J. D., Talih, M., Malec, D. J., et al. (2017). <em>National Center
+for Health Statistics data presentation standards for proportions</em>.
+Vital and Health Statistics, Series 2, No. 175.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>

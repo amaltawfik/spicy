@@ -27,7 +27,7 @@ table_categorical(
   include_total = TRUE,
   drop_na = FALSE,
   weights = NULL,
-  rescale = FALSE,
+  rescale = getOption("spicy.rescale", FALSE),
   correct = FALSE,
   simulate_p = FALSE,
   simulate_B = 2000,
@@ -36,7 +36,7 @@ table_categorical(
   p_adjust = "none",
   percent_digits = 1,
   p_digits = 3,
-  v_digits = 2,
+  effect_size_digits = 2,
   assoc_measure = "auto",
   assoc_ci = FALSE,
   smd = FALSE,
@@ -53,7 +53,8 @@ table_categorical(
   clipboard_delim = "\t",
   word_path = NULL,
   user_na = TRUE,
-  style = NULL
+  style = NULL,
+  v_digits
 )
 ```
 
@@ -80,19 +81,24 @@ table_categorical(
   and the other helpers skip them, and naming one in `select`, or giving
   its position, is an error. A name that is not a column of `data` is an
   error (class `spicy_missing_column`), and so is a selection with no
-  column to tabulate.
+  column to tabulate. The levels of a variable are its rows in the order
+  `by` gives its groups (see `by`); a labelled variable keeps the order
+  of its codes.
 
 - by:
 
   Optional grouping column used for columns/groups. Accepts an unquoted
   column name or a single character column name. Factor levels keep
-  their declared order; any other `by` (character, numeric, haven
-  labelled) forms group columns in order of first appearance in the data
-  – the same convention as
-  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md).
-  For a haven labelled `by`, the group headers are the raw codes (value
-  labels are not used for group headers – the family convention shared
-  with
+  their declared order, which is the way to choose another order; any
+  other `by` is sorted, as in
+  [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md) and
+  [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md):
+  text in the C locale (capitals before lower case, the same on every
+  machine), `FALSE` before `TRUE`, numbers and the codes of a haven
+  labelled column ascending, whatever the order of the rows. The column
+  of missing values comes last. For a haven labelled `by`, the group
+  headers are the raw codes (value labels are not used for group headers
+  – the family convention shared with
   [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
   and
   [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md));
@@ -157,20 +163,25 @@ table_categorical(
 
 - drop_na:
 
-  Logical. If `FALSE` (the default), missing values are displayed as a
-  dedicated `"(Missing)"` level (and, under `by`, a `"(Missing)"` group
-  column) – the field convention for descriptive tables (gtsummary's
-  "Unknown" row, janitor's `NA` row; see the Epidemiologist R Handbook,
-  Descriptive tables). A level displayed beside that row or column with
-  its label is an error (class `spicy_label_collision`): rename the
-  level, or give the row another label with
+  Logical. The rule of the family: a table that counts shows the missing
+  values by default, as a frequency table reports how many answers are
+  missing; a table that computes a statistic removes them by default and
+  counts them in the note (see
+  [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)).
+  This table counts, so `FALSE` (the default) displays the missing
+  values as a dedicated `"(Missing)"` level (and, under `by`, a
+  `"(Missing)"` group column) – the field convention for descriptive
+  tables (gtsummary's "Unknown" row, janitor's `NA` row; see the
+  Epidemiologist R Handbook, Descriptive tables). A level displayed
+  beside that row or column with its label is an error (class
+  `spicy_label_collision`): rename the level, or give the row another
+  label with
   `options(spicy.labels = list(row_missing_level = "(Not stated)"))`. If
   `TRUE`, rows with `NA` in the tabulated variable (and in `by`, when
   supplied) are removed BEFORE each cross-tabulation, and the removal is
   disclosed in a table note ("Missing values removed: ...") rather than
   silent; a `by` that no observation holds is then an error (class
-  `spicy_invalid_data`). Before 0.13.0 the default was `TRUE` with no
-  disclosure.
+  `spicy_invalid_data`).
 
 - weights:
 
@@ -180,11 +191,11 @@ table_categorical(
 
 - rescale:
 
-  Logical. If `FALSE` (the default), weights are used as-is. If `TRUE`,
-  rescales weights so total weighted N matches raw N. Passed to
+  Logical. If `FALSE`, weights are used as-is. If `TRUE`, rescales
+  weights so total weighted N matches raw N. Passed to
   [`spicy::cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md).
-  When the argument is not supplied, the default is read from
-  `options(spicy.rescale)` (falling back to `FALSE`), matching
+  The default reads `options(spicy.rescale)`, `FALSE` when it is unset,
+  matching
   [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md).
 
 - correct:
@@ -265,8 +276,8 @@ table_categorical(
 - percent_digits:
 
   Number of digits for percentages in report outputs. Defaults to `1`. A
-  whole number: a fraction is an error, as for `p_digits` and
-  `v_digits`.
+  whole number: a fraction is an error, as for every `*_digits`
+  argument.
 
 - p_digits:
 
@@ -277,9 +288,11 @@ table_categorical(
   `p_digits = 4` prints `.0451` and `<.0001`. Leading zeros are always
   stripped, following APA convention.
 
-- v_digits:
+- effect_size_digits:
 
-  Number of digits for the association measure. Defaults to `2`.
+  Number of digits for the association measure, its confidence interval
+  and the SMD, as for the effect sizes of the other table functions.
+  Defaults to `2`.
 
 - assoc_measure:
 
@@ -317,13 +330,13 @@ table_categorical(
 
   Passed to
   [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md).
-  If `TRUE`, includes the confidence interval of the association
-  measure. In the console and in the `"data.frame"`, `"excel"` and
-  `"clipboard"` outputs, two extra columns `CI lower` / `CI upper` are
-  added; in the long output (`"long"`) the bounds fill `es_ci_lower` /
-  `es_ci_upper`. In rendered formats (`"gt"`, `"tinytable"`,
-  `"flextable"`, `"word"`), the CI is shown inline (e.g.,
-  `.14 [.08, .19]`). Defaults to `FALSE`.
+  If `TRUE`, includes the 95\\ and in the `"excel"` and `"clipboard"`
+  outputs, two extra columns headed `95\% CI LL` / `95\% CI UL` are
+  added, the level stated as the other tables state it (the
+  `"data.frame"` output names them `CI lower` / `CI upper`); in the long
+  output (`"long"`) the bounds fill `es_ci_lower` / `es_ci_upper`. In
+  rendered formats (`"gt"`, `"tinytable"`, `"flextable"`, `"word"`), the
+  CI is shown inline (e.g., `.14 [.08, .19]`). Defaults to `FALSE`.
 
 - smd:
 
@@ -333,12 +346,16 @@ table_categorical(
   the variable row beside `p`, never on a level row. Signed for a
   two-category variable (group 1 minus group 2 on the second category),
   unsigned for three or more, where it is a distance. No confidence
-  interval and no p-value, by design. Rounded with `v_digits`. See the
-  "Standardized mean difference" section below. Defaults to `FALSE`.
+  interval and no p-value, by design. Rounded with `effect_size_digits`.
+  See the "Standardized mean difference" section below. Defaults to
+  `FALSE`.
 
 - decimal_mark:
 
-  Decimal separator (`"."` or `","`). Defaults to `"."`.
+  The decimal mark, a single character: `"."` (the default) or `","` in
+  most styles; the Lancet style of
+  [`spicy_style()`](https://amaltawfik.github.io/spicy/reference/spicy_style.md)
+  uses the middle dot.
 
 - align:
 
@@ -417,10 +434,11 @@ table_categorical(
 
   Logical. If `TRUE` (the default), merges top headers in Excel export.
   Only consulted for `output = "excel"` on a grouped table (`by`
-  supplied); like the other output-scoped presentation arguments
-  (`excel_sheet`, `clipboard_delim`, ...), it is silently unused in
-  every other output and in one-way tables, which have a single header
-  row to begin with.
+  supplied): typed with another `output`, it is ignored with a warning
+  (class `spicy_ignored_arg`), like the other arguments of one output
+  (`excel_path`, `excel_sheet`, `clipboard_delim`, `word_path`, ...),
+  and a one-way table, which has a single header row to begin with, does
+  not use it.
 
 - blank_na_wide:
 
@@ -451,7 +469,7 @@ table_categorical(
   `output = "flextable"` also wrote a `.docx` as a side effect; it is
   now used exclusively by `output = "word"` (the contract shared with
   the rest of the table family) and is ignored, with a warning, under
-  `output = "flextable"`.
+  any other `output`.
 
 - user_na:
 
@@ -475,6 +493,12 @@ table_categorical(
   [`?spicy_style`](https://amaltawfik.github.io/spicy/reference/spicy_style.md)
   lists the exact rules each one encodes and the official document they
   come from. An unknown name is an error.
+
+- v_digits:
+
+  Defunct. Renamed `effect_size_digits` in spicy 0.14.0, as in the other
+  table functions; supplying `v_digits` is an error (class
+  `spicy_defunct`).
 
 ## Value
 
@@ -1053,12 +1077,12 @@ table_categorical(
 #>    Yes       │       20.8             59         14.8       249     20.8   
 #>    (Missing) │        2.2              9          2.2        25      2.1   
 #> 
-#>  Variable    │   p    Cramer's V  CI lower  CI upper 
-#> ─────────────┼───────────────────────────────────────
-#>  smoking     │ <.001     .14        .08       .19    
-#>    No        │                                       
-#>    Yes       │                                       
-#>    (Missing) │                                       
+#>  Variable    │   p    Cramer's V  95% CI LL  95% CI UL 
+#> ─────────────┼─────────────────────────────────────────
+#>  smoking     │ <.001     .14         .08        .19    
+#>    No        │                                         
+#>    Yes       │                                         
+#>    (Missing) │                                         
 #> 
 #> Note. Group comparison: Pearson chi-squared test.
 
