@@ -265,28 +265,64 @@ test_that("the empty-cell refusal works without any table context", {
   # One sentence: no bullet was appended.
   expect_false(grepl("\n", conditionMessage(err), fixed = TRUE))
   expect_identical(
-    spicy:::.inline_empty_cell_hints(NULL, "delta", NULL, NULL),
+    spicy:::.inline_empty_cell_hints(NULL, "delta", NULL, NULL, NULL),
     character(0)
   )
 
   # With a real table the SAME refusal earns its hints -- which is what
-  # makes the bare form a fallback rather than the norm. An outcome
-  # observed in one group only cannot be fitted: its contrast is empty on
-  # every row of the table.
+  # makes the bare form a fallback rather than the norm. One observation
+  # per group leaves the model no residual degree of freedom: the means
+  # and the contrast are printed, the p is blank on every row of the
+  # table, and the means of the groups are the cells left to cite.
+  d <- data.frame(y = c(1, 3), grp = factor(c("auto", "manual")))
+  expect_warning(
+    tl <- table_continuous_lm(d, y, by = grp),
+    class = "spicy_undefined_stat"
+  )
+  err2 <- expect_error(
+    inline(tl, y, column = "p"),
+    class = "spicy_invalid_input"
+  )
+  msg <- conditionMessage(err2)
+  expect_match(
+    msg,
+    "The \"p\" cell of this row is empty in the table.",
+    fixed = TRUE
+  )
+  expect_match(msg, "The \"p\" column is empty on EVERY row", fixed = TRUE)
+  expect_match(
+    msg,
+    "Per-group columns ARE addressable: `model = \"auto\", column = \"emmean\"`.",
+    fixed = TRUE
+  )
+  expect_match(msg, "Available groups: \"auto\", \"manual\".", fixed = TRUE)
+  # The remedy the message names works.
+  expect_identical(inline(tl, y, column = "emmean", model = "auto"), "1.00")
+
+  # An outcome observed in one group only is a level with no data: the
+  # contrast that involves it applies and has no observation to fill it,
+  # so the cell is undefined, not empty. No model is fit, so the means of
+  # the groups are no remedy for its blank p either: none is named.
   d <- data.frame(
     y = c(rep(NA, 10), as.numeric(1:10)),
     grp = factor(rep(c("auto", "manual"), each = 10))
   )
-  tl <- withCallingHandlers(
-    table_continuous_lm(d, y, by = grp),
-    spicy_undefined_stat = function(w) invokeRestart("muffleWarning")
+  tl <- table_continuous_lm(d, y, by = grp)
+  err3 <- expect_error(inline(tl, y), class = "spicy_invalid_input")
+  expect_identical(
+    conditionMessage(err3),
+    "The \"delta\" cell of this row is undefined in the table (not estimable)."
   )
-  err2 <- expect_error(inline(tl, y), class = "spicy_invalid_input")
+  err4 <- expect_error(
+    inline(tl, y, column = "p"),
+    class = "spicy_invalid_input"
+  )
   expect_match(
-    conditionMessage(err2),
-    "The \"delta\" column is empty on EVERY row",
+    conditionMessage(err4),
+    "The \"p\" column is empty on EVERY row",
     fixed = TRUE
   )
+  expect_no_match(conditionMessage(err4), "ARE addressable", fixed = TRUE)
 
   # A non-empty cell is not refused at all.
   expect_null(spicy:::.inline_refuse_empty("1.23", "delta"))

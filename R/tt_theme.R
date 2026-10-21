@@ -411,11 +411,12 @@
 # the note out of the Word document. So each line of the note
 # (`.note_lines()`) is a note of its own, which tinytable sets in a row of
 # its own: the general note, one paragraph, then the legend of the stars,
-# as in Word and gt. In a document, the lead-in `lead` is set in `*...*`
-# on the note TEXT, before tinytable lays it out, so the grid stays
-# aligned; printed in a terminal, the grid is plain text and the note
-# stays as the console prints it, with no markup. "A document" is a knit
-# in progress -- Quarto and R Markdown -- which is also how
+# as in Word and gt. A cell note gets the same rows, its marker on the
+# first (`.spicy_split_note_lines()`). In a document, the lead-in `lead`
+# is set in `*...*` on the note TEXT, before tinytable lays it out, so the
+# grid stays aligned; printed in a terminal, the grid is plain text and
+# the note stays as the console prints it, with no markup. "A document"
+# is a knit in progress -- Quarto and R Markdown -- which is also how
 # `print.spicy_gt()` tells the two apart. Registered by `.spicy_tt_bare()`
 # as a preparation step for the markdown output only.
 .spicy_tt_note_markdown <- function(lead) {
@@ -434,20 +435,41 @@
 
 # The notes of a tinytable with each line of a note made a note of its
 # own (`.note_lines()`), for the markdown grid, whose cells hold no line
-# break. A string or an unnamed list of strings -- the shapes the
-# package's builders give `tt(notes = )` -- becomes a list with one string
-# per line; any other shape is left as it is.
+# break. The slot holds NULL or a list: `tt(notes = )` stores the string
+# the package's builders give it as a list of one. An unnamed list of
+# strings becomes a list with one string per line. A list with names also
+# holds notes with a marker, a named string or a cell note
+# `list(i = , j = , text = )`, such as a reader adds to a spicy table:
+# each note is split the same way, its first line keeps its name and its
+# cells, so tinytable still sets the marker in the cell and before that
+# line, and each further line follows it as a note of its own, with no
+# marker. The newline of a cell note used to reach the grid as it was and
+# broke the row. Any other shape is left as it is.
 .spicy_split_note_lines <- function(notes) {
-  if (is.character(notes) && is.null(names(notes))) {
-    lines <- unlist(lapply(notes, .note_lines), use.names = FALSE)
-    return(if (length(lines) == length(notes)) notes else as.list(lines))
-  }
   if (
     is.list(notes) &&
       is.null(names(notes)) &&
       all(vapply(notes, is.character, logical(1)))
   ) {
     return(as.list(unlist(lapply(notes, .note_lines), use.names = FALSE)))
+  }
+  if (is.list(notes) && !is.null(names(notes)) && is.null(notes$text)) {
+    out <- list()
+    for (k in seq_along(notes)) {
+      note <- notes[k]
+      cell <- is.list(note[[1L]])
+      lines <- .note_lines(if (cell) note[[1L]]$text else note[[1L]])
+      if (length(lines) > 1L) {
+        if (cell) {
+          note[[1L]]$text <- lines[[1L]]
+        } else {
+          note[[1L]] <- lines[[1L]]
+        }
+        note <- c(note, as.list(lines[-1L]))
+      }
+      out <- c(out, note)
+    }
+    return(out)
   }
   notes
 }

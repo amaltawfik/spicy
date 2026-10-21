@@ -1166,14 +1166,15 @@ inline <- function(
 # throughout, and not that the group means beside it are addressable.
 # (`table_continuous_lm(contrast = "none")` printed an empty contrast
 # column, the case that exposed it; the column is now left out.) The
-# context arguments are optional so a caller without a structured table
-# still gets the bare refusal.
+# context arguments (the table and the row) are optional so a caller
+# without a structured table still gets the bare refusal.
 .inline_refuse_empty <- function(
   txt,
   token,
   s = NULL,
   formatted = NULL,
   cols = NULL,
+  row = NULL,
   call = rlang::caller_env()
 ) {
   if (nzchar(txt)) {
@@ -1185,7 +1186,7 @@ inline <- function(
         "The %s cell of this row is empty in the table.",
         .quote_val(token)
       ),
-      .inline_empty_cell_hints(s, token, formatted, cols)
+      .inline_empty_cell_hints(s, token, formatted, cols, row)
     ),
     class = "spicy_invalid_input",
     call = call
@@ -1200,9 +1201,13 @@ inline <- function(
 #     reads the structured view and has no sight of the call.
 # (2) Some other token spreads over columns that carry a group. Those
 #     ARE addressable, and `model` is the argument that reaches them --
-#     the remedy the reader needs and could not guess.
-.inline_empty_cell_hints <- function(s, token, formatted, cols) {
-  if (is.null(s) || is.null(formatted) || is.null(cols)) {
+#     the remedy the reader needs and could not guess. Only the groups
+#     whose own cell on this `row` carries a value are named: a level
+#     with no data shows the undefined mark there, and a model that could
+#     not be fit leaves the means blank, so naming them would send the
+#     reader to one more refusal.
+.inline_empty_cell_hints <- function(s, token, formatted, cols, row) {
+  if (is.null(s) || is.null(formatted) || is.null(cols) || is.null(row)) {
     return(character(0))
   }
   hits <- Filter(
@@ -1232,7 +1237,9 @@ inline <- function(
   for (nm in setdiff(cols, hits)) {
     lv <- s$col_meta[[nm]]$level %||% NA_character_
     tk <- s$col_meta[[nm]]$token %||% ""
-    if (!is.na(lv) && nzchar(tk)) {
+    filled <- nzchar(trimws(formatted[[nm]][row])) &&
+      !nzchar(.struct_cell_status(s, nm)[row])
+    if (!is.na(lv) && nzchar(tk) && filled) {
       levels_by_token[[tk]] <- unique(c(levels_by_token[[tk]], lv))
     }
   }
@@ -1324,8 +1331,8 @@ inline <- function(
     # above lets it through: an association interval on a LEVEL row of
     # `table_categorical()` (the measure sits on the variable row) used
     # to compose as "[, ]".
-    .inline_refuse_empty(lo, token, s, formatted, cols, call = call)
-    .inline_refuse_empty(hi, token, s, formatted, cols, call = call)
+    .inline_refuse_empty(lo, token, s, formatted, cols, row, call = call)
+    .inline_refuse_empty(hi, token, s, formatted, cols, row, call = call)
     br <- .style_ci_brackets()
     sep <- .style_ci_sep(
       ci_bracket_separator(s$format_spec$decimal_mark)
@@ -1361,7 +1368,7 @@ inline <- function(
   }
   .inline_refuse_status(.struct_cell_status(s, hits)[row], token, call = call)
   out <- trimws(formatted[[hits]][row])
-  .inline_refuse_empty(out, token, s, formatted, cols, call = call)
+  .inline_refuse_empty(out, token, s, formatted, cols, row, call = call)
   out
 }
 

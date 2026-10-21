@@ -1231,16 +1231,16 @@ make_stronger_indent <- function(x, base_indent, strong_indent, rows) {
     return(spicy_fmt("note_no_data", .join_and(labels)))
   }
   hit <- lengths(groups) > 0L
-  labels <- labels[hit]
-  groups <- lapply(groups[hit], as.character)
-  set <- match(groups, unique(groups))
+  labs <- labels[hit]
+  sets <- lapply(groups[hit], as.character)
+  set <- match(sets, unique(sets))
   vapply(
     unique(set),
     function(k) {
       spicy_fmt(
         "note_no_data_in",
-        .join_and(labels[set == k]),
-        .join_and(groups[[match(k, set)]])
+        .join_and(labs[set == k]),
+        .join_and(sets[[match(k, set)]])
       )
     },
     character(1)
